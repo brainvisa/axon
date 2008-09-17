@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+  <d name="en" length="3">
+    <xhtml name="short"/>
+    <d name="parameters" length="1">
+      <xhtml name="features"/>
+    </d>
+    <xhtml name="long"> <p align="center"><img src="bvimage://diffusion/tracking/bundlesAnalysis.png" width="600"/></p></xhtml>
+  </d>
+</minf>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+  <d name="fr" length="3">
+    <xhtml name="short">Traitement pour la conversion de format de fichier d'image.<br/></xhtml>
+    <d name="parameters" length="6">
+      <xhtml name="removeSource">Si vous souhaitez éliminer le fichier d'entrée, par défaut 'false'</xhtml>
+      <xhtml name="voxelType">Type de données codant vos données, par défaut 'Same as input'</xhtml>
+      <xhtml name="read">Fichier d'entrée à convertir</xhtml>
+      <xhtml name="write">Fichier de sortie converti</xhtml>
+      <xhtml name="preferedFormat">Format d'entrée, par défaut 'auto', le format est reconnu.</xhtml>
+      <xhtml name="ascii">Ecrit en ASCII le fichier de sortie si le format le permet (sinon en binaire), par défaut 'false'</xhtml>
+    </d>
+    <xhtml name="long">Voici un exemple d'utilisation :<br/>
+
+<br/><br/><img SRC="../../images/ConvF_A.png" ALT=""/><br/><br/>
+
+Seuls les champs 'read' et 'write' sont obligatoires. Les autres champs sont définis par défaut. Reportez-vous au tableau des paramètres ci-dessus.<br/><br/>
+Les 'loupes' vous permettent de travailler ou de récupérer un fichier à partir de vos bases de données. Si vous travailler sur votre disque, utilisez les 'classeurs'.<br/><br/>
+Pour que le format de sortie soit pris en compte, vous devez indiquer l'extension au nom du fichier. Voici un tableau récapitulant les formats pris en charge.<br/><br/><br/>
+<br/>
+<table CELLPADDING="4" BGCOLOR="#E0E0E0" BORDER="1" CELLSPACING="0"><thead>
+<tr><th><em><bold>Format de fichier</bold></em></th><th><em><bold>Extension</bold></em></th></tr></thead><tbody>
+<tr><td><p>DICOM image</p></td><td><p>*</p></td></tr>
+<tr><td><p>ECAT i image</p></td><td><p>*.i</p></td></tr>
+<tr><td><p>ECAT v image</p></td><td><p>*.v</p></td></tr>
+<tr><td><p>GIS image</p></td><td><p>*.ima</p><p>f|*.dim</p></td></tr>
+<tr><td><p>JPEG image</p></td><td><p>*.jpg</p></td></tr>
+<tr><td><p>MINC image</p></td><td><p>*.mnc</p></td></tr>
+<tr><td><p>SPM image</p></td><td><p>*.img</p><p>f|*.hdr</p></td></tr>
+<tr><td><p>VIDA image</p></td><td><p>*.vimg</p><p>f|*.vinfo</p><p>f|*.vhdr</p></td></tr>
+<tr><td><p>VISTA image</p></td><td><p>*.v</p></td>
+</tr></tbody></table>
+<br/><br/></xhtml>
+  </d>
+</minf>

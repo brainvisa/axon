@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+  <d name="fr" length="3">
+    <xhtml name="short">Visualise sur un maillage en 3D des informations venant d'un volume 3D/4D</xhtml>
+    <d name="parameters" length="6">
+      <xhtml name="functional_volume"/>
+      <xhtml name="step"/>
+      <xhtml name="depth"/>
+      <xhtml name="mesh"/>
+      <xhtml name="calculation_method"/>
+      <xhtml name="submethod"/>
+    </d>
+    <xhtml name="long"/>
+  </d>
+  <d name="en" length="3">
+    <xhtml name="short">Shows information from a 3D/4D volume on a 3D mesh</xhtml>
+    <d name="parameters" length="6">
+      <xhtml name="functional_volume"/>
+      <xhtml name="step"/>
+      <xhtml name="depth"/>
+      <xhtml name="mesh"/>
+      <xhtml name="calculation_method"/>
+      <xhtml name="submethod"/>
+    </d>
+    <xhtml name="long"/>
+  </d>
+</minf>

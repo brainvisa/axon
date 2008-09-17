@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="en">
+    <xhtml name="short">This process checks data and suggests actions to complete/correct the database. For example, it checks that all data from t1mri segmentation pipeline have a referential. </xhtml>
+    <d name="parameters">
+      <xhtml name="database">Choose the database to check.</xhtml>
+    </d>
+    <xhtml name="long"><p>The checker has several parts associated to toolboxes.</p>
+<p>For <b>t1mri toolbox</b>, it explores data that appear in <b>segmentation pipeline</b>. It checks that the initial Raw T1 MRI has a <b>referential</b> and that all data generated from it have the same referential. If not, the process suggests to call a process to create a new referential or to copy the referential of the Raw T1 MRI.</p>
+<p>The user can unselect some actions before accepting suggested actions. This process cannot be undone.</p></xhtml>
+  </d>
+</d>
+</minf>

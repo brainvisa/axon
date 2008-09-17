@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="fr">
+    <xhtml name="short">Interface de la commade AimsMIRegister</xhtml>
+    <xhtml name="long">Ce traitement interface la commande de recalage 'AimsMIRegister' et propose ensuite de créer l'image test recalculée.<br/><br/>
+La méthode de recalage proposée par ce traitement repose sur une approche iconique, c'est à dire basée sur l'étude des niveaux de gris de chaque voxel et utilise l'information mutuelle (mesure de la dépendance statistique entre 2 variables) pour calculer le recalage.
+<br/><br/>Ce traitement permet de déterminer une transformation rigide entre 2 images (translation et matrice de rotation) de champ de vue similaire.
+<br/><br/>Si les images sont de type 4D alors le traitement réalise automatiquement une sommation de toutes les fenêtres de cette image afin d'obtenir une image de type 3D.
+<br/><br/>
+
+<b><u>Fichier de transformation :</u></b><br/><br/>
+Un fichier indiquant une transformation est un fichier de format .trm dont la syntaxe du nom du fichier est la suivante :<br/><br/>
+*TO*.trm (* indique tous les types de caractère ou chaînes de caractère). La première <b>*</b> indique la source (from) et la seconde <b>*</b> indique la destination (to). Cette transformation est de type rigide (translation + rotation).<br/><br/><br/><br/>
+<img src="../../images/recaltrm.png"/><br/><br/>
+<b>Fichiers de transformation</b><br/><br/>
+
+
+<b><u>Initialisation du recalage :</u></b><br/><br/>
+L'initialisation du recalage peut se faire selon 2 modes  :
+<ul>
+<li><b>gcinit = yes</b> -> initialisation avec le centre de gravité de chaque image seuillée : il s'agit du mode utilisé par défaut. Ce mode fonctionne avec les champs <b>seuilref</b> et <b>seuiltest</b>, seuillage sur les images par un pourcentage sur l'intensité maximale de l'image. Puis le centre de gravité est calculé pour initialiser l'algorithme.  Ce mode est intéressant pour des images ayant des intensités assez différentes (modalité différentes), par exemple dans le cas du recalage d'un exeman PET avec une IRM T1.</li> <br/><br/>
+<li><b>gcinit = no</b> -> initialisation selon des coordonnées passées en paramètre autrement avec une transformation de déaprt : pour initialiser les coordonnées de l'image à recaler, utilisez les champs <b>Tx</b>, <b>Ty</b>  ..... et définir vos pas d'exploration avec les champs <b>dTx</b>, <b>dTy</b> ..... </li>
+</ul>
+<br/><br/><br/><br/>
+<b><u>Sous-résolution de l'image de référence :</u></b><br/><br/>
+L'image de référence peut être 'dégradée' par un facteur de réduction selon le principe d'une pyramide. <br/><br/>
+Si <b>refstartpyr</b>= 1 --> 1 voxel sur 2 dans les 3 directions --> réduction d'un facteur 8 du volume<br/><br/>
+Si <b>refstartpyr</b>= 2 --> 1 voxel sur 4 dans les 3 directions --> réduction d'un facteur 64 du volume<br/><br/>
+.... par défaut la valeur est à 0, donc il n'y a pas de réduction<br/>
+<br/><br/><br/><br/>
+<b><u>Recalage de l'image test :</u></b><br/><br/>
+La commande <b>AimsMIRegister</b> permet de déterminer un fichier de transformation. Vous pouvez choisir d'appliquer cette transformation à l'image test. Pour cela, choisissez <b>'yes'</b> dans le champ <b>'image_resample'</b> et indiquez le nom de l'image recalée dans le champ <b>test_res</b>. <br/><br/>
+<br/><br/><br/><br/>
+<b><u>Exemple d'application :</u></b><br/><br/><br/><br/>
+Exemple du recalage de l'image test fonc.ima par rapport à l'image de référence anat.ima. Les sorties sont les fichiers de transformation refTOtest.trm et testTOref.trm ainsi que l'image recalée resampfonc.ima. Aujourd'hui, les sorties ne sont pas gérées dans la base de données de BrainVISA, vous devez donc utiliser l'icone <img src="../../images/icons/browse_read.png"/> pour gérer les sorties.
+<br/><br/><br/><br/>
+<img src="../../images/recalprocessus.png"/>
+<b>Traitement BrainVISA : Registration Mutual Infromation Method</b>
+<br/><br/><br/><br/></xhtml>
+    <d name="parameters">
+      <xhtml name="reference_to_source"/>
+      <xhtml name="step_translation_y"/>
+      <xhtml name="step_translation_x"/>
+      <xhtml name="step_translation_z"/>
+      <xhtml name="reference_threshold"/>
+      <xhtml name="initial_translation_x"/>
+      <xhtml name="initial_translation_y"/>
+      <xhtml name="initial_translation_z"/>
+      <xhtml name="error_epsilon"/>
+      <xhtml name="reference_reduction_factor"/>
+      <xhtml name="init_with_gravity_center"/>
+      <xhtml name="source_to_reference"/>
+      <xhtml name="source_threshold"/>
+      <xhtml name="reference_image"/>
+      <xhtml name="resampled_interpolation"/>
+      <xhtml name="initial_rotation_z"/>
+      <xhtml name="source_image"/>
+      <xhtml name="initial_rotation_x"/>
+      <xhtml name="initial_rotation_y"/>
+      <xhtml name="resampled_image"/>
+      <xhtml name="step_rotation_y"/>
+      <xhtml name="step_rotation_x"/>
+      <xhtml name="step_rotation_z"/>
+    </d>
+  </d>
+  <d name="en">
+    <xhtml name="short">Interface AimsMIRegister</xhtml>
+    <d name="parameters">
+      <xhtml name="reference_to_source"/>
+      <xhtml name="step_translation_y"/>
+      <xhtml name="step_translation_x"/>
+      <xhtml name="step_translation_z"/>
+      <xhtml name="reference_threshold"/>
+      <xhtml name="initial_translation_x"/>
+      <xhtml name="initial_translation_y"/>
+      <xhtml name="initial_translation_z"/>
+      <xhtml name="error_epsilon"/>
+      <xhtml name="reference_reduction_factor"/>
+      <xhtml name="init_with_gravity_center"/>
+      <xhtml name="source_to_reference"/>
+      <xhtml name="source_threshold"/>
+      <xhtml name="reference_image"/>
+      <xhtml name="resampled_interpolation"/>
+      <xhtml name="initial_rotation_z"/>
+      <xhtml name="source_image"/>
+      <xhtml name="initial_rotation_x"/>
+      <xhtml name="initial_rotation_y"/>
+      <xhtml name="resampled_image"/>
+      <xhtml name="step_rotation_y"/>
+      <xhtml name="step_rotation_x"/>
+      <xhtml name="step_rotation_z"/>
+    </d>
+    <xhtml name="long">This process interfaces registration command AimsMIRegister and proposes to compute (or not) new resampled image.<br/><br/>
+Method of registration is based on an iconic approach, based on voxels grey levels. It uses mutual information (statistical dependence between 2 variables) to compute the registration. 
+<br/><br/>A rigid transformation is calculated between the reference image and source image (translation and matrix rotation)  with similar field of view.
+<br/><br/>If images are 4D Volume, then an automatic sum of all the frames is made to obtain a 3D Volume.
+<br/><br/>
+
+<b><u>Matrix transformation:</u></b><br/><br/>
+The format file of matrix transformation is .trm and its syntax is:<br/><br/>
+*TO*.trm (* indicates all types of characters or character string).<br/><br/><br/><br/>
+<img src="../../images/recaltrm.png"/><br/><br/>
+<b>Format files</b><br/><br/>
+
+<b><u>Initialization of registration:</u></b><br/><br/>
+There are 2 modes for initialization of registration:
+<ul>
+<li><b>init_with_gravity_center=yes</b> -> initialization with gravity center: this is the default mode. It works with <b>reference_threshold</b> and <b>source_threshold</b> options. These thresholds preserve a percentage of intensity according to the maximun intensity. </li>
+<li><b>init_with_gravity_center=no</b> -> initialization with coordinates (or a starting transformation): to initialize coordinates with <b>Tx</b>, <b>Ty</b> ..... </li>
+</ul>
+<br/><br/>
+<b><u>Sub-resolution of reference image:</u></b><br/><br/>
+Reference image can be damaged with a reduction factor according to  the principle of a pyramid. <br/><br/>
+value 1 --> 1 voxel out of 2 in the 3 directions --> reduction by a factor of 8<br/><br/>
+value 1 --> 1 voxel out of 4 in the 3 directions --> reduction by a factor of 64<br/><br/>
+<br/><br/>
+<br/><br/>
+<b><u>Registration of source image:</u></b><br/><br/>
+The <b>AimsMIRegister</b> command allows the determination of a matrix transformation file. You can choose to apply this matrix transformation to the source image. Then you must indicate the name of the registred image for <b>resampled_image</b>. You can then choose the method of interpolation with <b>resampled_interpolation</b>.
+<br/><br/><br/><br/>
+<b><u>Example:</u></b><br/>
+Here is a registration of a source image (fonc.ima) with a reference image (anat.ima). The output files are refTOtest.trm, testTOref.trm and resampfonc.ima (registred image). Ouput files for this process are not currently managed by database. Thus you must use icon <img src="../../images/icons/browse_read.png"/>  to indicate output files.
+<br/><br/><br/><br/>
+<img src="../../images/recalprocessus.png"/>
+<b>Process BrainVISA: Rigid registration with mutual information</b>
+<br/><br/>
+</xhtml>
+  </d>
+</d>
+</minf>

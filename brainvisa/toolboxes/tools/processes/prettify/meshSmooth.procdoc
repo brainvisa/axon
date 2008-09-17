@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+  <d name="fr" length="3">
+    <xhtml name="short">Lissage de maillages</xhtml>
+    <xhtml name="long"><b>ATTENTION:</b>
+Les maillages de sortie (lissés) remplacent les fichiers d'entrée, vous ne devez dont pas utiliser ce traitement sur des maillages que vous comptez conserver...</xhtml>
+    <d name="parameters" length="4">
+      <xhtml name="directory">Lisse tous les maillages du directory entré
+renseigner un et un seul des deux paramètres 'mesh' ou 'directory'</xhtml>
+      <xhtml name="rate">Taux de déplacement (isotrope) à chaque itération</xhtml>
+      <xhtml name="mesh">Maillage d'entrée
+renseigner un et un seul des deux paramètres 'mesh' ou 'directory'</xhtml>
+      <xhtml name="iterations">Nombre de passes de lissage</xhtml>
+    </d>
+  </d>
+  <d name="en" length="3">
+    <xhtml name="short">Mesh smoothing</xhtml>
+    <xhtml name="long"><b>WARNING:</b>
+Output smoothed meshes replace input files, so you shouldn't use them on meshes you want to keep...</xhtml>
+    <d name="parameters" length="4">
+      <xhtml name="directory">Smoothes all meshes of the input directory
+You must fill one and only one of the two parameters 'mesh' or 'directory'</xhtml>
+      <xhtml name="rate">Moving rate (isotropic) at each iteration</xhtml>
+      <xhtml name="mesh">Input mesh
+You must fill one and only one of the two parameters 'mesh' or 'directory'</xhtml>
+      <xhtml name="iterations">Number of smoothing passes</xhtml>
+    </d>
+  </d>
+</minf>

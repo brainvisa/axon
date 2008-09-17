@@ -1,0 +1,100 @@
+#! /bin/env python
+
+import sys, os, stat, pprint
+
+def bytesToString( size ):
+  unitSize = 0
+  unit = None
+  if size < 2:
+    result = '%(bytes)d byte'
+  elif size < 1024:
+    result = '%(bytes)d byte'
+  else:
+    result = '%(unitSize).1f %(unit)s (%(bytes)d bytes)'
+    unitSize = int( size ) / 1024.0
+    unit = 'Kb'
+    if unitSize >= 1024:
+      unitSize = int( unitSize ) / 1024.0
+      unit = 'Mb'
+      if unitSize >= 1024:
+        unitSize = int( unitSize ) / 1024.0
+        unit = 'Gb'
+        if unitSize >= 1024:
+          unitSize = int( unitSize ) / 1024.0
+          unit = 'Tb'
+  return result % { 'unitSize': unitSize, 'unit': unit, 'bytes': size }
+
+
+if len( sys.argv ) > 1:
+  # Build a list of minf file to process.
+  minfs = []
+  stack = sys.argv[ 1: ]
+  minfTotalSize = 0
+  while stack:
+    item = stack.pop( 0 )
+    s = os.stat( item )
+    if stat.S_ISDIR( s.st_mode ):
+      stack += [os.path.join(item, i) for i in os.listdir( item )]
+    elif item.endswith( '.minf' ):
+      minfTotalSize += s.st_size
+      minfs.append( item )
+  print 'Found', len( minfs ), 'minf files'
+  print 'Total size:', bytesToString( minfTotalSize )
+
+  # Processing minf files
+  totalAttributesDeleted = 0
+  totalMinfsModified = 0
+  totalUnreadable = 0
+  newTotalSize = 0
+  count = 1
+  for minf in minfs:
+    sys.stdout.write( '\rProcessing %d on %d' % ( count, len(minfs) ) )
+    sys.stdout.flush()
+    # Read minf file in m
+    m = {}
+    try:
+      minfFileContent = open( minf ).read()
+      exec( minfFileContent, m, m )
+      m = m[ 'attributes' ]
+    except Exception, e:
+      totalUnreadable += 1
+      print >> sys.stderr, '\nCannot read "' + minf + '" (', e, ')'
+      m = None
+    # Remove attributes from minf file
+    if m:
+      rewrite = False
+      for key in [i for i in m.keys() if \
+          i.startswith( 'pool_header' )]:
+        totalAttributesDeleted += 1
+        rewrite = True
+        del m[ key ]
+      # Write minf file if modified
+      if rewrite:
+        totalMinfsModified += 1
+        out = open( minf, 'w' )
+        out.write( 'attributes = ' )
+        pprint.pprint( m, stream=out, indent=2 )
+        out.close()
+        # Check that written minf has nor error
+        m2 = {}
+        try:
+          newMinfContent = open( minf ).read()
+          exec( newMinfContent, m2, m2 )
+          m2 = m2[ 'attributes' ]
+        except:
+          m2 = None
+        if m2 != m:
+          f = open( minf, 'w' )
+          f.write( minfFileContent )
+          f.close()
+          print >> sys.stderr, '-'*50 + '\n' + newMinfContent + '\n' + '-'*50
+          raise RuntimeError( 'Error while checking modification of "' + minf + '" (initial content restored)' )
+    newTotalSize += os.stat( minf ).st_size
+    count += 1
+  print '\nRemoved', totalAttributesDeleted, 'attributes in', \
+        totalMinfsModified, 'files'
+  print 'New total size:', bytesToString( newTotalSize )
+  if totalUnreadable:
+    print totalUnreadable, 'files where not readable'
+else:
+  print >> sys.stderr, 'Usage: cleanMinf <filesOrDirectories>'

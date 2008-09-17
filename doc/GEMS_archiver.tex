@@ -1,0 +1,190 @@
+\documentclass{article}
+\usepackage{amssymb}
+\usepackage{xspace}
+\usepackage[T1]{fontenc}        % Utilisation des fontes 8 bits DC
+\usepackage{nnsp2e}
+\usepackage{aeguill,aecompl}   % Clavier francais
+%\usepackage[latin1]{inputenc}   % Clavier francais
+\usepackage[francais]{babel}    % Style francais sous babel
+\usepackage{pifont,pstricks,amssymb,calc,ifthen,indentfirst}
+\usepackage{marvosym}
+
+\usepackage{subeqnarray}
+\usepackage{graphicx}
+\usepackage{here}
+
+\input  alphabet       % Definitions de macros pour les alphabets
+\input abrege         % Abbreviations latines, anglaises et fran‡aises
+\input abrmath        % Abbreviations math‚matiques        
+\input beginend       % Abbreviations des \begin{} et des \end{}
+
+\title{Archivage des données provenant de l'IRM GEMS \textbf{Signa} 1.5T}
+\author{Cyril Poupon, \today}
+
+\bdoc
+\maketitle
+
+Bonjour a tous,
+
+Ce document peut vous paraître long mais il est conseillé à
+chaque utilisateur devant récupérer des données sur
+\textbf{Imaserv2} de le lire. Pour toute question ou problement rencontré, veuillez contacter:
+\bcc
+\btabu{c}
+    cpoupon\at shfj.cea.fr (78 13)\\
+    allirol\at shfj.cea.fr (77 56)\\
+    rougetet\at shfj.cea.fr(78 62)
+\etabu
+\ecc
+
+\section{Avant propos}
+
+Comme cela a été precisé dans le dernier mail, un upgrade logiciel a été effectue sur le \textbf{Signa}.
+
+Je crois que peu de problèmes d'acquisition sont apparus, parce que les séquences avaient été prealablement testées a l'hôpital \textbf{Necker} qui avait fait cette mise à jour avant nous.
+
+Les seuls problèmes a l'acquisition etaient dus à des adaptation de protocoles des utilisateurs pour utiliser des sequences standards.
+
+En revanche, l'archivage nocturne des données  sur le serveur d'archivage \textbf{mador} ne fonctionnait plus. Apres quelques investigations, il est
+apparu que l'aspect software avait été developpe par un ingenieur de la Société GEMS il y a de cela plusieurs
+années et que le logiciel n'était plus compatible avec le nouvel environnement ESE 9.1 de la console IRM. C'est pourquoi les \og{}moulinettes\fg{} d'archivage ont été entierement refaites, ce developpement etant decoupé
+en 3 parties (seule la derniere interesse l'utilisateur final)~:
+
+\subsection{Nouvelles \og{}moulinettes\fg{} de transfert sur la console}
+
+Sur la console du \textbf{Signa}, les fonctions \og{}send\fg{} et \og{}send epi\fg{}
+font desormais appel au commandes \texttt{NmrGemsSignaSendRec}
+(pour les données reconstruites) et \texttt{NmrGemsSignaSendRaw}
+( pour les données brutes ); ce changement est transparent pour
+l'utilisateur qui doit operer comme avant. Seule modification,
+il n'est plus necessaire de lancer la commande clean avant
+d'acquerir un jeu de données Bold, la commande \texttt{NmrGemsSignaSendRaw}
+se chargeant de nettoyer le repertoire concerne a la fin
+du transfert,
+
+\subsection{Nouvelle \og{}moulinette\fg{} d'archivage sur \textbf{mador}}
+
+Sur \textbf{mador}, le serveur d'archivage, la nouvelle commande 
+\texttt{NmrGemsSignaArchiverPut} est lancée automatiquement toutes  les nuits, et se charge de prendre les données poussées de la console et de les mettre dans le repertoire d'archivage final. Là aussi, cette procedure est transparente pour l'utilisateur.
+
+
+\subsection{Nouvelle \og{}moulinette\fg{} de recuperation des données pour l'utilisateur}
+
+Lorsque l'ulisateur désire récupérer ses données \textbf{Signa} UNIQUEMENT, 2 cas se presentent~:
+\bit
+\item  cas d'un examen dont le numero est strictement inferieur à 10342:    utiliser encore \texttt{imaserv2} sur Station \textsc{Sun} ( ça devrait changer dans un avenir proche...)
+
+\item cas d'un examen dont le numero est superieur ou egal a 10342~:
+\eit
+
+Une nouvelle \og{}moulinette\fg{} \texttt{NmrGemsSignaArchiverGet} est accessible depuis le compte de chaque utilisateur, pour le moment uniquement sur une station \textsc{Linux}. Son utilisation est relativement simple. L'aide est obtenue en tapant \\
+    \texttt{\texttt{NmrGemsSignaArchiverGet} -h}
+à l'invite du shell.
+
+Voici quelques exemples illustrant l'utilisation concrète de cette moulinette.
+
+\subsubsection{Exemple 1 :}
+
+Si un utilisateur souhaite rapatrier, dans le repertoire courant
+dans lequel il se trouve, les series \Numero 3 et 6 de l'examen numero 10815 qui
+correspondent toutes 2 à des données reconstruites, il saisira~:\\
+
+\texttt{  \texttt{NmrGemsSignaArchiverGet} -e 10815 -s 3 6 -verbose -minf}
+
+\`A noter que l'option \texttt{-verbose} est facultative et active le mode verbeux de  la commande et que l'option \texttt{-minf} génère les meta-info headers \texttt{*.ima.minf.}
+
+Une fois que la commande a fini de s'executer, l'utilisateur trouvera dans
+le repertoire courant les fichiers
+\begin{verbatim}
+    Exam10815_Series003.ima
+    Exam10815_Series003.dim
+    Exam10815_Series003.ima.minf
+\end{verbatim}
+et
+\begin{verbatim}
+    Exam10815_Series006.ima
+    Exam10815_Series006.dim
+    Exam10815_Series006.ima.minf
+\end{verbatim}
+
+\subsubsection{Exemple 2 :}
+
+Si l'utilisateur souhaite transférer dans le repertoire courant
+toutes les series de l'examen 10816, il saisira:\\
+     
+  \texttt{\texttt{NmrGemsSignaArchiverGet} -e 10816 -verbose -minf}
+
+en omettant de préciser les series avec l'option \texttt{-s}.
+
+\subsubsection{Exemple 3 :}
+
+Si l'utilisateur souhaite transférer dans le repertoire courant
+la serie \Numero 7 de l'examen 10817 qu'il sait être une donnée
+\textbf{EPIbold} brute, il saisira:\\
+
+ \texttt{ \texttt{NmrGemsSignaArchiverGet} -e 10817 -s 7 -verbose -minf}
+
+Une fois que la commande a fini de s'executer, l'utilisateur trouvera dans
+le repertoire courant les fichiers\\
+\begin{verbatim}
+    Exam10817_Series007_Image000001.ima
+    Exam10817_Series007_Image000001.dim
+    Exam10817_Series007_Image000001.ima.minf
+\end{verbatim}
+car la serie ne contenait  qu'une image \textbf{bold} (\Numero 000001).
+Si la serie contenait une deuxieme image \textbf{bold}, le repertoire courant
+contiendrait un second lot de 3 fichiers se terminant par
+\texttt{Imagexxxxxx.*}, \texttt{xxxxxx} representant le numero de l'image \textbf{bold} en question.
+
+
+Ce mail est presque terminé. Il me reste a préciser que~:\\
+\bit
+ \item une interface brainvisa accompagnera cette commande pour la
+  rendre conviviale et sous forme graphique,
+ \item la commande \texttt{NmrGemsSignaArchiverGet} gérera les anciennes
+  données qui ne sont pour le moment qu'accessible a travers
+  \texttt{imaserv2} sur une station \textsc{Sun},
+ \item la commande sera disponible sur \textsc{Solaris} prochainement alors
+  qu'elle n'est disponible que sur \textsc{Linux} pour le moment,
+ \item l'équivalent sera fait sur la \textbf{3T Bruker} dans le futur.
+ \eit
+
+\subsection{Remarques}
+En outre, je vous demande d'être indulgent quant à l'existence
+potentielle de petits bogues. Bien que ces nouvelles procedures
+aient été testées, les développements ont été réalisés
+dans l'urgence. Les bogues seront resolus soit avant mercredi soir
+pour ceux apparaissant avant cette date et dont j'aurais pris
+connaissance, soit à mon retour de l'ISMRM, le 24 mai pour les
+autres.
+
+N'hesitez pas à me contacter pour toute question ou signalement
+de bogue.
+
+\section{Mise à jour}
+
+Tous ceux qui utilisent le système d'archivage pour récupérer leurs données acquise sur l'\textbf{IRM Signa} doivent procéder à la modification suivante.
+
+Une modification est à apporter sur votre compte si vous
+avez déjà utilisé la commande \texttt{NmrGemsSignaArchiverGet}.
+Si vous n'êtes pas sûr, regardez si vous avez un répertoire
+\textbf{".nmr/"} sur la racine de votre compte réseau \unix (attention, il y a
+bien un point au debut du nom du repertoire).
+
+Si c'est le cas, veuillez remplacer le fichier \texttt{pluginrc} existant
+dans le repertoire .nmr/ par le fichier plugin qui se trouve sur mon compte\\ 
+\bcc
+(\texttt{/home/cpoupon/.nmr/pluginrc}),
+\ecc
+en tapant, à l'invite d'une fenêtre shell, la command suivante~:
+\begin{verbatim}
+cp -f /home/cpoupon/.nmr/pluginrc ~/.nmr/pluginrc
+\end{verbatim}
+
+
+
+\hspace*{10cm}Cordialement,
+
+\bfr Cyril Poupon\efr
+\edoc
+

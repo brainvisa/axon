@@ -1,0 +1,117 @@
+\documentclass[a4paper]{article}
+
+% for extended summary
+%\usepackage[summary]{nnsp2e}
+% final paper
+\usepackage{nnsp2e}
+\usepackage[latin1]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amssymb}%enumerate,theorem,setspace
+\usepackage{shortvrb,subeqnarray}
+\usepackage{color}
+\usepackage{array}
+
+% Example definitions.
+% --------------------
+\input{alphabet}   
+\input{abrege}	
+\input{abrmath}  
+%\input{old/abrege}	
+%\input{old/abrmath}  
+\input{beginend}   
+\input{transdef}
+\title{Updates in how to manage Process/Categories documentation under \brv}
+
+\author{Yann Cointepas, \today}
+%\author{Jan Larsen and Cyril Goutte\\
+%        Department of Mathematical Modeling, Building 321\\
+%        Technical University of Denmark, DK-2800 Lyngby, Denmark\\
+%        Phone: +45 4525 3923,3921\\
+%        Fax: +45 4587 2599\\
+%        E-mail: jl,cg@imm.dtu.dk\\
+%        Web: eivind.imm.dtu.dk}
+
+
+\begin{document}
+\maketitle
+
+\section*{General information}
+
+Finished processes/categories documentation new features. Here is a little summary of these features:
+\ben 
+\item I changed the style of processes documentation. There is no table
+     anymore. I am ready to go back if too many people complain.
+ 
+\item Process and categories documentation are now in  \texttt{.minf} format 
+    (by default it is XML minf). Hence, the text can be organized in several
+     parts. Each part can be a classical string or an \textbf{XHTML} text (\verb'<XHTML>'
+     tag in XML version only).
+ 
+     The main differences between \textbf{HTML} and \textbf{XHTML} are:
+    \bit
+     \item All tags must be closed:, \texttt{<br>} is forbidden. Use \texttt{<br/>} (or
+        \texttt{<br></br>}) instead.
+        
+     \item Tags are case significant: \texttt{<a href="toto.html">toto</A>} is
+        not valid.
+     \item Attributes values must be doubly-quoted: use \texttt{<table width="100\%">}
+        instead of \texttt{<table width=100\%>}
+
+     \item The tags must be correctly nested and closed.
+ 
+     The good point is that XML documentation files are now legible easily
+     and can be edited with any text or XML editor (I like copy/paste, \eg quanta+).
+ \eit
+
+  \item A process documentation is still a \texttt{*.procdoc} file with the same name
+     as the \texttt{*.py} file of the process (e.g. AnaDoAll.py \fleche AnaDoAll.procdoc).
+ 
+  \item The graphical editor is still working. It will check that the \textbf{HTML} you
+     write is valid \textbf{XHTML}. If it is not, the only choice you have is to use a regular string.
+ 
+  \item Categories documentation are parsed only in the main \brv process
+     directory (this would change in the future).\\
+      They are in
+     \texttt{category\_documentation.minf} file in the corresponding category directory.
+     Each file contain one text property per language (to date, only 'en' and 
+     'fr' have been filled).
+ 
+  \item \textbf{XHTML} texts are parsed to produce the final \textbf{HTML} documentation (the real
+     fromat is \textbf{XHTML} because most browsers support it). During this parsing
+     special tags and links are detected and converted :
+    \bit
+     \item \texttt{<a href="bvprocess://TheProcess>} has been replaced by a link to the
+        process documentation that can be reached using the \emph{process id} \textbf{TheProcess} (\ie
+        the name of the Python file without extention). 
+
+        Example in the 'fr' text property: 
+        
+        \cl{\texttt{<a href="bvprocess://AnaDoAll">Le célèbre pipeline</a>}}
+
+        Example in the 'en' text property: 
+
+        \cl{\texttt{<a href="bvprocess://AnaDoAll">The famous pipeline</a>}}
+        
+     \item \texttt{<a href="bvcategory://TheCategory>} has been replaced by a link to the
+        \emph{category} documentation.  \textbf{TheCategory} must be a relative path to
+        the category directory (all in english and in lower case as it
+        appear in \brv). 
+        
+        
+        \cl{Example:\texttt{<a href="bvcategory://data management/import/diffusion">diffusion</a>}}
+        
+     \item Note that \verb'<_t_>text</_t_>' is actually replaced by the \brv translation of 'text'.
+
+        \cl{Example :\texttt{<a href="bvcategory://data management"><\_t\_>data management</\_t\_></a>'}}
+
+\eit
+\een
+\section*{Additional points}
+
+  We have also added a special link to images. \texttt{bvimage://} stands for the \texttt{<img>} tag in documentation. It allows to make reference to an image without knowing where the final \textbf{HTML} file will
+  be. 
+  
+  \cl{Example : \texttt{<img src="bvimage://diffusion/dti/rgbev.jpg"/>}}
+  
+  
+\edoc

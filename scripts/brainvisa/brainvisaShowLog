@@ -1,0 +1,2 @@
+#! /bin/sh
+exec brainvisa --noMainWindow --logFile "" -c 'neuroLogGUI.showLog("'"$1"'")'

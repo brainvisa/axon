@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+
+<xhtml name="en">
+  <h1>Viewers</h1>
+  
+  <p>
+The processes in the viewers category are dedicated to display data. Each viewer is used for a specific data type (for instance Raw T1 MRI, or White matter mesh, ...).
+  </p>
+  <p>
+<em>Automatic</em> viewers have the ability to be automatically triggered by the graphical interface system of BrainVISA: the "eye" icons displayed on process parameters. To be valid, an automatic viewer must have only one mandatory parameter (the first one), corresponding to the data to be displayed. Additional optional parameters are of course allowed. The viewers list is open: you can add new viewers, and BrainVISA will be able to use them and display "eye" buttons on process parameters representing the corresponding data types.
+  </p>
+  <p>
+Most of the viewers currently shipped with BrainVISA use Anatomist. This is not mandatory: it is perfectly possible to write a viewer using a text editor, a curve plotter program, or whatever.
+  </p>
+  <p><img src="../../../../images/voronoiC.jpg"/> <img src="../../../../images/lesson3_13.png"/></p>
+
+</xhtml>
+
+<xhtml name="fr">
+  <h1>Afficheurs</h1>
+  
+  <p>
+Les traitements de la catégorie des afficheurs sont dédiés à la visualisation des données. Chaque afficheur est utilisé pour un type de données particulier (par exemple IRM T1 brute, ou Maillage de la matière blanche, ...).
+  </p>
+  <p>
+Les afficheurs <em>automatiques</em> ont la particularité d'être utilisés automatiquement par le système d'interface graphique de BrainVISA: les icônes "oeil" présents sur les paramètres des traitements. Pour être valides, les afficheurs automatiques ne doivent avoir qu'un paramètre obligatoire (le premier) qui correspond à la donnée à afficher. Des paramètres optionnels peuvent bien sûr être ajoutés. La liste des afficheurs automatiques est ouverte, c'est à dire que vous pouvez en ajouter, BrainVISA saura les utiliser et présenter des boutons "oeil" sur les paramètres de traitements représentant les types de données correspondants.
+  </p>
+  <p>
+La plupart des afficheurs actuellement fournis avec BrainVISA utilisent Anatomist. Mais ce n'est pas une obligation: il est tout à fait possible de faire un afficheur utilisant un éditeur de texte, un programme de tracé de courbes, ou n'importe quoi d'autre.
+  </p>
+  <p><img src="../../../../images/voronoiC.jpg"/> <img src="../../../../images/lesson3_13.png"/></p>
+
+</xhtml>
+
+</minf>

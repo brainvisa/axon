@@ -1,0 +1,28 @@
+#! /bin/env python
+# -*- coding: iso-8859-1 -*-
+#
+#  Copyright (C) 2004-2005 CEA
+#
+#  This software and supporting documentation were developed by
+#  	CEA/DSV/SHFJ
+#  	4 place du General Leclerc
+#  	91401 Orsay cedex
+#  	France
+#
+
+# Set default encoding to 'iso-8859-1'
+import sys, os
+try:
+  ksdjfh34_f9
+except:
+  c = sys.executable + " -S -c 'import sys; ksdjfh34_f9=True; sys.argv[ 0 ] = \"" + sys.argv[0] + "\"; execfile( \"" + sys.argv[ 0 ] + "\" )' " + ' '.join( ["'" + x + "'" for x in sys.argv[1: ] ] )
+  sys.exit( os.system( c ) )
+sys.setdefaultencoding( 'iso-8859-1' )
+import site
+
+from soma.minf.api import readMinf, writeMinf
+if len( sys.argv ) > 2:
+  output = open( sys.argv[ 2 ], 'w' )
+else:
+  output = sys.stdout
+writeMinf( output, readMinf( sys.argv[ 1 ] ) )

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="en">
+    <xhtml name="short">This process search for a specific importer according to the type of output and execute it. 
+If there is no specific importer, ImportData process is called (it only copy files).</xhtml>
+    <d name="parameters">
+      <xhtml name="input"/>
+      <xhtml name="output"/>
+    </d>
+    <xhtml name="long"/>
+  </d>
+</d>
+</minf>

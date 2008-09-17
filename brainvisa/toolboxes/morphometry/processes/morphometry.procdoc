@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+  <d name="fr" length="3">
+    <xhtml name="short">Collecte des chiffres utilisables en morphométrie pour décrire des régions d'intérêt, sur une série de graphes</xhtml>
+    <d name="parameters" length="9">
+      <xhtml name="region">Sélection des noms de régions à traiter. Ce type de paramètre, "sélection" est un peu spécial: le fichier de sélection associé est optionnel (s'il n'est pas donné, la sélection ne sera pas sauvée pour un usage ultérieur). Les noms de régions sont choisis avec un éditeur qui s'ouvre quand on clique sur le bouton "..." et qui utilise le modèle et la nomenclature choisis. Si aucune sélection n'est faite (si on ne clique même pas sur "..." ), une sélection par défaut sera faite automatiquement et contiendra tous les noms valides trouvés à la fois dans le modèle et la nomenclature. C'est, la plupart du temps, ce que l'on veut.</xhtml>
+      <xhtml name="nomenclature"/>
+      <xhtml name="data_graphs">Graphes de régions d'intétêt des différents sujets</xhtml>
+      <xhtml name="run_dataMind">Lance l'interface du module de statistiques. Nécessite que le logiciel R soit installé.
+R peut être trouvé sur <a href="http://www.r-project.org/">http://www.r-project.org/</a></xhtml>
+      <xhtml name="output_prefix">préfixe des fichiers écrits par le traitement (y compris le chemin). Les noms de fichiers seront complétés par les noms de régions et l'extension ".dat".</xhtml>
+      <xhtml name="region_type">Région: seulement la région sélectionnée
+Relations avec la région: modèles des relations liant cette région à d'autres
+Tous: région + relations</xhtml>
+      <xhtml name="model">Graphe modèle, de lui dépend la description en différentes mesures morphométriques</xhtml>
+      <xhtml name="label_attribute"/>
+      <xhtml name="region_as_regexp">Si cette option est mise, les noms de régions sont interprétés comme des 'expressions régulières', avec une syntaxe un peu cryptique mais qui permet des filtes complexes (filtres avec des et/ou, etc)
+Pour un nom 'simple', laissez cette option désactivée.</xhtml>
+    </d>
+    <xhtml name="long">Le traitement ne fait pas réellement de statistiques, il donne des descripteurs sur des régions, en fonction d'un modèle. 
+Le traitement a été écrit au départ pour fonctionner sur des graphes de sillons et c'est toujours son usage principal, 
+mais il est aussi possible d'obtenir des chiffres sur des gyri et des ROIs. D'autres modèles pourront être ajoutés par la suite.
+<br/><br/>
+Les graphes d'entrée sont générés par les outils de segmentation automatique: 
+voir le traitement <a href="AnaDoAll.html">Pipeline / Ana Do All From T1 MRI</a>
+<br/><br/>
+Les graphes des sujets doivent être au moins partiellement <b>étiquetés</b> de manière à pouvoir en extraire les ROIs voulues.
+Il est possible d'étiqueter automatiquement les graphes de sillons grâce au traitement de 
+<a href="recognition.html">morphométrie / reconnaissance automatique</a> 
+(mais il est plus que recommandé de vérifier les identifications)
+<br/><br/>
+Le modèle contient la connaissance anatomique (liste des régions...) et connait les chiffres associés et la façon 
+de les calculer ("experts" virtuels de l'anatomie concernée).
+<br/><br/>
+Le choix des régions est guidé par une "nomenclature" qui permet de sélectionner des région de façon hiérarchique: par ex. par lobe ou par grand sillon. 
+Ce choix aboutit à une "sélection" de noms et s'effectue via le paramètre <b>region</b> du traitement. 
+L'éditeur permet de choisir une sélection à partir du modèle et de la nomenclature choisis.
+<br/><br/>
+Il est possible d'obtenir des chiffres sur les sillons, et/ou sur les relations avec un sillon. 
+Le traitement écrit un fichier par sillon et par relation (en fait un fichier par "expert" utilisé dans le modèle). 
+Dans chaque fichier, il y a une ligne de chiffres par sujet.
+<br/><br/>
+<b>Description succinte des chiffres obtenus pour les sillons:</b>
+<br/><br/>
+On obtient d'une part des descripteurs plutôt structurels (nombre de morceaux non connexes et organisation entre eux) 
+et d'autrepart des descripteurs qui mesurent certaines choses (longueur, profondeur, orientation...).<br/>
+<b><i>! :</i></b> Aucune mesure ne concerne pour le moment les épaisseurs (<b>pas</b> d'épaisseur de cortex ni d'indice de l'ouverture des sillons) 
+car tous les chiffres sont issus de la segmentation des sillons à partir de leur squelettisation: les sillons extraits sont sans épaisseur 
+(ils font systématiquement 1 voxel d'épaisseur).<br/>
+On aura sans doute de meilleurs descripteurs à l'avenir...
+<br/><br/>
+<b>Sillons:</b>
+<br/><br/>
+Notations, jargon:<br/>
+<ul>
+<li>Extrémites du sillon: <b><i>E1</i></b>, <b><i>E2</i></b></li>
+<li>Relations "corticales pures": celles qui traversent un gyrus: les sillons ne 
+se touchent pas physiquement</li>
+<li>Toutes les coordonnées sont en principe données dans Talairach 
+(boîte proportionnelle)</li>
+</ul>
+<br/>
+Descripteurs:<br/>
+<ol>
+<li>Valide global: 0 si le sillon est absent, 1 s'il est OK</li>
+<li>Validité des extrémités du sillon (points les plus éloignés entre eux) (0 ou 1)<br/>
+<b>Si c'est 0, les entrées 3 a 8 ne sont pas valides</b></li>
+<li>1ère extrémité du sillon (<b><i>E1</i></b>). coordonnée X</li>
+<li>coord. Y</li>
+<li>coord. Z</li>
+<li>2ème extrémité du sillon (<b><i>E2</i></b>). Coord. X - 
+<i>E1</i> et <i>E2</i> sont interchangeables je crois... 
+-> on ne peut pas vraiment les discriminer (à vérifier!)</li>
+<li>coord. Y</li>
+<li>coord. Z</li>
+<li>Centre de gravité du sillon. Coord. X</li>
+<li>coord. Y</li>
+<li>coord. Z</li>
+<li>Validité de la normale au sillon (0 ou 1)<br/>
+<b>Si c'est 0, les enrées 13 a 15 ne sont pas valides</b></li>
+<li>normale moyenne au sillon, coord. X</li>
+<li>coord. Y</li>
+<li>coord. Z</li>
+<li>direction moyenne du sillon, coord. X</li>
+<li>coord. Y</li>
+<li>coord. Z</li>
+<li>"Taille" du sillon (volume en mm3 du squelette) = <i>nb voxels</i> * <i>volume du voxel</i></li>
+<li>Profondeur géodésique max. du sillon par rapport à l'enveloppe externe</li>
+<li>Profondeur géodésique min. du sillon -> 0 pour ceux qui touchent l'enveloppe (la plupart!), non nul dans l'insula...<br/>
+<b>*** La véritable profondeur du sillon, c'est <i>Prof. max.</i> - <i>prof. min.</i> !! ***</b></li>
+<li>Nombre de composantes connexes (de morceaux disjoints) qui composent le 
+sillon, <b>*** <i>selon tous les types de relations intra-sillon !!</i> ***</b><br/>
+<b>CE PARAMETRE EST TROMPEUR....</b> il y a des relations à travers les gyri</li>
+<li>Nb. composantes connexes si on ne tient pas compte des relations "corticales pures" 
+(relations a travers les gyri) intra-sillon<br/>
+-> <b>C'est <i>CE</i> parametre qui correspond a l'idee "habituelle" des morceaux disjoints de sillon</b></li>
+<li>Nb. relations corticales pures entre différentes composantes connexes du sillon</li>
+<li>Distance max. entre composantes connexes du sillon</li>
+<li>Nb. plis de passage à l'interieur du sillon (variations notables de profondeur ou de courbure 
+du fond du sillon), <b>pas très fiable</b> car la détection des plis de passage n'est pas du tout parfaite</li>
+<li>Taille des jonctions entre le sillon et l'enveloppe externe du sillon<br/>
+-> représente en gros la longueur du sillon</li>
+<li>Surface du sillon. Ce paramètre complète avantageusement le volume, et il est moins sujet aux variations 
+dues à des différences de taille de voxel. En revanche <b>il n'est disponinble que sur des graphes de sillons 
+"récents"</b>, les anciens ne possédant pas ce paramètre. Il est possibe d'ajouter ce paramètre sur des 
+anciens graphes de sillons à l'aide du traitement <a href="GraphComplete.html">GraphComplete</a>.</li>
+<li><b>[modèles appris seulement]</b> avis de l'expert du sillon associé à la région<br/>
+<i>valeur négative</i> -> ça lui plait<br/>
+<i>valeur positive</i> -> ça ne lui plait pas<br/>
+*** sur les modèles n'ayant pas subi d'apprentissage, les experts répondent n'importe quoi</li>
+</ol>
+<br/>
+<b>Relations</b>
+<br/><br/>
+Notations, jargon:
+<ul>
+<li><b><i>S1</i></b>: premier des deux sillons liés par la relation</li>
+<li><b><i>S2</i></b>: l'autre sillon</li>
+<li>L'ordre des sillons est celui donné par le nom de la relation:<br/>
+"truc-machin" -> <b><i>S1</i></b> = truc, <b><i>S2</i></b> = machin</li>
+</ul>
+<br/>
+Descripteurs:<br/>
+<ol>
+<li>Valide global (0 ou 1) - 0 si un des deux sillons n'est pas présent
+mais répond 1 si les 2 sillons existent mais qu'il n'y a pas de relation 
+entre les deux</li>
+<br/>
+<i>-- Les descripteurs 2 à 7 re-décrivent brièvement chacun des 2 sillons, il vaut 
+     mieux regarder la description de chacun d'eux, quoique les entrées 4 et 
+     7 apportent quand-même des informations nouvelles et possiblement 
+     intéressantes --</i>
+<br/><br/>
+<li>Taille de <b><i>S1</i></b></li>
+<li>Nb. composantes connexes de <b><i>S1</i></b> par les relations non-corticales</li>
+<li>Nb. de comp. connexes de <b><i>S1</i></b> impliquées dans la relation avec <b><i>S2</i></b></li>
+<li>Taille de <b><i>S2</i></b></li>
+<li>Nb. composantes connexes de <b><i>S2</i></b> par les relations non-corticales</li>
+<li>Nb. de comp. connexes de <b><i>S2</i></b> impliquées dans la relation avec <b><i>S1</i></b></li>
+<br/>
+<li>Taille des relations corticales: en fait c'est la longueur de la ligne qui
+départage les deux sillons (dans un diagramme de voronoi)<br/>
+-> il n'y a pour l'instant pas d'info directe sur la surface du gyrus...</li>
+<li>Distance minimale entre les sillons (0 s'ils se touchent)</li>
+<li>Direction "globale" de la relation, coord. X<br/>
+<b>*** a prendre avec des pincettes ! ***</b></li>
+<li>coord. Y</li>
+<li>coord. Z</li>
+<li>Distance entre le point de contact sur <b><i>S1</i></b> de la relation (point de <b><i>S1</i></b> le 
+plus proche de <b><i>S2</i></b>) et l'extrémite de <b><i>S1</i></b> la plus proche de ce point<br/>
+-> 0 si c'est une extrémite de <b><i>S1</i></b> qui touche <b><i>S2</i></b> 
+ou qui est la plus proche de <b><i>S2</i></b></li>
+<li>Distance entre le point de contact sur <b><i>S2</i></b> de la relation (point de <b><i>S2</i></b> le 
+plus proche de <b><i>S1</i></b>) et l'extrémite de <b><i>S2</i></b> la plus proche de ce point</li>
+<li>Centre de gravité de la relation, coord. X (positionnement grossier)</li>
+<li>coord. Y</li>
+<li>coord. Z</li>
+<li>cosinus de l'angle des directions globales de <b><i>S1</i></b> et <b><i>S2</i></b> 
+(produit scalaire des directions)</li>
+<li>Nombre de jonctions entre les 2 sillons<br/>
+<b>*** ne reflète pas nécéssairement le nombre d'endroits où ils se touchent ***</b></li>
+<li>Profondeur minimale des jonctions: non nulle seulement si les sillons se 
+touchent par un pli de passage profond</li>
+<li>Taille (longueur) des jonctions entre les deux sillons</li>
+<li>Nb. plis de passage qui joignent les deux sillons</li>
+<li>Profondeur max. des plis de passage</li>
+<li><b>[modèles appris seulement]</b> avis de l'expert de cette relation, comme 
+pour les sillons, les négatifs sont bons, les positifs mauvais</li>
+</ol>
+<br/><br/>
+Pour des infos plus detaillées, voir la <a href="ftp://ftp.cea.fr/pub/dsv/anatomist/papers/riviere-thesis00.pdf">thèse de 
+D. Rivière</a>.<br/>
+<i><b>e-mail:</b> <a href="mailto:riviere@shfj.cea.fr">riviere@shfj.cea.fr</a></i>
+</xhtml>
+  </d>
+  <d name="en" length="3">
+    <xhtml name="short">Gathers a number of morphometric figures about some regions of a set of subjects folds or ROI graphs</xhtml>
+    <d name="parameters" length="9">
+      <xhtml name="region">Selection of names to process. This "selection" parameter type is a bit special: the associated selection file is optional (if omitted, the selection will not be saved for later usage). Region names are chosen using an editor that is opened using the "..." button. This editor uses the selected model and nomenclature. If no selection is done (if the user just doesn't use the "..." button), a default selection will be done and will contain all valid names found both in the model and the nomenclature. Most of the time, this is what we want.</xhtml>
+      <xhtml name="nomenclature"/>
+      <xhtml name="data_graphs">Subjects ROI graphs (cortical folds, etc)</xhtml>
+      <xhtml name="run_dataMind">Starts the statistics module interface. Needs R installed.
+R can be found on <a href="http://www.r-project.org/">http://www.r-project.org/</a></xhtml>
+      <xhtml name="output_prefix">prefix of the output files (including path). All files will be suffixed with the region name and have the ".dat" extension</xhtml>
+      <xhtml name="region_type">Region: only the selected region
+Relations with region: models of the relations linking this region with ohters
+All: region + relations</xhtml>
+      <xhtml name="model">Model graph which will provide its own set of morphometric descriptors</xhtml>
+      <xhtml name="label_attribute"/>
+      <xhtml name="region_as_regexp">If this option is set, the region name is interpreted as a regular expression, with a somewhat cryptic syntax but allowing complex filters (with and/or expressions).
+For a 'simple' region name, leave this option off.</xhtml>
+    </d>
+    <xhtml name="long">This process does not actually make statistics, it only gives some descriptors on regions, according to a model. This process has been primarily written for cortical folds graphs and it is still its main usage, but it can also be used to obtain descriptotrs for gyri or ROIs. Other models could be added afterwards.
+<br/><br/>
+Imput graphs are generated by automatic segmentation tools: see the <a href="AnaDoAll.html">Pipeline / Ana Do All From T1 MRI</a> process.
+<br/><br/>
+The subjects graphs must be at least partially <b>labelled</b> in order to extract the correct ROIs.
+It is possible to automatically label sulcus graphs using the 
+<a href="recognition.html">morphometry / automatic recognition</a> process (but it is very strongly recommended to verify the identifications)
+<br/><br/>
+The model holds the anatomical knowledge (list of regions...) and knows the associated descriptors and how to calculate them (virtual "experts" of the related anatomy).
+<br/><br/>
+The choice of regions is guided by a "nomenclature" which allows to select regions in a hierarchical way: by lobe or by large sulcus for instance.
+The editor is not very convivial yet (it will be improved in the future): up to now you must type regions names by hand.
+<br/><br/>
+It is possible to obtain figures on sulci and/or on relations linking to a sulcus.
+The process writes a file for each sulcus or relation (more precisely a file for an "expert" of the model).
+In each file, there will be one line for each subject.
+<br/><br/>
+<b>Short description of the descriptors for sulci:</b>
+<br/><br/>
+You get some rather structural descriptors (number of non-connected parts and their relative organization), and also some descriptors which measure things (length, depth, orientation...).<br/>
+<b><i>! :</i></b> None of the measures is currently associated with any thickness (<b>no</b> cortex thickness nor sulcus opening descriptor) because all figures are obtained from sulci segmentation by their skeletonization: segmented data have no thickness (they are systematically 1 voxel thick).<br/>
+We plan to provide better descriptors in the future...
+<br/><br/>
+<b>Sulci:</b>
+<br/><br/>
+Notations and names:<br/>
+<ul>
+<li>Extremities of the sulcus: <b><i>E1</i></b>, <b><i>E2</i></b></li>
+<li>"Pure cortical" relation: relation across a gyrus: sulci do not physically connect</li>
+<li>All coordinates are (in principle) in Talairach coordinates (proportional box)</li>
+</ul>
+<br/>
+Descriptors:<br/>
+<ol>
+<li>Global valid flag: 0 if the sulcus is not present, 1 if it is here</li>
+<li>Validity of the sulcus extremities (more distant points) (0 or 1)<br/>
+<b>If this is 0, descriptors 3 to 8 are not valid</b></li>
+<li>1st sulcus extremity (<b><i>E1</i></b>). X coordinate</li>
+<li>Y coord.</li>
+<li>Z coord.</li>
+<li>2nd sulcus extremity (<b><i>E2</i></b>). X coord. - 
+<i>E1</i> and <i>E2</i> are interchangeable I think... 
+-> it is not really possible to distinguish them a priori (to be verified!)</li>
+<li>Y coord.</li>
+<li>Z coord.</li>
+<li>Gravity center of the sulcus. X coord.</li>
+<li>Y coord.</li>
+<li>Z coord.</li>
+<li>Validity of the normal to the sulcus (0 or 1)<br/>
+<b>If this is 0, descriptors 13 to 15 are not valid</b></li>
+<li>Mean normal to the sulcus, X coord.</li>
+<li>Y coord.</li>
+<li>Z coord.</li>
+<li>Mean direction of the sulcus, X coord.</li>
+<li>Y coord.</li>
+<li>Z coord.</li>
+<li>"Size" of the sulcus (volume in mm3 of the skeleton) = <i># of voxels</i> * <i>voxel volume</i></li>
+<li>Max. geodesic depth of the sulcus from the external hull</li>
+<li>Min. geodesic depth of the sulcus -> 0 for those touching the brain hull (most of them!), not null in the insula...<br/>
+<b>*** The real depth of the sulcus is <i>Max. depth</i> - <i>min. depth</i> !! ***</b></li>
+<li>Number of connected components (of unconnected parts) in the sulcus, <b>*** <i>according to every kind of intra-sulcus relations !!</i> ***</b><br/>
+<b>THIS PARAMETER IS CONFUSING....</b> there are relations across gyri</li>
+<li>Num. of connected components if intra-sulcus "pure cortical" relations (relations across gyri) are not taken into account<br/>
+-> <b>It is <i>THIS</i> parameter that corresponds to the "usual" idea of unconnected sulcus parts</b></li>
+<li>Num. of pure cortical relations linking different connected componentsof the sulcus</li>
+<li>Max. distance between connected components of the sulcus</li>
+<li>Num. of "plis de passage" inside the sulcus (notable variations of depth or curvature in the bottom of the sulcus), <b>not really reliable</b> because the detection of "plis de passage" is not perfect at all</li>
+<li>Size of junctions between the sulcus and the brain hull<br/>
+-> roughly shows the length of the sulcus</li>
+<li>Sulcus surface area. This parameter completes the volume measurement and is not subject to voxel size differences.
+However this parameter <b>is only available on "recent" sulci graphs</b>, because older ones do not have this parameter.
+It is possible to add the missing parameter on an old graph using the <a href="GraphComplete.html">GraphComplete</a> 
+process.</li>
+<li><b>[trained models only]</b> opinion of the expert of the region<br/>
+<i>negative value</i> -> good<br/>
+<i>positive value</i> -> bad<br/>
+*** for untrained models, experts answer at random
+</li>
+</ol>
+<br/>
+<b>Relations</b>
+<br/><br/>
+Notations and names:
+<ul>
+<li><b><i>S1</i></b>: first of the two sulci linked by this relation</li>
+<li><b><i>S2</i></b>: other sulcus</li>
+<li>The sulci ordering is given by the relation name:<br/>
+"toto-tutu" -> <b><i>S1</i></b> = toto, <b><i>S2</i></b> = tutu</li>
+</ul>
+<br/>
+Descriptors:<br/>
+<ol>
+<li>Global valid flag (0 or 1) - 0 if one of the two sulci is not present but 1 if both sulci exist and are not linked by any relation</li>
+<br/>
+<i>-- Descriptors 2 to 7 briefly describe again each of the 2 sulci, you should better look at their individual descriptors, althrough descriptors 4 and 7 actually give some new and possibly interesting information --</i>
+<br/><br/>
+<li>Size of <b><i>S1</i></b></li>
+<li>Num. of connected components of <b><i>S1</i></b> by non-cortical relations</li>
+<li>Num. of connected components of <b><i>S1</i></b> participating to the relation with <b><i>S2</i></b></li>
+<li>Size of <b><i>S2</i></b></li>
+<li>Num. of connected components of <b><i>S2</i></b> by non-cortical relations</li>
+<li>Num. of connected components of <b><i>S2</i></b> participating to the relation with <b><i>S1</i></b></li>
+<br/>
+<li>Size of cortical relations: length of the border line separating the two sulci (in a Voronoi diagram)<br/>
+-> there is currently no direct information on the gyrus surface...</li>
+<li>Minimal distance between the sulci (0 if they are touching)</li>
+<li>"Global" direction of the relation, X coord.<br/>
+<b>*** be careful, it is sometimes meaningless ! ***</b></li>
+<li>Y coord.</li>
+<li>Z coord.</li>
+<li>Distance between the contact point on <b><i>S1</i></b> of the relation (point of <b><i>S1</i></b> closest to <b><i>S2</i></b>) and the extremity of <b><i>S1</i></b> closest to this point<br/>
+-> 0 if it is an extremity of <b><i>S1</i></b> that touches <b><i>S2</i></b>  or is closest to <b><i>S2</i></b></li>
+<li>Distance between the contact point on <b><i>S2</i></b> of the relation (point of <b><i>S2</i></b> closest to <b><i>S1</i></b>) and the extremity of <b><i>S2</i></b> closest to this point</li>
+<li>Gravity center of the relation, X coord. (rough positioning)</li>
+<li>Y coord.</li>
+<li>Z coord.</li>
+<li>cosinus of the angle between the global directions of <b><i>S1</i></b> and <b><i>S2</i></b> 
+(scalar product of the directions)</li>
+<li>Num. of junctions between the two sulci<br/>
+<b>*** this does not necessarily show the number of places they are touching ***</b></li>
+<li>Minimal depth of the junctions: non-null only if the sulci only touch on a deep "pli de passage"</li>
+<li>Size (length) of the junctions between the two sulci</li>
+<li>Num. of "plis de passage" joining the two sulci</li>
+<li>Max. depth of "plis de passage"</li>
+<li><b>[trained models only]</b> output of this relation expert, as for sulci, negative values are good, positive are bad</li>
+</ol>
+<br/><br/>
+For more detailed information, see the <a href="ftp://ftp.cea.fr/pub/dsv/anatomist/papers/riviere-thesis00.pdf">PhD thesis of 
+D. Rivière</a> (in french)<br/>
+<i><b>e-mail:</b>
+<a href="mailto:riviere@shfj.cea.fr">riviere@shfj.cea.fr</a></i>
+</xhtml>
+  </d>
+</minf>

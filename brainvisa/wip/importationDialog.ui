@@ -1,0 +1,473 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>MyDialog</class>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>MyDialog</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>916</width>
+            <height>686</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Data importation</string>
+    </property>
+    <property name="sizeGripEnabled">
+        <bool>true</bool>
+    </property>
+    <vbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <widget class="QLayoutWidget">
+            <property name="name">
+                <cstring>layout12</cstring>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QLayoutWidget">
+                    <property name="name">
+                        <cstring>layout11</cstring>
+                    </property>
+                    <vbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QGroupBox">
+                            <property name="name">
+                                <cstring>groupBox1</cstring>
+                            </property>
+                            <property name="title">
+                                <string>Default attributes</string>
+                            </property>
+                            <grid>
+                                <property name="name">
+                                    <cstring>unnamed</cstring>
+                                </property>
+                                <widget class="QComboBox" row="0" column="2">
+                                    <item>
+                                        <property name="text">
+                                            <string>T1 MRI</string>
+                                        </property>
+                                    </item>
+                                    <item>
+                                        <property name="text">
+                                            <string>Diffusion MRI</string>
+                                        </property>
+                                    </item>
+                                    <item>
+                                        <property name="text">
+                                            <string>Functional MRI</string>
+                                        </property>
+                                    </item>
+                                    <property name="name">
+                                        <cstring>comboBox1</cstring>
+                                    </property>
+                                </widget>
+                                <widget class="QLabel" row="0" column="0" rowspan="1" colspan="2">
+                                    <property name="name">
+                                        <cstring>textLabel1_2</cstring>
+                                    </property>
+                                    <property name="text">
+                                        <string>Data type</string>
+                                    </property>
+                                </widget>
+                                <widget class="QLabel" row="1" column="0">
+                                    <property name="name">
+                                        <cstring>textLabel2</cstring>
+                                    </property>
+                                    <property name="text">
+                                        <string>protocol</string>
+                                    </property>
+                                </widget>
+                                <widget class="QLineEdit" row="1" column="1" rowspan="1" colspan="2">
+                                    <property name="name">
+                                        <cstring>lineEdit1</cstring>
+                                    </property>
+                                    <property name="text">
+                                        <string>test</string>
+                                    </property>
+                                </widget>
+                                <widget class="QLabel" row="2" column="0">
+                                    <property name="name">
+                                        <cstring>textLabel2_2</cstring>
+                                    </property>
+                                    <property name="text">
+                                        <string>subject</string>
+                                    </property>
+                                </widget>
+                                <widget class="QLineEdit" row="2" column="1" rowspan="1" colspan="2">
+                                    <property name="name">
+                                        <cstring>lineEdit2</cstring>
+                                    </property>
+                                </widget>
+                                <widget class="QLabel" row="3" column="0">
+                                    <property name="name">
+                                        <cstring>textLabel2_3</cstring>
+                                    </property>
+                                    <property name="text">
+                                        <string>acquisition</string>
+                                    </property>
+                                </widget>
+                                <widget class="QLineEdit" row="3" column="1" rowspan="1" colspan="2">
+                                    <property name="name">
+                                        <cstring>lineEdit3</cstring>
+                                    </property>
+                                </widget>
+                            </grid>
+                        </widget>
+                        <widget class="QGroupBox">
+                            <property name="name">
+                                <cstring>groupBox1_2</cstring>
+                            </property>
+                            <property name="sizePolicy">
+                                <sizepolicy>
+                                    <hsizetype>5</hsizetype>
+                                    <vsizetype>4</vsizetype>
+                                    <horstretch>0</horstretch>
+                                    <verstretch>0</verstretch>
+                                </sizepolicy>
+                            </property>
+                            <property name="title">
+                                <string>Attributes extraction from patterns</string>
+                            </property>
+                            <grid>
+                                <property name="name">
+                                    <cstring>unnamed</cstring>
+                                </property>
+                                <widget class="QLabel" row="1" column="0">
+                                    <property name="name">
+                                        <cstring>textLabel2_2_2</cstring>
+                                    </property>
+                                    <property name="text">
+                                        <string>directory</string>
+                                    </property>
+                                </widget>
+                                <widget class="QLabel" row="0" column="0">
+                                    <property name="name">
+                                        <cstring>textLabel2_4</cstring>
+                                    </property>
+                                    <property name="text">
+                                        <string>file</string>
+                                    </property>
+                                </widget>
+                                <widget class="QLineEdit" row="1" column="1">
+                                    <property name="name">
+                                        <cstring>lineEdit2_2</cstring>
+                                    </property>
+                                </widget>
+                                <widget class="QLineEdit" row="0" column="1">
+                                    <property name="name">
+                                        <cstring>lineEdit1_2</cstring>
+                                    </property>
+                                </widget>
+                            </grid>
+                        </widget>
+                    </vbox>
+                </widget>
+                <widget class="QLayoutWidget">
+                    <property name="name">
+                        <cstring>layout13</cstring>
+                    </property>
+                    <vbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QLayoutWidget">
+                            <property name="name">
+                                <cstring>layout7</cstring>
+                            </property>
+                            <vbox>
+                                <property name="name">
+                                    <cstring>unnamed</cstring>
+                                </property>
+                                <widget class="QLabel">
+                                    <property name="name">
+                                        <cstring>textLabel1</cstring>
+                                    </property>
+                                    <property name="text">
+                                        <string>Files to import:</string>
+                                    </property>
+                                </widget>
+                                <widget class="QListView">
+                                    <column>
+                                        <property name="text">
+                                            <string>Directory</string>
+                                        </property>
+                                        <property name="clickable">
+                                            <bool>true</bool>
+                                        </property>
+                                        <property name="resizable">
+                                            <bool>true</bool>
+                                        </property>
+                                    </column>
+                                    <column>
+                                        <property name="text">
+                                            <string>File</string>
+                                        </property>
+                                        <property name="clickable">
+                                            <bool>true</bool>
+                                        </property>
+                                        <property name="resizable">
+                                            <bool>true</bool>
+                                        </property>
+                                    </column>
+                                <item>
+                                    <property name="text">
+                                        <string>/volatile/data/</string>
+                                    </property>
+                                    <property name="text">
+                                        <string>test.ima</string>
+                                    </property>
+                                    <property name="pixmap">
+                                        <pixmap>image0</pixmap>
+                                    </property>
+                                    <property name="pixmap">
+                                        <pixmap></pixmap>
+                                    </property>
+                                </item>
+                                <item>
+                                    <property name="text">
+                                        <string>/volatile/data/</string>
+                                    </property>
+                                    <property name="text">
+                                        <string>test2.ima</string>
+                                    </property>
+                                    <property name="pixmap">
+                                        <pixmap>image1</pixmap>
+                                    </property>
+                                    <property name="pixmap">
+                                        <pixmap></pixmap>
+                                    </property>
+                                </item>
+                                    <property name="name">
+                                        <cstring>listView1</cstring>
+                                    </property>
+                                    <property name="allColumnsShowFocus">
+                                        <bool>true</bool>
+                                    </property>
+                                </widget>
+                            </vbox>
+                        </widget>
+                        <widget class="QLayoutWidget">
+                            <property name="name">
+                                <cstring>layout12</cstring>
+                            </property>
+                            <hbox>
+                                <property name="name">
+                                    <cstring>unnamed</cstring>
+                                </property>
+                                <widget class="QPushButton">
+                                    <property name="name">
+                                        <cstring>pushButton8</cstring>
+                                    </property>
+                                    <property name="text">
+                                        <string>add</string>
+                                    </property>
+                                </widget>
+                                <widget class="QPushButton">
+                                    <property name="name">
+                                        <cstring>pushButton7</cstring>
+                                    </property>
+                                    <property name="text">
+                                        <string>remove</string>
+                                    </property>
+                                </widget>
+                            </hbox>
+                        </widget>
+                    </vbox>
+                </widget>
+                <widget class="QGroupBox">
+                    <property name="name">
+                        <cstring>groupBox1_3</cstring>
+                    </property>
+                    <property name="title">
+                        <string>Selected file attributes</string>
+                    </property>
+                    <grid>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QComboBox" row="0" column="2">
+                            <item>
+                                <property name="text">
+                                    <string>T1 MRI</string>
+                                </property>
+                            </item>
+                            <item>
+                                <property name="text">
+                                    <string>Diffusion MRI</string>
+                                </property>
+                            </item>
+                            <item>
+                                <property name="text">
+                                    <string>Functional MRI</string>
+                                </property>
+                            </item>
+                            <property name="name">
+                                <cstring>comboBox1_2</cstring>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="0" column="0" rowspan="1" colspan="2">
+                            <property name="name">
+                                <cstring>textLabel1_2_2</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Data type</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="1" column="0">
+                            <property name="name">
+                                <cstring>textLabel2_5</cstring>
+                            </property>
+                            <property name="text">
+                                <string>protocol</string>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="1" column="1" rowspan="1" colspan="2">
+                            <property name="name">
+                                <cstring>lineEdit1_3</cstring>
+                            </property>
+                            <property name="text">
+                                <string>test</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="2" column="0">
+                            <property name="name">
+                                <cstring>textLabel2_2_3</cstring>
+                            </property>
+                            <property name="text">
+                                <string>&lt;font color="red"&gt;subject&lt;/font&gt;</string>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="2" column="1" rowspan="1" colspan="2">
+                            <property name="name">
+                                <cstring>lineEdit2_3</cstring>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="3" column="0">
+                            <property name="name">
+                                <cstring>textLabel2_3_2</cstring>
+                            </property>
+                            <property name="text">
+                                <string>acquisition</string>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="3" column="1" rowspan="1" colspan="2">
+                            <property name="name">
+                                <cstring>lineEdit3_2</cstring>
+                            </property>
+                        </widget>
+                    </grid>
+                </widget>
+            </hbox>
+        </widget>
+        <widget class="QLayoutWidget">
+            <property name="name">
+                <cstring>Layout1</cstring>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>0</number>
+                </property>
+                <property name="spacing">
+                    <number>6</number>
+                </property>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>buttonHelp</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Help</string>
+                    </property>
+                    <property name="accel">
+                        <string>F1</string>
+                    </property>
+                    <property name="autoDefault">
+                        <bool>true</bool>
+                    </property>
+                </widget>
+                <spacer>
+                    <property name="name">
+                        <cstring>Horizontal Spacing2</cstring>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>Expanding</enum>
+                    </property>
+                    <property name="sizeHint">
+                        <size>
+                            <width>20</width>
+                            <height>20</height>
+                        </size>
+                    </property>
+                </spacer>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>buttonOk</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;OK</string>
+                    </property>
+                    <property name="accel">
+                        <string></string>
+                    </property>
+                    <property name="autoDefault">
+                        <bool>true</bool>
+                    </property>
+                    <property name="default">
+                        <bool>true</bool>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>buttonCancel</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Cancel</string>
+                    </property>
+                    <property name="accel">
+                        <string></string>
+                    </property>
+                    <property name="autoDefault">
+                        <bool>true</bool>
+                    </property>
+                </widget>
+            </hbox>
+        </widget>
+    </vbox>
+</widget>
+<images>
+    <image name="image0">
+        <data format="PNG" length="485">89504e470d0a1a0a0000000d49484452000000100000001008060000001ff3ff61000001ac49444154388dc5d33f48550114c7f1cfbdefbee74309854786a939bc41086a10ca6a086c6fb3da424aa42982a09096a0a5cd96961a84a2a51603e135845b42ba54d01fb0a04c305e682fcb7cffaeb7a14093b4c1a1b39cdf19be1cf89ddf099224b19d0ab7452330a253dd47cbf88115d4112183f43a1dfd9e33f29906675329fb22b187eaaea0b0e5aa04ab76e38cbaa16a5d39889c08c338aca5b3e9bb6afa3605ab72b8dcd2d132d1d6d176cd8a5915c7f03c4c9692fbb9bdb95c764ff68eb2c3827570cd2eb173517bf4a4fd78fbf5e6cee6eee24cb1a0e2a4c01c444929995e2c2f56c3feb0c3a27bdeebc72b5503ba0c044782decc818cd2d392e5c2f2032943b24a6b260e6ad5a5e0821e458c7a67c582a30e3a849d18c3b81b1a5db5c3571964091a89ac2a7a6bca6b3dba714a5e28af0d35dc54376544836129f1468b42157c37ed8558110d68c207dcc28461894b7f8321f20db149cf2cd8af551a73185336e3bc26b7b78a5b2446ec8d392f7dd2aa8a715fccbaa8d1e8bfb21aa96115151326f599f7d9acd3228ffe38e9269592478044d9bc5e4b06451e0bac4577634ffdd2419ae0bf7fe34fae038bee04a5cacf0000000049454e44ae426082</data>
+    </image>
+    <image name="image1">
+        <data format="PNG" length="832">89504e470d0a1a0a0000000d49484452000000100000001008060000001ff3ff610000030749444154388d6d935b681c7518c57fdf7f66672fceee26bbd94b2eb268521a29c66d6a9ad2d482a62da808fa20484045305410abe8ab0f0a2a8214158b28a3155f048b3e68056d505a4a4b2f6993d4169b2c36b266a9b96cd84b361b77b333e3436c346d3ff8dece3970be733ee13673695bbfcf71dd3e07ba5c5c71916b655d1b1d3c7fa67a33566e229a02af7b5cf785a052e1c69d1d3402017c990c45db295585af8bbae7ed7de74eff798bc0a56dfd490527a289f8e6f0334fa3ed1a400b0501706b75aa63e354bef892f9cc547ed6ef7ff291d3274fac0b4cf46e3795c885b6dead9b7daf1c400f9ab77386b3daa0f0f961e67e3ab638699af70e9d3cfe9706b0bfb5fd9d5832f998ffa517d143269e9616eab91c4eb5babe28859188a3c56368bf4f0764762ea83dfaf088bad0dbe7f3c0f3de7d7bb12b15f468142d18c448a5a8cfe7a9cfe771566dfc9b36a10583b8b6833cb08b90e30c6d99c9b5e9409f691861bbb909279fa7f8e331c27b1ec24824b823dd43f5d72b04b7df0fc0e277df637efa19ede5255ca5ccce7265a70e74a94884463e8f681a28c5e2916f883cf138de8e768cbd0900960e7d4ce097e378979641c0a7697844ba7440b47a1d2d3b8318066218f8f20b30370f6fbdb976bdf1098247befd2f3757018223a2948b5c734a25a253192297afd07c718c402884f77f64b6a6e1c383ff0a08e81a35a7c18a484e95756db464db2511413485a47bd0de7b770d7ce05578f9b57511f7a3f7b1037e6c9f8f82ed2c5f8d348dabc1f367aa55e1f0ac12ca1d1d38cf3dbbe6f9e007146a350af77453f8c462752a83dcd74375cf20b34a58f0e847b3f1d8750118e91f688ed88dd1961d3b3a8d96e85a84d9ec2d453252292a17c758387b36f7735beb53d389d8e87a957f18d8dd99acd747c2e9f4dd667737221bc9ae0b95c9498a1313b953c9c4fedf92f15396659537c0bedafd606baabaf24620101832ee4a99dea666006ac502f53fb2cb85dadf47cf25e287a613b1cb966595373cd38d191e1e36b6cce4da3acb959d1e912e4744ad88e4ae469ac6b3f1d87560d1b2acfa0dfc3ff65f2612a288fa150000000049454e44ae426082</data>
+    </image>
+</images>
+<connections>
+    <connection>
+        <sender>buttonOk</sender>
+        <signal>clicked()</signal>
+        <receiver>MyDialog</receiver>
+        <slot>accept()</slot>
+    </connection>
+    <connection>
+        <sender>buttonCancel</sender>
+        <signal>clicked()</signal>
+        <receiver>MyDialog</receiver>
+        <slot>reject()</slot>
+    </connection>
+</connections>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

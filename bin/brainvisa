@@ -1,0 +1,74 @@
+#! /bin/sh
+
+# avoid threading problem on Linux/RedHat 9
+# if [ ! -f /etc/fedora-release ]; then
+#   LD_ASSUME_KERNEL=2.4.1
+#   export LD_ASSUME_KERNEL
+# fi
+
+# Python program to find a real file across symbolic links
+nosymlink='
+import sys,os
+p=sys.executable # sys.argv[1]
+while os.path.islink(p):
+  x = os.readlink(p)
+  if os.path.isabs(x):
+    p = x
+  else:
+    p=os.path.join(os.path.dirname(p),x)
+if not p: p=os.path.join(".", os.path.basename(p))
+print os.path.abspath( p )'
+
+# Find Python executable in $python
+
+pythonexelist='python'
+os=`echo $OSTYPE | sed -e 's/^\([^0-9\.]*\).*/\1/'`
+if [ "$os" = "darwin" ]; then
+  pythonexelist=$pythonexelist' Python'
+fi
+unset python
+for pythonexe in $pythonexelist; do
+  python=`type $pythonexe 2> /dev/null`
+  if [ $? -eq 0 ]; then break; fi
+done
+[ -z "$python" ] && echo 'Cannot find Python executable' && exit 1
+python=`echo $python | sed -e 's/^'$pythonexe' is //'`
+[ $? -eq 0 ] || exit $?
+
+if [ "$os" = "darwin" ]; then
+  python=`$python -c "$nosymlink"` # "$python"`/$pythonexe
+fi
+
+runbrainvisa='
+import sys,os
+neuro = ""
+executable = sys.argv[ 1 ]
+found = False
+while True:
+  p = os.path.dirname( executable )
+  for d in ( os.path.normpath( os.path.join( p, "..", "brainvisa" ) ),
+            os.path.normpath( os.path.join( p, "..", "..", "brainvisa" ) ) ):
+    neuro = os.path.join( d, "neuro.py" )
+    if os.path.exists( neuro ):
+      found = True
+      break
+  if found:
+    break
+  if os.path.islink( executable ):
+    executable = os.path.join( os.path.dirname( executable ), os.readlink( executable ) )
+  else:
+    break
+if neuro:
+  neuro = os.path.abspath( neuro )
+  sys.argv[ 0 ] = neuro
+  del sys.argv[ 1 ]
+  pythonPath = os.path.dirname( neuro )
+  sys.path[0:0] = [os.path.normpath(i) for i in \
+    (pythonPath, os.path.join( pythonPath, "..", "python" ), )]
+  execfile( neuro )
+else:
+  print >> sys.stderr, "Cannot find main BrainVISA directory"
+'
+
+# Look for neuro.py
+$python -S -t -c "$runbrainvisa" "$0" "$@"

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+  <d name="fr" length="3">
+    <xhtml name="short">Brique très simple qui génère un masque du cerveau à partir d'une carte de type SPMt.
+Cette étape est essentielle car le masque est nécessaire pour la construction du primal sketch de la carte...</xhtml>
+    <d name="parameters" length="3">
+      <xhtml name="spmt">Carte utilisée en entrée</xhtml>
+      <xhtml name="mask">Masque généré</xhtml>
+      <xhtml name="dilation">Taille de la dilatation appliquée au masque</xhtml>
+    </d>
+    <xhtml name="long">Brique très simple qui génère un masque du cerveau à partir d'une carte de type SPMt.
+Cette étape est essentielle car le masque est nécessaire pour la construction du primal sketch de la carte...
+La taille de la dilatation (en mm) doit être de l'ordre de deux ou trois fois la taille des voxels.</xhtml>
+  </d>
+  <d name="en" length="3">
+    <xhtml name="short">Very simple process that compute a brain mask from a SPMt map. This is an essential step since the mask is further used for computing the primal sketch of the SPMt.</xhtml>
+    <d name="parameters" length="3">
+      <xhtml name="spmt">SPMt map</xhtml>
+      <xhtml name="mask">Mask</xhtml>
+      <xhtml name="dilation">Size of the dilation (in mm)</xhtml>
+    </d>
+    <xhtml name="long">Very simple process that compute a brain mask from a SPMt map. This is an essential step since the mask is further used for computing the primal sketch of the SPMt.
+The size of the dilation (in mm) should be two to three times the voxel size.</xhtml>
+  </d>
+</minf>

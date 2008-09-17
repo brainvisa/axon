@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+  <d name="fr" length="3">
+    <xhtml name="short">Interface de la commande AimsThreshold, permettant de réaliser un seuillage de votre image.</xhtml>
+    <xhtml name="long">
+<b>Mode non binaire</b> : l'image résultat conserve les niveaux de gris initiaux<br/><br/>
+<b>Mode binaire</b> : l'image résultat est écrite en binaire (noir et blanc)<br/><br/>
+<b>Seuillage</b> : action de sélection d'un ou de plusieurs niveaux de gris avec un seuil ou 2 seuils (dans le cas de <b>between</b> et <b>outside</b>)<br/><br/>
+<b>Seuillage mode non binaire</b> : les voxels sélectionnés sont rendus en niveaux de gris, les autres sont rendus en noir<br/><br/>
+<b>Seuillage mode binaire</b> : les voxels sélectionnés sont rendus en blanc, les autres sont rendus en noir<br/> <br/>
+
+<b>Sélection des seuils </b>: votre image est composée de niveaux de gris, dans l'exemple suivant la valeur des niveaux de gris  s'étend de 0 à 4095. Le 0 représente le noir et le 4095 représente le blanc, toutes les niveaux de gris sont donc compris entre 1 et 4094. Pour connaître l'étendue des niveaux de gris de votre image, chargez votre image dans Anatomist et mettez-la dans un browser puis consultez les attributs <b>tex_min</b> (noir) et <b>tex_max</b> (blanc). Le module ROI d'Anatomist (onglet LevelSet) vous permettra également de manipuler les niveaux de gris de votre image. Une fois votre ou vos seuils (dans le cas <b>between</b> et <b>outside</b>) sélectionnés, vous pouvez lancer le traitement.<br/><br/>
+
+<b>Test image, tex_min = 0, tex_max = 4095</b><br/>
+<img src="../../images/tresh_anat.jpg"/><br/>
+<br/><br/>
+
+
+<table cellpadding="5" border="2" cellspacing="5">
+
+<tr>
+<td>Mode</td>
+<td>Description</td>
+<td>Mode_no_binary : fasle</td>
+<td>Mode_binary : true</td>
+</tr>
+
+<tr>
+<td>less_than</td>
+<td>select all voxels with a grey level is inferior to threshold1</td>
+<td><img src="../../images/tresh_lt.jpg"/><br/>
+<b>Threshold1 = 350</b><br/></td>
+<td><img src="../../images/btresh_lt.jpg"/><br/>
+<b>Threshold1 = 350</b><br/></td>
+</tr>
+
+<tr>
+<td>less_or_equal</td>
+<td>select all voxels with a grey level is inferior or equal to threshold1</td>
+<td><img src="../../images/tresh_le.jpg"/><br/>
+<b>Threshold1 = 350</b><br/></td>
+<td><img src="../../images/btresh_le.jpg"/><br/>
+<b>Threshold1 = 350</b><br/></td>
+</tr>
+
+<tr>
+<td>great_than</td>
+<td>select all voxels with a grey level is superior to threshold1</td>
+<td><img src="../../images/tresh_gt.jpg"/><br/>
+<b>Threshold1 = 350</b><br/></td>
+<td><img src="../../images/btresh_gt.jpg"/><br/>
+<b>Threshold1 = 350</b><br/></td>
+</tr>
+
+<tr>
+<td>great_or_equal</td>
+<td>select all voxels with a grey level is superior or equal to threshold1</td>
+<td><img src="../../images/tresh_ge.jpg"/><br/>
+<b>Threshold1 = 350</b><br/></td>
+<td><img src="../../images/btresh_ge.jpg"/><br/>
+<b>Threshold1 = 350</b><br/></td>
+</tr>
+
+<tr>
+<td>equal</td>
+<td>select all voxels with a grey level is equal to threshold1</td>
+<td><img src="../../images/tresh_eq.jpg"/><br/>
+<b>Threshold1 = 350</b><br/></td>
+<td><img src="../../images/btresh_eq.jpg"/><br/>
+<b>Threshold1 = 350</b><br/></td>
+</tr>
+
+<tr>
+<td>different</td>
+<td>select all voxels with a grey level is different to threshold1</td>
+<td><img src="../../images/tresh_di.jpg"/><br/>
+<b>Threshold1 = 1800</b><br/></td>
+<td><img src="../../images/btresh_di.jpg"/><br/>
+<b>Threshold1 = 1800</b><br/></td>
+</tr>
+
+<tr>
+<td>between</td>
+<td>select all voxels with a grey level is between threshold1 and threshold2</td>
+<td><img src="../../images/tresh_be.jpg"/><br/>
+<b>Threshold1 = 391</b><br/>
+<b>Threshold2 = 1078</b><br/></td>
+<td><img src="../../images/btresh_be.jpg"/><br/>
+<b>Threshold1 = 391</b><br/>
+<b>Threshold2 = 1078</b><br/></td>
+</tr>
+
+<tr>
+<td>outside</td>
+<td>select all voxels with a grey level is outside threshold1 and threshold2</td>
+<td><img src="../../images/tresh_ou.jpg"/><br/>
+<b>Threshold1 = 391</b><br/>
+<b>Threshold2 = 1078</b><br/></td>
+<td><img src="../../images/btresh_ou.jpg"/><br/>
+<b>Threshold1 = 391</b><br/>
+<b>Threshold2 = 1078</b><br/></td>
+</tr>
+</table></xhtml>
+    <d name="parameters" length="6">
+      <xhtml name="binary">Paramètre facultatif<br/>
+Permet de retourner les données en 'short binary'<br/></xhtml>
+      <xhtml name="threshold1">Paramètre obligatoire :<br/>
+niveau de gris 1
+</xhtml>
+      <xhtml name="image_output">Paramètre obligatoire :<br/>
+Image seuillée</xhtml>
+      <xhtml name="threshold2">Paramètre facultatif sauf pour les modes <b>between</b> et <b>outside</b><br/>
+niveau de gris 2</xhtml>
+      <xhtml name="mode">Paramètre obligatoire : mode du seuillage<br/>
+lt : lower than<br/>
+le : lower or equal to<br/>
+gt : greater than<br/>
+eq : equal to<br/>
+di : differ<br/>
+be : between<br/>
+ou : outside<br/></xhtml>
+      <xhtml name="image_input">Paramètre obligatoire :<br/>
+Image à seuiller</xhtml>
+    </d>
+  </d>
+  <d name="en" length="3">
+    <xhtml name="short">Interface of AimsThreshold command</xhtml>
+    <d name="parameters" length="6">
+      <xhtml name="binary">Optional <br/>
+return a short binary data</xhtml>
+      <xhtml name="threshold1">Mandatory <br/>
+grey level 1</xhtml>
+      <xhtml name="image_output">Mandatory<br/>output data</xhtml>
+      <xhtml name="threshold2">Optional except for <b>between</b> and <b>outside</b> modes:
+<br/>
+grey level 2</xhtml>
+      <xhtml name="image_input">Mandatory<br/>input data</xhtml>
+      <xhtml name="mode">Mandatory : mode of threshold<br/>
+lt : lower than<br/>
+le : lower or equal to<br/>
+gt : greater than<br/>
+eq : equal to<br/>
+di : differ<br/>
+be : between<br/>
+ou : outside<br/></xhtml>
+    </d>
+    <xhtml name="long"><b>Not binary mode</b> : output_image result preserves the levels of gray<br/><br/>
+<b>Binary mode</b> : output_image is binary (only black and white voxels)<br/><br/>
+<b>Threshold</b> : selection of one or two tresholds (case of <b>between</b> and <b>outside</b>)<br/><br/>
+<b>Threshold + Not binary mode</b> : selected voxels are in grey level and the others are black<br/><br/>
+<b>Threshold + Binary mode</b> : selected voxels are white and the others are black<br/> <br/>
+<b>Selection of threshold </b>: a image is composed with grey levels from 0 to 4095 (for example image). The grey level '0' is in fact black color and the '4095' is white color, all others grey levels are between 1 and 4094. To know the minimun and the maximun of grey level, you can put your image in a browser in Anatomist and read <b>tex_min</b> (black) and <b>tex_max</b> (white) attributes. To handle grey levels of your image, use ROI module of Anatomist (option Connectivity Threshold). <br/><br/>
+
+<b>Test image, tex_min = 0, tex_max = 4095</b><br/>
+<img src="../../images/tresh_anat.jpg"/><br/>
+<br/><br/>
+
+
+<table cellpadding="5" border="2" cellspacing="5">
+
+<tr>
+<td>Mode</td>
+<td>Description</td>
+<td>Mode_no_binary : fasle</td>
+<td>Mode_binary : true</td>
+</tr>
+
+<tr>
+<td>less_than</td>
+<td> to select all the voxels for which value of levels of gray is smaller than the threshold </td>
+<td><img src="../../images/tresh_lt.jpg"/><br/>
+<b>Threshold1 = 350</b><br/></td>
+<td><img src="../../images/btresh_lt.jpg"/><br/>
+<b>Threshold1 = 350</b><br/></td>
+</tr>
+
+<tr>
+<td>less_or_equal</td>
+<td> to select all the voxels for which value of levels of gray is smaller or equal to the threshold1</td>
+<td><img src="../../images/tresh_le.jpg"/><br/>
+<b>Threshold1 = 350</b><br/></td>
+<td><img src="../../images/btresh_le.jpg"/><br/>
+<b>Threshold1 = 350</b><br/></td>
+</tr>
+
+<tr>
+<td>great_than</td>
+<td> to select all the voxels for which value of levels of gray is larger than the threshold1 </td>
+<td><img src="../../images/tresh_gt.jpg"/><br/>
+<b>Threshold1 = 350</b><br/></td>
+<td><img src="../../images/btresh_gt.jpg"/><br/>
+<b>Threshold1 = 350</b><br/></td>
+</tr>
+
+<tr>
+<td>great_or_equal</td>
+<td> to select all the voxels for which value of levels of gray is larger or equal to the threshold1</td>
+<td><img src="../../images/tresh_ge.jpg"/><br/>
+<b>Threshold1 = 350</b><br/></td>
+<td><img src="../../images/btresh_ge.jpg"/><br/>
+<b>Threshold1 = 350</b><br/></td>
+</tr>
+
+<tr>
+<td>equal</td>
+<td> to select all the voxels for which value of levels of gray is equal to the threshold</td>
+<td><img src="../../images/tresh_eq.jpg"/><br/>
+<b>Threshold1 = 350</b><br/></td>
+<td><img src="../../images/btresh_eq.jpg"/><br/>
+<b>Threshold1 = 350</b><br/></td>
+</tr>
+
+<tr>
+<td>different</td>
+<td> to select all the voxels for which value of levels of gray is different to the threshold</td>
+<td><img src="../../images/tresh_di.jpg"/><br/>
+<b>Threshold1 = 1800</b><br/></td>
+<td><img src="../../images/btresh_di.jpg"/><br/>
+<b>Threshold1 = 1800</b><br/></td>
+</tr>
+
+<tr>
+<td>between</td>
+<td> to select all the voxels for which value of levels of gray contained between 1 and 2</td>
+<td><img src="../../images/tresh_be.jpg"/><br/>
+<b>Threshold1 = 391</b><br/>
+<b>Threshold2 = 1078</b><br/></td>
+<td><img src="../../images/btresh_be.jpg"/><br/>
+<b>Threshold1 = 391</b><br/>
+<b>Threshold2 = 1078</b><br/></td>
+</tr>
+
+<tr>
+<td>outside</td>
+<td>select all voxels with a grey level outside threshold1 and threshold2</td>
+<td><img src="../../images/tresh_ou.jpg"/><br/>
+<b>Threshold1 = 391</b><br/>
+<b>Threshold2 = 1078</b><br/></td>
+<td><img src="../../images/btresh_ou.jpg"/><br/>
+<b>Threshold1 = 391</b><br/>
+<b>Threshold2 = 1078</b><br/></td>
+</tr>
+</table></xhtml>
+  </d>
+</minf>

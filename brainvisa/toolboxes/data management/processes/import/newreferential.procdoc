@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d length="2">
+  <d length="3" name="fr">
+    <xhtml name="short">Crée un nouveau référentiel pour la donnée en entrée, si celle-ci n'a pas déjà un référentiel. </xhtml>
+    <d length="2" name="parameters">
+      <xhtml name="referential_type">Type de référentiel. Par exemple : "Referential of Raw T1 MRI". Par défaut, le type sera "Referential of" type de la donnée d'entrée. </xhtml>
+      <xhtml name="data">La donnée pour laquelle le nouveau référentiel sera créé.</xhtml>
+    </d>
+    <xhtml name="long"/>
+  </d>
+  <d length="3" name="en">
+    <xhtml name="short">Create a new referential for input data, if it has no existing referential. </xhtml>
+    <d length="2" name="parameters">
+      <xhtml name="referential_type">New Referential type. For example : "Referential of Raw T1 MRI". Default is "Referential of" input data type. </xhtml>
+      <xhtml name="data">Data for which a new referential is created. </xhtml>
+    </d>
+    <xhtml name="long"/>
+  </d>
+</d>
+</minf>

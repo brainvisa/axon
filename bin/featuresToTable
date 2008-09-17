@@ -1,0 +1,80 @@
+#! /bin/env python
+
+import sys
+from optparse import OptionParser
+from fnmatch import fnmatchcase
+
+parser = OptionParser( usage='%prog [options] input_file output_file', version='%prog 1.0' )
+parser.add_option( '-c', '--curves',
+                   action='store_true', dest='curves', default=False,
+                   help = 'Include curve features in the output' )
+parser.add_option( '-e', '--exclude',
+                   action='append', type='string', dest='exclude', default=[],
+                    help="Columns corresponding to the (Unix shell style) pattern are ignored (example: -e 'adc_*')" )
+parser.add_option( '-i', '--include',
+                   action='append', type='string', dest='include', default=[],
+                    help="Only columns corresponding to the (Unix shell style) pattern are included (unless they are excluded by -e option)" )
+options, args = parser.parse_args()
+if len( args ) != 2:
+  parser.error( 'Invalid arguments. Try "' + sys.argv[ 0 ] + ' --help" to get some help.' )
+
+# Lecture du fichier features
+d = {}
+execfile( args[ 0 ], d, d )
+
+# ouverture du ficher de sortie
+output = open( args[ 1 ], 'w' )
+
+# Parcours des bundles
+headerWritten = False
+featureNames = [ 'bundle' ]
+selectedColumns = None
+for bundleName, bundleContent in d[ 'attributes' ].items():
+  if bundleName in ( 'format', 'content_type' ):
+    continue
+  values = [ bundleName ]
+  for featureName, featureContent in bundleContent.items():
+    if featureName == '_vectors': continue
+    if isinstance( featureContent, dict ):
+      if not headerWritten:
+        featureNames += [ featureName + '_' + i for i in featureContent.keys() if i != '_vectors' ]
+        if options.curves and featureContent.has_key( '_vectors' ):
+          for curve in [ featureName + '_' + i for i in featureContent[ '_vectors' ].keys() if i != 'abscissa' ]:
+            featureNames += [curve + '_%03d' % i for i in featureContent[ '_vectors' ][ 'abscissa' ] ]
+      values += [ str( featureContent[ i ] ) for i in featureContent.keys() if i != '_vectors']
+      if options.curves and featureContent.has_key( '_vectors' ):
+        for curve in featureContent[ '_vectors' ].keys():
+          if curve == 'abscissa': continue
+          values += [str( i ) for i in featureContent[ '_vectors' ][ curve ]]
+    else:
+      if not headerWritten:
+        featureNames += [ featureName ]
+      values.append( repr(featureContent) )
+
+  if not headerWritten:
+    if options.include or options.exclude:
+      selectedColumns = []
+      for i in xrange( len( featureNames ) ):
+        if options.include:
+          keep = False
+          for p in options.include:
+            if fnmatchcase( featureNames[ i ], p ):
+              keep = True
+              break
+        else:
+          keep = True
+        for p in options.exclude:
+          if fnmatchcase( featureNames[ i ], p ):
+            keep = False
+            break
+        if keep:
+          selectedColumns.append( i )
+    if selectedColumns is None:
+      print >> output, '\t'.join( featureNames )
+    else:
+      print >> output, '\t'.join( [featureNames[i] for i in selectedColumns] )
+    headerWritten = True
+  if selectedColumns is None:
+    print >> output, '\t'.join( values )
+  else:
+    print >> output, '\t'.join( [values[i] for i in selectedColumns] )

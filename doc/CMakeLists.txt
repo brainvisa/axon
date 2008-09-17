@@ -1,0 +1,2 @@
+
+SHFJ_COPY_CURRENT_DIRECTORY(share/doc/brainvisa-${BrainVISA_VERSION})

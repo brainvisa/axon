@@ -1,0 +1,71 @@
+#! /usr/bin/env python
+import sys, os, gzip
+from optparse import OptionParser
+
+parser = OptionParser( usage='%prog [options] source destination', 
+  version='%prog 1.0',
+  description = 'Copy the structure of BrainVISA databases.' )
+#parser.add_option( '-v', '--variable',
+                   #action='append', type='string', dest='variables', default=[],
+                   #help = 'Adds a path environment variable. If none is given, PATH, LD_LIBRARY_PATH and PYTHONPATH are used. ' )
+options, args = parser.parse_args()
+if len( args ) != 2:
+  parser.error( 'Invalid arguments. Try "' + sys.argv[ 0 ] + ' --help" to get some help.' )
+
+def copyStructure( source, destination ):
+  if os.path.isdir( source ):
+    # Create a directory
+    os.mkdir( destination )
+    for child in os.listdir( source ):
+      copyStructure( os.path.join( source, child ), os.path.join( destination, child ) )
+  else:
+    # Create an empty file
+    open( destination, 'w' ).close()
+
+def copyStructureToFile( source, file ):
+  for child in os.listdir( source ):
+    fullPath = os.path.join( source, child )
+    if os.path.isdir( fullPath ):
+      # Create a directory
+      file.write('d'+child+'\n')
+      copyStructureToFile( fullPath, file )
+    elif child.endswith( '.minf' ) or child.endswith( '.referential' ):
+      file.write('m'+child+'\t'+repr(open(fullPath,'rb').read())+'\n')
+    else:
+      # Create an empty file
+      file.write('f'+child+'\n')
+  file.write('\n')
+
+def copyStructureFromFile( file, destination ):
+  c = file.read(1)
+  while True:
+    if c == 'f':
+      name = file.readline()[:-1]
+      try:
+        open( os.path.join( destination, name ), 'w' ).close() 
+      except Exception, e:
+        print >> sys.stderr, e
+    elif c == 'd':
+      directory = os.path.join( destination, file.readline()[:-1] )
+      os.mkdir( directory )
+      copyStructureFromFile( file, directory )
+    elif c == 'm':
+      l = file.readline()[:-1].split( '\t' )
+      name, content = l
+      content = eval( content )
+      try:
+        open( os.path.join( destination, name ), 'wb' ).write( content )
+      except Exception, e:
+        print >> sys.stderr, e
+    else:
+      break
+    c = file.read(1)
+   
+source, destination = args
+if os.path.isdir( source ):
+  file = gzip.open( destination, 'w' )
+  copyStructureToFile( source, file )
+else:
+  file = gzip.open( source, 'r' )
+  os.mkdir( destination )
+  copyStructureFromFile( file, destination )

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+  <d name="fr" length="3">
+    <xhtml name="short">Convertit une série d'images 2D (JPEG, PNG,...) en film Mpeg.</xhtml>
+    <d name="parameters" length="0">
+    </d>
+    <xhtml name="long">Ce traitement propose le choix parmi un ensemble de sous-traitements,
+    chacun spécialisé pour utiliser un logiciel d'encodage MPEG particulier (nous avons utilisé 
+    des encodeurs <i>freeware</i> tels que <b>mencoder</b>, <b>transcode</b> ou <b>recmpeg</b>).
+    Chacun de ces sous-traitements prend en entrée au moins une liste d'images 2D, et en sortie 
+    un nom de fichier MPEG ou AVI, et peut proposer des paramètres supplémentaires (<i>codec</i> 
+    d'encodage à utiliser, qualité, échelle de temps etc).<br/>
+    Ces programmes externes doivent être installés correctement sur le système pour que les 
+    sous-traitements correspondants soient valides, c'est pourquoi selon les programmes 
+    détectés par BrainVisa, le choix d'encodeurs sera plus ou moins vaste (voire nul si aucun 
+    encodeur n'est présent).
+    </xhtml>
+  </d>
+  <d name="en" length="3">
+    <xhtml name="short">Converts a set of 2D images (JPEG, PNG,...) into a Mpeg film.</xhtml>
+    <d name="parameters" length="1">
+      <xhtml name="images">2D images set, must be ordered</xhtml>
+    </d>
+    <xhtml name="long">This process allows to choose in a choice of sub-processes, each 
+    specialized to use a specific MPEG encoder software (we have used freeware encoders like 
+    <b>mencoder</b>, <b>transcode</b> or <b>recmpeg</b>). Each of these sub-processes takes, 
+    at least, a list of 2D images as input, and a MPEG or AVI filename as output. They can 
+    also have additional parameters (encoding codec, quality, time scale etc.).<br/>
+    Those external programs should be correctly installed on the system before corresponding 
+    sub-processes can be valid. Therefore, depending on which programs BrainVisa detects, the 
+    choice of encoders will be wide or restricted (and even absent if no encoder is present).
+    </xhtml>
+  </d>
+</minf>

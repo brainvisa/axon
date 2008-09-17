@@ -1,0 +1,145 @@
+#! /bin/env python
+# -*- coding: iso-8859-1 -*-
+#
+#  Copyright (C) 2004-2005 CEA
+#
+#  This software and supporting documentation were developed by
+#  	CEA/DSV/SHFJ
+#  	4 place du General Leclerc
+#  	91401 Orsay cedex
+#  	France
+#
+
+import sys, os, types, operator, re
+from xml.sax import make_parser
+from xml.sax.handler import ContentHandler
+
+mainPath = os.path.abspath( os.path.dirname( sys.path[0] ) )
+p = os.path.join(mainPath,'lib')
+if p not in sys.path:
+  sys.path.append( p )
+
+import minfXML
+import xhtml
+
+from qt import *
+from qtui import *
+
+class HTMLHandler( ContentHandler ):
+  def __init__( self, output=None ):
+    self.output = output
+    self.stack = []
+    self.indent = 0
+        
+  def startElement(self, name, attrs):
+    self.stack.append( name )
+    if self.output is not None:
+      self.output.write( '  ' * self.indent + '<' + name )
+      for n,v in attrs.items():
+        self.output.write( ' ' + n + '="' + v + '"' )
+      self.output.write( '>' )
+      if name not in ( 'n', 's' ):
+        self.indent += 1
+  
+  def endElement(self, name):
+    self.stack.pop()
+    if self.output is not None:
+      if name not in ( 'n', 's' ):
+        self.indent -= 1
+        self.output.write( '  '*self.indent  )
+      self.output.write( '</' + name + '>' )
+    
+  def characters(self, data):
+    if self.output is not None:
+      self.output.write( data.encode( 'latin-1' ) )
+
+def checkXML( sourceFile ):
+  try:
+    minf = minfXML.readMinfXML( '/tmp/procdoc.xml' )
+  except Exception, e:
+    print 'ERROR:', sourceFile
+    print ' ', e
+    
+def procdocToXHTML( procdoc ):
+  stack = [ (procdoc, key, key ) for key in procdoc.iterkeys() ]
+  while stack:
+    d, k, h = stack.pop()
+    value = d[ k ]
+    if isinstance( value, types.StringTypes ):
+      # Convert HTML tags to XML valid tags
+
+      # Put all tags in lower-case because <TAG> ... </tag> is illegal XML
+      def lowerTag( x ): 
+        result = '<' + x.group(1).lower() + x.group(2)
+        return result
+      value = re.sub( '<(/?[A-Za-z_][a-zA-Z_0-9]*)(>|[^a-zA-Z_0-9][^>]*>)',
+                        lowerTag, value )
+
+      # Add a '/' at the end of non closed tags
+      for l in ( 'img', 'br', 'hr' ):
+        expr = '<(' + l + '(([^A-Za-z_0-9>/]?)|([^A-Za-z_0-9][^>]*[^/>])))>(?!\s*</' + l + '>)'
+        value = re.sub( expr, '<\\1/>', value )
+
+      # convert <s> tag to <xhtml> tag
+      value = re.sub( '<(/?)s(>|[^a-zA-Z_0-9][^>]*>)', '<\\1xhtml\\2', value )
+
+      goOn = True
+      while goOn:
+        goOn = False
+        try:
+          newValue = xhtml.XHTML.buildFromHTML( value )
+        except Exception, e:
+          # Build a text editor
+          editor = QWidgetFactory.create( os.path.join( mainPath, 'lib', 'textEditor.ui' ) )
+          def f( l, c ):
+            editor.cursorPosition.setText( str( l+2 ) + ' : ' + str( c ) )
+          for x in editor.queryList( None, 'BV_.*' ):
+            setattr( editor, x.name()[ 3:], x )
+          editor.info.setText( '<h2><font color="red">Error in ' + h + ':<br>  ' + str(e) + '</font></h1>' )
+          editor.content.setTextFormat( editor.content.PlainText )
+          editor.content.setText( value )
+          editor.connect( editor.content, SIGNAL( 'cursorPositionChanged(int,int)' ), f )
+          editor.btnOk.setText( 'Check XHTML' )
+          editor.btnCancel.setText( 'Save as simple text' )
+          line = getattr( e, 'getLineNumber', None )
+          if line is not None:
+            line = line() - 2
+          else: 
+            line = 0
+          column = getattr( e, 'getColumnNumber', None )
+          if column is not None:
+            column = column()
+          else: 
+            column = 0
+          editor.content.setCursorPosition( line, column )
+          if editor.exec_loop() == QDialog.Accepted:
+            value = str( editor.content.text().latin1() )
+            goOn = True
+          else:
+            newValue = str( editor.content.text().latin1() )
+            goOn = False
+      d[ k ] = newValue        
+    elif type( value ) is types.DictType:
+      stack += [ ( value, key, h + '.' + key ) for key in value.iterkeys() ]
+
+
+
+app = QApplication( sys.argv )
+
+for procdocName in sys.argv[ 1: ]:
+  
+  # Read procdoc
+  minf = minfXML.readMinf( procdocName )
+  # Convert procdoc to XHTML
+  procdocToXHTML( minf )
+  
+  # Save result
+  file = open( procdocName, 'w' )
+  minfXML.printMinfXML( file,  minf )
+  sys.exit()
+  file.close()
+
+  checkXML( procdocName )
+
+if len( sys.argv ) == 1:
+  checkXML( '/tmp/procdoc.xml' )

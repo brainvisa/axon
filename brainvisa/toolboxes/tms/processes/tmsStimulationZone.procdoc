@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="fr">
+    <xhtml name="short"/>
+    <d name="parameters">
+      <xhtml name="view_results"/>
+      <xhtml name="stimulation_position"/>
+      <xhtml name="head_mesh"/>
+      <xhtml name="normal_mesh"/>
+      <xhtml name="target_line_mesh"/>
+      <xhtml name="landmarks"/>
+      <xhtml name="stimulation_zone"/>
+      <xhtml name="base_radius"/>
+      <xhtml name="depth"/>
+      <xhtml name="normal_radius"/>
+      <xhtml name="grey_matter_mask"/>
+      <xhtml name="cone_mesh"/>
+    </d>
+    <xhtml name="long"/>
+  </d>
+  <d name="en">
+    <xhtml name="short">Computes a model of a TMS stimulation zone shape (the 3D region that will be reached by the TMS stimulation), and optionally extracts the stimulated cortex region</xhtml>
+    <d name="parameters">
+      <xhtml name="view_results">If view_results is set to True, result will be shown in Anatomist</xhtml>
+      <xhtml name="stimulation_position"/>
+      <xhtml name="head_mesh">Head scalp mesh</xhtml>
+      <xhtml name="normal_mesh">The normal line to the head at the coil stimulation point: it may visually help to align the coil.</xhtml>
+      <xhtml name="target_line_mesh">The line between the cortex target and the head projection at the coil stimulation point. This line may be slightly different from the normal line.</xhtml>
+      <xhtml name="landmarks">Landmark points file containing the desired stimulation target point position. This input is optional: if not given, the stimulation position may be specified by the stimulation_position parameter</xhtml>
+      <xhtml name="stimulation_zone">The stimulation zone is the cortex region within the stimulated cone. The output object is a "bucket" (.bck file): a list of cortex voxels. It can be viewed in Anatomist or easily converted to a volume.</xhtml>
+      <xhtml name="base_radius">Radius of the cone at the coil position</xhtml>
+      <xhtml name="depth">TMS stimulation depth (length of the stimulation cone)</xhtml>
+      <xhtml name="normal_radius">The normal direction to the head at the coil position is calculated by averaging it on a small area around the coil position to make it more robust. The normal_radius parameter specifies the radius of this averaging.</xhtml>
+      <xhtml name="grey_matter_mask">The grey matter mask is used to get the stimulated cortex zone within the stimulation cone (see stimulation_zone parameter)</xhtml>
+      <xhtml name="cone_mesh">The stimulation shape is modelled as a cone, which mesh will be saved in this file</xhtml>
+    </d>
+    <xhtml name="long">The TMS stimulation zone is modelled as a cone, which parameters may be specified. In future evolutions, the cone model may be replaced by other shapes to get a more realistic model.</xhtml>
+  </d>
+</d>
+</minf>

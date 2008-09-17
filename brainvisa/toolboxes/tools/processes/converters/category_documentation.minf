@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+
+<xhtml name="en">
+  <h1>Converters</h1>
+  
+  <p>
+A converter transforms some data types or formats into others.
+  </p>
+  <p>
+<em>Automatic</em> converters are silently used by BrainVisa when conversions are needed (for instance when a process input is restricted to some specific image formats). To be valid, an automatic converter needs to have only two mandatory parameters: <tt>read</tt> (input data to be converted) and <tt>write</tt> (data written after conversion).
+  </p>
+
+</xhtml>
+
+<xhtml name="fr">
+  <h1>Convertisseurs</h1>
+  
+  <p>
+Un convertisseur permet de transformer certains types ou formats de données en d'autres.
+  </p>
+  <p>
+Les convertisseurs <em>automatiques</em> sont utilisés silencieusement par BrainVisa lorsque des conversions sont nécessaires (par ex. en entrée de traitements ne sachant lire que certains formats d'images). Pour être valide, un convertisseur automatique ne doit avoir que deux paramètres obligatoire: <tt>read</tt> (donnée d'entrée à convertir) et <tt>write</tt> (donnée écrite après conversion).
+  </p>
+
+</xhtml>
+
+</minf>

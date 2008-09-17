@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="fr">
+    <xhtml name="short"/>
+    <d name="parameters">
+      <xhtml name="neighbour_estimation_size"/>
+      <xhtml name="target"/>
+      <xhtml name="head_mesh"/>
+      <xhtml name="vertex"/>
+      <xhtml name="landmarks"/>
+      <xhtml name="inion"/>
+      <xhtml name="right_ear"/>
+      <xhtml name="nasion"/>
+      <xhtml name="target_texture"/>
+      <xhtml name="view_results"/>
+      <xhtml name="left_ear"/>
+    </d>
+    <xhtml name="long"/>
+  </d>
+  <d name="en">
+    <xhtml name="short">TMS target position calculation and localization relative to standard lanmark points</xhtml>
+    <d name="parameters">
+      <xhtml name="neighbour_estimation_size">The target projection on the head mesh will be averaged across a number of mesh vertices positions to make it more robust: the number of points to be taken into account for this averaging is specified here</xhtml>
+      <xhtml name="target">The target point may be chosen on the cortex on an activated region: it will be projected to the head scalp</xhtml>
+      <xhtml name="head_mesh">Head scalp mesh</xhtml>
+      <xhtml name="vertex"/>
+      <xhtml name="landmarks">Landmark points file: it will save all landmark and target positions.
+It may be either an input file already containing landmark positions, or it will be created or updated by the process according to the specified landmark points (nasion, inion, vertex, left/right_ear and target)</xhtml>
+      <xhtml name="inion"/>
+      <xhtml name="right_ear"/>
+      <xhtml name="nasion"/>
+      <xhtml name="target_texture">Output texture showing the target and distance maps to the several landmark points and inter-hemispheric plane. this texture will guide you to find the corresponding target point on the subject's real head</xhtml>
+      <xhtml name="view_results">If view_results is set to True, result will be shown in Anatomist</xhtml>
+      <xhtml name="left_ear"/>
+    </d>
+    <xhtml name="long">Several landmark points may be enetered (possibly by clicking in Anatomist on the head mesh), and a TMS stimulation target point is specified (either on the cortex or on the head mesh). The TMS coil position is computed by projecting the target on the head mesh, and distance maps are generated to show how to position the coil on a real subject's head.</xhtml>
+  </d>
+</d>
+</minf>

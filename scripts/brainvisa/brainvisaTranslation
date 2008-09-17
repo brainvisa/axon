@@ -1,0 +1,342 @@
+#! /bin/env python
+# -*- coding: utf-8 -*-
+#
+#  This software and supporting documentation were developed by
+#      CEA/DSV/SHFJ and IFR 49
+#      4 place du General Leclerc
+#      91401 Orsay cedex
+#      France
+#
+# This software is governed by the CeCILL license version 2 under 
+# French law and abiding by the rules of distribution of free software.
+# You can  use, modify and/or redistribute the software under the 
+# terms of the CeCILL license version 2 as circulated by CEA, CNRS
+# and INRIA at the following URL "http://www.cecill.info". 
+# 
+# As a counterpart to the access to the source code and  rights to copy,
+# modify and redistribute granted by the license, users are provided only
+# with a limited warranty  and the software's author,  the holder of the
+# economic rights,  and the successive licensors  have only  limited
+# liability. 
+# 
+# In this respect, the user's attention is drawn to the risks associated
+# with loading,  using,  modifying and/or developing or reproducing the
+# software by the user in light of its specific status of free software,
+# that may mean  that it is complicated to manipulate,  and  that  also
+# therefore means  that it is reserved for developers  and  experienced
+# professionals having in-depth computer knowledge. Users are therefore
+# encouraged to load and test the software's suitability as regards their
+# requirements in conditions enabling the security of their systems and/or 
+# data to be ensured and,  more generally, to use and operate it in the 
+# same conditions as regards security. 
+# 
+# The fact that you are presently reading this means that you have had
+# knowledge of the CeCILL license version 2 and that you accept its terms.
+
+import sys, os
+
+# Set default encoding to 'iso-8859-1'
+try:
+  ksdjfh34_f9
+except:
+  c = sys.executable + " -S -c 'import sys; ksdjfh34_f9=True; sys.argv[ 0 ] = \"" + sys.argv[0] + "\"; execfile( \"" + sys.argv[ 0 ] + "\" )' " + ' '.join( ["'" + x + "'" for x in sys.argv[1: ] ] )
+  sys.exit( os.system( c ) )
+sys.setdefaultencoding( 'iso-8859-1' )
+import site
+
+import __builtin__
+
+
+translatables = {}
+_translate = None
+
+
+
+def myTranslator( toTranslate ):
+  import neuroConfig
+  global _translate
+  if _translate is None:
+    _translate = neuroConfig.Translator().translate
+  l = translatables.setdefault( toTranslate, [] )
+  f = sys._getframe( 1 )
+  l.append( ( os.path.join( mainPath, f.f_globals[ '__name__' ] ) + '.py', f.f_lineno ) )
+  #print '!myTranslator!', toTranslate, l[ -1 ]
+  return _translate( toTranslate )
+__builtin__.__dict__['_t_'] = myTranslator
+
+
+import re, parser, token, types
+from qtui import *
+from soma.html import htmlEscape
+#import minfXML
+import soma.minf.api as minfXML
+
+def tokens( fileName ):
+  f = open( fileName )
+  content = f.read()
+  f.close()
+  try:
+    stack = [ parser.suite( content ).totuple( True ) ]
+  except Exception, e:
+    print >> sys.stderr, 'Error in file ' + fileName + ': ' + unicode( e )
+    return
+  while stack:
+    node = stack.pop( 0 )
+    if token.ISTERMINAL( node[ 0 ] ):
+      yield node
+    else:
+      stack = list( node[ 1: ] ) + stack
+    
+
+def findTranslatableStrings( fileName, result ):
+  toBeChecked = set()
+  state = 0
+  for t, c, l in tokens( fileName ):
+    if state == 0:
+      if t == token.NAME and c == "_t_":
+        state = 1
+        line = l
+      elif t == token.STRING:
+        u = result.get( eval( c ) )
+        if u is not None:
+          u.append( ( fileName, l ) )
+    elif state == 1:
+      if t != token.LPAR:
+        toBeChecked.add( line )
+        state = 0
+      else:
+        state = 2
+    elif state == 2:
+      if t != token.STRING:
+        toBeChecked.add( line )
+        state = 0
+      else:
+        translatable = eval( c )
+        state = 3
+    elif state == 3:
+      if t != token.RPAR:
+        toBeChecked.add( line )
+        state = 0
+      else:
+        result.setdefault( translatable, [] ).append( ( fileName, line ) )
+        state = 0
+#    print l, ':', token.tok_name[ t ], ':', c
+  return toBeChecked
+
+
+
+def main():
+  global editor, languages, translationTables, readOnly
+  #------------------------------------------------------------------------------
+  print 'Reading translation tables'
+  #------------------------------------------------------------------------------
+  readOnly = False
+  translationTables = {}
+  docPath = neuroConfig.mainDocPath
+  languages = []
+  for l in os.listdir( docPath ):
+    if len( l ) == 2 and os.path.isdir( os.path.join( docPath, l ) ):
+      languages.append( l )
+  for language in languages:
+    func = '''
+def translationChanged_''' + language + '''():
+  source = unicode( editor.txtSource.text() )
+  translation = unicode( editor.txt''' + language + '''.text() )
+  translationTables[ "''' + language + '''" ][ source ] = translation
+'''
+    exec func in globals(), globals()
+    n = os.path.join( docPath, language, 'translation.minf' )
+    print ' ', n
+    # Check that file can be opened for writing
+    try:
+      f = open( n, 'r+' )
+      f.close()
+    except IOError:
+      readOnly = True
+    f = open( n )
+    translationTables[ language ] = minfXML.readMinf( f )[0]
+    # print 'translationTables[', language, ']:', translationTables[ language ]
+    f.close()
+    for s, t in translationTables[ language ].iteritems():
+      translatables.setdefault( s, [] )
+      
+  
+  #------------------------------------------------------------------------------
+  print 'Parsing BrainVISA sources for translation'
+  #------------------------------------------------------------------------------
+  toBeChecked = {}
+  files = []
+  ##stack = [ os.path.join( mainPath, i ) for i in os.listdir( mainPath ) ]
+  stack = [ mainPath ]
+  while stack:
+    item = stack.pop()
+    if os.path.isdir( item ):
+  ##    pass
+      stack += [ os.path.join( item, i ) for i in os.listdir( item ) ]
+    elif item.endswith( '.py' ):
+      files.append( item )
+  
+  progress = QProgressDialog()
+  progress.setTotalSteps( len( files ) )
+  progress.setLabelText( 'Parsing BrainVISA sources...' )
+  progress.setMinimumDuration( 0 )
+  i = 0
+  for item in files:
+    progress.setProgress( i )
+    qApp.processEvents()
+    if progress.wasCanceled():
+      break
+    chk = findTranslatableStrings( item, translatables )
+    if chk:
+      toBeChecked[ item ] = sorted( list(toBeChecked) )
+    i += 1
+  progress.close()
+  del progress
+  qApp.processEvents()
+  
+  #------------------------------------------------------------------------------
+  print 'Create graphical interface'
+  #------------------------------------------------------------------------------
+  def sourceSelected( item ):
+    global editor, languages, translationTables
+    if item is not None:
+      source = unicode( item.text( 0 ) )
+      editor.txtSource.setText( source )
+      for language in languages:
+        txt = getattr( editor, 'txt'+language )
+        txt.setText( translationTables[ language ].get( source, '' ) )
+      usage = translatables[ source ]
+      editor.lstUsage.clear()
+      editor.txtUsage.setText( '' )
+      editor.labUsage.setText( '' )
+      if usage:
+        for f, l in usage:
+          item = QListViewItem( editor.lstUsage )
+          item.fileName = f
+          item.setText( 0, os.path.basename( f ) )
+          item.setText( 1, str( l ) )
+    else:
+      editor.txtSource.setText( '' )
+      for language in languages:
+        getattr( editor, 'txt'+language ).setText( '' )
+      editor.lstUsage.clear()
+      editor.txtUsage.setText( '' )
+      editor.labUsage.setText( '' )
+      
+  def usageSelected( item ):
+    global editor
+    if item is None:
+      editor.txtUsage.setText( '' )
+    else:
+      file = item.fileName
+      editor.labUsage.setText( file )
+      line = int( str( item.text( 1 ) ) )
+      txt = '<html><body><pre>'
+      i = 1
+      for l in open( file ):
+        #cl = '<font color="darkgreen">'+ str( i ) + ' - </font>' + htmlEscape( l ) 
+        cl = htmlEscape( l ) 
+        if i ==line:
+          txt += '<p><b><font color=blue><a name="here">' + cl + '</a></font></b></p>'
+        else:
+          txt += cl
+        i += 1
+      txt += '</pre></body></html>'
+      editor.txtUsage.setText( txt )
+      editor.txtUsage.scrollToAnchor( 'here' )
+  
+  import brainvisa
+  editor = QWidgetFactory.create( os.path.join( os.path.dirname( brainvisa.__file__ ), 'brainvisaTranslation.ui' ) )
+  for x in editor.queryList( None, 'BV_.*' ):
+    setattr( editor, x.name()[ 3:], x )
+  pixOk = QPixmap( os.path.join( neuroConfig.iconPath, 'ok.png' ) )
+  pixBad = QPixmap( os.path.join( neuroConfig.iconPath, 'abort.png' ) )
+  pixUnused = QPixmap( os.path.join( neuroConfig.iconPath, 'help.png' ) )
+  editor.connect( editor.lstSources, 
+                  SIGNAL( 'selectionChanged( QListViewItem *)' ),
+                  sourceSelected )
+  editor.connect( editor.lstUsage, 
+                  SIGNAL( 'selectionChanged( QListViewItem *)' ),
+                  usageSelected )
+  for language in languages:
+    txt = getattr( editor, 'txt'+language )
+    txt.setReadOnly( readOnly )
+    txt.connect( txt, SIGNAL( 'textChanged()' ), globals()[ 'translationChanged_' + language ] )
+  if readOnly:
+    editor.btnOk.hide()
+    editor.setCaption( unicode( editor.caption() ) + ' (read only)' )
+  
+  for s, u in translatables.iteritems():
+    item = QListViewItem( editor.lstSources )
+    if not u:
+      pix = pixUnused
+    else:
+      ok = True
+      for language in languages:
+        if language == 'en': continue
+        if not translationTables[ language ].get( s, '' ):
+          ok = False
+          break
+      if ok:
+        pix = pixOk
+      else:
+        pix = pixBad
+    item.setPixmap( 0, pix )
+    item.setText( 0, s )
+  
+  r = editor.exec_loop()
+  if not readOnly and r == editor.Accepted:
+    print 'Saving translation tables'
+    for l in languages:
+      for k, v in translationTables[ l ].items():
+        if not v:
+          del translationTables[ l ][ k ]
+      f = os.path.join( docPath, l, 'translation.minf' )
+      print ' ', f
+      f = open( f, 'w' )
+      minfXML.writeMinf( f, ( translationTables[ l ], ), format='XML',
+        reducer='minf_1.0' )
+      f.close()
+  
+  
+  
+from distutils.spawn import find_executable
+neuro = ""
+if len ( sys.argv ) > 1:
+  brainvisa = sys.argv[1]
+  del sys.argv[ 1 ]
+else:
+  brainvisa = 'brainvisa'
+
+executable = find_executable( brainvisa )
+if executable is None:
+  print >> sys.stderr, 'Cannot find executable:', brainvisa
+  sys.exit( 1 )
+
+
+found = False
+while True:
+  p = os.path.dirname( executable )
+  for d in ( os.path.normpath( os.path.join( p, "..", "brainvisa" ) ),
+            os.path.normpath( os.path.join( p, "..", "..", "brainvisa" ) ) ):
+    neuro = os.path.join( d, "neuro.py" )
+    if os.path.exists( neuro ):
+      found = True
+      break
+  if found:
+    break
+  if os.path.islink( executable ):
+    executable = os.path.join( os.path.dirname( executable ), os.readlink( executable ) )
+  else:
+    break
+if neuro:
+  neuro = os.path.abspath( neuro )
+  sys.argv[ 0 ] = neuro
+  pythonPath = os.path.dirname( neuro )
+  sys.path[0:0] = [os.path.normpath(i) for i in \
+    (pythonPath, os.path.join( pythonPath, "..", "python" ), )]
+  import neuroConfig
+  neuroConfig.startup.append( main )
+  execfile( neuro )
+else:
+  print >> sys.stderr, "Cannot find main BrainVISA directory"

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+  <d name="fr" length="3">
+    <xhtml name="short">Traitement pour appliquer une transformation rigide à une image.</xhtml>
+    <d name="parameters" length="4">
+      <xhtml name="image_res">Nom de l'image recalée</xhtml>
+      <xhtml name="image">Image d'entrée à recaler</xhtml>
+      <xhtml name="trm">Fichier de transformation rigide</xhtml>
+      <xhtml name="spline_interpolation_order">Méthode de réechantillonnage</xhtml>
+    </d>
+    <xhtml name="long">Traitement permettant de recaler une image à partir d'une transformation rigide.</xhtml>
+  </d>
+  <d name="en" length="3">
+    <xhtml name="short"/>
+    <d name="parameters" length="4">
+      <xhtml name="image_res"/>
+      <xhtml name="image"/>
+      <xhtml name="trm"/>
+      <xhtml name="spline_interpolation_order"/>
+    </d>
+    <xhtml name="long"/>
+  </d>
+</minf>

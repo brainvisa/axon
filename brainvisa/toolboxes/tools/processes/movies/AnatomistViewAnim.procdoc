@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+  <d name="fr" length="3">
+    <xhtml name="short">Rejoue une animation avec Anatomist, et en fait éventuellement une série d'images (jpeg...) et/ou un film mpeg</xhtml>
+    <d name="parameters" length="6">
+      <xhtml name="anim"/>
+      <xhtml name="keep_images">Garde ou non la série d'images JPEG de l'animation</xhtml>
+      <xhtml name="window"/>
+      <xhtml name="animation"/>
+      <xhtml name="images_basename">Répertoire + nom des images jpeg à sauver. Un numéro sera inséré à la fin du nom (avant l'extension)</xhtml>
+      <xhtml name="use_recorded_objects">Indique si le traitement essaie ou non de charger les objets (et leurs couleurs) référencés dans le fichier d'animation. Si cette option n'est pas utilisée, l'utilisateur doit lui-même mettre les objets dans la fenêtre avant que l'animation démarre</xhtml>
+    </d>
+    <xhtml name="long">Rejoue une animation avec Anatomist. L'animation doit avoir été préalablement préparée et sauvée à l'aide du traitement <a href="bvprocess://AnatomistRecordAnim">Anatomist record animation</a>.<br/>
+    Le principe est "simplement" de faire bouger le point de vue de la caméra d'une fenêtre Anatomist, et éventuellement changer les objets qui y sont représentés et leurs couleurs.<br/>
+    <br/>
+    Une série d'images (jpeg) peut être sauvée à mesure.<br/>
+    Un film MPEG ou AVI (DivX ou autre) peut être généré ensuite, à l'aide du traitement <a href="bvprocess://mpegEncode">MPEG encoder</a> (s'il est en état de marche, cf programmes à installer pour ce traitement)
+</xhtml>
+  </d>
+  <d name="en" length="3">
+    <xhtml name="short">Replays an animation using Anatomist, and makes an image series (jpeg...) and/or a mpeg film if requested</xhtml>
+    <d name="parameters" length="6">
+      <xhtml name="anim"/>
+      <xhtml name="keep_images">Keeps the series of JPEG images of the animation</xhtml>
+      <xhtml name="window"/>
+      <xhtml name="animation"/>
+      <xhtml name="images_basename">Directory + base jpeg filename to save. A number will 
+      be inserted at the end of this base name (before the extension).
+      </xhtml>
+      <xhtml name="use_recorded_objects">Specifies if the process must try to load objects 
+      (and their colors) referenced in the animation file. If this option is not used, 
+      objects have to manually be put in the target Anatomist window before the animation 
+      starts.
+      </xhtml>
+    </d>
+    <xhtml name="long">Replays an animation using Anatomist. The animation must be previously prepared and saved using the <a href="bvprocess://AnatomistRecordAnim">Anatomist record animation</a> process.<br/>
+    The point is "simply" to make the point of view of the camera move in an Anatomist window, and objects and colors change.<br/>
+    <br/>
+    An image series (jpeg) can be saved during the animation.<br/>
+    A MPEG or AVI (DivX or other) film can be generated from these images, using the <a href="bvprocess://mpegEncode">MPEG encoder</a> process (if it's working, see the programs to install for this process to work)</xhtml>
+  </d>
+</minf>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+  <d name="fr" length="3">
+    <xhtml name="short"/>
+    <xhtml name="long"/>
+    <d name="parameters" length="1">
+      <xhtml name="read"/>
+    </d>
+  </d>
+  <d name="en" length="3">
+    <xhtml name="short"/>
+    <xhtml name="long"/>
+    <d name="parameters" length="1">
+      <xhtml name="read"/>
+    </d>
+  </d>
+</minf>

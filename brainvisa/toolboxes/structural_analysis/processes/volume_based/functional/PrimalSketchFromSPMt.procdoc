@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+  <d name="fr" length="3">
+    <xhtml name="short">Construit le "scale-space primal sketch" d'une carte d'activations SPMt. </xhtml>
+    <d name="parameters" length="6">
+      <xhtml name="tMin">Echelle la plus fine pour le calcul du scale-space</xhtml>
+      <xhtml name="tMax">Echelle la plus grossière pour le calcul du scale-space</xhtml>
+      <xhtml name="mask"/>
+      <xhtml name="spmt"/>
+      <xhtml name="statFile"/>
+      <xhtml name="subject">Nom du sujet. Sera intégré comme attribut global du primal sketch pour identifier le sujet.</xhtml>
+    </d>
+    <xhtml name="long">Construit le "scale-space primal sketch" d'une carte d'activations SPMt. <br/><br/>
+
+Les arguments ayant une valeur par défaut (tMin et tMax) ne devraient pas être changés et peuvent être source d'erreur si mal choisis. <br/>
+Le fichier de statistiques est très important, il contient les valeurs statistiques nécessaires pour calculer convenablement les mesures associées à chaque objet du primal sketch. Si votre carte n'a pas une des tailles indiquées dans les choix possibles, vous pouvez probablement utiliser un choix ayant la même résolution (taille du voxel en mm^3). La qualité du résultat n'est cependant pas garantie et le mieux serait de générer un fichier de statistiques correspondant à vos images. Dès que j'ai le temps je fais une brique Brainvisa pour ça...<br/><br/>
+
+Pour plus d'information :<br/>
+Coulon O, Mangin J-F, Poline J-B, Zilbovicius M, Roumenov D, Samson Y, Frouin V, Bloch I, Structural Group Analysis of Functional Activation Maps, NeuroImage, vol. 11(6), pp. 767-782, 2000.
+</xhtml>
+  </d>
+</minf>

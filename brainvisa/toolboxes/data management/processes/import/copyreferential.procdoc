@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d length="2">
+  <d length="3" name="fr">
+    <xhtml name="short">Copie le référentiel de la donnée source comme référentiel de la donnée destination. Cette information est sauvegardée dans le fichier <code>minf</code> de la donnée destination. </xhtml>
+    <d length="2" name="parameters">
+      <xhtml name="source_data">Donnée source dont on veut copier le référentiel.</xhtml>
+      <xhtml name="destination_data">Donnée destination dont le référentiel doit être changé pour celui de la donnée source.</xhtml>
+    </d>
+    <xhtml name="long"/>
+  </d>
+  <d length="3" name="en">
+    <xhtml name="short">Copy source data's referential in destination data's referential. This information is stored in destination data's <code>minf</code> file.</xhtml>
+    <d length="2" name="parameters">
+      <xhtml name="source_data">Source data whose referential will be copied.</xhtml>
+      <xhtml name="destination_data">Destination data whose referential must be replaced by source data's referential. </xhtml>
+    </d>
+    <xhtml name="long"/>
+  </d>
+</d>
+</minf>

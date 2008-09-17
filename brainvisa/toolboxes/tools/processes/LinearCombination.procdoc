@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+  <d name="fr" length="3">
+    <xhtml name="short">Interface de la commande AimsLinearComb : Combinaison linéaire entre 2 images
+<br/>Les images doivent avoir les mêmes dimensions et les mêmes tailles de voxel.
+<br/></xhtml>
+    <d name="parameters" length="9">
+      <xhtml name="write">Obligatoire :<br/>
+Objet de sortie (volume)
+</xhtml>
+      <xhtml name="constant">Facultatif : <br/>
+coefficient de correction (e), <br/>
+par défaut, est égal à 0
+</xhtml>
+      <xhtml name="read1">Obligatoire : <br/>
+objet 1 (volume) </xhtml>
+      <xhtml name="divisor_coefficient1">Facultatif : <br/>
+coefficient diviseur pour  l'objet 1 (b),<br/>
+par défaut la valeur est égal à 1</xhtml>
+      <xhtml name="divisor_coefficient2">Facultatif : <br/>
+coefficient diviseur pour  l'objet 2 (d),<br/>
+par défaut la valeur est égal à 1</xhtml>
+      <xhtml name="read2">Obligatoire : <br/>
+objet 2 (volume) </xhtml>
+      <xhtml name="multiplicative_coefficient2">Facultatif : <br/>
+coefficient multiplicateur pour  l'objet 2 (c), <br/>
+par défaut la valeur est égal à 1</xhtml>
+      <xhtml name="multiplicative_coefficient1">Facultatif : <br/>
+coefficient multiplicateur pour l'objet 1 (a),<br/>
+par défaut la valeur est égal à 1</xhtml>
+      <xhtml name="type">type des données</xhtml>
+    </d>
+    <xhtml name="long">Ce traitement réalise une combinaison linéaire entre 2 images ou texture selon la relation :<br/>
+a.Objet1/b + c.Objet2/d  + e
+<br/><br/>
+</xhtml>
+  </d>
+  <d name="en" length="3">
+    <s name="short">Interface of AimsLinearComb command : Linear Combination between 2 images
+&lt;br/Volumes must have the same dimensions and the same voxel size.
+&lt;br/&gt;</s>
+    <d name="parameters" length="9">
+      <xhtml name="write">Mandatory :<br/>
+output image</xhtml>
+      <xhtml name="constant">Optional : <br/>
+constant offset value (e), <br/>
+by default is 0</xhtml>
+      <xhtml name="read1">Mandatory : <br/>
+object 1 (volume)</xhtml>
+      <xhtml name="divisor_coefficient1">Optional : <br/>
+divisor coefficient for object 1 (b),<br/>
+by default is 1</xhtml>
+      <xhtml name="divisor_coefficient2">Optional : <br/>
+divisor coefficient for object 2 (d),<br/>
+by default is 1</xhtml>
+      <xhtml name="read2">Mandatory : <br/>
+object 2 (volume)</xhtml>
+      <xhtml name="multiplicative_coefficient2">Optional : <br/>
+multiplicative coefficient for object 2 (c),<br/>
+by default is 1</xhtml>
+      <xhtml name="multiplicative_coefficient1">Optional : <br/>
+multiplicative coefficient for object 1 (a),<br/>
+by default is 1</xhtml>
+      <xhtml name="type">data type</xhtml>
+    </d>
+    <xhtml name="long">This processes make linear combination between 2 images according to :<br/>
+a.Objet1/b + c.Objet2/d  + e
+<br/>
+</xhtml>
+  </d>
+</minf>

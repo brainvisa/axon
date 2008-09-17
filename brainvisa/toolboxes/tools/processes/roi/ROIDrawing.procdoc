@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+  <d name="en" length="3">
+    <xhtml name="short">Create or edit a region of interest (ROI) file with Anatomist.</xhtml>
+    <d name="parameters" length="2">
+      <xhtml name="ROI">ROI file to create or edit</xhtml>
+      <xhtml name="image">image on which drawing is done</xhtml>
+    </d>
+    <xhtml name="long"><p>This process can be used to edit or create a ROI graph with Anatomist. The ROI edition feature of Anatomist allows the user to draw ROI by hand or with several tools (histogram analysis, region growing, etc). An image is required to do the drawing in order to define the 3D space (bounding box, voxel size, referential, etc.) of the ROIs. Therefore, this process takes two parameters, one image and one ROI graph. A click on the <em><_t_>Show</_t_></em> button opens the following Anatomist windows:</p>
+
+<p align="center">
+  <img src="bvimage://roi/roi_selection.jpg" width="400"/><br/>
+  <b>Anatomist ROI edition window</b> is the toolbox for all the ROI drawing features.
+</p>
+
+<p align="center">
+  <img src="bvimage://roi/roi_drawing.jpg" width="500"/><br/>
+  <b>Anatomist drawing window</b> composed of three orthogonal volume slices  (coronal, sagittal and axial) and one 3D view of the regions beign drawn.
+</p>
+
+<p>The ROI edition window must be used to select the ROI used for drawing. All the drawing is done on the selected region. You can switch from one ROI to another at ant time. This toolbox can also be used to create new regions, delete regions or to select which drawing tool is beign used.</p>
+
+<p>Once you have selected a ROI, you can draw on any of the Anatomist drawing window. The other view are updated in real time. Once you are done with editing, you must save your work by using the <em>Save</em> entry in the <em>Session</em> menu of the ROI edition window.</p>
+
+<h3><a name="whatIsROIGraph">What is a ROI graph ?</a></h3>
+
+<p>In BrainVISA, the main format for ROI set is Anatomist's ROI graph format. This format is based on a generic graph library which can be used to represent almost any kind of data and links between data. This is why we often use the term "ROI graph" for a set of ROI. In this case the term "graph" is often confusing because there is no links in ROI graphs. A ROI graph is just a series of Nodes (each node beign a ROI) without link between nodes.</p>
+<p>The file format for graph is composed of one header file (with <code>.arg</code> extension) containing the graph structure and one directory (with <code>.data</code> extension) containing nodes and links data.</p>
+
+<h3>Why cannot I see my previously drawn ROIs ?</h3>
+
+Usualy, when an object is loaded and then put in an Anatomist window, it immediatly appears in this window. It is not true for ROI graphs. Because some ROI graphs have a lot of regions and/or very big regions, it is more efficient to select which region is to be displayed. Therefore, when a ROI graph is put in a window, none of its ROI is displayed until it is selected. Whenever a ROI is selected, the corresponding graphical object is created an displayed in each window containing the ROI graph.
+
+</xhtml>
+  </d>
+</minf>

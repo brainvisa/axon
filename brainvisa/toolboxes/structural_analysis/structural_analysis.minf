@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="brainvisa-tree_2.0">
+<l length="1">
+  <f type="ProcessTree">
+    <s name="name">Data management</s>
+    <true name="editable"/>
+    <l length="1" name="content">
+      <f type="ProcessTree.Branch">
+        <l length="1" name="content">
+          <f type="ProcessTree.Branch">
+            <l length="1" name="content">
+              <f type="ProcessTree.Leaf">
+                <true name="editable"/>
+                <s name="id">importSPMtForStructuralAnalysis</s>
+                <none name="name"/>
+              </f>
+            </l>
+            <true name="editable"/>
+            <s name="name">Structural analysis</s>
+            <s name="id">structural_analysis/volume_based/import</s>
+          </f>
+        </l>
+        <true name="editable"/>
+        <s name="name">import</s>
+        <s name="id">data management/import</s>
+      </f>
+    </l>
+    <true name="user"/>
+    <s name="id">-1222536820</s>
+    <s name="icon">folder_home.png</s>
+  </f>
+</l>
+</minf>

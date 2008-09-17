@@ -1,0 +1,71 @@
+#! /usr/bin/env python
+
+#
+#  Copyright (C) 2002-2004 CEA
+#
+#  This software and supporting documentation were developed by
+#  	CEA/DSV/SHFJ
+#  	4 place du General Leclerc
+#  	91401 Orsay cedex
+#  	France
+#
+#  Our own configuration script - before switching to autotools.
+#
+import sys, os, string, re, shutil, getopt
+
+
+def usage( args ):
+  print args[0], '[-h] [-d|--database <dir>]'
+
+s = 'd:hm:'
+l = [ 'database', 'help']
+
+try:
+  optlist, args = getopt.getopt( sys.argv[1:], s, l,)
+except getopt.error, msg:
+  print str(msg) + '\nTry `' + os.path.basename( sys.argv[0] ) \
+        + ' -h\' for more information.'
+  sys.exit(2)
+for option, argument in optlist:
+  if option == '-h' or option == '--help':
+    usage( sys.argv )
+    sys.exit( 1 )
+  elif option == '-d' or option == '--database':
+    databasedir = argument
+
+DicoFromTo = {'snra_'  : 'swra', \
+              'sna_'  : 'swa', \
+              'swa_'  : 'swa', \
+              'nra_'  : 'wra', \
+              'wa_'  :  'wa', \
+              'na_'   : 'wa', \
+              'nr_'   : 'wr', \
+              'nr'    : 'wr', \
+              'ra_'   : 'ra', \
+              'n_'    : 'w', \
+              'n'     : 'w', \
+              'a_'    : 'a', \
+              'r_'    : 'r', \
+              'mean_a_' : 'mean_a', \
+              'mean_r_' : 'mean_r', \
+              'mean_a_' : 'mean_a', \
+              'mean_a_' : 'mean_a', \
+              'realignment_params_a_' : 'realignment_params_a' \
+              }
+
+for protocol in os.listdir( databasedir ):
+  protocolPath = os.path.join( databasedir, protocol )
+  print "Protocol = ", str(protocol)
+  for subject in os.listdir( protocolPath ):
+    print "Subject = ", str( subject )
+    subjectPath = os.path.join( protocolPath, subject )
+    SessionsPath = os.path.join( subjectPath, 'functional', 'fMRI') 
+    for session in os.listdir( SessionsPath ):
+      SessionPath = os.path.join(SessionsPath, session ) 
+      print "Session = ", str( session )
+      for file in os.listdir( SessionPath ):
+        for source, dest in DicoFromTo.items():
+          if file.startswith( source ):
+            sourceFile = os.path.join( SessionPath, file )
+            destFile = os.path.join( SessionPath, dest + file[ len(source): ] )
+            os.rename( sourceFile, destFile )

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+  <d name="fr" length="3">
+    <xhtml name="short">Afficheur d'images 2D/3D/4D générique</xhtml>
+    <d name="parameters" length="1">
+      <xhtml name="read"/>
+    </d>
+    <xhtml name="long"/>
+  </d>
+  <d name="en" length="3">
+    <xhtml name="short">Generic 2D/3D/4D images viewer</xhtml>
+    <d name="parameters" length="1">
+      <xhtml name="read"/>
+    </d>
+    <xhtml name="long"/>
+  </d>
+</minf>

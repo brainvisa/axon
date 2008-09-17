@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+  <d name="fr" length="3">
+    <xhtml name="short"/>
+    <d name="parameters" length="6">
+      <xhtml name="pointer_type"/>
+      <xhtml name="TMS_mesh"/>
+      <xhtml name="window"/>
+      <xhtml name="BrainSight_output"/>
+      <xhtml name="T1_mri"/>
+      <xhtml name="update_frequency"/>
+    </d>
+    <xhtml name="long"/>
+  </d>
+  <d name="en" length="3">
+    <xhtml name="short">Use BrainSight positioning system for TMS for display in Anatomist</xhtml>
+    <d name="parameters" length="6">
+      <xhtml name="pointer_type"/>
+      <xhtml name="TMS_mesh"/>
+      <xhtml name="window"/>
+      <xhtml name="BrainSight_output"/>
+      <xhtml name="T1_mri"/>
+      <xhtml name="update_frequency"/>
+    </d>
+    <xhtml name="long"><p>This process uses <a href="http://www.magstim.com/Brainsight.html">BrainSight</a> 
+localization system, and is useless without it.<br/>
+BrainSight only runs on Mac, so it is only useful on MacOS X.</p>
+
+<p>BrainSight can record TMS coil or pointer position in "real-time" and output it to a 
+file. This process scans this file continuously and reports positions (and orientations) of the 
+TMS coil or pointer to Anatomist. This allows using the power of all Anatomist visualization 
+tools with "real-time" TMS localization. Typically it will allow seing exactly where the coil is 
+located relatively to the scalp, or fMRI activation maps, brain structures, or all those at the 
+same time.
+</p>
+</xhtml>
+  </d>
+</minf>

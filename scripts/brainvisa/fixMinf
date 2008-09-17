@@ -1,0 +1,39 @@
+#! /bin/env python
+
+import sys, os, pprint, gzip
+
+stack = sys.argv[ 1: ]
+while stack:
+  f = stack.pop( 0 )
+  if os.path.isdir( f ):
+    try:
+      stack += [os.path.join( f, i ) for i in os.listdir( f )]
+    except OSError, e:
+      print >> sys.stderr, e
+  else:
+    if f.endswith( '.minf' ):
+      minf = open( f ).read()
+      if minf.startswith( '<?xml' ): continue
+      if not minf.startswith( 'attributes' ):
+        minf = gzip.open( f ).read()
+        if minf.startswith( '<?xml' ): continue
+        if not minf.startswith( 'attributes' ):
+          print >> sys.stderr, "Invalid syntax: '" + f + "'"
+        continue
+      d = {}
+      try:
+        exec minf in d
+        newMinf = d[ 'attributes' ]
+      except Exception, e:
+        print >> sys.stderr, unicode( e ) + ": '" + f +"'"
+        continue
+      try:
+        execfile( f )
+        continue
+      except:
+        pass
+      print "Rewriting '" + f + "'"
+      try:
+        open( f, 'w' ).write( minf )
+      except Exception, e:
+        print >> sys.stderr, unicode( e ) + ": '" + f +"'"

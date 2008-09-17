@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+  <d name="fr" length="3">
+    <xhtml name="short">Création d'une image 3D (S16) dont les points (valeur et coordonnées) sont indiqués par un fichier texte.</xhtml>
+    <d name="parameters" length="10">
+      <xhtml name="file_of_point">Fichier au format texte contenant les points de l'image à créer</xhtml>
+      <xhtml name="image_output">Chemin de l'image 3D à créer</xhtml>
+      <xhtml name="sizeX">Dimension d'un voxel en X</xhtml>
+      <xhtml name="sizeY">Dimension d'un voxel en Y</xhtml>
+      <xhtml name="sizeZ">Dimension d'un voxel en Z</xhtml>
+      <xhtml name="graph_output">Chemin du graphe de ROI à créer si l'option 'create_graph' est à 'yes'</xhtml>
+      <xhtml name="create_roigraph">Création d'un graphe de ROI à partir de l'image</xhtml>
+      <xhtml name="dimZ">Dimension en mm de l'image pour l'axe Z</xhtml>
+      <xhtml name="dimX">Dimension en mm de l'image pour l'axe X</xhtml>
+      <xhtml name="dimY">Dimension en mm de l'image pour l'axe Y</xhtml>
+    </d>
+    <xhtml name="long">Création d'une image 3D (S16) dont les points (valeur et coordonnées) sont indiqués par un fichier texte.
+<br/><br/>
+<b>Format du fichier texte</b><br/>
+Chaque ligne correspond aux informations d'un point : <br/>
+valeur_voxel coordX coordY coordZ<br/><br/>
+
+<u>Exemple de fichier :</u><br/>
+10 45 56 78<br/>
+45 45 78 56<br/>
+30 45 85 69<br/><br/>
+
+Ce fichier indique qu'il y a 3 points  : <br/>
+point 1 : valeur 10 au point (45, 56, 78)<br/>
+point 2 : valeur 45 au point (45, 78, 56)<br/>
+point 3 : valeur 30 au point (45, 85, 69)<br/>
+<br/>
+RQ : le repère dans lequel les coordonnées des points sont donnés est celui de l'image. L'image a pour origine (0, 0, 0) le voxel en haut, devant et à droite du volume. Vous devez faire une conversion de vos points si vous êtes dans un autre référentiel, par exemple celui de SPM_Talairach.<br/><br/>
+<b>Format de l'image :</b><br/>
+A partir des informations données (dimX ...), une image 3D (codée en S16) sera crée et initialisée avec les points du fichier 'file_of_point'.
+<br/><br/>
+<b>Création d'un graphe de ROI à partir de l'image : </b><br/>
+Il est possible de créer un graphe de ROI à partir de cette nouvelle image. Vous devez savoir que tous les voxels contenant la même valeur seront regroupés dans le même noeud.
+ 
+
+</xhtml>
+  </d>
+  <d name="en" length="3">
+    <xhtml name="short">To create 3D image from text file with voxel value and coordinates.</xhtml>
+    <d name="parameters" length="10">
+      <xhtml name="file_of_point">Text file with voxel value and coordinates
+</xhtml>
+      <xhtml name="image_output">Path of new 3D image</xhtml>
+      <xhtml name="sizeX">Voxel dimension in X</xhtml>
+      <xhtml name="sizeY">Voxel dimension in Y</xhtml>
+      <xhtml name="sizeZ">Voxel dimension in Z</xhtml>
+      <xhtml name="graph_output">Path of ROI graph if 'create_graph' option is 'yes'</xhtml>
+      <xhtml name="create_roigraph">To create ROI graph from new image</xhtml>
+      <xhtml name="dimZ">Image dimension in mm of Z axe</xhtml>
+      <xhtml name="dimX">Image dimension in mm of X axe </xhtml>
+      <xhtml name="dimY">Image dimension in mm of Y axe</xhtml>
+    </d>
+    <xhtml name="long">To create 3D image from text file with voxel value and coordinates.
+<br/><br/>
+<b>Text file format</b><br/>
+Each line corresponds informations of one point : <br/>
+voxel_value coordX coordY coordZ<br/><br/>
+
+<u>Example :</u><br/>
+10 45 56 78<br/>
+45 45 78 56<br/>
+30 45 85 69<br/><br/>
+
+This file indicates 3 points : <br/>
+point number#1 : voxel value  is 10 and coordinates are (45, 56, 78)<br/>
+point number#2 :  voxel value  is 45 and coordinates are (45, 78, 56)<br/>
+point number#3 :  voxel value  is 30 and coordinates are (45, 85, 69)<br/>
+<br/>
+Note : Referential of coordinates points is image referential. Origine image (0, 0, 0) is the voxel at the top, font and right of volume.  If your points are in another referential you must compute coordinates in referential image. 
+<br/><br/>
+<b>Image format:</b><br/>
+3D image will be create with informations (dimX ......) and initialized with data of 'file_of_point'.
+<br/><br/>
+<b>To create ROI graph from new image : </b><br/>
+ROI graph can be create with AimsGraphConvert. Here, you must know that all voxels with same value voxel will be put in same node.
+ 
+
+</xhtml>
+  </d>
+</minf>

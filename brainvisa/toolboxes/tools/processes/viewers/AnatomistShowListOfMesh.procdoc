@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+  <d name="en" length="3">
+    <xhtml name="short">Show in Anatomist a list of mesh with different color (jet color map)</xhtml>
+    <d name="parameters" length="2">
+      <xhtml name="color">You can chose to display all mesh with only one color. Give the color with an RGB vector: r g b
+</xhtml>
+      <xhtml name="mesh">List of mesh to display</xhtml>
+    </d>
+    <xhtml name="long"/>
+  </d>
+</minf>

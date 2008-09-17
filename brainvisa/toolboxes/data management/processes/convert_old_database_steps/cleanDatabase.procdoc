@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="en">
+    <xhtml name="short"> This process enables to clean a BrainVISA database from unused/unknown items. These items can be removed, moved or imported in the database.</xhtml>
+    <d name="parameters">
+      <xhtml name="undo">If True the process reverts previous changes.</xhtml>
+      <xhtml name="database">Choose the database to clean.</xhtml>
+    </d>
+    <xhtml name="long"><p>The process searches for files that are not identified by BrainVISA, that is to say items that are not mentionned in the hierarchy. </p>
+<p>The list of unknown items is presented to the user. By default the process suggests to <b>remove</b> these items. But the user can choose to unselect some items of the list that he want to keep. He can also change actions associated to items and choose to <b>move</b> an item elsewhere or to <b>import</b> it in the database by filling a form describing it.</p>
+<p>After user validation, the database is processed by performing selected actions. <b>All actions can be undone</b> (even remove because files are not really removed but put in a trash directory). An undo script is generated, so it is possible to undo changes, by starting again the process with parameter undo=Yes.</p>
+<p>The actions are grouped by toolboxes because the converter has several parts, each specialized for one toolbox. There is also several undo scripts which are written in a directory scripts in the database.</p></xhtml>
+  </d>
+</d>
+</minf>

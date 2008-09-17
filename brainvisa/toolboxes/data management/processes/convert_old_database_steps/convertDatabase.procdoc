@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="en">
+    <xhtml name="short">This process is usefull if you want to use a database created with a BrainVISA version ealier than 3.1. Files organization has changed since version 3.1, so these databases must be converted in order to have data correctly identified.</xhtml>
+    <d name="parameters">
+      <xhtml name="main_toolbox">Main toolbox used on this database. Unrecognized data in segment and graphe directories will be automatically moved in thi
+s toolbox directory. If you choose None, unrecognized data will stay in segment and graphe.</xhtml>
+      <xhtml name="undo">If True the process reverts previous conversion.</xhtml>
+      <xhtml name="database">Choose the database to convert. </xhtml>
+    </d>
+    <xhtml name="long"><p>The process searches for actions to perform on the database files in order to have these files identified by BrainVISA.</p>
+<p>Suggested actions are presented to the user. He can choose to unselect some actions he doesn't want to be performed. At this step, possible actions are <b>move/rename or remove</b>.</p>
+<p>After user validation, the database is processed by performing selected actions. <b>All actions can be undone</b> (even remove because files are not really removed but put in a trash directory). An undo script is generated, so it is possible to undo changes, by starting again the process with parameter undo=Yes.</p>
+<p>The actions are grouped by toolboxes because the converter has several parts, each specialized for one toolbox. There is also several undo scripts which are written in a directory scripts in the database.</p>
+<p>After conversion, the database follows <b>brainvisa-3.1.0 ontology</b>.</p></xhtml>
+  </d>
+</d>
+</minf>

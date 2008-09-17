@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+  <d name="fr" length="3">
+    <xhtml name="short">Correction manuelle d'une image de labels ou d'un masque à partir du module de dessin d'Anatomist</xhtml>
+    <d name="parameters" length="4">
+      <xhtml name="support_volume">IRM de fond à afficher en même temps que les régions dessinées</xhtml>
+      <xhtml name="readme"/>
+      <xhtml name="label_volume">Volume à corriger</xhtml>
+      <xhtml name="pipeline_mask_nomenclature">noms des régions</xhtml>
+    </d>
+    <xhtml name="long">Sélectionnez l'image à modifier et déclenchez le traitement.
+Appuyez sur F1 après avoir placé la souris dans la fenêtre de visualisation d'Anatomist.
+Corrigez le problème et cliquez sur OK.
+NB L'interface de dessin n'est pas encore très conviviale.<br/><br/>
+
+Quelques trucs:
+<ul>
+<li>
+Si vous voulez rendre transparentes toutes les régions d'intérêt en même temps,
+sélectionnez "neuro_quelquechose.arg" dans la fenêtre de controle d'Anatomist,
+et modifiez la couleur de l'objet (agissez sur l'opacité)
+</li><li> Lorsque vous voulez alterner rapidement entre deux labels, plutôt
+que changer d'onglet, vous pouvez passer en mode séléection (la flèche
+de la fenêtre d'Anatomist, cliquer sur votre nouveau label à modifier,
+et revenir en mode dessin.
+</li>
+</ul>
+<img SRC="../../images/mask-editing.png" ALT=""/></xhtml>
+  </d>
+  <d name="en" length="3">
+    <xhtml name="short">Manual correction of a labels image or a mask using Anatomist's drawing module</xhtml>
+    <d name="parameters" length="4">
+      <xhtml name="support_volume">background MRI to display under the drawn regions</xhtml>
+      <xhtml name="readme"/>
+      <xhtml name="label_volume">volume to modify</xhtml>
+      <xhtml name="pipeline_mask_nomenclature">regions names</xhtml>
+    </d>
+    <xhtml name="long">Select the image to modify,
+and trigger the treatment.
+Then press F1 with the mouse in Anatomist's window.
+Perform your corrections and press OK.
+NB: the drawing interface is still in progress... the conviviality
+has to be improved.
+
+A fewtricks:
+<ul>
+<li>
+ To get transparencies for all regions,
+select the neuro_something.arg in Anatomist interface
+and modify the color/material with the right click of the mouse (opacity slider)
+</li><li>
+To alternate easily from one label to another, you can click
+on Anatomist's window selection mode (the arrow), click
+on the new label you want to edit in the slice, go back to drawing mode.
+</li>
+</ul>
+
+
+<img SRC="../../images/mask-editing.png" ALT=""/></xhtml>
+  </d>
+</minf>

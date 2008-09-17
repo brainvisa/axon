@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+
+<xhtml name='en'>
+  <html>
+  <head>
+  <title>Importation in BrainVISA database</title>
+  </head>
+  <body>
+  <h1>Importation in BrainVISA database</h1>
+  Processes in this category are to be used to import your data in one of the configured <a href="bvcategory://data management#whatIsADatabase">BrainVISA database</a>. Theses processes takes files on your file system and copy them in a BrainVISA database.
+
+  <h2>Subcategories</h2>
+  There are several subcategories in <em>import</em> :
+  <ul>
+  <li><b>T1 MRI</b>: import  T1-weighted MRI.</li> 
+  <li><b>Diffusion and Tracking</b>: import diffusion MR images. (Available with Diffusion and Tracking toolbox)</li> 
+  <!--<li><b>experiments</b>: import fMRI experimental design.</li> 
+  <li><b>fieldmap</b>: import MRI fieldmap.</li> 
+  <li><b>fmri</b>: import functional MRI data.</li> 
+  -->
+  </ul>
+
+  <h2>What does an import process do ?</h2>
+
+  Each import process is designed for a specific data type and possibly for a specific data provider (scanner, software, etc.). The process ask the user to specify information that are required to process the data but cannot be extracted from the input files. 
+  Then it writes this information along with the data in the BrainVISA database.
+
+  <a name="minf">
+  <h2>How added information are stored in the database ?</h2>
+
+  Since BrainVISA and Aims library (SHFJ's C++ processing library) can recognize various file formats (DICOM, SPM/Analyse, GIS, MINC, etc.), we choosed to create a meta-header that can be attached to any file (not only images) and that can contain any structured information. The extension for this header is <code>'.minf'</code> and its actual format is an ascii version of a Python dictionary (in the future it will be an XML file). First, information stored in the image is extracted from its format (volume dimensions, voxel sizes, etc.). Then, this information is completed by the content of the <code>minf</code> file. The name of the <code>minf</code> file is the concatenation of the name of the first file of the image format (in BrainVISA definiton order) and <code>'.minf'</code> extension. For example SPM format is defined with <code>*.img</code> and <code>*.hdr</code> extension. Therefore, SPM readers will use the following files :
+
+  <ul>
+  <li><code>*.img</code></li>
+  <li><code>*.hdr</code></li>
+  <li><code>*.img.minf</code> (if it exists)</li>
+  </ul>
+
+  <br/>
+  Here is an example to illustrate the structure of a <code>*.minf</code> file:
+
+
+  <pre>
+  attributes = {
+      'ascii' : 0,
+      'byte_swapping' : 1,
+      'data_type' : 'S16',
+      'file_type' : 'GIS',
+      'object_type' : 'Volume',
+      'volume_dimension' : [ 256, 256, 124, 1 ],
+      'voxel_size' : [ 1.01562, 1.01562, 1.1, 1 ]
+    }
+  </pre>
+  </a>
+  </body>
+  </html>
+</xhtml>
+
+<xhtml name='fr'>
+  <html>
+    <head>
+      <title>Importation dans une base de données BrainVISA</title>
+    </head>
+    <body>
+      <h1>Importation dans une base de données BrainVISA</h1>
+      Les traitements de cette catégorie permettent d'importer vos données dans une des <a href="bvcategory://data management#whatIsADatabase">bases de données BrainVISA</a> configurées. Ces traitements prennent en entrée des fichiers et les copient dans une base de données BrainVISA.
+      
+      <h2>Sous-catégories</h2>
+      Il existe plusieurs sous-catégories dans <em>importation</em> :
+      <ul>
+        <li><b>IRM T1</b>: importation de données d'IRM pondérée en T1.</li> 
+        <li><b>Diffusion et Tracking</b>: importation d'images d'IRM de diffusion. (Disponible avec la boîte à outils Diffusion et Tracking)</li> 
+<!--        <li><b>experiments</b>: import fMRI experimental design.</li> 
+        <li><b>fieldmap</b>: import MRI fieldmap.</li> 
+        <li><b>fmri</b>: import functional MRI data.</li> 
+        -->
+      </ul>
+      
+      <h2>Que fait un traitement d'importation ?</h2>
+      
+      Chaque traitement d'importation est conçu pour un type de données spécifique et éventuellement pour une source de données spécifique (scanner, logiciel, etc.). Le traitement demande à l'utilisateur les informations nécéssaires pour traiter la données et qui ne peuvent pas être extraite des fichiers sources. 
+      Il écrit alors ces informations avec la données dans la base de données BrainVISA.
+      
+      <a name="minf">
+        <h2>Comment les informations supplémentaires sont-elles stockées dans la base de données ?</h2>
+        
+        Depuis que BrainVISA et la librairie Aims (librairie de traitement C++ du SHFJ) peuvent reconnaître plusieurs formats de fichiers (DICOM, SPM/Analyse, GIS, MINC, etc.), nous avons choisi de créer un fichier d'entête qui peut être attaché à n'importe quel fichier (pas seulement des images) et qui peut contenir n'importe quelle information structurée. L'extension de ce fichier d'entête est <code>'.minf'</code> et son format actuel est celui dictionnaire Python (il sera remplacé plus tard par un fichier XML). Les informations extraites du format de l'image (dimensions du volume, taille des voxels, etc.) sont complétées par celles de ce fichier <code>minf</code>. Le nom du fichier d'entête est la concaténation du nom du premier fichier de l'image (dans un ordre défini par BrainVISA) et de l'extension <code>'.minf'</code>. Par exemple, le format SPM est défini par les extensions <code>*.img</code> et <code>*.hdr</code>. Donc pour lire une image au format SPM, les fichiers suivants seront utilisés :
+        
+        <ul>
+          <li><code>*.img</code></li>
+          <li><code>*.hdr</code></li>
+          <li><code>*.img.minf</code> (si il existe)</li>
+        </ul>
+        
+        <br/>
+        Voici un exemple pour illustrer la structure d'un fichier <code>*.minf</code> :
+        
+        
+        <pre>
+          attributes = {
+          'ascii' : 0,
+          'byte_swapping' : 1,
+          'data_type' : 'S16',
+          'file_type' : 'GIS',
+          'object_type' : 'Volume',
+          'volume_dimension' : [ 256, 256, 124, 1 ],
+          'voxel_size' : [ 1.01562, 1.01562, 1.1, 1 ]
+          }
+        </pre>
+      </a>
+    </body>
+  </html>
+</xhtml>
+
+</minf>

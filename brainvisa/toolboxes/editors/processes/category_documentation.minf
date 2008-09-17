@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+
+<xhtml name="en">
+  <h1>Editors</h1>
+  
+  <p>
+Editors are processes that allow to interactively modify (and save back) some data.
+  </p>
+  <p>
+<em>Automatic</em> editors are triggered by the graphical interface system of BrainVISA: the "pen" icons displayed on process parameters. As for viewers, they must have only one mandatory parameter.
+  </p>
+
+</xhtml>
+
+<xhtml name="fr">
+  <h1>Éditeurs</h1>
+  
+  <p>
+Les éditeurs sont des traitements permettant de modifier (et re-sauver) interactivement certaines données.
+  </p>
+  <p>
+Les éditeurs <em>automatiques</em> sont utilisés automatiquement par le système d'interface graphique de BrainVISA: les icônes "crayon" présents sur les paramètres des traitements. Comme pour les afficheurs, ils doivent avoir un seul paramètre obligatoire.
+  </p>
+
+</xhtml>
+
+</minf>

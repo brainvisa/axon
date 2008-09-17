@@ -1,0 +1,194 @@
+<!doctype public "-//w3c//dtd html 4.01 transitional//en" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>BrainVISA Readme</title>
+  <style type="text/css">
+    BODY {
+	  text-align: justify;
+	  margin: 0.5cm;
+	}
+  </style>
+</head>
+<body text="#000000" bgcolor="#ffffff" link="#0000ee" vlink="#551a8b" alink="#ff0000">
+
+<h1>BrainVISA readme / release notes</h1>
+
+<p><em>Last modification: June 6, 2008</em></p>
+
+<li><a href="#disclaimer">Disclaimer</a></li>
+<li><a href="#license">License</a></li>
+<li><a href="#arch">Architecture-dependent notes</a></li>
+<li><a href="#optional">Optional software</a></li>
+<li><a href="#modules">Add-on module packages</a></li>
+
+
+<a name="disclaimer"></a>
+<h2>Disclaimer</h2>
+
+<p>All contributors of BrainVISA project are very happy to propose tools, libraries, demonstration data and documentation available free of charge on <a href='http://brainvisa.info'>http://brainvisa.info</a>. The BrainVISA project is focused on neuroimaging and the development of tools only in a context of research. Although every care has been taken by all contributors of the BrainVISA project no warranty can be given in respect of the accuracy, reliability, up-to-dateness or completeness of the information contained within BrainVISA project.
+In the same way no one will be responsible or liable for any loss or damage of any sort.
+</p>
+<p>
+Any contributor reserves the right to alter or remove the content, in full or in part, without prior notice.
+</p>
+
+<a name="license"></a>
+<h2>Licence</h2>
+<p>All programs and software libraries present in the binary distributions do not have the same licence.
+</p>
+
+<p>External software come with their own licence, which may depend on the 
+  system. For instance, Qt and PyQt are under GPL on Unix, and under a commercial licence on  Windows. All other included software are open-source and under GPL, LGPL or BSD-like licences.
+</p>
+
+<p>Our open-source softwares are governed by the CeCILL license version 2 under
+French law and abiding by the rules of distribution of free software.
+You can  use, modify and/or redistribute the software under the
+terms of the CeCILL license version 2 as circulated by CEA, CNRS
+ and INRIA at the following URL <a href="http://www.cecill.info">http://www.cecill.info</a>.</p>
+
+<p>But we also have closed-source programs. They can be freely copied and redistributed as binaries. But they are not released under the CeCill license, and are not using CeCill nor GPL software.  </p>
+
+<a name="contents"></a>
+<h2>Contents of the package</h2>
+<p>BrainVISA is packaged together with many software. The distribution contains all the 
+  core open-source software of BrainVisa itself and of our image analysis libraries. It also includes all our algorithms which are closed-source but binaries are provided 
+  for free. Additionally, several third-party software programs and libraries are packed 
+  in the bundle (especially the Python language interpreter and many modules).
+</p>
+<ul>
+<li>BrainVisa</li>
+<li>Anatomist</li>
+<li>Freeware libraries from our lab, with their sets of commandlines: 
+  cartobase, cartodata, graph, aimsdata and IO formats plugins
+</li>
+<li>Some closed-source libraries and programs from our lab</li>
+<li>Freeware libraries: libsigc++, libxml2, DcmTk, Ecat library, Minc and netcdf libraries</li>
+<li>Qt, used for all GUI</li>
+<li>Qwt: additional widgets for Qt (mainly for curves plotting)</li>
+<li>The Python interpreter</li>
+<li>Various modules for python, including:
+  <ul>
+  <li>XML modules</li>
+  <li>numpy: array and matrix manipulation library</li>
+  <li>PyQt: python bindings for Qt</li>
+  <li>PyQwt: python bindings for Qwt</li>
+  <li>IPython: an enhanced python shell</li>
+  <li>matplotlib</li>
+  <li>SciPy is present on some distributions, but not on all systems</li>
+  <li>pymat, a matlab module for python. This module is compiled for matlab 6.x in the 
+    binary distribution. If you need a module for another version (matlab 7), it needs to 
+    be recompiled using the matching libraries from matlab (matlab engine library).
+  </li>
+  <li>On Unix/X11 distributions, a gnuplot module is also present</li>
+  <li>pySqlite : python bindings for the database system manager sqlite</li>
+  </ul>
+</li>
+</ul>
+
+<a name="arch"></a>
+<h2>Architecture-dependent notes</h2>
+<p>On some platforms, some of the provided software are not present (generally because we have 
+not finished porting it). There are sometimes also some specific behaviours or limitations.</p>
+
+<h4>Windows</h4>
+<p>On Windows, the Vida IO formats plugins are not present: but we guess nobody cares outside our own lab.</p>
+<p>The new fMRI toolbox has not been ported/tested on Windows yet, and is not available.</p>
+
+<h4>Mac OS X</h4>
+<p>Normally everything should work as on Linux, except for
+The new fMRI toolbox which has not been ported/tested on Mac yet, and is not available.</p>
+
+<h4>Linux</h4>
+<p>Normally everything should work fine on Linux, it is our main development platform.</p>
+<p>However you might encounter display problems using 3D viewers based on Anatomist because of 
+3D graphics cards / drivers / OpenGL issues. See our web site (FAQ and forum) for a bit more information about it.
+</p>
+
+<h4>Solaris</h4>
+<p>Support for Sun/Solaris has not been continued since we are not using Solaris anymore. The last packages running on Solaris are still available, but they are very old and we will not provide any support on them.
+</p>
+
+<h4>Irix</h4>
+<p>Support for SGI/Irix has not been continued since we are not using Irix anymore. The last packages running on Irix are still available, but they are very old and we will not provide any support on them.
+</p>
+
+
+<a name="optional"></a>
+<h2>Optional software:</h2>
+
+<p>BrainVISA can benefit from external software. The software listed here are not 
+included in the BrainVISA distribution for licencing, or installation, or size reasons 
+and are not needed to run the core and the main applications. But if they are present on 
+the system running BrainVISA, some specific processes will be enabled and directly 
+usable.</p>
+<p>Moreover some external packages for BrainVISA like the upcoming MEG tools may require 
+such external software.
+</p>
+
+<h4><a href="http://www.mathworks.com"><b>Matlab</b></a></h4>
+  Matlab is a commercial product that just can't be distributed freely. If Matlab 
+  is installed, BrainVISA will enable some specific features. It is needed for the 
+  following:
+ <ul>
+  <li>The <a href="http://cogimage.dsi.cnrs.fr/logiciels/index.htm">MEG/EEG
+    package</a> from the
+    <a href="http://www.labos.upmc.fr/center-meg/">MEG center</a> / 
+    <a href="http://cogimage.dsi.cnrs.fr/">LENA</a>. This package is
+    not part of our main distrubution, but is available as a separate
+    module package.
+  </li>
+  <li>The fMRI toolbox shipped with BrainVISA, which also needs <a href="#spm">SPM</a> installed.
+  </li>
+  </ul>
+  <b>Installation:</b> You may have to set the <tt>matlabExecutable</tt> variable in the 
+  Preferences menu of BrainVISA, especially if the executable is not just 
+  <tt>matlab</tt> but something like <tt>matlab65</tt>.<br>
+  You can also optionally specify the Matlab release number you are using to help BrainVISA 
+  determine which version of the pymat module to use. If it's not specified, Matlab will be 
+  started to determine its version, so BrainVISA startup will be a bit longer. Note that 
+  matlab release number is <em>not</em> the matlab version number: matlab 6.x is release 12-13, 
+  matlab 7 is release 14.<br>
+
+<a name="spm"></a>
+<h4><a href="http://www.fil.ion.ucl.ac.uk/spm"><b>SPM</b></a></h4>
+  A link between BrainVISA and SPM is present in BrainVISA for the fMRI toolbox since version 3.1. It is used mainly for the preprocessing steps.<br>
+  <b>Installation:</b> SPM must be correctly setup in matlab startup paths, or SPM paths must be set in the preferences options of BrainVISA (<tt>matlabPath</tt>
+  variable).
+
+<!--<h4><a href="http://www.r-project.org"><b>R</b></a></h4>
+<p>R is used for Datamind toolbox : a statistical toolbox dedicated to datamining the data generated by other brainVISA processes.</p>
+<p>
+  R is a freeware product and can be downloaded and installed freely. We did not include it in our packages essentially because it is quite a big package and it is not essential to run BrainVISA.
+</p>-->
+
+<h4>Other miscelaneous software</h4>
+Other external software may be used for some processes. Look at the log in BrainVISA to check if some processes are disabled due to missing software. These external software are optional and are used only to provide optional features. For instance, some MPEG encoding software may be used if they are present on the system.
+
+
+<a name="modules"></a>
+<h2>Add-on module packages</h2>
+
+BrainVISA is modular, and other people may add new processes for their own tools. 
+Some labs have made packages and are distributing (or will distribute) them.
+<ul>
+  <li><b>MEG/EEG:</b> The <a href="http://cogimage.dsi.cnrs.fr/logiciels/index.htm">MEG/EEG toolbox for brainVISA</a> is available for download at the <a href="http://www.labos.upmc.fr/center-meg/">MEG center</a> / <a href="http://cogimage.dsi.cnrs.fr/">LENA</a> labs in the Pitié Salpétrière hospital in Paris. This toolbox is based on <a href="http://neuroimage.usc.edu/brainstorm/">BrainStorm</a> and integrates MEG/EEG processing tools in BrainVISA environement. It requires Matlab.
+  </li>
+</ul>
+
+If you have made nice processes for BrainVISA and wish to distribute them as a package, 
+just tell us (for instance via the <a href="http://brainvisa.info/forum">forum</a>), and we will 
+add a link for it here.<br>
+Our policy is not to include such processes in the core BrainVISA/Anatomist 
+distribution, but to keep them external and provide some links to them in their home labs. There are two main reasons for this behaviour:
+<ul>
+<li>Preserve the visibility and ownership of package authors: this way external 
+contributions will not be hidden in the main package: if people want to use the specific 
+functionalities of an external package, they have to download it from its authors 
+website, so they know who have made it.</li>
+<li>Avoid the maintenance work for us on these packages</li>
+</ul>
+
+</body>
+</html>

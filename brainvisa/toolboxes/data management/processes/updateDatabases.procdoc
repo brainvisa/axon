@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="en">
+    <xhtml name="short">This process enables to manage databases cache file. Database cache is a representation of the database. It must be cleared and updated sometimes when the database changes.</xhtml>
+    <d name="parameters">
+    </d>
+    <xhtml name="long"/>
+  </d>
+</d>
+</minf>

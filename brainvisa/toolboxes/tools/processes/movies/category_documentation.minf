@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+
+<xhtml name="en">
+  <h1>Animated sequences and film making</h1>
+  
+  <p>The processes in this category allow to pilot Anatomist to record and 
+    replay animated sequences. Such sequences of (2D) images can be used to 
+    make films using MPEG encoding processes (which need suitable external 
+    software: mencoder, transcode or recmpeg).
+  </p>
+
+</xhtml>
+
+<xhtml name="fr">
+  <h1>Séquences animées et fabrication de films</h1>
+  
+  <p>Les traitements de cette catégorie permettent de manipuler Anatomist 
+    pour enregistrer et rejouer des séquences animées. Ces séquences d'images 
+    (2D) peuvent être utilisées pour faire des films à l'aide de traitements 
+    d'encodage MPEG (nécéssitant des logiciels externes adéquats: mencoder, 
+    transcode ou recmpeg).
+  </p>
+
+</xhtml>
+
+</minf>

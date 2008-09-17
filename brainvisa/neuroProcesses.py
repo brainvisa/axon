@@ -1,0 +1,3385 @@
+# -*- coding: utf-8 -*-
+# Copyright CEA and IFR 49 (2000-2005)
+#
+#  This software and supporting documentation were developed by
+#      CEA/DSV/SHFJ and IFR 49
+#      4 place du General Leclerc
+#      91401 Orsay cedex
+#      France
+#
+# This software is governed by the CeCILL license version 2 under
+# French law and abiding by the rules of distribution of free software.
+# You can  use, modify and/or redistribute the software under the
+# terms of the CeCILL license version 2 as circulated by CEA, CNRS
+# and INRIA at the following URL "http://www.cecill.info".
+#
+# As a counterpart to the access to the source code and  rights to copy,
+# modify and redistribute granted by the license, users are provided only
+# with a limited warranty  and the software's author,  the holder of the
+# economic rights,  and the successive licensors  have only  limited
+# liability.
+#
+# In this respect, the user's attention is drawn to the risks associated
+# with loading,  using,  modifying and/or developing or reproducing the
+# software by the user in light of its specific status of free software,
+# that may mean  that it is complicated to manipulate,  and  that  also
+# therefore means  that it is reserved for developers  and  experienced
+# professionals having in-depth computer knowledge. Users are therefore
+# encouraged to load and test the software's suitability as regards their
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
+# same conditions as regards security.
+#
+# The fact that you are presently reading this means that you have had
+# knowledge of the CeCILL license version 2 and that you accept its terms.
+
+import traceback, threading, popen2, pickle, formatter, htmllib, operator
+import inspect, signal, shutil, imp, StringIO, types, copy, weakref
+import cPickle, atexit
+import string
+import distutils.spawn
+import os, time, calendar
+
+from soma.sorted_dictionary import SortedDictionary
+from soma.functiontools import numberOfParameterRange, hasParameter
+from soma.minf.api import readMinf, writeMinf, createMinfWriter, iterateMinf, minfFormat
+from soma.minf.xhtml import XHTML
+from soma.minf.xml_tags import xhtmlTag
+from soma.notification import EditableTree, ObservableSortedDictionary
+from soma.notification import ObservableAttributes
+from soma.minf.api import createMinfWriter, iterateMinf, minfFormat
+from soma.html import htmlEscape
+from soma.time import timeDifferenceToString
+
+from neuroData import *
+from neuroDiskItems import *
+import neuroConfig
+import neuroLog
+from neuroException import *
+import Scheduler
+from brainvisa import matlab
+from brainvisa.validation import ValidationError
+from brainvisa import notifier
+from brainvisa.debug import debugHere
+if neuroConfig.newDatabases:
+  from brainvisa.data.sqlFSODatabase import Database
+import neuroPopen2
+
+
+try:
+  from remoteProcesses import *
+  neuroDistributedProcesses = True
+except Exception, e:
+  neuroDistributedProcesses = False
+  neuroDistribException = e
+
+try:
+  from qt import QProcess, QTimer, qApp
+  qprocess = True
+except:
+  qprocess = False
+
+
+#----------------------------------------------------------------------------
+def pathsplit( path ):
+  '''Returns a tuple corresponding to a recursive call to os.path.split
+  for example on Unix:
+     pathsplit( 'toto/titi/tata' ) == ( 'toto', 'titi', 'tata' )
+     pathsplit( '/toto/titi/tata' ) == ( '/', 'toto', 'titi', 'tata' )'''
+  if isinstance( path, basestring ):
+    if path:
+      return pathsplit( ( path, ) )
+    else:
+      return ()
+  else:
+    if path[0]:
+      d,b = os.path.split( path[0] )
+      if b:
+        if d:
+          return pathsplit( d ) + (b,) + path[1:]
+        else:
+          return (b,) + path[1:]
+      else:
+          return (d,) + path[1:]
+
+#----------------------------------------------------------------------------
+def getProcdocFileName( processId ):
+  processInfo = getProcessInfo( processId )
+  fileName = getattr( processInfo, 'fileName', None )
+  if fileName is None:
+    return None
+
+  newFileName = os.path.join( os.path.dirname( fileName ),
+                              processInfo.id + ".procdoc" )
+  return newFileName
+
+
+
+#----------------------------------------------------------------------------
+def readProcdoc( processId ):
+  processInfo = getProcessInfo( processId )
+  if processInfo is not None:
+    procdoc = processInfo.procdoc
+    if procdoc is None:
+      fileName = getProcdocFileName( processInfo )
+      if fileName and os.path.exists( fileName ):
+        try:
+          procdoc = readMinf( fileName )[ 0 ]
+        except:
+          print '!Error in!', fileName
+          raise
+      else:
+        procdoc = {}
+      processInfo.procdoc = procdoc
+  else:
+    procdoc = {}
+  return procdoc
+
+
+#----------------------------------------------------------------------------
+def writeProcdoc( processId, documentation ):
+  fileName = getProcdocFileName( processId )
+  writeMinf( fileName, ( documentation, ) )
+
+
+#----------------------------------------------------------------------------
+def procdocToXHTML( procdoc ):
+  stack = [ (procdoc, key, key ) for key in procdoc.iterkeys() ]
+  while stack:
+    d, k, h = stack.pop()
+    value = d[ k ]
+    if isinstance( value, types.StringTypes ):
+      # Convert HTML tags to XML valid tags
+
+      # Put all tags in lower-case because <TAG> ... </tag> is illegal XML
+      def lowerTag( x ):
+        result = '<' + x.group(1).lower() + x.group(2)
+        return result
+      value = re.sub( '<(/?[A-Za-z_][a-zA-Z_0-9]*)(>|[^a-zA-Z_0-9][^>]*>)',
+                        lowerTag, value )
+
+      # Add a '/' at the end of non closed tags
+      for l in ( 'img', 'br', 'hr' ):
+        expr = '<(' + l + '(([^A-Za-z_0-9>/]?)|([^A-Za-z_0-9][^>]*[^/>])))>(?!\s*</' + l + '>)'
+        value = re.sub( expr, '<\\1/>', value )
+
+      # convert <s> tag to <xhtml> tag
+      value = re.sub( '<(/?)s(>|[^a-zA-Z_0-9][^>]*>)', '<\\1' + xhtmlTag + '\\2', value )
+
+      goOn = True
+      while goOn:
+        goOn = False
+        try:
+          newValue = XHTML.buildFromHTML( value )
+        except Exception, e:
+          # Build a text editor
+          editor = QWidgetFactory.create( os.path.join( mainPath, '..', 'python', 'brainvisa', 'textEditor.ui' ), None, None )
+          def f( l, c ):
+            editor.cursorPosition.setText( str( l+2 ) + ' : ' + str( c ) )
+          for x in editor.queryList( None, 'BV_.*' ):
+            setattr( editor, x.name()[ 3:], x )
+          editor.info.setText( '<h2><font color="red">Error in ' + h + ':<br>  ' + str(e) + '</font></h1>' )
+          editor.content.setTextFormat( editor.content.PlainText )
+          editor.content.setText( value )
+          editor.connect( editor.content, SIGNAL( 'cursorPositionChanged(int,int)' ), f )
+          editor.btnOk.setText( 'Check and save as XHTML' )
+          editor.btnCancel.setText( 'Save as simple text' )
+          line = getattr( e, 'getLineNumber', None )
+          if line is not None:
+            line = line() - 2
+          else:
+            line = 0
+          column = getattr( e, 'getColumnNumber', None )
+          if column is not None:
+            column = column()
+          else:
+            column = 0
+          editor.content.setCursorPosition( line, column )
+          if editor.exec_loop() == QDialog.Accepted:
+            value = unicode( editor.content.text() )
+            goOn = True
+          else:
+            newValue = unicode( editor.content.text() )
+            goOn = False
+      d[ k ] = newValue
+    elif type( value ) is types.DictType:
+      stack += [ ( value, key, h + '.' + key ) for key in value.iterkeys() ]
+
+
+#----------------------------------------------------------------------------
+def getHTMLFileName( processId, documentation=None, language=None ):
+  processInfo = getProcessInfo( processId )
+  if documentation is None:
+    documentation = readProcdoc( processId )
+  if language is None:
+    language = neuroConfig.language
+  htmlPath=XHTML.html(documentation.get( 'htmlPath', ''))
+  if htmlPath:
+    defaultPath=htmlPath
+  else:
+    defaultPath = os.path.dirname( neuroConfig.docPath )
+  return os.path.join( defaultPath, language, 'processes',
+                       string.replace( processInfo.id, ' ', '_' ) + '.html' )
+
+#----------------------------------------------------------------------------
+def convertSpecialLinks( msg, language, baseForLinks, translator ):
+  stack = [ msg ]
+  while stack:
+    item = stack.pop()
+    if isinstance( item, XHTML ):# and \
+      stack += item.content
+      tag = item.tag
+      if not tag: continue
+      tag = tag.lower()
+      if tag == 'a':
+        href = item.attributes.get( 'href' )
+        if href is not None:
+          i = href.find( '#' )
+          if i >= 0:
+            postHref = href[ i: ]
+            href = href[ :i ]
+          else:
+            postHref = ''
+          if not href: continue
+          if href.startswith( 'bvcategory://' ):
+            href = href[ 13: ]
+            if href.startswith( '/' ):
+              href = href[ 1: ]
+            if baseForLinks:
+              base = baseForLinks + '/categories/'
+            else:
+              base = 'categories/'
+            href = base + href.lower() + '/category_documentation.html'
+#            print '!convertSpecialLinks!', item.attributes[ 'href' ], '-->', href + postHref
+            item.attributes[ 'href' ] = href + postHref
+          elif href.startswith( 'bvprocess://' ):
+            href = href[ 12: ]
+            if href.startswith( '/' ):
+              href = href[ 1: ]
+            if baseForLinks:
+              href = baseForLinks + '/' + href
+            href += '.html'
+#            print '!convertSpecialLinks!', item.attributes[ 'href' ], '-->', href + postHref
+            item.attributes[ 'href' ] = href + postHref
+          elif href.startswith( 'bvimage://' ):
+            href = href[ 10: ]
+            if href.startswith( '/' ):
+              href = href[ 1: ]
+            if baseForLinks:
+              href = baseForLinks + '/../../images/' + href
+            else:
+              href = '../../images/' + href
+#            print '!convertSpecialLinks!', item.attributes[ 'href' ], '-->', href
+            item.attributes[ 'href' ] = href
+      elif tag == 'img':
+        src = item.attributes.get( 'src', '' )
+        if not src: continue
+        elif src.startswith( 'bvimage://' ):
+          src = src[ 10: ]
+          if src.startswith( '/' ):
+            src = src[ 1: ]
+          if baseForLinks:
+            src = baseForLinks + '/../../images/' + src
+          else:
+            src = '../../images/' + src
+#          print '!convertSpecialLinks!', item.attributes[ 'src' ], '-->', src
+          item.attributes[ 'src' ] = src
+      elif tag == '_t_':
+        item.tag = None
+        item.content = ( translator.translate( item.content[0] ), )
+      elif tag == 'bvprocessname':
+        item.tag = None
+        try:
+          n = getProcess( item.attributes[ 'name' ] ).name
+        except:
+          n = item.attributes[ 'name' ]
+        item.content = ( translator.translate( n, ) )
+  return msg
+
+#----------------------------------------------------------------------------
+def generateHTMLDocumentation( processInfoOrId, translators={} ):
+  processInfo = getProcessInfo( processInfoOrId )
+  documentation = readProcdoc( processInfo.id )
+  # english translation is the default
+  den = documentation.get( 'en', {} )
+  pen = den.get( 'parameters', {} )
+  # Generate HTML documentations
+  for l in neuroConfig._languages:
+    tr = translators.get( l, None )
+    if not tr:
+      tr=neuroConfig.Translator(l)
+    d = documentation.get( l, {} )
+    htmlFileName = getHTMLFileName( processInfo.id, documentation, l )
+    p = os.path.dirname( htmlFileName )
+    if not os.path.isdir( p ):
+      os.makedirs( p )
+    # Main page
+    f = open( htmlFileName, 'w' )
+    print >> f, '<html>'
+    print >> f, '<head>'
+    print >> f, '<title>' + tr.translate( processInfo.name ) + '</title>'
+    # unicode strings written in this file are encoded using default encoding
+    # to choose a different encoding, unicode_string.encode("encoding") should be used
+    # in Brainvisa, the default encoding is set at initilization using sys.setdefaultencoding in neuro.py
+    print >> f, '<meta http-equiv="Content-Type" content="text/html; charset='+sys.getdefaultencoding()+'">'
+    print >> f, '<meta content="BrainVISA ' + neuroConfig.shortVersion + '" name="generator">'
+    print >> f, '</head>'
+    print >> f, '<body>'
+    print >> f, '<h1><a href="bvshowprocess://' + processInfo.id \
+      + '"><img src="../../images/icons/icon_process.png" border="0"></a>'
+    print >> f, '<a name="bv_process%' + processInfo.id + '">' + tr.translate( processInfo.name ) + '</a></h1>'
+    print >> f, '<blockquote>'
+    short = d.get( 'short' )
+    if short:
+      short = convertSpecialLinks( short, l, '', tr )
+      short = XHTML.html( short )
+    if not short and l != 'en':
+      short = den.get( 'short' )
+      if short:
+        short = convertSpecialLinks( short, l, '', tr )
+        short = XHTML.html( short )
+    print >> f, short
+    print >> f, '</blockquote>'
+
+    # Description
+    long = d.get( 'long' )
+    if long:
+      long = convertSpecialLinks( long, l, '', tr )
+      long = XHTML.html( long )
+    if not long and l != 'en':
+      long = den.get( 'long' )
+      if long:
+        long = convertSpecialLinks( long, l, '', tr )
+        long = XHTML.html( long )
+    if long:
+      print >> f, '<h2>' + tr.translate( 'Description' ) + '</h2><blockquote>'
+      print >> f, long
+      print >> f, '</blockquote>'
+
+    signature = getProcessInstance( processInfo.id ).signature
+    signature = signature.items()
+
+    supportedFormats = []
+    if signature:
+      # Parameters
+      p = d.get( 'parameters', {} )
+      print >> f, '<h2>' + tr.translate('Parameters') + '</h2>'
+      for i, j in signature:
+        ti = j.typeInfo( tr )
+        descr = p.get( i, '' )
+        descr = convertSpecialLinks( descr, l , '', tr )
+        descr = XHTML.html( descr )
+        if not descr and l != 'en':
+          descr = XHTML.html( pen.get( i, '' ) )
+        print >> f, '<blockquote><b>' + i + '</b>:', ti[0][1]
+        f.write( '<i> ( ' )
+        if not j.mandatory:
+          f.write( _t_( 'optional, ' ) )
+        try:
+          if len( ti ) > 1:
+            k, access = ti[ 1 ]
+          else:
+            access = _t_( 'input' )
+          f.write( access )
+        except Exception, e:
+          print e
+        f.write( ' )</i>' )
+        print >> f, '<blockquote>'
+        print >> f, descr
+        print >> f, '</blockquote></blockquote>'
+
+        try:
+          if len( ti ) > 2:
+            supportedFormats.append( ( i, ti[2][1] ) )
+        except Exception, e:
+          print e
+
+    # Technical information
+    print >> f, '<h2>' + tr.translate( 'Technical information' ) + '</h2><blockquote>'
+    print >> f, '<p><em>' + tr.translate( 'User level' ) + ' : </em>' + unicode( processInfo.userLevel ) + '</p>'
+    print >> f, '<p><em>' + tr.translate( 'Identifier' ) + ' : </em><code>' + processInfo.id + '</code></p>'
+    print >> f, '<p><em>' + tr.translate( 'File name' ) + ' : </em><nobr><code>' + processInfo.fileName + '</code></nobr></p>'
+
+    if supportedFormats:
+      print >> f, '<p><em>' + tr.translate( 'Supported file formats' ) + ' : </em><blockquote>'
+      try:
+        for parameter, formats in supportedFormats:
+          print >> f, parameter + ':<blockquote>', formats, '</blockquote>'
+      except Exception, e:
+        print e
+      print >> f, '</blockquote></p>'
+    print >> f, '</blockquote>'
+
+    print >> f, '</body></html>'
+    f.close()
+
+#----------------------------------------------------------------------------
+def generateHTMLProcessesDocumentation():
+  import sys
+  
+  #--------------------------------------
+  # Generate translators
+  #--------------------------------------
+  translators = {}
+  for l in neuroConfig._languages:
+    translators[ l ] = neuroConfig.Translator( l )
+  #--------------------------------------
+  # Generate documentation for processes
+  #--------------------------------------
+  for pi in allProcessesInfo():
+    try:
+      generateHTMLDocumentation( pi, translators )
+    except ValidationError:
+      pass
+    except:
+      showException( beforeError=_t_('Cannot generate documentation for <em>%s</em>') % (pi.fileName,) )
+
+  #---------------------------------------
+  # Generate documentation for categories
+  #---------------------------------------
+
+  # Find all category_documentation.minf files in
+  # the order of neuroConfig.processesPath
+  categoryDocFiles = {}
+  for procPath in neuroConfig.processesPath:
+    stack = [ '' ]
+    while stack:
+      r = stack.pop()
+      f = os.path.join( procPath, r )
+      if os.path.basename( r ) == 'category_documentation.minf':
+        category = os.path.dirname(r).lower()
+        if category:
+          categoryDocFiles.setdefault( category, f )
+      elif os.path.isdir( f ):
+        stack += [ os.path.join( r, c ) for c in os.listdir( f ) ]
+  
+  # Find documentation files in toolboxes
+  # processes are in toolboxesDir/toolboxName/processes by default. anyway they are in toolbox.processesDir
+  # each relative directory dir in processes, matches a category named toolboxName/dir
+  # a documentation for the toolbox may be in toolboxesDir/toolboxId
+  from brainvisa.toolboxes import allToolboxes
+  for toolbox in allToolboxes():
+    # search for a file category_documentation.minf in toolboxesDir/toolboxId, otherwise it can be in processesDir
+    # It is usefull for my processes toolbox because the toolbox and the processes are not in the same place and the documentation of the toolbox cannot be in the processes directory. 
+    toolboxDoc=os.path.join( neuroConfig.toolboxesDir, toolbox.id, "category_documentation.minf")
+    if os.path.exists(toolboxDoc): # if it exists, add it to the doc file for which we have to generate an html file
+        categoryDocFiles.setdefault( toolbox.id, toolboxDoc )
+    # search for category documentation files in processes directory
+    stack = [('', toolbox.id)] # relative directory, category name
+    while stack:
+      r, cat = stack.pop() # get current relative path and associated category
+      f=os.path.join(toolbox.processesDir, r)
+      currentItem=os.path.basename( r )
+      if currentItem == 'category_documentation.minf':
+          categoryDocFiles.setdefault( cat, f )
+      elif os.path.isdir( f ):
+        if currentItem:
+          cat=os.path.join(cat, currentItem.lower())
+        stack += [ (os.path.join( r, c ), cat) for c in os.listdir( f ) ]
+
+  # Create category HTML files
+  baseDocDir = os.path.dirname( neuroConfig.docPath )
+  for category, f in categoryDocFiles.iteritems():
+    categoryPath=category.split("/")
+    minfContent = readMinf( f )[ 0 ]
+    enContent=minfContent['en']
+    for l in neuroConfig._languages:
+      #for l, c in minfContent.iteritems():
+      if l=='en':
+        c=enContent
+      else:
+        c=minfContent.get(l, enContent)
+        
+      tr = translators.get( l )
+      
+      c = convertSpecialLinks( c, l , '/'.join( ( '..', ) * (len( categoryPath )+1) ), tr ) # base dir for links : processes
+      p = os.path.join( baseDocDir, l, 'processes', 'categories', category )
+      if not os.path.isdir( p ):
+        os.makedirs( p )
+      f = open( os.path.join( p, 'category_documentation.html' ), 'w' )
+      print >> f, '<html>'
+      print >> f, '<head>'
+      print >> f, '<meta http-equiv="Content-Type" content="text/html; charset='+sys.getdefaultencoding()+'">'
+      print >> f, '<meta content="BrainVISA ' + neuroConfig.shortVersion + '" name="generator">'
+      print >> f, '</head>'
+      print >> f, '<body>'
+      print >> f, XHTML.html( c )
+      print >> f, '</html></body>'
+      f.close()
+
+#----------------------------------------------------------------------------
+class Parameterized( object ):
+
+  def __init__( self, signature ):
+    self.__dict__[ 'signature' ] = signature
+    self._convertedValues = {}
+    self._links = {}
+    self._isParameterSet = {}
+    self._isDefault = {}
+    self._warn = {}
+    self.signatureChangeNotifier = notifier.Notifier( 1 )
+    self.deleteCallbacks = []
+
+    for i, p in self.signature.items():
+      np = copy.copy( p )
+      self.signature[ i ] = np
+      np.copyPostprocessing()
+      np.setNameAndParameterized( i, self )
+
+    # Values initialization
+    for i, p in self.signature.items():
+      self.setValue( i, p.defaultValue() )
+
+    self.initialization()
+
+    self._isParameterSet = {}
+
+    # Take into account links set during self.initialization()
+    for name in self.signature.keys():
+      self._parameterHasChanged( name, getattr( self, name ) )
+
+  def __del__( self ):
+    debugHere()
+    for x in self.deleteCallbacks:
+      x( self )
+
+  def _parameterHasChanged( self, name, newValue ):
+    debug = neuroConfig.debugParametersLinks
+    if debug: print >> debug, 'parameter', name, 'changed in', self, 'with value', newValue
+    for function in self._warn.get( name, [] ):
+      if debug: print >> debug, '  call', function, '(', name, ',', newValue, ')'
+      function( self, name, newValue )
+    for parameterized, attribute, function, force in self._links.get( name, [] ):
+      if parameterized is None:
+        if debug: print >> debug, '  call', function, '(', self, ',', self, ')'
+        function( self, self )
+      else:
+        if debug: print >> debug, '  link to parameter', attribute, 'of', parameterized
+        linkParamType = parameterized.signature[ attribute ]
+        if force or parameterized.parameterLinkable( attribute, debug=debug ):
+          linkParamDebug = getattr( linkParamType, '_debug', None )
+          if linkParamDebug is not None:
+            print >> linkParamDebug, 'parameter', name, 'changed in', self, 'with value', newValue
+          if force:
+            parameterized.setDefault( attribute, self.isDefault( name ) )
+          if function is None:
+            if debug: print >> debug, '  ' + str(parameterized) + '.setValue(', repr(attribute), ',', newValue,')'
+            if linkParamDebug is not None:
+              print >> linkParamDebug, '  ==> ' + str(parameterized) + '.setValue(', repr(attribute), ',', newValue,')'
+            parameterized.setValue( attribute, newValue )
+          else:
+            if debug: print >> debug, '  call', function, '(', self, ',', self, ')'
+            if linkParamDebug is not None:
+              print >> linkParamDebug, '  ==> call', function, '(', self, ',', self, ')'
+            v = function( self, self )
+            if debug: print >> debug, '  ' + str(parameterized) + '.setValue(', repr(attribute), ',', v,')'
+            if linkParamDebug is not None:
+              print >> linkParamDebug, '      ' + str(parameterized) + '.setValue(', repr(attribute), ',', v,')'
+            parameterized.setValue( attribute, v )
+          parameterized.signature[ attribute ].valueLinkedNotifier(
+            parameterized, name, newValue )
+
+  def isDefault( self, key ):
+    return self._isDefault.get( key, True )
+
+  def setDefault( self, key, value ):
+    debug = neuroConfig.debugParametersLinks
+    if debug: print >> debug, '    setDefault(', key, ',', value, ')'
+    self._isDefault[ key ] = value
+
+  def parameterLinkable( self, key, debug=None ):
+    if debug is None:
+      debug = neuroConfig.debugParametersLinks
+    result= bool( self.signature[ key ].linkParameterWithNonDefaultValue or \
+                  self.isDefault( key ) )
+    if debug: print >> debug, '    parameterLinkable =', result
+    return result
+
+  def initialization( self ):
+    pass
+
+  def checkArguments( self ):
+    for p, o in self.signature.items():
+      o.checkValue( p, getattr( self, p, None ) )
+
+  def findValue( self, attributeName, value ):
+    self.setValue( attributeName, value )
+
+  def __setattr__( self, name, value ):
+    if self.signature.has_key( name ):
+      self.setValue( name, value )
+    else:
+      self.__dict__[ name ] = value
+
+  def setValue( self, name, value, default=None ):
+    debug = neuroConfig.debugParametersLinks
+    if debug:
+      print >> debug, str(self) + '.setValue(', name, ',', value, ',', default, ')'
+    changed = False
+    if default is not None:
+      changed = self.isDefault( name ) != default
+      self.setDefault( name, default )
+    if self._isParameterSet.get( name, False ):
+      oldValue = getattr( self, name, None )
+      newValue = self.signature[ name ].findValue( value )
+      changed = changed or newValue != oldValue
+    else:
+      self._isParameterSet[ name ] = True
+      newValue = self.signature[ name ].findValue( value )
+      changed = True
+    self.__dict__[ name ] =  newValue
+    if changed:
+      self._parameterHasChanged( name, newValue )
+
+  def linkParameters( self, destName, sources, function = None ):
+    if type( sources ) is types.StringType:
+      sourcesList = [ sources ]
+    else:
+      sourcesList = sources
+    for p in [ destName ] + list( sourcesList ):
+      if not self.signature.has_key( p ):
+        raise ValueError( HTMLMessage(_t_( '<em>%s</em> is not a valid parameter name' ) % p) )
+    if function is None:
+      function = getattr( self.signature[ destName ], 'defaultLinkParametersFunction', None )
+    for p in sourcesList:
+      self._links.setdefault( p, [] ).append( ( weakref.proxy( self ), destName, function, False ) )
+
+  def addParameterObserver( self, parameterName, function ):
+    minimum, maximum = numberOfParameterRange( function )
+    if maximum == 0:
+      tmp = lambda x, y, z, f=function: f()
+      tmp._save_function = function
+      function = tmp
+    self._warn.setdefault( parameterName, [] ).append( function )
+
+  def removeParameterObserver( self, parameterName, function ):
+    l = self._warn.get( parameterName, None )
+    if l is not None:
+      l.remove( function )
+      if not l:
+        del self._warn[ parameterName ]
+
+  def setOptional( self, *args ):
+    for k in args:
+      self.signature[ k ].mandatory = False
+
+  def setConvertedValue( self, name, value ):
+    self._convertedValues[ name ] = getattr( self, name )
+    self.__dict__[ name ] = value
+
+  def restoreConvertedValues( self ):
+    self.__dict__.update( self._convertedValues )
+    self._convertedValues.clear()
+
+  def addLink( self, destination, source, function=None ):
+    # Parse source
+    sources = []
+    if type( source ) in ( types.ListType, types.TupleType ):
+      for i in source:
+        if type( i ) in ( types.ListType, types.TupleType ):
+          sources.append( i )
+        else:
+          sources.append( ( self, i ) )
+    else:
+      sources.append( ( self, source ) )
+
+    if destination is None:
+      destObject, destParameter = ( None, None )
+    else:
+      destObject, destParameter = ( self, destination )
+    # Check if a default function can be provided
+    if function is None:
+      if len( sources ) == 1:
+        function = lambda x: x
+      else:
+        raise RuntimeError( HTMLMessage(_t_( 'No function provided in <em>addLink</em>' )) )
+    multiLink = ExecutionNode.MultiParameterLink( sources, function )
+    for sourceObject, sourceParameter in sources:
+      sourceObject._links.setdefault( sourceParameter, [] ).append (
+        ( destObject, destParameter, multiLink, True ) )
+
+  def removeLink( self, destination, source ):
+    # print 'removeLink', self, destination, source
+    # Parse source
+    sources = []
+    if type( source ) in ( types.ListType, types.TupleType ):
+      for i in source:
+        sources.append( ( self, i ) )
+    else:
+      sources.append( ( self, source ) )
+
+    if destination is None:
+      destObject, destParameter = ( None, None )
+    else:
+      destObject, destParameter = ( self, destination )
+
+    removed = False
+    for sourceObject, sourceParameter in sources:
+      l = sourceObject._links.get( sourceParameter, [] )
+      if l:
+        lbis = l
+        l = [i for i in l if ( i[0] is not destObject and i[0] is not weakref.proxy( destObject ) ) or i[1] != destParameter]
+        if len( lbis ) != len( l ):
+          removed = True
+          if l:
+            sourceObject._links[ sourceParameter ] = l
+          else:
+            del sourceObject._links[ sourceParameter ]
+        else:
+          print 'warning: link not removed:', self, destination, 'from:', source
+    return removed
+
+
+  def changeSignature( self, signature ):
+    # Change signature
+    self.signature = signature
+    for n in self.signature.keys():
+      setattr( self, n, getattr( self, n, None ) )
+
+    # Remove unused links
+    for n in self._links.keys():
+      if not self.signature.has_key( n ):
+        del self._links[ n ]
+    for n in self._warn.keys():
+      if not self.signature.has_key( n ):
+        del self._warn[ n ]
+
+    # Notify listeners
+    self.signatureChangeNotifier( self )
+
+  def clearLinksTo( self, *args ):
+    for i in args:
+      if isinstance( i, basestring ):
+        destObject,  destParameter = None, i
+      else:
+        destObject,  destParameter = i
+      if destObject:
+        do=destObject
+      else:
+        do= self
+      #do = (self if destObject is None else destObject) # not work in python 2.4
+      if not do.signature.has_key( destParameter ):
+        raise KeyError( _t_( 'Object %(object)s has not parameter "%(param)s"' ) % { 'object': unicode( do ), 'param': destParameter } )
+      for k, l in self._links.items():
+        i = 0
+        while i < len( l ):
+          do, dp, ml, f = l[ i ]
+          if ( destObject is None or destObject is do ) and \
+             destParameter == dp:
+            del l[ i ]
+          else:
+            i += 1
+
+  def clearLinksFrom( self, *args ):
+    for k in args:
+      if self._links.has_key( k ):
+        del self._links[ k ]
+
+
+  def cleanup( self ):
+    debugHere()
+    self._convertedValues = {}
+    self._links = {}
+    self._warn = {}
+    self.signatureChangeNotifier = notifier.Notifier( 1 )
+
+  
+  def saveStateInDictionary( self, result=None ):
+    if result is None:
+      result = {}
+    selected = {}
+    default = {}
+    for n in self.signature.iterkeys():
+      value = getattr( self, n, None )
+      if value is not None and not isinstance( value, ( int, float, basestring, list, dict, tuple ) ):
+        value = unicode( value )
+      if self.isDefault( n ):
+        default[ n ] = value
+      else:
+        selected[ n ] = value
+    result[ 'parameters' ] =  {
+      'selected': selected,
+      'default': default,
+    }
+    return result
+  
+  
+#----------------------------------------------------------------------------
+class Process( Parameterized ):
+  signature = Signature()
+  category = 'BrainVISA'
+  userLevel = 2
+
+  def __init__( self ):
+    # The following attributes can be set in user defined initialization()
+    # mathod which is called by Parameterized constructor. Therefore, it
+    # must be set before or never.
+    self._executionNode = None
+
+    # Copy signature because there is only one instance of each Parameter
+    # object in signature for each Process class. This is an old mistake in
+    # BrainVISA design, there should be one Signature instance by Process
+    # instance.
+    Parameterized.__init__( self, self.signature.shallowCopy())
+
+    self._log = None
+    self._outputLog = None
+    self._outputLogFile = None
+    #Main processes are opposed to subprocessed. There is more information
+    # displayed to the user on main processes. For example, start/stop
+    # notification and time elapsed in process are only displayed on main
+    # processes. By default all processes called by another process are not
+    # main process. It can be changed by setting isMainProcess to True.
+    self.isMainProcess = False
+    if hasattr( self.__class__, '_instance' ):
+      self.__class__._instance += 1
+    else:
+      self.__class__._instance = 1
+    self.instance = self.__class__._instance
+
+  def __del__( self ):
+    Parameterized.__del__( self )
+
+  def _iterate( self, **kwargs ):
+    # Find iteration size
+    requiredLength = 0
+    for values in kwargs.itervalues():
+      length = len( values )
+      if length > 1:
+        if requiredLength > 0 and length > 1 and requiredLength != length:
+          raise Exception( _t_( 'all lists of arguments with more than one values must have the same size' ) )
+        else:
+          requiredLength = length
+    
+    # Set lists of values
+    finalValues = {}
+    for key, values in kwargs.iteritems():
+      if values:
+        if len( values ) == 1:
+          finalValues[ key ] = [ self.signature[ key ].findValue( values[0] ) ] * requiredLength
+        else:
+          finalValues[ key ] = [ self.signature[ key ].findValue( v ) for v in values ]
+
+    result = []
+    for i in xrange( requiredLength ):
+      p = self._copy()
+      for argumentName, values in finalValues.iteritems():
+        p.setValue( argumentName, values[ i ], default=0 )
+      result.append( p )
+    return result
+
+
+  def _copy( self ):
+    result = self.__class__()
+    for ( n, p ) in self.signature.items():
+      if not self.isDefault( n ):
+#        result.setDefault( n, 0 )
+#        setattr( result, n, getattr( self, n ) )
+        result.setValue( n, getattr( self, n, None ), default=False )
+    if self._executionNode:
+      self._executionNode._copy(result.executionNode())
+    return result
+
+
+  def inlineGUI( self, values, context, parent, externalRunButton=False ):
+    return None
+
+
+  def validation( self ):
+    return 1
+
+  def id( self ):
+    return self._id
+
+  def sourceFile( self ):
+    return self._fileName
+
+  def sourcePath( self ):
+    return os.path.dirname( self._fileName )
+
+  def __str__( self ):
+    instance = getattr( self, '_instance', None )
+    if instance is None:
+      return self.id()
+    else:
+      return self.id() + '_' + unicode( instance )
+
+  def addLink( self, destination, source, function=None ):
+    eNode = getattr( self, '_executionNode', None )
+    if eNode is None:
+      Parameterized.addLink( self, destination, source, function )
+    else:
+      eNode.addLink( destination, source, function )
+
+  def setExecutionNode( self, eNode ):
+    self._executionNode = eNode
+
+  def execution( self, context ):
+    if self._executionNode is not None:
+      return self._executionNode.run( context )
+    else:
+      raise RuntimeError( HTMLMessage(_t_( 'No <em>execution</em> method provided' )) )
+
+  def executionNode( self ):
+    return self._executionNode
+
+  
+  def pipelineStructure( self ):
+    return self.id()
+  
+  
+  def saveStateInDictionary( self, result=None ):
+    if result is None:
+      result = {}
+    result[ 'pipelineStructure' ] = self.pipelineStructure()
+    if self._executionNode is not None:
+      if self._executionNode._parameterized is not None:
+        Parameterized.saveStateInDictionary( self._executionNode._parameterized(), result )
+      eNodesState = {}
+      for eNodeKey in self._executionNode.childrenNames():
+        eNode = self._executionNode.child( eNodeKey )
+        eNodeDict = {}
+        eNode.saveStateInDictionary( eNodeDict )
+        eNodesState[ eNodeKey ] = eNodeDict
+      result[ 'executionNodes' ] = eNodesState
+    else:
+      Parameterized.saveStateInDictionary( self, result )
+    return result
+
+
+  def getAllParameters( self ):
+    stack = [ self ]
+    while stack:
+      node = stack.pop( 0 )
+      if isinstance( node, Process ):
+        parameterized = node
+        node = node.executionNode()
+        if node is not None:
+          stack += [node.child( i ) for i in node.childrenNames()]
+      else:
+        parameterized = node._parameterized
+        if parameterized is not None: parameterized = parameterized()
+        stack += [node.child( i ) for i in node.childrenNames()]
+      if parameterized is not None:
+        for attribute, type in parameterized.signature.iteritems():
+          yield ( parameterized, attribute, type )
+        
+      
+
+#----------------------------------------------------------------------------
+class IterationProcess( Process ):
+  def __init__( self, name, processes ):
+    self._id = name + 'Iteration'
+    self.name = _t_( 'iteration' )
+    self.instance = 1
+    self._processes = [getProcessInstance( p ) for p in processes]
+    Process.__init__( self )
+
+  def pipelineStructure( self ):
+    return { 'type': 'iteration', 'children':[p.pipelineStructure() for p in self._processes] }
+    
+  def initialization( self ):
+    eNode = SerialExecutionNode( self.name, stopOnError=False )
+    for i in xrange( len( self._processes ) ):
+      self._processes[ i ].isMainProcess = True
+      eNode.addChild( str( i ), ProcessExecutionNode( self._processes[ i ],
+                        optional=True, selected = True ) )
+    self._executionNode = eNode
+
+#----------------------------------------------------------------------------
+class DistributedProcess( Process ):
+  def __init__( self, name, processes ):
+    self._id = name + 'DistributedIteration'
+    self.name = _t_( 'Distributed iteration' )
+    self.instance = 1
+    self._processes = [getProcessInstance( p ) for p in processes]
+    Process.__init__( self )
+
+    
+  def pipelineStructure( self ):
+    return { 'type': 'distributed', 'children':[p.pipelineStructure() for p in self._processes] }
+  
+  def initialization( self ):
+    eNode = ParallelExecutionNode( self.name )
+    for i in xrange( len( self._processes ) ):
+      self._processes[ i ].isMainProcess = True
+      subENode = self._processes[ i ]._executionNode
+      if subENode is None:
+        eNode.addChild( str( i ), ProcessExecutionNode( self._processes[ i ],
+                        optional=True, selected = True ) )
+    self._executionNode = eNode
+
+
+#----------------------------------------------------------------------------
+class TimeoutCall( object ):
+  def __init__( self, function, *args, **kwargs ):
+    self.function = function
+    self.args = args
+    self.kwargs = kwargs
+    self.event = threading.Event()
+    self.callFunction = 0
+    self.functionLock =threading.RLock()
+
+  def __del__( self ):
+    self.stop()
+
+  def _thread( self ):
+    self.event.wait( self.timeout )
+    self.functionLock.acquire()
+    try:
+      if self.callFunction:
+        apply( self.function, self.args, self.kwargs )
+    finally:
+      self.functionLock.release()
+
+  def start( self, timeout ):
+    self.stop() # Just in case of multiple start() call during timeout
+    self.functionLock.acquire()
+    try:
+      self.callFunction = 1
+      self.event.clear()
+      self.timeout = timeout
+      threading.Thread( target = self._thread )
+    finally:
+      self.functionLock.release()
+
+  def stop( self ):
+    self.functionLock.acquire()
+    try:
+      self.callFunction = 0
+      self.event.set()
+    finally:
+      self.functionLock.release()
+
+
+#----------------------------------------------------------------------------
+def signalName( signalNumber ):
+  for key, value in signal.__dict__.items():
+    if key[ :3 ] == 'SIG' and value == signalNumber:
+      return key
+  return str( signalNumber )
+
+
+#----------------------------------------------------------------------------
+def escapeQuoteForShell( s ):
+  return string.replace( s, "'",  "'\"'\"'" )
+
+
+if qprocess:
+  # If QProcess is available, provide an implementation of system calls
+  # based on this class. This implementation is called CommandWithQProcess
+  # and is also named Command (with Command = CommandWithQProcess) for
+  # backward compatibility with old implementation (see CommandWithPopen
+  # below).
+
+  #--------------------------------------------------------------------------
+  class CommandWithQProcess( object ):
+    def __init__( self, *args ):
+      '''This class is used to call a command line program from any thread
+      and launch personalized function whenever the command produce output
+      (either standard or error).
+
+      Usage:
+        c = CommandWithQProcess( 'executable', 'first argument','second argument' )
+        c.start()
+        exitStatus = c.wait()
+
+      By default all standard output are redirected to sys.stdout and all error
+      output to sys.stderr. It is possible to change this behaviour by setting
+      the functions called when an output string is available with
+      methods setStdoutAction() and setStderrAction().
+      '''
+      self._mainThreadCalls = mainThreadActions()
+      self._semaphore = threading.Semaphore( 0 )
+      self.args = [str(i) for i in args]
+      self._qprocess = self._mainThreadCalls.call( self._createQProcess )
+      self._stdoutAction = sys.stdout.write
+      self._stderrAction = sys.stderr.write
+
+
+    def start( self ):
+      '''Starts the command. If it cannot be started, a RuntimeError is raised'''
+      if not self._mainThreadCalls.call( self._startProcess ):
+        raise RuntimeError( _t_( 'Cannot start command %s' ) % ( str( self ), ) )
+
+
+    def wait( self ):
+      '''Wait for the command to finish. Upon normal exit, the exit status of
+      the command (i.e. its return value) is returned, otherwise a RuntimeError
+      is raised.'''
+      if self._mainThreadCalls.isInMainThread():
+        # process a local Qt events loop
+        while self._qprocess.isRunning():
+          qApp.processEvents()
+          time.sleep( 0.05 )
+      else:
+        # in a different thread, block on a semaphore until it is finished
+        self._semaphore.acquire()
+      if not self.normalExit:
+        raise RuntimeError( _t_( 'System call exited abnormally' ) )
+      return self.exitStatus
+
+
+    def stop( self ):
+      '''Interrupt a running command. If possible, it tries to terminate the
+      command giving it the possibility to do cleanup before exiting. If the
+      command is still alive ater 15 seconds, it is killed.'''
+      self._mainThreadCalls.push( self._stop )
+
+    def _stop( self ):
+      if neuroConfig.platform == 'windows':
+        # on Windows, don't even try the soft terminate, it always fails
+        self._qprocess.kill()
+        return
+      self._qprocess.tryTerminate()
+      if self._qprocess.isRunning():
+        # If the command is not finished in 15 seconds, kill it
+        # print 'still running... violently killing it in 15 seconds'
+        QTimer.singleShot( 15000, self._qprocess.kill )
+
+
+    def commandName( self ):
+      '''Returns the name of the executable of this command'''
+      return self.args[ 0 ]
+
+
+    def __str__( self ):
+      return' '.join( ["'" + i + "'" for i in self.args ] )
+
+
+    def setStdoutAction( self, callable, *args, **kwargs ):
+      '''Sets a function called each time a string is available on command's
+      standart output. The function is called with the string as a single parameter.'''
+      if args or kwargs:
+        raise RuntimeError( 'Command.setStdoutAction() only accept one argument (new in BrainVISA 3.03)' )
+      self._stdoutAction = callable
+
+
+    def setStderrAction( self, callable, *args, **kwargs ):
+      '''Sets a function called each time a string is available on command's
+      error output. The function is called with the string as a single parameter.'''
+      if args or kwargs:
+        raise RuntimeError( 'Command.setStderrAction() only accept one argument (new in BrainVISA 3.03)' )
+      self._stderrAction = callable
+
+
+    def _createQProcess( self ):
+  #    print threading.currentThread(), '_createQProcess()', self.args
+      qprocess = QProcess()
+      for arg in self.args:
+        qprocess.addArgument( arg )
+
+      qprocess.setCommunication( QProcess.Stdout | QProcess.Stderr )
+
+      qprocess.connect( qprocess,
+                        SIGNAL( 'processExited()' ),
+                        self._processExited )
+      qprocess.connect( qprocess,
+                        SIGNAL( 'launchFinished()' ),
+                        self._processLaunched )
+      qprocess.connect( qprocess, SIGNAL( 'readyReadStdout()' ),
+                        self._readStdout )
+      qprocess.connect( qprocess, SIGNAL( 'readyReadStderr()' ),
+                        self._readStderr )
+      return qprocess
+
+
+    def _startProcess( self ):
+  #    print threading.currentThread(), '_startProcess()', self
+      return self._qprocess.launch( '' )
+
+
+    def _processExited( self ):
+      #print threading.currentThread(), '_processExited()', self
+      self.normalExit = self._qprocess.normalExit()
+      self.exitStatus = self._qprocess.exitStatus()
+      self._semaphore.release()
+
+
+    def _processLaunched( self ):
+      pass
+
+
+    def _filterOutputString( buffer ):
+      # filter '\r', '\b' and similar
+      result = ''
+      for c in buffer:
+        if c == '\b':
+          if len( result ) > 0:
+            result = result[:-1]
+        elif c == '\r':
+          result = ''
+        elif c in ( '\a', '\m', '\x0b' ): # might appear on Mac/Windows
+          pass
+        else:
+          result += c
+      return result
+    _filterOutputString = staticmethod( _filterOutputString )
+
+    def _readStdout( self ):
+      while self._qprocess.canReadLineStdout():
+        line = self._filterOutputString( unicode( self._qprocess.readLineStdout() ) )
+        self._stdoutAction( line + '\n' )
+
+
+    def _readStderr( self ):
+      while self._qprocess.canReadLineStderr():
+        line = self._filterOutputString( unicode( self._qprocess.readLineStderr() ) )
+        self._stderrAction( line + '\n' )
+
+  Command = CommandWithQProcess
+
+else:
+  # Here, QProcess is not available. Therefore we provide an implementation
+  # of system calls based on os.popen3 and threading. This implementation is
+  #called CommandWithQProcess and is also named Command (with Command =
+  # CommandWithPopen) for backward compatibility. This implementation may
+  # disapear since QProcess should always be available.
+
+  #--------------------------------------------------------------------------
+  class CommandWithPopen( object ):
+    class SignalException( Exception ):
+      pass
+
+    def _buildCommand( args ):
+      if neuroConfig.platform == 'windows':
+        # don't give priority to .bat scripts if both .bat and .exe are available
+        x = distutils.spawn.find_executable( args[0] )
+        if x is None:
+          x = args[0]
+        # take care of space characters in command path
+        x = string.join( x.split(), '" "' )
+        args = ( x, ) + tuple( args[1:] )
+      if len( args ) == 1:
+        return str( args[ 0 ] )
+      else:
+        if neuroConfig.platform == 'windows':
+          return string.join( [args[0]] + map( lambda x: '"'+str(x)+'"', args[1:] ) )
+        else:
+          return string.join( map( lambda x: "'" + escapeQuoteForShell( str(x) ) \
+                  + "'", args ) )
+    _buildCommand = staticmethod( _buildCommand )
+
+    def __init__( self, *command ):
+      self.command = self._buildCommand( command )
+      self.stdoutAction = ( sys.stdout.write, (), {})
+      self.stderrAction = ( sys.stderr.write, (), {})
+      self.endAction = None
+      self.popen3 = None
+
+    def _parsecommand( self ):
+      '''recreate an args list from the commandline (string) to run'''
+      c = []
+      p = 0
+      q = 0
+      l = len( self.command )
+      line = ''
+      # print self.command
+      while q < l:
+        if self.command[q] in ( '"', "'" ):
+          ch = self.command[p]
+          p += 1
+          q = self.command.find( ch, p )
+          if q == -1:
+            c.append( line + self.command[ p: ] )
+            return c
+          line += self.command[ p:q ]
+          q += 1
+          p = q
+        elif self.command[q] not in ( ' ', '\t' ):
+          q += 1
+        else:
+          if q > p:
+            line += self.command[ p:q ]
+          if line:
+            c.append( line )
+            line = ''
+          q += 1
+          while q < l and self.command[q] in ( ' ', '\t' ):
+            q += 1
+          p = q
+      if q > p:
+        line += self.command[ p:q ]
+      if line:
+        c.append( line )
+      return c
+
+    def start( self ):
+      result = None
+      self.readThread = threading.Thread( target = self.read )
+      self.errorThread = threading.Thread( target = self.readError )
+      if sys.platform[:3] == 'win':
+        self.popen3 = None
+        self.stdout, self.stdin, self.stderr = neuroPopen2.popen3( self.command )
+      else:
+        self.popen3 = neuroPopen2.Popen3( self.command, 1 )
+        self.stdout, self.stdin, self.stderr = self.popen3.fromchild, \
+                                              self.popen3.tochild, \
+                                              self.popen3.childerr
+      self.readThread.start()
+      self.errorThread.start()
+
+    def wait( self ):
+      # print 'wait', self
+      # sys.stdout.flush()
+      if self.readThread is not None:
+        self.readThread.join()
+      # print 'readThread joined', self
+      # sys.stdout.flush()
+      if self.errorThread is not None:
+        self.errorThread.join()
+      # print 'errorThread joined', self
+      # sys.stdout.flush()
+      self.stdin.close()
+      self.stdout.close()
+      result = self.stderr.close()
+      self.readThread = None
+      self.errorThread = None
+      if self.popen3 is not None:
+        try:
+          #print '/wait pid ', str( self.popen3.pid ), ', state', \
+          #      str( self.popen3.poll() ), '/'
+          self.popen3.wait()
+        except:
+          pass
+        status = self.popen3.poll()
+        sig = None
+        if os.WIFEXITED( status ):
+          result = os.WEXITSTATUS( status )
+        elif os.WIFSTOPPED( status ):
+          sig = os.WSTOPSIG( status )
+        elif os.WIFSIGNALED( status ):
+          sig = os.WTERMSIG( status )
+        self.popen3 = None
+        if sig:
+          raise self.SignalException( HTMLMessage(_t_( 'System call interrupted with signal <em>%s</em>') % signalName( sig )) )
+      #print '/wait end/'
+      #print '/system result:', result, '/'
+      return result
+
+
+    def read( self ):
+      l = '-'
+      # print '/read/'
+      # sys.stdout.flush()
+
+      while l:
+        l = ''
+        c = '-'
+        while c not in ( '', '\r', '\n', '\b' ):
+          if neuroConfig.platform == 'windowsxx':
+            import win32file
+            #print '.'
+            c = ''
+            while not c:
+              res, c = win32file.ReadFile( self.popen3.stdout[0], 1, None )
+              #print 'read:', res, c
+              #sys.stdout.flush()
+              if res != 0:
+                c = ''
+                break
+              if not c:
+                time.sleep( 0.02 )
+          else:
+            c = self.stdout.read( 1 )
+          if c != '\x0b':
+            l += c
+        ( function, args, kwargs ) = self.stdoutAction
+        apply( function, ( l, ) + args, kwargs )
+      # print '/read end ' + str( self.popen3.poll() ) + ', pid ' \
+      #       + str( self.popen3.pid ) + '/'
+      # sys.stdout.flush()
+
+    def readError( self ):
+      l = '-'
+      while l:
+        #try:
+        #  x = os.waitpid( self.popen3.pid, os.WNOHANG )
+        #print x
+        #if x[0] == 0:
+        #  print '/readError aborting/'
+        #return
+        #except:
+        #  pass
+        l = self.stderr.readline()
+        #print '/readError ' + str( self.popen3.poll() ) + ', pid ' \
+        #      + str( self.popen3.pid ) + '/'
+        ( function, args, kwargs ) = self.stderrAction
+        apply( function, ( l, ) + args, kwargs )
+      #print '/readError end ' + str( self.popen3.poll() ) + ', pid ' \
+      #      + str( self.popen3.pid ) + '/'
+
+    def setStdoutAction( self, function, *args, **kwargs ):
+      self.stdoutAction = ( function, args, kwargs )
+
+    def setStderrAction( self, function, *args, **kwargs ):
+      self.stderrAction = ( function, args, kwargs )
+
+    def stop( self ):
+  ##    # Try to nicely abort the command
+  ##    os.kill( self.popen3.pid, signal.SIGINT )
+  ##    # If the command is not finished in 30 seconds, kill it
+  ##    killer = TimeoutCall( os.kill, self.popen3.pid, signal.SIGKILL )
+  ##    killer.start( 30 )
+  ##    self.wait()
+  ##    killer.stop()
+      # Just kill the process merciless
+      if neuroConfig.platform == 'windows':
+        import win32api
+        try:
+          win32api.TerminateProcess( self.popen3.pid[0], 1 )
+        except:
+          pass
+        self.stdin.close()
+        self.stdout.close()
+        self.stderr.close()
+      else:
+        os.kill( self.popen3.pid, signal.SIGKILL )
+
+    def commandName( self ):
+      return self._parsecommand()[0]
+      # older stuff
+      first = self.command[ 0 ]
+      if first in ( '"', "'" ):
+        i = 1
+        while i < len( self.command ):
+          c = self.command[ i ]
+          if c == first: break
+          if c == '\\': i += 1
+          i += 1
+        return os.path.basename( self.command[ 1 : i ] )
+      elif sys.platform[:3] == 'win':
+        c = ''
+        i = 0
+        j = 0
+        n = len( self.command )
+        while i != -1:
+          j = self.command.find( ' ', i )
+          if j != -1:
+            c += self.command[i:j-1]
+            if self.command[j-1] in ( '"', "'" ) \
+              and j < n-1 and self.command[j+1] == self.command[j-1]:
+              c += self.command[i:j-1] + ' '
+              i = j+2
+            else:
+              c += self.command[i:j]
+              i = -1
+          else:
+            c += self.command[i:-1]
+        return os.path.basename( c )
+      else:
+        return os.path.basename( string.split( self.command )[ 0 ] )
+
+    def __str__( self ):
+      return self.command
+
+  Command = CommandWithPopen
+
+
+
+#-------------------------------------------------------------------------------
+class ExecutionNode( object ):
+  class MultiParameterLink:
+    def __init__( self, sources, function ):
+      self.sources = []
+      for p, n in sources:
+        if type(p) is weakref.ReferenceType:
+          self.sources.append( ( p, n ) )
+        else:
+          self.sources.append( ( weakref.ref( p ), n ) )
+      self.function = function
+      self.hasParameterized = hasParameter( function, 'parameterized' )
+      self.hasNames = hasParameter( function, 'names' )
+
+    def __call__( self, dummy1, dummy2 ):
+      kwargs = {}
+      if self.hasParameterized:
+        kwargs[ 'parameterized' ] = [i[0]() for i in self.sources]
+      if self.hasNames:
+        kwargs[ 'names' ] = [i[1] for i in self.sources]
+      return self.function( *[getattr( i[0](), i[1], None ) for i in self.sources],
+                           **kwargs )
+
+  def __init__( self, name='', optional = False, selected = True,
+                guiOnly = False, parameterized = None ):
+    # Initialize an empty execution node
+    self.__dict__[ '_children' ] = SortedDictionary()
+    if parameterized is not None:
+      parameterized = weakref.ref( parameterized )
+    self.__dict__[ '_parameterized' ] = parameterized
+    self.__dict__[ '_name' ] = str( name )
+    self.__dict__[ '_optional' ] = optional
+    self.__dict__[ '_selected' ] = selected
+    self.__dict__[ '_guiOnly' ] = guiOnly
+    self.__dict__[ '_selectionChange' ] = notifier.Notifier( 1 )
+
+  def __del__( self ):
+    debugHere()
+
+  def _copy(self, node):
+    """
+    Uses non default parameters values to initialize the parameters of the node given in argument.
+    """
+    # if execution node contains a process, copy the process parameters and copy its execution node parameters if any
+    process=getattr(self, "_process", None)
+    if process:
+      processCopy=node._process
+      for ( n, v ) in process.signature.items():
+        if not self.isDefault( n ):
+          processCopy.setValue( n, getattr( process, n, None ), default=False )
+      processNode=process.executionNode()
+      if processNode:
+        processNode._copy(processCopy.executionNode())
+    node.setSelected(self._selected)
+    # if execution node have children nodes, copy the parameters of these nodes
+    for name in self.childrenNames():
+      child=self.child(name)
+      child._copy(node.child(name))
+    
+  def addChild( self, name, node ):
+    'Add a new child execution node'
+    if self._children.has_key( name ):
+      raise KeyError( HTMLMessage(_t_( '<em>%s</em> already defined' ) % ( name, )) )
+    if not isinstance( node, ExecutionNode ):
+      raise RuntimeError( HTMLMessage('<em>node</em> argument must be an ececution node') )
+    self._children[ name ] = node
+
+  def childrenNames( self ):
+    return self._children.keys()
+
+  
+  def hasChildren( self ):
+    return bool( self._children )
+  
+  
+  def setSelected( self, selected ):
+    if selected != self._selected:
+      self._selected = selected
+      self._selectionChange( self )
+
+  def isSelected( self ):
+    return self._selected
+
+  def __setattr__( self, attribute, value ):
+    if self._parameterized is not None and \
+       self._parameterized().signature.has_key( attribute ):
+      setattr( self._parameterized(), attribute, value )
+    elif self._children.has_key( attribute ):
+      raise RuntimeError( HTMLMessage(_t_( 'Direct modification of execution node <em>%s</em> is not allowed.' ) % ( attribute, )) )
+    else:
+      self.__dict__[ attribute ] = value
+
+  def __getattr__( self, attribute ):
+    p = self.__dict__.get( '_parameterized' )
+    if p is not None: p = p()
+    if p is not None and hasattr( p, attribute ):
+      return getattr( p, attribute )
+    children = self.__dict__[ '_children' ]
+    if children.has_key( attribute ):
+      return children[ attribute ]
+    raise AttributeError( attribute )
+
+  def child( self, name, default = None ):
+    return self._children.get( name, default )
+
+  def run( self, context ):
+    if self._optional and ( not self._selected ):
+      context.write( '<font color=orange>Skip unselected node: ' + str(self.name()) + '</font>' )
+      return
+    if self._guiOnly and not neuroConfig.gui:
+      context.write( '<font color=orange>Skip GUI-only node: ' + str(self.name()) + '</font>' )
+      return
+    return self._run( context )
+
+  def _run( self, context ):
+    pass
+
+  def name( self ):
+    return self._name
+
+  def gui( self, parent, processView = None ):
+    if self._parameterized is not None:
+      frame = QWidget( parent )
+      frameLayout = QVBoxLayout( frame, 5, 4 )
+      frame.parameterizedWidget = ParameterizedWidget( self._parameterized(), frame )
+      frameLayout.addWidget( frame.parameterizedWidget )
+      spacer = QSpacerItem(0,0,QSizePolicy.Minimum,QSizePolicy.Expanding)
+      frameLayout.addItem( spacer )
+      return frame
+    return None
+
+  def addLink( self, destination, source, function=None ):
+    # Parse source
+    sources = []
+    if type( source ) in ( types.ListType, types.TupleType ):
+      for i in source:
+        sources.append( self.parseParameterString( i ) )
+    else:
+      sources.append( self.parseParameterString( source ) )
+
+    destObject, destParameter = self.parseParameterString( destination )
+    # Check if a default function can be provided
+    if function is None:
+      if len( sources ) == 1:
+        function = lambda x: x
+      else:
+        raise RuntimeError( HTMLMessage(_t_( 'No function provided in <em>addLink</em>' )) )
+    multiLink = self.MultiParameterLink( sources, function )
+    for sourceObject, sourceParameter in sources:
+      sourceObject._links.setdefault( sourceParameter, [] ).append (
+        ( destObject, destParameter, multiLink, True ) )
+
+  def removeLink( self, destination, source, function=None ):
+    # Parse source
+    sources = []
+    if type( source ) in ( types.ListType, types.TupleType ):
+      for i in source:
+        sources.append( self.parseParameterString( i ) )
+    else:
+      sources.append( self.parseParameterString( source ) )
+
+    destObject, destParameter = self.parseParameterString( destination )
+
+    removed = 0
+    for sourceObject, sourceParameter in sources:
+      l = sourceObject._links.get( sourceParameter, [] )
+      if l:
+        lbis = l
+        l = [i for i in l if ( i[0] is not destObject and i[0] is not weakref.proxy( destObject ) ) or i[1] != destParameter]
+        if len(l) != len(lbis):
+          removed = 1
+        if l:
+          sourceObject._links[ sourceParameter ] = l
+        else:
+          del sourceObject._links[ sourceParameter ]
+          removed=1
+    if removed == 0:
+      print 'warning: enode link not removed:', self, destination, 'from:', source, ', function:', function
+
+
+  def parseParameterString( self, parameterString ):
+    if parameterString is None: return ( None, None )
+    l = parameterString.split( '.' )
+    node = self
+    for nodeName in l[ : -1 ]:
+      node = node.child( nodeName )
+    parameterized = node._parameterized
+    if parameterized is not None: parameterized = parameterized()
+    name = l[ -1 ]
+    if parameterized is None or not parameterized.signature.has_key( name ):
+      raise KeyError( name )
+    return ( parameterized, name )
+
+
+  def saveStateInDictionary( self, result=None ):
+    if result is None:
+      result = {}
+    result[ 'name' ] = self._name
+    result[ 'selected' ] = self._selected
+    if self._parameterized is not None:
+      Parameterized.saveStateInDictionary( self._parameterized(), result )
+    eNodesState = {}
+    for eNodeKey in self.childrenNames():
+      eNode = self.child( eNodeKey )
+      eNodesState[ eNodeKey ] = eNode.saveStateInDictionary()
+    result[ 'executionNodes' ] = eNodesState
+    return result
+
+#-------------------------------------------------------------------------------
+class ProcessExecutionNode( ExecutionNode ):
+  'An execution node that has no children and run one process'
+
+  def __init__( self, process, optional = False, selected = True,
+                guiOnly = False ):
+    process = getProcessInstance( process )
+    ExecutionNode.__init__( self, process.name,
+                            optional = optional,
+                            selected = selected,
+                            guiOnly = guiOnly,
+                            parameterized = process )
+    self.__dict__[ '_process' ] = process
+
+  def addChild( self, name, node ):
+    raise RuntimeError( _t_( 'A ProcessExecutionNode cannot have children' ) )
+
+  def _run( self, context ):
+    return context.runProcess( self._process )
+
+  def gui( self, parent, processView = None ):
+    if processView is not None:
+      return ProcessView( self._process, parent,
+                          externalInfo = processView.info )
+    else:
+      return ProcessView( self._process, parent )
+
+  def name( self ):
+    return _t_(self._process.name)
+
+
+  def childrenNames( self ):
+    eNode = getattr( self._process, '_executionNode', None )
+    if eNode is not None:
+      return eNode._children.keys()
+    else:
+      return []
+
+  def __setattr__( self, attribute, value ):
+    if self._parameterized is not None and \
+       self._parameterized().signature.has_key( attribute ):
+      setattr( self._parameterized(), attribute, value )
+    else:
+      eNode = getattr( self._process, '_executionNode', None )
+      if eNode is not None and eNode._children.has_key( attribute ):
+        raise RuntimeError( HTMLMessage(_t_( 'Direct modification of execution node <em>%s</em> is not allowed.' ) % ( attribute, )) )
+    self.__dict__[ attribute ] = value
+
+  def __getattr__( self, attribute ):
+    p = self.__dict__.get( '_parameterized' )()
+    if p is not None and hasattr( p, attribute ):
+      return getattr( p, attribute )
+    eNode = getattr( self._process, '_executionNode', None )
+    if eNode is not None:
+      return eNode.child( attribute )
+    raise AttributeError( attribute )
+
+  def child( self, name, default=None ):
+    eNode = getattr( self._process, '_executionNode', None )
+    if eNode is not None:
+      return eNode.child( name, default )
+    return default
+
+
+#-------------------------------------------------------------------------------
+class SerialExecutionNode( ExecutionNode ):
+  'An execution node that run all its children sequencially'
+
+  def __init__(self, name='', optional = False, selected = True,
+                guiOnly = False, parameterized = None, stopOnError=True ):
+    ExecutionNode.__init__(self, name, optional, selected, guiOnly, parameterized)
+    self.stopOnError=stopOnError
+    
+  def _run( self, context ):
+    result = []
+    if self.stopOnError:
+      for node in self._children.values():
+        result.append( node.run( context ) )
+    else:
+      for node in self._children.values():
+        try:
+          result.append( node.run( context ) )
+        except ExecutionContext.UserInterruption:
+          raise
+        except Exception, e:
+          context.error("Error in execution node : "+unicode(e))
+    return result
+
+
+#-------------------------------------------------------------------------------
+class ParallelExecutionNode( ExecutionNode ):
+  """
+  An execution node that run all its children in any order (and in parallel
+  if possible)
+  """
+
+  def _run( self, context ):
+    if not neuroDistributedProcesses or neuroConfig.userLevel < 2 \
+      or len( self._children ) < 2:
+      # do as for serial node
+      result = []
+      for node in self._children.values():
+        result.append( node.run( context ) )
+      return result
+    else:
+      errorCount = 0
+      result = []
+
+      rp_t = []
+      rpid = 0
+
+      try:
+        user = UserInfosBV(context, Signature('Password', Password()) )
+
+        if not user.isAccepted():
+          context.error('Password needed to launch process remotely. Running locally and sequencially...')
+          raise RuntimeError( _t_( 'distributed execution failure' ) )
+
+        remoteContext = context.remote
+        remoteContext.clearGUI()  
+        cluster, isServer = getClusterInstance(context)
+
+        context.write('Dispatching processes on cluster...\n')
+      except:
+        # distribution failure: run locally
+        # do as for serial node
+        result = []
+        for node in self._children.values():
+          result.append( node.run( context ) )
+        return result
+
+      for node in self._children.values():
+        try:
+
+          rp_t.append( RemoteProcessCall(rpid, cluster, context, node) )
+          rp_t[rpid].start()
+          rpid += 1
+
+        except ExecutionContext.UserInterruption:
+          raise
+        except:
+          errorCount += 1
+          result.append( sys.exc_info()[ 1 ] )
+          context._showException()
+          logException( context=context )
+
+      if errorCount:
+        raise RuntimeError( _t_( '%d execution nodes on %d have produced an error' ) % ( errorCount, len( result ) ) )
+
+      context.write('Processes are running...\n')
+
+      for i in range(len(self._children.values())):
+        rp_t[i].join()
+        print 'thread [%d] finished'%i
+        if isinstance(rp_t[i].exception, Exception):
+          if isinstance(rp_t[i].exception, RemoteConnectionError):
+            context.write(_t_('Remote execution failed on process %s. Running locally.') % (str(i),) )
+            # distribution failure: run locally
+            # do as for serial node
+            result.append( self._children.values()[i].run( context ) )
+          else:
+            raise rp_t[i].exception
+
+      if not isServer:
+        cluster.closeSessions()
+
+      print 'All finished' 
+
+      return result
+
+#-------------------------------------------------------------------------------
+class SelectionExecutionNode( ExecutionNode ):
+  '''An execution node that run one of its children'''
+
+  def __init__( self, *args, **kwargs ):
+    ExecutionNode.__init__( self, *args, **kwargs )
+    self._selection = None
+
+
+  def _run( self, context ):
+    'Run the selected child'
+    if self._selected is None:
+      raise RuntimeError( _t_( 'No children selected' ) )
+    for node in self._children.values():
+      if node._selected:
+        return node.run( context )
+
+
+
+#-------------------------------------------------------------------------------
+class ExecutionContext:
+  remote = None
+
+  class UserInterruption( Exception ):
+    def __init__( self ):
+      Exception.__init__( self, _t_( 'user interruption' ) )
+
+  class StackInfo:
+    def __init__( self, process ):
+      self.process = process
+      self.processCount = {}
+      self.thread = None
+      self.debug = None
+      self.log = None
+      self.time = time.localtime()
+
+  def __init__( self, userLevel = None, debug = None ):
+    if userLevel is None:
+      self.userLevel = neuroConfig.userLevel
+    else:
+      self.userLevel = userLevel
+    self._processStack = []
+    self.manageExceptions = 1
+    self._systemOutputLevel = 0
+    self._systemLog = None
+    self._systemLogFile = None
+
+    self._interruptionRequest = None
+    self._interruptionActions = {}
+    self._interruptionActionsId = 0
+    self._interruptionLock = threading.RLock()
+    self._allowHistory = True
+  
+  
+  def _setArguments( self, _process, *args, **kwargs ):
+#    print '!_setArguments! 1', _process, args, kwargs
+    # Set arguments
+    i = 0
+    for v in args:
+      n = _process.signature.keys()[ i ]
+      _process.setDefault( n, 0 )
+      if v is not None:
+        _process.setValue( n, v )
+      else:
+        setattr( _process, n, None )
+      # print '!_setArguments! 2', n, getattr( _process, n )
+      i += 1
+    for ( n, v ) in kwargs.items():
+      #print '!_setArguments! 3', n, v
+      _process.setDefault( n, 0 )
+      if v is not None:
+        _process.setValue( n, v )
+      else:
+        setattr( _process, n, None )
+#      _process._linkParameterValues( parameters=[ n ] )
+#      print '!_setArguments! 3.1', n, getattr( _process, n )
+#    print '!_setArguments! 4', _process
+    _process.checkArguments()
+
+  def _startProcess( self, _process, executionFunction, *args, **kwargs ):
+    if not isinstance( _process, Process ):
+      _process = self.newProcess( _process )
+    apply( self._setArguments, (_process,)+args, kwargs )
+    # Launch process
+    t = threading.Thread( target = self._processExecution,
+                          args = ( _process, executionFunction ) )
+    t.start()
+    return _process
+
+  def runProcess( self, _process, *args, **kwargs ):
+    _process = getProcessInstance( _process )
+    self.checkInterruption()
+    apply( self._setArguments, (_process,)+args, kwargs )
+    result = self._processExecution( _process, None )
+    self.checkInterruption()
+    return result
+  
+  
+  @staticmethod
+  def createContext():
+    return ExecutionContext()
+  
+  
+  def runInteractiveProcess( self, callMeAtTheEnd, process, *args, **kwargs ):
+    context = self.createContext()
+    process = getProcessInstance( process )
+    self.checkInterruption()
+    apply( self._setArguments, (process,)+args, kwargs )
+    thread = threading.Thread( target = self._runInteractiveProcessThread,
+      args = ( context, process, callMeAtTheEnd ) )
+    thread.start()
+  
+  
+  def _runInteractiveProcessThread( self, context, process, callMeAtTheEnd ):
+    try:
+      result = context.runProcess( process )
+    except Exception, e:
+      result = e
+    callMeAtTheEnd( result )
+  
+
+  def _processExecution( self, process, executionFunction=None ):
+
+    '''Execute the process "process". The value return is stored to avoid
+    the garbage-collection of some of the objects created by the process
+    itself (GUI for example).
+    '''
+
+    result = None
+    stackTop = None
+    process = getProcessInstance( process )
+
+    if self._processStack:
+##      if neuroConfig.userLevel > 0:
+##        self.write( '<img alt="" src="' + os.path.join( neuroConfig.iconPath, 'icon_process.png' ) + '" border="0">' \
+##                    + _t_(process.name) + ' '\
+##                    + str(process.instance) + '<p>' )
+      stackTop = self._processStack[ -1 ]
+      # Count process execution
+      count = stackTop.processCount.get( process._id, 0 )
+      stackTop.processCount[ process._id ] = count + 1
+
+    newStackTop = self.StackInfo( process )
+    self._processStack.append( newStackTop )
+
+    # Logging process start
+    if self._depth() == 1:
+      process.isMainProcess = True
+      log = neuroConfig.mainLog
+      if neuroConfig.newDatabases:
+        self._allWriteDiskItems = []
+        try: # an exception could occur if the user has not write permission on the database directory
+          for parameterized, attribute, type in process.getAllParameters():
+            if isinstance( type, WriteDiskItem ):
+              item = getattr( parameterized, attribute )
+              if item is not None:
+                dir = os.path.dirname( item.fullPath() )
+                if not os.path.exists( dir ):
+                  os.makedirs( dir )
+                item.uuid()
+                self._allWriteDiskItems.append( [ item, item.modificationHash() ] )
+            elif isinstance( type, ListOf ) and isinstance( type.contentType, WriteDiskItem ):
+              itemList = getattr( parameterized, attribute )
+              if itemList:
+                for item in itemList:
+                  dir = os.path.dirname( item.fullPath() )
+                  if not os.path.exists( dir ):
+                    os.makedirs( dir )
+                  item.uuid()
+                  self._allWriteDiskItems.append( [ item, item.modificationHash() ] )
+        except:
+          showException()
+          return None 
+      if self._allowHistory:
+        self._historyBookEvent, self._historyBooksContext = HistoryBook.storeProcessStart( self, process )
+    else:
+      log = self._processStack[ -2 ].log
+    if log is not None:
+      newStackTop.log = log.subLog()
+      process._log = newStackTop.log
+      content= '<html><body><h1>' + _t_(process.name) + '</h1><h2>' + _t_('Process identifier') + '</h2>' + process._id + '<h2>' + _t_('Parameters') +'</h2>'
+      for n in process.signature.keys():
+        content += '<em>' + n + '</em> = ' + htmlEscape( str( getattr( process, n, None ) ) ) + '<p>'
+      content += '<h2>' + _t_( 'Output' ) + '</h2>'
+      try:
+        process._outputLog = log.subTextLog()
+        process._outputLogFile = open( process._outputLog.fileName, 'w' )
+        print >> process._outputLogFile, content
+        process._outputLogFile.flush()
+        content = process._outputLog
+      except:
+        content += '<font color=red>' + _t_('Unabled to open log file') + '</font></html></body>'
+        process._outputLog = None
+        process._outputLogFile = None
+
+      self._lastStartProcessLogItem = log.append( _t_(process.name) + ' ' + str(process.instance), html=content,
+                  children=newStackTop.log, icon='icon_process.png' )
+    else:
+      newStackTop.log = None
+
+    newStackTop.thread = threading.currentThread()
+    self._processStarted()
+    self._lastProcessRaisedException = False
+    try:
+      try:
+        # Check arguments and conversions
+        converter = None
+        for ( n, p ) in process.signature.items():
+          if isinstance( p, ReadDiskItem ) and p.enableConversion:
+            v = getattr( process, n )
+            if v and v.type and ( ( not isSameDiskItemType( v.type, p.type ) ) or v.format not in p.formats ):
+              c = None
+              for destinationFormat in p.formats:
+                converter = getConverter( (v.type, v.format), (p.type, destinationFormat) )
+                if converter:
+                  tmp = self.temporary( destinationFormat )
+                  tmp.type = v.type
+                  tmp.copyAttributes( v )
+                  convargs = { 'read' : v, 'write' : tmp }
+                  c = getProcessInstance( converter.name )
+                  if c is not None:
+                    try:
+                      apply( self._setArguments, (c,), convargs )
+                      if c.write is not None:
+                        break
+                    except:
+                      pass
+##              if not converter: raise Exception( _t_('Cannot convert format <em>%s</em> to format <em>%s</em> for parameter <em>%s</em>') % ( _t_( v.format.name ), _t_( destinationFormat.name ), n ) )
+##              tmp = self.temporary( destinationFormat )
+##              tmp.type = v.type
+##              tmp.copyAttributes( v )
+##              self.runProcess( converter.name, read = v, write = tmp )
+              if not c: raise Exception( HTMLMessage(_t_('Cannot convert format <em>%s</em> to format <em>%s</em> for parameter <em>%s</em>') % ( _t_( v.format.name ), _t_( destinationFormat.name ), n )) )
+              self.runProcess( c )
+              process.setConvertedValue( n, tmp )
+          elif isinstance( p, WriteDiskItem ):
+            v = getattr( process, n )
+            if v is not None:
+              v.createParentDirectory()
+        if executionFunction is None:
+          result = process.execution( self )
+        else:
+          result = executionFunction( self )
+      except:
+        self._lastProcessRaisedException = True
+        self._showException()
+        logException( context=self )
+        if self._depth() != 1 or not self.manageExceptions:
+          raise
+    finally:
+      self._processFinished( result )
+      process.restoreConvertedValues()
+    
+      if neuroConfig.newDatabases:
+        for item_hash in self._allWriteDiskItems:
+          item, hash = item_hash
+          if item.modificationHash() != hash:
+            try:
+              neuroHierarchy.databases.insertDiskItem( item, update=True )
+            except Database.NotInDatabaseError:
+              pass
+            except:
+              showException()
+            item_hash[ 1 ] = item.modificationHash()
+      
+      # Close output log file
+      if process._outputLogFile is not None:
+        print >> process._outputLogFile, '</body></html>'
+        process._outputLogFile.close()
+      if process._outputLog is not None:
+        process._outputLog.close()
+      # Expand log to put sublogs inline
+      log = self._processStack[ -1 ].log
+      if log is not None:
+        log.expand()
+        if self._depth() == 1:
+          if self._historyBookEvent is not None:
+            HistoryBook.storeProcessFinished( self, process, self._historyBookEvent, self._historyBooksContext )
+            self._historyBookEvent = None
+            self._historyBooksContext = None
+          self._lastStartProcessLogItem = None
+      process._outputLogFile = None
+      process._outputLog = None
+      self._processStack.pop().thread = None
+    return result
+
+  def _currentProcess( self ):
+    return self._processStack[ -1 ].process
+
+  def _depth( self ):
+    return len( self._processStack )
+
+  def _showSystemOutput( self ):
+    return self._systemOutputLevel >= 0 and self.userLevel >= self._systemOutputLevel
+
+  def _processStarted( self ):
+    if self._currentProcess().isMainProcess:
+      msg = '<p><img alt="" src="' + \
+            os.path.join( neuroConfig.iconPath, 'process_start.png' ) + \
+            '" border="0"><em>' + _t_( 'Process <b>%s</b> started on %s') % \
+            ( _t_(self._currentProcess().name ) + ' ' + \
+              str( self._currentProcess().instance ),
+              time.strftime( _t_( '%Y/%m/%d %H:%M' ),
+                             self._processStack[ -1 ].time ) ) + \
+            '</em></p>'
+      self.write( msg, linebreak=0 )
+
+  def _processFinished( self, result ):
+    if self._currentProcess().isMainProcess:
+      finalTime = time.localtime()
+      elapsed = calendar.timegm( finalTime ) - calendar.timegm( self._processStack[ -1 ].time )
+      msg = '<p><img alt="" src="' + \
+            os.path.join( neuroConfig.iconPath, 'process_end.png' ) + \
+            '" border="0"><em>' + _t_( 'Process <b>%s</b> finished on %s (%s)' ) % \
+        ( _t_(self._currentProcess().name) + ' ' + str( self._currentProcess().instance ),
+          time.strftime( _t_( '%Y/%m/%d %H:%M' ), finalTime), timeDifferenceToString( elapsed ) ) + \
+        '</em></p>'
+      self.write( msg )
+
+  def system( self, *args, **kwargs ):
+    self._systemOutputLevel = kwargs.get( 'outputLevel', 0 )
+    ignoreReturnValue = kwargs.get( 'ignoreReturnValue', 0 )
+    command = [str(i) for i in args]
+
+    ret = self._system( command, self._systemStdout, self._systemStderr )
+    if ret and not ignoreReturnValue:
+      raise RuntimeError( _t_( 'System command exited with non null value : %s' ) % str( ret ) )
+    return ret
+
+  def _systemStdout( self, line ):
+    if line and self._systemLogFile is not None and self._showSystemOutput():
+      if line[ -1 ] not in ( '\b', '\r' ):
+        self._systemLogFile.write( htmlEscape(line))
+        self._systemLogFile.flush()
+
+  def _systemStderr( self, line ):
+    if line:
+      lineInHTML = '<font color=red>' + htmlEscape(line) + '</font>'
+      self.write( lineInHTML )
+    if self._systemLogFile is not None and line:
+      self._systemLogFile.write( lineInHTML )
+      self._systemLogFile.flush()
+
+  def _system( self, command, stdoutAction = None, stderrAction = None ):
+    self.checkInterruption()
+    if self._processStack:
+      stackTop = self._processStack[ -1 ]
+    else:
+      stackTop = None
+
+    if type( command ) in types.StringTypes:
+      c = Command( command )
+    else:
+      c = Command( *command )
+
+    # Logging system call start
+    if self._processStack:
+      log = self._processStack[ -1 ].log
+    else:
+      log = neuroConfig.mainLog
+    if log is not None:
+      self._systemLog = log.subTextLog()
+      self._systemLogFile = open( self._systemLog.fileName, 'w' )
+      log.append( c.commandName(),
+                  html=self._systemLog,
+                  icon='icon_system.png' )
+    if self._systemLogFile:
+      commandName = distutils.spawn.find_executable( c.commandName() )
+      if not commandName:
+        commandName = c.commandName()
+      print >> self._systemLogFile, '<html><body><h1>' + commandName +' </h1><h2>' +_t_('Command line') + \
+        '</h2><code>' + htmlEscape( str( c ) ) + '</code></h2><h2>' + _t_('Output') + '</h2><pre>'
+      self._systemLogFile.flush()
+
+##    if self._showSystemOutput() > 0:
+##      self.write( '<img alt="" src="' + os.path.join( neuroConfig.iconPath, 'icon_system.png' ) + '">' + c.commandName() + '<p>' )
+
+    if stdoutAction is not None: c.setStdoutAction( stdoutAction )
+    if stderrAction is not None: c.setStderrAction( stderrAction )
+    c.start()
+    intActionId = self._addInterruptionAction( c.stop )
+    try:
+      result = c.wait()
+    finally:
+      self._removeInterruptionAction( intActionId )
+    self.checkInterruption()
+    if self._systemLogFile is not None:
+      print >> self._systemLogFile, '</pre><h2>' + _t_('Result') + '</h2>' + _t_('Value returned') + ' = ' + str( result ) + '</body></html>'
+      self._systemLogFile.close()
+      self._systemLogFile = None
+    if self._systemLog is not None:
+      self._systemLog.close()
+    if log is not None and log is not neuroConfig.mainLog:
+      log.expand()
+    return result
+
+  def temporary( self, format, diskItemType = None ):
+    result = getTemporary( format, diskItemType )
+    if not neuroConfig.removeTemporary:
+      pt = getattr( self, '_protectedTemporaries', [] )
+      pt.append( result )
+      self._protectedTemporaries = pt
+    return result
+
+  def matlab( self, *commands ):
+    self.checkInterruption()
+    if matlab.valid and commands:
+      m = matlab.matlab()
+      for c in commands[:-1]:
+        m.eval( c )
+      return m.eval( commands[ -1 ] )
+    self.checkInterruption()
+
+
+  def write( self, *messages, **kwargs ):
+    self.checkInterruption()
+    linebreak = kwargs.get( 'linebreak', 1 )
+    if messages:
+      msg = string.join( map( str, messages ) )
+      if linebreak: msg += '<br>'
+
+      if self._processStack:
+        outputLogFile = self._processStack[ -1 ].process._outputLogFile
+        if outputLogFile:
+          print >> outputLogFile, msg
+          outputLogFile.flush()
+
+      self._write( msg )
+
+  def _write( self, html ):
+    if not hasattr( self, '_writeHTMLParser' ):
+      self._writeHTMLParser = htmllib.HTMLParser( formatter.AbstractFormatter(
+        formatter.DumbWriter( sys.stdout, 80 ) ) )
+    self._writeHTMLParser.feed( html )
+
+
+  def warning( self, *messages ):
+    self.checkInterruption()
+    bmsg = '<table width=100% border=1><tr><td><font color=orange><img alt="WARNING: " src="' \
+      + os.path.join( neuroConfig.iconPath, 'warning.png' ) + '">'
+    emsg = '</td></tr></table>'
+    apply( self.write, (bmsg, ) + messages + ( emsg, ) )
+
+  def error( self, *messages ):
+    self.checkInterruption()
+    bmsg = '<table width=100% border=1><tr><td><font color=red><img alt="ERROR: " src="' \
+      + os.path.join( neuroConfig.iconPath, 'error.png' ) + '">'
+    emsg = '</td></tr></table>'
+    apply( self.write, (bmsg, ) + messages + ( emsg, ) )
+
+
+  def ask( self, message, *buttons ):
+    self.checkInterruption()
+    self.write( '<pre>' + message )
+    i = 0
+    for b in buttons:
+      self.write( '  %d: %s' % ( i, str(b) ) )
+      i += 1
+    sys.stdout.write( 'Choice: ' )
+    sys.stdout.flush()
+    line = sys.stdin.readline()[:-1]
+    self.write( '</pre>' )
+    try:
+      result = int( line )
+    except:
+      result = None
+    return result
+
+
+  def dialog( self, *args ):
+    self.checkInterruption()
+    return None
+
+
+  def _showException( self ):
+    stackTop = self._processStack[ -1 ]
+    msg = exceptionHTML(
+      beforeError=_t_( 'in <em>%s</em>' ) % ( _t_(stackTop.process.name) + ' ' + str( stackTop.process.instance ) ) )
+    self.write( '<table width=100% border=1><tr><td>'+ msg + '</td></tr></table>' )
+
+
+  def checkInterruption( self ):
+    self._interruptionLock.acquire()
+    try:
+      self._checkInterruption()
+      exception = self._interruptionRequest
+      if exception is not None:
+        self._interruptionRequest = None
+        raise exception
+    finally:
+      self._interruptionLock.release()
+
+
+  def _checkInterruption( self ):
+    self._interruptionLock.acquire()
+    try:
+      if self._interruptionRequest is not None:
+        for function, args, kwargs in self._interruptionActions.values():
+          function( *args, **kwargs )
+        self._interruptionActions.clear()
+    finally:
+      self._interruptionLock.release()
+    return None
+
+  def _addInterruptionAction( self, function, *args, **kwargs ):
+    self._interruptionLock.acquire()
+    try:
+      result = self._interruptionActionsId
+      self._interruptionActionsId += 1
+      self._interruptionActions[ result ] = ( function, args, kwargs )
+    finally:
+      self._interruptionLock.release()
+    return result
+
+  def _removeInterruptionAction( self, number ):
+    self._interruptionLock.acquire()
+    try:
+      if self._interruptionActions.has_key( number ):
+        del self._interruptionActions[ number ]
+    finally:
+      self._interruptionLock.release()
+
+  def _setInterruptionRequest( self, interruptionRequest ):
+    self._interruptionLock.acquire()
+    try:
+      self._interruptionRequest = interruptionRequest
+      self._checkInterruption()
+    finally:
+      self._interruptionLock.release()
+
+
+  def log( self, *args, **kwargs ):
+    if self._processStack:
+      logFile = self._processStack[ -1 ].log
+    else:
+      logFile = neuroConfig.mainLog
+    if logFile is not None:
+      logFile.append( *args, **kwargs )
+
+
+  def getConverter( self, source, dest ):
+    # Check and convert source type
+    if isinstance( source, DiskItem ):
+      source = ( source.type, source.format )
+    elif isinstance( source, ReadDiskItem ):
+      if source.formats:
+        source = ( source.type, source.formats[ 0 ] )
+      else:
+        source = ( source.type, None )
+
+    # Check and convert dest type
+    if isinstance( dest, DiskItem ):
+      dest = ( dest.type, dest.format )
+    elif isinstance( dest, ReadDiskItem ):
+      if dest.formats:
+        dest = ( dest.type, dest.formats[ 0 ] )
+      else:
+        dest = ( dest.type, None )
+    st, sf = source
+    dt, df = dest
+    return getConverter( ( getDiskItemType( st ), getFormat( sf ) ),
+                         ( getDiskItemType( dt ), getFormat( df ) ) )
+
+
+  def createProcessExecutionEvent( self):
+    event = ProcessExecutionEvent()
+    event.setProcess( self.process )
+    if self._processStack:
+      log = self._processStack[0].log
+      if log is not None:
+        event.setLog( log )
+    return event
+
+
+#----------------------------------------------------------------------------
+class ProcessInfo:
+  def __init__( self, id, name, signature, userLevel, category, fileName, roles ):
+    self.id = id
+    self.name = name
+    #TODO: Signature cannot be pickeled
+    self.signature = None
+    self. userLevel = userLevel
+    self.category = category
+    self.fileName = fileName
+    self.roles = tuple( roles )
+    self.valid=True # set to False if process' validation method fails
+    self.procdoc = None
+
+  def html( self ):
+    return '\n'.join( ['<b>' + n + ': </b>' + unicode( getattr( self, n ) ) + \
+                        '<br>\n' for n in ( 'id', 'name', 'signature',
+                                            'userLevel', 'category',
+                                            'fileName', 'roles' )] )
+
+#----------------------------------------------------------------------------
+def getProcessInfo( processId ):
+  if isinstance( processId, ProcessInfo ):
+    result = processId
+  else:
+    result = _processesInfo.get( processId )
+    if result is None:
+      process = getProcess( processId )
+      if process is not None:
+        result = _processesInfo.get( process._id )
+  return result
+
+#----------------------------------------------------------------------------
+def addProcessInfo( processId, processInfo ):
+  _processesInfo[ processId ] = processInfo
+  
+#----------------------------------------------------------------------------
+def getProcess( processId, ignoreValidation=False ):
+  global _askUpdateProcess
+  if processId is None: return None
+  if isinstance( processId, Process ) or ( type(processId) in (types.ClassType, types.TypeType) and issubclass( processId, Process ) ):
+    result = processId
+    id = getattr( processId, '_id', None )
+    if id is not None:
+      process = getProcess( id )
+      if process is not None:
+        result = process
+  elif isinstance( processId, dict ):
+    if processId[ 'type' ] == 'iteration':
+      return IterationProcess( _t_( 'iteration' ), [ getProcessInstance(i) for i in processId[ 'children' ] ] )
+    elif processId[ 'type' ] == 'distributed':
+      return DistributedProcess( _t_( 'Distributed iteration' ), [ getProcessInstance(i) for i in processId[ 'children' ] ] )
+    else:
+      raise TypeError( _t_( 'Unknown process type: %s' ) % ( unicode( processId[type] ) ) )
+  else:
+    result = _processes.get( processId )
+  if result is None:
+    info = _processesInfo.get( processId )
+    if info is None and type( processId ) in types.StringTypes:
+      info = _processesInfoByName.get( processId.lower() )
+    if info is not None:
+      result = _processes.get( info.id )
+      if result is None:
+        result = readProcess( info.fileName, ignoreValidation=ignoreValidation )
+  if result is not None:
+    # Check if process source file have changed
+    fileName = getattr( result, '_fileName', None )
+    if fileName is not None:
+      ntime = os.path.getmtime( fileName )
+      if ntime > result._fileTime:
+        update = 0
+        ask = _askUpdateProcess.get( result._id, 0 )
+        if ask == 0:
+          if neuroConfig.userLevel > 0:
+            r = defaultContext().ask( _t_( '%s has been modified, would you like to update the process <em>%s</em> processes ? You should close all processes windows before reloading a process.' ) % \
+              ( result._fileName, _t_(result.name) ), _t_('Yes'), _t_('No'), _t_('Always'), _t_('Never') )
+            if r == 0:
+              update = 1
+            elif r == 2:
+              update = 1
+              _askUpdateProcess[ result._id ] = 1
+            elif r == 3:
+              update = 0
+              _askUpdateProcess[ result._id ] = 2
+        elif ask == 1:
+          update = 1
+        if update:
+          result = readProcess( fileName )
+  return result
+
+#----------------------------------------------------------------------------
+def getProcessInstanceFromProcessEvent( event ):
+  pipelineStructure = event.content.get( 'id' )
+  if pipelineStructure is None:
+    pipelineStructure = event.content.get( 'pipelineStructure' )
+  result = getProcessInstance( pipelineStructure )
+  if result is not None:
+    for n, v in event.content.get( 'parameters', {} ).get( 'selected', {} ).iteritems():
+      result.setValue( n, v, default=False )
+    for n, v in event.content.get( 'parameters', {} ).get( 'default', {} ).iteritems():
+      result.setValue( n, v, default=True )
+    stack = [ ( result.executionNode(), k, e.get( 'parameters' ), e[ 'selected' ], 
+                e.get( 'executionNodes', {} ) ) for k, e in
+                event.content.get( 'executionNodes', {} ).iteritems() ]
+    while stack:
+      eNodeParent, eNodeName, eNodeParameters, eNodeSelected, eNodeChildren = stack.pop( 0 )
+      eNode = eNodeParent.child( eNodeName )
+      eNode.setSelected( eNodeSelected )
+      if eNodeParameters:
+        for n, v in eNodeParameters[ 'selected' ].iteritems():
+          eNode.setValue( n, v )
+        for n, v in eNodeParameters[ 'default' ].iteritems():
+          eNode.setValue( n, v, default=True )
+      stack += [ ( eNode, k, e.get( 'parameters' ), e[ 'selected' ], 
+                e.get( 'executionNodes', {} ) ) for k, e in eNodeChildren.iteritems() ]
+    windowGeometry = event.content.get( 'window' )
+    if windowGeometry is not None:
+      result._windowGeometry = windowGeometry
+  return result
+
+
+#----------------------------------------------------------------------------
+def getProcessInstance( processIdClassOrInstance ):
+  result = getProcess( processIdClassOrInstance )
+  if isinstance( processIdClassOrInstance, Process ) and \
+     result is processIdClassOrInstance.__class__:
+    result = processIdClassOrInstance
+  elif result is None:
+    if isinstance( processIdClassOrInstance, basestring ) and minfFormat( processIdClassOrInstance )[ 1 ] == minfHistory:
+      event = readMinf( processIdClassOrInstance )[0]
+      result = getProcessInstanceFromProcessEvent( event )
+      if result is not None:
+        result._savedAs = processIdClassOrInstance
+  elif not isinstance( result, Process ):
+    result = result()
+  return result
+
+
+#----------------------------------------------------------------------------
+def allProcessesInfo():
+  return _processesInfo.values()
+
+
+#----------------------------------------------------------------------------
+def getConverter( source, destination ):
+  global _processes
+  result = _converters.get( destination, {} ).get( source )
+  if result is None:
+    dt, df = destination
+    st, sf = source
+    if isSameDiskItemType( st, dt ):
+      while result is None and st:
+        st = st.parent
+        result = _converters.get( ( st, df ), {} ).get( ( st, sf ) )
+  return getProcess( result )
+
+
+#----------------------------------------------------------------------------
+def getConvertersTo( destination, keepType=1 ):
+  global _converters
+  t, f = destination
+  c = _converters.get( ( t, f ), {} )
+  if keepType: return c
+  while not c and t:
+    t = t.parent
+    c = _converters.get( ( t, f ), {} )
+  return dict([(n,getProcess(p)) for n,p in c.items()])
+
+
+#----------------------------------------------------------------------------
+def getConvertersFrom( source ):
+  global _converters
+  result = {}
+  for destination, i in _converters.items():
+    c = i.get( source )
+    t,f = source
+    while not c and t:
+      t = t.parent
+      c = i.get( ( t, f ) )
+    if c:
+      result[ destination ] = getProcess( c )
+  return result
+
+
+#----------------------------------------------------------------------------
+def getViewer( source, enableConversion = 1 ):
+  global _viewers
+  if isinstance( source, DiskItem ):
+    t0 = source.type
+    f = source.format
+  else:
+    t0, f = source
+  t = t0
+  v = _viewers.get( ( t, f ) )
+  while not v and t:
+    t = t.parent
+    v = _viewers.get( ( t, f ) )
+  if not v and enableConversion:
+    converters = getConvertersFrom( (t0, f) )
+    t = t0
+    while not v and t:
+      for tc, fc in converters.keys():
+        if ( tc, fc ) != ( t0, f ):
+          v = getViewer( ( t, fc ), 0 )
+          if v: break
+      t = t.parent
+  p =  getProcess( v )
+  if p and p.userLevel <= neuroConfig.userLevel:
+    return p
+  return None
+
+
+#----------------------------------------------------------------------------
+def runViewer( source, context=None ):
+  if not isinstance( source, DiskItem ):
+    source = ReadDiskItem( 'Any Type', formats.keys() ).findValue( source )
+  if context is None:
+    context = defaultContext()
+  viewer = getViewer( source )
+  return context.runProcess( viewer, source )
+
+
+#----------------------------------------------------------------------------
+def getDataEditor( source, enableConversion = 0 ):
+  global _dataEditors
+  if isinstance( source, DiskItem ):
+    t0 = source.type
+    f = source.format
+  else:
+    t0, f = source
+  t = t0
+  v = _dataEditors.get( ( t, f ) )
+  while not v and t:
+    t = t.parent
+    v = _dataEditors.get( ( t, f ) )
+  if not v and enableConversion:
+    converters = getConvertersFrom( (t0, f) )
+    t = t0
+    while not v and t:
+      for tc, fc in converters.keys():
+        if ( tc, fc ) != ( t0, f ):
+          v = getDataEditor( ( t, fc ), 0 )
+          if v: break
+      t = t.parent
+  p =  getProcess( v )
+  if p and p.userLevel <= neuroConfig.userLevel:
+    return p
+  return None
+
+#----------------------------------------------------------------------------
+def getImporter( dataType ):
+  global _processes
+  result = _importers.get( dataType, None )
+  return getProcess( result )
+
+#----------------------------------------------------------------------------
+_extToModuleDescription ={
+  'py': ('.py', 'r', imp.PY_SOURCE),
+  'pyo': ('.py', 'r', imp.PY_COMPILED),
+  'pyc': ('.py', 'r', imp.PY_COMPILED),
+  'so': ('.so', 'rb', imp.C_EXTENSION),
+}
+
+#----------------------------------------------------------------------------
+def readProcess( fileName, category=None, ignoreValidation=False ):
+  result = None
+  try:
+    global _processModules, _processes, _processesInfo, _processesInfoByName, _readProcessLog, _askUpdateProcess
+    # If we do not remove user level here, default userLevel for process
+    # will be this one.
+    g = globals()
+    try:
+      del g[ 'userLevel' ]
+    except KeyError:
+      pass
+
+    extPos = fileName.rfind('.')
+    fileExtension = fileName[ extPos+1: ]
+    moduleName = os.path.basename( fileName[ : extPos ] )
+    dataDirectory = fileName[ : extPos ] + '.data'
+    if not os.path.exists( dataDirectory ):
+      dataDirectory = None
+
+    # Load module
+    moduleDescription = _extToModuleDescription.get( fileExtension )
+    if moduleDescription is None:
+      raise RuntimeError( HTMLMessage(_t_( 'Cannot load a process from file <em>%s</em>' ) % (fileName,)) )
+    currentDirectory = os.getcwdu()
+    fileIn = open( fileName, moduleDescription[ 1 ] )
+    try:
+      if dataDirectory:
+        os.chdir( dataDirectory )
+      try:
+        processModule = imp.load_module( moduleName, fileIn, fileName, moduleDescription )
+      except NameError, e:
+        showException(beforeError=( _t_('In <em>%s</em>') ) % ( fileName, ), afterError=_t_(' (perharps you need to add the line <tt>"from neuroProcesses import *"</tt> at the begining of the process)'))
+        return
+        #raise RuntimeError( HTMLMessage( _t_('In <em>%s</em>')  % ( fileName, ) + " <b>"+str(e)+"</b> "+_t_(' (perharps you need to add the line <tt>"from neuroProcesses import *"</tt> at the begining of the process)') )) 
+    finally:
+      fileIn.close()
+      if dataDirectory:
+        os.chdir( currentDirectory )
+
+    _processModules[ moduleName ] = processModule
+
+    if category is None:
+      category = os.path.basename( os.path.dirname( fileName ) )
+    class NewProcess( Process ):
+      _instance = 0
+
+    NewProcess._id = moduleName
+    NewProcess.name = moduleName
+    NewProcess.category = category
+    NewProcess.dataDirectory = dataDirectory
+    # The callback registered in processReloadNotifier are called whenever
+    # a change in the process source file lead to a reload of the process.
+    # The argument is the new process.
+    NewProcess.processReloadNotifier = notifier.Notifier( 1 )
+
+    # Optional attributes
+    for n in ( 'signature', 'execution', 'name', 'userLevel', 'roles' ):
+      v = getattr( processModule, n, None )
+      if v is not None:
+        setattr( NewProcess, n, v )
+    v = getattr( processModule, 'category', None )
+    if v is not None:
+      NewProcess.category = v
+
+    # Other attributes
+    for n, v in processModule.__dict__.items():
+      if type( v ) is types.FunctionType and \
+        g.get( n ) is not v:
+        args = inspect.getargs( v.func_code )[ 0 ]
+        if args and args[ 0 ] == 'self':
+          setattr( NewProcess, n, v )
+          delattr( processModule, n )
+        else:
+          setattr( NewProcess, n, staticmethod( v ) )
+        
+
+    NewProcess._fileName = fileName
+    NewProcess._fileTime = os.path.getmtime( fileName )
+
+    processInfo = ProcessInfo( id = NewProcess._id,
+      name = NewProcess.name,
+      signature = NewProcess.signature,
+      userLevel = NewProcess.userLevel,
+      category = NewProcess.category,
+      fileName = NewProcess._fileName,
+      roles = getattr( NewProcess, 'roles', () ),
+    )
+    _processesInfo[ processInfo.id ] = processInfo
+    _processesInfoByName[ NewProcess.name.lower() ] = processInfo
+
+    # Process validation
+    if not ignoreValidation:
+      v = getattr( processModule, 'validation', None )
+      if v is not None:
+        try:
+          v()
+        except Exception, e:
+          processInfo.valid=False
+          if _readProcessLog is not None:
+            _readProcessLog.append( NewProcess._id, html=exceptionHTML(), icon='warning.png' )
+          raise ValidationError( HTMLMessage(_t_('In <em>%s</em>') % ( fileName, ) + ': ' + str( e )) )
+
+    oldProcess = _processes.get( NewProcess._id )
+    if oldProcess is not None:
+      for n in ( 'execution', 'initialization', 'checkArguments' ):
+        setattr( oldProcess, n, getattr( NewProcess, n ).im_func )
+      oldProcess._fileTime = NewProcess._fileTime
+
+    _processes[ processInfo.id ] = NewProcess
+    result = NewProcess
+
+    def warnRole( processInfo, role ):
+      print >> sys.stderr, 'WARNING: process', processInfo.name, '(' + processInfo.fileName + ') is not a valid', role + '. Add the following line in the process to make it a', role + ':\nroles =', ( role, )
+    roles = getattr( processModule, 'roles', () )
+#    if NewProcess.category.lower() == 'converters/automatic':
+    if 'converter' in roles:
+      global _converters
+      possibleConversions = getattr( NewProcess, 'possibleConversions', None )
+      if possibleConversions is None:
+        sourceArg, destArg = NewProcess.signature.values()[ : 2 ]
+        for destFormat in destArg.formats:
+          for sourceFormat in sourceArg.formats:
+            dest = _converters.setdefault( ( destArg.type, destFormat ), {} )
+            dest[ ( sourceArg.type, sourceFormat ) ] = NewProcess._id
+      else:
+        for source, dest in possibleConversions():
+          source = ( getDiskItemType( source[0] ), getFormat( source[1] ) )
+          dest = ( getDiskItemType( dest[0] ), getFormat( dest[1] ) )
+          d = _converters.setdefault( dest, {} )
+          d[ source ] = NewProcess._id
+          
+    elif NewProcess.category.lower() == 'converters/automatic':
+      warnRole( processInfo, 'converter' )
+    if 'viewer' in roles:
+#    elif NewProcess.category.lower() == 'viewers/automatic':
+      global _viewers
+      arg = NewProcess.signature.values()[ 0 ]
+      if hasattr( arg, 'formats' ):
+        for format in arg.formats:
+          _viewers[ ( arg.type, format ) ] = NewProcess._id
+    elif NewProcess.category.lower() == 'viewers/automatic':
+      warnRole( processInfo, 'viewer' )
+    if 'editor' in roles:
+#    elif NewProcess.category.lower() == 'editors/automatic':
+      global _dataEditors
+      arg = NewProcess.signature.values()[ 0 ]
+      if hasattr( arg, 'formats' ):
+        for format in arg.formats:
+          _dataEditors[ ( arg.type, format ) ] = NewProcess._id
+    elif NewProcess.category.lower() == 'editors/automatic':
+      warnRole( processInfo.fileName, 'editor' )
+    if 'importer' in roles:
+      global _importers
+      sourceArg, destArg = NewProcess.signature.values()[ : 2 ]
+      _importers[destArg.type]=NewProcess._id
+
+    if _readProcessLog is not None:
+      _readProcessLog.append( processInfo.id,
+        html='<h1>' + processInfo.id + '</h1>' + processInfo.html(),
+        icon = 'icon_process.png' )
+
+    if oldProcess is not None:
+      oldProcess.processReloadNotifier( result )
+
+  except ValidationError:
+    raise
+  except:
+    if _readProcessLog is not None:
+      _readProcessLog.append( os.path.basename( fileName ), html=exceptionHTML(), icon='error.png' )
+    raise
+  return result
+
+#----------------------------------------------------------------------------
+def readProcesses( processesPath ):
+  # New style processes initialization
+  global _processesInfo
+  global _allProcessesTree
+  processesCacheFile = os.path.join( neuroConfig.homeBrainVISADir, 'processCache' )
+  processesCache = {}
+  if neuroConfig.fastStart and os.path.exists( processesCacheFile ):
+    try:
+      processesCache = cPickle.load( open( processesCacheFile, 'r' ) )
+    except:
+      raise
+      if neuroConfig.mainLog is not None:
+        neuroConfig.mainLog.append( 'Cannot read processes cache',
+          html=exceptionHTML( beforeError=_t_( 'Cannot read processes cache file <em>%s</em>' ) % ( processCacheFile, ) ),
+          icon='warning.png' )
+  
+  # create all processes tree while reading processes in processesPath
+  _allProcessesTree=ProcessTree("Various processes", "all processes",editable=False, user=False)
+  for processesDir in processesPath:
+    _allProcessesTree.addDir(processesDir, "", processesCache)
+  for toolbox in neuroConfig.allToolboxes():
+    toolbox.getProcessTree()
+  
+  # save processes cache
+  try:
+    cPickle.dump( _processesInfo, open( processesCacheFile, 'wb' ) )
+  except:
+    if neuroConfig.mainLog is not None:
+      neuroConfig.mainLog.append( 'Cannot write processes cache',
+        html=exceptionHTML( beforeError=_t_( 'Cannot write processes cache file <em>%s</em>' ) % ( processCacheFile, ) ),
+        icon='warning.png' )
+
+#----------------------------------------------------------------------------
+class ProcessTree( EditableTree ):
+  """
+  Represents a hierarchy of processes. 
+  It contains branches : category/directory, and leaves: processes.
+  """
+  defaultName = "New"
+  
+  def __init__( self, name=None, id=None, icon=None, tooltip=None, editable=True, user=True,  content=[]):
+    """
+    Represents a process tree. It can be a user profile or a default tree. 
+    This object can be saved in a minf file (in userProcessTree.minf for user profiles). That's why it defines __getinitkwargs__ method.  this method's result is stored in the file and passed to the constructor to restore the object. 
+    Some changes to the constructor attributes must be reflected in getinitkwargs method, but changes can affect the reading of existing minf files. 
+    """
+    if id is None and name is not None:
+      id=string.lower(name)
+    super(ProcessTree, self).__init__(_t_(name), id, editable, content)
+    self.initName=name
+    self.onAttributeChange("name", self.updateName)
+    self.user = bool( user )
+    if icon is not None:
+      self.icon=icon
+    elif self.user:
+      self.icon = 'folder_home.png'
+    else:
+      self.icon = 'list.png'
+    if tooltip!=None:
+      self.tooltip=_t_(tooltip)
+    else: self.tooltip=self.name
+    self.setValid() # tag the tree as valid or not : it is valid if it contains at least one valid child (or no child)
+  
+  def __getinitargs__(self):
+    content=self.values()
+    return ( self.initName, self.id, self.icon, self.tooltip, self.modifiable, self.user, content )
+  
+  def __getinitkwargs__(self):
+    content=self.values()
+    return ( (), {'name' : self.initName, 'id': self.id, 'icon' : self.icon, 'editable' : self.modifiable, 'user' : self.user, 'content' : content} )
+
+  def addDir(self, processesDir, category="", processesCache={}):
+    """
+    @type processesDir: string
+    @param processesDir: directory where processes are recursively searched.
+    @type category: string
+    @param category: category prefix for all processes found in this directory (usefull for toolboxes : all processes category begins with toolbox's name.
+    @processesCache: dictionary
+    @param processesCache: a dictionary containing previously saved processes info stored by id. Processes that are in this cache are not reread.
+    """
+    if os.path.isdir( processesDir ):
+      stack = [ ( self, processesDir, category ) ]
+      while stack:
+        parent, dir, category = stack.pop( 0 )
+        p = []
+        try:
+          listdir = os.listdir( dir )
+        except:
+          showException()
+          listdir=[]
+        for f in sorted( listdir ):
+          ff = os.path.join( dir, f )
+          if os.path.isdir( ff ):
+            if not ff.endswith( '.data' ):
+              if category:
+                c = category + '/' + f
+              else:
+                c = f
+              b = ProcessTree.Branch( name=f, id=c.lower(), editable=False )
+              parent.add( b )
+              stack.append( ( b, ff, c ) )
+            else:
+              continue
+          elif ff.endswith( '.py' ) or ff.endswith('.so'):
+            p.append( ( f, ff ) )
+        for f, ff in p:
+          id = f[:-3]
+          try:
+            processInfo = processesCache.get( id )
+            if processInfo is None:
+              readProcess( ff, category=category ) # two arguments : process fullpath and category (directories separated by /)
+            else:
+              addProcessInfo(id, processInfo)
+          except ValidationError:# it may occur a validation error on reading process
+            pass
+          except:
+            showException()
+          processInfo = getProcessInfo( id )
+          if processInfo is not None:
+            l = ProcessTree.Leaf( id=processInfo.id, editable=False)
+            parent.add( l )
+
+  def setEditable(self, bool):
+    """
+    Makes the tree editable. All its children becomes modifiable and deletable.
+    """
+    self.modifiable=bool
+    for item in self.values():
+      item.setAllModificationsEnabled(bool)
+
+  def setName(self, n):
+    """Renames item. The notifier notifies the change."""
+    if self.name==self.tooltip:
+      self.tooltip=n # change also the tooltip if it is equal to the name
+    EditableTree.setName(self, n)
+      
+  def setValid(self):
+    """
+    Sets the tree as valid if it has no child and it is a user tree or if it has at least one valid child.
+    Empty user tree is valid because it can be a newly created user tree and the user may want to fill it later.
+    """
+    valid=False
+    if len(self)==0 and self.user:
+      valid=True
+    else:
+      for item in self.values():
+        if item.valid:
+          valid=True
+          break
+    self.valid=valid 
+
+  def update(self):
+    """
+    Updates recursively valid attribute for each item in the tree. This method must be called when the validity may have change. For exemple when the userLevel has changed, some process must become visibles. 
+    """
+    if len(self)==0 and self.user:
+      self.valid=True
+    else:
+      validChild=False
+      for item in self.values():
+        item.update(self.user)
+        if item.valid:
+          validChild=True
+      self.valid=validChild
+  
+  def updateName(self):
+    """
+    When the tree name is changed after construction. The new name must be saved if the tree is saved in minf file. So change the initName. 
+    """
+    self.initName=self.name
+
+  #----------------------------------------------------------------------------
+  class Branch( EditableTree.Branch ):
+    """
+    A directory that contains processes and/or another branches. Enables to organise processes by category.
+    """
+    _defaultIcon = 'folder.png'
+    defaultName = "New category"
+
+    def __init__( self, name=None, id=None, editable=True, icon=None, content=[] ):
+      if icon is None:
+        icon = self._defaultIcon
+      defaultName = _t_( self.defaultName )
+      if id is None or id == defaultName:
+        if name is not None and name != defaultName:
+          id=string.lower(name)
+        else:
+          id=None
+      #from brainvisa.toolboxes import getToolbox
+      #toolbox=getToolbox(id)
+      #if toolbox is not None:
+         #name=toolbox.name
+      # even if the tree isn't editable, copy of elements is enabled
+      # (that  doesn't change the tree but enable to  copy elements in another tree)
+      super(ProcessTree.Branch, self).__init__(_t_(name), id, icon, _t_("category"), True, editable, editable, content)
+      self.initName=name # store the name given in parameters to return in getinitkwargs, so save in minf format will store init name before potential traduction
+      self.onAttributeChange("name", self.updateName)
+      #EditableTree.Branch.__init__(self, unicode(name), unicode(icon), _t_("category"), True, editable, editable, content)
+      self.setValid() # set the validity of the branch relatively to its content. As the branch can be constructed with a content (when it is restored from minf file for example), it is usefull to do so.
+
+    def __getinitargs__(self):
+      content=self.values()
+      return ( self.initName, self.id, self.modifiable, self.icon, content)
+    
+    def __getinitkwargs__(self):
+      content=self.values()
+      return ( (), {'name' : self.initName, 'id' : self.id, 'editable' : self.modifiable, 'content' : content})
+  
+    def __reduce__( self ):
+      """This method is redefined for enable deepcopy of this object (and potentially pickle).
+      It gives the arguments to pass to the init method of the object when creating a copy
+      """
+      return ( self.__class__, self.__getinitargs__(), None, None, None )
+
+    def setValid(self):
+      """
+      Sets the branch as valid if it has no child or if it has at least one valid child.
+      Empty branch is valid because it can be a newly created user branch and the user may want to fill it later.
+      """
+      valid=False
+      if len(self)==0:
+        valid=True
+      else:
+        for item in self.values():
+          if item.valid:
+            valid=True
+            break
+      self.valid=valid 
+      
+    def update(self, userTree=False):
+      """
+      Updates recursively valid attribute for each item in the branch. This method must be called when the validity may have change. For exemple when the userLevel has changed, some processes must become visibles. 
+      """
+      if len(self)==0:
+        self.valid=True
+      else:
+        validChild=False
+        for item in self.values():
+          item.update(userTree)
+          if item.valid:
+            validChild=True
+        self.valid=validChild
+   
+    def updateName(self): 
+      self.initName=self.name
+  #----------------------------------------------------------------------------
+  class Leaf( EditableTree.Leaf ):
+    """
+    A ProcessTree.Leaf represents a process. 
+    """
+    def __init__( self, id, name=None, editable=True, icon=None, *args, **kwargs ):
+      processInfo=getProcessInfo(id)
+      pname=name
+      if name is None:
+        pname=id
+      if processInfo is not None:
+        if name is None:
+          pname=processInfo.name
+        if icon is None: # set icon according to process role and user level
+          if 'viewer' in processInfo.roles:
+            icon = 'viewer.png'
+          elif 'editor' in processInfo.roles:
+            icon = 'editor.png'
+          elif 'converter' in processInfo.roles:
+            icon = 'converter.png'
+          else:
+            icon = 'icon_process_' + str( min( processInfo.userLevel, 3 ) ) + '.png'
+      super(ProcessTree.Leaf, self).__init__(_t_(pname), id, icon, _t_("process"), True, editable, editable)
+      self.initName=name
+      self.onAttributeChange("name", self.updateName)
+      self.setValid(processInfo)
+      
+    def __getinitargs__(self):
+      return (self.id, self.initName, self.modifiable, self.icon)
+    
+    def __getinitkwargs__(self):
+      return ( (), {'id' : self.id, 'name' : self.initName, 'editable' :  self.modifiable}) # do not save icon in minf file for processes because it is determined by its role and user level
+
+    def __reduce__( self ):
+      """This method is redefined for enable deepcopy of this object (and potentially pickle).
+      It gives the arguments to pass to the init method of the object when creating a copy
+      """
+      return ( self.__class__,  self.__getinitargs__(), None, None, None )
+
+    def setValid(self, processInfo):
+      """
+      A ProcessTree.Leaf is valid if the id references a process in _processesInfo and if the process' userLevel is lower or equal than global userLevel and the related process is valid (validation function succeeded).
+      """
+      valid=False
+      if processInfo is not None:
+        if (processInfo.userLevel <= neuroConfig.userLevel) and processInfo.valid:
+          valid=True
+      self.valid=valid
+
+    def update(self, userTree=False):
+      """
+      Called when the parent tree is updated because some validity conditions have changed.
+      Evaluates the validity of the reprensented process.
+      """
+      processInfo=getProcessInfo(self.id)
+      self.setValid(processInfo)
+   
+    def updateName(self): 
+      self.initName=self.name
+
+#----------------------------------------------------------------------------
+class ProcessTrees(ObservableAttributes, ObservableSortedDictionary):
+  """
+  Model for the list of process trees in brainvisa.
+  It is a dictionary which maps each tree with its id.
+  It contains several process trees :
+    - default process trees : all processes in brainvisa/processes (that are not in a toolbox). Not modifiable by user.
+    - toolboxes : processes grouped by theme. Not modifiable by user.
+    - user process trees : lists created by the user and saved in a minf file.
+  A tree can be set as default. It becomes the current tree at Brainvisa start.
+  """
+
+  def __init__(self, name=None):
+    if name is None:
+      name = _t_('Toolboxes')
+    # set the selected tree
+    super(ProcessTrees, self).__init__()
+    self.name=name
+    self.userProcessTreeMinfFile=os.path.join( neuroConfig.homeBrainVISADir, 'userProcessTrees.minf' )
+    self.selectedTree=None
+    self.load()
+
+  def add(self, processTree):
+    """
+    Add an item in the dictionary. If this item's id is already present in the dictionary as a key, add the item's content in the corresponding key. 
+    recursive method
+    """
+    key=processTree.id
+    if self.has_key(key):
+        for v in processTree.values(): # item is also a dictionary and contains several elements, add each value in the tree item
+          self[key].add(v)
+    else: # new item
+      self[key]=processTree
+
+  def load(self):
+    """
+    Loads process trees :
+      - a tree containing all processes that are not in toolboxes: allProcessesTree;
+      - toolboxes as new trees.
+      - user trees that are saved in a minf file in user's .brainvisa directory.
+    """
+    allTree=allProcessesTree()
+    self.add(allTree)
+    # append toolboxes process trees
+    from brainvisa.toolboxes import allToolboxes
+    for toolbox in allToolboxes(): # add each toolbox's process tree
+      self.add(toolbox.getProcessTree())
+      # no longer add toolboxes in allProcessesTree, it was redundant
+      # and add the toolbox as a branch in all processes tree
+      #allTree.add(ProcessTree.Branch(toolbox.processTree.name, toolbox.processTree.id, False, toolbox.processTree.icon, toolbox.processTree.values()))
+    for toolbox in allToolboxes(): # when all toolbox are created, add links from each toolbox to others
+      for processTree in toolbox.links():
+        self.add(processTree) # if a toolbox with the same id already exists, it doesn't create a new tree but update the existing one
+        # report the links in the toolbox that are in all processes tree
+        #if processTree.id != allTree.id: # except if the links points directly to all processes tree, in that case, there's nothing else to do
+        #  allTree.add(ProcessTree.Branch(processTree.name, processTree.id, False, processTree.icon, processTree.values()))
+    # sort processes in alphabetical order in toolboxes and in all processes tree
+    for toolbox in allToolboxes():
+      toolbox.processTree.sort()
+    allTree.sort()
+    # append other trees here if necessary
+    # ....
+    # load user trees from minf file
+    userTrees=None
+    currentTree=None
+    if os.access(self.userProcessTreeMinfFile, os.F_OK): # if the file exists, read it
+      try:
+        format, reduction=minfFormat( self.userProcessTreeMinfFile )
+        if (format=="XML") and (reduction=="brainvisa-tree_2.0"):
+          userTrees, currentTree=iterateMinf( self.userProcessTreeMinfFile )
+      except:
+        print "Error while reading", self.userProcessTreeMinfFile
+    if userTrees != None:
+      for userTree in userTrees:
+        self.add(userTree)
+    # search selected tree. 
+    if currentTree is not None:
+      # The id of the selected tree is stored in the minf file. But before, the name was stored, so if the value is not a key, search by names
+      if self.has_key(currentTree):
+        self.selectedTree=self[currentTree]
+      else:
+        for tree in self.values():
+          if tree.name==currentTree:
+            self.selectedTree=tree
+            break
+    else:
+      self.selectedTree=allTree
+    # update items validity it depends on processes validity and user level : must update to invalid branches that only contain invalid items
+    self.update()
+
+  def save(self):
+    """
+    Write trees created by the user in a minf file to restore them next time Brainvisa starts.
+    """
+    writer = createMinfWriter( self.userProcessTreeMinfFile, reducer='brainvisa-tree_2.0' )
+    # save trees created by user
+    writer.write( [ i for i in self.values() if i.user] )
+    # save selected tree name
+    writer.write(self.selectedTree.id)
+    writer.close()
+
+  def update(self):
+    """
+    Updates all trees (evaluates validity of each items).
+    """
+    for item in self.values():
+      item.update()
+#----------------------------------------------------------------------------
+_mainProcessTree = None
+def updatedMainProcessTree():
+  """
+  @rtype: ProcessTrees
+  @return: Brainvisa list of trees :  all processes tree, toolboxes, user trees
+  """
+  global _mainProcessTree
+  if _mainProcessTree is None:
+    _mainProcessTree = ProcessTrees()
+  return _mainProcessTree
+
+#----------------------------------------------------------------------------
+def allProcessesTree():
+  """
+  Get the tree that contains all processes. It is created when processes in processesPath are first read.
+  Toolboxes processes are also added in this tree.
+  @rtype: ProcessTree
+  @return: the tree that contains all processes.
+  """
+  global _allProcessesTree
+  return _allProcessesTree
+
+#----------------------------------------------------------------------------
+def updateProcesses():
+  """
+  Called when option userLevel has changed (neuroConfigGUI.validateOptions()). 
+  Associated widgets will be updated automatically because they listens for changes.
+  """
+  _mainProcessTree.update()
+
+#----------------------------------------------------------------------------
+def mainThread():
+  return _mainThread
+
+#----------------------------------------------------------------------------
+def defaultContext():
+  return _defaultContext
+
+
+#----------------------------------------------------------------------------
+def initializeProcesses():
+  #TODO: A class would be more clean instead of all these global variables
+  global _processModules, _processes, _processesInfo, _processesInfoByName, \
+         _converters, _viewers, _mainThread, _defaultContext, _dataEditors, _importers,\
+         _askUpdateProcess, _readProcessLog
+  _mainThread = threading.currentThread()
+  _processesInfo = {}
+  _processesInfoByName = {}
+  _processes = {}
+  _processModules = {}
+  _askUpdateProcess = {}
+  _converters = {}
+  _viewers = {}
+  _dataEditors = {}
+  _importers = {}
+  _defaultContext = ExecutionContext()
+  if neuroConfig.mainLog is not None:
+    _readProcessLog = neuroConfig.mainLog.subLog()
+    neuroConfig.mainLog.append( _t_('Read processes'),
+      html='<em>processesPath</em> = ' + str( neuroConfig.processesPath ),
+      children=_readProcessLog, icon='icon_process.png' )
+  else:
+    _readProcessLog = None
+  atexit.register( cleanupProcesses )
+
+
+#----------------------------------------------------------------------------
+def cleanupProcesses():
+  global _processModules, _processes, _processesInfo, _processesInfoByName, \
+         _converters, _viewers, _mainThread, _defaultContext, _dataEditors, _importers, \
+         _askUpdateProcess, _readProcessLog
+  _converters = {}
+  _viewers = {}
+  _dataEditors = {}
+  _importers = {}
+  _processesInfo = {}
+  _processesInfoByName = {}
+  _processes = {}
+  _processModules = {}
+  _askUpdateProcess = {}
+  _mainThread = None
+  _defaultContext = None
+  if _readProcessLog is not None:
+    _readProcessLog.close()
+    _readProcessLog = None
+
+# ---
+
+if not neuroDistributedProcesses:
+  # TODO: use log
+  logmsg = _t_( 'Distributed execution has been disabled due to the ' \
+    'following error:<br>' )
+  logmsg += str( neuroDistribException )
+  #defaultContext().log( \
+    #_t_( 'Distributed execution' ), html=logmsg, icon='warning' )
+  print logmsg
+  del neuroDistribException, logmsg
+
+
+
+
+import neuroHierarchy
+from neuroHierarchy import *
+from brainvisa.history import HistoryBook, minfHistory

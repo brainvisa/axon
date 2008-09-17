@@ -1,0 +1,282 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>TranslationEditor</class>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>TranslationEditor</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>713</width>
+            <height>711</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>TranslationEditor</string>
+    </property>
+    <property name="icon">
+        <pixmap>image0</pixmap>
+    </property>
+    <vbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <widget class="QSplitter">
+            <property name="name">
+                <cstring>splitter3</cstring>
+            </property>
+            <property name="orientation">
+                <enum>Horizontal</enum>
+            </property>
+            <widget class="QListView">
+                <column>
+                    <property name="text">
+                        <string>Source</string>
+                    </property>
+                    <property name="clickable">
+                        <bool>true</bool>
+                    </property>
+                    <property name="resizable">
+                        <bool>true</bool>
+                    </property>
+                </column>
+                <property name="name">
+                    <cstring>BV_lstSources</cstring>
+                </property>
+                <property name="allColumnsShowFocus">
+                    <bool>true</bool>
+                </property>
+            </widget>
+            <widget class="QTabWidget">
+                <property name="name">
+                    <cstring>tabWidget2</cstring>
+                </property>
+                <widget class="QWidget">
+                    <property name="name">
+                        <cstring>tab</cstring>
+                    </property>
+                    <attribute name="title">
+                        <string>Translations</string>
+                    </attribute>
+                    <vbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QLayoutWidget">
+                            <property name="name">
+                                <cstring>layout1</cstring>
+                            </property>
+                            <vbox>
+                                <property name="name">
+                                    <cstring>unnamed</cstring>
+                                </property>
+                                <widget class="QLabel">
+                                    <property name="name">
+                                        <cstring>textLabel1</cstring>
+                                    </property>
+                                    <property name="text">
+                                        <string>Source text:</string>
+                                    </property>
+                                </widget>
+                                <widget class="QTextEdit">
+                                    <property name="name">
+                                        <cstring>BV_txtSource</cstring>
+                                    </property>
+                                    <property name="textFormat">
+                                        <enum>PlainText</enum>
+                                    </property>
+                                    <property name="readOnly">
+                                        <bool>true</bool>
+                                    </property>
+                                </widget>
+                                <widget class="QLabel">
+                                    <property name="name">
+                                        <cstring>textLabel1_2</cstring>
+                                    </property>
+                                    <property name="text">
+                                        <string>English:</string>
+                                    </property>
+                                </widget>
+                                <widget class="QTextEdit">
+                                    <property name="name">
+                                        <cstring>BV_txten</cstring>
+                                    </property>
+                                    <property name="textFormat">
+                                        <enum>PlainText</enum>
+                                    </property>
+                                    <property name="readOnly">
+                                        <bool>false</bool>
+                                    </property>
+                                </widget>
+                                <widget class="QLabel">
+                                    <property name="name">
+                                        <cstring>textLabel1_2_2</cstring>
+                                    </property>
+                                    <property name="text">
+                                        <string>Français:</string>
+                                    </property>
+                                </widget>
+                                <widget class="QTextEdit">
+                                    <property name="name">
+                                        <cstring>BV_txtfr</cstring>
+                                    </property>
+                                    <property name="textFormat">
+                                        <enum>PlainText</enum>
+                                    </property>
+                                    <property name="readOnly">
+                                        <bool>false</bool>
+                                    </property>
+                                </widget>
+                            </vbox>
+                        </widget>
+                    </vbox>
+                </widget>
+                <widget class="QWidget">
+                    <property name="name">
+                        <cstring>tab</cstring>
+                    </property>
+                    <attribute name="title">
+                        <string>Usage</string>
+                    </attribute>
+                    <vbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QSplitter">
+                            <property name="name">
+                                <cstring>splitter6</cstring>
+                            </property>
+                            <property name="orientation">
+                                <enum>Horizontal</enum>
+                            </property>
+                            <widget class="QListView">
+                                <column>
+                                    <property name="text">
+                                        <string>File</string>
+                                    </property>
+                                    <property name="clickable">
+                                        <bool>true</bool>
+                                    </property>
+                                    <property name="resizable">
+                                        <bool>true</bool>
+                                    </property>
+                                </column>
+                                <column>
+                                    <property name="text">
+                                        <string>Line</string>
+                                    </property>
+                                    <property name="clickable">
+                                        <bool>true</bool>
+                                    </property>
+                                    <property name="resizable">
+                                        <bool>true</bool>
+                                    </property>
+                                </column>
+                                <property name="name">
+                                    <cstring>BV_lstUsage</cstring>
+                                </property>
+                            </widget>
+                            <widget class="QLayoutWidget">
+                                <property name="name">
+                                    <cstring>layout6</cstring>
+                                </property>
+                                <vbox>
+                                    <property name="name">
+                                        <cstring>unnamed</cstring>
+                                    </property>
+                                    <widget class="QLabel">
+                                        <property name="name">
+                                            <cstring>BV_labUsage</cstring>
+                                        </property>
+                                        <property name="text">
+                                            <string></string>
+                                        </property>
+                                    </widget>
+                                    <widget class="QTextBrowser">
+                                        <property name="name">
+                                            <cstring>BV_txtUsage</cstring>
+                                        </property>
+                                        <property name="wordWrap">
+                                            <enum>NoWrap</enum>
+                                        </property>
+                                    </widget>
+                                </vbox>
+                            </widget>
+                        </widget>
+                    </vbox>
+                </widget>
+            </widget>
+        </widget>
+        <widget class="QLayoutWidget">
+            <property name="name">
+                <cstring>layout3</cstring>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <spacer>
+                    <property name="name">
+                        <cstring>spacer1</cstring>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>Expanding</enum>
+                    </property>
+                    <property name="sizeHint">
+                        <size>
+                            <width>141</width>
+                            <height>20</height>
+                        </size>
+                    </property>
+                </spacer>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>BV_btnOk</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Ok</string>
+                    </property>
+                    <property name="accel">
+                        <string>Alt+O</string>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>BV_btnCancel</cstring>
+                    </property>
+                    <property name="text">
+                        <string>&amp;Cancel</string>
+                    </property>
+                    <property name="accel">
+                        <string>Alt+C</string>
+                    </property>
+                </widget>
+            </hbox>
+        </widget>
+    </vbox>
+</widget>
+<images>
+    <image name="image0">
+        <data format="PNG" length="2636">89504e470d0a1a0a0000000d494844520000001c0000002208060000004c7db94900000a134944415448898d97798c5df575c73ff777efbb6f9df7e66db37a160fd8cc78a1deb089210e8bd3402889704cdb283522695168a5b469ab48ed1f552322485b355185da4a550a492ba571080a81d6401bc0a12c7643c79eb119cfbecfbcd9debedc77dfdd7efde319278606f1938e747597efe79e73cfef9e73143ee21a9e9c8c8682c1c7ea0deb84e338fa46b138dc198fbf2e54f5bf7b52c92be978bcfc5174940fbbb8b0b111a91ac68978347a22572a1fffc7a79e0ebff81f6728150a1c3c728447bef430470f1ec0749cfaf8ccac3d313737293cf9edaf9efac28f749fcffdc8c0bf7aeabb5dc73f7edb37f3e5ca67f3a5526c6b6393bf7efc0956666741ca6bf7094d63e8d0211ef9f2231cdab3878d42819a697274efde6f8784f88bae8e76e3fddadafb4fccafadf5699af6fa6a2ed7f7fc7fbd82d568303536c6e6ea6af3fd1401d203053cc721116f655b7b3bab990c42d3989c9e21158bfd890a19e05b1feae15d0f7d49fdfbc7fef2dccf86876fc9e50b3cf3c367a94dccb1b555c46bd81858481cc2e9045dbb06599e9a4200d1789c63b71de5f8dd77f1d21b6fd2dfd7c75d1fbbb5dc168f6f3fb26777fe5702a756567eefa9679efdcee8e53196df384f7061151c3080121a59c5a681cd9e23fb397ef201565733f4f5f6b29ac990db58a790cda108c1e6e6165f7cf821eeb9e3d8ab0777ee7c48d3b4cc07427afaa7afea33cb2b7ff4e4dffc2db7e50b7cc136086a0a738a4abf7079c66d6113404a4aa522dd9d9decdd3544341261b5bb8b72a542c0efa75cad32393ec1f7ffe55fd9353478774b3094a419deeb81e964fc2bcffde4853d070b457ec7abf189b4424f58c7f254d62a06a3f93ac3f8008b703848cd30b06c9b1bfb7aa954abf46deb4253350aa5121b1b9be8a1103ffef733041ffcdc13c0fdd712edbd83a5b5f5dfcfbcf21af734aa1c6a11f42763a8031d04023e6a8ac273da9d38beaf8208a38808956a95643c8ea6aaecbd69279da914f158947432c11db71fe5be130f303e36c6c2eaea7dc353d3fbae03ce653277adae64b6fb2f0cd30e748535e88bc19d05c6ca351ecca7a9a4be0efe5f07b18d686b3bfdbdbd44c2411445c1711c3c29715d979a6150a9d548c4e3006c64f34ad930aef7f0ad914bbfbbfebf23a2c334e8f2436b4040ae88f7bac3b70a0126134f43fc2010004ea131442418e0a6fe7ec626a7518460239be3fc85112667e7999b5f24e0f7237c3ee6e7e6985d5afafc3be3130a8078776aba53a8ea83b90b975080a8068a9450b079fe9d06ff264f2106ee2572ab8232781806bf46f7ae47d9b9bd9f9f8f5ea658ad62361a7852d2b02ce6171679776c8cb12be3842211161616c86c6e0da513f1530022914c0c38b6e39b9d59a6848ae3c178de62ae54e7f172142bf14562c71a7cf99f2fd2fd50195a1432a5127ffed81394aa55da53292a350314d0751d9f4fa3bbbb8b50284426b3c6dccc0cb942816cb1f839004d2acac18d8d4dd62b5592e89cab3b8cd77dd8c088b81be2fb40f7a8290e56c90712f285222d6a8370384c2ade4abe5c464a49341221128990686d259bcfd3dbdbc3ecf838eb6beb8ccf2f1c00d0b2c5e281cdad2d0ccfe50a4172a88c280a360e52e906a120323aa7bf76046342800b7edd4f315744281008f851ab02d3b288462398a6892204bb6eda492a99e4742ec7e5d1518e1dbdb56b7269e9466d3d9bdb55af9b68c9040d01ab8e45d8e7a1083f920a4a701ddf861f77094212423a0c241bc463ad048b73440c1d4fab63682a56a9489bdca43cb3487f603785895176b4585cb8b244b95c169de9b4aed54d9389d9253ef5e829242e66dd64dbb66e344d450815cf7b1ec3309052e2380e8661f049f512a7c4abb072068a2eecde061ffb03987b05a6cf425dc0bb92df0a28b0dde11b198dc9a9690cd3bc55840301caa512a15000bfaed3d696a6a3bd0dcf6b026cdba6502c22a54408d1cc4864f32f2c015bc0fa16acbe052d09086bd070a0d280ba079ea4cf67b1bcb484a6aa0734574a14a151ad55518520954a51a9548845a3ecdb3d44a154666e7191f5cd2d5cd725954ca2d655b0afee645740c686375f8644182c173c091e60db20e1e6884b299bc5931ea2afb3c3ececee20166da15aadb1b2b242a9522110f033327685e5b50ca6d9a0d16850ad56715d97603000aa027ec02fc153202b61a10c1540b95a843c099e24ee83b0d2848bf5adec707b228d6ddb445a2284c361e2b118f57a9dad6c0ec3a8e3b82eb16894443c8ea22898a6d9145425e85ed3d4ab6009f835f0095005280a9e84d648844abd8e0804fc6f0c7427191b9bc66a34f0a447c3b2f0f97ca8aa4add34715d17c771f0f97c38aedbf4c0032c0186005bb9beb2ea40586f9a2ab03d41b2ad9dcd5cbe22b62512e70eeebfd92ee7f2f8fd7e4aa532b373f3d46a4653d7f5d0751ff26a2fe3d334c4b590011660294db8a38026c1ef41ab0b4189677914aa9048b7f1e6c8c884e8e9ec5c4ba792a32d91181d6d693ccf43d775b6b259c2a1302029164b689a46a3d1c0753d229148d3a35f368f66483da5b961bb43e07814375d967292ceee1e3ae2095300e44be5176e3ffc6bbcf6daebe8ba4e762b8bcfe7c3f55c3c4f62d4eb589685ed38d88e8de55a4d88269be20109423633d703822ad41c9c4d87b965c9dbc500370c0ec9de74eaa200b8b1bbfbd9cffcc63d763814a37135214cd3a4582c619a2689781c4dd3080583f8751dc7717ef1bdb4ab3009e812a212140f162db6565ce657c1bee553a0286f7fe2f02d5302a0b7a37dbc54adfed3c39f3f49381c4655558ac5e235af0ac522b6e35c2bb0a6ac43c405df7b99a9401cd893869e386c48aa8b1613f3928b598d1d9ffe2cb6657fe7ba1663a0b3e3c9b6b678ad9acfd3dfdfc7fafa067ebf9fb6749a80df4fc0efa76e9a0845c1edde0eb7ef871d51e809425f043e7e0c066f81e52ad6a2c3c494c7cc02ac0f1e20d1de3e7b68f0a6d3f0be36f1e5f3fff3670dcbfae6d33ff821f1548a443c8ee7b99866034dd3b02c8b7038cc91dddbf8cdbbbbc07807c5b3c05c84fc129c3f877db1c0d8bb0e9727e0e74e92c34f7fcf332cfbf8a3274f9c959ef70b0f01eed8bfefc972ad76f6e47df7b23039c9d4f434c552995028442a9504a0d168204408d44e1001d8b804e75f84177e8a359c676ac2616c0adef6d2dcfc774f4a9fdfff8d474f9e38fb1ee303b3c5c2ca4ae8fcf8e4b39663dffbd29917999c9ba76f60809ede1e3ccf23100870ac6399fbd36fc3d23464ca785b2e8575879925c9d8324c751da4ef0fff54b6b4b67ee5d47d9ffe0700e9ba0a8a22ffdf61a66a18e2cc5be7ee4788c7171617769f3dfb332e5cbacc0d37dc402295e2643cc303d5ff445836eb79c9c535c985720b819bef44ec3dc28dfb0fbd7660e78eaf0f0d6c7fe33d4de97928427cf8b856ae56fd6f8e5efaedd5cdad3f2e572a7b46464755a35c461712cba848b39c87581b437bf72987f7efb35a5b5a9e53e0273de9f48f0607b67f605c939ef7e1c05f5ea75f7a79c7fa56f6339acfd726747d291609ebe996e8dc91bd7bb66af57aceafeba5646b6cfd573d2f3d0f293dfe0f9e3cdb571dfa67350000000049454e44ae426082</data>
+    </image>
+</images>
+<connections>
+    <connection>
+        <sender>BV_btnOk</sender>
+        <signal>clicked()</signal>
+        <receiver>TranslationEditor</receiver>
+        <slot>accept()</slot>
+    </connection>
+    <connection>
+        <sender>BV_btnCancel</sender>
+        <signal>clicked()</signal>
+        <receiver>TranslationEditor</receiver>
+        <slot>reject()</slot>
+    </connection>
+</connections>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

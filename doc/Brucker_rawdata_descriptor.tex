@@ -1,0 +1,141 @@
+\documentclass[a4paper]{article}
+
+% for extended summary
+%\usepackage[summary]{nnsp2e}
+% final paper
+\usepackage{nnsp2e}
+\usepackage[latin1]{inputenc}
+\usepackage[francais]{babel}
+\usepackage{amssymb}%enumerate,theorem,setspace
+\usepackage{shortvrb,subeqnarray}
+\usepackage{color}
+\usepackage{array}
+
+% Example definitions.
+% --------------------
+\input{alphabet}   
+\input{abrege}	
+\input{abrmath}  
+%\input{old/abrege}	
+%\input{old/abrmath}  
+\input{beginend}   
+\input{transdef}
+\title{Description des données brutes sur l'IRM 3T Bruker}
+
+\author{Cyril Poupon, \today}
+%\author{Jan Larsen and Cyril Goutte\\
+%        Department of Mathematical Modeling, Building 321\\
+%        Technical University of Denmark, DK-2800 Lyngby, Denmark\\
+%        Phone: +45 4525 3923,3921\\
+%        Fax: +45 4587 2599\\
+%        E-mail: jl,cg@imm.dtu.dk\\
+%        Web: eivind.imm.dtu.dk}
+
+
+\begin{document}
+\maketitle
+
+Voici la manière dont je suppose organiser les répertoires des données
+brutes et reconstruites sur l'IRM 3T \textbf{Bruker} (ca ne veut pas dire qu'il n'y a a pas  d'autres fichiers dedans, mais je n'en tiens pas compte):
+
+\section{Différentes organisations des données}
+
+Dans la suite \texttt{<XXXXXX>} indique le répertoire dont le nom est typiquement \texttt{bruXXXX} 
+
+\subsection{Données brutes Paravision 1.0}
+
+\bcc
+\btabu{rcl}
+\texttt{<XXXXXX>/} && nom du répertoire\\
+\texttt{<XXXXXX>/acqp} &       $\longrightarrow$    & contient les params d'acquisition bas niveau\\
+\texttt{<XXXXXX>/imnd} &       $\longrightarrow$    & contient les params d'acquistion haut niveau\\
+\texttt{<XXXXXX>/fid}  &        $\longrightarrow$   & contient les données complexes du $k$-space
+\etabu
+\ecc
+
+\subsection{Données brutes Paravision 3.0}
+\bcc
+\btabu{rcl}
+
+\texttt{<XXXXXX>/}&&nom du répertoire \\
+\texttt{<XXXXXX>/acqp}&       $\longrightarrow$    & contient les param d'acquisition bas niveau\\
+\texttt{<XXXXXX>/method }   &$\longrightarrow$&contient les params d'acquistion haut niveau (idem imnd)\\
+\texttt{<XXXXXX>/fid}&&
+\etabu
+\ecc
+
+\subsection{Données reconstruites Paravision 1.0}
+\bcc
+\btabu{rcl}
+\texttt{<XXXXXX>/}&&\\
+\texttt{<XXXXXX>/reco}       &$\longrightarrow$&contient les params de la reconstruction\\
+\texttt{<XXXXXX>/../../acqp}&&\\
+\texttt{<XXXXXX>/../../imnd}&&\\
+\texttt{<XXXXXX>/2dseq}     &$\longrightarrow$&contient les données réelles reconstruites
+\etabu
+\ecc
+
+\subsection{Données reconstruites Paravision 3.0}
+\bcc
+\btabu{rcl}
+\texttt{<XXXXXX>/} && nom du répertoire\\
+\texttt{<XXXXXX>/reco} &$\longrightarrow$&contient les params de la reconstruction \\
+\texttt{<XXXXXX>/../../acqp} &       $\longrightarrow$    & contient les params d'acquisition bas niveau \\
+\texttt{<XXXXXX>/../../method} &$\longrightarrow$&contient les params d'acquistion haut niveau\\
+\texttt{<XXXXXX>/2dseq} &$\longrightarrow$&contient les donnees réelles reconstruites \\
+\etabu
+\ecc
+
+\section{Structure des répertoires à l'acquisition}
+
+En fait, à l'acquisition, un répertoire non modifié Bruker a la tête suivante
+(je n'ai représenté que les fichiers utiles... d'autres fichiers peuvent être
+présents dans cette arborescence, mais sont crées lors de post-processings
+réalisés sur la station Paravision, et ne nous servent pas, comme par
+exemple des fichiers ROI qui decrivent des régions d'interet utilisées par
+l'outil Bruker de stat sur ROIs,....):
+
+\textbf{Paravision 1.0:}
+%\begin{verbatim}
+\bcc
+\btabu{rcl}
+\texttt{<YYYYYY>/1/} & $\longrightarrow$ & serie 1 de l'exam \texttt{YYYYYY} \\
+\texttt{<YYYYYY>/1/imnd}        && \\              
+\texttt{<YYYYYY>/1/acqp}  && \\
+\texttt{<YYYYYY>/1/imnd}  && \\
+\texttt{<YYYYYY>/1/fid}   && \\
+\texttt{<YYYYYY>/1/pdata/}             &$\longrightarrow$ & reconstruction de la serie 1\\
+\texttt{<YYYYYY>/1/pdata/1/}          & $\longrightarrow$&  reconstruction \Numero 1 de la serie 1\\
+\texttt{<YYYYYY>/1/pdata/1/reco} && \\
+\texttt{<YYYYYY>/1/pdata/1/2dseq}&&  \\
+\texttt{<YYYYYY>/1/pdata/2/}          &$\longrightarrow$& reconstruction \Numero 2 de la serie 1 \\
+\texttt{<YYYYYY>/1/pdata/2/reco} &&  \\
+\texttt{<YYYYYY>/1/pdata/2/2dseq}&& \\
+\texttt{<YYYYYY>/2/}                     &$\longrightarrow$ & serie 2 de l'exam \texttt{YYYYYY} \\
+\texttt{<YYYYYY>/2/acqp}  &&  \\
+\texttt{<YYYYYY>/2/imnd}  &&  \\
+\texttt{<YYYYYY>/2/fid} &&    \\
+\texttt{<YYYYYY>/2/pdata/}             &$\longrightarrow$& reconstruction de la serie 2\\
+\texttt{<YYYYYY>/2/pdata/1/}          &$\longrightarrow$& reconstruction \Numero 1 de la serie 2\\
+\texttt{<YYYYYY>/2/pdata/1/reco}  &&  \\
+\texttt{<YYYYYY>/2/pdata/1/2dseq} &&  \\
+\texttt{<YYYYYY>/2/pdata/2/}         & $\longrightarrow$& reconstruction \Numero 2 de la serie 2\\
+\texttt{<YYYYYY>/2/pdata/2/reco}  &&\\
+\texttt{<YYYYYY>/2/pdata/2/2dseq} &&\\
+\texttt{<YYYYYY>/2/pdata/3/ }         &$\longrightarrow$& reconstruction \Numero 3 de la serie 2\\
+\texttt{<YYYYYY>/2/pdata/3/reco}  && \\
+\texttt{<YYYYYY>/2/pdata/3/2dseq} &&
+\etabu
+\ecc
+%\end{verbatim}
+
+\subsection{Différentes reconstructions sur les mêmes données}
+
+Comme je l'ai déjà évoqué, des mêmes données brutes peuvent être
+reconstruites avec des paramètres de reconstruction differents, d'où
+l'existence possible de plusieurs recontructions pour une serie de
+données brutes (à titre d'exemple, des données acquises avec une
+matrice du $k$-space de 64x64 peuvent tres bien être reconstruites
+avec une matrice de 64x64 ou 128x128 en faisant du zero-padding)
+
+\edoc

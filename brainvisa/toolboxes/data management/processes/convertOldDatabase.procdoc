@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="en">
+    <xhtml name="short">Database hierarchy has changed since BrainVISA 3.1. Databases created with earlier versions are not compatible with this version. This process  converts old databases to BrainVISA 3.1 hierarchy. It is compound of three steps : conversion, checking and cleaning.</xhtml>
+    <d name="parameters">
+      <xhtml name="main_toolbox">Main toolbox used on this database. Unrecognized data in segment and graphe directories will be automatically moved in this toolbox directory. If you choose None, unrecognized data will stay in segment and graphe.</xhtml>
+      <xhtml name="undo">If true, the process will try to undo the last conversion of the database.</xhtml>
+      <xhtml name="database">The database to process.</xhtml>
+    </d>
+    <xhtml name="long"><p>The first process of the pipeline is "Convert database".</p>
+<p>The second process is "Check database". In this process, the user can choose "Run later" instead of "Run now" to validate. So, the actions are not performed immediately, but kept for the end of the pipeline.</p>
+<p>The third process is "Clean database". This step is not mandatory, you can unselect it if you have data not linked to brainvisa in your database.</p></xhtml>
+  </d>
+</d>
+</minf>

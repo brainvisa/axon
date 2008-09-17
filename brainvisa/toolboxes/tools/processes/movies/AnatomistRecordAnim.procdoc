@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d length="2">
+  <d length="3" name="fr">
+    <xhtml name="short">Enregistre une séquence de points de vue sur une fenêtre Anatomist de manière à pouvoir rejouer une animation régulière</xhtml>
+    <d length="2" name="parameters">
+      <xhtml name="window"/>
+      <xhtml name="output_anim"/>
+    </d>
+    <xhtml name="long">2 modes de fonctionnement:
+<ul>
+<li>soit utiliser une fenêtre Anatomist déjà existante : il faut pour cela qu'il y en ait une et une seule ouverte par BrainVISA (pour éviter les ambiguïtés)</li>
+<li>soit le traitement ouvre une nouvelle fenêtre, dans laquelle il faut alors placer les objets à visualiser</li>
+</ul>
+
+<br/>
+Les objets à visualiser sont enregistrés avec l'animation, moyennant quelques contraintes:
+<ul>
+<li>Ils doivent être chargés dans Anatomist directement à partir d'un fichier, c'est ce nom de fichier qui est utilisé pour les recharger ensuite: cela exclut donc (pour l'instant en tout cas) les fusions, les éléments de graphe et autres sous-objets</li>
+<li>Ils doivent être chargés dans Anatomist par BrainVISA, de manière à avoir un identifiant pour BrainVISA qui permette d'y accéder</li>
+</ul>
+<br/>
+
+Les couleurs et sélections des objets sont sauvées avec l'animation de manière à être changés continument au cours de l'animation.<br/>
+
+Pour jouer une animation ou en faire un film MPEG, utiliser le traitement <a href="AnatomistViewAnim.html">Anatomist View Animation</a></xhtml>
+  </d>
+  <d length="3" name="en">
+    <xhtml name="short">Records a sequence of points of view from an Anatomist window, a smooth animation can be replayed afterwards</xhtml>
+    <d length="2" name="parameters">
+      <xhtml name="window"/>
+      <xhtml name="output_anim"/>
+    </d>
+    <xhtml name="long">2 operation modes:
+<ul>
+<li>either use an existing Anatomist window: for this there must be one and only one Anatomist window opened by BrainVISA (to avoid ambiguities)</li>
+<li>either the process opens a new 3D window, you must then put objects to view in it</li>
+</ul>
+
+<br/>
+Objects to view are recorded with the animation, with a few constraints:
+<ul>
+<li>Objects must be loaded in Anatomist directly from a file, the filenameq are used to reload them: this excludes (up to now) fusions, graph elements and other sub-objects.</li>
+<li>They must be loaded in Anatomist by BrainVISA so as to have an identifier in BrainVISA to access them</li>
+</ul>
+<br/>
+
+Colors and selections of objects are saved with animations: they can be changed continuously during the animation.<br/>
+
+To play a recorded animation or make a MPEG film from it, use the <a href="AnatomistViewAnim.html">Anatomist View Animation</a> process.</xhtml>
+  </d>
+</d>
+</minf>

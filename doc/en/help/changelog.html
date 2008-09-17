@@ -1,0 +1,364 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+  
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+
+  
+  
+  <title>BrainVISA ChangeLog</title>
+  <style type="text/css">
+    BODY {
+	  text-align: justify;
+	  margin: 0.5cm;
+	}
+  </style>
+</head>
+
+
+<body alink="#ff0000" bgcolor="#ffffff" link="#0000ee" text="#000000" vlink="#551a8b">
+
+
+<center>
+<h1>BrainVISA ChangeLog</h1>
+</center>
+
+    
+<hr width="100%"> <br>
+
+<a href="#version-3.1.2"><b>Version 3.1.2</b></a><br>
+<a href="#version-3.1.1"><b>Version 3.1.1</b></a><br>
+<a href="#version-3.1.0"><b>Version 3.1.0</b></a><br>
+<a href="#version-3.0.2"><b>Version 3.0.2</b></a><br>
+<a href="#version-3.0.1"><b>Version 3.0.1</b></a><br>
+<a href="#version-3.0.0"><b>Version 3.0.0</b></a><br>
+<a href="#version-2.3.5"><b>Version 2.3.5</b></a><br>
+<a href="#version-2.3.4"><b>Version 2.3.4</b></a><br>
+<a href="#version-2.3.2"><b>Version 2.3.2</b></a><br>
+<a href="#version-2.3.0"><b>Version 2.3.0</b></a><br>
+<a href="#version-1.5"><b>Version 1.5</b></a><br>
+
+<br>
+
+<!---------------------------------------------------------------------------->
+<h2><a name="version-3.1.2">Version 3.1.2</a></h2>
+<blockquote>
+Nothing yet.
+</blockquote>
+
+
+<!---------------------------------------------------------------------------->
+<h2><a name="version-3.1.1">Version 3.1.1</a></h2>
+<blockquote>
+
+<h3>General bug fixes:</h3>
+<li>Fixed some importation processes
+</li>
+<li>Fixes in database update</li>
+<li>Fixes in database conversions (3.0 to 3.1) when converting "dirty" databases
+</li>
+<li>Fix: in some conditions, user typed values in processes GUI where not taken into account
+</li>
+<li>Many less important little fixes
+</li>
+
+</blockquote>
+
+
+<!---------------------------------------------------------------------------->
+<h2><a name="version-3.1">Version 3.1</a></h2>
+<blockquote>
+
+<h3>Core:</h3>
+<blockquote>
+  <li>New organization of BrainVISA processes toolboxes. Each toolbox can define its own processes, extend database ontology, extend BrainVISA GUI (for instance add specific entry in preferences window), <i>etc</i>. A new panel has been added to BrainVISA main window to select toolboxes.</li>
+  <li>BrainVISA user directory (<code>$HOME/.brainvisa</code> under Linux and Mac and most often <code>C:\Documents and settings\{user name}\</code> under Windows) is now considered as a toolbox named 'My processes'.</li>
+  <li>New preferences panel with a tab for each group of options. Options are now saved in <code>options.minf</code> in BrainVISA user directory.</li>
+  <li>It is now possible to add custom processes trees in the main window (saved in <code>userProcessTrees.minf</code> in BrainVISA user directory).</li>
+  <li>Database system had been rewritten for better performance and scalability. The new system is based on <a href="http://www.sqlite.org/">SQLite</a>.</li>
+  <li>Default databases organization had been modified. Old organization (named <code>brainvisa-3.0</code>) is not compatible with new <code>brainvisa-3.1.0</code> organization. A converter had been written to convert from <code>brainvisa-3.0</code> to <code>brainvisa-3.1.0</code>.</li>
+  <li>Added support for <a href="http://nifti.nimh.nih.gov/nifti-1/">NIfTI-1</a> format.</li>
+  <li>An experimental framework for distribution of processes on several computers had been released.</li>
+  <li>The Python API to control Anatomist from Python had been completely rewritten (and documented).</li>
+  <li>Management of referentials and transformations had been improved.</li>
+  <li>New features in process <em>Database Hierarchy Browser</em>: it is possible to search data, copy data using drag and drop, call a viewer, remove data, and convert graphs (using process Compute Cortical Fold Graph Upgrade From Old) through this interface.</li>
+  <li>When right-clicking a process on the main window, a contextual menu allow to open, edit or iterate the processes.</li>
+  <li>Several BrainVISA can be launched by the same user without messing up the log files. Each BrainVISA instance now have its own session.</li>
+  <li>Processes and their parameters can be saved in a <code>*.bvproc</code> file. Opening this file in BrainVISA restore the process window.</li>
+  <li>There are so many other things that we truly regret that we did not update this changelog regularly.</li>
+
+</blockquote>
+
+<h3>Toolboxes</h3>
+<blockquote>
+
+  <h4>T1 MRI:</h4>
+  <blockquote>
+    Tools for segmentation of various anatomical objects (hemispheres, grey matter, white matter, cortical sulci and gyri, <i>etc.</i>) from T1 weighted MRI.
+  </blockquote>
+  
+  <h4>Sulci</h4>
+  <blockquote>
+  </blockquote>
+  
+  <h4>Diffusion and Tracking:</h4>
+  <blockquote>
+    Diffusion MR image analysis and fiber tracking.
+    <p>
+      <li>New diffusion model added: QBall imaging.</li>
+      <li>Tracking can be don either with DTI model or QBall model.</li>
+      <li>New regularized probabilistic tracking methods.</li>
+    </p>
+  </blockquote>
+  
+  
+  <h4>Datamind:</h4>
+  <blockquote>
+  </blockquote>
+  
+  <h4>Cortical surface</h4>
+  <blockquote>
+  </blockquote>
+  
+  <h4>Structural analysis</h4>
+  <blockquote>
+  </blockquote>
+  
+  <h4>Biology</h4>
+  <blockquote>
+  </blockquote>
+  
+  <h4>Nuclear Imaging</h4>
+  <blockquote>
+  </blockquote>
+  
+  <h4>Morphometry</h4>
+  <blockquote>
+  </blockquote>
+  
+  <h4>TMS</h4>
+  <blockquote>
+  </blockquote>
+  
+  <h4>Data management</h4>
+  <blockquote>
+  Core BrainVISA toolbox. Contains processes for databases management: data importation, databases checking, update and exploration.
+  </blockquote>
+  
+  <h4>Tools</h4>
+  <blockquote>
+  Core BrainVISA toolbox. Contains general processes that could not be put in another, more specific, toolbox.
+  </blockquote>
+</blockquote>
+</blockquote>
+
+
+
+<!---------------------------------------------------------------------------->
+
+<h2><a name="version-3.0.2">Version 3.0.2 (05/05/2006)</a></h2>
+<blockquote>
+
+<h3>General bug fixes:</h3>
+<li>Fixed a <em>command not found</em> error that prevented to use command lines programs from BrainVISA package (such as Aims... or Vip... commands) when BrainVISA was installed in a directory with space(s) in its name.</li>
+
+<h3>Diffusion and Fiber tracking:</h3>
+
+<li>During fiber tracking, the size of fascicles is limited to 20 000 points to avoid infinite loops in some cases.</li>
+
+<h3>Improvements</h3>
+
+<li>Documentation of a category (i.e. category_documentation.minf file) do not have to be in the main BrainVISA directory to be taken into account.
+</li>
+
+</blockquote>
+
+
+<!---------------------------------------------------------------------------->
+<h2><a name="version-3.0.1">Version 3.0.1 (10/10/2005)</a></h2>
+<blockquote>
+
+<h3>Bug fixes:</h3>
+<li> Fixed a crash when using bundles features viewers</li>
+<li>Log file is not expanded (therefore it is not read) at startup time. It avoids possible errors preventing BrainVISA to start when two BrainVISA instances are writing on the same cache file.</li>
+<li>Fixed an error in DiskItem comparison operations</li>
+<li>Changed the way system commands are run by BrainVisa on Mac and Windows. It seems to avoid hangups on Mac when BrainVisa is run from the desk or finder, and allows to stop processes on Windows.</li>
+<li>The rotating icon animation when processes are running has been made more lightweight: it could cause severe slowdown on old and slow machines.</li>
+
+<h3>Diffusion and Fiber tracking:</h3>
+<li>Removed options related to bundles selection from fascicle tracking process</li>
+<li>An error was fixed in linear interpolation of Aims library. This
+interpolation is used in several algorithms including diffusion and
+fiber tracking.</li>
+
+<h3>Improvements</h3>
+
+<li>Link with Matlab: multiple Matlab versions may now be supported. The matlab module in 
+  BrainVisa can switch between several pymat module compiled for either matlab 6 or 7. 
+  We have built pymat modules for both matlab versions in the binary packages (Linux, Windows, 
+  Mac, althrough they have not been tested at all on Mac)
+</li>
+
+</blockquote>
+
+
+<!---------------------------------------------------------------------------->
+<h2><a name="version-3.0.0">Version 3.0.0 (29/06/2005)</a></h2>
+<blockquote>
+Well, the changelog hasn't been maintained for this version... There has been quite 
+many changes, the most noticeable in the core of BrainVISA is a new pipeline system.&nbsp;</div>
+</blockquote>
+
+
+
+<!---------------------------------------------------------------------------->
+<h2><a name="version-2.3.5">Version 2.3.5 (30/11/2004)</a></h2>
+<blockquote>
+
+<h3>Changes in the core:</h3>
+
+
+<li>Fix in combo boxes creation in database browser that broke compatibility with new 
+  Python-Qt binding library (SIP 4). This bug made the importation processes break on the 
+  Mac version, and probably the Windows version too.
+</li>
+
+<li>Fix a possible crash in the redraw routines when a database browser combo was selected. 
+  Especially, this bug caused dirty crashes on the Mac version that made it quite unusable.
+</li>
+</blockquote>
+
+
+<!---------------------------------------------------------------------------->
+<h2><a name="version-2.3.4">Version 2.3.4 (17/11/2004)</a></h2>
+<blockquote>
+
+
+<h3>Changes in the core:</h3>
+
+
+<li>Improvements in the installation program: it is not really part of BrainVisa, but there 
+  is no other place yet for it. Installation in directories containing space characters now work 
+  on all systems (esp. windows), 
+  running the SHFJEnvironmentVariables scripts is no longer necessary to run all Aims and Vip 
+  commands from a terminal, re-running the setup program is safe and may be used after moving the 
+  installation directory.
+</li>
+
+<li>Changes to work with more recent versions of SIP/PyQt</li>
+
+
+
+<h3>Changes in processes:</h3>
+
+
+<li>SPM to AIMS normalization matrixes converter now also works with SPM2 normalization 
+  files
+</li>
+</blockquote>
+
+
+
+<!---------------------------------------------------------------------------->
+<h2><a name="version-2.3.2">Version 2.3.2 (07/07/2004)</a></h2>
+<blockquote>
+
+
+<h3>Changes in the core:</h3>
+
+
+<li>Fixed an ambiguity in the standard database hierarchy that caused the anatomical 
+  pipeline to fail at the end (graphToTalairach)</li>
+
+<li>Various fixes in C and C++ libraries used by BrainVisa processes. Amongst other things, this 
+  update should fix some problems on Windows XP (ROI graph writing, anatomical pipeline failure when 
+  using filenames containing space characters...)
+</li>
+
+<li>GUI improvement in DiskItem finder box for data importation</li>
+
+<li>...</li>
+
+
+
+<h3>Changes in processes:</h3>
+
+
+<li>Fixes in SPM-&gt;AIMS transformation converter</li>
+
+<li>SPM normalization/coregistration matrix converter, SPM images 
+  importation for anatomy, multiple cortical folds recognitions, ...
+</li>
+
+<li>in anatomy/pipeline/PrepareSubject, the parameter <tt>allow_flip_initial_MRI</tt>
+  has been set to <tt>false</tt> by default to avoid mistakes</li>
+
+<li>Mesh smoothing process failed when filenames contained spaces</li>
+
+</blockquote>
+
+
+<!---------------------------------------------------------------------------->
+<h2><a name="version-2.3.0">Version 2.3.0 (18/02/2004)</a></h2>
+<blockquote>
+
+
+<h3>Changes in the core:</h3>
+
+
+<li>Setup menus for options</li>
+
+<li>Databases setup is done via the menus: editing <tt>options.py</tt> is no longer 
+necessary.</li>
+
+<li>Bug reports options</li>
+
+<li>Better help system and french documentation. Ahem, er, yes, french. That's true...</li>
+
+<li>Porting to Windows</li>
+
+<li>Tooltips in processes GUI</li>
+
+<li>A new process category: editors, are similar to viewers but are dedicated to data 
+  modification. For now, a "label image" editor calls the ROI edition tool of Anatomist
+</li>
+
+<li>Lots of other things I don't remember</li>
+
+
+<h3>Changes in processes:</h3>
+
+
+<li>Diffusion and tracking pipeline</li>
+
+<li>Anatomical pipeline:
+  
+  <ul>
+
+  <li>subject preparation now takes care of image orientations</li>
+
+  <li>the pipeline also creates the head mesh</li>
+
+  
+  </ul>
+
+</li>
+
+<li>Some cleanup has been done in the multiple processes of BrainVISA: the userLevels 
+  have been modified in some cases so as to show in basic level only really useful 
+  ones (pipelines etc).
+</li>
+
+</blockquote>
+
+
+<!---------------------------------------------------------------------------->
+<h2><a name="version-1.5"></a>Version 1.5 (23/05/2003)</h2>
+<blockquote>
+There was no changelog at his time.
+</blockquote>
+
+</body>
+</html>
+
