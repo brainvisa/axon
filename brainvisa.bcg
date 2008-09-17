@@ -9,7 +9,7 @@ class BrainvisaComponent( GenericMakerComponent ):
 
 
   def dependencies( self ):
-    return [ SqliteComponent, PythonComponent, QtUIComponent, 'soma' ]
+    return [ SqliteComponent, PythonComponent, QtUIComponent, 'soma-base' ]
 
 
   def beforeVersionChange( self, newver, perforce ):
