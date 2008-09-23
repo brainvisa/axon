@@ -57,6 +57,7 @@ from neuroProcesses import *
 from neuroHierarchy import *
 from neuroDataGUI import *
 from neuroProcessesGUI import *
+import neuroHierarchy
 from neuroHierarchyGUI import *
 from backwardCompatibleQt import *
 from minfExtensions import initializeMinfExtensions
@@ -229,3 +230,5 @@ if neuroConfig.shell:
 
 
 
+if neuroConfig.newDatabases:
+  neuroHierarchy.databases.currentThreadCleanup()

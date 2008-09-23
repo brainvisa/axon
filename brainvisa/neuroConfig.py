@@ -43,7 +43,7 @@ import shutil
 from distutils.spawn import find_executable
 from soma.wip.application.api import Application
 from soma.qt3gui.api import ApplicationQt3GUI
-from brainvisa.configuration.api import initializeConfiguration, readConfiguration, setSPM99Compatibility
+from brainvisa.configuration.api import initializeConfiguration, readConfiguration, setSPM99Compatibility, DatabaseSettings
 
 from soma.html import htmlEscape
 from soma.uuid import Uuid
@@ -255,8 +255,8 @@ dataPath= []
 for p in ( os.path.join( os.environ.get( 'SHFJ_SHARED_PATH' ), 'shfj-' + shortVersion ),
            os.path.join( os.environ.get( 'SHFJ_SHARED_PATH' ), 'shfj' ) ):
   if os.path.isdir( p ):
-
-    dataPath.insert( 0, p )
+    dataPath.insert( 0, DatabaseSettings( p ) )
+    break
 clearCacheRequest = False
 cacheUpdateRequest = False
 logFileName = None
@@ -316,7 +316,7 @@ def editConfiguration():
   newDataPath = dataPath[:1]
   for fso in configuration.databases.fso:
     if fso.selected:
-      newDataPath.append( fso.directory )
+      newDataPath.append( DatabaseSettings( fso.directory ) )
   if dataPath != newDataPath:
     dataPath = newDataPath
     if newDatabases:

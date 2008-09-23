@@ -46,17 +46,29 @@ userLevel = 0
 
 signature = Signature( 
   'database', Choice(), 
-  'main_toolbox', Choice(None, "t1mri", "pet"),
+  'segment_default_destination', Choice(None, "t1mri", "pet"),
+  'graphe_default_destination', Choice(None, "t1mri_folds", "t1mri_roi", "pet_roi"),
   'undo', Boolean()
  )
+ 
+def setCheckSelection( self, undo ):
+  eNode = self.executionNode()
+  if undo:
+    eNode.CheckDatabase.setSelected( False )
+  else:
+    eNode.CheckDatabase.setSelected( True )
 
 
 def initialization( self ):
   databases=[(h.name, h) for h in reversed(neuroHierarchy.hierarchies())]# reverse order of hierarchies to have brainvisa shared hierarchy at the end of the list
   self.signature['database'].setChoices(*databases)
   self.database=databases[0][1]
-  self.main_toolbox="t1mri"
+  self.segment_default_destination="t1mri"
+  self.graphe_default_destination="t1mri_folds"
   self.undo=False
+
+  self.setOptional("segment_default_destination")
+  self.setOptional("graphe_default_destination")
 
   eNode = SerialExecutionNode( self.name, parameterized=self )
 
@@ -81,14 +93,19 @@ def initialization( self ):
   eNode.addLink( 'CheckDatabase.database', 'database' )
   eNode.addLink( 'database', 'CheckDatabase.database' )
 
-  eNode.addLink( 'ConvertDatabase.main_toolbox', 'main_toolbox' )
-  eNode.addLink( 'main_toolbox', 'ConvertDatabase.main_toolbox' )
+  eNode.addLink( 'ConvertDatabase.segment_default_destination', 'segment_default_destination' )
+  eNode.addLink( 'segment_default_destination', 'ConvertDatabase.segment_default_destination' )
   
+  eNode.addLink( 'ConvertDatabase.graphe_default_destination', 'graphe_default_destination' )
+  eNode.addLink( 'graphe_default_destination', 'ConvertDatabase.graphe_default_destination' )
+
   eNode.addLink( 'ConvertDatabase.undo', 'undo' )
   eNode.addLink( 'undo',  'ConvertDatabase.undo' )
   
   eNode.addLink( 'CleanDatabase.undo', 'undo' )
   eNode.addLink( 'undo',  'CleanDatabase.undo' )
+   
+  eNode.addLink( None, 'undo', self.setCheckSelection )
   
   self.setExecutionNode( eNode )
 

@@ -4,8 +4,8 @@
   <d name="en">
     <xhtml name="short">This process is usefull if you want to use a database created with a BrainVISA version ealier than 3.1. Files organization has changed since version 3.1, so these databases must be converted in order to have data correctly identified.</xhtml>
     <d name="parameters">
-      <xhtml name="main_toolbox">Main toolbox used on this database. Unrecognized data in segment and graphe directories will be automatically moved in thi
-s toolbox directory. If you choose None, unrecognized data will stay in segment and graphe.</xhtml>
+      <xhtml name="graphe_default_destination">The destination where you want to put unrecognized data found in graphe directory. By default, unrecognized data is put in t1mri folds directory. But you can choose to put it in t1mri roi or in pet roi directory. If you choose None, unrecognized data will stay in graphe directory. </xhtml>
+      <xhtml name="segment_default_destination">The destination where you want to put unrecognized data found in segment directory. By default, unrecognized data is put in t1mri segmentation directory. But you can choose to put it in pet segmentation directory. If you choose None, unrecognized data will stay in segment directory. </xhtml>
       <xhtml name="undo">If True the process reverts previous conversion.</xhtml>
       <xhtml name="database">Choose the database to convert. </xhtml>
     </d>

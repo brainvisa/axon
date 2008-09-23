@@ -787,7 +787,7 @@ if neuroConfig.newDatabases:
     Then, an instance of that converter must be added to this class's components list
     """
     
-    def __init__(self, db, context=None, defaultToolbox=None):
+    def __init__(self, db, context=None, segmentDefaultDestination=None, grapheDefaultDestination=None):
       super(BVConverter_3_1, self).__init__(db.name, context)
       self.components={ 't1mri' : T1MriConverter(self.dbDir, context),
                                     #'sulci' : SulciConverter(self.dbDir), 
@@ -797,7 +797,8 @@ if neuroConfig.newDatabases:
       self.undoScriptName="undoBv3_1Conversion.py"
       self.oldSettings=None
       self.newSettings=False
-      self.defaultToolbox=defaultToolbox
+      self.segmentDefaultDestination=segmentDefaultDestination
+      self.grapheDefaultDestination=grapheDefaultDestination
       # get the real object database because it can have changed after execution of another process
       self.db=neuroHierarchy.databases.database(db.name)
     
@@ -807,8 +808,8 @@ if neuroConfig.newDatabases:
       -> ajouter l'option dans le process de conversion
       """
       self.fileProcesses=[]
-      if self.defaultToolbox:
-        self.context.write("\nRemaining files in segment and graphe directories will be moved to "+self.defaultToolbox)
+      if self.segmentDefaultDestination or self.grapheDefaultDestination:
+        self.context.write("\nRemaining files in segment and graphe directories will be moved to "+self.segmentDefaultDestination+" and "+self.grapheDefaultDestination)
         protocols=os.listdir(self.dbDir) # first level : protocol
         os.chdir(self.dbDir)
         for p in protocols:
@@ -819,14 +820,16 @@ if neuroConfig.newDatabases:
               if os.path.isdir(subjectDir) and s != "registration" and s != "group_analysis":
                 segmentDir=os.path.join(subjectDir, "segment")
                 grapheDir=os.path.join(subjectDir, "graphe")
-                if os.path.exists(segmentDir):
-                  self.fileProcesses.append(FileProcess(segmentDir, Move(os.path.join(subjectDir, self.defaultToolbox, self.default_acquisition, self.default_analysis, "segmentation")), pattern=".*" ))
+                if os.path.exists(segmentDir) and self.segmentDefaultDestination:
+                  self.fileProcesses.append(FileProcess(segmentDir, Move(os.path.join(subjectDir, self.segmentDefaultDestination, self.default_acquisition, self.default_analysis, "segmentation")), pattern=".*" ))
                   self.fileProcesses.append( FileProcess(segmentDir, Remove(subjectDir)) )
-                if os.path.exists(grapheDir):
-                  if self.defaultToolbox=="t1mri":
-                    self.fileProcesses.append(FileProcess(grapheDir, Move(os.path.join(subjectDir, self.defaultToolbox, self.default_acquisition, self.default_analysis, "folds", "3.0")), pattern=".*" ))
+                if os.path.exists(grapheDir) and self.grapheDefaultDestination:
+                  if self.grapheDefaultDestination=="t1mri_folds":
+                    self.fileProcesses.append(FileProcess(grapheDir, Move(os.path.join(subjectDir, "t1mri", self.default_acquisition, self.default_analysis, "folds", "3.0")), pattern=".*" ))
+                  elif self.grapheDefaultDestination=="t1mri_roi":
+                    self.fileProcesses.append(FileProcess(grapheDir, Move(os.path.join(subjectDir, "t1mri", self.default_acquisition, self.default_analysis, "ROI")), pattern=".*" ))
                   else: # pet
-                    self.fileProcesses.append(FileProcess(grapheDir, Move(os.path.join(subjectDir, self.defaultToolbox, self.default_acquisition, self.default_analysis, "ROI")), pattern=".*" ))
+                    self.fileProcesses.append(FileProcess(grapheDir, Move(os.path.join(subjectDir, "pet", self.default_acquisition, self.default_analysis, "ROI")), pattern=".*" ))
                   self.fileProcesses.append( FileProcess(grapheDir, Remove(subjectDir)) )
       actions=[]
       actions.extend(self.fileProcesses)
@@ -851,7 +854,9 @@ if neuroConfig.newDatabases:
         self.db=SQLDatabase(self.db.sqlDatabaseFile, self.db.directories)
         neuroHierarchy.databases.add(self.db)
         self.context.write("")
+        self.context.write( '<b>Clear database:', self.db.name, '</b>' )
         self.db.clear(context=self.context)
+        self.context.write( '<b>Update database:', self.db.name, '</b>' )
         self.db.update(context=self.context)
       
     def generateUndoScripts(self, component=None):
@@ -895,7 +900,9 @@ if neuroConfig.newDatabases:
         self.db=SQLDatabase(self.db.sqlDatabaseFile, self.db.directories)
         neuroHierarchy.databases.add(self.db)
         self.context.write("")
+        self.context.write( '<b>Clear database:', self.db.name, '</b>' )
         self.db.clear(context=self.context)
+        self.context.write( '<b>Update database:', self.db.name, '</b>' )
         self.db.update(context=self.context)
    
   ###################################
@@ -1055,7 +1062,9 @@ if neuroConfig.newDatabases:
     def process(self, component=None, debug=False):
       super(BVChecker_3_1, self).process(component, debug)
       self.context.write("")
+      self.context.write( '<b>Clear database:', self.db.name, '</b>' )
       self.db.clear(context=self.context)
+      self.context.write( '<b>Update database:', self.db.name, '</b>' )
       self.db.update(context=self.context)
 
   ###################################

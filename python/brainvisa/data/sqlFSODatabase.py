@@ -1,15 +1,12 @@
 import sys
 import os, re
 
-try :
-  import sqlite3
-  from cStringIO import StringIO
-except :
-  from pysqlite2 import dbapi2 as sqlite3
-  from StringIO import StringIO
 import time
 from itertools import izip, chain
-
+try :
+  from cStringIO import StringIO
+except :
+  from StringIO import StringIO
 
 from soma.minf.api import readMinf, writeMinf
 from soma.html import htmlEscape
@@ -20,6 +17,8 @@ from soma.path import split_path
 from soma.time import timeDifferenceToString
 from soma.uuid import Uuid
 from soma.notification import Notifier
+from soma.databases.api import sqlite3, ThreadSafeSQLiteConnection
+
 
 from fileSystemOntology import FileSystemOntology, SetContent
 from neuroProcesses import diskItemTypes, getDiskItemType
@@ -161,27 +160,34 @@ class Database( object ):
     return item
 
 
+  def currentThreadCleanup( self ):
+    pass
+
+
 
 #------------------------------------------------------------------------------
 #dbg# import weakref
 class SQLDatabase( Database ):
   class CursorProxy( object ):
 #dbg#     _allProxy = weakref.WeakKeyDictionary()
-#dbg#     _proxyId = 0
+    _proxyId = 0
+    _executeCount = 0
     
     def __init__( self, cursor ):
       self.__cursor = cursor
-#dbg#       self._id = self._proxyId
-#dbg#       SQLDatabase.CursorProxy._proxyId += 1
+      self._id = self._proxyId
+      SQLDatabase.CursorProxy._proxyId += 1
 #dbg#       self._debugMessage( 'create' )
 #dbg#       self._allProxy[ self ] = None
     
     def execute( self, *args, **kwargs ):
-#dbg#       self._debugMessage( 'execute ' + args[0] )
+      #SQLDatabase.CursorProxy._executeCount += 1
+      self._debugMessage( 'execute:' + str( SQLDatabase.CursorProxy._executeCount ) + ' ' + args[0] )
       return self.__cursor.execute( *args, **kwargs )
     
     def executemany( self, *args, **kwargs ):
-#dbg#       self._debugMessage( 'executemany ' + args[0] )
+      #SQLDatabase.CursorProxy._executeCount += 1
+      self._debugMessage( 'executemany:' + str( SQLDatabase.CursorProxy._executeCount ) + ' ' + args[0] )
       return self.__cursor.executemany( *args, **kwargs )
     
     def close( self ):
@@ -189,13 +195,18 @@ class SQLDatabase( Database ):
       self.__cursor.close()
       del self.__cursor
       
-#dbg#     def _debugMessage( self, message ):
-#dbg#       print >> sys.stderr, '!cursor!', self._id, '(' + str(len(self._allProxy))+') :', message
+    def _debugMessage( self, message ):
+      print >> sys.stderr, '!cursor!', self._id, ':', message
 
 
   def __init__( self, sqlDatabaseFile, directories, fso=None ):
     super(SQLDatabase, self).__init__()
-    self.sqlDatabaseFile = os.path.normpath( os.path.abspath( sqlDatabaseFile ) )
+    self._connection = None
+    self.name = os.path.normpath( directories[ 0 ] )
+    if sqlDatabaseFile not in ( '', ':memory:' ):
+      self.sqlDatabaseFile = os.path.normpath( os.path.abspath( sqlDatabaseFile ) )
+    else:
+      self.sqlDatabaseFile = sqlDatabaseFile
     self.directories = [os.path.normpath( os.path.abspath( d ) ) for d in directories]
     if not os.path.exists(self.directories[0]):
         raise ValueError( HTMLMessage(_t_('<em>%s</em> is not a valid directory') % str( self.directories[0] )) )
@@ -331,16 +342,11 @@ class SQLDatabase( Database ):
     self.typesWithTable = set((t.name for t in self.typesWithTable))
     self.keysByType = dict( ((t.name,v) for t,v in self.keysByType.iteritems()))
   
-    if os.path.exists(self.sqlDatabaseFile):
+    if os.path.exists( self.sqlDatabaseFile ):
       if self.fso.lastModification > os.stat(self.sqlDatabaseFile).st_mtime:
         showWarning( _( 'ontology "%(ontology)s" had been modified, database "%(database)s" should be cleared and updated' ) % { 'ontology': self.fso.name, 'database': self.name } )
     if self.createTables():
       self.update()
-  
-  
-  def _name( self ):
-    return os.path.dirname( self.sqlDatabaseFile )
-  name = property( _name )
   
   
   def update( self, directoriesToScan=None, recursion=True, context=None ):
@@ -364,12 +370,17 @@ class SQLDatabase( Database ):
   
   
   def clear( self, context=None ):
-    if os.path.exists( self.sqlDatabaseFile ):
-      # Trucate the file to size 0 to preserve permissions
-      open( self.sqlDatabaseFile, 'w' ).close()
-    self.createTables(context)
+    cursor = self._getDatabaseCursor()
+    try:
+      tables = cursor.execute( 'SELECT name FROM sqlite_master WHERE type="table"' ).fetchall()
+      for table in tables:
+        cursor.execute( 'DROP TABLE "' + table[0] + '"' )
+      cursor.execute( 'VACUUM' )
+    finally:
+      self._closeDatabaseCursor( cursor )
+    self.createTables( context=context )
   
-    
+  
   def fsoToHTML( self, fileName ):
     out = open( fileName, 'w' )
     print >> out, '<html>\n<body>\n<center><h1>' + self.fso.name + '</h1></center>'
@@ -430,21 +441,26 @@ class SQLDatabase( Database ):
   
   
   def _getDatabaseCursor( self ):
-    connection = sqlite3.connect( self.sqlDatabaseFile, isolation_level=None, timeout=30.0 )
-    cursor = self.CursorProxy( connection.cursor() )
-    cursor._connection = connection
+    if self._connection is None:
+      self._connection = ThreadSafeSQLiteConnection( self.sqlDatabaseFile, isolation_level=None )
+    #cursor = self.CursorProxy( self._connection._getConnection().cursor() )
+    cursor = self._connection._getConnection().cursor()
     return cursor
   
   
   def _closeDatabaseCursor( self, cursor, rollback=False ):
-    connection = cursor._connection
-    del cursor._connection
-    cursor.close()
-    if rollback:
-      connection.rollback()
-    else:
-      connection.commit()
-    connection.close()
+    if self._connection is not None:
+      cursor.close()
+      connection = self._connection._getConnection()
+      if rollback:
+        connection.rollback()
+      else:
+        connection.commit()
+  
+  
+  def currentThreadCleanup( self ):
+    if self._connection is not None:
+      self._connection.currentThreadCleanup()
   
   
   def createTables( self, context=None ):
@@ -452,7 +468,7 @@ class SQLDatabase( Database ):
       from neuroProcesses import defaultContext
       context=defaultContext()
     # if the database file is created by sqlite, the write permission is given only for the current user, not for the group, so the database cannot be shared
-    if not os.path.exists(self.sqlDatabaseFile):
+    if not os.path.exists( self.sqlDatabaseFile ) and self.sqlDatabaseFile not in ( '', ':memory:' ):
       f=open(self.sqlDatabaseFile, "w")
       f.close()
     cursor = self._getDatabaseCursor()
@@ -466,6 +482,7 @@ class SQLDatabase( Database ):
       if create:
         context.write( 'Generating database tables for', self.name )
         cursor.execute( 'CREATE TABLE _FILENAMES_ (filename VARCHAR PRIMARY KEY, _uuid CHAR(36))' )
+        cursor.execute( 'CREATE INDEX _IDX_FILENAMES_ ON _FILENAMES_ (filename, _uuid)' )
       for type in self.typesWithTable:
         #tableName = mangleSQL(type.name)
         tableName = type
@@ -475,6 +492,11 @@ class SQLDatabase( Database ):
           sql = 'CREATE TABLE ' + '"' + tableName + '" (_uuid CHAR(36) PRIMARY KEY, ' + ', '.join( (i + ' VARCHAR' for i in tableFields[1:]) ) + ')'
           #print '!createTables!', sql
           cursor.execute( sql )
+          # create index
+          keys = self.keysByType[ type ]
+          if keys:
+            sql = 'CREATE INDEX "IDX_' + tableName + '" ON "' + tableName + '" ( ' + ', '.join([mangleSQL(i) for i in keys]) + ')'
+            cursor.execute( sql )
         sql = 'INSERT INTO ' + '"' + tableName + '" (' + ', '.join( (i for i in tableFields) ) + ') VALUES (' + ', '.join( ('?' for i in tableFields) ) + ')'
         self._tableFieldsAndInsertByTypeName[ type ] = ( tableName, tableFields, tableAttributes, sql )
     except:
@@ -483,7 +505,7 @@ class SQLDatabase( Database ):
     else:
       self._closeDatabaseCursor( cursor )
     # Save, in the database directory, an HTML file corresponding to database ontology
-    if create:
+    if create and os.path.exists( self.sqlDatabaseFile ):
       html = os.path.join( os.path.dirname( self.sqlDatabaseFile ), 'database_fso.html' )
       self.fsoToHTML( html )
     return create
@@ -889,75 +911,76 @@ class SQLDatabase( Database ):
       print >> debugHTML, '</body></html>'
 
   def findAttributes( self, attributes, selection={}, _debug=None, **required ):
-    cursor = self._getDatabaseCursor()
-    try:
-      types = set( chain( *( self._childrenByTypeName.get( t, ()) for t in self.getAttributeValues( '_type', selection, required ) ) ) )
-      if _debug is not None:
-        print >> _debug, '!findAttributes!', repr(self.name), attributes, tuple( types ), selection, required
-      for t in types:
-        try:
-          tableName, tableFields, tableAttributes, sql = self._tableFieldsAndInsertByTypeName[ t ]
-        except KeyError:
+    types = set( chain( *( self._childrenByTypeName.get( t, ()) for t in self.getAttributeValues( '_type', selection, required ) ) ) )
+    if _debug is not None:
+      print >> _debug, '!findAttributes!', repr(self.name), attributes, tuple( types ), selection, required
+    for t in types:
+      try:
+        tableName, tableFields, tableAttributes, sql = self._tableFieldsAndInsertByTypeName[ t ]
+      except KeyError:
+        continue
+      tableAttributes = [ '_diskItem' ] + tableAttributes
+      tableFields = [ '_diskItem', 'T._uuid' ] + tableFields[1:]
+      nonMandatoryKeyAttributes = self._nonMandatoryKeyAttributesByType[ t ]
+      select = []
+      tupleIndices = []
+      for a in attributes:
+        if a == '_type':
+          tupleIndices.append( 1 )
           continue
-        tableAttributes = [ '_diskItem' ] + tableAttributes
-        tableFields = [ '_diskItem', 'T._uuid' ] + tableFields[1:]
-        nonMandatoryKeyAttributes = self._nonMandatoryKeyAttributesByType[ t ]
-        select = []
-        tupleIndices = []
-        for a in attributes:
-          if a == '_type':
-            tupleIndices.append( 1 )
-            continue
-          try:
-            i = tableAttributes.index( a )
-            select.append( tableFields[ i ] )
-            tupleIndices.append( len( select ) + 1 )
-          except ValueError:
-            tupleIndices.append( 0 )
-            continue
-        typeOnly = False
-        if not select:
-          if [i for i in tupleIndices if i != 0]:
-            select = [ 'COUNT(*)' ]
-            typeOnly = True
+        try:
+          i = tableAttributes.index( a )
+          select.append( tableFields[ i ] )
+          tupleIndices.append( len( select ) + 1 )
+        except ValueError:
+          tupleIndices.append( 0 )
+          continue
+      typeOnly = False
+      if not select:
+        if [i for i in tupleIndices if i != 0]:
+          select = [ 'COUNT(*)' ]
+          typeOnly = True
+        else:
+          continue
+      where = {}
+      for f, a in izip( tableFields, tableAttributes ):
+        if a not in nonMandatoryKeyAttributes:
+          v = self.getAttributeValues( a, selection, required )
+          if v:
+            where[ f ] = v
+      sql = 'SELECT DISTINCT ' + ', '.join( select ) + " FROM '" + tableName + "' T, _DISKITEMS_ D WHERE T._uuid=D._uuid"
+      if where:
+        sqlWhereClauses = []
+        for f, v in where.iteritems():
+          if v is None:
+            sqlWhereClauses.append( f + '=NULL' )
+          elif isinstance( v, basestring ):
+            sqlWhereClauses.append( f + "='" + v + "'" )
           else:
-            continue
-        where = {}
-        for f, a in izip( tableFields, tableAttributes ):
-          if a not in nonMandatoryKeyAttributes:
-            v = self.getAttributeValues( a, selection, required )
-            if v:
-              where[ f ] = v
-        sql = 'SELECT DISTINCT ' + ', '.join( select ) + " FROM '" + tableName + "' T, _DISKITEMS_ D WHERE T._uuid=D._uuid"
-        if where:
-          sqlWhereClauses = []
-          for f, v in where.iteritems():
-            if v is None:
-              sqlWhereClauses.append( f + '=NULL' )
-            elif isinstance( v, basestring ):
-              sqlWhereClauses.append( f + "='" + v + "'" )
-            else:
-              #sqlWhereClauses.append( f + ' IN (' + ','.join( (('NULL' if i is None else "'" + i +"'") for i in v) ) + ')' )
-              whereParts = list()
-              for i in v :
-                if i is None :
-                  whereParts += ('NULL', )
-                else :
-                  whereParts += ("'" + i +"'", )
-              sqlWhereClauses.append( f + ' IN (' + ','.join( whereParts ) + ')' )
-          sql += ' AND ' + ' AND '.join( sqlWhereClauses )
-        if _debug is not None:
-          print >> _debug, '!findAttributes! ->', sql
-        for tpl in cursor.execute( sql ):
-          if typeOnly:
-            if tpl[0] > 0:
-              yield tuple( (( None, t )[i] for i in tupleIndices) )
+            #sqlWhereClauses.append( f + ' IN (' + ','.join( (('NULL' if i is None else "'" + i +"'") for i in v) ) + ')' )
+            whereParts = list()
+            for i in v :
+              if i is None :
+                whereParts += ('NULL', )
+              else :
+                whereParts += ("'" + i +"'", )
+            sqlWhereClauses.append( f + ' IN (' + ','.join( whereParts ) + ')' )
+        sql += ' AND ' + ' AND '.join( sqlWhereClauses )
+      if _debug is not None:
+        print >> _debug, '!findAttributes! ->', sql
+      cursor = self._getDatabaseCursor()
+      try:
+        sqlResult = cursor.execute( sql ).fetchall()
+      finally:
+        self._closeDatabaseCursor( cursor )
+      for tpl in sqlResult:
+        if typeOnly:
+          if tpl[0] > 0:
+            yield tuple( (( None, t )[i] for i in tupleIndices) )
 
-          else:
-            tpl = ( None, t ) + tpl
-            yield tuple( (tpl[i] for i in tupleIndices) )
-    finally:
-      self._closeDatabaseCursor( cursor )
+        else:
+          tpl = ( None, t ) + tpl
+          yield tuple( (tpl[i] for i in tupleIndices) )
   
   def findDiskItems( self, selection={}, _debug=None, **required ):
     for t in self.findAttributes( ( '_diskItem', ), selection, _debug=_debug, **required ):
@@ -1316,3 +1339,8 @@ class SQLDatabases( Database ):
     if self._databases:
       return set( chain( *(d.getTypesFormats( *types ) for d in self._databases.itervalues() ) ) )
     return ()
+
+  def currentThreadCleanup( self ):
+    for database in self._iterateDatabases( {}, {} ):
+      database.currentThreadCleanup()
+  

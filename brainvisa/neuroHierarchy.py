@@ -51,16 +51,20 @@ if neuroConfig.newDatabases:
     global databases
     databases.removeDatabases()
     ignoreReadOnlyForShared = True
-    for path in neuroConfig.dataPath:
+    for dbSettings in neuroConfig.dataPath:
       try:
-        base = SQLDatabase( os.path.join( path, 'database.sqlite' ), ( path, ) )
+        if dbSettings.expert_settings.sqliteFileName:
+          sqlite = dbSettings.expert_settings.sqliteFileName
+        else:
+          sqlite = os.path.join( dbSettings.directory, 'database.sqlite' )
+        base = SQLDatabase( sqlite, ( dbSettings.directory, ) )
         databases.add( base )
         if ignoreReadOnlyForShared:
           # The first database is the shared directory, usually users do not have
           # to modify it. Therefore no warning is shown for the first database.
           ignoreReadOnlyForShared = False
         else:
-          if (not os.access(path, os.W_OK) or not os.access(os.path.join( path, 'database.sqlite' ), os.W_OK)):
+          if (not os.access(dbSettings.directory, os.W_OK) or not os.access(sqlite, os.W_OK)):
             showWarning(_t_("The database "+base.name+" is read only, you will not be able to add new items in this database."))
       except:
         showException()
@@ -1095,12 +1099,12 @@ else:
     _flatHierarchies = ( [], {} )
     beforeError=''
     defaultPriority = len( neuroConfig.dataPath )
-    for directory in neuroConfig.dataPath:
+    for dbSettings in neuroConfig.dataPath:
       defaultPriority -= 1
       try:
-        if not isinstance( directory, basestring ):
+        if not isinstance( dbSettings.directory, basestring ):
           raise ValueError( HTMLMessage(_t_('Bad value in dataPath: "%s"') % unicode(p)))
-        readHierarchy( directory, clearCache=clearCache, \
+        readHierarchy( dbSettings.directory, clearCache=clearCache, \
                         defaultPriority = defaultPriority )
       except:
         showException( beforeError=beforeError )

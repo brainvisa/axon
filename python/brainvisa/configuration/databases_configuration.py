@@ -76,7 +76,8 @@ class DatabasesConfiguration( ConfigurationGroup ):
 #------------------------------------------------------------------------------
 class ExpertDatabaseSettings( HasSignature ):
   signature = Signature(
-    'ontology', Choice( 'brainvisa-3.1.0', 'brainvisa-3.0' ), dict( defaultValue='brainvisa-3.0' ),
+    'ontology', Choice( 'brainvisa-3.1.0', 'brainvisa-3.0', 'shared' ), dict( defaultValue='brainvisa-3.0' ),
+    'sqliteFileName', FileName, dict( defaultValue='' ),
     'activate_history', Boolean, dict( defaultValue=False ),
   )
 

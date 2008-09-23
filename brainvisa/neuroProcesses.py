@@ -1939,7 +1939,7 @@ class ExecutionContext:
       _process = self.newProcess( _process )
     apply( self._setArguments, (_process,)+args, kwargs )
     # Launch process
-    t = threading.Thread( target = self._processExecution,
+    t = threading.Thread( target = self._processExecutionThread,
                           args = ( _process, executionFunction ) )
     t.start()
     return _process
@@ -1976,6 +1976,12 @@ class ExecutionContext:
     callMeAtTheEnd( result )
   
 
+  def _processExecutionThread( self, *args, **kwargs ):
+    self._processExecution( *args, **kwargs )
+    if neuroConfig.newDatabases:
+      neuroHierarchy.databases.currentThreadCleanup()
+    
+  
   def _processExecution( self, process, executionFunction=None ):
 
     '''Execute the process "process". The value return is stored to avoid

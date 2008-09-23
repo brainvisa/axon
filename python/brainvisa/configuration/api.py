@@ -40,7 +40,7 @@ __docformat__ = "epytext en"
 import sys, os, time
 from soma.wip.application.api import Application
 from brainvisa.configuration.brainvisa_configuration import BrainVISAConfiguration
-from brainvisa.configuration.databases_configuration import DatabasesConfiguration
+from brainvisa.configuration.databases_configuration import DatabasesConfiguration, DatabaseSettings
 from brainvisa.configuration.anatomist_configuration import AnatomistConfiguration
 from brainvisa.configuration.r_configuration import RConfiguration
 from brainvisa.configuration.matlab_configuration import MatlabConfiguration
@@ -150,7 +150,7 @@ def readConfiguration( mainPath, userProfile, homeBrainVISADir ):
   newDataPath = []
   for fso in configuration.databases.fso:
     if fso.selected:
-      newDataPath.append( fso.directory )
+      newDataPath.append( DatabaseSettings( fso.directory ) )
   yield ( 'dataPath', newDataPath )
 
 

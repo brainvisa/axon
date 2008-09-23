@@ -47,7 +47,8 @@ userLevel = 0
 
 signature = Signature( 
   'database', Choice(),
-  'main_toolbox', Choice(None, "t1mri", "pet"),
+  'segment_default_destination', Choice(None, "t1mri", "pet"),
+  'graphe_default_destination', Choice(None, "t1mri_folds", "t1mri_roi", "pet_roi"),
   'undo', Boolean()
  )
 
@@ -55,8 +56,12 @@ def initialization(self):
   databases=[(h.name, h) for h in reversed(neuroHierarchy.hierarchies())]
   self.signature['database'].setChoices(*databases)
   self.database=databases[0][1]
-  self.main_toolbox="t1mri"
+  self.segment_default_destination="t1mri"
+  self.graphe_default_destination="t1mri_folds"
   self.undo=False
+  
+  self.setOptional("segment_default_destination")
+  self.setOptional("graphe_default_destination")
 
 def execution( self, context ):
   """
@@ -69,7 +74,7 @@ def execution( self, context ):
   res=None
   if not os.path.exists(dbDir):
     raise Exception(dbDir+" does not exist.")
-  converter=BVConverter_3_1(self.database, context, self.main_toolbox)
+  converter=BVConverter_3_1(self.database, context, self.segment_default_destination, self.graphe_default_destination)
   if self.undo:
     context.write("* Run undo scripts.")
     converter.undo()
