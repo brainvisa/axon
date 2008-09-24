@@ -2523,6 +2523,7 @@ def getProcess( processId, ignoreValidation=False ):
           update = 1
         if update:
           result = readProcess( fileName )
+          defaultContext().warning( _t_('<em>%s</em> processes updated') % _t_(result.name) )
   return result
 
 #----------------------------------------------------------------------------
