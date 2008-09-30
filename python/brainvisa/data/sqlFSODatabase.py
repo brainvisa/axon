@@ -3,10 +3,7 @@ import os, re
 
 import time
 from itertools import izip, chain
-try :
-  from cStringIO import StringIO
-except :
-  from StringIO import StringIO
+from StringIO import StringIO
 
 from soma.minf.api import readMinf, writeMinf
 from soma.html import htmlEscape
@@ -24,7 +21,7 @@ from fileSystemOntology import FileSystemOntology, SetContent
 from neuroProcesses import diskItemTypes, getDiskItemType
 import neuroProcesses
 from neuroException import showWarning
-from neuroDiskItems import getFormat, getFormats, FormatSeries, File, Directory, getAllFormats
+from neuroDiskItems import getFormat, getFormats, Format, FormatSeries, File, Directory, getAllFormats
 from neuroException import HTMLMessage
 from brainvisa.data.patterns import DictPattern
 from brainvisa.data.sql import mangleSQL, unmangleSQL
@@ -1125,6 +1122,19 @@ class SQLDatabase( Database ):
           result.update( f )
     return result
     
+    
+  def newFormat( self, name, patterns ):
+    if getFormat( name, None ) is None:
+      bvPatterns = []
+      for p in patterns:
+        i = p.find( '|' )
+        if i < 0:
+          bvPatterns.append( '*.' + p )
+        else:
+          bvPatterns.append( p[ :i+1 ] + '*.' + p[ i+1: ] )
+      Format( name, bvPatterns )
+      self.formats.newFormat( name, patterns )
+
   
 #------------------------------------------------------------------------------
 class SQLDatabases( Database ):
@@ -1171,7 +1181,7 @@ class SQLDatabases( Database ):
     databases = self.getAttributeValues( '_database', selection, required )
     if not databases:
       return self._databases.itervalues()
-    return (self._databases[n] for n in databases)
+    return (self._databases[os.path.normpath(n)] for n in databases)
   
   
   def insertDiskItems( self, diskItems, update=False ):
@@ -1344,3 +1354,8 @@ class SQLDatabases( Database ):
     for database in self._iterateDatabases( {}, {} ):
       database.currentThreadCleanup()
   
+  
+  def newFormat( self, name, patterns ):
+    for database in self._iterateDatabases( {}, {} ):
+      database.newFormat( name, patterns )
+

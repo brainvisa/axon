@@ -166,10 +166,12 @@ class RemoteProcessCall( threading.Thread ):
       return 0
 
 
-    if neuroConfig.remoteBrainvisaExecutable =='':
+    if neuroConfig.app.configuration.distributed_execution.remoteExecutable \
+      =='':
       brainvisa_exec = sys.argv[0]
     else:
-      brainvisa_exec = neuroConfig.remoteBrainvisaExecutable
+      brainvisa_exec = \
+        neuroConfig.app.configuration.distributed_execution.remoteExecutable
 
     remoteShell.sendline(brainvisa_exec+' --shell -b --logFile ' + neuroConfig.homeBrainVISADir + '/brainvisa_%d.log'%self.rpid )
     case = remoteShell.expect(['.*prints more.', TIMEOUT], timeout=60)

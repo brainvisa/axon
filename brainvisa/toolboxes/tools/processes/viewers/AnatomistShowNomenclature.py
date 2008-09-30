@@ -44,19 +44,25 @@ def validation():
   
 signature = Signature(
   'read', ReadDiskItem( 'Nomenclature', [ 'Hierarchy' ] ),
+  'use_existing_browser', Boolean(),
 )
+
+
+def initialization( self ):
+  self.use_existing_browser = True
 
 
 def execution( self, context ):
     a = anatomist.Anatomist()
     bro = None
     hie = a.loadObject( self.read )
-    #for i,w in a.idtowindow.items():
-        #if w._type == 'Browser' and hie in w._objectList:
-            #ok = 1
-            #bro = w
-            #break
-    #if bro is None:
-    bro = a.createWindow( 'Browser' )
-    bro.addObjects( [hie] )
+    if self.use_existing_browser:
+      wins = hie.getWindows()
+      for w in wins:
+        wi = w.getInfos()
+        if wi.get( 'windowType' ) == 'Browser':
+          bro = w
+    if bro is None:
+      bro = a.createWindow( 'Browser' )
+      bro.addObjects( [hie] )
     return ( hie, bro )

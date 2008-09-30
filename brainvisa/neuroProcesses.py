@@ -45,8 +45,8 @@ from soma.functiontools import numberOfParameterRange, hasParameter
 from soma.minf.api import readMinf, writeMinf, createMinfWriter, iterateMinf, minfFormat
 from soma.minf.xhtml import XHTML
 from soma.minf.xml_tags import xhtmlTag
-from soma.notification import EditableTree, ObservableSortedDictionary
-from soma.notification import ObservableAttributes
+from soma.notification import EditableTree, ObservableSortedDictionary, \
+                              ObservableAttributes, Notifier
 from soma.minf.api import createMinfWriter, iterateMinf, minfFormat
 from soma.html import htmlEscape
 from soma.time import timeDifferenceToString
@@ -59,7 +59,6 @@ from neuroException import *
 import Scheduler
 from brainvisa import matlab
 from brainvisa.validation import ValidationError
-from brainvisa import notifier
 from brainvisa.debug import debugHere
 if neuroConfig.newDatabases:
   from brainvisa.data.sqlFSODatabase import Database
@@ -68,9 +67,9 @@ import neuroPopen2
 
 try:
   from remoteProcesses import *
-  neuroDistributedProcesses = True
+  _neuroDistributedProcesses = True
 except Exception, e:
-  neuroDistributedProcesses = False
+  _neuroDistributedProcesses = False
   neuroDistribException = e
 
 try:
@@ -79,6 +78,12 @@ try:
 except:
   qprocess = False
 
+
+def neuroDistributedProcesses():
+  return _neuroDistributedProcesses and \
+  neuroConfig.app.configuration.distributed_execution.\
+    allowDistributedExecution \
+  and neuroConfig.userLevel >= 2
 
 #----------------------------------------------------------------------------
 def pathsplit( path ):
@@ -139,6 +144,17 @@ def readProcdoc( processId ):
 #----------------------------------------------------------------------------
 def writeProcdoc( processId, documentation ):
   fileName = getProcdocFileName( processId )
+  if not os.path.exists( fileName ):
+    processInfo = getProcessInfo( processId )
+    procFileName = getattr( processInfo, 'fileName', None )
+    procSourceFileName = os.path.realpath( procFileName )
+    # take care of keeping the .procdoc in the same location as the .py,
+    # whatever symlinks
+    if procFileName != procSourceFileName:
+      sourceFileName = os.path.join( os.path.dirname( procSourceFileName ),
+        os.path.basename( fileName ) )
+      os.symlink( sourceFileName, fileName )
+      fileName = sourceFileName
   writeMinf( fileName, ( documentation, ) )
 
 
@@ -517,7 +533,7 @@ class Parameterized( object ):
     self._isParameterSet = {}
     self._isDefault = {}
     self._warn = {}
-    self.signatureChangeNotifier = notifier.Notifier( 1 )
+    self.signatureChangeNotifier = Notifier( 1 )
     self.deleteCallbacks = []
 
     for i, p in self.signature.items():
@@ -745,7 +761,7 @@ class Parameterized( object ):
         del self._warn[ n ]
 
     # Notify listeners
-    self.signatureChangeNotifier( self )
+    self.signatureChangeNotifier.notify( self )
 
   def clearLinksTo( self, *args ):
     for i in args:
@@ -781,7 +797,7 @@ class Parameterized( object ):
     self._convertedValues = {}
     self._links = {}
     self._warn = {}
-    self.signatureChangeNotifier = notifier.Notifier( 1 )
+    self.signatureChangeNotifier = Notifier( 1 )
 
   
   def saveStateInDictionary( self, result=None ):
@@ -926,6 +942,17 @@ class Process( Parameterized ):
   
   def pipelineStructure( self ):
     return self.id()
+  
+  
+  def allProcesses( self ):
+    yield self
+    if self._executionNode is not None:
+      stack = [ self._executionNode ]
+      while stack:
+        eNode = stack.pop( 0 )
+        if isinstance( eNode, ProcessExecutionNode ):
+          yield eNode._process
+        stack.extend( eNode.children() )
   
   
   def saveStateInDictionary( self, result=None ):
@@ -1511,7 +1538,7 @@ class ExecutionNode( object ):
     self.__dict__[ '_optional' ] = optional
     self.__dict__[ '_selected' ] = selected
     self.__dict__[ '_guiOnly' ] = guiOnly
-    self.__dict__[ '_selectionChange' ] = notifier.Notifier( 1 )
+    self.__dict__[ '_selectionChange' ] = Notifier( 1 )
 
   def __del__( self ):
     debugHere()
@@ -1544,10 +1571,14 @@ class ExecutionNode( object ):
       raise RuntimeError( HTMLMessage('<em>node</em> argument must be an ececution node') )
     self._children[ name ] = node
 
+
   def childrenNames( self ):
     return self._children.keys()
 
   
+  def children( self ):
+    return self._children.itervalues()
+
   def hasChildren( self ):
     return bool( self._children )
   
@@ -1555,7 +1586,7 @@ class ExecutionNode( object ):
   def setSelected( self, selected ):
     if selected != self._selected:
       self._selected = selected
-      self._selectionChange( self )
+      self._selectionChange.notify( self )
 
   def isSelected( self ):
     return self._selected
@@ -1698,7 +1729,11 @@ class ProcessExecutionNode( ExecutionNode ):
                             guiOnly = guiOnly,
                             parameterized = process )
     self.__dict__[ '_process' ] = process
-
+    reloadNotifier = getattr( process, 'processReloadNotifier', None )
+    if reloadNotifier is not None:
+      reloadNotifier.add( self.processReloaded )
+  
+  
   def addChild( self, name, node ):
     raise RuntimeError( _t_( 'A ProcessExecutionNode cannot have children' ) )
 
@@ -1748,6 +1783,14 @@ class ProcessExecutionNode( ExecutionNode ):
       return eNode.child( name, default )
     return default
 
+  def processReloaded( self, newProcess ):
+    event = ProcessExecutionEvent()
+    event.setProcess( self._process )
+    self._process.processReloadNotifier.remove( self.processReloaded )
+    self.__dict__[ '_process' ] = getProcessInstanceFromProcessEvent( event )
+    self._process.processReloadNotifier.add( self.processReloaded )
+
+
 
 #-------------------------------------------------------------------------------
 class SerialExecutionNode( ExecutionNode ):
@@ -1782,8 +1825,7 @@ class ParallelExecutionNode( ExecutionNode ):
   """
 
   def _run( self, context ):
-    if not neuroDistributedProcesses or neuroConfig.userLevel < 2 \
-      or len( self._children ) < 2:
+    if not neuroDistributedProcesses() or len( self._children ) < 2:
       # do as for serial node
       result = []
       for node in self._children.values():
@@ -1910,7 +1952,6 @@ class ExecutionContext:
   
   
   def _setArguments( self, _process, *args, **kwargs ):
-#    print '!_setArguments! 1', _process, args, kwargs
     # Set arguments
     i = 0
     for v in args:
@@ -1920,18 +1961,13 @@ class ExecutionContext:
         _process.setValue( n, v )
       else:
         setattr( _process, n, None )
-      # print '!_setArguments! 2', n, getattr( _process, n )
       i += 1
     for ( n, v ) in kwargs.items():
-      #print '!_setArguments! 3', n, v
       _process.setDefault( n, 0 )
       if v is not None:
         _process.setValue( n, v )
       else:
         setattr( _process, n, None )
-#      _process._linkParameterValues( parameters=[ n ] )
-#      print '!_setArguments! 3.1', n, getattr( _process, n )
-#    print '!_setArguments! 4', _process
     _process.checkArguments()
 
   def _startProcess( self, _process, executionFunction, *args, **kwargs ):
@@ -2312,7 +2348,7 @@ class ExecutionContext:
     apply( self.write, (bmsg, ) + messages + ( emsg, ) )
 
 
-  def ask( self, message, *buttons ):
+  def ask( self, message, *buttons, **kwargs):
     self.checkInterruption()
     self.write( '<pre>' + message )
     i = 0
@@ -2425,7 +2461,7 @@ class ExecutionContext:
                          ( getDiskItemType( dt ), getFormat( df ) ) )
 
 
-  def createProcessExecutionEvent( self):
+  def createProcessExecutionEvent( self ):
     event = ProcessExecutionEvent()
     event.setProcess( self.process )
     if self._processStack:
@@ -2473,12 +2509,18 @@ def addProcessInfo( processId, processInfo ):
   
 #----------------------------------------------------------------------------
 def getProcess( processId, ignoreValidation=False ):
+  #print '!getProcess!', processId
   global _askUpdateProcess
   if processId is None: return None
   if isinstance( processId, Process ) or ( type(processId) in (types.ClassType, types.TypeType) and issubclass( processId, Process ) ):
     result = processId
     id = getattr( processId, '_id', None )
     if id is not None:
+      #print '!getProcess!', processId
+      #print '!getProcess!  id =', repr( id )
+      #print '!getProcess!  class address =', object.__hash__( processId.__class__ )
+      #global _processes
+      #print '!getProcess!  _processes[ id ] address =', object.__hash__( _processes[ id ] )
       process = getProcess( id )
       if process is not None:
         result = process
@@ -2523,7 +2565,6 @@ def getProcess( processId, ignoreValidation=False ):
           update = 1
         if update:
           result = readProcess( fileName )
-          defaultContext().warning( _t_('<em>%s</em> processes updated') % _t_(result.name) )
   return result
 
 #----------------------------------------------------------------------------
@@ -2534,9 +2575,15 @@ def getProcessInstanceFromProcessEvent( event ):
   result = getProcessInstance( pipelineStructure )
   if result is not None:
     for n, v in event.content.get( 'parameters', {} ).get( 'selected', {} ).iteritems():
-      result.setValue( n, v, default=False )
+      try:
+        result.setValue( n, v, default=False )
+      except KeyError:
+        pass
     for n, v in event.content.get( 'parameters', {} ).get( 'default', {} ).iteritems():
-      result.setValue( n, v, default=True )
+      try:
+        result.setValue( n, v, default=True )
+      except KeyError:
+        pass
     stack = [ ( result.executionNode(), k, e.get( 'parameters' ), e[ 'selected' ], 
                 e.get( 'executionNodes', {} ) ) for k, e in
                 event.content.get( 'executionNodes', {} ).iteritems() ]
@@ -2546,9 +2593,15 @@ def getProcessInstanceFromProcessEvent( event ):
       eNode.setSelected( eNodeSelected )
       if eNodeParameters:
         for n, v in eNodeParameters[ 'selected' ].iteritems():
-          eNode.setValue( n, v )
+          try:
+            eNode.setValue( n, v )
+          except KeyError:
+            pass
         for n, v in eNodeParameters[ 'default' ].iteritems():
-          eNode.setValue( n, v, default=True )
+          try:
+            eNode.setValue( n, v, default=True )
+          except KeyError:
+            pass
       stack += [ ( eNode, k, e.get( 'parameters' ), e[ 'selected' ], 
                 e.get( 'executionNodes', {} ) ) for k, e in eNodeChildren.iteritems() ]
     windowGeometry = event.content.get( 'window' )
@@ -2560,9 +2613,14 @@ def getProcessInstanceFromProcessEvent( event ):
 #----------------------------------------------------------------------------
 def getProcessInstance( processIdClassOrInstance ):
   result = getProcess( processIdClassOrInstance )
-  if isinstance( processIdClassOrInstance, Process ) and \
-     result is processIdClassOrInstance.__class__:
-    result = processIdClassOrInstance
+  if isinstance( processIdClassOrInstance, Process ):
+    if result is processIdClassOrInstance.__class__:
+      result = processIdClassOrInstance
+    else:
+      event = ProcessExecutionEvent()
+      event.setProcess( processIdClassOrInstance )
+      #print '!getProcessInstance! instance of', processIdClassOrInstance, 'created from event: result =', result, 'class =', processIdClassOrInstance.__class__
+      result = getProcessInstanceFromProcessEvent( event )
   elif result is None:
     if isinstance( processIdClassOrInstance, basestring ) and minfFormat( processIdClassOrInstance )[ 1 ] == minfHistory:
       event = readMinf( processIdClassOrInstance )[0]
@@ -2753,7 +2811,7 @@ def readProcess( fileName, category=None, ignoreValidation=False ):
     # The callback registered in processReloadNotifier are called whenever
     # a change in the process source file lead to a reload of the process.
     # The argument is the new process.
-    NewProcess.processReloadNotifier = notifier.Notifier( 1 )
+    NewProcess.processReloadNotifier = Notifier( 1 )
 
     # Optional attributes
     for n in ( 'signature', 'execution', 'name', 'userLevel', 'roles' ):
@@ -2808,6 +2866,7 @@ def readProcess( fileName, category=None, ignoreValidation=False ):
         setattr( oldProcess, n, getattr( NewProcess, n ).im_func )
       oldProcess._fileTime = NewProcess._fileTime
 
+    #print '!readProcess! _processes[', processInfo.id, '] =', object.__hash__( NewProcess )
     _processes[ processInfo.id ] = NewProcess
     result = NewProcess
 
@@ -2862,7 +2921,7 @@ def readProcess( fileName, category=None, ignoreValidation=False ):
         icon = 'icon_process.png' )
 
     if oldProcess is not None:
-      oldProcess.processReloadNotifier( result )
+      oldProcess.processReloadNotifier.notify( result )
 
   except ValidationError:
     raise
@@ -3374,10 +3433,14 @@ def cleanupProcesses():
 
 # ---
 
-if not neuroDistributedProcesses:
+if not _neuroDistributedProcesses:
   # TODO: use log
-  logmsg = _t_( 'Distributed execution has been disabled due to the ' \
-    'following error:<br>' )
+  if globals().has_key( '_t_' ):
+    logmsg = _t_( 'Distributed execution has been disabled due to the ' \
+      'following error:<br>' )
+  else: # in case _t_ has not been loaded yet
+    logmsg = 'Distributed execution has been disabled due to the ' \
+      'following error:<br>'
   logmsg += str( neuroDistribException )
   #defaultContext().log( \
     #_t_( 'Distributed execution' ), html=logmsg, icon='warning' )

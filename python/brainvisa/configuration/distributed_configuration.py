@@ -31,7 +31,7 @@
 
 
 '''
-@author: Yann Cointepas
+@author: Denis Riviere
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
@@ -39,13 +39,21 @@ __docformat__ = "epytext en"
 
 
 from soma.wip.configuration import ConfigurationGroup
-from soma.signature.api import Signature, FileName
-
+from soma.signature.api import Signature, Unicode, FileName, Sequence, Boolean
 
 #------------------------------------------------------------------------------
-class AnatomistConfiguration( ConfigurationGroup ):
-  label = 'Anatomist'
-  icon = 'anaIcon_small.png'
+class DistributedBrainVISAConfiguration( ConfigurationGroup ):
+
+  label = 'Distributed execution'
+  icon = 'structural.png'
+
   signature = Signature(
-    'executable', FileName, dict( defaultValue='anatomist', doc='Location of Anatomist program.' ),
+    'allowDistributedExecution', Boolean, dict( defaultValue=False,
+    doc='Allows distributed execution on a local network when possible. ' \
+    'EXPERIMENTAL. DON\'T USE IT. Anyway it only enabled in expert userLevel.'
+    ),
+    'remoteExecutable', FileName, dict( defaultValue='',
+    doc='location of the program used to execute BrainVISA on distant ' \
+    'computers (EXPERIMENTAL).' ),
   )
+

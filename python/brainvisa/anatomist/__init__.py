@@ -14,7 +14,7 @@ import qt
 try:
   import anatomist
   anatomist.setDefaultImplementation( neuroConfig.anatomistImplementation )
-  from anatomist import api as anatomistModule
+  exec("import "+anatomist.getDefaultImplementationModuleName()+" as anatomistModule")
   anatomistImport=True
 except Exception, e:
   print e
@@ -35,6 +35,7 @@ Specifities added for brainvisa are :
   - loading referentials and transformation on loading an object using brainvisa database informations.
   - writing messages in brainvisa log file.
 """
+
 def validation():
   if not anatomistImport:
     raise ValidationError('Cannot find anatomist module')

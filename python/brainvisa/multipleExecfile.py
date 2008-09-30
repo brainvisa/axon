@@ -85,3 +85,7 @@ class MultipleExecfile:
 #dbg#      print '!MultipleExecfile! include', f, 'in', self._includeStack[ -1 ]
 #dbg#      self.execute( f )
     self.execute( *args )
+
+
+  def executedFiles( self ):
+    return self._executedFiles.iterkeys()

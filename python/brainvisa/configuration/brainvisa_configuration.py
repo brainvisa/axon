@@ -40,7 +40,7 @@ __docformat__ = "epytext en"
 
 from soma.wip.configuration import ConfigurationGroup
 from soma.wip.temporary import getSystemDefaultTempDir
-from soma.signature.api import HasSignature, Signature, Unicode, Choice, OpenedChoice, Boolean, Sequence
+from soma.signature.api import HasSignature, Signature, Unicode, Choice, OpenedChoice, Boolean, Sequence, FileName
 from distutils.spawn import find_executable
 
 #------------------------------------------------------------------------------
@@ -78,11 +78,10 @@ class BrainVISAConfiguration( ConfigurationGroup ):
                  dict( defaultValue=0, doc='User level is used to hide experimental processes (and in some rare cases hide experimental parameters).' ),
     'language', Choice( ( 'default', None ), ( 'english', 'en' ), ( 'french', 'fr' ) ),
                 dict( defaultValue=None, doc='Language of the graphical interface (it is necessary to restart BrainVISA to take modification into account).' ),
-    'processesPath', Sequence( Unicode ), dict( defaultValue=[], doc='List of directories containing BrainVISA processes.' ),
-    'temporaryDirectory', Unicode, dict( defaultValue=getSystemDefaultTempDir(), doc='Directory where temporary files are stored. Name of temporary files produced by BrainVISA starts with <tt>"bv_"</tt>.' ),
-    'textEditor', Unicode, dict( defaultValue='', doc='Location of the program used to edit text files.' ),
+    'processesPath', Sequence( FileName( directoryOnly=True ) ), dict( defaultValue=[], doc='List of directories containing BrainVISA processes.' ),
+    'temporaryDirectory', FileName( directoryOnly=True ), dict( defaultValue=getSystemDefaultTempDir(), doc='Directory where temporary files are stored. Name of temporary files produced by BrainVISA starts with <tt>"bv_"</tt>.' ),
+    'textEditor', FileName, dict( defaultValue='', doc='Location of the program used to edit text files.' ),
     'htmlBrowser', OpenedChoice( ( '<built-in>', '' ), *htmlBrowsers() ), dict( defaultValue='', doc='Location of the program used to display HTML files.' ),
-    'remoteExecutable', Unicode, dict( defaultValue='', doc='location of the program used to execute BrainVISA on distant computers (EXPERIMENTAL).' ),
     'removeTemporary', Boolean, dict( defaultValue=True, doc='unselect this option if you do not want temporary files and directories to be automatically deleted. This option is used for debugging. If unselected BrainVISA can leave a lot of files in temporary directory.' ),
     'SPM', SPMConfiguration, dict( defaultValue=SPMConfiguration() ),
     'support', SupportConfiguration, dict( defaultValue=SupportConfiguration() ),

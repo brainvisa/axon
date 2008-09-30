@@ -44,6 +44,7 @@ from brainvisa.configuration.databases_configuration import DatabasesConfigurati
 from brainvisa.configuration.anatomist_configuration import AnatomistConfiguration
 from brainvisa.configuration.r_configuration import RConfiguration
 from brainvisa.configuration.matlab_configuration import MatlabConfiguration
+from brainvisa.configuration.distributed_configuration import DistributedBrainVISAConfiguration
 from brainvisa.configuration.nmrserver_configuration import NmrServerConfiguration
 from soma.wip.configuration import Configuration
 from soma.translation import translate as _
@@ -58,6 +59,8 @@ def initializeConfiguration():
   configuration.add( 'anatomist',  AnatomistConfiguration() )
   configuration.add( 'R',  RConfiguration() )
   configuration.add( 'matlab', MatlabConfiguration() )
+  configuration.add( 'distributed_execution',
+    DistributedBrainVISAConfiguration() )
   configuration.add( 'nmrserver', NmrServerConfiguration() )
 
 
@@ -121,7 +124,6 @@ def readConfiguration( mainPath, userProfile, homeBrainVISADir ):
     'brainvisa.htmlBrowser': 'HTMLBrowser',
     'brainvisa.language': 'language',
     'brainvisa.processesPath': 'processesPath',
-    'brainvisa.remoteExecutable': 'remoteBrainvisaExecutable',
     'brainvisa.removeTemporary': 'removeTemporary',
     'brainvisa.support.smtpServer': 'SMTP_server_name',
     'brainvisa.support.supportEmail': 'supportEmail',
@@ -167,7 +169,6 @@ def convertConfiguration30To31( sourceFileName, destFileName,
       'startup': None,
       'temporaryDirectory': 'brainvisa.temporaryDirectory',
       'anatomistExecutable': 'anatomist.executable',
-      'remoteBrainvisaExecutable': 'brainvisa.remoteExecutable',
       'matlabRelease': 'matlab.version',
       'matlabExecutable': 'matlab.executable',
       'matlabOptions': 'matlab.options',

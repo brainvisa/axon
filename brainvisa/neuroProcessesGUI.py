@@ -376,8 +376,9 @@ class ExecutionContextGUI( neuroProcesses.ExecutionContext):
   def __init__( self ):
     neuroProcesses.ExecutionContext.__init__( self )
 
-  def ask( self, message, *buttons ):
-    dlg = apply( self.dialog, (1, message, None) + buttons )
+  def ask( self, message, *buttons, **kwargs ):
+    modal=kwargs.get("modal", 1)
+    dlg = apply( self.dialog, (modal, message, None) + buttons )
     return dlg.call()
 
   def dialog( self, parentOrFirstArgument, *args, **kwargs ):
@@ -839,9 +840,6 @@ class ProcessView( QVBox, ExecutionContextGUI ):
     self.process.guiContext = weakref.proxy( self )
     self._runningProcess = 0
     self.process.signatureChangeNotifier.add( self.signatureChanged )
-    reloadNotifier = getattr( self.process, 'processReloadNotifier', None )
-    if reloadNotifier is not None:
-      reloadNotifier.add( self.processReloaded )
     self.btnRun = None
     self._running = False
 
@@ -975,7 +973,7 @@ class ProcessView( QVBox, ExecutionContextGUI ):
       self.executionTree.setSelected( item, True )
 
       ##--##
-      if neuroDistributedProcesses and neuroConfig.userLevel >= 2:
+      if neuroDistributedProcesses():
         self.remote = RemoteContext()
 
         self.remoteWidget = RemoteContextGUI(splitter)
@@ -1028,32 +1026,7 @@ class ProcessView( QVBox, ExecutionContextGUI ):
     initGUI = getattr( self.process, 'initializationGUI', None )
     if initGUI is not None:
       initGUI( self )
-
-
-  def processReloaded( self, newProcess ):
-    # Get current process arguments values
-    values =[(n,getattr(self.process,n)) for n in self.process.signature.keys()]
-    # Forget about old process
-    self.process.processReloadNotifier.remove( self.processReloaded )
-    self.process.signatureChangeNotifier.remove( self.signatureChanged )
-    self.eraseSignatureWidgets()
-    # Care about new process
-    self.process = getProcessInstance( newProcess )
-    self.process.signatureChangeNotifier.add( self.signatureChanged )
-    self.process.processReloadNotifier.add( self.processReloaded )
-    procdoc = readProcdoc( self.process )
-    documentation = procdoc.get( neuroConfig.language )
-    if documentation is None:
-      documentation = procdoc.get( 'en', {} )
-    self.createSignatureWidgets( documentation )
-    # restore values
-    for n,v in values:
-      if self.process.signature.has_key( n ):
-        try:
-          self.process.setValue( n, v )
-        except:
-          self.process.setValue( n, None )
-
+  
 
   def createSignatureWidgets( self, documentation=None ):
     eNode = getattr( self.process, '_executionNode', None )
@@ -1114,7 +1087,7 @@ class ProcessView( QVBox, ExecutionContextGUI ):
     self.btnIterate.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
     QObject.connect( self.btnIterate, SIGNAL( 'clicked()' ), self._iterateButton )
 
-    if neuroDistributedProcesses and neuroConfig.userLevel >= 2:
+    if neuroDistributedProcesses():
       self.btnDistribute = QPushButton( _t_( 'Distribute' ), container )
       self.btnDistribute.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
       QObject.connect( self.btnDistribute, SIGNAL( 'clicked()' ), self._distributeButton )
@@ -1149,7 +1122,8 @@ class ProcessView( QVBox, ExecutionContextGUI ):
         cleanup = getattr( gui, 'cleanup', None )
         if cleanup is not None:
           cleanup()
-        gui.deleteLater()
+        if gui is not None:
+          gui.deleteLater()
       self._widgetStack = None
     if self.executionTree is not None:
       stack = [ self.executionTree ]
@@ -1165,9 +1139,6 @@ class ProcessView( QVBox, ExecutionContextGUI ):
       self.executionTree = None
     neuroConfig.unregisterObject( self )
     self.process.signatureChangeNotifier.remove( self.signatureChanged )
-    reloadNotifier = getattr( self.process, 'processReloadNotifier', None )
-    if reloadNotifier is not None:
-      reloadNotifier.remove( self.processReloaded )
     self._executionNodeLVItems.clear()
     self.parametersWidget = None
     self.info = None
@@ -1178,16 +1149,52 @@ class ProcessView( QVBox, ExecutionContextGUI ):
       if self._running:
         self._setInterruptionRequest( neuroProcesses.ExecutionContext.UserInterruption() )
       else:
-        self._checkReloadProcess()
-        self.readUserValues()
-        self._runningProcess = 0
-        self._startCurrentProcess( executionFunction )
+        processView = self._checkReloadProcess()
+        if processView is None:
+          processView = self
+          processView.info.setText( '' )
+        else:
+          processView.info.setText( '' )
+          processView.warning( _t_('processes %s updated') % _t_(processView.process.name) )
+        processView._runningProcess = 0
+        processView._startCurrentProcess( executionFunction )
     except:
       showException()
 
-  def _checkReloadProcess( self ):
-    p = getProcess( self.process.id() )
 
+  def _checkReloadProcess( self ):
+    self.readUserValues()
+    reload = False
+    for p in self.process.allProcesses():
+      if p.__class__ is not getProcess( p ):
+        reload = True
+        break
+    result = None
+    if reload:
+      eNode = getattr( self.process, '_executionNode', None )
+      if eNode is None:
+        # Get current process arguments values
+        event = ProcessExecutionEvent()
+        event.setProcess( self.process )
+        # Forget about old process
+        self.process.signatureChangeNotifier.remove( self.signatureChanged )
+        self.eraseSignatureWidgets()
+        # Care about new process
+        self.process = getProcessInstanceFromProcessEvent( event )
+        self.process.signatureChangeNotifier.add( self.signatureChanged )
+        procdoc = readProcdoc( self.process )
+        documentation = procdoc.get( neuroConfig.language )
+        if documentation is None:
+          documentation = procdoc.get( 'en', {} )
+        self.createSignatureWidgets( documentation )
+        result = self
+      else:
+        result = self.clone()
+        self.deleteLater()
+    return result
+  
+  
+  
   def _startCurrentProcess( self, executionFunction ):
     #Remove icon from all ListView items
     for item in self._executionNodeLVItems.values():
@@ -1217,8 +1224,6 @@ class ProcessView( QVBox, ExecutionContextGUI ):
         _mainThreadActions.push( self.movie.start )
       if self.btnRun:
         _mainThreadActions.push( self.btnRun.setText, _t_( 'Interrupt' ) )
-      if self._runningProcess == 0:
-        _mainThreadActions.push( self.info.setText, '' )
 
     #Adds an icon on the ListViewItem corresponding to the current process
     # if any
@@ -1306,21 +1311,17 @@ class ProcessView( QVBox, ExecutionContextGUI ):
         eNodeChildren = (eNode.child( k ) for k in  eNode.childrenNames())
       else:
         eNode, eNodeChildren = eNodeAndChildren
-      #print '!executionNodeExpanded!', eNode, eNode.name()
       for childNode in eNodeChildren:
-        #print '!executionNodeExpanded! childNode:', childNode, childNode.name()
         if isinstance( childNode, ProcessExecutionNode ):
           en = childNode._executionNode
           if en is None:
             en = childNode
         else:
           en = childNode
-        #print '!executionNodeExpanded! en:', en, (en if en is None else en.name())
         if eNode is not childNode \
           and ( isinstance( eNode, SelectionExecutionNode ) \
             or ( isinstance( eNode, ProcessExecutionNode ) \
             and isinstance( eNode._executionNode, SelectionExecutionNode ) ) ):
-        #if getattr( childNode, '_radioButton', False ):
           newItem = NodeCheckListItem( childNode, item, previous, '', QCheckListItem.RadioButton )
         elif isinstance( en, SelectionExecutionNode ):
           newItem = NodeCheckListItem( childNode, item, previous, '', QCheckListItem.Controller )
@@ -1332,7 +1333,6 @@ class ProcessView( QVBox, ExecutionContextGUI ):
         previous = newItem
         newItem.setText( 0, _t_( childNode.name() ) )
         newItem.setExpandable( en.hasChildren() )
-        #newItem.setExpandable( True )
         if isinstance( childNode, ProcessExecutionNode ):
           self._executionNodeLVItems[ childNode._process ] = newItem
         gui = childNode.gui( self._widgetStack, processView=self )
@@ -1374,17 +1374,10 @@ class ProcessView( QVBox, ExecutionContextGUI ):
 
   def _iterateAccept( self ):
     try:
-      #print '!iteration! read parameters'
       params = self._iterationDialog.getLists()
-      #print '!iteration! create processes list'
-      #import cProfile
-      #cProfile.runctx('processes = self.process._iterate( **params )', globals(), locals(), '/tmp/profile' )
       processes = self.process._iterate( **params )
-      #print '!iteration! create iteration process'
       iterationProcess = IterationProcess( self.process.name, processes )
-      #print '!iteration! show iteration process'
       showProcess( iterationProcess )
-      #print '!iteration! all done'
     except:
         showException()
 
@@ -1424,7 +1417,7 @@ class ProcessView( QVBox, ExecutionContextGUI ):
   def clone( self ):
     self.readUserValues()
     clone = getProcessInstanceFromProcessEvent( self.createProcessExecutionEvent() )
-    showProcess( clone )
+    return showProcess( clone )
   
 
   @staticmethod
@@ -1461,6 +1454,7 @@ def showProcess( process, *args, **kwargs ):
       view.move( *windowGeometry[ 'position' ] )
       view.resize( *windowGeometry[ 'size' ] )
     view.show()
+    return view
 
 
 #----------------------------------------------------------------------------
@@ -1933,15 +1927,10 @@ class ProcessSelectionWidget( QVBox ):
     """
     Call back when accepting iteration dialog. Iterates the selected process.
     """
-    #print '!iteration! read parameters'
     params = self._iterationDialog.getLists()
-    #print '!iteration! create processes list'
     processes = self.currentProcess._iterate( **params )
-    #print '!iteration! create iteration process'
     iterationProcess = IterationProcess( self.currentProcess.name, processes )
-    #print '!iteration! show iteration process'
     showProcess( iterationProcess )
-    #print '!iteration! all done'
     
   def updateList(self):
     """

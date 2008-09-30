@@ -730,7 +730,7 @@ class FileSystemOntology( object ):
         e.message = msg
         e.args = ( msg, ) + e.args[1:]
         raise
-      fso.lastModification = max( [os.stat(f).st_mtime for f in files] )
+      fso.lastModification = max( neuroDiskItems.typesLastModification, max( (os.stat(f).st_mtime for f in files) ) )
 
     def insert( self, path, *content ):
       self._insert( False, False, path, *content )

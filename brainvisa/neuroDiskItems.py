@@ -1457,7 +1457,9 @@ class HierarchyDirectoryType( FileType ):
     FileType.__init__( self, typeName, None, directoryFormat, **kwargs )
   
 #----------------------------------------------------------------------------
+typesLastModification = 0
 def readTypes():
+  global typesLastModification
   mef = MultipleExecfile()
   mef.fileExtensions.append( '.py' )
   mef.includePath.extend(neuroConfig.typesPath)
@@ -1465,6 +1467,7 @@ def readTypes():
     files = shelltools.filesFromShPatterns( *[os.path.join( path, '*.py' ) for path in neuroConfig.typesPath] )
     files.sort()
     mef.execute( continue_on_error=True, *files )
+    typesLastModification = max( (os.stat(f).st_mtime for f in mef.executedFiles()) )
   except:
     showException()
 

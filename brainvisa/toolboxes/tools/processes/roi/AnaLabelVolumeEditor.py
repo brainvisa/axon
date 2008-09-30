@@ -60,8 +60,7 @@ def initialization( self ):
   
 def execution( self, context ):
   a = anatomist.Anatomist()
-  if self.pipeline_mask_nomenclature is not None:
-     hie = a.loadObject( self.pipeline_mask_nomenclature )
+  hie = a.loadObject( self.pipeline_mask_nomenclature )
 
   context.write( 'background:', self.background_label )
   if self.background_label != 'minimum':
@@ -97,9 +96,18 @@ def execution( self, context ):
   else:
     windownum = a.createWindow( 'Axial' )
   a.addObjects( objects=[voigraphnum,imagenum], windows=[windownum] )
+
+  voigraphnum.setMaterial( a.Material( diffuse=[ 0.8, 0.8, 0.8, 0.5 ] ) )
+  #selects the graph
+  children = voigraphnum.children
+  windownum.group.addToSelection( children )
+  windownum.group.unSelect( children[1:] )
+  del children
+
   a.execute( 'SetControl', windows=[windownum], control='PaintControl' )
   windownum.showToolbox(True)
-  rep = context.ask( "Click here when finished","OK", "Cancel" )
+  
+  rep = context.ask( "Click here when finished","OK", "Cancel", modal=0 )
   if rep != 1:
     voigraphnum.save(voigraph)
     a.waitEndProcessing() # make sure that anatomist has finished to process previous commands

@@ -138,4 +138,3 @@ def execution( self, context ):
   writer.write( func, self.localised.fullPath() )
   context.write('OK')
 
-  

@@ -38,8 +38,8 @@ if neuroConfig.newDatabases:
 else:
   from neuroHierarchyGUI import HierarchyBrowser
 
-name = 'Database hierarchy browser'
-userLevel = 1
+name = 'Database browser'
+userLevel = 0
 
 def overrideGUI( self ):
   return HierarchyBrowser()
