@@ -426,117 +426,118 @@ class NodeCheckListItem( QCheckListItem ):
     self._node = None
 
   def paintCell( self, painter, cg, column, width, align ):
-    if self.type() != QCheckListItem.Controller or not self._node._optional:
-      QCheckListItem.paintCell( self, painter, cg, column, width, align )
-    else:
-      painter.save()
-      pix = self.pixmap( 0 )
-      if pix and not pix.isNull():
-        #�I think this is a QCheckListItem bug...
-        painter.translate( pix.width() + 3, 0 )
-      QCheckListItem.paintCell( self, painter, cg, column, width, align )
-      painter.restore()
-      # translation of Qt C++ source code
-      lv = self.listView()
-      parentControl = 0
-      if self.parent() and self.parent().rtti() == 1 and \
-         sip.cast( self.parent(), QCheckListItem ).type() \
-         == QCheckListItem.RadioButtonController:
-        parentControl = 1
-      fm = QFontMetrics( lv.fontMetrics() )
-      boxsize = lv.style().pixelMetric( QStyle.PM_CheckListControllerSize,
-                                        lv )
-      marg = lv.itemMargin();
-
-      styleflags = QStyle.Style_Default
-      if self.state() == QCheckListItem.On:
-        styleflags |= QStyle.Style_On
-      elif self.state() == QCheckListItem.NoChange:
-        if not self.isTristate():
-          styleflags |= QStyle.Style_Off
+    if self._node is not None:
+      if self.type() != QCheckListItem.Controller or not self._node._optional:
+        QCheckListItem.paintCell( self, painter, cg, column, width, align )
+      else:
+        painter.save()
+        pix = self.pixmap( 0 )
+        if pix and not pix.isNull():
+          #�I think this is a QCheckListItem bug...
+          painter.translate( pix.width() + 3, 0 )
+        QCheckListItem.paintCell( self, painter, cg, column, width, align )
+        painter.restore()
+        # translation of Qt C++ source code
+        lv = self.listView()
+        parentControl = 0
+        if self.parent() and self.parent().rtti() == 1 and \
+          sip.cast( self.parent(), QCheckListItem ).type() \
+          == QCheckListItem.RadioButtonController:
+          parentControl = 1
+        fm = QFontMetrics( lv.fontMetrics() )
+        boxsize = lv.style().pixelMetric( QStyle.PM_CheckListControllerSize,
+                                          lv )
+        marg = lv.itemMargin();
+  
+        styleflags = QStyle.Style_Default
+        if self.state() == QCheckListItem.On:
+          styleflags |= QStyle.Style_On
+        elif self.state() == QCheckListItem.NoChange:
+          if not self.isTristate():
+            styleflags |= QStyle.Style_Off
+          else:
+            styleflags |= QStyle.Style_NoChange
         else:
-          styleflags |= QStyle.Style_NoChange
-      else:
-        styleflags |= QStyle.Style_Off
-      if self.isSelected():
-        styleflags |= QStyle.Style_Selected
-      if self.isEnabled() and lv.isEnabled():
-        styleflags |= QStyle.Style_Enabled
-
-      x = 0
-      y = 0
-      if not parentControl:
-        x += 3
-      if align & Qt.AlignVCenter:
-        y = ( ( self.height() - boxsize ) / 2 ) + marg
-      else:
-        y = (fm.height() + 2 + marg - boxsize) / 2
-      #print 'dims:', x, y, boxsize, fm.height() + 2 + marg
-      # cli = QCheckListItem( self, 'toto', QCheckListItem.CheckBox ) #sip.cast(self,QCheckListItem)
-      #opt = QStyleOption( cli )
-      #opt = QStyleOption( self )
-      # QStyleOption is buggy: listViewItem() and checkListItem() are not
-      # both initialized
-      # SIP is buggy: QStyleOption.__init__( QCheckListItem ) calls
-      # QStyleOption::QStyleOption( QListViewItem * ) instead of
-      # QStyleOption::QStyleOption( QCheckListItem * )
-##      print 'opt:', opt
-##      item = opt.checkListItem()
-##      print 'item:', item, 'cli:', cli, 'lvitem:', opt.listViewItem(), 'self:', self
-##      print 'cli.listview:', cli.listView(), ', self.lv:', self.listView()
-##      if item:
-##        print 'item not None'
-##        print 'listview:', item.listView()
-##      lv.style().drawPrimitive(QStyle.PE_CheckListIndicator, painter,
-##                               QRect(x, y, boxsize,
-##                                     fm.height() + 2 + marg),
-##                               cg, styleflags, opt )
-##      print 'drawPrim done'
-
-      # copied/translated from QCommonStyle.cpp:
-      r = QRect(x, y, boxsize, fm.height() + 2 + marg)
-      w = r.width()
-      h = r.width()
-      p = painter
-      item = self
-
-      #p.fillRect( 0, 0, x + marg + w + 4, item.height(),
-      #            QBrush( cg.background() ) )
-      lv.paintEmptyArea( p, r )
-      if styleflags & QStyle.Style_Enabled:
-        p.setPen( QPen( cg.text(), 2 ) )
-      else:
-        p.setPen( QPen( lv.palette().color( QPalette.Disabled,
-                                            QColorGroup.Text ), 2 ) )
-      if styleflags & QStyle.Style_Selected and not lv.rootIsDecorated() and \
-         not parentControl:
-        p.fillRect( 0, 0, x + marg + w + 4, item.height(),
-                    cg.brush( QColorGroup.Highlight ) )
-        if item.isEnabled():
-          p.setPen( QPen( cg.highlightedText(), 2 ) )
-
-      if styleflags & QStyle.Style_NoChange:
-        p.setBrush( cg.brush( QColorGroup.Button ) )
-      p.drawRect( x+marg, y+2, w-4, h-4 )
-      x+=1
-      y+=1
-      if ( styleflags & QStyle.Style_On) or \
-             ( styleflags & QStyle.Style_NoChange ):
-        a = QPointArray( 7*2 )
-        xx = x+1+marg
-        yy=y+5
-        for i in range(3):
-          a.setPoint( 2*i,   xx, yy )
-          a.setPoint( 2*i+1, xx, yy+2 )
-          xx+=1
-          yy+=1
-        yy -= 2;
-        for i in range(3,7):
-          a.setPoint( 2*i,   xx, yy )
-          a.setPoint( 2*i+1, xx, yy+2 );
-          xx+=1
-          yy-=1
-        p.drawLineSegments( a )
+          styleflags |= QStyle.Style_Off
+        if self.isSelected():
+          styleflags |= QStyle.Style_Selected
+        if self.isEnabled() and lv.isEnabled():
+          styleflags |= QStyle.Style_Enabled
+  
+        x = 0
+        y = 0
+        if not parentControl:
+          x += 3
+        if align & Qt.AlignVCenter:
+          y = ( ( self.height() - boxsize ) / 2 ) + marg
+        else:
+          y = (fm.height() + 2 + marg - boxsize) / 2
+        #print 'dims:', x, y, boxsize, fm.height() + 2 + marg
+        # cli = QCheckListItem( self, 'toto', QCheckListItem.CheckBox ) #sip.cast(self,QCheckListItem)
+        #opt = QStyleOption( cli )
+        #opt = QStyleOption( self )
+        # QStyleOption is buggy: listViewItem() and checkListItem() are not
+        # both initialized
+        # SIP is buggy: QStyleOption.__init__( QCheckListItem ) calls
+        # QStyleOption::QStyleOption( QListViewItem * ) instead of
+        # QStyleOption::QStyleOption( QCheckListItem * )
+  ##      print 'opt:', opt
+  ##      item = opt.checkListItem()
+  ##      print 'item:', item, 'cli:', cli, 'lvitem:', opt.listViewItem(), 'self:', self
+  ##      print 'cli.listview:', cli.listView(), ', self.lv:', self.listView()
+  ##      if item:
+  ##        print 'item not None'
+  ##        print 'listview:', item.listView()
+  ##      lv.style().drawPrimitive(QStyle.PE_CheckListIndicator, painter,
+  ##                               QRect(x, y, boxsize,
+  ##                                     fm.height() + 2 + marg),
+  ##                               cg, styleflags, opt )
+  ##      print 'drawPrim done'
+  
+        # copied/translated from QCommonStyle.cpp:
+        r = QRect(x, y, boxsize, fm.height() + 2 + marg)
+        w = r.width()
+        h = r.width()
+        p = painter
+        item = self
+  
+        #p.fillRect( 0, 0, x + marg + w + 4, item.height(),
+        #            QBrush( cg.background() ) )
+        lv.paintEmptyArea( p, r )
+        if styleflags & QStyle.Style_Enabled:
+          p.setPen( QPen( cg.text(), 2 ) )
+        else:
+          p.setPen( QPen( lv.palette().color( QPalette.Disabled,
+                                              QColorGroup.Text ), 2 ) )
+        if styleflags & QStyle.Style_Selected and not lv.rootIsDecorated() and \
+          not parentControl:
+          p.fillRect( 0, 0, x + marg + w + 4, item.height(),
+                      cg.brush( QColorGroup.Highlight ) )
+          if item.isEnabled():
+            p.setPen( QPen( cg.highlightedText(), 2 ) )
+  
+        if styleflags & QStyle.Style_NoChange:
+          p.setBrush( cg.brush( QColorGroup.Button ) )
+        p.drawRect( x+marg, y+2, w-4, h-4 )
+        x+=1
+        y+=1
+        if ( styleflags & QStyle.Style_On) or \
+              ( styleflags & QStyle.Style_NoChange ):
+          a = QPointArray( 7*2 )
+          xx = x+1+marg
+          yy=y+5
+          for i in range(3):
+            a.setPoint( 2*i,   xx, yy )
+            a.setPoint( 2*i+1, xx, yy+2 )
+            xx+=1
+            yy+=1
+          yy -= 2;
+          for i in range(3,7):
+            a.setPoint( 2*i,   xx, yy )
+            a.setPoint( 2*i+1, xx, yy+2 );
+            xx+=1
+            yy-=1
+          p.drawLineSegments( a )
 
   def activate( self ):
     if self.type() == QCheckListItem.Controller and self._node._optional:

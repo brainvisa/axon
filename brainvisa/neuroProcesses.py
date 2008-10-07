@@ -411,7 +411,14 @@ def generateHTMLDocumentation( processInfoOrId, translators={} ):
           print e
 
     # Technical information
+    from brainvisa.toolboxes import getToolbox
     print >> f, '<h2>' + tr.translate( 'Technical information' ) + '</h2><blockquote>'
+    toolbox = getToolbox( processInfo.toolbox )
+    if toolbox:
+      toolbox = tr.translate( toolbox.name )
+    else:
+      toolbox = 'brainvisa'
+    print >> f, '<p><em>' + tr.translate( 'Toolbox' ) + ' : </em>' + unicode( toolbox ) + '</p>'
     print >> f, '<p><em>' + tr.translate( 'User level' ) + ' : </em>' + unicode( processInfo.userLevel ) + '</p>'
     print >> f, '<p><em>' + tr.translate( 'Identifier' ) + ' : </em><code>' + processInfo.id + '</code></p>'
     print >> f, '<p><em>' + tr.translate( 'File name' ) + ' : </em><nobr><code>' + processInfo.fileName + '</code></nobr></p>'
@@ -2473,7 +2480,7 @@ class ExecutionContext:
 
 #----------------------------------------------------------------------------
 class ProcessInfo:
-  def __init__( self, id, name, signature, userLevel, category, fileName, roles ):
+  def __init__( self, id, name, signature, userLevel, category, fileName, roles, toolbox ):
     self.id = id
     self.name = name
     #TODO: Signature cannot be pickeled
@@ -2484,10 +2491,11 @@ class ProcessInfo:
     self.roles = tuple( roles )
     self.valid=True # set to False if process' validation method fails
     self.procdoc = None
+    self.toolbox = toolbox
 
   def html( self ):
     return '\n'.join( ['<b>' + n + ': </b>' + unicode( getattr( self, n ) ) + \
-                        '<br>\n' for n in ( 'id', 'name', 'signature',
+                        '<br>\n' for n in ( 'id', 'name', 'toolbox', 'signature',
                                             'userLevel', 'category',
                                             'fileName', 'roles' )] )
 
@@ -2758,7 +2766,7 @@ _extToModuleDescription ={
 }
 
 #----------------------------------------------------------------------------
-def readProcess( fileName, category=None, ignoreValidation=False ):
+def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brainvisa' ):
   result = None
   try:
     global _processModules, _processes, _processesInfo, _processesInfoByName, _readProcessLog, _askUpdateProcess
@@ -2808,6 +2816,7 @@ def readProcess( fileName, category=None, ignoreValidation=False ):
     NewProcess.name = moduleName
     NewProcess.category = category
     NewProcess.dataDirectory = dataDirectory
+    NewProcess.toolbox = toolbox
     # The callback registered in processReloadNotifier are called whenever
     # a change in the process source file lead to a reload of the process.
     # The argument is the new process.
@@ -2844,6 +2853,7 @@ def readProcess( fileName, category=None, ignoreValidation=False ):
       category = NewProcess.category,
       fileName = NewProcess._fileName,
       roles = getattr( NewProcess, 'roles', () ),
+      toolbox = toolbox
     )
     _processesInfo[ processInfo.id ] = processInfo
     _processesInfoByName[ NewProcess.name.lower() ] = processInfo
@@ -2862,6 +2872,8 @@ def readProcess( fileName, category=None, ignoreValidation=False ):
 
     oldProcess = _processes.get( NewProcess._id )
     if oldProcess is not None:
+      NewProcess.toolbox = oldProcess.toolbox
+      processInfo.toolbox = oldProcess.toolbox
       for n in ( 'execution', 'initialization', 'checkArguments' ):
         setattr( oldProcess, n, getattr( NewProcess, n ).im_func )
       oldProcess._fileTime = NewProcess._fileTime
@@ -3003,7 +3015,7 @@ class ProcessTree( EditableTree ):
     content=self.values()
     return ( (), {'name' : self.initName, 'id': self.id, 'icon' : self.icon, 'editable' : self.modifiable, 'user' : self.user, 'content' : content} )
 
-  def addDir(self, processesDir, category="", processesCache={}):
+  def addDir(self, processesDir, category="", processesCache={}, toolbox='brainvisa' ):
     """
     @type processesDir: string
     @param processesDir: directory where processes are recursively searched.
@@ -3042,7 +3054,7 @@ class ProcessTree( EditableTree ):
           try:
             processInfo = processesCache.get( id )
             if processInfo is None:
-              readProcess( ff, category=category ) # two arguments : process fullpath and category (directories separated by /)
+              readProcess( ff, category=category, toolbox=toolbox ) # two arguments : process fullpath and category (directories separated by /)
             else:
               addProcessInfo(id, processInfo)
           except ValidationError:# it may occur a validation error on reading process

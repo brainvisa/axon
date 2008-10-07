@@ -375,6 +375,8 @@ class SQLDatabase( Database ):
       cursor.execute( 'VACUUM' )
     finally:
       self._closeDatabaseCursor( cursor )
+      self._connection.close()
+      self._connection = None
     self.createTables( context=context )
   
   
@@ -830,7 +832,7 @@ class SQLDatabase( Database ):
               break
           else:
             if includeUnknowns:
-              stack.append( ( it, None, a, priorityOffset ) )
+              stack.append( ( it, None, attributes, priorityOffset ) )
               if allowYield:
                 diskItem = Directory( nameWithoutExtension, None )
                 diskItem._files = files
