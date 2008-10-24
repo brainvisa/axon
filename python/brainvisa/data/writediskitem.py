@@ -24,3 +24,8 @@ class WriteDiskItem( ReadDiskItem ):
       result = self.database.changeDiskItemFormat( selection, self.formats[ 0 ].name )
     return result
 
+  def typeInfo( self, translator = None ):
+    if translator: translate = translator.translate
+    else: translate = _
+    ti = super( WriteDiskItem, self ).typeInfo( translator )
+    return  ( ti[0], ) + ( ( translate( 'Access' ), translate( 'output' ) ), ) + ti[ 1: ]

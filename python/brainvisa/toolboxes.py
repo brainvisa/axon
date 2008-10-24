@@ -45,7 +45,7 @@ class Toolbox( object ):
     if ( d[ 'icon' ] != None ) :
       self.icon = os.path.join( toolboxDirectory, d[ 'icon' ] )
     self.processTree = None
-    self.description = description
+    self.description = d['description']
     
   
   def getProcessTree( self ):

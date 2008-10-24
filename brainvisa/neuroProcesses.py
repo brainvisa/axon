@@ -806,7 +806,22 @@ class Parameterized( object ):
     self._warn = {}
     self.signatureChangeNotifier = Notifier( 1 )
 
-  
+
+  def convertStateValue( self, value ):
+    
+    if value is not None and not isinstance( value, ( int, float, basestring, list, dict, tuple ) ):
+      result = unicode( value )
+    elif isinstance( value, list ):
+      result = [ self.convertStateValue( itervalue ) for itervalue in value ]
+    elif isinstance( value, tuple ):
+      result = tuple( self.convertStateValue( itervalue ) for itervalue in value )
+    elif isinstance( value, dict ) :
+      result = dict( (key, self.convertStateValue( itervalue ) ) for key, itervalue in value.iteritems() )
+    else :
+      result = value
+
+    return result
+    
   def saveStateInDictionary( self, result=None ):
     if result is None:
       result = {}
@@ -814,8 +829,8 @@ class Parameterized( object ):
     default = {}
     for n in self.signature.iterkeys():
       value = getattr( self, n, None )
-      if value is not None and not isinstance( value, ( int, float, basestring, list, dict, tuple ) ):
-        value = unicode( value )
+      value = self.convertStateValue( value )
+        
       if self.isDefault( n ):
         default[ n ] = value
       else:
@@ -2622,7 +2637,7 @@ def getProcessInstanceFromProcessEvent( event ):
 def getProcessInstance( processIdClassOrInstance ):
   result = getProcess( processIdClassOrInstance )
   if isinstance( processIdClassOrInstance, Process ):
-    if result is processIdClassOrInstance.__class__:
+    if result is processIdClassOrInstance or result is processIdClassOrInstance.__class__:
       result = processIdClassOrInstance
     else:
       event = ProcessExecutionEvent()

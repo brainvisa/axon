@@ -285,11 +285,13 @@ def setSPM99Compatibility( values ):
     if values.SPM99_compatibility:
       print >> aimsrc, "  'spm_input_spm2_normalization' : 0,\n" \
                        "  'spm_output_spm2_normalization' : 0,\n" \
-                       "  'spm_output_4d_volumes' : 0,"
+                       "  'spm_output_4d_volumes' : 0,\n" \
+                       "  'nifti_output_4d_volumes' : 0,"
     else:
       print >> aimsrc, "  'spm_input_spm2_normalization' : 1,\n" \
                       "  'spm_output_spm2_normalization' : 1,\n" \
-                      "  'spm_output_4d_volumes' : 1,"
+                      "  'spm_output_4d_volumes' : 1,\n" \
+                      "  'nifti_output_4d_volumes' : 1,"
     if values.radiological_orientation:
       print >> aimsrc, "  'spm_input_radio_convention' : 1,\n" \
                        "  'spm_output_radio_convention' : 1,"

@@ -184,7 +184,7 @@ class ChoiceEditor( QComboBox, DataEditor ):
 #dbg#    print 'ChoiceEditor.releaseCallbacks'
     if self.parameter is not None:
       self.parameter.unwarnChoices( self.changeChoices )
-      self.parameter.setChoices( ( '', None ) )
+      #self.parameter.setChoices( ( '', None ) )
       self.parameter = None
 
   def getValue( self ):

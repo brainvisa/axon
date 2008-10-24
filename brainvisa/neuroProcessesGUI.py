@@ -204,6 +204,16 @@ class HTMLBrowser( QWidget ):
       src = unicode( src )
       if not src.startswith( 'bvshowprocess://' ) and not src.startswith("http://"):
         TextBrowserWithSearch.setSource( self, src )
+        
+    def createPopupMenu(self, pos):
+      menu=TextBrowserWithSearch.createPopupMenu(self, pos)
+      # accelerator key doesn't work, I don't know why...
+      menu.insertItem("Open in a web browser", self.openWeb)#, qt.Qt.CTRL + qt.Qt.Key_F )
+      return menu
+      
+    def openWeb(self):
+      self.emit(PYSIGNAL("openWeb"), ())
+      
 
   def __init__( self, parent = None, name = None, fl = 0 ):
     QWidget.__init__( self, parent, name, fl )
@@ -252,6 +262,7 @@ class HTMLBrowser( QWidget ):
     self.connect( btnForward, SIGNAL('clicked()'), browser, SLOT( 'forward()' ) )
     self.connect( browser, SIGNAL('forwardAvailable(bool)'), btnForward, SLOT('setEnabled(bool)') )
     self.connect( browser, SIGNAL('linkClicked( const QString & )'), self.clickLink )
+    self.connect( browser, PYSIGNAL('openWeb'), self.openWeb )
 
     self.browser = browser
     
@@ -292,6 +303,13 @@ class HTMLBrowser( QWidget ):
     else:
       self.browser.setSource( text )
 
+  def openWeb(self):
+    try:
+      if self.webBrowser:
+        os.spawnl( os.P_NOWAIT, self.webBrowser, self.webBrowser, self.browser.source() )
+    except:
+        showException()
+    
   def showCategoryDocumentation( self, category ):
     """
     Searches for a documentation file associated to this category and opens it  in this browser. 
@@ -357,7 +375,7 @@ class WidgetScrollV( QScrollView ):
     result = QScrollView.resizeEvent( self, e )
     if self.box:
       self.box.resize( self.visibleWidth(), self.box.height() )
-      self.updateGeometry()
+      #self.updateGeometry()
       self.setMaximumSize( self.maximumWidth(), self.box.sizeHint().height() )
       if self.box.width() != self.visibleWidth():
         self.box.resize( self.visibleWidth(), self.box.height() )
@@ -668,13 +686,13 @@ class ParameterizedWidget( QWidget ):
     # Using weakref here because self.parameterized may contain a reference
     # to self.parameterChanged (see below) which is a bound method that contains
     # a reference to self. If nothing is done self is never destroyed.
+    
     self.parameterized = weakref.proxy( parameterized )
     self.parameterized.deleteCallbacks.append( self.parameterizedDeleted )
     self.labels={}
     self.editors={}
 #lock#    self.btnLock={}
     self._currentDirectory = None
-
 
     self._doUpdateParameterValue = 0
     first = None
@@ -1167,7 +1185,8 @@ class ProcessView( QVBox, ExecutionContextGUI ):
     self.readUserValues()
     reload = False
     for p in self.process.allProcesses():
-      if p.__class__ is not getProcess( p ):
+      pp = getProcess( p )
+      if pp is not p and pp is not p.__class__:
         reload = True
         break
     result = None
@@ -1703,11 +1722,11 @@ class ProcessEdit( QDialog ):
 
   def saveLanguage( self ):
     d = {}
-    d[ 'short' ] = unicode( self.mleShort.text() )
-    d[ 'long' ] = unicode( self.mleLong.text() )
+    d[ 'short' ] = self.escapeXMLEntities( unicode( self.mleShort.text() ) )
+    d[ 'long' ] = self.escapeXMLEntities( unicode( self.mleLong.text() ) )
     d[ 'parameters' ] = p = {}
     for i,j in self.mleParameters.items():
-      p[ unicode( self.cmbParameter.text( i ) ) ] = unicode( j.text() )
+      p[ unicode( self.cmbParameter.text( i ) ) ] = self.escapeXMLEntities( unicode( j.text() ) )
     self.documentation[ self.language ] = d
     htmlPath = unicode( self.leHTMLPath.text() )
     if htmlPath:
@@ -1718,6 +1737,11 @@ class ProcessEdit( QDialog ):
       except KeyError:
         pass
 
+  @staticmethod
+  def escapeXMLEntities( s ):
+    return re.sub( r'&([a-z]+);', lambda m: '&amp;'+m.group(1)+';', s )
+  
+  
   def changeLanguage( self ):
     self.saveLanguage()
     self.setLanguage( unicode( self.cmbLanguage.currentText() ) )
@@ -2071,7 +2095,7 @@ class ProcessTreesWidget(QSplitter):
     # -> so use clicked signal instead
     self.connect(treeWidget, SIGNAL( 'clicked( QListViewItem * )' ), self.selectionChanged)
     self.connect(treeWidget, SIGNAL( 'doubleClicked( QListViewItem * )' ), self.doubleClicked)
-    self.connect(treeWidget, SIGNAL( 'contextMenuRequested ( QListViewItem *, const QPoint &, int )'), self.openProcessMenu)
+    self.connect(treeWidget, SIGNAL( 'contextMenuRequested ( QListViewItem *, const QPoint &, int )'), lambda i, p, c : self.openProcessMenu(treeWidget, i, p, c))
     # the new widget representing the process tree is added in treeStack and in widgets
     stackIdentifier = self.treeStack.addWidget( treeWidget )
     self.treeStackIdentifiers.setdefault( object.__hash__( processTree ), stackIdentifier )
@@ -2092,12 +2116,14 @@ class ProcessTreesWidget(QSplitter):
     """
     self.popupMenu.exec_loop(QCursor.pos())
 
-  def openProcessMenu(self, item, point, col):
+  def openProcessMenu(self, listView, item, point, col):
     """
     Called on contextMenuRequested signal on the list of processes of a toolbox. It opens the process menu at cursor position if the current item represents a process.
     """
     if item and item.model and item.model.isLeaf():
       self.processMenu.exec_loop(QCursor.pos())
+    else:
+      listView.openContextMenu(item, point, col)
 
   def updateContent(self, action=None, items=None, position=None):
     """

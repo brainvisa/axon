@@ -382,6 +382,7 @@ class DiskItem:
     if r is None: r = self._minfAttributes.get( attrName )
     if r is None: r = self._otherAttributes.get( attrName )
     if r is None: r = self._localAttributes.get( attrName )
+    if r is None: r = aimsFileInfo( self.fullPath() ).get( attrName )
     if r is None:
       if self.parent: return self.parent.get( attrName, default )
       else: return default
@@ -1471,3 +1472,45 @@ def readTypes():
   except:
     showException()
 
+#----------------------------------------------------------------------------
+try:
+  from soma import aims
+  _finder = aims.Finder()
+  # don't resolve symlinks if file browser to be consistent with
+  # all DiskItem namings
+  try:
+    aims.setQtResolveSymlinks( False )
+  except:
+    pass
+except:
+  _finder = None
+
+
+#----------------------------------------------------------------------------
+def aimsFileInfo( fileName ):
+  from neuroProcessesGUI import mainThreadActions
+  global _finder
+  result = {}
+  try:
+    if _finder is not None:
+      finder = aims.Finder()
+      if type( fileName ) is unicode:
+        # convert to str
+        import codecs
+        fileName = codecs.getencoder( 'utf8' )( fileName )[0]
+      # Finder is not thread-safe (yet)
+      if mainThreadActions().call( finder.check, fileName ):
+        result = eval( str(finder.header() ) )
+    else:
+      if neuroConfig.platform == 'windows':
+        f=os.popen( 'AimsFileInfo -i "' + fileName + '"', 'r' )
+      else:
+        f=os.popen( 'AimsFileInfo -i "' + fileName + '" 2> /dev/null', 'r' )
+      s = f.readline()
+      while s and s != 'attributes = {\n': s = f.readline()
+      s = s[13:-1] + f.read()
+      result = eval( s )
+      f.close()
+  except:
+    pass
+  return result

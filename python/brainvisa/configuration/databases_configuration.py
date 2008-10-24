@@ -66,7 +66,7 @@ class DatabasesConfiguration( ConfigurationGroup ):
       super( DatabasesConfiguration.FileSystemOntology, self ).__init__()
       self.directory = directory
       self.selected = bool( selected )
-  
+
   
   signature = Signature(
     'fso', Sequence( FileSystemOntology ), dict( defaultValue=[] ),
@@ -91,9 +91,15 @@ class DatabaseSettings( HasSignature ):
 
   def __init__( self, directory=None, selected=True ):
     HasSignature.__init__( self )
-    if directory:
-      self.directory = directory
-    self._selected = selected
+    if directory :
+      if os.path.exists( directory ) :
+        self.directory = directory
+        self._selected = selected
+      else :
+        self._selected = False
+    else :
+      self._selected = selected
+
     self.onAttributeChange( 'directory', self._directoryChanged )
     self._directoryChanged( directory )
 

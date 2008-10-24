@@ -971,6 +971,17 @@ class ReadDiskItem( Parameter ):
     #return True
   
   
+  def typeInfo( self, translator = None ):
+    if translator: translate = translator.translate
+    else: translate = _
+    formats = ''
+    for f in self.formats:
+      if formats: formats += ', '
+      formats += translate( f.name )
+    return  ( ( translate( 'Type' ), translate( self.type.name ) ),
+              ( translate( 'Access' ), translate( 'input' ) ), 
+              ( translate( 'Formats' ), formats ) )
+  
   def toolTipText( self, parameterName, documentation ):
     result = '<center>' + parameterName
     if not self.mandatory: result += ' (' + _t_( 'optional' ) + ')'

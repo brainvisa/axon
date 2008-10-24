@@ -375,8 +375,7 @@ class SQLDatabase( Database ):
       cursor.execute( 'VACUUM' )
     finally:
       self._closeDatabaseCursor( cursor )
-      self._connection.close()
-      self._connection = None
+    self._connection.closeSqliteConnections()
     self.createTables( context=context )
   
   
@@ -441,7 +440,7 @@ class SQLDatabase( Database ):
   
   def _getDatabaseCursor( self ):
     if self._connection is None:
-      self._connection = ThreadSafeSQLiteConnection( self.sqlDatabaseFile, isolation_level=None )
+      self._connection = ThreadSafeSQLiteConnection( self.sqlDatabaseFile )
     #cursor = self.CursorProxy( self._connection._getConnection().cursor() )
     cursor = self._connection._getConnection().cursor()
     return cursor

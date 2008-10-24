@@ -290,57 +290,62 @@ class DatabasesTransformationManager( TransformationManager ):
 
   def update( self ):
     '''Clear the manager content and re-read the databases.'''
-    print "Update transformation manager."
-    self.clear()
-    if neuroConfig.newDatabases:
-      for item in self.__databases.findDiskItems( _type='Referential' ):
-        self.addReferential( item )
-      for item in self.__databases.findDiskItems( _type='Transformation' ):
-        self.addTransformation( item )
-    else:
-      referentialType = getDiskItemType( 'referential' )
-      transformationType = getDiskItemType( 'transformation' )
-      if self.__databases is None:
-        stack = neuroHierarchy.hierarchies()[:]
+    #print "Update transformation manager."
+    self.lock.acquire()
+    try:
+      self.clear()
+      if neuroConfig.newDatabases:
+        for item in self.__databases.findDiskItems( _type='Referential' ):
+          self.addReferential( item )
+        for item in self.__databases.findDiskItems( _type='Transformation' ):
+          self.addTransformation( item )
       else:
-        stack = self.__databases[:]
-      while stack:
-        item = stack.pop()
-        scanner = getattr( item, 'scanner', None )
-        if scanner is not None and ( scanner.possibleTypes.get( transformationType )\
-          or scanner.possibleTypes.get( referentialType ) ):
-          try:
-            c = item.childs()
-            if c is not None:
-              stack += c
-          except:
-            raise
-        elif item.type is not None:
-          if item.type.isA( transformationType ):
+        referentialType = getDiskItemType( 'referential' )
+        transformationType = getDiskItemType( 'transformation' )
+        if self.__databases is None:
+          stack = neuroHierarchy.hierarchies()[:]
+        else:
+          stack = self.__databases[:]
+        while stack:
+          item = stack.pop()
+          scanner = getattr( item, 'scanner', None )
+          if scanner is not None and ( scanner.possibleTypes.get( transformationType )\
+            or scanner.possibleTypes.get( referentialType ) ):
             try:
-              self.addTransformation( item )
+              c = item.childs()
+              if c is not None:
+                stack += c
             except:
-              pass
-          elif item.type.isA( referentialType ):
-            try:
-              self.addReferential( item )
-            except:
-              pass
-
+              raise
+          elif item.type is not None:
+            if item.type.isA( transformationType ):
+              try:
+                self.addTransformation( item )
+              except:
+                pass
+            elif item.type.isA( referentialType ):
+              try:
+                self.addReferential( item )
+              except:
+                pass
+    finally:
+      self.lock.release()
+  
+  
   def referential( self, diskItemOrId ):
     '''Return the referential object corresponding to the given diskItem
     or uuid. Return None if the diskItem has no referential or the referential
     is not in the manager.'''
     if isinstance( diskItemOrId, DiskItem ):
       if diskItemOrId.type is not None and diskItemOrId.type.isA( 'Referential' ):
-        try:
-          uuid = diskItemOrId.uuid()
-        except:
-          uuid = None
+        #try:
+        uuid = diskItemOrId.uuid()
+        #except Exception, e:
+        #  uuid = None
       else:
         try:
           uuid = diskItemOrId.get( 'referential' )
-        except:
+        except ( AttributeError, KeyError ):
           uuid = None
     else:
       uuid = diskItemOrId
@@ -491,10 +496,10 @@ class DatabasesTransformationManager( TransformationManager ):
         uuid = refId.get( 'referential' )
         if uuid is None:
           # Referential diskitem ?
-          try:
-            uuid = refId.uuid()
-          except:
-            uuid = None
+          #try:
+          uuid = refId.uuid()
+          #except:
+          #  uuid = None
           # maybe this needs a cleaner test/error message if uuid() fails
       if uuid is not None:
         destinationDiskItem.readAndUpdateMinf()

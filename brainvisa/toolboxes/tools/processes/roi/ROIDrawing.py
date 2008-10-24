@@ -65,10 +65,11 @@ def execution( self, context ):
   nodesObjects = []
   if not self.ROI.isReadable():
     regionsObject = a.createGraph( object=imageObject,
-                                   name=self.ROI.fullPath() )
+                                   name=self.ROI.fullPath(),
+                                   filename=self.ROI.fullPath() )
     # Create a region
     nodesObjects.append( regionsObject.createNode( name='region',
-                                                duplicate=False ) )
+                                                   duplicate=False ) )
   else:
     regionsObject = a.loadObject( self.ROI.fullPath() )
 
@@ -77,8 +78,8 @@ def execution( self, context ):
   windowC = a.createWindow( 'Coronal', block=block )
   windowS = a.createWindow( 'Sagittal', block=block )
   windowA = a.createWindow( 'Axial', block=block )
+  a.addObjects( [ imageObject, regionsObject ], [windowC, windowS, windowA] )
   a.setWindowsControl( windows=[windowC, windowS, windowA], control="PaintControl" )
-  a.addObjects([ imageObject, regionsObject ], [windowC, windowS, windowA])
   window3 = a.createWindow( '3D', block=block )
   window3.addObjects( [regionsObject] )
   

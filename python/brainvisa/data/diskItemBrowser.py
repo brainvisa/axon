@@ -219,13 +219,16 @@ class DiskItemBrowser( QDialog ):
       self._selectedAttributes.pop( name, None )
       self._lastSelection = None
     elif index > 0:
-      l = list( string_to_list( unicode( cmb.text( index ) ) ) )
-      if not l:
-        v = ''
-      elif len( l ) == 1:
-        v = l[ 0 ]
+      if name=='name_serie': # only name_serie attribute must be interpreted as a list when a value of a combo box is selected. A type or format can be in several words but is not a list...
+        l = list( string_to_list( unicode( cmb.text( index ) ) ) )
+        if not l:
+          v = ''
+        elif len( l ) == 1:
+          v = l[ 0 ]
+        else:
+          v = l
       else:
-        v = l
+        v=unicode( cmb.text( index ) )
       self._selectedAttributes[ name ] = v
       self._lastSelection = name
     self.rescan()
@@ -310,7 +313,11 @@ class DiskItemBrowser( QDialog ):
       required[ '_format' ] = self._possibleFormats
       # create type and format combo
       if '_type' not in preservedCombos:
-        for t in sorted(self._database.findAttributes( ( '_type', ), {}, **required )):
+        if self._write:# if the search diskitem is a writeDiskItem, it doesn't exist in the database and can have a type is not yet present in the database
+          typesList=[(t,) for t in self._possibleTypes]
+        else:
+          typesList=self._database.findAttributes( ( '_type', ), {}, **required ) # types represented in the database : there is at least one diskitem of that type in the database
+        for t in sorted(typesList):
           t = t[0]
           if t not in typesSet:
             self._cmbType.insertItem( t )
@@ -319,7 +326,11 @@ class DiskItemBrowser( QDialog ):
               self._cmbType.setCurrentItem( self._cmbType.count() - 1 )
       if '_format' not in preservedCombos:
         selected = self._selectedAttributes.get( '_format' )
-        for f in sorted(self._database.findAttributes( ( '_format', ), {}, **required  )):
+        if self._write:
+          formatsList=[(f,) for f in self._possibleFormats]
+        else:
+          formatsList=self._database.findAttributes( ( '_format', ), {}, **required  )
+        for f in sorted(formatsList):
           f = f[0]
           if f not in formatsSet and f is not None:
             self._cmbFormat.insertItem( f )

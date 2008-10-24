@@ -33,15 +33,15 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 import os, string
-import neuroDiskItems, neuroHierarchy, neuroConfig
-from neuroProcessesGUI import mainThreadActions
+from neuroDiskItems import createFormatList, getFormat, aimsFileInfo
+import neuroConfig
 
 #------------
 # IMPORTANT : In a formats list, the most common formats should be placed
 # at the begining of the list.
 #------------
 
-anatomistVolumeFormats = neuroDiskItems.createFormatList( 
+anatomistVolumeFormats = createFormatList( 
   'Anatomist volume formats', 
   ( 
     'GIS Image', 
@@ -79,7 +79,7 @@ anatomistVolumeFormats = neuroDiskItems.createFormatList(
 )
 
 
-aimsVolumeFormats = neuroDiskItems.createFormatList(
+aimsVolumeFormats = createFormatList(
   'Aims readable volume formats',
   ( 
     'GIS Image', 
@@ -106,7 +106,7 @@ aimsVolumeFormats = neuroDiskItems.createFormatList(
   )
 )
 
-aimsWriteVolumeFormats = neuroDiskItems.createFormatList(
+aimsWriteVolumeFormats = createFormatList(
   'Aims writable volume formats',
   ( 
     'GIS Image', 
@@ -121,7 +121,7 @@ aimsWriteVolumeFormats = neuroDiskItems.createFormatList(
   )
 )
 
-aimsImageFormats = neuroDiskItems.createFormatList(
+aimsImageFormats = createFormatList(
   'Aims image formats',
   (
     'JPEG image',
@@ -140,8 +140,8 @@ aimsImageFormats = neuroDiskItems.createFormatList(
 )
 _aimsVolumeFormats = None
 
-anatomistMeshFormats = neuroDiskItems.createFormatList(
-  'Anatomist mesh format',
+anatomistMeshFormats = createFormatList(
+  'Anatomist mesh formats',
   (
     'MESH mesh',
     'TRI mesh',
@@ -154,7 +154,7 @@ anatomistMeshFormats = neuroDiskItems.createFormatList(
 
 vipVolumeFormats = aimsVolumeFormats
 
-aimsMeshFormats = neuroDiskItems.createFormatList(
+aimsMeshFormats = createFormatList(
   'Aims mesh formats',
   (
     'MESH mesh',
@@ -163,54 +163,14 @@ aimsMeshFormats = neuroDiskItems.createFormatList(
 )
 _fileInfoFormats = None
 
-import sys
-
-try:
-  from soma import aims
-  _finder = aims.Finder()
-  # don't resolve symlinks if file browser to be consistent with
-  # all DiskItem namings
-  try:
-    aims.setQtResolveSymlinks( False )
-  except:
-    pass
-except:
-  _finder = None
-
-def aimsFileInfo( fileName ):
-  global _finder
-  result = {}
-  try:
-    if _finder is not None:
-      finder = aims.Finder()
-      if type( fileName ) is unicode:
-        # convert to str
-        import codecs
-        fileName = codecs.getencoder( 'utf8' )( fileName )[0]
-      # Finder is not thread-safe (yet)
-      if mainThreadActions().call( finder.check, fileName ):
-        result = eval( str(finder.header() ) )
-    else:
-      if neuroConfig.platform == 'windows':
-        f=os.popen( 'AimsFileInfo -i "' + fileName + '"', 'r' )
-      else:
-        f=os.popen( 'AimsFileInfo -i "' + fileName + '" 2> /dev/null', 'r' )
-      s = f.readline()
-      while s and s != 'attributes = {\n': s = f.readline()
-      s = s[13:-1] + f.read()
-      result = eval( s )
-      f.close()
-  except:
-    pass
-  return result
 
 def aimsVolumeAttributes( item, writeOnly=0, forceFormat=0 ):
   if writeOnly: return {}
   # Get formats objects from formats names
   global _aimsVolumeFormats
   if _aimsVolumeFormats is None:
-    _aimsVolumeFormats = map( neuroDiskItems.getFormat, aimsVolumeFormats ) \
-      + map( neuroDiskItems.getFormat, map( lambda x: 'Series of ' + x.name, aimsVolumeFormats ) )
+    _aimsVolumeFormats = map( getFormat, aimsVolumeFormats ) \
+      + map( getFormat, map( lambda x: 'Series of ' + x.name, aimsVolumeFormats ) )
   
   result = {}
   if ( forceFormat or item.format in _aimsVolumeFormats ) and item.isReadable():
