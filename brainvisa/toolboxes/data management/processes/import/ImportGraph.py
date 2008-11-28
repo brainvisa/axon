@@ -33,30 +33,23 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from neuroProcesses import *
+from brainvisa import shelltools
 import shfjGlobals
-from brainvisa import anatomist
 
-name = 'Anatomist Show ROI'
-roles = ('viewer',)
-userLevel = 0
-
-def validation():
-    anatomist.validation()
-
-signature = Signature(
-  'roi', ReadDiskItem( 'ROI', getDiskItemType( 'ROI' ).formats ),
+# This process should not be called directly unless you
+# exactly know what you are doing. Import processes for
+# specific data type should be used instead. No data checking
+# is done here.
+userLevel=1
+roles = ('importer',)
+signature=Signature(
+  'input', ReadDiskItem( 'Any Type', 'Graph and Data' ),
+  'output', WriteDiskItem( 'Any Type', 'Graph and Data' ),
 )
 
+def initialization( self ):
+  self.linkParameters( 'output', 'input' )
 
 def execution( self, context ):
-  a = anatomist.Anatomist()
-  if self.roi.format is getFormat( 'Graph and data' ):
-    graph_object = a.loadObject( self.roi )
-    window = a.createWindow( '3D' )
-    window.assignReferential( graph_object.referential )
-    window.addObjects( [graph_object] )
-    nodes = graph_object.children
-    a.getDefaultWindowsGroup().setSelection(nodes)
-    return ( graph_object, window, nodes )
-  else:
-    return a.viewObject( self.roi )
+  command=["AimsGraphConvert", "-i", self.input.fullPath(), "-o", self.output.fullPath()]
+  context.system(*command)

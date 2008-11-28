@@ -35,17 +35,18 @@
 from neuroProcesses import *
 from neuroHierarchy import databases
 import shfjGlobals
-
+import registration
 """
 This process search for a specific importer according to the type of output and execute it. 
 If there is no specific importer, ImportData process is called (it only copy files).
 """
-userLevel=1
+userLevel=0
 
 signature=Signature(
   'input', ReadDiskItem( 'Any Type', getAllFormats() ),
   'output', WriteDiskItem( 'Any Type', getAllFormats() ),
   'data_type', Choice( 'Any Type' ),
+  'copy_referential_of', ReadDiskItem( 'Any Type', getAllFormats() ),
   'input_spm_orientation', Choice( 'Not applicable' ), 
 
 )
@@ -90,16 +91,19 @@ def initialization( self ):
   possibleTypes = [t.name for t in getAllDiskItemTypes()]
   self.signature['data_type'].setChoices(*sorted(possibleTypes))
   self.data_type='Any Type'
+  self.setOptional("copy_referential_of")
   self.addLink( 'input_spm_orientation', 'input', self.orient )
   self.signature[ 'input_spm_orientation' \
                   ].linkParameterWithNonDefaultValue = 1
-  self.linkParameters( 'output', 'input' )
   self.addLink('output', 'data_type' , self.dataTypeChanged)
 
 def execution( self, context ):
   # search for a specific importer for this data
-  importer=getImporter(self.output.type)
+  importer=getImporter(self.output)
   if not importer:
     importer="ImportData"
   # must pass the filename to the importer and not a diskitem because it is potentially not in the database (findValue on a diskitem that is not in the database will fail and the parameter will not be taken into account)
   context.runProcess(importer, input=self.input.fullPath(), output=self.output)
+  if self.copy_referential_of:
+    tm=registration.getTransformationManager()
+    tm.copyReferential(self.copy_referential_of, self.output)

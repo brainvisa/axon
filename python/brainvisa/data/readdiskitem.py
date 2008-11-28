@@ -688,8 +688,7 @@ def diskItemDistance( diskItem, other ):
   nonHierarchyCommon = reduce( operator.add, 
       ( (other.get( n ) == v) for n, v in diskItem.nonHierarchyAttributes().iteritems() ),
       (int(diskItem_type == other_type) ) )
-  return ( -hierarchyCommon, -nonHierarchyCommon, 
-            other_priority - diskItem.priority()  )
+  return ( -hierarchyCommon, other_priority - diskItem.priority(), -nonHierarchyCommon  )
 
 
 #----------------------------------------------------------------------------
@@ -886,6 +885,7 @@ class ReadDiskItem( Parameter ):
       
     if result is None and fullSelection is not None:
       values = list( self._findValues( fullSelection, requiredAttributes, write=(write or self._write) , _debug=_debug ) )
+
       if values:
         if len( values ) == 1:
           result = values[ 0 ]
@@ -916,8 +916,14 @@ class ReadDiskItem( Parameter ):
       _debug = self._debug
     if requiredAttributes is None:
       requiredAttributes = self.requiredAttributes
-    readValues = ( i for i in self.database.findDiskItems( selection, _debug=_debug, **requiredAttributes ) if self.diskItemFilter( i, requiredAttributes ) )
+    keySelection={}
+    if selection:
+      # in selection attributes, choose only key attributes because the request must not be too restrictive to avoid failure. The results will be sorted by distance to the selection later.
+      keyAttributes=self.database.getTypesKeysAttributes(self.type.name)
+      keySelection=dict( (i,selection[i] ) for i in keyAttributes if i in selection )
+    readValues = ( i for i in self.database.findDiskItems( keySelection, _debug=_debug, **requiredAttributes ) if self.diskItemFilter( i, requiredAttributes ) )
     if write:
+      # use selection attributes to create a new diskitem
       fullPaths = set()
       for item in readValues:
         fullPaths.add( item.fullPath() )

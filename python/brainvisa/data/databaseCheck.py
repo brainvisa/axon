@@ -35,7 +35,7 @@ import neuroConfig
 #### WITH NEW DATABASE SYSTEM ####
 if neuroConfig.newDatabases:
 
-  import os, stat, re, shutil
+  import os, stat, re, shutil, time
   import operator
   import neuroDiskItems
   import neuroHierarchy, shfjGlobals
@@ -131,7 +131,13 @@ if neuroConfig.newDatabases:
       if not os.path.exists(os.path.join(self.dbDir, 'scripts')):
         os.mkdir(os.path.join(self.dbDir, 'scripts'))
       undoScriptName=os.path.join(self.dbDir, 'scripts', self.undoScriptName)
-      if os.path.exists(undoScriptName): os.remove(undoScriptName)
+      
+      if os.path.exists(undoScriptName): 
+        oldScriptName=undoScriptName[:-3]+time.strftime("_%Y-%m-%d_%H-%M-%S")+".py"
+        if os.path.exists(oldScriptName):
+          os.remove(oldScriptName)
+          os.rename(undoScriptName, oldScriptName)
+          
       if self.doneProcesses:
         undoScript=open(undoScriptName, "w")
         #print "Generate undo script ", undoScriptName
@@ -314,6 +320,9 @@ if neuroConfig.newDatabases:
                     # move anatomy/acquisition -> t1mri/acquisition/default_analysis
                     action=FileProcess(os.path.join(src, acquisition), Move(os.path.join(dest, acquisition), patternDest=self.default_analysis))
                     self.fileProcesses.append(action)
+                  if files:
+                    action=FileProcess(src, Move(os.path.join(dest, acquisition)), ".*")
+                    self.fileProcesses.append(action)
                   action=FileProcess(src, Remove(subjectDir)) # put src in trash in a directory subjectDir
                   self.fileProcesses.append(action)
                   
@@ -380,18 +389,19 @@ if neuroConfig.newDatabases:
                   
               if "deepnuclei" in dirs:
                 self.moveDir(os.path.join(subjectDir, "deepnuclei"), os.path.join(subjectDir, "t1mri"), "nuclei")
-                
+              
+              graphPatterns=self.getGraphPatterns(s) # folds graphs patterns
+              # recognition session graphs patterns
+              manualPatterns=self.getManualGraphPatterns(s) 
+              autoPatterns=self.getAutoGraphPatterns(s)
+              bestPatterns=self.getBestGraphPatterns(s)
+
               if "graphe" in dirs: # directory graphe contains graphs in 3.0 format
                 # graphe/[acquisition] -> t1mri/acquisition/analysis/folds/3.0
                 # graphe may contain a level acquisition or not. Any way it contains subdirs : *.data, sulci_recognition_session.
                 # if there is a level acquisition, graphe does not contain *.arg files
                 grapheDir, subdirs, files = os.walk(os.path.join(subjectDir, "graphe")).next()
                 acquisitionLevel=not contentMatch(files, ".*\.arg")
-                graphPatterns=self.getGraphPatterns(s) # folds graphs patterns
-                # recognition session graphs patterns
-                manualPatterns=self.getManualGraphPatterns(s) 
-                autoPatterns=self.getAutoGraphPatterns(s)
-                bestPatterns=self.getBestGraphPatterns(s)
                 if acquisitionLevel:
                   for acquisition in subdirs: 
                     graphAcquisitionDir=os.path.join(grapheDir, acquisition)
@@ -401,29 +411,45 @@ if neuroConfig.newDatabases:
                     self.convertFiles(autoPatterns, graphAcquisitionDir, graphAcquisitionDir, os.path.join(foldsDir, self.default_session+"_auto") )
                     self.convertFiles(bestPatterns, graphAcquisitionDir, graphAcquisitionDir, os.path.join(foldsDir, self.default_session+"_best") )
                     # if it already exists session directories, move and rename inside graphs
-                    self.moveSessionGraphs(graphAcquisitionDir, foldsDir, s)
+                    self.moveSessionGraphs(graphAcquisitionDir, graphAcquisitionDir, foldsDir, s)
                     # moving graphs creates new .data, so we have to remove old .data
-                    self.removeDataGraphs(graphAcquisitionDir, s)
+                    self.removeDataGraphs(graphAcquisitionDir, graphAcquisitionDir, s)
                 else: # no acquisition level
                   foldsDir=os.path.join(subjectDir, "t1mri", self.default_acquisition, self.default_analysis, "folds", "3.0")
                   self.convertFiles(graphPatterns, grapheDir, grapheDir, foldsDir)
                   self.convertFiles(manualPatterns, grapheDir, grapheDir, os.path.join(foldsDir, self.default_session+"_manual") )
                   self.convertFiles(autoPatterns, grapheDir, grapheDir, os.path.join(foldsDir, self.default_session+"_auto") )
                   self.convertFiles(bestPatterns, grapheDir, grapheDir, os.path.join(foldsDir, self.default_session+"_best") )
-                  self.moveSessionGraphs(grapheDir, foldsDir, s)
-                  self.removeDataGraphs(grapheDir, s)
+                  self.moveSessionGraphs(grapheDir, grapheDir, foldsDir, s)
+                  self.removeDataGraphs(grapheDir, grapheDir, s)
 
               if "sulci" in dirs: # sulci directory contains graphs in 3.1 format
-                sulciDir=os.path.join(subjectDir, "sulci")
-                foldsDir=os.path.join(subjectDir, "t1mri", self.default_acquisition, self.default_analysis, "folds", "3.1")
-                if os.path.exists(os.path.join(sulciDir, "default")):
-                  self.fileProcesses.append( FileProcess(os.path.join(sulciDir, "default"), Move(os.path.join(subjectDir, "t1mri", self.default_acquisition, self.default_analysis, "folds"), patternDest="3.1")))
-                  self.moveFoldsGraphs(os.path.join(sulciDir, "default"), foldsDir, s)
-                  self.fileProcesses.append( FileProcess(sulciDir, Remove(subjectDir)) )
-                else:
-                  self.fileProcesses.append( FileProcess(sulciDir, Move(os.path.join(subjectDir, "t1mri", self.default_acquisition, self.default_analysis, "folds"), patternDest="3.1")))
-                  self.moveFoldsGraphs(sulciDir, foldsDir, s)
-                  
+                sulciDir, subdirs, files = os.walk(os.path.join(subjectDir, "sulci")).next()
+                acquisitionLevel="default" not in subdirs
+                if acquisitionLevel:
+                  for acquisition in subdirs:
+                    sulciAcquisitionDir=os.path.join(sulciDir, acquisition)
+                    # sulci graph level
+                    sulciAcquisitionDir, sulciGraphDirs, acquisitionFiles = os.walk(os.path.join(sulciDir, acquisition)).next()
+                    for sulciGraph in sulciGraphDirs:
+                      # convertSulciGraphDir(self, sourceDir, sulciGraph, acquisition, subject, subjectDir):
+                      self.convertSulciGraphDir(sulciAcquisitionDir, sulciGraph, acquisition, s, subjectDir)
+                    if acquisitionFiles:
+                      # move remaining files to folds/3.1
+                      foldsDir=os.path.join(subjectDir, "t1mri", acquisition, self.default_analysis, "folds", "3.1")
+                      self.fileProcesses.append(FileProcess(sulciAcquisitionDir, Move(foldsDir), ".*"))
+                else: # no acquisition level
+                  # sulci graph level
+                  for sulciGraph in subdirs:
+                    # convertSulciGraphDir(self, sourceDir, sulciGraph, acquisition, subject, subjectDir):
+                    self.convertSulciGraphDir(sulciDir, sulciGraph, self.default_acquisition, s, subjectDir)
+                # move remaining files to folds/3.1
+                if files:
+                  foldsDir=os.path.join(subjectDir, "t1mri", self.default_acquisition, self.default_analysis, "folds", "3.1")
+                  self.fileProcesses.append(FileProcess(sulciDir, Move(foldsDir), ".*"))
+                # before removing the sulci directory
+                self.fileProcesses.append( FileProcess(sulciDir, Remove(subjectDir)) )
+              
               if "segment" in dirs: 
                 # move from segment to t1mri/acquisition/analysis/segmentation all files that match t1mri segmentation patterns
                 # move LSulci_<subject>, RSulci_<subject>, LBottom_<subject>, RBottom_<subject>, LHullJunction_<subject>, LSimpleSurface_<subject>, RHullJunction_<subject>, RSimpleSurface_<subject> in folds 3.0  + add recognition session in name
@@ -464,6 +490,8 @@ if neuroConfig.newDatabases:
         for acquisition in subdirs: # segment/acquisition -> t1mri/acquisition/default_analysis/segmentation
           action=FileProcess(os.path.join(src, acquisition), Move(os.path.join(dest, acquisition, self.default_analysis), patternDest=newName))
           self.fileProcesses.append(action)
+        if files:
+          self.fileProcesses.append(FileProcess(src, Move(os.path.join(dest, self.default_acquisition, self.default_analysis, newName)), ".*"))
         action=FileProcess(src, Remove(os.path.dirname(src)))
         self.fileProcesses.append(action)
       else:
@@ -502,12 +530,22 @@ if neuroConfig.newDatabases:
       ("("+subject+"_[LR]gyri)(?!\.data)(\..*)", "\\1_"+self.default_session+"_auto"+"\\2"), 
       (subject+"_((?:left)|(?:right))_sulci_to_texture(\..*)", subject+"_\\1_sulci_to_texture_"+self.default_session+"_auto"+"\\2"),  
       (subject+"_((?:left)|(?:right))_gyri_to_texture(\..*)", subject+"_\\1_gyri_to_texture_"+self.default_session+"_auto"+"\\2") ]
-  
+        
     def getBestGraphPatterns(self, subject):
       return [ ("([LR]"+subject+")AutoBest(?!\.data)(\..*)", "\\1_"+self.default_session+"_best"+"\\2") ]
-  
-    def moveSessionGraphs(self, oldDir, newDir, subject):
-      # search for session directories in graph dir : a directory which doesn't end with .data
+    
+    def getSulciManualGraphPatterns(self, subject):
+      return [ ("([LR]"+subject+")(?!\.data)(\..*)", "\\1_"+self.default_session+"_manual\\2")]
+
+    def moveSessionGraphs(self, oldDir, newDir, destDir, subject):
+      """
+      search for session directories in graph dir : a directory which doesn't end with .data
+      the session directory is renamed in session_auto and the graph files also
+      @param oldDir : directory where the recognition sessions are during parsing
+      @param newDir : directory where the recognition sessions are during conversion
+      @param destDir : directory where the recognition sessions must be moved
+      """
+      # 
       root, subdirs, files = os.walk(oldDir).next()
       data=re.compile(".*\.data")
       for d in subdirs:
@@ -518,18 +556,55 @@ if neuroConfig.newDatabases:
           else:
             session=d
           if contentMatch(os.path.join(oldDir, d), autoGraph):
-            self.fileProcesses.append(FileProcess(os.path.join(oldDir, d), Move(os.path.join(newDir, session+"_auto"), autoGraph, "\\1_"+session+"_auto\\2"), autoGraph) )
-            self.fileProcesses.append( FileProcess(os.path.join(oldDir, d), Remove(oldDir)) )
+            self.fileProcesses.append(FileProcess(os.path.join(newDir, d), Move(os.path.join(destDir, session+"_auto"), autoGraph, "\\1_"+session+"_auto\\2"), autoGraph) )
+            self.fileProcesses.append( FileProcess(os.path.join(newDir, d), Remove(newDir)) )
 
-    def removeDataGraphs(self, dataDir, subject):
-      # remove corresponding .data, they have been copied during .arg move with AimsGraphConvert command
+    def removeDataGraphs(self, oldDataDir, newDataDir, subject):
+      """
+      Remove graphs .data, they have been copied during .arg move with AimsGraphConvert command
+      @param oldDataDir : directory where .data are during parsing
+      @param newDataDir : directory where .data are during conversion
+      """
       dataGraph="[LR]"+subject+"(?:(?:Base)|(?:Auto)|(?:AutoBest))?\.data"
-      if contentMatch(dataDir, dataGraph):
-        self.fileProcesses.append(FileProcess(dataDir, Remove(dataDir), pattern=dataGraph))
+      if contentMatch(oldDataDir, dataGraph):
+        self.fileProcesses.append(FileProcess(newDataDir, Remove(newDataDir), pattern=dataGraph))
       dataGraph=subject+"_[LR]gyri\.data"
-      if contentMatch(dataDir, dataGraph):
-        self.fileProcesses.append(FileProcess(dataDir, Remove(dataDir), pattern=dataGraph))
+      if contentMatch(oldDataDir, dataGraph):
+        self.fileProcesses.append(FileProcess(newDataDir, Remove(newDataDir), pattern=dataGraph))
             
+            
+    def convertSulciGraphDir(self, sourceDir, sulciGraph, acquisition, subject, subjectDir):
+      sourceDir=os.path.join(sourceDir, sulciGraph)
+      if sulciGraph == "default":
+        # moveSulciGraphs(sourceDir, acquisition, analysis, subject, subjectDir)
+        self.moveSulciGraphs(sourceDir, acquisition, self.default_analysis, subject, subjectDir)
+      elif sulciGraph == "man": # hack for databases that have manually labelled graphs in a man directory 
+        patterns=self.getSulciManualGraphPatterns(subject)
+        destDir=os.path.join(subjectDir, "t1mri", acquisition, self.default_analysis, "folds", "3.1")
+        self.fileProcesses.append( FileProcess(sourceDir, Move(destDir, patternDest=self.default_session+"_manual")))
+        destDir=os.path.join(destDir, self.default_session+"_manual")
+        self.convertFiles(patterns, sourceDir, destDir, destDir )
+        dataGraph="[LR]"+subject+"\.data"
+        self.fileProcesses.append(FileProcess(destDir, Remove(destDir), pattern=dataGraph))
+      else:
+        self.moveSulciGraphs(sourceDir, acquisition, sulciGraph, subject, subjectDir)
+
+    def moveSulciGraphs(self, sourceDir, acquisition, analysis, subject, subjectDir):
+      foldsDir=os.path.join(subjectDir, "t1mri", acquisition, analysis, "folds")
+      # move the directory into folds/3.1
+      self.fileProcesses.append( FileProcess(sourceDir, Move(foldsDir, patternDest="3.1")))
+      foldsDir=os.path.join(foldsDir, "3.1")
+      # rename manual and auto recognition graphs
+      self.convertFiles(self.getManualGraphPatterns(subject), sourceDir, foldsDir, os.path.join(foldsDir, self.default_session+"_manual") )
+      self.convertFiles(self.getAutoGraphPatterns(subject), sourceDir, foldsDir, os.path.join(foldsDir, self.default_session+"_auto") )
+      self.convertFiles(self.getBestGraphPatterns(subject), sourceDir, foldsDir, os.path.join(foldsDir, self.default_session+"_best") )
+      # if it already exists session directories, move and rename inside graphs
+      self.moveSessionGraphs(sourceDir, foldsDir, foldsDir, subject)
+      # moving graphs creates new .data, so we have to remove old .data
+      dataGraph="[LR]"+subject+"(?:(?:Base)|(?:Auto)|(?:AutoBest))\.data"
+      if contentMatch(sourceDir, dataGraph):
+        self.fileProcesses.append(FileProcess(foldsDir, Remove(foldsDir), pattern=dataGraph))
+      
   ###################################
   class DiffusionConverter(DBConverter):
     """
@@ -821,15 +896,36 @@ if neuroConfig.newDatabases:
                 segmentDir=os.path.join(subjectDir, "segment")
                 grapheDir=os.path.join(subjectDir, "graphe")
                 if os.path.exists(segmentDir) and self.segmentDefaultDestination:
-                  self.fileProcesses.append(FileProcess(segmentDir, Move(os.path.join(subjectDir, self.segmentDefaultDestination, self.default_acquisition, self.default_analysis, "segmentation")), pattern=".*" ))
+                  segmentDir, subdirs, files = os.walk(segmentDir).next()
+                  if subdirs: # level acquisition exists
+                    for acquisition in subdirs: # segment/acquisition/* -> t1mri/acquisition/default_analysis/segmentation/*
+                      segmentAcquisitionDir=os.path.join(segmentDir, acquisition)
+                      self.fileProcesses.append(FileProcess(segmentAcquisitionDir, Move(os.path.join(subjectDir, self.segmentDefaultDestination, acquisition, self.default_analysis, "segmentation")), pattern=".*" ))
+                  if files:
+                    self.fileProcesses.append(FileProcess(segmentDir, Move(os.path.join(subjectDir, self.segmentDefaultDestination, self.default_acquisition, self.default_analysis, "segmentation")), pattern=".*" ))
                   self.fileProcesses.append( FileProcess(segmentDir, Remove(subjectDir)) )
+                  
                 if os.path.exists(grapheDir) and self.grapheDefaultDestination:
+                  grapheDir, subdirs, files = os.walk(grapheDir).next()
+                  acquisitionLevel=not contentMatch(files, ".*\.arg")
                   if self.grapheDefaultDestination=="t1mri_folds":
-                    self.fileProcesses.append(FileProcess(grapheDir, Move(os.path.join(subjectDir, "t1mri", self.default_acquisition, self.default_analysis, "folds", "3.0")), pattern=".*" ))
+                    if acquisitionLevel:
+                      for acquisition in subdirs: 
+                        self.fileProcesses.append(FileProcess(os.path.join(grapheDir, acquisition), Move(os.path.join(subjectDir, "t1mri", acquisition, self.default_analysis, "folds", "3.0")), pattern=".*" ))
+                    if not acquisitionLevel or files:
+                      self.fileProcesses.append(FileProcess(grapheDir, Move(os.path.join(subjectDir, "t1mri", self.default_acquisition, self.default_analysis, "folds", "3.0")), pattern=".*" ))
                   elif self.grapheDefaultDestination=="t1mri_roi":
-                    self.fileProcesses.append(FileProcess(grapheDir, Move(os.path.join(subjectDir, "t1mri", self.default_acquisition, self.default_analysis, "ROI")), pattern=".*" ))
+                    if acquisitionLevel:
+                      for acquisition in subdirs: 
+                        self.fileProcesses.append(FileProcess(os.path.join(grapheDir, acquisition), Move(os.path.join(subjectDir, "t1mri", acquisition, self.default_analysis, "ROI")), pattern=".*" ))
+                    if not acquisitionLevel or files:
+                      self.fileProcesses.append(FileProcess(grapheDir, Move(os.path.join(subjectDir, "t1mri", self.default_acquisition, self.default_analysis, "ROI")), pattern=".*" ))
                   else: # pet
-                    self.fileProcesses.append(FileProcess(grapheDir, Move(os.path.join(subjectDir, "pet", self.default_acquisition, self.default_analysis, "ROI")), pattern=".*" ))
+                    if acquisitionLevel:
+                      for acquisition in subdirs: 
+                        self.fileProcesses.append(FileProcess(os.path.join(grapheDir, acquisition), Move(os.path.join(subjectDir, "pet", acquisition, self.default_analysis, "ROI")), pattern=".*" ))
+                    if not acquisitionLevel or files:
+                      self.fileProcesses.append(FileProcess(grapheDir, Move(os.path.join(subjectDir, "pet", self.default_acquisition, self.default_analysis, "ROI")), pattern=".*" ))
                   self.fileProcesses.append( FileProcess(grapheDir, Remove(subjectDir)) )
       actions=[]
       actions.extend(self.fileProcesses)
@@ -1087,8 +1183,8 @@ if neuroConfig.newDatabases:
       'Grey White Mask', 'Hemisphere White Mesh', # grey white interface
       'CSF+GREY Mask', 'Hemisphere Mesh', # Ana get opened hemi surface
       'Head Mask', 'Head Mesh', # head mesh
-      'Cortical folds graph', 'Cortex Skeleton', 'Cortex Catchment Bassins',  # cortical fold graph
-      'Labelled Cortical folds graph' ] # automatic recognition
+      'Cortical folds graph', 'Cortex Skeleton', 'Cortex Catchment Bassins'  # cortical fold graph and automatic recognition
+      ] 
       
     def checkItem(self, item, itemType, tm):
       """
@@ -1303,7 +1399,11 @@ else:
       if not os.path.exists(os.path.join(self.dbDir, 'scripts')):
         os.mkdir(os.path.join(self.dbDir, 'scripts'))
       undoScriptName=os.path.join(self.dbDir, 'scripts', self.undoScriptName)
-      if os.path.exists(undoScriptName): os.remove(undoScriptName)
+      if os.path.exists(undoScriptName): 
+        oldScriptName=undoScriptName[:-3]+time.strftime("_%Y-%m-%d_%H-%M-%S")+".py"
+        if os.path.exists(oldScriptName):
+          os.remove(oldScriptName)
+          os.rename(undoScriptName, oldScriptName)
       if self.doneProcesses:
         undoScript=open(undoScriptName, "w")
         #print "Generate undo script ", undoScriptName
@@ -2163,8 +2263,8 @@ else:
       'Grey White Mask', 'Hemisphere White Mesh', # grey white interface
       'CSF+GREY Mask', 'Hemisphere Mesh', # Ana get opened hemi surface
       'Head Mask', 'Head Mesh', # head mesh
-      'Cortical folds graph', 'Cortex Skeleton', 'Cortex Catchment Bassins',  # cortical fold graph
-      'Labelled Cortical folds graph' ] # automatic recognition
+      'Cortical folds graph', 'Cortex Skeleton', 'Cortex Catchment Bassins'  # cortical fold graph and  automatic recognition
+      ]
       
     def findActions(self, filters={}):
       images=[]

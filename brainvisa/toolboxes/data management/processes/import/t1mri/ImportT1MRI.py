@@ -44,8 +44,8 @@ userLevel = 0
 
 
 signature=Signature(
-  'input', ReadDiskItem( 'Raw T1 MRI', shfjGlobals.aimsVolumeFormats ),
-  'output', WriteDiskItem( 'Raw T1 MRI', 'GIS image', 
+  'input', ReadDiskItem( 'Raw T1 MRI', 'Aims readable volume formats' ),
+  'output', WriteDiskItem( 'Raw T1 MRI', [ 'GIS image', 'NIFTI-1 image', 'gz compressed NIFTI-1 image' ], 
     exactType = 1,
   ),
   'input_spm_orientation', Choice( 'Not applicable' ), 
@@ -181,7 +181,8 @@ def execution( self, context ):
         radio = 1
       self.output.setMinf( 'spm_radio_convention', radio )
     self.output.saveMinf()
-  if self.output.get( 'referential' ):
+  # the referential can be written in the file header (nifti)
+  if self.output.minf().get( 'referential', None ):
     self.output.removeMinf( 'referential' )
     self.output.saveMinf()
   tm = registration.getTransformationManager()

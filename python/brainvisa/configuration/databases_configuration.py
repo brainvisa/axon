@@ -66,7 +66,11 @@ class DatabasesConfiguration( ConfigurationGroup ):
       super( DatabasesConfiguration.FileSystemOntology, self ).__init__()
       self.directory = directory
       self.selected = bool( selected )
+      self.onAttributeChange( 'directory', self._directoryChanged )
 
+    def _directoryChanged(self, newDirectory):
+      if newDirectory and not os.path.exists(newDirectory):
+        self.selected=False
   
   signature = Signature(
     'fso', Sequence( FileSystemOntology ), dict( defaultValue=[] ),
@@ -85,7 +89,7 @@ class ExpertDatabaseSettings( HasSignature ):
 #------------------------------------------------------------------------------
 class DatabaseSettings( HasSignature ):
   signature = Signature(
-    'directory', FileName( readOnly=True, directoryOnly=True ), dict( defaultValue='' ),
+    'directory', FileName( readOnly=True, directoryOnly=True ),# dict( defaultValue='' ),
     'expert_settings', ExpertDatabaseSettings, dict( defaultValue=ExpertDatabaseSettings(), collapsed=True ),
   )
 
@@ -210,16 +214,17 @@ class DatabaseManagerGUI( qt.QWidget ):
       settings = DatabaseSettings( *self.lvDatabases.currentItem()._value )
       appgui = ApplicationQt3GUI()
       if appgui.edit( settings, live=True, parent=self ):
-        item = self.lvDatabases.currentItem()
-        item._value = ( settings.directory, settings._selected )
-        item.setText( 0, settings.directory )
-        if not settings._selected: item.setOn( 0 )
-        self.modification = 1
-        try:
-          writeMinf( os.path.join( settings.directory, 'database_settings.minf' ),
-                     ( settings.expert_settings, ) )
-        except IOError:
-          pass
+        if settings.directory:
+          item = self.lvDatabases.currentItem()
+          item._value = ( settings.directory, settings._selected )
+          item.setText( 0, settings.directory )
+          if not settings._selected: item.setOn( 0 )
+          self.modification = 1
+          try:
+            writeMinf( os.path.join( settings.directory, 'database_settings.minf' ),
+                      ( settings.expert_settings, ) )
+          except IOError:
+            pass
     except:
       showException()
 
@@ -230,13 +235,14 @@ class DatabaseManagerGUI( qt.QWidget ):
       settings.expert_settings.ontology = 'brainvisa-3.1.0'
       appgui = ApplicationQt3GUI()
       if appgui.edit( settings, live=True, parent=self ):
-        self._addDatabase( settings.directory, settings._selected )
-        self.modification = True
-        try:
-          writeMinf( os.path.join( settings.directory, 'database_settings.minf' ),
-                     ( settings.expert_settings, ) )
-        except IOError:
-          pass
+        if settings.directory:
+          self._addDatabase( settings.directory, settings._selected )
+          self.modification = True
+          try:
+            writeMinf( os.path.join( settings.directory, 'database_settings.minf' ),
+                      ( settings.expert_settings, ) )
+          except IOError:
+            pass
     except:
       showException()
 

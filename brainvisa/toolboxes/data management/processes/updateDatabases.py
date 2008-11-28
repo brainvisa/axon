@@ -79,7 +79,7 @@ class UpdateDatabasesGUI( qt.QWidget ):
     spacer1 = qt.QSpacerItem(1,1,qt.QSizePolicy.Expanding,qt.QSizePolicy.Minimum)
     layout1.addItem(spacer1)
 
-    self.btnClearAndUpdate = qt.QPushButton( _t_( '&Clear and Update' ), self )
+    self.btnClearAndUpdate = qt.QPushButton( _t_( '&Update' ), self )
     layout1.addWidget( self.btnClearAndUpdate )
     
     #self.btnClear = qt.QPushButton( _t_( '&Clear' ), self )

@@ -341,7 +341,7 @@ class SQLDatabase( Database ):
   
     if os.path.exists( self.sqlDatabaseFile ):
       if self.fso.lastModification > os.stat(self.sqlDatabaseFile).st_mtime:
-        showWarning( _( 'ontology "%(ontology)s" had been modified, database "%(database)s" should be cleared and updated' ) % { 'ontology': self.fso.name, 'database': self.name } )
+        showWarning( _( 'ontology "%(ontology)s" had been modified, database "%(database)s" should be updated. Use the process : Data Management =&gt; Update databases.' ) % { 'ontology': self.fso.name, 'database': self.name } )
     if self.createTables():
       self.update()
   

@@ -315,7 +315,7 @@ def editConfiguration():
     setSPM99Compatibility( configuration.brainvisa.SPM )
   newDataPath = dataPath[:1]
   for fso in configuration.databases.fso:
-    if fso.selected:
+    if fso.selected and fso.directory and os.path.exists(fso.directory):
       newDataPath.append( DatabaseSettings( fso.directory ) )
   if dataPath != newDataPath:
     dataPath = newDataPath

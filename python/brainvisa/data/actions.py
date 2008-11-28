@@ -312,7 +312,10 @@ class CallProcess(Action):
       context.write( "-- ", str(self), args, kwargs)
     if context is None:
       neuroProcesses.defaultContext()
-    context.runProcess(self.processName, *args, **kwargs)
+    try:
+      context.runProcess(self.processName, *args, **kwargs)
+    except Exception, e:
+      context.warning("Error while executing "+self.processName+" : "+unicode(e.message))
     return True
     
   def __str__(self):

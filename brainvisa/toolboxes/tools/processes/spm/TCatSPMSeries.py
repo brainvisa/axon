@@ -38,9 +38,9 @@ import os.path
 name = 'Create a 4D volume from a list of 3D Volumes'
 
 signature = Signature(
-  'SPM_files', ListOf( ReadDiskItem( '3D volume', 'SPM image', 
+  'SPM_files', ListOf( ReadDiskItem( '3D volume', 'Aims readable volume formats', 
                        ignoreAttributes=1 ) ),
-  'SPM4D_volume',  WriteDiskItem( '4D volume', 'GIS image'),                    
+  'SPM4D_volume',  WriteDiskItem( '4D volume', 'Aims writable volume formats'),                    
   'display_with_anatomist', Boolean(),
 )
 
@@ -64,17 +64,11 @@ def execution( self, context ):
     series_filenames +=  "'" + self.SPM_files[i].fullPath() + "'," 
   series_filenames = series_filenames[:-1]
 
-  GIS4DVol = context.temporary( 'GIS image' )
   # perform the temporal concatenation 
-  #cmd = ["AimsTCat", "-i" ] + self.SPM4D_volume + [ "-o", GIS4DVol.fullPath() ]
-  cmd = ["AimsTCat", "-i" ] + self.SPM_files + [ "-o", GIS4DVol.fullPath() ]
+  cmd = ["AimsTCat", "-i" ] + self.SPM_files + [ "-o", self.SPM4D_volume.fullPath() ]
   context.write( str(cmd) )
   context.system( *cmd )
 
-  # perform the automatic conversion
-  cmd = ['AimsFileConvert', '-i',GIS4DVol ,'-o',  self.SPM4D_volume.fullPath() ]
-  context.write( str(cmd) )
-  context.system( *cmd )
   self.SPM4D_volume.saveMinf()
 
   if self.display_with_anatomist:

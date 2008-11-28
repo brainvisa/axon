@@ -29,5 +29,5 @@ def execution( self, context ):
   if self.number == 0:
     # Try dynamic signature in batch mode
 	  context.runProcess("DynamicSignature",4,1.2,3.4,5.6,7.8)
-  context.system( 'sleep 2s' )
-  raise 'Arrgh !'
+  context.system( 'sleep', '2s' )
+  raise Exception( 'Arrgh !' )

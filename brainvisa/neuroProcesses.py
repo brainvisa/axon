@@ -319,6 +319,10 @@ def generateHTMLDocumentation( processInfoOrId, translators={} ):
   # english translation is the default
   den = documentation.get( 'en', {} )
   pen = den.get( 'parameters', {} )
+  # get optional documentation generation properties
+  properties = documentation.get( 'properties', {} )
+  # some parameters can be hidden in documentation
+  hiddenparameters = properties.get( 'hidden', {} )
   # Generate HTML documentations
   for l in neuroConfig._languages:
     tr = translators.get( l, None )
@@ -381,34 +385,35 @@ def generateHTMLDocumentation( processInfoOrId, translators={} ):
       p = d.get( 'parameters', {} )
       print >> f, '<h2>' + tr.translate('Parameters') + '</h2>'
       for i, j in signature:
-        ti = j.typeInfo( tr )
-        descr = p.get( i, '' )
-        descr = convertSpecialLinks( descr, l , '', tr )
-        descr = XHTML.html( descr )
-        if not descr and l != 'en':
-          descr = XHTML.html( pen.get( i, '' ) )
-        print >> f, '<blockquote><b>' + i + '</b>:', ti[0][1]
-        f.write( '<i> ( ' )
-        if not j.mandatory:
-          f.write( _t_( 'optional, ' ) )
-        try:
-          if len( ti ) > 1:
-            k, access = ti[ 1 ]
-          else:
-            access = _t_( 'input' )
-          f.write( access )
-        except Exception, e:
-          print e
-        f.write( ' )</i>' )
-        print >> f, '<blockquote>'
-        print >> f, descr
-        print >> f, '</blockquote></blockquote>'
+        if not i in hiddenparameters :
+          ti = j.typeInfo( tr )
+          descr = p.get( i, '' )
+          descr = convertSpecialLinks( descr, l , '', tr )
+          descr = XHTML.html( descr )
+          if not descr and l != 'en':
+            descr = XHTML.html( pen.get( i, '' ) )
+          print >> f, '<blockquote><b>' + i + '</b>:', ti[0][1]
+          f.write( '<i> ( ' )
+          if not j.mandatory:
+            f.write( _t_( 'optional, ' ) )
+          try:
+            if len( ti ) > 1:
+              k, access = ti[ 1 ]
+            else:
+              access = _t_( 'input' )
+            f.write( access )
+          except Exception, e:
+            print e
+          f.write( ' )</i>' )
+          print >> f, '<blockquote>'
+          print >> f, descr
+          print >> f, '</blockquote></blockquote>'
 
-        try:
-          if len( ti ) > 2:
-            supportedFormats.append( ( i, ti[2][1] ) )
-        except Exception, e:
-          print e
+          try:
+            if len( ti ) > 2:
+              supportedFormats.append( ( i, ti[2][1] ) )
+          except Exception, e:
+            print e
 
     # Technical information
     from brainvisa.toolboxes import getToolbox
@@ -503,7 +508,7 @@ def generateHTMLProcessesDocumentation():
   # Create category HTML files
   baseDocDir = os.path.dirname( neuroConfig.docPath )
   for category, f in categoryDocFiles.iteritems():
-    categoryPath=category.split("/")
+    categoryPath=category.split( os.path.sep )
     minfContent = readMinf( f )[ 0 ]
     enContent=minfContent['en']
     for l in neuroConfig._languages:
@@ -637,7 +642,7 @@ class Parameterized( object ):
   def setValue( self, name, value, default=None ):
     debug = neuroConfig.debugParametersLinks
     if debug:
-      print >> debug, str(self) + '.setValue(', name, ',', value, ',', default, ')'
+      print >> debug, str(self) + '.setValue(', repr(name), ',', repr(value), ',', repr(default), ')'
     changed = False
     if default is not None:
       changed = self.isDefault( name ) != default
@@ -2120,10 +2125,10 @@ class ExecutionContext:
       newStackTop.log = None
 
     newStackTop.thread = threading.currentThread()
-    self._processStarted()
-    self._lastProcessRaisedException = False
     try:
       try:
+        self._processStarted()
+        self._lastProcessRaisedException = False
         # Check arguments and conversions
         converter = None
         for ( n, p ) in process.signature.items():
@@ -2177,7 +2182,11 @@ class ExecutionContext:
           item, hash = item_hash
           if item.modificationHash() != hash:
             try:
-              neuroHierarchy.databases.insertDiskItem( item, update=True )
+              # do not try to insert in the database an item that doesn't have any reference to a database
+              if item.get("_database", None): 
+                neuroHierarchy.databases.insertDiskItem( item, update=True )
+              else:
+                print "diskItem ", item.name, " doesn't have to be inserted in a database."
             except Database.NotInDatabaseError:
               pass
             except:
@@ -2216,26 +2225,26 @@ class ExecutionContext:
 
   def _processStarted( self ):
     if self._currentProcess().isMainProcess:
-      msg = '<p><img alt="" src="' + \
+      msg = '<img alt="" src="' + \
             os.path.join( neuroConfig.iconPath, 'process_start.png' ) + \
             '" border="0"><em>' + _t_( 'Process <b>%s</b> started on %s') % \
             ( _t_(self._currentProcess().name ) + ' ' + \
               str( self._currentProcess().instance ),
               time.strftime( _t_( '%Y/%m/%d %H:%M' ),
                              self._processStack[ -1 ].time ) ) + \
-            '</em></p>'
-      self.write( msg, linebreak=0 )
+            '</em><br>'
+      self.write( msg )
 
   def _processFinished( self, result ):
     if self._currentProcess().isMainProcess:
       finalTime = time.localtime()
       elapsed = calendar.timegm( finalTime ) - calendar.timegm( self._processStack[ -1 ].time )
-      msg = '<p><img alt="" src="' + \
+      msg = '<br><img alt="" src="' + \
             os.path.join( neuroConfig.iconPath, 'process_end.png' ) + \
             '" border="0"><em>' + _t_( 'Process <b>%s</b> finished on %s (%s)' ) % \
         ( _t_(self._currentProcess().name) + ' ' + str( self._currentProcess().instance ),
           time.strftime( _t_( '%Y/%m/%d %H:%M' ), finalTime), timeDifferenceToString( elapsed ) ) + \
-        '</em></p>'
+        '</em>'
       self.write( msg )
 
   def system( self, *args, **kwargs ):
@@ -2335,25 +2344,20 @@ class ExecutionContext:
 
   def write( self, *messages, **kwargs ):
     self.checkInterruption()
-    linebreak = kwargs.get( 'linebreak', 1 )
     if messages:
-      msg = string.join( map( str, messages ) )
-      if linebreak: msg += '<br>'
-
+      msg = u' '.join( unicode( i ) for i in messages )
       if self._processStack:
         outputLogFile = self._processStack[ -1 ].process._outputLogFile
         if outputLogFile:
           print >> outputLogFile, msg
           outputLogFile.flush()
-
       self._write( msg )
 
   def _write( self, html ):
     if not hasattr( self, '_writeHTMLParser' ):
       self._writeHTMLParser = htmllib.HTMLParser( formatter.AbstractFormatter(
         formatter.DumbWriter( sys.stdout, 80 ) ) )
-    self._writeHTMLParser.feed( html )
-
+    self._writeHTMLParser.feed( html + '<br>\n' )
 
   def warning( self, *messages ):
     self.checkInterruption()
@@ -2573,17 +2577,17 @@ def getProcess( processId, ignoreValidation=False ):
         update = 0
         ask = _askUpdateProcess.get( result._id, 0 )
         if ask == 0:
-          if neuroConfig.userLevel > 0:
-            r = defaultContext().ask( _t_( '%s has been modified, would you like to update the process <em>%s</em> processes ? You should close all processes windows before reloading a process.' ) % \
-              ( result._fileName, _t_(result.name) ), _t_('Yes'), _t_('No'), _t_('Always'), _t_('Never') )
-            if r == 0:
-              update = 1
-            elif r == 2:
-              update = 1
-              _askUpdateProcess[ result._id ] = 1
-            elif r == 3:
-              update = 0
-              _askUpdateProcess[ result._id ] = 2
+          #if neuroConfig.userLevel > 0:
+          r = defaultContext().ask( _t_( '%s has been modified, would you like to update the process <em>%s</em> processes ? You should close all processes windows before reloading a process.' ) % \
+            ( result._fileName, _t_(result.name) ), _t_('Yes'), _t_('No'), _t_('Always'), _t_('Never') )
+          if r == 0:
+            update = 1
+          elif r == 2:
+            update = 1
+            _askUpdateProcess[ result._id ] = 1
+          elif r == 3:
+            update = 0
+            _askUpdateProcess[ result._id ] = 2
         elif ask == 1:
           update = 1
         if update:
@@ -2767,10 +2771,23 @@ def getDataEditor( source, enableConversion = 0 ):
   return None
 
 #----------------------------------------------------------------------------
-def getImporter( dataType ):
+def getImporter( source ):
   global _processes
-  result = _importers.get( dataType, None )
-  return getProcess( result )
+  if isinstance( source, DiskItem ):
+    t0 = source.type
+    f = source.format
+  else:
+    t0, f = source
+  t = t0
+  v = _importers.get( ( t, f ) )
+  while not v and t:
+    t = t.parent
+    v = _importers.get( ( t, f ) )
+  p =  getProcess( v )
+  if p and p.userLevel <= neuroConfig.userLevel:
+    return p
+  return None
+
 
 #----------------------------------------------------------------------------
 _extToModuleDescription ={
@@ -2940,7 +2957,9 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
     if 'importer' in roles:
       global _importers
       sourceArg, destArg = NewProcess.signature.values()[ : 2 ]
-      _importers[destArg.type]=NewProcess._id
+      if hasattr( destArg, 'formats' ):
+        for format in destArg.formats:
+          _importers[ ( destArg.type, format ) ] = NewProcess._id
 
     if _readProcessLog is not None:
       _readProcessLog.append( processInfo.id,

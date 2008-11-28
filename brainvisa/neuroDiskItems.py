@@ -645,8 +645,7 @@ class DiskItem:
           lambda nv, other=other: other.getNonHierarchy( nv[ 0 ] ) == nv[ 1 ], 
           self.nonHierarchyAttributes().items() ),
         self.type is other.type )
-    return ( -hierarchyCommon, -nonHierarchyCommon, 
-             self.priority() - other.priority()  )
+    return ( -hierarchyCommon, self.priority() - other.priority(), -nonHierarchyCommon, )
 
 
   def _changeUuid( self, newUuid ):
@@ -1475,6 +1474,10 @@ def readTypes():
 #----------------------------------------------------------------------------
 try:
   from soma import aims
+  
+  # Fix libxml2 multithreaded application issue by initializing parser from the main thread
+  aims.xmlInitParser()
+  
   _finder = aims.Finder()
   # don't resolve symlinks if file browser to be consistent with
   # all DiskItem namings

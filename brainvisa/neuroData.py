@@ -344,7 +344,16 @@ class ListOf( Parameter ):
   def __init__( self, contentType ):
     Parameter.__init__( self )
     self.contentType = contentType
-  
+
+  def checkValue( self, name, value ):
+    '''This functions check if a value is valid for the parameter. If
+    the value is not valid it must raise an excpetion.'''
+    Parameter.checkValue( self, name, value )
+    
+    if ( not value is None ) and ( type( value ) in ( types.ListType, types.TupleType ) ):
+      for listvalue in value :
+        self.contentType.checkValue( name, listvalue )
+
   def findValue( self, value ):
     if value is None:
       return []

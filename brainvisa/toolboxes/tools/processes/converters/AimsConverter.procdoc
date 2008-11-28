@@ -1,6 +1,40 @@
 <?xml version="1.0" encoding="iso-8859-1" ?>
 <minf version="1.0">
-  <d name="fr" length="3">
+  <d name="en">
+    <xhtml name="short">
+      This process performs file format and data conversion.
+    </xhtml>
+    <d name="parameters" length="6">
+      <xhtml name="removeSource">
+        Choose if you want to delete (True) or not (False) the original input files.
+      </xhtml>
+      <xhtml name="voxelType">T
+        Choose the voxel type of the output files. By default, it is the same as input.<br/>
+        
+        This parameter is optional because it is only applicable to volumes or textures of scalars.
+      </xhtml>
+      <xhtml name="read">
+        Click on <img src="../../images/icons/browse_read.png" border="0" />.<br/>
+        
+        Select the file (2D, 3D volume, etc.) to be converted.
+      </xhtml>
+      <xhtml name="write">
+        Click on <img src="../../images/icons/browse_read.png" border="0" />.<br/>
+        
+        Specify the output directory and enter the output file name.
+      </xhtml>
+      <xhtml name="preferedFormat">
+        Choose a specific output format (GIS, VIDA, Analyze).<br/>
+        
+        This parameter is optional. By default, it is guessed by the output filename extension.
+      </xhtml>
+      <xhtml name="ascii">
+        This parameter allows to write in ASCII mode if the output format supports it.
+      </xhtml>
+    </d>
+    <xhtml name="long"></xhtml>
+  </d>
+  <d name="fr">
     <xhtml name="short">Traitement pour la conversion de format de fichier d'image.<br/></xhtml>
     <d name="parameters" length="6">
       <xhtml name="removeSource">Si vous souhaitez éliminer le fichier d'entrée, par défaut 'false'</xhtml>

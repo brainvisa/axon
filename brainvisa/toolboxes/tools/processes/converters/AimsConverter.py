@@ -38,7 +38,7 @@ from brainvisa import shelltools
 
 name = 'Aims Converter'
 roles = ('converter',)
-userLevel=1
+userLevel = 0
 
 signature = Signature(
   'read', ReadDiskItem( '4D Volume', shfjGlobals.aimsVolumeFormats,

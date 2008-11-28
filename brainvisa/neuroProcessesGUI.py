@@ -49,6 +49,7 @@ from brainvisa.history import ProcessExecutionEvent
 
 from brainvisa.TextEditor import TextEditor
 import weakref
+import brainvisa.configuration.brainvisa_configuration as brainvisa_configuration
 from soma.minf.xhtml import XHTML
 from brainvisa.debug import debugHere
 from soma.qt3gui.api import QtThreadCall, FakeQtThreadCall, TextBrowserWithSearch
@@ -202,7 +203,9 @@ class HTMLBrowser( QWidget ):
 
     def setSource( self, src ):
       src = unicode( src )
-      if not src.startswith( 'bvshowprocess://' ) and not src.startswith("http://"):
+      if not src.startswith( 'bvshowprocess://' ) \
+         and not src.startswith( 'http://' ) \
+         and not src.startswith( 'mailto:' ) :
         TextBrowserWithSearch.setSource( self, src )
         
     def createPopupMenu(self, pos):
@@ -267,8 +270,16 @@ class HTMLBrowser( QWidget ):
     self.browser = browser
     
     webBrowser = neuroConfig.HTMLBrowser
+    if not webBrowser :
+      # Get the default first one
+      browsers = brainvisa_configuration.htmlBrowsers()
+
+      if len(browsers) > 0 :
+        webBrowser = browsers[0]
+      
     if webBrowser is not None:
       webBrowser = distutils.spawn.find_executable( webBrowser )
+      
     self.webBrowser=webBrowser
 
     neuroConfig.registerObject( self )
@@ -282,6 +293,7 @@ class HTMLBrowser( QWidget ):
   def clickLink( self, text ):
     # Oh well, OK, we should handle this with a proper MimeType, but...
     # fake protocol bvshowprocess:
+  
     bvp = unicode( text )
     if bvp.startswith( 'bvshowprocess://' ):
       bvp = bvp[16:]
@@ -294,10 +306,12 @@ class HTMLBrowser( QWidget ):
       else:
         win = ProcessView( proc() )
         win.show()
-    elif bvp.startswith( 'http://' ):
+    elif bvp.startswith( 'http://' ) or bvp.startswith( 'mailto:' ):
       try:
           if self.webBrowser:
             os.spawnl( os.P_NOWAIT, self.webBrowser, self.webBrowser, bvp )
+          else:
+            self.browser.setSource( text )
       except:
           showException()
     else:
@@ -694,7 +708,7 @@ class ParameterizedWidget( QWidget ):
 #lock#    self.btnLock={}
     self._currentDirectory = None
 
-    self._doUpdateParameterValue = 0
+    self._doUpdateParameterValue = False
     first = None
     maxwidth = 0
     for ( k, p ) in self.parameterized.signature.items():
@@ -709,6 +723,7 @@ class ParameterizedWidget( QWidget ):
         hb = QHBox( self.scrollWidget.box )
         hb.setSpacing( 4 )
         l = ParameterLabel( k, p.mandatory, hb )
+        l.setDefault(self.parameterized.isDefault( k ))
         self.connect( l, PYSIGNAL( 'toggleDefault' ), self._toggleDefault )
         l.setFixedWidth( maxwidth )
         self.labels[ k ] = l
@@ -719,7 +734,8 @@ class ParameterizedWidget( QWidget ):
         self.editors[ k ] = e
         if first is None: first = e
         v = getattr( self.parameterized, k, None )
-        if v is not None: e.setValue( v, 1 )
+        if v is not None: 
+          e.setValue( v, 1 )
         e.connect( e, PYSIGNAL('noDefault'), self.removeDefault )
         e.connect( e, PYSIGNAL('newValidValue'), self.updateParameterValue )
 #lock#        btn = NamedPushButton( hb, k )
@@ -731,7 +747,7 @@ class ParameterizedWidget( QWidget ):
 #lock#        self.btnLock[ k ] = btn
 
     if first: first.setFocus()
-    self._doUpdateParameterValue = 1
+    self._doUpdateParameterValue = True
 
   def parameterizedDeleted( self, parameterized ):
     debugHere()
@@ -769,10 +785,17 @@ class ParameterizedWidget( QWidget ):
                   self.parameterized.signature[ parameterName ].toolTipText( parameterName, text ) )
 
   def parameterChanged( self, parameterized, parameterName, value ):
-     self._doUpdateParameterValue = 0
-     self.editors[ parameterName ].setValue( value,
-                           default = parameterized.isDefault( parameterName ) )
-     self._doUpdateParameterValue = 1
+    """This method is called when an attribute has changed in the model. 
+    A parameter can change in the model because it is links to another parameter that has changed or because the user changed it in the GUI."""
+    # It is necessary to read user values before applying changes,
+    # otherwise selected data are reset
+    self.readUserValues()
+    self._doUpdateParameterValue = False
+    default=parameterized.isDefault( parameterName )
+    self.editors[ parameterName ].setValue( value,
+                                            default = default)
+    self.labels[ parameterName ].setDefault( default )
+    self._doUpdateParameterValue = True
 
   def updateParameterValue( self, name, value ):
     if self._doUpdateParameterValue:
@@ -882,7 +905,7 @@ class ProcessView( QVBox, ExecutionContextGUI ):
     self.labName.setSizePolicy( QSizePolicy( QSizePolicy.Expanding, QSizePolicy.Maximum ) )
     doc =  XHTML.html( documentation.get( 'short', '' ) )
     if doc:
-      QToolTip.add( self.labName, doc )
+      QToolTip.add( self.labName, '<center><b>' + _t_(process.name) + '</b></center><hr><b>' + _t_('Description') + ':</b><br/>' + doc )
 
     if externalInfo is None:
       self.movie = BrainVISAAnimation( hb )
@@ -924,7 +947,9 @@ class ProcessView( QVBox, ExecutionContextGUI ):
       # self.info must be created before ExecutionNode GUIs because they may
       # need it.
       if externalInfo is None:
-        self.info = QTextView( splitter )
+        self.info = QTextEdit( splitter )
+        self.info.setReadOnly( True )
+        self.info.setTextFormat( Qt.RichText )
         self.info.setSizePolicy( QSizePolicy( QSizePolicy.Expanding, QSizePolicy.Preferred, 0, 50 ) )
         self.infoCounter = None
         splitter.setResizeMode( self.info, splitter.Stretch )
@@ -1232,11 +1257,7 @@ class ProcessView( QVBox, ExecutionContextGUI ):
     _mainThreadActions.push( self._appendInfo, html )
 
   def _appendInfo( self, msg ):
-    scroll = \
-      self.info.verticalScrollBar().value() == self.info.verticalScrollBar().maxValue()
-    self.info.setText( unicode( self.info.text() )+ msg  )
-    if scroll:
-      self.info.verticalScrollBar().setValue( self.info.verticalScrollBar().maxValue() )
+    self.info.append( msg  )
 
   def _processStarted( self ):
     if self._depth() == 1:
@@ -1279,8 +1300,8 @@ class ProcessView( QVBox, ExecutionContextGUI ):
       self._running = False
     else:
       _mainThreadActions.push( self._checkReadable )
-
-
+  
+  
   def system( self, *args, **kwargs ):
     ret = apply( ExecutionContextGUI.system, (self,) + args, kwargs )
     _mainThreadActions.push( self._checkReadable )

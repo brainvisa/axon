@@ -38,7 +38,7 @@ import os.path
 name = 'Create minf for SPM Series as 4D Volume'
 
 signature = Signature(
-  'SPM_files', ListOf( ReadDiskItem( '3D volume', 'SPM image', 
+  'SPM_files', ListOf( ReadDiskItem( '3D volume', 'Aims readable volume formats', 
                        ignoreAttributes=1 ) ),
   'display_with_anatomist', Boolean(),
 )

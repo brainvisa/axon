@@ -39,7 +39,6 @@ from neuroData import *
 from backwardCompatibleQt import *
 from neuroException import HTMLMessage
 from brainvisa import anatomist
-
 #----------------------------------------------------------------------------
 class DataEditor:
   def __init__( self ):
@@ -64,8 +63,8 @@ class StringEditor( QLineEdit, DataEditor ):
     DataEditor.__init__( self )
     QLineEdit.__init__( self, parent, name )
     self.connect( self, SIGNAL( 'returnPressed()' ), self.setFocusNext )
-    self.setValue( None, 1 )
     self.value = None
+    self.setValue( None, True )
       
   def getFocus( self ):
     self.selectAll()
@@ -76,32 +75,25 @@ class StringEditor( QLineEdit, DataEditor ):
   def _valueFromText( self, text ):
     return text
   
-  def setValue( self, value, default = 0 ):
-    self.forceDefault = default
+  def setValue( self, value, default = False ):
     if value is None:
       self.setText( '' )
     else:
       self.setText( unicode( value ) )
-    self.forceDefault = 0
+    self.value=value
   
   def setFocusNext( self ):
     self.checkValue()
     QApplication.postEvent( self, QKeyEvent( QEvent.KeyPress, 0x1001, 8, 0 ) )
 
   def checkValue( self ):
-    currentValue = self._valueFromText( unicode( self.text() ) )
-    if currentValue != self.getValue():
-      oldDefault = self.forceDefault
-      self.forceDefault = 1
-      self._newValidValue( currentValue )
-      self.forceDefault = oldDefault
-  
-  def _newValidValue( self, value ):
-    self.value = value
-    self.emit( PYSIGNAL('newValidValue'), ( self.name(), self.value, ) )
-    if not self.forceDefault:
+    value=self._valueFromText( unicode( self.text() ) )
+    if value != self.getValue():
+      self.value = value
       self.emit( PYSIGNAL('noDefault'), ( self.name(),) )
+      self.emit( PYSIGNAL('newValidValue'), ( self.name(), self.value, ) )
 
+  
 
 #----------------------------------------------------------------------------
 class PasswordEditor (StringEditor):
@@ -172,7 +164,6 @@ class ChoiceEditor( QComboBox, DataEditor ):
     for n, v in self.parameter.values:
       self.insertItem( n )
 #dbg#    print 'ChoiceEditor values:', self.parameter.values
-    self.forceDefault = 0
     self.value = self.parameter.values[ 0 ][ 1 ]
     self.parameter.warnChoices( self.changeChoices )
     #self.connect( self, SIGNAL( 'destroyed()' ), self.destroyed )
@@ -185,25 +176,23 @@ class ChoiceEditor( QComboBox, DataEditor ):
     if self.parameter is not None:
       self.parameter.unwarnChoices( self.changeChoices )
       #self.parameter.setChoices( ( '', None ) )
-      self.parameter = None
+      #self.parameter = None
 
   def getValue( self ):
     return self.value
 
-  def setValue( self, value, default = 0 ):
-    self.forceDefault = default
+  def setValue( self, value, default = False ):
     i = self.parameter.findIndex( value )
     if i >= 0:
       self.value = self.parameter.values[ i ][ 1 ]
     else:
       raise Exception( HTMLMessage(_t_('<em>%s</em> is not a valid choice') % unicode(value)) )
     self.setCurrentItem( i )
-    self.forceDefault = 0
   
   def newValue( self ):
     self.value = self.parameter.values[ self.currentItem() ][ 1 ]
+    self.emit( PYSIGNAL('noDefault'), ( self.name(),))
     self.emit( PYSIGNAL('newValidValue'), ( self.name(), self.value, ) )
-    if not self.forceDefault: self.emit( PYSIGNAL('noDefault'), ( self.name(),))
 
   def changeChoices( self ):
     oldValue = self.getValue()
@@ -227,7 +216,6 @@ class OpenChoiceEditor( QComboBox, DataEditor ):
     self.parameter = parameter
     for n, v in self.parameter.values:
       self.insertItem( n )
-    self.forceDefault = False
     self.value = None
     self.parameter.warnChoices( self.changeChoices )
     self.connect( self, SIGNAL( 'activated( int )' ), self.valueSelected )
@@ -254,7 +242,6 @@ class OpenChoiceEditor( QComboBox, DataEditor ):
     return self.value
 
   def setValue( self, value, default=False ):
-    self.forceDefault = default
     i = self.parameter.findIndex( value )
     if i >= 0:
       self.value = self.parameter.values[ i ][ 1 ]
@@ -262,26 +249,18 @@ class OpenChoiceEditor( QComboBox, DataEditor ):
     else:
       self.value = unicode( value )
       self.setEditText( self.value )
-    self.forceDefault = False
-  
+
   def setFocusNext( self ):
     self.checkValue()
     QApplication.postEvent( self, QKeyEvent( QEvent.KeyPress, 0x1001, 8, 0 ) )
 
   def checkValue( self ):
-    currentValue = unicode( self.currentText() )
-    if currentValue != self.getValue():
-      oldDefault = self.forceDefault
-      self.setValue( currentValue, True )
-      self.forceDefault = True
-      self._newValidValue( self.value )
-      self.forceDefault = oldDefault
-  
-  def _newValidValue( self, value ):
-    self.value = value
-    self.emit( PYSIGNAL('newValidValue'), ( self.name(), self.value, ) )
-    if not self.forceDefault:
+    value=unicode( self.currentText() )
+    if value != self.getValue():
+      self.value=value
       self.emit( PYSIGNAL('noDefault'), ( self.name(),) )
+      self.emit( PYSIGNAL('newValidValue'), ( self.name(), self.value, ) )
+
 
   def valueSelected( self, index ):
     self.checkValue()
@@ -293,13 +272,12 @@ class ListOfVectorEditor( StringEditor ):
     self.value = None
     
   def setValue( self, value, default = 0 ):
-    self.forceDefault = default
     if value is None:
       self.setText( '' )
     else:
       self.setText( string.join( map( lambda x: string.join( map( str, x ) ),
                                       value ), ';' ) )
-    self.forceDefault = 0
+    self.value = value
 
   def _valueFromText( self, text ):
     value = []
@@ -315,13 +293,12 @@ class MatrixEditor( StringEditor ):
     self.value = None
     
   def setValue( self, value, default = 0 ):
-    self.forceDefault = default
     if value is None:
       self.setText( '' )
     else:
       self.setText( string.join( map( lambda x: string.join( map( str, x ) ), 
                                       value ), ';' ) )
-    self.forceDefault = 0
+    self.value = value
 
   def _valueFromText( self, text ):
     value = []
@@ -379,9 +356,7 @@ class StringListEditor( QLineEdit, DataEditor ):
     return text
   
   def setValue( self, value, default = 0 ):
-    self.forceDefault = default
     self._setValue( value )
-    self.forceDefault = 0
     
   def _setValue( self, value ):
     self.value = value
@@ -420,17 +395,10 @@ class StringListEditor( QLineEdit, DataEditor ):
   def checkValue( self ):
     currentValue = self._valueFromText( str( self.text().latin1() ) )
     if currentValue != self.getValue() and ( self.getValue() or currentValue ):
-      oldDefault = self.forceDefault
-      self.forceDefault = 1
-      self._newValidValue( currentValue )
-      self.forceDefault = oldDefault
-  
-  def _newValidValue( self, value ):
-    self.value = value
-    self.emit( PYSIGNAL('newValidValue'), ( self.name(), self.value, ) )
-    if not self.forceDefault:
+      self.value = currentValue
       self.emit( PYSIGNAL('noDefault'), ( self.name(),) )
-  
+      self.emit( PYSIGNAL('newValidValue'), ( self.name(), self.value, ) )
+        
 
 #----------------------------------------------------------------------------
 
@@ -453,6 +421,7 @@ class NumberListEditor( StringListEditor ):
     return result
 
   def _setValue( self, value ):
+    self.value=value
     text = ''
     if value is None:
       pass
@@ -594,9 +563,7 @@ class ChoiceListEditor( QHBox, DataEditor ):
     return self.value
   
   def setValue( self, value, default = 0 ):
-    self.forceDefault = default
     self._setValue( value )
-    self.forceDefault = 0
 
   def _setValue( self, value, ):
     if value is not None:
@@ -613,17 +580,11 @@ class ChoiceListEditor( QHBox, DataEditor ):
     else:
       currentValue = None
     if currentValue != self.getValue():
-      oldDefault = self.forceDefault
-      self.forceDefault = 1
       self._newValidValue( currentValue )
-      self.forceDefault = oldDefault
-  
-  def _newValidValue( self, value ):
-    self.value = value
-    self.emit( PYSIGNAL('newValidValue'), ( self.name(), self.value, ) )
-    if not self.forceDefault:
+      self.value = currentValue
       self.emit( PYSIGNAL('noDefault'), ( self.name(),) )
-         
+      self.emit( PYSIGNAL('newValidValue'), ( self.name(), self.value, ) )
+
   def _selectValues( self ):
     w = self.ChoiceListSelect( self, self.name() )
     try:
@@ -638,8 +599,9 @@ class ChoiceListEditor( QHBox, DataEditor ):
     except:
       pass
     else:
+      self.emit( PYSIGNAL('noDefault'), ( self.name(),))
       self.emit( PYSIGNAL('newValidValue'), ( self.name(), v, ) )
-    if not self.forceDefault: self.emit( PYSIGNAL('noDefault'), ( self.name(),))
+    
   
  #-------------------------------------------------------------------------------
 class PointEditor( QHBox, DataEditor ):
@@ -734,9 +696,7 @@ class PointListEditor( QHBox, DataEditor ):
                   string.split( text, ',' ) )      
 
   def setValue( self, value, default = 0 ):
-    self.forceDefault = default
     self._setValue( value )
-    self.forceDefault = 0
 
   def _setValue( self, value ):
     if not value:
@@ -744,7 +704,6 @@ class PointListEditor( QHBox, DataEditor ):
     else:
       self.led.setText( string.join( map( 
         lambda point: string.join( map( str, point ) ), value ), ',' ) )
-    self.forceDefault = 0
   
   def setFocusNext( self ):
     QApplication.postEvent(self.led, QKeyEvent( QEvent.KeyPress, 0x1001, 8, 0 ))
@@ -755,9 +714,9 @@ class PointListEditor( QHBox, DataEditor ):
     except:
       pass
     else:
+      self.emit( PYSIGNAL('noDefault'), ( self.name(),) )
       self.emit( PYSIGNAL('newValidValue'), ( self.name(), v, ) )
-      if not self.forceDefault:
-        self.emit( PYSIGNAL('noDefault'), ( self.name(),) )
+        
 
   def selectPressed( self ):
     if self.btnSelect.isOn():

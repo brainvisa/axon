@@ -10,7 +10,7 @@ signature = Signature(
 )
 
 def initialization( self ):
-  self.addLink( 'htmlDirectory', 'ontology', lambda ontology: os.path.join( docPath, neuroConfig.language, 'ontology-' + ontology ) )
+  self.addLink( 'htmlDirectory', 'ontology', lambda ontology: os.path.join( neuroConfig.docPath, neuroConfig.language, 'ontology-' + ontology ) )
 
 
 #----------------------------------------------------------------------------

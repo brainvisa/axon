@@ -81,7 +81,7 @@ def initialization( self ):
    
   eNode.addChild( 'CleanDatabase',
                   ProcessExecutionNode( 'cleanDatabase',
-                                        optional = 1 ) )
+                                        optional = 1, selected=False ) )
 
  # links
   eNode.addLink( 'ConvertDatabase.database', 'database' )

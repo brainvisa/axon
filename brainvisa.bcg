@@ -73,7 +73,7 @@ _versionString = str( _versionNumber ) + 'a'
           docs += [ 'bv_training', 'bv_tms', 'bv_eegmeg' ]
         if 'progs' not in packs:
           docs += [ 'en/processes', 'fr/processes' ]
-      if 'progdoc' in packs and 'private' in packs:
+      if 'progdoc' in packs:
         docs.append( 'bv_pg' )
       if 'userdoc' in packs or 'progdoc' in packs:
         docs.append( 'images' )
