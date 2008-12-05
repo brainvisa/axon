@@ -148,7 +148,10 @@ anatomistMeshFormats = createFormatList(
     'Z compressed MESH mesh',
     'gz compressed MESH mesh',
     'Z compressed TRI mesh',
-    'gz compressed TRI mesh'
+    'gz compressed TRI mesh',
+    'PLY mesh',
+    'Z compressed PLY mesh',
+    'gz compressed PLY mesh',
   )
 )
 
@@ -159,6 +162,7 @@ aimsMeshFormats = createFormatList(
   (
     'MESH mesh',
     'TRI mesh',
+    'PLY mesh',
   )
 )
 _fileInfoFormats = None

@@ -73,21 +73,27 @@ class StringEditor( QLineEdit, DataEditor ):
     return self.value
 
   def _valueFromText( self, text ):
-    return text
+    if text:
+      return text
+    return None
   
   def setValue( self, value, default = False ):
     if value is None:
       self.setText( '' )
     else:
       self.setText( unicode( value ) )
-    self.value=value
+    if value != self.value:
+      self.value = value
+      if not default:
+        self.emit( PYSIGNAL('noDefault'), ( self.name(),) )
+      self.emit( PYSIGNAL('newValidValue'), ( self.name(), self.value, ) )
   
   def setFocusNext( self ):
     self.checkValue()
     QApplication.postEvent( self, QKeyEvent( QEvent.KeyPress, 0x1001, 8, 0 ) )
 
   def checkValue( self ):
-    value=self._valueFromText( unicode( self.text() ) )
+    value = self._valueFromText( unicode( self.text() ) )
     if value != self.getValue():
       self.value = value
       self.emit( PYSIGNAL('noDefault'), ( self.name(),) )
@@ -280,10 +286,12 @@ class ListOfVectorEditor( StringEditor ):
     self.value = value
 
   def _valueFromText( self, text ):
-    value = []
-    for line in string.split( text, ';' ):
-      value.append( string.split( line ) )
-    return ListOfVectorValue( value )
+    if text:
+      value = []
+      for line in string.split( text, ';' ):
+	value.append( string.split( line ) )
+      return ListOfVectorValue( value )
+    return None
 
 
 #----------------------------------------------------------------------------
@@ -301,11 +309,14 @@ class MatrixEditor( StringEditor ):
     self.value = value
 
   def _valueFromText( self, text ):
-    value = []
     if text:
-      for line in string.split( text, ';' ):
-        value.append( string.split( line ) )
-    return MatrixValue( value )
+      value = []
+      if text:
+	for line in string.split( text, ';' ):
+	  value.append( string.split( line ) )
+      return MatrixValue( value )
+    return None
+    
   
 
 #----------------------------------------------------------------------------
@@ -314,8 +325,8 @@ class StringListEditor( QLineEdit, DataEditor ):
     DataEditor.__init__( self )
     QLineEdit.__init__( self, parent, name )
     self.connect( self, SIGNAL( 'returnPressed()' ), self.setFocusNext )
-    self.setValue( None, 1 )
     self.value = None
+    self.setValue( None, True )
       
   def getFocus( self ):
     self.selectAll()
@@ -355,8 +366,12 @@ class StringListEditor( QLineEdit, DataEditor ):
     return result
     return text
   
-  def setValue( self, value, default = 0 ):
-    self._setValue( value )
+  def setValue( self, value, default=False ):
+    if value != self.value:
+      self._setValue( value )
+      if not default:
+        self.emit( PYSIGNAL('noDefault'), ( self.name(),) )
+      self.emit( PYSIGNAL('newValidValue'), ( self.name(), self.value, ) )
     
   def _setValue( self, value ):
     self.value = value
@@ -408,6 +423,7 @@ class NumberListEditor( StringListEditor ):
     StringListEditor.__init__( self, parent, name )
 
   def _valueFromText( self, text ):
+    if not text: return None
     result = []
     for s in string.split( text ):
       try: n = int( s )
@@ -425,9 +441,9 @@ class NumberListEditor( StringListEditor ):
     text = ''
     if value is None:
       pass
-    elif type( value ) in ( types.ListType, types.TupleType ):
+    elif isinstance( value, ( list, tuple ) ):
       text = string.join( map( lambda x: str(x), value ) )
-    elif type( value ) is types.StringType:
+    elif isinstance( value, basestring ):
       text = str(value)
     else:
       try:
@@ -444,6 +460,7 @@ class IntegerListEditor( NumberListEditor ):
     NumberListEditor.__init__( self, parent, name )
 
   def _valueFromText( self, text ):
+    if not text: return None
     result = []
     for s in string.split( str(self.text().latin1() ) ):
       try: n = int( s )
@@ -461,6 +478,7 @@ class FloatListEditor( NumberListEditor ):
     NumberListEditor.__init__( self, parent, name )
 
   def _valueFromText( self, text ):
+    if not text: return None
     result = []
     for s in string.split( str(self.text().latin1() ) ):
       try: n = float( s )
@@ -628,7 +646,7 @@ class PointEditor( QHBox, DataEditor ):
   def getValue( self ):
     return self.nle.getValue()
 
-  def setValue( self, value, default = 0 ):
+  def setValue( self, value, default = False ):
     # Get only the numbers for the dimension
     if value is not None:
       value = value[ 0 : self.parameter.dimension ]

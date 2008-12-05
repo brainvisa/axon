@@ -39,7 +39,7 @@ name = 'ROI drawing'
 userLevel = 1
 
 signature = Signature(
-  'image', ReadDiskItem( '4D Volume', shfjGlobals.aimsVolumeFormats ),
+  'image', ReadDiskItem( '4D Volume', shfjGlobals.anatomistVolumeFormats ),
   'ROI', WriteDiskItem( 'ROI', 'Graph and data' ),
 )
 
@@ -60,7 +60,7 @@ def execution( self, context ):
   self.ROI.saveMinf()
 
   a = anatomist.Anatomist()
-  imageObject = a.loadObject( self.image.fullPath() )
+  imageObject = a.loadObject( self.image )
 
   nodesObjects = []
   if not self.ROI.isReadable():

@@ -44,7 +44,8 @@ def validation():
     anatomist.validation()
 
 signature = Signature(
-  'mri', ReadDiskItem( "Rainbow 3D Volume", shfjGlobals.vipVolumeFormats )
+  'mri', ReadDiskItem( "Rainbow 3D Volume",
+    shfjGlobals.anatomistVolumeFormats )
 )
 
 def execution( self, context ):

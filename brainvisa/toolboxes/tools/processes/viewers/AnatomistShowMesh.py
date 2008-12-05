@@ -41,9 +41,9 @@ userLevel = 0
 
 def validation():
     anatomist.validation()
-  
+
 signature = Signature(
-  'read', ReadDiskItem( 'Mesh', [ 'Mesh mesh', 'TRI Mesh' ] ),
+  'read', ReadDiskItem( 'Mesh', 'Anatomist mesh formats' ),
 )
 
 

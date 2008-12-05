@@ -40,8 +40,8 @@ name = '2 - Primal Sketch from SPMt'
 userLevel = 2
 
 signature = Signature(
-    'spmt', ReadDiskItem( 'SPMt map', 'GIS image' ),
-    'mask', ReadDiskItem( 'Functional mask', 'GIS image'),
+    'spmt', ReadDiskItem( 'SPMt map', 'Aims readable volume formats' ),
+    'mask', ReadDiskItem( 'Functional mask', 'Aims readable volume formats' ),
     'sketch', WriteDiskItem( 'Primalsketch graph', 'Graph' ),
     'tMin', Float(),
     'tMax', Float(),
@@ -59,15 +59,15 @@ def execution( self, context ):
      blobs=context.temporary( 'GIS image' )
 
      call_list = [ 'AimsImagePrimalSketch',
-                   '-i', self.spmt.fullName(),
-                   '-m', self.mask.fullName(),
-                   '-os', scales.fullName(),
-                   '-ob', blobs.fullName(),
+                   '-i', self.spmt,
+                   '-m', self.mask,
+                   '-os', scales,
+                   '-ob', blobs,
                    '-t1', self.tMin,
                    '-t2', self.tMax,
                    '-s', '0',
-                   '-og', self.sketch.fullPath(),
-                   '-sj', self.mask.fullName() ]
+                   '-og', self.sketch,
+                   '-sj', self.mask ]
      option_list = []
      if self.statFile=='SPMt : 61x73x61 voxels, 3x3x3 mm^3' :
           option_list += ['-f', '/home/olivier/Perforce/shared-personal/blobsStats/spmt_61-73-61_3-3-3/blobs.stat']

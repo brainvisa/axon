@@ -45,7 +45,7 @@ def validation():
 signature = Signature(
     'graph', ListOf( ReadDiskItem( 'Cortical folds graph', 'Graph' ) ),
     'nomenclature', ReadDiskItem( 'Nomenclature', 'Hierarchy' ), 
-    'hemi_mesh', ReadDiskItem( 'Hemisphere Mesh', 'MESH mesh' ), 
+    'hemi_mesh', ReadDiskItem( 'Hemisphere Mesh', 'Anatomist mesh formats' ),
     )
 
 def initialization( self ):

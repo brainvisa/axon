@@ -42,9 +42,10 @@ name = 'Volumic Deviation'
 userLevel = 2
 
 signature = Signature(
-    'Images', ListOf( ReadDiskItem( '3D Volume', 'GIS image' ) ),
-    'Reference', ReadDiskItem( '3D Volume', 'GIS image' ),
-    'Deviation', WriteDiskItem( '3D Volume', 'GIS image' ),
+    'Images', ListOf( ReadDiskItem( '3D Volume',
+      'Aims readable volume formats' ) ),
+    'Reference', ReadDiskItem( '3D Volume', 'Aims readable volume formats' ),
+    'Deviation', WriteDiskItem( '3D Volume', 'Aims writable volume formats' ),
     'data_smoothing', Choice('Yes','No'),
     'smoothing_parameter', Float()
 )

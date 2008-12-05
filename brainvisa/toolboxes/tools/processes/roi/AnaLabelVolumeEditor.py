@@ -47,7 +47,7 @@ signature = Signature(
   'label_volume', WriteDiskItem( 'Label volume',
                                  shfjGlobals.aimsVolumeFormats ),
   'support_volume', ReadDiskItem( 'Raw T1 MRI',
-                                  shfjGlobals.aimsVolumeFormats ),
+                                  shfjGlobals.anatomistVolumeFormats ),
   'pipeline_mask_nomenclature', ReadDiskItem( 'Nomenclature', 'Hierarchy' ),
   'background_label', OpenChoice( 'minimum' ),
 )

@@ -72,7 +72,12 @@ Format( 'gz compressed TRI mesh', "f|*.tri.gz" )
 Format( 'MESH mesh', "f|*.mesh" )
 Format( 'Z compressed MESH mesh', "f|*.mesh.Z" )
 Format( 'gz compressed MESH mesh', "f|*.mesh.gz" )
+Format( 'PLY mesh', 'f|*.ply' )
+Format( 'Z compressed PLY mesh', 'f|*.ply.Z' )
+Format( 'gz compressed PLY mesh', 'f|*.ply.gz' )
 Format( 'GIFTI file', "f|*.gii" )
+Format( 'Z compressed GIFTI file', 'f|*.gii.Z' )
+Format( 'gz compressed GIFTI file', 'f|*.gii.gz' )
 
 Format( 'Moment Vector', "f|*.inv" )
 
@@ -161,12 +166,15 @@ volumeFormats = list( shfjGlobals.anatomistVolumeFormats )
 del volumeFormats[ volumeFormats.index( getFormat( 'DICOM image' ) ) ]
 createFormatList( 'BrainVISA volume formats', volumeFormats )
 createFormatList( 'BrainVISA image formats', 'Aims image formats' )
+createFormatList( 'BrainVISA mesh formats',
+  shfjGlobals.anatomistMeshFormats + [ 'GIFTI file', 'Z compressed GIFTI file',
+  'gz compressed GIFTI file' ] )
   
   
 FileType( '4D Volume', 'Any Type', 'BrainVISA volume formats') #minfAttributes=shfjGlobals.aimsVolumeAttributes )
 FileType( '3D Volume', '4D Volume' )
 FileType( '2D Image', '3D Volume', 'BrainVISA image formats' )
-FileType( 'Mesh', 'Any Type', [ 'TRI mesh', 'MESH mesh' ] )
+FileType( 'Mesh', 'Any Type', 'BrainVISA mesh formats' )
 FileType( 'Texture', 'Any Type', 'Texture' )
 FileType( 'Label Texture', 'Texture' )
 FileType( 'Log file', 'Any Type', [ 'Log file', 'Text file' ] )
@@ -174,7 +182,6 @@ FileType( 'Text file', 'Any type', 'Text file' )
 FileType( 'CSV file', 'Any type', 'CSV file' )
 FileType( 'GIFTI geometry', 'Any type', 'GIFTI file' )
 FileType( 'Bucket', 'Any Type', 'Bucket' )
-
 
 # There's a bug in BrainVISA when using 'Directory' as base type
 # FileType( 'Protocol','Directory' )

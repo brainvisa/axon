@@ -32,7 +32,7 @@ name = 'Show in anatomist a list of mesh'
 userLevel = 2
 
 signature = Signature(
-    'mesh',      ListOf(ReadDiskItem('Any Type','MESH mesh' )),
+    'mesh',      ListOf(ReadDiskItem('Any Type','Anatomist mesh formats' )),
     'transformations',    ListOf(ReadDiskItem( 'Transformation matrix', 'Transformation matrix')),
     'color',          ListOf(Number())
   )

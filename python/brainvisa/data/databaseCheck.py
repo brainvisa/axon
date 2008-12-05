@@ -136,7 +136,7 @@ if neuroConfig.newDatabases:
         oldScriptName=undoScriptName[:-3]+time.strftime("_%Y-%m-%d_%H-%M-%S")+".py"
         if os.path.exists(oldScriptName):
           os.remove(oldScriptName)
-          os.rename(undoScriptName, oldScriptName)
+        os.rename(undoScriptName, oldScriptName)
           
       if self.doneProcesses:
         undoScript=open(undoScriptName, "w")
@@ -299,7 +299,13 @@ if neuroConfig.newDatabases:
                 src=os.path.join(subjectDir, "anatomy")
                 dest=t1mriDir
                 
-                root, subdirs, files = os.walk(src).next()
+                subdirs=[]
+                files=[]
+                for f in os.listdir(src):
+                  if os.path.isdir(f) and not f.endswith(".data"):
+                    subdirs.append(f)
+                  else:
+                    files.append(f)
                 if subdirs: # level acquisition exists
                   for acquisition in subdirs: # anatomy/acquisition -> t1mri/acquisition/default_analysis/
                     # move and rename transformation raw t1 mri to talairach
@@ -321,14 +327,14 @@ if neuroConfig.newDatabases:
                     action=FileProcess(os.path.join(src, acquisition), Move(os.path.join(dest, acquisition), patternDest=self.default_analysis))
                     self.fileProcesses.append(action)
                   if files:
-                    action=FileProcess(src, Move(os.path.join(dest, acquisition)), ".*")
+                    action=FileProcess(src, Move(os.path.join(dest, self.default_acquisition)), ".*")
                     self.fileProcesses.append(action)
                   action=FileProcess(src, Remove(subjectDir)) # put src in trash in a directory subjectDir
                   self.fileProcesses.append(action)
                   
                 else: # no level acquisition
                   # move and rename transformation raw t1 mri to talairach
-                  talairachTrm=os.path.join(src, s+"_TO_talairach.trm"); 
+                  talairachTrm=os.path.join(src, s+"_TO_talairach.trm")
                   if os.path.exists(talairachTrm):
                     transfoPattern=s+"_TO_talairach.trm(.*)"
                     #action=Move(os.path.join(subjectDir, "registration"), patternSrc=transfoPattern, patternDest="RawT1-"+s+"_"+self.default_acquisition+"_TO_Talairach-ACPC.trm\\1")
@@ -400,7 +406,14 @@ if neuroConfig.newDatabases:
                 # graphe/[acquisition] -> t1mri/acquisition/analysis/folds/3.0
                 # graphe may contain a level acquisition or not. Any way it contains subdirs : *.data, sulci_recognition_session.
                 # if there is a level acquisition, graphe does not contain *.arg files
-                grapheDir, subdirs, files = os.walk(os.path.join(subjectDir, "graphe")).next()
+                subdirs=[]
+                files=[]
+                grapheDir=os.path.join(subjectDir, "graphe")
+                for f in os.listdir(grapheDir):
+                  if os.path.isdir(f) and not f.endswith(".data"):
+                    subdirs.append(f)
+                  else:
+                    files.append(f)
                 acquisitionLevel=not contentMatch(files, ".*\.arg")
                 if acquisitionLevel:
                   for acquisition in subdirs: 
@@ -424,13 +437,26 @@ if neuroConfig.newDatabases:
                   self.removeDataGraphs(grapheDir, grapheDir, s)
 
               if "sulci" in dirs: # sulci directory contains graphs in 3.1 format
-                sulciDir, subdirs, files = os.walk(os.path.join(subjectDir, "sulci")).next()
+                subdirs=[]
+                files=[]
+                sulciDir=os.path.join(subjectDir, "sulci")
+                for f in os.listdir(sulciDir):
+                  if os.path.isdir(f) and not f.endswith(".data"):
+                    subdirs.append(f)
+                  else:
+                    files.append(f)
                 acquisitionLevel="default" not in subdirs
                 if acquisitionLevel:
                   for acquisition in subdirs:
                     sulciAcquisitionDir=os.path.join(sulciDir, acquisition)
                     # sulci graph level
-                    sulciAcquisitionDir, sulciGraphDirs, acquisitionFiles = os.walk(os.path.join(sulciDir, acquisition)).next()
+                    sulciGraphDirs=[]
+                    acquisitionFiles=[]
+                    for f in os.listdir(sulciAcquisitionDir):
+                      if os.path.isdir(f) and not f.endswith(".data"):
+                        sulciGraphDirs.append(f)
+                      else:
+                        acquisitionFiles.append(f)
                     for sulciGraph in sulciGraphDirs:
                       # convertSulciGraphDir(self, sourceDir, sulciGraph, acquisition, subject, subjectDir):
                       self.convertSulciGraphDir(sulciAcquisitionDir, sulciGraph, acquisition, s, subjectDir)
@@ -453,7 +479,14 @@ if neuroConfig.newDatabases:
               if "segment" in dirs: 
                 # move from segment to t1mri/acquisition/analysis/segmentation all files that match t1mri segmentation patterns
                 # move LSulci_<subject>, RSulci_<subject>, LBottom_<subject>, RBottom_<subject>, LHullJunction_<subject>, LSimpleSurface_<subject>, RHullJunction_<subject>, RSimpleSurface_<subject> in folds 3.0  + add recognition session in name
-                segmentDir, subdirs, files = os.walk(os.path.join(subjectDir, "segment")).next()
+                subdirs=[]
+                files=[]
+                segmentDir=os.path.join(subjectDir, "segment")
+                for f in os.listdir(segmentDir):
+                  if os.path.isdir(f) and not f.endswith(".data"):
+                    subdirs.append(f)
+                  else:
+                    files.append(f)
                 segmentPatterns=self.getSegmentPatterns(s) # files that are in segment and must be moved in t1mri/acquisition/analysis/segmentation
                 foldsSegmentPatterns=self.getFoldsSegmentPatterns(s) # files that are in segment and must be moved in t1mri/acquisition/analysis/folds/3.0/session/segmentation
                 if subdirs: # level acquisition exists
@@ -485,7 +518,13 @@ if neuroConfig.newDatabases:
       Moves a directory in another directory adding levels acquisition and analysis. 
       If src contains acquisition directories, they are moved to dest/acquisition/default_analysis/newName. if there is no acquisition level in src, directory containt is moved to dest/default_acquisition/default_analysis/newName.
       """
-      root, subdirs, files = os.walk(src).next()
+      subdirs=[]
+      files=[]
+      for f in os.listdir(src):
+        if os.path.isdir(f) and not f.endswith(".data"):
+          subdirs.append(f)
+        else:
+          files.append(f)
       if subdirs: # level acquisition exists
         for acquisition in subdirs: # segment/acquisition -> t1mri/acquisition/default_analysis/segmentation
           action=FileProcess(os.path.join(src, acquisition), Move(os.path.join(dest, acquisition, self.default_analysis), patternDest=newName))
@@ -630,7 +669,13 @@ if neuroConfig.newDatabases:
               # if there is a diffusion directory
               diffusionDir=os.path.join(subjectDir, "diffusion")
               if os.path.isdir(diffusionDir) :
-                root, subdirs, files = os.walk(diffusionDir).next()
+                subdirs=[]
+                files=[]
+                for f in os.listdir(diffusionDir):
+                  if os.path.isdir(f) and not f.endswith(".data"):
+                    subdirs.append(f)
+                  else:
+                    files.append(f)
                 acquisitionLevel=True
                 if files: # if level acquisition exists, diffusion directory doesn't contain t2 diffusion image file.
                   regexp=re.compile(s+".*\.ima")
@@ -670,7 +715,13 @@ if neuroConfig.newDatabases:
                 else: # acquisitioni level exists
                   for acquisition in subdirs:
                     acquisitionDir=os.path.join(diffusionDir, acquisition)
-                    root, sessions, files = os.walk(acquisitionDir).next()
+                    sessions=[]
+                    files=[]
+                    for f in os.listdir(acquisitionDir):
+                      if os.path.isdir(f) and not f.endswith(".data"):
+                        sessions.append(f)
+                      else:
+                        files.append(f)
                     if contentMatch(acquisitionDir, t1mriPatterns[0]):
                       self.fileProcesses.append(FileProcess(acquisitionDir, Move(os.path.join(subjectDir, "t1mri", acquisition), t1mriPatterns[0], t1mriPatterns[1]), t1mriPatterns[0]))
                     self.convertFiles(acquisitionConversionPatterns, acquisitionDir, acquisitionDir, diffusionDir, acquisition)
@@ -803,7 +854,13 @@ if neuroConfig.newDatabases:
               # directory subject/pet
               petDir=os.path.join(subjectDir, "pet")
               if os.path.isdir(petDir) :
-                root, subdirs, files = os.walk(petDir).next()
+                subdirs=[]
+                files=[]
+                for f in os.listdir(petDir):
+                  if os.path.isdir(f) and not f.endswith(".data"):
+                    subdirs.append(f)
+                  else:
+                    files.append(f)
                 acquisitionLevel=True
                 if files: # if level acquisition exists, pet directory doesn't contain image file.
                   acquisitionDir=os.path.join(petDir, self.default_acquisition)
@@ -896,7 +953,13 @@ if neuroConfig.newDatabases:
                 segmentDir=os.path.join(subjectDir, "segment")
                 grapheDir=os.path.join(subjectDir, "graphe")
                 if os.path.exists(segmentDir) and self.segmentDefaultDestination:
-                  segmentDir, subdirs, files = os.walk(segmentDir).next()
+                  subdirs=[]
+                  files=[]
+                  for f in os.listdir(segmentDir):
+                    if os.path.isdir(f) and not f.endswith(".data"):
+                      subdirs.append(f)
+                    else:
+                      files.append(f)
                   if subdirs: # level acquisition exists
                     for acquisition in subdirs: # segment/acquisition/* -> t1mri/acquisition/default_analysis/segmentation/*
                       segmentAcquisitionDir=os.path.join(segmentDir, acquisition)
@@ -906,7 +969,13 @@ if neuroConfig.newDatabases:
                   self.fileProcesses.append( FileProcess(segmentDir, Remove(subjectDir)) )
                   
                 if os.path.exists(grapheDir) and self.grapheDefaultDestination:
-                  grapheDir, subdirs, files = os.walk(grapheDir).next()
+                  subdirs=[]
+                  files=[]
+                  for f in os.listdir(grapheDir):
+                    if os.path.isdir(f) and not f.endswith(".data"):
+                      subdirs.append(f)
+                    else:
+                      files.append(f)
                   acquisitionLevel=not contentMatch(files, ".*\.arg")
                   if self.grapheDefaultDestination=="t1mri_folds":
                     if acquisitionLevel:

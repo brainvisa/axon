@@ -44,14 +44,17 @@ signature = Signature(
     'nucleus_graph', ReadDiskItem( 'Nucleus graph', 'Graph' ),
     'nucleus_nomenclature', ReadDiskItem( 'Nomenclature', 'Hierarchy' ),
     'load_MRI', Choice("Yes","No"),
-    'mri_corrected', ReadDiskItem( 'T1 MRI Bias Corrected', 'GIS image' ),
+    'mri_corrected', ReadDiskItem( 'T1 MRI Bias Corrected',
+        'Anatomist volume formats' ),
     'load_sulcus', Choice("Both","Left","Right","No"),
     'load_hemis', Choice("Yes","No"),
     'Lfold_graph', ReadDiskItem( 'Left Base Cortical folds graph', 'Graph' ),
     'Rfold_graph', ReadDiskItem( 'Right Base Cortical folds graph', 'Graph' ),
     'fold_nomenclature', ReadDiskItem( 'Nomenclature', 'Hierarchy' ),
-    'Lhemi_mesh', ReadDiskItem( 'Left Hemisphere Mesh', 'MESH mesh' ),    
-    'Rhemi_mesh', ReadDiskItem( 'Right Hemisphere Mesh', 'MESH mesh' ),    
+    'Lhemi_mesh', ReadDiskItem( 'Left Hemisphere Mesh',
+        'Anatomist mesh formats' ),
+    'Rhemi_mesh', ReadDiskItem( 'Right Hemisphere Mesh',
+        'Anatomist mesh formats' ),
     )
 
 def validation():

@@ -40,8 +40,8 @@ name = '1 - Mask from SPMt'
 userLevel = 2
 
 signature = Signature(
-    'spmt', ReadDiskItem( 'SPMt map', 'GIS image' ),
-    'mask', WriteDiskItem( 'Functional mask', 'GIS image'),
+    'spmt', ReadDiskItem( 'SPMt map', 'Aims readable volume formats' ),
+    'mask', WriteDiskItem( 'Functional mask', 'Aims writable volume formats' ),
     'dilation', Float()
     )
 

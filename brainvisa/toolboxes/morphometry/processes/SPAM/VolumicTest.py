@@ -42,13 +42,19 @@ name = 'Volumic T Test'
 userLevel = 2
 
 signature = Signature(
-    'Images_group1', ListOf( ReadDiskItem( '3D Volume', 'GIS image' ) ),
-    'Images_group2', ListOf( ReadDiskItem( '3D Volume', 'GIS image' ) ),
-    'Average_group1', WriteDiskItem( '3D Volume', 'GIS image' ),
-    'Average_group2', WriteDiskItem( '3D Volume', 'GIS image' ),
-    'Mean_difference', WriteDiskItem( '3D Volume', 'GIS image' ),
-    'Deviation', WriteDiskItem( '3D Volume', 'GIS image' ),
-    'T_test', WriteDiskItem( '3D Volume', 'GIS image' ),
+    'Images_group1', ListOf( ReadDiskItem( '3D Volume',
+      'Aims readable volume formats' ) ),
+    'Images_group2', ListOf( ReadDiskItem( '3D Volume',
+      'Aims readable volume formats' ) ),
+    'Average_group1', WriteDiskItem( '3D Volume',
+      'Aims writable volume formats' ),
+    'Average_group2', WriteDiskItem( '3D Volume',
+      'Aims writable volume formats' ),
+    'Mean_difference', WriteDiskItem( '3D Volume',
+      'Aims writable volume formats' ),
+    'Deviation', WriteDiskItem( '3D Volume',
+      'Aims writable volume formats' ),
+    'T_test', WriteDiskItem( '3D Volume', 'Aims writable volume formats' ),
     'data_smoothing', Choice('Yes','No'),
     'smoothing_parameter', Float(),
  )

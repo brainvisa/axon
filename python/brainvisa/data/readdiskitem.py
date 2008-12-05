@@ -663,33 +663,6 @@ class DiskItemListEditor( QHBox, DataEditor ):
     self.sle.checkValue()
 
 
-#------------------------------------------------------------------------------
-def diskItemDistance( diskItem, other ):
-  '''Returns a value that represents a sort of distance between two DiskItems.
-      The distance is not a number but distances can be sorted.'''
-  # Count the number of common hierarchy attributes
-  if isinstance( other, DiskItem ):
-    if other.type is not None:
-      other_type = other.type.name
-    else:
-      other_type = None
-    other_priority = other.priority()
-  else:
-    other_type = other.get( '_type' )
-    other_priority = 0
-  if diskItem.type is not None:
-    diskItem_type = diskItem.type.name
-  else:
-    diskItem_type = None
-  hierarchyCommon = reduce( operator.add, 
-      ( (other.get( n ) == v) for n, v in diskItem.hierarchyAttributes().iteritems() ),
-      ( int(diskItem_type==other_type) ) )
-  # Count the number of common non hierarchy attributes
-  nonHierarchyCommon = reduce( operator.add, 
-      ( (other.get( n ) == v) for n, v in diskItem.nonHierarchyAttributes().iteritems() ),
-      (int(diskItem_type == other_type) ) )
-  return ( -hierarchyCommon, other_priority - diskItem.priority(), -nonHierarchyCommon  )
-
 
 #----------------------------------------------------------------------------
 class ReadDiskItem( Parameter ):
@@ -891,13 +864,40 @@ class ReadDiskItem( Parameter ):
           result = values[ 0 ]
         else:
           # Find the item with the "smallest" "distance" from item
-          values = sorted( (diskItemDistance( i, selection ), i ) for i in values )
+          values = sorted( (self.diskItemDistance( i, selection ), i ) for i in values )
           if _debug is not None:
             print >> _debug, '  findValue priority sorted items:'
             for l in values:
               print >> _debug, '   ', l
           if values[ 0 ][ 0 ] != values[ 1 ] [ 0 ]:
             result = values[ 0 ][ 1 ]
+          else:
+            refOrder, refDiskItem = values[ 0 ]
+            refHierarchy = refDiskItem.hierarchyAttributes()
+            refNonHierarchy = refDiskItem.nonHierarchyAttributes()
+            differentOnFormatOnly = [ refDiskItem ]
+            for checkOrder, checkDiskItem in values[1:]:
+              if checkOrder != refOrder:
+                break
+              if refHierarchy == checkDiskItem.hierarchyAttributes() and \
+                 refNonHierarchy == checkDiskItem.nonHierarchyAttributes():
+                differentOnFormatOnly.append( checkDiskItem )
+              else:
+                differentOnFormatOnly = []
+                break
+            if differentOnFormatOnly:
+              for preferedFormat in self.formats:
+                l = [i for i in differentOnFormatOnly if i.format is preferedFormat]
+                if l:
+                  result = l[0]
+                  break
+              if _debug is not None:
+                print >> _debug, '  top priority values differ only by formats:'
+                for i in differentOnFormatOnly:
+                  print >> _debug, '   ', i.format
+                if result:
+                  print >> _debug, '  choosen format:', result.format
+            
     if _debug is not None:
       print >> _debug, '-> findValue return', result
       if result is not None:
@@ -909,6 +909,38 @@ class ReadDiskItem( Parameter ):
       print >> _debug, '-' * 70 + '\n'
       _debug.flush()
     return result
+  
+  def diskItemDistance( self, diskItem, other ):
+    '''Returns a value that represents a sort of distance between two DiskItems.
+        The distance is not a number but distances can be sorted.'''
+    # Count the number of common hierarchy attributes
+    if isinstance( other, DiskItem ):
+      if other.type is not None:
+        other_type = other.type.name
+      else:
+        other_type = None
+      other_priority = other.priority()
+    else:
+      other_type = other.get( '_type' )
+      other_priority = 0
+    if diskItem.type is not None:
+      diskItem_type = diskItem.type.name
+    else:
+      diskItem_type = None
+    if isinstance( other, DiskItem ):
+      getHierarchy = other.getHierarchy
+      getNonHierarchy = other.getNonHierarchy
+    else:
+      getHierarchy = other.get
+      getNonHierarchy = other.get
+    hierarchyCommon = reduce( operator.add, 
+        ( (getHierarchy( n ) == v) for n, v in diskItem.hierarchyAttributes().iteritems() ),
+        ( int(diskItem_type==other_type) ) )
+    # Count the number of common non hierarchy attributes
+    nonHierarchyCommon = reduce( operator.add, 
+        ( (getNonHierarchy( n ) == v) for n, v in diskItem.nonHierarchyAttributes().iteritems() ),
+        (int(diskItem_type == other_type) ) )
+    return ( -hierarchyCommon, other_priority - diskItem.priority(), -nonHierarchyCommon  )
   
   
   def _findValues( self, selection, requiredAttributes, write, _debug=Undefined ):

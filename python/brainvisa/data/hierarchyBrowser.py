@@ -285,25 +285,27 @@ class HierarchyBrowser( QWidget ):
         for item in items:
           if item and item.diskItem:
             # remove all files associated to this diskitem
-            for f in item.diskItem.existingFiles():
-              self.remove(f)
-            item.parent().takeItem(item)
-            # update database after removing items
             db=neuroHierarchy.databases.database(item.diskItem.get("_database"))
-            if db and db.getDiskItemFromFileName(item.diskItem.fullPath(), None):
-              db.removeDiskItem(item.diskItem)
-        
-    def remove(self, file):
+            for f in item.diskItem.existingFiles():
+              self.remove(f, db)
+            item.parent().takeItem(item)
+    
+    def remove(self, file, db=None):
       """
       If the file is a directory, recursive call to remove all its content before removing the directory.
+      Corresponding diskitem is removed from the database if it exists.
       """
-      #print "remove ", file
       if os.path.isdir(file):
         for f in os.listdir(file):
-          self.remove(os.path.join(file, f))
+          self.remove(os.path.join(file, f), db)
         os.rmdir(file)
       else:
         os.remove(file)
+      if db:
+        diskItem=db.getDiskItemFromFileName(file, None)
+        if diskItem:
+          db.removeDiskItem(diskItem)
+
         
       
     def removeCondition(self, item):

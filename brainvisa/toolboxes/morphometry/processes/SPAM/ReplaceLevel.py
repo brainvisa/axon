@@ -32,7 +32,7 @@ name = 'Threshold and Normalize'
 userLevel = 2
 
 signature = Signature(
-    'Image', ReadDiskItem( '3D Volume', 'GIS image' ),
+    'Image', ReadDiskItem( '3D Volume', 'Aims readable volume formats' ),
     'Method', Choice('gt' ,'le', 'lt', 'ge', 'eq', 'di', 'be', 'ou'),
     'Normalize', Choice('yes' ,'no'),
     'Threshold', Float(),

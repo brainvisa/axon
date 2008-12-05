@@ -41,7 +41,7 @@ userLevel = 2
 
 signature = Signature(
      'input', ReadDiskItem( 'SPMt map', shfjGlobals.aimsVolumeFormats ),
-     'output', WriteDiskItem( 'SPMt map', 'GIS image',
+     'output', WriteDiskItem( 'SPMt map', 'Aims writable volume formats',
      exactType = 1,
      # Referential attribute must have the same value as subject attribute
      requiredAttributes = { 'referential': \

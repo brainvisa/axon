@@ -6,12 +6,16 @@ from brainvisa.toolboxes import getToolbox
 
 signature = Signature(
   'ontology', Choice( 'brainvisa-3.1.0', 'brainvisa-3.0', 'shared' ),
-  'htmlDirectory', WriteDiskItem( 'Any type', 'Directory' ),
+  'write_graphs', Boolean(),
+  #'htmlDirectory', WriteDiskItem( 'Any type', 'Directory' ),
 )
 
 def initialization( self ):
-  self.addLink( 'htmlDirectory', 'ontology', lambda ontology: os.path.join( neuroConfig.docPath, neuroConfig.language, 'ontology-' + ontology ) )
+  self.setOptional("write_graphs")
+  self.write_graphs=True
+  #self.addLink( 'htmlDirectory', 'ontology', lambda ontology: os.path.join( neuroConfig.mainDocPath, 'ontology-' + ontology ) )
 
+          
 
 #----------------------------------------------------------------------------
 def generateHTMLDocumentation( processInfoOrId, translators, context, ontology ):
@@ -97,7 +101,7 @@ def generateHTMLDocumentation( processInfoOrId, translators, context, ontology )
           else:
             type = j.type.name
           typeFileName = type.replace( '/', '_' )
-          typeHTML = os.path.join( docPath, l, 'ontology-' + ontology, 'types', typeFileName + '.html' )
+          typeHTML = os.path.join( neuroConfig.mainDocPath, 'ontology-' + ontology, l, 'types', typeFileName + '.html' )
           #context.write( repr(typeHTML), repr(f.name), repr( relative_path( typeHTML, os.path.dirname( f.name ) ) ) )
           a_prefix = '<a href="' + htmlEscape( relative_path( typeHTML, os.path.dirname( f.name ) ) ) + '">'
           a_suffix = '</a>'
@@ -247,112 +251,166 @@ def generateHTMLProcessesDocumentation( context, ontology ):
       f.close()
 
 
-
+def nameKey(x):
+  return x.name.lower()
+  
 def execution( self, context ):
   generateHTMLProcessesDocumentation( context, self.ontology )
   
+  # Ontology documentation for each language
+  ontologyDirectory=os.path.join( neuroConfig.mainDocPath, 'ontology-' + self.ontology)
+  for l in neuroConfig._languages:
+    htmlDirectory=os.path.join( ontologyDirectory, l )
+    if not os.path.exists( htmlDirectory ):
+      os.makedirs( htmlDirectory )
   
-  if not os.path.exists( self.htmlDirectory.fullPath() ):
-    os.makedirs( self.htmlDirectory.fullPath() )
+  allFormats=sorted(getAllFormats(), key=nameKey)
+  allTypes=sorted(getAllDiskItemTypes(), key=nameKey)
   
   processesByTypes = {}
+  typesByFormats = {}
+  formatsByTypes = {}
+  processesByFormats = {}
+  # get information about links between processes, types and formats
   for pi in allProcessesInfo():
     try:
       process = getProcessInstance(pi.id)
     except ValidationError:
-      pass
+      continue
     except:
       showException()
       #context.error( exceptionHTML() )
       continue
-    
-    processInputTypes = set()
-    processOutputTypes = set()
-    for t in process.signature.itervalues():
-      if isinstance( t, WriteDiskItem ):
-        processOutputTypes.add( t.type.name )
-      elif isinstance( t, ReadDiskItem ):
-        processInputTypes.add( t.type.name )
-    for t in processInputTypes.union( processOutputTypes ):
-      processesByTypes.setdefault( t, set() ).add( process.id() )
+    processTypes = set()
+    processId=process.id()
+    for param in process.signature.itervalues():
+      if isinstance( param, ReadDiskItem ):
+        t=param.type.name
+        processesByTypes.setdefault( t, set() ).add( pi )
+        if isinstance(param.formats, NamedFormatList):
+          f=param.formats.name
+          formatsByTypes.setdefault( t, set() ).add( f )
+          typesByFormats.setdefault( f, set() ).add( t )
+          processesByFormats.setdefault( f, set() ).add( pi )
+        elif param.formats:
+          for format in param.formats:
+            f=format.name
+            formatsByTypes.setdefault( t, set() ).add( f )
+            typesByFormats.setdefault( f, set() ).add( t )
+            processesByFormats.setdefault( f, set() ).add( pi )
   
-  
-  
-  
-  
+
   tmpDatabase = context.temporary( 'Directory' )
   database = SQLDatabase( ':memory:', (tmpDatabase.fullPath(),), fso=self.ontology )
   
-  index = open( os.path.join( self.htmlDirectory.fullPath(), 'index.html' ), 'w' )
-  print >> index, '<html>\n<body>\n<center><h1>' + database.fso.name + '</h1></center><a href="types/index.html">Data types</a>'
-  if not os.path.exists( os.path.join( self.htmlDirectory.fullPath(), 'types' ) ):
-    os.mkdir( os.path.join( self.htmlDirectory.fullPath(), 'types' ) )
-  
-  types = open( os.path.join( self.htmlDirectory.fullPath(), 'types', 'index.html' ), 'w' )
-  print >> types, '<html>\n<body>\n<center><h1> Datatypes for ontology ' + database.fso.name + '</h1></center>'
-  typeParent = {}
-  typeChildren = {}
-  stack = list( database.keysByType )
-  allTypes = set( stack )
-  while stack:
-    type = stack.pop( 0 )
-    allTypes.add( type )
-    parentType = getDiskItemType( type ).parent
-    if parentType is not None:
-      if parentType not in allTypes:
-        allTypes.add( parentType.name )
-        stack.append( parentType.name )
-      typeParent[ type ] = parentType.name
-      typeChildren.setdefault( parentType.name, set() ).add( type )
-  tmpDot = os.path.join( tmpDatabase.fullPath(), 'tmp.dot' )
-  tmpMap = os.path.join( tmpDatabase.fullPath(), 'tmp.html' )
-  #tmpDot = os.path.join( self.htmlDirectory.fullPath(), 'tmp.dot' )
-  #tmpMap = os.path.join( self.htmlDirectory.fullPath(), 'tmp.html' )
-  count = 0
-  for type in sorted( allTypes ):
-    typeFileName = type.replace( '/', '_' )
-    typeHTML = open( os.path.join( self.htmlDirectory.fullPath(), 'types', typeFileName + '.html' ), 'w' )
-    
-    typeEscaped = htmlEscape( type )
-    count += 1
-    context.write( 'Generate HTML for type', typeEscaped, '( ' + str( count ) + ' / ' + str( len( allTypes ) ) + ' )' )
-    print >> types, '<a href="' + htmlEscape( typeFileName ) + '.html">' + typeEscaped + '</a><br/>'
-    print >> typeHTML, '<html>\n<body>\n<center><h1>' + typeEscaped +' (' + database.fso.name + ')</h1></center>'
-    
-    dot = open( tmpDot, 'w' )
-    print >> dot, 'digraph "' + typeFileName + ' inheritance" {'
-    print >> dot, '  node [style=filled,shape=box];'
-    print >> dot, '  "' + type  + '" [color=orange];'
-    previous = type
-    parent = typeParent.get( type )
-    while parent:
-      print >> dot, '  "' + parent  + '" [URL="' + htmlEscape( parent.replace( '/', '_' ) ) + '.html"];'
-      print >> dot, '  "' + parent + '" -> "' + previous + '";'
-      previous = parent
-      parent = typeParent.get( parent )
-    stack = [ ( type, typeChildren.get( type, () ) ) ]
+  # Create types inheritance graphs
+  if self.write_graphs:
+    imagesDirectory=os.path.join( ontologyDirectory, 'images' )
+    if not os.path.exists( imagesDirectory ):
+      os.mkdir( imagesDirectory )
+
+    typeParent = {}
+    typeChildren = {}
+    typeRules = {}
+    #stack = list( database.keysByType )
+    stack = list( allTypes )
+    #allTypes = set( stack )
     while stack:
-      t, children = stack.pop( 0 )
-      for c in children:
-        print >> dot, '  "' + c  + '" [URL="' + htmlEscape( c.replace( '/', '_' ) ) + '.html"];'
-        print >> dot, '  "' + t + '" -> "' + c + '";'
-        stack.append( ( c, typeChildren.get( c, () ) ) )
-    print >> dot, '}'
-    dot.close()
-    context.system( 'dot', '-Tpng', '-o' + os.path.join( self.htmlDirectory.fullPath(), 'types', typeFileName + ' inheritance.png' ), '-Tcmapx', '-o' + tmpMap, tmpDot )
-    print >> typeHTML, '<h2>Inheritance graph</h2>'
-    print >> typeHTML, '<center><img src="' + htmlEscape( typeFileName ) + ' inheritance.png" usemap="#' + htmlEscape(typeFileName) + ' inheritance"/></center>'
-    print >> typeHTML, open( tmpMap ).read()
-    
-    
-    print >> typeHTML, '<h2>Used in the following processes</h2><blockquote>'
-    for p in processesByTypes.get( type, () ):
-      pi = getProcessInfo( p )
-      href = htmlEscape( relative_path( getHTMLFileName( p ), os.path.dirname( typeHTML.name ) ) )
-      print >> typeHTML, '<a href="' + href + '">' + htmlEscape( pi.name ) + '</a><br/>'
-    print >> typeHTML, '</blockquote>'
+      type = stack.pop( 0 )
+      #allTypes.add( type )
+      parentType = type.parent
+      if parentType is not None:
+        #if parentType not in allTypes:
+          #allTypes.add( parentType )
+          #stack.append( parentType )
+        typeParent[ type.name ] = parentType.name
+        typeChildren.setdefault( parentType.name, set() ).add( type.name )
+      # get ontology rules
+      rules=database.fso.typeToPatterns.get(type, None)
+      if rules:
+        typeRules[type.name]=rules
+    tmpDot = os.path.join( tmpDatabase.fullPath(), 'tmp.dot' )
+    for diskItemType in allTypes :
+      type=diskItemType.name
+      typeFileName = type.replace( '/', '_' )
       
+      context.write( 'Generate inheritance graph for type ', htmlEscape(type) )
+      
+      dot = open( tmpDot, 'w' )
+      tmpMap = os.path.join( tmpDatabase.fullPath(), typeFileName+'_map.html' )
+  
+      print >> dot, 'digraph "' + typeFileName + ' inheritance" {'
+      print >> dot, '  node [style=filled,shape=box];'
+      print >> dot, '  "' + type  + '" [color=orange];'
+      previous = type
+      parent = typeParent.get( type )
+      while parent:
+        print >> dot, '  "' + parent  + '" [URL="' + htmlEscape( parent.replace( '/', '_' ) ) + '.html"];'
+        print >> dot, '  "' + parent + '" -> "' + previous + '";'
+        previous = parent
+        parent = typeParent.get( parent )
+      stack = [ ( type, typeChildren.get( type, () ) ) ]
+      while stack:
+        t, children = stack.pop( 0 )
+        for c in children:
+          print >> dot, '  "' + c  + '" [URL="' + htmlEscape( c.replace( '/', '_' ) ) + '.html"];'
+          print >> dot, '  "' + t + '" -> "' + c + '";'
+          stack.append( ( c, typeChildren.get( c, () ) ) )
+      print >> dot, '}'
+      dot.close()
+      context.system( 'dot', '-Tpng', '-o' + os.path.join( imagesDirectory, typeFileName + '_inheritance.png' ), '-Tcmapx', '-o' + tmpMap, tmpDot )
+  
+  # LANGUAGES
+  for l in neuroConfig._languages:
+    context.write( '\nGenerate HTML for language ', l, "\n" )
+    # INDEX.HTML
+    htmlDirectory=os.path.join( ontologyDirectory, l )
+    index = open( os.path.join( htmlDirectory, 'index.html' ), 'w' )
+    print >> index, '<html>\n<body>\n<center><h1>' + database.fso.name + '</h1></center><a href="types/index.html">Data types</a><br><a href="formats/index.html">Formats</a>'
+  
+    # TYPES
+    typesDirectory=os.path.join( htmlDirectory, 'types' )
+    formatsDirectory=os.path.join( htmlDirectory, 'formats' )
+    if not os.path.exists( typesDirectory ):
+      os.mkdir( typesDirectory )
+    types = open( os.path.join( typesDirectory, 'index.html' ), 'w' )  
+    print >> types, '<html>\n<body>\n<center><h1> Datatypes for ontology ' + database.fso.name + '</h1></center>'
+    count = 0
+    for diskItemType in allTypes :
+      type=diskItemType.name
+      count += 1
+      typeFileName = type.replace( '/', '_' )
+      typeHTML = open( os.path.join( typesDirectory, typeFileName + '.html' ), 'w' )
+      typeEscaped = htmlEscape( type )
+      context.write( 'Generate HTML for type', typeEscaped, '( ' + str( count ) + ' / ' + str( len( allTypes ) ) + ' )' )
+      print >> types, '<a href="' + htmlEscape( typeFileName ) + '.html">' + typeEscaped + '</a><br/>'
+      print >> typeHTML, '<html>\n<body>\n<center><h1>' + typeEscaped +' (' + database.fso.name + ')</h1></center>'
+
+      if self.write_graphs:
+        print >> typeHTML, '<h2>Inheritance graph</h2>'
+        src=htmlEscape( relative_path( os.path.join( imagesDirectory, typeFileName + '_inheritance.png'), os.path.dirname( typeHTML.name ) ) )
+        print >> typeHTML, '<center><img src="' +src + '" usemap="#' + htmlEscape(typeFileName) + ' inheritance"/></center>'
+        print >> typeHTML, open( os.path.join( tmpDatabase.fullPath(), typeFileName+'_map.html' ) ).read()
     
+      print >> typeHTML, '<h2>Used in the following processes</h2><blockquote>'
+      processes=sorted(processesByTypes.get( type, () ), key=nameKey)
+      for pi in processes:
+        href = htmlEscape( relative_path( getHTMLFileName( pi.id, language=l ), os.path.dirname( typeHTML.name ) ) )
+        print >> typeHTML, '<a href="' + href + '">' + htmlEscape( pi.name ) + '</a><br/>'
+      print >> typeHTML, '</blockquote>'
+      
+      print >> typeHTML, '<h2>Associated formats</h2><blockquote>'
+      for f in sorted(formatsByTypes.get( type, () ), key=str.lower ):
+        formatFileName = f.replace( '/', '_' )
+        href = htmlEscape( relative_path( os.path.join( formatsDirectory, formatFileName + '.html' ), os.path.dirname( typeHTML.name ) ) )
+        print >> typeHTML, '<a href="' + href + '">' + htmlEscape( f ) + '</a><br/>'
+      print >> typeHTML, '</blockquote>'
+      
+      print >> typeHTML, '<h2>Associated ontology rules</h2><blockquote>'
+      for rule in typeRules.get( type, () ):
+        print >> typeHTML, htmlEscape(rule.pattern.pattern), "<br/>"
+      print >> typeHTML, '</blockquote>'
+      
     #dot = open( tmpDot, 'w' )
     #print >> dot, 'digraph "' + typeFileName + ' dataflow" {'
     #print >> dot, '  node [style=filled,shape=ellipse];'
@@ -384,11 +442,75 @@ def execution( self, context ):
     #print >> typeHTML, '<h2>Data flow graph</h2>'
     #print >> typeHTML, '<center><img src="' + htmlEscape( typeFileName ) + ' dataflow.png" usemap="#' + htmlEscape(typeFileName) + ' inheritance"/></center>'
     #print >> typeHTML, open( tmpMap ).read()
-    
-    
-    
-    
-    print >> typeHTML, '</body></html>'
+      print >> typeHTML, '</body></html>'
 
+    # FORMATS
+    if not os.path.exists( formatsDirectory ):
+      os.mkdir( formatsDirectory )
+    formatsFileName=os.path.join( formatsDirectory, 'index.html' )
+    formats = open( formatsFileName, 'w' )
+    print >> formats, '<html>\n<body>\n<center><h1> Formats for ontology ' + database.fso.name + '</h1></center>'
+    
+    for format in allFormats :
+      formatFileName = format.name.replace( '/', '_' )
+      formatHTML = open( os.path.join( formatsDirectory, formatFileName + '.html' ), 'w' )
+      formatEscaped = htmlEscape( format.name )
+      context.write( 'Generate HTML for format ', formatEscaped )
+      print >> formats, '<a href="' + htmlEscape( formatFileName ) + '.html">' + formatEscaped + '</a><br/>'
+      print >> formatHTML, '<html>\n<body>\n<center><h1>' + formatEscaped +'</h1></center>'
+
+      print >> formatHTML, '<h2>Files patterns</h2><blockquote>'
+      patterns=""
+      for p in format.getPatterns().patterns:
+        if patterns:
+          patterns+=", "+p.pattern
+        else:
+          patterns="<b>"+p.pattern+"</b>"
+      print >> formatHTML, patterns, "</blockquote>"
+
+      print >> formatHTML, '<h2>Used in the following processes</h2><blockquote>'
+      processes=sorted(processesByFormats.get( format.name, () ), key=nameKey)
+      for pi in processes:
+        href = htmlEscape( relative_path( getHTMLFileName( pi.id, language=l  ), os.path.dirname( formatHTML.name ) ) )
+        print >> formatHTML, '<a href="' + href + '">' + htmlEscape( pi.name ) + '</a><br/>'
+      print >> formatHTML, '</blockquote>'
       
+      print >> formatHTML, '<h2>Associated types</h2><blockquote>'
+      for t in sorted(typesByFormats.get( format.name, () ), key=str.lower):
+        typeFileName = t.replace( '/', '_' )
+        href = htmlEscape( relative_path( os.path.join( typesDirectory, typeFileName + '.html' ), os.path.dirname( formatHTML.name ) ) )
+        print >> formatHTML, '<a href="' + href + '">' + htmlEscape( t ) + '</a><br/>'
+      print >> formatHTML, '</blockquote>'
+      
+    # FORMATS LISTS
+    print >> formats, '<center><h1> Formats Lists for ontology ' + database.fso.name + '</h1></center>'
+    
+    for listName, format in sorted( formatLists.items() ):
+      formatFileName = format.name.replace( '/', '_' )
+      formatHTML = open( os.path.join( formatsDirectory, formatFileName + '.html' ), 'w' )
+      formatEscaped = htmlEscape( format.name )
+      context.write( 'Generate HTML for format', formatEscaped )
+      print >> formats, '<a href="' + htmlEscape( formatFileName ) + '.html">' + formatEscaped + '</a><br/>'
+      print >> formatHTML, '<html>\n<body>\n<center><h1>' + formatEscaped +'</h1></center>'
+
+      print >> formatHTML, '<h2>Formats</h2><blockquote>'
+      for f in format:
+        fname=f.name.replace( "/", "_" )
+        print >> formatHTML, "<a href='" + htmlEscape(fname) + ".html'>", f.name, "</a><br/>"
+      print >> formatHTML, "</blockquote>"
+
+      print >> formatHTML, '<h2>Used in the following processes</h2><blockquote>'
+      processes=sorted(processesByFormats.get( format.name, () ), key=nameKey)
+      for pi in processes:
+        href = htmlEscape( relative_path( getHTMLFileName( pi.id, language=l  ), os.path.dirname( formatHTML.name ) ) )
+        print >> formatHTML, '<a href="' + href + '">' + htmlEscape( pi.name ) + '</a><br/>'
+      print >> formatHTML, '</blockquote>'
+      
+      print >> formatHTML, '<h2>Associated types</h2><blockquote>'
+      for t in sorted(typesByFormats.get( format.name, () ), key=str.lower):
+        typeFileName = t.replace( '/', '_' )
+        href = htmlEscape( relative_path( os.path.join( typesDirectory, typeFileName + '.html' ), os.path.dirname( formatHTML.name ) ) )
+        print >> formatHTML, '<a href="' + href + '">' + htmlEscape( t ) + '</a><br/>'
+      print >> formatHTML, '</blockquote>'
+
   database.currentThreadCleanup()

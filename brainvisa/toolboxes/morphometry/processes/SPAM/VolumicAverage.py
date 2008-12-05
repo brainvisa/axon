@@ -34,7 +34,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-import shfjGlobals     
+import shfjGlobals
 from brainvisa import shelltools
 
 from neuroProcesses import *
@@ -42,8 +42,9 @@ name = 'Volumic Average'
 userLevel = 2
 
 signature = Signature(
-    'Images', ListOf( ReadDiskItem( '3D Volume', 'GIS image' ) ),
-    'Average', WriteDiskItem( '3D Volume', 'GIS image' ),
+    'Images', ListOf( ReadDiskItem( '3D Volume',
+      'Aims readable volume formats' ) ),
+    'Average', WriteDiskItem( '3D Volume', 'Aims writable volume formats' ),
     'data_smoothing', Choice('Yes','No'),
     'smoothing_parameter', Float()
 
@@ -54,8 +55,8 @@ def initialization( self ):
      self.smoothing_parameter = 1.0
 
 def execution( self, context ):
-     
-     NbImages =  len( self.Images )     
+
+     NbImages =  len( self.Images )
 
      #context.write('WARNING : This process works with normalized data having the SAME SPATIAL RESOLUTION')
      #context.write('')
