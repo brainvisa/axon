@@ -276,7 +276,7 @@ class ListOfVectorEditor( StringEditor ):
   def __init__( self, parent, name ):
     StringEditor.__init__( self, parent, name )
     self.value = None
-    
+
   def setValue( self, value, default = 0 ):
     if value is None:
       self.setText( '' )
@@ -289,7 +289,7 @@ class ListOfVectorEditor( StringEditor ):
     if text:
       value = []
       for line in string.split( text, ';' ):
-	value.append( string.split( line ) )
+        value.append( string.split( line ) )
       return ListOfVectorValue( value )
     return None
 
@@ -299,7 +299,7 @@ class MatrixEditor( StringEditor ):
   def __init__( self, parent, name ):
     StringEditor.__init__( self, parent, name )
     self.value = None
-    
+
   def setValue( self, value, default = 0 ):
     if value is None:
       self.setText( '' )
@@ -312,12 +312,12 @@ class MatrixEditor( StringEditor ):
     if text:
       value = []
       if text:
-	for line in string.split( text, ';' ):
-	  value.append( string.split( line ) )
+        for line in string.split( text, ';' ):
+          value.append( string.split( line ) )
       return MatrixValue( value )
     return None
-    
-  
+
+
 
 #----------------------------------------------------------------------------
 class StringListEditor( QLineEdit, DataEditor ):
@@ -561,7 +561,7 @@ class ChoiceListEditor( QHBox, DataEditor ):
         del self.value[ i ]
     
     def _ok( self ):
-      self.clEditor._newValidValue( self.value )
+      self.clEditor.setValue( self.value )
       self.close( 1 )
       
     def _cancel( self ):
@@ -572,23 +572,29 @@ class ChoiceListEditor( QHBox, DataEditor ):
     DataEditor.__init__( self )
     self.parameter = parameter
     self.sle = StringListEditor( self, name )
-    self.connect( self.sle, PYSIGNAL( 'newValidValue' ), self.newValue )
+    self.connect( self.sle, PYSIGNAL( 'newValidValue' ), self.checkValue )
     self.btn = QPushButton( '...', self )
     self.connect( self.btn, SIGNAL( 'clicked()' ), self._selectValues )
+    self.value=None
     self.setValue( None, 1 )
     
   def getValue( self ):
     return self.value
   
   def setValue( self, value, default = 0 ):
-    self._setValue( value )
+    self._setValue( value, default )
 
-  def _setValue( self, value, ):
+  def _setValue( self, value, default=0):
     if value is not None:
       value = map( self.parameter.findValue, value )
       labels = [self.parameter.values[ self.parameter.findIndex( x ) ][0] for x in value]
       self.sle.setValue( labels )
-    self.value = value
+    if value != self.value:
+      self.value = value
+      if not default:
+        self.emit( PYSIGNAL('noDefault'), ( self.name(),) )
+      self.emit( PYSIGNAL('newValidValue'), ( self.name(), self.value, ) )
+
 
   def checkValue( self ):
     self.sle.checkValue()
@@ -598,7 +604,6 @@ class ChoiceListEditor( QHBox, DataEditor ):
     else:
       currentValue = None
     if currentValue != self.getValue():
-      self._newValidValue( currentValue )
       self.value = currentValue
       self.emit( PYSIGNAL('noDefault'), ( self.name(),) )
       self.emit( PYSIGNAL('newValidValue'), ( self.name(), self.value, ) )
@@ -610,15 +615,6 @@ class ChoiceListEditor( QHBox, DataEditor ):
     except:
       pass
     w.show()
-
-  def newValue( self ):
-    try:
-      v = self.getValue()
-    except:
-      pass
-    else:
-      self.emit( PYSIGNAL('noDefault'), ( self.name(),))
-      self.emit( PYSIGNAL('newValidValue'), ( self.name(), v, ) )
     
   
  #-------------------------------------------------------------------------------

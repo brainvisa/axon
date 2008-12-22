@@ -3007,7 +3007,7 @@ def readProcesses( processesPath ):
   except:
     if neuroConfig.mainLog is not None:
       neuroConfig.mainLog.append( 'Cannot write processes cache',
-        html=exceptionHTML( beforeError=_t_( 'Cannot write processes cache file <em>%s</em>' ) % ( processCacheFile, ) ),
+        html=exceptionHTML( beforeError=_t_( 'Cannot write processes cache file <em>%s</em>' ) % ( processesCacheFile, ) ),
         icon='warning.png' )
 
 #----------------------------------------------------------------------------

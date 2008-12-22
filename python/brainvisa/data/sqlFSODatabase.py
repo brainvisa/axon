@@ -349,8 +349,8 @@ class SQLDatabase( Database ):
   def update( self, directoriesToScan=None, recursion=True, context=None ):
     if context is None:
       # it is not possible to import neuroProcesses at the beginning of the file because this module is also imported by neuroProcesses
-      from neuroProcesses import defaultContext
-      context=defaultContext()
+      #from neuroProcesses import defaultContext
+      context=neuroProcesses.defaultContext()
     context.write( self.name + ': parse directories and insert items' )
     t0 = time.time()
     self.insertDiskItems( ( i for i in self.scanDatabaseDirectories( directoriesToScan=directoriesToScan, recursion=recursion ) if i.type is not None ) )
@@ -463,8 +463,8 @@ class SQLDatabase( Database ):
   
   def createTables( self, context=None ):
     if context is None:
-      from neuroProcesses import defaultContext
-      context=defaultContext()
+      #from neuroProcesses import defaultContext
+      context=neuroProcesses.defaultContext()
     # if the database file is created by sqlite, the write permission is given only for the current user, not for the group, so the database cannot be shared
     if not os.path.exists( self.sqlDatabaseFile ) and self.sqlDatabaseFile not in ( '', ':memory:' ):
       f=open(self.sqlDatabaseFile, "w")
@@ -967,8 +967,11 @@ class SQLDatabase( Database ):
       if _debug is not None:
         print >> _debug, '!findAttributes! ->', sql
       cursor = self._getDatabaseCursor()
+      sqlResult=[]
       try:
         sqlResult = cursor.execute( sql ).fetchall()
+      except sqlite3.OperationalError, e:
+        neuroProcesses.defaultContext().warning(e.message)
       finally:
         self._closeDatabaseCursor( cursor )
       for tpl in sqlResult:

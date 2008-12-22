@@ -2,17 +2,19 @@
 
 class Subject(object):
     
-    def __init__(self, ReadDiskItem=None, protocol=None, subject=None, database=None, acquisition=None, session=None):
+    def __init__(self, ReadDiskItem=None, protocol=None, subject=None, database=None, acquisition=None, session=None, model=None):
         self.protocol = protocol
         self.subject = subject
         self.database = database
         self.acquisition = acquisition
+        self.model = model
         self.session = session
         if ReadDiskItem:
             self.protocol = ReadDiskItem.get('protocol',None)
             self.subject = ReadDiskItem.get('subject',None)
             self.database = ReadDiskItem.get('database',None)
             self.acquisition = ReadDiskItem.get('acquisition',None)
+            self.model = ReadDiskItem.get('model',None)
             self.session = ReadDiskItem.get('session',None)
 
     def __getinitkwargs__( self ):
@@ -27,6 +29,8 @@ class Subject(object):
             kwargs[ 'acquisition' ] = self.acquisition
         if self.session is not None:
             kwargs[ 'session' ] = self.session
+        if self.model is not None:
+            kwargs[ 'model' ] = self.model
         return ( (), kwargs )
     
     def __repr__( self ):

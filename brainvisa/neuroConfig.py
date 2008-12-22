@@ -307,7 +307,7 @@ def openDebugFile( fileName ):
 #------------------------------------------------------------------------------
 def editConfiguration():
   import neuroProcesses, neuroHierarchy
-  global userLevel, dataPath, newDatabases
+  global userLevel, dataPath, newDatabases, HTMLBrowser, textEditor, language, docPath
   configuration = Application().configuration
   appGUI = ApplicationQt3GUI()
   if appGUI.edit( configuration, live=False ):
@@ -325,6 +325,14 @@ def editConfiguration():
       neuroHierarchy.readHierarchies()
   if userLevel != configuration.brainvisa.userLevel:
     userLevel = configuration.brainvisa.userLevel
+    neuroProcesses.updateProcesses()
+  HTMLBrowser=configuration.brainvisa.htmlBrowser
+  if configuration.brainvisa.textEditor:
+    textEditor=configuration.brainvisa.textEditor
+  if language != configuration.brainvisa.language:
+    language=configuration.brainvisa.language
+    docPath=os.path.join(mainDocPath, language)
+    os.environ[ 'LANGUAGE' ] = language
     neuroProcesses.updateProcesses()
 
 # Parse command Line

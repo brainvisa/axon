@@ -255,6 +255,7 @@ def nameKey(x):
   return x.name.lower()
   
 def execution( self, context ):
+  
   generateHTMLProcessesDocumentation( context, self.ontology )
   
   # Ontology documentation for each language
@@ -304,6 +305,10 @@ def execution( self, context ):
   database = SQLDatabase( ':memory:', (tmpDatabase.fullPath(),), fso=self.ontology )
   
   # Create types inheritance graphs
+  if distutils.spawn.find_executable('dot') is None:
+    self.write_graphs=False
+    context.warning('Cannot find dot executable. Inheritance graphs won\'t be written.' )
+
   if self.write_graphs:
     imagesDirectory=os.path.join( ontologyDirectory, 'images' )
     if not os.path.exists( imagesDirectory ):
@@ -358,7 +363,19 @@ def execution( self, context ):
           stack.append( ( c, typeChildren.get( c, () ) ) )
       print >> dot, '}'
       dot.close()
-      context.system( 'dot', '-Tpng', '-o' + os.path.join( imagesDirectory, typeFileName + '_inheritance.png' ), '-Tcmapx', '-o' + tmpMap, tmpDot )
+      try:
+        command='dot -Tpng -o"' + os.path.join( imagesDirectory, typeFileName + '_inheritance.png' )+'" -Tcmapx -o"' + tmpMap+'" '+tmpDot
+        stdin, stdout, stderr=os.popen3(command)
+        stdin.close()
+        out=stdout.read()
+        stdout.close()
+        err=stderr.read()
+        stderr.close()
+        if out or err:
+          context.log(what="dot", html="<p><b>"+command+"</b></p><p>Output :</p><p>"+out+err+"</p>")
+      except Exception, e:
+        context.warning("Problem while generating inheritance graph : ", e.message)
+      #context.system( 'dot', '-Tpng', '-o' + os.path.join( imagesDirectory, typeFileName + '_inheritance.png' ), '-Tcmapx', '-o' + tmpMap, tmpDot )
   
   # LANGUAGES
   for l in neuroConfig._languages:
@@ -385,6 +402,8 @@ def execution( self, context ):
       context.write( 'Generate HTML for type', typeEscaped, '( ' + str( count ) + ' / ' + str( len( allTypes ) ) + ' )' )
       print >> types, '<a href="' + htmlEscape( typeFileName ) + '.html">' + typeEscaped + '</a><br/>'
       print >> typeHTML, '<html>\n<body>\n<center><h1>' + typeEscaped +' (' + database.fso.name + ')</h1></center>'
+      href=htmlEscape( relative_path( index.name, os.path.dirname( typeHTML.name ) ) )
+      print >> typeHTML, '<a href="'+href+'">Return to index</a>'
 
       if self.write_graphs:
         print >> typeHTML, '<h2>Inheritance graph</h2>'
@@ -458,6 +477,8 @@ def execution( self, context ):
       context.write( 'Generate HTML for format ', formatEscaped )
       print >> formats, '<a href="' + htmlEscape( formatFileName ) + '.html">' + formatEscaped + '</a><br/>'
       print >> formatHTML, '<html>\n<body>\n<center><h1>' + formatEscaped +'</h1></center>'
+      href=htmlEscape( relative_path( index.name, os.path.dirname( formatHTML.name ) ) )
+      print >> formatHTML, '<a href="'+href+'">Return to index</a>'
 
       print >> formatHTML, '<h2>Files patterns</h2><blockquote>'
       patterns=""
@@ -492,6 +513,8 @@ def execution( self, context ):
       context.write( 'Generate HTML for format', formatEscaped )
       print >> formats, '<a href="' + htmlEscape( formatFileName ) + '.html">' + formatEscaped + '</a><br/>'
       print >> formatHTML, '<html>\n<body>\n<center><h1>' + formatEscaped +'</h1></center>'
+      href=htmlEscape( relative_path( index.name, os.path.dirname( formatHTML.name ) ) )
+      print >> formatHTML, '<a href="'+href+'">Return to index</a>'
 
       print >> formatHTML, '<h2>Formats</h2><blockquote>'
       for f in format:

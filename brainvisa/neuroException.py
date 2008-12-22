@@ -38,6 +38,7 @@ import neuroConfig
 import neuroLog
 from backwardCompatibleQt import *
 from soma.html import htmlEscape
+from soma.qt3gui.api import TextEditWithSearch
 
 class HTMLMessage:
   """
@@ -117,7 +118,7 @@ class ShowException( QDialog ):
     if caption is None:
       caption = _t_( 'Error' )
     self.setCaption( caption )
-    self.teHTML = QTextEdit( self )
+    self.teHTML = TextEditWithSearch( self )
     self.teHTML.setReadOnly( True )
     layout.addWidget( self.teHTML )
     self.teHTML.setSizePolicy( QSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding ) )

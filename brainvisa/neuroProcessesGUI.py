@@ -49,7 +49,6 @@ from brainvisa.history import ProcessExecutionEvent
 
 from brainvisa.TextEditor import TextEditor
 import weakref
-import brainvisa.configuration.brainvisa_configuration as brainvisa_configuration
 from soma.minf.xhtml import XHTML
 from brainvisa.debug import debugHere
 from soma.qt3gui.api import QtThreadCall, FakeQtThreadCall, TextBrowserWithSearch
@@ -76,13 +75,20 @@ def quitRequest():
 #----------------------------------------------------------------------------
 _helpWidget = None
 def helpRequest():
+  sep = '//'
+  if neuroConfig.platform == 'windows':
+    # I definitely don't understand what is a good file URL like...
+    sep = '/'
+  url = 'file:' + sep + neuroConfig.getDocFile(os.path.join( 'help', 'index.html' ) )
+  openWeb(url)
+
+def openWeb(source):
   try:
     browser = neuroConfig.HTMLBrowser
     if browser is not None:
       browser = distutils.spawn.find_executable( browser )
       if browser:
-        url = neuroConfig.getDocFile(os.path.join( 'help', 'index.html' ) )
-        if os.spawnl( os.P_NOWAIT, browser, browser, url ) > 0:
+        if os.spawnl( os.P_NOWAIT, browser, browser, source ) > 0:
           return
   except:
     pass
@@ -91,19 +97,13 @@ def helpRequest():
     _helpWidget = HTMLBrowser( None )
     _helpWidget.setCaption( _t_( 'BrainVISA help' ) )
     _helpWidget.resize( 800, 600 )
-    sep = '//'
-    if neuroConfig.platform == 'windows':
-      # I definitely don't understand what is a good file URL like...
-      sep = '/'
-    url = 'file:' + sep + neuroConfig.getDocFile(os.path.join( 'help', 'index.html' ) )
-    sys.stdout.flush()
-    _helpWidget.setSource( url )
+  sys.stdout.flush()
+  _helpWidget.setSource( source )
   _helpWidget.show()
   _helpWidget.raiseW()
 
+
 _aboutWidget = None
-
-
 #----------------------------------------------------------------------------
 class AboutWidget( QVBox ):
   def __init__( self, parent=None, name=None ):
@@ -200,6 +200,7 @@ class HTMLBrowser( QWidget ):
   class BVTextBrowser( TextBrowserWithSearch ):
     def __init__( self, parent, name=None ):
       TextBrowserWithSearch.__init__( self, parent, name )
+      
 
     def setSource( self, src ):
       src = unicode( src )
@@ -215,7 +216,7 @@ class HTMLBrowser( QWidget ):
       return menu
       
     def openWeb(self):
-      self.emit(PYSIGNAL("openWeb"), ())
+      openWeb(self.source())
       
 
   def __init__( self, parent = None, name = None, fl = 0 ):
@@ -265,23 +266,9 @@ class HTMLBrowser( QWidget ):
     self.connect( btnForward, SIGNAL('clicked()'), browser, SLOT( 'forward()' ) )
     self.connect( browser, SIGNAL('forwardAvailable(bool)'), btnForward, SLOT('setEnabled(bool)') )
     self.connect( browser, SIGNAL('linkClicked( const QString & )'), self.clickLink )
-    self.connect( browser, PYSIGNAL('openWeb'), self.openWeb )
 
     self.browser = browser
     
-    webBrowser = neuroConfig.HTMLBrowser
-    if not webBrowser :
-      # Get the default first one
-      browsers = brainvisa_configuration.htmlBrowsers()
-
-      if len(browsers) > 0 :
-        webBrowser = browsers[0]
-      
-    if webBrowser is not None:
-      webBrowser = distutils.spawn.find_executable( webBrowser )
-      
-    self.webBrowser=webBrowser
-
     neuroConfig.registerObject( self )
 
   def setSource( self, source ):
@@ -308,21 +295,14 @@ class HTMLBrowser( QWidget ):
         win.show()
     elif bvp.startswith( 'http://' ) or bvp.startswith( 'mailto:' ):
       try:
-          if self.webBrowser:
-            os.spawnl( os.P_NOWAIT, self.webBrowser, self.webBrowser, bvp )
-          else:
-            self.browser.setSource( text )
+        openWeb(bvp)
       except:
           showException()
     else:
       self.browser.setSource( text )
 
   def openWeb(self):
-    try:
-      if self.webBrowser:
-        os.spawnl( os.P_NOWAIT, self.webBrowser, self.webBrowser, self.browser.source() )
-    except:
-        showException()
+    openWeb(self.browser.source())
     
   def showCategoryDocumentation( self, category ):
     """
