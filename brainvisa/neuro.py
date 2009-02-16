@@ -46,6 +46,8 @@ except AttributeError:
   pass
 import site
 
+from soma.wip.application.api import Application
+from soma.signature.api import Choice as SomaChoice
 import neuroConfig
 import Server
 from brainvisa.data import temporary
@@ -82,7 +84,14 @@ class EventFilter( QObject ):
     except:
       pass
     return False
-    
+  
+  
+def setQtApplicationStyle( newStyle ):
+  if not newStyle:
+    newStyle = app.configuration.brainvisa.signature[ 'gui_style' ].defaultValue
+  qApp.setStyle( newStyle )
+
+
 def main():
   if neuroConfig.server:
     # make the program into a daemon
@@ -187,6 +196,15 @@ if neuroConfig.gui:
   # QApplication.setColorSpec( QApplication.ManyColor )
   neuroConfig.qtApplication = QApplication(
     [ sys.argv[0], '-name', versionText() ] + sys.argv[1:] )
+
+  # Styles list must be read only after QApplication instanciation
+  # otherwise it is incomplete (even after instanciation).
+  app = Application()
+  app.configuration.brainvisa.signature[ 'gui_style' ].type = SomaChoice( *[ ('<system default>', None ) ] + [unicode(i) for i in qt.QStyleFactory.keys()] )
+  app.configuration.brainvisa.signature[ 'gui_style' ].defaultValue = unicode( qt.qApp.style().name() )
+  app.configuration.brainvisa.onAttributeChange( 'gui_style', setQtApplicationStyle )
+  setQtApplicationStyle( app.configuration.brainvisa.gui_style )
+
 # The following lines are used to put a BrainVISA icon to all
 # the top-level windows that do not have one. But it crashes due
 # to a PyQt bug. This bug has been reported and fixed in earlier

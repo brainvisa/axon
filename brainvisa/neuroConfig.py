@@ -329,8 +329,11 @@ def editConfiguration():
   HTMLBrowser=configuration.brainvisa.htmlBrowser
   if configuration.brainvisa.textEditor:
     textEditor=configuration.brainvisa.textEditor
-  if language != configuration.brainvisa.language:
+  if language != configuration.brainvisa.language \
+    and configuration.brainvisa.language is not None:
     language=configuration.brainvisa.language
+    print 'mainDocPath:', mainDocPath
+    print 'language:', language
     docPath=os.path.join(mainDocPath, language)
     os.environ[ 'LANGUAGE' ] = language
     neuroProcesses.updateProcesses()

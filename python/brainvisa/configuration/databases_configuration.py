@@ -78,23 +78,45 @@ class DatabasesConfiguration( ConfigurationGroup ):
 
 
 #------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
 class ExpertDatabaseSettings( HasSignature ):
   signature = Signature(
-    'ontology', Choice( 'brainvisa-3.1.0', 'brainvisa-3.0', 'shared' ), dict( defaultValue='brainvisa-3.0' ),
+    'ontology', Choice(), dict( defaultValue='brainvisa-3.0' ),
     'sqliteFileName', FileName, dict( defaultValue='' ),
     'activate_history', Boolean, dict( defaultValue=False ),
   )
 
+  def __init__( self ):
+    if not ExpertDatabaseSettings.signature[ 'ontology' ].type.values:
+      ExpertDatabaseSettings.signature[ 'ontology' ].type.setChoices( *ExpertDatabaseSettings.availableOntologies() )
+    super( ExpertDatabaseSettings, self ).__init__()
+  
+  
+  @staticmethod
+  def availableOntologies():
+    ontologies = [ 'brainvisa-3.1.0', 'brainvisa-3.0', 'shared' ]
+    moreOntologies = []
+    for path in neuroConfig.fileSystemOntologiesPath:
+      if os.path.exists( path ):
+        for ontology in os.listdir( path ):
+          if ontology == 'flat': continue
+          if ontology not in ontologies and ontology not in moreOntologies:
+            moreOntologies.append( ontology )
+        moreOntologies.sort()
+        ontologies += moreOntologies
+    return ontologies
 
 #------------------------------------------------------------------------------
 class DatabaseSettings( HasSignature ):
   signature = Signature(
     'directory', FileName( readOnly=True, directoryOnly=True ),# dict( defaultValue='' ),
-    'expert_settings', ExpertDatabaseSettings, dict( defaultValue=ExpertDatabaseSettings(), collapsed=True ),
+    'expert_settings', ExpertDatabaseSettings, dict( collapsed=True ),
   )
 
   def __init__( self, directory=None, selected=True ):
     HasSignature.__init__( self )
+    self.expert_settings = ExpertDatabaseSettings()
     if directory :
       if os.path.exists( directory ) :
         self.directory = directory

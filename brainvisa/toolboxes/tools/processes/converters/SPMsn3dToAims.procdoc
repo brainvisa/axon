@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+  <d name="fr" length="3">
+    <xhtml name="short">Extrait la partie affine d'une transformation de normalisaiton SPM (*_sn.mat ou *_sn3d.mat) et la convertit en fichier de transformation Aims (*.trm)</xhtml>
+    <d name="parameters" length="4">
+      <xhtml name="read">Fichier de normalisation SPM (SPM99: *_sn3d.mat ou SPM2: *_sn.mat)</xhtml>
+      <xhtml name="write">Fichier de transformation Aims</xhtml>
+      <xhtml name="removeSource">Si ce paramètre est mis à Vrai (True), le fichier matlab d'origine est effacé après conversion. <b>Cette option est fortement déconseillée</b> puisqu'elle peut faire perdre des données précieuses. Ne l'utilisez que si vous savez exactement ce que vous faites.</xhtml>
+      <xhtml name="normalized_volume">Volume normalisé par SPM. Si ce fichier n'est pas spécifié (ou pas présent), la matrice extraite sera celle passant du repère d'origine de l'image à celui du template de normalisation utilisé</xhtml>
+    </d>
+    <xhtml name="long"><p>Seule la partie affine des transformations SPM est extraite des fichiers matlab. En effet les parties élastiques ne sont pas gérées par Aims/Anatomist. Si vous voulez conserver les informations de normalisation non-linéraires, appliquez la normalisation dans SPM et réécrivez le volume après normalisation (n*.img sous SPM99 ou w*.img sous SPM2).
+</p>
+<p>Ce traitement appelle Matlab (sans quoi la lecture des fichiers .mat est impossible), vous devez donc avoir matlab installé et correctement configuré sur votre système pour que le convertisseur fonctionne.
+</p>
+<p><b>Remarque</b>: les systèmes de coordonnées (référentiels) internnes utilisés par SPM et Aims sont complètement différents. Ainsi en plus de l'extraction proprement dite, des conversions de coordonnées sont effectuées. C'est pourquoi vous ne retrouvez pas dans le fichier .trm de sortie le contenu de la matrice affine de SPM. Pour plus d'informations sur les référentiels et transformations, voyez <a href="http://brainvisa.info/doc/html/aims/en/referentials.html">http://brainvisa.info/doc/html/aims/en/referentials.html</a>.
+</p></xhtml>
+  </d>
+  <d name="en" length="3">
+    <xhtml name="short">Extracts the affine part of a SPM normalization transformation (*_sn.mat or *_sn3d.mat) and converts it to an Aims transformation file</xhtml>
+    <xhtml name="long"><p>Only the affine part of SPM transformation is extracted from matlib files. Elastic deformations are not handled by Aims/Anatomist. If tou want to keep non-linear information from the norlalization, apply the normalization in SPM and save the normalized volume (n*.img under SPM99 or w*.img under SPM2).
+</p>
+<p>This process calls matlab (otherwise reading .mat files is impossible), therefore you must have Matlab installed and correctly setup on your system for this converter to work.
+</p>
+<p><b>Remarq</b>: internal coordinates systems (referentials) used by SPM and Aims are completely different. So in addition to the matrix extraction itself, some coordinates conversions are done. This is why you don't find in the output .trm file the contents of the affine matrix of SPM. For more information about referentials and transformations, see <a href="http://brainvisa.info/doc/html/aims/en/referentials.html">http://brainvisa.info/doc/html/aims/en/referentials.html</a>.
+</p></xhtml>
+    <d name="parameters" length="4">
+      <xhtml name="read">SPM normalization file (SPM99: *_sn3d.mat or SPM2: *_sn.mat)</xhtml>
+      <xhtml name="write">Aims transformation file</xhtml>
+      <xhtml name="removeSource">If this parameter is set to True, the original matlab file is erased after conversion. <b>This option is strongly unadvisable</b> since it can lose some precious information. Use it only if you exactly know what you are doing.</xhtml>
+      <xhtml name="normalized_volume">SPM-normalized volume. If this file is not specified (or not present), the extracted transformation will be the transformation between the original referential to the normalization template one</xhtml>
+    </d>
+  </d>
+</minf>

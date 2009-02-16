@@ -36,6 +36,9 @@ import neuroConfig
 
 # Build-in formats
 Format( 'Matlab script', "f|*.m" )
+Format( 'Matlab file', 'f|*.mat' )
+Format( 'gz Matlab file', 'f|*.mat.gz', attributes={'compressed': 'gz'}  )
+Format( 'bz2 Matlab file', 'f|*.mat.bz2', attributes={'compressed': 'bz2'} )
 
 # Volume formats
 Format( 'GIS image', [ "f|*.ima", "f|*.dim" ] )
@@ -84,6 +87,7 @@ Format( 'Moment Vector', "f|*.inv" )
 #Format( 'Lipsia design', 'f|*.des' )
 Format( 'Transformation matrix', 'f|*.trm' )
 Format( 'MINC transformation matrix', 'f|*.xfm' )
+
 Format( 'Texture', 'f|*.tex' )
 
 Format( 'Graph', "f|*.arg" )
@@ -111,9 +115,6 @@ Format( 'XPM image', 'f|*.xpm' )
 Format( 'TIFF image', 'f|*.tiff' )
 Format( 'TIFF(.tif) image', 'f|*.tif' )
 
-Format( 'Matlab file', 'f|*.mat' )
-Format( 'gz Matlab file', 'f|*.mat.gz', attributes={'compressed': 'gz'}  )
-Format( 'bz2 Matlab file', 'f|*.mat.bz2', attributes={'compressed': 'bz2'} )
 Format( 'Text file', 'f|*.txt' )
 Format( 'CSV file', 'f|*.csv' )
 Format( 'ASCII results', 'f|*.asc' )
@@ -262,4 +263,10 @@ FileType( 'Nomenclature', 'Hierarchy' )
 FileType( 'Label translation', 'Label translation or Nomenclature',
           [ 'Label Translation', 'DEF Label Translation' ] )
 
+#--- General types for fMRI ---------------------
+#FileType( 'Functional volume', '4D Volume' )
+FileType( '3D Functional volume', '3D Volume' )
+FileType( '4D Functional volume', '4D Volume' )
+FileType( 'fMRI', '4D Volume' )
+FileType( 'fMRI activations', '3D functional volume' )
 

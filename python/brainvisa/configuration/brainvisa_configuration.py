@@ -40,8 +40,10 @@ __docformat__ = "epytext en"
 
 from soma.wip.configuration import ConfigurationGroup
 from soma.wip.temporary import getSystemDefaultTempDir
-from soma.signature.api import HasSignature, Signature, Unicode, Choice, OpenedChoice, Boolean, Sequence, FileName
+from soma.signature.api import HasSignature, Signature, VariableSignature, Unicode, \
+                               Choice, OpenedChoice, Boolean, Sequence, FileName
 from distutils.spawn import find_executable
+import qt
 
 #------------------------------------------------------------------------------
 def htmlBrowsers():
@@ -85,8 +87,14 @@ class BrainVISAConfiguration( ConfigurationGroup ):
     'removeTemporary', Boolean, dict( defaultValue=True, doc='unselect this option if you do not want temporary files and directories to be automatically deleted. This option is used for debugging. If unselected BrainVISA can leave a lot of files in temporary directory.' ),
     'SPM', SPMConfiguration, dict( defaultValue=SPMConfiguration() ),
     'support', SupportConfiguration, dict( defaultValue=SupportConfiguration() ),
+    'gui_style', OpenedChoice( ('<system default>', None ) ), dict( defaultValue = None, doc='Style of the graphical interface.' ),
   )
+
 
   def _check_userLevel_value( self, value ):
     return int( value )
   
+  
+  def __init__( self ):
+    super( BrainVISAConfiguration, self ).__init__()
+    self.signature = VariableSignature( self.signature )

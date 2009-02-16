@@ -141,7 +141,9 @@ def generateHTMLDocumentation( processInfoOrId, translators, context, ontology )
     print >> f, '<p><em>' + tr.translate( 'Toolbox' ) + ' : </em>' + unicode( toolbox ) + '</p>'
     print >> f, '<p><em>' + tr.translate( 'User level' ) + ' : </em>' + unicode( processInfo.userLevel ) + '</p>'
     print >> f, '<p><em>' + tr.translate( 'Identifier' ) + ' : </em><code>' + processInfo.id + '</code></p>'
-    print >> f, '<p><em>' + tr.translate( 'File name' ) + ' : </em><nobr><code>' + processInfo.fileName + '</code></nobr></p>'
+    processFileRef=relative_path(processInfo.fileName, os.path.dirname(htmlFileName))
+    processFileName=relative_path(processInfo.fileName, os.path.dirname(neuroConfig.mainPath))
+    print >> f, '<p><em>' + tr.translate( 'File name' ) + ' : </em><nobr><code><a href="file:'+processFileRef+'">' + processFileName + '</a></code></nobr></p>'
 
     if supportedFormats:
       print >> f, '<p><em>' + tr.translate( 'Supported file formats' ) + ' : </em><blockquote>'

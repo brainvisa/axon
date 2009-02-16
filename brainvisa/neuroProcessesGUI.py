@@ -200,6 +200,7 @@ class HTMLBrowser( QWidget ):
   class BVTextBrowser( TextBrowserWithSearch ):
     def __init__( self, parent, name=None ):
       TextBrowserWithSearch.__init__( self, parent, name )
+      self.mimeSourceFactory().setExtensionType("py", "text/plain")
       
 
     def setSource( self, src ):
@@ -1750,7 +1751,7 @@ class ProcessEdit( QDialog ):
   def applyChanges( self ):
     self.saveLanguage()
     self.writeDocumentation()
-    generateHTMLDocumentation( self.process )
+    generateHTMLProcessesDocumentation( self.process )
 
   def accept( self ):
     self.applyChanges()

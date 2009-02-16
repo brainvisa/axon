@@ -1,5 +1,6 @@
 from remoteToolkit import *
 import neuroConfig
+import pickle
 
 #--------------------------------------------------------------------------
 class ProcessInfos:
@@ -187,18 +188,28 @@ class RemoteProcessCall( threading.Thread ):
     else:
 
       #print "Brainvisa now is running on %s"%(host)
-      
-      #self.pid = self.__getpid(remoteShell)
-      startTime = time.localtime()
+      try:
+        #self.pid = self.__getpid(remoteShell)
+        startTime = time.localtime()
+        import neuroProcesses
 
-      print "defaultContext().runProcess('" + self.ProcessName + "' ," + self.ProcessParameters + ")"
+        print "defaultContext().runProcess('" + self.ProcessName + "' ," + self.ProcessParameters + ")"
 
-      remoteShell.sendline('from neuroProcesses import *')
-      remoteShell.sendline("defaultContext().runProcess('" + self.ProcessName + "' ," + self.ProcessParameters + ")")
+        event = neuroProcesses.ProcessExecutionEvent()
+        event.setProcess( self.process._process )
+        pk = pickle.dumps( event )
+        remoteShell.sendline('from neuroProcesses import *')
+        remoteShell.sendline('import pickle')
+        remoteShell.sendline('pk = pickle.loads(' + repr(pk) + ')' )
+        remoteShell.sendline('p = getProcessInstanceFromProcessEvent( pk )')
+        remoteShell.sendline('defaultContext().runProcess( p )')
+      except Exception, e:
+        print 'error:', e
+        self.context.remote.write('%d | %s | %s'%(self.rpid,host,str(e)) )
+        return 0
 
+      modulo = 0
 
-      modulo = 0      
-      
       while 1:
         case = remoteShell.expect(['.*ERROR.*','.*Error.*','.*\d{2}:\d{2}.*\(\d+.*',
                                    '.*warning:.*\r\n', '.*Exception.*\r\n','.*\r\n', TIMEOUT], timeout=10)

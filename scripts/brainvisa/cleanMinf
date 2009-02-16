@@ -1,6 +1,7 @@
 #! /bin/env python
 
 import sys, os, stat, pprint
+from soma.minf.api import readMinf, writeMinf
 
 def bytesToString( size ):
   unitSize = 0
@@ -28,7 +29,12 @@ def bytesToString( size ):
 if len( sys.argv ) > 1:
   # Build a list of minf file to process.
   minfs = []
-  stack = sys.argv[ 1: ]
+  if sys.argv[ 1 ] in ( '-f', '--force' ):
+    forceWrite = True
+    stack = sys.argv[ 2: ]
+  else:
+    forceWrite = False
+    stack = sys.argv[ 1: ]
   minfTotalSize = 0
   while stack:
     item = stack.pop( 0 )
@@ -54,8 +60,9 @@ if len( sys.argv ) > 1:
     m = {}
     try:
       minfFileContent = open( minf ).read()
-      exec( minfFileContent, m, m )
-      m = m[ 'attributes' ]
+      m = readMinf( minf )[ 0 ]
+      #exec( minfFileContent, m, m )
+      #m = m[ 'attributes' ]
     except Exception, e:
       totalUnreadable += 1
       print >> sys.stderr, '\nCannot read "' + minf + '" (', e, ')'
@@ -69,18 +76,20 @@ if len( sys.argv ) > 1:
         rewrite = True
         del m[ key ]
       # Write minf file if modified
-      if rewrite:
+      if rewrite or forceWrite:
         totalMinfsModified += 1
-        out = open( minf, 'w' )
-        out.write( 'attributes = ' )
-        pprint.pprint( m, stream=out, indent=2 )
-        out.close()
+        #out = open( minf, 'w' )
+        #out.write( 'attributes = ' )
+        #pprint.pprint( m, stream=out, indent=2 )
+        #out.close()
+        writeMinf( minf, ( m, ) )
         # Check that written minf has nor error
         m2 = {}
         try:
-          newMinfContent = open( minf ).read()
-          exec( newMinfContent, m2, m2 )
-          m2 = m2[ 'attributes' ]
+          #newMinfContent = open( minf ).read()
+          #exec( newMinfContent, m2, m2 )
+          #m2 = m2[ 'attributes' ]
+          m2 = readMinf( minf )[ 0 ]
         except:
           m2 = None
         if m2 != m:
@@ -97,4 +106,11 @@ if len( sys.argv ) > 1:
   if totalUnreadable:
     print totalUnreadable, 'files where not readable'
 else:
-  print >> sys.stderr, 'Usage: cleanMinf <filesOrDirectories>'
+  print >> sys.stderr, '''Read minf files, remove unused attributes, rewrite them in XML format
+and check the written file is correct (otherwise initial content is kept).
+
+Usage: cleanMinf [options] <filesOrDirectories>
+Options:
+  -f or --force : Force writing of minf files even if no attribute have been 
+                  changed (can be used to convert to XML format).
+'''

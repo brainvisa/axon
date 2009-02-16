@@ -750,21 +750,201 @@ class PointListEditor( QHBox, DataEditor ):
   def erasePressed( self ):
     self.setValue( None )
 
-#----------------------------------------------------------------------------
-class ObjectSelection( QComboBox ):
-  def __init__( self, objects, names = None, parent = None, name = None ):
-    QComboBox.__init__( self, 0, parent, name )
-    if names is None:
-      names = map( str, objects )
-    self.objects = objects
-    for n in names:
-      self.addItem( n )
 
-  def currentObject( self ):
-    i = self.currentItem()
-    if i > 0 and i < len( self.allTypes ):
-      return self.objects[ i ]
-    return None
+#----------------------------------------------------------------------------
+class GenericListSelection( QWidget ):
+  def __init__( self, parent, name ):
+    if getattr( GenericListSelection, 'pixUp', None ) is None:
+      setattr( GenericListSelection, 'pixUp', 
+        QPixmap( QImage(findIconFile( 'up.png' )).smoothScale(*largeIconSize) ) )
+      setattr( GenericListSelection, 'pixDown', 
+        QPixmap( QImage(findIconFile( 'down.png' )).smoothScale(*largeIconSize) ) )
+    
+    QWidget.__init__( self, parent.topLevelWidget(), name,
+      Qt.WType_Dialog + Qt.WGroupLeader + Qt.WStyle_StaysOnTop + Qt.WShowModal )
+    layout = QVBoxLayout( self )
+    layout.setMargin( 10 )
+    layout.setSpacing( 5 )
+    
+    self.values = []
+    
+    self.lbxValues = QListBox( self )
+    self.connect( self.lbxValues, SIGNAL('currentChanged( QListBoxItem * )'), self._currentChanged )
+    layout.addWidget( self.lbxValues )
+
+    hb = QHBoxLayout()
+    hb.setSpacing( 6 )
+    
+    self.btnAdd = QPushButton( _t_( 'Add' ), self )
+    self.connect( self.btnAdd, SIGNAL( 'clicked()' ), self._add )
+    hb.addWidget( self.btnAdd )
+
+    self.btnRemove = QPushButton( _t_( 'Remove' ), self )
+    self.btnRemove.setEnabled( 0 )
+    self.connect( self.btnRemove, SIGNAL( 'clicked()' ), self._remove )
+    hb.addWidget( self.btnRemove )
+    
+    self.btnUp = QPushButton( self )
+    self.btnUp.setPixmap( self.pixUp )
+    self.btnUp.setEnabled( 0 )
+    self.connect( self.btnUp, SIGNAL( 'clicked()' ), self._up )
+    hb.addWidget( self.btnUp )
+
+    self.btnDown = QPushButton( self )
+    self.btnDown.setPixmap( self.pixDown )
+    self.btnDown.setEnabled( 0 )
+    self.connect( self.btnDown, SIGNAL( 'clicked()' ), self._down )
+    hb.addWidget( self.btnDown )
+
+    spacer = QSpacerItem( 10, 10, QSizePolicy.Expanding, QSizePolicy.Minimum )
+    hb.addItem( spacer )
+
+    layout.addLayout( hb )
+      
+    hb = QHBoxLayout()
+    hb.setSpacing(6)
+    hb.setMargin(6)
+    spacer = QSpacerItem(20,20,QSizePolicy.Expanding,QSizePolicy.Minimum)
+    hb.addItem( spacer )
+    btn =QPushButton( _t_('Ok'), self )
+    hb.addWidget( btn )
+    self.connect( btn, SIGNAL( 'clicked()' ), self._ok )
+    btn =QPushButton( _t_('Cancel'), self )
+    hb.addWidget( btn )
+    self.connect( btn, SIGNAL( 'clicked()' ), self._cancel )
+    layout.addLayout( hb )
+
+    neuroConfig.registerObject( self )
+
+  def close( self, alsoDelete ):
+    neuroConfig.unregisterObject( self )
+    return QWidget.close( self, alsoDelete )
+    
+  def _currentChanged( self ):
+    index = self.lbxValues.currentItem()
+    if index >= 0 and index < len( self.values ):
+      # TODO
+      #self.sle.setValue( [ self.values[ index ].fullPath() ] )
+      self.btnRemove.setEnabled( 1 )
+      if index > 0:
+        self.btnUp.setEnabled( 1 )
+      else:
+        self.btnUp.setEnabled( 0 )
+      if index < ( len( self.values ) - 1 ):
+        self.btnDown.setEnabled( 1 )
+      else:
+        self.btnDown.setEnabled( 0 )
+    else:
+      # TODO
+      #self.sle.setValue( None )
+      self.btnRemove.setEnabled( 0 )
+      self.btnUp.setEnabled( 0 )
+      self.btnDown.setEnabled( 0 )
+
+  def _add( self ):
+    try:
+      pass
+      # TODO
+      #for v in map( self.parameter.findValue, self.sle.getValue() ):
+        #self.values.append( v )
+        #if v is None:
+          #self.lbxValues.insertItem( '<' + _t_('None') + '>' )
+        #else:
+          #self.lbxValues.insertItem( v.fileName() )
+      #self.lbxValues.setCurrentItem( len( self.values ) - 1 )   
+    except:
+      showException( parent=self )
+  
+  def _remove( self ):
+    index = self.lbxValues.currentItem()
+    del self.values[ index ]
+    self.lbxValues.removeItem( index )
+    
+  def _up( self ):
+    index = self.lbxValues.currentItem()
+    tmp = self.values[ index ]
+    self.values[ index ] = self.values[ index - 1 ]
+    self.values[ index - 1 ] = tmp
+    tmp = self.lbxValues.text( index )
+    self.lbxValues.changeItem( self.lbxValues.text( index - 1 ), index )
+    self.lbxValues.changeItem( tmp, index - 1 )
+    
+  def _down( self ):
+    index = self.lbxValues.currentItem()
+    tmp = self.values[ index ]
+    self.values[ index ] = self.values[ index + 1 ]
+    self.values[ index + 1 ] = tmp
+    tmp = self.lbxValues.text( index )
+    self.lbxValues.changeItem( self.lbxValues.text( index + 1 ), index )
+    self.lbxValues.changeItem( tmp, index + 1 )
+  
+  def setValue( self, value ):
+    if isinstance( value, ( list, tuple ) ):
+      self.values = []
+      self.lbxValues.clear()
+      for v in value:
+        self.values.append( v )
+        if v is None:
+          self.lbxValues.insertItem( '<' + _t_('None') + '>' )
+        else:
+          pass
+          # TODO
+          #self.lbxValues.insertItem( v.fileName() )
+    
+  def _ok( self ):
+    # TODO
+    #self.dilEditor._newValue( self.values )
+    self.close( True )
+    
+  def _cancel( self ):
+    self.close( True )
+
+
+
+#----------------------------------------------------------------------------
+class ListOfListEditor( QPushButton, DataEditor ):
+  def __init__( self, parameter, parent, name, context=None ):
+    QPushButton.__init__( self, parent, name )
+    self.setValue( None, True )
+    self.connect( self, SIGNAL( 'clicked()' ), self.startEditValues )
+  
+  def getValue( self ):
+    return self._value
+    
+  def setValue( self, value, default = False ):
+    self._value = value
+    if value:
+      self.setText( _t_( 'list of length %d' ) % ( len( value ), ) )
+    else:
+      self.setText( _t_( 'empty list' ) )
+  
+  def startEditValues( self ):
+    if self.editValuesDialog is None:
+      self.editValuesDialog = GenericListSelection( parent, name )
+      self.connect( self.editValuesDialog, PYSIGNAL( 'accept' ), self.acceptEditedValues )
+    self.editValuesDialog.show()
+  
+  
+  def acceptEditedValues( self ):
+    self.emit( PYSIGNAL( 'newValidValue' ), ( self.name(), self.acceptEditedValues.values, ) )
+    self.emit( PYSIGNAL('noDefault'), ( self.name(),) )
+
+
+##----------------------------------------------------------------------------
+#class ObjectSelection( QComboBox ):
+  #def __init__( self, objects, names = None, parent = None, name = None ):
+    #QComboBox.__init__( self, 0, parent, name )
+    #if names is None:
+      #names = map( str, objects )
+    #self.objects = objects
+    #for n in names:
+      #self.addItem( n )
+
+  #def currentObject( self ):
+    #i = self.currentItem()
+    #if i > 0 and i < len( self.allTypes ):
+      #return self.objects[ i ]
+    #return None
 
 #----------------------------------------------------------------------------
 class ObjectsSelection( QListBox ):

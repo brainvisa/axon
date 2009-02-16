@@ -6,6 +6,9 @@ class BrainvisaComponent( GenericMakerComponent ):
 
   def _libraries( self ):
     return []
+    
+  def weakDependencies( self ):
+    return [ DotComponent ]
 
 
   def dependencies( self ):
@@ -68,13 +71,11 @@ _versionString = str( _versionNumber ) + 'a'
       symlinks = self.getOption( 'symlinks' )
       dstdoc = os.path.join( packageDir(), self.docDir() )
       if 'userdoc' in packs:
-        docs = [ 'bv_man', 'en/help', 'fr/help' ]
+        docs = [ 'bv_man', 'en/help', 'fr/help', 'en/processes', 'fr/processes', 'ontology-brainvisa-3.1.0' ]
         if 'private' in packs:
           docs += [ 'bv_training', 'bv_tms', 'bv_eegmeg' ]
-        if 'progs' not in packs:
-          docs += [ 'en/processes', 'fr/processes' ]
       if 'progdoc' in packs:
-        docs.append( 'bv_pg' )
+        docs += [ 'bv_pg', 'epydoc' ]
       if 'userdoc' in packs or 'progdoc' in packs:
         docs.append( 'images' )
       for d in docs:

@@ -874,13 +874,11 @@ class ReadDiskItem( Parameter ):
           else:
             refOrder, refDiskItem = values[ 0 ]
             refHierarchy = refDiskItem.hierarchyAttributes()
-            refNonHierarchy = refDiskItem.nonHierarchyAttributes()
             differentOnFormatOnly = [ refDiskItem ]
             for checkOrder, checkDiskItem in values[1:]:
               if checkOrder != refOrder:
                 break
-              if refHierarchy == checkDiskItem.hierarchyAttributes() and \
-                 refNonHierarchy == checkDiskItem.nonHierarchyAttributes():
+              if refHierarchy == checkDiskItem.hierarchyAttributes():
                 differentOnFormatOnly.append( checkDiskItem )
               else:
                 differentOnFormatOnly = []
@@ -897,6 +895,8 @@ class ReadDiskItem( Parameter ):
                   print >> _debug, '   ', i.format
                 if result:
                   print >> _debug, '  choosen format:', result.format
+            elif _debug is not None:
+                print >> _debug, '  top priority values differ on ontology attributes ==> no selection on format'
             
     if _debug is not None:
       print >> _debug, '-> findValue return', result

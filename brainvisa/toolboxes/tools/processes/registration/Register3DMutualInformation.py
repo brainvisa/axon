@@ -41,7 +41,7 @@ from brainvisa import anatomist
 import os
 
 name = 'Rigid registration with mutual information'
-userLevel = 2
+userLevel = 0
 
 signature = Signature(
   
@@ -134,7 +134,7 @@ def execution( self, context ):
     '--index', 'mi',
     '--refstartpyr', self.reference_reduction_factor,
     '--seuilref', self.reference_threshold,
-    '--seuiltest', self.seuiltest, 
+    '--seuiltest', self.source_threshold, 
     '--error', self.error_epsilon
   ]
   

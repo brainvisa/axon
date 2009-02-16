@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+  <d name="fr" length="3">
+    <xhtml name="short">Conversion des fichiers de recalage (<em>coregistration</em>) SPM en transformations Aims</xhtml>
+    <d name="parameters" length="6">
+      <xhtml name="removeSource">Si ce paramètre est mis à Vrai (True), le fichier matlab d'origine est effacé après conversion. <b>Cette option est fortement déconseillée</b> puisqu'elle peut faire perdre des données précieuses. Ne l'utilisez que si vous savez exactement ce que vous faites.</xhtml>
+      <xhtml name="read">Fichier de recalage SPM</xhtml>
+      <xhtml name="source_volume">Volume allant avec la transformation SPM (généralement <tt>toto.img</tt> si la transformation est <tt>toto.mat</tt>)</xhtml>
+      <xhtml name="write">Fichier de transformation Aims</xhtml>
+      <xhtml name="registered_volume">Dans le cas d'une transformation d'un volume à un autre, volume d'arrivée. Si ce paramètre n'est pas donné, la transformation extraite s'arrête au "repère central" SPM</xhtml>
+      <xhtml name="central_to_registered">Transformation de recalage SPM allant avec le second volume (d'arrivée), s'il y en a un</xhtml>
+    </d>
+    <xhtml name="long"><p>Certains volumes SPM (*.img/*.hdr) sont complétés par un fichier de recalage optionnel en format matlab (*.mat) de même nom que le volume en question. Il contient des informations de recalage (<em>coregistration</em> / <em>realignment</em>), ou éventuellement simplement de changement d'origine, qui, si elles sont présentes, remplacent dans SPM les informations de l'en-tête de l'image elle-même. Ce traitement permet de lire et de convertir ces fichiers qui ne sont normalement lisibles que par Matlab (et donc pas par Aims/Anatomist).
+</p>
+<p>Ce traitement appelle Matlab (sans quoi la lecture des fichiers .mat est impossible), vous devez donc avoir matlab installé et correctement configuré sur votre système pour que le convertisseur fonctionne.
+</p>
+<p>Le traitement peut fonctionner dans 2 modes: transformation entre le volume initial et le repère "central" de SPM, ou bien transformation d'un volume à un autre. La transformation d'un volume à l'autre est en fait la combinaison de deux transformations vers le repère central.
+</p>
+<p>Si le second volume est spécifié, la seconde transformation est composée à la première. Le second volume peut ne pas avoir de fichier .mat associé: dans ce cas c'est la translation vers son origine SPM qui sera prise en compte.
+</p>
+<p><b>Remarque</b>: les systèmes de coordonnées (référentiels) internnes utilisés par SPM et Aims sont complètement différents. Ainsi en plus de l'extraction proprement dite, des conversions de coordonnées sont effectuées. C'est pourquoi vous ne retrouvez pas dans le fichier .trm de sortie le contenu de la matrice SPM. Pour plus d'informations sur les référentiels et transformations, voyez <a href="http://brainvisa.info/doc/html/aims/en/referentials.html">http://brainvisa.info/doc/html/aims/en/referentials.html</a>.
+</p></xhtml>
+  </d>
+  <d name="en" length="3">
+    <xhtml name="short">Conversion of SPM coregistration files to Aims transformations</xhtml>
+    <d name="parameters" length="6">
+      <xhtml name="removeSource">If this parameter is set to True, the original matlab file is erased after conversion. <b>This option is strongly unadvisable</b> since it can lose some precious information. Use it only if you exactly know what you are doing.</xhtml>
+      <xhtml name="read">SPM registration file</xhtml>
+      <xhtml name="source_volume">Volume going with the SPM transformation (usually <tt>foo.img</tt> when the registration file is <tt>toto.mat</tt>)</xhtml>
+      <xhtml name="write">Aims transformation file</xhtml>
+      <xhtml name="registered_volume">If you wish to get a transformation from a volume to another one, this is the destination volume. If this parameter is not specified, the extracted transformation stops in the "central referential" of SPM</xhtml>
+      <xhtml name="central_to_registered">SPM registration file going with the second (destination) volume, if any</xhtml>
+    </d>
+    <xhtml name="long"><p>Some SPM volumes (*.img/*.hdr) are completed by an optional registration file in matlab format (*.mat) with the same file name as the volume. It holds coregistration / realignment information, or simply an origin change, which replace the standard Analyze header information if it is provided. This process allows to read and convert such files which are normally only understandable by Matlab (and therefore not by Aims/Anatomist).
+</p>
+<p>This process calls matlab (otherwise reading .mat files is impossible), therefore you must have Matlab installed and correctly setup on your system for this converter to work.
+</p>
+<p>The process can woth in 2 modes: transformation between the initial volume and the "central referential" of SPM, or transformation from a volume to another one. The transformation between two volumes is actually the combination of two transformations to the central referential.
+</p>
+<p>If the second volume is specified, the second transformation is combined to the first one. The second volume is not required to have an associated .mat file: in this case only the translation to its SPM origin will be taken into account.
+</p>
+<p><b>Remarq</b>: internal coordinates systems (referentials) used by SPM and Aims are completely different. So in addition to the matrix extraction itself, some coordinates conversions are done. This is why you don't find in the output .trm file the contents of the SPM matrix. For more information about referentials and transformations, see <a href="http://brainvisa.info/doc/html/aims/en/referentials.html">http://brainvisa.info/doc/html/aims/en/referentials.html</a>.
+</p></xhtml>
+  </d>
+</minf>

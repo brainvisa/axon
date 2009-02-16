@@ -409,7 +409,7 @@ if anatomistImport:
       # Fusion indexMESH with indexTEX
       fusion = self.fusionObjects( [mesh, tex], method = 'FusionTexSurfMethod' )
       if interpolation is not None:
-        a.execute("TexturingParams", objects=[fusion], interpolation = interpolation)
+        self.execute("TexturingParams", objects=[fusion], interpolation = interpolation)
 
       window = self.createWindow( "3D" )
       window.assignReferential( mesh.referential )

@@ -39,6 +39,7 @@ import threading
 from brainvisa.data.readdiskitem import DiskItemEditor
 import distutils.spawn
 import neuroPopen2
+import os
 
 name = 'Morphometry statistics'
 userLevel = 0
@@ -300,7 +301,12 @@ def execution( self, context ):
         stream.write( 'print_labels 1\n' )
 ##    if self.print_subjects:
 ##    stream.write( 'subject_regex [LR]\\([^/\\]*\\)\\(Base\\|Auto[0-9]*\\)\\.arg\n' )
-    subjects = map(lambda x: str(x.get('subject')),self.data_graphs)
+    subjects = []
+    for x in self.data_graphs:
+	    s = x.get('subject')
+	    if s:	s = str(s)
+	    else:	s = os.path.basename(x.fullPath())
+	    subjects.append(s)
     stream.write( 'subjects ' + string.join( subjects ) + "\n" )
     stream.write( '*END\n' )
     stream.close()

@@ -53,3 +53,12 @@ FileType( 'Template Pole To Talairach Tranformation', 'Transformation matrix' )
 FileType( 'RECAL Transformation matrix', 'Transformation matrix' )
 FileType( 'REF to TEST Transformation matrix', 'RECAL Transformation matrix' )
 FileType( 'TEST to REF Transformation matrix', 'RECAL Transformation matrix' )
+
+#----------------- Matlab SPM transformations -------------------------
+FileType( 'SPM transformation', 'Transformation matrix', 'Matlab file' )
+FileType( 'SPM normalization matrix', 'SPM Transformation', 'Matlab file' )
+FileType( 'SPM99 normalization matrix', 'SPM normalization matrix',
+          'Matlab file' )
+FileType( 'SPM2 normalization matrix', 'SPM normalization matrix',
+          'Matlab file' )
+

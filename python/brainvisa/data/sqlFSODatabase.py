@@ -969,9 +969,10 @@ class SQLDatabase( Database ):
       cursor = self._getDatabaseCursor()
       sqlResult=[]
       try:
-        sqlResult = cursor.execute( sql ).fetchall()
-      except sqlite3.OperationalError, e:
-        neuroProcesses.defaultContext().warning(e.message)
+        try:
+          sqlResult = cursor.execute( sql ).fetchall()
+        except sqlite3.OperationalError, e:
+          neuroProcesses.defaultContext().warning(e.message)
       finally:
         self._closeDatabaseCursor( cursor )
       for tpl in sqlResult:
