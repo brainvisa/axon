@@ -1,15 +1,3 @@
-# PROJECT(BRAINVISA)
-# 
-# CONFIGURE_FILE(VERSION ${CMAKE_BINARY_DIR}/brainvisa/ COPYONLY)
-# INSTALL(FILES VERSION DESTINATION brainvisa/)
-# 
-# ADD_SUBDIRECTORY(bin)
-# ADD_SUBDIRECTORY(brainvisa)
-# ADD_SUBDIRECTORY(python)
-# ADD_SUBDIRECTORY(scripts)
-# ADD_SUBDIRECTORY(share)
-# ADD_SUBDIRECTORY(doc)
-
 cmake_minimum_required( VERSION 2.6 )
 
 find_package( soma-infra REQUIRED )
