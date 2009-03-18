@@ -10,9 +10,9 @@ find_package( PythonInterp REQUIRED )
 
 
 SOMA_COPY_PYTHON_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/python"
-                            ${PROJECT_NAME}-python ${PROJECT_NAME} )
+                            ${PROJECT_NAME} )
 SOMA_COPY_PYTHON_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/brainvisa"
-                            ${PROJECT_NAME}-brainvisa ${PROJECT_NAME} )
+                            ${PROJECT_NAME} )
 SOMA_COPY_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/share" 
                      "share/${PROJECT_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}"
                      ${PROJECT_NAME} )
