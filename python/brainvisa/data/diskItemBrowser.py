@@ -353,7 +353,6 @@ class DiskItemBrowser( QDialog ):
             s.add( v )
             if selected is not None and selected == v:
               cmb.setCurrentItem( cmb.count() - 1 )
-      
       self._ui.lstItems.clear()
       if self._write:
         iterateDiskItems = self._database.findOrCreateDiskItems
@@ -368,7 +367,6 @@ class DiskItemBrowser( QDialog ):
         self._ui.lstItems.setCurrentItem( 0 )
       else:
         self.emit( PYSIGNAL('selected'), (None,) )
-
       for a, cmb in self._combos.iteritems():
         if cmb.editable():
           selected = self._selectedAttributes.get( a )
@@ -497,15 +495,19 @@ class DiskItemBrowser( QDialog ):
     self._selectedAttributes = {}
     self._lastSelection = None
     if isinstance( selectedAttributes, DiskItem ):
+      # if selectedAttributes is a diskitem, use getHierarchy instead of get to calling aimsFileInfo when searching attributes values.
+      get=selectedAttributes.getHierarchy
       if selectedAttributes.type is not None:
         self._selectedAttributes[ '_type' ] = selectedAttributes.type.name
       if selectedAttributes.format is not None:
         self._selectedAttributes[ '_format' ] = selectedAttributes.format.name
-    v = selectedAttributes.get( '_database' )
+    else:
+      get=selectedAttributes.get
+    v = get( '_database' )
     if v is not None:
       self._selectedAttributes[ '_database' ] = v
     for n in self._combos:
-      v = selectedAttributes.get( n )
+      v = get( n )
       if v is not None:
         self._selectedAttributes[ n ] = v
     self.rescan()

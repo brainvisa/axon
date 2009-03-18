@@ -166,19 +166,24 @@ if anatomistImport:
         newObject=anatomistModule.Anatomist.loadObject(self, file, objectName, restrict_object_types, forceReload, duplicate, hidden)
         # search referential for this object
         if loadReferential:
-          tm = registration.getTransformationManager()
-          ref = tm.referential(fileref)
-          if ref is not None :
-            # the referential is loaded only if necessary : if the object has not the right referential assigned
-            ruuid=str(ref.uuid())
-            oruuid=newObject.referential.refUuid
-            if (ruuid != oruuid):
-              # create referential
-              aref=self.createReferential(ref)
-              # search transformations for this referential
-              self.loadTransformations(aref)
-              # assign referential to object
-              newObject.assignReferential(aref)
+          try:
+            tm = registration.getTransformationManager()
+            ref = tm.referential(fileref)
+            if ref is not None :
+              # the referential is loaded only if necessary : if the object has not the right referential assigned
+              ruuid=str(ref.uuid())
+              oruuid=newObject.referential.refUuid
+              if (ruuid != oruuid):
+                # create referential
+                aref=self.createReferential(ref)
+                # search transformations for this referential
+                self.loadTransformations(aref)
+                # assign referential to object
+                newObject.assignReferential(aref)
+          except:
+            neuroException.showException( afterError= \
+              'Cannot load referential and transformations information with ' \
+              'object "' + file + '"' )
       else:
         newObject=anatomistModule.Anatomist.loadObject(self,fileref, objectName, restrict_object_types, forceReload, duplicate, hidden)
       return newObject

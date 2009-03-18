@@ -169,7 +169,8 @@ def execution( self, context ):
     # force completing .minf
     minfatt = shfjGlobals.aimsVolumeAttributes( self.output )
     for x, y in minfatt.items():
-      self.output.setMinf( x, y )
+      if x != "dicom":
+        self.output.setMinf( x, y )
     self.output.saveMinf()
     self.output.readAndUpdateMinf( )
     if input1.format in map( getFormat,

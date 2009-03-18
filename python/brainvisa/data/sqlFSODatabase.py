@@ -628,6 +628,9 @@ class SQLDatabase( Database ):
   
   @staticmethod
   def _diskItemFromMinf( minf ):
+    if type(minf) is unicode:
+      # have to pass a str to readMinf and not a unicode because, xml parser will use encoding information written in the xml tag to decode the string. In brainvisa, all minf are encoded in utf-8
+      minf=minf.encode("utf-8")
     f = StringIO( minf )
     state = readMinf( f )[ 0 ]
     if state[ 'isDirectory' ]:
