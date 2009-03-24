@@ -1188,8 +1188,13 @@ class SQLDatabases( Database ):
   def _iterateDatabases( self, selection, required={} ):
     databases = self.getAttributeValues( '_database', selection, required )
     if not databases:
-      return self._databases.itervalues()
-    return (self._databases[os.path.normpath(n)] for n in databases)
+      for d in self._databases.itervalues():
+        yield d
+    for n in databases:
+      try:
+        yield self._databases[os.path.normpath(n)]
+      except KeyError:
+        pass
   
   
   def insertDiskItems( self, diskItems, update=False ):
