@@ -28,7 +28,7 @@ end
 axis_state = axis('state');
 
 if (axis_state(1:4) == 'auto')
-    axis([min(x(finite(x))) max(x(finite(x))) min(y(finite(y))) max(y(finite(y)))])
+    axis([min(x(isfinite(x))) max(x(isfinite(x))) min(y(isfinite(y))) max(y(isfinite(y)))])
 end;
 % Cyan circle head, yellow line body, and magenta line tail.
 head = line('color','c','linestyle','o','erase','xor','xdata',x(1),'ydata',y(1));

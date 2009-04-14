@@ -148,7 +148,7 @@ def execution( self, context ):
   for x in im:
     cmd += [ '-i', x ]
   cmd += [ '-r', str( self.framesPerSecond ), 
-           '-hq', 
+           #'-hq', # this options seems to have disapeared
            # '-b', str( bps ),
            '-qscale', str( qscale ),
            '-aspect', str( aspect ), 

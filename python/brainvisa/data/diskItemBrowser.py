@@ -96,10 +96,13 @@ class DiskItemBrowser( QDialog ):
     #print '!DiskItemBrowser! _possibleTypes', self._possibleTypes
     self._possibleFormats = set( chain( *(self._database.getTypesFormats( t ) for t in self._possibleTypes) ) )
     requestedFormats = database.getAttributeValues( '_format', {}, required )
-    if requestedFormats:
-      self._possibleFormats = self._possibleFormats.intersection( requestedFormats )
+    if self._possibleFormats:
+      if requestedFormats:
+        self._possibleFormats = self._possibleFormats.intersection( requestedFormats )
+      else:
+        requestedFormats = self._possibleFormats
     else:
-      requestedFormats = self._possibleFormats
+      self._possibleFormats = requestedFormats
     self._formatsWithConverter = {}
     if enableConversion:
       any = getDiskItemType( 'Any type' )

@@ -252,11 +252,6 @@ del texteditors
 matlabStartup = []
 fileSystemOntologiesPath = [ os.path.join( mainPath, 'hierarchies' ) ]
 dataPath= []
-for p in ( os.path.join( os.environ.get( 'SHFJ_SHARED_PATH' ), 'shfj-' + shortVersion ),
-           os.path.join( os.environ.get( 'SHFJ_SHARED_PATH' ), 'shfj' ) ):
-  if os.path.isdir( p ):
-    dataPath.insert( 0, DatabaseSettings( p ) )
-    break
 clearCacheRequest = False
 cacheUpdateRequest = False
 logFileName = None
@@ -563,7 +558,17 @@ for toolbox in allToolboxes():
       execfile( toolbox.initializationFile )
     except:
       showException()
+  if os.path.isdir( toolbox.fsoDir ):
+    fileSystemOntologiesPath.append( toolbox.fsoDir )
+  if os.path.isdir( toolbox.typesDir ):
+    typesPath.append( toolbox.typesDir )
 
+# add brainvisa shared database to the list of available databases
+for p in ( os.path.join( os.environ.get( 'SHFJ_SHARED_PATH' ), 'shfj-' + shortVersion ),
+           os.path.join( os.environ.get( 'SHFJ_SHARED_PATH' ), 'shfj' ) ):
+  if os.path.isdir( p ):
+    dataPath.insert( 0, DatabaseSettings( p ) )
+    break
 for attr, value in readConfiguration( mainPath, userProfile, homeBrainVISADir ):
   if isinstance( value, list ):
     globals()[ attr ] += value
@@ -576,10 +581,6 @@ if os.path.exists(siteStartupFile):
   startup.append( "execfile(" + repr(siteStartupFile) + ",globals(),{})" )
 # Search for hierarchy and types paths in toolboxes
 for toolbox in allToolboxes():
-  if os.path.isdir( toolbox.fsoDir ):
-    fileSystemOntologiesPath.append( toolbox.fsoDir )
-  if os.path.isdir( toolbox.typesDir ):
-    typesPath.append( toolbox.typesDir )
   # executes startup.py of each toolbox if it exists
   if os.path.exists( toolbox.startupFile ):
     startup.append( "execfile(" + repr(toolbox.startupFile) + ",globals(),{})" )

@@ -94,7 +94,7 @@ function J = besseln(n,x)
      if k == n, bn = bk; end
      if (k > 0 & rem(k,2)==0)
         s = t + 2*bk;
-        if ~finite(s),  break, end
+        if ~isfinite(s),  break, end
         t = s;
      end
      if k == 0 , t = t + bk; end

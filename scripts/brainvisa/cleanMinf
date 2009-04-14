@@ -71,7 +71,7 @@ if len( sys.argv ) > 1:
     if m:
       rewrite = False
       for key in [i for i in m.keys() if \
-          i.startswith( 'pool_header' )]:
+          i.startswith( 'pool_header' ) or i == 'byte_swapping']:
         totalAttributesDeleted += 1
         rewrite = True
         del m[ key ]

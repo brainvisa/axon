@@ -82,7 +82,7 @@ function H = besselh(n,x)
      if k == n, bn = bk; end
      if (k > 0 & rem(k,2)==0)
         s = t + 2*bk;
-        if ~finite(s),  break, end
+        if ~isfinite(s),  break, end
         t = s;
         y = y + sig*2*bk/k;
      else

@@ -126,18 +126,18 @@ class Quaternion:
             self._vector[j] = ( m[i*4+j] - m[j*4+i] ) * s
             self._vector[k] = ( m[i*4+k] - m[k*4+i] ) * s
 
-    def apply( self, p ):
+    def transform( self, p ):
+        r = self.rotationMatrix()
+        return [ r[0] * p[0] + r[1] * p[1] + r[2] * p[2], 
+                 r[4] * p[0] + r[5] * p[1] + r[6] * p[2], 
+                 r[8] * p[0] + r[9] * p[1] + r[10] * p[2] ]
+
+    def transformInverse( self, point ):
         r = self.rotationMatrix()
         return [ r[0] * p[0] + r[4] * p[1] + r[8] * p[2], 
                  r[1] * p[0] + r[5] * p[1] + r[9] * p[2], 
                  r[2] * p[0] + r[6] * p[1] + r[10] * p[2] ]
 
-    def applyInverse( self, point ):
-        r = self.rotationMatrix()
-        return [ r[0] * p[0] + r[1] * p[1] + r[2] * p[2], 
-                 r[4] * p[0] + r[5] * p[1] + r[6] * p[2], 
-                 r[8] * p[0] + r[9] * p[1] + r[10] * p[2] ]
-    
     def norm( self, x ):
         if x is None:	# quaternion norm
             n = 1 / math.sqrt( self._vector[0] * self._vector[0] \

@@ -96,15 +96,14 @@ class ExpertDatabaseSettings( HasSignature ):
   @staticmethod
   def availableOntologies():
     ontologies = [ 'brainvisa-3.1.0', 'brainvisa-3.0', 'shared' ]
-    moreOntologies = []
+    moreOntologies = set()
     for path in neuroConfig.fileSystemOntologiesPath:
       if os.path.exists( path ):
         for ontology in os.listdir( path ):
           if ontology == 'flat': continue
           if ontology not in ontologies and ontology not in moreOntologies:
-            moreOntologies.append( ontology )
-        moreOntologies.sort()
-        ontologies += moreOntologies
+            moreOntologies.add( ontology )
+    ontologies += sorted( moreOntologies )
     return ontologies
 
 #------------------------------------------------------------------------------

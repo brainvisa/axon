@@ -350,6 +350,7 @@ def execution( self, context ):
             context.write( 'temp dir: ', tmp )
             context.write( 'imgbase: ', imgbase )
             inputs = os.listdir( tmp )
+            inputs.sort()
             for i in xrange( len( inputs ) ):
                 inputs[i] = os.path.join( tmp, inputs[i] )
             context.write( 'num images: ', len( inputs ) )

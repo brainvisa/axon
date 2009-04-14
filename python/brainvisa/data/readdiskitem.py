@@ -940,7 +940,11 @@ class ReadDiskItem( Parameter ):
     nonHierarchyCommon = reduce( operator.add, 
         ( (getNonHierarchy( n ) == v) for n, v in diskItem.nonHierarchyAttributes().iteritems() ),
         (int(diskItem_type == other_type) ) )
-    return ( -hierarchyCommon, other_priority - diskItem.priority(), -nonHierarchyCommon  )
+    if getattr( other, '_write', False ) and diskItem.isReadable():
+      readable = -1
+    else:
+      readable = 0
+    return ( -hierarchyCommon, other_priority - diskItem.priority(), -nonHierarchyCommon, readable  )
   
   
   def _findValues( self, selection, requiredAttributes, write, _debug=Undefined ):

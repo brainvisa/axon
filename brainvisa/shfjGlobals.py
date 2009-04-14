@@ -179,6 +179,8 @@ def aimsVolumeAttributes( item, writeOnly=0, forceFormat=0 ):
   result = {}
   if ( forceFormat or item.format in _aimsVolumeFormats ) and item.isReadable():
     result = aimsFileInfo( item.fullPath() )
+  # Byte swapping should not be in image header but Aims gives this internal information.
+  result.pop( 'byte_swapping', None )
   return result
 
 # Try to open ftp connection to pelles to see if we are in shfj
