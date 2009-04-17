@@ -5,12 +5,12 @@ import neuroLog
 import neuroException
 import neuroData
 from brainvisa.validation import ValidationError
-from soma.qt3gui.qt3thread import QtThreadCall
+from soma.qtgui.api import QtThreadCall
 import distutils.spawn
 import weakref, types, threading
 import atexit
 import copy
-import qt
+import backwardCompatibleQt as qt
 try:
   import anatomist
   anatomist.setDefaultImplementation( neuroConfig.anatomistImplementation )

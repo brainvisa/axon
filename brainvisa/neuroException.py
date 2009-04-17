@@ -36,9 +36,8 @@ import sys, os, traceback, htmllib
 from neuroConfig import *
 import neuroConfig
 import neuroLog
-from backwardCompatibleQt import *
 from soma.html import htmlEscape
-from soma.qt3gui.api import TextEditWithSearch
+from qtgui.neuroExceptionGUI import ShowException
 
 class HTMLMessage:
   """
@@ -103,49 +102,6 @@ def exceptionTracebackHTML( exceptionInfo ):
            '<blockquote> ' + htmlEscape( text ) + '</blockquote>'
   msg += '</font>'
   return msg
-
-
-class ShowException( QDialog ):
-  _theExceptionDialog = None 
-  
-  def __init__( self, messageHTML, detailHTML, parent = None, caption=None ):
-    QDialog.__init__( self, parent, None, False, Qt.WType_Dialog + Qt.WGroupLeader + Qt.WShowModal )
-#    QVBox.__init__( self, parent, None, Qt.WType_Dialog + Qt.WGroupLeader + Qt.WShowModal )
-    layout = QVBoxLayout( self )
-    
-    layout.setMargin( 10 )
-    layout.setSpacing( 5 )
-    if caption is None:
-      caption = _t_( 'Error' )
-    self.setCaption( caption )
-    self.teHTML = TextEditWithSearch( self )
-    self.teHTML.setReadOnly( True )
-    layout.addWidget( self.teHTML )
-    self.teHTML.setSizePolicy( QSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding ) )
-    self.messageHTML = [ messageHTML ] 
-    self.detailHTML = [ detailHTML ]
-    self.advancedMode = False
-    self.updateText()
-        
-    hb = QHBoxLayout( layout )
-#    layout.addLayout( hb )
-    self.btnOk = QPushButton( _t_( 'Ok' ), self )
-    hb.addWidget( self.btnOk )
-    self.btnOk.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-    self.btnOk.setDefault( True )
-    self.btnOk.setAutoDefault( True )
-    self.connect( self.btnOk, SIGNAL( 'clicked()' ), self, SLOT( 'close()' ) )
-    
-    self.btnAdvanced = QPushButton( _t_( 'more info' ), self )
-    hb.addWidget( self.btnAdvanced )
-    self.btnAdvanced.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-    self.connect( self.btnAdvanced, SIGNAL( 'clicked()' ), self.changeAdvancedMode )
-    self.updateText()
-    
-    self.setSizePolicy( QSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding ) )
-    self.resize( 640, 400 )
-    ShowException._theExceptionDialog = self
-
   
   def changeAdvancedMode( self ):
     if self.advancedMode:

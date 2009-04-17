@@ -38,11 +38,10 @@ if not __builtin__.__dict__.has_key( '_t_' ):
   __builtin__.__dict__[ '_t_' ] = _defaultTranslateFunction
 
 import gettext, sys, os, pickle, string, traceback, htmllib, formatter, re, time, socket, atexit
-from backwardCompatibleQt import *
 import shutil
 from distutils.spawn import find_executable
 from soma.wip.application.api import Application
-from soma.qt3gui.api import ApplicationQt3GUI
+from soma.qtgui.api import ApplicationQtGUI
 from brainvisa.configuration.api import initializeConfiguration, readConfiguration, setSPM99Compatibility, DatabaseSettings
 
 from soma.html import htmlEscape
@@ -304,7 +303,7 @@ def editConfiguration():
   import neuroProcesses, neuroHierarchy
   global userLevel, dataPath, newDatabases, HTMLBrowser, textEditor, language, docPath
   configuration = Application().configuration
-  appGUI = ApplicationQt3GUI()
+  appGUI = ApplicationQtGUI()
   if appGUI.edit( configuration, live=False ):
     configuration.save( userOptionFile )
     setSPM99Compatibility( configuration.brainvisa.SPM )

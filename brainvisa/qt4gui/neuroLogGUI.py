@@ -33,78 +33,91 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 import time
-
-from qt import *
+import os
+from backwardCompatibleQt import QWidget, QVBoxLayout, QIcon, QSplitter, Qt, QSizePolicy, QSize, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QHBoxLayout, QPushButton, QObject, SIGNAL, QFileDialog
 import neuroLog
+import neuroException
 import neuroConfig
+from soma.qtgui.api import TextEditWithSearch
 
-class LogViewer( QVBox ):
+class LogViewer( QWidget ):
 
   def __init__( self, fileName, parent=None, name=None ):
-    QVBox.__init__( self, parent, name )
+    QWidget.__init__( self, parent )
+    if name:
+      self.setObjectName( name )
+    layout=QVBoxLayout()
+    self.setLayout(layout)
     if getattr( LogViewer, 'pixIcon', None ) is None:
-      setattr( LogViewer, 'pixIcon', QPixmap( os.path.join( neuroConfig.iconPath, 'icon_log.png' ) ) )
-    self.setIcon( self.pixIcon )
+      setattr( LogViewer, 'pixIcon', QIcon( os.path.join( neuroConfig.iconPath, 'icon_log.png' ) ) )
+    self.setWindowIcon( self.pixIcon )
     self._pixmaps = {}
 
-    splitter = QSplitter( Qt.Horizontal, self )
+    splitter = QSplitter( Qt.Horizontal )
     splitter.setSizePolicy( QSizePolicy( QSizePolicy.Minimum, QSizePolicy.Expanding ) )
-
-    self._list = QListView( splitter )
-    self._list.addColumn( _t_('Description') )
-    self._list.addColumn( _t_('Date') )
-    self._list.setSorting( -1 )
+    layout.addWidget(splitter)
+    
+    self._list = QTreeWidget( splitter )
+    self._list.setColumnCount(2)
+    self._list.setHeaderLabels( [ _t_('Description'), _t_('Date') ] )
     self._list.setAllColumnsShowFocus( 1 )
-    self._list.setSizePolicy( QSizePolicy( QSizePolicy.Minimum, QSizePolicy.Expanding ) )
+    self._list.setIconSize(QSize(32, 32))
+    self._list.setSizePolicy( QSizePolicy( QSizePolicy.Preferred, QSizePolicy.Expanding ) )
     self._list.setRootIsDecorated( 1 )
-    splitter.setResizeMode( self._list, QSplitter.KeepSize )
+    #splitter.setResizeMode( self._list, QSplitter.KeepSize )
 
-    self._content = QTextView( splitter )
+    self._content = TextEditWithSearch(splitter)#QTextView( splitter )
+    self._content.setReadOnly(True)
     self._content.setSizePolicy( QSizePolicy( QSizePolicy.Minimum, QSizePolicy.Expanding ) )
-    splitter.setResizeMode( self._content, QSplitter.Stretch )
+    #splitter.setResizeMode( self._content, QSplitter.Stretch )
     #self._content.setReadOnly( 1 )
-    QObject.connect( self._list, SIGNAL( 'currentChanged( QListViewItem * )' ),
+    QObject.connect( self._list, SIGNAL( 'currentItemChanged( QTreeWidgetItem *, QTreeWidgetItem * )' ),
                      self._updateContent )
 
-    hb = QHBox( self )
+    hb = QHBoxLayout( )
+    layout.addLayout(hb)
     hb.setMargin( 5 )
-    btn = QPushButton( _t_( '&Refresh' ), hb )
+    btn = QPushButton( _t_( '&Refresh' ) )
     btn.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
+    hb.addWidget(btn)
     QObject.connect( btn, SIGNAL( 'clicked()' ), self.refresh )
-    btn = QPushButton( _t_( '&Close' ), hb )
+    btn = QPushButton( _t_( '&Close' ) )
+    hb.addWidget(btn)
     btn.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
     QObject.connect( btn, SIGNAL( 'clicked()' ), self.close )
-    btn = QPushButton( _t_( '&Open...' ), hb )
+    btn = QPushButton( _t_( '&Open...' ) )
+    hb.addWidget(btn)
     btn.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
     QObject.connect( btn, SIGNAL( 'clicked()' ), self.open )
 
     neuroConfig.registerObject( self )
     self.setLogFile( fileName )
     self.resize( 800, 600 )
-    firstItem = self._list.firstChild()
+    self._list.resizeColumnToContents(0)
+    firstItem = self._list.topLevelItem(0)
     if firstItem:
       self._updateContent( firstItem )
 
   def setLogFile( self, fileName ):
     self._fileName = fileName
-    self.setCaption( self._fileName )
+    self.setWindowTitle( self._fileName )
     self.refresh()
 
-  def close( self, alsoDelete=1 ):
-    self.emit( PYSIGNAL( 'close' ), () )
+  def closeEvent( self, event ):
+    self.emit( SIGNAL( 'close' ), () )
     neuroConfig.unregisterObject( self )
-    return QVBox.close( self, alsoDelete )
+    QWidget.closeEvent( self, event )
 
   def _addLogItem( self, item, parent, after, itemIndex, listState, currentItemIndex, currentItemList ):
-    viewItem = QListViewItem( parent, after )
+    viewItem = QTreeWidgetItem( parent )
     viewItem.setText( 0, item.what() )
     viewItem.setText( 1, time.asctime( time.localtime( item.when() ) ) )
     if item.icon():
       pixmap = self._pixmaps.get( item.icon() )
       if pixmap is None:
-        pixmap = QPixmap( os.path.join( neuroConfig.iconPath, item.icon() ) )
+        pixmap = QIcon( os.path.join( neuroConfig.iconPath, item.icon() ) )
         self._pixmaps[ item.icon() ] = pixmap
-      viewItem.setPixmap( 0, pixmap )
+      viewItem.setIcon( 0, pixmap )
     content = item.html()
     if content:
       self._contents[ viewItem ] = content
@@ -118,37 +131,31 @@ class LogViewer( QVBox ):
  
     for child in item.children():
       ( after, itemIndex ) = self._addLogItem( child, viewItem, after, itemIndex, listState, currentItemIndex, currentItemList)
-    self._list.setOpen( viewItem, isOpen )
+    viewItem.setExpanded( isOpen )
     return ( viewItem, itemIndex )
 
   def _updateContent( self, item ):
-    self._content.setText( str( self._contents.get( item, '' ) ) )
+    self._content.setText( unicode( self._contents.get( item, '' ) ) )
 
 
   def refresh( self ):
     try:
       reader = neuroLog.LogFileReader( self._fileName )
     except IOError:
+      neuroException.showException()
       reader = None
     # Save list state
-    itemIndex = -1
+    itemIndex = 0
     currentItemIndex = -1
     listState = []
-    stack = [ self._list ]
-    while stack:
-      currentItem = stack.pop( 0 )
-      childs = []
-      currentChild = currentItem.firstChild()
-      while currentChild is not None:
-        childs.append( currentChild )
-        currentChild = currentChild.nextSibling()
-      stack = childs + stack
-
-      if currentItem is not self._list:
-        itemIndex += 1
-        listState.append( self._list.isOpen( currentItem ) )
-        if self._list.currentItem() is currentItem:
-          currentItemIndex = itemIndex
+    it = QTreeWidgetItemIterator(self._list)
+    while it.value():
+      currentItem=it.value()
+      listState.append( currentItem.isExpanded(  ) )
+      if self._list.currentItem() is currentItem:
+        currentItemIndex = itemIndex
+      it+=1
+      itemIndex+=1      
     # Erase list
     self._list.clear()
     self._contents = {}
@@ -163,12 +170,22 @@ class LogViewer( QVBox ):
         item = reader.readItem()
     if currentItemList:
       self._list.setCurrentItem( currentItemList[ 0 ] )
+    self._list.resizeColumnToContents(0)
 
 
   def open( self ):
-    logFileName = str( QFileDialog.getOpenFileName( self._fileName, '', None, None, _t_( 'Open log file' ) ) )
+     #QFileDialog.getOpenFileName( QWidget * parent = 0, const QString & caption = QString(), const QString & dir = QString(), const QString & filter = QString(), QString * selectedFilter = 0, Options options = 0)
+    logFileName = unicode( QFileDialog.getOpenFileName( None, _t_( 'Open log file' ), self._fileName, '',) )
     if logFileName:
       self.setLogFile( logFileName )
+
+  #def keyPressEvent( self, e ):
+    #if e.state() == Qt.ControlButton and e.key() == Qt.Key_W:
+      #e.accept()
+      #self.close()
+    #else:
+      #e.ignore()
+      #QWidget.keyPressEvent( self, e )
 
 def showLog( fileName ):
   l = LogViewer( fileName )

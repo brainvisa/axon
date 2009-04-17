@@ -49,7 +49,7 @@ if not neuroConfig.newDatabases:
   from soma.html import htmlEscape
   from StringIO import StringIO
   import qtui
-  from soma.qt3gui.timered_widgets import QLineEditModificationTimer
+  from soma.qtgui.timered_widgets import QLineEditModificationTimer
   from brainvisa.data.actions import FileProcess, Remove, Move
   #----------------------------------------------------------------------------
   def diskItemDisplayText(diskItem):

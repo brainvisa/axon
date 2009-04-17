@@ -37,7 +37,6 @@ import shfjGlobals
 import math
 from brainvisa import quaternion
 import copy
-from qt import *
 from brainvisa import anatomist
 
 name = 'Anatomist record animation'

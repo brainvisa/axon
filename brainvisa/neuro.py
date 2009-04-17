@@ -35,7 +35,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 import sys, os, signal, atexit, time
-
+  
 if len( sys.argv ) > 1 and sys.platform[:6] == 'darwin' and sys.argv[1][:5] == '-psn_':
   # MacOS calls me with this strange argument, I don't want it.
   del sys.argv[1]
@@ -46,19 +46,23 @@ except AttributeError:
   pass
 import site
 
+USE_QT4=False
+if USE_QT4:
+  import PyQt4
+
 from soma.wip.application.api import Application
 from soma.signature.api import Choice as SomaChoice
 import neuroConfig
 import Server
 from brainvisa.data import temporary
-from neuroConfigGUI import *
+from qtgui.neuroConfigGUI import *
 import neuroLog
 from neuroException import *
 from neuroData import *
 from neuroProcesses import *
 from neuroHierarchy import *
-from neuroDataGUI import *
-from neuroProcessesGUI import *
+from qtgui.neuroDataGUI import *
+from qtgui.neuroProcessesGUI import *
 import neuroHierarchy
 from neuroHierarchyGUI import *
 from backwardCompatibleQt import *
@@ -200,8 +204,11 @@ if neuroConfig.gui:
   # Styles list must be read only after QApplication instanciation
   # otherwise it is incomplete (even after instanciation).
   app = Application()
-  app.configuration.brainvisa.signature[ 'gui_style' ].type = SomaChoice( *[ ('<system default>', None ) ] + [unicode(i) for i in qt.QStyleFactory.keys()] )
-  app.configuration.brainvisa.signature[ 'gui_style' ].defaultValue = unicode( qt.qApp.style().name() )
+  app.configuration.brainvisa.signature[ 'gui_style' ].type = SomaChoice( *[ ('<system default>', None ) ] + [unicode(i) for i in QStyleFactory.keys()] )
+  if USE_QT4:
+    app.configuration.brainvisa.signature[ 'gui_style' ].defaultValue = unicode( qApp.style().objectName() )
+  else: 
+    app.configuration.brainvisa.signature[ 'gui_style' ].defaultValue = unicode( qApp.style().name() )
   app.configuration.brainvisa.onAttributeChange( 'gui_style', setQtApplicationStyle )
   setQtApplicationStyle( app.configuration.brainvisa.gui_style )
 
@@ -212,7 +219,10 @@ if neuroConfig.gui:
   global _globalEventFilter
   _globalEventFilter = EventFilter()
   qApp.installEventFilter( _globalEventFilter )
-  QMimeSourceFactory.defaultFactory().addFilePath( \
+  if USE_QT4:
+    QDir.addSearchPath("", os.path.join( neuroConfig.docPath, 'processes' ))
+  else:
+    QMimeSourceFactory.defaultFactory().addFilePath( \
     os.path.join( neuroConfig.docPath, 'processes' ) )
   neuroConfig.guiLoaded = True
 else:
@@ -234,12 +244,18 @@ if neuroConfig.gui:
   # Ctrl + C is now linked to qApp.exit()
   signal.signal( signal.SIGINT, qt_exit_handler )
   if not neuroConfig.shell:
-    neuroConfig.qtApplication.exec_loop()
+    if USE_QT4:
+      neuroConfig.qtApplication.exec_()
+    else:
+      neuroConfig.qtApplication.exec_loop()
 
 if neuroConfig.shell:
   try:
     import IPython
-    ipshell = IPython.Shell.IPShellQt( [ '-qthread' ] )
+    if USE_QT4:
+      ipshell = IPython.Shell.IPShellQt( [ '-q4thread' ] )
+    else:
+      ipshell = IPython.Shell.IPShellQt( [ '-qthread' ] )
     ipshell.mainloop()
   except ImportError:
     print >> sys.stderr, 'IPython not found - Shell mode disabled'

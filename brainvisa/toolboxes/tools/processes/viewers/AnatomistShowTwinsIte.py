@@ -34,7 +34,6 @@
 
 from neuroProcesses import *
 import shfjGlobals
-from qt import *
 from brainvisa import anatomist
 
 name = 'Anatomist Show a lot of Twins'

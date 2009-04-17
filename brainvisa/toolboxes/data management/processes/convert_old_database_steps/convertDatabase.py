@@ -35,11 +35,10 @@
 from neuroProcesses import *
 from neuroProcessesGUI import mainThreadActions
 import neuroHierarchy
-import qt
 import neuroConfig
 import neuroException
 from brainvisa.data.databaseCheck import BVConverter_3_1
-from brainvisa.data.databaseCheckGUI import ActionsWidget
+from brainvisa.data.qtgui.databaseCheckGUI import ActionsWidget
 import os, shutil
 
 name = '1 - Convert Database'

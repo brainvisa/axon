@@ -35,7 +35,7 @@
 from neuroProcesses import *
 import neuroHierarchy, neuroDiskItems
 from brainvisa.data.databaseCheck import BVChecker_3_1
-from brainvisa.data.databaseCheckGUI import CheckFilesWidget
+from brainvisa.data.qtgui.databaseCheckGUI import CheckFilesWidget
 import shfjGlobals
 
 

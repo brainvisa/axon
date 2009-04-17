@@ -33,7 +33,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from qwt import *
-from qt import *
+from backwardCompatibleQt import *
 
 class MultiPlot( QVBox ):
   '''A PyQt widget to draw several curves aligned on x axis'''

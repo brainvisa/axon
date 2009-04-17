@@ -1,6 +1,6 @@
 # Qt Matplotlib widget. Load this module with a try-except
 import sys
-from qt import *
+from backwardCompatibleQt import *
 import matplotlib
 matplotlib.use('Agg') # yes, i use agg directly
 from matplotlib.backends.backend_agg import FigureCanvasAgg
@@ -71,7 +71,7 @@ class BVFigureCanvasContent(QWidget, FigureCanvasAgg):
         p.end()
         self.replot = False
 
-class BVFigureCanvas(QHBox):
+class BVFigureCanvas(QWidget):
     """\
 Simple Qt Widget matplotlib-hosting canvas.
 For programmer convenience, it uses the pylab's figure manager,
@@ -106,7 +106,9 @@ Shortest Example:
     canvas.setFigure(self.fig)
 """
     def __init__(self, parent, *args):
-        QHBox.__init__(self, parent, *args)
+        QWidget.__init__(self, parent, *args)
+        layout=QHBoxLayout(self)
+        self.setLayout(layout)
         self.C = BVFigureCanvasContent(self, *args)
         self.setMouseTracking(True)
     def setFigure(self, fig):

@@ -32,8 +32,12 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-from qt import *
 import os, sys
+if sys.modules.has_key( 'PyQt4' ):
+  from PyQt4.Qt import * 
+else:
+  from qt import *
+
 
 # In BrainVISA, we try to use the latest version of PyQt. Unfortunately
 # some attributes name are changed between PyQt versions. When such a
@@ -43,18 +47,23 @@ import os, sys
 
 # Qt.WStyle_Dialog has been replaced by Qt.WType_Dialog in PyQt 3.0
 if not hasattr( Qt, 'WType_Dialog' ):
-  Qt.WType_Dialog = Qt.WStyle_Dialog
+  if hasattr(Qt, 'WStyle_Dialog'):
+    Qt.WType_Dialog = Qt.WStyle_Dialog
+  if hasattr(Qt, 'Dialog'):
+    Qt.WType_Dialog = Qt.Dialog
 
 # Qt.WType_Modal has been replaced by Qt.WShowModal in PyQt 3.0
 if not hasattr( Qt, 'WShowModal' ):
-  Qt.WShowModal = Qt.WType_Modal
+  if hasattr(Qt, 'WType_Modal'):
+    Qt.WShowModal = Qt.WType_Modal
 
 # QWidget.setBackgroundColor has been removed in PyQt 3.0.
 # We use QWidget.setPaletteBackgroundColor instead.
 if not hasattr( QWidget, 'setPaletteBackgroundColor' ):
-  def setPaletteBackgroundColor( self, color ):
-    self.setBackgroundColor( color )
-  QWidget.setPaletteBackgroundColor = setPaletteBackgroundColor
+  if hasattr(QWidget, 'setBackgroundColor'):
+    def setPaletteBackgroundColor( self, color ):
+      self.setBackgroundColor( color )
+    QWidget.setPaletteBackgroundColor = setPaletteBackgroundColor
 
 # QComboBox.setCurrentText does not exists before Qt 3.0
 if not hasattr( QComboBox, 'setCurrentText' ):

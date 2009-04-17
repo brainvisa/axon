@@ -33,7 +33,6 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from neuroProcesses import *
-from qt import *
 from brainvisa import shelltools
 import shfjGlobals
 import os

@@ -31,18 +31,9 @@
 # 
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
-
-from qt import *
-
-class TextEditor( QTextEdit ):
-  def __init__( self, *args, **kwargs ):
-    QTextEdit.__init__( self, *args, **kwargs )
-    self.setCaption( 'Text editor' )
-    
-  def show( self ):
-    self._life = self
-    QTextEdit.show( self )
-
-  def close( self, alsoDelete ):
-    del self._life
-    return QTextEdit.close( self, 1 )
+import sys
+if sys.modules.has_key( 'PyQt4' ):
+  from qt4gui.neuroLogGUI import * 
+else:
+  from qt3gui.neuroLogGUI import *
+del sys

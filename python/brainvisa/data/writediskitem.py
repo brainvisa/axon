@@ -2,7 +2,8 @@ from soma.undefined import Undefined
 from neuroData import Parameter
 from brainvisa.data.readdiskitem import ReadDiskItem
 from neuroDiskItems import getFormats, getDiskItemType, DiskItem, isSameDiskItemType
-from brainvisa.data.readdiskitem import ReadDiskItem, DiskItemEditor
+from brainvisa.data.readdiskitem import ReadDiskItem
+from brainvisa.data.qtgui.readdiskitemGUI import DiskItemEditor
 
 
 #----------------------------------------------------------------------------

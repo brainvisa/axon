@@ -83,7 +83,10 @@ def execution( self, context ):
     spm2 = 1
 
   tm = registration.getTransformationManager()
-  srcim = self.read.fullName()[:-5]
+  if spm2:
+    srcim = self.read.fullName()[:-3]
+  else:
+    srcim = self.read.fullName()[:-5]
   srcref = None
   try:
     context.write( 'source volume:', srcim )
@@ -93,7 +96,7 @@ def execution( self, context ):
       srcref = tm.referential( r )
       context.write( 'source_referential:', srcref.uuid() )
   except:
-    pass
+    atts = {}
   if not srcref:
     context.warning( 'source referential cannot be determined, ' \
     'I will not set it on the output transformation' )
@@ -134,6 +137,11 @@ def execution( self, context ):
   if spm2:
     VF = sn3d[ 'VF' ]
     VG = sn3d[ 'VG' ]
+    spm5 = False
+    if VF.dtype is numpy.dtype( 'object' ):
+      spm5 = True
+      VF = VF[0,0]
+      VG = VG[0,0]
     MA = numpy.mat( VF.mat ).astype( numpy.double )
     MT = numpy.mat( VG.mat ).astype( numpy.double )
     dimA = numpy.transpose( numpy.mat( VF.dim[:3] ).astype( numpy.double ) )
@@ -154,28 +162,42 @@ def execution( self, context ):
       MA = MF
     MT = MG
 
-  vsA = numpy.transpose( numpy.abs( numpy.mat( numpy.diag( \
-    MA[ 0:3, 0:3 ] ) ) ) )
-  vsT = numpy.transpose( numpy.abs( numpy.mat( numpy.diag( \
-    MT[ 0:3, 0:3 ] ) ) ) )
+  ASA = None
+  if spm5:
+    try:
+      # test atts
+      s2mv = atts[ 'storage_to_memory' ]
+      s2m = numpy.mat( [ s2mv[:4], s2mv[4:8], s2mv[8:12], s2mv[12:16] ] )
+      vsA = numpy.mat( numpy.diag( [1.,1.,1.,1.] ) )
+      vsA[0:3,0:3] = numpy.diag( atts[ 'voxel_size' ][:3] )
+      ASA = MA * numpy.linalg.inv( vsA * s2m )
+    except:
+      context.warning( 'Source image or header information could not be ' \
+        'accessed. The resulting transformation may be wrong due to missing ' \
+        'information.' )
+  if ASA is None:
+    vsA = numpy.transpose( numpy.abs( numpy.mat( numpy.diag( \
+      MA[ 0:3, 0:3 ] ) ) ) )
+    vsT = numpy.transpose( numpy.abs( numpy.mat( numpy.diag( \
+      MT[ 0:3, 0:3 ] ) ) ) )
 
-  # if no normalized volume, take the template instead
-  if not hasnorm:
-    vsN = vsT
-    dimN = dimT
+    # if no normalized volume, take the template instead
+    if not hasnorm:
+      vsN = vsT
+      dimN = dimT
 
-  # translation to origin
-  OA = numpy.mat( numpy.diag( [ 1., 1., 1., 1.] ) )
-  OA[ 0:3,3 ] = - numpy.abs( numpy.transpose( numpy.mat( numpy.diag( \
-    MA[0:3,0:3] ) ) ) + MA[ 0:3,3 ] )
+    # translation to origin
+    OA = numpy.mat( numpy.diag( [ 1., 1., 1., 1.] ) )
+    OA[ 0:3,3 ] = - numpy.abs( numpy.transpose( numpy.mat( numpy.diag( \
+      MA[0:3,0:3] ) ) ) + MA[ 0:3,3 ] )
 
-  # Flip Aims -> SPM standard refs
-  # (and change org to other side of image)
-  FA = numpy.mat( numpy.diag( [ -1., -1., -1., 1. ] ) )
-  FA[ 0:3, 3 ] = numpy.multiply( (dimA - 1), vsA )
+    # Flip Aims -> SPM standard refs
+    # (and change org to other side of image)
+    FA = numpy.mat( numpy.diag( [ -1., -1., -1., 1. ] ) )
+    FA[ 0:3, 3 ] = numpy.multiply( (dimA - 1), vsA )
 
-  # Aims -> SPM with origin:
-  ASA = OA * FA
+    # Aims -> SPM with origin:
+    ASA = OA * FA
 
   if self.target == 'MNI template':
     # MT * Affine^-1 * MA^-1 * ASA
@@ -184,24 +206,36 @@ def execution( self, context ):
 
   else:
     # same for normalized refs:
-    # translation to origin
-    ON = numpy.mat( numpy.diag( [ 1., 1., 1., 1. ] ) )
-    if hasnorm:
-      ON[ 0:3, 3 ] = - numpy.multiply( (orgN-1), vsN )
-    else:
-      ON[ 0:3, 3 ] = - numpy.abs( numpy.transpose( numpy.mat( numpy.diag( \
-        MT[ 0:3, 0:3 ] ) ) ) + MT[ 0:3, 3 ] )
-      # MNI ref in AIMS orientation
-      destref = tm.referential( 'f3848046-b581-cae4-ecb9-d80ada0278d5' )
-  
-    # Flip Aims -> SPM standard refs
-    # (and change org to other side of image)
-    FN = numpy.mat( numpy.diag( [ -1, -1, -1, 1 ] ) )
-    FN[ 0:3, 3 ] = numpy.multiply( (dimN - 1), vsN )
-  
-    # Aims -> SPM with origin:
-    ASN = ON * FN
-  
+    ASN = None
+    if spm5:
+      try:
+        # test atts
+        s2mv = attrs[ 'storage_to_memory' ]
+        s2m = numpy.mat( [ s2mv[:4], s2mv[4:8], s2mv[8:12], s2mv[12:16] ] )
+        ASN = MT * numpy.linalg.inv( vsN * s2m )
+      except:
+        context.warning( 'Destination image or header information could not ' \
+          'be accessed. The resulting transformation may be wrong due to ' \
+          'missing information.' )
+    if ASN is None:
+      # translation to origin
+      ON = numpy.mat( numpy.diag( [ 1., 1., 1., 1. ] ) )
+      if hasnorm:
+        ON[ 0:3, 3 ] = - numpy.multiply( (orgN-1), vsN )
+      else:
+        ON[ 0:3, 3 ] = - numpy.abs( numpy.transpose( numpy.mat( numpy.diag( \
+          MT[ 0:3, 0:3 ] ) ) ) + MT[ 0:3, 3 ] )
+        # MNI ref in AIMS orientation
+        destref = tm.referential( 'f3848046-b581-cae4-ecb9-d80ada0278d5' )
+
+      # Flip Aims -> SPM standard refs
+      # (and change org to other side of image)
+      FN = numpy.mat( numpy.diag( [ -1, -1, -1, 1 ] ) )
+      FN[ 0:3, 3 ] = numpy.multiply( (dimN - 1), vsN )
+
+      # Aims -> SPM with origin:
+      ASN = ON * FN
+
     # resulting Aims transformation
     AIMS = numpy.linalg.inv(ASN) * MT * numpy.linalg.inv(Affine) \
       * numpy.linalg.inv(MA) * ASA

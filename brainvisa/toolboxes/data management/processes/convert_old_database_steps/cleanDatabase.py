@@ -35,7 +35,7 @@
 from neuroProcesses import *
 import neuroHierarchy
 from brainvisa.data.databaseCheck import DBCleaner
-from brainvisa.data.databaseCheckGUI import UnknownFilesWidget
+from brainvisa.data.qtgui.databaseCheckGUI import UnknownFilesWidget
 
 
 name = '3 - Clean database'

@@ -15,7 +15,7 @@ import re, string, math
 import xml.parsers.expat
 import Pyro.core
 import pxxssh
-from qt import *
+from backwardCompatibleQt import *
 
 #--------------------------------------------------------------------------
 def sshSession(host, login, password=''):
@@ -905,8 +905,11 @@ class UserInfosQT( UserInfos ):
     app=QApplication(['pass'])
     UserInfos.__init__(self)
   
-  def _askPass(self): 
-    password, accept = QInputDialog.getText("OpenSSH Password", "Enter your password:", QLineEdit.Password)
+  def _askPass(self):
+    if sys.modules.has_key( 'PyQt4' ):
+      password, accept = QInputDialog.getText(None, "OpenSSH Password", "Enter your password:", QLineEdit.Password)
+    else:
+      password, accept = QInputDialog.getText("OpenSSH Password", "Enter your password:", QLineEdit.Password)
     
     if not accept:
       sys.exit(0)

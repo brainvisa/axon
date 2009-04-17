@@ -43,7 +43,6 @@ from soma.wip.temporary import getSystemDefaultTempDir
 from soma.signature.api import HasSignature, Signature, VariableSignature, Unicode, \
                                Choice, OpenedChoice, Boolean, Sequence, FileName
 from distutils.spawn import find_executable
-import qt
 
 #------------------------------------------------------------------------------
 def htmlBrowsers():

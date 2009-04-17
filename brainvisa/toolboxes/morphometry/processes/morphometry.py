@@ -36,7 +36,7 @@ from neuroProcesses import *
 from neuroData import *
 from neuroDataGUI import *
 import threading
-from brainvisa.data.readdiskitem import DiskItemEditor
+from brainvisa.data.qtgui.readdiskitemGUI import DiskItemEditor
 import distutils.spawn
 import neuroPopen2
 import os

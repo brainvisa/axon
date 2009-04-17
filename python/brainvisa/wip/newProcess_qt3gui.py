@@ -1,13 +1,13 @@
 from soma.signature.api import HasSignature
-from soma.qt3gui.api import Qt3GUI, ApplicationQt3GUI, createWidget
-from qt import QVBoxLayout
+from soma.qtgui.api import QtGUI, ApplicationQtGUI, createWidget
+from backwardCompatibleQt import QVBoxLayout
 import os
 from brainvisa.wip.newProcess import ExecutionContext
 
 
-class NewProcess_Qt3GUI( Qt3GUI ):
+class NewProcess_Qt3GUI( QtGUI ):
   def editionWidget( self, object, parent=None, name=None, live=False ):
-    self._processGUI = ApplicationQt3GUI.instanceQt3GUI( object, HasSignature )
+    self._processGUI = ApplicationQtGUI.instanceQt3GUI( object, HasSignature )
     editionWidget = createWidget( os.path.join( os.path.dirname( __file__ ), 'newProcess.ui' ), parent=parent, name=name )
     # TODO: set layout to editionWidget.processContainerWidget
     editionWidget.processContainerWidget._layout = QVBoxLayout( editionWidget.processContainerWidget, 0, 5 )

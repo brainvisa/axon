@@ -1,8 +1,8 @@
 from soma.signature.api import HasSignature
-from soma.qt3gui.api import ApplicationQt3GUI
+from soma.qtgui.api import ApplicationQtGUI
 from soma.singleton import Singleton
 from soma.translation import translate as _
-from qt import SIGNAL
+from backwardCompatibleQt import SIGNAL
 import sys, time
 from threading import RLock
 import neuroProcesses, neuroProcessesGUI
@@ -84,7 +84,7 @@ class NewProcess( HasSignature ):
 
 
   def show( self, *args, **kwargs ):
-    appGUI = ApplicationQt3GUI()
+    appGUI = ApplicationQtGUI()
     self._qtGUI = appGUI.instanceQt3GUI( self )
     self._editionWidget = self._qtGUI.editionWidget( self, live=True )
     self._editionWidget.btnRun.connect( self._editionWidget.btnRun, SIGNAL( 'clicked()' ), self.__call__ )

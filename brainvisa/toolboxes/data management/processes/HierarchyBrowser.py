@@ -34,7 +34,7 @@
 from neuroProcesses import *
 import neuroConfig
 if neuroConfig.newDatabases:
-  from brainvisa.data.hierarchyBrowser import HierarchyBrowser
+  from brainvisa.data.qtgui.hierarchyBrowser import HierarchyBrowser
 else:
   from neuroHierarchyGUI import HierarchyBrowser
 

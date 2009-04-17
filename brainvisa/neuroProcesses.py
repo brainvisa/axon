@@ -73,7 +73,7 @@ except Exception, e:
   neuroDistribException = e
 
 try:
-  from qt import QProcess, QTimer, qApp
+  from backwardCompatibleQt import QProcess, QTimer, qApp
   qprocess = True
 except:
   qprocess = False
