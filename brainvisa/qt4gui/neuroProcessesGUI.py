@@ -61,7 +61,7 @@ from soma.notification import ObservableList, EditableTree
 
 _mainThreadActions = FakeQtThreadCall()
 
-#----------------------------------------------------------------------------
+#----------------------------------------------------------------------------neuroProcesses.
 def quitRequest():
   a = QMessageBox.warning( None, _t_('Quit'),_t_( 'Do you really want to quit BrainVISA ?' ), QMessageBox.Yes | QMessageBox.Default, QMessageBox.No )
   if a == QMessageBox.Yes:
@@ -427,6 +427,18 @@ class ExecutionContextGUI( neuroProcesses.ExecutionContext):
   def createContext():
     return ExecutionContextGUI()
 
+#----------------------------------------------------------------------------
+class ExecutionNodeGUI(QWidget):
+  
+  def __init__(self, parent, parameterized):
+    QWidget.__init__(self, parent)
+    layout = QVBoxLayout()
+    layout.setMargin( 5 )
+    layout.setSpacing( 4 )
+    self.parameterizedWidget = ParameterizedWidget( parameterized, None )
+    layout.addWidget(self.parameterizedWidget)
+    spacer = QSpacerItem(0,0,QSizePolicy.Minimum,QSizePolicy.Expanding)
+    layout.addItem( spacer )
 
 #----------------------------------------------------------------------------
 class VoidClass:
@@ -632,9 +644,9 @@ class NodeCheckListItem( QTreeWidgetItem ):
 
   def setOn( self, b ):
     if b:
-      self.setCheckState( Qt.Checked )
+      self.setCheckState( 0, Qt.Checked )
     else:
-      self.setCheckState( Qt.UnChecked )
+      self.setCheckState( 0, Qt.Unchecked )
 
   def isOn( self ):
     if self.checkState() == Qt.Checked:
@@ -958,7 +970,7 @@ class ProcessView( QMainWindow, ExecutionContextGUI ):
     else:
       self.movie = None
       splitter = None
-      self.parametersWidget = self
+      self.parametersWidget = centralWidget
       container = self
       self.isMainWindow = False
       self.info = externalInfo
@@ -978,7 +990,7 @@ class ProcessView( QMainWindow, ExecutionContextGUI ):
       self.inlineGUI = self.process.inlineGUI( self.process, self, None,
                                                externalRunButton = True )
       if self.inlineGUI is None and externalInfo is None:
-        self.inlineGUI = self.defaultInlineGUI( )
+        self.inlineGUI = self.defaultInlineGUI( None )
       vb.addWidget(self.inlineGUI)
       
       self.executionTree = QTreeWidget( eTreeWidget )
@@ -993,7 +1005,7 @@ class ProcessView( QMainWindow, ExecutionContextGUI ):
       self._widgetStack = QStackedWidget( eTreeWidget )
       self._widgetStack._children = []
       blank = QWidget( self._widgetStack )
-      self._widgetStack.addWidget( blank, -2 )
+      self._widgetStack.addWidget( blank )
 
       self._guiId = 0
       self._executionNodeExpanded( self.executionTree, ( eNode, (eNode,) ) )
@@ -1008,12 +1020,11 @@ class ProcessView( QMainWindow, ExecutionContextGUI ):
       # Select and open the first item
       item = self.executionTree.topLevelItem(0)
       item.setExpanded( True )
-      #self.executionTree.setCurrentItem( item )
-      self.executionTree.setSelected( item, True )
+      self.executionTree.setCurrentItem( item )
 
       ##--##
-      if neuroDistributedProcesses():
-        self.remote = RemoteContext()
+      if neuroProcesses.neuroDistributedProcesses():
+        self.remote = neuroProcesses.RemoteContext()
 
         self.remoteWidget = RemoteContextGUI(splitter)
         #splitter.setResizeMode( self.remoteWidget.listView(), QSplitter.KeepSize )
@@ -1347,16 +1358,16 @@ class ProcessView( QMainWindow, ExecutionContextGUI ):
       else:
         eNode, eNodeChildren = eNodeAndChildren
       for childNode in eNodeChildren:
-        if isinstance( childNode, ProcessExecutionNode ):
+        if isinstance( childNode, neuroProcesses.ProcessExecutionNode ):
           en = childNode._executionNode
           if en is None:
             en = childNode
         else:
           en = childNode
         if eNode is not childNode \
-          and ( isinstance( eNode, SelectionExecutionNode ) \
-            or ( isinstance( eNode, ProcessExecutionNode ) \
-            and isinstance( eNode._executionNode, SelectionExecutionNode ) ) ):
+          and ( isinstance( eNode, neuroProcesses.SelectionExecutionNode ) \
+            or ( isinstance( eNode, neuroProcesses.ProcessExecutionNode ) \
+            and isinstance( eNode._executionNode, neuroProcesses.SelectionExecutionNode ) ) ):
           newItem = NodeCheckListItem( childNode, item, previous, '', "radio" )
         #elif isinstance( en, SelectionExecutionNode ):
           #newItem = NodeCheckListItem( childNode, item, previous, '', QCheckListItem.Controller )
@@ -1368,7 +1379,7 @@ class ProcessView( QMainWindow, ExecutionContextGUI ):
         previous = newItem
         newItem.setText( 0, _t_( childNode.name() ) )
         #newItem.setExpandable( en.hasChildren() )
-        if isinstance( childNode, ProcessExecutionNode ):
+        if isinstance( childNode, neuroProcesses.ProcessExecutionNode ):
           self._executionNodeLVItems[ childNode._process ] = newItem
         gui = childNode.gui( self._widgetStack, processView=self )
         if gui is not None:

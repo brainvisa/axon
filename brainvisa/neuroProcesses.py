@@ -64,7 +64,6 @@ if neuroConfig.newDatabases:
   from brainvisa.data.sqlFSODatabase import Database
 import neuroPopen2
 
-
 try:
   from remoteProcesses import *
   _neuroDistributedProcesses = True
@@ -1447,14 +1446,9 @@ class ExecutionNode( object ):
     return self._name
 
   def gui( self, parent, processView = None ):
+    from qtgui.neuroProcessesGUI import ExecutionNodeGUI
     if self._parameterized is not None:
-      frame = QWidget( parent )
-      frameLayout = QVBoxLayout( frame, 5, 4 )
-      frame.parameterizedWidget = ParameterizedWidget( self._parameterized(), frame )
-      frameLayout.addWidget( frame.parameterizedWidget )
-      spacer = QSpacerItem(0,0,QSizePolicy.Minimum,QSizePolicy.Expanding)
-      frameLayout.addItem( spacer )
-      return frame
+      return ExecutionNodeGUI(parent, self._parameterized())
     return None
 
   def addLink( self, destination, source, function=None ):
@@ -1479,7 +1473,7 @@ class ExecutionNode( object ):
         ( destObject, destParameter, multiLink, True ) )
 
   def removeLink( self, destination, source, function=None ):
-    # Parse source
+    # Parse sourceExecutionContext
     sources = []
     if type( source ) in ( types.ListType, types.TupleType ):
       for i in source:

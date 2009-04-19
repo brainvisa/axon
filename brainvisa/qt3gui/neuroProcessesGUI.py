@@ -411,6 +411,16 @@ class ExecutionContextGUI( neuroProcesses.ExecutionContext):
   def createContext():
     return ExecutionContextGUI()
 
+#----------------------------------------------------------------------------
+class ExecutionNodeGUI(QWidget):
+  
+  def __init__(self, parent, parameterized):
+      QWidget.__init__(self, parent )
+      layout = QVBoxLayout( self, 5, 4 )
+      self.parameterizedWidget = ParameterizedWidget( parameterized, self )
+      layout.addWidget( self.parameterizedWidget )
+      spacer = QSpacerItem(0,0,QSizePolicy.Minimum,QSizePolicy.Expanding)
+      layout.addItem( spacer )
 
 #----------------------------------------------------------------------------
 class VoidClass:
