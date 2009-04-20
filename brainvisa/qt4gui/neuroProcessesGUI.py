@@ -2190,6 +2190,7 @@ class ProcessTreesWidget(QSplitter):
     
     # Create a timer to delay model saves in minf file : it speeds up execution when there is several modification at the same time (drag&drop several elements)
     self.savesTimer=QTimer()
+    self.savesTimer.setSingleShot(True)
     self.connect(self.savesTimer, SIGNAL("timeout()"), self.model.save)
 
   
@@ -2280,7 +2281,7 @@ class ProcessTreesWidget(QSplitter):
     # instead of systematic model save for each change, start a timer wich will timeout when current event is finished
     # So if there is several modification due to the same event (drag and drop several elements), the model will be saved only one time when all changes are done. (speedier)
     if not self.savesTimer.isActive(): # if the timer is already started nothing to do, the change will be save anyway
-      self.savesTimer.start(0, True)
+      self.savesTimer.start(0)
     #self.model.save()
 
   def selectionChanged(self, item, col=0):
@@ -2395,7 +2396,7 @@ class ProcessTreesWidget(QSplitter):
     Called on click on set default option in contextual menu.
     Sets the selected tree as the default selected tree. So on next run of brainvisa, this tree will be selected.
     """
-    item=self.treeIndex.selectedItem()
+    item=self.treeIndex.currentItem()
     if item:
       self.model.selectedTree=item.model
 

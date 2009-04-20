@@ -137,11 +137,11 @@ class DiskItemEditor( QWidget, DataEditor ):
       if value is None: self.led.setText( '' )
       if self.btnShow: self.btnShow.setEnabled( 0 )
       if self.btnEdit: self.btnEdit.setEnabled( 0 )
-      self.emit( SIGNAL('newValidValue'), ( unicode(self.objectName()), self.diskItem, ) )
+      self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.diskItem )
     else:
       self.led.setText( self.diskItem.fullPath() )
       self.checkReadable()
-      self.emit( SIGNAL('newValidValue'), ( unicode(self.objectName()), self.diskItem, ) )
+      self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.diskItem )
     self._textChanged = 0
     self.forceDefault = 0
 
@@ -172,7 +172,7 @@ class DiskItemEditor( QWidget, DataEditor ):
   def textChanged( self ):
     self._textChanged = 1
     if not self.forceDefault:
-      self.emit( SIGNAL('noDefault'), ( unicode(self.objectName()),) )
+      self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
 
   def checkValue( self ):
     if self._textChanged:
@@ -249,7 +249,7 @@ class DiskItemEditor( QWidget, DataEditor ):
       else: # if there is no value, we could have some selected attributes from a linked value, use it to initialize the browser
         self.databaseDialog = DiskItemBrowser( self.parameter.database, selection=self._selectedAttributes, required=self.parameter.requiredAttributes, parent=self, write = self._write, enableConversion=self.parameter.enableConversion )
       self.databaseDialog.setWindowTitle( _t_( self.parameter.type.name ) )
-      self.connect( self.databaseDialog, SIGNAL( 'accepted' ), self.databaseAccepted )
+      self.connect( self.databaseDialog, SIGNAL( 'accepted()' ), self.databaseAccepted )
     else:
       if self.diskItem:
         self.databaseDialog.resetSelectedAttributes( self.diskItem )
@@ -579,7 +579,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
     self.sle = StringListEditor( None, name )
     hb.addWidget(self.sle)
     self._value = None
-    self.connect( self.sle, SIGNAL( 'newValidValue' ), self._newTextValue )
+    self.connect( self.sle, SIGNAL( 'newValidValue' ), name, self._newTextValue )
 
     self.btnFind = RightClickablePushButton( )
     hb.addWidget(self.btnFind)
@@ -667,8 +667,8 @@ class DiskItemListEditor( QWidget, DataEditor ):
 
   def _newValue( self, v ):
     self.setValue( v )
-    self.emit( SIGNAL('newValidValue'), ( unicode(self.objectName()), v, ) )
-    if not self.forceDefault: self.emit( SIGNAL('noDefault'), ( unicode(self.objectName()),) )
+    self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), v )
+    if not self.forceDefault: self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
 
   def checkValue( self ):
     self.sle.checkValue()

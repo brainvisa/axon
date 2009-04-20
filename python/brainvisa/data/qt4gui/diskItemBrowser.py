@@ -424,7 +424,7 @@ class DiskItemBrowser( QDialog ):
 
 
   def getValues( self ):
-    return [self._items[ i ] for i in xrange(self._ui.lstItems.count()) if self._ui.lstItems.isSelected( i )]
+    return [self._items[ i ] for i in xrange(self._ui.lstItems.count()) if self._ui.lstItems.item(i).isSelected( )]
 
 
   @staticmethod
