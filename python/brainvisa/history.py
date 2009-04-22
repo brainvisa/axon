@@ -121,7 +121,7 @@ class HistoryBook( object ):
         else:
           attributes = None
         if item is not None:
-          database = item.get( 'database' )
+          database = item.getHierarchy( '_database' )
           if database:
             historyBook = os.path.join( database, 'history_book' )
             if not os.path.exists( historyBook ):

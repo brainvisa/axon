@@ -47,7 +47,7 @@ from brainvisa.history import ProcessExecutionEvent
 import weakref
 from soma.minf.xhtml import XHTML
 from brainvisa.debug import debugHere
-from soma.qtgui.api import QtThreadCall, FakeQtThreadCall, TextBrowserWithSearch, bigIconSize
+from soma.qtgui.api import QtThreadCall, FakeQtThreadCall, TextBrowserWithSearch, bigIconSize, defaultIconSize
 try:
   import sip
 except:
@@ -435,7 +435,8 @@ class ExecutionNodeGUI(QWidget):
     layout = QVBoxLayout()
     layout.setMargin( 5 )
     layout.setSpacing( 4 )
-    self.parameterizedWidget = ParameterizedWidget( parameterized, None )
+    self.setLayout(layout)
+    self.parameterizedWidget = ParameterizedWidget( parameterized, None ) 
     layout.addWidget(self.parameterizedWidget)
     spacer = QSpacerItem(0,0,QSizePolicy.Minimum,QSizePolicy.Expanding)
     layout.addItem( spacer )
@@ -446,17 +447,66 @@ class VoidClass:
 
 
 #----------------------------------------------------------------------------
+class RadioItem(QWidget):
+  """An custom item to replace a QTreeWidgetItem for the representation of a SelectionExecutionNode item with a radio button. 
+  QTreeWidgetItem enables only check box items."""
+  def __init__(self, text, group, parent=None):
+    QWidget.__init__(self, parent)
+    layout=QHBoxLayout()
+    layout.setMargin(0)
+    layout.setSpacing(0)
+    self.setLayout(layout)
+    self.radio=QRadioButton("")
+    self.radio.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+    layout.addWidget(self.radio)
+    group.addButton(self.radio)
+    self.label=QLabel(text)
+    layout.addWidget(self.label)
+    layout.addStretch(1)
+    #self.setAutoFillBackground(True)
+    self.show()
+  
+  def setChecked(self, checked):
+    self.radio.setChecked(checked)
+    
+  def isChecked(self):
+    return self.radio.isChecked()
+  
+  def setIcon(self, icon):
+    self.label.setPixmap(icon.pixmap(*defaultIconSize))
+  
+#----------------------------------------------------------------------------
 class NodeCheckListItem( QTreeWidgetItem ):
   
   def __init__( self, node, parent, after=None, text=None, itemType=None ):
     QTreeWidgetItem.__init__( self, parent )
     self._node = node
     self.itemType=itemType
+    if itemType == "radio":
+      # if the item type is radio, create a custom item RadioItem to replace the current QTreeWidgetItem at display
+      # the radio button is included in a button group that is registred in the parent item
+      buttonGroup=getattr(self.parent(), "buttonGroup", None)
+      if not buttonGroup:
+        buttonGroup=QButtonGroup()
+        self.parent().buttonGroup=buttonGroup
+      self.widget=RadioItem(text, buttonGroup)
+      self.treeWidget().setItemWidget(self, 0, self.widget)
+      QWidget.connect(self.widget.radio, SIGNAL("clicked(bool)"), self.itemClicked)
+    else:# not a radio button, show text directly in the qtreeWidgetItem
+      if text:
+        self.setText(0, text)
     self.setOn( node._selected )
-    if text:
-      self.setText(0, text)
     node._selectionChange.add( self.nodeStateChanged )
 
+  def itemClicked(self, checked):
+    self.treeWidget().setCurrentItem(self)
+  
+  def setIcon(self, col, icon):
+    if self.itemType=="radio":
+      self.widget.setIcon(icon)
+    else:
+      QTreeWidgetItem.setIcon(self, col, icon)
+    
   def stateChange( self, selected ):
     self._node.setSelected( selected )
 
@@ -467,190 +517,20 @@ class NodeCheckListItem( QTreeWidgetItem ):
     self._node._selectionChange.remove( self.nodeStateChanged )
     self._node = None
 
-  #def paintCell( self, painter, cg, column, width, align ):
-    #if self._node is not None:
-      #if self.type() != QCheckListItem.Controller or not self._node._optional:
-        #QCheckListItem.paintCell( self, painter, cg, column, width, align )
-      #else:
-        #painter.save()
-        #pix = self.pixmap( 0 )
-        #if pix and not pix.isNull():
-          ##�I think this is a QCheckListItem bug...
-          #painter.translate( pix.width() + 3, 0 )
-        #QCheckListItem.paintCell( self, painter, cg, column, width, align )
-        #painter.restore()
-        ## translation of Qt C++ source code
-        #lv = self.listView()
-        #parentControl = 0
-        #if self.parent() and self.parent().rtti() == 1 and \
-          #sip.cast( self.parent(), QCheckListItem ).type() \
-          #== QCheckListItem.RadioButtonController:
-          #parentControl = 1
-        #fm = QFontMetrics( lv.fontMetrics() )
-        #boxsize = lv.style().pixelMetric( QStyle.PM_CheckListControllerSize,
-                                          #lv )
-        #marg = lv.itemMargin();
-  
-        #styleflags = QStyle.Style_Default
-        #if self.state() == QCheckListItem.On:
-          #styleflags |= QStyle.Style_On
-        #elif self.state() == QCheckListItem.NoChange:
-          #if not self.isTristate():
-            #styleflags |= QStyle.Style_Off
-          #else:
-            #styleflags |= QStyle.Style_NoChange
-        #else:
-          #styleflags |= QStyle.Style_Off
-        #if self.isSelected():
-          #styleflags |= QStyle.Style_Selected
-        #if self.isEnabled() and lv.isEnabled():
-          #styleflags |= QStyle.Style_Enabled
-  
-        #x = 0
-        #y = 0
-        #if not parentControl:
-          #x += 3
-        #if align & Qt.AlignVCenter:
-          #y = ( ( self.height() - boxsize ) / 2 ) + marg
-        #else:
-          #y = (fm.height() + 2 + marg - boxsize) / 2
-        ##print 'dims:', x, y, boxsize, fm.height() + 2 + marg
-        ## cli = QCheckListItem( self, 'toto', QCheckListItem.CheckBox ) #sip.cast(self,QCheckListItem)
-        ##opt = QStyleOption( cli )
-        ##opt = QStyleOption( self )
-        ## QStyleOption is buggy: listViewItem() and checkListItem() are not
-        ## both initialized
-        ## SIP is buggy: QStyleOption.__init__( QCheckListItem ) calls
-        ## QStyleOption::QStyleOption( QListViewItem * ) instead of
-        ## QStyleOption::QStyleOption( QCheckListItem * )
-  ###      print 'opt:', opt
-  ###      item = opt.checkListItem()
-  ###      print 'item:', item, 'cli:', cli, 'lvitem:', opt.listViewItem(), 'self:', self
-  ###      print 'cli.listview:', cli.listView(), ', self.lv:', self.listView()
-  ###      if item:
-  ###        print 'item not None'
-  ###        print 'listview:', item.listView()
-  ###      lv.style().drawPrimitive(QStyle.PE_CheckListIndicator, painter,
-  ###                               QRect(x, y, boxsize,
-  ###                                     fm.height() + 2 + marg),
-  ###                               cg, styleflags, opt )
-  ###      print 'drawPrim done'
-  
-        ## copied/translated from QCommonStyle.cpp:
-        #r = QRect(x, y, boxsize, fm.height() + 2 + marg)
-        #w = r.width()
-        #h = r.width()
-        #p = painter
-        #item = self
-  
-        ##p.fillRect( 0, 0, x + marg + w + 4, item.height(),
-        ##            QBrush( cg.background() ) )
-        #lv.paintEmptyArea( p, r )
-        #if styleflags & QStyle.Style_Enabled:
-          #p.setPen( QPen( cg.text(), 2 ) )
-        #else:
-          #p.setPen( QPen( lv.palette().color( QPalette.Disabled,
-                                              #QColorGroup.Text ), 2 ) )
-        #if styleflags & QStyle.Style_Selected and not lv.rootIsDecorated() and \
-          #not parentControl:
-          #p.fillRect( 0, 0, x + marg + w + 4, item.height(),
-                      #cg.brush( QColorGroup.Highlight ) )
-          #if item.isEnabled():
-            #p.setPen( QPen( cg.highlightedText(), 2 ) )
-  
-        #if styleflags & QStyle.Style_NoChange:
-          #p.setBrush( cg.brush( QColorGroup.Button ) )
-        #p.drawRect( x+marg, y+2, w-4, h-4 )content and presentation is achieved by the use of a standard model interface provided by QAbstractItemModel
-        #x+=1
-        #y+=1
-        #if ( styleflags & QStyle.Style_On) or \
-              #( styleflags & QStyle.Style_NoChange ):
-          #a = QPointArray( 7*2 )
-          #xx = x+1+marg
-          #yy=y+5
-          #for i in range(3):
-            #a.setPoint( 2*i,   xx, yy )
-            #a.setPoint( 2*i+1, xx, yy+2 )
-            #xx+=1
-            #yy+=1
-          #yy -= 2;
-          #for i in range(3,7):
-            #a.setPoint( 2*i,   xx, yy )
-            #a.setPoint( 2*i+1, xx, yy+2 );
-            #xx+=1
-            #yy-=1
-          #p.drawLineSegments( a )
-
-  #def activate( self ):
-    #if self.itemType == QCheckListItem.Controller and self._node._optional:
-      ## translation of Qt C++ source code
-      #lv = self.listView()
-      #if lv and not lv.isEnabled() or not self.isEnabled():
-        #return
-      #boxsize = lv.style().pixelMetric( QStyle.PM_CheckListButtonSize, lv )
-      #pos = QPoint()
-      #if self.activatedPos( pos ):
-        #parentControl = 0
-        #if self.parent() and self.parent().rtti() == 1 and \
-           #sip.cast( self.parent(), QCheckListItem).type() \
-           #== QCheckListItem.RadioButtonController:
-          #parentControl = 1
-        #x = 3
-        #if parentControl:
-          #x = 0
-        #align = lv.columnAlignment( 0 )
-        #marg = lv.itemMargin()
-        #y = 0
-        #if align & Qt.AlignVCenter:
-          #y = ( ( self.height() - boxsize ) / 2 ) + marg
-        #else:
-          #y = (lv.fontMetrics().height() + 2 + marg - boxsize) / 2
-        #r = QRect( x, y, boxsize-3, boxsize-3 )
-        #r.moveBy( lv.header().sectionPos( 0 ), 0 )
-        #if not r.contains( pos ):
-          #return
-      #if self.state() == QCheckListItem.On:
-        #self.setState( QCheckListItem.Off )
-      #elif self.state() == QCheckListItem.Off:
-        #if not self.isTristate():
-          #self.setState( QCheckListItem.On )
-        #else:
-          #self.setState( QCheckListItem.NoChange )
-          #if self.state() != QCheckListItem.NoChange:
-            #self.setState( QCheckListItem.On )
-      #else: # NoChange
-        #self.setState( QCheckListItem.On )
-    #else:
-      #QCheckListItem.activate( self )
-
-  #def setState( self, s ):
-    #if self.type() == QCheckListItem.Controller:
-      #self.stateChange( s != 0 );
-###      if self.parent() and self.parent().rtti() == 1 \
-###         and sip.cast( self.parent(), QCheckListItem ).type() \
-###         == QCheckListItem.CheckBoxController:
-###        sip.cast( self.parent(), QCheckListItem ).updateController( update,
-###                                                                    store )
-    #else:
-      #QCheckListItem.setState( self, s )
-
-  #def state( self ):
-    #if self.type() == QCheckListItem.Controller:
-      #if self._node._selected:
-        #return QCheckListItem.On
-      #else:
-        #return QCheckListItem.Off
-    #return QCheckListItem.state( self )
-
   def setOn( self, b ):
-    if b:
-      self.setCheckState( 0, Qt.Checked )
-    else:
-      self.setCheckState( 0, Qt.Unchecked )
+    if self.itemType=="radio":
+      self.widget.setChecked(b)
+    elif self.itemType=="check":
+      if b:
+        self.setCheckState( 0, Qt.Checked )
+      else:
+        self.setCheckState( 0, Qt.Unchecked )
 
   def isOn( self ):
-    if self.checkState() == Qt.Checked:
-      return False
+    if self.itemType=="radio":
+      return self.widget.isChecked()
+    elif self.itemType=="check":
+      return self.checkState() == Qt.Checked
     return True
 
 #------------------------------------------------------------------------------
@@ -879,10 +759,10 @@ class BrainVISAAnimation( QLabel ):
     self.mmovie.stop()
 
 #----------------------------------------------------------------------------
-class ProcessView( QMainWindow, ExecutionContextGUI ):
+class ProcessView( QWidget, ExecutionContextGUI ):
   def __init__( self, processId, parent = None, externalInfo = None ):
     ExecutionContextGUI.__init__( self )
-    QMainWindow.__init__( self, parent )
+    QWidget.__init__( self, parent )
     if getattr( ProcessView, 'pixIcon', None ) is None:
       setattr( ProcessView, 'pixIcon', QIcon( os.path.join( neuroConfig.iconPath, 'icon_process.png' ) ) )
       setattr( ProcessView, 'pixDefault', QIcon( os.path.join( neuroConfig.iconPath, 'lock.png' ) ) )
@@ -891,15 +771,26 @@ class ProcessView( QMainWindow, ExecutionContextGUI ):
       setattr( ProcessView, 'pixProcessError', QIcon( os.path.join( neuroConfig.iconPath, 'abort.png' ) ) )
       setattr( ProcessView, 'pixNone', QIcon() )
     
-    centralWidget=QWidget()
-    self.setCentralWidget(centralWidget)
+    # ProcessView cannot be a QMainWindow because it have to be included in a QStackedWidget in pipelines. 
+    #centralWidget=QWidget()
+    #self.setCentralWidget(centralWidget)
     
     centralWidgetLayout=QVBoxLayout()
-    centralWidget.setLayout(centralWidgetLayout)
+    self.setLayout(centralWidgetLayout)
     centralWidgetLayout.setMargin( 5 )
     centralWidgetLayout.setSpacing( 4 )
 
     self.setWindowIcon( self.pixIcon )
+
+    if parent is None:
+      neuroConfig.registerObject( self )
+      # menu bar
+      menu = QMenuBar()
+      addBrainVISAMenu( self, menu )
+      processMenu=menu.addMenu("&Process")
+      processMenu.addAction( _t_( '&Save...' ), self.saveAs,  Qt.CTRL + Qt.Key_S )
+      processMenu.addAction( _t_( '&Clone...' ), self.clone,  Qt.CTRL + Qt.Key_C )
+      centralWidgetLayout.addWidget(menu)
 
     self.connect( self, SIGNAL( 'destroyed()' ), self.cleanup )
 
@@ -939,6 +830,7 @@ class ProcessView( QMainWindow, ExecutionContextGUI ):
       self.labName.setToolTip('<center><b>' + _t_(process.name) + '</b></center><hr><b>' + _t_('Description') + ':</b><br/>' + doc)
 
     if externalInfo is None:
+      
       self.movie = BrainVISAAnimation( )
       titleLayout.addWidget(self.movie)
       titleLayout.setSpacing(3)
@@ -970,42 +862,50 @@ class ProcessView( QMainWindow, ExecutionContextGUI ):
     else:
       self.movie = None
       splitter = None
-      self.parametersWidget = centralWidget
+      self.parametersWidget = self
       container = self
       self.isMainWindow = False
       self.info = externalInfo
 
     self.splitter = splitter
     self._widgetStack = None
-    
     eNode = getattr( process, '_executionNode', None )
     self._executionNodeLVItems = {}
     # process composed of several processes
     if eNode is not None and self.isMainWindow:
       self.parameterizedWidget = None
-      vb = QVBoxLayout( )
-      container.layout().addLayout(vb)
+      #vb = QVBoxLayout( )
+      #container.layout().addLayout(vb)
+      vb=container.layout()
+      
+      # splitter that shows the composition of the process on the left and the parameters of each step on the right
       eTreeWidget = QSplitter( Qt.Horizontal )
       vb.addWidget(eTreeWidget)
+      
+      # Run and iterate buttons
       self.inlineGUI = self.process.inlineGUI( self.process, self, None,
                                                externalRunButton = True )
       if self.inlineGUI is None and externalInfo is None:
         self.inlineGUI = self.defaultInlineGUI( None )
       vb.addWidget(self.inlineGUI)
       
+      # composition of the pipeline
       self.executionTree = QTreeWidget( eTreeWidget )
       self.executionTree.setSizePolicy( QSizePolicy( QSizePolicy.Preferred, QSizePolicy.Preferred ) )
       self.executionTree.setColumnCount(1)
       self.executionTree.setHeaderLabels( ['Name'] )
       self.executionTree.setAllColumnsShowFocus( 1 )
       self.executionTree.setRootIsDecorated( 1 )
-      self.executionTree.setSortingEnabled( -1 )
+      #self.executionTree.setSortingEnabled( -1 )
       #eTreeWidget.setResizeMode( self.executionTree, QSplitter.KeepSize )
 
+      # parameters of a each step of the pipeline
       self._widgetStack = QStackedWidget( eTreeWidget )
+      self._widgetStack.setSizePolicy( QSizePolicy( QSizePolicy.Preferred,
+      QSizePolicy.Preferred ) )
       self._widgetStack._children = []
-      blank = QWidget( self._widgetStack )
-      self._widgetStack.addWidget( blank )
+      #blank = QWidget( )
+      #self._widgetStack.addWidget( blank )
 
       self._guiId = 0
       self._executionNodeExpanded( self.executionTree, ( eNode, (eNode,) ) )
@@ -1014,7 +914,7 @@ class ProcessView( QMainWindow, ExecutionContextGUI ):
                     self._executionNodeExpanded )
       
       self.connect( self.executionTree,
-                    SIGNAL( 'itemSelectionChanged( QTreeWidgetItem * )' ),
+                    SIGNAL( 'currentItemChanged( QTreeWidgetItem *, QTreeWidgetItem * )' ),
                     self.executionNodeSelected )
       
       # Select and open the first item
@@ -1043,15 +943,6 @@ class ProcessView( QMainWindow, ExecutionContextGUI ):
 
     self._iterationDialog = None
 
-    if parent is None:
-      neuroConfig.registerObject( self )
-      # menu bar
-      menu = self.menuBar()
-      addBrainVISAMenu( self, menu )
-      processMenu=menu.addMenu("&Process")
-      processMenu.addAction( _t_( '&Save...' ), self.saveAs,  Qt.CTRL + Qt.Key_S )
-      processMenu.addAction( _t_( '&Clone...' ), self.clone,  Qt.CTRL + Qt.Key_C )
-
     self._logDialog = None
     # It is necessary to call show() before resize() to have a correct layout.
     # Otherwize,  vertical sliders may be superimposed to widgets. But some
@@ -1075,19 +966,20 @@ class ProcessView( QMainWindow, ExecutionContextGUI ):
     if eNode and self.isMainWindow:
       parent = self._widgetStack
     else:
-      parent = self.parametersWidget
+      parent = self.parametersWidget.layout()
     # if the process has a signature, creates a widget for the parameters : ParameterizedWidget
     if self.process.signature:
       self.parameterizedWidget = ParameterizedWidget( self.process, None )
       self.parameterizedWidget.show()
-      parent.layout().addWidget(self.parameterizedWidget)
+      parent.addWidget(self.parameterizedWidget)
     else:
-      self.parameterizedWidget = None
+      self.parameterizedWidget = None 
     if eNode is None or not self.isMainWindow:
       self.inlineGUI = self.process.inlineGUI( self.process, self, None )
       if self.inlineGUI is None and self.isMainWindow:
         self.inlineGUI = self.defaultInlineGUI( None )
-      parent.layout().addWidget(self.inlineGUI)
+      if self.inlineGUI is not None:
+        parent.addWidget(self.inlineGUI)
     else:
       self._widgetStack.removeWidget( self._widgetStack._children[ 0 ] )
       self._widgetStack._children[ 0 ].close()
@@ -1179,7 +1071,7 @@ class ProcessView( QMainWindow, ExecutionContextGUI ):
           gui.deleteLater()
       self._widgetStack = None
     if self.executionTree is not None:
-      it = QTreeWidgetItemIterator()
+      it = QTreeWidgetItemIterator(self.executionTree)
       while it.value():
         cleanup = getattr( it.value(), 'cleanup', None )
         if cleanup is not None:
@@ -1195,6 +1087,9 @@ class ProcessView( QMainWindow, ExecutionContextGUI ):
 
   def _runButton( self, executionFunction=None ):
     try:
+      # disable run button when clicked to avoid several successive clicks
+      # it is enabled when the process starts, the label of the button switch to interrupt
+      self.btnRun.setEnabled(False)
       if self._running:
         self._setInterruptionRequest( neuroProcesses.ExecutionContext.UserInterruption() )
       else:
@@ -1208,6 +1103,7 @@ class ProcessView( QMainWindow, ExecutionContextGUI ):
         processView._runningProcess = 0
         processView._startCurrentProcess( executionFunction )
     except:
+      self.btnRun.setEnabled(True)
       neuroException.showException()
 
 
@@ -1249,7 +1145,6 @@ class ProcessView( QMainWindow, ExecutionContextGUI ):
     #Remove icon from all ListView items
     for item in self._executionNodeLVItems.values():
       item.setIcon( 0, self.pixNone )
-
     self._lastProcessRaisedException = False
     try:
       self._startProcess( self.process, executionFunction )
@@ -1269,6 +1164,7 @@ class ProcessView( QMainWindow, ExecutionContextGUI ):
       if self.movie is not None:
         _mainThreadActions.push( self.movie.start )
       if self.btnRun:
+        _mainThreadActions.push( self.btnRun.setEnabled, True )
         _mainThreadActions.push( self.btnRun.setText, _t_( 'Interrupt' ) )
 
     #Adds an icon on the ListViewItem corresponding to the current process
@@ -1276,7 +1172,7 @@ class ProcessView( QMainWindow, ExecutionContextGUI ):
     p = self._currentProcess()
     eNodeItem = self._executionNodeLVItems.get( p )
     if eNodeItem is not None:
-      _mainThreadActions.push( eNodeItem.setPixmap, 0, self.pixInProcess )
+      _mainThreadActions.push( eNodeItem.setIcon, 0, self.pixInProcess )
 
     ExecutionContextGUI._processStarted( self )
 
@@ -1339,7 +1235,7 @@ class ProcessView( QMainWindow, ExecutionContextGUI ):
     #txt.resize( 800, 600 )
     #txt.show()
 
-  def executionNodeSelected( self, item ):
+  def executionNodeSelected( self, item, previous ):
     if item is not None:
       self._widgetStack.setCurrentIndex( item._guiId )
       # Trick to have correct slider
@@ -1368,16 +1264,16 @@ class ProcessView( QMainWindow, ExecutionContextGUI ):
           and ( isinstance( eNode, neuroProcesses.SelectionExecutionNode ) \
             or ( isinstance( eNode, neuroProcesses.ProcessExecutionNode ) \
             and isinstance( eNode._executionNode, neuroProcesses.SelectionExecutionNode ) ) ):
-          newItem = NodeCheckListItem( childNode, item, previous, '', "radio" )
-        #elif isinstance( en, SelectionExecutionNode ):
-          #newItem = NodeCheckListItem( childNode, item, previous, '', QCheckListItem.Controller )
+          itemType="radio"
         elif childNode._optional:
-          newItem = NodeCheckListItem( childNode, item, previous, '', "check" )
+          itemType="check"
         else:
-          newItem = QTreeWidgetItem( item )
+          itemType=None
+        newItem=NodeCheckListItem( childNode, item, previous, _t_( childNode.name() ), itemType )
         newItem._executionNode = childNode
         previous = newItem
-        newItem.setText( 0, _t_( childNode.name() ) )
+        if en.hasChildren():
+          newItem.setChildIndicatorPolicy(newItem.ShowIndicator)
         #newItem.setExpandable( en.hasChildren() )
         if isinstance( childNode, neuroProcesses.ProcessExecutionNode ):
           self._executionNodeLVItems[ childNode._process ] = newItem
@@ -1471,7 +1367,6 @@ class ProcessView( QMainWindow, ExecutionContextGUI ):
     minf = unicode( QFileDialog.getOpenFileName( '', 'BrainVISA process (*.bvproc);;All files (*)', None, None, 'Open a process file', ))
     if minf:
       showProcess( neuroProcesses.getProcessInstance( minf ) )
-
 
 #----------------------------------------------------------------------------
 def showProcess( process, *args, **kwargs ):

@@ -1178,6 +1178,9 @@ class ProcessView( QVBox, ExecutionContextGUI ):
 
   def _runButton( self, executionFunction=None ):
     try:
+      # disable run button when clicked to avoid several successive clicks
+      # it is enabled when the process starts, the label of the button switch to interrupt
+      self.btnRun.setEnabled(False)
       if self._running:
         self._setInterruptionRequest( neuroProcesses.ExecutionContext.UserInterruption() )
       else:
@@ -1191,6 +1194,7 @@ class ProcessView( QVBox, ExecutionContextGUI ):
         processView._runningProcess = 0
         processView._startCurrentProcess( executionFunction )
     except:
+      self.btnRun.setEnabled(True)
       showException()
 
 
@@ -1232,7 +1236,6 @@ class ProcessView( QVBox, ExecutionContextGUI ):
     #Remove icon from all ListView items
     for item in self._executionNodeLVItems.values():
       item.setPixmap( 0, self.pixNone )
-
     self._lastProcessRaisedException = False
     try:
       self._startProcess( self.process, executionFunction )
@@ -1252,6 +1255,7 @@ class ProcessView( QVBox, ExecutionContextGUI ):
       if self.movie is not None:
         _mainThreadActions.push( self.movie.start )
       if self.btnRun:
+        _mainThreadActions.push( self.btnRun.setEnabled, True )
         _mainThreadActions.push( self.btnRun.setText, _t_( 'Interrupt' ) )
 
     #Adds an icon on the ListViewItem corresponding to the current process

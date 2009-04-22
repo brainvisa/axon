@@ -647,16 +647,18 @@ class PointEditor( QWidget, DataEditor ):
     QWidget.__init__( self, parent )
     if name:
       self.setObjectName( name )
-    layout=QHBoxLayout(self)
+    layout=QHBoxLayout()
+    layout.setMargin(0)
+    layout.setSpacing(4)
     self.setLayout(layout)
     self.parameter = parameter
-    self.nle = NumberListEditor( self, name )
+    self.nle = NumberListEditor( None, name )
     layout.addWidget(self.nle)
     
     self.connect( self.nle, SIGNAL( 'newValidValue' ), SIGNAL( 'newValidValue' ) )
     self.connect( self.nle, SIGNAL( 'noDefault' ), SIGNAL( 'noDefault' ) )
     
-    self.btnSelect = QPushButton( self )
+    self.btnSelect = QPushButton( )
     layout.addWidget(self.btnSelect)
     self.btnSelect.setIcon( self.pixSelect )
     self.btnSelect.setFocusPolicy( Qt.NoFocus )
@@ -707,23 +709,25 @@ class PointListEditor( QWidget, DataEditor ):
     QWidget.__init__( self, parent )
     if name:
       self.setObjectName( name )
-    layout=QHBoxLayout(self)
+    layout=QHBoxLayout()
+    layout.setMargin(0)
+    self.setLayout(layout)
     self.parameter = parameter
-    self.led = QLineEdit( self )
+    self.led = QLineEdit( )
     layout.addWidget(self.led)
     self.connect( self.led, SIGNAL( 'textChanged( const QString & )' ),
                   self.textChanged )
     self.connect( self.led, SIGNAL( 'returnPressed()' ), self.checkValue )
     self.setFocusProxy( self.led )
 
-    self.btnSelect = QPushButton( self )
+    self.btnSelect = QPushButton()
     layout.addWidget(self.btnSelect)
     self.btnSelect.setIcon( self.pixSelect )
     self.btnSelect.setToggleButton( 1 )
     self.btnSelect.setFocusPolicy( QWidget.NoFocus )
     self.connect( self.btnSelect, SIGNAL( 'clicked()' ), self.selectPressed )
     
-    self.btnErase = QPushButton( self )
+    self.btnErase = QPushButton()
     layout.addWidget(self.btnErase)
     self.btnErase.setIcon( self.pixErase )
     self.btnSelect.setFocusPolicy( QWidget.NoFocus )
@@ -795,37 +799,37 @@ class GenericListSelection( QWidget ):
     if name:
       self.setObjectName( name )
     self.setWindowModality(Qt.WindowModal)
-    layout = QVBoxLayout( self )
+    layout = QVBoxLayout( )
     layout.setMargin( 10 )
     layout.setSpacing( 5 )
     self.setLayout(layout)
     
     self.values = []
     
-    self.lbxValues = QListWidget( self )
+    self.lbxValues = QListWidget( )
     self.connect( self.lbxValues, SIGNAL('currentItemChanged( QListWidgetItem *, QListWidgetItem *  )'), self._currentChanged )
     layout.addWidget( self.lbxValues )
 
     hb = QHBoxLayout()
     hb.setSpacing( 6 )
     
-    self.btnAdd = QPushButton( _t_( 'Add' ), self )
+    self.btnAdd = QPushButton( _t_( 'Add' ) )
     self.connect( self.btnAdd, SIGNAL( 'clicked()' ), self._add )
     hb.addWidget( self.btnAdd )
 
-    self.btnRemove = QPushButton( _t_( 'Remove' ), self )
+    self.btnRemove = QPushButton( _t_( 'Remove' ) )
     self.btnRemove.setEnabled( 0 )
     self.connect( self.btnRemove, SIGNAL( 'clicked()' ), self._remove )
     hb.addWidget( self.btnRemove )
     
-    self.btnUp = QPushButton( self )
+    self.btnUp = QPushButton( )
     self.btnUp.setIcon( self.pixUp )
     self.btnUp.setIconSize(QSize(*largeIconSize))
     self.btnUp.setEnabled( 0 )
     self.connect( self.btnUp, SIGNAL( 'clicked()' ), self._up )
     hb.addWidget( self.btnUp )
 
-    self.btnDown = QPushButton( self )
+    self.btnDown = QPushButton( )
     self.btnDown.setIcon( self.pixDown )
     self.btnDown.setIconSize(QSize(*largeIconSize))
     self.btnDown.setEnabled( 0 )
@@ -842,10 +846,10 @@ class GenericListSelection( QWidget ):
     hb.setMargin(6)
     spacer = QSpacerItem(20,20,QSizePolicy.Expanding,QSizePolicy.Minimum)
     hb.addItem( spacer )
-    btn =QPushButton( _t_('Ok'), self )
+    btn =QPushButton( _t_('Ok') )
     hb.addWidget( btn )
     self.connect( btn, SIGNAL( 'clicked()' ), self._ok )
-    btn =QPushButton( _t_('Cancel'), self )
+    btn =QPushButton( _t_('Cancel') )
     hb.addWidget( btn )
     self.connect( btn, SIGNAL( 'clicked()' ), self._cancel )
     layout.addLayout( hb )

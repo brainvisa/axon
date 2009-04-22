@@ -1760,7 +1760,7 @@ class ExecutionContext:
     self._interruptionActions = {}
     self._interruptionActionsId = 0
     self._interruptionLock = threading.RLock()
-    self._allowHistory = True
+    self._allowHistory = False
   
   
   def _setArguments( self, _process, *args, **kwargs ):
@@ -1989,10 +1989,11 @@ class ExecutionContext:
       if log is not None:
         log.expand()
         if self._depth() == 1:
-          if self._historyBookEvent is not None:
-            HistoryBook.storeProcessFinished( self, process, self._historyBookEvent, self._historyBooksContext )
-            self._historyBookEvent = None
-            self._historyBooksContext = None
+          if self._allowHistory:
+            if self._historyBookEvent is not None:
+              HistoryBook.storeProcessFinished( self, process, self._historyBookEvent, self._historyBooksContext )
+              self._historyBookEvent = None
+              self._historyBooksContext = None
           self._lastStartProcessLogItem = None
       process._outputLogFile = None
       process._outputLog = None
