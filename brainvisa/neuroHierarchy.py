@@ -48,6 +48,7 @@ if neuroConfig.newDatabases:
     databases = SQLDatabases()
   
   def openDatabases():
+    from neuroProcesses import defaultContext
     global databases
     databases.removeDatabases()
     ignoreReadOnlyForShared = True
@@ -57,7 +58,7 @@ if neuroConfig.newDatabases:
           sqlite = dbSettings.expert_settings.sqliteFileName
         else:
           sqlite = os.path.join( dbSettings.directory, 'database.sqlite' )
-        base = SQLDatabase( sqlite, ( dbSettings.directory, ) )
+        base = SQLDatabase( sqlite, ( dbSettings.directory, ), context=defaultContext() )
         databases.add( base )
         if ignoreReadOnlyForShared:
           # The first database is the shared directory, usually users do not have

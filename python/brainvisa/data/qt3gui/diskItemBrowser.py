@@ -347,8 +347,13 @@ class DiskItemBrowser( QDialog ):
         if a in preservedCombos: continue
         selected = self._selectedAttributes.get( a )
         s = combosSets[ a ]
-        for v in sorted(self._database.findAttributes( ( a, ), {}, **required  )):
-          v = v[0]
+        if a in required:
+          values=[required.get(a)]
+        elif a in self._attributesValues and self._write:
+          values=self._attributesValues.get(a)
+        else:
+          values=[v[0] for v in self._database.findAttributes( ( a, ), {}, **required )]
+        for v in sorted(values):
           if not v: v = ''
           if v not in s:
             cmb.insertItem( v )

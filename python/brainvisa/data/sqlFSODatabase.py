@@ -196,7 +196,7 @@ class SQLDatabase( Database ):
       print >> sys.stderr, '!cursor!', self._id, ':', message
 
 
-  def __init__( self, sqlDatabaseFile, directories, fso=None ):
+  def __init__( self, sqlDatabaseFile, directories, fso=None, context=None ):
     super(SQLDatabase, self).__init__()
     self._connection = None
     self.name = os.path.normpath( directories[ 0 ] )
@@ -343,17 +343,14 @@ class SQLDatabase( Database ):
       if self.fso.lastModification > os.stat(self.sqlDatabaseFile).st_mtime:
         showWarning( _( 'ontology "%(ontology)s" had been modified, database "%(database)s" should be updated. Use the process : Data Management =&gt; Update databases.' ) % { 'ontology': self.fso.name, 'database': self.name } )
     if self.createTables():
-      self.update()
+      self.update( context=context)
   
   
   def update( self, directoriesToScan=None, recursion=True, context=None ):
-    if context is None:
-      # it is not possible to import neuroProcesses at the beginning of the file because this module is also imported by neuroProcesses
-      #from neuroProcesses import defaultContext
-      context=neuroProcesses.defaultContext()
-    context.write( self.name + ': parse directories and insert items' )
+    if context is not None:
+      context.write( self.name + ': parse directories and insert items' )
     t0 = time.time()
-    self.insertDiskItems( ( i for i in self.scanDatabaseDirectories( directoriesToScan=directoriesToScan, recursion=recursion ) if i.type is not None ) )
+    self.insertDiskItems( ( i for i in self.scanDatabaseDirectories( directoriesToScan=directoriesToScan, recursion=recursion ) if i.type is not None ), update=True )
     duration = time.time() - t0
     cursor = self._getDatabaseCursor()
     try:
@@ -361,7 +358,8 @@ class SQLDatabase( Database ):
       diskItemCount = cursor.execute( 'select COUNT(*) from _diskitems_' ).fetchone()[0]
     finally:
       self._closeDatabaseCursor( cursor )
-    context.write( self.name + ':', fileCount, 'files are stored as', diskItemCount, 'DiskItems in', timeDifferenceToString( duration ) )
+    if context is not None:
+      context.write( self.name + ':', fileCount, 'files are stored as', diskItemCount, 'DiskItems in', timeDifferenceToString( duration ) )
     # notifies the update to potential listeners
     self.onUpdateNotifier.notify()
   
@@ -462,9 +460,6 @@ class SQLDatabase( Database ):
   
   
   def createTables( self, context=None ):
-    if context is None:
-      #from neuroProcesses import defaultContext
-      context=neuroProcesses.defaultContext()
     # if the database file is created by sqlite, the write permission is given only for the current user, not for the group, so the database cannot be shared
     if not os.path.exists( self.sqlDatabaseFile ) and self.sqlDatabaseFile not in ( '', ':memory:' ):
       f=open(self.sqlDatabaseFile, "w")
@@ -478,7 +473,8 @@ class SQLDatabase( Database ):
       except sqlite3.OperationalError:
         create = False
       if create:
-        context.write( 'Generating database tables for', self.name )
+        if context is not None:
+          context.write( 'Generating database tables for', self.name )
         cursor.execute( 'CREATE TABLE _FILENAMES_ (filename VARCHAR PRIMARY KEY, _uuid CHAR(36))' )
         cursor.execute( 'CREATE INDEX _IDX_FILENAMES_ ON _FILENAMES_ (filename, _uuid)' )
       for type in self.typesWithTable:
@@ -559,9 +555,9 @@ class SQLDatabase( Database ):
                 delete = True
                 cursor.execute( 'UPDATE _DISKITEMS_ SET _diskItem=? WHERE _uuid=?', ( minf, uuid ) )
               else:
-                raise Database.Error( 'Cannot insert "%(filename)s" because its uuid is in conflict with the uuid of another file in the database' )
+                raise Database.Error( 'Cannot insert "%s" because its uuid is in conflict with the uuid of another file in the database' % diskItem.fullPath() )
             else:
-              raise Database.Error( 'Cannot insert "%(filename)s" because it is already in the database' )
+              raise Database.Error( 'Cannot insert "%s" because it is already in the database' % diskItem.fullPath() )
           else:
             # diskItem file name is not in the database ==> DiskItem's uuid is changed
             # commit changes
@@ -785,7 +781,7 @@ class SQLDatabase( Database ):
       except OSError, e:
         print >> sys.stderr, e
         knownFormat = unknownFormat = []
-        
+      
       if includeUnknowns and allowYield:
         for it in unknownFormat:
           diskItem = File( it.fileName(), None )
@@ -833,6 +829,8 @@ class SQLDatabase( Database ):
                 #print >> debugHTML, '<font color=darkorange><b>' + f + ':</b> ' + repr( match ) + '</font><br>'
               break
           else:
+            #for rule in directoryRules:
+              #print '  -->', rule.pattern
             if includeUnknowns:
               stack.append( ( it, None, attributes, priorityOffset ) )
               if allowYield:
@@ -1178,10 +1176,10 @@ class SQLDatabases( Database ):
       d.clear()
   
   
-  def update( self, directoriesToScan=None, recursion=True ):
+  def update( self, directoriesToScan=None, recursion=True, context=None ):
     self.onUpdateNotifier.delayNotification()
     for d in self.iterDatabases():
-      d.update( directoriesToScan=directoriesToScan, recursion=recursion )
+      d.update( directoriesToScan=directoriesToScan, recursion=recursion, context=context )
     self.onUpdateNotifier.restartNotification()
   
   

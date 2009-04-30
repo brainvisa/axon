@@ -644,6 +644,8 @@ class DiskItemListEditor( QHBox, DataEditor ):
     textValues = self.sle.getValue()
     if textValues is not None:
       self._newValue( [self.parameter.findValue( x ) for x in textValues] )
+    else:
+      self._newValue( None )
     return None
 
   def _newValue( self, v ):
@@ -653,4 +655,5 @@ class DiskItemListEditor( QHBox, DataEditor ):
 
   def checkValue( self ):
     self.sle.checkValue()
+
 

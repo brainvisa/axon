@@ -72,7 +72,7 @@ except Exception, e:
   neuroDistribException = e
 
 try:
-  from backwardCompatibleQt import QProcess, QTimer, qApp
+  from backwardCompatibleQt import QProcess
   qprocess = True
 except:
   qprocess = False
@@ -916,162 +916,7 @@ if qprocess:
   # backward compatibility with old implementation (see CommandWithPopen
   # below).
 
-  #--------------------------------------------------------------------------
-  class CommandWithQProcess( object ):
-    def __init__( self, *args ):
-      '''This class is used to call a command line program from any thread
-      and launch personalized function whenever the command produce output
-      (either standard or error).
-
-      Usage:
-        c = CommandWithQProcess( 'executable', 'first argument','second argument' )
-        c.start()
-        exitStatus = c.wait()
-
-      By default all standard output are redirected to sys.stdout and all error
-      output to sys.stderr. It is possible to change this behaviour by setting
-      the functions called when an output string is available with
-      methods setStdoutAction() and setStderrAction().
-      '''
-      self._mainThreadCalls = mainThreadActions()
-      self._semaphore = threading.Semaphore( 0 )
-      self.args = [str(i) for i in args]
-      self._qprocess = self._mainThreadCalls.call( self._createQProcess )
-      self._stdoutAction = sys.stdout.write
-      self._stderrAction = sys.stderr.write
-
-
-    def start( self ):
-      '''Starts the command. If it cannot be started, a RuntimeError is raised'''
-      if not self._mainThreadCalls.call( self._startProcess ):
-        raise RuntimeError( _t_( 'Cannot start command %s' ) % ( str( self ), ) )
-
-
-    def wait( self ):
-      '''Wait for the command to finish. Upon normal exit, the exit status of
-      the command (i.e. its return value) is returned, otherwise a RuntimeError
-      is raised.'''
-      if self._mainThreadCalls.isInMainThread():
-        # process a local Qt events loop
-        while self._qprocess.isRunning():
-          qApp.processEvents()
-          time.sleep( 0.05 )
-      else:
-        # in a different thread, block on a semaphore until it is finished
-        self._semaphore.acquire()
-      if not self.normalExit:
-        raise RuntimeError( _t_( 'System call exited abnormally' ) )
-      return self.exitStatus
-
-
-    def stop( self ):
-      '''Interrupt a running command. If possible, it tries to terminate the
-      command giving it the possibility to do cleanup before exiting. If the
-      command is still alive ater 15 seconds, it is killed.'''
-      self._mainThreadCalls.push( self._stop )
-
-    def _stop( self ):
-      if neuroConfig.platform == 'windows':
-        # on Windows, don't even try the soft terminate, it always fails
-        self._qprocess.kill()
-        return
-      self._qprocess.tryTerminate()
-      if self._qprocess.isRunning():
-        # If the command is not finished in 15 seconds, kill it
-        # print 'still running... violently killing it in 15 seconds'
-        QTimer.singleShot( 15000, self._qprocess.kill )
-
-
-    def commandName( self ):
-      '''Returns the name of the executable of this command'''
-      return self.args[ 0 ]
-
-
-    def __str__( self ):
-      return' '.join( ["'" + i + "'" for i in self.args ] )
-
-
-    def setStdoutAction( self, callable, *args, **kwargs ):
-      '''Sets a function called each time a string is available on command's
-      standart output. The function is called with the string as a single parameter.'''
-      if args or kwargs:
-        raise RuntimeError( 'Command.setStdoutAction() only accept one argument (new in BrainVISA 3.03)' )
-      self._stdoutAction = callable
-
-
-    def setStderrAction( self, callable, *args, **kwargs ):
-      '''Sets a function called each time a string is available on command's
-      error output. The function is called with the string as a single parameter.'''
-      if args or kwargs:
-        raise RuntimeError( 'Command.setStderrAction() only accept one argument (new in BrainVISA 3.03)' )
-      self._stderrAction = callable
-
-
-    def _createQProcess( self ):
-  #    print threading.currentThread(), '_createQProcess()', self.args
-      qprocess = QProcess()
-      for arg in self.args:
-        qprocess.addArgument( arg )
-
-      qprocess.setCommunication( QProcess.Stdout | QProcess.Stderr )
-
-      qprocess.connect( qprocess,
-                        SIGNAL( 'processExited()' ),
-                        self._processExited )
-      qprocess.connect( qprocess,
-                        SIGNAL( 'launchFinished()' ),
-                        self._processLaunched )
-      qprocess.connect( qprocess, SIGNAL( 'readyReadStdout()' ),
-                        self._readStdout )
-      qprocess.connect( qprocess, SIGNAL( 'readyReadStderr()' ),
-                        self._readStderr )
-      return qprocess
-
-
-    def _startProcess( self ):
-  #    print threading.currentThread(), '_startProcess()', self
-      return self._qprocess.launch( '' )
-
-
-    def _processExited( self ):
-      #print threading.currentThread(), '_processExited()', self
-      self.normalExit = self._qprocess.normalExit()
-      self.exitStatus = self._qprocess.exitStatus()
-      self._semaphore.release()
-
-
-    def _processLaunched( self ):
-      pass
-
-
-    def _filterOutputString( buffer ):
-      # filter '\r', '\b' and similar
-      result = ''
-      for c in buffer:
-        if c == '\b':
-          if len( result ) > 0:
-            result = result[:-1]
-        elif c == '\r':
-          result = ''
-        elif c in ( '\a', '\m', '\x0b' ): # might appear on Mac/Windows
-          pass
-        else:
-          result += c
-      return result
-    _filterOutputString = staticmethod( _filterOutputString )
-
-    def _readStdout( self ):
-      while self._qprocess.canReadLineStdout():
-        line = self._filterOutputString( unicode( self._qprocess.readLineStdout() ) )
-        self._stdoutAction( line + '\n' )
-
-
-    def _readStderr( self ):
-      while self._qprocess.canReadLineStderr():
-        line = self._filterOutputString( unicode( self._qprocess.readLineStderr() ) )
-        self._stderrAction( line + '\n' )
-
-  Command = CommandWithQProcess
+  from qtgui.command import CommandWithQProcess as Command 
 
 else:
   # Here, QProcess is not available. Therefore we provide an implementation
@@ -1836,11 +1681,10 @@ class ExecutionContext:
     the garbage-collection of some of the objects created by the process
     itself (GUI for example).
     '''
-
     result = None
     stackTop = None
     process = getProcessInstance( process )
-
+    
     if self._processStack:
 ##      if neuroConfig.userLevel > 0:
 ##        self.write( '<img alt="" src="' + os.path.join( neuroConfig.iconPath, 'icon_process.png' ) + '" border="0">' \
@@ -1858,61 +1702,64 @@ class ExecutionContext:
     if self._depth() == 1:
       process.isMainProcess = True
       log = neuroConfig.mainLog
-      if neuroConfig.newDatabases:
-        self._allWriteDiskItems = []
-        try: # an exception could occur if the user has not write permission on the database directory
-          for parameterized, attribute, type in process.getAllParameters():
-            if isinstance( type, WriteDiskItem ):
-              item = getattr( parameterized, attribute )
-              if item is not None:
-                dir = os.path.dirname( item.fullPath() )
-                if not os.path.exists( dir ):
-                  os.makedirs( dir )
-                item.uuid()
-                self._allWriteDiskItems.append( [ item, item.modificationHash() ] )
-            elif isinstance( type, ListOf ) and isinstance( type.contentType, WriteDiskItem ):
-              itemList = getattr( parameterized, attribute )
-              if itemList:
-                for item in itemList:
+
+    try: # finally -> processFinished
+      try: # show exception 
+        self._processStarted()
+        
+        if self._depth() == 1:
+          if neuroConfig.newDatabases:
+            self._allWriteDiskItems = []
+            #try: # an exception could occur if the user has not write permission on the database directory
+            for parameterized, attribute, type in process.getAllParameters():
+              if isinstance( type, WriteDiskItem ):
+                item = getattr( parameterized, attribute )
+                if item is not None:
                   dir = os.path.dirname( item.fullPath() )
                   if not os.path.exists( dir ):
                     os.makedirs( dir )
                   item.uuid()
                   self._allWriteDiskItems.append( [ item, item.modificationHash() ] )
-        except:
-          showException()
-          return None 
-      if self._allowHistory:
-        self._historyBookEvent, self._historyBooksContext = HistoryBook.storeProcessStart( self, process )
-    else:
-      log = self._processStack[ -2 ].log
-    if log is not None:
-      newStackTop.log = log.subLog()
-      process._log = newStackTop.log
-      content= '<html><body><h1>' + _t_(process.name) + '</h1><h2>' + _t_('Process identifier') + '</h2>' + process._id + '<h2>' + _t_('Parameters') +'</h2>'
-      for n in process.signature.keys():
-        content += '<em>' + n + '</em> = ' + htmlEscape( str( getattr( process, n, None ) ) ) + '<p>'
-      content += '<h2>' + _t_( 'Output' ) + '</h2>'
-      try:
-        process._outputLog = log.subTextLog()
-        process._outputLogFile = open( process._outputLog.fileName, 'w' )
-        print >> process._outputLogFile, content
-        process._outputLogFile.flush()
-        content = process._outputLog
-      except:
-        content += '<font color=red>' + _t_('Unabled to open log file') + '</font></html></body>'
-        process._outputLog = None
-        process._outputLogFile = None
-
-      self._lastStartProcessLogItem = log.append( _t_(process.name) + ' ' + str(process.instance), html=content,
-                  children=newStackTop.log, icon='icon_process.png' )
-    else:
-      newStackTop.log = None
-
-    newStackTop.thread = threading.currentThread()
-    try:
-      try:
-        self._processStarted()
+              elif isinstance( type, ListOf ) and isinstance( type.contentType, WriteDiskItem ):
+                itemList = getattr( parameterized, attribute )
+                if itemList:
+                  for item in itemList:
+                    dir = os.path.dirname( item.fullPath() )
+                    if not os.path.exists( dir ):
+                      os.makedirs( dir )
+                    item.uuid()
+                    self._allWriteDiskItems.append( [ item, item.modificationHash() ] )
+            #except:
+              #showException()
+          if self._allowHistory:
+            self._historyBookEvent, self._historyBooksContext = HistoryBook.storeProcessStart( self, process )
+        else:
+          log = self._processStack[ -2 ].log
+        if log is not None:
+          newStackTop.log = log.subLog()
+          process._log = newStackTop.log
+          content= '<html><body><h1>' + _t_(process.name) + '</h1><h2>' + _t_('Process identifier') + '</h2>' + process._id + '<h2>' + _t_('Parameters') +'</h2>'
+          for n in process.signature.keys():
+            content += '<em>' + n + '</em> = ' + htmlEscape( str( getattr( process, n, None ) ) ) + '<p>'
+          content += '<h2>' + _t_( 'Output' ) + '</h2>'
+          try:
+            process._outputLog = log.subTextLog()
+            process._outputLogFile = open( process._outputLog.fileName, 'w' )
+            print >> process._outputLogFile, content
+            process._outputLogFile.flush()
+            content = process._outputLog
+          except:
+            content += '<font color=red>' + _t_('Unabled to open log file') + '</font></html></body>'
+            process._outputLog = None
+            process._outputLogFile = None
+    
+          self._lastStartProcessLogItem = log.append( _t_(process.name) + ' ' + str(process.instance), html=content,
+                      children=newStackTop.log, icon='icon_process.png' )
+        else:
+          newStackTop.log = None
+    
+        newStackTop.thread = threading.currentThread()
+            
         self._lastProcessRaisedException = False
         # Check arguments and conversions
         converter = None
@@ -1936,11 +1783,11 @@ class ExecutionContext:
                         break
                     except:
                       pass
-##              if not converter: raise Exception( _t_('Cannot convert format <em>%s</em> to format <em>%s</em> for parameter <em>%s</em>') % ( _t_( v.format.name ), _t_( destinationFormat.name ), n ) )
-##              tmp = self.temporary( destinationFormat )
-##              tmp.type = v.type
-##              tmp.copyAttributes( v )
-##              self.runProcess( converter.name, read = v, write = tmp )
+              ##              if not converter: raise Exception( _t_('Cannot convert format <em>%s</em> to format <em>%s</em> for parameter <em>%s</em>') % ( _t_( v.format.name ), _t_( destinationFormat.name ), n ) )
+              ##              tmp = self.temporary( destinationFormat )
+              ##              tmp.type = v.type
+              ##              tmp.copyAttributes( v )
+              ##              self.runProcess( converter.name, read = v, write = tmp )
               if not c: raise Exception( HTMLMessage(_t_('Cannot convert format <em>%s</em> to format <em>%s</em> for parameter <em>%s</em>') % ( _t_( v.format.name ), _t_( destinationFormat.name ), n )) )
               self.runProcess( c )
               process.setConvertedValue( n, tmp )

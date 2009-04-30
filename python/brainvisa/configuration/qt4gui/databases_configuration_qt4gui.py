@@ -116,7 +116,7 @@ class DatabaseManagerGUI( qt.QWidget ):
     
   def getConfiguredDatabases( self ):
     for i in range(self.lvDatabases.count()):
-      item = self.lvDatabases.itemAt(i)
+      item = self.lvDatabases.item(i)
       directory, selected = item._value
       yield ( directory, (item.checkState()==qt.Qt.Checked) )
 

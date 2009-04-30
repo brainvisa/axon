@@ -38,6 +38,7 @@ import errno
 import registration
 try:
   #errorToDisableScipyVersion() # fail until it is a bit tested and debugged.
+  import scipy
   from scipy.io import loadmat
   import numpy
   from soma import aims
@@ -138,10 +139,15 @@ def execution( self, context ):
     VF = sn3d[ 'VF' ]
     VG = sn3d[ 'VG' ]
     spm5 = False
-    if VF.dtype is numpy.dtype( 'object' ):
-      spm5 = True
+    newmat = False
+    if [ int(x) for x in scipy.version.version.split('.') ] >= [ 0, 7 ]:
+      # mat format representation has changed...
+      newmat = True
       VF = VF[0,0]
       VG = VG[0,0]
+    if len(numpy.where(numpy.diag(numpy.diag(VF.mat[:3,:3])) \
+            ==VF.mat[:3,:3])[0]) != 9:
+      spm5 = True
     MA = numpy.mat( VF.mat ).astype( numpy.double )
     MT = numpy.mat( VG.mat ).astype( numpy.double )
     dimA = numpy.transpose( numpy.mat( VF.dim[:3] ).astype( numpy.double ) )

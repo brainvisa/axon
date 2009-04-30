@@ -1178,25 +1178,28 @@ class ProcessView( QVBox, ExecutionContextGUI ):
 
   def _runButton( self, executionFunction=None ):
     try:
-      # disable run button when clicked to avoid several successive clicks
-      # it is enabled when the process starts, the label of the button switch to interrupt
-      self.btnRun.setEnabled(False)
-      if self._running:
-        self._setInterruptionRequest( neuroProcesses.ExecutionContext.UserInterruption() )
-      else:
-        processView = self._checkReloadProcess()
-        if processView is None:
-          processView = self
-          processView.info.setText( '' )
+      try:
+        # disable run button when clicked to avoid several successive clicks
+        # it is enabled when the process starts, the label of the button switch to interrupt
+        if self.btnRun:
+          self.btnRun.setEnabled(False)
+        if self._running:
+          self._setInterruptionRequest( neuroProcesses.ExecutionContext.UserInterruption() )
         else:
-          processView.info.setText( '' )
-          processView.warning( _t_('processes %s updated') % _t_(processView.process.name) )
-        processView._runningProcess = 0
-        processView._startCurrentProcess( executionFunction )
-    except:
-      self.btnRun.setEnabled(True)
-      showException()
-
+          processView = self._checkReloadProcess()
+          if processView is None:
+            processView = self
+            processView.info.setText( '' )
+          else:
+            processView.info.setText( '' )
+            processView.warning( _t_('processes %s updated') % _t_(processView.process.name) )
+          processView._runningProcess = 0
+          processView._startCurrentProcess( executionFunction )
+      except:
+        showException()
+    finally:
+      if self.btnRun:
+        self.btnRun.setEnabled(True)
 
   def _checkReloadProcess( self ):
     self.readUserValues()

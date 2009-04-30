@@ -13,7 +13,7 @@ import neuroConfig
 from neuroException import showException, HTMLMessage
 
 #----------------------------------------------------------------------------
-class RightClickablePushButton( QToolButton ):
+class RightClickablePushButton( QPushButton ):
   def mousePressEvent( self, e ):
     if e.button() == Qt.RightButton:
       self.emit( SIGNAL( 'rightPressed' ), () )
@@ -50,6 +50,7 @@ class DiskItemEditor( QWidget, DataEditor ):
 
     self.btnShow = RightClickablePushButton( )
     hLayout.addWidget(self.btnShow)
+    self.btnShow.setCheckable(True)
     self.btnShow.setIcon( self.pixShow )
     self.btnShow.setIconSize(QSize(*largeIconSize))
     self.btnShow.setFocusPolicy( Qt.NoFocus )
@@ -62,6 +63,7 @@ class DiskItemEditor( QWidget, DataEditor ):
     self._edit = None
     self.btnEdit = RightClickablePushButton( )
     hLayout.addWidget(self.btnEdit)
+    self.btnEdit.setCheckable(True)
     self.btnEdit.setIcon( self.pixEdit )
     self.btnEdit.setIconSize(QSize(*largeIconSize))
     self.btnEdit.setFocusPolicy( Qt.NoFocus )
