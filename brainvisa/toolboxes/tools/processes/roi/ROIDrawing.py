@@ -57,7 +57,6 @@ def inlineGUI( self, values, context, parent ):
 def execution( self, context ):
   sourceUuid = self.image.uuid( saveMinf=False )
   self.ROI.setMinf( 'source_volume', str( sourceUuid ) )
-  self.ROI.saveMinf()
 
   a = anatomist.Anatomist()
   imageObject = a.loadObject( self.image )

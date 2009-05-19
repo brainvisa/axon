@@ -76,7 +76,7 @@ class CommandWithQProcess( object ):
     is raised.'''
     if self._mainThreadCalls.isInMainThread():
       # process a local Qt events loop
-      while self._qprocess.isRunning():
+      while self._qprocess.state() == self._qprocess.Running:
         qApp.processEvents()
         time.sleep( 0.05 )
     else:
@@ -99,7 +99,7 @@ class CommandWithQProcess( object ):
       self._qprocess.kill()
       return
     self._qprocess.terminate()
-    if self._qprocess.isRunning():
+    if self._qprocess.state() == self._qprocess.Running:
       # If the command is not finished in 15 seconds, kill it
       # print 'still running... violently killing it in 15 seconds'
       QTimer.singleShot( 15000, self._qprocess.kill )

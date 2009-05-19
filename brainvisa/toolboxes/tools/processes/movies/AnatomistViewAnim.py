@@ -339,13 +339,13 @@ def execution( self, context ):
     if self.animation is not None or self.keep_images:
         a.execute("WindowConfig", windows=[win], record_mode = "0" )
         # This is needed to wait for Anatomist to finish what it is doing
-        a.waitEndProcessing()
+        a.sync()
         #a.getInfo()
 
     if self.animation is not None:
         if len( mpegConfig.findEncoders() ) != 0:
             # make sure anatomist has finished its work
-            a.waitEndProcessing()
+            a.sync()
             #a.getInfo()
             context.write( 'temp dir: ', tmp )
             context.write( 'imgbase: ', imgbase )

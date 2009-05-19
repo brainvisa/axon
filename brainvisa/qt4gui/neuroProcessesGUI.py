@@ -456,10 +456,12 @@ class RadioItem(QWidget):
     layout.setMargin(0)
     layout.setSpacing(0)
     self.setLayout(layout)
-    self.radio=QRadioButton("")
+    self.radio=QRadioButton()
     self.radio.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
     layout.addWidget(self.radio)
     group.addButton(self.radio)
+    self.icon=QLabel()
+    layout.addWidget(self.icon)
     self.label=QLabel(text)
     layout.addWidget(self.label)
     layout.addStretch(1)
@@ -473,7 +475,7 @@ class RadioItem(QWidget):
     return self.radio.isChecked()
   
   def setIcon(self, icon):
-    self.label.setPixmap(icon.pixmap(*defaultIconSize))
+    self.icon.setPixmap(icon.pixmap(*defaultIconSize))
   
 #----------------------------------------------------------------------------
 class NodeCheckListItem( QTreeWidgetItem ):

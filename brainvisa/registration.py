@@ -69,7 +69,7 @@ class TransformationManager:
       referential._changeUuid( refId )
       referential.setMinf( 'dimension_count', dimension_count )
       #diskItem.setMinf( 'referential', refId )
-      referential.saveMinf()
+      #referential.saveMinf()
     self.lock.acquire()
     try:
       self.__referentials[ uuid ] = referential
@@ -362,7 +362,7 @@ class DatabasesTransformationManager( TransformationManager ):
         ' does not exist' )
     diskItem.readAndUpdateMinf()
     diskItem.setMinf( 'referential', ref.uuid() )
-    diskItem.saveMinf()
+    #diskItem.saveMinf()
     if neuroConfig.newDatabases:
       self.__databases.insertDiskItem( diskItem, update=True )
 
@@ -410,17 +410,17 @@ class DatabasesTransformationManager( TransformationManager ):
           name = diskItem.type.name
         else:
           name = referential.name
-      referential.setMinf( 'dimension_count', dimension_count )
+      referential.setMinf( 'dimension_count', dimension_count, saveMinf=False )
       if name is not None:    
-        referential.setMinf( 'name', name )
+        referential.setMinf( 'name', name, saveMinf=False )
       if description is not None:    
-        referential.setMinf( 'description', description)
+        referential.setMinf( 'description', description, saveMinf=False)
       if not simulation:
         diskItem.readAndUpdateMinf()
         referential.createParentDirectory()
         diskItem.setMinf( 'referential', referential.uuid() )
         referential.saveMinf()
-        diskItem.saveMinf()
+        #diskItem.saveMinf()
         if neuroConfig.newDatabases:
           self.__databases.insertDiskItem( referential, update=True )
           self.__databases.insertDiskItem( diskItem, update=True )
@@ -442,7 +442,7 @@ class DatabasesTransformationManager( TransformationManager ):
               i = 0
               refs[0] = 'Talairach-MNI template-SPM'
               diskItem.setMinf( 'referentials', refs )
-              diskItem.saveMinf()
+              #diskItem.saveMinf()
             # write a .trm transformation to MNI space here
             trans = atts.get( 'transformations' )
             if trans:
@@ -509,7 +509,7 @@ class DatabasesTransformationManager( TransformationManager ):
         if refs and trans:
           destinationDiskItem.setMinf( 'referentials', refs )
           destinationDiskItem.setMinf( 'transformations', trans )
-        destinationDiskItem.saveMinf()
+        #destinationDiskItem.saveMinf()
         if neuroConfig.newDatabases:
           try:
             self.__databases.insertDiskItem( destinationDiskItem, update=True )
@@ -592,14 +592,14 @@ class DatabasesTransformationManager( TransformationManager ):
         
     if transformation is not None:
       try:
-        transformation.setMinf( 'source_referential', sourceRef.uuid() )
-        transformation.setMinf( 'destination_referential', destRef.uuid() )
+        transformation.setMinf( 'source_referential', sourceRef.uuid(), saveMinf=False )
+        transformation.setMinf( 'destination_referential', destRef.uuid(), saveMinf=False )
       except:
         return None
       if name is not None:
-        transformation.setMinf( 'name', name )
+        transformation.setMinf( 'name', name, saveMinf=False )
       if description is not None:
-        transformation.setMinf( 'description', description )
+        transformation.setMinf( 'description', description, saveMinf=False )
       if not simulation:
         transformation.createParentDirectory()
         transformation.saveMinf()
@@ -618,6 +618,7 @@ class DatabasesTransformationManager( TransformationManager ):
       name = transformation.name
     source_referential = self.referential( source_referential )
     destination_referential = self.referential( destination_referential )
+    transformation.createParentDirectory()
     if source_referential is not None:
       transformation.setMinf( 'source_referential', source_referential.uuid() )
     if destination_referential is not None:
@@ -626,9 +627,8 @@ class DatabasesTransformationManager( TransformationManager ):
       transformation.setMinf( 'name', name )
     if description is not None:
       transformation.setMinf( 'description', name )
-    transformation.createParentDirectory()
     try:
-      transformation.saveMinf()
+      #transformation.saveMinf()
       if neuroConfig.newDatabases:
         self.__databases.insertDiskItem( transformation, update=True )
       self.addTransformation( transformation )
@@ -671,7 +671,7 @@ class DatabasesTransformationManager( TransformationManager ):
         if assign:
           if str(result.uuid()) != oldref and diskItem.isWriteable():
             diskItem.setMinf( 'referential', result.uuid() )
-            diskItem.saveMinf()
+            #diskItem.saveMinf()
           if neuroConfig.newDatabases:
             self.__databases.insertDiskItem( diskItem, update=True )
  

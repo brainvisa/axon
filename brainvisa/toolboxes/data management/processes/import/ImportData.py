@@ -118,7 +118,6 @@ def execution( self, context ):
                          input.fullPath() + '.minf' )
         input.readAndUpdateMinf()
         input.setMinf( 'spm_radio_convention', iradio )
-        input.saveMinf()
     context.runProcess( converter, input, self.output )
 
   else:
@@ -141,4 +140,3 @@ def execution( self, context ):
         radio = 1
       self.output.readAndUpdateMinf()
       self.output.setMinf( 'spm_radio_convention', radio )
-      self.output.saveMinf()

@@ -284,25 +284,29 @@ class DiskItemEditor( QWidget, DataEditor ):
         allPatterns[ flt ] = 1
         filters.append( _t_( f.name ) + ' (' + flt + ')' )
       filters.prepend( _t_( 'Recognized formats' ) + ' (' \
-        + ';'.join( allPatterns.keys() ) + ')' )
+        + ' '.join( allPatterns.keys() ) + ')' )
       filters.append( _t_( 'All files' ) + ' (*)' )
       if dirOnly:
         mode = QFileDialog.Directory
-      self.browseDialog.setMode( mode )
+      self.browseDialog.setFileMode( mode )
       self.browseDialog.setFilters( filters )
-      self.connect( self.browseDialog, SIGNAL( 'accepted' ), self.browseAccepted )
+      self.connect( self.browseDialog, SIGNAL( 'accepted()' ), self.browseAccepted )
     # set current directory
     parent = self._context
     if hasattr( parent, '_currentDirectory' ) and parent._currentDirectory:
-      self.browseDialog.setDir( parent._currentDirectory )
+      self.browseDialog.setDirectory( parent._currentDirectory )
     self.browseDialog.show()
 
   def browseAccepted( self ):
-    value = unicode( self.browseDialog.selectedFile() )
+    value = self.browseDialog.selectedFiles()
+    if (len(value) > 0):
+      value=unicode(value[0])
+    else:
+      value=None
     parent = self._context
     if hasattr( parent, '_currentDirectory' ):
-      parent._currentDirectory = unicode( self.browseDialog.dirPath() )
-    self.setValue( unicode( self.browseDialog.selectedFile() ) )
+      parent._currentDirectory = unicode( self.browseDialog.directory().path() )
+    self.setValue( value )
     
   def valueLinked( self, parameterized, name, value ):
     if isinstance( value, DiskItem ):

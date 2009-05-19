@@ -60,7 +60,5 @@ def execution( self, context ):
     volume_dimensionXYZ  + [ len( self.SPM_files ) ] )
 
 
-  self.SPM_files[0].saveMinf()
-
   if self.display_with_anatomist:
     return context.runProcess( 'AnatomistShowVolume', self.SPM_files[0] )

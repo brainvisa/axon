@@ -46,7 +46,7 @@ except AttributeError:
   pass
 import site
 
-USE_QT4=False
+#USE_QT4=True
 if USE_QT4:
   import PyQt4
 
@@ -148,7 +148,7 @@ def main():
 
     # write information about brainvisa log file
     defaultContext().write("The log file for this session is "+str(neuroConfig.logFileName))
-    # check for expired run information : ask user what to do
+    # check for expired run informatiib supporton : ask user what to do
     neuroConfig.runsInfo.check(defaultContext())
 
     #neuroConfig.runsInfo.check(defaultContext())
@@ -253,7 +253,7 @@ if neuroConfig.shell:
   try:
     import IPython
     if USE_QT4:
-      ipshell = IPython.Shell.IPShellQt( [ '-q4thread' ] )
+      ipshell = IPython.Shell.IPShellQt4( [ '-q4thread' ] )
     else:
       ipshell = IPython.Shell.IPShellQt( [ '-qthread' ] )
     ipshell.mainloop()

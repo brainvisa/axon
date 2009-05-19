@@ -1,4 +1,5 @@
-#! /bin/env python
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import sys, os, stat, pprint
 from soma.minf.api import readMinf, writeMinf
@@ -40,7 +41,10 @@ if len( sys.argv ) > 1:
     item = stack.pop( 0 )
     s = os.stat( item )
     if stat.S_ISDIR( s.st_mode ):
-      stack += [os.path.join(item, i) for i in os.listdir( item )]
+      try:
+        stack += [os.path.join(item, i) for i in os.listdir( item )]
+      except OSError, e:
+        print >> sys.stderr, 'Ignoring directory', repr( item ) +' :',e.strerror
     elif item.endswith( '.minf' ):
       minfTotalSize += s.st_size
       minfs.append( item )
@@ -50,6 +54,7 @@ if len( sys.argv ) > 1:
   # Processing minf files
   totalAttributesDeleted = 0
   totalMinfsModified = 0
+  totalMinfsDeleted = 0
   totalUnreadable = 0
   newTotalSize = 0
   count = 1
@@ -61,8 +66,8 @@ if len( sys.argv ) > 1:
     try:
       minfFileContent = open( minf ).read()
       m = readMinf( minf )[ 0 ]
-      #exec( minfFileContent, m, m )
-      #m = m[ 'attributes' ]
+      if m is None:
+        m = {}
     except Exception, e:
       totalUnreadable += 1
       print >> sys.stderr, '\nCannot read "' + minf + '" (', e, ')'
@@ -76,32 +81,38 @@ if len( sys.argv ) > 1:
         rewrite = True
         del m[ key ]
       # Write minf file if modified
-      if rewrite or forceWrite:
+      if rewrite:
         totalMinfsModified += 1
-        #out = open( minf, 'w' )
-        #out.write( 'attributes = ' )
-        #pprint.pprint( m, stream=out, indent=2 )
-        #out.close()
-        writeMinf( minf, ( m, ) )
-        # Check that written minf has nor error
-        m2 = {}
-        try:
-          #newMinfContent = open( minf ).read()
-          #exec( newMinfContent, m2, m2 )
-          #m2 = m2[ 'attributes' ]
-          m2 = readMinf( minf )[ 0 ]
-        except:
-          m2 = None
-        if m2 != m:
-          f = open( minf, 'w' )
-          f.write( minfFileContent )
-          f.close()
-          print >> sys.stderr, '-'*50 + '\n' + newMinfContent + '\n' + '-'*50
-          raise RuntimeError( 'Error while checking modification of "' + minf + '" (initial content restored)' )
-    newTotalSize += os.stat( minf ).st_size
+      if rewrite or forceWrite:
+        if m:
+          writeMinf( minf, ( m, ) )
+          # Check that written minf has nor error
+          m2 = {}
+          try:
+            m2 = readMinf( minf )[ 0 ]
+          except:
+            m2 = None
+          if m2 != m:
+            f = open( minf, 'w' )
+            f.write( minfFileContent )
+            f.close()
+            print >> sys.stderr, '-'*50 + '\n' + newMinfContent + '\n' + '-'*50
+            raise RuntimeError( 'Error while checking modification of "' + minf + '" (initial content restored)' )
+        else:
+          # No more attributes in minf => file is deleted
+          totalMinfsDeleted += 1
+          os.remove( minf )
+    elif m is not None:
+      # minf was empty => file is deleted
+      totalMinfsDeleted += 1
+      os.remove( minf )
+      
+    if os.path.exists( minf ):
+      newTotalSize += os.stat( minf ).st_size
     count += 1
   print '\nRemoved', totalAttributesDeleted, 'attributes in', \
         totalMinfsModified, 'files'
+  print 'Deleted', totalMinfsDeleted , 'empty minf files'
   print 'New total size:', bytesToString( newTotalSize )
   if totalUnreadable:
     print totalUnreadable, 'files where not readable'

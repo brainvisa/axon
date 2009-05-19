@@ -144,7 +144,7 @@ class DiskItemBrowser( QDialog ):
         allAttributes.append( a )
     for a in allAttributes:
       if a in self._editableAttributes:
-        self._combos[ a ] = self._createCombo( _t_( a ), a, self._write, layoutRow )
+        self._combos[ a ] = self._createCombo( _t_( a ), a, True, layoutRow )
         layoutRow += 1
       elif a != '_database' and a in self._attributesValues:
         self._combos[ a ] = self._createCombo( _t_( a ), a, False, layoutRow )

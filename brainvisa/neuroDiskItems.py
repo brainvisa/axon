@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright CEA and IFR 49 (2000-2005)
 #
 #  This software and supporting documentation were developed by
@@ -485,18 +486,29 @@ class DiskItem:
       self._setOther( attrName, value )
 
 
-  def setMinf( self, attrName, value ):
+  def setMinf( self, attrName, value, saveMinf = True ):
     self._otherAttributes.pop( attrName, None )
     self._minfAttributes[ attrName ] = value
+    if saveMinf:
+      minf = self._readMinf()
+      if minf is None: minf = {}
+      minf[ attrName ] = value
+      self._writeMinf( minf )
   
   
   def minf( self ):
     return self._minfAttributes
   
   
-  def updateMinf( self, dict ):
+  def updateMinf( self, dict, saveMinf = True ):
     for attrName, value in dict.items():
-      self.setMinf( attrName, value )
+      self._otherAttributes.pop( attrName, None )
+      self._minfAttributes[ attrName ] = value
+    if saveMinf:
+      minf = self._readMinf()
+      if minf is None: minf = {}
+      minf.update( dict )
+      self._writeMinf( minf )
   
   
   def isReadable( self ):
@@ -564,7 +576,6 @@ class DiskItem:
   
   
   def saveMinf( self, overrideMinfContent = None ):
-    attrFile = self.minfFileName()
     minfContent = {}
     if self._uuid is not None:
       minfContent[ 'uuid' ] = str( self._uuid )
@@ -572,19 +583,25 @@ class DiskItem:
       minfContent.update( self._minfAttributes )
     else:
       minfContent.update( overrideMinfContent )
-    if self._isTemporary: temporary.manager.registerPath( attrFile )
-    #writeMinf( attrFile, ( minfContent, ) )
-    file = open( attrFile, 'w' )
-    print >> file, 'attributes = ' + repr( minfContent )
-    file.close()
-
-
-  def removeMinf( self, attrName ):
+    if self._isTemporary: temporary.manager.registerPath( self.minfFileName() )
+    self._writeMinf( minfContent )
+  
+  
+  def removeMinf( self, attrName, saveMinf = True ):
     del self._minfAttributes[ attrName ]
+    if saveMinf:
+      minf = self._readMinf()
+      if minf is not None:
+        if minf.pop( attrName, Undefined ) is not Undefined:
+          self._writeMinf( minf )
   
   
-  def clearMinf( self ):
+  def clearMinf( self, saveMinf = True  ):
     self._minfAttributes.clear()
+    if saveMinf:
+      minf = self.minfFileName()
+      if os.path.exists( minf ):
+        os.remove( minf )
   
   
   def _readMinf( self ):
@@ -595,13 +612,24 @@ class DiskItem:
         minfContent = readMinf( f )[ 0 ]
         # Ignor huge DICOM information produced by NMR 
         # and stored in 'dicom' key.
-        minfContent.pop( 'dicom', None )
+        if minfContent: minfContent.pop( 'dicom', None )
         f.close()
         return minfContent
       except:
         showException( beforeError = \
                        _t_('in file <em>%s</em><br>') % attrFile )
     return None
+  
+  
+  def _writeMinf( self, minfContent ):
+    minf = self.minfFileName()
+    if minfContent:
+      file = open( minf, 'w' )
+      print >> file, 'attributes = ' + repr( minfContent )
+      file.close()
+    else:
+      if os.path.exists( minf ):
+        os.remove( minf )
   
   
   def readAndUpdateMinf( self ):
@@ -612,9 +640,10 @@ class DiskItem:
         if attrs.has_key( 'uuid' ):
           self._changeUuid( Uuid( attrs[ 'uuid' ] ) )
           del attrs[ 'uuid' ]
-        self.updateMinf( attrs )
+        self.updateMinf( attrs, saveMinf=False )
     finally:
       self._lock.release()
+  
   
   def createParentDirectory( self ):
     p = os.path.dirname( self.fullPath() )
@@ -658,11 +687,14 @@ class DiskItem:
     self._changeUuid( Uuid( uuid ) )
     if saveMinf:
       attrs = self._readMinf()
-      attrs[ 'uuid' ] = self._uuid
-      try:
-        self.saveMinf( overrideMinfContent=attrs )
-      except Exception, e:
-        raise MinfError( _t_( 'uuid cannot be saved in minf file' ) + ': ' + unicode( e ) )
+      if not attrs:
+        attrs = {}
+      if attrs.get( 'uuid' ) != self._uuid:
+        attrs[ 'uuid' ] = self._uuid
+        try:
+          self._writeMinf( attrs )
+        except Exception, e:
+          raise MinfError( _t_( 'uuid cannot be saved in minf file' ) + ': ' + unicode( e ) )
   
   
   def uuid( self, saveMinf=True ):
@@ -671,12 +703,7 @@ class DiskItem:
       if attrs and attrs.has_key( 'uuid' ):
         self._changeUuid( Uuid( attrs[ 'uuid' ] ) )
       else:
-        self._changeUuid( Uuid() )
-        if saveMinf:
-          try:
-            self.saveMinf( overrideMinfContent=attrs )
-          except Exception, e:
-            raise MinfError( _t_( 'uuid cannot be saved in minf file' ) + ': ' + unicode( e ) )
+        self.setUuid( Uuid(), saveMinf=saveMinf )
     return self._uuid
   
   

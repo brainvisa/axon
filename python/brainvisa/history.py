@@ -148,7 +148,6 @@ class HistoryBook( object ):
       for item in changedItems:
         try:
           item.setMinf( 'lastHistoricalEvent', event.uuid )
-          item.saveMinf()
         except:
           neuroException.showException()
   

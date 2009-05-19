@@ -2,17 +2,13 @@
 <html>
 <head>
 
-  
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-
-  
-  
   <title>BrainVISA ChangeLog</title>
   <style type="text/css">
     BODY {
-	  text-align: justify;
-	  margin: 0.5cm;
-	}
+          text-align: justify;
+          margin: 0.5cm;
+        }
   </style>
 </head>
 
@@ -24,8 +20,9 @@
 <h1>BrainVISA ChangeLog</h1>
 </center>
 
-    
+
 <hr width="100%"> <br>
+<a href="#version-3.1.6"><b>Version 3.1.6</b></a><br>
 <a href="#version-3.1.5"><b>Version 3.1.5</b></a><br>
 <a href="#version-3.1.4"><b>Version 3.1.4</b></a><br>
 <a href="#version-3.1.3"><b>Version 3.1.3</b></a><br>
@@ -42,6 +39,32 @@
 <a href="#version-1.5"><b>Version 1.5</b></a><br>
 
 <br>
+<!---------------------------------------------------------------------------->
+<h2><a name="version-3.1.6">Version 3.1.6</a></h2>
+<blockquote>
+
+<h3>General bug fixes and improvements:</h3>
+<li>Toolboxes can now completely define new ontologies</li>
+<li>Some parameters links fixes and improvements</li>
+<li>Suppressed a latency when clicking the "run" button of a process</li>
+<li>Fix: some attributes in output disk items browser were erroneously hidden, which actually made it impossible to write some specific data types.</li>
+<li>Fixed synchonization problem between database content and minf files content, which could cause strange problems when re-processing or re-importing data over existing older ones</li>
+<li>Several other bug fixes</li>
+
+<h3>Toolboxes:</h3>
+<li>Fixes in animation/mpeg processes</li>
+<li>SPM normalization files conversion has been re-written, and can handle SPM5 and SPM8 files</li>
+<li>T1: the reorientation routines in PrepareSubject have been re-written. They now handle any orientation</li>
+<li>T1: new TalairachTransformationFromNormalization process, to import orientation parameters from a normalization file</li>
+<li>T1: fixes in some memory (re-)allocation functions on Mac, which caused memory consumption to grow anormally and some commands to crash in the T1 pipeline.</li>
+<li>T1: fixes in 3.1 graphs: on sulcus opening descriptors, which mixed unnormalized CSF volume and normalized sulcus surface, on grey_surface_area, and on cortical thickness which could be inaccurate in some locations (sulci fundi especially)</li>
+<li>T1: in 3.1 graphs construction or upgrade variants, the process crashed on Windows. We fixed it by disabling multithreading on Windows, and making it optional on other platforms.</li>
+<li>T1: set total sulci length in global graph attributes of 3.1 sulci graphs</li>
+<li>Sulci: new multi-subject sulci snapshot process</li>
+<li>Sulci: new sulci labels transfer process, to transfer a labeling to another sulci graph with a different segmentation and graph structure (but same subject)</li>
+
+</blockquote>
+
 <!---------------------------------------------------------------------------->
 <h2><a name="version-3.1.5">Version 3.1.5</a></h2>
 <blockquote>

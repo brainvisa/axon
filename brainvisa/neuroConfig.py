@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright CEA and IFR 49 (2000-2005)
 #
 #  This software and supporting documentation were developed by
@@ -123,7 +124,7 @@ def versionText():
 
 processesPath = [ os.path.join( mainPath, 'processes' ) ]
 typesPath = [ os.path.join( mainPath, 'types' ) ]
-sharePath = os.path.join( os.environ[ 'SHFJ_SHARED_PATH' ], 'brainvisa-' + shortVersion )
+sharePath = os.path.join( os.environ.get( 'SHFJ_SHARED_PATH', '' ), 'brainvisa-' + shortVersion )
 if not os.path.isdir( sharePath ):
   # Sources organization
   sharePath = os.path.normpath( os.path.join( mainPath, '..', 'share', 'brainvisa-' + shortVersion ) )
@@ -154,7 +155,7 @@ else:
 
 def getDocPath( path, project = '' ) :
   # Language and documentation
-  result = os.path.join( os.environ[ 'SHFJ_SHARED_PATH' ], 'doc', project )
+  result = os.path.join( os.environ.get( 'SHFJ_SHARED_PATH', '' ), 'doc', project )
   if not os.path.exists( result ):
     result = os.path.normpath( os.path.join( path, '..', 'share', 'doc', project ) )
     if not os.path.exists( result ):
@@ -563,8 +564,8 @@ for toolbox in allToolboxes():
     typesPath.append( toolbox.typesDir )
 
 # add brainvisa shared database to the list of available databases
-for p in ( os.path.join( os.environ.get( 'SHFJ_SHARED_PATH' ), 'shfj-' + shortVersion ),
-           os.path.join( os.environ.get( 'SHFJ_SHARED_PATH' ), 'shfj' ) ):
+for p in ( os.path.join( os.environ.get( 'SHFJ_SHARED_PATH', '' ), 'shfj-' + shortVersion ),
+           os.path.join( os.environ.get( 'SHFJ_SHARED_PATH', '' ), 'shfj' ) ):
   if os.path.isdir( p ):
     dataPath.insert( 0, DatabaseSettings( p ) )
     break

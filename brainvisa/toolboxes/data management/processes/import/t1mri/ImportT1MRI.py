@@ -46,7 +46,7 @@ userLevel = 0
 signature=Signature(
   'input', ReadDiskItem( 'Raw T1 MRI', 'Aims readable volume formats' ),
   'output', WriteDiskItem( 'Raw T1 MRI', [ 'GIS image', 'NIFTI-1 image', 'gz compressed NIFTI-1 image' ], 
-    exactType = 1,
+    exactType = 1
   ),
   'input_spm_orientation', Choice( 'Not applicable' ), 
 )
@@ -134,7 +134,6 @@ def execution( self, context ):
           os.chmod( ominf, s.st_mode | stat.S_IWUSR | stat.S_IWGRP )
         input1.readAndUpdateMinf()
         input1.setMinf( 'spm_radio_convention', iradio )
-        input1.saveMinf()
     input = input1
     if converter._id != 'AimsConverter' or dtype == 'S16':
       if dtype == 'S16':
@@ -185,7 +184,6 @@ def execution( self, context ):
   # the referential can be written in the file header (nifti)
   if self.output.minf().get( 'referential', None ):
     self.output.removeMinf( 'referential' )
-    self.output.saveMinf()
   tm = registration.getTransformationManager()
   ref = tm.createNewReferentialFor( self.output, name='Raw T1 MRI' )
 

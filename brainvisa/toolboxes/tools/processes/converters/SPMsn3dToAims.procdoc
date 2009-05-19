@@ -1,33 +1,62 @@
-<?xml version="1.0" encoding="iso-8859-1" ?>
-<minf version="1.0">
-  <d name="fr" length="3">
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="fr">
     <xhtml name="short">Extrait la partie affine d'une transformation de normalisaiton SPM (*_sn.mat ou *_sn3d.mat) et la convertit en fichier de transformation Aims (*.trm)</xhtml>
-    <d name="parameters" length="4">
+    <d name="parameters">
+      <xhtml name="removeSource">Si ce paramètre est mis à Vrai (True), le fichier matlab d'origine est effacé après conversion. <b>Cette option est fortement déconseillée</b> puisqu'elle peut faire perdre des données précieuses. Ne l'utilisez que si vous savez exactement ce que vous faites.</xhtml>
+      <xhtml name="target">Précise vers quel repère cible la transformation convertie doit aller. Selon la valeur de ce paramètre, le paramètre <b>normalized_volume</b> sera utilisé ou non.</xhtml>
       <xhtml name="read">Fichier de normalisation SPM (SPM99: *_sn3d.mat ou SPM2: *_sn.mat)</xhtml>
+      <xhtml name="normalized_volume">Volume normalisé par SPM. Si ce fichier n'est utilisé que dans le cas <b>target = normalized volume in AIMS orientation</b>. S'il n'est pas utilisé, la matrice extraite sera celle passant du repère d'origine de l'image à celui du template de normalisation utilisé</xhtml>
+      <xhtml name="source_volume">Le volume source qui a servi à établir la normalisation, mais sans être lui-même normalisé. Un autre volume ayant exactement le même champ de vue (nombre et tailles de voxels) peut s'y substituer.</xhtml>
       <xhtml name="write">Fichier de transformation Aims</xhtml>
-      <xhtml name="removeSource">Si ce param�tre est mis � Vrai (True), le fichier matlab d'origine est effac� apr�s conversion. <b>Cette option est fortement d�conseill�e</b> puisqu'elle peut faire perdre des donn�es pr�cieuses. Ne l'utilisez que si vous savez exactement ce que vous faites.</xhtml>
-      <xhtml name="normalized_volume">Volume normalis� par SPM. Si ce fichier n'est pas sp�cifi� (ou pas pr�sent), la matrice extraite sera celle passant du rep�re d'origine de l'image � celui du template de normalisation utilis�</xhtml>
     </d>
-    <xhtml name="long"><p>Seule la partie affine des transformations SPM est extraite des fichiers matlab. En effet les parties �lastiques ne sont pas g�r�es par Aims/Anatomist. Si vous voulez conserver les informations de normalisation non-lin�raires, appliquez la normalisation dans SPM et r��crivez le volume apr�s normalisation (n*.img sous SPM99 ou w*.img sous SPM2).
+    <xhtml name="long"><p>Seule la partie affine des transformations SPM est extraite des fichiers matlab. En effet les parties élastiques ne sont pas gérées par Aims/Anatomist. Si vous voulez conserver les informations de normalisation non-linéraires, appliquez la normalisation dans SPM et réécrivez le volume après normalisation (n*.img sous SPM99 ou w*.img sous SPM &gt;= 2).
 </p>
-<p>Ce traitement appelle Matlab (sans quoi la lecture des fichiers .mat est impossible), vous devez donc avoir matlab install� et correctement configur� sur votre syst�me pour que le convertisseur fonctionne.
+<p>Ce traitement n'utilise plus Matlab, et lit les fichiers .mat grâce au module scipy en Python, ce qui est un grand proprès pour ceux qui, comme moi, ne disposent pas de Matlab.
 </p>
-<p><b>Remarque</b>: les syst�mes de coordonn�es (r�f�rentiels) internnes utilis�s par SPM et Aims sont compl�tement diff�rents. Ainsi en plus de l'extraction proprement dite, des conversions de coordonn�es sont effectu�es. C'est pourquoi vous ne retrouvez pas dans le fichier .trm de sortie le contenu de la matrice affine de SPM. Pour plus d'informations sur les r�f�rentiels et transformations, voyez <a href="http://brainvisa.info/doc/html/aims/en/referentials.html">http://brainvisa.info/doc/html/aims/en/referentials.html</a>.
+<p><b>Remarque</b>: les systèmes de coordonnées (référentiels) internnes utilisés par SPM et Aims sont complètement différents. Ainsi en plus de l'extraction proprement dite, des conversions de coordonnées sont effectuées. C'est pourquoi vous ne retrouvez pas dans le fichier .trm de sortie le contenu de la matrice affine de SPM. Pour plus d'informations sur les référentiels et transformations, voyez <a href="http://brainvisa.info/doc/html/aims/en/referentials.html">http://brainvisa.info/doc/html/aims/en/referentials.html</a>.
+</p>
+<p>La transformation en sortie a comme référentiel source le référentiel AIMS (x: droite vers gauche, y: avant vers arrière, z: haut vers bas, origine au centre du premier voxel à droite, en avant, en haut) du volume source, et comme référentiel destination, selon ce qui est précisé par le paramètre <b>target</b>:
+  <ul>
+    <li><b>target = MNI template</b>: la destination est le template de normalisation, et on suppose qu'il s'agit du référentiel standard du MNI utilisé par SPM.
+    </li>
+    <li><b>target = unspecified template</b>: pareil mais on ne marque pas le référentiel destination comme étant celui du MNI. Le calcul est le même mais l'identité du repère cible n'est pas précisée. C'est le cas lorsqu'on utilise un template de normalisation différent (ou fait maison).
+    </li>
+    <li><b>target = normalized volume in AIMS orientation</b>: cette fois on combine à la transformation vers le template de normalisation une deuxième transformation pour aller vers le repère AIMS de l'image cible (<b>normalized_volume</b>). Cette seconde image doit avoir la transformation vers ce même template dans ses informations d'en-tête.
+    </li>
+  </ul>
+Notez que le paramètre <b>normalized_volume</b> n'est utilisé que dans ce dernier cas <b>target = normalized volume in AIMS orientation</b>.
 </p></xhtml>
   </d>
-  <d name="en" length="3">
+  <d name="en">
     <xhtml name="short">Extracts the affine part of a SPM normalization transformation (*_sn.mat or *_sn3d.mat) and converts it to an Aims transformation file</xhtml>
-    <xhtml name="long"><p>Only the affine part of SPM transformation is extracted from matlib files. Elastic deformations are not handled by Aims/Anatomist. If tou want to keep non-linear information from the norlalization, apply the normalization in SPM and save the normalized volume (n*.img under SPM99 or w*.img under SPM2).
+    <d name="parameters">
+      <xhtml name="removeSource">If this parameter is set to True, the original matlab file is erased after conversion. <b>This option is strongly unadvisable</b> since it can lose some precious information. Use it only if you exactly know what you are doing.</xhtml>
+      <xhtml name="target">Specifies to which referential the converted transformation should transform to. Depending on this parameter value, the <b>normalized_volume</b> will get used or not.</xhtml>
+      <xhtml name="read">SPM normalization file (SPM99: *_sn3d.mat or SPM2: *_sn.mat)</xhtml>
+      <xhtml name="normalized_volume">SPM-normalized volume. This file is only used in the case <b>target = normalized volume in AIMS orientation</b>. If it is not used, the extracted transformation will be the transformation between the original referential to the normalization template.</xhtml>
+      <xhtml name="source_volume">Source volume used to perform the normalization, but which is not resampled in the normalized space. Any other volume with exactly the same field of view (number and size of voxels) could be used instead.</xhtml>
+      <xhtml name="write">Aims transformation file</xhtml>
+    </d>
+    <xhtml name="long"><p>Only the affine part of SPM transformation is extracted from matlib files. Elastic deformations are not handled by Aims/Anatomist. If tou want to keep non-linear information from the norlalization, apply the normalization in SPM and save the normalized volume (n*.img under SPM99 or w*.img under SPM &gt;= 2).
 </p>
-<p>This process calls matlab (otherwise reading .mat files is impossible), therefore you must have Matlab installed and correctly setup on your system for this converter to work.
+<p>This process does not use Matlab any longer, and reads the .mat files thanks to the scipy Python module, which is a great improvement for those who, like me, do not have Matlab.
 </p>
 <p><b>Remarq</b>: internal coordinates systems (referentials) used by SPM and Aims are completely different. So in addition to the matrix extraction itself, some coordinates conversions are done. This is why you don't find in the output .trm file the contents of the affine matrix of SPM. For more information about referentials and transformations, see <a href="http://brainvisa.info/doc/html/aims/en/referentials.html">http://brainvisa.info/doc/html/aims/en/referentials.html</a>.
-</p></xhtml>
-    <d name="parameters" length="4">
-      <xhtml name="read">SPM normalization file (SPM99: *_sn3d.mat or SPM2: *_sn.mat)</xhtml>
-      <xhtml name="write">Aims transformation file</xhtml>
-      <xhtml name="removeSource">If this parameter is set to True, the original matlab file is erased after conversion. <b>This option is strongly unadvisable</b> since it can lose some precious information. Use it only if you exactly know what you are doing.</xhtml>
-      <xhtml name="normalized_volume">SPM-normalized volume. If this file is not specified (or not present), the extracted transformation will be the transformation between the original referential to the normalization template one</xhtml>
-    </d>
+</p>
+<p>The output transformation has as source referential the AIMS referential (x: right to left, y: front to rear, z: top to bottom, origin in the center of the first voxel right, front, top) of the source volume, and as destination referential, depending on the <b>target</b> parameter value:
+  <ul>
+    <li><b>target = MNI template</b>: destination is the normalization template, and it is supposed to be the standard MNI referential used by SPM.
+    </li>
+    <li><b>target = unspecified template</b>: same, but the destination referential is not identified as the MNI template. Calculations are the same. Use this when using a custom or home-made normalization template.
+    </li>
+    <li><b>target = normalized volume in AIMS orientation</b>: in this case the transformation to the normalization template is combined with another transformation going to the AIMS referential of the target image (<b>normalized_volume</b>). This second image should contain the transformation to the same template in its header information.
+    </li>
+  </ul>
+Note that the <b>normalized_volume</b> parameter is only used in this last case <b>target = normalized volume in AIMS orientation</b>.
+</p>
+</xhtml>
   </d>
+</d>
 </minf>

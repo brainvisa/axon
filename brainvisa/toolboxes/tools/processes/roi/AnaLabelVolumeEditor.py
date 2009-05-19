@@ -110,7 +110,7 @@ def execution( self, context ):
   rep = context.ask( "Click here when finished","OK", "Cancel", modal=0 )
   if rep != 1:
     voigraphnum.save(voigraph)
-    a.waitEndProcessing() # make sure that anatomist has finished to process previous commands
+    a.sync() # make sure that anatomist has finished to process previous commands
     #a.getInfo()
     context.system( 'AimsGraphConvert', 
                     '-i', voigraph, 

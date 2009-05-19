@@ -132,7 +132,7 @@ class Quaternion:
                  r[4] * p[0] + r[5] * p[1] + r[6] * p[2], 
                  r[8] * p[0] + r[9] * p[1] + r[10] * p[2] ]
 
-    def transformInverse( self, point ):
+    def transformInverse( self, p ):
         r = self.rotationMatrix()
         return [ r[0] * p[0] + r[4] * p[1] + r[8] * p[2], 
                  r[1] * p[0] + r[5] * p[1] + r[9] * p[2], 

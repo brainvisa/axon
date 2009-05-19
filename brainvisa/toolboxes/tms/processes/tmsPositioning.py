@@ -243,6 +243,6 @@ def execution( self, context ):
     context.mainThreadActions().call( self.installTMSreader, tms )
 
     # wait for end
-    a.waitEndProcessing()
+    a.sync()
     context.ask( _t_( 'Click here to stop' ), _t_( 'Stop' ) )
     context.mainThreadActions().call( self.removeTMSreader )
