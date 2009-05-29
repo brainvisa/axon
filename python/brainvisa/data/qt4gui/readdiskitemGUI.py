@@ -339,7 +339,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
           QIcon( findIconFile( 'browse_read.png' )) )
         setattr( DiskItemListEditor.DiskItemListSelect, 'pixBrowseWrite', 
           QIcon( findIconFile( 'browse_write.png' )) )
-      QWidget.__init__( self, dilEditor.topLevelWidget(), Qt.Dialog  + Qt.WindowStaysOnTopHint )
+      QWidget.__init__( self, dilEditor.topLevelWidget(), Qt.Dialog  | Qt.WindowStaysOnTopHint )
       if name:
         self.setObjectName(name)
       self.setWindowModality(Qt.WindowModal)
@@ -378,7 +378,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
       hb.addWidget( self.btnUp )
 
       self.btnDown = QPushButton( )
-      self.btnDown.setPixmap( self.pixDown )
+      self.btnDown.setIcon( self.pixDown )
       self.btnDown.setEnabled( 0 )
       self.connect( self.btnDown, SIGNAL( 'clicked()' ), self._down )
       hb.addWidget( self.btnDown )
@@ -516,7 +516,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
           write = self.parameter._write,
           enableConversion=self.parameter.enableConversion,
           multiple = True )
-        self.connect( self.findDialog, SIGNAL( 'accepted' ), self.findAccepted )
+        self.connect( self.findDialog, SIGNAL( 'accepted()' ), self.findAccepted )
       else:
         self.findDialog.rescan()
       self.findDialog.show()
@@ -527,12 +527,12 @@ class DiskItemListEditor( QWidget, DataEditor ):
         self.sle.setValue( value )
         self._add()
       else:
-        self.emit( SIGNAL( 'accepted' ), ( value, ) )
+        self.emit( SIGNAL( 'accepted' ), value )
 
     def browsePressed( self ):
       if self.browseDialog is None:
         self.browseDialog = QFileDialog( self.topLevelWidget() )
-        self.browseDialog.setMode( self.browseDialog.ExistingFiles )
+        self.browseDialog.setFileMode( self.browseDialog.ExistingFiles )
         filters = QStringList()
         allPatterns = {}
         dirOnly = 1
@@ -543,13 +543,13 @@ class DiskItemListEditor( QWidget, DataEditor ):
           allPatterns[ flt ] = 1
           filters.append( _t_( f.name ) + ' (' + flt + ')' )
         filters.prepend( _t_( 'Recognized formats' ) + ' (' \
-          + ';'.join( allPatterns.keys() ) + ')' )
+          + ' '.join( allPatterns.keys() ) + ')' )
         filters.append( _t_( 'All files' ) + ' (*)' )
         self.browseDialog.setFilters( filters )
         # self.connect( self.browseDialog, SIGNAL( 'fileSelected( const QString & )' ), self.browseAccepted )
-        self.connect( self.browseDialog, SIGNAL( 'accepted' ), self.browseAccepted )
+        self.connect( self.browseDialog, SIGNAL( 'accepted()' ), self.browseAccepted )
         if dirOnly:
-          self.browseDialog.setMode( self.browseDialog.Directory )
+          self.browseDialog.setFileMode( self.browseDialog.Directory )
         parent = self._context
         if hasattr( parent, '_currentDirectory' ) and parent._currentDirectory:
           self.browseDialog.setDir( parent._currentDirectory )
@@ -558,13 +558,13 @@ class DiskItemListEditor( QWidget, DataEditor ):
     def browseAccepted( self ):
       parent = self._context
       if hasattr( parent, '_currentDirectory' ):
-        parent._currentDirectory = unicode( self.browseDialog.dirPath() )
+        parent._currentDirectory = unicode( self.browseDialog.directory().path() )
       l = [str(i) for i in self.browseDialog.selectedFiles()]
       if self.isVisible():
         self.sle.setValue( l ) 
         self._add()
       else:
-        self.emit( SIGNAL( 'accepted' ), ( l, ) )
+        self.emit( SIGNAL( 'accepted' ), l )
 
 
   def __init__( self, parameter, parent, name, write = 0, context=None ):
@@ -579,13 +579,14 @@ class DiskItemListEditor( QWidget, DataEditor ):
     hb=QHBoxLayout()
     self.setLayout(hb)
     hb.setMargin(0)
+    hb.setSpacing(4)
     self._context = context
     self.parameter = parameter
     self.write = write
     self.sle = StringListEditor( None, name )
     hb.addWidget(self.sle)
     self._value = None
-    self.connect( self.sle, SIGNAL( 'newValidValue' ), name, self._newTextValue )
+    self.connect( self.sle, SIGNAL( 'newValidValue' ), self._newTextValue )
 
     self.btnFind = RightClickablePushButton( )
     hb.addWidget(self.btnFind)

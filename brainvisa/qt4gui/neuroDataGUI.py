@@ -167,8 +167,8 @@ class ChoiceEditor( QComboBox, DataEditor ):
     if name:
       self.setObjectName( name )
     #self.connect( self, SIGNAL( 'returnPressed()' ), self.setFocusNext )
-    self.setSizePolicy( QSizePolicy( QSizePolicy.Expanding, 
-                                     QSizePolicy.Minimum ) )
+    #self.setSizePolicy( QSizePolicy( QSizePolicy.Expanding, 
+                                     #QSizePolicy.Minimum ) )
     self.connect( self, SIGNAL( 'activated( int )' ), self.newValue )
     self.parameter = parameter
     for n, v in self.parameter.values:
@@ -224,8 +224,8 @@ class OpenChoiceEditor( QComboBox, DataEditor ):
       self.setObjectName( name )
     self.setEditable(True)
     #self.connect( self, SIGNAL( 'returnPressed()' ), self.setFocusNext )
-    self.setSizePolicy( QSizePolicy( QSizePolicy.Expanding, 
-                                     QSizePolicy.Minimum ) )
+    #self.setSizePolicy( QSizePolicy( QSizePolicy.Expanding, 
+                                     #QSizePolicy.Minimum ) )
     self.parameter = parameter
     for n, v in self.parameter.values:
       self.addItem( n )

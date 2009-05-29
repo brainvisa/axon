@@ -389,9 +389,13 @@ class DiskItemBrowser( QDialog ):
           values=[v[0] for v in self._database.findAttributes( ( a, ), {}, **required )]
         for v in sorted(values):
           if not v: v = ''
-          if v not in s:
-            cmb.addItem( v )
-            s.add( v )
+          if isinstance( v, basestring ):
+            vstring = quote_string(v)
+          else:
+            vstring=list_to_string(v)
+          if vstring not in s:
+            cmb.addItem( vstring )
+            s.add( vstring )
             if selected is not None and selected == v:
               cmb.setCurrentIndex( cmb.count() - 1 )
       self._ui.lstItems.clear()

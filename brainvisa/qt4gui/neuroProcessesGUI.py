@@ -1303,7 +1303,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
   def _distributeButton( self ):
     self.readUserValues()
     self._iterationDialog = IterationDialog( self, self.process, self )
-    self.connect( self._iterationDialog, SIGNAL( 'accepted' ), 
+    self.connect( self._iterationDialog, SIGNAL( 'accept' ), 
                   self._distributeAccept )
     self._iterationDialog.show()
   
@@ -1315,7 +1315,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
   def _iterateButton( self ):
     self.readUserValues()
     self._iterationDialog = IterationDialog( self, self.process, self )
-    self.connect( self._iterationDialog, SIGNAL( 'accepted' ),
+    self.connect( self._iterationDialog, SIGNAL( 'accept' ),
                   self._iterateAccept )
     self._iterationDialog.show()
 
@@ -1323,7 +1323,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     try:
       params = self._iterationDialog.getLists()
       processes = self.process._iterate( **params )
-      iterationProcess = IterationProcess( self.process.name, processes )
+      iterationProcess = neuroProcesses.IterationProcess( self.process.name, processes )
       showProcess( iterationProcess )
     except:
         neuroException.showException()
@@ -1966,7 +1966,7 @@ class ProcessSelectionWidget( QMainWindow ):
     """
     params = self._iterationDialog.getLists()
     processes = self.currentProcess._iterate( **params )
-    iterationProcess = IterationProcess( self.currentProcess.name, processes )
+    iterationProcess = neuroProcesses.IterationProcess( self.currentProcess.name, processes )
     showProcess( iterationProcess )
     
   def updateList(self):
@@ -2220,7 +2220,7 @@ class ProcessTreesWidget(QSplitter):
       lastSelection=None
       while it.value():
         item=it.value()
-        if item.isVisible():
+        if not item.isHidden():
           if item.model.isLeaf(): # for a leaf (process) search string in name
             if item.model.name.lower().find(name) > -1:
               self.select(widget, item, lastSelection)
@@ -2240,10 +2240,12 @@ class ProcessTreesWidget(QSplitter):
     """
     self.selectIndex(widget.model) # select in left panel (toolbox name)
     self.setCurrentTree(widget) # raise widget of toolbox content
-    widget.ensureItemVisible( item ) # show item (open parents...)
-    widget.setSelected( item, 1 ) # select item
+    item.setHidden(False)
+    #widget.ensureItemVisible( item ) # show item (open parents...)
+    widget.setCurrentItem( item ) # select item
     if lastSelection:# undo last selection
-      lastSelection[0].setSelected(lastSelection[1], 0)
+      lastSelection[1].setSelected(False)
+      #lastSelection[0].setSelected(lastSelection[1], 0)
  
   def selectIndex(self, model):
     """
@@ -2252,13 +2254,14 @@ class ProcessTreesWidget(QSplitter):
     @type model : ProcessTree
     @param model: the process tree to select
     """
-    item=self.treeIndex.child(0)
+    i=0
     found=False
-    while item and not found: # search selected tree corresponding item in treeIndex widget
+    while i<self.treeIndex.topLevelItemCount() and not found: # search selected tree corresponding item in treeIndex widget
+      item=self.treeIndex.topLevelItem(i)
       if item.model==model:
         found=True
-        self.treeIndex.setSelected(item, True)
-      item=item.nextSibling()
+        self.treeIndex.setCurrentItem(item)
+      i+=1
 
   #------ context menu events ------
   def menuNewTabEvent(self):

@@ -311,20 +311,22 @@ def execution( self, context ):
     self.write_graphs=False
     context.warning('Cannot find dot executable. Inheritance graphs won\'t be written.' )
 
+  typeRules = {}
+  typeParent = {}
+  typeChildren = {}
+  
   if self.write_graphs:
     imagesDirectory=os.path.join( ontologyDirectory, 'images' )
     if not os.path.exists( imagesDirectory ):
       os.mkdir( imagesDirectory )
 
-    typeParent = {}
-    typeChildren = {}
-    typeRules = {}
-    #stack = list( database.keysByType )
-    stack = list( allTypes )
-    #allTypes = set( stack )
-    while stack:
-      type = stack.pop( 0 )
-      #allTypes.add( type )
+  #stack = list( database.keysByType )
+  stack = list( allTypes )
+  #allTypes = set( stack )
+  while stack:
+    type = stack.pop( 0 )
+    #allTypes.add( type )
+    if self.write_graphs:
       parentType = type.parent
       if parentType is not None:
         #if parentType not in allTypes:
@@ -332,10 +334,12 @@ def execution( self, context ):
           #stack.append( parentType )
         typeParent[ type.name ] = parentType.name
         typeChildren.setdefault( parentType.name, set() ).add( type.name )
-      # get ontology rules
-      rules=database.fso.typeToPatterns.get(type, None)
-      if rules:
-        typeRules[type.name]=rules
+    # get ontology rules
+    rules=database.fso.typeToPatterns.get(type, None)
+    if rules:
+      typeRules[type.name]=rules
+  
+  if self.write_graphs:
     tmpDot = os.path.join( tmpDatabase.fullPath(), 'tmp.dot' )
     for diskItemType in allTypes :
       type=diskItemType.name
