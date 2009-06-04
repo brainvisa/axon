@@ -97,7 +97,7 @@ _versionString = str( _versionNumber ) + 'a'
     bd = self.buildDir()
     print 'Generating BrainVisa processes documentation...'
     sys.stdout.flush()
-    os.system( os.path.join( bd, 'bin', 'brainvisa' ) \
+    os.system( 'sh ' + os.path.join( bd, 'bin', 'brainvisa' ) \
                + ' -b --updateDocumentation' )
     print 'BrainVisa processes doc done.'
 

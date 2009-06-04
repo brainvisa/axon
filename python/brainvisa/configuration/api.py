@@ -45,7 +45,10 @@ from brainvisa.configuration.anatomist_configuration import AnatomistConfigurati
 from brainvisa.configuration.r_configuration import RConfiguration
 from brainvisa.configuration.matlab_configuration import MatlabConfiguration
 from brainvisa.configuration.distributed_configuration import DistributedBrainVISAConfiguration
-from brainvisa.configuration.nmrserver_configuration import NmrServerConfiguration
+try :
+  from brainvisa.configuration.nmrserver_configuration import NmrServerConfiguration
+except Exception, e :
+  pass
 from soma.wip.configuration import Configuration
 from soma.translation import translate as _
 from brainvisa import shelltools
@@ -61,7 +64,10 @@ def initializeConfiguration():
   configuration.add( 'matlab', MatlabConfiguration() )
   configuration.add( 'distributed_execution',
     DistributedBrainVISAConfiguration() )
-  configuration.add( 'nmrserver', NmrServerConfiguration() )
+  try :
+    configuration.add( 'nmrserver', NmrServerConfiguration() )
+  except Exception, e :
+    pass
 
 
 #------------------------------------------------------------------------------
