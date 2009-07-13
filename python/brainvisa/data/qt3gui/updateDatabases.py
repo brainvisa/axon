@@ -40,8 +40,9 @@ __docformat__ = "epytext en"
 import backwardCompatibleQt as qt
 #from soma.functiontools import partial
 import neuroConfig
-if neuroConfig.newDatabases:
-  from neuroHierarchy import databases
+import neuroHierarchy
+from neuroProcesses import getProcessInstance
+from neuroProcessesGUI import ProcessView
 
 class UpdateDatabasesGUI( qt.QWidget ):
   def __init__( self, parent ):
@@ -56,7 +57,7 @@ class UpdateDatabasesGUI( qt.QWidget ):
     lastItem = None
     selected = False
     if neuroConfig.newDatabases:
-      for database in databases.iterDatabases():
+      for database in neuroHierarchy.databases.iterDatabases():
         item = qt.QCheckListItem( self.lvDatabases, lastItem, database.name, qt.QCheckListItem.CheckBox )
         item.setOn( selected )
         selected = True
@@ -88,7 +89,7 @@ class UpdateDatabasesGUI( qt.QWidget ):
       item = self.lvDatabases.firstChild()
       while item is not None:
         if item.isOn():
-          result.append( databases.database( unicode( item.text( 0 ) ) ) )
+          result.append( neuroHierarchy.databases.database( unicode( item.text( 0 ) ) ) )
         item = item.nextSibling()
       return result
     else:
@@ -103,6 +104,33 @@ class UpdateDatabasesGUI( qt.QWidget ):
         item = item.nextSibling()
       return result
 
+
+_ontologiesModificationDialog = None
+
+def warnUserAboutDatabasesToUpdate():
+  global _ontologiesModificationDialog
+  
+  if [i for i in neuroHierarchy.databases.iterDatabases() if getattr( i, '_mustBeUpdated', False )]:
+    if _ontologiesModificationDialog is not None:
+      # Detect if underlying C++ object has been destroyed (i.e. the window has been closed)
+      try:
+        _ontologiesModificationDialog.name()
+      except RuntimeError:
+        _ontologiesModificationDialog = None
+    if _ontologiesModificationDialog is None:
+      _ontologiesModificationDialog = ProcessView( getProcessInstance( 'updateDatabases' ) )
+      _ontologiesModificationDialog.labName.setText( '<font color=red>' + _t_( 'Some ontologies (i.e. databases organization) have been modified but are used by currently selected databases. To take this modification into account, it is necessary to update the databases selected below. Please click on the "Update" button below.' ) +'</font>' )
+      item = _ontologiesModificationDialog.inlineGUI.lvDatabases.firstChild()
+      while item is not None:
+        item.setOn( False )
+        item = item.nextSibling()
+    item = _ontologiesModificationDialog.inlineGUI.lvDatabases.firstChild()
+    while item is not None:
+      if getattr( neuroHierarchy.databases.database( unicode( item.text() ) ), '_mustBeUpdated', False ):
+        item.setOn( True )
+      item = item.nextSibling()
+    _ontologiesModificationDialog.show()
+    _ontologiesModificationDialog.raiseW()
 
 #def clearDatabases( self, context ):
   #databases = mainThreadActions().call( self.selectedDatabases, context )

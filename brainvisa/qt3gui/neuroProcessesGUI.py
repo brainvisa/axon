@@ -289,8 +289,7 @@ class HTMLBrowser( QWidget ):
       if proc is None:
         print 'No process of name', bvp
       else:
-        win = ProcessView( proc() )
-        win.show()
+        showProcess( proc() )
     elif bvp.startswith( 'http://' ) or bvp.startswith( 'mailto:' ):
       try:
         openWeb(bvp)
@@ -1466,6 +1465,7 @@ class ProcessView( QVBox, ExecutionContextGUI ):
 #----------------------------------------------------------------------------
 def showProcess( process, *args, **kwargs ):
   '''Opens a process window and set the corresponding arguments'''
+  global _mainWindow
   if isinstance( process, type ) and issubclass( process, newProcess.NewProcess ):
     process = process()
   if isinstance( process, newProcess.NewProcess ):
@@ -2461,6 +2461,9 @@ def showMainWindow():
     # window with customizable lists of processes
     _mainWindow = ProcessSelectionWidget()
     _mainWindow.show()
+    for w in qApp.topLevelWidgets():
+      if w is not _mainWindow:
+        w.raiseW()
   else:
     _mainWindow = None
     

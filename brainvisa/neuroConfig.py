@@ -302,6 +302,7 @@ def openDebugFile( fileName ):
 #------------------------------------------------------------------------------
 def editConfiguration():
   import neuroProcesses, neuroHierarchy
+  from brainvisa.data.qtgui.updateDatabases import warnUserAboutDatabasesToUpdate
   global userLevel, dataPath, newDatabases, HTMLBrowser, textEditor, language, docPath
   configuration = Application().configuration
   appGUI = ApplicationQtGUI()
@@ -332,6 +333,8 @@ def editConfiguration():
     docPath=os.path.join(mainDocPath, language)
     os.environ[ 'LANGUAGE' ] = language
     neuroProcesses.updateProcesses()
+  warnUserAboutDatabasesToUpdate()
+
 
 # Parse command Line
 # To use -- <Other options> do not use sys.argv but args (returned by getopt)

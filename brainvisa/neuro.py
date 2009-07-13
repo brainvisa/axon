@@ -67,6 +67,7 @@ import neuroHierarchy
 from neuroHierarchyGUI import *
 from backwardCompatibleQt import *
 from minfExtensions import initializeMinfExtensions
+from brainvisa.data.qtgui.updateDatabases import warnUserAboutDatabasesToUpdate
 
 def system_exit_handler( number, frame ):
   sys.exit()
@@ -162,7 +163,7 @@ def main():
     else:
       readHierarchies( neuroConfig.clearCacheRequest )
     readProcesses( neuroConfig.processesPath )
-    
+    warnUserAboutDatabasesToUpdate()
   except:
     raise
     showException()

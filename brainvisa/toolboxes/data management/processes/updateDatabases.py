@@ -72,6 +72,10 @@ def execution( self, context ):
       database.update(context=context)
     else:
       cacheUpdate( [ database ] )
+    try:
+      del database._mustBeUpdated
+    except AttributeError:
+      pass
 
 
 def inlineGUI( self, values, context, parent, externalRunButton=False ):

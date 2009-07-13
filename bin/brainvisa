@@ -6,6 +6,9 @@
 #   export LD_ASSUME_KERNEL
 # fi
 
+OLDLANG="$LANG"
+LANG=C
+
 # Python program to find a real file across symbolic links
 nosymlink='
 import sys,os
@@ -69,6 +72,9 @@ if neuro:
 else:
   print >> sys.stderr, "Cannot find main BrainVISA directory"
 '
+
+LANG="$OLDLANG"
+unset OLDLANG
 
 # Look for neuro.py
 $python -S -t -c "$runbrainvisa" "$0" "$@"

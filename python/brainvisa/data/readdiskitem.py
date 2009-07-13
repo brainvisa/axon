@@ -9,6 +9,7 @@ import neuroHierarchy
 from neuroException import HTMLMessage
 from brainvisa.data.qtgui.readdiskitemGUI import DiskItemEditor, DiskItemListEditor
 from brainvisa.data.qtgui.diskItemBrowser import diskItemFilter
+from neuroDiskItems import File, Directory
 
 #----------------------------------------------------------------------------
 class ReadDiskItem( Parameter ):
@@ -160,7 +161,21 @@ class ReadDiskItem( Parameter ):
           if _debug is not None:
             print >> _debug, '  DiskItem not created in databases'
           result = self.database.createDiskItemFromFormatExtension( fileName, None )
-          if result is not None:
+          if result is None:
+            if os.path.exists( fileName ):
+              from shfjGlobals import aimsFileInfo
+              file_type = aimsFileInfo( fileName ).get( 'file_type' )
+              if _debug is not None:
+                print >> _debug, '  aimsFileInfo returned file_type =', repr( file_type )
+                if file_type == 'DICOM':
+                  if _debug is not None:
+                    print >> _debug, '  creating DICOM DiskItem'
+                  result = File( fileName, None )
+                  result.format = getFormat( 'DICOM image' )
+                  result.type = None
+                  result._files = [ fileName ]
+                  result.readAndUpdateMinf()
+          else:
             result.readAndUpdateMinf()
         else:
           result.readAndUpdateMinf()
@@ -398,3 +413,4 @@ class ReadDiskItem( Parameter ):
 
   def listEditor( self, parent, name, context ):
     return DiskItemListEditor( self, parent, name, context=context, write=self._write )
+

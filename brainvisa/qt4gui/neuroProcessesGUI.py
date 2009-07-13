@@ -2456,6 +2456,9 @@ def showMainWindow():
     # window with customizable lists of processes
     _mainWindow = ProcessSelectionWidget()
     _mainWindow.show()
+    for w in qApp.topLevelWidgets():
+      if w is not _mainWindow:
+        w.raise_()
   else:
     _mainWindow = None
     
