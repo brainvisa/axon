@@ -302,7 +302,7 @@ if neuroConfig.newDatabases:
                 subdirs=[]
                 files=[]
                 for f in os.listdir(src):
-                  if os.path.isdir(f) and not f.endswith(".data"):
+                  if os.path.isdir(os.path.join(src, f)) and not f.endswith(".data"):
                     subdirs.append(f)
                   else:
                     files.append(f)
@@ -410,7 +410,7 @@ if neuroConfig.newDatabases:
                 files=[]
                 grapheDir=os.path.join(subjectDir, "graphe")
                 for f in os.listdir(grapheDir):
-                  if os.path.isdir(f) and not f.endswith(".data"):
+                  if os.path.isdir(os.path.join(grapheDir, f)) and not f.endswith(".data"):
                     subdirs.append(f)
                   else:
                     files.append(f)
@@ -441,7 +441,7 @@ if neuroConfig.newDatabases:
                 files=[]
                 sulciDir=os.path.join(subjectDir, "sulci")
                 for f in os.listdir(sulciDir):
-                  if os.path.isdir(f) and not f.endswith(".data"):
+                  if os.path.isdir(os.path.join(sulciDir, f)) and not f.endswith(".data"):
                     subdirs.append(f)
                   else:
                     files.append(f)
@@ -453,7 +453,7 @@ if neuroConfig.newDatabases:
                     sulciGraphDirs=[]
                     acquisitionFiles=[]
                     for f in os.listdir(sulciAcquisitionDir):
-                      if os.path.isdir(f) and not f.endswith(".data"):
+                      if os.path.isdir(os.path.join(sulciAcquisitionDir, f)) and not f.endswith(".data"):
                         sulciGraphDirs.append(f)
                       else:
                         acquisitionFiles.append(f)
@@ -483,7 +483,7 @@ if neuroConfig.newDatabases:
                 files=[]
                 segmentDir=os.path.join(subjectDir, "segment")
                 for f in os.listdir(segmentDir):
-                  if os.path.isdir(f) and not f.endswith(".data"):
+                  if os.path.isdir(os.path.join(segmentDir, f)) and not f.endswith(".data"):
                     subdirs.append(f)
                   else:
                     files.append(f)
@@ -521,7 +521,7 @@ if neuroConfig.newDatabases:
       subdirs=[]
       files=[]
       for f in os.listdir(src):
-        if os.path.isdir(f) and not f.endswith(".data"):
+        if os.path.isdir(os.path.join(src, f)) and not f.endswith(".data"):
           subdirs.append(f)
         else:
           files.append(f)
@@ -672,7 +672,7 @@ if neuroConfig.newDatabases:
                 subdirs=[]
                 files=[]
                 for f in os.listdir(diffusionDir):
-                  if os.path.isdir(f) and not f.endswith(".data"):
+                  if os.path.isdir(os.path.join(diffusionDir, f)) and not f.endswith(".data"):
                     subdirs.append(f)
                   else:
                     files.append(f)
@@ -718,7 +718,7 @@ if neuroConfig.newDatabases:
                     sessions=[]
                     files=[]
                     for f in os.listdir(acquisitionDir):
-                      if os.path.isdir(f) and not f.endswith(".data"):
+                      if os.path.isdir(os.path.join(acquisitionDir, f)) and not f.endswith(".data"):
                         sessions.append(f)
                       else:
                         files.append(f)
@@ -857,7 +857,7 @@ if neuroConfig.newDatabases:
                 subdirs=[]
                 files=[]
                 for f in os.listdir(petDir):
-                  if os.path.isdir(f) and not f.endswith(".data"):
+                  if os.path.isdir(os.path.join(petDir, f)) and not f.endswith(".data"):
                     subdirs.append(f)
                   else:
                     files.append(f)
@@ -956,7 +956,7 @@ if neuroConfig.newDatabases:
                   subdirs=[]
                   files=[]
                   for f in os.listdir(segmentDir):
-                    if os.path.isdir(f) and not f.endswith(".data"):
+                    if os.path.isdir(os.path.join(segmentDir, f)) and not f.endswith(".data"):
                       subdirs.append(f)
                     else:
                       files.append(f)
@@ -972,7 +972,7 @@ if neuroConfig.newDatabases:
                   subdirs=[]
                   files=[]
                   for f in os.listdir(grapheDir):
-                    if os.path.isdir(f) and not f.endswith(".data"):
+                    if os.path.isdir(os.path.join(grapheDir, f)) and not f.endswith(".data"):
                       subdirs.append(f)
                     else:
                       files.append(f)

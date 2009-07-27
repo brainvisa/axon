@@ -1376,6 +1376,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 #----------------------------------------------------------------------------
 def showProcess( process, *args, **kwargs ):
   '''Opens a process window and set the corresponding arguments'''
+  global _mainWindow
   if isinstance( process, type ) and issubclass( process, newProcess.NewProcess ):
     process = process()
   if isinstance( process, newProcess.NewProcess ):
@@ -2458,6 +2459,7 @@ def showMainWindow():
     _mainWindow.show()
     for w in qApp.topLevelWidgets():
       if w is not _mainWindow:
+
         w.raise_()
   else:
     _mainWindow = None
@@ -2481,4 +2483,5 @@ def initializeProcessesGUI():
     neuroProcesses._defaultContext = ExecutionContextGUI()
   else:
     exec 'from neuroProcessesGUI import mainThreadActions' in neuroProcesses.__dict__
+
 
