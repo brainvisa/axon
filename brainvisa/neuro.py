@@ -163,7 +163,15 @@ def main():
     else:
       readHierarchies( neuroConfig.clearCacheRequest )
     readProcesses( neuroConfig.processesPath )
-    warnUserAboutDatabasesToUpdate()
+    if neuroConfig.gui:
+      warnUserAboutDatabasesToUpdate()
+    else:
+      toUpdate = [i for i in neuroHierarchy.databases.iterDatabases() if getattr( i, '_mustBeUpdated', False )]
+      if toUpdate:
+        print >> sys.stderr, _t_( 'WARNING' )+':', _t_( 'Some ontologies (i.e. databases organization) have been modified but are used by currently selected databases. To take this modification into account, it is necessary to update the following databases:' )
+        for i in toUpdate:
+          print >> sys.stderr, ' ', i.name
+
   except:
     raise
     showException()
