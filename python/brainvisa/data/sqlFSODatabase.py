@@ -918,6 +918,8 @@ class SQLDatabase( Database ):
       try:
         tableName, tableFields, tableAttributes, sql = self._tableFieldsAndInsertByTypeName[ t ]
       except KeyError:
+        if _debug is not None:
+          print >> _debug, '!findAttributes!  No table for type', t, 'in', repr(self.name)
         continue
       tableAttributes = [ '_diskItem' ] + tableAttributes
       tableFields = [ '_diskItem', 'T._uuid' ] + tableFields[1:]
@@ -941,6 +943,8 @@ class SQLDatabase( Database ):
           select = [ 'COUNT(*)' ]
           typeOnly = True
         else:
+          if _debug is not None:
+            print >> _debug, '!findAttributes!  No attribute selected for type', t, 'in', repr(self.name), 'possible values are:', tableAttributes
           continue
       where = {}
       for f, a in izip( tableFields, tableAttributes ):
