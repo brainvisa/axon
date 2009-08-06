@@ -148,8 +148,8 @@ def main():
       html=neuroConfig.environmentHTML(), icon='brainvisa_small.png' )
 
     # write information about brainvisa log file
-    defaultContext().write("The log file for this session is "+str(neuroConfig.logFileName))
-    # check for expired run informatiib supporton : ask user what to do
+    defaultContext().write("The log file for this session is " + repr(neuroConfig.logFileName) )
+    # check for expired run information : ask user what to do
     neuroConfig.runsInfo.check(defaultContext())
 
     #neuroConfig.runsInfo.check(defaultContext())

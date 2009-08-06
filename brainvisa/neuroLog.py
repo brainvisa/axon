@@ -72,9 +72,12 @@ class LogFileLink( FileLink ):
     self.fileName = unicode( fileName )
   
   def expand( self ):
-    reader = LogFileReader( self.fileName )
-    result = reader.read()
-    reader.close()
+    try:
+      reader = LogFileReader( self.fileName )
+      result = reader.read()
+      reader.close()
+    except:
+      result = [ LogFile.Item( icon='error.png', what='Error', html=neuroException.exceptionHTML() ) ]
     return result
   
   def __getinitargs__( self ):
@@ -139,7 +142,7 @@ class LogFile:
       else:
         for child in self._children:
           if isinstance(child, LogFile.Item):
-            child._expand({})
+            child._expand( {} )
       return children
 
     def icon( self ):
