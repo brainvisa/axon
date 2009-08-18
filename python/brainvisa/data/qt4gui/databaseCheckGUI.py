@@ -266,7 +266,7 @@ class UnknownFilesWidget( ActionsWidget ):
 
       self.importDialog=DiskItemBrowser( self.database, self, write=True, selection=selection, required={'_type' : selection['_type'], '_format' : selection['_format']} )
       self.importDialog.setWindowTitle( _t_( selection[ '_type' ] ) )
-      self.importDialog.connect( self.importDialog, qt.PYSIGNAL( 'accept' ), lambda item=item, action=action: self.importDialogAccepted(item, action) )
+      self.importDialog.connect( self.importDialog, qt.SIGNAL( 'accept' ), lambda item=item, action=action: self.importDialogAccepted(item, action) )
       self.importDialog.show()
 
   def importDialogAccepted(self, item, action):

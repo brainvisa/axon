@@ -232,9 +232,9 @@ class DiskItemBrowser( QDialog ):
       if index >= 0:
         item = self._items[ index ]
         self._ui.textBrowser.setText( self.diskItemDisplayText( item ) )
-        self.emit( SIGNAL('selected'), (item,) )
+        self.emit( SIGNAL('selected'), item )
       else:
-        self.emit( SIGNAL('selected'), ( None,) )
+        self.emit( SIGNAL('selected'), None )
 
   
   def _comboSelected( self, name, index ):
@@ -411,7 +411,7 @@ class DiskItemBrowser( QDialog ):
       if self._ui.lstItems.count():
         self._ui.lstItems.setCurrentRow( 0 )
       else:
-        self.emit( PYSIGNAL('selected'), (None,) )
+        self.emit( SIGNAL('selected'), None )
       for a, cmb in self._combos.iteritems():
         if cmb.isEditable():
           selected = self._selectedAttributes.get( a )
