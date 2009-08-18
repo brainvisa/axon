@@ -233,7 +233,8 @@ class UnknownFilesWidget( ActionsWidget ):
     item=self.actionsList.selectedItem()
     if item:
       # open a dialog to choose where to move
-      dest=unicode(qt.QFileDialog.getExistingDirectory(self.defaultDest, self, "fileDialog", _t_("Choose a directory for destination : ") ))
+      # getExistingDirectory ( QWidget * parent = 0, const QString & caption = QString(), const QString & dir = QString(), Options options = ShowDirsOnly )
+      dest=unicode(qt.QFileDialog.getExistingDirectory(self, _t_("Choose a directory for destination : "), self.defaultDest ))
       action=Move(dest)
       item.setAction(action)
   
@@ -289,7 +290,7 @@ class UnknownFilesWidget( ActionsWidget ):
     Called when the user click on move all button. Set action Move on all unknown file.
     """
     # open a dialog to choose where to move
-    dest=unicode(qt.QFileDialog.getExistingDirectory(self.defaultDest, self, "fileDialog", _t_("Choose a directory for destination : ") ))
+    dest=unicode(qt.QFileDialog.getExistingDirectory(self, _t_("Choose a directory for destination : "), self.defaultDest))
     it = qt.QTreeWidgetItemIterator(self.actionsList)
     while it.value() :
       action=Move(os.path.join(dest, os.path.basename(it.current().model.file)))
