@@ -1449,7 +1449,7 @@ class IterationDialog( QDialog ):
   def accept( self ):
     QDialog.accept( self )
     self.parameterizedWidget.readUserValues()
-    self.emit( SIGNAL( 'accept' ), () )
+    self.emit( SIGNAL( 'accept' ) )
 
 #----------------------------------------------------------------------------
 

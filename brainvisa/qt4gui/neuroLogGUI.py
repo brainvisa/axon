@@ -104,7 +104,7 @@ class LogViewer( QWidget ):
     self.refresh()
 
   def closeEvent( self, event ):
-    self.emit( SIGNAL( 'close' ), () )
+    self.emit( SIGNAL( 'close' ) )
     neuroConfig.unregisterObject( self )
     QWidget.closeEvent( self, event )
 
