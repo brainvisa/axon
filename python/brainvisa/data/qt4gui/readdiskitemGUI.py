@@ -16,7 +16,7 @@ from neuroException import showException, HTMLMessage
 class RightClickablePushButton( QPushButton ):
   def mousePressEvent( self, e ):
     if e.button() == Qt.RightButton:
-      self.emit( SIGNAL( 'rightPressed' ), () )
+      self.emit( SIGNAL( 'rightPressed' ) )
     else:
       QPushButton.mousePressEvent( self, e )
 
