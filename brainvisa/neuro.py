@@ -46,7 +46,7 @@ except AttributeError:
   pass
 import site
 
-USE_QT4=True
+USE_QT4=False
 if USE_QT4:
   import PyQt4
 
