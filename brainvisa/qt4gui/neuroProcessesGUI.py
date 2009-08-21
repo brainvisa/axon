@@ -2437,7 +2437,7 @@ class RemoteContextGUI( QTreeWidgetItem ):
 
   def clear(self):
     for item in self.ipList.values():
-      self.takeItem(item)
+      self.takeChild(self.indexOfChild(item))
       del(item)
       
     self.processList = {}

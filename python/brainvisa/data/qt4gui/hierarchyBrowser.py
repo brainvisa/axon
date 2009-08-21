@@ -288,7 +288,7 @@ class HierarchyBrowser( QWidget ):
             db=neuroHierarchy.databases.database(item.diskItem.get("_database"))
             for f in item.diskItem.existingFiles():
               self.remove(f, db)
-            item.parent().takeItem(item)
+            item.parent().takeChild(item.parent().indexOfChild(item))
     
     def remove(self, file, db=None):
       """
@@ -357,7 +357,7 @@ class HierarchyBrowser( QWidget ):
       Calls when the user has sent a data request. The search results are shown in the main listView.
       """
       if self.searchResult:
-        self.lstHierarchy.takeItem(self.searchResult)
+        self.lstHierarchy.takeTopLevelItem(self.lstHierarchy.indexOfTopLevelItem(self.searchResult))
         del self.searchResult
       self.searchResult=SearchResultItem(self.lstHierarchy)
       sitem=None
