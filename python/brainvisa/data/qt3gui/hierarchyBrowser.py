@@ -155,60 +155,61 @@ class HierarchyBrowser( QWidget ):
           dbItem.expand=False
           dbItem.setPixmap(0, self.pixScan)
           dbItem.iconTooltip=_t_("Directory scan in progress...")
-          db=dbItem.database
-          # scan database to fill the listview
-          #print '!openItem!', dbItem.path
-          gen=db.scanDatabaseDirectories( directoriesToScan=( dbItem.path,), recursion=False, includeUnknowns=True )
-          for item in gen:
-            #print '!openItem! -->', item
-            if self.stop_scanning:
-              break
-            # create or retrieve items for directories in the item's path
-            #path=item.relativePath()
-            path=item.fullPath()
-            if path.startswith( dbItem.path ):
-              path = path[ len( dbItem.path ) + 1: ]
-            splitted = neuroProcesses.pathsplit( path )
-            #print '!openItem!   splitted =', splitted
-            parentDir=dbItem
-            for directory in splitted[ :-1 ]:
-              dirItem=self.searchItem(parentDir, directory)
-              if dirItem is None:
-                dirItem=QListViewItem(parentDir)
-                dirItem.database = parentDir.database
-                dirItem.diskItem=None
-                dirItem.path = os.path.join( parentDir.path, directory )
-                dirItem.setText(0, directory)
-                dirItem.setDragEnabled(True)
-                dirItem.setPixmap( 0, self.pixDirectory )
-                dirItem.setExpandable( True )
-              parentDir=dirItem
-            # now insert the item in its parent dir
-            viewItem = QListViewItem( parentDir )
-            viewItem.database = parentDir.database
-            viewItem.diskItem = item
-            viewItem.path = os.path.join( parentDir.path, splitted[ -1 ] )
-            viewItem.setText( 0, splitted[ -1 ] )
-            viewItem.setDragEnabled(True)
-            # File or Directory
-            if isinstance( item, neuroDiskItems.Directory ):
-              viewItem.setPixmap( 0, self.pixDirectory )
-              viewItem.setExpandable( True )
-              viewItem.iconTooltip=_t_("Directory")
-            else:
-              if item.type is not None:
-                if db.getDiskItemFromFileName(item.fullPath(), None): # item identified and already in the database
-                  viewItem.setPixmap( 0, self.pixFile )
-                  viewItem.iconTooltip=_t_("Identified File in database")
-                else: # item identified but not in the database -> database should be updated
-                  viewItem.setPixmap(0, self.pixNew)
-                  viewItem.iconTooltip=_t_("Identified File not in database")
-              else: # item not identified
-                viewItem.setPixmap( 0, self.pixUnknown )
-                viewItem.iconTooltip=_t_("Unidentified file")
-              viewItem.setExpandable( False )
-            qApp.processEvents()
-          dbItem.setPixmap( 0, self.pixDirectory )
+          db=getattr(dbItem, "database", None)
+          if db is not None:
+            # scan database to fill the listview
+            #print '!openItem!', dbItem.path
+            gen=db.scanDatabaseDirectories( directoriesToScan=( dbItem.path,), recursion=False, includeUnknowns=True )
+            for item in gen:
+              #print '!openItem! -->', item
+              if self.stop_scanning:
+                break
+              # create or retrieve items for directories in the item's path
+              #path=item.relativePath()
+              path=item.fullPath()
+              if path.startswith( dbItem.path ):
+                path = path[ len( dbItem.path ) + 1: ]
+              splitted = neuroProcesses.pathsplit( path )
+              #print '!openItem!   splitted =', splitted
+              parentDir=dbItem
+              for directory in splitted[ :-1 ]:
+                dirItem=self.searchItem(parentDir, directory)
+                if dirItem is None:
+                  dirItem=QListViewItem(parentDir)
+                  dirItem.database = parentDir.database
+                  dirItem.diskItem=None
+                  dirItem.path = os.path.join( parentDir.path, directory )
+                  dirItem.setText(0, directory)
+                  dirItem.setDragEnabled(True)
+                  dirItem.setPixmap( 0, self.pixDirectory )
+                  dirItem.setExpandable( True )
+                parentDir=dirItem
+              # now insert the item in its parent dir
+              viewItem = QListViewItem( parentDir )
+              viewItem.database = parentDir.database
+              viewItem.diskItem = item
+              viewItem.path = os.path.join( parentDir.path, splitted[ -1 ] )
+              viewItem.setText( 0, splitted[ -1 ] )
+              viewItem.setDragEnabled(True)
+              # File or Directory
+              if isinstance( item, neuroDiskItems.Directory ):
+                viewItem.setPixmap( 0, self.pixDirectory )
+                viewItem.setExpandable( True )
+                viewItem.iconTooltip=_t_("Directory")
+              else:
+                if item.type is not None:
+                  if db.getDiskItemFromFileName(item.fullPath(), None): # item identified and already in the database
+                    viewItem.setPixmap( 0, self.pixFile )
+                    viewItem.iconTooltip=_t_("Identified File in database")
+                  else: # item identified but not in the database -> database should be updated
+                    viewItem.setPixmap(0, self.pixNew)
+                    viewItem.iconTooltip=_t_("Identified File not in database")
+                else: # item not identified
+                  viewItem.setPixmap( 0, self.pixUnknown )
+                  viewItem.iconTooltip=_t_("Unidentified file")
+                viewItem.setExpandable( False )
+              qApp.processEvents()
+            dbItem.setPixmap( 0, self.pixDirectory )
       finally: # can occur if the window is closed during this method execution, it is possible because it calls qApp.processEvents
         if doscan:
           self.scanning-=1
