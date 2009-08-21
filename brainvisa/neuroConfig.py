@@ -457,8 +457,8 @@ class RunsInfo:
           if f.startswith("brainvisa") and (f.endswith(".log") or f.endswith(".log~")):
             os.remove(os.path.join(homeBrainVISADir, f) )
       except Exception, e:
+        print "Fail cleaning log files:"
         print e
-        print "Fail cleaning log files.."
     self.currentRun=1
     self.timeout=604800 # 7 days in seconds
     self.runs={}
@@ -488,22 +488,30 @@ class RunsInfo:
       self.write()
       atexit.register(self.delete)
     except Exception, e:
+      print "Fail to get or set current runs information:"
       print e
-      print "Fail to get or set current runs information."
       if os.path.exists( self.file ):
         os.remove(self.file)
       
   def delete(self):
     #print "delete run info "
     if os.path.exists( self.file ):
-      self.runs, self.count = readMinf(self.file)
-      self.runs.pop(self.currentRun, None)
-      self.count=len(self.runs)
-      self.write()
+      try:
+        self.runs, self.count = readMinf(self.file)
+        self.runs.pop(self.currentRun, None)
+        self.count=len(self.runs)
+        self.write()
+      except:
+        pass
 
   def check(self, context):
     if os.path.exists(self.file):
-      self.runs, self.count=readMinf(self.file)
+      try:
+        self.runs, self.count=readMinf(self.file)
+      except Exception, e:
+        print >> sys.stderr, 'Cannot read "' + self.file + '":'
+        print >> sys.stderr, e
+        return
       currentTime = time.time() 
       # check for expired runs
       for n, run in self.runs.items():
