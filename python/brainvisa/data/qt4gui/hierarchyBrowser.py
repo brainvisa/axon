@@ -350,7 +350,7 @@ class HierarchyBrowser( QWidget ):
       """
       self.requestDialog = DiskItemBrowser( neuroHierarchy.databases, selection={}, required={"_type" : "Any Type"} )
       self.requestDialog.setWindowTitle( _t_( "Any Type" ) )
-      self.requestDialog.connect( self.requestDialog, SIGNAL( 'accept' ), self.requestDialogAccepted )
+      self.requestDialog.connect( self.requestDialog, SIGNAL( 'accepted()' ), self.requestDialogAccepted )
       self.requestDialog.show()
   
     def requestDialogAccepted(self):
