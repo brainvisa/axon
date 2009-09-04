@@ -122,9 +122,34 @@ def versionString():
 def versionText():
   return 'BrainVISA ' + versionString()
 
+_sharePath = None
+def getSharePath():
+  global _sharePath
+  if _sharePath is not None:
+    return _sharePath
+  _sharePath = os.environ.get( 'BRAINVISA_SHARE', '' )
+  if not _sharePath:
+    _sharePath = os.environ.get( 'SHFJ_SHARED_PATH', '' )
+    if not _sharePath:
+      path = os.getenv( 'PATH' ).split( os.pathsep )
+      for p in path:
+        if p.endswith( '/bin' ) or p.endswith( '\\bin' ):
+          p = p[:len(p)-4]
+        elif p.endswith( '/bin/commands-links' ) \
+          or p.endswith( '\\bin\\commands-links' ):
+          p = p[:len(p)-19]
+        p = os.path.join( p, 'share' )
+        if os.path.isdir( p ):
+          _sharePath = p
+          break
+    if not _sharePath:
+      # empty string rather than None to avoid later re-detection
+      _sharePath = ''
+  return _sharePath
+
 processesPath = [ os.path.join( mainPath, 'processes' ) ]
 typesPath = [ os.path.join( mainPath, 'types' ) ]
-sharePath = os.path.join( os.environ.get( 'SHFJ_SHARED_PATH', '' ), 'brainvisa-' + shortVersion )
+sharePath = os.path.join( getSharePath(), 'brainvisa-' + shortVersion )
 if not os.path.isdir( sharePath ):
   # Sources organization
   sharePath = os.path.normpath( os.path.join( mainPath, '..', 'share', 'brainvisa-' + shortVersion ) )
@@ -155,7 +180,7 @@ else:
 
 def getDocPath( path, project = '' ) :
   # Language and documentation
-  result = os.path.join( os.environ.get( 'SHFJ_SHARED_PATH', '' ), 'doc', project )
+  result = os.path.join( getSharePath(), 'doc', project )
   if not os.path.exists( result ):
     result = os.path.normpath( os.path.join( path, '..', 'share', 'doc', project ) )
     if not os.path.exists( result ):
@@ -575,8 +600,8 @@ for toolbox in allToolboxes():
     typesPath.append( toolbox.typesDir )
 
 # add brainvisa shared database to the list of available databases
-for p in ( os.path.join( os.environ.get( 'SHFJ_SHARED_PATH', '' ), 'shfj-' + shortVersion ),
-           os.path.join( os.environ.get( 'SHFJ_SHARED_PATH', '' ), 'shfj' ) ):
+for p in ( os.path.join( getSharePath(), 'shfj-' + shortVersion ),
+           os.path.join( getSharePath(), 'shfj' ) ):
   if os.path.isdir( p ):
     dataPath.insert( 0, DatabaseSettings( p ) )
     break
