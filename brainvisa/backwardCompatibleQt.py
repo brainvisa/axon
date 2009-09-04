@@ -75,7 +75,21 @@ if not hasattr( QComboBox, 'setCurrentText' ):
 def setPluginPath():
   if sys.platform[ :6 ] != 'darwin':
     return # not needed on other platforms right now
-  shared = os.getenv( 'SHFJ_SHARED_PATH' )
+  shared = os.getenv( 'BRAINVISA_SHARE' )
+  if not shared:
+    shared = os.getenv( 'SHFJ_SHARED_PATH' )
+  if not shared:
+    path = os.getenv( 'PATH' ).split( os.pathsep )
+    for p in path:
+      if p.endswith( '/bin' ) or p.endswith( '\\bin' ):
+        p = p[:len(p)-4]
+      elif p.endswith( '/bin/commands-links' ) \
+        or p.endswith( '\\bin\\commands-links' ):
+        p = p[:len(p)-19]
+      p = os.path.join( p, 'share' )
+      if os.path.isdir( p ):
+       shared = p
+       break
   if shared is not None:
     p = os.path.normpath( os.path.join( shared, '..', 'lib', 'qt3-plugins' ) )
     QApplication.addLibraryPath( p )
