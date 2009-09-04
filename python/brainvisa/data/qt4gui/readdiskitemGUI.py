@@ -339,7 +339,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
           QIcon( findIconFile( 'browse_read.png' )) )
         setattr( DiskItemListEditor.DiskItemListSelect, 'pixBrowseWrite', 
           QIcon( findIconFile( 'browse_write.png' )) )
-      QWidget.__init__( self, dilEditor.topLevelWidget(), Qt.Dialog  | Qt.WindowStaysOnTopHint )
+      QWidget.__init__( self, dilEditor.topLevelWidget(), Qt.Dialog  | Qt.WindowStaysOnTopHint | Qt.WA_DeleteOnClose )
       if name:
         self.setObjectName(name)
       self.setWindowModality(Qt.WindowModal)
@@ -503,10 +503,10 @@ class DiskItemListEditor( QWidget, DataEditor ):
       
     def _ok( self ):
       self.dilEditor._newValue( self.values )
-      self.close( 1 )
+      self.close( )
       
     def _cancel( self ):
-      self.close( 1 )
+      self.close( )
 
     def findPressed( self ):
       if self.findDialog is None:
