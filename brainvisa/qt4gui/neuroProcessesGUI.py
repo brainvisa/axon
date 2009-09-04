@@ -48,6 +48,7 @@ import weakref
 from soma.minf.xhtml import XHTML
 from brainvisa.debug import debugHere
 from soma.qtgui.api import QtThreadCall, FakeQtThreadCall, TextBrowserWithSearch, bigIconSize, defaultIconSize
+import threading
 try:
   import sip
 except:
@@ -1455,7 +1456,7 @@ class IterationDialog( QDialog ):
 
 class UserDialog( QDialog ): # Ex QSemiModal
   def __init__( self, parent, modal, message, signature, buttons ):
-    flags =  Qt.Window | Qt.Dialog
+    flags =  Qt.Window | Qt.Dialog | Qt.WA_DeleteOnClose
     QDialog.__init__( self, parent, flags )
     self.setWindowModality(Qt.WindowModal)
     layout = QVBoxLayout( )
@@ -1536,7 +1537,7 @@ class UserDialog( QDialog ): # Ex QSemiModal
       condition.acquire()
       condition.notify()
       condition.release()
-      self.close( 1 )
+      self.close( )
     if self._exitLoop:
       self._result = value
       self._exitLoop = 0

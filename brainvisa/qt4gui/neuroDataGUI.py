@@ -501,7 +501,7 @@ class FloatListEditor( NumberListEditor ):
 class ChoiceListEditor( QWidget, DataEditor ):
   class ChoiceListSelect( QWidget ): # Ex QSemiModal
     def __init__( self, clEditor, name ):
-      QWidget.__init__( self, clEditor.topLevelWidget(), Qt.Dialog | Qt.Tool | Qt.WindowStaysOnTop )
+      QWidget.__init__( self, clEditor.topLevelWidget(), Qt.Dialog | Qt.Tool | Qt.WindowStaysOnTop | Qt.WA_DeleteOnClose )
       if name:
         self.setObjectName( name )
       self.setWindowModality(Qt.WindowModal)
@@ -574,10 +574,10 @@ class ChoiceListEditor( QWidget, DataEditor ):
     
     def _ok( self ):
       self.clEditor.setValue( self.value )
-      self.close( 1 )
+      self.close( )
       
     def _cancel( self ):
-      self.close( 1 )
+      self.close( )
   
   def __init__( self, parameter, parent, name ):
     QWidget.__init__( self, parent )
@@ -723,14 +723,14 @@ class PointListEditor( QWidget, DataEditor ):
     self.btnSelect = QPushButton()
     layout.addWidget(self.btnSelect)
     self.btnSelect.setIcon( self.pixSelect )
-    self.btnSelect.setToggleButton( 1 )
-    self.btnSelect.setFocusPolicy( QWidget.NoFocus )
+    self.btnSelect.setCheckable(True)
+    self.btnSelect.setFocusPolicy( Qt.NoFocus )
     self.connect( self.btnSelect, SIGNAL( 'clicked()' ), self.selectPressed )
     
     self.btnErase = QPushButton()
     layout.addWidget(self.btnErase)
     self.btnErase.setIcon( self.pixErase )
-    self.btnSelect.setFocusPolicy( QWidget.NoFocus )
+    self.btnSelect.setFocusPolicy( Qt.NoFocus )
     self.connect( self.btnErase, SIGNAL( 'clicked()' ), self.erasePressed )
     
     self.setValue( None, 1 )
