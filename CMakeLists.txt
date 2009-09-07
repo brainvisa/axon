@@ -10,20 +10,20 @@ BRAINVISA_DEPENDENCY( DEV DEPENDS "${BRAINVISA_PACKAGE_NAME}" RUN "= ${${BRAINVI
 BRAINVISA_DEPENDENCY( RUN DEPENDS python RUN "= ${PYTHON_SHORT_VERSION}" )
 BRAINVISA_DEPENDENCY( DEV DEPENDS python DEV ">= 2.4;<< 3.0" )
 
-
+file( WRITE "${CMAKE_BINARY_DIR}/brainvisa/VERSION" "${${BRAINVISA_PACKAGE_NAME}_VERSION}\n" )
 BRAINVISA_COPY_PYTHON_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/python"
-                            ${PROJECT_NAME} )
+                                 ${PROJECT_NAME} )
 BRAINVISA_COPY_PYTHON_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/brainvisa"
-                            ${PROJECT_NAME} )
+                                 ${PROJECT_NAME} )
 BRAINVISA_COPY_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/share" 
-                     "share/${PROJECT_NAME}-${BRAINVISA_PACKAGE_VERSION_MAJOR}.${BRAINVISA_PACKAGE_VERSION_MINOR}"
-                     ${PROJECT_NAME} )
+                          "share/${PROJECT_NAME}-${BRAINVISA_PACKAGE_VERSION_MAJOR}.${BRAINVISA_PACKAGE_VERSION_MINOR}"
+                          ${PROJECT_NAME} )
 BRAINVISA_COPY_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/bin"
-                     bin
-                     ${PROJECT_NAME} )
+                          bin
+                          ${PROJECT_NAME} )
 BRAINVISA_COPY_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/scripts"
-                     scripts
-                     ${PROJECT_NAME} )
+                          scripts
+                          ${PROJECT_NAME} )
 
 BRAINVISA_CREATE_CMAKE_CONFIG_FILES()
 
