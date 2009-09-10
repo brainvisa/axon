@@ -48,6 +48,7 @@ import weakref
 from soma.minf.xhtml import XHTML
 from brainvisa.debug import debugHere
 from soma.qtgui.api import QtThreadCall, FakeQtThreadCall, TextBrowserWithSearch, bigIconSize, defaultIconSize
+import threading
 try:
   import sip
 except:
@@ -1351,7 +1352,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
   
   def saveAs( self ):
     minf = getattr( self.process, '_savedAs', '' )
-    minf = unicode( QFileDialog.getSaveFileName( minf, 'BrainVISA process (*.bvproc);;All files (*)', None, None, 'Open a process file', ) )
+    minf = unicode( QFileDialog.getSaveFileName( None, 'Open a process file', minf, 'BrainVISA process (*.bvproc);;All files (*)' ) )
     if minf:
       if not minf.endswith( '.bvproc' ):
         minf += '.bvproc'
@@ -1369,7 +1370,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
   @staticmethod
   def open():
-    minf = unicode( QFileDialog.getOpenFileName( '', 'BrainVISA process (*.bvproc);;All files (*)', None, None, 'Open a process file', ))
+    minf = unicode( QFileDialog.getOpenFileName( None, 'Open a process file', '', 'BrainVISA process (*.bvproc);;All files (*)' ))
     if minf:
       showProcess( neuroProcesses.getProcessInstance( minf ) )
 
@@ -1449,13 +1450,13 @@ class IterationDialog( QDialog ):
   def accept( self ):
     QDialog.accept( self )
     self.parameterizedWidget.readUserValues()
-    self.emit( SIGNAL( 'accept' ), () )
+    self.emit( SIGNAL( 'accept' ) )
 
 #----------------------------------------------------------------------------
 
 class UserDialog( QDialog ): # Ex QSemiModal
   def __init__( self, parent, modal, message, signature, buttons ):
-    flags =  Qt.Window | Qt.Dialog
+    flags =  Qt.Window | Qt.Dialog | Qt.WA_DeleteOnClose
     QDialog.__init__( self, parent, flags )
     self.setWindowModality(Qt.WindowModal)
     layout = QVBoxLayout( )
@@ -1536,7 +1537,7 @@ class UserDialog( QDialog ): # Ex QSemiModal
       condition.acquire()
       condition.notify()
       condition.release()
-      self.close( 1 )
+      self.close( )
     if self._exitLoop:
       self._result = value
       self._exitLoop = 0
@@ -2437,7 +2438,7 @@ class RemoteContextGUI( QTreeWidgetItem ):
 
   def clear(self):
     for item in self.ipList.values():
-      self.takeItem(item)
+      self.takeChild(self.indexOfChild(item))
       del(item)
       
     self.processList = {}

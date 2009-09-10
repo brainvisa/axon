@@ -189,7 +189,7 @@ class ProcessExecutionEvent( HistoricalEvent ):
     self.content[ 'window' ] = {
         'position': [ processView.x(), processView.y() ],
         'size': [ processView.width(), processView.height() ],
-        'state': processView.windowState(),
+        #'state': processView.windowState(),
       }
 
 
