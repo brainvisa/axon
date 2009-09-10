@@ -32,7 +32,7 @@
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
-from qt import *
+from PyQt4.Qt import QWidget, QHBoxLayout, QPushButton, SIGNAL, QSize
 from neuroDataGUI import DataEditor
 from brainvisa.data.qtgui.readdiskitemGUI import DiskItemEditor
 
@@ -41,16 +41,24 @@ import neuroPopen2
 import sys
 
 #----------------------------------------------------------------------------
-class LabelSelectionEditor( QHBox, DataEditor ):
+class LabelSelectionEditor( QWidget, DataEditor ):
     def __init__( self, parameter, parent, name ):
         DataEditor.__init__( self )
-        QHBox.__init__( self, parent, name )
+        QWidget.__init__( self, parent )
+        self.setObjectName(name)
+        layout=QHBoxLayout()
+        self.setLayout(layout)
+        layout.setMargin(0)
+        layout.setSpacing(4)
         self.value = parameter
         self._disk = DiskItemEditor( self.value.fileDI, self, 'diskitem', 1 )
-        self._edit = QPushButton( '...', self, 'edit' )
+        layout.addWidget(self._disk)
+        self._edit = QPushButton( '...', self )
+        self._edit.setObjectName('edit')
+        layout.addWidget(self._edit)
         self.connect( self._edit, SIGNAL( 'clicked()' ), self.run )
         self._labelsel = 0
-        self.connect( self._disk, PYSIGNAL( 'newValidValue' ),
+        self.connect( self._disk, SIGNAL( 'newValidValue' ),
                       self.diskItemChanged )
 
     def setValue( self, value, default=0 ):
@@ -97,7 +105,7 @@ class LabelSelectionEditor( QHBox, DataEditor ):
         del self._thread
 
     def newValue( self ):
-        self.emit( PYSIGNAL('newValidValue'), ( self.name(), self.value, ) )
+        self.emit( SIGNAL('newValidValue'), self.name(), self.value )
         #self.emit( PYSIGNAL('noDefault'), ( self.name(),) )
 
     def diskItemChanged( self, name, val):

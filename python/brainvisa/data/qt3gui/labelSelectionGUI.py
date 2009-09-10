@@ -41,21 +41,16 @@ import neuroPopen2
 import sys
 
 #----------------------------------------------------------------------------
-class LabelSelectionEditor( QWidget, DataEditor ):
+class LabelSelectionEditor( QHBox, DataEditor ):
     def __init__( self, parameter, parent, name ):
         DataEditor.__init__( self )
-        QWidget.__init__( self, parent )
-        self.setObjectName(name)
-        layout=QHBoxLayout()
-        self.setLayout(layout)
+        QHBox.__init__( self, parent, name )
         self.value = parameter
         self._disk = DiskItemEditor( self.value.fileDI, self, 'diskitem', 1 )
-        self._edit = QPushButton( '...', self )
-        self._edit.setObjectName('edit')
-        layout.addWidget(self._edit)
+        self._edit = QPushButton( '...', self, 'edit' )
         self.connect( self._edit, SIGNAL( 'clicked()' ), self.run )
         self._labelsel = 0
-        self.connect( self._disk, SIGNAL( 'newValidValue' ),
+        self.connect( self._disk, PYSIGNAL( 'newValidValue' ),
                       self.diskItemChanged )
 
     def setValue( self, value, default=0 ):
@@ -102,7 +97,7 @@ class LabelSelectionEditor( QWidget, DataEditor ):
         del self._thread
 
     def newValue( self ):
-        self.emit( SIGNAL('newValidValue'), self.name(), self.value )
+        self.emit( PYSIGNAL('newValidValue'), ( self.name(), self.value, ) )
         #self.emit( PYSIGNAL('noDefault'), ( self.name(),) )
 
     def diskItemChanged( self, name, val):
