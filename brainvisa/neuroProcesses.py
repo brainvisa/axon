@@ -33,7 +33,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-import traceback, threading, popen2, pickle, formatter, htmllib, operator
+import traceback, threading, pickle, formatter, htmllib, operator
 import inspect, signal, shutil, imp, StringIO, types, copy, weakref
 import cPickle, atexit
 import string
