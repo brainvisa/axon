@@ -136,6 +136,12 @@ class DiskItemBrowser( QDialog ):
     layoutRow += 1
     self._combos = {} # Dictionary of attribute combos (attribute name -> QComboBox instance)
     self._editableAttributes, self._attributesValues = self._database.getAttributesEdition( *self._requestedTypes )
+    self._editableAttributes = tuple( self._editableAttributes )
+    self._editableAttributesValues = dict( ( (i,set()) for i in self._editableAttributes ) )
+    for values in self._database.findAttributes( self._editableAttributes, _type='Any Type' ):
+      for i in xrange( len(values) ):
+        if values[ i ]:
+          self._editableAttributesValues[ self._editableAttributes[ i ] ].add( values[ i ] )
     #print '!DiskItemBrowser! _editableAttributes', self._editableAttributes
     #print '!DiskItemBrowser! _attributesValues', self._attributesValues
     allAttributes = list( self._database.getTypesKeysAttributes( *self._requestedTypes ) )
@@ -347,12 +353,13 @@ class DiskItemBrowser( QDialog ):
         if a in preservedCombos: continue
         selected = self._selectedAttributes.get( a )
         s = combosSets[ a ]
+        values = set( self._editableAttributesValues.get( a, () ) )
         if a in required:
-          values=[required.get(a)]
+          values.update( [required.get(a)] )
         elif a in self._attributesValues and self._write:
-          values=self._attributesValues.get(a)
+          values.update( self._attributesValues.get(a) )
         else:
-          values=[v[0] for v in self._database.findAttributes( ( a, ), {}, **required )]
+          values.update( [v[0] for v in self._database.findAttributes( ( a, ), {}, **required )] )
         for v in sorted(values):
           if not v: v = ''
           if isinstance( v, basestring ):
