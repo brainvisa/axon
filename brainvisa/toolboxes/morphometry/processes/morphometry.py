@@ -33,12 +33,8 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from neuroProcesses import *
-from neuroData import *
-from neuroDataGUI import *
-import threading
-from brainvisa.data.qtgui.readdiskitemGUI import DiskItemEditor
+from brainvisa.data.labelSelection import LabelSelection
 import distutils.spawn
-import neuroPopen2
 import os
 
 name = 'Morphometry statistics'
@@ -50,7 +46,7 @@ selectionmode = 1
 
 def selectionType():
     if selectionmode == 1:
-        return Selection()
+        return LabelSelection()
     else:
         return String()
 
@@ -63,138 +59,6 @@ def changeSelectionMode( mode = 1 ):
     selectionmode = mode
     signature[ 'region' ] = selectionType()
 
-
-class Selection( Parameter ):
-    def __init__( self, model = None, nomencl = None ):
-        Parameter.__init__( self )
-        self.value = {}
-        self.fileDI = WriteDiskItem( 'Labels selection', 'selection' )
-        self.file = None
-        if model:
-            self.value[ 'model' ] = model
-        if nomencl:
-            self.value[ 'nomenclature' ] = nomencl
-
-    def findValue( self, value ):
-        return value
-
-    def editor( self, parent, name, context ):
-        return SelectionEditor( parent, name )
-
-    def listEditor( self, parent, name, context ):
-        return NotImplementedEditor( parent )
-
-    def getAutoSelection( self ):
-        model = self.value.get( 'model' )
-        nom = self.value.get( 'nomenclature' )
-        fsel = self.file
-        psel = self.value.get( 'selection' )
-        cmd = 'AimsLabelSelector -b'
-        if model:
-            cmd += ' -m ' + model
-        if nom:
-            cmd += ' -n ' + nom
-        if psel:
-            cmd += ' -p -'
-        elif fsel:
-            cmd += ' -p "' + fsel.fullPath() + '"'
-        stdout, stdin = neuroPopen2.popen2( cmd )
-        if( psel ):
-            stdin.write( psel )
-            stdin.flush()
-        s = stdout.read()
-        stdin.close()
-        stdout.close()
-        return s
-
-    def writeSelection( self, context = defaultContext() ):
-        s = self.getAutoSelection()
-        if not self.file:
-            self.file = defaultContext().temporary( 'selection' )
-        try:
-            f = open( self.file.fullPath(), 'w' )
-        except:
-            context.write( '<b><font color="#c00000">Warning:</font></b> ' \
-                         'writeSelection: file', self.file.fullPath(),
-                         "can't be written<br>" )
-            self.file = defaultContext().temporary( 'selection' )
-            f = open( self.file.fullPath(), 'w' )
-        f.write( s )
-        f.close()
-        return s
-
-
-class SelectionEditor( QHBox, DataEditor ):
-    def __init__( self, parent, name ):
-        DataEditor.__init__( self )
-        QHBox.__init__( self, parent, name )
-        self.value = Selection()
-        self._disk = DiskItemEditor( self.value.fileDI, self, 'diskitem', 1 )
-        self._edit = QPushButton( '...', self, 'edit' )
-        self.connect( self._edit, SIGNAL( 'clicked()' ), self.run )
-        self._labelsel = 0
-        self.connect( self._disk, PYSIGNAL( 'newValidValue' ),
-                      self.diskItemChanged )
-
-    def setValue( self, value, default=0 ):
-        if value is not None:
-            self.value = value
-        else:
-            self.value = Selection()
-
-    def getValue( self ):
-        return self.value
-
-    def run( self ):
-        if self._labelsel == 0:
-            self._labelsel = 1
-            model = self.value.value.get( 'model' )
-            nom = self.value.value.get( 'nomenclature' )
-            fsel = self.value.file
-            psel = self.value.value.get( 'selection' )
-            cmd = 'AimsLabelSelector'
-            if model:
-                cmd += ' -m ' + model
-            if nom:
-                cmd += ' -n ' + nom
-            if psel:
-                cmd += ' -p -'
-            elif fsel:
-                cmd += ' -p "' + fsel.fullPath() + '"'
-            sys.stdout.flush()
-            self._stdout, self._stdin = neuroPopen2.popen2( cmd )
-            if( psel ):
-                # print 'writing selection:', psel
-                self._stdin.write( psel )
-                self._stdin.flush()
-            self._thread = threading.Thread( target = self.read )
-            self._thread.start()
- 
-    def read( self ):
-        val = self._stdout.read()
-        sys.stdout.flush()
-        del self._stdout
-        del self._stdin
-        if val:
-            self.value.value[ 'selection' ] = val
-            self.newValue()
-        self._labelsel = 0
-        del self._thread
-
-    def newValue( self ):
-        self.emit( PYSIGNAL('newValidValue'), ( self.name(), self.value, ) )
-        #self.emit( PYSIGNAL('noDefault'), ( self.name(),) )
-
-    def diskItemChanged( self, name, val):
-        print 'Selector: file changed:', val
-        self.value.file = val
-        if val is None:
-            print 'temp'
-        else:
-            file = val.fullPath()
-            print file
-            if self.value.value.get( 'selection' ):
-                del self.value.value[ 'selection' ]
 
 
 sign = (
@@ -230,7 +94,7 @@ def initialization( self ):
             nom = None
         sel = self.region
         if sel is None:
-            sel = Selection( mod, nom )
+            sel = LabelSelection( mod, nom )
         else:
             sel.value[ 'model' ] = mod
             sel.value[ 'nomenclature' ] = nom
