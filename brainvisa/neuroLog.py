@@ -33,7 +33,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-import os, sets, threading, shutil, time, weakref
+import os, threading, shutil, time, weakref
 
 from soma.minf.api import iterateMinf, createMinfWriter
 from brainvisa.data import temporary
@@ -181,7 +181,7 @@ class LogFile:
     self.fileName = fileName
     self._parent = parentLog
     self._opened = weakref.WeakValueDictionary()
-    self._closed = sets.Set()
+    self._closed = set()
     if file is None:
       self._file = open( fileName, 'w' )
     else:
