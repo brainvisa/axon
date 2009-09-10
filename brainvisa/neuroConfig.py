@@ -108,16 +108,17 @@ f = os.path.join( mainPath, 'VERSION' )
 if not os.path.exists( f ):
   f = os.path.join( mainPath, '..', 'VERSION' )
 f = open( f )
-shortVersion = f.readline()[:-1]
+fullVersion = f.readline()[:-1]
 f.close()
+shortVersion = '.'.join( fullVersion.split( '.' )[:2] )
 
 def versionNumber():
   global shortVersion
   return float( shortVersion )
 
 def versionString():
-  global shortVersion
-  return shortVersion
+  global fullVersion
+  return fullVersion
 
 def versionText():
   return 'BrainVISA ' + versionString()
@@ -127,9 +128,9 @@ def getSharePath():
   global _sharePath
   if _sharePath is not None:
     return _sharePath
-  _sharePath = os.environ.get( 'BRAINVISA_SHARE', '' )
+  _sharePath = os.environ.get( 'BRAINVISA_SHARE' )
   if not _sharePath:
-    _sharePath = os.environ.get( 'SHFJ_SHARED_PATH', '' )
+    _sharePath = os.environ.get( 'SHFJ_SHARED_PATH' )
     if not _sharePath:
       path = os.getenv( 'PATH' ).split( os.pathsep )
       for p in path:
@@ -149,10 +150,15 @@ def getSharePath():
 
 processesPath = [ os.path.join( mainPath, 'processes' ) ]
 typesPath = [ os.path.join( mainPath, 'types' ) ]
-sharePath = os.path.join( getSharePath(), 'brainvisa-' + shortVersion )
-if not os.path.isdir( sharePath ):
+for projectName in ( 'axon', 'brainvisa' ):
+  sharePath = os.path.join( getSharePath(), projectName + '-' + shortVersion )
+  if os.path.isdir( sharePath ):
+    break
   # Sources organization
-  sharePath = os.path.normpath( os.path.join( mainPath, '..', 'share', 'brainvisa-' + shortVersion ) )
+  sharePath = os.path.normpath( os.path.join( mainPath, '..', 'share', projectName + '-' + shortVersion ) )
+  if os.path.isdir( sharePath ):
+    break
+    
 iconPath = os.path.join( sharePath, 'icons' )
 toolboxesDir = os.path.join( mainPath, 'toolboxes' )
 
@@ -188,7 +194,7 @@ def getDocPath( path, project = '' ) :
   
   return result
 
-docPath = mainDocPath = getDocPath( mainPath, 'brainvisa' + '-' + str( versionNumber() ) )
+docPath = mainDocPath = getDocPath( mainPath, projectName + '-' + str( versionNumber() ) )
 
 _languages = []
 for l in os.listdir( docPath ):
