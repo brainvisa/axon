@@ -1456,7 +1456,7 @@ class IterationDialog( QDialog ):
 
 class UserDialog( QDialog ): # Ex QSemiModal
   def __init__( self, parent, modal, message, signature, buttons ):
-    flags =  Qt.Window | Qt.Dialog | Qt.WA_DeleteOnClose
+    flags =  Qt.Window | Qt.Dialog
     QDialog.__init__( self, parent, flags )
     self.setWindowModality(Qt.WindowModal)
     layout = QVBoxLayout( )
