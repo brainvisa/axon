@@ -31,32 +31,49 @@
 # 
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
-from neuroProcesses import *
-import operator
-from brainvisa.data.qtgui.scalarFeaturesViewer import ScalarFeaturesViewer
 
-name = 'Show Scalar Features'
-roles = ('viewer',)
+from neuroProcesses import *
+import shfjGlobals
+from brainvisa import shelltools
+
+name = 'Aims Mesh Converter'
+roles = ('converter',)
 userLevel = 0
 
-
 signature = Signature(
-  'features', ReadDiskItem( 'Scalar features', 'Aims scalar features' ),
+  'read', ReadDiskItem( 'Mesh', 'Aims mesh formats',
+                        enableConversion = 0 ),
+  'write', WriteDiskItem( 'Mesh',  'Aims mesh formats' ),
+  'preferedFormat', apply( Choice, [ ( '<auto>', None ) ] + map( lambda x: (x,getFormat(x)), shfjGlobals.aimsMeshFormats ) ),
+  'removeSource', Boolean(),
+  'ascii', Boolean(),
 )
 
+def findAppropriateFormat( values, proc ):
+  if values.preferedFormat is None:
+    result = WriteDiskItem( 'Mesh', 'Aims mesh formats' ).findValue( values.read )
+  else:
+    result = WriteDiskItem( 'Mesh', values.preferedFormat ).findValue( values.read )
+  return result
 
-def readData( fileName ):
-  result = {}
-  d = {}
-  if not fileName.endswith( '.features' ):
-    fileName = fileName + '.features'
-  execfile( fileName, globals(), d )
-  return d[ 'attributes' ] 
-    
-      
+def initialization( self ):
+  self.linkParameters( 'write', [ 'read', 'preferedFormat' ], findAppropriateFormat )
+  self.preferedFormat = None
+  self.setOptional( 'preferedFormat' )
+  self.removeSource = 0
+  self.ascii = 0
+
+
 def execution( self, context ):
-  data = readData( self.features.fullPath() )
-  view = mainThreadActions().call( ScalarFeaturesViewer )
-  mainThreadActions().push( view.setData, data )
-  mainThreadActions().push( view.show )
-  return view
+  convert = 0
+  command = [ 'AimsFileConvert', '-i', self.read, '-o', self.write ]
+  if self.ascii:
+    convert = 1
+    command += [ '-a' ]
+
+  if apply( context.system, command ):
+    raise Exception( _t_('Error while converting <em>%s</em> to <em>%s</em>') % \
+                         ( command[ 2 ], command[ 4 ] ) )
+  if self.removeSource:
+    for f in self.read.fullPaths():
+      shelltools.rm( f )
