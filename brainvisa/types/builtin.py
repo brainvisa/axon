@@ -82,13 +82,15 @@ Format( 'GIFTI file', "f|*.gii" )
 Format( 'Z compressed GIFTI file', 'f|*.gii.Z' )
 Format( 'gz compressed GIFTI file', 'f|*.gii.gz' )
 
+Format( 'Texture', 'f|*.tex' )
+Format( 'Z compressed Texture', 'f|*.tex.Z' )
+Format( 'gz compressed Texture', 'f|*.tex.gz' )
+
 Format( 'Moment Vector', "f|*.inv" )
 
 #Format( 'Lipsia design', 'f|*.des' )
 Format( 'Transformation matrix', 'f|*.trm' )
 Format( 'MINC transformation matrix', 'f|*.xfm' )
-
-Format( 'Texture', 'f|*.tex' )
 
 Format( 'Graph', "f|*.arg" )
 Format( 'Graph and data', [ "f|*.arg", "d|*.data" ] )
@@ -167,16 +169,15 @@ volumeFormats = list( shfjGlobals.anatomistVolumeFormats )
 del volumeFormats[ volumeFormats.index( getFormat( 'DICOM image' ) ) ]
 createFormatList( 'BrainVISA volume formats', volumeFormats )
 createFormatList( 'BrainVISA image formats', 'Aims image formats' )
-createFormatList( 'BrainVISA mesh formats',
-  shfjGlobals.anatomistMeshFormats + [ 'GIFTI file', 'Z compressed GIFTI file',
-  'gz compressed GIFTI file' ] )
-  
-  
+createFormatList( 'BrainVISA mesh formats', 'Anatomist mesh formats' )
+createFormatList( 'BrainVISA texture formats', 'Anatomist texture formats' )
+
+
 FileType( '4D Volume', 'Any Type', 'BrainVISA volume formats') #minfAttributes=shfjGlobals.aimsVolumeAttributes )
 FileType( '3D Volume', '4D Volume' )
 FileType( '2D Image', '3D Volume', 'BrainVISA image formats' )
 FileType( 'Mesh', 'Any Type', 'BrainVISA mesh formats' )
-FileType( 'Texture', 'Any Type', 'Texture' )
+FileType( 'Texture', 'Any Type', 'BrainVISA texture formats' )
 FileType( 'Label Texture', 'Texture' )
 FileType( 'Log file', 'Any Type', [ 'Log file', 'Text file' ] )
 FileType( 'Text file', 'Any type', 'Text file' )

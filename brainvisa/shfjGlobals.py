@@ -115,6 +115,16 @@ aimsWriteVolumeFormats = createFormatList(
     'ECAT v image',
     'ECAT i image',
     'JPEG image',
+    'GIF image',
+    'PNG image',
+    'MNG image',
+    'BMP image',
+    'PBM image',
+    'PGM image',
+    'PPM image',
+    'XBM image',
+    'XPM image',
+    'TIFF image',
     'MINC image',
     'NIFTI-1 image',
     'gz compressed NIFTI-1 image',
@@ -152,6 +162,9 @@ anatomistMeshFormats = createFormatList(
     'PLY mesh',
     'Z compressed PLY mesh',
     'gz compressed PLY mesh',
+    'GIFTI file',
+    'Z compressed GIFTI file',
+    'gz compressed GIFTI file',
   )
 )
 
@@ -163,8 +176,30 @@ aimsMeshFormats = createFormatList(
     'MESH mesh',
     'TRI mesh',
     'PLY mesh',
+    'GIFTI file',
   )
 )
+
+aimsTextureFormats = createFormatList(
+  'Aims texture formats',
+  (
+    'Texture',
+    'GIFTI file',
+  )
+)
+
+anatomistTextureFormats = createFormatList(
+  'Anatomist texture formats',
+  (
+    'Texture',
+    'Z compressed Texture',
+    'gz compressed texture',
+    'GIFTI file',
+    'Z compressed GIFTI file',
+    'gz compressed GIFTI file',
+  )
+)
+
 _fileInfoFormats = None
 
 
