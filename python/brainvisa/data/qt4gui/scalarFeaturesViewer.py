@@ -45,22 +45,24 @@ from brainvisa.validation import ValidationError
 qwtAvailable=True
 try:
   try:
-    from Qwt4 import *
-  except:
+    from PyQt4.Qwt5 import *
+  except Exception, e1:
     from qwt import *
-except:
+except Exception, e:
   qwtAvailable=False
     
 def validation():
   if not qwtAvailable:
-    raise ValidationError('Cannot find Qwt4 or qwt module')
+    raise ValidationError('Cannot find PyQt4.Qwt5 or qwt module')
 
 if qwtAvailable:
   class ScalarFeatureCurvesPlotter( QwtPlot ):
     _colors = [ Qt.darkBlue, Qt.blue, Qt.magenta, Qt.darkRed, Qt.darkRed ]
   
     def __init__( self, parent = None, name = '' ):
-      QwtPlot.__init__( self, name, parent )
+      QwtPlot.__init__( self, parent )
+      if name:
+        self.setObjectName(name)
       
     def setData( self, data ):
       self.clear()
