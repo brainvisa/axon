@@ -31,7 +31,7 @@
 # 
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
-from backwardCompatibleQt import QWidget, QTreeWidget, QTreeWidgetItem, QIcon, QHBoxLayout, QVBoxLayout, QTextEdit, QSpacerItem, QSizePolicy, QSize, QPushButton, SIGNAL, qApp, QMenu, QCursor, QStringList, QDrag, QPixmap, QMimeData, Qt, QMessageBox
+from backwardCompatibleQt import QWidget, QTreeWidget, QTreeWidgetItem, QIcon, QHBoxLayout, QVBoxLayout, QTextEdit, QSpacerItem, QSizePolicy, QSize, QPushButton, SIGNAL, qApp, QMenu, QCursor, QStringList, QDrag, QPixmap, QMimeData, Qt, QMessageBox, QPoint, QApplication, QUrl
 import os
 
 from soma.wip.application.api import findIconFile
@@ -87,6 +87,8 @@ class HierarchyBrowser( QWidget ):
       # enable multiple selection
       self.lstHierarchy.setSelectionMode(QTreeWidget.ExtendedSelection)
       self.lstHierarchy.setContextMenuPolicy(Qt.CustomContextMenu) # enables customContextMenuRequested signal to be emited
+      self.lstHierarchy.mousePressEvent=self.mousePressEvent
+      self.lstHierarchy.mouseMoveEvent=self.mouseMoveEvent
       #self.tooltipsViewer=DiskItemToolTip( self.lstHierarchy.viewport() )
       
       self.textEditArea = QTextEdit()
@@ -135,7 +137,8 @@ class HierarchyBrowser( QWidget ):
       self.lstHierarchy.clear()
       self.scanning=0 # count number of scanning items
       self.stop_scanning=False
-
+      self.dragStartPosition=0
+      
       for db in neuroHierarchy.databases.iterDatabases():
         dbItem = QTreeWidgetItem( self.lstHierarchy )
         dbItem.database=db
@@ -377,6 +380,12 @@ class HierarchyBrowser( QWidget ):
       else:
         self.textEditArea.setText( '' )
   
+    #------ Drag&Drop ------
+    def mousePressEvent(self, event):
+      if (event.button() == Qt.LeftButton):
+        self.dragStartPosition = QPoint(event.pos())
+      QTreeWidget.mousePressEvent(self.lstHierarchy, event)
+  
     def mouseMoveEvent(self, event):
       """
       The QDrag object is shown during the drag.
@@ -393,18 +402,18 @@ class HierarchyBrowser( QWidget ):
       # keep a reference to the current dragged item
       d=None
       if items != []:
-        files=QStringList()
+        files=[]
         for item in items:
           if item.diskItem:
             for f in item.diskItem.fullPaths():
-              files.append(f)
+              files.append(QUrl(f))
             minfFile=item.diskItem.minfFileName()
             if os.path.exists(minfFile) and minfFile !=item.diskItem.fullPath():
-              files.append(minfFile)
+              files.append(QUrl(minfFile))
         d=QDrag(self)
-        icon = findIconFile( firstItem=items[0].icon )
-        if icon: # adding an icon which will be visible on drag move, it will be the first item's icon
-          d.setPixmap(QPixmap(icon))
+        #icon = findIconFile( items[0].icon )
+        #if icon: # adding an icon which will be visible on drag move, it will be the first item's icon
+          #d.setPixmap(QPixmap(icon))
         mimeData = QMimeData()
         mimeData.setUrls(files)
         d.setMimeData(mimeData);
