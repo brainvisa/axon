@@ -121,16 +121,7 @@ class ScalarFeaturesViewer( QHBox ):
     
   def __del__( self ):
     # There is a bug when using an QeventFilter on QApplication and
-    # threads. The Hide event is called after the Python   def updateFeatures(self,  features, data ):
-    for name, value in data.items():
-      if operator.isNumberType( value ):
-        features.add( name )
-      elif operator.isMappingType( value ):
-        if value.get( 'mean' ) is not None:
-          features.add( name )
-          continue
-        self.updateFeatures( features, value )
-object has
+    # threads. The Hide event is called after the Python  object has
     # started to be destroyed (after __del__ is called). Even if the
     # event filter does not propagate the event, Python crashes.
     # The easiest workaround I have found is to hide the widget in the
