@@ -33,7 +33,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from neuroProcesses import *
 import operator
-from brainvisa.data.qtgui.scalarFeaturesViewer import ScalarFeaturesViewer
+import brainvisa.data.qtgui.scalarFeaturesViewer as sfv
 
 name = 'Show Scalar Features'
 roles = ('viewer',)
@@ -44,6 +44,8 @@ signature = Signature(
   'features', ReadDiskItem( 'Scalar features', 'Aims scalar features' ),
 )
 
+def validation():
+    sfv.validation()
 
 def readData( fileName ):
   result = {}
@@ -56,7 +58,7 @@ def readData( fileName ):
       
 def execution( self, context ):
   data = readData( self.features.fullPath() )
-  view = mainThreadActions().call( ScalarFeaturesViewer )
+  view = mainThreadActions().call( sfv.ScalarFeaturesViewer )
   mainThreadActions().push( view.setData, data )
   mainThreadActions().push( view.show )
   return view
