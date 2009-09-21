@@ -202,7 +202,6 @@ class DiskItemBrowser( QDialog ):
     if self._ui.lstItems.count():
       index = self._ui.lstItems.currentItem()
       if index >= 0:
-        #item = self._items[ index ]
         item = (self._items[ index ] if isinstance(self._items[ index ], DiskItem) else self._database.getDiskItemFromUuid(self._items[ index ]))
         self._ui.textBrowser.setText( self.diskItemDisplayText( item ) )
         self.emit( PYSIGNAL('selected'), (item,) )
