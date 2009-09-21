@@ -8,21 +8,21 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>838</width>
-            <height>610</height>
+            <width>1087</width>
+            <height>891</height>
         </rect>
     </property>
     <property name="caption">
         <string>Select data from databases</string>
     </property>
-    <grid>
+    <vbox>
         <property name="name">
             <cstring>unnamed</cstring>
         </property>
         <property name="margin">
             <number>3</number>
         </property>
-        <widget class="QLayoutWidget" row="0" column="0" rowspan="1" colspan="2">
+        <widget class="QLayoutWidget">
             <property name="name">
                 <cstring>layout7</cstring>
             </property>
@@ -70,7 +70,184 @@
                 </widget>
             </hbox>
         </widget>
-        <widget class="QLayoutWidget" row="3" column="0" rowspan="1" colspan="2">
+        <widget class="QSplitter">
+            <property name="name">
+                <cstring>splitter2</cstring>
+            </property>
+            <property name="orientation">
+                <enum>Vertical</enum>
+            </property>
+            <widget class="QSplitter">
+                <property name="name">
+                    <cstring>splitter1</cstring>
+                </property>
+                <property name="orientation">
+                    <enum>Horizontal</enum>
+                </property>
+                <widget class="QLayoutWidget">
+                    <property name="name">
+                        <cstring>layout4</cstring>
+                    </property>
+                    <vbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QGroupBox">
+                            <property name="name">
+                                <cstring>EXPORT_attributesFrame</cstring>
+                            </property>
+                            <property name="title">
+                                <string>Filter data on attributes</string>
+                            </property>
+                            <grid>
+                                <property name="name">
+                                    <cstring>unnamed</cstring>
+                                </property>
+                                <property name="margin">
+                                    <number>6</number>
+                                </property>
+                                <property name="spacing">
+                                    <number>5</number>
+                                </property>
+                                <widget class="QLabel" row="0" column="0">
+                                    <property name="name">
+                                        <cstring>textLabel2</cstring>
+                                    </property>
+                                    <property name="text">
+                                        <string>textLabel2</string>
+                                    </property>
+                                </widget>
+                                <widget class="QComboBox" row="0" column="1">
+                                    <property name="name">
+                                        <cstring>comboBox1</cstring>
+                                    </property>
+                                    <property name="sizePolicy">
+                                        <sizepolicy>
+                                            <hsizetype>7</hsizetype>
+                                            <vsizetype>0</vsizetype>
+                                            <horstretch>0</horstretch>
+                                            <verstretch>0</verstretch>
+                                        </sizepolicy>
+                                    </property>
+                                </widget>
+                            </grid>
+                        </widget>
+                        <widget class="QLayoutWidget">
+                            <property name="name">
+                                <cstring>layout3</cstring>
+                            </property>
+                            <hbox>
+                                <property name="name">
+                                    <cstring>unnamed</cstring>
+                                </property>
+                                <spacer>
+                                    <property name="name">
+                                        <cstring>spacer2</cstring>
+                                    </property>
+                                    <property name="orientation">
+                                        <enum>Horizontal</enum>
+                                    </property>
+                                    <property name="sizeType">
+                                        <enum>Expanding</enum>
+                                    </property>
+                                    <property name="sizeHint">
+                                        <size>
+                                            <width>21</width>
+                                            <height>20</height>
+                                        </size>
+                                    </property>
+                                </spacer>
+                                <widget class="QPushButton">
+                                    <property name="name">
+                                        <cstring>EXPORT_btnReset</cstring>
+                                    </property>
+                                    <property name="text">
+                                        <string>Reset</string>
+                                    </property>
+                                </widget>
+                                <spacer>
+                                    <property name="name">
+                                        <cstring>spacer2_2</cstring>
+                                    </property>
+                                    <property name="orientation">
+                                        <enum>Horizontal</enum>
+                                    </property>
+                                    <property name="sizeType">
+                                        <enum>Expanding</enum>
+                                    </property>
+                                    <property name="sizeHint">
+                                        <size>
+                                            <width>21</width>
+                                            <height>20</height>
+                                        </size>
+                                    </property>
+                                </spacer>
+                            </hbox>
+                        </widget>
+                    </vbox>
+                </widget>
+                <widget class="QGroupBox">
+                    <property name="name">
+                        <cstring>EXPORT_ResultFrame</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>3</hsizetype>
+                            <vsizetype>5</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="title">
+                        <string>Resultats du filtre / Nom(s) suggere(s)</string>
+                    </property>
+                    <property name="flat">
+                        <bool>true</bool>
+                    </property>
+                    <vbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <property name="margin">
+                            <number>0</number>
+                        </property>
+                        <property name="spacing">
+                            <number>0</number>
+                        </property>
+                        <widget class="QListBox">
+                            <property name="name">
+                                <cstring>EXPORT_lstItems</cstring>
+                            </property>
+                            <property name="toolTip" stdset="0">
+                                <string>Select a filename in the database.&lt;br&gt; In read mode, the listed files correspond to datas available in the database&lt;br&gt;In write mode, listed filenames aren't necessary present already, but no warning will occur if you overwrite existing entries.</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>EXPORT_labItems</cstring>
+                            </property>
+                            <property name="text">
+                                <string></string>
+                            </property>
+                        </widget>
+                    </vbox>
+                </widget>
+            </widget>
+            <widget class="QTextBrowser">
+                <property name="name">
+                    <cstring>EXPORT_textBrowser</cstring>
+                </property>
+                <property name="sizePolicy">
+                    <sizepolicy>
+                        <hsizetype>7</hsizetype>
+                        <vsizetype>3</vsizetype>
+                        <horstretch>16</horstretch>
+                        <verstretch>0</verstretch>
+                    </sizepolicy>
+                </property>
+            </widget>
+        </widget>
+        <widget class="QLayoutWidget">
             <property name="name">
                 <cstring>layout3</cstring>
             </property>
@@ -132,168 +309,7 @@
                 </widget>
             </hbox>
         </widget>
-        <widget class="QLayoutWidget" row="1" column="0">
-            <property name="name">
-                <cstring>layout4</cstring>
-            </property>
-            <vbox>
-                <property name="name">
-                    <cstring>unnamed</cstring>
-                </property>
-                <widget class="QGroupBox">
-                    <property name="name">
-                        <cstring>EXPORT_attributesFrame</cstring>
-                    </property>
-                    <property name="title">
-                        <string>Filter data on attributes</string>
-                    </property>
-                    <grid>
-                        <property name="name">
-                            <cstring>unnamed</cstring>
-                        </property>
-                        <property name="margin">
-                            <number>6</number>
-                        </property>
-                        <property name="spacing">
-                            <number>5</number>
-                        </property>
-                        <widget class="QLabel" row="0" column="0">
-                            <property name="name">
-                                <cstring>textLabel2</cstring>
-                            </property>
-                            <property name="text">
-                                <string>textLabel2</string>
-                            </property>
-                        </widget>
-                        <widget class="QComboBox" row="0" column="1">
-                            <property name="name">
-                                <cstring>comboBox1</cstring>
-                            </property>
-                            <property name="sizePolicy">
-                                <sizepolicy>
-                                    <hsizetype>7</hsizetype>
-                                    <vsizetype>0</vsizetype>
-                                    <horstretch>0</horstretch>
-                                    <verstretch>0</verstretch>
-                                </sizepolicy>
-                            </property>
-                        </widget>
-                    </grid>
-                </widget>
-                <widget class="QLayoutWidget">
-                    <property name="name">
-                        <cstring>layout3</cstring>
-                    </property>
-                    <hbox>
-                        <property name="name">
-                            <cstring>unnamed</cstring>
-                        </property>
-                        <spacer>
-                            <property name="name">
-                                <cstring>spacer2</cstring>
-                            </property>
-                            <property name="orientation">
-                                <enum>Horizontal</enum>
-                            </property>
-                            <property name="sizeType">
-                                <enum>Expanding</enum>
-                            </property>
-                            <property name="sizeHint">
-                                <size>
-                                    <width>21</width>
-                                    <height>20</height>
-                                </size>
-                            </property>
-                        </spacer>
-                        <widget class="QPushButton">
-                            <property name="name">
-                                <cstring>EXPORT_btnReset</cstring>
-                            </property>
-                            <property name="text">
-                                <string>Reset</string>
-                            </property>
-                        </widget>
-                        <spacer>
-                            <property name="name">
-                                <cstring>spacer2_2</cstring>
-                            </property>
-                            <property name="orientation">
-                                <enum>Horizontal</enum>
-                            </property>
-                            <property name="sizeType">
-                                <enum>Expanding</enum>
-                            </property>
-                            <property name="sizeHint">
-                                <size>
-                                    <width>21</width>
-                                    <height>20</height>
-                                </size>
-                            </property>
-                        </spacer>
-                    </hbox>
-                </widget>
-            </vbox>
-        </widget>
-        <widget class="QGroupBox" row="1" column="1">
-            <property name="name">
-                <cstring>EXPORT_ResultFrame</cstring>
-            </property>
-            <property name="sizePolicy">
-                <sizepolicy>
-                    <hsizetype>3</hsizetype>
-                    <vsizetype>5</vsizetype>
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                </sizepolicy>
-            </property>
-            <property name="title">
-                <string>Resultats du filtre / Nom(s) suggere(s)</string>
-            </property>
-            <property name="flat">
-                <bool>true</bool>
-            </property>
-            <vbox>
-                <property name="name">
-                    <cstring>unnamed</cstring>
-                </property>
-                <property name="margin">
-                    <number>0</number>
-                </property>
-                <property name="spacing">
-                    <number>0</number>
-                </property>
-                <widget class="QListBox">
-                    <property name="name">
-                        <cstring>EXPORT_lstItems</cstring>
-                    </property>
-                    <property name="toolTip" stdset="0">
-                        <string>Select a filename in the database.&lt;br&gt; In read mode, the listed files correspond to datas available in the database&lt;br&gt;In write mode, listed filenames aren't necessary present already, but no warning will occur if you overwrite existing entries.</string>
-                    </property>
-                </widget>
-                <widget class="QLabel">
-                    <property name="name">
-                        <cstring>EXPORT_labItems</cstring>
-                    </property>
-                    <property name="text">
-                        <string></string>
-                    </property>
-                </widget>
-            </vbox>
-        </widget>
-        <widget class="QTextBrowser" row="2" column="0" rowspan="1" colspan="2">
-            <property name="name">
-                <cstring>EXPORT_textBrowser</cstring>
-            </property>
-            <property name="sizePolicy">
-                <sizepolicy>
-                    <hsizetype>7</hsizetype>
-                    <vsizetype>3</vsizetype>
-                    <horstretch>16</horstretch>
-                    <verstretch>0</verstretch>
-                </sizepolicy>
-            </property>
-        </widget>
-    </grid>
+    </vbox>
 </widget>
 <images>
     <image name="image0">

@@ -202,7 +202,7 @@ class DiskItemBrowser( QDialog ):
     if self._ui.lstItems.count():
       index = self._ui.lstItems.currentItem()
       if index >= 0:
-        item = self._items[ index ]
+        item = (self._items[ index ] if isinstance(self._items[ index ], DiskItem) else self._database.getDiskItemFromUuid(self._items[ index ]))
         self._ui.textBrowser.setText( self.diskItemDisplayText( item ) )
         self.emit( PYSIGNAL('selected'), (item,) )
       else:
@@ -372,14 +372,15 @@ class DiskItemBrowser( QDialog ):
             if selected is not None and selected == v:
               cmb.setCurrentItem( cmb.count() - 1 )
       self._ui.lstItems.clear()
-      if self._write:
-        iterateDiskItems = self._database.findOrCreateDiskItems
-      else:
-        iterateDiskItems = self._database.findDiskItems
       self._items = []
-      for name, path, item in sorted( (os.path.basename( item.fullPath()), item.fullPath(), item ) for item in iterateDiskItems( {}, **required  ) if diskItemFilter( self._database, item, required ) ): # sorted by basename, fullpath
-        self._ui.lstItems.insertItem( name )
-        self._items.append( item )
+      keyAttributes = self._database.getTypesKeysAttributes( *selectedTypes )
+      for attrs in sorted( self._database.findAttributes( keyAttributes + [ '_uuid', '_type' ], selection={}, **required ) ):
+        self._ui.lstItems.insertItem( attrs[-1] + ': ' + ','.join( ( keyAttributes[i] + '="' + unicode(attrs[i]) +'"' for i in xrange(len(keyAttributes)) if attrs[i] ) ) )
+        self._items.append( attrs[-2] )
+      if self._write:
+        for item in self._database.createDiskItems( {}, **required  ):
+          self._ui.lstItems.insertItem( item.type.name + ': ' + ', '.join( ( keyAttributes[i] + '="' + unicode(item.get(keyAttributes[i])) +'"' for i in xrange(len(keyAttributes)) if item.get(keyAttributes[i]) ) ) )
+          self._items.append( item )
       self._ui.labItems.setText( _t_( '%d item(s)' ) % ( self._ui.lstItems.count(), ) )
       if self._ui.lstItems.count():
         self._ui.lstItems.setCurrentItem( 0 )
@@ -406,7 +407,7 @@ class DiskItemBrowser( QDialog ):
 
 
   def getValues( self ):
-    return [self._items[ i ] for i in xrange(self._ui.lstItems.count()) if self._ui.lstItems.isSelected( i )]
+    return [ (self._items[ i ] if isinstance(self._items[ i ], DiskItem) else self._database.getDiskItemFromUuid(self._items[ i ])) for i in xrange(self._ui.lstItems.count()) if self._ui.lstItems.isSelected( i ) ]
 
 
   @staticmethod

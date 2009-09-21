@@ -45,29 +45,36 @@ from brainvisa.validation import ValidationError
 qwtAvailable=True
 try:
   try:
-    from Qwt4 import *
-  except:
+    from PyQt4.Qwt5 import *
+  except Exception, e1:
     from qwt import *
-except:
+except Exception, e:
   qwtAvailable=False
     
 def validation():
   if not qwtAvailable:
-    raise ValidationError('Cannot find Qwt4 or qwt module')
+    raise ValidationError('Cannot find PyQt4.Qwt5 or qwt module')
 
 if qwtAvailable:
   class ScalarFeatureCurvesPlotter( QwtPlot ):
     _colors = [ Qt.darkBlue, Qt.blue, Qt.magenta, Qt.darkRed, Qt.darkRed ]
   
     def __init__( self, parent = None, name = '' ):
-      QwtPlot.__init__( self, name, parent )
+      QwtPlot.__init__( self, parent )
+      if name:
+        self.setObjectName(name)
+      grid=QwtPlotGrid()
+      pen =QPen()
+      pen.setStyle(Qt.DashLine)
+      grid.setPen(pen)
+      grid.attach(self)
       
     def setData( self, data ):
       self.clear()
       self._curves = {}
       x = data[ 'abscissa' ]
       color_index = 0
-      style = QwtCurve.Lines
+      style = QwtPlotCurve.Lines
       
       mean = data[ 'mean' ]
       stddev = data[ 'stddev' ]
@@ -75,28 +82,38 @@ if qwtAvailable:
       mean_p_stddev = [ mean[ i ] + stddev[ i ] for i in xrange( len( mean ) ) ]
       
       for i in xrange( len( mean ) ):
-        curve = self.insertCurve( 'stddev' )
-        self.setCurveStyle( curve, QwtCurve.Lines )
+        curve = QwtPlotCurve( 'stddev' ) 
+        curve.setStyle( style )
         color = self._colors[ color_index % len( self._colors ) ]
-        self.setCurvePen( curve, QPen( color, 2 ) )
-        self.setCurveData( curve, [ x[i], x[i] ], [ mean_p_stddev[ i ], mean_s_stddev[ i ] ] )
+        pen= QPen(color)
+        pen.setWidth(2)
+        curve.setPen( pen )
+        curve.setData( [ x[i], x[i] ], [ mean_p_stddev[ i ], mean_s_stddev[ i ] ] )
+        curve.attach( self )
       color_index += 1      
       
-      curve = self.insertCurve( 'mean' )
-      self.setCurveStyle( curve, style )
+      curve = QwtPlotCurve( 'mean' )
+      curve.setStyle( style )
       color = self._colors[ color_index % len( self._colors ) ]
-      self.setCurvePen( curve, QPen( color, 2 ) )
-      self.setCurveData( curve, x, mean )
+      pen= QPen(color)
+      pen.setWidth(2)
+      curve.setPen( pen )
+      curve.setData( x, mean )
+      curve.attach( self )
       color_index += 1
       
       for key in ( 'median', 'min', 'max' ):
-        curve = self.insertCurve( key )
-        self.setCurveStyle( curve, style )
+        curve = QwtPlotCurve( key ) 
+        curve.setStyle( style )
         self._curves[ key ] = curve
         color = self._colors[ color_index % len( self._colors ) ]
-        self.setCurvePen( curve, QPen( color, 2 ) )
-        self.setCurveData( curve, x, data[ key ] )
+        pen= QPen(color)
+        pen.setWidth(2)
+        curve.setPen( pen )
+        curve.setData( x, data[ key ] )
+        curve.attach( self )
         color_index += 1
+      
       self.replot()
       
       
@@ -122,7 +139,9 @@ if qwtAvailable:
                                                   QSizePolicy.Expanding ) )
       self.connect( self.lbxFeatures, SIGNAL( 'currentRowChanged ( int ) ' ),
                     self.selectionChanged )
-      self.txtFeatures = QTextBrowser( self )
+      self.txtFeatures = QTextEdit( self )
+      self.txtFeatures.setReadOnly( True )
+      self.txtFeatures.setAcceptRichText( True )
       layout.addWidget(self.txtFeatures)
       self.txtFeatures.setSizePolicy( QSizePolicy( QSizePolicy.Preferred, 
                                                   QSizePolicy.Expanding ) )
@@ -172,8 +191,16 @@ if qwtAvailable:
           self.updateFeatures( features, value )
     
     def selectionChanged( self, row ):
-      self._item = str(self.lbxItems.currentItem().text())
-      self._feature = str(self.lbxFeatures.currentItem().text())
+      currentItem=self.lbxItems.currentItem()
+      currentFeature=self.lbxFeatures.currentItem()
+      if currentItem:
+        self._item = str(currentItem.text())
+      else:
+        self._item = ""
+      if currentFeature:
+        self._feature = str(currentFeature.text())
+      else:
+        self._feature = ""
       
       data = self.data[ self._item ].get( self._feature )
       if data:
@@ -185,7 +212,6 @@ if qwtAvailable:
         else:
           text += '<b>' + self._feature + ':</b> ' + str(data) + '<br>'
         text += '</body></html>'
-  
         if operator.isMappingType( data ):
           vectorData = data.get( '_vectors' )
           if vectorData is not None:
@@ -193,8 +219,11 @@ if qwtAvailable:
           else:
             self.crvFeatures.clear()
             self.crvFeatures.replot()
+        else:
+          self.crvFeatures.clear()
+          self.crvFeatures.replot()
       else:
         text = ''
         self.crvFeatures.clear()
         self.crvFeatures.replot()
-      self.txtFeatures.setText( text )
+      self.txtFeatures.setHtml( text )
