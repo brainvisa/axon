@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # Copyright CEA and IFR 49 (2000-2005)
 #
@@ -46,7 +47,11 @@ except AttributeError:
   pass
 import site
 
-USE_QT4=False
+try:
+  from soma.config import MAJOR_QT_VERSION
+  USE_QT4 = MAJOR_QT_VERSION == 4
+except ImportError:
+  USE_QT4=False
 if USE_QT4:
   import PyQt4
 

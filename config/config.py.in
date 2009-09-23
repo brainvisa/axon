@@ -1,0 +1,2 @@
+fullVersion = '@axon_VERSION@'
+shortVersion = '@axon_VERSION_MAJOR@.@axon_VERSION_MINOR@'

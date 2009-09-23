@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright CEA and IFR 49 (2000-2005)
 #
 #  This software and supporting documentation were developed by
@@ -79,17 +80,22 @@ def setPluginPath():
   if not shared:
     shared = os.getenv( 'SHFJ_SHARED_PATH' )
   if not shared:
-    path = os.getenv( 'PATH' ).split( os.pathsep )
-    for p in path:
-      if p.endswith( '/bin' ) or p.endswith( '\\bin' ):
-        p = p[:len(p)-4]
-      elif p.endswith( '/bin/commands-links' ) \
-        or p.endswith( '\\bin\\commands-links' ):
-        p = p[:len(p)-19]
-      p = os.path.join( p, 'share' )
-      if os.path.isdir( p ):
-       shared = p
-       break
+    try:
+      from soma.config import DEFAULT_BRAINVISA_SHARE
+      shared = DEFAULT_BRAINVISA_SHARE
+      print '!DEFAULT_BRAINVISA_SHARE!', DEFAULT_BRAINVISA_SHARE
+    except ImportError:
+      path = os.getenv( 'PATH' ).split( os.pathsep )
+      for p in path:
+        if p.endswith( '/bin' ) or p.endswith( '\\bin' ):
+          p = p[:len(p)-4]
+        elif p.endswith( '/bin/commands-links' ) \
+          or p.endswith( '\\bin\\commands-links' ):
+          p = p[:len(p)-19]
+        p = os.path.join( p, 'share' )
+        if os.path.isdir( p ):
+          shared = p
+          break
   if shared is not None:
     p = os.path.normpath( os.path.join( shared, '..', 'lib', 'qt3-plugins' ) )
     QApplication.addLibraryPath( p )
