@@ -35,7 +35,7 @@
 import sys, os
 from itertools import chain
 
-from backwardCompatibleQt import QDialog, Qt, QVBoxLayout, QComboBox, SIGNAL, SLOT, QLabel, QApplication, QPixmap, QListWidget, QWidget
+from backwardCompatibleQt import QDialog, Qt, QVBoxLayout, QComboBox, SIGNAL, SLOT, QLabel, QApplication, QPixmap, QListWidget, QWidget, QGridLayout
 from PyQt4 import uic
 from soma.functiontools import partial
 from soma.qtgui.api import QLineEditModificationTimer
@@ -118,12 +118,20 @@ class DiskItemBrowser( QDialog ):
     
     if write:
       self._ui.labDatabaseIcon.setPixmap( QPixmap( findIconFile( 'database_write.png' ) ) )
+    else: 
+      self._ui.labDatabaseIcon.setPixmap( QPixmap( findIconFile( 'database_read.png' ) ) )
     
-    # remove the existings ui-designer widgets
-    attributeFrameLayout = self._ui.attributesFrame.layout()
-    for x in (x for x in self._ui.attributesFrame.children() if x.isWidgetType()):
-      x.deleteLater()
-
+    # the area to show the attributes combos
+    scrollarea=self._ui.scrollarea
+    self.attributesWidget=QWidget()
+    gridLayout = QGridLayout()
+    gridLayout.setColumnStretch( 0, 0 )
+    gridLayout.setColumnStretch( 1, 1 )
+    self.attributesWidget.setLayout(gridLayout)
+    scrollarea.setWidget(self.attributesWidget)
+    self.attributesWidget.show()
+    scrollarea.setWidgetResizable(True)
+    
     self.connect( self._ui.lstItems, SIGNAL('currentItemChanged( QListWidgetItem * , QListWidgetItem * )'), self.itemSelected )
     
     #print '!DiskItemBrowser!', database, selection, required
@@ -196,9 +204,6 @@ class DiskItemBrowser( QDialog ):
       elif a != '_database' and a in self._attributesValues:
         self._combos[ a ] = self._createCombo( _t_( a ), a, False, layoutRow )
         layoutRow += 1
-    gridLayout = self._ui.attributesFrame.layout()
-    gridLayout.setColumnStretch( 0, 0 )
-    gridLayout.setColumnStretch( 1, 1 )
     self._selectedAttributes={}
     # among selection attributes keep those related to the types searched to initialize the combos
     for k, v in selection.items():
@@ -206,6 +211,10 @@ class DiskItemBrowser( QDialog ):
         self._selectedAttributes[k]=v
     #self._selectedAttributes = selection
     
+    # init window size
+    self.resize(800, 600)
+    self._ui.hsplitter.setSizes([600, 200])
+    self._ui.vsplitter.setSizes([400, 200])
     self._lastSelection = None
     self.rescan()
     
@@ -221,7 +230,7 @@ class DiskItemBrowser( QDialog ):
     self.itemSelected()
   
   def _createCombo( self, caption, attributeName, editable, layoutRow ):
-    gridLayout = self._ui.attributesFrame.layout()
+    gridLayout = self.attributesWidget.layout()#self._ui.attributesFrame.layout()
     label = QLabel(_t_( caption ) )
     gridLayout.addWidget( label, layoutRow, 0 )
     cmb = SignalNameComboBox( editable, None, attributeName )
