@@ -418,12 +418,12 @@ class DiskItemBrowser( QDialog ):
       self._ui.lstItems.clear()
       self._items = []
       keyAttributes = self._database.getTypesKeysAttributes( *selectedTypes )
-      for attrs in sorted( self._database.findAttributes( keyAttributes + [ '_uuid', '_type' ], selection={}, **required ) ):
-        self._ui.lstItems.addItem( attrs[-1] + ': ' + ','.join( ( keyAttributes[i] + '="' + unicode(attrs[i]) +'"' for i in xrange(len(keyAttributes)) if attrs[i] ) ) )
+      for attrs in sorted( self._database.findAttributes( keyAttributes + [ '_format', '_uuid', '_type' ], selection={}, **required ) ):
+        self._ui.lstItems.addItem( attrs[-1] + ': ' + ', '.join( ( keyAttributes[i] + '="' + unicode(attrs[i]) +'"' for i in xrange(len(keyAttributes)) if attrs[i] ) ) + ', format="'+ unicode(attrs[-3]) + '"' )
         self._items.append( attrs[-2] )
       if self._write:
         for item in self._database.createDiskItems( {}, **required  ):
-          self._ui.lstItems.addItem( item.type.name + ': ' + ', '.join( ( keyAttributes[i] + '="' + unicode(item.get(keyAttributes[i])) +'"' for i in xrange(len(keyAttributes)) if item.get(keyAttributes[i]) ) ) )
+          self._ui.lstItems.addItem( item.type.name + ': ' + ', '.join( ( keyAttributes[i] + '="' + unicode(item.get(keyAttributes[i])) +'"' for i in xrange(len(keyAttributes)) if item.get(keyAttributes[i]) ) ) + ', format="'+ item.format.name + '"' )
           self._items.append( item )
       self._ui.labItems.setText( _t_( '%d item(s)' ) % ( self._ui.lstItems.count(), ) )
       if self._ui.lstItems.count():
