@@ -501,9 +501,10 @@ class FloatListEditor( NumberListEditor ):
 class ChoiceListEditor( QWidget, DataEditor ):
   class ChoiceListSelect( QWidget ): # Ex QSemiModal
     def __init__( self, clEditor, name ):
-      QWidget.__init__( self, clEditor.topLevelWidget(), Qt.Dialog | Qt.Tool | Qt.WindowStaysOnTop | Qt.WA_DeleteOnClose )
+      QWidget.__init__( self, clEditor.topLevelWidget(), Qt.Dialog | Qt.Tool | Qt.WindowStaysOnTop )
       if name:
         self.setObjectName( name )
+      self.setAttribute( Qt.WA_DeleteOnClose, True )
       self.setWindowModality(Qt.WindowModal)
       layout = QVBoxLayout( self )
       layout.setMargin( 10 )

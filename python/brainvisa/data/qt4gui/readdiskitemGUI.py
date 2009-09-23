@@ -339,9 +339,10 @@ class DiskItemListEditor( QWidget, DataEditor ):
           QIcon( findIconFile( 'browse_read.png' )) )
         setattr( DiskItemListEditor.DiskItemListSelect, 'pixBrowseWrite', 
           QIcon( findIconFile( 'browse_write.png' )) )
-      QWidget.__init__( self, dilEditor.topLevelWidget(), Qt.Dialog  | Qt.WindowStaysOnTopHint | Qt.WA_DeleteOnClose )
+      QWidget.__init__( self, dilEditor.topLevelWidget(), Qt.Dialog  | Qt.WindowStaysOnTopHint  )
       if name:
         self.setObjectName(name)
+      self.setAttribute(Qt.WA_DeleteOnClose, True)
       self.setWindowModality(Qt.WindowModal)
       layout = QVBoxLayout( )
       layout.setMargin( 10 )
