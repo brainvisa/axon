@@ -64,6 +64,7 @@ class StringEditor( QLineEdit, DataEditor ):
     QLineEdit.__init__( self, parent )
     if name:
       self.setObjectName( name )
+    self.setMaxLength(-1)
     self.connect( self, SIGNAL( 'returnPressed()' ), self.setFocusNext )
     self.value = None
     self.setValue( None, True )
@@ -333,6 +334,7 @@ class StringListEditor( QLineEdit, DataEditor ):
     QLineEdit.__init__( self, parent )
     if name:
       self.setObjectName( name )
+    self.setMaxLength(-1)
     self.connect( self, SIGNAL( 'returnPressed()' ), self.setFocusNext )
     self.value = None
     self.setValue( None, True )
@@ -715,6 +717,7 @@ class PointListEditor( QWidget, DataEditor ):
     self.setLayout(layout)
     self.parameter = parameter
     self.led = QLineEdit( )
+    self.led.setMaxLength(-1)
     layout.addWidget(self.led)
     self.connect( self.led, SIGNAL( 'textChanged( const QString & )' ),
                   self.textChanged )

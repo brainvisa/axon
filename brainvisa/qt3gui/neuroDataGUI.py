@@ -62,6 +62,7 @@ class StringEditor( QLineEdit, DataEditor ):
   def __init__( self, parent, name ):
     DataEditor.__init__( self )
     QLineEdit.__init__( self, parent, name )
+    self.setMaxLength(-1)
     self.connect( self, SIGNAL( 'returnPressed()' ), self.setFocusNext )
     self.value = None
     self.setValue( None, True )
@@ -324,6 +325,7 @@ class StringListEditor( QLineEdit, DataEditor ):
   def __init__( self, parent, name ):
     DataEditor.__init__( self )
     QLineEdit.__init__( self, parent, name )
+    self.setMaxLength(-1)
     self.connect( self, SIGNAL( 'returnPressed()' ), self.setFocusNext )
     self.value = None
     self.setValue( None, True )
@@ -682,6 +684,7 @@ class PointListEditor( QHBox, DataEditor ):
     QHBox.__init__( self, parent, name )
     self.parameter = parameter
     self.led = QLineEdit( self )
+    self.led.setMaxLength(-1)
     self.connect( self.led, SIGNAL( 'textChanged( const QString & )' ),
                   self.textChanged )
     self.connect( self.led, SIGNAL( 'returnPressed()' ), self.checkValue )
