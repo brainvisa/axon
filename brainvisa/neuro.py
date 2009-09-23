@@ -168,15 +168,21 @@ def main():
     else:
       readHierarchies( neuroConfig.clearCacheRequest )
     readProcesses( neuroConfig.processesPath )
+    nbDatabases=len(neuroHierarchy.databases._databases)
     if neuroConfig.gui:
       warnUserAboutDatabasesToUpdate()
+      if (nbDatabases <= 1):
+        choice=defaultContext().ask("<p><b>Welcome to BrainVISA !</b></p><p>You have not selected any database yet. Do you want to choose a new database now ?</p><p>It is strongly advisable to use a database to process data with BrainVISA. Indeed, some important features are not available where you are using data outside a database. To add a new database, go to <i>databases tab</i> in the preferences window and click on the <i>add button</i>.</p>",  "Yes", "No")
+        if (choice == 0):
+          neuroConfig.editConfiguration()
     else:
       toUpdate = [i for i in neuroHierarchy.databases.iterDatabases() if getattr( i, '_mustBeUpdated', False )]
       if toUpdate:
         print >> sys.stderr, _t_( 'WARNING' )+':', _t_( 'Some ontologies (i.e. databases organization) have been modified but are used by currently selected databases. To take this modification into account, it is necessary to update the following databases:' )
         for i in toUpdate:
           print >> sys.stderr, ' ', i.name
-
+      if (nbDatabases <= 1):
+        print >> sys.stderr, _t_( 'WARNING' )+':', _t_( 'You have not selected any database yet. It is strongly advisable to use a database to process data with BrainVISA. Indeed, some important features are not available where you are using data outside a database. To add a new database, go to databases tab in the preferences window and click on the add button.' )
   except:
     raise
     showException()
