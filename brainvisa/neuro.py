@@ -172,7 +172,7 @@ def main():
     if neuroConfig.gui:
       warnUserAboutDatabasesToUpdate()
       if (nbDatabases <= 1):
-        choice=defaultContext().ask("<p><b>Welcome to BrainVISA !</b></p><p>You have not selected any database yet. Do you want to choose a new database now ?</p><p>It is strongly advisable to use a database to process data with BrainVISA. Indeed, some important features are not available where you are using data outside a database. To add a new database, go to <i>databases tab</i> in the preferences window and click on the <i>add button</i>.</p>",  "Yes", "No")
+        choice=defaultContext().ask("<p><b>Welcome to BrainVISA !</b></p><p>You have not selected any database yet. Do you want to choose a new database now ?</p><p>It is strongly advisable to use a database to process data with BrainVISA. Indeed, some important features are not available when you are using data outside a database. To add a new database, go to <i>databases tab</i> in the <i>preferences window</i> and click on the <i>add button</i>.</p>",  "Yes", "No")
         if (choice == 0):
           neuroConfig.editConfiguration()
     else:
