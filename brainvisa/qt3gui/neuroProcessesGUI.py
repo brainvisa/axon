@@ -1116,8 +1116,7 @@ class ProcessView( QVBox, ExecutionContextGUI ):
       QObject.connect( self.btnRun, SIGNAL( 'clicked()' ), self._runButton )
       
       if (self.process.__class__ == neuroProcesses.IterationProcess):
-        self.btnInterruptStep = QPushButton( _t_('Interrupt current step') )
-        layout.addWidget(self.btnInterruptStep)
+        self.btnInterruptStep = QPushButton( _t_('Interrupt current step'), container )
         self.btnInterruptStep.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
         self.btnInterruptStep.setHidden(True)
         QObject.connect( self.btnInterruptStep, SIGNAL( 'clicked()' ), self._interruptStepButton )
