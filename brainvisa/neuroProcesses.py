@@ -1467,6 +1467,8 @@ class SerialExecutionNode( ExecutionNode ):
       for node in self._children.values():
         try:
           result.append( node.run( context ) )
+        except ExecutionContext.UserInterruptionStep, e:
+          context.error(unicode(e))
         except ExecutionContext.UserInterruption:
           raise
         except Exception, e:
@@ -1580,6 +1582,10 @@ class ExecutionContext:
   class UserInterruption( Exception ):
     def __init__( self ):
       Exception.__init__( self, _t_( 'user interruption' ) )
+  
+  class UserInterruptionStep( Exception ):
+    def __init__( self ):
+      Exception.__init__( self, _t_( 'user interruption of current step' ) )
 
   class StackInfo:
     def __init__( self, process ):

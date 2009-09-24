@@ -84,8 +84,8 @@ class CommandWithQProcess( object ):
     else:
       # in a different thread, block on a semaphore until it is finished
       self._semaphore.acquire()
-    if not self.normalExit:
-      raise RuntimeError( _t_( 'System call exited abnormally' ) )
+    #if not self.normalExit:
+      #raise RuntimeError( _t_( 'System call exited abnormally' ) )
     return self.exitStatus
 
 
