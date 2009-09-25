@@ -169,7 +169,7 @@ class DiskItemBrowser( QDialog ):
     if self._multiple:
       self._ui.tblItems.setSelectionMode( QAbstractItemView.ExtendedSelection )
     else:
-      self.connect( self._ui.tblItems, SIGNAL( 'doubleClicked ( const QModelIndex & index )' ), self, SLOT('accept()') )
+      self.connect( self._ui.tblItems, SIGNAL( 'doubleClicked ( const QModelIndex & )' ), self, SLOT('accept()') )
 
     layoutRow = 0
     e,v = self._database.getAttributesEdition()
