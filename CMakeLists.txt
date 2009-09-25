@@ -3,6 +3,7 @@ find_package( brainvisa-cmake REQUIRED )
 BRAINVISA_PROJECT()
 
 BRAINVISA_FIND_PACKAGE( soma-base REQUIRED )
+find_package( PyQt${DESIRED_QT_VERSION} REQUIRED )
 
 find_package( python REQUIRED )
 
@@ -13,8 +14,8 @@ math( EXPR result "${soma-qtgui_VERSION_MINOR}+1" )
 BRAINVISA_DEPENDENCY( RUN DEPENDS "soma-qtgui" RUN ">= ${soma-qtgui_VERSION};<< ${soma-qtgui_VERSION_MAJOR}.${result}" )
 BRAINVISA_DEPENDENCY( RUN DEPENDS python RUN ">= ${PYTHON_SHORT_VERSION}" )
 BRAINVISA_DEPENDENCY( DEV DEPENDS python DEV ">= 2.4;<< 3.0" )
-BRAINVISA_DEPENDENCY( RUN DEPENDS python-qt RUN "= ${PYQT${DESIRED_QT_VERSION}_VERSION}" )
-BRAINVISA_DEPENDENCY( DEV DEPENDS python-qt DEV )
+BRAINVISA_DEPENDENCY( RUN DEPENDS python-qt${DESIRED_QT_VERSION} RUN )
+BRAINVISA_DEPENDENCY( DEV DEPENDS python-qt${DESIRED_QT_VERSION} DEV )
 
 configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/config/config.py.in" "${CMAKE_BINARY_DIR}/python/brainvisa/config.py" @ONLY )
 BRAINVISA_INSTALL( FILES "${CMAKE_BINARY_DIR}/python/brainvisa/config.py"
