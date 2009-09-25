@@ -870,6 +870,7 @@ class ProcessView( QVBox, ExecutionContextGUI ):
     self._runningProcess = 0
     self.process.signatureChangeNotifier.add( self.signatureChanged )
     self.btnRun = None
+    self.btnInterruptStep=None
     self._running = False
 
     procdoc = readProcdoc( process )
@@ -1113,7 +1114,13 @@ class ProcessView( QVBox, ExecutionContextGUI ):
       self.btnRun = QPushButton( _t_( 'Run' ), container )
       self.btnRun.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
       QObject.connect( self.btnRun, SIGNAL( 'clicked()' ), self._runButton )
-
+      
+      if (self.process.__class__ == neuroProcesses.IterationProcess):
+        self.btnInterruptStep = QPushButton( _t_('Interrupt current step'), container )
+        self.btnInterruptStep.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
+        self.btnInterruptStep.setHidden(True)
+        QObject.connect( self.btnInterruptStep, SIGNAL( 'clicked()' ), self._interruptStepButton )
+      
     self.btnIterate = QPushButton( _t_('Iterate'), container )
     self.btnIterate.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
     QObject.connect( self.btnIterate, SIGNAL( 'clicked()' ), self._iterateButton )
@@ -1199,6 +1206,10 @@ class ProcessView( QVBox, ExecutionContextGUI ):
     finally:
       if self.btnRun:
         self.btnRun.setEnabled(True)
+  
+  def _interruptStepButton( self, executionFunction=None ):
+    if self._running:
+          self._setInterruptionRequest( neuroProcesses.ExecutionContext.UserInterruptionStep() )
 
   def _checkReloadProcess( self ):
     self.readUserValues()
@@ -1257,6 +1268,8 @@ class ProcessView( QVBox, ExecutionContextGUI ):
       if self.movie is not None:
         _mainThreadActions.push( self.movie.start )
       if self.btnRun:
+        if self.btnInterruptStep:
+          _mainThreadActions.push(self.btnInterruptStep.setHidden, False)
         _mainThreadActions.push( self.btnRun.setEnabled, True )
         _mainThreadActions.push( self.btnRun.setText, _t_( 'Interrupt' ) )
 
@@ -1290,6 +1303,8 @@ class ProcessView( QVBox, ExecutionContextGUI ):
       if self.btnRun:
         _mainThreadActions.push( self.btnRun.setEnabled, True )
         _mainThreadActions.push( self.btnRun.setText, _t_( 'Run' ) )
+        if self.btnInterruptStep:
+          _mainThreadActions.push(self.btnInterruptStep.setHidden, True)
       _mainThreadActions.push( self._checkReadable )
       self._running = False
     else:

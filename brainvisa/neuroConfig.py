@@ -104,13 +104,16 @@ def findInPath( file,
       if os.path.isdir( p ) and os.path.exists( os.path.join( p, file ) ):
         return p
 
-f = os.path.join( mainPath, 'VERSION' )
-if not os.path.exists( f ):
-  f = os.path.join( mainPath, '..', 'VERSION' )
-f = open( f )
-fullVersion = f.readline()[:-1]
-f.close()
-shortVersion = '.'.join( fullVersion.split( '.' )[:2] )
+try:
+  from brainvisa.config import fullVersion, shortVersion
+except ImportError:
+  f = os.path.join( mainPath, 'VERSION' )
+  if not os.path.exists( f ):
+    f = os.path.join( mainPath, '..', 'VERSION' )
+  f = open( f )
+  fullVersion = f.readline()[:-1]
+  f.close()
+  shortVersion = '.'.join( fullVersion.split( '.' )[:2] )
 
 def versionNumber():
   global shortVersion
@@ -132,17 +135,21 @@ def getSharePath():
   if not _sharePath:
     _sharePath = os.environ.get( 'SHFJ_SHARED_PATH' )
     if not _sharePath:
-      path = os.getenv( 'PATH' ).split( os.pathsep )
-      for p in path:
-        if p.endswith( '/bin' ) or p.endswith( '\\bin' ):
-          p = p[:len(p)-4]
-        elif p.endswith( '/bin/commands-links' ) \
-          or p.endswith( '\\bin\\commands-links' ):
-          p = p[:len(p)-19]
-        p = os.path.join( p, 'share' )
-        if os.path.isdir( p ):
-          _sharePath = p
-          break
+      try:
+        from soma.config import DEFAULT_BRAINVISA_SHARE
+        _sharePath = DEFAULT_BRAINVISA_SHARE
+      except ImportError:
+        path = os.getenv( 'PATH' ).split( os.pathsep )
+        for p in path:
+          if p.endswith( '/bin' ) or p.endswith( '\\bin' ):
+            p = p[:len(p)-4]
+          elif p.endswith( '/bin/commands-links' ) \
+            or p.endswith( '\\bin\\commands-links' ):
+            p = p[:len(p)-19]
+          p = os.path.join( p, 'share' )
+          if os.path.isdir( p ):
+            _sharePath = p
+            break
     if not _sharePath:
       # empty string rather than None to avoid later re-detection
       _sharePath = ''
