@@ -613,11 +613,14 @@ for toolbox in allToolboxes():
     typesPath.append( toolbox.typesDir )
 
 # add brainvisa shared database to the list of available databases
+sharedDatabaseFound=False
 for p in ( os.path.join( getSharePath(), 'shfj-' + shortVersion ),
            os.path.join( getSharePath(), 'shfj' ) ):
   if os.path.isdir( p ):
     dataPath.insert( 0, DatabaseSettings( p ) )
+    sharedDatabaseFound=True
     break
+  
 for attr, value in readConfiguration( mainPath, userProfile, homeBrainVISADir ):
   if isinstance( value, list ):
     globals()[ attr ] += value
