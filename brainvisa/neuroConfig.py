@@ -614,7 +614,8 @@ for toolbox in allToolboxes():
 
 # add brainvisa shared database to the list of available databases
 sharedDatabaseFound=False
-for p in ( os.path.join( getSharePath(), 'shfj-' + shortVersion ),
+for p in ( os.path.join( getSharePath(), 'axon-' + shortVersion ),
+           os.path.join( getSharePath(), 'shfj-' + shortVersion ),
            os.path.join( getSharePath(), 'shfj' ) ):
   if os.path.isdir( p ):
     dataPath.insert( 0, DatabaseSettings( p ) )
