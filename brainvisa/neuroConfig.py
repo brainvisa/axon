@@ -383,7 +383,7 @@ try:
                                 "updateDocumentation", "noMainWindow",
                                 "logFile=", "cleanLog", "profile=", "shell", "validation",
                                 "debugHierarchy=", "debugLinks=", "oldDatabases", 
-                                "help" ] )
+                                "help", "setup" ] )
 except getopt.GetoptError, msg:
   # print help information and exit:
   sys.stderr.write( "error in options: %s\nUse -h or --help for help\n" % msg )
@@ -394,6 +394,8 @@ openMainWindow = 1
 showHelp = 0
 newDatabases = True
 fastStart = False
+global setup
+setup=False
 for o, a in opts:
   if o in ( "-b", ):
     gui = 0
@@ -440,6 +442,8 @@ for o, a in opts:
     newDatabases = False
   elif o in ( "-h", "--help" ):
     showHelp = 1
+  elif o in ( "--setup" ):
+    setup = True
 
 # Print help
 if showHelp == 1:
