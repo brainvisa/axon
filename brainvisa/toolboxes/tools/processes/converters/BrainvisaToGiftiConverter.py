@@ -34,8 +34,17 @@
 
 from neuroProcesses import *
 import shfjGlobals
-import soma.aims.BrainvisaToGifti_code as b2g
+try:
+  import soma.aims.BrainvisaToGifti_code as b2g
+except:
+  pass
 
+
+def validation():
+  try:
+    import soma.aims.BrainvisaToGifti_code as b2g
+  except:
+    raise ValisationError( 'no soma.aims module' )
 
 name = 'Brainvisa to Gifti'
 roles = ('converter',)

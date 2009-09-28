@@ -34,9 +34,19 @@
 
 from neuroProcesses import *
 import os, re
-
-from soma import aims
 import sys
+
+try:
+  from soma import aims
+except:
+  pass
+
+def validation():
+  try:
+    from soma import aims
+  except:
+    raise ValisationError( 'no soma.aims module' )
+
 
 name = 'Global graph property'
 userLevel = 2
