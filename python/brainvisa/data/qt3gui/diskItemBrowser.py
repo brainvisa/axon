@@ -375,14 +375,14 @@ class DiskItemBrowser( QDialog ):
             s.add( vstring )
             if selected is not None and selected == v:
               cmb.setCurrentItem( cmb.count() - 1 )
+      self._ui.tblItems.removeColumns( range(self._ui.tblItems.numCols()) )
       self._ui.tblItems.removeRows( range(self._ui.tblItems.numRows()) )
       keyAttributes = self._database.getTypesKeysAttributes( *selectedTypes )
-      if self._ui.tblItems.numCols() == 0:
-        header = QStringList()
-        self._ui.tblItems.insertColumns( 0, len( keyAttributes ) + 2 )
-        for c in [ 'type' ] + keyAttributes + [ 'format' ]:
-          header.append( QString( c ) )
-        self._ui.tblItems.setColumnLabels( header )
+      header = QStringList()
+      self._ui.tblItems.insertColumns( 0, len( keyAttributes ) + 2 )
+      for c in [ 'type' ] + keyAttributes + [ 'format' ]:
+        header.append( QString( c ) )
+      self._ui.tblItems.setColumnLabels( header )
       queryResult = sorted( self._database.findAttributes( [ '_type' ] + keyAttributes + [ '_format', '_uuid' ], selection={}, **required ) )
       self._ui.tblItems.insertRows( 0, len( queryResult ) )
       self._items = []
