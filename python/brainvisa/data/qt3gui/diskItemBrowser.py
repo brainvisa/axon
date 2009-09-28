@@ -4,6 +4,8 @@ from itertools import chain
 
 from backwardCompatibleQt import QDialog, Qt, QVBoxLayout, QComboBox, SIGNAL, PYSIGNAL, SLOT, \
                QLabel, QApplication, QPixmap, QListBox
+from qt import QString, QStringList
+from qttable import QTable
 
 from soma.functiontools import partial
 from soma.qtgui.api import createWidget, QLineEditModificationTimer
@@ -85,8 +87,9 @@ class DiskItemBrowser( QDialog ):
     for x in (x for x in self._ui.attributesFrame.children() if x.isWidgetType()):
       x.deleteLater()
 
-    self.connect( self._ui.lstItems, SIGNAL('currentChanged( QListBoxItem * )'), self.itemSelected )
-    
+    self._items = []
+    self.connect( self._ui.tblItems, SIGNAL('currentChanged( int, int )'), self.itemSelected )
+      
     #print '!DiskItemBrowser!', database, selection, required
     self._requiredAttributes = required
     self._database = database
@@ -116,9 +119,9 @@ class DiskItemBrowser( QDialog ):
     self._multiple = multiple
 
     if self._multiple:
-      self._ui.lstItems.setSelectionMode( QListBox.Extended )
+      self._ui.tblItems.setSelectionMode( QTable.MultiRow )
     else:
-      self.connect( self._ui.lstItems, SIGNAL( 'doubleClicked( QListBoxItem * )' ), self, SLOT('accept()') )
+      self.connect( self._ui.tblItems, SIGNAL( 'doubleClicked ( int, int, int, const QPoint & )' ), self, SLOT('accept()') )
 
     layoutRow = 0
     e,v = self._database.getAttributesEdition()
@@ -199,15 +202,15 @@ class DiskItemBrowser( QDialog ):
     self.emit( PYSIGNAL( 'accept' ), () )
 
 
-  def itemSelected( self ):
-    if self._ui.lstItems.count():
-      index = self._ui.lstItems.currentItem()
-      if index >= 0:
-        item = (self._items[ index ] if isinstance(self._items[ index ], DiskItem) else self._database.getDiskItemFromUuid(self._items[ index ]))
-        self._ui.textBrowser.setText( self.diskItemDisplayText( item ) )
-        self.emit( PYSIGNAL('selected'), (item,) )
-      else:
-        self.emit( PYSIGNAL('selected'), ( None,) )
+  def itemSelected( self, row=None, col=None ):
+    index = row
+    if index is not None and self._items:
+      item = (self._items[ index ] if isinstance(self._items[ index ], DiskItem) else self._database.getDiskItemFromUuid(self._items[ index ]))
+      self._items[ index ] = item
+      self._ui.textBrowser.setText( self.diskItemDisplayText( item ) )
+      self.emit( PYSIGNAL('selected'), ( item, ) )
+    else:
+      self.emit( PYSIGNAL('selected'), ( None, ) )
 
   
   def _comboSelected( self, name, index ):
@@ -372,21 +375,39 @@ class DiskItemBrowser( QDialog ):
             s.add( vstring )
             if selected is not None and selected == v:
               cmb.setCurrentItem( cmb.count() - 1 )
-      self._ui.lstItems.clear()
-      self._items = []
+      self._ui.tblItems.removeRows( range(self._ui.tblItems.numRows()) )
       keyAttributes = self._database.getTypesKeysAttributes( *selectedTypes )
-      for attrs in sorted( self._database.findAttributes( keyAttributes + [ '_format', '_uuid', '_type' ], selection={}, **required ) ):
-        self._ui.lstItems.insertItem( attrs[-1] + ': ' + ','.join( ( keyAttributes[i] + '="' + unicode(attrs[i]) +'"' for i in xrange(len(keyAttributes)) if attrs[i] ) )  + ', format="'+ unicode(attrs[-3]) + '"' )
-        self._items.append( attrs[-2] )
+      if self._ui.tblItems.numCols() == 0:
+        header = QStringList()
+        self._ui.tblItems.insertColumns( 0, len( keyAttributes ) + 2 )
+        for c in [ 'type' ] + keyAttributes + [ 'format' ]:
+          header.append( QString( c ) )
+        self._ui.tblItems.setColumnLabels( header )
+      queryResult = sorted( self._database.findAttributes( [ '_type' ] + keyAttributes + [ '_format', '_uuid' ], selection={}, **required ) )
+      self._ui.tblItems.insertRows( 0, len( queryResult ) )
+      self._items = []
+      row = 0
+      for attrs in queryResult:
+        for c in xrange( len( attrs ) - 1 ):
+          self._ui.tblItems.setText( row, c, ( attrs[ c ] if attrs[ c ] else '' ) )
+        row += 1
+        self._items.append( attrs[ -1 ] )
       if self._write:
-        for item in self._database.createDiskItems( {}, **required  ):
-          self._ui.lstItems.insertItem( item.type.name + ': ' + ', '.join( ( keyAttributes[i] + '="' + unicode(item.get(keyAttributes[i])) +'"' for i in xrange(len(keyAttributes)) if item.get(keyAttributes[i]) ) ) + ', format="'+ item.format.name + '"')
+        queryResult = tuple( self._database.createDiskItems( {}, **required  ) )
+        row = self._ui.tblItems.numRows()
+        self._ui.tblItems.insertRows( row, len( queryResult ) )
+        for item in queryResult:
+          attrs = [ item.type.name ] + [ unicode(item.get(i)) for i in keyAttributes ] + [ item.format.name ]
+          for c in xrange( len( attrs ) ):
+            self._ui.tblItems.setText( row, c, ( attrs[ c ] if attrs[ c ] else '' ) )
+          row += 1
           self._items.append( item )
-      self._ui.labItems.setText( _t_( '%d item(s)' ) % ( self._ui.lstItems.count(), ) )
-      if self._ui.lstItems.count():
-        self._ui.lstItems.setCurrentItem( 0 )
+      self._ui.labItems.setText( _t_( '%d item(s)' ) % ( len( self._items ), ) )
+      if self._items:
+        self._ui.tblItems.selectRow( 0 )
+        self.itemSelected( 0 )
       else:
-        self.emit( PYSIGNAL('selected'), (None,) )
+        self.itemSelected( None )
       for a, cmb in self._combos.iteritems():
         if cmb.editable():
           selected = self._selectedAttributes.get( a )
@@ -408,7 +429,7 @@ class DiskItemBrowser( QDialog ):
 
 
   def getValues( self ):
-    return [ (self._items[ i ] if isinstance(self._items[ i ], DiskItem) else self._database.getDiskItemFromUuid(self._items[ i ])) for i in xrange(self._ui.lstItems.count()) if self._ui.lstItems.isSelected( i ) ]
+    return [ (self._items[ i ] if isinstance(self._items[ i ], DiskItem) else self._database.getDiskItemFromUuid(self._items[ i ])) for i in xrange(self._ui.tblItems.numRows()) if self._ui.tblItems.isRowSelected( i ) ]
 
 
   @staticmethod
