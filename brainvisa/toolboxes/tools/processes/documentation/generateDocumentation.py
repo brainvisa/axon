@@ -182,7 +182,6 @@ def generateHTMLProcessesDocumentation( context, ontology ):
   #---------------------------------------
   # Generate documentation for categories
   #---------------------------------------
-
   # Find all category_documentation.minf files in
   # the order of neuroConfig.processesPath
   categoryDocFiles = {}
@@ -202,6 +201,7 @@ def generateHTMLProcessesDocumentation( context, ontology ):
   # processes are in toolboxesDir/toolboxName/processes by default. anyway they are in toolbox.processesDir
   # each relative directory dir in processes, matches a category named toolboxName/dir
   # a documentation for the toolbox may be in toolboxesDir/toolboxId
+  
   from brainvisa.toolboxes import allToolboxes
   for toolbox in allToolboxes():
     # search for a file category_documentation.minf in toolboxesDir/toolboxId, otherwise it can be in processesDir
@@ -223,6 +223,7 @@ def generateHTMLProcessesDocumentation( context, ontology ):
         stack += [ (os.path.join( r, c ), cat) for c in os.listdir( f ) ]
 
   # Create category HTML files
+  
   baseDocDir = os.path.dirname( neuroConfig.docPath )
   for category, f in categoryDocFiles.iteritems():
     categoryPath=category.split("/")
@@ -257,9 +258,7 @@ def nameKey(x):
   return x.name.lower()
   
 def execution( self, context ):
-  
   generateHTMLProcessesDocumentation( context, self.ontology )
-  
   # Ontology documentation for each language
   ontologyDirectory=os.path.join( neuroConfig.mainDocPath, 'ontology-' + self.ontology)
   for l in neuroConfig._languages:
@@ -302,7 +301,6 @@ def execution( self, context ):
             typesByFormats.setdefault( f, set() ).add( t )
             processesByFormats.setdefault( f, set() ).add( pi )
   
-
   tmpDatabase = context.temporary( 'Directory' )
   database = SQLDatabase( ':memory:', (tmpDatabase.fullPath(),), fso=self.ontology )
   
@@ -314,12 +312,13 @@ def execution( self, context ):
   typeRules = {}
   typeParent = {}
   typeChildren = {}
+  typeKeys = {}
   
   if self.write_graphs:
     imagesDirectory=os.path.join( ontologyDirectory, 'images' )
     if not os.path.exists( imagesDirectory ):
       os.mkdir( imagesDirectory )
-
+  
   #stack = list( database.keysByType )
   stack = list( allTypes )
   #allTypes = set( stack )
@@ -338,6 +337,7 @@ def execution( self, context ):
     rules=database.fso.typeToPatterns.get(type, None)
     if rules:
       typeRules[type.name]=rules
+    typeKeys[type.name]=database.getTypesKeysAttributes(type.name)
   
   if self.write_graphs:
     tmpDot = os.path.join( tmpDatabase.fullPath(), 'tmp.dot' )
@@ -436,6 +436,14 @@ def execution( self, context ):
         print >> typeHTML, htmlEscape(rule.pattern.pattern), "<br/>"
       print >> typeHTML, '</blockquote>'
       
+      print >> typeHTML, '<h2>Keys attributes</h2><blockquote>'
+      keys=typeKeys.get( type, () )
+      if keys:
+        print >> typeHTML, htmlEscape(keys[0])
+        for key in keys[1:]:
+          print >> typeHTML, ",&nbsp;", htmlEscape(key)
+      print >> typeHTML, '</blockquote>'
+
     #dot = open( tmpDot, 'w' )
     #print >> dot, 'digraph "' + typeFileName + ' dataflow" {'
     #print >> dot, '  node [style=filled,shape=ellipse];'
@@ -468,7 +476,7 @@ def execution( self, context ):
     #print >> typeHTML, '<center><img src="' + htmlEscape( typeFileName ) + ' dataflow.png" usemap="#' + htmlEscape(typeFileName) + ' inheritance"/></center>'
     #print >> typeHTML, open( tmpMap ).read()
       print >> typeHTML, '</body></html>'
-
+  
     # FORMATS
     if not os.path.exists( formatsDirectory ):
       os.mkdir( formatsDirectory )
@@ -508,7 +516,7 @@ def execution( self, context ):
         href = htmlEscape( relative_path( os.path.join( typesDirectory, typeFileName + '.html' ), os.path.dirname( formatHTML.name ) ) )
         print >> formatHTML, '<a href="' + href + '">' + htmlEscape( t ) + '</a><br/>'
       print >> formatHTML, '</blockquote>'
-      
+  
     # FORMATS LISTS
     print >> formats, '<center><h1> Formats Lists for ontology ' + database.fso.name + '</h1></center>'
     
@@ -541,5 +549,5 @@ def execution( self, context ):
         href = htmlEscape( relative_path( os.path.join( typesDirectory, typeFileName + '.html' ), os.path.dirname( formatHTML.name ) ) )
         print >> formatHTML, '<a href="' + href + '">' + htmlEscape( t ) + '</a><br/>'
       print >> formatHTML, '</blockquote>'
-
+  
   database.currentThreadCleanup()
