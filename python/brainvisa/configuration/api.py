@@ -160,6 +160,7 @@ def readConfiguration( mainPath, userProfile, homeBrainVISADir ):
     if fso.selected:
       newDataPath.append( DatabaseSettings( fso.directory ) )
   yield ( 'dataPath', newDataPath )
+  yield ( 'databasesWarning', configuration.brainvisa.databasesWarning)
 
 
 #------------------------------------------------------------------------------

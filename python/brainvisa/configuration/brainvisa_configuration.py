@@ -87,6 +87,7 @@ class BrainVISAConfiguration( ConfigurationGroup ):
     'SPM', SPMConfiguration, dict( defaultValue=SPMConfiguration() ),
     'support', SupportConfiguration, dict( defaultValue=SupportConfiguration() ),
     'gui_style', OpenedChoice( ('<system default>', None ) ), dict( defaultValue = None, doc='Style of the graphical interface.' ),
+    'databasesWarning', Boolean, dict( defaultValue=True, doc='Unselect this option to disable the warning message that is shown when you have not created any database.'),
   )
 
 

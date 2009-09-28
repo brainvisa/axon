@@ -623,6 +623,7 @@ for p in ( os.path.join( getSharePath(), 'brainvisa-share-' + shortVersion ),
     break
   
 for attr, value in readConfiguration( mainPath, userProfile, homeBrainVISADir ):
+  print "config ", attr, value
   if isinstance( value, list ):
     globals()[ attr ] += value
   else:
