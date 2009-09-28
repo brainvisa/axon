@@ -61,7 +61,6 @@ _versionString = str( _versionNumber ) + 'a'
       doNotExclude = None
       exclude = FileNameFilter(
         '*[mM]ador*.py',
-        'brainvisa/toolboxes/tms/*',
         )
     for f in GenericMakerComponent.filesToPack( self ):
       if exclude is None or not exclude.match( f ) or \
@@ -79,6 +78,7 @@ _versionString = str( _versionNumber ) + 'a'
       if 'userdoc' in packs:
         docs = [ 'bv_man', 'en/help', 'fr/help', 'en/processes', 'fr/processes', 'ontology-brainvisa-3.1.0' ]
         if 'private' in packs:
+          # TODO: bv_tms should move to t1mri-private/tms
           docs += [ 'bv_training', 'bv_tms', 'bv_eegmeg' ]
       if 'progdoc' in packs:
         docs += [ 'bv_pg', 'epydoc' ]
