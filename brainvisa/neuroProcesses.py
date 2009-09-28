@@ -1818,19 +1818,19 @@ class ExecutionContext:
       if neuroConfig.newDatabases:
         for item_hash in self._allWriteDiskItems:
           item, hash = item_hash
-          if item.modificationHash() != hash:
-            try:
-              # do not try to insert in the database an item that doesn't have any reference to a database
-              if item.get("_database", None): 
-                neuroHierarchy.databases.insertDiskItem( item, update=True )
-              else:
-                print "diskItem ", item.name, " doesn't have to be inserted in a database."
-            except Database.NotInDatabaseError:
-              pass
-            except:
-              showException()
-            item_hash[ 1 ] = item.modificationHash()
-      
+          if item.isReadable():
+            if item.modificationHash() != hash:
+              try:
+                # do not try to insert in the database an item that doesn't have any reference to a database
+                if item.get("_database", None): 
+                  neuroHierarchy.databases.insertDiskItem( item, update=True )
+              except Database.NotInDatabaseError:
+                pass
+              except:
+                showException()
+              item_hash[ 1 ] = item.modificationHash()
+          else:
+            item.clearMinf()
       # Close output log file
       if process._outputLogFile is not None:
         print >> process._outputLogFile, '</body></html>'
