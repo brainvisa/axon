@@ -257,6 +257,7 @@ Format( 'DEF Label Translation', "f|*.def" )
 FileType( 'Graph', 'Any Type', 'Graph' )
 FileType( 'Data graph', 'Graph' )
 FileType( 'Model graph', 'Graph' )
+FileType( 'Roi graph', 'Data graph' )
 FileType( 'Label translation or Nomenclature', 'Any Type',
           [ 'Label Translation', 'DEF Label Translation', 'Hierarchy' ] )
 FileType( 'Hierarchy', 'Label translation or Nomenclature', 'Hierarchy' )
