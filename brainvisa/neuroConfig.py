@@ -482,6 +482,8 @@ if newDatabases:
     print >> sys.stderr, 'WARNING: --clearCache is obsolete\n'
   if cacheUpdateRequest:
     print >> sys.stderr, 'WARNING: --updateCache is obsolete\n'
+  if setup:
+    startup.append( 'from neuroHierarchy import databases\ndb = list( databases.iterDatabases() )[0]\ndb.clear()\ndb.update()' )
 elif cacheUpdateRequest:
   startup.append( 'cacheUpdate()' )
 
