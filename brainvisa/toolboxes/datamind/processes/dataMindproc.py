@@ -50,7 +50,7 @@ def validation():
     progname = distutils.spawn.find_executable( 'datamind' )
     if not progname:
       progname =  os.path.join(os.path.dirname(mainPath), 'bin', 'datamind')
-      if not progname:
+      if not os.path.exists(progname):
           raise ValidationError( _t_( 'DataMind is unavailable' ) )
 
 def execution( self, context ):
