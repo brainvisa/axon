@@ -54,10 +54,10 @@ def validation():
           raise ValidationError( _t_( 'DataMind is unavailable' ) )
 
 def execution( self, context ):
-    python_interpretor = sys.executable
+    #python_interpretor = sys.executable
     progname = distutils.spawn.find_executable( 'datamind' )
     if not progname:
 
       progname =  os.path.join(os.path.dirname(mainPath), 'bin', 'datamind')
-    context.system( python_interpretor, progname )
+    context.system( progname )
 
