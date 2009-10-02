@@ -34,8 +34,8 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 import neuroConfig 
-import threading, sys, time
-from backwardCompatibleQt import QProcess, qApp, QTimer, SIGNAL
+import threading, sys, time, os
+from backwardCompatibleQt import QProcess, qApp, QTimer, SIGNAL, QStringList
 
 #--------------------------------------------------------------------------
 class CommandWithQProcess( object ):
@@ -64,7 +64,16 @@ class CommandWithQProcess( object ):
     self._qprocess = self._mainThreadCalls.call( self._createQProcess )
     self._stdoutAction = sys.stdout.write
     self._stderrAction = sys.stderr.write
+    self.env=None
 
+  def setEnvironment(self, env):
+    """
+    Set a map of environment variables that have to be change at starting the process.
+    @type env: map string -> string
+    @param env: map variable -> value
+    """
+    self.env=os.environ.copy()
+    self.env.update(env)
 
   def start( self ):
     '''Starts the command. If it cannot be started, a RuntimeError is raised'''
@@ -155,7 +164,13 @@ class CommandWithQProcess( object ):
 
   def _startProcess( self ):
 #    print threading.currentThread(), '_startProcess()', self
-    return self._qprocess.launch( '' )
+    env=None
+    if self.env:
+      env=QStringList()
+      for var, value in self.env.items():
+        if value is not None:
+          env.append(var+"="+value)
+    return self._qprocess.launch( '', env )
 
 
   def _processExited( self ):

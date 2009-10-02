@@ -1511,7 +1511,7 @@ def showProcess( process, *args, **kwargs ):
 #----------------------------------------------------------------------------
 class IterationDialog( QDialog ):
   def __init__( self, parent, parameterized, context ):
-    QDialog.__init__( self, parent, None, 1, Qt.WGroupLeader )
+    QDialog.__init__( self, parent, None, 0 )
     layout = QVBoxLayout( self )
     layout.setAutoAdd( 1 )
     layout.setMargin( 10 )
@@ -1536,6 +1536,15 @@ class IterationDialog( QDialog ):
     btn = QPushButton( _t_('Cancel'), hb )
     btn.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
     self.connect( btn, SIGNAL( 'clicked()' ), self, SLOT( 'reject()' ) )
+
+  def polish( self ):
+    desk = QDesktopWidget()
+    geom = desk.screenGeometry( desk.screenNumber( self ) )
+    h = geom.height() - 100
+    if h < 50:
+      h = 50
+    if self.height() > h:
+      self.resize( self.width(), h )
 
   def getLists( self ):
     result = {}

@@ -106,10 +106,7 @@ def main():
   if USE_QT4:
     p = os.path.join( neuroConfig.mainPath, 'protection_against_qt3' )
     if os.path.exists( p ):
-      print '!found!', repr( p )
       sys.path.insert( 0, p )
-    else:
-      print '!not found!', repr( p )
   if neuroConfig.server:
     # make the program into a daemon
     Server.daemonize()

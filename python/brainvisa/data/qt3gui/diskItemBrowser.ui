@@ -236,7 +236,7 @@
                                 <bool>true</bool>
                             </property>
                             <property name="sorting">
-                                <bool>false</bool>
+                                <bool>true</bool>
                             </property>
                             <property name="selectionMode">
                                 <enum>SingleRow</enum>

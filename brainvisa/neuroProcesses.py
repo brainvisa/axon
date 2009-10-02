@@ -955,6 +955,14 @@ else:
       self.stderrAction = ( sys.stderr.write, (), {})
       self.endAction = None
       self.popen3 = None
+    
+    def setEnvironment(self, env):
+      """
+      Set a map of environment variables that have to be change at starting the process.
+      @type env: map string -> string
+      @param env: map variable -> value
+      """
+      pass
 
     def _parsecommand( self ):
       '''recreate an args list from the commandline (string) to run'''
@@ -1945,6 +1953,11 @@ class ExecutionContext:
   ##    if self._showSystemOutput() > 0:
   ##      self.write( '<img alt="" src="' + os.path.join( neuroConfig.iconPath, 'icon_system.png' ) + '">' + c.commandName() + '<p>' )
   
+      # Set environment for the command
+      if (not commandName.startswith(os.path.dirname(neuroConfig.mainPath))): # external command
+        if neuroConfig.brainvisaSysEnv:
+          c.setEnvironment(neuroConfig.brainvisaSysEnv)
+      
       if stdoutAction is not None: c.setStdoutAction( stdoutAction )
       if stderrAction is not None: c.setStderrAction( stderrAction )
       c.start()
