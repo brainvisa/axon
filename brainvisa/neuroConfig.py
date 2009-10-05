@@ -48,6 +48,7 @@ from brainvisa.configuration.api import initializeConfiguration, readConfigurati
 from soma.html import htmlEscape
 from soma.uuid import Uuid
 from soma.minf.api import readMinf, writeMinf
+from soma.env import BrainvisaSystemEnv
 
 mainPath = os.path.dirname( sys.argv[0] )
 
@@ -179,16 +180,7 @@ def libraryPathEnvironmentVariable():
 
 # Define system environment variables that have to be passed to external command to restore environment if it have been modified at brainvisa startup
 global brainvisaSysEnv
-brainvisaSysEnv=None
-# if the variable BRAINVISA_SYSTEM_VARIABLES is defined, we are in a brainvisa package and some environment variable have been modified at startup
-brainvisaSysVarList=os.getenv('BRAINVISA_SYSTEM_VARIABLES')
-if brainvisaSysVarList:
-  # this map will contain {variable : old value} for all varialbes modified at startup
-  brainvisaSysEnv={}
-  # the old value of these variables was stored in variables BRAINVISA_SYSTEM_VARIABLE
-  for sysVar in brainvisaSysVarList.split(" "):
-    bvSysVar="BRAINVISA_SYSTEM_"+sysVar
-    brainvisaSysEnv[sysVar]=os.getenv(bvSysVar)
+brainvisaSysEnv=BrainvisaSystemEnv()
 
 from brainvisa import shelltools
 from soma.minf.api import readMinf

@@ -1956,7 +1956,7 @@ class ExecutionContext:
       # Set environment for the command
       if (not commandName.startswith(os.path.dirname(neuroConfig.mainPath))): # external command
         if neuroConfig.brainvisaSysEnv:
-          c.setEnvironment(neuroConfig.brainvisaSysEnv)
+          c.setEnvironment(neuroConfig.brainvisaSysEnv.getVariables())
       
       if stdoutAction is not None: c.setStdoutAction( stdoutAction )
       if stderrAction is not None: c.setStderrAction( stderrAction )
