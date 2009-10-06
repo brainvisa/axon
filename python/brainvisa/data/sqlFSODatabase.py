@@ -924,6 +924,8 @@ class SQLDatabase( Database ):
       tableAttributes = [ '_diskItem' ] + tableAttributes
       tableFields = [ '_diskItem', 'T._uuid' ] + tableFields[1:]
       nonMandatoryKeyAttributes = self._nonMandatoryKeyAttributesByType[ t ]
+      #if _debug is not None:
+        #print >> _debug, '!findAttributes!  tableFields(', repr( t ), ') =', repr( tableFields )
       select = []
       tupleIndices = []
       for a in attributes:
@@ -948,8 +950,10 @@ class SQLDatabase( Database ):
           continue
       where = {}
       for f, a in izip( tableFields, tableAttributes ):
-        if a not in nonMandatoryKeyAttributes:
+        if a in required or a not in nonMandatoryKeyAttributes:
           v = self.getAttributeValues( a, selection, required )
+          #if _debug is not None:
+            #print >> _debug, '!findAttributes!  getAttributeValues(', repr( a ), ', ... ) =', repr( v )
           if v:
             where[ f ] = v
       sql = 'SELECT DISTINCT ' + ', '.join( select ) + " FROM '" + tableName + "' T, _DISKITEMS_ D WHERE T._uuid=D._uuid"
