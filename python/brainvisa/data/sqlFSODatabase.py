@@ -41,12 +41,11 @@ from soma.html import htmlEscape
 from soma.sorted_dictionary import SortedDictionary
 from soma.undefined import Undefined
 from soma.translation import translate as _
-from soma.path import split_path
+from soma.path import split_path, relative_path
 from soma.time import timeDifferenceToString
 from soma.uuid import Uuid
 from soma.notification import Notifier
 from soma.databases.api import sqlite3, ThreadSafeSQLiteConnection
-
 
 from fileSystemOntology import FileSystemOntology, SetContent
 from neuroProcesses import diskItemTypes, getDiskItemType
@@ -227,18 +226,18 @@ class SQLDatabase( Database ):
       print >> sys.stderr, '!cursor!', self._id, ':', message
 
 
-  def __init__( self, sqlDatabaseFile, directories, fso=None, context=None ):
+  def __init__( self, sqlDatabaseFile, directory, fso=None, context=None ):
     super(SQLDatabase, self).__init__()
     self._connection = None
-    self.name = os.path.normpath( directories[ 0 ] )
+    self.name = os.path.normpath( directory )
     if sqlDatabaseFile not in ( '', ':memory:' ):
       self.sqlDatabaseFile = os.path.normpath( os.path.abspath( sqlDatabaseFile ) )
     else:
       self.sqlDatabaseFile = sqlDatabaseFile
-    self.directories = [os.path.normpath( os.path.abspath( d ) ) for d in directories]
-    if not os.path.exists(self.directories[0]):
-        raise ValueError( HTMLMessage(_t_('<em>%s</em> is not a valid directory') % str( self.directories[0] )) )
-    minf = os.path.join( self.directories[0], 'database_settings.minf' )
+    self.directory = os.path.normpath( directory )
+    if not os.path.exists( self.directory ):
+        raise ValueError( HTMLMessage(_t_('<em>%s</em> is not a valid directory') % str( self.directory )) )
+    minf = os.path.join( self.directory, 'database_settings.minf' )
     if fso is None:
       if os.path.exists(minf):
         fso = readMinf( minf )[ 0 ].get( 'ontology', 'brainvisa-3.0' )
@@ -271,6 +270,7 @@ class SQLDatabase( Database ):
     self.ruleSelectionByType = {}
     self._attributesEditionByType = {}
     self._formatsByTypeName = {}
+    self._tableFieldsAndInsertByTypeName = {}
     for type, rules in self.fso.typeToPatterns.iteritems():
       keys = []
       ruleSelectionByAttributeValue = []
@@ -374,8 +374,11 @@ class SQLDatabase( Database ):
       if self.fso.lastModification > os.stat(self.sqlDatabaseFile).st_mtime:
         self._mustBeUpdated = True
         #showWarning( _( 'ontology "%(ontology)s" had been modified, database "%(database)s" should be updated. Use the process : Data Management =&gt; Update databases.' ) % { 'ontology': self.fso.name, 'database': self.name } )
-    if self.createTables():
-      self.update( context=context)
+    else:
+      self._mustBeUpdated = True
+    # do not update automatically enven if the database sqlite file doesn't exists, ask the user.
+    #if self.createTables():
+      #self.update( context=context)
   
   
   def update( self, directoriesToScan=None, recursion=True, context=None ):
@@ -406,6 +409,7 @@ class SQLDatabase( Database ):
     finally:
       self._closeDatabaseCursor( cursor )
     self._connection.closeSqliteConnections()
+    self._connection=None
     self.createTables( context=context )
   
   
@@ -469,8 +473,11 @@ class SQLDatabase( Database ):
   
   
   def _getDatabaseCursor( self ):
+    databaseFile=self.sqlDatabaseFile
+    if not (os.path.exists(self.sqlDatabaseFile)):
+      databaseFile=':memory:'
     if self._connection is None:
-      self._connection = ThreadSafeSQLiteConnection( self.sqlDatabaseFile )
+      self._connection = ThreadSafeSQLiteConnection( databaseFile )
     #cursor = self.CursorProxy( self._connection._getConnection().cursor() )
     cursor = self._connection._getConnection().cursor()
     return cursor
@@ -561,8 +568,8 @@ class SQLDatabase( Database ):
           'isDirectory': isinstance( diskItem, Directory ),
           'type': diskItem.type.name,
           'format': format,
-          'name': diskItem.name,
-          '_files': diskItem._files,
+          'name': relative_path(diskItem.name, self.directory),
+          '_files': [ relative_path(f, self.directory) for f in diskItem._files ],
           '_localAttributes': diskItem._localAttributes,
           '_globalAttributes': diskItem._globalAttributes,
           '_minfAttributes': diskItem._minfAttributes,
@@ -578,7 +585,7 @@ class SQLDatabase( Database ):
           delete = False
         except sqlite3.IntegrityError, e:
           # an item with the same uuid is already in the database
-          uuid = cursor.execute( 'SELECT _uuid FROM _FILENAMES_ WHERE filename=?', ( diskItem.fullPath(), ) ).fetchone()
+          uuid = cursor.execute( 'SELECT _uuid FROM _FILENAMES_ WHERE filename=?', ( relative_path(diskItem.fullPath(), self.directory), ) ).fetchone()
           if uuid:
             uuid = uuid[ 0 ]
             # diskItem file name is in the database
@@ -610,7 +617,7 @@ class SQLDatabase( Database ):
         if delete:
           cursor.execute( 'DELETE FROM _FILENAMES_ WHERE _uuid=?', ( uuid, ) )
         try:
-          cursor.executemany( 'INSERT INTO _FILENAMES_ (filename, _uuid) VALUES (? ,?)', (( i, uuid ) for i in diskItem.fullPaths()) )
+          cursor.executemany( 'INSERT INTO _FILENAMES_ (filename, _uuid) VALUES (? ,?)', (( relative_path(i, self.directory), uuid ) for i in diskItem.fullPaths()) )
         except sqlite3.IntegrityError, e:
           raise Database.Error( unicode(e)+': file names = ' + repr(diskItem.fullPaths()) )
         
@@ -629,6 +636,9 @@ class SQLDatabase( Database ):
           if delete:
             cursor.execute( 'DELETE FROM "' + tableName + '" WHERE _uuid=?', ( uuid, ) )
           cursor.execute( sql, values )
+    except sqlite3.OperationalError, e:
+      self._closeDatabaseCursor( cursor, rollback=True )
+      raise Database.Error( "Cannot insert items in database "+self.name+". You should update this database." )
     except:
       self._closeDatabaseCursor( cursor, rollback=True )
       raise
@@ -647,30 +657,31 @@ class SQLDatabase( Database ):
         cursor.execute( 'DELETE FROM "' + tableName + '" WHERE _uuid=?', ( uuid, ) )
         if eraseFiles:
           diskItem.eraseFiles()
+    except sqlite3.OperationalError, e:
+      self._closeDatabaseCursor( cursor, rollback=True )
+      raise Database.Error( "Cannot remove items from database "+self.name+". You should update this database." )
     except:
       self._closeDatabaseCursor( cursor, rollback=True )
       raise
     else:
       self._closeDatabaseCursor( cursor )
   
-  
-  @staticmethod
-  def _diskItemFromMinf( minf ):
+  def _diskItemFromMinf(self, minf ):
     if type(minf) is unicode:
       # have to pass a str to readMinf and not a unicode because, xml parser will use encoding information written in the xml tag to decode the string. In brainvisa, all minf are encoded in utf-8
       minf=minf.encode("utf-8")
     f = StringIO( minf )
     state = readMinf( f )[ 0 ]
     if state[ 'isDirectory' ]:
-      diskItem = Directory( state[ 'name' ], None )
+      diskItem = Directory( os.path.join( self.directory, state[ 'name' ]), None )
     else:
-      diskItem = File( state[ 'name' ], None )
+      diskItem = File( os.path.join( self.directory, state[ 'name' ]), None )
     diskItem.type = getDiskItemType( str( state[ 'type' ] ) )
     f = state[ 'format' ]
     if f:
       diskItem.format = getFormat( str( f ) )
     #self.name = state[ 'name' ]
-    diskItem._files = state[ '_files' ]
+    diskItem._files = [ os.path.join( self.directory, f) for f in state[ '_files' ] ]
     diskItem._localAttributes = state[ '_localAttributes' ]
     diskItem._globalAttributes = state[ '_globalAttributes' ]
     diskItem._minfAttributes = state[ '_minfAttributes' ]
@@ -682,9 +693,12 @@ class SQLDatabase( Database ):
   
   def getDiskItemFromUuid( self, uuid, defaultValue=Undefined ):
     cursor = self._getDatabaseCursor()
+    minf=None
     try:
       sql = "SELECT _diskItem from _DISKITEMS_ WHERE _uuid='" + str( uuid ) + "'"
       minf = cursor.execute( sql ).fetchone()
+    except sqlite3.OperationalError, e:
+      neuroProcesses.defaultContext().warning( "Cannot question database "+self.name+". You should update this database." )
     finally:
       self._closeDatabaseCursor( cursor )
     if minf is not None:
@@ -695,14 +709,18 @@ class SQLDatabase( Database ):
   
   
   def getDiskItemFromFileName( self, fileName, defaultValue=Undefined ):
-    cursor = self._getDatabaseCursor()
-    try:
-      sql = "SELECT _diskItem FROM _FILENAMES_ F, _DISKITEMS_ D WHERE F._uuid=D._uuid AND F.filename='" + unicode( fileName ) + "'"
-      minf = cursor.execute( sql ).fetchone()
-    finally:
-      self._closeDatabaseCursor( cursor )
-    if minf is not None:
-      return self._diskItemFromMinf( minf[ 0 ] )
+    if fileName.startswith(self.directory):
+      cursor = self._getDatabaseCursor()
+      minf=None
+      try:
+        sql = "SELECT _diskItem FROM _FILENAMES_ F, _DISKITEMS_ D WHERE F._uuid=D._uuid AND F.filename='" + unicode( relative_path(fileName, self.directory) ) + "'"
+        minf = cursor.execute( sql ).fetchone()
+      except sqlite3.OperationalError, e:
+        neuroProcesses.defaultContext().warning( "Cannot question database "+self.name+". You should update this database." )
+      finally:
+        self._closeDatabaseCursor( cursor )
+      if minf is not None:
+        return self._diskItemFromMinf( minf[ 0 ] )
     if defaultValue is Undefined:
       raise Database.Error( _( 'Database "%(database)s" does not reference file "%(filename)s"' ) % { 'database': self.name,  'filename': fileName } )
     return defaultValue
@@ -711,16 +729,16 @@ class SQLDatabase( Database ):
   def createDiskItemFromFileName( self, fileName, defaultValue=Undefined ):
     diskItem = self.createDiskItemFromFormatExtension( fileName, None )
     if diskItem is not None:
-      for d in self.directories:
-        if fileName.startswith( d ):
-          splitted = split_path( fileName[ len(d)+1: ] )
-          content = reduce( lambda x,y: [(y,x)], reversed(splitted[:-1]), [ (os.path.basename(f), None) for f in diskItem._files ] )
-          vdi = VirtualDirectoryIterator( fileName[ :len(d) ], content )
-          lastItem = None
-          for item in self.scanDatabaseDirectories( vdi ):
-            lastItem = item
-          if lastItem is not None and fileName in lastItem.fullPaths():
-            return lastItem
+      d=self.directory
+      if fileName.startswith( d ):
+        splitted = split_path( fileName[ len(d)+1: ] )
+        content = reduce( lambda x,y: [(y,x)], reversed(splitted[:-1]), [ (os.path.basename(f), None) for f in diskItem._files ] )
+        vdi = VirtualDirectoryIterator( fileName[ :len(d) ], content )
+        lastItem = None
+        for item in self.scanDatabaseDirectories( vdi ):
+          lastItem = item
+        if lastItem is not None and fileName in lastItem.fullPaths():
+          return lastItem
     if defaultValue is Undefined:
       raise Database.Error( _( 'Database "%(database)s" cannot reference file "%(filename)s"' ) % { 'database': self.name,  'filename': fileName } )
     return defaultValue
@@ -759,11 +777,11 @@ class SQLDatabase( Database ):
   
   def scanDatabaseDirectories( self, directoriesIterator=None, includeUnknowns=False, directoriesToScan=None, recursion=True, debugHTML=None ):
     if debugHTML:
-      print >> debugHTML, '<html><body><h1>Scan log for database <tt>' + self.name + '</tt></h1>\n<h2>Directories</h2><blockquote>'
-      print >> debugHTML, '<br>\n'.join( self.directories ), '</blockquote>'
+      print >> debugHTML, '<html><body><h1>Scan log for database <tt>' + self.name + '</tt></h1>\n<h2>Directory</h2><blockquote>'
+      print >> debugHTML, '<br>\n'.join( self.directory ), '</blockquote>'
     scanner = [i for i in self.fso.content if isinstance(i,SetContent)][0].scanner
     if directoriesIterator is None:
-      stack = [ ( DirectoryIterator(directory), scanner, { }, 0 ) for directory in self.directories ]
+      stack = [ ( DirectoryIterator(self.directory), scanner, { }, 0 ) ]
     else:
       stack = [ ( directoriesIterator, scanner, {  }, 0 ) ]
     while stack:
@@ -1095,7 +1113,7 @@ class SQLDatabase( Database ):
                 if databaseDirectory:
                   databaseDirectory = databaseDirectory[ 0 ]
                 else:
-                  databaseDirectory = self.directories[ 0 ]
+                  databaseDirectory = self.directory
                 for format in (getFormat( f ) for f in formats): # search format in all format including Series of ...
                   if format.name == 'Directory':
                     files = [ os.path.join( databaseDirectory, name ) ]

@@ -88,10 +88,10 @@ def execution( self, context ):
   it.next() # Skip shared database
   for database in it:
     rename = []
-    for databaseDirectory in database.directories:
-      if os.path.exists( databaseDirectory ):
-        for f in find_denoised( databaseDirectory ):
-          rename.append( os.path.split( f ) )
+    databaseDirectory = database.directory
+    if os.path.exists( databaseDirectory ):
+      for f in find_denoised( databaseDirectory ):
+        rename.append( os.path.split( f ) )
     if rename:
       context.write( '<font color="orange"><b>' + database.name + ':</b><br></font>' )
       if undo_python_script is not None:

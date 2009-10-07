@@ -41,6 +41,11 @@ if neuroConfig.newDatabases:
   from neuroException import showException, showWarning
   import neuroConfig
   
+  global databaseVersion
+  databaseVersion="1.1" 
+  # mapping between databases versions and axon versions : database version -> first axon version where this database version is used
+  databaseVersions={ "1.0" : "3.1.0", "1.1" : "3.2.0"}
+  
   def initializeDatabases():
     global databases
     databases = SQLDatabases()
@@ -54,16 +59,18 @@ if neuroConfig.newDatabases:
       try:
         if dbSettings.expert_settings.sqliteFileName:
           sqlite = dbSettings.expert_settings.sqliteFileName
+          path, ext = os.path.splitext(sqlite)
+          sqlite=path+"-"+databaseVersion+ext
         else:
-          sqlite = os.path.join( dbSettings.directory, 'database.sqlite' )
-        base = SQLDatabase( sqlite, ( dbSettings.directory, ), context=defaultContext() )
+          sqlite = os.path.join( dbSettings.directory, 'database-'+databaseVersion+'.sqlite' )
+        base = SQLDatabase( sqlite, dbSettings.directory, context=defaultContext() )
         databases.add( base )
         if ignoreReadOnlyForShared:
           # The first database is the shared directory, usually users do not have
           # to modify it. Therefore no warning is shown for the first database.
           ignoreReadOnlyForShared = False
         else:
-          if (not os.access(dbSettings.directory, os.W_OK) or not os.access(sqlite, os.W_OK)):
+          if (not os.access(dbSettings.directory, os.W_OK) or ( os.path.exists(sqlite) and not os.access(sqlite, os.W_OK)) ):
             showWarning(_t_("The database "+base.name+" is read only, you will not be able to add new items in this database."))
       except:
         showException()

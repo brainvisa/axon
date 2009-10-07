@@ -1014,7 +1014,7 @@ if neuroConfig.newDatabases:
         settings['ontology']='brainvisa-3.1.0'
         writeMinf(settingsFile, [settings])
         self.newSettings=True
-        self.db=SQLDatabase(self.db.sqlDatabaseFile, self.db.directories)
+        self.db=SQLDatabase(self.db.sqlDatabaseFile, self.db.directory)
         neuroHierarchy.databases.add(self.db)
         self.context.write("")
         self.context.write( '<b>Clear database:', self.db.name, '</b>' )
@@ -1060,7 +1060,7 @@ if neuroConfig.newDatabases:
         except: 
           raise
       finally:
-        self.db=SQLDatabase(self.db.sqlDatabaseFile, self.db.directories)
+        self.db=SQLDatabase(self.db.sqlDatabaseFile, self.db.directory)
         neuroHierarchy.databases.add(self.db)
         self.context.write("")
         self.context.write( '<b>Clear database:', self.db.name, '</b>' )

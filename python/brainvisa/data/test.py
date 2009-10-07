@@ -101,7 +101,7 @@ directories = [
 directories = [ 'AnneLaure_base', 'data_icbm' ]
 import brainvisa.data, os
 baseDir = os.path.dirname( brainvisa.data.__file__ )
-databases = [ SQLDatabase( os.path.join( baseDir, i + '.sqlite' ), ( i, ), 'brainvisa-3.1' ) for i in directories ]
+databases = [ SQLDatabase( os.path.join( baseDir, i + '.sqlite' ), i, 'brainvisa-3.1' ) for i in directories ]
 for database in databases:
   if database.createTables():
     print database.name + ': parse directories and insert items'

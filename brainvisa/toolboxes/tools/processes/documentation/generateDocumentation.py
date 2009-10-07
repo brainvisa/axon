@@ -333,7 +333,7 @@ def execution( self, context ):
             processesByFormats.setdefault( f, set() ).add( pi )
   
   tmpDatabase = context.temporary( 'Directory' )
-  database = SQLDatabase( ':memory:', (tmpDatabase.fullPath(),), fso=self.ontology )
+  database = SQLDatabase( ':memory:', tmpDatabase.fullPath(), fso=self.ontology )
   
   # Create types inheritance graphs
   if distutils.spawn.find_executable('dot') is None:
