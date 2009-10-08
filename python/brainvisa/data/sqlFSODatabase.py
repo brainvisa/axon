@@ -270,7 +270,6 @@ class SQLDatabase( Database ):
     self.ruleSelectionByType = {}
     self._attributesEditionByType = {}
     self._formatsByTypeName = {}
-    self._tableFieldsAndInsertByTypeName = {}
     for type, rules in self.fso.typeToPatterns.iteritems():
       keys = []
       ruleSelectionByAttributeValue = []
@@ -369,7 +368,16 @@ class SQLDatabase( Database ):
         parent = parent.parent
     self.typesWithTable = set((t.name for t in self.typesWithTable))
     self.keysByType = dict( ((t.name,v) for t,v in self.keysByType.iteritems()))
-  
+    
+    # init of _tableFieldsAndInsertByTypeName
+    self._tableFieldsAndInsertByTypeName = {}
+    for type in self.typesWithTable:
+      tableName = type
+      tableFields = [ '_uuid', '_format', '_name' ] + [mangleSQL(i) for i in self._tableAttributesByTypeName[ type ]]
+      tableAttributes = [ '_uuid', '_format', '_name' ] + [i for i in self._tableAttributesByTypeName[ type ]]
+      sql = 'INSERT INTO ' + '"' + tableName + '" (' + ', '.join( (i for i in tableFields) ) + ') VALUES (' + ', '.join( ('?' for i in tableFields) ) + ')'
+      self._tableFieldsAndInsertByTypeName[ type ] = ( tableName, tableFields, tableAttributes, sql )
+
     if os.path.exists( self.sqlDatabaseFile ):
       if self.fso.lastModification > os.stat(self.sqlDatabaseFile).st_mtime:
         self._mustBeUpdated = True
