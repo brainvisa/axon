@@ -1,23 +1,21 @@
-# Copyright CEA and IFR 49 (2000-2005)
-#
-#  This software and supporting documentation were developed by
-#      CEA/DSV/SHFJ and IFR 49
-#      4 place du General Leclerc
-#      91401 Orsay cedex
+#  This software and supporting documentation are distributed by
+#      Institut Federatif de Recherche 49
+#      CEA/NeuroSpin, Batiment 145,
+#      91191 Gif-sur-Yvette cedex
 #      France
 #
-# This software is governed by the CeCILL license version 2 under 
+# This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
 # You can  use, modify and/or redistribute the software under the 
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
 # and INRIA at the following URL "http://www.cecill.info". 
-# 
+#
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
 # with a limited warranty  and the software's author,  the holder of the
 # economic rights,  and the successive licensors  have only  limited
-# liability. 
-# 
+# liability.
+#
 # In this respect, the user's attention is drawn to the risks associated
 # with loading,  using,  modifying and/or developing or reproducing the
 # software by the user in light of its specific status of free software,
@@ -25,10 +23,10 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requireme/_nts in conditions enabling the security of their systems and/or 
+# requirements in conditions enabling the security of their systems and/or 
 # data to be ensured and,  more generally, to use and operate it in the 
-# same conditions as regards security. 
-# 
+# same conditions as regards security.
+#
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
@@ -43,6 +41,11 @@ if neuroConfig.newDatabases:
   from neuroException import showException, showWarning
   import neuroConfig
   
+  global databaseVersion
+  databaseVersion="1.1" 
+  # mapping between databases versions and axon versions : database version -> first axon version where this database version is used
+  databaseVersions={ "1.0" : "3.1.0", "1.1" : "3.2.0"}
+  
   def initializeDatabases():
     global databases
     databases = SQLDatabases()
@@ -56,16 +59,18 @@ if neuroConfig.newDatabases:
       try:
         if dbSettings.expert_settings.sqliteFileName:
           sqlite = dbSettings.expert_settings.sqliteFileName
+          path, ext = os.path.splitext(sqlite)
+          sqlite=path+"-"+databaseVersion+ext
         else:
-          sqlite = os.path.join( dbSettings.directory, 'database.sqlite' )
-        base = SQLDatabase( sqlite, ( dbSettings.directory, ), context=defaultContext() )
+          sqlite = os.path.join( dbSettings.directory, 'database-'+databaseVersion+'.sqlite' )
+        base = SQLDatabase( sqlite, dbSettings.directory, context=defaultContext() )
         databases.add( base )
         if ignoreReadOnlyForShared:
           # The first database is the shared directory, usually users do not have
           # to modify it. Therefore no warning is shown for the first database.
           ignoreReadOnlyForShared = False
         else:
-          if (not os.access(dbSettings.directory, os.W_OK) or not os.access(sqlite, os.W_OK)):
+          if (not os.access(dbSettings.directory, os.W_OK) or ( os.path.exists(sqlite) and not os.access(sqlite, os.W_OK)) ):
             showWarning(_t_("The database "+base.name+" is read only, you will not be able to add new items in this database."))
       except:
         showException()
