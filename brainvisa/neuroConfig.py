@@ -486,7 +486,7 @@ if newDatabases:
   if cacheUpdateRequest:
     print >> sys.stderr, 'WARNING: --updateCache is obsolete\n'
   if setup:
-    startup.append( 'from neuroHierarchy import databases\ndb = list( databases.iterDatabases() )[0]\ndb.clear()\ndb.update()' )
+    startup.append( 'from neuroHierarchy import databases\nfrom neuroProcesses import defaultContext\ndb = list( databases.iterDatabases() )[0]\ndb.clear(context=defaultContext())\ndb.update(context=defaultContext())' )
 elif cacheUpdateRequest:
   startup.append( 'cacheUpdate()' )
 
