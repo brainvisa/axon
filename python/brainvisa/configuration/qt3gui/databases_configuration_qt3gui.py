@@ -71,6 +71,7 @@ class DatabaseManagerGUI( qt.QWidget ):
     self.lvDatabases.addColumn( _( 'Database' ) )
     self.lvDatabases.header().hide()
     self.lvDatabases.setSorting( -1 )
+    self.lvDatabases.setSizePolicy(qt.QSizePolicy.Expanding, qt.QSizePolicy.Maximum)
     self.connect( self.lvDatabases, qt.SIGNAL( 'selectionChanged( QListViewItem * )' ), self._selected )
     layout.addWidget( self.lvDatabases )
     self._lvDatabaseLastItem = None
@@ -115,6 +116,7 @@ class DatabaseManagerGUI( qt.QWidget ):
     layout.addLayout( hb )
     self.modification = 0
     self.setCaption( 'Select databases directories' )
+    self.setSizePolicy(qt.QSizePolicy.Expanding, qt.QSizePolicy.Maximum)
     
     
   def getConfiguredDatabases( self ):
