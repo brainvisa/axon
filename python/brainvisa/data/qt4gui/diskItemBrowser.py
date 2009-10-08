@@ -483,6 +483,12 @@ class DiskItemBrowser( QDialog ):
   def getValues( self ):
     return [ (self._items[ i ] if isinstance(self._items[ i ], DiskItem) else self._database.getDiskItemFromUuid(self._items[ i ])) for i in set(i.row() for i in self._ui.tblItems.selectedIndexes()) ]
 
+  def getAllValues( self ):
+    """
+    Returns all diskitems currently in the list, not only the selected ones.
+    """
+    return [ (item if isinstance(item, DiskItem) else self._database.getDiskItemFromUuid(item)) for item in self._items ]
+
 
   @staticmethod
   def diskItemDisplayText( diskItem ):
