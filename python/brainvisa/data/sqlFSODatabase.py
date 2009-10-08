@@ -417,6 +417,7 @@ class SQLDatabase( Database ):
     finally:
       self._closeDatabaseCursor( cursor )
     self._connection.closeSqliteConnections()
+    self.currentThreadCleanup()
     self._connection=None
     self.createTables( context=context )
   
