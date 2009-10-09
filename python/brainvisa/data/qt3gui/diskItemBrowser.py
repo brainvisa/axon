@@ -117,17 +117,19 @@ class DiskItemBrowser( QDialog ):
     #attributeFrameLayout = self._ui.attributesFrame.layout()
     #for x in (x for x in self._ui.attributesFrame.children() if x.isWidgetType()):
       #x.deleteLater()
+    vlayout=QVBoxLayout(self._ui.attributesFrame)
     scrollview=QScrollView(self._ui.attributesFrame)
     scrollview.setResizePolicy( QScrollView.AutoOneFit )
     scrollview.setFrameStyle( QFrame.NoFrame )
     scrollview.setMargin(6)
+    vlayout.addWidget(scrollview)
     self.gridwidget=QWidget(scrollview.viewport())
     vlayout=QVBoxLayout(scrollview.viewport())
     self.gridLayout=QGridLayout(self.gridwidget)
     self.gridLayout.setMargin(6)
     self.gridLayout.setSpacing(5)
     scrollview.addChild(self.gridwidget)
-    self._ui.attributesFrame.layout().addWidget(scrollview)
+    #self._ui.attributesFrame.layout().addWidget(scrollview)
     vlayout.addWidget(self.gridwidget)
     
     self._items = []
@@ -231,6 +233,7 @@ class DiskItemBrowser( QDialog ):
     label = QLabel(_t_( caption ), self.gridwidget )
     self.gridLayout.addWidget( label, layoutRow, 0 )
     cmb = SignalNameComboBox( editable, self.gridwidget, attributeName )
+    cmb.setSizePolicy( QSizePolicy.MinimumExpanding, QSizePolicy.Fixed )
     cmb._label = label
     if editable:
       cmb._modificationTimer = QLineEditModificationTimer( cmb.lineEdit() )

@@ -72,35 +72,55 @@
         </widget>
         <widget class="QSplitter">
             <property name="name">
-                <cstring>splitter2</cstring>
+                <cstring>splitter4</cstring>
             </property>
             <property name="orientation">
                 <enum>Vertical</enum>
             </property>
             <widget class="QSplitter">
                 <property name="name">
-                    <cstring>splitter1</cstring>
+                    <cstring>splitter3</cstring>
                 </property>
                 <property name="sizePolicy">
                     <sizepolicy>
                         <hsizetype>7</hsizetype>
                         <vsizetype>5</vsizetype>
-                        <horstretch>1</horstretch>
+                        <horstretch>0</horstretch>
                         <verstretch>1</verstretch>
                     </sizepolicy>
                 </property>
                 <property name="orientation">
                     <enum>Horizontal</enum>
                 </property>
-                <widget class="QLayoutWidget">
+                <widget class="QGroupBox">
                     <property name="name">
-                        <cstring>layout4</cstring>
+                        <cstring>EXPORT_attributesBox</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>7</hsizetype>
+                            <vsizetype>7</vsizetype>
+                            <horstretch>2</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="margin">
+                        <number>0</number>
+                    </property>
+                    <property name="title">
+                        <string>Filter data on attributes</string>
                     </property>
                     <vbox>
                         <property name="name">
                             <cstring>unnamed</cstring>
                         </property>
-                        <widget class="QGroupBox">
+                        <property name="margin">
+                            <number>6</number>
+                        </property>
+                        <property name="spacing">
+                            <number>5</number>
+                        </property>
+                        <widget class="QFrame">
                             <property name="name">
                                 <cstring>EXPORT_attributesFrame</cstring>
                             </property>
@@ -108,31 +128,20 @@
                                 <sizepolicy>
                                     <hsizetype>7</hsizetype>
                                     <vsizetype>7</vsizetype>
-                                    <horstretch>2</horstretch>
+                                    <horstretch>0</horstretch>
                                     <verstretch>0</verstretch>
                                 </sizepolicy>
                             </property>
-                            <property name="margin">
-                                <number>0</number>
+                            <property name="frameShape">
+                                <enum>StyledPanel</enum>
                             </property>
-                            <property name="title">
-                                <string>Filter data on attributes</string>
+                            <property name="frameShadow">
+                                <enum>Raised</enum>
                             </property>
-                            <vbox>
-                                <property name="name">
-                                    <cstring>unnamed</cstring>
-                                </property>
-                                <property name="margin">
-                                    <number>6</number>
-                                </property>
-                                <property name="spacing">
-                                    <number>5</number>
-                                </property>
-                            </vbox>
                         </widget>
                         <widget class="QLayoutWidget">
                             <property name="name">
-                                <cstring>layout3</cstring>
+                                <cstring>layout3_2</cstring>
                             </property>
                             <hbox>
                                 <property name="name">
@@ -192,7 +201,7 @@
                         <sizepolicy>
                             <hsizetype>5</hsizetype>
                             <vsizetype>5</vsizetype>
-                            <horstretch>0</horstretch>
+                            <horstretch>1</horstretch>
                             <verstretch>0</verstretch>
                         </sizepolicy>
                     </property>
