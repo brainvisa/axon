@@ -200,12 +200,13 @@ class DiskItemBrowser( QDialog ):
       if a not in allAttributes:
         allAttributes.append( a )
     for a in allAttributes:
-      if a in self._editableAttributes:
-        self._combos[ a ] = self._createCombo( _t_( a ), a, True, layoutRow )
-        layoutRow += 1
-      elif a != '_database' and a in self._attributesValues:
-        self._combos[ a ] = self._createCombo( _t_( a ), a, False, layoutRow )
-        layoutRow += 1
+      if a!='name_serie':
+        if a in self._editableAttributes:
+          self._combos[ a ] = self._createCombo( _t_( a ), a, True, layoutRow )
+          layoutRow += 1
+        elif a != '_database' and a in self._attributesValues:
+          self._combos[ a ] = self._createCombo( _t_( a ), a, False, layoutRow )
+          layoutRow += 1
     self._selectedAttributes={}
     # among selection attributes keep those related to the types searched to initialize the combos
     for k, v in selection.items():

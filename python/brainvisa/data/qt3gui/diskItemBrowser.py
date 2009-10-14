@@ -198,12 +198,13 @@ class DiskItemBrowser( QDialog ):
       if a not in allAttributes:
         allAttributes.append( a )
     for a in allAttributes:
-      if a in self._editableAttributes:
-        self._combos[ a ] = self._createCombo( _t_( a ), a, True, layoutRow )
-        layoutRow += 1
-      elif a != '_database' and a in self._attributesValues:
-        self._combos[ a ] = self._createCombo( _t_( a ), a, False, layoutRow )
-        layoutRow += 1
+      if a!='name_serie':
+        if a in self._editableAttributes:
+          self._combos[ a ] = self._createCombo( _t_( a ), a, True, layoutRow )
+          layoutRow += 1
+        elif a != '_database' and a in self._attributesValues:
+          self._combos[ a ] = self._createCombo( _t_( a ), a, False, layoutRow )
+          layoutRow += 1
     #gridLayout = self._ui.attributesFrame.layout().children()[ 0 ]
     self.gridLayout.setColStretch( 0, 0 )
     self.gridLayout.setColStretch( 1, 1 )
