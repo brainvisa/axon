@@ -341,6 +341,19 @@ def openDebugFile( fileName ):
   return result
 
 #------------------------------------------------------------------------------
+def chooseDatabaseVersionSyncOption(context):
+  global databaseVersionSync, userOptionFile
+  choice=context.ask("<p><b>Database synchronization between different versions of BrainVISA<b></p><p>Some of your databases have been used with different versions of BrainVISA. They may need to be updated when you switch from one BrainVISA version to another.</p> Please choose the way you want to manage the database synchronization throught BrainVISA versions : <ul><li>Automatic (recommended) : BrainVISA will automatically update your database if you switch from one BrainVISA version to another. </li><li>Manual : Database update is not automatic when switch from one BrainVISA version to another but if you modify a database in one version, you will have to update it with the other version for BrainVISA to take into account the modifications.</li></ul><p>You can change this option later in BrainVISA preferences.</p>", "Automatic (recommended)", "Manual")
+  if (choice == 0):
+    databaseVersionSync = "auto"
+  else:
+    databaseVersionSync = "man"
+  app = Application()
+  app.configuration.brainvisa.databaseVersionSync = databaseVersionSync
+  app.configuration.save( userOptionFile)
+  return databaseVersionSync
+  
+#------------------------------------------------------------------------------
 def editConfiguration():
   import neuroProcesses, neuroHierarchy
   from brainvisa.data.qtgui.updateDatabases import warnUserAboutDatabasesToUpdate

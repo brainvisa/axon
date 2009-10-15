@@ -164,6 +164,7 @@ def readConfiguration( mainPath, userProfile, homeBrainVISADir ):
       newDataPath.append( DatabaseSettings( fso.directory ) )
   yield ( 'dataPath', newDataPath )
   yield ( 'databasesWarning', configuration.brainvisa.databasesWarning)
+  yield ( 'databaseVersionSync', configuration.brainvisa.databaseVersionSync )
 
 
 #------------------------------------------------------------------------------

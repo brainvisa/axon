@@ -57,13 +57,26 @@ if neuroConfig.newDatabases:
     ignoreReadOnlyForShared = True
     for dbSettings in neuroConfig.dataPath:
       try:
+        otherSqliteFiles=[]
         if dbSettings.expert_settings.sqliteFileName:
-          sqlite = dbSettings.expert_settings.sqliteFileName
-          path, ext = os.path.splitext(sqlite)
-          sqlite=path+"-"+databaseVersion+ext
+          path, ext = os.path.splitext(dbSettings.expert_settings.sqliteFileName)
         else:
-          sqlite = os.path.join( dbSettings.directory, 'database-'+databaseVersion+'.sqlite' )
-        base = SQLDatabase( sqlite, dbSettings.directory, context=defaultContext() )
+          path=os.path.join( dbSettings.directory, 'database' )
+          ext='.sqlite'
+
+        sqlite=path+"-"+databaseVersion+ext
+        # other versions of sqlite file
+        other=path+ext
+        if os.path.exists(other):
+          otherSqliteFiles.append(other)
+        for version in databaseVersions.keys():
+          if version != databaseVersion:
+            other=path+"-"+version+ext
+            if os.path.exists(other):
+              otherSqliteFiles.append(path+"-"+version+ext)
+
+        base = SQLDatabase( sqlite, dbSettings.directory, context=defaultContext(), otherSqliteFiles=otherSqliteFiles )
+
         databases.add( base )
         if ignoreReadOnlyForShared:
           # The first database is the shared directory, usually users do not have
@@ -73,8 +86,8 @@ if neuroConfig.newDatabases:
           if (not os.access(dbSettings.directory, os.W_OK) or ( os.path.exists(sqlite) and not os.access(sqlite, os.W_OK)) ):
             showWarning(_t_("The database "+base.name+" is read only, you will not be able to add new items in this database."))
       except:
-        showException()
-
+        showException()    
+    
   def hierarchies():
     return databases._databases.values()
     
