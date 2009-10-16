@@ -420,8 +420,10 @@ class SQLDatabase( Database ):
       for f in self.otherSqliteFiles:
         if os.path.exists(f):
           os.remove(f)
+        if os.path.exists(f+".minf"):
+          os.remove(f+".minf")
       if context is not None:
-        context.write("Delete other versions of database cache files : "+self.otherSqliteFiles)
+        context.write("Delete other versions of database cache files : "+unicode(self.otherSqliteFiles))
       self.otherSqliteFiles=[]
     cursor = self._getDatabaseCursor()
     try:
