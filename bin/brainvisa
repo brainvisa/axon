@@ -78,3 +78,5 @@ unset OLDLANG
 
 # Look for neuro.py
 $python -S -t -c "$runbrainvisa" "$0" "$@"
+type stty > /dev/null && stty sane
+

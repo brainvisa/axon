@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -70,7 +71,10 @@ def startShell():
 def quitRequest():
   a = QMessageBox.warning( None, _t_('Quit'),_t_( 'Do you really want to quit BrainVISA ?' ), QMessageBox.Yes | QMessageBox.Default, QMessageBox.No )
   if a == QMessageBox.Yes:
-    qApp.exit()
+    if neuroConfig.shell:
+      sys.exit()
+    else:
+      qApp.exit()
 
 #----------------------------------------------------------------------------
 _helpWidget = None
