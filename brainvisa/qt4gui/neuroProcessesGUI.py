@@ -53,6 +53,7 @@ except:
   # for sip 3.x (does it work ??)
   import libsip as sip
 
+import neuroConfig
 import neuroProcesses
 import neuroException
 from soma.qtgui.api import EditableTreeWidget, TreeListWidget
@@ -60,12 +61,18 @@ from soma.notification import ObservableList, EditableTree
 
 _mainThreadActions = FakeQtThreadCall()
 
-#----------------------------------------------------------------------------neuroProcesses.
+#----------------------------------------------------------------------------
+def startShell():
+  neuroConfig.shell = True
+  from PyQt4.QtGui import qApp
+  mainThreadActions().push( qApp.exit )
+
+
+#----------------------------------------------------------------------------
 def quitRequest():
   a = QMessageBox.warning( None, _t_('Quit'),_t_( 'Do you really want to quit BrainVISA ?' ), QMessageBox.Yes | QMessageBox.Default, QMessageBox.No )
   if a == QMessageBox.Yes:
     qApp.exit()
-    #sys.exit()
 
 #----------------------------------------------------------------------------
 _helpWidget = None
@@ -199,6 +206,7 @@ def addBrainVISAMenu( widget, menuBar ):
   bvMenu.addAction( _t_( "&Preferences" ), neuroConfig.editConfiguration, Qt.CTRL + Qt.Key_P )
   bvMenu.addAction( _t_( "Show &Log" ), logRequest, Qt.CTRL + Qt.Key_L )
   bvMenu.addAction( _t_( "&Open process..." ), ProcessView.open, Qt.CTRL + Qt.Key_O )
+  bvMenu.addAction( _t_( "Start &Shell" ), startShell, Qt.CTRL + Qt.Key_S )
   bvMenu.addSeparator()
   if not isinstance( widget, ProcessSelectionWidget ):
     bvMenu.addAction( _t_( "Close" ), widget.close, Qt.CTRL + Qt.Key_W )

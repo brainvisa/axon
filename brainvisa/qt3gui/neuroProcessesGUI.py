@@ -1,4 +1,3 @@
-# -*- coding: iso-8859-1 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -61,11 +60,17 @@ from soma.notification import ObservableList, EditableTree
 _mainThreadActions = FakeQtThreadCall()
 
 #----------------------------------------------------------------------------
+def startShell():
+  neuroConfig.shell = True
+  from qt import qApp
+  mainThreadActions().push( qApp.exit )
+
+
+#----------------------------------------------------------------------------
 def quitRequest():
   a = QMessageBox.warning( None, _t_('Quit'),_t_( 'Do you really want to quit BrainVISA ?' ), QMessageBox.Yes | QMessageBox.Default, QMessageBox.No )
   if a == QMessageBox.Yes:
     qApp.exit()
-    #sys.exit()
 
 #----------------------------------------------------------------------------
 _helpWidget = None
@@ -183,6 +188,7 @@ def addBrainVISAMenu( widget, menuBar ):
   bvMenu.insertItem( _t_( "&Preferences" ), editConfiguration, Qt.CTRL + Qt.Key_P )
   bvMenu.insertItem( _t_( "Show &Log" ), logRequest, Qt.CTRL + Qt.Key_L )
   bvMenu.insertItem( _t_( "&Open process..." ), ProcessView.open, Qt.CTRL + Qt.Key_O )
+  bvMenu.insertItem( _t_( "Start &Shell" ), startShell, Qt.CTRL + Qt.Key_S )
   bvMenu.insertSeparator()
   if not isinstance( widget, ProcessSelectionWidget ):
     bvMenu.insertItem( _t_( "Close" ), widget.close, Qt.CTRL + Qt.Key_W )
@@ -450,7 +456,7 @@ class NodeCheckListItem( QCheckListItem ):
         painter.save()
         pix = self.pixmap( 0 )
         if pix and not pix.isNull():
-          #�I think this is a QCheckListItem bug...
+          # I think this is a QCheckListItem bug...
           painter.translate( pix.width() + 3, 0 )
         QCheckListItem.paintCell( self, painter, cg, column, width, align )
         painter.restore()
