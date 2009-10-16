@@ -200,12 +200,13 @@ class DiskItemBrowser( QDialog ):
       if a not in allAttributes:
         allAttributes.append( a )
     for a in allAttributes:
-      if a in self._editableAttributes:
-        self._combos[ a ] = self._createCombo( _t_( a ), a, True, layoutRow )
-        layoutRow += 1
-      elif a != '_database' and a in self._attributesValues:
-        self._combos[ a ] = self._createCombo( _t_( a ), a, False, layoutRow )
-        layoutRow += 1
+      if a!='name_serie':
+        if a in self._editableAttributes:
+          self._combos[ a ] = self._createCombo( _t_( a ), a, True, layoutRow )
+          layoutRow += 1
+        elif a != '_database' and a in self._attributesValues:
+          self._combos[ a ] = self._createCombo( _t_( a ), a, False, layoutRow )
+          layoutRow += 1
     self._selectedAttributes={}
     # among selection attributes keep those related to the types searched to initialize the combos
     for k, v in selection.items():
@@ -482,6 +483,12 @@ class DiskItemBrowser( QDialog ):
 
   def getValues( self ):
     return [ (self._items[ i ] if isinstance(self._items[ i ], DiskItem) else self._database.getDiskItemFromUuid(self._items[ i ])) for i in set(i.row() for i in self._ui.tblItems.selectedIndexes()) ]
+
+  def getAllValues( self ):
+    """
+    Returns all diskitems currently in the list, not only the selected ones.
+    """
+    return [ (item if isinstance(item, DiskItem) else self._database.getDiskItemFromUuid(item)) for item in self._items ]
 
 
   @staticmethod

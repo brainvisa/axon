@@ -91,6 +91,8 @@ class BrainVISAConfiguration( ConfigurationGroup ):
     'support', SupportConfiguration, dict( defaultValue=SupportConfiguration() ),
     'gui_style', OpenedChoice( ('<system default>', None ) ), dict( defaultValue = None, doc='Style of the graphical interface.' ),
     'databasesWarning', Boolean, dict( defaultValue=True, doc='Unselect this option to disable the warning message that is shown when you have not created any database.'),
+    'databaseVersionSync', Choice(('Ask User', None), ('Automatic', 'auto'), ('Manual', 'man')),
+        dict( defaultValue=None, doc='Management of the database synchronization throught BrainVISA versions. Ask User : BrainVISA will ask what to do when a database need to be updated. Automatic : BrainVISA will automatically update your database if you switch from one BrainVISA version to another. Manual : If you modify a database and then switch from one BrainVISA version to another, you will have to update the database if you want BrainVISA take into account the modifications.' ),
   )
 
 

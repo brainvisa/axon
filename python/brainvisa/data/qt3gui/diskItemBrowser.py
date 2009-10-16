@@ -34,7 +34,7 @@ import sys, os
 from itertools import chain
 
 from backwardCompatibleQt import QDialog, Qt, QVBoxLayout, QComboBox, SIGNAL, PYSIGNAL, SLOT, \
-               QLabel, QApplication, QPixmap, QListBox
+               QLabel, QApplication, QPixmap, QListBox, QScrollView, QGridLayout, QFrame, QWidget, QSizePolicy
 from qt import QString, QStringList
 from qttable import QTable
 
@@ -114,10 +114,24 @@ class DiskItemBrowser( QDialog ):
       self._ui.labDatabaseIcon.setPixmap( QPixmap( findIconFile( 'database_write.png' ) ) )
     
     # remove the existings ui-designer widgets
-    attributeFrameLayout = self._ui.attributesFrame.layout()
-    for x in (x for x in self._ui.attributesFrame.children() if x.isWidgetType()):
-      x.deleteLater()
-
+    #attributeFrameLayout = self._ui.attributesFrame.layout()
+    #for x in (x for x in self._ui.attributesFrame.children() if x.isWidgetType()):
+      #x.deleteLater()
+    vlayout=QVBoxLayout(self._ui.attributesFrame)
+    scrollview=QScrollView(self._ui.attributesFrame)
+    scrollview.setResizePolicy( QScrollView.AutoOneFit )
+    scrollview.setFrameStyle( QFrame.NoFrame )
+    scrollview.setMargin(6)
+    vlayout.addWidget(scrollview)
+    self.gridwidget=QWidget(scrollview.viewport())
+    vlayout=QVBoxLayout(scrollview.viewport())
+    self.gridLayout=QGridLayout(self.gridwidget)
+    self.gridLayout.setMargin(6)
+    self.gridLayout.setSpacing(5)
+    scrollview.addChild(self.gridwidget)
+    #self._ui.attributesFrame.layout().addWidget(scrollview)
+    vlayout.addWidget(self.gridwidget)
+    
     self._items = []
     self.connect( self._ui.tblItems, SIGNAL('currentChanged( int, int )'), self.itemSelected )
       
@@ -184,15 +198,16 @@ class DiskItemBrowser( QDialog ):
       if a not in allAttributes:
         allAttributes.append( a )
     for a in allAttributes:
-      if a in self._editableAttributes:
-        self._combos[ a ] = self._createCombo( _t_( a ), a, True, layoutRow )
-        layoutRow += 1
-      elif a != '_database' and a in self._attributesValues:
-        self._combos[ a ] = self._createCombo( _t_( a ), a, False, layoutRow )
-        layoutRow += 1
-    gridLayout = self._ui.attributesFrame.layout().children()[ 0 ]
-    gridLayout.setColStretch( 0, 0 )
-    gridLayout.setColStretch( 1, 1 )
+      if a!='name_serie':
+        if a in self._editableAttributes:
+          self._combos[ a ] = self._createCombo( _t_( a ), a, True, layoutRow )
+          layoutRow += 1
+        elif a != '_database' and a in self._attributesValues:
+          self._combos[ a ] = self._createCombo( _t_( a ), a, False, layoutRow )
+          layoutRow += 1
+    #gridLayout = self._ui.attributesFrame.layout().children()[ 0 ]
+    self.gridLayout.setColStretch( 0, 0 )
+    self.gridLayout.setColStretch( 1, 1 )
     self._selectedAttributes={}
     # among selection attributes keep those related to the types searched to initialize the combos
     for k, v in selection.items():
@@ -215,16 +230,17 @@ class DiskItemBrowser( QDialog ):
     self.itemSelected()
   
   def _createCombo( self, caption, attributeName, editable, layoutRow ):
-    gridLayout = self._ui.attributesFrame.layout().children()[ 0 ]
-    label = QLabel(_t_( caption ), self._ui.attributesFrame )
-    gridLayout.addWidget( label, layoutRow, 0 )
-    cmb = SignalNameComboBox( editable, self._ui.attributesFrame, attributeName )
+    #gridLayout = self._ui.attributesFrame.layout().children()[ 0 ]
+    label = QLabel(_t_( caption ), self.gridwidget )
+    self.gridLayout.addWidget( label, layoutRow, 0 )
+    cmb = SignalNameComboBox( editable, self.gridwidget, attributeName )
+    cmb.setSizePolicy( QSizePolicy.MinimumExpanding, QSizePolicy.Fixed )
     cmb._label = label
     if editable:
       cmb._modificationTimer = QLineEditModificationTimer( cmb.lineEdit() )
       self.connect( cmb._modificationTimer, PYSIGNAL( 'userModification' ), partial( self._comboTextChanged, name=attributeName ) )
     cmb.connect( cmb, PYSIGNAL( 'activated' ), self._comboSelected )
-    gridLayout.addWidget( cmb, layoutRow, 1 )
+    self.gridLayout.addWidget( cmb, layoutRow, 1 )
     return cmb
     
     
@@ -461,6 +477,12 @@ class DiskItemBrowser( QDialog ):
 
   def getValues( self ):
     return [ (self._items[ i ] if isinstance(self._items[ i ], DiskItem) else self._database.getDiskItemFromUuid(self._items[ i ])) for i in xrange(self._ui.tblItems.numRows()) if self._ui.tblItems.isRowSelected( i ) ]
+  
+  def getAllValues( self ):
+    """
+    Returns all diskitems currently in the list, not only the selected ones.
+    """
+    return [ (item if isinstance(item, DiskItem) else self._database.getDiskItemFromUuid(item)) for item in self._items ]
 
 
   @staticmethod

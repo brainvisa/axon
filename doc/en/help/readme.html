@@ -14,7 +14,7 @@
 
 <h1>BrainVISA readme / release notes</h1>
 
-<p><em>Last modification: June 6, 2008</em></p>
+<p><em>Last modification: October 9, 2009</em></p>
 
 <li><a href="#disclaimer">Disclaimer</a></li>
 <li><a href="#license">License</a></li>
@@ -39,14 +39,12 @@ Any contributor reserves the right to alter or remove the content, in full or in
 </p>
 
 <p>External software come with their own licence, which may depend on the 
-  system. For instance, Qt and PyQt are under GPL on Unix, and under a commercial licence on  Windows. All other included software are open-source and under GPL, LGPL or BSD-like licences.
+  system. For instance, PyQt is under GPL on Unix, and under a commercial licence on  Windows. All other included software are open-source and under GPL, LGPL or BSD-like licences.
 </p>
 
-<p>Our open-source softwares are governed by the CeCILL license version 2 under
-French law and abiding by the rules of distribution of free software.
+<p>Our open-source software is governed by CeCILL license version 2 for the parts that depend on PyQt and under CeCILL-B license for other parts, under French law and abiding by the rules of distribution of free software.
 You can  use, modify and/or redistribute the software under the
-terms of the CeCILL license version 2 as circulated by CEA, CNRS
- and INRIA at the following URL <a href="http://www.cecill.info">http://www.cecill.info</a>.</p>
+terms of the licences as circulated by CEA, CNRS and INRIA at the following URL <a href="http://www.cecill.info">http://www.cecill.info</a>.</p>
 
 <p>But we also have closed-source programs. They can be freely copied and redistributed as binaries. But they are not released under the CeCill license, and are not using CeCill nor GPL software.  </p>
 
@@ -60,8 +58,7 @@ terms of the CeCILL license version 2 as circulated by CEA, CNRS
 <ul>
 <li>BrainVisa</li>
 <li>Anatomist</li>
-<li>Freeware libraries from our lab, with their sets of commandlines: 
-  cartobase, cartodata, graph, aimsdata and IO formats plugins
+<li>Aims : Freeware libraries from our lab, with their sets of commandlines
 </li>
 <li>Some closed-source libraries and programs from our lab</li>
 <li>Freeware libraries: libsigc++, libxml2, DcmTk, Ecat library, Minc and netcdf libraries</li>
@@ -98,7 +95,7 @@ not finished porting it). There are sometimes also some specific behaviours or l
 
 <h4>Mac OS X</h4>
 <p>Normally everything should work as on Linux, except for
-The new fMRI toolbox which has not been ported/tested on Mac yet, and is not available.</p>
+the new fMRI toolbox which has not been ported/tested on Mac yet, and is not available.</p>
 
 <h4>Linux</h4>
 <p>Normally everything should work fine on Linux, it is our main development platform.</p>
@@ -107,12 +104,11 @@ The new fMRI toolbox which has not been ported/tested on Mac yet, and is not ava
 </p>
 
 <h4>Solaris</h4>
-<p>Support for Sun/Solaris has not been continued since we are not using Solaris anymore. The last packages running on Solaris are still available, but they are very old and we will not provide any support on them.
+<p>Support for Sun/Solaris has not been continued since we are not using Solaris anymore.
 </p>
 
 <h4>Irix</h4>
-<p>Support for SGI/Irix has not been continued since we are not using Irix anymore. The last packages running on Irix are still available, but they are very old and we will not provide any support on them.
-</p>
+<p>Support for SGI/Irix has not been continued since we are not using Irix anymore. </p>
 
 
 <a name="optional"></a>
@@ -171,15 +167,11 @@ Other external software may be used for some processes. Look at the log in Brain
 <h2>Add-on module packages</h2>
 
 BrainVISA is modular, and other people may add new processes for their own tools. 
-Some labs have made packages and are distributing (or will distribute) them.
-<ul>
-  <li><b>MEG/EEG:</b> The <a href="http://cogimage.dsi.cnrs.fr/logiciels/index.htm">MEG/EEG toolbox for brainVISA</a> is available for download at the <a href="http://www.labos.upmc.fr/center-meg/">MEG center</a> / <a href="http://cogimage.dsi.cnrs.fr/">LENA</a> labs in the Pitié Salpétrière hospital in Paris. This toolbox is based on <a href="http://neuroimage.usc.edu/brainstorm/">BrainStorm</a> and integrates MEG/EEG processing tools in BrainVISA environement. It requires Matlab.
-  </li>
-</ul>
+Some labs have made packages and are distributing (or will distribute) them. See the list of available toolboxes on the website : <a href="http://brainvisa.info/toolboxes.html">http://brainvisa.info/toolboxes.html</a>
 
 If you have made nice processes for BrainVISA and wish to distribute them as a package, 
 just tell us (for instance via the <a href="http://brainvisa.info/forum">forum</a>), and we will 
-add a link for it here.<br>
+add a link for it on our website.<br>
 Our policy is not to include such processes in the core BrainVISA/Anatomist 
 distribution, but to keep them external and provide some links to them in their home labs. There are two main reasons for this behaviour:
 <ul>

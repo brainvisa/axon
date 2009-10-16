@@ -49,7 +49,7 @@ from soma.databases.api import sqlite3, ThreadSafeSQLiteConnection
 
 from fileSystemOntology import FileSystemOntology, SetContent
 from neuroProcesses import diskItemTypes, getDiskItemType
-import neuroProcesses
+import neuroProcesses, neuroConfig
 from neuroException import showWarning
 from neuroDiskItems import getFormat, getFormats, Format, FormatSeries, File, Directory, getAllFormats
 from neuroException import HTMLMessage
@@ -226,7 +226,7 @@ class SQLDatabase( Database ):
       print >> sys.stderr, '!cursor!', self._id, ':', message
 
 
-  def __init__( self, sqlDatabaseFile, directory, fso=None, context=None ):
+  def __init__( self, sqlDatabaseFile, directory, fso=None, context=None, otherSqliteFiles=[] ):
     super(SQLDatabase, self).__init__()
     self._connection = None
     self.name = os.path.normpath( directory )
@@ -244,6 +244,7 @@ class SQLDatabase( Database ):
       else:
         fso='brainvisa-3.0'
     self.fso = FileSystemOntology.get( fso )
+    self.otherSqliteFiles=otherSqliteFiles
     
     # Build list of all formats used in BrainVISA
     self.formats = FileFormats( self.fso.name )
@@ -378,6 +379,7 @@ class SQLDatabase( Database ):
       sql = 'INSERT INTO ' + '"' + tableName + '" (' + ', '.join( (i for i in tableFields) ) + ') VALUES (' + ', '.join( ('?' for i in tableFields) ) + ')'
       self._tableFieldsAndInsertByTypeName[ type ] = ( tableName, tableFields, tableAttributes, sql )
 
+    # Determine if the database needs update
     if os.path.exists( self.sqlDatabaseFile ):
       if self.fso.lastModification > os.stat(self.sqlDatabaseFile).st_mtime:
         self._mustBeUpdated = True
@@ -387,6 +389,12 @@ class SQLDatabase( Database ):
     # do not update automatically enven if the database sqlite file doesn't exists, ask the user.
     #if self.createTables():
       #self.update( context=context)
+    if self.otherSqliteFiles: # if there are other sqlite files, the database might have been modified by other version of brainvisa
+      # update or not depends on the value of databaseVersionSync option
+      if ((neuroConfig.databaseVersionSync is None) and (not neuroConfig.setup)):
+        neuroConfig.chooseDatabaseVersionSyncOption(context)
+      if neuroConfig.databaseVersionSync == 'auto':
+        self._mustBeUpdated = True
   
   
   def update( self, directoriesToScan=None, recursion=True, context=None ):
@@ -408,6 +416,15 @@ class SQLDatabase( Database ):
   
   
   def clear( self, context=None ):
+    if ((neuroConfig.databaseVersionSync=='auto') and self.otherSqliteFiles):
+      for f in self.otherSqliteFiles:
+        if os.path.exists(f):
+          os.remove(f)
+        if os.path.exists(f+".minf"):
+          os.remove(f+".minf")
+      if context is not None:
+        context.write("Delete other versions of database cache files : "+unicode(self.otherSqliteFiles))
+      self.otherSqliteFiles=[]
     cursor = self._getDatabaseCursor()
     try:
       tables = cursor.execute( 'SELECT name FROM sqlite_master WHERE type="table"' ).fetchall()
