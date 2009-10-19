@@ -49,7 +49,7 @@ from brainvisa.configuration.r_configuration import RConfiguration
 from brainvisa.configuration.matlab_configuration import MatlabConfiguration
 from brainvisa.configuration.distributed_configuration import DistributedBrainVISAConfiguration
 try :
-  from brainvisa.configuration.nmrserver_configuration import NmrServerConfiguration
+  from brainvisa.configuration.datastorage_configuration import DataStorageConfiguration
 except Exception, e :
   pass
 from soma.wip.configuration import Configuration
@@ -68,7 +68,7 @@ def initializeConfiguration():
   configuration.add( 'distributed_execution',
     DistributedBrainVISAConfiguration() )
   try :
-    configuration.add( 'nmrserver', NmrServerConfiguration() )
+    configuration.add( 'datastorage', DataStorageConfiguration() )
   except Exception, e :
     pass
 
