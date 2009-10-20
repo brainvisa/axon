@@ -1335,9 +1335,13 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     self._iterationDialog.show()
   
   def _distributeAccept( self ):
-    params = self._iterationDialog.getLists()
-    processes = apply( self.process._iterate, (), params )
-    showProcess( DistributedProcess( self.process.name, processes ) )  
+    try:
+      params = self._iterationDialog.getLists()
+      processes = apply( self.process._iterate, (), params )
+      showProcess( DistributedProcess( self.process.name, processes ) )
+    except:
+      neuroException.showException()
+      self._iterationDialog.show()
 
   def _iterateButton( self ):
     self.readUserValues()
@@ -1354,6 +1358,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       showProcess( iterationProcess )
     except:
         neuroException.showException()
+        self._iterationDialog.show()
 
   def setValue( self, name, value ):
     setattr( self.process, name, value )
@@ -1992,11 +1997,15 @@ class ProcessSelectionWidget( QMainWindow ):
     """
     Call back when accepting iteration dialog. Iterates the selected process.
     """
-    params = self._iterationDialog.getLists()
-    processes = self.currentProcess._iterate( **params )
-    iterationProcess = neuroProcesses.IterationProcess( self.currentProcess.name, processes )
-    showProcess( iterationProcess )
-    
+    try:
+      params = self._iterationDialog.getLists()
+      processes = self.currentProcess._iterate( **params )
+      iterationProcess = neuroProcesses.IterationProcess( self.currentProcess.name, processes )
+      showProcess( iterationProcess )
+    except:
+      neuroException.showException()
+      self._iterationDialog.show()
+
   def updateList(self):
     """
     Reloads the list of process trees.
