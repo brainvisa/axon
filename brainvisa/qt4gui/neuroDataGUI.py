@@ -334,6 +334,7 @@ class StringListEditor( QLineEdit, DataEditor ):
       self.setObjectName( name )
     self.setMaxLength(-1)
     self.connect( self, SIGNAL( 'returnPressed()' ), self.setFocusNext )
+    self.connect( self, SIGNAL( 'lostFocus()' ), self.checkValue )
     self.value = None
     self.setValue( None, True )
       
@@ -413,7 +414,6 @@ class StringListEditor( QLineEdit, DataEditor ):
     return quote + result + quote
   
   def setFocusNext( self ):
-    self.checkValue()
     QApplication.postEvent( self, QKeyEvent( QEvent.KeyPress, 0x1001, 8, 0 ) )
 
   def checkValue( self ):
@@ -719,7 +719,7 @@ class PointListEditor( QWidget, DataEditor ):
     layout.addWidget(self.led)
     self.connect( self.led, SIGNAL( 'textChanged( const QString & )' ),
                   self.textChanged )
-    self.connect( self.led, SIGNAL( 'returnPressed()' ), self.checkValue )
+    self.connect( self.led, SIGNAL( 'returnPressed()' ), self.setFocusNext )
     self.setFocusProxy( self.led )
 
     self.btnSelect = QPushButton()
