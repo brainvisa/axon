@@ -71,7 +71,8 @@ class CommandWithQProcess( object ):
     @param env: map variable -> value
     """
     self.env=os.environ.copy()
-    self.env.update(env)
+    if env is not None:
+      self.env.update(env)
 
   def start( self ):
     '''Starts the command. If it cannot be started, a RuntimeError is raised'''

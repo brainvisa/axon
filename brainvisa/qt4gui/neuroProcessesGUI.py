@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -72,7 +72,10 @@ def startShell():
 def quitRequest():
   a = QMessageBox.warning( None, _t_('Quit'),_t_( 'Do you really want to quit BrainVISA ?' ), QMessageBox.Yes | QMessageBox.Default, QMessageBox.No )
   if a == QMessageBox.Yes:
-    qApp.exit()
+    if neuroConfig.shell:
+      sys.exit()
+    else:
+      qApp.exit()
 
 #----------------------------------------------------------------------------
 _helpWidget = None
@@ -1332,9 +1335,13 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     self._iterationDialog.show()
   
   def _distributeAccept( self ):
-    params = self._iterationDialog.getLists()
-    processes = apply( self.process._iterate, (), params )
-    showProcess( DistributedProcess( self.process.name, processes ) )  
+    try:
+      params = self._iterationDialog.getLists()
+      processes = apply( self.process._iterate, (), params )
+      showProcess( DistributedProcess( self.process.name, processes ) )
+    except:
+      neuroException.showException()
+      self._iterationDialog.show()
 
   def _iterateButton( self ):
     self.readUserValues()
@@ -1351,6 +1358,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       showProcess( iterationProcess )
     except:
         neuroException.showException()
+        self._iterationDialog.show()
 
   def setValue( self, name, value ):
     setattr( self.process, name, value )
@@ -1989,11 +1997,15 @@ class ProcessSelectionWidget( QMainWindow ):
     """
     Call back when accepting iteration dialog. Iterates the selected process.
     """
-    params = self._iterationDialog.getLists()
-    processes = self.currentProcess._iterate( **params )
-    iterationProcess = neuroProcesses.IterationProcess( self.currentProcess.name, processes )
-    showProcess( iterationProcess )
-    
+    try:
+      params = self._iterationDialog.getLists()
+      processes = self.currentProcess._iterate( **params )
+      iterationProcess = neuroProcesses.IterationProcess( self.currentProcess.name, processes )
+      showProcess( iterationProcess )
+    except:
+      neuroException.showException()
+      self._iterationDialog.show()
+
   def updateList(self):
     """
     Reloads the list of process trees.

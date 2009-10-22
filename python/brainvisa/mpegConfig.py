@@ -113,9 +113,13 @@ def findCodec( encoder ):
         break
     if codecsFound:
       while lines:
-        l = lines.pop( 0 )
+        l = lines.pop( 0 ).strip()
         if not l: break
-        codecs.append( l.split()[ -1 ] )
+        lsplit = l.split()
+        for x in lsplit:
+          if x != x.upper():
+            codecs.append( x )
+            break
     return codecs
   return []
 

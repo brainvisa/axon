@@ -606,6 +606,8 @@ class SQLDatabase( Database ):
         f = StringIO()
         writeMinf( f, ( state, ) )
         minf = f.getvalue()
+        # decode the minf string to pass a unicode string  to the sqlite database
+        minf = minf.decode("utf-8")
         try:
           cursor.execute( 'INSERT INTO _DISKITEMS_ (_uuid, _diskItem) VALUES (? ,?)', ( uuid, minf ) )
           delete = False

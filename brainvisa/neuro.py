@@ -287,7 +287,7 @@ if neuroConfig.shell:
       ipshell = IPython.Shell.IPShellQt4( [ '-q4thread' ] )
     else:
       ipshell = IPython.Shell.IPShellQt( [ '-qthread' ] )
-    ipshell.mainloop()
+    ipshell.mainloop( sys_exit=1 )
   except ImportError:
     print >> sys.stderr, 'IPython not found - Shell mode disabled'
     neuroConfig.shell = 0
