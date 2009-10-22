@@ -60,3 +60,6 @@ FileType( 'SPM99 normalization matrix', 'SPM normalization matrix',
 FileType( 'SPM2 normalization matrix', 'SPM normalization matrix',
           'Matlab file' )
 
+#----------------- FSL transformation ---------------------------------
+FileType( 'FSL transformation', 'Transformation matrix', 'Matlab file' ) # not a matlab file but .mat
+
