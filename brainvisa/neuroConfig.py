@@ -373,6 +373,7 @@ def editConfiguration():
       neuroHierarchy.openDatabases()
     else:
       neuroHierarchy.readHierarchies()
+    warnUserAboutDatabasesToUpdate()
   if userLevel != configuration.brainvisa.userLevel:
     userLevel = configuration.brainvisa.userLevel
     neuroProcesses.updateProcesses()
@@ -387,7 +388,6 @@ def editConfiguration():
     docPath=os.path.join(mainDocPath, language)
     os.environ[ 'LANGUAGE' ] = language
     neuroProcesses.updateProcesses()
-  warnUserAboutDatabasesToUpdate()
 
 
 # Parse command Line
