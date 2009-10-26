@@ -89,7 +89,9 @@ class ExpertDatabaseSettings( HasSignature ):
       ExpertDatabaseSettings.signature[ 'ontology' ].type.setChoices( *ExpertDatabaseSettings.availableOntologies() )
     super( ExpertDatabaseSettings, self ).__init__()
   
-  
+  def __eq__( self , other):
+    return ((self.ontology == other.ontology) and (self.sqliteFileName == other.sqliteFileName) and (self.activate_history == other.activate_history))
+    
   @staticmethod
   def availableOntologies():
     ontologies = [ 'brainvisa-3.1.0', 'brainvisa-3.0', 'shared' ]
@@ -125,6 +127,8 @@ class DatabaseSettings( HasSignature ):
     self.onAttributeChange( 'directory', self._directoryChanged )
     self._directoryChanged( directory )
 
+  def __eq__( self , other):
+    return ((self.directory == other.directory) and (self.expert_settings == other.expert_settings))
 
   def _directoryChanged( self, newDirectory ):
     if newDirectory:
