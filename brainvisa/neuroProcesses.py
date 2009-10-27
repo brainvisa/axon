@@ -1856,6 +1856,9 @@ class ExecutionContext:
           self._lastStartProcessLogItem = None
       process._outputLogFile = None
       process._outputLog = None
+      if process._log is not None:
+        process._log.close()
+      process._log = None
       self._processStack.pop().thread = None
     return result
 
