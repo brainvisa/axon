@@ -33,30 +33,23 @@
 from neuroProcesses import *
 import shfjGlobals
 
-name = 'Concatenate textures in one time-texture'
+name = 'Create an Average Volume from Different Volumes'
 
 userLevel = 2
 
 signature = Signature(
-      'input', ListOf( ReadDiskItem('Texture', 'Texture' )),
-      'output', WriteDiskItem('Texture', 'Texture')
+      'input', ListOf( ReadDiskItem('3D Volume', 'BrainVISA volume formats')),
+      'output', WriteDiskItem('3D Volume', 'BrainVISA volume formats')
 )
-
+def initialization( self ):
+  pass
 def execution( self, context ):
-      from soma import aims
-      reader = aims.Reader()
+
+      call_list = ['AimsAverage', '-i']
+      call_list += self.input
+      call_list += ['-o', self.output]
+      apply(context.system, call_list)
       
-      texture2 = reader.read(str(self.input[0]))
-      texture = aims.TimeTexture_FLOAT(len(self.input), len(texture2[0])) 
-      
-      #for i in xrange(len(texture2[0])):
-        #texture[0][i] = texture2[0][i]      
-      
-      for i in xrange(len(self.input)):
-         aux = reader.read(str(self.input[i]))
-         for j in xrange(len(aux[0])):
-            texture[i][j] = aux[0][j]      
-      context.write(texture.size())
-      writer = aims.Writer()
-      writer.write(texture, str(self.output))   
+
+ 
       context.write("Finished")
