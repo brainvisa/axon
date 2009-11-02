@@ -118,7 +118,7 @@ def execution( self, context ):
   #IMAGE TEST :
   source_image = self.source_image
   dims = self.source_image.get( 'volume_dimension',  [ 1, 1, 1, 1 ] )
-  if dims[ 3 ] > 1:
+  if len( dims ) > 3 and dims[ 3 ] > 1:
     source_image = context.temporary( 'GIS Image' )
     context.warning('Test image is a 4D Volume ==> Conversion to 3D')
     context.system( 'AimsSumFrame', '-i', self.source_image, '-o', source_image )

@@ -273,7 +273,7 @@ class DiskItemBrowser( QDialog ):
       else:
         index = None
     if index is not None:
-      item = (self._items[ index ] if isinstance(self._items[ index ], DiskItem) else self._database.getDiskItemFromUuid(self._items[ index ]))
+      item = (self._items[ index ] if isinstance(self._items[ index ], DiskItem) else self._database.database(self._items[index][1]).getDiskItemFromUuid(self._items[ index ][0]))
       self._items[ index ] = item
       self._ui.textBrowser.setText( self.diskItemDisplayText( item ) )
       self.emit( SIGNAL('selected'), item )
@@ -445,13 +445,14 @@ class DiskItemBrowser( QDialog ):
               cmb.setCurrentIndex( cmb.count() - 1 )
       self._items = []
       keyAttributes = self._database.getTypesKeysAttributes( *selectedTypes )
-      tableData = SimpleTable( header=[ 'type' ] + keyAttributes + [ 'format' ] )
-      for attrs in sorted( self._database.findAttributes( [ '_type' ] + keyAttributes + [ '_format', '_uuid' ], selection={}, **required ) ):
+      tableData = SimpleTable( header=[ 'type' ] + keyAttributes + [ 'format', 'database' ] )
+      # database attribute is also needed because two diskitems can have the same attributes values in two different databases
+      for attrs in sorted( self._database.findAttributes( [ '_type' ] + keyAttributes + [ '_format', '_database', '_uuid' ], selection={}, **required ) ):
         tableData.addRow( attrs[:-1] )
-        self._items.append( attrs[-1] )
+        self._items.append( (attrs[-1], attrs[-2], ) )
       if self._write:
         for item in self._database.createDiskItems( {}, **required  ):
-          tableData.addRow( [ item.type.name ] + [ unicode(item.get(i)) for i in keyAttributes ] + [ item.format.name ] )
+          tableData.addRow( [ item.type.name ] + [ unicode(item.get(i)) for i in keyAttributes ] + [ item.format.name, item._database] )
           self._items.append( item )
       self._ui.tblItems.setModel( tableData )
       self._ui.tableData = tableData
@@ -482,13 +483,13 @@ class DiskItemBrowser( QDialog ):
 
 
   def getValues( self ):
-    return [ (self._items[ i ] if isinstance(self._items[ i ], DiskItem) else self._database.getDiskItemFromUuid(self._items[ i ])) for i in set(i.row() for i in self._ui.tblItems.selectedIndexes()) ]
+    return [ (self._items[ i ] if isinstance(self._items[ i ], DiskItem) else self._database.database(self._items[i][1]).getDiskItemFromUuid(self._items[ i ][0])) for i in set(i.row() for i in self._ui.tblItems.selectedIndexes()) ]
 
   def getAllValues( self ):
     """
     Returns all diskitems currently in the list, not only the selected ones.
     """
-    return [ (item if isinstance(item, DiskItem) else self._database.getDiskItemFromUuid(item)) for item in self._items ]
+    return [ (item if isinstance(item, DiskItem) else self._database.database(item[1]).getDiskItemFromUuid(item[0])) for item in self._items ]
 
 
   @staticmethod

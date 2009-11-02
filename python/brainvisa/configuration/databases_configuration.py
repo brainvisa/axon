@@ -43,7 +43,7 @@ __docformat__ = "epytext en"
 import os
 from soma.wip.configuration import ConfigurationGroup
 from soma.signature.api import HasSignature, Signature, FileName, \
-                               Boolean, Choice, Sequence
+                               Boolean, OpenedChoice, Sequence
 from soma.minf.api import readMinf
 import neuroConfig
 
@@ -79,7 +79,7 @@ class DatabasesConfiguration( ConfigurationGroup ):
 #------------------------------------------------------------------------------
 class ExpertDatabaseSettings( HasSignature ):
   signature = Signature(
-    'ontology', Choice(), dict( defaultValue='brainvisa-3.0' ),
+    'ontology', OpenedChoice(), dict( defaultValue='brainvisa-3.0' ),
     'sqliteFileName', FileName, dict( defaultValue='' ),
     'activate_history', Boolean, dict( defaultValue=False ),
   )

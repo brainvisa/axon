@@ -748,6 +748,7 @@ class FileSystemOntology( object ):
           break
       parentScanners = [ scanner ]
       if path:
+        path=os.path.normpath(path)
         currentPattern = [] #'!'
         for pattern in path.split( '/' ):
           currentPattern.append( pattern ) # '!'
