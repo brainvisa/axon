@@ -452,7 +452,7 @@ class DiskItemBrowser( QDialog ):
         self._items.append( (attrs[-1], attrs[-2], ) )
       if self._write:
         for item in self._database.createDiskItems( {}, **required  ):
-          tableData.addRow( [ item.type.name ] + [ unicode(item.get(i)) for i in keyAttributes ] + [ item.format.name, item._database] )
+          tableData.addRow( [ item.type.name ] + [ unicode(item.get(i)) for i in keyAttributes ] + [ item.format.name, item.get('_database') ] )
           self._items.append( item )
       self._ui.tblItems.setModel( tableData )
       self._ui.tableData = tableData
