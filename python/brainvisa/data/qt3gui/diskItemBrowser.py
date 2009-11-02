@@ -252,7 +252,7 @@ class DiskItemBrowser( QDialog ):
   def itemSelected( self, row=None, col=None ):
     index = row
     if index is not None and self._items:
-      item = (self._items[ index ] if isinstance(self._items[ index ], DiskItem) else self._database.getDiskItemFromUuid(self._items[ index ]))
+      item = (self._items[ index ] if isinstance(self._items[ index ], DiskItem) else self._database.database(self._items[index][1]).getDiskItemFromUuid(self._items[ index ][0]))
       self._items[ index ] = item
       self._ui.textBrowser.setText( self.diskItemDisplayText( item ) )
       self.emit( PYSIGNAL('selected'), ( item, ) )
@@ -426,11 +426,12 @@ class DiskItemBrowser( QDialog ):
       self._ui.tblItems.removeRows( range(self._ui.tblItems.numRows()) )
       keyAttributes = self._database.getTypesKeysAttributes( *selectedTypes )
       header = QStringList()
-      self._ui.tblItems.insertColumns( 0, len( keyAttributes ) + 2 )
-      for c in [ 'type' ] + keyAttributes + [ 'format' ]:
+      self._ui.tblItems.insertColumns( 0, len( keyAttributes ) + 3 )
+      # database attribute is also needed because two diskitems can have the same attributes values in two different databases
+      for c in [ 'type' ] + keyAttributes + [ 'format', 'database' ]:
         header.append( QString( c ) )
       self._ui.tblItems.setColumnLabels( header )
-      queryResult = sorted( self._database.findAttributes( [ '_type' ] + keyAttributes + [ '_format', '_uuid' ], selection={}, **required ) )
+      queryResult = sorted( self._database.findAttributes( [ '_type' ] + keyAttributes + [ '_format', '_database', '_uuid' ], selection={}, **required ) )
       self._ui.tblItems.insertRows( 0, len( queryResult ) )
       self._items = []
       row = 0
@@ -438,13 +439,14 @@ class DiskItemBrowser( QDialog ):
         for c in xrange( len( attrs ) - 1 ):
           self._ui.tblItems.setText( row, c, ( attrs[ c ] if attrs[ c ] else '' ) )
         row += 1
-        self._items.append( attrs[ -1 ] )
+        # to find the diskitem we need the uuid and the database because uuid is unique only in a database
+        self._items.append( (attrs[ -1 ], attrs[-2], ) )
       if self._write:
         queryResult = tuple( self._database.createDiskItems( {}, **required  ) )
         row = self._ui.tblItems.numRows()
         self._ui.tblItems.insertRows( row, len( queryResult ) )
         for item in queryResult:
-          attrs = [ item.type.name ] + [ unicode(item.get(i)) for i in keyAttributes ] + [ item.format.name ]
+          attrs = [ item.type.name ] + [ unicode(item.get(i)) for i in keyAttributes ] + [ item.format.name, item._database ]
           for c in xrange( len( attrs ) ):
             self._ui.tblItems.setText( row, c, ( attrs[ c ] if attrs[ c ] else '' ) )
           row += 1
@@ -476,13 +478,13 @@ class DiskItemBrowser( QDialog ):
 
 
   def getValues( self ):
-    return [ (self._items[ i ] if isinstance(self._items[ i ], DiskItem) else self._database.getDiskItemFromUuid(self._items[ i ])) for i in xrange(self._ui.tblItems.numRows()) if self._ui.tblItems.isRowSelected( i ) ]
+    return [ (self._items[ i ] if isinstance(self._items[ i ], DiskItem) else self._database.database(self.items[i][1]).getDiskItemFromUuid(self._items[ i ][0])) for i in xrange(self._ui.tblItems.numRows()) if self._ui.tblItems.isRowSelected( i ) ]
   
   def getAllValues( self ):
     """
     Returns all diskitems currently in the list, not only the selected ones.
     """
-    return [ (item if isinstance(item, DiskItem) else self._database.getDiskItemFromUuid(item)) for item in self._items ]
+    return [ (item if isinstance(item, DiskItem) else self._database.database(item[1]).getDiskItemFromUuid(item[0])) for item in self._items ]
 
 
   @staticmethod
