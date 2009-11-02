@@ -270,7 +270,7 @@ class ReadDiskItem( Parameter ):
             for checkOrder, checkDiskItem in values[1:]:
               if checkOrder != refOrder:
                 break
-              if refHierarchy == checkDiskItem.hierarchyAttributes():
+              if ((refHierarchy == checkDiskItem.hierarchyAttributes()) and (refDiskItem.format.name != checkDiskItem.format.name)):
                 differentOnFormatOnly.append( checkDiskItem )
               else:
                 differentOnFormatOnly = []
