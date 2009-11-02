@@ -446,7 +446,7 @@ class DiskItemBrowser( QDialog ):
         row = self._ui.tblItems.numRows()
         self._ui.tblItems.insertRows( row, len( queryResult ) )
         for item in queryResult:
-          attrs = [ item.type.name ] + [ unicode(item.get(i)) for i in keyAttributes ] + [ item.format.name, item._database ]
+          attrs = [ item.type.name ] + [ unicode(item.get(i)) for i in keyAttributes ] + [ item.format.name, item.get('_database') ]
           for c in xrange( len( attrs ) ):
             self._ui.tblItems.setText( row, c, ( attrs[ c ] if attrs[ c ] else '' ) )
           row += 1
