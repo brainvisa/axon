@@ -38,7 +38,7 @@ name = 'Create an Average Volume from Different Volumes'
 userLevel = 2
 
 signature = Signature(
-      'input', ListOf( ReadDiskItem('3D Volume', 'BrainVISA volume formats')),
+      'input', ListOf( ReadDiskItem('3D Volume', ['Series of SPM image','BrainVISA volume formats'])),
       'output', WriteDiskItem('3D Volume', 'BrainVISA volume formats')
 )
 def initialization( self ):
