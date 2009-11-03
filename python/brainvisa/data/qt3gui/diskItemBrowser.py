@@ -478,7 +478,7 @@ class DiskItemBrowser( QDialog ):
 
 
   def getValues( self ):
-    return [ (self._items[ i ] if isinstance(self._items[ i ], DiskItem) else self._database.database(self.items[i][1]).getDiskItemFromUuid(self._items[ i ][0])) for i in xrange(self._ui.tblItems.numRows()) if self._ui.tblItems.isRowSelected( i ) ]
+    return [ (self._items[ i ] if isinstance(self._items[ i ], DiskItem) else self._database.database(self._items[i][1]).getDiskItemFromUuid(self._items[ i ][0])) for i in xrange(self._ui.tblItems.numRows()) if self._ui.tblItems.isRowSelected( i ) ]
   
   def getAllValues( self ):
     """
