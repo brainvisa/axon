@@ -147,7 +147,7 @@ def writeProcdoc( processId, documentation ):
     procSourceFileName = os.path.realpath( procFileName )
     # take care of keeping the .procdoc in the same location as the .py,
     # whatever symlinks
-    if procFileName != procSourceFileName:
+    if os.path.islink( procFileName ) and procFileName != procSourceFileName:
       sourceFileName = os.path.join( os.path.dirname( procSourceFileName ),
         os.path.basename( fileName ) )
       os.symlink( sourceFileName, fileName )
