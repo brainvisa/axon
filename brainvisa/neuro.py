@@ -49,7 +49,14 @@ try:
   from soma.config import MAJOR_QT_VERSION
   USE_QT4 = MAJOR_QT_VERSION == 4
 except ImportError:
-  USE_QT4=False
+  # in non-cmake version, soma.config does not exist.
+  # Then we are forced to use the gui to check Qt
+  import soma.qtgui.api as qg
+  if qg.QtGUI == qg.Qt4GUI:
+    USE_QT4 = True
+  else:
+    USE_QT4 = False
+  del qg
 if USE_QT4:
   import PyQt4
 
