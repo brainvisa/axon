@@ -52,7 +52,7 @@ except ImportError:
   # in non-cmake version, soma.config does not exist.
   # Then we are forced to use the gui to check Qt
   import soma.qtgui.api as qg
-  if qg.QtGUI == qg.Qt4GUI:
+  if qg.QtGUI == getattr(qg, "Qt4GUI", None):
     USE_QT4 = True
   else:
     USE_QT4 = False
