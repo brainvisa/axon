@@ -84,8 +84,13 @@ def initialization( self ):
 def execution( self, context ):
   if self.input.format is not self.output.format:
     # Convert input to appropriate output format
-    converter = context.getConverter( self.input,
-                                      self.output )
+    inp = self.input
+    if inp.type is None \
+      or inp.type == ReadDiskItem( 'Any Type', inp.format ).type:
+      # if the input type is not recognized (data not in database),
+      # assume it is the same type as the output
+      inp = ( self.output.type, inp.format )
+    converter = context.getConverter( inp, self.output )
     if converter is None:
       raise RuntimeError( _t_('Cannot convert input data') )
     input = self.input
