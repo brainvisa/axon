@@ -49,7 +49,9 @@ signature = Signature(
 
 
 def initialization( self ):
-     init=0
+    self.signature[ 'output' ].browseUserLevel = 3
+    self.signature[ 'input' ].databaseUserLevel = 2
+
 
 def execution( self, context ):
      context.system( 'AimsFileConvert', '-i', self.input.fullPath(), '-o',  self.output.fullPath() )
