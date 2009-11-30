@@ -360,6 +360,14 @@ class ListOf( Parameter ):
     else:
       return [ self.contentType.findValue( value ) ]
 
+  def editor( self, parent, name, context ):
+    # report visibility params to contentType
+    if hasattr( self, 'databaseUserLevel' ):
+      self.contentType.databaseUserLevel = self.databaseUserLevel
+    if hasattr( self, 'browseUserLevel' ):
+      self.contentType.browseUserLevel = self.browseUserLevel
+    return self.contentType.listEditor( parent, name, context )
+
 
 #----------------------------------------------------------------------------
 class Signature( UserDict ):

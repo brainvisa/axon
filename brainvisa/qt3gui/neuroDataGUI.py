@@ -1011,10 +1011,6 @@ def initializeDataGUI():
     lambda self, parent, name, context: ChoiceListEditor( self, parent, name )
   ListOf.listEditor = \
     lambda self, parent, name, context: NotImplementedEditor( parent )
-  ListOf.editor = \
-    lambda self, parent, name, context: self.contentType.listEditor( parent,
-                                                                     name,
-                                                                     context )
   Point.editor = \
     lambda self, parent, name, context: PointEditor( self, parent, name )
   Point.listEditor = \
