@@ -49,7 +49,10 @@ signature=Signature(
   'anatomy', WriteDiskItem("Raw T1 MRI", "GIS image"),
 )
 
-    
+def initialization( self ):
+  self.signature[ 'anatomy' ].browseUserLevel = 3
+
+
 def execution( self, context ):
   if self.exam_number <= 10342:
     raise ValueError( _t_( '<em>%d</em> is not a valid exam number' ) % ( self.exam_number, ) )

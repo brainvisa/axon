@@ -113,6 +113,10 @@ class DiskItemEditor( QHBox, DataEditor ):
       self.btnDatabase.setPixmap( self.pixDatabaseRead )
       QToolTip.add(self.btnDatabase,_t_("Browse the database (load mode)"))
     self.btnDatabase.setFocusPolicy( QWidget.NoFocus )
+    if hasattr( parameter, 'databaseUserLevel' ):
+      x = parameter.databaseUserLevel
+      if x > neuroConfig.userLevel:
+        self.btnDatabase.hide()
     self.connect( self.btnDatabase, SIGNAL( 'clicked()' ), self.databasePressed )
     self.databaseDialog = None
     self.btnBrowse = QPushButton( self )
@@ -123,6 +127,10 @@ class DiskItemEditor( QHBox, DataEditor ):
       self.btnBrowse.setPixmap( self.pixBrowseRead )
       QToolTip.add(self.btnBrowse,_t_("Browse the filesystem (load mode)"))
     self.btnBrowse.setFocusPolicy( QWidget.NoFocus )
+    if hasattr( parameter, 'browseUserLevel' ):
+      x = parameter.browseUserLevel
+      if x > neuroConfig.userLevel:
+        self.btnBrowse.hide()
     self.connect( self.btnBrowse, SIGNAL( 'clicked()' ), self.browsePressed )
     self.browseDialog = None
     self._textChanged = False

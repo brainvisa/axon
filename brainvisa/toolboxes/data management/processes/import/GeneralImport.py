@@ -55,6 +55,7 @@ def dataTypeChanged(self, dataType):
     if not formats:
       formats=getAllFormats()
     self.signature['output']=WriteDiskItem( dataType, formats )
+    self.signature[ 'output' ].browseUserLevel = 3
     self.signatureChangeNotifier.notify(self)
 
 def orient( self, input ):
@@ -94,6 +95,8 @@ def initialization( self ):
   self.signature[ 'input_spm_orientation' \
                   ].linkParameterWithNonDefaultValue = 1
   self.addLink('output', 'data_type' , self.dataTypeChanged)
+  self.signature[ 'output' ].browseUserLevel = 3
+  self.signature[ 'input' ].databaseUserLevel = 2
 
 def execution( self, context ):
   # search for a specific importer for this data

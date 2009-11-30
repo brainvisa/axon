@@ -79,6 +79,8 @@ def initialization( self ):
   self.signature[ 'input_spm_orientation' \
                   ].linkParameterWithNonDefaultValue = 1
   self.linkParameters( 'output', 'input' )
+  self.signature[ 'output' ].browseUserLevel = 3
+  self.signature[ 'input' ].databaseUserLevel = 2
 
 
 def execution( self, context ):

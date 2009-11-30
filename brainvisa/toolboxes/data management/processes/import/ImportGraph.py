@@ -47,6 +47,8 @@ signature=Signature(
 
 def initialization( self ):
   self.linkParameters( 'output', 'input' )
+  self.signature[ 'output' ].browseUserLevel = 3
+  self.signature[ 'input' ].databaseUserLevel = 2
 
 def execution( self, context ):
   command=["AimsGraphConvert", "-i", self.input.fullPath(), "-o", self.output.fullPath()]
