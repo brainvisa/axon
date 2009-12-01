@@ -115,6 +115,10 @@ class DiskItemEditor( QWidget, DataEditor ):
       self.btnDatabase.setIconSize(QSize(*largeIconSize))
       self.btnDatabase.setToolTip(_t_("Browse the database (load mode)"))
     self.btnDatabase.setFocusPolicy( Qt.NoFocus )
+    if hasattr( parameter, 'databaseUserLevel' ):
+      x = parameter.databaseUserLevel
+      if x > neuroConfig.userLevel:
+        self.btnDatabase.hide()
     self.connect( self.btnDatabase, SIGNAL( 'clicked()' ), self.databasePressed )
     self.databaseDialog = None
     self.btnBrowse = QPushButton( )
@@ -128,6 +132,10 @@ class DiskItemEditor( QWidget, DataEditor ):
       self.btnBrowse.setIconSize(QSize(*largeIconSize))
       self.btnBrowse.setToolTip(_t_("Browse the filesystem (load mode)"))
     self.btnBrowse.setFocusPolicy( Qt.NoFocus )
+    if hasattr( parameter, 'browseUserLevel' ):
+      x = parameter.browseUserLevel
+      if x > neuroConfig.userLevel:
+        self.btnBrowse.hide()
     self.connect( self.btnBrowse, SIGNAL( 'clicked()' ), self.browsePressed )
     self.browseDialog = None
     self._textChanged = False
@@ -355,7 +363,8 @@ class DiskItemListEditor( QWidget, DataEditor ):
   class DiskItemListSelect( QWidget ): # Ex QSemiModal
 
 
-    def __init__( self, dilEditor, name, write, context = None ):
+    def __init__( self, dilEditor, name, write, context = None,
+      databaseUserLevel=0, browseUserLevel=0 ):
       self._context = context
       if getattr( DiskItemListEditor.DiskItemListSelect, 'pixUp', None ) is None:
         setattr( DiskItemListEditor.DiskItemListSelect, 'pixUp', 
@@ -432,23 +441,27 @@ class DiskItemListEditor( QWidget, DataEditor ):
       else:
         btn.setIcon( self.pixFindRead )
       btn.setIconSize(QSize(*largeIconSize))
+      if databaseUserLevel > neuroConfig.userLevel:
+        btn.hide()
       self.connect( btn, SIGNAL( 'clicked()' ), self.findPressed )
       hb.addWidget( btn )
-      
+
       btn = QPushButton( )
       if write:
         btn.setIcon( self.pixBrowseWrite )
       else:
         btn.setIcon( self.pixBrowseRead )
       btn.setIconSize(QSize(*largeIconSize))
+      if browseUserLevel > neuroConfig.userLevel:
+        btn.hide()
       self.connect( btn, SIGNAL( 'clicked()' ), self.browsePressed )
       hb.addWidget( btn )
-      
+
       layout.addLayout( hb )
-            
+
 #      self.editor = self.parameter.editor( self, self.name() )
 #      layout.addWidget( self.editor )
-      
+
       hb = QHBoxLayout()
       hb.setSpacing(6)
       hb.setMargin(6)
@@ -628,6 +641,10 @@ class DiskItemListEditor( QWidget, DataEditor ):
       self.btnFind.setIcon( self.pixFindRead )
     self.btnFind.setIconSize(QSize(*largeIconSize))
     self.btnFind.setFocusPolicy( Qt.NoFocus )
+    if hasattr( parameter, 'databaseUserLevel' ):
+      x = parameter.databaseUserLevel
+      if x > neuroConfig.userLevel:
+        self.btnFind.hide()
     self.connect( self.btnFind, SIGNAL( 'clicked()' ), self.findPressed )
     self.connect( self.btnFind, SIGNAL( 'rightPressed' ), self.findRightPressed )
     self.btnBrowse = RightClickablePushButton( )
@@ -638,6 +655,10 @@ class DiskItemListEditor( QWidget, DataEditor ):
       self.btnBrowse.setIcon( self.pixBrowseRead )
     self.btnBrowse.setIconSize(QSize(*largeIconSize))
     self.btnBrowse.setFocusPolicy( Qt.NoFocus )
+    if hasattr( parameter, 'browseUserLevel' ):
+      x = parameter.browseUserLevel
+      if x > neuroConfig.userLevel:
+        self.btnBrowse.hide()
     self.connect( self.btnBrowse, SIGNAL( 'clicked()' ), self.browsePressed )
     self.connect( self.btnBrowse, SIGNAL( 'rightPressed' ), self.browseRightPressed )
 
@@ -661,16 +682,30 @@ class DiskItemListEditor( QWidget, DataEditor ):
     self.forceDefault = 0
   
   def findPressed( self ):
-    w = self.DiskItemListSelect( self, unicode(self.objectName()), self.write )
+    dul = 0
+    bul = 0
+    if hasattr( self.parameter, 'databaseUserLevel' ):
+      dul = self.parameter.databaseUserLevel
+    if hasattr( self.parameter, 'browseUserLevel' ):
+      bul = self.parameter.browseUserLevel
+    w = self.DiskItemListSelect( self, unicode(self.objectName()), self.write,
+      databaseUserLevel=dul, browseUserLevel=bul )
     try:
       w.setValue( self.getValue() )
     except:
       showException( parent = self )
     self.connect( w, SIGNAL( 'accepted' ), self._newValue )
     w.findPressed()
-  
+
   def findRightPressed( self ):
-    w = self.DiskItemListSelect( self, unicode(self.objectName()), self.write )
+    dul = 0
+    bul = 0
+    if hasattr( self.parameter, 'databaseUserLevel' ):
+      dul = self.parameter.databaseUserLevel
+    if hasattr( self.parameter, 'browseUserLevel' ):
+      bul = self.parameter.browseUserLevel
+    w = self.DiskItemListSelect( self, unicode(self.objectName()), self.write,
+      databaseUserLevel=dul, browseUserLevel=bul )
     try:
       w.setValue( self.getValue() )
     except:
@@ -679,18 +714,30 @@ class DiskItemListEditor( QWidget, DataEditor ):
     w.findPressed()
 
   def browsePressed( self ):
-    w = self.DiskItemListSelect( self, unicode(self.objectName()), self.write, 
-                                context = self._context )
+    dul = 0
+    bul = 0
+    if hasattr( self.parameter, 'databaseUserLevel' ):
+      dul = self.parameter.databaseUserLevel
+    if hasattr( self.parameter, 'browseUserLevel' ):
+      bul = self.parameter.browseUserLevel
+    w = self.DiskItemListSelect( self, unicode(self.objectName()), self.write,
+      context = self._context, databaseUserLevel=dul, browseUserLevel=bul )
     try:
       w.setValue( self.getValue() )
     except:
       showException( parent = self )
     self.connect( w, SIGNAL( 'accepted' ), self._newValue )
     w.browsePressed()
-    
+
   def browseRightPressed( self ):
+    dul = 0
+    bul = 0
+    if hasattr( self.parameter, 'databaseUserLevel' ):
+      dul = self.parameter.databaseUserLevel
+    if hasattr( self.parameter, 'browseUserLevel' ):
+      bul = self.parameter.browseUserLevel
     w = self.DiskItemListSelect( self, unicode(self.objectName()), self.write,
-                                  context = self._context )
+      context = self._context, databaseUserLevel=dul, browseUserLevel=bul )
     try:
       w.setValue( self.getValue() )
     except:

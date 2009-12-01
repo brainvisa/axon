@@ -354,7 +354,7 @@ class DiskItemListEditor( QHBox, DataEditor ):
   class DiskItemListSelect( QWidget ): # Ex QSemiModal
 
 
-    def __init__( self, dilEditor, name, write, context = None ,
+    def __init__( self, dilEditor, name, write, context = None,
       databaseUserLevel=0, browseUserLevel=0 ):
       self._context = context
       if getattr( DiskItemListEditor.DiskItemListSelect, 'pixUp', None ) is None:
@@ -669,7 +669,7 @@ class DiskItemListEditor( QHBox, DataEditor ):
       showException( parent = self )
     self.connect( w, PYSIGNAL( 'accept' ), self._newValue )
     w.findPressed()
-  
+
   def findRightPressed( self ):
     dul = 0
     bul = 0
@@ -701,7 +701,7 @@ class DiskItemListEditor( QHBox, DataEditor ):
       showException( parent = self )
     self.connect( w, PYSIGNAL( 'accept' ), self._newValue )
     w.browsePressed()
-    
+
   def browseRightPressed( self ):
     dul = 0
     bul = 0
