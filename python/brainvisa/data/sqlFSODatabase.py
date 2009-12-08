@@ -1439,7 +1439,7 @@ class SQLDatabases( Database ):
             result.append( a )
             set_result.add( a )
       return result
-    return ()
+    return []
     
   
   def getTypesFormats( self, *types ):
