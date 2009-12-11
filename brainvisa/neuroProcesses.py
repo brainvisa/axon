@@ -1825,12 +1825,12 @@ class ExecutionContext:
           result = executionFunction( self )
       except:
         self._lastProcessRaisedException = True
-	try:
+        try:
           self._showException()
-	except:
+        except:
           import traceback
-	  info = sys.exc_info()
-	  sys.stderr.write('\n%s: %s\n' % (info[0].__name__, info[1].message))
+          info = sys.exc_info()
+          sys.stderr.write('\n%s: %s\n' % (info[0].__name__, info[1].message))
           traceback.print_tb(info[2], None, sys.stderr)
         logException( context=self )
         if self._depth() != 1 or not self.manageExceptions:
