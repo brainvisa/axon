@@ -1413,6 +1413,12 @@ class ProcessExecutionNode( ExecutionNode ):
   def name( self ):
     return _t_(self._process.name)
 
+  def children( self ):
+    eNode = getattr( self._process, '_executionNode', None )
+    if eNode is not None:
+      return eNode._children.itervalues()
+    else:
+      return []
 
   def childrenNames( self ):
     eNode = getattr( self._process, '_executionNode', None )
@@ -1535,7 +1541,13 @@ class ParallelExecutionNode( ExecutionNode ):
         except:
           errorCount += 1
           result.append( sys.exc_info()[ 1 ] )
-          context._showException()
+          try:
+            self._showException()
+          except:
+            import traceback
+            info = sys.exc_info()
+            sys.stderr.write('\n%s: %s\n' % (info[0].__name__, info[1].message))
+            traceback.print_tb(info[2], None, sys.stderr)
           logException( context=context )
 
       if errorCount:
@@ -1813,7 +1825,13 @@ class ExecutionContext:
           result = executionFunction( self )
       except:
         self._lastProcessRaisedException = True
-        self._showException()
+	try:
+          self._showException()
+	except:
+          import traceback
+	  info = sys.exc_info()
+	  sys.stderr.write('\n%s: %s\n' % (info[0].__name__, info[1].message))
+          traceback.print_tb(info[2], None, sys.stderr)
         logException( context=self )
         if self._depth() != 1 or not self.manageExceptions:
           raise
@@ -2146,8 +2164,8 @@ class ExecutionContext:
     return getConverter( ( getDiskItemType( st ), getFormat( sf ) ),
                          ( getDiskItemType( dt ), getFormat( df ) ) )
 
-
   def createProcessExecutionEvent( self ):
+    from brainvisa.history import ProcessExecutionEvent
     event = ProcessExecutionEvent()
     event.setProcess( self.process )
     if self._processStack:
