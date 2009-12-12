@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="fr">
+    <xhtml name="short"/>
+    <d name="parameters">
+      <xhtml name="set_transformation_in_source_volume"/>
+      <xhtml name="read"/>
+      <xhtml name="source_volume"/>
+      <xhtml name="write"/>
+      <xhtml name="standard_template"/>
+      <xhtml name="registered_volume"/>
+    </d>
+    <xhtml name="long"/>
+  </d>
+  <d name="en">
+    <xhtml name="short">Converts a FSL normalization matrix (.mat ASCII file) into BrainVisa transformation framework</xhtml>
+    <d name="parameters">
+      <xhtml name="set_transformation_in_source_volume"/>
+      <xhtml name="read">input FSL normalization matrix</xhtml>
+      <xhtml name="source_volume"/>
+      <xhtml name="write"/>
+      <xhtml name="standard_template"/>
+      <xhtml name="registered_volume"/>
+    </d>
+    <xhtml name="long"><p>This process writes an AIMS transformation file with corresponding referentials information and inserts it into BrainVisa database and transformations handling system.
+</p>
+
+<p>The source volume (<tt>source_volume</tt> parameter) should be the voleume before normalization (unnormalized). It should be in BrainVisa database and have a referential assigned.
+</p>
+
+<p>The <tt>registered_volume</tt> parameter is either the normalized volume (<tt>source_volume</tt> after normalization, the output of the normalization process), or the normalization template (T1.nii for instance) which has actually be used to normalize the volume: it should have the same field of view (dimension and voxel size).
+</p>
+
+<p>Instead of specifying the normalized volume or template, it is also possible to specify a standard template via the <tt>standard_template</tt> parameter: then it avoids the need to have the registered volume or to find the template.
+</p>
+
+<p>If the <tt>set_transformation_in_source_volume</tt> parameter is set, then the normalization information will be written in the source volume header. This way FSL, SPM, or Anatomist will recognize it and will be able to use it directly. For this option, the source volume needs to be writeable: it cannot be performed on a read-only database.
+</p>
+</xhtml>
+  </d>
+</d>
+</minf>
