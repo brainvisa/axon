@@ -121,12 +121,12 @@ def execution( self, context ):
     trans = tmplimg.get( 'transformations' )
     if refs and trans:
       for ref, t in zip(refs, trans):
-        if ref == registration.talairachMNIReferentialId \
+        if ref == str( registration.talairachMNIReferentialId ) \
           or ref == 'Talairach-MNI template-SPM':
           aimsToMni = aims.Motion( t )
           outref = registration.talairachMNIReferentialId
           break
-        elif ref == registration.talairachACPCReferentialId \
+        elif ref == str( registration.talairachACPCReferentialId ) \
           or ref == 'Talairach-AC/PC-Anatomist':
           aimsToMni = aims.Motion( t )
           outref = registration.talairachACPCReferentialId
