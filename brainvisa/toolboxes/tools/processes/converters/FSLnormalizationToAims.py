@@ -68,12 +68,13 @@ def initialization( self ):
         ( 'FSL 91x109x91, 2x2x2 mm', 1 ),
         ( 'SPM 157x189x136, 1x1x1 mm', 2 ), )
       self.signature[ 'standard_template' ] = x
-      return 'FSL 182x218x218, 1x1x1 mm'
+      res = 'FSL 182x218x218, 1x1x1 mm'
     else:
-      x = Choice( ( 'taken from registered_volume', -1 ) )
+      x = Choice( ( 'taken from registered_volume', 0 ) )
       self.signature[ 'standard_template' ] = x
-      return 'taken from registered_volume'
+      res = 'taken from registered_volume'
     self.changeSignature( self.signature )
+    return res
   def linkSetTransfo( self, proc ):
     if self.source_volume is not None and self.source_volume.isWriteable():
       return True
