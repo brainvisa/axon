@@ -363,7 +363,7 @@ def editConfiguration():
   if appGUI.edit( configuration, live=False ):
     configuration.save( userOptionFile )
     setSPM99Compatibility( configuration.brainvisa.SPM )
-  newDataPath = dataPath[:1]
+  newDataPath = [ x for x in dataPath if hasattr( x, 'builtin' ) and x.builtin ]
   for fso in configuration.databases.fso:
     if fso.selected and fso.directory and os.path.exists(fso.directory):
       newDataPath.append( DatabaseSettings( fso.directory ) )
@@ -641,6 +641,7 @@ for p in ( os.path.join( getSharePath(), 'brainvisa-share-' + shortVersion ),
            os.path.join( getSharePath(), 'shfj' ) ):
   if os.path.isdir( p ):
     dataPath.insert( 0, DatabaseSettings( p ) )
+    dataPath[0].builtin = True # mark as a builtin, non-removable database
     sharedDatabaseFound=True
     break
   
