@@ -84,7 +84,10 @@ class ReadDiskItem( Parameter ):
       for f in self.formats:
         #if self._debug is not None:
           #print >> self._debug, '!_setRequiredAttributes!', self, self.type, 'Examining converters to', f, '(' + repr( type(f) ) + ')', len( neuroProcesses._converters )
-        for type_format, converter in neuroProcesses.getConvertersTo( ( any, f ) ).iteritems():
+        convs = neuroProcesses.getConvertersTo( ( any, f ) )
+        convs.update( neuroProcesses.getConvertersTo( ( self.type, f ),
+          keepType=0 ) )
+        for type_format, converter in convs.iteritems():
           typ, format = type_format
           formatName = self.database.formats.getFormat( format.name, format ).name
           #if self._debug is not None:
