@@ -427,7 +427,10 @@ class DiskItemBrowser( QDialog ):
         s = combosSets[ a ]
         values = set( self._editableAttributesValues.get( a, () ) )
         if a in required:
-          values.update( required.get(a) )
+          requiredValue=required.get(a)
+          if isinstance( requiredValue, basestring ):
+            requiredValue=[requiredValue]
+          values.update( requiredValue )
         elif a in self._attributesValues and self._write:
           values.update( self._attributesValues.get(a) )
         else:
