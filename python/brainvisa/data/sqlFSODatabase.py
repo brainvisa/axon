@@ -385,7 +385,11 @@ class SQLDatabase( Database ):
         self._mustBeUpdated = True
         #showWarning( _( 'ontology "%(ontology)s" had been modified, database "%(database)s" should be updated. Use the process : Data Management =&gt; Update databases.' ) % { 'ontology': self.fso.name, 'database': self.name } )
     else:
-      self._mustBeUpdated = True
+      if len(os.listdir(self.directory)) > 1: # there is at least database_settings.minf
+        self._mustBeUpdated = True
+      else: # if database directory is empty, it is a new database -> automatically update
+        if self.createTables():
+          self.update( context=context)
     # do not update automatically enven if the database sqlite file doesn't exists, ask the user.
     #if self.createTables():
       #self.update( context=context)
