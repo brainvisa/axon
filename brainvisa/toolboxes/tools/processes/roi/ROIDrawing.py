@@ -32,6 +32,7 @@
 from neuroProcesses import *
 import shfjGlobals
 from brainvisa import anatomist
+import registration
 
 name = 'ROI drawing'
 userLevel = 1
@@ -68,25 +69,35 @@ def execution( self, context ):
     nodesObjects.append( regionsObject.createNode( name='region',
                                                    duplicate=False ) )
   else:
-    regionsObject = a.loadObject( self.ROI.fullPath() )
+    regionsObject = a.loadObject( self.ROI )
     nodesObjects = regionsObject.children
-
-  # set the referential of the image to the regions graph
-  ref=imageObject.referential
-  if ref != a.centralRef:
-    regionsObject.assignReferential( ref )
 
   # Show regions and linked image
   block = a.createWindowsBlock()
   windowC = a.createWindow( 'Coronal', block=block )
   windowS = a.createWindow( 'Sagittal', block=block )
   windowA = a.createWindow( 'Axial', block=block )
+  window3 = a.createWindow( '3D', block=block )
+  
+  # set the referential of the image to all the window and to the roi graph
+  ref=imageObject.referential
+  if ref != a.centralRef:
+    a.assignReferential(ref, [windowC, windowS, windowA, window3, regionsObject])
+    
   a.addObjects( [ imageObject, regionsObject ], [windowC, windowS, windowA] )
   a.setWindowsControl( windows=[windowC, windowS, windowA], control="PaintControl" )
-  window3 = a.createWindow( '3D', block=block )
   window3.addObjects( [regionsObject] )
+    
   if nodesObjects: # the region must be selected to draw
     a.getDefaultWindowsGroup().addToSelection(nodesObjects)
   
-  return ( imageObject, regionsObject, windowC, windowS, windowA, window3,
-           nodesObjects, block )
+  rep = context.ask( "Click here when finished","OK", "Cancel", modal=0 )
+  if rep != 1:
+    regionsObject.save(self.ROI.fullPath())
+    a.sync() # make sure that anatomist has finished to process previous commands
+    
+  tm=registration.getTransformationManager()
+  tm.copyReferential(self.image, self.ROI)
+
+  #return ( imageObject, regionsObject, windowC, windowS, windowA, window3,
+           #nodesObjects, block )
