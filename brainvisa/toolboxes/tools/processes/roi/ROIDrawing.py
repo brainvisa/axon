@@ -69,6 +69,12 @@ def execution( self, context ):
                                                    duplicate=False ) )
   else:
     regionsObject = a.loadObject( self.ROI.fullPath() )
+    nodesObjects = regionsObject.children
+
+  # set the referential of the image to the regions graph
+  ref=imageObject.referential
+  if ref != a.centralRef:
+    regionsObject.assignReferential( ref )
 
   # Show regions and linked image
   block = a.createWindowsBlock()
@@ -79,6 +85,8 @@ def execution( self, context ):
   a.setWindowsControl( windows=[windowC, windowS, windowA], control="PaintControl" )
   window3 = a.createWindow( '3D', block=block )
   window3.addObjects( [regionsObject] )
+  if nodesObjects: # the region must be selected to draw
+    a.getDefaultWindowsGroup().addToSelection(nodesObjects)
   
   return ( imageObject, regionsObject, windowC, windowS, windowA, window3,
-           nodesObjects )
+           nodesObjects, block )
