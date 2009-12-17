@@ -437,6 +437,7 @@ class DiskItemBrowser( QDialog ):
       queryResult = sorted( self._database.findAttributes( [ '_type' ] + keyAttributes + [ '_format', '_database', '_uuid' ], selection={}, **required ) )
       self._ui.tblItems.insertRows( 0, len( queryResult ) )
       self._items = []
+      readItems = set()
       row = 0
       for attrs in queryResult:
         for c in xrange( len( attrs ) - 1 ):
@@ -444,16 +445,20 @@ class DiskItemBrowser( QDialog ):
         row += 1
         # to find the diskitem we need the uuid and the database because uuid is unique only in a database
         self._items.append( (attrs[ -1 ], attrs[-2], ) )
+        readItems.add( tuple( attrs[ :-1 ] ) )
       if self._write:
-        queryResult = tuple( self._database.createDiskItems( {}, **required  ) )
-        row = self._ui.tblItems.numRows()
-        self._ui.tblItems.insertRows( row, len( queryResult ) )
-        for item in queryResult:
+        newAttributes = []
+        for item in self._database.createDiskItems( {}, **required  ):
           attrs = [ item.type.name ] + [ unicode(item.get(i)) for i in keyAttributes ] + [ item.format.name, item.get('_database') ]
+          if tuple( attrs ) not in readItems:
+            self._items.append( item )
+            newAttributes.append( attrs )
+        row = self._ui.tblItems.numRows()
+        self._ui.tblItems.insertRows( row, len( newAttributes ) )
+        for attrs in newAttributes:
           for c in xrange( len( attrs ) ):
             self._ui.tblItems.setText( row, c, ( attrs[ c ] if attrs[ c ] else '' ) )
           row += 1
-          self._items.append( item )
       self._ui.labItems.setText( _t_( '%d item(s)' ) % ( len( self._items ), ) )
       if self._items:
         self._ui.tblItems.selectRow( 0 )

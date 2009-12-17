@@ -450,13 +450,17 @@ class DiskItemBrowser( QDialog ):
       keyAttributes = self._database.getTypesKeysAttributes( *selectedTypes )
       tableData = SimpleTable( header=[ 'type' ] + keyAttributes + [ 'format', 'database' ] )
       # database attribute is also needed because two diskitems can have the same attributes values in two different databases
+      readItems = set()
       for attrs in sorted( self._database.findAttributes( [ '_type' ] + keyAttributes + [ '_format', '_database', '_uuid' ], selection={}, **required ) ):
         tableData.addRow( attrs[:-1] )
         self._items.append( (attrs[-1], attrs[-2], ) )
+        readItems.add( tuple( attrs[ :-1 ] ) )
       if self._write:
         for item in self._database.createDiskItems( {}, **required  ):
-          tableData.addRow( [ item.type.name ] + [ unicode(item.get(i)) for i in keyAttributes ] + [ item.format.name, item.get('_database') ] )
-          self._items.append( item )
+          attrs = [ item.type.name ] + [ unicode(item.get(i)) for i in keyAttributes ] + [ item.format.name, item.get('_database') ]
+          if tuple( attrs ) not in readItems:
+            tableData.addRow( attrs )
+            self._items.append( item )
       self._ui.tblItems.setModel( tableData )
       self._ui.tableData = tableData
       self._ui.labItems.setText( _t_( '%d item(s)' ) % ( len( self._items ), ) )
