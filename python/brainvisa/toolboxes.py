@@ -34,6 +34,8 @@ import os, traceback
 from soma.minf.api import readMinf, minfFormat
 from soma.sorted_dictionary import SortedDictionary
 from soma.wip.application.api import findIconFile
+from neuroException import showException
+from neuroConfig import fileSystemOntologiesPath, typesPath
 
 class Toolbox( object ):
   """
@@ -116,9 +118,25 @@ class Toolbox( object ):
         otherToolbox.id = otherToolbox.initName.lower() 
         otherToolbox.icon = findIconFile( 'toolbox.png' )
         yield otherToolbox
+
+  def init(self):
+    if os.path.exists( self.initializationFile ):
+      try:
+        execfile( self.initializationFile )
+      except:
+        showException()
+    if os.path.isdir( self.fsoDir ):
+      fileSystemOntologiesPath.append( self.fsoDir )
+    if os.path.isdir( self.typesDir ):
+      typesPath.append( self.typesDir )
   
 _toolboxes = {}
   
+
+def addToolbox(name, dir):
+    print 'Loading toolbox', name
+    _toolboxes[ name ] = Toolbox( name, dir)
+    return _toolboxes[ name ]
 
 def readToolboxes( toolboxesDir, homeBrainVISADir ):
   """
@@ -132,13 +150,12 @@ def readToolboxes( toolboxesDir, homeBrainVISADir ):
   # always load toolboxes in the same order. (listdir doesn't give results always ordered the same way)
   for name in sorted( os.listdir( toolboxesDir ) ):
     try:
-      print 'Loading toolbox', name
-      _toolboxes[ name ] = Toolbox( name, os.path.join( toolboxesDir, name ) )
+      addToolbox(name, os.path.join( toolboxesDir, name ) )
     except:
-        traceback.print_exc()
+      traceback.print_exc() 
   print 'Loading toolbox', 'My processes'
   _toolboxes[ 'My processes' ] = Toolbox( 'My processes', toolboxDirectory= homeBrainVISADir )
-        
+
 
 def allToolboxes():
   """

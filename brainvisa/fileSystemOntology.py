@@ -714,7 +714,7 @@ class FileSystemOntology( object ):
       self.localDict[ 'insertLast' ] = self.insertLast
 
     def read( self, fso, directories):
-      self.includePath.extend(directories)
+      self.includePath.update(directories)
       files=[]
       for directory in directories:
         files.extend(shelltools.filesFromShPatterns( os.path.join( directory, '*.py' ) ))

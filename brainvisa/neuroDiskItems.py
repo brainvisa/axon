@@ -1483,11 +1483,14 @@ class HierarchyDirectoryType( FileType ):
   
 #----------------------------------------------------------------------------
 typesLastModification = 0
+# mef is global to handle multiple call to readTypes since allready read
+# file types are stored in it to prevent multiple loads which cause troubles.
+mef = MultipleExecfile()
+mef.fileExtensions.append( '.py' )
 def readTypes():
   global typesLastModification
-  mef = MultipleExecfile()
-  mef.fileExtensions.append( '.py' )
-  mef.includePath.extend(neuroConfig.typesPath)
+  global mef
+  mef.includePath.update(neuroConfig.typesPath)
   try:
     files = shelltools.filesFromShPatterns( *[os.path.join( path, '*.py' ) for path in neuroConfig.typesPath] )
     files.sort()

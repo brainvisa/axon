@@ -399,7 +399,7 @@ try:
                                 "updateDocumentation", "noMainWindow",
                                 "logFile=", "cleanLog", "profile=", "shell", "validation",
                                 "debugHierarchy=", "debugLinks=", "oldDatabases", 
-                                "help", "setup" ] )
+                                "help", "setup", "noToolBox" ] )
 except getopt.GetoptError, msg:
   # print help information and exit:
   sys.stderr.write( "error in options: %s\nUse -h or --help for help\n" % msg )
@@ -412,6 +412,7 @@ newDatabases = True
 fastStart = False
 global setup
 setup=False
+noToolBox = False
 for o, a in opts:
   if o in ( "-b", ):
     gui = 0
@@ -460,6 +461,8 @@ for o, a in opts:
     showHelp = 1
   elif o in ( "--setup" ):
     setup = True
+  elif o in ( "--noToolBox"):
+    noToolBox = True
 
 # Print help
 if showHelp == 1:
@@ -480,6 +483,7 @@ BrainVISA options:
   --oldDatabases          Use old obsolete implementation of database system.
   --updateDocumentation   Generate HTML documentation pages.
   --noMainWindow          Do not open the process selection window.
+  --noToolBox             Do not load any process nor toolbox.
   --logFile <file>        Change log file name (default=$HOME/.brainvisa/brainvisa.log)
   --cleanLog              Clean home brainvisa directory by removing session information (current_runs.minf) and all log files (brainvisa*.log)
   --shell                 Run BrainVISA in a IPython shell, if IPython is
@@ -621,18 +625,13 @@ from neuroException import showException
 
 initializeConfiguration()
 
-readToolboxes( toolboxesDir, homeBrainVISADir )
+if not noToolBox:
+  readToolboxes( toolboxesDir, homeBrainVISADir )
+else:
+  print "do not load tooboxes"
 
 for toolbox in allToolboxes():
-  if os.path.exists( toolbox.initializationFile ):
-    try:
-      execfile( toolbox.initializationFile )
-    except:
-      showException()
-  if os.path.isdir( toolbox.fsoDir ):
-    fileSystemOntologiesPath.append( toolbox.fsoDir )
-  if os.path.isdir( toolbox.typesDir ):
-    typesPath.append( toolbox.typesDir )
+  toolbox.init()
 
 # add brainvisa shared database to the list of available databases
 sharedDatabaseFound=False

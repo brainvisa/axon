@@ -43,7 +43,7 @@ class MultipleExecfile:
     self.localDict = localDict
     self.localDict[ 'include' ] = self._include
     self.globalDict = globalDict
-    self.includePath = []
+    self.includePath = set()
     self.fileExtensions = [ '' ]
     self._executedFiles = {}
     self._includeStack = []
@@ -51,9 +51,10 @@ class MultipleExecfile:
   def findFile( self, localFileName ):
     result = None
     if self._includeStack:
-      path = [ os.path.dirname( self._includeStack[ -1 ] ) ] + self.includePath
+      path = [ os.path.dirname( self._includeStack[ -1 ] ) ] + \
+               list(self.includePath)
     else:
-      path = self.includePath + [ '' ]
+      path = list(self.includePath) + [ '' ]
     for e in self.fileExtensions:
       for p in path:
         if p is None: continue
