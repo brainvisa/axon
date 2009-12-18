@@ -383,10 +383,16 @@ class SQLDatabase( Database ):
     if os.path.exists( self.sqlDatabaseFile ):
       if self.fso.lastModification > os.stat(self.sqlDatabaseFile).st_mtime:
         self._mustBeUpdated = True
+        neuroProcesses.defaultContext().write("Database ",  self.name, " must be updated because the database file is too old." )
         #showWarning( _( 'ontology "%(ontology)s" had been modified, database "%(database)s" should be updated. Use the process : Data Management =&gt; Update databases.' ) % { 'ontology': self.fso.name, 'database': self.name } )
+      else: # database seem to be up to date but let's check if all the types tables exist
+        if not self.checkTables():
+          self._mustBeUpdated=True
+          neuroProcesses.defaultContext().write( "Database ",  self.name, " must be updated because some types tables are missing." )
     else:
       if len(os.listdir(self.directory)) > 1: # there is at least database_settings.minf
         self._mustBeUpdated = True
+        neuroProcesses.defaultContext().write( "Database ",  self.name, " must be updated because there is no database file." )
       else: # if database directory is empty, it is a new database -> automatically update
         if self.createTables():
           self.update( context=context)
@@ -399,6 +405,7 @@ class SQLDatabase( Database ):
         neuroConfig.chooseDatabaseVersionSyncOption(context)
       if neuroConfig.databaseVersionSync == 'auto':
         self._mustBeUpdated = True
+        neuroProcesses.defaultContext().write( "Database ",  self.name, " must be updated because it has been used with other versions of Brainvisa." )
   
   
   def update( self, directoriesToScan=None, recursion=True, context=None ):
@@ -573,6 +580,23 @@ class SQLDatabase( Database ):
       self.fsoToHTML( html )
     return create
 
+  def checkTables(self):
+    """
+    Checks if all types currently defined in the database ontology have a matching table in the sqlite database.
+    It may be not the case when the database have been update with a version of brainvisa that has not all the toolboxes. It should then be updated.
+    """
+    cursor = self._getDatabaseCursor()
+    tablesExist=False
+    try:
+      try:
+        res=cursor.execute( "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name" )
+        tables=set([t[0] for t in res.fetchall()]) # fetchall returns a list of tuples
+        tablesExist=self.typesWithTable.issubset(tables) # there are also tables for diskitems and filenames which does match a specific type.
+      except sqlite3.OperationalError:
+        neuroProcesses.defaultContext().warning(e.message)
+    finally:
+      self._closeDatabaseCursor( cursor )
+    return tablesExist
 
   def insertDiskItems( self, diskItems, update=False ):
     cursor = self._getDatabaseCursor()
