@@ -2002,10 +2002,6 @@ class ExecutionContext:
 
   def temporary( self, format, diskItemType = None ):
     result = getTemporary( format, diskItemType )
-    if not neuroConfig.removeTemporary:
-      pt = getattr( self, '_protectedTemporaries', [] )
-      pt.append( result )
-      self._protectedTemporaries = pt
     return result
 
   def matlab( self, *commands ):
