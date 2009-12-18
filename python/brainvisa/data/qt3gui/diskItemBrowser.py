@@ -53,7 +53,8 @@ class SignalNameComboBox( QComboBox ):
   def __init__( self, editable, parent, name ):
     QComboBox.__init__( self, editable, parent, name )
     self.connect( self, SIGNAL( 'activated(int)' ), self.signalName )
-    self.setMaximumWidth(600)
+    #self.setMaximumWidth(600)
+    self.setAutoCompletion(True)
     
   def signalName( self, index ):
     self.emit( PYSIGNAL( 'activated' ), ( str( self.name() ), index ) )
@@ -119,7 +120,7 @@ class DiskItemBrowser( QDialog ):
       #x.deleteLater()
     vlayout=QVBoxLayout(self._ui.attributesFrame)
     scrollview=QScrollView(self._ui.attributesFrame)
-    scrollview.setResizePolicy( QScrollView.AutoOneFit )
+    scrollview.setResizePolicy( QScrollView.AutoOne )
     scrollview.setFrameStyle( QFrame.NoFrame )
     scrollview.setMargin(6)
     vlayout.addWidget(scrollview)
@@ -234,7 +235,7 @@ class DiskItemBrowser( QDialog ):
     label = QLabel(_t_( caption ), self.gridwidget )
     self.gridLayout.addWidget( label, layoutRow, 0 )
     cmb = SignalNameComboBox( editable, self.gridwidget, attributeName )
-    cmb.setSizePolicy( QSizePolicy.MinimumExpanding, QSizePolicy.Fixed )
+    cmb.setSizePolicy( QSizePolicy.Expanding, QSizePolicy.Fixed )
     cmb._label = label
     if editable:
       cmb._modificationTimer = QLineEditModificationTimer( cmb.lineEdit() )
