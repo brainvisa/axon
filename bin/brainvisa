@@ -76,5 +76,11 @@ unset OLDLANG
 
 # Look for neuro.py
 $python -S -t -c "$runbrainvisa" "$0" "$@"
-type stty > /dev/null && stty sane
+# After using IPython in brainvisa, console need to be reset otherwise
+# characters typed by user are not displayed anymore.
+# 1) check that stty command exists
+# 2) check that stty command can be called
+# 3) reset terminal
+type stty > /dev/null && stty -a > /dev/null 2>&1 && stty sane
+
 
