@@ -31,12 +31,10 @@ if [ "$os" = "darwin" ]; then
 fi
 unset python
 for pythonexe in $pythonexelist; do
-  python=`type $pythonexe 2> /dev/null`
+  python=`which $pythonexe 2> /dev/null`
   if [ $? -eq 0 ]; then break; fi
 done
 [ -z "$python" ] && echo 'Cannot find Python executable' && exit 1
-python=`echo $python | sed -e 's/^'$pythonexe' is //'`
-[ $? -eq 0 ] || exit $?
 
 if [ "$os" = "darwin" ]; then
   python=`$python -c "$nosymlink"` # "$python"`/$pythonexe
