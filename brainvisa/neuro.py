@@ -172,10 +172,14 @@ def main():
       neuroLog.log( 'Validation mode', html='Validation mode enabled. Databases are going to be modified.', icon='warning.png' )
 
     readTypes()
-    if neuroConfig.newDatabases:
-      openDatabases()
-    else:
-      readHierarchies( neuroConfig.clearCacheRequest )
+    # Databases loading is skipped when no toolbox is loaded because specific
+    # hierarchies from unloaded toolboxes may be needed to define the ontology
+    # describing a given database organization
+    if not neuroConfig.noToolBox:
+      if neuroConfig.newDatabases:
+        openDatabases()
+      else:
+        readHierarchies( neuroConfig.clearCacheRequest )
     readProcesses( neuroConfig.processesPath )
     nbDatabases=len(neuroHierarchy.databases._databases)
     if not neuroConfig.sharedDatabaseFound:
