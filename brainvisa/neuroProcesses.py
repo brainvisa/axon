@@ -1786,39 +1786,59 @@ class ExecutionContext:
             
         self._lastProcessRaisedException = False
         # Check arguments and conversions
+        def _getConvertedValue( v, p ):
+          # v: value
+          # p: parameter (Read/WriteDiskItem)
+          if v and v.type and ( ( not isSameDiskItemType( v.type, p.type ) ) or v.format not in p.formats ):
+            c = None
+            for destinationFormat in p.formats:
+              converter = getConverter( (v.type, v.format), (p.type, destinationFormat) )
+              if converter:
+                tmp = self.temporary( destinationFormat )
+                tmp.type = v.type
+                tmp.copyAttributes( v )
+                convargs = { 'read' : v, 'write' : tmp }
+                c = getProcessInstance( converter.name )
+                if c is not None:
+                  try:
+                    apply( self._setArguments, (c,), convargs )
+                    if c.write is not None:
+                      break
+                  except:
+                    pass
+            ##              if not converter: raise Exception( _t_('Cannot convert format <em>%s</em> to format <em>%s</em> for parameter <em>%s</em>') % ( _t_( v.format.name ), _t_( destinationFormat.name ), n ) )
+            ##              tmp = self.temporary( destinationFormat )
+            ##              tmp.type = v.type
+            ##              tmp.copyAttributes( v )
+            ##              self.runProcess( converter.name, read = v, write = tmp )
+            if not c: raise Exception( HTMLMessage(_t_('Cannot convert format <em>%s</em> to format <em>%s</em> for parameter <em>%s</em>') % ( _t_( v.format.name ), _t_( destinationFormat.name ), n )) )
+            self.runProcess( c )
+            return tmp
+
         converter = None
         for ( n, p ) in process.signature.items():
           if isinstance( p, ReadDiskItem ) and p.enableConversion:
             v = getattr( process, n )
-            if v and v.type and ( ( not isSameDiskItemType( v.type, p.type ) ) or v.format not in p.formats ):
-              c = None
-              for destinationFormat in p.formats:
-                converter = getConverter( (v.type, v.format), (p.type, destinationFormat) )
-                if converter:
-                  tmp = self.temporary( destinationFormat )
-                  tmp.type = v.type
-                  tmp.copyAttributes( v )
-                  convargs = { 'read' : v, 'write' : tmp }
-                  c = getProcessInstance( converter.name )
-                  if c is not None:
-                    try:
-                      apply( self._setArguments, (c,), convargs )
-                      if c.write is not None:
-                        break
-                    except:
-                      pass
-              ##              if not converter: raise Exception( _t_('Cannot convert format <em>%s</em> to format <em>%s</em> for parameter <em>%s</em>') % ( _t_( v.format.name ), _t_( destinationFormat.name ), n ) )
-              ##              tmp = self.temporary( destinationFormat )
-              ##              tmp.type = v.type
-              ##              tmp.copyAttributes( v )
-              ##              self.runProcess( converter.name, read = v, write = tmp )
-              if not c: raise Exception( HTMLMessage(_t_('Cannot convert format <em>%s</em> to format <em>%s</em> for parameter <em>%s</em>') % ( _t_( v.format.name ), _t_( destinationFormat.name ), n )) )
-              self.runProcess( c )
+            tmp = _getConvertedValue( v, p )
+            if tmp is not None:
               process.setConvertedValue( n, tmp )
           elif isinstance( p, WriteDiskItem ):
             v = getattr( process, n )
             if v is not None:
               v.createParentDirectory()
+          elif isinstance( p, ListOf ):
+            needsconv = False
+            converted = []
+            lv = getattr( process, n )
+            for v in lv:
+              tmp = _getConvertedValue( v, p.contentType )
+              if tmp is not None:
+                converted.append( tmp )
+                needsconv = True
+              else:
+                converted.append( v )
+            if needsconv:
+              process.setConvertedValue( n, converted )
         if executionFunction is None:
           result = process.execution( self )
         else:
@@ -2000,10 +2020,6 @@ class ExecutionContext:
 
   def temporary( self, format, diskItemType = None ):
     result = getTemporary( format, diskItemType )
-    if not neuroConfig.removeTemporary:
-      pt = getattr( self, '_protectedTemporaries', [] )
-      pt.append( result )
-      self._protectedTemporaries = pt
     return result
 
   def matlab( self, *commands ):

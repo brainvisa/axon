@@ -304,7 +304,6 @@ startup=[]
 flatHierarchy = os.path.join( mainPath, 'shfjFlatHierarchy.py' )
 debugHierarchyScanning = None
 debugParametersLinks = None
-removeTemporary = True
 validationEnabled = False
 
 userEmail = ''
@@ -790,7 +789,7 @@ def environmentHTML():
              'matlabStartup', 'spmDirectory',
              'logFileName', 'language', 'userLevel',
              'startup', 'supportEmail', 'SMTP_server_name', 'flatHierarchy',
-             'textEditor', 'removeTemporary' ):
+             'textEditor' ):
     content += '<code><em>'+ n + '</em> = ' + htmlEscape( str( g[ n ] ) ) + '</code><p>'
   content += '</body></html>'
   return content

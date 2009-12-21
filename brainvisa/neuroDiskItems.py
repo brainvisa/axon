@@ -40,6 +40,7 @@ from soma.html import htmlEscape
 from soma.undefined import Undefined
 from soma.uuid import Uuid
 from soma.minf.api import readMinf, MinfError
+from soma.wip.application.api import Application
 
 import neuroConfig
 from neuroException import *
@@ -1401,30 +1402,31 @@ class TemporaryDiskItem( File ):
     self._isTemporary = 1
     
   def __del__( self ):
-    toDelete = self.fullPaths()
-    toDelete.append( toDelete[ 0 ] + '.minf' )
-    #print 'deleting temp DI:', toDelete
-    for f in toDelete:
-      n = 0
-      while 1:
-        try:
-          temporary.manager.removePath( f )
-          break
-        except:
-          if n < 100:
-            n += 1
-            time.sleep( 0.01 )
-            #print 'can\' delete', f, 'yet. waiting'
-            #sys.stdout.flush()
-          else:
-            #print 'exception while removing', f
-            showException( beforeError=_t_('temorary file <em>%s</em> not '
-                                           'deleted<br>') % f, gui=0 )
-            # giving up, let it for later
-            temporary.manager.registerPath( f )
-            print 'continuing after failed rm'
-            sys.stdout.flush()
+    if Application().configuration.brainvisa.removeTemporary:
+      toDelete = self.fullPaths()
+      toDelete.append( toDelete[ 0 ] + '.minf' )
+      #print 'deleting temp DI:', toDelete
+      for f in toDelete:
+        n = 0
+        while 1:
+          try:
+            temporary.manager.removePath( f )
             break
+          except:
+            if n < 100:
+              n += 1
+              time.sleep( 0.01 )
+              #print 'can\' delete', f, 'yet. waiting'
+              #sys.stdout.flush()
+            else:
+              #print 'exception while removing', f
+              showException( beforeError=_t_('temorary file <em>%s</em> not '
+                                             'deleted<br>') % f, gui=0 )
+              # giving up, let it for later
+              temporary.manager.registerPath( f )
+              print 'continuing after failed rm'
+              sys.stdout.flush()
+              break
 
   def clear( self ):
     for f in self.fullPaths():

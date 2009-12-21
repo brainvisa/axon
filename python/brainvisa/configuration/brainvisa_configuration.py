@@ -46,6 +46,7 @@ from soma.wip.temporary import getSystemDefaultTempDir
 from soma.signature.api import HasSignature, Signature, VariableSignature, Unicode, \
                                Choice, OpenedChoice, Boolean, Sequence, FileName
 from distutils.spawn import find_executable
+import os
 
 #------------------------------------------------------------------------------
 def htmlBrowsers():
@@ -66,7 +67,7 @@ class BrainVISAConfiguration( ConfigurationGroup ):
     signature = Signature(
       'userEmail', Unicode, dict( defaultValue='', doc='Your email address that will appear in the "From:" field of messages send to BrainVISA support team.' ),
       'supportEmail', Unicode, dict( defaultValue='support@brainvisa.info', doc='Email address of BrainVISA support team.' ),
-      'smtpServer', Unicode, dict( defaultValue='', doc='Address of the server that wil be used to send emails.' ),
+      'smtpServer', Unicode, dict( defaultValue='', doc='Address of the server that will be used to send emails.' ),
     )
   
   class SPMConfiguration( HasSignature ):
@@ -99,6 +100,10 @@ class BrainVISAConfiguration( ConfigurationGroup ):
   def _check_userLevel_value( self, value ):
     return int( value )
   
+  def _check_temporaryDirectory_value(self, newDirectory):
+    if newDirectory and not os.path.exists(newDirectory):
+      print 'Configuration - temporaryDirectory option : No such file or directory: "' + newDirectory + '". Returned to default value.'
+    return self.signature['temporaryDirectory'].defaultValue
   
   def __init__( self ):
     super( BrainVISAConfiguration, self ).__init__()

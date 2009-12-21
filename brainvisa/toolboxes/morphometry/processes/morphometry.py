@@ -60,9 +60,9 @@ def changeSelectionMode( mode = 1 ):
 
 
 sign = (
-    'model', ReadDiskItem( 'Model graph', 'Graph' ),
     'data_graphs', ListOf( ReadDiskItem( "Data graph", 'Graph' ) ),
-    'nomenclature', ReadDiskItem( 'Nomenclature', 'Hierarchy' ), 
+    'model', ReadDiskItem( 'Model graph', 'Graph' ),
+    'nomenclature', ReadDiskItem( 'Nomenclature', 'Hierarchy' ),
     'region', selectionType(), 
     'output_prefix', String(), 
     'region_type', Choice( ( 'Region', 'label' ), 
@@ -98,7 +98,11 @@ def initialization( self ):
             sel.value[ 'nomenclature' ] = nom
         return sel
 
-    self.model = self.signature[ 'model' ].findValue( { 'side' : 'right' } )
+    def linkModel( self, proc ):
+      if self.data_graphs is not None and len( self.data_graphs ) != 0:
+        return self.signature[ 'model' ].findValue( self.data_graphs[0] )
+      return None
+
     self.nomenclature = self.signature[ 'nomenclature' ].findValue( {} )
     self.setOptional( 'region_type' )
     if selectionmode == 0:
@@ -114,6 +118,7 @@ def initialization( self ):
     else:
         self.linkParameters( 'region', ( 'model', 'nomenclature' ), \
                              change_region )
+    self.linkParameters( 'model', 'data_graphs', linkModel )
 
 def execution( self, context ):
     context.write( "Morphometry statistics running" )

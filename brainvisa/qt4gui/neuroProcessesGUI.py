@@ -35,6 +35,7 @@ import distutils, os, sys
 import types
 from backwardCompatibleQt import *
 from PyQt4 import uic
+from PyQt4.QtGui import QKeySequence
 import neuroConfig 
 import neuroConfigGUI
 import neuroLogGUI
@@ -1836,6 +1837,7 @@ class ProcessSelectionWidget( QMainWindow ):
     uic.loadUi(p, self.searchbox)
     vb.addWidget(self.searchbox)
     self.searchboxSearchB = self.searchbox.BV_search
+    self.searchboxSearchB.setShortcut( QKeySequence.Find )
     self.matchedProcs = []
     self.searchboxResetSearchB = self.searchbox.BV_resetsearch
     self.searchboxLineEdit = self.searchbox.BV_searchlineedit
@@ -1898,7 +1900,8 @@ class ProcessSelectionWidget( QMainWindow ):
       try:# an exception will occur when there is no more items
         item=self.matchedProcs.next() 
         self.searchboxLineEdit.setEnabled(False)
-        self.searchboxSearchB.setText('next')
+        self.searchboxSearchB.setText( 'next' )
+        self.searchboxSearchB.setShortcut( QKeySequence.FindNext )
       except:
         self.resetSearch()
         
@@ -1908,6 +1911,7 @@ class ProcessSelectionWidget( QMainWindow ):
     """
     self.matchedProcs = None
     self.searchboxSearchB.setText('search')
+    self.searchboxSearchB.setShortcut( QKeySequence.Find )
     self.searchboxLineEdit.setEnabled(True)
 
   def itemSelected( self, item ):
