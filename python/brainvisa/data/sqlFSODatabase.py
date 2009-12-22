@@ -592,7 +592,7 @@ class SQLDatabase( Database ):
         res=cursor.execute( "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name" )
         tables=set([t[0] for t in res.fetchall()]) # fetchall returns a list of tuples
         tablesExist=self.typesWithTable.issubset(tables) # there are also tables for diskitems and filenames which does match a specific type.
-      except sqlite3.OperationalError:
+      except sqlite3.OperationalError, e:
         neuroProcesses.defaultContext().warning(e.message)
     finally:
       self._closeDatabaseCursor( cursor )

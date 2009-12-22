@@ -33,7 +33,7 @@
 import sys, os
 from itertools import chain
 
-from backwardCompatibleQt import QDialog, Qt, QVBoxLayout, QComboBox, SIGNAL, SLOT, QLabel, QApplication, QPixmap, QListWidget, QWidget, QGridLayout
+from backwardCompatibleQt import QDialog, Qt, QVBoxLayout, QComboBox, SIGNAL, SLOT, QLabel, QApplication, QPixmap, QListWidget, QWidget, QGridLayout, QFrame, QSize
 from PyQt4 import uic
 from PyQt4.QtGui import QAbstractItemView, QSizePolicy
 from soma.qt4gui.api import SimpleTable
@@ -55,7 +55,7 @@ class SignalNameComboBox( QComboBox ):
       self.setObjectName(name)
     self.setEditable(editable)
     self.connect( self, SIGNAL( 'activated(int)' ), self.signalName )
-    self.setMaximumWidth(600)
+    #self.setMaximumWidth(600)
     
   def signalName( self, index ):
     self.emit( SIGNAL( 'activated' ), str( self.objectName() ), index )
@@ -125,6 +125,7 @@ class DiskItemBrowser( QDialog ):
     
     # the area to show the attributes combos
     scrollarea=self._ui.scrollarea
+    scrollarea.setFrameStyle(QFrame.NoFrame)
     self.attributesWidget=QWidget()
     gridLayout = QGridLayout()
     gridLayout.setColumnStretch( 0, 0 )
@@ -216,7 +217,8 @@ class DiskItemBrowser( QDialog ):
     
     self._lastSelection = None
     self.rescan()
-    self.initializeLayout()
+
+    self.restoreLayout()
     
     self.connect( self._ui.btnReset, SIGNAL( 'clicked()' ), self.resetSelectedAttributes )
     #btn.setText(_t_('Ok'))
@@ -228,12 +230,11 @@ class DiskItemBrowser( QDialog ):
     self.connect( self._ui.hsplitter, SIGNAL( 'splitterMoved ( int, int )' ), self.saveLayout )
     self.connect( self._ui.vsplitter, SIGNAL( 'splitterMoved ( int, int )' ), self.saveLayout )
 
-  
-  def initializeLayout( self ):
-    if not self.restoreLayout():
-      self._ui.hsplitter.setSizes( [ self._ui.attributesFrame.minimumSizeHint().width(), self._ui.grpItems.sizeHint().width() ] )
-      self._ui.vsplitter.setSizes( [ self._ui.hsplitter.sizeHint().height(), self._ui.textBrowser.sizeHint().height() ])
-    self._ui.tblItems.resizeColumnsToContents()
+  def sizeHint(self):
+    attributeSize=self._ui.attributesFrame.sizeHint()
+    tableSize=self._ui.grpItems.sizeHint()
+    textSize=self._ui.textBrowser.sizeHint()
+    return QSize((attributeSize.width()+self._ui.hsplitter.handleWidth()+tableSize.width())*1.1, (attributeSize.height()+self._ui.vsplitter.handleWidth()+textSize.height())*1.2)
   
   def saveLayout( self ):
       DiskItemBrowser._savedLayout = ( self.size(), self._ui.hsplitter.sizes(), self._ui.vsplitter.sizes() )
@@ -258,7 +259,7 @@ class DiskItemBrowser( QDialog ):
     gridLayout.addWidget( label, layoutRow, 0 )
     cmb = SignalNameComboBox( editable, None, attributeName )
     cmb._label = label
-    cmb.setSizePolicy( QSizePolicy( QSizePolicy.MinimumExpanding, QSizePolicy.Fixed ) )
+    cmb.setSizePolicy( QSizePolicy( QSizePolicy.Expanding, QSizePolicy.Fixed ) )
     if editable:
       cmb._modificationTimer = QLineEditModificationTimer( cmb.lineEdit() )
       self.connect( cmb._modificationTimer, SIGNAL( 'userModification' ), partial( self._comboTextChanged, name=attributeName ) )
@@ -485,6 +486,9 @@ class DiskItemBrowser( QDialog ):
           else:
             cmb.show()
             cmb._label.show()
+      
+      self.attributesWidget.adjustSize()
+      self._ui.tblItems.resizeColumnsToContents()
     finally:
       QApplication.restoreOverrideCursor()
 
