@@ -63,7 +63,7 @@ signature = Signature(
                         enableConversion = 0 ),
   'write', WriteDiskItem( 'Transformation matrix', 'Transformation matrix', 
      requiredAttributes = { 'destination_referential' : \
-      registration.talairachMNIReferentialId } ),
+      str( registration.talairachMNIReferentialId ) } ),
   'target', Choice( 'MNI template', 'unspecified template',
     'normalized_volume in AIMS orientation' ),
   'source_volume', ReadDiskItem( '4D Volume', 
@@ -71,7 +71,7 @@ signature = Signature(
   'normalized_volume', ReadDiskItem( '4D Volume', 
      shfjGlobals.aimsVolumeFormats, 
      requiredAttributes = { 'referential' : \
-      registration.talairachMNIReferentialId } ),
+      str( registration.talairachMNIReferentialId ) } ),
   'removeSource', Boolean(),
 )
 
@@ -79,6 +79,9 @@ def initialization( self ):
   def linkSource( proc, param ):
     if self.read is None:
       return None
+    x = self.signature[ 'source_volume' ].findValue( self.read )
+    if x is not None:
+      return x
     filetype = self.read.type
     if filetype is getDiskItemType( 'SPM99 normalization matrix' ) \
       or self.read.fullName()[-5:] == '_sn3d':
