@@ -505,6 +505,7 @@ class NodeCheckListItem( QTreeWidgetItem ):
       self.widget=RadioItem(text, buttonGroup)
       self.treeWidget().setItemWidget(self, 0, self.widget)
       QWidget.connect(self.widget.radio, SIGNAL("clicked(bool)"), self.itemClicked)
+      QWidget.connect(self.widget.radio, SIGNAL("toggled(bool)"), self.itemToggled)
     else:# not a radio button, show text directly in the qtreeWidgetItem
       if text:
         self.setText(0, text)
@@ -513,7 +514,10 @@ class NodeCheckListItem( QTreeWidgetItem ):
 
   def itemClicked(self, checked):
     self.treeWidget().setCurrentItem(self)
-  
+
+  def itemToggled(self, checked):
+    self.stateChange( checked )
+
   def setIcon(self, col, icon):
     if self.itemType=="radio":
       self.widget.setIcon(icon)
@@ -538,7 +542,7 @@ class NodeCheckListItem( QTreeWidgetItem ):
         self.setCheckState( 0, Qt.Checked )
       else:
         self.setCheckState( 0, Qt.Unchecked )
-
+        
   def isOn( self ):
     if self.itemType=="radio":
       return self.widget.isChecked()
@@ -931,6 +935,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       self.connect( self.executionTree,
                     SIGNAL( 'currentItemChanged( QTreeWidgetItem *, QTreeWidgetItem * )' ),
                     self.executionNodeSelected )
+      self.connect( self.executionTree,
+                    SIGNAL( 'itemClicked( QTreeWidgetItem *, int )' ),
+                    self.executionNodeClicked )
       
       # Select and open the first item
       item = self.executionTree.topLevelItem(0)
@@ -1276,7 +1283,11 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       #self.resize( size.width()+1, size.height() )
       #qApp.processEvents()
       #self.resize( size )
-  
+
+  def executionNodeClicked( self, item, column ):
+    item.stateChange( item.checkState( 0 ) )
+    
+
   def _executionNodeExpanded( self, item, eNodeAndChildren=None ):
     if item is not None and getattr( item, '_notExpandedYet', True ):
       item._notExpandedYet = False
