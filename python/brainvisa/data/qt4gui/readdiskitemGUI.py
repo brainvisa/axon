@@ -761,7 +761,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
     textValues = self.sle.getValue()
     if textValues is not None:
       self._newValue( [self.parameter.findValue( x ) for x in textValues] )
-    else 
+    else: 
       self._newValue( None )
     return None
 
