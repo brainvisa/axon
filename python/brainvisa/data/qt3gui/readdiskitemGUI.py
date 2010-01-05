@@ -640,9 +640,8 @@ class DiskItemListEditor( QHBox, DataEditor ):
   def getValue( self ):
     return self._value
     
-  def setValue( self, value, default = 0 ):
-    self.forceDefault = default
-    self._value = value
+  def _setValue(self, value):
+    self._value=value
     if isinstance( value, ( list, tuple ) ):
       r = []
       for v in value:
@@ -651,7 +650,20 @@ class DiskItemListEditor( QHBox, DataEditor ):
         else:
           r.append( str( v ) )
       value = r
-    self.sle.setValue( value, default )
+    self.sle._setValue(value)
+    
+  def setValue( self, value, default = 0 ):
+    self.forceDefault = default
+    self._value=value
+    if isinstance( value, ( list, tuple ) ):
+      r = []
+      for v in value:
+        if v is None:
+          r.append( '' )
+        else:
+          r.append( str( v ) )
+      value = r
+    self.sle.setValue(value, default)
     self.forceDefault = 0
   
   def findPressed( self ):
@@ -727,9 +739,10 @@ class DiskItemListEditor( QHBox, DataEditor ):
     return None
 
   def _newValue( self, v ):
-    self.setValue( v )
+    self._setValue(v)
     self.emit( PYSIGNAL('newValidValue'), ( self.name(), v, ) )
-    if not self.forceDefault: self.emit( PYSIGNAL('noDefault'), ( self.name(),) )
+    if not self.forceDefault: 
+      self.emit( PYSIGNAL('noDefault'), ( self.name(),) )
 
   def checkValue( self ):
     self.sle.checkValue()
