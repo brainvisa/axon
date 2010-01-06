@@ -53,31 +53,38 @@ if neuroConfig.newDatabases:
   def openDatabases():
     from neuroProcesses import defaultContext
     global databases
-    databases.removeDatabases()
+      
+    #databases.removeDatabases()
     for dbSettings in neuroConfig.dataPath:
       try:
-        otherSqliteFiles=[]
-        if dbSettings.expert_settings.sqliteFileName:
-          path, ext = os.path.splitext(dbSettings.expert_settings.sqliteFileName)
-        else:
-          path=os.path.join( dbSettings.directory, 'database' )
-          ext='.sqlite'
-
-        sqlite=path+"-"+databaseVersion+ext
-        # other versions of sqlite file
-        other=path+ext
-        if os.path.exists(other):
-          otherSqliteFiles.append(other)
-        for version in databaseVersions.keys():
-          if version != databaseVersion:
-            other=path+"-"+version+ext
+        
+        if not getattr(dbSettings, "builtin", False) or not databases.hasDatabase(dbSettings.directory): # builtin databases are not re created
+          databases.remove( dbSettings.directory )
+          otherSqliteFiles=[]
+          if dbSettings.expert_settings.sqliteFileName != ":memory:":
+            if dbSettings.expert_settings.sqliteFileName:
+              path, ext = os.path.splitext(dbSettings.expert_settings.sqliteFileName)
+            else:
+              path=os.path.join( dbSettings.directory, 'database' )
+              ext='.sqlite'
+    
+            sqlite=path+"-"+databaseVersion+ext
+            # other versions of sqlite file
+            other=path+ext
             if os.path.exists(other):
-              otherSqliteFiles.append(path+"-"+version+ext)
+              otherSqliteFiles.append(other)
+            for version in databaseVersions.keys():
+              if version != databaseVersion:
+                other=path+"-"+version+ext
+                if os.path.exists(other):
+                  otherSqliteFiles.append(path+"-"+version+ext)
+          else:
+            sqlite=dbSettings.expert_settings.sqliteFileName
 
-        base = SQLDatabase( sqlite, dbSettings.directory, fso=dbSettings.expert_settings.ontology, context=defaultContext(), otherSqliteFiles=otherSqliteFiles )
+          base = SQLDatabase( sqlite, dbSettings.directory, fso=dbSettings.expert_settings.ontology, context=defaultContext(), otherSqliteFiles=otherSqliteFiles )
 
-        databases.add( base )
-        if not getattr(dbSettings, "builtin", False):
+          databases.add( base )
+          
           # Usually users do not have to modify a builtin database. Therefore no warning is shown for these databases.
           if (not os.access(dbSettings.directory, os.W_OK) or ( os.path.exists(sqlite) and not os.access(sqlite, os.W_OK)) ):
             showWarning(_t_("The database "+base.name+" is read only, you will not be able to add new items in this database."))

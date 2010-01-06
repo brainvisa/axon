@@ -389,11 +389,11 @@ class SQLDatabase( Database ):
         if not self.checkTables():
           self._mustBeUpdated=True
           neuroProcesses.defaultContext().write( "Database ",  self.name, " must be updated because some types tables are missing." )
-    else:
-      if len(os.listdir(self.directory)) > 1: # there is at least database_settings.minf
+    else :
+      if (self.sqlDatabaseFile != ":memory:") and (len(os.listdir(self.directory)) > 1): # there is at least database_settings.minf
         self._mustBeUpdated = True
         neuroProcesses.defaultContext().write( "Database ",  self.name, " must be updated because there is no database file." )
-      else: # if database directory is empty, it is a new database -> automatically update
+      else: # if database directory is empty , it is a new database or it is in memory -> automatically update
         if self.createTables():
           self.update( context=context)
     # do not update automatically enven if the database sqlite file doesn't exists, ask the user.
@@ -1273,6 +1273,8 @@ class SQLDatabases( Database ):
   def database( self, name ):
     return self._databases[ name ]
   
+  def hasDatabase(self, name):
+    return self._databases.has_key(name)
   
   def add( self, database ):
     self._databases[ database.name ] = database
@@ -1280,6 +1282,10 @@ class SQLDatabases( Database ):
     # SQLDatabases notifier notifies when one of its database notifies an update
     database.onUpdateNotifier.add(self.onUpdateNotifier.notify)
   
+  def remove( self, name ):
+    if self._databases.has_key(name):
+      del self._databases[name]
+    
   def removeDatabases( self ):
     self._databases = SortedDictionary()
     self.formats = FileFormats( '<TODO>' )
