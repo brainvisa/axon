@@ -1777,7 +1777,7 @@ class ExecutionContext:
         def _getConvertedValue( v, p ):
           # v: value
           # p: parameter (Read/WriteDiskItem)
-          if v and v.type and ( ( not isSameDiskItemType( v.type, p.type ) ) or v.format not in p.formats ):
+          if v and getattr(v, "type", None) and ( ( not isSameDiskItemType( v.type, p.type ) ) or v.format not in p.formats ):
             c = None
             for destinationFormat in p.formats:
               converter = getConverter( (v.type, v.format), (p.type, destinationFormat) )
