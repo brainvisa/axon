@@ -667,6 +667,18 @@ class DiskItemListEditor( QWidget, DataEditor ):
   def getValue( self ):
     return self._value
     
+  def _setValue(self, value):
+    self._value=value
+    if isinstance( value, ( list, tuple ) ):
+      r = []
+      for v in value:
+        if v is None:
+          r.append( '' )
+        else:
+          r.append( str( v ) )
+      value = r
+    self.sle._setValue(value)
+
   def setValue( self, value, default = 0 ):
     self.forceDefault = default
     self._value = value
@@ -749,10 +761,12 @@ class DiskItemListEditor( QWidget, DataEditor ):
     textValues = self.sle.getValue()
     if textValues is not None:
       self._newValue( [self.parameter.findValue( x ) for x in textValues] )
+    else: 
+      self._newValue( None )
     return None
 
   def _newValue( self, v ):
-    self.setValue( v )
+    self._setValue( v )
     self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), v )
     if not self.forceDefault: self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
 
