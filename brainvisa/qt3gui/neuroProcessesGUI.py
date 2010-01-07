@@ -1775,11 +1775,11 @@ class ProcessEdit( QDialog ):
 
   def saveLanguage( self ):
     d = {}
-    d[ 'short' ] = self.escapeXMLEntities( unicode( self.mleShort.text() ) )
-    d[ 'long' ] = self.escapeXMLEntities( unicode( self.mleLong.text() ) )
+    d[ 'short' ] = unicode( self.mleShort.text() )
+    d[ 'long' ] = unicode( self.mleLong.text() )
     d[ 'parameters' ] = p = {}
     for i,j in self.mleParameters.items():
-      p[ unicode( self.cmbParameter.text( i ) ) ] = self.escapeXMLEntities( unicode( j.text() ) )
+      p[ unicode( self.cmbParameter.text( i ) ) ] = unicode( j.text() )
     self.documentation[ self.language ] = d
     htmlPath = unicode( self.leHTMLPath.text() )
     if htmlPath:
@@ -1789,10 +1789,6 @@ class ProcessEdit( QDialog ):
         del self.documentation[ 'htmlPath' ]
       except KeyError:
         pass
-
-  @staticmethod
-  def escapeXMLEntities( s ):
-    return re.sub( r'&([a-z]+);', lambda m: '&amp;'+m.group(1)+';', s )
   
   
   def changeLanguage( self ):
