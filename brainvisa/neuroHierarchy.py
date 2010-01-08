@@ -54,11 +54,12 @@ if neuroConfig.newDatabases:
     from neuroProcesses import defaultContext
     global databases
       
-    #databases.removeDatabases()
+    newDatabases=[] 
     for dbSettings in neuroConfig.dataPath:
       try:
-        
-        if not getattr(dbSettings, "builtin", False) or not databases.hasDatabase(dbSettings.directory): # builtin databases are not re created
+        if getattr(dbSettings, "builtin", False) and databases.hasDatabase(dbSettings.directory): # builtin databases are not re created
+          newDatabases.append(databases.database(dbSettings.directory))
+        else:
           databases.remove( dbSettings.directory )
           otherSqliteFiles=[]
           if dbSettings.expert_settings.sqliteFileName != ":memory:":
@@ -83,8 +84,8 @@ if neuroConfig.newDatabases:
 
           base = SQLDatabase( sqlite, dbSettings.directory, fso=dbSettings.expert_settings.ontology, context=defaultContext(), otherSqliteFiles=otherSqliteFiles )
 
-          databases.add( base )
-          
+          newDatabases.append( base )
+            
           # Usually users do not have to modify a builtin database. Therefore no warning is shown for these databases.
           if (not os.access(dbSettings.directory, os.W_OK) or ( os.path.exists(sqlite) and not os.access(sqlite, os.W_OK)) ):
             showWarning(_t_("The database "+base.name+" is read only, you will not be able to add new items in this database."))
@@ -92,6 +93,11 @@ if neuroConfig.newDatabases:
             showWarning(_t_("The database "+base.name+" uses brainvisa-3.0 ontology which is deprecated. You should convert this database to the new ontology using the process Data management -> Convert Old database."))
       except:
         showException()    
+    # update SQLDatabases object
+    databases.removeDatabases()
+    for db in newDatabases:
+      databases.add(db)
+
     
   def hierarchies():
     return databases._databases.values()
