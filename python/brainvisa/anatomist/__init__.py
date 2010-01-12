@@ -258,13 +258,26 @@ if anatomistImport:
       def _transformWith( self, ref1, ref2):
         def _transformWith2( self, ref1, ref2):
             tm = registration.getTransformationManager()
-            pth = tm.findPaths( ref1.diskitem.uuid(), ref2.diskitem.uuid() )
-            srcr = ref1
+            if isinstance( ref1, self.Referential ):
+              id1 = ref1.diskitem.uuid()
+              srcr = ref1
+            else:
+              id1 = ref1
+            if isinstance( ref2, self.Referential ):
+              id2 = ref2.diskitem.uuid()
+            else:
+              id2 = ref2
+            pth = tm.findPaths( id1, id2 )
             try:
                 p = pth.next()
+                if not isinstance( ref1, self.Referential ):
+                  srcrDiskItem=tm.referential(id1)
+                  srcr=self.createReferential(srcrDiskItem)
+                  ref1 = srcr
                 for t in p:
                     dstrid = t[ 'destination_referential' ]
-                    if dstrid != ref2.diskitem.uuid():
+                    if dstrid != id2 \
+                      or not isinstance( ref2, self.Referential ):
                       dstrDiskItem=tm.referential(dstrid)
                       dstr=self.createReferential(dstrDiskItem)
                     else:
@@ -278,7 +291,7 @@ if anatomistImport:
                     return 1
                 except:
                     return 1
-            except:
+            except StopIteration:
                 return 0 # no path
         # try to find transformation ref1 -> ref2
         if _transformWith2( self, ref1, ref2 ):
@@ -287,12 +300,13 @@ if anatomistImport:
         return _transformWith2( self, ref2, ref1 )
 
       # try to find transformation between this referential and spm referential
-      spmr=self.mniTemplateRef
-      x = _transformWith( self, referential, spmr )
-      if x:
-        return x
-      acpcr = self.centralRef
-      return _transformWith( self, referential, acpcr )
+      triedrefs = [ self.mniTemplateRef, self.centralRef,
+        registration.globallyRegistredSPAMReferentialId ]
+      for r in triedrefs:
+        x = _transformWith( self, referential, r )
+        if x:
+          return x
+      return 0
 
     def __getattr__(self, name):
       """

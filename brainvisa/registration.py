@@ -699,3 +699,5 @@ talairachACPCReferentialId = uuid.Uuid(
   'a2a820ac-a686-461e-bcf8-856400740a6c' )
 talairachMNIReferentialId = uuid.Uuid(
   '803552a6-ac4d-491d-99f5-b938392b674b' )
+globallyRegistredSPAMReferentialId = uuid.Uuid(
+  '5f83f18d-e211-6705-99a0-720c4707901b' )
