@@ -44,7 +44,7 @@ from soma.html import htmlEscape
 from soma.wip.application.api import findIconFile
 from soma.uuid import Uuid
 from soma.undefined import Undefined
-from soma.stringtools import quote_string, string_to_list, list_to_string
+from soma.stringtools import quote_string, unquote_string, string_to_list, list_to_string
 from neuroDiskItems import DiskItem, getFormats
 from neuroProcesses import getDiskItemType, getConvertersTo
 
@@ -288,7 +288,7 @@ class DiskItemBrowser( QDialog ):
         else:
           v = l
       else:
-        v=unicode( cmb.text( index ) )
+        v=unquote_string( unicode(cmb.text( index )) )
       self._selectedAttributes[ name ] = v
       self._lastSelection = name
     self.rescan()
