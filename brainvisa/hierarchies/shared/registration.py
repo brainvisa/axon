@@ -38,6 +38,12 @@ insert( '',
   ),
 )
 
+insert( '',
+  'transformation', SetContent(
+    '*', SetType( 'Transformation matrix' ),
+  ),
+)
+
 insert('hemitemplate',
   'RawT1-Template_TO_Talairach-ACPC', SetType( "Template Pole To Talairach Tranformation" ),
 )
