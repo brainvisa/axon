@@ -56,7 +56,14 @@ def isRadio( hdr ):
     radio = hdr.get( 'spm_radio_convention' )
   else:
     radio = ( s2m[0] > 0 )
-
+    
+def initSubject( self, inp ):
+  value=self.input
+  if self.input is not None and isinstance(self.input, DiskItem):
+    value=self.input.hierarchyAttributes()
+    if value.get("subject", None) is None:
+      value["subject"]=os.path.splitext(os.path.basename(self.input.fullPath()))[0]
+  return value
 
 def initialization( self ):
   def _orient( self, proc ):
@@ -88,10 +95,11 @@ def initialization( self ):
       res = None
     proc.signature[ 'input_spm_orientation' ].lastInput = self.input
     return res
-
+    
   self.linkParameters( 'input_spm_orientation', 'input', _orient )
   self.signature[ 'input_spm_orientation' ].linkParameterWithNonDefaultValue \
                   = 1
+  self.addLink( "output", "input", self.initSubject )
   self.signature[ 'output' ].browseUserLevel = 3
   self.signature[ 'input' ].databaseUserLevel = 2
 

@@ -140,9 +140,6 @@ class DiskItemEditor( QWidget, DataEditor ):
     self.browseDialog = None
     self._textChanged = False
 
-    self._selectedAttributes = {}
-    self.parameter.valueLinkedNotifier.add( self.valueLinked )
-
   def __del__( self ):
       self._ = None
 
@@ -288,7 +285,7 @@ class DiskItemEditor( QWidget, DataEditor ):
         self.databaseDialog = DiskItemBrowser( self.parameter.database, selection=selection, required=self.parameter.requiredAttributes, parent=self, write = self._write,
         enableConversion=self.parameter.enableConversion )
       else: # if there is no value, we could have some selected attributes from a linked value, use it to initialize the browser
-        self.databaseDialog = DiskItemBrowser( self.parameter.database, selection=self._selectedAttributes, required=self.parameter.requiredAttributes, parent=self, write = self._write, enableConversion=self.parameter.enableConversion )
+        self.databaseDialog = DiskItemBrowser( self.parameter.database, selection=self.parameter._selectedAttributes, required=self.parameter.requiredAttributes, parent=self, write = self._write, enableConversion=self.parameter.enableConversion )
       self.databaseDialog.setWindowTitle( _t_( self.parameter.type.name ) )
       self.connect( self.databaseDialog, SIGNAL( 'accepted()' ), self.databaseAccepted )
     else:
@@ -296,7 +293,7 @@ class DiskItemEditor( QWidget, DataEditor ):
         self.databaseDialog.resetSelectedAttributes( self.diskItem )
         #self.databaseDialog.rescan(selectedType=self.diskItem.type, selectedFormat=self.diskItem.format, selectedAttributes=self.diskItem.hierarchyAttributes())
       else:
-        self.databaseDialog.resetSelectedAttributes( self._selectedAttributes )
+        self.databaseDialog.resetSelectedAttributes( self.parameter._selectedAttributes )
        #self.databaseDialog.rescan( selectedAttributes=self._selectedAttributes)
     self.databaseDialog.show()
 
@@ -347,10 +344,6 @@ class DiskItemEditor( QWidget, DataEditor ):
       parent._currentDirectory = unicode( self.browseDialog.directory().path() )
     self.setValue( value )
     
-  def valueLinked( self, parameterized, name, value ):
-    if isinstance( value, DiskItem ):
-      self._selectedAttributes = value.hierarchyAttributes()
-
   def releaseCallbacks( self ):
     self._view = None
     self._edit = None

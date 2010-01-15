@@ -56,7 +56,9 @@ class ReadDiskItem( Parameter ):
     self._write = False
     #self._modified = 0
     self.ignoreAttributes = ignoreAttributes;
-  
+    self._selectedAttributes = {}
+    self.valueLinkedNotifier.add( self.valueLinked )
+
   
   def _getDatabase( self ):
     return neuroHierarchy.databases
@@ -111,7 +113,19 @@ class ReadDiskItem( Parameter ):
     #self._formats = getFormats( formats )
   #format = property( _getFormats, _setFormats )
   
-  
+  def valueLinked( self, parameterized, name, value ):
+    """This method is a callback called when the valueLinkedNotifier is activated.
+    This notifier is shared between this parameter and the initial parameter in the static signature of the process. 
+    So when this function is called self is the initial parameter in the static signature. 
+    That why self is not used in this function. 
+    """
+    if isinstance( value, DiskItem ):
+      parameterized.signature[name]._selectedAttributes = value.hierarchyAttributes()
+    elif isinstance( value, dict ):
+      parameterized.signature[name]._selectedAttributes = value
+    else:
+      parameterized.signature[name]._selectedAttributes = {}
+
   def checkValue( self, name, value ):
     Parameter.checkValue( self, name, value )
     if value is not None:

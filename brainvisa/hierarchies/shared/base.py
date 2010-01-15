@@ -45,13 +45,7 @@ hierarchy = (
         '*', SetType( "Label Translation" ),
       ),
     ),
-    'transformation', SetContent(
-      'talairach_TO_spm_template', SetType( 'Transformation matrix' ),
-      'talairach_TO_spm_template_novoxels', SetType( 'Transformation matrix' ),
-      'spm_template_TO_spm_template_novoxels',
-            SetType( 'Transformation matrix' ),
-    ),
-    'standardmeshes', SetWeakAttr( 'category', 'standardmeshes' ), 
+    'standardmeshes', SetWeakAttr( 'category', 'standardmeshes' ),
     SetContent( 
         "*", SetType( "Mesh" ), 
     ), 
