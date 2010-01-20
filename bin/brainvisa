@@ -86,8 +86,7 @@ if ( type stty > /dev/null 2>&1 ); then
   # the process is stopped
   pgid=`ps -p $$ -o pgid=`
   tpgid=`ps -p $$ -o tpgid=`
-echo $pgid $tpgid
-  if [ "$pgid" == "$tpgid" ]; then
+  if [ "$pgid" = "$tpgid" ]; then
     # if stty command can be called then reset terminal
     stty -a > /dev/null 2>&1 && stty sane
   fi

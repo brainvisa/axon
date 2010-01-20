@@ -31,7 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-import distutils, os, sys
+import distutils, os, sys, re
 import types
 from backwardCompatibleQt import *
 from PyQt4 import uic
@@ -42,6 +42,7 @@ import neuroLogGUI
 import neuroData
 from brainvisa.wip import newProcess
 from brainvisa.history import ProcessExecutionEvent
+from neuroProcesses import procdocToXHTML, writeProcdoc, generateHTMLProcessesDocumentation
 
 import weakref
 from soma.minf.xhtml import XHTML
@@ -1760,11 +1761,11 @@ class ProcessEdit( QDialog ):
 
   def saveLanguage( self ):
     d = {}
-    d[ 'short' ] = self.escapeXMLEntities( unicode( self.mleShort.text() ) )
-    d[ 'long' ] = self.escapeXMLEntities( unicode( self.mleLong.text() ) )
+    d[ 'short' ] = self.escapeXMLEntities( unicode( self.mleShort.toPlainText() ) )
+    d[ 'long' ] = self.escapeXMLEntities( unicode( self.mleLong.toPlainText() ) )
     d[ 'parameters' ] = p = {}
     for i,j in self.mleParameters.items():
-      p[ unicode( self.cmbParameter.text( i ) ) ] = self.escapeXMLEntities( unicode( j.text() ) )
+      p[ unicode( self.cmbParameter.itemText( i ) ) ] = self.escapeXMLEntities( unicode( j.toPlainText() ) )
     self.documentation[ self.language ] = d
     htmlPath = unicode( self.leHTMLPath.text() )
     if htmlPath:
