@@ -834,7 +834,7 @@ class SQLDatabase( Database ):
   def scanDatabaseDirectories( self, directoriesIterator=None, includeUnknowns=False, directoriesToScan=None, recursion=True, debugHTML=None ):
     if debugHTML:
       print >> debugHTML, '<html><body><h1>Scan log for database <tt>' + self.name + '</tt></h1>\n<h2>Directory</h2><blockquote>'
-      print >> debugHTML, '<br>\n'.join( self.directory ), '</blockquote>'
+      print >> debugHTML, self.directory, '</blockquote>'
     scanner = [i for i in self.fso.content if isinstance(i,SetContent)][0].scanner
     if directoriesIterator is None:
       stack = [ ( DirectoryIterator(self.directory), scanner, { }, 0 ) ]
