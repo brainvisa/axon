@@ -371,7 +371,7 @@ class Parameterized( object ):
         if debug: print >> debug, '  call', function, '(', self, ',', self, ')'
         function( self, self )
       else:
-        if debug: print >> debug, '  link to parameter', attribute, 'of', parameterized
+        if debug: print >> debug, ' ', name, 'is linked to parameter', attribute, 'of', parameterized
         linkParamType = parameterized.signature[ attribute ]
         if force or parameterized.parameterLinkable( attribute, debug=debug ):
           linkParamDebug = getattr( linkParamType, '_debug', None )
@@ -383,20 +383,21 @@ class Parameterized( object ):
             if debug: print >> debug, '  ' + str(parameterized) + '.setValue(', repr(attribute), ',', newValue,')'
             if linkParamDebug is not None:
               print >> linkParamDebug, '  ==> ' + str(parameterized) + '.setValue(', repr(attribute), ',', newValue,')'
+            valueSet = newValue
             parameterized.setValue( attribute, newValue )
           else:
             if debug: print >> debug, '  call', function, '(', self, ',', self, ')'
             if linkParamDebug is not None:
               print >> linkParamDebug, '  ==> call', function, '(', self, ',', self, ')'
             v = function( self, self )
-            newValue=v
+            valueSet=v
             if debug: print >> debug, '  ' + str(parameterized) + '.setValue(', repr(attribute), ',', v,')'
             if linkParamDebug is not None:
               print >> linkParamDebug, '      ' + str(parameterized) + '.setValue(', repr(attribute), ',', v,')'
             parameterized.setValue( attribute, v )
           # activate the notifier with the parameter that receive a linked value and with the new value after evaluation of a link function.
           parameterized.signature[ attribute ].valueLinkedNotifier(
-            parameterized, attribute, newValue )
+            parameterized, attribute, valueSet )
 
   def isDefault( self, key ):
     return self._isDefault.get( key, True )
