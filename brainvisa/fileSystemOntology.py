@@ -641,7 +641,7 @@ class FileSystemOntology( object ):
       rules = stack.pop( 0 )
       rule = rules[ -1 ]
       if rule.type is not None:
-        ruleInExtenso = ScannerRule( neuroDiskItems.DictPattern( os.path.join( *[r.pattern.pattern for r in rules] ) ) )
+        ruleInExtenso = ScannerRule( neuroDiskItems.DictPattern( '/'.join( (r.pattern.pattern for r in rules) ) ) )
         ruleInExtenso.type = rule.type
         ruleInExtenso.formats = rule.formats
         ruleInExtenso.priority = rule.priority
@@ -748,7 +748,7 @@ class FileSystemOntology( object ):
           break
       parentScanners = [ scanner ]
       if path:
-        path=os.path.normpath(path)
+        if path[ -1 ] == '/': path = path[ :-1 ]
         currentPattern = [] #'!'
         for pattern in path.split( '/' ):
           currentPattern.append( pattern ) # '!'
