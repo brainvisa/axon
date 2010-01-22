@@ -827,7 +827,7 @@ class SQLDatabase( Database ):
         #print '!changeDiskItemFormat!  ', format, 'matching.'
         result = diskItem.clone()
         result.format = getFormat( str(format.name) )
-        result._files = [ noExt + '.' + ext for ext in newFormat.extensions() ]
+        result._files = [ os.path.normpath( noExt + '.' + ext ) for ext in newFormat.extensions() ]
     return result
   
   
@@ -891,7 +891,7 @@ class SQLDatabase( Database ):
       if includeUnknowns and allowYield:
         for it in unknownFormat:
           diskItem = File( it.fileName(), None )
-          diskItem._files = [ it.fullPath() ]
+          diskItem._files = [ os.path.normpath( it.fullPath() ) ]
           diskItem._globalAttributes[ '_database' ] = self.name
           diskItem._identified = False
           yield diskItem
@@ -921,7 +921,7 @@ class SQLDatabase( Database ):
                 diskItem = Directory( nameWithoutExtension, None )
                 diskItem.type = rule.type
                 diskItem.format = getFormat( 'Directory' )
-                diskItem._files = files
+                diskItem._files = [ os.path.normpath( f ) for f in files ]
                 diskItem._globalAttributes[ '_database' ] = self.name
                 diskItem._globalAttributes[ '_ontology' ] = self.fso.name
                 diskItem._globalAttributes.update( a )
@@ -941,14 +941,14 @@ class SQLDatabase( Database ):
               stack.append( ( it, None, attributes, priorityOffset ) )
               if allowYield:
                 diskItem = Directory( nameWithoutExtension, None )
-                diskItem._files = files
+                diskItem._files = [ os.path.normpath( f ) for f in files ]
                 diskItem._globalAttributes[ '_database' ] = self.name
                 diskItem._identified = False
                 yield diskItem
         else:
           diskItem = File( nameWithoutExtension, None )
           diskItem.format = getFormat( str( format ) )
-          diskItem._files = [ os.path.join( itDirectory.fullPath(), i ) for i in files ]
+          diskItem._files = [ os.path.normpath( os.path.join( itDirectory.fullPath(), i ) ) for i in files ]
           diskItem._globalAttributes[ '_database' ] = self.name
           for rule in nonDirectoryRules:
             if rule.formats and format not in rule.formatNamesInSet:
@@ -972,7 +972,7 @@ class SQLDatabase( Database ):
                   match[ 'name_serie' ] = '#'
                   groupDiskItem.format = getFormat( str( 'Series of ' + format ) )
                   n = DictPattern.unmatch( rule.pattern, match, attributes )
-                  groupDiskItem._files = [ os.path.join( itDirectory.fullPath(), n + '.' + i ) for i in self.formats.getFormat( format ).extensions() ]
+                  groupDiskItem._files = [ os.path.normpath( os.path.join( itDirectory.fullPath(), n + '.' + i ) ) for i in self.formats.getFormat( format ).extensions() ]
                   groupDiskItem._setLocal( 'name_serie', set( ( name_serie, ) ) )
                   nameSeriesGroupedItems[ key ] = groupDiskItem
                 else:
@@ -1172,15 +1172,15 @@ class SQLDatabase( Database ):
                   databaseDirectory = self.directory
                 for format in (getFormat( f ) for f in formats): # search format in all format including Series of ...
                   if format.name == 'Directory':
-                    files = [ os.path.join( databaseDirectory, name ) ]
+                    files = [ os.path.normpath( os.path.join( databaseDirectory, name ) ) ]
                   elif isinstance( format, FormatSeries ): # a Series of ... has in _files the pattern of each data with # instead of the number
                     cg2 = CombineGet( {'name_serie' : "#"}, required, selection, defaultAttributesValues ) 
                     name2 = rule.pattern.unmatch( cg2, cg2 )
                     format2=self.formats.getFormat(format.baseFormat.name) # get the base file format
-                    files = [ os.path.join( databaseDirectory, name2 + '.' + e ) for e in format2.extensions() ]
+                    files = [ os.path.normpath( os.path.join( databaseDirectory, name2 + '.' + e ) ) for e in format2.extensions() ]
                   else:
                     format=self.formats.getFormat(format.name) # get corresponding file format
-                    files = [ os.path.join( databaseDirectory, name + '.' + e ) for e in format.extensions() ]
+                    files = [ os.path.normpath( os.path.join( databaseDirectory, name + '.' + e ) ) for e in format.extensions() ]
                   diskItem = File( os.path.join( databaseDirectory, name ), None )
                   diskItem._files = files
                   diskItem.type = getDiskItemType( type )
