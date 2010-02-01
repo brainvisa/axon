@@ -113,6 +113,7 @@ class DiskItem:
       '_minfAttributes': self._minfAttributes,
       '_otherAttributes': self._otherAttributes,
       '_uuid': self._uuid,
+      '_write': self._write,
       '_identified': self._identified,
     }
     if self.type:
@@ -150,6 +151,7 @@ class DiskItem:
     if priority is not None:
       self._priority = priority
     self._changeUuid( state.get( '_uuid' ) )
+    self._write = state[ '_write' ]
     self._identified = state[ '_identified' ]
     if not hasattr( self, '_lock' ):
       self._lock = RLock()

@@ -291,6 +291,27 @@ if neuroConfig.gui:
     else:
       neuroConfig.qtApplication.exec_loop()
 
+if neuroConfig.databaseServer:
+  # Start a Pyro server to serve databases
+  import Pyro.core
+  from brainvisa.data.temporary import manager as temporaryManager
+  from brainvisa.data.sqlFSODatabase import NoGeneratorSQLDatabase
+  Pyro.core.initServer()
+  daemon=Pyro.core.Daemon()
+  temporaries = []
+  for database in neuroHierarchy.databases.iterDatabases():
+    remoteAccessURI = os.path.join( database.directory, 'remoteAccessURI' )
+    if os.path.exists( remoteAccessURI ):
+      print 'WARNING: database', repr( database.directory ), 'has the following remote access:', open( remoteAccessURI ).read()
+    else:
+      obj = Pyro.core.ObjBase()
+      obj.delegateTo( NoGeneratorSQLDatabase( database ) )
+      uri = daemon.connect( obj )
+      temporaries.append( temporaryManager.createSelfDestroyed( remoteAccessURI ) )
+      open( remoteAccessURI, 'w' ).write( str( uri ) )
+      print 'Serving database', repr( database.directory ), 'with URI', uri
+  daemon.requestLoop()
+
 if neuroConfig.shell:
   try:
     import IPython

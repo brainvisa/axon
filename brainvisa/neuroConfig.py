@@ -397,7 +397,7 @@ try:
                               [ "updateCache", "clearCache",
                                 "updateDocumentation", "noMainWindow",
                                 "logFile=", "cleanLog", "profile=", "shell", "validation",
-                                "debugHierarchy=", "debugLinks=", "oldDatabases", 
+                                "debugHierarchy=", "debugLinks=", "databaseServer", 
                                 "help", "setup", "noToolBox" ] )
 except getopt.GetoptError, msg:
   # print help information and exit:
@@ -409,6 +409,7 @@ openMainWindow = 1
 showHelp = 0
 newDatabases = True
 fastStart = False
+databaseServer = False
 global setup
 setup=False
 noToolBox = False
@@ -454,8 +455,9 @@ for o, a in opts:
     debugParametersLinks = openDebugFile( a )
   elif o in ( "--validation", ):
     validationEnabled = True
-  elif o in ( "--oldDatabases", ):
-    newDatabases = False
+  elif o in ( "--databaseServer", ):
+    databaseServer = True
+    gui = False
   elif o in ( "-h", "--help" ):
     showHelp = 1
   elif o in ( "--setup" ):
@@ -479,7 +481,7 @@ BrainVISA options:
   -c <command>            Execute <command> which must be a valid Python command.
   -s <process_id>         Open a process window. Equivalent to -c 'showProcess("<process_id>")'.
   -u <profile>            Select a user profile.
-  --oldDatabases          Use old obsolete implementation of database system.
+  --databaseServer        Create a server for configured databases.
   --updateDocumentation   Generate HTML documentation pages.
   --noMainWindow          Do not open the process selection window.
   --noToolBox             Do not load any process nor toolbox.
