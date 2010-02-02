@@ -112,13 +112,19 @@ def tuplesWithMissingValues( tpl, missingValue ):
   for t in _indicesForTuplesWithMissingValues( len( tpl ) ):
     yield tupleWithMissingValues( t, tpl, missingValue )
     
+
+#------------------------------------------------------------------------------
+class DatabaseError( Exception ):
+  pass
+  
+
+#------------------------------------------------------------------------------
+class NotInDatabaseError( DatabaseError ):
+  pass
+
+
 #------------------------------------------------------------------------------
 class Database( object ):
-  class Error( Exception ):
-    pass
-  
-  class NotInDatabaseError( Error ):
-    pass
   
   
   @staticmethod
@@ -288,7 +294,7 @@ class SQLDatabase( Database ):
             defaultAttributesValues[ n ] = v
           else:
             if v != vv:
-              raise Database.Error( _( 'Two different values (%(v1)s and %(v2)s) found for default attribute "%(key)s" of type "%(type)s"' ) %
+              raise DatabaseError( _( 'Two different values (%(v1)s and %(v2)s) found for default attribute "%(key)s" of type "%(type)s"' ) %
                                 { 'v1': repr( v ), 'v2': repr( vv ), 'key': n, 'type': type.name } )
           defaultAttributesValues[ n ] = v
         rulesByLOPA.setdefault( tuple( rule.pattern.namedRegex() ), [] ).append( rule )
@@ -604,7 +610,7 @@ class SQLDatabase( Database ):
       for diskItem in diskItems:
         #print '!insertDiskItems!', diskItem
         if diskItem.type is None:
-          raise Database.Error( _('Cannot insert an item wthout type in a database: %s') % ( unicode( diskItem ), ) )
+          raise DatabaseError( _('Cannot insert an item wthout type in a database: %s') % ( unicode( diskItem ), ) )
         try:
           uuid = str( diskItem.uuid() )
         except RuntimeError:
@@ -650,9 +656,9 @@ class SQLDatabase( Database ):
                 delete = True
                 cursor.execute( 'UPDATE _DISKITEMS_ SET _diskItem=? WHERE _uuid=?', ( minf, uuid ) )
               else:
-                raise Database.Error( 'Cannot insert "%s" because its uuid is in conflict with the uuid of another file in the database' % diskItem.fullPath() )
+                raise DatabaseError( 'Cannot insert "%s" because its uuid is in conflict with the uuid of another file in the database' % diskItem.fullPath() )
             else:
-              raise Database.Error( 'Cannot insert "%s" because it is already in the database' % diskItem.fullPath() )
+              raise DatabaseError( 'Cannot insert "%s" because it is already in the database' % diskItem.fullPath() )
           else:
             # diskItem file name is not in the database ==> DiskItem's uuid is changed
             # commit changes
@@ -675,7 +681,7 @@ class SQLDatabase( Database ):
         try:
           cursor.executemany( 'INSERT INTO _FILENAMES_ (filename, _uuid) VALUES (? ,?)', (( relative_path(i, self.directory), uuid ) for i in diskItem.fullPaths()) )
         except sqlite3.IntegrityError, e:
-          raise Database.Error( unicode(e)+': file names = ' + repr(diskItem.fullPaths()) )
+          raise DatabaseError( unicode(e)+': file names = ' + repr(diskItem.fullPaths()) )
         
         values = [ uuid, format, os.path.basename( diskItem.fullPath() ) ]					
         if diskItem.type.name in self._tableFieldsAndInsertByTypeName:
@@ -694,7 +700,7 @@ class SQLDatabase( Database ):
           cursor.execute( sql, values )
     except sqlite3.OperationalError, e:
       self._closeDatabaseCursor( cursor, rollback=True )
-      raise Database.Error( "Cannot insert items in database "+self.name+". You should update this database." )
+      raise DatabaseError( "Cannot insert items in database "+self.name+". You should update this database." )
     except:
       self._closeDatabaseCursor( cursor, rollback=True )
       raise
@@ -715,7 +721,7 @@ class SQLDatabase( Database ):
           diskItem.eraseFiles()
     except sqlite3.OperationalError, e:
       self._closeDatabaseCursor( cursor, rollback=True )
-      raise Database.Error( "Cannot remove items from database "+self.name+". You should update this database." )
+      raise DatabaseError( "Cannot remove items from database "+self.name+". You should update this database." )
     except:
       self._closeDatabaseCursor( cursor, rollback=True )
       raise
@@ -760,7 +766,7 @@ class SQLDatabase( Database ):
     if minf is not None:
       return self._diskItemFromMinf( minf[ 0 ] )
     if defaultValue is Undefined:
-      raise Database.Error( _( 'Database "%(database)s" contains no DiskItem with uuid %(uuid)s' ) % { 'database': self.name,  'uuid': str(uuid) } )
+      raise DatabaseError( _( 'Database "%(database)s" contains no DiskItem with uuid %(uuid)s' ) % { 'database': self.name,  'uuid': str(uuid) } )
     return defaultValue
   
   
@@ -778,7 +784,7 @@ class SQLDatabase( Database ):
       if minf is not None:
         return self._diskItemFromMinf( minf[ 0 ] )
     if defaultValue is Undefined:
-      raise Database.Error( _( 'Database "%(database)s" does not reference file "%(filename)s"' ) % { 'database': self.name,  'filename': fileName } )
+      raise DatabaseError( _( 'Database "%(database)s" does not reference file "%(filename)s"' ) % { 'database': self.name,  'filename': fileName } )
     return defaultValue
 
 
@@ -796,7 +802,7 @@ class SQLDatabase( Database ):
         if lastItem is not None and fileName in lastItem.fullPaths():
           return lastItem
     if defaultValue is Undefined:
-      raise Database.Error( _( 'Database "%(database)s" cannot reference file "%(filename)s"' ) % { 'database': self.name,  'filename': fileName } )
+      raise DatabaseError( _( 'Database "%(database)s" cannot reference file "%(filename)s"' ) % { 'database': self.name,  'filename': fileName } )
     return defaultValue
 
   def createDiskItemFromFormatExtension( self, fileName, defaultValue=Undefined ):
@@ -813,7 +819,7 @@ class SQLDatabase( Database ):
       diskItem._files = files
       return diskItem
     if defaultValue is Undefined:
-      raise Database.Error( _( 'Database "%(database)s" has no format to recognise "%(filename)s"' ) % { 'database': self.name,  'filename': fileName } )
+      raise DatabaseError( _( 'Database "%(database)s" has no format to recognise "%(filename)s"' ) % { 'database': self.name,  'filename': fileName } )
     return None
     
   def changeDiskItemFormat( self, diskItem, newFormat ):
@@ -1354,7 +1360,7 @@ class SQLDatabases( Database ):
         if len( self._databases ) == 1:
           database = self._databases.values()[0]
         else:
-          raise Database.NotInDatabaseError( _( 'Cannot find out in which database "%s" should be inserted' ) % ( diskItem.fullPath(), ) )
+          raise NotInDatabaseError( _( 'Cannot find out in which database "%s" should be inserted' ) % ( diskItem.fullPath(), ) )
       else:
         database = self._databases[ baseName ]
       database.insertDiskItems( (diskItem,), update=update )
@@ -1367,7 +1373,7 @@ class SQLDatabases( Database ):
         if len( self._databases ) == 1:
           database = self._databases.values()[0]
         else:
-          raise Database.NotInDatabaseError( _( 'Cannot find out from which database "%s" should be removed' ) % ( diskItem.fullPath(), ) )
+          raise NotInDatabaseError( _( 'Cannot find out from which database "%s" should be removed' ) % ( diskItem.fullPath(), ) )
       else:
         database = self._databases[ baseName ]
       database.removeDiskItems( (diskItem,), eraseFiles=eraseFiles )
@@ -1379,7 +1385,7 @@ class SQLDatabases( Database ):
       if item is not None:
         return item
     if defaultValue is Undefined:
-      raise Database.Error( _( 'No database contain a DiskItem with uuid %(uuid)s' ) % { 'uuid': str(uuid) } )
+      raise DatabaseError( _( 'No database contain a DiskItem with uuid %(uuid)s' ) % { 'uuid': str(uuid) } )
     return defaultValue
   
   
@@ -1389,7 +1395,7 @@ class SQLDatabases( Database ):
       if item is not None:
         return item
     if defaultValue is Undefined:
-      raise Database.Error( _( 'No database reference file "%(filename)s"' ) % { 'filename': fileName } )
+      raise DatabaseError( _( 'No database reference file "%(filename)s"' ) % { 'filename': fileName } )
     return defaultValue
   
   
@@ -1427,7 +1433,7 @@ class SQLDatabases( Database ):
       if item is not None:
         return item
     if defaultValue is Undefined:
-      raise Database.Error( _( 'No database can reference file "%(filename)s"' ) % { 'filename': fileName } )
+      raise DatabaseError( _( 'No database can reference file "%(filename)s"' ) % { 'filename': fileName } )
     return defaultValue
   
   
@@ -1438,7 +1444,7 @@ class SQLDatabases( Database ):
       if item is not None:
         return item
     if defaultValue is Undefined:
-      raise Database.Error( _( 'No database has a format to recognise "%(filename)s"' ) % { 'filename': fileName } )
+      raise DatabaseError( _( 'No database has a format to recognise "%(filename)s"' ) % { 'filename': fileName } )
     return defaultValue
   
   

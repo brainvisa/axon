@@ -66,11 +66,12 @@ if neuroConfig.newDatabases:
           if os.path.exists( remoteAccessURI ):
             print '!remote!'
             import Pyro.core
+            from soma.pyro import ThreadSafeProxy
             print '!2!'
             uri = Pyro.core.PyroURI( open( remoteAccessURI ).read() )
             print '!3!'
             print 'Database', dbSettings.directory, 'is remotely accessed from', str( uri )
-            base = uri.getAttrProxy()
+            base = ThreadSafeProxy( uri.getAttrProxy() )
             newDatabases.append( base )
           else:
             print '!local!'
