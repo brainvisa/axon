@@ -56,7 +56,7 @@ def isRadio( hdr ):
     radio = hdr.get( 'spm_radio_convention' )
   else:
     radio = ( s2m[0] > 0 )
-    
+
 def initSubject( self, inp ):
   value=self.input
   if self.input is not None and isinstance(self.input, DiskItem):
@@ -143,11 +143,17 @@ def execution( self, context ):
         input1.readAndUpdateMinf()
         input1.setMinf( 'spm_radio_convention', iradio )
     input = input1
+    if dtype in ( 'FLOAT', 'DOUBLE' ):
+      # in float/double images, NaN values may have been introduced
+      # (typically by SPM after a normalization)
+      input2 = context.temporary( 'NIFTI-1 image', 'Raw T1 MRI' )
+      context.system( 'AimsRemoveNaN', '-i', input1, '-o', input2 )
+      input1 = input2
     if converter._id != 'AimsConverter' or dtype == 'S16':
       if dtype == 'S16':
         input = self.output
       else:
-        input = context.temporary( 'GIS image', 'Raw T1 MRI' )
+        input = context.temporary( 'NIFTI-1 image', 'Raw T1 MRI' )
       context.runProcess( converter, input1, input )
     if dtype != 'S16':
       # here we must convert to S16 data type
