@@ -293,9 +293,14 @@ if neuroConfig.gui:
 
 if neuroConfig.databaseServer:
   # Start a Pyro server to serve databases
-  import Pyro.core
+  import Pyro, Pyro.core
   from brainvisa.data.temporary import manager as temporaryManager
   from brainvisa.data.sqlFSODatabase import NoGeneratorSQLDatabase
+  
+  Pyro.config.PYRO_TRACELEVEL = 3
+  Pyro.config.PYRO_USER_TRACELEVEL = 3
+  Pyro.config.PYRO_LOGFILE='/dev/stderr'
+  Pyro.config.PYRO_STDLOGGING = 1
   Pyro.core.initServer()
   daemon=Pyro.core.Daemon()
   temporaries = []

@@ -62,19 +62,18 @@ if neuroConfig.newDatabases:
         else:
           databases.remove( dbSettings.directory )
           remoteAccessURI = os.path.join( dbSettings.directory, 'remoteAccessURI' )
-          print '!!', repr( remoteAccessURI )
           if os.path.exists( remoteAccessURI ):
-            print '!remote!'
-            import Pyro.core
+            import Pyro, Pyro.core
+            Pyro.config.PYRO_TRACELEVEL = 3
+            Pyro.config.PYRO_USER_TRACELEVEL = 3
+            Pyro.config.PYRO_LOGFILE='/dev/stderr'
+            Pyro.config.PYRO_STDLOGGING = 1
             from soma.pyro import ThreadSafeProxy
-            print '!2!'
             uri = Pyro.core.PyroURI( open( remoteAccessURI ).read() )
-            print '!3!'
             print 'Database', dbSettings.directory, 'is remotely accessed from', str( uri )
             base = ThreadSafeProxy( uri.getAttrProxy() )
             newDatabases.append( base )
           else:
-            print '!local!'
             otherSqliteFiles=[]
             if dbSettings.expert_settings.sqliteFileName != ":memory:":
               if dbSettings.expert_settings.sqliteFileName:

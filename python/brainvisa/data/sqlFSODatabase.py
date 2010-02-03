@@ -251,6 +251,7 @@ class SQLDatabase( Database ):
         fso='brainvisa-3.0'
     self.fso = FileSystemOntology.get( fso )
     self.otherSqliteFiles=otherSqliteFiles
+    self._mustBeUpdated = False
     
     # Build list of all formats used in BrainVISA
     self.formats = FileFormats( self.fso.name )
