@@ -59,7 +59,7 @@ from brainvisa import matlab
 from brainvisa.validation import ValidationError
 from brainvisa.debug import debugHere
 if neuroConfig.newDatabases:
-  from brainvisa.data.sqlFSODatabase import Database
+  from brainvisa.data.sqlFSODatabase import Database, NotInDatabaseError
 import neuroPopen2
 
 try:
@@ -1871,7 +1871,7 @@ class ExecutionContext:
                 # do not try to insert in the database an item that doesn't have any reference to a database
                 if item.get("_database", None): 
                   neuroHierarchy.databases.insertDiskItem( item, update=True )
-              except Database.NotInDatabaseError:
+              except NotInDatabaseError:
                 pass
               except:
                 showException()

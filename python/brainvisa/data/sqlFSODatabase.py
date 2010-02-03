@@ -688,7 +688,7 @@ class SQLDatabase( Database ):
         if diskItem.type.name in self._tableFieldsAndInsertByTypeName:
           tableName, tableFields, tableAttributes, sql = self._tableFieldsAndInsertByTypeName[ diskItem.type.name ]
           for i in tableAttributes[3:]:
-            v = diskItem.get( i )
+            v = diskItem.getHierarchy( i )
             if v is None:
               values.append( None )
             elif isinstance( v, basestring ):
@@ -701,7 +701,7 @@ class SQLDatabase( Database ):
           cursor.execute( sql, values )
     except sqlite3.OperationalError, e:
       self._closeDatabaseCursor( cursor, rollback=True )
-      raise DatabaseError( "Cannot insert items in database "+self.name+". You should update this database." )
+      raise DatabaseError( "Cannot insert items in database " + self.name + ". You should update this database." )
     except:
       self._closeDatabaseCursor( cursor, rollback=True )
       raise
@@ -1356,7 +1356,7 @@ class SQLDatabases( Database ):
   
   def insertDiskItems( self, diskItems, update=False ):
     for diskItem in diskItems:
-      baseName = diskItem.get( '_database' )
+      baseName = diskItem.getHierarchy( '_database' )
       if baseName is None:
         if len( self._databases ) == 1:
           database = self._databases.values()[0]
@@ -1369,7 +1369,7 @@ class SQLDatabases( Database ):
   
   def removeDiskItems( self, diskItems, eraseFiles=False ):
     for diskItem in diskItems:
-      baseName = diskItem.get( '_database' )
+      baseName = diskItem.getHierarchy( '_database' )
       if baseName is None:
         if len( self._databases ) == 1:
           database = self._databases.values()[0]

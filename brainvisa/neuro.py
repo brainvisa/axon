@@ -296,7 +296,7 @@ if neuroConfig.databaseServer:
   import Pyro, Pyro.core
   from brainvisa.data.temporary import manager as temporaryManager
   from brainvisa.data.sqlFSODatabase import NoGeneratorSQLDatabase
-  
+  from soma.qtgui.api import QtThreadCall
   Pyro.config.PYRO_TRACELEVEL = 3
   Pyro.config.PYRO_USER_TRACELEVEL = 3
   Pyro.config.PYRO_LOGFILE='/dev/stderr'
@@ -315,8 +315,10 @@ if neuroConfig.databaseServer:
       temporaries.append( temporaryManager.createSelfDestroyed( remoteAccessURI ) )
       open( remoteAccessURI, 'w' ).write( str( uri ) )
       print 'Serving database', repr( database.directory ), 'with URI', uri
-  daemon.requestLoop()
-
+  tc = QtThreadCall()
+  while True:
+    daemon.handleRequests( 1.0 )
+    tc.doAction()
 if neuroConfig.shell:
   try:
     import IPython
