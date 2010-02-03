@@ -93,17 +93,31 @@ if neuroConfig.newDatabases:
                   if os.path.exists(other):
                     otherSqliteFiles.append(path+"-"+version+ext)
             else:
-              sqlite=dbSettings.expert_settings.sqliteFileName
-  
-            base = SQLDatabase( sqlite, dbSettings.directory, fso=dbSettings.expert_settings.ontology, context=defaultContext(), otherSqliteFiles=otherSqliteFiles )
-  
-            newDatabases.append( base )
-              
-            # Usually users do not have to modify a builtin database. Therefore no warning is shown for these databases.
-            if (not os.access(dbSettings.directory, os.W_OK) or ( os.path.exists(sqlite) and not os.access(sqlite, os.W_OK)) ):
-              showWarning(_t_("The database "+base.name+" is read only, you will not be able to add new items in this database."))
-            if base.fso.name == "brainvisa-3.0":
-              showWarning(_t_("The database "+base.name+" uses brainvisa-3.0 ontology which is deprecated. You should convert this database to the new ontology using the process Data management -> Convert Old database."))
+              path=os.path.join( dbSettings.directory, 'database' )
+              ext='.sqlite'
+    
+            sqlite=path+"-"+databaseVersion+ext
+            # other versions of sqlite file
+            other=path+ext
+            if os.path.exists(other):
+              otherSqliteFiles.append(other)
+            for version in databaseVersions.keys():
+              if version != databaseVersion:
+                other=path+"-"+version+ext
+                if os.path.exists(other):
+                  otherSqliteFiles.append(path+"-"+version+ext)
+          else:
+            sqlite=dbSettings.expert_settings.sqliteFileName
+
+          base = SQLDatabase( sqlite, dbSettings.directory, fso=dbSettings.expert_settings.ontology, context=defaultContext(), otherSqliteFiles=otherSqliteFiles )
+
+          newDatabases.append( base )
+            
+          # Usually users do not have to modify a builtin database. Therefore no warning is shown for these databases.
+          if ( (not getattr(dbSettings, "builtin", False)) and (not os.access(dbSettings.directory, os.W_OK) or ( os.path.exists(sqlite) and not os.access(sqlite, os.W_OK)) ) ):
+            showWarning(_t_("The database "+base.name+" is read only, you will not be able to add new items in this database."))
+          if base.fso.name == "brainvisa-3.0":
+            showWarning(_t_("The database "+base.name+" uses brainvisa-3.0 ontology which is deprecated. You should convert this database to the new ontology using the process Data management -> Convert Old database."))
       except:
         showException()    
     # update SQLDatabases object

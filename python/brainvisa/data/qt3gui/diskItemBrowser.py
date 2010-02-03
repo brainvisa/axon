@@ -305,9 +305,7 @@ class DiskItemBrowser( QDialog ):
         cmb = self._cmbDatabase
       else:
         return
-    c = cmb.currentItem()
     text = unicode( cmb.currentText() )
-    if c > 0 and  text == unicode( cmb.text( c ) ): return
     l = list( string_to_list( text ) )
     if not l:
       v = ''
