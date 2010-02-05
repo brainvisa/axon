@@ -309,12 +309,13 @@ if neuroConfig.databaseServer:
     if os.path.exists( remoteAccessURI ):
       print 'WARNING: database', repr( database.directory ), 'has the following remote access:', open( remoteAccessURI ).read()
     else:
-      obj = Pyro.core.ObjBase()
-      obj.delegateTo( NoGeneratorSQLDatabase( database ) )
-      uri = daemon.connect( obj )
-      temporaries.append( temporaryManager.createSelfDestroyed( remoteAccessURI ) )
-      open( remoteAccessURI, 'w' ).write( str( uri ) )
-      print 'Serving database', repr( database.directory ), 'with URI', uri
+      if database.sqlDatabaseFile != ':memory:':
+        obj = Pyro.core.ObjBase()
+        obj.delegateTo( NoGeneratorSQLDatabase( database ) )
+        uri = daemon.connect( obj )
+        temporaries.append( temporaryManager.createSelfDestroyed( remoteAccessURI ) )
+        open( remoteAccessURI, 'w' ).write( str( uri ) )
+        print 'Serving database', repr( database.directory ), 'with URI', uri
   tc = QtThreadCall()
   while True:
     daemon.handleRequests( 1.0 )
