@@ -100,7 +100,7 @@ if neuroConfig.newDatabases:
             newDatabases.append( base )
               
             # Usually users do not have to modify a builtin database. Therefore no warning is shown for these databases.
-            if (not os.access(dbSettings.directory, os.W_OK) or ( os.path.exists(sqlite) and not os.access(sqlite, os.W_OK)) ):
+            if ( (not getattr(dbSettings, "builtin", False)) and (not os.access(dbSettings.directory, os.W_OK) or ( os.path.exists(sqlite) and not os.access(sqlite, os.W_OK)) ) ):
               showWarning(_t_("The database "+base.name+" is read only, you will not be able to add new items in this database."))
             if base.fso.name == "brainvisa-3.0":
               showWarning(_t_("The database "+base.name+" uses brainvisa-3.0 ontology which is deprecated. You should convert this database to the new ontology using the process Data management -> Convert Old database."))
