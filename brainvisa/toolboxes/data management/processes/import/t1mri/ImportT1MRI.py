@@ -149,6 +149,7 @@ def execution( self, context ):
       input2 = context.temporary( 'NIFTI-1 image', 'Raw T1 MRI' )
       context.system( 'AimsRemoveNaN', '-i', input1, '-o', input2 )
       input1 = input2
+      input = input2
     if converter._id != 'AimsConverter' or dtype == 'S16':
       if dtype == 'S16':
         input = self.output
