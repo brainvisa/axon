@@ -56,6 +56,7 @@ def isRadio( hdr ):
     radio = hdr.get( 'spm_radio_convention' )
   else:
     radio = ( s2m[0] > 0 )
+  return radio
 
 def initSubject( self, inp ):
   value=self.input
