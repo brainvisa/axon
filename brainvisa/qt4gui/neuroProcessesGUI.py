@@ -2331,7 +2331,7 @@ class ProcessTreesWidget(QSplitter):
     Called on click on del option in contextual menu.
     Removes the selected tree from the model.
     """
-    item=self.treeIndex.selectedItem()
+    item=self.treeIndex.currentItem()
     if item:
       if item.model.modifiable:
         del self.model[item.model.id]
@@ -2341,7 +2341,7 @@ class ProcessTreesWidget(QSplitter):
     Called on click on open option in contextual menu.
     Opens selected tree in a new window.
     """
-    item=self.treeIndex.selectedItem()
+    item=self.treeIndex.currentItem()
     if item:
       self.openedTreeWidget=EditableTreeWidget(item.model)
       self.openedTreeWidget.resize(400,600)
