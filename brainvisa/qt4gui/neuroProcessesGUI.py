@@ -206,7 +206,7 @@ def addBrainVISAMenu( widget, menuBar ):
   bvMenu = menuBar.addMenu( "&BrainVISA" )
 
   bvMenu.addAction( _t_( "&Help" ), helpRequest,  Qt.CTRL + Qt.Key_H )
-  bvMenu.addAction( _t_( "&About" ), aboutRequest, Qt.CTRL + Qt.Key_A )
+  bvMenu.addAction( _t_( "About" ), aboutRequest )
   bvMenu.addSeparator()
   bvMenu.addAction( _t_( "&Preferences" ), neuroConfig.editConfiguration, Qt.CTRL + Qt.Key_P )
   bvMenu.addAction( _t_( "Show &Log" ), logRequest, Qt.CTRL + Qt.Key_L )
@@ -254,7 +254,7 @@ class HTMLBrowser( QWidget ):
     def customMenu(self):
       menu=TextBrowserWithSearch.customMenu(self)
       # accelerator key doesn't work, I don't know why...
-      menu.addAction("Open in a web browser", self.openWeb, Qt.CTRL + Qt.Key_O )
+      menu.addAction("Open in a &web browser", self.openWeb, Qt.CTRL + Qt.Key_W )
       return menu
       
     def openWeb(self):
@@ -323,7 +323,7 @@ class HTMLBrowser( QWidget ):
     self.browser.setText( text )
     
   def openWeb(self):
-    openWeb(self.browser.source())
+    self.browser.openWeb()
     
   def showCategoryDocumentation( self, category ):
     """
@@ -1849,7 +1849,7 @@ class ProcessSelectionWidget( QMainWindow ):
     uic.loadUi(p, self.searchbox)
     vb.addWidget(self.searchbox)
     self.searchboxSearchB = self.searchbox.BV_search
-    self.searchboxSearchB.setShortcut( QKeySequence.Find )
+#    self.searchboxSearchB.setShortcut( QKeySequence.Find )
     self.matchedProcs = []
     self.searchboxResetSearchB = self.searchbox.BV_resetsearch
     self.searchboxLineEdit = self.searchbox.BV_searchlineedit
@@ -1892,6 +1892,17 @@ class ProcessSelectionWidget( QMainWindow ):
     self.resize( 800, 600 )
     splitter.setSizes( [ 400, 400 ] )
 
+  def keyPressEvent(self, keyEvent):
+    if (keyEvent.matches(QKeySequence.Find) or keyEvent.matches(QKeySequence.FindNext) ): 
+      if (self.searchboxLineEdit.text() == ""):
+        self.info.browser.keyPressEvent(keyEvent)
+      else:
+        self.buttonSearch()
+    elif ( (keyEvent.key() == Qt.Key_W) and (keyEvent.modifiers() == Qt.ControlModifier)):
+      self.info.openWeb()
+    else:
+      QWidget.keyPressEvent(self, keyEvent)
+
   def buttonSearch(self):
     """
     Called when user click on search / next button. 
@@ -1913,7 +1924,7 @@ class ProcessSelectionWidget( QMainWindow ):
         item=self.matchedProcs.next() 
         self.searchboxLineEdit.setEnabled(False)
         self.searchboxSearchB.setText( 'next' )
-        self.searchboxSearchB.setShortcut( QKeySequence.FindNext )
+#        self.searchboxSearchB.setShortcut( QKeySequence.FindNext )
       except:
         self.resetSearch()
         
@@ -1923,8 +1934,9 @@ class ProcessSelectionWidget( QMainWindow ):
     """
     self.matchedProcs = None
     self.searchboxSearchB.setText('search')
-    self.searchboxSearchB.setShortcut( QKeySequence.Find )
+#    self.searchboxSearchB.setShortcut( QKeySequence.Find )
     self.searchboxLineEdit.setEnabled(True)
+    self.searchboxLineEdit.setText("")
 
   def itemSelected( self, item ):
     """
