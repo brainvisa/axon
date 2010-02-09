@@ -81,7 +81,8 @@ class CommandWithQProcess( object ):
 
   def start( self ):
     '''Starts the command. If it cannot be started, a RuntimeError is raised'''
-    self._mainThreadCalls.call( self._startProcess )
+    if (not self._mainThreadCalls.call( self._startProcess )):
+      raise RuntimeError( _t_( 'Cannot start command %s' ) % ( str( self ), ) )
 
   def wait( self ):
     '''Wait for the command to finish. Upon normal exit, the exit status of
