@@ -1622,7 +1622,10 @@ class ExecutionContext:
       self.userLevel = neuroConfig.userLevel
     else:
       self.userLevel = userLevel
-    self._processStack = []
+    #self._processStack = []
+    self._lock = threading.RLock()
+    self._processStackThread = {}
+    self._processStackHead = None
     self.manageExceptions = 1
     self._systemOutputLevel = 0
     self._systemLog = None
@@ -1633,8 +1636,48 @@ class ExecutionContext:
     self._interruptionActionsId = 0
     self._interruptionLock = threading.RLock()
     self._allowHistory = False
-  
-  
+
+  def _processStack( self ):
+    self._lock.acquire()
+    try:
+      stack = self._processStackThread[ threading.currentThread() ]
+    except:
+      stack = []
+      self._processStackThread[ threading.currentThread() ] = stack
+    self._lock.release()
+    return stack
+
+  def _popStack( self ):
+    self._lock.acquire()
+    stack = self._processStackThread[ threading.currentThread() ]
+    stackinfo = stack.pop()
+    if len( stack ) == 0:
+      del self._processStackThread[ threading.currentThread() ]
+    if stackinfo is self._processStackHead:
+      self._processStackHead = None
+    self._lock.release()
+    return stackinfo
+
+  def _pushStack( self, stackinfo ):
+    self._lock.acquire()
+    stack = self._processStack()
+    stack.append( stackinfo )
+    if self._processStackHead is None:
+      self._processStackHead = stackinfo
+    self._lock.release()
+
+  def _stackTop( self ):
+    stack = self._processStack()
+    if len( stack ) == 0:
+      return None
+    return stack[-1]
+
+  def _processStackParent( self ):
+    stack = self._processStack()
+    if len( stack ) == 0:
+      return self._processStackHead
+    return stack[-1]
+
   def _setArguments( self, _process, *args, **kwargs ):
     # Set arguments
     i = 0
@@ -1711,30 +1754,32 @@ class ExecutionContext:
     result = None
     stackTop = None
     process = getProcessInstance( process )
-    
-    if self._processStack:
+
+    stack = self._processStack()
+    stackTop = self._processStackParent()
+    if stackTop:
 ##      if neuroConfig.userLevel > 0:
 ##        self.write( '<img alt="" src="' + os.path.join( neuroConfig.iconPath, 'icon_process.png' ) + '" border="0">' \
 ##                    + _t_(process.name) + ' '\
 ##                    + str(process.instance) + '<p>' )
-      stackTop = self._processStack[ -1 ]
       # Count process execution
       count = stackTop.processCount.get( process._id, 0 )
       stackTop.processCount[ process._id ] = count + 1
 
     newStackTop = self.StackInfo( process )
-    self._processStack.append( newStackTop )
+    self._pushStack( newStackTop )
+    ishead = ( not stackTop )
 
     # Logging process start
-    if self._depth() == 1:
+    if not stackTop:
       process.isMainProcess = True
-      log = neuroConfig.mainLog
 
     try: # finally -> processFinished
       try: # show exception 
         self._processStarted()
-        
-        if self._depth() == 1:
+
+        if ishead:
+          log = neuroConfig.mainLog
           if neuroConfig.newDatabases:
             self._allWriteDiskItems = []
             #try: # an exception could occur if the user has not write permission on the database directory
@@ -1761,7 +1806,15 @@ class ExecutionContext:
           if self._allowHistory:
             self._historyBookEvent, self._historyBooksContext = HistoryBook.storeProcessStart( self, process )
         else:
-          log = self._processStack[ -2 ].log
+          if len( stack ) >= 2:
+            log = stack[ -2 ].log
+          else:
+            # FIXME:
+            # attaching to head log is not always the right solution
+            # if a sub-process has parallel sub-nodes, then a new thread
+            # and a new stack will be created, but the logs will not be
+            # appended to the correct parent
+            log = self._processStackHead.log
         if log is not None:
           newStackTop.log = log.subLog()
           process._log = newStackTop.log
@@ -1885,8 +1938,8 @@ class ExecutionContext:
       if process._outputLog is not None:
         process._outputLog.close()
       # Expand log to put sublogs inline
-      log = self._processStack[ -1 ].log
-      if log is not None:
+      log = stack[ -1 ].log #### WARNING !!!! not -1
+      if log is not None: # and log.fileName is not None:
         log.expand()
         if self._depth() == 1:
           if self._allowHistory:
@@ -1900,14 +1953,14 @@ class ExecutionContext:
       if process._log is not None:
         process._log.close()
       process._log = None
-      self._processStack.pop().thread = None
+      self._popStack().thread = None ##### WARNING !!! not pop()
     return result
 
   def _currentProcess( self ):
-    return self._processStack[ -1 ].process
+    return self._stackTop().process
 
   def _depth( self ):
-    return len( self._processStack )
+    return len( self._processStack() )
 
   def _showSystemOutput( self ):
     return self._systemOutputLevel >= 0 and self.userLevel >= self._systemOutputLevel
@@ -1920,14 +1973,14 @@ class ExecutionContext:
             ( _t_(self._currentProcess().name ) + ' ' + \
               str( self._currentProcess().instance ),
               time.strftime( _t_( '%Y/%m/%d %H:%M' ),
-                             self._processStack[ -1 ].time ) ) + \
+                             self._stackTop().time ) ) + \
             '</em><br>'
       self.write( msg )
 
   def _processFinished( self, result ):
     if self._currentProcess().isMainProcess:
       finalTime = time.localtime()
-      elapsed = calendar.timegm( finalTime ) - calendar.timegm( self._processStack[ -1 ].time )
+      elapsed = calendar.timegm( finalTime ) - calendar.timegm( self._stackTop().time )
       msg = '<br><img alt="" src="' + \
             os.path.join( neuroConfig.iconPath, 'process_end.png' ) + \
             '" border="0"><em>' + _t_( 'Process <b>%s</b> finished on %s (%s)' ) % \
@@ -1946,26 +1999,27 @@ class ExecutionContext:
       raise RuntimeError( _t_( 'System command exited with non null value : %s' ) % str( ret ) )
     return ret
 
-  def _systemStdout( self, line ):
-    if line and self._systemLogFile is not None and self._showSystemOutput():
+  def _systemStdout( self, line, logFile=None ):
+    if logFile is None:
+      logFile = self._systemLogFile
+    if line and logFile is not None and self._showSystemOutput():
       if line[ -1 ] not in ( '\b', '\r' ):
-        self._systemLogFile.write( htmlEscape(line))
-        self._systemLogFile.flush()
+        logFile.write( htmlEscape(line))
+        logFile.flush()
 
-  def _systemStderr( self, line ):
+  def _systemStderr( self, line, logFile=None ):
+    if logFile is None:
+      logFile = self._systemLogFile
     if line:
       lineInHTML = '<font color=red>' + htmlEscape(line) + '</font>'
       self.write( lineInHTML )
-    if self._systemLogFile is not None and line:
-      self._systemLogFile.write( lineInHTML )
-      self._systemLogFile.flush()
+    if logFile is not None and line:
+      logFile.write( lineInHTML )
+      logFile.flush()
 
   def _system( self, command, stdoutAction = None, stderrAction = None ):
     self.checkInterruption()
-    if self._processStack:
-      stackTop = self._processStack[ -1 ]
-    else:
-      stackTop = None
+    stackTop = self._stackTop()
 
     if type( command ) in types.StringTypes:
       c = Command( command )
@@ -1973,24 +2027,28 @@ class ExecutionContext:
       c = Command( *command )
 
     # Logging system call start
-    if self._processStack:
-      log = self._processStack[ -1 ].log
+    if stackTop:
+      log = stackTop.log
     else:
       log = neuroConfig.mainLog
+    systemLogFile = None
+    systemLog = None
     if log is not None:
-      self._systemLog = log.subTextLog()
-      self._systemLogFile = open( self._systemLog.fileName, 'w' )
+      systemLog = log.subTextLog()
+      self._systemLog = systemLog
+      systemLogFile = open( systemLog.fileName, 'w' )
+      self._systemLogFile = systemLogFile
       log.append( c.commandName(),
-                  html=self._systemLog,
+                  html=systemLog,
                   icon='icon_system.png' )
     try:
-      if self._systemLogFile:
+      if systemLogFile:
         commandName = distutils.spawn.find_executable( c.commandName() )
         if not commandName:
           commandName = c.commandName()
-        print >> self._systemLogFile, '<html><body><h1>' + commandName +' </h1><h2>' +_t_('Command line') + \
+        print >> systemLogFile, '<html><body><h1>' + commandName +' </h1><h2>' +_t_('Command line') + \
           '</h2><code>' + htmlEscape( str( c ) ) + '</code></h2><h2>' + _t_('Output') + '</h2><pre>'
-        self._systemLogFile.flush()
+        systemLogFile.flush()
   
   ##    if self._showSystemOutput() > 0:
   ##      self.write( '<img alt="" src="' + os.path.join( neuroConfig.iconPath, 'icon_system.png' ) + '">' + c.commandName() + '<p>' )
@@ -2000,8 +2058,18 @@ class ExecutionContext:
         if neuroConfig.brainvisaSysEnv:
           c.setEnvironment(neuroConfig.brainvisaSysEnv.getVariables())
       
-      if stdoutAction is not None: c.setStdoutAction( stdoutAction )
-      if stderrAction is not None: c.setStderrAction( stderrAction )
+      if stdoutAction is not None:
+        if stdoutAction is self._systemStdout:
+          c.setStdoutAction( lambda line: stdoutAction( line,
+            logFile=systemLogFile ) )
+        else:
+          c.setStdoutAction( stdoutAction )
+      if stderrAction is not None:
+        if stderrAction is self._systemStderr:
+          c.setStderrAction( lambda line: stderrAction( line,
+            logFile=systemLogFile ) )
+        else:
+          c.setStderrAction( stderrAction )
       c.start()
       intActionId = self._addInterruptionAction( c.stop )
       try:
@@ -2009,14 +2077,14 @@ class ExecutionContext:
       finally:
         self._removeInterruptionAction( intActionId )
       self.checkInterruption()
-      if self._systemLogFile is not None:
-        print >> self._systemLogFile, '</pre><h2>' + _t_('Result') + '</h2>' + _t_('Value returned') + ' = ' + str( result ) + '</body></html>'
+      if systemLogFile is not None:
+        print >> systemLogFile, '</pre><h2>' + _t_('Result') + '</h2>' + _t_('Value returned') + ' = ' + str( result ) + '</body></html>'
     finally:
-      if self._systemLogFile is not None:
-        self._systemLogFile.close()
+      if systemLogFile is not None:
+        systemLogFile.close()
         self._systemLogFile = None
-      if self._systemLog is not None:
-        self._systemLog.close()
+      if systemLog is not None:
+        systemLog.close()
       if log is not None and log is not neuroConfig.mainLog:
         log.expand()
     return result
@@ -2039,8 +2107,9 @@ class ExecutionContext:
     self.checkInterruption()
     if messages:
       msg = u' '.join( unicode( i ) for i in messages )
-      if self._processStack:
-        outputLogFile = self._processStack[ -1 ].process._outputLogFile
+      stackTop = self._stackTop()
+      if stackTop:
+        outputLogFile = stackTop.process._outputLogFile
         if outputLogFile:
           print >> outputLogFile, msg
           outputLogFile.flush()
@@ -2091,7 +2160,7 @@ class ExecutionContext:
 
 
   def _showException( self ):
-    stackTop = self._processStack[ -1 ]
+    stackTop = self._stackTop()
     msg = exceptionHTML(
       beforeError=_t_( 'in <em>%s</em>' ) % ( _t_(stackTop.process.name) + ' ' + str( stackTop.process.instance ) ) )
     try:
@@ -2152,8 +2221,9 @@ class ExecutionContext:
 
 
   def log( self, *args, **kwargs ):
-    if self._processStack:
-      logFile = self._processStack[ -1 ].log
+    stackTop = self._stackTop()
+    if stackTop:
+      logFile = stackTop.log
     else:
       logFile = neuroConfig.mainLog
     if logFile is not None:
@@ -2187,8 +2257,9 @@ class ExecutionContext:
     from brainvisa.history import ProcessExecutionEvent
     event = ProcessExecutionEvent()
     event.setProcess( self.process )
-    if self._processStack:
-      log = self._processStack[0].log
+    stack = self._processStack()
+    if stack:
+      log = stack[0].log
       if log is not None:
         event.setLog( log )
     return event
