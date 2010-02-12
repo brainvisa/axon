@@ -2758,11 +2758,11 @@ def readProcesses( processesPath ):
   # New style processes initialization
   global _processesInfo
   global _allProcessesTree
-  processesCacheFile = os.path.join( neuroConfig.homeBrainVISADir, 'processCache' )
+  processesCacheFile = os.path.join( neuroConfig.homeBrainVISADir, 'processCache-' + neuroConfig.shortVersion )
   processesCache = {}
   if neuroConfig.fastStart and os.path.exists( processesCacheFile ):
     try:
-      processesCache = cPickle.load( open( processesCacheFile, 'r' ) )
+      _processesInfo = cPickle.load( open( processesCacheFile, 'r' ) )
     except:
       raise
       if neuroConfig.mainLog is not None:
@@ -2770,21 +2770,22 @@ def readProcesses( processesPath ):
           html=exceptionHTML( beforeError=_t_( 'Cannot read processes cache file <em>%s</em>' ) % ( processCacheFile, ) ),
           icon='warning.png' )
   
-  # create all processes tree while reading processes in processesPath
-  _allProcessesTree=ProcessTree("Various processes", "all processes",editable=False, user=False)
-  for processesDir in processesPath:
-    _allProcessesTree.addDir(processesDir, "", processesCache)
-  for toolbox in neuroConfig.allToolboxes():
-    toolbox.getProcessTree()
+  if neuroConfig.gui or not neuroConfig.fastStart:
+    # create all processes tree while reading processes in processesPath
+    _allProcessesTree=ProcessTree("Various processes", "all processes",editable=False, user=False)
+    for processesDir in processesPath:
+      _allProcessesTree.addDir(processesDir, "", processesCache)
+    for toolbox in neuroConfig.allToolboxes():
+      toolbox.getProcessTree()
   
-  # save processes cache
-  try:
-    cPickle.dump( _processesInfo, open( processesCacheFile, 'wb' ) )
-  except:
-    if neuroConfig.mainLog is not None:
-      neuroConfig.mainLog.append( 'Cannot write processes cache',
-        html=exceptionHTML( beforeError=_t_( 'Cannot write processes cache file <em>%s</em>' ) % ( processesCacheFile, ) ),
-        icon='warning.png' )
+    # save processes cache
+    try:
+      cPickle.dump( _processesInfo, open( processesCacheFile, 'wb' ) )
+    except:
+      if neuroConfig.mainLog is not None:
+        neuroConfig.mainLog.append( 'Cannot write processes cache',
+          html=exceptionHTML( beforeError=_t_( 'Cannot write processes cache file <em>%s</em>' ) % ( processesCacheFile, ) ),
+          icon='warning.png' )
 
 #----------------------------------------------------------------------------
 class ProcessTree( EditableTree ):
