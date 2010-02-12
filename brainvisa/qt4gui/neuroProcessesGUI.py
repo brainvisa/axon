@@ -2471,10 +2471,10 @@ class RemoteContextGUI( QTreeWidgetItem ):
     remoteView.setWindowTitle('Remote messages')
     remoteView.setColumnCount(4)
     remoteView.setHeaderLabels( ['IP', 'ID', 'Status', 'Messages'] )
-    
-    apply(QTreeWidgetItem.__init__,(self, remoteView, name ))
-    #apply(RemoteContext.__init__,(self) )
-    
+
+    QTreeWidgetItem.__init__(self, remoteView )
+    self.setText( 0, name )
+
     self.setExpanded(True)
     
     self.processList = {}
