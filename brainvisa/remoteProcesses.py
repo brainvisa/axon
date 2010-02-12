@@ -205,7 +205,7 @@ class RemoteProcessCall( threading.Thread ):
       brainvisa_exec = \
         neuroConfig.app.configuration.distributed_execution.remoteExecutable
 
-    remoteShell.sendline(brainvisa_exec+' --shell -b --logFile ' + neuroConfig.homeBrainVISADir + '/brainvisa_%d.log'%self.rpid )
+    remoteShell.sendline(brainvisa_exec+' -b --shell --logFile ' + neuroConfig.homeBrainVISADir + '/brainvisa_%d.log'%self.rpid )
     case = remoteShell.expect(['.*prints more.', TIMEOUT], timeout=60)
     if case == 1:
       remoteShell.close()
@@ -218,21 +218,25 @@ class RemoteProcessCall( threading.Thread ):
         return 0
     else:
 
-      #print "Brainvisa now is running on %s"%(host)
+      print "Brainvisa now is running on %s"%(host)
       try:
         #self.pid = self.__getpid(remoteShell)
         startTime = time.localtime()
         import neuroProcesses
 
-        print "defaultContext().runProcess('" + self.ProcessName + "' ," + self.ProcessParameters + ")"
+        #print host, ": runProcess('" + self.ProcessName + "' ," + self.ProcessParameters + ")"
 
-        event = neuroProcesses.ProcessExecutionEvent()
+        from brainvisa.history import ProcessExecutionEvent
+        import tempfile
+        tmp = tempfile.mkstemp( '.bvproc', 'process', neuroConfig.homeBrainVISADir )
+        event = ProcessExecutionEvent()
         event.setProcess( self.process._process )
-        pk = pickle.dumps( event )
         remoteShell.sendline('from neuroProcesses import *')
-        remoteShell.sendline('import pickle')
-        remoteShell.sendline('pk = pickle.loads(' + repr(pk) + ')' )
-        remoteShell.sendline('p = getProcessInstanceFromProcessEvent( pk )')
+        remoteShell.sendline('import os')
+        event.save( tmp[1] )
+        os.close( tmp[0] )
+        remoteShell.sendline('p = getProcessInstance( ' + repr( tmp[1] ) + ' )' )
+        remoteShell.sendline('os.unlink( ' + repr( tmp[1] ) + ' )' )
         remoteShell.sendline('defaultContext().runProcess( p )')
       except Exception, e:
         print 'error:', e
@@ -244,7 +248,8 @@ class RemoteProcessCall( threading.Thread ):
       while 1:
         case = remoteShell.expect(['.*ERROR.*','.*Error.*','.*\d{2}:\d{2}.*\(\d+.*',
                                    '.*warning:.*\r\n', '.*Exception.*\r\n','.*\r\n', TIMEOUT], timeout=10)
-   
+
+
         # check interruption (every 10 seconds at most)
         if self.checkInterruption():
           remoteShell.close(True)
@@ -261,6 +266,7 @@ class RemoteProcessCall( threading.Thread ):
           continue
         
         message = remoteShell.after.strip('\r\n')
+        #print host, 'message:', message
         modulo = 0
                                                                                                                                                                                                       
         if case == 0:
@@ -308,11 +314,11 @@ class RemoteProcessCall( threading.Thread ):
           return 0
           
         elif case == 5:
-          if self.__filterMessage(message) == 'Message':
-            self.context.remote.write('%d | %s | %s'%(self.rpid,host,message) )
-          else:
-            # ignore other messages
-            pass
+          #if self.__filterMessage(message) == 'Message':
+          self.context.remote.write('%d | %s | %s'%(self.rpid,host,message) )
+          #else:
+            ## ignore other messages
+            #pass
         else:
           # state theoritically impossible to reach
           print 'Something (bad) happened'
@@ -342,13 +348,13 @@ class RemoteProcessCall( threading.Thread ):
     @return: String defining the type of the message.
     """
 
-    if msg.find('from neuroProcesses import *') <> -1:
+    if msg.find('from neuroProcesses import *') != -1:
       return 'Init'
-    elif msg.find('context = ExecutionContext()') <> -1:
+    elif msg.find('context = ExecutionContext()') != -1:
       return 'Init'
-    elif msg.find('warning') <> -1:
+    elif msg.find('warning') != -1:
       return 'Warning'
-    elif msg.find('Warning') <> -1:
+    elif msg.find('Warning') != -1:
       return 'Warning'
     elif msg == '':
       return 'Null'
@@ -412,25 +418,25 @@ class RemoteContext( QObject ):
         
       regexp = re.compile('Error|interrupted')
       error_msg = regexp.findall(msg)
-        
-      self.emit(PYSIGNAL("SIG_setProcessStatus"), (pid, ' Running...') )
-      self.emit(PYSIGNAL("SIG_setCurrentMessage"), (pid, msg) )
-      self.emit(PYSIGNAL("SIG_addMessage"), (pid, msg) )
+      from neuroProcessesGUI import mainThreadActions
+      mainThreadActions().push( self.emit, PYSIGNAL("SIG_setProcessStatus"), (pid, ' Running...') )
+      mainThreadActions().push( self.emit, PYSIGNAL("SIG_setCurrentMessage"), (pid, msg) )
+      mainThreadActions().push( self.emit, PYSIGNAL("SIG_addMessage"), (pid, msg) )
         
       try:
         finish_msg = finish_msg[0]
       except IndexError:
         pass
       else:
-        self.emit(PYSIGNAL("SIG_setProcessStatus"), (pid, ' Finished') )
-        self.emit(PYSIGNAL("SIG_setCurrentMessage"), (pid, '') )
+        mainThreadActions().push( self.emit, PYSIGNAL("SIG_setProcessStatus"), (pid, ' Finished') )
+        mainThreadActions().push( self.emit, PYSIGNAL("SIG_setCurrentMessage"), (pid, '') )
         
       try:
         error_msg = error_msg[0]
       except IndexError:
         pass
       else:
-        self.emit(PYSIGNAL("SIG_setProcessStatus"), (pid, ' Error') )
+        mainThreadActions().push( self.emit, PYSIGNAL("SIG_setProcessStatus"), (pid, ' Error') )
   
   def updateGUI(self, ip, pid):
     """
