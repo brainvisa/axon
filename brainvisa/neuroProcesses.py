@@ -1513,15 +1513,19 @@ class ParallelExecutionNode( ExecutionNode ):
       rpid = 0
 
       try:
+        print 'ParallelExecutionNode._run'
         user = UserInfosBV(context, Signature('Password', Password()) )
+        print 'user:', user
 
         if not user.isAccepted():
           context.error('Password needed to launch process remotely. Running locally and sequencially...')
           raise RuntimeError( _t_( 'distributed execution failure' ) )
 
+        print 'user accepted'
         remoteContext = context.remote
-        remoteContext.clearGUI()  
+        remoteContext.clearGUI()
         cluster, isServer = getClusterInstance(context)
+        print 'cluster:', cluster, isServer
 
         context.write('Dispatching processes on cluster...\n')
       except:
@@ -1535,8 +1539,11 @@ class ParallelExecutionNode( ExecutionNode ):
       for node in self._children.values():
         try:
 
+          print 'RemoteProcessCall'
           rp_t.append( RemoteProcessCall(rpid, cluster, context, node) )
+          print 'RemoteProcessCall starting'
           rp_t[rpid].start()
+          print 'RemoteProcessCall done'
           rpid += 1
 
         except ExecutionContext.UserInterruption:
@@ -1558,6 +1565,7 @@ class ParallelExecutionNode( ExecutionNode ):
 
       context.write('Processes are running...\n')
 
+      print 'waiting...'
       for i in range(len(self._children.values())):
         rp_t[i].join()
         print 'thread [%d] finished'%i

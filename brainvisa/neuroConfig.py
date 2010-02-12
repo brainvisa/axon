@@ -389,6 +389,17 @@ def editConfiguration():
     neuroProcesses.updateProcesses()
 
 
+def stdinLoop():
+  e = []
+  for l in sys.stdin:
+    if l.startswith( '# brainvisa run commands' ):
+      exec( ''.join( e ) )
+      e = []
+    else:
+      e.append( l )
+  if e: exec( ''.join( e ) )
+
+
 # Parse command Line
 # To use -- <Other options> do not use sys.argv but args (returned by getopt)
 import getopt
@@ -420,7 +431,10 @@ for o, a in opts:
     gui = 0
     server = 1
   elif o in ( "-e", ):
-    startup.append( "execfile('" + a + "')" )
+    if a == '-':
+      startup.append( 'neuroConfig.stdinLoop()' )
+    else:
+      startup.append( "execfile('" + a + "')" )
   elif o in ( "-c", ):
     startup.append( a )
   elif o in ( "-s", ):
