@@ -473,7 +473,7 @@ def calcTimeDiff( startTime, finalTime):
   @param startTime: start marker.
   @param finalTime: end marker.
   
-  @note: It is basically the same function as neuroProcesses.timeDifferenceToString.
+  @note: It is basically the same function as soma.somatime.timeDifferenceToString.
   """
   
   difference = calendar.timegm( finalTime ) - calendar.timegm( startTime )  

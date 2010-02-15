@@ -47,7 +47,7 @@ from soma.notification import EditableTree, ObservableSortedDictionary, \
                               ObservableAttributes, Notifier
 from soma.minf.api import createMinfWriter, iterateMinf, minfFormat
 from soma.html import htmlEscape
-from soma.time import timeDifferenceToString
+from soma.somatime import timeDifferenceToString
 
 from neuroData import *
 from neuroDiskItems import *

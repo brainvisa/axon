@@ -42,7 +42,7 @@ from soma.sorted_dictionary import SortedDictionary
 from soma.undefined import Undefined
 from soma.translation import translate as _
 from soma.path import split_path, relative_path
-from soma.time import timeDifferenceToString
+from soma.somatime import timeDifferenceToString
 from soma.uuid import Uuid
 from soma.notification import Notifier
 from soma.databases.api import sqlite3, ThreadSafeSQLiteConnection
