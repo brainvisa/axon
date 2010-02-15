@@ -1539,11 +1539,8 @@ class ParallelExecutionNode( ExecutionNode ):
       for node in self._children.values():
         try:
 
-          print 'RemoteProcessCall'
           rp_t.append( RemoteProcessCall(rpid, cluster, context, node) )
-          print 'RemoteProcessCall starting'
           rp_t[rpid].start()
-          print 'RemoteProcessCall done'
           rpid += 1
 
         except ExecutionContext.UserInterruption:
