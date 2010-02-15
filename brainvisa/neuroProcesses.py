@@ -1522,15 +1522,23 @@ class ParallelExecutionNode( ExecutionNode ):
           raise RuntimeError( _t_( 'distributed execution failure' ) )
 
         print 'user accepted'
+        if not hasattr( context, 'remote' ) or context.remote is None:
+          # no remote context has been setup yet - no GUI
+          print 'creating remote context'
+          context.remote = RemoteContext()
         remoteContext = context.remote
+        print 'remoteContext:', remoteContext
         remoteContext.clearGUI()
+        print 'clearGUI done'
         cluster, isServer = getClusterInstance(context)
         print 'cluster:', cluster, isServer
 
         context.write('Dispatching processes on cluster...\n')
-      except:
+      except Exception, e:
         # distribution failure: run locally
         # do as for serial node
+        print 'distributed execution has failed:', e
+        print 'running sequentially.'
         result = []
         for node in self._children.values():
           result.append( node.run( context ) )

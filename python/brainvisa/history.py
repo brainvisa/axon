@@ -158,14 +158,20 @@ class HistoricalEvent( object ):
   
   
   def save( self, eventFileName, compression=False ):
-    if compression:
-      eventFile = gzipOpen( eventFileName, mode='w' )
+    close = True
+    if type( eventFileName ) in ( str, unicode ):
+      if compression:
+        eventFile = gzipOpen( eventFileName, mode='w' )
+      else:
+        eventFile = open( eventFileName, mode='w' )
     else:
-      eventFile = open( eventFileName, mode='w' )
+      eventFile = eventFileName
+      close = False
     writeMinf( eventFile, ( self, ), reducer=minfHistory )
-    eventFile.close()
-  
-  
+    if close:
+      eventFile.close()
+
+
 class ProcessExecutionEvent( HistoricalEvent ):
   eventType = 'bvproc'
   
