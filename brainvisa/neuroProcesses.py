@@ -1526,10 +1526,9 @@ class ParallelExecutionNode( ExecutionNode ):
           # no remote context has been setup yet - no GUI
           print 'creating remote context'
           context.remote = RemoteContext()
+          context.remote.write = context.write
         remoteContext = context.remote
-        print 'remoteContext:', remoteContext
         remoteContext.clearGUI()
-        print 'clearGUI done'
         cluster, isServer = getClusterInstance(context)
         print 'cluster:', cluster, isServer
 
