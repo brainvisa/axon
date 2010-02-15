@@ -206,7 +206,7 @@ class RemoteProcessCall( threading.Thread ):
         neuroConfig.app.configuration.distributed_execution.remoteExecutable
 
     remoteShell.sendline(brainvisa_exec+' -b --shell --logFile ' + neuroConfig.homeBrainVISADir + '/brainvisa_%d.log'%self.rpid )
-    case = remoteShell.expect(['.*prints more.', TIMEOUT], timeout=60)
+    case = remoteShell.expect(['.*prints more.', TIMEOUT], timeout=120)
     if case == 1:
       remoteShell.close()
       self.context.remote.write('%d | %s | Brainvisa failed to launch, restarting...'%(self.rpid,host) )
