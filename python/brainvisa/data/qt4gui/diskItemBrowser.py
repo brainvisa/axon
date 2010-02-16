@@ -217,8 +217,6 @@ class DiskItemBrowser( QDialog ):
     
     self._lastSelection = None
     self.rescan()
-
-    self.restoreLayout()
     
     self.connect( self._ui.btnReset, SIGNAL( 'clicked()' ), self.resetSelectedAttributes )
     #btn.setText(_t_('Ok'))
@@ -247,11 +245,14 @@ class DiskItemBrowser( QDialog ):
       return True
     return False
   
+  def resizeEvent( self, event ):
+    QDialog.resizeEvent( self, event )
+    if (event.spontaneous()): # take into account the event if it comes from the user and not the application
+      self.saveLayout()
   
-  def resizeEvent( self, *args ):
-    QDialog.resizeEvent( self, *args )
-    self.saveLayout()
-  
+  def showEvent(self, event):
+    QDialog.showEvent(self, event)
+    self.restoreLayout()
   
   def _createCombo( self, caption, attributeName, editable, layoutRow ):
     gridLayout = self.attributesWidget.layout()#self._ui.attributesFrame.layout()
