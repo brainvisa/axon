@@ -505,19 +505,23 @@ class NodeCheckListItem( QTreeWidgetItem ):
         self.parent().buttonGroup=buttonGroup
       self.widget=RadioItem(text, buttonGroup)
       self.treeWidget().setItemWidget(self, 0, self.widget)
-      QWidget.connect(self.widget.radio, SIGNAL("clicked(bool)"), self.itemClicked)
-      QWidget.connect(self.widget.radio, SIGNAL("toggled(bool)"), self.itemToggled)
+      QWidget.connect(self.widget.radio, SIGNAL("clicked(bool)"), self.radioClicked)
+      QWidget.connect(self.widget.radio, SIGNAL("toggled(bool)"), self.radioToggled)
     else:# not a radio button, show text directly in the qtreeWidgetItem
       if text:
         self.setText(0, text)
     self.setOn( node._selected )
     node._selectionChange.add( self.nodeStateChanged )
 
-  def itemClicked(self, checked):
+  def radioClicked(self, checked):
     self.treeWidget().setCurrentItem(self)
 
-  def itemToggled(self, checked):
+  def radioToggled(self, checked):
     self.stateChange( checked )
+
+  def itemClicked(self):
+    if (self.itemType == "check"):
+      self.stateChange(self.isOn())
 
   def setIcon(self, col, icon):
     if self.itemType=="radio":
@@ -548,7 +552,7 @@ class NodeCheckListItem( QTreeWidgetItem ):
     if self.itemType=="radio":
       return self.widget.isChecked()
     elif self.itemType=="check":
-      return self.checkState() == Qt.Checked
+      return self.checkState(0) == Qt.Checked
     return True
 
 #------------------------------------------------------------------------------
@@ -1286,8 +1290,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       #self.resize( size )
 
   def executionNodeClicked( self, item, column ):
-    item.stateChange( item.checkState( 0 ) )
-    
+    item.itemClicked()    
 
   def _executionNodeExpanded( self, item, eNodeAndChildren=None ):
     if item is not None and getattr( item, '_notExpandedYet', True ):
@@ -1335,7 +1338,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         eNodeItem = self._executionNodeLVItems.get( p )
         if eNodeItem is not None:
           eNodeItem.setIcon( 0, self.pixInProcess )
-  
+      
   def _executionNodeActivated(self, item):
     if getattr(item, "activate", None):
       item.activate()
