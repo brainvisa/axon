@@ -311,11 +311,13 @@ if neuroConfig.databaseServer:
     else:
       if database.sqlDatabaseFile != ':memory:':
         try:
-          open( remoteAccessURI, 'w' ).write( str( uri ) )
+          dbfile = open( remoteAccessURI, 'w' )
           obj = Pyro.core.ObjBase()
           obj.delegateTo( NoGeneratorSQLDatabase( database ) )
           uri = daemon.connect( obj )
           temporaries.append( temporaryManager.createSelfDestroyed( remoteAccessURI ) )
+          dbfile.write( str( uri ) )
+          del dbfile
           print 'Serving database', repr( database.directory ), 'with URI', uri
         except IOError:
           print 'database', repr( database.directory ), 'cannot be used with server access'
