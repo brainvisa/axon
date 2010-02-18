@@ -70,7 +70,7 @@ if neuroConfig.newDatabases:
             Pyro.config.PYRO_STDLOGGING = 1
             from soma.pyro import ThreadSafeProxy
             uri = Pyro.core.PyroURI( open( remoteAccessURI ).read() )
-            print 'Database', dbSettings.directory, 'is remotely accessed from', str( uri )
+            print 'Database', dbSettings.directory, 'is remotely accessed from', uri #str( uri )
             base = ThreadSafeProxy( uri.getAttrProxy() )
             newDatabases.append( base )
           else:
