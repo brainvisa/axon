@@ -135,9 +135,9 @@ def execution( self, context ):
         error(strerror, maker.output)
     stream.write( '*BEGIN TREE 1.0 siMorpho\n' )
     stream.write( 'modelFile  ' + self.model.fullPath() + "\n" )
-    stream.write( 'graphFiles  ' + \
-                  string.join( map( lambda x: x.fullPath(), 
-                  self.data_graphs ) ) + "\n" )
+    stream.write( 'graphFiles  "' + \
+                  '" "'.join( map( lambda x: x.fullPath(),
+                  self.data_graphs ) ) + '"\n' )
 
     if self.region_type is None:
         self.region_type = 'label'
