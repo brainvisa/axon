@@ -2300,7 +2300,7 @@ def getProcessInstanceFromProcessEvent( event ):
       if eNodeParameters:
         for n, v in eNodeParameters[ 'selected' ].iteritems():
           try:
-            eNode.setValue( n, v )
+            eNode.setValue( n, v, default=False )
           except KeyError:
             pass
         for n, v in eNodeParameters[ 'default' ].iteritems():
