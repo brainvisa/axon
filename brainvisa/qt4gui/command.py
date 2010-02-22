@@ -31,9 +31,10 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-import neuroConfig 
-import threading, sys, time, os
-from backwardCompatibleQt import QProcess, qApp, QTimer, SIGNAL, QStringList
+#import neuroConfig 
+import threading, sys, os
+from backwardCompatibleQt import QProcess, QTimer, SIGNAL, QStringList
+import pdb
 
 #--------------------------------------------------------------------------
 class CommandWithQProcess( object ):
@@ -55,13 +56,13 @@ class CommandWithQProcess( object ):
     the functions called when an output string is available with
     methods setStdoutAction() and setStderrAction().
     '''
-    from qtgui.neuroProcessesGUI import mainThreadActions
-    self._mainThreadCalls = mainThreadActions()
-    self._semaphore = threading.Semaphore( 0 )
+    print "init command ", threading.currentThread()
     self.args = [str(i) for i in args]
-    self._qprocess = self._mainThreadCalls.call( self._createQProcess )
+    self._qprocess=self._createQProcess( )
     self._stdoutAction = sys.stdout.write
     self._stderrAction = sys.stderr.write
+    self.normalExit=False
+    self.exitStatus=None
 
   def setEnvironment(self, env):
     """
@@ -81,23 +82,18 @@ class CommandWithQProcess( object ):
 
   def start( self ):
     '''Starts the command. If it cannot be started, a RuntimeError is raised'''
-    self._mainThreadCalls.call( self._startProcess )
-#      raise RuntimeError( _t_( 'Cannot start command %s' ) % ( str( self ), ) )
+    print "start process ", self.args[0]
+    self._qprocess.start( self.args[0], self.args[1:] )
+    if (not self._qprocess.waitForStarted(-1)):
+      raise RuntimeError( _t_( 'Cannot start command %s' ) % ( str( self ), ) )
 
   def wait( self ):
     '''Wait for the command to finish. Upon normal exit, the exit status of
     the command (i.e. its return value) is returned, otherwise a RuntimeError
     is raised.'''
-    if self._mainThreadCalls.isInMainThread():
-      # process a local Qt events loop
-      while self._qprocess.state() == self._qprocess.Running:
-        qApp.processEvents()
-        time.sleep( 0.05 )
-    else:
-      # in a different thread, block on a semaphore until it is finished
-      self._semaphore.acquire()
-    #if not self.normalExit:
-      #raise RuntimeError( _t_( 'System call exited abnormally' ) )
+    print "wait for finished ", threading.currentThread()
+    res=self._qprocess.waitForFinished(-1)
+    print "finished", res
     return self.exitStatus
 
 
@@ -105,13 +101,11 @@ class CommandWithQProcess( object ):
     '''Interrupt a running command. If possible, it tries to terminate the
     command giving it the possibility to do cleanup before exiting. If the
     command is still alive ater 15 seconds, it is killed.'''
-    self._mainThreadCalls.push( self._stop )
-
-  def _stop( self ):
-    if neuroConfig.platform == 'windows':
-      # on Windows, don't even try the soft terminate, it always fails
-      self._qprocess.kill()
-      return
+    print "stop ", threading.currentThread()
+#    if neuroConfig.platform == 'windows':
+#      # on Windows, don't even try the soft terminate, it always fails
+#      self._qprocess.kill()
+#      return
     self._qprocess.terminate()
     if self._qprocess.state() == self._qprocess.Running:
       # If the command is not finished in 15 seconds, kill it
@@ -150,30 +144,17 @@ class CommandWithQProcess( object ):
       qprocess.connect( qprocess,
                         SIGNAL( 'finished( int, QProcess::ExitStatus )' ),
                         self._processExited )
-      qprocess.connect( qprocess,
-                        SIGNAL( 'started()' ),
-                        self._processLaunched )
       qprocess.connect( qprocess, SIGNAL( 'readyReadStandardOutput()' ),
-                        self._readStdout )
+                        self._readStdout  )
       qprocess.connect( qprocess, SIGNAL( 'readyReadStandardError()' ),
-                        self._readStderr )
+                        self._readStderr  )
       return qprocess
 
 
-  def _startProcess( self ):
-#    print threading.currentThread(), '_startProcess()', self
-      self._qprocess.start( self.args[0], self.args[1:] )
-
-
   def _processExited( self, exitCode=0, exitStatus=0 ):
-    #print threading.currentThread(), '_processExited()', self
+    print '_processExited()', threading.currentThread()
     self.normalExit = (exitStatus == QProcess.NormalExit)
     self.exitStatus = exitCode
-    self._semaphore.release()
-
-
-  def _processLaunched( self ):
-    pass
 
 
   def _filterOutputString( buffer ):
@@ -193,8 +174,8 @@ class CommandWithQProcess( object ):
   _filterOutputString = staticmethod( _filterOutputString )
 
   def _readStdout( self ):
-      line=self._filterOutputString( unicode( self._qprocess.readAllStandardOutput() ))
-      self._stdoutAction(line + '\n' )
+    line=self._filterOutputString( unicode( self._qprocess.readAllStandardOutput() ))
+    self._stdoutAction(line + '\n' )
 
 
   def _readStderr( self ):
