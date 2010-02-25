@@ -2429,11 +2429,15 @@ def getProcessInstance( processIdClassOrInstance ):
       #print '!getProcessInstance! instance of', processIdClassOrInstance, 'created from event: result =', result, 'class =', processIdClassOrInstance.__class__
       result = getProcessInstanceFromProcessEvent( event )
   elif result is None:
-    if isinstance( processIdClassOrInstance, basestring ) and minfFormat( processIdClassOrInstance )[ 1 ] == minfHistory:
-      event = readMinf( processIdClassOrInstance )[0]
-      result = getProcessInstanceFromProcessEvent( event )
-      if result is not None:
-        result._savedAs = processIdClassOrInstance
+    try:
+      if isinstance( processIdClassOrInstance, basestring ) and minfFormat( processIdClassOrInstance )[ 1 ] == minfHistory:
+        event = readMinf( processIdClassOrInstance )[0]
+        result = getProcessInstanceFromProcessEvent( event )
+        if result is not None:
+          result._savedAs = processIdClassOrInstance
+    except IOError:
+      raise KeyError( 'Could not get process "' + processIdClassOrInstance \
+          + '": invalid identifier or process file' )
   elif not isinstance( result, Process ):
     result = result()
   return result
