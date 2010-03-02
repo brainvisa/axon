@@ -2097,8 +2097,10 @@ class ExecutionContext:
         self._systemLogFile = None
       if systemLog is not None:
         systemLog.close()
-      if log is not None and log is not neuroConfig.mainLog:
-        log.expand()
+        # no need to expand the log associated to the command as it is the log of the parent process, 
+        # it will be expanded at the end of the process
+#      if log is not None and log is not neuroConfig.mainLog:
+#        log.expand()
     return result
 
   def temporary( self, format, diskItemType = None ):
