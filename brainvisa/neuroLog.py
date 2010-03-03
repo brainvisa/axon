@@ -251,6 +251,9 @@ class LogFile:
     self._lock.acquire()
     try:
       self._closed.add( subLog.fileName )
+      # keep a link on the sub files to avoid their deletion before the log file is expanded 
+      if getattr(subLog, "_closed", None):
+        self._closed.update(subLog._closed)
       self._opened.pop( unicode( subLog.fileName ), None )
     finally:
       self._lock.release()

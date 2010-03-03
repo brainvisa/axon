@@ -1952,7 +1952,8 @@ class ExecutionContext:
       # Expand log to put sublogs inline
       log = stack[ -1 ].log #### WARNING !!!! not -1
       if log is not None: # and log.fileName is not None:
-        log.expand()
+        if process.isMainProcess:
+          log.expand()
         if self._depth() == 1:
           if self._allowHistory:
             if self._historyBookEvent is not None:
