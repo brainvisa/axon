@@ -478,7 +478,7 @@ class RadioItem(QWidget):
     layout.addWidget(self.label)
     layout.addStretch(1)
     #self.setAutoFillBackground(True)
-    self.show()
+#    self.show()
   
   def setChecked(self, checked):
     self.radio.setChecked(checked)
@@ -928,8 +928,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       self._widgetStack.setSizePolicy( QSizePolicy( QSizePolicy.Preferred,
       QSizePolicy.Preferred ) )
       self._widgetStack._children = []
-      #blank = QWidget( )
-      #self._widgetStack.addWidget( blank )
+    
+      # set splitter sizes to avoid the widget stack to be hidden in case it is currently empty
+      eTreeWidget.setSizes( [150, 250] )
 
       self._guiId = 0
       self._executionNodeExpanded( self.executionTree, ( eNode, (eNode,) ) )
@@ -948,7 +949,6 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       item = self.executionTree.topLevelItem(0)
       item.setExpanded( True )
       self.executionTree.setCurrentItem( item )
-
       ##--##
       if neuroProcesses.neuroDistributedProcesses():
         self.remote = neuroProcesses.RemoteContext()
@@ -997,7 +997,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     # if the process has a signature, creates a widget for the parameters : ParameterizedWidget
     if self.process.signature:
       self.parameterizedWidget = ParameterizedWidget( self.process, None )
-      self.parameterizedWidget.show()
+#      self.parameterizedWidget.show()
       parent.addWidget(self.parameterizedWidget)
     else:
       self.parameterizedWidget = None 
@@ -1021,9 +1021,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
           if neuroConfig.userLevel >= p.userLevel:
             self.parameterizedWidget.setParameterToolTip( k, 
               XHTML.html( documentation.get( 'parameters', {} ).get( k, '' ) ) )
-      self.parameterizedWidget.show()
-    if self.inlineGUI is not None:
-      self.inlineGUI.show()
+#      self.parameterizedWidget.show()
+#    if self.inlineGUI is not None:
+#      self.inlineGUI.show()
 
   def eraseSignatureWidgets( self ):
     if self.parameterizedWidget is not None:
@@ -1295,7 +1295,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
           item._guiId=self._widgetStack.addWidget( self._emptyWidget )
         self._widgetStack.setCurrentIndex( item._guiId )
       # Trick to have correct slider
-      size = self.size()
+#      size = self.size()
       #self.resize( size.width()+1, size.height() )
       #qApp.processEvents()
       #self.resize( size )
