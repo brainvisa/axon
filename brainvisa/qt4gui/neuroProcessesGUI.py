@@ -672,7 +672,7 @@ class ParameterizedWidget( QWidget ):
     if first: first.setFocus()
     self._doUpdateParameterValue = True
     #self.scrollWidget.widget().resize(600, 200) 
-    self.scrollWidget.show()
+#    self.scrollWidget.show()
     
   def parameterizedDeleted( self, parameterized ):
     debugHere()
@@ -1282,7 +1282,18 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
   def executionNodeSelected( self, item, previous ):
     if item is not None:
-      self._widgetStack.setCurrentIndex( item._guiId )
+      if (getattr(item, "_guiId", None)):
+        self._widgetStack.setCurrentIndex( item._guiId )
+      else:
+        gui = item._executionNode.gui( self._widgetStack, processView=self )
+        if gui is not None:
+          item._guiId=self._widgetStack.addWidget( gui )
+          self._widgetStack._children.append( gui )
+          self._guiId += 1
+        else:
+          self._emptyWidget = QWidget( self._widgetStack )
+          item._guiId=self._widgetStack.addWidget( self._emptyWidget )
+        self._widgetStack.setCurrentIndex( item._guiId )
       # Trick to have correct slider
       size = self.size()
       #self.resize( size.width()+1, size.height() )
@@ -1325,14 +1336,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         #newItem.setExpandable( en.hasChildren() )
         if isinstance( childNode, neuroProcesses.ProcessExecutionNode ):
           self._executionNodeLVItems[ childNode._process ] = newItem
-        gui = childNode.gui( self._widgetStack, processView=self )
-        if gui is not None:
-          newItem._guiId=self._widgetStack.addWidget( gui )
-          self._widgetStack._children.append( gui )
-          self._guiId += 1
-        else:
-          self._emptyWidget = QWidget( self._widgetStack )
-          newItem._guiId=self._widgetStack.addWidget( self._emptyWidget )
+
       if self._depth():
         p = self._currentProcess()
         eNodeItem = self._executionNodeLVItems.get( p )
