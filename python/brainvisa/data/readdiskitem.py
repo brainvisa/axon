@@ -69,7 +69,7 @@ class ReadDiskItem( Parameter ):
   def _getRequiredAttributes( self ):
     if self._formatsWithConverter is None:
       self._formatsWithConverter = {}
-      self.requiredAttributes = self.requiredAttributes
+      self.requiredAttributes = self._requiredAttributes
     return self._requiredAttributes
     
   def _setRequiredAttributes( self, value ):

@@ -170,16 +170,17 @@ class DiskItemEditor( QWidget, DataEditor ):
 
   def setValue( self, value, default = 0 ):
     self.forceDefault = default
-    self.diskItem = self.parameter.findValue( value )
-    if self.diskItem is None:
-      if value is None: self.led.setText( '' )
-      if self.btnShow: self.btnShow.setEnabled( 0 )
-      if self.btnEdit: self.btnEdit.setEnabled( 0 )
-      self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.diskItem )
-    else:
-      self.led.setText( self.diskItem.fullPath() )
-      self.checkReadable()
-      self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.diskItem )
+    if (self.diskItem != value):
+      self.diskItem = self.parameter.findValue( value )
+      if self.diskItem is None:
+        if value is None: self.led.setText( '' )
+        if self.btnShow: self.btnShow.setEnabled( 0 )
+        if self.btnEdit: self.btnEdit.setEnabled( 0 )
+        self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.diskItem )
+      else:
+        self.led.setText( self.diskItem.fullPath() )
+        self.checkReadable()
+        self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.diskItem )
     self._textChanged = 0
     self.forceDefault = 0
 
