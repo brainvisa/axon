@@ -303,7 +303,7 @@ def convertSpecialLinks( msg, language, baseForLinks, translator ):
       elif tag == 'bvprocessname':
         item.tag = None
         try:
-          n = getProcess( item.attributes[ 'name' ] ).name
+          n = getProcessInfo( item.attributes[ 'name' ] ).name
         except:
           n = item.attributes[ 'name' ]
         item.content = ( translator.translate( n, ) )
@@ -1860,7 +1860,7 @@ class ExecutionContext:
           if v and getattr(v, "type", None) and ( ( not isSameDiskItemType( v.type, p.type ) ) or v.format not in p.formats ):
             c = None
             for destinationFormat in p.formats:
-              converter = getConverter( (v.type, v.format), (p.type, destinationFormat) )
+              converter = getConverter( (v.type, v.format), (p.type, destinationFormat), checkUpdate=False )
               if converter:
                 tmp = self.temporary( destinationFormat )
                 tmp.type = v.type
@@ -2245,7 +2245,7 @@ class ExecutionContext:
       logFile.append( *args, **kwargs )
 
 
-  def getConverter( self, source, dest ):
+  def getConverter( self, source, dest, checkUpdate=True ):
     # Check and convert source type
     if isinstance( source, DiskItem ):
       source = ( source.type, source.format )
@@ -2266,7 +2266,7 @@ class ExecutionContext:
     st, sf = source
     dt, df = dest
     return getConverter( ( getDiskItemType( st ), getFormat( sf ) ),
-                         ( getDiskItemType( dt ), getFormat( df ) ) )
+                         ( getDiskItemType( dt ), getFormat( df ) ), checkUpdate=checkUpdate )
 
   def createProcessExecutionEvent( self ):
     from brainvisa.history import ProcessExecutionEvent
@@ -2308,7 +2308,7 @@ def getProcessInfo( processId ):
   else:
     result = _processesInfo.get( processId )
     if result is None:
-      process = getProcess( processId )
+      process = getProcess( processId, checkUpdate=False )
       if process is not None:
         result = _processesInfo.get( process._id )
   return result
@@ -2318,8 +2318,7 @@ def addProcessInfo( processId, processInfo ):
   _processesInfo[ processId ] = processInfo
   
 #----------------------------------------------------------------------------
-def getProcess( processId, ignoreValidation=False ):
-  #print '!getProcess!', processId
+def getProcess( processId, ignoreValidation=False, checkUpdate=True ):
   global _askUpdateProcess
   if processId is None: return None
   if isinstance( processId, Process ) or ( type(processId) in (types.ClassType, types.TypeType) and issubclass( processId, Process ) ):
@@ -2331,9 +2330,9 @@ def getProcess( processId, ignoreValidation=False ):
       #print '!getProcess!  class address =', object.__hash__( processId.__class__ )
       #global _processes
       #print '!getProcess!  _processes[ id ] address =', object.__hash__( _processes[ id ] )
-      process = getProcess( id )
+      process = getProcess( id, checkUpdate=False )
       if process is not None:
-        result = process
+        result=process
   elif isinstance( processId, dict ):
     if processId[ 'type' ] == 'iteration':
       return IterationProcess( _t_( 'iteration' ), [ getProcessInstance(i) for i in processId[ 'children' ] ] )
@@ -2351,30 +2350,34 @@ def getProcess( processId, ignoreValidation=False ):
       result = _processes.get( info.id )
       if result is None:
         result = readProcess( info.fileName, ignoreValidation=ignoreValidation )
+        checkUpdate=False
   if result is not None:
     # Check if process source file have changed
-    fileName = getattr( result, '_fileName', None )
-    if fileName is not None:
-      ntime = os.path.getmtime( fileName )
-      if ntime > result._fileTime:
-        update = 0
+    if checkUpdate:
+      fileName = getattr( result, '_fileName', None )
+      if fileName is not None:
         ask = _askUpdateProcess.get( result._id, 0 )
-        if ask == 0:
-          #if neuroConfig.userLevel > 0:
-          r = defaultContext().ask( _t_( '%s has been modified, would you like to update the process <em>%s</em> processes ? You should close all processes windows before reloading a process.' ) % \
-            ( result._fileName, _t_(result.name) ), _t_('Yes'), _t_('No'), _t_('Always'), _t_('Never') )
-          if r == 0:
-            update = 1
-          elif r == 2:
-            update = 1
-            _askUpdateProcess[ result._id ] = 1
-          elif r == 3:
+        # if the user choosed never updating the process, no need to check if it needs update
+        if (ask != 2): 
+          ntime = os.path.getmtime( fileName )
+          if ntime > result._fileTime:
             update = 0
-            _askUpdateProcess[ result._id ] = 2
-        elif ask == 1:
-          update = 1
-        if update:
-          result = readProcess( fileName )
+            if ask == 0:
+              #if neuroConfig.userLevel > 0:
+              r = defaultContext().ask( _t_( '%s has been modified, would you like to update the process <em>%s</em> processes ? You should close all processes windows before reloading a process.' ) % \
+                ( result._fileName, _t_(result.name) ), _t_('Yes'), _t_('No'), _t_('Always'), _t_('Never') )
+              if r == 0:
+                update = 1
+              elif r == 2:
+                update = 1
+                _askUpdateProcess[ result._id ] = 1
+              elif r == 3:
+                update = 0
+                _askUpdateProcess[ result._id ] = 2
+            elif ask == 1:
+              update = 1
+            if update:
+              result = readProcess( fileName )
   return result
 
 #----------------------------------------------------------------------------
@@ -2452,7 +2455,7 @@ def allProcessesInfo():
 
 
 #----------------------------------------------------------------------------
-def getConverter( source, destination ):
+def getConverter( source, destination, checkUpdate=True ):
   global _processes
   result = _converters.get( destination, {} ).get( source )
   if result is None:
@@ -2462,11 +2465,11 @@ def getConverter( source, destination ):
       while result is None and st:
         st = st.parent
         result = _converters.get( ( st, df ), {} ).get( ( st, sf ) )
-  return getProcess( result )
+  return getProcess( result, checkUpdate=checkUpdate )
 
 
 #----------------------------------------------------------------------------
-def getConvertersTo( destination, keepType=1 ):
+def getConvertersTo( destination, keepType=1, checkUpdate=True ):
   global _converters
   t, f = destination
   c = _converters.get( ( t, f ), {} )
@@ -2474,11 +2477,11 @@ def getConvertersTo( destination, keepType=1 ):
   while not c and t:
     t = t.parent
     c = _converters.get( ( t, f ), {} )
-  return dict([(n,getProcess(p)) for n,p in c.items()])
+  return dict([(n,getProcess(p, checkUpdate=checkUpdate)) for n,p in c.items()])
 
 
 #----------------------------------------------------------------------------
-def getConvertersFrom( source ):
+def getConvertersFrom( source, checkUpdate=True ):
   global _converters
   result = {}
   for destination, i in _converters.items():
@@ -2488,12 +2491,12 @@ def getConvertersFrom( source ):
       t = t.parent
       c = i.get( ( t, f ) )
     if c:
-      result[ destination ] = getProcess( c )
+      result[ destination ] = getProcess( c, checkUpdate=checkUpdate )
   return result
 
 
 #----------------------------------------------------------------------------
-def getViewer( source, enableConversion = 1 ):
+def getViewer( source, enableConversion = 1, checkUpdate=True ):
   global _viewers
   if isinstance( source, DiskItem ):
     t0 = source.type
@@ -2506,15 +2509,15 @@ def getViewer( source, enableConversion = 1 ):
     t = t.parent
     v = _viewers.get( ( t, f ) )
   if not v and enableConversion:
-    converters = getConvertersFrom( (t0, f) )
+    converters = getConvertersFrom( (t0, f), checkUpdate=checkUpdate )
     t = t0
     while not v and t:
       for tc, fc in converters.keys():
         if ( tc, fc ) != ( t0, f ):
-          v = getViewer( ( t, fc ), 0 )
+          v = _viewers.get( ( t, fc ) )
           if v: break
       t = t.parent
-  p =  getProcess( v )
+  p =  getProcess( v, checkUpdate=checkUpdate )
   if p and p.userLevel <= neuroConfig.userLevel:
     return p
   return None
@@ -2526,12 +2529,12 @@ def runViewer( source, context=None ):
     source = ReadDiskItem( 'Any Type', formats.keys() ).findValue( source )
   if context is None:
     context = defaultContext()
-  viewer = getViewer( source )
+  viewer = getViewer( source, checkUpdate=False )
   return context.runProcess( viewer, source )
 
 
 #----------------------------------------------------------------------------
-def getDataEditor( source, enableConversion = 0 ):
+def getDataEditor( source, enableConversion = 0, checkUpdate=True ):
   global _dataEditors
   if isinstance( source, DiskItem ):
     t0 = source.type
@@ -2544,21 +2547,21 @@ def getDataEditor( source, enableConversion = 0 ):
     t = t.parent
     v = _dataEditors.get( ( t, f ) )
   if not v and enableConversion:
-    converters = getConvertersFrom( (t0, f) )
+    converters = getConvertersFrom( (t0, f), checkUpdate=checkUpdate )
     t = t0
     while not v and t:
       for tc, fc in converters.keys():
         if ( tc, fc ) != ( t0, f ):
-          v = getDataEditor( ( t, fc ), 0 )
+          v = _dataEditors.get( ( t, fc ) )
           if v: break
       t = t.parent
-  p =  getProcess( v )
+  p =  getProcess( v, checkUpdate=checkUpdate )
   if p and p.userLevel <= neuroConfig.userLevel:
     return p
   return None
 
 #----------------------------------------------------------------------------
-def getImporter( source ):
+def getImporter( source, checkUpdate=True ):
   global _processes
   if isinstance( source, DiskItem ):
     t0 = source.type
@@ -2570,7 +2573,7 @@ def getImporter( source ):
   while not v and t:
     t = t.parent
     v = _importers.get( ( t, f ) )
-  p =  getProcess( v )
+  p =  getProcess( v, checkUpdate=checkUpdate )
   if p and p.userLevel <= neuroConfig.userLevel:
     return p
   return None

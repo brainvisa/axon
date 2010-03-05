@@ -322,7 +322,7 @@ class HierarchyBrowser( QWidget ):
             item.viewer=neuroProcesses.defaultContext().runProcess(viewer, item.diskItem)
   
     def viewCondition(self, item):
-      return item and item.diskItem and not getattr(item, "viewer", None) and neuroProcesses.getViewer(item.diskItem)
+      return item and item.diskItem and not getattr(item, "viewer", None) and neuroProcesses.getViewer(item.diskItem, checkUpdate=False)
     
     def menuHideEvent(self):
       items=self.selectedItems()

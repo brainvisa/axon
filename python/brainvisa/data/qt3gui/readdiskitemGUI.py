@@ -89,7 +89,7 @@ class DiskItemEditor( QHBox, DataEditor ):
     self.btnShow.setToggleButton( True )
     self.btnShow.setFocusPolicy( QWidget.NoFocus )
     self.btnShow.setEnabled( False )
-    if not neuroProcesses.getViewer( (self.parameter.type, self.parameter.formats[0] ), 1 ):
+    if not neuroProcesses.getViewer( (self.parameter.type, self.parameter.formats[0] ), 1, checkUpdate=False ):
       self.btnShow.hide()
     self._view = None
     self.connect( self.btnShow, SIGNAL( 'clicked()' ), self.showPressed )
@@ -100,7 +100,7 @@ class DiskItemEditor( QHBox, DataEditor ):
     self.btnEdit.setToggleButton( 1 )
     self.btnEdit.setFocusPolicy( QWidget.NoFocus )
     self.btnEdit.setEnabled( 0 )
-    if not neuroProcesses.getDataEditor( (self.parameter.type, self.parameter.formats[0] ) ):
+    if not neuroProcesses.getDataEditor( (self.parameter.type, self.parameter.formats[0] ), checkUpdate=False ):
       self.btnEdit.hide()
     self.connect( self.btnEdit, SIGNAL( 'clicked()' ), self.editPressed )
     self.connect( self.btnEdit, PYSIGNAL( 'rightPressed' ),
@@ -181,7 +181,7 @@ class DiskItemEditor( QHBox, DataEditor ):
   def checkReadable( self ):
     if self.btnShow:
       enabled = 0
-      v = neuroProcesses.getViewer( (self.parameter.type, self.parameter.formats[0] ), 1 )
+      v = neuroProcesses.getViewer( (self.parameter.type, self.parameter.formats[0] ), 1, checkUpdate=False )
       if v:
         self.btnShow.show()
       else:
@@ -192,7 +192,7 @@ class DiskItemEditor( QHBox, DataEditor ):
       self.btnShow.setEnabled( enabled )
     if self.btnEdit:
       enabled = 0
-      v = neuroProcesses.getDataEditor( (self.parameter.type, self.parameter.formats[0] ) )
+      v = neuroProcesses.getDataEditor( (self.parameter.type, self.parameter.formats[0] ), checkUpdate=False )
       if v:
         self.btnEdit.show()
       else:

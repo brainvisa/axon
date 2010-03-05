@@ -86,7 +86,7 @@ class DiskItemEditor( QWidget, DataEditor ):
     self.btnShow.setIconSize(QSize(*largeIconSize))
     self.btnShow.setFocusPolicy( Qt.NoFocus )
     self.btnShow.setEnabled( False )
-    if not neuroProcesses.getViewer( (self.parameter.type, self.parameter.formats[0] ), 1 ):
+    if not neuroProcesses.getViewer( (self.parameter.type, self.parameter.formats[0] ), 1, checkUpdate=False ):
       self.btnShow.hide()
     self._view = None
     self.connect( self.btnShow, SIGNAL( 'clicked()' ), self.showPressed )
@@ -99,7 +99,7 @@ class DiskItemEditor( QWidget, DataEditor ):
     self.btnEdit.setIconSize(QSize(*largeIconSize))
     self.btnEdit.setFocusPolicy( Qt.NoFocus )
     self.btnEdit.setEnabled( 0 )
-    if not neuroProcesses.getDataEditor( (self.parameter.type, self.parameter.formats[0] ) ):
+    if not neuroProcesses.getDataEditor( (self.parameter.type, self.parameter.formats[0] ), checkUpdate=False ):
       self.btnEdit.hide()
     self.connect( self.btnEdit, SIGNAL( 'clicked()' ), self.editPressed )
     self.connect( self.btnEdit, SIGNAL( 'rightPressed' ),
@@ -186,7 +186,7 @@ class DiskItemEditor( QWidget, DataEditor ):
   def checkReadable( self ):
     if self.btnShow:
       enabled = 0
-      v = neuroProcesses.getViewer( (self.parameter.type, self.parameter.formats[0] ), 1 )
+      v = neuroProcesses.getViewer( (self.parameter.type, self.parameter.formats[0] ), 1, checkUpdate=False )
       if v:
         self.btnShow.show()
       else:
@@ -197,7 +197,7 @@ class DiskItemEditor( QWidget, DataEditor ):
       self.btnShow.setEnabled( enabled )
     if self.btnEdit:
       enabled = 0
-      v = neuroProcesses.getDataEditor( (self.parameter.type, self.parameter.formats[0] ) )
+      v = neuroProcesses.getDataEditor( (self.parameter.type, self.parameter.formats[0]), checkUpdate=False )
       if v:
         self.btnEdit.show()
       else:
