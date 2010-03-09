@@ -384,7 +384,11 @@ class DiskItem:
     if r is None: r = self._minfAttributes.get( attrName )
     if r is None: r = self._otherAttributes.get( attrName )
     if r is None: r = self._localAttributes.get( attrName )
-    if r is None: r = aimsFileInfo( self.fullPath() ).get( attrName )
+    if r is None:
+      info = aimsFileInfo( self.fullPath() )
+      for k, v in info.iteritems():
+        self._otherAttributes.setdefault( k, v )
+      r = info.get( attrName )
     if r is None:
       if self.parent: return self.parent.get( attrName, default )
       else: return default
@@ -1523,9 +1527,15 @@ except:
 
 #----------------------------------------------------------------------------
 def aimsFileInfo( fileName ):
+  from neuroProcesses import defaultContext
   from neuroProcessesGUI import mainThreadActions
   global _finder
   result = {}
+  if fileName.endswith( '.ima.gz' ) or fileName.endswith( '.dim.gz' ) or fileName.endswith( '.ima.Z' ) or fileName.endswith( '.dim.Z' ):
+    context = defaultContext()
+    tmp = context.temporary( 'GIS image' )
+    context.runProcess( 'uncompressGIS', fileName, tmp, False )
+    fileName = tmp.fullPath()
   try:
     if _finder is not None:
       finder = aims.Finder()
