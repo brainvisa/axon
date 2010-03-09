@@ -52,7 +52,6 @@ class ReadDiskItem( Parameter ):
     self.type = getDiskItemType( diskItemType )
     self.formats = getFormats( formats )
     self.enableConversion = enableConversion
-    self.requiredFormats=None
     self.requiredAttributes = requiredAttributes
     self._write = False
     #self._modified = 0
@@ -68,18 +67,18 @@ class ReadDiskItem( Parameter ):
   
   # Allow direct affectation to requiredAttributes for backward compatibility
   def _getRequiredAttributes( self ):
-    if self.requiredFormats is None:
+    if self._formatsWithConverter is None:
+      self._formatsWithConverter={}
       self.requiredAttributes = self._requiredAttributes
     return self._requiredAttributes
     
   def _setRequiredAttributes( self, value ):
     self._requiredAttributes = value.copy()
     self._requiredAttributes[ '_type' ] = self.type.name
-    if self.requiredFormats is None:
-      formats = set( self.database.formats.getFormat( f.name, f ).name for f in self.formats )
-      #if self._debug is not None:
-        #print >> self._debug, '!_setRequiredAttributes!', self, self.type, 'formats', [f for f in self.formats]
-      if self.enableConversion and self._formatsWithConverter is None:
+    formats = set( self.database.formats.getFormat( f.name, f ).name for f in self.formats )
+    #if self._debug is not None:
+    #print >> self._debug, '!_setRequiredAttributes!', self, self.type, 'formats', [f for f in self.formats]
+    if self.enableConversion and self._formatsWithConverter is not None:
         self._formatsWithConverter = {}
         #if self._debug is not None:
           #print >> self._debug, '!_setRequiredAttributes!', self, self.type, 'conversion enabled'
@@ -98,10 +97,10 @@ class ReadDiskItem( Parameter ):
             if formatName not in formats:
               self._formatsWithConverter[ formatName ] = converter
         formats.update( self._formatsWithConverter.iterkeys() )
-      self.requiredFormats=formats
+
     #elif self._debug is not None:
       #print >> self._debug, '!_setRequiredAttributes!', self, self.type, 'conversion disabled'
-    self._requiredAttributes[ '_format' ] = self.requiredFormats
+    self._requiredAttributes[ '_format' ] = formats
     #if self._debug is not None:
       #if self._formatsWithConverter:
         #print >> self._debug, '!_setRequiredAttributes!', self, self.type, '_formatsWithConverter', self._formatsWithConverter
