@@ -844,7 +844,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     self.labName.setLineWidth( 1 )
     self.labName.setMargin( 5 )
     self.labName.setAlignment( Qt.AlignCenter )
-    self.labName.setWordWrap(True)
+    self.labName.setWordWrap( True )
     font = self.labName.font()
     font.setPointSize( QFontInfo( font ).pointSize() + 4 )
     self.labName.setFont( font )
@@ -1505,7 +1505,7 @@ class IterationDialog( QDialog ):
 
 #----------------------------------------------------------------------------
 
-class UserDialog( QDialog ): # Ex QSemiModal
+class UserDialog( QDialog ):
   def __init__( self, parent, modal, message, signature, buttons ):
     flags =  Qt.Window | Qt.Dialog
     QDialog.__init__( self, parent, flags )
@@ -1521,6 +1521,7 @@ class UserDialog( QDialog ): # Ex QSemiModal
     self._currentDirectory = None
     if message is not None:
       lab = QLabel( unicode(message) )
+      lab.setWordWrap( True )
       layout.addWidget(lab)
       lab.setSizePolicy( QSizePolicy( QSizePolicy.Preferred, QSizePolicy.Fixed ) )
 
