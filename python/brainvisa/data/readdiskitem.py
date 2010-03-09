@@ -52,6 +52,7 @@ class ReadDiskItem( Parameter ):
     self.type = getDiskItemType( diskItemType )
     self.formats = getFormats( formats )
     self.enableConversion = enableConversion
+    self.requiredFormats=None
     self.requiredAttributes = requiredAttributes
     self._write = False
     #self._modified = 0
@@ -67,39 +68,40 @@ class ReadDiskItem( Parameter ):
   
   # Allow direct affectation to requiredAttributes for backward compatibility
   def _getRequiredAttributes( self ):
-    if self._formatsWithConverter is None:
-      self._formatsWithConverter = {}
+    if self.requiredFormats is None:
       self.requiredAttributes = self._requiredAttributes
     return self._requiredAttributes
     
   def _setRequiredAttributes( self, value ):
     self._requiredAttributes = value.copy()
     self._requiredAttributes[ '_type' ] = self.type.name
-    formats = set( self.database.formats.getFormat( f.name, f ).name for f in self.formats )
-    #if self._debug is not None:
-      #print >> self._debug, '!_setRequiredAttributes!', self, self.type, 'formats', [f for f in self.formats]
-    if self.enableConversion and self._formatsWithConverter is not None:
-      self._formatsWithConverter = {}
+    if self.requiredFormats is None:
+      formats = set( self.database.formats.getFormat( f.name, f ).name for f in self.formats )
       #if self._debug is not None:
-        #print >> self._debug, '!_setRequiredAttributes!', self, self.type, 'conversion enabled'
-      any = getDiskItemType( 'Any type' )
-      for f in self.formats:
+        #print >> self._debug, '!_setRequiredAttributes!', self, self.type, 'formats', [f for f in self.formats]
+      if self.enableConversion and self._formatsWithConverter is None:
+        self._formatsWithConverter = {}
         #if self._debug is not None:
-          #print >> self._debug, '!_setRequiredAttributes!', self, self.type, 'Examining converters to', f, '(' + repr( type(f) ) + ')', len( neuroProcesses._converters )
-        convs = neuroProcesses.getConvertersTo( ( any, f ), checkUpdate=False )
-        convs.update( neuroProcesses.getConvertersTo( ( self.type, f ),
-          keepType=0, checkUpdate=False ) )
-        for type_format, converter in convs.iteritems():
-          typ, format = type_format
-          formatName = self.database.formats.getFormat( format.name, format ).name
+          #print >> self._debug, '!_setRequiredAttributes!', self, self.type, 'conversion enabled'
+        any = getDiskItemType( 'Any type' )
+        for f in self.formats:
           #if self._debug is not None:
-            #print >> self._debug, '!_setRequiredAttributes!', self, self.type, '  <--', formatName
-          if formatName not in formats:
-            self._formatsWithConverter[ formatName ] = converter
-      formats.update( self._formatsWithConverter.iterkeys() )
+            #print >> self._debug, '!_setRequiredAttributes!', self, self.type, 'Examining converters to', f, '(' + repr( type(f) ) + ')', len( neuroProcesses._converters )
+          convs = neuroProcesses.getConvertersTo( ( any, f ), checkUpdate=False )
+          convs.update( neuroProcesses.getConvertersTo( ( self.type, f ),
+            keepType=0, checkUpdate=False ) )
+          for type_format, converter in convs.iteritems():
+            typ, format = type_format
+            formatName = self.database.formats.getFormat( format.name, format ).name
+            #if self._debug is not None:
+              #print >> self._debug, '!_setRequiredAttributes!', self, self.type, '  <--', formatName
+            if formatName not in formats:
+              self._formatsWithConverter[ formatName ] = converter
+        formats.update( self._formatsWithConverter.iterkeys() )
+      self.requiredFormats=formats
     #elif self._debug is not None:
       #print >> self._debug, '!_setRequiredAttributes!', self, self.type, 'conversion disabled'
-    self._requiredAttributes[ '_format' ] = formats
+    self._requiredAttributes[ '_format' ] = self.requiredFormats
     #if self._debug is not None:
       #if self._formatsWithConverter:
         #print >> self._debug, '!_setRequiredAttributes!', self, self.type, '_formatsWithConverter', self._formatsWithConverter
