@@ -248,6 +248,9 @@ class HTMLBrowser( QWidget ):
           openWeb(bvp)
         except:
           neuroException.showException()
+      elif bvp.startswith( 'file://' ) and bvp.endswith( '.py' ):
+        TextBrowserWithSearch.setSource( self, url )
+        self.setHtml( '<html><body><pre>' + open( bvp[ 7: ] ).read() + '</pre></body></html>' )
       else:
         TextBrowserWithSearch.setSource( self, url )
         
