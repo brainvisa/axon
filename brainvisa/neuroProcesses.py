@@ -1927,7 +1927,6 @@ class ExecutionContext:
     finally:
       self._processFinished( result )
       process.restoreConvertedValues()
-    
       if neuroConfig.newDatabases:
         for item_hash in self._allWriteDiskItems:
           item, hash = item_hash
@@ -1942,7 +1941,7 @@ class ExecutionContext:
               except:
                 showException()
               item_hash[ 1 ] = item.modificationHash()
-          else:
+          elif (process.isMainProcess): # clear unused minfs only when the main process is finished to avoid clearing minf that will be used in next steps
             item.clearMinf()
       # Close output log file
       if process._outputLogFile is not None:

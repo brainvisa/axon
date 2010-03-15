@@ -79,6 +79,9 @@ def modificationHashOrEmpty( f ):
 
 #----------------------------------------------------------------------------
 class DiskItem:
+  
+  _minfLock=RLock()
+  
   def __init__( self, name, parent ):
     self.name = name
     if name and name[ -5: ] != '.minf': 
@@ -704,11 +707,15 @@ class DiskItem:
   
   def uuid( self, saveMinf=True ):
     if self._uuid is None:
-      attrs = self._readMinf()
-      if attrs and attrs.has_key( 'uuid' ):
-        self._changeUuid( Uuid( attrs[ 'uuid' ] ) )
-      else:
-        self.setUuid( Uuid(), saveMinf=saveMinf )
+      self._minfLock.acquire()
+      try:
+        attrs = self._readMinf()
+        if attrs and attrs.has_key( 'uuid' ):
+          self._changeUuid( Uuid( attrs[ 'uuid' ] ) )
+        else:
+          self.setUuid( Uuid(), saveMinf=saveMinf )
+      finally:
+        self._minfLock.release()
     return self._uuid
   
   
