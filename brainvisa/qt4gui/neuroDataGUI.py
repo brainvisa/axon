@@ -64,6 +64,7 @@ class StringEditor( QLineEdit, DataEditor ):
       self.setObjectName( name )
     self.setMaxLength(-1)
     self.connect( self, SIGNAL( 'returnPressed()' ), self.setFocusNext )
+    self.connect( self, SIGNAL( 'lostFocus()' ), self.checkValue )
     self.value = None
     self.setValue( None, True )
       
@@ -90,8 +91,7 @@ class StringEditor( QLineEdit, DataEditor ):
       self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
   
   def setFocusNext( self ):
-    self.checkValue()
-    QApplication.postEvent( self, QKeyEvent( QEvent.KeyPress, 0x1001, 8, 0 ) )
+    self.focusNextChild()
 
   def checkValue( self ):
     value = self._valueFromText( unicode( self.text() ) )
@@ -264,7 +264,7 @@ class OpenChoiceEditor( QComboBox, DataEditor ):
 
   def setFocusNext( self ):
     self.checkValue()
-    QApplication.postEvent( self, QKeyEvent( QEvent.KeyPress, 0x1001, 8, 0 ) )
+    self.focusNextChild()
 
   def checkValue( self ):
     value=unicode( self.currentText() )
@@ -414,7 +414,7 @@ class StringListEditor( QLineEdit, DataEditor ):
     return quote + result + quote
   
   def setFocusNext( self ):
-    QApplication.postEvent( self, QKeyEvent( QEvent.KeyPress, 0x1001, 8, 0 ) )
+    self.focusNextChild()
 
   def checkValue( self ):
     currentValue = self._valueFromText( str( self.text().toLatin1() ) )
@@ -757,7 +757,7 @@ class PointListEditor( QWidget, DataEditor ):
         lambda point: string.join( map( str, point ) ), value ), ',' ) )
   
   def setFocusNext( self ):
-    QApplication.postEvent(self.led, QKeyEvent( QEvent.KeyPress, 0x1001, 8, 0 ))
+    self.focusNextChild()
 
   def textChanged( self ):
     try:
