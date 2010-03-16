@@ -579,17 +579,29 @@ class ParameterLabel( QLabel ):
                                                    self.defaultChanged )
     self.default_id.setCheckable(True)
     self.default_id.setChecked( True )
+    self.setAutoFillBackground(True)
+    self.setBackgroundRole(QPalette.Window)
+    
 
   def contextMenuEvent( self, e ):
     self.contextMenu.exec_( e.globalPos() )
     e.accept()
 
-  def defaultChanged( self, checked ):
-    self.default_id.toggle()
+  def defaultChanged( self, checked=False ):
+    #self.default_id.toggle()
     self.emit( SIGNAL( 'toggleDefault' ), self.parameterName )
+    if self.default_id.isChecked():
+      self.setBackgroundRole(QPalette.Window)
+    else:
+      self.setBackgroundRole(QPalette.Light)
+
 
   def setDefault( self, default ):
     self.default_id.setChecked( default )
+    if default:
+      self.setBackgroundRole(QPalette.Window)
+    else:
+      self.setBackgroundRole(QPalette.Light)
 
 
 #------------------------------------------------------------------------------
