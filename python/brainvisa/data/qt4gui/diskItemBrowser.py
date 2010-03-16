@@ -603,7 +603,12 @@ class DiskItemBrowser( QDialog ):
         
     return text
   
-  
+  def keyPressEvent(self, event):
+    if (event.key() == Qt.Key_Return):
+      event.ignore()
+    else:
+      QDialog.keyPressEvent(self, event)
+    
   def resetSelectedAttributes( self, selectedAttributes={} ):
     self._selectedAttributes = {}
     self._lastSelection = None
