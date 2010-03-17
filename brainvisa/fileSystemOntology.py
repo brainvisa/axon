@@ -719,7 +719,14 @@ class FileSystemOntology( object ):
       for directory in directories:
         files.extend(shelltools.filesFromShPatterns( os.path.join( directory, '*.py' ) ))
       files.sort()
-      self.execute( *files )
+      exc=self.execute( continue_on_error=True, *files )
+      if exc:
+        for e in exc:
+          try:
+            raise e
+          except:
+            showException(beforeError="Error while reading ontology "+ directory +": ")
+
       try:
         fso.content = self.localDict[ 'hierarchy' ]
       except Exception, e:
