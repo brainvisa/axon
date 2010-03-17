@@ -363,7 +363,7 @@ class HierarchyBrowser( QWidget ):
         del self.searchResult
       self.searchResult=SearchResultItem(self.lstHierarchy)
       sitem=None
-      for item in self.requestDialog._items:
+      for item in self.requestDialog.getAllValues():
         sitem = QTreeWidgetItem( self.searchResult, sitem )
         sitem.diskItem = item
         sitem.setText( 0, os.path.basename(item.fullPath()) )
