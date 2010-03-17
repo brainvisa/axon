@@ -591,7 +591,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
           self.browseDialog.setFileMode( self.browseDialog.Directory )
         parent = self._context
         if hasattr( parent, '_currentDirectory' ) and parent._currentDirectory:
-          self.browseDialog.setDir( parent._currentDirectory )
+          self.browseDialog.setDirectory( parent._currentDirectory )
       self.browseDialog.show()
 
     def browseAccepted( self ):
