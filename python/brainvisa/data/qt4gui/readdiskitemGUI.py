@@ -390,7 +390,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
       self.findDialog = None
       
       self.lbxValues = QListWidget( )
-      self.connect( self.lbxValues, SIGNAL('currentItemChanged( QListWidgetItem * )'), self._currentChanged )
+      self.connect( self.lbxValues, SIGNAL('currentRowChanged( int )'), self._currentChanged )
       layout.addWidget( self.lbxValues )
 
       hb = QHBoxLayout()
@@ -475,8 +475,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
       neuroConfig.unregisterObject( self )
       QWidget.closeEvent( self, event )
       
-    def _currentChanged( self ):
-      index = self.lbxValues.currentItem()
+    def _currentChanged( self, index ):
       if index >= 0 and index < len( self.values ):
         self.sle.setValue( [ self.values[ index ].fullPath() ] )
         self.btnRemove.setEnabled( 1 )
@@ -499,35 +498,35 @@ class DiskItemListEditor( QWidget, DataEditor ):
         for v in map( self.parameter.findValue, self.sle.getValue() ):
           self.values.append( v )
           if v is None:
-            self.lbxValues.insertItem( '<' + _t_('None') + '>' )
+            self.lbxValues.addItem( '<' + _t_('None') + '>' )
           else:
-            self.lbxValues.insertItem( v.fileName() )
-        self.lbxValues.setCurrentItem( len( self.values ) - 1 )   
+            self.lbxValues.addItem( v.fileName() )
+        self.lbxValues.setCurrentRow( len( self.values ) - 1 )   
       except:
         showException( parent=self )
     
     def _remove( self ):
-      index = self.lbxValues.currentItem()
+      index = self.lbxValues.currentRow()
       del self.values[ index ]
-      self.lbxValues.removeItem( index )
+      self.lbxValues.takeItem( index )
       
     def _up( self ):
       index = self.lbxValues.currentRow()
       tmp = self.values[ index ]
       self.values[ index ] = self.values[ index - 1 ]
       self.values[ index - 1 ] = tmp
-      tmp = self.lbxValues.currentItem().text( 0 )
       item=self.lbxValues.takeItem(index)
       self.lbxValues.insertItem(index-1, item)
+      self.lbxValues.setCurrentRow(index-1)
       
     def _down( self ):
       index = self.lbxValues.currentRow()
       tmp = self.values[ index ]
       self.values[ index ] = self.values[ index + 1 ]
       self.values[ index + 1 ] = tmp
-      tmp = self.lbxValues.text( index )
       item=self.lbxValues.takeItem(index)
-      self.lbxValues.insertItem(index+1)
+      self.lbxValues.insertItem(index+1, item)
+      self.lbxValues.setCurrentRow(index+1)
     
     def setValue( self, value ):
       if isinstance( value, ( list, tuple ) ):
