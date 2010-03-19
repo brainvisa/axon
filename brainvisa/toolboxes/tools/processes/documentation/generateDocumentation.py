@@ -34,9 +34,10 @@ import neuroConfig
 from brainvisa.data.sqlFSODatabase import SQLDatabase
 from soma.path import relative_path
 from brainvisa.toolboxes import getToolbox
+from fileSystemOntology import FileSystemOntology
 
 signature = Signature(
-  'ontology', Choice( 'brainvisa-3.1.0', 'brainvisa-3.0', 'shared' ),
+  'ontology', Choice( 'all', 'brainvisa-3.1.0', 'brainvisa-3.0', 'shared' ),
   'write_graphs', Boolean(),
   #'htmlDirectory', WriteDiskItem( 'Any type', 'Directory' ),
 )
@@ -333,7 +334,16 @@ def execution( self, context ):
             processesByFormats.setdefault( f, set() ).add( pi )
   
   tmpDatabase = context.temporary( 'Directory' )
-  database = SQLDatabase( ':memory:', tmpDatabase.fullPath(), fso=self.ontology )
+  if (self.ontology =='all'):
+    ontologies=FileSystemOntology.getOntologiesNames()
+  else:
+    ontologies=[self.ontology]
+  
+  databases=[]
+  for ontology in ontologies:  
+    database = SQLDatabase( ':memory:', tmpDatabase.fullPath(), fso=ontology )
+    databases.append(database)
+    
   
   # Create types inheritance graphs
   if distutils.spawn.find_executable('dot') is None:
@@ -365,10 +375,15 @@ def execution( self, context ):
         typeParent[ type.name ] = parentType.name
         typeChildren.setdefault( parentType.name, set() ).add( type.name )
     # get ontology rules
-    rules=database.fso.typeToPatterns.get(type, None)
-    if rules:
-      typeRules[type.name]=rules
-    typeKeys[type.name]=database.getTypesKeysAttributes(type.name)
+    typeRules[type.name]={}
+    typeKeys[type.name]={}
+    for database in databases:
+      rules=database.fso.typeToPatterns.get(type, None)
+      if rules:
+        typeRules[type.name][database.fso.name]=rules
+      keys=database.getTypesKeysAttributes(type.name)
+      if keys:
+        typeKeys[type.name][database.fso.name]=keys
   
   if self.write_graphs:
     tmpDot = os.path.join( tmpDatabase.fullPath(), 'tmp.dot' )
@@ -420,7 +435,7 @@ def execution( self, context ):
     # INDEX.HTML
     htmlDirectory=os.path.join( ontologyDirectory, l )
     index = open( os.path.join( htmlDirectory, 'index.html' ), 'w' )
-    print >> index, '<html>\n<body>\n<center><h1>' + database.fso.name + '</h1></center><a href="types/index.html">Data types</a><br><a href="formats/index.html">Formats</a>'
+    print >> index, '<html>\n<body>\n<center><h1>Data types and formats in BrainVISA ontologies</h1></center><a href="types/index.html">Data types</a><br><a href="formats/index.html">Formats</a>'
   
     # TYPES
     typesDirectory=os.path.join( htmlDirectory, 'types' )
@@ -428,17 +443,18 @@ def execution( self, context ):
     if not os.path.exists( typesDirectory ):
       os.mkdir( typesDirectory )
     types = open( os.path.join( typesDirectory, 'index.html' ), 'w' )  
-    print >> types, '<html>\n<body>\n<center><h1> Datatypes for ontology ' + database.fso.name + '</h1></center>'
+    print >> types, '<html>\n<body>\n<center><h1> Data types in BrainVISA </h1></center>'
     count = 0
     for diskItemType in allTypes :
       type=diskItemType.name
       count += 1
       typeFileName = type.replace( '/', '_' )
-      typeHTML = open( os.path.join( typesDirectory, typeFileName + '.html' ), 'w' )
+      htmlFileName = os.path.join( typesDirectory, typeFileName + '.html' )
+      typeHTML = open( htmlFileName, 'w' )
       typeEscaped = htmlEscape( type )
       context.write( 'Generate HTML for type', typeEscaped, '( ' + str( count ) + ' / ' + str( len( allTypes ) ) + ' )' )
       print >> types, '<a href="' + htmlEscape( typeFileName ) + '.html">' + typeEscaped + '</a><br/>'
-      print >> typeHTML, '<html>\n<body>\n<center><h1>' + typeEscaped +' (' + database.fso.name + ')</h1></center>'
+      print >> typeHTML, '<html>\n<body>\n<center><h1>' + typeEscaped +'</h1></center>'
       href=htmlEscape( relative_path( index.name, os.path.dirname( typeHTML.name ) ) )
       print >> typeHTML, '<a href="'+href+'">Return to index</a>'
 
@@ -447,7 +463,11 @@ def execution( self, context ):
         src=htmlEscape( relative_path( os.path.join( imagesDirectory, typeFileName + '_inheritance.png'), os.path.dirname( typeHTML.name ) ) )
         print >> typeHTML, '<center><img src="' +src + '" usemap="#' + htmlEscape(typeFileName) + ' inheritance"/></center>'
         print >> typeHTML, open( os.path.join( tmpDatabase.fullPath(), typeFileName+'_map.html' ) ).read()
-    
+
+      typeFileRef=relative_path(diskItemType.fileName, os.path.dirname(htmlFileName))
+      typeFileName=relative_path(diskItemType.fileName, os.path.dirname(neuroConfig.mainPath))
+      print >> typeHTML, '<p><em>Defined in file : </em><nobr><code><a href="'+typeFileRef+'">' + typeFileName + '</a></code></nobr></p>'
+
       print >> typeHTML, '<h2>Used in the following processes</h2><blockquote>'
       processes=sorted(processesByTypes.get( type, () ), key=nameKey)
       for pi in processes:
@@ -462,18 +482,23 @@ def execution( self, context ):
         print >> typeHTML, '<a href="' + href + '">' + htmlEscape( f ) + '</a><br/>'
       print >> typeHTML, '</blockquote>'
       
-      print >> typeHTML, '<h2>Associated ontology rules</h2><blockquote>'
-      for rule in typeRules.get( type, () ):
-        print >> typeHTML, htmlEscape(rule.pattern.pattern), "<br/>"
-      print >> typeHTML, '</blockquote>'
+      print >> typeHTML, '<h2>Associated ontology rules</h2>'
+      ontRules = typeRules.get( type, {} )
+      for ont, rules in ontRules.items():  
+        print >> typeHTML, "<li><b>", ont, "</b>:</li><blockquote>"
+        for rule in rules:
+          print >> typeHTML, htmlEscape(rule.pattern.pattern), "<br/>"
+        print >> typeHTML, '</blockquote>'
       
-      print >> typeHTML, '<h2>Keys attributes</h2><blockquote>'
-      keys=typeKeys.get( type, () )
-      if keys:
-        print >> typeHTML, htmlEscape(keys[0])
-        for key in keys[1:]:
-          print >> typeHTML, ",&nbsp;", htmlEscape(key)
-      print >> typeHTML, '</blockquote>'
+      print >> typeHTML, '<h2>Keys attributes</h2>'
+      ontKeys=typeKeys.get( type, {} )
+      for ont, keys in ontKeys.items():
+        if keys:
+          print >> typeHTML, "<li><b>", ont, "</b>:</li><blockquote>"
+          print >> typeHTML, htmlEscape(keys[0])
+          for key in keys[1:]:
+            print >> typeHTML, ",&nbsp;", htmlEscape(key)
+          print >> typeHTML, '</blockquote>'
 
     #dot = open( tmpDot, 'w' )
     #print >> dot, 'digraph "' + typeFileName + ' dataflow" {'
@@ -513,11 +538,12 @@ def execution( self, context ):
       os.mkdir( formatsDirectory )
     formatsFileName=os.path.join( formatsDirectory, 'index.html' )
     formats = open( formatsFileName, 'w' )
-    print >> formats, '<html>\n<body>\n<center><h1> Formats for ontology ' + database.fso.name + '</h1></center>'
+    print >> formats, '<html>\n<body>\n<center><h1> Formats in BrainVISA </h1></center>'
     
     for format in allFormats :
       formatFileName = format.name.replace( '/', '_' )
-      formatHTML = open( os.path.join( formatsDirectory, formatFileName + '.html' ), 'w' )
+      htmlFileName = os.path.join( formatsDirectory, formatFileName + '.html' )
+      formatHTML = open( htmlFileName, 'w' )
       formatEscaped = htmlEscape( format.name )
       context.write( 'Generate HTML for format ', formatEscaped )
       print >> formats, '<a href="' + htmlEscape( formatFileName ) + '.html">' + formatEscaped + '</a><br/>'
@@ -534,6 +560,10 @@ def execution( self, context ):
           patterns="<b>"+p.pattern+"</b>"
       print >> formatHTML, patterns, "</blockquote>"
 
+      formatFileRef=relative_path(format.fileName, os.path.dirname(htmlFileName))
+      formatFileName=relative_path(format.fileName, os.path.dirname(neuroConfig.mainPath))
+      print >> formatHTML, '<p><em>Defined in file: </em><nobr><code><a href="'+formatFileRef+'">' + formatFileName + '</a></code></nobr></p>'
+
       print >> formatHTML, '<h2>Used in the following processes</h2><blockquote>'
       processes=sorted(processesByFormats.get( format.name, () ), key=nameKey)
       for pi in processes:
@@ -549,11 +579,12 @@ def execution( self, context ):
       print >> formatHTML, '</blockquote>'
   
     # FORMATS LISTS
-    print >> formats, '<center><h1> Formats Lists for ontology ' + database.fso.name + '</h1></center>'
+    print >> formats, '<center><h1> Formats Lists in BrainVISA</h1></center>'
     
     for listName, format in sorted( formatLists.items() ):
       formatFileName = format.name.replace( '/', '_' )
-      formatHTML = open( os.path.join( formatsDirectory, formatFileName + '.html' ), 'w' )
+      htmlFileName = os.path.join( formatsDirectory, formatFileName + '.html' )
+      formatHTML = open( htmlFileName, 'w' )
       formatEscaped = htmlEscape( format.name )
       context.write( 'Generate HTML for format', formatEscaped )
       print >> formats, '<a href="' + htmlEscape( formatFileName ) + '.html">' + formatEscaped + '</a><br/>'
@@ -566,6 +597,10 @@ def execution( self, context ):
         fname=f.name.replace( "/", "_" )
         print >> formatHTML, "<a href='" + htmlEscape(fname) + ".html'>", f.name, "</a><br/>"
       print >> formatHTML, "</blockquote>"
+
+      formatFileRef=relative_path(format.fileName, os.path.dirname(htmlFileName))
+      formatFileName=relative_path(format.fileName, os.path.dirname(neuroConfig.mainPath))
+      print >> formatHTML, '<p><em>Defined in file: </em><nobr><code><a href="'+formatFileRef+'">' + formatFileName + '</a></code></nobr></p>'
 
       print >> formatHTML, '<h2>Used in the following processes</h2><blockquote>'
       processes=sorted(processesByFormats.get( format.name, () ), key=nameKey)
@@ -581,4 +616,5 @@ def execution( self, context ):
         print >> formatHTML, '<a href="' + href + '">' + htmlEscape( t ) + '</a><br/>'
       print >> formatHTML, '</blockquote>'
   
-  database.currentThreadCleanup()
+  for database in databases:
+    database.currentThreadCleanup()

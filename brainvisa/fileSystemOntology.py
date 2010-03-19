@@ -665,6 +665,17 @@ class FileSystemOntology( object ):
       if rule.scanner:
         stack = [rules+(r,) for r in rule.scanner.rules] + stack
 
+  def getOntologiesNames():
+    """Lists all the ontologies names found in fileSystemOntologiesPath. 
+    """
+    ontologies=set()
+    for fsoPath in neuroConfig.fileSystemOntologiesPath:
+      _, dirnames, _ = os.walk(fsoPath).next()
+      for ontology in dirnames:
+        ontologies.add(ontology)
+    return ontologies
+  getOntologiesNames = staticmethod( getOntologiesNames )   
+    
   def get( source ):
     '''Satic factory for creation of FileSystemOntology instances. The source can be:
     - The name of one of the FSO directories located in one of the "hierarchies" directories

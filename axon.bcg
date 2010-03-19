@@ -76,7 +76,7 @@ _versionString = str( _versionNumber ) + 'a'
       symlinks = self.getOption( 'symlinks' )
       dstdoc = os.path.join( packageDir(), self.docDir() )
       if 'userdoc' in packs:
-        docs = [ 'bv_man', 'en/help', 'fr/help', 'en/processes', 'fr/processes', 'ontology-brainvisa-3.1.0' ]
+        docs = [ 'bv_man', 'en/help', 'fr/help', 'en/processes', 'fr/processes', 'ontology-all' ]
         if 'private' in packs:
           # TODO: bv_tms should move to t1mri-private/tms
           docs += [ 'bv_training', 'bv_tms', 'bv_eegmeg' ]

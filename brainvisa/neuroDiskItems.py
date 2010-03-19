@@ -31,7 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-import types, string, re, sys, os, stat, threading, cPickle, operator, time
+import types, string, re, sys, os, stat, threading, cPickle, operator, time, traceback
 from weakref import ref, WeakValueDictionary
 from UserList import UserList
 from threading import RLock
@@ -978,6 +978,9 @@ class Format:
                 ignoreExclusive=0 ):
     if type( formatName ) is not types.StringType:
       raise ValueError( HTMLMessage(_t_('<em><code>%s</code></em> is not a valid format name') % formatName) )
+
+    tb=traceback.extract_stack(None, 2)
+    self.fileName=tb[0][0]
     self.name = formatName
     self.id = getId( self.name )
     # Check patterns
@@ -1090,7 +1093,10 @@ class FormatSeries( Format ):
     if type( formatName ) is not types.StringType:
       raise ValueError( HTMLMessage(_t_('<em><code>%s</code></em> is not a valid format name') % formatName) )
     if attributes is None:
-      attributes = baseFormat._formatAttributes  
+      attributes = baseFormat._formatAttributes
+    
+    tb=traceback.extract_stack(None, 2)
+    self.fileName=tb[0][0]
     self.name = formatName
     self.id = getId( self.name )
     self.baseFormat = baseFormat
@@ -1200,6 +1206,9 @@ class NamedFormatList( UserList ):
   def __init__( self, name, data ):
       self.name = name
       self.data = list(data)
+      tb=traceback.extract_stack(None, 2)
+      self.fileName=tb[0][0]
+
   
   def __str__( self ):
       return self.name
@@ -1287,6 +1296,9 @@ class DiskItemType:
     # Check name
     if type( typeName ) is not types.StringType:
       raise ValueError( _t_('a type name must be a string') )
+    
+    tb=traceback.extract_stack(None, 3)
+    self.fileName=tb[0][0]
     self.name = typeName
     self.id = getId( typeName )
     if parent is None: self.parent = None
