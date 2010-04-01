@@ -216,14 +216,14 @@ class ReadDiskItem( Parameter ):
               file_type = aimsFileInfo( fileName ).get( 'file_type' )
               if _debug is not None:
                 print >> _debug, '  aimsFileInfo returned file_type =', repr( file_type )
-                if file_type == 'DICOM':
-                  if _debug is not None:
-                    print >> _debug, '  creating DICOM DiskItem'
-                  result = File( fileName, None )
-                  result.format = getFormat( 'DICOM image' )
-                  result.type = None
-                  result._files = [ fileName ]
-                  result.readAndUpdateMinf()
+              if file_type == 'DICOM':
+                if _debug is not None:
+                  print >> _debug, '  creating DICOM DiskItem'
+                result = File( fileName, None )
+                result.format = getFormat( 'DICOM image' )
+                result.type = None
+                result._files = [ fileName ]
+                result.readAndUpdateMinf()
           else:
             result.readAndUpdateMinf()
         else:
