@@ -1970,7 +1970,11 @@ class ExecutionContext:
     return result
 
   def _currentProcess( self ):
-    return self._stackTop().process
+    stackTop = self._stackTop()
+    if stackTop is None:
+      return None
+    else:
+      return stackTop.process
 
   def _depth( self ):
     return len( self._processStack() )
