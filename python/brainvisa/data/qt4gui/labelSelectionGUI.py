@@ -108,7 +108,7 @@ class LabelSelectionEditor( QWidget, DataEditor ):
         del self._thread
 
     def newValue( self ):
-        self.emit( SIGNAL('newValidValue'), self.name(), self.value )
+        self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
         #self.emit( PYSIGNAL('noDefault'), ( self.name(),) )
 
     def diskItemChanged( self, name, val):
