@@ -30,15 +30,25 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from neuroProcesses import *
-from backwardCompatibleQt import *
+try:
+  from backwardCompatibleQt import QVBox, QFileDialog, QPixmap, QLabel, QHBox, QComboBox, SIGNAL, QListBox, QLineEdit, QPushButton, QWidget
+  qtok=True
+except:
+  qtok=False
+  
 from brainvisa.data import ftpDirectory
 import shfjGlobals
 import re
+import sys
 
 name = 'Get Data From Mador'
 userLevel = 0
 
 signature = Signature()
+
+def validation():
+  if not qtok:
+    raise ValidationError( "This process needs qt3." )
 
 
 def splitExtension( fileName ):
@@ -179,125 +189,126 @@ def initialization( self ):
     ( 'Analyse / SPM', 'img' ),
   ]
 
-class ImaservGUI( QVBox ):
-  class DirectoryDialog( QFileDialog ):
-    def __init__( self, parent ):
-      QFileDialog.__init__( self, parent )
-      self.setMode( QFileDialog.DirectoryOnly )
+if qtok:
+  class ImaservGUI( QVBox ):
+    class DirectoryDialog( QFileDialog ):
+      def __init__( self, parent ):
+        QFileDialog.__init__( self, parent )
+        self.setMode( QFileDialog.DirectoryOnly )
+        
+      def accept( self ):
+        self.emit( PYSIGNAL( 'accept' ), () )
+        QFileDialog.accept( self )
+    
+    def __init__( self, values, context, parent ):
+      self.parentDirectory = None
+      self.context = None
+      QVBox.__init__( self, parent )
+      if getattr( ImaservGUI, 'pixBrowse', None ) is None:
+        setattr( ImaservGUI, 'pixBrowse', QPixmap( os.path.join( neuroConfig.iconPath, 'browse_write.png' ) ) )
+  
+      hb = QHBox( self )
+      QLabel( 'Scanner: ', hb )
+      self.cmbScanner = QComboBox( hb, 'cmbScanner' )
+      if context is not None:
+        scannerNames = context.process.scanners.keys()
+        scannerNames.sort()
+        for scanner in scannerNames:
+          self.cmbScanner.insertItem( scanner )
+      self.connect( self.cmbScanner, SIGNAL( 'activated( int )' ),
+                    self.scannerChanged )
+      self.currentScanner = None
       
-    def accept( self ):
-      self.emit( PYSIGNAL( 'accept' ), () )
-      QFileDialog.accept( self )
-  
-  def __init__( self, values, context, parent ):
-    self.parentDirectory = None
-    self.context = None
-    QVBox.__init__( self, parent )
-    if getattr( ImaservGUI, 'pixBrowse', None ) is None:
-      setattr( ImaservGUI, 'pixBrowse', QPixmap( os.path.join( neuroConfig.iconPath, 'browse_write.png' ) ) )
-
-    hb = QHBox( self )
-    QLabel( 'Scanner: ', hb )
-    self.cmbScanner = QComboBox( hb, 'cmbScanner' )
-    if context is not None:
-      scannerNames = context.process.scanners.keys()
-      scannerNames.sort()
-      for scanner in scannerNames:
-        self.cmbScanner.insertItem( scanner )
-    self.connect( self.cmbScanner, SIGNAL( 'activated( int )' ),
-                  self.scannerChanged )
-    self.currentScanner = None
-    
-    self.labDirectory = QLabel( 'Directory:', self )
-    self.lbxDirectories = QListBox( self )
-    self.connect( self.lbxDirectories, SIGNAL( 'highlighted( int )' ), 
-                  self.directorySelected )
-    QLabel( 'Files: ', self )
-    self.lbxFiles = QListBox( self )
-    self.lbxFiles.setSelectionMode( QListBox.Multi )
-    # self.lbxFiles.setSizePolicy( QSizePolicy( QSizePolicy.Expanding, QSizePolicy.MinimumExpanding ) )
-    self._acceptDirectorySelection = 1
-    self.scannerChanged( 0 )
-    
-    hb = QHBox( self )
-    QLabel( 'Output format: ', hb )
-    self.cmbFormats = QComboBox( hb, 'cmbFormats' )
-    if context is not None:
-      for f in context.process.formats:
-        self.cmbFormats.insertItem( f[0] )
-
-    hb = QHBox( self )
-    QLabel( 'Output directory: ', hb )
-    self.ledOutputDirectory = QLineEdit( hb )
-    btn = QPushButton( hb )
-    btn.setPixmap( self.pixBrowse )
-    btn.setFocusPolicy( QWidget.NoFocus )
-    self.connect( btn, SIGNAL( 'clicked()' ), self.browseOutputDirectory )
-    self.browseDialog = None
-  
-    hb = QHBox( self )
-    btn = QPushButton( 'retrieve', hb )
-    # btn.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-    if context is not None:
-      self.connect( btn, SIGNAL( 'clicked()' ), context._runButton )
-    self.context = context
-
-  def scannerChanged( self, index ):
-    scannerName = str( self.cmbScanner.text( index ).latin1() )
-    if self.context is not None:
-      self.currentScanner = self.context.process.scanners[ scannerName ]
-      self.parentDirectories = []
-      self.currentDirectory = self.currentScanner.storage.get( '' )
-      self.changeDirectory()
-    
-  
-  def changeDirectory( self ):
-    self._acceptDirectorySelection = 0
-    try:
-      self.lbxDirectories.clear()
-      self.directoryItems = []
-      self.lbxFiles.clear()
-      self.fileItems = []
-      self.labDirectory.setText( 'Directory: <b>' + str( self.currentDirectory ) + \
-                                 '</b>')
-      if self.parentDirectories:
-        self.lbxDirectories.insertItem( '..' )
-        self.directoryItems.append( None )
-      for item in self.currentDirectory.children():
-        if item.hasChildren():
-          self.lbxDirectories.insertItem( item.name() )
-          self.directoryItems.append( item )
-        else:
-          self.lbxFiles.insertItem( item.name() + '  ' + readableSize( item.size() ) )
-          self.fileItems.append( item )
-    finally:
+      self.labDirectory = QLabel( 'Directory:', self )
+      self.lbxDirectories = QListBox( self )
+      self.connect( self.lbxDirectories, SIGNAL( 'highlighted( int )' ), 
+                    self.directorySelected )
+      QLabel( 'Files: ', self )
+      self.lbxFiles = QListBox( self )
+      self.lbxFiles.setSelectionMode( QListBox.Multi )
+      # self.lbxFiles.setSizePolicy( QSizePolicy( QSizePolicy.Expanding, QSizePolicy.MinimumExpanding ) )
       self._acceptDirectorySelection = 1
-
-  def directorySelected( self, index ):
-    if self._acceptDirectorySelection:
-      if index >= 0:
-        newDirectory = self.directoryItems[ index ]
-        if newDirectory is None:
-          # '..' has been choosen
-          self.currentDirectory = self.parentDirectories.pop()
-          self.changeDirectory()
-        else:
-          self.parentDirectories.append( self.currentDirectory )
-          self.currentDirectory = self.directoryItems[ index ]
-          self.changeDirectory()
-
-  def browseOutputDirectory( self ):
-    if self.browseDialog is None:
-      self.browseDialog = self.DirectoryDialog( self.topLevelWidget() )
-      self.connect( self.browseDialog, 
-                    PYSIGNAL( 'accept' ),
-                    self.browseOutputDirectoryAccepted )
-    self.browseDialog.show()
-    
-  def browseOutputDirectoryAccepted( self ):
-    self.ledOutputDirectory.setText( self.browseDialog.selectedFile() )
-
+      self.scannerChanged( 0 )
+      
+      hb = QHBox( self )
+      QLabel( 'Output format: ', hb )
+      self.cmbFormats = QComboBox( hb, 'cmbFormats' )
+      if context is not None:
+        for f in context.process.formats:
+          self.cmbFormats.insertItem( f[0] )
   
+      hb = QHBox( self )
+      QLabel( 'Output directory: ', hb )
+      self.ledOutputDirectory = QLineEdit( hb )
+      btn = QPushButton( hb )
+      btn.setPixmap( self.pixBrowse )
+      btn.setFocusPolicy( QWidget.NoFocus )
+      self.connect( btn, SIGNAL( 'clicked()' ), self.browseOutputDirectory )
+      self.browseDialog = None
+    
+      hb = QHBox( self )
+      btn = QPushButton( 'retrieve', hb )
+      # btn.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
+      if context is not None:
+        self.connect( btn, SIGNAL( 'clicked()' ), context._runButton )
+      self.context = context
+  
+    def scannerChanged( self, index ):
+      scannerName = str( self.cmbScanner.text( index ).latin1() )
+      if self.context is not None:
+        self.currentScanner = self.context.process.scanners[ scannerName ]
+        self.parentDirectories = []
+        self.currentDirectory = self.currentScanner.storage.get( '' )
+        self.changeDirectory()
+      
+    
+    def changeDirectory( self ):
+      self._acceptDirectorySelection = 0
+      try:
+        self.lbxDirectories.clear()
+        self.directoryItems = []
+        self.lbxFiles.clear()
+        self.fileItems = []
+        self.labDirectory.setText( 'Directory: <b>' + str( self.currentDirectory ) + \
+                                   '</b>')
+        if self.parentDirectories:
+          self.lbxDirectories.insertItem( '..' )
+          self.directoryItems.append( None )
+        for item in self.currentDirectory.children():
+          if item.hasChildren():
+            self.lbxDirectories.insertItem( item.name() )
+            self.directoryItems.append( item )
+          else:
+            self.lbxFiles.insertItem( item.name() + '  ' + readableSize( item.size() ) )
+            self.fileItems.append( item )
+      finally:
+        self._acceptDirectorySelection = 1
+  
+    def directorySelected( self, index ):
+      if self._acceptDirectorySelection:
+        if index >= 0:
+          newDirectory = self.directoryItems[ index ]
+          if newDirectory is None:
+            # '..' has been choosen
+            self.currentDirectory = self.parentDirectories.pop()
+            self.changeDirectory()
+          else:
+            self.parentDirectories.append( self.currentDirectory )
+            self.currentDirectory = self.directoryItems[ index ]
+            self.changeDirectory()
+  
+    def browseOutputDirectory( self ):
+      if self.browseDialog is None:
+        self.browseDialog = self.DirectoryDialog( self.topLevelWidget() )
+        self.connect( self.browseDialog, 
+                      PYSIGNAL( 'accept' ),
+                      self.browseOutputDirectoryAccepted )
+      self.browseDialog.show()
+      
+    def browseOutputDirectoryAccepted( self ):
+      self.ledOutputDirectory.setText( self.browseDialog.selectedFile() )
+  
+    
     
 def inlineGUI( self, values, context, parent ):
   result = ImaservGUI( values, context, parent )
