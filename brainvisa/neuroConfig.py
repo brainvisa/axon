@@ -215,7 +215,8 @@ for i in ( 'LANGUAGE', 'LC_ALL', 'LC_MESSAGES', 'LANG' ):
   if language in _languages: break
 if language not in _languages:
   language = 'en'
-
+# variable to ensure the format used for numbers
+os.environ["LC_NUMERIC"]="C"
 
 # debug console defaults
 shell = 0
