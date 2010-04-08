@@ -99,7 +99,7 @@ class EventFilter( QObject ):
     except:
       pass
     return False
-  
+    
   
 def setQtApplicationStyle( newStyle ):
   if not newStyle:
@@ -258,12 +258,14 @@ if neuroConfig.gui:
 # the top-level windows that do not have one. But it crashes due
 # to a PyQt bug. This bug has been reported and fixed in earlier
 # versions.
-  global _globalEventFilter
-  _globalEventFilter = EventFilter()
-  qApp.installEventFilter( _globalEventFilter )
+  
   if USE_QT4:
+    neuroConfig.qtApplication.setWindowIcon( QIcon( os.path.join( iconPath, 'icon.png' )) )
     QDir.addSearchPath("", os.path.join( neuroConfig.docPath, 'processes' ))
   else:
+    global _globalEventFilter
+    _globalEventFilter = EventFilter()
+    qApp.installEventFilter( _globalEventFilter )
     QMimeSourceFactory.defaultFactory().addFilePath( \
     os.path.join( neuroConfig.docPath, 'processes' ) )
   neuroConfig.guiLoaded = True
