@@ -420,7 +420,7 @@ class ExecutionContextGUI( neuroProcesses.ExecutionContext):
   def ask( self, message, *buttons, **kwargs ):
     modal=kwargs.get("modal", 1)
     dlg = apply( self.dialog, (modal, message, None) + buttons )
-    return dlg.call()
+    return mainThreadActions().call( dlg.call )
 
   def dialog( self, parentOrFirstArgument, *args, **kwargs ):
     if isinstance( parentOrFirstArgument, QWidget ) or \
@@ -1598,19 +1598,8 @@ class UserDialog( QDialog ):
   def select( self, value ):
     for e in self.editors.values():
       e.checkValue()
-    if self.condition is not None:
-      condition = self.condition
-      self.condition = None
-      condition.result = value
-      condition.acquire()
-      condition.notify()
-      condition.release()
-      self.close( )
-    if self._exitLoop:
-      self._result = value
-      self._exitLoop = 0
-      self.close( )
-      #qApp.exit()
+    self._result = value
+    self.done( 1 )
 
   def setValue( self, name, value ):
     mainThreadActions().push( self.editors[ name ].setValue, value )
@@ -1623,35 +1612,13 @@ class UserDialog( QDialog ):
 
   def call( self ):
     if neuroConfig.gui:
-      if _mainThreadActions.isInMainThread():
-        # Actually, this function cannot be called from the
-        # main thread
-        #raise Exception( _t_("can't call <code>UserDialog.call()</code> from main thread") )
         self._result = None
-        self._exitLoop = 1
         self.show()
-        #qApp.enter_loop()
         self.exec_()
         result = self._result
         del self._result
         return result
-      else:
-        self.condition = threading.Condition()
-        condition = self.condition
-        condition.result = -1
-        self._exitLoop = 0
-        _mainThreadActions.push( self.show )
-        condition.acquire()
-        condition.wait()
-        condition.release()
-        result = condition.result
-        self.condition = None
-        return result
     return -1
-
-  def closeEvent( self, e ):
-    QWidget.closeEvent( self, e )
-    self.done( -1 )
 
 
 #----------------------------------------------------------------------------
