@@ -349,11 +349,9 @@ class Parameterized( object ):
 
     self.initialization()
 
-#    self._isParameterSet = {}
-
     # Take into account links set during self.initialization() : 
-    # call parameterHasChanged for the parameters that have not their default value anymore
-    for name in [n for n, v in self.signature.items() if self.__dict__[n] != v.defaultValue() ]:
+    # call parameterHasChanged for the parameters that have not their default value anymore or that have a not None value
+    for name in [n for n, v in self.signature.items() if ( (self.__dict__[n] != v.defaultValue()) or (self.__dict__[n] != None) ) ]:
         self._parameterHasChanged( name, getattr( self, name ) )
 
   def __del__( self ):
