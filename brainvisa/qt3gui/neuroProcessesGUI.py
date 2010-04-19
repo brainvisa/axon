@@ -236,6 +236,7 @@ class HTMLBrowser( QWidget ):
       setattr( HTMLBrowser, 'pixHome', QPixmap( os.path.join( neuroConfig.iconPath, 'top.png' ) ) )
       setattr( HTMLBrowser, 'pixBackward', QPixmap( os.path.join( neuroConfig.iconPath, 'back.png' ) ) )
       setattr( HTMLBrowser, 'pixForward', QPixmap( os.path.join( neuroConfig.iconPath, 'forward.png' ) ) )
+      setattr( HTMLBrowser, 'pixReload', QIcon( os.path.join( neuroConfig.iconPath, 'reload.png' ) ) )
 
     self.setIcon( HTMLBrowser.pixIcon )
 
@@ -260,6 +261,12 @@ class HTMLBrowser( QWidget ):
     btnForward.setEnabled( 0 )
     hbox.addWidget( btnForward )
 
+    btnReload = QPushButton( self )
+    btnReload.setSizePolicy( QSizePolicy( QSizePolicy.Minimum, QSizePolicy.Minimum ) )
+    btnReload.setPixmap( self.pixReload )
+    btnReload.setEnabled( 1 )
+    hbox.addWidget( btnReload )
+
     vbox.addLayout( hbox )
 
     browser = self.BVTextBrowser( self )
@@ -272,6 +279,7 @@ class HTMLBrowser( QWidget ):
     self.connect( btnForward, SIGNAL('clicked()'), browser, SLOT( 'forward()' ) )
     self.connect( browser, SIGNAL('forwardAvailable(bool)'), btnForward, SLOT('setEnabled(bool)') )
     self.connect( browser, SIGNAL('linkClicked( const QString & )'), self.clickLink )
+    self.connect( btnReload, SIGNAL('clicked()'), browser, SLOT( 'reload()' ) )
 
     self.browser = browser
     
