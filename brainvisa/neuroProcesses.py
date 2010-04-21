@@ -1941,6 +1941,7 @@ class ExecutionContext:
               item_hash[ 1 ] = item.modificationHash()
           elif (process.isMainProcess): # clear unused minfs only when the main process is finished to avoid clearing minf that will be used in next steps
             item.clearMinf()
+      
       # Close output log file
       if process._outputLogFile is not None:
         print >> process._outputLogFile, '</body></html>'
@@ -1948,10 +1949,10 @@ class ExecutionContext:
       if process._outputLog is not None:
         process._outputLog.close()
       # Expand log to put sublogs inline
-      log = stack[ -1 ].log #### WARNING !!!! not -1
+      log = self._stackTop().log #### WARNING !!!! not -1
       if log is not None: # and log.fileName is not None:
-        if process.isMainProcess:
-          log.expand()
+        if process.isMainProcess and neuroConfig.mainLog:
+          neuroConfig.mainLog.expand()
         if self._depth() == 1:
           if self._allowHistory:
             if self._historyBookEvent is not None:
@@ -2327,11 +2328,6 @@ def getProcess( processId, ignoreValidation=False, checkUpdate=True ):
     result = processId
     id = getattr( processId, '_id', None )
     if id is not None:
-      #print '!getProcess!', processId
-      #print '!getProcess!  id =', repr( id )
-      #print '!getProcess!  class address =', object.__hash__( processId.__class__ )
-      #global _processes
-      #print '!getProcess!  _processes[ id ] address =', object.__hash__( _processes[ id ] )
       process = getProcess( id, checkUpdate=False )
       if process is not None:
         result=process
@@ -2434,7 +2430,6 @@ def getProcessInstance( processIdClassOrInstance ):
     else:
       event = ProcessExecutionEvent()
       event.setProcess( processIdClassOrInstance )
-      #print '!getProcessInstance! instance of', processIdClassOrInstance, 'created from event: result =', result, 'class =', processIdClassOrInstance.__class__
       result = getProcessInstanceFromProcessEvent( event )
   elif result is None:
     try:
@@ -2702,7 +2697,6 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
         setattr( oldProcess, n, getattr( NewProcess, n ).im_func )
       oldProcess._fileTime = NewProcess._fileTime
 
-    #print '!readProcess! _processes[', processInfo.id, '] =', object.__hash__( NewProcess )
     _processes[ processInfo.id ] = NewProcess
     result = NewProcess
 
