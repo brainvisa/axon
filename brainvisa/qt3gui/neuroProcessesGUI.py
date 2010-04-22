@@ -236,7 +236,7 @@ class HTMLBrowser( QWidget ):
       setattr( HTMLBrowser, 'pixHome', QPixmap( os.path.join( neuroConfig.iconPath, 'top.png' ) ) )
       setattr( HTMLBrowser, 'pixBackward', QPixmap( os.path.join( neuroConfig.iconPath, 'back.png' ) ) )
       setattr( HTMLBrowser, 'pixForward', QPixmap( os.path.join( neuroConfig.iconPath, 'forward.png' ) ) )
-      setattr( HTMLBrowser, 'pixReload', QIcon( os.path.join( neuroConfig.iconPath, 'reload.png' ) ) )
+      setattr( HTMLBrowser, 'pixReload', QPixmap( os.path.join( neuroConfig.iconPath, 'reload.png' ) ) )
 
     self.setIcon( HTMLBrowser.pixIcon )
 
