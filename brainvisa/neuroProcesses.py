@@ -263,7 +263,6 @@ def convertSpecialLinks( msg, language, baseForLinks, translator ):
             else:
               base = 'categories/'
             href = base + href.lower() + '/category_documentation.html'
-#            print '!convertSpecialLinks!', item.attributes[ 'href' ], '-->', href + postHref
             item.attributes[ 'href' ] = href + postHref
           elif href.startswith( 'bvprocess://' ):
             href = href[ 12: ]
@@ -272,7 +271,6 @@ def convertSpecialLinks( msg, language, baseForLinks, translator ):
             if baseForLinks:
               href = baseForLinks + '/' + href
             href += '.html'
-#            print '!convertSpecialLinks!', item.attributes[ 'href' ], '-->', href + postHref
             item.attributes[ 'href' ] = href + postHref
           elif href.startswith( 'bvimage://' ):
             href = href[ 10: ]
@@ -282,7 +280,6 @@ def convertSpecialLinks( msg, language, baseForLinks, translator ):
               href = baseForLinks + '/../../images/' + href
             else:
               href = '../../images/' + href
-#            print '!convertSpecialLinks!', item.attributes[ 'href' ], '-->', href
             item.attributes[ 'href' ] = href
       elif tag == 'img':
         src = item.attributes.get( 'src', '' )
@@ -295,7 +292,6 @@ def convertSpecialLinks( msg, language, baseForLinks, translator ):
             src = baseForLinks + '/../../images/' + src
           else:
             src = '../../images/' + src
-#          print '!convertSpecialLinks!', item.attributes[ 'src' ], '-->', src
           item.attributes[ 'src' ] = src
       elif tag == '_t_':
         item.tag = None
@@ -1779,7 +1775,7 @@ class ExecutionContext:
 
     newStackTop = self.StackInfo( process )
     self._pushStack( newStackTop )
-    ishead = ( not stackTop )
+    ishead = not stackTop
 
     # Logging process start
     if not stackTop:
@@ -1843,7 +1839,6 @@ class ExecutionContext:
             content += '<font color=red>' + _t_('Unabled to open log file') + '</font></html></body>'
             process._outputLog = None
             process._outputLogFile = None
-    
           self._lastStartProcessLogItem = log.append( _t_(process.name) + ' ' + str(process.instance), html=content,
                       children=newStackTop.log, icon='icon_process.png' )
         else:
@@ -1947,10 +1942,10 @@ class ExecutionContext:
         print >> process._outputLogFile, '</body></html>'
         process._outputLogFile.close()
       if process._outputLog is not None:
-        process._outputLog.close()
+        process._outputLog = None
       # Expand log to put sublogs inline
-      log = self._stackTop().log #### WARNING !!!! not -1
-      if log is not None: # and log.fileName is not None:
+      log = self._stackTop().log
+      if log is not None:
         if process.isMainProcess and neuroConfig.mainLog:
           neuroConfig.mainLog.expand()
         if self._depth() == 1:

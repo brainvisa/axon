@@ -62,6 +62,8 @@ class TextFileLink( FileLink ):
   def __getinitargs__( self ):
     return ( self.fileName, )
 
+  def __repr__( self ):
+    return '<TextFileLink ' + self.fileName + '>'
 
 
 #------------------------------------------------------------------------------
@@ -80,6 +82,9 @@ class LogFileLink( FileLink ):
   
   def __getinitargs__( self ):
     return ( self.fileName, )
+
+  def __repr__( self ):
+    return '<LogFileLink ' + self.fileName + '>'
 
 
 #------------------------------------------------------------------------------
@@ -150,14 +155,16 @@ class LogFile:
       if isinstance( self._html, FileLink ) and \
          self._html.fileName not in openedFiles:
         self._html = self._html.expand()
-      children = []
-      for child in self.children():
-        if isinstance( child, FileLink )and \
-         child.fileName not in openedFiles:
-          children.append( child.expand() )
-        else:
-          children.append( child )
-      self._children = children
+      if isinstance( self._children, FileLink ) and \
+         self._children.fileName not in openedFiles:
+        children = []
+        for child in self.children():
+          if isinstance( child, FileLink )and \
+          child.fileName not in openedFiles:
+            children.append( child.expand() )
+          else:
+            children.append( child )
+        self._children = children
          
     def __getinitkwargs__( self ):
       kwattrs = dict( what=self._what )
@@ -196,6 +203,10 @@ class LogFile:
   
   def __getstate__( self ):
     raise RuntimeError( _t_( 'Cannot get state of LogFile' ) )
+  
+  
+  def __repr__( self ):
+    return '<LogFile ' + self.fileName + '>'
   
   
   def close( self ):
@@ -337,14 +348,10 @@ class LogFileReader:
 
 #------------------------------------------------------------------------------
 def expandedCopy( source, destFileName, destFile=None ):
-  reader = LogFileReader( source )
   writer = newLogFile( destFileName, file=destFile )
-  item = reader.readItem()
-  while item is not None:
+  for item in expandedReader( source ):
     writer.append( item.what(), when=item.when(), html=item.html(),
                    children=item.children(), icon=item.icon() )
-    item = reader.readItem()
-  reader.close()
   writer.flush()
   writer.close()
 
@@ -382,7 +389,6 @@ def closeMainLog():
     logFileName = neuroConfig.mainLog.fileName
     neuroConfig.mainLog.close()
     
-#TODO: compressing the log file corrupt its content
     dest = gzip.GzipFile( tmpFileName, 'wb', 9 )
 #    dest = open( tmpFileName, 'wb' )
     expandedCopy( logFileName, tmpFileName, dest )
