@@ -83,14 +83,27 @@ class CommandWithQProcess( object ):
   def start( self ):
     '''Starts the command. If it cannot be started, a RuntimeError is raised'''
     self._qprocess.start( self.args[0], self.args[1:] )
-    if (not self._qprocess.waitForStarted(-1)):
-      raise RuntimeError( _t_( 'Cannot start command %s' ) % ( str( self ), ) )
+    if not self._qprocess.waitForStarted( -1 ):
+      err = self._qprocess.error()
+      if err == self._qprocess.FailedToStart:
+        raise RuntimeError( _t_( 'Cannot start command %s' ) % ( str( self ), ) )
+      elif err == self._qprocess.Crashed:
+        raise RuntimeError( _t_( 'Crash during command start: %s' ) % ( str( self ), ) )
+      elif err == self._qprocess.Timedout:
+        raise RuntimeError( _t_( 'Timeout during command start: %s' ) % ( str( self ), ) )
+      elif err == self._qprocess.WriteError:
+        raise RuntimeError( _t_( 'Write error during command start: %s' ) % ( str( self ), ) )
+      elif err == self._qprocess.ReadError:
+        raise RuntimeError( _t_( 'Write error during command start: %s' ) % ( str( self ), ) )
+      else:
+        raise RuntimeError( _t_( 'Unknown error during command start: %s' ) % ( str( self ), ) )
+
 
   def wait( self ):
     '''Wait for the command to finish. Upon normal exit, the exit status of
     the command (i.e. its return value) is returned, otherwise a RuntimeError
     is raised.'''
-    self._qprocess.waitForFinished(-1)
+    self._qprocess.waitForFinished( -1 )
     return self.exitStatus
 
 
