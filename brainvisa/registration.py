@@ -137,8 +137,8 @@ class TransformationManager:
       return
     tsrc = transformation.get( 'source_referential' )
     if tsrc is None or transformation.get( 'destination_referential' ) is None:
-      print 'warning: transformation', transformation, \
-            'lacks source_referential or/and destination_referential'
+      #print 'warning: transformation', transformation, \
+            #'lacks source_referential or/and destination_referential'
       return
     self.lock.acquire()
     try:
