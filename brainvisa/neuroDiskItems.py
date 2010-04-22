@@ -1556,6 +1556,11 @@ def aimsFileInfo( fileName ):
     context.runProcess( 'uncompressGIS', fileName, tmp, False )
     fileName = tmp.fullPath()
   try:
+    try:
+      import numpy
+      nan = numpy.nan
+    except ImportError:
+      nan = None
     if _finder is not None:
       finder = aims.Finder()
       if type( fileName ) is unicode:
@@ -1564,7 +1569,7 @@ def aimsFileInfo( fileName ):
         fileName = codecs.getencoder( 'utf8' )( fileName )[0]
       # Finder is not thread-safe (yet)
       if mainThreadActions().call( finder.check, fileName ):
-        result = eval( str(finder.header() ) )
+        result = eval( str(finder.header() ), locals())
     else:
       if neuroConfig.platform == 'windows':
         f=os.popen( 'AimsFileInfo -i "' + fileName + '"', 'r' )
@@ -1573,7 +1578,7 @@ def aimsFileInfo( fileName ):
       s = f.readline()
       while s and s != 'attributes = {\n': s = f.readline()
       s = s[13:-1] + f.read()
-      result = eval( s )
+      result = eval( s , locals())
       f.close()
   except:
     pass
