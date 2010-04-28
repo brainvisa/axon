@@ -94,7 +94,7 @@ class CommandWithQProcess( object ):
       elif err == self._qprocess.WriteError:
         raise RuntimeError( _t_( 'Write error during command start: %s' ) % ( str( self ), ) )
       elif err == self._qprocess.ReadError:
-        raise RuntimeError( _t_( 'Write error during command start: %s' ) % ( str( self ), ) )
+        raise RuntimeError( _t_( 'Read error during command start: %s' ) % ( str( self ), ) )
       else:
         raise RuntimeError( _t_( 'Unknown error during command start: %s' ) % ( str( self ), ) )
 
