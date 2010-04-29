@@ -46,7 +46,6 @@ from neuroProcesses import procdocToXHTML, writeProcdoc, generateHTMLProcessesDo
 
 import weakref
 from soma.minf.xhtml import XHTML
-from brainvisa.debug import debugHere
 from soma.qtgui.api import QtThreadCall, FakeQtThreadCall, TextBrowserWithSearch, bigIconSize, defaultIconSize
 import threading
 try:
@@ -615,7 +614,6 @@ class ParameterLabel( QLabel ):
 #------------------------------------------------------------------------------
 class ParameterizedWidget( QWidget ):
   def __init__( self, parameterized, parent ):
-    debugHere()
 #lock#    if getattr( ParameterizedWidget, 'pixDefault', None ) is None:
 #lock#      setattr( ParameterizedWidget, 'pixDefault', QPixmap( os.path.join( neuroConfig.iconPath, 'lock.png' ) ) )
 #lock#      setattr( ParameterizedWidget, 'pixCustom', QPixmap( os.path.join( neuroConfig.iconPath, 'unlock.png' ) ) )
@@ -698,7 +696,6 @@ class ParameterizedWidget( QWidget ):
 #    self.scrollWidget.show()
     
   def parameterizedDeleted( self, parameterized ):
-    debugHere()
     for k, p in parameterized.signature.items():
       try:
         parameterized.removeParameterObserver( k, self.parameterChanged )
@@ -709,13 +706,11 @@ class ParameterizedWidget( QWidget ):
       self.editors[x].releaseCallbacks()
 
   def __del__( self ):
-    debugHere()
     if self.parameterized is not None:
       self.parameterizedDeleted( self.parameterized )
     #QWidget.__del__( self )
 
   def cleanup( self ):
-    debugHere()
     for x in self.editors.keys():
       self.editors[x].releaseCallbacks()
 
@@ -1105,19 +1100,13 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     return None
 
   def closeEvent( self, event ):
-    debugHere()
     self.cleanup()
     QWidget.closeEvent( self, event )
   
   
-  def __del__( self ):
-    debugHere()
-  
   def cleanup( self ):
-    debugHere( 1, self.process.name )
     self.process.cleanup()
     if self.parameterizedWidget is not None:
-      debugHere()
       self.parameterizedWidget.cleanup()
     if self._widgetStack is not None:
       for gui in  self._widgetStack._children:
@@ -1127,8 +1116,8 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         if gui is not None:
           gui.deleteLater()
       self._widgetStack = None
-    if self.executionTree is not None:
-      it = QTreeWidgetItemIterator(self.executionTree)
+    if self.executionTree is not None and QTreeWidgetItemIterator:
+      it = QTreeWidgetItemIterator( self.executionTree )
       while it.value():
         cleanup = getattr( it.value(), 'cleanup', None )
         if cleanup is not None:

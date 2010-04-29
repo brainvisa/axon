@@ -48,16 +48,18 @@ class ReadDiskItem( Parameter ):
                 enableConversion=True, ignoreAttributes=False, _debug=None ):
     Parameter.__init__( self )
     self._debug = _debug
-    self._formatsWithConverter = None
     self.type = getDiskItemType( diskItemType )
-    self.formats = getFormats( formats )
+    self.formats = tuple( sorted( getFormats( formats ) ) )
     self.enableConversion = enableConversion
+    self._formatsWithConversion = set()
     self.requiredAttributes = requiredAttributes
     self._write = False
     #self._modified = 0
     self.ignoreAttributes = ignoreAttributes;
     self._selectedAttributes = {}
     self.valueLinkedNotifier.add( self.valueLinked )
+    
+  _formatsAndConversionCache = {}
 
   
   def _getDatabase( self ):
@@ -67,44 +69,31 @@ class ReadDiskItem( Parameter ):
   
   # Allow direct affectation to requiredAttributes for backward compatibility
   def _getRequiredAttributes( self ):
-    if self._formatsWithConverter is None:
-      self._formatsWithConverter={}
-      self.requiredAttributes = self._requiredAttributes
     return self._requiredAttributes
-    
+  
   def _setRequiredAttributes( self, value ):
     self._requiredAttributes = value.copy()
     self._requiredAttributes[ '_type' ] = self.type.name
-    formats = set( self.database.formats.getFormat( f.name, f ).name for f in self.formats )
-    #if self._debug is not None:
-    #print >> self._debug, '!_setRequiredAttributes!', self, self.type, 'formats', [f for f in self.formats]
-    if self.enableConversion and self._formatsWithConverter is not None:
-        self._formatsWithConverter = {}
-        #if self._debug is not None:
-          #print >> self._debug, '!_setRequiredAttributes!', self, self.type, 'conversion enabled'
-        any = getDiskItemType( 'Any type' )
-        for f in self.formats:
-          #if self._debug is not None:
-            #print >> self._debug, '!_setRequiredAttributes!', self, self.type, 'Examining converters to', f, '(' + repr( type(f) ) + ')', len( neuroProcesses._converters )
-          convs = neuroProcesses.getConvertersTo( ( any, f ), checkUpdate=False )
-          convs.update( neuroProcesses.getConvertersTo( ( self.type, f ),
-            keepType=0, checkUpdate=False ) )
-          for type_format, converter in convs.iteritems():
-            typ, format = type_format
-            formatName = self.database.formats.getFormat( format.name, format ).name
-            #if self._debug is not None:
-              #print >> self._debug, '!_setRequiredAttributes!', self, self.type, '  <--', formatName
-            if formatName not in formats:
-              self._formatsWithConverter[ formatName ] = converter
-        formats.update( self._formatsWithConverter.iterkeys() )
-
-    #elif self._debug is not None:
-      #print >> self._debug, '!_setRequiredAttributes!', self, self.type, 'conversion disabled'
-    self._requiredAttributes[ '_format' ] = formats
-    #if self._debug is not None:
-      #if self._formatsWithConverter:
-        #print >> self._debug, '!_setRequiredAttributes!', self, self.type, '_formatsWithConverter', self._formatsWithConverter
-      #print >> self._debug, '!_setRequiredAttributes!', self, self.type, '_requiredAttributes', self._requiredAttributes
+    cache = self._formatsAndConversionCache.get( ( self.type.name, self.formats ) )
+    if cache is None:
+      formats = set( self.database.formats.getFormat( f.name, f ).name for f in self.formats )
+      formatsWithConversion = set()
+      any = getDiskItemType( 'Any type' )
+      for f in self.formats:
+        convs = neuroProcesses.getConvertersTo( ( any, f ), checkUpdate=False )
+        convs.update( neuroProcesses.getConvertersTo( ( self.type, f ), keepType=0, checkUpdate=False ) )
+        for type_format, converter in convs.iteritems():
+          typ, format = type_format
+          formatName = self.database.formats.getFormat( format.name, format ).name
+          if formatName not in formats:
+            formatsWithConversion.add( formatName )
+      cache = ( formats, formatsWithConversion )
+    formats, self._formatsWithConversion = cache
+    if self.enableConversion:
+      self._requiredAttributes[ '_format' ] = self._formatsWithConversion.union( formats )
+      
+    else:
+      self._requiredAttributes[ '_format' ] = formats
   requiredAttributes = property( _getRequiredAttributes, _setRequiredAttributes )
   
   
@@ -374,17 +363,17 @@ class ReadDiskItem( Parameter ):
       for item in readValues:
         fullPaths.add( item.fullPath() )
         yield item
-      if self._formatsWithConverter:
-        # Do not allow formats that require a conversion in DiskItem creation
+      # Do not allow formats that require a conversion in DiskItem creation
+      if self._formatsWithConversion:
         oldFormats = requiredAttributes.get( '_format' )
-        requiredAttributes[ '_format' ] = oldFormats.difference( self._formatsWithConverter.iterkeys() )
+        requiredAttributes[ '_format' ] = self._formatsWithConversion.symmetric_difference( oldFormats )
       for item in self.database.createDiskItems( selection, _debug=_debug, **requiredAttributes ):
         if self.diskItemFilter( item, requiredAttributes ):
           if item.fullPath() not in fullPaths:
             yield item
         elif _debug is not None:
           print >> _debug, ' ', item, 'rejected because:', self.diskItemFilter( item, requiredAttributes, explainRejection=True )
-      if self._formatsWithConverter:
+      if self._formatsWithConversion:
         requiredAttributes[ '_format' ] = oldFormats
     else:
       for i in readValues:
