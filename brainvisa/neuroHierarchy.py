@@ -42,7 +42,7 @@ if neuroConfig.newDatabases:
   import neuroConfig
   
   global databaseVersion
-  databaseVersion="1.1" 
+  databaseVersion="2.0" 
   # mapping between databases versions and axon versions : database version -> first axon version where this database version is used
   databaseVersions={ "1.0" : "3.1.0", "1.1" : "3.2.0"}
   

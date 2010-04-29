@@ -35,8 +35,9 @@ import os, re
 import time
 from itertools import izip, chain
 from StringIO import StringIO
+import cPickle
 
-from soma.minf.api import readMinf, writeMinf
+#from soma.minf.api import readMinf, writeMinf
 from soma.html import htmlEscape
 from soma.sorted_dictionary import SortedDictionary
 from soma.undefined import Undefined
@@ -552,6 +553,7 @@ class SQLDatabase( Database ):
       self._tableFieldsAndInsertByTypeName = {}
       create = True
       try:
+        cursor.execute( 'PRAGMA synchronous =  0' )
         cursor.execute( 'CREATE TABLE _DISKITEMS_ (_uuid CHAR(36) PRIMARY KEY, _diskItem TEXT)' )
       except sqlite3.OperationalError:
         create = False
@@ -638,11 +640,12 @@ class SQLDatabase( Database ):
           '_uuid': diskItem._uuid,
           '_priority': getattr( diskItem, '_priority', 0 ),
         }
-        f = StringIO()
-        writeMinf( f, ( state, ) )
-        minf = f.getvalue()
-        # decode the minf string to pass a unicode string  to the sqlite database
-        minf = minf.decode("utf-8")
+        minf = cPickle.dumps( state )
+        #f = StringIO()
+        #writeMinf( f, ( state, ) )
+        #minf = f.getvalue()
+        ## decode the minf string to pass a unicode string  to the sqlite database
+        #minf = minf.decode("utf-8")
         try:
           cursor.execute( 'INSERT INTO _DISKITEMS_ (_uuid, _diskItem) VALUES (? ,?)', ( uuid, minf ) )
           delete = False
@@ -673,9 +676,10 @@ class SQLDatabase( Database ):
             diskItem.setUuid( Uuid() )
             uuid = str( diskItem._uuid )
             state[ '_uuid' ] = diskItem._uuid
-            f = StringIO()
-            writeMinf( f, ( state, ) )
-            minf = f.getvalue()
+            #f = StringIO()
+            #writeMinf( f, ( state, ) )
+            #minf = f.getvalue()
+            minf = cPickle.dumps( state )
             cursor.execute( 'INSERT INTO _DISKITEMS_ (_uuid, _diskItem) VALUES (? ,?)', ( uuid, minf ) )
         if delete:
           cursor.execute( 'DELETE FROM _FILENAMES_ WHERE _uuid=?', ( uuid, ) )
@@ -730,11 +734,12 @@ class SQLDatabase( Database ):
       self._closeDatabaseCursor( cursor )
   
   def _diskItemFromMinf(self, minf ):
-    if type(minf) is unicode:
-      # have to pass a str to readMinf and not a unicode because, xml parser will use encoding information written in the xml tag to decode the string. In brainvisa, all minf are encoded in utf-8
-      minf=minf.encode("utf-8")
-    f = StringIO( minf )
-    state = readMinf( f )[ 0 ]
+    #if type(minf) is unicode:
+      ## have to pass a str to readMinf and not a unicode because, xml parser will use encoding information written in the xml tag to decode the string. In brainvisa, all minf are encoded in utf-8
+      #minf=minf.encode("utf-8")
+    #f = StringIO( minf )
+    #state = readMinf( f )[ 0 ]
+    state = cPickle.loads( str( minf ) )
     if state[ 'isDirectory' ]:
       diskItem = Directory( os.path.join( self.directory, state[ 'name' ]), None )
     else:
