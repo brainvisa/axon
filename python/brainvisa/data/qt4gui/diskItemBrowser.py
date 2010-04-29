@@ -282,6 +282,8 @@ class DiskItemBrowser( QDialog ):
       self.emit( SIGNAL('selected'), item )
     else:
       self.emit( SIGNAL('selected'), None )
+    if self._multiple:
+      self._ui.labItems.setText( _t_( '%d item(s) - %d selected' ) % ( len( self._items ), len(self._ui.tblItems.selectionModel().selectedRows(), ) ) )
 
   
   def _comboSelected( self, name, index ):
