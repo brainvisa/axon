@@ -297,7 +297,15 @@
   <s name="Automatic recognition iterator">Itérateur de reconnaissance automatique</s>
   <s name="Gaussian Smoothing">Lissage gaussien</s>
   <s name="Diffusion model pipeline">Pipeline Modèle de diffusion</s>
-  <s name="Automatic recognition">Reconnaissance automatique</s>
+  <s name="Sulci Recognition with ANN">Labélisation des sillons basée sur des réseaux neuronaux</s>
+  <s name="ANN-based">basée sur des réseaux neuronaux</s>
+  <s name="Abstract Neural Network (ANN)"> Réseaux Neuronaux (ANN)</s>
+  <s name="Sulci Recognition with SPAM">Labélisation des sillons basée sur des SPAM</s>
+  <s name="SPAM-based">basée sur des SPAM</s>
+  <s name="Sulci Recognition (both hemispheres)">Labélisation des sillons (2 hémisphères)</s>
+  <s name="Sulci Recognition (left side)">Labélisation des sillons (côté gauche)</s>
+  <s name="Sulci Recognition (right side)">Labélisation des sillons (côté droit) </s>
+  <s name="Sulci Recognition">Labélisation des sillons</s>
   <s name="Process &lt;b&gt;%s&lt;/b&gt; started">Traitement &lt;b&gt;%s&lt;/b&gt; démarré</s>
   <s name="Ignore">Ignorer</s>
   <s name="Nuclear Imaging">Imagerie nucléaire</s>
