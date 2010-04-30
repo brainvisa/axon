@@ -436,8 +436,11 @@ class Parameterized( object ):
       self.setDefault( name, default )
     if self._isParameterSet.get( name, False ):
       oldValue = getattr( self, name, None )
-      newValue = self.signature[ name ].findValue( value )
-      changed = changed or newValue != oldValue
+      if oldValue == value:
+        newValue=value
+      else:
+        newValue = self.signature[ name ].findValue( value )
+        changed = changed or newValue != oldValue
     else:
       self._isParameterSet[ name ] = True
       newValue = self.signature[ name ].findValue( value )
