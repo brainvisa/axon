@@ -1436,7 +1436,7 @@ class ProcessExecutionNode( ExecutionNode ):
       eNode = getattr( self._process, '_executionNode', None )
       if eNode is not None and eNode._children.has_key( attribute ):
         raise RuntimeError( HTMLMessage(_t_( 'Direct modification of execution node <em>%s</em> is not allowed.' ) % ( attribute, )) )
-    self.__dict__[ attribute ] = value
+      self.__dict__[ attribute ] = value
 
   def __getattr__( self, attribute ):
     p = self.__dict__.get( '_parameterized' )()
