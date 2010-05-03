@@ -437,6 +437,10 @@ class ExecutionNodeGUI(QWidget):
       spacer = QSpacerItem(0,0,QSizePolicy.Minimum,QSizePolicy.Expanding)
       layout.addItem( spacer )
 
+  def close( self, alsoDelete=False ):
+    self.parameterizedWidget.close(alsoDelete)
+    return QWidget.close( self, alsoDelete )
+
 #----------------------------------------------------------------------------
 class VoidClass:
   pass
@@ -1079,14 +1083,17 @@ class ProcessView( QVBox, ExecutionContextGUI ):
 
   def createSignatureWidgets( self, documentation=None ):
     eNode = getattr( self.process, '_executionNode', None )
+    signatureWidget=None
     if eNode and self.isMainWindow:
       parent = self._widgetStack
+      if self.process.signature:
+        signatureWidget = eNode.gui( parent, processView=self )
     else:
       parent = self.parametersWidget
-    if self.process.signature:
-      self.parameterizedWidget = ParameterizedWidget( self.process, parent )
-    else:
-      self.parameterizedWidget = None
+      if self.process.signature:
+        signatureWidget = ParameterizedWidget( self.process, parent )
+      self.parameterizedWidget=signatureWidget
+
     if eNode is None or not self.isMainWindow:
       self.inlineGUI = self.process.inlineGUI( self.process, self, parent )
       if self.inlineGUI is None and self.isMainWindow:
@@ -1095,9 +1102,9 @@ class ProcessView( QVBox, ExecutionContextGUI ):
       self._widgetStack.removeWidget( self._widgetStack._children[ 0 ] )
       self._widgetStack._children[ 0 ].close()
       self._widgetStack._children[ 0 ].deleteLater()
-      if self.parameterizedWidget is not None:
-        self._widgetStack.addWidget( self.parameterizedWidget, 0 )
-      self._widgetStack._children[ 0 ] = self.parameterizedWidget
+      if signatureWidget is not None:
+        self._widgetStack.addWidget( signatureWidget, 0 )
+      self._widgetStack._children[ 0 ] = signatureWidget
       self._widgetStack.raiseWidget( 0 )
     if self.parameterizedWidget is not None:
       if documentation is not None:
