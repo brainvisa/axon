@@ -455,6 +455,7 @@ class NodeCheckListItem( QCheckListItem ):
 
   def nodeStateChanged( self, node ):
     self.setOn( node._selected )
+    self.repaint()
 
   def cleanup( self ):
     self._node._selectionChange.remove( self.nodeStateChanged )
