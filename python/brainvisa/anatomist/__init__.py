@@ -113,7 +113,8 @@ if anatomistImport:
           # launched as backgroud scrip and launches anatomist
           a.getControlWindow().enableClose( False )
       try:
-        neuroConfig.qtApplication.connect( neuroConfig.qtApplication,qt.SIGNAL( 'aboutToQuit ()' ),self.close )
+        mainThread.push( neuroConfig.qtApplication.connect,
+          neuroConfig.qtApplication,qt.SIGNAL( 'aboutToQuit ()' ),self.close )
       except:
         atexit.register(self.close)
                                      
