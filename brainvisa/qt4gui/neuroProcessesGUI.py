@@ -463,6 +463,9 @@ class ExecutionNodeGUI(QWidget):
     spacer = QSpacerItem(0,0,QSizePolicy.Minimum,QSizePolicy.Expanding)
     layout.addItem( spacer )
 
+  def closeEvent(self, event):
+    self.parameterizedWidget.close()
+    QWidget.closeEvent(self, event)
 #----------------------------------------------------------------------------
 class VoidClass:
   pass
@@ -1008,17 +1011,19 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
   def createSignatureWidgets( self, documentation=None ):
     eNode = getattr( self.process, '_executionNode', None )
+    signatureWidget=None
+    # if the process has a signature, creates a widget for the parameters : ParameterizedWidget
     if eNode and self.isMainWindow:
       parent = self._widgetStack
+      if self.process.signature:
+        signatureWidget=eNode.gui(parent, processView=self)
     else:
       parent = self.parametersWidget.layout()
-    # if the process has a signature, creates a widget for the parameters : ParameterizedWidget
-    if self.process.signature:
-      self.parameterizedWidget = ParameterizedWidget( self.process, None )
-#      self.parameterizedWidget.show()
-      parent.addWidget(self.parameterizedWidget)
-    else:
-      self.parameterizedWidget = None 
+      if self.process.signature:
+        signatureWidget = ParameterizedWidget( self.process, None )
+        parent.addWidget(signatureWidget)
+      self.parameterizedWidget=signatureWidget
+
     if eNode is None or not self.isMainWindow:
       self.inlineGUI = self.process.inlineGUI( self.process, self, None )
       if self.inlineGUI is None and self.isMainWindow:
@@ -1029,9 +1034,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       self._widgetStack.removeWidget( self._widgetStack._children[ 0 ] )
       self._widgetStack._children[ 0 ].close()
       self._widgetStack._children[ 0 ].deleteLater()
-      if self.parameterizedWidget is not None:
-        self._widgetStack.insertWidget(0, self.parameterizedWidget )
-      self._widgetStack._children[ 0 ] = self.parameterizedWidget
+      if signatureWidget is not None:
+        self._widgetStack.insertWidget(0, signatureWidget )
+      self._widgetStack._children[ 0 ] = signatureWidget
       self._widgetStack.setCurrentIndex( 0 )
     if self.parameterizedWidget is not None:
       if documentation is not None:
