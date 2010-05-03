@@ -1030,7 +1030,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       self._widgetStack._children[ 0 ].close()
       self._widgetStack._children[ 0 ].deleteLater()
       if self.parameterizedWidget is not None:
-        self._widgetStack.addWidget( self.parameterizedWidget, 0 )
+        self._widgetStack.insertWidget(0, self.parameterizedWidget )
       self._widgetStack._children[ 0 ] = self.parameterizedWidget
       self._widgetStack.setCurrentIndex( 0 )
     if self.parameterizedWidget is not None:
