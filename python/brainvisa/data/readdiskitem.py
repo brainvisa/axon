@@ -51,7 +51,7 @@ class ReadDiskItem( Parameter ):
     self.type = getDiskItemType( diskItemType )
     self.formats = tuple( sorted( getFormats( formats ) ) )
     self.enableConversion = enableConversion
-    self._formatsWithConversion = set()
+    self._formatsWithConversion = None
     self.requiredAttributes = requiredAttributes
     self._write = False
     #self._modified = 0
@@ -69,39 +69,51 @@ class ReadDiskItem( Parameter ):
   
   # Allow direct affectation to requiredAttributes for backward compatibility
   def _getRequiredAttributes( self ):
+    #_debug = self._debug
+    #if _debug is not None:
+      #print >> _debug, '!_getRequiredAttributes!', self, self.type, self.formats, self.enableConversion
+    if self._requiredAttributes[ '_format' ] is None:
+      cache = self._formatsAndConversionCache.get( ( self.type.name, self.formats ) )
+      #if _debug is not None:
+        #print >> _debug, '!_getRequiredAttributes! 1', cache
+      if cache is None:
+        formats = set( self.database.formats.getFormat( f.name, f ).name for f in self.formats )
+        #if _debug is not None:
+         #print >> _debug, '!_getRequiredAttributes! 2', formats
+        formatsWithConversion = set()
+        any = getDiskItemType( 'Any type' )
+        for f in getFormats( self.formats ):
+          convs = neuroProcesses.getConvertersTo( ( any, f ), checkUpdate=False )
+          convs.update( neuroProcesses.getConvertersTo( ( self.type, f ), keepType=0, checkUpdate=False ) )
+          #if _debug is not None:
+            #print >> _debug, '!_getRequiredAttributes! 3', self.type, object.__repr__( self.type ), f, object.__repr__( f ), convs
+          for type_format, converter in convs.iteritems():
+            typ, format = type_format
+            formatName = self.database.formats.getFormat( format.name, format ).name
+            #if _debug is not None:
+              #print >> _debug, '!_getRequiredAttributes! 4', formatName
+            if formatName not in formats:
+              formatsWithConversion.add( formatName )
+        cache = ( formats, formatsWithConversion )
+        self._formatsAndConversionCache[ ( self.type.name, self.formats ) ] = cache
+      formats, self._formatsWithConversion = cache
+      #if _debug is not None:
+        #print >> _debug, '!_getRequiredAttributes! 5', formats, self._formatsWithConversion
+      if self.enableConversion:
+        self._requiredAttributes[ '_format' ] = self._formatsWithConversion.union( formats )
+      else:
+        self._requiredAttributes[ '_format' ] = formats
+    #if _debug is not None:
+      #print >> _debug, '!_getRequiredAttributes! 6', self._requiredAttributes[ '_format' ]
     return self._requiredAttributes
+  
   
   def _setRequiredAttributes( self, value ):
     self._requiredAttributes = value.copy()
     self._requiredAttributes[ '_type' ] = self.type.name
-    cache = self._formatsAndConversionCache.get( ( self.type.name, self.formats ) )
-    if cache is None:
-      formats = set( self.database.formats.getFormat( f.name, f ).name for f in self.formats )
-      formatsWithConversion = set()
-      any = getDiskItemType( 'Any type' )
-      for f in self.formats:
-        convs = neuroProcesses.getConvertersTo( ( any, f ), checkUpdate=False )
-        convs.update( neuroProcesses.getConvertersTo( ( self.type, f ), keepType=0, checkUpdate=False ) )
-        for type_format, converter in convs.iteritems():
-          typ, format = type_format
-          formatName = self.database.formats.getFormat( format.name, format ).name
-          if formatName not in formats:
-            formatsWithConversion.add( formatName )
-      cache = ( formats, formatsWithConversion )
-    formats, self._formatsWithConversion = cache
-    if self.enableConversion:
-      self._requiredAttributes[ '_format' ] = self._formatsWithConversion.union( formats )
-      
-    else:
-      self._requiredAttributes[ '_format' ] = formats
+    self._requiredAttributes[ '_format' ] = None
   requiredAttributes = property( _getRequiredAttributes, _setRequiredAttributes )
   
-  
-  #def _getFormats( self ):
-    #return self._formats
-  #def _setFormats( self, formats ):
-    #self._formats = getFormats( formats )
-  #format = property( _getFormats, _setFormats )
   
   def valueLinked( self, parameterized, name, value ):
     """This method is a callback called when the valueLinkedNotifier is activated.
