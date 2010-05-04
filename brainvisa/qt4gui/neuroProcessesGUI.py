@@ -1129,7 +1129,8 @@ class ProcessView( QWidget, ExecutionContextGUI ):
           cleanup()
         it+=1
       self.executionTree = None
-    neuroConfig.unregisterObject( self )
+    if neuroConfig:
+      neuroConfig.unregisterObject( self )
     self.process.signatureChangeNotifier.remove( self.signatureChanged )
     self._executionNodeLVItems.clear()
     self.parametersWidget = None
