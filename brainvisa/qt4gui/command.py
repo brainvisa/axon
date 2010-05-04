@@ -37,6 +37,11 @@ from backwardCompatibleQt import QProcess, QTimer, SIGNAL, QStringList
 import neuroConfig
 from soma import somaqt
 
+#import logging
+#LOG_FILENAME = '/tmp/commands.log'
+#if os.path.exists( LOG_FILENAME ): os.remove( LOG_FILENAME )
+#logging.basicConfig( filename=LOG_FILENAME, level=logging.DEBUG )
+
 #--------------------------------------------------------------------------
 class CommandWithQProcess( object ):
   """
@@ -82,20 +87,27 @@ class CommandWithQProcess( object ):
 
   def start( self ):
     '''Starts the command. If it cannot be started, a RuntimeError is raised'''
+    #logging.debug( '\n'.join( [ ' '.join( ( repr(i) for i in self.args) ), 'File descriptors: ' + str( len(os.listdir( os.path.join( '/proc', str( os.getpid() ), 'fd' ) ) ) ), open( os.path.join( '/proc', str( os.getpid() ), 'status' ) ).read(), '-' * 70 ] ) )
     self._qprocess.start( self.args[0], self.args[1:] )
     if not self._qprocess.waitForStarted( -1 ):
       err = self._qprocess.error()
       if err == self._qprocess.FailedToStart:
+        #logging.error( 'Cannot start command' )
         raise RuntimeError( _t_( 'Cannot start command %s' ) % ( str( self ), ) )
       elif err == self._qprocess.Crashed:
+        #logging.error( 'Crash during command start' )
         raise RuntimeError( _t_( 'Crash during command start: %s' ) % ( str( self ), ) )
       elif err == self._qprocess.Timedout:
+        #logging.error( 'Timeout during command start' )
         raise RuntimeError( _t_( 'Timeout during command start: %s' ) % ( str( self ), ) )
       elif err == self._qprocess.WriteError:
+        #logging.error( 'Write error during command start' )
         raise RuntimeError( _t_( 'Write error during command start: %s' ) % ( str( self ), ) )
       elif err == self._qprocess.ReadError:
+        #logging.error( 'Read error during command start' )
         raise RuntimeError( _t_( 'Read error during command start: %s' ) % ( str( self ), ) )
       else:
+        #logging.error( 'Unknown error during command start' )
         raise RuntimeError( _t_( 'Unknown error during command start: %s' ) % ( str( self ), ) )
 
 
