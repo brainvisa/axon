@@ -1299,7 +1299,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
   def executionNodeSelected( self, item, previous ):
     if item is not None:
-      if (getattr(item, "_guiId", None)):
+      if (getattr(item, "_guiId", None)) is not None:
         self._widgetStack.setCurrentIndex( item._guiId )
       else:
         gui = item._executionNode.gui( self._widgetStack, processView=self )
