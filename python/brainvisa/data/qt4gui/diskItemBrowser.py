@@ -152,7 +152,7 @@ class DiskItemBrowser( QDialog ):
       else:
         requestedFormats = self._possibleFormats
     else:
-      self._possibleFormats = requestedFormats
+      self._possibleFormats = set(requestedFormats)
     self._formatsWithConverter = {}
     if enableConversion:
       any = getDiskItemType( 'Any type' )
@@ -229,10 +229,10 @@ class DiskItemBrowser( QDialog ):
     self.connect( self._ui.vsplitter, SIGNAL( 'splitterMoved ( int, int )' ), self.saveLayout )
 
   def sizeHint(self):
-    attributeSize=self._ui.attributesFrame.sizeHint()
+    attributeSize=self.attributesWidget.sizeHint()
     tableSize=self._ui.grpItems.sizeHint()
     textSize=self._ui.textBrowser.sizeHint()
-    return QSize((attributeSize.width()+self._ui.hsplitter.handleWidth()+tableSize.width())*1.1, (attributeSize.height()+self._ui.vsplitter.handleWidth()+textSize.height())*1.2)
+    return QSize((attributeSize.width()+self._ui.hsplitter.handleWidth()+tableSize.width())*1.2, (attributeSize.height()+self._ui.vsplitter.handleWidth()+textSize.height())*1.2)
   
   def saveLayout( self ):
       DiskItemBrowser._savedLayout = ( self.size(), self._ui.hsplitter.sizes(), self._ui.vsplitter.sizes() )
