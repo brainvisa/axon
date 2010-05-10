@@ -57,7 +57,9 @@ def execution( self, context ):
   for database in databases:
     context.write( '<b>Clear database:', database.name, '</b>' )
     if neuroConfig.newDatabases:
-      mainThreadActions().call( database.clear, context=context )
+      # must close the connection currently opened in the main thread before clearing and updating the database
+      mainThreadActions().call( database.currentThreadCleanup )
+      database.clear( context=context )
     else:
       databaseFile = os.path.join( database.fullPath(),
         FileSystemOntology.get( database.get( 'ontology' ) ).cacheName )
@@ -72,7 +74,7 @@ def execution( self, context ):
       database.lastModified = 0
     context.write( '<b>Update database:', database.name, '</b>' )
     if neuroConfig.newDatabases:
-      mainThreadActions().call( database.update, context=context )
+      database.update( context=context )
     else:
       cacheUpdate( [ database ] )
     try:
