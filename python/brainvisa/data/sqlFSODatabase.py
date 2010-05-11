@@ -627,6 +627,7 @@ class SQLDatabase( Database ):
         else :
           format = None
         
+	del diskItem._globalAttributes["_database"]
         state =  {
           'isDirectory': isinstance( diskItem, Directory ),
           'type': diskItem.type.name,
@@ -641,6 +642,7 @@ class SQLDatabase( Database ):
           '_priority': getattr( diskItem, '_priority', 0 ),
         }
         minf = cPickle.dumps( state )
+	diskItem._globalAttributes["_database"]=self.name
         #f = StringIO()
         #writeMinf( f, ( state, ) )
         #minf = f.getvalue()
@@ -752,6 +754,7 @@ class SQLDatabase( Database ):
     diskItem._files = [ os.path.join( self.directory, f) for f in state[ '_files' ] ]
     diskItem._localAttributes = state[ '_localAttributes' ]
     diskItem._globalAttributes = state[ '_globalAttributes' ]
+    diskItem._globalAttributes["_database"]=self.name
     diskItem._minfAttributes = state[ '_minfAttributes' ]
     diskItem._otherAttributes = state[ '_otherAttributes' ]
     diskItem._changeUuid( state.get( '_uuid' ) )
