@@ -3151,7 +3151,7 @@ class ProcessTrees(ObservableAttributes, ObservableSortedDictionary):
             self.selectedTree=tree
             break
     else:
-      self.selectedTree=allTree
+      self.selectedTree=None
     # update items validity it depends on processes validity and user level : must update to invalid branches that only contain invalid items
     self.update()
 
