@@ -627,7 +627,7 @@ class SQLDatabase( Database ):
         else :
           format = None
         
-	del diskItem._globalAttributes["_database"]
+        del diskItem._globalAttributes["_database"]
         state =  {
           'isDirectory': isinstance( diskItem, Directory ),
           'type': diskItem.type.name,
@@ -642,7 +642,7 @@ class SQLDatabase( Database ):
           '_priority': getattr( diskItem, '_priority', 0 ),
         }
         minf = cPickle.dumps( state )
-	diskItem._globalAttributes["_database"]=self.name
+        diskItem._globalAttributes["_database"]=self.name
         #f = StringIO()
         #writeMinf( f, ( state, ) )
         #minf = f.getvalue()
