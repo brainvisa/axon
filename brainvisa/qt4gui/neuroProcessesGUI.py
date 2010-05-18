@@ -2474,18 +2474,28 @@ class RemoteContextGUI( QTreeWidgetItem ):
     self.ipList = {}
   
   def addIP(self, ip):
-    i_item = QTreeWidgetItem(self, ip)
+    i_item = QTreeWidgetItem(self, [ip] )
     self.ipList[str(ip)] = i_item
     i_item.setExpanded(True)
     
   def addProcess(self, ip, pid, status=' Starting...', message=''):
-    p_item = QTreeWidgetItem(self.ipList[str(ip)], 'Process', '%03d'%pid, status, message)
+    p_item = QTreeWidgetItem(self.ipList[str(ip)],
+      ['Process', '%03d'%pid, status, message] )
+    #p_item.setText( 0, 'Process' )
+    #p_item.setText( 1, '%03d'%pid )
+    #p_item.setText( 2, status )
+    #p_item.setText( 3, message )
     self.processList[str(pid)] = p_item
-    self.ipList[str(ip)].insertItem(p_item)
+    #self.ipList[str(ip)].insertItem(p_item)
       
   def addMessage(self, pid, message):
-    m_item = QTreeWidgetItem(self.processList[str(pid)], 'Message', '', '', message)  
-    self.processList[str(pid)].insertItem(m_item)
+    m_item = QTreeWidgetItem(self.processList[str(pid)],
+      ['Message', '', '', message] )
+    #m_item.setText( 0, 'Message' )
+    #m_item.setText( 1, '' )
+    #m_item.setText( 2, '' )
+    #m_item.setText( 3, message )
+    #self.processList[str(pid)].insertItem(m_item)
             
   def setProcessStatus(self, pid, status):
     self.processList[str(pid)].setText(2, status)

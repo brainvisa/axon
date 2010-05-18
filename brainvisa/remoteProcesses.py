@@ -419,24 +419,36 @@ class RemoteContext( QObject ):
       regexp = re.compile('Error|interrupted')
       error_msg = regexp.findall(msg)
       from neuroProcessesGUI import mainThreadActions
-      mainThreadActions().push( self.emit, PYSIGNAL("SIG_setProcessStatus"), (pid, ' Running...') )
-      mainThreadActions().push( self.emit, PYSIGNAL("SIG_setCurrentMessage"), (pid, msg) )
-      mainThreadActions().push( self.emit, PYSIGNAL("SIG_addMessage"), (pid, msg) )
+      if sys.modules.has_key( 'PyQt4' ):
+        mainThreadActions().push( self.emit, SIGNAL("SIG_setProcessStatus"), pid, ' Running...' )
+        mainThreadActions().push( self.emit, SIGNAL("SIG_setCurrentMessage"), pid, msg )
+        mainThreadActions().push( self.emit, SIGNAL("SIG_addMessage"), pid, msg )
+      else:
+        mainThreadActions().push( self.emit, PYSIGNAL("SIG_setProcessStatus"), (pid, ' Running...') )
+        mainThreadActions().push( self.emit, PYSIGNAL("SIG_setCurrentMessage"), (pid, msg) )
+        mainThreadActions().push( self.emit, PYSIGNAL("SIG_addMessage"), (pid, msg) )
         
       try:
         finish_msg = finish_msg[0]
       except IndexError:
         pass
       else:
-        mainThreadActions().push( self.emit, PYSIGNAL("SIG_setProcessStatus"), (pid, ' Finished') )
-        mainThreadActions().push( self.emit, PYSIGNAL("SIG_setCurrentMessage"), (pid, '') )
+        if sys.modules.has_key( 'PyQt4' ):
+          mainThreadActions().push( self.emit, SIGNAL("SIG_setProcessStatus"), pid, ' Finished' )
+          mainThreadActions().push( self.emit, SIGNAL("SIG_setCurrentMessage"), pid, '' )
+        else:
+          mainThreadActions().push( self.emit, PYSIGNAL("SIG_setProcessStatus"), (pid, ' Finished') )
+          mainThreadActions().push( self.emit, PYSIGNAL("SIG_setCurrentMessage"), (pid, '') )
         
       try:
         error_msg = error_msg[0]
       except IndexError:
         pass
       else:
-        mainThreadActions().push( self.emit, PYSIGNAL("SIG_setProcessStatus"), (pid, ' Error') )
+        if sys.modules.has_key( 'PyQt4' ):
+         mainThreadActions().push( self.emit, SIGNAL("SIG_setProcessStatus"), pid, ' Error' )
+        else:
+         mainThreadActions().push( self.emit, PYSIGNAL("SIG_setProcessStatus"), (pid, ' Error') )
   
   def updateGUI(self, ip, pid):
     """
@@ -450,20 +462,29 @@ class RemoteContext( QObject ):
       self.ipList.index(ip)
     except ValueError:
       self.ipList.append(ip)
-      self.emit(PYSIGNAL("SIG_addIP"), (ip,) )
+      if sys.modules.has_key( 'PyQt4' ):
+        self.emit(SIGNAL("SIG_addIP"), ip )
+      else:
+        self.emit(PYSIGNAL("SIG_addIP"), (ip,) )
       
     # A little delay seems to be mandatory here, as the signals are asynchronous.
     # The addProcess function may otherwise be executed before addIP, which would crash the program.
-    time.sleep(0.1)   
-    self.emit(PYSIGNAL("SIG_addProcess"), (ip, pid) )
-    
+    time.sleep(0.1)
+    if sys.modules.has_key( 'PyQt4' ):
+      self.emit(SIGNAL("SIG_addProcess"), ip, pid )
+    else:
+      self.emit(PYSIGNAL("SIG_addProcess"), (ip, pid) )
+
   def clearGUI(self):
     """
     Clears the QListView displaying the remote Brainvisa messages.
     """  
     
     self.ipList = []
-    self.emit(PYSIGNAL("SIG_clear"), () )
+    if sys.modules.has_key( 'PyQt4' ):
+      self.emit(SIGNAL("SIG_clear") )
+    else:
+      self.emit(PYSIGNAL("SIG_clear"), () )
 
 #----------------------------------------------------------------------------
 def calcTimeDiff( startTime, finalTime):
