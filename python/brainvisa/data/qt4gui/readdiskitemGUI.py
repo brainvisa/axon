@@ -438,7 +438,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
         btn.setIcon( self.pixFindWrite )
       else:
         btn.setIcon( self.pixFindRead )
-      btn.setIconSize(QSize(*deefaultIconSize))
+      btn.setIconSize(buttonIconSize)
       if databaseUserLevel > neuroConfig.userLevel:
         btn.hide()
       self.connect( btn, SIGNAL( 'clicked()' ), self.findPressed )
