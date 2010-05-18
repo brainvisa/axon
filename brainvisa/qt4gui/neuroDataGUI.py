@@ -657,12 +657,12 @@ class PointEditor( QWidget, DataEditor ):
     if name:
       self.setObjectName( name )
     layout=QHBoxLayout()
+    layout.setMargin(0)
     if sys.platform == 'darwin' and QtCore.qVersion() == '4.6.2':
       # is this layout problem a bug in qt/Mac 4.6.2 ?
-      layout.setMargin(8)
+      layout.setSpacing(8)
     else:
-      layout.setMargin(0)
-    layout.setSpacing(2)
+      layout.setSpacing(2)
     self.setLayout(layout)
     self.parameter = parameter
     self.nle = NumberListEditor( None, name )
