@@ -659,6 +659,7 @@ class ParameterizedWidget( QWidget ):
     parametersWidget=QWidget()
     parametersWidgetLayout=QVBoxLayout()
     parametersWidgetLayout.setMargin(0)
+    parametersWidgetLayout.setSpacing(2)
     parametersWidget.setLayout(parametersWidgetLayout)
     # create a widget for each parameter
     for k, p in self.parameterized.signature.items():

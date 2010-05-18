@@ -35,7 +35,7 @@ from backwardCompatibleQt import QLineEdit, SIGNAL, QPushButton, QToolButton, \
 from soma.wip.application.api import findIconFile
 from soma.qtgui.api import largeIconSize
 from brainvisa.data.qtgui.diskItemBrowser import DiskItemBrowser
-from neuroDataGUI import DataEditor, StringListEditor
+from neuroDataGUI import DataEditor, StringListEditor, buttonMargin, buttonIconSize
 from neuroProcesses import defaultContext
 import neuroProcesses
 import neuroProcessesGUI
@@ -66,7 +66,7 @@ class DiskItemEditor( QWidget, DataEditor ):
       self.setObjectName(name)
     hLayout=QHBoxLayout()
     self.setLayout(hLayout)
-    hLayout.setSpacing( 4 )
+    hLayout.setSpacing( 2 )
     hLayout.setMargin(0)
     self._write = write
     self.parameter =  parameter
@@ -83,7 +83,8 @@ class DiskItemEditor( QWidget, DataEditor ):
     hLayout.addWidget(self.btnShow)
     self.btnShow.setCheckable(True)
     self.btnShow.setIcon( self.pixShow )
-    self.btnShow.setIconSize(QSize(*largeIconSize))
+    self.btnShow.setIconSize(buttonIconSize)
+    self.btnShow.setFixedSize( buttonIconSize + buttonMargin )
     self.btnShow.setFocusPolicy( Qt.NoFocus )
     self.btnShow.setEnabled( False )
     if not neuroProcesses.getViewer( (self.parameter.type, self.parameter.formats[0] ), 1, checkUpdate=False ):
@@ -96,7 +97,8 @@ class DiskItemEditor( QWidget, DataEditor ):
     hLayout.addWidget(self.btnEdit)
     self.btnEdit.setCheckable(True)
     self.btnEdit.setIcon( self.pixEdit )
-    self.btnEdit.setIconSize(QSize(*largeIconSize))
+    self.btnEdit.setIconSize(buttonIconSize)
+    self.btnEdit.setFixedSize( buttonIconSize + buttonMargin )
     self.btnEdit.setFocusPolicy( Qt.NoFocus )
     self.btnEdit.setEnabled( 0 )
     if not neuroProcesses.getDataEditor( (self.parameter.type, self.parameter.formats[0] ), checkUpdate=False ):
@@ -108,12 +110,13 @@ class DiskItemEditor( QWidget, DataEditor ):
     hLayout.addWidget(self.btnDatabase)
     if write:
       self.btnDatabase.setIcon( self.pixDatabaseWrite )
-      self.btnDatabase.setIconSize(QSize(*largeIconSize))
+      self.btnDatabase.setIconSize(buttonIconSize)
       self.btnDatabase.setToolTip(_t_("Browse the database (save mode)"))
     else:
       self.btnDatabase.setIcon( self.pixDatabaseRead )
-      self.btnDatabase.setIconSize(QSize(*largeIconSize))
+      self.btnDatabase.setIconSize(buttonIconSize)
       self.btnDatabase.setToolTip(_t_("Browse the database (load mode)"))
+    self.btnDatabase.setFixedSize( buttonIconSize + buttonMargin )
     self.btnDatabase.setFocusPolicy( Qt.NoFocus )
     if hasattr( parameter, 'databaseUserLevel' ):
       x = parameter.databaseUserLevel
@@ -125,12 +128,13 @@ class DiskItemEditor( QWidget, DataEditor ):
     hLayout.addWidget(self.btnBrowse)
     if write:
       self.btnBrowse.setIcon( self.pixBrowseWrite )
-      self.btnBrowse.setIconSize(QSize(*largeIconSize))
+      self.btnBrowse.setIconSize(buttonIconSize)
       self.btnBrowse.setToolTip(_t_("Browse the filesystem (save mode)"))
     else:
       self.btnBrowse.setIcon( self.pixBrowseRead )
-      self.btnBrowse.setIconSize(QSize(*largeIconSize))
+      self.btnBrowse.setIconSize(buttonIconSize)
       self.btnBrowse.setToolTip(_t_("Browse the filesystem (load mode)"))
+    self.btnBrowse.setFixedSize( buttonIconSize + buttonMargin )
     self.btnBrowse.setFocusPolicy( Qt.NoFocus )
     if hasattr( parameter, 'browseUserLevel' ):
       x = parameter.browseUserLevel
@@ -407,7 +411,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
       
       self.btnUp = QPushButton( )
       self.btnUp.setIcon( self.pixUp )
-      self.btnUp.setIconSize(QSize(*largeIconSize))
+      self.btnUp.setIconSize(buttonIconSize)
       self.btnUp.setEnabled( 0 )
       self.connect( self.btnUp, SIGNAL( 'clicked()' ), self._up )
       hb.addWidget( self.btnUp )
@@ -434,7 +438,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
         btn.setIcon( self.pixFindWrite )
       else:
         btn.setIcon( self.pixFindRead )
-      btn.setIconSize(QSize(*largeIconSize))
+      btn.setIconSize(QSize(*deefaultIconSize))
       if databaseUserLevel > neuroConfig.userLevel:
         btn.hide()
       self.connect( btn, SIGNAL( 'clicked()' ), self.findPressed )
@@ -445,7 +449,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
         btn.setIcon( self.pixBrowseWrite )
       else:
         btn.setIcon( self.pixBrowseRead )
-      btn.setIconSize(QSize(*largeIconSize))
+      btn.setIconSize(buttonIconSize)
       if browseUserLevel > neuroConfig.userLevel:
         btn.hide()
       self.connect( btn, SIGNAL( 'clicked()' ), self.browsePressed )
@@ -617,7 +621,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
     hb=QHBoxLayout()
     self.setLayout(hb)
     hb.setMargin(0)
-    hb.setSpacing(4)
+    hb.setSpacing(2)
     self._context = context
     self.parameter = parameter
     self.write = write
@@ -632,7 +636,8 @@ class DiskItemListEditor( QWidget, DataEditor ):
       self.btnFind.setIcon( self.pixFindWrite )
     else:
       self.btnFind.setIcon( self.pixFindRead )
-    self.btnFind.setIconSize(QSize(*largeIconSize))
+    self.btnFind.setIconSize(buttonIconSize)
+    self.btnFind.setFixedSize( buttonIconSize + buttonMargin )
     self.btnFind.setFocusPolicy( Qt.NoFocus )
     if hasattr( parameter, 'databaseUserLevel' ):
       x = parameter.databaseUserLevel
@@ -646,7 +651,8 @@ class DiskItemListEditor( QWidget, DataEditor ):
       self.btnBrowse.setIcon( self.pixBrowseWrite )
     else:
       self.btnBrowse.setIcon( self.pixBrowseRead )
-    self.btnBrowse.setIconSize(QSize(*largeIconSize))
+    self.btnBrowse.setIconSize(buttonIconSize)
+    self.btnBrowse.setFixedSize( buttonIconSize + buttonMargin )
     self.btnBrowse.setFocusPolicy( Qt.NoFocus )
     if hasattr( parameter, 'browseUserLevel' ):
       x = parameter.browseUserLevel

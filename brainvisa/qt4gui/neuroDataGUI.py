@@ -37,6 +37,11 @@ from neuroData import *
 from backwardCompatibleQt import *
 from neuroException import HTMLMessage
 from brainvisa import anatomist
+from soma.qtgui.api import largeIconSize
+
+buttonIconSize = QSize( *largeIconSize )
+buttonMargin = QSize( 4, 4 )
+
 #----------------------------------------------------------------------------
 class DataEditor:
   def __init__( self ):
@@ -587,6 +592,7 @@ class ChoiceListEditor( QWidget, DataEditor ):
       self.setObjectName( name )
     layout=QHBoxLayout(self)
     layout.setMargin(0)
+    layout.setSpacing(2)
     self.setLayout(layout)
     self.parameter = parameter
     self.sle = StringListEditor( self, name )
@@ -650,7 +656,7 @@ class PointEditor( QWidget, DataEditor ):
       self.setObjectName( name )
     layout=QHBoxLayout()
     layout.setMargin(0)
-    layout.setSpacing(4)
+    layout.setSpacing(2)
     self.setLayout(layout)
     self.parameter = parameter
     self.nle = NumberListEditor( None, name )
@@ -662,6 +668,8 @@ class PointEditor( QWidget, DataEditor ):
     self.btnSelect = QPushButton( )
     layout.addWidget(self.btnSelect)
     self.btnSelect.setIcon( self.pixSelect )
+    self.btnSelect.setIconSize(buttonIconSize)
+    self.btnSelect.setFixedSize( buttonIconSize + buttonMargin )
     self.btnSelect.setFocusPolicy( Qt.NoFocus )
     self.connect( self.btnSelect, SIGNAL( 'clicked()' ), self.selectPressed )
     
@@ -725,6 +733,8 @@ class PointListEditor( QWidget, DataEditor ):
     self.btnSelect = QPushButton()
     layout.addWidget(self.btnSelect)
     self.btnSelect.setIcon( self.pixSelect )
+    self.btnSelect.setIconSize(buttonIconSize)
+    self.btnSelect.setFixedSize( buttonIconSize + buttonMargin )
     self.btnSelect.setCheckable(True)
     self.btnSelect.setFocusPolicy( Qt.NoFocus )
     self.connect( self.btnSelect, SIGNAL( 'clicked()' ), self.selectPressed )
@@ -732,6 +742,8 @@ class PointListEditor( QWidget, DataEditor ):
     self.btnErase = QPushButton()
     layout.addWidget(self.btnErase)
     self.btnErase.setIcon( self.pixErase )
+    self.btnErase.setIconSize(buttonIconSize)
+    self.btnErase.setFixedSize( buttonIconSize + buttonMargin )
     self.btnSelect.setFocusPolicy( Qt.NoFocus )
     self.connect( self.btnErase, SIGNAL( 'clicked()' ), self.erasePressed )
     
@@ -826,14 +838,14 @@ class GenericListSelection( QWidget ):
     
     self.btnUp = QPushButton( )
     self.btnUp.setIcon( self.pixUp )
-    self.btnUp.setIconSize(QSize(*largeIconSize))
+    self.btnUp.setIconSize(buttonIconSize)
     self.btnUp.setEnabled( 0 )
     self.connect( self.btnUp, SIGNAL( 'clicked()' ), self._up )
     hb.addWidget( self.btnUp )
 
     self.btnDown = QPushButton( )
     self.btnDown.setIcon( self.pixDown )
-    self.btnDown.setIconSize(QSize(*largeIconSize))
+    self.btnDown.setIconSize(buttonIconSize)
     self.btnDown.setEnabled( 0 )
     self.connect( self.btnDown, SIGNAL( 'clicked()' ), self._down )
     hb.addWidget( self.btnDown )
