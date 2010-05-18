@@ -2161,14 +2161,14 @@ class ExecutionContext:
     self.checkInterruption()
     bmsg = '<table width=100% border=1><tr><td><font color=orange><img alt="WARNING: " src="' \
       + os.path.join( neuroConfig.iconPath, 'warning.png' ) + '">'
-    emsg = '</td></tr></table>'
+    emsg = '</font></td></tr></table>'
     apply( self.write, (bmsg, ) + messages + ( emsg, ) )
 
   def error( self, *messages ):
     self.checkInterruption()
     bmsg = '<table width=100% border=1><tr><td><font color=red><img alt="ERROR: " src="' \
       + os.path.join( neuroConfig.iconPath, 'error.png' ) + '">'
-    emsg = '</td></tr></table>'
+    emsg = '</font></td></tr></table>'
     apply( self.write, (bmsg, ) + messages + ( emsg, ) )
 
 
