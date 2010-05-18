@@ -48,6 +48,7 @@ import weakref
 from soma.minf.xhtml import XHTML
 from soma.qtgui.api import QtThreadCall, FakeQtThreadCall, TextBrowserWithSearch, bigIconSize, defaultIconSize
 import threading
+import sys
 try:
   import sip
 except:
@@ -659,7 +660,11 @@ class ParameterizedWidget( QWidget ):
     parametersWidget=QWidget()
     parametersWidgetLayout=QVBoxLayout()
     parametersWidgetLayout.setMargin(0)
-    parametersWidgetLayout.setSpacing(2)
+    if sys.platform == 'darwin' and qVersion() == '4.6.2':
+      # is this layout problem a bug in qt/Mac 4.6.2 ?
+      parametersWidgetLayout.setSpacing(0)
+    else:
+      parametersWidgetLayout.setSpacing(2)
     parametersWidget.setLayout(parametersWidgetLayout)
     # create a widget for each parameter
     for k, p in self.parameterized.signature.items():

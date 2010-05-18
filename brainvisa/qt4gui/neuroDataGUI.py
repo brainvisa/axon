@@ -38,6 +38,7 @@ from backwardCompatibleQt import *
 from neuroException import HTMLMessage
 from brainvisa import anatomist
 from soma.qtgui.api import largeIconSize
+import sys
 
 buttonIconSize = QSize( *largeIconSize )
 buttonMargin = QSize( 4, 4 )
@@ -655,7 +656,11 @@ class PointEditor( QWidget, DataEditor ):
     if name:
       self.setObjectName( name )
     layout=QHBoxLayout()
-    layout.setMargin(0)
+    if sys.platform == 'darwin' and qVersion() == '4.6.2':
+      # is this layout problem a bug in qt/Mac 4.6.2 ?
+      layout.setMargin(8)
+    else:
+      layout.setMargin(0)
     layout.setSpacing(2)
     self.setLayout(layout)
     self.parameter = parameter

@@ -42,6 +42,7 @@ import neuroProcessesGUI
 from neuroDiskItems import DiskItem, Directory
 import neuroConfig
 from neuroException import showException, HTMLMessage
+import sys
 
 #----------------------------------------------------------------------------
 class RightClickablePushButton( QPushButton ):
@@ -66,7 +67,11 @@ class DiskItemEditor( QWidget, DataEditor ):
       self.setObjectName(name)
     hLayout=QHBoxLayout()
     self.setLayout(hLayout)
-    hLayout.setSpacing( 2 )
+    if sys.platform == 'darwin' and qVersion() == '4.6.2':
+      # is this layout problem a bug in qt/Mac 4.6.2 ?
+      hLayout.setSpacing( 14 )
+    else:
+      hLayout.setSpacing( 2 )
     hLayout.setMargin(0)
     self._write = write
     self.parameter =  parameter
