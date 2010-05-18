@@ -1050,7 +1050,9 @@ else:
       #print '/system result:', result, '/'
       return result
 
-
+    def error(self):
+      return None
+    
     def read( self ):
       l = '-'
       # print '/read/'
@@ -2081,7 +2083,28 @@ class ExecutionContext:
             logFile=systemLogFile ) )
         else:
           c.setStderrAction( stderrAction )
-      c.start()
+
+      retry = 1
+      first=True
+      while (retry > 0):
+        try:
+          c.start()
+          retry=0
+        except RuntimeError, e:
+          if c.error() == QProcess.FailedToStart:
+            if first: 
+              retry = 2
+              first=False
+            else:
+              retry=retry-1
+            self._systemStderr(e.message+"\n", systemLogFile)
+            if (retry != 0):
+               self._systemStderr("Try to restart the command...\n", systemLogFile)
+            else:
+              raise e
+          else:
+            raise e
+          
       intActionId = self._addInterruptionAction( c.stop )
       try:
         result = c.wait()

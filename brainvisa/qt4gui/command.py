@@ -93,22 +93,22 @@ class CommandWithQProcess( object ):
       err = self._qprocess.error()
       if err == self._qprocess.FailedToStart:
         #logging.error( 'Cannot start command' )
-        raise RuntimeError( _t_( 'Cannot start command %s' ) % ( str( self ), ) )
+        raise RuntimeError( _t_( 'Cannot start command %s : %s' ) % ( str( self ), self._qprocess.errorString(), ) )
       elif err == self._qprocess.Crashed:
         #logging.error( 'Crash during command start' )
-        raise RuntimeError( _t_( 'Crash during command start: %s' ) % ( str( self ), ) )
+        raise RuntimeError( _t_( 'Crash during command start %s : %s' ) % ( str( self ), self._qprocess.errorString(), ) )
       elif err == self._qprocess.Timedout:
         #logging.error( 'Timeout during command start' )
-        raise RuntimeError( _t_( 'Timeout during command start: %s' ) % ( str( self ), ) )
+        raise RuntimeError( _t_( 'Timeout during command start %s : %s' ) % ( str( self ), self._qprocess.errorString(), ) )
       elif err == self._qprocess.WriteError:
         #logging.error( 'Write error during command start' )
-        raise RuntimeError( _t_( 'Write error during command start: %s' ) % ( str( self ), ) )
+        raise RuntimeError( _t_( 'Write error during command start %s : %s' ) % ( str( self ), self._qprocess.errorString(), ) )
       elif err == self._qprocess.ReadError:
         #logging.error( 'Read error during command start' )
-        raise RuntimeError( _t_( 'Read error during command start: %s' ) % ( str( self ), ) )
+        raise RuntimeError( _t_( 'Read error during command start %s : %s' ) % ( str( self ), self._qprocess.errorString(), ) )
       else:
         #logging.error( 'Unknown error during command start' )
-        raise RuntimeError( _t_( 'Unknown error during command start: %s' ) % ( str( self ), ) )
+        raise RuntimeError( _t_( 'Unknown error during command start %s : %s' ) % ( str( self ), self._qprocess.errorString(), ) )
 
 
   def wait( self ):
@@ -118,6 +118,8 @@ class CommandWithQProcess( object ):
     self._qprocess.waitForFinished( -1 )
     return self.exitStatus
 
+  def error(self):
+    return self._qprocess.error()
 
   def stop( self ):
     '''Interrupt a running command. If possible, it tries to terminate the
