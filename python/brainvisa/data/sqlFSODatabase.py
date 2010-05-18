@@ -707,7 +707,7 @@ class SQLDatabase( Database ):
           cursor.execute( sql, values )
     except sqlite3.OperationalError, e:
       self._closeDatabaseCursor( cursor, rollback=True )
-      raise DatabaseError( "Cannot insert items in database " + self.name + ". You should update this database." )
+      raise DatabaseError( "Cannot insert items in database " + self.name + ": "+e.message+". You should update this database." )
     except:
       self._closeDatabaseCursor( cursor, rollback=True )
       raise
