@@ -38,6 +38,7 @@ from backwardCompatibleQt import *
 from neuroException import HTMLMessage
 from brainvisa import anatomist
 from soma.qtgui.api import largeIconSize
+from PyQt4 import QtCore
 import sys
 
 buttonIconSize = QSize( *largeIconSize )

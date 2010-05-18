@@ -36,6 +36,7 @@ import types
 from backwardCompatibleQt import *
 from PyQt4 import uic
 from PyQt4.QtGui import QKeySequence
+from PyQt4 import QtCore
 import neuroConfig 
 import neuroConfigGUI
 import neuroLogGUI

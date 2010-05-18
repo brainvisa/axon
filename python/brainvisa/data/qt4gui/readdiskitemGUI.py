@@ -42,6 +42,7 @@ import neuroProcessesGUI
 from neuroDiskItems import DiskItem, Directory
 import neuroConfig
 from neuroException import showException, HTMLMessage
+from PyQt4 import QtCore
 import sys
 
 #----------------------------------------------------------------------------
