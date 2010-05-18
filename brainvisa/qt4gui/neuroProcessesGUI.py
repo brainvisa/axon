@@ -660,7 +660,7 @@ class ParameterizedWidget( QWidget ):
     parametersWidget=QWidget()
     parametersWidgetLayout=QVBoxLayout()
     parametersWidgetLayout.setMargin(0)
-    if sys.platform == 'darwin' and qVersion() == '4.6.2':
+    if sys.platform == 'darwin' and QtCore.qVersion() == '4.6.2':
       # is this layout problem a bug in qt/Mac 4.6.2 ?
       parametersWidgetLayout.setSpacing(0)
     else:

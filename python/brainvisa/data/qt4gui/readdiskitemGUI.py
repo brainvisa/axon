@@ -67,7 +67,7 @@ class DiskItemEditor( QWidget, DataEditor ):
       self.setObjectName(name)
     hLayout=QHBoxLayout()
     self.setLayout(hLayout)
-    if sys.platform == 'darwin' and qVersion() == '4.6.2':
+    if sys.platform == 'darwin' and QtCore.qVersion() == '4.6.2':
       # is this layout problem a bug in qt/Mac 4.6.2 ?
       hLayout.setSpacing( 14 )
     else:

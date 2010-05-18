@@ -656,7 +656,7 @@ class PointEditor( QWidget, DataEditor ):
     if name:
       self.setObjectName( name )
     layout=QHBoxLayout()
-    if sys.platform == 'darwin' and qVersion() == '4.6.2':
+    if sys.platform == 'darwin' and QtCore.qVersion() == '4.6.2':
       # is this layout problem a bug in qt/Mac 4.6.2 ?
       layout.setMargin(8)
     else:
