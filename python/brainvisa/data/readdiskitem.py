@@ -41,6 +41,7 @@ from neuroException import HTMLMessage
 from brainvisa.data.qtgui.readdiskitemGUI import DiskItemEditor, DiskItemListEditor
 from brainvisa.data.qtgui.diskItemBrowser import diskItemFilter
 from neuroDiskItems import File, Directory
+import types
 
 #----------------------------------------------------------------------------
 class ReadDiskItem( Parameter ):
@@ -49,7 +50,12 @@ class ReadDiskItem( Parameter ):
     Parameter.__init__( self )
     self._debug = _debug
     self.type = getDiskItemType( diskItemType )
-    self.formats = tuple( sorted( getFormats( formats ) ) )
+    formatsList = getFormats( formats )
+    if len( formatsList ) != 0:
+      self.preferredFormat = formatsList[0]
+    else:
+      self.preferedFormat = None
+    self.formats = tuple( sorted( formatsList ) )
     self.enableConversion = enableConversion
     self._formatsWithConversion = None
     self.requiredAttributes = requiredAttributes
@@ -295,7 +301,11 @@ class ReadDiskItem( Parameter ):
                 differentOnFormatOnly = []
                 break
             if differentOnFormatOnly:
-              for preferedFormat in self.formats:
+              formatsToTest = []
+              if self.preferredFormat:
+                formatsToTest = [ self.preferredFormat ]
+              formatsToTest += self.formats
+              for preferedFormat in formatsToTest:
                 l = [i for i in differentOnFormatOnly if i.format is preferedFormat]
                 if l:
                   result = l[0]
