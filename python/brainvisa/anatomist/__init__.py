@@ -159,7 +159,7 @@ if anatomistImport:
       @type params: string
       @param params: event's parameters
       """
-      self.log("<B> &lt -- " + event + "</B> : " + params)
+      self.log("<B> &lt;-- " + event + "</B> : " + params)
 
     ###############################################################################
     # Methods redefined to use Brainvisa transformation manager (with database informations)
