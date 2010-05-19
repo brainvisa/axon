@@ -1871,7 +1871,6 @@ class ProcessSelectionWidget( QMainWindow ):
     # bottom of the central widget : buttons open and edit
     hb = QHBoxLayout()
     layout.addLayout(hb)
-    self.setSizePolicy( QSizePolicy( QSizePolicy.MinimumExpanding, QSizePolicy.Fixed ) )
     hb.setMargin( 5 )
     self.btnOpen = QPushButton( _t_('Open') )
     hb.addWidget(self.btnOpen)
