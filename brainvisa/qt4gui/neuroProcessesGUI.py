@@ -75,6 +75,11 @@ def startShell():
 def quitRequest():
   a = QMessageBox.warning( None, _t_('Quit'),_t_( 'Do you really want to quit BrainVISA ?' ), QMessageBox.Yes | QMessageBox.Default, QMessageBox.No )
   if a == QMessageBox.Yes:
+    wids = qApp.topLevelWidgets()
+    for w in wids:
+      if isinstance( w, ProcessView ):
+        w.close()
+        del w
     if neuroConfig.shell:
       sys.exit()
     else:
@@ -1125,7 +1130,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         cleanup = getattr( gui, 'cleanup', None )
         if cleanup is not None:
           cleanup()
-        if gui is not None:
+        if gui is not None and sip is not None and not sip.isdeleted( gui ):
           gui.deleteLater()
       self._widgetStack = None
     if self.executionTree is not None and QTreeWidgetItemIterator:
