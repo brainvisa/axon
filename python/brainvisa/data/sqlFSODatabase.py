@@ -522,7 +522,7 @@ class SQLDatabase( Database ):
     if not (os.path.exists(self.sqlDatabaseFile)):
       databaseFile=':memory:'
     if self._connection is None:
-      self._connection = ThreadSafeSQLiteConnection( databaseFile )
+      self._connection = ThreadSafeSQLiteConnection( databaseFile, 20, isolation_level="EXCLUSIVE" )
     #cursor = self.CursorProxy( self._connection._getConnection().cursor() )
     cursor = self._connection._getConnection().cursor()
     return cursor
