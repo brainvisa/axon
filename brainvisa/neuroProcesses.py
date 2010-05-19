@@ -1603,7 +1603,19 @@ class SelectionExecutionNode( ExecutionNode ):
       if node._selected:
         return node.run( context )
 
-
+  def addChild( self, name, node ):
+    'Add a new child execution node'
+    ExecutionNode.addChild(self, name, node)
+    node._selectionChange.add(self.childSelectionChange)
+    
+  def childSelectionChange(self, node):
+    '''This callback is called when the selection state of a child has changed. 
+    If the child is selected, all the other children must be unselected 
+    because this node is a selectionNode.'''
+    if node._selected:
+      for child in self.children():
+        if child != node:
+          child.setSelected(False)
 
 #-------------------------------------------------------------------------------
 class ExecutionContext:
