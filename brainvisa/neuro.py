@@ -332,8 +332,11 @@ if neuroConfig.shell:
     import IPython
     if USE_QT4:
       ipshell = IPython.Shell.IPShellQt4( [ '-q4thread' ] )
+      from PyQt4.QtCore import QTimer
     else:
       ipshell = IPython.Shell.IPShellQt( [ '-qthread' ] )
+      from qt import QTimer
+    QTimer.singleShot( 0, restartAnatomist )
     ipshell.mainloop( sys_exit=1 )
   except ImportError:
     print >> sys.stderr, 'IPython not found - Shell mode disabled'
