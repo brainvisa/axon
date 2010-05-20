@@ -93,6 +93,10 @@ def quitRequest():
       qApp.exit()
 
 #----------------------------------------------------------------------------
+def cleanupGui():
+  pass # only needed in Qt4
+
+#----------------------------------------------------------------------------
 _helpWidget = None
 def helpRequest():
   sep = '//'

@@ -103,6 +103,18 @@ def quitRequest():
       qApp.exit()
 
 #----------------------------------------------------------------------------
+def cleanupGui():
+  wids = qApp.topLevelWidgets()
+  for w in wids:
+    if isinstance( w, ProcessView ):
+      w.close()
+      del w
+  wids = qApp.topLevelWidgets()
+  for w in wids:
+    w.close()
+    del w
+
+#----------------------------------------------------------------------------
 _helpWidget = None
 def helpRequest():
   sep = '//'

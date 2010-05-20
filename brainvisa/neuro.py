@@ -338,6 +338,7 @@ if neuroConfig.shell:
       from qt import QTimer
     QTimer.singleShot( 0, restartAnatomist )
     ipshell.mainloop( sys_exit=1 )
+    cleanupGui()
   except ImportError:
     print >> sys.stderr, 'IPython not found - Shell mode disabled'
     neuroConfig.shell = 0
