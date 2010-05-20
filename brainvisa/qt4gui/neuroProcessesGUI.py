@@ -66,49 +66,30 @@ _mainThreadActions = FakeQtThreadCall()
 
 #----------------------------------------------------------------------------
 def restartAnatomist():
-  print 'restartAnatomist'
   from brainvisa import anatomist
   a = anatomist.Anatomist( create=False )
-  if hasattr( anatomist.Anatomist, '_close_bak' ):
-    print 'restore close'
-    anatomist.Anatomist.close = anatomist.Anatomist._close_bak
-    del anatomist.Anatomist._close_bak
-  #if True: #dict().has_key( '_restartshell_newanatomist' ):
-    #print 'reconnecting'
-    #global _restartshell_newanatomist
-    #del _restartshell_newanatomist
-    #b = anatomist.Anatomist( host=a.comm.dest, port=a.comm.port,
-      #newanatomist=False )
-    #b.newanatomist = True
-  else: print 'do nothing'
+  if hasattr( a, '_restartshell_launched' ):
+    a.launched = True
+    del a._restartshell_launched
 
 def startShell():
   neuroConfig.shell = True
   from PyQt4.QtGui import qApp
-  def dontClose( a ):
-    print "DON'T CLOSE"
-    pass
   try:
     if neuroConfig.anatomistImplementation == 'socket':
       from brainvisa import anatomist
-      print 'change anatomist close method'
-      #a = anatomist.Anatomist( create=False )
-      anatomist.Anatomist._close_bak = anatomist.Anatomist.close
-      anatomist.Anatomist.close = dontClose
-      print 'anatomist close hijacked'
-      #if a.newanatomist:
-        #a.newanatomist = False
-        #global _restartshell_newanatomist
-        #_restartshell_newanatomist = True
+      a = anatomist.Anatomist( create=False )
+      if a.launched:
+        a.launched = False
+        a._restartshell_launched = True
   except Exception, e:
     print e
-    pass
   mainThreadActions().push( qApp.exit )
 
 
 #----------------------------------------------------------------------------
 def quitRequest():
-  print '!!!!!!!!!quitRequest!!!!!!!!'
+  # print '!!!!!!!!!quitRequest!!!!!!!!'
   a = QMessageBox.warning( None, _t_('Quit'),_t_( 'Do you really want to quit BrainVISA ?' ), QMessageBox.Yes | QMessageBox.Default, QMessageBox.No )
   if a == QMessageBox.Yes:
     wids = qApp.topLevelWidgets()

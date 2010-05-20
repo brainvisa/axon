@@ -61,9 +61,25 @@ from soma.notification import ObservableList, EditableTree
 _mainThreadActions = FakeQtThreadCall()
 
 #----------------------------------------------------------------------------
+def restartAnatomist():
+  from brainvisa import anatomist
+  a = anatomist.Anatomist( create=False )
+  if hasattr( a, '_restartshell_launched' ):
+    a.launched = True
+    del a._restartshell_launched
+
 def startShell():
   neuroConfig.shell = True
   from qt import qApp
+  try:
+    if neuroConfig.anatomistImplementation == 'socket':
+      from brainvisa import anatomist
+      a = anatomist.Anatomist( create=False )
+      if a.launched:
+        a.launched = False
+        a._restartshell_launched = True
+  except Exception, e:
+    print e
   mainThreadActions().push( qApp.exit )
 
 
