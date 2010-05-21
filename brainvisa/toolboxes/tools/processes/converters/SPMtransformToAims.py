@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -56,7 +57,8 @@ def validation():
 signature = Signature(
   'read', ReadDiskItem( 'Transformation matrix', 'Matlab file',
                         enableConversion = 0 ),
-  'write', WriteDiskItem( 'Transformation matrix', 'Transformation matrix' ),
+  'write', WriteDiskItem( 'Transformation matrix', 'Transformation matrix',
+    exactType=True ),
   'source_volume', ReadDiskItem( '4D Volume',
                                  shfjGlobals.aimsVolumeFormats ),
   'registered_volume', ReadDiskItem( '4D Volume',
