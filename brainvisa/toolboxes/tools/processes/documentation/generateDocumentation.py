@@ -36,6 +36,7 @@ from brainvisa.data.sqlFSODatabase import SQLDatabase
 from soma.path import relative_path
 from brainvisa.toolboxes import getToolbox
 from fileSystemOntology import FileSystemOntology
+import subprocess
 
 signature = Signature(
   'ontology', Choice( 'all', 'brainvisa-3.1.0', 'brainvisa-3.0', 'shared' ),
@@ -56,7 +57,10 @@ def generateHTMLDocumentation( processInfoOrId, translators, context, ontology )
   documentation = readProcdoc( processInfo.id )
   
   if context is not None:
-    context.write( 'Generate HTML for process "' + processInfo.name + '"<br/>' )
+    # this <font></font> thing is a trick to allow text to be considered as
+    # HTML, and the <br/> not escaped, otherwise either "<br/>" appears in
+    # the process view window, or the log has no line breaks
+    context.write( '<font></font>Generate HTML for process "' + processInfo.name + '"<br/>' )
   # english translation is the default
   den = documentation.get( 'en', {} )
   pen = den.get( 'parameters', {} )
@@ -392,7 +396,7 @@ def execution( self, context ):
       type=diskItemType.name
       typeFileName = type.replace( '/', '_' )
       
-      context.write( 'Generate inheritance graph for type ', htmlEscape(type),
+      context.write( '<font></font>Generate inheritance graph for type ', htmlEscape(type) +
         '<br/>' )
       
       dot = open( tmpDot, 'w' )
@@ -420,9 +424,12 @@ def execution( self, context ):
       command=''
       out = ''
       err = ''
-      try:
-        command='dot -Tpng -o"' + os.path.join( imagesDirectory, typeFileName + '_inheritance.png' )+'" -Tcmapx -o"' + tmpMap+'" '+tmpDot
-        stdin, stdout, stderr=os.popen3(command)
+      command='dot -Tpng -o"' + os.path.join( imagesDirectory, typeFileName + '_inheritance.png' )+'" -Tcmapx -o"' + tmpMap+'" '+tmpDot
+      def retrycmd( command ):
+        p = subprocess.Popen( command, shell=True, stdin=subprocess.PIPE,
+          stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True )
+        stdin, stdout, stderr = (p.stdin, p.stdout, p.stderr)
+        #stdin, stdout, stderr=os.popen3(command)
         stdin.close()
         out=stdout.read()
         stdout.close()
@@ -430,15 +437,34 @@ def execution( self, context ):
         stderr.close()
         if out or err:
           context.log(what="dot", html="<p><b>"+command+"</b></p><p>Output :</p><p>"+out+err+"</p>")
+
+      try:
+        ok = False
+        attempt = 0
+        nattempts = 3
+        while not ok and attempt < nattempts:
+          try:
+            retrycmd( command )
+            ok = True
+          except OSError, e:
+            context.warning("Strange problem while generating inheritance graph, retrying..." )
+            import time
+            time.sleep( 0.1 )
+            if attempt == nattempts - 1:
+              retrycmd( command )
+              ok = True
+            attempt += 1
+        if attempt > 0:
+          context.write( '<font color="#00b000">...OK now!</font><br/>' )
       except Exception, e:
         context.write(  )
         context.warning("Problem while generating inheritance graph :<br/>",
-          htmlEscape( str(e) ), '<br/>dot command:<br/>' + htmlEscape(command) + "<br/>Output :<br/>"+out+'</p><p><b>stderr :</b></p><p>' +err+'</p>' )
+          __builtins__['type'](e), htmlEscape( str(e) ), '<br/><p>dot command:</p><p>' + htmlEscape(command) + "</p><p>Output :</p><p>"+out+'</p><p>stderr :</p><p>' +err+'</p>' )
       #context.system( 'dot', '-Tpng', '-o' + os.path.join( imagesDirectory, typeFileName + '_inheritance.png' ), '-Tcmapx', '-o' + tmpMap, tmpDot )
   
   # LANGUAGES
   for l in neuroConfig._languages:
-    context.write( '\nGenerate HTML for language ', l, "\n" )
+    context.write( '<p><b>Generate HTML for language ', l, "</b></p>" )
     # INDEX.HTML
     htmlDirectory=os.path.join( ontologyDirectory, l )
     index = open( os.path.join( htmlDirectory, 'index.html' ), 'w' )
@@ -459,7 +485,7 @@ def execution( self, context ):
       htmlFileName = os.path.join( typesDirectory, typeFileName + '.html' )
       typeHTML = open( htmlFileName, 'w' )
       typeEscaped = htmlEscape( type )
-      context.write( 'Generate HTML for type', typeEscaped, '( ' + str( count ) + ' / ' + str( len( allTypes ) ) + ' )' )
+      context.write( '<font></font>Generate HTML for type', typeEscaped, '( ' + str( count ) + ' / ' + str( len( allTypes ) ) + ' )<br/>' )
       print >> types, '<a href="' + htmlEscape( typeFileName ) + '.html">' + typeEscaped + '</a><br/>'
       print >> typeHTML, '<html>\n<body>\n<center><h1>' + typeEscaped +'</h1></center>'
       href=htmlEscape( relative_path( index.name, os.path.dirname( typeHTML.name ) ) )
@@ -558,7 +584,7 @@ def execution( self, context ):
       htmlFileName = os.path.join( formatsDirectory, formatFileName + '.html' )
       formatHTML = open( htmlFileName, 'w' )
       formatEscaped = htmlEscape( format.name )
-      context.write( 'Generate HTML for format ', formatEscaped )
+      context.write( '<font></font>Generate HTML for format ', formatEscaped, '<br/>' )
       print >> formats, '<a href="' + htmlEscape( formatFileName ) + '.html">' + formatEscaped + '</a><br/>'
       print >> formatHTML, '<html>\n<body>\n<center><h1>' + formatEscaped +'</h1></center>'
       href=htmlEscape( relative_path( index.name, os.path.dirname( formatHTML.name ) ) )
@@ -599,7 +625,7 @@ def execution( self, context ):
       htmlFileName = os.path.join( formatsDirectory, formatFileName + '.html' )
       formatHTML = open( htmlFileName, 'w' )
       formatEscaped = htmlEscape( format.name )
-      context.write( 'Generate HTML for format', formatEscaped )
+      context.write( '<font></font>Generate HTML for format', formatEscaped, '<br/>' )
       print >> formats, '<a href="' + htmlEscape( formatFileName ) + '.html">' + formatEscaped + '</a><br/>'
       print >> formatHTML, '<html>\n<body>\n<center><h1>' + formatEscaped +'</h1></center>'
       href=htmlEscape( relative_path( index.name, os.path.dirname( formatHTML.name ) ) )
