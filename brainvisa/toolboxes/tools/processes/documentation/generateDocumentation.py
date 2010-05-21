@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -55,7 +56,7 @@ def generateHTMLDocumentation( processInfoOrId, translators, context, ontology )
   documentation = readProcdoc( processInfo.id )
   
   if context is not None:
-    context.write( 'Generate HTML for process "' + processInfo.name + '"' )
+    context.write( 'Generate HTML for process "' + processInfo.name + '"<br/>' )
   # english translation is the default
   den = documentation.get( 'en', {} )
   pen = den.get( 'parameters', {} )
@@ -391,7 +392,8 @@ def execution( self, context ):
       type=diskItemType.name
       typeFileName = type.replace( '/', '_' )
       
-      context.write( 'Generate inheritance graph for type ', htmlEscape(type) )
+      context.write( 'Generate inheritance graph for type ', htmlEscape(type),
+        '<br/>' )
       
       dot = open( tmpDot, 'w' )
       tmpMap = os.path.join( tmpDatabase.fullPath(), typeFileName+'_map.html' )
@@ -415,6 +417,9 @@ def execution( self, context ):
           stack.append( ( c, typeChildren.get( c, () ) ) )
       print >> dot, '}'
       dot.close()
+      command=''
+      out = ''
+      err = ''
       try:
         command='dot -Tpng -o"' + os.path.join( imagesDirectory, typeFileName + '_inheritance.png' )+'" -Tcmapx -o"' + tmpMap+'" '+tmpDot
         stdin, stdout, stderr=os.popen3(command)
@@ -426,7 +431,9 @@ def execution( self, context ):
         if out or err:
           context.log(what="dot", html="<p><b>"+command+"</b></p><p>Output :</p><p>"+out+err+"</p>")
       except Exception, e:
-        context.warning("Problem while generating inheritance graph : ", e.message)
+        context.write(  )
+        context.warning("Problem while generating inheritance graph :<br/>",
+          htmlEscape( str(e) ), '<br/>dot command:<br/>' + htmlEscape(command) + "<br/>Output :<br/>"+out+'</p><p><b>stderr :</b></p><p>' +err+'</p>' )
       #context.system( 'dot', '-Tpng', '-o' + os.path.join( imagesDirectory, typeFileName + '_inheritance.png' ), '-Tcmapx', '-o' + tmpMap, tmpDot )
   
   # LANGUAGES
@@ -462,7 +469,13 @@ def execution( self, context ):
         print >> typeHTML, '<h2>Inheritance graph</h2>'
         src=htmlEscape( relative_path( os.path.join( imagesDirectory, typeFileName + '_inheritance.png'), os.path.dirname( typeHTML.name ) ) )
         print >> typeHTML, '<center><img src="' +src + '" usemap="#' + htmlEscape(typeFileName) + ' inheritance"/></center>'
-        print >> typeHTML, open( os.path.join( tmpDatabase.fullPath(), typeFileName+'_map.html' ) ).read()
+        graphmap = os.path.join( tmpDatabase.fullPath(),
+          typeFileName+'_map.html' )
+        if os.path.exists( graphmap ):
+          print >> typeHTML, open( graphmap ).read()
+        else:
+          print >> typeHTML, '<em>(no documentation for type', typeHTML, \
+            ')</em>'
 
       typeFileRef=relative_path(diskItemType.fileName, os.path.dirname(htmlFileName))
       typeFileName=relative_path(diskItemType.fileName, os.path.dirname(neuroConfig.mainPath))
