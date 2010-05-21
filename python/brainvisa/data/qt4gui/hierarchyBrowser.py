@@ -40,6 +40,7 @@ import neuroConfig
 from brainvisa.data.qt4gui.diskItemBrowser import DiskItemBrowser
 from brainvisa.data.actions import FileProcess, Remove, Move
 import neuroProcesses
+from neuroException import showException
 
 class HierarchyBrowser( QWidget ):
     """
@@ -286,11 +287,15 @@ class HierarchyBrowser( QWidget ):
         items=self.selectedItems()
         for item in items:
           if item and item.diskItem:
-            # remove all files associated to this diskitem
-            db=neuroHierarchy.databases.database(item.diskItem.get("_database"))
-            for f in item.diskItem.existingFiles():
-              self.remove(f, db)
-            item.parent().takeChild(item.parent().indexOfChild(item))
+            try:
+              # remove all files associated to this diskitem
+              db=neuroHierarchy.databases.database(item.diskItem.get("_database"))
+              for f in item.diskItem.existingFiles():
+                self.remove(f, db)
+              item.parent().takeChild(item.parent().indexOfChild(item))
+            except:
+              showException(beforeError="Error when trying to remove "+item.diskItem.fileName())
+
     
     def remove(self, file, db=None):
       """
