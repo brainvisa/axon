@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -63,7 +64,7 @@ signature = Signature(
                         enableConversion = 0 ),
   'write', WriteDiskItem( 'Transformation matrix', 'Transformation matrix', 
      requiredAttributes = { 'destination_referential' : \
-      str( registration.talairachMNIReferentialId ) } ),
+      str( registration.talairachMNIReferentialId ) }, exactType=True ),
   'target', Choice( 'MNI template', 'unspecified template',
     'normalized_volume in AIMS orientation' ),
   'source_volume', ReadDiskItem( '4D Volume', 
