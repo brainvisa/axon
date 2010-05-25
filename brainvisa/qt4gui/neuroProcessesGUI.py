@@ -31,7 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-import distutils, os, sys, re
+import distutils, os, sys, re, string
 import types
 from backwardCompatibleQt import *
 from PyQt4 import uic
@@ -117,11 +117,7 @@ def cleanupGui():
 #----------------------------------------------------------------------------
 _helpWidget = None
 def helpRequest():
-  sep = '//'
-  if neuroConfig.platform == 'windows':
-    # I definitely don't understand what is a good file URL like...
-    sep = '/'
-  url = 'file:' + sep + neuroConfig.getDocFile(os.path.join( 'help', 'index.html' ) )
+  url = QUrl.fromLocalFile( neuroConfig.getDocFile(os.path.join( 'help', 'index.html' ) ) ).toString()
   openWeb(url)
 
 def openWeb(source):
@@ -285,13 +281,8 @@ class HTMLBrowser( QWidget ):
           neuroException.showException()
       elif bvp.startswith( 'file://' ) and bvp.endswith( '.py' ):
         TextBrowserWithSearch.setSource( self, url )
-        self.setHtml( '<html><body><pre>' + open( bvp[ 7: ] ).read() + '</pre></body></html>' )
-      elif not bvp.startswith("file:") and os.path.exists(bvp):
-        # In windows qt4 version, urls without file:/ don't work anymore
-        sep = '//'
-        if neuroConfig.platform == 'windows':
-            sep = '/'
-        TextBrowserWithSearch.setSource( self, "file:"+sep+bvp )        
+        self.setHtml( '<html><body><pre>' + open( url.toLocalFile() ).read() + '</pre></body></html>' )
+        sys.stdout.flush()
       else:
         TextBrowserWithSearch.setSource( self, url )
         
@@ -369,11 +360,11 @@ class HTMLBrowser( QWidget ):
     neuroConfig.registerObject( self )
 
   def setSource( self, source ):
-    self.browser.setSource( QUrl(source) )
+    self.browser.setSource( QUrl.fromLocalFile(source) )
 
   def setText( self, text ):
     self.browser.setText( text )
-    
+      
   def openWeb(self):
     self.browser.openWeb()
     
@@ -1925,10 +1916,7 @@ class ProcessSelectionWidget( QMainWindow ):
     self.updateList()
 
     # try to start with a doc opened
-    sep = '//'
-    if neuroConfig.platform == 'windows':
-      sep = '/'
-    self.info.setSource( 'file:' + sep + neuroConfig.getDocFile(os.path.join( 'help','index.html' ) ) )
+    self.info.setSource( neuroConfig.getDocFile(os.path.join( 'help','index.html' ) ) )
     self.resize( 800, 600 )
     splitter.setSizes( [ 400, 400 ] )
 
