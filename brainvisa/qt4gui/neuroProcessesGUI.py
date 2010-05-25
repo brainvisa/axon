@@ -265,7 +265,6 @@ class HTMLBrowser( QWidget ):
       
 
     def setSource( self, url ):
-      
       text=url.toString()
       bvp = unicode( text )
       if bvp.startswith( 'bvshowprocess://' ):
@@ -288,8 +287,11 @@ class HTMLBrowser( QWidget ):
         TextBrowserWithSearch.setSource( self, url )
         self.setHtml( '<html><body><pre>' + open( bvp[ 7: ] ).read() + '</pre></body></html>' )
       elif not bvp.startswith("file:") and os.path.exists(bvp):
-        # In windows qt4 version, urls without file:// don't work anymore
-        TextBrowserWithSearch.setSource( self, QUrl("file://"+bvp) )        
+        # In windows qt4 version, urls without file:/ don't work anymore
+        sep = '//'
+        if neuroConfig.platform == 'windows':
+            sep = '/'
+        TextBrowserWithSearch.setSource( self, "file:"+sep+bvp )        
       else:
         TextBrowserWithSearch.setSource( self, url )
         
