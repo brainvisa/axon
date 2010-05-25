@@ -31,7 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-import distutils, os, sys, re, string
+import distutils, os, sys, re
 import types
 from backwardCompatibleQt import *
 from PyQt4 import uic
@@ -49,14 +49,12 @@ import weakref
 from soma.minf.xhtml import XHTML
 from soma.qtgui.api import QtThreadCall, FakeQtThreadCall, TextBrowserWithSearch, bigIconSize, defaultIconSize
 import threading
-import sys
 try:
   import sip
 except:
   # for sip 3.x (does it work ??)
   import libsip as sip
 
-import neuroConfig
 import neuroProcesses
 import neuroException
 from soma.qtgui.api import EditableTreeWidget, TreeListWidget
