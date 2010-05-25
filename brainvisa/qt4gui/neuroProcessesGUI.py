@@ -367,7 +367,6 @@ class HTMLBrowser( QWidget ):
     neuroConfig.registerObject( self )
 
   def setSource( self, source ):
-    print "set source ", source
     self.browser.setSource( QUrl(source) )
 
   def setText( self, text ):
