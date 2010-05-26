@@ -469,7 +469,8 @@ def execution( self, context ):
     htmlDirectory=os.path.join( ontologyDirectory, l )
     index = open( os.path.join( htmlDirectory, 'index.html' ), 'w' )
     print >> index, '<html>\n<body>\n<center><h1>Data types and formats in BrainVISA ontologies</h1></center><a href="types/index.html">Data types</a><br><a href="formats/index.html">Formats</a>'
-  
+    print >> index, "</body></html>"
+    index.close()
     # TYPES
     typesDirectory=os.path.join( htmlDirectory, 'types' )
     formatsDirectory=os.path.join( htmlDirectory, 'formats' )
@@ -539,38 +540,11 @@ def execution( self, context ):
             print >> typeHTML, ",&nbsp;", htmlEscape(key)
           print >> typeHTML, '</blockquote>'
 
-    #dot = open( tmpDot, 'w' )
-    #print >> dot, 'digraph "' + typeFileName + ' dataflow" {'
-    #print >> dot, '  node [style=filled,shape=ellipse];'
-    #for t in inputTypes:
-      #if t in outputTypes:
-        #color='orange'
-      #else:
-        #color='green'
-      #print >> dot, '  "' + t  + '" [color=' + color + '];'
-    #for t in outputTypes:
-      #if t in inputTypes:
-        #continue
-      #print >> dot, '  "' + t + '" [color=red];'
-    #for p in typesProcesses:
-      #if p in inPipeline:
-        #shape='ellipse'
-      #else:
-        #shape='box'
-      #print >> dot, '  "' + p + '" [shape=' + shape + '];'
-    #for i, p in typesInputLinks:
-      #if p in inPipeline: continue
-      #print >> dot, '  "' + i + '" -> "' + p + '" [color=green];'
-    #for p, o in typesOutputLinks:
-      #if p in inPipeline: continue
-      #print >> dot, '  "' + p + '" -> "' + o + '" [color=red];'
-    #print >> dot, '}'
-    #dot.close()
-    #context.system( 'dot', '-Tpng', '-o' + os.path.join( self.htmlDirectory.fullPath(), 'types', typeFileName + ' dataflow.png' ), '-Tcmapx', '-o' + tmpMap, tmpDot )
-    #print >> typeHTML, '<h2>Data flow graph</h2>'
-    #print >> typeHTML, '<center><img src="' + htmlEscape( typeFileName ) + ' dataflow.png" usemap="#' + htmlEscape(typeFileName) + ' inheritance"/></center>'
-    #print >> typeHTML, open( tmpMap ).read()
       print >> typeHTML, '</body></html>'
+      typeHTML.close()
+      
+    print >> types, '</body></html>'
+    types.close()
   
     # FORMATS
     if not os.path.exists( formatsDirectory ):
@@ -616,6 +590,10 @@ def execution( self, context ):
         href = htmlEscape( relative_path( os.path.join( typesDirectory, typeFileName + '.html' ), os.path.dirname( formatHTML.name ) ) )
         print >> formatHTML, '<a href="' + href + '">' + htmlEscape( t ) + '</a><br/>'
       print >> formatHTML, '</blockquote>'
+
+      print >> formatHTML, '</body></html>'
+      formatHTML.close()
+
   
     # FORMATS LISTS
     print >> formats, '<center><h1> Formats Lists in BrainVISA</h1></center>'
@@ -654,6 +632,12 @@ def execution( self, context ):
         href = htmlEscape( relative_path( os.path.join( typesDirectory, typeFileName + '.html' ), os.path.dirname( formatHTML.name ) ) )
         print >> formatHTML, '<a href="' + href + '">' + htmlEscape( t ) + '</a><br/>'
       print >> formatHTML, '</blockquote>'
+
+      print >> formatHTML, '</body></html>'
+      formatHTML.close()
   
+    print >> formats, '</body></html>'
+    formats.close()
+
   for database in databases:
     database.currentThreadCleanup()
