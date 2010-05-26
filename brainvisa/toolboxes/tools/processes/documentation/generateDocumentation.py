@@ -427,7 +427,7 @@ def execution( self, context ):
       command='dot -Tpng -o"' + os.path.join( imagesDirectory, typeFileName + '_inheritance.png' )+'" -Tcmapx -o"' + tmpMap+'" '+tmpDot
       def retrycmd( command ):
         p = subprocess.Popen( command, shell=True, stdin=subprocess.PIPE,
-          stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True )
+          stdout=subprocess.PIPE, stderr=subprocess.PIPE )
         stdin, stdout, stderr = (p.stdin, p.stdout, p.stderr)
         #stdin, stdout, stderr=os.popen3(command)
         stdin.close()
@@ -501,7 +501,7 @@ def execution( self, context ):
         if os.path.exists( graphmap ):
           print >> typeHTML, open( graphmap ).read()
         else:
-          print >> typeHTML, '<em>(no documentation for type', typeHTML, \
+          print >> typeHTML, '<em>(no documentation for type', typeHTML.name, \
             ')</em>'
 
       typeFileRef=relative_path(diskItemType.fileName, os.path.dirname(htmlFileName))
