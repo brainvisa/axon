@@ -1,45 +1,46 @@
-<?xml version="1.0" encoding="iso-8859-1" ?>
-<minf version="1.0">
-  <d name="fr" length="3">
-    <xhtml name="short">Interface de la commande AimsLinearComb : Combinaison linéaire entre 2 images
-<br/>Les images doivent avoir les mêmes dimensions et les mêmes tailles de voxel.
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="fr">
+    <xhtml name="short">Interface de la commande AimsLinearComb : Combinaison linÃ©aire entre 2 images
+<br/>Les images doivent avoir les mÃªmes dimensions et les mÃªmes tailles de voxel.
 <br/></xhtml>
-    <d name="parameters" length="9">
+    <xhtml name="long">Ce traitement rÃ©alise une combinaison linÃ©aire entre 2 images ou texture selon la relation :<br/>
+a.Objet1/b + c.Objet2/d  + e
+<br/><br/>
+</xhtml>
+    <d name="parameters">
+      <xhtml name="read1">Obligatoire : <br/>
+objet 1 (volume) </xhtml>
+      <xhtml name="constant">Facultatif : <br/>
+coefficient de correction (e), <br/>
+par dÃ©faut, est Ã©gal Ã  0
+</xhtml>
       <xhtml name="write">Obligatoire :<br/>
 Objet de sortie (volume)
 </xhtml>
-      <xhtml name="constant">Facultatif : <br/>
-coefficient de correction (e), <br/>
-par défaut, est égal à 0
-</xhtml>
-      <xhtml name="read1">Obligatoire : <br/>
-objet 1 (volume) </xhtml>
       <xhtml name="divisor_coefficient1">Facultatif : <br/>
 coefficient diviseur pour  l'objet 1 (b),<br/>
-par défaut la valeur est égal à 1</xhtml>
+par dÃ©faut la valeur est Ã©gal Ã  1</xhtml>
       <xhtml name="divisor_coefficient2">Facultatif : <br/>
 coefficient diviseur pour  l'objet 2 (d),<br/>
-par défaut la valeur est égal à 1</xhtml>
+par dÃ©faut la valeur est Ã©gal Ã  1</xhtml>
       <xhtml name="read2">Obligatoire : <br/>
 objet 2 (volume) </xhtml>
       <xhtml name="multiplicative_coefficient2">Facultatif : <br/>
 coefficient multiplicateur pour  l'objet 2 (c), <br/>
-par défaut la valeur est égal à 1</xhtml>
+par dÃ©faut la valeur est Ã©gal Ã  1</xhtml>
       <xhtml name="multiplicative_coefficient1">Facultatif : <br/>
 coefficient multiplicateur pour l'objet 1 (a),<br/>
-par défaut la valeur est égal à 1</xhtml>
-      <xhtml name="type">type des données</xhtml>
+par dÃ©faut la valeur est Ã©gal Ã  1</xhtml>
+      <xhtml name="type">type des donnÃ©es</xhtml>
     </d>
-    <xhtml name="long">Ce traitement réalise une combinaison linéaire entre 2 images ou texture selon la relation :<br/>
-a.Objet1/b + c.Objet2/d  + e
-<br/><br/>
-</xhtml>
   </d>
-  <d name="en" length="3">
-    <s name="short">Interface of AimsLinearComb command : Linear Combination between 2 images
-&lt;br/Volumes must have the same dimensions and the same voxel size.
-&lt;br/&gt;</s>
-    <d name="parameters" length="9">
+  <d name="en">
+    <xhtml name="short">Interface of AimsLinearComb command : Linear Combination between 2 images
+<br/>Volumes must have the same dimensions and the same voxel size.
+<br/></xhtml>
+    <d name="parameters">
       <xhtml name="write">Mandatory :<br/>
 output image</xhtml>
       <xhtml name="constant">Optional : <br/>
@@ -68,4 +69,5 @@ a.Objet1/b + c.Objet2/d  + e
 <br/>
 </xhtml>
   </d>
+</d>
 </minf>
