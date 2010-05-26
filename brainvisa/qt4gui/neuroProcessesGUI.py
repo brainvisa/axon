@@ -600,6 +600,18 @@ class NodeCheckListItem( QTreeWidgetItem ):
       return self.checkState(0) == Qt.Checked
     return True
 
+  def check(self, b):
+    """
+    This method is used to check or uncheck a checkable item and warn the underlying model of the state change. 
+    It is useful for the feature select/unselect before/after/all in pipelines and iterations.
+    """
+    if self.itemType=="check":
+      if b:
+        self.setCheckState( 0, Qt.Checked )
+      else:
+        self.setCheckState( 0, Qt.Unchecked )
+      self.stateChange(b)
+      
 #------------------------------------------------------------------------------
 class ParameterLabel( QLabel ):
   '''A QLabel that emits PYSIGNAL( 'contextMenuEvent' ) whenever a
@@ -978,6 +990,16 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       self.executionTree.setHeaderLabels( ['Name'] )
       self.executionTree.setAllColumnsShowFocus( 1 )
       self.executionTree.setRootIsDecorated( 1 )
+      self.executionTree.setContextMenuPolicy(Qt.CustomContextMenu)
+          # Popup Menu for toolboxes
+      self.executionTreeMenu = QMenu()
+      self.executionTreeMenu.addAction( _t_("Unselect before"), self.menuUnselectBefore)
+      self.executionTreeMenu.addAction( _t_("Unselect after"), self.menuUnselectAfter)
+      self.executionTreeMenu.addAction( _t_("Unselect all"),  self.menuUnselectAll )
+      self.executionTreeMenu.addAction( _t_("Select before"), self.menuSelectBefore)
+      self.executionTreeMenu.addAction( _t_("Select after"), self.menuSelectAfter)
+      self.executionTreeMenu.addAction( _t_("Select all"),  self.menuSelectAll )
+      self.connect(self.executionTree, SIGNAL( 'customContextMenuRequested ( const QPoint & )'), self.openContextMenu)
       #self.executionTree.setSortingEnabled( -1 )
       #eTreeWidget.setResizeMode( self.executionTree, QSplitter.KeepSize )
 
@@ -1097,6 +1119,55 @@ class ProcessView( QWidget, ExecutionContextGUI ):
   def signatureChanged( self, process ):
     self.eraseSignatureWidgets()
     self.createSignatureWidgets( None )
+
+  # Execution tree menu
+  def openContextMenu(self, point):
+    """
+    Called on contextMenuRequested signal. It opens the popup menu at cursor position.
+    """
+    self.executionTreeMenu.exec_(QCursor.pos())
+    
+  def changeItemSelection(self, select=True, all=True, before=False ):
+    item=self.executionTree.currentItem()
+    if item:
+      parent=item.parent()
+      if parent:
+        if all:
+          r=xrange(parent.childCount())
+        elif before:
+          r=xrange(parent.indexOfChild(item))
+        else:# after
+          r=xrange(parent.indexOfChild(item)+1, parent.childCount())
+        for i in r:
+          parent.child(i).check(select)
+      else:
+        parent=item.treeWidget()
+        if all:
+          r=xrange(parent.topLevelItemCount())
+        elif before:
+          r=xrange(parent.indexOfTopLevelItem(item))
+        else:# after
+          r=xrange(parent.indexOfTopLevelItem(item)+1, parent.topLevelItemCount())
+        for i in r:
+          parent.topLevelItem(i).check(select)
+  
+  def menuUnselectBefore(self):
+    self.changeItemSelection(select=False, all=False, before=True)
+
+  def menuUnselectAfter(self):
+    self.changeItemSelection(select=False, all=False, before=False)
+    
+  def menuUnselectAll(self):
+    self.changeItemSelection(select=False, all=True, before=False)
+    
+  def menuSelectBefore(self):
+    self.changeItemSelection(select=True, all=False, before=True)
+
+  def menuSelectAfter(self):
+    self.changeItemSelection(select=True, all=False, before=False)
+
+  def menuSelectAll(self):
+    self.changeItemSelection(select=True, all=True, before=False)
 
   def defaultInlineGUI( self, parent, externalRunButton = False, container = None ):
     if container is None:
