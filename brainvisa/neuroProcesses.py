@@ -2339,16 +2339,18 @@ def getProcessInfo( processId ):
   if isinstance( processId, ProcessInfo ):
     result = processId
   else:
+    if type(processId) in types.StringTypes:
+      processId = processId.lower()
     result = _processesInfo.get( processId )
     if result is None:
       process = getProcess( processId, checkUpdate=False )
       if process is not None:
-        result = _processesInfo.get( process._id )
+        result = _processesInfo.get( process._id.lower() )
   return result
 
 #----------------------------------------------------------------------------
 def addProcessInfo( processId, processInfo ):
-  _processesInfo[ processId ] = processInfo
+  _processesInfo[ processId.lower() ] = processInfo
   
 #----------------------------------------------------------------------------
 def getProcess( processId, ignoreValidation=False, checkUpdate=True ):
@@ -2369,13 +2371,15 @@ def getProcess( processId, ignoreValidation=False, checkUpdate=True ):
     else:
       raise TypeError( _t_( 'Unknown process type: %s' ) % ( unicode( processId[type] ) ) )
   else:
+    if type(processId) in types.StringTypes:
+      processId=processId.lower()
     result = _processes.get( processId )
   if result is None:
     info = _processesInfo.get( processId )
-    if info is None and type( processId ) in types.StringTypes:
-      info = _processesInfoByName.get( processId.lower() )
+    if info is None:
+      info = _processesInfoByName.get( processId )
     if info is not None:
-      result = _processes.get( info.id )
+      result = _processes.get( info.id.lower() )
       if result is None:
         result = readProcess( info.fileName, ignoreValidation=ignoreValidation )
         checkUpdate=False
@@ -2704,7 +2708,7 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
       roles = getattr( NewProcess, 'roles', () ),
       toolbox = toolbox
     )
-    _processesInfo[ processInfo.id ] = processInfo
+    _processesInfo[ processInfo.id.lower() ] = processInfo
     _processesInfoByName[ NewProcess.name.lower() ] = processInfo
 
     # Process validation
@@ -2719,15 +2723,16 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
             _readProcessLog.append( NewProcess._id, html=exceptionHTML(), icon='warning.png' )
           raise ValidationError( HTMLMessage(_t_('In <em>%s</em>') % ( fileName, ) + ': ' + str( e )) )
 
-    oldProcess = _processes.get( NewProcess._id )
+    oldProcess = _processes.get( NewProcess._id.lower() )
     if oldProcess is not None:
+      defaultContext().warning("Two process have the same name.", fileName, " process will override ", oldProcess._fileName)
       NewProcess.toolbox = oldProcess.toolbox
       processInfo.toolbox = oldProcess.toolbox
       for n in ( 'execution', 'initialization', 'checkArguments' ):
         setattr( oldProcess, n, getattr( NewProcess, n ).im_func )
       oldProcess._fileTime = NewProcess._fileTime
 
-    _processes[ processInfo.id ] = NewProcess
+    _processes[ processInfo.id.lower() ] = NewProcess
     result = NewProcess
 
     def warnRole( processInfo, role ):
