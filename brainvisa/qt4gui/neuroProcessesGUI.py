@@ -998,7 +998,14 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       self.executionTreeMenu.addAction( _t_("Unselect all"),  self.menuUnselectAll )
       self.executionTreeMenu.addAction( _t_("Select before"), self.menuSelectBefore)
       self.executionTreeMenu.addAction( _t_("Select after"), self.menuSelectAfter)
-      self.executionTreeMenu.addAction( _t_("Select all"),  self.menuSelectAll )
+      self.executionTreeMenu.addAction( _t_("Select all"), self.menuSelectAll )
+      self.executionTreeMenu.addSeparator()
+      self.executionTreeMenu._opennodeaction \
+        = self.executionTreeMenu.addAction( _t_("Open this step separately"),
+                                            self.menuDetachExecutionNode )
+      self.executionTreeMenu._showdocaction \
+        = self.executionTreeMenu.addAction( _t_("Show documentation"),
+                                            self.menuShowDocumentation )
       self.connect(self.executionTree, SIGNAL( 'customContextMenuRequested ( const QPoint & )'), self.openContextMenu)
       #self.executionTree.setSortingEnabled( -1 )
       #eTreeWidget.setResizeMode( self.executionTree, QSplitter.KeepSize )
@@ -1125,8 +1132,17 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     """
     Called on contextMenuRequested signal. It opens the popup menu at cursor position.
     """
-    self.executionTreeMenu.exec_(QCursor.pos())
-    
+    item=self.executionTree.currentItem()
+    if item:
+      enode = item._executionNode
+      if hasattr( enode, '_process' ):
+        self.executionTreeMenu._opennodeaction.setEnabled( True )
+        self.executionTreeMenu._showdocaction.setEnabled( True )
+      else:
+        self.executionTreeMenu._opennodeaction.setEnabled( False )
+        self.executionTreeMenu._showdocaction.setEnabled( False )
+      self.executionTreeMenu.exec_(QCursor.pos())
+
   def changeItemSelection(self, select=True, all=True, before=False ):
     item=self.executionTree.currentItem()
     if item:
@@ -1168,6 +1184,36 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
   def menuSelectAll(self):
     self.changeItemSelection(select=True, all=True, before=False)
+
+  def menuDetachExecutionNode(self):
+    item=self.executionTree.currentItem()
+    if item:
+      proc = item._executionNode
+      self.readUserValues()
+      event = ProcessExecutionEvent()
+      if hasattr( proc, '_process' ):
+        # TODO: case ExecutionNode without a unique process inside
+        event.setProcess( proc._process )
+        clone = neuroProcesses.getProcessInstanceFromProcessEvent( event )
+        return showProcess( clone )
+
+  def menuShowDocumentation(self):
+    item=self.executionTree.currentItem()
+    if item:
+      enode = item._executionNode
+      if hasattr( enode, '_process' ):
+        proc = enode._process
+        if isinstance( proc, type ) \
+          and issubclass( proc, newProcess.NewProcess ):
+          doc = proc.onlineDocumentationSource()
+          if proc is not None:
+            global _mainWindow
+            _mainWindow.info.setSource( doc )
+        else:
+          doc = neuroProcesses.getHTMLFileName( proc )
+          if os.path.exists( doc ):
+            global _mainWindow
+            _mainWindow.info.setSource( doc )
 
   def defaultInlineGUI( self, parent, externalRunButton = False, container = None ):
     if container is None:
@@ -1522,6 +1568,8 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
 
   def createProcessExecutionEvent( self ):
+    print 'createProcessExecutionEvent GUI, self:', self
+    print 'self.process:', self.process
     event = super( ProcessView, self ).createProcessExecutionEvent()
     mainThreadActions().call( event.setWindow, self )
     return event
