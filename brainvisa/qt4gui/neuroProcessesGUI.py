@@ -282,7 +282,8 @@ class HTMLBrowser( QWidget ):
         self.setHtml( '<html><body><pre>' + open( url.toLocalFile() ).read() + '</pre></body></html>' )
         sys.stdout.flush()
       else:
-        TextBrowserWithSearch.setSource( self, url )
+        # trick to make the links in documentation work on windows
+        TextBrowserWithSearch.setSource( self, QUrl.fromLocalFile(url.toLocalFile()) )
         
     def customMenu(self):
       menu=TextBrowserWithSearch.customMenu(self)
