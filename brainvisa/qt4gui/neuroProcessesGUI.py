@@ -645,17 +645,33 @@ class ParameterLabel( QLabel ):
     #self.default_id.toggle()
     self.emit( SIGNAL( 'toggleDefault' ), self.parameterName )
     if self.default_id.isChecked():
-      self.setBackgroundRole(QPalette.Window)
+      txt = unicode( self.text() )
+      if txt.startswith( '<img src=' ):
+        x = txt.find( '/> ' )
+        txt = txt[ x+3 : ]
+        self.setText( txt )
+      # self.setBackgroundRole(QPalette.Window)
     else:
-      self.setBackgroundRole(QPalette.Light)
+      if not unicode( self.text() ).startswith( '<img src=' ):
+        self.setText( '<img src="' \
+          + os.path.join( neuroConfig.iconPath, 'lock.png' ) \
+          + '" height="16"/> ' + self.text() )
 
 
   def setDefault( self, default ):
     self.default_id.setChecked( default )
     if default:
-      self.setBackgroundRole(QPalette.Window)
+      txt = unicode( self.text() )
+      if txt.startswith( '<img src=' ):
+        x = txt.find( '/> ' )
+        txt = txt[ x+3 : ]
+        self.setText( txt )
+      # self.setBackgroundRole(QPalette.Window)
     else:
-      self.setBackgroundRole(QPalette.Light)
+      if not unicode( self.text() ).startswith( '<img src=' ):
+        self.setText( '<img src="' \
+          + os.path.join( neuroConfig.iconPath, 'lock.png' ) \
+          + '" height="16"/> ' + self.text() )
 
 
 #------------------------------------------------------------------------------
@@ -1109,7 +1125,12 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         for ( k, p ) in self.process.signature.items():
           if neuroConfig.userLevel >= p.userLevel:
             self.parameterizedWidget.setParameterToolTip( k, 
-              XHTML.html( documentation.get( 'parameters', {} ).get( k, '' ) ) )
+              XHTML.html( documentation.get( 'parameters', {} ).get( k, '' ) ) \
+              + '<br/><img src="' \
+              + os.path.join( neuroConfig.iconPath, 'lock.png' )+ '"/><em>: ' \
+              + _t_( \
+              'value has been manually changed and is not linked anymore' ) \
+              + '</em>' )
 #      self.parameterizedWidget.show()
 #    if self.inlineGUI is not None:
 #      self.inlineGUI.show()
