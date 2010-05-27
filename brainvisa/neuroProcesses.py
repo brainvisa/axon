@@ -2725,7 +2725,8 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
 
     oldProcess = _processes.get( NewProcess._id.lower() )
     if oldProcess is not None:
-      defaultContext().warning("Two process have the same name.", fileName, " process will override ", oldProcess._fileName)
+      if fileName != oldProcess._fileName:
+        defaultContext().warning("Two processes have the same id : "+NewProcess._id.lower()+".", fileName, " process will override ", oldProcess._fileName)
       NewProcess.toolbox = oldProcess.toolbox
       processInfo.toolbox = oldProcess.toolbox
       for n in ( 'execution', 'initialization', 'checkArguments' ):
