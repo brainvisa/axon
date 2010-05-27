@@ -41,8 +41,7 @@ from brainvisa.data.qtgui.readdiskitemGUI import DiskItemEditor
 class WriteDiskItem( ReadDiskItem ):
   def __init__( self, diskItemType, formats, requiredAttributes={},
                 exactType=False, ignoreAttributes=False, _debug=None ):
-    ReadDiskItem.__init__( self, diskItemType, formats, requiredAttributes=requiredAttributes, ignoreAttributes=ignoreAttributes, enableConversion=False, _debug=_debug  )
-    self.exactType = exactType
+    ReadDiskItem.__init__( self, diskItemType, formats, requiredAttributes=requiredAttributes, ignoreAttributes=ignoreAttributes, enableConversion=False, _debug=_debug, exactType=exactType  )
     self._write = True
         
   
@@ -52,7 +51,8 @@ class WriteDiskItem( ReadDiskItem ):
   def findValue( self, selection, requiredAttributes=None, _debug=Undefined ):
     result = ReadDiskItem.findValue( self, selection, requiredAttributes=requiredAttributes, _debug=_debug )
     if result is None and isinstance( selection, DiskItem ) and \
-      ( selection.type is None or isSameDiskItemType( selection.type, self.type ) ) and self.formats[ 0 ] != selection.format:
+      ( selection.type is None or selection.type is self.type or (not self.exactType and isSameDiskItemType( selection.type, self.type )) ) and \
+       self.formats[ 0 ] != selection.format:
       result = self.database.changeDiskItemFormat( selection, self.formats[ 0 ].name )
     return result
 

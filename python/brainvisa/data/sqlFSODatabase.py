@@ -1030,8 +1030,11 @@ class SQLDatabase( Database ):
     if debugHTML:
       print >> debugHTML, '</body></html>'
 
-  def findAttributes( self, attributes, selection={}, _debug=None, **required ):
-    types = set( chain( *( self._childrenByTypeName.get( t, ()) for t in self.getAttributeValues( '_type', selection, required ) ) ) )
+  def findAttributes( self, attributes, selection={}, _debug=None, exactType=False, **required ):
+    if exactType:
+      types = set( self.getAttributeValues( '_type', selection, required ) )
+    else:
+      types = set( chain( *( self._childrenByTypeName.get( t, ()) for t in self.getAttributeValues( '_type', selection, required ) ) ) )
     if _debug is not None:
       print >> _debug, '!findAttributes!', repr(self.name), attributes, tuple( types ), selection, required
     for t in types:
@@ -1114,13 +1117,16 @@ class SQLDatabase( Database ):
           tpl = ( None, t ) + tpl
           yield tuple( (tpl[i] for i in tupleIndices) )
   
-  def findDiskItems( self, selection={}, _debug=None, **required ):
-    for t in self.findAttributes( ( '_diskItem', ), selection, _debug=_debug, **required ):
+  def findDiskItems( self, selection={}, _debug=None, exactType=False, **required ):
+    for t in self.findAttributes( ( '_diskItem', ), selection, _debug=_debug, exactType=exactType, **required ):
         yield self._diskItemFromMinf( t[0] )
   
   
-  def createDiskItems( self, selection={}, _debug=None, **required ):
-    types = set( chain( *( self._childrenByTypeName[ t ] for t in self.getAttributeValues( '_type', selection, required ) ) ) )
+  def createDiskItems( self, selection={}, _debug=None, exactType=False, **required ):
+    if exactType:
+      types = set( self.getAttributeValues( '_type', selection, required ) )
+    else:
+      types = set( chain( *( self._childrenByTypeName[ t ] for t in self.getAttributeValues( '_type', selection, required ) ) ) )
     if _debug is not None:
       print >> _debug, '!createDiskItems!', tuple( types ), selection, required
     for type in types:
@@ -1408,7 +1414,7 @@ class SQLDatabases( Database ):
     return defaultValue
   
   
-  def findAttributes( self, attributes, selection={}, _debug=None, **required ):
+  def findAttributes( self, attributes, selection={},  _debug=None, exactType=False, **required ):
     index = 0
     for a in attributes:
       if a == '_database':
@@ -1417,22 +1423,22 @@ class SQLDatabases( Database ):
     else:
       index = -1
     for database in self._iterateDatabases( selection, required ):
-      for tpl in database.findAttributes( attributes, selection, _debug=_debug, **required ):
+      for tpl in database.findAttributes( attributes, selection, _debug=_debug, exactType=exactType, **required ):
         if index >= 0:
           yield tpl[:index] + ( database.name, ) + tpl[index+1:]
         else:
           yield tpl
   
   
-  def findDiskItems( self, selection={}, _debug=None, **required ):
+  def findDiskItems( self, selection={}, _debug=None, exactType=False, **required ):
     for database in self._iterateDatabases( {}, required ):
-      for item in database.findDiskItems( selection, _debug=_debug, **required ):
+      for item in database.findDiskItems( selection, _debug=_debug, exactType=exactType, **required ):
         yield item
   
   
-  def createDiskItems( self, selection={}, _debug=None, **required ):
+  def createDiskItems( self, selection={}, _debug=None, exactType=False, **required ):
     for database in self._iterateDatabases( {}, required ):
-      for item in database.createDiskItems( selection, _debug=_debug, **required ):
+      for item in database.createDiskItems( selection, _debug=_debug, exactType=exactType, **required ):
         yield item
   
   

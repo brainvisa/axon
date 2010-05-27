@@ -278,9 +278,9 @@ class DiskItemEditor( QHBox, DataEditor ):
           selection[ '_format' ] = self.diskItem.format.name
         
         self.databaseDialog = DiskItemBrowser( self.parameter.database, selection=selection, required=self.parameter.requiredAttributes, parent=self, write = self._write,
-        enableConversion=self.parameter.enableConversion )
+        enableConversion=self.parameter.enableConversion, exactType=self.parameter.exactType )
       else: # if there is no value, we could have some selected attributes from a linked value, use it to initialize the browser
-        self.databaseDialog = DiskItemBrowser( self.parameter.database, selection=self.parameter._selectedAttributes, required=self.parameter.requiredAttributes, parent=self, write = self._write, enableConversion=self.parameter.enableConversion )
+        self.databaseDialog = DiskItemBrowser( self.parameter.database, selection=self.parameter._selectedAttributes, required=self.parameter.requiredAttributes, parent=self, write = self._write, enableConversion=self.parameter.enableConversion, exactType=self.parameter.exactType )
       self.databaseDialog.setCaption( _t_( self.parameter.type.name ) )
       self.connect( self.databaseDialog, PYSIGNAL( 'accept' ), self.databaseAccepted )
     else:
@@ -537,7 +537,8 @@ class DiskItemListEditor( QHBox, DataEditor ):
           parent=self,
           write = self.parameter._write,
           enableConversion=self.parameter.enableConversion,
-          multiple = True )
+          multiple = True,
+          exactType=self.parameter.exactType )
         self.connect( self.findDialog, PYSIGNAL( 'accept' ), self.findAccepted )
       else:
         self.findDialog.rescan()

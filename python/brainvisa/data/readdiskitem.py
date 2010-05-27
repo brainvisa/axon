@@ -46,7 +46,7 @@ import types
 #----------------------------------------------------------------------------
 class ReadDiskItem( Parameter ):
   def __init__( self, diskItemType, formats, requiredAttributes={},
-                enableConversion=True, ignoreAttributes=False, _debug=None ):
+                enableConversion=True, ignoreAttributes=False, _debug=None, exactType=False ):
     Parameter.__init__( self )
     self._debug = _debug
     self.type = getDiskItemType( diskItemType )
@@ -57,6 +57,7 @@ class ReadDiskItem( Parameter ):
       self.preferedFormat = None
     self.formats = tuple( sorted( formatsList ) )
     self.enableConversion = enableConversion
+    self.exactType = exactType
     self._formatsWithConversion = None
     self.requiredAttributes = requiredAttributes
     self._write = False
@@ -183,7 +184,8 @@ class ReadDiskItem( Parameter ):
           rr[ '_format' ] = requiredAttributes[ '_format' ]
         requiredAttributes = rr
         
-      if ( selection.type is None or isSameDiskItemType( selection.type, self.type ) or isSameDiskItemType( self.type, selection.type )) \
+      if ( selection.type is None or (selection.type is self.type) or \
+           (not self.exactType and (isSameDiskItemType( selection.type, self.type ) or isSameDiskItemType( self.type, selection.type )))) \
         and self.diskItemFilter( selection, requiredAttributes ):
           result = selection
           
@@ -378,7 +380,7 @@ class ReadDiskItem( Parameter ):
       # in selection attributes, choose only key attributes because the request must not be too restrictive to avoid failure. The results will be sorted by distance to the selection later.
       keyAttributes=self.database.getTypesKeysAttributes(self.type.name)
       keySelection=dict( (i,selection[i] ) for i in keyAttributes if i in selection )
-    readValues = ( i for i in self.database.findDiskItems( keySelection, _debug=_debug, **requiredAttributes ) if self.diskItemFilter( i, requiredAttributes ) )
+    readValues = ( i for i in self.database.findDiskItems( keySelection, _debug=_debug, exactType = self.exactType, **requiredAttributes ) if self.diskItemFilter( i, requiredAttributes ) )
     if write:
       # use selection attributes to create a new diskitem
       fullPaths = set()
@@ -389,7 +391,7 @@ class ReadDiskItem( Parameter ):
       if self._formatsWithConversion:
         oldFormats = requiredAttributes.get( '_format' )
         requiredAttributes[ '_format' ] = self._formatsWithConversion.symmetric_difference( oldFormats )
-      for item in self.database.createDiskItems( selection, _debug=_debug, **requiredAttributes ):
+      for item in self.database.createDiskItems( selection, _debug=_debug, exactType = self.exactType, **requiredAttributes ):
         if self.diskItemFilter( item, requiredAttributes ):
           if item.fullPath() not in fullPaths:
             yield item

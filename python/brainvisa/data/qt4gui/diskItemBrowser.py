@@ -105,7 +105,7 @@ class DiskItemBrowser( QDialog ):
   _savedLayout = None
   
   def __init__( self, database, parent=None, write=False, multiple=False,
-                selection={}, required={}, enableConversion=False ):
+                selection={}, required={}, enableConversion=False, exactType=False ):
     """
     """
     QDialog.__init__( self, parent )
@@ -142,7 +142,10 @@ class DiskItemBrowser( QDialog ):
     self._database = database
     self._requestedTypes = database.getAttributeValues( '_type', {}, required )
     #print '!DiskItemBrowser! _requestedTypes', self._requestedTypes
-    self._possibleTypes = set( chain( *( self._database.getTypeChildren(  t ) for t in self._requestedTypes ) ) )
+    if exactType:
+      self._possibleTypes = set( self._requestedTypes )
+    else:
+      self._possibleTypes = set( chain( *( self._database.getTypeChildren(  t ) for t in self._requestedTypes ) ) )
     #print '!DiskItemBrowser! _possibleTypes', self._possibleTypes
     self._possibleFormats = set( chain( *(self._database.getTypesFormats( t ) for t in self._possibleTypes) ) )
     requestedFormats = database.getAttributeValues( '_format', {}, required )
@@ -162,6 +165,7 @@ class DiskItemBrowser( QDialog ):
             self._formatsWithConverter[ format.name ] = converter
     self._possibleFormats.update( self._formatsWithConverter.iterkeys() )
     #print '!DiskItemBrowser! _possibleFormats', self._possibleFormats
+    self._exactType=exactType
     self._write = write
     self._multiple = multiple
 
@@ -401,7 +405,7 @@ class DiskItemBrowser( QDialog ):
         if self._write:# if the search diskitem is a writeDiskItem, it doesn't exist in the database and can have a type is not yet present in the database
           typesList=[(t,) for t in self._possibleTypes]
         else:
-          typesList=self._database.findAttributes( ( '_type', ), {}, **required ) # types represented in the database : there is at least one diskitem of that type in the database
+          typesList=self._database.findAttributes( ( '_type', ), {}, exactType=self._exactType, **required ) # types represented in the database : there is at least one diskitem of that type in the database
         for t in sorted(typesList):
           t = t[0]
           if t not in typesSet:
@@ -414,7 +418,7 @@ class DiskItemBrowser( QDialog ):
         if self._write:
           formatsList=[(f,) for f in self._possibleFormats]
         else:
-          formatsList=self._database.findAttributes( ( '_format', ), {}, **required  )
+          formatsList=self._database.findAttributes( ( '_format', ), {}, exactType=self._exactType, **required  )
         for f in sorted(formatsList):
           f = f[0]
           if f not in formatsSet and f is not None:
@@ -439,7 +443,7 @@ class DiskItemBrowser( QDialog ):
         elif a in self._attributesValues and self._write:
           values.update( self._attributesValues.get(a) )
         else:
-          values.update( v[0] for v in self._database.findAttributes( ( a, ), {}, **required ) )
+          values.update( v[0] for v in self._database.findAttributes( ( a, ), {}, exactType=self._exactType, **required ) )
         for v in sorted(values):
           if not v: v = ''
           if isinstance( v, basestring ):
@@ -456,12 +460,12 @@ class DiskItemBrowser( QDialog ):
       self._tableData = SimpleTable( header=[ 'type' ] + keyAttributes + [ 'format', 'database' ] )
       # database attribute is also needed because two diskitems can have the same attributes values in two different databases
       readItems = set()
-      for attrs in sorted( self._database.findAttributes( [ '_type' ] + keyAttributes + [ '_format', '_database', '_uuid' ], selection={}, **required ) ):
+      for attrs in sorted( self._database.findAttributes( [ '_type' ] + keyAttributes + [ '_format', '_database', '_uuid' ], selection={}, exactType=self._exactType, **required ) ):
         self._tableData.addRow( attrs[:-1] )
         self._items.append( (attrs[-1], attrs[-2], ) )
         readItems.add( tuple( attrs[ :-1 ] ) )
       if self._write:
-        for item in self._database.createDiskItems( {}, **required  ):
+        for item in self._database.createDiskItems( {}, exactType=self._exactType, **required  ):
           attrs = [ item.type.name ] + [ unicode(item.get(i)) for i in keyAttributes ] + [ item.format.name, item.get('_database') ]
           if tuple( attrs ) not in readItems:
             self._tableData.addRow( attrs )
