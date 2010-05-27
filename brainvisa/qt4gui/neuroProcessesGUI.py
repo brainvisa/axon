@@ -650,7 +650,6 @@ class ParameterLabel( QLabel ):
         x = txt.find( '/> ' )
         txt = txt[ x+3 : ]
         self.setText( txt )
-      # self.setBackgroundRole(QPalette.Window)
     else:
       if not unicode( self.text() ).startswith( '<img src=' ):
         self.setText( '<img src="' \
@@ -666,7 +665,6 @@ class ParameterLabel( QLabel ):
         x = txt.find( '/> ' )
         txt = txt[ x+3 : ]
         self.setText( txt )
-      # self.setBackgroundRole(QPalette.Window)
     else:
       if not unicode( self.text() ).startswith( '<img src=' ):
         self.setText( '<img src="' \
