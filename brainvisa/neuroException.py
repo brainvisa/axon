@@ -72,8 +72,10 @@ def exceptionMessageHTML( exceptionInfo, beforeError='', afterError='' ):
         else: # if there is no message, we must use str(v) to get the message. It should be a system exception and the message is encoded with console encoding. So we decode it with console encoding to get unicode string. 
           enco = sys.stdout.encoding
           if not enco:
-            enco = 'utf8'
-          txt="<b>"+htmlEscape( str(v).decode(enco) )+"</b>"
+            enco = sys.getdefaultencoding()
+            if not enco:
+              enco = 'utf8'
+          txt="<b>"+htmlEscape( str(v).decode(enco, 'replace') )+"</b>"
   msg = '<table border=0><tr><td width=50><img alt="' + _t_('ERROR') + '" src="' \
     + os.path.join( neuroConfig.iconPath, 'error.png' ) + '"></td><td><font color=red> ' \
     + beforeError \
