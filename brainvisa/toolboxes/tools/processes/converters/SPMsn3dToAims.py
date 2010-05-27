@@ -64,7 +64,7 @@ signature = Signature(
                         enableConversion = 0 ),
   'write', WriteDiskItem( 'Transformation matrix', 'Transformation matrix', 
      requiredAttributes = { 'destination_referential' : \
-      str( registration.talairachMNIReferentialId ) }, exactType=True ),
+      str( registration.talairachMNIReferentialId ) } ),
   'target', Choice( 'MNI template', 'unspecified template',
     'normalized_volume in AIMS orientation' ),
   'source_volume', ReadDiskItem( '4D Volume', 

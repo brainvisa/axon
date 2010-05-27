@@ -57,8 +57,7 @@ def validation():
 signature = Signature(
   'read', ReadDiskItem( 'Transformation matrix', 'Matlab file',
                         enableConversion = 0 ),
-  'write', WriteDiskItem( 'Transformation matrix', 'Transformation matrix',
-    exactType=True ),
+  'write', WriteDiskItem( 'Transformation matrix', 'Transformation matrix' ),
   'source_volume', ReadDiskItem( '4D Volume',
                                  shfjGlobals.aimsVolumeFormats ),
   'registered_volume', ReadDiskItem( '4D Volume',
