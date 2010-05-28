@@ -811,7 +811,7 @@ class Process( Parameterized ):
 class IterationProcess( Process ):
   def __init__( self, name, processes ):
     self._id = name + 'Iteration'
-    self.name = _t_( 'iteration' )
+    self.name = name
     self.instance = 1
     self._processes = [getProcessInstance( p ) for p in processes]
     Process.__init__( self )
@@ -821,7 +821,7 @@ class IterationProcess( Process ):
         sp._selected = p._selected
 
   def pipelineStructure( self ):
-    return { 'type': 'iteration', 'children':[p.pipelineStructure() for p in self._processes] }
+    return { 'type': 'iteration', 'name' : self.name, 'children':[p.pipelineStructure() for p in self._processes] }
 
   def initialization( self ):
     eNode = SerialExecutionNode( self.name, stopOnError=False )
@@ -835,7 +835,7 @@ class IterationProcess( Process ):
 class DistributedProcess( Process ):
   def __init__( self, name, processes ):
     self._id = name + 'DistributedIteration'
-    self.name = _t_( 'Distributed iteration' )
+    self.name = name
     self.instance = 1
     self._processes = [getProcessInstance( p ) for p in processes]
     Process.__init__( self )
@@ -845,7 +845,7 @@ class DistributedProcess( Process ):
         sp._selected = p._selected
 
   def pipelineStructure( self ):
-    return { 'type': 'distributed', 'children':[p.pipelineStructure() for p in self._processes] }
+    return { 'type': 'distributed', 'name' : self.name, 'children':[p.pipelineStructure() for p in self._processes] }
 
   def initialization( self ):
     eNode = ParallelExecutionNode( self.name )
@@ -861,7 +861,7 @@ class DistributedProcess( Process ):
 class SelectionProcess( Process ):
   def __init__( self, name, processes ):
     self._id = name + 'Selection'
-    self.name = _t_( 'selection' )
+    self.name = name
     self.instance = 1
     self._processes = [getProcessInstance( p ) for p in processes]
     Process.__init__( self )
@@ -871,7 +871,7 @@ class SelectionProcess( Process ):
         sp._selected = p._selected
 
   def pipelineStructure( self ):
-    return { 'type': 'selection', 'children':[p.pipelineStructure() for p in self._processes] }
+    return { 'type': 'selection', 'name' : self.name, 'children':[p.pipelineStructure() for p in self._processes] }
 
   def initialization( self ):
     eNode = SelectionExecutionNode( self.name )
@@ -2396,11 +2396,13 @@ def getProcess( processId, ignoreValidation=False, checkUpdate=True ):
         result=process
   elif isinstance( processId, dict ):
     if processId[ 'type' ] == 'iteration':
-      return IterationProcess( _t_( 'iteration' ), [ getProcessInstance(i) for i in processId[ 'children' ] ] )
+      return IterationProcess( processId.get('name', 'Iteration'), [ getProcessInstance(i) for i in processId[ 'children' ] ] )
     elif processId[ 'type' ] == 'distributed':
-      return DistributedProcess( _t_( 'Distributed iteration' ), [ getProcessInstance(i) for i in processId[ 'children' ] ] )
+      return DistributedProcess( processId.get('name', 'Distributed iteration'), [ getProcessInstance(i) for i in processId[ 'children' ] ] )
+    elif processId['type'] == 'selection' : 
+      return SelectionProcess( processId.get('name', 'Selection'), [ getProcessInstance(i) for i in processId[ 'children' ] ] )
     else:
-      raise TypeError( _t_( 'Unknown process type: %s' ) % ( unicode( processId[type] ) ) )
+      raise TypeError( _t_( 'Unknown process type: %s' ) % ( unicode( processId['type'] ) ) )
   else:
     if type(processId) in types.StringTypes:
       processId=processId.lower()

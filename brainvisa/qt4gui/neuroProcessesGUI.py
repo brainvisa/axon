@@ -1561,7 +1561,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     try:
       params = self._iterationDialog.getLists()
       processes = self.process._iterate( **params )
-      iterationProcess = neuroProcesses.IterationProcess( self.process.name, processes )
+      iterationProcess = neuroProcesses.IterationProcess( self.process.name+" iteration", processes )
       showProcess( iterationProcess )
     except:
         neuroException.showException()
@@ -2187,7 +2187,7 @@ class ProcessSelectionWidget( QMainWindow ):
     try:
       params = self._iterationDialog.getLists()
       processes = self.currentProcess._iterate( **params )
-      iterationProcess = neuroProcesses.IterationProcess( self.currentProcess.name, processes )
+      iterationProcess = neuroProcesses.IterationProcess( self.currentProcess.name+" iteration", processes )
       showProcess( iterationProcess )
     except:
       neuroException.showException()

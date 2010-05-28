@@ -205,7 +205,10 @@ class ProcessExecutionEvent( HistoricalEvent ):
 
 
   def __str__( self ):
-    return 'bvproc<' + str(self.uuid) + ',' + self.content['id'] + '>'
+    if self.content.get('id', None):
+      return 'bvproc<' + str(self.uuid) + ',' + self.content['id'] + '>'
+    else:
+      return str(self.content)
 
 class BrainVISASessionEvent( HistoricalEvent ):
   eventType = 'bvsession'
