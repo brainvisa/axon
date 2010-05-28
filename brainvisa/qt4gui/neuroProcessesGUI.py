@@ -713,6 +713,16 @@ class ParameterizedWidget( QWidget ):
           txtwidth = txtwidth * 1.2 # (bold text)
         if txtwidth > maxwidth:
           maxwidth = txtwidth
+    
+    documentation = {}
+    id = getattr(parameterized, '_id', None)
+    if id is not None:
+      procdoc = neuroProcesses.readProcdoc( id )
+      if procdoc:
+        documentation = procdoc.get( neuroConfig.language )
+        if documentation is None:
+          documentation = procdoc.get( 'en', {} )
+
     # the widget that will contain parameters, it will be put in the scroll widget
     parametersWidget=QWidget()
     parametersWidgetLayout=QVBoxLayout()
@@ -755,6 +765,15 @@ class ParameterizedWidget( QWidget ):
 #lock#        btn.hide()
 #lock#        self.connect( btn, PYSIGNAL( 'clicked' ), self._toggleDefault )
 #lock#        self.btnLock[ k ] = btn
+        if documentation is not None:
+          self.setParameterToolTip( k, 
+            XHTML.html( documentation.get( 'parameters', {} ).get( k, '' ) ) \
+            + '<br/><img src="' \
+            + os.path.join( neuroConfig.iconPath, 'lock.png' )+ '"/><em>: ' \
+            + _t_( \
+            'value has been manually changed and is not linked anymore' ) \
+            + '</em>' )
+
     self.scrollWidget.setWidget(parametersWidget)
     if first: first.setFocus()
     self._doUpdateParameterValue = True
@@ -1118,17 +1137,17 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         self._widgetStack.insertWidget(0, signatureWidget )
       self._widgetStack._children[ 0 ] = signatureWidget
       self._widgetStack.setCurrentIndex( 0 )
-    if self.parameterizedWidget is not None:
-      if documentation is not None:
-        for ( k, p ) in self.process.signature.items():
-          if neuroConfig.userLevel >= p.userLevel:
-            self.parameterizedWidget.setParameterToolTip( k, 
-              XHTML.html( documentation.get( 'parameters', {} ).get( k, '' ) ) \
-              + '<br/><img src="' \
-              + os.path.join( neuroConfig.iconPath, 'lock.png' )+ '"/><em>: ' \
-              + _t_( \
-              'value has been manually changed and is not linked anymore' ) \
-              + '</em>' )
+#    if self.parameterizedWidget is not None:
+#      if documentation is not None:
+#        for ( k, p ) in self.process.signature.items():
+#          if neuroConfig.userLevel >= p.userLevel:
+#            self.parameterizedWidget.setParameterToolTip( k, 
+#              XHTML.html( documentation.get( 'parameters', {} ).get( k, '' ) ) \
+#              + '<br/><img src="' \
+#              + os.path.join( neuroConfig.iconPath, 'lock.png' )+ '"/><em>: ' \
+#              + _t_( \
+#              'value has been manually changed and is not linked anymore' ) \
+#              + '</em>' )
 #      self.parameterizedWidget.show()
 #    if self.inlineGUI is not None:
 #      self.inlineGUI.show()
@@ -1481,6 +1500,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
           self._emptyWidget = QWidget( self._widgetStack )
           item._guiId=self._widgetStack.addWidget( self._emptyWidget )
         self._widgetStack.setCurrentIndex( item._guiId )
+        
       # Trick to have correct slider
 #      size = self.size()
       #self.resize( size.width()+1, size.height() )
