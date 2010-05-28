@@ -874,7 +874,7 @@ class SelectionProcess( Process ):
     return { 'type': 'selection', 'children':[p.pipelineStructure() for p in self._processes] }
 
   def initialization( self ):
-    eNode = SelectionExecutionNode( self.name, stopOnError=False )
+    eNode = SelectionExecutionNode( self.name )
     for i in xrange( len( self._processes ) ):
       self._processes[ i ].isMainProcess = True
       eNode.addChild( str( i ), ProcessExecutionNode( self._processes[ i ],
