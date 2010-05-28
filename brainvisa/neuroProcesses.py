@@ -815,10 +815,14 @@ class IterationProcess( Process ):
     self.instance = 1
     self._processes = [getProcessInstance( p ) for p in processes]
     Process.__init__( self )
+    for sp, p in zip( self._executionNode._children.values(), processes ):
+      if isinstance( p, ExecutionNode ):
+        sp._optional = p._optional
+        sp._selected = p._selected
 
   def pipelineStructure( self ):
     return { 'type': 'iteration', 'children':[p.pipelineStructure() for p in self._processes] }
-    
+
   def initialization( self ):
     eNode = SerialExecutionNode( self.name, stopOnError=False )
     for i in xrange( len( self._processes ) ):
@@ -835,11 +839,14 @@ class DistributedProcess( Process ):
     self.instance = 1
     self._processes = [getProcessInstance( p ) for p in processes]
     Process.__init__( self )
+    for sp, p in zip( self._executionNode._children.values(), processes ):
+      if isinstance( p, ExecutionNode ):
+        sp._optional = p._optional
+        sp._selected = p._selected
 
-    
   def pipelineStructure( self ):
     return { 'type': 'distributed', 'children':[p.pipelineStructure() for p in self._processes] }
-  
+
   def initialization( self ):
     eNode = ParallelExecutionNode( self.name )
     for i in xrange( len( self._processes ) ):
@@ -849,6 +856,30 @@ class DistributedProcess( Process ):
                       optional=True, selected = True ) )
     self._executionNode = eNode
 
+
+#----------------------------------------------------------------------------
+class SelectionProcess( Process ):
+  def __init__( self, name, processes ):
+    self._id = name + 'Selection'
+    self.name = _t_( 'selection' )
+    self.instance = 1
+    self._processes = [getProcessInstance( p ) for p in processes]
+    Process.__init__( self )
+    for sp, p in zip( self._executionNode._children.values(), processes ):
+      if isinstance( p, ExecutionNode ):
+        sp._optional = p._optional
+        sp._selected = p._selected
+
+  def pipelineStructure( self ):
+    return { 'type': 'selection', 'children':[p.pipelineStructure() for p in self._processes] }
+
+  def initialization( self ):
+    eNode = SelectionExecutionNode( self.name, stopOnError=False )
+    for i in xrange( len( self._processes ) ):
+      self._processes[ i ].isMainProcess = True
+      eNode.addChild( str( i ), ProcessExecutionNode( self._processes[ i ],
+                        optional=True, selected = True ) )
+    self._executionNode = eNode
 
 #----------------------------------------------------------------------------
 class TimeoutCall( object ):
@@ -1463,7 +1494,7 @@ class ProcessExecutionNode( ExecutionNode ):
 
 #-------------------------------------------------------------------------------
 class SerialExecutionNode( ExecutionNode ):
-  'An execution node that run all its children sequencially'
+  'An execution node that run all its children sequentially'
 
   def __init__(self, name='', optional = False, selected = True,
                 guiOnly = False, parameterized = None, stopOnError=True ):
@@ -2456,6 +2487,18 @@ def getProcessInstanceFromProcessEvent( event ):
 
 
 #----------------------------------------------------------------------------
+def getProcessFromExecutionNode( node ):
+  nt = type( node )
+  if nt is ProcessExecutionNode:
+    return node._process
+  elif nt is SerialExecutionNode:
+    return IterationProcess( node.name(), node.children() )
+  elif nt is ParallelExecutionNode:
+    return DistributedProcess( node.name(), node._children.values() )
+  elif nt is SelectionExecutionNode:
+    return SelectionProcess( node.name(), node.children() )
+
+#----------------------------------------------------------------------------
 def getProcessInstance( processIdClassOrInstance ):
   result = getProcess( processIdClassOrInstance )
   if isinstance( processIdClassOrInstance, Process ):
@@ -2466,15 +2509,18 @@ def getProcessInstance( processIdClassOrInstance ):
       event.setProcess( processIdClassOrInstance )
       result = getProcessInstanceFromProcessEvent( event )
   elif result is None:
-    try:
-      if isinstance( processIdClassOrInstance, basestring ) and minfFormat( processIdClassOrInstance )[ 1 ] == minfHistory:
-        event = readMinf( processIdClassOrInstance )[0]
-        result = getProcessInstanceFromProcessEvent( event )
-        if result is not None:
-          result._savedAs = processIdClassOrInstance
-    except IOError:
-      raise KeyError( 'Could not get process "' + processIdClassOrInstance \
-          + '": invalid identifier or process file' )
+    if isinstance( processIdClassOrInstance, ExecutionNode ):
+      result = getProcessFromExecutionNode( processIdClassOrInstance )
+    else:
+      try:
+        if isinstance( processIdClassOrInstance, basestring ) and minfFormat( processIdClassOrInstance )[ 1 ] == minfHistory:
+          event = readMinf( processIdClassOrInstance )[0]
+          result = getProcessInstanceFromProcessEvent( event )
+          if result is not None:
+            result._savedAs = processIdClassOrInstance
+      except IOError:
+        raise KeyError( 'Could not get process "' + processIdClassOrInstance \
+            + '": invalid identifier or process file' )
   elif not isinstance( result, Process ):
     result = result()
   return result

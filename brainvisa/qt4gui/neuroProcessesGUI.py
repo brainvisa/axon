@@ -1155,10 +1155,8 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     if item:
       enode = item._executionNode
       if hasattr( enode, '_process' ):
-        self.executionTreeMenu._opennodeaction.setEnabled( True )
         self.executionTreeMenu._showdocaction.setEnabled( True )
       else:
-        self.executionTreeMenu._opennodeaction.setEnabled( False )
         self.executionTreeMenu._showdocaction.setEnabled( False )
       self.executionTreeMenu.exec_(QCursor.pos())
 
@@ -1210,11 +1208,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       proc = item._executionNode
       self.readUserValues()
       event = ProcessExecutionEvent()
-      if hasattr( proc, '_process' ):
-        # TODO: case ExecutionNode without a unique process inside
-        event.setProcess( proc._process )
-        clone = neuroProcesses.getProcessInstanceFromProcessEvent( event )
-        return showProcess( clone )
+      event.setProcess( neuroProcesses.getProcessInstance( proc ) )
+      clone = neuroProcesses.getProcessInstanceFromProcessEvent( event )
+      return showProcess( clone )
 
   def menuShowDocumentation(self):
     item=self.executionTree.currentItem()
@@ -1587,8 +1583,6 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
 
   def createProcessExecutionEvent( self ):
-    print 'createProcessExecutionEvent GUI, self:', self
-    print 'self.process:', self.process
     event = super( ProcessView, self ).createProcessExecutionEvent()
     mainThreadActions().call( event.setWindow, self )
     return event
