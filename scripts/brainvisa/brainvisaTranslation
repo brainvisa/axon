@@ -66,10 +66,25 @@ __builtin__.__dict__['_t_'] = myTranslator
 
 
 import re, parser, token, types
-from qtui import *
 from soma.html import htmlEscape
 #import minfXML
 import soma.minf.api as minfXML
+try:
+  from soma.config import MAJOR_QT_VERSION
+  USE_QT4 = MAJOR_QT_VERSION == 4
+except ImportError:
+  # in non-cmake version, soma.config does not exist.
+  # Then we are forced to use the gui to check Qt
+  import soma.qtgui.api as qg
+  if qg.QtGUI == getattr(qg, "Qt4GUI", None):
+    USE_QT4 = True
+  else:
+    USE_QT4 = False
+  del qg
+if USE_QT4:
+  from PyQt4 import uic
+else:
+  from qtui import *
 
 def tokens( fileName ):
   f = open( fileName )
@@ -177,12 +192,18 @@ def translationChanged_''' + language + '''():
       files.append( item )
   
   progress = QProgressDialog()
-  progress.setTotalSteps( len( files ) )
+  if USE_QT4:
+    progress.setMaximum( len( files ) )
+  else:
+    progress.setTotalSteps( len( files ) )
   progress.setLabelText( 'Parsing BrainVISA sources...' )
   progress.setMinimumDuration( 0 )
   i = 0
   for item in files:
-    progress.setProgress( i )
+    if USE_QT4:
+      progress.setValue( i )
+    else:
+      progress.setProgress( i )
     qApp.processEvents()
     if progress.wasCanceled():
       break
@@ -197,6 +218,9 @@ def translationChanged_''' + language + '''():
   #------------------------------------------------------------------------------
   print 'Create graphical interface'
   #------------------------------------------------------------------------------
+  def sourceSelectedQt4( item, col ):
+    return sourceSelected( item )
+
   def sourceSelected( item ):
     global editor, languages, translationTables
     if item is not None:
@@ -223,6 +247,9 @@ def translationChanged_''' + language + '''():
       editor.txtUsage.setText( '' )
       editor.labUsage.setText( '' )
       
+  def usageSelectedQt4( item, col ):
+    return usageSelected( item )
+
   def usageSelected( item ):
     global editor
     if item is None:
@@ -246,18 +273,29 @@ def translationChanged_''' + language + '''():
       editor.txtUsage.scrollToAnchor( 'here' )
   
   import brainvisa
-  editor = QWidgetFactory.create( os.path.join( os.path.dirname( brainvisa.__file__ ), 'brainvisaTranslation.ui' ) )
-  for x in editor.queryList( None, 'BV_.*' ):
-    setattr( editor, x.name()[ 3:], x )
+  if USE_QT4:
+    editor = uic.loadUi( os.path.join( os.path.dirname( brainvisa.__file__ ), 'brainvisaTranslation-qt4.ui' ) )
+  else:
+    editor = QWidgetFactory.create( os.path.join( os.path.dirname( brainvisa.__file__ ), 'brainvisaTranslation.ui' ) )
+    for x in editor.queryList( None, 'BV_.*' ):
+      setattr( editor, x.name()[ 3:], x )
   pixOk = QPixmap( os.path.join( neuroConfig.iconPath, 'ok.png' ) )
   pixBad = QPixmap( os.path.join( neuroConfig.iconPath, 'abort.png' ) )
   pixUnused = QPixmap( os.path.join( neuroConfig.iconPath, 'help.png' ) )
-  editor.connect( editor.lstSources, 
-                  SIGNAL( 'selectionChanged( QListViewItem *)' ),
-                  sourceSelected )
-  editor.connect( editor.lstUsage, 
-                  SIGNAL( 'selectionChanged( QListViewItem *)' ),
-                  usageSelected )
+  if USE_QT4:
+    editor.connect( editor.lstSources,
+                    SIGNAL( 'itemActivated( QTreeWidgetItem *, int )' ),
+                    sourceSelectedQt4 )
+    editor.connect( editor.lstUsage,
+                    SIGNAL( 'itemActivated( QTreeWidgetItem *, int )' ),
+                    usageSelectedQt4 )
+  else:
+    editor.connect( editor.lstSources,
+                    SIGNAL( 'selectionChanged( QListViewItem *)' ),
+                    sourceSelected )
+    editor.connect( editor.lstUsage,
+                    SIGNAL( 'selectionChanged( QListViewItem *)' ),
+                    usageSelected )
   for language in languages:
     txt = getattr( editor, 'txt'+language )
     txt.setReadOnly( readOnly )
@@ -267,7 +305,10 @@ def translationChanged_''' + language + '''():
     editor.setCaption( unicode( editor.caption() ) + ' (read only)' )
   
   for s, u in translatables.iteritems():
-    item = QListViewItem( editor.lstSources )
+    if USE_QT4:
+      item = QTreeWidgetItem( editor.lstSources )
+    else:
+      item = QListViewItem( editor.lstSources )
     if not u:
       pix = pixUnused
     else:
@@ -281,10 +322,20 @@ def translationChanged_''' + language + '''():
         pix = pixOk
       else:
         pix = pixBad
-    item.setPixmap( 0, pix )
-    item.setText( 0, s )
-  
-  r = editor.exec_loop()
+    if USE_QT4:
+      item.setIcon( 0, QIcon( pix ) )
+      if s is None:
+        item.setText( 0, '' )
+      else:
+        item.setText( 0, s )
+    else:
+      item.setPixmap( 0, pix )
+      item.setText( 0, s )
+
+  if USE_QT4:
+    r = editor.exec_()
+  else:
+    r = editor.exec_loop()
   if not readOnly and r == editor.Accepted:
     print 'Saving translation tables'
     for l in languages:
