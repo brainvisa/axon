@@ -153,7 +153,15 @@ def main():
     if len( l ) == 2 and os.path.isdir( os.path.join( docPath, l ) ):
       languages.append( l )
   for language in languages:
-    func = '''
+    if USE_QT4:
+      func = '''
+def translationChanged_''' + language + '''():
+  source = unicode( editor.txtSource.toPlainText() )
+  translation = unicode( editor.txt''' + language + '''.toPlainText() )
+  translationTables[ "''' + language + '''" ][ source ] = translation
+'''
+    else:
+      func = '''
 def translationChanged_''' + language + '''():
   source = unicode( editor.txtSource.text() )
   translation = unicode( editor.txt''' + language + '''.text() )
@@ -193,6 +201,7 @@ def translationChanged_''' + language + '''():
   
   progress = QProgressDialog()
   if USE_QT4:
+    QListViewItem = QTreeWidgetItem
     progress.setMaximum( len( files ) )
   else:
     progress.setTotalSteps( len( files ) )
@@ -302,8 +311,11 @@ def translationChanged_''' + language + '''():
     txt.connect( txt, SIGNAL( 'textChanged()' ), globals()[ 'translationChanged_' + language ] )
   if readOnly:
     editor.btnOk.hide()
-    editor.setCaption( unicode( editor.caption() ) + ' (read only)' )
-  
+    if USE_QT4:
+      editor.setWindowTitle( unicode( editor.caption() ) + ' (read only)' )
+    else:
+      editor.setCaption( unicode( editor.caption() ) + ' (read only)' )
+
   for s, u in translatables.iteritems():
     if USE_QT4:
       item = QTreeWidgetItem( editor.lstSources )
