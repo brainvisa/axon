@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>823</width>
+    <width>652</width>
     <height>760</height>
    </rect>
   </property>
@@ -20,6 +20,12 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <widget class="QTreeWidget" name="lstSources">
+      <property name="sortingEnabled">
+       <bool>true</bool>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
+      </property>
       <column>
        <property name="text">
         <string>Source</string>
@@ -110,7 +116,7 @@
                <string/>
               </property>
               <property name="wordWrap">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
              </widget>
             </item>
@@ -151,6 +157,16 @@
        </property>
        <property name="shortcut">
         <string>Alt+O</string>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnApply">
+       <property name="text">
+        <string>Apply</string>
        </property>
       </widget>
      </item>

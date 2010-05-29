@@ -234,10 +234,16 @@ def translationChanged_''' + language + '''():
     global editor, languages, translationTables
     if item is not None:
       source = unicode( item.text( 0 ) )
-      editor.txtSource.setText( source )
+      if USE_QT4:
+        editor.txtSource.setPlainText( source )
+      else:
+        editor.txtSource.setText( source )
       for language in languages:
         txt = getattr( editor, 'txt'+language )
-        txt.setText( translationTables[ language ].get( source, '' ) )
+        if USE_QT4:
+          txt.setPlainText( translationTables[ language ].get( source, '' ) )
+        else:
+          txt.setText( translationTables[ language ].get( source, '' ) )
       usage = translatables[ source ]
       editor.lstUsage.clear()
       editor.txtUsage.setText( '' )
@@ -280,7 +286,21 @@ def translationChanged_''' + language + '''():
       txt += '</pre></body></html>'
       editor.txtUsage.setText( txt )
       editor.txtUsage.scrollToAnchor( 'here' )
-  
+
+  def saveCurrent():
+    if not readOnly:
+      print 'Saving translation tables'
+      for l in languages:
+        for k, v in translationTables[ l ].items():
+          if not v:
+            del translationTables[ l ][ k ]
+        f = os.path.join( docPath, l, 'translation.minf' )
+        print ' ', f
+        f = open( f, 'w' )
+        minfXML.writeMinf( f, ( translationTables[ l ], ), format='XML',
+          reducer='minf_1.0' )
+        f.close()
+
   import brainvisa
   if USE_QT4:
     editor = uic.loadUi( os.path.join( os.path.dirname( brainvisa.__file__ ), 'brainvisaTranslation-qt4.ui' ) )
@@ -305,12 +325,14 @@ def translationChanged_''' + language + '''():
     editor.connect( editor.lstUsage,
                     SIGNAL( 'selectionChanged( QListViewItem *)' ),
                     usageSelected )
+  editor.connect( editor.btnApply, SIGNAL( 'clicked()'), saveCurrent )
   for language in languages:
     txt = getattr( editor, 'txt'+language )
     txt.setReadOnly( readOnly )
     txt.connect( txt, SIGNAL( 'textChanged()' ), globals()[ 'translationChanged_' + language ] )
   if readOnly:
     editor.btnOk.hide()
+    editor.btnApply.hide()
     if USE_QT4:
       editor.setWindowTitle( unicode( editor.caption() ) + ' (read only)' )
     else:
@@ -348,18 +370,8 @@ def translationChanged_''' + language + '''():
     r = editor.exec_()
   else:
     r = editor.exec_loop()
-  if not readOnly and r == editor.Accepted:
-    print 'Saving translation tables'
-    for l in languages:
-      for k, v in translationTables[ l ].items():
-        if not v:
-          del translationTables[ l ][ k ]
-      f = os.path.join( docPath, l, 'translation.minf' )
-      print ' ', f
-      f = open( f, 'w' )
-      minfXML.writeMinf( f, ( translationTables[ l ], ), format='XML',
-        reducer='minf_1.0' )
-      f.close()
+  if r == editor.Accepted:
+    saveCurrent()
   
   
   

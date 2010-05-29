@@ -210,7 +210,7 @@
         </widget>
         <widget class="QLayoutWidget">
             <property name="name">
-                <cstring>layout3</cstring>
+                <cstring>layout4</cstring>
             </property>
             <hbox>
                 <property name="name">
@@ -228,7 +228,7 @@
                     </property>
                     <property name="sizeHint">
                         <size>
-                            <width>141</width>
+                            <width>500</width>
                             <height>20</height>
                         </size>
                     </property>
@@ -242,6 +242,17 @@
                     </property>
                     <property name="accel">
                         <string>Alt+O</string>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>BV_btnApply</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Apply</string>
+                    </property>
+                    <property name="accel">
+                        <string></string>
                     </property>
                 </widget>
                 <widget class="QPushButton">
