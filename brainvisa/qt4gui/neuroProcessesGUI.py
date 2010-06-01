@@ -653,7 +653,7 @@ class ParameterLabel( QLabel ):
     else:
       if not unicode( self.text() ).startswith( '<img src=' ):
         self.setText( '<img src="' \
-          + os.path.join( neuroConfig.iconPath, 'lock.png' ) \
+          + os.path.join( neuroConfig.iconPath, 'modified.png' ) \
           + '" height="16"/> ' + self.text() )
 
 
@@ -668,7 +668,7 @@ class ParameterLabel( QLabel ):
     else:
       if not unicode( self.text() ).startswith( '<img src=' ):
         self.setText( '<img src="' \
-          + os.path.join( neuroConfig.iconPath, 'lock.png' ) \
+          + os.path.join( neuroConfig.iconPath, 'modified.png' ) \
           + '" height="16"/> ' + self.text() )
 
 
@@ -769,9 +769,9 @@ class ParameterizedWidget( QWidget ):
           self.setParameterToolTip( k, 
             XHTML.html( documentation.get( 'parameters', {} ).get( k, '' ) ) \
             + '<br/><img src="' \
-            + os.path.join( neuroConfig.iconPath, 'lock.png' )+ '"/><em>: ' \
+            + os.path.join( neuroConfig.iconPath, 'modified.png' )+ '"/><em>: ' \
             + _t_( \
-            'value has been manually changed and is not linked anymore' ) \
+            'value has been manually changed and is not modified by links anymore' ) \
             + '</em>' )
 
     self.scrollWidget.setWidget(parametersWidget)
