@@ -1232,6 +1232,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       return showProcess( clone )
 
   def menuShowDocumentation(self):
+    global _mainWindow
     item=self.executionTree.currentItem()
     if item:
       enode = item._executionNode
@@ -1241,12 +1242,10 @@ class ProcessView( QWidget, ExecutionContextGUI ):
           and issubclass( proc, newProcess.NewProcess ):
           doc = proc.onlineDocumentationSource()
           if proc is not None:
-            global _mainWindow
             _mainWindow.info.setSource( doc )
         else:
           doc = neuroProcesses.getHTMLFileName( proc )
           if os.path.exists( doc ):
-            global _mainWindow
             _mainWindow.info.setSource( doc )
 
   def defaultInlineGUI( self, parent, externalRunButton = False, container = None ):
