@@ -3252,7 +3252,10 @@ class ProcessTrees(ObservableAttributes, ObservableSortedDictionary):
     # save trees created by user
     writer.write( [ i for i in self.values() if i.user] )
     # save selected tree name
-    writer.write(self.selectedTree.id)
+    if self.selectedTree is not None:
+      writer.write(self.selectedTree.id)
+    else:
+      writer.write(None)
     writer.close()
 
   def update(self):
