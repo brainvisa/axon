@@ -2959,7 +2959,9 @@ class ProcessTree( EditableTree ):
           try:
             processInfo = processesCache.get( id )
             if processInfo is None:
-              readProcess( ff, category=category, toolbox=toolbox ) # two arguments : process fullpath and category (directories separated by /)
+              readProcess( ff, category=category,
+                ignoreValidation=neuroConfig.ignoreValidation,
+                toolbox=toolbox ) # two arguments : process fullpath and category (directories separated by /)
             else:
               addProcessInfo(id, processInfo)
           except ValidationError:# it may occur a validation error on reading process

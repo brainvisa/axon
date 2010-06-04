@@ -104,7 +104,7 @@ _versionString = str( _versionNumber ) + 'a'
     print 'Generating BrainVisa processes documentation...'
     sys.stdout.flush()
     os.system( 'sh ' + os.path.join( bd, 'bin', 'brainvisa' ) \
-               + ' -b --updateDocumentation' )
+               + ' -b --ignoreValidation --updateDocumentation' )
     print 'BrainVisa processes doc done.'
 
   def configure_copyStep( self, instances ):
