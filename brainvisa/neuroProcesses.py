@@ -2959,7 +2959,9 @@ class ProcessTree( EditableTree ):
           try:
             processInfo = processesCache.get( id )
             if processInfo is None:
-              readProcess( ff, category=category, toolbox=toolbox ) # two arguments : process fullpath and category (directories separated by /)
+              readProcess( ff, category=category,
+                ignoreValidation=neuroConfig.ignoreValidation,
+                toolbox=toolbox ) # two arguments : process fullpath and category (directories separated by /)
             else:
               addProcessInfo(id, processInfo)
           except ValidationError:# it may occur a validation error on reading process
@@ -3252,7 +3254,10 @@ class ProcessTrees(ObservableAttributes, ObservableSortedDictionary):
     # save trees created by user
     writer.write( [ i for i in self.values() if i.user] )
     # save selected tree name
-    writer.write(self.selectedTree.id)
+    if self.selectedTree is not None:
+      writer.write(self.selectedTree.id)
+    else:
+      writer.write(None)
     writer.close()
 
   def update(self):

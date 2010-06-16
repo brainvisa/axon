@@ -390,7 +390,7 @@ class ReadDiskItem( Parameter ):
       # Do not allow formats that require a conversion in DiskItem creation
       if self._formatsWithConversion:
         oldFormats = requiredAttributes.get( '_format' )
-        requiredAttributes[ '_format' ] = self._formatsWithConversion.symmetric_difference( oldFormats )
+        requiredAttributes[ '_format' ] = [ i for i in oldFormats if i not in self._formatsWithConversion ]
       for item in self.database.createDiskItems( selection, _debug=_debug, exactType = self.exactType, **requiredAttributes ):
         if self.diskItemFilter( item, requiredAttributes ):
           if item.fullPath() not in fullPaths:

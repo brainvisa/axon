@@ -410,7 +410,8 @@ try:
                                 "updateDocumentation", "noMainWindow",
                                 "logFile=", "cleanLog", "profile=", "shell", "validation",
                                 "debugHierarchy=", "debugLinks=", "databaseServer", 
-                                "help", "setup", "noToolBox" ] )
+                                "help", "setup", "noToolBox",
+                                "ignoreValidation" ] )
 except getopt.GetoptError, msg:
   # print help information and exit:
   sys.stderr.write( "error in options: %s\nUse -h or --help for help\n" % msg )
@@ -425,6 +426,7 @@ databaseServer = False
 global setup
 setup=False
 noToolBox = False
+ignoreValidation = False
 for o, a in opts:
   if o in ( "-b", ):
     gui = 0
@@ -479,6 +481,8 @@ for o, a in opts:
     setup = True
   elif o in ( "--noToolBox"):
     noToolBox = True
+  elif o in ( "--ignoreValidation"):
+    ignoreValidation = True
 
 # Print help
 if showHelp == 1:
@@ -504,6 +508,8 @@ BrainVISA options:
   --cleanLog              Clean home brainvisa directory by removing session information (current_runs.minf) and all log files (brainvisa*.log)
   --shell                 Run BrainVISA in a IPython shell, if IPython is
                           available (see http://ipython.scipy.org).
+  --ignoreValidation      Do not check vor invalid processes, all are enabled.
+                          (generally not useful)
   -h  or --help           Show help message in batch mode and exit.
 
 Notes:
