@@ -1751,7 +1751,7 @@ class ExecutionContext:
 
   def _startProcess( self, _process, executionFunction, *args, **kwargs ):
     if not isinstance( _process, Process ):
-      _process = self.newProcess( _process )
+      _process = getProcessInstance( _process )
     apply( self._setArguments, (_process,)+args, kwargs )
     # Launch process
     t = threading.Thread( target = self._processExecutionThread,
