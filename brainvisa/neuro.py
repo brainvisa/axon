@@ -295,38 +295,13 @@ if neuroConfig.gui:
 
 if neuroConfig.databaseServer:
   # Start a Pyro server to serve databases
-  import Pyro, Pyro.core
-  from brainvisa.data.temporary import manager as temporaryManager
-  from brainvisa.data.sqlFSODatabase import NoGeneratorSQLDatabase
-  from soma.qtgui.api import QtThreadCall
-  Pyro.config.PYRO_TRACELEVEL = 3
-  Pyro.config.PYRO_USER_TRACELEVEL = 3
-  Pyro.config.PYRO_LOGFILE='/dev/stderr'
-  Pyro.config.PYRO_STDLOGGING = 1
-  Pyro.core.initServer()
-  daemon=Pyro.core.Daemon()
-  temporaries = []
+  from brainvisa.remote.database import DatabaseServer
+  server = DatabaseServer()
+  server.initialize()
   for database in neuroHierarchy.databases.iterDatabases():
-    remoteAccessURI = os.path.join( database.directory, 'remoteAccessURI' )
-    if os.path.exists( remoteAccessURI ):
-      print 'WARNING: database', repr( database.directory ), 'has the following remote access:', open( remoteAccessURI ).read()
-    else:
-      if database.sqlDatabaseFile != ':memory:':
-        try:
-          dbfile = open( remoteAccessURI, 'w' )
-          obj = Pyro.core.ObjBase()
-          obj.delegateTo( NoGeneratorSQLDatabase( database ) )
-          uri = daemon.connect( obj )
-          temporaries.append( temporaryManager.createSelfDestroyed( remoteAccessURI ) )
-          dbfile.write( str( uri ) )
-          del dbfile
-          print 'Serving database', repr( database.directory ), 'with URI', uri
-        except IOError:
-          print 'database', repr( database.directory ), 'cannot be used with server access'
-  tc = QtThreadCall()
-  while True:
-    daemon.handleRequests( 1.0 )
-    tc.doAction()
+    server.addDatabase( database )
+  server.serve()
+
 if neuroConfig.shell:
   try:
     import IPython
