@@ -513,6 +513,8 @@ class Parameterized( object ):
       sourceObject._links.setdefault( sourceParameter, [] ).append (
         ( destObject, destParameter, multiLink, True ) )
 
+  
+  
   def removeLink( self, destination, source ):
     # print 'removeLink', self, destination, source
     # Parse source
@@ -1354,6 +1356,12 @@ class ExecutionNode( object ):
       sourceObject._links.setdefault( sourceParameter, [] ).append (
         ( destObject, destParameter, multiLink, True ) )
 
+  
+  def addDoubleLink( self, destination, source, function=None ):
+    self.addLink( destination, source, function )
+    self.addLink( source, destination, function )
+  
+  
   def removeLink( self, destination, source, function=None ):
     # Parse sourceExecutionContext
     sources = []
