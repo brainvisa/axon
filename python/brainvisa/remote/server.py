@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import Pyro, Pyro.core
 
 from soma.singleton import Singleton
@@ -5,7 +6,7 @@ from soma.qtgui.api import QtThreadCall
 
 
 class BrainVISAServer( Singleton ):
-  def __singleton_init__( self )
+  def __singleton_init__( self ):
     self.daemon = None
   
   def initialize( self ):
