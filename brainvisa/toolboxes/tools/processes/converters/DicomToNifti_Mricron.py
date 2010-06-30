@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -38,6 +39,7 @@ import registration
 
 name = 'Dicom to Nifti Converter Using MRICRON'
 roles = ('converter',)
+rolePriority = 10 # override Aims converter
 userLevel = 0
 
 def validation():

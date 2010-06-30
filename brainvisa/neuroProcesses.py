@@ -2788,6 +2788,18 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
       print >> sys.stderr, 'WARNING: process', processInfo.name, '(' + processInfo.fileName + ') is not a valid', role + '. Add the following line in the process to make it a', role + ':\nroles =', ( role, )
     roles = getattr( processModule, 'roles', () )
 #    if NewProcess.category.lower() == 'converters/automatic':
+    def _setConverter( source, dest, proc ):
+      d = _converters.setdefault( dest, {} )
+      oldc = d.get( source )
+      if oldc:
+        oldproc = getProcess( oldc )
+        oldpriority = 0
+        if oldproc:
+          oldpriority = getattr( oldproc, 'rolePriority', 0 )
+        newpriority = getattr( proc, 'rolePriority', 0 )
+        if oldpriority > newpriority:
+          return # don't register because prioriry is not sufficient
+      d[ source ] = proc._id
     if 'converter' in roles:
       global _converters
       possibleConversions = getattr( NewProcess, 'possibleConversions', None )
@@ -2795,14 +2807,13 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
         sourceArg, destArg = NewProcess.signature.values()[ : 2 ]
         for destFormat in destArg.formats:
           for sourceFormat in sourceArg.formats:
-            dest = _converters.setdefault( ( destArg.type, destFormat ), {} )
-            dest[ ( sourceArg.type, sourceFormat ) ] = NewProcess._id
+            _setConverter( ( sourceArg.type, sourceFormat ),
+              ( destArg.type, destFormat ), NewProcess )
       else:
         for source, dest in possibleConversions():
           source = ( getDiskItemType( source[0] ), getFormat( source[1] ) )
           dest = ( getDiskItemType( dest[0] ), getFormat( dest[1] ) )
-          d = _converters.setdefault( dest, {} )
-          d[ source ] = NewProcess._id
+          _setConverter( source, dest, NewProcess )
           
     elif NewProcess.category.lower() == 'converters/automatic':
       warnRole( processInfo, 'converter' )
