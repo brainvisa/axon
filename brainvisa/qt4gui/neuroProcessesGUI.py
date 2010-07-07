@@ -1770,7 +1770,7 @@ class UserDialog( QDialog ):
         group1Layout.addWidget(btn)
         self.group1.addButton(btn, i)
         btn.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-        self._actions[ group1.id( btn ) ] = action
+        self._actions[ self.group1.id( btn ) ] = action
         deleteGroup1 = 0
       else:
         btn = QPushButton( unicode( b ) )
@@ -1804,8 +1804,8 @@ class UserDialog( QDialog ):
   def call( self ):
     if neuroConfig.gui:
         self._result = None
-        self.show()
-        self.exec_()
+        mainThreadActions().call( self.show )
+        mainThreadActions().call( self.exec_ )
         result = self._result
         del self._result
         return result
