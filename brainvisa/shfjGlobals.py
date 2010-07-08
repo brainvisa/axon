@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -98,6 +99,7 @@ aimsVolumeFormats = createFormatList(
     'TIFF image',
     'TIFF(.tif) image',
     'MINC image',
+    'gz compressed MINC image',
     'NIFTI-1 image',
     'gz compressed NIFTI-1 image',
     'DICOM image',

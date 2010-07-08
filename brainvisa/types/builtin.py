@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -61,6 +62,7 @@ else:
   Format( 'DICOM image', [ '*' ], exclusive=1, ignoreExclusive=1 )
 #Format( 'VISTA image', "f|*.v" )
 Format( 'MINC image', "f|*.mnc" )
+Format( 'gz compressed MINC image', "f|*.mnc.gz", attributes={'compressed': 'gz'} )
 Format( 'NIFTI-1 image', "f|*.nii" )
 Format( 'gz compressed NIFTI-1 image', "f|*.nii.gz", attributes={'compressed': 'gz'} )
 #Format( 'BRUKER fieldmap', "f|*.raw" )
