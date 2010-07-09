@@ -826,7 +826,7 @@ class IterationProcess( Process ):
     return { 'type': 'iteration', 'name' : self.name, 'children':[p.pipelineStructure() for p in self._processes] }
 
   def initialization( self ):
-    eNode = SerialExecutionNode( self.name, stopOnError=False )
+    eNode = ParallelExecutionNode( self.name, stopOnError=False )
     for i in xrange( len( self._processes ) ):
       self._processes[ i ].isMainProcess = True
       eNode.addChild( str( i ), ProcessExecutionNode( self._processes[ i ],
@@ -1528,7 +1528,7 @@ class SerialExecutionNode( ExecutionNode ):
 
 
 #-------------------------------------------------------------------------------
-class ParallelExecutionNode( ExecutionNode ):
+class ParallelExecutionNode( SerialExecutionNode ):
   """
   An execution node that run all its children in any order (and in parallel
   if possible)
@@ -1537,10 +1537,7 @@ class ParallelExecutionNode( ExecutionNode ):
   def _run( self, context ):
     if not neuroDistributedProcesses() or len( self._children ) < 2:
       # do as for serial node
-      result = []
-      for node in self._children.values():
-        result.append( node.run( context ) )
-      return result
+      super( ParallelExecutionNode, self )._run( context )
     else:
       errorCount = 0
       result = []
