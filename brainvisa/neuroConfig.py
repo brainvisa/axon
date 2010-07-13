@@ -403,20 +403,8 @@ def stdinLoop():
 
 # Parse command Line
 # To use -- <Other options> do not use sys.argv but args (returned by getopt)
-import getopt
-try:
-  opts, args = getopt.getopt( sys.argv[1:], "dbfe:c:s:u:h",
-                              [ "updateCache", "clearCache",
-                                "updateDocumentation", "noMainWindow",
-                                "logFile=", "cleanLog", "profile=", "shell", "validation",
-                                "debugHierarchy=", "debugLinks=", "databaseServer", 
-                                "help", "setup", "noToolBox",
-                                "ignoreValidation" ] )
-except getopt.GetoptError, msg:
-  # print help information and exit:
-  sys.stderr.write( "error in options: %s\nUse -h or --help for help\n" % msg )
-  sys.exit( 1 )
-  showHelp = 1
+
+  
 userProfile = None
 openMainWindow = 1
 showHelp = 0
@@ -427,62 +415,92 @@ global setup
 setup=False
 noToolBox = False
 ignoreValidation = False
-for o, a in opts:
-  if o in ( "-b", ):
-    gui = 0
-  elif o in ("-d", ):
-    gui = 0
-    server = 1
-  elif o in ( "-e", ):
-    if a == '-':
-      startup.append( 'neuroConfig.stdinLoop()' )
-    else:
-      startup.append( "execfile('" + a + "')" )
-  elif o in ( "-c", ):
-    startup.append( a )
-  elif o in ( "-s", ):
-    m = re.match( r'(.*)\((.*[^)])\)?', a )
-    if m:
-      startup.append( 'showProcess("' + m.group(1) + '",' + m.group(2) + ')' )
-    else:
-      startup.append( 'showProcess("' + a + '")' )
-  elif o in ( "-u", ):
-    userProfile = a
-  elif o in ( "-f", ):
-    fastStart = True
-  elif o in ( "--updateCache", ):
-    cacheUpdateRequest = True
-  elif o in ( "--clearCache", ):
-    clearCacheRequest = True
-  elif o in ( "--updateDocumentation", ):
-    startup.append( 'generateHTMLProcessesDocumentation()' )
-  elif o in ( "--noMainWindow", ):
-    openMainWindow = 0
-  elif o in ( "--logFile", ):
-    logFileName = a
-  elif o in ("--cleanLog",):
-    cleanLog=True
-  elif o in ( "--profile", ):
-    profileFileName = a
-  elif o in ( "--shell", ):
-    shell = 1
-  elif o in ( "--debugHierarchy", ):
-    debugHierarchyScanning = openDebugFile( a )
-  elif o in ( "--debugLinks", ):
-    debugParametersLinks = openDebugFile( a )
-  elif o in ( "--validation", ):
-    validationEnabled = True
-  elif o in ( "--databaseServer", ):
-    databaseServer = True
-    gui = False
-  elif o in ( "-h", "--help" ):
-    showHelp = 1
-  elif o in ( "--setup" ):
-    setup = True
-  elif o in ( "--noToolBox"):
-    noToolBox = True
-  elif o in ( "--ignoreValidation"):
-    ignoreValidation = True
+
+_convertCommandLineParameter = {
+  'None': None,
+  'False': False,
+  'True': True,
+}
+try:
+  i = sys.argv.index( '-r' )
+except ValueError:
+  i = -1
+if i >= 0:
+  gui = 0
+  fastStart = True
+  noToolBox = True
+  logFileName = ''
+  startup.append( 'defaultContext().runProcess' + repr( tuple( ( _convertCommandLineParameter.get( i, i ) for i in sys.argv[ i+1 : ]  ) ) ) )
+else:
+  import getopt
+  try:
+    opts, args = getopt.getopt( sys.argv[1:], "dbfe:c:s:u:h",
+                                [ "updateCache", "clearCache",
+                                  "updateDocumentation", "noMainWindow",
+                                  "logFile=", "cleanLog", "profile=", "shell", "validation",
+                                  "debugHierarchy=", "debugLinks=", "databaseServer", 
+                                  "help", "setup", "noToolBox",
+                                  "ignoreValidation" ] )
+  except getopt.GetoptError, msg:
+    # print help information and exit:
+    sys.stderr.write( "error in options: %s\nUse -h or --help for help\n" % msg )
+    sys.exit( 1 )
+  for o, a in opts:
+    if o in ( "-b", ):
+      gui = 0
+    elif o in ("-d", ):
+      gui = 0
+      server = 1
+    elif o in ( "-e", ):
+      if a == '-':
+        startup.append( 'neuroConfig.stdinLoop()' )
+      else:
+        startup.append( "execfile('" + a + "')" )
+    elif o in ( "-c", ):
+      startup.append( a )
+    elif o in ( "-s", ):
+      m = re.match( r'(.*)\((.*[^)])\)?', a )
+      if m:
+        startup.append( 'showProcess("' + m.group(1) + '",' + m.group(2) + ')' )
+      else:
+        startup.append( 'showProcess("' + a + '")' )
+    elif o in ( "-u", ):
+      userProfile = a
+    elif o in ( "-f", ):
+      fastStart = True
+    elif o in ( "--updateCache", ):
+      cacheUpdateRequest = True
+    elif o in ( "--clearCache", ):
+      clearCacheRequest = True
+    elif o in ( "--updateDocumentation", ):
+      startup.append( 'generateHTMLProcessesDocumentation()' )
+    elif o in ( "--noMainWindow", ):
+      openMainWindow = 0
+    elif o in ( "--logFile", ):
+      logFileName = a
+    elif o in ("--cleanLog",):
+      cleanLog=True
+    elif o in ( "--profile", ):
+      profileFileName = a
+    elif o in ( "--shell", ):
+      shell = 1
+    elif o in ( "--debugHierarchy", ):
+      debugHierarchyScanning = openDebugFile( a )
+    elif o in ( "--debugLinks", ):
+      debugParametersLinks = openDebugFile( a )
+    elif o in ( "--validation", ):
+      validationEnabled = True
+    elif o in ( "--databaseServer", ):
+      databaseServer = True
+      gui = False
+    elif o in ( "-h", "--help" ):
+      showHelp = 1
+    elif o in ( "--setup" ):
+      setup = True
+    elif o in ( "--noToolBox"):
+      noToolBox = True
+    elif o in ( "--ignoreValidation"):
+      ignoreValidation = True
 
 # Print help
 if showHelp == 1:
@@ -649,50 +667,49 @@ initializeConfiguration()
 
 if not noToolBox:
   readToolboxes( toolboxesDir, homeBrainVISADir )
-else:
-  print "do not load tooboxes"
 
 for toolbox in allToolboxes():
   toolbox.init()
 
 # add brainvisa shared database to the list of available databases
-sharedDatabaseFound=False
-for p in ( os.path.join( getSharePath(), 'brainvisa-share-' + shortVersion ),
-           os.path.join( getSharePath(), 'shfj-' + shortVersion ),
-           os.path.join( getSharePath(), 'shfj' ) ):
-  if os.path.isdir( p ):
-    dataPath.insert( 0, DatabaseSettings( p ) )
-    dataPath[0].builtin = True # mark as a builtin, non-removable database
-    sharedDatabaseFound=True
-    break
-  
-for attr, value in readConfiguration( mainPath, userProfile, homeBrainVISADir ):
-  if isinstance( value, list ):
-    globals()[ attr ] += value
-  else:
-    globals()[ attr ] = value
-
-
-# executes brainvisa startup.py if it exists. there's no use to execute user startup.py here because .brainvisa is a toolbox and its startup.py will be executed with the toolboxes' ones.
-if os.path.exists(siteStartupFile):
-  startup.append( "execfile(" + repr(siteStartupFile) + ",globals(),{})" )
-# Search for hierarchy and types paths in toolboxes
-for toolbox in allToolboxes():
-  # executes startup.py of each toolbox if it exists
-  if os.path.exists( toolbox.startupFile ):
-    startup.append( "execfile(" + repr(toolbox.startupFile) + ",globals(),{})" )
-
-
-# Clean pathes
-for p in ( typesPath, dataPath, processesPath, fileSystemOntologiesPath, matlabPath ):
-  i = 0
-  l = []
-  while i < len( p ):
-    if p[ i ] in l:
-      del p[ i ]
+if not fastStart:
+  sharedDatabaseFound=False
+  for p in ( os.path.join( getSharePath(), 'brainvisa-share-' + shortVersion ),
+            os.path.join( getSharePath(), 'shfj-' + shortVersion ),
+            os.path.join( getSharePath(), 'shfj' ) ):
+    if os.path.isdir( p ):
+      dataPath.insert( 0, DatabaseSettings( p ) )
+      dataPath[0].builtin = True # mark as a builtin, non-removable database
+      sharedDatabaseFound=True
+      break
+    
+  for attr, value in readConfiguration( mainPath, userProfile, homeBrainVISADir ):
+    if isinstance( value, list ):
+      globals()[ attr ] += value
     else:
-      l.append( p[ i ] )
-      i += 1
+      globals()[ attr ] = value
+
+
+  # executes brainvisa startup.py if it exists. there's no use to execute user startup.py here because .brainvisa is a toolbox and its startup.py will be executed with the toolboxes' ones.
+  if os.path.exists(siteStartupFile):
+    startup.append( "execfile(" + repr(siteStartupFile) + ",globals(),{})" )
+  # Search for hierarchy and types paths in toolboxes
+  for toolbox in allToolboxes():
+    # executes startup.py of each toolbox if it exists
+    if os.path.exists( toolbox.startupFile ):
+      startup.append( "execfile(" + repr(toolbox.startupFile) + ",globals(),{})" )
+
+
+  # Clean pathes
+  for p in ( typesPath, dataPath, processesPath, fileSystemOntologiesPath, matlabPath ):
+    i = 0
+    l = []
+    while i < len( p ):
+      if p[ i ] in l:
+        del p[ i ]
+      else:
+        l.append( p[ i ] )
+        i += 1
 
 # Translations
 

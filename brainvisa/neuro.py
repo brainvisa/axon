@@ -157,20 +157,20 @@ def main():
     initializeProcessesGUI()
     atexit.register( neuroConfig.clearObjects )
 
-    # Logging BrainVISA environment
-    neuroConfig.brainvisaSessionLogItem = neuroLog.log( 'starting BrainVISA', 
-      html=neuroConfig.environmentHTML(), icon='brainvisa_small.png' )
+    if not neuroConfig.fastStart:
+      # Logging BrainVISA environment
+      neuroConfig.brainvisaSessionLogItem = neuroLog.log( 'starting BrainVISA', 
+        html=neuroConfig.environmentHTML(), icon='brainvisa_small.png' )
+  
+      # write information about brainvisa log file
+      defaultContext().write("The log file for this session is " + repr(neuroConfig.logFileName) )
+      # check for expired run information : ask user what to do
+      neuroConfig.runsInfo.check(defaultContext())
 
-    # write information about brainvisa log file
-    defaultContext().write("The log file for this session is " + repr(neuroConfig.logFileName) )
-    # check for expired run information : ask user what to do
-    neuroConfig.runsInfo.check(defaultContext())
-
-    #neuroConfig.runsInfo.check(defaultContext())
 
     if neuroConfig.validationEnabled:
       neuroLog.log( 'Validation mode', html='Validation mode enabled. Databases are going to be modified.', icon='warning.png' )
-
+  
     readTypes()
     # Databases loading is skipped when no toolbox is loaded because specific
     # hierarchies from unloaded toolboxes may be needed to define the ontology
@@ -180,31 +180,34 @@ def main():
         openDatabases()
       else:
         readHierarchies( neuroConfig.clearCacheRequest )
+    
     readProcesses( neuroConfig.processesPath )
-    nbDatabases=len(neuroHierarchy.databases._databases)
-    if not neuroConfig.sharedDatabaseFound:
-      showWarning("BrainVISA Shared database was not found. It is needed for many processes. Check your Brainvisa installation.")
-    else:
-      nbDatabases-=1
-    if not neuroConfig.setup:
-      if neuroConfig.gui:
-        warnUserAboutDatabasesToUpdate()
-        if ((nbDatabases == 0) and (neuroConfig.databasesWarning)):
-          choice=defaultContext().ask("<p><b>Welcome to BrainVISA !</b></p><p>You have not selected any database yet.</p><p>It is strongly advisable to use a database to process data with BrainVISA. Indeed, some important features are not available when you are using data outside a database. To add a new database, go to <i>databases tab</i> in the <i>preferences window</i> and click on the <i>add button</i>.</p>",  "Open preferences", "Cancel", "Don't show this warning next time")
-          if (choice == 0):
-            neuroConfig.editConfiguration()
-          elif (choice == 2):
-            app = Application()
-            app.configuration.brainvisa.databasesWarning = False
-            app.configuration.save( neuroConfig.userOptionFile)
+    
+    if not neuroConfig.fastStart:
+      nbDatabases=len(neuroHierarchy.databases._databases)
+      if not neuroConfig.sharedDatabaseFound:
+        showWarning("BrainVISA Shared database was not found. It is needed for many processes. Check your Brainvisa installation.")
       else:
-        toUpdate = [i for i in neuroHierarchy.databases.iterDatabases() if getattr( i, '_mustBeUpdated', False )]
-        if toUpdate:
-          print >> sys.stderr, _t_( 'WARNING' )+':', _t_( 'Some ontologies (i.e. databases organization) have been modified but are used by currently selected databases. To take this modification into account, it is necessary to update the following databases:' )
-          for i in toUpdate:
-            print >> sys.stderr, ' ', i.name
-        if ((nbDatabases == 0) and (neuroConfig.databasesWarning)):
-          print >> sys.stderr, _t_( 'WARNING' )+':', _t_( 'You have not selected any database yet. It is strongly advisable to use a database to process data with BrainVISA. Indeed, some important features are not available where you are using data outside a database. To add a new database, go to databases tab in the preferences window and click on the add button.' )
+        nbDatabases-=1
+      if not neuroConfig.setup:
+        if neuroConfig.gui:
+          warnUserAboutDatabasesToUpdate()
+          if ((nbDatabases == 0) and (neuroConfig.databasesWarning)):
+            choice=defaultContext().ask("<p><b>Welcome to BrainVISA !</b></p><p>You have not selected any database yet.</p><p>It is strongly advisable to use a database to process data with BrainVISA. Indeed, some important features are not available when you are using data outside a database. To add a new database, go to <i>databases tab</i> in the <i>preferences window</i> and click on the <i>add button</i>.</p>",  "Open preferences", "Cancel", "Don't show this warning next time")
+            if (choice == 0):
+              neuroConfig.editConfiguration()
+            elif (choice == 2):
+              app = Application()
+              app.configuration.brainvisa.databasesWarning = False
+              app.configuration.save( neuroConfig.userOptionFile)
+        else:
+          toUpdate = [i for i in neuroHierarchy.databases.iterDatabases() if getattr( i, '_mustBeUpdated', False )]
+          if toUpdate:
+            print >> sys.stderr, _t_( 'WARNING' )+':', _t_( 'Some ontologies (i.e. databases organization) have been modified but are used by currently selected databases. To take this modification into account, it is necessary to update the following databases:' )
+            for i in toUpdate:
+              print >> sys.stderr, ' ', i.name
+          if ((nbDatabases == 0) and (neuroConfig.databasesWarning)):
+            print >> sys.stderr, _t_( 'WARNING' )+':', _t_( 'You have not selected any database yet. It is strongly advisable to use a database to process data with BrainVISA. Indeed, some important features are not available where you are using data outside a database. To add a new database, go to databases tab in the preferences window and click on the add button.' )
   except:
     raise
     showException()
