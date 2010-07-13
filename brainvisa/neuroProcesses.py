@@ -2103,10 +2103,10 @@ class ExecutionContext:
                   html=systemLog,
                   icon='icon_system.png' )
     try:
+      commandName = distutils.spawn.find_executable( c.commandName() )
+      if not commandName:
+        commandName = c.commandName()
       if systemLogFile:
-        commandName = distutils.spawn.find_executable( c.commandName() )
-        if not commandName:
-          commandName = c.commandName()
         print >> systemLogFile, '<html><body><h1>' + commandName +' </h1><h2>' +_t_('Command line') + \
           '</h2><code>' + htmlEscape( str( c ) ) + '</code></h2><h2>' + _t_('Output') + '</h2><pre>'
         systemLogFile.flush()
