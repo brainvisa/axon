@@ -428,7 +428,7 @@ except ValueError:
 if i >= 0:
   gui = 0
   fastStart = True
-  noToolBox = True
+  #noToolBox = True
   logFileName = ''
   startup.append( 'defaultContext().runProcess' + repr( tuple( ( _convertCommandLineParameter.get( i, i ) for i in sys.argv[ i+1 : ]  ) ) ) )
 else:
@@ -672,8 +672,8 @@ for toolbox in allToolboxes():
   toolbox.init()
 
 # add brainvisa shared database to the list of available databases
+sharedDatabaseFound=False
 if not fastStart:
-  sharedDatabaseFound=False
   for p in ( os.path.join( getSharePath(), 'brainvisa-share-' + shortVersion ),
             os.path.join( getSharePath(), 'shfj-' + shortVersion ),
             os.path.join( getSharePath(), 'shfj' ) ):
