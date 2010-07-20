@@ -85,7 +85,7 @@ class CommandWithQProcess( object ):
       for var, value in mapenv.items():
         if value is not None:
           listenv.append(var+"="+value)
-      self._qprocess.setEnvironement(listenv)
+      self._qprocess.setEnvironment(listenv)
 
 
   def start( self ):
