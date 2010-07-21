@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -126,6 +127,29 @@ class NotInDatabaseError( DatabaseError ):
 
 #------------------------------------------------------------------------------
 class Database( object ):
+
+  _all_formats = None
+  @property
+  def formats( self ):
+    if Database._all_formats is None:
+      # Build list of all formats used in BrainVISA
+      Database._all_formats = FileFormats( 'All formats' )
+      formatsAlreadyDefined = set( ( 'Directory', 'Graph', 'Graph and data' ,'mdata file' ) )
+      Database._all_formats.newFormat( 'Graph and data', ( 'arg', 'd|data' ) )
+      Database._all_formats.newAlias( 'Graph', 'Graph and data' )
+      for format in (i for i in getAllFormats() if not i.name.startswith( 'Series of ' )):
+        if isinstance( format, FormatSeries ) or format.name == 'mdata file': continue
+        if format.name not in formatsAlreadyDefined:
+          patterns = []
+          for p in format.patterns.patterns:
+            p = p.pattern
+            dotIndex = p.find( '.' )
+            if dotIndex < 0:
+              break
+            patterns.append( p[ dotIndex + 1 : ] )
+          Database._all_formats.newFormat( format.name, patterns )
+          formatsAlreadyDefined.add( format.name )
+    return Database._all_formats
   
   
   @staticmethod
@@ -153,6 +177,8 @@ class Database( object ):
   def __init__(self):
     # a notifier that notifies database update
     self.onUpdateNotifier=Notifier()
+
+  
   
   def insertDiskItem( self, item, **kwargs ):
     self.insertDiskItems( ( item, ), **kwargs )
@@ -196,6 +222,24 @@ class Database( object ):
 
   def currentThreadCleanup( self ):
     pass
+
+
+  def createDiskItemFromFormatExtension( self, fileName, defaultValue=Undefined ):
+    format, ext, noExt = self.formats._findMatchingFormat( fileName )
+    if format is not None:
+      extensions = format.extensions()
+      if len( extensions ) == 1:
+        files = [ noExt + '.' + ext ]
+      else:
+        files = [ noExt + '.' + ext for ext in extensions ]
+      diskItem = File( noExt, None )
+      diskItem.format = getFormat( str(format.name) )
+      diskItem.type = None
+      diskItem._files = files
+      return diskItem
+    if defaultValue is Undefined:
+      raise DatabaseError( _( 'No format is matching filename "%s"' ) % fileName )
+    return None
 
 
 
@@ -253,25 +297,6 @@ class SQLDatabase( Database ):
     self.fso = FileSystemOntology.get( fso )
     self.otherSqliteFiles=otherSqliteFiles
     self._mustBeUpdated = False
-    
-    # Build list of all formats used in BrainVISA
-    self.formats = FileFormats( self.fso.name )
-    formatsAlreadyDefined = set( ( 'Directory', 'Graph', 'Graph and data' ,'mdata file' ) )
-    self.formats.newFormat( 'Graph and data', ( 'arg', 'd|data' ) )
-    self.formats.newAlias( 'Graph', 'Graph and data' )
-    for format in (i for i in getAllFormats() if not i.name.startswith( 'Series of ' )):
-      if isinstance( format, FormatSeries ) or format.name == 'mdata file': continue
-      if format.name not in formatsAlreadyDefined:
-        patterns = []
-        for p in format.patterns.patterns:
-          p = p.pattern
-          dotIndex = p.find( '.' )
-          if dotIndex < 0:
-            break
-          patterns.append( p[ dotIndex + 1 : ] )
-        self.formats.newFormat( format.name, patterns )
-        formatsAlreadyDefined.add( format.name )
-    
     
     self.keysByType = {}
     self._tableAttributesByTypeName = {}
@@ -814,22 +839,6 @@ class SQLDatabase( Database ):
       raise DatabaseError( _( 'Database "%(database)s" cannot reference file "%(filename)s"' ) % { 'database': self.name,  'filename': fileName } )
     return defaultValue
 
-  def createDiskItemFromFormatExtension( self, fileName, defaultValue=Undefined ):
-    format, ext, noExt = self.formats._findMatchingFormat( fileName )
-    if format is not None:
-      extensions = format.extensions()
-      if len( extensions ) == 1:
-        files = [ noExt + '.' + ext ]
-      else:
-        files = [ noExt + '.' + ext for ext in extensions ]
-      diskItem = File( noExt, None )
-      diskItem.format = getFormat( str(format.name) )
-      diskItem.type = None
-      diskItem._files = files
-      return diskItem
-    if defaultValue is Undefined:
-      raise DatabaseError( _( 'Database "%(database)s" has no format to recognise "%(filename)s"' ) % { 'database': self.name,  'filename': fileName } )
-    return None
     
   def changeDiskItemFormat( self, diskItem, newFormat ):
     #print '!changeDiskItemFormat!', self.name, diskItem, newFormat, type( newFormat )
@@ -1313,7 +1322,6 @@ class SQLDatabases( Database ):
   def __init__( self, databases=[] ):
     super(SQLDatabases, self).__init__()
     self._databases = SortedDictionary()
-    self.formats = FileFormats( '<TODO>' )
     for database in databases:
       self.add( database )
   
@@ -1330,7 +1338,6 @@ class SQLDatabases( Database ):
   
   def add( self, database ):
     self._databases[ database.name ] = database
-    self.formats.update( database.formats )
     # SQLDatabases notifier notifies when one of its database notifies an update
     if isinstance( database, SQLDatabase ):
       database.onUpdateNotifier.add(self.onUpdateNotifier.notify)
@@ -1341,7 +1348,6 @@ class SQLDatabases( Database ):
     
   def removeDatabases( self ):
     self._databases = SortedDictionary()
-    self.formats = FileFormats( '<TODO>' )
   
   
   def clear( self ):
@@ -1449,17 +1455,6 @@ class SQLDatabases( Database ):
         return item
     if defaultValue is Undefined:
       raise DatabaseError( _( 'No database can reference file "%(filename)s"' ) % { 'filename': fileName } )
-    return defaultValue
-  
-  
-  
-  def createDiskItemFromFormatExtension( self, fileName, defaultValue=Undefined ):
-    for database in self._iterateDatabases( {}, {} ):
-      item = database.createDiskItemFromFormatExtension( fileName, None )
-      if item is not None:
-        return item
-    if defaultValue is Undefined:
-      raise DatabaseError( _( 'No database has a format to recognise "%(filename)s"' ) % { 'filename': fileName } )
     return defaultValue
   
   

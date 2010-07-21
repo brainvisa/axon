@@ -207,9 +207,12 @@ def getDocPath( path, project = '' ) :
 docPath = mainDocPath = getDocPath( mainPath, projectName + '-' + str( versionNumber() ) )
 
 _languages = []
-for l in os.listdir( docPath ):
-  if len( l ) == 2 and os.path.isdir( os.path.join( mainDocPath, l ) ):
-    _languages.append( l )
+if os.path.exists( docPath ):
+  for l in os.listdir( docPath ):
+    if len( l ) == 2 and os.path.isdir( os.path.join( mainDocPath, l ) ):
+      _languages.append( l )
+else:
+  print >> sys.stderr, 'WARNING: You should check your BrainVISA installation because the following directory does not exists:', repr( docPath )
 for i in ( 'LANGUAGE', 'LC_ALL', 'LC_MESSAGES', 'LANG' ):
   language = os.environ.get( i, '' )[ : 2 ]
   if language in _languages: break

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -41,7 +42,6 @@ from neuroException import HTMLMessage
 from brainvisa.data.qtgui.readdiskitemGUI import DiskItemEditor, DiskItemListEditor
 from brainvisa.data.qtgui.diskItemBrowser import diskItemFilter
 from neuroDiskItems import File, Directory
-import types
 
 #----------------------------------------------------------------------------
 class ReadDiskItem( Parameter ):
@@ -217,9 +217,11 @@ class ReadDiskItem( Parameter ):
         result = self.database.createDiskItemFromFileName( fileName, None )
         if result is None:
           if _debug is not None:
-            print >> _debug, '  DiskItem not created in databases'
+            print >> _debug, '  DiskItem not created in databases from file name'
           result = self.database.createDiskItemFromFormatExtension( fileName, None )
           if result is None:
+            if _debug is not None:
+              print >> _debug, '  DiskItem not created in databases from format extension'
             if os.path.exists( fileName ):
               from shfjGlobals import aimsFileInfo
               file_type = aimsFileInfo( fileName ).get( 'file_type' )
