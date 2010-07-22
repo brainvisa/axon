@@ -419,11 +419,11 @@ class WidgetScrollV( QScrollArea ):
     QScrollArea.__init__( self, parent)
     if name:
       self.setObjectName( name )
-    self.setHorizontalScrollBarPolicy( Qt.ScrollBarAlwaysOff )
+    #self.setHorizontalScrollBarPolicy( Qt.ScrollBarAlwaysOff )
     self.setFrameStyle( self.NoFrame )
     #self.box = self.VBox( None, self )
     #self.setWidget( self.box )
-    self.setSizePolicy( QSizePolicy( QSizePolicy.Expanding, QSizePolicy.Maximum ) )
+    self.setSizePolicy( QSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding ) )
     self.setWidgetResizable(True)
     #self.box.resize( self.visibleWidth(), self.box.height() )
 
@@ -689,8 +689,9 @@ class ParameterizedWidget( QWidget ):
     # the scroll widget will contain parameters widgets
     self.scrollWidget = WidgetScrollV( )
     layout.addWidget( self.scrollWidget )
-    spacer = QSpacerItem( 0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding )
-    layout.addItem( spacer )
+    
+    #spacer = QSpacerItem( 0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding )
+    #layout.addItem( spacer )
 
     # Using weakref here because self.parameterized may contain a reference
     # to self.parameterChanged (see below) which is a bound method that contains
@@ -747,6 +748,7 @@ class ParameterizedWidget( QWidget ):
         l.setFixedWidth( maxwidth )
         self.labels[ k ] = l
         e = p.editor( None, k, weakref.proxy( self ) )
+        
         hb.addWidget(e)
 
         self.parameterized.addParameterObserver( k, self.parameterChanged )
@@ -774,6 +776,7 @@ class ParameterizedWidget( QWidget ):
             'value has been manually changed and is not modified by links anymore' ) \
             + '</em>' )
 
+    parametersWidget.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum))
     self.scrollWidget.setWidget(parametersWidget)
     if first: first.setFocus()
     self._doUpdateParameterValue = True
