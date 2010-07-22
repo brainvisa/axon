@@ -38,7 +38,7 @@ from itertools import izip, chain
 from StringIO import StringIO
 import cPickle
 
-#from soma.minf.api import readMinf, writeMinf
+from soma.minf.api import readMinf
 from soma.html import htmlEscape
 from soma.sorted_dictionary import SortedDictionary
 from soma.undefined import Undefined

@@ -37,7 +37,7 @@ import neuroConfig
 import neuroException
 from brainvisa.data.databaseCheck import BVConverter_3_1
 from brainvisa.data.qtgui.databaseCheckGUI import ActionsWidget
-import os, shutil
+import os, shutil, sys
 
 name = '1 - Convert Database'
 userLevel = 0
@@ -100,5 +100,10 @@ def showActions(actions):
   """
   actionsWidget=ActionsWidget(actions)
   actionsWidget.runLaterButton.setEnabled(False)
-  result=actionsWidget.exec_loop()
+  
+  if sys.modules.has_key( 'PyQt4' ):
+    result=actionsWidget.exec_()
+  else:
+    result=actionsWidget.exec_loop()
+    
   return result # convert immediatly
