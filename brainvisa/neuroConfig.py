@@ -419,11 +419,13 @@ setup=False
 noToolBox = False
 ignoreValidation = False
 
-_convertCommandLineParameter = {
-  'None': None,
-  'False': False,
-  'True': True,
-}
+def _convertCommandLineParameter(i):
+  try:
+    res=eval(i)
+  except:
+    res=i
+  return res
+
 try:
   i = sys.argv.index( '-r' )
 except ValueError:
@@ -433,7 +435,7 @@ if i >= 0:
   fastStart = True
   #noToolBox = True
   logFileName = ''
-  startup.append( 'defaultContext().runProcess' + repr( tuple( ( _convertCommandLineParameter.get( i, i ) for i in sys.argv[ i+1 : ]  ) ) ) )
+  startup.append( 'defaultContext().runProcess' + repr( tuple( ( _convertCommandLineParameter( i ) for i in sys.argv[ i+1 : ]  ) ) ) )
 else:
   import getopt
   try:
