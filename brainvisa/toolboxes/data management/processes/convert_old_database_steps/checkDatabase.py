@@ -35,6 +35,7 @@ import neuroHierarchy, neuroDiskItems
 from brainvisa.data.databaseCheck import BVChecker_3_1
 from brainvisa.data.qtgui.databaseCheckGUI import CheckFilesWidget
 import shfjGlobals
+import sys
 
 
 name = '2 - Check database'
@@ -74,6 +75,11 @@ def show(checker):
   @returns : True if the user choose to execute actions immediatly, false if he decided to run it later.
   """
   widget=CheckFilesWidget(checker)
-  result=widget.exec_loop()
+  
+  if sys.modules.has_key( 'PyQt4' ):
+    result=widget.exec_()
+  else:
+    result=widget.exec_loop()
+
   return result # convert immediatly
 

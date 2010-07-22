@@ -58,11 +58,12 @@ class ActionsWidget( qt.QDialog ):
   def __init__( self, processor, parent=None, uiFile='actions.ui'):
     qt.QDialog.__init__( self, parent ) # by default the dialog is not modal (doesn't block waiting user action)
     layout = qt.QVBoxLayout( self )
-    layout.setAutoAdd( 1 )
+    self.setLayout(layout)
 
     p = os.path.join( os.path.dirname( __file__ ), uiFile)  #os.path.join( neuroConfig.mainPath, 'actions.ui' )
     self.ui = qt.QWidget(self)
     uic.loadUi(p, self.ui)
+    layout.addWidget(self.ui)
     
     # change the instruction bar title
     self.titleLabel = self.ui.titleLabel
@@ -73,6 +74,7 @@ class ActionsWidget( qt.QDialog ):
     #self.actionsList.setSorting(-1) # disable sort
     self.actionsList.setHeaderLabels( [ _t_("File"), _t_("Action") ] )
     self.actionsList.setIconSize(qt.QSize(ICON_SIZE, ICON_SIZE))
+    self.actionsList.setContextMenuPolicy(qt.Qt.CustomContextMenu)
     
     #item=None
     directory=None
@@ -82,7 +84,8 @@ class ActionsWidget( qt.QDialog ):
         #item=None
         item=self.addActions(directory, None, component.fileProcesses)
     item=self.addActions(self.actionsList, directory, processor.fileProcesses)
-          
+    
+    
     # buttons to run actions
     self.runNowButton=self.ui.runNowButton
     self.runNowButton.setText(_t_("Run now"))
@@ -112,12 +115,13 @@ class ActionsWidget( qt.QDialog ):
   def invertSelection(self):
     it = qt.QTreeWidgetItemIterator(self.actionsList, qt.QTreeWidgetItemIterator.Selected)
     while it.value() :
-      if (it.value().checkState(0) == qt.Qt.Checked):
-        it.value().setCheckState(qt.Qt.UnChecked)
-        it.value().model.selected=False
-      else:
-        it.value().setCheckState(qt.Qt.Checked)
-        it.value().model.selected=True
+      if getattr(it.value(), "model", None):
+        if (it.value().checkState(0) == qt.Qt.Checked):
+          it.value().setCheckState(0, qt.Qt.Unchecked)
+          it.value().model.selected=False
+        else:
+          it.value().setCheckState(0, qt.Qt.Checked)
+          it.value().model.selected=True
       it+=1
   
   def addActions(self, parent, after, actions):
@@ -141,7 +145,8 @@ class DirectoryWidget(qt.QTreeWidgetItem):
   defaultIcon="folder.png"
   
   def __init__(self, name, parent, after=None, icon=defaultIcon):
-    qt.QTreeWidgetItem.__init__(self, parent, name)
+    qt.QTreeWidgetItem.__init__(self, parent)
+    self.setText(0, name)
     self.setExpanded(True)
     pix=qt.QIcon(os.path.join(neuroConfig.iconPath, icon))
     self.setIcon(0, pix)
@@ -155,16 +160,19 @@ class ActionWidget(qt.QTreeWidgetItem):
   
   def __init__(self, fileProcess, parent, after=None):
     self.model=fileProcess
-    qt.QTreeWidgetItem.__init__(self, parent, fileProcess.filePattern())
+    qt.QTreeWidgetItem.__init__(self, parent)
+    self.setText(0, fileProcess.filePattern())
+    self.setToolTip(0, fileProcess.filePattern())
     if fileProcess.action is not None:
       icon=fileProcess.action.icon
       self.setText(1, unicode(fileProcess.action))
+      self.setToolTip(1, fileProcess.tooltip+" "+unicode(fileProcess.action))
     else : # there's nothing to do because the file is correct
       icon="ok.png"
     pix=qt.QIcon(os.path.join(neuroConfig.iconPath, icon))
     self.setIcon(1, pix)
     self.setExpanded(True)
-    self.setCheckState(qt.Qt.UnChecked)
+    self.setCheckState(0, qt.Qt.Checked)
   
   def stateChange(self, state):
     self.model.selected=state
@@ -174,7 +182,7 @@ class ActionWidget(qt.QTreeWidgetItem):
     pix=qt.QIcon(os.path.join(neuroConfig.iconPath, action.icon))
     self.setIcon(1, pix)
     self.setText(1, unicode(self.model.action))
-    self.setToolTip(self.model.tooltip)
+    self.setToolTip(1, self.model.tooltip+" "+unicode(self.model.action))
         
 ###################################
 class UnknownFilesWidget( ActionsWidget ):
@@ -213,22 +221,22 @@ class UnknownFilesWidget( ActionsWidget ):
     pix=qt.QIcon(os.path.join(neuroConfig.iconPath, ImportData.icon))
     self.popupMenu.addAction( pix, "Import",  self.menuImportEvent )
 
-    self.connect(self.actionsList, qt.SIGNAL( 'contextMenuRequested ( QListViewItem *, const QPoint &, int )'), self.openContextMenu)
+    self.connect(self.actionsList, qt.SIGNAL( 'customContextMenuRequested ( const QPoint & )'), self.openContextMenu)
   
-  def openContextMenu(self):
+  def openContextMenu(self, pos):
     """
     Called on contextMenuRequested signal. It opens the popup menu at cursor position.
     """
     self.popupMenu.exec_(qt.QCursor.pos())
   
   def menuRemoveEvent(self):
-    item=self.actionsList.selectedItem()
+    item=self.actionsList.currentItem()
     if item:
       action=Remove(os.path.dirname(item.model.file))
       item.setAction(action) 
   
   def menuMoveEvent(self):
-    item=self.actionsList.selectedItem()
+    item=self.actionsList.currentItem()
     if item:
       # open a dialog to choose where to move
       # getExistingDirectory ( QWidget * parent = 0, const QString & caption = QString(), const QString & dir = QString(), Options options = ShowDirsOnly )
@@ -240,7 +248,7 @@ class UnknownFilesWidget( ActionsWidget ):
     """
     Called when user choose to import unidentified file in the database. 
     """
-    item=self.actionsList.selectedItem()
+    item=self.actionsList.currentItem()
     selectedType=None
     selectedFormat=None
     selectedAttributes={}
@@ -262,7 +270,7 @@ class UnknownFilesWidget( ActionsWidget ):
       else :
         selection[ '_format' ] = defaultValue.format.name
 
-      self.importDialog=DiskItemBrowser( self.database, self, write=True, selection=selection, required={'_type' : selection['_type'], '_format' : selection['_format']} )
+      self.importDialog=DiskItemBrowser( neuroHierarchy.databases, self, write=True, selection=selection, required={'_type' : selection['_type'], '_format' : selection['_format'], 'database' : self.database.name} )
       self.importDialog.setWindowTitle( _t_( selection[ '_type' ] ) )
       self.importDialog.connect( self.importDialog, qt.SIGNAL( 'accepted()' ), lambda item=item, action=action: self.importDialogAccepted(item, action) )
       self.importDialog.show()
@@ -291,7 +299,7 @@ class UnknownFilesWidget( ActionsWidget ):
     dest=unicode(qt.QFileDialog.getExistingDirectory(self, _t_("Choose a directory for destination : "), self.defaultDest))
     it = qt.QTreeWidgetItemIterator(self.actionsList)
     while it.value() :
-      action=Move(os.path.join(dest, os.path.basename(it.current().model.file)))
+      action=Move(os.path.join(dest, os.path.basename(it.value().model.file)))
       it.value().setAction(action)
       it+=1
 
@@ -346,7 +354,9 @@ class CheckFileWidget(qt.QTreeWidgetItem):
   """
   def __init__(self, fileProcess, parent, after=None):
     self.model=fileProcess
-    qt.QTreeWidgetItem.__init__(self, parent, os.path.basename(fileProcess.diskItem.name), qt.QCheckListItem.CheckBox)
+    qt.QTreeWidgetItem.__init__(self, parent)
+    self.setText(0, os.path.basename(fileProcess.diskItem.name))
+    self.setToolTip(0, self.text(0))
     self.setText(1, unicode(fileProcess.diskItem.type))
     self.setText(2, unicode(fileProcess.diskItem.format))
     if fileProcess.action is not None:
@@ -357,7 +367,7 @@ class CheckFileWidget(qt.QTreeWidgetItem):
     pix=qt.QIcon(os.path.join(neuroConfig.iconPath, icon))
     self.setIcon(3, pix)
     if fileProcess.selected:
-      self.setCheckState(qt.Qt.UnChecked) # the item is not selected
+      self.setCheckState(0, qt.Qt.Checked) # the item is selected
   
   def stateChange(self, state):
     self.model.selected=state

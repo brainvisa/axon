@@ -90,5 +90,10 @@ def showActions(dbCleaner):
   @returns : True if the user choose to execute actions immediatly, false if he decided to run it later.
   """
   actionsWidget=UnknownFilesWidget(dbCleaner)
-  result=actionsWidget.exec_loop()
+  
+  if sys.modules.has_key( 'PyQt4' ):
+    result=actionsWidget.exec_()
+  else:
+    result=actionsWidget.exec_loop()
+
   return result # convert immediatly
