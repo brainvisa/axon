@@ -1828,7 +1828,7 @@ class ExecutionContext:
 
     try: # finally -> processFinished
       try: # show exception 
-        self._processStarted()
+        
 
         if ishead:
           log = neuroConfig.mainLog
@@ -1890,7 +1890,8 @@ class ExecutionContext:
                       children=newStackTop.log, icon='icon_process.png' )
         else:
           newStackTop.log = None
-    
+        
+        self._processStarted()
         newStackTop.thread = threading.currentThread()
             
         self._lastProcessRaisedException = False
