@@ -50,6 +50,7 @@ class TextFileLink( FileLink ):
     self.fileName = unicode( fileName )
   
   def expand( self ):
+    #print "expand text ", self
     result = None
     try:
       file = open( self.fileName, 'r' )
@@ -72,11 +73,13 @@ class LogFileLink( FileLink ):
     self.fileName = unicode( fileName )
   
   def expand( self ):
+    #print "expand file ", self
     try:
       reader = LogFileReader( self.fileName )
       result = reader.read()
       reader.close()
     except:
+      #print "error while reading log file ", self
       result = [ LogFile.Item( icon='error.png', what='Error', html=neuroException.exceptionHTML() ) ]
     return result
   
@@ -95,6 +98,7 @@ class LogFile:
   class SubTextLog( TextFileLink ):
     def __init__( self, fileName, parentLog ):
       self.fileName = fileName
+      #print "SubTextLog ", fileName, " of parent ", parentLog
       # Create empty file
       file = open( unicode( self.fileName ), 'w' )
       file.close()
@@ -152,17 +156,21 @@ class LogFile:
       return self._icon
       
     def _expand( self, openedFiles ):
+      #print "expand item ", self._what
       if isinstance( self._html, FileLink ) and \
          self._html.fileName not in openedFiles:
         self._html = self._html.expand()
       if isinstance( self._children, FileLink ) and \
          self._children.fileName not in openedFiles:
         children = []
+        #print "expand children"
         for child in self.children():
+          #print "a child : ", child
           if isinstance( child, FileLink )and \
           child.fileName not in openedFiles:
             children.append( child.expand() )
           else:
+            child._expand( openedFiles )
             children.append( child )
         self._children = children
          
@@ -181,6 +189,7 @@ class LogFile:
 
   #----------------------------------------------------------------------------
   def __init__( self, fileName, parentLog, lock, file=None ):
+    #print "New log file ", fileName, " of parent ", parentLog
     self._writer = None
     self._lock = lock
     self.fileName = fileName
@@ -238,6 +247,7 @@ class LogFile:
     try:
       if fileName is None:
         fileName = temporary.manager.new()
+      #print "Creating sublog..."
       result = LogFile( fileName, self, self._lock )
       self._opened[ unicode( result.fileName ) ] = result
     finally:
@@ -250,6 +260,7 @@ class LogFile:
     try:
       if fileName is None:
         fileName = temporary.manager.new()
+      #print "Creating subTextLog..."
       result = self.SubTextLog( fileName, self )
       self._opened[ unicode( result.fileName ) ] = result
     finally:
@@ -266,6 +277,7 @@ class LogFile:
       if getattr(subLog, "_closed", None):
         self._closed.update(subLog._closed)
       self._opened.pop( unicode( subLog.fileName ), None )
+      #print "subLogClosed ", subLog, "remaining opened : ", self._opened.values()
     finally:
       self._lock.release()
    
@@ -286,6 +298,7 @@ class LogFile:
   
   
   def expand( self, force=False ):
+    #print "expand ", self
     if force:
       opened = {}
     else:
@@ -297,6 +310,7 @@ class LogFile:
       self._file = None
       reader = LogFileReader( self.fileName )
       tmp = temporary.manager.new()
+      #print "Create temporary new log file for expand ", tmp
       writer = newLogFile( tmp )
       logItem = reader.readItem()
       while logItem is not None:
