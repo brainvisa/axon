@@ -2026,14 +2026,14 @@ class ExecutionContext:
 
   def _processStarted( self ):
     if self._currentProcess().isMainProcess:
-      msg = '<img alt="" src="' + \
+      msg = '<p><img alt="" src="' + \
             os.path.join( neuroConfig.iconPath, 'process_start.png' ) + \
             '" border="0"><em>' + _t_( 'Process <b>%s</b> started on %s') % \
             ( _t_(self._currentProcess().name ) + ' ' + \
               str( self._currentProcess().instance ),
               time.strftime( _t_( '%Y/%m/%d %H:%M' ),
                              self._stackTop().time ) ) + \
-            '</em><br>'
+            '</em></p>'
       self.write( msg )
 
   def _processFinished( self, result ):
