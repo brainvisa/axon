@@ -61,7 +61,7 @@ def initSubject( self, inp ):
   if self.input is not None and isinstance(self.input, DiskItem):
     value=self.input.hierarchyAttributes()
     if value.get("subject", None) is None:
-      value["subject"]=os.path.splitext(os.path.basename(self.input.fullPath()))[0]
+      value["subject"]=os.path.basename(self.input.fullPath()).partition(".")[0]
   return value
 
 def initialization( self ):

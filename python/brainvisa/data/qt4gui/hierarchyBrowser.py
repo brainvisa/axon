@@ -29,7 +29,7 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
-from backwardCompatibleQt import QWidget, QTreeWidget, QTreeWidgetItem, QIcon, QHBoxLayout, QVBoxLayout, QTextEdit, QSpacerItem, QSizePolicy, QSize, QPushButton, SIGNAL, qApp, QMenu, QCursor, QStringList, QDrag, QPixmap, QMimeData, Qt, QMessageBox, QPoint, QApplication, QUrl
+from backwardCompatibleQt import QWidget, QTreeWidget, QTreeWidgetItem, QIcon, QHBoxLayout, QVBoxLayout, QTextEdit, QSpacerItem, QSizePolicy, QSize, QPushButton, SIGNAL, qApp, QMenu, QCursor, QStringList, QDrag, QPixmap, QMimeData, Qt, QMessageBox, QPoint, QApplication, QUrl, QSplitter
 import os
 
 from soma.wip.application.api import findIconFile
@@ -71,10 +71,8 @@ class HierarchyBrowser( QWidget ):
       layout.setMargin( 10 )
       self.setLayout(layout)
       
-      hl = QHBoxLayout( )
-      layout.addLayout(hl)
-      hl.setSpacing( 5 )
-  
+      hl = QSplitter( Qt.Horizontal )
+      layout.addWidget(hl)
       
       self.lstHierarchy = QTreeWidget( )
       hl.addWidget( self.lstHierarchy )

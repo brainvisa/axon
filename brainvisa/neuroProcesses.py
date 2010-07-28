@@ -1833,7 +1833,7 @@ class ExecutionContext:
 
     try: # finally -> processFinished
       try: # show exception 
-        self._processStarted()
+        
 
         if ishead:
           log = neuroConfig.mainLog
@@ -1873,6 +1873,7 @@ class ExecutionContext:
             # appended to the correct parent
             log = self._processStackHead.log
         if log is not None:
+          #print "Create subLog for process ", process.name
           newStackTop.log = log.subLog()
           process._log = newStackTop.log
           content= '<html><body><h1>' + _t_(process.name) + '</h1><h2>' + _t_('Process identifier') + '</h2>' + process._id + '<h2>' + _t_('Parameters') +'</h2>'
@@ -1880,6 +1881,7 @@ class ExecutionContext:
             content += '<em>' + n + '</em> = ' + htmlEscape( str( getattr( process, n, None ) ) ) + '<p>'
           content += '<h2>' + _t_( 'Output' ) + '</h2>'
           try:
+            #print "Create subTextLog for process ", process.name
             process._outputLog = log.subTextLog()
             process._outputLogFile = open( process._outputLog.fileName, 'w' )
             print >> process._outputLogFile, content
@@ -1893,7 +1895,8 @@ class ExecutionContext:
                       children=newStackTop.log, icon='icon_process.png' )
         else:
           newStackTop.log = None
-    
+        
+        self._processStarted()
         newStackTop.thread = threading.currentThread()
             
         self._lastProcessRaisedException = False
@@ -1991,8 +1994,13 @@ class ExecutionContext:
       if process._outputLogFile is not None:
         print >> process._outputLogFile, '</body></html>'
         process._outputLogFile.close()
+        process.outputLogFile = None
       if process._outputLog is not None:
+        process._outputLog.close()
         process._outputLog = None
+      if process._log is not None:
+        process._log.close()
+        process._log = None
       # Expand log to put sublogs inline
       log = self._stackTop().log
       if log is not None:
@@ -2005,11 +2013,6 @@ class ExecutionContext:
               self._historyBookEvent = None
               self._historyBooksContext = None
           self._lastStartProcessLogItem = None
-      process._outputLogFile = None
-      process._outputLog = None
-      if process._log is not None:
-        process._log.close()
-      process._log = None
       self._popStack().thread = None ##### WARNING !!! not pop()
     return result
 
@@ -2028,14 +2031,14 @@ class ExecutionContext:
 
   def _processStarted( self ):
     if self._currentProcess().isMainProcess:
-      msg = '<img alt="" src="' + \
+      msg = '<p><img alt="" src="' + \
             os.path.join( neuroConfig.iconPath, 'process_start.png' ) + \
             '" border="0"><em>' + _t_( 'Process <b>%s</b> started on %s') % \
             ( _t_(self._currentProcess().name ) + ' ' + \
               str( self._currentProcess().instance ),
               time.strftime( _t_( '%Y/%m/%d %H:%M' ),
                              self._stackTop().time ) ) + \
-            '</em><br>'
+            '</em></p>'
       self.write( msg )
 
   def _processFinished( self, result ):
@@ -2095,6 +2098,7 @@ class ExecutionContext:
     systemLogFile = None
     systemLog = None
     if log is not None:
+      #print "Create subTextLog for command ", command[0] 
       systemLog = log.subTextLog()
       self._systemLog = systemLog
       systemLogFile = open( systemLog.fileName, 'w' )
