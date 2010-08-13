@@ -71,6 +71,7 @@ anatomistVolumeFormats = createFormatList(
     'TIFF image',
     'TIFF(.tif) image',
     'MINC image',
+    'gz compressed MINC image',
     'NIFTI-1 image',
     'gz compressed NIFTI-1 image',
     'DICOM image',
