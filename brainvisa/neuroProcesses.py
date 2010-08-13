@@ -2218,6 +2218,8 @@ class ExecutionContext:
     emsg = '</font></td></tr></table>'
     apply( self.write, (bmsg, ) + messages + ( emsg, ) )
 
+  def progress( self, value, maxval ):
+    self.write( 'progress:', value, '/', maxval, '...' )
 
   def ask( self, message, *buttons, **kwargs):
     self.checkInterruption()
