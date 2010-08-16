@@ -64,7 +64,8 @@ sign = (
     'model', ReadDiskItem( 'Model graph', 'Graph' ),
     'nomenclature', ReadDiskItem( 'Nomenclature', 'Hierarchy' ),
     'region', selectionType(), 
-    'output_prefix', String(), 
+    'output_directory', WriteDiskItem( 'Directory', 'Directory' ),
+    'output_filename_prefix', String(),
     'region_type', Choice( ( 'Region', 'label' ), 
                            ( 'Relations with region', 'label1 label2' ), 
                            ( 'All', 'label label1 label2' ) ),
@@ -108,11 +109,13 @@ def initialization( self ):
     if selectionmode == 0:
         self.region_as_regexp = 0
     self.setOptional( 'nomenclature' )
-    self.setOptional( 'output_prefix' )
+    self.setOptional( 'output_filename_prefix' )
     self.name_descriptors = 1
     #self.print_subjects = 1
     self.print_labels = 1
     self.run_dataMind     = 0
+    self.output_directory = os.getcwd()
+    self.output_filename_prefix = 'morpho_'
     if selectionmode == 0:
         self.region = 'S.C.'
     else:
@@ -153,8 +156,11 @@ def execution( self, context ):
         self.region.writeSelection( context )
         sfile = self.region.file
         stream.write( 'selection ' + sfile.fullPath() + '\n' )
-    if not self.output_prefix is None:
-        stream.write( 'output_prefix  ' + self.output_prefix + "\n" )
+    op = self.output_filename_prefix
+    if op is None:
+        op = ''
+    stream.write( 'output_prefix  ' + os.path.join( \
+        self.output_directory.fullPath(), op ) + "\n" )
     if not self.nomenclature is None:
         stream.write( 'labelsMapFile  ' + self.nomenclature.fullPath() 
                       + "\n" );
