@@ -476,8 +476,10 @@ class ExecutionContextGUI( neuroProcesses.ExecutionContext):
   def mainThreadActions( self ):
     return mainThreadActions()
 
-  def progress( self, value, maxval ):
+  def showProgress( self, value, maxval=None ):
     def setProgress( self, value, maxval ):
+      if not maxval:
+        maxval = 100
       if not hasattr( self, '_progressBar' ):
         layout = self.inlineGUI.parentWidget().layout()
         self._progressBar = QProgressBar( None )
@@ -485,7 +487,7 @@ class ExecutionContextGUI( neuroProcesses.ExecutionContext):
         self._progressBar.show()
       if self._progressBar.maximum() != maxval:
         self._progressBar.setRange( 0, maxval )
-      self._progressBar.setValue( value )
+      self._progressBar.setValue( int( round( value ) ) )
     mainThreadActions().push( setProgress, self, value, maxval )
 
 

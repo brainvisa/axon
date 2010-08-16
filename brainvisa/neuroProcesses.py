@@ -1500,22 +1500,31 @@ class SerialExecutionNode( ExecutionNode ):
                 guiOnly = False, parameterized = None, stopOnError=True ):
     ExecutionNode.__init__(self, name, optional, selected, guiOnly, parameterized)
     self.stopOnError=stopOnError
-    
+
   def _run( self, context ):
     result = []
+    pi, p = context.getProgressInfo( self )
+    pi.children = [ None ] * len( self._children )
     if self.stopOnError:
       for node in self._children.values():
+        npi, proc = context.getProgressInfo( node, parent=pi )
+        context.progress()
         result.append( node.run( context ) )
+        del npi
     else:
       for node in self._children.values():
+        npi, proc = context.getProgressInfo( node, parent=pi )
+        context.progress()
         try:
           result.append( node.run( context ) )
+          del npi
         except ExecutionContext.UserInterruptionStep, e:
           context.error(unicode(e))
         except ExecutionContext.UserInterruption:
           raise
         except Exception, e:
           context.error("Error in execution node : "+unicode(e))
+    context.progress()
     return result
 
 
@@ -1527,11 +1536,16 @@ class ParallelExecutionNode( ExecutionNode ):
   """
 
   def _run( self, context ):
+    pi, p = context.getProgressInfo( self )
     if not neuroDistributedProcesses() or len( self._children ) < 2:
       # do as for serial node
       result = []
       for node in self._children.values():
+        npi, proc = context.getProgressInfo( node, parent=pi )
+        context.progress()
         result.append( node.run( context ) )
+        del npi
+      context.progress()
       return result
     else:
       errorCount = 0
@@ -1568,10 +1582,18 @@ class ParallelExecutionNode( ExecutionNode ):
         print 'running sequentially.'
         result = []
         for node in self._children.values():
+          npi, proc = context.getProgressInfo( node, parent=pi )
+          context.progress()
           result.append( node.run( context ) )
+          del npi
+        context.progress()
         return result
 
+      context.progress()
+      pis = []
       for node in self._children.values():
+        npi, proc = context.getProgressInfo( node, parent=pi )
+        pis.append( npi )
         try:
 
           rp_t.append( RemoteProcessCall(rpid, cluster, context, node) )
@@ -1600,6 +1622,8 @@ class ParallelExecutionNode( ExecutionNode ):
       print 'waiting...'
       for i in range(len(self._children.values())):
         rp_t[i].join()
+        del pis[0]
+        context.progress()
         print 'thread [%d] finished'%i
         if isinstance(rp_t[i].exception, Exception):
           if isinstance(rp_t[i].exception, RemoteConnectionError):
@@ -1609,12 +1633,14 @@ class ParallelExecutionNode( ExecutionNode ):
             result.append( self._children.values()[i].run( context ) )
           else:
             raise rp_t[i].exception
+      del pis
 
       if not isServer:
         cluster.closeSessions()
 
-      print 'All finished' 
+      print 'All finished'
 
+      context.progress()
       return result
 
 #-------------------------------------------------------------------------------
@@ -1630,9 +1656,17 @@ class SelectionExecutionNode( ExecutionNode ):
     'Run the selected child'
     if self._selected is None:
       raise RuntimeError( _t_( 'No children selected' ) )
+    pi, p = context.getProgressInfo( self )
+    pi.children = [ None ]
     for node in self._children.values():
       if node._selected:
-        return node.run( context )
+        npi, proc = context.getProgressInfo( node, parent=pi )
+        context.progress()
+        res =  node.run( context )
+        del npi
+        context.progress()
+        return res
+    context.progress()
 
   def addChild( self, name, node ):
     'Add a new child execution node'
@@ -2218,9 +2252,6 @@ class ExecutionContext:
     emsg = '</font></td></tr></table>'
     apply( self.write, (bmsg, ) + messages + ( emsg, ) )
 
-  def progress( self, value, maxval ):
-    self.write( 'progress:', value, '/', maxval, '...' )
-
   def ask( self, message, *buttons, **kwargs):
     self.checkInterruption()
     self.write( '<pre>' + message )
@@ -2348,6 +2379,247 @@ class ExecutionContext:
       if log is not None:
         event.setLog( log )
     return event
+
+  def _attachProgress( self, parent, count=None, process=None ):
+    '''Create a new ProgressInfo object.
+    If parent is provided, it is the parent ProgressInfo, or the parent
+    process. If not specified, the new ProgressInfo will be attached to the
+    top-level ProgressInfo in the context.
+    count is the number of children that the new ProgressInfo will hold. It is
+    not the maximum value of a numeric progress value (see progress() method).
+    process is the current (child) process which will be attached with the new
+    ProgressInfo.
+
+    This method is called internally in pipeline execution nodes. Regular
+    processes need not to call it directly. They should call getProcessInfo()
+    instead.
+    '''
+    if parent is not None:
+      parent, parentproc = self._findProgressInfo( parent )
+    if parent is None:
+      parent = self._topProgressinfo()
+      #if parent is not None and len( parent.children ) == 0:
+        #parent.childrendone = 0 # reset
+    if parent is None:
+      parent = ProgressInfo()
+      self._progressinfo = weakref.ref( parent )
+      if process is None:
+        pi = parent
+        pi.children = [ None ] * count
+      else:
+        pi = ProgressInfo( parent, count, process=process )
+    else:
+      pi = ProgressInfo( parent, count, process=process )
+    pig = self._topProgressinfo()
+    if process is not None:
+      plist = getattr( pig, 'processes', None )
+      if plist is None:
+        plist = weakref.WeakKeyDictionary()
+        pig.processes = plist
+      plist[ process ] = weakref.ref( pi )
+    return pi
+
+  def getProgressInfo( self, process, childrencount=None, parent=None ):
+    '''Get the progress info for a given process or execution node, or create
+    one if none already exists.
+    A regular process may call it.
+    The output is a tuple containing the ProgressInfo and the process itself,
+    just in case the input process is in fact a ProgressInfo instance.
+    A ProgressInfo has no hard reference in BrainVISA: when you don't need
+    it anymore, it is destroyed via Python reference counting, and is
+    considered done 100% for its parent.
+    '''
+    pinfo, process = self._findProgressInfo( process )
+    if pinfo is None:
+      if process is None:
+        pinfo = self._topProgressinfo()
+      if pinfo is None:
+        pinfo = self._attachProgress( parent=parent, process=process,
+          count=childrencount )
+    return pinfo, process
+
+  def _topProgressinfo( self ):
+    '''internal.'''
+    if hasattr( self, '_progressinfo' ):
+      return self._progressinfo()
+    return None
+
+  def _findProgressInfo( self, processOrProgress ):
+    '''internal.'''
+    if processOrProgress is None:
+      return None, None
+    if isinstance( processOrProgress, ProgressInfo ):
+      return processOrProgress, getattr( processOrProgress, 'process', None )
+    # in case it is a ProcessExecutionNode
+    down = True
+    while down:
+      down = False
+      if isinstance( processOrProgress, ExecutionNode ) and \
+        hasattr( processOrProgress, '_process' ):
+          processOrProgress = processOrProgress._process
+          down = True
+      if not isinstance( processOrProgress, ExecutionNode ) and \
+        hasattr( processOrProgress, '_executionNode' ):
+          p = processOrProgress._executionNode
+          if p is not None:
+            processOrProgress = p
+            down = True
+    if hasattr( processOrProgress, '_progressinfo' ):
+      return processOrProgress._progressinfo, processOrProgress
+    pinfo = getattr( self, '_progressinfo', None )
+    if pinfo is None:
+      return None, processOrProgress
+    procs = getattr( self._topProgressinfo(), 'processes', None )
+    if procs is None:
+      return None, processOrProgress
+    pi = procs.get( processOrProgress, None )
+    if pi is not None:
+      pi = pi()
+    return pi, processOrProgress
+
+  def progress( self, value=None, count=None, process=None ):
+    '''Set the progress information for the parent process ot ProgressInfo
+    instance, and output it using the context output mechanisms.
+    value is the progress value to set. If none, the value will not be changed,
+    but the current status will be shown.
+    count is the maximum value for the process own progress value (not taking
+    children into account).
+    process is either the calling process, or the ProgressInfo.
+    '''
+    if value is not None:
+      pinfo, process = self.getProgressInfo( process )
+      pinfo.setValue( value, count )
+    tpi = self._topProgressinfo()
+    if tpi is not None:
+      self.showProgress( tpi.value() * 100 )
+
+  def showProgress( self, value, count=None ):
+    '''Output the given progress value. This is just the output method which
+    is overriden in subclassed contexts.
+    Users should normally not call it directory, but use progress() instead.
+    '''
+    if count is None:
+      self.write( 'progress:', value, '% ...' )
+    else:
+      self.write( 'progress:', value, '/', count, '...' )
+
+#----------------------------------------------------------------------------
+class ProgressInfo( object ):
+  '''ProgressInfo is a tree-like structure for progression information in a
+  process or a pipeline. The final goal is to provide feedback to the user via
+  a progress bar. ProgressInfo has children for sub-processes (when used in a
+  pipeline), or a local value for its own progression.
+  A ProgressInfo normally registers itself in the calling Process, and is
+  destroyed when the process is destroyed, or when the process _progressinfo
+  variable is deleted.
+  '''
+  def __init__( self, parent=None, count=None, process=None ):
+    '''parent is a ProgressInfo instance.
+    count is a number of children which will be attached.
+    process is the calling process.
+    '''
+    if count is None:
+      self.children = []
+    else:
+      self.children = [ None ] * count
+    self.done = False
+    self.childrendone = 0
+    if parent is not None:
+      parent.attach( self )
+      self.parent = parent # prevent parent from deleting
+    self._localvalue = 0.
+    self._localcount = None
+    if process is not None:
+      self.process = weakref.ref( process )
+      #process._progressinfo = self
+    else:
+      self.process = None
+
+  def __del__( self ):
+    if self.process is not None:
+      proc = self.process()
+      if proc is not None and hasattr( proc, '_progressinfo' ):
+        del proc._progressinfo
+
+  def value( self ):
+    '''Calculate the progress value including those of children.
+    '''
+    if self.done:
+      return 1.
+    n = self.childrendone + len( self.children )
+    if self._localcount is not None:
+      n += 1 # self._localcount
+    if n == 0:
+      return self._localvalue
+    done = float( self.childrendone )
+    for c in self.children:
+      if c is not None:
+        done += c().value()
+        if c().done:
+          self._delchild( c )
+    done += self._localvalue
+    return done / n
+
+  def setValue( self, value, count=None ):
+    '''Set the ProgressInfo own progress value (not its children)
+    '''
+    if count is None:
+      count = self._localcount
+    else:
+      self._localcount = count
+    if self.done:
+      if ( count is not None and value != count ) \
+        or ( count is None and value != 1. ):
+        self.done = False
+    if count:
+      value = float( value ) / count
+    self._localvalue = value
+
+  def setdone( self ):
+    '''Marks the ProgressInfo as done 100%, the children are detached.
+    '''
+    self.done = True
+    del self.children
+
+  def _delchild( self, child ):
+    if child in self.children:
+      del self.children[ self.children.index( child ) ]
+      self.childrendone += 1
+    if len( self.children ) == 0:
+      self.done = True
+
+  def attach( self, pinfo ):
+    '''Don't use this method directly, it is part of the internal mechanism,
+    called by the constructor.
+    '''
+    wr = weakref.ref( pinfo, self._delchild )
+    if None in self.children:
+      i = self.children.index( None )
+      self.children[i] = wr
+    else:
+      self.children.append( wr )
+    self.done = False
+
+  def debugDump( self ):
+    print 'ProgressInfo:', self
+    if hasattr( self, 'process' ):
+      print '  process:', self.process
+    print '  local value:', self._localvalue, '/', self._localcount
+    print '  value:', self.value()
+    print '  children:', len( self.children ) + self.childrendone
+    print '  done:', self.childrendone
+    print '  not started:', len( [ x for x in self.children if x is None ] )
+    print '  running:'
+    todo = [ ( x(), 1 ) for x in self.children if x is not None ]
+    while len( todo ) != 0:
+      pi, indent = todo[0]
+      del todo[0]
+      print '  ' * indent, pi, pi.childrendone,
+      if hasattr( pi, 'process' ):
+        print pi.process()
+      else:
+        print
+      todo = [ ( x(), indent+1 ) for x in pi.children if x is not None ] + todo
 
 
 #----------------------------------------------------------------------------
