@@ -80,7 +80,7 @@ from minfExtensions import initializeMinfExtensions
 from brainvisa.data.qtgui.updateDatabases import warnUserAboutDatabasesToUpdate
 
 def system_exit_handler( number, frame ):
-  sys.exit()
+  sys.exit( 1 )
 
 def qt_exit_handler( number, frame ):
   qApp.exit()
@@ -283,6 +283,7 @@ if neuroConfig.profileFileName:
 else:
   main()
 
+
 if neuroConfig.gui:
   neuroConfig.qtApplication.connect( neuroConfig.qtApplication,\
                                      SIGNAL( 'lastWindowClosed ()' ),\
@@ -325,3 +326,5 @@ if neuroConfig.shell:
 
 if neuroConfig.newDatabases:
   neuroHierarchy.databases.currentThreadCleanup()
+
+sys.exit( neuroConfig.exitValue )

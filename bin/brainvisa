@@ -76,6 +76,7 @@ unset OLDLANG
 
 # Look for neuro.py
 $python -S -t -c "$runbrainvisa" "$0" "$@"
+returnValue=$?
 
 # After using IPython in brainvisa, console need to be reset otherwise
 # characters typed by user are not displayed anymore.
@@ -91,4 +92,6 @@ if ( type stty > /dev/null 2>&1 ); then
     stty -a > /dev/null 2>&1 && stty sane
   fi
 fi
+
+exit $returnValue
 

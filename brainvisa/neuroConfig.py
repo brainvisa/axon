@@ -48,6 +48,8 @@ from soma.uuid import Uuid
 from soma.minf.api import readMinf, writeMinf
 from soma.env import BrainvisaSystemEnv
 
+exitValue = 0
+
 mainPath = os.path.dirname( sys.argv[0] )
 
 sys.argv[0] = os.path.normpath( os.path.abspath( os.path.join( mainPath, '..', 'bin', 'brainvisa' ) ) )

@@ -1608,6 +1608,8 @@ class ParallelExecutionNode( SerialExecutionNode ):
           result.append( sys.exc_info()[ 1 ] )
           try:
             self._showException()
+          except SystemExit:
+            raise
           except:
             import traceback
             info = sys.exc_info()
@@ -1992,6 +1994,8 @@ class ExecutionContext:
         self._lastProcessRaisedException = True
         try:
           self._showException()
+        except SystemExit, e:
+          neuroConfig.exitValue = e.args[0]
         except:
           import traceback
           info = sys.exc_info()
@@ -2285,6 +2289,8 @@ class ExecutionContext:
     except:
       pass
     self.write( '<table width=100% border=1><tr><td>'+ msg + '</td></tr></table>' )
+    if neuroConfig.fastStart and not neuroConfig.gui:
+      sys.exit( 1 )
 
 
   def checkInterruption( self ):

@@ -168,7 +168,10 @@ def showException( beforeError='', afterError='', parent = None,
         .feed( messageHTML + '<hr>' + detailHTML ) 
   except Exception, e:
     traceback.print_exc()
-    
+  if neuroConfig.fastStart and not neuroConfig.gui:
+    sys.exit( 1 )
+
+
 def showWarning( message, parent = None, gui=None):
   if gui is None:
     gui = neuroConfig.gui
