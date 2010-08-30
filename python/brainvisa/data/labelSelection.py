@@ -41,6 +41,7 @@ from neuroDataGUI import NotImplementedEditor
 from brainvisa.data.writediskitem import WriteDiskItem
 from brainvisa.data.qtgui.labelSelectionGUI import LabelSelectionEditor
 from neuroProcesses import defaultContext
+import soma.minf.api as minf
 
 import neuroPopen2
 
@@ -106,3 +107,12 @@ class LabelSelection( Parameter ):
       f.write( s )
       f.close()
       return s
+
+  def isValid( self ):
+    if not self.file:
+      return False
+    m = minf.readMinf( self.file.fullPath() )
+    m = m[0]
+    if len( m ) == 0 or ( len( m ) == 1 and m.keys()[0] == '__syntax__' ):
+      return False
+    return True
