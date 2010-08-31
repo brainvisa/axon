@@ -101,9 +101,11 @@ class BrainVISAConfiguration( ConfigurationGroup ):
     return int( value )
   
   def _check_temporaryDirectory_value(self, newDirectory):
-    if newDirectory and not os.path.exists(newDirectory):
+    if not newDirectory or \
+      ( newDirectory and not os.path.exists(newDirectory) ):
       print 'Configuration - temporaryDirectory option : No such file or directory: "' + newDirectory + '". Returned to default value.'
-    return self.signature['temporaryDirectory'].defaultValue
+      return self.signature['temporaryDirectory'].defaultValue
+    return newDirectory
   
   def __init__( self ):
     super( BrainVISAConfiguration, self ).__init__()
