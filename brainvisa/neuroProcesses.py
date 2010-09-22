@@ -7,9 +7,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -24,8 +24,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -345,7 +345,7 @@ class Parameterized( object ):
 
     self.initialization()
 
-    # Take into account links set during self.initialization() : 
+    # Take into account links set during self.initialization() :
     # call parameterHasChanged for the parameters that have not their default value anymore or that have a not None value
     for name in [n for n, v in self.signature.items() if ( (self.__dict__[n] != v.defaultValue()) or (self.__dict__[n] != None) ) ]:
         self._parameterHasChanged( name, getattr( self, name ) )
@@ -600,7 +600,7 @@ class Parameterized( object ):
 
 
   def convertStateValue( self, value ):
-    
+
     if value is not None and not isinstance( value, ( int, float, basestring, list, dict, tuple ) ):
       result = unicode( value )
     elif isinstance( value, list ):
@@ -613,7 +613,7 @@ class Parameterized( object ):
       result = value
 
     return result
-    
+
   def saveStateInDictionary( self, result=None ):
     if result is None:
       result = {}
@@ -622,7 +622,7 @@ class Parameterized( object ):
     for n in self.signature.iterkeys():
       value = getattr( self, n, None )
       value = self.convertStateValue( value )
-        
+
       if self.isDefault( n ):
         default[ n ] = value
       else:
@@ -632,8 +632,8 @@ class Parameterized( object ):
       'default': default,
     }
     return result
-  
-  
+
+
 #----------------------------------------------------------------------------
 class Process( Parameterized ):
   signature = Signature()
@@ -680,7 +680,7 @@ class Process( Parameterized ):
           raise Exception( _t_( 'all lists of arguments with more than one values must have the same size' ) )
         else:
           requiredLength = length
-    
+
     # Set lists of values
     finalValues = {}
     for key, values in kwargs.iteritems():
@@ -753,11 +753,11 @@ class Process( Parameterized ):
   def executionNode( self ):
     return self._executionNode
 
-  
+
   def pipelineStructure( self ):
     return self.id()
-  
-  
+
+
   def allProcesses( self ):
     yield self
     if self._executionNode is not None:
@@ -767,8 +767,8 @@ class Process( Parameterized ):
         if isinstance( eNode, ProcessExecutionNode ):
           yield eNode._process
         stack.extend( eNode.children() )
-  
-  
+
+
   def saveStateInDictionary( self, result=None ):
     if result is None:
       result = {}
@@ -804,8 +804,8 @@ class Process( Parameterized ):
       if parameterized is not None:
         for attribute, type in parameterized.signature.iteritems():
           yield ( parameterized, attribute, type )
-        
-      
+
+
 
 #----------------------------------------------------------------------------
 class IterationProcess( Process ):
@@ -943,7 +943,7 @@ if qprocess:
   # backward compatibility with old implementation (see CommandWithPopen
   # below).
 
-  from qtgui.command import CommandWithQProcess as Command 
+  from qtgui.command import CommandWithQProcess as Command
 
 else:
   # Here, QProcess is not available. Therefore we provide an implementation
@@ -982,7 +982,7 @@ else:
       self.stderrAction = ( sys.stderr.write, (), {})
       self.endAction = None
       self.popen3 = None
-    
+
     def setEnvironment(self, env):
       """
       Set a map of environment variables that have to be change at starting the process.
@@ -1083,7 +1083,7 @@ else:
 
     def error(self):
       return None
-    
+
     def read( self ):
       l = '-'
       # print '/read/'
@@ -1261,7 +1261,7 @@ class ExecutionNode( object ):
     for name in self.childrenNames():
       child=self.child(name)
       child._copy(node.child(name))
-    
+
   def addChild( self, name, node ):
     'Add a new child execution node'
     if self._children.has_key( name ):
@@ -1274,14 +1274,14 @@ class ExecutionNode( object ):
   def childrenNames( self ):
     return self._children.keys()
 
-  
+
   def children( self ):
     return self._children.itervalues()
 
   def hasChildren( self ):
     return bool( self._children )
-  
-  
+
+
   def setSelected( self, selected ):
     if selected != self._selected:
       self._selected = selected
@@ -1430,8 +1430,8 @@ class ProcessExecutionNode( ExecutionNode ):
     reloadNotifier = getattr( process, 'processReloadNotifier', None )
     if reloadNotifier is not None:
       reloadNotifier.add( self.processReloaded )
-  
-  
+
+
   def addChild( self, name, node ):
     raise RuntimeError( _t_( 'A ProcessExecutionNode cannot have children' ) )
 
@@ -1676,10 +1676,10 @@ class SelectionExecutionNode( ExecutionNode ):
     'Add a new child execution node'
     ExecutionNode.addChild(self, name, node)
     node._selectionChange.add(self.childSelectionChange)
-    
+
   def childSelectionChange(self, node):
-    '''This callback is called when the selection state of a child has changed. 
-    If the child is selected, all the other children must be unselected 
+    '''This callback is called when the selection state of a child has changed.
+    If the child is selected, all the other children must be unselected
     because this node is a selectionNode.'''
     if node._selected:
       for child in self.children():
@@ -1693,7 +1693,7 @@ class ExecutionContext:
   class UserInterruption( Exception ):
     def __init__( self ):
       Exception.__init__( self, _t_( 'user interruption' ) )
-  
+
   class UserInterruptionStep( Exception ):
     def __init__( self ):
       Exception.__init__( self, _t_( 'user interruption of current step' ) )
@@ -1804,13 +1804,13 @@ class ExecutionContext:
     result = self._processExecution( _process, None )
     self.checkInterruption()
     return result
-  
-  
+
+
   @staticmethod
   def createContext():
     return ExecutionContext()
-  
-  
+
+
   def runInteractiveProcess( self, callMeAtTheEnd, process, *args, **kwargs ):
     context = self.createContext()
     process = getProcessInstance( process )
@@ -1819,22 +1819,22 @@ class ExecutionContext:
     thread = threading.Thread( target = self._runInteractiveProcessThread,
       args = ( context, process, callMeAtTheEnd ) )
     thread.start()
-  
-  
+
+
   def _runInteractiveProcessThread( self, context, process, callMeAtTheEnd ):
     try:
       result = context.runProcess( process )
     except Exception, e:
       result = e
     callMeAtTheEnd( result )
-  
+
 
   def _processExecutionThread( self, *args, **kwargs ):
     self._processExecution( *args, **kwargs )
     if neuroConfig.newDatabases:
       neuroHierarchy.databases.currentThreadCleanup()
-    
-  
+
+
   def _processExecution( self, process, executionFunction=None ):
 
     '''Execute the process "process". The value return is stored to avoid
@@ -1865,8 +1865,8 @@ class ExecutionContext:
       process.isMainProcess = True
 
     try: # finally -> processFinished
-      try: # show exception 
-        
+      try: # show exception
+
 
         if ishead:
           log = neuroConfig.mainLog
@@ -1928,10 +1928,10 @@ class ExecutionContext:
                       children=newStackTop.log, icon='icon_process.png' )
         else:
           newStackTop.log = None
-        
+
         self._processStarted()
         newStackTop.thread = threading.currentThread()
-            
+
         self._lastProcessRaisedException = False
         # Check arguments and conversions
         def _getConvertedValue( v, p ):
@@ -2013,7 +2013,7 @@ class ExecutionContext:
             if item.modificationHash() != hash:
               try:
                 # do not try to insert in the database an item that doesn't have any reference to a database
-                if item.get("_database", None): 
+                if item.get("_database", None):
                   neuroHierarchy.databases.insertDiskItem( item, update=True )
               except NotInDatabaseError:
                 pass
@@ -2022,7 +2022,7 @@ class ExecutionContext:
               item_hash[ 1 ] = item.modificationHash()
           elif (process.isMainProcess): # clear unused minfs only when the main process is finished to avoid clearing minf that will be used in next steps
             item.clearMinf()
-      
+
       # Close output log file
       if process._outputLogFile is not None:
         print >> process._outputLogFile, '</body></html>'
@@ -2131,7 +2131,7 @@ class ExecutionContext:
     systemLogFile = None
     systemLog = None
     if log is not None:
-      #print "Create subTextLog for command ", command[0] 
+      #print "Create subTextLog for command ", command[0]
       systemLog = log.subTextLog()
       self._systemLog = systemLog
       systemLogFile = open( systemLog.fileName, 'w' )
@@ -2147,15 +2147,15 @@ class ExecutionContext:
         print >> systemLogFile, '<html><body><h1>' + commandName +' </h1><h2>' +_t_('Command line') + \
           '</h2><code>' + htmlEscape( str( c ) ) + '</code></h2><h2>' + _t_('Output') + '</h2><pre>'
         systemLogFile.flush()
-  
+
   ##    if self._showSystemOutput() > 0:
   ##      self.write( '<img alt="" src="' + os.path.join( neuroConfig.iconPath, 'icon_system.png' ) + '">' + c.commandName() + '<p>' )
-  
+
       # Set environment for the command
       if (not commandName.startswith(os.path.dirname(neuroConfig.mainPath))): # external command
         if neuroConfig.brainvisaSysEnv:
           c.setEnvironment(neuroConfig.brainvisaSysEnv.getVariables())
-      
+
       if stdoutAction is not None:
         if stdoutAction is self._systemStdout:
           c.setStdoutAction( lambda line: stdoutAction( line,
@@ -2177,7 +2177,7 @@ class ExecutionContext:
           retry=0
         except RuntimeError, e:
           if c.error() == QProcess.FailedToStart:
-            if first: 
+            if first:
               retry = 2
               first=False
             else:
@@ -2189,7 +2189,7 @@ class ExecutionContext:
               raise e
           else:
             raise e
-          
+
       intActionId = self._addInterruptionAction( c.stop )
       try:
         result = c.wait()
@@ -2204,7 +2204,7 @@ class ExecutionContext:
         self._systemLogFile = None
       if systemLog is not None:
         systemLog.close()
-        # no need to expand the log associated to the command as it is the log of the parent process, 
+        # no need to expand the log associated to the command as it is the log of the parent process,
         # it will be expanded at the end of the process
 #      if log is not None and log is not neuroConfig.mainLog:
 #        log.expand()
@@ -2432,6 +2432,10 @@ class ExecutionContext:
     A ProgressInfo has no hard reference in BrainVISA: when you don't need
     it anymore, it is destroyed via Python reference counting, and is
     considered done 100% for its parent.
+    childrencount is the number of children that the process will have, and is
+    not the same as the own count of the process in itself, which is in
+    addition to children (and independent), and specified when using the
+    progress() method.
     '''
     pinfo, process = self._findProgressInfo( process )
     if pinfo is None:
@@ -2664,7 +2668,7 @@ def getProcessInfo( processId ):
 #----------------------------------------------------------------------------
 def addProcessInfo( processId, processInfo ):
   _processesInfo[ processId.lower() ] = processInfo
-  
+
 #----------------------------------------------------------------------------
 def getProcess( processId, ignoreValidation=False, checkUpdate=True ):
   global _askUpdateProcess
@@ -2681,7 +2685,7 @@ def getProcess( processId, ignoreValidation=False, checkUpdate=True ):
       return IterationProcess( processId.get('name', 'Iteration'), [ getProcessInstance(i) for i in processId[ 'children' ] ] )
     elif processId[ 'type' ] == 'distributed':
       return DistributedProcess( processId.get('name', 'Distributed iteration'), [ getProcessInstance(i) for i in processId[ 'children' ] ] )
-    elif processId['type'] == 'selection' : 
+    elif processId['type'] == 'selection' :
       return SelectionProcess( processId.get('name', 'Selection'), [ getProcessInstance(i) for i in processId[ 'children' ] ] )
     else:
       raise TypeError( _t_( 'Unknown process type: %s' ) % ( unicode( processId['type'] ) ) )
@@ -2705,7 +2709,7 @@ def getProcess( processId, ignoreValidation=False, checkUpdate=True ):
       if fileName is not None:
         ask = _askUpdateProcess.get( result._id, 0 )
         # if the user choosed never updating the process, no need to check if it needs update
-        if (ask != 2): 
+        if (ask != 2):
           ntime = os.path.getmtime( fileName )
           if ntime > result._fileTime:
             update = 0
@@ -2744,7 +2748,7 @@ def getProcessInstanceFromProcessEvent( event ):
         result.setValue( n, v, default=True )
       except KeyError:
         pass
-    stack = [ ( result.executionNode(), k, e.get( 'parameters' ), e[ 'selected' ], 
+    stack = [ ( result.executionNode(), k, e.get( 'parameters' ), e[ 'selected' ],
                 e.get( 'executionNodes', {} ) ) for k, e in
                 event.content.get( 'executionNodes', {} ).iteritems() ]
     while stack:
@@ -2762,7 +2766,7 @@ def getProcessInstanceFromProcessEvent( event ):
             eNode.setValue( n, v, default=True )
           except KeyError:
             pass
-      stack += [ ( eNode, k, e.get( 'parameters' ), e[ 'selected' ], 
+      stack += [ ( eNode, k, e.get( 'parameters' ), e[ 'selected' ],
                 e.get( 'executionNodes', {} ) ) for k, e in eNodeChildren.iteritems() ]
     windowGeometry = event.content.get( 'window' )
     if windowGeometry is not None:
@@ -2982,7 +2986,7 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
       except NameError, e:
         showException(beforeError=( _t_('In <em>%s</em>') ) % ( fileName, ), afterError=_t_(' (perharps you need to add the line <tt>"from neuroProcesses import *"</tt> at the begining of the process)'))
         return
-        #raise RuntimeError( HTMLMessage( _t_('In <em>%s</em>')  % ( fileName, ) + " <b>"+str(e)+"</b> "+_t_(' (perharps you need to add the line <tt>"from neuroProcesses import *"</tt> at the begining of the process)') )) 
+        #raise RuntimeError( HTMLMessage( _t_('In <em>%s</em>')  % ( fileName, ) + " <b>"+str(e)+"</b> "+_t_(' (perharps you need to add the line <tt>"from neuroProcesses import *"</tt> at the begining of the process)') ))
     finally:
       fileIn.close()
       if dataDirectory:
@@ -3024,7 +3028,7 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
           delattr( processModule, n )
         else:
           setattr( NewProcess, n, staticmethod( v ) )
-        
+
 
     NewProcess._fileName = fileName
     NewProcess._fileTime = os.path.getmtime( fileName )
@@ -3096,7 +3100,7 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
           source = ( getDiskItemType( source[0] ), getFormat( source[1] ) )
           dest = ( getDiskItemType( dest[0] ), getFormat( dest[1] ) )
           _setConverter( source, dest, NewProcess )
-          
+
     elif NewProcess.category.lower() == 'converters/automatic':
       warnRole( processInfo, 'converter' )
     if 'viewer' in roles:
@@ -3156,7 +3160,7 @@ def readProcesses( processesPath ):
         neuroConfig.mainLog.append( 'Cannot read processes cache',
           html=exceptionHTML( beforeError=_t_( 'Cannot read processes cache file <em>%s</em>' ) % ( processCacheFile, ) ),
           icon='warning.png' )
-  
+
   if neuroConfig.gui or not neuroConfig.fastStart:
     # create all processes tree while reading processes in processesPath
     _allProcessesTree=ProcessTree("Various processes", "all processes",editable=False, user=False)
@@ -3164,7 +3168,7 @@ def readProcesses( processesPath ):
       _allProcessesTree.addDir(processesDir, "", processesCache)
     for toolbox in neuroConfig.allToolboxes():
       toolbox.getProcessTree()
-  
+
     # save processes cache
     try:
       cPickle.dump( _processesInfo, open( processesCacheFile, 'wb' ) )
@@ -3177,16 +3181,16 @@ def readProcesses( processesPath ):
 #----------------------------------------------------------------------------
 class ProcessTree( EditableTree ):
   """
-  Represents a hierarchy of processes. 
+  Represents a hierarchy of processes.
   It contains branches : category/directory, and leaves: processes.
   """
   defaultName = "New"
-  
+
   def __init__( self, name=None, id=None, icon=None, tooltip=None, editable=True, user=True,  content=[]):
     """
-    Represents a process tree. It can be a user profile or a default tree. 
-    This object can be saved in a minf file (in userProcessTree.minf for user profiles). That's why it defines __getinitkwargs__ method.  this method's result is stored in the file and passed to the constructor to restore the object. 
-    Some changes to the constructor attributes must be reflected in getinitkwargs method, but changes can affect the reading of existing minf files. 
+    Represents a process tree. It can be a user profile or a default tree.
+    This object can be saved in a minf file (in userProcessTree.minf for user profiles). That's why it defines __getinitkwargs__ method.  this method's result is stored in the file and passed to the constructor to restore the object.
+    Some changes to the constructor attributes must be reflected in getinitkwargs method, but changes can affect the reading of existing minf files.
     """
     if id is None and name is not None:
       id=string.lower(name)
@@ -3204,11 +3208,11 @@ class ProcessTree( EditableTree ):
       self.tooltip=_t_(tooltip)
     else: self.tooltip=self.name
     self.setValid() # tag the tree as valid or not : it is valid if it contains at least one valid child (or no child)
-  
+
   def __getinitargs__(self):
     content=self.values()
     return ( self.initName, self.id, self.icon, self.tooltip, self.modifiable, self.user, content )
-  
+
   def __getinitkwargs__(self):
     content=self.values()
     return ( (), {'name' : self.initName, 'id': self.id, 'icon' : self.icon, 'editable' : self.modifiable, 'user' : self.user, 'content' : content} )
@@ -3279,7 +3283,7 @@ class ProcessTree( EditableTree ):
     if self.name==self.tooltip:
       self.tooltip=n # change also the tooltip if it is equal to the name
     EditableTree.setName(self, n)
-      
+
   def setValid(self):
     """
     Sets the tree as valid if it has no child and it is a user tree or if it has at least one valid child.
@@ -3293,11 +3297,11 @@ class ProcessTree( EditableTree ):
         if item.valid:
           valid=True
           break
-    self.valid=valid 
+    self.valid=valid
 
   def update(self):
     """
-    Updates recursively valid attribute for each item in the tree. This method must be called when the validity may have change. For exemple when the userLevel has changed, some process must become visibles. 
+    Updates recursively valid attribute for each item in the tree. This method must be called when the validity may have change. For exemple when the userLevel has changed, some process must become visibles.
     """
     if len(self)==0 and self.user:
       self.valid=True
@@ -3308,10 +3312,10 @@ class ProcessTree( EditableTree ):
         if item.valid:
           validChild=True
       self.valid=validChild
-  
+
   def updateName(self):
     """
-    When the tree name is changed after construction. The new name must be saved if the tree is saved in minf file. So change the initName. 
+    When the tree name is changed after construction. The new name must be saved if the tree is saved in minf file. So change the initName.
     """
     self.initName=self.name
 
@@ -3347,11 +3351,11 @@ class ProcessTree( EditableTree ):
     def __getinitargs__(self):
       content=self.values()
       return ( self.initName, self.id, self.modifiable, self.icon, content)
-    
+
     def __getinitkwargs__(self):
       content=self.values()
       return ( (), {'name' : self.initName, 'id' : self.id, 'editable' : self.modifiable, 'content' : content})
-  
+
     def __reduce__( self ):
       """This method is redefined for enable deepcopy of this object (and potentially pickle).
       It gives the arguments to pass to the init method of the object when creating a copy
@@ -3371,11 +3375,11 @@ class ProcessTree( EditableTree ):
           if item.valid:
             valid=True
             break
-      self.valid=valid 
-      
+      self.valid=valid
+
     def update(self, userTree=False):
       """
-      Updates recursively valid attribute for each item in the branch. This method must be called when the validity may have change. For exemple when the userLevel has changed, some processes must become visibles. 
+      Updates recursively valid attribute for each item in the branch. This method must be called when the validity may have change. For exemple when the userLevel has changed, some processes must become visibles.
       """
       if len(self)==0:
         self.valid=True
@@ -3386,13 +3390,13 @@ class ProcessTree( EditableTree ):
           if item.valid:
             validChild=True
         self.valid=validChild
-   
-    def updateName(self): 
+
+    def updateName(self):
       self.initName=self.name
   #----------------------------------------------------------------------------
   class Leaf( EditableTree.Leaf ):
     """
-    A ProcessTree.Leaf represents a process. 
+    A ProcessTree.Leaf represents a process.
     """
     def __init__( self, id, name=None, editable=True, icon=None, *args, **kwargs ):
       processInfo=getProcessInfo(id)
@@ -3415,10 +3419,10 @@ class ProcessTree( EditableTree ):
       self.initName=name
       self.onAttributeChange("name", self.updateName)
       self.setValid(processInfo)
-      
+
     def __getinitargs__(self):
       return (self.id, self.initName, self.modifiable, self.icon)
-    
+
     def __getinitkwargs__(self):
       return ( (), {'id' : self.id, 'name' : self.initName, 'editable' :  self.modifiable}) # do not save icon in minf file for processes because it is determined by its role and user level
 
@@ -3445,8 +3449,8 @@ class ProcessTree( EditableTree ):
       """
       processInfo=getProcessInfo(self.id)
       self.setValid(processInfo)
-   
-    def updateName(self): 
+
+    def updateName(self):
       self.initName=self.name
 
 #----------------------------------------------------------------------------
@@ -3473,7 +3477,7 @@ class ProcessTrees(ObservableAttributes, ObservableSortedDictionary):
 
   def add(self, processTree):
     """
-    Add an item in the dictionary. If this item's id is already present in the dictionary as a key, add the item's content in the corresponding key. 
+    Add an item in the dictionary. If this item's id is already present in the dictionary as a key, add the item's content in the corresponding key.
     recursive method
     """
     key=processTree.id
@@ -3524,7 +3528,7 @@ class ProcessTrees(ObservableAttributes, ObservableSortedDictionary):
     if userTrees != None:
       for userTree in userTrees:
         self.add(userTree)
-    # search selected tree. 
+    # search selected tree.
     if currentTree is not None:
       # The id of the selected tree is stored in the minf file. But before, the name was stored, so if the value is not a key, search by names
       if self.has_key(currentTree):
@@ -3585,7 +3589,7 @@ def allProcessesTree():
 #----------------------------------------------------------------------------
 def updateProcesses():
   """
-  Called when option userLevel has changed (neuroConfigGUI.validateOptions()). 
+  Called when option userLevel has changed (neuroConfigGUI.validateOptions()).
   Associated widgets will be updated automatically because they listens for changes.
   """
   _mainProcessTree.update()
