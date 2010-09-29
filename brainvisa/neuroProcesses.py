@@ -36,7 +36,7 @@ import inspect, signal, shutil, imp, StringIO, types, copy, weakref
 import cPickle, atexit
 import string
 import distutils.spawn
-import os, time, calendar
+import os, errno, time, calendar
 
 from soma.sorted_dictionary import SortedDictionary
 from soma.functiontools import numberOfParameterRange, hasParameter
@@ -1878,7 +1878,13 @@ class ExecutionContext:
                 if item is not None:
                   dir = os.path.dirname( item.fullPath() )
                   if not os.path.exists( dir ):
-                    os.makedirs( dir )
+                    try: 
+                      os.makedirs( dir )
+                    except OSError, e:
+                      if e.errno == errno.EEXIST:
+                        print "warning: " + repr(e)
+                      else:
+                        raise e
                   item.uuid()
                   self._allWriteDiskItems.append( [ item, item.modificationHash() ] )
               elif isinstance( type, ListOf ) and isinstance( type.contentType, WriteDiskItem ):
