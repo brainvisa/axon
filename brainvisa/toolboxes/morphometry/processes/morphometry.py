@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -6,9 +7,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -23,8 +24,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -63,11 +64,11 @@ sign = (
     'data_graphs', ListOf( ReadDiskItem( "Data graph", 'Graph' ) ),
     'model', ReadDiskItem( 'Model graph', 'Graph' ),
     'nomenclature', ReadDiskItem( 'Nomenclature', 'Hierarchy' ),
-    'region', selectionType(), 
-    'output_directory', WriteDiskItem( 'Directory', 'Directory' ),
+    'region', selectionType(),
+    'output_directory', ReadDiskItem( 'Directory', 'Directory' ),
     'output_filename_prefix', String(),
-    'region_type', Choice( ( 'Region', 'label' ), 
-                           ( 'Relations with region', 'label1 label2' ), 
+    'region_type', Choice( ( 'Region', 'label' ),
+                           ( 'Relations with region', 'label1 label2' ),
                            ( 'All', 'label label1 label2' ) ),
     )
 
@@ -75,8 +76,8 @@ if selectionmode == 0:
     sign.append( 'region_as_regexp', Boolean() )
 
 sign += (
-    'label_attribute', Choice( 'auto', 'label', 'name' ), 
-    'run_dataMind', Boolean(), 
+    'label_attribute', Choice( 'auto', 'label', 'name' ),
+    'run_dataMind', Boolean(),
     )
 
 signature = Signature( *sign )
@@ -162,7 +163,7 @@ def execution( self, context ):
     stream.write( 'output_prefix  ' + os.path.join( \
         self.output_directory.fullPath(), op ) + "\n" )
     if not self.nomenclature is None:
-        stream.write( 'labelsMapFile  ' + self.nomenclature.fullPath() 
+        stream.write( 'labelsMapFile  ' + self.nomenclature.fullPath()
                       + "\n" );
     if self.label_attribute != 'auto':
         stream.write( 'label_attribute  ' + self.label_attribute + '\n' )
