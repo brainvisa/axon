@@ -35,19 +35,18 @@ import shfjGlobals
 
 name = 'Create an Average Volume from Different Volumes'
 
-userLevel = 2
+userLevel = 0
 
 signature = Signature(
-      'input', ListOf( ReadDiskItem('3D Volume', 'BrainVISA volume formats')),
+      'input', ReadDiskItem('4D Volume', 'BrainVISA volume formats'),
       'output', WriteDiskItem('3D Volume', 'BrainVISA volume formats')
 )
 def initialization( self ):
   pass
 def execution( self, context ):
 
-      call_list = ['AimsAverage', '-i']
-      call_list += self.input
-      call_list += ['-o', self.output]
+      call_list = ['AimsAverage', '-i', self.input,
+                    '-o', self.output]
       apply(context.system, call_list)
       
 
