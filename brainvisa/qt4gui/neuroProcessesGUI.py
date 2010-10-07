@@ -59,6 +59,12 @@ import neuroProcesses
 import neuroException
 from soma.qtgui.api import EditableTreeWidget, TreeListWidget
 from soma.notification import ObservableList, EditableTree
+from soma.signature.api import HasSignature
+from soma.signature.api import Signature as SomaSignature
+from soma.signature.api import FileName as SomaFileName
+from soma.signature.api import Choice as SomaChoice
+from soma.signature.api import Boolean as SomaBoolean
+from soma.qt4gui.api import ApplicationQt4GUI
 
 _mainThreadActions = FakeQtThreadCall()
 
@@ -923,7 +929,8 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     centralWidgetLayout.setSpacing( 4 )
 
     self.setWindowIcon( self.pixIcon )
-
+    self.workflowEnabled = False
+    
     if parent is None:
       neuroConfig.registerObject( self )
       # menu bar
@@ -932,6 +939,13 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       processMenu=menu.addMenu("&Process")
       processMenu.addAction( _t_( '&Save...' ), self.saveAs,  Qt.CTRL + Qt.Key_S )
       processMenu.addAction( _t_( '&Clone...' ), self.clone,  Qt.CTRL + Qt.Key_C )
+      try:
+        import soma.jobs
+        self.workflowEnabled = True
+      except ImportError:
+        pass
+      if self.workflowEnabled:
+        processMenu.addAction( _t_( 'Create &Workflow...' ), self.createWorkflow,  Qt.CTRL + Qt.Key_D )
       centralWidgetLayout.addWidget(menu)
 
     self.connect( self, SIGNAL( 'destroyed()' ), self.cleanup )
@@ -1569,7 +1583,21 @@ class ProcessView( QWidget, ExecutionContextGUI ):
   def _executionNodeActivated(self, item):
     if getattr(item, "activate", None):
       item.activate()
+  
+  
+  def createWorkflow( self ):
+    from brainvisa.workflow import process_to_workflow
+    class Options( HasSignature ):
+      signature = SomaSignature(
+        'output', SomaFileName, dict( doc='Name of the output workflow file.' ),
+        'file_transfers', SomaChoice( ( _t_( 'Nothing' ), 0 ), ( _t_( 'Copy files' ), 1 ), ( _t_( 'Translate file names' ), 2 ) ),
+        'no_white_space', SomaBoolean(),
+      )
+    options = Options()
+    ApplicationQt4GUI().edit( options )
+    process_to_workflow( self.process, options.output, file_transfers = (options.file_transfers == 1), no_white_space = options.no_white_space )
     
+  
   def _distributeButton( self ):
     self.readUserValues()
     self._iterationDialog = IterationDialog( self, self.process, self )
