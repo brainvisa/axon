@@ -58,8 +58,7 @@ import Scheduler
 from brainvisa import matlab
 from brainvisa.validation import ValidationError
 from brainvisa.debug import debugHere
-if neuroConfig.newDatabases:
-  from brainvisa.data.sqlFSODatabase import Database, NotInDatabaseError
+from brainvisa.data.sqlFSODatabase import Database, NotInDatabaseError
 import neuroPopen2
 
 try:
@@ -1830,8 +1829,7 @@ class ExecutionContext:
 
   def _processExecutionThread( self, *args, **kwargs ):
     self._processExecution( *args, **kwargs )
-    if neuroConfig.newDatabases:
-      neuroHierarchy.databases.currentThreadCleanup()
+    neuroHierarchy.databases.currentThreadCleanup()
 
 
   def _processExecution( self, process, executionFunction=None ):
@@ -1869,35 +1867,34 @@ class ExecutionContext:
 
         if ishead:
           log = neuroConfig.mainLog
-          if neuroConfig.newDatabases:
-            self._allWriteDiskItems = []
-            #try: # an exception could occur if the user has not write permission on the database directory
-            for parameterized, attribute, type in process.getAllParameters():
-              if isinstance( type, WriteDiskItem ):
-                item = getattr( parameterized, attribute )
-                if item is not None:
+          self._allWriteDiskItems = []
+          #try: # an exception could occur if the user has not write permission on the database directory
+          for parameterized, attribute, type in process.getAllParameters():
+            if isinstance( type, WriteDiskItem ):
+              item = getattr( parameterized, attribute )
+              if item is not None:
+                dir = os.path.dirname( item.fullPath() )
+                if not os.path.exists( dir ):
+                  try: 
+                    os.makedirs( dir )
+                  except OSError, e:
+                    if e.errno == errno.EEXIST:
+                      print "warning: " + repr(e)
+                    else:
+                      raise e
+                item.uuid()
+                self._allWriteDiskItems.append( [ item, item.modificationHash() ] )
+            elif isinstance( type, ListOf ) and isinstance( type.contentType, WriteDiskItem ):
+              itemList = getattr( parameterized, attribute )
+              if itemList:
+                for item in itemList:
                   dir = os.path.dirname( item.fullPath() )
                   if not os.path.exists( dir ):
-                    try: 
-                      os.makedirs( dir )
-                    except OSError, e:
-                      if e.errno == errno.EEXIST:
-                        print "warning: " + repr(e)
-                      else:
-                        raise e
+                    os.makedirs( dir )
                   item.uuid()
                   self._allWriteDiskItems.append( [ item, item.modificationHash() ] )
-              elif isinstance( type, ListOf ) and isinstance( type.contentType, WriteDiskItem ):
-                itemList = getattr( parameterized, attribute )
-                if itemList:
-                  for item in itemList:
-                    dir = os.path.dirname( item.fullPath() )
-                    if not os.path.exists( dir ):
-                      os.makedirs( dir )
-                    item.uuid()
-                    self._allWriteDiskItems.append( [ item, item.modificationHash() ] )
-            #except:
-              #showException()
+          #except:
+            #showException()
           if self._allowHistory:
             self._historyBookEvent, self._historyBooksContext = HistoryBook.storeProcessStart( self, process )
         else:
@@ -2013,22 +2010,21 @@ class ExecutionContext:
     finally:
       self._processFinished( result )
       process.restoreConvertedValues()
-      if neuroConfig.newDatabases:
-        for item_hash in self._allWriteDiskItems:
-          item, hash = item_hash
-          if item.isReadable():
-            if item.modificationHash() != hash:
-              try:
-                # do not try to insert in the database an item that doesn't have any reference to a database
-                if item.get("_database", None):
-                  neuroHierarchy.databases.insertDiskItem( item, update=True )
-              except NotInDatabaseError:
-                pass
-              except:
-                showException()
-              item_hash[ 1 ] = item.modificationHash()
-          elif (process.isMainProcess): # clear unused minfs only when the main process is finished to avoid clearing minf that will be used in next steps
-            item.clearMinf()
+      for item_hash in self._allWriteDiskItems:
+        item, hash = item_hash
+        if item.isReadable():
+          if item.modificationHash() != hash:
+            try:
+              # do not try to insert in the database an item that doesn't have any reference to a database
+              if item.get("_database", None):
+                neuroHierarchy.databases.insertDiskItem( item, update=True )
+            except NotInDatabaseError:
+              pass
+            except:
+              showException()
+            item_hash[ 1 ] = item.modificationHash()
+        elif (process.isMainProcess): # clear unused minfs only when the main process is finished to avoid clearing minf that will be used in next steps
+          item.clearMinf()
 
       # Close output log file
       if process._outputLogFile is not None:

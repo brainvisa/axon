@@ -59,22 +59,13 @@ class UpdateDatabasesGUI( qt.QWidget ):
     
     lastItem = None
     selected = False
-    if neuroConfig.newDatabases:
-      for database in neuroHierarchy.databases.iterDatabases():
-        item = qt.QListWidgetItem( database.name, self.lvDatabases )
-        if selected:
-          item.setCheckState(qt.Qt.Checked)
-        else:
-          item.setCheckState(qt.Qt.Unchecked)
-        selected = True
-    else:
-      for h in hierarchies():
-        item = qt.QCheckListItem( h.fullPath(), self.lvDatabases )
-        if selected:
-          item.setCheckState(qt.Qt.Checked)
-        else:
-          item.setCheckState(qt.Qt.Unchecked)
-        selected = True
+    for database in neuroHierarchy.databases.iterDatabases():
+      item = qt.QListWidgetItem( database.name, self.lvDatabases )
+      if selected:
+        item.setCheckState(qt.Qt.Checked)
+      else:
+        item.setCheckState(qt.Qt.Unchecked)
+      selected = True
 
     layout1 = qt.QHBoxLayout()
     layout1.setMargin(0)
@@ -93,27 +84,14 @@ class UpdateDatabasesGUI( qt.QWidget ):
     layout1.addItem(spacer2)
   
   def selectedDatabases( self ):
-    if neuroConfig.newDatabases:
-      result = []
-      i=0
-      while i<self.lvDatabases.count():
-        item = self.lvDatabases.item(i)
-        if item.checkState() == qt.Qt.Checked:
-          result.append( neuroHierarchy.databases.database( unicode( item.text( ) ) ) )
-        i+=1
-      return result
-    else:
-      result = []
-      i=0
-      while i<self.lvDatabases.count():
-        item = self.lvDatabases.item(i)
-        if item.checkState() == qt.Qt.Checked:
-          directory = unicode( item.text( ) )
-          for h in hierarchies():
-            if h.fullPath() == directory:
-              result.append( h )
-        i+=1
-      return result
+    result = []
+    i=0
+    while i<self.lvDatabases.count():
+      item = self.lvDatabases.item(i)
+      if item.checkState() == qt.Qt.Checked:
+        result.append( neuroHierarchy.databases.database( unicode( item.text( ) ) ) )
+      i+=1
+    return result
 
 
 _ontologiesModificationDialog = None
@@ -147,24 +125,3 @@ def warnUserAboutDatabasesToUpdate():
       #item = item.nextSibling()
     _ontologiesModificationDialog.show()
     _ontologiesModificationDialog.raise_()
-
-
-#def clearDatabases( self, context ):
-  #neuroHierarchy.databases = mainThreadActions().call( self.selectedDatabases, context )
-  #for database in databases:
-    #context.write( 'Clear database:', database.name )
-    #if neuroConfig.newDatabases:
-      #database.clear(context=context)
-    #else:
-      #databaseFile = os.path.join( database.fullPath(),
-        #FileSystemOntology.get( database.get( 'ontology' ) ).cacheName )
-      #if os.path.exists( databaseFile ):
-        #try:
-          #file = open( databaseFile, 'w' )
-          #file.close()
-        #except Exception, e:
-          #context.warning( _t_( 'Cannot clear file %(file)s. %(error)' ) % \
-                          #{ 'file': databaseFile, 'error': str( e ) } )
-      
-      #del database._childs[:]
-      #database.lastModified = 0

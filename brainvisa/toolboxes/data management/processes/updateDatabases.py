@@ -45,8 +45,7 @@ from neuroProcesses import *
 import backwardCompatibleQt as qt
 #from soma.functiontools import partial
 import neuroConfig
-if neuroConfig.newDatabases:
-  from neuroHierarchy import databases
+from neuroHierarchy import databases
 from brainvisa.data.qtgui.updateDatabases import UpdateDatabasesGUI
 
 name = 'Update databases'
@@ -56,27 +55,11 @@ def execution( self, context ):
   databases = mainThreadActions().call( context.inlineGUI.selectedDatabases )
   for database in databases:
     context.write( '<b>Clear database:', database.name, '</b>' )
-    if neuroConfig.newDatabases:
-      # must close the connection currently opened in the main thread before clearing and updating the database
-      mainThreadActions().call( database.currentThreadCleanup )
-      database.clear( context=context )
-    else:
-      databaseFile = os.path.join( database.fullPath(),
-        FileSystemOntology.get( database.get( 'ontology' ) ).cacheName )
-      if os.path.exists( databaseFile ):
-        try:
-          file = open( databaseFile, 'w' )
-          file.close()
-        except Exception, e:
-          context.warning( _t_( 'Cannot clear file %(file)s. %(error)' ) % \
-                          { 'file': databaseFile, 'error': str( e ) } )
-      del database._childs[:]
-      database.lastModified = 0
+    # must close the connection currently opened in the main thread before clearing and updating the database
+    mainThreadActions().call( database.currentThreadCleanup )
+    database.clear( context=context )
     context.write( '<b>Update database:', database.name, '</b>' )
-    if neuroConfig.newDatabases:
-      database.update( context=context )
-    else:
-      cacheUpdate( [ database ] )
+    database.update( context=context )
     try:
       del database._mustBeUpdated
     except AttributeError:

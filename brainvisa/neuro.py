@@ -74,7 +74,6 @@ from neuroHierarchy import *
 from qtgui.neuroDataGUI import *
 from qtgui.neuroProcessesGUI import *
 import neuroHierarchy
-from neuroHierarchyGUI import *
 from backwardCompatibleQt import *
 from minfExtensions import initializeMinfExtensions
 from brainvisa.data.qtgui.updateDatabases import warnUserAboutDatabasesToUpdate
@@ -146,14 +145,9 @@ def main():
         neuroConfig.validationEnabled = False
         showException( afterError=': validation mode disabled' )
 
-    if neuroConfig.newDatabases:
-      initializeDatabases()
-    else:
-      initializeHierarchy()
+    initializeDatabases()
     initializeProcesses()
     initializeDataGUI()
-    if not neuroConfig.newDatabases:
-      initializeHierarchyGUI()
     initializeProcessesGUI()
     atexit.register( neuroConfig.clearObjects )
 
@@ -176,10 +170,7 @@ def main():
     # hierarchies from unloaded toolboxes may be needed to define the ontology
     # describing a given database organization
     if not neuroConfig.noToolBox:
-      if neuroConfig.newDatabases:
-        openDatabases()
-      else:
-        readHierarchies( neuroConfig.clearCacheRequest )
+      openDatabases()
     
     readProcesses( neuroConfig.processesPath )
     
@@ -324,7 +315,6 @@ if neuroConfig.shell:
 
 
 
-if neuroConfig.newDatabases:
-  neuroHierarchy.databases.currentThreadCleanup()
+neuroHierarchy.databases.currentThreadCleanup()
 
 sys.exit( neuroConfig.exitValue )

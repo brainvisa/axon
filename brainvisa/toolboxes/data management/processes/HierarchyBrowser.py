@@ -31,10 +31,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from neuroProcesses import *
 import neuroConfig
-if neuroConfig.newDatabases:
-  from brainvisa.data.qtgui.hierarchyBrowser import HierarchyBrowser
-else:
-  from neuroHierarchyGUI import HierarchyBrowser
+from brainvisa.data.qtgui.hierarchyBrowser import HierarchyBrowser
 
 name = 'Database browser'
 userLevel = 0

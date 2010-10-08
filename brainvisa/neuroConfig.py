@@ -362,7 +362,7 @@ def chooseDatabaseVersionSyncOption(context):
 def editConfiguration():
   import neuroProcesses, neuroHierarchy
   from brainvisa.data.qtgui.updateDatabases import warnUserAboutDatabasesToUpdate
-  global userLevel, dataPath, newDatabases, HTMLBrowser, textEditor, language, docPath
+  global userLevel, dataPath, HTMLBrowser, textEditor, language, docPath
   configuration = Application().configuration
   appGUI = ApplicationQtGUI()
   if appGUI.edit( configuration, live=False ):
@@ -374,10 +374,13 @@ def editConfiguration():
       newDataPath.append( DatabaseSettings( fso.directory ) )
   if dataPath != newDataPath:
     dataPath = newDataPath
-    if newDatabases:
-      neuroHierarchy.openDatabases()
-    else:
-      neuroHierarchy.readHierarchies()
+    neuroHierarchy.openDatabases()
+    somaWorklowTranslation = open( os.path.join( homeBrainVISADir, 'soma-workflow.translation' ), 'w' )
+    for db in neuroHierarchy.databases.iterDatabases():
+      uuid = getattr( db, 'uuid', None )
+      if uuid:
+        print >> somaWorklowTranslation, uuid, db.name
+    somaWorklowTranslation.close()
     warnUserAboutDatabasesToUpdate()
   if userLevel != configuration.brainvisa.userLevel:
     userLevel = configuration.brainvisa.userLevel
@@ -413,7 +416,6 @@ def stdinLoop():
 userProfile = None
 openMainWindow = 1
 showHelp = 0
-newDatabases = True
 fastStart = False
 databaseServer = False
 global setup
@@ -544,15 +546,12 @@ Notes:
 '''
   sys.exit()
 
-if newDatabases:
-  if clearCacheRequest:
-    print >> sys.stderr, 'WARNING: --clearCache is obsolete\n'
-  if cacheUpdateRequest:
-    print >> sys.stderr, 'WARNING: --updateCache is obsolete\n'
-  if setup:
-    startup.append( 'from neuroHierarchy import databases\nfrom neuroProcesses import defaultContext\ndb = list( databases.iterDatabases() )[0]\ndb.clear(context=defaultContext())\ndb.update(context=defaultContext())' )
-elif cacheUpdateRequest:
-  startup.append( 'cacheUpdate()' )
+if clearCacheRequest:
+  print >> sys.stderr, 'WARNING: --clearCache is obsolete\n'
+if cacheUpdateRequest:
+  print >> sys.stderr, 'WARNING: --updateCache is obsolete\n'
+if setup:
+  startup.append( 'from neuroHierarchy import databases\nfrom neuroProcesses import defaultContext\ndb = list( databases.iterDatabases() )[0]\ndb.clear(context=defaultContext())\ndb.update(context=defaultContext())' )
 
 # get information about possibly existing runs of Brainvisa and add information about current
 class RunsInfo:

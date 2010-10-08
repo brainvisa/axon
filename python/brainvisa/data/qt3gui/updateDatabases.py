@@ -59,18 +59,11 @@ class UpdateDatabasesGUI( qt.QWidget ):
     
     lastItem = None
     selected = False
-    if neuroConfig.newDatabases:
-      for database in neuroHierarchy.databases.iterDatabases():
-        item = qt.QCheckListItem( self.lvDatabases, lastItem, database.name, qt.QCheckListItem.CheckBox )
-        item.setOn( selected )
-        selected = True
-        lastItem = item
-    else:
-      for h in hierarchies():
-        item = qt.QCheckListItem( self.lvDatabases, lastItem, h.fullPath(), qt.QCheckListItem.CheckBox )
-        item.setOn( selected )
-        selected = True
-        lastItem = item
+    for database in neuroHierarchy.databases.iterDatabases():
+      item = qt.QCheckListItem( self.lvDatabases, lastItem, database.name, qt.QCheckListItem.CheckBox )
+      item.setOn( selected )
+      selected = True
+      lastItem = item
 
     layout1 = qt.QHBoxLayout(None,0,6)
     layout.addLayout( layout1 )
@@ -87,25 +80,13 @@ class UpdateDatabasesGUI( qt.QWidget ):
     layout1.addItem(spacer2)
   
   def selectedDatabases( self ):
-    if neuroConfig.newDatabases:
-      result = []
-      item = self.lvDatabases.firstChild()
-      while item is not None:
-        if item.isOn():
-          result.append( neuroHierarchy.databases.database( unicode( item.text( 0 ) ) ) )
-        item = item.nextSibling()
-      return result
-    else:
-      result = []
-      item = self.lvDatabases.firstChild()
-      while item is not None:
-        if item.isOn():
-          directory = unicode( item.text( 0 ) )
-          for h in hierarchies():
-            if h.fullPath() == directory:
-              result.append( h )
-        item = item.nextSibling()
-      return result
+    result = []
+    item = self.lvDatabases.firstChild()
+    while item is not None:
+      if item.isOn():
+        result.append( neuroHierarchy.databases.database( unicode( item.text( 0 ) ) ) )
+      item = item.nextSibling()
+    return result
 
 
 _ontologiesModificationDialog = None
@@ -134,23 +115,3 @@ def warnUserAboutDatabasesToUpdate():
       item = item.nextSibling()
     _ontologiesModificationDialog.show()
     _ontologiesModificationDialog.raiseW()
-
-#def clearDatabases( self, context ):
-  #databases = mainThreadActions().call( self.selectedDatabases, context )
-  #for database in databases:
-    #context.write( 'Clear database:', database.name )
-    #if neuroConfig.newDatabases:
-      #database.clear(context=context)
-    #else:
-      #databaseFile = os.path.join( database.fullPath(),
-        #FileSystemOntology.get( database.get( 'ontology' ) ).cacheName )
-      #if os.path.exists( databaseFile ):
-        #try:
-          #file = open( databaseFile, 'w' )
-          #file.close()
-        #except Exception, e:
-          #context.warning( _t_( 'Cannot clear file %(file)s. %(error)' ) % \
-                          #{ 'file': databaseFile, 'error': str( e ) } )
-      
-      #del database._childs[:]
-      #database.lastModified = 0

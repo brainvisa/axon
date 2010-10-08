@@ -292,40 +292,10 @@ class DatabasesTransformationManager( TransformationManager ):
     self.lock.acquire()
     try:
       self.clear()
-      if neuroConfig.newDatabases:
-        for item in self.__databases.findDiskItems( _type='Referential' ):
-          self.addReferential( item )
-        for item in self.__databases.findDiskItems( _type='Transformation' ):
-          self.addTransformation( item )
-      else:
-        referentialType = getDiskItemType( 'referential' )
-        transformationType = getDiskItemType( 'transformation' )
-        if self.__databases is None:
-          stack = neuroHierarchy.hierarchies()[:]
-        else:
-          stack = self.__databases[:]
-        while stack:
-          item = stack.pop()
-          scanner = getattr( item, 'scanner', None )
-          if scanner is not None and ( scanner.possibleTypes.get( transformationType )\
-            or scanner.possibleTypes.get( referentialType ) ):
-            try:
-              c = item.childs()
-              if c is not None:
-                stack += c
-            except:
-              raise
-          elif item.type is not None:
-            if item.type.isA( transformationType ):
-              try:
-                self.addTransformation( item )
-              except:
-                pass
-            elif item.type.isA( referentialType ):
-              try:
-                self.addReferential( item )
-              except:
-                pass
+      for item in self.__databases.findDiskItems( _type='Referential' ):
+        self.addReferential( item )
+      for item in self.__databases.findDiskItems( _type='Transformation' ):
+        self.addTransformation( item )
     finally:
       self.lock.release()
   
@@ -361,8 +331,7 @@ class DatabasesTransformationManager( TransformationManager ):
     diskItem.readAndUpdateMinf()
     diskItem.setMinf( 'referential', ref.uuid() )
     #diskItem.saveMinf()
-    if neuroConfig.newDatabases:
-      self.__databases.insertDiskItem( diskItem, update=True )
+    self.__databases.insertDiskItem( diskItem, update=True )
 
 
   def createNewReferentialFor( self,
@@ -419,9 +388,8 @@ class DatabasesTransformationManager( TransformationManager ):
         diskItem.setMinf( 'referential', referential.uuid() )
         referential.saveMinf()
         #diskItem.saveMinf()
-        if neuroConfig.newDatabases:
-          self.__databases.insertDiskItem( referential, update=True )
-          self.__databases.insertDiskItem( diskItem, update=True )
+        self.__databases.insertDiskItem( referential, update=True )
+        self.__databases.insertDiskItem( diskItem, update=True )
         self.addReferential( referential )
         # write a transformation between this referential and MNI template if needed
         if diskItem.get( 'normalized' ) == 'yes':
@@ -472,8 +440,7 @@ class DatabasesTransformationManager( TransformationManager ):
     try:
       referential.createParentDirectory()
       referential.saveMinf()
-      if neuroConfig.newDatabases:
-        self.__databases.insertDiskItem( referential, update=True )
+      self.__databases.insertDiskItem( referential, update=True )
       self.addReferential( referential )
     except:
       referential=None
@@ -508,11 +475,10 @@ class DatabasesTransformationManager( TransformationManager ):
           destinationDiskItem.setMinf( 'referentials', refs )
           destinationDiskItem.setMinf( 'transformations', trans )
         #destinationDiskItem.saveMinf()
-        if neuroConfig.newDatabases:
-          try:
-            self.__databases.insertDiskItem( destinationDiskItem, update=True )
-          except:
-            pass
+        try:
+          self.__databases.insertDiskItem( destinationDiskItem, update=True )
+        except:
+          pass
 
   def createNewTransformation( self,
                               format,
@@ -601,8 +567,7 @@ class DatabasesTransformationManager( TransformationManager ):
       if not simulation:
         transformation.createParentDirectory()
         transformation.saveMinf()
-        if neuroConfig.newDatabases:
-          self.__databases.insertDiskItem( transformation, update=True )
+        self.__databases.insertDiskItem( transformation, update=True )
         self.addTransformation( transformation )
     return transformation
 
@@ -627,8 +592,7 @@ class DatabasesTransformationManager( TransformationManager ):
       transformation.setMinf( 'description', name )
     try:
       #transformation.saveMinf()
-      if neuroConfig.newDatabases:
-        self.__databases.insertDiskItem( transformation, update=True )
+      self.__databases.insertDiskItem( transformation, update=True )
       self.addTransformation( transformation )
     except:
       pass
@@ -661,8 +625,7 @@ class DatabasesTransformationManager( TransformationManager ):
           try:
             result.createParentDirectory()
             result.saveMinf()
-            if neuroConfig.newDatabases:
-              self.__databases.insertDiskItem( result, update=True )
+            self.__databases.insertDiskItem( result, update=True )
             self.addReferential( result )
           except OSError:
             result = None
@@ -670,8 +633,7 @@ class DatabasesTransformationManager( TransformationManager ):
           if str(result.uuid()) != oldref and diskItem.isWriteable():
             diskItem.setMinf( 'referential', result.uuid() )
             #diskItem.saveMinf()
-          if neuroConfig.newDatabases:
-            self.__databases.insertDiskItem( diskItem, update=True )
+          self.__databases.insertDiskItem( diskItem, update=True )
  
     return result
 
@@ -684,13 +646,7 @@ _transformationManager = None
 def getTransformationManager():
   global _transformationManager
   if _transformationManager is None:
-    if neuroConfig.newDatabases:
-      _transformationManager = DatabasesTransformationManager( neuroHierarchy.databases )
-    else:
-      _transformationManager = DatabasesTransformationManager()
-  else: # not later update transformation manager each it is got with new database system. It is updated only when databases are updated.
-    if not neuroConfig.newDatabases:
-      _transformationManager.update()
+    _transformationManager = DatabasesTransformationManager( neuroHierarchy.databases )
   return _transformationManager
 
 #------------------------------------------------------------------------------
