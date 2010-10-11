@@ -618,6 +618,8 @@ class DiskItemListEditor( QWidget, DataEditor ):
 
   def __init__( self, parameter, parent, name, write = 0, context=None ):
     if getattr( DiskItemListEditor, 'pixFindRead', None ) is None:
+      setattr( DiskItemListEditor, 'pixShow', QIcon( findIconFile( 'eye.png' )) )
+      setattr( DiskItemListEditor, 'pixEdit', QIcon( findIconFile( 'pencil.png' )) )
       setattr( DiskItemListEditor, 'pixFindRead', QIcon( findIconFile( 'database_read.png' )) )
       setattr( DiskItemListEditor, 'pixFindWrite', QIcon( findIconFile( 'database_write.png' )) )
       setattr( DiskItemListEditor, 'pixBrowseRead', QIcon( findIconFile( 'browse_read.png' )) )
@@ -636,6 +638,34 @@ class DiskItemListEditor( QWidget, DataEditor ):
     hb.addWidget(self.sle)
     self._value = None
     self.connect( self.sle, SIGNAL( 'newValidValue' ), self._newTextValue )
+    
+    self.btnShow = RightClickablePushButton( )
+    hb.addWidget(self.btnShow)
+    self.btnShow.setCheckable(True)
+    self.btnShow.setIcon( self.pixShow )
+    self.btnShow.setIconSize(buttonIconSize)
+    self.btnShow.setFixedSize( buttonIconSize + buttonMargin )
+    self.btnShow.setFocusPolicy( Qt.NoFocus )
+    self.btnShow.setEnabled( False )
+    if not neuroProcesses.getViewer( (self.parameter.type, self.parameter.formats[0] ), 0, checkUpdate=False, listof=True ):
+      self.btnShow.hide()
+    self._view = None
+    self.connect( self.btnShow, SIGNAL( 'clicked()' ), self.showPressed )
+    self.connect( self.btnShow, SIGNAL( 'rightPressed' ), self.openViewerPressed )
+    self._edit = None
+    self.btnEdit = RightClickablePushButton( )
+    hb.addWidget(self.btnEdit)
+    self.btnEdit.setCheckable(True)
+    self.btnEdit.setIcon( self.pixEdit )
+    self.btnEdit.setIconSize(buttonIconSize)
+    self.btnEdit.setFixedSize( buttonIconSize + buttonMargin )
+    self.btnEdit.setFocusPolicy( Qt.NoFocus )
+    self.btnEdit.setEnabled( 0 )
+    if not neuroProcesses.getDataEditor( (self.parameter.type, self.parameter.formats[0] ), checkUpdate=False, listof=True ):
+      self.btnEdit.hide()
+    self.connect( self.btnEdit, SIGNAL( 'clicked()' ), self.editPressed )
+    self.connect( self.btnEdit, SIGNAL( 'rightPressed' ),
+                  self.openEditorPressed )
 
     self.btnFind = RightClickablePushButton( )
     hb.addWidget(self.btnFind)
@@ -696,8 +726,78 @@ class DiskItemListEditor( QWidget, DataEditor ):
         else:
           r.append( str( v ) )
       value = r
+    if value:
+      self.checkReadable()
+    else:
+      if self.btnShow: self.btnShow.setEnabled( 0 )
+      if self.btnEdit: self.btnEdit.setEnabled( 0 )
     self.sle.setValue( value, default )
     self.forceDefault = 0
+    
+  def checkReadable( self ):
+    if self.btnShow:
+      enabled = True
+      for v in self._value:
+        if not (v and isinstance(v, DiskItem) and v.isReadable()) :
+          enabled = False
+      self.btnShow.setEnabled( enabled )
+    if self.btnEdit:
+      enabled = True
+      for v in self._value:
+        if not (v and isinstance(v, DiskItem) and v.isWriteable()) :
+          enabled = False
+      self.btnEdit.setEnabled( enabled )
+
+  def showPressed( self ):
+    if self.btnShow.isChecked():
+      self.btnShow.setEnabled( 0 )
+      v = self.getValue()
+      try :
+        viewer = neuroProcesses.getViewer( v, 0, listof=True )()
+        defaultContext().runInteractiveProcess( self._viewerExited, viewer, v )
+      except Exception, error :
+        raise RuntimeError( HTMLMessage(_t_( 'No viewer could be found or launched for type =<em>%s</em> and format=<em>%s</em>' ) % (unicode( v.type ), unicode(v.format))) )
+    else:
+      self._view = None
+
+
+  def _viewerExited( self, result ):
+    if isinstance( result, Exception ):
+      showException( parent=self )
+    else:
+      self._view = result
+    neuroProcessesGUI.mainThreadActions().push( self.btnShow.setEnabled, 1 )
+
+
+  def openViewerPressed( self ):
+    v = self.getValue()
+    viewer = neuroProcesses.getViewer( v, 0, listof=True )()
+    neuroProcessesGUI.showProcess( viewer, v )
+
+  
+  def editPressed( self ):
+    if self.btnEdit.isChecked():
+      self.btnEdit.setEnabled( 0 )
+      v = self.getValue()
+      editor = neuroProcesses.getDataEditor( v, listof=True )()
+      defaultContext().runInteractiveProcess( self._editorExited, editor, v )
+    else:
+      self._edit = None
+  
+  
+  def _editorExited( self, result ):
+    if isinstance( result, Exception ):
+      showException( parent=self )
+    else:
+      self._edit = result
+    neuroProcessesGUI.mainThreadActions().push( self.btnEdit.setEnabled, True )
+    neuroProcessesGUI.mainThreadActions().push( self.btnEdit.setChecked, False )
+
+  
+  def openEditorPressed( self ):
+    v = self.getValue()
+    editor = neuroProcesses.getDataEditor( v, listof=True )()
+    neuroProcessesGUI.showProcess( editor, v )
   
   def findPressed( self ):
     dul = 0
