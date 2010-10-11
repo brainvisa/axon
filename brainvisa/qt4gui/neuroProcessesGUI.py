@@ -1586,16 +1586,28 @@ class ProcessView( QWidget, ExecutionContextGUI ):
   
   
   def createWorkflow( self ):
-    from brainvisa.workflow import process_to_workflow
+    from brainvisa.workflow import process_to_workflow, ProcessToSomaJobsWorkflow
     class Options( HasSignature ):
       signature = SomaSignature(
         'output', SomaFileName, dict( doc='Name of the output workflow file.' ),
-        'file_transfers', SomaChoice( ( _t_( 'Nothing' ), 0 ), ( _t_( 'Copy files' ), 1 ), ( _t_( 'Translate file names' ), 2 ) ),
+        'input_file_processing', SomaChoice( ( _t_( 'no processing' ), 0 ), ( _t_( 'transfer files' ), 1 ), ( _t_( 'use relative path' ), 2 ) ),
+        'output_file_processing', SomaChoice( ( _t_( 'no processing' ), 0 ), ( _t_( 'transfer files' ), 1 ), ( _t_( 'use relative path' ), 2 ) ),
         'no_white_space', SomaBoolean(),
       )
     options = Options()
     ApplicationQt4GUI().edit( options )
-    process_to_workflow( self.process, options.output, file_transfers = (options.file_transfers == 1), no_white_space = options.no_white_space )
+    input_file_processing = ProcessToSomaJobsWorkflow.NO_FILE_PROCESSING
+    if options.input_file_processing == 1:
+      input_file_processing = ProcessToSomaJobsWorkflow.FILE_TRANSFER
+    if options.input_file_processing == 2:
+      input_file_processing = ProcessToSomaJobsWorkflow.PATH_TRANSLATION
+    output_file_processing = ProcessToSomaJobsWorkflow.NO_FILE_PROCESSING
+    if options.output_file_processing == 1:
+      output_file_processing = ProcessToSomaJobsWorkflow.FILE_TRANSFER
+    if options.output_file_processing == 2:
+      output_file_processing = ProcessToSomaJobsWorkflow.PATH_TRANSLATION
+    
+    process_to_workflow( self.process, options.output, input_file_processing = input_file_processing, output_file_processing = output_file_processing, no_white_space = options.no_white_space )
     
   
   def _distributeButton( self ):
