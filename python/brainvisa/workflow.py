@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from soma.jobs.constants import *
-from soma.jobs.jobClient import JobTemplate, FileSending, FileRetrieving, FileTranslation, FileRetrieving, Group, Workflow
+from soma.jobs.jobClient import JobTemplate, FileTransfer, FileSending, FileRetrieving, FileTranslation, FileRetrieving, Group, Workflow
 import os
 from neuroProcesses import ProcessExecutionNode, SerialExecutionNode, ParallelExecutionNode, WriteDiskItem, ReadDiskItem
 import pickle
@@ -39,7 +39,7 @@ class ProcessToWorkflow( object ):
         if pENode is None:
           # Create job
           jobId = self._createIdentifier( self.JOB )
-          print 'Create job:', jobId, '(', inGroup, ')', eNode._process.name
+          #print 'Create job:', jobId, '(', inGroup, ')', eNode._process.name
           self._jobs[ jobId ] = eNode._process
           self._groups[ inGroup ][ 1 ].append( jobId )
           self._inGroup[ jobId ] = inGroup
@@ -54,7 +54,7 @@ class ProcessToWorkflow( object ):
           label = process.name
         # Create parallel group
         groupId = self._createIdentifier( self.PARALLEL_GROUP )
-        print 'Create group (parallel):', groupId, '(', inGroup, ')', label
+        #print 'Create group (parallel):', groupId, '(', inGroup, ')', label
         self._groups[ groupId ] = ( label, [] )
         self._groups[ inGroup ][ 1 ].append( groupId )
         self._inGroup[ groupId ] = inGroup
@@ -68,7 +68,7 @@ class ProcessToWorkflow( object ):
           label = process.name
         # Create serial group
         groupId = self._createIdentifier( self.SERIAL_GROUP )
-        print 'Create group (serial):', groupId, '(', inGroup, ')', label
+        #print 'Create group (serial):', groupId, '(', inGroup, ')', label
         self._groups[ groupId ] = ( label, [] )
         self._groups[ inGroup ][ 1 ].append( groupId )
         self._inGroup[ groupId ] = inGroup
@@ -81,16 +81,16 @@ class ProcessToWorkflow( object ):
 
   def doIt( self ):
     self._processExecutionNode( self.process._executionNode, None )
-    import pprint
-    pprint.pprint( self._groups )
+    #import pprint
+    #pprint.pprint( self._groups )
     self._processNodes( 0, self._groups[ None ][ 1 ], None, set(), set(), False, None )
     for fid, input_output in self._iofiles.iteritems():
       input, output = input_output
-      if len( output ) > 1:
-        print '!!!', 'File "%s" is created by several processes: %s' % ( self._files[fid][0], ', '.join( self._jobs[ i ].name for i in output ) )
+      #if len( output ) > 1:
+        #print '!!!', 'File "%s" is created by several processes: %s' % ( self._files[fid][0], ', '.join( self._jobs[ i ].name for i in output ) )
       #fileId = self._createIdentifier( self.FILE )
-      print "------------"
-      print repr(fid) + " " + repr(input) + " " + repr(output)
+      #print "------------"
+      #print repr(fid) + " " + repr(input) + " " + repr(output)
       
       if output:
         self.create_output_file( fid, self._files[fid][0], self._files[fid][1], self._files[fid][2], self._files[fid][3] )
@@ -108,20 +108,19 @@ class ProcessToWorkflow( object ):
     for id in nodes:
       if id[ 0 ] == self.JOB:
         process = self._jobs[ id ]
-        
         for name, type in process.signature.iteritems():
           if isinstance( type, WriteDiskItem ):
             fileName = getattr( process, name, None )
             if fileName is not None:
-             
               if not fileName.fullPath() in self._fileNames.keys():
                 fileId = self._createIdentifier( self.FILE )
                 database = fileName.get( '_database' )
                 databaseUuid = None
                 if database:
                   databaseUuid = neuroHierarchy.databases.database(database).uuid
-                print "database => " + repr(database)
-                print "databaseUuid => " + repr(databaseUuid)
+                #print "file => " + repr(fileName.fullPath())
+                #print "database => " + repr(database)
+                #print "databaseUuid => " + repr(databaseUuid)
                 self._files[fileId]=(fileName.fullPath(), fileName.fullPaths(), databaseUuid, database)
                 self._fileNames[fileName.fullPath()]= fileId
               else:
@@ -428,12 +427,10 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
         global_in_file=FileSending(remote_path = fileName, name = os.path.basename( fileName ), remote_paths = fullPaths)#fileId)# 
         self.__file_transfers[fileId]=global_in_file
       elif self.__input_file_processing == self.PATH_TRANSLATION:
-        print "databaseUuid = " + repr(databaseUuid)
-        print "database_dir = " + repr(database_dir)
         if databaseUuid and database_dir:
-          global_in_file= FileTranslation(relative_path = fileName[len(database_dir):], namespace = "brainvisa", uuid = databaseUuid)  
+          global_in_file= FileTranslation(relative_path = fileName[(len(database_dir)+1):], namespace = "brainvisa", uuid = databaseUuid)  
       
-      if global_out_file:
+      if global_in_file:
         jobs_to_inspect=[]
         for job_id in self._iofiles[fileId][0]:
           if self.__input_file_processing == self.FILE_TRANSFER:
@@ -449,7 +446,10 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
           #print "command : " + repr(job.command) 
           #print "file name : " + fileName
           while fileName in job.command:
-            job.command[job.command.index(fileName)] = (global_in_file, os.path.basename( fileName ).encode('utf-8'))
+            if isinstance(global_in_file, FileTransfer):
+              job.command[job.command.index(fileName)] = (global_in_file, os.path.basename( fileName ).encode('utf-8'))
+            else:
+              job.command[job.command.index(fileName)] = global_in_file
           if job.stdin == fileName:
             job.stdin = global_in_file
           if job.stdout_file == fileName:
@@ -467,10 +467,8 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
         global_out_file = FileRetrieving(remote_path = fileName,  name = os.path.basename( fileName ), remote_paths = fullPaths)#fileId)#
         self.__file_transfers[fileId]=global_out_file
       elif self.__output_file_processing == self.PATH_TRANSLATION:
-        print "databaseUuid = " + repr(databaseUuid)
-        print "database_dir = " + repr(database_dir)
         if databaseUuid and database_dir:
-          global_out_file= FileTranslation(relative_path = fileName[len(database_dir):], namespace = "brainvisa", uuid = databaseUuid)  
+          global_out_file= FileTranslation(relative_path = fileName[(len(database_dir)+1):], namespace = "brainvisa", uuid = databaseUuid)  
         
       if global_out_file:
         jobs_to_inspect=[]
@@ -488,7 +486,10 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
           #print "command : " + repr(job.command) 
           #print "file name : " + fileName
           while fileName in job.command:
-            job.command[job.command.index(fileName)] = (global_out_file, os.path.basename( fileName ).encode('utf-8'))
+            if isinstance(global_out_file, FileTransfer):
+              job.command[job.command.index(fileName)] = (global_out_file, os.path.basename( fileName ).encode('utf-8'))
+            else:
+              job.command[job.command.index(fileName)] = global_out_file
           if job.stdin == fileName:
             job.stdin = global_out_file
           if job.stdout_file == fileName:
