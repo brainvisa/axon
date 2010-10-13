@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="en">
+    <xhtml name="short">This process converts a volume from Dicom format to Nifti or Compressed Nifti format. It uses dcm2nii Mricron tool, so it is available only if this tool is installed. 
+The input parameter can be either a Dicom file (extension .dcm) or a directory that contains the Dicom files (no specific extension in this case).</xhtml>
+    <d name="parameters">
+      <xhtml name="write">The output Nifti file.</xhtml>
+      <xhtml name="input_directory">You can use this parameter instead of input_file if you want to convert several Dicom files that are in a directory. </xhtml>
+      <xhtml name="removeSource">Remove the Dicom source files.</xhtml>
+      <xhtml name="input_file">The Dicom input file to be converted.</xhtml>
+    </d>
+    <xhtml name="long"/>
+  </d>
+</d>
+</minf>
