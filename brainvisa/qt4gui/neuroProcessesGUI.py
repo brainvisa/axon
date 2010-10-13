@@ -1590,8 +1590,8 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     class Options( HasSignature ):
       signature = SomaSignature(
         'output', SomaFileName, dict( doc='Name of the output workflow file.' ),
-        'input_file_processing', SomaChoice( ( _t_( 'no processing' ), 0 ), ( _t_( 'transfer files' ), 1 ), ( _t_( 'use relative path' ), 2 ) ),
-        'output_file_processing', SomaChoice( ( _t_( 'no processing' ), 0 ), ( _t_( 'transfer files' ), 1 ), ( _t_( 'use relative path' ), 2 ) ),
+        'input_file_processing', SomaChoice( ( _t_( 'use local paths' ), 0 ), ( _t_( 'transfer files' ), 1 ), ( _t_( 'use universal resource paths' ), 2 ) ),
+        'output_file_processing', SomaChoice( ( _t_( 'use local paths' ), 0 ), ( _t_( 'transfer files' ), 1 ), ( _t_( 'use universal resource paths' ), 2 ) ),
         'no_white_space', SomaBoolean(),
       )
     options = Options()
@@ -1600,12 +1600,12 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     if options.input_file_processing == 1:
       input_file_processing = ProcessToSomaJobsWorkflow.FILE_TRANSFER
     if options.input_file_processing == 2:
-      input_file_processing = ProcessToSomaJobsWorkflow.PATH_TRANSLATION
+      input_file_processing = ProcessToSomaJobsWorkflow.UNIVERSAL_RESOURCE_PATH
     output_file_processing = ProcessToSomaJobsWorkflow.NO_FILE_PROCESSING
     if options.output_file_processing == 1:
       output_file_processing = ProcessToSomaJobsWorkflow.FILE_TRANSFER
     if options.output_file_processing == 2:
-      output_file_processing = ProcessToSomaJobsWorkflow.PATH_TRANSLATION
+      output_file_processing = ProcessToSomaJobsWorkflow.UNIVERSAL_RESOURCE_PATH
     
     process_to_workflow( self.process, options.output, input_file_processing = input_file_processing, output_file_processing = output_file_processing, no_white_space = options.no_white_space )
     

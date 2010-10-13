@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from soma.jobs.constants import *
-from soma.jobs.jobClient import JobTemplate, FileTransfer, FileSending, FileRetrieving, FileTranslation, FileRetrieving, Group, Workflow
+from soma.jobs.jobClient import JobTemplate, FileTransfer, FileSending, FileRetrieving, UniversalResourcePath, FileRetrieving, Group, Workflow
 import os
 from neuroProcesses import ProcessExecutionNode, SerialExecutionNode, ParallelExecutionNode, WriteDiskItem, ReadDiskItem
 import pickle
@@ -310,7 +310,7 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
   
   NO_FILE_PROCESSING = "no_file_processing"
   FILE_TRANSFER = "file_transfer"
-  PATH_TRANSLATION = "path_translation"
+  UNIVERSAL_RESOURCE_PATH = "universal_resource_path"
   
   def __init__( self, process, output, input_file_processing =  "no_file_processing", output_file_processing =  "no_file_processing", no_white_space = False ):
     super( ProcessToSomaJobsWorkflow, self ).__init__( process )
@@ -426,9 +426,9 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
       if self.__input_file_processing == self.FILE_TRANSFER:
         global_in_file=FileSending(remote_path = fileName, name = os.path.basename( fileName ), remote_paths = fullPaths)#fileId)# 
         self.__file_transfers[fileId]=global_in_file
-      elif self.__input_file_processing == self.PATH_TRANSLATION:
+      elif self.__input_file_processing == self.UNIVERSAL_RESOURCE_PATH:
         if databaseUuid and database_dir:
-          global_in_file= FileTranslation(relative_path = fileName[(len(database_dir)+1):], namespace = "brainvisa", uuid = databaseUuid)  
+          global_in_file= UniversalResourcePath(relative_path = fileName[(len(database_dir)+1):], namespace = "brainvisa", uuid = databaseUuid)  
       
       if global_in_file:
         jobs_to_inspect=[]
@@ -466,9 +466,9 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
       if self.__output_file_processing == self.FILE_TRANSFER:
         global_out_file = FileRetrieving(remote_path = fileName,  name = os.path.basename( fileName ), remote_paths = fullPaths)#fileId)#
         self.__file_transfers[fileId]=global_out_file
-      elif self.__output_file_processing == self.PATH_TRANSLATION:
+      elif self.__output_file_processing == self.UNIVERSAL_RESOURCE_PATH:
         if databaseUuid and database_dir:
-          global_out_file= FileTranslation(relative_path = fileName[(len(database_dir)+1):], namespace = "brainvisa", uuid = databaseUuid)  
+          global_out_file= UniversalResourcePath(relative_path = fileName[(len(database_dir)+1):], namespace = "brainvisa", uuid = databaseUuid)  
         
       if global_out_file:
         jobs_to_inspect=[]
