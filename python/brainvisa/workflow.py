@@ -151,9 +151,10 @@ class ProcessToWorkflow( object ):
         else:
           begin.add( id )
           end.add( id )
-          for source in previous:
-            if source != id:
-              self.create_link(  source, id )
+          if previous:
+            for source in previous:
+              if source != id:
+                self.create_link(  source, id )
               
         
         
