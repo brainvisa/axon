@@ -815,7 +815,9 @@ class SQLDatabase( Database ):
     return defaultValue
 
   def createDiskItemFromFormatExtension( self, fileName, defaultValue=Undefined ):
+    #print '!createDiskItemFromFormatExtension!', self.name, fileName
     format, ext, noExt = self.formats._findMatchingFormat( fileName )
+    #print '!createDiskItemFromFormatExtension!', format, ext, noExt
     if format is not None:
       extensions = format.extensions()
       if len( extensions ) == 1:
@@ -1483,13 +1485,20 @@ class SQLDatabases( Database ):
       regexp=re.compile("(.+?)(\d+)\.(.+)")
       match=regexp.match(filename)
       if match:
-        diskItem.format=formatSeries
         name=match.group(1)
-        num=match.group(2)
         ext=match.group(3)
+        diskItem.format=formatSeries
         name_serie=[]
         diskItem._setLocal("name_serie", name_serie)
-        diskItem._files=[f.replace(num, "#") for f in diskItem._files]
+        files=diskItem._files
+        diskItem._files=[]
+        for f in files:
+          match=regexp.match(f)
+          if match:
+            namef=match.group(1)
+            numf=match.group(2)
+            extf=match.group(3)
+            diskItem._files.append(os.path.join(os.path.dirname(f), namef+"#."+extf))
         # search the other numbers of the serie
         regexp=re.compile("^"+name+"(\d+)\."+ext+"$")
         for file in sorted(os.listdir(parentDir)):
