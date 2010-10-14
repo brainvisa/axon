@@ -48,10 +48,11 @@ def validation():
     raise ValidationError( 'MRICRON dcm2nii program not found' )
 
 signature = Signature(
-  'read', ReadDiskItem( '4D Volume', 'DICOM image',
+  'input_file', ReadDiskItem( '4D Volume', 'DICOM image',
                         enableConversion = 0 ),
   'write', WriteDiskItem( '4D Volume',
                           [ 'NIFTI-1 image', 'gz compressed NIFTI-1 image' ] ),
+  'input_directory', ReadDiskItem( 'Directory', 'Directory' ),
   'removeSource', Boolean(),
 )
 
@@ -59,46 +60,47 @@ signature = Signature(
 def initialization( self ):
   #self.linkParameters( 'write', 'read' )
   self.removeSource = 0
-
+  self.setOptional( 'input_file' )
+  self.setOptional( 'input_directory' )
 
 def execution( self, context ):
-  mricron = distutils.spawn.find_executable( 'dcm2nii' )
-  outdir = os.path.dirname( self.write.fullPath() )
-  #context.write( 'dcm2nii:', mricron )
-  fname = os.path.basename( self.read.fullName() )
-  while fname[-1] in ( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ):
-    fname = fname[:-1]
-  ofname = os.path.basename( self.write.fullName() )
-  while ofname[-1] in ( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ):
-    ofname = ofname[:-1]
-  ext = '.nii'
-  print self.write.format, type( self.write.format )
-  if str( self.write.format ).startswith( 'gz compressed' ):
-    ext += '.gz'
-    gopt = 'y'
+  self.read=None
+  if self.input_file:
+    self.read=self.input_file
+  elif self.input_directory:
+    self.read=self.input_directory
   else:
-    gopt = 'n'
-  efiles = glob.glob( os.path.join( outdir, fname + '*' + ext ) )
-  context.system( mricron, '-n', 'y', '-f', 'y', '-g', gopt, '-d', 'n', '-e',
-                  'n', '-p', 'n', '-i', 'n', '-o', outdir, self.read )
-  ofiles = glob.glob( os.path.join( outdir, fname + '*' + ext ) )
-  ofiles = [ f for f in ofiles if f not in efiles ]
-  for f in ofiles:
-    bname = os.path.basename( f )
-    bname = bname[ len(fname) : ]
-    e = bname.find( '.' )
-    if e >= 0:
-      bname = ofname + bname[ e: ]
+    context.error("You must give a valid value for input_file or input_directory.")
+  if self.read:
+    mricron = distutils.spawn.find_executable( 'dcm2nii' )
+    # creating a temporary directory to write the output nifti file, as we cannot choose the name of the output file with dcm2nii command
+    outdir = context.temporary('Directory')
+    ext = '.nii'
+    if str( self.write.format ).startswith( 'gz compressed' ):
+      ext += '.gz'
+      gopt = 'y'
     else:
-      bname = ofname + ext
-    oname = os.path.join( os.path.dirname( f ), bname )
-    if f != oname:
-      shelltools.mv( f, oname )
-      #shelltools.rm( f )
-
-  registration.getTransformationManager().copyReferential( self.read,
-    self.write )
-
-  if self.removeSource:
-    for f in self.read.fullPaths():
-      shelltools.rm( f )
+      gopt = 'n'
+    
+    context.system( mricron, '-n', 'y', '-f', 'y', '-g', gopt, '-d', 'n', '-e',
+                    'n', '-p', 'n', '-i', 'n', '-o', outdir, self.read )
+    
+    outputFile=None
+    outputFiles=glob.glob( os.path.join( outdir.fullPath(), '*' + ext ) )
+    if len(outputFiles) == 1:
+      outputFile = outputFiles[0]
+      
+    if outputFile and os.path.exists(outputFile):
+      if (self.write.fullPath() != outputFile):
+        shelltools.mv( outputFile, self.write.fullPath() )
+        context.write("Output file ", outputFile, " moved to ", self.write.fullPath())
+    else:
+      context.error("Problem during the conversion, no output file generated.")
+  
+  
+    registration.getTransformationManager().copyReferential( self.read,
+      self.write )
+  
+    if self.removeSource:
+      for f in self.read.fullPaths():
+        shelltools.rm( f )

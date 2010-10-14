@@ -34,20 +34,20 @@ from neuroProcesses import *
 import shfjGlobals
 from brainvisa import anatomist
 
-name = 'Anatomist Show List of Mesh'
+name = 'Anatomist Show List of Volumes'
+roles = ('viewer',)
 userLevel = 0
-roles=("viewer", )
-
-signature = Signature(
-    'mesh',      ListOf(ReadDiskItem('Mesh','Anatomist mesh formats' )),
-  )
 
 def validation():
     anatomist.validation()
-  
+
+signature = Signature(
+  'volumes', ListOf(ReadDiskItem( '4D Volume', shfjGlobals.anatomistVolumeFormats )),
+)
+
 def execution( self, context ):
-  a = anatomist.Anatomist()
-  views=[]
-  for m in self.mesh:
-    views.append( a.viewMesh( m ) )
-  return views
+    a = anatomist.Anatomist()
+    views=[]
+    for v in self.volumes:
+      views.append(a.viewObject( v ))
+    return views

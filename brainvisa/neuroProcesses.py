@@ -2866,25 +2866,35 @@ def getConvertersFrom( source, checkUpdate=True ):
 
 
 #----------------------------------------------------------------------------
-def getViewer( source, enableConversion = 1, checkUpdate=True ):
+def getViewer( source, enableConversion = 1, checkUpdate=True, listof=False ):
   global _viewers
+  global _listViewers
+  if listof:
+    viewers = _listViewers
+  else:
+    viewers = _viewers
+  
   if isinstance( source, DiskItem ):
     t0 = source.type
     f = source.format
+  elif isinstance( source, list):
+    if source != [] and isinstance(source[0], DiskItem):
+      t0 = source[0].type
+      f=source[0].format
   else:
     t0, f = source
   t = t0
-  v = _viewers.get( ( t, f ) )
+  v = viewers.get( ( t, f ) )
   while not v and t:
     t = t.parent
-    v = _viewers.get( ( t, f ) )
+    v = viewers.get( ( t, f ) )
   if not v and enableConversion:
     converters = getConvertersFrom( (t0, f), checkUpdate=checkUpdate )
     t = t0
     while not v and t:
       for tc, fc in converters.keys():
         if ( tc, fc ) != ( t0, f ):
-          v = _viewers.get( ( t, fc ) )
+          v = viewers.get( ( t, fc ) )
           if v: break
       t = t.parent
   p =  getProcess( v, checkUpdate=checkUpdate )
@@ -2904,25 +2914,35 @@ def runViewer( source, context=None ):
 
 
 #----------------------------------------------------------------------------
-def getDataEditor( source, enableConversion = 0, checkUpdate=True ):
+def getDataEditor( source, enableConversion = 0, checkUpdate=True, listof=False ):
   global _dataEditors
+  global _listDataEditors
+  if listof:
+    dataEditors = _listDataEditors
+  else:
+    dataEditors = _dataEditors
+  
   if isinstance( source, DiskItem ):
     t0 = source.type
     f = source.format
+  elif isinstance( source, list):
+    if source != [] and isinstance(source[0], DiskItem):
+      t0 = source[0].type
+      f=source[0].format
   else:
     t0, f = source
   t = t0
-  v = _dataEditors.get( ( t, f ) )
+  v = dataEditors.get( ( t, f ) )
   while not v and t:
     t = t.parent
-    v = _dataEditors.get( ( t, f ) )
+    v = dataEditors.get( ( t, f ) )
   if not v and enableConversion:
     converters = getConvertersFrom( (t0, f), checkUpdate=checkUpdate )
     t = t0
     while not v and t:
       for tc, fc in converters.keys():
         if ( tc, fc ) != ( t0, f ):
-          v = _dataEditors.get( ( t, fc ) )
+          v = dataEditors.get( ( t, fc ) )
           if v: break
       t = t.parent
   p =  getProcess( v, checkUpdate=checkUpdate )
@@ -3111,8 +3131,14 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
     if 'viewer' in roles:
 #    elif NewProcess.category.lower() == 'viewers/automatic':
       global _viewers
+      global _listViewers
       arg = NewProcess.signature.values()[ 0 ]
-      if hasattr( arg, 'formats' ):
+      if isinstance(arg, ListOf):
+        arg=arg.contentType
+        if hasattr( arg, 'formats' ):
+          for format in arg.formats:
+            _listViewers[ ( arg.type, format ) ] = NewProcess._id
+      elif hasattr( arg, 'formats' ):
         for format in arg.formats:
           _viewers[ ( arg.type, format ) ] = NewProcess._id
     elif NewProcess.category.lower() == 'viewers/automatic':
@@ -3120,8 +3146,14 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
     if 'editor' in roles:
 #    elif NewProcess.category.lower() == 'editors/automatic':
       global _dataEditors
+      global _listDataEditors
       arg = NewProcess.signature.values()[ 0 ]
-      if hasattr( arg, 'formats' ):
+      if isinstance(arg, ListOf):
+        arg=arg.contentType
+        if hasattr( arg, 'formats' ):
+          for format in arg.formats:
+            _listDataEditors[ ( arg.type, format ) ] = NewProcess._id
+      elif hasattr( arg, 'formats' ):
         for format in arg.formats:
           _dataEditors[ ( arg.type, format ) ] = NewProcess._id
     elif NewProcess.category.lower() == 'editors/automatic':
@@ -3612,7 +3644,7 @@ def defaultContext():
 def initializeProcesses():
   #TODO: A class would be more clean instead of all these global variables
   global _processModules, _processes, _processesInfo, _processesInfoByName, \
-         _converters, _viewers, _mainThread, _defaultContext, _dataEditors, _importers,\
+         _converters, _viewers, _listViewers, _mainThread, _defaultContext, _dataEditors, _listDataEditors, _importers,\
          _askUpdateProcess, _readProcessLog
   _mainThread = threading.currentThread()
   _processesInfo = {}
@@ -3622,7 +3654,9 @@ def initializeProcesses():
   _askUpdateProcess = {}
   _converters = {}
   _viewers = {}
+  _listViewers = {}
   _dataEditors = {}
+  _listDataEditors = {}
   _importers = {}
   _defaultContext = ExecutionContext()
   if neuroConfig.mainLog is not None:
@@ -3638,11 +3672,13 @@ def initializeProcesses():
 #----------------------------------------------------------------------------
 def cleanupProcesses():
   global _processModules, _processes, _processesInfo, _processesInfoByName, \
-         _converters, _viewers, _mainThread, _defaultContext, _dataEditors, _importers, \
+         _converters, _viewers, _listViewers, _mainThread, _defaultContext, _dataEditors, _listDataEditors, _importers, \
          _askUpdateProcess, _readProcessLog
   _converters = {}
   _viewers = {}
+  _listViewers = {}
   _dataEditors = {}
+  _listDataEditors = {}
   _importers = {}
   _processesInfo = {}
   _processesInfoByName = {}

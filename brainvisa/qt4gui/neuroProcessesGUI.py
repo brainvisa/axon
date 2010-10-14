@@ -542,7 +542,7 @@ class RadioItem(QWidget):
     self.label=QLabel(text)
     layout.addWidget(self.label)
     layout.addStretch(1)
-    #self.setAutoFillBackground(True)
+    self.setAutoFillBackground(True)
 #    self.show()
   
   def setChecked(self, checked):
@@ -632,6 +632,20 @@ class NodeCheckListItem( QTreeWidgetItem ):
         self.setCheckState( 0, Qt.Unchecked )
       self.stateChange(b)
       
+  def currentItemChanged(self, current):
+    """ This function is called when the item gains or lose the status of current item of the tree widget. 
+    In case the item is a radio button, its background and foreground colors are changed to follow the tree item widget policy. 
+    @param current: indicates if the item is the current item or not.
+    @type current: boolean
+    """
+    if self.itemType == "radio":
+      if current:
+        self.widget.setBackgroundRole(QPalette.Highlight)
+        self.widget.setForegroundRole(QPalette.HighlightedText)
+      else:
+        self.widget.setBackgroundRole(QPalette.Base)
+        self.widget.setForegroundRole(QPalette.Text)
+     
 #------------------------------------------------------------------------------
 class ParameterLabel( QLabel ):
   '''A QLabel that emits PYSIGNAL( 'contextMenuEvent' ) whenever a
@@ -1530,6 +1544,10 @@ class ProcessView( QWidget, ExecutionContextGUI ):
           self._emptyWidget = QWidget( self._widgetStack )
           item._guiId=self._widgetStack.addWidget( self._emptyWidget )
         self._widgetStack.setCurrentIndex( item._guiId )
+      item.currentItemChanged(True)
+    if previous is not None:
+      previous.currentItemChanged(False)
+        
         
       # Trick to have correct slider
 #      size = self.size()
