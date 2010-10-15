@@ -5,6 +5,7 @@ import os
 from neuroProcesses import ProcessExecutionNode, SerialExecutionNode, ParallelExecutionNode, WriteDiskItem, ReadDiskItem
 import pickle
 import neuroHierarchy
+from neuroDiskItems import DiskItem
 
 class ProcessToWorkflow( object ):
   JOB = 'j'
@@ -112,7 +113,7 @@ class ProcessToWorkflow( object ):
           if isinstance( type, WriteDiskItem ):
             fileName = getattr( process, name, None )
             if fileName is not None:
-              if not fileName.fullPath() in self._fileNames.keys():
+              if not fileName.fullPath() in self._fileNames:
                 fileId = self._createIdentifier( self.FILE )
                 database = fileName.get( '_database' )
                 databaseUuid = None
@@ -129,8 +130,13 @@ class ProcessToWorkflow( object ):
               
           elif isinstance( type, ReadDiskItem ):
             fileName = getattr( process, name, None )
+            if name in getattr( process, 'workflow_transmit_by_attributes', () ):
+              hierarchyAttributes = fileName.hierarchyAttributes()
+              hierarchyAttributes.pop( '_database', None )
+              if hierarchyAttributes:
+                continue
             if fileName is not None:
-              if fileName.fullPath() not in self._fileNames.keys():
+              if fileName.fullPath() not in self._fileNames:
                 fileId = self._createIdentifier( self.FILE )
                 database = fileName.get( '_database' )
                 databaseUuid = None
@@ -204,7 +210,16 @@ class ProcessToWorkflow( object ):
   def _create_job( self, depth, jobId, process, inGroup ):
     command = [ 'brainvisa', '-r', process.id() ]
     for name in process.signature.keys():
-      value = str( getattr( process, name ) )
+      value = getattr( process, name )
+      if isinstance( value, DiskItem ):
+        hierarchyAttributes = value.hierarchyAttributes()
+        hierarchyAttributes.pop( '_database', None )
+        if hierarchyAttributes and name in getattr( process, 'workflow_transmit_by_attributes', () ):
+          value = repr( hierarchyAttributes )
+        else:
+          value = str( value )
+      else:
+        value = str( value )
       command.append( value )
     self.create_job( depth, jobId, command, inGroup, label=process.name )
  
@@ -347,7 +362,7 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
     dependencies = self.__dependencies
     mainGroup = self.__groups[self.__mainGroupId]
     groups = []
-    for gid in self.__groups.keys():
+    for gid in self.__groups:
       if not gid == self.__mainGroupId:
         groups.append(self.__groups[gid])
       

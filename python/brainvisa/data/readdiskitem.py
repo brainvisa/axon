@@ -208,6 +208,9 @@ class ReadDiskItem( Parameter ):
           fullSelection[ '_format' ] = selection.format.name
           
     elif isinstance( selection, basestring ):
+      if selection.startswith( '{' ):
+        # String value is a dictionary
+        return self.findValue( eval( selection ), requiredAttributes=requiredAttributes, _debug=_debug )
       fullselection = None
       fileName = os.path.normpath( os.path.abspath( selection ) )
       result = self.database.getDiskItemFromFileName( fileName, None )

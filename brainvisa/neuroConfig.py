@@ -682,16 +682,16 @@ for toolbox in allToolboxes():
 
 # add brainvisa shared database to the list of available databases
 sharedDatabaseFound=False
-if not fastStart:
-  for p in ( os.path.join( getSharePath(), 'brainvisa-share-' + shortVersion ),
-            os.path.join( getSharePath(), 'shfj-' + shortVersion ),
-            os.path.join( getSharePath(), 'shfj' ) ):
-    if os.path.isdir( p ):
-      dataPath.insert( 0, DatabaseSettings( p ) )
-      dataPath[0].builtin = True # mark as a builtin, non-removable database
-      sharedDatabaseFound=True
-      break
+for p in ( os.path.join( getSharePath(), 'brainvisa-share-' + shortVersion ),
+          os.path.join( getSharePath(), 'shfj-' + shortVersion ),
+          os.path.join( getSharePath(), 'shfj' ) ):
+  if os.path.isdir( p ):
+    dataPath.insert( 0, DatabaseSettings( p ) )
+    dataPath[0].builtin = True # mark as a builtin, non-removable database
+    sharedDatabaseFound=True
+    break
     
+if not fastStart:
   for attr, value in readConfiguration( mainPath, userProfile, homeBrainVISADir ):
     if isinstance( value, list ):
       globals()[ attr ] += value
