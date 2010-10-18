@@ -652,7 +652,7 @@ class SQLDatabase( Database ):
         else :
           format = None
         
-        del diskItem._globalAttributes["_database"]
+        diskItem._globalAttributes.pop("_database", None)
         state =  {
           'isDirectory': isinstance( diskItem, Directory ),
           'type': diskItem.type.name,
