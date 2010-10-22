@@ -51,13 +51,17 @@ def selectionType():
 
 
 def changeSelectionMode( mode = 1 ):
-    global labelselector
-    if not labelselector:
-        mode = 0
-    global selectionmode
-    selectionmode = mode
-    signature[ 'region' ] = selectionType()
-
+    if mode < 2:
+      global labelselector
+      if not labelselector:
+          mode = 0
+      global selectionmode
+      selectionmode = mode
+      signature[ 'region' ] = selectionType()
+    else:
+      global selectionmode
+      selectionmode = mode
+      signature[ 'region' ] = ReadDiskItem( 'Labels selection', 'selection' )
 
 
 sign = (
@@ -119,7 +123,7 @@ def initialization( self ):
     self.output_filename_prefix = 'morpho_'
     if selectionmode == 0:
         self.region = 'S.C.'
-    else:
+    elif selectionmode == 1:
         self.linkParameters( 'region', ( 'model', 'nomenclature' ), \
                              change_region )
     self.linkParameters( 'model', 'data_graphs', linkModel )
@@ -153,9 +157,12 @@ def execution( self, context ):
             region = re.sub( '(\.|\(|\)|\[|\])', '\\\\\\1', self.region )
             region = re.sub( '\*', '.*', region )
         stream.write( 'filter_pattern  ' + region + "\n" )
-    else:
+    elif selectionmode == 1:
         self.region.writeSelection( context )
         sfile = self.region.file
+        stream.write( 'selection ' + sfile.fullPath() + '\n' )
+    else:
+        sfile = self.region
         stream.write( 'selection ' + sfile.fullPath() + '\n' )
     op = self.output_filename_prefix
     if op is None:
@@ -184,9 +191,10 @@ def execution( self, context ):
     stream.write( 'subjects ' + string.join( subjects ) + "\n" )
     stream.write( '*END\n' )
     stream.close()
-    f = open( tmp.fullPath() )
-    context.log( 'siMorpho input file', html=f.read() )
-    f.close()
+    f = open( tmp.fullPath() ).read()
+    context.log( 'siMorpho input file', html=f )
+    if selectionmode == 2:
+      context.write( 'siMorpho input file:\n<pre>' + f + '</pre>' )
     context.system( progname, tmp.fullPath() )
     #c = Command( progname + " " + tmp.fullPath() )
     #c.start()
