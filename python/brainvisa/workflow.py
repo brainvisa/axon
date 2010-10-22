@@ -438,14 +438,16 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
     
     if not self.__input_file_processing == self.NO_FILE_PROCESSING:
       #print 'create_input_file' + repr( ( fileId, os.path.basename( fileName ), fullPaths, databaseUuid, database_dir ) )
-      global_out_file = None
       if self.__input_file_processing == self.FILE_TRANSFER:
         global_in_file=FileSending(remote_path = fileName, name = os.path.basename( fileName ), remote_paths = fullPaths)#fileId)# 
         self.__file_transfers[fileId]=global_in_file
       elif self.__input_file_processing == self.UNIVERSAL_RESOURCE_PATH:
         if databaseUuid and database_dir:
           global_in_file= UniversalResourcePath(relative_path = fileName[(len(database_dir)+1):], namespace = "brainvisa", uuid = databaseUuid)  
-      
+        else: 
+          raise RuntimeError('Cannot find database uuid for file %s' %(repr(fileName)))
+        
+        
       if global_in_file:
         jobs_to_inspect=[]
         for job_id in self._iofiles[fileId][0]:
@@ -478,13 +480,14 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
   def create_output_file( self, fileId, fileName, fullPaths = None, databaseUuid = None, database_dir = None ):
     if not self.__output_file_processing == self.NO_FILE_PROCESSING:
       #print 'create_output_file' + repr( ( fileId, os.path.basename( fileName ), fullPaths, databaseUuid, database_dir ) )
-      global_out_file = None
       if self.__output_file_processing == self.FILE_TRANSFER:
         global_out_file = FileRetrieving(remote_path = fileName,  name = os.path.basename( fileName ), remote_paths = fullPaths)#fileId)#
         self.__file_transfers[fileId]=global_out_file
       elif self.__output_file_processing == self.UNIVERSAL_RESOURCE_PATH:
         if databaseUuid and database_dir:
           global_out_file= UniversalResourcePath(relative_path = fileName[(len(database_dir)+1):], namespace = "brainvisa", uuid = databaseUuid)  
+        else: 
+          raise RuntimeError('Cannot find database uuid for file %s' %(repr(fileName)))
         
       if global_out_file:
         jobs_to_inspect=[]
