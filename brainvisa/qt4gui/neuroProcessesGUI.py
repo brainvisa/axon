@@ -481,6 +481,10 @@ class ExecutionContextGUI( neuroProcesses.ExecutionContext):
       if not maxval:
         maxval = 100
       if not hasattr( self, '_progressBar' ):
+        if not hasattr( self, 'inlineGUI' ):
+          # no GUI: fallback to text mode
+          neuroProcesses.ExecutionContext.showProgress( self, value, maxval )
+          return
         layout = self.inlineGUI.parentWidget().layout()
         self._progressBar = QProgressBar( None )
         layout.addWidget( self._progressBar )

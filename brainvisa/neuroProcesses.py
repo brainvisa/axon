@@ -831,6 +831,31 @@ class IterationProcess( Process ):
                         optional=True, selected = True ) )
     self._executionNode = eNode
 
+
+#----------------------------------------------------------------------------
+class ListOfIterationProcess( IterationProcess ):
+  '''An IterationProcess which has on its main signature a list of the first
+  element of each sub-process.
+  Used for viewers and editors of ListOf()'''
+  class linkP( object ):
+    def __init__( self, proc, i ):
+      self.proc = proc
+      self.num = i
+    def __call__( self, par ):
+      if len( self.proc.param ) > self.num:
+        return self.proc.param[self.num]
+
+  def __init__( self, name, processes ):
+    IterationProcess.__init__( self, name, processes )
+    chs = list( self.executionNode().children() )[0]._process.signature
+    self.changeSignature( Signature( 'param', ListOf( chs.values()[0] ) ) )
+    en = self.executionNode()
+    en._parameterized = weakref.ref( self )
+    for i, p in enumerate( en.children() ):
+      s = p._process.signature
+      en.addLink( str(i) + '.' + s.keys()[0], 'param', self.linkP( self, i ) )
+
+
 #----------------------------------------------------------------------------
 class DistributedProcess( Process ):
   def __init__( self, name, processes ):
@@ -2895,6 +2920,22 @@ def getViewer( source, enableConversion = 1, checkUpdate=True, listof=False ):
   p =  getProcess( v, checkUpdate=checkUpdate )
   if p and p.userLevel <= neuroConfig.userLevel:
     return p
+  if listof:
+    if isinstance( source, tuple ) and len( source ) == 2:
+      vrs = [ getViewer( source, enableConversion=enableConversion,
+                        checkUpdate=checkUpdate ) ]
+    else:
+      vrs = [ getViewer( s, enableConversion=enableConversion,
+                        checkUpdate=checkUpdate ) for s in source ]
+    if None not in vrs and len( vrs ) != 0:
+      class iterproc( object ):
+        def __init__( self, name, procs ):
+          self.name = name
+          self.procs = procs
+        def __call__( self ):
+          ip = ListOfIterationProcess( self.name, self.procs )
+          return ip
+      return iterproc( _t_( 'Viewer for list of ' ) + t0.name, vrs )
   return None
 
 
@@ -2943,6 +2984,22 @@ def getDataEditor( source, enableConversion = 0, checkUpdate=True, listof=False 
   p =  getProcess( v, checkUpdate=checkUpdate )
   if p and p.userLevel <= neuroConfig.userLevel:
     return p
+  if listof:
+    if isinstance( source, tuple ) and len( source ) == 2:
+      vrs = [ getDataEditor( source, enableConversion=enableConversion,
+                             checkUpdate=checkUpdate ) ]
+    else:
+      vrs = [ getDataEditor( s, enableConversion=enableConversion,
+                             checkUpdate=checkUpdate ) for s in source ]
+    if None not in vrs and len( vrs ) != 0:
+      class iterproc( object ):
+        def __init__( self, name, procs ):
+          self.name = name
+          self.procs = procs
+        def __call__( self ):
+          ip = ListOfIterationProcess( self.name, self.procs )
+          return ip
+      return iterproc( _t_( 'Editor for list of ' ) + t0.name, vrs )
   return None
 
 #----------------------------------------------------------------------------
