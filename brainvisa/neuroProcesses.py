@@ -2905,6 +2905,16 @@ def getViewer( source, enableConversion = 1, checkUpdate=True, listof=False ):
     t0, f = source
   t = t0
   v = viewers.get( ( t, f ) )
+  # if the diskitem has no type, get the more generic viewer that accept the format of the diskitem
+  if not v and t is None:
+    for k in viewers.keys():
+      t0b, fb = k
+      if fb == f:
+        if t is None or t.isA(t0b):
+          t=t0b
+          v=viewers.get((t, f))
+          if t.parent is None:
+            break
   while not v and t:
     t = t.parent
     v = viewers.get( ( t, f ) )

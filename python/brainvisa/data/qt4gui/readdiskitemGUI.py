@@ -197,12 +197,12 @@ class DiskItemEditor( QWidget, DataEditor ):
   def checkReadable( self ):
     if self.btnShow:
       enabled = 0
-      v = neuroProcesses.getViewer( (self.parameter.type, self.parameter.formats[0] ), 1, checkUpdate=False )
-      if v:
-        self.btnShow.show()
-      else:
-        self.btnShow.hide()
       if self.diskItem:
+        v = neuroProcesses.getViewer( self.diskItem, 1, checkUpdate=False )
+        if v:
+          self.btnShow.show()
+        else:
+          self.btnShow.hide()
         if v:
           enabled = self.diskItem.isReadable()
       self.btnShow.setEnabled( enabled )
