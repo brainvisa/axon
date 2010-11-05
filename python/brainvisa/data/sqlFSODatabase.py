@@ -1197,7 +1197,7 @@ class SQLDatabase( Database ):
                   if format.name == 'Directory':
                     files = [ os.path.normpath( os.path.join( databaseDirectory, name ) ) ]
                   elif isinstance( format, FormatSeries ): # a Series of ... has in _files the pattern of each data with # instead of the number
-                    cg2 = CombineGet( {'name_serie' : "#"}, required, selection, defaultAttributesValues ) 
+                    cg2 = CombineGet( {'name_serie' : "#"}, unmatchAttributes, required, selection, defaultAttributesValues ) 
                     name2 = rule.pattern.unmatch( cg2, cg2 )
                     format2=self.formats.getFormat(format.baseFormat.name) # get the base file format
                     files = [ os.path.normpath( os.path.join( databaseDirectory, name2 + '.' + e ) ) for e in format2.extensions() ]
