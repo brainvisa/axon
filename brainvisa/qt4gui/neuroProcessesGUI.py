@@ -134,7 +134,8 @@ def openWeb(source):
     _helpWidget.setWindowTitle( _t_( 'BrainVISA help' ) )
     _helpWidget.resize( 800, 600 )
   sys.stdout.flush()
-  _helpWidget.setSource( source )
+  source_file = QUrl( source ).toLocalFile()
+  _helpWidget.setSource( source_file )
   _helpWidget.show()
   _helpWidget.raise_()
 
