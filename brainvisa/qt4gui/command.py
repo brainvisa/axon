@@ -192,7 +192,8 @@ class CommandWithQProcess( object ):
       if c == '\b':
         if len( result ) > 0:
           result = result[:-1]
-      elif c == '\r':
+      elif (c == '\r') and (neuroConfig.platform != 'windows') :
+        # On windows \r means a carriage return and is followed by a \n
         result = ''
       elif c in ( '\a', '\m', '\x0b' ): # might appear on Mac/Windows
         pass
