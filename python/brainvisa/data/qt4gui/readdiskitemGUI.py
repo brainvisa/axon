@@ -682,7 +682,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
         self.btnFind.hide()
     self.connect( self.btnFind, SIGNAL( 'clicked()' ), self.findPressed )
     self.connect( self.btnFind, SIGNAL( 'rightPressed' ), self.findRightPressed )
-    self.btnBrowse = RightClickablePushButton( )
+    self.btnBrowse = QPushButton( )
     hb.addWidget(self.btnBrowse)
     if write:
       self.btnBrowse.setIcon( self.pixBrowseWrite )
@@ -695,8 +695,10 @@ class DiskItemListEditor( QWidget, DataEditor ):
       x = parameter.browseUserLevel
       if x > neuroConfig.userLevel:
         self.btnBrowse.hide()
+    # only one click on the browse button : always open the diskItemListSelect widget
+    # as we often need to select files in the filesystem in several steps when the files are not all in the same directory. 
     self.connect( self.btnBrowse, SIGNAL( 'clicked()' ), self.browsePressed )
-    self.connect( self.btnBrowse, SIGNAL( 'rightPressed' ), self.browseRightPressed )
+    #self.connect( self.btnBrowse, SIGNAL( 'rightPressed' ), self.browseRightPressed )
 
     self.setValue( None, 1 )
     
@@ -831,23 +833,23 @@ class DiskItemListEditor( QWidget, DataEditor ):
     w.show()
     w.findPressed()
 
-  def browsePressed( self ):
-    dul = 0
-    bul = 0
-    if hasattr( self.parameter, 'databaseUserLevel' ):
-      dul = self.parameter.databaseUserLevel
-    if hasattr( self.parameter, 'browseUserLevel' ):
-      bul = self.parameter.browseUserLevel
-    w = self.DiskItemListSelect( self, unicode(self.objectName()), self.write,
-      context = self._context, databaseUserLevel=dul, browseUserLevel=bul )
-    try:
-      w.setValue( self.getValue() )
-    except:
-      showException( parent = self )
-    self.connect( w, SIGNAL( 'accepted' ), self._newValue )
-    w.browsePressed()
+  #def browsePressed( self ):
+    #dul = 0
+    #bul = 0
+    #if hasattr( self.parameter, 'databaseUserLevel' ):
+      #dul = self.parameter.databaseUserLevel
+    #if hasattr( self.parameter, 'browseUserLevel' ):
+      #bul = self.parameter.browseUserLevel
+    #w = self.DiskItemListSelect( self, unicode(self.objectName()), self.write,
+      #context = self._context, databaseUserLevel=dul, browseUserLevel=bul )
+    #try:
+      #w.setValue( self.getValue() )
+    #except:
+      #showException( parent = self )
+    #self.connect( w, SIGNAL( 'accepted' ), self._newValue )
+    #w.browsePressed()
 
-  def browseRightPressed( self ):
+  def browsePressed( self ):
     dul = 0
     bul = 0
     if hasattr( self.parameter, 'databaseUserLevel' ):
