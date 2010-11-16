@@ -1896,27 +1896,35 @@ class ExecutionContext:
         if ishead:
           log = neuroConfig.mainLog
           if neuroConfig.newDatabases:
-            self._allWriteDiskItems = []
+            self._allWriteDiskItems = {}
+            writeParameters = []
             #try: # an exception could occur if the user has not write permission on the database directory
             for parameterized, attribute, type in process.getAllParameters():
               if isinstance( type, WriteDiskItem ):
                 item = getattr( parameterized, attribute )
                 if item is not None:
-                  dir = os.path.dirname( item.fullPath() )
-                  if not os.path.exists( dir ):
-                    os.makedirs( dir )
-                  item.uuid()
-                  self._allWriteDiskItems.append( [ item, item.modificationHash() ] )
+                  writeParameters.append(item)
               elif isinstance( type, ListOf ) and isinstance( type.contentType, WriteDiskItem ):
                 itemList = getattr( parameterized, attribute )
                 if itemList:
-                  for item in itemList:
-                    dir = os.path.dirname( item.fullPath() )
-                    if not os.path.exists( dir ):
-                      os.makedirs( dir )
-                    item.uuid()
-                    self._allWriteDiskItems.append( [ item, item.modificationHash() ] )
-            #except:
+                  writeParameters.extend(itemList)
+            for item in writeParameters:
+              dirs=[]
+              dirname = os.path.dirname( item.fullPath() )
+              dir=dirname
+              while not os.path.exists( dir ):
+                dirs.append(dir)
+                dir=os.path.dirname(dir)
+              if dirs:
+                os.makedirs( dirname )
+                for d in dirs:
+                  dirItem=neuroHierarchy.databases.createDiskItemFromFileName(d, None)
+                  if dirItem:
+                    uuid=dirItem.uuid()
+                    self._allWriteDiskItems[uuid] = [ dirItem, None ]
+              uuid=item.uuid()
+              self._allWriteDiskItems[uuid] = [ item, item.modificationHash() ]
+             #except:
               #showException()
           if self._allowHistory:
             self._historyBookEvent, self._historyBooksContext = HistoryBook.storeProcessStart( self, process )
@@ -2032,7 +2040,7 @@ class ExecutionContext:
       self._processFinished( result )
       process.restoreConvertedValues()
       if neuroConfig.newDatabases:
-        for item_hash in self._allWriteDiskItems:
+        for item_hash in self._allWriteDiskItems.values():
           item, hash = item_hash
           if item.isReadable():
             if item.modificationHash() != hash:

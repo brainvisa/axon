@@ -803,7 +803,11 @@ class SQLDatabase( Database ):
       d=self.directory
       if fileName.startswith( d ):
         splitted = split_path( fileName[ len(d)+1: ] )
-        content = reduce( lambda x,y: [(y,x)], reversed(splitted[:-1]), [ (os.path.basename(f), None) for f in diskItem._files ] )
+        if os.path.isdir(fileName):
+          lastContent=[]
+        else:
+          lastContent=None
+        content = reduce( lambda x,y: [(y,x)], reversed(splitted[:-1]), [ (os.path.basename(f), lastContent) for f in diskItem._files ] )
         vdi = VirtualDirectoryIterator( fileName[ :len(d) ], content )
         lastItem = None
         for item in self.scanDatabaseDirectories( vdi ):
@@ -821,7 +825,10 @@ class SQLDatabase( Database ):
     if format is not None:
       extensions = format.extensions()
       if len( extensions ) == 1:
-        files = [ noExt + '.' + ext ]
+        if ext:
+          files = [ noExt + '.' + ext ]
+        else:
+          files = [ noExt ]
       else:
         files = [ noExt + '.' + ext for ext in extensions ]
       diskItem = File( noExt, None )
@@ -859,6 +866,7 @@ class SQLDatabase( Database ):
       stack = [ ( directoriesIterator, scanner, {  }, 0 ) ]
     while stack:
       itDirectory, scanner, attributes, priorityOffset = stack.pop( 0 )
+
       f = itDirectory.fullPath()
       if directoriesToScan is not None:
         ignore = True
