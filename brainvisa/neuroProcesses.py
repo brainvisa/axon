@@ -1869,9 +1869,9 @@ class ExecutionContext:
     result = None
     stackTop = None
     process = getProcessInstance( process )
-
     stack = self._processStack()
     stackTop = self._processStackParent()
+    
     if stackTop:
 ##      if neuroConfig.userLevel > 0:
 ##        self.write( '<img alt="" src="' + os.path.join( neuroConfig.iconPath, 'icon_process.png' ) + '" border="0">' \
@@ -1880,6 +1880,7 @@ class ExecutionContext:
       # Count process execution
       count = stackTop.processCount.get( process._id, 0 )
       stackTop.processCount[ process._id ] = count + 1
+      
 
     newStackTop = self.StackInfo( process )
     self._pushStack( newStackTop )
@@ -1892,8 +1893,9 @@ class ExecutionContext:
     try: # finally -> processFinished
       try: # show exception
 
-
-        if ishead:
+        # check write parameters if the process is the main process (check all parameters in child nodes if it is a pipeline) 
+        # or if it has a parent which is not a pipeline that is to say, the current process is run throught context.runProcess
+        if ishead or (stackTop and stackTop.process._executionNode is None):
           log = neuroConfig.mainLog
           if neuroConfig.newDatabases:
             self._allWriteDiskItems = {}
@@ -1926,6 +1928,7 @@ class ExecutionContext:
               self._allWriteDiskItems[uuid] = [ item, item.modificationHash() ]
              #except:
               #showException()
+        if ishead:
           if self._allowHistory:
             self._historyBookEvent, self._historyBooksContext = HistoryBook.storeProcessStart( self, process )
         else:
