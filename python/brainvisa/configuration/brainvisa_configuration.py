@@ -56,7 +56,17 @@ def htmlBrowsers():
                        '/Applications/Safari.app/Contents/MacOS/Safari', 
                        'mozilla', 'netscape' ) if find_executable( i ) ]
 
-
+def defaultHTMLBrowser():
+  """
+  If a real web browser is found, use it dy default. 
+  If there is no web browser available, the built-in Qt Browser is used but it cannot open websites. 
+  """
+  defaultBrowser=""
+  browsers=htmlBrowsers()
+  if browsers:
+    defaultBrowser=browsers[0]
+  return defaultBrowser
+    
 #------------------------------------------------------------------------------
 class BrainVISAConfiguration( ConfigurationGroup ):
   
@@ -75,7 +85,7 @@ class BrainVISAConfiguration( ConfigurationGroup ):
       'SPM99_compatibility', Boolean, dict( defaultValue=False, doc='If selected, Analyse (*.hdr + *.img) images loaded from BrainVISA, Anatomist and Aims will use an heuristic to guess the orientationin in SPM99 compatible way.' ),
       'radiological_orientation', Boolean, dict( defaultValue=True, doc='If selected, SPM is supposed to use radiological orientation for images. Otherwise it is supposed to use neurological convention.' ),
     )
-
+  
   signature = Signature(
     'userLevel', Choice( ( 'Basic', 0 ), 
                          ( 'Advanced', 1 ),
@@ -86,7 +96,7 @@ class BrainVISAConfiguration( ConfigurationGroup ):
     'processesPath', Sequence( FileName( directoryOnly=True ) ), dict( defaultValue=[], doc='List of directories containing BrainVISA processes.' ),
     'temporaryDirectory', FileName( directoryOnly=True ), dict( defaultValue=getSystemDefaultTempDir(), doc='Directory where temporary files are stored. Name of temporary files produced by BrainVISA starts with <tt>"bv_"</tt>.' ),
     'textEditor', FileName, dict( defaultValue='', doc='Location of the program used to edit text files.' ),
-    'htmlBrowser', OpenedChoice( ( '<built-in>', '' ), *htmlBrowsers() ), dict( defaultValue='', doc='Location of the program used to display HTML files.' ),
+    'htmlBrowser', OpenedChoice( ( '<built-in>', '' ), * htmlBrowsers()  ), dict( defaultValue = defaultHTMLBrowser(), doc='Location of the program used to display HTML files.' ),
     'removeTemporary', Boolean, dict( defaultValue=True, doc='unselect this option if you do not want temporary files and directories to be automatically deleted. This option is used for debugging. If unselected BrainVISA can leave a lot of files in temporary directory.' ),
     'SPM', SPMConfiguration, dict( defaultValue=SPMConfiguration() ),
     'support', SupportConfiguration, dict( defaultValue=SupportConfiguration() ),

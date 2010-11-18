@@ -140,7 +140,8 @@ def openWeb(source):
     _helpWidget.setWindowTitle( _t_( 'BrainVISA help' ) )
     _helpWidget.resize( 800, 600 )
   sys.stdout.flush()
-  _helpWidget.setSource( source )
+  source_file = QUrl( source ).toLocalFile()
+  _helpWidget.setSource( source_file )
   _helpWidget.show()
   _helpWidget.raise_()
 
@@ -289,7 +290,9 @@ class HTMLBrowser( QWidget ):
         sys.stdout.flush()
       else:
         # trick to make the links in documentation work on windows
-        TextBrowserWithSearch.setSource( self, QUrl.fromLocalFile(url.toLocalFile()) )
+        newUrl=QUrl.fromLocalFile(url.toLocalFile())
+        newUrl.setFragment(url.fragment())
+        TextBrowserWithSearch.setSource( self, newUrl)
         
     def customMenu(self):
       menu=TextBrowserWithSearch.customMenu(self)
@@ -487,6 +490,10 @@ class ExecutionContextGUI( neuroProcesses.ExecutionContext):
       if not maxval:
         maxval = 100
       if not hasattr( self, '_progressBar' ):
+        if not hasattr( self, 'inlineGUI' ):
+          # no GUI: fallback to text mode
+          neuroProcesses.ExecutionContext.showProgress( self, value, maxval )
+          return
         layout = self.inlineGUI.parentWidget().layout()
         self._progressBar = QProgressBar( None )
         layout.addWidget( self._progressBar )

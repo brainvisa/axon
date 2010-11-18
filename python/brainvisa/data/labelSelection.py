@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -42,7 +43,7 @@ from brainvisa.data.writediskitem import WriteDiskItem
 from brainvisa.data.qtgui.labelSelectionGUI import LabelSelectionEditor
 from neuroProcesses import defaultContext
 import soma.minf.api as minf
-
+import types
 import neuroPopen2
 
 #----------------------------------------------------------------------------
@@ -50,17 +51,25 @@ class LabelSelection( Parameter ):
   """
   Select labels in a nomenclature.
   """
-  def __init__( self, model = None, nomencl = None ):
+  def __init__( self, model = None, nomencl = None, **kwargs ):
       Parameter.__init__( self )
-      self.value = {}
-      self.fileDI = WriteDiskItem( 'Labels selection', 'selection' )
+      self.value = kwargs.get( 'value', {} )
+      self.fileDI = kwargs.get( 'fileDI',
+        WriteDiskItem( 'Labels selection', 'selection' ) )
       self.file = None
       if model:
           self.value[ 'model' ] = model
       if nomencl:
           self.value[ 'nomenclature' ] = nomencl
 
+  def __str__( self ):
+    return "{ 'value' : " + repr( self.value ) \
+      + ", 'fileDI' : WriteDiskItem( " + repr( self.fileDI.type.name ) \
+      + ", " + repr( self.fileDI.formats ) + " ) }"
+
   def findValue( self, value ):
+      if type( value ) in types.StringTypes:
+        value = LabelSelection( **eval( value ) )
       return value
   
   def editor( self, parent, name, context ):
@@ -92,21 +101,23 @@ class LabelSelection( Parameter ):
       stdout.close()
       return s
 
-  def writeSelection( self, context = defaultContext() ):
-      s = self.getAutoSelection()
-      if not self.file:
-          self.file = context.temporary( 'selection' )
-      try:
-          f = open( self.file.fullPath(), 'w' )
-      except:
-          context.write( '<b><font color="#c00000">Warning:</font></b> ' \
-                        'writeSelection: file', self.file.fullPath(),
-                        "can't be written<br>" )
-          self.file = context.temporary( 'selection' )
-          f = open( self.file.fullPath(), 'w' )
-      f.write( s )
-      f.close()
-      return s
+  def writeSelection( self, context = None ):
+    if context is None:
+      context = defaultContext()
+    s = self.getAutoSelection()
+    if not self.file:
+        self.file = context.temporary( 'selection' )
+    try:
+        f = open( self.file.fullPath(), 'w' )
+    except:
+        context.write( '<b><font color="#c00000">Warning:</font></b> ' \
+                      'writeSelection: file', self.file.fullPath(),
+                      "can't be written<br>" )
+        self.file = context.temporary( 'selection' )
+        f = open( self.file.fullPath(), 'w' )
+    f.write( s )
+    f.close()
+    return s
 
   def isValid( self ):
     if not self.file:
@@ -116,3 +127,4 @@ class LabelSelection( Parameter ):
     if len( m ) == 0 or ( len( m ) == 1 and m.keys()[0] == '__syntax__' ):
       return False
     return True
+

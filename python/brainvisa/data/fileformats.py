@@ -122,6 +122,10 @@ class FileFormats( object ):
           break
         noExt = noExt + '.' + ext[ : dotIndex ]
         ext = ext[ dotIndex + 1 : ]
+    elif os.path.isdir(f):
+      format=self._formatsByName["Directory"]
+      ext=None
+      noExt=f
     return ( format, ext, noExt )
   
   

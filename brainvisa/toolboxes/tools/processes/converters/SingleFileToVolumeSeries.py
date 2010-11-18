@@ -81,7 +81,17 @@ def execution( self, context ):
     if len( name_serie ) != time_length:
       raise ValueError( _t_( '<em>write</em> parameter must have <em>%d</em> files' ) % ( time_length, ) )
   else:
-    name_serie = map( str, range( time_length ) )
+    nb_digit=len(str(time_length))
+    if nb_digit < 4: # nb_digit for the serie zeros are added at the beginning of the number that doesn't have enough digits
+      nb_digit=4
+    for n in range( time_length ):
+      n=str(n)
+      print n
+      while len(n) < nb_digit:
+	n = "0"+n
+      name_serie.append(n)
+    #name_serie = map( str, range( time_length ) )
+    
   self.write._setLocal( 'name_serie', name_serie )  
 
   command = [ 'AimsSubVolume', '--singleminf', '-i', self.read, '-o'] + \

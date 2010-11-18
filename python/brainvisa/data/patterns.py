@@ -436,14 +436,14 @@ class DictPattern:
   def multipleUnmatch( self, dict ):
     #print '!multipleUnmatch!', self, dict
     # Retrieve attributes() and namedRegex()
-    attributes = set()
+    attributes = []
     for i in self.unmatchList:
       if isinstance( i, DictPattern.Attribute ):
         if i._Attribute__key not in attributes:
-          attributes.add( i._Attribute__key )
+          attributes.append( i._Attribute__key )
       elif isinstance( i, DictPattern.MatchResult ):
         if i._MatchResult__key not in attributes:
-          attributes.add( i._MatchResult__key )
+          attributes.append( i._MatchResult__key )
     #print '!multipleUnmatch! attributes =', attributes
     # Check attributes values that are list
     multipleValues = []
@@ -484,19 +484,19 @@ class DictPattern:
         
       
   def attributes( self ):
-    sent = set()
+    sent = []
     for i in self.unmatchList:
       if isinstance( i, DictPattern.Attribute ):
         if i._Attribute__key not in sent:
-          sent.add( i._Attribute__key )
+          sent.append( i._Attribute__key )
           yield i._Attribute__key
     
   def namedRegex( self ):
-    sent = set()
+    sent = []
     for i in self.unmatchList:
       if isinstance( i, DictPattern.MatchResult ):
         if i._MatchResult__key not in sent:
-          sent.add( i._MatchResult__key )
+          sent.append( i._MatchResult__key )
           yield i._MatchResult__key
     
 

@@ -229,7 +229,10 @@ class Database( object ):
     if format is not None:
       extensions = format.extensions()
       if len( extensions ) == 1:
-        files = [ noExt + '.' + ext ]
+        if ext:
+          files = [ noExt + '.' + ext ]
+        else:
+          files = [ noExt ]
       else:
         files = [ noExt + '.' + ext for ext in extensions ]
       diskItem = File( noExt, None )
@@ -828,7 +831,11 @@ class SQLDatabase( Database ):
       d=self.directory
       if fileName.startswith( d ):
         splitted = split_path( fileName[ len(d)+1: ] )
-        content = reduce( lambda x,y: [(y,x)], reversed(splitted[:-1]), [ (os.path.basename(f), None) for f in diskItem._files ] )
+        if os.path.isdir(fileName):
+          lastContent=[]
+        else:
+          lastContent=None
+        content = reduce( lambda x,y: [(y,x)], reversed(splitted[:-1]), [ (os.path.basename(f), lastContent) for f in diskItem._files ] )
         vdi = VirtualDirectoryIterator( fileName[ :len(d) ], content )
         lastItem = None
         for item in self.scanDatabaseDirectories( vdi ):
@@ -839,8 +846,8 @@ class SQLDatabase( Database ):
       raise DatabaseError( _( 'Database "%(database)s" cannot reference file "%(filename)s"' ) % { 'database': self.name,  'filename': fileName } )
     return defaultValue
 
-    #print '!createDiskItemFromFormatExtension!', self.name, fileName
-    #print '!createDiskItemFromFormatExtension!', format, ext, noExt
+
+
     
   def changeDiskItemFormat( self, diskItem, newFormat ):
     #print '!changeDiskItemFormat!', self.name, diskItem, newFormat, type( newFormat )
@@ -868,6 +875,7 @@ class SQLDatabase( Database ):
       stack = [ ( directoriesIterator, scanner, {  }, 0 ) ]
     while stack:
       itDirectory, scanner, attributes, priorityOffset = stack.pop( 0 )
+
       f = itDirectory.fullPath()
       if directoriesToScan is not None:
         ignore = True
@@ -1206,7 +1214,7 @@ class SQLDatabase( Database ):
                   if format.name == 'Directory':
                     files = [ os.path.normpath( os.path.join( databaseDirectory, name ) ) ]
                   elif isinstance( format, FormatSeries ): # a Series of ... has in _files the pattern of each data with # instead of the number
-                    cg2 = CombineGet( {'name_serie' : "#"}, required, selection, defaultAttributesValues ) 
+                    cg2 = CombineGet( {'name_serie' : "#"}, unmatchAttributes, required, selection, defaultAttributesValues ) 
                     name2 = rule.pattern.unmatch( cg2, cg2 )
                     format2=self.formats.getFormat(format.baseFormat.name) # get the base file format
                     files = [ os.path.normpath( os.path.join( databaseDirectory, name2 + '.' + e ) ) for e in format2.extensions() ]

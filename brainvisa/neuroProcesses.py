@@ -832,6 +832,31 @@ class IterationProcess( Process ):
                         optional=True, selected = True ) )
     self._executionNode = eNode
 
+
+#----------------------------------------------------------------------------
+class ListOfIterationProcess( IterationProcess ):
+  '''An IterationProcess which has on its main signature a list of the first
+  element of each sub-process.
+  Used for viewers and editors of ListOf()'''
+  class linkP( object ):
+    def __init__( self, proc, i ):
+      self.proc = proc
+      self.num = i
+    def __call__( self, par ):
+      if len( self.proc.param ) > self.num:
+        return self.proc.param[self.num]
+
+  def __init__( self, name, processes ):
+    IterationProcess.__init__( self, name, processes )
+    chs = list( self.executionNode().children() )[0]._process.signature
+    self.changeSignature( Signature( 'param', ListOf( chs.values()[0] ) ) )
+    en = self.executionNode()
+    en._parameterized = weakref.ref( self )
+    for i, p in enumerate( en.children() ):
+      s = p._process.signature
+      en.addLink( str(i) + '.' + s.keys()[0], 'param', self.linkP( self, i ) )
+
+
 #----------------------------------------------------------------------------
 class DistributedProcess( Process ):
   def __init__( self, name, processes ):
@@ -1841,9 +1866,9 @@ class ExecutionContext:
     result = None
     stackTop = None
     process = getProcessInstance( process )
-
     stack = self._processStack()
     stackTop = self._processStackParent()
+    
     if stackTop:
 ##      if neuroConfig.userLevel > 0:
 ##        self.write( '<img alt="" src="' + os.path.join( neuroConfig.iconPath, 'icon_process.png' ) + '" border="0">' \
@@ -1852,6 +1877,7 @@ class ExecutionContext:
       # Count process execution
       count = stackTop.processCount.get( process._id, 0 )
       stackTop.processCount[ process._id ] = count + 1
+      
 
     newStackTop = self.StackInfo( process )
     self._pushStack( newStackTop )
@@ -1864,37 +1890,42 @@ class ExecutionContext:
     try: # finally -> processFinished
       try: # show exception
 
-
+        # check write parameters if the process is the main process (check all parameters in child nodes if it is a pipeline) 
+        # or if it has a parent which is not a pipeline that is to say, the current process is run throught context.runProcess
         if ishead:
-          log = neuroConfig.mainLog
-          self._allWriteDiskItems = []
+          self._allWriteDiskItems = {}
+        if ishead or (stackTop and stackTop.process._executionNode is None):
+          writeParameters = []
           #try: # an exception could occur if the user has not write permission on the database directory
           for parameterized, attribute, type in process.getAllParameters():
             if isinstance( type, WriteDiskItem ):
               item = getattr( parameterized, attribute )
               if item is not None:
-                dir = os.path.dirname( item.fullPath() )
-                if not os.path.exists( dir ):
-                  try: 
-                    os.makedirs( dir )
-                  except OSError, e:
-                    if e.errno == errno.EEXIST:
-                      print "warning: " + repr(e)
-                    else:
-                      raise e
-                item.uuid()
-                self._allWriteDiskItems.append( [ item, item.modificationHash() ] )
+                writeParameters.append(item)
             elif isinstance( type, ListOf ) and isinstance( type.contentType, WriteDiskItem ):
               itemList = getattr( parameterized, attribute )
               if itemList:
-                for item in itemList:
-                  dir = os.path.dirname( item.fullPath() )
-                  if not os.path.exists( dir ):
-                    os.makedirs( dir )
-                  item.uuid()
-                  self._allWriteDiskItems.append( [ item, item.modificationHash() ] )
+                writeParameters.extend(itemList)
+          for item in writeParameters:
+            dirs=[]
+            dirname = os.path.dirname( item.fullPath() )
+            dir=dirname
+            while not os.path.exists( dir ):
+              dirs.append(dir)
+              dir=os.path.dirname(dir)
+            if dirs:
+              os.makedirs( dirname )
+              for d in dirs:
+                dirItem=neuroHierarchy.databases.createDiskItemFromFileName(d, None)
+                if dirItem:
+                  uuid=dirItem.uuid()
+                  self._allWriteDiskItems[uuid] = [ dirItem, None ]
+            uuid=item.uuid()
+            self._allWriteDiskItems[uuid] = [ item, item.modificationHash() ]
           #except:
             #showException()
+        if ishead:
+          log = neuroConfig.mainLog
           if self._allowHistory:
             self._historyBookEvent, self._historyBooksContext = HistoryBook.storeProcessStart( self, process )
         else:
@@ -2010,7 +2041,7 @@ class ExecutionContext:
     finally:
       self._processFinished( result )
       process.restoreConvertedValues()
-      for item_hash in self._allWriteDiskItems:
+      for item_hash in self._allWriteDiskItems.values():
         item, hash = item_hash
         if item.isReadable():
           if item.modificationHash() != hash:
@@ -2885,6 +2916,16 @@ def getViewer( source, enableConversion = 1, checkUpdate=True, listof=False ):
     t0, f = source
   t = t0
   v = viewers.get( ( t, f ) )
+  # if the diskitem has no type, get the more generic viewer that accept the format of the diskitem
+  if not v and t is None:
+    for k in viewers.keys():
+      t0b, fb = k
+      if fb == f:
+        if t is None or t.isA(t0b):
+          t=t0b
+          v=viewers.get((t, f))
+          if t.parent is None:
+            break
   while not v and t:
     t = t.parent
     v = viewers.get( ( t, f ) )
@@ -2900,6 +2941,22 @@ def getViewer( source, enableConversion = 1, checkUpdate=True, listof=False ):
   p =  getProcess( v, checkUpdate=checkUpdate )
   if p and p.userLevel <= neuroConfig.userLevel:
     return p
+  if listof:
+    if isinstance( source, tuple ) and len( source ) == 2:
+      vrs = [ getViewer( source, enableConversion=enableConversion,
+                        checkUpdate=checkUpdate ) ]
+    else:
+      vrs = [ getViewer( s, enableConversion=enableConversion,
+                        checkUpdate=checkUpdate ) for s in source ]
+    if None not in vrs and len( vrs ) != 0:
+      class iterproc( object ):
+        def __init__( self, name, procs ):
+          self.name = name
+          self.procs = procs
+        def __call__( self ):
+          ip = ListOfIterationProcess( self.name, self.procs )
+          return ip
+      return iterproc( _t_( 'Viewer for list of ' ) + t0.name, vrs )
   return None
 
 
@@ -2948,6 +3005,22 @@ def getDataEditor( source, enableConversion = 0, checkUpdate=True, listof=False 
   p =  getProcess( v, checkUpdate=checkUpdate )
   if p and p.userLevel <= neuroConfig.userLevel:
     return p
+  if listof:
+    if isinstance( source, tuple ) and len( source ) == 2:
+      vrs = [ getDataEditor( source, enableConversion=enableConversion,
+                             checkUpdate=checkUpdate ) ]
+    else:
+      vrs = [ getDataEditor( s, enableConversion=enableConversion,
+                             checkUpdate=checkUpdate ) for s in source ]
+    if None not in vrs and len( vrs ) != 0:
+      class iterproc( object ):
+        def __init__( self, name, procs ):
+          self.name = name
+          self.procs = procs
+        def __call__( self ):
+          ip = ListOfIterationProcess( self.name, self.procs )
+          return ip
+      return iterproc( _t_( 'Editor for list of ' ) + t0.name, vrs )
   return None
 
 #----------------------------------------------------------------------------

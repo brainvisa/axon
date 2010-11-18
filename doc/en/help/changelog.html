@@ -22,6 +22,7 @@
 
 
 <hr width="100%"> <br>
+<a href="#version-4.0.2"><b>Version 4.0.2</b></a><br>
 <a href="#version-4.0.1"><b>Version 4.0.1</b></a><br>
 <a href="#version-4.0.0"><b>Version 4.0.0</b></a><br>
 <a href="#version-3.2.1"><b>Version 3.2.1</b></a><br>
@@ -43,6 +44,33 @@
 <a href="#version-1.5"><b>Version 1.5</b></a><br>
 
 <br>
+<!---------------------------------------------------------------------------->
+<h2><a name="version-4.0.2">Version 4.0.2</a></h2>
+<blockquote>
+
+<h3>General bug fixes and improvements:</h3>
+<ul>
+<li>New progress bar in processes and pipeline windows.</li>
+<li>Viewers and Editors are now available for list of data. The default viewer is an iteration of the viewer for the type of data in the list.</li>
+<li>Fix background and foreground color of choice nodes in pipeline graphical interface.</li>
+<li>Fix iteration on Series of 3D volume (Import fMRI data)</li>
+<li><b>Database browser</b>: enable visualization of unrecognized data if a viewer that accepts the data format exists.</li>
+<li>Fix commands log in windows version.</li>
+<li>Documentation panel : enable links with anchor and open web links in a real web browser when possible.</li>
+<li>Browse button in process iteration dialog always opens the dialog that enables selecting several files at different location on the filesystem. 
+This action was only available through right click before.</li>
+<li>Improvement of database update when a process finishes : intermediate directory items created by the process are inserted in the database; 
+output parameters of a sub-process not in a pipeline are inserted in the database. </li>
+
+<li>Improvement in <b>Morphometry statistics</b> process : output parameters are now output_directory and output_filename_prefix instead of output_prefix and have default values.</li>
+<li>Improvement in <b>DicomToNiftiConverter</b> process : enable choosing the output filename and giving a directory containing dicom images instead of a file as input parameter.</li>
+<li>New importation process to import a T1 MRI from a Dicom directory using Mricron Dicom converter.</li>
+<li>Fix <b>Single file to serie</b> process : generate the numbers of the serie with a fix number of digit to ensure that the files of the serie are in the correct order.</li>
+<li><b>T1 MRI : new sulci voronoi step before the folds thickness step, to allow saving and reusing the sulci voronoi maps; New type for lesion mask used in the brain segmentation parameters.</b></li>
+<li><b>Sulci : new processes to calculate the mean distance from a lesion mask to sulci.</b></li>
+</ul>
+</blockquote>
+
 <!---------------------------------------------------------------------------->
 <h2><a name="version-4.0.1">Version 4.0.1</a></h2>
 <blockquote>
