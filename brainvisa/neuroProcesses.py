@@ -1895,10 +1895,10 @@ class ExecutionContext:
 
         # check write parameters if the process is the main process (check all parameters in child nodes if it is a pipeline) 
         # or if it has a parent which is not a pipeline that is to say, the current process is run throught context.runProcess
+        if ishead:
+          self._allWriteDiskItems = {}
         if ishead or (stackTop and stackTop.process._executionNode is None):
-          log = neuroConfig.mainLog
           if neuroConfig.newDatabases:
-            self._allWriteDiskItems = {}
             writeParameters = []
             #try: # an exception could occur if the user has not write permission on the database directory
             for parameterized, attribute, type in process.getAllParameters():
@@ -1929,6 +1929,7 @@ class ExecutionContext:
              #except:
               #showException()
         if ishead:
+          log = neuroConfig.mainLog
           if self._allowHistory:
             self._historyBookEvent, self._historyBooksContext = HistoryBook.storeProcessStart( self, process )
         else:
