@@ -86,7 +86,6 @@ def execution( self, context ):
       nb_digit=4
     for n in range( time_length ):
       n=str(n)
-      print n
       while len(n) < nb_digit:
 	n = "0"+n
       name_serie.append(n)
