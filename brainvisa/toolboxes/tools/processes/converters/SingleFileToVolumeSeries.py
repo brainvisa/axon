@@ -87,7 +87,7 @@ def execution( self, context ):
     for n in range( time_length ):
       n=str(n)
       while len(n) < nb_digit:
-	n = "0"+n
+        n = "0"+n
       name_serie.append(n)
     #name_serie = map( str, range( time_length ) )
     
