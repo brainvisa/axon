@@ -1651,7 +1651,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
   
   def saveAs( self ):
     minf = getattr( self.process, '_savedAs', '' )
-    minf = unicode( QFileDialog.getSaveFileName( None, 'Open a process file', minf, 'BrainVISA process (*.bvproc);;All files (*)' ) )
+    minf = unicode( QFileDialog.getSaveFileName( None, 'Open a process file', minf, 'BrainVISA process (*.bvproc);;All files (*)', options=QFileDialog.DontUseNativeDialog ) )
     if minf:
       if not minf.endswith( '.bvproc' ):
         minf += '.bvproc'
@@ -1669,7 +1669,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
   @staticmethod
   def open():
-    minf = unicode( QFileDialog.getOpenFileName( None, 'Open a process file', '', 'BrainVISA process (*.bvproc);;All files (*)' ))
+    minf = unicode( QFileDialog.getOpenFileName( None, 'Open a process file', '', 'BrainVISA process (*.bvproc);;All files (*)', options=QFileDialog.DontUseNativeDialog ))
     if minf:
       showProcess( neuroProcesses.getProcessInstance( minf ) )
 
