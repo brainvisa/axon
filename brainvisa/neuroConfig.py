@@ -281,16 +281,7 @@ while tmp:
 spmDirectory=''
 
 textEditor = ''
-if platform == 'windows':
-  texteditors = ( 'notepad', 'write' )
-else:
-  texteditors = ( 'nedit', 'kedit', 'kwrite', 'xemacs', 'emacs', 'textedit' )
-for m in texteditors:
-  if find_executable( m ):
-    textEditor = m
-    break
-del m
-del texteditors
+
 matlabStartup = []
 fileSystemOntologiesPath = [ os.path.join( mainPath, 'hierarchies' ) ]
 dataPath= []
@@ -378,8 +369,7 @@ def editConfiguration():
     userLevel = configuration.brainvisa.userLevel
     neuroProcesses.updateProcesses()
   HTMLBrowser=configuration.brainvisa.htmlBrowser
-  if configuration.brainvisa.textEditor:
-    textEditor=configuration.brainvisa.textEditor
+  textEditor=configuration.brainvisa.textEditor
   if language != configuration.brainvisa.language \
     and configuration.brainvisa.language is not None:
     language=configuration.brainvisa.language
