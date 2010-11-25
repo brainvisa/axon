@@ -3,6 +3,7 @@ find_package( brainvisa-cmake REQUIRED )
 BRAINVISA_PROJECT()
 
 BRAINVISA_FIND_PACKAGE( soma-base REQUIRED )
+BRAINVISA_FIND_PACKAGE( soma-qtgui REQUIRED )
 find_package( PyQt${DESIRED_QT_VERSION} REQUIRED )
 
 find_package( python REQUIRED )
