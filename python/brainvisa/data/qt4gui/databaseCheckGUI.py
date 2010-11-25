@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -240,7 +241,7 @@ class UnknownFilesWidget( ActionsWidget ):
     if item:
       # open a dialog to choose where to move
       # getExistingDirectory ( QWidget * parent = 0, const QString & caption = QString(), const QString & dir = QString(), Options options = ShowDirsOnly )
-      dest=unicode(qt.QFileDialog.getExistingDirectory(self, _t_("Choose a directory for destination : "), self.defaultDest ))
+      dest=unicode(qt.QFileDialog.getExistingDirectory(self, _t_("Choose a directory for destination : "), self.defaultDest, qt.QFileDialog.ShowDirsOnly | qt.QFileDialog.DontUseNativeDialog ))
       action=Move(dest)
       item.setAction(action)
   
@@ -296,7 +297,7 @@ class UnknownFilesWidget( ActionsWidget ):
     Called when the user click on move all button. Set action Move on all unknown file.
     """
     # open a dialog to choose where to move
-    dest=unicode(qt.QFileDialog.getExistingDirectory(self, _t_("Choose a directory for destination : "), self.defaultDest))
+    dest=unicode(qt.QFileDialog.getExistingDirectory(self, _t_("Choose a directory for destination : "), self.defaultDest, qt.QFileDialog.ShowDirsOnly | qt.QFileDialog.DontUseNativeDialog ))
     it = qt.QTreeWidgetItemIterator(self.actionsList)
     while it.value() :
       action=Move(os.path.join(dest, os.path.basename(it.value().model.file)))

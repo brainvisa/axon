@@ -66,7 +66,17 @@ def defaultHTMLBrowser():
   if browsers:
     defaultBrowser=browsers[0]
   return defaultBrowser
-    
+
+def textEditors():
+  return [t for t in ('nedit', 'kedit', 'kwrite', 'xemacs', 'emacs', 'textedit', 'notepad', 'write' ) if find_executable( t ) ]
+
+def defaultTextEditor():
+  defaultEditor=''
+  editors=textEditors()
+  if editors:
+    defaultEditor=editors[0]
+  return defaultEditor
+
 #------------------------------------------------------------------------------
 class BrainVISAConfiguration( ConfigurationGroup ):
   
@@ -95,7 +105,7 @@ class BrainVISAConfiguration( ConfigurationGroup ):
                 dict( defaultValue=None, doc='Language of the graphical interface (it is necessary to restart BrainVISA to take modification into account).' ),
     'processesPath', Sequence( FileName( directoryOnly=True ) ), dict( defaultValue=[], doc='List of directories containing BrainVISA processes.' ),
     'temporaryDirectory', FileName( directoryOnly=True ), dict( defaultValue=getSystemDefaultTempDir(), doc='Directory where temporary files are stored. Name of temporary files produced by BrainVISA starts with <tt>"bv_"</tt>.' ),
-    'textEditor', FileName, dict( defaultValue='', doc='Location of the program used to edit text files.' ),
+    'textEditor', OpenedChoice( * textEditors() ), dict( defaultValue=defaultTextEditor(), doc='Location of the program used to edit text files.' ),
     'htmlBrowser', OpenedChoice( ( '<built-in>', '' ), * htmlBrowsers()  ), dict( defaultValue = defaultHTMLBrowser(), doc='Location of the program used to display HTML files.' ),
     'removeTemporary', Boolean, dict( defaultValue=True, doc='unselect this option if you do not want temporary files and directories to be automatically deleted. This option is used for debugging. If unselected BrainVISA can leave a lot of files in temporary directory.' ),
     'SPM', SPMConfiguration, dict( defaultValue=SPMConfiguration() ),

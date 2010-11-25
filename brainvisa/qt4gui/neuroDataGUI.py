@@ -182,10 +182,7 @@ class ChoiceEditor( QComboBox, DataEditor ):
 #dbg#    print 'ChoiceEditor values:', self.parameter.values
     self.value = self.parameter.values[ 0 ][ 1 ]
     self.parameter.warnChoices( self.changeChoices )
-    #self.connect( self, SIGNAL( 'destroyed()' ), self.destroyed )
-
-#dbg#  def __del__( self ):
-#dbg#    print 'del ChoiceEditor'
+    self.connect( self, SIGNAL( 'destroyed()' ), self.releaseCallbacks )
 
   def releaseCallbacks( self ):
 #dbg#    print 'ChoiceEditor.releaseCallbacks'
@@ -240,6 +237,8 @@ class OpenChoiceEditor( QComboBox, DataEditor ):
     self.connect( self, SIGNAL( 'activated( int )' ), self.valueSelected )
     self.connect( self.lineEdit(), SIGNAL( 'returnPressed()' ),
                   self.setFocusNext )
+    self.connect( self, SIGNAL( 'destroyed()' ), self.releaseCallbacks )
+
 
   def releaseCallbacks( self ):
     self.parameter.unwarnChoices( self.changeChoices )
@@ -527,6 +526,9 @@ class ChoiceListEditor( QWidget, DataEditor ):
       btn = QPushButton( _t_('Add'), self )
       hb.addWidget( btn )
       self.connect( btn, SIGNAL( 'clicked()' ), self.add )
+      btn = QPushButton( _t_('Add all'), self )
+      hb.addWidget( btn )
+      self.connect( btn, SIGNAL( 'clicked()' ), self.addAll )
       btn = QPushButton( _t_('Remove'), self )
       hb.addWidget( btn )
       self.connect( btn, SIGNAL( 'clicked()' ), self.remove )
@@ -573,6 +575,11 @@ class ChoiceListEditor( QWidget, DataEditor ):
       v = self.valueSelect.getValue()
       self.value.append( v )
       self.list.addItem( n )
+    
+    def addAll( self ):
+      for n, v in self.valueSelect.parameter.values:
+        self.value.append( v )
+        self.list.addItem( n )
 
     def remove( self ):
       i = self.list.currentRow()
