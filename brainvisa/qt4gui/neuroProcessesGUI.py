@@ -961,7 +961,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       processMenu.addAction( _t_( '&Save...' ), self.saveAs,  Qt.CTRL + Qt.Key_S )
       processMenu.addAction( _t_( '&Clone...' ), self.clone,  Qt.CTRL + Qt.Key_C )
       try:
-        import soma.jobs
+        import soma.workflow
         self.workflowEnabled = True
       except ImportError:
         pass
@@ -1615,8 +1615,8 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     class Options( HasSignature ):
       signature = SomaSignature(
         'output', SomaFileName, dict( doc='Name of the output workflow file.' ),
-        'input_file_processing', SomaChoice( ( _t_( 'use local paths' ), 0 ), ( _t_( 'transfer files' ), 1 ), ( _t_( 'use universal resource paths' ), 2 ) ),
-        'output_file_processing', SomaChoice( ( _t_( 'use local paths' ), 0 ), ( _t_( 'transfer files' ), 1 ), ( _t_( 'use universal resource paths' ), 2 ) ),
+        'input_file_processing', SomaChoice( ( _t_( 'use local paths' ), 0 ), ( _t_( 'transfer files' ), 1 ), ( _t_( 'use shared paths' ), 2 ) ),
+        'output_file_processing', SomaChoice( ( _t_( 'use local paths' ), 0 ), ( _t_( 'transfer files' ), 1 ), ( _t_( 'use shared paths' ), 2 ) ),
         'no_white_space', SomaBoolean(),
       )
     options = Options()

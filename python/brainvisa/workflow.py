@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-from soma.jobs.constants import *
-from soma.jobs.jobClient import JobTemplate, FileTransfer, FileSending, FileRetrieving, UniversalResourcePath, FileRetrieving, Group, Workflow
 import os
 from neuroProcesses import ProcessExecutionNode, SerialExecutionNode, ParallelExecutionNode, WriteDiskItem, ReadDiskItem
 import pickle
 import neuroHierarchy
 from neuroDiskItems import DiskItem
+
+from soma.workflow.constants import *
+from soma.workflow.client import Job, FileTransfer, FileSending, FileRetrieving, SharedResourcePath, WorkflowNodeGroup, Workflow
 
 class ProcessToWorkflow( object ):
   JOB = 'j'
@@ -376,7 +377,7 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
     ##########################
     #print ">>> referenced input and output"
     #for n in workflow.nodes:
-      #if isinstance(n, JobTemplate):
+      #if isinstance(n, Job):
         #print "-------------"
         #print "    " + n.name
         #print "referenced inputs : " + repr(len(n.referenced_input_files)) 
@@ -417,12 +418,12 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
         new_command.append("\""+command_el+"\"")
       command = new_command
     #print 'create_job' + repr( ( depth, jobId, command, inGroup ) )
-    self.__jobs[jobId] = JobTemplate(command=command, name_description=self.process_str(label))#jobId)#
+    self.__jobs[jobId] = Job(command=command, name_description=self.process_str(label))#jobId)#
     self.__groups[inGroup].elements.append(self.__jobs[jobId]) 
   
   def open_group( self, depth, groupId, label, inGroup ):
     #print 'open_group' + repr( ( depth, groupId, label, inGroup ) )
-    self.__groups[groupId] = Group(elements = [], name = self.process_str(label))#groupId)#
+    self.__groups[groupId] = WorkflowNodeGroup(elements = [], name = self.process_str(label))#groupId)#
     if not inGroup: 
       self.__mainGroupId = groupId
     else:
@@ -443,7 +444,7 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
         self.__file_transfers[fileId]=global_in_file
       elif self.__input_file_processing == self.UNIVERSAL_RESOURCE_PATH:
         if databaseUuid and database_dir:
-          global_in_file= UniversalResourcePath(relative_path = fileName[(len(database_dir)+1):], namespace = "brainvisa", uuid = databaseUuid)  
+          global_in_file= SharedResourcePath(relative_path = fileName[(len(database_dir)+1):], namespace = "brainvisa", uuid = databaseUuid)  
         else: 
           raise RuntimeError('Cannot find database uuid for file %s' %(repr(fileName)))
         
@@ -485,7 +486,7 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
         self.__file_transfers[fileId]=global_out_file
       elif self.__output_file_processing == self.UNIVERSAL_RESOURCE_PATH:
         if databaseUuid and database_dir:
-          global_out_file= UniversalResourcePath(relative_path = fileName[(len(database_dir)+1):], namespace = "brainvisa", uuid = databaseUuid)  
+          global_out_file= SharedResourcePath(relative_path = fileName[(len(database_dir)+1):], namespace = "brainvisa", uuid = databaseUuid)  
         else: 
           raise RuntimeError('Cannot find database uuid for file %s' %(repr(fileName)))
         
