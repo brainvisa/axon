@@ -1709,7 +1709,8 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
   @staticmethod
   def open():
-    minf = unicode( QFileDialog.getOpenFileName( None, 'Open a process file', '', 'BrainVISA process (*.bvproc);;All files (*)', options=QFileDialog.DontUseNativeDialog ))
+    minf = unicode( QFileDialog.getOpenFileName( None,
+      _t_( 'Open a process file' ), '', 'BrainVISA process (*.bvproc);;All files (*)', None, QFileDialog.DontUseNativeDialog ))
     if minf:
       showProcess( neuroProcesses.getProcessInstance( minf ) )
 
