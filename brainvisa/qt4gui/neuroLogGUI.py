@@ -33,7 +33,7 @@
 
 import time
 import os
-from backwardCompatibleQt import QWidget, QVBoxLayout, QIcon, QSplitter, Qt, QSizePolicy, QSize, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QHBoxLayout, QPushButton, QObject, SIGNAL, QFileDialog
+from backwardCompatibleQt import QWidget, QVBoxLayout, QIcon, QSplitter, Qt, QSizePolicy, QSize, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QHBoxLayout, QPushButton, QObject, SIGNAL, QFileDialog, QKeySequence, QInputDialog, QLineEdit
 import neuroLog
 import neuroException
 import neuroConfig
@@ -63,6 +63,8 @@ class LogViewer( QWidget ):
     self._list.setIconSize(QSize(32, 32))
     self._list.setSizePolicy( QSizePolicy( QSizePolicy.Preferred, QSizePolicy.Expanding ) )
     self._list.setRootIsDecorated( 1 )
+    self.searchResults=None
+    self.searchText=""
     #splitter.setResizeMode( self._list, QSplitter.KeepSize )
 
     self._content = TextEditWithSearch(splitter)#QTextView( splitter )
@@ -185,6 +187,51 @@ class LogViewer( QWidget ):
     #else:
       #e.ignore()
       #QWidget.keyPressEvent( self, e )
+      
+  def keyPressEvent(self, keyEvent):
+    if (self._list.hasFocus()):
+      if (keyEvent.matches(QKeySequence.Find)):
+        (res, ok)=QInputDialog.getText(self, "Find", "Text to find :", QLineEdit.Normal, self.searchText)
+        if ok:
+          self.searchText=res
+        if self.searchText and ok:
+          self.searchResults=self.findItem(self.searchText)
+          if (self.searchResults):
+            item=self.searchResults.next()
+      elif (keyEvent.matches(QKeySequence.FindNext) ):
+        if (self.searchResults is not None):
+          if (self.searchResults):
+            item=self.searchResults.next()
+            if item is None:
+              self.searchResults.close()
+              self.searchResults=None
+      else:
+        QWidget.keyPressEvent(self, keyEvent)
+    else:
+      QWidget.keyPressEvent(self, keyEvent)
+
+  def findItem( self, name):
+    """
+    Find items that contain the string given in parameters in their name. Each found item is selected and yield (and replace previous selection).
+    Wide search.
+    @type name: string
+    @param name: string searched in items names. 
+    
+    @rtype:  generator
+    @return: a generator
+    """
+    it=QTreeWidgetItemIterator(self._list)
+    lastSelection=None
+    while it.value():
+      item=it.value()
+      if item.text(0).contains(name, Qt.CaseInsensitive):
+        self._list.setCurrentItem(item)
+        if lastSelection:
+          lastSelection.setSelected(False)
+        lastSelection=item
+        yield item
+      it+=1
+    yield None
 
 def showLog( fileName ):
   l = LogViewer( fileName )
