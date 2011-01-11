@@ -356,17 +356,17 @@ class DatabasesTransformationManager( TransformationManager ):
     else:
       referentialType = getDiskItemType( referentialType )
     while referential is None and referentialType is not None:
-      wdi = neuroHierarchy.WriteDiskItem( referentialType, 'Referential' )
+      wdi = neuroHierarchy.WriteDiskItem( referentialType, 'Referential', exactType=True )
       referential = wdi.findValue( diskItem )
       #if referential is None:
         #wdi.requiredAttributes = { 'filename_variable':  refId }
         #referential = wdi.findValue( diskItem )
       referentialType = referentialType.parent
     if referential is None:
-      wdi = neuroHierarchy.WriteDiskItem( 'Referential', 'Referential' )
+      wdi = neuroHierarchy.WriteDiskItem( 'Referential', 'Referential', exactType=True )
       referential = wdi.findValue( diskItem )
       #if referential is None:
-        #wdi = neuroHierarchy.WriteDiskItem( 'Referential', 'Referential' )
+        #wdi = neuroHierarchy.WriteDiskItem( 'Referential', 'Referential', exactType=True )
         #wdi.requiredAttributes[ 'filename_variable' ] = refId
         #referential = wdi.findValue( diskItem )
     if referential is not None:
@@ -546,7 +546,7 @@ class DatabasesTransformationManager( TransformationManager ):
     if trType is None:
       trType = getDiskItemType( 'Transformation' )
 
-    wdi = neuroHierarchy.WriteDiskItem( trType, format )
+    wdi = neuroHierarchy.WriteDiskItem( trType, format, exactType=True )
     transformation = wdi.findValue( { 'source': sourceDiskItem,
                                       'destination': destDiskItem } )
     if transformation is None:

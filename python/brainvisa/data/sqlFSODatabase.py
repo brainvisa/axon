@@ -53,7 +53,7 @@ from fileSystemOntology import FileSystemOntology, SetContent
 from neuroProcesses import diskItemTypes, getDiskItemType
 import neuroProcesses, neuroConfig
 from neuroException import showWarning
-from neuroDiskItems import getFormat, getFormats, Format, FormatSeries, File, Directory, getAllFormats
+from neuroDiskItems import getFormat, getFormats, Format, FormatSeries, File, Directory, getAllFormats, MinfFormat
 from neuroException import HTMLMessage
 from brainvisa.data.patterns import DictPattern
 from brainvisa.data.sql import mangleSQL, unmangleSQL
@@ -147,7 +147,7 @@ class Database( object ):
             if dotIndex < 0:
               break
             patterns.append( p[ dotIndex + 1 : ] )
-          Database._all_formats.newFormat( format.name, patterns )
+          Database._all_formats.newFormat( format.name, patterns, isinstance( format, MinfFormat ) )
           formatsAlreadyDefined.add( format.name )
     return Database._all_formats
   

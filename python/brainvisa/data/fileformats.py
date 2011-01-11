@@ -34,8 +34,9 @@ from soma.translation import translate as _
 from soma.undefined import Undefined
 
 class Format( object ):
-  def __init__( self, name, extensions ):
+  def __init__( self, name, extensions, isMinf=False ):
     self.name = unicode( name )
+    self.isMinf = isMinf
     self._extensionsAndIsDir = []
     for e in extensions:
       isDirectory = False
@@ -60,11 +61,11 @@ class FileFormats( object ):
     self._alias = {}
 
   
-  def newFormat( self, name, extensions ):
+  def newFormat( self, name, extensions, isMinf=False ):
     f = self._formatsByName.get( name )
     if f is not None:
       raise KeyError( _( 'Format "%s" already defined' ) % ( name,) )
-    f = Format( name, extensions )
+    f = Format( name, extensions, isMinf )
     self._formatsByName[ name ] = f
     for oe, d in f._extensionsAndIsDir:
       le = oe.lower()
