@@ -382,10 +382,10 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
         #print "    " + n.name
         #print "referenced inputs : " + repr(len(n.referenced_input_files)) 
         ##for r in n.referenced_input_files:
-          ##print "   %30s                              %s" %(r.name,r.remote_path)
+          ##print "   %30s                              %s" %(r.name,r.client_path)
         #print "referenced outputs :" + repr(len(n.referenced_output_files)) 
         ##for r in n.referenced_output_files:
-          ##print "   %30s                              %s" %(r.name,r.remote_path)
+          ##print "   %30s                              %s" %(r.name,r.client_path)
     #print "<<< referenced input and output"
     #print " "
     #print ">>> nodes"
@@ -418,7 +418,7 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
         new_command.append("\""+command_el+"\"")
       command = new_command
     #print 'create_job' + repr( ( depth, jobId, command, inGroup ) )
-    self.__jobs[jobId] = Job(command=command, name_description=self.process_str(label))#jobId)#
+    self.__jobs[jobId] = Job(command=command, name=self.process_str(label))#jobId)#
     self.__groups[inGroup].elements.append(self.__jobs[jobId]) 
   
   def open_group( self, depth, groupId, label, inGroup ):
@@ -440,7 +440,7 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
     if not self.__input_file_processing == self.NO_FILE_PROCESSING:
       #print 'create_input_file' + repr( ( fileId, os.path.basename( fileName ), fullPaths, databaseUuid, database_dir ) )
       if self.__input_file_processing == self.FILE_TRANSFER:
-        global_in_file=FileSending(remote_path = fileName, name = os.path.basename( fileName ), remote_paths = fullPaths)#fileId)# 
+        global_in_file=FileSending(client_path = fileName, name = os.path.basename( fileName ), client_paths = fullPaths)#fileId)# 
         self.__file_transfers[fileId]=global_in_file
       elif self.__input_file_processing == self.UNIVERSAL_RESOURCE_PATH:
         if databaseUuid and database_dir:
@@ -482,7 +482,7 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
     if not self.__output_file_processing == self.NO_FILE_PROCESSING:
       #print 'create_output_file' + repr( ( fileId, os.path.basename( fileName ), fullPaths, databaseUuid, database_dir ) )
       if self.__output_file_processing == self.FILE_TRANSFER:
-        global_out_file = FileRetrieving(remote_path = fileName,  name = os.path.basename( fileName ), remote_paths = fullPaths)#fileId)#
+        global_out_file = FileRetrieving(client_path = fileName,  name = os.path.basename( fileName ), client_paths = fullPaths)#fileId)#
         self.__file_transfers[fileId]=global_out_file
       elif self.__output_file_processing == self.UNIVERSAL_RESOURCE_PATH:
         if databaseUuid and database_dir:
