@@ -42,6 +42,16 @@ fi
 
 runbrainvisa='
 import sys,os
+# setdefaultencoding can only be done before import site
+try:
+  sys.setdefaultencoding( "iso-8859-1" )
+except AttributeError:
+  print "Cannot set default encoding !"
+  pass
+# if import site is done after some modifications of 
+# sys.path (see below), there may be some cyclic imports.
+# So we do it here:
+import site
 neuro = ""
 executable = sys.argv[ 1 ]
 found = False

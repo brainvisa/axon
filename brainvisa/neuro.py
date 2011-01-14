@@ -40,12 +40,6 @@ if len( sys.argv ) > 1 and sys.platform[:6] == 'darwin' and sys.argv[1][:5] == '
   del sys.argv[1]
 
 try:
-  sys.setdefaultencoding( 'iso-8859-1' )
-except AttributeError:
-  pass
-import site
-
-try:
   from soma.config import MAJOR_QT_VERSION
   USE_QT4 = MAJOR_QT_VERSION == 4
 except ImportError:
