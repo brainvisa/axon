@@ -6,7 +6,7 @@ import neuroHierarchy
 from neuroDiskItems import DiskItem
 
 from soma.workflow.constants import *
-from soma.workflow.client import Job, FileTransfer, FileSending, FileRetrieving, SharedResourcePath, WorkflowNodeGroup, Workflow
+from soma.workflow.client import Job, FileTransfer, SharedResourcePath, WorkflowNodeGroup, Workflow
 
 class ProcessToWorkflow( object ):
   JOB = 'j'
@@ -440,7 +440,10 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
     if not self.__input_file_processing == self.NO_FILE_PROCESSING:
       #print 'create_input_file' + repr( ( fileId, os.path.basename( fileName ), fullPaths, databaseUuid, database_dir ) )
       if self.__input_file_processing == self.FILE_TRANSFER:
-        global_in_file=FileSending(client_path = fileName, name = os.path.basename( fileName ), client_paths = fullPaths)#fileId)# 
+        global_in_file=FileTransfer(is_input=True, 
+                                    client_path=fileName, 
+                                    name=os.path.basename(fileName), 
+                                    client_paths = fullPaths)#fileId)# 
         self.__file_transfers[fileId]=global_in_file
       elif self.__input_file_processing == self.UNIVERSAL_RESOURCE_PATH:
         if databaseUuid and database_dir:
@@ -482,7 +485,10 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
     if not self.__output_file_processing == self.NO_FILE_PROCESSING:
       #print 'create_output_file' + repr( ( fileId, os.path.basename( fileName ), fullPaths, databaseUuid, database_dir ) )
       if self.__output_file_processing == self.FILE_TRANSFER:
-        global_out_file = FileRetrieving(client_path = fileName,  name = os.path.basename( fileName ), client_paths = fullPaths)#fileId)#
+        global_out_file = FileTransfer(is_input=False,
+                                       client_path=fileName,  
+                                       name=os.path.basename(fileName),
+                                       client_paths = fullPaths)#fileId)#
         self.__file_transfers[fileId]=global_out_file
       elif self.__output_file_processing == self.UNIVERSAL_RESOURCE_PATH:
         if databaseUuid and database_dir:
