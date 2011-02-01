@@ -547,10 +547,13 @@ class DatabasesTransformationManager( TransformationManager ):
       trType = getDiskItemType( 'Transformation' )
 
     wdi = neuroHierarchy.WriteDiskItem( trType, format, exactType=True )
-    transformation = wdi.findValue( { 'source': sourceDiskItem,
-                                      'destination': destDiskItem } )
-    if transformation is None:
-        transformation = wdi.findValue( sourceDiskItem )
+    # it would be a good idea to take into account the source and destination diskitems but it is not 
+    # possible for the moment, these attributes source and destintation doesn't exist and are not used.
+    # Moreover, this request can return a wrong transformation, if there is only one transformation of that type in the datbase.
+    #transformation = wdi.findValue( { 'source': sourceDiskItem,
+                                      #'destination': destDiskItem } )
+    #if transformation is None:
+    transformation = wdi.findValue( sourceDiskItem )
     if transformation is None:
         transformation = wdi.findValue( destDiskItem )
         
