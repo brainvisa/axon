@@ -512,8 +512,8 @@ class Parameterized( object ):
       sourceObject._links.setdefault( sourceParameter, [] ).append (
         ( destObject, destParameter, multiLink, True ) )
 
-  
-  
+
+
   def removeLink( self, destination, source ):
     # print 'removeLink', self, destination, source
     # Parse source
@@ -1380,12 +1380,12 @@ class ExecutionNode( object ):
       sourceObject._links.setdefault( sourceParameter, [] ).append (
         ( destObject, destParameter, multiLink, True ) )
 
-  
+
   def addDoubleLink( self, destination, source, function=None ):
     self.addLink( destination, source, function )
     self.addLink( source, destination, function )
 
-  
+
   def removeLink( self, destination, source, function=None ):
     # Parse sourceExecutionContext
     sources = []
@@ -1868,7 +1868,7 @@ class ExecutionContext:
     process = getProcessInstance( process )
     stack = self._processStack()
     stackTop = self._processStackParent()
-    
+
     if stackTop:
 ##      if neuroConfig.userLevel > 0:
 ##        self.write( '<img alt="" src="' + os.path.join( neuroConfig.iconPath, 'icon_process.png' ) + '" border="0">' \
@@ -1877,7 +1877,7 @@ class ExecutionContext:
       # Count process execution
       count = stackTop.processCount.get( process._id, 0 )
       stackTop.processCount[ process._id ] = count + 1
-      
+
 
     newStackTop = self.StackInfo( process )
     self._pushStack( newStackTop )
@@ -1890,7 +1890,7 @@ class ExecutionContext:
     try: # finally -> processFinished
       try: # show exception
 
-        # check write parameters if the process is the main process (check all parameters in child nodes if it is a pipeline) 
+        # check write parameters if the process is the main process (check all parameters in child nodes if it is a pipeline)
         # or if it has a parent which is not a pipeline that is to say, the current process is run throught context.runProcess
         if ishead:
           self._allWriteDiskItems = {}
@@ -2904,7 +2904,7 @@ def getViewer( source, enableConversion = 1, checkUpdate=True, listof=False ):
     viewers = _listViewers
   else:
     viewers = _viewers
-  
+
   if isinstance( source, DiskItem ):
     t0 = source.type
     f = source.format
@@ -2978,7 +2978,7 @@ def getDataEditor( source, enableConversion = 0, checkUpdate=True, listof=False 
     dataEditors = _listDataEditors
   else:
     dataEditors = _dataEditors
-  
+
   if isinstance( source, DiskItem ):
     t0 = source.type
     f = source.format
