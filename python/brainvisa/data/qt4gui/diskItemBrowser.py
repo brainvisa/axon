@@ -466,7 +466,7 @@ class DiskItemBrowser( QDialog ):
         readItems.add( tuple( attrs[ :-1 ] ) )
       if self._write:
         for item in self._database.createDiskItems( {}, exactType=self._exactType, **required  ):
-          attrs = [ item.type.name ] + [ unicode(item.get(i)) for i in keyAttributes ] + [ item.format.name, item.get('_database') ]
+          attrs = [ item.type.name ] + [ unicode(item.getHierarchy(i)) for i in keyAttributes ] + [ item.format.name, item.getHierarchy('_database') ]
           if tuple( attrs ) not in readItems:
             self._tableData.addRow( attrs )
             self._items.append( item )
