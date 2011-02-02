@@ -34,6 +34,7 @@ from neuroProcesses import *
 from neuroHierarchy import databases
 import shfjGlobals
 import registration
+
 """
 This process search for a specific importer according to the type of output and execute it. 
 If there is no specific importer, ImportData process is called (it only copy files).
@@ -42,8 +43,8 @@ userLevel=0
 
 signature=Signature(
   'input', ReadDiskItem( 'Any Type', getAllFormats() ),
-  'output', WriteDiskItem( 'Any Type', getAllFormats() ),
   'data_type', Choice( 'Any Type' ),
+  'output', WriteDiskItem( 'Any Type', getAllFormats() ),
   'copy_referential_of', ReadDiskItem( 'Any Type', getAllFormats() ),
   'input_spm_orientation', Choice( 'Not applicable' ), 
 

@@ -341,11 +341,11 @@ class ImportData(CallProcess):
       
   def doit(self, file, debug=False, context=None):
     # creates dest files from src files, deletes src files
-    self.args=(self.src.fullPath(), self.dest, )
+    self.kwargs={'input' : self.src.fullPath(), 'output' : self.dest }
     if debug:
       if context is None:
         context=neuroProcesses.defaultContext()
-      context.write("-- ", self.tooltip, self.args)
+      context.write("-- ", self.tooltip, self.kwargs)
     super(ImportData, self).doit(None, debug, context)
     for f in self.src.existingFiles():
       shutil.move(f, "trash")
