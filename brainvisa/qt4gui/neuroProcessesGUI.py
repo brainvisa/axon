@@ -1617,7 +1617,6 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         'output', SomaFileName, dict( doc='Name of the output workflow file.' ),
         'input_file_processing', SomaChoice( ( _t_( 'use local paths' ), 0 ), ( _t_( 'transfer files' ), 1 ), ( _t_( 'use shared paths' ), 2 ) ),
         'output_file_processing', SomaChoice( ( _t_( 'use local paths' ), 0 ), ( _t_( 'transfer files' ), 1 ), ( _t_( 'use shared paths' ), 2 ) ),
-        'no_white_space', SomaBoolean(),
       )
     options = Options()
     ApplicationQt4GUI().edit( options )
@@ -1632,7 +1631,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     if options.output_file_processing == 2:
       output_file_processing = ProcessToSomaJobsWorkflow.UNIVERSAL_RESOURCE_PATH
     
-    process_to_workflow( self.process, options.output, input_file_processing = input_file_processing, output_file_processing = output_file_processing, no_white_space = options.no_white_space )
+    process_to_workflow( self.process, options.output, input_file_processing = input_file_processing, output_file_processing = output_file_processing )
     
   
   def _distributeButton( self ):
