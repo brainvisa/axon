@@ -6,7 +6,7 @@ import neuroHierarchy
 from neuroDiskItems import DiskItem
 
 from soma.workflow.constants import *
-from soma.workflow.client import Job, FileTransfer, SharedResourcePath, WorkflowNodeGroup, Workflow
+from soma.workflow.client import Job, FileTransfer, SharedResourcePath, Group, Workflow
 
 class ProcessToWorkflow( object ):
   JOB = 'j'
@@ -329,7 +329,7 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
   FILE_TRANSFER = "file_transfer"
   UNIVERSAL_RESOURCE_PATH = "universal_resource_path"
   
-  def __init__( self, process, output, input_file_processing =  "no_file_processing", output_file_processing =  "no_file_processing", no_white_space = False ):
+  def __init__( self, process, output, input_file_processing =  "no_file_processing", output_file_processing =  "no_file_processing"):
     super( ProcessToSomaJobsWorkflow, self ).__init__( process )
     self.__out = output
     
@@ -341,8 +341,6 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
     
     self.__input_file_processing = input_file_processing
     self.__output_file_processing = output_file_processing
-    self.__no_white_space = no_white_space
-      
     
   def doIt( self ):
     
@@ -359,15 +357,11 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
     #self.linkcnt[(self.FILE, self.FILE)] = 0
     
     super( ProcessToSomaJobsWorkflow, self ).doIt()
-    nodes = self.__jobs.values()
+    jobs = self.__jobs.values()
     dependencies = self.__dependencies
-    mainGroup = self.__groups[self.__mainGroupId]
-    groups = []
-    for gid in self.__groups:
-      if not gid == self.__mainGroupId:
-        groups.append(self.__groups[gid])
+    root_group = self.__groups[self.__mainGroupId]
       
-    workflow = Workflow(nodes, dependencies, mainGroup, groups)
+    workflow = Workflow(jobs, dependencies, root_group)
     file = open(self.__out, "w")
     if file:
       pickle.dump(workflow, file)
@@ -376,7 +370,7 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
       
     ##########################
     #print ">>> referenced input and output"
-    #for n in workflow.nodes:
+    #for n in workflow.jobs:
       #if isinstance(n, Job):
         #print "-------------"
         #print "    " + n.name
@@ -388,20 +382,20 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
           ##print "   %30s                              %s" %(r.name,r.client_path)
     #print "<<< referenced input and output"
     #print " "
-    #print ">>> nodes"
-    #for n in workflow.nodes:
+    #print ">>> jobs"
+    #for n in workflow.jobs:
       #print " " + n.name 
-    #print "<<< nodes"
+    #print "<<< jobs"
     #print " " 
     #print ">>> dependencies "
     #for d in workflow.dependencies:
       #print "   ( " + d[0].name + " , " + d[1].name + " ) "
     #print "<<< dependencies "
     #print " "
-    #print ">>> main Group "
-    #for el in workflow.mainGroup.elements:
+    #print ">>> root group "
+    #for el in workflow.root_group:
       #print " " + el.name
-    #print "<<< main Group "
+    #print "<<< root group "
     #print "  "
     #print ">>> groups "
     #for g in workflow.groups:
@@ -412,18 +406,14 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
     ##########################
       
   def create_job( self, depth, jobId, command, inGroup, label ):
-    if self.__no_white_space:
-      new_command = []
-      for command_el in command:
-        new_command.append("\""+command_el+"\"")
-      command = new_command
     #print 'create_job' + repr( ( depth, jobId, command, inGroup ) )
     self.__jobs[jobId] = Job(command=command, name=self.process_str(label))#jobId)#
     self.__groups[inGroup].elements.append(self.__jobs[jobId]) 
   
   def open_group( self, depth, groupId, label, inGroup ):
     #print 'open_group' + repr( ( depth, groupId, label, inGroup ) )
-    self.__groups[groupId] = WorkflowNodeGroup(elements = [], name = self.process_str(label))#groupId)#
+    self.__groups[groupId] = Group(name = self.process_str(label), 
+                                   elements = [])#groupId)#
     if not inGroup: 
       self.__mainGroupId = groupId
     else:
@@ -550,10 +540,10 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
       
 
   
-def process_to_workflow( process, output, input_file_processing = ProcessToSomaJobsWorkflow.NO_FILE_PROCESSING, output_file_processing = ProcessToSomaJobsWorkflow.NO_FILE_PROCESSING, no_white_space = False ):
+def process_to_workflow( process, output, input_file_processing = ProcessToSomaJobsWorkflow.NO_FILE_PROCESSING, output_file_processing = ProcessToSomaJobsWorkflow.NO_FILE_PROCESSING):
   #ptwf = GraphvizProcessToWorkflow( process, output, clusters=clusters, files=files )
   #ptwf = ProcessToFastExecution( process, output )
-  ptwf = ProcessToSomaJobsWorkflow(process, output, input_file_processing, output_file_processing, no_white_space)
+  ptwf = ProcessToSomaJobsWorkflow(process, output, input_file_processing, output_file_processing)
   ptwf.doIt()
 
 
@@ -567,7 +557,7 @@ if __name__ == '__main__':
   #process_to_workflow(theProcess, open( 'test.dot', 'w' ), clusters = True, files = False)
   #process_to_workflow( theProcess, open( 'test.sh', 'w' ) )
   #process_to_workflow(theProcess, 'test.workflow')
-  process_to_workflow(process = theProcess, output = sys.argv[2], input_file_processing = sys.argv[3], output_file_processing = sys.argv[4], no_white_space = sys.argv[5] == 'True')
+  process_to_workflow(process = theProcess, output = sys.argv[2], input_file_processing = sys.argv[3], output_file_processing = sys.argv[4])
   
   
   
