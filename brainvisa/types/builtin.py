@@ -120,6 +120,7 @@ Format( 'ASCII results', 'f|*.asc' )
 Format( 'XML', 'f|*.xml' )
 Format( 'gzipped XML', 'f|*.xml.gz' )
 Format( 'Info file', "f|*.info" )
+Format( 'ZIP file', 'f|*.zip' )
 
 #Format( 'Matlab design file', 'f|*DesMtx.mat' )
 #Postscript files for SPM results
