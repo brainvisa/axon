@@ -421,47 +421,10 @@ def execution( self, context ):
           stack.append( ( c, typeChildren.get( c, () ) ) )
       print >> dot, '}'
       dot.close()
-      command=''
-      out = ''
-      err = ''
-      command='dot -Tpng -o"' + os.path.join( imagesDirectory, typeFileName + '_inheritance.png' )+'" -Tcmapx -o"' + tmpMap+'" '+tmpDot
-      def retrycmd( command ):
-        p = subprocess.Popen( command, shell=True, stdin=subprocess.PIPE,
-          stdout=subprocess.PIPE, stderr=subprocess.PIPE )
-        stdin, stdout, stderr = (p.stdin, p.stdout, p.stderr)
-        #stdin, stdout, stderr=os.popen3(command)
-        stdin.close()
-        out=stdout.read()
-        stdout.close()
-        err=stderr.read()
-        stderr.close()
-        if out or err:
-          context.log(what="dot", html="<p><b>"+command+"</b></p><p>Output :</p><p>"+out+err+"</p>")
-
       try:
-        ok = False
-        attempt = 0
-        nattempts = 3
-        while not ok and attempt < nattempts:
-          try:
-            retrycmd( command )
-            ok = True
-          except OSError, e:
-            context.warning("Strange problem while generating inheritance graph, retrying..." )
-            import time
-            time.sleep( 0.1 )
-            if attempt == nattempts - 1:
-              retrycmd( command )
-              ok = True
-            attempt += 1
-        if attempt > 0:
-          context.write( '<font color="#00b000">...OK now!</font><br/>' )
-      except Exception, e:
-        context.write(  )
-        context.warning("Problem while generating inheritance graph :<br/>",
-          __builtins__['type'](e), htmlEscape( str(e) ), '<br/><p>dot command:</p><p>' + htmlEscape(command) + "</p><p>Output :</p><p>"+out+'</p><p>stderr :</p><p>' +err+'</p>' )
-      #context.system( 'dot', '-Tpng', '-o' + os.path.join( imagesDirectory, typeFileName + '_inheritance.png' ), '-Tcmapx', '-o' + tmpMap, tmpDot )
-  
+        context.system( 'dot', '-Tpng', '-o' + os.path.join( imagesDirectory, typeFileName + '_inheritance.png' ), '-Tcmapx', '-o' + tmpMap, tmpDot )
+      except:
+        context.warning("Cannot generate inheritance graph, the dot command failed.")
   # LANGUAGES
   for l in neuroConfig._languages:
     context.write( '<p><b>Generate HTML for language ', l, "</b></p>" )
