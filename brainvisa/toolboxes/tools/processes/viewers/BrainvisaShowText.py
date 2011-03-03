@@ -31,14 +31,16 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from neuroProcesses import *
+import neuroConfig
 
 name = 'Brainvisa Show Text'
 roles = ('viewer',)
 userLevel = 0
 
 signature = Signature(
-     'text',ReadDiskItem('Text File','Text File' )
+     'text',ReadDiskItem('Text File', ['Text File', 'CSV file'] )
   )
 
 def execution( self, context ):
-  context.system( textEditor, self.text.fullPath() )
+  if neuroConfig.textEditor and self.text is not None and os.path.exists(self.text.fullPath()):
+    context.system( neuroConfig.textEditor, self.text.fullPath() )
