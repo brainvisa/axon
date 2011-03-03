@@ -310,6 +310,19 @@ def execution( self, context ):
   typesByFormats = {}
   formatsByTypes = {}
   processesByFormats = {}
+  
+  # initialize formats associated to types
+  for t in allTypes:
+    if isinstance(t.formats, NamedFormatList):
+      f=t.formats.name
+      formatsByTypes.setdefault( t.name, set() ).add( f )
+      typesByFormats.setdefault( f, set() ).add( t.name )
+    elif t.formats:
+      for format in t.formats:
+        f=format.name
+        formatsByTypes.setdefault( t.name, set() ).add( f )
+        typesByFormats.setdefault( f, set() ).add( t.name )
+
   # get information about links between processes, types and formats
   for pi in allProcessesInfo():
     try:
