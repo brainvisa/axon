@@ -200,13 +200,13 @@ FileType( 'Roi scalar features', 'Scalar features' )
 FileType( 'Data Table', 'Any Type', 'Text Data Table' )
 
 
-FileType( 'XML parameters', 'Any Type', 'XML')
+FileType( 'XML parameters', 'Text file', 'XML')
 
 FileType( 'pickle file', 'Any Type', 'pickle file' )
 FileType( 'Database Cache file', 'Any Type', ('Database Cache file', 'SQLite Database File'))
 FileType( 'Database description page', 'HTML file' )
-FileType( 'Database settings', 'Any Type', 'Minf' )
-FileType( 'Script', 'Any Type', 'Python Script')
+FileType( 'Database settings', 'Text file', 'Minf' )
+FileType( 'Script', 'Text file', 'Python Script')
   
 # ROI can be either a 'Graph and data' or a 'Volume 3D'
 # It should be a subtype of 'Graph' but the default format
