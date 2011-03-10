@@ -90,10 +90,10 @@ class BugReportDialog( QWidget ):
     outer = mailing.MIMEMultipart()
     outer['Subject'] = '[BrainVISA ' + neuroConfig.versionString() + '] Bug report'
     for field in ( 'From', 'Cc', 'Bcc' ):
-      value = str( getattr( self, 'led'+ field ).text().toLatin1() )
+      value = unicode( getattr( self, 'led'+ field ).text() )
       if value:
         outer[ field ] = value
-    to = str( self.ledTo.text().toLatin1() )
+    to = unicode( self.ledTo.text() )
     to = map( string.strip, string.split( to, ',' ) )
     outer[ 'To' ] = string.join( to, ', ' )
     
@@ -101,7 +101,7 @@ class BugReportDialog( QWidget ):
     # To guarantee the message ends with a newline
     outer.epilogue = ''
     
-    msg = mailing.MIMEText( str( self.tedMessage.toPlainText().toLatin1() ), 'plain' )
+    msg = mailing.MIMEText( unicode( self.tedMessage.toPlainText() ), 'plain' )
     outer.attach( msg )
     if self.chkSendLog.isChecked() and neuroConfig.logFileName:
       # Copy and expand log file

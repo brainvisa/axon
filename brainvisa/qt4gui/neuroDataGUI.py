@@ -423,7 +423,7 @@ class StringListEditor( QLineEdit, DataEditor ):
     self.focusNextChild()
 
   def checkValue( self ):
-    currentValue = self._valueFromText( str( self.text().toLatin1() ) )
+    currentValue = self._valueFromText( unicode( self.text() ) )
     if currentValue != self.getValue() and ( self.getValue() or currentValue ):
       self.value = currentValue
       self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
@@ -477,7 +477,7 @@ class IntegerListEditor( NumberListEditor ):
   def _valueFromText( self, text ):
     if not text: return None
     result = []
-    for s in string.split( str(self.text().toLatin1() ) ):
+    for s in string.split( unicode(self.text() ) ):
       try: n = int( s )
       except:
         try: n = long( s )
@@ -495,7 +495,7 @@ class FloatListEditor( NumberListEditor ):
   def _valueFromText( self, text ):
     if not text: return None
     result = []
-    for s in string.split( str(self.text().toLatin1() ) ):
+    for s in string.split( unicode(self.text() ) ):
       try: n = float( s )
       except:
         raise ValueError( HTMLMessage( _t_('<em>%s</em> is not a valid float') % s) )
@@ -571,7 +571,7 @@ class ChoiceListEditor( QWidget, DataEditor ):
         self.setValue( [ value ] )
 
     def add( self ):
-      n = str( self.valueSelect.currentText().toLatin1() )
+      n = unicode( self.valueSelect.currentText() )
       v = self.valueSelect.getValue()
       self.value.append( v )
       self.list.addItem( n )
@@ -766,7 +766,7 @@ class PointListEditor( QWidget, DataEditor ):
     self.led.selectAll()
   
   def getValue( self ):
-    text = str( self.led.text().toLatin1() )
+    text = unicode( self.led.text() )
     if text:
       return map( lambda x: map( float, string.split(x) ),
                   string.split( text, ',' ) )      

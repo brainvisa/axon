@@ -33,7 +33,7 @@
 
 #import neuroConfig 
 import sys, os
-from backwardCompatibleQt import QProcess, QTimer, SIGNAL, QStringList
+from backwardCompatibleQt import QProcess, QTimer, SIGNAL
 import neuroConfig
 from backwardCompatibleQt import PYQT_VERSION
 if PYQT_VERSION < 0x040703:
@@ -81,7 +81,7 @@ class CommandWithQProcess( object ):
     if env:
       mapenv=os.environ.copy()
       mapenv.update(env)
-      listenv=QStringList()
+      listenv=[]
       for var, value in mapenv.items():
         if value is not None:
           listenv.append(var+"="+value)

@@ -34,7 +34,12 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 import sys, os, signal, atexit, time
-  
+
+# Force QString API version in order to be compatible with recent version
+# of enthought.traits.ui (3.6 for instance)
+import sip
+sip.setapi( 'QString', 2 )
+
 if len( sys.argv ) > 1 and sys.platform[:6] == 'darwin' and sys.argv[1][:5] == '-psn_':
   # MacOS calls me with this strange argument, I don't want it.
   del sys.argv[1]

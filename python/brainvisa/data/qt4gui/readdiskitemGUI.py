@@ -31,7 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from backwardCompatibleQt import QLineEdit, SIGNAL, QPushButton, QToolButton, \
-               Qt, QIcon, QWidget, QFileDialog, QStringList, QVBoxLayout, \
+               Qt, QIcon, QWidget, QFileDialog, QVBoxLayout, \
                QListWidget, QHBoxLayout, QSpacerItem, QSizePolicy, QSize
 from soma.wip.application.api import findIconFile
 from soma.qtgui.api import largeIconSize
@@ -322,7 +322,7 @@ class DiskItemEditor( QWidget, DataEditor ):
         mode = QFileDialog.AnyFile
       else:
         mode = QFileDialog.ExistingFile
-      filters = QStringList()
+      filters = []
       allPatterns = {}
       dirOnly = True
       for f in self.parameter.formats:
@@ -331,7 +331,7 @@ class DiskItemEditor( QWidget, DataEditor ):
         flt = f.getPatterns().unmatch( {}, { 'filename_variable': '*' } )[ 0 ]
         allPatterns[ flt ] = 1
         filters.append( _t_( f.name ) + ' (' + flt + ')' )
-      filters.prepend( _t_( 'Recognized formats' ) + ' (' \
+      filters.insert( 0, _t_( 'Recognized formats' ) + ' (' \
         + ' '.join( allPatterns.keys() ) + ')' )
       filters.append( _t_( 'All files' ) + ' (*)' )
       if dirOnly:
@@ -583,7 +583,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
       if self.browseDialog is None:
         self.browseDialog = QFileDialog( self.topLevelWidget() )
         self.browseDialog.setFileMode( self.browseDialog.ExistingFiles )
-        filters = QStringList()
+        filters = []
         allPatterns = {}
         dirOnly = 1
         for f in self.parameter.formats:
@@ -592,7 +592,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
           flt = f.getPatterns().unmatch( {}, { 'filename_variable': '*' } )[ 0 ]
           allPatterns[ flt ] = 1
           filters.append( _t_( f.name ) + ' (' + flt + ')' )
-        filters.prepend( _t_( 'Recognized formats' ) + ' (' \
+        filters.insert( 0, _t_( 'Recognized formats' ) + ' (' \
           + ' '.join( allPatterns.keys() ) + ')' )
         filters.append( _t_( 'All files' ) + ' (*)' )
         self.browseDialog.setFilters( filters )
