@@ -224,7 +224,7 @@ class LogViewer( QWidget ):
     lastSelection=None
     while it.value():
       item=it.value()
-      if item.text(0).contains(name, Qt.CaseInsensitive):
+      if item.text(0).lower().find( name.lower() ) >= 0:
         self._list.setCurrentItem(item)
         if lastSelection:
           lastSelection.setSelected(False)
