@@ -1690,7 +1690,12 @@ class ProcessView( QWidget, ExecutionContextGUI ):
   
   def saveAs( self ):
     minf = getattr( self.process, '_savedAs', '' )
-    minf = unicode( QFileDialog.getSaveFileName( None, 'Open a process file', minf, 'BrainVISA process (*.bvproc);;All files (*)', None, QFileDialog.DontUseNativeDialog ) )
+    # workaround a bug in PyQt ? Param 5 doesn't work; try to use kwargs
+    import sipconfig
+    if sipconfig.Configuration().sip_version >= 0x040a00:
+      minf = unicode( QFileDialog.getSaveFileName( None, 'Open a process file', minf, 'BrainVISA process (*.bvproc);;All files (*)', options=QFileDialog.DontUseNativeDialog ) )
+    else:
+      minf = unicode( QFileDialog.getSaveFileName( None, 'Open a process file', minf, 'BrainVISA process (*.bvproc);;All files (*)', None, QFileDialog.DontUseNativeDialog ) )
     if minf:
       if not minf.endswith( '.bvproc' ):
         minf += '.bvproc'
