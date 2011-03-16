@@ -1506,7 +1506,9 @@ class ProcessExecutionNode( ExecutionNode ):
       return getattr( p, attribute )
     eNode = getattr( self._process, '_executionNode', None )
     if eNode is not None:
-      return eNode.child( attribute )
+      c = eNode.child( attribute )
+      if c is not None:
+        return c
     raise AttributeError( attribute )
 
   def child( self, name, default=None ):
