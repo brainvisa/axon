@@ -38,7 +38,7 @@ roles = ('viewer',)
 userLevel = 0
 
 signature = Signature(
-     'text', ReadDiskItem('Text File', ['Text File', 'CSV file', 'XML', 'Python Script', 'Minf'] )
+     'text', ReadDiskItem('Text File', ['Text File', 'CSV file', 'XML', 'Python Script', 'Minf', 'Referential'] )
   )
 
 def execution( self, context ):

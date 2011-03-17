@@ -39,7 +39,7 @@ MinfFormat( 'Referential', '*.referential' )
 FileType( 'Transformation', 'Any Type' )
 FileType( 'Transformation matrix', 'Transformation', 
           ( 'Transformation matrix', 'Matlab file' ) )
-FileType( 'Referential', 'Any Type', 'Referential' )
+FileType( 'Referential', 'Text file', 'Referential' )
 
 
 FileType( 'Resamp Spline Image',  '3D Volume' )

@@ -31,6 +31,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from neuroProcesses import *
+import neuroConfig
 
 name = 'Brainvisa Show Transformation Matrix'
 roles = ('viewer',)
@@ -41,12 +42,12 @@ signature = Signature(
 )
 
 def execution( self, context ):
-  cmd = [ textEditor ]
-  if textEditor == 'nedit':
+  cmd = [ neuroConfig.textEditor ]
+  if neuroConfig.textEditor == 'nedit':
     cmd += [ '-geometry', '50x5' ]
-  if textEditor in ( 'xemacs', 'emacs' ):
+  if neuroConfig.textEditor in ( 'xemacs', 'emacs' ):
     cmd += [ '-geometry', '50x10' ]
-  elif textEditor == 'kedit':
+  elif neuroConfig.textEditor in ( 'kedit', 'kwrite' ) :
     cmd += [ '-geometry', '500x100' ]
   cmd.append( self.trm.fullPath() )
   context.system( *cmd )
