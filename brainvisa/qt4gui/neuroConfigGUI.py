@@ -122,10 +122,10 @@ class BugReportDialog( QWidget ):
     content = outer.as_string()
     s.sendmail( outer[ 'From' ], to, content )
     s.close()      
-    self.close( 0 )
+    self.close( )
     
   def _cancel( self ):
-    self.close( 0 )
+    self.close( )
 
 
 #----------------------------------------------------------------------------
