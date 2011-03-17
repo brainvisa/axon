@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
@@ -52,6 +52,10 @@ try :
   from brainvisa.configuration.datastorage_configuration import DataStorageConfiguration
 except Exception, e :
   pass
+try :
+  from brainvisa.configuration.sulci_configuration import SulciConfiguration
+except Exception, e :
+  pass
 from soma.wip.configuration import Configuration
 from soma.translation import translate as _
 from brainvisa import shelltools
@@ -69,6 +73,10 @@ def initializeConfiguration():
     DistributedBrainVISAConfiguration() )
   try :
     configuration.add( 'datastorage', DataStorageConfiguration() )
+  except Exception, e :
+    pass
+  try :
+    configuration.add( 'sulci', SulciConfiguration() )
   except Exception, e :
     pass
 
