@@ -83,7 +83,7 @@ def startShell():
     if neuroConfig.anatomistImplementation == 'socket':
       from brainvisa import anatomist
       a = anatomist.Anatomist( create=False )
-      if a.launched:
+      if a and a.launched:
         a.launched = False
         a._restartshell_launched = True
   except Exception, e:
