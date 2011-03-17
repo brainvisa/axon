@@ -1713,7 +1713,12 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
   @staticmethod
   def open():
-    minf = unicode( QFileDialog.getOpenFileName( None,
+    import sipconfig
+    if sipconfig.Configuration().sip_version >= 0x040a00:
+      minf = unicode( QFileDialog.getOpenFileName( None,
+      _t_( 'Open a process file' ), '', 'BrainVISA process (*.bvproc);;All files (*)', options=QFileDialog.DontUseNativeDialog ))
+    else:
+      minf = unicode( QFileDialog.getOpenFileName( None,
       _t_( 'Open a process file' ), '', 'BrainVISA process (*.bvproc);;All files (*)', None, QFileDialog.DontUseNativeDialog ))
     if minf:
       showProcess( neuroProcesses.getProcessInstance( minf ) )

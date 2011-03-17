@@ -176,7 +176,12 @@ class LogViewer( QWidget ):
 
   def open( self ):
      #QFileDialog.getOpenFileName( QWidget * parent = 0, const QString & caption = QString(), const QString & dir = QString(), const QString & filter = QString(), QString * selectedFilter = 0, Options options = 0)
-    logFileName = unicode( QFileDialog.getOpenFileName( None, _t_( 'Open log file' ), self._fileName, '', None, QFileDialog.DontUseNativeDialog ) )
+     # workaround a bug in PyQt ? Param 5 doesn't work; try to use kwargs
+    import sipconfig
+    if sipconfig.Configuration().sip_version >= 0x040a00:
+      logFileName = unicode( QFileDialog.getOpenFileName( None, _t_( 'Open log file' ), self._fileName, '', options=QFileDialog.DontUseNativeDialog ) )
+    else:
+      logFileName = unicode( QFileDialog.getOpenFileName( None, _t_( 'Open log file' ), self._fileName, '', None, QFileDialog.DontUseNativeDialog ) )
     if logFileName:
       self.setLogFile( logFileName )
 
