@@ -1573,7 +1573,7 @@ class ParallelExecutionNode( SerialExecutionNode ):
     pi, p = context.getProgressInfo( self )
     if not neuroDistributedProcesses() or len( self._children ) < 2:
       # do as for serial node
-      super( ParallelExecutionNode, self )._run( context )
+      return super( ParallelExecutionNode, self )._run( context )
     else:
       errorCount = 0
       result = []
