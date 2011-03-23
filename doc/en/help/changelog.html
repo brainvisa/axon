@@ -22,6 +22,7 @@
 
 
 <hr width="100%"> <br>
+<a href="#version-4.1.0"><b>Version 4.1.0</b></a><br>
 <a href="#version-4.0.2"><b>Version 4.0.2</b></a><br>
 <a href="#version-4.0.1"><b>Version 4.0.1</b></a><br>
 <a href="#version-4.0.0"><b>Version 4.0.0</b></a><br>
@@ -44,6 +45,41 @@
 <a href="#version-1.5"><b>Version 1.5</b></a><br>
 
 <br>
+<!---------------------------------------------------------------------------->
+<h2><a name="version-4.1.0">Version 4.1.0</a></h2>
+<blockquote>
+
+<p>In this version, an important change for the developers should be noted : the build tool used to compile from the source code has changed. We gave up our home-made tool <i>build-config</i> and replace it with the standard tool <a href="http://www.cmake.org/">CMake</a>, a cross-platform, open-source build system.
+</p>
+
+<p>This version also brings a number of bug fixes, and improvements:</p>
+<ul>
+<ul>
+<li>Text search available in the log throught ctrl+F and F3 keys</li>
+<li>Text viewer available for more data types (csv, xml files).</li>
+<li>Brainvisa now uses sip QString API version 2, so it not possible to use QString and QStringList classes anymore, python types should be used instead.</li>
+<li>Fix graphviz packaging which make generation of ontology documentation with types inheritance graphs available.</li>
+<li>Update in programming documentation about GUI customization</li>
+<li><b>T1 MRI toolbox</b></li>
+  <ul>
+    <li>New T1 pipeline named <b>Morphologist</b>. This new version is more robust and efficient.</li>
+    <li>T1 Normalization processes (using FSL or SPM) have been moved from fMRI to T1MRI toolbox. So, it is now possible to choose normalization instead of manual localization of AC/PC in the anatomical pipeline without having fMRI toolbox installed.</li>
+  </ul>
+<li><b>Sulci toolbox</b></li>
+  <ul> 
+    <li>New process <b>SPAM models installation</b> to install SPAM models for sulci recognition. The installation of the required models is checked in the Morphologist pipeline.</li>
+    <li>Add new 2011 ANN models to sulci recognition available models</li>
+    <li>Bug fix in iterative mode of a sulci graph viewer</li>
+  </ul>
+<li>New toolbox <b>Optical Imaging</b></li>
+<li><b>BrainRAT toolbox</b></li>
+  <ul>
+    <li>Add RGB/RGBA background estimation to subsampling and to intra volume registration process</li>
+    <li>Add advanced slice replacement process</li>
+  </ul>
+</ul>
+</blockquote>
+
 <!---------------------------------------------------------------------------->
 <h2><a name="version-4.0.2">Version 4.0.2</a></h2>
 <blockquote>
