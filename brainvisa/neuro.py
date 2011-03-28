@@ -35,6 +35,14 @@
 
 import sys, os, signal, atexit, time
 
+# setdefaultencoding can only be done before import site
+# it may be already done in brainvisa sh script but not on windows
+try:
+  sys.setdefaultencoding( "iso-8859-1" )
+  import site
+except AttributeError:
+  pass
+
 # Force QString API version in order to be compatible with recent version
 # of enthought.traits.ui (3.6 for instance)
 import sip
