@@ -2604,7 +2604,7 @@ class ProcessTreesWidget(QSplitter):
     Called on click on new option in contextual menu. 
     Adds a new empty tree in the model.
     """
-    processTree=neuroProcesses.ProcessTree()
+    processTree=neuroProcesses.ProcessTree( name='Personal Bookmarks' )
     processTree.new=True
     self.model.add(processTree)
 
