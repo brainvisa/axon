@@ -92,14 +92,16 @@ returnValue=$?
 # characters typed by user are not displayed anymore.
 #
 # check that stty command exists
-if ( type stty > /dev/null 2>&1 ); then
-  # If brainvisa is in background, do not launch stty otherwise
-  # the process is stopped
-  pgid=`ps -p $$ -o pgid=`
-  tpgid=`ps -p $$ -o tpgid=`
-  if [ "$pgid" = "$tpgid" ]; then
-    # if stty command can be called then reset terminal
-    stty -a > /dev/null 2>&1 && stty sane
+if  [ ! "${TERM}" = "msys" ]; then
+  if ( type stty > /dev/null 2>&1 ); then
+    # If brainvisa is in background, do not launch stty otherwise
+    # the process is stopped
+    pgid=`ps -p $$ -o pgid=`
+    tpgid=`ps -p $$ -o tpgid=`
+    if [ "$pgid" = "$tpgid" ]; then
+      # if stty command can be called then reset terminal
+      stty -a > /dev/null 2>&1 && stty sane
+    fi
   fi
 fi
 
