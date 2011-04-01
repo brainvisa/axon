@@ -2670,7 +2670,7 @@ class ProgressInfo( object ):
 
 #----------------------------------------------------------------------------
 class ProcessInfo:
-  def __init__( self, id, name, signature, userLevel, category, fileName, roles, toolbox ):
+  def __init__( self, id, name, signature, userLevel, category, fileName, roles, toolbox, module=None ):
     self.id = id
     self.name = name
     #TODO: Signature cannot be pickeled
@@ -2682,7 +2682,20 @@ class ProcessInfo:
     self.valid=True # set to False if process' validation method fails
     self.procdoc = None
     self.toolbox = toolbox
-
+    
+    if module is None:
+      for p in ( neuroConfig.mainPath, neuroConfig.homeBrainVISADir ):
+        if self.fileName.startswith( p ):
+          module = split_path( self.fileName[ len( p ) + 1: ] )
+      if module:
+        if module[0] == 'toolboxes':
+          module = module[ 2: ]
+        module = '.'.join( module )
+        if module.endswith( '.py' ):
+          module = module[ :-3 ]
+    self.module = module
+  
+  
   def html( self ):
     return '\n'.join( ['<b>' + n + ': </b>' + unicode( getattr( self, n ) ) + \
                         '<br>\n' for n in ( 'id', 'name', 'toolbox', 'signature',
@@ -3144,7 +3157,9 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
     )
     _processesInfo[ processInfo.id.lower() ] = processInfo
     _processesInfoByName[ NewProcess.name.lower() ] = processInfo
-
+    
+    NewProcess.module = processInfo.module
+    
     # Process validation
     if not ignoreValidation:
       v = getattr( processModule, 'validation', None )
@@ -3372,7 +3387,7 @@ class ProcessTree( EditableTree ):
                 ignoreValidation=neuroConfig.ignoreValidation,
                 toolbox=toolbox ) # two arguments : process fullpath and category (directories separated by /)
             else:
-              addProcessInfo(id, processInfo)
+              addProcessInfo( id, processInfo )
           except ValidationError:# it may occur a validation error on reading process
             pass
           except:

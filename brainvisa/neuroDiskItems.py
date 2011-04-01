@@ -39,6 +39,7 @@ from threading import RLock
 from soma.html import htmlEscape
 from soma.undefined import Undefined
 from soma.uuid import Uuid
+from soma.path import split_path
 from soma.minf.api import readMinf, MinfError
 from soma.wip.application.api import Application
 
@@ -1512,7 +1513,61 @@ class HierarchyDirectoryType( FileType ):
 typesLastModification = 0
 # mef is global to handle multiple call to readTypes since allready read
 # file types are stored in it to prevent multiple loads which cause troubles.
-mef = MultipleExecfile()
+class TypesMEF( MultipleExecfile ):
+  def __init__( self ):
+    super( TypesMEF, self ).__init__()
+    self.localDict[ 'Format' ] = self.create_format
+    self.localDict[ 'createFormatList' ] = self.create_format_list
+    self.localDict[ 'FileType' ] = self.create_type
+  
+  
+  def create_format( self, *args, **kwargs ):
+    format = Format( *args, **kwargs )
+    toolbox, module = self.currentToolbox()
+    format.toolbox = toolbox
+    format.module = module
+    return format
+  
+  
+  def create_format_list( self, *args, **kwargs ):
+    format_list = createFormatList( *args, **kwargs )
+    toolbox, module = self.currentToolbox()
+    format_list.toolbox = toolbox
+    format_list.module = module
+    return format_list
+  
+  def create_type( self, *args, **kwargs ):
+    type = FileType( *args, **kwargs )
+    toolbox, module = self.currentToolbox()
+    type.toolbox = toolbox
+    type.module = module
+    return type
+  
+  
+  def currentToolbox( self ):
+    file = self.localDict[ '__name__' ]
+    toolbox = None
+    module = None
+    if file.startswith( neuroConfig.mainPath ):
+      l = split_path( file[ len( neuroConfig.mainPath ) + 1: ] )
+      if l and l[0] == 'toolboxes':
+        if len( l ) >= 4:
+          toolbox = l[ 1 ]
+          module = '.'.join( l[ 2:] )
+          if module.endswith( '.py' ):
+            module = module[ :-3 ]
+      elif l and l[0] == 'types':
+        toolbox = 'axon'
+        module = '.'.join( l )
+        if module.endswith( '.py' ):
+          module = module[ :-3 ]
+    else:
+      module = file
+    return ( toolbox, module )
+  
+  
+
+mef = TypesMEF()
 mef.fileExtensions.append( '.py' )
 def readTypes():
   global typesLastModification

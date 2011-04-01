@@ -32,7 +32,7 @@
 import sys, os
 from traceback      import format_exc
 
-class MultipleExecfile:
+class MultipleExecfile( object ):
   def __init__( self, localDict=None, globalDict=None ):
     if localDict is None:
       localDict = {}
