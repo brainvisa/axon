@@ -3379,6 +3379,7 @@ class ProcessTree( EditableTree ):
           elif ff.endswith( '.py' ) or ff.endswith('.so'):
             p.append( ( f, ff ) )
         for f, ff in p:
+          if not os.path.exists( ff ): continue
           id = f[:-3]
           try:
             processInfo = processesCache.get( id )
