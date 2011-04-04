@@ -34,7 +34,6 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 import sys, os
-
 # Set default encoding to 'iso-8859-1'
 try:
   ksdjfh34_f9
@@ -45,6 +44,9 @@ sys.setdefaultencoding( 'iso-8859-1' )
 import site
 
 import __builtin__
+
+import sip
+sip.setapi( 'QString', 2 )
 
 
 translatables = {}
