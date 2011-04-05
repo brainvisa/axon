@@ -104,8 +104,8 @@ if anatomistImport:
       if neuroConfig.userProfile is not None:
         anatomistParameters += [ '-u', neuroConfig.userProfile ]
       mainThread=QtThreadCall()
-      args = [ self ] + anatomistParameters
-      anatomistModule.Anatomist.__singleton_init__( *args, **kwargs )
+      args = anatomistParameters
+      super( Anatomist, self ).__singleton_init__( *args, **kwargs )
       if neuroConfig.anatomistImplementation != 'socket':
         a = anatomistModule.Anatomist()
         if neuroConfig.openMainWindow :
@@ -468,6 +468,15 @@ if anatomistImport:
       # Keep a reference on mesh. In case of temporary file, it must not be
       # deleted while in Anatomist
       return {"mesh" : mesh, "texture" : tex, "fusion" : fusion, "window" : window, "meshFile" : meshFile, "textureFile" : textureFile}
+
+    #def close( self ):
+      #print 'CLOSE !!!'
+      #if neuroConfig.anatomistImplementation != 'threaded':
+        #print 'really really closing.'
+        #anatomistModule.Anatomist.close( self )
+      #else:
+        #self.execute( 'DeleteAll' )
+        #self.getControlWindow().close()
 
   # end of Anatomist class
 
