@@ -48,6 +48,7 @@ from neuroProcesses import procdocToXHTML, writeProcdoc, generateHTMLProcessesDo
 import weakref
 from soma.minf.xhtml import XHTML
 from soma.qtgui.api import QtThreadCall, FakeQtThreadCall, TextBrowserWithSearch, bigIconSize, defaultIconSize
+from soma.html import htmlEscape
 import threading
 try:
   import sip
@@ -286,7 +287,7 @@ class HTMLBrowser( QWidget ):
           neuroException.showException()
       elif bvp.startswith( 'file://' ) and bvp.endswith( '.py' ):
         TextBrowserWithSearch.setSource( self, url )
-        self.setHtml( '<html><body><pre>' + open( url.toLocalFile() ).read() + '</pre></body></html>' )
+        self.setHtml( '<html><body><pre>' + htmlEscape(open( url.toLocalFile() ).read()) + '</pre></body></html>' )
         sys.stdout.flush()
       else:
         # trick to make the links in documentation work on windows
