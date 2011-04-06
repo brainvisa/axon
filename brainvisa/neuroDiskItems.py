@@ -1519,6 +1519,7 @@ class TypesMEF( MultipleExecfile ):
     self.localDict[ 'Format' ] = self.create_format
     self.localDict[ 'createFormatList' ] = self.create_format_list
     self.localDict[ 'FileType' ] = self.create_type
+    self.localDict[ 'HierarchyDirectoryType' ] = self.create_directory_type
   
   
   def create_format( self, *args, **kwargs ):
@@ -1543,6 +1544,13 @@ class TypesMEF( MultipleExecfile ):
     type.module = module
     return type
   
+  def create_directory_type( self, *args, **kwargs ):
+    type = HierarchyDirectoryType( *args, **kwargs )
+    toolbox, module = self.currentToolbox()
+    type.toolbox = toolbox
+    type.module = module
+    return type
+
   
   def currentToolbox( self ):
     file = self.localDict[ '__name__' ]
