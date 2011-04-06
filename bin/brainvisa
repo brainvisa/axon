@@ -92,7 +92,7 @@ returnValue=$?
 # characters typed by user are not displayed anymore.
 #
 # check that stty command exists
-if  [ ! "${TERM}" = "msys" ]; then
+if  ( [ ! "${TERM}" = "msys" ] && [ ! "${TERM}" = "cygwin" ] ); then
   if ( type stty > /dev/null 2>&1 ); then
     # If brainvisa is in background, do not launch stty otherwise
     # the process is stopped
