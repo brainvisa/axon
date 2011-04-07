@@ -46,7 +46,7 @@
 
 <br>
 <!---------------------------------------------------------------------------->
-<h2><a name="version-4.1.0">Version 4.1.0</a></h2>
+<h2><a name="version-4.1.0">Version 4.1.0 (2011/04/07)</a></h2>
 <blockquote>
 
 <p>In this version, an important change for the developers should be noted : the build tool used to compile from the source code has changed. We gave up our home-made tool <i>build-config</i> and replace it with the standard tool <a href="http://www.cmake.org/">CMake</a>, a cross-platform, open-source build system.
@@ -66,7 +66,7 @@
     <li>T1 Normalization processes (using FSL or SPM) have been moved from fMRI to T1MRI toolbox. So, it is now possible to choose normalization instead of manual localization of AC/PC in the anatomical pipeline without having fMRI toolbox installed.</li>
   </ul>
 <li><b>Sulci toolbox</b></li>
-  <ul> 
+  <ul>
     <li>New process <b>SPAM models installation</b> to install SPAM models for sulci recognition. The installation of the required models is checked in the Morphologist pipeline.</li>
     <li>Add new 2011 ANN models to sulci recognition available models</li>
     <li>Bug fix in iterative mode of a sulci graph viewer</li>
@@ -93,9 +93,9 @@
 <li><b>Database browser</b>: enable visualization of unrecognized data if a viewer that accepts the data format exists.</li>
 <li>Fix commands log in windows version.</li>
 <li>Documentation panel : enable links with anchor and open web links in a real web browser when possible.</li>
-<li>Browse button in process iteration dialog always opens the dialog that enables selecting several files at different location on the filesystem. 
+<li>Browse button in process iteration dialog always opens the dialog that enables selecting several files at different location on the filesystem.
 This action was only available through right click before.</li>
-<li>Improvement of database update when a process finishes : intermediate directory items created by the process are inserted in the database; 
+<li>Improvement of database update when a process finishes : intermediate directory items created by the process are inserted in the database;
 output parameters of a sub-process not in a pipeline are inserted in the database. </li>
 
 <li>Improvement in <b>Morphometry statistics</b> process : output parameters are now output_directory and output_filename_prefix instead of output_prefix and have default values.</li>
@@ -331,11 +331,11 @@ output parameters of a sub-process not in a pipeline are inserted in the databas
   <blockquote>
     Tools for segmentation of various anatomical objects (hemispheres, grey matter, white matter, cortical sulci and gyri, <i>etc.</i>) from T1 weighted MRI.
   </blockquote>
-  
+
   <h4>Sulci</h4>
   <blockquote>
   </blockquote>
-  
+
   <h4>Diffusion and Tracking:</h4>
   <blockquote>
     Diffusion MR image analysis and fiber tracking.
@@ -345,41 +345,41 @@ output parameters of a sub-process not in a pipeline are inserted in the databas
       <li>New regularized probabilistic tracking methods.</li>
     </p>
   </blockquote>
-  
-  
+
+
   <h4>Datamind:</h4>
   <blockquote>
   </blockquote>
-  
+
   <h4>Cortical surface</h4>
   <blockquote>
   </blockquote>
-  
+
   <h4>Structural analysis</h4>
   <blockquote>
   </blockquote>
-  
+
   <h4>Biology</h4>
   <blockquote>
   </blockquote>
-  
+
   <h4>Nuclear Imaging</h4>
   <blockquote>
   </blockquote>
-  
+
   <h4>Morphometry</h4>
   <blockquote>
   </blockquote>
-  
+
   <h4>TMS</h4>
   <blockquote>
   </blockquote>
-  
+
   <h4>Data management</h4>
   <blockquote>
   Core BrainVISA toolbox. Contains processes for databases management: data importation, databases checking, update and exploration.
   </blockquote>
-  
+
   <h4>Tools</h4>
   <blockquote>
   Core BrainVISA toolbox. Contains general processes that could not be put in another, more specific, toolbox.
@@ -428,9 +428,9 @@ fiber tracking.</li>
 
 <h3>Improvements</h3>
 
-<li>Link with Matlab: multiple Matlab versions may now be supported. The matlab module in 
-  BrainVisa can switch between several pymat module compiled for either matlab 6 or 7. 
-  We have built pymat modules for both matlab versions in the binary packages (Linux, Windows, 
+<li>Link with Matlab: multiple Matlab versions may now be supported. The matlab module in
+  BrainVisa can switch between several pymat module compiled for either matlab 6 or 7.
+  We have built pymat modules for both matlab versions in the binary packages (Linux, Windows,
   Mac, althrough they have not been tested at all on Mac)
 </li>
 
@@ -440,7 +440,7 @@ fiber tracking.</li>
 <!---------------------------------------------------------------------------->
 <h2><a name="version-3.0.0">Version 3.0.0 (29/06/2005)</a></h2>
 <blockquote>
-Well, the changelog hasn't been maintained for this version... There has been quite 
+Well, the changelog hasn't been maintained for this version... There has been quite
 many changes, the most noticeable in the core of BrainVISA is a new pipeline system.&nbsp;</div>
 </blockquote>
 
@@ -453,12 +453,12 @@ many changes, the most noticeable in the core of BrainVISA is a new pipeline sys
 <h3>Changes in the core:</h3>
 
 
-<li>Fix in combo boxes creation in database browser that broke compatibility with new 
-  Python-Qt binding library (SIP 4). This bug made the importation processes break on the 
+<li>Fix in combo boxes creation in database browser that broke compatibility with new
+  Python-Qt binding library (SIP 4). This bug made the importation processes break on the
   Mac version, and probably the Windows version too.
 </li>
 
-<li>Fix a possible crash in the redraw routines when a database browser combo was selected. 
+<li>Fix a possible crash in the redraw routines when a database browser combo was selected.
   Especially, this bug caused dirty crashes on the Mac version that made it quite unusable.
 </li>
 </blockquote>
@@ -472,11 +472,11 @@ many changes, the most noticeable in the core of BrainVISA is a new pipeline sys
 <h3>Changes in the core:</h3>
 
 
-<li>Improvements in the installation program: it is not really part of BrainVisa, but there 
-  is no other place yet for it. Installation in directories containing space characters now work 
-  on all systems (esp. windows), 
-  running the SHFJEnvironmentVariables scripts is no longer necessary to run all Aims and Vip 
-  commands from a terminal, re-running the setup program is safe and may be used after moving the 
+<li>Improvements in the installation program: it is not really part of BrainVisa, but there
+  is no other place yet for it. Installation in directories containing space characters now work
+  on all systems (esp. windows),
+  running the SHFJEnvironmentVariables scripts is no longer necessary to run all Aims and Vip
+  commands from a terminal, re-running the setup program is safe and may be used after moving the
   installation directory.
 </li>
 
@@ -487,7 +487,7 @@ many changes, the most noticeable in the core of BrainVISA is a new pipeline sys
 <h3>Changes in processes:</h3>
 
 
-<li>SPM to AIMS normalization matrixes converter now also works with SPM2 normalization 
+<li>SPM to AIMS normalization matrixes converter now also works with SPM2 normalization
   files
 </li>
 </blockquote>
@@ -502,11 +502,11 @@ many changes, the most noticeable in the core of BrainVISA is a new pipeline sys
 <h3>Changes in the core:</h3>
 
 
-<li>Fixed an ambiguity in the standard database hierarchy that caused the anatomical 
+<li>Fixed an ambiguity in the standard database hierarchy that caused the anatomical
   pipeline to fail at the end (graphToTalairach)</li>
 
-<li>Various fixes in C and C++ libraries used by BrainVisa processes. Amongst other things, this 
-  update should fix some problems on Windows XP (ROI graph writing, anatomical pipeline failure when 
+<li>Various fixes in C and C++ libraries used by BrainVisa processes. Amongst other things, this
+  update should fix some problems on Windows XP (ROI graph writing, anatomical pipeline failure when
   using filenames containing space characters...)
 </li>
 
@@ -521,7 +521,7 @@ many changes, the most noticeable in the core of BrainVISA is a new pipeline sys
 
 <li>Fixes in SPM-&gt;AIMS transformation converter</li>
 
-<li>SPM normalization/coregistration matrix converter, SPM images 
+<li>SPM normalization/coregistration matrix converter, SPM images
   importation for anatomy, multiple cortical folds recognitions, ...
 </li>
 
@@ -543,7 +543,7 @@ many changes, the most noticeable in the core of BrainVISA is a new pipeline sys
 
 <li>Setup menus for options</li>
 
-<li>Databases setup is done via the menus: editing <tt>options.py</tt> is no longer 
+<li>Databases setup is done via the menus: editing <tt>options.py</tt> is no longer
 necessary.</li>
 
 <li>Bug reports options</li>
@@ -554,7 +554,7 @@ necessary.</li>
 
 <li>Tooltips in processes GUI</li>
 
-<li>A new process category: editors, are similar to viewers but are dedicated to data 
+<li>A new process category: editors, are similar to viewers but are dedicated to data
   modification. For now, a "label image" editor calls the ROI edition tool of Anatomist
 </li>
 
@@ -567,20 +567,20 @@ necessary.</li>
 <li>Diffusion and tracking pipeline</li>
 
 <li>Anatomical pipeline:
-  
+
   <ul>
 
   <li>subject preparation now takes care of image orientations</li>
 
   <li>the pipeline also creates the head mesh</li>
 
-  
+
   </ul>
 
 </li>
 
-<li>Some cleanup has been done in the multiple processes of BrainVISA: the userLevels 
-  have been modified in some cases so as to show in basic level only really useful 
+<li>Some cleanup has been done in the multiple processes of BrainVISA: the userLevels
+  have been modified in some cases so as to show in basic level only really useful
   ones (pipelines etc).
 </li>
 
