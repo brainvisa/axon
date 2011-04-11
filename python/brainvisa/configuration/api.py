@@ -47,13 +47,10 @@ from brainvisa.configuration.databases_configuration import DatabasesConfigurati
 from brainvisa.configuration.anatomist_configuration import AnatomistConfiguration
 from brainvisa.configuration.r_configuration import RConfiguration
 from brainvisa.configuration.matlab_configuration import MatlabConfiguration
+from brainvisa.configuration.spm_configuration import SPMConfiguration
 from brainvisa.configuration.distributed_configuration import DistributedBrainVISAConfiguration
 try :
   from brainvisa.configuration.datastorage_configuration import DataStorageConfiguration
-except Exception, e :
-  pass
-try :
-  from brainvisa.configuration.sulci_configuration import SulciConfiguration
 except Exception, e :
   pass
 from soma.wip.configuration import Configuration
@@ -69,14 +66,11 @@ def initializeConfiguration():
   configuration.add( 'anatomist',  AnatomistConfiguration() )
   configuration.add( 'R',  RConfiguration() )
   configuration.add( 'matlab', MatlabConfiguration() )
+  configuration.add( 'SPM', SPMConfiguration() )
   configuration.add( 'distributed_execution',
     DistributedBrainVISAConfiguration() )
   try :
     configuration.add( 'datastorage', DataStorageConfiguration() )
-  except Exception, e :
-    pass
-  try :
-    configuration.add( 'sulci', SulciConfiguration() )
   except Exception, e :
     pass
 
