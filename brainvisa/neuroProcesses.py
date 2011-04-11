@@ -1974,7 +1974,9 @@ class ExecutionContext:
           # p: parameter (Read/WriteDiskItem)
           if v and getattr(v, "type", None) and ( ( not isSameDiskItemType( v.type, p.type ) ) or v.format not in p.formats ):
             c = None
-            for destinationFormat in p.formats:
+            formats = [ p.preferredFormat ] \
+              + [ f for f in p.formats if f is not p.preferredFormat ]
+            for destinationFormat in formats:
               converter = getConverter( (v.type, v.format), (p.type, destinationFormat), checkUpdate=False )
               if converter:
                 tmp = self.temporary( destinationFormat )
