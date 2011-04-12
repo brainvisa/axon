@@ -43,11 +43,11 @@ from soma.wip.configuration import ConfigurationGroup
 from soma.signature.api import Signature, Unicode, FileName, Sequence, Boolean
 
 #------------------------------------------------------------------------------
-class SPMConfiguration( ConfigurationGroup ):
-  label = 'SPM'
-  icon = 'matlab.png'
+class FSLConfiguration( ConfigurationGroup ):
+  label = 'FSL'
+  icon = 'fsl-logo-big.jpg'
   signature = Signature(
-    'check_spm_path', Boolean, dict( defaultValue=True, doc='check where SPM is installed (needs to run matlab)' ),
-    'spm5_path', FileName, dict( defaultValue='', doc='location of SPM 5 installation directory' ),
+    # 'fsldir', FileName, dict( defaultValue='', doc='location of FSL installation directory' ),
+    'fsl_commands_prefix', Unicode, dict( defaultValue='', doc='prefix, prepended to FSL commands names, used in some installations (Ubuntu uses "fsl4.1-")' ),
   )
 
