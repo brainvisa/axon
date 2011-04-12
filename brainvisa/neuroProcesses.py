@@ -2051,7 +2051,10 @@ class ExecutionContext:
           if item.modificationHash() != hash:
             try:
               # do not try to insert in the database an item that doesn't have any reference to a database
-              if item.get("_database", None):
+              # or which is temporary
+              if item.get("_database", None) and \
+                ( not hasattr( item, '_isTemporary' ) \
+                  or not item._isTemporary ):
                 neuroHierarchy.databases.insertDiskItem( item, update=True )
             except NotInDatabaseError:
               pass
