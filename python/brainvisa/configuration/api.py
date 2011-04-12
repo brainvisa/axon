@@ -48,6 +48,7 @@ from brainvisa.configuration.anatomist_configuration import AnatomistConfigurati
 from brainvisa.configuration.r_configuration import RConfiguration
 from brainvisa.configuration.matlab_configuration import MatlabConfiguration
 from brainvisa.configuration.spm_configuration import SPMConfiguration
+from brainvisa.configuration.fsl_configuration import FSLConfiguration
 from brainvisa.configuration.distributed_configuration import DistributedBrainVISAConfiguration
 try :
   from brainvisa.configuration.datastorage_configuration import DataStorageConfiguration
@@ -67,6 +68,7 @@ def initializeConfiguration():
   configuration.add( 'R',  RConfiguration() )
   configuration.add( 'matlab', MatlabConfiguration() )
   configuration.add( 'SPM', SPMConfiguration() )
+  configuration.add( 'FSL', FSLConfiguration() )
   configuration.add( 'distributed_execution',
     DistributedBrainVISAConfiguration() )
   try :
