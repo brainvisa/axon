@@ -44,6 +44,7 @@ labelselector = distutils.spawn.find_executable(
 selectionmode = 1
 
 def selectionType():
+    global selectionmode
     if selectionmode == 1:
         return LabelSelection()
     else:
@@ -51,15 +52,14 @@ def selectionType():
 
 
 def changeSelectionMode( mode = 1 ):
+    global selectionmode
     if mode < 2:
       global labelselector
       if not labelselector:
           mode = 0
-      global selectionmode
       selectionmode = mode
       signature[ 'region' ] = selectionType()
     else:
-      global selectionmode
       selectionmode = mode
       signature[ 'region' ] = ReadDiskItem( 'Labels selection', 'selection' )
 
@@ -87,6 +87,7 @@ sign += (
 signature = Signature( *sign )
 
 def initialization( self ):
+    global selectionmode
     def change_region( self, proc ):
         if self.model:
             mod = self.model.fullPath()
