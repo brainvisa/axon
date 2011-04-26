@@ -42,17 +42,22 @@ __docformat__ = "epytext en"
 
 from soma.wip.configuration import ConfigurationGroup
 from soma.signature.api import Signature, Unicode, FileName, Sequence, Boolean
+import sys
 
 #------------------------------------------------------------------------------
 class MatlabConfiguration( ConfigurationGroup ):
   label = 'Matlab'
   icon = 'matlab.png'
+  optdef = u'-nosplash -nojvm'
+  if sys.platform.startswith( 'win' ):
+    optdef += u' -wait'
   signature = Signature(
     'enable_matlab', Boolean, dict( defaultValue=False, doc='if unchecked, matlab is disabled' ),
     'executable', FileName, dict( defaultValue='matlab', doc='location of the Matlab program' ),
     'version', Unicode, dict( defaultValue=u'', doc='Matlab version' ),
-    'options', Unicode, dict( defaultValue=u'-nosplash -nojvm', doc='Options passed to Matlab executable.' ),
+    'options', Unicode, dict( defaultValue=optdef, doc='Options passed to Matlab executable.' ),
     'path', Sequence( Unicode ), dict( defaultValue=[], doc='List of directories that will be added to Matlab path.' ),
     'startup', Sequence( Unicode ), dict( defaultValue=[], doc='List of Matlab commands to execute at startup.' ),
   )
+  del optdef
 
