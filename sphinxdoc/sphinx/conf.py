@@ -22,7 +22,7 @@ try:
   sys.path.append( os.path.abspath( os.path.join( os.path.dirname( os.path.dirname( matplotlib.__file__ ) ), 'sphinx', 'ext' ) ) )
 except Exception, e:
   print 'warning:', e
-  
+
 # path for brainvisa
 import brainvisa
 sys.path.append( os.path.join( os.path.dirname( os.path.dirname( \
@@ -237,13 +237,15 @@ extlinks = {
   'somaworkflow' : ( '../../soma-workflow-1.0/sphinx/%s', 'somaworkflow' ),
 }
 
+docpath = os.path.join( os.path.dirname( os.path.dirname( os.path.dirname( \
+  brainvisa.__file__ ) ) ), 'share', 'doc' )
 
 intersphinx_mapping = {
-  'somabase': ('../../../../../../build-cmake/build-stable-release/share/doc/soma-base-' + version + '/sphinx', None),
-  'somaqtgui': ('/home/riviere/build-cmake/build-stable-release/share/doc/soma-qtgui-' + version + '/sphinx', None),
-  'pyaims': ('/home/riviere/build-cmake/build-stable-release/share/doc/pyaims-' + version + '/sphinx', None),
-  'pyana': ('/home/riviere/build-cmake/build-stable-release/share/doc/pyanatomist-' + version + '/sphinx', None),
-  'somaworkflow': ('../../../../../../build-cmake/build-stable-release/share/doc/soma-workflow-1.0/sphinx', None),
+  'somabase': ( os.path.join( docpath, 'soma-base-' + version + '/sphinx' ), None ),
+  'somaqtgui': ( os.path.join( docpath, 'soma-qtgui-' + version + '/sphinx' ), None ),
+  'pyaims': ( os.path.join( docpath, 'pyaims-' + version + '/sphinx' ), None ),
+  'pyana': ( os.path.join( docpath, 'pyanatomist-' + version + '/sphinx' ), None ),
+  'somaworkflow': ( os.path.join( docpath, 'soma-workflow-1.0/sphinx' ), None ),
   'python': ('http://docs.python.org/3.2', None),
 }
 
