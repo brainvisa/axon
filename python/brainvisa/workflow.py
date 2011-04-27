@@ -123,7 +123,12 @@ class ProcessToWorkflow( object ):
                 #print "file => " + repr(fileName.fullPath())
                 #print "database => " + repr(database)
                 #print "databaseUuid => " + repr(databaseUuid)
-                self._files[fileId]=(fileName.fullPath(), fileName.fullPaths(), databaseUuid, database)
+                full_paths = [fileName.fullPath() + ".minf"]
+                if fileName.fullPaths():
+                  full_paths.extend(fileName.fullPaths())
+                else:
+                  full_paths.append(fileName.fullPath())
+                self._files[fileId]=(fileName.fullPath(), full_paths, databaseUuid, database)
                 self._fileNames[fileName.fullPath()]= fileId
               else:
                 fileId = self._fileNames[fileName.fullPath()]
@@ -143,7 +148,12 @@ class ProcessToWorkflow( object ):
                 databaseUuid = None
                 if database:
                   databaseUuid = neuroHierarchy.databases.database( database ).uuid
-                self._files[fileId]=(fileName.fullPath(), fileName.fullPaths(), databaseUuid, database)
+                full_paths = [fileName.fullPath() + ".minf"]
+                if fileName.fullPaths():
+                  full_paths.extend(fileName.fullPaths())
+                else:
+                  full_paths.append(fileName.fullPath())
+                self._files[fileId]=(fileName.fullPath(), full_paths, databaseUuid, database)
                 self._fileNames[fileName.fullPath()]= fileId
               else:
                 fileId = self._fileNames[fileName.fullPath()]
