@@ -526,6 +526,11 @@ class ExecutionNodeGUI(QWidget):
   def closeEvent(self, event):
     self.parameterizedWidget.close()
     QWidget.closeEvent(self, event)
+    
+  def _checkReadable( self ):
+    if self.parameterizedWidget is not None:
+      self.parameterizedWidget.checkReadable()
+
 #----------------------------------------------------------------------------
 class VoidClass:
   pass
