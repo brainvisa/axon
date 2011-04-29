@@ -85,7 +85,7 @@ LANG="$OLDLANG"
 unset OLDLANG
 
 # Look for neuro.py
-$python -S -t -c "$runbrainvisa" "$0" "$@"
+"$python" -S -t -c "$runbrainvisa" "$0" "$@"
 returnValue=$?
 
 # After using IPython in brainvisa, console need to be reset otherwise
