@@ -131,6 +131,11 @@ def openWeb(source):
     if browser is not None:
       browser = distutils.spawn.find_executable( browser )
       if browser:
+        if sys.platform == "darwin":
+          m=re.match("\/Applications\/.+\.app/Contents/MacOS/(.*)", browser)
+          if m:
+            if os.system("open -a "+m.group(1)+" '"+source+"'") == 0:
+              return
         if os.spawnl( os.P_NOWAIT, browser, browser, source ) > 0:
           return
   except:
