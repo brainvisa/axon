@@ -55,10 +55,10 @@ neuroProcesses
   :members:
 
 
-neuroProcessesGui
+neuroProcessesGUI
 +++++++++++++++++
 
-.. automodule:: neuroProcessesGui
+.. automodule:: neuroProcessesGUI
   :members:
 
 
