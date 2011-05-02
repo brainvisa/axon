@@ -131,6 +131,11 @@ def openWeb(source):
     if browser is not None:
       browser = distutils.spawn.find_executable( browser )
       if browser:
+        if sys.platform == "darwin":
+          m=re.match("\/Applications\/.+\.app/Contents/MacOS/(.*)", browser)
+          if m:
+            if os.system("open -a "+m.group(1)+" '"+source+"'") == 0:
+              return
         if os.spawnl( os.P_NOWAIT, browser, browser, source ) > 0:
           return
   except:
@@ -526,6 +531,11 @@ class ExecutionNodeGUI(QWidget):
   def closeEvent(self, event):
     self.parameterizedWidget.close()
     QWidget.closeEvent(self, event)
+    
+  def _checkReadable( self ):
+    if self.parameterizedWidget is not None:
+      self.parameterizedWidget.checkReadable()
+
 #----------------------------------------------------------------------------
 class VoidClass:
   pass
