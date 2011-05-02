@@ -37,7 +37,7 @@ done
 [ -z "$python" ] && echo 'Cannot find Python executable' && exit 1
 
 if [ "$os" = "darwin" ]; then
-  python=`$python -c "$nosymlink"` # "$python"`/$pythonexe
+  python=`"$python" -c "$nosymlink"` # "$python"`/$pythonexe
 fi
 
 runbrainvisa='
