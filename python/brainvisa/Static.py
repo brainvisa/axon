@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -34,7 +35,7 @@
 class Static:
   """This class is used to associate classical Python functions (i.e as opposed
 to method) or callable to a class. The function becomes a static method which
-can be called without beign bound to an object.
+can be called without being bound to an object.
 
 Here is a small exemple :
 
