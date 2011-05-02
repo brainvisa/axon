@@ -53,7 +53,7 @@ class SPMConfiguration( ConfigurationGroup ):
 
   def _get_spm5_path( self ):
     return self._spm5_path
-  def _set_spm5_path( self, name, value ):
+  def _set_spm5_path( self, value ):
     self._spm5_path = value
   spm5_path = property( _get_spm5_path, _set_spm5_path )
   
