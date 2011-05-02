@@ -52,14 +52,14 @@ class SPMConfiguration( ConfigurationGroup ):
   )
 
   def _get_spm5_path( self ):
-    print '!_get_spm5_path!', self._spm5_path
     return self._spm5_path
   def _set_spm5_path( self, value ):
-    print '!_set_spm5_path!', value
     self._spm5_path = value
   spm5_path = property( _get_spm5_path, _set_spm5_path )
   
   
   def __init__( self, *args, **kwargs ):
     self._spm5_path = None
+    self._spmpath_checked = True
     super( SPMConfiguration, self ).__init__( *args, **kwargs )
+
