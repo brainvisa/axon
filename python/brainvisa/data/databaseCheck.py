@@ -109,11 +109,13 @@ class DBProcessor(object):
         c.process(debug=debug)
 
     self.doneProcesses=[]
+    currentDir=os.getcwdu()
     os.chdir(self.dbDir)
     for action in self.fileProcesses:
       if action.selected:
         action.doit(debug, context=self.context)
         self.doneProcesses.insert(0, action)
+    os.chdir(currentDir)
   
   def generateUndoScripts(self, component=None):
     """
@@ -269,6 +271,7 @@ class T1MriConverter(DBConverter):
   def findActions(self):
     self.fileProcesses=[]
     protocols=os.listdir(self.dbDir) # first level : protocol
+    currentDir=os.getcwdu()
     os.chdir(self.dbDir)
     for p in protocols:
       if os.path.isdir(p):
@@ -505,6 +508,7 @@ class T1MriConverter(DBConverter):
               
             #if "spectroscopy" in dirs:
               #self.fileProcesses.append( FileProcess() )
+      os.chdir(currentDir)
     return self.fileProcesses
           
           
@@ -653,6 +657,7 @@ class DiffusionConverter(DBConverter):
   def findActions(self):
     self.fileProcesses=[]
     protocols=os.listdir(self.dbDir) # first level : protocol
+    currentDir=os.getcwdu()
     os.chdir(self.dbDir)
     for p in protocols:
       if os.path.isdir(p):
@@ -736,7 +741,7 @@ class DiffusionConverter(DBConverter):
               # inter modality referentials and transformations stay  in protocol/subject/regsitration but are renamed
               registrationPatterns=self.getRegistrationPatterns(s)
               self.convertFiles(registrationPatterns, registrationDir, registrationDir, registrationDir, "")
-
+      os.chdir(currentDir)
     return self.fileProcesses
 
   def getAcquisitionPatterns(self, subject):
@@ -839,6 +844,7 @@ class PETConverter(DBConverter):
   def findActions(self):
     self.fileProcesses=[]
     protocols=os.listdir(self.dbDir) # first level : protocol
+    currentDir=os.getcwdu()
     os.chdir(self.dbDir)
     for p in protocols:
       if os.path.isdir(p):
@@ -876,6 +882,7 @@ class PETConverter(DBConverter):
               for graphPattern in graphPatterns:
                 if contentMatch(graphDir, graphPattern):
                   self.fileProcesses.append(FileProcess(graphDir, Move(os.path.join(acquisitionDir, self.default_analysis, "ROI")), pattern=graphPattern ))
+      os.chdir(currentDir)
     return self.fileProcesses
   
   def getSegmentationPatterns(self, subject):
@@ -938,6 +945,7 @@ class BVConverter_3_1(DBConverter):
     if self.segmentDefaultDestination or self.grapheDefaultDestination:
       self.context.write("\nRemaining files in segment and graphe directories will be moved to "+self.segmentDefaultDestination+" and "+self.grapheDefaultDestination)
       protocols=os.listdir(self.dbDir) # first level : protocol
+      currentDir=os.getcwdu()
       os.chdir(self.dbDir)
       for p in protocols:
         if os.path.isdir(p):
@@ -991,6 +999,7 @@ class BVConverter_3_1(DBConverter):
                   if not acquisitionLevel or files:
                     self.fileProcesses.append(FileProcess(grapheDir, Move(os.path.join(subjectDir, "pet", self.default_acquisition, self.default_analysis, "ROI")), pattern=".*" ))
                 self.fileProcesses.append( FileProcess(grapheDir, Remove(subjectDir)) )
+      os.chdir(currentDir)
     actions=[]
     actions.extend(self.fileProcesses)
     actions.extend(super(BVConverter_3_1, self).findActions(component) ) 
@@ -1173,6 +1182,7 @@ class DBChecker(DBProcessor):
     @type component: string
     @param component: key of a component to process only a part of the database
     """
+    currentDir=os.getcwdu()
     os.chdir(self.dbDir)
     self.processRec(self.fileProcesses, debug=debug)
     
@@ -1186,6 +1196,7 @@ class DBChecker(DBProcessor):
     else:
       for c in self.components.values():
         c.process(debug=debug)
+    os.chdir(currentDir)
 
   def processRec(self, item, debug=False):
     """
