@@ -29,17 +29,21 @@ sys.path.append( os.path.join( os.path.dirname( os.path.dirname( \
   os.path.dirname( brainvisa.__file__ ) ) ), 'brainvisa' ) )
 import sip
 sip.setapi( 'QString', 2 )
+argv = sys.argv
+sys.argv = [ os.path.join( os.path.dirname( os.path.dirname( \
+  os.path.dirname( brainvisa.__file__ ) ) ), 'brainvisa', 'neuro.py' ), '-b' ]
 try:
   import neuro
 except:
   pass # normal...
-sys.argv.append( '-b' ) # doesn't seem to work...
+sys.argv = argv
+del argv
 
 # -- General configuration -----------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx', 'sphinx.ext.todo', 'sphinx.ext.coverage', 'sphinx.ext.ifconfig', 'sphinx.ext.viewcode', 'sphinx.ext.extlinks', 'inheritance_diagram']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx', 'sphinx.ext.todo', 'sphinx.ext.coverage', 'sphinx.ext.ifconfig', 'sphinx.ext.viewcode', 'sphinx.ext.extlinks', 'sphinx.ext.inheritance_diagram']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -246,6 +250,6 @@ intersphinx_mapping = {
   'pyaims': ( os.path.join( docpath, 'pyaims-' + version + '/sphinx' ), None ),
   'pyana': ( os.path.join( docpath, 'pyanatomist-' + version + '/sphinx' ), None ),
   'somaworkflow': ( os.path.join( docpath, 'soma-workflow-1.0/sphinx' ), None ),
-  'python': ('http://docs.python.org/3.2', None),
+  'python': ('http://docs.python.org/2.7', None),
 }
 
