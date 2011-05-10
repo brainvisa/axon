@@ -324,4 +324,5 @@ if neuroConfig.shell:
 
 neuroHierarchy.databases.currentThreadCleanup()
 
-sys.exit( neuroConfig.exitValue )
+if __name__ == '__main__' :
+  sys.exit( neuroConfig.exitValue )
