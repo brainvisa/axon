@@ -3057,7 +3057,7 @@ def getImporter( source, checkUpdate=True ):
     t = t.parent
     v = _importers.get( ( t, f ) )
   p =  getProcess( v, checkUpdate=checkUpdate )
-  if p and p.userLevel <= neuroConfig.userLevel:
+  if p:
     return p
   return None
 

@@ -735,7 +735,7 @@ class SQLDatabase( Database ):
           cursor.execute( sql, values )
     except sqlite3.OperationalError, e:
       self._closeDatabaseCursor( cursor, rollback=True )
-      raise DatabaseError( "Cannot insert items in database " + self.name + ": "+e.message+". You should update this database." )
+      raise DatabaseError( "Cannot insert items in database " + self.name + ": "+e.message+". Item:" + diskItem.fullPath() + ". You should update this database." )
     except:
       self._closeDatabaseCursor( cursor, rollback=True )
       raise
@@ -1388,9 +1388,12 @@ class SQLDatabases( Database ):
     for diskItem in diskItems:
       baseName = diskItem.getHierarchy( '_database' )
       if baseName is None:
+        database = None
         if len( self._databases ) == 1:
           database = self._databases.values()[0]
-        else:
+          if not diskItem.fullPath().startswith( self._databases.values()[0].name ):
+            database = None
+        if database is None:
           raise NotInDatabaseError( _( 'Cannot find out in which database "%s" should be inserted' ) % ( diskItem.fullPath(), ) )
       else:
         database = self._databases[ baseName ]
