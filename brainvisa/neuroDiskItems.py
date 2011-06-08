@@ -657,9 +657,15 @@ class DiskItem:
   def createParentDirectory( self ):
     p = os.path.dirname( self.fullPath() )
     if not os.path.exists( p ):
-      os.makedirs( p )
-  
-  
+      try:
+        os.makedirs( p )
+      except OSError, e:
+        if not e.errno == os.errno.EEXIST:
+          # filter out 'File exists' exception, if the same dir has been created
+          # concurrently by another instance of BrainVisa or another thread
+          raise
+
+
   def isTemporary( self ):
     return self._isTemporary
 
@@ -1417,7 +1423,13 @@ class TemporaryDirectory( Directory ):
     else:
       fullPath = name
     if not os.path.isdir( fullPath ):
-      os.mkdir( fullPath, 0770 )
+      try:
+        os.mkdir( fullPath, 0770 )
+      except OSError, e:
+        if not e.errno == os.errno.EEXIST:
+          # filter out 'File exists' exception, if the same dir has been created
+          # concurrently by another instance of BrainVisa or another thread
+          raise
     Directory.__init__( self, name, parent )
 
 

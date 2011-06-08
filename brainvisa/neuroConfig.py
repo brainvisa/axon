@@ -257,8 +257,14 @@ if not homedir:
       homedir = drive + homedir
 homeBrainVISADir = os.path.join( homedir, '.brainvisa' )
 if not os.path.exists( homeBrainVISADir ):
-  os.mkdir( homeBrainVISADir )
-  
+  try:
+    os.mkdir( homeBrainVISADir )
+  except OSError, e:
+    if not e.errno == os.errno.EEXIST:
+      # filter out 'File exists' exception, if the same dir has been created
+      # concurrently by another instance of BrainVisa or another thread
+      raise
+
 # Other defaults
 anatomistExecutable = 'anatomist'
 if platform == 'windows':
