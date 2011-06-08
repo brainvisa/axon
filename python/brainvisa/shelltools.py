@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -67,12 +68,25 @@ def cp( *args, **kwargs):
     if len( sources ) == 1 and not os.path.isdir( sources[0] ):
       copy( sources[ 0 ], dest )
       return
-    os.mkdir( dest )
+    try:
+      os.mkdir( dest )
+    except OSError, e:
+      if not e.errno == os.errno.EEXIST:
+        # filter out 'File exists' exception, if the same dir has been created
+        # concurrently by another instance of BrainVisa or another thread
+        raise
 
   for path in sources:
     newpath = os.path.join( dest, os.path.normpath( os.path.basename( path ) ) )
     if os.path.isdir( path ):
-      if not os.path.isdir( newpath ): os.mkdir( newpath )
+      if not os.path.isdir( newpath ):
+        try:
+          os.mkdir( newpath )
+        except OSError, e:
+          if not e.errno == os.errno.EEXIST:
+            # filter out 'File exists' exception, if the same dir has been created
+            # concurrently by another instance of BrainVisa or another thread
+            raise
       cp( os.path.join( path, '*' ), os.path.join( path, '.*' ), newpath, symlinks=symlinks )
     elif symlinks and os.path.islink( path ):
       if os.path.exists( newpath ):

@@ -1916,7 +1916,14 @@ class ExecutionContext:
               dirs.append(dir)
               dir=os.path.dirname(dir)
             if dirs:
-              os.makedirs( dirname )
+              try:
+                os.makedirs( dirname )
+              except OSError, e:
+                if not e.errno == os.errno.EEXIST:
+                  # filter out 'File exists' exception, if the same dir has
+                  # been created concurrently by another instance of BrainVisa
+                  # or another thread
+                  raise
               for d in dirs:
                 dirItem=neuroHierarchy.databases.createDiskItemFromFileName(d, None)
                 if dirItem:

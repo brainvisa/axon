@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -114,7 +115,13 @@ class LocalDirectory( virtualDirectory.VirtualDirectory ):
     if virtualDirectoryItem.hasChildren():
       directory = self.__pathFromBinId( binId )
       if os.path.exists( directory ): shelltools.rm( directory )
-      os.mkdir( directory )
+      try:
+        os.mkdir( directory )
+      except OSError, e:
+        if not e.errno == os.errno.EEXIST:
+          # filter out 'File exists' exception, if the same dir has been created
+          # concurrently by another instance of BrainVisa or another thread
+          raise
       for child in virtualDirectoryItem.children():
         name = virtualDirectoryItem.name()
         if not name:
