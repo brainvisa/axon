@@ -225,7 +225,8 @@ def main():
   for f in neuroConfig.startup:
     try:
       if isinstance( f, basestring ):
-        exec f in globals(), localsStartup
+        localsStartup = globals().copy()
+        exec f in localsStartup, localsStartup
       else:
         f()
     except:
