@@ -7,9 +7,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -24,8 +24,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -40,20 +40,20 @@ import neuroConfig
 # at the begining of the list.
 #------------
 
-anatomistVolumeFormats = createFormatList( 
-  'Anatomist volume formats', 
-  ( 
-    'GIS Image', 
+anatomistVolumeFormats = createFormatList(
+  'Anatomist volume formats',
+  (
+    'GIS Image',
     'SPM image',
     'VIDA Image',
     'ECAT v image',
     'ECAT i image',
-    'Z Compressed GIS Image', 
-    'gz Compressed GIS Image', 
+    'Z Compressed GIS Image',
+    'gz Compressed GIS Image',
     'Z compressed VIDA Image',
     'gz compressed VIDA Image',
     'Z compressed SPM image',
-    'gz compressed SPM image', 
+    'gz compressed SPM image',
     'Z compressed ECAT v image',
     'gz compressed ECAT v image',
     'Z compressed ECAT i image',
@@ -81,8 +81,8 @@ anatomistVolumeFormats = createFormatList(
 
 aimsVolumeFormats = createFormatList(
   'Aims readable volume formats',
-  ( 
-    'GIS Image', 
+  (
+    'GIS Image',
     'SPM image',
     'VIDA Image',
     'ECAT v image',
@@ -109,8 +109,8 @@ aimsVolumeFormats = createFormatList(
 
 aimsWriteVolumeFormats = createFormatList(
   'Aims writable volume formats',
-  ( 
-    'GIS Image', 
+  (
+    'GIS Image',
     'SPM image',
     'VIDA Image',
     'ECAT v image',
@@ -166,6 +166,9 @@ anatomistMeshFormats = createFormatList(
     'GIFTI file',
     'Z compressed GIFTI file',
     'gz compressed GIFTI file',
+    'MNI OBJ mesh',
+    'Z compressed MNI OBJ mesh',
+    'gz compressed MNI OBJ mesh',
   )
 )
 
@@ -178,6 +181,7 @@ aimsMeshFormats = createFormatList(
     'TRI mesh',
     'PLY mesh',
     'GIFTI file',
+    'MNI OBJ mesh',
   )
 )
 
@@ -211,7 +215,7 @@ def aimsVolumeAttributes( item, writeOnly=0, forceFormat=0 ):
   if _aimsVolumeFormats is None:
     _aimsVolumeFormats = map( getFormat, aimsVolumeFormats ) \
       + map( getFormat, map( lambda x: 'Series of ' + x.name, aimsVolumeFormats ) )
-  
+
   result = {}
   if ( forceFormat or item.format in _aimsVolumeFormats ) and item.isReadable():
     result = aimsFileInfo( item.fullPath() )
