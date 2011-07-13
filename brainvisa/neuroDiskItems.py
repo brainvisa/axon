@@ -1518,8 +1518,8 @@ def getDataFromUuid( uuid ):
 
 #----------------------------------------------------------------------------
 class HierarchyDirectoryType( FileType ):
-  def __init__( self, typeName, **kwargs ):
-    FileType.__init__( self, typeName, None, directoryFormat, **kwargs )
+  def __init__( self, typeName, parent=None, **kwargs ):
+    FileType.__init__( self, typeName, parent, directoryFormat, **kwargs )
   
 #----------------------------------------------------------------------------
 typesLastModification = 0
