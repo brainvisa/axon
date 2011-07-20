@@ -181,6 +181,11 @@ def libraryPathEnvironmentVariable():
 # Define system environment variables that have to be passed to external command to restore environment if it have been modified at brainvisa startup
 global brainvisaSysEnv
 brainvisaSysEnv=BrainvisaSystemEnv()
+# try to determine if we are in a build tree with system libraries - in that
+# case, brainvisaSysEnv should not be altered when calling external commands
+if mainPath.startswith( '/usr' ) or not sys.executable.startswith( mainPath ):
+  # python is not in the BV tree, or it is a system-wide installation
+  brainvisaSysEnv.variables = {}
 
 from brainvisa import shelltools
 from soma.minf.api import readMinf
