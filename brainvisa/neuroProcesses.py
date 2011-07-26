@@ -30,6 +30,59 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+"""
+This module contains classes defining Brainvisa **processes and pipelines**.
+
+The main class in this module is :py:class:`Process`. It is the base class for all Brainvisa processes. It inherits from the class :py:class:`Parameterized` that defines an object with a signature. 
+
+A pipeline is defined as a specific process that has an execution node that describes the pipeline structure. The base class for execution nodes is :py:class:`ExecutionNode`. This class is specialized into several other classes, defining different types of pipelines:
+  * :py:class:`ProcessExecutionNode`
+  * :py:class:`SerialExecutionNode`
+  * :py:class:`ParallelExecutionNode`
+  * :py:class:`SelectionExecutionNode`
+  
+Specialized Process classes that uses the different type of execution nodes also exist:
+  * :py:class:`IterationProcess`: an iteration of a process on a set of data. Uses a :py:class:`ParallelExecutionNode`.
+  * :py:class:`ListOfIterationProcess`
+  * :py:class:`DistributedProcess`: a pipeline that have a :py:class:`ParallelExecutionNode`
+  * :py:class:`SelectionProcess`: a pipeline that have a :py:class:`SelectionExecutionNode`.
+  
+:Classes:
+  
+.. autoclass:: Parameterized
+    
+.. autoclass:: Process
+  :members:
+    
+.. autoclass:: ExecutionNode
+  :members:
+    
+.. autoclass:: ProcessExecutionNode
+  :members:
+
+.. autoclass:: SerialExecutionNode
+  :members:
+    
+.. autoclass:: ParallelExecutionNode
+  :members:
+
+.. autoclass:: SelectionExecutionNode
+  :members:
+
+.. autoclass:: IterationProcess
+  :members:
+    
+.. autoclass:: ListOfIterationProcess
+  :members:
+    
+.. autoclass:: DistributedProcess
+  :members:
+
+.. autoclass:: SelectionProcess
+  :members:
+
+"""
+__docformat__ = 'restructuredtext en'
 
 import traceback, threading, pickle, formatter, htmllib, operator
 import inspect, signal, shutil, imp, StringIO, types, copy, weakref
@@ -105,6 +158,9 @@ def pathsplit( path ):
 
 #----------------------------------------------------------------------------
 def getProcdocFileName( processId ):
+  """
+  Returns the name of the file (.procdoc) that contains the documentation of the process in parameter.
+  """
   processInfo = getProcessInfo( processId )
   fileName = getattr( processInfo, 'fileName', None )
   if fileName is None:
@@ -114,10 +170,11 @@ def getProcdocFileName( processId ):
                               processInfo.id + ".procdoc" )
   return newFileName
 
-
-
 #----------------------------------------------------------------------------
 def readProcdoc( processId ):
+  """
+  Returns the content of the documentation file (.procdoc) of the process in parameter.
+  """
   processInfo = getProcessInfo( processId )
   if processInfo is not None:
     procdoc = processInfo.procdoc
@@ -139,6 +196,9 @@ def readProcdoc( processId ):
 
 #----------------------------------------------------------------------------
 def writeProcdoc( processId, documentation ):
+  """
+  Writes the ``documentation`` in the process documentation file (.procdoc).
+  """
   fileName = getProcdocFileName( processId )
   if not os.path.exists( fileName ):
     processInfo = getProcessInfo( processId )
@@ -156,6 +216,10 @@ def writeProcdoc( processId, documentation ):
 
 #----------------------------------------------------------------------------
 def procdocToXHTML( procdoc ):
+  """
+  Converts HTML tags in the content of a .procdoc file to XHTML tags.
+  Checks its syntax.
+  """
   stack = [ (procdoc, key, key ) for key in procdoc.iterkeys() ]
   while stack:
     d, k, h = stack.pop()
@@ -220,6 +284,9 @@ def procdocToXHTML( procdoc ):
 
 #----------------------------------------------------------------------------
 def getHTMLFileName( processId, documentation=None, language=None ):
+  """
+  Gets the path to the html page corresponding to the documentation of the process in parameter.
+  """
   processInfo = getProcessInfo( processId )
   if documentation is None:
     documentation = readProcdoc( processId )
@@ -235,6 +302,17 @@ def getHTMLFileName( processId, documentation=None, language=None ):
 
 #----------------------------------------------------------------------------
 def convertSpecialLinks( msg, language, baseForLinks, translator ):
+  """
+  Converts special links and tags in a procdoc documentation.
+  The possible special links or tags are:
+  
+  * *bvcategory://* refers to the documentation of a processes category (directory containing processes).
+  * *bvprocess://* refers to the documentation of a process
+  * *bvimage://* refers to an image in Brainvisa images directory
+  * *<_t_>* translates the string in the selected language 
+  * *<bvprocessname name=""> replaces the id by the name of the process
+  
+  """
   stack = [ msg ]
   while stack:
     item = stack.pop()
@@ -308,6 +386,10 @@ def convertSpecialLinks( msg, language, baseForLinks, translator ):
 
 #----------------------------------------------------------------------------
 def generateHTMLProcessesDocumentation( procId = None ):
+  """
+  Generates HTML pages for the documentation of the process in parameter or for all processes if `procId` is None.
+  The process generateDocumentation is used. 
+  """
   if procId is None:
     defaultContext().runProcess("generateDocumentation")
   else:
@@ -321,6 +403,47 @@ def generateHTMLProcessesDocumentation( procId = None ):
 
 #----------------------------------------------------------------------------
 class Parameterized( object ):
+  """
+  This class represents an object that have a signature, that is to say a list of typed parameters.
+  
+  A `Parameterized` object can notify the changes in its signature.
+  The parameters can be linked together, that is to say, if the value of a parameter changes, the value of all linked parameters may change.
+  
+  This object has an :py:func:`initialization` function that can define the links between the parameters and their initial values.
+  
+  :Attributes:
+  
+  .. py:attribute:: signature
+  The signature is a :py:class:`neuroData.Signature`. It contains the list of parameters accepted by the object and their types. The possible types are described in :py:mod:`neuroData`.
+  
+  .. py:attribute:: signatureChangeNotifier
+  This variable is a :py:class:`soma.notification.Notifier`. It calls its notify function when the signature of the :py:class:`Parameterized` object changes.
+  
+  :Methods:
+  
+  .. automethod:: initialization
+  .. automethod:: findValue
+  .. automethod:: setValue
+  .. automethod:: checkArguments
+  .. automethod:: setOptional
+  .. automethod:: isDefault
+  .. automethod:: setDefault
+  .. automethod:: setConvertedValue
+  .. automethod:: restoreConvertedValues
+
+  .. automethod:: parameterLinkable
+  .. automethod:: linkParameters
+  .. automethod:: addLink
+  .. automethod:: removeLink
+  .. automethod:: addParameterObserver
+  .. automethod:: removeParameterObserver
+  .. automethod:: changeSignature
+  .. automethod:: _parameterHasChanged
+  .. automethod:: clearLinksFrom
+  .. automethod:: clearLinksTo
+  .. automethod:: cleanup
+
+  """
 
   def __init__( self, signature ):
     self.__dict__[ 'signature' ] = signature
@@ -355,6 +478,9 @@ class Parameterized( object ):
       x( self )
 
   def _parameterHasChanged( self, name, newValue ):
+    """
+    This function is called when the value of an attribute described in the signature changes.
+    """
     debug = neuroConfig.debugParametersLinks
     if debug: print >> debug, 'parameter', name, 'changed in', self, 'with value', newValue
     for function in self._warn.get( name, [] ):
@@ -394,14 +520,17 @@ class Parameterized( object ):
             parameterized, attribute, valueSet )
 
   def isDefault( self, key ):
+    """Returns True if the parameter `key` has kept its default value."""
     return self._isDefault.get( key, True )
 
   def setDefault( self, key, value ):
+    """Stores if the parameter `key` have kept its default value or not."""
     debug = neuroConfig.debugParametersLinks
     if debug: print >> debug, '    setDefault(', key, ',', value, ')'
     self._isDefault[ key ] = value
 
   def parameterLinkable( self, key, debug=None ):
+    """Indicates if the value of the parameter can change through a parameter link."""
     if debug is None:
       debug = neuroConfig.debugParametersLinks
     result= bool( self.signature[ key ].linkParameterWithNonDefaultValue or \
@@ -410,22 +539,30 @@ class Parameterized( object ):
     return result
 
   def initialization( self ):
+    """This function does nothing by default but it may be overrideed in processes classes to define initial values for the parameters or links between parameters."""
     pass
 
   def checkArguments( self ):
+    """Checks the value of the parameters described in the signature."""
     for p, o in self.signature.items():
       o.checkValue( p, getattr( self, p, None ) )
 
   def findValue( self, attributeName, value ):
+    """Calls :py:func:`setValue`."""
     self.setValue( attributeName, value )
 
   def __setattr__( self, name, value ):
+    """Calls :py:func:`setValue` if the parameter is described in the signature."""
     if self.signature.has_key( name ):
       self.setValue( name, value )
     else:
       self.__dict__[ name ] = value
 
   def setValue( self, name, value, default=None ):
+    """
+    Checks the value, sets the attribute `name`. 
+    If the value has changed, :py:meth:`_parameterHasChanged` is called to apply the links.
+    """
     debug = neuroConfig.debugParametersLinks
     if debug:
       print >> debug, str(self) + '.setValue(', repr(name), ',', repr(value), ',', repr(default), ')'
@@ -446,6 +583,16 @@ class Parameterized( object ):
       self._parameterHasChanged( name, newValue )
 
   def linkParameters( self, destName, sources, function = None ):
+    """
+    Links the parameters. When one of the `sources` parameters change, the value of `destName` parameter may change.
+    It is possible to give a specific link function that will be called when the link is applied but it is not mandatory, a default function exists according to the type of parameter.
+        
+    :param string destName: name of the parameter that may change when the sources parameters change. If None, the link function will be called every time the sources parameters change.
+    :param sources: one or several parameters, whose modification will activate the link function.
+    :type sources: string, tuple or list
+    :param function function: specific function to call instead of the default one when the link is activated. The signature of the function is *function(self, process ) -> destination*
+
+    """
     if type( sources ) is types.StringType:
       sourcesList = [ sources ]
     else:
@@ -459,6 +606,11 @@ class Parameterized( object ):
       self._links.setdefault( p, [] ).append( ( weakref.proxy( self ), destName, function, False ) )
 
   def addParameterObserver( self, parameterName, function ):
+    """Associates a callback function to the modifications of the parameter value.
+    
+    :param parameterName: the name of the parameter whose modification will activate the callback.
+    :param function: the callback function. its signature is *function(self, parameterName, newValue)*
+    """
     minimum, maximum = numberOfParameterRange( function )
     if maximum == 0:
       tmp = lambda x, y, z, f=function: f()
@@ -467,6 +619,7 @@ class Parameterized( object ):
     self._warn.setdefault( parameterName, [] ).append( function )
 
   def removeParameterObserver( self, parameterName, function ):
+    """Removes the callback function from the parameter observers."""
     l = self._warn.get( parameterName, None )
     if l is not None:
       l.remove( function )
@@ -474,18 +627,29 @@ class Parameterized( object ):
         del self._warn[ parameterName ]
 
   def setOptional( self, *args ):
+    """Indicates the the parameters are not mandatory."""
     for k in args:
       self.signature[ k ].mandatory = False
 
   def setConvertedValue( self, name, value ):
+    """Sets the value but stores the previous value in an internal dictionary."""
     self._convertedValues[ name ] = getattr( self, name )
     self.__dict__[ name ] = value
 
   def restoreConvertedValues( self ):
+    """Restore values as they were before conversions using the values stored in an internal dictionary."""
     self.__dict__.update( self._convertedValues )
     self._convertedValues.clear()
 
   def addLink( self, destination, source, function=None ):
+    """Add a link between `source` and `destination` parameters. When the value of `source` changes, the value of `destination` may change.
+    Contrary to :py:func:`linkParameters`, the link will always be applied, even if the `destination` parameter has no more its default value.
+    
+    :param string destination: name of the parameter that may change when the source parameters change. If None, the link function will be called every time the source parameters change.
+    :param source: one or several parameters, whose modification will activate the link function.
+    :type source: string, tuple or list
+    :param function function: specific function that will be called instead of the default one when the link is activated. The signature of the function is *function(self, *sources ) -> destination*
+    """
     # Parse source
     sources = []
     if type( source ) in ( types.ListType, types.TupleType ):
@@ -515,6 +679,7 @@ class Parameterized( object ):
 
 
   def removeLink( self, destination, source ):
+    """Removes a link added with :py:func:`addLink` function."""
     # print 'removeLink', self, destination, source
     # Parse source
     sources = []
@@ -547,6 +712,10 @@ class Parameterized( object ):
 
 
   def changeSignature( self, signature ):
+    """Sets a new signature. Previous values of attributes are kept if the attributes are still in the signature.
+    Links and observer callbacks that are no more associated to the signature parameters are deleted.
+    The :py:attr:`signatureChangeNotifier` is notified.
+    """
     # Change signature
     self.signature = signature
     for n in self.signature.keys():
@@ -564,6 +733,7 @@ class Parameterized( object ):
     self.signatureChangeNotifier.notify( self )
 
   def clearLinksTo( self, *args ):
+    """Removes all links that have a parameter in `args` as a destination."""
     for i in args:
       if isinstance( i, basestring ):
         destObject,  destParameter = None, i
@@ -587,12 +757,14 @@ class Parameterized( object ):
             i += 1
 
   def clearLinksFrom( self, *args ):
+    """Removes all links associated to a parameter in `args` as a source. """
     for k in args:
       if self._links.has_key( k ):
         del self._links[ k ]
 
 
   def cleanup( self ):
+    """Removes all links, observers, and stored converted values, reinitializes the signature change notifier."""
     debugHere()
     self._convertedValues = {}
     self._links = {}
@@ -637,6 +809,26 @@ class Parameterized( object ):
 
 #----------------------------------------------------------------------------
 class Process( Parameterized ):
+  """
+  This class represents a Brainvisa process or pipeline. It inherits from :py:class:`Parameterized`.
+  This object has a signature that describes its inputs and outputs and an execution function.
+  If it is a pipeline, it also have an execution node that describes the structure of the pipeline.
+  
+  :Attributes:
+  
+  .. py:attribute:: signature
+  The signature is a :py:class:`neuroData.Signature`. It contains the list of parameters accepted by the object and their types. The possible types are described in :py:mod:`neuroData`.
+
+  .. py:attribute:: category (string)
+  The processes are organized into categories. Generally, the category is the name of the directory where the process file is located.
+  
+  .. py::attribute:: userLevel (integer)
+  The process is available in Brainvisa interface if its userLevel is lower or equal than the userLevel selected in Brainvisa options.
+  0 : Basic, 1: Advanced, 2: Expert.
+  
+  :Methods:
+  .. 
+  """
   signature = Signature()
   category = 'BrainVISA'
   userLevel = 2
@@ -713,19 +905,33 @@ class Process( Parameterized ):
 
 
   def inlineGUI( self, values, context, parent, externalRunButton=False ):
+    """This method can be overrideed in order to specialize buttons of the process window.
+    
+    :param context: the execution context of the process
+    :param parent: The parent widget
+    :returns: the widget containing the buttons that will replace the default buttons (Run and Iterate)
+    :rtype: QWidget
+    """
     return None
 
 
   def validation( self ):
+    """This method can be overrideed in order to check if the process dependencies are available.
+    It will be called at Brainvisa startup when the processes are loaded. If the method raises an exception, the process will not be available.
+    :raises: :py:class:`brainvisa.validation import ValidationError`
+    """
     return 1
 
   def id( self ):
+    """Returns the process id."""
     return self._id
 
   def sourceFile( self ):
+    """Returns the name of the source file of the process."""
     return self._fileName
 
   def sourcePath( self ):
+    """Returns the path to the source file of the process."""
     return os.path.dirname( self._fileName )
 
   def __str__( self ):
@@ -743,23 +949,36 @@ class Process( Parameterized ):
       eNode.addLink( destination, source, function )
 
   def setExecutionNode( self, eNode ):
+    """Sets the execution node of the pipeline.
+    
+    :param eNode: object that describes the structure of the pipeline.
+    :type eNode: :py:class:`ExecutionNode`
+    """
     self._executionNode = eNode
 
   def execution( self, context ):
+    """
+    Execution function that is called when the process is run.
+    """
     if self._executionNode is not None:
       return self._executionNode.run( context )
     else:
       raise RuntimeError( HTMLMessage(_t_( 'No <em>execution</em> method provided' )) )
 
   def executionNode( self ):
+    """Returns the execution node of the pipeline."""
     return self._executionNode
 
 
   def pipelineStructure( self ):
+    """Returns the description of a pipeline in a dictionary or the id of the process if it is a simple process."""
     return self.id()
 
 
   def allProcesses( self ):
+    """Returns the current process and all its children if it is a pipeline.
+    :rtype: generator
+    """
     yield self
     if self._executionNode is not None:
       stack = [ self._executionNode ]
@@ -771,6 +990,7 @@ class Process( Parameterized ):
 
 
   def saveStateInDictionary( self, result=None ):
+    """Returns the description of the process in a dictionary."""
     if result is None:
       result = {}
     result[ 'pipelineStructure' ] = self.pipelineStructure()
@@ -790,6 +1010,12 @@ class Process( Parameterized ):
 
 
   def getAllParameters( self ):
+    """
+    Returns all the parameters of the current process and its children if it is a pipeline.
+    
+    :returns: tuples (Parameterized, attribute name, attribute type)
+    :rtype: generator
+    """
     stack = [ self ]
     while stack:
       node = stack.pop( 0 )
@@ -810,6 +1036,10 @@ class Process( Parameterized ):
 
 #----------------------------------------------------------------------------
 class IterationProcess( Process ):
+  """
+  This class represents a set of process instances that can be executed in parallel. 
+  It is used to iterate the same process on a set of data.
+  """
   def __init__( self, name, processes ):
     self._id = name + 'Iteration'
     self.name = name
@@ -1231,6 +1461,9 @@ else:
 
 #-------------------------------------------------------------------------------
 class ExecutionNode( object ):
+  """
+  Base class for the classes that describe a pipeline structure. 
+  """
   class MultiParameterLink:
     def __init__( self, sources, function ):
       self.sources = []
@@ -1444,7 +1677,7 @@ class ExecutionNode( object ):
 
 #-------------------------------------------------------------------------------
 class ProcessExecutionNode( ExecutionNode ):
-  'An execution node that has no children and run one process'
+  '''An execution node that has no children and run one process'''
 
   def __init__( self, process, optional = False, selected = True,
                 guiOnly = False ):
@@ -1528,7 +1761,7 @@ class ProcessExecutionNode( ExecutionNode ):
 
 #-------------------------------------------------------------------------------
 class SerialExecutionNode( ExecutionNode ):
-  'An execution node that run all its children sequentially'
+  '''An execution node that run all its children sequentially'''
 
   def __init__(self, name='', optional = False, selected = True,
                 guiOnly = False, parameterized = None, stopOnError=True ):

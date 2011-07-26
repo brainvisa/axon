@@ -72,7 +72,6 @@ neuroProcesses
 --------------
 
 .. automodule:: neuroProcesses
-  :members:
 
 neuroException
 --------------
