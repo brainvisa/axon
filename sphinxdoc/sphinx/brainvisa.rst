@@ -55,7 +55,11 @@ neuro
 -----
 
 .. automodule:: neuro
-  :members:
+
+.. autofunction:: neuro.main
+.. autofunction:: neuro.setQtApplicationStyle
+.. autofunction:: system_exit_handler
+.. autofunction:: qt_exit_handler
 
 neuroConfig
 -----------
