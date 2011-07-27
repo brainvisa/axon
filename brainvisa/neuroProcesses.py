@@ -33,15 +33,15 @@
 """
 This module contains classes defining Brainvisa **processes and pipelines**.
 
-The main class in this module is :py:class:`Process`. It is the base class for all Brainvisa processes. It inherits from the class :py:class:`Parameterized` that defines an object with a signature. 
+The main class in this module is :py:class:`Process`. It is the base class for all Brainvisa processes. It inherits from the class :py:class:`Parameterized` that defines an object with a list of parameters that we call a signature. 
 
 A pipeline is defined as a specific process that has an execution node that describes the pipeline structure. The base class for execution nodes is :py:class:`ExecutionNode`. This class is specialized into several other classes, defining different types of pipelines:
-  * :py:class:`ProcessExecutionNode`
-  * :py:class:`SerialExecutionNode`
-  * :py:class:`ParallelExecutionNode`
-  * :py:class:`SelectionExecutionNode`
+  * :py:class:`ProcessExecutionNode`: only one process
+  * :py:class:`SerialExecutionNode`: a list of execution nodes that have to be executed serially.
+  * :py:class:`ParallelExecutionNode`: a list of execution nodes that can be executed in parallel.
+  * :py:class:`SelectionExecutionNode`: a choice between several execution nodes.
   
-Specialized Process classes that uses the different type of execution nodes also exist:
+Specialized Process classes that use the different types of execution nodes also exist:
   * :py:class:`IterationProcess`: an iteration of a process on a set of data. Uses a :py:class:`ParallelExecutionNode`.
   * :py:class:`ListOfIterationProcess`
   * :py:class:`DistributedProcess`: a pipeline that have a :py:class:`ParallelExecutionNode`

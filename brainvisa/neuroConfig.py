@@ -38,7 +38,7 @@ Several global variables are defined in this module to store **Brainvisa configu
 * **gui**: false if Brainvisa is in batch mode
 * **sessionID**
 * **fullVersion, shortVersion**: Brainvisa version
-* **userProfile**: if Brainvisa is started with -u option, the name of the profile stored in this variable is used to create a specific log file for this profile.
+* **userProfile**: if Brainvisa is started with `-u` option, the name of the profile stored in this variable is used to create a specific log file for this profile.
 * **siteOptionFile**: path to a general options file that may be used for all users.
 * **userOptionFile**: path to user options file.
 * **logFileName**: path of Brainvisa log file where the history of the current session will be saved.
@@ -53,27 +53,27 @@ Several global variables are defined in this module to store **Brainvisa configu
 * **dataPath**: list of DatabaseSettings objects indicating the selected databases.
 * **typesPath**: list of paths to Brainvisa type files that contain the description of Brainvisa ontology.
 * **fileSystemOntologiesPath**: list of paths to Brainvisa hierarchy files that contain the rules to organize Brainvisa databases directories.
-* **debugHierarchyScanning**: stream where debug information about hierarchy rules may be written. Set with --debugHierarchy option.
-* **debugParameterLinks**: stream where debug information about parameter links may be written. Set with --debugLinks option.
+* **debugHierarchyScanning**: stream where debug information about hierarchy rules may be written. Set with `--debugHierarchy` option.
+* **debugParameterLinks**: stream where debug information about parameter links may be written. Set with `--debugLinks` option.
 * **sharedDatabaseFound**: True if Brainvisa shared database which contain models, templates, referentials, etc, was found.
 * **mainDocPath**: path to Brainvisa documentation directory 
 * **docPath**: path to Brainvisa documentation directory according to the choosen language.
 * **brainvisaSysEnv**: :py:class:`soma.env.BrainvisaSystemEnv` - defines system environment variables that have to be passed to external command to restore environment if it have been modified at brainvisa startup
-* **ignoreValidation**: Do not check vor invalid processes, all are enabled. Set with --ignoreValidation.
+* **ignoreValidation**: Do not check vor invalid processes, all are enabled. Set with `--ignoreValidation`.
 * **language**: fr or en
 * **userLevel**: the processes which level is greater than the user level are hidden. Basic = 0, advanced = 1, expert = 2.
 * **supportEmail, SMTP_server_name**
 * **textEditor**
 * **HTMLBrowser**
-* **fastStart**: if this mode is enabled, brainvisa starts faster but with less features. Set with -f or -r options.
-* **noToolBox**: if enabled, Brainvisa toolboxes are not loaded. Set with --noToolBox.
-* **setup**: if enabled, the shared database is updated at startup. Set with --setup option.
+* **fastStart**: if this mode is enabled, brainvisa starts faster but with less features. Set with `-f` or `-r` options.
+* **noToolBox**: if enabled, Brainvisa toolboxes are not loaded. Set with `--noToolBox`.
+* **setup**: if enabled, the shared database is updated at startup. Set with `--setup` option.
 * **anatomistExecutable, anatomistImplementation**
 * **matlabRelease, matlabExecutable, matlabOptions, matlabPath, matlabStartup**
 * **spmDirectory**
 * **Roptions, Rexecutable**
-* **databaseServer**: if enabled, Brainvisa is started as a database server (experimental). Set with --databaseServer option.
-* **profileFileName**: filename where profiling information may be written. Set with --profile option.
+* **databaseServer**: if enabled, Brainvisa is started as a database server (experimental). Set with `--databaseServer` option.
+* **profileFileName**: filename where profiling information may be written. Set with `--profile` option.
 """
 
 __docformat__ = 'restructuredtext en'
@@ -410,7 +410,7 @@ def chooseDatabaseVersionSyncOption(context):
   
   :param context: The context enables to adapt the interaction with the user according to Brainvisa mode of execution (graphical, batch)
   
-  :returns: the user choice: auto for automatic mode, man for manual mode.
+  :returns: the user choice: *auto* for automatic mode, *man* for manual mode.
   """
   global databaseVersionSync, userOptionFile
   choice=context.ask("<p><b>Database synchronization between different versions of BrainVISA<b></p><p>Some of your databases have been used with different versions of BrainVISA. They may need to be updated when you switch from one BrainVISA version to another.</p> Please choose the way you want to manage the database synchronization throught BrainVISA versions : <ul><li>Automatic (recommended) : BrainVISA will automatically update your database if you switch from one BrainVISA version to another. </li><li>Manual : Database update is not automatic when switch from one BrainVISA version to another but if you modify a database in one version, you will have to update it with the other version for BrainVISA to take into account the modifications.</li></ul><p>You can change this option later in BrainVISA preferences.</p>", "Automatic (recommended)", "Manual")
@@ -637,12 +637,12 @@ class RunsInfo:
   """
   This class gets information about possibly existing runs of Brainvisa and adds information about the current one.
   
-  :var string file: information about current runs is stored in <Brainvisa home dir>/current_runs.minf
+  :var string file: information about current runs is stored in *<Brainvisa home dir>/current_runs.minf*
   :var integer currentRun: index of the current execution of Brainvisa (from 1)
   :var float timeout: timeout before asking the user if the execution of Brainvisa is still alive. When Brainvisa fails, the file current_runs.minf may not be cleaned.
-  :var dictionary runs: information about current executions of Brainvisa. The information is loaded from the minf file and information about the current execution is added. It is a dictionary {index -> {host, pid, time, logFileName} }
+  :var dictionary runs: information about current executions of Brainvisa. The information is loaded from the minf file and information about the current execution is added. It is a dictionary *{index -> {host, pid, time, logFileName} }*
   :var integer count: number of executions of Brainvisa
-  :var dictonary expiredRuns: dictionary containing the runs for which the timeout is reached. The user will be asked if these runs are still alive. If not, the corresponding log files will be deleted and the current_runs.minf file will be cleaned.
+  :var dictonary expiredRuns: dictionary containing the runs for which the timeout is reached. The user will be asked if these runs are still alive. If not, the corresponding log files will be deleted and the *current_runs.minf* file will be cleaned.
   """
   def __init__(self):
     global logFileName
@@ -915,6 +915,7 @@ def clearObjects():
 def environmentHTML():
   """
   Returns an HTML page displaying Brainvisa configuration:
+  
   * Brainvisa version
   * Python Version
   * Command line used to start Brainvisa
