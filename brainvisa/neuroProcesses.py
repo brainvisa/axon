@@ -47,12 +47,13 @@ Specialized Process classes that use the different types of execution nodes also
   * :py:class:`DistributedProcess`: a pipeline that have a :py:class:`ParallelExecutionNode`
   * :py:class:`SelectionProcess`: a pipeline that have a :py:class:`SelectionExecutionNode`.
   
+As processes can be run in different contexts, an object representing this context is passed as a parameter in the processes execution function. This object is an intance of the class :py:class:`ExecutionContext`.
+  
 :Classes:
   
 .. autoclass:: Parameterized
     
 .. autoclass:: Process
-  :members:
     
 .. autoclass:: ExecutionNode
   :members:
@@ -81,6 +82,8 @@ Specialized Process classes that use the different types of execution nodes also
 .. autoclass:: SelectionProcess
   :members:
 
+.. autoclass:: ExecutionContext
+  :members:
 """
 __docformat__ = 'restructuredtext en'
 
@@ -811,8 +814,9 @@ class Parameterized( object ):
 class Process( Parameterized ):
   """
   This class represents a Brainvisa process or pipeline. It inherits from :py:class:`Parameterized`.
-  This object has a signature that describes its inputs and outputs and an execution function.
-  If it is a pipeline, it also have an execution node that describes the structure of the pipeline.
+  
+  This object has a **signature** that describes its inputs and outputs and an **execution function** :py:meth:`execution`.
+  If it is a **pipeline**, it also have an **execution node** that describes the structure of the pipeline.
   
   :Attributes:
   
@@ -822,11 +826,28 @@ class Process( Parameterized ):
   .. py:attribute:: category (string)
   The processes are organized into categories. Generally, the category is the name of the directory where the process file is located.
   
-  .. py::attribute:: userLevel (integer)
+  .. py:attribute:: userLevel (integer)
   The process is available in Brainvisa interface if its userLevel is lower or equal than the userLevel selected in Brainvisa options.
   0 : Basic, 1: Advanced, 2: Expert.
   
   :Methods:
+  
+  .. automethod:: id
+  .. automethod:: validation
+  .. automethod:: execution
+  .. automethod:: executionNode
+  .. automethod:: setExecutionNode
+  .. automethod:: getAllParameters
+  .. automethod:: allProcesses
+  .. automethod:: pipelineStructure
+  
+  .. automethod:: sourceFile
+  .. automethod:: sourcePath
+  
+  .. automethod:: inlineGUI
+  
+  .. automethod:: _iterate
+  .. automethod:: _copy
   .. 
   """
   signature = Signature()
@@ -864,6 +885,12 @@ class Process( Parameterized ):
     Parameterized.__del__( self )
 
   def _iterate( self, **kwargs ):
+    """
+    Returns a list of copies of the current process with different parameters values. 
+    
+    :param kwargs: dictionary containing a list of values for each parameter name. 
+    The first value is for the first process of the iteration and so on...
+    """
     # Find iteration size
     requiredLength = 0
     for values in kwargs.itervalues():
@@ -893,6 +920,7 @@ class Process( Parameterized ):
 
 
   def _copy( self ):
+    """Returns a copy of the process. The value of the parameters are also copied"""
     result = self.__class__()
     for ( n, p ) in self.signature.items():
       if not self.isDefault( n ):
@@ -1037,7 +1065,10 @@ class Process( Parameterized ):
 #----------------------------------------------------------------------------
 class IterationProcess( Process ):
   """
+  Inherits from :py:class:`Process`.
+  
   This class represents a set of process instances that can be executed in parallel. 
+  
   It is used to iterate the same process on a set of data.
   """
   def __init__( self, name, processes ):
@@ -1065,9 +1096,14 @@ class IterationProcess( Process ):
 
 #----------------------------------------------------------------------------
 class ListOfIterationProcess( IterationProcess ):
-  '''An IterationProcess which has on its main signature a list of the first
+  '''
+  Inherits from :py:class:`IterationProcess`.
+  
+  An IterationProcess which has on its main signature a list of the first
   element of each sub-process.
-  Used for viewers and editors of ListOf()'''
+  
+  Used for viewers and editors of ListOf()
+  '''
   class linkP( object ):
     def __init__( self, proc, i ):
       self.proc = proc
@@ -1089,6 +1125,11 @@ class ListOfIterationProcess( IterationProcess ):
 
 #----------------------------------------------------------------------------
 class DistributedProcess( Process ):
+  """
+  Inherits from :py:class:`Process`.
+  
+  This class represents a set of process instances that can be executed in parallel. 
+  """
   def __init__( self, name, processes ):
     self._id = name + 'DistributedIteration'
     self.name = name
@@ -1115,6 +1156,11 @@ class DistributedProcess( Process ):
 
 #----------------------------------------------------------------------------
 class SelectionProcess( Process ):
+  """
+  Inherits from :py:class:`Process`.
+  
+  This class represents a choice between a list of processes. 
+  """
   def __init__( self, name, processes ):
     self._id = name + 'Selection'
     self.name = name
@@ -1210,6 +1256,9 @@ else:
 
   #--------------------------------------------------------------------------
   class CommandWithPopen( object ):
+    """
+    This is an implementation of a class to run system commands when QProcess from Qt API is not available
+    """
     class SignalException( Exception ):
       pass
 
@@ -1487,6 +1536,13 @@ class ExecutionNode( object ):
 
   def __init__( self, name='', optional = False, selected = True,
                 guiOnly = False, parameterized = None ):
+    """
+    :param string name: name of the node - default ''.
+    :param boolean optional: indicates if this node is optional in the pipeline - default False.
+    :param boolean selected: indicates if the node is selected in the pipeline - default True.
+    :param boolean guiOnly: default False.
+    :param parameterized: :py:class:`Parameterized` containing the signature of the node - default None.
+    """
     # Initialize an empty execution node
     self.__dict__[ '_children' ] = SortedDictionary()
     if parameterized is not None:
@@ -1522,7 +1578,11 @@ class ExecutionNode( object ):
       child._copy(node.child(name))
 
   def addChild( self, name, node ):
-    'Add a new child execution node'
+    '''Add a new child execution node.
+    
+    :param string name: name which identifies the node
+    :param node: an :py:class:`ExecutionNode` which will be added to this node's children.
+    '''
     if self._children.has_key( name ):
       raise KeyError( HTMLMessage(_t_( '<em>%s</em> already defined' ) % ( name, )) )
     if not isinstance( node, ExecutionNode ):
@@ -1531,25 +1591,38 @@ class ExecutionNode( object ):
 
 
   def childrenNames( self ):
+    '''
+    Returns the list of names of the children execution nodes.
+    '''
     return self._children.keys()
 
 
   def children( self ):
+    """Returns the list of children execution nodes."""
     return self._children.itervalues()
 
   def hasChildren( self ):
+    """Returns True if this node has children."""
     return bool( self._children )
 
 
   def setSelected( self, selected ):
+    """Change the selection state of the node.
+    
+    :param bool selected: new selection state of the node. If the selection changes, a selection change notifier is notified.
+    """
     if selected != self._selected:
       self._selected = selected
       self._selectionChange.notify( self )
 
   def isSelected( self ):
+    """True if this node is selected."""
     return self._selected
 
   def __setattr__( self, attribute, value ):
+    """
+    If the attribute is in the signature of the corresponding parameterized object, it is modified.
+    """
     if self._parameterized is not None and \
        self._parameterized().signature.has_key( attribute ):
       setattr( self._parameterized(), attribute, value )
@@ -1569,9 +1642,13 @@ class ExecutionNode( object ):
     raise AttributeError( attribute )
 
   def child( self, name, default = None ):
+    """Get a child node by name."""
     return self._children.get( name, default )
 
   def run( self, context ):
+    """
+    Calls :py:meth:`_run` method if the node is selected.
+    """
     if self._optional and ( not self._selected ):
       context.write( '<font color=orange>Skip unselected node: ' + str(self.name()) + '</font>' )
       return
@@ -1581,18 +1658,28 @@ class ExecutionNode( object ):
     return self._run( context )
 
   def _run( self, context ):
+    """
+    Does nothing in the base class. It is overriden by derived classes. 
+    """
     pass
 
   def name( self ):
+    """Returns the name of the node."""
     return self._name
 
   def gui( self, parent, processView = None ):
+    """
+    Returns the graphical user interface of this node.
+    """
     from qtgui.neuroProcessesGUI import ExecutionNodeGUI
     if self._parameterized is not None:
       return ExecutionNodeGUI(parent, self._parameterized())
     return None
 
   def addLink( self, destination, source, function=None ):
+    """
+    Adds a parameter link like :py:meth:`Process.addLink`.
+    """
     # Parse source
     sources = []
     if type( source ) in ( types.ListType, types.TupleType ):
@@ -1615,11 +1702,17 @@ class ExecutionNode( object ):
 
 
   def addDoubleLink( self, destination, source, function=None ):
+    """
+    Creates a double link source -> destination and destination -> source.
+    """
     self.addLink( destination, source, function )
     self.addLink( source, destination, function )
 
 
   def removeLink( self, destination, source, function=None ):
+    """
+    Removes a parameters link added with :py:meth:`addLink`.
+    """
     # Parse sourceExecutionContext
     sources = []
     if type( source ) in ( types.ListType, types.TupleType ):
@@ -1648,6 +1741,11 @@ class ExecutionNode( object ):
 
 
   def parseParameterString( self, parameterString ):
+    """
+    Returns a tuple containing the :py:class:`Parameterized` object of the child node indicated in the parameter string and the name of the parameter.
+    
+    :param string parameterString: references a parameter of a child node with a path like <node name 1>.<node name 2>...<parameter name>
+    """
     if parameterString is None: return ( None, None )
     l = parameterString.split( '.' )
     node = self
@@ -1677,7 +1775,10 @@ class ExecutionNode( object ):
 
 #-------------------------------------------------------------------------------
 class ProcessExecutionNode( ExecutionNode ):
-  '''An execution node that has no children and run one process'''
+  '''
+  An execution node that has no children and run one process
+  
+  '''
 
   def __init__( self, process, optional = False, selected = True,
                 guiOnly = False ):
@@ -1751,6 +1852,10 @@ class ProcessExecutionNode( ExecutionNode ):
     return default
 
   def processReloaded( self, newProcess ):
+    """
+    If the associated process has an attribute *processReloadNotifier*, this callback is attached to the notifier.
+    So, the node is reloaded when the process is reloaded.
+    """
     event = ProcessExecutionEvent()
     event.setProcess( self._process )
     self._process.processReloadNotifier.remove( self.processReloaded )
@@ -1946,6 +2051,29 @@ class SelectionExecutionNode( ExecutionNode ):
 
 #-------------------------------------------------------------------------------
 class ExecutionContext:
+  """
+  This object represents the execution context of the processes. 
+  
+  Indeed, a process can be started in different contexts :
+
+    * The user starts the process by clicking on the Run button in the graphical interface.
+    * The process is started via a script. It is possible to run brainvisa in batch mode (without any graphical interface) and to run a process via a python function : neuroProcesses.defaultContext().runProcess(...).
+    * The process is a converter, so it can be run automatically by BrainVISA when a conversion is needed for another process parameters.
+    * The process is a viewer or an editor, it is run when the user clicks on the corresponding icon to view or edit another process parameter. 
+    
+  The interactions with the user are different according to the context. That's why the context object offers several useful functions to interact with BrainVISA and to call system commands.
+  Here are these functions :
+
+    * :py:meth:`write`, :py:meth:`warning`, :py:meth:`error` : prints a message, either in the graphical process window (in GUI mode) or in the terminal (in batch mode).
+    * :py:meth:`log` : writes a message in the BrainVISA log file.
+    * :py:meth:`ask`, :py:meth:`dialog` : asks a question to the user.
+    * :py:meth:`temporary` : creates a temporary file.
+    * :py:meth:`system`: calls a system command.
+    * :py:meth:`runProcess` : runs a BrainVISA process.
+    * :py:meth:`matlab` : calls a Matlab command.
+    * :py:meth:`checkInterruption` : defines a breakpoint.
+
+  """
   remote = None
 
   class UserInterruption( Exception ):
@@ -2056,6 +2184,19 @@ class ExecutionContext:
     return _process
 
   def runProcess( self, _process, *args, **kwargs ):
+    """
+    It is possible to call a sub-process in the current process by calling context.runProcess. 
+    
+    The first argument is the process identifier, which is either the filename wihtout extension of the process or its english name. 
+    The other arguments are the values of the process parameters. All mandatory argument must have a value. 
+    The function returns the value returned by the sub-process execution method.
+    
+    *Example*
+
+>>> context.runProcess( 'do_something', self.input, self.output, value = 3.14 )
+
+    In this example, the process do_something is called with self.input as the first paramter value, self.ouput as the second parameter value and 3.14 to the parameter named value.
+    """
     _process = getProcessInstance( _process )
     self.checkInterruption()
     apply( self._setArguments, (_process,)+args, kwargs )
@@ -2070,6 +2211,12 @@ class ExecutionContext:
 
 
   def runInteractiveProcess( self, callMeAtTheEnd, process, *args, **kwargs ):
+    """
+    Runs a process in a new thread and calls a callback function when the execution is finished. 
+    
+    :param function callMeAtTheEnd: callback function which will be called the process execution is finished.
+    :param process: id of the process which will be run.
+    """
     context = self.createContext()
     process = getProcessInstance( process )
     self.checkInterruption()
@@ -2368,6 +2515,20 @@ class ExecutionContext:
       self.write( msg )
 
   def system( self, *args, **kwargs ):
+    """
+    This function is used to call system commands. It is very similar to functions like os.system in Python and system in C. The main difference is the management of messages sent on standard output. These messages are intercepted and reported in BrainVISA interface according to the current execution context.
+
+    If the command is given as one argument, it is converted to a string and passed to the system. If there are several arguments, each argument is converted to a string, surrounded by simple quotes and all elements are joined, separated by spaces. The resulting command is passed to the system. The second method is recommended because the usage of quotes enables to pass arguments that contain spaces. The function returns the value returned by the system command.
+    
+    *Example*
+    
+    >>> arg1 = 'x'
+    >>> arg2 = 'y z'
+    >>> context.system( 'command ' + arg1 + ' ' + arg2 )
+    >>> context.system( 'command', arg1, arg2 )
+    
+    The first call generates the command command x y z which calls the commands with 3 parameters. The second call generates the command 'command' 'x' 'y z' which calls the command with two parameters.
+    """
     self._systemOutputLevel = kwargs.get( 'outputLevel', 0 )
     ignoreReturnValue = kwargs.get( 'ignoreReturnValue', 0 )
     command = [str(i) for i in args]
@@ -2492,10 +2653,26 @@ class ExecutionContext:
     return result
 
   def temporary( self, format, diskItemType = None ):
+    """
+    This method enables to create a temporary DiskItem. The argument format is the temporary data format. The optional argument type is the data type. It generates one or several unique filenames (according to the format) in the temporary directory of BrainVISA (it can be changed in BrainVISA configuration). No file is created by this function. The process has to create it. The temporary files are deleted automatically when the temporary diskitem returned by the function is no later used.
+    
+    *Example*
+    
+    >>> tmp = context.temporary( 'GIS image' )
+    >>> context.runProcess( 'threshold', self.input, tmp, self.threshold )
+    >>> tmp2 = context.temporary( 'GIS image' )
+    >>> context.system( 'erosion', '-i', tmp.fullPath(), '-o', tmp2.fullPath(), '-s', self.size )
+    >>> del tmp
+
+    In this example, a temporary data in GIS format is created and it is used to store the output of the process threshold. Then a new temporary data is created to store the output of a command line. At the end, the variable tmp is deleted, so the temporary data is no more referenced and the corresponding files are deleted.
+    """
     result = getTemporary( format, diskItemType )
     return result
 
   def matlab( self, *commands ):
+    """
+    This function starts a Matlab interpreter in order to execute the commands given as arguments. Then the matlab interpreter is closed. It is equivalent to start Matlab, send all the commands and close the interpreter. BrainVISA creates a temporary matlab script which is passed to Matlab interpreter. The script and the command to run matlab depend on Matlab version. This method tend to be obsolete, it is no longer used and may not work with recent matlab versions.
+    """
     self.checkInterruption()
     if matlab.valid and commands:
       m = matlab.matlab()
@@ -2506,6 +2683,9 @@ class ExecutionContext:
 
 
   def write( self, *messages, **kwargs ):
+    """
+     This method is used to print information messages during the process execution. All arguments are converted into strings and joined to form the message. This message may contain HTML tags for an improved display. The result vary according to the context. If the process is run via its graphical interface, the message is displayed in the process window. If the process is run via a script, the message is displayed in the terminal. The message can also be ignored if the process is called automatically by brainvisa or another process.
+    """
     self.checkInterruption()
     if messages:
       msg = u' '.join( unicode( i ) for i in messages )
@@ -2524,6 +2704,9 @@ class ExecutionContext:
     self._writeHTMLParser.feed( html + '<br>\n' )
 
   def warning( self, *messages ):
+    """
+    This method is used to print a warning message. This function adds some HTML tags to change the appearance of the message and calls the :py:meth:`write` function.
+    """
     self.checkInterruption()
     bmsg = '<table width=100% border=1><tr><td><font color=orange><img alt="WARNING: " src="' \
       + os.path.join( neuroConfig.iconPath, 'warning.png' ) + '">'
@@ -2531,6 +2714,9 @@ class ExecutionContext:
     apply( self.write, (bmsg, ) + messages + ( emsg, ) )
 
   def error( self, *messages ):
+    """
+    This method is used to print an error message. Like the above function, it adds some HTML tags to change the appearance of the message and calls :py:meth:`write` function.
+    """
     self.checkInterruption()
     bmsg = '<table width=100% border=1><tr><td><font color=red><img alt="ERROR: " src="' \
       + os.path.join( neuroConfig.iconPath, 'error.png' ) + '">'
@@ -2538,6 +2724,15 @@ class ExecutionContext:
     apply( self.write, (bmsg, ) + messages + ( emsg, ) )
 
   def ask( self, message, *buttons, **kwargs):
+    """
+    This method asks a question to the user. The message is displayed and the user is invited to choose a value among the propositions. The method returns the index of the chosen value, beginning by 0. If the answer is not valid, the returned value is -1. Sometimes, when the process is called automatically (in batch mode), these calls to context.ask are ignored and return directly -1 without asking question.
+
+    *Example*
+
+>>> if context.ask( 'Is the result ok ?', 'yes', 'no') == 1:
+>>>  try_again()
+
+    """
     self.checkInterruption()
     self.write( '<pre>' + message )
     i = 0
@@ -2556,6 +2751,18 @@ class ExecutionContext:
 
 
   def dialog( self, *args ):
+    """
+    This method is available only in a graphical context. Like ask, it is used to ask a question to the user, but the dialog interface is customisable. It is possible to add a signature to the dialog : fields that the user has to fill in.
+
+    *Example*
+
+>>> dial = context.dialog( 1, 'Enter a value', Signature( 'param', Number() ), _t_( 'OK' ), _t_( 'Cancel' ) )
+>>> dial.setValue( 'param', 0 )
+>>> r = dial.call()
+>>> if r == 0:
+>>>   v=dial.getValue( 'param' )
+            
+    """
     self.checkInterruption()
     return None
 
@@ -2574,6 +2781,16 @@ class ExecutionContext:
 
 
   def checkInterruption( self ):
+    """
+    This function is used to define breakpoints. When the process execution reach a breakpoint, the user can interrupt the process. There are 4 types of breakpoints automatically added :
+
+    * before each system call (context.system)
+    * after each system call (context.system)
+    * before each sub-process call (context.runProcess)
+    * after each sub-process call (context.runProcess)
+
+    To allow the user to interrupt the process at another place, you have to use the function context.checkInterruption. If the user has clicked on the Interrupt button while the process runs, it will stop when reaching the checkInterruption point.
+    """
     self._interruptionLock.acquire()
     try:
       self._checkInterruption()
@@ -2624,6 +2841,11 @@ class ExecutionContext:
 
 
   def log( self, *args, **kwargs ):
+    """
+    `context.log(what, when=None, html='', children=[], icon=None)`
+    
+    This method is used to add a message to BrainVISA log. The first parameter what is the name of the entry in the log, the message to write is in the html parameter.
+    """
     stackTop = self._stackTop()
     if stackTop:
       logFile = stackTop.log
@@ -2634,6 +2856,9 @@ class ExecutionContext:
 
 
   def getConverter( self, source, dest, checkUpdate=True ):
+    """
+    Gets a converter process which can convert the source diskitem from its format to the destination format.
+    """
     # Check and convert source type
     if isinstance( source, DiskItem ):
       source = ( source.type, source.format )
