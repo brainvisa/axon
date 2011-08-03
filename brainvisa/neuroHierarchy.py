@@ -34,6 +34,10 @@
 import os
 
 from brainvisa.data.sqlFSODatabase import SQLDatabase, SQLDatabases
+try:
+  from soma.database.cw_database import CWDatabase
+except:
+  CWDatabase=None
 from brainvisa.data.readdiskitem import ReadDiskItem
 from brainvisa.data.writediskitem import WriteDiskItem
 from neuroException import showException, showWarning
@@ -71,31 +75,38 @@ def openDatabases():
           print 'Database', dbSettings.directory, 'is remotely accessed from', uri.protocol+'://'+uri.address+':'+str(uri.port) #str( uri )
           base = ThreadSafeProxy( uri.getAttrProxy() )
           newDatabases.append( base )
-        else:
-          otherSqliteFiles=[]
-          if dbSettings.expert_settings.sqliteFileName != ":memory:":
-            if dbSettings.expert_settings.sqliteFileName:
-              path, ext = os.path.splitext(dbSettings.expert_settings.sqliteFileName)
-            else:
-              path=os.path.join( dbSettings.directory, 'database' )
-              ext='.sqlite'
-    
-            sqlite=path+"-"+databaseVersion+ext
-            # other versions of sqlite file
-            other=path+ext
-            if os.path.exists(other):
-              otherSqliteFiles.append(other)
-            for version in databaseVersions.keys():
-              if version != databaseVersion:
-                other=path+"-"+version+ext
-                if os.path.exists(other):
-                  otherSqliteFiles.append(path+"-"+version+ext)
-          else:
-            sqlite=dbSettings.expert_settings.sqliteFileName
+        else:	    
+	  if dbSettings.expert_settings.db_type=="Cubicweb":
+	    if CWDatabase is not None:
+	      print "Create a CW database"
+	      base = CWDatabase( dbSettings.expert_settings.db_name, dbSettings.directory, dbSettings.expert_settings.login, dbSettings.expert_settings.password, fso=dbSettings.expert_settings.ontology, context=defaultContext() )
+	    else:
+	      showWarning("Impossible to load a Cubicweb database because module soma.database.cw_database was not found.")
+	  else:
+	    otherSqliteFiles=[]
+	    if dbSettings.expert_settings.sqliteFileName != ":memory:":
+	      if dbSettings.expert_settings.sqliteFileName:
+		path, ext = os.path.splitext(dbSettings.expert_settings.sqliteFileName)
+	      else:
+		path=os.path.join( dbSettings.directory, 'database' )
+		ext='.sqlite'
+      
+	      sqlite=path+"-"+databaseVersion+ext
+	      # other versions of sqlite file
+	      other=path+ext
+	      if os.path.exists(other):
+		otherSqliteFiles.append(other)
+	      for version in databaseVersions.keys():
+		if version != databaseVersion:
+		  other=path+"-"+version+ext
+		  if os.path.exists(other):
+		    otherSqliteFiles.append(path+"-"+version+ext)
+	    else:
+	      sqlite=dbSettings.expert_settings.sqliteFileName
 
-          base = SQLDatabase( sqlite, dbSettings.directory, fso=dbSettings.expert_settings.ontology, context=defaultContext(), otherSqliteFiles=otherSqliteFiles )
-          base.uuid = getattr( dbSettings.expert_settings, 'uuid', None )
-          newDatabases.append( base )
+	    base = SQLDatabase( sqlite, dbSettings.directory, fso=dbSettings.expert_settings.ontology, context=defaultContext(), otherSqliteFiles=otherSqliteFiles )
+	    base.uuid = getattr( dbSettings.expert_settings, 'uuid', None )
+	  newDatabases.append( base )
             
           # Usually users do not have to modify a builtin database. Therefore no warning is shown for these databases.
           if ( (not getattr(dbSettings, "builtin", False)) and (not os.access(dbSettings.directory, os.W_OK) or ( os.path.exists(sqlite) and not os.access(sqlite, os.W_OK)) ) ):
@@ -108,7 +119,6 @@ def openDatabases():
   databases.removeDatabases()
   for db in newDatabases:
     databases.add(db)
-
   
 def hierarchies():
   return databases._databases.values()

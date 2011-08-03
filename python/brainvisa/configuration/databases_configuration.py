@@ -43,7 +43,7 @@ __docformat__ = "epytext en"
 import os
 from soma.wip.configuration import ConfigurationGroup
 from soma.signature.api import HasSignature, Signature, FileName, \
-                               Boolean, OpenedChoice, Sequence
+                               Boolean, OpenedChoice, Sequence, Unicode, Choice
 from soma.minf.api import readMinf
 import neuroConfig
 
@@ -80,7 +80,11 @@ class DatabasesConfiguration( ConfigurationGroup ):
 class ExpertDatabaseSettings( HasSignature ):
   signature = Signature(
     'ontology', OpenedChoice(), dict( defaultValue='brainvisa-3.0' ),
+    'db_type', Choice("SQLite", "Cubicweb"), dict(defaultValue='SQLite', visible=False),
     'sqliteFileName', FileName, dict( defaultValue='' ),
+    'db_name', Unicode(), dict( visible = False ), 
+    'login', Unicode(),  dict( visible = False ), 
+    'password', Unicode(), dict( visible = False ), 
     'activate_history', Boolean, dict( defaultValue=False ),
   )
 
@@ -88,10 +92,34 @@ class ExpertDatabaseSettings( HasSignature ):
     if not ExpertDatabaseSettings.signature[ 'ontology' ].type.values:
       ExpertDatabaseSettings.signature[ 'ontology' ].type.setChoices( *ExpertDatabaseSettings.availableOntologies() )
     super( ExpertDatabaseSettings, self ).__init__()
+    # The possibility to choose a Cuicweb database is an experimental feature
+    # so it is not available for all user but only for user with a level > 4 which cannot be set throught preferences GUI
+    # else the option is not visible
+    if neuroConfig.userLevel > 4:
+      self.signature["db_type"].visible=True
+    self.onAttributeChange("db_type", self._dbTypeChanged )
   
   def __eq__( self , other):
     return ((self.ontology == other.ontology) and (self.sqliteFileName == other.sqliteFileName) and (self.activate_history == other.activate_history))
     
+  def _dbTypeChanged(self, db_type):
+    """
+    Change the visibility of parameters according to the type of database
+    Parameters db_name, login and password are related to a Cubicweb database
+    Parameter sqliteFileName is related to a BV SQLite database.
+    """
+    if db_type == "SQLite":
+      self.signature["sqliteFileName"].visible=True
+      self.signature["db_name"].visible=False
+      self.signature["login"].visible=False
+      self.signature["password"].visible=False
+    else:
+      self.signature["sqliteFileName"].visible=False
+      self.signature["db_type"].visible=True
+      self.signature["db_name"].visible=True
+      self.signature["login"].visible=True
+      self.signature["password"].visible=True
+  
   @staticmethod
   def availableOntologies():
     ontologies = [ 'brainvisa-3.1.0', 'brainvisa-3.0', 'shared' ]
@@ -112,7 +140,7 @@ class DatabaseSettings( HasSignature ):
     'expert_settings', ExpertDatabaseSettings, dict( collapsed=True ),
   )
 
-  def __init__( self, directory=None, selected=True ):
+  def __init__( self, directory=None, selected=True):
     HasSignature.__init__( self )
     self.expert_settings = ExpertDatabaseSettings()
     if directory :
