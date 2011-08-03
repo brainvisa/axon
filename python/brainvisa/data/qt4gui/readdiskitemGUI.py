@@ -45,6 +45,7 @@ import neuroConfig
 from neuroException import showException, HTMLMessage
 from PyQt4 import QtCore
 import sys
+import cProfile, pstats
 
 #----------------------------------------------------------------------------
 class RightClickablePushButton( QPushButton ):
@@ -281,6 +282,14 @@ class DiskItemEditor( QWidget, DataEditor ):
 
 
   def databasePressed( self ):
+    if neuroConfig.userLevel > 4:
+      cProfile.runctx("self._databasePressed()", globals(), locals(), "/tmp/bv.profile")
+      p=pstats.Stats("/tmp/bv.profile")
+      p.strip_dirs().sort_stats('cumulative').print_stats(30)
+    else:
+      self._databasePressed()
+    
+  def _databasePressed(self):
     if self.databaseDialog is None or self.parameter._modified:
       self.parameter._modified = 0
       if self.diskItem: # this parameter has already a value, use it to initialize the browser
