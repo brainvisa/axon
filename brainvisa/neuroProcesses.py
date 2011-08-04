@@ -68,7 +68,12 @@ Specialized Process classes that use the different types of execution nodes also
   * :py:class:`DistributedProcess`: a pipeline that have a :py:class:`ParallelExecutionNode`
   * :py:class:`SelectionProcess`: a pipeline that have a :py:class:`SelectionExecutionNode`.
   
-As processes can be run in different contexts, an object representing this context is passed as a parameter in the processes execution function. This object is an intance of the class :py:class:`ExecutionContext`.
+As processes can be run in different contexts, an object representing this context is passed as a parameter in the processes execution function. This object is an intance of the class :py:class:`ExecutionContext`. A default context associated to the application also exists, to get it use the function :py:func:`defaultContext`.
+
+:Inheritance diagram:
+
+.. inheritance-diagram:: Parameterized Process ExecutionNode SerialExecutionNode ProcessExecutionNode SelectionExecutionNode ParallelExecutionNode ProcessInfo ExecutionContext IterationProcess SelectionProcess DistributedProcess ListOfIterationProcess ProcessTree ProcessTrees
+
   
 :Classes:
   
@@ -119,6 +124,10 @@ As processes can be run in different contexts, an object representing this conte
   :show-inheritance:
 
 .. autoclass:: ExecutionContext
+  :members:
+  :show-inheritance:
+    
+.. autoclass:: ProcessTree
   :members:
   :show-inheritance:
    
@@ -870,7 +879,7 @@ class Parameterized( object ):
 #----------------------------------------------------------------------------
 class Process( Parameterized ):
   """
-  This class represents a Brainvisa process or pipeline. It inherits from :py:class:`Parameterized`.
+  This class represents a Brainvisa process or pipeline.
   
   This object has a **signature** that describes its inputs and outputs and an **execution function** :py:meth:`execution`.
   If it is a **pipeline**, it also have an **execution node** that describes the structure of the pipeline.
@@ -1123,8 +1132,6 @@ class Process( Parameterized ):
 #----------------------------------------------------------------------------
 class IterationProcess( Process ):
   """
-  Inherits from :py:class:`Process`.
-  
   This class represents a set of process instances that can be executed in parallel. 
   
   It is used to iterate the same process on a set of data.
@@ -1155,8 +1162,6 @@ class IterationProcess( Process ):
 #----------------------------------------------------------------------------
 class ListOfIterationProcess( IterationProcess ):
   '''
-  Inherits from :py:class:`IterationProcess`.
-  
   An IterationProcess which has on its main signature a list of the first
   element of each sub-process.
   
@@ -1184,8 +1189,6 @@ class ListOfIterationProcess( IterationProcess ):
 #----------------------------------------------------------------------------
 class DistributedProcess( Process ):
   """
-  Inherits from :py:class:`Process`.
-  
   This class represents a set of process instances that can be executed in parallel. 
   """
   def __init__( self, name, processes ):
@@ -1215,8 +1218,6 @@ class DistributedProcess( Process ):
 #----------------------------------------------------------------------------
 class SelectionProcess( Process ):
   """
-  Inherits from :py:class:`Process`.
-  
   This class represents a choice between a list of processes. 
   """
   def __init__( self, name, processes ):
@@ -1736,7 +1737,7 @@ class ExecutionNode( object ):
 
   def addLink( self, destination, source, function=None ):
     """
-    Adds a parameter link like :py:meth:`Process.addLink`.
+    Adds a parameter link like :py:meth:`Parameterized.addLink`.
     """
     # Parse source
     sources = []
@@ -2251,7 +2252,7 @@ class ExecutionContext:
     
     *Example*
 
->>> context.runProcess( 'do_something', self.input, self.output, value = 3.14 )
+    >>> context.runProcess( 'do_something', self.input, self.output, value = 3.14 )
 
     In this example, the process do_something is called with self.input as the first paramter value, self.ouput as the second parameter value and 3.14 to the parameter named value.
     """
@@ -3057,11 +3058,9 @@ class ExecutionContext:
     '''Set the progress information for the parent process or ProgressInfo
     instance, and output it using the context output mechanisms.
     
-    :param value: is the progress value to set. If none, the value will not be changed,
-    but the current status will be shown.
+    :param value: is the progress value to set. If none, the value will not be changed, but the current status will be shown.
     
-    :param count: is the maximum value for the process own progress value (not taking
-    children into account).
+    :param count: is the maximum value for the process own progress value (not taking children into account).
     
     :param process: is either the calling process, or the ProgressInfo.
     '''
@@ -3487,7 +3486,7 @@ def getProcessInstance( processIdClassOrInstance ):
 #----------------------------------------------------------------------------
 def allProcessesInfo():
   """
-  Returns a list of :py:class`ProcessInfo` objects for the loaded processes.
+  Returns a list of :py:class:`ProcessInfo` objects for the loaded processes.
   """
   return _processesInfo.values()
 
@@ -3564,7 +3563,7 @@ def getViewer( source, enableConversion = 1, checkUpdate=True, listof=False ):
   Gets a viewer (a process that have the role viewer) which can visualize source data.
   The viewer is returned only if its userLevel is lower than the current userLevel.
   
-  :param source: a :py:class:`neuroDiskItems.DiskItem`, a list of :py:class:`neuroData.DiskItem` (only the first will be taken into account), a tuple (type, format).
+  :param source: a :py:class:`neuroDiskItems.DiskItem`, a list of :py:class:`neuroDiskItems.DiskItem` (only the first will be taken into account), a tuple (type, format).
   :param boolean enableConversion: if True, a viewer that accepts a format in which source can be converted is also accepted. Default True
   :param boolean checkUpdate: if True, Brainvisa will check if the viewer needs to be reloaded. Default True.
   :param boolean listof: If True, we need a viewer for a list of data. If there is no specific viewer for a list of this type of data, a :py:class:`ListOfIterationProcess` is created from the associated simple viewer. Default False.
@@ -3636,7 +3635,7 @@ def getViewer( source, enableConversion = 1, checkUpdate=True, listof=False ):
 def runViewer( source, context=None ):
   """
   Searches for a viewer for source data and runs the process. 
-  :param source: a :py:class:`neuroData.DiskItem` or something that enables to find a :py:class:`neuroData.DiskItem`.
+  :param source: a :py:class:`neuroDiskItems.DiskItem` or something that enables to find a :py:class:`neuroDiskItems.DiskItem`.
   :param context: the :py:class:`ExecutionContext`. If None, the default context is used.
   :returns: the result of the execution of the found viewer.
   """
@@ -3654,7 +3653,7 @@ def getDataEditor( source, enableConversion = 0, checkUpdate=True, listof=False 
   Gets a data editor (a process that have the role editor) which can open source data for edition (modification).
   The data editor is returned only if its userLevel is lower than the current userLevel.
   
-  :param source: a :py:class:`neuroData.DiskItem`, a list of :py:class:`neuroData.DiskItem` (only the first will be taken into account), a tuple (type, format).
+  :param source: a :py:class:`neuroDiskItems.DiskItem`, a list of :py:class:`neuroDiskItems.DiskItem` (only the first will be taken into account), a tuple (type, format).
   :param boolean enableConversion: if True, a data editor that accepts a format in which source can be converted is also accepted. Default False
   :param boolean checkUpdate: if True, Brainvisa will check if the editor needs to be reloaded. Default True.
   :param boolean listof: If True, we need an editor for a list of data. If there is no specific editor for a list of this type of data, a :py:class:`ListOfIterationProcess` is created from the associated simple editor. Default False.
@@ -3716,7 +3715,7 @@ def getImporter( source, checkUpdate=True ):
   """
   Gets a importer (a process that have the role importer) which can import data in the database.
   
-  :param source: a :py:class:`neuroData.DiskItem` or a tuple (type, format).
+  :param source: a :py:class:`neuroDiskItems.DiskItem` or a tuple (type, format).
   :param boolean checkUpdate: if True, Brainvisa will check if the process needs to be reloaded. Default True.
   :returns: the NewProcess class associated to the found process.
   """
@@ -4041,16 +4040,27 @@ def readProcesses( processesPath ):
 #----------------------------------------------------------------------------
 class ProcessTree( EditableTree ):
   """
-  Represents a hierarchy of processes.
-  It contains branches : category/directory, and leaves: processes.
+  Represents a hierarchy of processes. 
+  It is used to represent the processes of a toolbox or a set of personal bookmarks on processes.
+  
+  The tree contains branches: categories or directories, and leaves: processes.
+  
+  This object can be saved in a minf file (in userProcessTree.minf for user bookmarks). That's why it defines __getinitkwargs__ method.  this method's result is stored in the file and passed to the constructor to restore the object.
+    Some changes to the constructor attributes must be reflected in getinitkwargs method, but changes can affect the reading of existing minf files.
+
+  This object can be saved in a minf file (in userProcessTree.minf for user bookmarks).
   """
   defaultName = "New"
 
   def __init__( self, name=None, id=None, icon=None, tooltip=None, editable=True, user=True,  content=[]):
     """
-    Represents a process tree. It can be a user profile or a default tree.
-    This object can be saved in a minf file (in userProcessTree.minf for user profiles). That's why it defines __getinitkwargs__ method.  this method's result is stored in the file and passed to the constructor to restore the object.
-    Some changes to the constructor attributes must be reflected in getinitkwargs method, but changes can affect the reading of existing minf files.
+    :param string name: name of the tree
+    :param string id: id of the process. if None, it is set to the name in lowercase.
+    :param string icon: filename of an icon that represents the process tree.
+    :param string tooltip: description associated to the process tree
+    :param boolean editable: if True, the tree can be modified after its creation. 
+    :param boolean user: if True, this tree is a custom process tree created by the user (personal bookmarks on processes)
+    :param list content: initial content, list of children to add in the tree.
     """
     if id is None and name is not None:
       id=string.lower(name)
@@ -4074,17 +4084,20 @@ class ProcessTree( EditableTree ):
     return ( self.initName, self.id, self.icon, self.tooltip, self.modifiable, self.user, content )
 
   def __getinitkwargs__(self):
+    """
+    This object can be saved in a minf file (in userProcessTree.minf for user bookmarks). That's why it defines __getinitkwargs__ method.  this method's result is stored in the file and passed to the constructor to restore the object.
+    Some changes to the constructor attributes must be reflected in getinitkwargs method, but changes can affect the reading of existing minf files.
+    """
     content=self.values()
     return ( (), {'name' : self.initName, 'id': self.id, 'icon' : self.icon, 'editable' : self.modifiable, 'user' : self.user, 'content' : content} )
 
   def addDir(self, processesDir, category="", processesCache={}, toolbox='brainvisa' ):
     """
-    @type processesDir: string
-    @param processesDir: directory where processes are recursively searched.
-    @type category: string
-    @param category: category prefix for all processes found in this directory (usefull for toolboxes : all processes category begins with toolbox's name.
-    @processesCache: dictionary
-    @param processesCache: a dictionary containing previously saved processes info stored by id. Processes that are in this cache are not reread.
+    Adds the processes from a directory to the current tree. Subdirectories will become the branches of the tree and processes will become the leaves of the tree.
+    
+    :param string processesDir: directory where processes are recursively searched.
+    :param string category: category prefix for all processes found in this directory (useful for toolboxes : all processes category begins with toolbox's name.
+    :param dictionary processesCache: a dictionary containing previously saved processes info stored by id. Processes that are in this cache are not reread.
     """
     if os.path.isdir( processesDir ):
       stack = [ ( self, processesDir, category ) ]
@@ -4140,15 +4153,17 @@ class ProcessTree( EditableTree ):
       item.setAllModificationsEnabled(bool)
 
   def setName(self, n):
-    """Renames item. The notifier notifies the change."""
+    """
+    Renames the tree. The tooltip is also changed it was equal to the name.
+    """
     if self.name==self.tooltip:
-      self.tooltip=n # change also the tooltip if it is equal to the name
+      self.tooltip=n
     EditableTree.setName(self, n)
 
   def setValid(self):
     """
     Sets the tree as valid if it has no child and it is a user tree or if it has at least one valid child.
-    Empty user tree is valid because it can be a newly created user tree and the user may want to fill it later.
+    An empty user tree is valid because it can be a newly created user tree and the user may want to fill it later.
     """
     valid=False
     if len(self)==0 and self.user:
@@ -4162,7 +4177,7 @@ class ProcessTree( EditableTree ):
 
   def update(self):
     """
-    Updates recursively valid attribute for each item in the tree. This method must be called when the validity may have change. For exemple when the userLevel has changed, some process must become visibles.
+   Recursively Updates `valid` attribute for each item in the tree. This method must be called when the validity may have change. For exemple when the userLevel has changed, some process must become visibles.
     """
     if len(self)==0 and self.user:
       self.valid=True
@@ -4320,13 +4335,29 @@ class ProcessTrees(ObservableAttributes, ObservableSortedDictionary):
   Model for the list of process trees in brainvisa.
   It is a dictionary which maps each tree with its id.
   It contains several process trees :
-    - default process trees : all processes in brainvisa/processes (that are not in a toolbox). Not modifiable by user.
+    - default process tree : all processes in brainvisa/processes (that are not in a toolbox). Not modifiable by user.
     - toolboxes : processes grouped by theme. Not modifiable by user.
-    - user process trees : lists created by the user and saved in a minf file.
+    - user process trees (personal bookmarks): lists created by the user and saved in a minf file.
   A tree can be set as default. It becomes the current tree at Brainvisa start.
+  
+  .. py:attribute:: name 
+  
+  Name of the object.
+  
+  .. py:attribute:: userProcessTreeMinfFile
+  
+  Path to the file which stores the process trees created by the user as bookmarks. 
+  Default filename is in brainvisa home directory and is called `userProcessTrees.minf`.
+  
+  .. py:attribute::selectedTree
+  
+  :py:class:`ProcessTree` that is the current tree when Brainvisa starts.
   """
 
   def __init__(self, name=None):
+    """
+    :param string name: Name of the object. Default is 'Toolboxes'.
+    """
     if name is None:
       name = _t_('Toolboxes')
     # set the selected tree
@@ -4428,8 +4459,8 @@ class ProcessTrees(ObservableAttributes, ObservableSortedDictionary):
 _mainProcessTree = None
 def updatedMainProcessTree():
   """
-  @rtype: ProcessTrees
-  @return: Brainvisa list of trees :  all processes tree, toolboxes, user trees
+  :rtype: :py:class:`ProcessTrees`
+  :returns: Brainvisa list of process trees :  all processes tree, toolboxes, user trees
   """
   global _mainProcessTree
   if _mainProcessTree is None:
@@ -4441,8 +4472,8 @@ def allProcessesTree():
   """
   Get the tree that contains all processes. It is created when processes in processesPath are first read.
   Toolboxes processes are also added in this tree.
-  @rtype: ProcessTree
-  @return: the tree that contains all processes.
+  :rtype: :py:class:`ProcessTrees`
+  :return: the tree that contains all processes.
   """
   global _allProcessesTree
   return _allProcessesTree
@@ -4457,15 +4488,28 @@ def updateProcesses():
 
 #----------------------------------------------------------------------------
 def mainThread():
+  """
+  Gets Brainvisa main thread.
+  """
   return _mainThread
 
 #----------------------------------------------------------------------------
 def defaultContext():
+  """
+  Gets the default execution context.
+  :rtype: :py:class:`ExecutionContext`
+  :return: The default execution context associated to Brainvisa application.
+  """
   return _defaultContext
 
 
 #----------------------------------------------------------------------------
 def initializeProcesses():
+  """
+  Intializes the global variables of the module. 
+  The current thread is stored as the main thread. 
+  A default execution context is created.
+  """
   #TODO: A class would be more clean instead of all these global variables
   global _processModules, _processes, _processesInfo, _processesInfoByName, \
          _converters, _viewers, _listViewers, _mainThread, _defaultContext, _dataEditors, _listDataEditors, _importers,\
@@ -4495,6 +4539,10 @@ def initializeProcesses():
 
 #----------------------------------------------------------------------------
 def cleanupProcesses():
+  """
+  Callback associated to the application exit. 
+  The global variables are cleaned.
+  """
   global _processModules, _processes, _processesInfo, _processesInfoByName, \
          _converters, _viewers, _listViewers, _mainThread, _defaultContext, _dataEditors, _listDataEditors, _importers, \
          _askUpdateProcess, _readProcessLog
