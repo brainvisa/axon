@@ -71,8 +71,15 @@ neuroConfig
 neuroProcesses
 --------------
 
+:Inheritance diagram:
+
+.. inheritance-diagram:: neuroProcesses
+
 .. automodule:: neuroProcesses
 
+
+
+    
 neuroException
 --------------
 

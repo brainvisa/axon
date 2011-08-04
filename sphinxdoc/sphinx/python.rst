@@ -11,6 +11,8 @@ Modules organization
 - :py:mod:`brainvisa.toolboxes`: Toolbox class representing a BrainVISA toolbox.
 - :py:mod:`brainvisa.shelltools`: functions to copy, move, delete files.
 - :py:mod:`brainvisa.workflow`: Conversion of a Process into a Workflow usable in :somaworkflow:`Soma-workflow <index.html>`.
+- :py:mod:`brainvisa.validation`: Definition of an exception that can be raised by processes validation functions.
+- :py:mod:`brainvisa.history`: Framework to manage history of processes.
 
 brainvisa.configuration
 +++++++++++++++++++++++
@@ -80,6 +82,20 @@ brainvisa.workflow
 
 .. automodule:: brainvisa.workflow
   :members:
+
+
+brainvisa.validation
+------------------
+
+.. automodule:: brainvisa.validation
+  :members:
+
+brainvisa.history
+------------------
+
+.. automodule:: brainvisa.history
+  :members:
+  :show-inheritance:
 
 brainvisa.configuration
 -----------------------

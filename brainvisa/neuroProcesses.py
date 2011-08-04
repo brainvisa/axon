@@ -73,41 +73,54 @@ As processes can be run in different contexts, an object representing this conte
 :Classes:
   
 .. autoclass:: Parameterized
+  :show-inheritance:
     
 .. autoclass:: Process
+  :show-inheritance:
 
 .. autoclass:: ProcessInfo
   :members:
+  :show-inheritance:
     
 .. autoclass:: ExecutionNode
   :members:
+  :show-inheritance:
     
 .. autoclass:: ProcessExecutionNode
   :members:
-
+  :show-inheritance:
+    
 .. autoclass:: SerialExecutionNode
   :members:
+  :show-inheritance:
     
 .. autoclass:: ParallelExecutionNode
   :members:
+  :show-inheritance:
 
 .. autoclass:: SelectionExecutionNode
   :members:
+  :show-inheritance:
 
 .. autoclass:: IterationProcess
   :members:
+  :show-inheritance:
     
 .. autoclass:: ListOfIterationProcess
   :members:
+  :show-inheritance:
     
 .. autoclass:: DistributedProcess
   :members:
+  :show-inheritance:
 
 .. autoclass:: SelectionProcess
   :members:
+  :show-inheritance:
 
 .. autoclass:: ExecutionContext
   :members:
+  :show-inheritance:
    
 :Functions:
   
