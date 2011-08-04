@@ -80,6 +80,10 @@ def modificationHashOrEmpty( f ):
 
 #----------------------------------------------------------------------------
 class DiskItem:
+  """
+  This class represents data stored in one or several files on a filesystem.
+  It can have additional information stored in attributes and may be indexed in a Brainvisa database.
+  """
   
   _minfLock=RLock()
   

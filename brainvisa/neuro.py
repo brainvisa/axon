@@ -32,6 +32,11 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+"""
+This is the main module of BrainVISA. It is executed by ``brainvisa`` command to start the software.
+It loads a lot of other modules and initializes BrainVISA application according to the options given at startup. 
+"""
+__docformat__ = 'restructuredtext en'
 
 import sys, os, signal, atexit, time
 
@@ -86,9 +91,11 @@ from minfExtensions import initializeMinfExtensions
 from brainvisa.data.qtgui.updateDatabases import warnUserAboutDatabasesToUpdate
 
 def system_exit_handler( number, frame ):
+  """The callback associated to SIGINT signal (CTRL+C) when there is no Qt Application."""
   sys.exit( 1 )
 
 def qt_exit_handler( number, frame ):
+  """The callback associated to SIGINT signal (CTRL+C) when a Qt Application is running."""
   qApp.exit()
 
 # Ctrl + C is linked to sys.exit() until Qt event loop is entered
@@ -108,12 +115,19 @@ class EventFilter( QObject ):
     
   
 def setQtApplicationStyle( newStyle ):
+  """
+  This function sets the graphical style of the Qt application with the style given in parameter. 
+  If the parameter is None, the style given in gui_style brainvisa option is applied.
+  """
   if not newStyle:
     newStyle = app.configuration.brainvisa.signature[ 'gui_style' ].defaultValue
   qApp.setStyle( newStyle )
 
 
 def main():
+  """
+  This function initializes BrainVISA components: log, databases, processes, graphical user interface. 
+  """
   if USE_QT4:
     p = os.path.join( neuroConfig.mainPath, 'protection_against_qt3' )
     if os.path.exists( p ):
@@ -121,9 +135,7 @@ def main():
   if neuroConfig.server:
     # make the program into a daemon
     Server.daemonize()
-    
-#  sys.excepthook = exceptionHook
-
+  #  sys.excepthook = exceptionHook
   # InitializationoptionFile
   try:
     temporary.initializeTemporaryFiles( 

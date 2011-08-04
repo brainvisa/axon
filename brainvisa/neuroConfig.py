@@ -31,6 +31,53 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+"""
+Several global variables are defined in this module to store **Brainvisa configuration and user options**: 
+
+* **platform**: linux, windows...
+* **gui**: false if Brainvisa is in batch mode
+* **sessionID**
+* **fullVersion, shortVersion**: Brainvisa version
+* **userProfile**: if Brainvisa is started with `-u` option, the name of the profile stored in this variable is used to create a specific log file for this profile.
+* **siteOptionFile**: path to a general options file that may be used for all users.
+* **userOptionFile**: path to user options file.
+* **logFileName**: path of Brainvisa log file where the history of the current session will be saved.
+* **runsInfo**: information about the current executions of Brainvisa.
+* **temporaryDirectory**: directory where temporary files will be written.
+* **mainPath**: Path of Brainvisa main module.
+* **sharePath**: Brainvisa share directory
+* **iconPath**
+* **homeBrainVISADir**: path to Brainvisa home directory (usually $HOME/.brainvisa)
+* **toolboxesDir**: Brainvisa toolboxes directory
+* **processesPath**: list of paths to Brainvisa processes (outside any toolbox)
+* **dataPath**: list of DatabaseSettings objects indicating the selected databases.
+* **typesPath**: list of paths to Brainvisa type files that contain the description of Brainvisa ontology.
+* **fileSystemOntologiesPath**: list of paths to Brainvisa hierarchy files that contain the rules to organize Brainvisa databases directories.
+* **debugHierarchyScanning**: stream where debug information about hierarchy rules may be written. Set with `--debugHierarchy` option.
+* **debugParameterLinks**: stream where debug information about parameter links may be written. Set with `--debugLinks` option.
+* **sharedDatabaseFound**: True if Brainvisa shared database which contain models, templates, referentials, etc, was found.
+* **mainDocPath**: path to Brainvisa documentation directory 
+* **docPath**: path to Brainvisa documentation directory according to the choosen language.
+* **brainvisaSysEnv**: :py:class:`soma.env.BrainvisaSystemEnv` - defines system environment variables that have to be passed to external command to restore environment if it have been modified at brainvisa startup
+* **ignoreValidation**: Do not check vor invalid processes, all are enabled. Set with `--ignoreValidation`.
+* **language**: fr or en
+* **userLevel**: the processes which level is greater than the user level are hidden. Basic = 0, advanced = 1, expert = 2.
+* **supportEmail, SMTP_server_name**
+* **textEditor**
+* **HTMLBrowser**
+* **fastStart**: if this mode is enabled, brainvisa starts faster but with less features. Set with `-f` or `-r` options.
+* **noToolBox**: if enabled, Brainvisa toolboxes are not loaded. Set with `--noToolBox`.
+* **setup**: if enabled, the shared database is updated at startup. Set with `--setup` option.
+* **anatomistExecutable, anatomistImplementation**
+* **matlabRelease, matlabExecutable, matlabOptions, matlabPath, matlabStartup**
+* **spmDirectory**
+* **Roptions, Rexecutable**
+* **databaseServer**: if enabled, Brainvisa is started as a database server (experimental). Set with `--databaseServer` option.
+* **profileFileName**: filename where profiling information may be written. Set with `--profile` option.
+"""
+
+__docformat__ = 'restructuredtext en'
+
 import __builtin__
 _defaultTranslateFunction = lambda x: x
 if not __builtin__.__dict__.has_key( '_t_' ):
@@ -71,13 +118,16 @@ _commandLine = string.join( map( lambda x: '"'+x+'"', sys.argv ) )
 def commandLine():
   return _commandLine
 
-# Identify platform, possible return values are :
-#   'windows': Windows
-#   'linux': Linux
-#   'sunos': SunOS (Solaris)
-#   'darwin': Darwin (MacOS X)
-#   None: unknown
 def findPlatform():
+  """Identify system platform, possible return values are :
+  
+* 'windows': Windows
+* 'linux': Linux
+* 'sunos': SunOS (Solaris)
+* 'darwin': Darwin (MacOS X)
+* 'irix': Irix
+* None: unknown
+  """
   if sys.platform[:3] == "win":
     return 'windows'
   else:
@@ -117,18 +167,22 @@ except ImportError:
   shortVersion = '.'.join( fullVersion.split( '.' )[:2] )
 
 def versionNumber():
+  """Returns Brainvisa short version X.Y as a float number"""
   global shortVersion
   return float( shortVersion )
 
 def versionString():
+  """Returns Brainvisa full version 'X.Y.Z'"""
   global fullVersion
   return fullVersion
 
 def versionText():
+  """Returns the text 'BrainVISA X.Y.Z'"""
   return 'BrainVISA ' + versionString()
 
 _sharePath = None
 def getSharePath():
+  """Returns BrainVISA share directory path."""
   global _sharePath
   if _sharePath is not None:
     return _sharePath
@@ -181,6 +235,11 @@ def libraryPathEnvironmentVariable():
 # Define system environment variables that have to be passed to external command to restore environment if it have been modified at brainvisa startup
 global brainvisaSysEnv
 brainvisaSysEnv=BrainvisaSystemEnv()
+# try to determine if we are in a build tree with system libraries - in that
+# case, brainvisaSysEnv should not be altered when calling external commands
+if mainPath.startswith( '/usr' ) or not sys.executable.startswith( mainPath ):
+  # python is not in the BV tree, or it is a system-wide installation
+  brainvisaSysEnv.variables = {}
 
 from brainvisa import shelltools
 from soma.minf.api import readMinf
@@ -197,6 +256,7 @@ else:
   temporaryDirectory = '/tmp'
 
 def getDocPath( path, project = '' ) :
+  """Returns the path of the documentation directory of the given project."""
   # Language and documentation
   result = os.path.join( getSharePath(), 'doc', project )
   if not os.path.exists( result ):
@@ -344,6 +404,14 @@ def openDebugFile( fileName ):
 
 #------------------------------------------------------------------------------
 def chooseDatabaseVersionSyncOption(context):
+  """
+  Asks user to choose a database synchronization mode (Automatic or manual) when a database is used with different versions of Brainvisa.
+  The choice is saved in brainvisa options file.
+  
+  :param context: The context enables to adapt the interaction with the user according to Brainvisa mode of execution (graphical, batch)
+  
+  :returns: the user choice: *auto* for automatic mode, *man* for manual mode.
+  """
   global databaseVersionSync, userOptionFile
   choice=context.ask("<p><b>Database synchronization between different versions of BrainVISA<b></p><p>Some of your databases have been used with different versions of BrainVISA. They may need to be updated when you switch from one BrainVISA version to another.</p> Please choose the way you want to manage the database synchronization throught BrainVISA versions : <ul><li>Automatic (recommended) : BrainVISA will automatically update your database if you switch from one BrainVISA version to another. </li><li>Manual : Database update is not automatic when switch from one BrainVISA version to another but if you modify a database in one version, you will have to update it with the other version for BrainVISA to take into account the modifications.</li></ul><p>You can change this option later in BrainVISA preferences.</p>", "Automatic (recommended)", "Manual")
   if (choice == 0):
@@ -357,6 +425,18 @@ def chooseDatabaseVersionSyncOption(context):
   
 #------------------------------------------------------------------------------
 def editConfiguration():
+  """
+  Opens Brainvisa options window. When the user closes the window, the configuration is saved in Brainvisa options file.
+  
+  Some options are taken into account immediately:
+  
+  * if databases selection has changed, databases are reloaded
+  * if userLevel has changed, the list of available processes is updated
+  * new HTML browser and new text editors are taken into account
+  * language change is applied to documentation pages.
+  
+  Some other options are not applied directly but are saved in the options file and will be applied next time Brainvisa is started.
+  """
   import neuroProcesses, neuroHierarchy
   from brainvisa.data.qtgui.updateDatabases import warnUserAboutDatabasesToUpdate
   global userLevel, dataPath, HTMLBrowser, textEditor, language, docPath
@@ -395,6 +475,9 @@ def editConfiguration():
 
 
 def stdinLoop():
+  """
+  Reads Brainvisa commands on stdin and executes them.
+  """
   e = []
   for l in sys.stdin:
     if l.startswith( '# brainvisa run commands' ):
@@ -549,8 +632,18 @@ if cacheUpdateRequest:
 if setup:
   startup.append( 'from neuroHierarchy import databases\nfrom neuroProcesses import defaultContext\ndb = list( databases.iterDatabases() )[0]\ndb.clear(context=defaultContext())\ndb.update(context=defaultContext())' )
 
-# get information about possibly existing runs of Brainvisa and add information about current
+# 
 class RunsInfo:
+  """
+  This class gets information about possibly existing runs of Brainvisa and adds information about the current one.
+  
+  :var string file: information about current runs is stored in *<Brainvisa home dir>/current_runs.minf*
+  :var integer currentRun: index of the current execution of Brainvisa (from 1)
+  :var float timeout: timeout before asking the user if the execution of Brainvisa is still alive. When Brainvisa fails, the file current_runs.minf may not be cleaned.
+  :var dictionary runs: information about current executions of Brainvisa. The information is loaded from the minf file and information about the current execution is added. It is a dictionary *{index -> {host, pid, time, logFileName} }*
+  :var integer count: number of executions of Brainvisa
+  :var dictonary expiredRuns: dictionary containing the runs for which the timeout is reached. The user will be asked if these runs are still alive. If not, the corresponding log files will be deleted and the *current_runs.minf* file will be cleaned.
+  """
   def __init__(self):
     global logFileName
     global cleanLog
@@ -600,6 +693,9 @@ class RunsInfo:
         os.remove(self.file)
       
   def delete(self):
+    """
+    Removes current run information from the current_runs.minf file.
+    """
     #print "delete run info "
     if os.path.exists( self.file ):
       try:
@@ -611,6 +707,9 @@ class RunsInfo:
         pass
 
   def check(self, context):
+    """
+    Checks if there are expired runs and asks the user what to do.
+    """
     if os.path.exists(self.file):
       try:
         self.runs, self.count=readMinf(self.file)
@@ -814,6 +913,17 @@ def clearObjects():
   _allObjects = {}
 
 def environmentHTML():
+  """
+  Returns an HTML page displaying Brainvisa configuration:
+  
+  * Brainvisa version
+  * Python Version
+  * Command line used to start Brainvisa
+  * Environment variables
+  * Brainvisa options (global variables of this module)
+  
+  This page is displayed in Brainvisa log in starting Brainvisa item.
+  """
   content = '<html><body><h1>' + htmlEscape( versionText() ) + '''</h1>
 <h2>''' + _t_( 'Python version' ) + '</h2>'+ htmlEscape( sys.version ) + '''
 <h2>''' + _t_( 'Command line' ) + '''</h2>
