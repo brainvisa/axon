@@ -152,6 +152,9 @@ class HistoryBook( object ):
   
 
 class HistoricalEvent( object ):
+  """
+  
+  """
   def __init__( self, uuid = None ):
     if uuid is None: uuid = Uuid()
     self.uuid = uuid
@@ -173,6 +176,9 @@ class HistoricalEvent( object ):
 
 
 class ProcessExecutionEvent( HistoricalEvent ):
+  """
+  This object enables to store the state of a :py:class:`Process` instance in a dictionary format.
+  """
   eventType = 'bvproc'
   
   def __init__( self, uuid=None, content={} ):
