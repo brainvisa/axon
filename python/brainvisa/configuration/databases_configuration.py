@@ -82,9 +82,9 @@ class ExpertDatabaseSettings( HasSignature ):
     'ontology', OpenedChoice(), dict( defaultValue='brainvisa-3.0' ),
     'db_type', Choice("SQLite", "Cubicweb"), dict(defaultValue='SQLite', visible=False),
     'sqliteFileName', FileName, dict( defaultValue='' ),
-    'db_name', Unicode(), dict( visible = False ), 
-    'login', Unicode(),  dict( visible = False ), 
-    'password', Unicode(), dict( visible = False ), 
+    'db_name', Unicode(), dict( defaultValue='', visible = False ), 
+    'login', Unicode(),  dict( defaultValue='', visible = False ), 
+    'password', Unicode(), dict( defaultValue='', visible = False ), 
     'activate_history', Boolean, dict( defaultValue=False ),
   )
 
