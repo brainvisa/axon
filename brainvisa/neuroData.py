@@ -371,6 +371,9 @@ class ListOf( Parameter ):
 
 #----------------------------------------------------------------------------
 class Signature( UserDict ):
+  """
+  A list of parameters with the name and the type of each paraeter.
+  """
   def __init__( self, *params ):
     self.sortedKeys = []
     self.data = {}

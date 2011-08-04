@@ -33,8 +33,29 @@
 """
 This module contains classes defining Brainvisa **processes and pipelines**.
 
-The main class in this module is :py:class:`Process`. It is the base class for all Brainvisa processes. It inherits from the class :py:class:`Parameterized` that defines an object with a list of parameters that we call a signature. 
+The main class in this module is :py:class:`Process`. It is the base class for all Brainvisa processes. It inherits from the class :py:class:`Parameterized` that defines an object with a list of parameters that we call a signature.
+When the processes are loaded at Brainvisa startup, information about them is stored in :py:class:`ProcessInfo` objects.
 
+Several functions are available in this module to get information about the processes or to get instances of the processes:
+  * :py:func:`getProcessInfo`
+  * :py:func:`allProcessesInfo`
+  * :py:func:`getProcess`
+  * :py:func:`getProcessInstance`
+  * :py:func:`getProcessInstanceFromProcessEvent`
+  * :py:func:`getProcessFromExecutionNode`
+  * :py:func:`getConverter`
+  * :py:func:`getConvertersTo`
+  * :py:func:`getConvertersFrom`
+  * :py:func:`getViewer`
+  * :py:func:`runViewer`
+  * :py:func:`getDataEditor`
+  * :py:func:`getImporter`
+To modify, the lists of processes, several functions are also available:
+  * :py:func:`addProcessInfo`
+  * :py:func:`readProcess`
+  * :py:func:`readProcesses`
+  
+  
 A pipeline is defined as a specific process that has an execution node that describes the pipeline structure. The base class for execution nodes is :py:class:`ExecutionNode`. This class is specialized into several other classes, defining different types of pipelines:
   * :py:class:`ProcessExecutionNode`: only one process
   * :py:class:`SerialExecutionNode`: a list of execution nodes that have to be executed serially.
@@ -54,6 +75,9 @@ As processes can be run in different contexts, an object representing this conte
 .. autoclass:: Parameterized
     
 .. autoclass:: Process
+
+.. autoclass:: ProcessInfo
+  :members:
     
 .. autoclass:: ExecutionNode
   :members:
@@ -84,6 +108,26 @@ As processes can be run in different contexts, an object representing this conte
 
 .. autoclass:: ExecutionContext
   :members:
+   
+:Functions:
+  
+.. autofunction:: getProcessInfo
+.. autofunction:: allProcessesInfo
+.. autofunction:: getProcess
+.. autofunction:: getProcessInstance
+.. autofunction:: getProcessInstanceFromProcessEvent
+.. autofunction:: getProcessFromExecutionNode
+.. autofunction:: getConverter
+.. autofunction:: getConvertersTo
+.. autofunction:: getConvertersFrom
+.. autofunction:: getViewer
+.. autofunction:: runViewer
+.. autofunction:: getDataEditor
+.. autofunction:: getImporter
+.. autofunction:: addProcessInfo
+.. autofunction:: readProcess
+.. autofunction:: readProcesses
+
 """
 __docformat__ = 'restructuredtext en'
 
@@ -946,7 +990,8 @@ class Process( Parameterized ):
   def validation( self ):
     """This method can be overrideed in order to check if the process dependencies are available.
     It will be called at Brainvisa startup when the processes are loaded. If the method raises an exception, the process will not be available.
-    :raises: :py:class:`brainvisa.validation import ValidationError`
+    
+    :raises: :py:class:`brainvisa.validation.ValidationError`
     """
     return 1
 
@@ -2935,12 +2980,14 @@ class ExecutionContext:
     '''Get the progress info for a given process or execution node, or create
     one if none already exists.
     A regular process may call it.
+    
     The output is a tuple containing the ProgressInfo and the process itself,
     just in case the input process is in fact a ProgressInfo instance.
     A ProgressInfo has no hard reference in BrainVISA: when you don't need
     it anymore, it is destroyed via Python reference counting, and is
     considered done 100% for its parent.
-    childrencount is the number of children that the process will have, and is
+    
+    :param childrencount: it is the number of children that the process will have, and is
     not the same as the own count of the process in itself, which is in
     addition to children (and independent), and specified when using the
     progress() method.
@@ -2996,11 +3043,14 @@ class ExecutionContext:
   def progress( self, value=None, count=None, process=None ):
     '''Set the progress information for the parent process or ProgressInfo
     instance, and output it using the context output mechanisms.
-    value is the progress value to set. If none, the value will not be changed,
+    
+    :param value: is the progress value to set. If none, the value will not be changed,
     but the current status will be shown.
-    count is the maximum value for the process own progress value (not taking
+    
+    :param count: is the maximum value for the process own progress value (not taking
     children into account).
-    process is either the calling process, or the ProgressInfo.
+    
+    :param process: is either the calling process, or the ProgressInfo.
     '''
     if value is not None:
       pinfo, process = self.getProgressInfo( process )
@@ -3012,6 +3062,7 @@ class ExecutionContext:
   def showProgress( self, value, count=None ):
     '''Output the given progress value. This is just the output method which
     is overriden in subclassed contexts.
+    
     Users should normally not call it directory, but use progress() instead.
     '''
     if count is None:
@@ -3025,14 +3076,16 @@ class ProgressInfo( object ):
   process or a pipeline. The final goal is to provide feedback to the user via
   a progress bar. ProgressInfo has children for sub-processes (when used in a
   pipeline), or a local value for its own progression.
+  
   A ProgressInfo normally registers itself in the calling Process, and is
   destroyed when the process is destroyed, or when the process _progressinfo
   variable is deleted.
   '''
   def __init__( self, parent=None, count=None, process=None ):
-    '''parent is a ProgressInfo instance.
-    count is a number of children which will be attached.
-    process is the calling process.
+    '''
+    :param parent: is a ProgressInfo instance.
+    :param count: is a number of children which will be attached.
+    :param process: is the calling process.
     '''
     if count is None:
       self.children = []
@@ -3140,12 +3193,49 @@ class ProgressInfo( object ):
 
 #----------------------------------------------------------------------------
 class ProcessInfo:
+  """
+  This object stores information about a process. Such objects are created at BrainVISA startup when the processes are loaded.
+  
+  .. py:attribute:: id
+  Id of the process. It is the name of the file without extension in lowercase.
+  
+  .. py:attribute:: name
+  Name of the process as it is displayed in the GUI.
+  
+  .. py:attribute:: signature
+  Process excepted parameters.
+  
+  .. py:attribute:: userLevel
+  User level needed to see the process.
+  
+  .. py:attribute:: category
+  Process category path: <toolbox>/<category1>/<category2>/...
+  
+  .. py:attribute:: fileName
+  Path to the file containing the source code of the process.
+  
+  .. py:attribute:: roles
+  Tuple containing the specific roles of the process: viewer, converter, editor, importer.
+  
+  .. py:attribute:: valid
+  False if the validation method of the process fails - default True.
+  
+  .. py:attribute:: procdoc
+  The content of the .procdoc file associated to this process in a dictionary. It represents the documentation of the process.
+  
+  .. py:attribute:: toolbox
+  The id of the toolbox containing the process.
+  
+  .. py:attribute:: module
+  Module path to the source of the process related to the toolbox directory. 
+  <processes>.<category1>...<process>
+  """
   def __init__( self, id, name, signature, userLevel, category, fileName, roles, toolbox, module=None ):
     self.id = id
     self.name = name
     #TODO: Signature cannot be pickeled
     self.signature = None
-    self. userLevel = userLevel
+    self.userLevel = userLevel
     self.category = category
     self.fileName = fileName
     self.roles = tuple( roles )
@@ -3167,6 +3257,9 @@ class ProcessInfo:
 
 
   def html( self ):
+    """
+    Returns the process information in html format.
+    """
     return '\n'.join( ['<b>' + n + ': </b>' + unicode( getattr( self, n ) ) + \
                         '<br>\n' for n in ( 'id', 'name', 'toolbox', 'signature',
                                             'userLevel', 'category',
@@ -3174,6 +3267,11 @@ class ProcessInfo:
 
 #----------------------------------------------------------------------------
 def getProcessInfo( processId ):
+  """
+  Gets information about the process whose id is given in parameter.
+  
+  :return type: :py:class:`ProcessInfo`
+  """
   if isinstance( processId, ProcessInfo ):
     result = processId
   else:
@@ -3188,10 +3286,25 @@ def getProcessInfo( processId ):
 
 #----------------------------------------------------------------------------
 def addProcessInfo( processId, processInfo ):
+  """Stores information about the process."""
   _processesInfo[ processId.lower() ] = processInfo
 
 #----------------------------------------------------------------------------
 def getProcess( processId, ignoreValidation=False, checkUpdate=True ):
+  """
+  Gets the class associated to the process id given in parameter.
+  
+  When the processes are loaded, a new class called NewProcess is created for each process. 
+  This class inherits from :py:class:`Process` and adds an instance counter which is incremented each time a new instance of the process is created.
+  
+  :param processId: the id or the name of the process, or a dictionary *{'type' : 'iteration|distributed|selection', 'children' : [...] }* to create an :py:class:`IterationProcess`, a :py:class:`DistributedProcess` or a :py:class:`SelectionProcess`.
+  
+  :param boolean ignoreValidation: if True the validation function of the process won't be executed if the process need to be reloaded - default False.
+  
+  :param boolean checkUpdate: If True, the modification date of the source file of the process will be checked. If the file has been modified since the process loading, it may need to be reloaded. The user will be asked what he wants to do. Default True.
+  
+  :returns: a NewProcess class which inherits from :py:class:`Process`.
+  """
   global _askUpdateProcess
   if processId is None: return None
   if isinstance( processId, Process ) or ( type(processId) in (types.ClassType, types.TypeType) and issubclass( processId, Process ) ):
@@ -3254,6 +3367,12 @@ def getProcess( processId, ignoreValidation=False, checkUpdate=True ):
 
 #----------------------------------------------------------------------------
 def getProcessInstanceFromProcessEvent( event ):
+  """
+  Gets an instance of a process described in a :py:class:`brainvisa.history.ProcessExecutionEvent`.
+  
+  :param event: a :py:class:`brainvisa.history.ProcessExecutionEvent` that describes the process: its structure and its parameters.
+  :returns: an instance of the NewProcess class associated to the described process. Parameters may have been set.
+  """
   pipelineStructure = event.content.get( 'id' )
   if pipelineStructure is None:
     pipelineStructure = event.content.get( 'pipelineStructure' )
@@ -3297,6 +3416,17 @@ def getProcessInstanceFromProcessEvent( event ):
 
 #----------------------------------------------------------------------------
 def getProcessFromExecutionNode( node ):
+  """
+  Gets a process instance corresponding to the given execution node.
+  
+  :param node: a process :py:class:`ExecutionNode`
+  :returns: According to the type of node, it returns:
+  
+    * a NewProcess instance if the node is :py:class:`ProcessExecutionNode`,
+    * an :py:class:`IterationProcess` if the node is a :py:class:`SerialExecutionNode`
+    * a :py:class:`DistributedProcess` if the node is a :py:class:`ParallelExecutionNode`
+    * a :py:class:`SelectionProcess` if the node is a :py:class:`SelectionExecutionNode`.
+  """
   nt = type( node )
   if nt is ProcessExecutionNode:
     return node._process
@@ -3309,6 +3439,12 @@ def getProcessFromExecutionNode( node ):
 
 #----------------------------------------------------------------------------
 def getProcessInstance( processIdClassOrInstance ):
+  """
+  Gets an instance of the process given in parameter.
+  
+  :param processIdClassOrInstance: a process id, name, class, instance, execution node, or a the name of a file containing a backup copy of a process. 
+  :returns: an instance of the NewProcess class associated to the described process.
+  """
   result = getProcess( processIdClassOrInstance )
   if isinstance( processIdClassOrInstance, Process ):
     if result is processIdClassOrInstance or result is processIdClassOrInstance.__class__:
@@ -3337,11 +3473,23 @@ def getProcessInstance( processIdClassOrInstance ):
 
 #----------------------------------------------------------------------------
 def allProcessesInfo():
+  """
+  Returns a list of :py:class`ProcessInfo` objects for the loaded processes.
+  """
   return _processesInfo.values()
 
 
 #----------------------------------------------------------------------------
 def getConverter( source, destination, checkUpdate=True ):
+  """
+  Gets a converter (a process that have the role converter) which can convert data from source format to destination format.
+  Such converters can be used to extend the set of formats that a process accepts.
+  
+  :param source: tuple (type, format). If a converter is not found directly, parent types are tried.
+  :param destination: tuple (type, format)
+  :param boolean checkUpdate: if True, Brainvisa will check if the converter needs to be reloaded. Default True.
+  :returns: the NewProcess class associated to the found converter.
+  """
   global _processes
   result = _converters.get( destination, {} ).get( source )
   if result is None:
@@ -3356,6 +3504,15 @@ def getConverter( source, destination, checkUpdate=True ):
 
 #----------------------------------------------------------------------------
 def getConvertersTo( destination, keepType=1, checkUpdate=True ):
+  """
+  Gets the converters which can convert data to destination format.
+  
+  :param destination: tuple (type, format). If a converter is not found directly, parent types are tried.
+  :param boolean keepType: if True, parent type won't be tried. Default True.
+  :param boolean checkUpdate: if True, Brainvisa will check if the converters needs to be reloaded. Default True.
+  :returns: a map (type, format) -> NewProcess class associated to the found converter.
+  """
+
   global _converters
   t, f = destination
   c = _converters.get( ( t, f ), {} )
@@ -3368,6 +3525,13 @@ def getConvertersTo( destination, keepType=1, checkUpdate=True ):
 
 #----------------------------------------------------------------------------
 def getConvertersFrom( source, checkUpdate=True ):
+  """
+  Gets the converters which can convert data from source format to whatever format.
+  
+  :param source: tuple (type, format). If a converter is not found directly, parent types are tried.
+  :param boolean checkUpdate: if True, Brainvisa will check if the converters needs to be reloaded. Default True.
+  :returns: a map (type, format) -> NewProcess class associated to the found converter.
+  """
   global _converters
   result = {}
   for destination, i in _converters.items():
@@ -3383,6 +3547,16 @@ def getConvertersFrom( source, checkUpdate=True ):
 
 #----------------------------------------------------------------------------
 def getViewer( source, enableConversion = 1, checkUpdate=True, listof=False ):
+  """
+  Gets a viewer (a process that have the role viewer) which can visualize source data.
+  The viewer is returned only if its userLevel is lower than the current userLevel.
+  
+  :param source: a :py:class:`neuroDiskItems.DiskItem`, a list of :py:class:`neuroData.DiskItem` (only the first will be taken into account), a tuple (type, format).
+  :param boolean enableConversion: if True, a viewer that accepts a format in which source can be converted is also accepted. Default True
+  :param boolean checkUpdate: if True, Brainvisa will check if the viewer needs to be reloaded. Default True.
+  :param boolean listof: If True, we need a viewer for a list of data. If there is no specific viewer for a list of this type of data, a :py:class:`ListOfIterationProcess` is created from the associated simple viewer. Default False.
+  :returns: the NewProcess class associated to the found viewer.
+  """
   global _viewers
   global _listViewers
   if listof:
@@ -3447,6 +3621,12 @@ def getViewer( source, enableConversion = 1, checkUpdate=True, listof=False ):
 
 #----------------------------------------------------------------------------
 def runViewer( source, context=None ):
+  """
+  Searches for a viewer for source data and runs the process. 
+  :param source: a :py:class:`neuroData.DiskItem` or something that enables to find a :py:class:`neuroData.DiskItem`.
+  :param context: the :py:class:`ExecutionContext`. If None, the default context is used.
+  :returns: the result of the execution of the found viewer.
+  """
   if not isinstance( source, DiskItem ):
     source = ReadDiskItem( 'Any Type', formats.keys() ).findValue( source )
   if context is None:
@@ -3457,6 +3637,16 @@ def runViewer( source, context=None ):
 
 #----------------------------------------------------------------------------
 def getDataEditor( source, enableConversion = 0, checkUpdate=True, listof=False ):
+  """
+  Gets a data editor (a process that have the role editor) which can open source data for edition (modification).
+  The data editor is returned only if its userLevel is lower than the current userLevel.
+  
+  :param source: a :py:class:`neuroData.DiskItem`, a list of :py:class:`neuroData.DiskItem` (only the first will be taken into account), a tuple (type, format).
+  :param boolean enableConversion: if True, a data editor that accepts a format in which source can be converted is also accepted. Default False
+  :param boolean checkUpdate: if True, Brainvisa will check if the editor needs to be reloaded. Default True.
+  :param boolean listof: If True, we need an editor for a list of data. If there is no specific editor for a list of this type of data, a :py:class:`ListOfIterationProcess` is created from the associated simple editor. Default False.
+  :returns: the NewProcess class associated to the found editor.
+  """
   global _dataEditors
   global _listDataEditors
   if listof:
@@ -3510,6 +3700,13 @@ def getDataEditor( source, enableConversion = 0, checkUpdate=True, listof=False 
 
 #----------------------------------------------------------------------------
 def getImporter( source, checkUpdate=True ):
+  """
+  Gets a importer (a process that have the role importer) which can import data in the database.
+  
+  :param source: a :py:class:`neuroData.DiskItem` or a tuple (type, format).
+  :param boolean checkUpdate: if True, Brainvisa will check if the process needs to be reloaded. Default True.
+  :returns: the NewProcess class associated to the found process.
+  """
   global _processes
   if isinstance( source, DiskItem ):
     t0 = source.type
@@ -3537,6 +3734,51 @@ _extToModuleDescription ={
 
 #----------------------------------------------------------------------------
 def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brainvisa' ):
+  """
+  Loads a process from its source file. The source file is a python file which defines some variables (signature, name, userLevel) and functions (validation, initialization, execution).
+  
+  The process is indexed in the global lists of processes so it can be retrieved through the functions :py:func:`getProcess`, :py:func:`getProcessInfo`, :py:func:`getViewer`, ...
+  
+  A new class derived from :py:class:`Process` is defined to store the content of the file:
+  
+  .. py:class:: NewProcess
+  
+    All the elements defined in the file are added to the class. 
+    
+    .. py:attribute:: name 
+    Name of the process. If it is not defined in the process file, it is the base name of the file without extension.
+     
+    .. py:attribute:: category
+    The category of the process. If it is not given in parameter, it is the name of the directory containing the process file.
+    
+    .. py:attribute:: dataDirectory
+    The data directory of the process is a directory near the process file with the same name and the extension .data. It is optional.
+    
+    .. py::attribute:: toolbox
+    Name of the toolbox containing the process.
+    
+    .. py:attribute:: processReloadNotifier
+    A :py:class:`soma.notification.Notifier` that will notify its observers when the process is reload.
+    
+    .. py:attribute:: signature
+    The parameters excepted by the process.
+    
+    .. py:attribute:: userLevel
+    Minimum userLevel needed to see the process.
+    
+    .. py:attributes:: roles
+    Roles of the process: viewer, converter, editor, impoter. 
+    
+    .. py:method:: execution(self, context)
+    Execution function.
+    
+  
+  :param string fileName: the name of the file containing the source code of the process.
+  :param string category: category of the process. If None, it is the name of the directory containing the process.
+  :param boolean ignoreValidation: if True, the validation function of the process won't be executed.
+  :param string toolbox: The id of the toolbox containing the process. Defaut is 'brainvisa', it indicates that the process is not in a toolbox.
+  :returns: A NewProcess class representing the process if no exception is raised during the loading of the process.
+  """
   result = None
   try:
     global _processModules, _processes, _processesInfo, _processesInfoByName, _readProcessLog, _askUpdateProcess
@@ -3743,6 +3985,14 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
 
 #----------------------------------------------------------------------------
 def readProcesses( processesPath ):
+  """
+  Read all the processes found in toolboxes and in a list of directories. 
+  The toolboxes are found with the function :py:func:`neuroConfig.allToolboxes`.
+  
+  A global object representing a tree of processes is created, it is an instance of the :py:class:`ProcessTree` 
+  
+  :param list processesPath: list of paths to directories containing processes files.
+  """
   # New style processes initialization
   global _processesInfo
   global _allProcessesTree
