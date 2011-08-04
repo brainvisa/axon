@@ -106,7 +106,22 @@ pygments_style = 'sphinx'
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
-
+inheritance_graph_attrs = {
+        'rankdir': 'LR',
+        'size': '"15.0, 18.0"',
+    }
+inheritance__node_attrs = {
+        'shape': 'box',
+        'fontsize': 12,
+        'height': 0.75,
+        'fontname': 'Arial, Vera Sans, DejaVu Sans, Liberation Sans, '
+                    'Helvetica, sans',
+        'style': '"setlinewidth(1.0)"',
+    }
+inheritance_edge_attrs = {
+        'arrowsize': 1.0,
+        'style': '"setlinewidth(1.0)"',
+    }
                               
 # -- Options for HTML output ---------------------------------------------------
 
