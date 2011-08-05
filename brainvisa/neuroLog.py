@@ -30,7 +30,19 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+"""
+This module contains the classes for **Brainvisa log system**.
 
+Brainvisa main log is an instance of :py:class:`LogFile`. It is stored in the global variable :py:data:`neuroConfig.mainLog`.
+This main log is created in the function :py:func:`initializeLog`.
+
+:Inheritance diagram:
+
+.. inheritance-diagram:: neuroLog
+  
+:Classes and functions:
+  
+"""
 import os, threading, shutil, time, weakref
 
 from soma.minf.api import iterateMinf, createMinfWriter
@@ -41,15 +53,27 @@ import gzip
 
 #------------------------------------------------------------------------------
 class FileLink:
+  """
+  Base virtual class for a link on a log file.
+  """
   pass
 
 
 #------------------------------------------------------------------------------
 class TextFileLink( FileLink ):
+  """
+  This class represents a link on the file associated to a :py:class:`SubTextLog`.
+  """
   def __init__( self, fileName ):
+    """
+    :param string fileName: name of the file
+    """
     self.fileName = unicode( fileName )
   
   def expand( self ):
+    """
+    Reads the file and returns its content as a string.
+    """
     #print "expand text ", self
     result = None
     try:
@@ -69,10 +93,16 @@ class TextFileLink( FileLink ):
 
 #------------------------------------------------------------------------------
 class LogFileLink( FileLink ):
+  """
+  This class represents a link on the file associated to a :py:class:`LogFile`.
+  """
   def __init__( self, fileName ):
     self.fileName = unicode( fileName )
   
   def expand( self ):
+    """
+    Reads the file and returns the content as a list of :py:class:`Item`.
+    """
     #print "expand file ", self
     try:
       reader = LogFileReader( self.fileName )
@@ -92,11 +122,31 @@ class LogFileLink( FileLink ):
 
 #------------------------------------------------------------------------------
 class LogFile:
-
+  """
+  This class represents Brainvisa log file.
+  This object is structured hierarchically. A LogFile can have a parent log and can be the parent log of other logs.
+  
+  This hierarchical structure is useful in Brainvisa because several threads may have to add log information at the same time,
+  so we have to use several temporary log files to avoid concurrent access to the same file.
+  So each process have its own LogFile which can have sub logs if the process calls other processes or system commands. 
+  The different log files are merged in the main log file when the process ends.
+  
+  The content of the file is in minf xml format.
+  
+  The elements written in the file are :py:class:`Item` objects. They are written through the method :py:meth:`append`.
+  """
 
   #----------------------------------------------------------------------------
   class SubTextLog( TextFileLink ):
+    """
+    This class is a kind of leaf in the tree of log files. It cannot be a parent for another log file.
+    It only stores text information.
+    """
     def __init__( self, fileName, parentLog ):
+      """
+      :param string fileName: path to the file where the log information will be written.
+      :param parentLog: parent :py:class:`neuroLog.LogFile`. 
+      """
       self.fileName = fileName
       #print "SubTextLog ", fileName, " of parent ", parentLog
       # Create empty file
@@ -108,15 +158,28 @@ class LogFile:
       self.close()
 
     def close( self ):
+      """
+      Warns the parent log that this file is closed.
+      """
       if self.fileName is not None:
         self._parent._subLogClosed( self )
         self.fileName = None
 
   #----------------------------------------------------------------------------
   class Item:
+    """
+    An entry in a log file. It can have a list of children items. 
+    """
     icon = 'logItem.png'
     
     def __init__( self, what, when=None, html='', children=[], icon=None ):
+      """
+      :param string what: title of the entry
+      :param when: date of creation returned by :py:func:`time.time` by default.
+      :param html: the content associated to this item in HTML format. String or :py:class:`FileLink`.
+      :param children: sub items: a list of Items or a LogFile (which contains Items)
+      :param string icon: An icon file associated to this entry.
+      """
       self._what = unicode( what )
       if when is None:
         self._when = time.time()
@@ -132,17 +195,30 @@ class LogFile:
       self._icon = icon
           
     def what( self ):
+      """
+      Returns the title of the entry.
+      """
       return self._what
       
     def when( self ):
+      """
+      Returns the date of the entry.
+      """
       return self._when
       
     def html( self ):
+      """
+      Returns the HTML content of the log entry.
+      """
       if isinstance( self._html, FileLink ):
         return self._html.expand()
       return unicode( self._html )
     
     def children( self ):
+      """
+      Returns the children of the item as a list of :py:class:`Item`.
+      If children items are in a log file, this log file is read to extract its items.
+      """
       children = self._children
       if isinstance( children, FileLink ):
         children = children.expand()
@@ -153,9 +229,18 @@ class LogFile:
       return children
 
     def icon( self ):
+      """
+      Returns the icon file associated to this item.
+      """
       return self._icon
       
     def _expand( self, openedFiles ):
+      """
+      If html content of the item is a :py:class:`FileLink` and the associated file is not opened, 
+      the html content is replaced by the content of the file (text).
+      If the children items are in a log file and the associated file is not opened, 
+      the file is read and the list of its children is stored directly in the current item.
+      """
       #print "expand item ", self._what
       if isinstance( self._html, FileLink ) and \
          self._html.fileName not in openedFiles:
@@ -175,6 +260,9 @@ class LogFile:
         self._children = children
          
     def __getinitkwargs__( self ):
+      """
+      This function enable to save this object in a minf file.
+      """
       kwattrs = dict( what=self._what )
       if self._when:
         kwattrs[ 'when' ] = self._when
@@ -189,6 +277,12 @@ class LogFile:
 
   #----------------------------------------------------------------------------
   def __init__( self, fileName, parentLog, lock, file=None ):
+    """
+    :param string fileName: path to the file where the log information will be written.
+    :param parentLog: parent :py:class:`Logfile`. 
+    :param lock: :py:func:`threading.RLock`, a lock to prevent from concurrent access to the file.
+    :parent file: stream on the opened file.
+    """
     #print "New log file ", fileName, " of parent ", parentLog
     self._writer = None
     self._lock = lock
@@ -219,6 +313,9 @@ class LogFile:
   
   
   def close( self ):
+    """
+    Closes all files related to this LogFile.
+    """
     if self._lock is None: return
     try:
       self._lock.acquire()
@@ -243,6 +340,14 @@ class LogFile:
   
   
   def subLog( self, fileName = None ):
+    """
+    Creates a sub log, that is to say a new :py:class:`LogFile` which have this log as parent log.
+    
+    :param string fileName: name of the file where log information will be written. If None, the sublog is associated to a new temporary file created with :py:meth:`brainvisa.data.temporary.TemporaryFileManager.new`.
+    
+    :rtype: :py:class:`LogFile`
+    :returns: The new sub log.
+    """
     self._lock.acquire()
     try:
       if fileName is None:
@@ -256,6 +361,14 @@ class LogFile:
 
   
   def subTextLog( self, fileName = None ):
+    """
+    Creates a :py:class:`SubTextLog` as a child of the current log. The sub log have the current log as parent log.
+    This type of sub log is used for example to store the output of a system command. 
+    
+    :param string fileName: name of the file where log information will be written. If None, the sublog is associated to a new temporary file created with :py:meth:`brainvisa.data.temporary.TemporaryFileManager.new`.
+    :rtype: :py:class:`SubTextLog`
+    :returns: The new sub log.
+    """
     self._lock.acquire()
     try:
       if fileName is None:
@@ -269,6 +382,9 @@ class LogFile:
 
   
   def _subLogClosed( self, subLog ):
+    """
+    Stores the information that this sublog is closed.
+    """
     if self._lock is None: return
     self._lock.acquire()
     try:
@@ -283,6 +399,10 @@ class LogFile:
    
    
   def append( self, *args, **kwargs ):
+    """
+    Writes an :py:class:`Item` in the current log file. 
+    This method can take in parameters a :py:class:`Item` or the parameters needed to create a new :py:class:`Item`.
+    """
     self._lock.acquire()
     try:
       if not kwargs and \
@@ -298,6 +418,9 @@ class LogFile:
   
   
   def expand( self, force=False ):
+    """
+    Reads the current log file and the sub logs and items files and merges all their content in a same file.
+    """
     #print "expand ", self
     if force:
       opened = {}
@@ -327,6 +450,9 @@ class LogFile:
   
   
   def flush( self ):
+    """
+    Really writes the file on disk.
+    """
     if self._writer is not None:
       self._writer.flush()
   
@@ -336,11 +462,17 @@ class LogFile:
 
 #------------------------------------------------------------------------------
 def newLogFile( fileName, file=None ):
+  """
+  Returns a new :py:class:`LogFile` object that will write in `fileName`.
+  """
   return LogFile( fileName, None, threading.RLock(), file=file )
 
 
 #------------------------------------------------------------------------------
 class LogFileReader:
+  """
+  This objects enables to read :py:class:`LogFile` :py:class:`Items <Item>` from a filename.
+  """
   def __init__( self, source ):
     self._iterator = iterateMinf( source )
   
@@ -350,6 +482,9 @@ class LogFileReader:
   
   
   def readItem( self ):
+    """
+    Returns the next :py:class:`Item` in the current file.
+    """
     try:
       return self._iterator.next()
     except StopIteration:
@@ -357,11 +492,17 @@ class LogFileReader:
   
   
   def read( self ):
+    """
+    Returns the list of all :py:class:`Item`s in the current file.
+    """
     return list( self._iterator )
 
 
 #------------------------------------------------------------------------------
 def expandedCopy( source, destFileName, destFile=None ):
+  """
+  Returns a copy of the source log file with all its items expanded (file links replaced by the content of the file).
+  """
   writer = newLogFile( destFileName, file=destFile )
   for item in expandedReader( source ):
     writer.append( item.what(), when=item.when(), html=item.html(),
@@ -372,6 +513,10 @@ def expandedCopy( source, destFileName, destFile=None ):
 
 #------------------------------------------------------------------------------
 def expandedReader( source ):
+  """
+  Generator on the :py:class:`Item`s of the source file. Each item is expanded, 
+  that is to say each file link that they contains is also read.
+  """
   reader = LogFileReader( source )
   item = reader.readItem()
   while item is not None:
@@ -383,6 +528,10 @@ def expandedReader( source ):
   
 #------------------------------------------------------------------------------
 def initializeLog():
+  """
+  Creates Brainvisa main log as an instance of :py:class:`LogFile` which is stored in the variable :py:data:`neuroConfig.mainLog`.
+  The associated file is :py:data:`neuroConfig.logFileName`.
+  """
   neuroConfig.mainLog = None
   try:
     if neuroConfig.logFileName:
@@ -398,6 +547,9 @@ def initializeLog():
 
 #------------------------------------------------------------------------------
 def closeMainLog():
+  """
+  Closes Brainvisa main log. The log file content is expanded and the file is compressed with :py:class:`gzip.GzipFile`.
+  """
   if neuroConfig.mainLog is not None:
     tmpFileName = temporary.manager.new()
     logFileName = neuroConfig.mainLog.fileName
@@ -413,5 +565,8 @@ def closeMainLog():
 
 #------------------------------------------------------------------------------
 def log( *args, **kwargs ):
+  """
+  Adds an :py:class:`Item` in Brainvisa main log.
+  """
   if neuroConfig.mainLog is not None:
     neuroConfig.mainLog.append( *args, **kwargs )

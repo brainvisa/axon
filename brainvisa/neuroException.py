@@ -29,7 +29,19 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+"""
+The functions are used to display error and warning messages in Brainvisa.
 
+:py:func:`showException` can be used to display a message describing the last exception that occured in Brainvisa error window or in the console. In the same way, the function :py:func:`showWarning` can be used to display warning message.
+
+*Example*
+
+>>> try:
+>>>   <code that can raise an exception>
+>>> except:
+>>>   neuroException.showException(beforeError="The following error occured when...:")
+
+"""
 import sys, os, traceback, htmllib
 from neuroConfig import *
 import neuroConfig
@@ -40,8 +52,9 @@ from qtgui.neuroExceptionGUI import ShowException
 class HTMLMessage:
   """
   This class enables to create an error message in HTML format.
-  Create an instance of this class to raise an error with an HTML message. 
-  Example : raise RuntimeError( HTMLErrorMessage("<b>Error ...</b>") )
+  Creates an instance of this class to raise an error with an HTML message. 
+  
+  Example: raise RuntimeError( HTMLMessage("<b>Error ...</b>") )
   """
   def __init__(self, msg):
     self.html=msg
@@ -50,6 +63,16 @@ class HTMLMessage:
     return self.html  
    
 def exceptionHTML( beforeError='', afterError='', exceptionInfo=None ):
+  """
+  Generates an HTML message that describes the given exception with its traceback.
+  
+  :param tuple exceptionInfo: (type, value, traceback) describing the exception.
+  :param string beforeError: Message that will be displayed before the text of the exception.
+  :param string afterError: Message that will be displayed after the text of the exception.
+  :rtype: string
+  :returns: the message in HTML format.
+
+  """
   if exceptionInfo is None:
     exceptionInfo = sys.exc_info()
 
@@ -58,6 +81,16 @@ def exceptionHTML( beforeError='', afterError='', exceptionInfo=None ):
   return msg
 
 def exceptionMessageHTML( exceptionInfo, beforeError='', afterError='' ):
+  """
+  Generates an HTML message that describes the given exception. The traceback of the exception is not included in the message.
+  
+  :param tuple exceptionInfo: (type, value, traceback) describing the exception.
+  :param string beforeError: Message that will be displayed before the text of the exception.
+  :param string afterError: Message that will be displayed after the text of the exception.
+  :rtype: string
+  :returns: the message in HTML format.
+  """
+
   e, v, t = exceptionInfo
   #tb = traceback.extract_tb( t )
   txt="<b>"+htmlEscape( unicode(v) )+"</b>"
@@ -88,6 +121,13 @@ def warningMessageHTML(message):
   return msg
 
 def exceptionTracebackHTML( exceptionInfo ):
+  """
+  Generates an HTML message that describes the traceback of the given exception.
+  
+  :param tuple exceptionInfo: (type, value, traceback) describing the exception.
+  :rtype: string
+  :returns: the message in HTML format.
+  """
   e, v, t = exceptionInfo
   try:
     name = e.__name__
@@ -103,35 +143,23 @@ def exceptionTracebackHTML( exceptionInfo ):
   msg += '</font>'
   return msg
   
-  def changeAdvancedMode( self ):
-    if self.advancedMode:
-      self.advancedMode = False
-      self.btnAdvanced.setText( _t_( 'more info' ) )
-    else:
-      self.advancedMode = True
-      self.btnAdvanced.setText( _t_( 'hide info' ) )
-    self.updateText()
-      
-  def updateText( self ):
-    if self.advancedMode:
-      self.teHTML.setText( '<hr>\n'.join( [i + '<hr>\n' + j for i, j in zip( self.messageHTML, self.detailHTML) ] ) )
-    else:
-      self.teHTML.setText( '<hr>\n'.join( self.messageHTML ) )
-    self.teHTML.scrollToBottom()
-    
-  
-  def appendException( self, messageHTML, detailHTML ):
-    self.messageHTML.append( messageHTML )
-    self.detailHTML.append( detailHTML )
-    self.updateText()
-    
-  def close( self, alsoDelete ):
-    self.hide()
-    ShowException._theExceptionDialog = None
-    return 1
-  
 def logException( beforeError='', afterError='', exceptionInfo=None, 
                   context=None ):
+  """
+  Generates two HTML messages to represent the current exception: a short one and a detailed version.
+  The exception is also stored in Brainvisa log file.
+  The detailed message shows the traceback of the exception.
+  The short message is generated with the function :py:func:`exceptionMessageHTML` and the detailed one with :py:func:`exceptionTracebackHTML`.
+  
+  :param string beforeError: Message that will be displayed before the text of the exception.
+  :param string afterError: Message that will be displayed after the text of the exception.
+  :param tuple exceptionInfo: tuple (type, value, traceback) describing the exception. If None, :py:func:`sys.exc_info` is used to get the exception.
+  :param context: :py:class:`neuroProcesses.ExecutionContext` that can be used to store the message at the right place in the log file. 
+  Indeed, the current log could be the log of a process execution. 
+  If None, the default context is used.
+  :rtype: tuple
+  :returns: A short HTML message and a detailed version of the message.
+  """
   if exceptionInfo is None:
     exceptionInfo = sys.exc_info()
   messageHTML = exceptionMessageHTML( exceptionInfo, beforeError=beforeError, afterError=afterError ) 
@@ -145,6 +173,18 @@ def logException( beforeError='', afterError='', exceptionInfo=None,
 
 def showException( beforeError='', afterError='', parent = None, 
                    gui=None, exceptionInfo=None ):
+  """
+  Displays an error message describing the last exception that occurred or the exception information given in parameter.
+  The message can be displayed in Brainvisa error window or in the console.
+  The generated message is in HTML format and have a style adapted to error messages (icon, font color).
+  
+  :param string beforeError: Message that will be displayed before the text of the exception.
+  :param string afterError: Message that will be displayed after the text of the exception.
+  :param parent: A parent widget for the exception widget. Optional.
+  :param boolean gui: If True, the graphical interface is used to display the exception. Else, it is displayed in the console.
+  If None, it is displayed with the graphical interface if Brainvisa is in graphical mode.
+  :param tuple exceptionInfo: tuple (type, value, traceback) describing the exception. If None, :py:func:`sys.exc_info` is used to get the exception.
+  """
   if gui is None:
     gui = neuroConfig.gui
   try:
@@ -173,6 +213,16 @@ def showException( beforeError='', afterError='', parent = None,
 
 
 def showWarning( message, parent = None, gui=None):
+  """
+  Shows a warning message.
+  The message can be displayed in Brainvisa error window or in the console.
+  The generated message is in HTML format and have a style adapted to warning messages (icon, font color).
+  
+  :param string message: Warning message that will be displayed.
+  :param parent: A parent widget for the exception widget. Optional.
+  :param boolean gui: If True, the graphical interface is used to display the exception. Else, it is displayed in the console.
+  If None, it is displayed with the graphical interface if Brainvisa is in graphical mode.
+  """
   if gui is None:
     gui = neuroConfig.gui
   try:

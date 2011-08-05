@@ -34,46 +34,160 @@
 """
 Several global variables are defined in this module to store **Brainvisa configuration and user options**: 
 
-* **platform**: linux, windows...
-* **gui**: false if Brainvisa is in batch mode
-* **sessionID**
-* **fullVersion, shortVersion**: Brainvisa version
-* **userProfile**: if Brainvisa is started with `-u` option, the name of the profile stored in this variable is used to create a specific log file for this profile.
-* **siteOptionFile**: path to a general options file that may be used for all users.
-* **userOptionFile**: path to user options file.
-* **logFileName**: path of Brainvisa log file where the history of the current session will be saved.
-* **runsInfo**: information about the current executions of Brainvisa.
-* **temporaryDirectory**: directory where temporary files will be written.
-* **mainPath**: Path of Brainvisa main module.
-* **sharePath**: Brainvisa share directory
-* **iconPath**
-* **homeBrainVISADir**: path to Brainvisa home directory (usually $HOME/.brainvisa)
-* **toolboxesDir**: Brainvisa toolboxes directory
-* **processesPath**: list of paths to Brainvisa processes (outside any toolbox)
-* **dataPath**: list of DatabaseSettings objects indicating the selected databases.
-* **typesPath**: list of paths to Brainvisa type files that contain the description of Brainvisa ontology.
-* **fileSystemOntologiesPath**: list of paths to Brainvisa hierarchy files that contain the rules to organize Brainvisa databases directories.
-* **debugHierarchyScanning**: stream where debug information about hierarchy rules may be written. Set with `--debugHierarchy` option.
-* **debugParameterLinks**: stream where debug information about parameter links may be written. Set with `--debugLinks` option.
-* **sharedDatabaseFound**: True if Brainvisa shared database which contain models, templates, referentials, etc, was found.
-* **mainDocPath**: path to Brainvisa documentation directory 
-* **docPath**: path to Brainvisa documentation directory according to the choosen language.
-* **brainvisaSysEnv**: :py:class:`soma.env.BrainvisaSystemEnv` - defines system environment variables that have to be passed to external command to restore environment if it have been modified at brainvisa startup
-* **ignoreValidation**: Do not check vor invalid processes, all are enabled. Set with `--ignoreValidation`.
-* **language**: fr or en
-* **userLevel**: the processes which level is greater than the user level are hidden. Basic = 0, advanced = 1, expert = 2.
-* **supportEmail, SMTP_server_name**
-* **textEditor**
-* **HTMLBrowser**
-* **fastStart**: if this mode is enabled, brainvisa starts faster but with less features. Set with `-f` or `-r` options.
-* **noToolBox**: if enabled, Brainvisa toolboxes are not loaded. Set with `--noToolBox`.
-* **setup**: if enabled, the shared database is updated at startup. Set with `--setup` option.
-* **anatomistExecutable, anatomistImplementation**
-* **matlabRelease, matlabExecutable, matlabOptions, matlabPath, matlabStartup**
-* **spmDirectory**
-* **Roptions, Rexecutable**
-* **databaseServer**: if enabled, Brainvisa is started as a database server (experimental). Set with `--databaseServer` option.
-* **profileFileName**: filename where profiling information may be written. Set with `--profile` option.
+.. py:data:: logFileName 
+  
+  path of Brainvisa log file where the history of the current session will be saved.
+
+
+.. py:data:: platform
+
+  linux, windows...
+  
+.. py:data:: gui
+  
+  false if Brainvisa is in batch mode
+  
+.. py:data:: sessionID
+
+.. py:data:: fullVersion, shortVersion
+  
+  Brainvisa version
+  
+.. py:data:: userProfile
+  
+  if Brainvisa is started with ``-u`` option, the name of the profile stored in this variable is used to create a specific log file for this profile.
+  
+.. py:data:: siteOptionFile
+  
+  path to a general options file that may be used for all users.
+  
+.. py:data:: userOptionFile
+
+  path to user options file.
+  
+.. py:data:: logFileName
+
+  path of Brainvisa log file where the history of the current session will be saved.
+  
+.. py:data:: runsInfo
+
+  information about the current executions of Brainvisa.
+  
+.. py:data:: temporaryDirectory
+
+  directory where temporary files will be written.
+  
+.. py:data:: mainPath
+
+  Path of Brainvisa main module.
+  
+.. py:data:: sharePath
+
+  Brainvisa share directory
+  
+.. py:data:: iconPath
+
+.. py:data:: homeBrainVISADir
+
+  path to Brainvisa home directory (usually *$HOME/.brainvisa*)
+  
+.. py:data:: toolboxesDir
+
+  Brainvisa toolboxes directory
+  
+.. py:data:: processesPath
+
+  list of paths to Brainvisa processes (outside any toolbox)
+  
+.. py:data:: dataPath
+
+  list of DatabaseSettings objects indicating the selected databases.
+  
+.. py:data:: typesPath
+
+  list of paths to Brainvisa type files that contain the description of Brainvisa ontology.
+  
+.. py:data:: fileSystemOntologiesPath
+
+  list of paths to Brainvisa hierarchy files that contain the rules to organize Brainvisa databases directories.
+  
+.. py:data:: debugHierarchyScanning
+
+  stream where debug information about hierarchy rules may be written. Set with ``--debugHierarchy`` option.
+  
+.. py:data:: debugParameterLinks
+
+  stream where debug information about parameter links may be written. Set with `--debugLinks` option.
+  
+.. py:data:: sharedDatabaseFound
+
+  True if Brainvisa shared database which contain models, templates, referentials, etc, was found.
+  
+.. py:data:: mainDocPath
+
+  path to Brainvisa documentation directory 
+  
+.. py:data:: docPath
+
+  path to Brainvisa documentation directory according to the choosen language.
+  
+.. py:data:: brainvisaSysEnv
+
+  :py:class:`soma.env.BrainvisaSystemEnv` - defines system environment variables that have to be passed to external command to restore environment if it have been modified at brainvisa startup
+  
+.. py:data:: ignoreValidation
+
+  Do not check vor invalid processes, all are enabled. Set with ``--ignoreValidation``.
+  
+.. py:data:: language
+
+  fr or en
+  
+.. py:data:: userLevel
+
+  the processes which level is greater than the user level are hidden. Basic = 0, advanced = 1, expert = 2.
+  
+.. py:data:: supportEmail
+             SMTP_server_name
+
+.. py:data:: textEditor
+
+.. py:data:: HTMLBrowser
+
+.. py:data:: fastStart
+
+  if this mode is enabled, brainvisa starts faster but with less features. Set with ``-f`` or ``-r`` options.
+  
+.. py:data:: noToolBox
+
+  if enabled, Brainvisa toolboxes are not loaded. Set with ``--noToolBox``.
+  
+.. py:data:: setup
+
+  if enabled, the shared database is updated at startup. Set with ``--setup`` option.
+  
+.. py:data:: anatomistExecutable
+             anatomistImplementation
+
+.. py:data:: matlabRelease
+             matlabExecutable
+             matlabOptions
+             matlabPath
+             matlabStartup
+
+.. py:data:: spmDirectory
+
+.. py:data:: Roptions
+             Rexecutable
+
+.. py:data:: databaseServer
+
+  if enabled, Brainvisa is started as a database server (experimental). Set with ``--databaseServer`` option.
+  
+.. py:data:: profileFileName
+
+  filename where profiling information may be written. Set with ``--profile`` option.
+  
 """
 
 __docformat__ = 'restructuredtext en'
