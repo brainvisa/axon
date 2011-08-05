@@ -135,10 +135,74 @@ brainvisa.data.readdiskitem
   :members:
 
 brainvisa.data.writediskitem
----------------------------
+----------------------------
 
 .. automodule:: brainvisa.data.writediskitem
   :members:
 
+brainvisa.data.HierarchyBrowser
+-------------------------------
 
+brainvisa.data.directory_iterator
+---------------------------------
 
+..automodule:: brainvisa.data.directory_iterator
+  :members:
+    
+brainvisa.data.fileformats
+--------------------------
+
+.. automodule:: brainvisa.data.fileformats
+  :members:
+
+brainvisa.data.ftpDirectory
+---------------------------
+
+.. automodule:: brainvisa.data.ftpDirectory
+  :members:
+    
+brainvisa.data.labelSelection
+-----------------------------
+
+.. automodule:: brainvisa.data.labelSelection
+  :members:
+    
+brainvisa.data.localDirectory
+-----------------------------
+
+.. automodule:: brainvisa.data.localDirectory
+  :members:
+    
+brainvisa.data.patterns
+-----------------------
+
+.. automodule:: brainvisa.data.patterns
+  :members:
+    
+brainvisa.data.sql
+------------------
+
+.. automodule:: brainvisa.data.sql
+  :members:
+    
+brainvisa.data.temporary
+------------------------
+
+.. automodule:: brainvisa.data.temporary
+  :members:
+    
+brainvisa.data.test
+-------------------
+
+    
+brainvisa.data.virtualDirectory
+-------------------------------
+
+.. automodule:: brainvisa.data.virtualDirectory
+  :members:
+    
+brainvisa.data.qt4gui
+---------------------
+
+.. automodule:: brainvisa.data.qt4gui
+  :members:

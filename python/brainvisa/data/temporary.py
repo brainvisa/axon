@@ -44,6 +44,10 @@ def void( *args, **kwargs ):
 
 #----------------------------------------------------------------------------
 class TemporaryFileManager:
+  """
+  This object manages temporary files. 
+  It enables to create new temporary files that will be automatically deleted when there is no more references on them.
+  """
 
   __removePermissions = stat.S_IWRITE + stat.S_IREAD
   
@@ -170,6 +174,15 @@ class TemporaryFileManager:
     
     
   def new( self, suffix=None, prefix=None, directory=None ):
+    """
+    Creates a new temporary file. 
+    The filename will be directory/prefix+pid+count+suffix
+    
+    :param string suffix: something to add at the end of the generated filename.
+    :param string prefix: something to add at the begining of the filename. A default prefix is used if None.
+    :param string directory: path of the directory where the file must be created. A default directory is used if None.
+    :returns: an internal object that contains the filename and enables to destroy the file when it is no more used.
+    """
     path = self.newFileName( suffix=suffix, prefix=prefix, directory=directory )
     return self.createSelfDestroyed( path )
   

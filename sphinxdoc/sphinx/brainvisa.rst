@@ -66,18 +66,12 @@ neuroConfig
 
 .. automodule:: neuroConfig
   :members:
-
+  :show-inheritance:
 
 neuroProcesses
 --------------
 
-:Inheritance diagram:
-
-.. inheritance-diagram:: neuroProcesses
-
 .. automodule:: neuroProcesses
-
-
 
     
 neuroException
@@ -85,42 +79,49 @@ neuroException
 
 .. automodule:: neuroException
   :members:
+  :show-inheritance:
 
 neuroLog
 --------
 
 .. automodule:: neuroLog
   :members:
+  :show-inheritance:
 
 neuroData
 ---------
 
 .. automodule:: neuroData
   :members:
+  :show-inheritance:
 
 neuroDiskItems
 --------------
 
 .. automodule:: neuroDiskItems
   :members:
+  :show-inheritance:
 
 neuroHierarchy
 --------------
 
 .. automodule:: neuroHierarchy
   :members:
+  :show-inheritance:
 
 fileSystemOntology
 ------------------
 
 .. automodule:: fileSystemOntology
   :members:
+  :show-inheritance:
 
 shfjGlobals
 -----------
 
 .. automodule:: shfjGlobals
   :members:
+  :show-inheritance:
 
 registration
 ------------
@@ -133,57 +134,67 @@ qt4gui.neuroConfigGUI
 
 .. automodule:: qt4gui.neuroConfigGUI
   :members:
+  :show-inheritance:
 
 qt4gui.neuroProcessesGUI
 ------------------------
 
 .. automodule:: qt4gui.neuroProcessesGUI
   :members:
+  :show-inheritance:
 
 qt4gui.neuroDataGUI
 -------------------
 
 .. automodule:: qt4gui.neuroDataGUI
   :members:
+  :show-inheritance:
 
 qt4gui.neuroExceptionGUI
 ------------------------
 
 .. automodule:: qt4gui.neuroExceptionGUI
   :members:
+  :show-inheritance:
 
 qt4gui.neuroLogGUI
 ------------------
 
 .. automodule:: qt4gui.neuroLogGUI
   :members:
+  :show-inheritance:
 
 qt4gui.command
 ------------------
 
 .. automodule:: qt4gui.command
   :members:
+  :show-inheritance:
 
 neuroPopen2
 -----------
 
 .. automodule:: neuroPopen2
   :members:
- 
+  :show-inheritance:
+
 backwardCompatibleQt
 --------------------
 
 .. automodule:: backwardCompatibleQt
   :members:
+  :show-inheritance:
 
 matlabValidation
 ----------------
 
 .. automodule:: matlabValidation
   :members:
+  :show-inheritance:
 
 minfExtensions
 --------------
 
 .. automodule:: minfExtensions
   :members:
+  :show-inheritance:

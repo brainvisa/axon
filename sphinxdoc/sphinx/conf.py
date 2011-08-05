@@ -108,12 +108,12 @@ pygments_style = 'sphinx'
 #modindex_common_prefix = []
 inheritance_graph_attrs = {
         'rankdir': 'LR',
-        'size': '"15.0, 18.0"',
+        'size': '"100.0, 100.0"',
     }
 inheritance__node_attrs = {
         'shape': 'box',
-        'fontsize': 12,
-        'height': 0.75,
+        'fontsize': 10,
+        'height': 0.50,
         'fontname': 'Arial, Vera Sans, DejaVu Sans, Liberation Sans, '
                     'Helvetica, sans',
         'style': '"setlinewidth(1.0)"',

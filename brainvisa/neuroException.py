@@ -30,7 +30,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 """
-The functions in this module are useful to display error and warning messages in Brainvisa.
+The functions are used to display error and warning messages in Brainvisa.
 
 :py:func:`showException` can be used to display a message describing the last exception that occured in Brainvisa error window or in the console. In the same way, the function :py:func:`showWarning` can be used to display warning message.
 
@@ -40,6 +40,7 @@ The functions in this module are useful to display error and warning messages in
 >>>   <code that can raise an exception>
 >>> except:
 >>>   neuroException.showException(beforeError="The following error occured when...:")
+
 """
 import sys, os, traceback, htmllib
 from neuroConfig import *
