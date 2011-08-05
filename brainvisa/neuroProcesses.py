@@ -70,6 +70,8 @@ Specialized Process classes that use the different types of execution nodes also
   
 As processes can be run in different contexts, an object representing this context is passed as a parameter in the processes execution function. This object is an intance of the class :py:class:`ExecutionContext`. A default context associated to the application also exists, to get it use the function :py:func:`defaultContext`.
 
+After loading, Brainvisa processes are stored in an object :py:class:`ProcessTrees` that represents the processes organization in toolboxes and categories. The function :py:func:`updatedMainProcessTree` creates this object if it doesn't exist yet and to returns it.
+
 :Inheritance diagram:
 
 .. inheritance-diagram:: Parameterized Process ExecutionNode SerialExecutionNode ProcessExecutionNode SelectionExecutionNode ParallelExecutionNode ProcessInfo ExecutionContext IterationProcess SelectionProcess DistributedProcess ListOfIterationProcess ProcessTree ProcessTrees
@@ -129,8 +131,11 @@ As processes can be run in different contexts, an object representing this conte
     
 .. autoclass:: ProcessTree
   :members:
-  :show-inheritance:
    
+.. autoclass:: ProcessTrees
+  :members:
+  :show-inheritance:
+
 :Functions:
   
 .. autofunction:: getProcessInfo
@@ -149,6 +154,13 @@ As processes can be run in different contexts, an object representing this conte
 .. autofunction:: addProcessInfo
 .. autofunction:: readProcess
 .. autofunction:: readProcesses
+.. autofunction:: updatedProcessTree
+.. autofunction:: allProcessesTree
+.. autofunction:: updateProcesses
+.. autofunction:: mainThread
+.. autofunction:: defaultContext
+.. autofunction:: initializeProcesses
+.. autofunction:: cleanupProcesses
 
 """
 __docformat__ = 'restructuredtext en'
@@ -3306,7 +3318,7 @@ def getProcess( processId, ignoreValidation=False, checkUpdate=True ):
   """
   Gets the class associated to the process id given in parameter.
   
-  When the processes are loaded, a new class called NewProcess is created for each process. 
+  When the processes are loaded, a new class called :py:class:`NewProcess` is created for each process. 
   This class inherits from :py:class:`Process` and adds an instance counter which is incremented each time a new instance of the process is created.
   
   :param processId: the id or the name of the process, or a dictionary *{'type' : 'iteration|distributed|selection', 'children' : [...] }* to create an :py:class:`IterationProcess`, a :py:class:`DistributedProcess` or a :py:class:`SelectionProcess`.
@@ -3315,7 +3327,7 @@ def getProcess( processId, ignoreValidation=False, checkUpdate=True ):
   
   :param boolean checkUpdate: If True, the modification date of the source file of the process will be checked. If the file has been modified since the process loading, it may need to be reloaded. The user will be asked what he wants to do. Default True.
   
-  :returns: a NewProcess class which inherits from :py:class:`Process`.
+  :returns: a :py:class:`NewProcess` class which inherits from :py:class:`Process`.
   """
   global _askUpdateProcess
   if processId is None: return None
@@ -3383,7 +3395,7 @@ def getProcessInstanceFromProcessEvent( event ):
   Gets an instance of a process described in a :py:class:`brainvisa.history.ProcessExecutionEvent`.
   
   :param event: a :py:class:`brainvisa.history.ProcessExecutionEvent` that describes the process: its structure and its parameters.
-  :returns: an instance of the NewProcess class associated to the described process. Parameters may have been set.
+  :returns: an instance of the :py:class:`NewProcess` class associated to the described process. Parameters may have been set.
   """
   pipelineStructure = event.content.get( 'id' )
   if pipelineStructure is None:
@@ -3434,7 +3446,7 @@ def getProcessFromExecutionNode( node ):
   :param node: a process :py:class:`ExecutionNode`
   :returns: According to the type of node, it returns:
   
-    * a NewProcess instance if the node is :py:class:`ProcessExecutionNode`,
+    * a :py:class:`NewProcess` instance if the node is :py:class:`ProcessExecutionNode`,
     * an :py:class:`IterationProcess` if the node is a :py:class:`SerialExecutionNode`
     * a :py:class:`DistributedProcess` if the node is a :py:class:`ParallelExecutionNode`
     * a :py:class:`SelectionProcess` if the node is a :py:class:`SelectionExecutionNode`.
@@ -3455,7 +3467,7 @@ def getProcessInstance( processIdClassOrInstance ):
   Gets an instance of the process given in parameter.
   
   :param processIdClassOrInstance: a process id, name, class, instance, execution node, or a the name of a file containing a backup copy of a process. 
-  :returns: an instance of the NewProcess class associated to the described process.
+  :returns: an instance of the :py:class:`NewProcess` class associated to the described process.
   """
   result = getProcess( processIdClassOrInstance )
   if isinstance( processIdClassOrInstance, Process ):
@@ -3500,7 +3512,7 @@ def getConverter( source, destination, checkUpdate=True ):
   :param source: tuple (type, format). If a converter is not found directly, parent types are tried.
   :param destination: tuple (type, format)
   :param boolean checkUpdate: if True, Brainvisa will check if the converter needs to be reloaded. Default True.
-  :returns: the NewProcess class associated to the found converter.
+  :returns: the :py:class:`NewProcess` class associated to the found converter.
   """
   global _processes
   result = _converters.get( destination, {} ).get( source )
@@ -3522,7 +3534,7 @@ def getConvertersTo( destination, keepType=1, checkUpdate=True ):
   :param destination: tuple (type, format). If a converter is not found directly, parent types are tried.
   :param boolean keepType: if True, parent type won't be tried. Default True.
   :param boolean checkUpdate: if True, Brainvisa will check if the converters needs to be reloaded. Default True.
-  :returns: a map (type, format) -> NewProcess class associated to the found converter.
+  :returns: a map (type, format) -> :py:class:`NewProcess` class associated to the found converter.
   """
 
   global _converters
@@ -3542,7 +3554,7 @@ def getConvertersFrom( source, checkUpdate=True ):
   
   :param source: tuple (type, format). If a converter is not found directly, parent types are tried.
   :param boolean checkUpdate: if True, Brainvisa will check if the converters needs to be reloaded. Default True.
-  :returns: a map (type, format) -> NewProcess class associated to the found converter.
+  :returns: a map (type, format) -> :py:class:`NewProcess` class associated to the found converter.
   """
   global _converters
   result = {}
@@ -3567,7 +3579,7 @@ def getViewer( source, enableConversion = 1, checkUpdate=True, listof=False ):
   :param boolean enableConversion: if True, a viewer that accepts a format in which source can be converted is also accepted. Default True
   :param boolean checkUpdate: if True, Brainvisa will check if the viewer needs to be reloaded. Default True.
   :param boolean listof: If True, we need a viewer for a list of data. If there is no specific viewer for a list of this type of data, a :py:class:`ListOfIterationProcess` is created from the associated simple viewer. Default False.
-  :returns: the NewProcess class associated to the found viewer.
+  :returns: the :py:class:`NewProcess` class associated to the found viewer.
   """
   global _viewers
   global _listViewers
@@ -3635,6 +3647,7 @@ def getViewer( source, enableConversion = 1, checkUpdate=True, listof=False ):
 def runViewer( source, context=None ):
   """
   Searches for a viewer for source data and runs the process. 
+  
   :param source: a :py:class:`neuroDiskItems.DiskItem` or something that enables to find a :py:class:`neuroDiskItems.DiskItem`.
   :param context: the :py:class:`ExecutionContext`. If None, the default context is used.
   :returns: the result of the execution of the found viewer.
@@ -3657,7 +3670,7 @@ def getDataEditor( source, enableConversion = 0, checkUpdate=True, listof=False 
   :param boolean enableConversion: if True, a data editor that accepts a format in which source can be converted is also accepted. Default False
   :param boolean checkUpdate: if True, Brainvisa will check if the editor needs to be reloaded. Default True.
   :param boolean listof: If True, we need an editor for a list of data. If there is no specific editor for a list of this type of data, a :py:class:`ListOfIterationProcess` is created from the associated simple editor. Default False.
-  :returns: the NewProcess class associated to the found editor.
+  :returns: the :py:class:`NewProcess` class associated to the found editor.
   """
   global _dataEditors
   global _listDataEditors
@@ -3717,7 +3730,7 @@ def getImporter( source, checkUpdate=True ):
   
   :param source: a :py:class:`neuroDiskItems.DiskItem` or a tuple (type, format).
   :param boolean checkUpdate: if True, Brainvisa will check if the process needs to be reloaded. Default True.
-  :returns: the NewProcess class associated to the found process.
+  :returns: the :py:class:`NewProcess` class associated to the found process.
   """
   global _processes
   if isinstance( source, DiskItem ):
@@ -3751,9 +3764,17 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
   
   The process is indexed in the global lists of processes so it can be retrieved through the functions :py:func:`getProcess`, :py:func:`getProcessInfo`, :py:func:`getViewer`, ...
   
+  :param string fileName: the name of the file containing the source code of the process.
+  :param string category: category of the process. If None, it is the name of the directory containing the process.
+  :param boolean ignoreValidation: if True, the validation function of the process won't be executed.
+  :param string toolbox: The id of the toolbox containing the process. Defaut is 'brainvisa', it indicates that the process is not in a toolbox.
+  :returns: A :py:class:`NewProcess` class representing the process if no exception is raised during the loading of the process.
+
   A new class derived from :py:class:`Process` is defined to store the content of the file:
   
   .. py:class:: NewProcess
+  
+    Bases: :py:class:`Process`
   
     All the elements defined in the file are added to the class. 
     
@@ -3785,11 +3806,6 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
     Execution function.
     
   
-  :param string fileName: the name of the file containing the source code of the process.
-  :param string category: category of the process. If None, it is the name of the directory containing the process.
-  :param boolean ignoreValidation: if True, the validation function of the process won't be executed.
-  :param string toolbox: The id of the toolbox containing the process. Defaut is 'brainvisa', it indicates that the process is not in a toolbox.
-  :returns: A NewProcess class representing the process if no exception is raised during the loading of the process.
   """
   result = None
   try:
@@ -3999,7 +4015,7 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
 def readProcesses( processesPath ):
   """
   Read all the processes found in toolboxes and in a list of directories. 
-  The toolboxes are found with the function :py:func:`neuroConfig.allToolboxes`.
+  The toolboxes are found with the function :py:func:`brainvisa.toolboxes.allToolboxes`.
   
   A global object representing a tree of processes is created, it is an instance of the :py:class:`ProcessTree` 
   
@@ -4040,14 +4056,13 @@ def readProcesses( processesPath ):
 #----------------------------------------------------------------------------
 class ProcessTree( EditableTree ):
   """
+  Bases: :py:class:`soma.notification.EditableTree`
+  
   Represents a hierarchy of processes. 
   It is used to represent the processes of a toolbox or a set of personal bookmarks on processes.
   
   The tree contains branches: categories or directories, and leaves: processes.
   
-  This object can be saved in a minf file (in userProcessTree.minf for user bookmarks). That's why it defines __getinitkwargs__ method.  this method's result is stored in the file and passed to the constructor to restore the object.
-    Some changes to the constructor attributes must be reflected in getinitkwargs method, but changes can affect the reading of existing minf files.
-
   This object can be saved in a minf file (in userProcessTree.minf for user bookmarks).
   """
   defaultName = "New"
@@ -4198,6 +4213,8 @@ class ProcessTree( EditableTree ):
   #----------------------------------------------------------------------------
   class Branch( EditableTree.Branch ):
     """
+    Bases: :py:class:`soma.notification.EditableTree.Branch`
+    
     A directory that contains processes and/or another branches. Enables to organise processes by category.
     """
     _defaultIcon = 'folder.png'
@@ -4272,6 +4289,8 @@ class ProcessTree( EditableTree ):
   #----------------------------------------------------------------------------
   class Leaf( EditableTree.Leaf ):
     """
+    Bases: :py:class:`soma.notification.EditableTree.Leaf`
+    
     A ProcessTree.Leaf represents a process.
     """
     def __init__( self, id, name=None, editable=True, icon=None, *args, **kwargs ):
@@ -4332,7 +4351,7 @@ class ProcessTree( EditableTree ):
 #----------------------------------------------------------------------------
 class ProcessTrees(ObservableAttributes, ObservableSortedDictionary):
   """
-  Model for the list of process trees in brainvisa.
+  Model for the list of process trees in brainvisa. A process tree is an instance of the class :py:class:`ProcessTree`.
   It is a dictionary which maps each tree with its id.
   It contains several process trees :
     - default process tree : all processes in brainvisa/processes (that are not in a toolbox). Not modifiable by user.
@@ -4349,7 +4368,7 @@ class ProcessTrees(ObservableAttributes, ObservableSortedDictionary):
   Path to the file which stores the process trees created by the user as bookmarks. 
   Default filename is in brainvisa home directory and is called `userProcessTrees.minf`.
   
-  .. py:attribute::selectedTree
+  .. py:attribute:: selectedTree
   
   :py:class:`ProcessTree` that is the current tree when Brainvisa starts.
   """
@@ -4382,8 +4401,8 @@ class ProcessTrees(ObservableAttributes, ObservableSortedDictionary):
   def load(self):
     """
     Loads process trees :
-      - a tree containing all processes that are not in toolboxes: allProcessesTree;
-      - toolboxes as new trees.
+      - a tree containing all processes that are not in toolboxes: the function :py:func:`allProcessesTree` returns it;
+      - toolboxes as new trees;
       - user trees that are saved in a minf file in user's .brainvisa directory.
     """
     allTree=allProcessesTree()
@@ -4472,6 +4491,7 @@ def allProcessesTree():
   """
   Get the tree that contains all processes. It is created when processes in processesPath are first read.
   Toolboxes processes are also added in this tree.
+  
   :rtype: :py:class:`ProcessTrees`
   :return: the tree that contains all processes.
   """
@@ -4497,6 +4517,7 @@ def mainThread():
 def defaultContext():
   """
   Gets the default execution context.
+  
   :rtype: :py:class:`ExecutionContext`
   :return: The default execution context associated to Brainvisa application.
   """
