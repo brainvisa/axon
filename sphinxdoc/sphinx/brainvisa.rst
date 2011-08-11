@@ -147,7 +147,6 @@ qt4gui.neuroDataGUI
 -------------------
 
 .. automodule:: qt4gui.neuroDataGUI
-  :members:
   :show-inheritance:
 
 qt4gui.neuroExceptionGUI

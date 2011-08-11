@@ -146,7 +146,7 @@ brainvisa.data.HierarchyBrowser
 brainvisa.data.directory_iterator
 ---------------------------------
 
-..automodule:: brainvisa.data.directory_iterator
+.. automodule:: brainvisa.data.directory_iterator
   :members:
     
 brainvisa.data.fileformats

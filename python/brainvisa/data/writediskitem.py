@@ -29,6 +29,11 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+"""
+This module defines the class :py:class:`WriteDiskItem` which is a subclass :py:class:`neuroData.Parameter`.
+It is used to define an output data file as a parameter in a :py:class:`neuroProcesses.Process` :py:class:`neuroData.Signature`.
+"""
+
 from soma.undefined import Undefined
 from neuroData import Parameter
 from brainvisa.data.readdiskitem import ReadDiskItem
@@ -39,6 +44,20 @@ from brainvisa.data.qtgui.readdiskitemGUI import DiskItemEditor
 
 #----------------------------------------------------------------------------
 class WriteDiskItem( ReadDiskItem ):
+  """
+  The expected value for this parameter must be a writable :py:class:`neuroDiskItems.DiskItem`.
+  
+  :Syntax: 
+  
+  ::
+  
+    WriteDiskItem( file_type_name, formats [, required_attributes={}, exactType=0, ignoreAttributes=0] )
+    formats <- format_name
+    formats <- [ format_name, ... ]
+        
+
+  This parameter type is very close to ReadDiskItem (WriteDiskItem derives from ReadDiskItem), but it accepts writable files. That is to say, it accepts not only files that are accepted by a ReadDiskItem but also files that doesn't exist yet. It has the same search methods as the ReadDiskItem class but these methods generate diskitems that may not exist yet, using data ontology information. 
+  """
   def __init__( self, diskItemType, formats, requiredAttributes={},
                 exactType=False, ignoreAttributes=False, _debug=None ):
     ReadDiskItem.__init__( self, diskItemType, formats, requiredAttributes=requiredAttributes, ignoreAttributes=ignoreAttributes, enableConversion=False, _debug=_debug, exactType=exactType  )
