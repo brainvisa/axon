@@ -30,7 +30,18 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+"""
+This module contains classes defining data items that are called diskItems in Brainvisa.
+These diskItems are associated to files that store data on a filesystem, 
+and attributes that are used to index the data in a database.
 
+The main class in this module is :py:class:`DiskItem`.
+
+A diskItem has a type indicating what the data represents (a Volume, a T1 MRI, fMRI data...) and a format indicating the file format used to write the data in files.
+The class :py:class:`DiskItemType` represents data types.
+The class :py:class:`Format` represents file formats.
+
+"""
 import types, string, re, sys, os, stat, threading, cPickle, operator, time, traceback
 from weakref import ref, WeakValueDictionary
 from UserList import UserList
@@ -83,6 +94,32 @@ class DiskItem:
   """
   This class represents data stored in one or several files on a filesystem.
   It can have additional information stored in attributes and may be indexed in a Brainvisa database.
+  
+  A diskItem can have hierarchy attributes (comes from Brainvisa ontology), 
+  minf attributes (that are stored in a .minf file), and possibly other attributes.
+  Several methods enable to access the values of the attributes: :py:meth:`getHierarchy`, :py:meth:`getNonHierarchy`, :py:meth:`attributes`, :py:meth:`globalAttributes`, :py:meth:`hierarchyAttributes`, :py:meth:`localAttributes`, :py:meth:`minf`. 
+  The attributes of a diskItem can also be requested using the dictionary notation ``d["attribute_name"]``, which calls :py:meth:`get` method. 
+  
+  A diskItem can be identified by a unique identifier called uuid. This uuid is stored in minf attributes and it is an instance of :py:class:`soma.uuid.Uuid` class.
+  
+  Several methods enable to request the name of the files associated to the diskItem: :py:meth:`fullPath`, :py:meth:`fullName`,  :py:meth:`fullPaths`, :py:meth:`fullPathSerie`, :py:meth:`fullPathsSerie`.
+  
+  :Attributes:
+  
+  .. py:attribute:: name
+  name of the diskItem, generally the filename of the first file.
+  
+  .. py:attribute:: parent
+  a parent diskItem, generally the diskItem associated to the directory that contains the data files of this diskItem.
+  
+  .. py:attribute:: type
+  Data type of the diskItem, Indicating the meaning of the data. It is an instance of :py:class:`DiskItemType`.
+  
+  .. py:attribute:: format
+  DiskItem file format, indicated by the files extensions. It is an instance of :py:class:`Format`.
+  
+  :Methods:
+  
   """
   
   _minfLock=RLock()
@@ -178,6 +215,9 @@ class DiskItem:
   
   
   def clone( self ):
+    """
+    Returns a deep copy of the current diskItem object. The associated files are not copied. 
+    """
     result = self.__class__( self.name, self.parent )
     result.__setstate__( self.__getstate__() )
     # Copy attributes so that they can be modified without
@@ -202,24 +242,42 @@ class DiskItem:
   
   
   def attributes( self ):
+    """
+    Returns a dictionary containing the name and value of all the attributes associated to this diskItem.
+    """
     result = {}
     self._mergeAttributes( result )
     return result
 
 
   def globalAttributes( self ):
+    """
+    Returns a dictionary containing the name and value of the global attributes. 
+    They may come from parent diskItem and are transmitted to child diskItem.
+    The global attributes are the attributes coming from data ontoloy.
+    """
     result = {}
     self._mergeGlobalAttributes( result )
     return result
   
   
   def localAttributes( self ):
+    """
+    Returns a dictionary containing the name and value of the local attributes. 
+    The local attributes are valid only for this diskItem, they are no transmitted to child diskItem. 
+    For example the attribute ``name_serie`` that indicates the list of numbers of a serie of files that store the data, is a local attribute.
+    """
     result = {}
     self._mergeLocalAttributes( result )
     return result
 
 
   def copyAttributes( self, other ):
+    """
+    Copy all the attributes of the given diskItem in the current diskItem.
+    
+    :param other: the py:class:`DiskItem` whose attributes will be copied.
+    """
     self._localAttributes = other._localAttributes.copy()
     self._globalAttributes = other._globalAttributes.copy()
     self._minfAttributes = other._minfAttributes.copy()
@@ -227,6 +285,9 @@ class DiskItem:
   
   
   def _mergeAttributes( self, result ):
+    """
+    Updates result dictionary with all attributes of the current diskItem and its parent global attributes.
+    """
     result.update( self._globalAttributes )
     if self.parent:
       self.parent._mergeAttributes( result )
@@ -236,6 +297,9 @@ class DiskItem:
 
 
   def _mergeGlobalAttributes( self, result ):
+    """
+    Updates result dictionary with all global attributes of the current diskItem and its parent global attributes.
+    """
     result.update( self._globalAttributes )
     if self.parent:
       self.parent._mergeGlobalAttributes( result )
@@ -265,6 +329,10 @@ class DiskItem:
 
 
   def fileName( self, index=0 ):
+    """
+    Returns the filename of the file number index in the list of files associated to this diskItem.
+    The absolute files paths are generally stored in diskItems. So this function is equivalent to :py:meth:`fullPath`.
+    """
     name_serie = self.get( 'name_serie' )
     if name_serie:
       return self.fileNameSerie( index / len( self._files ) , 
@@ -274,6 +342,10 @@ class DiskItem:
 
 
   def fileNames( self ):
+    """
+    Returns the list of filenames of the files associated to this diskItem. 
+    The absolute files paths are generally stored in diskItems. So this function is equivalent to :py:meth:`fullPaths`.
+    """
     name_serie = self.get( 'name_serie' )
     if name_serie:
       result = []
@@ -286,6 +358,14 @@ class DiskItem:
   
   
   def fileNameSerie( self, serie, index=0 ):
+    """
+    This function can be used only on diskItems that are a serie of data. For example a serie of 3D volumes, each volume being stored in two files .ima and .dim (GIS format). 
+    Returns the name of the index number file of the serie number item of the serie.
+    The absolute files paths are generally stored in diskItems. So this function is equivalent to :py:meth:`fullPathSerie`.
+    
+    :param int serie: index of the item in the serie.
+    :param int index: index of the file in one item of the serie.
+    """
     name_serie = self.get( 'name_serie' )
     if name_serie:
       return expand_name_serie( self._files[ index ],
@@ -294,6 +374,12 @@ class DiskItem:
   
   
   def fileNamesSerie( self, serie ):
+    """
+    Returns all the files of one item of the serie. 
+    The absolute files paths are generally stored in diskItems. So this function is equivalent to :py:meth:`fullPathsSerie`.
+    
+    :param int serie: index of the item in the serie.
+    """
     name_serie = self.get( 'name_serie' )
     if name_serie:
       return map( lambda x, number=name_serie[serie]: expand_name_serie( x, number ),
@@ -302,6 +388,9 @@ class DiskItem:
   
   
   def fullName( self ):
+    """
+    Returns the absolute path to the diskItem with its name (without extension). 
+    """
     if self.parent is None:
       return self.name
     else:
@@ -309,7 +398,8 @@ class DiskItem:
 
   def relativePath(self, index=0):
     """
-    Gets the file path of this diskitem, relatively to the path of its root diskitem. 
+    Gets the file path of this diskitem, relatively to the path its database directory.
+    If there is no database information in the attributes it returns the full path of the diskItem.
     """
     database=self.get("database")
     if database is None:
@@ -320,6 +410,9 @@ class DiskItem:
     return path
     
   def fullPath( self, index=0 ):
+    """
+    Returns the absolute file name of the index number file of the diskItem.
+    """
     if self.parent is None:
       return self.fileName(index)
     else:
@@ -327,6 +420,9 @@ class DiskItem:
 
 
   def fullPaths( self ):
+    """
+    Returns the absolute file names of the all the files of the diskItem.
+    """
     if self.parent is None:
       return self.fileNames()
     else:
@@ -335,7 +431,7 @@ class DiskItem:
 
   def existingFiles(self):
     """
-    Returns all files reprensented by this diskitem and that really exist.
+    Returns all files associated to this diskitem, that really exist plus its minf file if it exists.
     """
     files=[ f for f in self.fullPaths() if os.path.exists(f)]
     minfFile= self.minfFileName()
@@ -344,6 +440,14 @@ class DiskItem:
     return files
 
   def fullPathSerie( self, serie, index=0 ):
+    """
+    This function can be used only on a diskItem that is a serie of data. For example a serie of 3D volumes, each volume being stored in two files .ima and .dim (GIS format). 
+    Returns the absolute file name of the index number file of the serie number item of the serie.
+    
+    :param int serie: index of the item in the serie.
+    :param int index: index of the file in one item of the serie.
+    """
+
     if self.parent is None:
       return self.fileNameSerie( serie, index )
     else:
@@ -351,6 +455,13 @@ class DiskItem:
 
 
   def fullPathsSerie( self, serie ):
+    """
+    This function can be used only on a diskItem that is a serie of data. For example a serie of 3D volumes, each volume being stored in two files .ima and .dim (GIS format). 
+    Returns all the absolute file names of the serie number item of the serie.
+    
+    :param int serie: index of the item in the serie.
+    """
+
     if self.parent is None:
       return self.fileNamesSerie( serie )
     else:
@@ -359,6 +470,9 @@ class DiskItem:
 
 
   def firstFullPathsOfEachSeries( self ):
+    """
+    Returns the first file name of each item of the serie.
+    """
     return map( lambda i, self=self: self.fullPathSerie( i ),
                 range( len( self.get( 'name_serie' ) ) ) )
 
@@ -388,6 +502,18 @@ class DiskItem:
   
   
   def get( self, attrName, default = None ):
+    """
+    Gets the value of an attribute. 
+    If the attribute is not found in the attributes stored in this diskItem object, 
+    it is searched for in data file header using :py:func:`aimsFileInfo` function.
+    
+    .. warning::
+      So this method takes more time to execute than :py:func:`getHierarchy` and :py:func:`getNonHierarchy`
+      when the attribute is not found because it reads the header of the file on the filesystem.
+    
+    :param string attrName: name of the attribute
+    :param default: value returned if the attribute is not set in this diskItem.
+    """
     r = self._globalAttributes.get( attrName )
     if r is None: r = self._minfAttributes.get( attrName )
     if r is None: r = self._otherAttributes.get( attrName )
@@ -402,14 +528,25 @@ class DiskItem:
       else: return default
     return r
 
-
   def __getitem__( self, attrName ):
+    """
+    Enables to use d[attrname] notation.
+    """
     r = self.get( attrName )
     if r is None: raise KeyError( attrName )
     return r
 
 
   def getInTree( self, attrPath, default = None, separator = '.' ):
+    """
+    This function could be used to get an attribute value from an object that is an attribute value of a diskItem. 
+    ::
+      d.getInTree("attr1.attr2...") <=> d.get(attr1).get(attr2)...
+    
+    :param string attrPath: the attributes path, each attribute is separated by a separator character
+    :param default: default value is the attribute value is not found
+    :param string separator: character separator used to separate the different attributes in the attributes path.
+    """
     item = self
     stack = attrPath.split( separator )
     while stack and item is not None:
@@ -420,6 +557,12 @@ class DiskItem:
   
   
   def getHierarchy( self, attrName, default = None ):
+    """
+    Gets the attribute from the global attributes or the local attributes or the parent  hierarchy attributes.
+    
+    :param string attrName: name of the attribute
+    :param default: value returned if the attribute is not found.
+    """
     r = self._globalAttributes.get( attrName )
     if r is None: r = self._localAttributes.get( attrName )
     if r is None:
@@ -429,6 +572,12 @@ class DiskItem:
 
 
   def getNonHierarchy( self, attrName, default = None ):
+    """
+    Gets the attribute value from the attributes written in minf file or in other attributes or in parent non hierarchy attributes.
+    
+    :param string attrName: name of the attribute
+    :param default: value returned if the attribute is not found.
+    """
     r = self._minfAttributes.get( attrName )
     if r is None: r = self._otherAttributes.get( attrName )
     if r is None:
@@ -438,18 +587,27 @@ class DiskItem:
   
   
   def nonHierarchyAttributes( self ):
+    """
+    Returns all non hierarchy attributes in a dictionary.
+    """
     result = {}
     self._mergeNonHierarchyAttributes( result )
     return result
   
   
   def hierarchyAttributes( self ):
+    """
+    Returns all hierarchy attributes in a dictionary.
+    """
     result = {}
     self._mergeHierarchyAttributes( result )
     return result
   
   
   def has_key( self, attrName ):
+    """
+    Returns True if the diskItem has an attribute with this name in one of its dictionary of attributes.
+    """
     r = self._minfAttributes.has_key( attrName )
     if r: return r
     r = self._otherAttributes.has_key( attrName )
@@ -500,6 +658,13 @@ class DiskItem:
 
 
   def setMinf( self, attrName, value, saveMinf = True ):
+    """
+    Add this attribute to the minf attributes of the diskItem.
+    
+    :param string attrName: name of the attribute
+    :param value: value sets for the attribute
+    :param boolean saveMinf: if True the modified attributes are written to the diskItem minf file.
+    """
     self._otherAttributes.pop( attrName, None )
     self._minfAttributes[ attrName ] = value
     if saveMinf:
@@ -510,10 +675,19 @@ class DiskItem:
   
   
   def minf( self ):
+    """
+    Returns a dictionary containing the minf attributes of the diskItem.
+    """
     return self._minfAttributes
   
   
   def updateMinf( self, dict, saveMinf = True ):
+    """
+    Add new attributes to the minf attributes of the diskItem and possibly save the attributes in a minf file.
+    
+    :param dict: dictionary containing the attributes that will be added to this diskItem minf attributes.
+    :param boolean saveMinf: if True the minf attributes will be saved in the minf file of the diskItem.
+    """
     for attrName, value in dict.items():
       self._otherAttributes.pop( attrName, None )
       self._minfAttributes[ attrName ] = value
@@ -525,6 +699,9 @@ class DiskItem:
   
   
   def isReadable( self ):
+    """
+    Returns True if all the files associated to this diskItem exist and are readable.
+    """
     result = 1
     for p in self.fullPaths():
       if not os.access( p, os.F_OK + os.R_OK ):
@@ -534,6 +711,9 @@ class DiskItem:
 
 
   def isWriteable( self ):
+    """
+    Returns True if all the files associated to this diskItem exist and are readable and writable.
+    """
     result = 1
     for p in self.fullPaths():
       if not os.access( p, os.F_OK + os.R_OK + os.W_OK ):
@@ -547,6 +727,9 @@ class DiskItem:
 
 
   def childs( self ):
+    """
+    Virtual function, returns None. It is overriden in derived class :py:class:`Directory`.
+    """
     return None
   
   
@@ -555,6 +738,13 @@ class DiskItem:
 
 
   def setFormatAndTypeAttributes( self, writeOnly=0 ):
+    """
+    Adds the diskItem format attributes to its other attributes, 
+    and the diskItem types attributes to its minf attributes.
+    
+    :param boolean writeOnly: if False the minf file is read to update the dictionary of minf attributes.
+    :returns: current disktem
+    """
     # Set format attributes
     if self.format is not None:
       self.format.setAttributes( self, writeOnly=writeOnly )
@@ -568,6 +758,13 @@ class DiskItem:
 
 
   def priority( self ):
+    """
+    Returns the value of priority attribute if found 
+    else the parent diskItem priority, 
+    else the default priority attribute, else 0.
+    
+    This priority is an attribute associated to the ontology rule that enabled to identify the diskItem.
+    """
     if getattr( self, '_priority', None ) is not None:
       return self._priority
     if self.parent is not None:
@@ -576,12 +773,18 @@ class DiskItem:
 
   
   def setPriority( self, newPriority, priorityOffset=0 ):
+    """
+    Sets a value for the priority a attribute: ``newPriority + priorityOffset``.
+    """
     self._priority = newPriority
     if priorityOffset:
       self._priority = self.priority() + priorityOffset
   
   
   def minfFileName( self ):
+    """
+    Returns the name of the minf file associated to this diskItem. It is generally the name of the main file of the diskItem + the .minf extension.
+    """
     if self.format is not None and ( isinstance( self.format, MinfFormat ) or self.format.name == 'Minf' ):
       return self.fullPath()
     else:
@@ -589,6 +792,9 @@ class DiskItem:
   
   
   def saveMinf( self, overrideMinfContent = None ):
+    """
+    Writes minf attributes or the content of overrideMifContent if given to the minf file.
+    """
     minfContent = {}
     if self._uuid is not None:
       minfContent[ 'uuid' ] = str( self._uuid )
@@ -601,6 +807,12 @@ class DiskItem:
   
   
   def removeMinf( self, attrName, saveMinf = True ):
+    """
+    Remove the attribute from minf attributes. 
+    
+    :param string attrName: name of the attribute to remove
+    :param boolean saveMinf: if True, the minf attributes are saved in the minf file.
+    """
     del self._minfAttributes[ attrName ]
     if saveMinf:
       minf = self._readMinf()
@@ -610,6 +822,9 @@ class DiskItem:
   
   
   def clearMinf( self, saveMinf = True  ):
+    """
+    Deletes all minf attributes. Also removes the minf file if saveMinf is True.
+    """
     self._minfAttributes.clear()
     if saveMinf:
       minf = self.minfFileName()
@@ -618,6 +833,9 @@ class DiskItem:
   
   
   def _readMinf( self ):
+    """
+    Reads the minf file and returns its content.
+    """
     attrFile = self.minfFileName()
     if os.path.exists( attrFile ):
       try:
@@ -635,6 +853,10 @@ class DiskItem:
   
   
   def _writeMinf( self, minfContent ):
+    """
+    Writes the given content to the minf file.
+    if minfContent is None, removes the minf file.
+    """
     minf = self.minfFileName()
     if minfContent:
       file = open( minf, 'w' )
@@ -646,6 +868,9 @@ class DiskItem:
   
   
   def readAndUpdateMinf( self ):
+    """
+    Reads the content of the minf file and updates the minf attribute dictionary accordingly.
+    """
     self._lock.acquire()
     try:
       attrs = self._readMinf()
@@ -659,6 +884,9 @@ class DiskItem:
   
   
   def createParentDirectory( self ):
+    """
+    According to the file path of the diskItem, creates the directory that should contain the files if it doesn't exist.
+    """
     p = os.path.dirname( self.fullPath() )
     if not os.path.exists( p ):
       try:
@@ -671,12 +899,15 @@ class DiskItem:
 
 
   def isTemporary( self ):
+    """
+    Returns True if it is a temporary diskItem, that is to say its files will be automatically deleted when its is no more referenced.
+    """
     return self._isTemporary
 
 
   def distance( self, other ):
     '''Returns a value that represents a sort of distance between two DiskItems.
-       The distance is not a number but distances can be sorted.'''
+       The distance is not a number but distances can be sorted, it is a tuple of numbers.'''
     # Count the number of common hierarchy attributes
     hierarchyCommon = \
       reduce( 
@@ -703,6 +934,9 @@ class DiskItem:
   
 
   def setUuid( self, uuid, saveMinf=True ):
+    """
+    Sets a new uuid to this diskItem.
+    """
     self._changeUuid( Uuid( uuid ) )
     if saveMinf:
       attrs = self._readMinf()
@@ -717,6 +951,9 @@ class DiskItem:
   
   
   def uuid( self, saveMinf=True ):
+    """
+    Gets the uuid of the diskItem.
+    """
     if self._uuid is None:
       self._minfLock.acquire()
       try:
@@ -736,10 +973,10 @@ class DiskItem:
     Does nothing if this item has already a format. 
     Doesn't take into account format whose pattern matches any filename (*). 
     Stops when a matching format is found : 
-      - item name is modified (prefix and suffix linked to the format are deleted)
-      - item list of files is modified accoding to format patterns
-      - the format is applied to the item
-      - setFormatAndTypesAttributes method is applied
+      * item name is modified (prefix and suffix linked to the format are deleted)
+      * item list of files is modified accoding to format patterns
+      * the format is applied to the item
+      * :py:meth:`setFormatAndTypeAttributes` method is applied.
     """
     if not self.format:
       if not amongFormats:
@@ -767,6 +1004,9 @@ class DiskItem:
   
   
   def eraseFiles( self ):
+    """
+    Deletes all files associated to this diskItem.
+    """
     for fp in self.fullPaths():
       if os.path.exists( fp ):
         shelltools.rm( fp )
@@ -777,6 +1017,9 @@ class DiskItem:
   
 #----------------------------------------------------------------------------
 class File( DiskItem ):
+  """
+  This class represents a diskItem that cannot contain other diskItem (not a directory).
+  """
   def __init__( self, name, parent ):
     DiskItem.__init__( self, name, parent )
 
@@ -784,6 +1027,9 @@ class File( DiskItem ):
 
 #----------------------------------------------------------------------------
 class Directory( DiskItem ):
+  """
+  This class represents a directory, that is to say a diskItem that can contain other diskItems.
+  """
   def __init__( self, name, parent ):
     DiskItem.__init__( self, name, parent )
     self._childs = []
@@ -812,6 +1058,10 @@ class Directory( DiskItem ):
   
   
   def childs( self ):
+    """
+    Returns the children diskItems scaning the directory using the ontology rules.
+    Not used.
+    """
     self._lock.acquire()
     try:
       if self.scanner is None: return []
@@ -886,6 +1136,9 @@ class Directory( DiskItem ):
 
 #----------------------------------------------------------------------------
 def getId( name ):
+  """
+  Returns the name in lowercase.
+  """
   return  name.lower()
 
  
@@ -983,10 +1236,36 @@ formatLists = {}
 
 #----------------------------------------------------------------------------
 class Format:
+  """
+  This class represents a data file format. It is used to define new formats in brainvisa ontology types files.
+  
+  :Attributes: 
+  
+  .. py:attribute:: name
+  Name of the format. For example *GIS image*.
+  
+  .. py:attribute:: fileName
+  Name of the python file that contains the definition of this format.
+  
+  .. py:attribute:: id
+  Identifier associated to this format.
+  
+  .. py:attribute:: patterns
+  :py:class:`BackwardCompatiblePatterns` describing the files patterns associated to this format. Example: *f|*.ima, f|*.dim*.
+  
+  
+  """
   _msgError = 'error in <em>%s</em> format'
   
   def __init__( self, formatName, patterns, attributes=None, exclusive=None, 
                 ignoreExclusive=0 ):
+    """
+    :param string formatName: name of the format. 
+    :param patterns: string or :py:class:`BackwardCompatiblePatterns` describing the files patterns associated to this format.
+    :param attributes: dictionary of attributes associated to this format. For example, an attribute *compressed = type_of_compression* is associated to the compressed files formats.
+    :param boolean exclusive: if True, a file should match only this pattern to match the format. Hardly ever used.
+    :param boolean ignoreExclusive: if True, this format will be ignored when exclusivity of a format is checked. Hardly ever used.
+    """
     if type( formatName ) is not types.StringType:
       raise ValueError( HTMLMessage(_t_('<em><code>%s</code></em> is not a valid format name') % formatName) )
 
@@ -1014,6 +1293,14 @@ class Format:
     raise cPickle.PicklingError
   
   def match( self, item, returnPosition=0, ignoreExclusive=0 ):
+    """
+    Checks if the diskItem files match the format patterns.
+    
+    :param item: the py:class:`DiskItem` whose format is checked.
+    :param boolean returnPosition: if True the position of the match is returned with the matched variables
+    :param boolean ignoreExclusive: if True, the exclusivity of the matched format will not be checked.
+    :returns: a dictionary containing the matched variables of the patterns or a tuple containing this dictionary and the position of the match if returnPosition was True.
+    """
     name = item.name
     if name[ -5: ] == '.minf':
       item.name = name[ : -5 ]
@@ -1028,6 +1315,9 @@ class Format:
     return result
 
   def unmatch( self, diskItem, matchResult, force = 0 ):
+    """
+    Returns the list of filenames according to this format replacing the variables in the patterns with the value in matchResult. 
+    """
     d, f = os.path.split( diskItem.name )
     if d:
       oldName = diskItem.name
@@ -1039,6 +1329,9 @@ class Format:
     return result
 
   def formatedName( self, item, matchResult ):
+    """
+    Returns the name of the diskItem that matches the format without format extension.
+    """
     star = matchResult.get( 'filename_variable' )
     if star:
       if item.parent is None:
@@ -1049,6 +1342,12 @@ class Format:
     return item.name
   
   def setFormat( self, item, ruleMatchingInfo = None ):
+    """
+    Sets this format to the diskItem.
+    
+    :param item: :py:class:`DiskItem` whose format will be set.
+    :param ruleMatchingInfo: used in derived class.
+    """
     item.format = self
   
   def group( self, groupedItem, matchedItem, position=0 ):
@@ -1064,6 +1363,9 @@ class Format:
     return groupedItem
   
   def fileOrDirectory( self ):
+    """
+    Returns the class of diskItem that this format matches : :py:class:`File` or :py:class:`Directory`.
+    """
     return self.patterns.fileOrDirectory()
   
   def __str__( self ):
@@ -1073,6 +1375,9 @@ class Format:
     return  repr( self.name )
 
   def setAttributes( self, item, writeOnly=0 ):
+    """
+    Adds the attributes of this format to the diskItem other attributes
+    """
     attrs = self._formatAttributes
     if attrs is not None:
       if type( attrs ) is types.DictType:
@@ -1083,18 +1388,31 @@ class Format:
         raise ValueError( HTMLMessage(_t_('Invalid attributes: <em>%s</em>') % htmlEscape( str(attrs) )) )
 
   def postProcessing( self, item ):
+    """Virtual method. Overriden in derived class.
+    """
     pass
 
   def getPatterns( self ):
+    """Returns a :py:class:`BackwardCompatiblePatterns` representing the files patterns for this format.
+    """
     return self.patterns
 
 
 #----------------------------------------------------------------------------
 class MinfFormat( Format ):
+  """
+  Base class for the file formats that uses the minf format.
+  """
   pass
     
 #----------------------------------------------------------------------------
 class FormatSeries( Format ):
+  """
+  This class represents the format of a serie of diskItems with the same format. For example, a serie of images in Analyse format.
+  
+  .. py:attributes:: baseFormat
+  The format of each element of the serie.
+  """
   def __init__( self, baseFormat, formatName=None, attributes=None ):
     baseFormat = getFormat( baseFormat )
     if isinstance( baseFormat, FormatSeries ):
@@ -1178,6 +1496,9 @@ class FormatSeries( Format ):
 
 #----------------------------------------------------------------------------
 def changeToFormatSeries( format ):
+  """
+  Gets the suited format for a serie of item in the given format.
+  """
   if isinstance( format, FormatSeries ):
     return format
   global formats
@@ -1189,6 +1510,9 @@ def changeToFormatSeries( format ):
 
 #----------------------------------------------------------------------------
 def registerFormat( format ):
+  """
+  Stores the format in a global list of formats.
+  """
   global formats
   f = formats.get( format.id )
   if f:
@@ -1199,6 +1523,9 @@ def registerFormat( format ):
 
 #----------------------------------------------------------------------------
 def getFormat( item, default=Undefined ):
+  """
+  Gets the format whose id is the given item.
+  """
   if isinstance( item, Format ): return item
   elif isinstance( item, basestring ):
     if item == 'Graph': item = 'Graph and data'
@@ -1214,6 +1541,19 @@ def getFormat( item, default=Undefined ):
 
 #----------------------------------------------------------------------------
 class NamedFormatList( UserList ):
+  """
+  This class represents a list of formats which have a name.
+  This object can be used as a list.
+  
+  .. py:attribute:: name
+  Name of the list of formats.
+  
+  .. py:attribute:: data
+  List of formats.
+  
+  .. py:attribute:: fileName
+  Name of the file where this list of formats is defined.
+  """
   def __init__( self, name, data ):
       self.name = name
       self.data = list(data)
@@ -1256,6 +1596,13 @@ class NamedFormatList( UserList ):
 
 #----------------------------------------------------------------------------
 def createFormatList( listName, formats=[] ):
+  """
+  Creates a new :py:class:`NamedFormatList` and stores it in a global list of formats lists.
+  
+  :param string listName: the name of the list
+  :param list formats: the list of formats ids (string)
+  :returns: the new :py:class:`NamedFormatList` containing a list of :py:class:`Format` objects.
+  """
   global formatLists
   key = getId( listName )
   if formatLists.has_key( key ):
@@ -1267,6 +1614,10 @@ def createFormatList( listName, formats=[] ):
 
 #----------------------------------------------------------------------------
 def getFormats( formats ):
+  """
+  Returns a list of :py:class:`Format` or a :py:class:`NamedFormatList` corresponding to the given parameter.
+  The parameter can be a string or a list of string matching format names.
+  """
   if formats is None: return None
   global formatLists
   if type( formats ) in types.StringTypes:
@@ -1288,13 +1639,14 @@ def getFormats( formats ):
 
 #----------------------------------------------------------------------------
 def getAllFormats():
+  """
+  Returns the list of all available formats.
+  """
   global formats
   return formats.values()
 
 directoryFormat = Format( 'Directory', 'd|*', ignoreExclusive=1 )
 fileFormat = Format( 'File', 'f|*', ignoreExclusive=1 )
-
-
 
 
 #----------------------------------------------------------------------------
@@ -1303,7 +1655,31 @@ diskItemTypes = {}
 
 #----------------------------------------------------------------------------
 class DiskItemType:
+  """
+  This class represents a type of :py:class:`DiskItem`.
+  
+  :Attributes: 
+  
+  .. py:attribute:: name
+  Name of the Type. For example *T1 MRI*.
+  
+  .. py:attribute:: fileName
+  Name of the python file that contains the definition of this type.
+  
+  .. py:attribute:: id
+  Identifier associated to this type.
+  
+  .. py:attribute:: parent
+  As types are defined hierarchically, a type can have a parent type.
+  
+
+  """
   def __init__( self, typeName, parent = None, attributes=None ):
+    """
+    :param string typeName: name of the type
+    :param parent: can be the name of the parent. If it already registered, it will be found from its name.
+    :param attributes: dictionary containing attributes associated to this type. 
+    """
     # Check name
     if type( typeName ) is not types.StringType:
       raise ValueError( _t_('a type name must be a string') )
@@ -1332,15 +1708,24 @@ class DiskItemType:
     raise cPickle.PicklingError
 
   def setType( self, item, matchResult, formatPosition ):
+    """
+    Sets this type to the given item.
+    """
     item.type = self
 
   def isA( self, diskItemType ):
+    """
+    Returns True if the given diskItem type is a parent (direct or indirect) of the current diskItem.
+    """
     diskItemType = getDiskItemType( diskItemType )
     if diskItemType is self: return 1
     if self.parent is None: return 0
     return self.parent.isA( diskItemType )
 
   def parents( self ):
+    """
+    Returns the list of parents of this diskItem, that is to say its parent and its parent's parents.
+    """
     if self.parent: return [ self.parent ] + self.parent.parents()
     return []
 
@@ -1351,6 +1736,9 @@ class DiskItemType:
     return '<' + str( self ) + '>'
 
   def setAttributes( self, item, writeOnly=0 ):
+    """
+    Add this type attributes to the given diskItem minf attributes.
+    """
     attrs = self._typeAttributes
     if attrs is not None:
       if type( attrs ) is types.DictType:
@@ -1363,6 +1751,9 @@ class DiskItemType:
 
 #----------------------------------------------------------------------------
 def getDiskItemType( item ):
+  """
+  Gets the :py:class:`DiskItemType` whose id is the given item.
+  """
   if isinstance( item, DiskItemType ): return item
   elif type( item ) is types.StringType or type( item ) is types.UnicodeType:
     result = diskItemTypes.get( getId( item ) )
@@ -1372,11 +1763,17 @@ def getDiskItemType( item ):
 
 #----------------------------------------------------------------------------
 def getAllDiskItemTypes():
+  """
+  Gets all registered :py:class:`DiskItemType`.
+  """
   return diskItemTypes.values()
 
 
 #----------------------------------------------------------------------------
 def isSameDiskItemType( base, ref ):
+  """
+  Returns True if ref is a parent of base.
+  """
   if base: return base.isA( ref )
   else: return ref is None
 
@@ -1384,6 +1781,11 @@ def isSameDiskItemType( base, ref ):
 
 #----------------------------------------------------------------------------
 class FileType( DiskItemType ):
+  """
+  This class represents a type for a DiskItem associated to files. (a :py:class:`File`).
+  
+  It can stores file formats associated to this type.
+  """
   def __init__( self, typeName, parent = None, formats = None, minfAttributes = None ):
     # Check formats
     if formats:
@@ -1420,6 +1822,9 @@ def expand_name_serie( text, number ):
 
 #----------------------------------------------------------------------------
 class TemporaryDirectory( Directory ):
+  """
+  This class represents a temporary directory. 
+  """
   def __init__( self, name, parent ):
     self._isTemporary = 1
     if parent:
