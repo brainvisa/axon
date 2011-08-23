@@ -169,21 +169,25 @@ class DiskItem:
   Several methods enable to request the name of the files associated to the diskItem: :py:meth:`fullPath`, :py:meth:`fullName`,  :py:meth:`fullPaths`, :py:meth:`fullPathSerie`, :py:meth:`fullPathsSerie`.
   
   :Attributes:
-  
+
   .. py:attribute:: name
-  name of the diskItem, generally the filename of the first file.
   
+    name of the diskItem, generally the filename of the first file.
+
   .. py:attribute:: parent
-  a parent diskItem, generally the diskItem associated to the directory that contains the data files of this diskItem.
   
+    a parent diskItem, generally the diskItem associated to the directory that contains the data files of this diskItem.
+
   .. py:attribute:: type
-  Data type of the diskItem, indicating the meaning of the data. It is an instance of :py:class:`DiskItemType`.
   
+    Data type of the diskItem, indicating the meaning of the data. It is an instance of :py:class:`DiskItemType`.
+
   .. py:attribute:: format
-  DiskItem file format, indicated by the files extensions. It is an instance of :py:class:`Format`.
   
+    DiskItem file format, indicated by the files extensions. It is an instance of :py:class:`Format`.
+
   :Methods:
-  
+
   """
   
   _minfLock=RLock()
@@ -604,9 +608,11 @@ class DiskItem:
   def getInTree( self, attrPath, default = None, separator = '.' ):
     """
     This function could be used to get an attribute value from an object that is an attribute value of a diskItem. 
-    ::
-      d.getInTree("attr1.attr2...") <=> d.get(attr1).get(attr2)...
     
+    ::
+      
+      d.getInTree("attr1.attr2...") <=> d.get(attr1).get(attr2)...
+
     :param string attrPath: the attributes path, each attribute is separated by a separator character
     :param default: default value is the attribute value is not found
     :param string separator: character separator used to separate the different attributes in the attributes path.
@@ -1036,11 +1042,12 @@ class DiskItem:
     Find the format of this diskItem : the format whose pattern matches this diskitem's filename.
     Does nothing if this item has already a format. 
     Doesn't take into account format whose pattern matches any filename (*). 
-    Stops when a matching format is found : 
-      * item name is modified (prefix and suffix linked to the format are deleted)
-      * item list of files is modified accoding to format patterns
-      * the format is applied to the item
-      * :py:meth:`setFormatAndTypeAttributes` method is applied.
+    Stops when a matching format is found :
+    
+    * item name is modified (prefix and suffix linked to the format are deleted)
+    * item list of files is modified accoding to format patterns
+    * the format is applied to the item
+    * :py:meth:`setFormatAndTypeAttributes` method is applied.
     """
     if not self.format:
       if not amongFormats:
@@ -1353,17 +1360,22 @@ class Format:
   :Attributes: 
   
   .. py:attribute:: name
-  Name of the format. For example *GIS image*.
+  
+    Name of the format. For example *GIS image*.
   
   .. py:attribute:: fileName
-  Name of the python file that contains the definition of this format.
+  
+    Name of the python file that contains the definition of this format.
   
   .. py:attribute:: id
-  Identifier associated to this format.
+  
+    Identifier associated to this format.
   
   .. py:attribute:: patterns
-  :py:class:`BackwardCompatiblePatterns` describing the files patterns associated to this format. Example: ``f|*.ima, f|*.dim``.
   
+    :py:class:`BackwardCompatiblePatterns` describing the files patterns associated to this format. Example: ``f|*.ima, f|*.dim``.
+  
+  :Methods:
   
   """
   _msgError = 'error in <em>%s</em> format'
@@ -1688,13 +1700,17 @@ class NamedFormatList( UserList ):
   This object can be used as a list.
   
   .. py:attribute:: name
-  Name of the list of formats.
+    
+    Name of the list of formats.
   
   .. py:attribute:: data
-  List of formats.
+    
+    List of formats.
   
   .. py:attribute:: fileName
-  Name of the file where this list of formats is defined.
+    
+    Name of the file where this list of formats is defined.
+    
   """
   def __init__( self, name, data ):
       self.name = name
@@ -1806,17 +1822,22 @@ class DiskItemType:
   :Attributes: 
   
   .. py:attribute:: name
-  Name of the Type. For example *T1 MRI*.
+    
+    Name of the Type. For example *T1 MRI*.
   
   .. py:attribute:: fileName
-  Name of the python file that contains the definition of this type.
+  
+    Name of the python file that contains the definition of this type.
   
   .. py:attribute:: id
-  Identifier associated to this type.
+  
+    Identifier associated to this type.
   
   .. py:attribute:: parent
-  As types are defined hierarchically, a type can have a parent type.
   
+    As types are defined hierarchically, a type can have a parent type.
+  
+  :Methods:
 
   """
   def __init__( self, typeName, parent = None, attributes=None ):

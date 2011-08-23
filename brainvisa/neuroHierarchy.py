@@ -29,7 +29,23 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+"""
+This module defines functions to load Brainvisa **databases**.
 
+The databases objects are stored in a global variable:
+  
+  .. py:data:: databases
+  
+    :py:class:`brainvisa.data.sqlFSODatabase.SQLDatabases` object which contains the loaded Brainvisa databases.
+
+This object is created with the function :py:func:`initializeDatabases`.
+
+Then each each database can be loaded with the function :py:func:`openDatabases`. 
+An object :py:class:`brainvisa.data.sqlFSODatabase.SQLDatabase` is created for each database selected in Brainvisa options. 
+
+The function :py:func:`hierarchies` enables to get the list of databases objects. 
+
+"""
 
 import os
 
@@ -45,10 +61,21 @@ databaseVersion="2.0"
 databaseVersions={ "1.0" : "3.1.0", "1.1" : "3.2.0"}
 
 def initializeDatabases():
+  """
+  Creates the object :py:data:`databases` which is an instance of :py:class:`brainvisa.data.sqlFSODatabase.SQLDatabases`. 
+  It will contain all loaded databases.
+  """
   global databases
   databases = SQLDatabases()
 
 def openDatabases():
+  """
+  Loads databases which are selected in Brainvisa options. 
+  For each database, an object :py:class:`brainvisa.data.sqlFSODatabase.SQLDatabase` is created.
+  The new database objects are added to :py:data:`databases`, any existing database in this object is previously removed. 
+  
+  Warning messages may be displayed if a database is readonly or uses a deprecated ontology (*brainvisa-3.0*).
+  """
   from neuroProcesses import defaultContext
   global databases
     
@@ -111,5 +138,8 @@ def openDatabases():
 
   
 def hierarchies():
+  """
+  Returns a list of :py:class:`brainvisa.data.sqlFSODatabase.SQLDatabase` objects representing the databases currently loaded in Brainvisa.
+  """
   return databases._databases.values()
   

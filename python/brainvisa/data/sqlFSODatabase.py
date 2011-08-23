@@ -30,6 +30,12 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+"""
+This module contains classes defining Brainvisa **databases**. 
+
+The main classes are :py:class:`SQLDatabases` and :py:class:`SQLDatabase`. 
+
+"""
 import sys
 import os, re
 
@@ -127,6 +133,9 @@ class NotInDatabaseError( DatabaseError ):
 
 #------------------------------------------------------------------------------
 class Database( object ):
+  """
+  Base class for Brainvisa databases. 
+  """
 
   _all_formats = None
   @property
@@ -249,6 +258,11 @@ class Database( object ):
 #------------------------------------------------------------------------------
 #dbg# import weakref
 class SQLDatabase( Database ):
+  """
+  A Brainvisa database with files stored in a hierarchically organized directory and a SQL database indexing the files according to Brainvisa ontology.
+  
+  The SQL database is implemented using SQLite. 
+  """
   class CursorProxy( object ):
 #dbg#     _allProxy = weakref.WeakKeyDictionary()
     _proxyId = 0
@@ -1329,6 +1343,9 @@ class NoGeneratorSQLDatabase( SQLDatabase ):
   
 #------------------------------------------------------------------------------
 class SQLDatabases( Database ):
+  """
+  This object stores several :py:class:`SQLDatabase` objects. 
+  """
   def __init__( self, databases=[] ):
     super(SQLDatabases, self).__init__()
     self._databases = SortedDictionary()

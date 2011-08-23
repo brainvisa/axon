@@ -35,18 +35,19 @@ that is to say a list of typed parameters.
 
 The main class is :py:class:`Signature`. It contains a list of parameters names and types. 
 Each parameter is an instance of a sublcass of :py:class:`Parameter`:
-  * :py:class:`String`
-  * :py:class:`Number`: an integer or float number.
-  * :py:class:`Integer`
-  * :py:class:`Float`
-  * :py:class:`Choice`: a choice between several constant values.
-  * :py:class:`Boolean`
-  * :py:class:`Point`, :py:class:`Point2D`, :py:class:`Point3D`: coordinates of a point.
-  * :py:class:`ListOfVector`: a list of vectors of numbers.
-  * :py:class:`Matrix`: a matrix of numbers.
-  * :py:class:`ListOf`: a list of :py:class:`Parameter`.
-  * :py:class:`brainvisa.data.readdiskitem.ReadDiskItem`: a :py:class:`neuroDiskItems.DiskItem` as an input parameter.
-  * :py:class:`brainvisa.data.writediskitem.WriteDiskItem`: a :py:class:`neuroDiskItems.DiskItem` as an output parameter.
+
+* :py:class:`String`
+* :py:class:`Number`: an integer or float number.
+* :py:class:`Integer`
+* :py:class:`Float`
+* :py:class:`Choice`: a choice between several constant values.
+* :py:class:`Boolean`
+* :py:class:`Point`, :py:class:`Point2D`, :py:class:`Point3D`: coordinates of a point.
+* :py:class:`ListOfVector`: a list of vectors of numbers.
+* :py:class:`Matrix`: a matrix of numbers.
+* :py:class:`ListOf`: a list of :py:class:`Parameter`.
+* :py:class:`brainvisa.data.readdiskitem.ReadDiskItem`: a :py:class:`neuroDiskItems.DiskItem` as an input parameter.
+* :py:class:`brainvisa.data.writediskitem.WriteDiskItem`: a :py:class:`neuroDiskItems.DiskItem` as an output parameter.
 
 **Example**
 
@@ -487,10 +488,12 @@ class MatrixValue( UserList ):
   :Attributes:
   
   .. py:attribute:: data (list)
-  Content of the matrix: a list of lines, each line is a list of number.
+  
+    Content of the matrix: a list of lines, each line is a list of number.
   
   .. py:attribute:: size (tuple)
-  Dimension of the matrix (nb lines, nb columns)
+  
+    Dimension of the matrix (nb lines, nb columns)
   
   """
   def __init__( self, value, requiredLength=None, requiredWidth=None ):
@@ -528,10 +531,12 @@ class ListOfVectorValue( UserList ):
   :Attributes:
   
   .. py:attribute:: data
-  The content of the list of vectors: a list of vectors, each vector is a list of number. The vectors can have different sizes.
+  
+    The content of the list of vectors: a list of vectors, each vector is a list of number. The vectors can have different sizes.
   
   .. py:attribute:: size
-  The number of vectors in the list.
+  
+    The number of vectors in the list.
   
   """
   def __init__( self, value, requiredLength=None ):
@@ -601,7 +606,10 @@ class ListOf( Parameter ):
   :Attributes:
   
   .. py:attribute:: contentType
-  Required :py:class:`Parameter` type for the elements of the list.
+  
+    Required :py:class:`Parameter` type for the elements of the list.
+  
+  :Methods:
   
   """
   def __init__( self, contentType ):
