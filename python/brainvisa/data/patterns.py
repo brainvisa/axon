@@ -39,54 +39,68 @@ class DictPattern:
   returns a dictionary containing attributes values extracted from the input
   string.
 
+  Such patterns are used to define Brainvisa ontology rules which associate filenames and data types. 
+  
   The input pattern is a string that is splitted in three kinds of tokens:
-  - An attribute name enclosed in '<' and '>'
-  - A named regular expression enclosed in '{' and '}'
-  - A string literal which is everything not enclosed neither in braces nor 
-    with '<' and '>'.
+    
+    * An attribute name enclosed in ``<`` and ``>``
+    * A named regular expression enclosed in ``{`` and ``}``
+    * A string literal which is everything not enclosed neither in braces nor with ``<`` and ``>``.
 
-  When DictPattern.match( s, dict ) is called, all attribute names from the
+  When ``DictPattern.match( s, dict )`` is called, all attribute names from the
   pattern are replaced by the corresponding value in dict. If the dict does not
-  contain the attribute, the match fails. Then, the string is match against the
+  contain the attribute, the match fails. Then, the string is matched against the
   pattern. If the pattern contains named regular expressions, the values
   corresponding to each expression is put in the resulting dictionary. If the
-  match succeed, a dictionary (possibly empty) is returned. Otherwise, None is
+  match succeed, a dictionary (possibly empty) is returned. Otherwise, ``None`` is
   returned.
   
-  Match examples:
+  In the string literal of the pattern, special characters can be found:
+    
+    * ``*`` matches any string and the matched value is associated to a ``filename_variable`` key in the results dictionary.
+    * ``#`` matches any number and the matches value is associated to a ``name_serie`` key in the results dictionary.
   
-   p = DictPattern( '<subject>_t1' )
-   p.match( 's_t1', { 'subject': 's' } ) == {}
-   p.match( 's_t1', { 'subject': 'x' } ) == None
-   p.match( 's_t2', { 'subject': 's' } ) == None
-
-   p = DictPattern( '{subject}_t1' )
-   p.match( 's_t1', { 'subject': 's' } ) == {'subject': 's'}
-   p.match( 'tutu_t1', { 'subject': 's' } ) == {'subject': 'tutu'}
-   p.match( 's_t2', { 'subject': 's' } ) == None
+  :Match examples:
+  
+  ::
+  
+    p = DictPattern( '<subject>_t1' )
+    p.match( 's_t1', { 'subject': 's' } ) == {}
+    p.match( 's_t1', { 'subject': 'x' } ) == None
+    p.match( 's_t2', { 'subject': 's' } ) == None
+    
+    p = DictPattern( '{subject}_t1' )
+    p.match( 's_t1', { 'subject': 's' } ) == {'subject': 's'}
+    p.match( 'tutu_t1', { 'subject': 's' } ) == {'subject': 'tutu'}
+    p.match( 's_t2', { 'subject': 's' } ) == None
       
-   p = DictPattern( '*_#' )
-   p.match( 'toto_titi', {} ) == None
-   p.match( 'toto_42', {} ) == {'name_serie':'42', 'filename_variable':'toto'}
-
-   p = DictPattern( 'begin*_<subject>_*end' )
-   p.match( 'beginxxx_anatole_yyyend', { 'subject': 'anatole' } ) == None
-   p.match( 'beginxxx_anatole_xxxend', { 'subject': 'anatole' } ) ==
-     { 'filename_variable': 'xxx' }
-   p.match( 'beginxxx_anatole_xxxend', { 'subject': 'raymond' } ) == None
-
-   p = DictPattern( 'begin#_<subject>_#end': (
-   p.match( 'beginxxx_anatole_xxxend', { 'subject': 'anatole' } ) == None
-   p.match( 'begin123_anatole_456end', { 'subject': 'anatole' } ) == None
-   p.match( 'begin123_anatole_123end', { 'subject': 'anatole' } ) ==
-       { 'name_serie': '123' }
-   p.match( 'begin123_anatole_123end', { 'subject': 'raymond' } ) == None
+    p = DictPattern( '*_#' )
+    p.match( 'toto_titi', {} ) == None
+    p.match( 'toto_42', {} ) == {'name_serie':'42', 'filename_variable':'toto'}
+    
+    p = DictPattern( 'begin*_<subject>_*end' )
+    p.match( 'beginxxx_anatole_yyyend', { 'subject': 'anatole' } ) == None
+    p.match( 'beginxxx_anatole_xxxend', { 'subject': 'anatole' } ) ==
+      { 'filename_variable': 'xxx' }
+    p.match( 'beginxxx_anatole_xxxend', { 'subject': 'raymond' } ) == None
+    
+    p = DictPattern( 'begin#_<subject>_#end': (
+    p.match( 'beginxxx_anatole_xxxend', { 'subject': 'anatole' } ) == None
+    p.match( 'begin123_anatole_456end', { 'subject': 'anatole' } ) == None
+    p.match( 'begin123_anatole_123end', { 'subject': 'anatole' } ) ==
+        { 'name_serie': '123' }
+    p.match( 'begin123_anatole_123end', { 'subject': 'raymond' } ) == None
   
   
-  DictPattern.unmatch( matchResult, dict ) allow to build the string that would
-  produce matchResult if DictPattern.match( s, dict ) is succesfully used. The
-  unmatch always succeed if matchResult is not None, in this case, we have :
-    DictPattern.match( DictPattern.match( s, dict ), dict ) == s
+  :Unmatch example:
+  
+  >>> DictPattern.unmatch( matchResult, dict ) 
+  
+  This allows to build the string that would produce matchResult if ``DictPattern.match( s, dict )`` is succesfully used. 
+  The unmatch always succeed if matchResult is not None, in this case, we have :
+    
+  >>> DictPattern.match( DictPattern.match( s, dict ), dict ) == s
+  
   '''
   class Constant:
     pass
@@ -401,6 +415,13 @@ class DictPattern:
     self.__init__( state )
 
   def match( self, s, dict ):
+    """
+    Checks if the given string matches the pattern. 
+    
+    :param string s: the string which should match the pattern
+    :param dict: a dictionary containing the values to set to the attributes named in the pattern.
+    :returns: a dictionary containing the value of each named expression of the pattern found in the string, None if the string doesn't match the pattern.
+    """
     try:
       if self.matchPrefix:
         if isinstance( self.matchPrefix, list ):
@@ -427,6 +448,14 @@ class DictPattern:
       return None
   
   def unmatch( self, matchResult, dict ):
+    """
+    The opposite of :py:meth:`match` method:  the matching string is found from a match result and a dictionary of attributes values. 
+    
+    :param matchResult: dictionary which associates a value to each named expression of the pattern.
+    :param dict: dictionary which associates a value to each attribute name of the pattern.
+    :rtype: string
+    :returns: the rebuilt matching string.
+    """
     try:
       return ''.join( [i( dict, matchResult ) for i in self.unmatchList] )
     except KeyError, e:

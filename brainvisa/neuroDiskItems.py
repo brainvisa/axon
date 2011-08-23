@@ -31,15 +31,68 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 """
-This module contains classes defining data items that are called diskItems in Brainvisa.
+This module contains classes defining data items that are called **diskItems** in Brainvisa.
 These diskItems are associated to files that store data on a filesystem, 
 and attributes that are used to index the data in a database.
 
-The main class in this module is :py:class:`DiskItem`.
+The main class in this module is :py:class:`DiskItem`. This class is derived into two sub-classes :py:class:`File` for the diskitems that are stored as files and :py:class:`Directory` for the diskitems that represent directories.
 
-A diskItem has a type indicating what the data represents (a Volume, a T1 MRI, fMRI data...) and a format indicating the file format used to write the data in files.
+A diskItem has a **type** indicating what the data represents (a Volume, a T1 MRI, fMRI data...) and a **format** indicating the file format used to write the data in files.
 The class :py:class:`DiskItemType` represents data types.
 The class :py:class:`Format` represents file formats.
+
+Two general formats are defined in this module as global variables:
+  
+.. py:data:: directoryFormat
+  
+  This format matches any directory.
+  
+.. py:data:: fileFormat
+  
+  This format matches any file.
+  
+The available types and formats in Brainvisa ontology are defined in each toolbox in python files under the ``types`` directory. 
+They are loaded at Brainvisa startup using the function :py:func:`readTypes` and stored in global maps:
+  
+  .. py:data:: formats
+  
+    A global map which associates each format id to the matching object :py:class:`Format`.
+
+  .. py:data:: formatLists
+  
+    A global map which associates each list of formats id to the matching object :py:class:`NamedFormatList`.
+  
+  .. py:data:: diskItemTypes
+  
+    A global map which associates each type id to the matching object :py:class:`DiskItemType`
+    
+  .. py:data:: mef
+    
+    A global instance of the class :py:class:`TypesMEF` which is used to read the Brainvisa ontology types files.
+
+The following function are available to get a format or a type object from its id:
+  
+  * :py:func:`getFormat`
+  * :py:func:`getFormats`
+  * :py:func:`getAllFormats`
+  * :py:func:`getDiskItemType`
+  * :py:func:`getAllDiskItemTypes`
+  * :py:func:`isSameDiskItemType`
+
+This module also defines classes for temporary files and directories: :py:class:`TemporaryDiskItem`, :py:class:`TemporaryDirectory`. 
+The function :py:func:`getTemporary` enables to create a new temporary item.
+All temporary files and directories are written in Brainvisa global temporary directory which can be choosen in Brainvisa options. The diskitem corresponding to this global directory is stored in a global variable:
+
+.. py:data:: globalTmpDir
+
+  It is the default parent diskItem for temporary diskitems.
+  
+
+:Inheritance diagram:
+
+.. inheritance-diagram:: neuroDiskItems
+
+:Classes:
 
 """
 import types, string, re, sys, os, stat, threading, cPickle, operator, time, traceback
@@ -63,6 +116,13 @@ from brainvisa.multipleExecfile import MultipleExecfile
 
 #----------------------------------------------------------------------------
 def sameContent( a, b ):
+  """
+  Checks if *a* and *b* have the same content.
+  
+  If the two objects are lists, the function is called on each element of the list.
+  If the first object has a method named *sameContent*, it is called. 
+  Else, the result of a comparison with *==* operator is returned.
+  """
   result = 0
   if type( a ) is type( b ):
     if type( a ) in ( types.ListType, types.TupleType ):
@@ -82,6 +142,10 @@ def sameContent( a, b ):
 
 #----------------------------------------------------------------------------
 def modificationHashOrEmpty( f ):
+  """
+  Returns a tuple containing information about the file from :py:func:`os.lstat`.
+  Returns an empty tuple if an exception occurs. 
+  """
   try:
     s = os.lstat( f )
     return ( s.st_mode, s.st_uid, s.st_gid, s.st_size, s.st_mtime, s.st_ctime )
@@ -100,7 +164,7 @@ class DiskItem:
   Several methods enable to access the values of the attributes: :py:meth:`getHierarchy`, :py:meth:`getNonHierarchy`, :py:meth:`attributes`, :py:meth:`globalAttributes`, :py:meth:`hierarchyAttributes`, :py:meth:`localAttributes`, :py:meth:`minf`. 
   The attributes of a diskItem can also be requested using the dictionary notation ``d["attribute_name"]``, which calls :py:meth:`get` method. 
   
-  A diskItem can be identified by a unique identifier called uuid. This uuid is stored in minf attributes and it is an instance of :py:class:`soma.uuid.Uuid` class.
+  A diskItem can be identified by a unique identifier called *uuid*. This uuid is stored in minf attributes and it is an instance of :py:class:`soma.uuid.Uuid` class.
   
   Several methods enable to request the name of the files associated to the diskItem: :py:meth:`fullPath`, :py:meth:`fullName`,  :py:meth:`fullPaths`, :py:meth:`fullPathSerie`, :py:meth:`fullPathsSerie`.
   
@@ -113,7 +177,7 @@ class DiskItem:
   a parent diskItem, generally the diskItem associated to the directory that contains the data files of this diskItem.
   
   .. py:attribute:: type
-  Data type of the diskItem, Indicating the meaning of the data. It is an instance of :py:class:`DiskItemType`.
+  Data type of the diskItem, indicating the meaning of the data. It is an instance of :py:class:`DiskItemType`.
   
   .. py:attribute:: format
   DiskItem file format, indicated by the files extensions. It is an instance of :py:class:`Format`.
@@ -276,7 +340,7 @@ class DiskItem:
     """
     Copy all the attributes of the given diskItem in the current diskItem.
     
-    :param other: the py:class:`DiskItem` whose attributes will be copied.
+    :param other: the :py:class:`DiskItem` whose attributes will be copied.
     """
     self._localAttributes = other._localAttributes.copy()
     self._globalAttributes = other._globalAttributes.copy()
@@ -441,7 +505,7 @@ class DiskItem:
 
   def fullPathSerie( self, serie, index=0 ):
     """
-    This function can be used only on a diskItem that is a serie of data. For example a serie of 3D volumes, each volume being stored in two files .ima and .dim (GIS format). 
+    This function can be used only on a diskItem that is a serie of data. For example a serie of 3D volumes, each volume being stored in two files *.ima* and *.dim* (*GIS format*). 
     Returns the absolute file name of the index number file of the serie number item of the serie.
     
     :param int serie: index of the item in the serie.
@@ -456,7 +520,7 @@ class DiskItem:
 
   def fullPathsSerie( self, serie ):
     """
-    This function can be used only on a diskItem that is a serie of data. For example a serie of 3D volumes, each volume being stored in two files .ima and .dim (GIS format). 
+    This function can be used only on a diskItem that is a serie of data. For example a serie of 3D volumes, each volume being stored in two files *.ima* and *.dim* (*GIS format*). 
     Returns all the absolute file names of the serie number item of the serie.
     
     :param int serie: index of the item in the serie.
@@ -508,7 +572,7 @@ class DiskItem:
     it is searched for in data file header using :py:func:`aimsFileInfo` function.
     
     .. warning::
-      So this method takes more time to execute than :py:func:`getHierarchy` and :py:func:`getNonHierarchy`
+      This method takes more time to execute than :py:func:`getHierarchy` and :py:func:`getNonHierarchy`
       when the attribute is not found because it reads the header of the file on the filesystem.
     
     :param string attrName: name of the attribute
@@ -597,7 +661,7 @@ class DiskItem:
   
   def hierarchyAttributes( self ):
     """
-    Returns all hierarchy attributes in a dictionary.
+    Returns all hierarchy attributes as a dictionary.
     """
     result = {}
     self._mergeHierarchyAttributes( result )
@@ -606,7 +670,7 @@ class DiskItem:
   
   def has_key( self, attrName ):
     """
-    Returns True if the diskItem has an attribute with this name in one of its dictionary of attributes.
+    Returns True if the diskItem has an attribute with this name in one of its dictionaries of attributes.
     """
     r = self._minfAttributes.has_key( attrName )
     if r: return r
@@ -659,11 +723,11 @@ class DiskItem:
 
   def setMinf( self, attrName, value, saveMinf = True ):
     """
-    Add this attribute to the minf attributes of the diskItem.
+    Adds this attribute to the minf attributes of the diskItem.
     
     :param string attrName: name of the attribute
     :param value: value sets for the attribute
-    :param boolean saveMinf: if True the modified attributes are written to the diskItem minf file.
+    :param bool saveMinf: if True the modified attributes are written to the diskItem minf file.
     """
     self._otherAttributes.pop( attrName, None )
     self._minfAttributes[ attrName ] = value
@@ -683,10 +747,10 @@ class DiskItem:
   
   def updateMinf( self, dict, saveMinf = True ):
     """
-    Add new attributes to the minf attributes of the diskItem and possibly save the attributes in a minf file.
+    Adds new attributes to the minf attributes of the diskItem and possibly save the attributes in a minf file.
     
     :param dict: dictionary containing the attributes that will be added to this diskItem minf attributes.
-    :param boolean saveMinf: if True the minf attributes will be saved in the minf file of the diskItem.
+    :param bool saveMinf: if True the minf attributes will be saved in the minf file of the diskItem.
     """
     for attrName, value in dict.items():
       self._otherAttributes.pop( attrName, None )
@@ -742,7 +806,7 @@ class DiskItem:
     Adds the diskItem format attributes to its other attributes, 
     and the diskItem types attributes to its minf attributes.
     
-    :param boolean writeOnly: if False the minf file is read to update the dictionary of minf attributes.
+    :param bool writeOnly: if False the minf file is read to update the dictionary of minf attributes.
     :returns: current disktem
     """
     # Set format attributes
@@ -774,7 +838,7 @@ class DiskItem:
   
   def setPriority( self, newPriority, priorityOffset=0 ):
     """
-    Sets a value for the priority a attribute: ``newPriority + priorityOffset``.
+    Sets a value for the priority attribute: ``newPriority + priorityOffset``.
     """
     self._priority = newPriority
     if priorityOffset:
@@ -783,7 +847,7 @@ class DiskItem:
   
   def minfFileName( self ):
     """
-    Returns the name of the minf file associated to this diskItem. It is generally the name of the main file of the diskItem + the .minf extension.
+    Returns the name of the minf file associated to this diskItem. It is generally the name of the main file of the diskItem + the *.minf* extension.
     """
     if self.format is not None and ( isinstance( self.format, MinfFormat ) or self.format.name == 'Minf' ):
       return self.fullPath()
@@ -811,7 +875,7 @@ class DiskItem:
     Remove the attribute from minf attributes. 
     
     :param string attrName: name of the attribute to remove
-    :param boolean saveMinf: if True, the minf attributes are saved in the minf file.
+    :param bool saveMinf: if True, the minf attributes are saved in the minf file.
     """
     del self._minfAttributes[ attrName ]
     if saveMinf:
@@ -998,6 +1062,8 @@ class DiskItem:
     DiskItem. Two calls to modificationHash will return the same value if and 
     only if all files in the DiskItem have not changed. Note that the contents 
     of the files are not read, the modification hash rely only on os.stat.
+    
+    This method uses the funciton :py:func:`modificationHashOrEmpty` to create a hash code for each file.
     """
     files = self.fullPaths() + [ self.minfFileName() ]
     return tuple( [(f,) + tuple(modificationHashOrEmpty( f )) for f in files] )
@@ -1018,7 +1084,7 @@ class DiskItem:
 #----------------------------------------------------------------------------
 class File( DiskItem ):
   """
-  This class represents a diskItem that cannot contain other diskItem (not a directory).
+  This class represents a diskItem that cannot contain other diskItems (it is not a directory).
   """
   def __init__( self, name, parent ):
     DiskItem.__init__( self, name, parent )
@@ -1130,10 +1196,6 @@ class Directory( DiskItem ):
     return result
 
 
-
-
-
-
 #----------------------------------------------------------------------------
 def getId( name ):
   """
@@ -1141,10 +1203,19 @@ def getId( name ):
   """
   return  name.lower()
 
- 
-
 #----------------------------------------------------------------------------
 class BackwardCompatiblePattern( DictPattern ):
+  """
+  This class represents a file pattern. 
+  
+  The pattern is described with an expression like ``f|*.jpg``. 
+  The first character (before the ``|``) indicates if the pattern recognizes files (``f``) or directories (``d``).
+  This part is optional. The rest of the pattern is a simple regular expression that describes the file name. 
+  It can contain ``*`` character to replace any character and ``#`` character to replace numbers.
+  See the parent class :py:class:`brainvisa.data.patterns.DictPattern` for more details about the patterns.
+  
+  A method :py:meth:`match` enables to check if a :py:class:`DiskItem` file name matches this format pattern.
+  """
   _msgBadPattern = '<em><code>%s</code></em> is not a valid pattern'
 
   def __init__( self, pattern ):
@@ -1168,6 +1239,15 @@ class BackwardCompatiblePattern( DictPattern ):
     self.pattern = pattern
     
   def match( self, diskItem ):
+    """
+    Checks if the diskitem file name matches the pattern.
+    
+    :param diskItem: The :py:class:`DiskItem` whose file format is checked.
+    :returns: a dictionary containing the value found in the diskItem file name for each named expression of the pattern. 
+      The ``*`` character in the pattern is associated to a ``filename_variable`` key in the result dictionary.
+      The ``#`` character in the pattern is associated to a ``name_serie`` key in the result dictionary.
+      ``None`` is returned if the diskitem file name doesn't match the pattern.
+    """
     # Check File / Directory / both
     if self.fileType is not None:
       if diskItem.__class__ is not DiskItem and \
@@ -1178,6 +1258,15 @@ class BackwardCompatiblePattern( DictPattern ):
     return result      
 
   def unmatch( self, diskItem, matchResult, force=False ):
+    """
+    The opposite of :py:meth:`match` method:  the matching string is found from a match result and a dictionary of attributes values. 
+    
+    :param matchResult: dictionary which associates a value to each named expression of the pattern.
+    :param dict: dictionary which associates a value to each attribute name of the pattern.
+    :param bool force: If True default values are set in the match result for ``filename_variable`` and ``name_serie`` attributes.
+    :rtype: string
+    :returns: The rebuilt matching string.
+    """
     if matchResult is None: return None
     if force:
       matchResult.setdefault( 'filename_variable', '' )
@@ -1187,9 +1276,17 @@ class BackwardCompatiblePattern( DictPattern ):
 
 #----------------------------------------------------------------------------
 class BackwardCompatiblePatterns:
+  """
+  This class represents several file patterns. 
+  
+  Each pattern is a :py:class:`BackwardCompatiblePattern`.
+  """
   _typeMsg = '<em><code>%s</code></em> is not a valid pattern list'
    
   def __init__( self, patterns ):
+    """
+    :param patterns: a string, a list of string, or a list of :py:class:`BackwardCompatiblePattern`. They are used to create the internal list of :py:class:`BackwardCompatiblePattern`.
+    """
     # Build Pattern list in self.patterns
     if type( patterns ) is types.StringType:
       self.patterns = [ BackwardCompatiblePattern( patterns ) ]
@@ -1204,6 +1301,13 @@ class BackwardCompatiblePatterns:
       raise TypeError( HTMLMessage(_t_(self._typeMsg) % str( patterns )) )
             
   def match( self, diskItem, returnPosition=0 ):
+    """
+    Checks if the diskitem matches one of the patterns of this :py:class:`BackwardCompatiblePatterns`.
+    
+    :param diskItem: The diskitem which files names should match the patterns.
+    :param bool returnPosition: if True, the index of the matching pattern is returned as well as the match result.
+    :returns: the match result or a tuple (match result, index) if ``returnPosition`` is True.
+    """
     pos = 0
     for i in self.patterns:
       m = i.match( diskItem )
@@ -1214,10 +1318,16 @@ class BackwardCompatiblePatterns:
     return None
 
   def unmatch( self, diskItem, matchResult, force = 0 ):
+    """
+    Returns the list of file names generated from a diskitem and its match result.
+    """
     return [ p.unmatch( diskItem, matchResult, force )
              for p in self.patterns ]
 
   def fileOrDirectory( self ):
+    """
+    Checks if all the patterns match files or directories. If they all match the same type (file or directory), returns this type.
+    """
     if self.patterns:
       result = self.patterns[0].fileType
       for p in self.patterns[ 1: ]:
@@ -1237,7 +1347,8 @@ formatLists = {}
 #----------------------------------------------------------------------------
 class Format:
   """
-  This class represents a data file format. It is used to define new formats in brainvisa ontology types files.
+  This class represents a data file format. It is used to define the format attribute of :py:class:`DiskItem` objects.
+  It is also used to define new formats in brainvisa ontology files.
   
   :Attributes: 
   
@@ -1251,7 +1362,7 @@ class Format:
   Identifier associated to this format.
   
   .. py:attribute:: patterns
-  :py:class:`BackwardCompatiblePatterns` describing the files patterns associated to this format. Example: *f|*.ima, f|*.dim*.
+  :py:class:`BackwardCompatiblePatterns` describing the files patterns associated to this format. Example: ``f|*.ima, f|*.dim``.
   
   
   """
@@ -1263,8 +1374,8 @@ class Format:
     :param string formatName: name of the format. 
     :param patterns: string or :py:class:`BackwardCompatiblePatterns` describing the files patterns associated to this format.
     :param attributes: dictionary of attributes associated to this format. For example, an attribute *compressed = type_of_compression* is associated to the compressed files formats.
-    :param boolean exclusive: if True, a file should match only this pattern to match the format. Hardly ever used.
-    :param boolean ignoreExclusive: if True, this format will be ignored when exclusivity of a format is checked. Hardly ever used.
+    :param bool exclusive: if True, a file should match only this pattern to match the format. Hardly ever used.
+    :param bool ignoreExclusive: if True, this format will be ignored when exclusivity of a format is checked. Hardly ever used.
     """
     if type( formatName ) is not types.StringType:
       raise ValueError( HTMLMessage(_t_('<em><code>%s</code></em> is not a valid format name') % formatName) )
@@ -1296,9 +1407,9 @@ class Format:
     """
     Checks if the diskItem files match the format patterns.
     
-    :param item: the py:class:`DiskItem` whose format is checked.
-    :param boolean returnPosition: if True the position of the match is returned with the matched variables
-    :param boolean ignoreExclusive: if True, the exclusivity of the matched format will not be checked.
+    :param item: the :py:class:`DiskItem` whose format is checked.
+    :param bool returnPosition: if True the position of the match is returned with the matched variables
+    :param bool ignoreExclusive: if True, the exclusivity of the matched format will not be checked.
     :returns: a dictionary containing the matched variables of the patterns or a tuple containing this dictionary and the position of the match if returnPosition was True.
     """
     name = item.name
@@ -1409,9 +1520,16 @@ class MinfFormat( Format ):
 class FormatSeries( Format ):
   """
   This class represents the format of a serie of diskItems with the same format. For example, a serie of images in Analyse format.
+  Such an object can be created using the function :py:func:`changeToFormatSeries`.
   
-  .. py:attributes:: baseFormat
-  The format of each element of the serie.
+  :Attributes:
+  
+  .. py:attribute:: baseFormat
+  
+    The format of each element of the serie.
+  
+  :Methods:
+  
   """
   def __init__( self, baseFormat, formatName=None, attributes=None ):
     baseFormat = getFormat( baseFormat )
@@ -1434,15 +1552,27 @@ class FormatSeries( Format ):
     self._ignoreExclusive = baseFormat._ignoreExclusive
 
   def match( self, *args, **kwargs ):
+    """
+    Calls the :py:meth:`Format.match` method of the base format.
+    """
     return self.baseFormat.match( *args, **kwargs )
 
   def unmatch( self, *args, **kwargs ):
+    """
+    Calls the :py:meth:`Format.unmatch` method of the base format.
+    """
     return self.baseFormat.unmatch( *args, **kwargs )
 
   def formatedName( self, item, matchResult ):
+    """
+    Calls the :py:meth:`Format.formatedName` method of the base format.
+    """
     return self.baseFormat.formatedName( item, matchResult )
     
   def setFormat( self, item, ruleMatchingInfo=None ):
+    """
+    Applies this format to the diskitem.
+    """
     item.format = self
     if ruleMatchingInfo is not None:
       rule, matchRule = ruleMatchingInfo
@@ -1457,6 +1587,9 @@ class FormatSeries( Format ):
         #ns.append( matchRule.get( 'name_serie' ) )
 
   def group( self, groupedItem, matchedItem, position=0, matchRule=None ):
+    """
+    Groups files which are associated to the same diskitem.
+    """
     if isinstance( matchedItem, Directory ) and not isinstance( groupedItem, Directory ):
       # If a directory is grouped, the final DiskItem is a Directory
       tmp = groupedItem
@@ -1472,9 +1605,15 @@ class FormatSeries( Format ):
     return groupedItem
     
   def fileOrDirectory( self ):
+    """
+    Calls the :py:meth:`Format.fileOrDirectory` method of the base format.
+    """
     return self.baseFormat.fileOrDirectory()
 
   def postProcessing( self, item ):
+    """
+    Sorts and removes doubloons in the list of numbers in the ``name_serie`` attribute of the item.
+    """
     name_serie = item.get( 'name_serie' )
     if len( name_serie ) > 1:
       # Sort name_serie by numeric order
@@ -1491,6 +1630,9 @@ class FormatSeries( Format ):
       item._setLocal( 'name_serie', name_serie )
 
   def getPatterns( self ):
+    """
+    Calls the :py:meth:`Format.getPatterns` method of the base format.
+    """
     return self.baseFormat.patterns
   
 
@@ -1656,7 +1798,10 @@ diskItemTypes = {}
 #----------------------------------------------------------------------------
 class DiskItemType:
   """
-  This class represents a type of :py:class:`DiskItem`.
+  This class represents a data type. It is used to define the type attribute of :py:class:`DiskItem` objects.
+  
+  The types are defined hierarchically, that's why a type can have a parent type 
+  and a method :py:meth:`DiskItemType.isA` enables to request if a type is derived from another type.
   
   :Attributes: 
   
@@ -1782,11 +1927,18 @@ def isSameDiskItemType( base, ref ):
 #----------------------------------------------------------------------------
 class FileType( DiskItemType ):
   """
-  This class represents a type for a DiskItem associated to files. (a :py:class:`File`).
+  This class represents a type for a DiskItem associated to files (a :py:class:`File`).
+  It is used to define new data types in brainvisa ontology files.
   
-  It can stores file formats associated to this type.
+  It can store file formats associated to this type.
+  
   """
   def __init__( self, typeName, parent = None, formats = None, minfAttributes = None ):
+    """
+    :param string typeName: name of the type
+    :param formats: list of file formats associated to this type of data.
+    :param minfAttributes: dictionary containing attributes associated to this type.
+    """
     # Check formats
     if formats:
       self.formats = getFormats( formats )
@@ -1799,6 +1951,11 @@ class FileType( DiskItemType ):
     DiskItemType.__init__( self, typeName, parent, minfAttributes )
 
   def sameContent( self, other ):
+    """
+    Returns True if the two file types are instances of the same class and have the same list of formats and the same parent.
+    
+    The formats and parents are compared using the function :py:func:`sameContent`.
+    """
     return isinstance( other, FileType ) and \
            self.__class__ is  other.__class__ and \
            sameContent( self.formats, other.formats ) and \
@@ -1806,24 +1963,22 @@ class FileType( DiskItemType ):
 
 #----------------------------------------------------------------------------
 def expand_name_serie( text, number ):
+  """
+  Replaces ``#`` character in *text* by *number*.
+  """
   l = text.split( '#' )
   if len( l ) == 2:
     return l[0] + number + l[1]
   return text
- 
-
-
-
-
-
-
-
-
 
 #----------------------------------------------------------------------------
 class TemporaryDirectory( Directory ):
   """
   This class represents a temporary directory. 
+  
+  It will be deleted when Brainvisa closes.
+  
+  The deletion of temporary files and directories is managed by a :py:class:`brainvisa.data.temporary.TemporaryFileManager`.
   """
   def __init__( self, name, parent ):
     self._isTemporary = 1
@@ -1844,6 +1999,13 @@ class TemporaryDirectory( Directory ):
 
 #----------------------------------------------------------------------------
 class TemporaryDiskItem( File ):
+  """
+  This class represents a temporary diskitem.
+  
+  The associated files are automatically deleted when the corresponding object is no more used and so garbage collected.
+  
+  The deletion of temporary files and directories is managed by a :py:class:`brainvisa.data.temporary.TemporaryFileManager`.
+  """
   def __init__( self, name, parent ):
     File.__init__( self, name, parent )
     self._isTemporary = 1
@@ -1876,6 +2038,9 @@ class TemporaryDiskItem( File ):
               break
 
   def clear( self ):
+    """
+    Removes all files associated to this diskItem.
+    """
     for f in self.fullPaths():
       try:
         temporary.manager.removePath( f )
@@ -1891,6 +2056,18 @@ globalTmpDir = None
 
 #----------------------------------------------------------------------------
 def getTemporary( format, diskItemType = None, parent = None, name = None ):
+  """
+  Creates a new temporary diskitem. It will be automatically deleted when there is no more references on it or when Brainvisa closes.
+  
+  :param format: format of the diskitem. 
+    If the format correspond to a directory, a :py:class:`TemporaryDirectory` will be created, else a :py:class:`TemporaryDiskItem` will be created.
+  :param diskItemType: type of the diskItem. 
+  :param parent: parent diskitem: directory which contains the diskItem. 
+    By default it will be Brainvisa global temporary directory whose path can be choosen in the options.
+    The global temporary directory diskitem is defined in the global variable :py:data:`globalTmpDir`.
+  :param name: filename for the diskitem. By default, a new name is generated by the :py:class:`brainvisa.data.temporary.TemporaryFileManager`.
+  :returns: a :py:class:`TemporaryDirectory` or a :py:class:`TemporaryDiskItem`.
+  """
   global globalTmpDir
 
   format = getFormat( format )
@@ -1921,12 +2098,19 @@ _uuid_to_DiskItem = WeakValueDictionary()
 
 #----------------------------------------------------------------------------
 def getDataFromUuid( uuid ):
+  """
+  Gets a :py:class:`DiskItem` from its uuid.
+  """
   if not isinstance( uuid, Uuid ):
     uuid = Uuid( uuid )
   return _uuid_to_DiskItem.get( uuid )
 
 #----------------------------------------------------------------------------
 class HierarchyDirectoryType( FileType ):
+  """
+  This type represents a directory which represents data in Brainvisa ontology.
+  It is associated to the format :py:data:`directoryFormat`.
+  """
   def __init__( self, typeName, **kwargs ):
     FileType.__init__( self, typeName, None, directoryFormat, **kwargs )
   
@@ -1935,6 +2119,18 @@ typesLastModification = 0
 # mef is global to handle multiple call to readTypes since allready read
 # file types are stored in it to prevent multiple loads which cause troubles.
 class TypesMEF( MultipleExecfile ):
+  """
+  This class enables to read Brainvisa ontology files which contain the definition of formats and types.
+  
+  A global instance of this object :py:data:`mef` is used to load types and formats at Brainvisa startup.
+  
+  The Brainvisa types files will define new formats with :py:class:`Format`, new types with :py:class:`FileType`
+  and new format lists with :py:func:`createFormatList`. 
+  
+  With the :py:attr:`brainvisa.multipleExecfile.MultipleExecfile.localDict`, callback methods are associated to the functions that will be called in the types files:
+  :py:meth:`create_format`, :py:meth:`create_format_list`, :py:meth:`create_type`.
+  
+  """
   def __init__( self ):
     super( TypesMEF, self ).__init__()
     self.localDict[ 'Format' ] = self.create_format
@@ -1943,14 +2139,27 @@ class TypesMEF( MultipleExecfile ):
   
   
   def create_format( self, *args, **kwargs ):
+    """
+    This method is called when a new format is created in one of the executed files.
+    The *toolbox* and *module* attributes of the new :py:class:`Format` are set.
+    
+    :param args: The arguments will be passed to the constructor of :py:class:`Format`.
+    :returns: The new format.
+    """
     format = Format( *args, **kwargs )
     toolbox, module = self.currentToolbox()
     format.toolbox = toolbox
     format.module = module
     return format
   
-  
   def create_format_list( self, *args, **kwargs ):
+    """
+    This method is called when a new formats list is created in one of the executed files.
+    The *toolbox* and *module* attributes of the new :py:class:`NamedFormatList` are set.
+    
+    :param args: The arguments will be passed to the function :py:func:`createFormatList`.
+    :returns: The new formats list.
+    """
     format_list = createFormatList( *args, **kwargs )
     toolbox, module = self.currentToolbox()
     format_list.toolbox = toolbox
@@ -1958,6 +2167,13 @@ class TypesMEF( MultipleExecfile ):
     return format_list
   
   def create_type( self, *args, **kwargs ):
+    """
+    This method is called when a new type is created in one of the executed files.
+    The *toolbox* and *module* attributes of the new :py:class:`FileType` are set.
+    
+    :param args: The arguments will be passed to the constructor of :py:class:`FileType`.
+    :returns: The new type.
+    """
     type = FileType( *args, **kwargs )
     toolbox, module = self.currentToolbox()
     type.toolbox = toolbox
@@ -1966,6 +2182,10 @@ class TypesMEF( MultipleExecfile ):
   
   
   def currentToolbox( self ):
+    """
+    Finds the name of the toolbox and the module path of the last executed file.
+    Returns a tuple *(toolbox, module)*.
+    """
     file = self.localDict[ '__name__' ]
     toolbox = None
     module = None
@@ -1991,6 +2211,9 @@ class TypesMEF( MultipleExecfile ):
 mef = TypesMEF()
 mef.fileExtensions.append( '.py' )
 def readTypes():
+  """
+  This function loads types and formats by reading Brainvisa ontology types files.
+  """
   global typesLastModification
   global mef
   mef.includePath.update(neuroConfig.typesPath)
@@ -2022,6 +2245,9 @@ except:
 
 #----------------------------------------------------------------------------
 def aimsFileInfo( fileName ):
+  """
+  Reads the header of the file *fileName* and returns its attributes as a dictionary.
+  """
   from neuroProcesses import defaultContext
   from neuroProcessesGUI import mainThreadActions
   global _finder

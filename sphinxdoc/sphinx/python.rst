@@ -13,6 +13,7 @@ Modules organization
 - :py:mod:`brainvisa.workflow`: Conversion of a Process into a Workflow usable in :somaworkflow:`Soma-workflow <index.html>`.
 - :py:mod:`brainvisa.validation`: Definition of an exception that can be raised by processes validation functions.
 - :py:mod:`brainvisa.history`: Framework to manage history of processes.
+- :py:mod:`brainvisa.mutlipleExecfile`: A class to load several inter-dependent python files.
 
 brainvisa.configuration
 +++++++++++++++++++++++
@@ -85,15 +86,22 @@ brainvisa.workflow
 
 
 brainvisa.validation
-------------------
+--------------------
 
 .. automodule:: brainvisa.validation
   :members:
 
 brainvisa.history
-------------------
+-----------------
 
 .. automodule:: brainvisa.history
+  :members:
+  :show-inheritance:
+
+brainvisa.mutlipleExcecfile
+---------------------------
+
+.. automodule:: brainvisa.multipleExecfile
   :members:
   :show-inheritance:
 
