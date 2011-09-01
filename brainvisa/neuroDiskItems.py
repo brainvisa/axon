@@ -95,7 +95,7 @@ All temporary files and directories are written in Brainvisa global temporary di
 :Classes:
 
 """
-import types, string, re, sys, os, stat, threading, cPickle, operator, time, traceback
+import types, sys, os, stat, cPickle, operator, time, traceback
 from weakref import ref, WeakValueDictionary
 from UserList import UserList
 from threading import RLock
@@ -1391,9 +1391,10 @@ class Format:
     """
     if type( formatName ) is not types.StringType:
       raise ValueError( HTMLMessage(_t_('<em><code>%s</code></em> is not a valid format name') % formatName) )
-
-    tb=traceback.extract_stack(None, 2)
+    
+    tb=traceback.extract_stack(None, 3)
     self.fileName=tb[0][0]
+    
     self.name = formatName
     self.id = getId( self.name )
     # Check patterns
@@ -1554,7 +1555,7 @@ class FormatSeries( Format ):
     if attributes is None:
       attributes = baseFormat._formatAttributes
     
-    tb=traceback.extract_stack(None, 2)
+    tb=traceback.extract_stack(None, 3)
     self.fileName=tb[0][0]
     self.name = formatName
     self.id = getId( self.name )
@@ -1713,10 +1714,10 @@ class NamedFormatList( UserList ):
     
   """
   def __init__( self, name, data ):
+      tb=traceback.extract_stack(None, 3)
+      self.fileName=tb[0][0]
       self.name = name
       self.data = list(data)
-      tb=traceback.extract_stack(None, 2)
-      self.fileName=tb[0][0]
 
   
   def __str__( self ):
@@ -2156,13 +2157,15 @@ class TypesMEF( MultipleExecfile ):
     super( TypesMEF, self ).__init__()
     self.localDict[ 'Format' ] = self.create_format
     self.localDict[ 'createFormatList' ] = self.create_format_list
+    self.localDict[ 'changeToFormatSeries' ] = self.create_format_serie
     self.localDict[ 'FileType' ] = self.create_type
+    self.localDict[ 'HierarchyDirectoryType' ] = self.create_hie_dir_type
   
   
   def create_format( self, *args, **kwargs ):
     """
     This method is called when a new format is created in one of the executed files.
-    The *toolbox* and *module* attributes of the new :py:class:`Format` are set.
+    The *toolbox*, *module*  and fileName attributes of the new :py:class:`Format` are set.
     
     :param args: The arguments will be passed to the constructor of :py:class:`Format`.
     :returns: The new format.
@@ -2171,12 +2174,13 @@ class TypesMEF( MultipleExecfile ):
     toolbox, module = self.currentToolbox()
     format.toolbox = toolbox
     format.module = module
+    format.fileName=self.localDict["__name__"]
     return format
   
   def create_format_list( self, *args, **kwargs ):
     """
     This method is called when a new formats list is created in one of the executed files.
-    The *toolbox* and *module* attributes of the new :py:class:`NamedFormatList` are set.
+    The *toolbox*, *module*  and fileName attributes of the new :py:class:`NamedFormatList` are set.
     
     :param args: The arguments will be passed to the function :py:func:`createFormatList`.
     :returns: The new formats list.
@@ -2185,12 +2189,28 @@ class TypesMEF( MultipleExecfile ):
     toolbox, module = self.currentToolbox()
     format_list.toolbox = toolbox
     format_list.module = module
+    format_list.fileName=self.localDict["__name__"]
     return format_list
-  
+    
+  def create_format_serie( self, *args, **kwargs ):
+    """
+    This method is called when a new formats list is created in one of the executed files.
+    The *toolbox*, *module*  and fileName attributes of the new :py:class:`FormatSeries` are set.
+    
+    :param args: The arguments will be passed to the function :py:func:`changeToFormatSeries`.
+    :returns: The new format series.
+    """
+    format_serie = changeToFormatSeries( *args, **kwargs )
+    toolbox, module = self.currentToolbox()
+    format_serie.toolbox = toolbox
+    format_serie.module = module
+    format_serie.fileName=self.localDict["__name__"]
+    return format_serie
+
   def create_type( self, *args, **kwargs ):
     """
     This method is called when a new type is created in one of the executed files.
-    The *toolbox* and *module* attributes of the new :py:class:`FileType` are set.
+    The *toolbox*, *module*  and fileName attributes of the new :py:class:`FileType` are set.
     
     :param args: The arguments will be passed to the constructor of :py:class:`FileType`.
     :returns: The new type.
@@ -2199,8 +2219,23 @@ class TypesMEF( MultipleExecfile ):
     toolbox, module = self.currentToolbox()
     type.toolbox = toolbox
     type.module = module
+    type.fileName=self.localDict["__name__"]
     return type
   
+  def create_hie_dir_type( self, *args, **kwargs ):
+    """
+    This method is called when a new type is created in one of the executed files.
+    The *toolbox*, *module*  and fileName attributes of the new :py:class:`HierarchyDirectoryType` are set.
+    
+    :param args: The arguments will be passed to the constructor of :py:class:`HierarchyDirectoryType`.
+    :returns: The new type.
+    """
+    hdtype=HierarchyDirectoryType(*args, **kwargs)
+    toolbox, module = self.currentToolbox()
+    hdtype.toolbox = toolbox
+    hdtype.module = module
+    hdtype.fileName = self.localDict["__name__"]
+    return hdtype
   
   def currentToolbox( self ):
     """
