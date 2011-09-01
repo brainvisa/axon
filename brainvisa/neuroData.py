@@ -29,7 +29,44 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+"""
+This module contains classes used to define the signature of Brainvisa processes, 
+that is to say a list of typed parameters.
 
+The main class is :py:class:`Signature`. It contains a list of parameters names and types. 
+Each parameter is an instance of a sublcass of :py:class:`Parameter`:
+
+* :py:class:`String`
+* :py:class:`Number`: an integer or float number.
+* :py:class:`Integer`
+* :py:class:`Float`
+* :py:class:`Choice`: a choice between several constant values.
+* :py:class:`Boolean`
+* :py:class:`Point`, :py:class:`Point2D`, :py:class:`Point3D`: coordinates of a point.
+* :py:class:`ListOfVector`: a list of vectors of numbers.
+* :py:class:`Matrix`: a matrix of numbers.
+* :py:class:`ListOf`: a list of :py:class:`Parameter`.
+* :py:class:`brainvisa.data.readdiskitem.ReadDiskItem`: a :py:class:`neuroDiskItems.DiskItem` as an input parameter.
+* :py:class:`brainvisa.data.writediskitem.WriteDiskItem`: a :py:class:`neuroDiskItems.DiskItem` as an output parameter.
+
+**Example**
+
+>>> signature = Signature(
+>>>   'input', ReadDiskItem( "Volume 4D", [ 'GIS Image', 'VIDA image' ] ),
+>>>   'output', WriteDiskItem( 'Volume 4D', 'GIS Image' ),
+>>>   'threshold', Number(),
+>>>   'method', Choice( 'gt', 'ge', 'lt', 'le' )
+>>> )
+
+Matching graphical editors classes are defined in :py:mod:`qt4gui.neuroDataGUI`.
+
+:Inheritance diagram:
+  
+.. inheritance-diagram:: neuroData
+       
+:Classes:
+  
+"""
 import types, string, re, sys, os, stat, threading, cPickle, weakref, copy
 from UserDict import UserDict
 from UserList import UserList
@@ -40,6 +77,31 @@ import neuroConfig
 
 #----------------------------------------------------------------------------
 class Parameter( object ):
+  """
+  This class represents a type of parameter in a :py:class:`Signature`.
+  
+  :Attributes:
+  
+  .. py:attribute:: mandatory
+  
+  Boolean. Indicates if the parameter is mandatory, that is to say it must have a non null value.
+  Default is True.
+  
+  .. py:attribute:: userLevel
+  
+  Integer. Indicates the minimum userLevel needed to see this parameter. Default is 0.
+  
+  .. py:attribute:: linkParameterWithNonDefaultValue
+  
+  Boolean. Indicates if the value of the parameter can be changed by the activation of a link between parameters even if the parameter has no more a default value (it has been changed by the user). Default is False.
+  
+  .. py:attribute:: valueLinkedNotifier
+  
+  :py:class:`soma.notification.Notifier`. This notifier will notify its observers when a link to this parameter is activated.
+  
+  :Methods:
+  
+  """
   def __init__( self ):
     self.mandatory = 1
     self.linkParameterWithNonDefaultValue = 0
@@ -49,25 +111,48 @@ class Parameter( object ):
     self._parameterized = None
     
   def checkReadable( self, value ):
+    """
+    This is a virtual function (returns always True) that could be overriden in derived class. 
+    It should return True if the value given in parameter is *readable*.
+    """
     return 1
 
   def iterate( self, *args ):
+    """
+    Calls :py:meth:`findValue` on each value given in parameter. 
+    Returns the list of results.
+    """
     result = []
     for i in args: result.append( self.findValue( i ) )
     return result
   
   def typeInfo( self, translator = None ):
+    """
+    Returns a tuple containing ("Type", type_name). 
+    The type_name is the name of the class possibly translated with the give translator or Brainvisa default translator if None.
+    """
     if translator is None: translate = _t_
     else: translate = translator.translate
     return  ( ( translate( 'Type' ), translate( string.split( str( self.__class__.__name__ ), '.' )[ -1 ] ) ), )
 
   def editor( self, parent, name, context ):
+    """
+    Virtual function that can be overriden in derived class. The function should return an object that can be used to edit the value of the parameter.
+    This one raises an exception saying that no editor exist for this type.
+    """
     raise Exception( _t_('No editor implanted for type %s') % self.typeInfo()[0][ 1 ] )
   
   def listEditor( self, parent, name, context ):
+    """
+    Virtual function that can be overriden in derived class. The function should return an object that can be used to edit a list of values for the parameter.
+    This one raises an exception saying that no list editor exist for this type.
+    """
     raise Exception( _t_('No list editor implanted for type %s') % self.typeInfo()[0][ 1 ] )
 
   def defaultValue( self ):
+    """
+    Virtual function. Returns a default value for the parameter (here None).
+    """
     return None
   
   def __getstate__( self ):
@@ -80,6 +165,10 @@ class Parameter( object ):
     pass
   
   def toolTipText( self, parameterName, documentation ):
+    """
+    Returns the text of a tooltip (in HTML format) for this parameter. Can be displayed as information in a GUI.
+    The tooltip shows the name of the parameter, indicates if it is optional, and shows ``documentation`` as a description of the parameter.
+    """
     result = '<center>' + parameterName 
     if not self.mandatory: result += ' (' + _t_( 'optional' ) + ')'
     result += '</center><hr><b>' + _t_( 'Description' ) + ':</b><br>' + \
@@ -87,12 +176,15 @@ class Parameter( object ):
     return result
   
   def checkValue( self, name, value ):
-    '''This functions check if a value is valid for the parameter. If
-    the value is not valid it must raise an excpetion.'''
+    '''This functions check if the given value is valid for the parameter. 
+    If the value is not valid it raises an exception.'''
     if value is None and self.mandatory:
       raise Exception( HTMLMessage(_t_('Mandatory argument <em>%s</em> has not a valid value') % name) )
   
   def setNameAndParameterized( self, name, parameterized ):
+    """
+    Stores a name and an associated :py:class:`neuroProcesses.Parameterized` object in this parameter.
+    """
     self._name = name
     if parameterized is None:
       self._parameterized = None
@@ -100,11 +192,18 @@ class Parameter( object ):
       self._parameterized = weakref.ref( parameterized )
   
   def getParameterized( self ):
+    """
+    Returns the :py:class:`neuroProcesses.Parameterized` object associated to this parameter. 
+    Generally the Process that have this parameter in its signature.
+    """
     if self._parameterized is not None:
       return self._parameterized()
     return None
 
   def getName( self ):
+    """
+    Returns the name of the parameter.
+    """
     return self._name
 
   constructorEditor = None
@@ -112,21 +211,36 @@ class Parameter( object ):
 
 #----------------------------------------------------------------------------
 class String( Parameter ):
+  """
+  This class represents a string parameter.
+  """
 
   def findValue( self, value ):
+    """
+    Returns ``str(value)``.
+    """
     if value is None: return None
     return str( value )
   
   
 #----------------------------------------------------------------------------
 class Password( String ):
+  """
+  This class represents a string parameter that is used as a Password.
+  """
   pass
  
 
 #----------------------------------------------------------------------------
 class Number( Parameter ):
+  """
+  This class represents a parameter that is a number, integer of float.
+  """
 
   def findValue( self, value ):
+    """
+    If the value is not a python number, tries to convert it to a number with :py:func:`int`, :py:func:`long`, :py:func:`float`.
+    """
     if value is None: return None
     if type( value ) in ( types.FloatType, types.IntType, types.LongType ):
       return value
@@ -139,8 +253,14 @@ class Number( Parameter ):
 
 #----------------------------------------------------------------------------
 class Integer( Number ):
+  """
+  This class represents a parameter that is an integer.
+  """
 
   def findValue( self, value ):
+    """
+    If the value is not a python integer, tries to convert it to an integer with :py:func:`int`, :py:func:`long`.
+    """
     if value is None: return None
     if type( value ) in ( types.IntType, types.LongType ):
       return value
@@ -151,21 +271,47 @@ class Integer( Number ):
 
 #----------------------------------------------------------------------------
 class Float( Number ):
+  """
+  This class represents a parameter that is float number.
+  """
 
   def findValue( self, value ):
+    """
+    Tries to convert the value to a float with :py:func:`float`.
+    """
     if value is None: return None
     return float( value )
 
 
 #----------------------------------------------------------------------------
 class Choice( Parameter ):
+  """
+  A Choice parameter allows the user to choose a value among a set of possible values. 
+  This set is given as parameter to the constructor. Each value is associated to a label, which is the string shown in the graphical interface, possibly after a translation. That's why a choice item can be a couple (label, value). 
+  When a choice item is a simple value, the label will be the string representation of the value ( ``label=unicode(value)`` ).
+  
+  **Examples**
+  
+  >>> c = Choice( 1, 2, 3 )
+  >>> c = Choice( ( 'first', 1 ), ( 'second', 2 ), ( 'third', 3 ) )
+            
+  """
   def __init__( self, *args ):
+    """
+    
+    :param list args: list of possible value, each value can be a string or a tuple. 
+    """
     Parameter.__init__( self )
     self._warnChoices = {}
     self.values = []
     self.setChoices( *args )
     
   def setChoices( self, *args ):
+    """
+    Sets the list of possible values. 
+    
+    :param list args: list of possible value, each value can be a string or a tuple. 
+    """
     if not args: args = [ ( '', None) ]
     values = []
     for p in args:
@@ -179,15 +325,29 @@ class Choice( Parameter ):
         f()
   
   def warnChoices( self, function ):
+    """
+    Stores a callback function that will be called if the list of choices changes.
+    
+    :param function: the callback function
+    """
     self._warnChoices[ function ] = None
   
   def unwarnChoices( self, function ):
+    """
+    Removes the function from the callback functions associated to the list of choices modification.
+    
+    :param function: the callback function
+    """
     try:
       del self._warnChoices[ function ]
     except KeyError: # try to del a callback that is not longer registred
       pass
   
   def findValue( self, value ):
+    """
+    Finds a value in the list of choices that matches the one given in parameter.
+    Raises :py:class:`exceptions.KeyError` if not found.
+    """
     if value is None: return None
     i = self.findIndex( value )
     if i >= 0:
@@ -204,6 +364,13 @@ class Choice( Parameter ):
     raise KeyError( HTMLMessage(_t_('<em>%s</em> is not a valid choice') % unicode(value)) )
     
   def findIndex( self, value ):
+    """
+    Finds the index of a value in the list of possible choices. 
+    
+    :param value: could be the label or the associated value of the choice
+    :rtype: integer
+    :returns: the index of the value if found, else -1.
+    """
     i = 0
     for n, v in self.values:
       if value == v or str( value ) == n:
@@ -212,6 +379,9 @@ class Choice( Parameter ):
     return -1
 
   def defaultValue( self ):
+    """
+    The default value for a choice parameter is the first of the list of choices or None if the list of choices is empty.
+    """
     if self.values:
       return self.values[ 0 ][ 1 ]
     else:
@@ -226,10 +396,16 @@ class Choice( Parameter ):
 
 #----------------------------------------------------------------------------
 class OpenChoice( Choice ):
+  """
+  An OpenChoice enables to choose a value in the list of choice or a new value that is not in the list.
+  """
   def __init__( self, *args ):
     Choice.__init__( self, *args )
 
   def findValue( self, value ):
+    """
+    If the value is not in the list of choices, returns ``str(value)``.
+    """
     if value is None: return None
     i = self.findIndex( value )
     if i >= 0:
@@ -240,22 +416,41 @@ class OpenChoice( Choice ):
 
 #----------------------------------------------------------------------------
 class Boolean( Choice ):
+  """
+  A choice between 2 values: True or False.
+  """
   def __init__( self ):
     Choice.__init__( self, ( 'True', True ), ( 'False', False ) )
 
 #-------------------------------------------------------------------------------
 class Point( Parameter ):
+  """
+  This parameter type represents the coordinates of a point.
+  """
   def __init__( self, dimension = 1 ):
+    """
+    :param int dimension: dimension of the space in which the coordinates are given.
+    """
     Parameter.__init__( self )
 #    self.linkParameterWithNonDefaultValue = 1
     self.dimension = dimension
     self._Link = None
 
   def findValue( self, value ):
+    """
+    Checks that the value is a list and returns a list with each valus converted to a float value.
+    """
     if isinstance( value, list ):
       return map( float, value )
 
   def addLink( self, sourceParameterized, sourceParameter ):
+    """
+    Associates a specific link function between the source parameter and this parameter.
+    When the source parameter changes, its value is stored in this object.
+    
+    :param sourceParameterized: :py:class:`neuroProcesses.Parameterized` object that contains the parameters in its signature
+    :param sourceParameter: :py:class:`Parameter` object that is the source of the link
+    """
     sourceParameterized.addLink( None, sourceParameter, self._setLink )
 
   def _setLink( self, value ):
@@ -263,22 +458,50 @@ class Point( Parameter ):
 
 #-------------------------------------------------------------------------------
 class Point2D( Point ):
+  """
+  :py:class:`Point` in a two dimensions space.
+  """
   def __init__( self, dimension = 2 ):
     Point.__init__( self, dimension )
 
 #-------------------------------------------------------------------------------
 class Point3D( Point ):
+  """
+  :py:class:`Point` in a three dimensions space.
+  """
   def __init__( self, dimension = 3 ):
     Point.__init__( self, dimension )
 
   # We only keep the following method to have back compatibility with old
   # codes
   def add3DLink( self, sourceParameterized, sourceParameter ):
+    """
+    Deprecated. Use :py:meth:`Point.addLink` instead.
+    """
     Point.addLink( self, sourceParameterized, sourceParameter )  
 
 #----------------------------------------------------------------------------
 class MatrixValue( UserList ):
+  """
+  This object represents a matrix. 
+  
+  :Attributes:
+  
+  .. py:attribute:: data (list)
+  
+    Content of the matrix: a list of lines, each line is a list of number.
+  
+  .. py:attribute:: size (tuple)
+  
+    Dimension of the matrix (nb lines, nb columns)
+  
+  """
   def __init__( self, value, requiredLength=None, requiredWidth=None ):
+    """
+    :param list value: content of the matrix: a list of lines, each line is a list of value. Each value should be a number of a string that can be converted to a number. 
+    :param int requiredLength: required number of lines of the matrix. An exception is raised if this condition is not met.
+    :param int requiredWidth: required number of columns of the matrix. An exception is raised if this condition is not met.
+    """
     self.data = []
     if value is None:
       self.size = ( 0, 0 )
@@ -302,7 +525,26 @@ class MatrixValue( UserList ):
 
 #----------------------------------------------------------------------------
 class ListOfVectorValue( UserList ):
+  """
+  This object represents a list of vectors.
+  
+  :Attributes:
+  
+  .. py:attribute:: data
+  
+    The content of the list of vectors: a list of vectors, each vector is a list of number. The vectors can have different sizes.
+  
+  .. py:attribute:: size
+  
+    The number of vectors in the list.
+  
+  """
   def __init__( self, value, requiredLength=None ):
+    """
+    
+    :param list value: the content of the list of vector: a list of vector, each vector is a list of value. Each value should be number or a string that can be converted to a number.
+    :param int requiredLength: required number of vectors in the list. An exception is raised if this condition is not met.
+    """
     self.data = []
     if value is not None:
       length = len( value )
@@ -316,36 +558,73 @@ class ListOfVectorValue( UserList ):
 
 #----------------------------------------------------------------------------
 class ListOfVector( Parameter ):
+  """
+  This parameter expects a list of vectors value.
+  """
   def __init__( self, length=None ):
+    """
+    :param int length: number of vectors.
+    """
     Parameter.__init__( self )
     self.length =length
   
   def findValue( self, value ):
+    """
+    Returns a :py:class:`ListOfVectorValue` created from the given value, checking that the required length is respected.
+    """
     if value is None: return None
     return ListOfVectorValue( value, self.length )
 
 
 #----------------------------------------------------------------------------
 class Matrix( Parameter ):
+  """
+  This parameter expects a matrix value.
+  """
   def __init__( self, length=None, width=None ):
+    """
+    :param int length: required number of lines of the matrix
+    :param int width: required number of columns of the matrix.
+    """
     Parameter.__init__( self )
     self.length =length
     self.width = width
   
   def findValue( self, value ):
+    """
+    Returns a :py:class:`MatrixValue` created from the given value, checking that the required dimensions are respected.
+    """
     if not value: return None
     return MatrixValue( value, self.length, self.width )
 
   
 #----------------------------------------------------------------------------
 class ListOf( Parameter ):
+  """
+  This parameter represents a list of elements of the same type.
+  
+  :Attributes:
+  
+  .. py:attribute:: contentType
+  
+    Required :py:class:`Parameter` type for the elements of the list.
+  
+  :Methods:
+  
+  """
   def __init__( self, contentType ):
+    """
+    :param contentType: type of the elements of the list.
+    """
     Parameter.__init__( self )
     self.contentType = contentType
 
   def checkValue( self, name, value ):
-    '''This functions check if a value is valid for the parameter. If
-    the value is not valid it must raise an excpetion.'''
+    '''
+    Checks if the given value is valid for this parameter. 
+    The value should be a list or a tuple and each element should match the content type of the parameter.
+    An exception is raised if these conditions are not met.
+    '''
     Parameter.checkValue( self, name, value )
     
     if ( not value is None ) and ( type( value ) in ( types.ListType, types.TupleType ) ):
@@ -353,6 +632,12 @@ class ListOf( Parameter ):
         self.contentType.checkValue( name, listvalue )
 
   def findValue( self, value ):
+    """
+    Returns a suitable value for this parameter from the given value. 
+    If the value is None, ``[]`` is returned. 
+    It it is a list, a new list with each value checked and possibly converted to the appropriate type is returned.
+    If it is not a list (only one element), a list containing this element possibly converted to the appropriate type is returned.
+    """
     if value is None:
       return []
     elif type( value ) in ( types.ListType, types.TupleType ):
@@ -361,6 +646,9 @@ class ListOf( Parameter ):
       return [ self.contentType.findValue( value ) ]
 
   def editor( self, parent, name, context ):
+    """
+    Returns the list editor of the content type parameter.
+    """
     # report visibility params to contentType
     if hasattr( self, 'databaseUserLevel' ):
       self.contentType.databaseUserLevel = self.databaseUserLevel
@@ -372,9 +660,19 @@ class ListOf( Parameter ):
 #----------------------------------------------------------------------------
 class Signature( UserDict ):
   """
-  A list of parameters with the name and the type of each paraeter.
+  A list of parameters with the name and the type of each parameter.
+  
+  This object can be used as a dictionary whose keys are the name of the parameters 
+  and the values are the types of the parameters.
+  But unlike a python dictionary, the keys are **ordered** according their insertion in the signature object.
   """
   def __init__( self, *params ):
+    """
+    The constructor expects a list formatted as follow:
+    parameter1_name (string), parameter1_type (:py:class:`Parameter`), ...
+    
+    Each couple parameter_name, parameter_type defines a parameter. The parameter name is a string which must also be a Python variable name, so it can contain only letters (uppercase or lowercase), digits or underscore character. Moreover some Python reserved word are forbidden (and, assert, break, class, continue, def, del, elif, else, except, exec, finally, for, from, global, if, import, in, print, is, lambda, not ,or , pass, raise, return, try, why). The parameter type is an instance of :py:class:`Parameter` class and indicates the supported value type for this parameter. 
+    """
     self.sortedKeys = []
     self.data = {}
     i = 0
@@ -385,12 +683,21 @@ class Signature( UserDict ):
       i += 2
   
   def keys( self ):
+    """
+    Returns the list of parameters names.
+    """
     return self.sortedKeys
   
   def items( self ):
+    """
+    Returns a list of tuple (parameter_name, parameter_type) for each parameter.
+    """
     return [(x, self.data[x]) for x in self.sortedKeys]
 
   def values( self ):
+    """
+    Returns the list of parameters types.
+    """
     return [self.data[x] for x in self.sortedKeys]
 
   def __getstate__( self ):
@@ -411,6 +718,9 @@ class Signature( UserDict ):
     self.data[k] = value
 
   def shallowCopy(self):
+    """
+    Returns a shallow copy of the current signature. Only the parameters names are duplicated, the list of parameters types is shared.
+    """
     import copy
     new = copy.copy(self)
     new.sortedKeys = copy.copy(self.sortedKeys)

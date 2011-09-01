@@ -29,10 +29,38 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+"""
+This module defines the class :py:class:`MultipleExecfile` that is used to read Brainvisa ontology files.
+"""
 import sys, os
 from traceback      import format_exc
 
 class MultipleExecfile( object ):
+  """
+  This object enables to execute several python files that can have dependencies between us.
+  One file can include another to indicate that it needs something defined in this other file.
+  
+  :Attributes:
+  
+  .. py:attribute:: fileExtensions
+    
+    list of string indicating the possible file extensions for the files that can be executed via this object.
+    
+  .. py:attribute:: includePath
+  
+    Set of paths where the files to execute are searched.
+    
+  .. py:attribute:: globalDict
+  
+    Global dictionary that will be used to execute the files.
+  
+  .. py:attribute:: localDict
+  
+    Local dictionary that will be used to execute the files.
+    
+  :Methods:
+  
+  """
   def __init__( self, localDict=None, globalDict=None ):
     if localDict is None:
       localDict = {}
@@ -49,6 +77,13 @@ class MultipleExecfile( object ):
     self._includeStack = []
     
   def findFile( self, localFileName ):
+    """
+    Finds the file in :py:attr:`includePath` trying to append the :py:attr:`fileExtensions` to its name.
+    
+    :param string localFileName: name of the searched file, possibly wihtout extension, relative to the include path.
+    :rtype: string
+    :returns: absolute path to the found file, else None.
+    """
     result = None
     if self._includeStack:
       path = [ os.path.dirname( self._includeStack[ -1 ] ) ] + \
@@ -66,6 +101,15 @@ class MultipleExecfile( object ):
     return result
   
   def execute( self, *args, **kwargs ):
+    """
+    Executes the files listed in *args* if they are found in the :py:attr:`includePath` 
+    passing :py:attr:`globalDict` and :py:attr:`localDict` as global and local namespaces.
+    
+    *kwargs* may contain a parameter *continue_on_error*. If it is True, the execution won't be stopped by the first exception, 
+    the exceptions will be stored in a list and returned at the end of the method.
+    
+    :returns: The list of exception that occured during files execution.
+    """
     exc = []
     for f in args:
       file = None
@@ -120,4 +164,7 @@ class MultipleExecfile( object ):
 
 
   def executedFiles( self ):
+    """
+    Returns the list of executed files.
+    """
     return self._executedFiles.iterkeys()

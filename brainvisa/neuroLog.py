@@ -471,7 +471,7 @@ def newLogFile( fileName, file=None ):
 #------------------------------------------------------------------------------
 class LogFileReader:
   """
-  This objects enables to read :py:class:`LogFile` :py:class:`Items <Item>` from a filename.
+  This objects enables to read :py:class:`LogFile` :py:class:`Item` from a filename.
   """
   def __init__( self, source ):
     self._iterator = iterateMinf( source )
@@ -493,7 +493,7 @@ class LogFileReader:
   
   def read( self ):
     """
-    Returns the list of all :py:class:`Item`s in the current file.
+    Returns the list of all :py:class:`Item` in the current file.
     """
     return list( self._iterator )
 
@@ -514,7 +514,7 @@ def expandedCopy( source, destFileName, destFile=None ):
 #------------------------------------------------------------------------------
 def expandedReader( source ):
   """
-  Generator on the :py:class:`Item`s of the source file. Each item is expanded, 
+  Generator on the :py:class:`Item` of the source file. Each item is expanded, 
   that is to say each file link that they contains is also read.
   """
   reader = LogFileReader( source )

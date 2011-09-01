@@ -154,7 +154,7 @@ After loading, Brainvisa processes are stored in an object :py:class:`ProcessTre
 .. autofunction:: addProcessInfo
 .. autofunction:: readProcess
 .. autofunction:: readProcesses
-.. autofunction:: updatedProcessTree
+.. autofunction:: updatedMainProcessTree
 .. autofunction:: allProcessesTree
 .. autofunction:: updateProcesses
 .. autofunction:: mainThread
@@ -495,10 +495,12 @@ class Parameterized( object ):
   :Attributes:
   
   .. py:attribute:: signature
-  The signature is a :py:class:`neuroData.Signature`. It contains the list of parameters accepted by the object and their types. The possible types are described in :py:mod:`neuroData`.
+  
+    The signature is a :py:class:`neuroData.Signature`. It contains the list of parameters accepted by the object and their types. The possible types are described in :py:mod:`neuroData`.
   
   .. py:attribute:: signatureChangeNotifier
-  This variable is a :py:class:`soma.notification.Notifier`. It calls its notify function when the signature of the :py:class:`Parameterized` object changes.
+  
+    This variable is a :py:class:`soma.notification.Notifier`. It calls its notify function when the signature of the :py:class:`Parameterized` object changes.
   
   :Methods:
   
@@ -899,14 +901,15 @@ class Process( Parameterized ):
   :Attributes:
   
   .. py:attribute:: signature
-  The signature is a :py:class:`neuroData.Signature`. It contains the list of parameters accepted by the object and their types. The possible types are described in :py:mod:`neuroData`.
+  
+    The signature is a :py:class:`neuroData.Signature`. It contains the list of parameters accepted by the object and their types. The possible types are described in :py:mod:`neuroData`.
 
   .. py:attribute:: category (string)
-  The processes are organized into categories. Generally, the category is the name of the directory where the process file is located.
+    The processes are organized into categories. Generally, the category is the name of the directory where the process file is located.
   
   .. py:attribute:: userLevel (integer)
-  The process is available in Brainvisa interface if its userLevel is lower or equal than the userLevel selected in Brainvisa options.
-  0 : Basic, 1: Advanced, 2: Expert.
+    The process is available in Brainvisa interface if its userLevel is lower or equal than the userLevel selected in Brainvisa options.
+    0 : Basic, 1: Advanced, 2: Expert.
   
   :Methods:
   
@@ -926,7 +929,7 @@ class Process( Parameterized ):
   
   .. automethod:: _iterate
   .. automethod:: _copy
-  .. 
+ 
   """
   signature = Signature()
   category = 'BrainVISA'
@@ -967,7 +970,7 @@ class Process( Parameterized ):
     Returns a list of copies of the current process with different parameters values. 
     
     :param kwargs: dictionary containing a list of values for each parameter name. 
-    The first value is for the first process of the iteration and so on...
+      The first value is for the first process of the iteration and so on...
     """
     # Find iteration size
     requiredLength = 0
@@ -3014,9 +3017,9 @@ class ExecutionContext:
     considered done 100% for its parent.
     
     :param childrencount: it is the number of children that the process will have, and is
-    not the same as the own count of the process in itself, which is in
-    addition to children (and independent), and specified when using the
-    progress() method.
+      not the same as the own count of the process in itself, which is in
+      addition to children (and independent), and specified when using the
+      progress() method.
     '''
     pinfo, process = self._findProgressInfo( process )
     if pinfo is None:
@@ -3221,38 +3224,49 @@ class ProcessInfo:
   This object stores information about a process. Such objects are created at BrainVISA startup when the processes are loaded.
   
   .. py:attribute:: id
-  Id of the process. It is the name of the file without extension in lowercase.
+  
+    Id of the process. It is the name of the file without extension in lowercase.
   
   .. py:attribute:: name
-  Name of the process as it is displayed in the GUI.
+  
+    Name of the process as it is displayed in the GUI.
   
   .. py:attribute:: signature
-  Process excepted parameters.
+    
+    Process excepted parameters.
   
   .. py:attribute:: userLevel
-  User level needed to see the process.
+  
+    User level needed to see the process.
   
   .. py:attribute:: category
-  Process category path: <toolbox>/<category1>/<category2>/...
+    
+    Process category path: <toolbox>/<category1>/<category2>/...
   
   .. py:attribute:: fileName
-  Path to the file containing the source code of the process.
+  
+    Path to the file containing the source code of the process.
   
   .. py:attribute:: roles
-  Tuple containing the specific roles of the process: viewer, converter, editor, importer.
+  
+    Tuple containing the specific roles of the process: viewer, converter, editor, importer.
   
   .. py:attribute:: valid
-  False if the validation method of the process fails - default True.
+  
+    False if the validation method of the process fails - default True.
   
   .. py:attribute:: procdoc
-  The content of the .procdoc file associated to this process in a dictionary. It represents the documentation of the process.
+  
+    The content of the .procdoc file associated to this process in a dictionary. It represents the documentation of the process.
   
   .. py:attribute:: toolbox
-  The id of the toolbox containing the process.
+  
+    The id of the toolbox containing the process.
   
   .. py:attribute:: module
-  Module path to the source of the process related to the toolbox directory. 
-  <processes>.<category1>...<process>
+  
+    Module path to the source of the process related to the toolbox directory. 
+    <processes>.<category1>...<process>
   """
   def __init__( self, id, name, signature, userLevel, category, fileName, roles, toolbox, module=None ):
     self.id = id
@@ -3779,31 +3793,40 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
     All the elements defined in the file are added to the class. 
     
     .. py:attribute:: name 
-    Name of the process. If it is not defined in the process file, it is the base name of the file without extension.
+    
+      Name of the process. If it is not defined in the process file, it is the base name of the file without extension.
      
     .. py:attribute:: category
-    The category of the process. If it is not given in parameter, it is the name of the directory containing the process file.
+    
+      The category of the process. If it is not given in parameter, it is the name of the directory containing the process file.
     
     .. py:attribute:: dataDirectory
-    The data directory of the process is a directory near the process file with the same name and the extension .data. It is optional.
+      
+      The data directory of the process is a directory near the process file with the same name and the extension .data. It is optional.
     
     .. py::attribute:: toolbox
-    Name of the toolbox containing the process.
+      
+      Name of the toolbox containing the process.
     
     .. py:attribute:: processReloadNotifier
-    A :py:class:`soma.notification.Notifier` that will notify its observers when the process is reload.
+      
+      A :py:class:`soma.notification.Notifier` that will notify its observers when the process is reload.
     
     .. py:attribute:: signature
-    The parameters excepted by the process.
+      
+      The parameters excepted by the process.
     
     .. py:attribute:: userLevel
-    Minimum userLevel needed to see the process.
+      
+      Minimum userLevel needed to see the process.
     
-    .. py:attributes:: roles
-    Roles of the process: viewer, converter, editor, impoter. 
+    .. py:attribute:: roles
+    
+      Roles of the process: viewer, converter, editor, impoter. 
     
     .. py:method:: execution(self, context)
-    Execution function.
+    
+      Execution function.
     
   
   """
@@ -4354,23 +4377,26 @@ class ProcessTrees(ObservableAttributes, ObservableSortedDictionary):
   Model for the list of process trees in brainvisa. A process tree is an instance of the class :py:class:`ProcessTree`.
   It is a dictionary which maps each tree with its id.
   It contains several process trees :
-    - default process tree : all processes in brainvisa/processes (that are not in a toolbox). Not modifiable by user.
-    - toolboxes : processes grouped by theme. Not modifiable by user.
-    - user process trees (personal bookmarks): lists created by the user and saved in a minf file.
+  
+  * default process tree : all processes in brainvisa/processes (that are not in a toolbox). Not modifiable by user.
+  * toolboxes : processes grouped by theme. Not modifiable by user.
+  * user process trees (personal bookmarks): lists created by the user and saved in a minf file.
+  
   A tree can be set as default. It becomes the current tree at Brainvisa start.
   
   .. py:attribute:: name 
   
-  Name of the object.
+    Name of the object.
   
   .. py:attribute:: userProcessTreeMinfFile
   
-  Path to the file which stores the process trees created by the user as bookmarks. 
-  Default filename is in brainvisa home directory and is called `userProcessTrees.minf`.
+    Path to the file which stores the process trees created by the user as bookmarks. 
+    Default filename is in brainvisa home directory and is called `userProcessTrees.minf`.
   
   .. py:attribute:: selectedTree
   
-  :py:class:`ProcessTree` that is the current tree when Brainvisa starts.
+    :py:class:`ProcessTree` that is the current tree when Brainvisa starts.
+    
   """
 
   def __init__(self, name=None):

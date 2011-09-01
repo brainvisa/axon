@@ -155,8 +155,8 @@ def logException( beforeError='', afterError='', exceptionInfo=None,
   :param string afterError: Message that will be displayed after the text of the exception.
   :param tuple exceptionInfo: tuple (type, value, traceback) describing the exception. If None, :py:func:`sys.exc_info` is used to get the exception.
   :param context: :py:class:`neuroProcesses.ExecutionContext` that can be used to store the message at the right place in the log file. 
-  Indeed, the current log could be the log of a process execution. 
-  If None, the default context is used.
+    Indeed, the current log could be the log of a process execution. 
+    If None, the default context is used.
   :rtype: tuple
   :returns: A short HTML message and a detailed version of the message.
   """
@@ -182,7 +182,7 @@ def showException( beforeError='', afterError='', parent = None,
   :param string afterError: Message that will be displayed after the text of the exception.
   :param parent: A parent widget for the exception widget. Optional.
   :param boolean gui: If True, the graphical interface is used to display the exception. Else, it is displayed in the console.
-  If None, it is displayed with the graphical interface if Brainvisa is in graphical mode.
+    If None, it is displayed with the graphical interface if Brainvisa is in graphical mode.
   :param tuple exceptionInfo: tuple (type, value, traceback) describing the exception. If None, :py:func:`sys.exc_info` is used to get the exception.
   """
   if gui is None:
@@ -221,7 +221,7 @@ def showWarning( message, parent = None, gui=None):
   :param string message: Warning message that will be displayed.
   :param parent: A parent widget for the exception widget. Optional.
   :param boolean gui: If True, the graphical interface is used to display the exception. Else, it is displayed in the console.
-  If None, it is displayed with the graphical interface if Brainvisa is in graphical mode.
+    If None, it is displayed with the graphical interface if Brainvisa is in graphical mode.
   """
   if gui is None:
     gui = neuroConfig.gui

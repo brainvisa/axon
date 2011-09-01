@@ -29,7 +29,33 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+"""
+This module contains classes defining Brainvisa **ontology rules** to manage a database directory. 
 
+In Brainvisa ontology, adding to the types and formats definition, it is possible to define rules associating a data type and a path in a location and filename in a database directory. The classes in this module enable to define such rules. 
+
+These rules describe the organization of data in the database filesystem. 
+Thanks to this description, the name and place of a file allows to guess its type and some information about it, 
+as for example the protocol, subject or acquisition associated to this data. 
+It also makes it possible to write data in the database using the same rules, 
+so the information can be retrieved when the data is reloaded later.
+
+These ontology files that we called *hierarchy* files in Brainvisa are located in ``brainvisa/hierarchies`` directory and in the hierarchies directory of each toolbox. BrainVISA can use several hierarchies whose files are grouped in a directory named as the hierarchy.
+
+The main class in this module is :py:class:`FileSystemOntology`. 
+It represents a Brainvisa **hierarchy**, a set of rules that associate data types and data organization on the filesystem.
+
+A rule is represented by the class :py:class:`ScannerRule`. 
+Several classes inheriting from :py:class:`ScannerRuleBuilder` are used to associate ontology attributes to a rule.
+
+:Inheritance diagram:
+
+.. inheritance-diagram:: fileSystemOntology
+
+:Classes:
+
+
+"""
 import types, sys, os, time
 import neuroConfig
 from neuroException import *
@@ -122,6 +148,67 @@ def getAttrValue( value ):
 
 #----------------------------------------------------------------------------
 class ScannerRule( object ):
+  """
+  This class represents a hierarchy rule. It associates a filename pattern and ontology attributes. 
+  
+  :Attributes:
+  
+  .. py:attribute:: pattern
+  
+    The filename pattern for this rule. It is an instance of :py:class:`neuroDiskItems.BackwardCompatiblePattern`.
+    
+  .. py:attribute:: globalAttributes
+  
+    List of global attributes names and values (tuples). Global attributes are added with a :py:class:`SetAttr` builder.
+  
+  .. py:attribute:: localAttributes
+  
+    List of local attributes names and values (tuples). Local attributes are added with a :py:class:`SetWeakAttr` builder.
+    
+  .. py:attribute:: defaultAttributesValues
+  
+    Dictionary associating attribute names and default values. It can be added with a :py:class:`SetDefaultAttributeValue` builder.
+  
+  .. py:attribute:: type
+  
+    Data type associated to this rule. Instance of :py:class:`neuroDiskItems.DiskItemType`. 
+    It can be added with a :py:class:`SetType` builder.
+  
+  .. py:attribute:: formats
+  
+    List of file formats associated to this rule, each format is an instance of :py:class:`neuroDiskItems.Format`.
+    It can be added with a :py:class:`SetFormats` builder.
+    
+  .. py:attribute:: scanner
+  
+    When the rule pattern matches a directory, it can contain other elements. 
+    In this case, this attribute is a :py:class:`DirectoryScanner` and it contains other rules describing the content of the directory.
+    
+  .. py:attribute:: itemName
+  
+    A name associated to this rule. It can be added with a :py:class:`SetName` builder.
+    
+  .. py:attribute:: priority
+  
+    This attribute can be added with a :py:class:`SetPriority` builder.
+    
+  .. py:attribute:: priorityOffset
+    
+    This attribute can be added with a :py:class:`SetPriorityOffset` builder.
+    
+  .. py:attribute:: fileNameAttribute
+  
+    This attribute can be added with a :py:class:`SetFileNameAttribute` or a :py:class:`SetFileNameStrongAttribute` builder.
+    
+  .. py:attribute:: fileNameAttributeIsWeak
+  
+    This attribute can be added with a :py:class:`SetFileNameAttribute` or a :py:class:`SetFileNameStrongAttribute` builder.
+    
+  .. py:attribute:: nonMandatoryKeyAttributes
+  
+    This attribute can be added with a :py:class:`SetNonMandatoryKeyAttribute` builder.
+    
+  """
   def __init__( self, pattern ):
     self.pattern = pattern
     self.type = None
@@ -201,16 +288,35 @@ class ScannerRule( object ):
 
 #----------------------------------------------------------------------------
 class ScannerRuleBuilder( object ):
+  """
+  Base class for rule builders. 
+  
+  It defines a virtual method :py:meth:`build`. All derived class override this method.
+  """
   def build( self, scannerRule ):
+    """
+    :param scannerRule: related :py:class:`ScannerRule`.
+    """
     pass  
 
 
 #----------------------------------------------------------------------------
 class SetType( ScannerRuleBuilder ):
+  """
+  This builder set the :py:attr:`ScannerRule.type` attribute of the current rule.
+  """
   def __init__( self, diskItemType ):
+    """
+    :param string diskItemType: data type.
+    """
     self.type = neuroDiskItems.getDiskItemType( diskItemType )
 
   def build( self, scannerRule ):
+    """
+    Sets its data type to the given scannerRule. 
+    
+    If the type has associated formats, the :py:attr:`ScannerRule.formats` is also updated.
+    """
     scannerRule.type = self.type
     # Set default formats
     if self.type.formats:
@@ -228,7 +334,13 @@ class SetType( ScannerRuleBuilder ):
 
 #----------------------------------------------------------------------------
 class SetName( ScannerRuleBuilder ):
+  """
+  This builder set the :py:attr:`ScannerRule.itemName` attribute of the current rule.
+  """
   def __init__( self, name ):
+    """
+    :param string name: a name that will be associated to any diskitem that match the rule.
+    """
     self.name = getAttrValue( name )
 
   def build( self, scannerRule ):
@@ -237,7 +349,13 @@ class SetName( ScannerRuleBuilder ):
 
 #----------------------------------------------------------------------------
 class SetAttr( ScannerRuleBuilder ):
+  """
+  This builder set the :py:attr:`ScannerRule.globalAttributes` attribute of the current rule.
+  """
   def __init__( self, *params ):
+    """
+    :param params: list of attribute name followed by its value.
+    """
     self.attributes = []
     i = 0
     while i+1 < len( params ):
@@ -259,6 +377,10 @@ class SetAttr( ScannerRuleBuilder ):
 
 #----------------------------------------------------------------------------
 class SetWeakAttr( SetAttr ):
+  """
+  This builder set the :py:attr:`ScannerRule.localAttributes` attribute of the current rule.
+  """
+
   def build( self, scannerRule ):
     scannerRule.localAttributes += self.attributes
   
@@ -266,7 +388,14 @@ class SetWeakAttr( SetAttr ):
 
 #----------------------------------------------------------------------------
 class SetDefaultAttributeValue( ScannerRuleBuilder ):
+  """
+  This builder adds a new attribute value in the :py:attr:`ScannerRule.defaultAttributesValues` map of the current rule.
+  """
   def __init__( self, attribute, value ):
+    """
+    :param string attribute: name of the attribute
+    :param string value: default value of the attribute.
+    """
     self.attribute = attribute
     self.value = value
   
@@ -277,7 +406,13 @@ class SetDefaultAttributeValue( ScannerRuleBuilder ):
 
 #----------------------------------------------------------------------------
 class SetNonMandatoryKeyAttribute( ScannerRuleBuilder ):
+  """
+  This builder adds new attributes names in the :py:attr:`ScannerRule.nonMandatoryKeyAttributes` list of the current rule.
+  """
   def __init__( self, *attributes ):
+    """
+    :param attributes: list of attributes names that are not mandatory key attributes. 
+    """
     self.attributes = attributes
   
   def build( self, scannerRule ):
@@ -286,7 +421,17 @@ class SetNonMandatoryKeyAttribute( ScannerRuleBuilder ):
 
 #----------------------------------------------------------------------------
 class SetContent( ScannerRuleBuilder ):
+  """
+  This builder assumes that the current rule pattern is matches a directory. 
+  As a directory can contain other files, a new :py:class:`DirectoryScanner` is created 
+  and set as the :py:attr:`ScannerRule.scanner` attribute of the current rule.
+  This directory scanner contains the rules defined to describe the content of this directory.
+  """
   def __init__( self, *params ):
+    """
+    :param params: list of rules describing the content of a directory: 
+      several filename patterns followed by associated rule builders.
+    """
     scannerRules = []
     i = 0
     while i < len( params ):
@@ -313,6 +458,9 @@ class SetContent( ScannerRuleBuilder ):
 
 #----------------------------------------------------------------------------
 class SetPriority( ScannerRuleBuilder ):
+  """
+  This builder set the :py:attr:`ScannerRule.priority` attribute of the current rule.
+  """
   def __init__( self, priority ):
     self.priority = priority
   
@@ -322,6 +470,9 @@ class SetPriority( ScannerRuleBuilder ):
 
 #----------------------------------------------------------------------------
 class SetPriorityOffset( ScannerRuleBuilder ):
+  """
+  This builder set the :py:attr:`ScannerRule.priorityOffset` attribute of the current rule.
+  """
   def __init__( self, priorityOffset ):
     self.priorityOffset = priorityOffset
   
@@ -331,7 +482,13 @@ class SetPriorityOffset( ScannerRuleBuilder ):
   
 #----------------------------------------------------------------------------
 class SetFormats( ScannerRuleBuilder ):
+  """
+  This builder set the :py:attr:`ScannerRule.formats` attribute of the current rule.
+  """
   def __init__( self, formats ):
+    """
+    :param formats: list of formats names that will be associated to the current pattern.
+    """
     self.formats = neuroDiskItems.getFormats( formats )
   
   def build( self, scannerRule ):
@@ -345,7 +502,15 @@ class SetFormats( ScannerRuleBuilder ):
   
 #----------------------------------------------------------------------------
 class SetFileNameAttribute( ScannerRuleBuilder ):
+  """
+  This builder set the :py:attr:`ScannerRule.fileNameAttribute` and :py:attr:`ScannerRule.fileNameAttributeDefault` attributes of the current rule.
+  The :py:attr:`ScannerRule.fileNameAttributeIsWeak` attribute is set to 1.
+  """
   def __init__( self, attribute, defaultValue=None ):
+    """
+    :param string attribute: name of the attribute
+    :param string defaultValue: a default value for this attribute.
+    """
     self.attribute = str( attribute )
     self.default = defaultValue
   
@@ -356,7 +521,15 @@ class SetFileNameAttribute( ScannerRuleBuilder ):
 
 #----------------------------------------------------------------------------
 class SetFileNameStrongAttribute( ScannerRuleBuilder ):
+  """
+  This builder set the :py:attr:`ScannerRule.fileNameAttribute` and :py:attr:`ScannerRule.fileNameAttributeDefault` attributes of the current rule.
+  The :py:attr:`ScannerRule.fileNameAttributeIsWeak` attribute is set to 0.
+  """
   def __init__( self, attribute, defaultValue=None ):
+    """
+    :param string attribute: name of the attribute
+    :param string defaultValue: a default value for this attribute.
+    """
     self.attribute = str( attribute )
     self.default = defaultValue
   
@@ -365,11 +538,25 @@ class SetFileNameStrongAttribute( ScannerRuleBuilder ):
     scannerRule.fileNameAttributeIsWeak = 0
     scannerRule.fileNameAttributeDefault = self.default
 
-  
-
 
 #----------------------------------------------------------------------------
 class DirectoryScanner( object ):
+  """
+  This object contains a list of :py:class:`ScannerRule` describing the content of a directory.
+  
+  :Attributes:
+  
+  .. py:attribute:: rules
+  
+    The list of :py:class:`ScannerRule` describing the content of the directory.
+    
+  .. py:attribute:: possibleTypes
+  
+    Dictionary containing the data types associated to its rules as keys. Values are always 1. 
+  
+  :Methods:
+  
+  """
   def __init__( self, scannerRules ):
     self.rules = scannerRules
     # Set possible types
@@ -395,6 +582,10 @@ class DirectoryScanner( object ):
       self.possibleTypes[ neuroDiskItems.getDiskItemType( t ) ] = 1
   
   def scan( self, directory ):
+    """
+    Scans a directory and returns the list of diskitem that it contain. 
+    The diskitems that match ontology rules get corresponding ontology attributes.
+    """
     debug = neuroConfig.debugHierarchyScanning
     groups={}
     formatGroups={}
@@ -598,12 +789,41 @@ class DirectoryScanner( object ):
 
 #----------------------------------------------------------------------------
 class FileSystemOntology( object ):
+  """
+  This class represents a Brainvisa hierarchy, that is to say a set of rules associating data types and filenames.
+  
+  The right way to use this class is to use the :py:meth:`get` method 
+  to get an instance of this class for a specific hierarchy in order to create only one instance for each hierarchy.
+  
+  :Attributes:
+  
+  .. py:attribute:: name
+  
+    The name of the hierarchy. It is the name of the directory containing the hierachy files, under the *hierarchies* directory.
+    
+  .. py:attribute:: source
+  
+    List of source paths for this hierarchy. Indeed, the hierarchy files can be in several directories: in the main Brainvisa directory and in each toolbox directory.
+    
+  .. py:attribute:: content
+  
+    Content of the hierarchy as it is described in the hierarchy files.
+    
+  .. py:attribute:: typeToPatterns
+  
+    Map associating each data type (:py:class:`neuroDiskItems.FileType`) with a list of rules (:py:class:`ScannerRule`).
+    
+  .. py:attribute:: lastModification
+    
+    Date of last modification of the hierarchy files. This enables to detect ontology changes and to offer the user to update his databases.
+  
+  :Methods:
+  
+  """
   __instances = {}
   
   def __init__( self, source, directories ):
-    '''FileSystemOntology constructor is private. Use FileSystemOntology.get() instead'''
-
-
+    # FileSystemOntology constructor is private. Use :py:meth:`get` instead.
     self.cacheName = None
     #if os.path.isdir( source ):
       ## Source is a directory => new (version 3.1 and later) multiple files
@@ -666,7 +886,8 @@ class FileSystemOntology( object ):
         stack = [rules+(r,) for r in rule.scanner.rules] + stack
 
   def getOntologiesNames():
-    """Lists all the ontologies names found in fileSystemOntologiesPath. 
+    """
+    Lists all the ontologies names found in fileSystemOntologiesPath. 
     """
     ontologies=set()
     for fsoPath in neuroConfig.fileSystemOntologiesPath:
@@ -677,11 +898,14 @@ class FileSystemOntology( object ):
   getOntologiesNames = staticmethod( getOntologiesNames )   
     
   def get( source ):
-    '''Satic factory for creation of FileSystemOntology instances. The source can be:
-    - The name of one of the FSO directories located in one of the "hierarchies" directories
+    '''
+    Satic factory for creation of FileSystemOntology instances. The source can be:
+    
+    * The name of one of the FSO directories located in one of the "hierarchies" directories
       of neuroConfig.fileSystemOntologiesPath (for example 'brainvisa-3.1.0' is the main FSO).
-    - The name of any FSO directory.
-    - The name of an old-style (prior to version 3.1) hierarchy file.'''
+    * The name of any FSO directory.
+    * The name of an old-style (prior to version 3.1) hierarchy file.
+    '''
     # Get the source file
     if source is None:
       source = 'brainvisa-3.0'
@@ -717,6 +941,12 @@ class FileSystemOntology( object ):
 
   #--------------------------------------------------------------------------
   class __Reader( MultipleExecfile ):
+    """
+    A reader for hierarchy files.
+    
+    It enables to use the functions *insert*, *insertFirst* and *insertLast* in these files.
+    These functions are associated to the methods :py:meth:`insert`, :py:meth:`insertFirst` and :py:meth:`insertLast` of this class.
+    """
     def __init__( self ):
       MultipleExecfile.__init__( self )
       self.fileExtensions.append( '.py' )
@@ -725,6 +955,13 @@ class FileSystemOntology( object ):
       self.localDict[ 'insertLast' ] = self.insertLast
 
     def read( self, fso, directories):
+      """
+      Reads the hiearchy files of an ontology.
+      Set the value of *hierarchy* variable that should be defined in the hierarchy files as the content of the fso.
+      
+      :param fso: :py:class:`FileSystemOntoloy`
+      :param directories: paths to the hierarchy files of this ontology.
+      """
       self.includePath.update(directories)
       files=[]
       for directory in directories:
@@ -749,12 +986,21 @@ class FileSystemOntology( object ):
       fso.lastModification = max( neuroDiskItems.typesLastModification, max( (os.stat(f).st_mtime for f in files) ) )
 
     def insert( self, path, *content ):
+      """
+      Inserts rules in a :py:class:`DirectoryScanner` whose pattern matches *path*.
+      """
       self._insert( False, False, path, *content )
     
     def insertLast( self, path, *content ):
+      """
+      Appends rules in a :py:class:`DirectoryScanner` whose pattern matches *path*.
+      """
       self._insert( False, True, path, *content )
 
     def insertFirst( self, path, *content ):
+      """
+      Inserts rules in a :py:class:`DirectoryScanner` whose pattern matches *path* at the beginning of the list of rules.
+      """
       self._insert( True, False, path, *content )
 
     def _insert( self, first, last, path, *content ):
@@ -859,6 +1105,9 @@ class FileSystemOntology( object ):
   
   
   def printOntology( self, file=sys.stdout ):
+    """
+    Writes ontology information.
+    """
     allKeys = set()
     tab = '  '
     anyType = neuroDiskItems.getDiskItemType( 'Any type' )
@@ -961,6 +1210,9 @@ class FileSystemOntology( object ):
   
   
   def printFormats( self, file=sys.stdout ):
+    """
+    Prints information about formats.
+    """
     for format in neuroDiskItems.formats.itervalues():
       output = 'newFormat( ' + repr( format.name ) + ', ( '
       for pattern in format.getPatterns().patterns:

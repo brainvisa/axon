@@ -30,6 +30,10 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+"""
+This module defines the class :py:class:`ReadDiskItem` which is a subclass :py:class:`neuroData.Parameter`.
+It is used to define an input data file as a parameter in a :py:class:`neuroProcesses.Process` :py:class:`neuroData.Signature`.
+"""
 import os, operator
 #from soma.debug import print_stack
 from soma.undefined import Undefined
@@ -45,6 +49,35 @@ from neuroDiskItems import File, Directory
 
 #----------------------------------------------------------------------------
 class ReadDiskItem( Parameter ):
+  """
+  The expected value for this parameter must be a readable :py:class:`neuroDiskItems.DiskItem`. 
+  This parameter type uses BrainVISA data organization to select possible files. 
+  
+  :Syntax: 
+  
+  ::
+  
+    ReadDiskItem( file_type_name, formats [, required_attributes, enableConversion=1, ignoreAttributes=0 ])
+    formats <- format_name
+    formats <- [ format_name, ... ]
+    required_attributes <- { name : value, ...}
+           
+  file_type_name enables to select files of a specific type, that is to say DiskItem objects whose type is either file_name_type or a derived type. The formats list gives the exhaustive list of accepted formats for this parameter. But if there are some converters ( see the section called “Role”) from other formats to one of the accepted formats, they will be accepted too because BrainVISA can automatically convert the parameter (if enableConversion value is 1, which is the default). Warning : the type and formats given in parameters of ReadDiskItem constructor must have been defined in BrainVISA types and hierarchies files. required_attributes enables to add some conditions on the parameter value : it will have to match the given attributes value.
+
+  This method of files selection ease file selection by showing the user only files that matches type and format required for this parameter. It also enables BrainVISA to automatically fill some parameters values. The ReadDiskItem class has methods to search matching diskitems in BrainVISA databases :
+
+    * ReadDiskItem.findItems( <database directory diskitem>, <attributes>) : this method returns a list of diskitems that exist in that database and match type, format and required attributes of the parameter. It is possible to specify additional attributes in the method parameters. Found items will have the selected value for these attributes if they have the attribute, but these attributes are not mandatory. That's the difference with the required attributes set in the constructor.
+    * ReadDiskItem.findValues( <value> ) : this method searches diskitems matching the value in parameter. This value can be a diskitem, a filename, a dictionary of attributes.
+    * ReadDiskItem.findValue( <value> ) : this method returns the best among possible value, that is to say with the more common attributes, highest priority. If there is an ambiguity, it returns None.
+
+  **Examples**
+
+  >>> ReadDiskItem( 'Volume 3D', [ 'GIS Image', 'VIDA image' ] )
+  >>> ReadDiskItem( 'Cortical folds graph', 'Graph', requiredAttributes = { 'labelled' : 'No', 'side' : 'left'} )
+            
+
+  In the first example, the parameter will accept only a file whose type is 3D Volume and format is either GIS image or VIDA image, or a format that can be converted to GIS or VIDA image. These types and formats must have been defined first. In the second example, the parameter value type must be "Cortical folds graph", its format must be "Graph". The required attributes add some conditions : the graph isn't labelled and represents the left hemisphere.
+  """
   def __init__( self, diskItemType, formats, requiredAttributes={},
                 enableConversion=True, ignoreAttributes=False, _debug=None, exactType=False ):
     Parameter.__init__( self )
