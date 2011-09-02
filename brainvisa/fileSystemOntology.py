@@ -204,6 +204,10 @@ class ScannerRule( object ):
   
     This attribute can be added with a :py:class:`SetFileNameAttribute` or a :py:class:`SetFileNameStrongAttribute` builder.
     
+  .. py:attribute:: fileNameAttributeDefault
+  
+    Default value for the filename attribute.
+    
   .. py:attribute:: nonMandatoryKeyAttributes
   
     This attribute can be added with a :py:class:`SetNonMandatoryKeyAttribute` builder.
