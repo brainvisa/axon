@@ -2133,8 +2133,8 @@ class HierarchyDirectoryType( FileType ):
   This type represents a directory which represents data in Brainvisa ontology.
   It is associated to the format :py:data:`directoryFormat`.
   """
-  def __init__( self, typeName, **kwargs ):
-    FileType.__init__( self, typeName, None, directoryFormat, **kwargs )
+  def __init__( self, typeName, parent=None, **kwargs ):
+    FileType.__init__( self, typeName, parent, directoryFormat, **kwargs )
   
 #----------------------------------------------------------------------------
 typesLastModification = 0
