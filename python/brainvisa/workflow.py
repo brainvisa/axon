@@ -333,14 +333,18 @@ class ProcessToFastExecution( ProcessToWorkflow ):
   
   
   
-class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
+class ProcessToSomaWorkflow(ProcessToWorkflow):
   
   NO_FILE_PROCESSING = "no_file_processing"
   FILE_TRANSFER = "file_transfer"
-  UNIVERSAL_RESOURCE_PATH = "universal_resource_path"
+  SHARED_RESOURCE_PATH = "shared_resource_path"
   
-  def __init__( self, process, output, input_file_processing =  "no_file_processing", output_file_processing =  "no_file_processing"):
-    super( ProcessToSomaJobsWorkflow, self ).__init__( process )
+  def __init__( self, 
+                process, 
+                output = None, 
+                input_file_processing =  "no_file_processing", 
+                output_file_processing =  "no_file_processing"):
+    super( ProcessToSomaWorkflow, self ).__init__( process )
     self.__out = output
     
     self.__jobs = {}
@@ -366,16 +370,18 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
     #self.linkcnt[(self.JOB, self.FILE)] = 0
     #self.linkcnt[(self.FILE, self.FILE)] = 0
     
-    super( ProcessToSomaJobsWorkflow, self ).doIt()
+    super( ProcessToSomaWorkflow, self ).doIt()
     jobs = self.__jobs.values()
     dependencies = self.__dependencies
     root_group = self.__groups[self.__mainGroupId]
       
     workflow = Workflow(jobs, dependencies, root_group)
-    file = open(self.__out, "w")
-    if file:
-      pickle.dump(workflow, file)
-      file.close()
+    if self.__out:
+      file = open(self.__out, "w")
+      if file:
+        pickle.dump(workflow, file)
+        file.close()
+    return workflow
       
       
     ##########################
@@ -445,7 +451,7 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
                                     name=os.path.basename(fileName), 
                                     client_paths = fullPaths)#fileId)# 
         self.__file_transfers[fileId]=global_in_file
-      elif self.__input_file_processing == self.UNIVERSAL_RESOURCE_PATH:
+      elif self.__input_file_processing == self.SHARED_RESOURCE_PATH:
         if databaseUuid and database_dir:
           global_in_file= SharedResourcePath(relative_path = fileName[(len(database_dir)+1):], namespace = "brainvisa", uuid = databaseUuid)  
         else: 
@@ -456,11 +462,11 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
         jobs_to_inspect=[]
         for job_id in self._iofiles[fileId][0]:
           if self.__input_file_processing == self.FILE_TRANSFER:
-            self.__jobs[job_id].referenced_input_files.add(global_in_file)
+            self.__jobs[job_id].referenced_input_files.append(global_in_file)
           jobs_to_inspect.append(self.__jobs[job_id])
         for job_id in self._iofiles[fileId][1]:
           if self.__input_file_processing == self.FILE_TRANSFER:
-            self.__jobs[job_id].referenced_output_files.add(global_in_file)
+            self.__jobs[job_id].referenced_output_files.append(global_in_file)
           jobs_to_inspect.append(self.__jobs[job_id])
         
         #print "job inspection: " + repr(len(jobs_to_inspect)) + " jobs."
@@ -490,7 +496,7 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
                                        name=os.path.basename(fileName),
                                        client_paths = fullPaths)#fileId)#
         self.__file_transfers[fileId]=global_out_file
-      elif self.__output_file_processing == self.UNIVERSAL_RESOURCE_PATH:
+      elif self.__output_file_processing == self.SHARED_RESOURCE_PATH:
         if databaseUuid and database_dir:
           global_out_file= SharedResourcePath(relative_path = fileName[(len(database_dir)+1):], namespace = "brainvisa", uuid = databaseUuid)  
         else: 
@@ -500,11 +506,11 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
         jobs_to_inspect=[]
         for job_id in self._iofiles[fileId][0]:
           if self.__output_file_processing == self.FILE_TRANSFER:
-            self.__jobs[job_id].referenced_input_files.add(global_out_file)
+            self.__jobs[job_id].referenced_input_files.append(global_out_file)
           jobs_to_inspect.append(self.__jobs[job_id])
         for job_id in self._iofiles[fileId][1]:
           if self.__output_file_processing == self.FILE_TRANSFER:
-            self.__jobs[job_id].referenced_output_files.add(global_out_file)
+            self.__jobs[job_id].referenced_output_files.append(global_out_file)
           jobs_to_inspect.append(self.__jobs[job_id])
           
         #print "job inspection: " + repr(len(jobs_to_inspect)) + " jobs."
@@ -534,13 +540,13 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
       if source[0] == self.FILE and destination[0] == self.JOB:
         file = self.__file_transfers[source]
         job = self.__jobs[destination]
-        job.referenced_input_files.add(file)
+        job.referenced_input_files.append(file)
         #self.linkcnt[(self.FILE, self.JOB)] = self.linkcnt[(self.FILE, self.JOB)] +1
         #print repr(self.linkcnt[(self.FILE, self.JOB)]) +'     FILE -> JOB  ' + repr( (file.name, job.name ) ) + ' len(job.referenced_input_files) = ' + repr(len(job.referenced_input_files))
       elif source[0] == self.JOB and destination[0] == self.FILE: 
         job = self.__jobs[source]
         file = self.__file_transfers[destination]
-        job.referenced_output_files.add(file)
+        job.referenced_output_files.append(file)
         #self.linkcnt[(self.JOB, self.FILE)] = self.linkcnt[(self.JOB, self.FILE)] +1
         #print repr(self.linkcnt[(self.JOB, self.FILE)]) +'     JOB  -> FILE ' + repr( (job.name, file.name ) ) + ' len(job.referenced_output_files) = ' + repr(len(job.referenced_output_files))
       elif source[0] == self.FILE and destination[0] == self.FILE: 
@@ -550,10 +556,10 @@ class ProcessToSomaJobsWorkflow(ProcessToWorkflow):
       
 
   
-def process_to_workflow( process, output, input_file_processing = ProcessToSomaJobsWorkflow.NO_FILE_PROCESSING, output_file_processing = ProcessToSomaJobsWorkflow.NO_FILE_PROCESSING):
+def process_to_workflow( process, output, input_file_processing = ProcessToSomaWorkflow.NO_FILE_PROCESSING, output_file_processing = ProcessToSomaWorkflow.NO_FILE_PROCESSING):
   #ptwf = GraphvizProcessToWorkflow( process, output, clusters=clusters, files=files )
   #ptwf = ProcessToFastExecution( process, output )
-  ptwf = ProcessToSomaJobsWorkflow(process, output, input_file_processing, output_file_processing)
+  ptwf = ProcessToSomaWorkflow(process, output, input_file_processing, output_file_processing)
   ptwf.doIt()
 
 
