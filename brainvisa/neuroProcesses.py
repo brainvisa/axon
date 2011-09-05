@@ -905,9 +905,11 @@ class Process( Parameterized ):
     The signature is a :py:class:`neuroData.Signature`. It contains the list of parameters accepted by the object and their types. The possible types are described in :py:mod:`neuroData`.
 
   .. py:attribute:: category (string)
+  
     The processes are organized into categories. Generally, the category is the name of the directory where the process file is located.
   
   .. py:attribute:: userLevel (integer)
+  
     The process is available in Brainvisa interface if its userLevel is lower or equal than the userLevel selected in Brainvisa options.
     0 : Basic, 1: Advanced, 2: Expert.
   

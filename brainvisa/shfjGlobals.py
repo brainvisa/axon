@@ -30,7 +30,43 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+"""
+This module defines several lists of formats (:py:class:`neuroDiskItems.NamedFormatList`):
 
+.. py:data:: anatomistVolumeFormats
+
+  The name of the list is *Anatomist volume formats* and it contains the volume formats which are handled by Anatomist.
+  
+.. py:data:: aimsVolumeFormats
+             vipVolumeFormats
+
+  The name of the list is *Aims readable volume formats* and it contains the volume formats which can be read with Aims.
+  
+.. py:data:: aimsWriteVolumeFormats
+
+  The name of the list is *Aims writable volume formats* and it contains the volume formats which can be written with Aims.
+
+.. py:data:: aimsImageFormats
+
+  The name of the list is *Aims image formats* and it contains the 2D image formats which are readable with Aims.
+
+.. py:data:: anatomistMeshFormats
+
+  The name of the list is *Anatomist mesh formats* and it contains the mesh formats which are handled by Anatomist.
+
+.. py:data:: aimsMeshFormats
+
+  The name of the list is *Aims mesh formats* and it contains the mesh formats which are handled by Aims.
+
+.. py:data:: aimsTextureFormats
+
+  The name of the list is *Aims texture formats* and it contains the texture formats which are handled by Aims.
+
+.. py:data:: anatomistTextureFormats
+
+  The name of the list is *Anatomist texture formats* and it contains the texture formats which are handled by Anatomist.
+
+"""
 import os, string
 from neuroDiskItems import createFormatList, getFormat, aimsFileInfo
 import neuroConfig
@@ -209,6 +245,14 @@ _fileInfoFormats = None
 
 
 def aimsVolumeAttributes( item, writeOnly=0, forceFormat=0 ):
+  """
+  Gets the header attributes of a :py:class:`DiskItem` if the item is a readable volume. 
+  
+  :param item: the diskitem
+  :param writeonly: if True, the function just returns an empty dictionary
+  :param forceFormat: if True, the format of the diskitem is not checked
+  :returns: a dictionary containing the attributes of the header.
+  """
   if writeOnly: return {}
   # Get formats objects from formats names
   global _aimsVolumeFormats

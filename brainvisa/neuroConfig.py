@@ -49,7 +49,8 @@ Several global variables are defined in this module to store **Brainvisa configu
   
 .. py:data:: sessionID
 
-.. py:data:: fullVersion, shortVersion
+.. py:data:: fullVersion
+             shortVersion
   
   Brainvisa version
   

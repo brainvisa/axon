@@ -192,7 +192,9 @@ def translationChanged_''' + language + '''():
   toBeChecked = {}
   files = []
   ##stack = [ os.path.join( mainPath, i ) for i in os.listdir( mainPath ) ]
-  stack = [ mainPath ]
+  import brainvisa
+  bvmodpath = os.path.dirname( brainvisa.__file__ )
+  stack = [ mainPath, bvmodpath ]
   while stack:
     item = stack.pop()
     if os.path.isdir( item ):
