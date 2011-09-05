@@ -232,11 +232,17 @@ class DiskItemEditor( QWidget, DataEditor ):
     if self.btnShow.isChecked():
       self.btnShow.setEnabled( 0 )
       v = self.getValue()
+      viewerExists = False
       try :
         viewer = neuroProcesses.getViewer( v, 1 )()
+        viewerExists = True
         defaultContext().runInteractiveProcess( self._viewerExited, viewer, v )
       except Exception, error :
-        raise RuntimeError( HTMLMessage(_t_( 'No viewer could be found or launched for type =<em>%s</em> and format=<em>%s</em>' ) % (unicode( v.type ), unicode(v.format))) )
+        self.btnShow.setChecked( False )
+        if viewerExists:
+          self.btnShow.setEnabled( True )
+          raise RuntimeError( HTMLMessage( _t_( 'Viewer aborted for type =<em>%s</em> and format=<em>%s</em> (try using it interactively by right-clicking on the eye icon)' ) % (unicode( v.type ), unicode(v.format))) )
+        raise RuntimeError( HTMLMessage( _t_( 'No viewer could be found for type =<em>%s</em> and format=<em>%s</em>' ) % (unicode( v.type ), unicode(v.format))) )
     else:
       self._view = None
 
