@@ -1017,7 +1017,7 @@ class DiskItem:
         try:
           self._writeMinf( attrs )
         except Exception, e:
-          raise MinfError( _t_( 'uuid cannot be saved in minf file' ) + ': ' + unicode( e ) )
+          raise MinfError( unicode( _t_( 'uuid cannot be saved in minf file' ) + ': ' ) + unicode( e ) )
   
   
   def uuid( self, saveMinf=True ):
