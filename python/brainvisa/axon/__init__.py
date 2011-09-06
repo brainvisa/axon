@@ -43,10 +43,10 @@ sip.setapi( 'QString', 2 )
 import brainvisa
 brainvisa_path=os.path.join( os.path.dirname( os.path.dirname( \
     os.path.dirname( brainvisa.__file__ ))), 'brainvisa' )
-argv0 = sys.argv[0]
+argv = sys.argv
 # Temporarily change argv[0] since it is used in neuroConfig initialization
 # to set paths
-sys.argv[0] = os.path.join(brainvisa_path, 'neuro.py')
+sys.argv = [ os.path.join(brainvisa_path, 'neuro.py'), '-b' ]
 sys.path.insert( 0, brainvisa_path )
 import PyQt4
 import neuroConfig
@@ -54,8 +54,8 @@ import neuroLog
 from processes import initializeProcesses
 
 # set back argv[0] to its original value
-sys.argv[0] = argv0
-del argv0
+sys.argv = argv
+del argv
 
 # once imported and initialized, the modules do not need to be
 # referenced any longer here.
