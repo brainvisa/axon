@@ -3932,10 +3932,11 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
         try:
           v()
         except Exception, e:
+          import codecs
           processInfo.valid=False
           if _readProcessLog is not None:
             _readProcessLog.append( NewProcess._id, html=exceptionHTML(), icon='warning.png' )
-          raise ValidationError( HTMLMessage(_t_('In <em>%s</em>') % ( fileName, ) + ': ' + str( e )) )
+          raise ValidationError( HTMLMessage(_t_('In <em>%s</em>') % ( fileName, ) + ': ' + unicode( e ) ))
 
     oldProcess = _processes.get( NewProcess._id.lower() )
     if oldProcess is not None:
