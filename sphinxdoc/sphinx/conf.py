@@ -24,20 +24,20 @@ except Exception, e:
   print 'warning:', e
 
 # path for brainvisa
-import brainvisa
-sys.path.append( os.path.join( os.path.dirname( os.path.dirname( \
-  os.path.dirname( brainvisa.__file__ ) ) ), 'brainvisa' ) )
-import sip
-sip.setapi( 'QString', 2 )
-argv = sys.argv
-sys.argv = [ os.path.join( os.path.dirname( os.path.dirname( \
-  os.path.dirname( brainvisa.__file__ ) ) ), 'brainvisa', 'neuro.py' ), '-b' ]
-try:
-  import neuro
-except:
-  pass # normal...
-sys.argv = argv
-del argv
+import brainvisa.axon
+#sys.path.append( os.path.join( os.path.dirname( os.path.dirname( \
+  #os.path.dirname( brainvisa.__file__ ) ) ), 'brainvisa' ) )
+#import sip
+#sip.setapi( 'QString', 2 )
+#argv = sys.argv
+#sys.argv = [ os.path.join( os.path.dirname( os.path.dirname( \
+  #os.path.dirname( brainvisa.__file__ ) ) ), 'brainvisa', 'neuro.py' ), '-b' ]
+#try:
+  #import neuro
+#except:
+  #pass # normal...
+#sys.argv = argv
+#del argv
 
 # -- General configuration -----------------------------------------------------
 
