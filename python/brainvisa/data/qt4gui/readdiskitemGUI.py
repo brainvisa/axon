@@ -44,7 +44,7 @@ from neuroDiskItems import DiskItem, Directory
 import neuroConfig
 from neuroException import showException, HTMLMessage
 from PyQt4 import QtCore
-import sys
+import sys, os
 
 #----------------------------------------------------------------------------
 class RightClickablePushButton( QPushButton ):
@@ -349,6 +349,8 @@ class DiskItemEditor( QWidget, DataEditor ):
     parent = self._context
     if hasattr( parent, '_currentDirectory' ) and parent._currentDirectory:
       self.browseDialog.setDirectory( parent._currentDirectory )
+    else:
+      self.browseDialog.setDirectory( os.getcwd() )
     self.browseDialog.show()
 
   def browseAccepted( self ):
@@ -609,6 +611,8 @@ class DiskItemListEditor( QWidget, DataEditor ):
         parent = self._context
         if hasattr( parent, '_currentDirectory' ) and parent._currentDirectory:
           self.browseDialog.setDirectory( parent._currentDirectory )
+        else:
+          self.browseDialog.setDirectory( os.getcwd() )
       self.browseDialog.show()
 
     def browseAccepted( self ):

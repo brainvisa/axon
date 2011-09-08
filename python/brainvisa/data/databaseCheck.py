@@ -32,8 +32,7 @@
 
 import os, stat, re, shutil, time
 import operator
-import neuroDiskItems
-import neuroHierarchy, shfjGlobals
+import neuroHierarchy
 import registration
 from soma.sorted_dictionary import SortedDictionary
 from brainvisa.data.actions import FileProcess, Move, Remove, CallProcess, SetTransformationInfo
@@ -254,15 +253,16 @@ class DBConverter(DBProcessor):
 ###################################
 class T1MriConverter(DBConverter):
   """
-  In protocol/subject : 
-    - anatomy -> t1mri/acquisition/analysis (raw t1 mri and acpc coordinates files are put in acquisition, the others in analysis)
+  In protocol/subject :
+  
+    * anatomy -> t1mri/acquisition/analysis (raw t1 mri and acpc coordinates files are put in acquisition, the others in analysis)
     If anatomy already contains acquisition directories, they are moved in t1mri, and analysis level is added.
-    - segment -> t1mri/acquisition/analysis/segmentation
-    - tri, mesh -> t1mri/acquisition/analysis/segmentation/mesh
-    - deepnuclei -> t1mri/acquisition/analysis/nuclei
-    - Referential and transformations :
-      - <subject>_TO_talairach.trm -> <protocol>/<subject>/registration/RawT1-<subject>_<acquisition>_TO_Talairach-ACPC.trm
-      - *<subject>.referential -> *<subject>-default_acquisition.referential, *<subject>_TO_*.trm -> *<subject>_default_acquisition_TO_*.trm
+    * segment -> t1mri/acquisition/analysis/segmentation
+    * tri, mesh -> t1mri/acquisition/analysis/segmentation/mesh
+    * deepnuclei -> t1mri/acquisition/analysis/nuclei
+    * Referential and transformations :
+      * <subject>_TO_talairach.trm -> <protocol>/<subject>/registration/RawT1-<subject>_<acquisition>_TO_Talairach-ACPC.trm
+      * *<subject>.referential -> *<subject>-default_acquisition.referential, *<subject>_TO_*.trm -> *<subject>_default_acquisition_TO_*.trm
   """
   def __init__(self, dbDir, context=None):
     super(T1MriConverter, self).__init__(dbDir, context)
