@@ -50,9 +50,9 @@ def initializeProcesses():
     job which is usually done at the very beginning when BrainVISA starts,
     but here no GUI is created.
 
-    The processes are stored in neuroProcesses._processes.
-    The databases are in neuroHierarchy.databases.
-    The types are in neuroProcesses.types*
+    The processes are available through functions in :py:mod:`neuroProcesses`.
+    The databases are in :py:data:`neuroHierarchy.databases`.
+    The types are available through functions in :py:mod:`neuroDiskItems`.
 
     '''
     temporary.initializeTemporaryFiles(

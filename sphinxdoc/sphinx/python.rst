@@ -6,6 +6,7 @@ This part of the API is in the Python path, it may be imported without running B
 Modules organization
 --------------------
 
+- :py:mod:`brainvisa.axon`: loading Brainvisa in a Python script.
 - :py:mod:`brainvisa.config`: information about BrainVISA version.
 - :py:mod:`brainvisa.anatomist`: specialization of pyanatomist API for Brainvisa. Used by most of Brainvisa viewers.
 - :py:mod:`brainvisa.toolboxes`: Toolbox class representing a BrainVISA toolbox.
@@ -52,6 +53,16 @@ brainvisa.data
 - :py:mod:`brainvisa.data.test`
 - :py:mod:`brainvisa.data.virtualDirectory`
 - :py:mod:`brainvisa.data.qt4gui`
+
+
+brainvisa.axon
+--------------
+
+.. automodule:: brainvisa.axon
+  :members:
+    
+.. automodule:: brainvisa.axon.processes
+  :members:
 
 brainvisa.config
 ----------------

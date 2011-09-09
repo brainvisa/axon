@@ -33,6 +33,18 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+"""
+This module loads BrainVISA and enables to import the Brainvisa modules which are not automatically in the python path (:doc:`brainvisa`).
+
+It is useful to write a Python script that uses Brainvisa. Usage:
+  
+  >>> import brainvisa.axon
+  >>> brainvisa.axon.initializeProcesses()
+  
+Then, Brainvisa, its processes and databases are loaded and it can be used as if it were started in batch mode.
+
+"""
+
 import os, sys
 
 # Force QString API version in order to be compatible with recent version
