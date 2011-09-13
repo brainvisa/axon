@@ -31,7 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-import os, stat
+import os, errno, stat
 
 from brainvisa.data import virtualDirectory
 
@@ -118,7 +118,7 @@ class LocalDirectory( virtualDirectory.VirtualDirectory ):
       try:
         os.mkdir( directory )
       except OSError, e:
-        if not e.errno == os.errno.EEXIST:
+        if not e.errno == errno.EEXIST:
           # filter out 'File exists' exception, if the same dir has been created
           # concurrently by another instance of BrainVisa or another thread
           raise

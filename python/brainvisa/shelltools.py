@@ -71,7 +71,7 @@ def cp( *args, **kwargs):
     try:
       os.mkdir( dest )
     except OSError, e:
-      if not e.errno == os.errno.EEXIST:
+      if not e.errno == errno.EEXIST:
         # filter out 'File exists' exception, if the same dir has been created
         # concurrently by another instance of BrainVisa or another thread
         raise
@@ -83,7 +83,7 @@ def cp( *args, **kwargs):
         try:
           os.mkdir( newpath )
         except OSError, e:
-          if not e.errno == os.errno.EEXIST:
+          if not e.errno == errno.EEXIST:
             # filter out 'File exists' exception, if the same dir has been created
             # concurrently by another instance of BrainVisa or another thread
             raise
