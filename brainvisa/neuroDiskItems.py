@@ -95,7 +95,7 @@ All temporary files and directories are written in Brainvisa global temporary di
 :Classes:
 
 """
-import types, sys, os, stat, cPickle, operator, time, traceback
+import types, sys, os, errno, stat, cPickle, operator, time, traceback
 from weakref import ref, WeakValueDictionary
 from UserList import UserList
 from threading import RLock
@@ -962,7 +962,7 @@ class DiskItem:
       try:
         os.makedirs( p )
       except OSError, e:
-        if not e.errno == os.errno.EEXIST:
+        if not e.errno == errno.EEXIST:
           # filter out 'File exists' exception, if the same dir has been created
           # concurrently by another instance of BrainVisa or another thread
           raise
@@ -2012,7 +2012,7 @@ class TemporaryDirectory( Directory ):
       try:
         os.mkdir( fullPath, 0770 )
       except OSError, e:
-        if not e.errno == os.errno.EEXIST:
+        if not e.errno == errno.EEXIST:
           # filter out 'File exists' exception, if the same dir has been created
           # concurrently by another instance of BrainVisa or another thread
           raise

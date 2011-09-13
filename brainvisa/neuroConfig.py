@@ -198,7 +198,7 @@ _defaultTranslateFunction = lambda x: x
 if not __builtin__.__dict__.has_key( '_t_' ):
   __builtin__.__dict__[ '_t_' ] = _defaultTranslateFunction
 
-import gettext, sys, os, pickle, string, traceback, htmllib, formatter, re, time, socket, atexit
+import gettext, sys, os, errno, pickle, string, traceback, htmllib, formatter, re, time, socket, atexit
 import shutil
 from distutils.spawn import find_executable
 from soma.wip.application.api import Application
@@ -435,7 +435,7 @@ if not os.path.exists( homeBrainVISADir ):
   try:
     os.mkdir( homeBrainVISADir )
   except OSError, e:
-    if not e.errno == os.errno.EEXIST:
+    if not e.errno == errno.EEXIST:
       # filter out 'File exists' exception, if the same dir has been created
       # concurrently by another instance of BrainVisa or another thread
       raise

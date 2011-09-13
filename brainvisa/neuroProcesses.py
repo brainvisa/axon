@@ -2375,7 +2375,7 @@ class ExecutionContext:
               try:
                 os.makedirs( dirname )
               except OSError, e:
-                if not e.errno == os.errno.EEXIST:
+                if not e.errno == errno.EEXIST:
                   # filter out 'File exists' exception, if the same dir has
                   # been created concurrently by another instance of BrainVisa
                   # or another thread
