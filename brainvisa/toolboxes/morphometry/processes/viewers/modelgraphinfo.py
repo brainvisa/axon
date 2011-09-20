@@ -36,6 +36,7 @@ from neuroProcessesGUI import HTMLBrowser
 
 name = 'Show Model Graph Info'
 roles = ( 'viewer', )
+userLevel = 0
 
 signature = Signature(
   'model_graph', ReadDiskItem( 'Model graph', 'Graph and data' ),
