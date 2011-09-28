@@ -1622,27 +1622,39 @@ class ProcessView( QWidget, ExecutionContextGUI ):
   
   
   def createWorkflow( self ):
-    from brainvisa.workflow import process_to_workflow, ProcessToSomaJobsWorkflow
+    from brainvisa.workflow import ProcessToSomaWorkflow
     class Options( HasSignature ):
       signature = SomaSignature(
-        'output', SomaFileName, dict( doc='Name of the output workflow file.' ),
-        'input_file_processing', SomaChoice( ( _t_( 'use local paths' ), 0 ), ( _t_( 'transfer files' ), 1 ), ( _t_( 'use shared paths' ), 2 ) ),
-        'output_file_processing', SomaChoice( ( _t_( 'use local paths' ), 0 ), ( _t_( 'transfer files' ), 1 ), ( _t_( 'use shared paths' ), 2 ) ),
+        'output', 
+        SomaFileName, 
+        dict( doc='Name of the output workflow file.' ),
+        'input_file_processing', 
+        SomaChoice( ( _t_( 'use local paths' ), 0 ), 
+                    ( _t_( 'transfer files' ), 1 ), 
+                    ( _t_( 'use shared paths' ), 2 ) ),
+        'output_file_processing', 
+        SomaChoice( ( _t_( 'use local paths' ), 0 ), 
+                    ( _t_( 'transfer files' ), 1 ), 
+                    ( _t_( 'use shared paths' ), 2 ) ),
       )
     options = Options()
     ApplicationQt4GUI().edit( options )
-    input_file_processing = ProcessToSomaJobsWorkflow.NO_FILE_PROCESSING
+    input_file_processing = ProcessToSomaWorkflow.NO_FILE_PROCESSING
     if options.input_file_processing == 1:
-      input_file_processing = ProcessToSomaJobsWorkflow.FILE_TRANSFER
+      input_file_processing = ProcessToSomaWorkflow.FILE_TRANSFER
     if options.input_file_processing == 2:
-      input_file_processing = ProcessToSomaJobsWorkflow.UNIVERSAL_RESOURCE_PATH
-    output_file_processing = ProcessToSomaJobsWorkflow.NO_FILE_PROCESSING
+      input_file_processing = ProcessToSomaWorkflow.SHARED_RESOURCE_PATH
+    output_file_processing = ProcessToSomaWorkflow.NO_FILE_PROCESSING
     if options.output_file_processing == 1:
-      output_file_processing = ProcessToSomaJobsWorkflow.FILE_TRANSFER
+      output_file_processing = ProcessToSomaWorkflow.FILE_TRANSFER
     if options.output_file_processing == 2:
-      output_file_processing = ProcessToSomaJobsWorkflow.UNIVERSAL_RESOURCE_PATH
+      output_file_processing = ProcessToSomaWorkflow.SHARED_RESOURCE_PATH
     
-    process_to_workflow( self.process, options.output, input_file_processing = input_file_processing, output_file_processing = output_file_processing )
+    ptowf = ProcessToSomaWorkflow(self.process, 
+                                 options.output, 
+                                 input_file_processing = input_file_processing, 
+                                 output_file_processing = output_file_processing)
+    ptowf.doIt()
     
   
   def _distributeButton( self ):
