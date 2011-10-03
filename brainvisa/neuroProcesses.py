@@ -196,6 +196,13 @@ from brainvisa.data.sqlFSODatabase import Database, NotInDatabaseError
 import neuroPopen2
 
 try:
+  from soma.workflow.gui.workflowGui import ComputingResourcePool
+  from soma.workflow.gui.workflowGui import ApplicationModel as WorkflowApplicationModel
+except ImportError:
+  class ComputingResourcePool(object): pass
+  class WorkflowApplicationModel(object): pass
+
+try:
   from remoteProcesses import *
   _neuroDistributedProcesses = True
 except Exception, e:
@@ -3498,14 +3505,14 @@ def getProcessInstance( processIdClassOrInstance ):
       result = getProcessFromExecutionNode( processIdClassOrInstance )
     else:
       try:
-        if isinstance( processIdClassOrInstance, basestring ) and minfFormat( processIdClassOrInstance )[ 1 ] == minfHistory:
+        if (isinstance( processIdClassOrInstance, basestring ) or hasattr( processIdClassOrInstance, 'readline' )) and minfFormat( processIdClassOrInstance )[ 1 ] == minfHistory:
           event = readMinf( processIdClassOrInstance )[0]
           result = getProcessInstanceFromProcessEvent( event )
           if result is not None:
             result._savedAs = processIdClassOrInstance
-      except IOError:
-        raise KeyError( 'Could not get process "' + processIdClassOrInstance \
-            + '": invalid identifier or process file' )
+      except IOError, e:
+        raise KeyError( 'Could not get process "' + repr(processIdClassOrInstance) \
+            + '": invalid identifier or process file: ' + repr(e))
   elif not isinstance( result, Process ):
     result = result()
   return result
@@ -4563,7 +4570,8 @@ def initializeProcesses():
   #TODO: A class would be more clean instead of all these global variables
   global _processModules, _processes, _processesInfo, _processesInfoByName, \
          _converters, _viewers, _listViewers, _mainThread, _defaultContext, _dataEditors, _listDataEditors, _importers,\
-         _askUpdateProcess, _readProcessLog
+         _askUpdateProcess, _readProcessLog, _computing_resource_pool, \
+         _workflow_application_model
   _mainThread = threading.currentThread()
   _processesInfo = {}
   _processesInfoByName = {}
@@ -4576,6 +4584,13 @@ def initializeProcesses():
   _dataEditors = {}
   _listDataEditors = {}
   _importers = {}
+  if False:
+    _computing_resource_pool = ComputingResourcePool()
+    _computing_resource_pool.add_default_connection()
+    _workflow_application_model = WorkflowApplicationModel(_computing_resource_pool)
+  else:
+    _computing_resource_pool = None
+    _workflow_application_model = None
   _defaultContext = ExecutionContext()
   if neuroConfig.mainLog is not None:
     _readProcessLog = neuroConfig.mainLog.subLog()
@@ -4609,6 +4624,8 @@ def cleanupProcesses():
   _askUpdateProcess = {}
   _mainThread = None
   _defaultContext = None
+  _computing_resource_pool = None
+  _workflow_application_model = None
   if _readProcessLog is not None:
     _readProcessLog.close()
     _readProcessLog = None

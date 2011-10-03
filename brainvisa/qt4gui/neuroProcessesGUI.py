@@ -31,12 +31,17 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from datetime import date
+from datetime import datetime
+from datetime import timedelta
+import StringIO
 import distutils, os, sys, re
 import types
 from backwardCompatibleQt import *
 from PyQt4 import uic
 from PyQt4.QtGui import QKeySequence
 from PyQt4 import QtCore
+from PyQt4 import QtGui
 import neuroConfig 
 import neuroConfigGUI
 import neuroLogGUI
@@ -50,6 +55,7 @@ from soma.minf.xhtml import XHTML
 from soma.qtgui.api import QtThreadCall, FakeQtThreadCall, TextBrowserWithSearch, bigIconSize, defaultIconSize
 from soma.html import htmlEscape
 import threading
+import socket
 try:
   import sip
 except:
@@ -66,6 +72,12 @@ from soma.signature.api import FileName as SomaFileName
 from soma.signature.api import Choice as SomaChoice
 from soma.signature.api import Boolean as SomaBoolean
 from soma.qt4gui.api import ApplicationQt4GUI
+
+try: 
+  from soma.workflow.gui.workflowGui import SomaWorkflowWidget as ComputingResourceWidget
+  import soma.workflow.gui.workflowGui
+except ImportError:
+  class ComputingResourceWidget(object): pass
 
 _mainThreadActions = FakeQtThreadCall()
 
@@ -151,6 +163,86 @@ def openWeb(source):
   _helpWidget.show()
   _helpWidget.raise_()
 
+
+
+class SomaWorkflowWidget(ComputingResourceWidget):
+
+  # dict wf_id -> serialized_proc
+  serialized_processes = None
+
+  brainvisa_code = "brainvisa_"
+
+  def __init__(self, model, computing_resource=None, parent=None):
+    super(SomaWorkflowWidget, self).__init__(model, 
+                                             None, 
+                                             False, 
+                                             computing_resource, 
+                                             parent, 
+                                             0)
+
+    self.ui.list_widget_submitted_wfs.itemDoubleClicked.connect(self.workflow_double_clicked)
+    QtGui.QApplication.instance().focusChanged.connect(self.process_selection_changed)
+    #self.connect(self.model, QtCore.SIGNAL('current_workflow_changed()'),  self.synchronize_active_window)
+    
+  def workflow_filter(self, workflows):
+    new_workflows = {}
+    self.serialized_processes = {}
+    for wf_id, (name, date) in workflows.iteritems():
+      if name != None and \
+        len(name) > 9 and \
+        name[0:10] == SomaWorkflowWidget.brainvisa_code:
+
+        workflow = self.model.current_connection.workflow(wf_id)
+
+        if workflow.user_storage != None and \
+           len(workflow.user_storage) == 2 and \
+           workflow.user_storage[0] == SomaWorkflowWidget.brainvisa_code:
+  
+          new_workflows[wf_id] = (name[10:], date)
+          self.serialized_processes[wf_id] = workflow.user_storage[1]
+    return new_workflows
+
+  #@QtCore.pyqtSlot()
+  #def synchronize_active_window(self):
+    #wf_id = self.model.current_workflow.wf_id
+    #app = QtGui.QApplication.instance()
+    #for widget in app.topLevelWidgets():
+      #if isinstance(widget, ProcessView) and widget.soma_workflow_id == wf_id:
+        #app.setActiveWindow(widget)
+        #break 
+
+  @QtCore.pyqtSlot()
+  def workflow_double_clicked(self):
+    selected_items = self.ui.list_widget_submitted_wfs.selectedItems()
+    wf_id = selected_items[0].data(QtCore.Qt.UserRole).toInt()[0]
+    serialized_proc = self.serialized_processes[wf_id]
+    serialized_proc = StringIO.StringIO(serialized_proc)
+    proc = neuroProcesses.getProcessInstance(serialized_proc)
+    view = showProcess(proc)
+    view.soma_workflow_id = wf_id
+    view.soma_workflow_resource = self.model.current_resource_id
+    view.display_workflow_tree_view()
+
+  @QtCore.pyqtSlot(QWidget, QWidget)
+  def process_selection_changed(self, old, now):
+    active_window = QtGui.QApplication.instance().activeWindow()
+    if active_window != None and isinstance(active_window, ProcessView):
+      if active_window.soma_workflow_id != None: 
+        if active_window.soma_workflow_resource != self.model.current_resource_id:
+           if self.model.resource_exist(active_window.soma_workflow_resource):
+             self.model.set_current_connection(active_window.soma_workflow_resource)
+           else:
+             new_connection = self.createConnection(self.model.current_resource_id)
+             if new_connection:
+               self.model.add_connection(resource_id, new_connection)
+        found = False
+        for i in range(0, self.ui.list_widget_submitted_wfs.count()):
+          if active_window.soma_workflow_id == self.ui.list_widget_submitted_wfs.item(i).data(QtCore.Qt.UserRole).toInt()[0]:
+            self.ui.list_widget_submitted_wfs.setCurrentRow(i)
+            found = True
+            break
+        if not found:
+          self.model.clear_current_workflow()
 
 _aboutWidget = None
 #----------------------------------------------------------------------------
@@ -938,8 +1030,17 @@ class BrainVISAAnimation( QLabel ):
     qApp.processEvents()
     self.mmovie.stop()
 
+    
+
 #----------------------------------------------------------------------------
 class ProcessView( QWidget, ExecutionContextGUI ):
+
+  soma_workflow_id = None
+
+  soma_workflow_resource = None
+
+  workflow_tree_view = None
+
   def __init__( self, processId, parent = None, externalInfo = None ):
     ExecutionContextGUI.__init__( self )
     QWidget.__init__( self, parent )
@@ -955,10 +1056,21 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     #centralWidget=QWidget()
     #self.setCentralWidget(centralWidget)
     
+    menu_layout = QVBoxLayout()
+    menu_layout.setMargin(5)
+    menu_layout.setSpacing(4)
+    self.setLayout(menu_layout)
+  
+    self.central_layout = QHBoxLayout()
+    self.central_layout.setMargin(5)
+    self.central_layout.setSpacing(4)
+  
     centralWidgetLayout=QVBoxLayout()
-    self.setLayout(centralWidgetLayout)
     centralWidgetLayout.setMargin( 5 )
     centralWidgetLayout.setSpacing( 4 )
+    #self.setLayout(centralWidgetLayout)
+    self.central_layout.addLayout(centralWidgetLayout)
+    
 
     self.setWindowIcon( self.pixIcon )
     self.workflowEnabled = False
@@ -966,9 +1078,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     if parent is None:
       neuroConfig.registerObject( self )
       # menu bar
-      menu = QMenuBar()
-      addBrainVISAMenu( self, menu )
-      processMenu=menu.addMenu("&Process")
+      self.menu = QMenuBar()
+      addBrainVISAMenu( self, self.menu )
+      processMenu = self.menu.addMenu("&Process")
       processMenu.addAction( _t_( '&Save...' ), self.saveAs,  Qt.CTRL + Qt.Key_S )
       processMenu.addAction( _t_( '&Clone...' ), self.clone,  Qt.CTRL + Qt.Key_C )
       try:
@@ -978,18 +1090,21 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         pass
       if self.workflowEnabled:
         processMenu.addAction( _t_( 'Create &Workflow...' ), self.createWorkflow,  Qt.CTRL + Qt.Key_D )
-      centralWidgetLayout.addWidget(menu)
+      
+      menu_layout.addWidget(self.menu)
 
+    menu_layout.addLayout(self.central_layout)
     self.connect( self, SIGNAL( 'destroyed()' ), self.cleanup )
 
     process = neuroProcesses.getProcessInstance( processId )
     if process is None:
-      raise RuntimeError( HTMLMessage(_t_( 'Cannot open process <em>%s</em>' ) % ( str(processId), )) )
+      raise RuntimeError( neuroException.HTMLMessage(_t_( 'Cannot open process <em>%s</em>' ) % ( str(processId), )) )
     self.process = process
     self.process.guiContext = weakref.proxy( self )
     self._runningProcess = 0
     self.process.signatureChangeNotifier.add( self.signatureChanged )
     self.btnRun = None
+    self.btnRunSomaWorkflow = None
     self.btnInterruptStep=None
     self._running = False
 
@@ -1069,8 +1184,8 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       vb=container.layout()
       
       # splitter that shows the composition of the process on the left and the parameters of each step on the right
-      eTreeWidget = QSplitter( Qt.Horizontal )
-      vb.addWidget(eTreeWidget)
+      self.eTreeWidget = QSplitter( Qt.Horizontal )
+      vb.addWidget(self.eTreeWidget)
       
       # Run and iterate buttons
       self.inlineGUI = self.process.inlineGUI( self.process, self, None,
@@ -1080,7 +1195,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       vb.addWidget(self.inlineGUI)
       
       # composition of the pipeline
-      self.executionTree = QTreeWidget( eTreeWidget )
+      self.executionTree = QTreeWidget( self.eTreeWidget )
       self.executionTree.setSizePolicy( QSizePolicy( QSizePolicy.Preferred, QSizePolicy.Preferred ) )
       self.executionTree.setColumnCount(1)
       self.executionTree.setHeaderLabels( ['Name'] )
@@ -1104,16 +1219,16 @@ class ProcessView( QWidget, ExecutionContextGUI ):
                                             self.menuShowDocumentation )
       self.connect(self.executionTree, SIGNAL( 'customContextMenuRequested ( const QPoint & )'), self.openContextMenu)
       #self.executionTree.setSortingEnabled( -1 )
-      #eTreeWidget.setResizeMode( self.executionTree, QSplitter.KeepSize )
+      #self.eTreeWidget.setResizeMode( self.executionTree, QSplitter.KeepSize )
 
       # parameters of a each step of the pipeline
-      self._widgetStack = QStackedWidget( eTreeWidget )
+      self._widgetStack = QStackedWidget( self.eTreeWidget )
       self._widgetStack.setSizePolicy( QSizePolicy( QSizePolicy.Preferred,
       QSizePolicy.Preferred ) )
       self._widgetStack._children = []
     
       # set splitter sizes to avoid the widget stack to be hidden in case it is currently empty
-      eTreeWidget.setSizes( [150, 250] )
+      self.eTreeWidget.setSizes( [150, 250] )
 
       self._guiId = 0
       self._executionNodeExpanded( self.executionTree, ( eNode, (eNode,) ) )
@@ -1170,6 +1285,71 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     if initGUI is not None:
       initGUI( self )
   
+  def display_workflow_tree_view(self):
+    self.eTreeWidget.setOrientation(Qt.Vertical)
+    self.inlineGUI.hide()
+    self.info.hide()
+    if self.workflow_tree_view != None:
+      self.workflow_tree_view.show()
+      return
+    if self.soma_workflow_id != None:
+      self.workflow_menu = self.menu.addMenu("&Workflow")
+      self.workflow_menu.addAction(_mainWindow.sw_widget.ui.action_stop_wf)
+      self.workflow_menu.addAction(_mainWindow.sw_widget.ui.action_restart)
+      self.workflow_menu.addSeparator()
+      self.workflow_menu.addAction(_mainWindow.sw_widget.ui.action_transfer_infiles)
+      self.workflow_menu.addAction(_mainWindow.sw_widget.ui.action_transfer_outfiles)
+      self.workflow_menu.addSeparator()
+      self.workflow_menu.addAction(_mainWindow.sw_widget.ui.action_delete_workflow)
+      self.workflow_menu.addAction(_mainWindow.sw_widget.ui.action_change_expiration_date)
+
+      self.wf_exec_widget = QWidget()
+      uic.loadUi(os.path.join( os.path.dirname( __file__ ), 'workflow_execution.ui' ), self.wf_exec_widget)
+
+      
+      tree_layout = QVBoxLayout()
+      tree_layout.setMargin(0)
+      tree_layout.setSpacing(0)
+      self.wf_exec_widget.tree.setLayout(tree_layout)
+
+      item_info_layout = QVBoxLayout()
+      item_info_layout.setMargin(0)
+      item_info_layout.setSpacing(0)
+      self.wf_exec_widget.selection_info.setLayout(item_info_layout)
+      
+      plot_layout = QVBoxLayout()
+      plot_layout.setMargin(0)
+      plot_layout.setSpacing(0)
+      self.wf_exec_widget.plot.setLayout(plot_layout)
+
+      self.workflow_tree_view = soma.workflow.gui.workflowGui.WorkflowTree(
+                      neuroProcesses._workflow_application_model, 
+                      assigned_wf_id=self.soma_workflow_id, 
+                      assigned_resource_id=self.soma_workflow_resource,
+                      parent=self)
+      tree_layout.addWidget(self.workflow_tree_view) 
+      
+      self.workflow_item_view = soma.workflow.gui.workflowGui.WorkflowElementInfo(
+                      neuroProcesses._workflow_application_model, 
+                      parent=self)
+      item_info_layout.addWidget(self.workflow_item_view)
+
+      self.workflow_plot_view = soma.workflow.gui.workflowGui.WorkflowPlot(
+                      neuroProcesses._workflow_application_model, 
+                      assigned_wf_id=self.soma_workflow_id, 
+                      assigned_resource_id=self.soma_workflow_resource,
+                      parent=self)
+      plot_layout.addWidget(self.workflow_plot_view)
+
+
+      self.connect(self.workflow_tree_view, QtCore.SIGNAL('selection_model_changed(QItemSelectionModel)'), self.workflow_item_view.setSelectionModel)
+      
+      self.central_layout.addWidget(self.wf_exec_widget)
+
+      self.workflow_tree_view.currentWorkflowChanged()
+      self.workflow_plot_view.workflowChanged()
+      
+
 
   def createSignatureWidgets( self, documentation=None ):
     eNode = getattr( self.process, '_executionNode', None )
@@ -1325,6 +1505,12 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       layout.addWidget(self.btnRun)
       self.btnRun.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
       QObject.connect( self.btnRun, SIGNAL( 'clicked()' ), self._runButton )
+
+      if neuroProcesses._workflow_application_model != None:
+        self.btnRunSomaWorkflow = QPushButton( _t_( 'Run with soma-workflow' ) )
+        layout.addWidget(self.btnRunSomaWorkflow)
+        self.btnRunSomaWorkflow.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
+        QObject.connect( self.btnRunSomaWorkflow, SIGNAL( 'clicked()' ), self._run_with_soma_workflow )
       
       if (self.process.__class__ == neuroProcesses.IterationProcess):
         self.btnInterruptStep = QPushButton( _t_('Interrupt current step') )
@@ -1386,7 +1572,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     self.parametersWidget = None
     self.info = None
     self.process._lastResult = None
-
+  
   def _runButton( self, executionFunction=None ):
     try:
       try:
@@ -1411,6 +1597,81 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     finally:
       if self.btnRun:
         self.btnRun.setEnabled(True)
+
+  def _run_with_soma_workflow( self, executionFunction=None ):
+    try:
+      from brainvisa.workflow import ProcessToSomaWorkflow
+     
+      submission_dlg = QtGui.QDialog(self)
+      uic.loadUi(os.path.join( os.path.dirname( soma.workflow.gui.workflowGui.__file__), 'submissionDlg.ui' ), submission_dlg)
+      submission_dlg.resource_label.setText(neuroProcesses._workflow_application_model.current_resource_id)
+      submission_dlg.lineedit_wf_name.setText("")
+      submission_dlg.dateTimeEdit_expiration.setDateTime(datetime.now() + timedelta(days=5))
+      queues = ["default queue"]
+      queues.extend(neuroProcesses._workflow_application_model.current_connection.config.get_queues())
+      submission_dlg.combo_queue.addItems(queues)
+
+      submission_dlg.grid_layout.addWidget(QtGui.QLabel("input files:"), 0, 0)
+      submission_dlg.grid_layout.addWidget(QtGui.QLabel("output files:"), 1, 0)
+      combo_in_files = QtGui.QComboBox()
+      combo_in_files.addItem(ProcessToSomaWorkflow.NO_FILE_PROCESSING)
+      combo_in_files.addItem(ProcessToSomaWorkflow.FILE_TRANSFER)
+      combo_in_files.addItem(ProcessToSomaWorkflow.SHARED_RESOURCE_PATH)
+      submission_dlg.grid_layout.addWidget(combo_in_files, 0, 1)
+
+      combo_out_files = QtGui.QComboBox()
+      combo_out_files.addItem(ProcessToSomaWorkflow.NO_FILE_PROCESSING)
+      combo_out_files.addItem(ProcessToSomaWorkflow.FILE_TRANSFER)
+      combo_out_files.addItem(ProcessToSomaWorkflow.SHARED_RESOURCE_PATH)
+      submission_dlg.grid_layout.addWidget(combo_out_files, 1, 1)
+
+
+      if submission_dlg.exec_() != QtGui.QDialog.Accepted:
+        return
+
+      name = unicode(submission_dlg.lineedit_wf_name.text())
+      if name == "": name = SomaWorkflowWidget.brainvisa_code
+      else: name = SomaWorkflowWidget.brainvisa_code + name
+      qtdt = submission_dlg.dateTimeEdit_expiration.dateTime()
+      date = datetime(qtdt.date().year(), qtdt.date().month(), qtdt.date().day(), 
+                      qtdt.time().hour(), qtdt.time().minute(), qtdt.time().second())
+      queue =  unicode(submission_dlg.combo_queue.currentText()).encode('utf-8')
+      if queue == "default queue": queue = None
+
+      input_file_processing = combo_in_files.currentText()
+      output_file_processing = combo_out_files.currentText()
+
+      ptowf = ProcessToSomaWorkflow(self.process,
+                                  input_file_processing = input_file_processing, 
+                                  output_file_processing = output_file_processing)
+      workflow = ptowf.doIt()
+      workflow.name = SomaWorkflowWidget.brainvisa_code
+      
+      #store the process in workflow.user_storage
+      serialized_proc = StringIO.StringIO()
+      event = self.createProcessExecutionEvent()
+      event.save(serialized_proc)
+
+      to_store = [SomaWorkflowWidget.brainvisa_code, serialized_proc.getvalue()]
+      workflow.user_storage = to_store
+      
+      serialized_proc.close()
+      neuroProcesses._workflow_application_model.add_workflow(workflow, 
+                                             datetime.now() + timedelta(days=5))
+      (wf_id, resource_id) = _mainWindow.sw_widget.submit_workflow(date,
+                                                                   name,
+                                                                   queue)
+
+      self.soma_workflow_id = wf_id
+      self.soma_workflow_resource = resource_id
+
+      self.display_workflow_tree_view()
+      
+    except:
+      neuroException.showException()
+    finally:
+      if self.btnRunSomaWorkflow:
+        self.btnRunSomaWorkflow.setEnabled(True)
   
   def _interruptStepButton( self, executionFunction=None ):
     if self._running:
@@ -1655,7 +1916,6 @@ class ProcessView( QWidget, ExecutionContextGUI ):
                                  input_file_processing = input_file_processing, 
                                  output_file_processing = output_file_processing)
     ptowf.doIt()
-    
   
   def _distributeButton( self ):
     self.readUserValues()
@@ -1746,8 +2006,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     if minf:
       showProcess( neuroProcesses.getProcessInstance( minf ) )
 
+
 #----------------------------------------------------------------------------
-def showProcess( process, *args, **kwargs ):
+def showProcess( process, *args, **kwargs):
   '''Opens a process window and set the corresponding arguments'''
   global _mainWindow
   if isinstance( process, type ) and issubclass( process, newProcess.NewProcess ):
@@ -1758,7 +2019,7 @@ def showProcess( process, *args, **kwargs ):
   else:
     process = neuroProcesses.getProcessInstance( process )
     if process is None:
-      raise RuntimeError( HTMLMessage(_t_( 'Invalid process <em>%s</em>' ) % ( str(process), )) )
+      raise RuntimeError( neuroException.HTMLMessage(_t_( 'Invalid process <em>%s</em>' ) % ( str(process), )) )
     for i in xrange( len( args ) ):
       k, p = process.signature.items()[ i ]
       process.setValue( k, args[ i ] )
@@ -2099,6 +2360,10 @@ class ProcessSelectionWidget( QMainWindow ):
   Provides navigation among processes and creation of user profiles (sub group of processes).
   """
 
+  # Soma-Workflow widget for workflow execution on various computing resources
+  # SomaWorkflowWidget
+  sw_widget = None
+
   def __init__( self ):
     QMainWindow.__init__( self )
     
@@ -2111,6 +2376,19 @@ class ProcessSelectionWidget( QMainWindow ):
     centralWidget=QWidget()
     self.setCentralWidget(centralWidget)
     
+    if neuroProcesses._workflow_application_model != None:
+      sw_dialog = QDialog(self)
+      sw_layout = QHBoxLayout()
+      sw_layout.setMargin(0)
+      sw_dialog.setLayout(sw_layout)
+      self.sw_widget = SomaWorkflowWidget(neuroProcesses._workflow_application_model,
+                         computing_resource=socket.gethostname(),
+                         parent=self)
+      sw_layout.addWidget(self.sw_widget)
+      sw_dialog.show()
+    else:
+      self.sw_widget = None
+
     # Menu setup
     menu = self.menuBar()
     addBrainVISAMenu( self, menu )
