@@ -1061,16 +1061,20 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     menu_layout.setSpacing(4)
     self.setLayout(menu_layout)
   
-    self.central_layout = QHBoxLayout()
-    self.central_layout.setMargin(5)
-    self.central_layout.setSpacing(4)
+    self.central_widget = QSplitter(Qt.Horizontal)
+    self.central_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
   
     centralWidgetLayout=QVBoxLayout()
     centralWidgetLayout.setMargin( 5 )
     centralWidgetLayout.setSpacing( 4 )
-    #self.setLayout(centralWidgetLayout)
-    self.central_layout.addLayout(centralWidgetLayout)
-    
+
+    centralWidgetFrame = QFrame(self)
+    sizePolicy=QSizePolicy( QSizePolicy.Expanding, QSizePolicy.Preferred)
+    sizePolicy.setHorizontalStretch(50)
+    sizePolicy.setVerticalStretch(50)
+    centralWidgetFrame.setSizePolicy(sizePolicy)
+    centralWidgetFrame.setLayout(centralWidgetLayout)
+    self.central_widget.addWidget(centralWidgetFrame)
 
     self.setWindowIcon( self.pixIcon )
     self.workflowEnabled = False
@@ -1093,7 +1097,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       
       menu_layout.addWidget(self.menu)
 
-    menu_layout.addLayout(self.central_layout)
+    menu_layout.addWidget(self.central_widget)
     self.connect( self, SIGNAL( 'destroyed()' ), self.cleanup )
 
     process = neuroProcesses.getProcessInstance( processId )
@@ -1344,7 +1348,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
       self.connect(self.workflow_tree_view, QtCore.SIGNAL('selection_model_changed(QItemSelectionModel)'), self.workflow_item_view.setSelectionModel)
       
-      self.central_layout.addWidget(self.wf_exec_widget)
+      self.central_widget.addWidget(self.wf_exec_widget)
 
       self.workflow_tree_view.currentWorkflowChanged()
       self.workflow_plot_view.workflowChanged()
