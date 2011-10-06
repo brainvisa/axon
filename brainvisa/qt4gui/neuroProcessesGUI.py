@@ -2381,15 +2381,10 @@ class ProcessSelectionWidget( QMainWindow ):
     self.setCentralWidget(centralWidget)
     
     if neuroProcesses._workflow_application_model != None:
-      sw_dialog = QDialog(self)
-      sw_layout = QHBoxLayout()
-      sw_layout.setMargin(0)
-      sw_dialog.setLayout(sw_layout)
       self.sw_widget = SomaWorkflowWidget(neuroProcesses._workflow_application_model,
                          computing_resource=socket.gethostname(),
-                         parent=self)
-      sw_layout.addWidget(self.sw_widget)
-      sw_dialog.show()
+                         parent=None)
+      self.sw_widget.show()
     else:
       self.sw_widget = None
 
