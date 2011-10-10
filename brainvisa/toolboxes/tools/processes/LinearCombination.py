@@ -58,7 +58,7 @@ signature = Signature(
   'type', Choice( ( '<Same as input>', None), 'U8', 'S8', 'U16', 'S16', 'U32', 'S32', 'FLOAT', 'DOUBLE' ),  
 )
 
-def initialization( self ): 
+def initialization( self ):
   self.setOptional('multiplicative_coefficient1', 'divisor_coefficient1','multiplicative_coefficient2', 'divisor_coefficient2', 'constant', 'type')
   self.multiplicative_coefficient1=1
   self.multiplicative_coefficient2=1
