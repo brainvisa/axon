@@ -2276,7 +2276,13 @@ def readTypes():
   try:
     files = shelltools.filesFromShPatterns( *[os.path.join( path, '*.py' ) for path in neuroConfig.typesPath] )
     files.sort()
-    mef.execute( continue_on_error=True, *files )
+    exc=mef.execute( continue_on_error=True, *files )
+    if exc:
+      for e in exc:
+        try:
+          raise e
+        except:
+          showException(beforeError="Error while reading types file: ")
     typesLastModification = max( (os.stat(f).st_mtime for f in mef.executedFiles()) )
   except:
     showException()
