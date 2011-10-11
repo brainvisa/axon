@@ -892,7 +892,12 @@ for toolbox in allToolboxes():
 
 # add brainvisa shared database to the list of available databases
 sharedDatabaseFound=False
-for p in ( os.path.join( getSharePath(), 'brainvisa-share-' + shortVersion ),
+try:
+  import brainvisa_share.config
+  bvShareDirectory= brainvisa_share.config.share
+except:
+  bvShareDirectory='brainvisa-share-' + shortVersion
+for p in ( os.path.join( getSharePath(), bvShareDirectory ),
           os.path.join( getSharePath(), 'shfj-' + shortVersion ),
           os.path.join( getSharePath(), 'shfj' ) ):
   if os.path.isdir( p ):
