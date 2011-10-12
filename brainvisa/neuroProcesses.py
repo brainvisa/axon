@@ -185,7 +185,7 @@ from soma.somatime import timeDifferenceToString
 
 from neuroData import *
 from neuroDiskItems import *
-import neuroConfig
+import neuroConfig, neuroDiskItems
 import neuroLog
 from neuroException import *
 import Scheduler
@@ -193,8 +193,9 @@ from brainvisa import matlab
 from brainvisa.validation import ValidationError
 from brainvisa.debug import debugHere
 from brainvisa.data.sqlFSODatabase import Database, NotInDatabaseError
+import brainvisa.toolboxes
 import neuroPopen2
-
+import fileSystemOntology
 try:
   from soma.workflow.gui.workflowGui import ComputingResourcePool
   from soma.workflow.gui.workflowGui import ApplicationModel as WorkflowApplicationModel
@@ -4074,7 +4075,7 @@ def readProcesses( processesPath ):
     _allProcessesTree=ProcessTree("Various processes", "all processes",editable=False, user=False)
     for processesDir in processesPath:
       _allProcessesTree.addDir(processesDir, "", processesCache)
-    for toolbox in neuroConfig.allToolboxes():
+    for toolbox in brainvisa.toolboxes.allToolboxes():
       toolbox.getProcessTree()
 
     # save processes cache
@@ -4630,8 +4631,39 @@ def cleanupProcesses():
     _readProcessLog.close()
     _readProcessLog = None
 
-# ---
+#----------------------------------------------------------------------------
+def reloadToolboxes():
+  """
+  Reloads toolboxes, processes, types, ontology rules, databases. 
+  Useful to take into account new files without having to quit and start again Brainvisa.
+  """
+  import neuroHierarchy
+  global _mainProcessTree
+  
+  # init typesPath and fileSystemOntologiesPath
+  neuroConfig.initializeOntologyPaths()
+  
+  # read toolboxes directories: useful if there are new toolbox, process, types, or hierarchy files
+  brainvisa.toolboxes.readToolboxes(neuroConfig.toolboxesDir, neuroConfig.homeBrainVISADir)
+  # execute intialization files of toolboxes
+  for toolbox in brainvisa.toolboxes.allToolboxes():
+    toolbox.init()
+  
+  # reload lists of types and formats
+  neuroDiskItems.reloadTypes()
+  
+  # reload processes
+  readProcesses(neuroConfig.processesPath)
+  # update the list of processes
+  _mainProcessTree=None
+  updatedMainProcessTree()
+  
+  # update databases and ontology rules
+  fileSystemOntology.FileSystemOntology.clear()
+  neuroHierarchy.initializeDatabases()
+  neuroHierarchy.openDatabases()
 
+#----------------------------------------------------------------------------
 if not _neuroDistributedProcesses:
   # TODO: use log
   if globals().has_key( '_t_' ):

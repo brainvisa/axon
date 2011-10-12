@@ -50,7 +50,10 @@ import os, sys
 # Force QString API version in order to be compatible with recent version
 # of enthought.traits.ui (3.6 for instance)
 import sip
-sip.setapi( 'QString', 2 )
+try:
+  sip.setapi( 'QString', 2 )
+except:
+  print "WARNING: impossible to use version 2 of API QString."
 
 import brainvisa
 brainvisa_path=os.path.join( os.path.dirname( os.path.dirname( \

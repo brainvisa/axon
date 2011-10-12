@@ -943,6 +943,9 @@ class FileSystemOntology( object ):
     return result
   get = staticmethod( get )
 
+  def clear():
+    FileSystemOntology.__instances={}
+  clear=staticmethod( clear )
   #--------------------------------------------------------------------------
   class __Reader( MultipleExecfile ):
     """

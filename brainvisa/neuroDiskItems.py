@@ -1350,7 +1350,6 @@ class BackwardCompatiblePatterns:
 formats = {}
 formatLists = {}
 
-
 #----------------------------------------------------------------------------
 class Format:
   """
@@ -2262,10 +2261,10 @@ class TypesMEF( MultipleExecfile ):
       module = file
     return ( toolbox, module )
   
-  
-
 mef = TypesMEF()
 mef.fileExtensions.append( '.py' )
+  
+  
 def readTypes():
   """
   This function loads types and formats by reading Brainvisa ontology types files.
@@ -2287,6 +2286,31 @@ def readTypes():
   except:
     showException()
 
+
+def reloadTypes():
+  """
+  This function reinitializes the global variables used to store the types and formats before calling :py:func:`readTypes`.
+  """
+  global formats
+  global formatLists
+  global diskItemTypes
+  global typesLastModification
+  global mef
+  global directoryFormat
+  global fileFormat
+  
+  formats={}
+  formatLists={}
+  diskItemTypes={}
+  typesLastModification=0
+  mef = TypesMEF()
+  mef.fileExtensions.append( '.py' )
+  directoryFormat = Format( 'Directory', 'd|*', ignoreExclusive=1 )
+  fileFormat = Format( 'File', 'f|*', ignoreExclusive=1 )
+  
+  readTypes()
+  
+  
 #----------------------------------------------------------------------------
 try:
   from soma import aims

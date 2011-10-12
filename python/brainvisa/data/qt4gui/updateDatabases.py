@@ -43,8 +43,8 @@ __docformat__ = "epytext en"
 import backwardCompatibleQt as qt
 import neuroConfig
 import neuroHierarchy
-from neuroProcesses import getProcessInstance
-from neuroProcessesGUI import ProcessView
+import neuroProcesses
+import neuroProcessesGUI
 
 
 class UpdateDatabasesGUI( qt.QWidget ):
@@ -108,7 +108,7 @@ def warnUserAboutDatabasesToUpdate():
       except RuntimeError:
         _ontologiesModificationDialog = None
     if _ontologiesModificationDialog is None or _ontologiesModificationDialog.info is None:
-      _ontologiesModificationDialog = ProcessView( getProcessInstance( 'updateDatabases' ) )
+      _ontologiesModificationDialog = neuroProcessesGUI.ProcessView( neuroProcesses.getProcessInstance( 'updateDatabases' ) )
       _ontologiesModificationDialog.labName.setText( '<html><body><font color=red>' + _t_( 'Some ontologies (i.e. databases organization) have been modified but are used by currently selected databases. To take this modification into account, it is necessary to update the databases selected below. Please click on the "Update" button below.' ) +'</font></body></html>' )
       for i in xrange( _ontologiesModificationDialog.inlineGUI.lvDatabases.count() ):
         _ontologiesModificationDialog.inlineGUI.lvDatabases.item( i ).setCheckState(qt.Qt.Unchecked)

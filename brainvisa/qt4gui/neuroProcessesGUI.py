@@ -48,8 +48,8 @@ import neuroLogGUI
 import neuroData
 from brainvisa.wip import newProcess
 from brainvisa.history import ProcessExecutionEvent
-from neuroProcesses import procdocToXHTML, writeProcdoc, generateHTMLProcessesDocumentation
-
+import neuroProcesses
+from brainvisa.data.qtgui.updateDatabases import warnUserAboutDatabasesToUpdate
 import weakref
 from soma.minf.xhtml import XHTML
 from soma.qtgui.api import QtThreadCall, FakeQtThreadCall, TextBrowserWithSearch, bigIconSize, defaultIconSize
@@ -345,6 +345,7 @@ def addBrainVISAMenu( widget, menuBar ):
   bvMenu.addAction( _t_( "&Preferences" ), neuroConfig.editConfiguration, Qt.CTRL + Qt.Key_P )
   bvMenu.addAction( _t_( "Show &Log" ), logRequest, Qt.CTRL + Qt.Key_L )
   bvMenu.addAction( _t_( "&Open process..." ), ProcessView.open, Qt.CTRL + Qt.Key_O )
+  bvMenu.addAction( _t_( "Reload toolboxes" ), reloadToolboxesGUI )
   bvMenu.addAction( _t_( "Start &Shell" ), startShell, Qt.CTRL + Qt.Key_S )
   bvMenu.addSeparator()
   if not isinstance( widget, ProcessSelectionWidget ):
@@ -2307,9 +2308,9 @@ class ProcessEdit( QDialog ):
     self.documentation = neuroProcesses.readProcdoc( self.process )
 
   def writeDocumentation( self ):
-    procdocToXHTML( self.documentation )
+    neuroProcesses.procdocToXHTML( self.documentation )
     self.setLanguage( self.language )
-    writeProcdoc( self.process, self.documentation )
+    neuroProcesses.writeProcdoc( self.process, self.documentation )
 
   def setLanguage( self, lang ):
     self.leHTMLPath.setText(XHTML.html(self.documentation.get( 'htmlPath', '' )) )
@@ -2350,7 +2351,7 @@ class ProcessEdit( QDialog ):
   def applyChanges( self ):
     self.saveLanguage()
     self.writeDocumentation()
-    generateHTMLProcessesDocumentation( self.process )
+    neuroProcesses.generateHTMLProcessesDocumentation( self.process )
 
   def accept( self ):
     self.applyChanges()
@@ -2838,7 +2839,8 @@ class ProcessTreesWidget(QSplitter):
     """
     Changes the visible widget in the stack.
     """
-    self.treeStack.setCurrentIndex( self.treeStackIdentifiers.get( object.__hash__( item.model ) ) )
+    if item:
+      self.treeStack.setCurrentIndex( self.treeStackIdentifiers.get( object.__hash__( item.model ) ) )
 
   def findItem( self, name):
     """
@@ -3112,6 +3114,15 @@ def showMainWindow():
 def updateProcessList():
   _mainWindow.updateList()
 
+def reloadToolboxesGUI():
+  """
+  Calls :py:func:`neuroProcesses.reloadToolboxes` and updates the main window (list of toolboxes or processes may have changed).
+  If some databases should be updated, the user is warned.
+  """
+  neuroProcesses.reloadToolboxes()
+  updateProcessList()
+  warnUserAboutDatabasesToUpdate()
+  
 #----------------------------------------------------------------------------
 def mainThreadActions():
   return _mainThreadActions

@@ -56,10 +56,9 @@ from soma.notification import Notifier
 from soma.databases.api import sqlite3, ThreadSafeSQLiteConnection
 
 from fileSystemOntology import FileSystemOntology, SetContent
-from neuroProcesses import diskItemTypes, getDiskItemType
-import neuroProcesses, neuroConfig
+import neuroProcesses, neuroConfig, neuroDiskItems
 from neuroException import showWarning
-from neuroDiskItems import getFormat, getFormats, Format, FormatSeries, File, Directory, getAllFormats, MinfFormat
+from neuroDiskItems import getFormat, getFormats, Format, FormatSeries, File, Directory, getAllFormats, MinfFormat, getDiskItemType
 from neuroException import HTMLMessage
 from brainvisa.data.patterns import DictPattern
 from brainvisa.data.sql import mangleSQL, unmangleSQL
@@ -402,7 +401,7 @@ class SQLDatabase( Database ):
     
     self.typesWithTable = set()
     self._childrenByTypeName = {}
-    for type in diskItemTypes.itervalues():
+    for type in neuroDiskItems.diskItemTypes.itervalues():
       self._childrenByTypeName.setdefault( type.name, set() ).add( type.name )
       p = type.parent
       while p is not None:

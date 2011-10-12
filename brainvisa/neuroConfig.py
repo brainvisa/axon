@@ -325,8 +325,20 @@ def getSharePath():
       _sharePath = ''
   return _sharePath
 
+def initializeOntologyPaths():
+  """
+  Initializes the global variables :py:data:`typesPath` and :py:data:`fileSystemOntologiesPath`.
+  This function is used when toolboxes are reloaded.
+  """
+  global typesPath
+  global fileSystemOntologiesPath
+  global mainPath
+  typesPath = [ os.path.join( mainPath, 'types' ) ]
+  fileSystemOntologiesPath = [ os.path.join( mainPath, 'hierarchies' ) ]
+
+initializeOntologyPaths()
 processesPath = [ os.path.join( mainPath, 'processes' ) ]
-typesPath = [ os.path.join( mainPath, 'types' ) ]
+
 for projectName in ( 'axon', 'brainvisa' ):
   sharePath = os.path.join( getSharePath(), projectName + '-' + shortVersion )
   if os.path.isdir( sharePath ):
@@ -469,7 +481,6 @@ spmDirectory=''
 textEditor = ''
 
 matlabStartup = []
-fileSystemOntologiesPath = [ os.path.join( mainPath, 'hierarchies' ) ]
 dataPath= []
 clearCacheRequest = False
 cacheUpdateRequest = False
@@ -879,16 +890,9 @@ if not fastStart:
 else:
   runsInfo = None
 
-from brainvisa.toolboxes import readToolboxes, allToolboxes
 from neuroException import showException
 
 initializeConfiguration()
-
-if not noToolBox:
-  readToolboxes( toolboxesDir, homeBrainVISADir )
-
-for toolbox in allToolboxes():
-  toolbox.init()
 
 # add brainvisa shared database to the list of available databases
 sharedDatabaseFound=False
@@ -912,17 +916,6 @@ if not fastStart:
       globals()[ attr ] += value
     else:
       globals()[ attr ] = value
-
-
-  # executes brainvisa startup.py if it exists. there's no use to execute user startup.py here because .brainvisa is a toolbox and its startup.py will be executed with the toolboxes' ones.
-  if os.path.exists(siteStartupFile):
-    startup.append( "execfile(" + repr(siteStartupFile) + ",globals(),{})" )
-  # Search for hierarchy and types paths in toolboxes
-  for toolbox in allToolboxes():
-    # executes startup.py of each toolbox if it exists
-    if os.path.exists( toolbox.startupFile ):
-      startup.append( "execfile(" + repr(toolbox.startupFile) + ",globals(),{})" )
-
 
   # Clean pathes
   for p in ( typesPath, dataPath, processesPath, fileSystemOntologiesPath, matlabPath ):
@@ -1068,3 +1061,4 @@ def environmentHTML():
     content += '<code><em>'+ n + '</em> = ' + htmlEscape( str( g[ n ] ) ) + '</code><p>'
   content += '</body></html>'
   return content
+

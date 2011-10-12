@@ -156,8 +156,8 @@ Format( 'HTML', 'f|*.html' )
 # Make 'Series of SPM image' format exists
 changeToFormatSeries( getFormat( 'SPM image' ) )
 
-
 import shfjGlobals
+shfjGlobals.initializeFormatLists()
 
 #-------------- General types ---------------------
 

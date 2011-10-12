@@ -32,7 +32,7 @@
 
 from backwardCompatibleQt import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QCheckBox, QSizePolicy, QSpacerItem, QPushButton, SIGNAL, QMenu, QTextEdit
 import neuroConfig
-from neuroProcesses import defaultContext
+import neuroProcesses
 import neuroLog
 import brainvisa.mailing as mailing
 import smtplib, string
@@ -105,7 +105,7 @@ class BugReportDialog( QWidget ):
     outer.attach( msg )
     if self.chkSendLog.isChecked() and neuroConfig.logFileName:
       # Copy and expand log file
-      tmp = defaultContext().temporary( 'File' )
+      tmp = neuroProcesses.defaultContext().temporary( 'File' )
       neuroLog.expandedCopy( neuroConfig.logFileName, tmp.fullPath() )
 
       # Attach log file content
@@ -149,7 +149,7 @@ def addSupportMenu( widget, menuBar ):
     except:
       showException()
   else:
-    defaultContext().log( _t_( 'Feature disabled' ),
+    neuroProcesses.defaultContext().log( _t_( 'Feature disabled' ),
                           html=_t_( 'Bug report feature is disabled due to ' \
                                'missing email module in python' ),
                           icon='warning.png' )

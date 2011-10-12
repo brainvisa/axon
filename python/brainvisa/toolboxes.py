@@ -35,7 +35,7 @@ from soma.minf.api import readMinf, minfFormat
 from soma.sorted_dictionary import SortedDictionary
 from soma.wip.application.api import findIconFile
 from neuroException import showException
-from neuroConfig import fileSystemOntologiesPath, typesPath
+import neuroConfig
 
 class Toolbox( object ):
   """
@@ -126,9 +126,9 @@ class Toolbox( object ):
       except:
         showException()
     if os.path.isdir( self.fsoDir ):
-      fileSystemOntologiesPath.append( self.fsoDir )
+      neuroConfig.fileSystemOntologiesPath.append( self.fsoDir )
     if os.path.isdir( self.typesDir ):
-      typesPath.append( self.typesDir )
+      neuroConfig.typesPath.append( self.typesDir )
   
 _toolboxes = {}
   

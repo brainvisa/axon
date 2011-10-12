@@ -75,6 +75,7 @@ if USE_QT4:
 from soma.wip.application.api import Application
 from soma.signature.api import Choice as SomaChoice
 import neuroConfig
+from brainvisa.toolboxes import readToolboxes, allToolboxes
 import Server
 from brainvisa.data import temporary
 from qtgui.neuroConfigGUI import *
@@ -138,6 +139,12 @@ def main():
   #  sys.excepthook = exceptionHook
   # InitializationoptionFile
   try:
+    if not noToolBox:
+      readToolboxes( neuroConfig.toolboxesDir, neuroConfig.homeBrainVISADir )
+
+    for toolbox in allToolboxes():
+      toolbox.init()
+
     temporary.initializeTemporaryFiles( 
       defaultTemporaryDirectory = neuroConfig.temporaryDirectory )
     atexit.register( temporary.manager.__del__ )
@@ -233,6 +240,16 @@ def main():
   if neuroConfig.gui:
     showMainWindow()
   
+  if not neuroConfig.fastStart:
+    # executes brainvisa startup.py if it exists. there's no use to execute user startup.py here because .brainvisa is a toolbox and its startup.py will be executed with the toolboxes' ones.
+    if os.path.exists(neuroConfig.siteStartupFile):
+      neuroConfig.startup.append( "execfile(" + repr(neuroConfig.siteStartupFile) + ",globals(),{})" )
+    # Search for hierarchy and types paths in toolboxes
+    for toolbox in allToolboxes():
+      # executes startup.py of each toolbox if it exists
+      if os.path.exists( toolbox.startupFile ):
+        neuroConfig.startup.append( "execfile(" + repr(toolbox.startupFile) + ",globals(),{})" )
+
   localsStartup = {}
   for f in neuroConfig.startup:
     try:

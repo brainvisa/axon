@@ -37,7 +37,6 @@ from soma.wip.application.api import findIconFile
 from soma.qtgui.api import largeIconSize
 from brainvisa.data.qtgui.diskItemBrowser import DiskItemBrowser
 from neuroDataGUI import DataEditor, StringListEditor, buttonMargin, buttonIconSize
-from neuroProcesses import defaultContext
 import neuroProcesses
 import neuroProcessesGUI
 from neuroDiskItems import DiskItem, Directory
@@ -236,7 +235,7 @@ class DiskItemEditor( QWidget, DataEditor ):
       try :
         viewer = neuroProcesses.getViewer( v, 1 )()
         viewerExists = True
-        defaultContext().runInteractiveProcess( self._viewerExited, viewer, v )
+        neuroProcesses.defaultContext().runInteractiveProcess( self._viewerExited, viewer, v )
       except Exception, error :
         self.btnShow.setChecked( False )
         if viewerExists:
@@ -266,7 +265,7 @@ class DiskItemEditor( QWidget, DataEditor ):
       self.btnEdit.setEnabled( 0 )
       v = self.getValue()
       editor = neuroProcesses.getDataEditor( v )()
-      defaultContext().runInteractiveProcess( self._editorExited, editor, v )
+      neuroProcesses.defaultContext().runInteractiveProcess( self._editorExited, editor, v )
     else:
       self._edit = None
   
@@ -767,7 +766,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
       v = self.getValue()
       try :
         viewer = neuroProcesses.getViewer( v, 0, listof=True )()
-        defaultContext().runInteractiveProcess( self._viewerExited, viewer, v )
+        neuroProcesses.defaultContext().runInteractiveProcess( self._viewerExited, viewer, v )
       except Exception, error :
         raise RuntimeError( HTMLMessage(_t_( 'No viewer could be found or launched for type =<em>%s</em> and format=<em>%s</em>' ) % (unicode( v.type ), unicode(v.format))) )
     else:
@@ -793,7 +792,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
       self.btnEdit.setEnabled( 0 )
       v = self.getValue()
       editor = neuroProcesses.getDataEditor( v, listof=True )()
-      defaultContext().runInteractiveProcess( self._editorExited, editor, v )
+      neuroProcesses.defaultContext().runInteractiveProcess( self._editorExited, editor, v )
     else:
       self._edit = None
   

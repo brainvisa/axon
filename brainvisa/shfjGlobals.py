@@ -66,6 +66,7 @@ This module defines several lists of formats (:py:class:`neuroDiskItems.NamedFor
 
   The name of the list is *Anatomist texture formats* and it contains the texture formats which are handled by Anatomist.
 
+These global variables are initialized through the function :py:func:`initializeFormatLists`.
 """
 import os, string
 from neuroDiskItems import createFormatList, getFormat, aimsFileInfo
@@ -76,172 +77,183 @@ import neuroConfig
 # at the begining of the list.
 #------------
 
-anatomistVolumeFormats = createFormatList(
-  'Anatomist volume formats',
-  (
-    'GIS Image',
-    'SPM image',
-    'VIDA Image',
-    'ECAT v image',
-    'ECAT i image',
-    'Z Compressed GIS Image',
-    'gz Compressed GIS Image',
-    'Z compressed VIDA Image',
-    'gz compressed VIDA Image',
-    'Z compressed SPM image',
-    'gz compressed SPM image',
-    'Z compressed ECAT v image',
-    'gz compressed ECAT v image',
-    'Z compressed ECAT i image',
-    'gz compressed ECAT i image',
-    'JPEG image',
-    'GIF image',
-    'PNG image',
-    'MNG image',
-    'BMP image',
-    'PBM image',
-    'PGM image',
-    'PPM image',
-    'XBM image',
-    'XPM image',
-    'TIFF image',
-    'TIFF(.tif) image',
-    'MINC image',
-    'gz compressed MINC image',
-    'NIFTI-1 image',
-    'gz compressed NIFTI-1 image',
-    'DICOM image',
+def initializeFormatLists():
+  """
+  Initializes several lists of formats. The lists are stored in global variables.
+  """
+  global anatomistVolumeFormats
+  anatomistVolumeFormats = createFormatList(
+    'Anatomist volume formats',
+    (
+      'GIS Image',
+      'SPM image',
+      'VIDA Image',
+      'ECAT v image',
+      'ECAT i image',
+      'Z Compressed GIS Image',
+      'gz Compressed GIS Image',
+      'Z compressed VIDA Image',
+      'gz compressed VIDA Image',
+      'Z compressed SPM image',
+      'gz compressed SPM image',
+      'Z compressed ECAT v image',
+      'gz compressed ECAT v image',
+      'Z compressed ECAT i image',
+      'gz compressed ECAT i image',
+      'JPEG image',
+      'GIF image',
+      'PNG image',
+      'MNG image',
+      'BMP image',
+      'PBM image',
+      'PGM image',
+      'PPM image',
+      'XBM image',
+      'XPM image',
+      'TIFF image',
+      'TIFF(.tif) image',
+      'MINC image',
+      'gz compressed MINC image',
+      'NIFTI-1 image',
+      'gz compressed NIFTI-1 image',
+      'DICOM image',
+    )
   )
-)
-
-
-aimsVolumeFormats = createFormatList(
-  'Aims readable volume formats',
-  (
-    'GIS Image',
-    'SPM image',
-    'VIDA Image',
-    'ECAT v image',
-    'ECAT i image',
-    'JPEG image',
-    'GIF image',
-    'PNG image',
-    'MNG image',
-    'BMP image',
-    'PBM image',
-    'PGM image',
-    'PPM image',
-    'XBM image',
-    'XPM image',
-    'TIFF image',
-    'TIFF(.tif) image',
-    'MINC image',
-    'gz compressed MINC image',
-    'NIFTI-1 image',
-    'gz compressed NIFTI-1 image',
-    'DICOM image',
+  global aimsVolumeFormats
+  aimsVolumeFormats = createFormatList(
+    'Aims readable volume formats',
+    (
+      'GIS Image',
+      'SPM image',
+      'VIDA Image',
+      'ECAT v image',
+      'ECAT i image',
+      'JPEG image',
+      'GIF image',
+      'PNG image',
+      'MNG image',
+      'BMP image',
+      'PBM image',
+      'PGM image',
+      'PPM image',
+      'XBM image',
+      'XPM image',
+      'TIFF image',
+      'TIFF(.tif) image',
+      'MINC image',
+      'gz compressed MINC image',
+      'NIFTI-1 image',
+      'gz compressed NIFTI-1 image',
+      'DICOM image',
+    )
   )
-)
 
-aimsWriteVolumeFormats = createFormatList(
-  'Aims writable volume formats',
-  (
-    'GIS Image',
-    'SPM image',
-    'VIDA Image',
-    'ECAT v image',
-    'ECAT i image',
-    'JPEG image',
-    'GIF image',
-    'PNG image',
-    'MNG image',
-    'BMP image',
-    'PBM image',
-    'PGM image',
-    'PPM image',
-    'XBM image',
-    'XPM image',
-    'TIFF image',
-    'MINC image',
-    'NIFTI-1 image',
-    'gz compressed NIFTI-1 image',
+  global aimsWriteVolumeFormats
+  aimsWriteVolumeFormats = createFormatList(
+    'Aims writable volume formats',
+    (
+      'GIS Image',
+      'SPM image',
+      'VIDA Image',
+      'ECAT v image',
+      'ECAT i image',
+      'JPEG image',
+      'GIF image',
+      'PNG image',
+      'MNG image',
+      'BMP image',
+      'PBM image',
+      'PGM image',
+      'PPM image',
+      'XBM image',
+      'XPM image',
+      'TIFF image',
+      'MINC image',
+      'NIFTI-1 image',
+      'gz compressed NIFTI-1 image',
+    )
   )
-)
 
-aimsImageFormats = createFormatList(
-  'Aims image formats',
-  (
-    'JPEG image',
-    'GIF image',
-    'PNG image',
-    'MNG image',
-    'BMP image',
-    'PBM image',
-    'PGM image',
-    'PPM image',
-    'XBM image',
-    'XPM image',
-    'TIFF image',
-    'TIFF(.tif) image',
+  global aimsImageFormats
+  aimsImageFormats = createFormatList(
+    'Aims image formats',
+    (
+      'JPEG image',
+      'GIF image',
+      'PNG image',
+      'MNG image',
+      'BMP image',
+      'PBM image',
+      'PGM image',
+      'PPM image',
+      'XBM image',
+      'XPM image',
+      'TIFF image',
+      'TIFF(.tif) image',
+    )
   )
-)
-_aimsVolumeFormats = None
+  
+  global _aimsVolumeFormats
+  _aimsVolumeFormats = None
 
-anatomistMeshFormats = createFormatList(
-  'Anatomist mesh formats',
-  (
-    'MESH mesh',
-    'TRI mesh',
-    'Z compressed MESH mesh',
-    'gz compressed MESH mesh',
-    'Z compressed TRI mesh',
-    'gz compressed TRI mesh',
-    'PLY mesh',
-    'Z compressed PLY mesh',
-    'gz compressed PLY mesh',
-    'GIFTI file',
-    'Z compressed GIFTI file',
-    'gz compressed GIFTI file',
-    'MNI OBJ mesh',
-    'Z compressed MNI OBJ mesh',
-    'gz compressed MNI OBJ mesh',
+  global anatomistMeshFormats
+  anatomistMeshFormats = createFormatList(
+    'Anatomist mesh formats',
+    (
+      'MESH mesh',
+      'TRI mesh',
+      'Z compressed MESH mesh',
+      'gz compressed MESH mesh',
+      'Z compressed TRI mesh',
+      'gz compressed TRI mesh',
+      'PLY mesh',
+      'Z compressed PLY mesh',
+      'gz compressed PLY mesh',
+      'GIFTI file',
+      'Z compressed GIFTI file',
+      'gz compressed GIFTI file',
+      'MNI OBJ mesh',
+      'Z compressed MNI OBJ mesh',
+      'gz compressed MNI OBJ mesh',
+    )
   )
-)
 
-vipVolumeFormats = aimsVolumeFormats
+  global vipVolumeFormats
+  vipVolumeFormats = aimsVolumeFormats
 
-aimsMeshFormats = createFormatList(
-  'Aims mesh formats',
-  (
-    'MESH mesh',
-    'TRI mesh',
-    'PLY mesh',
-    'GIFTI file',
-    'MNI OBJ mesh',
+  global aimsMeshFormats
+  aimsMeshFormats = createFormatList(
+    'Aims mesh formats',
+    (
+      'MESH mesh',
+      'TRI mesh',
+      'PLY mesh',
+      'GIFTI file',
+      'MNI OBJ mesh',
+    )
   )
-)
 
-aimsTextureFormats = createFormatList(
-  'Aims texture formats',
-  (
-    'Texture',
-    'GIFTI file',
+  global aimsTextureFormats
+  aimsTextureFormats = createFormatList(
+    'Aims texture formats',
+    (
+      'Texture',
+      'GIFTI file',
+    )
   )
-)
 
-anatomistTextureFormats = createFormatList(
-  'Anatomist texture formats',
-  (
-    'Texture',
-    'Z compressed Texture',
-    'gz compressed texture',
-    'GIFTI file',
-    'Z compressed GIFTI file',
-    'gz compressed GIFTI file',
+  global anatomistTextureFormats
+  anatomistTextureFormats = createFormatList(
+    'Anatomist texture formats',
+    (
+      'Texture',
+      'Z compressed Texture',
+      'gz compressed texture',
+      'GIFTI file',
+      'Z compressed GIFTI file',
+      'gz compressed GIFTI file',
+    )
   )
-)
-
-_fileInfoFormats = None
 
 
 def aimsVolumeAttributes( item, writeOnly=0, forceFormat=0 ):

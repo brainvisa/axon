@@ -44,8 +44,8 @@ from soma.wip.application.api import findIconFile
 from soma.uuid import Uuid
 from soma.undefined import Undefined
 from soma.stringtools import quote_string, unquote_string, string_to_list, list_to_string
-from neuroDiskItems import DiskItem, getFormats
-from neuroProcesses import getDiskItemType, getConvertersTo
+from neuroDiskItems import DiskItem, getFormats, getDiskItemType
+import neuroProcesses
 
 #----------------------------------------------------------------------------
 class SignalNameComboBox( QComboBox ):
@@ -159,7 +159,7 @@ class DiskItemBrowser( QDialog ):
     self._formatsWithConverter = {}
     if enableConversion:
       any = getDiskItemType( 'Any type' )
-      for type_format, converter in chain( *( getConvertersTo( ( any, f ), checkUpdate=False ).iteritems() for f in getFormats( self._possibleFormats ) ) ):
+      for type_format, converter in chain( *( neuroProcesses.getConvertersTo( ( any, f ), checkUpdate=False ).iteritems() for f in getFormats( self._possibleFormats ) ) ):
           type, format = type_format
           if format.name not in self._possibleFormats:
             self._formatsWithConverter[ format.name ] = converter
