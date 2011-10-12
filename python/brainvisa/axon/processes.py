@@ -41,6 +41,7 @@ import sys, atexit
 import neuroConfig, neuroData, neuroProcesses, neuroHierarchy, neuroLog
 from minfExtensions import initializeMinfExtensions
 from brainvisa.data import temporary
+import brainvisa.toolboxes
 
 
 def initializeProcesses():
@@ -55,6 +56,10 @@ def initializeProcesses():
     The types are available through functions in :py:mod:`neuroDiskItems`.
 
     '''
+    brainvisa.toolboxes.readToolboxes( neuroConfig.toolboxesDir, neuroConfig.homeBrainVISADir )
+    for toolbox in brainvisa.toolboxes.allToolboxes():
+      toolbox.init()
+
     temporary.initializeTemporaryFiles(
             defaultTemporaryDirectory = neuroConfig.temporaryDirectory )
     atexit.register(temporary.manager.__del__)
