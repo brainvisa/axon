@@ -3119,9 +3119,11 @@ def reloadToolboxesGUI():
   Calls :py:func:`neuroProcesses.reloadToolboxes` and updates the main window (list of toolboxes or processes may have changed).
   If some databases should be updated, the user is warned.
   """
+  QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
   neuroProcesses.reloadToolboxes()
   updateProcessList()
   warnUserAboutDatabasesToUpdate()
+  QtGui.QApplication.restoreOverrideCursor()
   
 #----------------------------------------------------------------------------
 def mainThreadActions():
