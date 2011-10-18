@@ -590,7 +590,8 @@ class DiskItemListEditor( QWidget, DataEditor ):
     def browsePressed( self ):
       if self.browseDialog is None:
         self.browseDialog = QFileDialog( self.topLevelWidget() )
-        self.browseDialog.setFileMode( self.browseDialog.ExistingFiles )
+        if not self.parameter._write :
+          self.browseDialog.setFileMode( self.browseDialog.ExistingFiles )
         filters = []
         allPatterns = {}
         dirOnly = 1
