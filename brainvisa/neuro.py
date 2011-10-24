@@ -333,22 +333,53 @@ if neuroConfig.databaseServer:
     server.addDatabase( database )
   server.serve()
 
+ipConsole = None
+ipsubprocs = []
 if neuroConfig.shell:
   try:
+    neuroConfig.shell = 0
     import IPython
-    if USE_QT4:
-      ipshell = IPython.Shell.IPShellQt4( [ '-q4thread' ] )
-      from PyQt4.QtCore import QTimer
+    if [ int(x) for x in IPython.__version__.split('.') ] >= [ 0, 11 ]:
+      # IPython >= 0.11: use qtconsole
+      startapp = False
+      if ipConsole is None:
+        print 'runing IP console kernel'
+        startapp = True
+        from IPython.zmq.ipkernel import IPKernelApp
+        ipConsole = IPKernelApp.instance()
+        ipConsole.hb_port = 50043 # don't know why this is not set automatically
+        ipConsole.initialize( [ 'qtconsole', '--pylab=qt',
+          "--KernelApp.parent_appname='ipython-qtconsole'" ] )
+      import subprocess
+      sp = subprocess.Popen( [ sys.executable, '-c',
+        'from IPython.frontend.terminal.ipapp import launch_new_instance; ' \
+        'launch_new_instance()', 'qtconsole', '--existing',
+        '--shell=%d' % ipConsole.shell_port,
+        '--iopub=%d' % ipConsole.iopub_port,
+        '--stdin=%d' % ipConsole.stdin_port, '--hb=%d' % ipConsole.hb_port ] )
+      ipsubprocs.append( sp )
+      QTimer.singleShot( 0, restartAnatomist )
+      if startapp:
+        ipConsole.start()
     else:
-      ipshell = IPython.Shell.IPShellQt( [ '-qthread' ] )
-      from qt import QTimer
-    QTimer.singleShot( 0, restartAnatomist )
-    ipshell.mainloop( sys_exit=1 )
+      # Qt console does not exist in ipython <= 0.10
+      # and the API was different
+      if USE_QT4:
+        ipshell = IPython.Shell.IPShellQt4( [ '-q4thread' ] )
+        from PyQt4.QtCore import QTimer
+      else:
+        ipshell = IPython.Shell.IPShellQt( [ '-qthread' ] )
+        from qt import QTimer
+      QTimer.singleShot( 0, restartAnatomist )
+      ipshell.mainloop( sys_exit=1 )
     cleanupGui()
   except ImportError:
     print >> sys.stderr, 'IPython not found - Shell mode disabled'
     neuroConfig.shell = 0
 
+while len( ipsubprocs ) != 0:
+  sp = ipsubprocs.pop()
+  sp.kill()
 
 
 
