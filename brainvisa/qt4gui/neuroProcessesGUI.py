@@ -181,8 +181,7 @@ class SomaWorkflowWidget(ComputingResourceWidget):
                                              0)
 
     self.ui.list_widget_submitted_wfs.itemDoubleClicked.connect(self.workflow_double_clicked)
-    QtGui.QApplication.instance().focusChanged.connect(self.process_selection_changed)
-    #self.connect(self.model, QtCore.SIGNAL('current_workflow_changed()'),  self.synchronize_active_window)
+
     
   def workflow_filter(self, workflows):
     new_workflows = {}
@@ -202,14 +201,6 @@ class SomaWorkflowWidget(ComputingResourceWidget):
           self.serialized_processes[wf_id] = workflow.user_storage[1]
     return new_workflows
 
-  #@QtCore.pyqtSlot()
-  #def synchronize_active_window(self):
-    #wf_id = self.model.current_workflow.wf_id
-    #app = QtGui.QApplication.instance()
-    #for widget in app.topLevelWidgets():
-      #if isinstance(widget, ProcessView) and widget.soma_workflow_id == wf_id:
-        #app.setActiveWindow(widget)
-        #break 
 
   @QtCore.pyqtSlot()
   def workflow_double_clicked(self):
@@ -217,32 +208,223 @@ class SomaWorkflowWidget(ComputingResourceWidget):
     wf_id = selected_items[0].data(QtCore.Qt.UserRole).toInt()[0]
     serialized_proc = self.serialized_processes[wf_id]
     serialized_proc = StringIO.StringIO(serialized_proc)
+    #print "before serialize"
     proc = neuroProcesses.getProcessInstance(serialized_proc)
-    view = showProcess(proc)
-    view.soma_workflow_id = wf_id
-    view.soma_workflow_resource = self.model.current_resource_id
-    view.display_workflow_tree_view()
+    #print "after serialize"
+    #print "before view creation"
+    view = SomaWorkflowProcessView(self.model,
+                                   proc, 
+                                   wf_id, 
+                                   self.model.current_resource_id,
+                                   _mainWindow)
+    view.show()
+    #print "after view creation"
 
-  @QtCore.pyqtSlot(QWidget, QWidget)
-  def process_selection_changed(self, old, now):
-    active_window = QtGui.QApplication.instance().activeWindow()
-    if active_window != None and isinstance(active_window, ProcessView):
-      if active_window.soma_workflow_id != None: 
-        if active_window.soma_workflow_resource != self.model.current_resource_id:
-           if self.model.resource_exist(active_window.soma_workflow_resource):
-             self.model.set_current_connection(active_window.soma_workflow_resource)
-           else:
-             new_connection = self.createConnection(self.model.current_resource_id)
-             if new_connection:
-               self.model.add_connection(resource_id, new_connection)
-        found = False
-        for i in range(0, self.ui.list_widget_submitted_wfs.count()):
-          if active_window.soma_workflow_id == self.ui.list_widget_submitted_wfs.item(i).data(QtCore.Qt.UserRole).toInt()[0]:
-            self.ui.list_widget_submitted_wfs.setCurrentRow(i)
-            found = True
-            break
-        if not found:
-          self.model.clear_current_workflow()
+
+class SomaWorkflowProcessView(QMainWindow):
+
+  workflow_id = None
+
+  resource_id = None
+
+  model = None
+
+  process = None
+
+  ui = None
+
+  process_view = None
+
+  workflow_tree_view = None
+
+  workflow_item_view = None
+
+  workflow_plot_view = None
+
+  action_monitor_workflow = None
+
+  workflow_menu = None
+
+  workflow_tool_bar = None
+  
+  def __init__(self,
+               model,
+               process,
+               workflow_id,
+               resource_id,
+               parent=None):
+    super(SomaWorkflowProcessView, self).__init__(parent)
+    
+    Ui_SWProcessView = uic.loadUiType(os.path.join(os.path.dirname( __file__ ), 
+                                                'sw_process_view.ui' ))[0]
+
+    self.ui = Ui_SWProcessView()
+    self.ui.setupUi(self)
+
+    self.model = model
+    self.process = process
+    self.workflow_id = workflow_id
+    self.resource_id = resource_id
+
+    self.connect(self.model, QtCore.SIGNAL('current_workflow_changed()'),  self.current_workflow_changed)
+
+    self.setCorner(QtCore.Qt.TopLeftCorner, QtCore.Qt.LeftDockWidgetArea)
+    self.setCorner(QtCore.Qt.TopRightCorner, QtCore.Qt.RightDockWidgetArea)
+    self.setCorner(QtCore.Qt.BottomLeftCorner, QtCore.Qt.LeftDockWidgetArea)
+    self.setCorner(QtCore.Qt.BottomRightCorner, QtCore.Qt.RightDockWidgetArea)
+
+    title = _t_(self.process.name) + ' ' + unicode( self.process.instance )
+    self.setWindowTitle(title)
+      
+    self.action_monitor_workflow = QAction(_t_('Monitor execution'), self)
+    self.action_monitor_workflow.setCheckable(True)
+    self.action_monitor_workflow.setIcon(QIcon( os.path.join( neuroConfig.iconPath, 'eye.gif')))
+    self.action_monitor_workflow.toggled.connect(self.enable_workflow_monitoring)
+    self.action_monitor_workflow.setChecked(True)
+
+    self.workflow_tree_view = soma.workflow.gui.workflowGui.WorkflowTree(
+                      neuroProcesses._workflow_application_model, 
+                      assigned_wf_id=self.workflow_id, 
+                      assigned_resource_id=self.resource_id,
+                      parent=self)
+      
+    self.workflow_item_view = soma.workflow.gui.workflowGui.WorkflowElementInfo(
+                    neuroProcesses._workflow_application_model, 
+                    parent=self)
+
+    self.workflow_plot_view = soma.workflow.gui.workflowGui.WorkflowPlot(
+                    neuroProcesses._workflow_application_model, 
+                    assigned_wf_id=self.workflow_id, 
+                    assigned_resource_id=self.resource_id,
+                    parent=self)
+
+    self.workflow_info_view = soma.workflow.gui.workflowGui.WorkflowStatusNameDate(
+                    neuroProcesses._workflow_application_model, 
+                    assigned_wf_id=self.workflow_id, 
+                    assigned_resource_id=self.resource_id,
+                    parent=self)
+
+    self.workflow_menu = self.ui.menubar.addMenu("&Workflow")
+    self.workflow_menu.addAction(_mainWindow.sw_widget.ui.action_stop_wf)
+    self.workflow_menu.addAction(_mainWindow.sw_widget.ui.action_restart)
+    self.workflow_menu.addSeparator()
+    self.workflow_menu.addAction(_mainWindow.sw_widget.ui.action_transfer_infiles)
+    self.workflow_menu.addAction(_mainWindow.sw_widget.ui.action_transfer_outfiles)
+    self.workflow_menu.addSeparator()
+    self.workflow_menu.addAction(_mainWindow.sw_widget.ui.action_delete_workflow)
+    self.workflow_menu.addAction(_mainWindow.sw_widget.ui.action_change_expiration_date)
+
+    view_menu = self.ui.menubar.addMenu("&View")
+    view_menu.addAction(self.ui.dock_bv_process.toggleViewAction())
+    view_menu.addAction(self.ui.dock_plot.toggleViewAction())
+
+    self.workflow_tool_bar = QToolBar(self)
+    self.workflow_tool_bar.addWidget(self.workflow_info_view.ui.wf_status_icon)
+    self.workflow_tool_bar.addWidget(self.workflow_info_view.ui.wf_name)
+    self.workflow_tool_bar.addSeparator()
+    self.workflow_tool_bar.addAction(_mainWindow.sw_widget.ui.action_stop_wf)
+    self.workflow_tool_bar.addAction(_mainWindow.sw_widget.ui.action_restart)
+    self.workflow_tool_bar.addSeparator()
+    self.workflow_tool_bar.addAction(_mainWindow.sw_widget.ui.action_transfer_infiles)
+    self.workflow_tool_bar.addAction(_mainWindow.sw_widget.ui.action_transfer_outfiles)
+    
+    self.ui.tool_bar.addWidget(self.workflow_tool_bar)
+    self.ui.tool_bar.addSeparator()
+    self.ui.tool_bar.addAction(self.ui.dock_bv_process.toggleViewAction())
+    self.ui.tool_bar.addSeparator()
+    self.ui.tool_bar.addAction(self.action_monitor_workflow)
+    
+    tree_widget_layout = QtGui.QVBoxLayout()
+    tree_widget_layout.setContentsMargins(2,2,2,2)
+    tree_widget_layout.addWidget(self.workflow_tree_view)
+    self.ui.centralwidget.setLayout(tree_widget_layout)
+
+    self.process_layout = QtGui.QVBoxLayout()
+    self.process_layout.setContentsMargins(2,2,2,2)
+    self.ui.dock_bv_process_contents.setLayout(self.process_layout)
+   
+    item_info_layout = QtGui.QVBoxLayout()
+    item_info_layout.setContentsMargins(2,2,2,2)
+    item_info_layout.addWidget(self.workflow_item_view)
+    self.ui.dock_item_info_contents.setLayout(item_info_layout)
+
+    wf_info_layout = QtGui.QVBoxLayout()
+    wf_info_layout.setContentsMargins(2,2,2,2)
+    wf_info_layout.addWidget(self.workflow_info_view)
+    self.ui.dock_workflow_info_contents.setLayout(wf_info_layout)
+    
+    plot_layout = QtGui.QVBoxLayout()
+    plot_layout.setContentsMargins(2,2,2,2)
+    plot_layout.addWidget(self.workflow_plot_view)
+    self.ui.dock_plot_contents.setLayout(plot_layout)
+
+    self.connect(self.workflow_tree_view, QtCore.SIGNAL('selection_model_changed(QItemSelectionModel)'), self.workflow_item_view.setSelectionModel)
+
+    self.connect(self.workflow_item_view, QtCore.SIGNAL('connection_closed_error()'), _mainWindow.sw_widget.reconnectAfterConnectionClosed)
+
+      
+    self.workflow_tree_view.current_workflow_changed()
+    self.workflow_plot_view.current_workflow_changed()
+    self.workflow_info_view.current_workflow_changed()
+
+    self.ui.dock_bv_process.toggleViewAction().toggled.connect(self.show_process)
+
+    self.ui.dock_plot.close()
+    self.ui.dock_bv_process.close()
+    self.ui.dock_workflow_info.close()
+
+
+  @QtCore.pyqtSlot(bool)
+  def enable_workflow_monitoring(self, enable):
+    if not enable:
+      if self.model.current_wf_id == self.workflow_id:
+        self.model.clear_current_workflow()
+    else:      
+      #print "before check and change resource "
+      if self.resource_id != self.model.current_resource_id:
+        if self.model.resource_exist(self.resource_id):
+          self.model.set_current_connection(self.resource_id)
+        else:
+          new_connection = _mainWindow.sw_widget.createConnection(self.model.current_resource_id)
+          if new_connection:
+            self.check and self.model.add_connection(resource_id, new_connection)
+      #print "after print resource "
+
+      #print "before model.set_current_workflow"
+      if self.model.is_loaded_workflow(self.workflow_id):
+        self.model.set_current_workflow(self.workflow_id)
+      else:
+        QMessageBox.warning(self, "Impossible to monitor the workflow.", " The workflow was deleted.")
+        self.action_monitor_workflow.setChecked(False)
+        
+      #print "after model.set_current_workflow"
+      
+  
+
+  @QtCore.pyqtSlot(bool)
+  def show_process(self, checked):
+    if checked and self.process_view == None:
+      self.process_view = ProcessView(self.process)
+      self.process_view.inlineGUI.hide()
+      self.process_view.info.hide()
+      self.process_view.menu.hide()
+      self.process_view.eTreeWidget.setOrientation(Qt.Vertical)
+      self.process_layout.addWidget(self.process_view)
+
+      self.ui.dock_bv_process.toggleViewAction().toggled.disconnect(self.show_process)
+
+
+  @QtCore.pyqtSlot()
+  def current_workflow_changed(self):
+    if self.model.current_wf_id != self.workflow_id:
+      self.action_monitor_workflow.setChecked(False)
+      self.workflow_tool_bar.setEnabled(False)
+      self.workflow_menu.setEnabled(False)
+    else:
+      self.action_monitor_workflow.setChecked(True)
+      self.workflow_tool_bar.setEnabled(True)
+      self.workflow_menu.setEnabled(True)
+
 
 _aboutWidget = None
 #----------------------------------------------------------------------------
@@ -1036,13 +1218,31 @@ class BrainVISAAnimation( QLabel ):
 #----------------------------------------------------------------------------
 class ProcessView( QWidget, ExecutionContextGUI ):
 
-  soma_workflow_id = None
+  #actions:
+  action_save_process = None
+  
+  action_clone_process = None
 
-  soma_workflow_resource = None
+  action_create_workflow = None
 
-  workflow_tree_view = None
+  action_run = None
 
-  def __init__( self, processId, parent = None, externalInfo = None ):
+  action_interupt = None
+
+  action_interupt_step = None
+
+  action_run_with_sw = None
+
+  action_iterate = None
+
+  eTreeWidget = None
+
+  menu = None
+
+  def __init__( self, 
+                processId, 
+                parent=None, 
+                externalInfo=None):
     ExecutionContextGUI.__init__( self )
     QWidget.__init__( self, parent )
     if getattr( ProcessView, 'pixIcon', None ) is None:
@@ -1057,48 +1257,71 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     #centralWidget=QWidget()
     #self.setCentralWidget(centralWidget)
     
-    menu_layout = QVBoxLayout()
-    menu_layout.setMargin(5)
-    menu_layout.setSpacing(4)
-    self.setLayout(menu_layout)
-  
-    self.central_widget = QSplitter(Qt.Horizontal)
-    self.central_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-  
     centralWidgetLayout=QVBoxLayout()
+    self.setLayout(centralWidgetLayout)
     centralWidgetLayout.setMargin( 5 )
     centralWidgetLayout.setSpacing( 4 )
 
-    centralWidgetFrame = QFrame(self)
-    sizePolicy=QSizePolicy( QSizePolicy.Expanding, QSizePolicy.Preferred)
-    sizePolicy.setHorizontalStretch(50)
-    sizePolicy.setVerticalStretch(50)
-    centralWidgetFrame.setSizePolicy(sizePolicy)
-    centralWidgetFrame.setLayout(centralWidgetLayout)
-    self.central_widget.addWidget(centralWidgetFrame)
-
     self.setWindowIcon( self.pixIcon )
     self.workflowEnabled = False
+
+    self.action_save_process = QAction(_t_( '&Save...' ), self)
+    self.action_save_process.setShortcuts(Qt.CTRL + Qt.Key_S)
+    self.action_save_process.triggered.connect(self.saveAs)
     
+    self.action_clone_process = QAction(_t_( '&Clone...' ), self)
+    self.action_clone_process.setShortcuts(Qt.CTRL + Qt.Key_C)
+    self.action_clone_process.triggered.connect(self.clone)
+
+    self.action_create_workflow = QAction(_t_('Create &Workflow...'), self)
+    self.action_create_workflow.setShortcuts(Qt.CTRL + Qt.Key_D)
+    self.action_create_workflow.triggered.connect(self.createWorkflow)
+
+    self.action_run = QAction(_t_('Run') , self)
+    self.action_run.triggered.connect(self._run)
+   
+    self.action_run_with_sw = QAction(_t_('Run with soma-workflow'), self)
+    self.action_run_with_sw.triggered.connect(self._run_with_soma_workflow) 
+
+    self.action_interupt = QAction(_t_('Interrupt'), self)
+    self.action_interupt.triggered.connect(self._interruptButton) 
+    self.action_interupt.setVisible(False)
+    
+    self.action_interupt_step = QAction(_t_('Interrupt current step'), self)
+    self.action_interupt_step.triggered.connect(self._interruptStepButton) 
+    self.action_interupt_step.setVisible(False)
+    
+    self.action_iterate = QAction(_t_('Iterate'), self)
+    self.action_iterate.triggered.connect(self._iterateButton) 
+
     if parent is None:
       neuroConfig.registerObject( self )
       # menu bar
       self.menu = QMenuBar()
       addBrainVISAMenu( self, self.menu )
+      
       processMenu = self.menu.addMenu("&Process")
-      processMenu.addAction( _t_( '&Save...' ), self.saveAs,  Qt.CTRL + Qt.Key_S )
-      processMenu.addAction( _t_( '&Clone...' ), self.clone,  Qt.CTRL + Qt.Key_C )
+      processMenu.addAction(self.action_save_process)
+      processMenu.addAction(self.action_clone_process)
+      processMenu.addAction(self.action_iterate)
+      processMenu.addSeparator()
+      processMenu.addAction(self.action_create_workflow)
+      processMenu.addSeparator()
+      processMenu.addAction(self.action_run)
+      processMenu.addAction(self.action_interupt)
+      processMenu.addAction(self.action_interupt_step)
+      processMenu.addSeparator()
+      processMenu.addAction(self.action_run_with_sw)
+      
       try:
         import soma.workflow
         self.workflowEnabled = True
       except ImportError:
         pass
-      if self.workflowEnabled:
-        processMenu.addAction( _t_( 'Create &Workflow...' ), self.createWorkflow,  Qt.CTRL + Qt.Key_D )
-      
-      menu_layout.addWidget(self.menu)
+      if not self.workflowEnabled:
+        self.action_create_workflow.setEnabled(False)
+      centralWidgetLayout.addWidget(self.menu)
 
-    menu_layout.addWidget(self.central_widget)
     self.connect( self, SIGNAL( 'destroyed()' ), self.cleanup )
 
     process = neuroProcesses.getProcessInstance( processId )
@@ -1110,8 +1333,12 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     self.process.signatureChangeNotifier.add( self.signatureChanged )
     self.btnRun = None
     self.btnRunSomaWorkflow = None
-    self.btnInterruptStep=None
+    self.btnInterrupt = None
+    self.btnInterruptStep = None
     self._running = False
+
+    if self.process.__class__ == neuroProcesses.IterationProcess:
+      self.action_iterate.setVisible(False)
 
     procdoc = neuroProcesses.readProcdoc( process )
     documentation = procdoc.get( neuroConfig.language )
@@ -1191,6 +1418,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       # splitter that shows the composition of the process on the left and the parameters of each step on the right
       self.eTreeWidget = QSplitter( Qt.Horizontal )
       vb.addWidget(self.eTreeWidget)
+
       
       # Run and iterate buttons
       self.inlineGUI = self.process.inlineGUI( self.process, self, None,
@@ -1290,71 +1518,6 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     if initGUI is not None:
       initGUI( self )
   
-  def display_workflow_tree_view(self):
-    self.eTreeWidget.setOrientation(Qt.Vertical)
-    self.inlineGUI.hide()
-    self.info.hide()
-    if self.workflow_tree_view != None:
-      self.workflow_tree_view.show()
-      return
-    if self.soma_workflow_id != None:
-      self.workflow_menu = self.menu.addMenu("&Workflow")
-      self.workflow_menu.addAction(_mainWindow.sw_widget.ui.action_stop_wf)
-      self.workflow_menu.addAction(_mainWindow.sw_widget.ui.action_restart)
-      self.workflow_menu.addSeparator()
-      self.workflow_menu.addAction(_mainWindow.sw_widget.ui.action_transfer_infiles)
-      self.workflow_menu.addAction(_mainWindow.sw_widget.ui.action_transfer_outfiles)
-      self.workflow_menu.addSeparator()
-      self.workflow_menu.addAction(_mainWindow.sw_widget.ui.action_delete_workflow)
-      self.workflow_menu.addAction(_mainWindow.sw_widget.ui.action_change_expiration_date)
-
-      self.wf_exec_widget = QWidget()
-      uic.loadUi(os.path.join( os.path.dirname( __file__ ), 'workflow_execution.ui' ), self.wf_exec_widget)
-
-      
-      tree_layout = QVBoxLayout()
-      tree_layout.setMargin(0)
-      tree_layout.setSpacing(0)
-      self.wf_exec_widget.tree.setLayout(tree_layout)
-
-      item_info_layout = QVBoxLayout()
-      item_info_layout.setMargin(0)
-      item_info_layout.setSpacing(0)
-      self.wf_exec_widget.selection_info.setLayout(item_info_layout)
-      
-      plot_layout = QVBoxLayout()
-      plot_layout.setMargin(0)
-      plot_layout.setSpacing(0)
-      self.wf_exec_widget.plot.setLayout(plot_layout)
-
-      self.workflow_tree_view = soma.workflow.gui.workflowGui.WorkflowTree(
-                      neuroProcesses._workflow_application_model, 
-                      assigned_wf_id=self.soma_workflow_id, 
-                      assigned_resource_id=self.soma_workflow_resource,
-                      parent=self)
-      tree_layout.addWidget(self.workflow_tree_view) 
-      
-      self.workflow_item_view = soma.workflow.gui.workflowGui.WorkflowElementInfo(
-                      neuroProcesses._workflow_application_model, 
-                      parent=self)
-      item_info_layout.addWidget(self.workflow_item_view)
-
-      self.workflow_plot_view = soma.workflow.gui.workflowGui.WorkflowPlot(
-                      neuroProcesses._workflow_application_model, 
-                      assigned_wf_id=self.soma_workflow_id, 
-                      assigned_resource_id=self.soma_workflow_resource,
-                      parent=self)
-      plot_layout.addWidget(self.workflow_plot_view)
-
-
-      self.connect(self.workflow_tree_view, QtCore.SIGNAL('selection_model_changed(QItemSelectionModel)'), self.workflow_item_view.setSelectionModel)
-      
-      self.central_widget.addWidget(self.wf_exec_widget)
-
-      self.workflow_tree_view.currentWorkflowChanged()
-      self.workflow_plot_view.workflowChanged()
-      
-
 
   def createSignatureWidgets( self, documentation=None ):
     eNode = getattr( self.process, '_executionNode', None )
@@ -1506,28 +1669,41 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       layout=container.layout()
 
     if not externalRunButton:
-      self.btnRun = QPushButton( _t_( 'Run' ) )
+      self.btnRun = QToolButton(self)
+      self.btnRun.setDefaultAction(self.action_run)
+      self.btnRun.setToolButtonStyle(Qt.ToolButtonTextOnly)
       layout.addWidget(self.btnRun)
+      self.btnRun.setMinimumWidth(90)
       self.btnRun.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-      QObject.connect( self.btnRun, SIGNAL( 'clicked()' ), self._runButton )
 
       if neuroProcesses._workflow_application_model != None:
-        self.btnRunSomaWorkflow = QPushButton( _t_( 'Run with soma-workflow' ) )
+        self.btnRunSomaWorkflow = QToolButton(self)
+        self.btnRunSomaWorkflow.setDefaultAction(self.action_run_with_sw)
+        self.btnRunSomaWorkflow.setToolButtonStyle(Qt.ToolButtonTextOnly)
         layout.addWidget(self.btnRunSomaWorkflow)
+        self.btnRunSomaWorkflow.setMinimumWidth(90)
         self.btnRunSomaWorkflow.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-        QObject.connect( self.btnRunSomaWorkflow, SIGNAL( 'clicked()' ), self._run_with_soma_workflow )
+
+      self.btnInterrupt =  QToolButton(self)
+      self.btnInterrupt.setDefaultAction(self.action_interupt)
+      self.btnInterrupt.setToolButtonStyle(Qt.ToolButtonTextOnly)
+      layout.addWidget(self.btnInterrupt)
+      self.btnInterrupt.setMinimumWidth(90)
+      self.btnInterrupt.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
       
-      if (self.process.__class__ == neuroProcesses.IterationProcess):
-        self.btnInterruptStep = QPushButton( _t_('Interrupt current step') )
-        layout.addWidget(self.btnInterruptStep)
-        self.btnInterruptStep.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-        self.btnInterruptStep.setVisible(False)
-        QObject.connect( self.btnInterruptStep, SIGNAL( 'clicked()' ), self._interruptStepButton )
+      self.btnInterruptStep =  QToolButton(self)
+      self.btnInterruptStep.setDefaultAction(self.action_interupt_step)
+      self.btnInterruptStep.setToolButtonStyle(Qt.ToolButtonTextOnly)
+      layout.addWidget(self.btnInterruptStep)
+      self.btnInterruptStep.setMinimumWidth(90)
+      self.btnInterruptStep.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
       
-    self.btnIterate = QPushButton( _t_('Iterate') )
+    self.btnIterate = QToolButton(self)
+    self.btnIterate.setDefaultAction(self.action_iterate)
+    self.btnIterate.setToolButtonStyle(Qt.ToolButtonTextOnly)
     layout.addWidget(self.btnIterate)
+    self.btnIterate.setMinimumWidth(90)
     self.btnIterate.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-    QObject.connect( self.btnIterate, SIGNAL( 'clicked()' ), self._iterateButton )
 
     if neuroProcesses.neuroDistributedProcesses():
       self.btnDistribute = QPushButton( _t_( 'Distribute' ) )
@@ -1578,30 +1754,28 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     self.info = None
     self.process._lastResult = None
   
+  def _run(self):
+    self._runButton()
+
   def _runButton( self, executionFunction=None ):
     try:
       try:
         # disable run button when clicked to avoid several successive clicks
         # it is enabled when the process starts, the label of the button switch to interrupt
-        if self.btnRun:
-          self.btnRun.setEnabled(False)
-        if self._running:
-          self._setInterruptionRequest( neuroProcesses.ExecutionContext.UserInterruption() )
+        self.action_run.setEnabled(False)
+        processView = self._checkReloadProcess()
+        if processView is None:
+          processView = self
+          processView.info.setText( '' )
         else:
-          processView = self._checkReloadProcess()
-          if processView is None:
-            processView = self
-            processView.info.setText( '' )
-          else:
-            processView.info.setText( '' )
-            processView.warning( _t_('processes %s updated') % _t_(processView.process.name) )
-          processView._runningProcess = 0
-          processView._startCurrentProcess( executionFunction )
+          processView.info.setText( '' )
+          processView.warning( _t_('processes %s updated') % _t_(processView.process.name) )
+        processView._runningProcess = 0
+        processView._startCurrentProcess( executionFunction )
       except:
         neuroException.showException()
     finally:
-      if self.btnRun:
-        self.btnRun.setEnabled(True)
+      self.action_run.setEnabled(True)
 
   def _run_with_soma_workflow( self, executionFunction=None ):
     try:
@@ -1667,20 +1841,30 @@ class ProcessView( QWidget, ExecutionContextGUI ):
                                                                    name,
                                                                    queue)
 
-      self.soma_workflow_id = wf_id
-      self.soma_workflow_resource = resource_id
-
-      self.display_workflow_tree_view()
+      view = SomaWorkflowProcessView(
+                            neuroProcesses._workflow_application_model,
+                            self.process, 
+                            wf_id, 
+                            resource_id,
+                            _mainWindow)
+      view.show()
       
     except:
       neuroException.showException()
     finally:
-      if self.btnRunSomaWorkflow:
-        self.btnRunSomaWorkflow.setEnabled(True)
+      self.action_run_with_sw.setEnabled(True)
   
+  def _interruptButton(self):
+    if self._running:
+      try:
+        self._setInterruptionRequest( neuroProcesses.ExecutionContext.UserInterruption() )
+      except:
+        neuroException.showException()
+
   def _interruptStepButton( self, executionFunction=None ):
     if self._running:
-          self._setInterruptionRequest( neuroProcesses.ExecutionContext.UserInterruptionStep() )
+      self._setInterruptionRequest( neuroProcesses.ExecutionContext.UserInterruptionStep() )
+
 
   def _checkReloadProcess( self ):
     self.readUserValues()
@@ -1738,11 +1922,11 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     if self._depth() == 1:
       if self.movie is not None:
         _mainThreadActions.push( self.movie.start )
-      if self.btnRun:
-        if self.btnInterruptStep:
-          _mainThreadActions.push(self.btnInterruptStep.setVisible, True)
-        _mainThreadActions.push( self.btnRun.setEnabled, True )
-        _mainThreadActions.push( self.btnRun.setText, _t_( 'Interrupt' ) )
+
+      _mainThreadActions.push(self.action_run.setEnabled, False)
+      _mainThreadActions.push(self.action_interupt.setVisible, True)
+      if self.process.__class__ == neuroProcesses.IterationProcess:
+        _mainThreadActions.push(self.action_interupt_step.setVisible, True)
 
     #Adds an icon on the ListViewItem corresponding to the current process
     # if any
@@ -1771,11 +1955,12 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     if self._depth() == 1:
       if self.movie is not None:
         _mainThreadActions.push( self.movie.stop )
-      if self.btnRun:
-        _mainThreadActions.push( self.btnRun.setEnabled, True )
-        _mainThreadActions.push( self.btnRun.setText, _t_( 'Run' ) )
-        if self.btnInterruptStep:
-          _mainThreadActions.push(self.btnInterruptStep.setVisible, False)
+
+      _mainThreadActions.push( self.action_run.setEnabled, True)
+      _mainThreadActions.push(self.action_interupt.setVisible, False)
+      if self.process.__class__ == neuroProcesses.IterationProcess:
+        _mainThreadActions.push(self.action_interupt_step.setVisible, False)
+
       _mainThreadActions.push( self._checkReadable )
       self._running = False
     else:
