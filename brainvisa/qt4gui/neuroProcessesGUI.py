@@ -190,15 +190,7 @@ class SomaWorkflowWidget(ComputingResourceWidget):
       if name != None and \
         len(name) > len(SomaWorkflowWidget.brainvisa_code)-1 and \
         name[0:len(SomaWorkflowWidget.brainvisa_code)] == SomaWorkflowWidget.brainvisa_code:
-
-        workflow = self.model.current_connection.workflow(wf_id)
-
-        if workflow.user_storage != None and \
-           len(workflow.user_storage) == 2 and \
-           workflow.user_storage[0] == SomaWorkflowWidget.brainvisa_code:
-  
-          new_workflows[wf_id] = (name[len(SomaWorkflowWidget.brainvisa_code):], date)
-          self.serialized_processes[wf_id] = workflow.user_storage[1]
+        new_workflows[wf_id] = (name[len(SomaWorkflowWidget.brainvisa_code):], date)
     return new_workflows
 
 
@@ -206,6 +198,17 @@ class SomaWorkflowWidget(ComputingResourceWidget):
   def workflow_double_clicked(self):
     selected_items = self.ui.list_widget_submitted_wfs.selectedItems()
     wf_id = selected_items[0].data(QtCore.Qt.UserRole).toInt()[0]
+
+    if wf_id not in self.serialized_processes:
+      workflow = self.model.current_connection.workflow(wf_id)
+      if workflow.user_storage != None and \
+         len(workflow.user_storage) == 2 and \
+         workflow.user_storage[0] == SomaWorkflowWidget.brainvisa_code:
+        self.serialized_processes[wf_id] = workflow.user_storage[1]
+      else:
+        QMessageBox.warning(self, "Workflow loading impossible", "The workflow was not created from a BrainVISA pipeline.")
+        return
+
     serialized_process = self.serialized_processes[wf_id]
     serialized_process = StringIO.StringIO(serialized_process)
     #print "before view creation"
@@ -398,7 +401,7 @@ class SomaWorkflowProcessView(QMainWindow):
       if self.model.is_loaded_workflow(self.workflow_id):
         self.model.set_current_workflow(self.workflow_id)
       else:
-        QMessageBox.warning(self, "Impossible to monitor the workflow.", " The workflow was deleted.")
+        QMessageBox.warning(self, "Monitoring impossible", "The workflow was deleted.")
         self.action_monitor_workflow.setChecked(False)
         
       #print "after model.set_current_workflow"
