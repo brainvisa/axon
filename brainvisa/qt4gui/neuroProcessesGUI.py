@@ -1794,31 +1794,31 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       from brainvisa.workflow import ProcessToSomaWorkflow
      
       submission_dlg = QtGui.QDialog(self)
-      uic.loadUi(os.path.join( os.path.dirname( soma.workflow.gui.workflowGui.__file__), 'submissionDlg.ui' ), submission_dlg)
-      submission_dlg.resource_label.setText(neuroProcesses._workflow_application_model.current_resource_id)
-      submission_dlg.lineedit_wf_name.setText("")
-      submission_dlg.dateTimeEdit_expiration.setDateTime(datetime.now() + timedelta(days=5))
+      uic.loadUi(os.path.join( os.path.dirname( __file__), 'sw_submission_dlg.ui' ), submission_dlg)
+
+      resource_list = neuroProcesses._computing_resource_pool.resource_ids()
+      submission_dlg.combo_resource.addItems(resource_list)
+      submission_dlg.combo_resource.setCurrentIndex(resource_list.index(neuroProcesses._workflow_application_model.current_resource_id))
+
+      kind_of_file_processing = [ProcessToSomaWorkflow.NO_FILE_PROCESSING,    
+                                 ProcessToSomaWorkflow.FILE_TRANSFER,
+                                 ProcessToSomaWorkflow.SHARED_RESOURCE_PATH]
+      submission_dlg.combo_in_files.addItems(kind_of_file_processing)
+      submission_dlg.combo_out_files.addItems(kind_of_file_processing)
+
       queues = ["default queue"]
       queues.extend(neuroProcesses._workflow_application_model.current_connection.config.get_queues())
       submission_dlg.combo_queue.addItems(queues)
-
-      submission_dlg.grid_layout.addWidget(QtGui.QLabel("input files:"), 0, 0)
-      submission_dlg.grid_layout.addWidget(QtGui.QLabel("output files:"), 1, 0)
-      combo_in_files = QtGui.QComboBox()
-      combo_in_files.addItem(ProcessToSomaWorkflow.NO_FILE_PROCESSING)
-      combo_in_files.addItem(ProcessToSomaWorkflow.FILE_TRANSFER)
-      combo_in_files.addItem(ProcessToSomaWorkflow.SHARED_RESOURCE_PATH)
-      submission_dlg.grid_layout.addWidget(combo_in_files, 0, 1)
-
-      combo_out_files = QtGui.QComboBox()
-      combo_out_files.addItem(ProcessToSomaWorkflow.NO_FILE_PROCESSING)
-      combo_out_files.addItem(ProcessToSomaWorkflow.FILE_TRANSFER)
-      combo_out_files.addItem(ProcessToSomaWorkflow.SHARED_RESOURCE_PATH)
-      submission_dlg.grid_layout.addWidget(combo_out_files, 1, 1)
-
+      submission_dlg.lineedit_wf_name.setText("")
+      submission_dlg.dateTimeEdit_expiration.setDateTime(datetime.now() + timedelta(days=5))
+      
 
       if submission_dlg.exec_() != QtGui.QDialog.Accepted:
         return
+
+      resource_id = submission_dlg.combo_resource.currentText()
+      if resource_id != neuroProcesses._workflow_application_model.current_resource_id:
+        neuroProcesses._workflow_application_model.set_current_connection(resource_id)
 
       name = unicode(submission_dlg.lineedit_wf_name.text())
       if name == "": name = SomaWorkflowWidget.brainvisa_code
@@ -1829,8 +1829,8 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       queue =  unicode(submission_dlg.combo_queue.currentText()).encode('utf-8')
       if queue == "default queue": queue = None
 
-      input_file_processing = combo_in_files.currentText()
-      output_file_processing = combo_out_files.currentText()
+      input_file_processing = submission_dlg.combo_in_files.currentText()
+      output_file_processing = submission_dlg.combo_out_files.currentText()
 
       ptowf = ProcessToSomaWorkflow(self.process,
                                   input_file_processing = input_file_processing, 
