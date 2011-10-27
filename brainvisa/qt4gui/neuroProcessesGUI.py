@@ -196,29 +196,37 @@ class SomaWorkflowWidget(ComputingResourceWidget):
 
   @QtCore.pyqtSlot()
   def workflow_double_clicked(self):
-    selected_items = self.ui.list_widget_submitted_wfs.selectedItems()
-    wf_id = selected_items[0].data(QtCore.Qt.UserRole).toInt()[0]
+    QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+    try:
+      selected_items = self.ui.list_widget_submitted_wfs.selectedItems()
+      wf_id = selected_items[0].data(QtCore.Qt.UserRole).toInt()[0]
 
-    if wf_id not in self.serialized_processes:
-      workflow = self.model.current_connection.workflow(wf_id)
-      if workflow.user_storage != None and \
-         len(workflow.user_storage) == 2 and \
-         workflow.user_storage[0] == SomaWorkflowWidget.brainvisa_code:
-        self.serialized_processes[wf_id] = workflow.user_storage[1]
-      else:
-        QMessageBox.warning(self, "Workflow loading impossible", "The workflow was not created from a BrainVISA pipeline.")
-        return
+      if wf_id not in self.serialized_processes:
+        workflow = self.model.current_connection.workflow(wf_id)
+        if workflow.user_storage != None and \
+          len(workflow.user_storage) == 2 and \
+          workflow.user_storage[0] == SomaWorkflowWidget.brainvisa_code:
+          self.serialized_processes[wf_id] = workflow.user_storage[1]
+        else:
+          QMessageBox.warning(self, "Workflow loading impossible", "The workflow was not created from a BrainVISA pipeline.")
+          QtGui.QApplication.restoreOverrideCursor()
+          return
 
-    serialized_process = self.serialized_processes[wf_id]
-    serialized_process = StringIO.StringIO(serialized_process)
-    #print "before view creation"
-    view = SomaWorkflowProcessView(self.model,
-                                   wf_id, 
-                                   self.model.current_resource_id,
-                                   serialized_process=serialized_process,
-                                   parent=_mainWindow)
-    view.show()
-    #print "after view creation"
+      serialized_process = self.serialized_processes[wf_id]
+      serialized_process = StringIO.StringIO(serialized_process)
+      #print "before view creation"
+      view = SomaWorkflowProcessView(self.model,
+                                    wf_id, 
+                                    self.model.current_resource_id,
+                                    serialized_process=serialized_process,
+                                    parent=_mainWindow)
+      view.show()
+      #print "after view creation"
+    except Exception, e:
+      QtGui.QApplication.restoreOverrideCursor()
+      raise e
+    else:
+      QtGui.QApplication.restoreOverrideCursor()
 
 
 class SomaWorkflowProcessView(QMainWindow):
@@ -415,10 +423,30 @@ class SomaWorkflowProcessView(QMainWindow):
     if checked and self.process_view == None:
       if self.process == None:
         #print "before unserialize"
-        self.process = neuroProcesses.getProcessInstance(self.serialized_process)
+        QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+        #self.ui.statusbar.showMessage("Unserialize...")
+        try:
+          self.process = neuroProcesses.getProcessInstance(self.serialized_process)
+        except Exception, e:
+          #self.ui.statusbar.clearMessage()
+          QtGui.QApplication.restoreOverrideCursor()
+          raise e
+        else:
+          #self.ui.statusbar.clearMessage()
+          QtGui.QApplication.restoreOverrideCursor()
         #print "after unserialize"
       #print "before process view creation"
-      self.process_view = ProcessView(self.process)
+      QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+      #self.ui.statusbar.showMessage("Building the process view...")
+      try:
+        self.process_view = ProcessView(self.process)
+      except Exception, e:
+        #self.ui.statusbar.clearMessage()
+        QtGui.QApplication.restoreOverrideCursor()
+        raise e
+      else:
+        #self.ui.statusbar.clearMessage()
+        QtGui.QApplication.restoreOverrideCursor()
       self.process_view.inlineGUI.hide()
       self.process_view.info.hide()
       self.process_view.menu.hide()
