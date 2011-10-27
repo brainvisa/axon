@@ -208,8 +208,8 @@ class SomaWorkflowWidget(ComputingResourceWidget):
           workflow.user_storage[0] == SomaWorkflowWidget.brainvisa_code:
           self.serialized_processes[wf_id] = workflow.user_storage[1]
         else:
-          QMessageBox.warning(self, "Workflow loading impossible", "The workflow was not created from a BrainVISA pipeline.")
           QtGui.QApplication.restoreOverrideCursor()
+          QMessageBox.warning(self, "Workflow loading impossible", "The workflow was not created from a BrainVISA pipeline.")
           return
 
       serialized_process = self.serialized_processes[wf_id]
