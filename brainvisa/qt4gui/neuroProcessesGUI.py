@@ -188,8 +188,8 @@ class SomaWorkflowWidget(ComputingResourceWidget):
     self.serialized_processes = {}
     for wf_id, (name, date) in workflows.iteritems():
       if name != None and \
-        len(name) > 9 and \
-        name[0:10] == SomaWorkflowWidget.brainvisa_code:
+        len(name) > len(SomaWorkflowWidget.brainvisa_code)-1 and \
+        name[0:len(SomaWorkflowWidget.brainvisa_code)] == SomaWorkflowWidget.brainvisa_code:
 
         workflow = self.model.current_connection.workflow(wf_id)
 
@@ -197,7 +197,7 @@ class SomaWorkflowWidget(ComputingResourceWidget):
            len(workflow.user_storage) == 2 and \
            workflow.user_storage[0] == SomaWorkflowWidget.brainvisa_code:
   
-          new_workflows[wf_id] = (name[10:], date)
+          new_workflows[wf_id] = (name[len(SomaWorkflowWidget.brainvisa_code):], date)
           self.serialized_processes[wf_id] = workflow.user_storage[1]
     return new_workflows
 
@@ -273,13 +273,6 @@ class SomaWorkflowProcessView(QMainWindow):
     self.setCorner(QtCore.Qt.TopRightCorner, QtCore.Qt.RightDockWidgetArea)
     self.setCorner(QtCore.Qt.BottomLeftCorner, QtCore.Qt.LeftDockWidgetArea)
     self.setCorner(QtCore.Qt.BottomRightCorner, QtCore.Qt.RightDockWidgetArea)
-
-    if self.process != None:
-      title = _t_(self.process.name) + ' ' + unicode( self.process.instance )
-    else:
-      title = " "
-
-    self.setWindowTitle(title)
       
     self.action_monitor_workflow = QAction(_t_('Monitor execution'), self)
     self.action_monitor_workflow.setCheckable(True)
@@ -325,7 +318,6 @@ class SomaWorkflowProcessView(QMainWindow):
 
     self.workflow_tool_bar = QToolBar(self)
     self.workflow_tool_bar.addWidget(self.workflow_info_view.ui.wf_status_icon)
-    self.workflow_tool_bar.addWidget(self.workflow_info_view.ui.wf_name)
     self.workflow_tool_bar.addSeparator()
     self.workflow_tool_bar.addAction(_mainWindow.sw_widget.ui.action_stop_wf)
     self.workflow_tool_bar.addAction(_mainWindow.sw_widget.ui.action_restart)
@@ -378,6 +370,13 @@ class SomaWorkflowProcessView(QMainWindow):
     self.ui.dock_bv_process.close()
     self.ui.dock_workflow_info.close()
 
+    wf_name = self.workflow_info_view.ui.wf_name.text()
+    if len(wf_name[len(SomaWorkflowWidget.brainvisa_code):]) == 0:
+      title = repr(self.workflow_id) + "@" + self.resource_id
+    else:
+      title =  wf_name[len(SomaWorkflowWidget.brainvisa_code):] + "@" + self.resource_id
+    self.setWindowTitle(title)
+
 
   @QtCore.pyqtSlot(bool)
   def enable_workflow_monitoring(self, enable):
@@ -424,6 +423,11 @@ class SomaWorkflowProcessView(QMainWindow):
       self.process_layout.addWidget(self.process_view)
       #print "After process view creation"
       self.ui.dock_bv_process.toggleViewAction().toggled.disconnect(self.show_process)
+      
+      self.process_menu = self.ui.menubar.addMenu("&Process")
+      self.process_menu.addAction(self.process_view.action_save_process)
+      self.process_menu.addAction(self.process_view.action_clone_process)
+      self.process_menu.addAction(self.process_view.action_iterate)
 
 
   @QtCore.pyqtSlot()
