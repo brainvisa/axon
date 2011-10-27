@@ -167,7 +167,7 @@ def openWeb(source):
 
 class SomaWorkflowWidget(ComputingResourceWidget):
 
-  # dict wf_id -> serialized_proc
+  # dict wf_id -> serialized_process
   serialized_processes = None
 
   brainvisa_code = "brainvisa_"
@@ -206,17 +206,14 @@ class SomaWorkflowWidget(ComputingResourceWidget):
   def workflow_double_clicked(self):
     selected_items = self.ui.list_widget_submitted_wfs.selectedItems()
     wf_id = selected_items[0].data(QtCore.Qt.UserRole).toInt()[0]
-    serialized_proc = self.serialized_processes[wf_id]
-    serialized_proc = StringIO.StringIO(serialized_proc)
-    #print "before serialize"
-    proc = neuroProcesses.getProcessInstance(serialized_proc)
-    #print "after serialize"
+    serialized_process = self.serialized_processes[wf_id]
+    serialized_process = StringIO.StringIO(serialized_process)
     #print "before view creation"
     view = SomaWorkflowProcessView(self.model,
-                                   proc, 
                                    wf_id, 
                                    self.model.current_resource_id,
-                                   _mainWindow)
+                                   serialized_process=serialized_process,
+                                   parent=_mainWindow)
     view.show()
     #print "after view creation"
 
@@ -230,6 +227,8 @@ class SomaWorkflowProcessView(QMainWindow):
   model = None
 
   process = None
+
+  serialized_process = None
 
   ui = None
 
@@ -249,9 +248,10 @@ class SomaWorkflowProcessView(QMainWindow):
   
   def __init__(self,
                model,
-               process,
                workflow_id,
                resource_id,
+               process=None,
+               serialized_process=None,
                parent=None):
     super(SomaWorkflowProcessView, self).__init__(parent)
     
@@ -262,6 +262,7 @@ class SomaWorkflowProcessView(QMainWindow):
     self.ui.setupUi(self)
 
     self.model = model
+    self.serialized_process = serialized_process
     self.process = process
     self.workflow_id = workflow_id
     self.resource_id = resource_id
@@ -273,7 +274,11 @@ class SomaWorkflowProcessView(QMainWindow):
     self.setCorner(QtCore.Qt.BottomLeftCorner, QtCore.Qt.LeftDockWidgetArea)
     self.setCorner(QtCore.Qt.BottomRightCorner, QtCore.Qt.RightDockWidgetArea)
 
-    title = _t_(self.process.name) + ' ' + unicode( self.process.instance )
+    if self.process != None:
+      title = _t_(self.process.name) + ' ' + unicode( self.process.instance )
+    else:
+      title = " "
+
     self.setWindowTitle(title)
       
     self.action_monitor_workflow = QAction(_t_('Monitor execution'), self)
@@ -403,14 +408,21 @@ class SomaWorkflowProcessView(QMainWindow):
 
   @QtCore.pyqtSlot(bool)
   def show_process(self, checked):
+    if self.process == None and self.serialized_process == None:
+      return
     if checked and self.process_view == None:
+      if self.process == None:
+        #print "before unserialize"
+        self.process = neuroProcesses.getProcessInstance(self.serialized_process)
+        #print "after unserialize"
+      #print "before process view creation"
       self.process_view = ProcessView(self.process)
       self.process_view.inlineGUI.hide()
       self.process_view.info.hide()
       self.process_view.menu.hide()
       self.process_view.eTreeWidget.setOrientation(Qt.Vertical)
       self.process_layout.addWidget(self.process_view)
-
+      #print "After process view creation"
       self.ui.dock_bv_process.toggleViewAction().toggled.disconnect(self.show_process)
 
 
@@ -1827,26 +1839,25 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       workflow.name = SomaWorkflowWidget.brainvisa_code
       
       #store the process in workflow.user_storage
-      serialized_proc = StringIO.StringIO()
+      serialized_process = StringIO.StringIO()
       event = self.createProcessExecutionEvent()
-      event.save(serialized_proc)
+      event.save(serialized_process)
 
-      to_store = [SomaWorkflowWidget.brainvisa_code, serialized_proc.getvalue()]
+      to_store = [SomaWorkflowWidget.brainvisa_code, serialized_process.getvalue()]
       workflow.user_storage = to_store
       
-      serialized_proc.close()
+      serialized_process.close()
       neuroProcesses._workflow_application_model.add_workflow(workflow, 
                                              datetime.now() + timedelta(days=5))
       (wf_id, resource_id) = _mainWindow.sw_widget.submit_workflow(date,
                                                                    name,
                                                                    queue)
-
       view = SomaWorkflowProcessView(
                             neuroProcesses._workflow_application_model,
-                            self.process, 
                             wf_id, 
                             resource_id,
-                            _mainWindow)
+                            process=self.process,
+                            parent=_mainWindow)
       view.show()
       
     except:
