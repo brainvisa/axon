@@ -1688,20 +1688,13 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       self.btnRun.setMinimumWidth(90)
       self.btnRun.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
 
-      if neuroProcesses._workflow_application_model != None:
-        self.btnRunSomaWorkflow = QToolButton(self)
-        self.btnRunSomaWorkflow.setDefaultAction(self.action_run_with_sw)
-        self.btnRunSomaWorkflow.setToolButtonStyle(Qt.ToolButtonTextOnly)
-        layout.addWidget(self.btnRunSomaWorkflow)
-        self.btnRunSomaWorkflow.setMinimumWidth(90)
-        self.btnRunSomaWorkflow.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-
       self.btnInterrupt =  QToolButton(self)
       self.btnInterrupt.setDefaultAction(self.action_interupt)
       self.btnInterrupt.setToolButtonStyle(Qt.ToolButtonTextOnly)
       layout.addWidget(self.btnInterrupt)
       self.btnInterrupt.setMinimumWidth(90)
       self.btnInterrupt.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
+      self.btnInterrupt.setVisible(False)
       
       self.btnInterruptStep =  QToolButton(self)
       self.btnInterruptStep.setDefaultAction(self.action_interupt_step)
@@ -1709,6 +1702,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       layout.addWidget(self.btnInterruptStep)
       self.btnInterruptStep.setMinimumWidth(90)
       self.btnInterruptStep.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
+      self.btnInterruptStep.setVisible(False)
       
     self.btnIterate = QToolButton(self)
     self.btnIterate.setDefaultAction(self.action_iterate)
@@ -1716,6 +1710,16 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     layout.addWidget(self.btnIterate)
     self.btnIterate.setMinimumWidth(90)
     self.btnIterate.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
+    if self.process.__class__ == neuroProcesses.IterationProcess:
+      self.btnIterate.setVisible(False)
+
+    if neuroProcesses._workflow_application_model != None:
+      self.btnRunSomaWorkflow = QToolButton(self)
+      self.btnRunSomaWorkflow.setDefaultAction(self.action_run_with_sw)
+      self.btnRunSomaWorkflow.setToolButtonStyle(Qt.ToolButtonTextOnly)
+      layout.addWidget(self.btnRunSomaWorkflow)
+      self.btnRunSomaWorkflow.setMinimumWidth(90)
+      self.btnRunSomaWorkflow.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
 
     if neuroProcesses.neuroDistributedProcesses():
       self.btnDistribute = QPushButton( _t_( 'Distribute' ) )
@@ -1938,6 +1942,13 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       _mainThreadActions.push(self.action_interupt.setVisible, True)
       if self.process.__class__ == neuroProcesses.IterationProcess:
         _mainThreadActions.push(self.action_interupt_step.setVisible, True)
+        
+      if self.btnRun != None:
+        _mainThreadActions.push(self.btnRun.setVisible, False)
+        _mainThreadActions.push(self.btnInterrupt.setVisible, True)
+        if self.process.__class__ == neuroProcesses.IterationProcess:
+          _mainThreadActions.push(self.btnInterruptStep.setVisible, True)
+        
 
     #Adds an icon on the ListViewItem corresponding to the current process
     # if any
@@ -1971,7 +1982,13 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       _mainThreadActions.push(self.action_interupt.setVisible, False)
       if self.process.__class__ == neuroProcesses.IterationProcess:
         _mainThreadActions.push(self.action_interupt_step.setVisible, False)
-
+        
+      if self.btnRun != None:
+        _mainThreadActions.push( self.btnRun.setVisible, True)
+        _mainThreadActions.push(self.btnInterrupt.setVisible, False)
+        if self.process.__class__ == neuroProcesses.IterationProcess:
+          _mainThreadActions.push(self.btnInterruptStep.setVisible, False)
+          
       _mainThreadActions.push( self._checkReadable )
       self._running = False
     else:
