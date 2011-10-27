@@ -4585,7 +4585,7 @@ def initializeProcesses():
   _dataEditors = {}
   _listDataEditors = {}
   _importers = {}
-  if False:
+  if neuroConfig.userLevel >= 3:
     _computing_resource_pool = ComputingResourcePool()
     _computing_resource_pool.add_default_connection()
     _workflow_application_model = WorkflowApplicationModel(_computing_resource_pool)
