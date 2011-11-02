@@ -3512,7 +3512,7 @@ def getProcessInstance( processIdClassOrInstance ):
         if (isinstance( processIdClassOrInstance, basestring ) or hasattr( processIdClassOrInstance, 'readline' )) and minfFormat( processIdClassOrInstance )[ 1 ] == minfHistory:
           event = readMinf( processIdClassOrInstance )[0]
           result = getProcessInstanceFromProcessEvent( event )
-          if result is not None:
+          if result is not None and isinstance( processIdClassOrInstance, basestring):
             result._savedAs = processIdClassOrInstance
       except IOError, e:
         raise KeyError( 'Could not get process "' + repr(processIdClassOrInstance) \
