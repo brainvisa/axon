@@ -454,6 +454,28 @@ class SomaWorkflowProcessView(QMainWindow):
       self.process_layout.addWidget(self.process_view)
       #print "After process view creation"
       self.ui.dock_bv_process.toggleViewAction().toggled.disconnect(self.show_process)
+
+      process_button_layout = QtGui.QHBoxLayout()
+      process_button_layout.setContentsMargins(2,2,2,2)
+      self.process_layout.addLayout(process_button_layout)
+
+      btn_clone = QToolButton(self)
+      btn_clone.setDefaultAction(self.process_view.action_clone_process)
+      btn_clone.setMinimumWidth(90)
+      btn_clone.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
+      process_button_layout.addWidget(btn_clone)
+
+      btn_iterate = QToolButton(self)
+      btn_iterate.setDefaultAction(self.process_view.action_iterate)
+      btn_iterate.setMinimumWidth(90)
+      btn_iterate.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
+      process_button_layout.addWidget(btn_iterate)
+
+      btn_save = QToolButton(self)
+      btn_save.setDefaultAction(self.process_view.action_save_process)
+      btn_save.setMinimumWidth(90)
+      btn_save.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
+      process_button_layout.addWidget(btn_save)
       
       self.process_menu = self.ui.menubar.addMenu("&Process")
       self.process_menu.addAction(self.process_view.action_save_process)
