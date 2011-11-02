@@ -55,6 +55,9 @@ class DataEditor:
   def checkReadable( self ):
     pass
 
+  def set_read_only(self, read_only):
+    self.setEnabled(not read_only)
+
   def releaseCallbacks( self ):
     '''Unrgister all callbacks or references to self so that the editor can
     be destroyed
@@ -74,6 +77,10 @@ class StringEditor( QLineEdit, DataEditor ):
     self.connect( self, SIGNAL( 'lostFocus()' ), self.checkValue )
     self.value = None
     self.setValue( None, True )
+
+  def set_read_only(self, read_only):
+    self.setReadOnly(read_only)
+    self.setFrame(not read_only)
       
   def getFocus( self ):
     self.selectAll()
@@ -343,6 +350,10 @@ class StringListEditor( QLineEdit, DataEditor ):
     self.connect( self, SIGNAL( 'lostFocus()' ), self.checkValue )
     self.value = None
     self.setValue( None, True )
+
+  def set_read_only(self, read_only):
+    self.setReadOnly(read_only)
+    self.setFrame(not read_only)
       
   def getFocus( self ):
     self.selectAll()
@@ -687,6 +698,10 @@ class PointEditor( QWidget, DataEditor ):
     self.connect( self.btnSelect, SIGNAL( 'clicked()' ), self.selectPressed )
     
     self.nle.setValue( None )
+
+  def set_read_only(self, read_only):
+    self.btnSelect.setEnabled(not read_only)
+    self.nle.set_read_only(read_only)
     
   def getValue( self ):
     return self.nle.getValue()

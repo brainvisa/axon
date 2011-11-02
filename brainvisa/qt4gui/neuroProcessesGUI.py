@@ -439,7 +439,7 @@ class SomaWorkflowProcessView(QMainWindow):
       QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
       #self.ui.statusbar.showMessage("Building the process view...")
       try:
-        self.process_view = ProcessView(self.process)
+        self.process_view = ProcessView(self.process, read_only=True)
       except Exception, e:
         #self.ui.statusbar.clearMessage()
         QtGui.QApplication.restoreOverrideCursor()
@@ -839,13 +839,15 @@ class ExecutionContextGUI( neuroProcesses.ExecutionContext):
 #----------------------------------------------------------------------------
 class ExecutionNodeGUI(QWidget):
   
-  def __init__(self, parent, parameterized):
+  def __init__(self, parent, parameterized, read_only=False):
     QWidget.__init__(self, parent)
     layout = QVBoxLayout()
     layout.setMargin( 5 )
     layout.setSpacing( 4 )
     self.setLayout(layout)
-    self.parameterizedWidget = ParameterizedWidget( parameterized, None ) 
+    self.parameterizedWidget = ParameterizedWidget( parameterized, None )
+    if read_only:
+      self.parameterizedWidget.set_read_only(True)
     layout.addWidget(self.parameterizedWidget)
     spacer = QSpacerItem(0,0,QSizePolicy.Minimum,QSizePolicy.Expanding)
     layout.addItem( spacer )
@@ -884,7 +886,7 @@ class RadioItem(QWidget):
     layout.addStretch(1)
     self.setAutoFillBackground(True)
 #    self.show()
-  
+
   def setChecked(self, checked):
     self.radio.setChecked(checked)
     
@@ -897,11 +899,12 @@ class RadioItem(QWidget):
 #----------------------------------------------------------------------------
 class NodeCheckListItem( QTreeWidgetItem ):
   
-  def __init__( self, node, parent, after=None, text=None, itemType=None ):
+  def __init__( self, node, parent, after=None, text=None, itemType=None, read_only=False ):
     QTreeWidgetItem.__init__( self, parent )
     self._node = node
     self.itemType=itemType
-    if itemType == "radio":
+    self.read_only = read_only
+    if itemType == "radio" and not self.read_only:
       # if the item type is radio, create a custom item RadioItem to replace the current QTreeWidgetItem at display
       # the radio button is included in a button group that is registred in the parent item
       buttonGroup=getattr(self.parent(), "buttonGroup", None)
@@ -912,7 +915,7 @@ class NodeCheckListItem( QTreeWidgetItem ):
       self.treeWidget().setItemWidget(self, 0, self.widget)
       QWidget.connect(self.widget.radio, SIGNAL("clicked(bool)"), self.radioClicked)
       QWidget.connect(self.widget.radio, SIGNAL("toggled(bool)"), self.radioToggled)
-    else:# not a radio button, show text directly in the qtreeWidgetItem
+    else:# not a radio button or read only, show text directly in the qtreeWidgetItem
       if text:
         self.setText(0, text)
     self.setOn( node._selected )
@@ -925,7 +928,7 @@ class NodeCheckListItem( QTreeWidgetItem ):
     self.stateChange( checked )
 
   def itemClicked(self):
-    if (self.itemType == "check"):
+    if self.itemType == "check":
       self.stateChange(self.isOn())
 
   def setIcon(self, col, icon):
@@ -945,16 +948,23 @@ class NodeCheckListItem( QTreeWidgetItem ):
     self._node = None
 
   def setOn( self, b ):
-    if self.itemType=="radio":
+    if self.read_only:
+      if b:
+        self.setFlags(Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsEnabled)
+      else:
+        self.setFlags(Qt.ItemIsSelectable | Qt.ItemIsDragEnabled)
+    elif self.itemType=="radio":
       self.widget.setChecked(b)
     elif self.itemType=="check":
       if b:
         self.setCheckState( 0, Qt.Checked )
       else:
         self.setCheckState( 0, Qt.Unchecked )
-        
+      
   def isOn( self ):
-    if self.itemType=="radio":
+    if self.read_only:
+      return int(Qt.ItemIsEnabled & self.flags())>0
+    elif self.itemType=="radio":
       return self.widget.isChecked()
     elif self.itemType=="check":
       return self.checkState(0) == Qt.Checked
@@ -965,7 +975,7 @@ class NodeCheckListItem( QTreeWidgetItem ):
     This method is used to check or uncheck a checkable item and warn the underlying model of the state change. 
     It is useful for the feature select/unselect before/after/all in pipelines and iterations.
     """
-    if self.itemType=="check":
+    if self.itemType=="check" and not self.read_only:
       if b:
         self.setCheckState( 0, Qt.Checked )
       else:
@@ -978,7 +988,7 @@ class NodeCheckListItem( QTreeWidgetItem ):
     @param current: indicates if the item is the current item or not.
     @type current: boolean
     """
-    if self.itemType == "radio":
+    if self.itemType == "radio" and not self.read_only:
       if current:
         self.widget.setBackgroundRole(QPalette.Highlight)
         self.widget.setForegroundRole(QPalette.HighlightedText)
@@ -990,6 +1000,7 @@ class NodeCheckListItem( QTreeWidgetItem ):
 class ParameterLabel( QLabel ):
   '''A QLabel that emits PYSIGNAL( 'contextMenuEvent' ) whenever a
   contextMenuEvent occurs'''
+
   def __init__( self, parameterName, mandatory, parent ):
     if mandatory:
       QLabel.__init__( self, '<b>' + parameterName + ':</b>',
@@ -1010,6 +1021,9 @@ class ParameterLabel( QLabel ):
     self.setAutoFillBackground(True)
     self.setBackgroundRole(QPalette.Window)
     
+
+  def set_read_only(self, read_only):
+    self.default_id.setEnabled(not read_only)
 
   def contextMenuEvent( self, e ):
     self.contextMenu.exec_( e.globalPos() )
@@ -1156,6 +1170,12 @@ class ParameterizedWidget( QWidget ):
     self._doUpdateParameterValue = True
     #self.scrollWidget.widget().resize(600, 200) 
 #    self.scrollWidget.show()
+
+  def set_read_only(self, read_only):
+    for x in self.editors.keys():
+      self.editors[x].set_read_only(read_only)
+    for x in self.labels.keys():
+      self.labels[x].set_read_only(read_only)
     
   def parameterizedDeleted( self, parameterized ):
     for k, p in parameterized.signature.items():
@@ -1286,10 +1306,15 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
   menu = None
 
+  parameterizedWidget = None
+
+  read_only = None
+
   def __init__( self, 
                 processId, 
                 parent=None, 
-                externalInfo=None):
+                externalInfo=None,
+                read_only=False):
     ExecutionContextGUI.__init__( self )
     QWidget.__init__( self, parent )
     if getattr( ProcessView, 'pixIcon', None ) is None:
@@ -1300,6 +1325,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       setattr( ProcessView, 'pixProcessError', QIcon( os.path.join( neuroConfig.iconPath, 'abort.png' ) ) )
       setattr( ProcessView, 'pixNone', QIcon() )
     
+    
+    self.read_only = read_only
+
     # ProcessView cannot be a QMainWindow because it have to be included in a QStackedWidget in pipelines. 
     #centralWidget=QWidget()
     #self.setCentralWidget(centralWidget)
@@ -1501,6 +1529,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       #self.executionTree.setSortingEnabled( -1 )
       #self.eTreeWidget.setResizeMode( self.executionTree, QSplitter.KeepSize )
 
+      if self.read_only:
+        self.executionTreeMenu.setEnabled(False)
+
       # parameters of a each step of the pipeline
       self._widgetStack = QStackedWidget( self.eTreeWidget )
       self._widgetStack.setSizePolicy( QSizePolicy( QSizePolicy.Preferred,
@@ -1564,6 +1595,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     initGUI = getattr( self.process, 'initializationGUI', None )
     if initGUI is not None:
       initGUI( self )
+
+    if self.read_only and self.parameterizedWidget != None:
+      self.parameterizedWidget.set_read_only(True)
   
 
   def createSignatureWidgets( self, documentation=None ):
@@ -1609,6 +1643,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 #      self.parameterizedWidget.show()
 #    if self.inlineGUI is not None:
 #      self.inlineGUI.show()
+
+    if self.parameterizedWidget != None:
+      self.parameterizedWidget.set_read_only(self.read_only)
 
   def eraseSignatureWidgets( self ):
     if self.parameterizedWidget is not None:
@@ -2115,7 +2152,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
           itemType="check"
         else:
           itemType=None
-        newItem=NodeCheckListItem( childNode, item, previous, _t_( childNode.name() ), itemType )
+        newItem=NodeCheckListItem( childNode, item, previous, _t_( childNode.name() ), itemType, read_only=self.read_only )
         newItem._executionNode = childNode
         previous = newItem
         if en.hasChildren():

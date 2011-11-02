@@ -1757,6 +1757,8 @@ class ExecutionNode( object ):
     """
     from qtgui.neuroProcessesGUI import ExecutionNodeGUI
     if self._parameterized is not None:
+      if processView != None and processView.read_only:
+        return ExecutionNodeGUI(parent, self._parameterized(), read_only=True)
       return ExecutionNodeGUI(parent, self._parameterized())
     return None
 
@@ -1887,7 +1889,8 @@ class ProcessExecutionNode( ExecutionNode ):
   def gui( self, parent, processView = None ):
     if processView is not None:
       return ProcessView( self._process, parent,
-                          externalInfo = processView.info )
+                          externalInfo = processView.info,
+                          read_only=processView.read_only)
     else:
       return ProcessView( self._process, parent )
 

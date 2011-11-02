@@ -153,6 +153,13 @@ class DiskItemEditor( QWidget, DataEditor ):
   def __del__( self ):
       self._ = None
 
+  def set_read_only(self, read_only):
+    self.btnDatabase.setEnabled(not read_only)
+    self.btnBrowse.setEnabled(not read_only)
+    self.btnEdit.setEnabled(not read_only)
+    self.led.setReadOnly(read_only)
+    self.led.setFrame(not read_only)
+
   def setContext( self, newContext ):
     oldContext = ( self.btnShow.isChecked(), self._view,
                    self.btnEdit.isChecked(), self._edit )
