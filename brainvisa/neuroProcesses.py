@@ -3716,19 +3716,33 @@ def getDataEditor( source, enableConversion = 0, checkUpdate=True, listof=False 
   else:
     t0, f = source
   t = t0
-  v = dataEditors.get( ( t, f ) )
+  if not isinstance( f, list ) and not isinstance( f, tuple ):
+    f = ( f, )
+  v = None
+  for i in f:
+    v = dataEditors.get( ( t, i ) )
+    if v is not None:
+      format = i
+      break
   while not v and t:
     t = t.parent
-    v = dataEditors.get( ( t, f ) )
+    v = None
+    for i in f:
+      v = dataEditors.get( ( t, i ) )
+      if v is not None:
+        format = i
+        break
   if not v and enableConversion:
-    converters = getConvertersFrom( (t0, f), checkUpdate=checkUpdate )
-    t = t0
-    while not v and t:
-      for tc, fc in converters.keys():
-        if ( tc, fc ) != ( t0, f ):
-          v = dataEditors.get( ( t, fc ) )
-          if v: break
-      t = t.parent
+    for format in f:
+      converters = getConvertersFrom( (t0, f), checkUpdate=checkUpdate )
+      t = t0
+      while not v and t:
+        for tc, fc in converters.keys():
+          if ( tc, fc ) != ( t0, f ):
+            v = dataEditors.get( ( t, fc ) )
+            if v: break
+        t = t.parent
+      if v: break
   p =  getProcess( v, checkUpdate=checkUpdate )
   if p and p.userLevel <= neuroConfig.userLevel:
     return p
