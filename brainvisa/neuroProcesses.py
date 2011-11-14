@@ -185,7 +185,7 @@ from soma.somatime import timeDifferenceToString
 
 from neuroData import *
 from neuroDiskItems import *
-import neuroConfig
+import neuroConfig, neuroDiskItems
 import neuroLog
 from neuroException import *
 import Scheduler
@@ -193,7 +193,15 @@ from brainvisa import matlab
 from brainvisa.validation import ValidationError
 from brainvisa.debug import debugHere
 from brainvisa.data.sqlFSODatabase import Database, NotInDatabaseError
+import brainvisa.toolboxes
 import neuroPopen2
+import fileSystemOntology
+try:
+  from soma.workflow.gui.workflowGui import ComputingResourcePool
+  from soma.workflow.gui.workflowGui import ApplicationModel as WorkflowApplicationModel
+except ImportError:
+  class ComputingResourcePool(object): pass
+  class WorkflowApplicationModel(object): pass
 
 try:
   from remoteProcesses import *
@@ -1749,6 +1757,8 @@ class ExecutionNode( object ):
     """
     from qtgui.neuroProcessesGUI import ExecutionNodeGUI
     if self._parameterized is not None:
+      if processView != None and processView.read_only:
+        return ExecutionNodeGUI(parent, self._parameterized(), read_only=True)
       return ExecutionNodeGUI(parent, self._parameterized())
     return None
 
@@ -1879,7 +1889,8 @@ class ProcessExecutionNode( ExecutionNode ):
   def gui( self, parent, processView = None ):
     if processView is not None:
       return ProcessView( self._process, parent,
-                          externalInfo = processView.info )
+                          externalInfo = processView.info,
+                          read_only=processView.read_only)
     else:
       return ProcessView( self._process, parent )
 
@@ -3498,14 +3509,14 @@ def getProcessInstance( processIdClassOrInstance ):
       result = getProcessFromExecutionNode( processIdClassOrInstance )
     else:
       try:
-        if isinstance( processIdClassOrInstance, basestring ) and minfFormat( processIdClassOrInstance )[ 1 ] == minfHistory:
+        if (isinstance( processIdClassOrInstance, basestring ) or hasattr( processIdClassOrInstance, 'readline' )) and minfFormat( processIdClassOrInstance )[ 1 ] == minfHistory:
           event = readMinf( processIdClassOrInstance )[0]
           result = getProcessInstanceFromProcessEvent( event )
-          if result is not None:
+          if result is not None and isinstance( processIdClassOrInstance, basestring):
             result._savedAs = processIdClassOrInstance
-      except IOError:
-        raise KeyError( 'Could not get process "' + processIdClassOrInstance \
-            + '": invalid identifier or process file' )
+      except IOError, e:
+        raise KeyError( 'Could not get process "' + repr(processIdClassOrInstance) \
+            + '": invalid identifier or process file: ' + repr(e))
   elif not isinstance( result, Process ):
     result = result()
   return result
@@ -3705,19 +3716,33 @@ def getDataEditor( source, enableConversion = 0, checkUpdate=True, listof=False 
   else:
     t0, f = source
   t = t0
-  v = dataEditors.get( ( t, f ) )
+  if not isinstance( f, list ) and not isinstance( f, tuple ):
+    f = ( f, )
+  v = None
+  for i in f:
+    v = dataEditors.get( ( t, i ) )
+    if v is not None:
+      format = i
+      break
   while not v and t:
     t = t.parent
-    v = dataEditors.get( ( t, f ) )
+    v = None
+    for i in f:
+      v = dataEditors.get( ( t, i ) )
+      if v is not None:
+        format = i
+        break
   if not v and enableConversion:
-    converters = getConvertersFrom( (t0, f), checkUpdate=checkUpdate )
-    t = t0
-    while not v and t:
-      for tc, fc in converters.keys():
-        if ( tc, fc ) != ( t0, f ):
-          v = dataEditors.get( ( t, fc ) )
-          if v: break
-      t = t.parent
+    for format in f:
+      converters = getConvertersFrom( (t0, f), checkUpdate=checkUpdate )
+      t = t0
+      while not v and t:
+        for tc, fc in converters.keys():
+          if ( tc, fc ) != ( t0, f ):
+            v = dataEditors.get( ( t, fc ) )
+            if v: break
+        t = t.parent
+      if v: break
   p =  getProcess( v, checkUpdate=checkUpdate )
   if p and p.userLevel <= neuroConfig.userLevel:
     return p
@@ -4067,7 +4092,7 @@ def readProcesses( processesPath ):
     _allProcessesTree=ProcessTree("Various processes", "all processes",editable=False, user=False)
     for processesDir in processesPath:
       _allProcessesTree.addDir(processesDir, "", processesCache)
-    for toolbox in neuroConfig.allToolboxes():
+    for toolbox in brainvisa.toolboxes.allToolboxes():
       toolbox.getProcessTree()
 
     # save processes cache
@@ -4563,7 +4588,8 @@ def initializeProcesses():
   #TODO: A class would be more clean instead of all these global variables
   global _processModules, _processes, _processesInfo, _processesInfoByName, \
          _converters, _viewers, _listViewers, _mainThread, _defaultContext, _dataEditors, _listDataEditors, _importers,\
-         _askUpdateProcess, _readProcessLog
+         _askUpdateProcess, _readProcessLog, _computing_resource_pool, \
+         _workflow_application_model
   _mainThread = threading.currentThread()
   _processesInfo = {}
   _processesInfoByName = {}
@@ -4576,6 +4602,13 @@ def initializeProcesses():
   _dataEditors = {}
   _listDataEditors = {}
   _importers = {}
+  if neuroConfig.userLevel >= 3:
+    _computing_resource_pool = ComputingResourcePool()
+    _computing_resource_pool.add_default_connection()
+    _workflow_application_model = WorkflowApplicationModel(_computing_resource_pool)
+  else:
+    _computing_resource_pool = None
+    _workflow_application_model = None
   _defaultContext = ExecutionContext()
   if neuroConfig.mainLog is not None:
     _readProcessLog = neuroConfig.mainLog.subLog()
@@ -4609,12 +4642,45 @@ def cleanupProcesses():
   _askUpdateProcess = {}
   _mainThread = None
   _defaultContext = None
+  _computing_resource_pool = None
+  _workflow_application_model = None
   if _readProcessLog is not None:
     _readProcessLog.close()
     _readProcessLog = None
 
-# ---
+#----------------------------------------------------------------------------
+def reloadToolboxes():
+  """
+  Reloads toolboxes, processes, types, ontology rules, databases. 
+  Useful to take into account new files without having to quit and start again Brainvisa.
+  """
+  import neuroHierarchy
+  global _mainProcessTree
+  
+  # init typesPath and fileSystemOntologiesPath
+  neuroConfig.initializeOntologyPaths()
+  
+  # read toolboxes directories: useful if there are new toolbox, process, types, or hierarchy files
+  brainvisa.toolboxes.readToolboxes(neuroConfig.toolboxesDir, neuroConfig.homeBrainVISADir)
+  # execute intialization files of toolboxes
+  for toolbox in brainvisa.toolboxes.allToolboxes():
+    toolbox.init()
+  
+  # reload lists of types and formats
+  neuroDiskItems.reloadTypes()
+  
+  # reload processes
+  readProcesses(neuroConfig.processesPath)
+  # update the list of processes
+  _mainProcessTree=None
+  updatedMainProcessTree()
+  
+  # update databases and ontology rules
+  fileSystemOntology.FileSystemOntology.clear()
+  neuroHierarchy.initializeDatabases()
+  neuroHierarchy.openDatabases()
 
+#----------------------------------------------------------------------------
 if not _neuroDistributedProcesses:
   # TODO: use log
   if globals().has_key( '_t_' ):

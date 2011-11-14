@@ -37,7 +37,6 @@ from soma.wip.application.api import findIconFile
 from soma.qtgui.api import largeIconSize
 from brainvisa.data.qtgui.diskItemBrowser import DiskItemBrowser
 from neuroDataGUI import DataEditor, StringListEditor, buttonMargin, buttonIconSize
-from neuroProcesses import defaultContext
 import neuroProcesses
 import neuroProcessesGUI
 from neuroDiskItems import DiskItem, Directory
@@ -108,7 +107,7 @@ class DiskItemEditor( QWidget, DataEditor ):
     self.btnEdit.setFixedSize( buttonIconSize + buttonMargin )
     self.btnEdit.setFocusPolicy( Qt.NoFocus )
     self.btnEdit.setEnabled( 0 )
-    if not neuroProcesses.getDataEditor( (self.parameter.type, self.parameter.formats[0] ), checkUpdate=False ):
+    if not neuroProcesses.getDataEditor( (self.parameter.type, self.parameter.formats ), checkUpdate=False ):
       self.btnEdit.hide()
     self.connect( self.btnEdit, SIGNAL( 'clicked()' ), self.editPressed )
     self.connect( self.btnEdit, SIGNAL( 'rightPressed' ),
@@ -153,6 +152,13 @@ class DiskItemEditor( QWidget, DataEditor ):
 
   def __del__( self ):
       self._ = None
+
+  def set_read_only(self, read_only):
+    self.btnDatabase.setEnabled(not read_only)
+    self.btnBrowse.setEnabled(not read_only)
+    self.btnEdit.setEnabled(not read_only)
+    self.led.setReadOnly(read_only)
+    self.led.setFrame(not read_only)
 
   def setContext( self, newContext ):
     oldContext = ( self.btnShow.isChecked(), self._view,
@@ -209,7 +215,7 @@ class DiskItemEditor( QWidget, DataEditor ):
       self.btnShow.setEnabled( enabled )
     if self.btnEdit:
       enabled = 0
-      v = neuroProcesses.getDataEditor( (self.parameter.type, self.parameter.formats[0]), checkUpdate=False )
+      v = neuroProcesses.getDataEditor( (self.parameter.type, self.parameter.formats), checkUpdate=False )
       if v:
         self.btnEdit.show()
       else:
@@ -236,7 +242,7 @@ class DiskItemEditor( QWidget, DataEditor ):
       try :
         viewer = neuroProcesses.getViewer( v, 1 )()
         viewerExists = True
-        defaultContext().runInteractiveProcess( self._viewerExited, viewer, v )
+        neuroProcesses.defaultContext().runInteractiveProcess( self._viewerExited, viewer, v )
       except Exception, error :
         self.btnShow.setChecked( False )
         if viewerExists:
@@ -266,7 +272,7 @@ class DiskItemEditor( QWidget, DataEditor ):
       self.btnEdit.setEnabled( 0 )
       v = self.getValue()
       editor = neuroProcesses.getDataEditor( v )()
-      defaultContext().runInteractiveProcess( self._editorExited, editor, v )
+      neuroProcesses.defaultContext().runInteractiveProcess( self._editorExited, editor, v )
     else:
       self._edit = None
   
@@ -673,7 +679,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
     self.btnEdit.setFixedSize( buttonIconSize + buttonMargin )
     self.btnEdit.setFocusPolicy( Qt.NoFocus )
     self.btnEdit.setEnabled( 0 )
-    if not neuroProcesses.getDataEditor( (self.parameter.type, self.parameter.formats[0] ), checkUpdate=False, listof=True ):
+    if not neuroProcesses.getDataEditor( (self.parameter.type, self.parameter.formats ), checkUpdate=False, listof=True ):
       self.btnEdit.hide()
     self.connect( self.btnEdit, SIGNAL( 'clicked()' ), self.editPressed )
     self.connect( self.btnEdit, SIGNAL( 'rightPressed' ),
@@ -768,7 +774,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
       v = self.getValue()
       try :
         viewer = neuroProcesses.getViewer( v, 0, listof=True )()
-        defaultContext().runInteractiveProcess( self._viewerExited, viewer, v )
+        neuroProcesses.defaultContext().runInteractiveProcess( self._viewerExited, viewer, v )
       except Exception, error :
         raise RuntimeError( HTMLMessage(_t_( 'No viewer could be found or launched for type =<em>%s</em> and format=<em>%s</em>' ) % (unicode( v.type ), unicode(v.format))) )
     else:
@@ -794,7 +800,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
       self.btnEdit.setEnabled( 0 )
       v = self.getValue()
       editor = neuroProcesses.getDataEditor( v, listof=True )()
-      defaultContext().runInteractiveProcess( self._editorExited, editor, v )
+      neuroProcesses.defaultContext().runInteractiveProcess( self._editorExited, editor, v )
     else:
       self._edit = None
   
