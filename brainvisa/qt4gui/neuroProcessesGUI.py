@@ -75,6 +75,7 @@ from soma.qt4gui.api import ApplicationQt4GUI
 
 try: 
   from soma.workflow.gui.workflowGui import SomaWorkflowWidget as ComputingResourceWidget
+  from soma.workflow.gui.workflowGui import SomaWorkflowMiniWidget as MiniComputingResourceWidget
   import soma.workflow.gui.workflowGui
 except ImportError:
   class ComputingResourceWidget(object): pass
@@ -162,8 +163,18 @@ def openWeb(source):
   _helpWidget.setSource( source_file )
   _helpWidget.show()
   _helpWidget.raise_()
+    
 
+class SomaWorkflowMiniWidget(MiniComputingResourceWidget):
 
+  def __init__(self, model, sw_widget, parent=None):
+    super(SomaWorkflowMiniWidget, self).__init__(model, 
+                                                 sw_widget,
+                                                 parent)
+    self.layout().addWidget(sw_widget)
+    self.layout().addStretch()
+    sw_widget.update_workflow_list_from_model = True
+    sw_widget.hide()
 
 class SomaWorkflowWidget(ComputingResourceWidget):
 
@@ -181,7 +192,7 @@ class SomaWorkflowWidget(ComputingResourceWidget):
                                              0)
 
     self.ui.list_widget_submitted_wfs.itemDoubleClicked.connect(self.workflow_double_clicked)
-
+    self.ui.combo_resources.hide()
     
   def workflow_filter(self, workflows):
     new_workflows = {}
@@ -200,7 +211,11 @@ class SomaWorkflowWidget(ComputingResourceWidget):
     wf_id = selected_items[0].data(QtCore.Qt.UserRole).toInt()[0]
 
     if wf_id not in self.serialized_processes:
-      workflow = self.model.current_connection.workflow(wf_id)
+      workflow = self.model.current_workflow()#current_connection.workflow(wf_id)
+      if workflow == None:
+        QMessageBox.warning(self, "Workflow loading impossible", "The workflow does not exist.")
+        return
+      workflow = workflow.server_workflow
       if workflow.user_storage != None and \
         len(workflow.user_storage) == 2 and \
         workflow.user_storage[0] == SomaWorkflowWidget.brainvisa_code:
@@ -365,7 +380,7 @@ class SomaWorkflowProcessView(QMainWindow):
 
     self.connect(self.workflow_tree_view, QtCore.SIGNAL('selection_model_changed(QItemSelectionModel)'), self.workflow_item_view.setSelectionModel)
 
-    self.connect(self.workflow_item_view, QtCore.SIGNAL('connection_closed_error()'), _mainWindow.sw_widget.reconnectAfterConnectionClosed)
+    self.connect(self.workflow_item_view, QtCore.SIGNAL('connection_closed_error'), _mainWindow.sw_widget.reconnectAfterConnectionClosed)
 
       
     self.workflow_tree_view.current_workflow_changed()
@@ -393,24 +408,25 @@ class SomaWorkflowProcessView(QMainWindow):
       if self.model.current_wf_id == self.workflow_id:
         self.model.clear_current_workflow()
     else:      
-      #print "before check and change resource "
       if self.resource_id != self.model.current_resource_id:
         if self.model.resource_exist(self.resource_id):
           self.model.set_current_connection(self.resource_id)
         else:
-          new_connection = _mainWindow.sw_widget.createConnection(self.model.current_resource_id)
+          (resource_id, 
+           new_connection) = _mainWindow.sw_widget.createConnection(self.resource_id,
+                                                                    editable_resource=False)
           if new_connection:
-            self.check and self.model.add_connection(resource_id, new_connection)
-      #print "after print resource "
+            self.model.add_connection(resource_id, new_connection)
+          else:
+            QMessageBox.warning(self, "Monitoring impossible", "The connection is not active.")
+            self.action_monitor_workflow.setChecked(False)
+            return
 
-      #print "before model.set_current_workflow"
       if self.model.is_loaded_workflow(self.workflow_id):
         self.model.set_current_workflow(self.workflow_id)
       else:
         QMessageBox.warning(self, "Monitoring impossible", "The workflow was deleted.")
         self.action_monitor_workflow.setChecked(False)
-        
-      #print "after model.set_current_workflow"
       
   
 
@@ -599,6 +615,9 @@ def addBrainVISAMenu( widget, menuBar ):
   bvMenu.addAction( _t_( "Reload toolboxes" ), reloadToolboxesGUI )
   bvMenu.addAction( _t_( "Start &Shell" ), startShell, Qt.CTRL + Qt.Key_S )
   bvMenu.addSeparator()
+  if isinstance(widget, ProcessSelectionWidget):
+    bvMenu.addAction(widget.dock_sw.toggleViewAction())
+    bvMenu.addSeparator()
   if not isinstance( widget, ProcessSelectionWidget ):
     bvMenu.addAction( _t_( "Close" ), widget.close, Qt.CTRL + Qt.Key_W )
   bvMenu.addAction( _t_( "&Quit" ), quitRequest, Qt.CTRL + Qt.Key_Q )
@@ -1956,7 +1975,8 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       (wf_id, resource_id) = _mainWindow.sw_widget.submit_workflow(date,
                                                                    name,
                                                                    queue)
-     
+      if wf_id == None:
+        return 
 
       view = SomaWorkflowProcessView(
                             neuroProcesses._workflow_application_model,
@@ -2684,6 +2704,8 @@ class ProcessSelectionWidget( QMainWindow ):
   # SomaWorkflowWidget
   sw_widget = None
 
+  sw_mini_widget = None
+
   def __init__( self ):
     QMainWindow.__init__( self )
     
@@ -2696,12 +2718,23 @@ class ProcessSelectionWidget( QMainWindow ):
     centralWidget=QWidget()
     self.setCentralWidget(centralWidget)
     
+    self.dock_sw = QDockWidget("Execution", self)
+    self.dock_sw.toggleViewAction().setText("Workflow view")
     if neuroProcesses._workflow_application_model != None:
+      
       self.sw_widget = SomaWorkflowWidget(neuroProcesses._workflow_application_model,
                          computing_resource=socket.gethostname(),
                          parent=None)
-      self.sw_widget.show()
+      self.sw_mini_widget = SomaWorkflowMiniWidget(neuroProcesses._workflow_application_model, 
+                                                   self.sw_widget, 
+                                                   self.dock_sw)
+      self.dock_sw.setWidget(self.sw_mini_widget)
+      self.dock_sw.show()
+      self.dock_sw.setFloating(True)
+      self.addDockWidget(Qt.RightDockWidgetArea, self.dock_sw)
     else:
+      self.dock_sw.hide()
+      self.dock_sw.toggleViewAction().setVisible(False)
       self.sw_widget = None
 
     # Menu setup
