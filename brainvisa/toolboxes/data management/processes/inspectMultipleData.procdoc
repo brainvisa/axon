@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="fr">
+    <xhtml name="short"/>
+    <d name="parameters">
+      <xhtml name="items"/>
+      <xhtml name="data_type"/>
+    </d>
+    <xhtml name="long"/>
+  </d>
+  <d name="en">
+    <xhtml name="short">Allow easy viewing or editing on multiple files</xhtml>
+    <d name="parameters">
+      <xhtml name="items">List of items to be displayed</xhtml>
+      <xhtml name="data_type">Restrict queries on selected data types (to make searches faster and more readable)</xhtml>
+    </d>
+    <xhtml name="long">Opens a fake process view for a list of files (disk items), so that all viewers and editors can be accessed easily.
+The opened process is just the graphical interface with a list of selected parameters so that eyes and pencil icons are lined up and visible. It has no run button.</xhtml>
+  </d>
+</d>
+</minf>
