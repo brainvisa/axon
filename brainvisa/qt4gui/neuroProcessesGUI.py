@@ -79,6 +79,8 @@ try:
   import soma.workflow.gui.workflowGui
 except ImportError:
   class ComputingResourceWidget(object): pass
+  class MiniComputingResourceWidget(object): pass
+
 
 _mainThreadActions = FakeQtThreadCall()
 
@@ -318,6 +320,9 @@ class SomaWorkflowProcessView(QMainWindow):
                     assigned_wf_id=self.workflow_id, 
                     assigned_resource_id=self.resource_id,
                     parent=self)
+    if not soma.workflow.gui.workflowGui.MATPLOTLIB:
+      self.ui.dock_plot.hide()
+      self.ui.dock_plot.toggleViewAction().setVisible(False)
 
     self.workflow_info_view = soma.workflow.gui.workflowGui.WorkflowStatusNameDate(
                     neuroProcesses._workflow_application_model, 

@@ -200,8 +200,11 @@ try:
   from soma.workflow.gui.workflowGui import ComputingResourcePool
   from soma.workflow.gui.workflowGui import ApplicationModel as WorkflowApplicationModel
 except ImportError:
+  _soma_workflow = False
   class ComputingResourcePool(object): pass
   class WorkflowApplicationModel(object): pass
+else:
+  _soma_workflow = True
 
 try:
   from remoteProcesses import *
@@ -4602,7 +4605,7 @@ def initializeProcesses():
   _dataEditors = {}
   _listDataEditors = {}
   _importers = {}
-  if neuroConfig.userLevel >= 3:
+  if _soma_workflow and neuroConfig.userLevel >= 3:
     _computing_resource_pool = ComputingResourcePool()
     _computing_resource_pool.add_default_connection()
     _workflow_application_model = WorkflowApplicationModel(_computing_resource_pool)
