@@ -320,9 +320,20 @@ def getSharePath():
           if os.path.isdir( p ):
             _sharePath = p
             break
-    if not _sharePath:
+    if not _sharePath or \
+      ( not os.path.isdir( os.path.join( _sharePath,
+        'axon-' + shortVersion ) ) \
+        and not os.path.isdir( os.path.join( _sharePath,
+          'brainvisa-' + shortVersion ) ) ):
       # empty string rather than None to avoid later re-detection
       _sharePath = ''
+      for projectName in ( 'axon', 'brainvisa' ):
+        sharePath = os.path.normpath( os.path.join( mainPath, '..', 'share',
+          projectName + '-' + shortVersion ) )
+        if os.path.isdir( sharePath ):
+          _sharePath = os.path.normpath( os.path.join( mainPath, '..',
+            'share' ) )
+          break
   return _sharePath
 
 def initializeOntologyPaths():
