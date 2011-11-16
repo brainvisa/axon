@@ -173,8 +173,6 @@ class SomaWorkflowMiniWidget(MiniComputingResourceWidget):
     super(SomaWorkflowMiniWidget, self).__init__(model, 
                                                  sw_widget,
                                                  parent)
-    self.layout().addWidget(sw_widget)
-    self.layout().addStretch()
     sw_widget.update_workflow_list_from_model = True
     sw_widget.hide()
 
@@ -620,9 +618,6 @@ def addBrainVISAMenu( widget, menuBar ):
   bvMenu.addAction( _t_( "Reload toolboxes" ), reloadToolboxesGUI )
   bvMenu.addAction( _t_( "Start &Shell" ), startShell, Qt.CTRL + Qt.Key_S )
   bvMenu.addSeparator()
-  if isinstance(widget, ProcessSelectionWidget):
-    bvMenu.addAction(widget.dock_sw.toggleViewAction())
-    bvMenu.addSeparator()
   if not isinstance( widget, ProcessSelectionWidget ):
     bvMenu.addAction( _t_( "Close" ), widget.close, Qt.CTRL + Qt.Key_W )
   bvMenu.addAction( _t_( "&Quit" ), quitRequest, Qt.CTRL + Qt.Key_Q )
@@ -1831,13 +1826,15 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     if self.process.__class__ == neuroProcesses.IterationProcess:
       self.btnIterate.setVisible(False)
 
-    if neuroProcesses._workflow_application_model != None:
+    if self.process.executionNode() != None and neuroProcesses._workflow_application_model != None:
       self.btnRunSomaWorkflow = QToolButton(self)
       self.btnRunSomaWorkflow.setDefaultAction(self.action_run_with_sw)
       self.btnRunSomaWorkflow.setToolButtonStyle(Qt.ToolButtonTextOnly)
       layout.addWidget(self.btnRunSomaWorkflow)
       self.btnRunSomaWorkflow.setMinimumWidth(90)
       self.btnRunSomaWorkflow.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
+    else:
+      self.action_run_with_sw.setVisible(False)
 
     if neuroProcesses.neuroDistributedProcesses():
       self.btnDistribute = QPushButton( _t_( 'Distribute' ) )
@@ -2722,30 +2719,41 @@ class ProcessSelectionWidget( QMainWindow ):
     
     centralWidget=QWidget()
     self.setCentralWidget(centralWidget)
-    
+
+    self.dock_doc = QDockWidget("Documentation", self)
+    self.dock_doc.toggleViewAction().setText("Documentation")
+    self.dock_doc.show()
+    self.addDockWidget(Qt.RightDockWidgetArea, self.dock_doc)
+
     self.dock_sw = QDockWidget("Execution", self)
-    self.dock_sw.toggleViewAction().setText("Workflow view")
+    self.dock_sw.toggleViewAction().setText("Workflow execution")
     if neuroProcesses._workflow_application_model != None:
       
       self.sw_widget = SomaWorkflowWidget(neuroProcesses._workflow_application_model,
                          computing_resource=socket.gethostname(),
                          parent=None)
+      self.sw_widget.setWindowTitle("Workflow execution")
       self.sw_mini_widget = SomaWorkflowMiniWidget(neuroProcesses._workflow_application_model, 
                                                    self.sw_widget, 
                                                    self.dock_sw)
       self.dock_sw.setWidget(self.sw_mini_widget)
-      self.dock_sw.show()
-      self.dock_sw.setFloating(True)
-      self.addDockWidget(Qt.RightDockWidgetArea, self.dock_sw)
+      
+      self.dock_sw.hide()
+      self.addDockWidget(Qt.BottomDockWidgetArea, self.dock_sw)
     else:
       self.dock_sw.hide()
       self.dock_sw.toggleViewAction().setVisible(False)
       self.sw_widget = None
 
+    self.setCorner(QtCore.Qt.BottomRightCorner, QtCore.Qt.RightDockWidgetArea)
+
     # Menu setup
     menu = self.menuBar()
     addBrainVISAMenu( self, menu )
     neuroConfigGUI.addSupportMenu( self, menu )
+    view_menu = menu.addMenu("&View")
+    view_menu.addAction(self.dock_doc.toggleViewAction())
+    view_menu.addAction(self.dock_sw.toggleViewAction())
 
     # the main layout contains vertically : a QSplitter (processes | doc) and a QHBoxLayout (open and edit buttons)
     layout=QVBoxLayout()
@@ -2753,17 +2761,18 @@ class ProcessSelectionWidget( QMainWindow ):
     layout.setMargin( 10 )
 
     # the splitter contains the processes on the left and the documentation on the right
-    splitter = QSplitter( )
-    layout.addWidget(splitter)
+    #splitter = QSplitter( )
+    #layout.addWidget(splitter)
 
     # left part of the splitter : QVBoxLayout : processTrees and the search box
-    w=QWidget(splitter)
+    w=QWidget(self) #splitter)
+    layout.addWidget(w)
     vb = QVBoxLayout()
     vb.setMargin(0)
     w.setLayout(vb)
     self.currentProcessId = None
     self.processTrees=ProcessTreesWidget()
-    vb.addWidget(self.processTrees)
+    #vb.addWidget(self.processTrees)
     self.processTrees.setSizePolicy( QSizePolicy( QSizePolicy.Preferred,
       QSizePolicy.Preferred ) )
     QObject.connect(self.processTrees, SIGNAL('selectionChanged'), self.itemSelected )
@@ -2775,7 +2784,7 @@ class ProcessSelectionWidget( QMainWindow ):
     p = os.path.join( neuroConfig.mainPath, 'qt4gui', 'searchbox.ui' )
     self.searchbox = QWidget()
     uic.loadUi(p, self.searchbox)
-    vb.addWidget(self.searchbox)
+    #vb.addWidget(self.searchbox)
     self.searchboxSearchB = self.searchbox.BV_search
 #    self.searchboxSearchB.setShortcut( QKeySequence.Find )
     self.matchedProcs = []
@@ -2785,36 +2794,51 @@ class ProcessSelectionWidget( QMainWindow ):
     QObject.connect(self.searchboxSearchB, SIGNAL('clicked()'), self.buttonSearch)
     QObject.connect(self.searchboxResetSearchB, SIGNAL('clicked()'), self.resetSearch )
 
+
+    vb.addWidget(self.processTrees)
+    vb.addWidget(self.searchbox)
+
     # right part of the splitter : documentation panel
-    self.info = HTMLBrowser( splitter )
+    
+    self.info = HTMLBrowser(self)#splitter )
+    #self.info.resize(400,600)
+    self.info.setMinimumSize(400,400)
+    self.info.setSizePolicy(QSizePolicy(QSizePolicy.MinimumExpanding,
+      QSizePolicy.MinimumExpanding))
+    self.dock_doc.setWidget(self.info)
     #hb.setResizeMode( self.info, QSplitter.Stretch )
     #x = hb
 
     # bottom of the central widget : buttons open and edit
-    hb = QHBoxLayout()
-    layout.addLayout(hb)
-    hb.setMargin( 5 )
+    #hb = QHBoxLayout()
+    #layout.addLayout(hb)
+    #hb.setMargin( 5 )
     self.btnOpen = QPushButton( _t_('Open') )
-    hb.addWidget(self.btnOpen)
-    self.btnOpen.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-    self.btnOpen.setEnabled( 0 )
-    QObject.connect( self.btnOpen, SIGNAL( 'clicked()' ), self.openProcess )
+    #hb.addWidget(self.btnOpen)
+    #self.btnOpen.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
+    #self.btnOpen.setEnabled( 0 )
+    #QObject.connect( self.btnOpen, SIGNAL( 'clicked()' ), self.openProcess )
     
-    if neuroConfig.userLevel >= 1:
-      self.btnEdit = QPushButton( _t_('Edit') )
-      hb.addWidget(self.btnEdit)
-      self.btnEdit.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-      self.btnEdit.setEnabled( 0 )
-      QObject.connect( self.btnEdit, SIGNAL( 'clicked()' ), self.editProcess )
-    else:
-      self.btnEdit = None
+    ##self.btnOpen.hide()
+    #if neuroConfig.userLevel >= 1:
+      #self.btnEdit = QPushButton( _t_('Edit') )
+      #hb.addWidget(self.btnEdit)
+      #self.btnEdit.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
+      #self.btnEdit.setEnabled( 0 )
+      #QObject.connect( self.btnEdit, SIGNAL( 'clicked()' ), self.editProcess )
+      ##self.btnEdit.hide()
+    #else:
+      #self.btnEdit = None
+    self.btnEdit = None
 
     self.updateList()
 
     # try to start with a doc opened
     self.info.setSource( neuroConfig.getDocFile(os.path.join( 'help','index.html' ) ) )
-    self.resize( 800, 600 )
-    splitter.setSizes( [ 400, 400 ] )
+    self.resize(800, 600)
+    
+    
+    #splitter.setSizes( [ 400, 400 ] )
 
   def keyPressEvent(self, keyEvent):
     if (keyEvent.matches(QKeySequence.Find) or keyEvent.matches(QKeySequence.FindNext) ): 
@@ -3034,7 +3058,7 @@ class ProcessTreesWidget(QSplitter):
     # Popup Menu for processes
     self.processMenu = QMenu()
     self.processMenu.addAction( _t_("Open"),  self.menuOpenProcessEvent )
-    self.processMenu.addAction( _t_("Edit"),  self.menuEditProcessEvent )
+    self.processMenu.addAction( _t_("Edit documentation"),  self.menuEditProcessEvent )
     self.processMenu.addAction( _t_("Iterate"), self.menuIterateProcessEvent)
 
     if processTrees:
