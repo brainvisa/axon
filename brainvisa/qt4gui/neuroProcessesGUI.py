@@ -2721,12 +2721,16 @@ class ProcessSelectionWidget( QMainWindow ):
     self.setCentralWidget(centralWidget)
 
     self.dock_doc = QDockWidget("Documentation", self)
+    self.dock_doc.setObjectName("documentation_dock")
     self.dock_doc.toggleViewAction().setText("Documentation")
+    self.dock_doc.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea |                                  QtCore.Qt.RightDockWidgetArea)
     self.dock_doc.show()
     self.addDockWidget(Qt.RightDockWidgetArea, self.dock_doc)
 
     self.dock_sw = QDockWidget("Execution", self)
+    self.dock_sw.setObjectName("execution_dock")
     self.dock_sw.toggleViewAction().setText("Workflow execution")
+    self.dock_sw.setAllowedAreas(QtCore.Qt.BottomDockWidgetArea |                                  QtCore.Qt.TopDockWidgetArea)
     if neuroProcesses._workflow_application_model != None:
       
       self.sw_widget = SomaWorkflowWidget(neuroProcesses._workflow_application_model,
@@ -2746,6 +2750,9 @@ class ProcessSelectionWidget( QMainWindow ):
       self.sw_widget = None
 
     self.setCorner(QtCore.Qt.BottomRightCorner, QtCore.Qt.RightDockWidgetArea)
+    self.setCorner(QtCore.Qt.BottomLeftCorner, QtCore.Qt.LeftDockWidgetArea)
+    self.setCorner(QtCore.Qt.TopLeftCorner, QtCore.Qt.LeftDockWidgetArea)
+    self.setCorner(QtCore.Qt.TopRightCorner, QtCore.Qt.RightDockWidgetArea)
 
     # Menu setup
     menu = self.menuBar()
@@ -2837,8 +2844,14 @@ class ProcessSelectionWidget( QMainWindow ):
     self.info.setSource( neuroConfig.getDocFile(os.path.join( 'help','index.html' ) ) )
     self.resize(800, 600)
     
-    
-    #splitter.setSizes( [ 400, 400 ] )
+    state_path = os.path.join(neuroConfig.homeBrainVISADir, "main_window_state.bin")
+    if os.path.exists(state_path):
+      state_file = QtCore.QFile(state_path)
+      state_file.open(QtCore.QIODevice.ReadOnly)
+      state = state_file.readAll()
+      state_file.close()
+      self.restoreState(state, 1)
+
 
   def keyPressEvent(self, keyEvent):
     if (keyEvent.matches(QKeySequence.Find) or keyEvent.matches(QKeySequence.FindNext) ): 
@@ -2989,6 +3002,11 @@ class ProcessSelectionWidget( QMainWindow ):
     self.processTrees.setModel( neuroProcesses.updatedMainProcessTree() )
 
   def closeEvent ( self, event ):
+    state = self.saveState(1)
+    state_file = QtCore.QFile(os.path.join(neuroConfig.homeBrainVISADir, "main_window_state.bin"))
+    state_file.open(QtCore.QIODevice.WriteOnly)
+    state_file.write(state)
+    state_file.close()
     quitRequest()
     event.ignore()
 
