@@ -208,10 +208,16 @@ if anatomistImport:
               if (ruuid != oruuid):
                 # create referential
                 aref=self.createReferential(ref)
-                # search transformations for this referential
-                self.loadTransformations(aref)
+                
+                ## search transformations for this referential
+                #self.loadTransformations(aref)
+                
                 # assign referential to object
                 newObject.assignReferential(aref)
+                
+              # search transformations for this referential
+              self.loadTransformations(newObject.referential)
+              
           except:
             neuroException.showException( afterError= \
               'Cannot load referential and transformations information with ' \
@@ -258,61 +264,63 @@ if anatomistImport:
       """
       def _transformWith( self, ref1, ref2, forceLoadTransformation = True):
         def _transformWith2( self, ref1, ref2):
-            tm = registration.getTransformationManager()
-            if isinstance( ref1, self.Referential ):
-	      id1=None
-	      if (getattr(ref1, "diskitem", None)==None):
-		id1=ref1.refUuid
-	      else:			     
-		id1 = ref1.diskitem.uuid()
-              srcr = ref1
+          tm = registration.getTransformationManager()
+          if isinstance( ref1, self.Referential ):
+            id1=None
+            if (getattr(ref1, "diskitem", None)==None):
+              id1=ref1.refUuid
+            else:			     
+              id1 = ref1.diskitem.uuid()              
+            srcr = ref1
+          else:
+            id1 = ref1
+
+          if isinstance( ref2, self.Referential ):	      		
+            id2 = None
+            if (getattr(ref2, "diskitem", None)==None):
+              id2 = ref2.refUuid
             else:
-              id1 = ref1
-            if isinstance( ref2, self.Referential ):	      		
-		id2 = None
-		if (getattr(ref2, "diskitem", None)==None):
-		  id2 = ref2.refUuid
-		else:
-		  id2 = ref2.diskitem.uuid()              
-              
-            else:
-              id2 = ref2
-            pth = tm.findPaths( id1, id2 )
+              id2 = ref2.diskitem.uuid()                                
+          else:
+            id2 = ref2
+            
+          pth = tm.findPaths( id1, id2 )
+          
+          try:
+            p = pth.next()
+            
+            loadTrAndCreateRef=forceLoadTransformation
             try:
                 p = pth.next()
-                
-                loadTrAndCreateRef=forceLoadTransformation
-                try:
-                    p = pth.next()
-                    self.log(string.join('processTransformations warning: multiple transformations from', ref1, 'to', ref2))
-                    loadTrAndCreateRef = forceLoadTransformation
-                except:
-                    loadTrAndCreateRef = True
-                
-                if(loadTrAndCreateRef == True):
-		  if not isinstance( ref1, self.Referential ):
-		    srcrDiskItem=tm.referential(id1)
-		    srcr=self.createReferential(srcrDiskItem)
-		    ref1 = srcr
+                self.log(string.join('processTransformations warning: multiple transformations from', ref1, 'to', ref2))
+                loadTrAndCreateRef = forceLoadTransformation
+            except:
+                loadTrAndCreateRef = True
+                        
+            if(loadTrAndCreateRef == True):
+              if not isinstance( ref1, self.Referential ):
+                srcrDiskItem=tm.referential(id1)
+                srcr=self.createReferential(srcrDiskItem)
+                ref1 = srcr
+            
+              for t in p:
+                  dstrid = t[ 'destination_referential' ]
+                  if dstrid != id2 \
+                    or not isinstance( ref2, self.Referential ):
+                    dstrDiskItem=tm.referential(dstrid)
+                    dstr=self.createReferential(dstrDiskItem)
+                  else:
+                    dstr=ref2
+                    
+                  #print "load transformation", t, ":", srcr, "->", dstr
+                  self.loadTransformation( t.fullPath(), srcr, dstr )
+                  srcr = dstr
+          
+            return loadTrAndCreateRef# 0 -> no UNIQUE path, transformations not loaded
 
-		      
-		  for t in p:
-		      dstrid = t[ 'destination_referential' ]
-		      if dstrid != id2 \
-			or not isinstance( ref2, self.Referential ):
-			dstrDiskItem=tm.referential(dstrid)
-			dstr=self.createReferential(dstrDiskItem)
-		      else:
-			dstr=ref2
-		      #print "load transformation", t, ":", srcr, "->", dstr
-		      self.loadTransformation( t.fullPath(), srcr, dstr )
-		      srcr = dstr
-		      
-		return loadTrAndCreateRef# 0 -> no UNIQUE path, transformations not loaded
-
-            except StopIteration:
-                return 0 # no path
-            #end _transformWith2 ------------------------------------------------
+          except StopIteration:
+            return 0 # no path
+        #end _transformWith2 ------------------------------------------------
             
         # try to find transformation ref1 -> ref2
         if _transformWith2( self, ref1, ref2 ):
@@ -323,39 +331,42 @@ if anatomistImport:
 
       # try to find transformation between this referential and spm referential
       triedrefs = [ self.mniTemplateRef, self.centralRef,
-        registration.globallyRegistredSPAMReferentialId ]      
+      registration.globallyRegistredSPAMReferentialId ]      
         
       for r in triedrefs:
         x = _transformWith( self, referential, r )
         if x==1:
           return x
+      
       #print "no path from/to [mni, central or spam], search for others (if no ambiguity : unique path only)."
       # try to find transformation between this referential and others
       allRefs=self.getReferentials()
       
       triedUuid=[]
       for tr in triedrefs:
-	if isinstance( tr, self.Referential ):
-	  triedUuid.append(tr.refUuid)
-	else:
-	  triedUuid.append(tr)
+        if isinstance( tr, self.Referential ):
+          triedUuid.append(tr.refUuid)
+        else:
+          triedUuid.append(tr)
+      
       toremove = []
       for r in allRefs:
-	if(r.refUuid in triedUuid):
-	  toremove.append(r) 
-      
+        if(r.refUuid in triedUuid):
+          toremove.append(r) 
+              
       for r in toremove :
-	allRefs.remove(r)	
+        allRefs.remove(r)	
+      
       if referential in allRefs :
-	allRefs.remove(referential)  
-	  
+        allRefs.remove(referential)  
+
       otherRefs = allRefs
       
       result = 0      
       for r in otherRefs :
         x = _transformWith( self, referential, r, False)
         if x == 1: # seulement si il n y a pas ambiguite
-	  result = 1
+          result = 1          
            
       return result
 
