@@ -478,6 +478,9 @@ class SomaWorkflowProcessView(QMainWindow):
       process_button_layout.setContentsMargins(2,2,2,2)
       self.process_layout.addLayout(process_button_layout)
 
+      self.process_view.action_clone_process.setText("Edit...")
+      self.process_view.action_iterate.setText("Iterate...")
+
       btn_clone = QToolButton(self)
       btn_clone.setDefaultAction(self.process_view.action_clone_process)
       btn_clone.setMinimumWidth(90)
