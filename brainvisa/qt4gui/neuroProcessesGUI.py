@@ -1744,24 +1744,28 @@ def showProcess( process, *args, **kwargs ):
     # Opening a new style process
     process.show( *args, **kwargs )
   else:
-    process = neuroProcesses.getProcessInstance( process )
-    if process is None:
-      raise RuntimeError( HTMLMessage(_t_( 'Invalid process <em>%s</em>' ) % ( str(process), )) )
-    for i in xrange( len( args ) ):
-      k, p = process.signature.items()[ i ]
-      process.setValue( k, args[ i ] )
-    for k, v in kwargs.items():
-      process.setValue( k, v )
-    gui = getattr( process, 'overrideGUI', None )
-    if gui is None:
-      view = ProcessView( process )
-    else:
-      view = gui()
-    windowGeometry = getattr( process, '_windowGeometry', None )
-    if windowGeometry is not None:
-      view.move( *windowGeometry[ 'position' ] )
-      view.resize( *windowGeometry[ 'size' ] )
-    view.show()
+    view=None
+    try:
+      process = neuroProcesses.getProcessInstance( process )
+      if process is None:
+        raise RuntimeError( HTMLMessage(_t_( 'Invalid process <em>%s</em>' ) % ( str(process), )) )
+      for i in xrange( len( args ) ):
+        k, p = process.signature.items()[ i ]
+        process.setValue( k, args[ i ] )
+      for k, v in kwargs.items():
+        process.setValue( k, v )
+      gui = getattr( process, 'overrideGUI', None )
+      if gui is None:
+        view = ProcessView( process )
+      else:
+        view = gui()
+      windowGeometry = getattr( process, '_windowGeometry', None )
+      if windowGeometry is not None:
+        view.move( *windowGeometry[ 'position' ] )
+        view.resize( *windowGeometry[ 'size' ] )
+      view.show()
+    except: # an exception can occur if the process is reloaded and an error has been introduced in its code.
+      neuroException.showException()
     return view
 
 
