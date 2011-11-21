@@ -192,7 +192,7 @@ class SomaWorkflowWidget(ComputingResourceWidget):
                                              0)
 
     self.ui.list_widget_submitted_wfs.itemDoubleClicked.connect(self.workflow_double_clicked)
-    self.ui.combo_resources.hide()
+    self.ui.resource_selection_frame.hide()
     
   def workflow_filter(self, workflows):
     new_workflows = {}
