@@ -310,7 +310,8 @@ class SomaWorkflowProcessView(QMainWindow):
                       parent=self)
       
     self.workflow_item_view = soma.workflow.gui.workflowGui.WorkflowElementInfo(
-                    neuroProcesses._workflow_application_model, 
+                    model=neuroProcesses._workflow_application_model,
+                    proxy_model=self.workflow_tree_view.proxy_model,
                     parent=self)
 
     self.workflow_plot_view = soma.workflow.gui.workflowGui.WorkflowPlot(
