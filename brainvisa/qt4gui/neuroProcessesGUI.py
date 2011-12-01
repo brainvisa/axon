@@ -311,18 +311,18 @@ class SomaWorkflowProcessView(QMainWindow):
     self.action_monitor_workflow.setChecked(True)
 
     self.workflow_tree_view = soma.workflow.gui.workflowGui.WorkflowTree(
-                      neuroProcesses._workflow_application_model, 
+                      _workflow_application_model, 
                       assigned_wf_id=self.workflow_id, 
                       assigned_resource_id=self.resource_id,
                       parent=self)
       
     self.workflow_item_view = soma.workflow.gui.workflowGui.WorkflowElementInfo(
-                    model=neuroProcesses._workflow_application_model,
+                    model=_workflow_application_model,
                     proxy_model=self.workflow_tree_view.proxy_model,
                     parent=self)
 
     self.workflow_plot_view = soma.workflow.gui.workflowGui.WorkflowPlot(
-                    neuroProcesses._workflow_application_model, 
+                    _workflow_application_model, 
                     assigned_wf_id=self.workflow_id, 
                     assigned_resource_id=self.resource_id,
                     parent=self)
@@ -331,7 +331,7 @@ class SomaWorkflowProcessView(QMainWindow):
       self.ui.dock_plot.toggleViewAction().setVisible(False)
 
     self.workflow_info_view = soma.workflow.gui.workflowGui.WorkflowStatusNameDate(
-                    neuroProcesses._workflow_application_model, 
+                    _workflow_application_model, 
                     assigned_wf_id=self.workflow_id, 
                     assigned_resource_id=self.resource_id,
                     parent=self)
@@ -1837,7 +1837,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     if self.process.__class__ == neuroProcesses.IterationProcess:
       self.btnIterate.setVisible(False)
 
-    if self.process.executionNode() != None and neuroProcesses._workflow_application_model != None:
+    if self.process.executionNode() != None and _workflow_application_model != None:
       self.btnRunSomaWorkflow = QToolButton(self)
       self.btnRunSomaWorkflow.setDefaultAction(self.action_run_with_sw)
       self.btnRunSomaWorkflow.setToolButtonStyle(Qt.ToolButtonTextOnly)
@@ -1926,9 +1926,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       submission_dlg = QtGui.QDialog(self)
       uic.loadUi(os.path.join( os.path.dirname( __file__), 'sw_submission_dlg.ui' ), submission_dlg)
 
-      resource_list = neuroProcesses._computing_resource_pool.resource_ids()
+      resource_list = _computing_resource_pool.resource_ids()
       submission_dlg.combo_resource.addItems(resource_list)
-      submission_dlg.combo_resource.setCurrentIndex(resource_list.index(neuroProcesses._workflow_application_model.current_resource_id))
+      submission_dlg.combo_resource.setCurrentIndex(resource_list.index(_workflow_application_model.current_resource_id))
 
       kind_of_file_processing = [ProcessToSomaWorkflow.NO_FILE_PROCESSING,    
                                  ProcessToSomaWorkflow.FILE_TRANSFER,
@@ -1937,7 +1937,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       submission_dlg.combo_out_files.addItems(kind_of_file_processing)
 
       queues = ["default queue"]
-      queues.extend(neuroProcesses._workflow_application_model.current_connection.config.get_queues())
+      queues.extend(_workflow_application_model.current_connection.config.get_queues())
       submission_dlg.combo_queue.addItems(queues)
       submission_dlg.lineedit_wf_name.setText("")
       submission_dlg.dateTimeEdit_expiration.setDateTime(datetime.now() + timedelta(days=5))
@@ -1947,8 +1947,8 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         return
 
       resource_id = submission_dlg.combo_resource.currentText()
-      if resource_id != neuroProcesses._workflow_application_model.current_resource_id:
-        neuroProcesses._workflow_application_model.set_current_connection(resource_id)
+      if resource_id != _workflow_application_model.current_resource_id:
+        _workflow_application_model.set_current_connection(resource_id)
 
       name = unicode(submission_dlg.lineedit_wf_name.text())
       if name == "": name = SomaWorkflowWidget.brainvisa_code
@@ -1978,7 +1978,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       
       serialized_process.close()
 
-      neuroProcesses._workflow_application_model.add_workflow(
+      _workflow_application_model.add_workflow(
                             soma.workflow.gui.workflowGui.NOT_SUBMITTED_WF_ID, 
                             datetime.now() + timedelta(days=5),
                             name,
@@ -1992,7 +1992,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         return 
 
       view = SomaWorkflowProcessView(
-                            neuroProcesses._workflow_application_model,
+                            _workflow_application_model,
                             wf_id, 
                             resource_id,
                             process=self.process,
@@ -2746,13 +2746,13 @@ class ProcessSelectionWidget( QMainWindow ):
     self.dock_sw.setObjectName("execution_dock")
     self.dock_sw.toggleViewAction().setText("Workflow execution")
     self.dock_sw.setAllowedAreas(QtCore.Qt.BottomDockWidgetArea |                                  QtCore.Qt.TopDockWidgetArea)
-    if neuroProcesses._workflow_application_model != None:
+    if _workflow_application_model != None:
       
-      self.sw_widget = SomaWorkflowWidget(neuroProcesses._workflow_application_model,
+      self.sw_widget = SomaWorkflowWidget(_workflow_application_model,
                          computing_resource=socket.gethostname(),
                          parent=None)
       self.sw_widget.setWindowTitle("Workflow execution")
-      self.sw_mini_widget = SomaWorkflowMiniWidget(neuroProcesses._workflow_application_model, 
+      self.sw_mini_widget = SomaWorkflowMiniWidget(_workflow_application_model, 
                                                    self.sw_widget, 
                                                    self.dock_sw)
       self.dock_sw.setWidget(self.sw_mini_widget)

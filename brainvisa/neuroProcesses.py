@@ -4628,8 +4628,6 @@ def cleanupProcesses():
   _askUpdateProcess = {}
   _mainThread = None
   _defaultContext = None
-  _computing_resource_pool = None
-  _workflow_application_model = None
   if _readProcessLog is not None:
     _readProcessLog.close()
     _readProcessLog = None
