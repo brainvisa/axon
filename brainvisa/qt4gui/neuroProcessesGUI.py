@@ -3507,20 +3507,12 @@ class RemoteContextGUI( QTreeWidgetItem ):
 
 #----------------------------------------------------------------------------
 def showMainWindow():
-  global _mainWindow, _computing_resource_pool, _workflow_application_model
+  global _mainWindow
   if neuroConfig.openMainWindow:
     #_mainWindow = ProcessSelection()
     # window with customizable lists of processes
     _mainWindow = ProcessSelectionWidget()
     _mainWindow.show()
-    if _soma_workflow and neuroConfig.userLevel >= 3:
-      _computing_resource_pool = ComputingResourcePool()
-      _computing_resource_pool.add_default_connection()
-      _workflow_application_model = WorkflowApplicationModel(_computing_resource_pool)
-    else:
-      _computing_resource_pool = None
-      _workflow_application_model = None
-      
     for w in qApp.topLevelWidgets():
       if w is not _mainWindow:
 
@@ -3550,8 +3542,16 @@ def mainThreadActions():
 #----------------------------------------------------------------------------
 
 def initializeProcessesGUI():
-  global _mainThreadActions
+  global _mainThreadActions, _computing_resource_pool, _workflow_application_model
   _mainThreadActions = QtThreadCall()
+  if _soma_workflow and neuroConfig.userLevel >= 3:
+    _computing_resource_pool = ComputingResourcePool()
+    _computing_resource_pool.add_default_connection()
+    _workflow_application_model = WorkflowApplicationModel(_computing_resource_pool)
+  else:
+    _computing_resource_pool = None
+    _workflow_application_model = None
+
   import neuroProcesses
   if neuroConfig.gui:
     exec 'from neuroProcessesGUI import *' in neuroProcesses.__dict__
