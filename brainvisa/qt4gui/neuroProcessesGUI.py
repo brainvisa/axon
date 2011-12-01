@@ -77,9 +77,16 @@ try:
   from soma.workflow.gui.workflowGui import SomaWorkflowWidget as ComputingResourceWidget
   from soma.workflow.gui.workflowGui import SomaWorkflowMiniWidget as MiniComputingResourceWidget
   import soma.workflow.gui.workflowGui
+  from soma.workflow.gui.workflowGui import ComputingResourcePool
+  from soma.workflow.gui.workflowGui import ApplicationModel as WorkflowApplicationModel
 except ImportError:
+  _soma_workflow = False
   class ComputingResourceWidget(object): pass
   class MiniComputingResourceWidget(object): pass
+  class ComputingResourcePool(object): pass
+  class WorkflowApplicationModel(object): pass
+else:
+  _soma_workflow = True
 
 
 _mainThreadActions = FakeQtThreadCall()
@@ -3500,12 +3507,20 @@ class RemoteContextGUI( QTreeWidgetItem ):
 
 #----------------------------------------------------------------------------
 def showMainWindow():
-  global _mainWindow
+  global _mainWindow, _computing_resource_pool, _workflow_application_model
   if neuroConfig.openMainWindow:
     #_mainWindow = ProcessSelection()
     # window with customizable lists of processes
     _mainWindow = ProcessSelectionWidget()
     _mainWindow.show()
+    if _soma_workflow and neuroConfig.userLevel >= 3:
+      _computing_resource_pool = ComputingResourcePool()
+      _computing_resource_pool.add_default_connection()
+      _workflow_application_model = WorkflowApplicationModel(_computing_resource_pool)
+    else:
+      _computing_resource_pool = None
+      _workflow_application_model = None
+      
     for w in qApp.topLevelWidgets():
       if w is not _mainWindow:
 
