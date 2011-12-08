@@ -91,12 +91,18 @@ def findCodec( encoder ):
     try:
       # Valid only since Python 2.4
       import subprocess
-      out, err = subprocess.Popen( ( 'ffmpeg', '-formats' ), 
-                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE ).communicate()
+      sproc = subprocess.Popen( ( 'ffmpeg', '-codecs' ),
+                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE )
+      out, err = sproc.communicate()
+      if sproc.returncode != 0:
+        # maybe the older ffmpeg using -formats argument
+        sproc = subprocess.Popen( ( 'ffmpeg', '-formats' ),
+                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE )
+        out, err = sproc.communicate()
     except ImportError:
       # Work with earlier Python version but generates the following error at exit:
       # Exception exceptions.TypeError: TypeError("'NoneType' object is not callable",) in <bound method Popen3.__del__ of <popen2.Popen3 instance at 0xb7303c2c>> ignored
-      stdin, stdout, stderr = os.popen3( 'ffmpeg -formats' )
+      stdin, stdout, stderr = os.popen3( 'ffmpeg -codecs' )
       stdin.close()
       err = stderr.read()
       out = stdout.read()

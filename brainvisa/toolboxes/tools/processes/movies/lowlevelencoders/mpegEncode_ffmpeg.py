@@ -65,7 +65,12 @@ def initialization( self ):
   self.quality = 75
   self.framesPerSecond = 25
   self.passes = 1
-  self.encoding = 'mpeg4'
+  for c in ( 'h264', 'mpeg4', 'msmpeg4' ):
+    if c in codecs():
+      self.encoding = c
+      break
+  if self.encoding is None and len( codecs() ) >= 0:
+    self.encoding = codecs()[0]
 
 
 def execution( self, context ):
