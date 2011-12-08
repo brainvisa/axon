@@ -41,11 +41,6 @@ It also provides en alias name for classes that have not the same name in qt3 an
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
 __docformat__ = "epytext en"
-import sys
 
-if sys.modules.has_key( 'PyQt4' ):
-  from brainvisa.data.qt4gui.diskItemBrowser import *
-else:
-  from brainvisa.data.qt3gui.diskItemBrowser import *
-del sys
+from brainvisa.data.qt4gui.diskItemBrowser import *
 

@@ -29,9 +29,4 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
-import sys
-if sys.modules.has_key( 'PyQt4' ):
-  from qt4gui.neuroConfigGUI import * 
-else:
-  from qt3gui.neuroConfigGUI import *
-del sys
+from qt4gui.neuroConfigGUI import * 
