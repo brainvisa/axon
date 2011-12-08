@@ -301,39 +301,35 @@ def getSharePath():
   global _sharePath
   if _sharePath is not None:
     return _sharePath
-  _sharePath = os.environ.get( 'BRAINVISA_SHARE' )
-  if not _sharePath:
-    _sharePath = os.environ.get( 'SHFJ_SHARED_PATH' )
-    if not _sharePath:
-      try:
-        from soma.config import DEFAULT_BRAINVISA_SHARE
-        _sharePath = DEFAULT_BRAINVISA_SHARE
-      except ImportError:
-        path = os.getenv( 'PATH' ).split( os.pathsep )
-        for p in path:
-          if p.endswith( '/bin' ) or p.endswith( '\\bin' ):
-            p = p[:len(p)-4]
-          elif p.endswith( '/bin/commands-links' ) \
-            or p.endswith( '\\bin\\commands-links' ):
-            p = p[:len(p)-19]
-          p = os.path.join( p, 'share' )
-          if os.path.isdir( p ):
-            _sharePath = p
-            break
-    if not _sharePath or \
-      ( not os.path.isdir( os.path.join( _sharePath,
-        'axon-' + shortVersion ) ) \
-        and not os.path.isdir( os.path.join( _sharePath,
-          'brainvisa-' + shortVersion ) ) ):
-      # empty string rather than None to avoid later re-detection
-      _sharePath = ''
-      for projectName in ( 'axon', 'brainvisa' ):
-        sharePath = os.path.normpath( os.path.join( mainPath, '..', 'share',
-          projectName + '-' + shortVersion ) )
-        if os.path.isdir( sharePath ):
-          _sharePath = os.path.normpath( os.path.join( mainPath, '..',
-            'share' ) )
-          break
+  try:
+    from soma.config import BRAINVISA_SHARE
+    _sharePath = BRAINVISA_SHARE
+  except ImportError:
+    path = os.getenv( 'PATH' ).split( os.pathsep )
+    for p in path:
+      if p.endswith( '/bin' ) or p.endswith( '\\bin' ):
+        p = p[:len(p)-4]
+      elif p.endswith( '/bin/commands-links' ) \
+        or p.endswith( '\\bin\\commands-links' ):
+        p = p[:len(p)-19]
+      p = os.path.join( p, 'share' )
+      if os.path.isdir( p ):
+        _sharePath = p
+        break
+  if not _sharePath or \
+    ( not os.path.isdir( os.path.join( _sharePath,
+      'axon-' + shortVersion ) ) \
+      and not os.path.isdir( os.path.join( _sharePath,
+        'brainvisa-' + shortVersion ) ) ):
+    # empty string rather than None to avoid later re-detection
+    _sharePath = ''
+    for projectName in ( 'axon', 'brainvisa' ):
+      sharePath = os.path.normpath( os.path.join( mainPath, '..', 'share',
+        projectName + '-' + shortVersion ) )
+      if os.path.isdir( sharePath ):
+        _sharePath = os.path.normpath( os.path.join( mainPath, '..',
+          'share' ) )
+        break
   return _sharePath
 
 def initializeOntologyPaths():
