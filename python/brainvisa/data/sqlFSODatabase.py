@@ -52,7 +52,6 @@ from soma.translation import translate as _
 from soma.path import split_path, relative_path
 from soma.somatime import timeDifferenceToString
 from soma.uuid import Uuid
-from soma.notification import Notifier
 from soma.databases.api import sqlite3, ThreadSafeSQLiteConnection
 
 from fileSystemOntology import FileSystemOntology, SetContent
@@ -182,12 +181,6 @@ class Database( object ):
     if i: return list( i )
     return list( r )
 
-  def __init__(self):
-    # a notifier that notifies database update
-    self.onUpdateNotifier=Notifier()
-
-  
-  
   def insertDiskItem( self, item, **kwargs ):
     self.insertDiskItems( ( item, ), **kwargs )
   
@@ -471,9 +464,7 @@ class SQLDatabase( Database ):
       self._closeDatabaseCursor( cursor )
     if context is not None:
       context.write( self.name + ':', fileCount, 'files are stored as', diskItemCount, 'DiskItems in', timeDifferenceToString( duration ) )
-    # notifies the update to potential listeners
-    self.onUpdateNotifier.notify()
-  
+
   
   def clear( self, context=None ):
     if ((neuroConfig.databaseVersionSync=='auto') and self.otherSqliteFiles):
@@ -603,6 +594,8 @@ class SQLDatabase( Database ):
           context.write( 'Generating database tables for', self.name )
         cursor.execute( 'CREATE TABLE _FILENAMES_ (filename VARCHAR PRIMARY KEY, _uuid CHAR(36))' )
         cursor.execute( 'CREATE INDEX _IDX_FILENAMES_ ON _FILENAMES_ (filename, _uuid)' )
+        cursor.execute( 'CREATE TABLE _TRANSFORMATIONS_ (_uuid CHAR(36) PRIMARY KEY, _from CHAR(36), _to CHAR(36))' )
+        cursor.execute( 'CREATE INDEX _IDX_TRANSFORMATIONS_ ON _TRANSFORMATIONS_ (_from, _to)' )
       for type in self.typesWithTable:
         #tableName = mangleSQL(type.name)
         tableName = type
@@ -684,13 +677,17 @@ class SQLDatabase( Database ):
         }
         minf = cPickle.dumps( state )
         diskItem._globalAttributes["_database"]=self.name
-        #f = StringIO()
-        #writeMinf( f, ( state, ) )
-        #minf = f.getvalue()
-        ## decode the minf string to pass a unicode string  to the sqlite database
-        #minf = minf.decode("utf-8")
+        if diskItem.type.isA( 'Transformation' ):
+          destination_referential = diskItem.get( 'destination_referential' )
+          source_referential = diskItem.get( 'source_referential' )
+        else:
+          destination_referential = None
+          source_referential = None
         try:
           cursor.execute( 'INSERT INTO _DISKITEMS_ (_uuid, _diskItem) VALUES (? ,?)', ( uuid, minf ) )
+          if source_referential and destination_referential:
+            #print '!insert transformation!', uuid, source_referential, destination_referential 
+            cursor.execute( 'INSERT INTO _TRANSFORMATIONS_ (_uuid, _from, _to) VALUES (? ,?, ?)', ( uuid, source_referential, destination_referential ) )
           delete = False
         except sqlite3.IntegrityError, e:
           # an item with the same uuid is already in the database
@@ -702,6 +699,9 @@ class SQLDatabase( Database ):
               if uuid == str( diskItem._uuid ):
                 delete = True
                 cursor.execute( 'UPDATE _DISKITEMS_ SET _diskItem=? WHERE _uuid=?', ( minf, uuid ) )
+                if source_referential and destination_referential:
+                  #print '!update transformation!', uuid, source_referential, destination_referential 
+                  cursor.execute( 'UPDATE _TRANSFORMATIONS_ SET _from=?, _to=? WHERE _uuid=?', ( source_referential, destination_referential, uuid ) )
               else:
                 raise DatabaseError( 'Cannot insert "%s" because its uuid is in conflict with the uuid of another file in the database' % diskItem.fullPath() )
             else:
@@ -724,6 +724,9 @@ class SQLDatabase( Database ):
             #minf = f.getvalue()
             minf = cPickle.dumps( state )
             cursor.execute( 'INSERT INTO _DISKITEMS_ (_uuid, _diskItem) VALUES (? ,?)', ( uuid, minf ) )
+            if source_referential and destination_referential:
+              #print '!insert transformation!', uuid, source_referential, destination_referential 
+              cursor.execute( 'INSERT INTO _TRANSFORMATIONS_ (_uuid, _from, _to) VALUES (? ,?, ?)', ( uuid, source_referential, destination_referential ) )
         if delete:
           cursor.execute( 'DELETE FROM _FILENAMES_ WHERE _uuid=?', ( uuid, ) )
         try:
@@ -746,6 +749,7 @@ class SQLDatabase( Database ):
           if delete:
             cursor.execute( 'DELETE FROM "' + tableName + '" WHERE _uuid=?', ( uuid, ) )
           cursor.execute( sql, values )
+          
     except sqlite3.OperationalError, e:
       self._closeDatabaseCursor( cursor, rollback=True )
       raise DatabaseError( "Cannot insert items in database " + self.name + ": "+e.message+". Item:" + diskItem.fullPath() + ". You should update this database." )
@@ -1062,7 +1066,7 @@ class SQLDatabase( Database ):
     if debugHTML:
       print >> debugHTML, '</body></html>'
 
-  def findAttributes( self, attributes, selection={}, _debug=None, exactType=False, **required ):
+  def findAttributes( self, attributes, selection={}, _debug=sys.stdout, exactType=False, **required ):
     if exactType:
       types = set( self.getAttributeValues( '_type', selection, required ) )
     else:
@@ -1308,6 +1312,62 @@ class SQLDatabase( Database ):
       Format( name, bvPatterns )
       self.formats.newFormat( name, patterns )
 
+  def findTransformationPaths( self, source_referential, destination_referential, maxLength=None, bidirectional=False ):
+    '''Return a generator object that iterate over all the transformation
+    paths going from source_referential to destination_referential.
+    A transformation path is a list of ( transformation uuid, destination 
+    referentia uuid). The pathsare returned in increasing length order. 
+    If maxlength is set to a non null positive value, it limits the size of
+    the paths returned. Source and destination referentials must be given as
+    string uuid.'''
+    if isinstance( source_referential, Uuid ):
+      source_referential = str( source_referential )
+    if isinstance( destination_referential, Uuid ):
+      destination_referential = str( destination_referential )
+    
+    #print '!findTransformationPaths!', source_referential, destination_referential, maxLength, bidirectional
+    cursor = self._getDatabaseCursor()
+    paths = cursor.execute( 'SELECT DISTINCT _uuid, _to FROM _TRANSFORMATIONS_ WHERE _TRANSFORMATIONS_._from = ?', ( source_referential, ) ).fetchall()
+    if bidirectional:
+      paths.extend( cursor.execute( 'SELECT DISTINCT _uuid, _from FROM _TRANSFORMATIONS_ WHERE _TRANSFORMATIONS_._to = ?', ( source_referential, ) ) )
+    #print '!findTransformationPaths 1!', paths
+    paths = [ ( [ t ], set( [ t[1] ] ) ) for t in paths ]
+    #print '!findTransformationPaths 1.1!', paths
+    length = 1
+    while paths:
+      if maxLength and length > maxLength:
+        break
+      longerPaths = []
+      for path, referentials in paths:
+        # Get the last referential of the path
+        lastReferential = path[ -1][ 1 ]
+        # Check if the path reach the destination referential
+        #print '!findTransformationPaths 2!', path
+        if lastReferential == destination_referential:
+          #print '!findTransformationPaths! -->', path
+          yield path
+          continue
+        if lastReferential == source_referential:
+          continue
+
+        # Get all the transformations objects starting from the last referential
+        # of the path
+        #trList = [ self.__transformations[ trId ] \
+                  #for trId in self.__transformationsFrom.get( lastReferential,
+                                                              #[] ) ]
+        newPaths = cursor.execute( 'SELECT DISTINCT _uuid, _to FROM _TRANSFORMATIONS_ WHERE _TRANSFORMATIONS_._from = ?', ( lastReferential, ) ).fetchall()
+        if bidirectional:
+          newPaths.extend( cursor.execute( 'SELECT DISTINCT _uuid, _from FROM _TRANSFORMATIONS_ WHERE _TRANSFORMATIONS_._to = ?', ( lastReferential, ) ) )
+
+        for p in newPaths:
+          if p[ 1 ] not in referentials:
+            newReferentials = set( referentials )
+            newReferentials.add( p[ 1 ] )
+            longerPaths.append( ( path + [ p ], newReferentials ) )
+      paths = longerPaths
+      length += 1
+    #print '!findTransformationPaths! finished'
+
   
 #------------------------------------------------------------------------------
 class NoGeneratorSQLDatabase( SQLDatabase ):
@@ -1364,9 +1424,6 @@ class SQLDatabases( Database ):
   
   def add( self, database ):
     self._databases[ database.name ] = database
-    # SQLDatabases notifier notifies when one of its database notifies an update
-    if isinstance( database, SQLDatabase ):
-      database.onUpdateNotifier.add(self.onUpdateNotifier.notify)
   
   def remove( self, name ):
     if self._databases.has_key(name):
@@ -1382,10 +1439,8 @@ class SQLDatabases( Database ):
   
   
   def update( self, directoriesToScan=None, recursion=True, context=None ):
-    self.onUpdateNotifier.delayNotification()
     for d in self.iterDatabases():
       d.update( directoriesToScan=directoriesToScan, recursion=recursion, context=context )
-    self.onUpdateNotifier.restartNotification()
   
   
   def _iterateDatabases( self, selection, required={} ):
@@ -1574,3 +1629,40 @@ class SQLDatabases( Database ):
     for database in self._iterateDatabases( {}, {} ):
       database.newFormat( name, patterns )
 
+
+  def findTransformationPaths( self, source_referential, destination_referential, maxLength=None, bidirectional=False ):
+    if isinstance( source_referential, Uuid ):
+      source_referential = str( source_referential )
+    if isinstance( destination_referential, Uuid ):
+      destination_referential = str( destination_referential )
+      
+    iterators = [ d.findTransformationPaths( source_referential, destination_referential, maxLength, bidirectional ) for d in self._databases.itervalues() ]
+    currentLength = 1
+    paths_to_yield = []
+    while iterators and ( maxLength is None or currentLength <= maxLength ):
+      new_paths_to_yield = []
+      for p in paths_to_yield:
+        if len( p ) == currentLength:
+          yield p
+        else:
+          new_paths_to_yield.append( p )
+      paths_to_yield = new_paths_to_yield
+      for it in tuple( iterators ):
+        while True:
+          try:
+            path = it.next()
+          except StopIteration:
+            iterators.remove( it )
+            break
+          if len( path ) > currentLength:
+            if maxLength is None or len( path ) <= maxLength:
+              paths_to_yield.append( path )
+            else:
+              iterators.remove( it )
+            break
+          yield path  
+      currentLength += 1
+    if paths_to_yield:
+      paths_to_yield.sort( lambda a,b: cmp( len(a), len(b) ) )
+      for path in paths_to_yield:
+        yield paths

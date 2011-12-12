@@ -39,167 +39,40 @@ from neuroException import HTMLMessage
 from soma import uuid
 import threading
 
+
 #------------------------------------------------------------------------------
-class TransformationManager:
-  def __init__( self ):
-    # referential uuid -> referential object
-    self.__referentials = {}
-    # transformation uuid -> transformation object
-    self.__transformations = {}
-    # referential uuid -> transformation uuid list
-    self.__transformationsFrom = {}
-    # a reentrant lock to make this class thread safe
-    self.lock=threading.RLock()
+class DatabasesTransformationManager( object ):
 
+  '''TransformationsManager linked with BrainVISA database system. This
+  object imports all the transformations and referentials of a series of
+  BrainVISA databases.'''
 
-  def getObjectUuid( object ):
-    return uuid.Uuid( object.uuid() )
-  getObjectUuid = staticmethod( getObjectUuid )
+  def __init__( self, database = None ):
+    '''If databases is None, this constructor uses all the selected databases
+    of BrainVISA.'''
+    
+    self.lock = threading.RLock()
+    self.__databases = database
 
-  def addReferential( self, referential ):
-    '''Add a new referential object to this manager. A referential object must
-    have an 'uuid' attribute containing a unique string value (i.e. two
-    referentials cannot have the same uuid).'''
-    try:
-      uuid = self.getObjectUuid( referential )
-    except:
-      print 'warning: referential', referential, 'has no UUID. Making one'
-      refId = uuid.Uuid()
-      referential._changeUuid( refId )
-      referential.setMinf( 'dimension_count', dimension_count )
-      #diskItem.setMinf( 'referential', refId )
-      #referential.saveMinf()
-    self.lock.acquire()
-    try:
-      self.__referentials[ uuid ] = referential
-    finally:
-      self.lock.release()
-
-
-  def removeReferential( self, referential, removeTransformations=False ):
-    '''Remove a referential from this manager. Either the uuid or the object can
-    be given in referential parameter. If removeTransformations is True, all
-    the transformations connected to the removed referential are removed from
-    the manager. Removing a referential that is not in the manager is not
-    considered as an error.'''
-
-    refId = self.getObjectUuid( referential )
-    self.lock.acquire()
-    try:
-      if self.__referenrials.pop( refId, None ) is not None:
-        if removeTransformations:
-          for trId in self.__transformationsFrom.pop( refId, [] ):
-            del self.__transformations[ trId ]
-    finally:
-      self.lock.release()
-
-
-  def referential( self, referentialId ):
-    '''Return the referential object corresponding to the given uuid.
-    Return None if the referential is not in the manager.'''
-    if referentialId is None: return None
-    self.lock.acquire()
-    try:
-      ref=self.__referentials.get( uuid.Uuid( referentialId ), None )
-    finally:
-      self.lock.release()
-    return ref
-
-
-  def referentialName( self, referential ):
-    '''Return the name of a referential object or its uuid if it has no name.
-    If an uuid is given and the referential is not found, the given uuid is
-    returned.'''
-    refId = uuid.Uuid( referential )
-    if refId is None:
-      refId = self.getObjectUuid( referential )
+  def referential( self, diskItemOrId ):
+    '''Return the referential object corresponding to the given diskItem
+    or uuid. Return None if the diskItem has no referential or the referential
+    is not in the manager.'''
+    if isinstance( diskItemOrId, DiskItem ):
+      if diskItemOrId.type is not None and diskItemOrId.type.isA( 'Referential' ):
+        uuid = diskItemOrId.uuid()
+      else:
+        try:
+          uuid = diskItemOrId.get( 'referential' )
+        except ( AttributeError, KeyError ):
+          uuid = None
     else:
-      referential = self.referential( refId )
-    if referential is not None:
-      name = referential.get( 'name' )
-      if name is None:
-        return str( refId )
-      return name
-    else:
-      return str( refId )
+      uuid = diskItemOrId
+    if uuid is None: return None
+    return self.__databases.getDiskItemFromUuid( uuid, None )
 
 
-  def addTransformation( self, transformation ):
-    '''Add a new transformation to this manager. A transfomration object must
-    have three attributes:
-      'uuid': a unique string value (i.e. two transformations cannot have the
-            same uuid).
-      'source_referential': the uuid of the source referential.
-      'destination_referential': the uuid of the destination referential.'''
-    try:
-      trId = self.getObjectUuid( transformation )
-    except:
-      print 'warning: transformation with no uuid:', transformation
-      return
-    tsrc = transformation.get( 'source_referential' )
-    if tsrc is None or transformation.get( 'destination_referential' ) is None:
-      #print 'warning: transformation', transformation, \
-            #'lacks source_referential or/and destination_referential'
-      return
-    self.lock.acquire()
-    try:
-      self.__transformations[ trId ] = transformation
-      self.__transformationsFrom.setdefault( uuid.Uuid( tsrc ),
-                                            [] ).append( trId )
-    finally:
-      self.lock.release()
-
-  def removeTransformation( self, transformation, ):
-    '''Remove a transformation from this manager. Either the uuid or the object
-    can be given in transformation parameter. Removing a transformation that
-    is not in the manager is not considered as an error.'''
-    trId = uuid.Uuid( transformation )
-    if trId is None:
-      trId = self.getObjectUuid( transformation )
-    self.lock.acquire()
-    try:
-      tr = self.__transformations.pop( trId, None )
-      if tr:
-        trList = self.__transformationsFrom[ uuid.Uuid( tr.get( 'source_referential' ) ) ]
-        trList.remove( trId )
-        if not trList:
-          del self.__transformationsFrom[ uuid.Uuid( tr.get( 'source_referential' ) ) ]
-    finally:
-      self.lock.release()
-
-
-  def transformation( self, transformationId ):
-    '''Return the transformation object corresponding to the given uuid.
-    Return None if the transformation is not in the manager.'''
-    if transformationId is None: return None
-    self.lock.acquire()
-    try:
-      tr=self.__transformations.get( uuid.Uuid( transformationId ), None )
-    finally:
-      self.lock.release()
-    return tr
-
-
-  def transformationName( self, transformation ):
-    '''Return the name of a transformation object or its uuid if it has no name.
-    If an uuid is given and the transformation is not found, the given uuid is
-    returned.'''
-    trId = uuid.Uuid( transformation )
-    if trId is None:
-      trId = self.getObjectUuid( transformation )
-    else:
-      transformation = self.transformation( trId )
-    if transformation is not None:
-      name = transformation.get( 'name' )
-      if name is None:
-        return str( trId )
-      return name
-    else:
-      return str( trId )
-
-
-  def findPaths( self, source_referential, destination_referential,
-                maxLength=None ):
+  def findPaths( self, source_referential, destination_referential, maxLength=None, bidirectional=False ):
     '''Return a generator object that iterate over all the transformation
     paths going from source_referential to destination_referential.
     A transformation path is a list of transformation objects. The paths
@@ -218,108 +91,8 @@ class TransformationManager:
     else:
       destination_referential = self.getObjectUuid( destination_referential )
 
-    self.lock.acquire()
-    try:
-      paths = [ [ self.__transformations[ trId ] ] \
-                for trId in self.__transformationsFrom.get( source_referential,
-                                                            [] ) ]
-    finally:
-      self.lock.release()
-
-    length = 1
-    while paths:
-      if maxLength and length > maxLength:
-        break
-      longerPaths = []
-      for path in paths:
-        # Get the last referential of the path
-        lastReferential = uuid.Uuid( path[ -1 ].get( 'destination_referential' ) )
-        # Check if the path reach the destination referential
-        if lastReferential == destination_referential:
-          yield path
-          continue
-        if lastReferential == source_referential:
-          continue
-
-        self.lock.acquire()
-        try:
-          # Get all the transformations objects starting from the last referential
-          # of the path
-          trList = [ self.__transformations[ trId ] \
-                    for trId in self.__transformationsFrom.get( lastReferential,
-                                                                [] ) ]
-        finally:
-          self.lock.release()
-
-        for tr in trList:
-          if tr not in path and uuid.Uuid( tr.get( 'destination_referential' ) ) not in \
-            [uuid.Uuid( i.get( 'destination_referential' ) ) for i in path]:
-            longerPaths.append( path + [ tr ] )
-      paths = longerPaths
-      length += 1
-
-  def clear( self ):
-    '''Remove all the referentials and transformations from the manager.'''
-    self.lock.acquire()
-    try:
-      self.__referentials = {}
-      self.__transformations = {}
-      self.__transformationsFrom = {}
-    finally:
-      self.lock.release()
-
-
-
-#------------------------------------------------------------------------------
-class DatabasesTransformationManager( TransformationManager ):
-
-  '''TransformationsManager linked with BrainVISA database system. This
-  object imports all the transformations and referentials of a series of
-  BrainVISA databases (i.e. DiskItem directories).'''
-
-  def __init__( self, database = None ):
-    '''If databases is None, this constructor uses all the selected databases
-    of BrainVISA (i.e. neuroHierarchy.hierarchies()).'''
-    TransformationManager.__init__( self )
-    self.__databases = database
-    # update transformation manager when the databases are updated
-    if database is not None:
-      database.onUpdateNotifier.add(self.update)
-    self.update()
-
-  def update( self ):
-    '''Clear the manager content and re-read the databases.'''
-    #print "Update transformation manager."
-    self.lock.acquire()
-    try:
-      self.clear()
-      for item in self.__databases.findDiskItems( _type='Referential' ):
-        self.addReferential( item )
-      for item in self.__databases.findDiskItems( _type='Transformation' ):
-        self.addTransformation( item )
-    finally:
-      self.lock.release()
-
-
-  def referential( self, diskItemOrId ):
-    '''Return the referential object corresponding to the given diskItem
-    or uuid. Return None if the diskItem has no referential or the referential
-    is not in the manager.'''
-    if isinstance( diskItemOrId, DiskItem ):
-      if diskItemOrId.type is not None and diskItemOrId.type.isA( 'Referential' ):
-        #try:
-        uuid = diskItemOrId.uuid()
-        #except Exception, e:
-        #  uuid = None
-      else:
-        try:
-          uuid = diskItemOrId.get( 'referential' )
-        except ( AttributeError, KeyError ):
-          uuid = None
-    else:
-      uuid = diskItemOrId
-    if uuid is None: return None
-    return TransformationManager.referential( self, uuid )
+    for path in self.__databases.findTransformationPaths( source_referential, destination_referential, maxLength, bidirectional ):
+      yield [ self.__databases.getDiskItemFromUuid( i[0] ) for i in path ]
 
 
   def setReferentialTo( self, diskItem, referential ):
@@ -328,10 +101,9 @@ class DatabasesTransformationManager( TransformationManager ):
     ref = self.referential( referential )
     if not ref:
       raise RuntimeError( 'Referential ' + str( referential ) + \
-        ' does not exist' )
+        ' is not in a configured database' )
     diskItem.readAndUpdateMinf()
     diskItem.setMinf( 'referential', ref.uuid() )
-    #diskItem.saveMinf()
     try:
       self.__databases.insertDiskItem( diskItem, update=True )
     except:
@@ -362,17 +134,10 @@ class DatabasesTransformationManager( TransformationManager ):
     while referential is None and referentialType is not None:
       wdi = neuroHierarchy.WriteDiskItem( referentialType, 'Referential', exactType=True )
       referential = wdi.findValue( diskItem )
-      #if referential is None:
-        #wdi.requiredAttributes = { 'filename_variable':  refId }
-        #referential = wdi.findValue( diskItem )
       referentialType = referentialType.parent
     if referential is None:
       wdi = neuroHierarchy.WriteDiskItem( 'Referential', 'Referential', exactType=True )
       referential = wdi.findValue( diskItem )
-      #if referential is None:
-        #wdi = neuroHierarchy.WriteDiskItem( 'Referential', 'Referential', exactType=True )
-        #wdi.requiredAttributes[ 'filename_variable' ] = refId
-        #referential = wdi.findValue( diskItem )
     if referential is not None:
       if name is None:
         if referentialType is not None:
@@ -391,10 +156,8 @@ class DatabasesTransformationManager( TransformationManager ):
         referential.createParentDirectory()
         diskItem.setMinf( 'referential', referential.uuid() )
         referential.saveMinf()
-        #diskItem.saveMinf()
         self.__databases.insertDiskItem( referential, update=True )
         self.__databases.insertDiskItem( diskItem, update=True )
-        self.addReferential( referential )
         # write a transformation between this referential and MNI template if needed
         if diskItem.get( 'normalized' ) == 'yes':
           import shfjGlobals
@@ -418,15 +181,14 @@ class DatabasesTransformationManager( TransformationManager ):
             if trans:
               tr = trans[i]
               dref = self.referential( talairachMNIReferentialId )
-              paths = self.findPaths( referential.uuid(), dref.uuid(),
-                maxLength=1 )
-              tdi = None
-              for p in paths:
-                tdi = p[0]
-                break
-              if not tdi:
+              try:
+                path = self.findTransformationPaths( referential.uuid(), dref.uuid(),
+                  maxLength=1 ).next()
+              except StopIteration:
                 tdi = self.createNewTransformation( 'Transformation Matrix',
                   referential, dref )
+              else:
+                tdi = self.transformation( path[ 0 ][ 0 ] )
               if tdi:
                 trm = open( tdi.fullPath(), 'w' )
                 print >> trm, tr[3], tr[7], tr[11]
@@ -434,10 +196,10 @@ class DatabasesTransformationManager( TransformationManager ):
                 print >> trm, tr[4], tr[5], tr[6]
                 print >> trm, tr[8], tr[9], tr[10]
                 trm.close()
-
     return referential
 
-  def createNewReferential(self, referential):
+
+  def createNewReferential( self, referential ):
     """
     Creates the file for the referential diskitem and add it to the database and to the transformation manager.
     """
@@ -445,10 +207,10 @@ class DatabasesTransformationManager( TransformationManager ):
       referential.createParentDirectory()
       referential.saveMinf()
       self.__databases.insertDiskItem( referential, update=True )
-      self.addReferential( referential )
     except:
       referential=None
     return referential
+
 
   def copyReferential( self,
                       sourceDiskItem,
@@ -464,12 +226,7 @@ class DatabasesTransformationManager( TransformationManager ):
       if isinstance( refId, DiskItem ):
         uuid = refId.get( 'referential' )
         if uuid is None:
-          # Referential diskitem ?
-          #try:
           uuid = refId.uuid()
-          #except:
-          #  uuid = None
-          # maybe this needs a cleaner test/error message if uuid() fails
       if uuid is not None:
         destinationDiskItem.readAndUpdateMinf()
         destinationDiskItem.setMinf( 'referential', uuid )
@@ -478,11 +235,11 @@ class DatabasesTransformationManager( TransformationManager ):
         if refs and trans:
           destinationDiskItem.setMinf( 'referentials', refs )
           destinationDiskItem.setMinf( 'transformations', trans )
-        #destinationDiskItem.saveMinf()
         try:
           self.__databases.insertDiskItem( destinationDiskItem, update=True )
         except:
           pass
+
 
   def createNewTransformation( self,
                               format,
@@ -575,7 +332,6 @@ class DatabasesTransformationManager( TransformationManager ):
         transformation.createParentDirectory()
         transformation.saveMinf()
         self.__databases.insertDiskItem( transformation, update=True )
-        self.addTransformation( transformation )
     return transformation
 
 
@@ -600,7 +356,6 @@ class DatabasesTransformationManager( TransformationManager ):
     try:
       #transformation.saveMinf()
       self.__databases.insertDiskItem( transformation, update=True )
-      self.addTransformation( transformation )
     except:
       pass
 
@@ -633,7 +388,6 @@ class DatabasesTransformationManager( TransformationManager ):
             result.createParentDirectory()
             result.saveMinf()
             self.__databases.insertDiskItem( result, update=True )
-            self.addReferential( result )
           except OSError:
             result = None
         if assign:
