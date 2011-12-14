@@ -917,23 +917,22 @@ for p in ( os.path.join( getSharePath(), bvShareDirectory ),
     sharedDatabaseFound=True
     break
     
-if not fastStart:
-  for attr, value in readConfiguration( mainPath, userProfile, homeBrainVISADir ):
-    if isinstance( value, list ):
-      globals()[ attr ] += value
-    else:
-      globals()[ attr ] = value
+for attr, value in readConfiguration( mainPath, userProfile, homeBrainVISADir ):
+  if isinstance( value, list ):
+    globals()[ attr ] += value
+  else:
+    globals()[ attr ] = value
 
-  # Clean pathes
-  for p in ( typesPath, dataPath, processesPath, fileSystemOntologiesPath, matlabPath ):
-    i = 0
-    l = []
-    while i < len( p ):
-      if p[ i ] in l:
-        del p[ i ]
-      else:
-        l.append( p[ i ] )
-        i += 1
+# Clean pathes
+for p in ( typesPath, dataPath, processesPath, fileSystemOntologiesPath, matlabPath ):
+  i = 0
+  l = []
+  while i < len( p ):
+    if p[ i ] in l:
+      del p[ i ]
+    else:
+      l.append( p[ i ] )
+      i += 1
 
 # Translations
 
