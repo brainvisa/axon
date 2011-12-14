@@ -678,8 +678,8 @@ class SQLDatabase( Database ):
         minf = cPickle.dumps( state )
         diskItem._globalAttributes["_database"]=self.name
         if diskItem.type.isA( 'Transformation' ):
-          destination_referential = diskItem.get( 'destination_referential' )
-          source_referential = diskItem.get( 'source_referential' )
+          destination_referential = str( diskItem.get( 'destination_referential' ) )
+          source_referential = str( diskItem.get( 'source_referential' ) )
         else:
           destination_referential = None
           source_referential = None
@@ -687,7 +687,7 @@ class SQLDatabase( Database ):
           cursor.execute( 'INSERT INTO _DISKITEMS_ (_uuid, _diskItem) VALUES (? ,?)', ( uuid, minf ) )
           if source_referential and destination_referential:
             #print '!insert transformation!', uuid, source_referential, destination_referential 
-            cursor.execute( 'INSERT INTO _TRANSFORMATIONS_ (_uuid, _from, _to) VALUES (? ,?, ?)', ( uuid, source_referential, destination_referential ) )
+            cursor.execute( 'INSERT INTO _TRANSFORMATIONS_ (_uuid, _from, _to) VALUES (? ,?, ?)', ( str( uuid ), source_referential, destination_referential ) )
           delete = False
         except sqlite3.IntegrityError, e:
           # an item with the same uuid is already in the database
@@ -700,8 +700,8 @@ class SQLDatabase( Database ):
                 delete = True
                 cursor.execute( 'UPDATE _DISKITEMS_ SET _diskItem=? WHERE _uuid=?', ( minf, uuid ) )
                 if source_referential and destination_referential:
-                  #print '!update transformation!', uuid, source_referential, destination_referential 
-                  cursor.execute( 'UPDATE _TRANSFORMATIONS_ SET _from=?, _to=? WHERE _uuid=?', ( source_referential, destination_referential, uuid ) )
+                  #print '!update transformation!', repr( uuid ), repr( source_referential ), repr( destination_referential  )
+                  cursor.execute( 'UPDATE _TRANSFORMATIONS_ SET _from=?, _to=? WHERE _uuid=?', ( source_referential, destination_referential, str( uuid ) ) )
               else:
                 raise DatabaseError( 'Cannot insert "%s" because its uuid is in conflict with the uuid of another file in the database' % diskItem.fullPath() )
             else:
