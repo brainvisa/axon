@@ -726,7 +726,7 @@ class SQLDatabase( Database ):
             cursor.execute( 'INSERT INTO _DISKITEMS_ (_uuid, _diskItem) VALUES (? ,?)', ( uuid, minf ) )
             if source_referential and destination_referential:
               #print '!insert transformation!', uuid, source_referential, destination_referential 
-              cursor.execute( 'INSERT INTO _TRANSFORMATIONS_ (_uuid, _from, _to) VALUES (? ,?, ?)', ( uuid, source_referential, destination_referential ) )
+              cursor.execute( 'INSERT INTO _TRANSFORMATIONS_ (_uuid, _from, _to) VALUES (? ,?, ?)', ( str( uuid ), source_referential, destination_referential ) )
         if delete:
           cursor.execute( 'DELETE FROM _FILENAMES_ WHERE _uuid=?', ( uuid, ) )
         try:
