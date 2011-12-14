@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: iso-8859-1 -*-
 
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
@@ -33,7 +33,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 '''
-Registration of all BrainVISA specific minf formats.
+Manipulation of icnos and images.
 
 @author: Yann Cointepas
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
@@ -41,36 +41,21 @@ Registration of all BrainVISA specific minf formats.
 '''
 __docformat__ = "epytext en"
 
-from soma.minf.api import iterateMinf, createMinfWriter, \
-                          createReducerAndExpander, registerClass, \
-                          registerClassAs
+from weakref import WeakValueDictionary
+from qt import QPixmap
+from soma.wip.application.api import findIconFile
 
-#------------------------------------------------------------------------------
-def initializeMinfExtensions():
-  from soma.notification import ObservableList, EditableTree
-  registerClass( 'minf_2.0', EditableTree, 'EditableTree' )
-  registerClass( 'minf_2.0', EditableTree.Branch, 'EditableTree.Branch' )
-  registerClass( 'minf_2.0', EditableTree.Leaf, 'EditableTree.Leaf' )
-  registerClass( 'minf_2.0', ObservableList, 'ObservableList' )
 
-  createReducerAndExpander( 'brainvisa_2.0', 'minf_2.0' )
+_pixmapCache = WeakValueDictionary()
 
-  # Logging extensions
-  from neuroLog import TextFileLink, LogFileLink, LogFile
-  registerClass( 'brainvisa_2.0', TextFileLink, 'TextFileLink' )
-  registerClass( 'brainvisa_2.0', LogFileLink,'LogFileLink' )
-  registerClass( 'brainvisa_2.0', LogFile.Item, 'LogFile.Item' )
-  registerClassAs( 'brainvisa_2.0', LogFile.SubTextLog, TextFileLink )
-  createReducerAndExpander( 'brainvisa-log_2.0', 'brainvisa_2.0' )
-
-  from neuroProcesses import ProcessTree
-  registerClass( 'brainvisa_2.0', ProcessTree, 'ProcessTree')
-  registerClass( 'brainvisa_2.0', ProcessTree.Branch, 'ProcessTree.Branch' )
-  registerClass( 'brainvisa_2.0', ProcessTree.Leaf, 'ProcessTree.Leaf' )
-  createReducerAndExpander( 'brainvisa-tree_2.0', 'brainvisa_2.0' )
-
-  from brainvisa.history import minfHistory, ProcessExecutionEvent, BrainVISASessionEvent
-  registerClass( 'brainvisa_2.0', ProcessExecutionEvent, ProcessExecutionEvent.eventType )
-  registerClass( 'brainvisa_2.0', BrainVISASessionEvent, BrainVISASessionEvent.eventType )
-  createReducerAndExpander( minfHistory, 'brainvisa_2.0' )
-
+def getPixmap( fileName ):
+  '''
+  Return a L{QPixmap} corresponding to fileName.
+  Result is cached in a L{WeakValueDictionary}.
+  '''
+  global _pixmapCache
+  result = _pixmapCache.get( fileName )
+  if result is None:
+    result = QPixmap( fileName )
+    _pixmapCache[ fileName ] = result
+  return result

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: iso-8859-1 -*-
 
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
@@ -33,44 +33,45 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 '''
-Registration of all BrainVISA specific minf formats.
+Toolboxes to create
+U{Qt 3<http://www.trolltech.com/products/qt/qt3>} widgets (requires
+U{PyQt v3<http://www.riverbankcomputing.co.uk/pyqt>} to be installed).
 
+This module gather together several public items defined in various submodules:
+  - From L{soma.qt3gui.designer}:
+    - L{createWidget}
+    - L{WidgetFactory}
+    - L{CustomizedQWidgetFactory}
+  - From L{soma.qt3gui.automatic}:
+    - L{ApplicationQt3GUI}
+    - L{Qt3GUI}
+    - L{WidgetGeometryUpdater}
+  - Other items:
+    - L{EditableTreeWidget}
+    - L{getPixmap}
+    - L{ObservableListWidget}
+    - L{QFileDialogWithSignals}
+    - L{QLineEditModificationTimer}
+    - L{QtThreadCall}, L{FakeQtThreadCall}
+    - L{TimeredQLineEdit}
+    - L{TreeListWidget}
+    - L{VScrollFrame}
 @author: Yann Cointepas
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
 __docformat__ = "epytext en"
 
-from soma.minf.api import iterateMinf, createMinfWriter, \
-                          createReducerAndExpander, registerClass, \
-                          registerClassAs
-
-#------------------------------------------------------------------------------
-def initializeMinfExtensions():
-  from soma.notification import ObservableList, EditableTree
-  registerClass( 'minf_2.0', EditableTree, 'EditableTree' )
-  registerClass( 'minf_2.0', EditableTree.Branch, 'EditableTree.Branch' )
-  registerClass( 'minf_2.0', EditableTree.Leaf, 'EditableTree.Leaf' )
-  registerClass( 'minf_2.0', ObservableList, 'ObservableList' )
-
-  createReducerAndExpander( 'brainvisa_2.0', 'minf_2.0' )
-
-  # Logging extensions
-  from neuroLog import TextFileLink, LogFileLink, LogFile
-  registerClass( 'brainvisa_2.0', TextFileLink, 'TextFileLink' )
-  registerClass( 'brainvisa_2.0', LogFileLink,'LogFileLink' )
-  registerClass( 'brainvisa_2.0', LogFile.Item, 'LogFile.Item' )
-  registerClassAs( 'brainvisa_2.0', LogFile.SubTextLog, TextFileLink )
-  createReducerAndExpander( 'brainvisa-log_2.0', 'brainvisa_2.0' )
-
-  from neuroProcesses import ProcessTree
-  registerClass( 'brainvisa_2.0', ProcessTree, 'ProcessTree')
-  registerClass( 'brainvisa_2.0', ProcessTree.Branch, 'ProcessTree.Branch' )
-  registerClass( 'brainvisa_2.0', ProcessTree.Leaf, 'ProcessTree.Leaf' )
-  createReducerAndExpander( 'brainvisa-tree_2.0', 'brainvisa_2.0' )
-
-  from brainvisa.history import minfHistory, ProcessExecutionEvent, BrainVISASessionEvent
-  registerClass( 'brainvisa_2.0', ProcessExecutionEvent, ProcessExecutionEvent.eventType )
-  registerClass( 'brainvisa_2.0', BrainVISASessionEvent, BrainVISASessionEvent.eventType )
-  createReducerAndExpander( minfHistory, 'brainvisa_2.0' )
-
+#: Default size for icons
+defaultIconSize = ( 16, 16 )
+largeIconSize = ( 22, 22 )
+bigIconSize = ( 32, 32 )
+from soma.qt3gui.designer import createWidget, WidgetFactory, CustomizedQWidgetFactory
+from soma.qt3gui.automatic import ApplicationQt3GUI, Qt3GUI, WidgetGeometryUpdater
+from soma.qt3gui.timered_widgets import QLineEditModificationTimer, TimeredQLineEdit
+from soma.qt3gui.vscrollframe import VScrollFrame
+from soma.qt3gui.list_tree_widgets import ObservableListWidget, EditableTreeWidget, TreeListWidget
+from soma.qt3gui.qt3thread import QtThreadCall, FakeQtThreadCall
+from soma.qt3gui.file_dialog import QFileDialogWithSignals
+from soma.qt3gui.icons import getPixmap
+from soma.qt3gui.text import TextEditWithSearch, TextBrowserWithSearch
