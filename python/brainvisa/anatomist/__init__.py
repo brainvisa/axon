@@ -545,70 +545,18 @@ if anatomistImport:
     '''
     A process parameter to choose an Anatomist window.
     This parameter is a choice between several anatomist windows. By default, if anatomist isn't started or if there's no opened windows, the choice offer the possibility to create any type of anatomist window.
-    When anatomist is started and the set of opened window is modified, the choice list is updated, in order to propose existing windows.
+    If anatomist is started, the set of opened window is added to the choices list.
+    The list of choices is not updated automatically, to refresh the choices it is necessary to open a new instance of the process.
     '''
-
-    class CleanHandlerProxy:
-      """
-      This handler sets listeners on windows events when anatomist starts and removes them when anatomist is closed.
-      On window event, it calls AnatomistWindowChoice methods in order to update the choices.
-      """
-      def __init__( self, winchoice ):
-        # keeps a weak ref on AnatomistWindowChoice instance to prevent reference loop
-        # when the referred object is deleted, the callback closed is called
-        self.ref = weakref.ref( winchoice, self.closed )
-        self.install()
-
-      def install( self, a=None ):
-        """
-        @type a: Anatomist
-        @param a: Anatomist instance to listen
-        """
-        if a is None:
-          # get the anatomist instance if it exists. Anatomist is an ObservableSingleton, so calling the constructor with create=False as parameter does not create a new instance. It only returns the existing one if any.
-          a = Anatomist( create=False )
-        if a is not None:
-          # if there's an anatomist instance, add listeners
-          a.onCloseWindowNotifier.add(self.refreshChoices)
-          a.onCreateWindowNotifier.add(self.refreshChoices)
-          a.onExitNotifier.add(self.closeAnatomist )
-        self.ref().refreshChoices()
-
-      def closed( self, param=None ):
-        """
-        It is called when AnatomistWindowChoice instance is deleted.
-        Anatomist events are no longer listened.
-        """
-        a = Anatomist( create=False )
-        if a is not None:
-          a.onCloseWindowNotifier.remove(self.refreshChoices)
-          a.onCreateWindowNotifier.remove(self.refreshChoices)
-          a.onExitNotifier.remove(self.closeAnatomist )
-        del self.ref
-
-      def refreshChoices( self, *args ):
-        """
-        Calls AnatomistWindowChoice refreshChoices method.
-        """
-        self.ref().refreshChoices(  )
-
-      def closeAnatomist( self, *args):
-        """
-        Calls AnatomistWindowChoice closeAnatomist method.
-        """
-        self.ref().closeAnatomist(  )
 
     def __init__( self, noSelectionLabel=None ):
       neuroData.Choice.__init__( self )
-      if noSelectionLabel is None:
-        noSelectionLabel = '<'+_t_('None')+'>'
       self._init2( noSelectionLabel )
 
     def _init2( self, noSelectionLabel=None ):
       if noSelectionLabel is None:
         noSelectionLabel = '<'+_t_('None')+'>'
       self._initargs = ( noSelectionLabel, )
-      self.lock=threading.RLock()
       self.noSelectionLabel = noSelectionLabel
       # initial choice : creating new windows
       self.newWindow = ( '<'+_t_('New window (3D)')+'>', self._newWindow )
@@ -620,25 +568,13 @@ if anatomistImport:
                           lambda self=self: self._newWindow( 'Coronal' ) )
       self.newWindowB = ( '<'+_t_('New window (Browser)')+'>',
                           lambda self=self: self._newWindow( 'Browser' ) )
-      # Try to avoid a reference loop. Bound methods are temporary objects
-      # containing self. Without weakref or proxy, Anatomist class would
-      # have owned a reference to self, therefore self would never be destroyed
-      # until BrainVISA exit.
-      self.__openAnatomist = self.openAnatomist
-      # this component must be notified when anatomist starts in order to set listeners on windows events
-      Anatomist.addCreateListener( weakref.proxy( self.__openAnatomist ) )
-      self.handler = self.CleanHandlerProxy( self )
-
-    def __del__( self ):
-      # when this component is deleted, remove the listener on Anatomist start
-      Anatomist.removeCreateListener( weakref.proxy( self.__openAnatomist ) )
-      del self.__openAnatomist
-
+      self.refreshChoices()
 
     def __getinitargs__( self ):
       """
       getinitargs, getstate, setstate are used by copy module.
-      When a process is opened, it signature is copied. So if the signature contains a AnatomistWindowChoice, it is copied too. If a shallow copy is done, the new AnatomistWindowChoice will contain reference from the source object and it is a source of problems. So these methods are redefined in order to make the shallow copy create a new distinct instance.
+      When a process is opened, its signature is copied. So if the signature contains a AWindowChoice, it is copied too. 
+      If a shallow copy is done, the new AWindowChoice will contain reference from the source object and it is a source of problems. So these methods are redefined in order to make the shallow copy create a new distinct instance.
       With getinitargs, the constructor is called to create the new object. And because getstate and setstate do nothing, the source object is not copied, the two objects are distinct instances.
       """
       return self._initargs
@@ -651,13 +587,12 @@ if anatomistImport:
     def __setstate__(self, state):
       neuroData.Choice.__setstate__( self, state )
       self._init2()
-
+      
     def refreshChoices( self, *args ):
       """
       Updates choice list. Adds to default choices curently opened anatomist windows.
       """
       # if anatomist is not started, this command will not start it.
-      self.lock.acquire()
       a = Anatomist( create=False )
       if a is not None:
         try:
@@ -675,26 +610,11 @@ if anatomistImport:
           self.clearChoices()
       else:
         self.clearChoices()
-      self.lock.release()
 
     def clearChoices( self ):
-        self.lock.acquire()
         self.setChoices( (self.noSelectionLabel,None), self.newWindow,
                         self.newWindowA, self.newWindowS, self.newWindowC,
                         self.newWindowB )
-        self.lock.release()
-
-    def openAnatomist( self, a ):
-      """
-      When Anatomist starts, initialize the handler in order to listen windows events.
-      """
-      self.handler.install( a )
-
-    def closeAnatomist( self, *args ):
-      """
-      When Anatomist exits, set choice list to default choices.
-      """
-      self.clearChoices()
 
     def _newWindow( self, type = "3D" ):
       """
