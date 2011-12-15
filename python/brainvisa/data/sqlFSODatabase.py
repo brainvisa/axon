@@ -63,6 +63,7 @@ from brainvisa.data.patterns import DictPattern
 from brainvisa.data.sql import mangleSQL, unmangleSQL
 from brainvisa.data.fileformats import FileFormats
 from brainvisa.data.directory_iterator import DirectoryIterator, VirtualDirectoryIterator
+from brainvisa.data import temporary
 
 out = sys.stdout
 
@@ -290,7 +291,11 @@ class SQLDatabase( Database ):
     super(SQLDatabase, self).__init__()
     self._connection = None
     self.name = os.path.normpath( directory )
-    if sqlDatabaseFile not in ( '', ':memory:' ):
+    if not sqlDatabaseFile:
+      self.sqlDatabaseDirectory = temporary.manager.new()
+      os.mkdir( self.sqlDatabaseDirectory )
+      self.sqlDatabaseFile = os.path.join( self.sqlDatabaseDirectory, 'database.sqlite' )
+    elif sqlDatabaseFile != ':memory:':
       self.sqlDatabaseFile = os.path.normpath( os.path.abspath( sqlDatabaseFile ) )
     else:
       self.sqlDatabaseFile = sqlDatabaseFile
@@ -619,7 +624,7 @@ class SQLDatabase( Database ):
       self._closeDatabaseCursor( cursor )
     # Save, in the database directory, an HTML file corresponding to database ontology
     if create and os.path.exists( self.sqlDatabaseFile ):
-      html = os.path.join( os.path.dirname( self.sqlDatabaseFile ), 'database_fso.html' )
+      html = os.path.join( os.path.dirname( self.sqlDatabaseFile ) , 'database_fso.html' )
       self.fsoToHTML( html )
     return create
 
