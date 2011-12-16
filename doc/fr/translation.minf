@@ -856,11 +856,11 @@
   <s name="Realignment for motion correction">Recalage d'images pour la correction de mouvement</s>
   <s name="Data Management">Gestion des données</s>
   <s name="Cortical Surface Parameterization Pipeline">Pipeline de paramétrisation de la surface corticale</s>
-  <s name="Cortical Surface Parameterization Pipeline 2011">Pipeline 2011 de paramétrisation de la surface corticale</s>
+  <s name="Cortical Surface Parameterization Pipeline 2012">Pipeline 2012 de paramétrisation de la surface corticale</s>
   <s name="Sulcal Lines Extraction Left">Extraction des lignes sulcales de l'hémisphère gauche</s>
   <s name="Sulcal Lines Extraction Right">Extraction des lignes sulcales de l'hémisphère droit</s>
-  <s name="Pipeline 2011 parameterization left hemisphere">Pipeline 2011 de paramétrisation de l'hémisphère gauche</s>
-  <s name="Pipeline 2011 parameterization right hemisphere">Pipeline 2011 de paramétrisation de l'hémisphère droit</s>
+  <s name="Pipeline 2012 parameterization left hemisphere">Pipeline 2012 de paramétrisation de l'hémisphère gauche</s>
+  <s name="Pipeline 2012 parameterization right hemisphere">Pipeline 2012 de paramétrisation de l'hémisphère droit</s>
   <s name="Unconstrained harmonic parameterization left hemisphere">Paramétrisation harmonique non contrainte de l'hémisphère gauche</s>
   <s name="Unconstrained harmonic parameterization right hemisphere">Paramétrisation harmonique non contrainte de l'hémisphère droit</s>
   <s name="Harmonic mapping under orthogonal constraints left hemisphere">Alignement harmonique sous contraintes orthogonales de l'hémisphère gauche</s>
