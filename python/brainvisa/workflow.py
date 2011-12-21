@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 import os
-from neuroProcesses import ProcessExecutionNode, SerialExecutionNode, ParallelExecutionNode, WriteDiskItem, ReadDiskItem
+from neuroProcesses import ProcessExecutionNode, SerialExecutionNode, ParallelExecutionNode
+from brainvisa.data.readdiskitem import ReadDiskItem
+from brainvisa.data.writediskitem import WriteDiskItem
+
+
+
 import pickle
 import neuroHierarchy
 from neuroDiskItems import DiskItem
 
 from soma.workflow.constants import *
-from soma.workflow.client import Job, FileTransfer, SharedResourcePath, Group, Workflow
+from soma.workflow.client import Job, FileTransfer, SharedResourcePath, Group, Workflow, Helper
 
 class ProcessToWorkflow( object ):
   JOB = 'j'
@@ -402,10 +407,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
       
     workflow = Workflow(jobs, dependencies, root_group, name=self.process.name)
     if self.__out:
-      file = open(self.__out, "w")
-      if file:
-        pickle.dump(workflow, file)
-        file.close()
+      Helper.serialize(self.__out, workflow)
     return workflow
       
       

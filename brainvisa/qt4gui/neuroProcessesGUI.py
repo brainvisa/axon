@@ -247,6 +247,45 @@ class SomaWorkflowWidget(ComputingResourceWidget):
       
     view.show()
 
+class WorkflowSubmissionDlg(QDialog):
+
+  def __init__(self, parent=None):
+    super(WorkflowSubmissionDlg, self).__init__(parent)
+
+    from brainvisa.workflow import ProcessToSomaWorkflow
+
+    uic.loadUi(os.path.join(os.path.dirname(__file__), 'sw_submission_dlg.ui' ),            
+               self)
+    #self.setupUi(self)
+
+    resource_list = _computing_resource_pool.resource_ids()
+    self.combo_resource.addItems(resource_list)
+    current_resource_index = resource_list.index(_workflow_application_model.current_resource_id)
+    self.combo_resource.setCurrentIndex(current_resource_index)
+    self.resource_changed(current_resource_index)
+
+    kind_of_file_processing = [ProcessToSomaWorkflow.NO_FILE_PROCESSING,    
+                               ProcessToSomaWorkflow.FILE_TRANSFER,
+                               ProcessToSomaWorkflow.SHARED_RESOURCE_PATH]
+    self.combo_in_files.addItems(kind_of_file_processing)
+    self.combo_out_files.addItems(kind_of_file_processing)
+
+    self.lineedit_wf_name.setText("")
+    self.dateTimeEdit_expiration.setDateTime(datetime.now() + timedelta(days=5))
+
+    self.combo_resource.currentIndexChanged.connect(self.resource_changed)
+
+  @QtCore.pyqtSlot(int)
+  def resource_changed(self, resource_index):
+
+    resource_id = self.combo_resource.currentText()
+    queues = ["default queue"]
+    queues.extend(_computing_resource_pool.connection(resource_id).config.get_queues())
+    self.combo_queue.clear()
+    self.combo_queue.addItems(queues)
+    
+
+
 
 class SomaWorkflowProcessView(QMainWindow):
 
@@ -1926,26 +1965,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     try:
       from brainvisa.workflow import ProcessToSomaWorkflow
      
-      submission_dlg = QtGui.QDialog(self)
-      uic.loadUi(os.path.join( os.path.dirname( __file__), 'sw_submission_dlg.ui' ), submission_dlg)
-
-      resource_list = _computing_resource_pool.resource_ids()
-      submission_dlg.combo_resource.addItems(resource_list)
-      submission_dlg.combo_resource.setCurrentIndex(resource_list.index(_workflow_application_model.current_resource_id))
-
-      kind_of_file_processing = [ProcessToSomaWorkflow.NO_FILE_PROCESSING,    
-                                 ProcessToSomaWorkflow.FILE_TRANSFER,
-                                 ProcessToSomaWorkflow.SHARED_RESOURCE_PATH]
-      submission_dlg.combo_in_files.addItems(kind_of_file_processing)
-      submission_dlg.combo_out_files.addItems(kind_of_file_processing)
-
-      queues = ["default queue"]
-      queues.extend(_workflow_application_model.current_connection.config.get_queues())
-      submission_dlg.combo_queue.addItems(queues)
-      submission_dlg.lineedit_wf_name.setText("")
-      submission_dlg.dateTimeEdit_expiration.setDateTime(datetime.now() + timedelta(days=5))
-      
-
+      submission_dlg = WorkflowSubmissionDlg(self)
       if submission_dlg.exec_() != QtGui.QDialog.Accepted:
         return
 
@@ -2245,7 +2265,6 @@ class ProcessView( QWidget, ExecutionContextGUI ):
   
   
   def createWorkflow( self ):
-    from brainvisa.workflow import ProcessToSomaWorkflow
     class Options( HasSignature ):
       signature = SomaSignature(
         'output', 
@@ -2255,29 +2274,32 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         SomaChoice( ( _t_( 'use local paths' ), 0 ), 
                     ( _t_( 'transfer files' ), 1 ), 
                     ( _t_( 'use shared paths' ), 2 ) ),
+        dict( defaultValue=0 ),
         'output_file_processing', 
         SomaChoice( ( _t_( 'use local paths' ), 0 ), 
                     ( _t_( 'transfer files' ), 1 ), 
                     ( _t_( 'use shared paths' ), 2 ) ),
+        dict( defaultValue=0 )
       )
     options = Options()
-    ApplicationQt4GUI().edit( options )
-    input_file_processing = ProcessToSomaWorkflow.NO_FILE_PROCESSING
-    if options.input_file_processing == 1:
-      input_file_processing = ProcessToSomaWorkflow.FILE_TRANSFER
-    if options.input_file_processing == 2:
-      input_file_processing = ProcessToSomaWorkflow.SHARED_RESOURCE_PATH
-    output_file_processing = ProcessToSomaWorkflow.NO_FILE_PROCESSING
-    if options.output_file_processing == 1:
-      output_file_processing = ProcessToSomaWorkflow.FILE_TRANSFER
-    if options.output_file_processing == 2:
-      output_file_processing = ProcessToSomaWorkflow.SHARED_RESOURCE_PATH
-    
-    ptowf = ProcessToSomaWorkflow(self.process, 
-                                 options.output, 
-                                 input_file_processing = input_file_processing, 
-                                 output_file_processing = output_file_processing)
-    ptowf.doIt()
+    if ApplicationQt4GUI().edit( options ):
+      from brainvisa.workflow import ProcessToSomaWorkflow
+      input_file_processing = ProcessToSomaWorkflow.NO_FILE_PROCESSING
+      if options.input_file_processing == 1:
+        input_file_processing = ProcessToSomaWorkflow.FILE_TRANSFER
+      if options.input_file_processing == 2:
+        input_file_processing = ProcessToSomaWorkflow.SHARED_RESOURCE_PATH
+      output_file_processing = ProcessToSomaWorkflow.NO_FILE_PROCESSING
+      if options.output_file_processing == 1:
+        output_file_processing = ProcessToSomaWorkflow.FILE_TRANSFER
+      if options.output_file_processing == 2:
+        output_file_processing = ProcessToSomaWorkflow.SHARED_RESOURCE_PATH
+      
+      ptowf = ProcessToSomaWorkflow(self.process, 
+                                  options.output, 
+                                  input_file_processing = input_file_processing, 
+                                  output_file_processing = output_file_processing)
+      ptowf.doIt()
   
   def _distributeButton( self ):
     self.readUserValues()
