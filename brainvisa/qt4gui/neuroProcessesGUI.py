@@ -1478,7 +1478,10 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     # title of the process : label + rotating icon when it's running
     titleLayout = QHBoxLayout( )
     centralWidgetLayout.addLayout(titleLayout)
-    self.labName = QLabel( t, self )
+    if not parent:
+      self.labName = QLabel( t, self )
+    else:
+      self.labName = QLabel( _t_(process.name), self )
     titleLayout.addWidget(self.labName)
     self.labName.setFrameStyle( QFrame.Panel | QFrame.Raised )
     self.labName.setLineWidth( 1 )

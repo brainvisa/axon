@@ -1173,6 +1173,7 @@ class IterationProcess( Process ):
     eNode = ParallelExecutionNode( self.name, stopOnError=False )
     for i in xrange( len( self._processes ) ):
       self._processes[ i ].isMainProcess = True
+      self._processes[ i ].name =  repr(i+1) + ". " + self._processes[ i ].name
       eNode.addChild( str( i ), ProcessExecutionNode( self._processes[ i ],
                         optional=True, selected = True ) )
     self._executionNode = eNode
@@ -2427,7 +2428,11 @@ class ExecutionContext:
             content += '<font color=red>' + _t_('Unabled to open log file') + '</font></html></body>'
             process._outputLog = None
             process._outputLogFile = None
-          self._lastStartProcessLogItem = log.append( _t_(process.name) + ' ' + str(process.instance), html=content,
+          if stackTop:
+            self._lastStartProcessLogItem = log.append( _t_(process.name), html=content,
+                      children=newStackTop.log, icon='icon_process.png' )
+          else:
+            self._lastStartProcessLogItem = log.append( _t_(process.name) + ' ' + str(process.instance), html=content,
                       children=newStackTop.log, icon='icon_process.png' )
         else:
           newStackTop.log = None
@@ -2576,8 +2581,7 @@ class ExecutionContext:
       msg = '<p><img alt="" src="' + \
             os.path.join( neuroConfig.iconPath, 'process_start.png' ) + \
             '" border="0"><em>' + _t_( 'Process <b>%s</b> started on %s') % \
-            ( _t_(self._currentProcess().name ) + ' ' + \
-              str( self._currentProcess().instance ),
+            ( _t_(self._currentProcess().name ),
               time.strftime( _t_( '%Y/%m/%d %H:%M' ),
                              self._stackTop().time ) ) + \
             '</em></p>'
@@ -2590,7 +2594,7 @@ class ExecutionContext:
       msg = '<br><img alt="" src="' + \
             os.path.join( neuroConfig.iconPath, 'process_end.png' ) + \
             '" border="0"><em>' + _t_( 'Process <b>%s</b> finished on %s (%s)' ) % \
-        ( _t_(self._currentProcess().name) + ' ' + str( self._currentProcess().instance ),
+        ( _t_(self._currentProcess().name),
           time.strftime( _t_( '%Y/%m/%d %H:%M' ), finalTime), timeDifferenceToString( elapsed ) ) + \
         '</em>'
       self.write( msg )
