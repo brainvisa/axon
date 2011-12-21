@@ -94,6 +94,18 @@ def qt_exit_handler( number, frame ):
 # Ctrl + C is linked to sys.exit() until Qt event loop is entered
 signal.signal( signal.SIGINT, system_exit_handler )
 
+def cleanup():
+  """
+  Cleanup to be done at Brainvisa exiting. This function is registered in atexit.
+  """
+  if neuroConfig.runsInfo:
+    neuroConfig.runsInfo.delete()
+  neuroConfig.clearObjects()
+  neuroProcesses.cleanupProcesses()
+  neuroLog.closeMainLog()
+  temporary.manager.close()
+  
+atexit.register(cleanup)
 
 class EventFilter( QObject ):
   def eventFilter( self, o, e ):
@@ -139,10 +151,8 @@ def main():
 
     temporary.initializeTemporaryFiles( 
       defaultTemporaryDirectory = neuroConfig.temporaryDirectory )
-    atexit.register( temporary.manager.__del__ )
     
     neuroLog.initializeLog()
-    atexit.register( neuroLog.closeMainLog )
     initializeData()
 
     if neuroConfig.validationEnabled:
@@ -167,7 +177,6 @@ def main():
     initializeProcesses()
     initializeDataGUI()
     initializeProcessesGUI()
-    atexit.register( neuroConfig.clearObjects )
 
     if not neuroConfig.fastStart:
       # Logging BrainVISA environment
@@ -303,7 +312,6 @@ if neuroConfig.profileFileName:
 else:
   main()
 
-
 if neuroConfig.gui:
   neuroConfig.qtApplication.connect( neuroConfig.qtApplication,\
                                      SIGNAL( 'lastWindowClosed ()' ),\
@@ -372,7 +380,6 @@ if neuroConfig.shell:
 while len( ipsubprocs ) != 0:
   sp = ipsubprocs.pop()
   sp.kill()
-
 
 
 neuroHierarchy.databases.currentThreadCleanup()

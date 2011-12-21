@@ -29,7 +29,7 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
-import os, threading, atexit, warnings, stat
+import os, threading, warnings, stat
 from UserString import UserString
 from soma.minf.tree import registerClassAs
 
@@ -85,7 +85,6 @@ class TemporaryFileManager:
     self.__lock = threading.RLock()
     self.__identifier = str( os.getpid() )
     self.__count = 0
-    atexit.register( self.close )
     
     
   def registerPath( self, path ):
@@ -134,8 +133,8 @@ class TemporaryFileManager:
       self.__lock.release()
 
 
-  def __del__( self ):
-    self.close()
+  #def __del__( self ):
+    #self.close()
   
   
   def close( self ):

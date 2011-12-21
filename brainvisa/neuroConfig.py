@@ -198,7 +198,7 @@ _defaultTranslateFunction = lambda x: x
 if not __builtin__.__dict__.has_key( '_t_' ):
   __builtin__.__dict__[ '_t_' ] = _defaultTranslateFunction
 
-import gettext, sys, os, errno, pickle, string, traceback, htmllib, formatter, re, time, socket, atexit
+import gettext, sys, os, errno, pickle, string, traceback, htmllib, formatter, re, time, socket
 import shutil
 from distutils.spawn import find_executable
 from soma.wip.application.api import Application
@@ -818,7 +818,6 @@ class RunsInfo:
       infos["logFileName"]=logFileName
       self.runs[self.currentRun]=infos
       self.write()
-      atexit.register(self.delete)
     except Exception, e:
       print "Fail to get or set current runs information:"
       print e
@@ -829,7 +828,6 @@ class RunsInfo:
     """
     Removes current run information from the current_runs.minf file.
     """
-    #print "delete run info "
     if os.path.exists( self.file ):
       try:
         self.runs, self.count = readMinf(self.file)

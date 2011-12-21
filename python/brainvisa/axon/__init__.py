@@ -43,6 +43,10 @@ It is useful to write a Python script that uses Brainvisa. Usage:
   
 Then, Brainvisa, its processes and databases are loaded and it can be used as if it were started in batch mode.
 
+At the end of your script, call a cleanup function. It would be called automatically at exit, but it is better to call it from the main thread:
+
+  >>> brainvisa.axon.cleanup()
+  
 """
 
 import os, sys
@@ -66,7 +70,7 @@ sys.path.insert( 0, brainvisa_path )
 import PyQt4
 import neuroConfig
 import neuroLog
-from processes import initializeProcesses
+from processes import initializeProcesses, cleanup
 
 # set back argv[0] to its original value
 sys.argv = argv

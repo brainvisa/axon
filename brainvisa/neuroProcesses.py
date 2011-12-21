@@ -167,7 +167,7 @@ __docformat__ = 'restructuredtext en'
 
 import traceback, threading, pickle, formatter, htmllib, operator
 import inspect, signal, shutil, imp, StringIO, types, copy, weakref
-import cPickle, atexit
+import cPickle
 import string
 import distutils.spawn
 import os, errno, time, calendar
@@ -4607,7 +4607,6 @@ def initializeProcesses():
       children=_readProcessLog, icon='icon_process.png' )
   else:
     _readProcessLog = None
-  atexit.register( cleanupProcesses )
 
 
 #----------------------------------------------------------------------------

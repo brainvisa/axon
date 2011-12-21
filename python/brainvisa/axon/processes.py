@@ -43,6 +43,18 @@ from minfExtensions import initializeMinfExtensions
 from brainvisa.data import temporary
 import brainvisa.toolboxes
 
+def cleanup():
+  """
+  Cleanup to be done at Brainvisa exiting. This function is registered in atexit.
+  """
+  if neuroConfig.runsInfo:
+    neuroConfig.runsInfo.delete()
+  neuroConfig.clearObjects()
+  neuroHierarchy.databases.currentThreadCleanup()
+  neuroProcesses.cleanupProcesses()
+  neuroLog.closeMainLog()
+  temporary.manager.close()
+
 
 def initializeProcesses():
     '''
@@ -56,17 +68,16 @@ def initializeProcesses():
     The types are available through functions in :py:mod:`neuroDiskItems`.
 
     '''
+    atexit.register(cleanup)
     brainvisa.toolboxes.readToolboxes( neuroConfig.toolboxesDir, neuroConfig.homeBrainVISADir )
     for toolbox in brainvisa.toolboxes.allToolboxes():
       toolbox.init()
 
     temporary.initializeTemporaryFiles(
             defaultTemporaryDirectory = neuroConfig.temporaryDirectory )
-    atexit.register(temporary.manager.__del__)
 
     initializeMinfExtensions()
     neuroLog.initializeLog()
-    atexit.register(neuroLog.closeMainLog)
 
     #neuroConfig.qtApplication = QApplication( sys.argv, QApplication.Tty )
     #   I removed this neuroConfig.qtApplication line because it hangs the
