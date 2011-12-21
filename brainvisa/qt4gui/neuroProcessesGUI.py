@@ -1953,9 +1953,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       if resource_id != _workflow_application_model.current_resource_id:
         _workflow_application_model.set_current_connection(resource_id)
 
-      name = unicode(submission_dlg.lineedit_wf_name.text())
-      if name == "": name = SomaWorkflowWidget.brainvisa_code
-      else: name = SomaWorkflowWidget.brainvisa_code + name
+     
       qtdt = submission_dlg.dateTimeEdit_expiration.dateTime()
       date = datetime(qtdt.date().year(), qtdt.date().month(), qtdt.date().day(), 
                       qtdt.time().hour(), qtdt.time().minute(), qtdt.time().second())
@@ -1969,7 +1967,15 @@ class ProcessView( QWidget, ExecutionContextGUI ):
                                   input_file_processing = input_file_processing, 
                                   output_file_processing = output_file_processing)
       workflow = ptowf.doIt()
-      workflow.name = SomaWorkflowWidget.brainvisa_code
+
+      name = unicode(submission_dlg.lineedit_wf_name.text())
+      if name == "": 
+        if workflow.name != None:
+          name = SomaWorkflowWidget.brainvisa_code + workflow.name
+        else:
+          name = SomaWorkflowWidget.brainvisa_code
+      else: 
+        name = SomaWorkflowWidget.brainvisa_code + name
       
       #store the process in workflow.user_storage
       serialized_process = StringIO.StringIO()

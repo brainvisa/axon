@@ -34,7 +34,7 @@ class ProcessToWorkflow( object ):
     return type + str( count )
   
   
-  def _processExecutionNode( self, eNode, inGroup ):
+  def _processExecutionNode( self, eNode, inGroup, priority = None ):
     if eNode is not None and eNode.isSelected():
       if isinstance( eNode, ProcessExecutionNode ):
         pENode = eNode._process._executionNode
@@ -42,7 +42,10 @@ class ProcessToWorkflow( object ):
           # Create job
           jobId = self._createIdentifier( self.JOB )
           #print 'Create job:', jobId, '(', inGroup, ')', eNode._process.name
-          self._jobs[ jobId ] = eNode._process
+          if priority == None:
+            self._jobs[ jobId ] = (eNode._process, 0)
+          else:
+            self._jobs[ jobId ] = (eNode._process, priority)
           self._groups[ inGroup ][ 1 ].append( jobId )
           self._inGroup[ jobId ] = inGroup
           return
@@ -60,8 +63,17 @@ class ProcessToWorkflow( object ):
         self._groups[ groupId ] = ( label, [] )
         self._groups[ inGroup ][ 1 ].append( groupId )
         self._inGroup[ groupId ] = inGroup
+        children_count = len(eNode.childrenNames())
+        cmpt = 0
         for i in eNode.children():
-          self._processExecutionNode( i, groupId )
+          if priority == None:
+            self._processExecutionNode( i, 
+                                        groupId, 
+                                        priority=children_count - cmpt )
+            cmpt = cmpt + 1
+          else:
+            self._processExecutionNode( i, groupId, priority )
+          
       elif isinstance( pENode, SerialExecutionNode ):
         process = getattr( eNode, '_process', None )
         if process is None:
@@ -74,22 +86,35 @@ class ProcessToWorkflow( object ):
         self._groups[ groupId ] = ( label, [] )
         self._groups[ inGroup ][ 1 ].append( groupId )
         self._inGroup[ groupId ] = inGroup
-        for i in eNode.children():
-          self._processExecutionNode( i, groupId )
+        if priority == None:
+          for i in eNode.children():
+            self._processExecutionNode( i, groupId, 0 )
+        else:
+          for i in eNode.children():
+            self._processExecutionNode( i, groupId, priority )
       else:
-        for i in eNode.children():
-          self._processExecutionNode( i, inGroup )
+        if priority == None:
+          for i in eNode.children():
+            self._processExecutionNode( i, inGroup, 0 )
+        else:
+          for i in eNode.children():
+            self._processExecutionNode( i, inGroup, priority )
 
 
   def doIt( self ):
-    self._processExecutionNode( self.process._executionNode, None )
+    # set the priority 0 to all jobs
+    #self._processExecutionNode( self.process._executionNode, None, priority=0 )
+    # if the root node is a parallel node, its children will have a decreasing
+    # priorities
+    self._processExecutionNode( self.process._executionNode, None, priority=None )
+
     #import pprint
     #pprint.pprint( self._groups )
     self._processNodes( 0, self._groups[ None ][ 1 ], None, set(), set(), False, None )
     for fid, input_output in self._iofiles.iteritems():
       input, output = input_output
       #if len( output ) > 1:
-        #print '!!!', 'File "%s" is created by several processes: %s' % ( self._files[fid][0], ', '.join( self._jobs[ i ].name for i in output ) )
+        #print '!!!', 'File "%s" is created by several processes: %s' % ( self._files[fid][0], ', '.join( self._jobs[ i ][0].name for i in output ) )
       #fileId = self._createIdentifier( self.FILE )
       #print "------------"
       #print repr(fid) + " " + repr(input) + " " + repr(output)
@@ -109,7 +134,7 @@ class ProcessToWorkflow( object ):
     last = previous
     for id in nodes:
       if id[ 0 ] == self.JOB:
-        process = self._jobs[ id ]
+        (process, priority) = self._jobs[ id ]
         for name, type in process.signature.iteritems():
           if isinstance( type, WriteDiskItem ):
             fileName = getattr( process, name, None )
@@ -159,7 +184,7 @@ class ProcessToWorkflow( object ):
                 fileId = self._fileNames[fileName.fullPath()]
               self._iofiles.setdefault( fileId, ( [], [] ) )[ 0 ].append( id )
               
-        self._create_job( depth, id, process, inGroup )
+        self._create_job( depth, id, process, inGroup, priority)
         if serial:
           if first is None:
             first = [ id ]
@@ -218,7 +243,7 @@ class ProcessToWorkflow( object ):
       end.update( last )
 
 
-  def _create_job( self, depth, jobId, process, inGroup ):
+  def _create_job( self, depth, jobId, process, inGroup, priority ):
     command = [ 'brainvisa', '-r', process.id() ]
     for name in process.signature.keys():
       value = getattr( process, name )
@@ -232,7 +257,7 @@ class ProcessToWorkflow( object ):
       else:
         value = str( value )
       command.append( value )
-    self.create_job( depth, jobId, command, inGroup, label=process.name )
+    self.create_job( depth, jobId, command, inGroup, label=process.name, priority=priority )
  
   def process_str(self, value):
     if value and value.find(' ') != -1:
@@ -260,7 +285,7 @@ class GraphvizProcessToWorkflow( ProcessToWorkflow ):
     self.out.close()
   
   
-  def create_job( self, depth, jobId, command, inGroup, label ):
+  def create_job( self, depth, jobId, command, inGroup, label, priority ):
     print 'create_job' + repr( ( depth, jobId, command, inGroup ) )
     print >> self.out, '  ' * depth, jobId, '[ shape=ellipse, label="' + label + '" ]'
   
@@ -307,7 +332,7 @@ class ProcessToFastExecution( ProcessToWorkflow ):
     self.out.close()
 
   
-  def create_job( self, depth, jobId, command, inGroup, label ):
+  def create_job( self, depth, jobId, command, inGroup, label, priority ):
     print >> self.out, 'echo', ' '.join( repr(i) for i in command )
     print >> self.out, ' '.join( repr(i) for i in command )
   
@@ -375,7 +400,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
     dependencies = self.__dependencies
     root_group = self.__groups[self.__mainGroupId]
       
-    workflow = Workflow(jobs, dependencies, root_group)
+    workflow = Workflow(jobs, dependencies, root_group, name=self.process.name)
     if self.__out:
       file = open(self.__out, "w")
       if file:
@@ -421,9 +446,9 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
     #print "<<< groups "
     ##########################
       
-  def create_job( self, depth, jobId, command, inGroup, label ):
+  def create_job( self, depth, jobId, command, inGroup, label, priority ):
     #print 'create_job' + repr( ( depth, jobId, command, inGroup ) )
-    self.__jobs[jobId] = Job(command=command, name=self.process_str(label))#jobId)#
+    self.__jobs[jobId] = Job(command=command, name=self.process_str(label), priority=priority)#jobId)#
     self.__groups[inGroup].elements.append(self.__jobs[jobId]) 
   
   def open_group( self, depth, groupId, label, inGroup ):
