@@ -291,7 +291,7 @@ class SQLDatabase( Database ):
     super(SQLDatabase, self).__init__()
     self._connection = None
     self.name = os.path.normpath( directory )
-    if not sqlDatabaseFile:
+    if not sqlDatabaseFile or sqlDatabaseFile == ':temporary:':
       self.sqlDatabaseDirectory = temporary.manager.new()
       os.mkdir( self.sqlDatabaseDirectory )
       self.sqlDatabaseFile = os.path.join( self.sqlDatabaseDirectory, 'database.sqlite' )
