@@ -22,6 +22,7 @@
 
 
 <hr width="100%"> <br>
+<a href="#version-4.2.0"><b>Version 4.2.0</b></a><br>
 <a href="#version-4.1.1"><b>Version 4.1.1</b></a><br>
 <a href="#version-4.1.0"><b>Version 4.1.0</b></a><br>
 <a href="#version-4.0.2"><b>Version 4.0.2</b></a><br>
@@ -46,6 +47,41 @@
 <a href="#version-1.5"><b>Version 1.5</b></a><br>
 
 <br>
+<!---------------------------------------------------------------------------->
+<h2><a name="version-4.2.0">2012/01/04 - Version 4.2.0</a></h2>
+<blockquote>
+<h3>General bug fixes and improvements:</h3>
+<ul>
+<li><b>Jobs distribution integration</b>: Soma-workflow has now been completely integrated in BrainVisa: processes (pipelines) may be run through a "run in soma-workflow" button, which allows do dispatch processing across local processors, or on a remote computing resource. A specifig GUI allows to control and monitor all executions.
+</li>
+<li>GUI changes in BrainVisa main window: the doc panel can now be deteched from the main window, or docked at other positions, or hidden. The soma-workflow panel behaves the same, and can be hidden or shown.
+</li>
+<li>Transformations manager performance improvements: it used to drastically slow down BrainVisa, especially when using it the first time (typically when using a viewer on an object with transformations information). It now relies on databasing and is much faster.
+</li>
+<li>"Reload toolbox" option in menus: allows to take into account changes in types and ontologies in toolboxes, and detect new processes, without quitting brainvisa.
+</li>
+<li>Processes and iterations numbering has been revised for a better readability for users.
+</li>
+<li>Use Ipython console shell with ipython >= 0.11.</li>
+<li>Support for SPM8 and SPM8 compiled version (standalone) in config, and in normalization process.
+</li>
+<li>Better handling of transformations loading in Anatomist when loading objects in anatomist.
+</li>
+<li>New process InspectMultipleData in data management: allow to easily display viewers/editors icons for a list of data.
+</li>
+<li>Adapt ffmpeg encoder process to new versions of ffmpeg.</li>
+<li>Fixed environment variables when using external commands from brainvisa.</li>
+<li>Fixes in error handling while reading processes.</li>
+<li>Fixes in file selection of a list of output files.</li>
+<li>Fixes in getting viewers/editors for some data.</li>
+<li>Try better to work cleanly without an environment variable BRAINVISA_SHARE.
+</li>
+<li>Fixed userLevel of modelgraphinfo viewer.</li>
+<li>Fixed some errors / crashes when quitting brainvisa (by reworking exit code).</li>
+<li>(developers) Cleanup: removed Qt3 compatibility code.</li>
+</ul>
+</blockquote>
+
 <!---------------------------------------------------------------------------->
 <h2><a name="version-4.1.1">2011/09/14 - Version 4.1.1</a></h2>
 <blockquote>
