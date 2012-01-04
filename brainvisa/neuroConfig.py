@@ -915,27 +915,40 @@ for p in ( os.path.join( getSharePath(), bvShareDirectory ),
     sharedDatabaseFound=True
     break
     
-for attr, value in readConfiguration( mainPath, userProfile, homeBrainVISADir ):
-  if isinstance( value, list ):
-    globals()[ attr ] += value
-  else:
-    globals()[ attr ] = value
-
-# Clean pathes
-for p in ( typesPath, dataPath, processesPath, fileSystemOntologiesPath, matlabPath ):
-  i = 0
-  l = []
-  while i < len( p ):
-    if p[ i ] in l:
-      del p[ i ]
+def initGlobalVariables():
+  global mainPath, userProfile, homeBrainVISADir
+  for attr, value in readConfiguration( mainPath, userProfile, homeBrainVISADir ):
+    if isinstance( value, list ):
+      globals()[ attr ] += value
     else:
-      l.append( p[ i ] )
-      i += 1
+      globals()[ attr ] = value
 
-# Translations
+  # Clean pathes
+  global typesPath, dataPath, processesPath, fileSystemOntologiesPath, matlabPath
+  for p in ( typesPath, dataPath, processesPath, fileSystemOntologiesPath, matlabPath ):
+    i = 0
+    l = []
+    while i < len( p ):
+      if p[ i ] in l:
+        del p[ i ]
+      else:
+        l.append( p[ i ] )
+        i += 1
 
-os.environ[ 'LANGUAGE' ] = language
-docPath = os.path.join( docPath, language )
+  # Translations
+  global docPath, language
+  os.environ[ 'LANGUAGE' ] = language
+  docPath = os.path.join( docPath, language )
+  
+  # Set matlab options
+  from brainvisa import matlab
+  global matlabRelease, matlabExecutable, matlabOptions, matlabStartup
+  matlab.matlabRelease = matlabRelease
+  matlab.matlabExecutable = matlabExecutable
+  matlab.matlabOptions = matlabOptions
+  matlab.matlabPath = matlabPath
+  matlab.matlabStartup = matlabStartup
+
 def getDocFile(filename):
   """
   Search doc file in doc path and if not found, in english documentation path.
@@ -999,13 +1012,7 @@ if _t_ is _defaultTranslateFunction:
 
 
 
-# Set matlab options
-from brainvisa import matlab
-matlab.matlabRelease = matlabRelease
-matlab.matlabExecutable = matlabExecutable
-matlab.matlabOptions = matlabOptions
-matlab.matlabPath = matlabPath
-matlab.matlabStartup = matlabStartup
+
 
 
 

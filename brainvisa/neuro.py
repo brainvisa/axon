@@ -149,6 +149,8 @@ def main():
     for toolbox in allToolboxes():
       toolbox.init()
 
+    neuroConfig.initGlobalVariables()
+    
     temporary.initializeTemporaryFiles( 
       defaultTemporaryDirectory = neuroConfig.temporaryDirectory )
     
