@@ -48,11 +48,11 @@
 
 <br>
 <!---------------------------------------------------------------------------->
-<h2><a name="version-4.2.0">2012/01/04 - Version 4.2.0</a></h2>
+<h2><a name="version-4.2.0">2012/01/05 - Version 4.2.0</a></h2>
 <blockquote>
 <h3>General bug fixes and improvements:</h3>
 <ul>
-<li><b>Jobs distribution integration</b>: Soma-workflow has now been completely integrated in BrainVisa: processes (pipelines) may be run through a "run in soma-workflow" button, which allows do dispatch processing across local processors, or on a remote computing resource. A specifig GUI allows to control and monitor all executions.
+<li><b>Jobs distribution integration</b>: <a href="http://brainvisa.info/soma/soma-workflow/">Soma-workflow</a> has now been completely integrated in BrainVisa: processes (pipelines) may be run through a "run in soma-workflow" button, which allows do dispatch processing across local processors, or on a remote computing resource. A specifig GUI allows to control and monitor all executions.
 </li>
 <li>GUI changes in BrainVisa main window: the doc panel can now be deteched from the main window, or docked at other positions, or hidden. The soma-workflow panel behaves the same, and can be hidden or shown.
 </li>
@@ -79,6 +79,22 @@
 <li>Fixed userLevel of modelgraphinfo viewer.</li>
 <li>Fixed some errors / crashes when quitting brainvisa (by reworking exit code).</li>
 <li>(developers) Cleanup: removed Qt3 compatibility code.</li>
+<li><b>T1 MRI toolbox</b>
+  <ul>
+    <li>More improvements in Morphologist segmentation robustness and accuracy
+    </li>
+    <li>Hemisphere and white meshes are now more accurate, prettier, and conform to the spherical topology constraint.
+    </li>
+    <li>May use SPM8 and compiled variant to perform normalization.</li>
+  </ul>
+</li>
+<li><b>Sulci toolbox</b>
+  <ul>
+    <li>SPAM sulci recognition models data have been reorganized.</li>
+    <li>SPAM models viewers have been improved and a bad interaction with other objects in anatomist has been fixed.
+    </li>
+  </ul>
+</li>
 </ul>
 </blockquote>
 
