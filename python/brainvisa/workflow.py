@@ -365,9 +365,9 @@ class ProcessToFastExecution( ProcessToWorkflow ):
   
 class ProcessToSomaWorkflow(ProcessToWorkflow):
   
-  NO_FILE_PROCESSING = "no_file_processing"
-  FILE_TRANSFER = "file_transfer"
-  SHARED_RESOURCE_PATH = "shared_resource_path"
+  NO_FILE_PROCESSING = "use local path"
+  FILE_TRANSFER = "transfer files"
+  SHARED_RESOURCE_PATH = "use path translation"
   
   def __init__( self, 
                 process, 

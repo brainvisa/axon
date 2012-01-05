@@ -369,7 +369,7 @@ class SomaWorkflowProcessView(QMainWindow):
       self.ui.dock_plot.hide()
       self.ui.dock_plot.toggleViewAction().setVisible(False)
 
-    self.workflow_info_view = soma.workflow.gui.workflowGui.WorkflowStatusNameDate(
+    self.workflow_info_view = soma.workflow.gui.workflowGui.WorkflowInfoWidget(
                     _workflow_application_model, 
                     assigned_wf_id=self.workflow_id, 
                     assigned_resource_id=self.resource_id,
@@ -459,7 +459,7 @@ class SomaWorkflowProcessView(QMainWindow):
         self.model.clear_current_workflow()
     else:      
       if self.resource_id != self.model.current_resource_id:
-        if self.model.resource_exist(self.resource_id):
+        if self.model.resource_pool.resource_exist(self.resource_id):
           self.model.set_current_connection(self.resource_id)
         else:
           (resource_id, 
