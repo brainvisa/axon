@@ -72,7 +72,8 @@ from soma.signature.api import FileName as SomaFileName
 from soma.signature.api import Choice as SomaChoice
 from soma.signature.api import Boolean as SomaBoolean
 from soma.qt4gui.api import ApplicationQt4GUI
-
+from brainvisa.data.databaseCheck import BVChecker_3_1
+import neuroHierarchy
 try: 
   from soma.workflow.gui.workflowGui import SomaWorkflowWidget as ComputingResourceWidget
   from soma.workflow.gui.workflowGui import SomaWorkflowMiniWidget as MiniComputingResourceWidget
@@ -389,6 +390,12 @@ class SomaWorkflowProcessView(QMainWindow):
     view_menu.addAction(self.ui.dock_bv_process.toggleViewAction())
     view_menu.addAction(self.ui.dock_plot.toggleViewAction())
 
+    self.action_update_databases=QAction(self)
+    self.action_update_databases.setText(_t_( 'Check && update databases' ))
+    self.action_update_databases.triggered.connect(self.update_databases)
+    self.process_menu = self.ui.menubar.addMenu("&Process")
+    self.process_menu.addAction(self.action_update_databases)
+
     self.workflow_tool_bar = QToolBar(self)
     self.workflow_tool_bar.addWidget(self.workflow_info_view.ui.wf_status_icon)
     self.workflow_tool_bar.addSeparator()
@@ -450,7 +457,11 @@ class SomaWorkflowProcessView(QMainWindow):
     else:
       title =  wf_name[len(SomaWorkflowWidget.brainvisa_code):] + "@" + self.resource_id
     self.setWindowTitle(title)
-
+    
+    # warning message in the status bar about the need to check and update databases after execution
+    warningMsg=QLabel("<div style='font-size:9pt'><i><font color='red'>Warning:</font> After execution with Soma-Workflow, the databases may need to be updated.<br>Use \"Process -> Check &amp; update databases\" menu to do it.</i></div>")
+    warningMsg.setWordWrap(True)
+    self.ui.statusbar.addPermanentWidget(warningMsg, 1)
 
   @QtCore.pyqtSlot(bool)
   def enable_workflow_monitoring(self, enable):
@@ -546,11 +557,29 @@ class SomaWorkflowProcessView(QMainWindow):
       btn_save.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
       process_button_layout.addWidget(btn_save)
       
-      self.process_menu = self.ui.menubar.addMenu("&Process")
       self.process_menu.addAction(self.process_view.action_save_process)
       self.process_menu.addAction(self.process_view.action_clone_process)
       self.process_menu.addAction(self.process_view.action_iterate)
 
+  @QtCore.pyqtSlot()
+  def update_databases(self):
+    QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+    for dbSettings in neuroConfig.dataPath:
+      try:
+        if not dbSettings.builtin:
+          db=neuroHierarchy.databases.database(dbSettings.directory)
+          neuroProcesses.defaultContext().write("Updating database "+db.name+"...")
+          # first update before checking for missing referentials
+          db.clear(context=neuroProcesses.defaultContext())
+          db.update(context=neuroProcesses.defaultContext())
+          # check referentials and transformations information, the database will be updated after
+          neuroProcesses.defaultContext().write("Checking referentials information in database "+db.name+"...")
+          checker=BVChecker_3_1(db, neuroProcesses.defaultContext())
+          checker.findActions()
+          checker.process()
+      except:
+        neuroException.showException(beforeError="Error while updating database "+dbSettings.directory)
+    QtGui.QApplication.restoreOverrideCursor()
 
   @QtCore.pyqtSlot()
   def current_workflow_changed(self):

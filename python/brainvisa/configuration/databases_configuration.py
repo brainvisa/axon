@@ -151,7 +151,7 @@ class DatabaseSettings( HasSignature ):
         self._selected = False
     else :
       self._selected = selected
-
+    self.builtin=False
     self.onAttributeChange( 'directory', self._directoryChanged )
     self._directoryChanged( directory )
 
