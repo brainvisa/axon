@@ -198,7 +198,7 @@ def main():
     # Databases loading is skipped when no toolbox is loaded because specific
     # hierarchies from unloaded toolboxes may be needed to define the ontology
     # describing a given database organization
-    if not neuroConfig.noToolBox:
+    if not neuroConfig.noToolBox and not neuroConfig.fastStart:
       openDatabases()
     
     readProcesses( neuroConfig.processesPath )
