@@ -117,12 +117,13 @@ def startShell():
 
 #----------------------------------------------------------------------------
 def quitRequest():
+  # Called when quitting brainvisa using quit menu or closing the main window
   # print '!!!!!!!!!quitRequest!!!!!!!!'
   a = QMessageBox.warning( None, _t_('Quit'),_t_( 'Do you really want to quit BrainVISA ?' ), QMessageBox.Yes | QMessageBox.Default, QMessageBox.No )
   if a == QMessageBox.Yes:
     wids = qApp.topLevelWidgets()
     for w in wids:
-      if isinstance( w, ProcessView ):
+      if isinstance( w, ProcessView ) or isinstance(w, SomaWorkflowProcessView):
         w.close()
         del w
     if neuroConfig.shell:
@@ -132,6 +133,7 @@ def quitRequest():
 
 #----------------------------------------------------------------------------
 def cleanupGui():
+  # called when quitting a ipython shell
   wids = qApp.topLevelWidgets()
   for w in wids:
     if isinstance( w, ProcessView ):
@@ -463,6 +465,11 @@ class SomaWorkflowProcessView(QMainWindow):
     warningMsg.setWordWrap(True)
     self.ui.statusbar.addPermanentWidget(warningMsg, 1)
 
+  def closeEvent( self, event ):
+    if self.process_view:
+      self.process_view.cleanup()
+    QMainWindow.closeEvent( self, event )
+
   @QtCore.pyqtSlot(bool)
   def enable_workflow_monitoring(self, enable):
     if not enable:
@@ -515,7 +522,7 @@ class SomaWorkflowProcessView(QMainWindow):
       QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
       #self.ui.statusbar.showMessage("Building the process view...")
       try:
-        self.process_view = ProcessView(self.process, read_only=True)
+        self.process_view = ProcessView(self.process, parent=self, read_only=True)
         QtGui.QApplication.restoreOverrideCursor()
       except Exception, e:
         #self.ui.statusbar.clearMessage()
@@ -526,7 +533,6 @@ class SomaWorkflowProcessView(QMainWindow):
         QtGui.QApplication.restoreOverrideCursor()
       self.process_view.inlineGUI.hide()
       self.process_view.info.hide()
-      self.process_view.menu.hide()
       self.process_view.eTreeWidget.setOrientation(Qt.Vertical)
       self.process_layout.addWidget(self.process_view)
       #print "After process view creation"
@@ -1937,7 +1943,6 @@ class ProcessView( QWidget, ExecutionContextGUI ):
   def closeEvent( self, event ):
     self.cleanup()
     QWidget.closeEvent( self, event )
-  
   
   def cleanup( self ):
     self.process.cleanup()
