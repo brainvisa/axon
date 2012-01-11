@@ -59,10 +59,10 @@ To use this implementation, load the module using :
 anatomistModule = anatomistapi.bvimpl.loadAnatomistModule(anatomistapi.api.SOCKET) # or DIRECT)
 a=anatomistModule.Anatomist()
 ...
-It can be used only in brainvisa application because it uses module that are loaded in brainvisa.
+It can be used only in brainvisa application because it uses modules that are loaded in brainvisa.
 
 Returned module contains an Anatomist class which inherits from choosen Anatomist class implementation, and is a thread safe singleton.
-Specifities added for brainvisa are :
+Specificities added for brainvisa are :
   - loading referentials and transformation on loading an object using brainvisa database informations.
   - writing messages in brainvisa log file.
 """
@@ -76,7 +76,13 @@ def validation():
 if anatomistImport:
   # dynamic class Anatomist inherits from one implementation of anatomist api
   class Anatomist(anatomistModule.Anatomist):
-    defaultRefType="WeakShared"
+    # We shouldn't change the defaultRefType in fact. 
+    # Indeed, if Anatomist from brainvisa takes only weak shared references on objects and windows,
+    # the user can close a window that is still used by python and it can creates pbs 
+    # Fo example, an id that is free for Anatomist C++ is reused for a new object in Anatomist python but python add still references 
+    # on this id for another object, so when this other object is release in python layer, it can lead to the destruction of the new object.
+    # But with this change, the user won't be able to really close windows or delete objects in Anatomist of Brainvisa manually.
+    #defaultRefType="WeakShared"
     def __singleton_init__(self, *args, **kwargs):
       anatomistParameters=[]
       for a in args:
@@ -117,7 +123,6 @@ if anatomistImport:
           neuroConfig.qtApplication,qt.SIGNAL( 'aboutToQuit ()' ),self.close )
       except:
         atexit.register(self.close)
-                                     
 
     ###############################################################################
     # Methods redefined to use Brainvisa log system.
