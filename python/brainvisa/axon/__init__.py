@@ -76,6 +76,8 @@ from processes import initializeProcesses, cleanup
 sys.argv = argv
 del argv
 
+neuroConfig.initGlobalVariables()
+
 # once imported and initialized, the modules do not need to be
 # referenced any longer here.
 del brainvisa, PyQt4, neuroConfig, neuroLog, sys, os, sip, processes
