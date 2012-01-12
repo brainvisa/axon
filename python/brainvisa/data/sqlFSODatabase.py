@@ -459,7 +459,7 @@ class SQLDatabase( Database ):
     if context is not None:
       context.write( self.name + ': parse directories and insert items' )
     t0 = time.time()
-    self.insertDiskItems( ( i for i in self.scanDatabaseDirectories( directoriesToScan=directoriesToScan, recursion=recursion ) if i.type is not None ), update=True )
+    self.insertDiskItems( ( i for i in self.scanDatabaseDirectories( directoriesToScan=directoriesToScan, recursion=recursion, context=context ) if i.type is not None ), update=True )
     duration = time.time() - t0
     cursor = self._getDatabaseCursor()
     try:
@@ -886,7 +886,7 @@ class SQLDatabase( Database ):
     return result
   
   
-  def scanDatabaseDirectories( self, directoriesIterator=None, includeUnknowns=False, directoriesToScan=None, recursion=True, debugHTML=None ):
+  def scanDatabaseDirectories( self, directoriesIterator=None, includeUnknowns=False, directoriesToScan=None, recursion=True, debugHTML=None, context=None ):
     if debugHTML:
       print >> debugHTML, '<html><body><h1>Scan log for database <tt>' + self.name + '</tt></h1>\n<h2>Directory</h2><blockquote>'
       print >> debugHTML, self.directory, '</blockquote>'
@@ -939,7 +939,7 @@ class SQLDatabase( Database ):
         print >> debugHTML, '</blockquote>'
       # Identify formats
       try:
-        knownFormat, unknownFormat = self.formats.identify( itDirectory )
+        knownFormat, unknownFormat = self.formats.identify( itDirectory, context=context )
       except OSError, e:
         print >> sys.stderr, e
         knownFormat = unknownFormat = []

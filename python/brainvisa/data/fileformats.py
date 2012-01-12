@@ -141,7 +141,7 @@ class FileFormats( object ):
     execfile( fileName, context, context )
 
 
-  def identify( self, directoryIterator ):
+  def identify( self, directoryIterator, context=None ):
     unknown = []
     known = []
     minfs = {}
@@ -149,6 +149,10 @@ class FileFormats( object ):
     while stack:
       f,it = stack.popitem()
       #print '!identify! "' +  f + '"'
+      if not os.access(f, os.R_OK):
+        if context is not None:
+          context.warning("The file ",f, "is not readable.")
+        continue
       format, ext, noExt = self._findMatchingFormat( f )
       if format is None:
         if it.isDir():
