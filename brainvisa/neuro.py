@@ -68,7 +68,6 @@ from soma.wip.application.api import Application
 from soma.signature.api import Choice as SomaChoice
 import neuroConfig
 from brainvisa.toolboxes import readToolboxes, allToolboxes
-import Server
 from brainvisa.data import temporary
 from qtgui.neuroConfigGUI import *
 import neuroLog
@@ -137,9 +136,6 @@ def main():
     p = os.path.join( neuroConfig.mainPath, 'protection_against_qt3' )
     if os.path.exists( p ):
       sys.path.insert( 0, p )
-  if neuroConfig.server:
-    # make the program into a daemon
-    Server.daemonize()
   #  sys.excepthook = exceptionHook
   # InitializationoptionFile
   try:
@@ -264,9 +260,6 @@ def main():
     except:
       showException()
   del localsStartup
-  
-  if neuroConfig.server:
-    Server.startServer()
 
 
 initializeMinfExtensions()

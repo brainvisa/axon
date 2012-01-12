@@ -188,7 +188,6 @@ from neuroDiskItems import *
 import neuroConfig, neuroDiskItems
 import neuroLog
 from neuroException import *
-import Scheduler
 from brainvisa import matlab
 from brainvisa.validation import ValidationError
 from brainvisa.debug import debugHere
@@ -198,24 +197,11 @@ import neuroPopen2
 import fileSystemOntology
 
 try:
-  from remoteProcesses import *
-  _neuroDistributedProcesses = True
-except Exception, e:
-  _neuroDistributedProcesses = False
-  neuroDistribException = e
-
-try:
   from backwardCompatibleQt import QProcess
   qprocess = True
 except:
   qprocess = False
 
-
-def neuroDistributedProcesses():
-  return _neuroDistributedProcesses and \
-  neuroConfig.app.configuration.distributed_execution.\
-    allowDistributedExecution \
-  and neuroConfig.userLevel >= 2
 
 #----------------------------------------------------------------------------
 def pathsplit( path ):
@@ -1991,106 +1977,8 @@ class ParallelExecutionNode( SerialExecutionNode ):
 
   def _run( self, context ):
     pi, p = context.getProgressInfo( self )
-    if not neuroDistributedProcesses() or len( self._children ) < 2:
-      # do as for serial node
-      return super( ParallelExecutionNode, self )._run( context )
-    else:
-      errorCount = 0
-      result = []
-
-      rp_t = []
-      rpid = 0
-
-      try:
-        print 'ParallelExecutionNode._run'
-        user = UserInfosBV(context, Signature('Password', Password()) )
-        print 'user:', user
-
-        if not user.isAccepted():
-          context.error('Password needed to launch process remotely. Running locally and sequencially...')
-          raise RuntimeError( _t_( 'distributed execution failure' ) )
-
-        print 'user accepted'
-        if not hasattr( context, 'remote' ) or context.remote is None:
-          # no remote context has been setup yet - no GUI
-          print 'creating remote context'
-          context.remote = RemoteContext()
-          context.remote.write = context.write
-        remoteContext = context.remote
-        remoteContext.clearGUI()
-        cluster, isServer = getClusterInstance(context)
-        print 'cluster:', cluster, isServer
-
-        context.write('Dispatching processes on cluster...\n')
-      except Exception, e:
-        # distribution failure: run locally
-        # do as for serial node
-        print 'distributed execution has failed:', e
-        print 'running sequentially.'
-        result = []
-        for node in self._children.values():
-          npi, proc = context.getProgressInfo( node, parent=pi )
-          context.progress()
-          result.append( node.run( context ) )
-          del npi
-        context.progress()
-        return result
-
-      context.progress()
-      pis = []
-      for node in self._children.values():
-        npi, proc = context.getProgressInfo( node, parent=pi )
-        pis.append( npi )
-        try:
-
-          rp_t.append( RemoteProcessCall(rpid, cluster, context, node) )
-          rp_t[rpid].start()
-          rpid += 1
-
-        except ExecutionContext.UserInterruption:
-          raise
-        except:
-          errorCount += 1
-          result.append( sys.exc_info()[ 1 ] )
-          try:
-            self._showException()
-          except SystemExit:
-            raise
-          except:
-            import traceback
-            info = sys.exc_info()
-            sys.stderr.write('\n%s: %s\n' % (info[0].__name__, info[1].message))
-            traceback.print_tb(info[2], None, sys.stderr)
-          logException( context=context )
-
-      if errorCount:
-        raise RuntimeError( _t_( '%d execution nodes on %d have produced an error' ) % ( errorCount, len( result ) ) )
-
-      context.write('Processes are running...\n')
-
-      print 'waiting...'
-      for i in range(len(self._children.values())):
-        rp_t[i].join()
-        del pis[0]
-        context.progress()
-        print 'thread [%d] finished'%i
-        if isinstance(rp_t[i].exception, Exception):
-          if isinstance(rp_t[i].exception, RemoteConnectionError):
-            context.write(_t_('Remote execution failed on process %s. Running locally.') % (str(i),) )
-            # distribution failure: run locally
-            # do as for serial node
-            result.append( self._children.values()[i].run( context ) )
-          else:
-            raise rp_t[i].exception
-      del pis
-
-      if not isServer:
-        cluster.closeSessions()
-
-      print 'All finished'
-
-      context.progress()
-      return result
+    # do as for serial node
+    return super( ParallelExecutionNode, self )._run( context )
 
 #-------------------------------------------------------------------------------
 class SelectionExecutionNode( ExecutionNode ):
@@ -4668,22 +4556,6 @@ def reloadToolboxes():
   neuroHierarchy.openDatabases()
 
 #----------------------------------------------------------------------------
-if not _neuroDistributedProcesses:
-  # TODO: use log
-  if globals().has_key( '_t_' ):
-    logmsg = _t_( 'Distributed execution has been disabled due to the ' \
-      'following error:<br>' )
-  else: # in case _t_ has not been loaded yet
-    logmsg = 'Distributed execution has been disabled due to the ' \
-      'following error:<br>'
-  logmsg += str( neuroDistribException )
-  #defaultContext().log( \
-    #_t_( 'Distributed execution' ), html=logmsg, icon='warning' )
-  print logmsg
-  del neuroDistribException, logmsg
-
-
-
 
 import neuroHierarchy
 from neuroHierarchy import *

@@ -1687,20 +1687,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       item = self.executionTree.topLevelItem(0)
       item.setExpanded( True )
       self.executionTree.setCurrentItem( item )
-      ##--##
-      if neuroProcesses.neuroDistributedProcesses():
-        self.remote = neuroProcesses.RemoteContext()
 
-        self.remoteWidget = RemoteContextGUI(splitter)
-        #splitter.setResizeMode( self.remoteWidget.listView(), QSplitter.KeepSize )
-        self.connect(self.remote, SIGNAL("SIG_addIP"), self.remoteWidget.addIP)
-        self.connect(self.remote, SIGNAL("SIG_addProcess"), self.remoteWidget.addProcess)
-        self.connect(self.remote, SIGNAL("SIG_addMessage"), self.remoteWidget.addMessage)
-        self.connect(self.remote, SIGNAL("SIG_setProcessStatus"), self.remoteWidget.setProcessStatus)
-        self.connect(self.remote, SIGNAL("SIG_setCurrentMessage"), self.remoteWidget.setCurrentMessage)
-        self.connect(self.remote, SIGNAL("SIG_clear"), self.remoteWidget.clear)
-      ##--##
-    
     # simple process : only a signature, no sub-processes
     else:
       self.executionTree = None
@@ -1923,12 +1910,6 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       self.btnRunSomaWorkflow.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
     else:
       self.action_run_with_sw.setVisible(False)
-
-    if neuroProcesses.neuroDistributedProcesses():
-      self.btnDistribute = QPushButton( _t_( 'Distribute' ) )
-      layout.addWidget(self.btnDistribute)
-      self.btnDistribute.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-      QObject.connect( self.btnDistribute, SIGNAL( 'clicked()' ), self._distributeButton )
 
     container.setSizePolicy( QSizePolicy( QSizePolicy.MinimumExpanding, QSizePolicy.Fixed ) )
     container.setMaximumHeight( container.sizeHint().height() )
@@ -2335,22 +2316,6 @@ class ProcessView( QWidget, ExecutionContextGUI ):
                                   output_file_processing = output_file_processing)
       ptowf.doIt()
   
-  def _distributeButton( self ):
-    self.readUserValues()
-    self._iterationDialog = IterationDialog( self, self.process, self )
-    self.connect( self._iterationDialog, SIGNAL( 'accept' ), 
-                  self._distributeAccept )
-    self._iterationDialog.show()
-  
-  def _distributeAccept( self ):
-    try:
-      params = self._iterationDialog.getLists()
-      processes = apply( self.process._iterate, (), params )
-      showProcess( DistributedProcess( self.process.name, processes ) )
-    except:
-      neuroException.showException()
-      self._iterationDialog.show()
-
   def _iterateButton( self ):
     self.readUserValues()
     self._iterationDialog = IterationDialog( self, self.process, self )
