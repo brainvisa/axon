@@ -4114,11 +4114,11 @@ class ProcessTree( EditableTree ):
 
   def setValid(self):
     """
-    Sets the tree as valid if it has no child and it is a user tree or if it has at least one valid child.
+    Sets the tree as valid it is a user tree or if it has at least one valid child.
     An empty user tree is valid because it can be a newly created user tree and the user may want to fill it later.
     """
     valid=False
-    if len(self)==0 and self.user:
+    if self.user:
       valid=True
     else:
       for item in self.values():
@@ -4131,15 +4131,12 @@ class ProcessTree( EditableTree ):
     """
    Recursively Updates `valid` attribute for each item in the tree. This method must be called when the validity may have change. For exemple when the userLevel has changed, some process must become visibles.
     """
-    if len(self)==0 and self.user:
-      self.valid=True
-    else:
-      validChild=False
-      for item in self.values():
-        item.update(self.user)
-        if item.valid:
-          validChild=True
-      self.valid=validChild
+    validChild=False
+    for item in self.values():
+      item.update(self.user)
+      if item.valid:
+        validChild=True
+    self.valid=(self.user or validChild)
 
   def updateName(self):
     """
