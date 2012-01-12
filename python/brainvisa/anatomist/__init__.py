@@ -91,12 +91,11 @@ if anatomistImport:
         if neuroConfig.anatomistImplementation == 'socket':
           anatomistModule.Anatomist.anatomistExecutable = \
             eval("neuroConfig.anatomistExecutable")
-        anatomistLog=neuroConfig.mainLog.subLog()
-        communicationLog=anatomistLog.subTextLog()
+        communicationLog=neuroConfig.mainLog.subTextLog()
         # log file for writing traces from this class
         self.communicationLogFile=open( communicationLog.fileName,'w' )
         # log for writing traces from anatomist process
-        self.outputLog=anatomistLog.subTextLog()
+        self.outputLog=neuroConfig.mainLog.subTextLog()
         # add a trace in brainvisa main log
         neuroConfig.mainLog.append( 'Anatomist ', html=self.outputLog,
                 children = [ neuroLog.LogFile.Item('Communications', html = communicationLog ) ],
