@@ -631,7 +631,7 @@ class SQLDatabase( Database ):
   def checkTables(self):
     """
     Checks if all types currently defined in the database ontology have a matching table in the sqlite database.
-    It may be not the case when the database have been update with a version of brainvisa that has not all the toolboxes. It should then be updated.
+    It may be not the case when the database has been updated with a version of brainvisa that has not all the toolboxes. It should then be updated.
     """
     cursor = self._getDatabaseCursor()
     tablesExist=False
@@ -1146,7 +1146,7 @@ class SQLDatabase( Database ):
         try:
           sqlResult = cursor.execute( sql ).fetchall()
         except sqlite3.OperationalError, e:
-          neuroProcesses.defaultContext().warning(e.message)
+          neuroProcesses.defaultContext().warning("Cannot question database ", self.name, " : ", e.message, ". You should update this database.")
       finally:
         self._closeDatabaseCursor( cursor )
       for tpl in sqlResult:
