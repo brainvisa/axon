@@ -914,50 +914,6 @@ for p in ( os.path.join( getSharePath(), bvShareDirectory ),
     dataPath[0].builtin = True # mark as a builtin, non-removable database
     sharedDatabaseFound=True
     break
-    
-def initGlobalVariables():
-  global mainPath, userProfile, homeBrainVISADir
-  for attr, value in readConfiguration( mainPath, userProfile, homeBrainVISADir ):
-    if isinstance( value, list ):
-      globals()[ attr ] += value
-    else:
-      globals()[ attr ] = value
-
-  # Clean pathes
-  global typesPath, dataPath, processesPath, fileSystemOntologiesPath, matlabPath
-  for p in ( typesPath, dataPath, processesPath, fileSystemOntologiesPath, matlabPath ):
-    i = 0
-    l = []
-    while i < len( p ):
-      if p[ i ] in l:
-        del p[ i ]
-      else:
-        l.append( p[ i ] )
-        i += 1
-
-  # Translations
-  global docPath, language
-  os.environ[ 'LANGUAGE' ] = language
-  docPath = os.path.join( docPath, language )
-  
-  # Set matlab options
-  from brainvisa import matlab
-  global matlabRelease, matlabExecutable, matlabOptions, matlabStartup
-  matlab.matlabRelease = matlabRelease
-  matlab.matlabExecutable = matlabExecutable
-  matlab.matlabOptions = matlabOptions
-  matlab.matlabPath = matlabPath
-  matlab.matlabStartup = matlabStartup
-
-def getDocFile(filename):
-  """
-  Search doc file in doc path and if not found, in english documentation path.
-  """
-  global docPath, mainDocPath
-  path=os.path.join(docPath, filename)
-  if not os.path.exists(path):
-    path=os.path.join(mainDocPath, "en", filename)
-  return path
 
 class Translator:
   def __init__( self, lang=language ) :
@@ -986,12 +942,56 @@ class Translator:
       if os.path.exists( file ):
         yield file
 
-if _t_ is _defaultTranslateFunction:
-  try:
-    __builtin__.__dict__['_t_'] = Translator().translate
-  except Exception, msg:
-    __builtin__.__dict__['_t_'] = lambda x: x
-    sys.stderr.write( str(msg) + '\n' )
+def initGlobalVariables():
+  global mainPath, userProfile, homeBrainVISADir
+  for attr, value in readConfiguration( mainPath, userProfile, homeBrainVISADir ):
+    if isinstance( value, list ):
+      globals()[ attr ] += value
+    else:
+      globals()[ attr ] = value
+
+  # Clean pathes
+  global typesPath, dataPath, processesPath, fileSystemOntologiesPath, matlabPath
+  for p in ( typesPath, dataPath, processesPath, fileSystemOntologiesPath, matlabPath ):
+    i = 0
+    l = []
+    while i < len( p ):
+      if p[ i ] in l:
+        del p[ i ]
+      else:
+        l.append( p[ i ] )
+        i += 1
+
+  # Translations
+  global docPath, language, _defaultTranslateFunction
+  os.environ[ 'LANGUAGE' ] = language
+  docPath = os.path.join( docPath, language )
+  if _t_ is _defaultTranslateFunction:
+    try:
+      __builtin__.__dict__['_t_'] = Translator(language).translate
+    except Exception, msg:
+      __builtin__.__dict__['_t_'] = lambda x: x
+      sys.stderr.write( str(msg) + '\n' )
+
+  
+  # Set matlab options
+  from brainvisa import matlab
+  global matlabRelease, matlabExecutable, matlabOptions, matlabStartup
+  matlab.matlabRelease = matlabRelease
+  matlab.matlabExecutable = matlabExecutable
+  matlab.matlabOptions = matlabOptions
+  matlab.matlabPath = matlabPath
+  matlab.matlabStartup = matlabStartup
+
+def getDocFile(filename):
+  """
+  Search doc file in doc path and if not found, in english documentation path.
+  """
+  global docPath, mainDocPath
+  path=os.path.join(docPath, filename)
+  if not os.path.exists(path):
+    path=os.path.join(mainDocPath, "en", filename)
+  return path
 
 
 # Pathes for binaries and libraries
@@ -1009,11 +1009,6 @@ if _t_ is _defaultTranslateFunction:
       #os.environ[ libpathenv ]
   #else:
     #os.environ[ libpathenv ] = os.path.join( mainPath, 'lib', platform )
-
-
-
-
-
 
 
 # Setup GUI
