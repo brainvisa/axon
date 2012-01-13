@@ -1088,6 +1088,47 @@ class DiskItem:
       shelltools.rm( fp )
   
   
+  def isLockData( self):
+    """
+    Return True or False to know if a file is locked.
+    """
+    #print "-- FUNCTION isLockData : neuroDiskItems -- "
+    nameFileLock = str(self.fileName())  + ".lock"
+    #print "File to test"
+    #print nameFileLock
+    return os.path.isfile( nameFileLock )
+
+
+  def lockData( self):
+    """
+    function to lock file
+    add a filename.lock file if the filename exists
+    """
+    print "-- FUNCTION lockData : neuroDiskItems -- "
+    nameFileLock = str(self.fileName())  + ".lock"
+    if os.path.isfile( self.fileName()) :
+        print "File to lock" + nameFileLock
+        fd = open(nameFileLock, 'a')
+        fd.close()
+        return(True)
+    else : return(False)   
+    
+    
+  def unlockData( self):
+    """
+    function to unlock file
+    remove a .lock file 
+    """
+    #print "-- FUNCTION unlockData : neuroDiskItems -- "
+
+    nameFileLock = str(self.fileName())  + ".lock"
+    if os.path.isfile( nameFileLock ) :
+        fd = os.remove(nameFileLock)
+
+  
+  
+  
+  
 #----------------------------------------------------------------------------
 class File( DiskItem ):
   """
