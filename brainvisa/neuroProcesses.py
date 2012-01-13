@@ -2382,7 +2382,7 @@ class ExecutionContext:
    
             #test if data is locked       
             if v.isLockData() and (process.execution.__func__ != super(process.__class__, process).execution.__func__ ) :                
-              raise RuntimeError ( HTMLMessage(_t_('Locked file: <em>%s</em>. Please unlocked if necessary by clicking the right menu of the parameter') % (diskToTest.fileName() )))
+              raise RuntimeError ( HTMLMessage(_t_('Locked file: <em>%s</em>. Please unlock it if necessary by clicking the right menu of the parameter %s') % ( str(v), n ) ))
             #end test if data is locked  
    
             
