@@ -2363,13 +2363,29 @@ class ExecutionContext:
 
         converter = None
         for ( n, p ) in process.signature.items():
-          if isinstance( p, ReadDiskItem ) and p.enableConversion:
+          
+          #isa
+          print "boucle items"
+          print process.name
+          print n
+          print p
+          #isa
+          
+          
+          if isinstance( p, ReadDiskItem ) and p.enableConversion:            
             v = getattr( process, n )
             tmp = _getConvertedValue( v, p )
             if tmp is not None:
               process.setConvertedValue( n, tmp )
-          elif isinstance( p, WriteDiskItem ):
+          elif isinstance( p, WriteDiskItem ):  
             v = getattr( process, n )
+   
+            #test if data is locked       
+            if v.isLockData() and (process.execution.__func__ != super(process.__class__, process).execution.__func__ ) :                
+              raise RuntimeError ( HTMLMessage(_t_('Locked file: <em>%s</em>. Please unlocked if necessary by clicking the right menu of the parameter') % (diskToTest.fileName() )))
+            #end test if data is locked  
+   
+            
             if v is not None:
               v.createParentDirectory()
           elif isinstance( p, ListOf ):

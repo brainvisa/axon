@@ -49,6 +49,7 @@ import neuroData
 from brainvisa.wip import newProcess
 from brainvisa.history import ProcessExecutionEvent
 import neuroProcesses
+from neuroDiskItems import DiskItem
 from brainvisa.data.qtgui.updateDatabases import warnUserAboutDatabasesToUpdate
 import weakref
 from soma.minf.xhtml import XHTML
@@ -1144,6 +1145,7 @@ class ParameterLabel( QLabel ):
                                                    self.defaultChanged )
     self.default_id.setCheckable(True)
     self.default_id.setChecked( True )
+    self.addMenuLock()
     self.setAutoFillBackground(True)
     self.setBackgroundRole(QPalette.Window)
     
@@ -1155,35 +1157,141 @@ class ParameterLabel( QLabel ):
     self.contextMenu.exec_( e.globalPos() )
     e.accept()
 
-  def defaultChanged( self, checked=False ):
-    #self.default_id.toggle()
-    self.emit( SIGNAL( 'toggleDefault' ), self.parameterName )
-    if self.default_id.isChecked():
-      txt = unicode( self.text() )
-      if txt.startswith( '<img src=' ):
-        x = txt.find( '/> ' )
-        txt = txt[ x+3 : ]
-        self.setText( txt )
+  def setOptionMenu( self,  val_default_id, val_lock_id  ):
+    #CAS : val_default_id / val_lock_id 
+    #val_default_id = 0 pas valeur par defaut donc icone
+    #val_default_id = 1 valeur par defaut donc pas icone
+    text = '' #cas 0 / 0
+#    if 
+#        1 / 0 
+#        if 1 / 1
+#    else 0 / 1
+    
+    if val_default_id:
+        if val_lock_id : text =  text + '<img src="' + os.path.join( neuroConfig.iconPath, 'lock.png' ) + '" height="16"/> ' 
+    else :
+        text =  '<img src="' + os.path.join( neuroConfig.iconPath, 'modified.png' ) + '" height="16"/> ' 
+        if  val_lock_id  : text =  text + '<img src="' + os.path.join( neuroConfig.iconPath, 'lock.png' ) + '" height="16"/> ' 
+
+    return(text)
+
+  def addMenuLock( self ): 
+    self.lock_id = self.contextMenu.addAction( _t_( 'lock' ), self.lockChanged ) 
+    self.lock_id.setCheckable(False)
+    self.lock_id.setChecked( False )
+  
+
+  def readText( self, txt ):
+    """ Function to return the value of text without value of tag for images """ 
+    if unicode( txt).startswith( '<img src=' ):
+      x = txt.find( '/> ' )
+      txt = txt[ x+3 : ]
+      return txt
+    return txt
+      
+
+  def lockChanged( self, checked=False ):
+    """ This function is to lock or unlock data if a user click on the lock menu  """    
+    
+    
+    if self.lock_id.isChecked():
+      self.emit( SIGNAL( 'lock_system' ), self.parameterName ) 
+      #warning the value of lock_id can be become false if we can't write the lock file.
+      #For example, if you try to lock a file which doesn't exist
+      self.setlock(self.lock_id.isChecked()) #on remet à jour en fonction du resultat du lock du fichier
+      txt = self.setOptionMenu(self.default_id.isChecked(), self.lock_id.isChecked())
+      #print " ParameterLabel : lockChanged self.lock_id.isChecked() a true - val de self.text(): " + self.text()
     else:
-      if not unicode( self.text() ).startswith( '<img src=' ):
-        self.setText( '<img src="' \
-          + os.path.join( neuroConfig.iconPath, 'modified.png' ) \
-          + '" height="16"/> ' + self.text() )
+      self.emit( SIGNAL( 'unlock_system' ), self.parameterName )  
+      #txt = self.setOptionMenu(self.default_id.isChecked(), False) 
+      self.setlock(self.lock_id.isChecked()) #on remet à jour en fonction du resultat du unlock du fichier
+      txt = self.setOptionMenu(self.default_id.isChecked(), self.lock_id.isChecked())   
+      #print " ParameterLabel : lockChanged self.lock_id.isChecked() a false val de self.text() : " + self.text()
+
+    txt_value_parameter = self.readText(self.text())
+    while (self.readText(txt_value_parameter) != txt_value_parameter) :
+        txt_value_parameter = self.readText(txt_value_parameter)
+
+    txt = txt + txt_value_parameter
+    self.setText( unicode(txt) )
+                 
+          
+  def setlock( self, default):
+    """ This function is to set lock or unlock data """   
+    self.lock_id.setChecked(default)
+
+    txt = self.setOptionMenu(self.default_id.isChecked(), default)
+    
+    txt_value_parameter = self.readText(self.text())
+    while (self.readText(txt_value_parameter) != txt_value_parameter) :
+        txt_value_parameter = self.readText(txt_value_parameter)
+
+    txt = txt + txt_value_parameter
+    self.setText( unicode(txt) )
+    
+
+  def defaultChanged( self, checked=False ):
+    #print "-- FUNCTION defaultChanged : neuroProcessesGUI / ParameterLabel --" 
+    self.emit( SIGNAL( 'toggleDefault' ), self.parameterName )
+
+    txt = self.setOptionMenu(self.default_id.isChecked(), self.lock_id.isChecked())
+
+    txt_value_parameter = self.readText(self.text())
+    while (self.readText(txt_value_parameter) != txt_value_parameter) :
+        txt_value_parameter = self.readText(txt_value_parameter)
+
+    txt = txt + txt_value_parameter
+    self.setText(  unicode(txt) )
+    
 
 
   def setDefault( self, default ):
+    #print "-- FUNCTION setDefault : neuroProcessesGUI / ParameterLabel --" 
     self.default_id.setChecked( default )
-    if default:
-      txt = unicode( self.text() )
-      if txt.startswith( '<img src=' ):
-        x = txt.find( '/> ' )
-        txt = txt[ x+3 : ]
-        self.setText( txt )
-    else:
-      if not unicode( self.text() ).startswith( '<img src=' ):
-        self.setText( '<img src="' \
-          + os.path.join( neuroConfig.iconPath, 'modified.png' ) \
-          + '" height="16"/> ' + self.text() )
+    
+    #self.lockChanged()
+    
+    txt = self.setOptionMenu(self.default_id.isChecked(), self.lock_id.isChecked())
+
+    txt_value_parameter = self.readText(self.text())
+    while (self.readText(txt_value_parameter) != txt_value_parameter) :
+        txt_value_parameter = self.readText(txt_value_parameter)
+    
+    txt = txt + txt_value_parameter
+    self.setText(  unicode(txt))
+    
+
+
+
+  #def defaultChanged( self, checked=False ):
+    ##self.default_id.toggle()
+    #self.emit( SIGNAL( 'toggleDefault' ), self.parameterName )
+    #if self.default_id.isChecked():
+      #txt = unicode( self.text() )
+      #if txt.startswith( '<img src=' ):
+        #x = txt.find( '/> ' )
+        #txt = txt[ x+3 : ]
+        #self.setText( txt )
+    #else:
+      #if not unicode( self.text() ).startswith( '<img src=' ):
+        #self.setText( '<img src="' \
+          #+ os.path.join( neuroConfig.iconPath, 'modified.png' ) \
+          #+ '" height="16"/> ' + self.text() )
+
+
+  #def setDefault( self, default ):
+    #self.default_id.setChecked( default )
+    #if default:
+      #txt = unicode( self.text() )
+      #if txt.startswith( '<img src=' ):
+        #x = txt.find( '/> ' )
+        #txt = txt[ x+3 : ]
+        #self.setText( txt )
+    #else:
+      #if not unicode( self.text() ).startswith( '<img src=' ):
+        #self.setText( '<img src="' \
+          #+ os.path.join( neuroConfig.iconPath, 'modified.png' ) \
+          #+ '" height="16"/> ' + self.text() )
 
 
 #------------------------------------------------------------------------------
@@ -1259,6 +1367,14 @@ class ParameterizedWidget( QWidget ):
         hb.addWidget(l)
         l.setDefault(self.parameterized.isDefault( k ))
         self.connect( l, SIGNAL( 'toggleDefault' ), self._toggleDefault )
+        
+        if isinstance( p, neuroProcesses.WriteDiskItem ):         
+            l.lock_id.setCheckable(True)
+            l.setlock(self._setlock_system(k)) #ini la valeur de lock du parametre
+            #self.connect( l, SIGNAL( 'setlock_system' ), self._setlock_system )
+            self.connect( l, SIGNAL( 'lock_system' ), self._lock_system )
+            self.connect( l, SIGNAL( 'unlock_system' ), self._unlock_system )
+        
         l.setFixedWidth( maxwidth )
         self.labels[ k ] = l
         e = p.editor( None, k, weakref.proxy( self ) )
@@ -1345,14 +1461,24 @@ class ParameterizedWidget( QWidget ):
     self.editors[ parameterName ].setValue( value,
                                             default = default)
     self.labels[ parameterName ].setDefault( default )
+    
+    #lock system
+    self.labels[parameterName].setlock(self._setlock_system(parameterName))
+    
     self._doUpdateParameterValue = True
 
   def updateParameterValue( self, name, value ):
+    #lock system
+    self.labels[name].setlock(self._setlock_system(name))
+    
     if self._doUpdateParameterValue:
       setattr( self.parameterized, name, value )
 
   def removeDefault( self, name ):
-    self.parameterized.setDefault( name, False )
+    #lock system   
+    self.labels[ name ].setlock(self._setlock_system(name))
+    
+    self.parameterized.setDefault( name, False )  
     self.labels[ name ].setDefault( False )
 #lock#    self.btnLock[ name ].setPixmap( self.pixDefault )
 #lock#    self.btnLock[ name ].setOn( 1 )
@@ -1369,6 +1495,43 @@ class ParameterizedWidget( QWidget ):
 #lock#      self.btnLock[ name ].setPixmap( self.pixCustom )
 #lock#      self.btnLock[ name ].setOn( 0 )
 #lock#      self.btnLock[ name ].hide()
+
+
+  def _lock_system( self, name ):
+      """function for lock system : lock a diskItem if the file exists"""
+      #print "-- FUNCTION _lock_system  : neuroProcessesGUI / ParameterizedWidget-- "
+      #value = self.parameterized.__getattribute__(name)
+      value = getattr(self.parameterized, name, None)
+      
+      #if value is not None and isinstance( value, neuroProcesses.WriteDiskItem ): 
+      if value is not None : 
+          isLock = value.lockData()
+          if isLock : self.labels[name].lock_id.setChecked(True)
+          else : self.labels[name].lock_id.setChecked(False)
+
+
+  def _unlock_system( self, name ):
+      """function for lock system : unlock a file"""
+      #print "-- FUNCTION _unlock_system : neuroProcessesGUI / ParameterizedWidget-- "
+      #value = self.parameterized.__getattribute__(name)
+      value = getattr(self.parameterized, name, None)
+      #if value is not None and isinstance( value, neuroProcesses.WriteDiskItem ):  
+      if value is not None :  
+          value.unlockData()
+
+  
+  def _setlock_system( self, name ):
+      """function for lock system : lock a diskItem if the file exists"""
+      #from neuroDiskItems import DiskItem
+      #print "-- FUNCTION _setlock_system : neuroProcessesGUI / ParameterizedWidget-- "
+      #value = self.parameterized.__getattribute__(name)
+      value = getattr(self.parameterized, name, None)
+      
+      if value is not None and isinstance( value, DiskItem ):
+        valueToSet =  value.isLockData()
+        return valueToSet
+      else : 
+          return (False)
 
   def checkReadable( self ):
     for ( n, p ) in self.parameterized.signature.items():
