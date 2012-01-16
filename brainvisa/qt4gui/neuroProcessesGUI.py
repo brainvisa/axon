@@ -2162,6 +2162,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       input_file_processing = submission_dlg.combo_in_files.currentText()
       output_file_processing = submission_dlg.combo_out_files.currentText()
 
+      self.readUserValues()
       ptowf = ProcessToSomaWorkflow(self.process,
                                   input_file_processing = input_file_processing, 
                                   output_file_processing = output_file_processing)
