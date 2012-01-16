@@ -1104,10 +1104,10 @@ class DiskItem:
     function to lock file
     add a filename.lock file if the filename exists
     """
-    print "-- FUNCTION lockData : neuroDiskItems -- "
+    #print "-- FUNCTION lockData : neuroDiskItems -- "
     nameFileLock = str(self.fileName())  + ".lock"
     if os.path.isfile( self.fileName()) :
-        print "File to lock" + nameFileLock
+        #print "File to lock" + nameFileLock
         fd = open(nameFileLock, 'a')
         fd.close()
         return(True)

@@ -2363,14 +2363,7 @@ class ExecutionContext:
 
         converter = None
         for ( n, p ) in process.signature.items():
-          
-          #isa
-          print "boucle items"
-          print process.name
-          print n
-          print p
-          #isa
-          
+                  
           
           if isinstance( p, ReadDiskItem ) and p.enableConversion:            
             v = getattr( process, n )
