@@ -3737,7 +3737,7 @@ def mainThreadActions():
 def initializeProcessesGUI():
   global _mainThreadActions, _computing_resource_pool, _workflow_application_model
   _mainThreadActions = QtThreadCall()
-  if _soma_workflow and neuroConfig.userLevel >= 3:
+  if _soma_workflow and neuroConfig.userLevel >= 1:
     _computing_resource_pool = ComputingResourcePool()
     _computing_resource_pool.add_default_connection()
     _workflow_application_model = WorkflowApplicationModel(_computing_resource_pool)
