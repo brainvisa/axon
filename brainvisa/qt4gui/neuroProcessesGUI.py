@@ -1644,7 +1644,8 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     self.action_run = QAction(_t_('Run') , self)
     self.action_run.triggered.connect(self._run)
    
-    self.action_run_with_sw = QAction(_t_('Run with soma-workflow'), self)
+    self.action_run_with_sw = QAction(_t_('Run in parallel'), self)
+    self.action_run_with_sw.setToolTip('Run in parallel using Soma-workflow')
     self.action_run_with_sw.triggered.connect(self._run_with_soma_workflow) 
 
     self.action_interupt = QAction(_t_('Interrupt'), self)
