@@ -2373,9 +2373,10 @@ class ExecutionContext:
           elif isinstance( p, WriteDiskItem ):  
             v = getattr( process, n )
    
-            #test if data is locked       
-            if v.isLockData() and (process.execution.__func__ != super(process.__class__, process).execution.__func__ ) :                
-              raise RuntimeError ( HTMLMessage(_t_('Locked file: <em>%s</em>. Please unlock it if necessary by clicking the right menu of the parameter %s') % ( str(v), n ) ))
+            #test if data is locked
+            if  (v is not None ):     
+              if v.isLockData() and (process.execution.__func__ != super(process.__class__, process).execution.__func__ ) :                
+                raise RuntimeError ( HTMLMessage(_t_('Locked file: <em>%s</em>. Please unlock it if necessary by clicking the right menu of the parameter %s') % ( str(v), n ) ))
             #end test if data is locked  
    
             
