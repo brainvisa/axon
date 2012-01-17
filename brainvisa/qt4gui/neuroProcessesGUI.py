@@ -1198,13 +1198,13 @@ class ParameterLabel( QLabel ):
       self.emit( SIGNAL( 'lock_system' ), self.parameterName ) 
       #warning the value of lock_id can be become false if we can't write the lock file.
       #For example, if you try to lock a file which doesn't exist
-      self.setlock(self.lock_id.isChecked()) #on remet à jour en fonction du resultat du lock du fichier
+      self.setlock(self.lock_id.isChecked()) #on remet a jour en fonction du resultat du lock du fichier
       txt = self.setOptionMenu(self.default_id.isChecked(), self.lock_id.isChecked())
       #print " ParameterLabel : lockChanged self.lock_id.isChecked() a true - val de self.text(): " + self.text()
     else:
       self.emit( SIGNAL( 'unlock_system' ), self.parameterName )  
       #txt = self.setOptionMenu(self.default_id.isChecked(), False) 
-      self.setlock(self.lock_id.isChecked()) #on remet à jour en fonction du resultat du unlock du fichier
+      self.setlock(self.lock_id.isChecked()) #on remet a jour en fonction du resultat du unlock du fichier
       txt = self.setOptionMenu(self.default_id.isChecked(), self.lock_id.isChecked())   
       #print " ParameterLabel : lockChanged self.lock_id.isChecked() a false val de self.text() : " + self.text()
 
@@ -1368,7 +1368,7 @@ class ParameterizedWidget( QWidget ):
         l.setDefault(self.parameterized.isDefault( k ))
         self.connect( l, SIGNAL( 'toggleDefault' ), self._toggleDefault )
         
-        if isinstance( p, neuroProcesses.WriteDiskItem ):         
+        if isinstance( p, neuroProcesses.ReadDiskItem ):         
             l.lock_id.setCheckable(True)
             l.setlock(self._setlock_system(k)) #ini la valeur de lock du parametre
             #self.connect( l, SIGNAL( 'setlock_system' ), self._setlock_system )
@@ -1387,7 +1387,7 @@ class ParameterizedWidget( QWidget ):
         if first is None: first = e
         v = getattr( self.parameterized, k, None )
         if v is not None: 
-          e.setValue( v, 1 )
+          self.setValue( k, v, 1 )
         e.connect( e, SIGNAL('noDefault'), self.removeDefault )
         e.connect( e, SIGNAL('newValidValue'), self.updateParameterValue )
 #lock#        btn = NamedPushButton( hb, k )
@@ -1458,7 +1458,7 @@ class ParameterizedWidget( QWidget ):
     self.readUserValues()
     self._doUpdateParameterValue = False
     default=parameterized.isDefault( parameterName )
-    self.editors[ parameterName ].setValue( value,
+    self.setValue( parameterName, value,
                                             default = default)
     self.labels[ parameterName ].setDefault( default )
     
@@ -1548,7 +1548,14 @@ class ParameterizedWidget( QWidget ):
 
   def setValue( self, parameterName, value, default=0 ):
     'Set the value of a parameter'
+    oldValue=self.editors[ parameterName ].getValue()
     self.editors[ parameterName ].setValue( value, default = default )
+    # use signals-slots to update the parameter label gui if the lock status of the matching value changes.
+    # DiskItems now inherit from QObject and emit lockChanged signal when the lock changes
+    if isinstance(oldValue, QObject):
+      self.disconnect(oldValue, SIGNAL("lockChanged"), self.labels[parameterName].setlock)
+    if isinstance(value, QObject):
+      self.connect(value, SIGNAL("lockChanged"), self.labels[parameterName].setlock )
 
 
 #----------------------------------------------------------------------------

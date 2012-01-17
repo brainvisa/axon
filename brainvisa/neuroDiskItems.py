@@ -113,6 +113,7 @@ from brainvisa.data import temporary
 from brainvisa.data.patterns import DictPattern
 from brainvisa import shelltools
 from brainvisa.multipleExecfile import MultipleExecfile
+from PyQt4.QtCore import QObject, SIGNAL
 
 #----------------------------------------------------------------------------
 def sameContent( a, b ):
@@ -154,7 +155,7 @@ def modificationHashOrEmpty( f ):
 
 
 #----------------------------------------------------------------------------
-class DiskItem:
+class DiskItem(QObject):
   """
   This class represents data stored in one or several files on a filesystem.
   It can have additional information stored in attributes and may be indexed in a Brainvisa database.
@@ -193,6 +194,7 @@ class DiskItem:
   _minfLock=RLock()
   
   def __init__( self, name, parent ):
+    super(DiskItem, self).__init__()
     self.name = name
     if name and name[ -5: ] != '.minf': 
       self._files = [ name ]
@@ -1110,6 +1112,7 @@ class DiskItem:
         #print "File to lock" + nameFileLock
         fd = open(nameFileLock, 'a')
         fd.close()
+        self.emit(SIGNAL("lockChanged"), True)
         return(True)
     else : return(False)   
     
@@ -1123,6 +1126,7 @@ class DiskItem:
 
     nameFileLock = str(self.fileName())  + ".lock"
     if os.path.isfile( nameFileLock ) :
+        self.emit(SIGNAL("lockChanged"), False)
         fd = os.remove(nameFileLock)
 
   
