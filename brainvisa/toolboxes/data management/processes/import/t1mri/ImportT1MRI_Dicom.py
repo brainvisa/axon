@@ -33,7 +33,7 @@
 from neuroProcesses import *
 
 
-name = 'Import T1MRI (Dicom directory)'
+name = 'Import Dicom T1 MRI'
 userLevel=0
 
 signature=Signature(
@@ -41,7 +41,7 @@ signature=Signature(
     'output', WriteDiskItem( 'Raw T1 MRI', [ 'NIFTI-1 image', 'gz compressed NIFTI-1 image', 'GIS image' ] ),
     )
 
-
+ 
 def initialization( self ):
   pass
 

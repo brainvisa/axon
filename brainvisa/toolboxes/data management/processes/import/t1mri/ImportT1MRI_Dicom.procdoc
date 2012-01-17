@@ -2,7 +2,9 @@
 <minf expander="minf_2.0">
 <d>
   <d name="en">
-    <xhtml name="short">This process imports T1 MRI data into a BrainVISA database. The input data is a directory containing Dicom images. It is converted to a Nifti 3D volume before importation in the BrainVISA database. Select the input Dicom directory with the file browser icon. Enter the database attributes of the data with the red database button. 
+    <xhtml name="short"><p>This process imports T1 MRI data into a BrainVISA database.</p>
+<p>The input data is a directory containing Dicom images. It is converted to a Nifti 3D volume using <b>Mricron dcm2nii tool</b> before importation in the BrainVISA database.</p>
+<p>Select the input Dicom directory with the file browser icon. Enter the database attributes of the data with the red database button. </p>
 </xhtml>
     <d name="parameters">
       <xhtml name="output">The data that will be imported in the database.</xhtml>
