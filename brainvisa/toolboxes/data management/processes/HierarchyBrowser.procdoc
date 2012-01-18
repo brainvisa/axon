@@ -3,9 +3,9 @@
 <d>
   <d name="fr">
     <xhtml name="short">Ce traitement permet de visualiser l'organisation des données dans les bases de données sélectionnées. Il permet aussi d'avoir des informations détaillées sur les fichiers enregistrés dans les bases. </xhtml>
+    <xhtml name="long"/>
     <d name="parameters">
     </d>
-    <xhtml name="long"/>
   </d>
   <d name="en">
     <xhtml name="short">This process is usefull to explore and manage databases. It shows data organization in selected databases and detailled information about files stored in databases. </xhtml>
@@ -14,12 +14,14 @@
     <xhtml name="long"><img src="../../images/database_browser.png" width="600"/>
 <h2>Features</h2>
 <ul>
-<li>Database explorer in the left pannel shows directories and files that are <b>identified in BrainVISA hierarchy</b>. Unknown files are printed with a ? icon and unknwon directories content cannot be explored.</li>
-<li>When an item is selected, <b>detailled information</b> about it isprovided in the right pannel.</li>
+<li>Database browser shows in the left panel directories and files that are <b>identified in BrainVISA hierarchy</b>. Unknown files are printed with a <img src="../../bv_man/en/html/images/unknown.png"/> icon and unknwon directories content cannot be explored.</li>
+<li>When an item is selected, <b>detailled information</b> about it is provided in the right panel.</li>
 <li>It is possible to <b>perform actions</b> on selected data using contextual menu : view, remove.</li>
 <li>You can <b>search data</b> with the "Search" button. A form appears to choose the search parameters. Search results are presented in the database explorer under a new node : "Search results".</li>
 <li>You can use drag and drop to <b>copy files or filenames</b> in a console or a file system explorer.</li>
-</ul></xhtml>
+</ul>
+
+<p>More information about this process in <a href="../../bv_man/en/html/ch04s06.html">Brainvisa manual</a></p></xhtml>
   </d>
 </d>
 </minf>
