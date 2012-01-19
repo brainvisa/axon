@@ -459,7 +459,15 @@ class SQLDatabase( Database ):
     if context is not None:
       context.write( self.name + ': parse directories and insert items' )
     t0 = time.time()
-    self.insertDiskItems( ( i for i in self.scanDatabaseDirectories( directoriesToScan=directoriesToScan, recursion=recursion, context=context ) if i.type is not None ), update=True )
+    diskitems=[]
+    for i in self.scanDatabaseDirectories( directoriesToScan=directoriesToScan, recursion=recursion, context=context ):
+      if i.type is not None:
+        if i.isReadable():
+          diskitems.append(i)
+        else:
+          if context is not None:
+            context.warning("The data ",i.fullPath(), "is not readable.")
+    self.insertDiskItems( diskitems, update=True )
     duration = time.time() - t0
     cursor = self._getDatabaseCursor()
     try:
@@ -895,8 +903,10 @@ class SQLDatabase( Database ):
       stack = [ ( DirectoryIterator(self.directory), scanner, { }, 0 ) ]
     else:
       stack = [ ( directoriesIterator, scanner, {  }, 0 ) ]
+
     while stack:
       itDirectory, scanner, attributes, priorityOffset = stack.pop( 0 )
+      
 
       f = itDirectory.fullPath()
       if directoriesToScan is not None:
