@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -60,9 +61,12 @@ from neuroException import showException, showWarning
 import neuroConfig
 
 global databaseVersion
-databaseVersion="2.0" 
+databaseVersion='2.1' 
 # mapping between databases versions and axon versions : database version -> first axon version where this database version is used
-databaseVersions={ "1.0" : "3.1.0", "1.1" : "3.2.0"}
+databaseVersions={ '1.0': '3.1.0', 
+                   '1.1': '3.2.0',
+                   '2.0': '4.0.0',
+                   '2.1': '4.2.0' }
 
 def initializeDatabases():
   """
