@@ -50,9 +50,12 @@ signature = Signature(
  )
 
 def initialization(self):
-  databases=[(h.name, h) for h in reversed(neuroHierarchy.hierarchies())]
+  databases=[(dbs.directory, neuroHierarchy.databases.database(dbs.directory)) for dbs in neuroConfig.dataPath if not dbs.builtin]
   self.signature['database'].setChoices(*databases)
-  self.database=databases[0][1]
+  if databases:
+    self.database=databases[0][1]
+  else:
+    self.database=None
   self.segment_default_destination="t1mri"
   self.graphe_default_destination="t1mri_folds"
   self.undo=False
