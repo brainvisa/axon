@@ -58,14 +58,14 @@ class UpdateDatabasesGUI( qt.QWidget ):
     layout.addWidget( self.lvDatabases )
     
     lastItem = None
-    selected = False
-    for database in neuroHierarchy.databases.iterDatabases():
+    for dbs in neuroConfig.dataPath:
+      database=neuroHierarchy.databases.database(dbs.directory)
+      selected=not dbs.builtin
       item = qt.QListWidgetItem( database.name, self.lvDatabases )
       if selected:
         item.setCheckState(qt.Qt.Checked)
       else:
         item.setCheckState(qt.Qt.Unchecked)
-      selected = True
 
     layout1 = qt.QHBoxLayout()
     layout1.setMargin(0)

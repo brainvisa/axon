@@ -60,11 +60,6 @@ def execution( self, context ):
     database.clear( context=context )
     context.write( '<b>Update database:', database.name, '</b>' )
     database.update( context=context )
-    try:
-      del database._mustBeUpdated
-    except AttributeError:
-      pass
-
 
 def inlineGUI( self, values, context, parent, externalRunButton=False ):
   result = UpdateDatabasesGUI( parent )

@@ -477,6 +477,7 @@ class SQLDatabase( Database ):
       self._closeDatabaseCursor( cursor )
     if context is not None:
       context.write( self.name + ':', fileCount, 'files are stored as', diskItemCount, 'DiskItems in', timeDifferenceToString( duration ) )
+    self._mustBeUpdated=False
 
   
   def clear( self, context=None ):
