@@ -37,7 +37,7 @@
 '''
 
 from backwardCompatibleQt import *
-from sets import Set
+
 import operator
 from brainvisa.validation import ValidationError
 qwtAvailable=True
@@ -165,7 +165,7 @@ if qwtAvailable:
       self.lbxItems.clear()
       self.lbxFeatures.clear()
       
-      features = Set()
+      features = set()
       names = self.data.keys()
       names.sort()
       for name in names:
