@@ -145,7 +145,7 @@ class DatabaseSettings( HasSignature ):
     self.expert_settings = ExpertDatabaseSettings()
     if directory :
       if os.path.exists( directory ) :
-        self.directory = directory
+        self.directory = os.path.normpath(directory)
         self._selected = selected
       else :
         self._selected = False
