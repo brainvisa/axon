@@ -81,6 +81,7 @@ try:
   import soma.workflow.gui.workflowGui
   from soma.workflow.gui.workflowGui import ComputingResourcePool
   from soma.workflow.gui.workflowGui import ApplicationModel as WorkflowApplicationModel
+  import soma.workflow.configuration
 except ImportError:
   _soma_workflow = False
   class ComputingResourceWidget(object): pass
@@ -2159,7 +2160,6 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       if resource_id != _workflow_application_model.current_resource_id:
         _workflow_application_model.set_current_connection(resource_id)
 
-     
       qtdt = submission_dlg.dateTimeEdit_expiration.dateTime()
       date = datetime(qtdt.date().year(), qtdt.date().month(), qtdt.date().day(), 
                       qtdt.time().hour(), qtdt.time().minute(), qtdt.time().second())
@@ -2169,10 +2169,17 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       input_file_processing = submission_dlg.combo_in_files.currentText()
       output_file_processing = submission_dlg.combo_out_files.currentText()
 
+      brainvisa_cmd = 'brainvisa'
+      if sys.platform == 'win32':
+        sw_mode = _computing_resource_pool.connection(resource_id).config.get_mode()
+        if sw_mode != soma.workflow.configuration.REMOTE_MODE:
+          brainvisa_cmd = 'brainvisa.bat'
+
       self.readUserValues()
       ptowf = ProcessToSomaWorkflow(self.process,
-                                  input_file_processing = input_file_processing, 
-                                  output_file_processing = output_file_processing)
+                                  input_file_processing=input_file_processing, 
+                                  output_file_processing=output_file_processing,
+                                  brainvisa_cmd=brainvisa_cmd)
       workflow = ptowf.doIt()
 
       name = unicode(submission_dlg.lineedit_wf_name.text())

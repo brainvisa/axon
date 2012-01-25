@@ -33,6 +33,8 @@ class ProcessToWorkflow( object ):
     # self._iofiles = fileId -> (list of job for which the file is an input, list of job for which the file is an output) 
     self._iofiles = {}
   
+    self.brainvisa_cmd = 'brainvisa'
+  
   def _createIdentifier( self, type ):
     count = self._identifiers.get( type, 0 ) + 1
     self._identifiers[ type ] = count
@@ -249,7 +251,7 @@ class ProcessToWorkflow( object ):
 
 
   def _create_job( self, depth, jobId, process, inGroup, priority ):
-    command = [ 'brainvisa', '-r', process.id() ]
+    command = [ self.brainvisa_cmd, '-r', process.id() ]
     for name in process.signature.keys():
       value = getattr( process, name )
       if isinstance( value, DiskItem ):
@@ -372,8 +374,9 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
   def __init__( self, 
                 process, 
                 output = None, 
-                input_file_processing =  "no_file_processing", 
-                output_file_processing =  "no_file_processing"):
+                input_file_processing="use local path", 
+                output_file_processing="use local path",
+                brainvisa_cmd="brainvisa"):
     super( ProcessToSomaWorkflow, self ).__init__( process )
     self.__out = output
     
@@ -385,6 +388,8 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
     
     self.__input_file_processing = input_file_processing
     self.__output_file_processing = output_file_processing
+    
+    self.brainvisa_cmd = brainvisa_cmd
     
   def doIt( self ):
     
