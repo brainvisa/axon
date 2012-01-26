@@ -4452,7 +4452,8 @@ def updateProcesses():
   Called when option userLevel has changed (neuroConfigGUI.validateOptions()).
   Associated widgets will be updated automatically because they listens for changes.
   """
-  _mainProcessTree.update()
+  if _mainProcessTree is not None:
+    _mainProcessTree.update()
 
 #----------------------------------------------------------------------------
 def mainThread():
