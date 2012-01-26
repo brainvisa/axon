@@ -86,6 +86,7 @@ class ExpertDatabaseSettings( HasSignature ):
     'login', Unicode(),  dict( defaultValue='', visible = False ), 
     'password', Unicode(), dict( defaultValue='', visible = False ), 
     'activate_history', Boolean, dict( defaultValue=False ),
+    'uuid', Unicode(), dict( defaultValue='', visible = False)
   )
 
   def __init__( self ):
