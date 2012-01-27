@@ -586,12 +586,9 @@ def editConfiguration():
     dataPath = newDataPath
     neuroHierarchy.openDatabases()
     warnUserAboutDatabasesToUpdate()
-  somaWorklowTranslation = open( os.path.join( homeBrainVISADir, 'soma-workflow.translation' ), 'w' )
-  for db in neuroHierarchy.databases.iterDatabases():
-    uuid = getattr( db, 'uuid', None )
-    if uuid:
-      print >> somaWorklowTranslation, uuid, db.name
-  somaWorklowTranslation.close()
+
+  neuroHierarchy.update_soma_workflow_translations()
+
   if userLevel != configuration.brainvisa.userLevel:
     userLevel = configuration.brainvisa.userLevel
     neuroProcesses.updateProcesses()

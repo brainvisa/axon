@@ -370,13 +370,20 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
   NO_FILE_PROCESSING = "use local path"
   FILE_TRANSFER = "transfer files"
   SHARED_RESOURCE_PATH = "use path translation"
+  BV_DB_SHARED_PATH = "path translation for BrainVISA db"
   
   def __init__( self, 
                 process, 
                 output = None, 
                 input_file_processing="use local path", 
                 output_file_processing="use local path",
-                brainvisa_cmd="brainvisa"):
+                brainvisa_cmd="brainvisa",
+                brainvisa_db=None):
+    '''
+    brainvisa_db: list of the brainvisa db uuid which will be used in the case 
+    of the option: BV_DB_SHARED_PATH
+    '''
+
     super( ProcessToSomaWorkflow, self ).__init__( process )
     self.__out = output
     
@@ -390,7 +397,12 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
     self.__output_file_processing = output_file_processing
     
     self.brainvisa_cmd = brainvisa_cmd
-    
+    if brainvisa_db == None:
+      self.brainvisa_db = []
+    else:
+      self.brainvisa_db = brainvisa_db
+
+
   def doIt( self ):
     
     self.__jobs = {}
@@ -473,8 +485,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
   
   
   
-  def create_input_file( self, fileId, fileName, fullPaths = None, databaseUuid = None, database_dir = None ):
-    
+  def create_input_file( self, fileId, fileName, fullPaths = None, databaseUuid = None, database_dir = None ): 
     if not self.__input_file_processing == self.NO_FILE_PROCESSING:
       #print 'create_input_file' + repr( ( fileId, os.path.basename( fileName ), fullPaths, databaseUuid, database_dir ) )
       if self.__input_file_processing == self.FILE_TRANSFER:
@@ -488,6 +499,11 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
           global_in_file= SharedResourcePath(relative_path = fileName[(len(database_dir)+1):], namespace = "brainvisa", uuid = databaseUuid)  
         else: 
           raise RuntimeError('Cannot find database uuid for file %s' %(repr(fileName)))
+      elif self.__input_file_processing == self.BV_DB_SHARED_PATH:
+        if databaseUuid and databaseUuid in self.brainvisa_db:
+          global_in_file= SharedResourcePath(relative_path = fileName[(len(database_dir)+1):], namespace = "brainvisa", uuid = databaseUuid)  
+        else:
+          return 
         
         
       if global_in_file:

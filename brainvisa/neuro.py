@@ -197,16 +197,8 @@ def main():
     if not neuroConfig.noToolBox and not neuroConfig.fastStart:
       openDatabases()
     
-    somaWorklowTranslation = open( os.path.join( homeBrainVISADir, 'soma-workflow.translation' ), 'w' )
-    print "translation"
-    for db in neuroHierarchy.databases.iterDatabases():
-      uuid = getattr( db, 'uuid', None )
-      if uuid:
-        print >> somaWorklowTranslation, uuid, db.name
-      print "  " + repr(db.name) + repr(uuid)
-    print "end translation"
-    somaWorklowTranslation.close()   
- 
+    neuroHierarchy.update_soma_workflow_translations()
+   
     readProcesses( neuroConfig.processesPath )
     
     nbDatabases=len(neuroHierarchy.databases._databases)

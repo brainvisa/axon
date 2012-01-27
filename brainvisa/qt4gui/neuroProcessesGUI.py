@@ -268,11 +268,15 @@ class WorkflowSubmissionDlg(QDialog):
     self.combo_resource.setCurrentIndex(current_resource_index)
     self.resource_changed(current_resource_index)
 
+   
+
     kind_of_file_processing = [ProcessToSomaWorkflow.NO_FILE_PROCESSING,    
                                ProcessToSomaWorkflow.FILE_TRANSFER,
                                ProcessToSomaWorkflow.SHARED_RESOURCE_PATH]
-    self.combo_in_files.addItems(kind_of_file_processing)
     self.combo_out_files.addItems(kind_of_file_processing)
+    kind_of_file_processing.append(ProcessToSomaWorkflow.BV_DB_SHARED_PATH)
+    self.combo_in_files.addItems(kind_of_file_processing)
+    
 
     self.lineedit_wf_name.setText("")
     self.dateTimeEdit_expiration.setDateTime(datetime.now() + timedelta(days=5))
@@ -2175,10 +2179,23 @@ class ProcessView( QWidget, ExecutionContextGUI ):
           brainvisa_cmd = 'brainvisa.bat'
 
       self.readUserValues()
+
+      builtin_db = []
+      if input_file_processing == ProcessToSomaWorkflow.BV_DB_SHARED_PATH:
+        for db_setting in neuroConfig.dataPath:
+          if db_setting.builtin:
+            uuid = db_setting.expert_settings.uuid
+            if uuid:
+              builtin_db.append(uuid)
+            else:
+              print "warning ! db " + repr(db_setting.directory) + " has no uuid."
+        print "==> buildin db " + repr(builtin_db)
+
       ptowf = ProcessToSomaWorkflow(self.process,
                                   input_file_processing=input_file_processing, 
                                   output_file_processing=output_file_processing,
-                                  brainvisa_cmd=brainvisa_cmd)
+                                  brainvisa_cmd=brainvisa_cmd,
+                                  brainvisa_db=builtin_db)
       workflow = ptowf.doIt()
 
       name = unicode(submission_dlg.lineedit_wf_name.text())
@@ -2458,40 +2475,55 @@ class ProcessView( QWidget, ExecutionContextGUI ):
   
   
   def createWorkflow( self ):
+    from brainvisa.workflow import ProcessToSomaWorkflow
     class Options( HasSignature ):
       signature = SomaSignature(
         'output', 
         SomaFileName, 
         dict( doc='Name of the output workflow file.' ),
         'input_file_processing', 
-        SomaChoice( ( _t_( 'use local paths' ), 0 ), 
-                    ( _t_( 'transfer files' ), 1 ), 
-                    ( _t_( 'use shared paths' ), 2 ) ),
+        SomaChoice( ( _t_( ProcessToSomaWorkflow.NO_FILE_PROCESSING ), 0 ), 
+                    ( _t_( ProcessToSomaWorkflow.FILE_TRANSFER ), 1 ), 
+                    ( _t_( ProcessToSomaWorkflow.SHARED_RESOURCE_PATH ), 2 ),
+                    ( _t_( ProcessToSomaWorkflow.BV_DB_SHARED_PATH ), 3 )),
         dict( defaultValue=0 ),
         'output_file_processing', 
-        SomaChoice( ( _t_( 'use local paths' ), 0 ), 
-                    ( _t_( 'transfer files' ), 1 ), 
-                    ( _t_( 'use shared paths' ), 2 ) ),
+        SomaChoice( ( _t_( ProcessToSomaWorkflow.NO_FILE_PROCESSING ), 0 ), 
+                    ( _t_( ProcessToSomaWorkflow.FILE_TRANSFER ), 1 ), 
+                    ( _t_( ProcessToSomaWorkflow.SHARED_RESOURCE_PATH ), 2 )),
         dict( defaultValue=0 )
       )
     options = Options()
     if ApplicationQt4GUI().edit( options ):
-      from brainvisa.workflow import ProcessToSomaWorkflow
       input_file_processing = ProcessToSomaWorkflow.NO_FILE_PROCESSING
       if options.input_file_processing == 1:
         input_file_processing = ProcessToSomaWorkflow.FILE_TRANSFER
       if options.input_file_processing == 2:
         input_file_processing = ProcessToSomaWorkflow.SHARED_RESOURCE_PATH
+      if options.input_file_processing == 3:
+        input_file_processing = ProcessToSomaWorkflow.BV_DB_SHARED_PATH
       output_file_processing = ProcessToSomaWorkflow.NO_FILE_PROCESSING
       if options.output_file_processing == 1:
         output_file_processing = ProcessToSomaWorkflow.FILE_TRANSFER
       if options.output_file_processing == 2:
         output_file_processing = ProcessToSomaWorkflow.SHARED_RESOURCE_PATH
-      
+ 
+      builtin_db = []
+      if input_file_processing == ProcessToSomaWorkflow.BV_DB_SHARED_PATH:
+        for db_setting in neuroConfig.dataPath:
+          if db_setting.builtin:
+            uuid = db_setting.expert_settings.uuid
+            if uuid:
+              builtin_db.append(uuid)
+            else:
+              print "warning ! db " + repr(db_setting.directory) + " has no uuid."
+        print "==> buildin db " + repr(builtin_db)
+
       ptowf = ProcessToSomaWorkflow(self.process, 
                                   options.output, 
                                   input_file_processing = input_file_processing, 
-                                  output_file_processing = output_file_processing)
+                                  output_file_processing = output_file_processing,
+                                  brainvisa_db=builtin_db)
       ptowf.doIt()
   
   def _iterateButton( self ):
