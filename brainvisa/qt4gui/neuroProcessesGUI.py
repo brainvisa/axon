@@ -2189,7 +2189,6 @@ class ProcessView( QWidget, ExecutionContextGUI ):
               builtin_db.append(uuid)
             else:
               print "warning ! db " + repr(db_setting.directory) + " has no uuid."
-        print "==> buildin db " + repr(builtin_db)
 
       ptowf = ProcessToSomaWorkflow(self.process,
                                   input_file_processing=input_file_processing, 
@@ -2517,7 +2516,6 @@ class ProcessView( QWidget, ExecutionContextGUI ):
               builtin_db.append(uuid)
             else:
               print "warning ! db " + repr(db_setting.directory) + " has no uuid."
-        print "==> buildin db " + repr(builtin_db)
 
       ptowf = ProcessToSomaWorkflow(self.process, 
                                   options.output, 

@@ -160,14 +160,11 @@ def hierarchies():
 def update_soma_workflow_translations():
   if not neuroConfig.fastStart:
     translation_file = open( os.path.join( neuroConfig.homeBrainVISADir, 'soma-workflow.translation' ), 'w' )
-    print ">>> translation"
     for db in databases.iterDatabases():
       uuid = getattr( db, 'uuid', None )
       if uuid:
         print >> translation_file, uuid, db.name
       else:
         print "warning: " + repr(db.name) + " has no uuid"
-      print "  " + repr(db.name) + repr(uuid)
-    print "<<<< end translation"
     translation_file.close()   
 
