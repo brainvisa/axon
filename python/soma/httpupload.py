@@ -68,7 +68,7 @@ import os
 import thread
 import threading
 import tempfile
-import sha
+import hashlib
 import signal
 import string
 import sys
@@ -122,7 +122,7 @@ def checkSha1( content, sha1 ) :
     
     - returns: True if the content matches the sha1 key, False otherwise.
   '''
-  digest = sha.new( content )
+  digest = hashlib.sha1( content )
   return ( digest.hexdigest() == sha1 )
   
 @synchronized
