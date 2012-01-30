@@ -49,10 +49,10 @@ class SPMConfiguration( ConfigurationGroup ):
   icon = 'matlab.png'
   signature = Signature(
     'check_spm_path', Boolean, dict( defaultValue=True, doc='check where SPM is installed (needs to run matlab)' ),
-    'spm8_path', FileName, dict( defaultValue='', doc='location of SPM 8 installation directory' ),
-    'spm8_standalone_command', FileName, dict( defaultValue='', doc='location of SPM 8 standalone (compiled) run script' ),
-    'spm8_standalone_mcr_path', FileName, dict( defaultValue='', doc='location of SPM 8 standalone MCR directory (generally &lt;spm8&gt;/standalone/mcr/v713' ),
-    'spm5_path', FileName, dict( defaultValue='', doc='location of SPM 5 installation directory' ),
+    'spm8_path', FileName( directoryOnly=True ), dict( defaultValue='', doc='location of SPM 8 installation directory' ),
+    'spm8_standalone_command', FileName( readOnly=True ), dict( defaultValue='', doc='location of SPM 8 standalone (compiled) run script' ),
+    'spm8_standalone_mcr_path', FileName( directoryOnly=True ), dict( defaultValue='', doc='location of SPM 8 standalone MCR directory (generally &lt;spm8&gt;/standalone/mcr/v713' ),
+    'spm5_path', FileName( directoryOnly=True ), dict( defaultValue='', doc='location of SPM 5 installation directory' ),
   )
 
   def _get_spm5_path( self ):

@@ -53,7 +53,7 @@ class MatlabConfiguration( ConfigurationGroup ):
     optdef += u' -wait'
   signature = Signature(
     'enable_matlab', Boolean, dict( defaultValue=False, doc='if unchecked, matlab is disabled' ),
-    'executable', FileName, dict( defaultValue='matlab', doc='location of the Matlab program' ),
+    'executable', FileName( readOnly=True ), dict( defaultValue='matlab', doc='location of the Matlab program' ),
     'version', Unicode, dict( defaultValue=u'', doc='Matlab version' ),
     'options', Unicode, dict( defaultValue=optdef, doc='Options passed to Matlab executable.' ),
     'path', Sequence( Unicode ), dict( defaultValue=[], doc='List of directories that will be added to Matlab path.' ),

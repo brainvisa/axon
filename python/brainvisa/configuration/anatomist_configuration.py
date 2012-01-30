@@ -50,5 +50,5 @@ class AnatomistConfiguration( ConfigurationGroup ):
   label = 'Anatomist'
   icon = 'anaIcon_small.png'
   signature = Signature(
-    'executable', FileName, dict( defaultValue='anatomist', doc='Location of Anatomist program.' ),
+    'executable', FileName( readOnly=True ), dict( defaultValue='anatomist', doc='Location of Anatomist program.' ),
   )

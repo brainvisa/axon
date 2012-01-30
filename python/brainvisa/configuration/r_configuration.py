@@ -59,6 +59,6 @@ class RConfiguration( ConfigurationGroup ):
   label = 'R'
   icon = 'Rlogo_small.png'
   signature = Signature(
-    'executable', FileName, dict( defaultValue=defaultExecutable, doc='Location of R program.' ),
+    'executable', FileName( readOnly=True ), dict( defaultValue=defaultExecutable, doc='Location of R program.' ),
     'options', Unicode, dict( defaultValue=defaultOptions, doc='Options passed to R program.' ),
   )
