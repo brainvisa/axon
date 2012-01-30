@@ -61,7 +61,7 @@ class ProcessToWorkflow( object ):
       if isinstance( pENode, ParallelExecutionNode ):
         process = getattr( eNode, '_process', None )
         if process is None:
-          label = None
+          label = eNode.name()
         else:
           label = process.name
         # Create parallel group
@@ -84,7 +84,7 @@ class ProcessToWorkflow( object ):
       elif isinstance( pENode, SerialExecutionNode ):
         process = getattr( eNode, '_process', None )
         if process is None:
-          label = None
+          label = eNode.name()
         else:
           label = process.name
         # Create serial group
