@@ -183,13 +183,13 @@ def generateHTMLDocumentation( processInfoOrId, translators, context, ontology )
     print >> f, '<p><em>' + tr.translate( 'File name' ) + ' : </em><nobr><code><a href="'+processFileRef+'">' + processFileName + '</a></code></nobr></p>'
 
     if supportedFormats:
-      print >> f, '<p><em>' + tr.translate( 'Supported file formats' ) + ' : </em><blockquote>'
+      print >> f, '<p><em>' + tr.translate( 'Supported file formats' ) + ' : </em>'
       try:
         for parameter, formats in supportedFormats:
-          print >> f, parameter + ':<blockquote>', formats, '</blockquote>'
+          print >> f, '<blockquote>', parameter, ':<blockquote>', formats, '</blockquote>', '</blockquote>'
       except Exception, e:
         print e
-      print >> f, '</blockquote></p>'
+      print >> f, '</p>'
     print >> f, '</blockquote>'
 
     print >> f, '</body></html>'

@@ -79,4 +79,4 @@ class WriteDiskItem( ReadDiskItem ):
     if translator: translate = translator.translate
     else: translate = _
     ti = super( WriteDiskItem, self ).typeInfo( translator )
-    return  ( ti[0], ) + ( ( translate( 'Access' ), translate( 'output' ) ), ) + ti[ 1: ]
+    return  ( ti[0], ) + ( ( translate( 'Access' ), translate( 'output' ) ), ) + ti[ 2: ]
