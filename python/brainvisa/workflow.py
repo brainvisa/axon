@@ -308,7 +308,10 @@ class ProcessToWorkflow( object ):
         else:
           value = str( value )
       elif isinstance(value, list):
-        pass
+        new_value = []
+        for element in value:
+          new_value.append(str(element))
+        value = new_value
       else:
         value = str( value )
       command.append( value )
