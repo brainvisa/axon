@@ -52,6 +52,7 @@ class SPMConfiguration( ConfigurationGroup ):
     'spm8_path', FileName( directoryOnly=True ), dict( defaultValue='', doc='location of SPM 8 installation directory' ),
     'spm8_standalone_command', FileName( readOnly=True ), dict( defaultValue='', doc='location of SPM 8 standalone (compiled) run script' ),
     'spm8_standalone_mcr_path', FileName( directoryOnly=True ), dict( defaultValue='', doc='location of SPM 8 standalone MCR directory (generally &lt;spm8&gt;/standalone/mcr/v713' ),
+    'spm8_standalone_path', FileName( directoryOnly=True ), dict( defaultValue='', doc='location of SPM 8 standalone directory where the templates directory can be found.' ),
     'spm5_path', FileName( directoryOnly=True ), dict( defaultValue='', doc='location of SPM 5 installation directory' ),
   )
 
@@ -81,27 +82,6 @@ class SPMConfiguration( ConfigurationGroup ):
   spm8_standalone_mcr_path = property( _get_spm8_standalone_mcr_path,
     _set_spm8_standalone_mcr_path )
 
-  def changeSpm8Path( self, newValue, oldValue ):
-    if self.spm8_standalone_command is None \
-      or self.spm8_standalone_command == '':
-      cmd = os.path.join( newValue, 'standalone', 'run_spm8.sh' )
-      if os.path.exists( cmd ):
-        self.spm8_standalone_command = cmd
-      else:
-        cmd = os.path.join( newValue, 'standalone', 'spm8_wxx.exe' )
-        if os.path.exists( cmd ):
-          self.spm8_standalone_command = cmd
-    elif oldValue and self.spm8_standalone_command.startswith( oldValue ):
-      self.spm8_standalone_command = newValue \
-        + self.spm8_standalone_command[ len(oldValue) : ]
-    if self.spm8_standalone_mcr_path is None \
-      or self.spm8_standalone_mcr_path == '':
-      cmd = os.path.join( newValue, 'standalone', 'mcr', 'v713' )
-      if os.path.exists( cmd ):
-        self.spm8_standalone_mcr_path = cmd
-    elif oldValue and self.spm8_standalone_mcr_path.startswith( oldValue ):
-      self.spm8_standalone_mcr_path = newValue \
-        + self.spm8_standalone_mcr_path[ len(oldValue) : ]
 
   def __init__( self, *args, **kwargs ):
     self._spm5_path = None
@@ -110,5 +90,4 @@ class SPMConfiguration( ConfigurationGroup ):
     self._spm8_standalone_command = None
     self._spm8_standalone_mcr_path = None
     super( SPMConfiguration, self ).__init__( *args, **kwargs )
-    self.onAttributeChange( 'spm8_path', self.changeSpm8Path )
 
