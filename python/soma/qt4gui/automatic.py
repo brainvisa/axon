@@ -109,7 +109,10 @@ class EditionDialog( QtGui.QDialog ):
       self.setObjectName(name)
     self.setModal(modal)
     # window modal means that the dialog will block only its parent windows in modal mode, which is set automatically when calling exec_ method
-    self.setWindowModality(QtCore.Qt.WindowModal)
+    if not modal:
+      self.setWindowModality(QtCore.Qt.WindowModal)
+    else:
+      self.setWindowModality(QtCore.Qt.ApplicationModal)
     layout = QtGui.QVBoxLayout( )
     layout.setMargin(11)
     layout.setSpacing(6)
@@ -181,8 +184,8 @@ class ApplicationQt4GUI( ApplicationBaseGUI ):
     dialog.cleanup()
 
 
-  def edit( self, object, live=True, parent=None ):
-    dialog = self.createEditionDialog( object, parent=parent, live=live )
+  def edit( self, object, live=True, parent=None, modal=False ):
+    dialog = self.createEditionDialog( object, parent=parent, live=live, modal=modal )
     result = dialog.exec_()
     if result:
       dialog.setObject( object )

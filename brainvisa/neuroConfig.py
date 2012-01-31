@@ -575,7 +575,7 @@ def editConfiguration():
   global userLevel, dataPath, HTMLBrowser, textEditor, language, docPath
   configuration = Application().configuration
   appGUI = ApplicationQtGUI()
-  if appGUI.edit( configuration, live=False ):
+  if appGUI.edit( configuration, live=False, modal=True ):
     configuration.save( userOptionFile )
     setSPM99Compatibility( configuration.brainvisa.SPM )
   newDataPath = [ x for x in dataPath if hasattr( x, 'builtin' ) and x.builtin ]
