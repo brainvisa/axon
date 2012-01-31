@@ -41,7 +41,7 @@
 __docformat__ = "epytext en"
 
 from soma.wip.configuration import ConfigurationGroup
-from soma.signature.api import Signature, Unicode, FileName, Sequence, Boolean
+from soma.signature.api import Signature, Unicode, Sequence, Boolean
 import sys
 
 #------------------------------------------------------------------------------
@@ -53,7 +53,7 @@ class MatlabConfiguration( ConfigurationGroup ):
     optdef += u' -wait'
   signature = Signature(
     'enable_matlab', Boolean, dict( defaultValue=False, doc='if unchecked, matlab is disabled' ),
-    'executable', FileName( readOnly=True ), dict( defaultValue='matlab', doc='location of the Matlab program' ),
+    'executable', Unicode, dict( defaultValue='matlab', doc='location of the Matlab program' ),
     'version', Unicode, dict( defaultValue=u'', doc='Matlab version' ),
     'options', Unicode, dict( defaultValue=optdef, doc='Options passed to Matlab executable.' ),
     'path', Sequence( Unicode ), dict( defaultValue=[], doc='List of directories that will be added to Matlab path.' ),

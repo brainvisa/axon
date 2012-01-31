@@ -42,7 +42,7 @@ __docformat__ = "epytext en"
 
 
 from soma.wip.configuration import ConfigurationGroup
-from soma.signature.api import Signature, Unicode, FileName
+from soma.signature.api import Signature, Unicode
 import platform
 
 
@@ -59,6 +59,6 @@ class RConfiguration( ConfigurationGroup ):
   label = 'R'
   icon = 'Rlogo_small.png'
   signature = Signature(
-    'executable', FileName( readOnly=True ), dict( defaultValue=defaultExecutable, doc='Location of R program.' ),
+    'executable', Unicode, dict( defaultValue=defaultExecutable, doc='Location of R program.' ),
     'options', Unicode, dict( defaultValue=defaultOptions, doc='Options passed to R program.' ),
   )

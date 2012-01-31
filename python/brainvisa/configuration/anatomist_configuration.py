@@ -42,7 +42,7 @@ __docformat__ = "epytext en"
 
 
 from soma.wip.configuration import ConfigurationGroup
-from soma.signature.api import Signature, FileName
+from soma.signature.api import Signature, Unicode
 
 
 #------------------------------------------------------------------------------
@@ -50,5 +50,5 @@ class AnatomistConfiguration( ConfigurationGroup ):
   label = 'Anatomist'
   icon = 'anaIcon_small.png'
   signature = Signature(
-    'executable', FileName( readOnly=True ), dict( defaultValue='anatomist', doc='Location of Anatomist program.' ),
+    'executable', Unicode, dict( defaultValue='anatomist', doc='Location of Anatomist program.' ),
   )
