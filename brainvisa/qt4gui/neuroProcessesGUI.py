@@ -478,7 +478,8 @@ class SomaWorkflowProcessView(QMainWindow):
   @QtCore.pyqtSlot(bool)
   def enable_workflow_monitoring(self, enable):
     if not enable:
-      if self.model.current_wf_id == self.workflow_id:
+      if self.model.current_wf_id == self.workflow_id and \
+         self.model.current_resource_id == self.resource_id:
         self.model.clear_current_workflow()
     else:      
       if self.resource_id != self.model.current_resource_id:
@@ -594,14 +595,16 @@ class SomaWorkflowProcessView(QMainWindow):
 
   @QtCore.pyqtSlot()
   def current_workflow_changed(self):
-    if self.model.current_wf_id != self.workflow_id:
-      self.action_monitor_workflow.setChecked(False)
-      self.workflow_tool_bar.setEnabled(False)
-      self.workflow_menu.setEnabled(False)
-    else:
+    if self.model.current_wf_id == self.workflow_id and \
+      self.model.current_resource_id == self.resource_id:
       self.action_monitor_workflow.setChecked(True)
       self.workflow_tool_bar.setEnabled(True)
       self.workflow_menu.setEnabled(True)
+    else:
+      self.action_monitor_workflow.setChecked(False)
+      self.workflow_tool_bar.setEnabled(False)
+      self.workflow_menu.setEnabled(False)
+      
 
 
 _aboutWidget = None
