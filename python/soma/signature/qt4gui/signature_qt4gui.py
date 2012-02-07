@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
@@ -294,9 +294,8 @@ class HasSignature_Qt4GUI( Qt4GUI ):
 
   
   def updateEditionWidget( self, editionWidget, object ):
-    '''
-    @todo: not implemented
-    '''
+    editionWidget._HasSignatureEditionWidget__object = object
+    editionWidget._signatureChanged()
 
   def _createAttributeQt4GUI( self, dataType, object, attributeName ):
     customizedMethod = getattr( self, '_create_' + attributeName + '_Qt4GUI',  
