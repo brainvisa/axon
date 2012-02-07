@@ -77,6 +77,8 @@ class Toolbox( object ):
     self.typesDir = os.path.join( toolboxDirectory, 'types' )
     if ( d[ 'icon' ] != None ) :
       self.icon = os.path.join( toolboxDirectory, d[ 'icon' ] )
+    else:
+      self.icon = None
     self.processTree = None
     self.description = d['description']
     
