@@ -42,7 +42,7 @@ from PyQt4 import uic
 from PyQt4.QtGui import QKeySequence
 from PyQt4 import QtCore
 from PyQt4 import QtGui
-import neuroConfig 
+import neuroConfig
 import neuroConfigGUI
 import neuroLogGUI
 import neuroData
@@ -162,7 +162,12 @@ def openWeb(source):
           if m:
             if os.system("open -a "+m.group(1)+" '"+source+"'") == 0:
               return
-        if os.spawnl( os.P_NOWAIT, browser, browser, source ) > 0:
+
+        env=os.environ.copy()
+        if (not browser.startswith(os.path.dirname(neuroConfig.mainPath))): # external command
+          if neuroConfig.brainvisaSysEnv:
+            env.update(neuroConfig.brainvisaSysEnv.getVariables())
+        if os.spawnle( os.P_NOWAIT, browser, browser, source, env ) > 0:
           return
   except:
     pass
