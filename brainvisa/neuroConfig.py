@@ -495,7 +495,7 @@ logFileName = None
 cleanLog=False
 profileFileName = ''
 mainLog = None
-brainvisaSessionLogItem = None
+brainvisaSessionLog = None
 startup=[]
 flatHierarchy = os.path.join( mainPath, 'shfjFlatHierarchy.py' )
 debugHierarchyScanning = None
@@ -1040,11 +1040,14 @@ def environmentHTML():
   
   This page is displayed in Brainvisa log in starting Brainvisa item.
   """
+  from brainvisa.toolboxes import allToolboxes
   content = '<html><body><h1>' + htmlEscape( versionText() ) + '''</h1>
 <h2>''' + _t_( 'Python version' ) + '</h2>'+ htmlEscape( sys.version ) + '''
 <h2>''' + _t_( 'Command line' ) + '''</h2>
 <tt>''' + htmlEscape( commandLine() ) + '''</tt>
-<h2>''' + _t_( 'Environment variables' ) + '</h2>'
+<h2>''' + _t_( 'Toolboxes' ) + '</h2>\n' + \
+'\n'.join( (i.name + '<br>' for i in allToolboxes()) )
+  content += '<h2>' + _t_( 'Environment variables' ) + '</h2>'
   for n,v in os.environ.items():
     content += '<tt><em>'+ n + '</em> = ' + htmlEscape( v ) + '</tt><p>'
   content += '<h2>' + _t_( 'BrainVISA options' ) + '</h2>'

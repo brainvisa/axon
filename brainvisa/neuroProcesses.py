@@ -2081,7 +2081,7 @@ class ExecutionContext:
     self._interruptionActions = {}
     self._interruptionActionsId = 0
     self._interruptionLock = threading.RLock()
-    self._allowHistory = False
+    self._allowHistory = True
 
   def _processStack( self ):
     self._lock.acquire()
@@ -2285,8 +2285,6 @@ class ExecutionContext:
             #showException()
         if ishead:
           log = neuroConfig.mainLog
-          if self._allowHistory:
-            self._historyBookEvent, self._historyBooksContext = HistoryBook.storeProcessStart( self, process )
         else:
           if len( stack ) >= 2:
             log = stack[ -2 ].log
@@ -2324,6 +2322,9 @@ class ExecutionContext:
                       children=newStackTop.log, icon='icon_process.png' )
         else:
           newStackTop.log = None
+
+        if ishead and self._allowHistory:
+          self._historyBookEvent, self._historyBooksContext = HistoryBook.storeProcessStart( self, process )
 
         self._processStarted()
         newStackTop.thread = threading.currentThread()
@@ -2436,6 +2437,12 @@ class ExecutionContext:
         elif (process.isMainProcess): # clear unused minfs only when the main process is finished to avoid clearing minf that will be used in next steps
           item.clearMinf()
 
+      # update history
+      if self._allowHistory and self._depth() == 1 and self._historyBookEvent is not None:
+        HistoryBook.storeProcessFinished( self, process, self._historyBookEvent, self._historyBooksContext )
+        self._historyBookEvent = None
+        self._historyBooksContext = None
+
       # Close output log file
       if process._outputLogFile is not None:
         print >> process._outputLogFile, '</body></html>'
@@ -2453,11 +2460,6 @@ class ExecutionContext:
         if process.isMainProcess and neuroConfig.mainLog:
           neuroConfig.mainLog.expand()
         if self._depth() == 1:
-          if self._allowHistory:
-            if self._historyBookEvent is not None:
-              HistoryBook.storeProcessFinished( self, process, self._historyBookEvent, self._historyBooksContext )
-              self._historyBookEvent = None
-              self._historyBooksContext = None
           self._lastStartProcessLogItem = None
       self._popStack().thread = None ##### WARNING !!! not pop()
     return result
@@ -4498,8 +4500,8 @@ def initializeProcesses():
   _importers = {}
   _defaultContext = ExecutionContext()
   if neuroConfig.mainLog is not None:
-    _readProcessLog = neuroConfig.mainLog.subLog()
-    neuroConfig.mainLog.append( _t_('Read processes'),
+    _readProcessLog = neuroConfig.brainvisaSessionLog.subLog()
+    neuroConfig.brainvisaSessionLog.append( _t_('Read processes'),
       html='<em>processesPath</em> = ' + str( neuroConfig.processesPath ),
       children=_readProcessLog, icon='icon_process.png' )
   else:

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -132,13 +133,14 @@ class HistoryBook( object ):
       event = executionContext.createProcessExecutionEvent()
       for book in historyBooksContext.iterkeys():
         book.storeEvent( event )
+      event._logItem = executionContext._lastStartProcessLogItem
     return event, historyBooksContext
 
 
   @staticmethod
   def storeProcessFinished( executionContext, process, event, historyBooksContext ):
     #print '!history! storeProcessFinished:', process
-    event.setLog( executionContext._lastStartProcessLogItem )
+    event.setLog( event._logItem )
     for book, items in historyBooksContext.iteritems():
       changedItems = [item for item, hash in items.itervalues() if hash != item.modificationHash()]
       event.content[ 'modified_data' ] = [unicode(item) for item in changedItems]
@@ -204,10 +206,11 @@ class ProcessExecutionEvent( HistoricalEvent ):
 
 
   def setLog( self, log ):
-    if isinstance( log, neuroLog.LogFile.Item ):
-      self.content[ 'log' ] = [ neuroLog.LogFile.Item(what=log.what(), when=log.when(), html=log.html(), children=log.children(), icon=log.icon() ) ]
-    else:
-      self.content[ 'log' ] = list( neuroLog.expandedReader( log.fileName ) )
+    if log:
+      if isinstance( log, neuroLog.LogFile.Item ):
+        self.content[ 'log' ] = [ neuroLog.LogFile.Item(what=log.what(), when=log.when(), html=log.html(), children=log.children(), icon=log.icon() ) ]
+      else:
+        self.content[ 'log' ] = list( neuroLog.expandedReader( log.fileName ) )
 
 
   def __str__( self ):
@@ -231,8 +234,8 @@ class BrainVISASessionEvent( HistoricalEvent ):
   def setCurrentBrainVISASession( self ):
     self.content[ 'version' ] = neuroConfig.versionString()
     self.uuid = neuroConfig.sessionID
-    if neuroConfig.brainvisaSessionLogItem:
-      self.content[ 'log' ] = [ neuroConfig.brainvisaSessionLogItem ]
+    if neuroConfig.brainvisaSessionLog:
+      self.content[ 'log' ] = list( neuroLog.expandedReader( neuroConfig.brainvisaSessionLog.fileName ) )
   
   
   def __str__( self ):

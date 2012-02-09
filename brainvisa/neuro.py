@@ -177,10 +177,6 @@ def main():
     initializeProcessesGUI()
 
     if not neuroConfig.fastStart:
-      # Logging BrainVISA environment
-      neuroConfig.brainvisaSessionLogItem = neuroLog.log( 'starting BrainVISA', 
-        html=neuroConfig.environmentHTML(), icon='brainvisa_small.png' )
-  
       # write information about brainvisa log file
       defaultContext().write("The log file for this session is " + repr(neuroConfig.logFileName) )
       # check for expired run information : ask user what to do

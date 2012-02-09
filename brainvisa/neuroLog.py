@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -539,6 +539,10 @@ def initializeLog():
         shutil.copyfile( neuroConfig.logFileName, 
                          neuroConfig.logFileName + '~' )
       neuroConfig.mainLog = newLogFile( neuroConfig.logFileName )
+      neuroConfig.brainvisaSessionLog = neuroConfig.mainLog.subLog()
+      neuroConfig.mainLog.append( _t_('BrainVISA session'),
+        html=neuroConfig.environmentHTML(),
+        children=neuroConfig.brainvisaSessionLog, icon='brainvisa_small.png' )
   except Exception, e:
     import traceback
     traceback.print_exc()
