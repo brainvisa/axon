@@ -55,38 +55,7 @@ class SPMConfiguration( ConfigurationGroup ):
     'spm5_path', FileName( directoryOnly=True ), dict( defaultValue='', doc='location of SPM 5 installation directory' ),
   )
 
-  def _get_spm5_path( self ):
-    return self._spm5_path
-  def _set_spm5_path( self, value ):
-    self._spm5_path = value
-  spm5_path = property( _get_spm5_path, _set_spm5_path )
-
-  def _get_spm8_path( self ):
-    return self._spm8_path
-  def _set_spm8_path( self, value ):
-    self._spm8_path = value
-  spm8_path = property( _get_spm8_path, _set_spm8_path )
-
-  def _get_spm8_standalone_command( self ):
-    return self._spm8_standalone_command
-  def _set_spm8_standalone_command( self, value ):
-    self._spm8_standalone_command = value
-  spm8_standalone_command = property( _get_spm8_standalone_command,
-    _set_spm8_standalone_command )
-
-  def _get_spm8_standalone_mcr_path( self ):
-    return self._spm8_standalone_mcr_path
-  def _set_spm8_standalone_mcr_path( self, value ):
-    self._spm8_standalone_mcr_path = value
-  spm8_standalone_mcr_path = property( _get_spm8_standalone_mcr_path,
-    _set_spm8_standalone_mcr_path )
-
 
   def __init__( self, *args, **kwargs ):
-    self._spm5_path = None
-    self._spmpath_checked = True
-    self._spm8_path = None
-    self._spm8_standalone_command = None
-    self._spm8_standalone_mcr_path = None
     super( SPMConfiguration, self ).__init__( *args, **kwargs )
 

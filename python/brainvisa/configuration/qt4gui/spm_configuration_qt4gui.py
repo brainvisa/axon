@@ -33,7 +33,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 
-from backwardCompatibleQt import QWidget, QVBoxLayout, QHBoxLayout, QSpacerItem, QSizePolicy, QPushButton, Qt
+from backwardCompatibleQt import QWidget, QVBoxLayout, QHBoxLayout, QSpacerItem, QSizePolicy, QPushButton, Qt, QApplication, QCursor
 import backwardCompatibleQt as qt
 from soma.qtgui.api import QtGUI
 from soma.signature.qt4gui.signature_qt4gui import HasSignature_Qt4GUI
@@ -50,14 +50,14 @@ class SPMConfiguration_Qt4GUI( QtGUI ):
     self._defaultGUI = HasSignature_Qt4GUI( instance )
 
 
-  def editionWidget( self, value, parent=None, name=None, live=False ):
+  def editionWidget( self, value, parent=None, name=None, live=True ):
     widget = QWidget( parent )
     if name:
       widget.setObjectName( name )
     layout = QVBoxLayout( )
     layout.setMargin(0)
     layout.setSpacing(6)
-    self._defaultWidget = self._defaultGUI.editionWidget( value, parent=widget, live=live )
+    self._defaultWidget = self._defaultGUI.editionWidget( value, parent=widget, live=True )
     layout.addWidget( self._defaultWidget )
     widget.setLayout(layout)
 
@@ -66,7 +66,7 @@ class SPMConfiguration_Qt4GUI( QtGUI ):
     layout2.setSpacing(6)
     spacer = QSpacerItem( 1, 1, QSizePolicy.Expanding, QSizePolicy.Minimum )
     layout2.addItem( spacer )
-    self.btnGuess = QPushButton(  _t_( 'guess configuration' ), widget )
+    self.btnGuess = QPushButton(  _t_( 'Auto detect' ), widget )
     #self.btnGuess.setEnabled( False )
     layout2.addWidget( self.btnGuess )
     spacer = QSpacerItem( 1, 1, QSizePolicy.Expanding, QSizePolicy.Minimum )
@@ -78,7 +78,6 @@ class SPMConfiguration_Qt4GUI( QtGUI ):
 
 
   def closeEditionWidget( self, editionWidget ):
-    print '########### closeEditionWidget'
     self.btnGuess.deleteLater()
     self._defaultGUI.closeEditionWidget( self._defaultWidget )
     editionWidget.close()
@@ -87,18 +86,20 @@ class SPMConfiguration_Qt4GUI( QtGUI ):
 
   def setObject( self, editionWidget, value ):
     self._defaultGUI.setObject( self._defaultWidget, value )
-
-
+  
   def updateEditionWidget( self, editionWidget, value ):
     self._defaultGUI.updateEditionWidget( self._defaultWidget, value )
 
   def guess( self ):
-    print 'guess'
-    import neuroProcesses
-    spmpathcheck = neuroProcesses.getProcessInstance( 'spmpathcheck' )
-    if spmpathcheck:
-      neuroProcesses.defaultContext().runProcess( spmpathcheck )
-      configuration = Application().configuration
-      self.updateEditionWidget( self._defaultWidget, configuration.SPM )
+    print 'Trying to guess SPM configuration...'
+    QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
+    try:
+      import neuroProcesses
+      spmpathcheck = neuroProcesses.getProcessInstance( 'spmpathcheck' )
+      if spmpathcheck:
+        neuroProcesses.defaultContext().runProcess( spmpathcheck )
+        # spmpathcheck modifies the configuration object and the GUI is automatically updated because it is edited with live=True option which enables the GUI to listen the model changes.
+    finally:
+      QApplication.restoreOverrideCursor()
 
 
