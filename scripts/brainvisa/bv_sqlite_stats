@@ -1,0 +1,60 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import sys, operator
+import sqlite3
+
+def sizeToString( fullSize, units=True ):
+  size = fullSize
+  if size >= 1024:
+    unit = 'KiB'
+    size /= 1024.0
+    if size >= 1024:
+      unit = 'MiB'
+      size /= 1024.0
+      if size >= 1024:
+        unit = 'GiB'
+        size /= 1024.0
+        if size >= 1024:
+          unit = TiB
+          size /= 1024.0
+    s = '%.2f' % ( size, )
+    if s.endswith( '.00' ): s = s[:-3]
+    elif s[-1] == '0': s = s[:-1]
+    return s + ' ' + unit + ' (' + str( fullSize ) + ')'
+  else:
+    return str( fullSize )
+
+# Check existance of database file and raise appropriate exception
+open( sys.argv[1] )
+conn = sqlite3.connect( sys.argv[1] )
+c = conn.cursor()
+
+result = {}
+c.execute( "SELECT name FROM sqlite_master WHERE type = 'table'" )
+total_size = 0
+for table in [i[0] for i in c]:
+  c.execute( 'SELECT * from "' + table +'"' )
+  count_rows = 0
+  columns = []
+  sizes = []
+  for row in c:
+    count_rows += 1
+    size = [(len(i) if isinstance(i,basestring) else 4) for i in row]
+    if columns:
+      sizes = [sizes[i] + size[i] for i in range(len(size))]
+    else:
+      columns = [i[0] for i in c.description]
+      sizes = size
+  table_size = reduce(operator.add, sizes, 0)
+  total_size += table_size
+  result[ ( table_size, count_rows, table ) ] = ( columns, sizes )
+
+print 'Total size =', sizeToString( total_size )
+print
+for key in sorted( result, reverse=True ):
+  table_size, count_rows, table = key
+  columns, sizes = result[ key ]
+  print table + ':', count_rows, 'elements,', sizeToString( table_size )
+  for i in range( len( columns ) ):
+    print ' ', columns[i] + ':', sizeToString(sizes[i]), '(' + sizeToString(sizes[i]/float(count_rows)),'per item)'
