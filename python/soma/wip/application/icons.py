@@ -66,7 +66,7 @@ def findIconFile( fileName ):
   if fileName is not None:
     app = Application("soma", "")
     for dir in ( app.directories.user, app.directories.application,
-                app.directories.site, somaIconsDirectory ):
+                app.directories.site, somaIconsDirectory[:-6] ): # remove "/icons" from soma icon directory path
       if dir is not None:
         file = os.path.join( dir, 'icons', fileName )
         if os.path.exists( file ):
