@@ -571,6 +571,7 @@ class SQLDatabase( Database ):
       self._connection = ThreadSafeSQLiteConnection( databaseFile, 20, isolation_level="EXCLUSIVE" )
     #cursor = self.CursorProxy( self._connection._getConnection().cursor() )
     cursor = self._connection._getConnection().cursor()
+    cursor.execute( 'PRAGMA synchronous =  0' )
     return cursor
   
   
@@ -599,7 +600,6 @@ class SQLDatabase( Database ):
       self._tableFieldsAndInsertByTypeName = {}
       create = True
       try:
-        cursor.execute( 'PRAGMA synchronous =  0' )
         cursor.execute( 'CREATE TABLE _DISKITEMS_ (_uuid CHAR(36) PRIMARY KEY, _diskItem TEXT)' )
       except sqlite3.OperationalError:
         create = False
@@ -607,9 +607,10 @@ class SQLDatabase( Database ):
         if context is not None:
           context.write( 'Generating database tables for', self.name )
         cursor.execute( 'CREATE TABLE _FILENAMES_ (filename VARCHAR PRIMARY KEY, _uuid CHAR(36))' )
-        cursor.execute( 'CREATE INDEX _IDX_FILENAMES_ ON _FILENAMES_ (filename, _uuid)' )
+        #cursor.execute( 'CREATE INDEX _IDX_FILENAMES_ ON _FILENAMES_ (_uuid)' )
         cursor.execute( 'CREATE TABLE _TRANSFORMATIONS_ (_uuid CHAR(36) PRIMARY KEY, _from CHAR(36), _to CHAR(36))' )
-        cursor.execute( 'CREATE INDEX _IDX_TRANSFORMATIONS_ ON _TRANSFORMATIONS_ (_from, _to)' )
+        cursor.execute( 'CREATE INDEX _IDX_TRANSFORMATIONS_1_ ON _TRANSFORMATIONS_ (_from )' )
+        cursor.execute( 'CREATE INDEX _IDX_TRANSFORMATIONS_2_ ON _TRANSFORMATIONS_ ( _to )' )
       for type in self.typesWithTable:
         #tableName = mangleSQL(type.name)
         tableName = type
@@ -692,8 +693,12 @@ class SQLDatabase( Database ):
         minf = cPickle.dumps( state )
         diskItem._globalAttributes["_database"]=self.name
         if diskItem.type.isA( 'Transformation' ):
-          destination_referential = str( diskItem.get( 'destination_referential' ) )
-          source_referential = str( diskItem.get( 'source_referential' ) )
+          destination_referential = diskItem.get( 'destination_referential' )
+          if destination_referential:
+            destination_referential = str( destination_referential )
+          source_referential = diskItem.get( 'source_referential' )
+          if source_referential:
+            source_referential = str( source_referential )
         else:
           destination_referential = None
           source_referential = None
