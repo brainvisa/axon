@@ -89,9 +89,14 @@ class ExpertDatabaseSettings( HasSignature ):
     'uuid', Unicode(), dict( defaultValue='', visible = False)
   )
 
-  def __init__( self ):
-    if not ExpertDatabaseSettings.signature[ 'ontology' ].type.values:
-      ExpertDatabaseSettings.signature[ 'ontology' ].type.setChoices( *ExpertDatabaseSettings.availableOntologies() )
+  def __init__( self ):      
+    #The list of ontolgies is never empty, so this test cannot to update this list and new ontology such as freesurfer are not added
+    #in the expert_settings
+    #if not ExpertDatabaseSettings.signature[ 'ontology' ].type.values:
+    #  ExpertDatabaseSettings.signature[ 'ontology' ].type.setChoices( *ExpertDatabaseSettings.availableOntologies() )
+    ExpertDatabaseSettings.signature[ 'ontology' ].type.setChoices( *ExpertDatabaseSettings.availableOntologies() )
+      
+      
     super( ExpertDatabaseSettings, self ).__init__()
     # The possibility to choose a Cuicweb database is an experimental feature
     # so it is not available for all user but only for user with a level > 4 which cannot be set throught preferences GUI
