@@ -41,6 +41,7 @@ from brainvisa.data.qt4gui.diskItemBrowser import DiskItemBrowser
 from brainvisa.data.actions import FileProcess, Remove, Move
 import neuroProcesses
 from neuroException import showException
+from brainvisa.data.qt4gui.history import DataHistoryWindow
 
 class HierarchyBrowser( QWidget ):
     """
@@ -126,6 +127,8 @@ class HierarchyBrowser( QWidget ):
       self.actionConditions[idConvert]=self.convertCondition
       self.graphConverter=neuroProcesses.getProcess("CorticalFoldsGraphUpgradeFromOld")
       self.graphType=neuroDiskItems.getDiskItemType("Graph")
+      idHistory=self.popupMenu.addAction( self.pixView, _t_("Show history"), self.menuHistoryEvent )
+      self.actionConditions[idHistory]=self.historyCondition
       self.connect(self.lstHierarchy, SIGNAL( 'customContextMenuRequested ( const QPoint & )'), self.openContextMenu)
     
       self.resize( 800, 600 )
@@ -348,6 +351,18 @@ class HierarchyBrowser( QWidget ):
     def convertCondition(self, item):
       return item and item.diskItem and item.diskItem.get("graph_version", None) == "3.0" and neuroDiskItems.isSameDiskItemType(item.diskItem.type, self.graphType) and self.graphConverter
   
+    def menuHistoryEvent(self):
+      items=self.selectedItems()
+      for item in items:
+        if item.diskItem:
+          bvproc_uuid=item.diskItem.get("lastHistoricalEvent", None)
+          if bvproc_uuid is not None:
+            history_window=DataHistoryWindow(item.diskItem, bvproc_uuid, parent=self)
+            history_window.show()
+      
+    def historyCondition(self, item):
+      return item and item.diskItem and item.diskItem.get("lastHistoricalEvent", None) is not None
+      
     def search(self):
       """
       Opens a diskItemBrowser to set parameters to describe requested data. 
