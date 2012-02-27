@@ -1061,7 +1061,7 @@ class Process( Parameterized ):
     Execution function that is called when the process is run.
     """
     if self._executionNode is not None:
-      return self._executionNode.run( context )
+        return self._executionNode.run( context )
     else:
       raise RuntimeError( HTMLMessage(_t_( 'No <em>execution</em> method provided' )) )
 
@@ -3494,6 +3494,20 @@ def getConvertersFrom( source, checkUpdate=True ):
       result[ destination ] = getProcess( c, checkUpdate=checkUpdate )
   return result
 
+def getConverters():
+    """
+    Gets the converter name list.
+    """
+    global _converters
+    results = []
+    
+    for d in _converters.itervalues():
+        for v in d.itervalues():
+            if not v in results and type( v ) == str:
+                results.append( v )            
+    
+    return sorted( results )
+        
 
 #----------------------------------------------------------------------------
 def getViewer( source, enableConversion = 1, checkUpdate=True, listof=False ):
@@ -3801,7 +3815,7 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
     class NewProcess( Process ):
       _instance = 0
 
-    NewProcess._id = moduleName
+    NewProcess._id = moduleName 
     NewProcess.name = moduleName
     NewProcess.category = category
     NewProcess.dataDirectory = dataDirectory
@@ -3844,6 +3858,7 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
       roles = getattr( NewProcess, 'roles', () ),
       toolbox = toolbox
     )
+
     _processesInfo[ processInfo.id.lower() ] = processInfo
     _processesInfoByName[ NewProcess.name.lower() ] = processInfo
 

@@ -44,6 +44,7 @@ signature=Signature(
   'input', ReadDiskItem( 'Any Type', getAllFormats() ),
   'output', WriteDiskItem( 'Any Type', getAllFormats() ),
   'input_spm_orientation', Choice( 'Not applicable' ), 
+  'converter', Choice( 'Any converter' ),
 )
 
 def initialization( self ):
@@ -81,6 +82,10 @@ def initialization( self ):
   self.linkParameters( 'output', 'input' )
   self.signature[ 'output' ].browseUserLevel = 3
   self.signature[ 'input' ].databaseUserLevel = 2
+  
+  self.signature[ 'converter' ].userLevel = 1
+  self.signature[ 'converter' ].setChoices( 'Any converter', *getConverters() )
+  self.converter = 'Any converter'
 
 
 def execution( self, context ):
@@ -92,7 +97,10 @@ def execution( self, context ):
       # if the input type is not recognized (data not in database),
       # assume it is the same type as the output
       inp = ( self.output.type, inp.format )
-    converter = context.getConverter( inp, self.output )
+    if self.converter == 'Any converter':
+        converter = context.getConverter( inp, self.output )
+    else:
+        converter = getProcess( self.converter )
     if converter is None:
       raise RuntimeError( _t_('Cannot convert input data') )
     input = self.input

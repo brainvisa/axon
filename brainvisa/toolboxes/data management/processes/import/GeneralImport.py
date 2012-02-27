@@ -46,7 +46,8 @@ signature=Signature(
   'data_type', Choice( 'Any Type' ),
   'output', WriteDiskItem( 'Any Type', getAllFormats() ),
   'copy_referential_of', ReadDiskItem( 'Any Type', getAllFormats() ),
-  'input_spm_orientation', Choice( 'Not applicable' ), 
+  'input_spm_orientation', Choice( 'Not applicable' ),
+  'converter', Choice( 'Any converter' ),
 
 )
 
@@ -98,6 +99,10 @@ def initialization( self ):
   self.addLink('output', 'data_type' , self.dataTypeChanged)
   self.signature[ 'output' ].browseUserLevel = 3
   self.signature[ 'input' ].databaseUserLevel = 2
+  
+  self.signature[ 'converter' ].userLevel = 1
+  self.signature[ 'converter' ].setChoices( 'Any converter', *getConverters() )
+  self.converter = 'Any converter'
 
 def execution( self, context ):
   # search for a specific importer for this data
@@ -105,7 +110,7 @@ def execution( self, context ):
   if not importer:
     importer="ImportData"
   # must pass the filename to the importer and not a diskitem because it is potentially not in the database (findValue on a diskitem that is not in the database will fail and the parameter will not be taken into account)
-  context.runProcess(importer, input=self.input.fullPath(), output=self.output)
+  context.runProcess(importer, input=self.input.fullPath(), output=self.output, converter=self.converter)
   if self.copy_referential_of:
     tm=registration.getTransformationManager()
     tm.copyReferential(self.copy_referential_of, self.output)
