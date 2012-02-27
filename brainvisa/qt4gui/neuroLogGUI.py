@@ -39,19 +39,20 @@ import neuroException
 import neuroConfig
 from soma.qtgui.api import TextEditWithSearch
 
-class LogViewer( QWidget ):
-
-  def __init__( self, fileName, parent=None, name=None ):
+class LogItemsViewer( QWidget):
+  """
+  Widget to visualize a list of :py:class:`neuroLog.LogFile.Item`. 
+  It is compound of a splitter with the list of items displayed as a QTreeWidget at the left
+  and the text of the content of the selected item at the right side.
+  A contextual menu is available on the content panel to search a string in the text.
+  """
+  
+  def __init__( self, logitems=[], parent=None):
     QWidget.__init__( self, parent )
-    if name:
-      self.setObjectName( name )
     layout=QVBoxLayout()
     self.setLayout(layout)
-    if getattr( LogViewer, 'pixIcon', None ) is None:
-      setattr( LogViewer, 'pixIcon', QIcon( os.path.join( neuroConfig.iconPath, 'icon_log.png' ) ) )
-    self.setWindowIcon( self.pixIcon )
     self._pixmaps = {}
-
+    
     splitter = QSplitter( Qt.Horizontal )
     splitter.setSizePolicy( QSizePolicy( QSizePolicy.Minimum, QSizePolicy.Expanding ) )
     layout.addWidget(splitter)
@@ -63,51 +64,49 @@ class LogViewer( QWidget ):
     self._list.setIconSize(QSize(32, 32))
     self._list.setSizePolicy( QSizePolicy( QSizePolicy.Preferred, QSizePolicy.Expanding ) )
     self._list.setRootIsDecorated( 1 )
+    
     self.searchResults=None
     self.searchText=""
-    #splitter.setResizeMode( self._list, QSplitter.KeepSize )
-
+    
     self._content = TextEditWithSearch(splitter)#QTextView( splitter )
     self._content.setReadOnly(True)
     self._content.setSizePolicy( QSizePolicy( QSizePolicy.Minimum, QSizePolicy.Expanding ) )
-    #splitter.setResizeMode( self._content, QSplitter.Stretch )
-    #self._content.setReadOnly( 1 )
+    
     QObject.connect( self._list, SIGNAL( 'currentItemChanged( QTreeWidgetItem *, QTreeWidgetItem * )' ),
                      self._updateContent )
-
-    hb = QHBoxLayout( )
-    layout.addLayout(hb)
-    hb.setMargin( 5 )
-    btn = QPushButton( _t_( '&Refresh' ) )
-    btn.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-    hb.addWidget(btn)
-    QObject.connect( btn, SIGNAL( 'clicked()' ), self.refresh )
-    btn = QPushButton( _t_( '&Close' ) )
-    hb.addWidget(btn)
-    btn.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-    QObject.connect( btn, SIGNAL( 'clicked()' ), self.close )
-    btn = QPushButton( _t_( '&Open...' ) )
-    hb.addWidget(btn)
-    btn.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-    QObject.connect( btn, SIGNAL( 'clicked()' ), self.open )
-
-    neuroConfig.registerObject( self )
-    self.setLogFile( fileName )
-    self.resize( 800, 600 )
-    self._list.resizeColumnToContents(0)
+                     
+    self.refresh(logitems)
+      
     firstItem = self._list.topLevelItem(0)
     if firstItem:
       self._updateContent( firstItem )
 
-  def setLogFile( self, fileName ):
-    self._fileName = fileName
-    self.setWindowTitle( self._fileName )
-    self.refresh()
+  def refresh( self, logitems ):
+    # Save list state
+    itemIndex = 0
+    currentItemIndex = -1
+    listState = []
+    it = QTreeWidgetItemIterator(self._list)
+    while it.value():
+      currentItem=it.value()
+      listState.append( currentItem.isExpanded(  ) )
+      if self._list.currentItem() is currentItem:
+        currentItemIndex = itemIndex
+      it+=1
+      itemIndex+=1
+    # Erase list
+    self._list.clear()
+    self._contents = {}
+    # Reread log and restore list state
+    after=None
+    currentItemList = []
+    itemIndex = -1
+    for item in logitems:
+      ( after, itemIndex ) = self._addLogItem( item, self._list, after, itemIndex, listState, currentItemIndex, currentItemList )
 
-  def closeEvent( self, event ):
-    self.emit( SIGNAL( 'close' ) )
-    neuroConfig.unregisterObject( self )
-    QWidget.closeEvent( self, event )
+    if currentItemList:
+      self._list.setCurrentItem( currentItemList[ 0 ] )
+    self._list.resizeColumnToContents(0)
 
   def _addLogItem( self, item, parent, after, itemIndex, listState, currentItemIndex, currentItemList ):
     viewItem = QTreeWidgetItem( parent )
@@ -138,61 +137,6 @@ class LogViewer( QWidget ):
   def _updateContent( self, item ):
     self._content.setText( unicode( self._contents.get( item, '' ) ) )
 
-
-  def refresh( self ):
-    try:
-      reader = neuroLog.LogFileReader( self._fileName )
-    except IOError:
-      neuroException.showException()
-      reader = None
-    # Save list state
-    itemIndex = 0
-    currentItemIndex = -1
-    listState = []
-    it = QTreeWidgetItemIterator(self._list)
-    while it.value():
-      currentItem=it.value()
-      listState.append( currentItem.isExpanded(  ) )
-      if self._list.currentItem() is currentItem:
-        currentItemIndex = itemIndex
-      it+=1
-      itemIndex+=1      
-    # Erase list
-    self._list.clear()
-    self._contents = {}
-    # Reread log and restore list state
-    after=None
-    currentItemList = []
-    if reader is not None:
-      itemIndex = -1
-      item = reader.readItem()
-      while item is not None:
-        ( after, itemIndex ) = self._addLogItem( item, self._list, after, itemIndex, listState, currentItemIndex, currentItemList )
-        item = reader.readItem()
-    if currentItemList:
-      self._list.setCurrentItem( currentItemList[ 0 ] )
-    self._list.resizeColumnToContents(0)
-
-
-  def open( self ):
-     #QFileDialog.getOpenFileName( QWidget * parent = 0, const QString & caption = QString(), const QString & dir = QString(), const QString & filter = QString(), QString * selectedFilter = 0, Options options = 0)
-     # workaround a bug in PyQt ? Param 5 doesn't work; try to use kwargs
-    import sipconfig
-    if sipconfig.Configuration().sip_version >= 0x040a00:
-      logFileName = unicode( QFileDialog.getOpenFileName( None, _t_( 'Open log file' ), self._fileName, '', options=QFileDialog.DontUseNativeDialog ) )
-    else:
-      logFileName = unicode( QFileDialog.getOpenFileName( None, _t_( 'Open log file' ), self._fileName, '', None, QFileDialog.DontUseNativeDialog ) )
-    if logFileName:
-      self.setLogFile( logFileName )
-
-  #def keyPressEvent( self, e ):
-    #if e.state() == Qt.ControlButton and e.key() == Qt.Key_W:
-      #e.accept()
-      #self.close()
-    #else:
-      #e.ignore()
-      #QWidget.keyPressEvent( self, e )
-      
   def keyPressEvent(self, keyEvent):
     if (self._list.hasFocus()):
       if (keyEvent.matches(QKeySequence.Find)):
@@ -237,6 +181,80 @@ class LogViewer( QWidget ):
         yield item
       it+=1
     yield None
+
+
+class LogViewer( QWidget ):
+  """
+  A viewer for a log file. The file is read and its items are displayed in a LogItemsViewer. 
+  Buttons are available at the bottom of the window to refresh the display, 
+  close the window or open a new log file.
+  """
+
+  def __init__( self, fileName, parent=None, name=None ):
+    QWidget.__init__( self, parent )
+    if name:
+      self.setObjectName( name )
+    layout=QVBoxLayout()
+    self.setLayout(layout)
+    if getattr( LogViewer, 'pixIcon', None ) is None:
+      setattr( LogViewer, 'pixIcon', QIcon( os.path.join( neuroConfig.iconPath, 'icon_log.png' ) ) )
+    self.setWindowIcon( self.pixIcon )
+
+    self.logitems_viewer=LogItemsViewer([], self)
+    layout.addWidget(self.logitems_viewer)
+    
+    hb = QHBoxLayout( )
+    layout.addLayout(hb)
+    hb.setMargin( 5 )
+    btn = QPushButton( _t_( '&Refresh' ) )
+    btn.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
+    hb.addWidget(btn)
+    QObject.connect( btn, SIGNAL( 'clicked()' ), self.refresh )
+    btn = QPushButton( _t_( '&Close' ) )
+    hb.addWidget(btn)
+    btn.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
+    QObject.connect( btn, SIGNAL( 'clicked()' ), self.close )
+    btn = QPushButton( _t_( '&Open...' ) )
+    hb.addWidget(btn)
+    btn.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
+    QObject.connect( btn, SIGNAL( 'clicked()' ), self.open )
+
+    neuroConfig.registerObject( self )
+    self.setLogFile( fileName )
+    self.resize( 800, 600 )
+
+  def setLogFile( self, fileName ):
+    self._fileName = fileName
+    self.setWindowTitle( self._fileName )
+    self.refresh()
+
+  def closeEvent( self, event ):
+    self.emit( SIGNAL( 'close' ) )
+    neuroConfig.unregisterObject( self )
+    QWidget.closeEvent( self, event )
+
+  def refresh( self ):
+    try:
+      reader = neuroLog.LogFileReader( self._fileName )
+    except IOError:
+      neuroException.showException()
+      reader = None
+
+    # Reread log and restore list state
+    logitems=reader.read()
+    self.logitems_viewer.refresh(logitems)
+
+  def open( self ):
+     #QFileDialog.getOpenFileName( QWidget * parent = 0, const QString & caption = QString(), const QString & dir = QString(), const QString & filter = QString(), QString * selectedFilter = 0, Options options = 0)
+     # workaround a bug in PyQt ? Param 5 doesn't work; try to use kwargs
+    import sipconfig
+    if sipconfig.Configuration().sip_version >= 0x040a00:
+      logFileName = unicode( QFileDialog.getOpenFileName( None, _t_( 'Open log file' ), self._fileName, '', options=QFileDialog.DontUseNativeDialog ) )
+    else:
+      logFileName = unicode( QFileDialog.getOpenFileName( None, _t_( 'Open log file' ), self._fileName, '', None, QFileDialog.DontUseNativeDialog ) )
+    if logFileName:
+      self.setLogFile( logFileName )
+
 
 def showLog( fileName ):
   l = LogViewer( fileName )

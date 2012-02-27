@@ -37,6 +37,7 @@ from PyQt4.QtCore import Qt
 from soma.minf.api import readMinf
 from neuroProcesses import getProcessInstanceFromProcessEvent
 from neuroProcessesGUI import ProcessView
+from qt4gui.neuroLogGUI import LogItemsViewer
 
 class DataHistoryWindow(QtGui.QMainWindow):
   """
@@ -48,6 +49,7 @@ class DataHistoryWindow(QtGui.QMainWindow):
   """
   data = None
   ui = None
+  
   
   def __init__(self, data, bvproc_uuid, parent=None):
     super(DataHistoryWindow, self).__init__(parent)
@@ -63,14 +65,6 @@ class DataHistoryWindow(QtGui.QMainWindow):
 
     # menu bar
     self.process_menu = self.ui.menubar.addMenu("&Process")
-    
-    self.process_layout = QtGui.QVBoxLayout()
-    self.process_layout.setContentsMargins(2,2,2,2)
-    self.ui.process_widget.setLayout(self.process_layout)
-   
-    self.log_layout = QtGui.QVBoxLayout()
-    self.log_layout.setContentsMargins(2,2,2,2)
-    self.ui.log_widget.setLayout(self.log_layout)
 
     self.ui.info.setText("History of "+self.data.fullPath())
     
@@ -101,28 +95,27 @@ class DataHistoryWindow(QtGui.QMainWindow):
         process_view = ProcessView(process, parent=self, read_only=True)
       finally:
         QtGui.QApplication.restoreOverrideCursor()
-        
       process_view.inlineGUI.hide()
       process_view.info.hide()
-      self.process_layout.addWidget(process_view)
-
-      process_button_layout = QtGui.QHBoxLayout()
-      process_button_layout.setContentsMargins(2,2,2,2)
-      self.process_layout.addLayout(process_button_layout)
-
+      self.ui.process_widget.layout().addWidget(process_view)
       process_view.action_clone_process.setText("Edit")
-
-      btn_clone = QtGui.QToolButton(self)
-      btn_clone.setDefaultAction(process_view.action_clone_process)
-      btn_clone.setMinimumWidth(90)
-      btn_clone.setSizePolicy( QtGui.QSizePolicy( QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed ) )
-      process_button_layout.addWidget(btn_clone)
-
       self.process_menu.addAction(process_view.action_clone_process)
-
+  
+  
   def show_log(self, log, bvsession):
-    # TODO: extract a list of LogItem view from neuroLogGUI
-    pass
+    session_item=None
+    bvsession_file = os.path.join(self.data.get("_database", ""), "history_book", str(bvsession) + ".bvsession")
+    if os.path.exists(bvsession_file):
+      minf = readMinf(bvsession_file)
+      if minf:
+        session_item=minf[0].content.get("log", None)
 
-
-      
+    logitems=[]
+    if session_item:
+      logitems.extend(session_item)
+    if log:
+      logitems.extend(log)
+    
+    logitems_viewer=LogItemsViewer(logitems, self)
+    self.ui.log_widget.layout().addWidget(logitems_viewer)
+    
