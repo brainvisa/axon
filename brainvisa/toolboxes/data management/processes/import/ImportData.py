@@ -83,7 +83,7 @@ def initialization( self ):
   self.signature[ 'output' ].browseUserLevel = 3
   self.signature[ 'input' ].databaseUserLevel = 2
   
-  self.signature[ 'converter' ].userLevel = 1
+  self.signature[ 'converter' ].userLevel = 2
   self.signature[ 'converter' ].setChoices( 'Any converter', *getConverters() )
   self.converter = 'Any converter'
 
