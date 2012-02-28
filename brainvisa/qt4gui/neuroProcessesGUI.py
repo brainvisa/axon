@@ -1732,6 +1732,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     t = _t_(process.name) + ' ' + unicode( process.instance )
     self.setWindowTitle( t )
     
+    if process.showMaximized:
+        self.showMaximized()
+    
     # title of the process : label + rotating icon when it's running
     titleLayout = QHBoxLayout( )
     centralWidgetLayout.addLayout(titleLayout)

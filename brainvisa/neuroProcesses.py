@@ -900,6 +900,10 @@ class Process( Parameterized ):
   
     The process is available in Brainvisa interface if its userLevel is lower or equal than the userLevel selected in Brainvisa options.
     0 : Basic, 1: Advanced, 2: Expert.
+    
+  .. py:attribute:: showMaximized (boolean)
+  
+    If true, the process window is shown maximized with a frame around it.
   
   :Methods:
   
@@ -924,6 +928,7 @@ class Process( Parameterized ):
   signature = Signature()
   category = 'BrainVISA'
   userLevel = 2
+  showMaximized = False
 
   def __init__( self ):
     # The following attributes can be set in user defined initialization()
@@ -3154,6 +3159,10 @@ class ProcessInfo:
   .. py:attribute:: category
     
     Process category path: <toolbox>/<category1>/<category2>/...
+    
+  .. py:attribute:: showMaximized
+  
+    Process window maximized state.
   
   .. py:attribute:: fileName
   
@@ -3180,7 +3189,7 @@ class ProcessInfo:
     Module path to the source of the process related to the toolbox directory. 
     <processes>.<category1>...<process>
   """
-  def __init__( self, id, name, signature, userLevel, category, fileName, roles, toolbox, module=None ):
+  def __init__( self, id, name, signature, userLevel, category, fileName, roles, toolbox, module=None, showMaximized=False ):
     self.id = id
     self.name = name
     #TODO: Signature cannot be pickeled
@@ -3192,6 +3201,7 @@ class ProcessInfo:
     self.valid=True # set to False if process' validation method fails
     self.procdoc = None
     self.toolbox = toolbox
+    self.showMaximized = showMaximized
 
     if module is None:
       for p in ( neuroConfig.mainPath, neuroConfig.homeBrainVISADir ):
@@ -3833,6 +3843,9 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
     v = getattr( processModule, 'category', None )
     if v is not None:
       NewProcess.category = v
+    v = getattr( processModule, 'showMaximized', None )
+    if v is not None:
+      NewProcess.showMaximized = v
 
     # Other attributes
     for n, v in processModule.__dict__.items():
@@ -3856,7 +3869,8 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
       category = NewProcess.category,
       fileName = NewProcess._fileName,
       roles = getattr( NewProcess, 'roles', () ),
-      toolbox = toolbox
+      toolbox = toolbox,
+      showMaximized = NewProcess.showMaximized
     )
 
     _processesInfo[ processInfo.id.lower() ] = processInfo
