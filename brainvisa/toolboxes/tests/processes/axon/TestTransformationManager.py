@@ -63,7 +63,7 @@ def create_test_database( self ):
     os.makedirs( database_directory )
   database_settings = neuroConfig.DatabaseSettings( database_directory )
   database_settings.builtin = True
-  database = neuroHierarchy.SQLDatabase( database_settings.expert_settings.sqliteFileName, database_directory, 'brainvisa-3.1.0' )
+  database = neuroHierarchy.SQLDatabase( database_settings.expert_settings.sqliteFileName, database_directory, 'brainvisa-3.1.0', settings=database_settings )
   neuroHierarchy.databases.add( database )
   neuroConfig.dataPath.insert( 1, database_settings )
   return database

@@ -287,7 +287,7 @@ class SQLDatabase( Database ):
       print >> sys.stderr, '!cursor!', self._id, ':', message
 
 
-  def __init__( self, sqlDatabaseFile, directory, fso=None, context=None, otherSqliteFiles=[] ):
+  def __init__( self, sqlDatabaseFile, directory, fso=None, context=None, otherSqliteFiles=[], settings=None ):
     super(SQLDatabase, self).__init__()
     self._connection = None
     self.name = os.path.normpath( directory )
@@ -311,6 +311,14 @@ class SQLDatabase( Database ):
     self.fso = FileSystemOntology.get( fso )
     self.otherSqliteFiles=otherSqliteFiles
     self._mustBeUpdated = False
+    if settings is not None:
+      self.builtin=settings.builtin
+      self.uuid=settings.expert_settings.uuid
+      self.activate_history=settings.expert_settings.activate_history
+    else:
+      self.builtin=False
+      self.uuid=None
+      self.activate_history=False
     
     self.keysByType = {}
     self._tableAttributesByTypeName = {}

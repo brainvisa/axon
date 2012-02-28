@@ -122,11 +122,13 @@ class HistoryBook( object ):
         if item is not None:
           database = item.getHierarchy( '_database' )
           if database:
-            historyBook = os.path.join( database, 'history_book' )
-            if not os.path.exists( historyBook ):
-              continue
-            historyBook = HistoryBook( historyBook, compression=True )
-            historyBooksContext.setdefault( historyBook, {} )[ item.fullPath() ] = ( item, item.modificationHash() )
+            db=neuroHierarchy.databases.database(database)
+            if db.activate_history:
+              historyBook = os.path.join( database, 'history_book' )
+              if not os.path.exists( historyBook ):
+                os.mkdir(historyBook)
+              historyBook = HistoryBook( historyBook, compression=True )
+              historyBooksContext.setdefault( historyBook, {} )[ item.fullPath() ] = ( item, item.modificationHash() )
     event = None
     if historyBooksContext:
       #print '!history! databases:', [i._HistoryBook__dir for i in historyBooksContext.iterkeys()]
