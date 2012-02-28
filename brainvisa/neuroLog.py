@@ -540,9 +540,11 @@ def initializeLog():
                          neuroConfig.logFileName + '~' )
       neuroConfig.mainLog = newLogFile( neuroConfig.logFileName )
       neuroConfig.brainvisaSessionLog = neuroConfig.mainLog.subLog()
-      neuroConfig.mainLog.append( _t_('BrainVISA session'),
-        html=neuroConfig.environmentHTML(),
-        children=neuroConfig.brainvisaSessionLog, icon='brainvisa_small.png' )
+      neuroConfig.brainvisaSessionLogItem = neuroConfig.mainLog.Item(
+          _t_('BrainVISA session'),
+          html=neuroConfig.environmentHTML(),
+          children=neuroConfig.brainvisaSessionLog, icon='brainvisa_small.png' )
+      neuroConfig.mainLog.append(neuroConfig.brainvisaSessionLogItem)
   except Exception, e:
     import traceback
     traceback.print_exc()

@@ -496,6 +496,7 @@ cleanLog=False
 profileFileName = ''
 mainLog = None
 brainvisaSessionLog = None
+brainvisaSessionLogItem = None
 startup=[]
 flatHierarchy = os.path.join( mainPath, 'shfjFlatHierarchy.py' )
 debugHierarchyScanning = None

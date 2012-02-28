@@ -65,6 +65,8 @@ class DataHistoryWindow(QtGui.QMainWindow):
 
     # menu bar
     self.process_menu = self.ui.menubar.addMenu("&Process")
+    view_menu = self.ui.menubar.addMenu("&View")
+    view_menu.addAction(self.ui.log_dock.toggleViewAction())
 
     self.ui.info.setText("History of "+self.data.fullPath())
     

@@ -208,7 +208,8 @@ class ProcessExecutionEvent( HistoricalEvent ):
   def setLog( self, log ):
     if log:
       if isinstance( log, neuroLog.LogFile.Item ):
-        self.content[ 'log' ] = [ neuroLog.LogFile.Item(what=log.what(), when=log.when(), html=log.html(), children=log.children(), icon=log.icon() ) ]
+        log._expand({})
+        self.content[ 'log' ] = [ log ]
       else:
         self.content[ 'log' ] = list( neuroLog.expandedReader( log.fileName ) )
 
@@ -234,8 +235,9 @@ class BrainVISASessionEvent( HistoricalEvent ):
   def setCurrentBrainVISASession( self ):
     self.content[ 'version' ] = neuroConfig.versionString()
     self.uuid = neuroConfig.sessionID
-    if neuroConfig.brainvisaSessionLog:
-      self.content[ 'log' ] = list( neuroLog.expandedReader( neuroConfig.brainvisaSessionLog.fileName ) )
+    if neuroConfig.brainvisaSessionLogItem:
+      neuroConfig.brainvisaSessionLogItem._expand({})
+      self.content[ 'log' ] = [ neuroConfig.brainvisaSessionLogItem ]
   
   
   def __str__( self ):
