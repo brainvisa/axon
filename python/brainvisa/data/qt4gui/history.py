@@ -68,7 +68,8 @@ class DataHistoryWindow(QtGui.QMainWindow):
     view_menu = self.ui.menubar.addMenu("&View")
     view_menu.addAction(self.ui.log_dock.toggleViewAction())
 
-    self.ui.info.setText("History of "+self.data.fullPath())
+    self.ui.info.setText("History of "+self.data.relativePath())
+    self.ui.info.setToolTip(self.data.fullPath())
     
     if self.bvproc_uuid is not None:
       bvproc_file = os.path.join(self.data.get("_database", ""), "history_book", self.bvproc_uuid + ".bvproc")
