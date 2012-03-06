@@ -571,14 +571,14 @@ class DiskItem(QObject):
     return r
   
   
-  def get( self, attrName, default = None ):
+  def get( self, attrName, default = None, search_header=False ):
     """
     Gets the value of an attribute. 
     If the attribute is not found in the attributes stored in this diskItem object, 
-    it is searched for in data file header using :py:func:`aimsFileInfo` function.
+    it can be searched for in data file header using :py:func:`aimsFileInfo` function if the option search_header is True.
     
     .. warning::
-      This method takes more time to execute than :py:func:`getHierarchy` and :py:func:`getNonHierarchy`
+      If search_header is True, the method can take more time to execute than :py:func:`getHierarchy` and :py:func:`getNonHierarchy`
       when the attribute is not found because it reads the header of the file on the filesystem.
     
     :param string attrName: name of the attribute
@@ -588,7 +588,7 @@ class DiskItem(QObject):
     if r is None: r = self._minfAttributes.get( attrName )
     if r is None: r = self._otherAttributes.get( attrName )
     if r is None: r = self._localAttributes.get( attrName )
-    if r is None:
+    if r is None and search_header:
       info = aimsFileInfo( self.fullPath() )
       for k, v in info.iteritems():
         self._otherAttributes.setdefault( k, v )
