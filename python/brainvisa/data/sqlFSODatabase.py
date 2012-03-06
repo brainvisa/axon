@@ -615,7 +615,7 @@ class SQLDatabase( Database ):
         if context is not None:
           context.write( 'Generating database tables for', self.name )
         cursor.execute( 'CREATE TABLE _FILENAMES_ (filename VARCHAR PRIMARY KEY, _uuid CHAR(36))' )
-        #cursor.execute( 'CREATE INDEX _IDX_FILENAMES_ ON _FILENAMES_ (_uuid)' )
+        cursor.execute( 'CREATE INDEX _IDX_FILENAMES_ ON _FILENAMES_ (_uuid)' )
         cursor.execute( 'CREATE TABLE _TRANSFORMATIONS_ (_uuid CHAR(36) PRIMARY KEY, _from CHAR(36), _to CHAR(36))' )
         cursor.execute( 'CREATE INDEX _IDX_TRANSFORMATIONS_1_ ON _TRANSFORMATIONS_ (_from )' )
         cursor.execute( 'CREATE INDEX _IDX_TRANSFORMATIONS_2_ ON _TRANSFORMATIONS_ ( _to )' )
@@ -701,10 +701,10 @@ class SQLDatabase( Database ):
         minf = cPickle.dumps( state )
         diskItem._globalAttributes["_database"]=self.name
         if diskItem.type.isA( 'Transformation' ):
-          destination_referential = diskItem.get( 'destination_referential' )
+          destination_referential = diskItem.getNonHierarchy( 'destination_referential' )
           if destination_referential:
             destination_referential = str( destination_referential )
-          source_referential = diskItem.get( 'source_referential' )
+          source_referential = diskItem.getNonHierarchy( 'source_referential' )
           if source_referential:
             source_referential = str( source_referential )
         else:
@@ -1100,6 +1100,7 @@ class SQLDatabase( Database ):
       types = set( self.getAttributeValues( '_type', selection, required ) )
     else:
       types = set( chain( *( self._childrenByTypeName.get( t, ()) for t in self.getAttributeValues( '_type', selection, required ) ) ) )
+    diskitem_searched="_diskItem" in attributes
     if _debug is not None:
       print >> _debug, '!findAttributes!', repr(self.name), attributes, tuple( types ), selection, required
     for t in types:
@@ -1109,8 +1110,9 @@ class SQLDatabase( Database ):
         if _debug is not None:
           print >> _debug, '!findAttributes!  No table for type', t, 'in', repr(self.name)
         continue
-      tableAttributes = [ '_diskItem' ] + tableAttributes
-      tableFields = [ '_diskItem', 'T._uuid' ] + tableFields[1:]
+      if diskitem_searched:
+        tableAttributes = [ '_diskItem' ] + tableAttributes
+        tableFields = [ '_diskItem', 'T._uuid' ] + tableFields[1:]
       nonMandatoryKeyAttributes = self._nonMandatoryKeyAttributesByType[ t ]
       #if _debug is not None:
         #print >> _debug, '!findAttributes!  tableFields(', repr( t ), ') =', repr( tableFields )
@@ -1144,7 +1146,9 @@ class SQLDatabase( Database ):
             #print >> _debug, '!findAttributes!  getAttributeValues(', repr( a ), ', ... ) =', repr( v )
           if v:
             where[ f ] = v
-      sql = 'SELECT DISTINCT ' + ', '.join( select ) + " FROM '" + tableName + "' T, _DISKITEMS_ D WHERE T._uuid=D._uuid"
+      sql = 'SELECT DISTINCT ' + ', '.join( select ) + " FROM '" + tableName + "' "
+      if diskitem_searched:
+        sql +=" T, _DISKITEMS_ D WHERE T._uuid=D._uuid "
       if where:
         sqlWhereClauses = []
         for f, v in where.iteritems():
@@ -1161,7 +1165,10 @@ class SQLDatabase( Database ):
               else :
                 whereParts += ("'" + i +"'", )
             sqlWhereClauses.append( f + ' IN (' + ','.join( whereParts ) + ')' )
-        sql += ' AND ' + ' AND '.join( sqlWhereClauses )
+        if diskitem_searched:
+          sql += ' AND ' + ' AND '.join( sqlWhereClauses )
+        else:
+          sql += ' WHERE ' + ' AND '.join( sqlWhereClauses )
       if _debug is not None:
         print >> _debug, '!findAttributes! ->', sql
       cursor = self._getDatabaseCursor()
