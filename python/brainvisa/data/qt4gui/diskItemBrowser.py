@@ -193,10 +193,15 @@ class DiskItemBrowser( QDialog ):
     self._editableAttributes, self._attributesValues = self._database.getAttributesEdition( *self._requestedTypes )
     self._editableAttributes = tuple( self._editableAttributes )
     self._editableAttributesValues = dict( ( (i,set()) for i in self._editableAttributes ) )
-    for values in self._database.findAttributes( self._editableAttributes, _type='Any Type' ):
-      for i in xrange( len(values) ):
-        if values[ i ]:
-          self._editableAttributesValues[ self._editableAttributes[ i ] ].add( values[ i ] )
+    if write:
+      searchedTypes=['Any Type']
+    else:
+      searchedTypes=self._requestedTypes
+    for t in searchedTypes:
+      for values in self._database.findAttributes( self._editableAttributes, _type=t ):
+        for i in xrange( len(values) ):
+          if values[ i ]:
+            self._editableAttributesValues[ self._editableAttributes[ i ] ].add( values[ i ] )
     #print '!DiskItemBrowser! _editableAttributes', self._editableAttributes
     #print '!DiskItemBrowser! _editableAttributesValues', self._editableAttributesValues
     #print '!DiskItemBrowser! _attributesValues', self._attributesValues
