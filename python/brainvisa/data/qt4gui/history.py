@@ -46,10 +46,29 @@ class DataHistoryWindow(QtGui.QMainWindow):
   .. py:attribute:: data
   
     The :py:class:`DiskItem` whose history is displayed in this window.
+    
+  .. py:attribute:: ui
+  
+    The :py:class:`QtGui.QMainWindow` loaded from a qt designer file that is the base of this window.
+    
+  .. py:attribute:: bvproc_uuid
+  
+    The uuid of the bvproc history file that is displayed in this window.
+    
+  .. py:attribute:: process_menu
+  
+    The "Process" :py:class:`QtGui.QMenu` of the window in the menubar. 
+    It contains an action to open the process of the history in normal mode (not read only).
+    
+  .. py:attribute:: process_view
+  
+    The widget of the process described in the history bvproc file.
   """
   data = None
   ui = None
-  
+  bvproc_uuid = None
+  process_menu = None
+  process_view = None
   
   def __init__(self, data, bvproc_uuid, parent=None):
     super(DataHistoryWindow, self).__init__(parent)
@@ -62,6 +81,7 @@ class DataHistoryWindow(QtGui.QMainWindow):
 
     self.data = data
     self.bvproc_uuid = bvproc_uuid
+    self.process_view = None
 
     # menu bar
     self.process_menu = self.ui.menubar.addMenu("&Process")
@@ -85,27 +105,40 @@ class DataHistoryWindow(QtGui.QMainWindow):
           if log:
             self.show_log(log, bvsession)
 
-  #def closeEvent( self, event ):
-    #if self.process_view:
-      #self.process_view.cleanup()
-    #QtGui.QMainWindow.closeEvent( self, event )
+  def closeEvent( self, event ):
+    """Called when the window is closed. Cleans up the process view before closing."""
+    if self.process_view:
+      self.process_view.cleanup()
+    QtGui.QMainWindow.closeEvent( self, event )
 
 
   def show_process(self, process):
+    """
+    Shows the signature of the process in read only mode.
+    
+    :param process: Instance of :py:class:`Process`.
+    """
     if process:
       QtGui.QApplication.setOverrideCursor(QtGui.QCursor(Qt.WaitCursor))
       try:
-        process_view = ProcessView(process, parent=self, read_only=True)
+        self.process_view = ProcessView(process, parent=self, read_only=True)
       finally:
         QtGui.QApplication.restoreOverrideCursor()
-      process_view.inlineGUI.hide()
-      process_view.info.hide()
-      self.ui.process_widget.layout().addWidget(process_view)
-      process_view.action_clone_process.setText("Edit")
-      self.process_menu.addAction(process_view.action_clone_process)
+      self.process_view.inlineGUI.hide()
+      self.process_view.info.hide()
+      self.ui.process_widget.layout().addWidget(self.process_view)
+      self.process_view.action_clone_process.setText("Edit")
+      self.process_menu.addAction(self.process_view.action_clone_process)
   
   
   def show_log(self, log, bvsession):
+    """
+    Shows the given process and brainvisa session logs in a log window.
+    
+    :param log: list of :py:class:`Log.Item` that represent the log of the process in the history file.
+    :param string bvsession: uuid of the brainvisa session mentionned in the history file. 
+    Enables to retrieve the brainvisa session history file and display it in the log window.
+    """
     session_item=None
     bvsession_file = os.path.join(self.data.get("_database", ""), "history_book", str(bvsession) + ".bvsession")
     if os.path.exists(bvsession_file):
