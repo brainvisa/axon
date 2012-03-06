@@ -394,7 +394,7 @@ class DatabasesTransformationManager( object ):
           if str(result.uuid()) != oldref and diskItem.isWriteable():
             diskItem.setMinf( 'referential', result.uuid() )
             #diskItem.saveMinf()
-          self.__databases.insertDiskItem( diskItem, update=True )
+            self.__databases.insertDiskItem( diskItem, update=True )
 
     return result
 
