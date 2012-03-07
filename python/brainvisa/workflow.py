@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import pickle
+import types
 
 from neuroProcesses import ProcessExecutionNode, SerialExecutionNode, ParallelExecutionNode
 from brainvisa.data.readdiskitem import ReadDiskItem
@@ -32,7 +33,7 @@ class ProcessToWorkflow( object ):
     # self._iofiles = fileId -> (list of job for which the file is an input, list of job for which the file is an output) 
     self._iofiles = {}
   
-    self.brainvisa_cmd = 'brainvisa'
+    self.brainvisa_cmd = [ 'python', '-m', 'brainvisa.axon.runprocess' ]
   
   def _createIdentifier( self, type ):
     count = self._identifiers.get( type, 0 ) + 1
@@ -297,7 +298,7 @@ class ProcessToWorkflow( object ):
 
 
   def _create_job( self, depth, jobId, process, inGroup, priority ):
-    command = [ self.brainvisa_cmd, '-r', process.id() ]
+    command = self.brainvisa_cmd + [ process.id() ]
     for name in process.signature.keys():
       value = getattr( process, name )
       if isinstance( value, DiskItem ):
@@ -423,7 +424,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
                 output = None, 
                 input_file_processing="use local path", 
                 output_file_processing="use local path",
-                brainvisa_cmd="brainvisa",
+                brainvisa_cmd=["python", "-m", "brainvisa.axon.runprocess" ],
                 brainvisa_db=None):
     '''
     brainvisa_db: list of the brainvisa db uuid which will be used in the case 
@@ -443,6 +444,8 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
     self.__output_file_processing = output_file_processing
     
     self.brainvisa_cmd = brainvisa_cmd
+    if type( self.brainvisa_cmd ) in types.StringTypes:
+      self.brainvisa_cmd = [ brainvisa_cmd ]
     if brainvisa_db == None:
       self.brainvisa_db = []
     else:

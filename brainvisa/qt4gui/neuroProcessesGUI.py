@@ -2183,11 +2183,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       input_file_processing = submission_dlg.combo_in_files.currentText()
       output_file_processing = submission_dlg.combo_out_files.currentText()
 
-      brainvisa_cmd = 'brainvisa'
-      if sys.platform == 'win32':
-        sw_mode = _computing_resource_pool.connection(resource_id).config.get_mode()
-        if sw_mode != soma.workflow.configuration.REMOTE_MODE:
-          brainvisa_cmd = 'brainvisa.bat'
+      brainvisa_cmd = [ 'python', '-m', 'brainvisa.axon.runprocess' ]
 
       self.readUserValues()
 
