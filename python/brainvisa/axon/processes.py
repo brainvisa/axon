@@ -37,7 +37,7 @@
 # option). A independent GUI is displayed from BV and operates processes.
 
 import brainvisa.axon
-import sys, atexit
+import sys, atexit, os
 import neuroConfig, neuroData, neuroProcesses, neuroHierarchy, neuroLog
 from minfExtensions import initializeMinfExtensions
 from brainvisa.data import temporary
@@ -69,7 +69,9 @@ def initializeProcesses():
 
     '''
     atexit.register(cleanup)
-    brainvisa.toolboxes.readToolboxes( neuroConfig.toolboxesDir, neuroConfig.homeBrainVISADir )
+    if not neuroConfig.noToolBox:
+        brainvisa.toolboxes.readToolboxes( neuroConfig.toolboxesDir,
+            neuroConfig.homeBrainVISADir )
     for toolbox in brainvisa.toolboxes.allToolboxes():
       toolbox.init()
 
@@ -85,20 +87,54 @@ def initializeProcesses():
     neuroData.initializeData()
     neuroHierarchy.initializeDatabases()
     neuroProcesses.initializeProcesses()
+    if neuroConfig.gui:
+        from neuroDataGUI import initializeDataGUI
+        initializeDataGUI()
+        from neuroProcessesGUI import initializeProcessesGUI
+        initializeProcessesGUI()
+
+    if not neuroConfig.fastStart:
+        # write information about brainvisa log file
+        neuroProcesses.defaultContext().write("The log file for this session is " + repr(neuroConfig.logFileName) )
+        # check for expired run information : ask user what to do
+        neuroConfig.runsInfo = neuroConfig.RunsInfo()
+        neuroConfig.runsInfo.check(neuroProcesses.defaultContext())
 
     # neuroProcesses.readTypes() (actually imported from neuroDiskItems)
     # lists all existing types in the ontology
     neuroProcesses.readTypes()
     # neuroHierarchy.databases gets populated
 
-    neuroHierarchy.openDatabases()
+    # Databases loading is skipped when no toolbox is loaded because specific
+    # hierarchies from unloaded toolboxes may be needed to define the ontology
+    # describing a given database organization
+    if not neuroConfig.noToolBox and not neuroConfig.fastStart:
+        neuroHierarchy.openDatabases()
 
     neuroConfig.brainvisaSessionLogItem = neuroLog.log( 'starting BrainVISA',
         html=neuroConfig.environmentHTML(), icon='brainvisa_small.png' )
-    neuroProcesses.defaultContext().write("The log file for this session is " \
-        + repr(neuroConfig.logFileName) )
-    neuroConfig.runsInfo.check(neuroProcesses.defaultContext())
 
     # Makes the list of all processes availables in the processes path
     neuroProcesses.readProcesses(neuroConfig.processesPath)
 
+    if not neuroConfig.fastStart:
+        # executes brainvisa startup.py if it exists. there's no use to execute user startup.py here because .brainvisa is a toolbox and its startup.py will be executed with the toolboxes' ones.
+        if os.path.exists(neuroConfig.siteStartupFile):
+              execfile( neuroConfig.siteStartupFile, globals(), {} )
+        # Search for hierarchy and types paths in toolboxes
+        for toolbox in brainvisa.toolboxes.allToolboxes():
+              # executes startup.py of each toolbox if it exists
+              if os.path.exists( toolbox.startupFile ):
+                  execfile( toolbox.startupFile, globals(), {} )
+
+        localsStartup = {}
+        for f in neuroConfig.startup:
+            try:
+                if isinstance( f, basestring ):
+                    localsStartup = globals().copy()
+                    exec f in localsStartup, localsStartup
+                else:
+                    f()
+            except:
+                showException()
+        del localsStartup

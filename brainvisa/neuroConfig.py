@@ -888,10 +888,7 @@ if logFileName is None:
   if userProfile:
     logFileName = os.path.join( homeBrainVISADir, 'brainvisa-' + userProfile+'.log' )
 
-if not fastStart:
-  runsInfo = RunsInfo()
-else:
-  runsInfo = None
+runsInfo = None
 
 from neuroException import showException
 

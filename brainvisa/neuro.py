@@ -103,8 +103,7 @@ def cleanup():
   neuroProcesses.cleanupProcesses()
   neuroLog.closeMainLog()
   temporary.manager.close()
-  
-atexit.register(cleanup)
+
 
 class EventFilter( QObject ):
   def eventFilter( self, o, e ):
@@ -139,64 +138,32 @@ def main():
   #  sys.excepthook = exceptionHook
   # InitializationoptionFile
   try:
-    if not noToolBox:
-      readToolboxes( neuroConfig.toolboxesDir, neuroConfig.homeBrainVISADir )
-
-    for toolbox in allToolboxes():
-      toolbox.init()
-
     neuroConfig.initGlobalVariables()
-    
-    temporary.initializeTemporaryFiles( 
-      defaultTemporaryDirectory = neuroConfig.temporaryDirectory )
-    
-    neuroLog.initializeLog()
-    initializeData()
 
-    if neuroConfig.validationEnabled:
-      # Looking for main validation directory
-      try:
-        v = os.path.dirname( sys.argv[0] )
-        v = v[ v.rfind( '-' )+1: ]
-        p4 = os.environ.get( 'P4', '' )
-        # Looking for validation directory
-        for d in ( 'validation-' + v, 'validation-main', ):
-          d = os.path.join( p4, d, 'brainvisa' )
-          if os.path.isdir( d ): break
-        else:
-          raise RuntimeError( 'Cannot find validation directory' )
-        neuroConfig.processesPath.append( os.path.join( d, 'processes' ) )
-      except:
-        d = None
-        neuroConfig.validationEnabled = False
-        showException( afterError=': validation mode disabled' )
+    # this is obsolete and doesn't do anything any longer
+    #if neuroConfig.validationEnabled:
+      ## Looking for main validation directory
+      #try:
+        #v = os.path.dirname( sys.argv[0] )
+        #v = v[ v.rfind( '-' )+1: ]
+        #p4 = os.environ.get( 'P4', '' )
+        ## Looking for validation directory
+        #for d in ( 'validation-' + v, 'validation-main', ):
+          #d = os.path.join( p4, d, 'brainvisa' )
+          #if os.path.isdir( d ): break
+        #else:
+          #raise RuntimeError( 'Cannot find validation directory' )
+        #neuroConfig.processesPath.append( os.path.join( d, 'processes' ) )
+      #except:
+        #d = None
+        #neuroConfig.validationEnabled = False
+        #showException( afterError=': validation mode disabled' )
 
-    initializeDatabases()
-    initializeProcesses()
-    initializeDataGUI()
-    initializeProcessesGUI()
+    from brainvisa import axon
+    axon.initializeProcesses()
 
-    if not neuroConfig.fastStart:
-      # write information about brainvisa log file
-      defaultContext().write("The log file for this session is " + repr(neuroConfig.logFileName) )
-      # check for expired run information : ask user what to do
-      neuroConfig.runsInfo.check(defaultContext())
-
-
-    if neuroConfig.validationEnabled:
-      neuroLog.log( 'Validation mode', html='Validation mode enabled. Databases are going to be modified.', icon='warning.png' )
-  
-    readTypes()
-    # Databases loading is skipped when no toolbox is loaded because specific
-    # hierarchies from unloaded toolboxes may be needed to define the ontology
-    # describing a given database organization
-    if not neuroConfig.noToolBox and not neuroConfig.fastStart:
-      openDatabases()
-    
     neuroHierarchy.update_soma_workflow_translations()
-   
-    readProcesses( neuroConfig.processesPath )
-    
+
     nbDatabases=len(neuroHierarchy.databases._databases)
     if neuroConfig.sharedDatabaseFound:
       nbDatabases-=1
@@ -225,42 +192,21 @@ def main():
     raise
     showException()
 
-  if neuroConfig.validationEnabled:
-    defaultContext().warning( 'Validation mode enabled. Databases are going to be modified.' )
-    try:
-      if d:
-        neuroConfig.validationDirectory = d
-        execfile( os.path.join( d, 'initBrainVISAValidation.py' ) )
-    except:
-      showException()
-  
+  # this is obsolete and doesn't do anything any longer
+  #if neuroConfig.validationEnabled:
+    #neuroLog.log( 'Validation mode', html='Validation mode enabled. Databases are going to be modified.', icon='warning.png' )
+    #defaultContext().warning( 'Validation mode enabled. Databases are going to be modified.' )
+    #try:
+      #if d:
+        #neuroConfig.validationDirectory = d
+        #execfile( os.path.join( d, 'initBrainVISAValidation.py' ) )
+    #except:
+      #showException()
+
   if neuroConfig.gui:
     showMainWindow()
-  
-  if not neuroConfig.fastStart:
-    # executes brainvisa startup.py if it exists. there's no use to execute user startup.py here because .brainvisa is a toolbox and its startup.py will be executed with the toolboxes' ones.
-    if os.path.exists(neuroConfig.siteStartupFile):
-      neuroConfig.startup.append( "execfile(" + repr(neuroConfig.siteStartupFile) + ",globals(),{})" )
-    # Search for hierarchy and types paths in toolboxes
-    for toolbox in allToolboxes():
-      # executes startup.py of each toolbox if it exists
-      if os.path.exists( toolbox.startupFile ):
-        neuroConfig.startup.append( "execfile(" + repr(toolbox.startupFile) + ",globals(),{})" )
-
-  localsStartup = {}
-  for f in neuroConfig.startup:
-    try:
-      if isinstance( f, basestring ):
-        localsStartup = globals().copy()
-        exec f in localsStartup, localsStartup
-      else:
-        f()
-    except:
-      showException()
-  del localsStartup
 
 
-initializeMinfExtensions()
 
 if neuroConfig.gui:
   # QApplication.setColorSpec( QApplication.ManyColor )
