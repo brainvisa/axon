@@ -48,16 +48,16 @@ import neuroException
 from neuroProcesses import *
 
 def cleanup():
-  """
-  Cleanup to be done at Brainvisa exiting. This function is registered in atexit.
-  """
-  if neuroConfig.runsInfo:
-    neuroConfig.runsInfo.delete()
-  neuroConfig.clearObjects()
-  neuroHierarchy.databases.currentThreadCleanup()
-  neuroProcesses.cleanupProcesses()
-  neuroLog.closeMainLog()
-  temporary.manager.close()
+    """
+    Cleanup to be done at Brainvisa exiting. This function is registered in atexit.
+    """
+    if neuroConfig.runsInfo:
+        neuroConfig.runsInfo.delete()
+    neuroConfig.clearObjects()
+    neuroHierarchy.databases.currentThreadCleanup()
+    neuroProcesses.cleanupProcesses()
+    neuroLog.closeMainLog()
+    temporary.manager.close()
 
 
 def initializeProcesses():
@@ -83,7 +83,11 @@ def initializeProcesses():
             defaultTemporaryDirectory = neuroConfig.temporaryDirectory )
 
     initializeMinfExtensions()
-    neuroLog.initializeLog()
+
+    if not neuroConfig.fastStart:
+        # check for expired run information : ask user what to do
+        neuroConfig.runsInfo = neuroConfig.RunsInfo()
+        neuroLog.initializeLog()
 
     #neuroConfig.qtApplication = QApplication( sys.argv, QApplication.Tty )
     #   I removed this neuroConfig.qtApplication line because it hangs the
@@ -100,8 +104,6 @@ def initializeProcesses():
     if not neuroConfig.fastStart:
         # write information about brainvisa log file
         neuroProcesses.defaultContext().write("The log file for this session is " + repr(neuroConfig.logFileName) )
-        # check for expired run information : ask user what to do
-        neuroConfig.runsInfo = neuroConfig.RunsInfo()
         neuroConfig.runsInfo.check(neuroProcesses.defaultContext())
 
     # neuroProcesses.readTypes() (actually imported from neuroDiskItems)
