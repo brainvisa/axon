@@ -87,11 +87,8 @@ def initializeProcesses():
     if not neuroConfig.fastStart:
         # check for expired run information : ask user what to do
         neuroConfig.runsInfo = neuroConfig.RunsInfo()
-        neuroLog.initializeLog()
 
-    #neuroConfig.qtApplication = QApplication( sys.argv, QApplication.Tty )
-    #   I removed this neuroConfig.qtApplication line because it hangs the
-    #   Anatomist instance which has also a QApplication
+    neuroLog.initializeLog()
     neuroData.initializeData()
     neuroHierarchy.initializeDatabases()
     neuroProcesses.initializeProcesses()
