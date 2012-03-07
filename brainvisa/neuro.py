@@ -138,8 +138,6 @@ def main():
   #  sys.excepthook = exceptionHook
   # InitializationoptionFile
   try:
-    neuroConfig.initGlobalVariables()
-
     # this is obsolete and doesn't do anything any longer
     #if neuroConfig.validationEnabled:
       ## Looking for main validation directory
