@@ -42,6 +42,10 @@ import neuroConfig, neuroData, neuroProcesses, neuroHierarchy, neuroLog
 from minfExtensions import initializeMinfExtensions
 from brainvisa.data import temporary
 import brainvisa.toolboxes
+import neuroException
+# the environment has to contain everything necessary as neuroConfig
+# used to do: import many things here...
+from neuroProcesses import *
 
 def cleanup():
   """
@@ -127,14 +131,14 @@ def initializeProcesses():
               if os.path.exists( toolbox.startupFile ):
                   execfile( toolbox.startupFile, globals(), {} )
 
-        localsStartup = {}
-        for f in neuroConfig.startup:
-            try:
-                if isinstance( f, basestring ):
-                    localsStartup = globals().copy()
-                    exec f in localsStartup, localsStartup
-                else:
-                    f()
-            except:
-                showException()
-        del localsStartup
+    localsStartup = {}
+    for f in neuroConfig.startup:
+        try:
+            if isinstance( f, basestring ):
+                localsStartup = globals().copy()
+                exec f in localsStartup, localsStartup
+            else:
+                f()
+        except:
+            neuroException.showException()
+    del localsStartup
