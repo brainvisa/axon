@@ -122,6 +122,8 @@ def initializeProcesses():
     neuroProcesses.readProcesses(neuroConfig.processesPath)
 
     if not neuroConfig.fastStart:
+        from neuroProcessesGUI import showProcess # may be used directly
+        global showProcess
         # executes brainvisa startup.py if it exists. there's no use to execute user startup.py here because .brainvisa is a toolbox and its startup.py will be executed with the toolboxes' ones.
         if os.path.exists(neuroConfig.siteStartupFile):
               execfile( neuroConfig.siteStartupFile, globals(), {} )
