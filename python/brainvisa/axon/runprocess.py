@@ -46,14 +46,21 @@ from optparse import OptionParser
 usage = 'Usage: %prog [options] processname [arg1] [arg2] ... [argx=valuex] [argy=valuey] ...\n\nExample:\n%prog --enabledb threshold ~/data/irm.ima /tmp/th.nii threshold1=80'
 parser = OptionParser( description = 'Run a single BrainVISA / Axon process',
   usage=usage )
-parser.add_option( '--enabledb', dest='enabledb', action='store_true', default=False, help='enable databasing (slower startup, but all features enabled)' )
+parser.add_option( '--enabledb', dest='enabledb', action='store_true',
+  default=False,
+  help='enable databasing (slower startup, but all features enabled)' )
+parser.add_option( '--historyBook', dest='historyBook', action='append',
+  help='store history information files in this directory (otherwise disabled unless dabasing is enabled)' )
 
 (options, args) = parser.parse_args()
 
+neuroConfig.gui = False
 if not options.enabledb:
   neuroConfig.fastStart = True
-neuroConfig.gui = False
-neuroConfig.logFileName = ''
+if options.historyBook:
+  neuroConfig.historyBookDirectory = options.historyBook
+if not options.enabledb and not options.historyBook:
+  neuroConfig.logFileName = ''
 
 axon.initializeProcesses()
 
@@ -68,7 +75,7 @@ for arg in args:
       kwargs[ m.group(1) ] = \
         neuroConfig._convertCommandLineParameter( m.group(2) )
       todel.append( arg )
-args = ( arg for arg in args if arg not in todel )
+args = [ arg for arg in args if arg not in todel ]
 
 neuroProcesses.defaultContext().runProcess( *args, **kwargs )
 

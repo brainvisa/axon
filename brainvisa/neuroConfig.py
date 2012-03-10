@@ -189,6 +189,10 @@ Several global variables are defined in this module to store **Brainvisa configu
 
   filename where profiling information may be written. Set with ``--profile`` option.
   
+.. py:data:: historyBookDirectory
+
+  path to history_book directory, where processes executions and logs will be saved. Normally it is None so that it is stored in the database of each output data. But in some specific cases (distributed execution of single process) it can be useful to force it.
+  May be a list of directories: in that case, history files are duplicated in each of them.
 """
 
 __docformat__ = 'restructuredtext en'
@@ -502,6 +506,7 @@ flatHierarchy = os.path.join( mainPath, 'shfjFlatHierarchy.py' )
 debugHierarchyScanning = None
 debugParametersLinks = None
 validationEnabled = False
+historyBookDirectory = None
 
 userEmail = ''
 supportEmail = 'support@brainvisa.info'

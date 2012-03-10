@@ -32,6 +32,8 @@ class ProcessToWorkflow( object ):
     self._fileNames = {}
     # self._iofiles = fileId -> (list of job for which the file is an input, list of job for which the file is an output) 
     self._iofiles = {}
+    # list of history boook directories to transfer back after wf execution
+    self._historyBooks = []
   
     self.brainvisa_cmd = [ 'python', '-m', 'brainvisa.axon.runprocess' ]
   
@@ -109,6 +111,7 @@ class ProcessToWorkflow( object ):
 
 
   def doIt( self ):
+    self._historyBooks = []
     # set the priority 0 to all jobs
     #self._processExecutionNode( self.process._executionNode, None, priority=0 )
     # if the root node is a parallel node, its children will have a decreasing
@@ -133,8 +136,33 @@ class ProcessToWorkflow( object ):
         #self.create_link( fileId, i )
       #for o in output:
         #self.create_link( o, fileId )
-  
-  
+
+
+  def _handleHistoryBook( self, inputFileName ):
+    '''Appends the history_book directory as an output file transfer, for a
+    given disk item, if it belongs to a database with history handling.
+    '''
+    database = inputFileName.get( '_database' )
+    if not database:
+      return # will not record history for this.
+    db=neuroHierarchy.databases.database(database)
+    if db is None or not db.activate_history:
+      return # will not record history for this.
+    databaseUuid = neuroHierarchy.databases.database(database).uuid
+    fileName = os.path.join( database, 'history_book' )
+    if fileName in self._fileNames:
+      return # already done
+    fileId = self._createIdentifier( self.FILE )
+    #print "file => " + repr(fileName.fullPath())
+    #print "database => " + repr(database)
+    #print "databaseUuid => " + repr(databaseUuid)
+    full_paths = [ fileName ]
+    self._files[fileId]=(fileName, full_paths, databaseUuid, database)
+    self._fileNames[fileName]= fileId
+    self._iofiles.setdefault( fileId, ( [], [] ) )[ 1 ].append( [] )
+    self._historyBooks.append( fileName )
+
+
   def _processNodes( self, depth, nodes, inGroup, begin, end, serial, previous ):
     first = None
     last = previous
@@ -164,6 +192,7 @@ class ProcessToWorkflow( object ):
               else:
                 fileId = self._fileNames[fileName.fullPath()]
               self._iofiles.setdefault( fileId, ( [], [] ) )[ 1 ].append( id )
+              # self._handleHistoryBook( fileName )
               
           elif isinstance( type, ReadDiskItem ):
             fileName = getattr( process, name, None )
@@ -213,6 +242,7 @@ class ProcessToWorkflow( object ):
                 else:
                   fileId = self._fileNames[fileName.fullPath()]
                 self._iofiles.setdefault( fileId, ( [], [] ) )[ 1 ].append( id )
+                # self._handleHistoryBook( fileName )
 
           elif isinstance(type, ListOf) and \
                isinstance(type.contentType, ReadDiskItem):
@@ -298,7 +328,10 @@ class ProcessToWorkflow( object ):
 
 
   def _create_job( self, depth, jobId, process, inGroup, priority ):
-    command = self.brainvisa_cmd + [ process.id() ]
+    command = list( self.brainvisa_cmd )
+    for hb in self._historyBooks:
+      command += [ '--historyBook', hb ]
+    command.append( process.id() )
     for name in process.signature.keys():
       value = getattr( process, name )
       if isinstance( value, DiskItem ):
@@ -316,7 +349,7 @@ class ProcessToWorkflow( object ):
       else:
         value = str( value )
       command.append( value )
-    #print "==> command " + repr(command)
+    # print "==> command " + repr(command)
     self.create_job( depth, jobId, command, inGroup, label=process.name, priority=priority )
  
 

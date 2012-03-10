@@ -84,7 +84,7 @@ def initializeProcesses():
 
     initializeMinfExtensions()
 
-    if not neuroConfig.fastStart:
+    if not neuroConfig.fastStart or neuroConfig.historyBookDirectory:
         # check for expired run information : ask user what to do
         neuroConfig.runsInfo = neuroConfig.RunsInfo()
 

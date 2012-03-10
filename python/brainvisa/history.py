@@ -42,6 +42,7 @@ from gzip import open as gzipOpen
 import neuroLog, neuroConfig, neuroHierarchy, neuroException
 from glob import glob
 import weakref
+import types
 
 minfHistory = 'brainvisa-history_2.0'
 
@@ -107,31 +108,40 @@ class HistoryBook( object ):
   def removeEvent( self, uuid ):
     os.remove( self._findEventFileName( uuid ) )
 
+  @staticmethod
+  def getHistoryBookDirectories( item ):
+    historyBook = None
+    if hasattr( neuroConfig, 'historyBookDirectory' ):
+      historyBook = neuroConfig.historyBookDirectory
+    if not historyBook and item is not None:
+      database = item.getHierarchy( '_database' )
+      if database:
+        db=neuroHierarchy.databases.database(database)
+        if db is not None and db.activate_history:
+          historyBook = os.path.join( database, 'history_book' )
+    if type( historyBook ) in types.StringTypes:
+      historyBook = [ historyBook ]
+    return historyBook
 
   @staticmethod
   def storeProcessStart( executionContext, process ):
-    #print '!history! storeProcessStart:', process
+    # print '!history! storeProcessStart:', process
     historyBooksContext = {}
     for parameterized, attribute, type in process.getAllParameters():
       if isinstance( type, neuroHierarchy.WriteDiskItem ):
         item = getattr( parameterized, attribute )
-        if item is not None:
-          attributes = item.hierarchyAttributes()
-        else:
-          attributes = None
-        if item is not None:
-          database = item.getHierarchy( '_database' )
-          if database:
-            db=neuroHierarchy.databases.database(database)
-            if db.activate_history:
-              historyBook = os.path.join( database, 'history_book' )
-              if not os.path.exists( historyBook ):
-                os.mkdir(historyBook)
-              historyBook = HistoryBook( historyBook, compression=True )
-              historyBooksContext.setdefault( historyBook, {} )[ item.fullPath() ] = ( item, item.modificationHash() )
+        historyBooks = HistoryBook.getHistoryBookDirectories( item )
+        if historyBooks:
+          for historyBook in historyBooks:
+            if not os.path.exists( historyBook ):
+              os.mkdir(historyBook)
+            historyBook = HistoryBook( historyBook, compression=True )
+            print item
+            historyBooksContext.setdefault( historyBook, {} )[ item.fullPath() ] = ( item, item.modificationHash() )
+
     event = None
     if historyBooksContext:
-      #print '!history! databases:', [i._HistoryBook__dir for i in historyBooksContext.iterkeys()]
+      # print '!history! databases:', [i._HistoryBook__dir for i in historyBooksContext.iterkeys()]
       event = executionContext.createProcessExecutionEvent()
       for book in historyBooksContext.iterkeys():
         book.storeEvent( event )

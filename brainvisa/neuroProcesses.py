@@ -2875,12 +2875,17 @@ class ExecutionContext:
   def createProcessExecutionEvent( self ):
     from brainvisa.history import ProcessExecutionEvent
     event = ProcessExecutionEvent()
-    event.setProcess( self.process )
+    process = None
+    if hasattr( self, 'process' ):
+      process = self.process
     stack = self._processStack()
     if stack:
+      if process is None:
+        process = stack[0].process
       log = stack[0].log
       if log is not None:
         event.setLog( log )
+    event.setProcess( process )
     return event
 
   def _attachProgress( self, parent, count=None, process=None ):
