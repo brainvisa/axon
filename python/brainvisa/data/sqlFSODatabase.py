@@ -1095,7 +1095,7 @@ class SQLDatabase( Database ):
     if debugHTML:
       print >> debugHTML, '</body></html>'
 
-  def findAttributes( self, attributes, selection={}, _debug=sys.stdout, exactType=False, **required ):
+  def findAttributes( self, attributes, selection={}, _debug=None, exactType=False, **required ):
     if exactType:
       types = set( self.getAttributeValues( '_type', selection, required ) )
     else:
