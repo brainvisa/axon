@@ -114,9 +114,6 @@ def initializeProcesses():
     if not neuroConfig.noToolBox and not neuroConfig.fastStart:
         neuroHierarchy.openDatabases()
 
-    neuroConfig.brainvisaSessionLogItem = neuroLog.log( 'starting BrainVISA',
-        html=neuroConfig.environmentHTML(), icon='brainvisa_small.png' )
-
     # Makes the list of all processes availables in the processes path
     neuroProcesses.readProcesses(neuroConfig.processesPath)
 
