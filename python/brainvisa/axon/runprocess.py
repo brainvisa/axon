@@ -79,3 +79,6 @@ args = [ arg for arg in args if arg not in todel ]
 
 neuroProcesses.defaultContext().runProcess( *args, **kwargs )
 
+sys.exit( neuroConfig.exitValue )
+
+
