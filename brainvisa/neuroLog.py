@@ -276,7 +276,7 @@ class LogFile:
 
 
   #----------------------------------------------------------------------------
-  def __init__( self, fileName, parentLog, lock, file=None ):
+  def __init__( self, fileName, parentLog, lock, file=None, temporary=False ):
     """
     :param string fileName: path to the file where the log information will be written.
     :param parentLog: parent :py:class:`Logfile`. 
@@ -290,6 +290,7 @@ class LogFile:
     self._parent = parentLog
     self._opened = weakref.WeakValueDictionary()
     self._closed = set()
+    self._temporary = temporary
     if file is None:
       self._file = open( fileName, 'w' )
     else:
@@ -337,6 +338,8 @@ class LogFile:
       if self._lock is not None:
         self._lock.release()
         self._lock = None
+    if self._temporary:
+      os.unlink( self.fileName )
   
   
   def subLog( self, fileName = None ):

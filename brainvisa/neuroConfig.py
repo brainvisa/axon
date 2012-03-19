@@ -780,10 +780,18 @@ class RunsInfo:
   :var integer count: number of executions of Brainvisa
   :var dictonary expiredRuns: dictionary containing the runs for which the timeout is reached. The user will be asked if these runs are still alive. If not, the corresponding log files will be deleted and the *current_runs.minf* file will be cleaned.
   """
-  def __init__(self):
+  def __init__(self, dontrecordruns=False):
     global logFileName
     global cleanLog
-    self.file=os.path.join(homeBrainVISADir, "current_runs.minf")
+    self.dontrecordruns = dontrecordruns
+    if dontrecordruns:
+      import tempfile
+      fd, self.file = tempfile.mkstemp( suffix='.minf',
+        prefix='bv_current_runs', dir=temporaryDirectory, text=True )
+      os.close( fd )
+      os.unlink( self.file )
+    else:
+      self.file=os.path.join(homeBrainVISADir, "current_runs.minf")
     if cleanLog:
       try:
         if os.path.exists(self.file):
@@ -802,7 +810,7 @@ class RunsInfo:
     try:
       if os.path.exists( self.file ):
         self.runs, self.count = readMinf(self.file)
-      currentTime = time.time() 
+      currentTime = time.time()
       
       # register information for current run
       infos={ 'host' : socket.gethostname(), 'pid' : os.getpid(), 'time' : currentTime }
@@ -812,7 +820,12 @@ class RunsInfo:
         i+=1
       self.currentRun=i
       if logFileName is None:
-        if self.currentRun > 1:
+        if dontrecordruns:
+          fd, logFileName=tempfile.mkstemp( suffix='.log', prefix='brainvisa',
+            dir=temporaryDirectory, text=True )
+          os.close( fd )
+          os.unlink( logFileName )
+        elif self.currentRun > 1:
           logFileName=os.path.join( homeBrainVISADir, 'brainvisa'+ str(self.currentRun) +'.log' )
         else : 
           logFileName=os.path.join( homeBrainVISADir, 'brainvisa.log' )
@@ -833,10 +846,13 @@ class RunsInfo:
     """
     if os.path.exists( self.file ):
       try:
-        self.runs, self.count = readMinf(self.file)
-        self.runs.pop(self.currentRun, None)
-        self.count=len(self.runs)
-        self.write()
+        if self.dontrecordruns:
+          os.unlink( self.file )
+        else:
+          self.runs, self.count = readMinf(self.file)
+          self.runs.pop(self.currentRun, None)
+          self.count=len(self.runs)
+          self.write()
       except:
         pass
 
@@ -844,6 +860,8 @@ class RunsInfo:
     """
     Checks if there are expired runs and asks the user what to do.
     """
+    if self.dontrecordruns:
+      return # don't check in this mode
     if os.path.exists(self.file):
       try:
         self.runs, self.count=readMinf(self.file)

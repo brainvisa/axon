@@ -2443,7 +2443,7 @@ class ExecutionContext:
           item.clearMinf()
 
       # update history
-      if self._allowHistory and self._depth() == 1 and self._historyBookEvent is not None:
+      if self._allowHistory and ishead and self._historyBookEvent is not None:
         HistoryBook.storeProcessFinished( self, process, self._historyBookEvent, self._historyBooksContext )
         self._historyBookEvent = None
         self._historyBooksContext = None

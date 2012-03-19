@@ -86,7 +86,12 @@ def initializeProcesses():
 
     if not neuroConfig.fastStart or neuroConfig.historyBookDirectory:
         # check for expired run information : ask user what to do
-        neuroConfig.runsInfo = neuroConfig.RunsInfo()
+        if neuroConfig.fastStart:
+          dontrecordruns = True
+        else:
+          dontrecordruns = False
+        neuroConfig.runsInfo = neuroConfig.RunsInfo( \
+          dontrecordruns=dontrecordruns )
 
     neuroLog.initializeLog()
     neuroData.initializeData()
