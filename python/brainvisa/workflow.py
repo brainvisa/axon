@@ -192,7 +192,7 @@ class ProcessToWorkflow( object ):
               else:
                 fileId = self._fileNames[fileName.fullPath()]
               self._iofiles.setdefault( fileId, ( [], [] ) )[ 1 ].append( id )
-              # self._handleHistoryBook( fileName )
+              self._handleHistoryBook( fileName )
               
           elif isinstance( type, ReadDiskItem ):
             fileName = getattr( process, name, None )
@@ -242,7 +242,7 @@ class ProcessToWorkflow( object ):
                 else:
                   fileId = self._fileNames[fileName.fullPath()]
                 self._iofiles.setdefault( fileId, ( [], [] ) )[ 1 ].append( id )
-                # self._handleHistoryBook( fileName )
+                self._handleHistoryBook( fileName )
 
           elif isinstance(type, ListOf) and \
                isinstance(type.contentType, ReadDiskItem):
