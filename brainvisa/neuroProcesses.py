@@ -4020,7 +4020,7 @@ def readProcesses( processesPath ):
     except:
       if neuroConfig.mainLog is not None:
         neuroConfig.mainLog.append( 'Cannot read processes cache',
-          html=exceptionHTML( beforeError=_t_( 'Cannot read processes cache file <em>%s</em>' ) % ( processCacheFile, ) ),
+          html=exceptionHTML( beforeError=_t_( 'Cannot read processes cache file <em>%s</em>' ) % ( processesCacheFile, ) ),
           icon='warning.png' )
 
   if neuroConfig.gui or not neuroConfig.fastStart:
