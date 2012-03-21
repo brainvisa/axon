@@ -4018,12 +4018,13 @@ def readProcesses( processesPath ):
       for k in converters.keys():
         _converters[ ( getDiskItemType( k[0].name ), getFormat( k[1].name ) ) ] = converters[ k ]
     except:
+      _processesInfo, _converters = None, None
       if neuroConfig.mainLog is not None:
         neuroConfig.mainLog.append( 'Cannot read processes cache',
           html=exceptionHTML( beforeError=_t_( 'Cannot read processes cache file <em>%s</em>' ) % ( processesCacheFile, ) ),
           icon='warning.png' )
 
-  if neuroConfig.gui or not neuroConfig.fastStart:
+  if neuroConfig.gui or not neuroConfig.fastStart or not _processesInfo:
     # create all processes tree while reading processes in processesPath
     _allProcessesTree=ProcessTree("Various processes", "all processes",editable=False, user=False)
     for processesDir in processesPath:
