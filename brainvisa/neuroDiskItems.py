@@ -1458,8 +1458,13 @@ class Format:
     self._ignoreExclusive = ignoreExclusive
     
   def __getstate__( self ):
-    raise cPickle.PicklingError
-  
+    #raise cPickle.PicklingError
+    return { 'name' : self.name }
+
+  def __setstate__( self, state ):
+    f = getFormat( state[ 'name' ] )
+    self.__dict__.update( f.__dict__ )
+
   def match( self, item, returnPosition=0, ignoreExclusive=0 ):
     """
     Checks if the diskItem files match the format patterns.
@@ -1916,7 +1921,12 @@ class DiskItemType:
       self._typeAttributes = attributes
   
   def __getstate__( self ):
-    raise cPickle.PicklingError
+    #raise cPickle.PicklingError
+    return { 'diskItemType' : self.name }
+
+  def __setstate__( self, state ):
+    dit = getDiskItemType( state[ 'diskItemType' ] )
+    self.__dict__.update( dit.__dict__ )
 
   def setType( self, item, matchResult, formatPosition ):
     """

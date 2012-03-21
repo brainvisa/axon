@@ -4006,15 +4006,18 @@ def readProcesses( processesPath ):
   :param list processesPath: list of paths to directories containing processes files.
   """
   # New style processes initialization
-  global _processesInfo
+  global _processesInfo, _converters
   global _allProcessesTree
   processesCacheFile = os.path.join( neuroConfig.homeBrainVISADir, 'processCache-' + neuroConfig.shortVersion )
   processesCache = {}
   if neuroConfig.fastStart and os.path.exists( processesCacheFile ):
     try:
-      _processesInfo = cPickle.load( open( processesCacheFile, 'r' ) )
+      _processesInfo, converters = cPickle.load( open( processesCacheFile, 'r' ) )
+      # change _converters keys to use the same instances as the global
+      # types / formats list
+      for k in converters.keys():
+        _converters[ ( getDiskItemType( k[0].name ), getFormat( k[1].name ) ) ] = converters[ k ]
     except:
-      raise
       if neuroConfig.mainLog is not None:
         neuroConfig.mainLog.append( 'Cannot read processes cache',
           html=exceptionHTML( beforeError=_t_( 'Cannot read processes cache file <em>%s</em>' ) % ( processCacheFile, ) ),
@@ -4030,7 +4033,7 @@ def readProcesses( processesPath ):
 
     # save processes cache
     try:
-      cPickle.dump( _processesInfo, open( processesCacheFile, 'wb' ) )
+      cPickle.dump( ( _processesInfo, _converters ), open( processesCacheFile, 'wb' ) )
     except:
       if neuroConfig.mainLog is not None:
         neuroConfig.mainLog.append( 'Cannot write processes cache',
