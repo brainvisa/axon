@@ -33,7 +33,7 @@ class ProcessToWorkflow( object ):
     # self._iofiles = fileId -> (list of job for which the file is an input, list of job for which the file is an output) 
     self._iofiles = {}
     # list of history boook directories to transfer back after wf execution
-    self._historyBooks = []
+    self._historyBooks = {}
   
     self.brainvisa_cmd = [ 'python', '-m', 'brainvisa.axon.runprocess' ]
   
@@ -111,7 +111,7 @@ class ProcessToWorkflow( object ):
 
 
   def doIt( self ):
-    self._historyBooks = []
+    self._historyBooks = {}
     # set the priority 0 to all jobs
     #self._processExecutionNode( self.process._executionNode, None, priority=0 )
     # if the root node is a parallel node, its children will have a decreasing
@@ -138,7 +138,7 @@ class ProcessToWorkflow( object ):
         #self.create_link( o, fileId )
 
 
-  def _handleHistoryBook( self, inputFileName ):
+  def _handleHistoryBook( self, inputFileName, id ):
     '''Appends the history_book directory as an output file transfer, for a
     given disk item, if it belongs to a database with history handling.
     '''
@@ -151,6 +151,8 @@ class ProcessToWorkflow( object ):
     databaseUuid = neuroHierarchy.databases.database(database).uuid
     fileName = os.path.join( database, 'history_book' )
     if fileName in self._fileNames:
+      fileId = self._historyBooks[ fileName ]
+      self._iofiles[ fileId ][ 1 ].append( id )
       return # already done
     fileId = self._createIdentifier( self.FILE )
     #print "file => " + repr(fileName.fullPath())
@@ -159,8 +161,8 @@ class ProcessToWorkflow( object ):
     full_paths = [ fileName ]
     self._files[fileId]=(fileName, full_paths, databaseUuid, database)
     self._fileNames[fileName]= fileId
-    self._iofiles.setdefault( fileId, ( [], [] ) )[ 1 ].append( [] )
-    self._historyBooks.append( fileName )
+    self._iofiles.setdefault( fileId, ( [], [] ) )[ 1 ].append( id )
+    self._historyBooks[ fileName ] = fileId
 
 
   def _processNodes( self, depth, nodes, inGroup, begin, end, serial, previous ):
@@ -192,7 +194,7 @@ class ProcessToWorkflow( object ):
               else:
                 fileId = self._fileNames[fileName.fullPath()]
               self._iofiles.setdefault( fileId, ( [], [] ) )[ 1 ].append( id )
-              self._handleHistoryBook( fileName )
+              self._handleHistoryBook( fileName, id )
               
           elif isinstance( type, ReadDiskItem ):
             fileName = getattr( process, name, None )
@@ -242,7 +244,7 @@ class ProcessToWorkflow( object ):
                 else:
                   fileId = self._fileNames[fileName.fullPath()]
                 self._iofiles.setdefault( fileId, ( [], [] ) )[ 1 ].append( id )
-                self._handleHistoryBook( fileName )
+                self._handleHistoryBook( fileName, id )
 
           elif isinstance(type, ListOf) and \
                isinstance(type.contentType, ReadDiskItem):
