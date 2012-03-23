@@ -152,7 +152,8 @@ class ProcessToWorkflow( object ):
     fileName = os.path.join( database, 'history_book' )
     if fileName in self._fileNames:
       fileId = self._historyBooks[ fileName ]
-      self._iofiles[ fileId ][ 1 ].append( id )
+      if id not in self._iofiles[ fileId ][ 1 ]:
+        self._iofiles[ fileId ][ 1 ].append( id )
       return # already done
     fileId = self._createIdentifier( self.FILE )
     #print "file => " + repr(fileName.fullPath())
