@@ -116,7 +116,7 @@ def execution( self, context ):
   aimsToMni = None
   outref = None
   if type( tmplimg ) in types.StringTypes:
-    tmplimg = self.registered_volume
+    tmplimg = neuroDiskItems.aimsFileInfo( self.registered_volume.fullPath() )
     refs = tmplimg.get( 'referentials' )
     trans = tmplimg.get( 'transformations' )
     if refs and trans:
