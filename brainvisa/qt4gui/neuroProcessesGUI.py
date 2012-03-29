@@ -839,7 +839,7 @@ class HTMLBrowser( QWidget ):
     self.browser.setSource( source )
 
   def setText( self, text ):
-    self.browser.setText( text )
+    self.browser.setHtml( text )
 
   def openWeb(self):
     self.browser.openWeb()
