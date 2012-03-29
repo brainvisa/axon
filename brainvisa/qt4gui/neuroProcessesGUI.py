@@ -38,7 +38,7 @@ import StringIO
 import distutils, os, sys, re
 import types
 from backwardCompatibleQt import *
-from PyQt4 import uic
+from soma.qt4gui.designer import loadUi, loadUiType
 from PyQt4.QtGui import QKeySequence
 from PyQt4 import QtCore
 from PyQt4 import QtGui
@@ -222,7 +222,7 @@ class SomaWorkflowWidget(ComputingResourceWidget):
     return new_workflows
 
 
-  @QtCore.pyqtSlot()
+  @QtCore.Slot()
   def workflow_double_clicked(self):
     selected_items = self.ui.list_widget_submitted_wfs.selectedItems()
     wf_id = selected_items[0].data(QtCore.Qt.UserRole).toInt()[0]
@@ -264,7 +264,7 @@ class WorkflowSubmissionDlg(QDialog):
 
     from brainvisa.workflow import ProcessToSomaWorkflow
 
-    uic.loadUi(os.path.join(os.path.dirname(__file__), 'sw_submission_dlg.ui' ),            
+    loadUi(os.path.join(os.path.dirname(__file__), 'sw_submission_dlg.ui' ),
                self)
     #self.setupUi(self)
 
@@ -289,7 +289,7 @@ class WorkflowSubmissionDlg(QDialog):
 
     self.combo_resource.currentIndexChanged.connect(self.resource_changed)
 
-  @QtCore.pyqtSlot(int)
+  @QtCore.Slot(int)
   def resource_changed(self, resource_index):
 
     resource_id = self.combo_resource.currentText()
@@ -338,7 +338,7 @@ class SomaWorkflowProcessView(QMainWindow):
                parent=None):
     super(SomaWorkflowProcessView, self).__init__(parent)
     
-    Ui_SWProcessView = uic.loadUiType(os.path.join(os.path.dirname( __file__ ), 
+    Ui_SWProcessView = loadUiType(os.path.join(os.path.dirname( __file__ ),
                                                 'sw_process_view.ui' ))[0]
 
     self.ui = Ui_SWProcessView()
@@ -481,7 +481,7 @@ class SomaWorkflowProcessView(QMainWindow):
       self.process_view.cleanup()
     QMainWindow.closeEvent( self, event )
 
-  @QtCore.pyqtSlot(bool)
+  @QtCore.Slot(bool)
   def enable_workflow_monitoring(self, enable):
     if not enable:
       if self.model.current_wf_id == self.workflow_id and \
@@ -510,7 +510,7 @@ class SomaWorkflowProcessView(QMainWindow):
       
   
 
-  @QtCore.pyqtSlot(bool)
+  @QtCore.Slot(bool)
   def show_process(self, checked):
     if self.process == None and self.serialized_process == None:
       return
@@ -579,7 +579,7 @@ class SomaWorkflowProcessView(QMainWindow):
       self.process_menu.addAction(self.process_view.action_clone_process)
       self.process_menu.addAction(self.process_view.action_iterate)
 
-  @QtCore.pyqtSlot()
+  @QtCore.Slot()
   def update_databases(self):
     QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
     for dbSettings in neuroConfig.dataPath:
@@ -599,7 +599,7 @@ class SomaWorkflowProcessView(QMainWindow):
         neuroException.showException(beforeError="Error while updating database "+dbSettings.directory)
     QtGui.QApplication.restoreOverrideCursor()
 
-  @QtCore.pyqtSlot()
+  @QtCore.Slot()
   def current_workflow_changed(self):
     if self.model.current_wf_id == self.workflow_id and \
       self.model.current_resource_id == self.resource_id:
@@ -626,7 +626,7 @@ class AboutWidget( QWidget ):
     self.setAutoFillBackground(True)
     hb = QHBoxLayout( )
     layout.addLayout(hb)
-    layout.setMargin( 10 )
+    layout.setContentsMargins( 10, 10, 10, 10 )
     self.setWindowTitle( _t_( 'About') )
     if getattr( AboutWidget, 'pixIcon', None ) is None:
       setattr( AboutWidget, 'pixIcon', QIcon( os.path.join( neuroConfig.iconPath, 'icon.png' ) ) )
@@ -650,7 +650,7 @@ class AboutWidget( QWidget ):
     label = QLabel( neuroConfig.versionText() )
     hb.addWidget(label)
     #label.setBackgroundRole( QPalette.Base )
-    label.setMargin( 4 )
+    label.setContentsMargins( 4, 4, 4, 4 )
     font = QFont()
     font.setPointSize( 30 )
     label.setFont( font )
@@ -659,28 +659,28 @@ class AboutWidget( QWidget ):
     hb.addLayout(vb)
     widget = buildImageWidget( None, 'ifr49.png', desiredHeight=60 )
     vb.addWidget(widget)
-    widget.setMargin( 5 )
+    widget.setContentsMargins( 5, 5, 5, 5 )
     widget = buildImageWidget( None, 'neurospin.png', desiredHeight=40 )
     vb.addWidget(widget)
-    widget.setMargin( 5 )
+    widget.setContentsMargins( 5, 5, 5, 5 )
     widget = buildImageWidget( None, 'shfj.png', desiredHeight=40 )
     vb.addWidget(widget)
-    widget.setMargin( 5 )
+    widget.setContentsMargins( 5, 5, 5, 5 )
     widget = buildImageWidget( None, 'mircen.png', desiredHeight=40 )
     vb.addWidget(widget)
-    widget.setMargin( 5 )
+    widget.setContentsMargins( 5, 5, 5, 5 )
     widget = buildImageWidget( None, 'inserm.png', desiredHeight=40 )
     vb.addWidget(widget)
-    widget.setMargin( 5 )
+    widget.setContentsMargins( 5, 5, 5, 5 )
     widget = buildImageWidget( None, 'cnrs.png', desiredHeight=60 )
     vb.addWidget(widget)
-    widget.setMargin( 5 )
+    widget.setContentsMargins( 5, 5, 5, 5 )
     widget = buildImageWidget( None, 'chups.png', desiredHeight=40 )
     vb.addWidget(widget)
-    widget.setMargin( 5 )
+    widget.setContentsMargins( 5, 5, 5, 5 )
     widget = buildImageWidget( None, 'parietal.png', desiredHeight=40 )
     vb.addWidget(widget)
-    widget.setMargin( 5 )
+    widget.setContentsMargins( 5, 5, 5, 5 )
 
     if parent is None:
       px = ( neuroConfig.qtApplication.desktop().width() - self.sizeHint().width() ) / 2
@@ -776,7 +776,7 @@ class HTMLBrowser( QWidget ):
     vbox = QVBoxLayout( self )
     self.setLayout(vbox)
     vbox.setSpacing( 2 )
-    vbox.setMargin( 3 )
+    vbox.setContentsMargins( 3, 3, 3, 3 )
 
     if getattr( HTMLBrowser, 'pixHome', None ) is None:
       setattr( HTMLBrowser, 'pixIcon', QIcon( os.path.join( neuroConfig.iconPath, 'icon_help.png' ) ) )
@@ -786,7 +786,7 @@ class HTMLBrowser( QWidget ):
 
     hbox = QHBoxLayout()
     hbox.setSpacing(6)
-    hbox.setMargin(0)
+    hbox.setContentsMargins( 0, 0, 0, 0 )
 
     self.homeAction = QAction( _t_( 'Home' ), self )
     self.homeAction.setIcon( self.pixHome )
@@ -998,7 +998,7 @@ class ExecutionNodeGUI(QWidget):
   def __init__(self, parent, parameterized, read_only=False):
     QWidget.__init__(self, parent)
     layout = QVBoxLayout()
-    layout.setMargin( 5 )
+    layout.setContentsMargins( 5, 5, 5, 5 )
     layout.setSpacing( 4 )
     self.setLayout(layout)
     self.parameterizedWidget = ParameterizedWidget( parameterized, None )
@@ -1028,7 +1028,7 @@ class RadioItem(QWidget):
   def __init__(self, text, group, parent=None):
     QWidget.__init__(self, parent)
     layout=QHBoxLayout()
-    layout.setMargin(0)
+    layout.setContentsMargins( 0, 0, 0, 0 )
     layout.setSpacing(0)
     self.setLayout(layout)
     self.radio=QRadioButton()
@@ -1334,7 +1334,7 @@ class ParameterizedWidget( QWidget ):
     self.connect( self, SIGNAL( 'destroyed()' ), self.cleanup )
 
     layout = QVBoxLayout( )
-    layout.setMargin(0)
+    layout.setContentsMargins( 0, 0, 0, 0 )
     layout.setSpacing(4)
     self.setLayout(layout)
     # the scroll widget will contain parameters widgets
@@ -1378,7 +1378,7 @@ class ParameterizedWidget( QWidget ):
     # the widget that will contain parameters, it will be put in the scroll widget
     parametersWidget=QWidget()
     parametersWidgetLayout=QVBoxLayout()
-    parametersWidgetLayout.setMargin(0)
+    parametersWidgetLayout.setContentsMargins( 0, 0, 0, 0 )
     if sys.platform == 'darwin' and QtCore.qVersion() == '4.6.2':
       # is this layout problem a bug in qt/Mac 4.6.2 ?
       parametersWidgetLayout.setSpacing(0)
@@ -1659,7 +1659,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     
     centralWidgetLayout=QVBoxLayout()
     self.setLayout(centralWidgetLayout)
-    centralWidgetLayout.setMargin( 5 )
+    centralWidgetLayout.setContentsMargins( 5, 5, 5, 5 )
     centralWidgetLayout.setSpacing( 4 )
 
     self.setWindowIcon( self.pixIcon )
@@ -1762,7 +1762,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     titleLayout.addWidget(self.labName)
     self.labName.setFrameStyle( QFrame.Panel | QFrame.Raised )
     self.labName.setLineWidth( 1 )
-    self.labName.setMargin( 5 )
+    self.labName.setContentsMargins( 5, 5, 5, 5 )
     self.labName.setAlignment( Qt.AlignCenter )
     self.labName.setWordWrap( True )
     font = self.labName.font()
@@ -1786,7 +1786,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       # at the top of the splitter : the parameters
       self.parametersWidget = QWidget(splitter)
       parametersWidgetLayout = QVBoxLayout( )
-      parametersWidgetLayout.setMargin(0)
+      parametersWidgetLayout.setContentsMargins( 0, 0, 0, 0 )
       self.parametersWidget.setLayout(parametersWidgetLayout)
       
       # at the bottom of the splitter : the text widget to log information about process execution
@@ -2067,7 +2067,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       container = QWidget( )
       layout=QHBoxLayout()
       container.setLayout(layout)
-      layout.setMargin( 5 )
+      layout.setContentsMargins( 5, 5, 5, 5 )
     else:
       layout=container.layout()
 
@@ -2664,7 +2664,7 @@ class IterationDialog( QDialog ):
     self.setModal(True)
     layout = QVBoxLayout( )
     self.setLayout(layout)
-    layout.setMargin( 10 )
+    layout.setContentsMargins( 10, 10, 10, 10 )
     self.setWindowTitle( _t_('%s iteration') % unicode( parent.windowTitle() ) )
 
     params = []
@@ -2682,7 +2682,7 @@ class IterationDialog( QDialog ):
     hb = QHBoxLayout( )
     w.setLayout(hb)
     layout.addWidget(w)
-    hb.setMargin( 5 )
+    hb.setContentsMargins( 5, 5, 5, 5 )
     w.setSizePolicy( QSizePolicy( QSizePolicy.Expanding, QSizePolicy.Fixed ) )
     btn = QPushButton( _t_('Ok') )
     hb.addWidget(btn)
@@ -2714,7 +2714,7 @@ class UserDialog( QDialog ):
     self.setAttribute(Qt.WA_DeleteOnClose, True)
     layout = QVBoxLayout( )
     self.setLayout(layout)
-    layout.setMargin( 10 )
+    layout.setContentsMargins( 10, 10, 10, 10 )
     layout.setSpacing( 5 )
 
     self.condition = None
@@ -2813,7 +2813,7 @@ class ProcessEdit( QDialog ):
     QDialog.__init__( self, None )
     layout = QVBoxLayout( )
     self.setLayout(layout)
-    layout.setMargin( 10 )
+    layout.setContentsMargins( 10, 10, 10, 10 )
     layout.setSpacing( 5 )
     neuroConfig.registerObject( self )
 
@@ -2895,7 +2895,7 @@ class ProcessEdit( QDialog ):
     hb = QHBoxLayout( )
     w.setLayout(hb)
     vb.addWidget(w)
-    hb.setMargin( 5 )
+    hb.setContentsMargins( 5, 5, 5, 5 )
     w.setSizePolicy( QSizePolicy( QSizePolicy.Expanding, QSizePolicy.Fixed ) )
     btn = QPushButton( _t_('apply') )
     hb.addWidget(btn)
@@ -3042,7 +3042,7 @@ class ProcessSelectionWidget( QMainWindow ):
     # the main layout contains vertically : a QSplitter (processes | doc) and a QHBoxLayout (open and edit buttons)
     layout=QVBoxLayout()
     centralWidget.setLayout(layout)
-    layout.setMargin( 10 )
+    layout.setContentsMargins( 10, 10, 10, 10 )
 
     # the splitter contains the processes on the left and the documentation on the right
     #splitter = QSplitter( )
@@ -3052,7 +3052,7 @@ class ProcessSelectionWidget( QMainWindow ):
     w=QWidget(self) #splitter)
     layout.addWidget(w)
     vb = QVBoxLayout()
-    vb.setMargin(0)
+    vb.setContentsMargins( 0, 0, 0, 0 )
     w.setLayout(vb)
     self.currentProcessId = None
     self.processTrees=ProcessTreesWidget()
@@ -3067,7 +3067,7 @@ class ProcessSelectionWidget( QMainWindow ):
     # the hacked search box
     p = os.path.join( neuroConfig.mainPath, 'qt4gui', 'searchbox.ui' )
     self.searchbox = QWidget()
-    uic.loadUi(p, self.searchbox)
+    self.searchbox = loadUi(p, self.searchbox)
     #vb.addWidget(self.searchbox)
     self.searchboxSearchB = self.searchbox.BV_search
 #    self.searchboxSearchB.setShortcut( QKeySequence.Find )

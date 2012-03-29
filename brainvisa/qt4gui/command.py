@@ -35,10 +35,15 @@
 import sys, os
 from backwardCompatibleQt import QProcess, QTimer, SIGNAL
 import neuroConfig
-from backwardCompatibleQt import PYQT_VERSION
-if PYQT_VERSION < 0x040703:
-  # a bug in PyQt QProcess.start() needs a compiled workaround
-  from soma import somaqt
+import backwardCompatibleQt
+if hasattr( backwardCompatibleQt, 'PYQT_VERSION' ):
+  from backwardCompatibleQt import PYQT_VERSION
+  use_pyside = False
+  if PYQT_VERSION < 0x040703:
+    # a bug in PyQt QProcess.start() needs a compiled workaround
+    from soma import somaqt
+else:
+  use_pyside = True
 
 #import logging
 #LOG_FILENAME = '/tmp/commands.log'
@@ -166,7 +171,7 @@ class CommandWithQProcess( object ):
 
   def _createQProcess( self ):
 #    print threading.currentThread(), '_createQProcess()', self.args
-      if PYQT_VERSION >= 0x040703:
+      if use_pyside or PYQT_VERSION >= 0x040703:
         qprocess = QProcess()
       else:
         qprocess = somaqt.makeQProcess()

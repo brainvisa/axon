@@ -45,7 +45,7 @@ buttonIconSize = QSize( *largeIconSize )
 buttonMargin = QSize( 4, 4 )
 
 #----------------------------------------------------------------------------
-class DataEditor:
+class DataEditor( object ):
   def __init__( self ):
     pass
   

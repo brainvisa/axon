@@ -2025,7 +2025,7 @@ class SelectionExecutionNode( ExecutionNode ):
           child.setSelected(False)
 
 #-------------------------------------------------------------------------------
-class ExecutionContext:
+class ExecutionContext( object ):
   """
   This object represents the execution context of the processes. 
   

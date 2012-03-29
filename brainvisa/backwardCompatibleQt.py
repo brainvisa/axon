@@ -32,10 +32,19 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 import os, sys
+USES_PYSIDE = False
 if sys.modules.has_key( 'qt' ):
   from qt import *
 else:
-  from PyQt4.Qt import *
+  from PyQt4.QtCore import *
+  from PyQt4.QtGui import *
+  from PyQt4 import QtCore
+  # PyQt / PySide compatibility for signals/slots
+  if hasattr( QtCore, 'pyqtSignal' ):
+    USES_PYSIDE = True
+    QtCore.Signal = QtCore.pyqtSignal
+    QtCore.Slot= QtCore.pyqtSlot
+    QtCore.Property = QtCore.pyqtProperty
 
 
 # In BrainVISA, we try to use the latest version of PyQt. Unfortunately
@@ -77,7 +86,6 @@ def setPluginPath():
   try:
     from soma.config import BRAINVISA_SHARE
     shared = BRAINVISA_SHARE
-    print '!BRAINVISA_SHARE!', BRAINVISA_SHARE
   except ImportError:
     path = os.getenv( 'PATH' ).split( os.pathsep )
     for p in path:

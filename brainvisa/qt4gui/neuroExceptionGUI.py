@@ -41,7 +41,7 @@ class ShowException( QDialog ):
     self.setModal(False)
     layout = QVBoxLayout( self )
     self.setLayout(layout)
-    layout.setMargin( 10 )
+    layout.setContentsMargins( 10, 10, 10, 10 )
     layout.setSpacing( 5 )
     if caption is None:
       caption = _t_( 'Error' )

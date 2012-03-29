@@ -34,7 +34,7 @@ import sys, os
 from itertools import chain
 
 from backwardCompatibleQt import QDialog, Qt, QVBoxLayout, QComboBox, SIGNAL, SLOT, QLabel, QApplication, QPixmap, QListWidget, QWidget, QGridLayout, QFrame, QSize
-from PyQt4 import uic
+from soma.qt4gui.designer import loadUi
 from PyQt4.QtGui import QAbstractItemView, QSizePolicy
 from soma.qt4gui.api import SimpleTable
 from soma.functiontools import partial
@@ -115,7 +115,7 @@ class DiskItemBrowser( QDialog ):
 
     p = os.path.join( os.path.dirname( __file__ ), 'diskItemBrowser.ui' )
     self._ui = QWidget()
-    uic.loadUi(p, self._ui)
+    loadUi(p, self._ui)
     layout.addWidget(self._ui)
     
     if write:
