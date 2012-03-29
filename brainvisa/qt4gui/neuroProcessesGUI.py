@@ -42,6 +42,7 @@ from PyQt4 import uic
 from PyQt4.QtGui import QKeySequence
 from PyQt4 import QtCore
 from PyQt4 import QtGui
+from PyQt4 import QtWebKit
 import neuroConfig
 import neuroConfigGUI
 import neuroLogGUI
@@ -53,7 +54,7 @@ from neuroDiskItems import DiskItem
 from brainvisa.data.qtgui.updateDatabases import warnUserAboutDatabasesToUpdate
 import weakref
 from soma.minf.xhtml import XHTML
-from soma.qtgui.api import QtThreadCall, FakeQtThreadCall, TextBrowserWithSearch, bigIconSize, defaultIconSize
+from soma.qtgui.api import QtThreadCall, FakeQtThreadCall, WebBrowserWithSearch, bigIconSize, defaultIconSize
 from soma.html import htmlEscape
 import threading
 import socket
@@ -177,8 +178,7 @@ def openWeb(source):
     _helpWidget.setWindowTitle( _t_( 'BrainVISA help' ) )
     _helpWidget.resize( 800, 600 )
   sys.stdout.flush()
-  source_file = QUrl( source ).toLocalFile()
-  _helpWidget.setSource( source_file )
+  _helpWidget.setSource( source )
   _helpWidget.show()
   _helpWidget.raise_()
     
@@ -724,13 +724,17 @@ def addBrainVISAMenu( widget, menuBar ):
 #----------------------------------------------------------------------------
 class HTMLBrowser( QWidget ):
 
-  class BVTextBrowser( TextBrowserWithSearch ):
+  class BVTextBrowser( WebBrowserWithSearch ):
     def __init__( self, parent, name=None ):
-      TextBrowserWithSearch.__init__( self, parent )
+      WebBrowserWithSearch.__init__( self, parent )
       if name:
         self.setObjectName(name)
       #self.mimeSourceFactory().setExtensionType("py", "text/plain")
-      
+      self.openWebAction = QAction( _t_( 'Open in a web browser' ), self )
+      self.openWebAction.setShortcut( Qt.CTRL + Qt.Key_W )
+      self.connect( self.openWebAction, SIGNAL( 'triggered(bool)' ),
+        self.openWeb )
+
 
     def setSource( self, url ):
       text=url.toString()
@@ -746,30 +750,22 @@ class HTMLBrowser( QWidget ):
         else:
           win = ProcessView( proc() )
           win.show()
-      elif bvp.startswith( 'http://' ) or bvp.startswith( 'mailto:' ):
-        try:
-          openWeb(bvp)
-        except:
-          neuroException.showException()
       elif bvp.startswith( 'file://' ) and bvp.endswith( '.py' ):
-        TextBrowserWithSearch.setSource( self, url )
+        WebBrowserWithSearch.setSource( self, url )
         self.setHtml( '<html><body><pre>' + htmlEscape(open( url.toLocalFile() ).read()) + '</pre></body></html>' )
         sys.stdout.flush()
       else:
-        # trick to make the links in documentation work on windows
-        newUrl=QUrl.fromLocalFile(url.toLocalFile())
-        newUrl.setFragment(url.fragment())
-        TextBrowserWithSearch.setSource( self, newUrl)
-        
+        WebBrowserWithSearch.setSource( self, url)
+      self.page().setLinkDelegationPolicy( QtWebKit.QWebPage.DelegateAllLinks )
+
     def customMenu(self):
-      menu=TextBrowserWithSearch.customMenu(self)
-      # accelerator key doesn't work, I don't know why...
-      menu.addAction("Open in a &web browser", self.openWeb, Qt.CTRL + Qt.Key_W )
+      menu=WebBrowserWithSearch.customMenu(self)
+      menu.addAction( self.openWebAction )
       return menu
-      
+
     def openWeb(self):
-      openWeb(self.source().toString())
-      
+      openWeb(self.url().toString())
+
 
   def __init__( self, parent = None, name = None, fl = Qt.WindowFlags() ):
     QWidget.__init__( self, parent, fl )
@@ -784,9 +780,6 @@ class HTMLBrowser( QWidget ):
     if getattr( HTMLBrowser, 'pixHome', None ) is None:
       setattr( HTMLBrowser, 'pixIcon', QIcon( os.path.join( neuroConfig.iconPath, 'icon_help.png' ) ) )
       setattr( HTMLBrowser, 'pixHome', QIcon( os.path.join( neuroConfig.iconPath, 'top.png' ) ) )
-      setattr( HTMLBrowser, 'pixBackward', QIcon( os.path.join( neuroConfig.iconPath, 'back.png' ) ) )
-      setattr( HTMLBrowser, 'pixForward', QIcon( os.path.join( neuroConfig.iconPath, 'forward.png' ) ) )
-      setattr( HTMLBrowser, 'pixReload', QIcon( os.path.join( neuroConfig.iconPath, 'reload.png' ) ) )
 
     self.setWindowIcon( HTMLBrowser.pixIcon )
 
@@ -794,27 +787,22 @@ class HTMLBrowser( QWidget ):
     hbox.setSpacing(6)
     hbox.setMargin(0)
 
-    btnHome = QPushButton( )
+    self.homeAction = QAction( _t_( 'Home' ), self )
+    self.homeAction.setIcon( self.pixHome )
+    btnHome = QToolButton( )
     btnHome.setSizePolicy( QSizePolicy( QSizePolicy.Minimum, QSizePolicy.Minimum ) )
-    btnHome.setIcon( self.pixHome )
     hbox.addWidget( btnHome )
 
-    btnBackward = QPushButton( )
+    btnBackward = QToolButton( )
     btnBackward.setSizePolicy( QSizePolicy( QSizePolicy.Minimum, QSizePolicy.Minimum ) )
-    btnBackward.setIcon( self.pixBackward )
-    btnBackward.setEnabled( 0 )
     hbox.addWidget( btnBackward )
 
-    btnForward = QPushButton( )
+    btnForward = QToolButton( )
     btnForward.setSizePolicy( QSizePolicy( QSizePolicy.Minimum, QSizePolicy.Minimum ) )
-    btnForward.setIcon( self.pixForward )
-    btnForward.setEnabled( 0 )
     hbox.addWidget( btnForward )
 
-    btnReload = QPushButton( )
+    btnReload = QToolButton( )
     btnReload.setSizePolicy( QSizePolicy( QSizePolicy.Minimum, QSizePolicy.Minimum ) )
-    btnReload.setIcon( self.pixReload )
-    btnReload.setEnabled( 1 )
     hbox.addWidget( btnReload )
 
     vbox.addLayout( hbox )
@@ -823,26 +811,32 @@ class HTMLBrowser( QWidget ):
     browser.setSizePolicy( QSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding ) )
     vbox.addWidget( browser )
 
-    self.connect( btnHome, SIGNAL('clicked()'), browser, SLOT( 'home()' ) )
-    self.connect( btnBackward, SIGNAL('clicked()'), browser, SLOT( 'backward()' ) )
-    self.connect( browser, SIGNAL('backwardAvailable(bool)'), btnBackward, SLOT('setEnabled(bool)') )
-    self.connect( btnForward, SIGNAL('clicked()'), browser, SLOT( 'forward()' ) )
-    self.connect( browser, SIGNAL('forwardAvailable(bool)'), btnForward, SLOT('setEnabled(bool)') )
-    self.connect( btnReload, SIGNAL('clicked()'), browser, SLOT( 'reload()' ) )
+    self.connect( self.homeAction, SIGNAL('triggered(bool)'), self.home )
+
+    btnHome.setDefaultAction( self.homeAction )
+    btnForward.setDefaultAction( browser.pageAction( QtWebKit.QWebPage.Forward ) )
+    btnBackward.setDefaultAction( browser.pageAction( QtWebKit.QWebPage.Back ) )
+    a = browser.pageAction( QtWebKit.QWebPage.Reload )
+    a.setShortcut( QtGui.QKeySequence.Refresh )
+    btnReload.setDefaultAction( a )
+    self.connect( browser, SIGNAL('linkClicked(const QUrl &)' ),
+      browser.setSource )
 
     self.browser = browser
     
     neuroConfig.registerObject( self )
 
   def setSource( self, source ):
-    self.browser.setSource( QUrl.fromLocalFile(source) )
+    if not isinstance( source, QUrl ):
+      source = QUrl( source )
+    self.browser.setSource( source )
 
   def setText( self, text ):
     self.browser.setText( text )
-      
+
   def openWeb(self):
     self.browser.openWeb()
-    
+
   def showCategoryDocumentation( self, category ):
     """
     Searches for a documentation file associated to this category and opens it  in this browser. 
@@ -865,6 +859,9 @@ class HTMLBrowser( QWidget ):
   def closeEvent( self, event ):
     neuroConfig.unregisterObject( self )
     QWidget.closeEvent( self, event )
+
+  def home( self, void ):
+    self.setSource( neuroConfig.getDocFile(os.path.join( 'help','index.html' ) ) )
 
 
 #----------------------------------------------------------------------------
