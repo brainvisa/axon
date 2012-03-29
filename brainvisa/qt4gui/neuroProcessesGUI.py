@@ -854,7 +854,7 @@ class HTMLBrowser( QWidget ):
       categoryPath=categoryPath[1:]
         
     if not found:
-      self.setText( '' )
+      self.browser.setHtml( '' )
 
   def closeEvent( self, event ):
     neuroConfig.unregisterObject( self )
