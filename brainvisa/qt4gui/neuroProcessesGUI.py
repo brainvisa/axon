@@ -76,6 +76,7 @@ from soma.signature.api import Boolean as SomaBoolean
 from soma.qt4gui.api import ApplicationQt4GUI
 from brainvisa.data.databaseCheck import BVChecker_3_1
 import neuroHierarchy
+import urllib
 try: 
   from soma.workflow.gui.workflowGui import SomaWorkflowWidget as ComputingResourceWidget
   from soma.workflow.gui.workflowGui import SomaWorkflowMiniWidget as MiniComputingResourceWidget
@@ -826,6 +827,12 @@ class HTMLBrowser( QWidget ):
     
     neuroConfig.registerObject( self )
 
+    hbox.addWidget( QLabel( _t_( 'Search site:' ) ) )
+    self._siteSearch = QLineEdit()
+    hbox.addWidget( self._siteSearch )
+    self.connect( self._siteSearch, SIGNAL( 'returnPressed()' ),
+      self.siteSearch )
+
   def setSource( self, source ):
     if not isinstance( source, QUrl ):
       source = QUrl( source )
@@ -862,6 +869,19 @@ class HTMLBrowser( QWidget ):
 
   def home( self, void ):
     self.setSource( neuroConfig.getDocFile(os.path.join( 'help','index.html' ) ) )
+
+  def siteSearch( self ):
+    '''Search the brainvisa.info website using google search'''
+    if self._siteSearch.text():
+      if not hasattr( self, '_currentNonSearchPage' ):
+        self._currentNonSearchPage = self.browser.url()
+      url = 'http://www.google.com/cse?url=brainvisa.info&cref=http%3A%2F%2Fwww.google.com%2Fcse%2Ftools%2Fmakecse%3Furl%3Dbrainvisa.info&ie=&q=' + urllib.quote_plus( self._siteSearch.text() )
+      self.setSource( QUrl.fromEncoded( url ) )
+    else:
+      # get back to the previous non-search page
+      url = self._currentNonSearchPage
+      del self._currentNonSearchPage
+      self.setSource( url )
 
 
 #----------------------------------------------------------------------------
