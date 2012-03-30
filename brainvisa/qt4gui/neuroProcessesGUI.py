@@ -1417,7 +1417,7 @@ class ParameterizedWidget( QWidget ):
         v = getattr( self.parameterized, k, None )
         if v is not None: 
           self.setValue( k, v, 1 )
-        e.connect( e, SIGNAL('noDefault'), self.removeDefault )
+        e.connect( e, SIGNAL('noDefault(QString)'), self.removeDefault )
         e.connect( e, SIGNAL('newValidValue'), self.updateParameterValue )
 #lock#        btn = NamedPushButton( hb, k )
 #lock#        btn.setPixmap( self.pixCustom )
@@ -1666,15 +1666,15 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     self.workflowEnabled = False
 
     self.action_save_process = QAction(_t_( '&Save...' ), self)
-    self.action_save_process.setShortcuts(Qt.CTRL + Qt.Key_S)
+    self.action_save_process.setShortcut( Qt.CTRL + Qt.Key_S )
     self.action_save_process.triggered.connect(self.saveAs)
     
     self.action_clone_process = QAction(_t_( '&Clone...' ), self)
-    self.action_clone_process.setShortcuts(Qt.CTRL + Qt.Key_C)
+    self.action_clone_process.setShortcut(Qt.CTRL + Qt.Key_C)
     self.action_clone_process.triggered.connect(self.clone)
 
     self.action_create_workflow = QAction(_t_('Create &Workflow...'), self)
-    self.action_create_workflow.setShortcuts(Qt.CTRL + Qt.Key_D)
+    self.action_create_workflow.setShortcut(Qt.CTRL + Qt.Key_D)
     self.action_create_workflow.triggered.connect(self.createWorkflow)
 
     self.action_run = QAction(_t_('Run') , self)
@@ -3066,7 +3066,7 @@ class ProcessSelectionWidget( QMainWindow ):
     QObject.connect(self.processTrees, SIGNAL('iterateProcess'), self.iterateProcess )
     # the hacked search box
     p = os.path.join( neuroConfig.mainPath, 'qt4gui', 'searchbox.ui' )
-    self.searchbox = QWidget()
+    self.searchbox = QWidget() # for PySide/PyQt compat
     self.searchbox = loadUi(p, self.searchbox)
     #vb.addWidget(self.searchbox)
     self.searchboxSearchB = self.searchbox.BV_search

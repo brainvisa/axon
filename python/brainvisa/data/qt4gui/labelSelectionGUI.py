@@ -35,7 +35,8 @@
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
-from PyQt4.Qt import QWidget, QHBoxLayout, QPushButton, SIGNAL, QSize
+from PyQt4.QtGui import QWidget, QHBoxLayout, QPushButton
+from PyQt4.QtCore import SIGNAL, QSize
 from neuroDataGUI import DataEditor
 from brainvisa.data.qtgui.readdiskitemGUI import DiskItemEditor
 

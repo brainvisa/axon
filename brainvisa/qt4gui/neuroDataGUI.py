@@ -101,7 +101,7 @@ class StringEditor( QLineEdit, DataEditor ):
     if value != self.value:
       self.value = value
       if not default:
-        self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
+        self.emit( SIGNAL('noDefault(QString)'), unicode(self.objectName()) )
       self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
   
   def setFocusNext( self ):
@@ -111,7 +111,7 @@ class StringEditor( QLineEdit, DataEditor ):
     value = self._valueFromText( unicode( self.text() ) )
     if value != self.getValue():
       self.value = value
-      self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
+      self.emit( SIGNAL('noDefault(QString)'), unicode(self.objectName()) )
       self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
 
   
@@ -211,7 +211,7 @@ class ChoiceEditor( QComboBox, DataEditor ):
   
   def newValue( self ):
     self.value = self.parameter.values[ self.currentIndex() ][ 1 ]
-    self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
+    self.emit( SIGNAL('noDefault(QString)'), unicode(self.objectName()) )
     self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
 
   def changeChoices( self ):
@@ -283,7 +283,7 @@ class OpenChoiceEditor( QComboBox, DataEditor ):
     value=unicode( self.currentText() )
     if value != self.getValue():
       self.value=value
-      self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
+      self.emit( SIGNAL('noDefault(QString)'), unicode(self.objectName()) )
       self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
 
 
@@ -397,7 +397,7 @@ class StringListEditor( QLineEdit, DataEditor ):
     if value != self.value:
       self._setValue( value )
       if not default:
-        self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
+        self.emit( SIGNAL('noDefault(QString)'), unicode(self.objectName()) )
       self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
     
   def _setValue( self, value ):
@@ -437,7 +437,7 @@ class StringListEditor( QLineEdit, DataEditor ):
     currentValue = self._valueFromText( unicode( self.text() ) )
     if currentValue != self.getValue() and ( self.getValue() or currentValue ):
       self.value = currentValue
-      self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
+      self.emit( SIGNAL('noDefault(QString)'), unicode(self.objectName()) )
       self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
         
 
@@ -524,7 +524,7 @@ class ChoiceListEditor( QWidget, DataEditor ):
       self.setAttribute( Qt.WA_DeleteOnClose, True )
       self.setWindowModality(Qt.WindowModal)
       layout = QVBoxLayout( self )
-      layout.setMargin( 10 )
+      layout.setContentsMargins( 10, 10, 10, 10 )
       layout.setSpacing( 5 )
       self.setLayout(layout)
       
@@ -549,7 +549,7 @@ class ChoiceListEditor( QWidget, DataEditor ):
       
       hb = QHBoxLayout()
       hb.setSpacing(6)
-      hb.setMargin(6)
+      hb.setContentsMargins( 6, 6, 6, 6 )
       spacer = QSpacerItem(20,20,QSizePolicy.Expanding,QSizePolicy.Minimum)
       hb.addItem( spacer )
       btn =QPushButton( _t_('Ok'), self )
@@ -611,7 +611,7 @@ class ChoiceListEditor( QWidget, DataEditor ):
     if name:
       self.setObjectName( name )
     layout=QHBoxLayout(self)
-    layout.setMargin(0)
+    layout.setContentsMargins( 0, 0, 0, 0 )
     layout.setSpacing(2)
     self.setLayout(layout)
     self.parameter = parameter
@@ -638,7 +638,7 @@ class ChoiceListEditor( QWidget, DataEditor ):
     if value != self.value:
       self.value = value
       if not default:
-        self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
+        self.emit( SIGNAL('noDefault(QString)'), unicode(self.objectName()) )
       self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
 
 
@@ -651,7 +651,7 @@ class ChoiceListEditor( QWidget, DataEditor ):
       currentValue = None
     if currentValue != self.getValue():
       self.value = currentValue
-      self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
+      self.emit( SIGNAL('noDefault(QString)'), unicode(self.objectName()) )
       self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
 
   def _selectValues( self ):
@@ -675,7 +675,7 @@ class PointEditor( QWidget, DataEditor ):
     if name:
       self.setObjectName( name )
     layout=QHBoxLayout()
-    layout.setMargin(0)
+    layout.setContentsMargins( 0, 0, 0, 0 )
     if sys.platform == 'darwin' and QtCore.qVersion() == '4.6.2':
       # is this layout problem a bug in qt/Mac 4.6.2 ?
       layout.setSpacing(8)
@@ -687,7 +687,7 @@ class PointEditor( QWidget, DataEditor ):
     layout.addWidget(self.nle)
     
     self.connect( self.nle, SIGNAL( 'newValidValue' ), SIGNAL( 'newValidValue' ) )
-    self.connect( self.nle, SIGNAL( 'noDefault' ), SIGNAL( 'noDefault' ) )
+    self.connect( self.nle, SIGNAL( 'noDefault(QString)' ), SIGNAL( 'noDefault(QString)' ) )
     
     self.btnSelect = QPushButton( )
     layout.addWidget(self.btnSelect)
@@ -747,7 +747,7 @@ class PointListEditor( QWidget, DataEditor ):
     if name:
       self.setObjectName( name )
     layout=QHBoxLayout()
-    layout.setMargin(0)
+    layout.setContentsMargins( 0, 0, 0, 0 )
     self.setLayout(layout)
     self.parameter = parameter
     self.led = QLineEdit( )
@@ -805,7 +805,7 @@ class PointListEditor( QWidget, DataEditor ):
     except:
       pass
     else:
-      self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
+      self.emit( SIGNAL('noDefault(QString)'), unicode(self.objectName()) )
       self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), v )
         
 
@@ -842,7 +842,7 @@ class GenericListSelection( QWidget ):
       self.setObjectName( name )
     self.setWindowModality(Qt.WindowModal)
     layout = QVBoxLayout( )
-    layout.setMargin( 10 )
+    layout.setContentsMargins( 10, 10, 10, 10 )
     layout.setSpacing( 5 )
     self.setLayout(layout)
     
@@ -885,7 +885,7 @@ class GenericListSelection( QWidget ):
       
     hb = QHBoxLayout()
     hb.setSpacing(6)
-    hb.setMargin(6)
+    hb.setContentsMargins( 6, 6, 6, 6 )
     spacer = QSpacerItem(20,20,QSizePolicy.Expanding,QSizePolicy.Minimum)
     hb.addItem( spacer )
     btn =QPushButton( _t_('Ok') )
@@ -1009,7 +1009,7 @@ class ListOfListEditor( QPushButton, DataEditor ):
   
   def acceptEditedValues( self ):
     self.emit( SIGNAL( 'newValidValue' ), unicode(self.objectName()), self.acceptEditedValues.values )
-    self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
+    self.emit( SIGNAL('noDefault(QString)'), unicode(self.objectName()) )
 
 
 ##----------------------------------------------------------------------------

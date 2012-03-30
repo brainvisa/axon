@@ -73,7 +73,7 @@ class DiskItemEditor( QWidget, DataEditor ):
       hLayout.setSpacing( 14 )
     else:
       hLayout.setSpacing( 2 )
-    hLayout.setMargin(0)
+    hLayout.setContentsMargins( 0, 0, 0, 0 )
     self._write = write
     self.parameter =  parameter
     self.led = QLineEdit( )
@@ -404,7 +404,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
       self.setAttribute(Qt.WA_DeleteOnClose, True)
       self.setWindowModality(Qt.WindowModal)
       layout = QVBoxLayout( )
-      layout.setMargin( 10 )
+      layout.setContentsMargins( 10, 10, 10, 10 )
       layout.setSpacing( 5 )
       self.setLayout(layout)
       
@@ -483,7 +483,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
 
       hb = QHBoxLayout()
       hb.setSpacing(6)
-      hb.setMargin(6)
+      hb.setContentsMargins( 6, 6, 6, 6 )
       spacer = QSpacerItem(20,20,QSizePolicy.Expanding,QSizePolicy.Minimum)
       hb.addItem( spacer )
       btn =QPushButton( _t_('Ok') )
@@ -647,7 +647,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
       self.setObjectName(name)
     hb=QHBoxLayout()
     self.setLayout(hb)
-    hb.setMargin(0)
+    hb.setContentsMargins( 0, 0, 0, 0 )
     hb.setSpacing(2)
     self._context = context
     self.parameter = parameter

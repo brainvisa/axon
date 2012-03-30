@@ -115,7 +115,7 @@ class DiskItemBrowser( QDialog ):
 
     p = os.path.join( os.path.dirname( __file__ ), 'diskItemBrowser.ui' )
     self._ui = QWidget()
-    loadUi(p, self._ui)
+    self._ui = loadUi(p, self._ui)
     layout.addWidget(self._ui)
     
     if write:
