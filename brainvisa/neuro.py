@@ -249,12 +249,33 @@ if neuroConfig.profileFileName:
 else:
   main()
 
+
+def startConsoleShell():
+  from PyQt4.QtGui import qApp
+  import IPython
+  ipConsole = neuroProcesses.runIPConsoleKernel()
+  import subprocess
+  sp = subprocess.Popen( [ sys.executable, '-c',
+    'from IPython.frontend.terminal.ipapp import launch_new_instance; ' \
+    'launch_new_instance()', 'console', '--existing',
+    '--shell=%d' % ipConsole.shell_port, '--iopub=%d' % ipConsole.iopub_port,
+    '--stdin=%d' % ipConsole.stdin_port, '--hb=%d' % ipConsole.hb_port ] )
+  neuroProcesses._ipsubprocs.append( sp )
+
+
 if neuroConfig.gui:
   neuroConfig.qtApplication.connect( neuroConfig.qtApplication,\
                                      SIGNAL( 'lastWindowClosed ()' ),\
                                      sys.exit )
   # Ctrl + C is now linked to qApp.exit()
   signal.signal( signal.SIGINT, qt_exit_handler )
+  if neuroConfig.shell:
+    import IPython
+    if [ int(x) for x in IPython.__version__.split('.') ] >= [ 0, 11 ]:
+      # ipython >= 0.11, use client/server mode
+      print 'running shell...'
+      neuroConfig.shell = False
+      QTimer.singleShot( 0, startConsoleShell )
   if not neuroConfig.shell:
     if USE_QT4:
       neuroConfig.qtApplication.exec_()
@@ -277,27 +298,12 @@ if neuroConfig.shell:
     neuroConfig.shell = 0
     import IPython
     if [ int(x) for x in IPython.__version__.split('.') ] >= [ 0, 11 ]:
-      # IPython >= 0.11: use qtconsole
-      startapp = False
-      if ipConsole is None:
-        print 'runing IP console kernel'
-        startapp = True
-        from IPython.zmq.ipkernel import IPKernelApp
-        ipConsole = IPKernelApp.instance()
-        ipConsole.hb_port = 50043 # don't know why this is not set automatically
-        ipConsole.initialize( [ 'qtconsole', '--pylab=qt',
-          "--KernelApp.parent_appname='ipython-qtconsole'" ] )
-      import subprocess
-      sp = subprocess.Popen( [ sys.executable, '-c',
-        'from IPython.frontend.terminal.ipapp import launch_new_instance; ' \
-        'launch_new_instance()', 'qtconsole', '--existing',
-        '--shell=%d' % ipConsole.shell_port,
-        '--iopub=%d' % ipConsole.iopub_port,
-        '--stdin=%d' % ipConsole.stdin_port, '--hb=%d' % ipConsole.hb_port ] )
-      ipsubprocs.append( sp )
-      QTimer.singleShot( 0, restartAnatomist )
-      if startapp:
-        ipConsole.start()
+      if not neuroConfig.gui: # with gui this is done earlier using qtconsole
+        # ipython >= 0.11
+        from IPython.frontend.terminal.ipapp import TerminalIPythonApp
+        app = TerminalIPythonApp.instance()
+        app.initialize( [] )
+        app.start()
     else:
       # Qt console does not exist in ipython <= 0.10
       # and the API was different
@@ -309,7 +315,7 @@ if neuroConfig.shell:
         from qt import QTimer
       QTimer.singleShot( 0, restartAnatomist )
       ipshell.mainloop( sys_exit=1 )
-    cleanupGui()
+      cleanupGui()
   except ImportError:
     print >> sys.stderr, 'IPython not found - Shell mode disabled'
     neuroConfig.shell = 0

@@ -104,42 +104,20 @@ def restartAnatomist():
     del a._restartshell_launched
 
 
-_ipConsole = None
-_ipsubprocs = []
-
-def runIPConsoleKernel():
-  global _ipConsole, _ipsubprocs
-  if _ipConsole is None:
-    print 'runing IP console kernel'
-    def mylooprunning( app=None ):
-      return True
-    from IPython.lib import guisupport
-    guisupport.is_event_loop_running_qt4  = mylooprunning
-    from IPython.zmq.ipkernel import IPKernelApp
-    app = IPKernelApp.instance()
-    _ipConsole = app
-    app.hb_port = 50042 # don't know why this is not set automatically
-    app.initialize( [ 'qtconsole', '--pylab=qt',
-      "--KernelApp.parent_appname='ipython-qtconsole'" ] )
-    app.start()
-  return _ipConsole
-
-
 def startShell():
   from PyQt4.QtGui import qApp
   try:
     import IPython
     if [ int(x) for x in IPython.__version__.split('.') ] >= [ 0, 11 ]:
       # ipython >= 0.11, use client/server mode
-      ipConsole = runIPConsoleKernel()
-      global _ipsubprocs
+      ipConsole = neuroProcesses.runIPConsoleKernel()
       import subprocess
       sp = subprocess.Popen( [ sys.executable, '-c',
         'from IPython.frontend.terminal.ipapp import launch_new_instance; ' \
         'launch_new_instance()', 'qtconsole', '--existing',
         '--shell=%d' % ipConsole.shell_port, '--iopub=%d' % ipConsole.iopub_port,
         '--stdin=%d' % ipConsole.stdin_port, '--hb=%d' % ipConsole.hb_port ] )
-      _ipsubprocs.append( sp )
+      neuroProcesses._ipsubprocs.append( sp )
       return
   except:
     pass
