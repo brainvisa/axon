@@ -4018,7 +4018,7 @@ def readProcesses( processesPath ):
       for k in converters.keys():
         _converters[ ( getDiskItemType( k[0].name ), getFormat( k[1].name ) ) ] = converters[ k ]
     except:
-      _processesInfo, _converters = None, None
+      _processesInfo, _converters = {}, {}
       if neuroConfig.mainLog is not None:
         neuroConfig.mainLog.append( 'Cannot read processes cache',
           html=exceptionHTML( beforeError=_t_( 'Cannot read processes cache file <em>%s</em>' ) % ( processesCacheFile, ) ),
