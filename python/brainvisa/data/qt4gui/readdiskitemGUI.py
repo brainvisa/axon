@@ -259,7 +259,15 @@ class DiskItemEditor( QWidget, DataEditor ):
     else:
       self._view = result
     neuroProcessesGUI.mainThreadActions().push( self.btnShow.setEnabled, 1 )
+    if result is None:
+      neuroProcessesGUI.mainThreadActions().push( self.btnShow.setChecked, False )
 
+  def close_viewer(self):
+    if self._view is not None:
+      self._view = None
+      neuroProcessesGUI.mainThreadActions().push( self.btnShow.setChecked, False )
+      neuroProcessesGUI.mainThreadActions().push( self.btnShow.setEnabled, 1 )
+    
 
   def openViewerPressed( self ):
     v = self.getValue()

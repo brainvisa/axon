@@ -418,6 +418,7 @@ class SomaWorkflowProcessView(QMainWindow):
     view_menu = self.ui.menubar.addMenu("&View")
     view_menu.addAction(self.ui.dock_bv_process.toggleViewAction())
     view_menu.addAction(self.ui.dock_plot.toggleViewAction())
+    view_menu.addAction(_mainWindow.close_viewers_action)
 
     self.action_update_databases=QAction(self)
     self.action_update_databases.setText(_t_( 'Check && update databases' ))
@@ -523,8 +524,6 @@ class SomaWorkflowProcessView(QMainWindow):
       else:
         QMessageBox.warning(self, "Monitoring impossible", "The workflow was deleted.")
         self.action_monitor_workflow.setChecked(False)
-      
-  
 
   @QtCore.Slot(bool)
   def show_process(self, checked):
@@ -1666,7 +1665,6 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       setattr( ProcessView, 'pixProcessError', QIcon( os.path.join( neuroConfig.iconPath, 'abort.png' ) ) )
       setattr( ProcessView, 'pixNone', QIcon() )
     
-    
     self.read_only = read_only
 
     # ProcessView cannot be a QMainWindow because it have to be included in a QStackedWidget in pipelines. 
@@ -1729,6 +1727,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       processMenu.addAction(self.action_interupt_step)
       processMenu.addSeparator()
       processMenu.addAction(self.action_run_with_sw)
+      
+      view_menu = self.menu.addMenu("&View")
+      view_menu.addAction(_mainWindow.close_viewers_action)
       
       try:
         import soma.workflow
@@ -3054,6 +3055,10 @@ class ProcessSelectionWidget( QMainWindow ):
     view_menu = menu.addMenu("&View")
     view_menu.addAction(self.dock_doc.toggleViewAction())
     view_menu.addAction(self.dock_sw.toggleViewAction())
+    self.close_viewers_action = QAction(self)
+    self.close_viewers_action.setText("Close all viewers")
+    self.close_viewers_action.triggered.connect(self.close_viewers)
+    view_menu.addAction(self.close_viewers_action)
 
     # the main layout contains vertically : a QSplitter (processes | doc) and a QHBoxLayout (open and edit buttons)
     layout=QVBoxLayout()
@@ -3302,6 +3307,20 @@ class ProcessSelectionWidget( QMainWindow ):
     state_file.close()
     quitRequest()
     event.ignore()
+    
+  def close_viewers(self):
+    from brainvisa.data.qt4gui.readdiskitemGUI import DiskItemEditor
+    from brainvisa.data.qt4gui.hierarchyBrowser import HierarchyBrowser
+    for w in qApp.allWidgets():
+      if isinstance(w, DiskItemEditor):
+        w.close_viewer()
+      elif isinstance(w, ProcessView):
+        process_info = neuroProcesses.getProcessInfo(w.process.id())
+        if "viewer" in process_info.roles:
+          w.close()
+      elif isinstance(w, HierarchyBrowser):
+        w.close_viewers()
+        
 
 #----------------------------------------------------------------------------
 class ProcessTreesWidget(QSplitter):

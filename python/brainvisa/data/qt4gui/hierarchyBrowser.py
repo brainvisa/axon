@@ -29,7 +29,7 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
-from backwardCompatibleQt import QWidget, QTreeWidget, QTreeWidgetItem, QIcon, QHBoxLayout, QVBoxLayout, QTextEdit, QSpacerItem, QSizePolicy, QSize, QPushButton, SIGNAL, qApp, QMenu, QCursor, QDrag, QPixmap, QMimeData, Qt, QMessageBox, QPoint, QApplication, QUrl, QSplitter
+from backwardCompatibleQt import QWidget, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QIcon, QHBoxLayout, QVBoxLayout, QTextEdit, QSpacerItem, QSizePolicy, QSize, QPushButton, SIGNAL, qApp, QMenu, QCursor, QDrag, QPixmap, QMimeData, Qt, QMessageBox, QPoint, QApplication, QUrl, QSplitter
 import os
 
 from soma.wip.application.api import findIconFile
@@ -71,6 +71,7 @@ class HierarchyBrowser( QWidget ):
       layout.setSpacing( 5 )
       layout.setMargin( 10 )
       self.setLayout(layout)
+      self.setAttribute(Qt.WA_DeleteOnClose)
       
       hl = QSplitter( Qt.Horizontal )
       layout.addWidget(hl)
@@ -257,6 +258,13 @@ class HierarchyBrowser( QWidget ):
       """
       return self.lstHierarchy.selectedItems()
   
+    def close_viewers(self):
+      it=QTreeWidgetItemIterator(self.lstHierarchy)
+      while it.value():
+        item=it.value()
+        item.viewer=None
+        it+=1
+      
     # --------------------------------
     # Contextual menu functions
     # --------------------------------
