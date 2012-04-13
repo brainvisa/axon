@@ -145,6 +145,11 @@ def quitRequest():
       if isinstance( w, ProcessView ) or isinstance(w, SomaWorkflowProcessView):
         w.close()
         del w
+    from brainvisa import anatomist
+    a = anatomist.Anatomist( create=False )
+    if a:
+      close_viewers()
+      a.close()
     if neuroConfig.shell:
       sys.exit()
     else:
@@ -418,7 +423,7 @@ class SomaWorkflowProcessView(QMainWindow):
     view_menu = self.ui.menubar.addMenu("&View")
     view_menu.addAction(self.ui.dock_bv_process.toggleViewAction())
     view_menu.addAction(self.ui.dock_plot.toggleViewAction())
-    view_menu.addAction(_mainWindow.close_viewers_action)
+    view_menu.addAction(close_viewers_action(self))
 
     self.action_update_databases=QAction(self)
     self.action_update_databases.setText(_t_( 'Check && update databases' ))
@@ -1729,7 +1734,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       processMenu.addAction(self.action_run_with_sw)
       
       view_menu = self.menu.addMenu("&View")
-      view_menu.addAction(_mainWindow.close_viewers_action)
+      view_menu.addAction(close_viewers_action(self))
       
       try:
         import soma.workflow
@@ -3055,10 +3060,7 @@ class ProcessSelectionWidget( QMainWindow ):
     view_menu = menu.addMenu("&View")
     view_menu.addAction(self.dock_doc.toggleViewAction())
     view_menu.addAction(self.dock_sw.toggleViewAction())
-    self.close_viewers_action = QAction(self)
-    self.close_viewers_action.setText("Close all viewers")
-    self.close_viewers_action.triggered.connect(self.close_viewers)
-    view_menu.addAction(self.close_viewers_action)
+    view_menu.addAction(close_viewers_action(self))
 
     # the main layout contains vertically : a QSplitter (processes | doc) and a QHBoxLayout (open and edit buttons)
     layout=QVBoxLayout()
@@ -3307,20 +3309,7 @@ class ProcessSelectionWidget( QMainWindow ):
     state_file.close()
     quitRequest()
     event.ignore()
-    
-  def close_viewers(self):
-    from brainvisa.data.qt4gui.readdiskitemGUI import DiskItemEditor
-    from brainvisa.data.qt4gui.hierarchyBrowser import HierarchyBrowser
-    for w in qApp.allWidgets():
-      if isinstance(w, DiskItemEditor):
-        w.close_viewer()
-      elif isinstance(w, ProcessView):
-        process_info = neuroProcesses.getProcessInfo(w.process.id())
-        if "viewer" in process_info.roles:
-          w.close()
-      elif isinstance(w, HierarchyBrowser):
-        w.close_viewers()
-        
+            
 
 #----------------------------------------------------------------------------
 class ProcessTreesWidget(QSplitter):
@@ -3803,6 +3792,11 @@ class RemoteContextGUI( QTreeWidgetItem ):
     pass
 
 #----------------------------------------------------------------------------
+def mainWindow():
+  global _mainWindow
+  return _mainWindow
+  
+  
 def showMainWindow():
   global _mainWindow
   if neuroConfig.openMainWindow:
@@ -3817,6 +3811,25 @@ def showMainWindow():
   else:
     _mainWindow = None
     
+def close_viewers_action(parent):
+  action=QAction(parent)
+  action.setText("Close all viewers")
+  action.triggered.connect(close_viewers)
+  return action
+  
+def close_viewers():
+  from brainvisa.data.qt4gui.readdiskitemGUI import DiskItemEditor
+  from brainvisa.data.qt4gui.hierarchyBrowser import HierarchyBrowser
+  for w in qApp.allWidgets():
+    if isinstance(w, DiskItemEditor):
+      w.close_viewer()
+    elif isinstance(w, ProcessView):
+      process_info = neuroProcesses.getProcessInfo(w.process.id())
+      if "viewer" in process_info.roles:
+        w.close()
+    elif isinstance(w, HierarchyBrowser):
+      w.close_viewers()
+
 #----------------------------------------------------------------------------
 def updateProcessList():
   _mainWindow.updateList()

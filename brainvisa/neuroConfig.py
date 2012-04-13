@@ -465,11 +465,8 @@ if not os.path.exists( homeBrainVISADir ):
 
 # Other defaults
 anatomistExecutable = 'anatomist'
-if platform == 'windows':
-  # Fix issue in socket communication on windows platform (libc++ seems to not be thread safe)
-  anatomistImplementation = 'threaded'
-else :
-  anatomistImplementation = 'socket'
+anatomistImplementation = 'threaded'
+
 remoteBrainvisaExecutable = ''
 
 HTMLBrowser = ''

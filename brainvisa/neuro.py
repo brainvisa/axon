@@ -313,7 +313,6 @@ if neuroConfig.shell:
       else:
         ipshell = IPython.Shell.IPShellQt( [ '-qthread' ] )
         from qt import QTimer
-      QTimer.singleShot( 0, restartAnatomist )
       ipshell.mainloop( sys_exit=1 )
       cleanupGui()
   except ImportError:

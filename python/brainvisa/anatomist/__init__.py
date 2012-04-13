@@ -42,6 +42,7 @@ import weakref, types, threading
 import atexit
 import copy
 import backwardCompatibleQt as qt
+import neuroProcessesGUI
 try:
   import anatomist
   anatomist.setDefaultImplementation( neuroConfig.anatomistImplementation )
@@ -79,10 +80,23 @@ if anatomistImport:
     # We shouldn't change the defaultRefType in fact. 
     # Indeed, if Anatomist from brainvisa takes only weak shared references on objects and windows,
     # the user can close a window that is still used by python and it can creates pbs 
-    # Fo example, an id that is free for Anatomist C++ is reused for a new object in Anatomist python but python add still references 
-    # on this id for another object, so when this other object is release in python layer, it can lead to the destruction of the new object.
+    # Fo example, an id that is free for Anatomist C++ is reused for a new object in Anatomist python but python still have references 
+    # on this id for another object, so when this other object is released in python layer, it can lead to the destruction of the new object.
     # But with this change, the user won't be able to really close windows or delete objects in Anatomist of Brainvisa manually.
     #defaultRefType="WeakShared"
+    
+    def __new__(cls, *args, **kwargs ):
+      instance=super(Anatomist, cls).__new__(cls, *args, **kwargs)
+      if instance :
+        if not instance.getControlWindow():
+          mainThread=QtThreadCall()
+          instance.createControlWindow()
+          win=instance.getControlWindow()
+          if win:
+            win.enableClose( False )
+            mainThread.push( qt.QObject.connect, win, qt.SIGNAL("destroyed(QObject *)"), instance.anatomist_closed )
+      return instance
+      
     def __singleton_init__(self, *args, **kwargs):
       anatomistParameters=[]
       for a in args:
@@ -113,16 +127,13 @@ if anatomistImport:
       super( Anatomist, self ).__singleton_init__( *args, **kwargs )
       if neuroConfig.anatomistImplementation != 'socket':
         a = anatomistModule.Anatomist()
-        if neuroConfig.openMainWindow :
-          # Anatomist can be closed directly if brainvisa main window is not available (this is used when brainvisa is 
-          # launched as backgroud scrip and launches anatomist
-          a.getControlWindow().enableClose( False )
-      try:
-        mainThread.push( neuroConfig.qtApplication.connect,
-          neuroConfig.qtApplication,qt.SIGNAL( 'aboutToQuit ()' ),self.close )
-      except:
-        atexit.register(self.close)
+        a.getControlWindow().enableClose( False )
+        mainThread.push( qt.QObject.connect, a.getControlWindow(), qt.SIGNAL("destroyed(QObject *)"), self.anatomist_closed )
 
+    def anatomist_closed(self):
+      if neuroProcessesGUI:
+        neuroProcessesGUI.close_viewers()
+      
     ###############################################################################
     # Methods redefined to use Brainvisa log system.
     def log(self, message ):
