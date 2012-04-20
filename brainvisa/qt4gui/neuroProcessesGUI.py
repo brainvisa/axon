@@ -3825,7 +3825,7 @@ def close_viewers():
       w.close_viewer()
     elif isinstance(w, ProcessView):
       process_info = neuroProcesses.getProcessInfo(w.process.id())
-      if "viewer" in process_info.roles:
+      if process_info is not None and "viewer" in process_info.roles:
         w.close()
     elif isinstance(w, HierarchyBrowser):
       w.close_viewers()
