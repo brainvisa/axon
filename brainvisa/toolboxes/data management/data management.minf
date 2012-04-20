@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="brainvisa-tree_2.0">
+<l length="1">
+  <f type="ProcessTree">
+    <s name="name">Data management</s>
+    <true name="editable"/>
+    <l length="1" name="content">
+      <f type="ProcessTree.Branch">
+        <l length="1" name="content">
+          <f type="ProcessTree.Leaf">
+            <s name="name">2 - Check database</s>
+            <s name="id">checkDatabase</s>
+          </f>
+        </l>
+        <s name="name">convert_old_database_steps</s>
+        <s name="id">data management/convert_old_database_steps</s>
+      </f>
+    </l>
+    <s name="id">-1222536820</s>
+  </f>
+</l>
+</minf>

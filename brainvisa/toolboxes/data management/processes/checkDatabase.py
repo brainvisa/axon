@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -38,7 +39,7 @@ import shfjGlobals
 import sys
 
 
-name = '2 - Check database'
+name = 'Check database'
 userLevel = 0
 
 signature = Signature( 
