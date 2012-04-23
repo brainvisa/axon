@@ -52,6 +52,9 @@ else:
 
 #--------------------------------------------------------------------------
 class CommandWithQProcess( object ):
+  class SignalException( Exception ):
+    pass
+
   """
   This class is used to make a system call using QProcess
   """
@@ -124,6 +127,10 @@ class CommandWithQProcess( object ):
     the command (i.e. its return value) is returned, otherwise a RuntimeError
     is raised.'''
     self._qprocess.waitForFinished( -1 )
+    print 'wait finished:', self.exitStatus, self.normalExit
+    if not self.normalExit:
+      print 'raising exception...'
+      raise self.SignalException( _t_( 'System call interrupted or crashed ' ) )
     return self.exitStatus
 
   def error(self):
@@ -185,7 +192,7 @@ class CommandWithQProcess( object ):
       return qprocess
 
 
-  def _processExited( self, exitCode=0, exitStatus=0 ):
+  def _processExited( self, exitCode, exitStatus ):
     self.normalExit = (exitStatus == QProcess.NormalExit)
     self.exitStatus = exitCode
 
