@@ -33,6 +33,7 @@
 from neuroProcesses import *
 import shfjGlobals, registration
 from brainvisa import shelltools
+import numpy as np
 
 name = 'Graph To Volume Converter'
 userLevel = 0
@@ -48,6 +49,7 @@ signature = Signature(
       + map( lambda x: (x,getFormat(x)), shfjGlobals.aimsVolumeFormats ) ),
   'removeSource', Boolean(),
   'extract_volume', String(),
+  'extract_contours', Choice( 'Yes', 'No' )
   )
 
 def findAppropriateFormat( values, proc ):
@@ -65,6 +67,13 @@ def initialization( self ):
   self.preferedFormat = None
   self.setOptional( 'preferedFormat', 'extract_volume' )
   self.removeSource = 0
+  self.extract_contours = 'No'
+
+def neighbors( t, z, y, x):
+    return [ ( t, z, y-1, x ),
+             ( t, z, y+1, x ),
+             ( t, z, y, x-1 ),
+             ( t, z, y, x+1 ) ]
 
 def execution( self, context ):
   from soma import aims
@@ -93,10 +102,23 @@ def execution( self, context ):
     ar = vol2.arraydata()
     ar[ :, bmin[2]:bmax[2]+1, bmin[1]:bmax[1]+1, bmin[0]:bmax[0]+1 ] \
       = vol.volume().arraydata()
+
+    if self.extract_contours == 'Yes':
+        ar_copy = ar.copy()
+        for label in [ v['roi_label'] for v in graph.vertices() ]:
+            ind = zip( *np.where( ar_copy == label ) )
+            for i in ind:
+                erase = True
+                for neigh in neighbors( *i ):
+                    if ar_copy[ neigh ] != label:
+                        erase = False
+                if erase:
+                    ar[ i ] = 0
+
     for x,y in vol.header().items():
       vol2.header()[ x ] = y
     # add 1 to all voxels because the background is -1
-    vol2 += 1
+#    vol2 += 1
     aims.write( vol2, self.write.fullPath() )
   else:
     # bounding box OK
