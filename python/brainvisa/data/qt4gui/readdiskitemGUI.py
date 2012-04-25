@@ -124,6 +124,11 @@ class DiskItemEditor( QWidget, DataEditor ):
       self.btnDatabase.setToolTip(_t_("Browse the database (load mode)"))
     self.btnDatabase.setFixedSize( buttonIconSize + buttonMargin )
     self.btnDatabase.setFocusPolicy( Qt.NoFocus )
+    
+    self.customFileDialog = None
+    if hasattr( parameter, 'fileDialog' ):
+        self.customFileDialog = parameter.fileDialog
+    
     if hasattr( parameter, 'databaseUserLevel' ):
       x = parameter.databaseUserLevel
       if x > neuroConfig.userLevel:
@@ -337,7 +342,10 @@ class DiskItemEditor( QWidget, DataEditor ):
   def browsePressed( self ):
     if self.browseDialog is None or self.parameter._modified:
       self.parameter._modified = False
-      self.browseDialog = QFileDialog( self )
+      if self.customFileDialog:
+          self.browseDialog = self.customFileDialog( self )
+      else:
+          self.browseDialog = QFileDialog( self )
       if self._write:
         mode = QFileDialog.AnyFile
       else:
@@ -358,6 +366,8 @@ class DiskItemEditor( QWidget, DataEditor ):
         mode = QFileDialog.Directory
       self.browseDialog.setFileMode( mode )
       self.browseDialog.setFilters( filters )
+      if self.customFileDialog and self.customFileDialog.customFilter != "":
+          self.browseDialog.selectFilter( self.customFileDialog.customFilter )
       self.connect( self.browseDialog, SIGNAL( 'accepted()' ), self.browseAccepted )
     # set current directory
     parent = self._context
