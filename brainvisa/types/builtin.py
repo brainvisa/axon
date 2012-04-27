@@ -275,3 +275,5 @@ FileType( '4D Functional volume', '4D Volume' )
 FileType( 'fMRI', '4D Volume' )
 FileType( 'fMRI activations', '3D functional volume' )
 
+# Group analysis
+FileType( 'Group definition', 'XML parameters', 'XML' )

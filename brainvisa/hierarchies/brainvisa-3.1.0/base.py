@@ -44,6 +44,10 @@ hierarchy = (
       '{subject}', SetFileNameStrongAttribute( 'subject' ), SetType( 'Subject' ),
       SetContent( # Set Content must be present even if it is empty, else it is impossible to insert something in subject directory
       ),
+      "group_analysis",
+      SetContent( '{group_of_subjects}',
+                  SetContent( '<group_of_subjects>_group', SetType( 'Group definition' ), ),
+      ),
     ),
   ),
 )
