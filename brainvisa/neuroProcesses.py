@@ -3299,8 +3299,11 @@ def getProcess( processId, ignoreValidation=False, checkUpdate=True ):
     if info is not None:
       result = _processes.get( info.id.lower() )
       if result is None:
-        result = readProcess( info.fileName, ignoreValidation=ignoreValidation )
-        checkUpdate=False
+        try:
+          result = readProcess( info.fileName, ignoreValidation=ignoreValidation )
+          checkUpdate=False
+        except ValidationError:
+          result = None
   if result is not None:
     # Check if process source file have changed
     if checkUpdate:
@@ -3467,7 +3470,7 @@ def getConverter( source, destination, checkUpdate=True ):
   return getProcess( result, checkUpdate=checkUpdate )
 
 
-#----------------------------------------------------------------------------
+#--------------------------------------------->-------------------------------
 def getConvertersTo( destination, keepType=1, checkUpdate=True ):
   """
   Gets the converters which can convert data to destination format.
