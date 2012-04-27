@@ -127,9 +127,9 @@ class CommandWithQProcess( object ):
     the command (i.e. its return value) is returned, otherwise a RuntimeError
     is raised.'''
     self._qprocess.waitForFinished( -1 )
-    print 'wait finished:', self.exitStatus, self.normalExit
+    #print 'wait finished:', self.exitStatus, self.normalExit
     if not self.normalExit:
-      print 'raising exception...'
+      #print 'raising exception...'
       raise self.SignalException( _t_( 'System call interrupted or crashed ' ) )
     return self.exitStatus
 

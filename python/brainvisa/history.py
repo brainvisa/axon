@@ -136,7 +136,7 @@ class HistoryBook( object ):
             if not os.path.exists( historyBook ):
               os.mkdir(historyBook)
             historyBook = HistoryBook( historyBook, compression=True )
-            print item
+            #print item
             historyBooksContext.setdefault( historyBook, {} )[ item.fullPath() ] = ( item, item.modificationHash() )
 
     event = None
