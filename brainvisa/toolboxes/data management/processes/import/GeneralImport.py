@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -72,11 +73,11 @@ def orient( self, input ):
       if self.input.format in map( getFormat, ( 'SPM image', 'Series of SPM image' ) ):
         hide = 0
         atts = shfjGlobals.aimsVolumeAttributes( self.input )
-        radio = atts.get( 'spm_radio_convention' )
-        if radio is not None and radio != 0:
-          res = 'Radiological'
-        else:
+        tr = atts.get( 'storage_to_memory' )
+        if tr is not None and tr[0] < 0:
           res = 'Neurological'
+        else:
+          res = 'Radiological'
     if hide:
       self.signature[ 'input_spm_orientation' ].setChoices( \
           'Not applicable' )
@@ -108,9 +109,16 @@ def execution( self, context ):
   # search for a specific importer for this data
   importer=getImporter(self.output)
   if not importer:
-    importer="ImportData"
+    importer=getProcess("ImportData")
   # must pass the filename to the importer and not a diskitem because it is potentially not in the database (findValue on a diskitem that is not in the database will fail and the parameter will not be taken into account)
-  context.runProcess(importer, input=self.input.fullPath(), output=self.output, converter=self.converter)
+  impinst = getProcessInstance( importer )
+  context.write( 'importer:', importer.name )
+  kwargs = { 'input': self.input.fullPath(), 'output': self.output }
+  if impinst.signature.has_key( 'converter' ):
+    kwargs[ 'converter' ] = self.converter
+  if impinst.signature.has_key( 'input_spm_orientation' ):
+    kwargs[ 'input_spm_orientation' ] = self.input_spm_orientation
+  context.runProcess(importer, **kwargs )
   if self.copy_referential_of:
     tm=registration.getTransformationManager()
     tm.copyReferential(self.copy_referential_of, self.output)

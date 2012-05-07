@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -60,11 +61,11 @@ def initialization( self ):
         if self.input.format in map( getFormat, ( 'SPM image', 'Series of SPM image' ) ):
           hide = 0
           atts = shfjGlobals.aimsVolumeAttributes( self.input )
-          radio = atts.get( 'spm_radio_convention' )
-          if radio is not None and radio != 0:
-            res = 'Radiological'
-          else:
+          tr = atts.get( 'storage_to_memory' )
+          if tr is not None and tr[0] < 0:
             res = 'Neurological'
+          else:
+            res = 'Radiological'
       if hide:
         proc.signature[ 'input_spm_orientation' ].setChoices( \
             'Not applicable' )
@@ -107,7 +108,10 @@ def execution( self, context ):
     if self.input.format in map( getFormat,
                                  ( 'SPM image', 'Series of SPM image' ) ):
       atts = shfjGlobals.aimsVolumeAttributes( self.input )
-      radio = atts.get( 'spm_radio_convention' )
+      tr = atts.get( 'storage_to_memory' )
+      radio = None
+      if tr:
+        radio = ( tr[0] > 0 )
       iradio = 0
       if self.input_spm_orientation == 'Radiological':
         iradio = 1
@@ -130,7 +134,18 @@ def execution( self, context ):
           shelltools.cp( self.input.fullPath() + '.minf',
                          input.fullPath() + '.minf' )
         input.readAndUpdateMinf()
-        input.setMinf( 'spm_radio_convention', iradio )
+        if iradio != 1:
+          iradio = -1
+        if tr is None:
+          tr = [ 1, 0, 0, 0,  0, -1, 0, 0,  0, 0, -1, 0,  0, 0, 0, 1 ]
+          tr[7] = atts[ 'volume_dimension' ][1] - 1
+          tr[11] = atts[ 'volume_dimension' ][2] - 1
+        tr[0] = iradio
+        if tr[0] < 0:
+          tr[3] = atts[ 'volume_dimension' ][0] - 1
+        else:
+          tr[3] = 0
+        input.setMinf( 'storage_to_memory', tr )
     context.runProcess( converter, input, self.output )
 
   else:
