@@ -87,7 +87,8 @@ if anatomistImport:
     
     def __new__(cls, *args, **kwargs ):
       instance=super(Anatomist, cls).__new__(cls, *args, **kwargs)
-      if instance :
+      if instance and '-b' not in args \
+        and neuroConfig.anatomistImplementation != 'socket':
         if not instance.getControlWindow():
           mainThread=QtThreadCall()
           instance.createControlWindow()
@@ -126,9 +127,10 @@ if anatomistImport:
       args = anatomistParameters
       super( Anatomist, self ).__singleton_init__( *args, **kwargs )
       if neuroConfig.anatomistImplementation != 'socket':
-        a = anatomistModule.Anatomist()
-        a.getControlWindow().enableClose( False )
-        mainThread.push( qt.QObject.connect, a.getControlWindow(), qt.SIGNAL("destroyed(QObject *)"), self.anatomist_closed )
+        a = anatomistModule.Anatomist( *args, **kwargs )
+        if a.getControlWindow() is not None:
+          a.getControlWindow().enableClose( False )
+          mainThread.push( qt.QObject.connect, a.getControlWindow(), qt.SIGNAL("destroyed(QObject *)"), self.anatomist_closed )
 
     def anatomist_closed(self):
       if neuroProcessesGUI:
