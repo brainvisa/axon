@@ -37,7 +37,7 @@ from datetime import timedelta
 import StringIO
 import distutils, os, sys, re
 import types
-from backwardCompatibleQt import *
+from brainvisa.processes.qtgui.backwardCompatibleQt import *
 from soma.qt4gui.designer import loadUi, loadUiType
 from PyQt4.QtGui import QKeySequence
 from PyQt4 import QtCore

@@ -194,7 +194,7 @@ from brainvisa.debug import debugHere
 from brainvisa.data.sqlFSODatabase import Database, NotInDatabaseError
 import brainvisa.toolboxes
 import fileSystemOntology
-from backwardCompatibleQt import QProcess
+from brainvisa.processes.qtgui.backwardCompatibleQt import QProcess
 from brainvisa.processes.qtgui.command import CommandWithQProcess as Command
 
 

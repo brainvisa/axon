@@ -33,7 +33,7 @@
 
 import time
 import os
-from backwardCompatibleQt import QWidget, QVBoxLayout, QIcon, QSplitter, Qt, QSizePolicy, QSize, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QHBoxLayout, QPushButton, QObject, SIGNAL, QFileDialog, QKeySequence, QInputDialog, QLineEdit
+from brainvisa.processes.qtgui.backwardCompatibleQt import QWidget, QVBoxLayout, QIcon, QSplitter, Qt, QSizePolicy, QSize, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QHBoxLayout, QPushButton, QObject, SIGNAL, QFileDialog, QKeySequence, QInputDialog, QLineEdit
 import neuroLog
 from brainvisa.processes import neuroException
 import neuroConfig

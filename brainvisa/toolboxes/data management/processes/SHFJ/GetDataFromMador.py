@@ -31,7 +31,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from neuroProcesses import *
 try:
-  from backwardCompatibleQt import QVBox, QFileDialog, QPixmap, QLabel, QHBox, QComboBox, SIGNAL, QListBox, QLineEdit, QPushButton, QWidget
+  from brainvisa.processes.qtgui.backwardCompatibleQt import QVBox, QFileDialog, QPixmap, QLabel, QHBox, QComboBox, SIGNAL, QListBox, QLineEdit, QPushButton, QWidget
   qtok=True
 except:
   qtok=False

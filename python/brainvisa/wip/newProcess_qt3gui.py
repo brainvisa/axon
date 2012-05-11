@@ -31,7 +31,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from soma.signature.api import HasSignature
 from soma.qtgui.api import QtGUI, ApplicationQtGUI, createWidget
-from backwardCompatibleQt import QVBoxLayout
+from brainvisa.processes.qtgui.backwardCompatibleQt import QVBoxLayout
 import os
 from brainvisa.wip.newProcess import ExecutionContext
 

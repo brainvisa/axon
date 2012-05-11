@@ -30,9 +30,10 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
-from backwardCompatibleQt import QLineEdit, SIGNAL, QPushButton, QToolButton, \
-               Qt, QIcon, QWidget, QFileDialog, QVBoxLayout, \
-               QListWidget, QHBoxLayout, QSpacerItem, QSizePolicy, QSize
+from brainvisa.processes.qtgui.backwardCompatibleQt \
+    import QLineEdit, SIGNAL, QPushButton, QToolButton, \
+           Qt, QIcon, QWidget, QFileDialog, QVBoxLayout, \
+           QListWidget, QHBoxLayout, QSpacerItem, QSizePolicy, QSize
 from soma.wip.application.api import findIconFile
 from soma.qtgui.api import largeIconSize
 from brainvisa.data.qtgui.diskItemBrowser import DiskItemBrowser

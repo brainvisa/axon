@@ -78,7 +78,7 @@ from neuroHierarchy import *
 from brainvisa.processes.qtgui.neuroDataGUI import *
 from brainvisa.processes.qtgui.neuroProcessesGUI import *
 import neuroHierarchy
-from backwardCompatibleQt import *
+from brainvisa.processes.qtgui.backwardCompatibleQt import *
 from minfExtensions import initializeMinfExtensions
 from brainvisa.data.qtgui.updateDatabases import warnUserAboutDatabasesToUpdate
 

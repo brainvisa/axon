@@ -36,7 +36,7 @@
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
 
-from backwardCompatibleQt import *
+from brainvisa.processes.qtgui.backwardCompatibleQt import *
 
 import operator
 from brainvisa.validation import ValidationError

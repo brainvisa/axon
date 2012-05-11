@@ -41,7 +41,7 @@ import distutils.spawn
 import weakref, types, threading
 import atexit
 import copy
-import backwardCompatibleQt as qt
+from brainvisa.processes.qtgui import backwardCompatibleQt as qt
 import neuroProcessesGUI
 try:
   import anatomist

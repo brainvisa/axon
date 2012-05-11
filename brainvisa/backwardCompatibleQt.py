@@ -31,75 +31,8 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-import os, sys
-USES_PYSIDE = False
-if sys.modules.has_key( 'qt' ):
-  from qt import *
-else:
-  from PyQt4.QtCore import *
-  from PyQt4.QtGui import *
-  from PyQt4 import QtCore
-  # PyQt / PySide compatibility for signals/slots
-  if hasattr( QtCore, 'pyqtSignal' ):
-    USES_PYSIDE = True
-    QtCore.Signal = QtCore.pyqtSignal
-    QtCore.Slot= QtCore.pyqtSlot
-    QtCore.Property = QtCore.pyqtProperty
-
-
-# In BrainVISA, we try to use the latest version of PyQt. Unfortunately
-# some attributes name are changed between PyQt versions. When such a
-# problem is detected, we replace the old attribute name by the new one
-# in all BrainVISA and here, we define the new attribute for older PyQt
-# versions.
-
-# Qt.WStyle_Dialog has been replaced by Qt.WType_Dialog in PyQt 3.0
-if not hasattr( Qt, 'WType_Dialog' ):
-  if hasattr(Qt, 'WStyle_Dialog'):
-    Qt.WType_Dialog = Qt.WStyle_Dialog
-  if hasattr(Qt, 'Dialog'):
-    Qt.WType_Dialog = Qt.Dialog
-
-# Qt.WType_Modal has been replaced by Qt.WShowModal in PyQt 3.0
-if not hasattr( Qt, 'WShowModal' ):
-  if hasattr(Qt, 'WType_Modal'):
-    Qt.WShowModal = Qt.WType_Modal
-
-# QWidget.setBackgroundColor has been removed in PyQt 3.0.
-# We use QWidget.setPaletteBackgroundColor instead.
-if not hasattr( QWidget, 'setPaletteBackgroundColor' ):
-  if hasattr(QWidget, 'setBackgroundColor'):
-    def setPaletteBackgroundColor( self, color ):
-      self.setBackgroundColor( color )
-    QWidget.setPaletteBackgroundColor = setPaletteBackgroundColor
-
-# QComboBox.setCurrentText does not exists before Qt 3.0
-if not hasattr( QComboBox, 'setCurrentText' ):
-  def setCurrentText( self, text ):
-    return self.lineEdit().setText( text )
-  QComboBox.setCurrentText = setCurrentText
-
-# set plugins path for binary packages (needed on MacOSX/Fink version of Qt)
-def setPluginPath():
-  if sys.platform[ :6 ] != 'darwin':
-    return # not needed on other platforms right now
-  try:
-    from soma.config import BRAINVISA_SHARE
-    shared = BRAINVISA_SHARE
-  except ImportError:
-    path = os.getenv( 'PATH' ).split( os.pathsep )
-    for p in path:
-      if p.endswith( '/bin' ) or p.endswith( '\\bin' ):
-        p = p[:len(p)-4]
-      elif p.endswith( '/bin/commands-links' ) \
-        or p.endswith( '\\bin\\commands-links' ):
-        p = p[:len(p)-19]
-      p = os.path.join( p, 'share' )
-      if os.path.isdir( p ):
-        shared = p
-        break
-  if shared is not None:
-    p = os.path.normpath( os.path.join( shared, '..', 'lib', 'qt3-plugins' ) )
-    QApplication.addLibraryPath( p )
-
-setPluginPath()
+import traceback
+print 'warning: use of obsolete backwardCompatibleQt. Please use brainvisa.processes.backwardCompatibleQt instead now.'
+print 'called from:'
+traceback.print_stack()
+from brainvisa.processes.qtgui.backwardCompatibleQt import *
