@@ -33,7 +33,7 @@ import sys, new, os
 import registration
 import neuroConfig
 import neuroLog
-from brainvisa.processes import neuroException
+from brainvisa.processing import neuroException
 import neuroData
 from brainvisa.validation import ValidationError
 from soma.qtgui.api import QtThreadCall
@@ -41,7 +41,7 @@ import distutils.spawn
 import weakref, types, threading
 import atexit
 import copy
-from brainvisa.processes.qtgui import backwardCompatibleQt as qt
+from brainvisa.processing.qtgui import backwardCompatibleQt as qt
 import neuroProcessesGUI
 try:
   import anatomist

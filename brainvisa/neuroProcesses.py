@@ -187,15 +187,15 @@ from neuroData import *
 from neuroDiskItems import *
 import neuroConfig, neuroDiskItems
 import neuroLog
-from brainvisa.processes.neuroException import *
+from brainvisa.processing.neuroException import *
 from brainvisa import matlab
 from brainvisa.validation import ValidationError
 from brainvisa.debug import debugHere
 from brainvisa.data.sqlFSODatabase import Database, NotInDatabaseError
 import brainvisa.toolboxes
 import fileSystemOntology
-from brainvisa.processes.qtgui.backwardCompatibleQt import QProcess
-from brainvisa.processes.qtgui.command import CommandWithQProcess as Command
+from brainvisa.processing.qtgui.backwardCompatibleQt import QProcess
+from brainvisa.processing.qtgui.command import CommandWithQProcess as Command
 
 
 #----------------------------------------------------------------------------
@@ -1466,7 +1466,7 @@ class ExecutionNode( object ):
     """
     Returns the graphical user interface of this node.
     """
-    from brainvisa.processes.qtgui.neuroProcessesGUI import ExecutionNodeGUI
+    from brainvisa.processing.qtgui.neuroProcessesGUI import ExecutionNodeGUI
     if self._parameterized is not None:
       if processView != None and processView.read_only:
         return ExecutionNodeGUI(parent, self._parameterized(), read_only=True)

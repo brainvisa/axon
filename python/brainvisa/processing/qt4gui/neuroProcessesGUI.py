@@ -37,7 +37,7 @@ from datetime import timedelta
 import StringIO
 import distutils, os, sys, re
 import types
-from brainvisa.processes.qtgui.backwardCompatibleQt import *
+from brainvisa.processing.qtgui.backwardCompatibleQt import *
 from soma.qt4gui.designer import loadUi, loadUiType
 from PyQt4.QtGui import QKeySequence
 from PyQt4 import QtCore
@@ -65,7 +65,7 @@ except:
   import libsip as sip
 
 import neuroProcesses
-from brainvisa.processes import neuroException
+from brainvisa.processing import neuroException
 from soma.qtgui.api import EditableTreeWidget, TreeListWidget
 from soma.notification import ObservableList, EditableTree
 from soma.signature.api import HasSignature

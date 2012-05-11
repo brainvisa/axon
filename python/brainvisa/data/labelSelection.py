@@ -38,7 +38,7 @@
 '''
 
 from neuroData import Parameter
-from brainvisa.processes.qtgui.neuroDataGUI import NotImplementedEditor
+from brainvisa.processing.qtgui.neuroDataGUI import NotImplementedEditor
 from brainvisa.data.writediskitem import WriteDiskItem
 from brainvisa.data.qtgui.labelSelectionGUI import LabelSelectionEditor
 from neuroProcesses import defaultContext

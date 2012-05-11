@@ -30,7 +30,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 import sys
-from brainvisa.processes.qtgui.backwardCompatibleQt import *
+from brainvisa.processing.qtgui.backwardCompatibleQt import *
 import matplotlib
 matplotlib.use('Agg') # yes, i use agg directly
 from matplotlib.backends.backend_agg import FigureCanvasAgg

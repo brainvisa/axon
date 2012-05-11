@@ -57,7 +57,7 @@ except:
   CWDatabase=None
 from brainvisa.data.readdiskitem import ReadDiskItem
 from brainvisa.data.writediskitem import WriteDiskItem
-from brainvisa.processes.neuroException import showException, showWarning
+from brainvisa.processing.neuroException import showException, showWarning
 import neuroConfig
 
 global databaseVersion

@@ -29,5 +29,5 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+from brainvisa.processing.qt4gui.neuroLogGUI import *
 
-from brainvisa.processes.qt4gui.neuroExceptionGUI import *

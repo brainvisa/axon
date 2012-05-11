@@ -42,7 +42,7 @@ import neuroConfig, neuroData, neuroProcesses, neuroHierarchy, neuroLog
 from minfExtensions import initializeMinfExtensions
 from brainvisa.data import temporary
 import brainvisa.toolboxes
-from brainvisa.processes import neuroException
+from brainvisa.processing import neuroException
 # the environment has to contain everything necessary as neuroConfig
 # used to do: import many things here...
 from neuroProcesses import *
@@ -98,9 +98,9 @@ def initializeProcesses():
     neuroHierarchy.initializeDatabases()
     neuroProcesses.initializeProcesses()
     if neuroConfig.gui:
-        from brainvisa.processes.gui.neuroDataGUI import initializeDataGUI
+        from brainvisa.processing.qtgui.neuroDataGUI import initializeDataGUI
         initializeDataGUI()
-        from brainvisa.processes.gui.neuroProcessesGUI import initializeProcessesGUI
+        from brainvisa.processing.qtgui.neuroProcessesGUI import initializeProcessesGUI
         initializeProcessesGUI()
 
     if not neuroConfig.fastStart:
@@ -123,7 +123,7 @@ def initializeProcesses():
     neuroProcesses.readProcesses(neuroConfig.processesPath)
 
     if not neuroConfig.fastStart:
-        from brainvisa.processes.gui.neuroProcessesGUI import showProcess # may be used directly
+        from brainvisa.processing.qtgui.neuroProcessesGUI import showProcess # may be used directly
         global showProcess
         # executes brainvisa startup.py if it exists. there's no use to execute user startup.py here because .brainvisa is a toolbox and its startup.py will be executed with the toolboxes' ones.
         if os.path.exists(neuroConfig.siteStartupFile):

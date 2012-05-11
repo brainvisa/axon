@@ -33,11 +33,11 @@
 
 #import neuroConfig 
 import sys, os
-from brainvisa.processes.qtgui.backwardCompatibleQt import QProcess, QTimer, SIGNAL
+from brainvisa.processing.qtgui.backwardCompatibleQt import QProcess, QTimer, SIGNAL
 import neuroConfig
-from brainvisa.processes.qtgui import backwardCompatibleQt
+from brainvisa.processing.qtgui import backwardCompatibleQt
 if hasattr( backwardCompatibleQt, 'PYQT_VERSION' ):
-  from brainvisa.processes.qtgui.backwardCompatibleQt import PYQT_VERSION
+  from brainvisa.processing.qtgui.backwardCompatibleQt import PYQT_VERSION
   use_pyside = False
   if PYQT_VERSION < 0x040703:
     # a bug in PyQt QProcess.start() needs a compiled workaround

@@ -30,12 +30,12 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from neuroData import *
-from brainvisa.processes.qtgui.neuroDataGUI import *
-from brainvisa.processes.qtgui.backwardCompatibleQt import *
+from brainvisa.processing.qtgui.neuroDataGUI import *
+from brainvisa.processing.qtgui.backwardCompatibleQt import *
 import qwt
 from brainvisa.multiplot import MultiPlot
 import neuroConfig
-from brainvisa.processes.neuroException import HTMLMessage
+from brainvisa.processing.neuroException import HTMLMessage
 
 def floatString( floatValue ):
   result = str( floatValue )

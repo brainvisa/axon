@@ -42,7 +42,7 @@ from neuroProcesses import getDiskItemType
 import neuroProcesses
 from neuroDiskItems import getFormat, getFormats, DiskItem, isSameDiskItemType
 import neuroHierarchy
-from brainvisa.processes.neuroException import HTMLMessage
+from brainvisa.processing.neuroException import HTMLMessage
 from brainvisa.data.qtgui.readdiskitemGUI import DiskItemEditor, DiskItemListEditor
 from brainvisa.data.qtgui.diskItemBrowser import diskItemFilter
 from neuroDiskItems import File, Directory

@@ -34,7 +34,7 @@ from neuroProcesses import *
 from neuroProcessesGUI import mainThreadActions
 import neuroHierarchy
 import neuroConfig
-from brainvisa.processes import neuroException
+from brainvisa.processing import neuroException
 from brainvisa.data.databaseCheck import BVConverter_3_1
 from brainvisa.data.qtgui.databaseCheckGUI import ActionsWidget
 import os, shutil, sys

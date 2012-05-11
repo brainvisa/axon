@@ -33,7 +33,7 @@ from soma.signature.api import HasSignature
 from soma.qtgui.api import ApplicationQtGUI
 from soma.singleton import Singleton
 from soma.translation import translate as _
-from brainvisa.processes.qtgui.backwardCompatibleQt import SIGNAL
+from brainvisa.processing.qtgui.backwardCompatibleQt import SIGNAL
 import sys, time
 from threading import RLock
 import neuroProcesses, neuroProcessesGUI

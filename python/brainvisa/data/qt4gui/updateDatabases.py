@@ -40,7 +40,7 @@
 '''
 __docformat__ = "epytext en"
 
-from brainvisa.processes.qtgui import backwardCompatibleQt as qt
+from brainvisa.processing.qtgui import backwardCompatibleQt as qt
 import neuroConfig
 import neuroHierarchy
 import neuroProcesses

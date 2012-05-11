@@ -46,7 +46,7 @@ import sys, os, traceback, htmllib
 from neuroConfig import *
 import neuroConfig
 from soma.html import htmlEscape
-from brainvisa.processes.qtgui.neuroExceptionGUI import ShowException
+from brainvisa.processing.qtgui.neuroExceptionGUI import ShowException
 
 class HTMLMessage:
   """

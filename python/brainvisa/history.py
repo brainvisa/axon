@@ -40,7 +40,7 @@ from soma.undefined import Undefined
 from soma.minf.api import readMinf
 from gzip import open as gzipOpen
 import neuroLog, neuroConfig, neuroHierarchy
-from brainvisa.processes import neuroException
+from brainvisa.processing import neuroException
 from glob import glob
 import weakref
 import types

@@ -108,7 +108,7 @@ from soma.minf.api import readMinf, MinfError
 from soma.wip.application.api import Application
 
 import neuroConfig
-from brainvisa.processes.neuroException import *
+from brainvisa.processing.neuroException import *
 from brainvisa.data import temporary
 from brainvisa.data.patterns import DictPattern
 from brainvisa import shelltools

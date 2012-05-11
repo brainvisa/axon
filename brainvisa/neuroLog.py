@@ -48,7 +48,7 @@ import os, threading, shutil, time, weakref
 from soma.minf.api import iterateMinf, createMinfWriter
 from brainvisa.data import temporary
 import neuroConfig
-from brainvisa.processes import neuroException
+from brainvisa.processing import neuroException
 import gzip
 
 

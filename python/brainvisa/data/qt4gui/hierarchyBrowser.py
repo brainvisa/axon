@@ -29,7 +29,7 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
-from brainvisa.processes.qtgui.backwardCompatibleQt import QWidget, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QIcon, QHBoxLayout, QVBoxLayout, QTextEdit, QSpacerItem, QSizePolicy, QSize, QPushButton, SIGNAL, qApp, QMenu, QCursor, QDrag, QPixmap, QMimeData, Qt, QMessageBox, QPoint, QApplication, QUrl, QSplitter
+from brainvisa.processing.qtgui.backwardCompatibleQt import QWidget, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QIcon, QHBoxLayout, QVBoxLayout, QTextEdit, QSpacerItem, QSizePolicy, QSize, QPushButton, SIGNAL, qApp, QMenu, QCursor, QDrag, QPixmap, QMimeData, Qt, QMessageBox, QPoint, QApplication, QUrl, QSplitter
 import os
 
 from soma.wip.application.api import findIconFile
@@ -40,7 +40,7 @@ import neuroConfig
 from brainvisa.data.qt4gui.diskItemBrowser import DiskItemBrowser
 from brainvisa.data.actions import FileProcess, Remove, Move
 import neuroProcesses
-from brainvisa.processes.neuroException import showException
+from brainvisa.processing.neuroException import showException
 from brainvisa.data.qt4gui.history import DataHistoryWindow
 
 class HierarchyBrowser( QWidget ):

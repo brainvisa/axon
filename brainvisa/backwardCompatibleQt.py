@@ -32,7 +32,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 import traceback
-print 'warning: use of obsolete backwardCompatibleQt. Please use brainvisa.processes.backwardCompatibleQt instead now.'
+print 'warning: use of obsolete backwardCompatibleQt. Please use brainvisa.processing.qtgui.backwardCompatibleQt instead now.'
 print 'called from:'
 traceback.print_stack()
-from brainvisa.processes.qtgui.backwardCompatibleQt import *
+from brainvisa.processing.qtgui.backwardCompatibleQt import *
