@@ -2625,9 +2625,12 @@ class ExecutionContext( object ):
 
       intActionId = self._addInterruptionAction( c.stop )
       try:
-        result = c.wait()
-      finally:
-        self._removeInterruptionAction( intActionId )
+        try:
+          result = c.wait()
+        finally:
+          self._removeInterruptionAction( intActionId )
+      except Command.UserInterruption:
+        pass
       self.checkInterruption()
       if systemLogFile is not None:
         print >> systemLogFile, '</pre><h2>' + _t_('Result') + '</h2>' + _t_('Value returned') + ' = ' + str( result ) + '</body></html>'

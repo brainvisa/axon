@@ -54,6 +54,8 @@ else:
 class CommandWithQProcess( object ):
   class SignalException( Exception ):
     pass
+  class UserInterruption( Exception ):
+    pass
 
   """
   This class is used to make a system call using QProcess
@@ -79,6 +81,7 @@ class CommandWithQProcess( object ):
     self._stderrAction = sys.stderr.write
     self.normalExit=False
     self.exitStatus=None
+    self._stopped = False
 
   def setEnvironment(self, env):
     """
@@ -99,6 +102,7 @@ class CommandWithQProcess( object ):
   def start( self ):
     '''Starts the command. If it cannot be started, a RuntimeError is raised'''
     #logging.debug( '\n'.join( [ ' '.join( ( repr(i) for i in self.args) ), 'File descriptors: ' + str( len(os.listdir( os.path.join( '/proc', str( os.getpid() ), 'fd' ) ) ) ), open( os.path.join( '/proc', str( os.getpid() ), 'status' ) ).read(), '-' * 70 ] ) )
+    self._stopped = False
     self._qprocess.start( self.args[0], self.args[1:] )
     if not self._qprocess.waitForStarted( -1 ):
       err = self._qprocess.error()
@@ -130,7 +134,9 @@ class CommandWithQProcess( object ):
     #print 'wait finished:', self.exitStatus, self.normalExit
     if not self.normalExit:
       #print 'raising exception...'
-      raise self.SignalException( _t_( 'System call interrupted or crashed ' ) )
+      if self._stopped:
+        raise self.UserInterruption( _t_( 'System call interrupted' ) )
+      raise self.SignalException( _t_( 'System call crashed' ) )
     return self.exitStatus
 
   def error(self):
@@ -140,6 +146,7 @@ class CommandWithQProcess( object ):
     '''Interrupt a running command. If possible, it tries to terminate the
     command giving it the possibility to do cleanup before exiting. If the
     command is still alive ater 15 seconds, it is killed.'''
+    self._stopped = True
     if neuroConfig.platform == 'windows':
       # on Windows, don't even try the soft terminate, it always fails
       self._qprocess.kill()
