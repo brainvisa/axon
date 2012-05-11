@@ -98,9 +98,9 @@ def initializeProcesses():
     neuroHierarchy.initializeDatabases()
     neuroProcesses.initializeProcesses()
     if neuroConfig.gui:
-        from neuroDataGUI import initializeDataGUI
+        from brainvisa.processes.gui.neuroDataGUI import initializeDataGUI
         initializeDataGUI()
-        from neuroProcessesGUI import initializeProcessesGUI
+        from brainvisa.processes.gui.neuroProcessesGUI import initializeProcessesGUI
         initializeProcessesGUI()
 
     if not neuroConfig.fastStart:
@@ -123,7 +123,7 @@ def initializeProcesses():
     neuroProcesses.readProcesses(neuroConfig.processesPath)
 
     if not neuroConfig.fastStart:
-        from neuroProcessesGUI import showProcess # may be used directly
+        from brainvisa.processes.gui.neuroProcessesGUI import showProcess # may be used directly
         global showProcess
         # executes brainvisa startup.py if it exists. there's no use to execute user startup.py here because .brainvisa is a toolbox and its startup.py will be executed with the toolboxes' ones.
         if os.path.exists(neuroConfig.siteStartupFile):

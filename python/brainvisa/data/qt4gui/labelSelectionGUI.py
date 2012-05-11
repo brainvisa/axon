@@ -37,7 +37,7 @@
 '''
 from PyQt4.QtGui import QWidget, QHBoxLayout, QPushButton
 from PyQt4.QtCore import SIGNAL, QSize
-from neuroDataGUI import DataEditor
+from brainvisa.processes.qtgui.neuroDataGUI import DataEditor
 from brainvisa.data.qtgui.readdiskitemGUI import DiskItemEditor
 
 import threading
