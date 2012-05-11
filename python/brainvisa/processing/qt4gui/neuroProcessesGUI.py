@@ -45,7 +45,7 @@ from PyQt4 import QtGui
 from PyQt4 import QtWebKit
 import neuroConfig
 import neuroConfigGUI
-import neuroLogGUI
+from brainvisa.processing.qt4gui import neuroLogGUI
 import neuroData
 from brainvisa.wip import newProcess
 from brainvisa.history import ProcessExecutionEvent
