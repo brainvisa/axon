@@ -35,7 +35,7 @@
 import neuroConfig
 import neuroHierarchy
 from neuroDiskItems import getDiskItemType, isSameDiskItemType, DiskItem
-from neuroException import HTMLMessage
+from brainvisa.processes.neuroException import HTMLMessage
 from soma import uuid
 import threading
 

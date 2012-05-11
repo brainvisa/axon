@@ -69,14 +69,14 @@ from soma.signature.api import Choice as SomaChoice
 import neuroConfig
 from brainvisa.toolboxes import readToolboxes, allToolboxes
 from brainvisa.data import temporary
-from qtgui.neuroConfigGUI import *
+from brainvisa.processes.qtgui.neuroConfigGUI import *
 import neuroLog
-from neuroException import *
+from brainvisa.processes.neuroException import *
 from neuroData import *
 from neuroProcesses import *
 from neuroHierarchy import *
-from qtgui.neuroDataGUI import *
-from qtgui.neuroProcessesGUI import *
+from brainvisa.processes.qtgui.neuroDataGUI import *
+from brainvisa.processes.qtgui.neuroProcessesGUI import *
 import neuroHierarchy
 from backwardCompatibleQt import *
 from minfExtensions import initializeMinfExtensions
@@ -131,10 +131,11 @@ def main():
   """
   This function initializes BrainVISA components: log, databases, processes, graphical user interface. 
   """
-  if USE_QT4:
-    p = os.path.join( neuroConfig.mainPath, 'protection_against_qt3' )
-    if os.path.exists( p ):
-      sys.path.insert( 0, p )
+  import brainvisa.processes.qtgui
+  p = os.path.join( os.path.dirname( brainvisa.processes.qtgui.__file__ ),
+    'protection_against_qt3' )
+  if os.path.exists( p ):
+    sys.path.insert( 0, p )
   #  sys.excepthook = exceptionHook
   # InitializationoptionFile
   try:

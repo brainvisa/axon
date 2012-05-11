@@ -71,7 +71,7 @@ import types, string, re, sys, os, stat, threading, cPickle, weakref, copy
 from UserDict import UserDict
 from UserList import UserList
 from brainvisa import notifier
-from neuroException import HTMLMessage
+from brainvisa.processes.neuroException import HTMLMessage
 import neuroConfig
 
 

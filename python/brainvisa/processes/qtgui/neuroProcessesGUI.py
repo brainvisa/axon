@@ -1,3 +1,4 @@
+# -*- coding: iso-8859-1 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -29,5 +30,4 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
-
-from qt4gui.neuroExceptionGUI import * 
+from brainvisa.processes.qt4gui.neuroProcessesGUI import * 

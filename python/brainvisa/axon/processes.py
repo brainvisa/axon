@@ -42,7 +42,7 @@ import neuroConfig, neuroData, neuroProcesses, neuroHierarchy, neuroLog
 from minfExtensions import initializeMinfExtensions
 from brainvisa.data import temporary
 import brainvisa.toolboxes
-import neuroException
+from brainvisa.processes import neuroException
 # the environment has to contain everything necessary as neuroConfig
 # used to do: import many things here...
 from neuroProcesses import *

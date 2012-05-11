@@ -34,7 +34,7 @@ import os, traceback
 from soma.minf.api import readMinf, minfFormat
 from soma.sorted_dictionary import SortedDictionary
 from soma.wip.application.api import findIconFile
-from neuroException import showException
+from brainvisa.processes.neuroException import showException
 import neuroConfig
 
 class Toolbox( object ):

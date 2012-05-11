@@ -910,8 +910,6 @@ if logFileName is None:
 
 runsInfo = None
 
-from neuroException import showException
-
 initializeConfiguration()
 
 # add brainvisa shared database to the list of available databases

@@ -45,9 +45,8 @@ The functions are used to display error and warning messages in Brainvisa.
 import sys, os, traceback, htmllib
 from neuroConfig import *
 import neuroConfig
-import neuroLog
 from soma.html import htmlEscape
-from qtgui.neuroExceptionGUI import ShowException
+from brainvisa.processes.qtgui.neuroExceptionGUI import ShowException
 
 class HTMLMessage:
   """
@@ -164,6 +163,7 @@ def logException( beforeError='', afterError='', exceptionInfo=None,
     exceptionInfo = sys.exc_info()
   messageHTML = exceptionMessageHTML( exceptionInfo, beforeError=beforeError, afterError=afterError ) 
   detailHTML =  exceptionTracebackHTML( exceptionInfo ) 
+  import neuroLog
   if context is None:
     neuroLog.log( 'Error', html=messageHTML + '<hr>' + detailHTML , icon='error.png' )
   else:

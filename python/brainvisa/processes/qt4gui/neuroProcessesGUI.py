@@ -65,7 +65,7 @@ except:
   import libsip as sip
 
 import neuroProcesses
-import neuroException
+from brainvisa.processes import neuroException
 from soma.qtgui.api import EditableTreeWidget, TreeListWidget
 from soma.notification import ObservableList, EditableTree
 from soma.signature.api import HasSignature
@@ -3088,7 +3088,7 @@ class ProcessSelectionWidget( QMainWindow ):
     QObject.connect(self.processTrees, SIGNAL('editProcess'), self.editProcess )
     QObject.connect(self.processTrees, SIGNAL('iterateProcess'), self.iterateProcess )
     # the hacked search box
-    p = os.path.join( neuroConfig.mainPath, 'qt4gui', 'searchbox.ui' )
+    p = os.path.join( os.path.dirname( __file__ ), 'searchbox.ui' )
     self.searchbox = QWidget() # for PySide/PyQt compat
     self.searchbox = loadUi(p, self.searchbox)
     #vb.addWidget(self.searchbox)

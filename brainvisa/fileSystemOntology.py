@@ -58,7 +58,7 @@ Several classes inheriting from :py:class:`ScannerRuleBuilder` are used to assoc
 """
 import types, sys, os, time
 import neuroConfig
-from neuroException import *
+from brainvisa.processes.neuroException import *
 from brainvisa import shelltools
 from soma.sorted_dictionary import SortedDictionary
 import neuroDiskItems

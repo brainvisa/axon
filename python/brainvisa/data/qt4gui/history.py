@@ -37,7 +37,7 @@ from PyQt4.QtCore import Qt
 from soma.minf.api import readMinf
 from neuroProcesses import getProcessInstanceFromProcessEvent
 from neuroProcessesGUI import ProcessView
-from qt4gui.neuroLogGUI import LogItemsViewer
+from brainvisa.processes.qt4gui.neuroLogGUI import LogItemsViewer
 
 class DataHistoryWindow(QtGui.QMainWindow):
   """

@@ -33,7 +33,7 @@ import sys, new, os
 import registration
 import neuroConfig
 import neuroLog
-import neuroException
+from brainvisa.processes import neuroException
 import neuroData
 from brainvisa.validation import ValidationError
 from soma.qtgui.api import QtThreadCall

@@ -187,7 +187,7 @@ from neuroData import *
 from neuroDiskItems import *
 import neuroConfig, neuroDiskItems
 import neuroLog
-from neuroException import *
+from brainvisa.processes.neuroException import *
 from brainvisa import matlab
 from brainvisa.validation import ValidationError
 from brainvisa.debug import debugHere
@@ -1466,7 +1466,7 @@ class ExecutionNode( object ):
     """
     Returns the graphical user interface of this node.
     """
-    from qtgui.neuroProcessesGUI import ExecutionNodeGUI
+    from brainvisa.processes.qtgui.neuroProcessesGUI import ExecutionNodeGUI
     if self._parameterized is not None:
       if processView != None and processView.read_only:
         return ExecutionNodeGUI(parent, self._parameterized(), read_only=True)

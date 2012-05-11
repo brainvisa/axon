@@ -40,7 +40,7 @@ import neuroConfig
 from brainvisa.data.qt4gui.diskItemBrowser import DiskItemBrowser
 from brainvisa.data.actions import FileProcess, Remove, Move
 import neuroProcesses
-from neuroException import showException
+from brainvisa.processes.neuroException import showException
 from brainvisa.data.qt4gui.history import DataHistoryWindow
 
 class HierarchyBrowser( QWidget ):
