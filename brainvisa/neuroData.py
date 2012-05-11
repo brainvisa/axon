@@ -58,7 +58,7 @@ Each parameter is an instance of a sublcass of :py:class:`Parameter`:
 >>>   'method', Choice( 'gt', 'ge', 'lt', 'le' )
 >>> )
 
-Matching graphical editors classes are defined in :py:mod:`qt4gui.neuroDataGUI`.
+Matching graphical editors classes are defined in :py:mod:`brainvisa.processing.qtgui.neuroDataGUI`.
 
 :Inheritance diagram:
   
