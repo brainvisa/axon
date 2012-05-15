@@ -44,7 +44,7 @@ from brainvisa.data.qtgui.labelSelectionGUI import LabelSelectionEditor
 from neuroProcesses import defaultContext
 import soma.minf.api as minf
 import types
-import neuroPopen2
+import subprocess
 
 #----------------------------------------------------------------------------
 class LabelSelection( Parameter ):
@@ -83,16 +83,18 @@ class LabelSelection( Parameter ):
       nom = self.value.get( 'nomenclature' )
       fsel = self.file
       psel = self.value.get( 'selection' )
-      cmd = 'AimsLabelSelector -b'
+      cmd = [ 'AimsLabelSelector', '-b' ]
       if model:
-          cmd += ' -m ' + model
+          cmd += [ '-m', model ]
       if nom:
-          cmd += ' -n ' + nom
+          cmd += [ '-n', nom ]
       if psel:
-          cmd += ' -p -'
+          cmd += [ '-p', '-' ]
       elif fsel:
-          cmd += ' -p "' + fsel.fullPath() + '"'
-      stdout, stdin = neuroPopen2.popen2( cmd )
+          cmd += [ '-p', fsel.fullPath() ]
+      pipe = subprocess.Popen( cmd, stdin=subprocess.PIPE,
+          stdout=subprocess.PIPE, close_fds=True )
+      stdout, stdin = pipe.stdout, pipe.stdin
       if( psel ):
           stdin.write( psel )
           stdin.flush()

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -41,7 +42,7 @@ from brainvisa.processing.qtgui.neuroDataGUI import DataEditor
 from brainvisa.data.qtgui.readdiskitemGUI import DiskItemEditor
 
 import threading
-import neuroPopen2
+import subprocess
 import sys
 
 #----------------------------------------------------------------------------
@@ -79,17 +80,19 @@ class LabelSelectionEditor( QWidget, DataEditor ):
             nom = self.value.value.get( 'nomenclature' )
             fsel = self.value.file
             psel = self.value.value.get( 'selection' )
-            cmd = 'AimsLabelSelector'
+            cmd = [ 'AimsLabelSelector' ]
             if model:
-                cmd += ' -m ' + model
+                cmd += [ '-m', model ]
             if nom:
-                cmd += ' -n ' + nom
+                cmd += [ '-n', nom ]
             if psel:
-                cmd += ' -p -'
+                cmd += [ '-p', '-' ]
             elif fsel:
-                cmd += ' -p "' + fsel.fullPath() + '"'
+                cmd += [ '-p', fsel.fullPath() ]
             sys.stdout.flush()
-            self._stdout, self._stdin = neuroPopen2.popen2( cmd )
+            pipe = subprocess.Popen( cmd, stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE, close_fds=True )
+            self._stdout, self._stdin = pipe.stdout, pipe.stdin
             if( psel ):
                 # print 'writing selection:', psel
                 self._stdin.write( psel )
