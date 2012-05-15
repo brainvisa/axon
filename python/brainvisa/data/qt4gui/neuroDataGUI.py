@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -31,12 +31,9 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-from neuroData import *
-#from neuroProcesses import *
-#from neuroProcessesGUI import *
+from brainvisa.data.neuroData import *
 from brainvisa.processing.qtgui.backwardCompatibleQt import *
 from brainvisa.processing.neuroException import HTMLMessage
-from brainvisa import anatomist
 from soma.qtgui.api import largeIconSize
 from PyQt4 import QtCore
 import sys
@@ -713,6 +710,7 @@ class PointEditor( QWidget, DataEditor ):
     self.nle.setValue( value, default )
 
   def selectPressed( self ):
+    from brainvisa import anatomist
     a= anatomist.Anatomist()
     
     if self.parameter._Link is not None :
@@ -810,6 +808,7 @@ class PointListEditor( QWidget, DataEditor ):
         
 
   def selectPressed( self ):
+    from brainvisa import anatomist
     if self.btnSelect.isChecked():
       a= anatomist.Anatomist()
       a.onCursorNotifier.add(self.anatomistInputFilterEvent )

@@ -37,10 +37,10 @@ from brainvisa.processing.qtgui.backwardCompatibleQt \
 from soma.wip.application.api import findIconFile
 from soma.qtgui.api import largeIconSize
 from brainvisa.data.qtgui.diskItemBrowser import DiskItemBrowser
-from brainvisa.processing.qtgui.neuroDataGUI import DataEditor, StringListEditor, buttonMargin, buttonIconSize
+from brainvisa.data.qtgui.neuroDataGUI import DataEditor, StringListEditor, buttonMargin, buttonIconSize
 import neuroProcesses
-from brainvisa.processing.qtgui import neuroProcessesGUI
-from neuroDiskItems import DiskItem, Directory
+from brainvisa.processing.qt4gui import neuroProcessesGUI
+from brainvisa.data.neuroDiskItems import DiskItem, Directory
 import neuroConfig
 from brainvisa.processing.neuroException import showException, HTMLMessage
 from PyQt4 import QtCore

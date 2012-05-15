@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -35,7 +36,7 @@ import os
 from soma.wip.application.api import findIconFile
 from soma.qtgui.api import defaultIconSize
 import neuroHierarchy
-import neuroDiskItems
+from brainvisa.data import neuroDiskItems
 import neuroConfig
 from brainvisa.data.qt4gui.diskItemBrowser import DiskItemBrowser
 from brainvisa.data.actions import FileProcess, Remove, Move

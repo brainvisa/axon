@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -163,7 +164,7 @@ def logException( beforeError='', afterError='', exceptionInfo=None,
     exceptionInfo = sys.exc_info()
   messageHTML = exceptionMessageHTML( exceptionInfo, beforeError=beforeError, afterError=afterError ) 
   detailHTML =  exceptionTracebackHTML( exceptionInfo ) 
-  import neuroLog
+  from brainvisa.processing import neuroLog
   if context is None:
     neuroLog.log( 'Error', html=messageHTML + '<hr>' + detailHTML , icon='error.png' )
   else:
@@ -193,7 +194,7 @@ def showException( beforeError='', afterError='', parent = None,
                   exceptionInfo=exceptionInfo )
 
     if gui and neuroConfig.guiLoaded:
-      import neuroProcessesGUI
+      from brainvisa.processing.qtgui import neuroProcessesGUI
       if ShowException._theExceptionDialog is not None:
         neuroProcessesGUI.mainThreadActions().push( ShowException._theExceptionDialog.appendException, messageHTML, detailHTML )
       else:
@@ -229,7 +230,7 @@ def showWarning( message, parent = None, gui=None):
     messageHTML = warningMessageHTML( message )
 
     if gui and neuroConfig.guiLoaded:
-      import neuroProcessesGUI
+      from brainvisa.processing.qtgui import neuroProcessesGUI
       if ShowException._theExceptionDialog is not None:
         neuroProcessesGUI.mainThreadActions().push( ShowException._theExceptionDialog.appendException, messageHTML, "" )
       else:

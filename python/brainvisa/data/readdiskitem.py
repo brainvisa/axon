@@ -31,26 +31,25 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 """
-This module defines the class :py:class:`ReadDiskItem` which is a subclass :py:class:`neuroData.Parameter`.
-It is used to define an input data file as a parameter in a :py:class:`neuroProcesses.Process` :py:class:`neuroData.Signature`.
+This module defines the class :py:class:`ReadDiskItem` which is a subclass :py:class:`brainvisa.data.neuroData.Parameter`.
+It is used to define an input data file as a parameter in a :py:class:`neuroProcesses.Process` :py:class:`brainvisa.data.neuroData.Signature`.
 """
 import os, operator
 #from soma.debug import print_stack
 from soma.undefined import Undefined
-from neuroData import Parameter
+from brainvisa.data.neuroData import Parameter
 from neuroProcesses import getDiskItemType
 import neuroProcesses
-from neuroDiskItems import getFormat, getFormats, DiskItem, isSameDiskItemType
+from brainvisa.data.neuroDiskItems import getFormat, getFormats, DiskItem, isSameDiskItemType, File, Directory
 import neuroHierarchy
 from brainvisa.processing.neuroException import HTMLMessage
 from brainvisa.data.qtgui.readdiskitemGUI import DiskItemEditor, DiskItemListEditor
 from brainvisa.data.qtgui.diskItemBrowser import diskItemFilter
-from neuroDiskItems import File, Directory
 
 #----------------------------------------------------------------------------
 class ReadDiskItem( Parameter ):
   """
-  The expected value for this parameter must be a readable :py:class:`neuroDiskItems.DiskItem`. 
+  The expected value for this parameter must be a readable :py:class:`brainvisa.data.neuroDiskItems.DiskItem`. 
   This parameter type uses BrainVISA data organization to select possible files. 
   
   :Syntax: 

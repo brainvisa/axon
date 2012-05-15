@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -33,7 +34,7 @@
 from brainvisa.processing.qtgui.backwardCompatibleQt import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QCheckBox, QSizePolicy, QSpacerItem, QPushButton, SIGNAL, QMenu, QTextEdit
 import neuroConfig
 import neuroProcesses
-import neuroLog
+from brainvisa.processing import neuroLog
 import brainvisa.mailing as mailing
 import smtplib, string
 

@@ -38,11 +38,11 @@
 
 import brainvisa.axon
 import sys, atexit, os
-import neuroConfig, neuroData, neuroProcesses, neuroHierarchy, neuroLog
-from minfExtensions import initializeMinfExtensions
-from brainvisa.data import temporary
+import neuroConfig, neuroProcesses, neuroHierarchy
+from brainvisa.data import neuroData, temporary
+from brainvisa.data.minfExtensions import initializeMinfExtensions
 import brainvisa.toolboxes
-from brainvisa.processing import neuroException
+from brainvisa.processing import neuroException, neuroLog
 # the environment has to contain everything necessary as neuroConfig
 # used to do: import many things here...
 from neuroProcesses import *
@@ -98,7 +98,7 @@ def initializeProcesses():
     neuroHierarchy.initializeDatabases()
     neuroProcesses.initializeProcesses()
     if neuroConfig.gui:
-        from brainvisa.processing.qtgui.neuroDataGUI import initializeDataGUI
+        from brainvisa.data.qtgui.neuroDataGUI import initializeDataGUI
         initializeDataGUI()
         from brainvisa.processing.qtgui.neuroProcessesGUI import initializeProcessesGUI
         initializeProcessesGUI()

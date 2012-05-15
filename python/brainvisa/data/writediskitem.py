@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -30,14 +31,14 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 """
-This module defines the class :py:class:`WriteDiskItem` which is a subclass :py:class:`neuroData.Parameter`.
-It is used to define an output data file as a parameter in a :py:class:`neuroProcesses.Process` :py:class:`neuroData.Signature`.
+This module defines the class :py:class:`WriteDiskItem` which is a subclass :py:class:`brainvisa.data.neuroData.Parameter`.
+It is used to define an output data file as a parameter in a :py:class:`neuroProcesses.Process` :py:class:`brainvisa.data.neuroData.Signature`.
 """
 
 from soma.undefined import Undefined
-from neuroData import Parameter
+from brainvisa.data.neuroData import Parameter
 from brainvisa.data.readdiskitem import ReadDiskItem
-from neuroDiskItems import getFormats, getDiskItemType, DiskItem, isSameDiskItemType
+from brainvisa.data.neuroDiskItems import getFormats, getDiskItemType, DiskItem, isSameDiskItemType
 from brainvisa.data.readdiskitem import ReadDiskItem
 from brainvisa.data.qtgui.readdiskitemGUI import DiskItemEditor
 
@@ -45,7 +46,7 @@ from brainvisa.data.qtgui.readdiskitemGUI import DiskItemEditor
 #----------------------------------------------------------------------------
 class WriteDiskItem( ReadDiskItem ):
   """
-  The expected value for this parameter must be a writable :py:class:`neuroDiskItems.DiskItem`.
+  The expected value for this parameter must be a writable :py:class:`brainvisa.data.neuroDiskItems.DiskItem`.
   
   :Syntax: 
   

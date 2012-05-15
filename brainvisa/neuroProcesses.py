@@ -183,10 +183,11 @@ from soma.minf.api import createMinfWriter, iterateMinf, minfFormat
 from soma.html import htmlEscape
 from soma.somatime import timeDifferenceToString
 
-from neuroData import *
-from neuroDiskItems import *
-import neuroConfig, neuroDiskItems
-import neuroLog
+from brainvisa.data.neuroData import *
+from brainvisa.data import neuroDiskItems
+from brainvisa.data.neuroDiskItems import *
+import neuroConfig
+from brainvisa.processing import neuroLog
 from brainvisa.processing.neuroException import *
 from brainvisa import matlab
 from brainvisa.validation import ValidationError
@@ -479,7 +480,7 @@ class Parameterized( object ):
   
   .. py:attribute:: signature
   
-    The signature is a :py:class:`neuroData.Signature`. It contains the list of parameters accepted by the object and their types. The possible types are described in :py:mod:`neuroData`.
+    The signature is a :py:class:`brainvisa.data.neuroData.Signature`. It contains the list of parameters accepted by the object and their types. The possible types are described in :py:mod:`brainvisa.data.neuroData`.
   
   .. py:attribute:: signatureChangeNotifier
   
@@ -885,7 +886,7 @@ class Process( Parameterized ):
   
   .. py:attribute:: signature
   
-    The signature is a :py:class:`neuroData.Signature`. It contains the list of parameters accepted by the object and their types. The possible types are described in :py:mod:`neuroData`.
+    The signature is a :py:class:`brainvisa.data.neuroData.Signature`. It contains the list of parameters accepted by the object and their types. The possible types are described in :py:mod:`brainvisa.data.neuroData`.
 
   .. py:attribute:: category (string)
   

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -29,8 +30,8 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
-from neuroData import *
-from brainvisa.processing.qtgui.neuroDataGUI import *
+from brainvisa.data.neuroData import *
+from brainvisa.data.qtgui.neuroDataGUI import *
 from brainvisa.processing.qtgui.backwardCompatibleQt import *
 import qwt
 from brainvisa.multiplot import MultiPlot

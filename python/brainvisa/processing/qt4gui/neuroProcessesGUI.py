@@ -44,14 +44,13 @@ from PyQt4 import QtCore
 from PyQt4 import QtGui
 from PyQt4 import QtWebKit
 import neuroConfig
-import neuroConfigGUI
+from brainvisa.processing.qt4gui import neuroConfigGUI
 from brainvisa.processing.qt4gui import neuroLogGUI
-import neuroData
+from brainvisa.data import neuroData
 from brainvisa.wip import newProcess
 from brainvisa.history import ProcessExecutionEvent
 import neuroProcesses
-from neuroDiskItems import DiskItem
-from brainvisa.data.qtgui.updateDatabases import warnUserAboutDatabasesToUpdate
+from brainvisa.data.neuroDiskItems import DiskItem
 import weakref
 from soma.minf.xhtml import XHTML
 from soma.qtgui.api import QtThreadCall, FakeQtThreadCall, WebBrowserWithSearch, bigIconSize, defaultIconSize
@@ -1571,7 +1570,7 @@ class ParameterizedWidget( QWidget ):
   
   def _setlock_system( self, name ):
       """function for lock system : lock a diskItem if the file exists"""
-      #from neuroDiskItems import DiskItem
+      #from brainvisa.data.neuroDiskItems import DiskItem
       #print "-- FUNCTION _setlock_system : neuroProcessesGUI / ParameterizedWidget-- "
       #value = self.parameterized.__getattribute__(name)
       value = getattr(self.parameterized, name, None)
@@ -3842,6 +3841,7 @@ def reloadToolboxesGUI():
   QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
   neuroProcesses.reloadToolboxes()
   updateProcessList()
+  from brainvisa.data.qt4gui.updateDatabases import warnUserAboutDatabasesToUpdate
   warnUserAboutDatabasesToUpdate()
   QtGui.QApplication.restoreOverrideCursor()
   

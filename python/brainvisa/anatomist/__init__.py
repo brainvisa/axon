@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -30,11 +31,11 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 import sys, new, os
-import registration
+from brainvisa import registration
 import neuroConfig
-import neuroLog
+from brainvisa.processing import neuroLog
 from brainvisa.processing import neuroException
-import neuroData
+from brainvisa.data import neuroData
 from brainvisa.validation import ValidationError
 from soma.qtgui.api import QtThreadCall
 import distutils.spawn
@@ -42,7 +43,7 @@ import weakref, types, threading
 import atexit
 import copy
 from brainvisa.processing.qtgui import backwardCompatibleQt as qt
-import neuroProcessesGUI
+from brainvisa.processing.qtgui import neuroProcessesGUI
 try:
   import anatomist
   anatomist.setDefaultImplementation( neuroConfig.anatomistImplementation )

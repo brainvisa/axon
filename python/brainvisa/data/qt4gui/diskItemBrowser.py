@@ -44,7 +44,7 @@ from soma.wip.application.api import findIconFile
 from soma.uuid import Uuid
 from soma.undefined import Undefined
 from soma.stringtools import quote_string, unquote_string, string_to_list, list_to_string
-from neuroDiskItems import DiskItem, getFormats, getDiskItemType
+from brainvisa.data.neuroDiskItems import DiskItem, getFormats, getDiskItemType
 import neuroProcesses
 
 #----------------------------------------------------------------------------

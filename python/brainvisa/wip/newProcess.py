@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -36,7 +37,7 @@ from soma.translation import translate as _
 from brainvisa.processing.qtgui.backwardCompatibleQt import SIGNAL
 import sys, time
 from threading import RLock
-import neuroProcesses, neuroProcessesGUI
+import neuroProcesses
 
 class ExecutionContext( object ):
   class Session( object ):
@@ -139,7 +140,10 @@ class NewProcess( HasSignature ):
     tree = nameList[ 0 ]
     branches = nameList[ 1:-1 ]
     leaf = nameList[ -1 ]
-    
+
+    # WARNING don't import this at the beginning of the module file
+    # because neuroProcessesGUI imports newProcess !
+    from brainvisa.processing.qtgui import neuroProcessesGUI
     # Find or create ProcessTree
     for processTree in neuroProcessesGUI._mainWindow.processTrees.model:
       if processTree.name == tree:

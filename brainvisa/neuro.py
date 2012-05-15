@@ -70,16 +70,16 @@ import neuroConfig
 from brainvisa.toolboxes import readToolboxes, allToolboxes
 from brainvisa.data import temporary
 from brainvisa.processing.qtgui.neuroConfigGUI import *
-import neuroLog
+from brainvisa.processing import neuroLog
 from brainvisa.processing.neuroException import *
-from neuroData import *
+from brainvisa.data.neuroData import *
 from neuroProcesses import *
 from neuroHierarchy import *
-from brainvisa.processing.qtgui.neuroDataGUI import *
+from brainvisa.data.qtgui.neuroDataGUI import *
 from brainvisa.processing.qtgui.neuroProcessesGUI import *
 import neuroHierarchy
 from brainvisa.processing.qtgui.backwardCompatibleQt import *
-from minfExtensions import initializeMinfExtensions
+from brainvisa.data.minfExtensions import initializeMinfExtensions
 from brainvisa.data.qtgui.updateDatabases import warnUserAboutDatabasesToUpdate
 
 def system_exit_handler( number, frame ):

@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
@@ -44,7 +44,7 @@ from brainvisa.processing.qtgui import backwardCompatibleQt as qt
 import neuroConfig
 import neuroHierarchy
 import neuroProcesses
-import neuroProcessesGUI
+from brainvisa.processing.qt4gui import neuroProcessesGUI
 
 
 class UpdateDatabasesGUI( qt.QWidget ):
