@@ -40,12 +40,12 @@
 __docformat__ = "epytext en"
 
 import os
-import backwardCompatibleQt as qt
+import brainvisa.processing.qtgui.backwardCompatibleQt as qt
 from soma.translation import translate as _
 from soma.qtgui.api import ApplicationQtGUI, QtGUI
 from soma.wip.application.api import findIconFile
 from soma.minf.api import writeMinf
-from neuroException import showException
+from brainvisa.processing.neuroException import showException
 from brainvisa.configuration.databases_configuration import DatabaseSettings, DatabasesConfiguration
 
 #------------------------------------------------------------------------------

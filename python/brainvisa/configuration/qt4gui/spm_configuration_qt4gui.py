@@ -33,8 +33,8 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 
-from backwardCompatibleQt import QWidget, QVBoxLayout, QHBoxLayout, QSpacerItem, QSizePolicy, QPushButton, Qt, QApplication, QCursor
-import backwardCompatibleQt as qt
+from brainvisa.processing.qtgui.backwardCompatibleQt import QWidget, QVBoxLayout, QHBoxLayout, QSpacerItem, QSizePolicy, QPushButton, Qt, QApplication, QCursor
+import brainvisa.processing.qt4gui.backwardCompatibleQt as qt
 from soma.qtgui.api import QtGUI
 from soma.signature.qt4gui.signature_qt4gui import HasSignature_Qt4GUI
 from soma.translation import translate as _t_
