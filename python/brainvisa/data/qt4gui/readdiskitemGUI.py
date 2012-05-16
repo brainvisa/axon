@@ -38,7 +38,7 @@ from soma.wip.application.api import findIconFile
 from soma.qtgui.api import largeIconSize
 from brainvisa.data.qtgui.diskItemBrowser import DiskItemBrowser
 from brainvisa.data.qtgui.neuroDataGUI import DataEditor, StringListEditor, buttonMargin, buttonIconSize
-import neuroProcesses
+import brainvisa.processes
 from brainvisa.processing.qt4gui import neuroProcessesGUI
 from brainvisa.data.neuroDiskItems import DiskItem, Directory
 from brainvisa.configuration import neuroConfig
@@ -94,7 +94,7 @@ class DiskItemEditor( QWidget, DataEditor ):
     self.btnShow.setFixedSize( buttonIconSize + buttonMargin )
     self.btnShow.setFocusPolicy( Qt.NoFocus )
     self.btnShow.setEnabled( False )
-    if not neuroProcesses.getViewer( (self.parameter.type, self.parameter.formats[0] ), 1, checkUpdate=False ):
+    if not brainvisa.processes.getViewer( (self.parameter.type, self.parameter.formats[0] ), 1, checkUpdate=False ):
       self.btnShow.hide()
     self._view = None
     self.connect( self.btnShow, SIGNAL( 'clicked()' ), self.showPressed )
@@ -108,7 +108,7 @@ class DiskItemEditor( QWidget, DataEditor ):
     self.btnEdit.setFixedSize( buttonIconSize + buttonMargin )
     self.btnEdit.setFocusPolicy( Qt.NoFocus )
     self.btnEdit.setEnabled( 0 )
-    if not neuroProcesses.getDataEditor( (self.parameter.type, self.parameter.formats ), checkUpdate=False ):
+    if not brainvisa.processes.getDataEditor( (self.parameter.type, self.parameter.formats ), checkUpdate=False ):
       self.btnEdit.hide()
     self.connect( self.btnEdit, SIGNAL( 'clicked()' ), self.editPressed )
     self.connect( self.btnEdit, SIGNAL( 'rightPressed' ),
@@ -211,7 +211,7 @@ class DiskItemEditor( QWidget, DataEditor ):
     if self.btnShow:
       enabled = 0
       if self.diskItem:
-        v = neuroProcesses.getViewer( self.diskItem, 1, checkUpdate=False )
+        v = brainvisa.processes.getViewer( self.diskItem, 1, checkUpdate=False )
         if v:
           self.btnShow.show()
         else:
@@ -221,7 +221,7 @@ class DiskItemEditor( QWidget, DataEditor ):
       self.btnShow.setEnabled( enabled )
     if self.btnEdit:
       enabled = 0
-      v = neuroProcesses.getDataEditor( (self.parameter.type, self.parameter.formats), checkUpdate=False )
+      v = brainvisa.processes.getDataEditor( (self.parameter.type, self.parameter.formats), checkUpdate=False )
       if v:
         self.btnEdit.show()
       else:
@@ -246,9 +246,9 @@ class DiskItemEditor( QWidget, DataEditor ):
       v = self.getValue()
       viewerExists = False
       try :
-        viewer = neuroProcesses.getViewer( v, 1 )()
+        viewer = brainvisa.processes.getViewer( v, 1 )()
         viewerExists = True
-        neuroProcesses.defaultContext().runInteractiveProcess( self._viewerExited, viewer, v )
+        brainvisa.processes.defaultContext().runInteractiveProcess( self._viewerExited, viewer, v )
       except Exception, error :
         self.btnShow.setChecked( False )
         if viewerExists:
@@ -277,7 +277,7 @@ class DiskItemEditor( QWidget, DataEditor ):
 
   def openViewerPressed( self ):
     v = self.getValue()
-    viewer = neuroProcesses.getViewer( v, 1 )()
+    viewer = brainvisa.processes.getViewer( v, 1 )()
     neuroProcessesGUI.showProcess( viewer, v )
 
   
@@ -285,8 +285,8 @@ class DiskItemEditor( QWidget, DataEditor ):
     if self.btnEdit.isChecked():
       self.btnEdit.setEnabled( 0 )
       v = self.getValue()
-      editor = neuroProcesses.getDataEditor( v )()
-      neuroProcesses.defaultContext().runInteractiveProcess( self._editorExited, editor, v )
+      editor = brainvisa.processes.getDataEditor( v )()
+      brainvisa.processes.defaultContext().runInteractiveProcess( self._editorExited, editor, v )
     else:
       self._edit = None
   
@@ -302,7 +302,7 @@ class DiskItemEditor( QWidget, DataEditor ):
   
   def openEditorPressed( self ):
     v = self.getValue()
-    editor = neuroProcesses.getDataEditor( v )()
+    editor = brainvisa.processes.getDataEditor( v )()
     neuroProcessesGUI.showProcess( editor, v )
 
 
@@ -684,7 +684,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
     self.btnShow.setFixedSize( buttonIconSize + buttonMargin )
     self.btnShow.setFocusPolicy( Qt.NoFocus )
     self.btnShow.setEnabled( False )
-    if not neuroProcesses.getViewer( (self.parameter.type, self.parameter.formats[0] ), 0, checkUpdate=False, listof=True ):
+    if not brainvisa.processes.getViewer( (self.parameter.type, self.parameter.formats[0] ), 0, checkUpdate=False, listof=True ):
       self.btnShow.hide()
     self._view = None
     self.connect( self.btnShow, SIGNAL( 'clicked()' ), self.showPressed )
@@ -698,7 +698,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
     self.btnEdit.setFixedSize( buttonIconSize + buttonMargin )
     self.btnEdit.setFocusPolicy( Qt.NoFocus )
     self.btnEdit.setEnabled( 0 )
-    if not neuroProcesses.getDataEditor( (self.parameter.type, self.parameter.formats ), checkUpdate=False, listof=True ):
+    if not brainvisa.processes.getDataEditor( (self.parameter.type, self.parameter.formats ), checkUpdate=False, listof=True ):
       self.btnEdit.hide()
     self.connect( self.btnEdit, SIGNAL( 'clicked()' ), self.editPressed )
     self.connect( self.btnEdit, SIGNAL( 'rightPressed' ),
@@ -792,8 +792,8 @@ class DiskItemListEditor( QWidget, DataEditor ):
       self.btnShow.setEnabled( 0 )
       v = self.getValue()
       try :
-        viewer = neuroProcesses.getViewer( v, 0, listof=True )()
-        neuroProcesses.defaultContext().runInteractiveProcess( self._viewerExited, viewer, v )
+        viewer = brainvisa.processes.getViewer( v, 0, listof=True )()
+        brainvisa.processes.defaultContext().runInteractiveProcess( self._viewerExited, viewer, v )
       except Exception, error :
         raise RuntimeError( HTMLMessage(_t_( 'No viewer could be found or launched for type =<em>%s</em> and format=<em>%s</em>' ) % (unicode( v.type ), unicode(v.format))) )
     else:
@@ -810,7 +810,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
 
   def openViewerPressed( self ):
     v = self.getValue()
-    viewer = neuroProcesses.getViewer( v, 0, listof=True )()
+    viewer = brainvisa.processes.getViewer( v, 0, listof=True )()
     neuroProcessesGUI.showProcess( viewer, v )
 
   
@@ -818,8 +818,8 @@ class DiskItemListEditor( QWidget, DataEditor ):
     if self.btnEdit.isChecked():
       self.btnEdit.setEnabled( 0 )
       v = self.getValue()
-      editor = neuroProcesses.getDataEditor( v, listof=True )()
-      neuroProcesses.defaultContext().runInteractiveProcess( self._editorExited, editor, v )
+      editor = brainvisa.processes.getDataEditor( v, listof=True )()
+      brainvisa.processes.defaultContext().runInteractiveProcess( self._editorExited, editor, v )
     else:
       self._edit = None
   
@@ -835,7 +835,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
   
   def openEditorPressed( self ):
     v = self.getValue()
-    editor = neuroProcesses.getDataEditor( v, listof=True )()
+    editor = brainvisa.processes.getDataEditor( v, listof=True )()
     neuroProcessesGUI.showProcess( editor, v )
   
   def findPressed( self ):

@@ -31,7 +31,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 import glob
-from neuroProcesses import *
+from brainvisa.processes import *
 import shfjGlobals
 import math, time, shutil
 from brainvisa import quaternion

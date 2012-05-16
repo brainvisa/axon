@@ -121,7 +121,7 @@ ReadDiskItem.database = bases
 
 
 
-from neuroProcesses import Parameterized, Signature, String
+from brainvisa.processes import Parameterized, Signature, String
 from brainvisa.processing.qtgui.neuroProcessesGUI import ParameterizedWidget
 
 p = Parameterized( 

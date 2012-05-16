@@ -37,7 +37,7 @@ from soma.translation import translate as _
 from brainvisa.processing.qtgui.backwardCompatibleQt import SIGNAL
 import sys, time
 from threading import RLock
-import neuroProcesses
+import brainvisa.processes
 
 class ExecutionContext( object ):
   class Session( object ):
@@ -149,7 +149,7 @@ class NewProcess( HasSignature ):
       if processTree.name == tree:
         break
     else:
-      processTree = neuroProcesses.ProcessTree( name=tree, editable=False, user=False )
+      processTree = brainvisa.processes.ProcessTree( name=tree, editable=False, user=False )
       neuroProcessesGUI._mainWindow.processTrees.model.append( processTree )
     # Find or create branches
     currentBranch = processTree

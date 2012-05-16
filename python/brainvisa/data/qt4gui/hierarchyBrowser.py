@@ -39,7 +39,7 @@ from brainvisa.data import neuroHierarchy, neuroDiskItems
 from brainvisa.configuration import neuroConfig
 from brainvisa.data.qt4gui.diskItemBrowser import DiskItemBrowser
 from brainvisa.data.actions import FileProcess, Remove, Move
-import neuroProcesses
+import brainvisa.processes
 from brainvisa.processing.neuroException import showException
 from brainvisa.data.qt4gui.history import DataHistoryWindow
 
@@ -126,7 +126,7 @@ class HierarchyBrowser( QWidget ):
       self.actionConditions[idRemove]=self.removeCondition
       idConvert=self.popupMenu.addAction( self.pixConvert, _t_("Convert to graph 3.1"), self.menuConvertEvent )
       self.actionConditions[idConvert]=self.convertCondition
-      self.graphConverter=neuroProcesses.getProcess("CorticalFoldsGraphUpgradeFromOld")
+      self.graphConverter=brainvisa.processes.getProcess("CorticalFoldsGraphUpgradeFromOld")
       self.graphType=neuroDiskItems.getDiskItemType("Graph")
       idHistory=self.popupMenu.addAction( self.pixView, _t_("Show history"), self.menuHistoryEvent )
       self.actionConditions[idHistory]=self.historyCondition
@@ -176,7 +176,7 @@ class HierarchyBrowser( QWidget ):
               path=item.fullPath()
               if path.startswith( dbItem.path ):
                 path = path[ len( dbItem.path ) + 1: ]
-              splitted = neuroProcesses.pathsplit( path )
+              splitted = brainvisa.processes.pathsplit( path )
               #print '!openItem!   splitted =', splitted
               parentDir=dbItem
               for directory in splitted[ :-1 ]:
@@ -331,12 +331,12 @@ class HierarchyBrowser( QWidget ):
       items=self.selectedItems()
       for item in items:
         if item.diskItem:
-          viewer=neuroProcesses.getViewer(item.diskItem)
+          viewer=brainvisa.processes.getViewer(item.diskItem)
           if viewer:
-            item.viewer=neuroProcesses.defaultContext().runProcess(viewer, item.diskItem)
+            item.viewer=brainvisa.processes.defaultContext().runProcess(viewer, item.diskItem)
   
     def viewCondition(self, item):
-      return item and item.diskItem and not getattr(item, "viewer", None) and neuroProcesses.getViewer(item.diskItem, checkUpdate=False)
+      return item and item.diskItem and not getattr(item, "viewer", None) and brainvisa.processes.getViewer(item.diskItem, checkUpdate=False)
     
     def menuHideEvent(self):
       items=self.selectedItems()
@@ -352,9 +352,9 @@ class HierarchyBrowser( QWidget ):
         if item.diskItem and self.graphConverter:
           # params : Cortical folds graph, Cortex skeleton, commissure coordinates, transform raw T1 MRI to talairach-AC/PC-anatomist
           try:
-            neuroProcesses.defaultContext().runProcess(self.graphConverter, item.diskItem)
+            brainvisa.processes.defaultContext().runProcess(self.graphConverter, item.diskItem)
           except Exception, e:
-              neuroProcesses.defaultContext().error("Error during graph conversion : "+str(e))
+              brainvisa.processes.defaultContext().error("Error during graph conversion : "+str(e))
       
     def convertCondition(self, item):
       return item and item.diskItem and item.diskItem.get("graph_version", None) == "3.0" and neuroDiskItems.isSameDiskItemType(item.diskItem.type, self.graphType) and self.graphConverter

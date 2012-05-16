@@ -32,7 +32,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 import os, shutil, re
-import  neuroProcesses
+import  brainvisa.processes
 from brainvisa import registration
 from brainvisa.data import neuroHierarchy
 
@@ -211,7 +211,7 @@ class Move(Action):
     else: dest=os.path.join(self.dest, os.path.basename(src))
     if debug:
       if context is None:
-        context=neuroProcesses.defaultContext()
+        context=brainvisa.processes.defaultContext()
       context.write("-- ", self.tooltip,  src, " -> ", dest)
     #print "move", src, "->",  dest
     # exception for graphs : must use AimsGraphConvert to copy .data with the graph
@@ -281,7 +281,7 @@ class Mkdir(Action):
   def doit(self, newDir, debug=False, context=None):
     if debug:
       if context is None:
-        context=neuroProcesses.defaultContext()
+        context=brainvisa.processes.defaultContext()
       context.write("-- ", self.tooltip, newDir)
     #print str(self)
     os.mkdir(newDir)
@@ -306,11 +306,11 @@ class CallProcess(Action):
       kwargs=self.kwargs
     if debug:
       if context is None:
-        context=neuroProcesses.defaultContext()
+        context=brainvisa.processes.defaultContext()
       context.write("")
       context.write( "-- ", str(self), args, kwargs)
     if context is None:
-      neuroProcesses.defaultContext()
+      brainvisa.processes.defaultContext()
     try:
       context.runProcess(self.processName, *args, **kwargs)
     except Exception, e:
@@ -345,7 +345,7 @@ class ImportData(CallProcess):
     self.kwargs={'input' : self.src.fullPath(), 'output' : self.dest }
     if debug:
       if context is None:
-        context=neuroProcesses.defaultContext()
+        context=brainvisa.processes.defaultContext()
       context.write("-- ", self.tooltip, self.kwargs)
     super(ImportData, self).doit(None, debug, context)
     for f in self.src.existingFiles():
@@ -388,7 +388,7 @@ class SetTransformationInfo(Action):
   def doit(self, file, debug=False, context=None):
     if debug:
       if context is None:
-        context=neuroProcesses.defaultContext()
+        context=brainvisa.processes.defaultContext()
       context.write("")
       context.write("-- ", str(self), self.transformation, " : ")
       context.write(self.sourceRef, " -> ", self.destRef  )

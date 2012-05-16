@@ -40,7 +40,7 @@ python -m brainvisa.axon.runprocess <process name> <process arguments>
 
 from brainvisa import axon
 from brainvisa.configuration import neuroConfig
-import neuroProcesses
+import brainvisa.processes
 import sys, re, types
 from optparse import OptionParser
 
@@ -78,7 +78,7 @@ for arg in args:
       todel.append( arg )
 args = [ arg for arg in args if arg not in todel ]
 
-neuroProcesses.defaultContext().runProcess( *args, **kwargs )
+brainvisa.processes.defaultContext().runProcess( *args, **kwargs )
 
 sys.exit( neuroConfig.exitValue )
 

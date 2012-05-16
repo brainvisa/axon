@@ -37,7 +37,7 @@
 #d'anatomist 1.24 environ.
 
 
-from neuroProcesses import *
+from brainvisa.processes import *
 import shfjGlobals
 
 name = 'Fusion Linear Contrastes'

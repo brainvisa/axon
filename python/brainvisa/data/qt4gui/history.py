@@ -35,7 +35,7 @@ import os
 from PyQt4 import uic, QtGui, QtCore
 from PyQt4.QtCore import Qt
 from soma.minf.api import readMinf
-from neuroProcesses import getProcessInstanceFromProcessEvent
+from brainvisa.processes import getProcessInstanceFromProcessEvent
 from brainvisa.processing.qt4gui.neuroProcessesGUI import ProcessView
 from brainvisa.processing.qt4gui.neuroLogGUI import LogItemsViewer
 

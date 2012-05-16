@@ -43,7 +43,7 @@ __docformat__ = "epytext en"
 from brainvisa.processing.qtgui import backwardCompatibleQt as qt
 from brainvisa.configuration import neuroConfig
 from brainvisa.data import neuroHierarchy
-import neuroProcesses
+import brainvisa.processes
 from brainvisa.processing.qt4gui import neuroProcessesGUI
 
 
@@ -108,7 +108,7 @@ def warnUserAboutDatabasesToUpdate():
       except RuntimeError:
         _ontologiesModificationDialog = None
     if _ontologiesModificationDialog is None or _ontologiesModificationDialog.info is None:
-      _ontologiesModificationDialog = neuroProcessesGUI.ProcessView( neuroProcesses.getProcessInstance( 'updateDatabases' ) )
+      _ontologiesModificationDialog = neuroProcessesGUI.ProcessView( brainvisa.processes.getProcessInstance( 'updateDatabases' ) )
       _ontologiesModificationDialog.labName.setText( '<html><body><font color=red>' + _t_( 'Some ontologies (i.e. databases organization) have been modified but are used by currently selected databases. To take this modification into account, it is necessary to update the databases selected below. Please click on the "Update" button below.' ) +'</font></body></html>' )
       for i in xrange( _ontologiesModificationDialog.inlineGUI.lvDatabases.count() ):
         _ontologiesModificationDialog.inlineGUI.lvDatabases.item( i ).setCheckState(qt.Qt.Unchecked)

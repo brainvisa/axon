@@ -3,7 +3,7 @@ import os
 import pickle
 import types
 
-from neuroProcesses import ProcessExecutionNode, SerialExecutionNode, ParallelExecutionNode
+from brainvisa.processes import ProcessExecutionNode, SerialExecutionNode, ParallelExecutionNode
 from brainvisa.data.readdiskitem import ReadDiskItem
 from brainvisa.data.writediskitem import WriteDiskItem
 from brainvisa.data.neuroData import ListOf
@@ -746,7 +746,7 @@ if __name__ == '__main__':
   try:
     theProcess
   except NameError:
-    from neuroProcesses import *
+    from brainvisa.processes import *
     theProcess = getProcessInstance( sys.argv[1] )
   #process_to_workflow(theProcess, open( 'test.dot', 'w' ), clusters = True, files = False)
   #process_to_workflow( theProcess, open( 'test.sh', 'w' ) )

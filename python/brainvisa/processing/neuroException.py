@@ -154,7 +154,7 @@ def logException( beforeError='', afterError='', exceptionInfo=None,
   :param string beforeError: Message that will be displayed before the text of the exception.
   :param string afterError: Message that will be displayed after the text of the exception.
   :param tuple exceptionInfo: tuple (type, value, traceback) describing the exception. If None, :py:func:`sys.exc_info` is used to get the exception.
-  :param context: :py:class:`neuroProcesses.ExecutionContext` that can be used to store the message at the right place in the log file. 
+  :param context: :py:class:`brainvisa.processes.ExecutionContext` that can be used to store the message at the right place in the log file. 
     Indeed, the current log could be the log of a process execution. 
     If None, the default context is used.
   :rtype: tuple

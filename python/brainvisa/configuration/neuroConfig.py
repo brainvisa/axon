@@ -573,7 +573,7 @@ def editConfiguration():
   
   Some other options are not applied directly but are saved in the options file and will be applied next time Brainvisa is started.
   """
-  import neuroProcesses
+  import brainvisa.processes
   from brainvisa.data import neuroHierarchy
   from brainvisa.data.qtgui.updateDatabases import warnUserAboutDatabasesToUpdate
   global userLevel, dataPath, HTMLBrowser, textEditor, language, docPath
@@ -595,7 +595,7 @@ def editConfiguration():
 
   if userLevel != configuration.brainvisa.userLevel:
     userLevel = configuration.brainvisa.userLevel
-    neuroProcesses.updateProcesses()
+    brainvisa.processes.updateProcesses()
   HTMLBrowser=configuration.brainvisa.htmlBrowser
   textEditor=configuration.brainvisa.textEditor
   if language != configuration.brainvisa.language \
@@ -605,7 +605,7 @@ def editConfiguration():
     print 'language:', language
     docPath=os.path.join(mainDocPath, language)
     os.environ[ 'LANGUAGE' ] = language
-    neuroProcesses.updateProcesses()
+    brainvisa.processes.updateProcesses()
 
 
 def stdinLoop():
@@ -764,7 +764,7 @@ if clearCacheRequest:
 if cacheUpdateRequest:
   print >> sys.stderr, 'WARNING: --updateCache is obsolete\n'
 if setup:
-  startup.append( 'from brainvisa.data.neuroHierarchy import databases\nfrom neuroProcesses import defaultContext\ndb = list( databases.iterDatabases() )[0]\ndb.clear(context=defaultContext())\ndb.update(context=defaultContext())' )
+  startup.append( 'from brainvisa.data.neuroHierarchy import databases\nfrom brainvisa.processes import defaultContext\ndb = list( databases.iterDatabases() )[0]\ndb.clear(context=defaultContext())\ndb.update(context=defaultContext())' )
 
 # 
 class RunsInfo:

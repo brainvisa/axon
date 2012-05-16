@@ -2,7 +2,7 @@
 
 from shutil import rmtree
 
-from neuroProcesses import *
+from brainvisa.processes import *
 from brainvisa.registration import getTransformationManager
 from brainvisa.configuration import neuroConfig
 from brainvisa.data import neuroHierarchy

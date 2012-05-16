@@ -31,9 +31,9 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from soma.signature.api import HasSignature, VariableSignature
 
-from neuroProcesses import String as BrainvisaString
+from brainvisa.processes import String as BrainvisaString
 from soma.signature.api import Unicode as SomaUnicode
-from neuroProcesses import Number as BrainvisaNumber
+from brainvisa.processes import Number as BrainvisaNumber
 from soma.signature.api import Number as SomaNumber
 
 class SomaSignatureProcess( HasSignature ):

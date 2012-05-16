@@ -32,14 +32,14 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 """
 This module defines the class :py:class:`ReadDiskItem` which is a subclass :py:class:`brainvisa.data.neuroData.Parameter`.
-It is used to define an input data file as a parameter in a :py:class:`neuroProcesses.Process` :py:class:`brainvisa.data.neuroData.Signature`.
+It is used to define an input data file as a parameter in a :py:class:`brainvisa.processes.Process` :py:class:`brainvisa.data.neuroData.Signature`.
 """
 import os, operator
 #from soma.debug import print_stack
 from soma.undefined import Undefined
 from brainvisa.data.neuroData import Parameter
-from neuroProcesses import getDiskItemType
-import neuroProcesses
+from brainvisa.processes import getDiskItemType
+import brainvisa.processes
 from brainvisa.data.neuroDiskItems import getFormat, getFormats, DiskItem, isSameDiskItemType, File, Directory
 from brainvisa.processing.neuroException import HTMLMessage
 from brainvisa.data.qtgui.diskItemBrowser import diskItemFilter
@@ -122,8 +122,8 @@ class ReadDiskItem( Parameter ):
         formatsWithConversion = set()
         any = getDiskItemType( 'Any type' )
         for f in getFormats( self.formats ):
-          convs = neuroProcesses.getConvertersTo( ( any, f ), checkUpdate=False )
-          convs.update( neuroProcesses.getConvertersTo( ( self.type, f ), keepType=0, checkUpdate=False ) )
+          convs = brainvisa.processes.getConvertersTo( ( any, f ), checkUpdate=False )
+          convs.update( brainvisa.processes.getConvertersTo( ( self.type, f ), keepType=0, checkUpdate=False ) )
           #if _debug is not None:
             #print >> _debug, '!_getRequiredAttributes! 3', self.type, object.__repr__( self.type ), f, object.__repr__( f ), convs
           for type_format, converter in convs.iteritems():

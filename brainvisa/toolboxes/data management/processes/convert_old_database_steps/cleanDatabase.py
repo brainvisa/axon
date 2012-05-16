@@ -31,7 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-from neuroProcesses import *
+from brainvisa.processes import *
 from brainvisa.data import neuroHierarchy
 from brainvisa.data.databaseCheck import DBCleaner
 from brainvisa.data.qtgui.databaseCheckGUI import UnknownFilesWidget

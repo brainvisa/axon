@@ -184,7 +184,7 @@ class Parameter( object ):
   
   def setNameAndParameterized( self, name, parameterized ):
     """
-    Stores a name and an associated :py:class:`neuroProcesses.Parameterized` object in this parameter.
+    Stores a name and an associated :py:class:`brainvisa.processes.Parameterized` object in this parameter.
     """
     self._name = name
     if parameterized is None:
@@ -194,7 +194,7 @@ class Parameter( object ):
   
   def getParameterized( self ):
     """
-    Returns the :py:class:`neuroProcesses.Parameterized` object associated to this parameter. 
+    Returns the :py:class:`brainvisa.processes.Parameterized` object associated to this parameter. 
     Generally the Process that have this parameter in its signature.
     """
     if self._parameterized is not None:
@@ -449,7 +449,7 @@ class Point( Parameter ):
     Associates a specific link function between the source parameter and this parameter.
     When the source parameter changes, its value is stored in this object.
     
-    :param sourceParameterized: :py:class:`neuroProcesses.Parameterized` object that contains the parameters in its signature
+    :param sourceParameterized: :py:class:`brainvisa.processes.Parameterized` object that contains the parameters in its signature
     :param sourceParameter: :py:class:`Parameter` object that is the source of the link
     """
     sourceParameterized.addLink( None, sourceParameter, self._setLink )

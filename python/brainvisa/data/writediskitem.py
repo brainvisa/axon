@@ -32,7 +32,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 """
 This module defines the class :py:class:`WriteDiskItem` which is a subclass :py:class:`brainvisa.data.neuroData.Parameter`.
-It is used to define an output data file as a parameter in a :py:class:`neuroProcesses.Process` :py:class:`brainvisa.data.neuroData.Signature`.
+It is used to define an output data file as a parameter in a :py:class:`brainvisa.processes.Process` :py:class:`brainvisa.data.neuroData.Signature`.
 """
 
 from soma.undefined import Undefined

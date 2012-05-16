@@ -84,7 +84,7 @@ def openDatabases():
   
   Warning messages may be displayed if a database is readonly or uses a deprecated ontology (*brainvisa-3.0*).
   """
-  from neuroProcesses import defaultContext
+  from brainvisa.processes import defaultContext
   global databases
     
   newDatabases=[] 

@@ -63,7 +63,7 @@ def initializeMinfExtensions():
   registerClassAs( 'brainvisa_2.0', LogFile.SubTextLog, TextFileLink )
   createReducerAndExpander( 'brainvisa-log_2.0', 'brainvisa_2.0' )
 
-  from neuroProcesses import ProcessTree
+  from brainvisa.processes import ProcessTree
   registerClass( 'brainvisa_2.0', ProcessTree, 'ProcessTree')
   registerClass( 'brainvisa_2.0', ProcessTree.Branch, 'ProcessTree.Branch' )
   registerClass( 'brainvisa_2.0', ProcessTree.Leaf, 'ProcessTree.Leaf' )

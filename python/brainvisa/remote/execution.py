@@ -3,7 +3,7 @@ from brainvisa.remote.server import BrainVISAServer
 
 
 class DatabaseServer( Singleton ):
-  from neuroProcesses import defaultContext
+  from brainvisa.processes import defaultContext
   
   
   def initialize( self ):

@@ -2389,7 +2389,7 @@ def aimsFileInfo( fileName ):
   """
   Reads the header of the file *fileName* and returns its attributes as a dictionary.
   """
-  from neuroProcesses import defaultContext
+  from brainvisa.processes import defaultContext
   from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
   global _finder
   result = {}

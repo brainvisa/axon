@@ -39,14 +39,14 @@
 import brainvisa.axon
 import sys, atexit, os
 from brainvisa.configuration import neuroConfig
-import neuroProcesses
+import brainvisa.processes
 from brainvisa.data import neuroHierarchy, neuroData, temporary
 from brainvisa.data.minfExtensions import initializeMinfExtensions
 import brainvisa.toolboxes
 from brainvisa.processing import neuroException, neuroLog
 # the environment has to contain everything necessary as neuroConfig
 # used to do: import many things here...
-from neuroProcesses import *
+from brainvisa.processes import *
 
 def cleanup():
     """
@@ -56,7 +56,7 @@ def cleanup():
         neuroConfig.runsInfo.delete()
     neuroConfig.clearObjects()
     neuroHierarchy.databases.currentThreadCleanup()
-    neuroProcesses.cleanupProcesses()
+    brainvisa.processes.cleanupProcesses()
     neuroLog.closeMainLog()
     temporary.manager.close()
 
@@ -68,7 +68,7 @@ def initializeProcesses():
     job which is usually done at the very beginning when BrainVISA starts,
     but here no GUI is created.
 
-    The processes are available through functions in :py:mod:`neuroProcesses`.
+    The processes are available through functions in :py:mod:`brainvisa.processes`.
     The databases are in :py:data:`neuroHierarchy.databases`.
     The types are available through functions in :py:mod:`neuroDiskItems`.
 
@@ -97,7 +97,7 @@ def initializeProcesses():
     neuroLog.initializeLog()
     neuroData.initializeData()
     neuroHierarchy.initializeDatabases()
-    neuroProcesses.initializeProcesses()
+    brainvisa.processes.initializeProcesses()
     if neuroConfig.gui:
         from brainvisa.data.qtgui.neuroDataGUI import initializeDataGUI
         initializeDataGUI()
@@ -106,12 +106,12 @@ def initializeProcesses():
 
     if not neuroConfig.fastStart:
         # write information about brainvisa log file
-        neuroProcesses.defaultContext().write("The log file for this session is " + repr(neuroConfig.logFileName) )
-        neuroConfig.runsInfo.check(neuroProcesses.defaultContext())
+        brainvisa.processes.defaultContext().write("The log file for this session is " + repr(neuroConfig.logFileName) )
+        neuroConfig.runsInfo.check(brainvisa.processes.defaultContext())
 
-    # neuroProcesses.readTypes() (actually imported from neuroDiskItems)
+    # brainvisa.processes.readTypes() (actually imported from neuroDiskItems)
     # lists all existing types in the ontology
-    neuroProcesses.readTypes()
+    brainvisa.processes.readTypes()
     # neuroHierarchy.databases gets populated
 
     # Databases loading is skipped when no toolbox is loaded because specific
@@ -121,7 +121,7 @@ def initializeProcesses():
         neuroHierarchy.openDatabases()
 
     # Makes the list of all processes availables in the processes path
-    neuroProcesses.readProcesses(neuroConfig.processesPath)
+    brainvisa.processes.readProcesses(neuroConfig.processesPath)
 
     if not neuroConfig.fastStart:
         from brainvisa.processing.qtgui.neuroProcessesGUI import showProcess # may be used directly

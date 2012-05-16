@@ -94,10 +94,10 @@ class SPMConfiguration_Qt4GUI( QtGUI ):
     print 'Trying to guess SPM configuration...'
     QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
     try:
-      import neuroProcesses
-      spmpathcheck = neuroProcesses.getProcessInstance( 'spmpathcheck' )
+      import brainvisa.processes
+      spmpathcheck = brainvisa.processes.getProcessInstance( 'spmpathcheck' )
       if spmpathcheck:
-        neuroProcesses.defaultContext().runProcess( spmpathcheck )
+        brainvisa.processes.defaultContext().runProcess( spmpathcheck )
         # spmpathcheck modifies the configuration object and the GUI is automatically updated because it is edited with live=True option which enables the GUI to listen the model changes.
     finally:
       QApplication.restoreOverrideCursor()

@@ -30,7 +30,7 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
-import neuroProcesses
+import brainvisa.processes
 import os, traceback
 from soma.minf.api import readMinf, minfFormat
 from soma.sorted_dictionary import SortedDictionary
@@ -86,7 +86,7 @@ class Toolbox( object ):
   
   def getProcessTree( self ):
     if self.processTree is None:
-      self.processTree = neuroProcesses.ProcessTree(
+      self.processTree = brainvisa.processes.ProcessTree(
         name=self.name,
         id=self.id,
         icon=self.icon,

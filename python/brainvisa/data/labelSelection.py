@@ -41,7 +41,7 @@ from brainvisa.data.neuroData import Parameter
 from brainvisa.data.qtgui.neuroDataGUI import NotImplementedEditor
 from brainvisa.data.writediskitem import WriteDiskItem
 from brainvisa.data.qtgui.labelSelectionGUI import LabelSelectionEditor
-from neuroProcesses import defaultContext
+from brainvisa.processes import defaultContext
 import soma.minf.api as minf
 import types
 import subprocess

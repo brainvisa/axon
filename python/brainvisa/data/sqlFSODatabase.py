@@ -55,7 +55,7 @@ from soma.uuid import Uuid
 from soma.databases.api import sqlite3, ThreadSafeSQLiteConnection
 
 from brainvisa.data.fileSystemOntology import FileSystemOntology, SetContent
-import neuroProcesses
+import brainvisa.processes
 from brainvisa.configuration import neuroConfig
 from brainvisa.data import neuroDiskItems
 from brainvisa.processing.neuroException import showWarning, HTMLMessage
@@ -439,16 +439,16 @@ class SQLDatabase( Database ):
     if os.path.exists( self.sqlDatabaseFile ):
       if self.fso.lastModification > os.stat(self.sqlDatabaseFile).st_mtime:
         self._mustBeUpdated = True
-        neuroProcesses.defaultContext().write("Database ",  self.name, " must be updated because the database file is too old." )
+        brainvisa.processes.defaultContext().write("Database ",  self.name, " must be updated because the database file is too old." )
         #showWarning( _( 'ontology "%(ontology)s" had been modified, database "%(database)s" should be updated. Use the process : Data Management =&gt; Update databases.' ) % { 'ontology': self.fso.name, 'database': self.name } )
       else: # database seem to be up to date but let's check if all the types tables exist
         if not self.checkTables():
           self._mustBeUpdated=True
-          neuroProcesses.defaultContext().write( "Database ",  self.name, " must be updated because some types tables are missing." )
+          brainvisa.processes.defaultContext().write( "Database ",  self.name, " must be updated because some types tables are missing." )
     else :
       if (self.sqlDatabaseFile != ":memory:") and (len(os.listdir(self.directory)) > 1): # there is at least database_settings.minf
         self._mustBeUpdated = True
-        neuroProcesses.defaultContext().write( "Database ",  self.name, " must be updated because there is no database file." )
+        brainvisa.processes.defaultContext().write( "Database ",  self.name, " must be updated because there is no database file." )
       else: # if database directory is empty , it is a new database or it is in memory -> automatically update
         if self.createTables():
           self.update( context=context)
@@ -461,7 +461,7 @@ class SQLDatabase( Database ):
         neuroConfig.chooseDatabaseVersionSyncOption(context)
       if neuroConfig.databaseVersionSync == 'auto':
         self._mustBeUpdated = True
-        neuroProcesses.defaultContext().write( "Database ",  self.name, " must be updated because it has been used with other versions of Brainvisa." )
+        brainvisa.processes.defaultContext().write( "Database ",  self.name, " must be updated because it has been used with other versions of Brainvisa." )
   
   
   def update( self, directoriesToScan=None, recursion=True, context=None ):
@@ -660,7 +660,7 @@ class SQLDatabase( Database ):
         tables=set([t[0] for t in res.fetchall()]) # fetchall returns a list of tuples
         tablesExist=self.typesWithTable.issubset(tables) # there are also tables for diskitems and filenames which does match a specific type.
       except sqlite3.OperationalError, e:
-        neuroProcesses.defaultContext().warning(e.message)
+        brainvisa.processes.defaultContext().warning(e.message)
     finally:
       self._closeDatabaseCursor( cursor )
     return tablesExist
@@ -842,7 +842,7 @@ class SQLDatabase( Database ):
       sql = "SELECT _diskItem from _DISKITEMS_ WHERE _uuid='" + str( uuid ) + "'"
       minf = cursor.execute( sql ).fetchone()
     except sqlite3.OperationalError, e:
-      neuroProcesses.defaultContext().warning( "Cannot question database "+self.name+". You should update this database." )
+      brainvisa.processes.defaultContext().warning( "Cannot question database "+self.name+". You should update this database." )
     finally:
       self._closeDatabaseCursor( cursor )
     if minf is not None:
@@ -860,7 +860,7 @@ class SQLDatabase( Database ):
         sql = "SELECT _diskItem FROM _FILENAMES_ F, _DISKITEMS_ D WHERE F._uuid=D._uuid AND F.filename='" + unicode( relative_path(fileName, self.directory) ) + "'"
         minf = cursor.execute( sql ).fetchone()
       except sqlite3.OperationalError, e:
-        neuroProcesses.defaultContext().warning( "Cannot question database "+self.name+". You should update this database." )
+        brainvisa.processes.defaultContext().warning( "Cannot question database "+self.name+". You should update this database." )
       finally:
         self._closeDatabaseCursor( cursor )
       if minf is not None:
@@ -1178,7 +1178,7 @@ class SQLDatabase( Database ):
         try:
           sqlResult = cursor.execute( sql ).fetchall()
         except sqlite3.OperationalError, e:
-          neuroProcesses.defaultContext().warning("Cannot question database ", self.name, " : ", e.message, ". You should update this database.")
+          brainvisa.processes.defaultContext().warning("Cannot question database ", self.name, " : ", e.message, ". You should update this database.")
       finally:
         self._closeDatabaseCursor( cursor )
       for tpl in sqlResult:

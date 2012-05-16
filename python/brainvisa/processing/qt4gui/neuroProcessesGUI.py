@@ -49,7 +49,7 @@ from brainvisa.processing.qt4gui import neuroLogGUI
 from brainvisa.data import neuroData
 from brainvisa.wip import newProcess
 from brainvisa.history import ProcessExecutionEvent
-import neuroProcesses
+import brainvisa.processes
 from brainvisa.data.neuroDiskItems import DiskItem
 import weakref
 from soma.minf.xhtml import XHTML
@@ -63,7 +63,7 @@ except:
   # for sip 3.x (does it work ??)
   import libsip as sip
 
-import neuroProcesses
+import brainvisa.processes
 from brainvisa.processing import neuroException
 from soma.qtgui.api import EditableTreeWidget, TreeListWidget
 from soma.notification import ObservableList, EditableTree
@@ -109,14 +109,14 @@ def startShell():
     import IPython
     if [ int(x) for x in IPython.__version__.split('.') ] >= [ 0, 11 ]:
       # ipython >= 0.11, use client/server mode
-      ipConsole = neuroProcesses.runIPConsoleKernel()
+      ipConsole = brainvisa.processes.runIPConsoleKernel()
       import subprocess
       sp = subprocess.Popen( [ sys.executable, '-c',
         'from IPython.frontend.terminal.ipapp import launch_new_instance; ' \
         'launch_new_instance()', 'qtconsole', '--existing',
         '--shell=%d' % ipConsole.shell_port, '--iopub=%d' % ipConsole.iopub_port,
         '--stdin=%d' % ipConsole.stdin_port, '--hb=%d' % ipConsole.hb_port ] )
-      neuroProcesses._ipsubprocs.append( sp )
+      brainvisa.processes._ipsubprocs.append( sp )
       return
   except:
     pass
@@ -539,7 +539,7 @@ class SomaWorkflowProcessView(QMainWindow):
         QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
         #self.ui.statusbar.showMessage("Unserialize...")
         try:
-          self.process = neuroProcesses.getProcessInstance(self.serialized_process)
+          self.process = brainvisa.processes.getProcessInstance(self.serialized_process)
           QtGui.QApplication.restoreOverrideCursor()
         except Exception, e:
           #self.ui.statusbar.clearMessage()
@@ -605,13 +605,13 @@ class SomaWorkflowProcessView(QMainWindow):
       try:
         if not dbSettings.builtin:
           db=neuroHierarchy.databases.database(dbSettings.directory)
-          neuroProcesses.defaultContext().write("Updating database "+db.name+"...")
+          brainvisa.processes.defaultContext().write("Updating database "+db.name+"...")
           # first update before checking for missing referentials
-          db.clear(context=neuroProcesses.defaultContext())
-          db.update(context=neuroProcesses.defaultContext())
+          db.clear(context=brainvisa.processes.defaultContext())
+          db.update(context=brainvisa.processes.defaultContext())
           # check referentials and transformations information, the database will be updated after
-          neuroProcesses.defaultContext().write("Checking referentials information in database "+db.name+"...")
-          checker=BVChecker_3_1(db, neuroProcesses.defaultContext())
+          brainvisa.processes.defaultContext().write("Checking referentials information in database "+db.name+"...")
+          checker=BVChecker_3_1(db, brainvisa.processes.defaultContext())
           checker.findActions()
           checker.process()
       except:
@@ -764,7 +764,7 @@ class HTMLBrowser( QWidget ):
         # remove tailing '/'
         if bvp[ -1 ] == '/':
           bvp = bvp[ : -1 ]
-        proc = neuroProcesses.getProcess( bvp )
+        proc = brainvisa.processes.getProcess( bvp )
         if proc is None:
           print 'No process of name', bvp
         else:
@@ -964,9 +964,9 @@ class WidgetScrollV( QScrollArea ):
     #return self.viewport().width()
 
 #----------------------------------------------------------------------------
-class ExecutionContextGUI( neuroProcesses.ExecutionContext):
+class ExecutionContextGUI( brainvisa.processes.ExecutionContext):
   def __init__( self ):
-    neuroProcesses.ExecutionContext.__init__( self )
+    brainvisa.processes.ExecutionContext.__init__( self )
 
   def ask( self, message, *buttons, **kwargs ):
     modal=kwargs.get("modal", 1)
@@ -995,7 +995,7 @@ class ExecutionContextGUI( neuroProcesses.ExecutionContext):
       if not hasattr( self, '_progressBar' ):
         if not hasattr( self, 'inlineGUI' ):
           # no GUI: fallback to text mode
-          neuroProcesses.ExecutionContext.showProgress( self, value, maxval )
+          brainvisa.processes.ExecutionContext.showProgress( self, value, maxval )
           return
         layout = self.inlineGUI.parentWidget().layout()
         self._progressBar = QProgressBar( None )
@@ -1388,7 +1388,7 @@ class ParameterizedWidget( QWidget ):
     documentation = {}
     id = getattr(parameterized, '_id', None)
     if id is not None:
-      procdoc = neuroProcesses.readProcdoc( id )
+      procdoc = brainvisa.processes.readProcdoc( id )
       if procdoc:
         documentation = procdoc.get( neuroConfig.language )
         if documentation is None:
@@ -1416,7 +1416,7 @@ class ParameterizedWidget( QWidget ):
         l.setDefault(self.parameterized.isDefault( k ))
         self.connect( l, SIGNAL( 'toggleDefault' ), self._toggleDefault )
         
-        if isinstance( p, neuroProcesses.ReadDiskItem ):         
+        if isinstance( p, brainvisa.processes.ReadDiskItem ):         
             l.lock_id.setCheckable(True)
             l.setlock(self._setlock_system(k)) #ini la valeur de lock du parametre
             #self.connect( l, SIGNAL( 'setlock_system' ), self._setlock_system )
@@ -1551,7 +1551,7 @@ class ParameterizedWidget( QWidget ):
       #value = self.parameterized.__getattribute__(name)
       value = getattr(self.parameterized, name, None)
       
-      #if value is not None and isinstance( value, neuroProcesses.WriteDiskItem ): 
+      #if value is not None and isinstance( value, brainvisa.processes.WriteDiskItem ): 
       if value is not None : 
           isLock = value.lockData()
           if isLock : self.labels[name].lock_id.setChecked(True)
@@ -1563,7 +1563,7 @@ class ParameterizedWidget( QWidget ):
       #print "-- FUNCTION _unlock_system : neuroProcessesGUI / ParameterizedWidget-- "
       #value = self.parameterized.__getattribute__(name)
       value = getattr(self.parameterized, name, None)
-      #if value is not None and isinstance( value, neuroProcesses.WriteDiskItem ):  
+      #if value is not None and isinstance( value, brainvisa.processes.WriteDiskItem ):  
       if value is not None :  
           value.unlockData()
 
@@ -1746,7 +1746,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
     self.connect( self, SIGNAL( 'destroyed()' ), self.cleanup )
 
-    process = neuroProcesses.getProcessInstance( processId )
+    process = brainvisa.processes.getProcessInstance( processId )
     if process is None:
       raise RuntimeError( neuroException.HTMLMessage(_t_( 'Cannot open process <em>%s</em>' ) % ( str(processId), )) )
     self.process = process
@@ -1759,10 +1759,10 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     self.btnInterruptStep = None
     self._running = False
 
-    if self.process.__class__ == neuroProcesses.IterationProcess:
+    if self.process.__class__ == brainvisa.processes.IterationProcess:
       self.action_iterate.setVisible(False)
 
-    procdoc = neuroProcesses.readProcdoc( process )
+    procdoc = brainvisa.processes.readProcdoc( process )
     documentation = procdoc.get( neuroConfig.language )
     if documentation is None:
       documentation = procdoc.get( 'en', {} )
@@ -2062,8 +2062,8 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       proc = item._executionNode
       self.readUserValues()
       event = ProcessExecutionEvent()
-      event.setProcess( neuroProcesses.getProcessInstance( proc ) )
-      clone = neuroProcesses.getProcessInstanceFromProcessEvent( event )
+      event.setProcess( brainvisa.processes.getProcessInstance( proc ) )
+      clone = brainvisa.processes.getProcessInstanceFromProcessEvent( event )
       return showProcess( clone )
 
   def menuShowDocumentation(self):
@@ -2079,7 +2079,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
           if proc is not None:
             _mainWindow.info.setSource( doc )
         else:
-          doc = neuroProcesses.getHTMLFileName( proc )
+          doc = brainvisa.processes.getHTMLFileName( proc )
           if os.path.exists( doc ):
             _mainWindow.info.setSource( doc )
 
@@ -2122,7 +2122,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     layout.addWidget(self.btnIterate)
     self.btnIterate.setMinimumWidth(90)
     self.btnIterate.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-    if self.process.__class__ == neuroProcesses.IterationProcess:
+    if self.process.__class__ == brainvisa.processes.IterationProcess:
       self.btnIterate.setVisible(False)
 
     if self.process.executionNode() != None and _workflow_application_model != None:
@@ -2290,20 +2290,20 @@ class ProcessView( QWidget, ExecutionContextGUI ):
   def _interruptButton(self):
     if self._running:
       try:
-        self._setInterruptionRequest( neuroProcesses.ExecutionContext.UserInterruption() )
+        self._setInterruptionRequest( brainvisa.processes.ExecutionContext.UserInterruption() )
       except:
         neuroException.showException()
 
   def _interruptStepButton( self, executionFunction=None ):
     if self._running:
-      self._setInterruptionRequest( neuroProcesses.ExecutionContext.UserInterruptionStep() )
+      self._setInterruptionRequest( brainvisa.processes.ExecutionContext.UserInterruptionStep() )
 
 
   def _checkReloadProcess( self ):
     self.readUserValues()
     reload = False
     for p in self.process.allProcesses():
-      pp = neuroProcesses.getProcess( p )
+      pp = brainvisa.processes.getProcess( p )
       if pp is not p and pp is not p.__class__:
         reload = True
         break
@@ -2318,9 +2318,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         self.process.signatureChangeNotifier.remove( self.signatureChanged )
         self.eraseSignatureWidgets()
         # Care about new process
-        self.process = neuroProcesses.getProcessInstanceFromProcessEvent( event )
+        self.process = brainvisa.processes.getProcessInstanceFromProcessEvent( event )
         self.process.signatureChangeNotifier.add( self.signatureChanged )
-        procdoc = neuroProcesses.readProcdoc( self.process )
+        procdoc = brainvisa.processes.readProcdoc( self.process )
         documentation = procdoc.get( neuroConfig.language )
         if documentation is None:
           documentation = procdoc.get( 'en', {} )
@@ -2358,13 +2358,13 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
       _mainThreadActions.push(self.action_run.setEnabled, False)
       _mainThreadActions.push(self.action_interupt.setVisible, True)
-      if self.process.__class__ == neuroProcesses.IterationProcess:
+      if self.process.__class__ == brainvisa.processes.IterationProcess:
         _mainThreadActions.push(self.action_interupt_step.setVisible, True)
         
       if self.btnRun != None:
         _mainThreadActions.push(self.btnRun.setVisible, False)
         _mainThreadActions.push(self.btnInterrupt.setVisible, True)
-        if self.process.__class__ == neuroProcesses.IterationProcess:
+        if self.process.__class__ == brainvisa.processes.IterationProcess:
           _mainThreadActions.push(self.btnInterruptStep.setVisible, True)
         
 
@@ -2398,13 +2398,13 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
       _mainThreadActions.push( self.action_run.setEnabled, True)
       _mainThreadActions.push(self.action_interupt.setVisible, False)
-      if self.process.__class__ == neuroProcesses.IterationProcess:
+      if self.process.__class__ == brainvisa.processes.IterationProcess:
         _mainThreadActions.push(self.action_interupt_step.setVisible, False)
         
       if self.btnRun != None:
         _mainThreadActions.push( self.btnRun.setVisible, True)
         _mainThreadActions.push(self.btnInterrupt.setVisible, False)
-        if self.process.__class__ == neuroProcesses.IterationProcess:
+        if self.process.__class__ == brainvisa.processes.IterationProcess:
           _mainThreadActions.push(self.btnInterruptStep.setVisible, False)
           
       _mainThreadActions.push( self._checkReadable )
@@ -2483,16 +2483,16 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       else:
         eNode, eNodeChildren = eNodeAndChildren
       for childNode in eNodeChildren:
-        if isinstance( childNode, neuroProcesses.ProcessExecutionNode ):
+        if isinstance( childNode, brainvisa.processes.ProcessExecutionNode ):
           en = childNode._executionNode
           if en is None:
             en = childNode
         else:
           en = childNode
         if eNode is not childNode \
-          and ( isinstance( eNode, neuroProcesses.SelectionExecutionNode ) \
-            or ( isinstance( eNode, neuroProcesses.ProcessExecutionNode ) \
-            and isinstance( eNode._executionNode, neuroProcesses.SelectionExecutionNode ) ) ):
+          and ( isinstance( eNode, brainvisa.processes.SelectionExecutionNode ) \
+            or ( isinstance( eNode, brainvisa.processes.ProcessExecutionNode ) \
+            and isinstance( eNode._executionNode, brainvisa.processes.SelectionExecutionNode ) ) ):
           itemType="radio"
         elif childNode._optional:
           itemType="check"
@@ -2504,7 +2504,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         if en.hasChildren():
           newItem.setChildIndicatorPolicy(newItem.ShowIndicator)
         #newItem.setExpandable( en.hasChildren() )
-        if isinstance( childNode, neuroProcesses.ProcessExecutionNode ):
+        if isinstance( childNode, brainvisa.processes.ProcessExecutionNode ):
           self._executionNodeLVItems[ childNode._process ] = newItem
 
       if self._depth():
@@ -2580,7 +2580,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     try:
       params = self._iterationDialog.getLists()
       processes = self.process._iterate( **params )
-      iterationProcess = neuroProcesses.IterationProcess( self.process.name+" iteration", processes )
+      iterationProcess = brainvisa.processes.IterationProcess( self.process.name+" iteration", processes )
       showProcess( iterationProcess )
     except:
         neuroException.showException()
@@ -2626,7 +2626,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
   
   def clone( self ):
     self.readUserValues()
-    clone = neuroProcesses.getProcessInstanceFromProcessEvent( self.createProcessExecutionEvent() )
+    clone = brainvisa.processes.getProcessInstanceFromProcessEvent( self.createProcessExecutionEvent() )
     return showProcess( clone )
   
 
@@ -2640,7 +2640,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       minf = unicode( QFileDialog.getOpenFileName( None,
       _t_( 'Open a process file' ), '', 'BrainVISA process (*.bvproc);;All files (*)', None, QFileDialog.DontUseNativeDialog ))
     if minf:
-      showProcess( neuroProcesses.getProcessInstance( minf ) )
+      showProcess( brainvisa.processes.getProcessInstance( minf ) )
 
 
 #----------------------------------------------------------------------------
@@ -2655,7 +2655,7 @@ def showProcess( process, *args, **kwargs):
   else:
     view=None
     try:
-      process = neuroProcesses.getProcessInstance( process )
+      process = brainvisa.processes.getProcessInstance( process )
       if process is None:
         raise RuntimeError( neuroException.HTMLMessage(_t_( 'Invalid process <em>%s</em>' ) % ( str(process), )) )
       for i in xrange( len( args ) ):
@@ -2692,7 +2692,7 @@ class IterationDialog( QDialog ):
     for ( n, p ) in parameterized.signature.items():
       if neuroConfig.userLevel >= p.userLevel:
         params += [ n, neuroData.ListOf( p ) ]
-    self.parameterized = neuroProcesses.Parameterized( neuroData.Signature( *params ) )
+    self.parameterized = brainvisa.processes.Parameterized( neuroData.Signature( *params ) )
     for n in self.parameterized.signature.keys():
       setattr( self.parameterized, n, None )
 
@@ -2940,12 +2940,12 @@ class ProcessEdit( QDialog ):
     QWidget.closeEvent(self, event)
 
   def readDocumentation( self ):
-    self.documentation = neuroProcesses.readProcdoc( self.process )
+    self.documentation = brainvisa.processes.readProcdoc( self.process )
 
   def writeDocumentation( self ):
-    neuroProcesses.procdocToXHTML( self.documentation )
+    brainvisa.processes.procdocToXHTML( self.documentation )
     self.setLanguage( self.language )
-    neuroProcesses.writeProcdoc( self.process, self.documentation )
+    brainvisa.processes.writeProcdoc( self.process, self.documentation )
 
   def setLanguage( self, lang ):
     self.leHTMLPath.setText(XHTML.html(self.documentation.get( 'htmlPath', '' )) )
@@ -2986,7 +2986,7 @@ class ProcessEdit( QDialog ):
   def applyChanges( self ):
     self.saveLanguage()
     self.writeDocumentation()
-    neuroProcesses.generateHTMLProcessesDocumentation( self.process )
+    brainvisa.processes.generateHTMLProcessesDocumentation( self.process )
 
   def accept( self ):
     self.applyChanges()
@@ -3218,8 +3218,8 @@ class ProcessSelectionWidget( QMainWindow ):
         else:
           self.currentProcessId = processId
           self.btnOpen.setEnabled( 1 )
-          documentation = neuroProcesses.readProcdoc( self.currentProcessId )
-          source = neuroProcesses.getHTMLFileName( self.currentProcessId )
+          documentation = brainvisa.processes.readProcdoc( self.currentProcessId )
+          source = brainvisa.processes.getHTMLFileName( self.currentProcessId )
           if os.path.exists( source ):
             self.info.setSource( source )
           else:
@@ -3264,7 +3264,7 @@ class ProcessSelectionWidget( QMainWindow ):
         processId=item.id
     else:
       processId=self.currentProcessId
-    win = ProcessEdit( neuroProcesses.getProcessInstance( processId ) )
+    win = ProcessEdit( brainvisa.processes.getProcessInstance( processId ) )
     win.show()
 
   def iterateProcess( self, item=None ):
@@ -3274,7 +3274,7 @@ class ProcessSelectionWidget( QMainWindow ):
         processId=item.id
     else:
       processId=self.currentProcessId
-    self.currentProcess=neuroProcesses.getProcessInstance(processId)
+    self.currentProcess=brainvisa.processes.getProcessInstance(processId)
     #print "iterate process", processId
     self._iterationDialog = IterationDialog( self, self.currentProcess, self )
     self.connect( self._iterationDialog, SIGNAL( 'accept' ),
@@ -3288,7 +3288,7 @@ class ProcessSelectionWidget( QMainWindow ):
     try:
       params = self._iterationDialog.getLists()
       processes = self.currentProcess._iterate( **params )
-      iterationProcess = neuroProcesses.IterationProcess( self.currentProcess.name+" iteration", processes )
+      iterationProcess = brainvisa.processes.IterationProcess( self.currentProcess.name+" iteration", processes )
       showProcess( iterationProcess )
     except:
       neuroException.showException()
@@ -3298,7 +3298,7 @@ class ProcessSelectionWidget( QMainWindow ):
     """
     Reloads the list of process trees.
     """
-    self.processTrees.setModel( neuroProcesses.updatedMainProcessTree() )
+    self.processTrees.setModel( brainvisa.processes.updatedMainProcessTree() )
 
   def closeEvent ( self, event ):
     state = self.saveState(1)
@@ -3503,7 +3503,7 @@ class ProcessTreesWidget(QSplitter):
       for item in items:
         # on insertion in a tree, listen changes of the new element
         # on insertion of a tree in the tree list, nothing to do, listeners are already registred
-        if not issubclass(item.__class__, neuroProcesses.ProcessTree):
+        if not issubclass(item.__class__, brainvisa.processes.ProcessTree):
           if not item.isLeaf():
             item.addListenerRec(self.modelChanged)
             item.onAttributeChangeRec("name", self.modelChanged)
@@ -3601,7 +3601,7 @@ class ProcessTreesWidget(QSplitter):
     Called on click on new option in contextual menu. 
     Adds a new empty tree in the model.
     """
-    processTree=neuroProcesses.ProcessTree( name='Personal Bookmarks' )
+    processTree=brainvisa.processes.ProcessTree( name='Personal Bookmarks' )
     processTree.new=True
     self.model.add(processTree)
 
@@ -3823,7 +3823,7 @@ def close_viewers():
     if isinstance(w, DiskItemEditor):
       w.close_viewer()
     elif isinstance(w, ProcessView):
-      process_info = neuroProcesses.getProcessInfo(w.process.id())
+      process_info = brainvisa.processes.getProcessInfo(w.process.id())
       if process_info is not None and "viewer" in process_info.roles:
         w.close()
     elif isinstance(w, HierarchyBrowser):
@@ -3835,11 +3835,11 @@ def updateProcessList():
 
 def reloadToolboxesGUI():
   """
-  Calls :py:func:`neuroProcesses.reloadToolboxes` and updates the main window (list of toolboxes or processes may have changed).
+  Calls :py:func:`brainvisa.processes.reloadToolboxes` and updates the main window (list of toolboxes or processes may have changed).
   If some databases should be updated, the user is warned.
   """
   QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
-  neuroProcesses.reloadToolboxes()
+  brainvisa.processes.reloadToolboxes()
   updateProcessList()
   from brainvisa.data.qt4gui.updateDatabases import warnUserAboutDatabasesToUpdate
   warnUserAboutDatabasesToUpdate()
@@ -3857,16 +3857,16 @@ def initializeProcessesGUI():
   _computing_resource_pool = None
   _workflow_application_model = None
 
-  import neuroProcesses
+  import brainvisa.processes
   if neuroConfig.gui:
     if _soma_workflow and neuroConfig.userLevel >= 1:
       _computing_resource_pool = ComputingResourcePool()
       _computing_resource_pool.add_default_connection()
       _workflow_application_model = WorkflowApplicationModel(_computing_resource_pool)
 
-    exec 'from brainvisa.processing.qt4gui.neuroProcessesGUI import *' in neuroProcesses.__dict__
-    neuroProcesses._defaultContext = ExecutionContextGUI()
+    exec 'from brainvisa.processing.qt4gui.neuroProcessesGUI import *' in brainvisa.processes.__dict__
+    brainvisa.processes._defaultContext = ExecutionContextGUI()
   else:
-    exec 'from brainvisa.processing.qt4gui.neuroProcessesGUI import mainThreadActions' in neuroProcesses.__dict__
+    exec 'from brainvisa.processing.qt4gui.neuroProcessesGUI import mainThreadActions' in brainvisa.processes.__dict__
 
 
