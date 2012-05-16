@@ -245,7 +245,7 @@ class SomaWorkflowWidget(ComputingResourceWidget):
   @QtCore.Slot()
   def workflow_double_clicked(self):
     selected_items = self.ui.list_widget_submitted_wfs.selectedItems()
-    wf_id = selected_items[0].data(QtCore.Qt.UserRole).toInt()[0]
+    wf_id = int( selected_items[0].data(QtCore.Qt.UserRole) )
 
     if wf_id not in self.serialized_processes:
       workflow = self.model.current_workflow()#current_connection.workflow(wf_id)

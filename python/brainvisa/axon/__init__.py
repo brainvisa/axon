@@ -56,6 +56,7 @@ import os, sys
 import sip
 try:
   sip.setapi( 'QString', 2 )
+  sip.setapi( 'QVariant', 2 )
 except:
   print "WARNING: impossible to use version 2 of API QString."
 

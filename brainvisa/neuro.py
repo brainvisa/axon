@@ -44,6 +44,7 @@ import sys, os, signal, atexit, time
 # of enthought.traits.ui (3.6 for instance)
 import sip
 sip.setapi( 'QString', 2 )
+sip.setapi( 'QVariant', 2 )
 
 if len( sys.argv ) > 1 and sys.platform[:6] == 'darwin' and sys.argv[1][:5] == '-psn_':
   # MacOS calls me with this strange argument, I don't want it.
