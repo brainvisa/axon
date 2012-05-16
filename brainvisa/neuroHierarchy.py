@@ -31,10 +31,9 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-import warnings
-import traceback
-warnings.warn( 'use of obsolete neuroHierarchy. Please use brainvisa.data.neuroHierarchy instead now.', DeprecationWarning )
-print 'called from:'
-traceback.print_stack()
-import brainvisa.data.neuroHierarchy
+#import warnings
+#import traceback
+#warnings.warn( 'use of obsolete neuroHierarchy. Please use brainvisa.data.neuroHierarchy instead now.', DeprecationWarning )
+#print 'called from:'
+#traceback.print_stack()
 from brainvisa.data.neuroHierarchy import *
