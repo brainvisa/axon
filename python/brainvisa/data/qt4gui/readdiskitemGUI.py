@@ -41,7 +41,7 @@ from brainvisa.data.qtgui.neuroDataGUI import DataEditor, StringListEditor, butt
 import neuroProcesses
 from brainvisa.processing.qt4gui import neuroProcessesGUI
 from brainvisa.data.neuroDiskItems import DiskItem, Directory
-import neuroConfig
+from brainvisa.configuration import neuroConfig
 from brainvisa.processing.neuroException import showException, HTMLMessage
 from PyQt4 import QtCore
 import sys, os

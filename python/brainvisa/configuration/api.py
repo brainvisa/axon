@@ -268,7 +268,7 @@ def convertConfiguration30To31( sourceFileName, destFileName,
   configuration.add( 'R',  RConfiguration() )
   configuration.add( 'matlab', MatlabConfiguration() )
   
-  from neuroConfig import versionNumber
+  from brainvisa.configuration.neuroConfig import versionNumber
   d = { 'options': Options3_0( configuration ), 'versionNumber': versionNumber }
   try:
     execfile( sourceFileName, d, d )
@@ -288,7 +288,7 @@ def convertConfiguration30To31( sourceFileName, destFileName,
 
 #------------------------------------------------------------------------------
 def setSPM99Compatibility( values ):
-  import neuroConfig
+  from brainvisa.configuration import neuroConfig
   aimsrc = os.path.join( neuroConfig.homedir, '.aimsrc' )
   if values.SPM99_compatibility or ( not values.radiological_orientation ) or os.path.exists( aimsrc ):
     aimsrc = open( aimsrc, 'w' )

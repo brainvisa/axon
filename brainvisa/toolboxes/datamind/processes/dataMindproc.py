@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -32,7 +33,7 @@
 
 from neuroProcesses import *
 from brainvisa.validation import ValidationError
-from neuroConfig import *
+from brainvisa.configuration.neuroConfig import *
 import os.path
 import sys
 import distutils.spawn
@@ -41,7 +42,7 @@ name = 'DataMind : a data mining toolbox'
 userLevel = 2
 
 def validation():
-    mainPath = neuroConfig.mainPath    
+    mainPath = neuroConfig.mainPath
 
     if not distutils.spawn.find_executable( neuroConfig.Rexecutable ):
         raise ValidationError( _t_( 'R unavailable' ) )

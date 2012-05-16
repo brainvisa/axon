@@ -32,9 +32,9 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 
-import neuroConfig
-import neuroHierarchy
-from neuroDiskItems import getDiskItemType, isSameDiskItemType, DiskItem
+from brainvisa.configuration import neuroConfig
+from brainvisa.data import neuroHierarchy
+from brainvisa.data.neuroDiskItems import getDiskItemType, isSameDiskItemType, DiskItem
 from brainvisa.processing.neuroException import HTMLMessage
 from soma import uuid
 import threading

@@ -39,8 +39,10 @@ from soma.translation import translate as _
 from soma.undefined import Undefined
 from soma.minf.api import readMinf
 from gzip import open as gzipOpen
-import neuroConfig, neuroHierarchy
-from brainvisa.processing import neuroException, neuroLog
+from brainvisa.processing import neuroLog
+from brainvisa.configuration import neuroConfig
+from brainvisa.data import  neuroHierarchy
+from brainvisa.processing import neuroException
 from glob import glob
 import weakref
 import types

@@ -6,9 +6,9 @@ import types
 from neuroProcesses import ProcessExecutionNode, SerialExecutionNode, ParallelExecutionNode
 from brainvisa.data.readdiskitem import ReadDiskItem
 from brainvisa.data.writediskitem import WriteDiskItem
-from neuroData import ListOf
-import neuroHierarchy
-from neuroDiskItems import DiskItem
+from brainvisa.data.neuroData import ListOf
+from brainvisa.data import neuroHierarchy
+from brainvisa.data.neuroDiskItems import DiskItem
 
 from soma.workflow.constants import *
 from soma.workflow.client import Job, FileTransfer, SharedResourcePath, Group, Workflow, Helper

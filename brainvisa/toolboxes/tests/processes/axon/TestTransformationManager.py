@@ -3,9 +3,9 @@
 from shutil import rmtree
 
 from neuroProcesses import *
-from registration import getTransformationManager
-import neuroConfig, neuroHierarchy
-from brainvisa.data import temporary
+from brainvisa.registration import getTransformationManager
+from brainvisa.configuration import neuroConfig
+from brainvisa.data import neuroHierarchy
 
 userLevel = 2
 

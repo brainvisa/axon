@@ -32,10 +32,10 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from neuroProcesses import *
-import shfjGlobals, neuroConfig
+import brainvisa.tools.aimsGlobals as shfjGlobals
 import errno
-import registration
-from neuroHierarchy import databases
+from brainvisa import registration
+from brainvisa.data.neuroHierarchy import databases
 try:
   #errorToDisableScipyVersion() # fail until it is a bit tested and debugged.
   import scipy

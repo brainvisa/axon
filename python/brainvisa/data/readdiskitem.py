@@ -41,9 +41,7 @@ from brainvisa.data.neuroData import Parameter
 from neuroProcesses import getDiskItemType
 import neuroProcesses
 from brainvisa.data.neuroDiskItems import getFormat, getFormats, DiskItem, isSameDiskItemType, File, Directory
-import neuroHierarchy
 from brainvisa.processing.neuroException import HTMLMessage
-from brainvisa.data.qtgui.readdiskitemGUI import DiskItemEditor, DiskItemListEditor
 from brainvisa.data.qtgui.diskItemBrowser import diskItemFilter
 
 #----------------------------------------------------------------------------
@@ -102,6 +100,8 @@ class ReadDiskItem( Parameter ):
 
   
   def _getDatabase( self ):
+    # WARNING: don't import earlier to prevent a circular inclusion!
+    from brainvisa.data import neuroHierarchy
     return neuroHierarchy.databases
   database = property( _getDatabase )
   
@@ -503,13 +503,22 @@ class ReadDiskItem( Parameter ):
 
 
   def editor( self, parent, name, context ):
+    # WARNING: don't import at the beginning of the module,
+    # it would cause a circular inclusion
+    from brainvisa.data.qtgui.readdiskitemGUI import DiskItemEditor
     return DiskItemEditor( self, parent, name, context=context )
   
   
   def editor( self, parent, name, context ):
+    # WARNING: don't import at the beginning of the module,
+    # it would cause a circular inclusion
+    from brainvisa.data.qtgui.readdiskitemGUI import DiskItemEditor
     return DiskItemEditor( self, parent, name, context=context, write=self._write )
 
 
   def listEditor( self, parent, name, context ):
+    # WARNING: don't import at the beginning of the module,
+    # it would cause a circular inclusion
+    from brainvisa.data.qtgui.readdiskitemGUI import DiskItemListEditor
     return DiskItemListEditor( self, parent, name, context=context, write=self._write )
 

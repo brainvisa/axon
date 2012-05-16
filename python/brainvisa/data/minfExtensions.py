@@ -56,7 +56,7 @@ def initializeMinfExtensions():
   createReducerAndExpander( 'brainvisa_2.0', 'minf_2.0' )
 
   # Logging extensions
-  from neuroLog import TextFileLink, LogFileLink, LogFile
+  from brainvisa.processing.neuroLog import TextFileLink, LogFileLink, LogFile
   registerClass( 'brainvisa_2.0', TextFileLink, 'TextFileLink' )
   registerClass( 'brainvisa_2.0', LogFileLink,'LogFileLink' )
   registerClass( 'brainvisa_2.0', LogFile.Item, 'LogFile.Item' )

@@ -32,7 +32,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 import sys, new, os
 from brainvisa import registration
-import neuroConfig
+from brainvisa.configuration import neuroConfig
 from brainvisa.processing import neuroLog
 from brainvisa.processing import neuroException
 from brainvisa.data import neuroData

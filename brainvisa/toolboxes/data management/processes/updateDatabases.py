@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
@@ -43,8 +43,8 @@ __docformat__ = "epytext en"
 
 from neuroProcesses import *
 import brainvisa.processing.qtgui.backwardCompatibleQt as qt
-import neuroConfig
-from neuroHierarchy import databases
+from brainvisa.configuration import neuroConfig
+from brainvisa.data.neuroHierarchy import databases
 from brainvisa.data.qtgui.updateDatabases import UpdateDatabasesGUI
 
 name = 'Update databases'

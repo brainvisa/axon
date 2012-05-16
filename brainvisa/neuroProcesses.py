@@ -184,9 +184,9 @@ from soma.html import htmlEscape
 from soma.somatime import timeDifferenceToString
 
 from brainvisa.data.neuroData import *
-from brainvisa.data import neuroDiskItems
 from brainvisa.data.neuroDiskItems import *
-import neuroConfig
+from brainvisa.configuration import neuroConfig
+from brainvisa.data import neuroDiskItems
 from brainvisa.processing import neuroLog
 from brainvisa.processing.neuroException import *
 from brainvisa import matlab
@@ -194,7 +194,7 @@ from brainvisa.validation import ValidationError
 from brainvisa.debug import debugHere
 from brainvisa.data.sqlFSODatabase import Database, NotInDatabaseError
 import brainvisa.toolboxes
-import fileSystemOntology
+from brainvisa.data import fileSystemOntology
 from brainvisa.processing.qtgui.backwardCompatibleQt import QProcess
 from brainvisa.processing.qtgui.command import CommandWithQProcess as Command
 
@@ -4310,7 +4310,7 @@ def reloadToolboxes():
   Reloads toolboxes, processes, types, ontology rules, databases. 
   Useful to take into account new files without having to quit and start again Brainvisa.
   """
-  import neuroHierarchy
+  from brainvisa.data import neuroHierarchy
   global _mainProcessTree
   
   # init typesPath and fileSystemOntologiesPath
@@ -4359,6 +4359,6 @@ def runIPConsoleKernel():
 
 #----------------------------------------------------------------------------
 
-import neuroHierarchy
-from neuroHierarchy import *
+from brainvisa.data import neuroHierarchy
+from brainvisa.data.neuroHierarchy import *
 from brainvisa.history import HistoryBook, minfHistory

@@ -35,7 +35,7 @@ from brainvisa.data.qtgui.neuroDataGUI import *
 from brainvisa.processing.qtgui.backwardCompatibleQt import *
 import qwt
 from brainvisa.multiplot import MultiPlot
-import neuroConfig
+from brainvisa.configuration import neuroConfig
 from brainvisa.processing.neuroException import HTMLMessage
 
 def floatString( floatValue ):

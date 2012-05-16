@@ -68,7 +68,7 @@ argv = sys.argv
 sys.argv = [ os.path.join(brainvisa_path, 'neuro.py'), '-b' ]
 sys.path.insert( 0, brainvisa_path )
 import PyQt4
-import neuroConfig
+from brainvisa.configuration import neuroConfig
 from brainvisa.processing import neuroLog
 from processes import initializeProcesses, cleanup
 

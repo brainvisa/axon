@@ -35,9 +35,8 @@ import os
 
 from soma.wip.application.api import findIconFile
 from soma.qtgui.api import defaultIconSize
-import neuroHierarchy
-from brainvisa.data import neuroDiskItems
-import neuroConfig
+from brainvisa.data import neuroHierarchy, neuroDiskItems
+from brainvisa.configuration import neuroConfig
 from brainvisa.data.qt4gui.diskItemBrowser import DiskItemBrowser
 from brainvisa.data.actions import FileProcess, Remove, Move
 import neuroProcesses

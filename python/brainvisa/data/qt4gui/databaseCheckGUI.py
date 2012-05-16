@@ -39,13 +39,13 @@
 # possibilite de visualiser la donnee
 # filtres pour modifier la vue
 
-import neuroConfig 
+from brainvisa.configuration import neuroConfig
 #### WITH NEW DATABASE SYSTEM ####
 from brainvisa.data.qt4gui.diskItemBrowser import DiskItemBrowser
 import brainvisa.processing.qtgui.backwardCompatibleQt as qt
 from PyQt4 import uic
 import os
-import neuroDiskItems, neuroHierarchy
+from brainvisa.data import neuroDiskItems, neuroHierarchy
 from brainvisa.data.actions import Move, Remove, FileProcess, ImportData
 
 ICON_SIZE=16

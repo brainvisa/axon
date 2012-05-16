@@ -32,9 +32,9 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from neuroProcesses import *
-from neuroHierarchy import databases
-import shfjGlobals
-import registration
+from brainvisa.data.neuroHierarchy import databases
+import brainvisa.tools.aimsGlobals as shfjGlobals
+from brainvisa import registration
 
 """
 This process search for a specific importer according to the type of output and execute it. 

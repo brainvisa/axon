@@ -34,7 +34,7 @@
 #import neuroConfig 
 import sys, os
 from brainvisa.processing.qtgui.backwardCompatibleQt import QProcess, QTimer, SIGNAL
-import neuroConfig
+from brainvisa.configuration import neuroConfig
 from brainvisa.processing.qtgui import backwardCompatibleQt
 if hasattr( backwardCompatibleQt, 'PYQT_VERSION' ):
   from brainvisa.processing.qtgui.backwardCompatibleQt import PYQT_VERSION

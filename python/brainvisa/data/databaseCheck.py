@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -32,8 +33,8 @@
 
 import os, stat, re, shutil, time
 import operator
-import neuroHierarchy
-import registration
+from brainvisa.data import neuroHierarchy
+from brainvisa import registration
 from soma.sorted_dictionary import SortedDictionary
 from brainvisa.data.actions import FileProcess, Move, Remove, CallProcess, SetTransformationInfo
 from soma.minf.api import readMinf, writeMinf

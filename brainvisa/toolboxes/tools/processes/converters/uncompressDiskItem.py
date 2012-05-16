@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -31,8 +32,8 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from neuroProcesses import *
-import shfjGlobals
-import neuroDiskItems
+import brainvisa.tools.aimsGlobals as shfjGlobals
+from brainvisa.data import neuroDiskItems
 import gzip
 
 name = 'uncompress any disk item'

@@ -66,18 +66,18 @@ if USE_QT4:
 
 from soma.wip.application.api import Application
 from soma.signature.api import Choice as SomaChoice
-import neuroConfig
+from brainvisa.configuration import neuroConfig
 from brainvisa.toolboxes import readToolboxes, allToolboxes
 from brainvisa.data import temporary
-from brainvisa.processing.qtgui.neuroConfigGUI import *
+from brainvisa.configuration.qtgui.neuroConfigGUI import *
 from brainvisa.processing import neuroLog
 from brainvisa.processing.neuroException import *
 from brainvisa.data.neuroData import *
 from neuroProcesses import *
-from neuroHierarchy import *
+from brainvisa.data.neuroHierarchy import *
 from brainvisa.data.qtgui.neuroDataGUI import *
 from brainvisa.processing.qtgui.neuroProcessesGUI import *
-import neuroHierarchy
+from brainvisa.data import neuroHierarchy
 from brainvisa.processing.qtgui.backwardCompatibleQt import *
 from brainvisa.data.minfExtensions import initializeMinfExtensions
 from brainvisa.data.qtgui.updateDatabases import warnUserAboutDatabasesToUpdate

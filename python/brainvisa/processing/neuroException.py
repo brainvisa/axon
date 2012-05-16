@@ -44,8 +44,8 @@ The functions are used to display error and warning messages in Brainvisa.
 
 """
 import sys, os, traceback, htmllib
-from neuroConfig import *
-import neuroConfig
+from brainvisa.configuration.neuroConfig import *
+from brainvisa.configuration import neuroConfig
 from soma.html import htmlEscape
 from brainvisa.processing.qtgui.neuroExceptionGUI import ShowException
 

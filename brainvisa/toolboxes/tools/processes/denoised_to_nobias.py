@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -31,7 +32,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
  # -*- coding: utf-8 -*-
 from neuroProcesses import *
-from neuroHierarchy import databases
+from brainvisa.data.neuroHierarchy import databases
 import os
 
 name = 'Rename denoised_* to nobias_*'

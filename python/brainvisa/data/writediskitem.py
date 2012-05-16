@@ -40,7 +40,6 @@ from brainvisa.data.neuroData import Parameter
 from brainvisa.data.readdiskitem import ReadDiskItem
 from brainvisa.data.neuroDiskItems import getFormats, getDiskItemType, DiskItem, isSameDiskItemType
 from brainvisa.data.readdiskitem import ReadDiskItem
-from brainvisa.data.qtgui.readdiskitemGUI import DiskItemEditor
 
 
 #----------------------------------------------------------------------------

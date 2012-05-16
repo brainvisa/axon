@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -31,4 +31,9 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+import warnings
+import traceback
+warnings.warn( 'use of obsolete neuroProcessesGUI. Please use brainvisa.processing.qtgui.neuroProcessesGUI instead now.', DeprecationWarning )
+print 'called from:'
+traceback.print_stack()
 from brainvisa.processing.qtgui.neuroProcessesGUI import *

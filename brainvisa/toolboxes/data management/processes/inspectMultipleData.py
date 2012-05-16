@@ -32,7 +32,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from neuroProcesses import *
-from neuroHierarchy import databases
+from brainvisa.data.neuroHierarchy import databases
 
 name = 'Inspect Multiple Data'
 userLevel = 0

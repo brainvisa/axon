@@ -43,8 +43,8 @@ from PyQt4.QtGui import QKeySequence
 from PyQt4 import QtCore
 from PyQt4 import QtGui
 from PyQt4 import QtWebKit
-import neuroConfig
-from brainvisa.processing.qt4gui import neuroConfigGUI
+from brainvisa.configuration import neuroConfig
+from brainvisa.configuration.qt4gui import neuroConfigGUI
 from brainvisa.processing.qt4gui import neuroLogGUI
 from brainvisa.data import neuroData
 from brainvisa.wip import newProcess
@@ -74,7 +74,7 @@ from soma.signature.api import Choice as SomaChoice
 from soma.signature.api import Boolean as SomaBoolean
 from soma.qt4gui.api import ApplicationQt4GUI
 from brainvisa.data.databaseCheck import BVChecker_3_1
-import neuroHierarchy
+from brainvisa.data import neuroHierarchy
 import urllib
 try: 
   from soma.workflow.gui.workflowGui import SomaWorkflowWidget as ComputingResourceWidget
@@ -3864,9 +3864,9 @@ def initializeProcessesGUI():
       _computing_resource_pool.add_default_connection()
       _workflow_application_model = WorkflowApplicationModel(_computing_resource_pool)
 
-    exec 'from neuroProcessesGUI import *' in neuroProcesses.__dict__
+    exec 'from brainvisa.processing.qt4gui.neuroProcessesGUI import *' in neuroProcesses.__dict__
     neuroProcesses._defaultContext = ExecutionContextGUI()
   else:
-    exec 'from neuroProcessesGUI import mainThreadActions' in neuroProcesses.__dict__
+    exec 'from brainvisa.processing.qt4gui.neuroProcessesGUI import mainThreadActions' in neuroProcesses.__dict__
 
 

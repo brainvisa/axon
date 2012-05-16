@@ -39,7 +39,8 @@ python -m brainvisa.axon.runprocess <process name> <process arguments>
 """
 
 from brainvisa import axon
-import neuroConfig, neuroProcesses
+from brainvisa.configuration import neuroConfig
+import neuroProcesses
 import sys, re, types
 from optparse import OptionParser
 

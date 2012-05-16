@@ -107,7 +107,7 @@ from soma.path import split_path
 from soma.minf.api import readMinf, MinfError
 from soma.wip.application.api import Application
 
-import neuroConfig
+from brainvisa.configuration import neuroConfig
 from brainvisa.processing.neuroException import *
 from brainvisa.data import temporary
 from brainvisa.data.patterns import DictPattern
@@ -2390,7 +2390,7 @@ def aimsFileInfo( fileName ):
   Reads the header of the file *fileName* and returns its attributes as a dictionary.
   """
   from neuroProcesses import defaultContext
-  from neuroProcessesGUI import mainThreadActions
+  from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
   global _finder
   result = {}
   if fileName.endswith( '.ima.gz' ) or fileName.endswith( '.dim.gz' ) or fileName.endswith( '.ima.Z' ) or fileName.endswith( '.dim.Z' ):

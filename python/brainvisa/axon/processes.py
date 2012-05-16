@@ -38,8 +38,9 @@
 
 import brainvisa.axon
 import sys, atexit, os
-import neuroConfig, neuroProcesses, neuroHierarchy
-from brainvisa.data import neuroData, temporary
+from brainvisa.configuration import neuroConfig
+import neuroProcesses
+from brainvisa.data import neuroHierarchy, neuroData, temporary
 from brainvisa.data.minfExtensions import initializeMinfExtensions
 import brainvisa.toolboxes
 from brainvisa.processing import neuroException, neuroLog

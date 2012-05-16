@@ -73,7 +73,7 @@ from UserDict import UserDict
 from UserList import UserList
 from brainvisa import notifier
 from brainvisa.processing.neuroException import HTMLMessage
-import neuroConfig
+from brainvisa.configuration import neuroConfig
 
 
 #----------------------------------------------------------------------------

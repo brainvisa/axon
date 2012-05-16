@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -31,9 +32,9 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from neuroProcesses import *
-from neuroProcessesGUI import mainThreadActions
-import neuroHierarchy
-import neuroConfig
+from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
+from brainvisa.data import neuroHierarchy
+from brainvisa.configuration import neuroConfig
 from brainvisa.processing import neuroException
 from brainvisa.data.databaseCheck import BVConverter_3_1
 from brainvisa.data.qtgui.databaseCheckGUI import ActionsWidget

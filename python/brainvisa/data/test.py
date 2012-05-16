@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -121,7 +122,7 @@ ReadDiskItem.database = bases
 
 
 from neuroProcesses import Parameterized, Signature, String
-from neuroProcessesGUI import ParameterizedWidget
+from brainvisa.processing.qtgui.neuroProcessesGUI import ParameterizedWidget
 
 p = Parameterized( 
   Signature(

@@ -32,10 +32,10 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from neuroProcesses import *
-import neuroHierarchy, neuroDiskItems
+from brainvisa.data import neuroHierarchy, neuroDiskItems
 from brainvisa.data.databaseCheck import BVChecker_3_1
 from brainvisa.data.qtgui.databaseCheckGUI import CheckFilesWidget
-import shfjGlobals
+import brainvisa.tools.aimsGlobals as shfjGlobals
 import sys
 
 

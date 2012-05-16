@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -35,7 +36,7 @@ from soma.minf.api import readMinf, minfFormat
 from soma.sorted_dictionary import SortedDictionary
 from soma.wip.application.api import findIconFile
 from brainvisa.processing.neuroException import showException
-import neuroConfig
+from brainvisa.configuration import neuroConfig
 
 class Toolbox( object ):
   """

@@ -31,11 +31,11 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from neuroProcesses import *
-import neuroConfig
+from brainvisa.configuration import neuroConfig
 from brainvisa.data.sqlFSODatabase import SQLDatabase
 from soma.path import relative_path
 from brainvisa.toolboxes import getToolbox
-from fileSystemOntology import FileSystemOntology
+from brainvisa.data.fileSystemOntology import FileSystemOntology
 import subprocess
 
 signature = Signature(

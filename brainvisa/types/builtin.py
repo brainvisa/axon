@@ -31,7 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-import neuroConfig
+from brainvisa.configuration import neuroConfig
 
 # Build-in formats
 Format( 'Matlab script', "f|*.m" )
@@ -156,7 +156,7 @@ Format( 'HTML', 'f|*.html' )
 # Make 'Series of SPM image' format exists
 changeToFormatSeries( getFormat( 'SPM image' ) )
 
-import shfjGlobals
+import brainvisa.tools.aimsGlobals as shfjGlobals
 shfjGlobals.initializeFormatLists()
 
 #-------------- General types ---------------------

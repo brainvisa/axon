@@ -54,10 +54,12 @@ from soma.somatime import timeDifferenceToString
 from soma.uuid import Uuid
 from soma.databases.api import sqlite3, ThreadSafeSQLiteConnection
 
-from fileSystemOntology import FileSystemOntology, SetContent
-import neuroProcesses, neuroConfig, neuroDiskItems
+from brainvisa.data.fileSystemOntology import FileSystemOntology, SetContent
+import neuroProcesses
+from brainvisa.configuration import neuroConfig
+from brainvisa.data import neuroDiskItems
 from brainvisa.processing.neuroException import showWarning, HTMLMessage
-from neuroDiskItems import getFormat, getFormats, Format, FormatSeries, File, Directory, getAllFormats, MinfFormat, getDiskItemType
+from brainvisa.data.neuroDiskItems import getFormat, getFormats, Format, FormatSeries, File, Directory, getAllFormats, MinfFormat, getDiskItemType
 from brainvisa.data.patterns import DictPattern
 from brainvisa.data.sql import mangleSQL, unmangleSQL
 from brainvisa.data.fileformats import FileFormats

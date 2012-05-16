@@ -32,7 +32,8 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from neuroProcesses import *
-import shfjGlobals, neuroConfig
+from brainvisa.configuration import neuroConfig
+from brainvisa.tools import aimsGlobals
 try:
   #errorToDisableScipyVersion() # fail until it is a bit tested and debugged.
   from scipy.io import loadmat
@@ -40,7 +41,7 @@ try:
   from soma import aims
 except:
   loadmat = None
-  import matlabValidation
+  from brainvisa.tools import matlabValidation
 
 name = 'SPM to AIMS transformation converter'
 roles = ( 'converter', )
@@ -59,9 +60,9 @@ signature = Signature(
                         enableConversion = 0 ),
   'write', WriteDiskItem( 'Transformation matrix', 'Transformation matrix' ),
   'source_volume', ReadDiskItem( '4D Volume',
-                                 shfjGlobals.aimsVolumeFormats ),
+                                 aimsGlobals.aimsVolumeFormats ),
   'registered_volume', ReadDiskItem( '4D Volume',
-                                    shfjGlobals.aimsVolumeFormats ), 
+                                    aimsGlobals.aimsVolumeFormats ),
   'central_to_registered', ReadDiskItem( 'Transformation matrix', 
                                          'Matlab file' ), 
   'removeSource', Boolean(),
@@ -121,10 +122,10 @@ def matlabExecution( self, context ):
     bmat = None
     context.write( 'No destination volume - going only to central ref' )
 
-  aattrs = shfjGlobals.aimsVolumeAttributes( aim )
+  aattrs = aimsGlobals.aimsVolumeAttributes( aim )
   #context.write( 'aatrs: ', aattrs )
   if bim:
-    battrs = shfjGlobals.aimsVolumeAttributes( bim )
+    battrs = aimsGlobals.aimsVolumeAttributes( bim )
     #context.write( 'battrs: ', battrs )
 
 
@@ -276,10 +277,10 @@ def execution( self, context ):
     bmat = None
     context.write( 'No destination volume - going only to central ref' )
 
-  aattrs = shfjGlobals.aimsVolumeAttributes( aim )
+  aattrs = aimsGlobals.aimsVolumeAttributes( aim )
   #context.write( 'aatrs: ', aattrs )
   if bim:
-    battrs = shfjGlobals.aimsVolumeAttributes( bim )
+    battrs = aimsGlobals.aimsVolumeAttributes( bim )
     #context.write( 'battrs: ', battrs )
 
   dim1 = aattrs[ 'volume_dimension' ][:3]
