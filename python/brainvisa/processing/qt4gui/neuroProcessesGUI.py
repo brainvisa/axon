@@ -1436,7 +1436,7 @@ class ParameterizedWidget( QWidget ):
         v = getattr( self.parameterized, k, None )
         if v is not None: 
           self.setValue( k, v, 1 )
-        e.connect( e, SIGNAL('noDefault(QString)'), self.removeDefault )
+        e.connect( e, SIGNAL('noDefault'), self.removeDefault )
         e.connect( e, SIGNAL('newValidValue'), self.updateParameterValue )
 #lock#        btn = NamedPushButton( hb, k )
 #lock#        btn.setPixmap( self.pixCustom )

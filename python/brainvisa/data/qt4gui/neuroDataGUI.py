@@ -98,7 +98,7 @@ class StringEditor( QLineEdit, DataEditor ):
     if value != self.value:
       self.value = value
       if not default:
-        self.emit( SIGNAL('noDefault(QString)'), unicode(self.objectName()) )
+        self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
       self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
   
   def setFocusNext( self ):
@@ -108,7 +108,7 @@ class StringEditor( QLineEdit, DataEditor ):
     value = self._valueFromText( unicode( self.text() ) )
     if value != self.getValue():
       self.value = value
-      self.emit( SIGNAL('noDefault(QString)'), unicode(self.objectName()) )
+      self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
       self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
 
   
@@ -208,7 +208,7 @@ class ChoiceEditor( QComboBox, DataEditor ):
   
   def newValue( self ):
     self.value = self.parameter.values[ self.currentIndex() ][ 1 ]
-    self.emit( SIGNAL('noDefault(QString)'), unicode(self.objectName()) )
+    self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
     self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
 
   def changeChoices( self ):
@@ -280,7 +280,7 @@ class OpenChoiceEditor( QComboBox, DataEditor ):
     value=unicode( self.currentText() )
     if value != self.getValue():
       self.value=value
-      self.emit( SIGNAL('noDefault(QString)'), unicode(self.objectName()) )
+      self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
       self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
 
 
@@ -394,7 +394,7 @@ class StringListEditor( QLineEdit, DataEditor ):
     if value != self.value:
       self._setValue( value )
       if not default:
-        self.emit( SIGNAL('noDefault(QString)'), unicode(self.objectName()) )
+        self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
       self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
     
   def _setValue( self, value ):
@@ -434,7 +434,7 @@ class StringListEditor( QLineEdit, DataEditor ):
     currentValue = self._valueFromText( unicode( self.text() ) )
     if currentValue != self.getValue() and ( self.getValue() or currentValue ):
       self.value = currentValue
-      self.emit( SIGNAL('noDefault(QString)'), unicode(self.objectName()) )
+      self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
       self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
         
 
@@ -635,7 +635,7 @@ class ChoiceListEditor( QWidget, DataEditor ):
     if value != self.value:
       self.value = value
       if not default:
-        self.emit( SIGNAL('noDefault(QString)'), unicode(self.objectName()) )
+        self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
       self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
 
 
@@ -648,7 +648,7 @@ class ChoiceListEditor( QWidget, DataEditor ):
       currentValue = None
     if currentValue != self.getValue():
       self.value = currentValue
-      self.emit( SIGNAL('noDefault(QString)'), unicode(self.objectName()) )
+      self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
       self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
 
   def _selectValues( self ):
@@ -684,7 +684,7 @@ class PointEditor( QWidget, DataEditor ):
     layout.addWidget(self.nle)
     
     self.connect( self.nle, SIGNAL( 'newValidValue' ), SIGNAL( 'newValidValue' ) )
-    self.connect( self.nle, SIGNAL( 'noDefault(QString)' ), SIGNAL( 'noDefault(QString)' ) )
+    self.connect( self.nle, SIGNAL( 'noDefault' ), SIGNAL( 'noDefault' ) )
     
     self.btnSelect = QPushButton( )
     layout.addWidget(self.btnSelect)
@@ -803,7 +803,7 @@ class PointListEditor( QWidget, DataEditor ):
     except:
       pass
     else:
-      self.emit( SIGNAL('noDefault(QString)'), unicode(self.objectName()) )
+      self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
       self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), v )
         
 
@@ -1008,7 +1008,7 @@ class ListOfListEditor( QPushButton, DataEditor ):
   
   def acceptEditedValues( self ):
     self.emit( SIGNAL( 'newValidValue' ), unicode(self.objectName()), self.acceptEditedValues.values )
-    self.emit( SIGNAL('noDefault(QString)'), unicode(self.objectName()) )
+    self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
 
 
 ##----------------------------------------------------------------------------
