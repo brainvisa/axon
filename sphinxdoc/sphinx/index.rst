@@ -24,10 +24,10 @@ Modules organization
   brainvisa
   python
 
-A part of the API is in the form of classical python modules under the main brainvisa module while another part of the API (the older one) is in a brainvisa directory that is not in the python path and thus not accessible without running BrainVISA. 
+Most of the API is in the form of classical python modules under the main brainvisa module but a few python files are in a brainvisa directory that is not in the python path and thus not accessible without running BrainVISA.
 
-- :doc:`brainvisa`: main module executed at Brainvisa startup, modules about the processes and data ontology.
-- :doc:`python`: toolboxes, preferences, databases.
+- :doc:`brainvisa`: main module executed at Brainvisa startup and a few empty modules that redirect to a new location kept only for backward compatibility.
+- :doc:`python`: Modules of the axon python API: processes, data ontology, toolboxes, preferences, databases.
 
 Examples
 --------
