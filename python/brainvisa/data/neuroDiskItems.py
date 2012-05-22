@@ -1419,6 +1419,11 @@ class Format:
   
     :py:class:`BackwardCompatiblePatterns` describing the files patterns associated to this format. Example: ``f|*.ima, f|*.dim``.
   
+      
+  .. py:attribute:: toolbox
+  
+  Name of the toolbox that defined the format, default is 'axon' (no toolbox).
+  
   :Methods:
   
   """
@@ -1441,6 +1446,7 @@ class Format:
     
     self.name = formatName
     self.id = getId( self.name )
+    self.toolbox = 'axon'
     # Check patterns
     if isinstance( patterns, BackwardCompatiblePatterns ):
       self.patterns = patterns
@@ -1608,6 +1614,7 @@ class FormatSeries( Format ):
     self.fileName=tb[0][0]
     self.name = formatName
     self.id = getId( self.name )
+    self.toolbox = 'axon'
     self.baseFormat = baseFormat
     registerFormat( self )
     self._formatAttributes = attributes
@@ -1767,6 +1774,7 @@ class NamedFormatList( UserList ):
       self.fileName=tb[0][0]
       self.name = name
       self.data = list(data)
+      self.toolbox = 'axon'
 
   
   def __str__( self ):
@@ -1886,6 +1894,10 @@ class DiskItemType:
   .. py:attribute:: parent
   
     As types are defined hierarchically, a type can have a parent type.
+    
+  .. py:attribute:: toolbox
+  
+  Name of the toolbox that defined the type, default is 'axon' (no toolbox).
   
   :Methods:
 
@@ -1904,6 +1916,7 @@ class DiskItemType:
     self.fileName=tb[0][0]
     self.name = typeName
     self.id = getId( typeName )
+    self.toolbox = 'axon'
     if parent is None: self.parent = None
     else: self.parent = getDiskItemType( parent )
     other = diskItemTypes.get( self.id )
