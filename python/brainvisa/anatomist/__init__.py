@@ -85,7 +85,7 @@ if anatomistImport:
     # on this id for another object, so when this other object is released in python layer, it can lead to the destruction of the new object.
     # But with this change, the user won't be able to really close windows or delete objects in Anatomist of Brainvisa manually.
     #defaultRefType="WeakShared"
-    
+
     def __new__(cls, *args, **kwargs ):
       instance=super(Anatomist, cls).__new__(cls, *args, **kwargs)
       if instance and '-b' not in args \
@@ -127,6 +127,8 @@ if anatomistImport:
       mainThread=QtThreadCall()
       args = anatomistParameters
       super( Anatomist, self ).__singleton_init__( *args, **kwargs )
+      self._reusableWindows = set()
+
       if neuroConfig.anatomistImplementation != 'socket':
         a = anatomistModule.Anatomist( *args, **kwargs )
         if a.getControlWindow() is not None:
@@ -134,9 +136,10 @@ if anatomistImport:
           mainThread.push( qt.QObject.connect, a.getControlWindow(), qt.SIGNAL("destroyed(QObject *)"), self.anatomist_closed )
 
     def anatomist_closed(self):
+      self._reusableWindows = set()
       if neuroProcessesGUI:
         neuroProcessesGUI.close_viewers()
-      
+
     ###############################################################################
     # Methods redefined to use Brainvisa log system.
     def log(self, message ):
@@ -243,6 +246,18 @@ if anatomistImport:
       else:
         newObject=anatomistModule.Anatomist.loadObject(self,fileref, objectName, restrict_object_types, forceReload, duplicate, hidden)
       return newObject
+
+    def createWindow(self, wintype, geometry=None, block=None,
+      no_decoration=None, options=None, allowreuse=True):
+      if allowreuse:
+        win = self.findReusableWindow( wintype )
+      else:
+        win = None
+      if win is None:
+        win = anatomistModule.Anatomist.createWindow( self, wintype,
+          geometry=geometry, block=block, no_decoration=no_decoration,
+          options=options )
+      return win
 
     def createReferential(self, fileref=None):
       """
@@ -413,6 +428,29 @@ if anatomistImport:
         return self.mniTemplateRef
       else:
         anatomistModule.Anatomist.__getattr__(self, name)
+
+    def findReusableWindow( self, wintype = '3D' ):
+      self._reusableWindows = set( [ w for w in self._reusableWindows \
+        if w ] )
+      todel = set()
+      try:
+        for w in self._reusableWindows:
+          try:
+            if w.getInfos()[ 'windowType' ] == wintype \
+              and len( w.objects ) == 0:
+              return w
+          except: # window probably closed in the meantime
+            todel.add( w )
+      finally:
+        if len( todel ) != 0:
+          self._reusableWindows = set( [ w for w in self._reusableWindows \
+            if w not in todel ] )
+      return None
+
+    def setReusableWindow( self, win ):
+      self._reusableWindows = set( [ w for w in self._reusableWindows \
+        if w ] )
+      self._reusableWindows.add( win.getRef( 'WeakShared' ) )
 
     # util methods for brainvisa processes
     def viewObject(self, fileRef, wintype = "Axial", palette = None ): # AnatomistImageView
@@ -639,6 +677,7 @@ if anatomistImport:
       Creates a new Anatomist window of the given type.
       """
       return Anatomist().createWindow( type )
+
 
 else: # if anatomist module is not available: empty classes
   class Anatomist:
