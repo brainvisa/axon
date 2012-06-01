@@ -450,7 +450,10 @@ if anatomistImport:
     def setReusableWindow( self, win ):
       self._reusableWindows = set( [ w for w in self._reusableWindows \
         if w ] )
-      self._reusableWindows.add( win.getRef( 'WeakShared' ) )
+      if type( win ) not in ( types.ListType, types.TupleType ):
+        win = [ win ]
+      for w in win:
+        self._reusableWindows.add( w.getRef( 'WeakShared' ) )
 
     # util methods for brainvisa processes
     def viewObject(self, fileRef, wintype = "Axial", palette = None ): # AnatomistImageView
@@ -605,16 +608,19 @@ if anatomistImport:
     The list of choices is not updated automatically, to refresh the choices it is necessary to open a new instance of the process.
     '''
 
-    def __init__( self, noSelectionLabel=None ):
+    def __init__( self, noSelectionLabel=None, aslist=False ):
       neuroData.Choice.__init__( self )
-      self._init2( noSelectionLabel )
+      self._init2( noSelectionLabel, aslist=aslist )
 
-    def _init2( self, noSelectionLabel=None ):
+    def _init2( self, noSelectionLabel=None, aslist=False ):
       if noSelectionLabel is None:
         noSelectionLabel = '<'+_t_('None')+'>'
-      self._initargs = ( noSelectionLabel, )
+      self._initargs = ( noSelectionLabel, aslist )
       self.noSelectionLabel = noSelectionLabel
+      self.aslist = aslist
       # initial choice : creating new windows
+      self.selWindow = ( '<'+_t_('Selected windows in Anatomist')+'>',
+        self.getSelectedWindows )
       self.newWindow = ( '<'+_t_('New window (3D)')+'>', self._newWindow )
       self.newWindowA = ( '<'+_t_('New window (Axial)')+'>',
                           lambda self=self: self._newWindow( 'Axial' ) )
@@ -643,7 +649,23 @@ if anatomistImport:
     def __setstate__(self, state):
       neuroData.Choice.__setstate__( self, state )
       self._init2()
-      
+
+    def getSelectedWindows( self ):
+      a = Anatomist( create=False )
+      if a is not None:
+        windows = a.getWindows()
+        sels = [ w for w in windows if w.getInfos()[ 'selected' ] ]
+        if self.aslist:
+          return sels
+        if len( sels ) == 1:
+          return sels[0]
+        else:
+          return None
+      if self.aslist:
+        return []
+      else:
+        return None
+
     def refreshChoices( self, *args ):
       """
       Updates choice list. Adds to default choices curently opened anatomist windows.
@@ -653,7 +675,7 @@ if anatomistImport:
       if a is not None:
         try:
           windows = a.getWindows()
-          choices = [ (self.noSelectionLabel,None), self.newWindow,
+          choices = [ self.selWindow, self.newWindow,
                       self.newWindowA, self.newWindowS, self.newWindowC,
                       self.newWindowB ] + \
             map( lambda w, self=self: \
@@ -668,7 +690,8 @@ if anatomistImport:
         self.clearChoices()
 
     def clearChoices( self ):
-        self.setChoices( (self.noSelectionLabel,None), self.newWindow,
+        self.setChoices( self.selWindow,
+                        self.newWindow,
                         self.newWindowA, self.newWindowS, self.newWindowC,
                         self.newWindowB )
 
@@ -676,7 +699,10 @@ if anatomistImport:
       """
       Creates a new Anatomist window of the given type.
       """
-      return Anatomist().createWindow( type )
+      win = Anatomist().createWindow( type )
+      if self.aslist:
+        return [ win ]
+      return win
 
 
 else: # if anatomist module is not available: empty classes

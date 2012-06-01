@@ -41,10 +41,12 @@ def validation():
     anatomist.validation()
 
 signature = Signature(
-    'window', anatomist.AWindowChoice(),
+    'windows', anatomist.AWindowChoice( aslist=True ),
 )
 
 
 def execution( self, context ):
     a = anatomist.Anatomist()
-    a.setReusableWindow( self.window() )
+    windows = self.windows()
+    if windows:
+      a.setReusableWindow( windows )
