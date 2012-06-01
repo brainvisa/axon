@@ -49,6 +49,8 @@ try:
   anatomist.setDefaultImplementation( neuroConfig.anatomistImplementation )
   exec("import "+anatomist.getDefaultImplementationModuleName()+" as anatomistModule")
   anatomistImport=True
+  if neuroConfig.anatomistImplementation != 'socket':
+    import reusablewinhook
 except Exception, e:
   print e
   anatomistImport=False
@@ -134,6 +136,7 @@ if anatomistImport:
         if a.getControlWindow() is not None:
           a.getControlWindow().enableClose( False )
           mainThread.push( qt.QObject.connect, a.getControlWindow(), qt.SIGNAL("destroyed(QObject *)"), self.anatomist_closed )
+        mainThread.push( reusablewinhook.installWindowHandler )
 
     def anatomist_closed(self):
       self._reusableWindows = set()
@@ -447,13 +450,27 @@ if anatomistImport:
             if w not in todel ] )
       return None
 
-    def setReusableWindow( self, win ):
+    def setReusableWindow( self, win, state=True ):
       self._reusableWindows = set( [ w for w in self._reusableWindows \
         if w ] )
       if type( win ) not in ( types.ListType, types.TupleType ):
         win = [ win ]
-      for w in win:
-        self._reusableWindows.add( w.getRef( 'WeakShared' ) )
+      if state:
+        for w in win:
+          self._reusableWindows.add( w.getRef( 'WeakShared' ) )
+      else:
+        s = set( [ w.getInternalRep() for w in win ] )
+        s2 = set()
+        for w in self._reusableWindows:
+          if w.getInternalRep() in s:
+            s2.add( w )
+        for w in s2:
+          self._reusableWindows.remove( w )
+      if neuroConfig.anatomistImplementation != 'socket':
+        for w in win:
+          ac = w.findChild( reusablewinhook.ReusableWindowAction )
+          if ac and ac.isChecked() != state:
+            mainThread.push( ac.setChecked, state )
 
     # util methods for brainvisa processes
     def viewObject(self, fileRef, wintype = "Axial", palette = None ): # AnatomistImageView
@@ -589,14 +606,16 @@ if anatomistImport:
       # deleted while in Anatomist
       return {"mesh" : mesh, "texture" : tex, "fusion" : fusion, "window" : window, "meshFile" : meshFile, "textureFile" : textureFile}
 
-    #def close( self ):
-      #print 'CLOSE !!!'
-      #if neuroConfig.anatomistImplementation != 'threaded':
-        #print 'really really closing.'
-        #anatomistModule.Anatomist.close( self )
-      #else:
+    def close( self ):
+      # print 'CLOSE !!!'
+      if neuroConfig.anatomistImplementation != 'threaded':
+        anatomistModule.Anatomist.close( self )
+      else:
         #self.execute( 'DeleteAll' )
         #self.getControlWindow().close()
+        reusablewinhook.uninstallWindowHandler()
+        anatomistModule.Anatomist.close( self )
+      print 'anatomist closed.'
 
   # end of Anatomist class
 
