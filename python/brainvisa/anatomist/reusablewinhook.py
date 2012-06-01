@@ -57,7 +57,10 @@ if neuroConfig.anatomistImplementation != 'socket':
             toolbar = win.findChild( QtGui.QToolBar )
             if toolbar is None:
               toolbar = win.addToolBar( 'BV toolbar' )
-              toolbar.show()
+              if win.toolBarsVisible():
+                toolbar.show()
+              else:
+                toolbar.hide()
           if toolbar is not None:
             toolbar.addSeparator()
             icon = QtGui.QIcon( findIconFile( 'eye.png' ))
