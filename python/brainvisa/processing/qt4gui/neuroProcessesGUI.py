@@ -1160,8 +1160,8 @@ class NodeCheckListItem( QTreeWidgetItem ):
   def currentItemChanged(self, current):
     """ This function is called when the item gains or lose the status of current item of the tree widget. 
     In case the item is a radio button, its background and foreground colors are changed to follow the tree item widget policy. 
-    @param current: indicates if the item is the current item or not.
-    @type current: boolean
+    
+    :param current: indicates if the item is the current item or not. boolean.
     """
     if self.itemType == "radio" and not self.read_only:
       if current:
@@ -2997,7 +2997,7 @@ class ProcessEdit( QDialog ):
 class ProcessSelectionWidget( QMainWindow ):
   """
   This widget is the main window in brainvisa.
-  Provides navigation among processes and creation of user profiles (sub group of processes).
+  Provides navigation among processes.
   """
 
   # Soma-Workflow widget for workflow execution on various computing resources
@@ -3201,8 +3201,8 @@ class ProcessSelectionWidget( QMainWindow ):
   def itemSelected( self, item ):
     """
     Called when a tree item becomes selected. currentProcessId is updated and associated documentation is shown.
-    @type item: ProcessTree.Item
-    @param item: the newly selected item
+
+    :param item: the newly selected item :py:class:`ProcessTree.Item`
     """
     if item:
       if item.isLeaf():
@@ -3239,8 +3239,7 @@ class ProcessSelectionWidget( QMainWindow ):
     Called to open current process. 
     If the process is not given, selected process in current tree is opened.
     
-    @type item: ProcessTree.Item
-    @param item: the process to open
+    :param item: the process to open. :py:class:`ProcessTree.Item`
     """
     processId=None
     if item is not None: # open given item
@@ -3313,39 +3312,51 @@ class ProcessSelectionWidget( QMainWindow ):
 #----------------------------------------------------------------------------
 class ProcessTreesWidget(QSplitter):
   """
-  A widget that shows a list of ProcessTree.
+  A widget that shows a list of :py:class:`ProcessTree`.
   Each process tree presents a sub group of existing processes.
+  
   It's composed of two parts : 
-    - the list of process trees (use profiles)
-    - a view of currently selected tree
+  * the list of process trees (use profiles)
+  * a view of currently selected tree
   Each process tree can be opened in another window in order to enable drag and drop from one tree to another. 
 
-  @type treeIndex: TreeListWidget
-  @ivar treeIndex: Widget containing items representing each process tree
-  @type treeStack: QWidgetStack
-  @ivar treeStack: A stack of EditableTreeWidget, representing the content of each processTree
-  @type treeStackIdentifiers: dict
-  @ivar treeStackIdentifiers: associates a processTree to an unique integer identifier used with the widget stack.
-  Only the selected processTree widget of the stack is visible.
-  @type widgets: list
-  @ivar widgets: list of EditableTreeWidget currently in the stack.
-  Usefull because QWidgetStack doesn't provide iterator on its content.
-  @type openedTreeWidget: EditableTreeWidget
-  @ivar openedTreeWidget: Currently opened process tree. It is in a window independant from the main window.
-  @type model: ProcessTrees
-  @ivar model: list of ProcessTree which this widget represents
-  @type popupMenu: QPopupMenu
-  @ivar popupMenu: contextual menu associated to the list of process trees.
-  @type savesTimer: QTimer
-  @param savesTimer: a timer started when the model has changed. When the timer times out, the model is saved. Used to delay model saves : it speeds up execution when there is several modification at the same time (drag&drop several elements). 
+  .. py:attribute:: treeIndex
+  
+    Widget containing items representing each process tree. TreeListWidget.
+    
+  .. py:attribute:: treeStack
+  
+    A stack of EditableTreeWidget, representing the content of each processTree. QWidgetStack.
+    
+  .. py:attribute::  treeStackIdentifiers
+  
+    dict associating a processTree to an unique integer identifier used with the widget stack. Only the selected processTree widget of the stack is visible.
+    
+  .. py:attribute::  widgets
+  
+    list of EditableTreeWidget currently in the stack. Useful because QWidgetStack doesn't provide iterator on its content.
+  
+  .. py:attribute:: openedTreeWidget
+  
+    Currently opened process tree. It is in a window independant from the main window. EditableTreeWidget
+    
+  .. py:attribute:: model
+    
+    list of ProcessTree which this widget represents. ProcessTrees
+  
+  .. py:attribute:: popupMenu
+    
+    QPopupMenu contextual menu associated to the list of process trees.
+
+  .. py:attribute:: savesTimer
+  
+    QTimer started when the model has changed. When the timer times out, the model is saved. Used to delay model saves : it speeds up execution when there is several modification at the same time (drag&drop several elements). 
   """
 
   def __init__(self, processTrees=None, parent=None ):
     """
-    @type processTrees: ProcessTrees
-    @param processTrees: the list of process trees which this widget represents
-    @type parent: QWidget
-    @param parent: container of this widget
+    :param processTrees: ProcessTrees, the list of process trees which this widget represents
+    :param parent: QWidget, container of this widget
     """
     QSplitter.__init__(self, parent)
     self.treeIndex=TreeListWidget(None, self, iconSize=bigIconSize)
@@ -3386,8 +3397,8 @@ class ProcessTreesWidget(QSplitter):
     """
     The widget is initialized with the given list of process tree. 
     For each process tree, an item is added in treeIndex. A widget is created to represent each process tree and added to treeStack.
-    @type processTrees: ProcessTrees
-    @param processTrees: the list of process trees which this widget represents
+  
+    :param processTrees: the list of process trees which this widget represents
     """
     # clear widgets
     self.treeIndex.clear()
@@ -3428,8 +3439,8 @@ class ProcessTreesWidget(QSplitter):
   def addProcessTree(self, processTree):
     """
     Add elements in the widget to add a representation of this process tree. 
-    @type processTree: ProcessTree
-    @param processTree: new process tree for which the widget must be completed.
+
+    :param processTree: new process tree for which the widget must be completed.
     """
     treeWidget=EditableTreeWidget( processTree, self.treeStack )
     if processTree.modifiable:
@@ -3541,11 +3552,10 @@ class ProcessTreesWidget(QSplitter):
     """
     Find items that contain the string given in parameters in their name. Each found item is selected and yield (and replace previous selection).
     Wide search.
-    @type name: string
-    @param name: string searched in items names. 
     
-    @rtype:  generator
-    @return: a generator
+    :param name: string searched in items names. 
+    
+    :rtype:  generator
     """
     for widget in self.widgets: # for all process trees widgets
       it=QTreeWidgetItemIterator(widget)
@@ -3563,12 +3573,10 @@ class ProcessTreesWidget(QSplitter):
   def select(self, widget, item, lastSelection):
     """
     Select a process tree and an item in it. Undo last selection.
-    @type widget: EditableTreeWidget
-    @param widget:  the tree widget that contains the item to select. 
-    @type item: EditableTreeItem
-    @param item: the item (process) to select
-    @type lastSelection: tuple (EditableTreeWidget, EditableTreeItem)
-    @param lastSelection: previous selected item and its container, to be unselected.
+
+    :param widget:  EditableTreeWidget, the tree widget that contains the item to select. 
+    :param item: EditableTreeItem, the item (process) to select
+    :param lastSelection: tuple(EditableTreeWidget, EditableTreeItem), previous selected item and its container, to be unselected.
     """
     self.selectIndex(widget.model) # select in left panel (toolbox name)
     self.setCurrentTree(widget) # raise widget of toolbox content
@@ -3583,8 +3591,7 @@ class ProcessTreesWidget(QSplitter):
     """
     Select a process tree in the left panel (toolboxes).
     
-    @type model : ProcessTree
-    @param model: the process tree to select
+    :param model: the process tree to select
     """
     i=0
     found=False
@@ -3726,8 +3733,8 @@ class RemoteContextGUI( QTreeWidgetItem ):
         |
         --message
         
-    @param parent: the QListView.
-    @param name: name 
+    :param parent: the QListView.
+    :param name: name 
     """
 
     remoteView = QTreeWidget(parent)

@@ -51,7 +51,7 @@ Several classes inheriting from :py:class:`ScannerRuleBuilder` are used to assoc
 
 :Inheritance diagram:
 
-.. inheritance-diagram:: fileSystemOntology
+.. inheritance-diagram:: brainvisa.data.fileSystemOntology
 
 :Classes:
 
@@ -156,7 +156,7 @@ class ScannerRule( object ):
   
   .. py:attribute:: pattern
   
-    The filename pattern for this rule. It is an instance of :py:class:`neuroDiskItems.BackwardCompatiblePattern`.
+    The filename pattern for this rule. It is an instance of :py:class:`brainvisa.data.neuroDiskItems.BackwardCompatiblePattern`.
     
   .. py:attribute:: globalAttributes
   
@@ -172,12 +172,12 @@ class ScannerRule( object ):
   
   .. py:attribute:: type
   
-    Data type associated to this rule. Instance of :py:class:`neuroDiskItems.DiskItemType`. 
+    Data type associated to this rule. Instance of :py:class:`brainvisa.data.neuroDiskItems.DiskItemType`. 
     It can be added with a :py:class:`SetType` builder.
   
   .. py:attribute:: formats
   
-    List of file formats associated to this rule, each format is an instance of :py:class:`neuroDiskItems.Format`.
+    List of file formats associated to this rule, each format is an instance of :py:class:`brainvisa.data.neuroDiskItems.Format`.
     It can be added with a :py:class:`SetFormats` builder.
     
   .. py:attribute:: scanner
@@ -816,7 +816,7 @@ class FileSystemOntology( object ):
     
   .. py:attribute:: typeToPatterns
   
-    Map associating each data type (:py:class:`neuroDiskItems.FileType`) with a list of rules (:py:class:`ScannerRule`).
+    Map associating each data type (:py:class:`brainvisa.data.neuroDiskItems.FileType`) with a list of rules (:py:class:`ScannerRule`).
     
   .. py:attribute:: lastModification
     

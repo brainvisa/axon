@@ -34,14 +34,15 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 """
-This module loads BrainVISA and enables to import the Brainvisa modules which are not automatically in the python path (:doc:`brainvisa`).
+This module enables to start Brainvisa in batch mode through a python script.
 
 It is useful to write a Python script that uses Brainvisa. Usage:
   
   >>> import brainvisa.axon
   >>> brainvisa.axon.initializeProcesses()
+  Loading toolbox ...
   
-Then, Brainvisa, its processes and databases are loaded and it can be used as if it were started in batch mode.
+Then, Brainvisa, its processes and databases are loaded and it can be used as if it were started in batch mode (``brainvisa -b``).
 
 At the end of your script, call a cleanup function. It would be called automatically at exit, but it is better to call it from the main thread:
 

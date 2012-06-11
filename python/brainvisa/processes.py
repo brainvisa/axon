@@ -1078,6 +1078,7 @@ class Process( Parameterized ):
 
   def allProcesses( self ):
     """Returns the current process and all its children if it is a pipeline.
+    
     :rtype: generator
     """
     yield self

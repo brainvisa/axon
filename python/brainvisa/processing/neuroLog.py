@@ -33,12 +33,12 @@
 """
 This module contains the classes for **Brainvisa log system**.
 
-Brainvisa main log is an instance of :py:class:`LogFile`. It is stored in the global variable :py:data:`neuroConfig.mainLog`.
+Brainvisa main log is an instance of :py:class:`LogFile`. It is stored in the global variable :py:data:`brainvisa.configuration.neuroConfig.mainLog`.
 This main log is created in the function :py:func:`initializeLog`.
 
 :Inheritance diagram:
 
-.. inheritance-diagram:: neuroLog
+.. inheritance-diagram:: brainvisa.processing.neuroLog
   
 :Classes and functions:
   
@@ -146,7 +146,7 @@ class LogFile:
     def __init__( self, fileName, parentLog ):
       """
       :param string fileName: path to the file where the log information will be written.
-      :param parentLog: parent :py:class:`neuroLog.LogFile`. 
+      :param parentLog: parent :py:class:`brainvisa.processing.neuroLog.LogFile`. 
       """
       self.fileName = fileName
       #print "SubTextLog ", fileName, " of parent ", parentLog
@@ -475,7 +475,7 @@ def newLogFile( fileName, file=None ):
 #------------------------------------------------------------------------------
 class LogFileReader:
   """
-  This objects enables to read :py:class:`LogFile` :py:class:`Item` from a filename.
+  This objects enables to read :py:class:`LogFile` :py:class:`Logfile.Item` from a filename.
   """
   def __init__( self, source ):
     self._iterator = iterateMinf( source )
@@ -533,8 +533,8 @@ def expandedReader( source ):
 #------------------------------------------------------------------------------
 def initializeLog():
   """
-  Creates Brainvisa main log as an instance of :py:class:`LogFile` which is stored in the variable :py:data:`neuroConfig.mainLog`.
-  The associated file is :py:data:`neuroConfig.logFileName`.
+  Creates Brainvisa main log as an instance of :py:class:`LogFile` which is stored in the variable :py:data:`brainvisa.configuration.neuroConfig.mainLog`.
+  The associated file is :py:data:`brainvisa.configuration.neuroConfig.logFileName`.
   """
   neuroConfig.mainLog = None
   try:

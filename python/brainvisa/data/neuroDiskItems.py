@@ -90,7 +90,7 @@ All temporary files and directories are written in Brainvisa global temporary di
 
 :Inheritance diagram:
 
-.. inheritance-diagram:: neuroDiskItems
+.. inheritance-diagram:: brainvisa.data.neuroDiskItems
 
 :Classes:
 

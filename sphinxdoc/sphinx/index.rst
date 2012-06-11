@@ -1,5 +1,5 @@
-Axon python libraries API documentation
-=======================================
+Axon python API documentation
+=============================
 
 Axon python API is used by BrainVISA software. It includes modules to manage BrainVISA toolboxes, processes, databases, graphical user interface, etc.
 
@@ -15,26 +15,41 @@ This API can be used in several contexts:
   - in a script executed from brainvisa in **batch mode**: ``brainvisa -b -e myScript.py``
   - in a **Python script** where Brainvisa is loaded using the module :py:mod:`brainvisa.axon`
 
+To know the version of the API, use ``brainvisa.config.shortVersion`` (|version|) or ``brainvisa.config.fullVersion`` (|release|).
+
 Modules organization
 --------------------
 
-.. toctree:: 
+The modules of Axon python API are in the top-level package brainvisa.
+
+Main modules
+++++++++++++
+
+- :py:mod:`brainvisa.axon`: loading Brainvisa in a Python script.
+- :py:mod:`brainvisa.processes`: classes about processes and pipelines.
+- :ref:`brainvisa.data`: sub-package containing modules about Brainvisa databases and process parameters.
+- :py:mod:`brainvisa.registration`: referentials and transformations management.
+- :py:mod:`brainvisa.anatomist`: specialization of pyanatomist API for Brainvisa. Used by most of Brainvisa viewers.
+- :ref:`brainvisa.processing.qt4gui`
+- :py:mod:`brainvisa.toolboxes`: Toolbox class representing a BrainVISA toolbox.
+- :py:mod:`brainvisa.workflow`: Conversion of a Process into a Workflow usable in :somaworkflow:`Soma-workflow <index.html>`.
+- :py:mod:`brainvisa.history`: Framework to manage history of processes.
+
+Detailled list of modules in here: :doc:`python`.
+
+.. toctree::
   :hidden:
   
-  brainvisa
   python
+  
+Use cases & examples
+--------------------
 
-Most of the API is in the form of classical python modules under the main brainvisa module but a few python files are in a brainvisa directory that is not in the python path and thus not accessible without running BrainVISA.
+.. toctree::
 
-- :doc:`brainvisa`: main module executed at Brainvisa startup and a few empty modules that redirect to a new location kept only for backward compatibility.
-- :doc:`python`: Modules of the axon python API: processes, data ontology, toolboxes, preferences, databases.
+  usecases
 
-Examples
---------
-
-- Setting a database: `brainvisaSetDatabase.py <../examples/brainvisaSetDatabase.py>`_
-- A process with a dynamic signature: `DynamicSignature.py <../examples/processes/DynamicSignature.py>`_
-- **Processes** : Any process available in BrainVISA may be used as an example to help in developing new processes. The source code of each process is available directly from BrainVISA inline documentation: just click on the file name in the technical information part of the process documentation.
+**Processes** : Any process available in BrainVISA may be used as an example to help in developing new processes. The source code of each process is available directly from BrainVISA inline documentation: just click on the file name in the technical information part of the process documentation.
 
 Other documentation
 -------------------

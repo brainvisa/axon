@@ -69,8 +69,8 @@ def initializeProcesses():
     but here no GUI is created.
 
     The processes are available through functions in :py:mod:`brainvisa.processes`.
-    The databases are in :py:data:`neuroHierarchy.databases`.
-    The types are available through functions in :py:mod:`neuroDiskItems`.
+    The databases are in :py:data:`brainvisa.data.neuroHierarchy.databases`.
+    The types are available through functions in :py:mod:`brainvisa.data.neuroDiskItems`.
 
     '''
     atexit.register(cleanup)
