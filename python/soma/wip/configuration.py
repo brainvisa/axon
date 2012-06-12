@@ -65,7 +65,9 @@ class Configuration( HasSignature ):
   
   
   def load( self, minf ):
-    readMinf( minf, targets=( self, ) )
+    exceptions=[]
+    readMinf( minf, targets=( self, ), stop_on_error=False, exceptions=exceptions )
+    return exceptions
 
 
 #------------------------------------------------------------------------------

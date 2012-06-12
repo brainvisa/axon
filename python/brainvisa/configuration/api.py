@@ -58,6 +58,7 @@ from soma.translation import translate as _
 from brainvisa import shelltools
 
 
+
 #------------------------------------------------------------------------------
 def initializeConfiguration():
   configuration = Application().configuration
@@ -76,19 +77,24 @@ def initializeConfiguration():
 
 #------------------------------------------------------------------------------
 def readConfiguration( mainPath, userProfile, homeBrainVISADir ):
+  from brainvisa.processing.neuroException import showException
   configuration = Application().configuration
   saveUserOptions = False
   siteOptionFile = os.path.join( mainPath, 'options.minf' )
   siteStartupFile = os.path.join( mainPath, 'startup.py' )
   if os.path.exists( siteOptionFile ):
-    configuration.load( siteOptionFile )
+    exceptions=configuration.load( siteOptionFile )
+    for exc in exceptions:
+      showException(beforeError="Error while reading options from "+siteOptionFile+"<br>", afterError="<br>The option will be ignored.", exceptionInfo=exc)
   else:
     oldSiteOptionFile = siteOptionFile[ :-4 ] + 'py'
     if os.path.exists( oldSiteOptionFile ):
       convertConfiguration30To31( oldSiteOptionFile, siteOptionFile,
         siteStartupFile )
-  if os.path.exists( siteOptionFile ):
-    configuration.load( siteOptionFile )
+  if os.path.exists( siteStartupFile ):
+    exceptions=configuration.load( siteStartupFile )
+    for exc in exceptions:
+      showException(beforeError="Error while reading options from "+siteStartupFile+"<br>", afterError="<br>The option will be ignored.", exceptionInfo=exc)
 
   if userProfile is None:
     userOptionFile = os.path.join( homeBrainVISADir, 'options.minf' )
@@ -125,7 +131,10 @@ def readConfiguration( mainPath, userProfile, homeBrainVISADir ):
         shelltools.cp( commonUserStartupFile, userStartupFile )
   
   if os.path.exists( userOptionFile ):
-    configuration.load( userOptionFile )
+    exceptions=configuration.load( userOptionFile )
+    for exc in exceptions:
+      showException(beforeError="Error while reading options from "+userOptionFile+"<br>", afterError="<br>The option will be ignored.", exceptionInfo=exc)
+
   
   equiv31_30 = {
     'R.executable': 'Rexecutable',

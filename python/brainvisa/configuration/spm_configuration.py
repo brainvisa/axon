@@ -48,11 +48,11 @@ class SPMConfiguration( ConfigurationGroup ):
   label = 'SPM'
   icon = 'matlab.png'
   signature = Signature(
-    'spm8_path', FileName( directoryOnly=True ), dict( defaultValue='', doc='location of SPM 8 installation directory' ),
+    'spm8_path', FileName( directoryOnly=True, readOnly=True ), dict( defaultValue='', doc='location of SPM 8 installation directory' ),
     'spm8_standalone_command', FileName( readOnly=True ), dict( defaultValue='', doc='location of SPM 8 standalone (compiled) run script' ),
-    'spm8_standalone_mcr_path', FileName( directoryOnly=True ), dict( defaultValue='', doc='location of SPM 8 standalone MCR directory (generally &lt;spm8&gt;/standalone/mcr/v713' ),
-    'spm8_standalone_path', FileName( directoryOnly=True ), dict( defaultValue='', doc='location of SPM 8 standalone directory where the templates directory can be found.' ),
-    'spm5_path', FileName( directoryOnly=True ), dict( defaultValue='', doc='location of SPM 5 installation directory' ),
+    'spm8_standalone_mcr_path', FileName( directoryOnly=True, readOnly=True ), dict( defaultValue='', doc='location of SPM 8 standalone MCR directory (generally &lt;spm8&gt;/standalone/mcr/v713' ),
+    'spm8_standalone_path', FileName( directoryOnly=True, readOnly=True ), dict( defaultValue='', doc='location of SPM 8 standalone directory where the templates directory can be found.' ),
+    'spm5_path', FileName( directoryOnly=True, readOnly=True ), dict( defaultValue='', doc='location of SPM 5 installation directory' ),
   )
 
 
