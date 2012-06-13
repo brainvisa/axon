@@ -59,6 +59,8 @@ find_package( Sphinx )
 BRAINVISA_GENERATE_SPHINX_DOC( "sphinxdoc/sphinx"
   "share/doc/axon-${BRAINVISA_PACKAGE_VERSION_MAJOR}.${BRAINVISA_PACKAGE_VERSION_MINOR}/sphinx" )
 
+add_test(axon-tests ${PYTHON_EXECUTABLE} -m brainvisa.tests.test_axon)
+
 BRAINVISA_CREATE_CMAKE_CONFIG_FILES()
 
 
