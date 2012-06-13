@@ -1285,7 +1285,7 @@ def initializeDataGUI():
     lambda self, parent, name, context: ListOfVectorEditor( parent, name )
   Matrix.editor = \
     lambda self, parent, name, context: MatrixEditor( parent, name )
-  Boolean_new.editor = \
+  Boolean.editor = \
     lambda self, parent, name, context: BooleanEditor( parent, name )
-  Boolean_new.listEditor = \
+  Boolean.listEditor = \
     lambda self, parent, name, context: BooleanListEditor( self, parent, name )

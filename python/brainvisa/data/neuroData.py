@@ -416,15 +416,7 @@ class OpenChoice( Choice ):
 
 
 #----------------------------------------------------------------------------
-class Boolean_old( Choice ):
-  """
-  A choice between 2 values: True or False.
-  """
-  def __init__( self ):
-    Choice.__init__( self, ( 'True', True ), ( 'False', False ) )
-
-#----------------------------------------------------------------------------
-class Boolean_new( Parameter ):
+class Boolean( Parameter ):
   """
   A choice between 2 values: True or False.
   """
@@ -438,9 +430,6 @@ class Boolean_new( Parameter ):
     if value is None: return None
     return bool( value )
 
-# FIXME change this to switch to new implementation of Boolean
-# with checkbox GUI instead of combobox
-Boolean = Boolean_new
 
 #-------------------------------------------------------------------------------
 class Point( Parameter ):
