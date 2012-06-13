@@ -730,7 +730,7 @@ def addBrainVISAMenu( widget, menuBar ):
   bvMenu.addAction( _t_( "&Help" ), helpRequest,  Qt.CTRL + Qt.Key_H )
   bvMenu.addAction( _t_( "About" ), aboutRequest )
   bvMenu.addSeparator()
-  bvMenu.addAction( _t_( "&Preferences" ), neuroConfig.editConfiguration, Qt.CTRL + Qt.Key_P )
+  bvMenu.addAction( _t_( "&Preferences" ), neuroConfigGUI.editConfiguration, Qt.CTRL + Qt.Key_P )
   bvMenu.addAction( _t_( "Show &Log" ), logRequest, Qt.CTRL + Qt.Key_L )
   bvMenu.addAction( _t_( "&Open process..." ), ProcessView.open, Qt.CTRL + Qt.Key_O )
   bvMenu.addAction( _t_( "Reload toolboxes" ), reloadToolboxesGUI )

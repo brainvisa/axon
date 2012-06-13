@@ -43,22 +43,6 @@ It also provides en alias name for classes that have not the same name in qt3 an
 __docformat__ = "epytext en"
 import sys
 
-if sys.modules.has_key( 'PyQt4' ):
-  from soma.qt4gui.api import *
-  ApplicationQtGUI=ApplicationQt4GUI
-  QtGUI=Qt4GUI
-else:
-  try:
-    # test useability of Qt3
-    import qt
-    del qt
-    from soma.qt3gui.api import *
-    ApplicationQtGUI=ApplicationQt3GUI
-    QtGUI=Qt3GUI
-  except:
-    # Qt3 is not present: use Qt4
-    from soma.qt4gui.api import *
-    ApplicationQtGUI=ApplicationQt4GUI
-    QtGUI=Qt4GUI
-
-
+from soma.qt4gui.api import *
+ApplicationQtGUI=ApplicationQt4GUI
+QtGUI=Qt4GUI

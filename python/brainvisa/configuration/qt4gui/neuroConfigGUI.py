@@ -32,12 +32,59 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processing.qtgui.backwardCompatibleQt import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QCheckBox, QSizePolicy, QSpacerItem, QPushButton, SIGNAL, QMenu, QTextEdit
+from soma.wip.application.api import Application
+from soma.qtgui.api import ApplicationQtGUI
 from brainvisa.configuration import neuroConfig
+from brainvisa.configuration.api import DatabaseSettings
+from brainvisa.data import neuroHierarchy
 import brainvisa.processes
 from brainvisa.processing import neuroLog
 import brainvisa.mailing as mailing
 import smtplib, string
 
+#------------------------------------------------------------------------------
+def editConfiguration():
+  """
+  Opens Brainvisa options window. When the user closes the window, the configuration is saved in Brainvisa options file.
+  
+  Some options are taken into account immediately:
+  
+  * if databases selection has changed, databases are reloaded
+  * if userLevel has changed, the list of available processes is updated
+  * new HTML browser and new text editors are taken into account
+  * language change is applied to documentation pages.
+  
+  Some other options are not applied directly but are saved in the options file and will be applied next time Brainvisa is started.
+  """
+  from brainvisa.data.qtgui.updateDatabases import warnUserAboutDatabasesToUpdate
+  configuration = Application().configuration
+  appGUI = ApplicationQtGUI()
+  if appGUI.edit( configuration, live=False, modal=True ):
+    configuration.save( neuroConfig.userOptionFile )
+    setSPM99Compatibility( configuration.brainvisa.SPM )
+  newDataPath = [ x for x in neuroConfig.dataPath if hasattr( x, 'builtin' ) and x.builtin ]
+  for fso in configuration.databases.fso:
+    if fso.selected and fso.directory and os.path.exists(fso.directory):
+      newDataPath.append( DatabaseSettings( fso.directory ) )
+  if neuroConfig.dataPath != newDataPath:
+    neuroConfig.dataPath = newDataPath
+    neuroHierarchy.openDatabases()
+    warnUserAboutDatabasesToUpdate()
+
+  neuroHierarchy.update_soma_workflow_translations()
+
+  if neuroConfig.userLevel != configuration.brainvisa.userLevel:
+    neuroConfig.userLevel = configuration.brainvisa.userLevel
+    brainvisa.processes.updateProcesses()
+  neuroConfig.HTMLBrowser=configuration.brainvisa.htmlBrowser
+  neuroConfig.textEditor=configuration.brainvisa.textEditor
+  if neuroConfig.language != configuration.brainvisa.language \
+    and configuration.brainvisa.language is not None:
+    neuroConfig.language=configuration.brainvisa.language
+    neuroConfig.docPath=os.path.join(neuroConfig.mainDocPath, neuroConfig.language)
+    os.environ[ 'LANGUAGE' ] = neuroConfig.language
+    brainvisa.processes.updateProcesses()
+    
 #----------------------------------------------------------------------------
 bugReportDialog = None
 

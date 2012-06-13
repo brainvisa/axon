@@ -206,17 +206,17 @@ import gettext, sys, os, errno, pickle, string, traceback, htmllib, formatter, r
 import shutil
 from distutils.spawn import find_executable
 from soma.wip.application.api import Application
-from soma.qtgui.api import ApplicationQtGUI
 from brainvisa.configuration.api import initializeConfiguration, readConfiguration, setSPM99Compatibility, DatabaseSettings
 
 from soma.html import htmlEscape
 from soma.uuid import Uuid
 from soma.minf.api import readMinf, writeMinf
 from soma.env import BrainvisaSystemEnv
+import brainvisa
 
 exitValue = 0
 
-mainPath = os.path.dirname( sys.argv[0] )
+mainPath = os.path.normpath(os.path.join(os.path.dirname(brainvisa.__file__), "..", "..", "brainvisa"))
 
 sys.argv[0] = os.path.normpath( os.path.abspath( os.path.join( mainPath, '..', 'bin', 'brainvisa' ) ) )
 
@@ -558,54 +558,6 @@ def chooseDatabaseVersionSyncOption(context):
   app.configuration.brainvisa.databaseVersionSync = databaseVersionSync
   app.configuration.save( userOptionFile)
   return databaseVersionSync
-  
-#------------------------------------------------------------------------------
-def editConfiguration():
-  """
-  Opens Brainvisa options window. When the user closes the window, the configuration is saved in Brainvisa options file.
-  
-  Some options are taken into account immediately:
-  
-  * if databases selection has changed, databases are reloaded
-  * if userLevel has changed, the list of available processes is updated
-  * new HTML browser and new text editors are taken into account
-  * language change is applied to documentation pages.
-  
-  Some other options are not applied directly but are saved in the options file and will be applied next time Brainvisa is started.
-  """
-  import brainvisa.processes
-  from brainvisa.data import neuroHierarchy
-  from brainvisa.data.qtgui.updateDatabases import warnUserAboutDatabasesToUpdate
-  global userLevel, dataPath, HTMLBrowser, textEditor, language, docPath
-  configuration = Application().configuration
-  appGUI = ApplicationQtGUI()
-  if appGUI.edit( configuration, live=False, modal=True ):
-    configuration.save( userOptionFile )
-    setSPM99Compatibility( configuration.brainvisa.SPM )
-  newDataPath = [ x for x in dataPath if hasattr( x, 'builtin' ) and x.builtin ]
-  for fso in configuration.databases.fso:
-    if fso.selected and fso.directory and os.path.exists(fso.directory):
-      newDataPath.append( DatabaseSettings( fso.directory ) )
-  if dataPath != newDataPath:
-    dataPath = newDataPath
-    neuroHierarchy.openDatabases()
-    warnUserAboutDatabasesToUpdate()
-
-  neuroHierarchy.update_soma_workflow_translations()
-
-  if userLevel != configuration.brainvisa.userLevel:
-    userLevel = configuration.brainvisa.userLevel
-    brainvisa.processes.updateProcesses()
-  HTMLBrowser=configuration.brainvisa.htmlBrowser
-  textEditor=configuration.brainvisa.textEditor
-  if language != configuration.brainvisa.language \
-    and configuration.brainvisa.language is not None:
-    language=configuration.brainvisa.language
-    print 'mainDocPath:', mainDocPath
-    print 'language:', language
-    docPath=os.path.join(mainDocPath, language)
-    os.environ[ 'LANGUAGE' ] = language
-    brainvisa.processes.updateProcesses()
 
 
 def stdinLoop():

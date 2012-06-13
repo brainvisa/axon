@@ -70,7 +70,7 @@ from soma.signature.api import Choice as SomaChoice
 from brainvisa.configuration import neuroConfig
 from brainvisa.toolboxes import readToolboxes, allToolboxes
 from brainvisa.data import temporary
-from brainvisa.configuration.qtgui.neuroConfigGUI import *
+from brainvisa.configuration.qtgui import neuroConfigGUI
 from brainvisa.processing import neuroLog
 from brainvisa.processing.neuroException import *
 from brainvisa.data.neuroData import *
@@ -175,7 +175,7 @@ def main():
         if ( nbDatabases == 0 and getattr( neuroConfig, 'databasesWarning', False ) ):
           choice=defaultContext().ask("<p><b>Welcome to BrainVISA !</b></p><p>You have not selected any database yet.</p><p>It is strongly advisable to use a database to process data with BrainVISA. Indeed, some important features are not available when you are using data outside a database. To add a new database, go to <i>databases tab</i> in the <i>preferences window</i> and click on the <i>add button</i>.</p>",  "Open preferences", "Cancel", "Don't show this warning next time")
           if (choice == 0):
-            neuroConfig.editConfiguration()
+            neuroConfigGUI.editConfiguration()
           elif (choice == 2):
             app = Application()
             app.configuration.brainvisa.databasesWarning = False
