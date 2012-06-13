@@ -36,11 +36,6 @@ Main modules
 - :py:mod:`brainvisa.history`: Framework to manage history of processes.
 
 Detailled list of modules in here: :doc:`python`.
-
-.. toctree::
-  :hidden:
-  
-  python
   
 Use cases & examples
 --------------------
@@ -55,3 +50,9 @@ Other documentation
 -------------------
 
 A **programming manual** is available `here <../bv_pg/en/html/index.html>`_. Among others, it shows how to use this API to develop new processes and toolboxes and to extend the data ontology 
+
+.. toctree::
+   :hidden:
+
+   usecases
+   python

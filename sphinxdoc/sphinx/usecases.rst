@@ -1,13 +1,13 @@
 Use cases of Axon python API
 ============================
 
-Calling a process
------------------
+Call a process
+--------------
 
 The module :py:mod:`brainvisa.processes` manages the processes, pipelines and their execution.
 
-The object :py:class:`brainvisa.processes.ExcecutionContext` enables to start a Brainvisa process using the method :py:meth:`brainvisa.processes.ExcecutionContext.runProcess`. 
-When Brainvisa is loaded, a default execution context exists and is returned by the function :py:func:`brainvisa.processes.`
+The object :py:class:`brainvisa.processes.ExecutionContext` enables to start a Brainvisa process using the method :py:meth:`brainvisa.processes.ExecutionContext.runProcess`.
+When Brainvisa is loaded, a default execution context exists and is returned by the function :py:func:`brainvisa.processes.defaultContext`
 
 The following example will load Brainvisa and run the process Threshold on an image:
 
@@ -29,11 +29,11 @@ Loading toolbox ...
 Process Threshold started ...
 
 
-Querying a database
--------------------
+Query a database
+----------------
 
 At Brainvisa startup, an internal database and the database selected in the user's preferences are loaded. 
-The list of databases (:py:class:`brainvisa.data.sqlFSODatabase.SQLDatabases`) is stored in the global variable :py:var:`brainvisa.data.neuroHierarchy.databases`.
+The list of databases (:py:class:`brainvisa.data.sqlFSODatabase.SQLDatabases`) is stored in the global variable :py:data:`brainvisa.data.neuroHierarchy.databases`.
 Each database is an instance of the class :py:class:`brainvisa.data.sqlFSODatabase.SQLDatabase`.
 Several methods enable to query a database or a list of databases. The results of queries are generally :py:class:`brainvisa.data.neuroDiskItems.DiskItem` objects. A DiskItem represents data stored in files and indexed in a database with additionnal information.
 
@@ -49,12 +49,33 @@ True
 >>> item.format
 'NIFTI-1 image'
 
+
+Here is a request for all DiskItems of type "Model graph" with the value of *side* attribute is "left":
+
+
 >>> items = databases.findDiskItems({"_type" : "Model graph", "side": "left"})
 >>> items
 <generator object findDiskItems at ...>
 >>> model_filename = items.next().fileName()
 >>> model_filename.startswith(os.path.join(getSharePath(), bvShareDirectory, "models"))
 True
+
+The object :py:class:`brainvisa.data.readdiskitem.ReadDiskItem` enables to search for an existing DiskItem in the databases using the method :py:meth:`ReadDiskItem.findValue`. If the request is not precise enought and several DiskItems match, the method returns nothing.
+
+>>> from brainvisa.data.readdiskitem import ReadDiskItem
+>>> rd=ReadDiskItem("Model graph", "Graph and Data")
+>>> rd.findValue({"side" : "left"})
+>>> model = rd.findValue({"side" : "left", "sulci_database" : "2001"})
+>>> model.fileName().startswith(os.path.join(getSharePath(), bvShareDirectory, "models"))
+True
+
+The object :py:class:`brainvisa.data.writediskitem.WriteDiskItem` enables to create new DiskItems to write output data according to Brainvisa hierarchy of directories.
+
+>>> from brainvisa.data.writediskitem import WriteDiskItem
+>>> wd=WriteDiskItem("Raw T1 MRI", "NIFTI-1 image")
+>>> item=wd.findValue({"protocol" : 'test', "subject" : "mysubject"})
+>>> item.isReadable()
+0
 
 
 >>> brainvisa.axon.cleanup()
