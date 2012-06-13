@@ -35,12 +35,13 @@ from brainvisa.processing.qtgui.backwardCompatibleQt import QWidget, QVBoxLayout
 from soma.wip.application.api import Application
 from soma.qtgui.api import ApplicationQtGUI
 from brainvisa.configuration import neuroConfig
-from brainvisa.configuration.api import DatabaseSettings
+from brainvisa.configuration.api import setSPM99Compatibility, DatabaseSettings
 from brainvisa.data import neuroHierarchy
 import brainvisa.processes
 from brainvisa.processing import neuroLog
 import brainvisa.mailing as mailing
 import smtplib, string
+import os
 
 #------------------------------------------------------------------------------
 def editConfiguration():

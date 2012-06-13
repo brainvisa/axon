@@ -206,7 +206,7 @@ import gettext, sys, os, errno, pickle, string, traceback, htmllib, formatter, r
 import shutil
 from distutils.spawn import find_executable
 from soma.wip.application.api import Application
-from brainvisa.configuration.api import initializeConfiguration, readConfiguration, setSPM99Compatibility, DatabaseSettings
+from brainvisa.configuration.api import initializeConfiguration, readConfiguration, DatabaseSettings
 
 from soma.html import htmlEscape
 from soma.uuid import Uuid
