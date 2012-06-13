@@ -223,6 +223,34 @@ class ChoiceEditor( QComboBox, DataEditor ):
 
 
 #----------------------------------------------------------------------------
+class BooleanEditor( QCheckBox, DataEditor ):
+  def __init__( self, parent, name ):
+    QCheckBox.__init__( self, parent )
+    DataEditor.__init__( self )
+    if name:
+      self.setObjectName( name )
+    self.connect( self, SIGNAL( 'stateChanged( int )' ), self.newValue )
+
+  def getValue( self ):
+    x = self.checkState()
+    if x == Qt.Unchecked:
+      return False
+    elif x == Qt.Checked:
+      return True
+    return None
+
+  def setValue( self, value, default = False ):
+    if value:
+      self.setCheckState( Qt.Checked )
+    elif value == False:
+      self.setCheckState( Qt.Unchecked )
+    else:
+      self.setCheckState( Qt.PartiallyChecked )
+
+  def newValue( self ):
+    self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
+
+#----------------------------------------------------------------------------
 class OpenChoiceEditor( QComboBox, DataEditor ):
   def __init__( self, parameter, parent, name ):
     DataEditor.__init__( self )
@@ -1109,3 +1137,5 @@ def initializeDataGUI():
     lambda self, parent, name, context: ListOfVectorEditor( parent, name )
   Matrix.editor = \
     lambda self, parent, name, context: MatrixEditor( parent, name )
+  Boolean_new.editor = \
+    lambda self, parent, name, context: BooleanEditor( parent, name )
