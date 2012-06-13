@@ -440,7 +440,7 @@ class Boolean_new( Parameter ):
 
 # FIXME change this to switch to new implementation of Boolean
 # with checkbox GUI instead of combobox
-Boolean = Boolean_old
+Boolean = Boolean_new
 
 #-------------------------------------------------------------------------------
 class Point( Parameter ):

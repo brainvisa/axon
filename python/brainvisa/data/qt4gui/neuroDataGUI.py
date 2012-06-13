@@ -250,6 +250,154 @@ class BooleanEditor( QCheckBox, DataEditor ):
   def newValue( self ):
     self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
 
+
+#----------------------------------------------------------------------------
+class BooleanListEditor( QWidget, DataEditor ):
+  class BooleanListSelect( QWidget ): # Ex QSemiModal
+    def __init__( self, clEditor, name ):
+      QWidget.__init__( self, clEditor.topLevelWidget(), Qt.Dialog | Qt.Tool | Qt.WindowStaysOnTopHint )
+      if name:
+        self.setObjectName( name )
+      self.setAttribute( Qt.WA_DeleteOnClose, True )
+      self.setWindowModality(Qt.WindowModal)
+      layout = QVBoxLayout( self )
+      layout.setContentsMargins( 10, 10, 10, 10 )
+      layout.setSpacing( 5 )
+      self.setLayout(layout)
+
+      self.clEditor = clEditor
+
+      hb = QHBoxLayout()
+      self.valueSelect = BooleanEditor( self, name )
+      self.valueSelect.setValue( True ) # arbitrary
+      hb.addWidget( self.valueSelect )
+      btn = QPushButton( _t_('Add'), self )
+      hb.addWidget( btn )
+      self.connect( btn, SIGNAL( 'clicked()' ), self.add )
+      btn = QPushButton( _t_('Remove'), self )
+      hb.addWidget( btn )
+      self.connect( btn, SIGNAL( 'clicked()' ), self.remove )
+      layout.addLayout( hb )
+      self.list = QListWidget( self )
+      layout.addWidget( self.list )
+
+      hb = QHBoxLayout()
+      hb.setSpacing(6)
+      hb.setContentsMargins( 6, 6, 6, 6 )
+      spacer = QSpacerItem(20,20,QSizePolicy.Expanding,QSizePolicy.Minimum)
+      hb.addItem( spacer )
+      btn =QPushButton( _t_('Ok'), self )
+      hb.addWidget( btn )
+      self.connect( btn, SIGNAL( 'clicked()' ), self._ok )
+      btn =QPushButton( _t_('Cancel'), self )
+      hb.addWidget( btn )
+      self.connect( btn, SIGNAL( 'clicked()' ), self._cancel )
+      layout.addLayout( hb )
+      self.value = []
+
+    def setValue( self, value ):
+      self.value = []
+      self.list.clear()
+      if value is None or value == '':
+        pass
+      elif type( value ) in ( types.ListType, types.TupleType ):
+        for v in value:
+          fv = self.parameter.findValue( v )
+          nn, nv  = self.parameter.values[ 0 ]
+          i = 0
+          for n, vv in self.parameter.values:
+            if fv == vv:
+              nn = n
+              nv = vv
+              break
+          self.value.append( nv )
+          self.list.addItem( nn )
+      else:
+        self.setValue( [ value ] )
+
+    def add( self ):
+      v = self.valueSelect.getValue()
+      if v:
+        n = 'True'
+      else:
+        n = 'False'
+      self.value.append( v )
+      self.list.addItem( n )
+
+    def remove( self ):
+      i = self.list.currentRow()
+      if i >= 0:
+        self.list.takeItem( i )
+        del self.value[ i ]
+
+    def _ok( self ):
+      self.clEditor.setValue( self.value )
+      self.close( )
+
+    def _cancel( self ):
+      self.close( )
+
+  def __init__( self, parameter, parent, name ):
+    QWidget.__init__( self, parent )
+    DataEditor.__init__( self )
+    if name:
+      self.setObjectName( name )
+    layout=QHBoxLayout(self)
+    layout.setContentsMargins( 0, 0, 0, 0 )
+    layout.setSpacing(2)
+    self.setLayout(layout)
+    self.parameter = parameter
+    self.sle = StringListEditor( self, name )
+    layout.addWidget(self.sle)
+    self.connect( self.sle, SIGNAL( 'newValidValue' ), self.checkValue )
+    self.btn = QPushButton( '...', self )
+    layout.addWidget(self.btn)
+    self.connect( self.btn, SIGNAL( 'clicked()' ), self._selectValues )
+    self.value=None
+    self.setValue( None, 1 )
+
+  def getValue( self ):
+    return self.value
+
+  def setValue( self, value, default = 0 ):
+    self._setValue( value, default )
+
+  def _setValue( self, value, default=0):
+    print '_setValue:', value
+    print 'parameter:', self.parameter
+    if value is not None:
+      value = map( self.parameter.findValue, value )
+      print 'validated value:', value
+      labels = [ str( x ) for x in value ]
+      self.sle.setValue( labels )
+    if value != self.value:
+      self.value = value
+      if not default:
+        self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
+      self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
+
+
+  def checkValue( self ):
+    self.sle.checkValue()
+    sleValue = self.sle.getValue()
+    if sleValue is not None:
+      currentValue = [ x == 'True' for x in sleValue ]
+    else:
+      currentValue = None
+    if currentValue != self.getValue():
+      self.value = currentValue
+      self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
+      self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
+
+  def _selectValues( self ):
+    w = self.BooleanListSelect( self, unicode(self.objectName()) )
+    try:
+      w.setValue( self.getValue() )
+    except:
+      pass
+    w.show()
+
+
 #----------------------------------------------------------------------------
 class OpenChoiceEditor( QComboBox, DataEditor ):
   def __init__( self, parameter, parent, name ):
@@ -1139,3 +1287,5 @@ def initializeDataGUI():
     lambda self, parent, name, context: MatrixEditor( parent, name )
   Boolean_new.editor = \
     lambda self, parent, name, context: BooleanEditor( parent, name )
+  Boolean_new.listEditor = \
+    lambda self, parent, name, context: BooleanListEditor( self, parent, name )
