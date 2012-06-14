@@ -249,6 +249,8 @@ class BooleanEditor( QCheckBox, DataEditor ):
 
   def newValue( self ):
     self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
+    self.emit( SIGNAL('newValidValue'), unicode(self.objectName()),
+      self.checkState() == Qt.Checked )
 
 
 #----------------------------------------------------------------------------

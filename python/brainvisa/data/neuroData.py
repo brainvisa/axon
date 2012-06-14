@@ -427,7 +427,7 @@ class Boolean( Parameter ):
     """
     Returns ``bool(value)``.
     """
-    if value is None: return False
+    if value is None: return True # default is True
     return bool( value )
 
 
