@@ -130,6 +130,7 @@ if anatomistImport:
       args = anatomistParameters
       super( Anatomist, self ).__singleton_init__( *args, **kwargs )
       self._reusableWindows = set()
+      self._reusableWindowBlocks = set()
 
       if neuroConfig.anatomistImplementation != 'socket':
         a = anatomistModule.Anatomist( *args, **kwargs )
@@ -140,6 +141,7 @@ if anatomistImport:
 
     def anatomist_closed(self):
       self._reusableWindows = set()
+      self._reusableWindowBlocks = set()
       if neuroProcessesGUI:
         neuroProcessesGUI.close_viewers()
 
@@ -252,6 +254,7 @@ if anatomistImport:
 
     def createWindow(self, wintype, geometry=None, block=None,
       no_decoration=None, options=None, allowreuse=True):
+      self.findReusableWindowBlock( block )
       if allowreuse:
         win = self.findReusableWindow( wintype, block=block )
         if win and geometry is not None:
@@ -443,7 +446,7 @@ if anatomistImport:
           try:
             if w.getInfos()[ 'windowType' ] == wintype \
               and len( w.objects ) == 0 and \
-              (block is None or w.block == block ):
+              (block is None or w.block.internalWidget == block.internalWidget ):
               return w
           except: # window probably closed in the meantime
             todel.add( w )
@@ -451,6 +454,33 @@ if anatomistImport:
         if len( todel ) != 0:
           self._reusableWindows = set( [ w for w in self._reusableWindows \
             if w not in todel ] )
+      return None
+
+    def findReusableWindowBlock( self, block ):
+      if block is None or neuroConfig.anatomistImplementation == 'socket':
+        return block
+      if hasattr( block, 'internalWidget' ) and block.internalWidget:
+        return block
+      self._reusableWindowBlocks = set( [ w for w in \
+        self._reusableWindowBlocks if w ] )
+      todel = set()
+      try:
+        for w in self._reusableWindowBlocks:
+          us = anatomistModule.cpp.CommandContext.defaultContext().unserial
+          bid = us.id( w.widget )
+          if bid >= 0:
+            block.internalRep = bid
+          else:
+            if block.internalRep < 0:
+              bid = us.makeID( w.widget )
+              block.internalRep = bid
+              us.registerPointer( w.widget, bid )
+          block.setWidget( w.widget )
+          return block
+      finally:
+        if len( todel ) != 0:
+          self._reusableWindowBlocks = set( [ w for w in \
+            self._reusableWindowBlocks if w not in todel ] )
       return None
 
     def setReusableWindow( self, win, state=True ):
@@ -474,6 +504,52 @@ if anatomistImport:
           ac = w.findChild( reusablewinhook.ReusableWindowAction )
           if ac and ac.isChecked() != state:
             mainThread.push( ac.setChecked, state )
+
+    def setReusableWindowBlock( self, win, state=True ):
+      #self._reusableWindowBlocks = set( [ w for w in \
+        #self._reusableWindowBlocks if w ] )
+      if type( win ) not in ( types.ListType, types.TupleType ):
+        win = [ win ]
+      win2 = []
+      for w in win:
+        if isinstance( w, self.AWindowsBlock ):
+          w = w.internalWidget
+        win2.append( w )
+      win = win2
+      del win2
+      if win is None:
+        return
+      from PyQt4 import QtCore
+      if state:
+        for w in win:
+          wp = self.AWindowsBlock.findBlock( w )
+          if wp is None:
+            wp = self.AWindowsBlock()
+            wp.setWidget( w )
+          self._reusableWindowBlocks.add( wp )
+          wp.widget.connect( wp.widget,
+            QtCore.SIGNAL( 'destroyed( QObject* )' ),
+            self.removeReusableWindowBlock )
+      else:
+        s2 = set()
+        for w in self._reusableWindowBlocks:
+          for ws in win:
+            if w == ws:
+              s2.add( w )
+        for w in s2:
+          wp = self.AWindowsBlock.findBlock( w )
+          if wp is not None:
+            self._reusableWindowBlocks.remove( wp )
+            wp.widget.disconnect( wp.widget,
+              QtCore.SIGNAL( 'destroyed( QObject* )' ),
+              self.removeReusableWindowBlock )
+      for w in win:
+        ac = w.findChild( reusablewinhook.ReusableWindowBlockAction )
+        if ac and ac.isChecked() != state:
+          mainThread.push( ac.setChecked, state )
+
+    def removeReusableWindowBlock( self, win ):
+      self.setReusableWindowBlock( win, False )
 
     # util methods for brainvisa processes
     def viewObject(self, fileRef, wintype = "Axial", palette = None ): # AnatomistImageView

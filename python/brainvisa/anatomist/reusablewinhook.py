@@ -38,6 +38,11 @@ if neuroConfig.anatomistImplementation != 'socket':
   import anatomist.cpp as anacpp
   from PyQt4 import QtGui
   from soma.wip.application.api import findIconFile
+  from soma import aims
+  try:
+    from soma.aims import aimsgui
+  except:
+    print 'Warning: pyaimsgui not available'
 
   class ReusableWindowAction( QtGui.QAction ):
     def toggleReuseWindow( self, state ):
@@ -46,11 +51,17 @@ if neuroConfig.anatomistImplementation != 'socket':
       a = anatomist.Anatomist( [ '-b' ] )
       a.setReusableWindow( a.AWindow( a, win, refType='WeakShared' ), state )
 
+  class ReusableWindowBlockAction( QtGui.QAction ):
+    def toggleReuseWindow( self, state ):
+      win = self.parent()
+      from brainvisa import anatomist
+      a = anatomist.Anatomist( [ '-b' ] )
+      a.setReusableWindowBlock( win, state )
+
   class ReusableWindowHook( anacpp.EventHandler ):
     def doit( self, event ):
       if event.eventType() == 'CreateWindow':
         win = event.contents()[ '_window' ]
-        win = anacpp.AWindow.fromObject( win )
         if isinstance( win, QtGui.QMainWindow ):
           toolbar = win.findChild( QtGui.QToolBar, 'mutations' )
           if toolbar is None:
@@ -70,19 +81,34 @@ if neuroConfig.anatomistImplementation != 'socket':
             ac.toggled.connect( ac.toggleReuseWindow )
             toolbar.addAction( ac )
 
+  class ReusableWindowBlockHook( anacpp.EventHandler ):
+    def doit( self, event ):
+      if event.eventType() == 'CreateWindowBlock':
+        block = event.contents()[ '_block' ]
+        if isinstance( block, QtGui.QMainWindow ):
+          menubar = block.menuBar()
+          icon = QtGui.QIcon( findIconFile( 'eye.png' ))
+          ac = ReusableWindowBlockAction( icon, 'Keep and reuse in BrainVisa',
+            block )
+          ac.setCheckable( True )
+          ac.toggled.connect( ac.toggleReuseWindow )
+          menubar.addAction( ac )
 
-  handler = None
+  handlers = None
 
   def installWindowHandler():
-    global handler
-    handler = ReusableWindowHook()
-    anacpp.EventHandler.registerHandler( 'CreateWindow', handler )
+    global handlers
+    handlers = [ ReusableWindowHook(), ReusableWindowBlockHook() ]
+    anacpp.EventHandler.registerHandler( 'CreateWindow', handlers[0] )
     anacpp.CommandContext.defaultContext().evfilter.filter( 'CreateWindow' )
+    anacpp.EventHandler.registerHandler( 'CreateWindowBlock', handlers[1] )
+    anacpp.CommandContext.defaultContext().evfilter.filter( 'CreateWindowBlock' )
 
   def uninstallWindowHandler():
     print 'clearing windows handler'
-    global handler
-    if handler is not None:
-      anacpp.EventHandler.unregisterHandler( 'CreateWindow', handler )
-      handler = None
+    global handlers
+    if handlers:
+      anacpp.EventHandler.unregisterHandler( 'CreateWindow', handlers[0] )
+      anacpp.EventHandler.unregisterHandler( 'CreateWindowBlock', handlers[1] )
+      handlers = None
 
