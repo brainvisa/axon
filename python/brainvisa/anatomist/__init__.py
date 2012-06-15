@@ -267,6 +267,16 @@ if anatomistImport:
           options=options )
       return win
 
+    def createWindowsBlock(self, nbCols=2, nbRows=0, allowreuse=True):
+      if nbRows:
+        nbCols = 0
+      if allowreuse:
+        bw = self.findReusableWindowBlock()
+        return self.AWindowsBlock( self, nbCols=nbCols, nbRows=nbRows,
+          widgetproxy=bw )
+      return anatomistModule.Anatomist.createWindowsBlock( self,
+          nbCols=nbCols, nbRows=nbRows )
+
     def createReferential(self, fileref=None):
       """
       Creates a new referential using the informations in the file.
@@ -444,9 +454,9 @@ if anatomistImport:
       try:
         for w in self._reusableWindows:
           try:
-            if w.getInfos()[ 'windowType' ] == wintype \
-              and len( w.objects ) == 0 and \
-              (block is None or w.block.internalWidget == block.internalWidget ):
+            if w.windowType == wintype and len( w.objects ) == 0 and \
+              (block is None or ( w.block is not None \
+                and w.block.internalWidget == block.internalWidget ) ):
               return w
           except: # window probably closed in the meantime
             todel.add( w )
@@ -456,16 +466,19 @@ if anatomistImport:
             if w not in todel ] )
       return None
 
-    def findReusableWindowBlock( self, block ):
-      if block is None or neuroConfig.anatomistImplementation == 'socket':
-        return block
-      if hasattr( block, 'internalWidget' ) and block.internalWidget:
-        return block
+    def findReusableWindowBlock( self, block=None ):
+      if neuroConfig.anatomistImplementation == 'socket':
+        return None
+      if block is not None and hasattr( block, 'internalWidget' ) \
+        and block.internalWidget:
+        return block.internalWidget
       self._reusableWindowBlocks = set( [ w for w in \
         self._reusableWindowBlocks if w ] )
       todel = set()
       try:
         for w in self._reusableWindowBlocks:
+          if block is None:
+            return w
           us = anatomistModule.cpp.CommandContext.defaultContext().unserial
           bid = us.id( w.widget )
           if bid >= 0:
@@ -476,7 +489,7 @@ if anatomistImport:
               block.internalRep = bid
               us.registerPointer( w.widget, bid )
           block.setWidget( w.widget )
-          return block
+          return block.internalWidget
       finally:
         if len( todel ) != 0:
           self._reusableWindowBlocks = set( [ w for w in \
