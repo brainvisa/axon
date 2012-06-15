@@ -87,12 +87,13 @@ if neuroConfig.anatomistImplementation != 'socket':
         block = event.contents()[ '_block' ]
         if isinstance( block, QtGui.QMainWindow ):
           menubar = block.menuBar()
+          menu = menubar.addMenu( 'BrainVISA' )
           icon = QtGui.QIcon( findIconFile( 'eye.png' ))
           ac = ReusableWindowBlockAction( icon, 'Keep and reuse in BrainVisa',
             block )
           ac.setCheckable( True )
           ac.toggled.connect( ac.toggleReuseWindow )
-          menubar.addAction( ac )
+          menu.addAction( ac )
 
   handlers = None
 
