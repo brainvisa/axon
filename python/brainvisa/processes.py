@@ -191,7 +191,6 @@ from brainvisa.configuration import neuroConfig
 from brainvisa.data import neuroDiskItems
 from brainvisa.processing import neuroLog
 from brainvisa.processing.neuroException import *
-from brainvisa import matlab
 from brainvisa.validation import ValidationError
 from brainvisa.debug import debugHere
 from brainvisa.data.sqlFSODatabase import Database, NotInDatabaseError
@@ -1774,7 +1773,6 @@ class ExecutionContext( object ):
     * :py:meth:`temporary` : creates a temporary file.
     * :py:meth:`system`: calls a system command.
     * :py:meth:`runProcess` : runs a BrainVISA process.
-    * :py:meth:`matlab` : calls a Matlab command.
     * :py:meth:`checkInterruption` : defines a breakpoint.
 
   """
@@ -2391,19 +2389,6 @@ class ExecutionContext( object ):
     """
     result = getTemporary( format, diskItemType )
     return result
-
-  def matlab( self, *commands ):
-    """
-    This function starts a Matlab interpreter in order to execute the commands given as arguments. Then the matlab interpreter is closed. It is equivalent to start Matlab, send all the commands and close the interpreter. BrainVISA creates a temporary matlab script which is passed to Matlab interpreter. The script and the command to run matlab depend on Matlab version. This method tend to be obsolete, it is no longer used and may not work with recent matlab versions.
-    """
-    self.checkInterruption()
-    if matlab.valid and commands:
-      m = matlab.matlab()
-      for c in commands[:-1]:
-        m.eval( c )
-      return m.eval( commands[ -1 ] )
-    self.checkInterruption()
-
 
   def write( self, *messages, **kwargs ):
     """

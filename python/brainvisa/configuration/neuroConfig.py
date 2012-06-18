@@ -933,16 +933,6 @@ def initGlobalVariables():
       __builtin__.__dict__['_t_'] = lambda x: x
       sys.stderr.write( str(msg) + '\n' )
 
-  
-  # Set matlab options
-  from brainvisa import matlab
-  global matlabRelease, matlabExecutable, matlabOptions, matlabStartup
-  matlab.matlabRelease = matlabRelease
-  matlab.matlabExecutable = matlabExecutable
-  matlab.matlabOptions = matlabOptions
-  matlab.matlabPath = matlabPath
-  matlab.matlabStartup = matlabStartup
-
 def getDocFile(filename):
   """
   Search doc file in doc path and if not found, in english documentation path.
