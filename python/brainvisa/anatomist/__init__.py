@@ -513,6 +513,7 @@ if anatomistImport:
         for w in s2:
           self._reusableWindows.remove( w )
       if neuroConfig.anatomistImplementation != 'socket':
+        mainThread=QtThreadCall()
         for w in win:
           ac = w.findChild( reusablewinhook.ReusableWindowAction )
           if ac and ac.isChecked() != state:
@@ -556,6 +557,7 @@ if anatomistImport:
             wp.widget.disconnect( wp.widget,
               QtCore.SIGNAL( 'destroyed( QObject* )' ),
               self.removeReusableWindowBlock )
+      mainThread=QtThreadCall()
       for w in win:
         ac = w.findChild( reusablewinhook.ReusableWindowBlockAction )
         if ac and ac.isChecked() != state:

@@ -36,7 +36,7 @@ from brainvisa.configuration import neuroConfig
 if neuroConfig.anatomistImplementation != 'socket':
 
   import anatomist.cpp as anacpp
-  from PyQt4 import QtGui
+  from PyQt4 import QtGui, QtCore
   from soma.wip.application.api import findIconFile
   from soma import aims
   try:
@@ -57,6 +57,32 @@ if neuroConfig.anatomistImplementation != 'socket':
       from brainvisa import anatomist
       a = anatomist.Anatomist( [ '-b' ] )
       a.setReusableWindowBlock( win, state )
+      reuseaction = win.findChild( QtGui.QAction, 'reuseAllAction' )
+      if state:
+        reuseaction.setText( self.tr( \
+          'Don\'t reuse any longer block and windows', 'QAWindowBlock' ) )
+      else:
+        reuseaction.setText( self.tr( \
+          'Keep and reuse in BrainVisa, with all current views',
+          'QAWindowBlock' ) )
+
+  class ReusableWindowBlockWithViewsAction( QtGui.QAction ):
+    def toggleReuseWindowWithViews( self ):
+      win = self.parent()
+      reuseaction = win.findChild( QtGui.QAction, 'reuseAction' )
+      state = not reuseaction.isChecked()
+      reuseaction.setChecked( state )
+      awins =  win.findChildren( anacpp.QAWindow )
+      from brainvisa import anatomist
+      a = anatomist.Anatomist( [ '-b' ] )
+      awins = [ a.AWindow(a, w) for w in awins ]
+      a.setReusableWindow( awins, state )
+      if state:
+        self.setText( self.tr( 'Don\'t reuse any longer block and windows', 'QAWindowBlock' ) )
+      else:
+        self.setText( self.tr( \
+          'Keep and reuse in BrainVisa, with all current views',
+          'QAWindowBlock' ) )
 
   class ReusableWindowHook( anacpp.EventHandler ):
     def doit( self, event ):
@@ -75,8 +101,8 @@ if neuroConfig.anatomistImplementation != 'socket':
           if toolbar is not None:
             toolbar.addSeparator()
             icon = QtGui.QIcon( findIconFile( 'eye.png' ))
-            ac = ReusableWindowAction( icon, 'Keep and reuse in BrainVisa',
-              win )
+            ac = ReusableWindowAction( icon,
+              win.tr( 'Keep and reuse in BrainVisa', 'QAWindowBlock' ), win )
             ac.setCheckable( True )
             ac.toggled.connect( ac.toggleReuseWindow )
             toolbar.addAction( ac )
@@ -89,10 +115,17 @@ if neuroConfig.anatomistImplementation != 'socket':
           menubar = block.menuBar()
           menu = menubar.addMenu( 'BrainVISA' )
           icon = QtGui.QIcon( findIconFile( 'eye.png' ))
-          ac = ReusableWindowBlockAction( icon, 'Keep and reuse in BrainVisa',
-            block )
+          ac = ReusableWindowBlockAction( icon,
+            block.tr( 'Keep and reuse in BrainVisa', 'QAWindowBlock' ), block )
           ac.setCheckable( True )
           ac.toggled.connect( ac.toggleReuseWindow )
+          ac.setObjectName( 'reuseAction' )
+          menu.addAction( ac )
+          ac = ReusableWindowBlockWithViewsAction( icon,
+            block.tr( 'Keep and reuse in BrainVisa, with all current views',
+              'QAWindowBlock' ), block )
+          ac.triggered.connect( ac.toggleReuseWindowWithViews )
+          ac.setObjectName( 'reuseAllAction' )
           menu.addAction( ac )
 
   handlers = None
