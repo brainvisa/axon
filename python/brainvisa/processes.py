@@ -2150,6 +2150,13 @@ class ExecutionContext( object ):
     finally:
       self._processFinished( result )
       process.restoreConvertedValues()
+      
+      # update history
+      if self._allowHistory and ishead and self._historyBookEvent is not None:
+        HistoryBook.storeProcessFinished( self, process, self._historyBookEvent, self._historyBooksContext )
+        self._historyBookEvent = None
+        self._historyBooksContext = None
+
       for item_hash in self._allWriteDiskItems.values():
         item, hash = item_hash
         if item.isReadable():
@@ -2168,12 +2175,6 @@ class ExecutionContext( object ):
             item_hash[ 1 ] = item.modificationHash()
         elif (process.isMainProcess): # clear unused minfs only when the main process is finished to avoid clearing minf that will be used in next steps
           item.clearMinf()
-
-      # update history
-      if self._allowHistory and ishead and self._historyBookEvent is not None:
-        HistoryBook.storeProcessFinished( self, process, self._historyBookEvent, self._historyBooksContext )
-        self._historyBookEvent = None
-        self._historyBooksContext = None
 
       # Close output log file
       if process._outputLogFile is not None:
