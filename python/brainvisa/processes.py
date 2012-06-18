@@ -185,6 +185,8 @@ from soma.somatime import timeDifferenceToString
 
 from brainvisa.data.neuroData import *
 from brainvisa.data.neuroDiskItems import *
+from brainvisa.data.readdiskitem import ReadDiskItem
+from brainvisa.data.writediskitem import WriteDiskItem
 from brainvisa.configuration import neuroConfig
 from brainvisa.data import neuroDiskItems
 from brainvisa.processing import neuroLog

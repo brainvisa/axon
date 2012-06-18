@@ -95,7 +95,7 @@ All temporary files and directories are written in Brainvisa global temporary di
 :Classes:
 
 """
-import types, sys, os, errno, stat, cPickle, operator, time, traceback
+import types, sys, os, errno, stat, operator, time, traceback
 from weakref import ref, WeakValueDictionary
 from UserList import UserList
 from threading import RLock
@@ -108,7 +108,7 @@ from soma.minf.api import readMinf, MinfError
 from soma.wip.application.api import Application
 
 from brainvisa.configuration import neuroConfig
-from brainvisa.processing.neuroException import *
+from brainvisa.processing.neuroException import HTMLMessage, showException
 from brainvisa.data import temporary
 from brainvisa.data.patterns import DictPattern
 from brainvisa import shelltools
@@ -1464,7 +1464,6 @@ class Format:
     self._ignoreExclusive = ignoreExclusive
     
   def __getstate__( self ):
-    #raise cPickle.PicklingError
     return { 'name' : self.name }
 
   def __setstate__( self, state ):
@@ -1934,7 +1933,6 @@ class DiskItemType:
       self._typeAttributes = attributes
   
   def __getstate__( self ):
-    #raise cPickle.PicklingError
     return { 'diskItemType' : self.name }
 
   def __setstate__( self, state ):

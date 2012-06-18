@@ -258,7 +258,7 @@ class ReadDiskItem( Parameter ):
             if _debug is not None:
               print >> _debug, '  DiskItem not created in databases from format extension'
             if os.path.exists( fileName ):
-              from shfjGlobals import aimsFileInfo
+              from brainvisa.tools.aimsGlobals import aimsFileInfo
               file_type = aimsFileInfo( fileName ).get( 'file_type' )
               if _debug is not None:
                 print >> _debug, '  aimsFileInfo returned file_type =', repr( file_type )

@@ -41,8 +41,7 @@ Registration of all BrainVISA specific minf formats.
 '''
 __docformat__ = "epytext en"
 
-from soma.minf.api import iterateMinf, createMinfWriter, \
-                          createReducerAndExpander, registerClass, \
+from soma.minf.api import createReducerAndExpander, registerClass, \
                           registerClassAs
 
 #------------------------------------------------------------------------------

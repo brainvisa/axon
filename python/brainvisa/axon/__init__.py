@@ -72,7 +72,7 @@ sys.path.insert( 0, brainvisa_path )
 import PyQt4
 from brainvisa.configuration import neuroConfig
 from brainvisa.processing import neuroLog
-from processes import initializeProcesses, cleanup
+from brainvisa.axon.processes import initializeProcesses, cleanup
 
 # set back argv[0] to its original value
 sys.argv = argv
@@ -82,4 +82,4 @@ neuroConfig.initGlobalVariables()
 
 # once imported and initialized, the modules do not need to be
 # referenced any longer here.
-del brainvisa, PyQt4, neuroConfig, neuroLog, sys, os, sip, processes
+del brainvisa, PyQt4, neuroConfig, neuroLog, sys, os, sip

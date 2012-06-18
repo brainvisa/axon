@@ -43,7 +43,7 @@ The functions are used to display error and warning messages in Brainvisa.
 >>>   neuroException.showException(beforeError="The following error occured when...:")
 
 """
-import sys, os, traceback, htmllib
+import sys, os, traceback, htmllib, formatter
 from brainvisa.configuration.neuroConfig import *
 from brainvisa.configuration import neuroConfig
 from soma.html import htmlEscape

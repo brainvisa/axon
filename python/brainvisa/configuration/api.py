@@ -79,7 +79,6 @@ def initializeConfiguration():
 def readConfiguration( mainPath, userProfile, homeBrainVISADir ):
   from brainvisa.processing.neuroException import showException
   configuration = Application().configuration
-  saveUserOptions = False
   siteOptionFile = os.path.join( mainPath, 'options.minf' )
   siteStartupFile = os.path.join( mainPath, 'startup.py' )
   if os.path.exists( siteOptionFile ):

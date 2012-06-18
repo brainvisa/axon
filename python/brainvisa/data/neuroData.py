@@ -68,13 +68,11 @@ Matching graphical editors classes are defined in :py:mod:`brainvisa.data.qt4gui
 :Classes:
   
 """
-import types, string, re, sys, os, stat, threading, cPickle, weakref, copy
+import types, string, weakref, copy
 from UserDict import UserDict
 from UserList import UserList
 from brainvisa import notifier
 from brainvisa.processing.neuroException import HTMLMessage
-from brainvisa.configuration import neuroConfig
-
 
 #----------------------------------------------------------------------------
 class Parameter( object ):
@@ -723,14 +721,13 @@ class Signature( UserDict ):
 
   def __setitem__(self, k, value):
     if not self.data.has_key(k):
-	    self.sortedKeys.append(k)
+      self.sortedKeys.append(k)
     self.data[k] = value
 
   def shallowCopy(self):
     """
     Returns a shallow copy of the current signature. Only the parameters names are duplicated, the list of parameters types is shared.
     """
-    import copy
     new = copy.copy(self)
     new.sortedKeys = copy.copy(self.sortedKeys)
     return new

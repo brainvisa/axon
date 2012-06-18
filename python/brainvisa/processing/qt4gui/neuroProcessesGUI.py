@@ -51,6 +51,7 @@ from brainvisa.wip import newProcess
 from brainvisa.history import ProcessExecutionEvent
 import brainvisa.processes
 from brainvisa.data.neuroDiskItems import DiskItem
+from brainvisa.data.readdiskitem import ReadDiskItem
 import weakref
 from soma.minf.xhtml import XHTML
 from soma.qtgui.api import QtThreadCall, FakeQtThreadCall, WebBrowserWithSearch, bigIconSize, defaultIconSize
@@ -1416,7 +1417,7 @@ class ParameterizedWidget( QWidget ):
         l.setDefault(self.parameterized.isDefault( k ))
         self.connect( l, SIGNAL( 'toggleDefault' ), self._toggleDefault )
         
-        if isinstance( p, brainvisa.processes.ReadDiskItem ):         
+        if isinstance( p, ReadDiskItem ):         
             l.lock_id.setCheckable(True)
             l.setlock(self._setlock_system(k)) #ini la valeur de lock du parametre
             #self.connect( l, SIGNAL( 'setlock_system' ), self._setlock_system )
@@ -1551,7 +1552,6 @@ class ParameterizedWidget( QWidget ):
       #value = self.parameterized.__getattribute__(name)
       value = getattr(self.parameterized, name, None)
       
-      #if value is not None and isinstance( value, brainvisa.processes.WriteDiskItem ): 
       if value is not None : 
           isLock = value.lockData()
           if isLock : self.labels[name].lock_id.setChecked(True)
@@ -1563,7 +1563,6 @@ class ParameterizedWidget( QWidget ):
       #print "-- FUNCTION _unlock_system : neuroProcessesGUI / ParameterizedWidget-- "
       #value = self.parameterized.__getattribute__(name)
       value = getattr(self.parameterized, name, None)
-      #if value is not None and isinstance( value, brainvisa.processes.WriteDiskItem ):  
       if value is not None :  
           value.unlockData()
 

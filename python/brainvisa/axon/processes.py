@@ -37,7 +37,7 @@
 # option). A independent GUI is displayed from BV and operates processes.
 
 import brainvisa.axon
-import sys, atexit, os
+import atexit, os
 from brainvisa.configuration import neuroConfig
 import brainvisa.processes
 from brainvisa.data import neuroHierarchy, neuroData, temporary
@@ -124,12 +124,6 @@ def initializeProcesses():
     brainvisa.processes.readProcesses(neuroConfig.processesPath)
 
     if not neuroConfig.fastStart:
-        from brainvisa.processing.qtgui.neuroProcessesGUI import showProcess # may be used directly
-        global showProcess
-        # executes brainvisa startup.py if it exists. there's no use to execute user startup.py here because .brainvisa is a toolbox and its startup.py will be executed with the toolboxes' ones.
-        if os.path.exists(neuroConfig.siteStartupFile):
-              execfile( neuroConfig.siteStartupFile, globals(), {} )
-        # Search for hierarchy and types paths in toolboxes
         for toolbox in brainvisa.toolboxes.allToolboxes():
               # executes startup.py of each toolbox if it exists
               if os.path.exists( toolbox.startupFile ):

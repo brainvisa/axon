@@ -55,18 +55,19 @@ try:
   from soma.database.cw_database import CWDatabase
 except:
   CWDatabase=None
-from brainvisa.data.readdiskitem import ReadDiskItem
-from brainvisa.data.writediskitem import WriteDiskItem
 from brainvisa.processing.neuroException import showException, showWarning
 from brainvisa.configuration import neuroConfig
+# Import read and write diskitem because neuroHierarchy.ReadDiskItem and neuroHierarchy.WriteDiskItem is used in some processes
+from brainvisa.data.readdiskitem import ReadDiskItem
+from brainvisa.data.writediskitem import WriteDiskItem
 
-global databaseVersion
 databaseVersion='2.1' 
 # mapping between databases versions and axon versions : database version -> first axon version where this database version is used
 databaseVersions={ '1.0': '3.1.0', 
                    '1.1': '3.2.0',
                    '2.0': '4.0.0',
                    '2.1': '4.2.0' }
+databases=None
 
 def initializeDatabases():
   """

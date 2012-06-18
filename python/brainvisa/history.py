@@ -32,8 +32,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 import os
-from soma.minf.api import createReducerAndExpander, createMinfWriter, \
-                          registerClass, writeMinf
+from soma.minf.api import writeMinf
 from soma.uuid import Uuid
 from soma.translation import translate as _
 from soma.undefined import Undefined
@@ -46,6 +45,7 @@ from brainvisa.processing import neuroException
 from glob import glob
 import weakref
 import types
+from brainvisa.data.writediskitem import WriteDiskItem
 
 minfHistory = 'brainvisa-history_2.0'
 
@@ -131,7 +131,7 @@ class HistoryBook( object ):
     # print '!history! storeProcessStart:', process
     historyBooksContext = {}
     for parameterized, attribute, type in process.getAllParameters():
-      if isinstance( type, neuroHierarchy.WriteDiskItem ):
+      if isinstance( type, WriteDiskItem ):
         item = getattr( parameterized, attribute )
         historyBooks = HistoryBook.getHistoryBookDirectories( item )
         if historyBooks:

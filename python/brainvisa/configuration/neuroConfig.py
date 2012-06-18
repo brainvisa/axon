@@ -202,9 +202,7 @@ _defaultTranslateFunction = lambda x: x
 if not __builtin__.__dict__.has_key( '_t_' ):
   __builtin__.__dict__[ '_t_' ] = _defaultTranslateFunction
 
-import gettext, sys, os, errno, pickle, string, traceback, htmllib, formatter, re, time, socket
-import shutil
-from distutils.spawn import find_executable
+import sys, os, errno, re, time, socket
 from soma.wip.application.api import Application
 from brainvisa.configuration.api import initializeConfiguration, readConfiguration, DatabaseSettings
 
@@ -233,7 +231,7 @@ sys.path[ 0:0 ] = [ mainPath, os.path.join( basePath, 'python' ) ]
 # A bit of cleanup
 sys.path = [os.path.normpath( os.path.abspath( p ) ) for p in sys.path]
 
-_commandLine = string.join( map( lambda x: '"'+x+'"', sys.argv ) )
+_commandLine = " ".join( map( lambda x: '"'+x+'"', sys.argv ) )
 def commandLine():
   return _commandLine
 
@@ -371,16 +369,12 @@ def libraryPathEnvironmentVariable():
   return 'LD_LIBRARY_PATH'
 
 # Define system environment variables that have to be passed to external command to restore environment if it have been modified at brainvisa startup
-global brainvisaSysEnv
 brainvisaSysEnv=BrainvisaSystemEnv()
 # try to determine if we are in a build tree with system libraries - in that
 # case, brainvisaSysEnv should not be altered when calling external commands
 if not sys.executable.startswith( basePath ):
   # python is not in the BV tree, or it is a system-wide installation
   brainvisaSysEnv.variables = {}
-
-from brainvisa import shelltools
-from soma.minf.api import readMinf
 
 userLevel = 0
 sessionID = Uuid()
@@ -588,7 +582,7 @@ setup=False
 noToolBox = False
 ignoreValidation = False
 
-def _convertCommandLineParameter(i):
+def convertCommandLineParameter(i):
   try:
     res=eval(i)
   except:
@@ -604,7 +598,7 @@ if i >= 0:
   fastStart = True
   #noToolBox = True
   logFileName = ''
-  startup.append( 'defaultContext().runProcess' + repr( tuple( ( _convertCommandLineParameter( i ) for i in sys.argv[ i+1 : ]  ) ) ) )
+  startup.append( 'defaultContext().runProcess' + repr( tuple( ( convertCommandLineParameter( i ) for i in sys.argv[ i+1 : ]  ) ) ) )
 else:
   import getopt
   try:
@@ -635,9 +629,9 @@ else:
     elif o in ( "-s", ):
       m = re.match( r'(.*)\((.*[^)])\)?', a )
       if m:
-        startup.append( 'showProcess("' + m.group(1) + '",' + m.group(2) + ')' )
+        startup.append( 'brainvisa.processing.qt4gui.neuroProcessesGUI.showProcess("' + m.group(1) + '",' + m.group(2) + ')' )
       else:
-        startup.append( 'showProcess("' + a + '")' )
+        startup.append( 'brainvisa.processing.qt4gui.neuroProcessesGUI.showProcess("' + a + '")' )
     elif o in ( "-u", ):
       userProfile = a
     elif o in ( "-f", ):
@@ -690,7 +684,7 @@ BrainVISA options:
   -f                      EXPERIMENTAL: Try to speed-up BrainVISA startup by caching processes reading.
   -e <file>               Execute <file> which must be a valid Python script.
   -c <command>            Execute <command> which must be a valid Python command.
-  -s <process_id>         Open a process window. Equivalent to -c 'showProcess("<process_id>")'.
+  -s <process_id>         Open a process window. Equivalent to -c 'brainvisa.processing.qt4gui.neuroProcessesGUI.showProcess("<process_id>")'.
   -u <profile>            Select a user profile.
   --databaseServer        Create a server for configured databases.
   --updateDocumentation   Generate HTML documentation pages.

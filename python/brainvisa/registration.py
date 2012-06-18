@@ -36,6 +36,7 @@ from brainvisa.configuration import neuroConfig
 from brainvisa.data import neuroHierarchy
 from brainvisa.data.neuroDiskItems import getDiskItemType, isSameDiskItemType, DiskItem
 from brainvisa.processing.neuroException import HTMLMessage
+from brainvisa.data.writediskitem import WriteDiskItem
 from soma import uuid
 import threading
 
@@ -132,11 +133,11 @@ class DatabasesTransformationManager( object ):
     else:
       referentialType = getDiskItemType( referentialType )
     while referential is None and referentialType is not None:
-      wdi = neuroHierarchy.WriteDiskItem( referentialType, 'Referential', exactType=True )
+      wdi = WriteDiskItem( referentialType, 'Referential', exactType=True )
       referential = wdi.findValue( diskItem )
       referentialType = referentialType.parent
     if referential is None:
-      wdi = neuroHierarchy.WriteDiskItem( 'Referential', 'Referential', exactType=True )
+      wdi = WriteDiskItem( 'Referential', 'Referential', exactType=True )
       referential = wdi.findValue( diskItem )
     if referential is not None:
       if name is None:
@@ -160,8 +161,8 @@ class DatabasesTransformationManager( object ):
         self.__databases.insertDiskItem( diskItem, update=True )
         # write a transformation between this referential and MNI template if needed
         if diskItem.get( 'normalized' ) == 'yes':
-          import shfjGlobals
-          atts = shfjGlobals.aimsVolumeAttributes(diskItem)
+          from brainvisa.tools.aimsGlobals import aimsVolumeAttributes
+          atts = aimsVolumeAttributes(diskItem)
           refs = atts.get( 'referentials' )
           if refs:
             foundmni = False
@@ -219,8 +220,8 @@ class DatabasesTransformationManager( object ):
     The minf file of destinationDiskItem is saved by this function.'''
     if destinationDiskItem is None or not destinationDiskItem.isReadable(): return # do not create a .minf file for a diskitem that doesn't exist
     refId = self.referential( sourceDiskItem )
-    import shfjGlobals
-    atts = shfjGlobals.aimsVolumeAttributes( sourceDiskItem, forceFormat=True )
+    from brainvisa.tools.aimsGlobals import aimsVolumeAttributes
+    atts = aimsVolumeAttributes( sourceDiskItem, forceFormat=True )
     uuid = None
     if refId is not None:
       if isinstance( refId, DiskItem ):
@@ -307,7 +308,7 @@ class DatabasesTransformationManager( object ):
     if trType is None:
       trType = getDiskItemType( 'Transformation' )
 
-    wdi = neuroHierarchy.WriteDiskItem( trType, format, exactType=True )
+    wdi = WriteDiskItem( trType, format, exactType=True )
     # it would be a good idea to take into account the source and destination diskitems but it is not
     # possible for the moment, these attributes source and destintation doesn't exist and are not used.
     # Moreover, this request can return a wrong transformation, if there is only one transformation of that type in the datbase.

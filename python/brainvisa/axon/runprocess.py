@@ -65,7 +65,7 @@ if not options.enabledb and not options.historyBook:
 
 axon.initializeProcesses()
 
-args = tuple( ( neuroConfig._convertCommandLineParameter( i ) for i in args ) )
+args = tuple( ( neuroConfig.convertCommandLineParameter( i ) for i in args ) )
 kwre = re.compile( '([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(.*)$' )
 kwargs = {}
 todel = []
@@ -74,7 +74,7 @@ for arg in args:
     m = kwre.match( arg )
     if m is not None:
       kwargs[ m.group(1) ] = \
-        neuroConfig._convertCommandLineParameter( m.group(2) )
+        neuroConfig.convertCommandLineParameter( m.group(2) )
       todel.append( arg )
 args = [ arg for arg in args if arg not in todel ]
 
