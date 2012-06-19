@@ -71,7 +71,7 @@ Matching graphical editors classes are defined in :py:mod:`brainvisa.data.qt4gui
 import types, string, weakref, copy
 from UserDict import UserDict
 from UserList import UserList
-from brainvisa import notifier
+from soma.notification import Notifier
 from brainvisa.processing.neuroException import HTMLMessage
 
 #----------------------------------------------------------------------------
@@ -105,7 +105,7 @@ class Parameter( object ):
     self.mandatory = 1
     self.linkParameterWithNonDefaultValue = 0
     self.userLevel = 0
-    self.valueLinkedNotifier = notifier.Notifier( 3 )
+    self.valueLinkedNotifier = Notifier( 3 )
     self._name = None
     self._parameterized = None
     

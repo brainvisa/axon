@@ -584,7 +584,7 @@ class Parameterized( object ):
               print >> linkParamDebug, '      ' + str(parameterized) + '.setValue(', repr(attribute), ',', v,')'
             parameterized.setValue( attribute, v )
           # activate the notifier with the parameter that receive a linked value and with the new value after evaluation of a link function.
-          parameterized.signature[ attribute ].valueLinkedNotifier(
+          parameterized.signature[ attribute ].valueLinkedNotifier.notify(
             parameterized, attribute, valueSet )
 
   def isDefault( self, key ):
