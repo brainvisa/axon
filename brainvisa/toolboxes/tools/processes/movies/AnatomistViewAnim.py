@@ -35,7 +35,7 @@ from brainvisa.processes import *
 import shfjGlobals
 import math, time, shutil
 from brainvisa import quaternion
-from brainvisa import mpegConfig
+from brainvisa.configuration import mpegConfig
 from brainvisa import anatomist
 
 name = 'Anatomist View Animation'

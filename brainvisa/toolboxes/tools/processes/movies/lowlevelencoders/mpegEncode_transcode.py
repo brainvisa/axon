@@ -32,7 +32,7 @@
 
 from brainvisa.processes import *
 from brainvisa.validation import ValidationError
-from brainvisa import mpegConfig
+from brainvisa.configuration import mpegConfig
 import os, shfjGlobals
 
 name = 'Transcode MPEG encoder'
