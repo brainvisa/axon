@@ -83,6 +83,7 @@ def execution( self, context ):
         cpos = info[ 'position' ]
         zoom = info[ 'zoom' ]
         slicequat = info[ 'slice_quaternion' ]
+        a.importObjects()
         objects = win.objects
         objectsInfos={}
         for o in objects:
@@ -90,7 +91,7 @@ def execution( self, context ):
           sel=infos.get( 'selected_in_groups' )
           if sel and group in sel:
             infos['selected'] = 1
-          objectsInfos[o.internalRep] = infos
+          objectsInfos[o.name] = infos
         positions.append( { 'view_quaternion' : quat,
                             'observer_position' : pos,
                             'cursor_position' : cpos,
@@ -130,12 +131,12 @@ def execution( self, context ):
                     s0[3]*(1-incr*i) + s1[3]*incr*i
                     ) ).normalized().vector(), 
                     )
-        quat0 = copy.deepcopy( quat )
-        pos0 = copy.deepcopy( pos )
-        cpos0 = copy.deepcopy( cpos )
+        quat0 = copy.copy( quat )
+        pos0 = copy.copy( pos )
+        cpos0 = copy.copy( cpos )
         zoom0 = zoom
-        slicequat0 = copy.deepcopy( slicequat )
-        objects0 = copy.deepcopy( objectsInfos )
+        slicequat0 = copy.copy( slicequat )
+        objects0 = copy.copy( objectsInfos )
 
     # context.write( self.output_anim )
     if self.output_anim is not None:
