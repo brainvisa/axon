@@ -505,6 +505,10 @@ class SQLDatabase( Database ):
       for table in tables:
         cursor.execute( 'DROP TABLE "' + table[0] + '"' )
       cursor.execute( 'VACUUM' )
+    except Exception:
+      context.warning("The database file must be corrupted, deleting it.")
+      if os.path.exists(self.sqlDatabaseFile):
+        os.remove(self.sqlDatabaseFile)
     finally:
       self._closeDatabaseCursor( cursor )
     self._connection.closeSqliteConnections()
