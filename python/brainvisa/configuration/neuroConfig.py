@@ -601,8 +601,14 @@ if i >= 0:
   startup.append( 'defaultContext().runProcess' + repr( tuple( ( convertCommandLineParameter( i ) for i in sys.argv[ i+1 : ]  ) ) ) )
 else:
   import getopt
+  # Ignore Qt -style attribute
   try:
-    opts, args = getopt.getopt( sys.argv[1:], "dbfe:c:s:u:h",
+    i = sys.argv.index( '-style' )
+    argv = sys.argv[ 1:i ] + sys.argv[ i+2: ]
+  except ValueError:
+    argv = sys.argv[ 1: ]
+  try:
+    opts, args = getopt.getopt( argv, "dbfe:c:s:u:h",
                                 [ "updateCache", "clearCache",
                                   "updateDocumentation", "noMainWindow",
                                   "logFile=", "cleanLog", "profile=", "shell", "validation",
