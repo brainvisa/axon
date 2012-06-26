@@ -145,6 +145,11 @@ class BugReportDialog( QWidget ):
     to = unicode( self.ledTo.text() )
     to = map( string.strip, string.split( to, ',' ) )
     outer[ 'To' ] = string.join( to, ', ' )
+    if outer.get("Cc", None):
+      to.extend(map( string.strip, string.split( outer["Cc"], ',' ) ))
+    if outer.get("Bcc", None):
+      to.extend(map( string.strip, string.split( outer["Bcc"], ',' ) ))
+
     
     outer.preamble = '\n'
     # To guarantee the message ends with a newline
