@@ -51,10 +51,6 @@ The function :py:func:`hierarchies` enables to get the list of databases objects
 import os
 
 from brainvisa.data.sqlFSODatabase import SQLDatabase, SQLDatabases
-try:
-  from soma.database.cw_database import CWDatabase
-except:
-  CWDatabase=None
 from brainvisa.processing.neuroException import showException, showWarning
 from brainvisa.configuration import neuroConfig
 # Import read and write diskitem because neuroHierarchy.ReadDiskItem and neuroHierarchy.WriteDiskItem is used in some processes
@@ -108,35 +104,28 @@ def openDatabases():
           base = ThreadSafeProxy( uri.getAttrProxy() )
           newDatabases.append( base )
         else:
-          if dbSettings.expert_settings.db_type=="Cubicweb":
-            if CWDatabase is not None:
-              print "Create a CW database"
-              base = CWDatabase( dbSettings.expert_settings.db_name, dbSettings.directory, dbSettings.expert_settings.login, dbSettings.expert_settings.password, fso=dbSettings.expert_settings.ontology, context=defaultContext() )
+          otherSqliteFiles=[]
+          if dbSettings.expert_settings.sqliteFileName != ":memory:" and dbSettings.expert_settings.sqliteFileName != ":temporary:":
+            if dbSettings.expert_settings.sqliteFileName:
+              path, ext = os.path.splitext(dbSettings.expert_settings.sqliteFileName)
             else:
-              showWarning("Impossible to load a Cubicweb database because module soma.database.cw_database was not found.")
+              path=os.path.join( dbSettings.directory, 'database' )
+              ext='.sqlite'
+          
+            sqlite=path+"-"+databaseVersion+ext
+            # other versions of sqlite file
+            other=path+ext
+            if os.path.exists(other):
+              otherSqliteFiles.append(other)
+            for version in databaseVersions.keys():
+              if version != databaseVersion:
+                other=path+"-"+version+ext
+                if os.path.exists(other):
+                  otherSqliteFiles.append(path+"-"+version+ext)
           else:
-            otherSqliteFiles=[]
-            if dbSettings.expert_settings.sqliteFileName != ":memory:" and dbSettings.expert_settings.sqliteFileName != ":temporary:":
-              if dbSettings.expert_settings.sqliteFileName:
-                path, ext = os.path.splitext(dbSettings.expert_settings.sqliteFileName)
-              else:
-                path=os.path.join( dbSettings.directory, 'database' )
-                ext='.sqlite'
-            
-              sqlite=path+"-"+databaseVersion+ext
-              # other versions of sqlite file
-              other=path+ext
-              if os.path.exists(other):
-                otherSqliteFiles.append(other)
-              for version in databaseVersions.keys():
-                if version != databaseVersion:
-                  other=path+"-"+version+ext
-                  if os.path.exists(other):
-                    otherSqliteFiles.append(path+"-"+version+ext)
-            else:
-              sqlite=dbSettings.expert_settings.sqliteFileName
-            
-            base = SQLDatabase( sqlite, dbSettings.directory, fso=dbSettings.expert_settings.ontology, context=defaultContext(), otherSqliteFiles=otherSqliteFiles, settings=dbSettings )
+            sqlite=dbSettings.expert_settings.sqliteFileName
+          
+          base = SQLDatabase( sqlite, dbSettings.directory, fso=dbSettings.expert_settings.ontology, context=defaultContext(), otherSqliteFiles=otherSqliteFiles, settings=dbSettings )
           newDatabases.append( base )
             
           # Usually users do not have to modify a builtin database. Therefore no warning is shown for these databases.
