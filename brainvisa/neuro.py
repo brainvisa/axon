@@ -212,6 +212,7 @@ if neuroConfig.gui:
   # QApplication.setColorSpec( QApplication.ManyColor )
   neuroConfig.qtApplication = QApplication(
     [ sys.argv[0], '-name', versionText() ] + sys.argv[1:] )
+  neuroConfig.qtApplication.setAttribute(Qt.AA_DontShowIconsInMenus, False)
 
   # Styles list must be read only after QApplication instanciation
   # otherwise it is incomplete (even after instanciation).
