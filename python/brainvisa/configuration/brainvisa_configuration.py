@@ -42,7 +42,7 @@ __docformat__ = "epytext en"
 
 
 from soma.wip.configuration import ConfigurationGroup
-from soma.wip.temporary import getSystemDefaultTempDir
+from brainvisa.data.temporary import getSystemDefaultTempDir
 from soma.signature.api import HasSignature, Signature, VariableSignature, Unicode, \
                                Choice, OpenedChoice, Boolean, Sequence, FileName
 from distutils.spawn import find_executable

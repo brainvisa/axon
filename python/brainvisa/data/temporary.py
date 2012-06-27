@@ -29,7 +29,7 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
-import os, threading, warnings, stat
+import os, threading, warnings, stat, platform
 from soma.minf.tree import registerClassAs
 
 try:
@@ -71,7 +71,7 @@ class TemporaryFileManager:
           self.__manager.removePath( self.data, raiseException=False )
         elif os.path.exists( self.data ):
           warnings.warn( _t_('temporary path %(path)s not deleted: %(error)s')%\
-            { 'path': path, 
+            { 'path': self.data, 
               'error': _t_('file not controled by a TemporaryFileManager' ) } )
 
   # __SelfDestroyFileName instances are stored as string in minf files
@@ -196,6 +196,18 @@ class TemporaryFileManager:
   def isTemporary( self, path ):
     return isinstance( self.__SelfDestroyFileName, path )
 
+#----------------------------------------------------------------------------
+def getSystemDefaultTempDir():
+  if platform.system() == 'Windows':
+    defaultTemporary = os.getenv( 'TEMP' )
+    if not defaultTemporary:
+      defaultTemporary = os.getenv( 'TMP' )
+      if not defaultTemporary:
+        defaultTemporary = 'C:\\WINDOWS\\TEMP'
+  else:
+    defaultTemporary = '/tmp'
+  
+  return defaultTemporary
 
 #----------------------------------------------------------------------------
 def initializeTemporaryFiles( defaultTemporaryDirectory ):

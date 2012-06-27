@@ -421,6 +421,7 @@ shell = 0
 # GUI defaults
 gui = True
 guiLoaded = False
+qtApplication = None
 
 # server defaults
 server = 0
