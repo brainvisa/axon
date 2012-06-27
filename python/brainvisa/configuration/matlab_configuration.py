@@ -40,7 +40,7 @@
 '''
 __docformat__ = "epytext en"
 
-from soma.wip.configuration import ConfigurationGroup
+from soma.configuration import ConfigurationGroup
 from soma.signature.api import Signature, Unicode, Sequence, Boolean
 import sys
 

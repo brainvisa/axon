@@ -53,7 +53,7 @@ try :
   from brainvisa.configuration.datastorage_configuration import DataStorageConfiguration
 except Exception, e :
   pass
-from soma.wip.configuration import Configuration
+from soma.configuration import Configuration
 from soma.translation import translate as _
 from brainvisa import shelltools
 

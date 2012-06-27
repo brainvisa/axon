@@ -41,7 +41,7 @@
 __docformat__ = "epytext en"
 
 import os
-from soma.wip.configuration import ConfigurationGroup
+from soma.configuration import ConfigurationGroup
 from soma.signature.api import HasSignature, Signature, FileName, \
                                Boolean, OpenedChoice, Sequence, Unicode, Choice
 from soma.minf.api import readMinf

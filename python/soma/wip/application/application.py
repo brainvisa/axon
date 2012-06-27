@@ -50,7 +50,7 @@ from soma.minf.api import readMinf, minfFormat
 from soma.translation import translate as _
 from soma.notification import Notifier
 from soma.wip.application.plugins import Plugins
-from soma.wip.configuration import Configuration
+from soma.configuration import Configuration
 
 #-------------------------------------------------------------------------------
 class Application( Singleton, HasSignature ):

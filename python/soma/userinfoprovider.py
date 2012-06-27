@@ -33,7 +33,7 @@ import operator
 import types
 
 from soma.signature.api import Signature, VariableSignature, Unicode, Sequence, Integer, Choice
-from soma.wip.configuration import ConfigurationGroup
+from soma.configuration import ConfigurationGroup
 from soma.wip.application.api import Application
 
 def getUsersInfo( dataset, formats, keys, sorts ) :
