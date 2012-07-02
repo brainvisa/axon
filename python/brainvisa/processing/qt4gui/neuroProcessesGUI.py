@@ -271,6 +271,7 @@ class SomaWorkflowWidget(ComputingResourceWidget):
                                     self.model.current_resource_id,
                                     serialized_process=serialized_process,
                                     parent=_mainWindow)
+      view.setAttribute( QtCore.Qt.WA_DeleteOnClose )
       QtGui.QApplication.restoreOverrideCursor()
     except Exception, e:
       QtGui.QApplication.restoreOverrideCursor()
@@ -2279,6 +2280,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
                             resource_id,
                             process=self.process,
                             parent=_mainWindow)
+      view.setAttribute( QtCore.Qt.WA_DeleteOnClose )
       view.show()
       
     except:
