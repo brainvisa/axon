@@ -366,11 +366,8 @@ class BooleanListEditor( QWidget, DataEditor ):
     self._setValue( value, default )
 
   def _setValue( self, value, default=0):
-    print '_setValue:', value
-    print 'parameter:', self.parameter
     if value is not None:
       value = map( self.parameter.findValue, value )
-      print 'validated value:', value
       labels = [ str( x ) for x in value ]
       self.sle.setValue( labels )
     if value != self.value:
