@@ -53,6 +53,7 @@ parser.add_option( '--enabledb', dest='enabledb', action='store_true',
 parser.add_option( '--historyBook', dest='historyBook', action='append',
   help='store history information files in this directory (otherwise disabled unless dabasing is enabled)' )
 
+parser.disable_interspersed_args()
 (options, args) = parser.parse_args()
 
 neuroConfig.gui = False
