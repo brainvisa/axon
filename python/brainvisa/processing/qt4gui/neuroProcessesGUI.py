@@ -859,6 +859,9 @@ class HTMLBrowser( QWidget ):
       source = QUrl( source )
     self.browser.setSource( source )
 
+  def reload( self ):
+    self.browser.reload()
+
   def setText( self, text ):
     self.browser.setHtml( text )
 
@@ -2988,6 +2991,7 @@ class ProcessEdit( QDialog ):
     self.saveLanguage()
     self.writeDocumentation()
     brainvisa.processes.generateHTMLProcessesDocumentation( self.process )
+    mainWindow().info.reload()
 
   def accept( self ):
     self.applyChanges()
