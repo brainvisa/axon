@@ -463,7 +463,7 @@ def generateHTMLProcessesDocumentation( procId = None ):
     translators = {}
     for l in neuroConfig._languages:
       translators[ l ] = neuroConfig.Translator( l )
-    ontology = docproc.ontology
+    ontology = 'all'
     docproc.generateHTMLDocumentation( procId, translators, defaultContext(),
       ontology )
 
