@@ -1201,7 +1201,6 @@ class ParameterLabel( QLabel ):
     self.addMenuLock()
     self.setAutoFillBackground(True)
     self.setBackgroundRole(QPalette.Window)
-    
 
   def set_read_only(self, read_only):
     self.default_id.setEnabled(not read_only)
@@ -1389,7 +1388,8 @@ class ParameterizedWidget( QWidget ):
           txtwidth = txtwidth * 1.2 # (bold text)
         if txtwidth > maxwidth:
           maxwidth = txtwidth
-    
+    maxwidth += 20 # approx width of the "modified" icon
+
     documentation = {}
     id = getattr(parameterized, '_id', None)
     if id is not None:
