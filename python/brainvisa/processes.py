@@ -315,15 +315,18 @@ def procdocToXHTML( procdoc ):
           newValue = XHTML.buildFromHTML( value )
         except Exception, e:
           # Build a text editor
-          editor = QWidgetFactory.create( os.path.join( mainPath, '..', 'python', 'brainvisa', 'textEditor.ui' ), None, None )
-          def f( l, c ):
+          from soma.qt4gui.designer import loadUi
+          from PyQt4 import QtGui, QtCore
+          editor = loadUi( os.path.join( mainPath, '..', 'python', 'brainvisa', 'textEditor.ui' ) )
+          #editor.setAttribute( QtCore.Qt.WA_DeleteOnClose, True )
+          def f():
+            l = editor.content.textCursor().blockNumber()
+            c = editor.content.textCursor().columnNumber()
             editor.cursorPosition.setText( str( l+2 ) + ' : ' + str( c ) )
-          for x in editor.queryList( None, 'BV_.*' ):
-            setattr( editor, x.name()[ 3:], x )
           editor.info.setText( '<h2><font color="red">Error in ' + h + ':<br>  ' + str(e) + '</font></h1>' )
-          editor.content.setTextFormat( editor.content.PlainText )
-          editor.content.setText( value )
-          editor.connect( editor.content, SIGNAL( 'cursorPositionChanged(int,int)' ), f )
+          editor.content.setAcceptRichText( False )
+          editor.content.setPlainText( value )
+          editor.connect( editor.content, SIGNAL( 'cursorPositionChanged()' ), f )
           editor.btnOk.setText( 'Check and save as XHTML' )
           editor.btnCancel.setText( 'Save as simple text' )
           line = getattr( e, 'getLineNumber', None )
@@ -336,12 +339,24 @@ def procdocToXHTML( procdoc ):
             column = column()
           else:
             column = 0
-          editor.content.setCursorPosition( line, column )
-          if editor.exec_loop() == QDialog.Accepted:
-            value = unicode( editor.content.text() )
+          if line == 0 and column == 0:
+            x = re.match( '^[^0-9]*:([0-9]+):([0-9]+):', str(e) )
+            print x
+            print str(e)
+            if x:
+              line = int( x.group(1) ) - 3
+              column = int( x.group(2) ) # it's not the column !
+              # (maybe the XML tag number ?)
+          editor.content.moveCursor( QtGui.QTextCursor.Start )
+          for i in xrange( line - 1 ):
+            editor.content.moveCursor( QtGui.QTextCursor.NextBlock )
+          #for i in xrange( column - 1 ):
+            #editor.content.moveCursor( QtGui.QTextCursor.Right )
+          if editor.exec_() == QDialog.Accepted:
+            value = unicode( editor.content.toPlainText() )
             goOn = True
           else:
-            newValue = unicode( editor.content.text() )
+            newValue = unicode( editor.content.toPlainText() )
             goOn = False
       d[ k ] = newValue
     elif type( value ) is types.DictType:
