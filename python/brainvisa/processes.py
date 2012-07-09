@@ -848,7 +848,8 @@ class Parameterized( object ):
 
   def cleanup( self ):
     """Removes all links, observers, and stored converted values, reinitializes the signature change notifier."""
-    debugHere()
+    if debugHere is not None: # at exit time, the debug module might already be gone
+      debugHere()
     self._convertedValues = {}
     self._links = {}
     self._warn = {}

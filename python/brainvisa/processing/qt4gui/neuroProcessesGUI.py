@@ -1380,15 +1380,6 @@ class ParameterizedWidget( QWidget ):
 
     self._doUpdateParameterValue = False
     first = None
-    maxwidth = 0
-    for ( k, p ) in self.parameterized.signature.items():
-      if neuroConfig.userLevel >= p.userLevel:
-        txtwidth = self.fontMetrics().boundingRect(k).width()
-        if p.mandatory:
-          txtwidth = txtwidth * 1.2 # (bold text)
-        if txtwidth > maxwidth:
-          maxwidth = txtwidth
-    maxwidth += 20 # approx width of the "modified" icon
 
     documentation = {}
     id = getattr(parameterized, '_id', None)
@@ -1401,7 +1392,8 @@ class ParameterizedWidget( QWidget ):
 
     # the widget that will contain parameters, it will be put in the scroll widget
     parametersWidget=QWidget()
-    parametersWidgetLayout=QVBoxLayout()
+    # QGridLayout : a label and an editor for each parameter, in 2 columns
+    parametersWidgetLayout=QGridLayout()
     parametersWidgetLayout.setContentsMargins( 0, 0, 0, 0 )
     if sys.platform == 'darwin' and QtCore.qVersion() == '4.6.2':
       # is this layout problem a bug in qt/Mac 4.6.2 ?
@@ -1410,14 +1402,11 @@ class ParameterizedWidget( QWidget ):
       parametersWidgetLayout.setSpacing(2)
     parametersWidget.setLayout(parametersWidgetLayout)
     # create a widget for each parameter
+    line = 0
     for k, p in self.parameterized.signature.items():
       if neuroConfig.userLevel >= p.userLevel:
-        hb = QHBoxLayout( )
-        parametersWidgetLayout.addLayout(hb)
-        hb.setSpacing( 4 )
-        # in a QHBoxLayout : a label and an editor for each parameter
         l = ParameterLabel( k, p.mandatory, None )
-        hb.addWidget(l)
+        parametersWidgetLayout.addWidget(l, line, 0 )
         l.setDefault(self.parameterized.isDefault( k ))
         self.connect( l, SIGNAL( 'toggleDefault' ), self._toggleDefault )
         
@@ -1428,11 +1417,11 @@ class ParameterizedWidget( QWidget ):
             self.connect( l, SIGNAL( 'lock_system' ), self._lock_system )
             self.connect( l, SIGNAL( 'unlock_system' ), self._unlock_system )
         
-        l.setFixedWidth( maxwidth )
+        l.setSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed )
         self.labels[ k ] = l
         e = p.editor( None, k, weakref.proxy( self ) )
         
-        hb.addWidget(e)
+        parametersWidgetLayout.addWidget(e, line, 1)
 
         self.parameterized.addParameterObserver( k, self.parameterChanged )
 
@@ -1458,6 +1447,7 @@ class ParameterizedWidget( QWidget ):
             + _t_( \
             'value has been manually changed and is not modified by links anymore' ) \
             + '</em>' )
+        line += 1
 
     parametersWidget.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum))
     self.scrollWidget.setWidget(parametersWidget)
