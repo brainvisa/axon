@@ -84,6 +84,8 @@ def initializeFormatLists():
   anatomistVolumeFormats = createFormatList(
     'Anatomist volume formats',
     (
+      'gz compressed NIFTI-1 image',
+      'NIFTI-1 image',
       'GIS Image',
       'SPM image',
       'VIDA Image',
@@ -113,8 +115,6 @@ def initializeFormatLists():
       'TIFF(.tif) image',
       'MINC image',
       'gz compressed MINC image',
-      'NIFTI-1 image',
-      'gz compressed NIFTI-1 image',
       'DICOM image',
     )
   )
@@ -122,6 +122,8 @@ def initializeFormatLists():
   aimsVolumeFormats = createFormatList(
     'Aims readable volume formats',
     (
+      'gz compressed NIFTI-1 image',
+      'NIFTI-1 image',
       'GIS Image',
       'SPM image',
       'VIDA Image',
@@ -141,8 +143,6 @@ def initializeFormatLists():
       'TIFF(.tif) image',
       'MINC image',
       'gz compressed MINC image',
-      'NIFTI-1 image',
-      'gz compressed NIFTI-1 image',
       'DICOM image',
     )
   )
@@ -151,6 +151,8 @@ def initializeFormatLists():
   aimsWriteVolumeFormats = createFormatList(
     'Aims writable volume formats',
     (
+      'gz compressed NIFTI-1 image',
+      'NIFTI-1 image',
       'GIS Image',
       'SPM image',
       'VIDA Image',
@@ -168,8 +170,6 @@ def initializeFormatLists():
       'XPM image',
       'TIFF image',
       'MINC image',
-      'NIFTI-1 image',
-      'gz compressed NIFTI-1 image',
     )
   )
 
@@ -199,6 +199,7 @@ def initializeFormatLists():
   anatomistMeshFormats = createFormatList(
     'Anatomist mesh formats',
     (
+      'GIFTI file',
       'MESH mesh',
       'TRI mesh',
       'Z compressed MESH mesh',
@@ -208,7 +209,6 @@ def initializeFormatLists():
       'PLY mesh',
       'Z compressed PLY mesh',
       'gz compressed PLY mesh',
-      'GIFTI file',
       'Z compressed GIFTI file',
       'gz compressed GIFTI file',
       'MNI OBJ mesh',
@@ -224,10 +224,10 @@ def initializeFormatLists():
   aimsMeshFormats = createFormatList(
     'Aims mesh formats',
     (
+      'GIFTI file',
       'MESH mesh',
       'TRI mesh',
       'PLY mesh',
-      'GIFTI file',
       'MNI OBJ mesh',
     )
   )
@@ -236,8 +236,8 @@ def initializeFormatLists():
   aimsTextureFormats = createFormatList(
     'Aims texture formats',
     (
-      'Texture',
       'GIFTI file',
+      'Texture',
     )
   )
 
@@ -245,10 +245,10 @@ def initializeFormatLists():
   anatomistTextureFormats = createFormatList(
     'Anatomist texture formats',
     (
+      'GIFTI file',
       'Texture',
       'Z compressed Texture',
       'gz compressed texture',
-      'GIFTI file',
       'Z compressed GIFTI file',
       'gz compressed GIFTI file',
     )
