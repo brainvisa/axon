@@ -47,7 +47,6 @@ from brainvisa.configuration import neuroConfig
 from brainvisa.configuration.qt4gui import neuroConfigGUI
 from brainvisa.processing.qt4gui import neuroLogGUI
 from brainvisa.data import neuroData
-from brainvisa.wip import newProcess
 from brainvisa.history import ProcessExecutionEvent
 import brainvisa.processes
 from brainvisa.data.neuroDiskItems import DiskItem
@@ -2066,15 +2065,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       enode = item._executionNode
       if hasattr( enode, '_process' ):
         proc = enode._process
-        if isinstance( proc, type ) \
-          and issubclass( proc, newProcess.NewProcess ):
-          doc = proc.onlineDocumentationSource()
-          if proc is not None:
-            _mainWindow.info.setSource( doc )
-        else:
-          doc = brainvisa.processes.getHTMLFileName( proc )
-          if os.path.exists( doc ):
-            _mainWindow.info.setSource( doc )
+        doc = brainvisa.processes.getHTMLFileName(proc)
+        if os.path.exists(doc):
+          _mainWindow.info.setSource(doc)
 
   def defaultInlineGUI( self, parent, externalRunButton = False, container = None ):
     if container is None:
@@ -2641,35 +2634,29 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 def showProcess( process, *args, **kwargs):
   '''Opens a process window and set the corresponding arguments'''
   global _mainWindow
-  if isinstance( process, type ) and issubclass( process, newProcess.NewProcess ):
-    process = process()
-  if isinstance( process, newProcess.NewProcess ):
-    # Opening a new style process
-    process.show( *args, **kwargs )
-  else:
-    view=None
-    try:
-      process = brainvisa.processes.getProcessInstance( process )
-      if process is None:
-        raise RuntimeError( neuroException.HTMLMessage(_t_( 'Invalid process <em>%s</em>' ) % ( str(process), )) )
-      for i in xrange( len( args ) ):
-        k, p = process.signature.items()[ i ]
-        process.setValue( k, args[ i ] )
-      for k, v in kwargs.items():
-        process.setValue( k, v )
-      gui = getattr( process, 'overrideGUI', None )
-      if gui is None:
-        view = ProcessView( process )
-      else:
-        view = gui()
-      windowGeometry = getattr( process, '_windowGeometry', None )
-      if windowGeometry is not None:
-        view.move( *windowGeometry[ 'position' ] )
-        view.resize( *windowGeometry[ 'size' ] )
-      view.show()
-    except: # an exception can occur if the process is reloaded and an error has been introduced in its code.
-      neuroException.showException()
-    return view
+  view=None
+  try:
+    process = brainvisa.processes.getProcessInstance( process )
+    if process is None:
+      raise RuntimeError( neuroException.HTMLMessage(_t_( 'Invalid process <em>%s</em>' ) % ( str(process), )) )
+    for i in xrange( len( args ) ):
+      k, p = process.signature.items()[ i ]
+      process.setValue( k, args[ i ] )
+    for k, v in kwargs.items():
+      process.setValue( k, v )
+    gui = getattr( process, 'overrideGUI', None )
+    if gui is None:
+      view = ProcessView( process )
+    else:
+      view = gui()
+    windowGeometry = getattr( process, '_windowGeometry', None )
+    if windowGeometry is not None:
+      view.move( *windowGeometry[ 'position' ] )
+      view.resize( *windowGeometry[ 'size' ] )
+    view.show()
+  except: # an exception can occur if the process is reloaded and an error has been introduced in its code.
+    neuroException.showException()
+  return view
 
 
 #----------------------------------------------------------------------------
@@ -3202,24 +3189,15 @@ class ProcessSelectionWidget( QMainWindow ):
     if item:
       if item.isLeaf():
         processId = item.id
-        if isinstance( processId, type ) and issubclass( processId, newProcess.NewProcess ):
-          source = processId.onlineDocumentationSource()
-          if source is None:
-            self.info.setText( processId.onlineDocumentationHTML() )
-          else:
-            self.info.setSource( source )
-          self.btnOpen.setEnabled( True )
-          if self.btnEdit is not None: self.btnEdit.setEnabled( False )
+        self.currentProcessId = processId
+        self.btnOpen.setEnabled( 1 )
+        documentation = brainvisa.processes.readProcdoc( self.currentProcessId )
+        source = brainvisa.processes.getHTMLFileName( self.currentProcessId )
+        if os.path.exists( source ):
+          self.info.setSource( source )
         else:
-          self.currentProcessId = processId
-          self.btnOpen.setEnabled( 1 )
-          documentation = brainvisa.processes.readProcdoc( self.currentProcessId )
-          source = brainvisa.processes.getHTMLFileName( self.currentProcessId )
-          if os.path.exists( source ):
-            self.info.setSource( source )
-          else:
-            self.info.setText( '' )
-          if self.btnEdit is not None: self.btnEdit.setEnabled( 1 )
+          self.info.setText( '' )
+        if self.btnEdit is not None: self.btnEdit.setEnabled( 1 )
       else:
         self.currentProcessId = None
         self.btnOpen.setEnabled( 0 )
