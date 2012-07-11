@@ -13,17 +13,15 @@ class TestDatabaseHistory(unittest.TestCase):
   def setUp(self):
     brainvisa.axon.initializeProcesses()
     db_directory=defaultContext().temporary("Directory")
-    #os.mkdir(str(db_directory))
     # create a database in a temporary directory
-    dbs = neuroConfig.DatabaseSettings( db_directory.name )
-    dbs.expert_settings.ontology = 'brainvisa-3.1.0'
-    dbs.expert_settings.sqliteFileName = ':temporary:'
-    dbs.expert_settings.activate_history = True
-    neuroConfig.dataPath.append( dbs )
-    self.db = SQLDatabase( dbs.expert_settings.sqliteFileName,  db_directory.name, dbs.expert_settings.ontology, settings=dbs )
+    self.dbs = neuroConfig.DatabaseSettings( db_directory.name )
+    self.dbs.expert_settings.ontology = 'brainvisa-3.1.0'
+    self.dbs.expert_settings.sqliteFileName = os.path.join(str(db_directory), "database.sqlite")
+    self.dbs.expert_settings.activate_history = True
+    neuroConfig.dataPath.append( self.dbs )
+    self.db = SQLDatabase( self.dbs.expert_settings.sqliteFileName,  db_directory.name, 
+                           self.dbs.expert_settings.ontology, context=defaultContext(), settings=self.dbs )
     neuroHierarchy.databases.add( self.db )
-    self.db.clear()
-    self.db.update( context=defaultContext() )
     self.example_data = defaultContext().temporary("NIFTI-1 image")
     volume=aims.Volume( 256, 256, 128, dtype='int16' )
     volume.fill(0)
@@ -44,7 +42,9 @@ class TestDatabaseHistory(unittest.TestCase):
     self.assertTrue(os.path.exists(bvproc_file))
     
   def tearDown(self):
+    neuroConfig.dataPath.remove(self.dbs)
     brainvisa.axon.cleanup()
+
 
 def test_suite():
   return unittest.TestLoader().loadTestsFromTestCase(TestDatabaseHistory)

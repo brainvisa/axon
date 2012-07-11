@@ -44,16 +44,10 @@ import threading
 #------------------------------------------------------------------------------
 class DatabasesTransformationManager( object ):
 
-  '''TransformationsManager linked with BrainVISA database system. This
-  object imports all the transformations and referentials of a series of
-  BrainVISA databases.'''
+  '''TransformationsManager linked with BrainVISA database system.'''
 
-  def __init__( self, database = None ):
-    '''If databases is None, this constructor uses all the selected databases
-    of BrainVISA.'''
-    
+  def __init__( self ):
     self.lock = threading.RLock()
-    self.__databases = database
 
   def referential( self, diskItemOrId ):
     '''Return the referential object corresponding to the given diskItem
@@ -70,7 +64,7 @@ class DatabasesTransformationManager( object ):
     else:
       uuid = diskItemOrId
     if uuid is None: return None
-    return self.__databases.getDiskItemFromUuid( uuid, None )
+    return neuroHierarchy.databases.getDiskItemFromUuid( uuid, None )
 
 
   def findPaths( self, source_referential, destination_referential, maxLength=None, bidirectional=False ):
@@ -92,8 +86,8 @@ class DatabasesTransformationManager( object ):
     else:
       destination_referential = self.getObjectUuid( destination_referential )
 
-    for path in self.__databases.findTransformationPaths( source_referential, destination_referential, maxLength, bidirectional ):
-      yield [ self.__databases.getDiskItemFromUuid( i[0] ) for i in path ]
+    for path in neuroHierarchy.databases.findTransformationPaths( source_referential, destination_referential, maxLength, bidirectional ):
+      yield [ neuroHierarchy.databases.getDiskItemFromUuid( i[0] ) for i in path ]
 
 
   def setReferentialTo( self, diskItem, referential ):
@@ -106,7 +100,7 @@ class DatabasesTransformationManager( object ):
     diskItem.readAndUpdateMinf()
     diskItem.setMinf( 'referential', ref.uuid() )
     try:
-      self.__databases.insertDiskItem( diskItem, update=True )
+      neuroHierarchy.databases.insertDiskItem( diskItem, update=True )
     except:
       pass
 
@@ -157,8 +151,8 @@ class DatabasesTransformationManager( object ):
         referential.createParentDirectory()
         diskItem.setMinf( 'referential', referential.uuid() )
         referential.saveMinf()
-        self.__databases.insertDiskItem( referential, update=True )
-        self.__databases.insertDiskItem( diskItem, update=True )
+        neuroHierarchy.databases.insertDiskItem( referential, update=True )
+        neuroHierarchy.databases.insertDiskItem( diskItem, update=True )
         # write a transformation between this referential and MNI template if needed
         if diskItem.get( 'normalized' ) == 'yes':
           from brainvisa.tools.aimsGlobals import aimsVolumeAttributes
@@ -207,7 +201,7 @@ class DatabasesTransformationManager( object ):
     try:
       referential.createParentDirectory()
       referential.saveMinf()
-      self.__databases.insertDiskItem( referential, update=True )
+      neuroHierarchy.databases.insertDiskItem( referential, update=True )
     except:
       referential=None
     return referential
@@ -237,7 +231,7 @@ class DatabasesTransformationManager( object ):
           destinationDiskItem.setMinf( 'referentials', refs )
           destinationDiskItem.setMinf( 'transformations', trans )
         try:
-          self.__databases.insertDiskItem( destinationDiskItem, update=True )
+          neuroHierarchy.databases.insertDiskItem( destinationDiskItem, update=True )
         except:
           pass
 
@@ -332,7 +326,7 @@ class DatabasesTransformationManager( object ):
       if not simulation:
         transformation.createParentDirectory()
         transformation.saveMinf()
-        self.__databases.insertDiskItem( transformation, update=True )
+        neuroHierarchy.databases.insertDiskItem( transformation, update=True )
     return transformation
 
 
@@ -356,7 +350,7 @@ class DatabasesTransformationManager( object ):
       transformation.setMinf( 'description', name )
     try:
       #transformation.saveMinf()
-      self.__databases.insertDiskItem( transformation, update=True )
+      neuroHierarchy.databases.insertDiskItem( transformation, update=True )
     except:
       pass
 
@@ -388,14 +382,14 @@ class DatabasesTransformationManager( object ):
           try:
             result.createParentDirectory()
             result.saveMinf()
-            self.__databases.insertDiskItem( result, update=True )
+            neuroHierarchy.databases.insertDiskItem( result, update=True )
           except OSError:
             result = None
         if assign:
           if str(result.uuid()) != oldref and diskItem.isWriteable():
             diskItem.setMinf( 'referential', result.uuid() )
             #diskItem.saveMinf()
-            self.__databases.insertDiskItem( diskItem, update=True )
+            neuroHierarchy.databases.insertDiskItem( diskItem, update=True )
 
     return result
 
@@ -408,7 +402,7 @@ _transformationManager = None
 def getTransformationManager():
   global _transformationManager
   if _transformationManager is None:
-    _transformationManager = DatabasesTransformationManager( neuroHierarchy.databases )
+    _transformationManager = DatabasesTransformationManager()
   return _transformationManager
 
 #------------------------------------------------------------------------------

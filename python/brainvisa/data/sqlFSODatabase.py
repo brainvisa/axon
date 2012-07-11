@@ -446,15 +446,12 @@ class SQLDatabase( Database ):
           self._mustBeUpdated=True
           brainvisa.processes.defaultContext().write( "Database ",  self.name, " must be updated because some types tables are missing." )
     else :
-      if (self.sqlDatabaseFile != ":memory:") and (len(os.listdir(self.directory)) > 1): # there is at least database_settings.minf
+      if (sqlDatabaseFile != ":memory:") and (sqlDatabaseFile != ":temporary:") and (len(os.listdir(self.directory)) > 1): # there is at least database_settings.minf
         self._mustBeUpdated = True
         brainvisa.processes.defaultContext().write( "Database ",  self.name, " must be updated because there is no database file." )
-      else: # if database directory is empty , it is a new database or it is in memory -> automatically update
+      else: # if database directory is empty , it is a new database or it is in memory or in temp dir -> automatically update
         if self.createTables():
           self.update( context=context)
-    # do not update automatically enven if the database sqlite file doesn't exists, ask the user.
-    #if self.createTables():
-      #self.update( context=context)
     if self.otherSqliteFiles: # if there are other sqlite files, the database might have been modified by other version of brainvisa
       # update or not depends on the value of databaseVersionSync option
       if ((neuroConfig.databaseVersionSync is None) and (not neuroConfig.setup)):
