@@ -51,6 +51,7 @@ from brainvisa.history import ProcessExecutionEvent
 import brainvisa.processes
 from brainvisa.data.neuroDiskItems import DiskItem
 from brainvisa.data.readdiskitem import ReadDiskItem
+from brainvisa.data.writediskitem import WriteDiskItem
 import weakref
 from soma.minf.xhtml import XHTML
 from soma.qtgui.api import QtThreadCall, FakeQtThreadCall, WebBrowserWithSearch, bigIconSize, defaultIconSize
@@ -63,7 +64,6 @@ except:
   # for sip 3.x (does it work ??)
   import libsip as sip
 
-import brainvisa.processes
 from brainvisa.processing import neuroException
 from soma.qtgui.api import EditableTreeWidget, TreeListWidget
 from soma.notification import ObservableList, EditableTree
@@ -1859,10 +1859,13 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       self.executionTreeMenu = QMenu()
       self.executionTreeMenu.addAction( _t_("Unselect before"), self.menuUnselectBefore)
       self.executionTreeMenu.addAction( _t_("Unselect after"), self.menuUnselectAfter)
-      self.executionTreeMenu.addAction( _t_("Unselect all"),  self.menuUnselectAll )
+      #self.executionTreeMenu.addAction( _t_("Unselect all"),  self.menuUnselectAll )
       self.executionTreeMenu.addAction( _t_("Select before"), self.menuSelectBefore)
       self.executionTreeMenu.addAction( _t_("Select after"), self.menuSelectAfter)
-      self.executionTreeMenu.addAction( _t_("Select all"), self.menuSelectAll )
+      #self.executionTreeMenu.addAction( _t_("Select all"), self.menuSelectAll )
+      self.executionTreeMenu.addSeparator()
+      self.executionTreeMenu.addAction( _t_("Unselect steps writing locked files"), self.menuUnselectLocked )
+      self.executionTreeMenu.addAction( _t_("Unselect steps upstream of locked files"), self.menuUnselectLockedUpstream )
       self.executionTreeMenu.addSeparator()
       self.executionTreeMenu._opennodeaction \
         = self.executionTreeMenu.addAction( _t_("Open this step separately"),
@@ -2035,18 +2038,98 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
   def menuUnselectAfter(self):
     self.changeItemSelection(select=False, all=False, before=False)
-    
-  def menuUnselectAll(self):
-    self.changeItemSelection(select=False, all=True, before=False)
-    
+
+  #def menuUnselectAll(self):
+    #self.changeItemSelection(select=False, all=True, before=False)
+
   def menuSelectBefore(self):
     self.changeItemSelection(select=True, all=False, before=True)
 
   def menuSelectAfter(self):
     self.changeItemSelection(select=True, all=False, before=False)
 
-  def menuSelectAll(self):
-    self.changeItemSelection(select=True, all=True, before=False)
+  #def menuSelectAll(self):
+    #self.changeItemSelection(select=True, all=True, before=False)
+
+  def lockedSteps( self, useUnselected=False ):
+    items = [ self.process.executionNode() ]
+    locked = []
+    while items:
+      item = items.pop()
+      if not useUnselected and not item.isSelected():
+        continue
+      children = list( item.children() )
+      if len( children ) == 0: # terminal node
+        process = item._process
+        for n, p in process.signature.iteritems():
+          if isinstance( p, WriteDiskItem ):
+            v = getattr( item._process, n )
+            #test if data is locked
+            if v is not None and v.isLockData():
+              locked.append( item )
+      else:
+        if useUnselected:
+          items += list( item.children() )
+        else:
+          items += [ x for x in item.children() if x.isSelected() ]
+    return locked
+
+  def parentNodes( self, enode ):
+    items = [ [ self.process.executionNode() ] ]
+    chain = []
+    # walk the tree "vertically" getting deep in branches first
+    while items:
+      iteml = items[-1]
+      if len( iteml ) == 0:
+        items.pop()
+        chain.pop()
+        continue
+      item = iteml.pop()
+      if item is enode:
+        return chain
+      children = list( item.children() )
+      if len( children ) != 0:
+        chain.append( item )
+        items.append( list( item.children() ) )
+
+  def menuUnselectLocked( self ):
+    locked = self.lockedSteps()
+    for item in locked:
+      if item._optional:
+        item.setSelected( False )
+      else:
+        parents = [ x for x in self.parentNodes( item ) if x._optional ]
+        if parents:
+          parents[-1].setSelected( False )
+
+  def menuUnselectLockedUpstream( self ):
+    items = self.lockedSteps( useUnselected=True )
+    while items:
+      item = items.pop()
+      if item._optional:
+        item.setSelected( False )
+      else:
+        parents = [ x for x in self.parentNodes( item ) if x._optional ]
+        if parents:
+          parents[-1].setSelected( False )
+          items.append( parents[-1] )
+          continue
+      parents = self.parentNodes( item )
+      parents.reverse()
+      for p in parents:
+        if p.isSelected():
+          if p.__class__ is brainvisa.processes.SerialExecutionNode:
+            for sp in p.children():
+              if sp is item:
+                break
+              if sp._optional:
+                sp.setSelected( False )
+              else:
+                sparents = [ x for x in self.parentNodes( sp ) if x._optional ]
+                if sparents:
+                  sparents[-1].setSelected( False )
+          item = p
+
 
   def menuDetachExecutionNode(self):
     item=self.executionTree.currentItem()

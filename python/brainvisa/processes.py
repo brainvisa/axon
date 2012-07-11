@@ -2119,11 +2119,11 @@ class ExecutionContext( object ):
             tmp = _getConvertedValue( v, p )
             if tmp is not None:
               process.setConvertedValue( n, tmp )
-          elif isinstance( p, WriteDiskItem ):  
+          elif isinstance( p, WriteDiskItem ):
             v = getattr( process, n )
    
             #test if data is locked
-            if  (v is not None ):     
+            if  (v is not None ):
               if v.isLockData() and (process.execution.im_func != super(process.__class__, process).execution.im_func ) :
                 # raise an error if the diskitem is an output of a process which has an execution function (not the default execution function of the Process class)
                 raise IOError ( HTMLMessage(_t_('<b>The file: <em>%s</em> is locked</b>. It cannot be opened for writing. You can unlock it if necessary using  the contextual menu of the parameter %s') % ( str(v), n ) ))
