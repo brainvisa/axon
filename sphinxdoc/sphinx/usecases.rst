@@ -1,6 +1,15 @@
 Use cases of Axon python API
 ============================
 
+Load Brainvisa
+--------------
+
+The following lines enable to load Brainvisa without the graphical user interface through a python script:
+
+>>> import brainvisa.axon
+>>> brainvisa.axon.initializeProcesses()
+Loading toolbox ...
+
 Call a process
 --------------
 
@@ -9,12 +18,9 @@ The module :py:mod:`brainvisa.processes` manages the processes, pipelines and th
 The object :py:class:`brainvisa.processes.ExecutionContext` enables to start a Brainvisa process using the method :py:meth:`brainvisa.processes.ExecutionContext.runProcess`.
 When Brainvisa is loaded, a default execution context exists and is returned by the function :py:func:`brainvisa.processes.defaultContext`
 
-The following example will load Brainvisa and run the process Threshold on an image:
+The following example will run the process Threshold on an image:
 
->>> import brainvisa.axon
 >>> import brainvisa.processes
->>> brainvisa.axon.initializeProcesses()
-Loading toolbox ...
 >>> context = brainvisa.processes.defaultContext()
 
 >>> # Just to get an example data for running the process
@@ -28,6 +34,30 @@ Loading toolbox ...
 <BLANKLINE>
 Process Threshold started ...
 
+Select a step in a pipeline
+---------------------------
+
+In a pipeline, some steps may be optional and can be selected or unselected for execution. 
+It is possible to select or unselect a step of a pipeline before running it through a python script. 
+A pipeline is a process that have execution nodes. The method :py:meth:`brainvisa.processes.Process.executionNode` returns an :py:class:`ExecutionNode`.
+The execution node of the pipeline contains child nodes, the name of these nodes can be obtained with the method :py:meth:`brainvisa.processes.ExecutionNode.childrenNames`.
+To get a specific child node, the method :py:meth:`brainvisa.processes.ExecutionNode.child` can be used.
+
+The following examples gets an instance of the Morphologist pipeline and selects it _sulci recognition_ step:
+
+>>> pipeline=brainvisa.processes.getProcessInstance("morphologist")
+>>> nodes=pipeline.executionNode()
+>>> nodes.childrenNames()
+['PrepareSubject', 'BiasCorrection', ...
+>>> nodes.child("SulciRecognition").setSelected(1)
+<BLANKLINE>
+Process Check SPAM models ...
+>>> nodes.child("SulciRecognition").isSelected()
+1
+>>> brainvisa.processes.defaultContext().runProcess(pipeline)
+Traceback (most recent call last):
+    ...
+Exception: Mandatory argument <em>mri</em> has not a valid value
 
 Query a database
 ----------------
@@ -77,5 +107,9 @@ The object :py:class:`brainvisa.data.writediskitem.WriteDiskItem` enables to cre
 >>> item.isReadable()
 0
 
+Quit Brainvisa
+--------------
+
+The function :py:func:`brainvisa.axon.cleanup` should be called at the end of the script to quit properly Brainvisa.
 
 >>> brainvisa.axon.cleanup()
