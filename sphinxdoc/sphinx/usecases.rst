@@ -39,14 +39,15 @@ Select a step in a pipeline
 
 In a pipeline, some steps may be optional and can be selected or unselected for execution. 
 It is possible to select or unselect a step of a pipeline before running it through a python script. 
-A pipeline is a process that have execution nodes. The method :py:meth:`brainvisa.processes.Process.executionNode` returns an :py:class:`ExecutionNode`.
+A pipeline is a process that have execution nodes. The method :py:meth:`brainvisa.processes.Process.executionNode` returns an :py:class:`brainvisa.processes.ExecutionNode`.
 The execution node of the pipeline contains child nodes, the name of these nodes can be obtained with the method :py:meth:`brainvisa.processes.ExecutionNode.childrenNames`.
 To get a specific child node, the method :py:meth:`brainvisa.processes.ExecutionNode.child` can be used.
 
-The following examples gets an instance of the Morphologist pipeline and selects it _sulci recognition_ step:
+The following examples gets an instance of the Morphologist pipeline and selects it *sulci recognition* step:
 
 >>> pipeline=brainvisa.processes.getProcessInstance("morphologist")
 >>> nodes=pipeline.executionNode()
+
 >>> nodes.childrenNames()
 ['PrepareSubject', 'BiasCorrection', ...
 >>> nodes.child("SulciRecognition").setSelected(1)
@@ -54,6 +55,10 @@ The following examples gets an instance of the Morphologist pipeline and selects
 Process Check SPAM models ...
 >>> nodes.child("SulciRecognition").isSelected()
 1
+
+The process instance can be given as a parameter for the :py:meth:`brainvisa.processes.ExecutionContext.runProcess` method instead of the process id. 
+In the following exemple, the parameters of the process should be filled in to really execute the pipeline:
+
 >>> brainvisa.processes.defaultContext().runProcess(pipeline)
 Traceback (most recent call last):
     ...
@@ -110,6 +115,6 @@ The object :py:class:`brainvisa.data.writediskitem.WriteDiskItem` enables to cre
 Quit Brainvisa
 --------------
 
-The function :py:func:`brainvisa.axon.cleanup` should be called at the end of the script to quit properly Brainvisa.
+The function :py:func:`brainvisa.axon.processes.cleanup` should be called at the end of the script to quit properly Brainvisa.
 
 >>> brainvisa.axon.cleanup()
