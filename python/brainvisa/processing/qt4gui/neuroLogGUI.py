@@ -33,7 +33,7 @@
 
 import time
 import os
-from brainvisa.processing.qtgui.backwardCompatibleQt import QWidget, QVBoxLayout, QIcon, QSplitter, Qt, QSizePolicy, QSize, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QHBoxLayout, QPushButton, QObject, SIGNAL, QFileDialog, QKeySequence, QInputDialog, QLineEdit
+from brainvisa.processing.qtgui.backwardCompatibleQt import QWidget, QVBoxLayout, QIcon, QSplitter, Qt, QSizePolicy, QSize, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QHBoxLayout, QPushButton, QObject, SIGNAL, QFileDialog, QKeySequence, QInputDialog, QLineEdit, qApp
 from brainvisa.processing import neuroLog
 from brainvisa.processing import neuroException
 from brainvisa.configuration import neuroConfig
@@ -71,6 +71,8 @@ class LogItemsViewer( QWidget):
     self._content = TextEditWithSearch(splitter)#QTextView( splitter )
     self._content.setReadOnly(True)
     self._content.setSizePolicy( QSizePolicy( QSizePolicy.Minimum, QSizePolicy.Expanding ) )
+    splitter.setStretchFactor( 0, 1 )
+    splitter.setStretchFactor( 1, 2 )
     
     QObject.connect( self._list, SIGNAL( 'currentItemChanged( QTreeWidgetItem *, QTreeWidgetItem * )' ),
                      self._updateContent )
@@ -221,7 +223,8 @@ class LogViewer( QWidget ):
 
     neuroConfig.registerObject( self )
     self.setLogFile( fileName )
-    self.resize( 800, 600 )
+    ds = qApp.desktop().size()
+    self.resize( min( 1200, ds.width() ), min( 800, ds.height() ) )
 
   def setLogFile( self, fileName ):
     self._fileName = fileName

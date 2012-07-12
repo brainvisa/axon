@@ -3223,7 +3223,8 @@ class ProcessSelectionWidget( QMainWindow ):
 
     # try to start with a doc opened
     self.info.home()
-    self.resize(800, 600)
+    ds = qApp.desktop().size()
+    self.resize( min( 1200, ds.width() ), min( 800, ds.height() ) )
     
     state_path = os.path.join(neuroConfig.homeBrainVISADir, "main_window_state.bin")
     if os.path.exists(state_path):
