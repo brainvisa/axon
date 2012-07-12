@@ -75,6 +75,7 @@ from soma.signature.api import Boolean as SomaBoolean
 from soma.qt4gui.api import ApplicationQt4GUI
 from brainvisa.data.databaseCheck import BVChecker_3_1
 from brainvisa.data import neuroHierarchy
+from brainvisa.tools import checkbrainvisaupdates
 import urllib
 try: 
   from soma.workflow.gui.workflowGui import SomaWorkflowWidget as ComputingResourceWidget
@@ -890,8 +891,23 @@ class HTMLBrowser( QWidget ):
     neuroConfig.unregisterObject( self )
     QWidget.closeEvent( self, event )
 
-  def home( self, void ):
-    self.setSource( neuroConfig.getDocFile(os.path.join( 'help','index.html' ) ) )
+  def home( self, void=None ):
+    newver = checkbrainvisaupdates.checkUpdates()
+    if newver:
+      text = '''<html><div style="background-color: #ffe8e8">
+<hr/>
+<h2>A newer BrainVISA version is available</h2>
+<p>Version ''' + '.'.join( [ str(x) for x in newver[0] ] ) + ''' is available on the BrainVISA web site.<br/>
+Download it on <a href="http://brainvisa.info/downloadpage.html">the BrainVISA download page</a>.</p>
+<hr/>
+</div>
+<iframe src="file://''' + neuroConfig.getDocFile(os.path.join( 'help','index.html' ) ) + '''" align="center" width="100%" height="100%" scrolling="auto" frameborder="0"></iframe>
+</html>'''
+      tmp = brainvisa.processes.defaultContext().temporary( 'HTML' )
+      open( tmp.fullPath(), 'w' ).write( text )
+      self.setSource( tmp.fullPath() )
+    else:
+      self.setSource( neuroConfig.getDocFile(os.path.join( 'help','index.html' ) ) )
 
   def siteSearch( self ):
     '''Search the brainvisa.info website using google search'''
@@ -3206,7 +3222,7 @@ class ProcessSelectionWidget( QMainWindow ):
     self.updateList()
 
     # try to start with a doc opened
-    self.info.setSource( neuroConfig.getDocFile(os.path.join( 'help','index.html' ) ) )
+    self.info.home()
     self.resize(800, 600)
     
     state_path = os.path.join(neuroConfig.homeBrainVISADir, "main_window_state.bin")
