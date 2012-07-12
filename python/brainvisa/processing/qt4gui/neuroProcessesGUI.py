@@ -2419,7 +2419,8 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     _mainThreadActions.push( self._appendInfo, html )
 
   def _appendInfo( self, msg ):
-    self.info.append( msg  )
+    # the tags font are here just to avoid display problems in QTextEdit with non html content (color staying red after an error for example)
+    self.info.append( "<font>"+msg+"</font>"  )
 
   def _processStarted( self ):
     if self._depth() == 1:
