@@ -3143,24 +3143,19 @@ class ProcessSelectionWidget( QMainWindow ):
     view_menu.addAction(self.dock_sw.toggleViewAction())
     view_menu.addAction(close_viewers_action(self))
 
-    # the main layout contains vertically : a QSplitter (processes | doc) and a QHBoxLayout (open and edit buttons)
+    # central widget layout
     layout=QVBoxLayout()
     centralWidget.setLayout(layout)
     layout.setContentsMargins( 10, 10, 10, 10 )
 
-    # the splitter contains the processes on the left and the documentation on the right
-    #splitter = QSplitter( )
-    #layout.addWidget(splitter)
-
-    # left part of the splitter : QVBoxLayout : processTrees and the search box
-    w=QWidget(self) #splitter)
+    # processTrees and the search box
+    w=QWidget(self)
     layout.addWidget(w)
     vb = QVBoxLayout()
     vb.setContentsMargins( 0, 0, 0, 0 )
     w.setLayout(vb)
     self.currentProcessId = None
     self.processTrees=ProcessTreesWidget()
-    #vb.addWidget(self.processTrees)
     self.processTrees.setSizePolicy( QSizePolicy( QSizePolicy.Preferred,
       QSizePolicy.Preferred ) )
     QObject.connect(self.processTrees, SIGNAL('selectionChanged'), self.itemSelected )
@@ -3172,9 +3167,7 @@ class ProcessSelectionWidget( QMainWindow ):
     p = os.path.join( os.path.dirname( __file__ ), 'searchbox.ui' )
     self.searchbox = QWidget() # for PySide/PyQt compat
     self.searchbox = loadUi(p, self.searchbox)
-    #vb.addWidget(self.searchbox)
     self.searchboxSearchB = self.searchbox.BV_search
-#    self.searchboxSearchB.setShortcut( QKeySequence.Find )
     self.matchedProcs = []
     self.searchboxResetSearchB = self.searchbox.BV_resetsearch
     self.searchboxLineEdit = self.searchbox.BV_searchlineedit
@@ -3186,37 +3179,14 @@ class ProcessSelectionWidget( QMainWindow ):
     vb.addWidget(self.processTrees)
     vb.addWidget(self.searchbox)
 
-    # right part of the splitter : documentation panel
-    
-    self.info = HTMLBrowser(self)#splitter )
-    #self.info.resize(400,600)
-    self.info.setMinimumSize(400,400)
-    self.info.setSizePolicy(QSizePolicy(QSizePolicy.MinimumExpanding,
-      QSizePolicy.MinimumExpanding))
-    self.dock_doc.setWidget(self.info)
-    #hb.setResizeMode( self.info, QSplitter.Stretch )
-    #x = hb
+    # right dock : documentation panel
 
-    # bottom of the central widget : buttons open and edit
-    #hb = QHBoxLayout()
-    #layout.addLayout(hb)
-    #hb.setMargin( 5 )
+    self.info = HTMLBrowser(self)
+    self.info.setSizePolicy(QSizePolicy(QSizePolicy.Expanding,
+      QSizePolicy.Expanding))
+    self.dock_doc.setWidget(self.info)
+
     self.btnOpen = QPushButton( _t_('Open') )
-    #hb.addWidget(self.btnOpen)
-    #self.btnOpen.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-    #self.btnOpen.setEnabled( 0 )
-    #QObject.connect( self.btnOpen, SIGNAL( 'clicked()' ), self.openProcess )
-    
-    ##self.btnOpen.hide()
-    #if neuroConfig.userLevel >= 1:
-      #self.btnEdit = QPushButton( _t_('Edit') )
-      #hb.addWidget(self.btnEdit)
-      #self.btnEdit.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-      #self.btnEdit.setEnabled( 0 )
-      #QObject.connect( self.btnEdit, SIGNAL( 'clicked()' ), self.editProcess )
-      ##self.btnEdit.hide()
-    #else:
-      #self.btnEdit = None
     self.btnEdit = None
 
     self.updateList()
@@ -3225,7 +3195,7 @@ class ProcessSelectionWidget( QMainWindow ):
     self.info.home()
     ds = qApp.desktop().size()
     self.resize( min( 1200, ds.width() ), min( 800, ds.height() ) )
-    
+
     state_path = os.path.join(neuroConfig.homeBrainVISADir, "main_window_state.bin")
     if os.path.exists(state_path):
       state_file = QtCore.QFile(state_path)
@@ -3464,6 +3434,8 @@ class ProcessTreesWidget(QSplitter):
     self.processMenu.addAction( _t_("Edit documentation"),  self.menuEditProcessEvent )
     self.processMenu.addAction( _t_("Iterate"), self.menuIterateProcessEvent)
 
+    self.setStretchFactor( 0, 2 )
+    self.setStretchFactor( 1, 3 )
     if processTrees:
       self.setModel(processTrees)
 
