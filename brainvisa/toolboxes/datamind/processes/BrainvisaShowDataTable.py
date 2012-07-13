@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -40,7 +41,7 @@ roles = ( 'viewer', )
 userLevel = 0
 
 signature = Signature(
-  'input', ReadDiskItem( 'Data Table', 'Text data table' )
+  'input', ReadDiskItem( 'Data Table', ( 'Text data table', 'CSV file' ) )
 )
 
 def execution( self, context ):
