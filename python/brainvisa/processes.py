@@ -3033,11 +3033,8 @@ def getProcess( processId, ignoreValidation=False, checkUpdate=True ):
     if info is not None:
       result = _processes.get( info.id.lower() )
       if result is None:
-        try:
-          result = readProcess( info.fileName, ignoreValidation=ignoreValidation )
-          checkUpdate=False
-        except ValidationError:
-          result = None
+        result = readProcess( info.fileName, ignoreValidation=ignoreValidation )
+        checkUpdate=False
   if result is not None:
     # Check if process source file have changed
     if checkUpdate:
@@ -3629,9 +3626,7 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
         except Exception, e:
           import codecs
           processInfo.valid=False
-          if _readProcessLog is not None:
-            _readProcessLog.append( NewProcess._id, html=exceptionHTML(), icon='warning.png' )
-          raise ValidationError( HTMLMessage(_t_('In <em>%s</em>') % ( fileName, ) + ': ' + unicode( e ) ))
+          raise ValidationError(HTMLMessage("The process <em>"+os.path.relpath(processInfo.fileName, neuroConfig.toolboxesDir)+"</em> is not available: <b>"+unicode(e)+"</b>"))
 
     oldProcess = _processes.get( NewProcess._id.lower() )
     if oldProcess is not None:
@@ -3725,6 +3720,8 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
       oldProcess.processReloadNotifier.notify( result )
 
   except ValidationError:
+    if _readProcessLog is not None:
+      _readProcessLog.append( NewProcess._id, html=exceptionHTML(), icon='warning.png' )
     raise
   except:
     if _readProcessLog is not None:
@@ -3817,7 +3814,7 @@ class ProcessTree( EditableTree ):
     if tooltip!=None:
       self.tooltip=_t_(tooltip)
     else: self.tooltip=self.name
-    self.setValid() # tag the tree as valid or not : it is valid if it contains at least one valid child (or no child)
+    self.setVisible() # tag the tree as visible or not : it is visible if it contains at least one visible child
 
   def __getinitargs__(self):
     content=self.values()
@@ -3900,35 +3897,38 @@ class ProcessTree( EditableTree ):
       self.tooltip=n
     EditableTree.setName(self, n)
 
-  def setValid(self):
+  def setVisible(self):
     """
-    Sets the tree as valid it is a user tree or if it has at least one valid child.
-    An empty user tree is valid because it can be a newly created user tree and the user may want to fill it later.
+    Sets the tree as visible if it is a user tree or if it has at least one visible child.
+    An empty user tree is visible because it can be a newly created user tree and the user may want to fill it later.
     """
-    valid=False
+    visible=False
     if self.user:
-      valid=True
+      visible=True
     else:
       for item in self.values():
-        if item.valid:
-          valid=True
+        if item.visible:
+          visible=True
           break
-    self.valid=valid
+    self.visible=visible
 
   def update(self):
     """
-   Recursively Updates `valid` attribute for each item in the tree. This method must be called when the validity may have change. For exemple when the userLevel has changed, some process must become visibles.
+   Recursively Updates `visible` attribute for each item in the tree. 
+   This method must be called when the visibility may have change. 
+   For exemple when the userLevel has changed, some process must become visibles.
     """
-    validChild=False
+    visibleChild=False
     for item in self.values():
       item.update(self.user)
-      if item.valid:
-        validChild=True
-    self.valid=(self.user or validChild)
+      if item.visible:
+        visibleChild=True
+    self.visible=(self.user or visibleChild)
 
   def updateName(self):
     """
-    When the tree name is changed after construction. The new name must be saved if the tree is saved in minf file. So change the initName.
+    When the tree name is changed after construction. 
+    The new name must be saved if the tree is saved in minf file. So change the initName.
     """
     self.initName=self.name
 
@@ -3937,7 +3937,8 @@ class ProcessTree( EditableTree ):
     """
     Bases: :py:class:`soma.notification.EditableTree.Branch`
     
-    A directory that contains processes and/or another branches. Enables to organise processes by category.
+    A directory that contains processes and/or another branches. 
+    Enables to organise processes by category.
     """
     _defaultIcon = 'folder.png'
     defaultName = "New category"
@@ -3961,7 +3962,7 @@ class ProcessTree( EditableTree ):
       self.initName=name # store the name given in parameters to return in getinitkwargs, so save in minf format will store init name before potential traduction
       self.onAttributeChange("name", self.updateName)
       #EditableTree.Branch.__init__(self, unicode(name), unicode(icon), _t_("category"), True, editable, editable, content)
-      self.setValid() # set the validity of the branch relatively to its content. As the branch can be constructed with a content (when it is restored from minf file for example), it is usefull to do so.
+      self.setVisible() # set the visibility of the branch relatively to its content. As the branch can be constructed with a content (when it is restored from minf file for example), it is usefull to do so.
 
     def __getinitargs__(self):
       content=self.values()
@@ -3977,34 +3978,36 @@ class ProcessTree( EditableTree ):
       """
       return ( self.__class__, self.__getinitargs__(), None, None, None )
 
-    def setValid(self):
+    def setVisible(self):
       """
-      Sets the branch as valid if it has no child or if it has at least one valid child.
-      Empty branch is valid because it can be a newly created user branch and the user may want to fill it later.
+      Sets the branch as visible if it has no child or if it has at least one visible child.
+      Empty branch is visible because it can be a newly created user branch and the user may want to fill it later.
       """
-      valid=False
+      visible=False
       if len(self)==0:
-        valid=True
+        visible=True
       else:
         for item in self.values():
-          if item.valid:
-            valid=True
+          if item.visible:
+            visible=True
             break
-      self.valid=valid
+      self.visible=visible
 
     def update(self, userTree=False):
       """
-      Updates recursively valid attribute for each item in the branch. This method must be called when the validity may have change. For exemple when the userLevel has changed, some processes must become visibles.
+      Updates recursively visible attribute for each item in the branch. 
+      This method must be called when the visibility may have change. 
+      For exemple when the userLevel has changed, some processes must become visibles.
       """
       if len(self)==0:
-        self.valid=True
+        self.visible=True
       else:
-        validChild=False
+        visibleChild=False
         for item in self.values():
           item.update(userTree)
-          if item.valid:
-            validChild=True
-        self.valid=validChild
+          if item.visible:
+            visibleChild=True
+        self.visible=visibleChild
 
     def updateName(self):
       self.initName=self.name
@@ -4035,7 +4038,11 @@ class ProcessTree( EditableTree ):
       super(ProcessTree.Leaf, self).__init__(_t_(pname), id, icon, _t_("process"), True, editable, editable)
       self.initName=name
       self.onAttributeChange("name", self.updateName)
-      self.setValid(processInfo)
+      self.setVisible(processInfo)
+      if processInfo is not None:
+        self.enabled = processInfo.valid
+      else:
+        self.enabled = True
 
     def __getinitargs__(self):
       return (self.id, self.initName, self.modifiable, self.icon)
@@ -4049,23 +4056,23 @@ class ProcessTree( EditableTree ):
       """
       return ( self.__class__,  self.__getinitargs__(), None, None, None )
 
-    def setValid(self, processInfo):
+    def setVisible(self, processInfo):
       """
       A ProcessTree.Leaf is valid if the id references a process in _processesInfo and if the process' userLevel is lower or equal than global userLevel and the related process is valid (validation function succeeded).
       """
-      valid=False
+      visible=False
       if processInfo is not None:
-        if (processInfo.userLevel <= neuroConfig.userLevel) and processInfo.valid:
-          valid=True
-      self.valid=valid
+        if (processInfo.userLevel <= neuroConfig.userLevel):
+          visible=True
+      self.visible=visible
 
     def update(self, userTree=False):
       """
-      Called when the parent tree is updated because some validity conditions have changed.
-      Evaluates the validity of the reprensented process.
+      Called when the parent tree is updated because some visibility conditions have changed.
+      Evaluates the visibility of the reprensented process.
       """
       processInfo=getProcessInfo(self.id)
-      self.setValid(processInfo)
+      self.setVisible(processInfo)
 
     def updateName(self):
       self.initName=self.name
@@ -4176,7 +4183,7 @@ class ProcessTrees(ObservableAttributes, ObservableSortedDictionary):
             break
     else:
       self.selectedTree=None
-    # update items validity it depends on processes validity and user level : must update to invalid branches that only contain invalid items
+    # update items visibility it depends on processes user level : must update to invisible branches that only contain invisible items
     self.update()
 
   def save(self):
@@ -4195,7 +4202,7 @@ class ProcessTrees(ObservableAttributes, ObservableSortedDictionary):
 
   def update(self):
     """
-    Updates all trees (evaluates validity of each items).
+    Updates all trees (evaluates visibility of each items).
     """
     for item in self.values():
       item.update()
@@ -4226,7 +4233,7 @@ def allProcessesTree():
 #----------------------------------------------------------------------------
 def updateProcesses():
   """
-  Called when option userLevel has changed (neuroConfigGUI.validateOptions()).
+  Called when option userLevel has changed.
   Associated widgets will be updated automatically because they listens for changes.
   """
   if _mainProcessTree is not None:
