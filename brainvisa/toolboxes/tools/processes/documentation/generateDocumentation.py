@@ -295,6 +295,8 @@ def get_toolbox_name(toolbox_id):
     name= toolbox.name
   else:
     name = toolbox_id
+  if name is None:
+    name = '&lt;unnamed toolbox&gt;'
   return name
   
 def nameKey(x):
@@ -469,11 +471,13 @@ def execution( self, context ):
     print >> types_toolboxes, '<html>\n<body>\n<center><h1>Data types per toolbox</h1></center>'
     print >> types_toolboxes, '<p><a href="'+return_to_index+'">Return to index</a></p>'
     for toolbox in sorted(typesByToolboxes.keys()):
-      print >> types_toolboxes, '<a href=\'#toolbox_'+toolbox+'\'>', get_toolbox_name(toolbox), '</a><br/>'
+      if toolbox is not None:
+        print >> types_toolboxes, '<a href=\'#toolbox_'+toolbox+'\'>', get_toolbox_name(toolbox), '</a><br/>'
     for toolbox in sorted(typesByToolboxes.keys()):
-      print >> types_toolboxes, '<a name=\'toolbox_'+toolbox+'\'/><h2>', get_toolbox_name(toolbox), '</h2>'
-      for diskItemType in typesByToolboxes.get(toolbox, []):
-        print >> types_toolboxes, get_link_to_documentation(diskItemType)
+      if toolbox is not None:
+        print >> types_toolboxes, '<a name=\'toolbox_'+toolbox+'\'/><h2>', get_toolbox_name(toolbox), '</h2>'
+        for diskItemType in typesByToolboxes.get(toolbox, []):
+          print >> types_toolboxes, get_link_to_documentation(diskItemType)
     print >> types_toolboxes, '</body></html>'
     types_toolboxes.close()
 
