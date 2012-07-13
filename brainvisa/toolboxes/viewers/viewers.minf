@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="brainvisa-tree_2.0">
+<l length="1">
+  <f type="ProcessTree">
+      <s name="name">Viewers</s>
+    <l length="17" name="content">
+      <f type="ProcessTree.Leaf">
+        <s name="id">AnatomistLoadOnlyGraph</s>
+      </f>
+      <f type="ProcessTree.Leaf">
+        <s name="id">AnatomistShowFusion3D</s>
+      </f>
+      <f type="ProcessTree.Leaf">
+        <s name="id">AnatomistShowActivations</s>
+      </f>
+      <f type="ProcessTree.Leaf">
+        <s name="id">AnatomistShowFMRI</s>
+      </f>
+      <f type="ProcessTree.Leaf">
+        <s name="id">AnatomistShowFusionAnatomyFMRI</s>
+      </f>
+      <f type="ProcessTree.Leaf">
+        <s name="id">AnatomistShowListOfMesh</s>
+      </f>
+      <f type="ProcessTree.Leaf">
+        <s name="id">AnatomistShowListOfVolumes</s>
+      </f>
+      <f type="ProcessTree.Leaf">
+        <s name="id">AnatomistShowMesh</s>
+      </f>
+      <f type="ProcessTree.Leaf">
+        <s name="id">AnatomistShowNomenclature</s>
+      </f>
+      <f type="ProcessTree.Leaf">
+        <s name="id">AnatomistShowRainbowVolume</s>
+      </f>
+      <f type="ProcessTree.Leaf">
+        <s name="id">AnatomistShowVolume</s>
+      </f>
+      <f type="ProcessTree.Leaf">
+        <s name="id">BrainvisaShowText</s>
+      </f>
+      <f type="ProcessTree.Leaf">
+        <s name="id">BrainvisaShowDataTable</s>
+      </f>
+      <f type="ProcessTree.Leaf">
+        <s name="id">ShowScalarFeatures</s>
+      </f>
+      <f type="ProcessTree.Leaf">
+        <s name="id">ViewHTML</s>
+      </f>
+    </l>
+  </f>
+</l>
+</minf>
