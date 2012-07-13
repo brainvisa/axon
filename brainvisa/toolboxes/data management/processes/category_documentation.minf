@@ -8,24 +8,48 @@
   </head>
   <body>
   <h1>Data management</h1>
-  Processes in this category are to be used to import your data in one of the configured <a href="#whatIsADatabase">BrainVISA database</a>. The first thing you have to do is to <a href="#databaseManagement">create or configure your BrainVISA databases</a>. Then you can use the import processes (which are in the subcategory <em>import</em>) to put your data into the database. It is not mandatory to use a database to process data with BrainVISA but it is <a href="#whyADatabase">highly recommanded</a>.
+  The processes in this toolbox deal with <a href="#whatIsADatabase">BrainVISA databases</a>. 
+  They can be used to import data in a <a href="#whatIsADatabase">BrainVISA database</a>. 
+  The first thing you have to do is to <a href="#databaseManagement">create or configure your BrainVISA databases</a>. 
+  Then you can use the import processes (which are in the sub category <em>import</em>) to put data in the database. 
+  It is not mandatory to use a database in order to process data with BrainVISA but it is <a href="#whyADatabase">highly recommanded</a>.
 
-  <a name="whatIsADatabase">
-  <h2>What is a BrainVISA database ?</h2>
-  <p>Data organization is an important point in BrainVISA.  Indeed, BrainVISA was conceived to allow a simplified use of neuroimagery tools coming from various laboratories and being able to combine data resulting from several acquisition modalities (aMRI, fMRI, dMRI, EEG/MEG, PET, etc).  Interactions between these tools and the various data were made possible thanks to a system of data organization. In order to remain compatible with existing software, BrainVISA is mainly based on directories and file organization and naming in order to build a database. </p>
-  A directory is a BrainVISA database if the structure of its sub-directories and the file names in this directory respect a set of rules.  These rules make it possible to BrainVISA to scan the whole directory contents and to identify without ambiguity the database elements.  These elements are composed of the following information:
+  <a name="whatIsADatabase">  
+  <h2>What is a BrainVISA database ?</h2></a>
+  <p>Data organization is an important point in BrainVISA.  
+  Indeed, BrainVISA was conceived to allow a simplified use of neuroimagery tools coming from various laboratories and being able to combine data resulting from several acquisition modalities (aMRI, fMRI, dMRI, EEG/MEG, PET, etc).  
+  Interactions between these tools and the various data were made possible thanks to a system of data organization. In order to remain compatible with existing software, BrainVISA is mainly based on directories and file organization and naming in order to build a database. </p>
+  
+  <p>A directory is a BrainVISA database if the structure of its sub-directories and the file names in this directory respect a set of rules.  
+  These rules make it possible for BrainVISA to scan the whole directory content and to identify without ambiguity the database elements.  
+  These elements are composed of the following information:
   <ul>
 
-  <li><b>Data type:</b> identify the contents of a data (image, mesh, functional image, anatomical RM, etc).  The data types are organized in hierarchy making it possible to decline a generic type in several specialized types. For example, there is a <em>4D Image</em> type  which is specialized in <em>3D Image</em> (indeed, a three-dimensional image is a particular case of a four-dimensional one);  the type <em>3D Image</em> is itself declined in several types of which <em>T1 MRI</em> and <em>Brain mask</em>.</li>
+  <li><p><b>Data type:</b> identifies the content of data (image, mesh, functional image, anatomical RM, etc). 
+  The data types are organized in a hierarchy making it possible to decline a generic type in several specialized types. 
+  For example, there is a <em>4D Image</em> type  which is specialized in <em>3D Image</em> 
+  (indeed, a three-dimensional image is a particular case of a four-dimensional one);  
+  the type <em>3D Image</em> is itself declined in several types of which <em>T1 MRI</em> and <em>Brain mask</em>.</p></li>
 
-  <li><b>File format:</b>  Represent the format of files used to record a data.  BrainVISA is able to recognize several file formats (for example DICOM, Analyse/SPM, GIS, etc).  It is possible to add new data formats and to provide converters to make it possible for existing processes to use these new formats.</li>
-  <li><b>Files:</b> contains the names of the files used to record the data.  It is a list of files because some formats use several files to store the data.</li>
+  <li><p><b>File format:</b> Represents the format of files used to record a data. 
+  BrainVISA is able to recognize several file formats (for example DICOM, Analyse/SPM, GIS, etc).
+  It is possible to add new data formats and to provide converters to make it possible for existing processes to use these new formats.</p></li>
+  
+  <li><p><b>Files:</b> the names of the files used to record the data. 
+  It is a list of files because some formats use several files to store the data.</p></li>
 
-  <li><b>Attributes:</b> an attribute is an association between a name and a value. A set of attributes is associated with each element of BrainVISA database. This set represents all of the characteristics of a data (as the image size, the name of the protocol corresponding to the data or the acquisition parameters). Attributes values are set by BrainVISA during directory scanning.</li>
+  <li><p><b>Attributes:</b> an attribute is an association between a name and a value. 
+  A set of attributes is associated with each element of a BrainVISA database. 
+  This set represents all of the characteristics of a data (as the image size, the name of the protocol corresponding to the data or the acquisition parameters). 
+  Attributes values are set by BrainVISA during directory scanning.</p></li>
   </ul>
+  </p>
+  
+<p>It is possible to completely define the set of rules used to convert a directory in a BrainVISA database. 
+That allows the use of BrainVISA without having to modify an existing file organization. 
+However, the writing of such a system of rules requires a significant investment in the study of BrainVISA.  
+This is why BrainVISA is provided with a default data organization system that can be used easily.</p>
 
-  It is possible to completely define the set of rules used to convert a directory in a BrainVISA database.  That allows the use of BrainVISA without having to modify an existing file organization.  However, the writing of such a system of rules requires a significant investment in the study of BrainVISA.  This is why BrainVISA is provided with a default data organization system that can be used easily.
-  </a>
 
 <h2>BrainVISA database organization</h2>
 <p>By default, data in a BrainVISA database are organized in a hierarchical structure with the following directories :</p>
@@ -39,14 +63,21 @@
  </ul>
  
   <a name="whyADatabase">
-  <h2>Why should I use a BrainVISA database ?</h2>
-  It is not mandatory to use a database to process data with BrainVISA. However, some important features are not available when you are using data which are not in a database. For example, the BrainVISA ability to construct a default output file name when an input data is selected in a process relies on the database system. Moreover, some processes use the database system to find data; for example, the brain mask viewer tries to find the T1 MRI used to build the brain mask in order to superimpose both images in an Anatomist window.
-
-  </a>
+  <h2>Why should I use a BrainVISA database ?</h2>  </a>
+  <p>
+  It is not mandatory to use a database to process data with BrainVISA. 
+  However, some important features are not available when you are using data which are not in a database. 
+  For example, the BrainVISA ability to construct a default output file name when an input data is selected in a process relies on the database system. 
+  Moreover, some processes use the database system to find data; 
+  for example, the brain mask viewer tries to find the T1 MRI used to build the brain mask in order to superimpose both images in an Anatomist window.
+  </p>
 
   <a name="databaseManagement">
   <h2>How to create or edit BrainVISA databases ?</h2>
-  You can create several BrainVISA databases and select the ones you want to activate. You just have to use the database edition window accessible via the <em>Preferences->databases</em> menu of the main window.
+  <p>
+  You can create several BrainVISA databases and select the ones you want to activate. 
+  You just have to use the database edition window accessible via the <em>Preferences->databases</em> menu of the main window.
+  </p>
   </a>
   <br/>
   <br/>
@@ -62,7 +93,11 @@
   </head>
   <body>
   <h1>Gestion des données</h1>
-  Les traitements de cette catégorie servent à importer vos données dans une des <a href="#whatIsADatabase">bases de données BrainVISA</a> configurées. La première chose à faire est la <a href="#databaseManagement">Création ou configuration de bases de données BrainVISA</a>. Vous pouvez alors utiliser un des traitements d'importation pour placer vos données dans la base. Il n'est pas obligatoire d'utiliser une base de donnée avec BrainVISA mais c'est <a href="#whyADatabase">fortement recommandé</a>.
+  <p>Les traitements de cette boîte à outils sont en lien avec les <a href="#whatIsADatabase">bases de données BrainVISA</a>. 
+  Ils permettent notamment d'importer des données dans une des <a href="#whatIsADatabase">bases de données BrainVISA</a> configurées. 
+  La première chose à faire est la <a href="#databaseManagement">Création ou configuration de bases de données BrainVISA</a>. 
+  Vous pouvez alors utiliser un des traitements d'importation pour placer vos données dans la base. 
+  Il n'est pas obligatoire d'utiliser une base de donnée avec BrainVISA mais c'est <a href="#whyADatabase">fortement recommandé</a></p>.
 
   <a name="whatIsADatabase">
   <h2>Qu'est-ce qu'une base de donnée BrainVISA ?</h2>
