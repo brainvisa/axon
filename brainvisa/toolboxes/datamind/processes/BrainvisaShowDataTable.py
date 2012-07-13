@@ -33,7 +33,7 @@ from brainvisa.processes import *
 
 def validation():
   global GenericTableEditor
-  from dataMind.genericTableEditor import GenericTableEditor
+  from datamind.gui.genericTableEditor import GenericTableEditor
 
 name = 'Show data table'
 roles = ( 'viewer', )
