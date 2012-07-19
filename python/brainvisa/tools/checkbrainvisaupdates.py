@@ -23,7 +23,9 @@ def checkUpdates():
         'Ubuntu' : 'linux2', 'MacOS' : 'darwin', 'Windows' : 'win32' }
     archs = { 'i686' : '32bit', 'x86_64' : '64bit' }
 
-    lines = urllib2.urlopen( filesaddress, timeout=3 ).readlines()
+    # timeout parameter does not exists in python 2.5
+    #lines = urllib2.urlopen( filesaddress, timeout=3 ).readlines()
+    lines = urllib2.urlopen( filesaddress ).readlines()
     rexp = re.compile( \
         '^.*(brainvisa-(.*)-(i686|x86_64).*-([^-]+)-.*)\.README.*$' )
     upgrade = False
