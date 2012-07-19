@@ -74,7 +74,8 @@ from brainvisa.configuration.qtgui import neuroConfigGUI
 from brainvisa.processing import neuroLog
 from brainvisa.processing.neuroException import *
 from brainvisa.data.neuroData import *
-from neuroProcesses import *
+from brainvisa.processes import *
+import brainvisa.processes
 from brainvisa.data.neuroHierarchy import *
 from brainvisa.data.qtgui.neuroDataGUI import *
 from brainvisa.processing.qtgui.neuroProcessesGUI import *
@@ -93,18 +94,6 @@ def qt_exit_handler( number, frame ):
 
 # Ctrl + C is linked to sys.exit() until Qt event loop is entered
 signal.signal( signal.SIGINT, system_exit_handler )
-
-def cleanup():
-  """
-  Cleanup to be done at Brainvisa exiting. This function is registered in atexit.
-  """
-  if neuroConfig.runsInfo:
-    neuroConfig.runsInfo.delete()
-  neuroConfig.clearObjects()
-  neuroProcesses.cleanupProcesses()
-  neuroLog.closeMainLog()
-  temporary.manager.close()
-
 
 class EventFilter( QObject ):
   def eventFilter( self, o, e ):
@@ -256,14 +245,14 @@ else:
 def startConsoleShell():
   from PyQt4.QtGui import qApp
   import IPython
-  ipConsole = neuroProcesses.runIPConsoleKernel()
+  ipConsole = runIPConsoleKernel()
   import subprocess
   sp = subprocess.Popen( [ sys.executable, '-c',
     'from IPython.frontend.terminal.ipapp import launch_new_instance; ' \
     'launch_new_instance()', 'console', '--existing',
     '--shell=%d' % ipConsole.shell_port, '--iopub=%d' % ipConsole.iopub_port,
     '--stdin=%d' % ipConsole.stdin_port, '--hb=%d' % ipConsole.hb_port ] )
-  neuroProcesses._ipsubprocs.append( sp )
+  brainvisa.processes._ipsubprocs.append( sp )
 
 
 if neuroConfig.gui:
