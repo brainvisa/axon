@@ -679,26 +679,30 @@ if anatomistImport:
       # deleted while in Anatomist
       return {"mri" : mri, "fmri" : fmri, "fusion" : fusion, "window" : window, "refMRI" : refMRI, "refFMRI" : refFMRI, "transformation" : transformation, "mriFile" : mriFile, "fmriFile" : fmriFile}
 
-    def viewTextureOnMesh( self, meshFile, textureFile, palette=None, interpolation=None ):
+    def viewTextureOnMesh( self, meshFile, textureFile, palette=None,
+      interpolation=None ):
       """Load a mesh file and apply the texture with the palette"""
       mesh = self.loadObject( meshFile.fullPath() )
       duplicate=False
       if palette is not None:
         duplicate=True
       tex = self.loadObject( textureFile.fullPath(), duplicate=duplicate)
-      if palette is not None:
+      if palette:
         tex.setPalette( palette )
       # Fusion indexMESH with indexTEX
-      fusion = self.fusionObjects( [mesh, tex], method = 'FusionTexSurfMethod' )
-      if interpolation is not None:
-        self.execute("TexturingParams", objects=[fusion], interpolation = interpolation)
+      fusion = self.fusionObjects( [mesh, tex],
+        method = 'FusionTexSurfMethod' )
+      if interpolation:
+        self.execute("TexturingParams", objects=[tex], interpolation =
+          interpolation )
 
       window = self.createWindow( "3D" )
       window.assignReferential( mesh.referential )
       window.addObjects( [fusion] )
       # Keep a reference on mesh. In case of temporary file, it must not be
       # deleted while in Anatomist
-      return {"mesh" : mesh, "texture" : tex, "fusion" : fusion, "window" : window, "meshFile" : meshFile, "textureFile" : textureFile}
+      return {"mesh" : mesh, "texture" : tex, "fusion" : fusion,
+        "window" : window, "meshFile" : meshFile, "textureFile" : textureFile}
 
     def close( self ):
       # print 'CLOSE !!!'
