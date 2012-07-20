@@ -1046,8 +1046,6 @@ class ExecutionNodeGUI(QWidget):
     if read_only:
       self.parameterizedWidget.set_read_only(True)
     layout.addWidget(self.parameterizedWidget)
-    spacer = QSpacerItem(0,0,QSizePolicy.Minimum,QSizePolicy.Expanding)
-    layout.addItem( spacer )
 
   def closeEvent(self, event):
     self.parameterizedWidget.close()
