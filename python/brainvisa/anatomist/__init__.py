@@ -682,11 +682,18 @@ if anatomistImport:
     def viewTextureOnMesh( self, meshFile, textureFile, palette=None,
       interpolation=None ):
       """Load a mesh file and apply the texture with the palette"""
-      mesh = self.loadObject( meshFile.fullPath() )
+      mesh = self.loadObject( meshFile )
+      print mesh, type( mesh )
+      if not mesh.getInternalRep():
+        raise RuntimeError( 'Anatomist could not read file %s' \
+          % meshFile.fullPath() )
       duplicate=False
       if palette is not None:
         duplicate=True
-      tex = self.loadObject( textureFile.fullPath(), duplicate=duplicate)
+      tex = self.loadObject( textureFile, duplicate=duplicate)
+      if not tex.getInternalRep():
+        raise RuntimeError( 'Anatomist could not read file %s' \
+          % textureFile.fullPath() )
       if palette:
         tex.setPalette( palette )
       # Fusion indexMESH with indexTEX
