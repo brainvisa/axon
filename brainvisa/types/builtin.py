@@ -248,8 +248,7 @@ FileType( 'T2 MRI', '3D Volume' )
 FileType( 'Raw T1 MRI', 'T1 MRI' )
 FileType( 'Label volume', '3D Volume' )
 FileType( 'Rainbow 3D volume', '3D Volume' )
-FileType( 'Masked T1 MRI', 'Label volume' )
-FileType( 'Voronoi Diagram', 'Label Volume' )
+FileType( 'Split Brain Mask', 'Label Volume' )
 
 #----------------- Graphs -------------------------
 
