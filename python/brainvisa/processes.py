@@ -182,6 +182,7 @@ from soma.notification import EditableTree, ObservableSortedDictionary, \
 from soma.minf.api import createMinfWriter, iterateMinf, minfFormat
 from soma.html import htmlEscape
 from soma.somatime import timeDifferenceToString
+from soma.path import relative_path
 
 from brainvisa.data.neuroData import *
 from brainvisa.data.neuroDiskItems import *
@@ -3626,7 +3627,7 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
         except Exception, e:
           import codecs
           processInfo.valid=False
-          raise ValidationError(HTMLMessage("The process <em>"+os.path.relpath(processInfo.fileName, neuroConfig.toolboxesDir)+"</em> is not available: <b>"+unicode(e)+"</b>"))
+          raise ValidationError(HTMLMessage("The process <em>"+relative_path(processInfo.fileName, neuroConfig.toolboxesDir)+"</em> is not available: <b>"+unicode(e)+"</b>"))
 
     oldProcess = _processes.get( NewProcess._id.lower() )
     if oldProcess is not None:
