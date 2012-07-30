@@ -31,42 +31,54 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-include( 'builtin' )
-
-#--------------- generic ------------------
-
-MinfFormat( 'Referential', '*.referential' )
-
-FileType( 'Transformation', 'Any Type' )
-FileType( 'Transformation matrix', 'Transformation', 
-          ( 'Transformation matrix', 'Matlab file' ) )
-FileType( 'Referential', 'Text file', 'Referential' )
+from brainvisa.processes import *
+import registration
+import shfjGlobals
+from soma import aims
 
 
-FileType( 'Resamp Spline Image',  '3D Volume' )
-FileType( 'Registration Directory', 'Directory' )
+name = 'AddScannerBasedReferential'
+userLevel = 2
 
-FileType( 'Template Pole To Talairach Tranformation', 'Transformation matrix' )
+signature = Signature( 
+  'volume_input', ReadDiskItem( "T1 MRI", getAllFormats() ),
+  'T1_TO_Scanner_Based', WriteDiskItem( 'Transformation to Scanner Based Referential', 'Transformation matrix' ),
+  'new_referential', WriteDiskItem( 'Scanner Based Referential', 'Referential' ),
+ )
+  
 
-#----------------- Scanner Based using ---------------------------------
-FileType( 'Transformation to Scanner Based Referential', 'Transformation matrix' )
-FileType( 'Scanner Based Referential', 'Referential' )
+def initialization( self ):
+  self.linkParameters( 'new_referential', 'volume_input' )
+  self.linkParameters( 'T1_TO_Scanner_Based', 'volume_input' )
 
-# recal types
-FileType( 'RECAL Transformation matrix', 'Transformation matrix' )
-FileType( 'REF to TEST Transformation matrix', 'RECAL Transformation matrix' )
-FileType( 'TEST to REF Transformation matrix', 'RECAL Transformation matrix' )
 
-#----------------- Matlab SPM transformations -------------------------
-FileType( 'SPM transformation', 'Transformation matrix', 'Matlab file' )
-FileType( 'SPM normalization matrix', 'SPM Transformation', 'Matlab file' )
-FileType( 'SPM99 normalization matrix', 'SPM normalization matrix',
-          'Matlab file' )
-FileType( 'SPM2 normalization matrix', 'SPM normalization matrix',
-          'Matlab file' )
+def execution( self, context ):
+  #Read header information
+  atts = shfjGlobals.aimsVolumeAttributes( self.volume_input )
+  ref = atts[ 'referentials' ]
+  trf = atts[ 'transformations' ]
+  if ("Scanner-based anatomical coordinates" in ref ):
+    trm_to_scannerBased = trf[ref.index("Scanner-based anatomical coordinates")]
+  
+  
+  #Create a referential for Scanner-based
+  tm = registration.getTransformationManager()
+  dest = tm.referential( self.new_referential )
+  if dest is None :
+    dest = tm.createNewReferential(self.new_referential)
+    
+    
+  #Create a new referential if needed for the volume
+  src = tm.referential( self.volume_input )
+  if src is None:
+    src = tm.createNewReferentialFor(self.volume_input)
+  
+  
+  #Store information into the trm file
+  mot = aims.Motion( trm_to_scannerBased )
+  aims.write( mot, self.T1_TO_Scanner_Based.fullPath() )
+  
+  tm.setNewTransformationInfo( self.T1_TO_Scanner_Based, source_referential=src, destination_referential=dest )
 
-#----------------- FSL transformation ---------------------------------
-FileType( 'FSL transformation', 'Transformation matrix', 'Matlab file' ) # not a matlab file but .mat
-
-#----------------- baladin transformation ---------------------------------
-FileType( 'baladin Transformation', 'Transformation matrix', 'Text file' )
+  
+  
