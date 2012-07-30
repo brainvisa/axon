@@ -129,24 +129,6 @@ def main():
   #  sys.excepthook = exceptionHook
   # InitializationoptionFile
   try:
-    # this is obsolete and doesn't do anything any longer
-    #if neuroConfig.validationEnabled:
-      ## Looking for main validation directory
-      #try:
-        #v = os.path.dirname( sys.argv[0] )
-        #v = v[ v.rfind( '-' )+1: ]
-        #p4 = os.environ.get( 'P4', '' )
-        ## Looking for validation directory
-        #for d in ( 'validation-' + v, 'validation-main', ):
-          #d = os.path.join( p4, d, 'brainvisa' )
-          #if os.path.isdir( d ): break
-        #else:
-          #raise RuntimeError( 'Cannot find validation directory' )
-        #neuroConfig.processesPath.append( os.path.join( d, 'processes' ) )
-      #except:
-        #d = None
-        #neuroConfig.validationEnabled = False
-        #showException( afterError=': validation mode disabled' )
 
     from brainvisa import axon
     axon.initializeProcesses()

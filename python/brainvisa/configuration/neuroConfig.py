@@ -423,9 +423,6 @@ gui = True
 guiLoaded = False
 qtApplication = None
 
-# server defaults
-server = 0
-
 # Create $HOME/.brainvisa directory
 homedir = os.getenv( 'HOME' )
 if not homedir:
@@ -485,8 +482,6 @@ textEditor = ''
 
 matlabStartup = []
 dataPath= []
-clearCacheRequest = False
-cacheUpdateRequest = False
 logFileName = None
 cleanLog=False
 profileFileName = ''
@@ -497,7 +492,6 @@ startup=[]
 flatHierarchy = os.path.join( mainPath, 'shfjFlatHierarchy.py' )
 debugHierarchyScanning = None
 debugParametersLinks = None
-validationEnabled = False
 historyBookDirectory = None
 
 userEmail = ''
@@ -609,10 +603,9 @@ else:
   except ValueError:
     argv = sys.argv[ 1: ]
   try:
-    opts, args = getopt.getopt( argv, "dbfe:c:s:u:h",
-                                [ "updateCache", "clearCache",
-                                  "updateDocumentation", "noMainWindow",
-                                  "logFile=", "cleanLog", "profile=", "shell", "validation",
+    opts, args = getopt.getopt( argv, "bfe:c:s:u:h",
+                                [ "updateDocumentation", "noMainWindow",
+                                  "logFile=", "cleanLog", "profile=", "shell",
                                   "debugHierarchy=", "debugLinks=", "databaseServer", 
                                   "help", "setup", "noToolBox",
                                   "ignoreValidation" ] )
@@ -623,9 +616,6 @@ else:
   for o, a in opts:
     if o in ( "-b", ):
       gui = 0
-    elif o in ("-d", ):
-      gui = 0
-      server = 1
     elif o in ( "-e", ):
       if a == '-':
         startup.append( 'neuroConfig.stdinLoop()' )
@@ -643,10 +633,6 @@ else:
       userProfile = a
     elif o in ( "-f", ):
       fastStart = True
-    elif o in ( "--updateCache", ):
-      cacheUpdateRequest = True
-    elif o in ( "--clearCache", ):
-      clearCacheRequest = True
     elif o in ( "--updateDocumentation", ):
       startup.append( 'generateHTMLProcessesDocumentation()' )
     elif o in ( "--noMainWindow", ):
@@ -663,8 +649,6 @@ else:
       debugHierarchyScanning = openDebugFile( a )
     elif o in ( "--debugLinks", ):
       debugParametersLinks = openDebugFile( a )
-    elif o in ( "--validation", ):
-      validationEnabled = True
     elif o in ( "--databaseServer", ):
       databaseServer = True
       gui = False
@@ -686,23 +670,28 @@ Usage: brainvisa [ <BrainVISA options> ] [ -- <other options> ]
 passed to BrainVISA scripts (technically, they are kept in sys.argv).
 
 BrainVISA options:
-  -d                      Run as a processes server, in daemon mode.
   -b                      Run in batch mode: no graphical interface started by BrainVISA.
-  -f                      EXPERIMENTAL: Try to speed-up BrainVISA startup by caching processes reading.
   -e <file>               Execute <file> which must be a valid Python script.
   -c <command>            Execute <command> which must be a valid Python command.
-  -s <process_id>         Open a process window. Equivalent to -c 'brainvisa.processing.qt4gui.neuroProcessesGUI.showProcess("<process_id>")'.
-  -u <profile>            Select a user profile.
-  --databaseServer        Create a server for configured databases.
-  --updateDocumentation   Generate HTML documentation pages.
-  --noMainWindow          Do not open the process selection window.
-  --noToolBox             Do not load any process nor toolbox.
-  --logFile <file>        Change log file name (default=$HOME/.brainvisa/brainvisa.log)
-  --cleanLog              Clean home brainvisa directory by removing session information (current_runs.minf) and all log files (brainvisa*.log)
   --shell                 Run BrainVISA in a IPython shell, if IPython is
                           available (see http://ipython.scipy.org).
+  -s <process_id>         Open a process window. Equivalent to -c 'brainvisa.processing.qt4gui.neuroProcessesGUI.showProcess("<process_id>")'.
+  
+  -u <profile>            Select a user profile.
+  --logFile <file>        Change the log file name (default=$HOME/.brainvisa/brainvisa.log).
+  --updateDocumentation   Generate processes and types HTML documentation pages.
+  --setup                 Update the shared database at startup.
+  
+  --noMainWindow          Do not open Brainvisa main window.
+  --noToolBox             Do not load any process nor toolbox.
+  --cleanLog              Clean home brainvisa directory by removing session information (current_runs.minf) and all log files (brainvisa*.log)
   --ignoreValidation      Do not check vor invalid processes, all are enabled.
                           (generally not useful)
+  -f                      Run in faststart mode: databases are not loaded, processes are loaded from a cache 
+                          (this mode is used when processes are run in parallel  via Soma-workflow).
+  --debugHierarchy <file> Write ontology rules debug information in <file>.
+  --debugLinks <file>     Write parameter links debug information in <file>.
+  
   -h  or --help           Show help message in batch mode and exit.
 
 Notes:
@@ -712,10 +701,6 @@ Notes:
 '''
   sys.exit()
 
-if clearCacheRequest:
-  print >> sys.stderr, 'WARNING: --clearCache is obsolete\n'
-if cacheUpdateRequest:
-  print >> sys.stderr, 'WARNING: --updateCache is obsolete\n'
 if setup:
   startup.append( 'from brainvisa.data.neuroHierarchy import databases\nfrom brainvisa.processes import defaultContext\ndb = list( databases.iterDatabases() )[0]\ndb.clear(context=defaultContext())\ndb.update(context=defaultContext())' )
 
