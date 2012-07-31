@@ -1,6 +1,7 @@
 cmake_minimum_required( VERSION 2.6 )
 find_package( brainvisa-cmake REQUIRED )
 BRAINVISA_PROJECT()
+enable_testing()
 
 BRAINVISA_FIND_PACKAGE( soma-base REQUIRED )
 BRAINVISA_FIND_PACKAGE( soma-qtgui REQUIRED )
