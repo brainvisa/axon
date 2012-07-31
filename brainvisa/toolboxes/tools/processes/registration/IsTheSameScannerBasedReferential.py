@@ -35,17 +35,21 @@ name = 'IsTheSameScannerBasedReferential'
 userLevel = 2
 
 signature = Signature( 
-  'Volume_1', ReadDiskItem( "T1 MRI", getAllFormats() ),
-  'Volume_2', ReadDiskItem( "T1 MRI", getAllFormats() ),
+  #'Volume_1', ReadDiskItem( "T1 MRI", getAllFormats() ),
+  #'Volume_2', ReadDiskItem( "T1 MRI", getAllFormats() ),
+  'Scanner_Based_Ref_1', ReadDiskItem( 'Scanner Based Referential', 'Referential' ),
+  'Scanner_Based_Ref_2', ReadDiskItem( 'Scanner Based Referential', 'Referential' ),
  )
   
 
-#def initialization( self ):
-  #pass
+def initialization( self ):
+  pass
 
   
 def execution( self, context ):
-  context.write('Under development')
+  #db_dict = neuroHierarchy.databases._databases
+  
+  #context.write('Under development')
   
   #update the scanner based referential A by the the scanner based referential B
   #if A has already a scanner based referential included in other transformation, update them too.
@@ -57,11 +61,62 @@ def execution( self, context ):
 
 
   #for each volume, check if there is a scanner based referential
-  #tm = registration.getTransformationManager()
-  #vol1 = tm.referential( self.Volume_1 )
-  #vol2 = tm.referential( self.Volume_2 )
-  #if (vol1 is None or vol1 is None ) :
-    #context.write("One of both volume doesn't have a Scanner Based Referential")
+  tm = registration.getTransformationManager()
+  ref1 = tm.referential( self.Scanner_Based_Ref_1 )
+  ref2 = tm.referential( self.Scanner_Based_Ref_2 )
+  
+  #for tests
+  #acpc = tm.referential( registration.talairachACPCReferentialId )
+  #mni = tm.referential( registration.talairachMNIReferentialId )
+
+
+  #print ref1.uuid()
+  #print ref2.uuid()
+  
+  if (self.Scanner_Based_Ref_1 == self.Scanner_Based_Ref_2 ) :
+    context.write("Scanner Based Referential are the same")
+  else : 
+      context.write("ok")
+         
+      #Find transformations in which ref1 is used
+      #res = tm.findPaths(acpc.uuid(), mni.uuid())
+      
+      #scanner tous les reférentiels de toutes les bases
+      all_databases = neuroHierarchy.databases._databases
+      
+      for db in all_databases.values():
+        options = {'_type' : 'Referential'}
+        listDiskItem = db.findDiskItems(**options)
+        for diskItem in listDiskItem :
+          #print diskItem.fileName()
+          dest = tm.referential(diskItem)
+          #print dest.fileName()
+          res = tm.findPaths(dest.uuid(), ref1.uuid())
+
+          #for i in  tm.findPaths(dest.uuid(), ref1.uuid()):
+             #print "lecture du generator"
+             #print i
+          for p in res :
+            for path in p :
+              print "path"
+              print path
+          else :
+            pass
+            #print "rien à faire"
+
+          res = tm.findPaths(ref1.uuid(), dest.uuid()) 
+          paths=list(tm.findPaths(ref1.uuid(), dest.uuid()))
+
+
+          for p in res :
+            for path in p :
+              print "path"
+              print path
+          else :
+            pass
+            #print "rien à faire"
+        
+
     
     
 

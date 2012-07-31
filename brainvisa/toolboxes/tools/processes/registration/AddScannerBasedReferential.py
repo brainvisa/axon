@@ -42,12 +42,14 @@ userLevel = 2
 
 signature = Signature( 
   'volume_input', ReadDiskItem( "T1 MRI", getAllFormats() ),
+  'referential_volume_input', WriteDiskItem( 'Referential of Raw T1 MRI', 'Referential' ),
   'T1_TO_Scanner_Based', WriteDiskItem( 'Transformation to Scanner Based Referential', 'Transformation matrix' ),
   'new_referential', WriteDiskItem( 'Scanner Based Referential', 'Referential' ),
  )
   
 
 def initialization( self ):
+  self.linkParameters( 'referential_volume_input', 'volume_input' )
   self.linkParameters( 'new_referential', 'volume_input' )
   self.linkParameters( 'T1_TO_Scanner_Based', 'volume_input' )
 
@@ -69,14 +71,28 @@ def execution( self, context ):
     
     
   #Create a new referential if needed for the volume
-  src = tm.referential( self.volume_input )
+  
+  #src = tm.referential( self.volume_input )
+  #print "Attributes"
+  #print self.volume_input.hierarchyAttributes()
+  #if src is None:
+    #print "create src"
+    #src = tm.createNewReferentialFor(self.volume_input)
+    #print "apres"
+    #print src
+    
+  src = tm.referential( self.referential_volume_input )
+  #print "Attributes"
+  #print self.volume_input.hierarchyAttributes()
   if src is None:
-    src = tm.createNewReferentialFor(self.volume_input)
+    src = tm.createNewReferentialFor(self.referential_volume_input)
+
   
   
   #Store information into the trm file
   mot = aims.Motion( trm_to_scannerBased )
   aims.write( mot, self.T1_TO_Scanner_Based.fullPath() )
+  
   
   tm.setNewTransformationInfo( self.T1_TO_Scanner_Based, source_referential=src, destination_referential=dest )
 
