@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="en">
+    <xhtml name="short">This process allows to replace one scanner based referential by an other in all transformations managed by BrainVISA.
+In fact, if data have the same scanner based referential, you could want to display them into the same view in Anatomist.
+ </xhtml>
+    <d name="parameters">
+      <xhtml name="Scanner_Based_Ref_2"/>
+      <xhtml name="Scanner_Based_Ref_1"/>
+    </d>
+    <xhtml name="long"/>
+  </d>
+</d>
+</minf>
