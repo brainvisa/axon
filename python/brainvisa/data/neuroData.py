@@ -90,6 +90,14 @@ class Parameter( object ):
   
   Integer. Indicates the minimum userLevel needed to see this parameter. Default is 0.
   
+  .. py:attribute:: databaseUserLevel
+  
+  Integer. Indicates the minimum userLevel needed to allow database selection for this parameter (useful only for diskitems).
+  
+  .. py:attribute:: browseUserLevel
+  
+  Integer. Indicates the minimum userLevel needed to allow filesystem selection for this parameter (useful only for diskitems).
+  
   .. py:attribute:: linkParameterWithNonDefaultValue
   
   Boolean. Indicates if the value of the parameter can be changed by the activation of a link between parameters even if the parameter has no more a default value (it has been changed by the user). Default is False.
