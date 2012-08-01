@@ -90,7 +90,7 @@ Here is a request for all DiskItems of type "Model graph" with the value of *sid
 
 >>> items = databases.findDiskItems({"_type" : "Model graph", "side": "left"})
 >>> items
-<generator object findDiskItems at ...>
+<generator object ...>
 >>> model_filename = items.next().fileName()
 >>> model_filename.startswith(os.path.join(getSharePath(), bvShareDirectory, "models"))
 True
