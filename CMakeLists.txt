@@ -60,7 +60,9 @@ find_package( Sphinx )
 BRAINVISA_GENERATE_SPHINX_DOC( "sphinxdoc/sphinx"
   "share/doc/axon-${BRAINVISA_PACKAGE_VERSION_MAJOR}.${BRAINVISA_PACKAGE_VERSION_MINOR}/sphinx" )
 
-add_test(axon-tests ${PYTHON_EXECUTABLE} -m brainvisa.tests.test_axon)
+# first test to setup bv (update shared database)
+add_test(axon_setup "${CMAKE_BINARY_DIR}/bin/bv_env" brainvisa -b --setup)
+add_test(axon-tests "${CMAKE_BINARY_DIR}/bin/bv_env" "${PYTHON_EXECUTABLE}" -m brainvisa.tests.test_axon)
 
 BRAINVISA_CREATE_CMAKE_CONFIG_FILES()
 
