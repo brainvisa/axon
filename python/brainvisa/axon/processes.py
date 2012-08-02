@@ -127,7 +127,10 @@ def initializeProcesses():
         for toolbox in brainvisa.toolboxes.allToolboxes():
               # executes startup.py of each toolbox if it exists
               if os.path.exists( toolbox.startupFile ):
-                  execfile( toolbox.startupFile, globals(), {} )
+                  try:
+                      execfile( toolbox.startupFile, globals(), {} )
+                  except:
+                      neuroException.showException()
 
     localsStartup = {}
     for f in neuroConfig.startup:
