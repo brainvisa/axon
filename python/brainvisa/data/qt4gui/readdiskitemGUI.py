@@ -354,7 +354,14 @@ class DiskItemEditor( QWidget, DataEditor ):
       filters = []
       allPatterns = {}
       dirOnly = True
-      for f in self.parameter.formats:
+      formats = set( self.parameter.formats )
+      if self.parameter.enableConversion:
+        for t in [ self.parameter.type ] + self.parameter.type.parents():
+          for f in self.parameter.formats:
+            conv = brainvisa.processes.getConvertersTo( ( t, f ) )
+            for t2, f2 in conv.iterkeys():
+              formats.add( f2 )
+      for f in formats:
         if f.fileOrDirectory() is not Directory:
           dirOnly = False
         flt = f.getPatterns().unmatch( {}, { 'filename_variable': '*' } )[ 0 ]
@@ -620,7 +627,14 @@ class DiskItemListEditor( QWidget, DataEditor ):
         filters = []
         allPatterns = {}
         dirOnly = 1
-        for f in self.parameter.formats:
+        formats = set( self.parameter.formats )
+        if self.parameter.enableConversion:
+          for t in [ self.parameter.type ] + self.parameter.type.parents():
+            for f in self.parameter.formats:
+              conv = brainvisa.processes.getConvertersTo( ( t, f ) )
+              for t2, f2 in conv.iterkeys():
+                formats.add( f2 )
+        for f in formats:
           if f.fileOrDirectory() is not Directory:
             dirOnly = 0
           flt = f.getPatterns().unmatch( {}, { 'filename_variable': '*' } )[ 0 ]
