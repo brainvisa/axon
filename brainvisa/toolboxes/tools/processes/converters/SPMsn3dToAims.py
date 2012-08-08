@@ -104,9 +104,10 @@ def initialization( self ):
     if proc.source_volume:
       tm = registration.getTransformationManager()
       ref = tm.referential( registration.talairachMNIReferentialId )
-      trans = tm.createNewTransformation( 'Transformation matrix',
-        proc.source_volume, ref, simulation=True )
-      return trans
+      if ref and tm.referential( proc.source_volume ):
+        trans = tm.createNewTransformation( 'Transformation matrix',
+          proc.source_volume, ref, simulation=True )
+        return trans
 
   self.removeSource = 0
   self.linkParameters( 'write', 'source_volume',
