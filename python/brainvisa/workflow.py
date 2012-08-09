@@ -116,11 +116,21 @@ class ProcessToWorkflow( object ):
     #self._processExecutionNode( self.process._executionNode, None, priority=0 )
     # if the root node is a parallel node, its children will have a decreasing
     # priorities
-    self._processExecutionNode( self.process._executionNode, None, priority=None )
+    if self.process._executionNode:
+      self._processExecutionNode( self.process._executionNode, None, priority=None )
+      self._processNodes( 0, self._groups[ None ][ 1 ], None, set(), set(), False, None )
+    else:
+      # Create job
+      jobId = self._createIdentifier( self.JOB )
+      self._jobs[ jobId ] = (self.process, 0)
+      groupId = self._createIdentifier( self.SERIAL_GROUP )
+      self._groups[ groupId ] = ( self.process.name, [] )
+      self._groups[ groupId ][ 1 ].append( jobId )
+      self._inGroup[ jobId ] = groupId
+      self._processNodes( 0, [groupId], None, set(), set(), False, None )
 
     #import pprint
     #pprint.pprint( self._groups )
-    self._processNodes( 0, self._groups[ None ][ 1 ], None, set(), set(), False, None )
     for fid, input_output in self._iofiles.iteritems():
       input, output = input_output
       #if len( output ) > 1:
@@ -506,7 +516,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
     jobs = self.__jobs.values()
     dependencies = self.__dependencies
     root_group = self.__groups[self.__mainGroupId]
-      
+     
     workflow = Workflow(jobs, dependencies, root_group, name=self.process.name)
     if self.__out:
       Helper.serialize(self.__out, workflow)
