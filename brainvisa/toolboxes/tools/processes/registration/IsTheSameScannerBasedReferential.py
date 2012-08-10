@@ -37,8 +37,8 @@ userLevel = 2
 signature = Signature( 
   #'Volume_1', ReadDiskItem( "T1 MRI", getAllFormats() ),
   #'Volume_2', ReadDiskItem( "T1 MRI", getAllFormats() ),
-  'Scanner_Based_Ref_1', ReadDiskItem( 'Scanner Based Referential', 'Referential' ),
-  'Scanner_Based_Ref_2', ReadDiskItem( 'Scanner Based Referential', 'Referential' ),
+  'Scanner_Based_1', ReadDiskItem( 'Scanner Based Referential', 'Referential' ),
+  'Scanner_Based_2', ReadDiskItem( 'Scanner Based Referential', 'Referential' ),
  )
   
 
@@ -55,73 +55,106 @@ def execution( self, context ):
   #if A has already a scanner based referential included in other transformation, update them too.
   #to update a scanner based referential, change the 'destination_referential' in the .trmMinf file
  
-  #Check if there is not a soma-wkf using
-  #databases=[h.name for h in neuroHierarchy.hierarchies()]
-  #print databases
-
+  context.write("under devepmt")
 
   #for each volume, check if there is a scanner based referential
   tm = registration.getTransformationManager()
-  ref1 = tm.referential( self.Scanner_Based_Ref_1 )
-  ref2 = tm.referential( self.Scanner_Based_Ref_2 )
+  ref1 = tm.referential( self.Scanner_Based_1 )
+  ref2 = tm.referential( self.Scanner_Based_2 )
   
   #for tests
-  #acpc = tm.referential( registration.talairachACPCReferentialId )
-  #mni = tm.referential( registration.talairachMNIReferentialId )
-
-
-  #print ref1.uuid()
-  #print ref2.uuid()
+  #ref1 = tm.referential( registration.talairachACPCReferentialId )
+  #ref1= tm.referential( registration.talairachMNIReferentialId )
   
-  if (self.Scanner_Based_Ref_1 == self.Scanner_Based_Ref_2 ) :
+  
+  #Test set(list)
+  
+  if (self.Scanner_Based_1 == self.Scanner_Based_2 ) :
     context.write("Scanner Based Referential are the same")
-  else : 
-      context.write("ok")
-         
-      #Find transformations in which ref1 is used
-      #res = tm.findPaths(acpc.uuid(), mni.uuid())
-      
-      #scanner tous les reférentiels de toutes les bases
-      all_databases = neuroHierarchy.databases._databases
-      
+  else :
+    #Chek if they are type of "Scanner Based Referential" ?
+        
+    context.write("ok")
+    
+    #List of paths to update
+    pathToUpdate = []
+    
+    
+    #Find transformations in which ref1 is used
+    #res = tm.findPaths(acpc.uuid(), mni.uuid())
+    
+    #scanner tous les reférentiels de toutes les bases
+    all_databases = neuroHierarchy.databases._databases
+    
+    #print " all databases"
+    #print all_databases.values()
+
+    AllDatabases = all_databases.values()
+    
+    if ( AllDatabases != [] ) :
       for db in all_databases.values():
         options = {'_type' : 'Referential'}
+        #options = {'_type' : 'Transformation matrix'}
         listDiskItem = db.findDiskItems(**options)
         for diskItem in listDiskItem :
-          #print diskItem.fileName()
-          dest = tm.referential(diskItem)
-          #print dest.fileName()
-          res = tm.findPaths(dest.uuid(), ref1.uuid())
+          print "DiskItem"
+          #print diskItem
+          print diskItem.fileName()
+          src = tm.referential(diskItem)
+          print "\n** FIND WITH"
+          print src.fileName()
+          print src.uuid()
+          print ref1.fileName()
+          print ref1.uuid()
+          #def findPaths( self, source_referential, destination_referential, maxLength=None, bidirectional=False ):
+          res = tm.findPaths(src.uuid(), ref1.uuid(), maxLength=1, bidirectional=True)
 
           #for i in  tm.findPaths(dest.uuid(), ref1.uuid()):
-             #print "lecture du generator"
-             #print i
+              #print "lecture du generator"
+              #print i
+          
+          print res
+              
           for p in res :
+            print 'path:'
+            print p
+            print '====='
             for path in p :
-              print "path"
-              print path
-          else :
-            pass
-            #print "rien à faire"
+              print 'begin iter'
+              print "\n** PATH FOUND"
+              #print "Used to find"
+              #print ref1.uuid()
+              #print src.uuid()
+              print 'transfo:', path
+              print '-----'
+              #print "referential values for the path"
+              #print path.get('destination_referential')
+              #print path.get('source_referential')
+              if path not in pathToUpdate:
+                pathToUpdate.append(path)
+              print 'iter done'
+            print 'path finished.'
 
-          res = tm.findPaths(ref1.uuid(), dest.uuid()) 
-          paths=list(tm.findPaths(ref1.uuid(), dest.uuid()))
+      #Now update transformations
+      print pathToUpdate
+      for v in pathToUpdate:
+        destPath = v.get('destination_referential')
+        srcPath =v.get('source_referential')
+        print ref1.uuid()
+        print destPath
+        print srcPath 
+        if destPath == ref1.uuid() :
+          print "cas destPath"
+          #setNewTransformationInfo( self, v, srcPath, ref2.uuid())
+        elif srcPath == ref1.uuid() :
+          print  "cas srcPath"
+        #setNewTransformationInfo( self, v, ref2.uuid(), destPath )
+          
+          
+    else : 
+      context.warning("This process is not avvailable without databases connexions.")
 
 
-          for p in res :
-            for path in p :
-              print "path"
-              print path
-          else :
-            pass
-            #print "rien à faire"
-        
-
-    
-    
-
-
-  
   
   
   
