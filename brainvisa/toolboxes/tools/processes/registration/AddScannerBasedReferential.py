@@ -67,8 +67,7 @@ def execution( self, context ):
   tm = registration.getTransformationManager()
   dest = tm.referential( self.new_referential )
   if dest is None :
-    dest = tm.createNewReferential(self.new_referential)
-    
+    dest = tm.createNewReferentialFor(self.new_referential, referentialType='Scanner Based Referential' )
     
   #Create a new referential if needed for the volume
   
@@ -85,15 +84,14 @@ def execution( self, context ):
   #print "Attributes"
   #print self.volume_input.hierarchyAttributes()
   if src is None:
-    src = tm.createNewReferentialFor(self.referential_volume_input)
+    src = tm.createNewReferentialFor(self.referential_volume_input , referentialType='Referential of Raw T1 MRI' )
+    
 
-  
-  
   #Store information into the trm file
   mot = aims.Motion( trm_to_scannerBased )
   aims.write( mot, self.T1_TO_Scanner_Based.fullPath() )
   
-  
+  #set and update database
   tm.setNewTransformationInfo( self.T1_TO_Scanner_Based, source_referential=src, destination_referential=dest )
 
   

@@ -1703,4 +1703,4 @@ class SQLDatabases( Database ):
     if paths_to_yield:
       paths_to_yield.sort( lambda a,b: cmp( len(a), len(b) ) )
       for path in paths_to_yield:
-        yield paths
+        yield path
