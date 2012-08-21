@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="en">
+    <xhtml name="short">Replace one referential by an other.<br/>
+The process parses all tranformations managed through the BrainVISA databases and replace the "Referential_to_replace" by "Referential_to_keep".
+Then the "Referential_to_replace" is removed of the transformation manager. 
+
+
+
+</xhtml>
+    <d name="parameters">
+      <xhtml name="Referential_to_replace"/>
+      <xhtml name="Referential_to_keep"/>
+    </d>
+    <xhtml name="long"><u>Why to merge two referentials ?</u><br/>
+Referentials and transformations are used when data are load in Anatomist and allow to place correctly data between them. The system load the transfomation information between two volumes to obtain consistent coordinate systems.
+For instance, this process was designed to indicate that data processed by Morphologist and FreeSurfer toolbox share the same scanner based referential (information of header file).
+<br/><br/>
+<u>If data don't have referentials ?</u><br/>
+Referentials are managed via the ontology files. Somes of them are generated automatically and other can be added explicitly by using other processes such as <a href="AddScannerBasedReferential.html">AddScannerBasedReferential</a>.
+
+
+</xhtml>
+  </d>
+</d>
+</minf>

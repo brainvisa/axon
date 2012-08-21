@@ -31,14 +31,14 @@ import shfjGlobals
 from soma import aims
 
 
-name = 'IsTheSameScannerBasedReferential'
+name = 'MergeReferentials'
 userLevel = 2
 
 signature = Signature( 
   #'Volume_1', ReadDiskItem( "T1 MRI", getAllFormats() ),
   #'Volume_2', ReadDiskItem( "T1 MRI", getAllFormats() ),
-  'Scanner_Based_1', ReadDiskItem( 'Scanner Based Referential', 'Referential' ),
-  'Scanner_Based_2', ReadDiskItem( 'Scanner Based Referential', 'Referential' ),
+  'Referential_to_replace', ReadDiskItem( 'Scanner Based Referential', 'Referential' ),
+  'Referential_to_keep', ReadDiskItem( 'Scanner Based Referential', 'Referential' ),
  )
   
 
@@ -55,12 +55,12 @@ def execution( self, context ):
   #if A has already a scanner based referential included in other transformation, update them too.
   #to update a scanner based referential, change the 'destination_referential' in the .trmMinf file
  
-  context.write("under devepmt")
+  context.write("Under Devepmt")
 
   #for each volume, check if there is a scanner based referential
   tm = registration.getTransformationManager()
-  ref1 = tm.referential( self.Scanner_Based_1 )
-  ref2 = tm.referential( self.Scanner_Based_2 )
+  ref1 = tm.referential( self.Referential_to_replace )
+  ref2 = tm.referential( self.Referential_to_keep )
   
   #for tests
   #ref1 = tm.referential( registration.talairachACPCReferentialId )
@@ -69,17 +69,13 @@ def execution( self, context ):
   
   #Test set(list)
   
-  if (self.Scanner_Based_1 == self.Scanner_Based_2 ) :
-    context.write("Scanner Based Referential are the same")
+  if (self.Referential_to_replace == self.Referential_to_keep ) :
+    context.write("Referentials are the same")
   else :
     #Chek if they are type of "Scanner Based Referential" ?
         
-    context.write("ok")
-    
-    #List of paths to update
-    pathToUpdate = []
-    
-    
+    #context.write("ok")
+
     #Find transformations in which ref1 is used
     #res = tm.findPaths(acpc.uuid(), mni.uuid())
     
@@ -91,68 +87,77 @@ def execution( self, context ):
 
     AllDatabases = all_databases.values()
     
+    
     if ( AllDatabases != [] ) :
+
       for db in all_databases.values():
+        #List of paths to update
+        #print "\nMise a zero de pathToUpdate"
+        pathToUpdate = []
+        
+        #print "Parcours de la base"
+        #print db
+        #print db.__class__
+        
         options = {'_type' : 'Referential'}
         #options = {'_type' : 'Transformation matrix'}
         listDiskItem = db.findDiskItems(**options)
         for diskItem in listDiskItem :
-          print "DiskItem"
-          #print diskItem
-          print diskItem.fileName()
+          #print diskItem.fileName()
           src = tm.referential(diskItem)
-          print "\n** FIND WITH"
-          print src.fileName()
-          print src.uuid()
-          print ref1.fileName()
-          print ref1.uuid()
-          #def findPaths( self, source_referential, destination_referential, maxLength=None, bidirectional=False ):
-          res = tm.findPaths(src.uuid(), ref1.uuid(), maxLength=1, bidirectional=True)
+         
+          #print "\n** FIND WITH"
+          #print src.fileName()
+          #print src.uuid()
+          #print ref1.fileName()
+          #print ref1.uuid()
 
-          #for i in  tm.findPaths(dest.uuid(), ref1.uuid()):
-              #print "lecture du generator"
-              #print i
-          
-          print res
+          #find paths with both referential 
+          res = tm.findPaths(src.uuid(), ref1.uuid(), maxLength=1, bidirectional=True)
               
           for p in res :
-            print 'path:'
-            print p
-            print '====='
             for path in p :
-              print 'begin iter'
-              print "\n** PATH FOUND"
-              #print "Used to find"
-              #print ref1.uuid()
-              #print src.uuid()
-              print 'transfo:', path
-              print '-----'
-              #print "referential values for the path"
-              #print path.get('destination_referential')
-              #print path.get('source_referential')
+              #print "\n** PATH FOUND"
+              #print 'transfo:', path
               if path not in pathToUpdate:
+                #print path.__class__
                 pathToUpdate.append(path)
-              print 'iter done'
-            print 'path finished.'
+                
+        if pathToUpdate:
+          #Now update transformations
+          #print "\n** PATH TO UPDATE"
+          #print pathToUpdate
+          for v in pathToUpdate:
+            destPath = v.get('destination_referential')
+            srcPath =v.get('source_referential')
+            #print "ref1 %s" %(ref1.uuid())
+            #print "ref2 %s" %(ref2.uuid())
+            #print "destPath %s" %(destPath)
+            #print "srcPath %s" %(srcPath)
+            
+            if destPath == ref1.uuid() :
+              #print "Update the destination referential"
+              #print "Change the %s referential by  %s in %s" %(ref1.uuid(), ref2.uuid() ,v)
+              #print v.__class__
+              #print srcPath.__class__
+              #print ref2.uuid().__class__
+              tm.setNewTransformationInfo( v, srcPath, ref2.uuid() )
+            elif srcPath == ref1.uuid() :
+              print "Update the source referential"
+              print "Change the %s referential by  %s in %s" %(ref1.uuid(), ref2.uuid() ,v)
+              #tm.setNewTransformationInfo( self, v, ref2.uuid(), destPath, v )
 
-      #Now update transformations
-      print pathToUpdate
-      for v in pathToUpdate:
-        destPath = v.get('destination_referential')
-        srcPath =v.get('source_referential')
-        print ref1.uuid()
-        print destPath
-        print srcPath 
-        if destPath == ref1.uuid() :
-          print "cas destPath"
-          #setNewTransformationInfo( self, v, srcPath, ref2.uuid())
-        elif srcPath == ref1.uuid() :
-          print  "cas srcPath"
-        #setNewTransformationInfo( self, v, ref2.uuid(), destPath )
-          
-          
+            #Remove the referantial from database OR update the value of referential ?
+            #print "database en cours"
+            #print db.__class__
+            #print db
+            #tm.removeReferential ( db, diskItems, eraseFiles=False )
+            
+        else :
+          context.write("Not transformation found")
+
     else : 
-      context.warning("This process is not avvailable without databases connexions.")
+      context.warning("This process is not available without databases connexions.")
 
 
   
