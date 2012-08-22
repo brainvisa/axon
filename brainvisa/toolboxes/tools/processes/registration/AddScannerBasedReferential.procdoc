@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <minf expander="minf_2.0">
 <d>
-  <d name="en">
-    <xhtml name="short">Process to manage the scanner based referential which is sometimes store in the header.
-It seems particulary interesting in the case of freesurfer data because you can manage /mri/orig.nii and /mri/ori/001.nii in the same coordinate system.<br/><br/>
-This process adds new referentials in the brainvisa manager of transformations and creates a transformation from the volume to the scanner based referential.
-<br/><br/>Then, in order to link two scanner based referentials between them, see the 
-<a href="IsTheSameScannerBasedReferential.html">IsTheSameScannerBasedReferential</a>.</xhtml>
+  <d name="fr">
+    <xhtml name="short"/>
     <d name="parameters">
       <xhtml name="T1_TO_Scanner_Based"/>
       <xhtml name="volume_input"/>
@@ -14,6 +10,20 @@ This process adds new referentials in the brainvisa manager of transformations a
       <xhtml name="referential_volume_input"/>
     </d>
     <xhtml name="long"/>
+  </d>
+  <d name="en">
+    <xhtml name="short">Process to manage the scanner based referential which is sometimes stored in the header of data files.
+</xhtml>
+    <d name="parameters">
+      <xhtml name="T1_TO_Scanner_Based"/>
+      <xhtml name="volume_input"/>
+      <xhtml name="new_referential"/>
+      <xhtml name="referential_volume_input"/>
+    </d>
+    <xhtml name="long">This process is especially useful in the case of freesurfer data, to manage raw input data (<tt>mri/orig.nii</tt>) and resampled data (<tt>mri/ori/001.nii</tt>) with correspondance between their coordinate systems.<br/><br/>
+This process adds new referentials in the brainvisa manager of transformations and creates a transformation from the volume to the scanner based referential.
+<br/><br/>Then, in order to link two scanner based referentials between them, see the 
+<a href="bvprocess://MergeReferentials">MergeReferentials</a> process.</xhtml>
   </d>
 </d>
 </minf>
