@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="fr">
+    <xhtml name="short"/>
+    <d name="parameters">
+      <xhtml name="list_of_subjects"/>
+      <xhtml name="group_definition"/>
+    </d>
+    <xhtml name="long"/>
+  </d>
+  <d name="en">
+    <xhtml name="short">Select many subjects by selecting of multiple choices (Ctrl key + left mouse button) in the BrainVISA database and create a group. 
+</xhtml>
+    <d name="parameters">
+      <xhtml name="list_of_subjects"/>
+      <xhtml name="group_definition"/>
+    </d>
+    <xhtml name="long">Groups are used in various inter-subjects analyses. They are used both to store the subjects list in a group, and analyses results in a given group (genrally modality-based).</xhtml>
+  </d>
+</d>
+</minf>
