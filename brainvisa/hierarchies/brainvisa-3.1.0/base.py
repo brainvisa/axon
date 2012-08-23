@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -41,12 +42,13 @@ hierarchy = (
     'trash', #directory containing files that must be deleted
     '{protocol}', SetFileNameStrongAttribute( 'protocol' ), SetType( 'Protocol' ),
     SetContent(
-      '{subject}', SetFileNameStrongAttribute( 'subject' ), SetType( 'Subject' ),
-      SetContent( # Set Content must be present even if it is empty, else it is impossible to insert something in subject directory
-      ),
       "group_analysis",
       SetContent( '{group_of_subjects}',
-                  SetContent( '<group_of_subjects>_group', SetType( 'Group definition' ), ),
+        SetContent( '<group_of_subjects>_group', SetType( 'Group definition' ),
+        ),
+      ),
+      '{subject}', SetFileNameStrongAttribute( 'subject' ), SetType( 'Subject' ),
+      SetContent( # Set Content must be present even if it is empty, otherwise it is impossible to insert something in subject directory
       ),
     ),
   ),
