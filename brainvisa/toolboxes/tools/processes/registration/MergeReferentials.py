@@ -55,29 +55,19 @@ def execution( self, context ):
   #if A has already a scanner based referential included in other transformation, update them too.
   #to update a scanner based referential, change the 'destination_referential' in the .trmMinf file
  
-  context.write("Under Devepmt")
+  #context.write("Under Devepmt")
 
   #for each volume, check if there is a scanner based referential
   tm = registration.getTransformationManager()
   ref1 = tm.referential( self.Referential_to_replace )
   ref2 = tm.referential( self.Referential_to_keep )
   
-  #for tests
-  #ref1 = tm.referential( registration.talairachACPCReferentialId )
-  #ref1= tm.referential( registration.talairachMNIReferentialId )
-  
-  
   #Test set(list)
   
   if (self.Referential_to_replace == self.Referential_to_keep ) :
     context.write("Referentials are the same")
   else :
-    #Chek if they are type of "Scanner Based Referential" ?
-        
-    #context.write("ok")
-
     #Find transformations in which ref1 is used
-    #res = tm.findPaths(acpc.uuid(), mni.uuid())
     
     #scanner tous les reférentiels de toutes les bases
     all_databases = neuroHierarchy.databases._databases
@@ -87,18 +77,10 @@ def execution( self, context ):
 
     AllDatabases = all_databases.values()
     
-    
     if ( AllDatabases != [] ) :
-
       for db in all_databases.values():
         #List of paths to update
-        #print "\nMise a zero de pathToUpdate"
         pathToUpdate = []
-        
-        #print "Parcours de la base"
-        #print db
-        #print db.__class__
-        
         options = {'_type' : 'Referential'}
         #options = {'_type' : 'Transformation matrix'}
         listDiskItem = db.findDiskItems(**options)
@@ -117,16 +99,11 @@ def execution( self, context ):
               
           for p in res :
             for path in p :
-              #print "\n** PATH FOUND"
-              #print 'transfo:', path
               if path not in pathToUpdate:
-                #print path.__class__
                 pathToUpdate.append(path)
                 
         if pathToUpdate:
           #Now update transformations
-          #print "\n** PATH TO UPDATE"
-          #print pathToUpdate
           for v in pathToUpdate:
             destPath = v.get('destination_referential')
             srcPath =v.get('source_referential')
@@ -136,25 +113,22 @@ def execution( self, context ):
             #print "srcPath %s" %(srcPath)
             
             if destPath == ref1.uuid() :
-              #print "Update the destination referential"
-              #print "Change the %s referential by  %s in %s" %(ref1.uuid(), ref2.uuid() ,v)
-              #print v.__class__
-              #print srcPath.__class__
-              #print ref2.uuid().__class__
+              context.write(  "\nUpdate the source referential in " + str(v) )
+              #context.write ( "Change the %s referential by  %s in %s" %(ref1.uuid(), ref2.uuid() ,v) )
               tm.setNewTransformationInfo( v, srcPath, ref2.uuid() )
             elif srcPath == ref1.uuid() :
-              print "Update the source referential"
-              print "Change the %s referential by  %s in %s" %(ref1.uuid(), ref2.uuid() ,v)
-              #tm.setNewTransformationInfo( self, v, ref2.uuid(), destPath, v )
+              context.write(  "\nUpdate the source referential in " + str(v) )
+              #context.write ( "Change the %s referential by  %s in %s" %(ref1.uuid(), ref2.uuid() ,v) )
+              tm.setNewTransformationInfo( self, v, ref2.uuid(), destPath, v )
 
-            #Remove the referantial from database OR update the value of referential ?
-            #print "database en cours"
-            #print db.__class__
-            #print db
-            #tm.removeReferential ( db, diskItems, eraseFiles=False )
-            
+            #Remove the referential from database 
+            res = tm.removeReferential (db, self.Referential_to_replace, ref1.uuid(), eraseFiles=True )
+            if res :
+              context.write("The referential has been removed")
+            else : 
+              context.write("The referential cannot be removed")            
         else :
-          context.write("Not transformation found")
+          context.write( "\nNot transformation found in" + db.name )
 
     else : 
       context.warning("This process is not available without databases connexions.")
