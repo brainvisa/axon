@@ -1406,6 +1406,30 @@ class SQLDatabase( Database ):
       length += 1
     #print '!findTransformationPaths! finished'
 
+
+  def findTransformationWith( self, uuid ):
+    '''Return a generator object that iterate over all transformations in database using uuid 
+    parameter for _to or _from fields'''
+   
+    cursor = self._getDatabaseCursor()
+    pathsWith=[]
+    try:
+      sql = "SELECT _uuid, _from, _to from _TRANSFORMATIONS_ WHERE _to='" + str( uuid ) + "' OR " + "_from='" + str( uuid ) + "'"
+      #sql = "SELECT _uuid, _from, _to from _TRANSFORMATIONS_ "
+      #print sql
+      pathsWith = cursor.execute( sql ).fetchall()
+    except sqlite3.OperationalError, e:
+      brainvisa.processes.defaultContext().warning( "Cannot question database "+self.name+". You should update this database." )
+    finally:
+      self._closeDatabaseCursor( cursor )
+    if pathsWith==[] :
+      return None
+    else :
+      return pathsWith
+
+
+
+
   
 #------------------------------------------------------------------------------
 class NoGeneratorSQLDatabase( SQLDatabase ):
@@ -1530,6 +1554,19 @@ class SQLDatabases( Database ):
     if defaultValue is Undefined:
       raise DatabaseError( _( 'No database contain a DiskItem with uuid %(uuid)s' ) % { 'uuid': str(uuid) } )
     return defaultValue
+    
+    
+  def findTransformationWith( self, uuid):
+    item = []
+    for database in self._databases.itervalues():
+      val = database.findTransformationWith( uuid )
+      if val != None :
+        item.append(database.findTransformationWith( uuid ))
+    if len(item) == 0 :
+      return None
+    else : 
+      return item
+
   
   
   def getDiskItemFromFileName( self, fileName, defaultValue=Undefined ):
