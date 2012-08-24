@@ -205,6 +205,21 @@ class DatabasesTransformationManager( object ):
     except:
       referential=None
     return referential
+    
+
+
+  def removeReferential (self, db, diskItem, uuid, eraseFiles=False) :
+    """
+    Test if there is no transformation with uuid then remove the diskItem
+    """ 
+    val =  neuroHierarchy.databases.findTransformationWith( uuid )
+    if val is None :
+      db.removeDiskItem(diskItem, eraseFiles=eraseFiles) 
+      return True
+    else :
+      return False
+    
+      
 
 
   def copyReferential( self,
