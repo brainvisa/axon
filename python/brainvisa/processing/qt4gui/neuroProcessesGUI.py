@@ -856,9 +856,10 @@ class HTMLBrowser( QWidget ):
 
   def setSource( self, source ):
     if not isinstance( source, QUrl ):
-      source = QUrl( source )
-      if not source.scheme():
-        source.setScheme("file")
+      if os.path.exists(source):
+        source = QUrl.fromLocalFile(source)
+      else:
+        source = QUrl(source)
     self.browser.setSource( source )
 
   def reload( self ):
