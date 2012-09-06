@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -76,6 +77,7 @@ def preloadfiles( self, anim ):
     """Preload all files needed for the animation and return a dictionary with
     ID in .banim file as KEY and object file as value"""
     a = anatomist.Anatomist()
+    allobj = None
     preloadedfiles = {}
     for iter in anim: # for each step of the animation
         objectsDict = iter.get( "objects" )
@@ -84,6 +86,20 @@ def preloadfiles( self, anim ):
                 tmpfilename = obj.get( "filename" )
                 if tmpfilename:
                     preloadedfiles[ objID ] = a.loadObject( tmpfilename )
+                else:
+                    chl = obj.get( 'children' )
+                    t = obj.get( 'objectType' )
+                    if chl and t:
+                        if allobj is None:
+                            allobj = a.getObjects()
+                        for oo in allobj:
+                            if oo.objectType == t \
+                                and len( chl ) == len( oo.children ) \
+                                and oo.name == obj.get( 'name' ) \
+                                and len( [ a.AObject( a, i ) in chl \
+                                    for i in oo.children ] ) == len( chl ):
+                                    preloadedfiles[ objID ] = oo
+                                    break
     return preloadedfiles
 
 
@@ -161,10 +177,13 @@ def execution( self, context ):
         imgbase = os.path.join( tmp, 'anim.jpg' )
     else:
         imgbase = os.path.join( tmp, self.images_basename.fileName() )
+    p = imgbase.rfind( '.' )
+    imgpattern = imgbase[:p] + '%04d' + imgbase[p:]
 
     objects = []
     translationtable = {}
     n = len( anim )
+    num = 0
 
 
     preloadedFiles = self.preloadfiles( anim )
@@ -254,7 +273,6 @@ def execution( self, context ):
                             shi0 = mat0[ 'shininess' ]
                             shi1 = mat1[ 'shininess' ]
 
-                        if mat0 and mat1:
                             no.setMaterial( a.Material(
                                        ambient = [ \
                                        amb0[0]*(1-incr*i) + amb1[0]*incr*i,
@@ -280,6 +298,20 @@ def execution( self, context ):
                                        shi0*(1-incr*i) + shi1*incr*i),
                                        refresh=0
                                        )
+                        # slice info
+                        sl0 = obj0[o].get( 'slice_quaternion' )
+                        sl1 = obj1[o].get( 'slice_quaternion' )
+                        opos0 = obj0[o].get( 'slice_position' )
+                        opos1 = obj1[o].get( 'slice_position' )
+                        if sl0 and sl1:
+                          sl0 = aims.Point4df( sl0 )
+                          sl1 = aims.Point4df( sl1 )
+                          opos0 = aims.Point3df( opos0 )
+                          opos1 = aims.Point3df( opos1 )
+                          a.execute( 'SliceParams', objects=[no],
+                            quaternion=sl0*(1-incr*i) + sl1*incr*i,
+                            position=opos0*(1-incr*i) + opos1*incr*i)
+
                         # palette
 
 
@@ -312,11 +344,16 @@ def execution( self, context ):
                     cpos0[2]*(1-incr*i) + cpos[2]*incr*i, 
                     cpos0[3]*(1-incr*i) + cpos[3]*incr*i )
             win.camera( **params )
-            if i == 0 and j == 0 and \
-              ( self.animation is not None or self.keep_images ):
-                # get anatomist to record mode
-                a.execute("WindowConfig", windows=[win], record_mode=1,
-                  record_basename=imgbase )
+            #if i == 0 and j == 0 and \
+              #( self.animation is not None or self.keep_images ):
+                ## get anatomist to record mode
+                #a.execute("WindowConfig", windows=[win], record_mode=1,
+                  #record_basename=imgbase )
+            if self.animation is not None or self.keep_images:
+                # get a snapshot
+                a.execute("WindowConfig", windows=[win],
+                    snapshot=imgpattern % num )
+                num += 1
         # last step
         params = {
             'zoom' : zoom, 
@@ -327,14 +364,19 @@ def execution( self, context ):
             'slice_quaternion' : \
             quaternion.Quaternion( ( s1[0], s1[1], s1[2], s1[3] \
                                           ) ).normalized().vector(),
-            'force_redraw' : 1
+            #'force_redraw' : 1
             }
         if cpos and cpos0:
             params[ 'cursor_position' ] = cpos
         win.camera( **params )
+        if self.animation is not None or self.keep_images:
+            # get a snapshot
+            a.execute("WindowConfig", windows=[win],
+                snapshot=imgpattern % num )
+            num += 1
 
     if self.animation is not None or self.keep_images:
-        a.execute("WindowConfig", windows=[win], record_mode = 0 )
+        #a.execute("WindowConfig", windows=[win], record_mode = 0 )
         # This is needed to wait for Anatomist to finish what it is doing
         a.sync()
         #a.getInfo()
