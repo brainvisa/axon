@@ -40,6 +40,7 @@ from PyQt4.QtGui import QWidget, QHBoxLayout, QPushButton
 from PyQt4.QtCore import SIGNAL, QSize
 from brainvisa.data.qtgui.neuroDataGUI import DataEditor
 from brainvisa.data.qtgui.readdiskitemGUI import DiskItemEditor
+from brainvisa.configuration import neuroConfig
 
 import threading
 import subprocess
@@ -90,8 +91,12 @@ class LabelSelectionEditor( QWidget, DataEditor ):
             elif fsel:
                 cmd += [ '-p', fsel.fullPath() ]
             sys.stdout.flush()
-            pipe = subprocess.Popen( cmd, stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE, close_fds=True )
+            if neuroConfig.platform == 'windows':
+                pipe = subprocess.Popen( cmd, stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE )
+            else:
+                pipe = subprocess.Popen( cmd, stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE, close_fds=True )
             self._stdout, self._stdin = pipe.stdout, pipe.stdin
             if( psel ):
                 # print 'writing selection:', psel

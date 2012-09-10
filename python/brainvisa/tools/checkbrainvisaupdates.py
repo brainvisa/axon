@@ -25,7 +25,10 @@ def checkUpdates():
 
     # timeout parameter does not exists in python 2.5
     #lines = urllib2.urlopen( filesaddress, timeout=3 ).readlines()
-    lines = urllib2.urlopen( filesaddress ).readlines()
+    try:
+      lines = urllib2.urlopen( filesaddress ).readlines()
+    except: # the network may be not available
+      lines = []
     rexp = re.compile( \
         '^.*(brainvisa-(.*)-(i686|x86_64).*-([^-]+)-.*)\.README.*$' )
     upgrade = False

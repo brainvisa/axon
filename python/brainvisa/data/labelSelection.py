@@ -42,6 +42,7 @@ from brainvisa.data.qtgui.neuroDataGUI import NotImplementedEditor
 from brainvisa.data.writediskitem import WriteDiskItem
 from brainvisa.data.qtgui.labelSelectionGUI import LabelSelectionEditor
 from brainvisa.processes import defaultContext
+from brainvisa.configuration import neuroConfig
 import soma.minf.api as minf
 import types
 import subprocess
@@ -92,8 +93,12 @@ class LabelSelection( Parameter ):
           cmd += [ '-p', '-' ]
       elif fsel:
           cmd += [ '-p', fsel.fullPath() ]
-      pipe = subprocess.Popen( cmd, stdin=subprocess.PIPE,
-          stdout=subprocess.PIPE, close_fds=True )
+      if neuroConfig.platform == 'windows':
+          pipe = subprocess.Popen( cmd, stdin=subprocess.PIPE,
+              stdout=subprocess.PIPE )
+      else:
+          pipe = subprocess.Popen( cmd, stdin=subprocess.PIPE,
+              stdout=subprocess.PIPE, close_fds=True )
       stdout, stdin = pipe.stdout, pipe.stdin
       if( psel ):
           stdin.write( psel )

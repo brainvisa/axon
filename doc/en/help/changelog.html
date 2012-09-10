@@ -64,7 +64,7 @@
 <li>Optimisations to reduce the access time for big databases.</li>
 <li>Fixes in configuration options: it aborted when a non-existing (or moved away) file was referenced in the options file</li>
 <li>Fix font color in the output panel of Brainvisa processes</li>
-<li><p><b>Important changes for developpers:</b></p>
+<li><p><b>Important changes for developers:</b></p>
 <ul>
 <li><b>Anatomist in "direct" mode:</b> this change allows more sophisticated viewers (BV/Anatomist combined interfaces)</li>
 <li><b>Reorganization of Brainvisa python modules:</b> old python modules (neuro*.py) have been moved to brainvisa.processing, brainvisa.data and brainvisa.configuration sub-modules. Some top-level modules (directly used in processes, such as neuroProcesses) are still reachable directly via a proxy module, which will import from the new location (brainvisa.processes for instance). Modules which should not be commonly used from processes (like neuroLog) have been removed from the brainvisa directory.</li>
