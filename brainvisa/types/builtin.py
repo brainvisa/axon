@@ -276,3 +276,8 @@ FileType( 'fMRI activations', '3D functional volume' )
 
 # Group analysis
 FileType( 'Group definition', 'XML parameters', 'XML' )
+
+#Postscript files for SPM results
+FileType( 'Postscript file', 'Any Type', [ 'PS file', 'gz compressed PS file'] )
+FileType( 'Postscript SPM file', 'Postscript file' )
+
