@@ -279,4 +279,3 @@ FileType( 'Group definition', 'XML parameters', 'XML' )
 
 #Postscript files for SPM results
 FileType( 'Postscript file', 'Any Type', [ 'PS file', 'gz compressed PS file'] )
-
