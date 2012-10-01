@@ -530,6 +530,7 @@ class Parameterized( object ):
   """
 
   def __init__( self, signature ):
+    # print 'create Parameterized', self
     self.__dict__[ 'signature' ] = signature
     self._convertedValues = {}
     self._links = {}
@@ -557,6 +558,7 @@ class Parameterized( object ):
         self._parameterHasChanged( name, getattr( self, name ) )
 
   def __del__( self ):
+    # print 'del Parameterized', self
     debugHere()
     for x in self.deleteCallbacks:
       x( self )
@@ -748,7 +750,7 @@ class Parameterized( object ):
     if destination is None:
       destObject, destParameter = ( None, None )
     else:
-      destObject, destParameter = ( self, destination )
+      destObject, destParameter = ( weakref.proxy( self ), destination )
     # Check if a default function can be provided
     if function is None:
       if len( sources ) == 1:
@@ -1506,6 +1508,8 @@ class ExecutionNode( object ):
       sources.append( self.parseParameterString( source ) )
 
     destObject, destParameter = self.parseParameterString( destination )
+    if destObject is not None:
+      destObject = weakref.proxy( destObject )
     # Check if a default function can be provided
     if function is None:
       if len( sources ) == 1:
@@ -1623,11 +1627,21 @@ class ProcessExecutionNode( ExecutionNode ):
         self.processReloaded ) )
 
   def __del__( self ):
+    # print 'del ProcessExecutionNode', self
     reloadNotifier = getattr( self._process, 'processReloadNotifier', None )
     if reloadNotifier is not None:
-      reloadNotifier.remove( ProcessExecutionNode.ReloadNotifierCallback( \
-        self.processReloaded ) )
-    ExecutionNode.__del__( self )
+      try:
+        reloadNotifier.remove( ProcessExecutionNode.ReloadNotifierCallback( \
+          self.processReloaded ) )
+      except AttributeError:
+        # this try..except is here to prevent an error when quitting BrainVisa:
+        # ProcessExecutionNode class is set to None during module destruction
+        pass
+    try:
+      ExecutionNode.__del__( self )
+    except AttributeError:
+      # same as above
+      pass
 
   def addChild( self, name, node ):
     raise RuntimeError( _t_( 'A ProcessExecutionNode cannot have children' ) )
@@ -1754,7 +1768,6 @@ class SelectionExecutionNode( ExecutionNode ):
 
   def __init__( self, *args, **kwargs ):
     ExecutionNode.__init__( self, *args, **kwargs )
-    self._selection = None
 
 
   def _run( self, context ):
