@@ -530,7 +530,7 @@ class Parameterized( object ):
   """
 
   def __init__( self, signature ):
-    # print 'create Parameterized', self
+    #print 'create Parameterized', self
     self.__dict__[ 'signature' ] = signature
     self._convertedValues = {}
     self._links = {}
@@ -558,7 +558,7 @@ class Parameterized( object ):
         self._parameterHasChanged( name, getattr( self, name ) )
 
   def __del__( self ):
-    # print 'del Parameterized', self
+    #print 'del Parameterized', self
     debugHere()
     for x in self.deleteCallbacks:
       x( self )
@@ -974,7 +974,7 @@ class Process( Parameterized ):
     self.instance = self.__class__._instance
 
   def __del__( self ):
-    Parameterized.__del__( self )
+    super( self.__class__.__base__, self ).__del__()
 
   def _iterate( self, **kwargs ):
     """
@@ -1351,6 +1351,21 @@ class ExecutionNode( object ):
       return self.function( *[getattr( i[0](), i[1], None ) for i in self.sources],
                            **kwargs )
 
+  class MethodCallbackProxy( object ):
+    def __init__( self, method ):
+      self.object = weakref.ref( method.im_self )
+      self.method = method.im_func
+    def __call__( self, newProcess ):
+      o = self.object()
+      if o is not None:
+        self.method( o, newProcess )
+    def __eq__( self, other ):
+      if isinstance( other, ExecutionNode.MethodCallbackProxy ):
+        return self.object() == other.object() and self.method == other.method
+      if self.object() is None:
+        return other is None
+      return self.method.__get__( self.object() ) == other
+
   def __init__( self, name='', optional = False, selected = True,
                 guiOnly = False, parameterized = None ):
     """
@@ -1372,6 +1387,7 @@ class ExecutionNode( object ):
     self.__dict__[ '_selectionChange' ] = Notifier( 1 )
 
   def __del__( self ):
+    #print 'del ExecutionNode', self
     debugHere()
 
   def _copy(self, node):
@@ -1601,17 +1617,6 @@ class ProcessExecutionNode( ExecutionNode ):
   
   '''
 
-  class ReloadNotifierCallback( object ):
-    def __init__( self, method ):
-      self.object = weakref.ref( method.im_self )
-      self.method = method.im_func
-    def __call__( self, newProcess ):
-      o = self.object()
-      if o is not None:
-        self.method( o, newProcess )
-    def __eq__( self, other ):
-      return self.object() == other.object() and self.method == other.method
-
   def __init__( self, process, optional = False, selected = True,
                 guiOnly = False ):
     process = getProcessInstance( process )
@@ -1623,22 +1628,22 @@ class ProcessExecutionNode( ExecutionNode ):
     self.__dict__[ '_process' ] = process
     reloadNotifier = getattr( process, 'processReloadNotifier', None )
     if reloadNotifier is not None:
-      reloadNotifier.add( ProcessExecutionNode.ReloadNotifierCallback( \
+      reloadNotifier.add( ExecutionNode.MethodCallbackProxy( \
         self.processReloaded ) )
 
   def __del__( self ):
-    # print 'del ProcessExecutionNode', self
+    #print 'del ProcessExecutionNode', self
     reloadNotifier = getattr( self._process, 'processReloadNotifier', None )
     if reloadNotifier is not None:
       try:
-        reloadNotifier.remove( ProcessExecutionNode.ReloadNotifierCallback( \
+        reloadNotifier.remove( ExecutionNode.MethodCallbackProxy( \
           self.processReloaded ) )
       except AttributeError:
         # this try..except is here to prevent an error when quitting BrainVisa:
         # ProcessExecutionNode class is set to None during module destruction
         pass
     try:
-      ExecutionNode.__del__( self )
+      super( ProcessExecutionNode, self ).__del__()
     except AttributeError:
       # same as above
       pass
@@ -1769,6 +1774,11 @@ class SelectionExecutionNode( ExecutionNode ):
   def __init__( self, *args, **kwargs ):
     ExecutionNode.__init__( self, *args, **kwargs )
 
+  def __del__( self ):
+    for node in self._children.values():
+      node._selectionChange.remove( ExecutionNode.MethodCallbackProxy( \
+        self.childSelectionChange ) )
+    super( SelectionExecutionNode, self ).__del__()
 
   def _run( self, context ):
     'Run the selected child'
@@ -1789,7 +1799,8 @@ class SelectionExecutionNode( ExecutionNode ):
   def addChild( self, name, node ):
     'Add a new child execution node'
     ExecutionNode.addChild(self, name, node)
-    node._selectionChange.add(self.childSelectionChange)
+    node._selectionChange.add( ExecutionNode.MethodCallbackProxy( \
+      self.childSelectionChange ) )
 
   def childSelectionChange(self, node):
     '''This callback is called when the selection state of a child has changed.
