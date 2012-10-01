@@ -1597,6 +1597,17 @@ class ProcessExecutionNode( ExecutionNode ):
   
   '''
 
+  class ReloadNotifierCallback( object ):
+    def __init__( self, method ):
+      self.object = weakref.ref( method.im_self )
+      self.method = method.im_func
+    def __call__( self, newProcess ):
+      o = self.object()
+      if o is not None:
+        self.method( o, newProcess )
+    def __eq__( self, other ):
+      return self.object() == other.object() and self.method == other.method
+
   def __init__( self, process, optional = False, selected = True,
                 guiOnly = False ):
     process = getProcessInstance( process )
@@ -1608,8 +1619,15 @@ class ProcessExecutionNode( ExecutionNode ):
     self.__dict__[ '_process' ] = process
     reloadNotifier = getattr( process, 'processReloadNotifier', None )
     if reloadNotifier is not None:
-      reloadNotifier.add( self.processReloaded )
+      reloadNotifier.add( ProcessExecutionNode.ReloadNotifierCallback( \
+        self.processReloaded ) )
 
+  def __del__( self ):
+    reloadNotifier = getattr( self._process, 'processReloadNotifier', None )
+    if reloadNotifier is not None:
+      reloadNotifier.remove( ProcessExecutionNode.ReloadNotifierCallback( \
+        self.processReloaded ) )
+    ExecutionNode.__del__( self )
 
   def addChild( self, name, node ):
     raise RuntimeError( _t_( 'A ProcessExecutionNode cannot have children' ) )
