@@ -169,7 +169,7 @@ class ReadDiskItem( Parameter ):
 
   def checkValue( self, name, value ):
     Parameter.checkValue( self, name, value )
-    if value is not None:
+    if ((value is not None) and (self.mandatory == True)):
       if not value.isReadable():
         raise RuntimeError( HTMLMessage(_t_( '<em>%s</em> is not readable or does not exists' ) % unicode( value )) )
 
