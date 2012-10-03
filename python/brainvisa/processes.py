@@ -1355,10 +1355,10 @@ class ExecutionNode( object ):
     def __init__( self, method ):
       self.object = weakref.ref( method.im_self )
       self.method = method.im_func
-    def __call__( self, newProcess ):
+    def __call__( self, *args, **kwargs ):
       o = self.object()
       if o is not None:
-        self.method( o, newProcess )
+        self.method( o, *args, **kwargs )
     def __eq__( self, other ):
       if isinstance( other, ExecutionNode.MethodCallbackProxy ):
         return self.object() == other.object() and self.method == other.method
@@ -1642,11 +1642,9 @@ class ProcessExecutionNode( ExecutionNode ):
         # this try..except is here to prevent an error when quitting BrainVisa:
         # ProcessExecutionNode class is set to None during module destruction
         pass
-    try:
-      super( ProcessExecutionNode, self ).__del__()
-    except AttributeError:
+    if ProcessExecutionNode is not None:
       # same as above
-      pass
+      super( ProcessExecutionNode, self ).__del__()
 
   def addChild( self, name, node ):
     raise RuntimeError( _t_( 'A ProcessExecutionNode cannot have children' ) )
