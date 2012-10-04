@@ -570,14 +570,14 @@ class Parameterized( object ):
     debug = neuroConfig.debugParametersLinks
     if debug: print >> debug, 'parameter', name, 'changed in', self, 'with value', newValue
     for function in self._warn.get( name, [] ):
-      if debug: print >> debug, '  call', function, '(', name, ',', newValue, ')'
+      if debug: print >> debug, '  call (_warn)', function, '(', name, ',', newValue, ')'
       function( self, name, newValue )
     for parameterized, attribute, function, force in self._links.get( name, [] ):
       if parameterized is None:
-        if debug: print >> debug, '  call', function, '(', self, ',', self, ')'
+        if debug: print >> debug, '  call (_links)', function, '(', self, ',', self, ')'
         function( self, self )
       else:
-        if debug: print >> debug, ' ', name, 'is linked to parameter', attribute, 'of', parameterized
+        if debug: print >> debug, ' ', name, 'is linked to parameter', attribute, 'of', parameterized, 'from', self, '(', len( self._links.get( name, [] ) ), ')'
         linkParamType = parameterized.signature[ attribute ]
         if force or parameterized.parameterLinkable( attribute, debug=debug ):
           linkParamDebug = getattr( linkParamType, '_debug', None )
@@ -592,10 +592,10 @@ class Parameterized( object ):
             valueSet = newValue
             parameterized.setValue( attribute, newValue )
           else:
-            if debug: print >> debug, '  call', function, '(', self, ',', self, ')'
+            if debug: print >> debug, '  call', function, '(', parameterized, ',', self, ')'
             if linkParamDebug is not None:
-              print >> linkParamDebug, '  ==> call', function, '(', self, ',', self, ')'
-            v = function( self, self )
+              print >> linkParamDebug, '  ==> call', function, '(', parameterized, ',', self, ')'
+            v = function( parameterized, self )
             valueSet=v
             if debug: print >> debug, '  ' + str(parameterized) + '.setValue(', repr(attribute), ',', v,')'
             if linkParamDebug is not None:
@@ -974,7 +974,12 @@ class Process( Parameterized ):
     self.instance = self.__class__._instance
 
   def __del__( self ):
-    super( self.__class__.__base__, self ).__del__()
+    try:
+      Parameterized.__del__( self )
+    except:
+      # can happen when quitting the application: the current module is
+      # not available any longer
+      pass
 
   def _iterate( self, **kwargs ):
     """
@@ -1642,9 +1647,11 @@ class ProcessExecutionNode( ExecutionNode ):
         # this try..except is here to prevent an error when quitting BrainVisa:
         # ProcessExecutionNode class is set to None during module destruction
         pass
-    if ProcessExecutionNode is not None:
+    try:
+      ExecutionNode.__del__( self )
+    except:
       # same as above
-      super( ProcessExecutionNode, self ).__del__()
+      pass
 
   def addChild( self, name, node ):
     raise RuntimeError( _t_( 'A ProcessExecutionNode cannot have children' ) )
