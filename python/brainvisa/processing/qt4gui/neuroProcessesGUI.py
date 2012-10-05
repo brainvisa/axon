@@ -1951,6 +1951,23 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     if self.read_only and self.parameterizedWidget != None:
       self.parameterizedWidget.set_read_only(True)
   
+  # This method should be called to refresh gui 
+  # if process tree was updated
+  def updateExecutionTree(self):
+    
+    eTree = getattr(self, 'executionTree', None)
+    if eTree :
+      #self.trace.append('self->currentContainer')
+      eNode = getattr( self.process, '_executionNode', None )
+      if eNode :
+        # Update gui using execution tree
+        #self.trace.append('self->_executionNode')
+        eTree._notExpandedYet = True
+        eTree.takeTopLevelItem(0)
+        self._executionNodeExpanded( eTree, ( eNode, (eNode,) ) )
+        item = eTree.topLevelItem(0)
+        item.setExpanded( True )
+        eTree.setCurrentItem( item )
 
   def createSignatureWidgets( self, documentation=None ):
     eNode = getattr( self.process, '_executionNode', None )

@@ -1074,6 +1074,13 @@ class Process( Parameterized ):
     :type eNode: :py:class:`ExecutionNode`
     """
     self._executionNode = eNode
+    
+    gui = getattr(self, 'guiContext', None)
+    
+    # Check that both attribute and weakref are availables
+    if gui :
+      # Prevent gui context to refresh execution tree
+      gui.updateExecutionTree()
 
   def execution( self, context ):
     """
