@@ -530,6 +530,7 @@ class Parameterized( object ):
   """
 
   def __init__( self, signature ):
+    #print 'create Parameterized', self
     self.__dict__[ 'signature' ] = signature
     self._convertedValues = {}
     self._links = {}
@@ -557,6 +558,7 @@ class Parameterized( object ):
         self._parameterHasChanged( name, getattr( self, name ) )
 
   def __del__( self ):
+    #print 'del Parameterized', self
     debugHere()
     for x in self.deleteCallbacks:
       x( self )
@@ -568,14 +570,14 @@ class Parameterized( object ):
     debug = neuroConfig.debugParametersLinks
     if debug: print >> debug, 'parameter', name, 'changed in', self, 'with value', newValue
     for function in self._warn.get( name, [] ):
-      if debug: print >> debug, '  call', function, '(', name, ',', newValue, ')'
+      if debug: print >> debug, '  call (_warn)', function, '(', name, ',', newValue, ')'
       function( self, name, newValue )
     for parameterized, attribute, function, force in self._links.get( name, [] ):
       if parameterized is None:
-        if debug: print >> debug, '  call', function, '(', self, ',', self, ')'
+        if debug: print >> debug, '  call (_links)', function, '(', self, ',', self, ')'
         function( self, self )
       else:
-        if debug: print >> debug, ' ', name, 'is linked to parameter', attribute, 'of', parameterized
+        if debug: print >> debug, ' ', name, 'is linked to parameter', attribute, 'of', parameterized, 'from', self, '(', len( self._links.get( name, [] ) ), ')'
         linkParamType = parameterized.signature[ attribute ]
         if force or parameterized.parameterLinkable( attribute, debug=debug ):
           linkParamDebug = getattr( linkParamType, '_debug', None )
@@ -590,10 +592,10 @@ class Parameterized( object ):
             valueSet = newValue
             parameterized.setValue( attribute, newValue )
           else:
-            if debug: print >> debug, '  call', function, '(', self, ',', self, ')'
+            if debug: print >> debug, '  call', function, '(', parameterized, ',', self, ')'
             if linkParamDebug is not None:
-              print >> linkParamDebug, '  ==> call', function, '(', self, ',', self, ')'
-            v = function( self, self )
+              print >> linkParamDebug, '  ==> call', function, '(', parameterized, ',', self, ')'
+            v = function( parameterized, self )
             valueSet=v
             if debug: print >> debug, '  ' + str(parameterized) + '.setValue(', repr(attribute), ',', v,')'
             if linkParamDebug is not None:
@@ -748,7 +750,7 @@ class Parameterized( object ):
     if destination is None:
       destObject, destParameter = ( None, None )
     else:
-      destObject, destParameter = ( self, destination )
+      destObject, destParameter = ( weakref.proxy( self ), destination )
     # Check if a default function can be provided
     if function is None:
       if len( sources ) == 1:
@@ -972,7 +974,12 @@ class Process( Parameterized ):
     self.instance = self.__class__._instance
 
   def __del__( self ):
-    Parameterized.__del__( self )
+    try:
+      Parameterized.__del__( self )
+    except:
+      # can happen when quitting the application: the current module is
+      # not available any longer
+      pass
 
   def _iterate( self, **kwargs ):
     """
@@ -1356,6 +1363,21 @@ class ExecutionNode( object ):
       return self.function( *[getattr( i[0](), i[1], None ) for i in self.sources],
                            **kwargs )
 
+  class MethodCallbackProxy( object ):
+    def __init__( self, method ):
+      self.object = weakref.ref( method.im_self )
+      self.method = method.im_func
+    def __call__( self, *args, **kwargs ):
+      o = self.object()
+      if o is not None:
+        self.method( o, *args, **kwargs )
+    def __eq__( self, other ):
+      if isinstance( other, ExecutionNode.MethodCallbackProxy ):
+        return self.object() == other.object() and self.method == other.method
+      if self.object() is None:
+        return other is None
+      return self.method.__get__( self.object() ) == other
+
   def __init__( self, name='', optional = False, selected = True,
                 guiOnly = False, parameterized = None ):
     """
@@ -1377,6 +1399,7 @@ class ExecutionNode( object ):
     self.__dict__[ '_selectionChange' ] = Notifier( 1 )
 
   def __del__( self ):
+    #print 'del ExecutionNode', self
     debugHere()
 
   def _copy(self, node):
@@ -1513,6 +1536,8 @@ class ExecutionNode( object ):
       sources.append( self.parseParameterString( source ) )
 
     destObject, destParameter = self.parseParameterString( destination )
+    if destObject is not None:
+      destObject = weakref.proxy( destObject )
     # Check if a default function can be provided
     if function is None:
       if len( sources ) == 1:
@@ -1615,8 +1640,25 @@ class ProcessExecutionNode( ExecutionNode ):
     self.__dict__[ '_process' ] = process
     reloadNotifier = getattr( process, 'processReloadNotifier', None )
     if reloadNotifier is not None:
-      reloadNotifier.add( self.processReloaded )
+      reloadNotifier.add( ExecutionNode.MethodCallbackProxy( \
+        self.processReloaded ) )
 
+  def __del__( self ):
+    #print 'del ProcessExecutionNode', self
+    reloadNotifier = getattr( self._process, 'processReloadNotifier', None )
+    if reloadNotifier is not None:
+      try:
+        reloadNotifier.remove( ExecutionNode.MethodCallbackProxy( \
+          self.processReloaded ) )
+      except AttributeError:
+        # this try..except is here to prevent an error when quitting BrainVisa:
+        # ProcessExecutionNode class is set to None during module destruction
+        pass
+    try:
+      ExecutionNode.__del__( self )
+    except:
+      # same as above
+      pass
 
   def addChild( self, name, node ):
     raise RuntimeError( _t_( 'A ProcessExecutionNode cannot have children' ) )
@@ -1743,8 +1785,12 @@ class SelectionExecutionNode( ExecutionNode ):
 
   def __init__( self, *args, **kwargs ):
     ExecutionNode.__init__( self, *args, **kwargs )
-    self._selection = None
 
+  def __del__( self ):
+    for node in self._children.values():
+      node._selectionChange.remove( ExecutionNode.MethodCallbackProxy( \
+        self.childSelectionChange ) )
+    super( SelectionExecutionNode, self ).__del__()
 
   def _run( self, context ):
     'Run the selected child'
@@ -1765,7 +1811,8 @@ class SelectionExecutionNode( ExecutionNode ):
   def addChild( self, name, node ):
     'Add a new child execution node'
     ExecutionNode.addChild(self, name, node)
-    node._selectionChange.add(self.childSelectionChange)
+    node._selectionChange.add( ExecutionNode.MethodCallbackProxy( \
+      self.childSelectionChange ) )
 
   def childSelectionChange(self, node):
     '''This callback is called when the selection state of a child has changed.
