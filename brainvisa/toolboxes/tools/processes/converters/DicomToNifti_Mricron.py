@@ -81,26 +81,40 @@ def execution( self, context ):
       gopt = 'y'
     else:
       gopt = 'n'
-    
+
     context.system( mricron, '-n', 'y', '-f', 'y', '-g', gopt, '-d', 'n', '-e',
                     'n', '-p', 'n', '-i', 'n', '-o', outdir, self.read )
-    
+
     outputFile=None
     outputFiles=glob.glob( os.path.join( outdir.fullPath(), '*' + ext ) )
     if len(outputFiles) == 1:
       outputFile = outputFiles[0]
-      
+    elif len( outputFiles ) > 1:
+      # prefix 'o' is used for reoriented images
+      o = [ im for im in outputFiles \
+        if os.path.basename(im).startswith( 'o' ) ]
+      if len( o ) == 0:
+        # 'co' prefix is used for cropped images
+        o = [ im for im in outputFiles \
+          if os.path.basename(im).startswith( 'co' ) ]
+      if len( o ) > 1:
+        # take longer name in case we have ( 'olga', 'oolga' )
+        m = max( [ len(im) for im in o ] )
+        outputFile = [ im for im in o if len(im) == m ][0]
+      elif len( o ) == 1:
+        outputFile = o[0]
+
     if outputFile and os.path.exists(outputFile):
       if (self.write.fullPath() != outputFile):
         shelltools.mv( outputFile, self.write.fullPath() )
-        context.write("Output file ", outputFile, " moved to ", self.write.fullPath())
+        context.write("Output file ", outputFile, " moved to ",
+          self.write.fullPath())
     else:
       context.error("Problem during the conversion, no output file generated.")
-  
-  
+
     registration.getTransformationManager().copyReferential( self.read,
       self.write )
-  
+
     if self.removeSource:
       for f in self.read.fullPaths():
         shelltools.rm( f )
