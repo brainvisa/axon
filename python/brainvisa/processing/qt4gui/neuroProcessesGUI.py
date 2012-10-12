@@ -1890,6 +1890,16 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       self.executionTreeMenu._showdocaction \
         = self.executionTreeMenu.addAction( _t_("Show documentation"),
                                             self.menuShowDocumentation )
+                                            
+      self.executionTreeMenu._nodeactionseparator \
+        = self.executionTreeMenu.addSeparator()
+      self.executionTreeMenu._addnodeaction \
+        = self.executionTreeMenu.addAction( _t_("Add node"),
+                                            self.menuAddExecutionNode )
+      self.executionTreeMenu._removenodeaction \
+        = self.executionTreeMenu.addAction( _t_("Remove node"),
+                                            self.menuRemoveExecutionNode )
+                                            
       self.connect(self.executionTree, SIGNAL( 'customContextMenuRequested ( const QPoint & )'), self.openContextMenu)
       #self.executionTree.setSortingEnabled( -1 )
       #self.eTreeWidget.setResizeMode( self.executionTree, QSplitter.KeepSize )
@@ -2037,10 +2047,33 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     item=self.executionTree.currentItem()
     if item:
       enode = item._executionNode
+      parent = item.parent()
+      if parent:
+        pnode = parent._executionNode
+      else:
+        pnode = None
       if hasattr( enode, '_process' ):
         self.executionTreeMenu._showdocaction.setEnabled( True )
       else:
         self.executionTreeMenu._showdocaction.setEnabled( False )
+        
+      # Show/Hide node actions
+      if isinstance( enode, brainvisa.processes.ParallelExecutionNode ) \
+         and enode.dynamicProcess :
+        self.executionTreeMenu._addnodeaction.setVisible( True )
+      else:
+        self.executionTreeMenu._addnodeaction.setVisible( False )
+        
+      if isinstance( pnode, brainvisa.processes.ParallelExecutionNode ) \
+         and pnode.dynamicProcess :
+        self.executionTreeMenu._removenodeaction.setVisible( True )
+      else:
+        self.executionTreeMenu._removenodeaction.setVisible( False )
+      
+      self.executionTreeMenu._nodeactionseparator.setVisible( \
+          self.executionTreeMenu._addnodeaction.isVisible() or \
+          self.executionTreeMenu._removenodeaction.isVisible() )
+        
       self.executionTreeMenu.exec_(QCursor.pos())
 
   def changeItemSelection(self, select=True, all=True, before=False ):
@@ -2186,6 +2219,35 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         if os.path.exists(doc):
           _mainWindow.info.setSource(doc)
 
+  def menuAddExecutionNode(self):
+    global _mainWindow
+    item=self.executionTree.currentItem()
+    if item:
+      enode = item._executionNode
+      if isinstance( enode, brainvisa.processes.ParallelExecutionNode ) \
+         and enode.dynamicProcess :
+        enode.addChild()
+        _mainThreadActions.push( self.updateExecutionTree )
+
+  def menuRemoveExecutionNode(self):
+    global _mainWindow
+    item = self.executionTree.currentItem()
+    parent = item.parent() 
+    if parent:
+      pnode = parent._executionNode
+      if isinstance( pnode, brainvisa.processes.ParallelExecutionNode ) \
+         and pnode.dynamicProcess :
+        n = pnode.childrenNames()
+        csize = len(n)
+        for k in n:
+          c = pnode._children[k]
+          if c == item._executionNode :
+            pnode.removeChild(k)
+         
+        if (len(pnode.childrenNames()) < csize):
+          _mainThreadActions.push( self.updateExecutionTree )
+
+        
   def defaultInlineGUI( self, parent, externalRunButton = False, container = None ):
     if container is None:
       container = QWidget( )

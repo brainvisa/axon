@@ -604,6 +604,9 @@ class Parameterized( object ):
           # activate the notifier with the parameter that receive a linked value and with the new value after evaluation of a link function.
           parameterized.signature[ attribute ].valueLinkedNotifier.notify(
             parameterized, attribute, valueSet )
+     
+    if debug :
+      debug.flush()
 
   def isDefault( self, key ):
     """Returns True if the parameter `key` has kept its default value."""
@@ -1431,9 +1434,20 @@ class ExecutionNode( object ):
     if self._children.has_key( name ):
       raise KeyError( HTMLMessage(_t_( '<em>%s</em> already defined' ) % ( name, )) )
     if not isinstance( node, ExecutionNode ):
-      raise RuntimeError( HTMLMessage('<em>node</em> argument must be an ececution node') )
+      raise RuntimeError( HTMLMessage('<em>node</em> argument must be an execution node') )
     self._children[ name ] = node
 
+  def removeChild( self, name ):
+    '''Remove child execution node.
+    
+    :param string name: name which identifies the node
+    '''
+    if not self._children.has_key( name ):
+      raise KeyError( HTMLMessage(_t_( '<em>%s</em> not defined' ) % ( name, )) )
+    c = self._children[ name ]
+    del self._children[ name ]
+    
+    return c
 
   def childrenNames( self ):
     '''
@@ -1774,11 +1788,53 @@ class ParallelExecutionNode( SerialExecutionNode ):
   if possible)
   """
 
+  def __init__(self, name='', optional = False, selected = True,
+                guiOnly = False, parameterized = None, stopOnError=True, dynamicProcess = None ):
+    SerialExecutionNode.__init__(self, name, optional, selected, guiOnly, parameterized)
+    self._internalIndex = 0
+    self.dynamicProcess = dynamicProcess
+    
+    if self.dynamicProcess :
+      # Only dynamic processes need to use notifiers
+      self.beforeChildRemoved = Notifier( 4 )
+      self.afterChildRemoved = Notifier( 4 )
+      self.beforeChildAdded = Notifier( 4 )
+      self.afterChildAdded = Notifier( 4 )
+    
   def _run( self, context ):
     pi, p = context.getProgressInfo( self )
     # do as for serial node
     return super( ParallelExecutionNode, self )._run( context )
-
+    
+  def addChild(self, name = None, node = None):
+    if self.dynamicProcess :
+      if not node :
+        node = ProcessExecutionNode(self.dynamicProcess)
+        
+      if not name :
+        name = self.dynamicProcess + '_' + str(self._internalIndex)
+    
+      self.beforeChildAdded.notify( weakref.proxy( self ), name, weakref.proxy( node ) )
+      
+    super( ParallelExecutionNode, self ).addChild(name, node)
+    
+    if self.dynamicProcess :
+      self._internalIndex += 1
+      self.afterChildAdded.notify( weakref.proxy( self ), name, weakref.proxy( node ) )
+  
+  def removeChild(self, name):
+    if self.dynamicProcess :
+      if not self._children.has_key( name ):
+        raise KeyError( HTMLMessage(_t_( '<em>%s</em> not defined' ) % ( name, )) )
+      
+      node = self._children[ name ]
+      self.beforeChildRemoved.notify( weakref.proxy( self ), name, weakref.proxy( node ) )
+      
+    super( ParallelExecutionNode, self ).removeChild(name)
+    
+    if self.dynamicProcess :
+      self.afterChildRemoved.notify( weakref.proxy( self ), name, weakref.proxy( node ) )
+    
 #-------------------------------------------------------------------------------
 class SelectionExecutionNode( ExecutionNode ):
   '''An execution node that run one of its children'''
