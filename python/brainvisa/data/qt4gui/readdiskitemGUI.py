@@ -528,7 +528,11 @@ class DiskItemListEditor( QWidget, DataEditor ):
       
     def _currentChanged( self, index ):
       if index >= 0 and index < len( self.values ):
-        self.sle.setValue( [ self.values[ index ].fullPath() ] )
+        if self.values[ index ] :
+          self.sle.setValue( [ self.values[ index ].fullPath() ] )
+        else :
+          self.sle.setValue( None )
+          
         self.btnRemove.setEnabled( 1 )
         if index > 0:
           self.btnUp.setEnabled( 1 )
