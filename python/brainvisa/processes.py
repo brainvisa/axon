@@ -484,6 +484,52 @@ def generateHTMLProcessesDocumentation( procId = None ):
       ontology )
 
 #----------------------------------------------------------------------------
+def mapValuesToChildrenParameters(self, node, dest, source, value = None):
+  l = getattr(node, source, [])
+  lsize = len(l)
+  csize = len(node.childrenNames())
+  initcsize = csize
+  
+  # Resulting size is the max between children size and list size
+  rsize = max(csize, lsize)
+
+  for i in xrange(rsize):
+    if i == csize:
+      # Add a new node
+      node.addChild()
+      csize += 1
+
+      
+    if i < lsize :
+      v = l[i]
+    else :
+      v = None
+    
+    # Set node value
+    k = node.childrenNames()[i]
+    setattr(node._children[ k ], dest, v)
+    
+    i += 1
+      
+  if initcsize < csize :
+    # Nodes were added, so it is necessary to update gui
+    gui = getattr(self, 'guiContext', None)
+    
+    # Check that both attribute and weakref are availables
+    if gui :
+      # Prevent gui context to refresh execution tree
+      gui.mainThreadActions().push( gui.updateExecutionTree )
+
+#----------------------------------------------------------------------------
+def mapChildrenParametersToValues(self, node, dest, source, value = None):
+  r = []
+  for k in node.childrenNames():
+    s = getattr(node._children[ k ], source, None)
+    r.append(s)
+
+  setattr(node, dest, r)
+  
+#----------------------------------------------------------------------------
 class Parameterized( object ):
   """
   This class represents an object that have a signature, that is to say a list of typed parameters.
