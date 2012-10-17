@@ -1239,7 +1239,12 @@ class IterationProcess( Process ):
     return { 'type': 'iteration', 'name' : self.name, 'children':[p.pipelineStructure() for p in self._processes] }
 
   def initialization( self ):
-    eNode = ParallelExecutionNode( self.name, stopOnError=False )
+    if len( self._processes ) != 0:
+      dp = self._processes[0].name
+    else:
+      dp = None
+    eNode = ParallelExecutionNode( self.name, stopOnError=False,
+      dynamicProcess=dp )
     for i in xrange( len( self._processes ) ):
       self._processes[ i ].isMainProcess = True
       self._processes[ i ].name =  repr(i+1) + ". " + self._processes[ i ].name
@@ -1855,7 +1860,8 @@ class ParallelExecutionNode( SerialExecutionNode ):
   def addChild(self, name = None, node = None):
     if self.dynamicProcess :
       if not node :
-        node = ProcessExecutionNode(self.dynamicProcess)
+        node = ProcessExecutionNode(self.dynamicProcess, optional=True,
+          selected=True)
         
       if not name :
         name = self.dynamicProcess + '_' + str(self._internalIndex)
