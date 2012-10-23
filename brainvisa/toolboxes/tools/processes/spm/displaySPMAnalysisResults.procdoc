@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="en">
+    <xhtml name="short">Displays the results of a SPM analysis (requires SPM12 standalone)</xhtml>
+    <d name="parameters">
+      <xhtml name="spm_mat">The SPM matlab file which contains the SPM analysis.</xhtml>
+      <xhtml name="title">The title for comparison.</xhtml>
+      <xhtml name="pvalue_adjustment">The p-value adjustment to control.</xhtml>
+      <xhtml name="pvalue_threshold">The p-value threshold.</xhtml>
+      <xhtml name="pvalue_extent_threshold">The p-value extent threshold (cluster size).</xhtml>
+      <xhtml name="result_image_type">The saving type of the t-map.</xhtml>
+      <xhtml name="comment">Any additional comment to be displayed in the result window.</xhtml>
+      <xhtml name="display_glass_brain">Option to display the glass brain views.</xhtml>
+    </d>
+    <xhtml name="long"/>
+  </d>
+</d>
+</minf>
