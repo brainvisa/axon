@@ -152,7 +152,6 @@ def setAtlasFiles( self ):
     self.pickAtlasPath = self.configuration.SPM.spm8_wfu_pickatlas_path
     for k, v in self.atlasFiles.items():
         atlasLocation = locateFile( v, root = self.pickAtlasPath )
-        print atlasLocation
         if not atlasLocation:
             del self.atlasFiles[ k ]
         else:
@@ -1069,7 +1068,7 @@ def createBrainMIPWithGrid( self, context ):
     """
     Creates the brain MIP and the ACPC grid
     """
-    mipMat = locateFile( "MIP.mat", self.configuration.SPM.spm8_path )
+    mipMat = locateFile( "MIP.mat", os.path.dirname( self.configuration.SPM.spm8_standalone_command ) )
     if not mipMat:
         return
     
