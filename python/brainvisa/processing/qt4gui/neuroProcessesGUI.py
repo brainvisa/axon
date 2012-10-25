@@ -56,6 +56,7 @@ import weakref
 from soma.minf.xhtml import XHTML
 from soma.qtgui.api import QtThreadCall, FakeQtThreadCall, WebBrowserWithSearch, bigIconSize, defaultIconSize
 from soma.html import htmlEscape
+import soma.functiontools
 import threading
 import socket
 try:
@@ -1960,24 +1961,6 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
     if self.read_only and self.parameterizedWidget != None:
       self.parameterizedWidget.set_read_only(True)
-  
-  # This method should be called to refresh gui 
-  # if process tree was updated
-  def updateExecutionTree(self):
-    
-    eTree = getattr(self, 'executionTree', None)
-    if eTree :
-      #self.trace.append('self->currentContainer')
-      eNode = getattr( self.process, '_executionNode', None )
-      if eNode :
-        # Update gui using execution tree
-        #self.trace.append('self->_executionNode')
-        eTree._notExpandedYet = True
-        eTree.takeTopLevelItem(0)
-        self._executionNodeExpanded( eTree, ( eNode, (eNode,) ) )
-        item = eTree.topLevelItem(0)
-        item.setExpanded( True )
-        eTree.setCurrentItem( item )
 
   def createSignatureWidgets( self, documentation=None ):
     eNode = getattr( self.process, '_executionNode', None )
@@ -2058,11 +2041,17 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         self.executionTreeMenu._showdocaction.setEnabled( False )
         
       # Show/Hide node actions
+      if isinstance( enode, brainvisa.processes.ProcessExecutionNode ) :
+        enode = enode._executionNode
+      
       if isinstance( enode, brainvisa.processes.ParallelExecutionNode ) \
          and enode.dynamicProcess :
         self.executionTreeMenu._addnodeaction.setVisible( True )
       else:
         self.executionTreeMenu._addnodeaction.setVisible( False )
+      
+      if isinstance( pnode, brainvisa.processes.ProcessExecutionNode ) :
+        pnode = pnode._executionNode
         
       if isinstance( pnode, brainvisa.processes.ParallelExecutionNode ) \
          and pnode.dynamicProcess :
@@ -2220,32 +2209,31 @@ class ProcessView( QWidget, ExecutionContextGUI ):
           _mainWindow.info.setSource(doc)
 
   def menuAddExecutionNode(self):
-    global _mainWindow
     item=self.executionTree.currentItem()
     if item:
       enode = item._executionNode
+      if isinstance( enode, brainvisa.processes.ProcessExecutionNode ) :
+        enode = enode._executionNode
+      
       if isinstance( enode, brainvisa.processes.ParallelExecutionNode ) \
          and enode.dynamicProcess :
         enode.addChild()
-        _mainThreadActions.push( self.updateExecutionTree )
 
   def menuRemoveExecutionNode(self):
-    global _mainWindow
     item = self.executionTree.currentItem()
     parent = item.parent() 
     if parent:
       pnode = parent._executionNode
+      if isinstance( pnode, brainvisa.processes.ProcessExecutionNode ) :
+        pnode = pnode._executionNode
       if isinstance( pnode, brainvisa.processes.ParallelExecutionNode ) \
-         and pnode.dynamicProcess :
+        and pnode.dynamicProcess :
         n = pnode.childrenNames()
-        csize = len(n)
         for k in n:
           c = pnode._children[k]
-          if c == item._executionNode :
+          if c and ((c is item._executionNode) \
+            or (weakref.proxy(c) is item._executionNode )) :
             pnode.removeChild(k)
-         
-        if (len(pnode.childrenNames()) < csize):
-          _mainThreadActions.push( self.updateExecutionTree )
 
         
   def defaultInlineGUI( self, parent, externalRunButton = False, container = None ):
@@ -2612,6 +2600,78 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     #txt.resize( 800, 600 )
     #txt.show()
 
+  def executionNodeRemoveChild( self, item, eNode, key = None, childNode = None ):
+    
+    childItem = getattr(childNode, '_guiItem', None)
+    if childItem :
+      
+      # Remove matching child item
+      for i in xrange(item.childCount()):
+        c = item.child(i)
+        if (childItem == c) or (childItem is weakref.proxy(c)):
+          item.takeChild(i)
+          break
+    
+    func = getattr(item, 'hasChildren', None)
+    # Update children indicator for the current item
+    if func and func():
+      item.setChildIndicatorPolicy(item.DontShowIndicator)
+    
+  def executionNodeAddChild( self, item, eNode, key = None, childNode = None, previous = None ):
+    newItem = None
+    if not getattr(childNode, '_guiItem', None) :
+      if isinstance( childNode, brainvisa.processes.ProcessExecutionNode ):
+        en = childNode._executionNode
+        if en is None:
+          en = childNode
+      else:
+        en = childNode
+      if eNode is not childNode \
+        and ( isinstance( eNode, brainvisa.processes.SelectionExecutionNode ) \
+          or ( isinstance( eNode, brainvisa.processes.ProcessExecutionNode ) \
+          and isinstance( eNode._executionNode, brainvisa.processes.SelectionExecutionNode ) ) ):
+        itemType = "radio"
+      elif childNode._optional:
+        itemType = "check"
+      else:
+        itemType = None
+      newItem = NodeCheckListItem( childNode, item, previous, _t_( childNode.name() ), itemType, read_only = self.read_only )
+      newItem._executionNode = childNode
+      childNode._guiItem = weakref.proxy(newItem)
+      # Add callback to warn about child add and remove
+      beforeChildRemovedCallback = getattr(en, 'beforeChildRemoved', None)
+      if beforeChildRemovedCallback:
+        beforeChildRemovedCallback.add(
+          soma.functiontools.partial( 
+            self.executionNodeRemoveChild, 
+            newItem ) )
+      
+      afterChildAddedCallback = getattr(en, 'afterChildAdded', None)
+      if afterChildAddedCallback :
+        afterChildAddedCallback.add(
+          soma.functiontools.partial(
+            self.executionNodeAddChild, 
+            newItem) )
+        
+      if en.hasChildren():
+        newItem.setChildIndicatorPolicy(newItem.ShowIndicator)
+      #newItem.setExpandable( en.hasChildren() )
+      if isinstance( childNode, brainvisa.processes.ProcessExecutionNode ):
+        self._executionNodeLVItems[ childNode._process ] = newItem
+      
+      func = getattr(item, 'hasChildren', None)
+      # Update children indicator for the current item
+      if func and func():
+        item.setChildIndicatorPolicy(item.ShowIndicator)
+        
+    if self._depth():
+      p = self._currentProcess()
+      eNodeItem = self._executionNodeLVItems.get( p )
+      if eNodeItem is not None:
+        eNodeItem.setIcon( 0, self.pixInProcess )
+        
+    return newItem
+    
   def executionNodeSelected( self, item, previous ):
     if item is not None:
       if (getattr(item, "_guiId", None)) is not None:
@@ -2644,41 +2704,17 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     if item is not None and getattr( item, '_notExpandedYet', True ):
       item._notExpandedYet = False
       previous = None
+      
       if eNodeAndChildren is None:
         eNode = item._executionNode
         eNodeChildren = (eNode.child( k ) for k in  eNode.childrenNames())
       else:
         eNode, eNodeChildren = eNodeAndChildren
+      
       for childNode in eNodeChildren:
-        if isinstance( childNode, brainvisa.processes.ProcessExecutionNode ):
-          en = childNode._executionNode
-          if en is None:
-            en = childNode
-        else:
-          en = childNode
-        if eNode is not childNode \
-          and ( isinstance( eNode, brainvisa.processes.SelectionExecutionNode ) \
-            or ( isinstance( eNode, brainvisa.processes.ProcessExecutionNode ) \
-            and isinstance( eNode._executionNode, brainvisa.processes.SelectionExecutionNode ) ) ):
-          itemType="radio"
-        elif childNode._optional:
-          itemType="check"
-        else:
-          itemType=None
-        newItem=NodeCheckListItem( childNode, item, previous, _t_( childNode.name() ), itemType, read_only=self.read_only )
-        newItem._executionNode = childNode
-        previous = newItem
-        if en.hasChildren():
-          newItem.setChildIndicatorPolicy(newItem.ShowIndicator)
-        #newItem.setExpandable( en.hasChildren() )
-        if isinstance( childNode, brainvisa.processes.ProcessExecutionNode ):
-          self._executionNodeLVItems[ childNode._process ] = newItem
-
-      if self._depth():
-        p = self._currentProcess()
-        eNodeItem = self._executionNodeLVItems.get( p )
-        if eNodeItem is not None:
-          eNodeItem.setIcon( 0, self.pixInProcess )
+        previous = self.executionNodeAddChild( item, eNode, 
+                                               childNode = childNode, 
+                                               previous = previous )
       
   def _executionNodeActivated(self, item):
     if getattr(item, "activate", None):

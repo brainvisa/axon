@@ -510,16 +510,7 @@ def mapValuesToChildrenParameters(self, node, dest, source, value = None):
     setattr(node._children[ k ], dest, v)
     
     i += 1
-      
-  if initcsize < csize :
-    # Nodes were added, so it is necessary to update gui
-    gui = getattr(self, 'guiContext', None)
     
-    # Check that both attribute and weakref are availables
-    if gui :
-      # Prevent gui context to refresh execution tree
-      gui.mainThreadActions().push( gui.updateExecutionTree )
-
 #----------------------------------------------------------------------------
 def mapChildrenParametersToValues(self, node, dest, source, value = None):
   r = []
@@ -1122,7 +1113,7 @@ class Process( Parameterized ):
       Parameterized.addLink( self, destination, source, function )
     else:
       eNode.addLink( destination, source, function )
-
+    
   def setExecutionNode( self, eNode ):
     """Sets the execution node of the pipeline.
     
@@ -1130,13 +1121,6 @@ class Process( Parameterized ):
     :type eNode: :py:class:`ExecutionNode`
     """
     self._executionNode = eNode
-    
-    gui = getattr(self, 'guiContext', None)
-    
-    # Check that both attribute and weakref are availables
-    if gui :
-      # Prevent gui context to refresh execution tree
-      gui.updateExecutionTree()
 
   def execution( self, context ):
     """
@@ -1486,6 +1470,7 @@ class ExecutionNode( object ):
       raise KeyError( HTMLMessage(_t_( '<em>%s</em> already defined' ) % ( name, )) )
     if not isinstance( node, ExecutionNode ):
       raise RuntimeError( HTMLMessage('<em>node</em> argument must be an execution node') )
+    
     self._children[ name ] = node
 
   def removeChild( self, name ):
@@ -1642,7 +1627,7 @@ class ExecutionNode( object ):
       l = sourceObject._links.get( sourceParameter, [] )
       if l:
         lbis = l
-        l = [i for i in l if ( i[0] is not destObject and i[0] is not weakref.proxy( destObject ) ) or i[1] != destParameter]
+        l = [i for i in l if ( destObject and i[0] is not destObject and ( i[0] is not weakref.proxy( destObject ) ) ) or i[1] != destParameter]
         if len(l) != len(lbis):
           removed = 1
         if l:
@@ -1653,6 +1638,12 @@ class ExecutionNode( object ):
     if removed == 0:
       print 'warning: enode link not removed:', self, destination, 'from:', source, ', function:', function
 
+  def removeDoubleLink( self, destination, source, function=None ):
+    """
+    Removes a double link source -> destination and destination -> source.
+    """
+    self.removeLink( destination, source, function )
+    self.removeLink( source, destination, function )
 
   def parseParameterString( self, parameterString ):
     """
@@ -1686,7 +1677,7 @@ class ExecutionNode( object ):
       eNodesState[ eNodeKey ] = eNode.saveStateInDictionary()
     result[ 'executionNodes' ] = eNodesState
     return result
-
+    
 #-------------------------------------------------------------------------------
 class ProcessExecutionNode( ExecutionNode ):
   '''
@@ -3256,20 +3247,23 @@ def getProcessInstanceFromProcessEvent( event ):
     while stack:
       eNodeParent, eNodeName, eNodeParameters, eNodeSelected, eNodeChildren = stack.pop( 0 )
       eNode = eNodeParent.child( eNodeName )
-      eNode.setSelected( eNodeSelected )
-      if eNodeParameters:
-        for n, v in eNodeParameters[ 'selected' ].iteritems():
-          try:
-            eNode.setValue( n, v, default=False )
-          except KeyError:
-            pass
-        for n, v in eNodeParameters[ 'default' ].iteritems():
-          try:
-            eNode.setValue( n, v, default=True )
-          except KeyError:
-            pass
-      stack += [ ( eNode, k, e.get( 'parameters' ), e[ 'selected' ],
-                e.get( 'executionNodes', {} ) ) for k, e in eNodeChildren.iteritems() ]
+      
+      if eNode :
+        eNode.setSelected( eNodeSelected )
+        
+        if eNodeParameters:
+          for n, v in eNodeParameters[ 'selected' ].iteritems():
+            try:
+              eNode.setValue( n, v, default=False )
+            except KeyError:
+              pass
+          for n, v in eNodeParameters[ 'default' ].iteritems():
+            try:
+              eNode.setValue( n, v, default=True )
+            except KeyError:
+              pass
+        stack += [ ( eNode, k, e.get( 'parameters' ), e[ 'selected' ],
+                  e.get( 'executionNodes', {} ) ) for k, e in eNodeChildren.iteritems() ]
     windowGeometry = event.content.get( 'window' )
     if windowGeometry is not None:
       result._windowGeometry = windowGeometry
