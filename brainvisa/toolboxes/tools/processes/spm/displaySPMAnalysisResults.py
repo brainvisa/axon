@@ -55,7 +55,8 @@ signature = Signature(
   'pvalue_extent_threshold', Integer(),
   'result_image_type', Choice( 'Thresholded SPM', 'All clusters (binary)', 'All clusters (n-ary)' ),
   'comment', String(),
-  'display_glass_brain', Choice( 'Yes', 'No' )
+  'display_glass_brain', Choice( 'Yes', 'No' ),
+  'spmVersion', Choice('Spm12_standalone', 'Spm8 NOT standalone'),
 )
 
 def locateFile( pattern, root = os.curdir ):
@@ -77,6 +78,7 @@ def locateFile( pattern, root = os.curdir ):
 
 def initialization( self ):
     # Default parameters
+    self.spmVersion = 'Spm12_standalone'
     self.pvalue_adjustment = 'FDR'
     self.pvalue_threshold = 0.05
     self.pvalue_extent_threshold = 30
@@ -176,14 +178,35 @@ def isGlassBrainAvailable( self ):
     return self.display_glass_brain == 'Yes'
 
 def computeResults( self, context ):
+  if(self.spmVersion == 'Spm12_standalone'):
+    return self.computeResults_spm12Standalone(context)
+  elif(self.spmVersion == 'Spm8 NOT standalone'):
+    return self.computeResults_spm8(context)
+    
+def computeResults_spm12Standalone( self, context ):
     """
     Computes the SPM analysis results according to the spm_mat parameter
     """
     # Write the SPM script
     matFileFi, matFile = mkstemp( suffix = ".m" )
     matFileFd = os.fdopen( matFileFi, "w" )
-    matFileFd.write( \
-"""
+    self.appendResultMatlabbatch(matFileFd)
+    matFileFd.write("""spm_jobman('run', matlabbatch);""")
+    self.appendSpmWriteFiltered(matFileFd)
+    matFileFd.close()
+    
+    # Launch SPM standalone
+    mexe = self.configuration.SPM.spm8_standalone_command
+    cmd = [ mexe,
+            self.configuration.SPM.spm8_standalone_mcr_path,
+            'script',
+            matFile ]
+    context.write( 'SPM analysis: computing T-map' )
+    context.system( *cmd )
+
+def appendResultMatlabbatch(self, matFileFd):
+  return matFileFd.write(
+    """
 spm_get_defaults('stats.topoFDR', 0);
 spm_get_defaults('cmdline', true);
 spm_jobman('initcfg');
@@ -196,22 +219,31 @@ matlabbatch{1}.spm.stats.results.conspec.extent = %s;
 matlabbatch{1}.spm.stats.results.conspec.mask = struct('contrasts', {}, 'thresh', {}, 'mtype', {});
 matlabbatch{1}.spm.stats.results.units = 1;
 matlabbatch{1}.spm.stats.results.print = true;
-spm_jobman('run', matlabbatch);
+""" % (self.spm_mat.fullPath(), 
+      self.title, 
+      self.pvalue_adjustment, # FDR is not available for spm8, only for spm12 (FWE or none are ok with spm8)
+      self.pvalue_threshold, 
+      self.pvalue_extent_threshold))
+
+
+def appendSpmWriteFiltered(self, matlabBatchFile):
+  return matlabBatchFile.write(
+    """ 
 XYZ = xSPM.XYZ;
 switch lower( '%s' )
-    case 'thresh'
-        Z = xSPM.Z;
+case 'thresh'
+    Z = xSPM.Z;
 
-    case 'binary'
-        Z = ones(size(xSPM.Z));
+case 'binary'
+    Z = ones(size(xSPM.Z));
 
-    case 'n-ary'
-        Z       = spm_clusters(XYZ);
-        num     = max(Z);
-        [n, ni] = sort(histc(Z,1:num), 2, 'descend');
-        n       = size(ni);
-        n(ni)   = 1:num;
-        Z       = n(Z);
+case 'n-ary'
+    Z       = spm_clusters(XYZ);
+    num     = max(Z);
+    [n, ni] = sort(histc(Z,1:num), 2, 'descend');
+    n       = size(ni);
+    n(ni)   = 1:num;
+    Z       = n(Z);
 end
 spm_write_filtered( Z, XYZ, xSPM.DIM, xSPM.M, '', '%s' );
 tmpfile = [ '%s' ];
@@ -232,26 +264,57 @@ fprintf(fid, '%%s', sprintf('Height threshold %%c = %%0.2f {%%s}', xSPM.STAT, xS
 fprintf(fid, '\\n' );
 fprintf(fid, '%%s', sprintf('Extent threshold k = %%0.0f voxels', xSPM.k));
 fclose(fid);
-""" \
-    % ( self.spm_mat.fullPath(),
-        self.title,
-        self.pvalue_adjustment,
-        self.pvalue_threshold,
-        self.pvalue_extent_threshold,
-        self.result_image_type_dic[ self.result_image_type ],
-        self.resultMap,
-        self.statsCsv,
-        self.threshInfo ) )
-    matFileFd.close()
+""" % (self.result_image_type_dic[self.result_image_type], 
+      self.resultMap, 
+      self.statsCsv, 
+      self.threshInfo))
+
+def computeResults_spm8( self, context ):
+    """
+    Computes the SPM analysis results according to the spm_mat parameter
+    """
+    inDir = self.resultMap[:self.resultMap.rindex('/')]  
+    # Write the SPM script
+    spmJobFile = inDir + '/' + 'result_job.m'
+    matFileFd = open(spmJobFile, 'w')
+
+    self.appendResultMatlabbatch(matFileFd)
     
-    # Launch SPM standalone
-    mexe = self.configuration.SPM.spm8_standalone_command
-    cmd = [ mexe,
-            self.configuration.SPM.spm8_standalone_mcr_path,
-            'script',
-            matFile ]
+    matFileFd.close()
+
+    context.write( 'SPM analysis: computing ...' )
+    
+    jobPath = matFileFd.name
+    matlabBatchPath = str(jobPath).replace('_job', '')  
+    matlabBatchFile = open(matlabBatchPath, 'w')
+    
+    context.write("matlabBatchPath", matlabBatchPath)
+    curDir = matlabBatchPath[:matlabBatchPath.rindex('/')]
+    os.chdir(curDir)
+    
+    matlabBatchFile.write("addpath('" + self.configuration.SPM.spm8_path + "');\n")
+    matlabBatchFile.write("spm('pet');\n")
+    matlabBatchFile.write("jobid = cfg_util('initjob', '%s');\n" % jobPath)
+    matlabBatchFile.write("cfg_util('run', jobid);\n")
+
+    self.appendSpmWriteFiltered(matlabBatchFile)
+    
+    matlabBatchFile.write("exit\n")
+    matlabBatchFile.close()
+    
     context.write( 'SPM analysis: computing T-map' )
-    context.system( *cmd )
+    runMatblatBatch(context, self.configuration, matlabBatchPath)
+
+def runMatblatBatch(context, configuration, matlabBatchPath):
+  curDir = matlabBatchPath[:matlabBatchPath.rindex('/')]
+  os.chdir(curDir)
+  # execution batch file
+  mexe = distutils.spawn.find_executable(configuration.matlab.executable)
+  matlabCmd = os.path.basename(matlabBatchPath)[:os.path.basename(matlabBatchPath).rindex('.')] # remove extension
+  cmd = [mexe] + configuration.matlab.options.split() + ['-r', matlabCmd]
+  context.write('Running matlab command:', cmd)
+  context.system(*cmd)
+
 
 def display( self, context ):
     """
@@ -1080,7 +1143,7 @@ def createBrainMIPWithGrid( self, context ):
 """
 spm_get_defaults('cmdline', true);
 spm_jobman('initcfg');
-load('/home_local/jmartini/tools/spm8_x64/MIP.mat');
+load('%s/spm8_mcr/spm8/MIP.mat');
 
 [r,c,v] = find( grid_all > 0 );
 fid = fopen( '%s', 'wt' );
@@ -1095,7 +1158,8 @@ for i=1:length( r )
 end
 fclose(fid);
 """ \
-    % ( gridFile,
+    % ( self.configuration.SPM.spm8_standalone_path,
+        gridFile,
         maskFile ) )
     matFileFd.close()
     mexe = self.configuration.SPM.spm8_standalone_command
