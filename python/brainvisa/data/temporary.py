@@ -158,7 +158,7 @@ class TemporaryFileManager:
     self.__lock.acquire()
     try:
       result = os.path.join( directory,
-                   prefix + self.__identifier + str( self.__count ) + suffix )
+                   prefix + self.__identifier + '_' + str( self.__count ) + suffix )
       self.__count += 1
     finally:
       self.__lock.release()
