@@ -103,7 +103,10 @@ def exceptionMessageHTML( exceptionInfo, beforeError='', afterError='' ):
         elif message and len(v.args)==1: # should be a user message in unicode
           txt="<b>"+htmlEscape( unicode(message) )+"</b>"
         else: # if there is no message, we must use str(v) to get the message. It should be a system exception and the message is encoded with console encoding. So we decode it with console encoding to get unicode string. 
-          enco = sys.stdout.encoding
+          if hasattr( sys.stdout, 'encoding' ):
+            enco = sys.stdout.encoding
+          else: # IPython fake streams do not have the encoding variable
+            enco = None
           if not enco:
             enco = sys.getdefaultencoding()
             if not enco:
