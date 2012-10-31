@@ -1200,7 +1200,9 @@ class SQLDatabase( Database ):
     if exactType:
       types = set( self.getAttributeValues( '_type', selection, required ) )
     else:
-      types = set( chain( *( self._childrenByTypeName[ t ] for t in self.getAttributeValues( '_type', selection, required ) ) ) )
+      tval = [ x for x in self.getAttributeValues( '_type', selection,
+        required ) if x is not None ]
+      types = set( chain( *( self._childrenByTypeName[ t ] for t in tval ) ) )
     if _debug is not None:
       print >> _debug, '!createDiskItems!', tuple( types ), selection, required
     for type in types:
