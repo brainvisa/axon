@@ -34,6 +34,8 @@ class ProcessToWorkflow( object ):
     self._iofiles = {}
     # list of history boook directories to transfer back after wf execution
     self._historyBooks = {}
+    # execution node to group ID map
+    self._nodeToId = {}
   
     self.brainvisa_cmd = [ 'python', '-m', 'brainvisa.axon.runprocess' ]
   
@@ -72,6 +74,7 @@ class ProcessToWorkflow( object ):
         self._groups[ groupId ] = ( label, [] )
         self._groups[ inGroup ][ 1 ].append( groupId )
         self._inGroup[ groupId ] = inGroup
+        self._nodeToId[ eNode ] = groupId
         children_count = len(eNode.childrenNames())
         cmpt = 0
         for i in eNode.children():
@@ -95,6 +98,7 @@ class ProcessToWorkflow( object ):
         self._groups[ groupId ] = ( label, [] )
         self._groups[ inGroup ][ 1 ].append( groupId )
         self._inGroup[ groupId ] = inGroup
+        self._nodeToId[ eNode ] = groupId
         if priority == None:
           for i in eNode.children():
             self._processExecutionNode( i, groupId, 0 )
@@ -128,6 +132,8 @@ class ProcessToWorkflow( object ):
       self._groups[ groupId ][ 1 ].append( jobId )
       self._inGroup[ jobId ] = groupId
       self._processNodes( 0, [groupId], None, set(), set(), False, None )
+
+    self._processExtraDependencies()
 
     #import pprint
     #pprint.pprint( self._groups )
@@ -294,7 +300,6 @@ class ProcessToWorkflow( object ):
             for source in previous:
               if source != id:
                 self.create_link(  source, id )
-              
         
         
       elif id[ 0 ] == self.PARALLEL_GROUP:
@@ -364,7 +369,58 @@ class ProcessToWorkflow( object ):
       command.append( value )
     # print "==> command " + repr(command)
     self.create_job( depth, jobId, command, inGroup, label=process.name, priority=priority )
- 
+
+
+  def _processExtraDependencies( self ):
+    jobtoid = {}
+    for id, job in self._jobs.iteritems():
+      jobtoid[job[0]] = id
+    idtogroup = {}
+    for node, id in self._nodeToId.iteritems():
+      idtogroup[id] = node
+    for id, job in self._jobs.iteritems():
+      node = job[0].executionNode()
+      if hasattr( node, '_dependencies' ):
+        deps = node._dependencies
+        self._processExtraDependenciesFor( id, deps, jobtoid )
+    for id, group in self._groups.iteritems():
+      if id is not None: # None group has no deps.
+        node = idtogroup[ id ]
+        if hasattr( node, '_dependencies' ):
+          deps = node._dependencies
+          self._processExtraDependenciesFor( id, deps, jobtoid )
+
+  def _processExtraDependenciesFor( self, id, deps, jobtoid ):
+    if id[0] == self.SERIAL_GROUP:
+      group = self._groups[ id ]
+      self._processExtraDependenciesFor( group[1][1], deps, jobtoid )
+    elif id[0] == self.PARALLEL_GROUP:
+      # add deps for each job of the parallel
+      group = self._groups[ id ]
+      for jid in group[1]:
+        self._processExtraDependenciesFor( jid, deps, jobtoid )
+    elif id[0] == self.JOB:
+      # add source dependencies deps to a single job id
+      for dep in deps:
+        dep = dep() # dereference weakref
+        if dep in jobtoid or ( hasattr( dep, '_process' ) and \
+          dep._process in jobtoid ): # dep is a single job
+          if hasattr( dep, '_process' ):
+            destid =  jobtoid[ dep._process ]
+          else:
+            destid = jobtoid[ dep ]
+          print 'create_link( ', id, ',', destid, ')'
+          self.create_link( id, destid )
+        elif dep in self._nodeToId: # dep is a group
+          gid = self._nodeToId[ dep ]
+          group = self._groups[ gid ][1]
+          if gid[0] == self.SERIAL_GROUP:
+            # depend only on last task in serial group
+            self._processExtraDependenciesFor( id, [ group[-1] ], jobtoid )
+          elif gid[0] == self.PARALLEL_GROUP:
+            # depend on all jobs in the parallel group
+            self._processExtraDependenciesFor( id, group, jobtoid )
+
 
 class GraphvizProcessToWorkflow( ProcessToWorkflow ):
   def __init__( self, process, output, clusters=True, files=True ):

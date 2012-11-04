@@ -1417,7 +1417,7 @@ class ExecutionNode( object ):
       return self.method.__get__( self.object() ) == other
 
   def __init__( self, name='', optional = False, selected = True,
-                guiOnly = False, parameterized = None ):
+                guiOnly = False, parameterized = None, expandedInGui = False ):
     """
     :param string name: name of the node - default ''.
     :param boolean optional: indicates if this node is optional in the pipeline - default False.
@@ -1435,6 +1435,8 @@ class ExecutionNode( object ):
     self.__dict__[ '_selected' ] = selected
     self.__dict__[ '_guiOnly' ] = guiOnly
     self.__dict__[ '_selectionChange' ] = Notifier( 1 )
+    self.__dict__[ '_expandedInGui' ] = expandedInGui
+    self.__dict__[ '_dependencies' ] = []
 
   def __del__( self ):
     #print 'del ExecutionNode', self
@@ -1677,7 +1679,17 @@ class ExecutionNode( object ):
       eNodesState[ eNodeKey ] = eNode.saveStateInDictionary()
     result[ 'executionNodes' ] = eNodesState
     return result
-    
+
+  def addExecutionDependencies( self, deps ):
+    '''Adds to the execution node dependencies on the execution of other nodes.
+    This allows to build a dependencies structure which is not forced to be a
+    tree, but can be a grapĥ. Dependencies are used to build Soma-Workflow
+    workflows with correct dependencies.
+    '''
+    if type( deps ) not in ( types.ListType, types.TupleType ):
+      deps = [ deps ]
+    self._dependencies += [ weakref.ref(x) for x in deps ]
+
 #-------------------------------------------------------------------------------
 class ProcessExecutionNode( ExecutionNode ):
   '''
@@ -1686,13 +1698,13 @@ class ProcessExecutionNode( ExecutionNode ):
   '''
 
   def __init__( self, process, optional = False, selected = True,
-                guiOnly = False ):
+                guiOnly = False, expandedInGui = False ):
     process = getProcessInstance( process )
     ExecutionNode.__init__( self, process.name,
                             optional = optional,
                             selected = selected,
                             guiOnly = guiOnly,
-                            parameterized = process )
+                            parameterized = process, expandedInGui = expandedInGui )
     self.__dict__[ '_process' ] = process
     reloadNotifier = getattr( process, 'processReloadNotifier', None )
     if reloadNotifier is not None:
@@ -1785,6 +1797,10 @@ class ProcessExecutionNode( ExecutionNode ):
     self.__dict__[ '_process' ] = getProcessInstanceFromProcessEvent( event )
     self._process.processReloadNotifier.add( self.processReloaded )
 
+  def addExecutionDependencies( self, deps ):
+    ExecutionNode.addExecutionDependencies( self, deps )
+    eNode = self._process._executionNode
+    eNode.addExecutionDependencies( deps )
 
 
 #-------------------------------------------------------------------------------
@@ -1792,8 +1808,9 @@ class SerialExecutionNode( ExecutionNode ):
   '''An execution node that run all its children sequentially'''
 
   def __init__(self, name='', optional = False, selected = True,
-                guiOnly = False, parameterized = None, stopOnError=True ):
-    ExecutionNode.__init__(self, name, optional, selected, guiOnly, parameterized)
+                guiOnly = False, parameterized = None, stopOnError=True,
+                expandedInGui = False ):
+    ExecutionNode.__init__(self, name, optional, selected, guiOnly, parameterized, expandedInGui=expandedInGui )
     self.stopOnError=stopOnError
 
   def _run( self, context ):
@@ -1831,8 +1848,8 @@ class ParallelExecutionNode( SerialExecutionNode ):
   """
 
   def __init__(self, name='', optional = False, selected = True,
-                guiOnly = False, parameterized = None, stopOnError=True, dynamicProcess = None ):
-    SerialExecutionNode.__init__(self, name, optional, selected, guiOnly, parameterized)
+                guiOnly = False, parameterized = None, stopOnError=True, dynamicProcess = None, expandedInGui = False ):
+    SerialExecutionNode.__init__(self, name, optional, selected, guiOnly, parameterized, expandedInGui=expandedInGui)
     self._internalIndex = 0
     self.dynamicProcess = dynamicProcess
     
@@ -1912,6 +1929,7 @@ class SelectionExecutionNode( ExecutionNode ):
     ExecutionNode.addChild(self, name, node)
     node._selectionChange.add( ExecutionNode.MethodCallbackProxy( \
       self.childSelectionChange ) )
+    node._dependencies += self._dependencies
 
   def childSelectionChange(self, node):
     '''This callback is called when the selection state of a child has changed.
@@ -1921,6 +1939,11 @@ class SelectionExecutionNode( ExecutionNode ):
       for child in self.children():
         if child != node:
           child.setSelected(False)
+
+  def addExecutionDependencies( self, deps ):
+    ExecutionNode.addExecutionDependencies( self, deps )
+    for node in self._children.values():
+      node.addExecutionDependencies( deps )
 
 #-------------------------------------------------------------------------------
 class ExecutionContext( object ):
@@ -3376,7 +3399,8 @@ def getConvertersTo( destination, keepType=1, checkUpdate=True ):
   while not c and t:
     t = t.parent
     c = _converters.get( ( t, f ), {} )
-  return dict([(n,getProcess(p, checkUpdate=checkUpdate)) for n,p in c.items()])
+  return dict([(n,getProcess(p, checkUpdate=checkUpdate,
+    ignoreValidation=True)) for n,p in c.items()])
 
 
 #----------------------------------------------------------------------------

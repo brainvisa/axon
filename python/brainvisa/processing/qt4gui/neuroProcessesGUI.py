@@ -2663,7 +2663,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       # Update children indicator for the current item
       if func and func():
         item.setChildIndicatorPolicy(item.ShowIndicator)
-        
+
     if self._depth():
       p = self._currentProcess()
       eNodeItem = self._executionNodeLVItems.get( p )
@@ -2704,18 +2704,20 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     if item is not None and getattr( item, '_notExpandedYet', True ):
       item._notExpandedYet = False
       previous = None
-      
+
       if eNodeAndChildren is None:
         eNode = item._executionNode
         eNodeChildren = (eNode.child( k ) for k in  eNode.childrenNames())
       else:
         eNode, eNodeChildren = eNodeAndChildren
-      
+
       for childNode in eNodeChildren:
         previous = self.executionNodeAddChild( item, eNode, 
                                                childNode = childNode, 
                                                previous = previous )
-      
+        if childNode._expandedInGui:
+          previous.setExpanded( True )
+
   def _executionNodeActivated(self, item):
     if getattr(item, "activate", None):
       item.activate()
