@@ -1800,7 +1800,8 @@ class ProcessExecutionNode( ExecutionNode ):
   def addExecutionDependencies( self, deps ):
     ExecutionNode.addExecutionDependencies( self, deps )
     eNode = self._process._executionNode
-    eNode.addExecutionDependencies( deps )
+    if eNode:
+      eNode.addExecutionDependencies( deps )
 
 
 #-------------------------------------------------------------------------------

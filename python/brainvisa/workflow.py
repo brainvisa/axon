@@ -393,7 +393,7 @@ class ProcessToWorkflow( object ):
   def _processExtraDependenciesFor( self, id, deps, jobtoid ):
     if id[0] == self.SERIAL_GROUP:
       group = self._groups[ id ]
-      self._processExtraDependenciesFor( group[1][1], deps, jobtoid )
+      self._processExtraDependenciesFor( group[1][0], deps, jobtoid )
     elif id[0] == self.PARALLEL_GROUP:
       # add deps for each job of the parallel
       group = self._groups[ id ]
@@ -402,22 +402,35 @@ class ProcessToWorkflow( object ):
     elif id[0] == self.JOB:
       # add source dependencies deps to a single job id
       for dep in deps:
-        dep = dep() # dereference weakref
-        if dep in jobtoid or ( hasattr( dep, '_process' ) and \
-          dep._process in jobtoid ): # dep is a single job
-          if hasattr( dep, '_process' ):
-            destid =  jobtoid[ dep._process ]
-          else:
-            destid = jobtoid[ dep ]
-          print 'create_link( ', id, ',', destid, ')'
-          self.create_link( id, destid )
-        elif dep in self._nodeToId: # dep is a group
-          gid = self._nodeToId[ dep ]
-          group = self._groups[ gid ][1]
-          if gid[0] == self.SERIAL_GROUP:
+        if type( dep ) not in ( str, unicode ):
+          dep = dep() # dereference weakref
+          if dep in jobtoid or ( hasattr( dep, '_process' ) and \
+            dep._process in jobtoid ): # dep is a single job
+            if hasattr( dep, '_process' ):
+              destid =  jobtoid[ dep._process ]
+            else:
+              destid = jobtoid[ dep ]
+            print 'create_link( ', destid, ',', id, ')'
+            self.create_link( destid, id )
+          elif dep in self._nodeToId: # dep is a group
+            gid = self._nodeToId[ dep ]
+            group = self._groups[ gid ][1]
+            if gid[0] == self.SERIAL_GROUP:
+              # depend only on last task in serial group
+              self._processExtraDependenciesFor( id, [ group[-1] ], jobtoid )
+            elif gid[0] == self.PARALLEL_GROUP:
+              # depend on all jobs in the parallel group
+              self._processExtraDependenciesFor( id, group, jobtoid )
+        else: # dep as job/group id
+          if dep[0] == self.JOB:
+            print 'create_link( ', dep, ',', id, ')'
+            self.create_link( dep, id )
+          elif dep[0] == self.SERIAL_GROUP:
             # depend only on last task in serial group
+            group = self._groups[ dep ][1]
             self._processExtraDependenciesFor( id, [ group[-1] ], jobtoid )
-          elif gid[0] == self.PARALLEL_GROUP:
+          elif dep[0] == self.PARALLEL_GROUP:
+            group = self._groups[ dep ][1]
             # depend on all jobs in the parallel group
             self._processExtraDependenciesFor( id, group, jobtoid )
 
