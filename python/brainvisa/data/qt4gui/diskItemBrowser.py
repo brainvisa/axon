@@ -457,7 +457,7 @@ class DiskItemBrowser( QDialog ):
             vstring=list_to_string(v)
           else:
             # WARNING DEBUG
-            print 'unexpected database value type in DiskItem browser combo:', type(v)
+            print 'unexpected database value type in DiskItem browser combo:', type(v), 'for attribute:', a
             try:
               vstring = quote_string( str( v ) )
             except:
