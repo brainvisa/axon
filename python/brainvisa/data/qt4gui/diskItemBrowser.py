@@ -453,9 +453,16 @@ class DiskItemBrowser( QDialog ):
           if not v: v = ''
           if isinstance( v, basestring ):
             vstring = quote_string(v)
-          else:
+          elif type( v ) in ( types.ListType, types.TupleType ):
             vstring=list_to_string(v)
-          if vstring not in s:
+          else:
+            # WARNING DEBUG
+            print 'unexpected database value type in DiskItem browser combo:', type(v)
+            try:
+              vstring = quote_string( str( v ) )
+            except:
+              vstring = None
+          if vstring is not None and vstring not in s:
             cmb.addItem( vstring )
             s.add( vstring )
             if selected is not None and selected == v:
