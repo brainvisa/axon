@@ -46,6 +46,7 @@ from soma.undefined import Undefined
 from soma.stringtools import quote_string, unquote_string, string_to_list, list_to_string
 from brainvisa.data.neuroDiskItems import DiskItem, getFormats, getDiskItemType
 import brainvisa.processes
+import types
 
 #----------------------------------------------------------------------------
 class SignalNameComboBox( QComboBox ):
