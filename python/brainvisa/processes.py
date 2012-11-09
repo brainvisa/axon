@@ -484,7 +484,7 @@ def generateHTMLProcessesDocumentation( procId = None ):
       ontology )
 
 #----------------------------------------------------------------------------
-def mapValuesToChildrenParameters(self, node, dest, source, value = None):
+def mapValuesToChildrenParameters(self, node, dest, source, value = None, defaultProcess = None, defaultProcessOptions = {}):
   l = getattr(node, source, [])
   lsize = len(l)
   csize = len(node.childrenNames())
@@ -495,8 +495,16 @@ def mapValuesToChildrenParameters(self, node, dest, source, value = None):
 
   for i in xrange(rsize):
     if i == csize:
-      # Add a new node
-      node.addChild()
+      if defaultProcess :
+        # Add a newc child node
+        child = brainvisa.processes.ProcessExecutionNode( 
+                  defaultProcess,
+                  optional = defaultProcessOptions.get('optional', True), 
+                  selected = defaultProcessOptions.get('selected', True), 
+                  expandedInGui = defaultProcessOptions.get('expandedInGui', False)
+                )
+        node.addChild(node = child)
+        
       csize += 1
 
       
@@ -588,11 +596,27 @@ class Parameterized( object ):
       self.setValue( i, p.defaultValue() )
 
     self.initialization()
-
     # Take into account links set during self.initialization() :
-    # call parameterHasChanged for the parameters that have not their default value anymore or that have a not None value
+    self.linksInitialization()
+    
+  def linksInitialization( self, parameterizedObjects = None, params = None, excluded = None ):
+      
+    if parameterizedObjects :
+      r = []
+      for o in parameterizedObjects :
+        if not isinstance(o, weakref.ProxyType):
+          o = weakref.proxy(o)
+        r.append(o)
+        
+      parameterizedObjects = r
+      
+    # Call parameterHasChanged for the parameters that have not their default value anymore or that have a not None value
     for name in [n for n, v in self.signature.items() if ( (self.__dict__[n] != v.defaultValue()) or (self.__dict__[n] != None) ) ]:
-        self._parameterHasChanged( name, getattr( self, name ) )
+      if (not params or (name in params)) \
+        and (not excluded or (not name in excluded)) :
+        self._parameterHasChanged( name, 
+                                   getattr( self, name ), 
+                                   parameterizedObjects = parameterizedObjects )
 
   def __del__( self ):
     #print 'del Parameterized', self
@@ -600,11 +624,12 @@ class Parameterized( object ):
     for x in self.deleteCallbacks:
       x( self )
 
-  def _parameterHasChanged( self, name, newValue ):
+  def _parameterHasChanged( self, name, newValue, parameterizedObjects = None ):
     """
     This function is called when the value of an attribute described in the signature changes.
     """
     debug = neuroConfig.debugParametersLinks
+      
     if debug: print >> debug, 'parameter', name, 'changed in', self, 'with value', newValue
     for function in self._warn.get( name, [] ):
       if debug: print >> debug, '  call (_warn)', function, '(', name, ',', newValue, ')'
@@ -613,7 +638,7 @@ class Parameterized( object ):
       if parameterized is None:
         if debug: print >> debug, '  call (_links)', function, '(', self, ',', self, ')'
         function( self, self )
-      else:
+      elif (not parameterizedObjects) or (parameterized in parameterizedObjects):
         if debug: print >> debug, ' ', name, 'is linked to parameter', attribute, 'of', parameterized, 'from', self, '(', len( self._links.get( name, [] ) ), ')'
         linkParamType = parameterized.signature[ attribute ]
         if force or parameterized.parameterLinkable( attribute, debug=debug ):
@@ -1228,15 +1253,31 @@ class IterationProcess( Process ):
     else:
       dp = None
     eNode = ParallelExecutionNode( self.name, stopOnError=False,
-      dynamicProcess=dp )
+      possibleChildrenProcesses=dp, notify = True )
+
     for i in xrange( len( self._processes ) ):
       self._processes[ i ].isMainProcess = True
-      self._processes[ i ].name =  repr(i+1) + ". " + self._processes[ i ].name
-      eNode.addChild( str( i ), ProcessExecutionNode( self._processes[ i ],
-                        optional=True, selected = True ) )
+      self._processes[ i ].name = repr(i+1) + ". " + self._processes[ i ].name
+      eNode.addChild( node = ProcessExecutionNode( self._processes[ i ],
+                      optional = True, selected = True ) )
+      
+    # Add callbacks to maintain synchronization
+    eNode.beforeChildAdded.add(\
+      ExecutionNode.MethodCallbackProxy( self.beforeChildAdded ) )
+    eNode.beforeChildRemoved.add(\
+      ExecutionNode.MethodCallbackProxy( self.beforeChildRemoved ) )
+      
     self._executionNode = eNode
+    
+  def beforeChildAdded( self, parent, key, child ):
+    child._process.isMainProcess = True
+    child._process.name = repr(parent._internalIndex) + ". " + child._process.name
+    self._processes.append( child._process )
 
-
+  def beforeChildRemoved( self, parent, key, child ):
+    if child._process in self._processes:
+      self._processes.remove(child._process)
+      
 #----------------------------------------------------------------------------
 class ListOfIterationProcess( IterationProcess ):
   '''
@@ -1462,7 +1503,7 @@ class ExecutionNode( object ):
       child=self.child(name)
       child._copy(node.child(name))
 
-  def addChild( self, name, node ):
+  def addChild( self, name, node, index = None):
     '''Add a new child execution node.
     
     :param string name: name which identifies the node
@@ -1473,7 +1514,10 @@ class ExecutionNode( object ):
     if not isinstance( node, ExecutionNode ):
       raise RuntimeError( HTMLMessage('<em>node</em> argument must be an execution node') )
     
-    self._children[ name ] = node
+    if not index is None :
+      self._children.insert( index, name, node )
+    else :
+      self._children[ name ] = node
 
   def removeChild( self, name ):
     '''Remove child execution node.
@@ -1728,7 +1772,7 @@ class ProcessExecutionNode( ExecutionNode ):
       # same as above
       pass
 
-  def addChild( self, name, node ):
+  def addChild( self, name, node, index = None ):
     raise RuntimeError( _t_( 'A ProcessExecutionNode cannot have children' ) )
 
   def _run( self, context ):
@@ -1810,9 +1854,34 @@ class SerialExecutionNode( ExecutionNode ):
 
   def __init__(self, name='', optional = False, selected = True,
                 guiOnly = False, parameterized = None, stopOnError=True,
-                expandedInGui = False ):
+                expandedInGui = False, possibleChildrenProcesses = None, notify = False ):
     ExecutionNode.__init__(self, name, optional, selected, guiOnly, parameterized, expandedInGui=expandedInGui )
     self.stopOnError=stopOnError
+    self.notify = notify
+    
+    if possibleChildrenProcesses :
+      if not isinstance( possibleChildrenProcesses, dict ) :
+        if not isinstance( possibleChildrenProcesses, list ) \
+          and not isinstance( possibleChildrenProcesses, tuple ) :
+          possibleChildrenProcesses = [ possibleChildrenProcesses ]
+        
+        r = {}
+        for i in xrange(len(possibleChildrenProcesses)) :
+          r[possibleChildrenProcesses[i]] = { 'optional' : True,
+                                              'selected' : True,
+                                              'expandedInGui' : False }
+        possibleChildrenProcesses = r
+        
+      self._internalIndex = 0
+      
+    self.possibleChildrenProcesses = possibleChildrenProcesses
+    
+    if self.notify :
+      # Add child changes notifiers
+      self.beforeChildRemoved = Notifier( 4 )
+      self.afterChildRemoved = Notifier( 4 )
+      self.beforeChildAdded = Notifier( 4 )
+      self.afterChildAdded = Notifier( 4 )
 
   def _run( self, context ):
     result = []
@@ -1839,6 +1908,37 @@ class SerialExecutionNode( ExecutionNode ):
           context.error("Error in execution node : "+unicode(e))
     context.progress()
     return result
+    
+  def addChild(self, name = None, node = None, index = None):
+    if self.possibleChildrenProcesses :
+      if not name :
+        if isinstance( node, ExecutionNode ):
+          name = node.name() + '_' + str(self._internalIndex)
+        else :
+          raise RuntimeError( HTMLMessage('<em>node</em> argument must be an execution node') )
+      self._internalIndex += 1
+      
+    if self.notify :
+      self.beforeChildAdded.notify( weakref.proxy( self ), name, weakref.proxy( node ) )
+      
+    super( SerialExecutionNode, self ).addChild(name, node, index)
+    
+    if self.notify :
+      self.afterChildAdded.notify( weakref.proxy( self ), name, weakref.proxy( node ) )
+  
+  def removeChild(self, name):
+    if self.possibleChildrenProcesses :
+      if not self._children.has_key( name ):
+        raise KeyError( HTMLMessage(_t_( '<em>%s</em> not defined' ) % ( name, )) )
+      
+    if self.notify :
+      node = self._children[ name ]
+      self.beforeChildRemoved.notify( weakref.proxy( self ), name, weakref.proxy( node ) )
+
+    super( SerialExecutionNode, self ).removeChild(name)
+    
+    if self.notify :
+      self.afterChildRemoved.notify( weakref.proxy( self ), name, weakref.proxy( node ) )
 
 
 #-------------------------------------------------------------------------------
@@ -1847,54 +1947,11 @@ class ParallelExecutionNode( SerialExecutionNode ):
   An execution node that run all its children in any order (and in parallel
   if possible)
   """
-
-  def __init__(self, name='', optional = False, selected = True,
-                guiOnly = False, parameterized = None, stopOnError=True, dynamicProcess = None, expandedInGui = False ):
-    SerialExecutionNode.__init__(self, name, optional, selected, guiOnly, parameterized, expandedInGui=expandedInGui)
-    self._internalIndex = 0
-    self.dynamicProcess = dynamicProcess
-    
-    if self.dynamicProcess :
-      # Only dynamic processes need to use notifiers
-      self.beforeChildRemoved = Notifier( 4 )
-      self.afterChildRemoved = Notifier( 4 )
-      self.beforeChildAdded = Notifier( 4 )
-      self.afterChildAdded = Notifier( 4 )
     
   def _run( self, context ):
     pi, p = context.getProgressInfo( self )
     # do as for serial node
     return super( ParallelExecutionNode, self )._run( context )
-    
-  def addChild(self, name = None, node = None):
-    if self.dynamicProcess :
-      if not node :
-        node = ProcessExecutionNode(self.dynamicProcess, optional=True,
-          selected=True)
-        
-      if not name :
-        name = self.dynamicProcess + '_' + str(self._internalIndex)
-    
-      self.beforeChildAdded.notify( weakref.proxy( self ), name, weakref.proxy( node ) )
-      
-    super( ParallelExecutionNode, self ).addChild(name, node)
-    
-    if self.dynamicProcess :
-      self._internalIndex += 1
-      self.afterChildAdded.notify( weakref.proxy( self ), name, weakref.proxy( node ) )
-  
-  def removeChild(self, name):
-    if self.dynamicProcess :
-      if not self._children.has_key( name ):
-        raise KeyError( HTMLMessage(_t_( '<em>%s</em> not defined' ) % ( name, )) )
-      
-      node = self._children[ name ]
-      self.beforeChildRemoved.notify( weakref.proxy( self ), name, weakref.proxy( node ) )
-      
-    super( ParallelExecutionNode, self ).removeChild(name)
-    
-    if self.dynamicProcess :
-      self.afterChildRemoved.notify( weakref.proxy( self ), name, weakref.proxy( node ) )
     
 #-------------------------------------------------------------------------------
 class SelectionExecutionNode( ExecutionNode ):
@@ -1925,9 +1982,9 @@ class SelectionExecutionNode( ExecutionNode ):
         return res
     context.progress()
 
-  def addChild( self, name, node ):
+  def addChild( self, name, node, index = None ):
     'Add a new child execution node'
-    ExecutionNode.addChild(self, name, node)
+    ExecutionNode.addChild(self, name, node, index)
     node._selectionChange.add( ExecutionNode.MethodCallbackProxy( \
       self.childSelectionChange ) )
     node._dependencies += self._dependencies

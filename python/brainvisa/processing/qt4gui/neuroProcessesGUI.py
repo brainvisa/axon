@@ -1096,8 +1096,13 @@ class RadioItem(QWidget):
 #----------------------------------------------------------------------------
 class NodeCheckListItem( QTreeWidgetItem ):
   
-  def __init__( self, node, parent, after=None, text=None, itemType=None, read_only=False ):
-    QTreeWidgetItem.__init__( self, parent )
+  def __init__( self, node, parent, index=None, text=None, itemType=None, read_only=False ):
+    if not index is None :
+      QTreeWidgetItem.__init__( self )
+      parent.insertChild(index, self)
+    else :
+      QTreeWidgetItem.__init__( self, parent )
+
     self._node = node
     self.itemType=itemType
     self.read_only = read_only
@@ -2045,7 +2050,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         enode = enode._executionNode
       
       if isinstance( enode, brainvisa.processes.ParallelExecutionNode ) \
-         and enode.dynamicProcess :
+         and enode.possibleChildrenProcesses :
         self.executionTreeMenu._addnodeaction.setVisible( True )
       else:
         self.executionTreeMenu._addnodeaction.setVisible( False )
@@ -2054,7 +2059,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         pnode = pnode._executionNode
         
       if isinstance( pnode, brainvisa.processes.ParallelExecutionNode ) \
-         and pnode.dynamicProcess :
+         and pnode.possibleChildrenProcesses :
         self.executionTreeMenu._removenodeaction.setVisible( True )
       else:
         self.executionTreeMenu._removenodeaction.setVisible( False )
@@ -2215,9 +2220,17 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       if isinstance( enode, brainvisa.processes.ProcessExecutionNode ) :
         enode = enode._executionNode
       
-      if isinstance( enode, brainvisa.processes.ParallelExecutionNode ) \
-         and enode.dynamicProcess :
-        enode.addChild()
+      if isinstance( enode, brainvisa.processes.SerialExecutionNode ) \
+         and enode.possibleChildrenProcesses :
+        defaultProcess = enode.possibleChildrenProcesses.keys()[0]
+        defaultProcessOptions = enode.possibleChildrenProcesses[defaultProcess]
+        child = brainvisa.processes.ProcessExecutionNode( 
+                  defaultProcess,
+                  optional = defaultProcessOptions.get('optional', True), 
+                  selected = defaultProcessOptions.get('selected', True), 
+                  expandedInGui = defaultProcessOptions.get('expandedInGui', False)
+                )
+        enode.addChild(node = child)
 
   def menuRemoveExecutionNode(self):
     item = self.executionTree.currentItem()
@@ -2226,8 +2239,8 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       pnode = parent._executionNode
       if isinstance( pnode, brainvisa.processes.ProcessExecutionNode ) :
         pnode = pnode._executionNode
-      if isinstance( pnode, brainvisa.processes.ParallelExecutionNode ) \
-        and pnode.dynamicProcess :
+      if isinstance( pnode, brainvisa.processes.SerialExecutionNode ) \
+        and pnode.possibleChildrenProcesses :
         n = pnode.childrenNames()
         for k in n:
           c = pnode._children[k]
@@ -2635,7 +2648,14 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         itemType = "check"
       else:
         itemType = None
-      newItem = NodeCheckListItem( childNode, item, previous, _t_( childNode.name() ), itemType, read_only = self.read_only )
+        
+      # Try to insert node at the matching index
+      if key :
+        index = eNode._children.index( key )
+      else :
+        index = None
+        
+      newItem = NodeCheckListItem( childNode, item, index, _t_( childNode.name() ), itemType, read_only = self.read_only )
       newItem._executionNode = childNode
       childNode._guiItem = weakref.proxy(newItem)
       # Add callback to warn about child add and remove
@@ -2713,8 +2733,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
       for childNode in eNodeChildren:
         previous = self.executionNodeAddChild( item, eNode, 
-                                               childNode = childNode, 
-                                               previous = previous )
+                                               childNode = childNode )
         if childNode._expandedInGui:
           previous.setExpanded( True )
 
