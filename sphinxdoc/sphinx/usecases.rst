@@ -59,9 +59,6 @@ The following examples gets an instance of the *convertOldDatabase* pipeline and
 
 The process instance can be given as a parameter for the :py:meth:`brainvisa.processes.ExecutionContext.runProcess` method instead of the process id.
 
->>> brainvisa.processes.defaultContext().runProcess(pipeline)
-<BLANKLINE>
-Process Convert old database started ...
 
 Query a database
 ----------------
@@ -108,8 +105,6 @@ The object :py:class:`brainvisa.data.writediskitem.WriteDiskItem` enables to cre
 >>> from brainvisa.data.writediskitem import WriteDiskItem
 >>> wd=WriteDiskItem("Raw T1 MRI", "NIFTI-1 image")
 >>> item=wd.findValue({"protocol" : 'test', "subject" : "mysubject"})
->>> item.isReadable()
-0
 
 Quit Brainvisa
 --------------
