@@ -277,5 +277,6 @@ FileType( 'fMRI activations', '3D functional volume' )
 # Group analysis
 FileType( 'Group definition', 'XML parameters', 'XML' )
 
+FileType( 'Matlab SPM file', 'Any Type', [ 'Matlab file', 'gz Matlab file', 'bz2 Matlab file' ] )
 #Postscript files for SPM results
 FileType( 'Postscript file', 'Any Type', [ 'PS file', 'gz compressed PS file'] )
