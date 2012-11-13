@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -44,7 +45,8 @@ userLevel = 0
 signature=Signature(
   'input', ReadDiskItem( 'Raw T1 MRI', 'Aims readable volume formats' ),
   'output', WriteDiskItem( 'Raw T1 MRI', [ 'GIS image', 'NIFTI-1 image', 'gz compressed NIFTI-1 image' ] ),
-  'input_spm_orientation', Choice( 'Not applicable' ), 
+  'input_spm_orientation', Choice( 'Not applicable' ),
+  'referential', WriteDiskItem( 'Referential', 'Referential' ),
 )
 
 
@@ -101,6 +103,13 @@ def initialization( self ):
   self.addLink( "output", "input", self.initSubject )
   self.signature[ 'output' ].browseUserLevel = 3
   self.signature[ 'input' ].databaseUserLevel = 2
+  self.signature[ 'referential' ].userLevel = 2
+  if neuroDiskItems.diskItemTypes.has_key( 'referential of raw t1 mri' ):
+    # this type is declared in morphologist only
+    self.signature[ 'referential' ] \
+      = WriteDiskItem( 'Referential of Raw T1 MRI', 'Referential' )
+  self.setOptional( 'referential' )
+  self.linkParameters( 'referential', 'output' )
 
 
 def execution( self, context ):
@@ -199,5 +208,8 @@ def execution( self, context ):
   if self.output.minf().get( 'referential', None ):
     self.output.removeMinf( 'referential' )
   tm = registration.getTransformationManager()
-  ref = tm.createNewReferentialFor( self.output, name='Raw T1 MRI' )
+  if self.referential is not None:
+    tm.createNewReferential( self.referential )
+  else:
+    ref = tm.createNewReferentialFor( self.output, name='Raw T1 MRI' )
 
