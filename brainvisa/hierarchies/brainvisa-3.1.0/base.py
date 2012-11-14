@@ -31,6 +31,13 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+# Constants for default attributes values
+default_protocol="subjects"
+default_acquisition="default_acquisition"
+default_analysis="default_analysis"
+default_session="default_session"
+default_graph_version="3.0"
+
 hierarchy = (
   SetWeakAttr( 'database', '%f' ),
   SetContent(
@@ -40,7 +47,7 @@ hierarchy = (
     'database_settings', SetType( 'Database settings' ),
     '*', SetType('Database Cache file'), # database cache
     'trash', #directory containing files that must be deleted
-    '{protocol}', SetFileNameStrongAttribute( 'protocol' ), SetType( 'Protocol' ),
+    '{protocol}', SetFileNameStrongAttribute( 'protocol' ), SetType( 'Protocol' ), SetDefaultAttributeValue( 'protocol', default_protocol ),
     SetContent(
       "group_analysis",
       SetContent( '{group_of_subjects}',
@@ -53,12 +60,6 @@ hierarchy = (
     ),
   ),
 )
-
-# Constants for default attributes values
-default_acquisition="default_acquisition"
-default_analysis="default_analysis"
-default_session="default_session"
-default_graph_version="3.0"
 
 
 
