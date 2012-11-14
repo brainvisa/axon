@@ -46,7 +46,7 @@ signature=Signature(
   'input', ReadDiskItem( 'Raw T1 MRI', 'Aims readable volume formats' ),
   'output', WriteDiskItem( 'Raw T1 MRI', [ 'GIS image', 'NIFTI-1 image', 'gz compressed NIFTI-1 image' ] ),
   'input_spm_orientation', Choice( 'Not applicable' ),
-  'referential', WriteDiskItem( 'Referential', 'Referential' ),
+  'referential', WriteDiskItem( 'Referential of Raw T1 MRI', 'Referential' ),
 )
 
 
@@ -104,10 +104,6 @@ def initialization( self ):
   self.signature[ 'output' ].browseUserLevel = 3
   self.signature[ 'input' ].databaseUserLevel = 2
   self.signature[ 'referential' ].userLevel = 2
-  if neuroDiskItems.diskItemTypes.has_key( 'referential of raw t1 mri' ):
-    # this type is declared in morphologist only
-    self.signature[ 'referential' ] \
-      = WriteDiskItem( 'Referential of Raw T1 MRI', 'Referential' )
   self.setOptional( 'referential' )
   self.linkParameters( 'referential', 'output' )
 

@@ -41,7 +41,7 @@ FileType( 'Transformation', 'Any Type' )
 FileType( 'Transformation matrix', 'Transformation', 
           ( 'Transformation matrix', 'Matlab file' ) )
 FileType( 'Referential', 'Text file', 'Referential' )
-
+FileType( 'Referential of Raw T1 MRI', 'Referential' )
 
 FileType( 'Resamp Spline Image',  '3D Volume' )
 FileType( 'Registration Directory', 'Directory' )
