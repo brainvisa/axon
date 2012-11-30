@@ -484,10 +484,11 @@ def generateHTMLProcessesDocumentation( procId = None ):
       ontology )
 
 #----------------------------------------------------------------------------
-def mapValuesToChildrenParameters(self, node, dest, source, value = None, defaultProcess = None, defaultProcessOptions = {}):
-  l = getattr(node, source, [])
+def mapValuesToChildrenParameters(destNode, sourceNode, dest, source, value = None, defaultProcess = None, defaultProcessOptions = {}):
+  sourceObject, sourceParameter = sourceNode.parseParameterString( source )
+  l = getattr(sourceObject, sourceParameter, [])
   lsize = len(l)
-  csize = len(node.childrenNames())
+  csize = len(destNode.childrenNames())
   initcsize = csize
   
   # Resulting size is the max between children size and list size
@@ -503,7 +504,7 @@ def mapValuesToChildrenParameters(self, node, dest, source, value = None, defaul
                   selected = defaultProcessOptions.get('selected', True), 
                   expandedInGui = defaultProcessOptions.get('expandedInGui', False)
                 )
-        node.addChild(node = child)
+        destNode.addChild(node = child)
         
       csize += 1
 
@@ -514,19 +515,24 @@ def mapValuesToChildrenParameters(self, node, dest, source, value = None, defaul
       v = None
     
     # Set node value
-    k = node.childrenNames()[i]
-    setattr(node._children[ k ], dest, v)
+    k = destNode.childrenNames()[i]
+    destChild = destNode._children[k]
+    destObject, destParameter = destChild.parseParameterString( dest )
+    setattr(destObject, destParameter, v)
     
     i += 1
     
 #----------------------------------------------------------------------------
-def mapChildrenParametersToValues(self, node, dest, source, value = None):
+def mapChildrenParametersToValues(destNode, sourceNode, dest, source, value = None):
   r = []
-  for k in node.childrenNames():
-    s = getattr(node._children[ k ], source, None)
+  for k in sourceNode.childrenNames():
+    sourceChild = sourceNode._children[k]
+    sourceObject, sourceParameter = sourceChild.parseParameterString( source )
+    s = getattr(sourceObject, sourceParameter, None)
     r.append(s)
 
-  setattr(node, dest, r)
+  destObject, destParameter = destNode.parseParameterString( dest )
+  setattr(destObject, destParameter, r)
   
 #----------------------------------------------------------------------------
 class Parameterized( object ):
