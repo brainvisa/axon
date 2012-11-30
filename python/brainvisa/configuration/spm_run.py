@@ -40,11 +40,11 @@ def validationSpm8(configuration):
 
 #------------------------------------------------------------------------------
 # first, try spm8, but if not in configuration, use spm8Standalone. Read note on top of this file
-def run(context, configuration, matfilePath, cmd=None):  
+def run(context, configuration, jobPath, cmd=None):  
   if(configuration.SPM.spm8_path is not None and configuration.SPM.spm8_path != ''):
-    return runSpm8(context, configuration, matfilePath, cmd)
+    return runSpm8(context, configuration, jobPath, cmd)
   elif(configuration.SPM.spm8_standalone_command is not None and len(configuration.SPM.spm8_standalone_command) > 0):
-    return runSpm8Standalone(context, configuration, matfilePath, cmd)
+    return runSpm8Standalone(context, configuration, jobPath, cmd)
   else:
     context.error('need SPM8 : see Brainvisa preferences and fill spm8 paths please.')
 
@@ -58,26 +58,31 @@ def runSpm8Standalone(context, configuration, matfilePath, matlabCommande=None):
   context.system(*cmd)
   os.chdir(pd)  
 
-def runSpm8(context, configuration, matfilePath, cmd=None):
-  jobPath = str(matfilePath).replace('_job', '')  
-  jobFile = open(jobPath, 'w')
+def runSpm8(context, configuration, jobPath, spmCmd=None):
+  matlabBatchPath = str(jobPath).replace('_job', '')  
+  matlabBatchFile = open(matlabBatchPath, 'w')
   
-  context.write("jobPath", jobPath)
-  curDir = jobPath[:jobPath.rindex('/')]
+  context.write("matlabBatchPath", matlabBatchPath)
+  curDir = matlabBatchPath[:matlabBatchPath.rindex('/')]
   os.chdir(curDir)
   
-  jobFile.write("addpath('" + configuration.SPM.spm8_path + "');\n")
-  jobFile.write("spm('pet');\n")
-  jobFile.write("jobid = cfg_util('initjob', '%s');\n" % matfilePath)
-  jobFile.write("cfg_util('run', jobid);\n")
-  if(cmd is not None):
-    jobFile.write(cmd + "\n")    
-  jobFile.write("exit\n")
-  jobFile.close()
+  matlabBatchFile.write("addpath('" + configuration.SPM.spm8_path + "');\n")
+  matlabBatchFile.write("spm('pet');\n")
+  matlabBatchFile.write("jobid = cfg_util('initjob', '%s');\n" % jobPath)
+  matlabBatchFile.write("cfg_util('run', jobid);\n")
+  if(spmCmd is not None):
+    matlabBatchFile.write(spmCmd + "\n")    
+  matlabBatchFile.write("exit\n")
+  matlabBatchFile.close()
 
+  runMatblatBatch(context, configuration, matlabBatchPath) 
+  
+def runMatblatBatch(context, configuration, matlabBatchPath):
+  curDir = matlabBatchPath[:matlabBatchPath.rindex('/')]
+  os.chdir(curDir)
   # execution batch file
   mexe = distutils.spawn.find_executable(configuration.matlab.executable)
-  matlabCmd = os.path.basename(jobPath)[:(os.path.basename(jobPath)).rindex('.')] # remove extension
-  cmd = [ mexe ] + configuration.matlab.options.split() + [ '-r', matlabCmd]
+  matlabCmd = os.path.basename(matlabBatchPath)[:os.path.basename(matlabBatchPath).rindex('.')] # remove extension
+  cmd = [mexe] + configuration.matlab.options.split() + ['-r', matlabCmd]
   context.write('Running matlab command:', cmd)
-  context.system(*cmd) 
+  context.system(*cmd)
