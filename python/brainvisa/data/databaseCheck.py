@@ -1255,7 +1255,7 @@ class T1MriChecker(DBChecker):
     'Transform Raw T1 MRI to Talairach-AC/PC-Anatomist', # talairach transformation
     'T1 MRI Bias Corrected', 'T1 MRI Filtered For Histo', 'T1 MRI White Matter Ridges', 'T1 MRI Bias Field', 'T1 MRI Mean Curvature', 'T1 MRI Variance', 'T1 MRI Edges', # t1 bias correction
     'T1 Brain Mask', # brain mask segmentation
-    'Voronoi Diagram', # split brain mask
+    'Split Brain Mask', # split brain mask
     'Grey White Mask', 'Hemisphere White Mesh', # grey white interface
     'CSF+GREY Mask', 'Hemisphere Mesh', # Ana get opened hemi surface
     'Head Mask', 'Head Mesh', # head mesh
