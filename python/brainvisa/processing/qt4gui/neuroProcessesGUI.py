@@ -2656,21 +2656,27 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         index = None
         
       newItem = NodeCheckListItem( childNode, item, index, _t_( childNode.name() ), itemType, read_only = self.read_only )
-      newItem._executionNode = childNode
-      childNode._guiItem = weakref.proxy(newItem)
+      if isinstance( childNode, weakref.ProxyType ):
+        newItem._executionNode = childNode
+      else:
+        newItem._executionNode = weakref.proxy( childNode )
+      if isinstance( newItem, weakref.ProxyType ):
+        childNode._guiItem = newItem
+      else:
+        childNode._guiItem = weakref.proxy(newItem)
       # Add callback to warn about child add and remove
       beforeChildRemovedCallback = getattr(en, 'beforeChildRemoved', None)
       if beforeChildRemovedCallback:
         beforeChildRemovedCallback.add(
           soma.functiontools.partial( 
-            self.executionNodeRemoveChild, 
+            self.__class__.executionNodeRemoveChild, weakref.proxy( self ),
             newItem ) )
       
       afterChildAddedCallback = getattr(en, 'afterChildAdded', None)
       if afterChildAddedCallback :
         afterChildAddedCallback.add(
           soma.functiontools.partial(
-            self.executionNodeAddChild, 
+            self.__class__.executionNodeAddChild, weakref.proxy( self ),
             newItem) )
         
       if en.hasChildren():
