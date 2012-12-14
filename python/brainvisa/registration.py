@@ -56,6 +56,8 @@ class DatabasesTransformationManager( object ):
     if isinstance( diskItemOrId, DiskItem ):
       if diskItemOrId.type is not None and diskItemOrId.type.isA( 'Referential' ):
         uuid = diskItemOrId.uuid()
+        if uuid is not None: 
+            return diskItemOrId
       else:
         try:
           uuid = diskItemOrId.get( 'referential' )
@@ -351,7 +353,10 @@ class DatabasesTransformationManager( object ):
         name = None,
         description = None ):
     if name is None and isinstance( transformation, DiskItem ):
-      name = transformation.name
+      if transformation.type is not None:
+        name = transformation.type.name
+      else:
+        name = transformation.name
     source_referential = self.referential( source_referential )
     destination_referential = self.referential( destination_referential )
     transformation.createParentDirectory()
@@ -362,7 +367,7 @@ class DatabasesTransformationManager( object ):
     if name is not None:
       transformation.setMinf( 'name', name )
     if description is not None:
-      transformation.setMinf( 'description', name )
+      transformation.setMinf( 'description', description )
     try:
       #transformation.saveMinf()
       neuroHierarchy.databases.insertDiskItem( transformation, update=True )
