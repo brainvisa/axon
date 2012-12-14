@@ -206,6 +206,7 @@ def execution( self, context ):
   tm = registration.getTransformationManager()
   if self.referential is not None:
     tm.createNewReferential( self.referential )
+    tm.setReferentialTo(self.output, self.referential)
   else:
     ref = tm.createNewReferentialFor( self.output, name='Raw T1 MRI' )
 
