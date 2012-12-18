@@ -448,7 +448,7 @@ class LogFile:
       self._closed.clear()
       shutil.copyfile( tmp, self.fileName )
       self._file = open( self.fileName, 'a+' )
-      self._writer.changeFile( self._file )
+      self._writer.change_file( self._file )
     finally:
       self._lock.release()
   
