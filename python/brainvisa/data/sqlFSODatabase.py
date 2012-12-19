@@ -52,7 +52,7 @@ from soma.translation import translate as _
 from soma.path import split_path, relative_path
 from soma.somatime import timeDifferenceToString
 from soma.uuid import Uuid
-from soma.databases.api import sqlite3, ThreadSafeSQLiteConnection
+from soma.sqlite_tools import sqlite3, ThreadSafeSQLiteConnection
 
 from brainvisa.data.fileSystemOntology import FileSystemOntology, SetContent
 import brainvisa.processes
