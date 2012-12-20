@@ -29,7 +29,8 @@ def writeNormalizeMatFile(context, configuration, src, imgToWrite, matfileDI, ma
         , tmp=None, wtsrc="""''"""
         , weight="""''""", smosrc="""8""", smoref="""0""", regtype="""'mni'""", cutoff="""25""", nits="""16""", reg="""1"""
         , preserve="""0""", bb="""[-90 -126 -72  
-                                      90 90 108]""", vox="""[2 2 2]""", interp="""1""", wrap="""[0 0 0]""", prefix="""'spmNormalized_'""" 
+                                      90 90 108]""", vox="""[2 2 2]""" # bouding box and voxel size value used for PET modality
+        , interp="""1""", wrap="""[0 0 0]""", prefix="""'spmNormalized_'""" 
         ):
   spm8Path = getSpm8Path(configuration)
   if(tmp == None):
