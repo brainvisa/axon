@@ -3,6 +3,14 @@ import distutils.spawn
 import os
 import sys
 
+def getSpm8Path(configuration):  
+  if(configuration.SPM.spm8_path is not None and configuration.SPM.spm8_path != ''):
+    return configuration.SPM.spm8_path
+  elif(configuration.SPM.spm8_standalone_path is not None and configuration.SPM.spm8_standalone_path != ''):
+    return configuration.SPM.spm8_standalone_path
+  else:
+    return None
+  
 #------------------------------------------------------------------------------
 # spm8_standalone : 
 #* does not generate spm_2012Oct03.ps file for result job 
@@ -86,3 +94,34 @@ def runMatblatBatch(context, configuration, matlabBatchPath):
   cmd = [mexe] + configuration.matlab.options.split() + ['-r', matlabCmd]
   context.write('Running matlab command:', cmd)
   context.system(*cmd)
+ 
+#------------------------------------------------------------------------------
+
+# place output at correct location
+def moveSpmOutFiles(inDir, outPath, spmPrefixes, outDir=None, ext='.nii'):
+  for i in range(0, len(spmPrefixes)):
+    if(spmPrefixes[i].startswith("""'""")):
+      spmPrefixes[i] = spmPrefixes[i][1:-1]
+  for root, _dirs, filenames in os.walk(inDir):
+    for f in filenames:
+      goodPrefix = False;
+      for spmPrefix in spmPrefixes:
+        if(f.startswith(spmPrefix)):
+          goodPrefix = True;
+          break
+      goodExtension = f.endswith(ext) or f.endswith('.txt')
+      if (goodPrefix and goodExtension):
+        if(outPath is not None):
+          movePath(root + '/' + f, outPath)
+        else:
+          movePath(root + '/' + f, outDir + '/' + f)          
+    
+def movePath(srcPath, dstPath):
+  if (os.path.exists(srcPath)):
+    if(os.path.exists(dstPath)):      
+      os.remove(dstPath) # do not use directly os.rename (but remove before) because : on windows, rename with dstPath already exists causes exception
+    os.rename(srcPath, dstPath)
+  if (os.path.exists(srcPath)):
+    os.remove(srcPath) # remove because if grey_probability_map does not exists, then user only wants to estimate transfo
+
+#------------------------------------------------------------------------------

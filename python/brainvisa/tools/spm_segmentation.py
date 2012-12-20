@@ -1,13 +1,5 @@
-#------------------------------------------------------------------------------  
-
-def getSpm8Path(configuration):  
-  if(configuration.SPM.spm8_path is not None and configuration.SPM.spm8_path != ''):
-    return configuration.SPM.spm8_path
-  elif(configuration.SPM.spm8_standalone_path is not None and configuration.SPM.spm8_standalone_path != ''):
-    return configuration.SPM.spm8_standalone_path
-  else:
-    return None
-     
+from brainvisa.tools.spm_run import getSpm8Path 
+    
 #------------------------------------------------------------------------------
 # Segmentation with SPM : 
 # 1 Unified Segmentation ( in spm8 : newSegment)
