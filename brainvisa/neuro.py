@@ -245,7 +245,7 @@ if neuroConfig.gui:
   signal.signal( signal.SIGINT, qt_exit_handler )
   if neuroConfig.shell:
     import IPython
-    if [ int(x) for x in IPython.__version__.split('.') ] >= [ 0, 11 ]:
+    if [ int(x) for x in IPython.__version__.split('.')[:2] ] >= [ 0, 11 ]:
       # ipython >= 0.11, use client/server mode
       print 'running shell...'
       neuroConfig.shell = False
