@@ -360,7 +360,7 @@ class SomaWorkflowProcessView(QMainWindow):
                serialized_process=None,
                parent=None):
     super(SomaWorkflowProcessView, self).__init__(parent)
-    
+
     Ui_SWProcessView = loadUiType(os.path.join(os.path.dirname( __file__ ),
                                                 'sw_process_view.ui' ))[0]
 
@@ -415,10 +415,10 @@ class SomaWorkflowProcessView(QMainWindow):
     self.workflow_menu = self.ui.menubar.addMenu("&Workflow")
     self.workflow_menu.addAction(_mainWindow.sw_widget.ui.action_stop_wf)
     self.workflow_menu.addAction(_mainWindow.sw_widget.ui.action_restart)
-    self.workflow_menu.addSeparator()
+    _addSeparator( self.workflow_menu )
     self.workflow_menu.addAction(_mainWindow.sw_widget.ui.action_transfer_infiles)
     self.workflow_menu.addAction(_mainWindow.sw_widget.ui.action_transfer_outfiles)
-    self.workflow_menu.addSeparator()
+    _addSeparator( self.workflow_menu )
     self.workflow_menu.addAction(_mainWindow.sw_widget.ui.action_delete_workflow)
     self.workflow_menu.addAction(_mainWindow.sw_widget.ui.action_change_expiration_date)
 
@@ -435,17 +435,17 @@ class SomaWorkflowProcessView(QMainWindow):
 
     self.workflow_tool_bar = QToolBar(self)
     self.workflow_tool_bar.addWidget(self.workflow_info_view.ui.wf_status_icon)
-    self.workflow_tool_bar.addSeparator()
+    _addSeparator( self.workflow_tool_bar )
     self.workflow_tool_bar.addAction(_mainWindow.sw_widget.ui.action_stop_wf)
     self.workflow_tool_bar.addAction(_mainWindow.sw_widget.ui.action_restart)
-    self.workflow_tool_bar.addSeparator()
+    _addSeparator( self.workflow_tool_bar )
     self.workflow_tool_bar.addAction(_mainWindow.sw_widget.ui.action_transfer_infiles)
     self.workflow_tool_bar.addAction(_mainWindow.sw_widget.ui.action_transfer_outfiles)
     
     self.ui.tool_bar.addWidget(self.workflow_tool_bar)
-    self.ui.tool_bar.addSeparator()
+    _addSeparator( self.ui.tool_bar )
     self.ui.tool_bar.addAction(self.ui.dock_bv_process.toggleViewAction())
-    self.ui.tool_bar.addSeparator()
+    _addSeparator( self.ui.tool_bar )
     self.ui.tool_bar.addAction(self.action_monitor_workflow)
     
     tree_widget_layout = QtGui.QVBoxLayout()
@@ -725,23 +725,49 @@ def aboutRequest():
 def logRequest():
   neuroLogGUI.LogViewer( neuroConfig.logFileName ).show()
 
+#----------------------------------------------------------------------------
+def _addAction( parent, text=None, callback=None, shortcut=None ):
+# this 'strange' function is only here to avoid a memory leak in PyQt:
+# it apparently does the same as QMenu.addAction() / addSeparator(),
+# but if the former are called, the returned QAction is created in the
+# C++ layer, and has a strange ownership side effect: the python part
+# of the QAction is never destroyed.
+# Creating the QAction from Python side seems to work around the problem.
+# Seen in PyQt 4.9.3
+  if text is None:
+    ac = QAction( parent )
+    ac.setSeparator( True )
+  else:
+    ac = QAction( text, parent )
+  if callback is not None:
+    ac.triggered.connect( callback )
+  if shortcut is not None:
+    ac.setShortcut( shortcut )
+  parent.addAction( ac )
+  return ac
+
+def _addSeparator( menu ):
+    return _addAction( menu )
 
 #----------------------------------------------------------------------------
 def addBrainVISAMenu( widget, menuBar ):
-  bvMenu = menuBar.addMenu( "&BrainVISA" )
-
-  bvMenu.addAction( _t_( "&Help" ), helpRequest,  Qt.CTRL + Qt.Key_H )
-  bvMenu.addAction( _t_( "About" ), aboutRequest )
-  bvMenu.addSeparator()
-  bvMenu.addAction( _t_( "&Preferences" ), neuroConfigGUI.editConfiguration, Qt.CTRL + Qt.Key_P )
-  bvMenu.addAction( _t_( "Show &Log" ), logRequest, Qt.CTRL + Qt.Key_L )
-  bvMenu.addAction( _t_( "&Open process..." ), ProcessView.open, Qt.CTRL + Qt.Key_O )
-  bvMenu.addAction( _t_( "Reload toolboxes" ), reloadToolboxesGUI )
-  bvMenu.addAction( _t_( "Start &Shell" ), startShell, Qt.CTRL + Qt.Key_S )
-  bvMenu.addSeparator()
+  bvMenu = QMenu( "&BrainVISA", menuBar ) # avoid creating the menu in addMenu
+  menuBar.addMenu( bvMenu ) # same problem as addAction()
+  _addAction( bvMenu, _t_( "&Help" ), helpRequest, Qt.CTRL + Qt.Key_H )
+  _addAction( bvMenu, _t_( "About" ), aboutRequest )
+  _addAction( bvMenu )
+  _addAction( bvMenu, _t_( "&Preferences" ),
+    neuroConfigGUI.editConfiguration, Qt.CTRL + Qt.Key_P )
+  _addAction( bvMenu, _t_( "Show &Log" ), logRequest, Qt.CTRL + Qt.Key_L )
+  _addAction( bvMenu, _t_( "&Open process..." ), ProcessView.open,
+    Qt.CTRL + Qt.Key_O )
+  _addAction( bvMenu, _t_( "Reload toolboxes" ), reloadToolboxesGUI )
+  _addAction( bvMenu, _t_( "Start &Shell" ), startShell, Qt.CTRL + Qt.Key_S )
+  _addAction( bvMenu )
   if not isinstance( widget, ProcessSelectionWidget ):
-    bvMenu.addAction( _t_( "Close" ), widget.close, Qt.CTRL + Qt.Key_W )
-  bvMenu.addAction( _t_( "&Quit" ), quitRequest, Qt.CTRL + Qt.Key_Q )
+    _addAction( bvMenu, _t_( "Close" ), widget.close, Qt.CTRL + Qt.Key_W )
+  _addAction( bvMenu, _t_( "&Quit" ), quitRequest, Qt.CTRL + Qt.Key_Q )
+  return bvMenu
 
 
 #----------------------------------------------------------------------------
@@ -1214,9 +1240,9 @@ class ParameterLabel( QLabel ):
     self.parameterName = parameterName
 
     # Create popup menu
-    self.contextMenu = QMenu()
+    self.contextMenu = QMenu( self )
     #self.contextMenu.setCheckable( True )
-    self.default_id = self.contextMenu.addAction( _t_( 'default value' ),
+    self.default_id = _addAction( self.contextMenu, _t_( 'default value' ),
                                                    self.defaultChanged )
     self.default_id.setCheckable(True)
     self.default_id.setChecked( True )
@@ -1250,7 +1276,8 @@ class ParameterLabel( QLabel ):
     return(text)
 
   def addMenuLock( self ): 
-    self.lock_id = self.contextMenu.addAction( _t_( 'lock' ), self.lockChanged ) 
+    self.lock_id = _addAction( self.contextMenu, _t_( 'lock' ),
+      self.lockChanged )
     self.lock_id.setCheckable(False)
     self.lock_id.setChecked( False )
   
@@ -1731,25 +1758,29 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     if parent is None:
       neuroConfig.registerObject( self )
       # menu bar
-      self.menu = QMenuBar()
+      self.menu = QMenuBar( self )
       addBrainVISAMenu( self, self.menu )
-      
-      processMenu = self.menu.addMenu("&Process")
+
+      # warning: don't create the menu using addMenu() in PyQt
+      processMenu = QMenu( "&Process", self.menu )
+      self.menu.addMenu(processMenu)
       processMenu.addAction(self.action_save_process)
       processMenu.addAction(self.action_clone_process)
       processMenu.addAction(self.action_iterate)
-      processMenu.addSeparator()
+      _addSeparator( processMenu )
       processMenu.addAction(self.action_create_workflow)
-      processMenu.addSeparator()
+      _addSeparator( processMenu )
       processMenu.addAction(self.action_run)
       processMenu.addAction(self.action_interupt)
       processMenu.addAction(self.action_interupt_step)
-      processMenu.addSeparator()
+      _addSeparator( processMenu )
       processMenu.addAction(self.action_run_with_sw)
-      
-      view_menu = self.menu.addMenu("&View")
+
+      # warning: don't create the menu using addMenu() in PyQt
+      view_menu = QMenu( "&View", self.menu )
+      self.menu.addMenu(view_menu)
       view_menu.addAction(close_viewers_action(self))
-      
+
       try:
         import soma.workflow
         self.workflowEnabled = True
@@ -1869,7 +1900,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       if self.inlineGUI is None and externalInfo is None:
         self.inlineGUI = self.defaultInlineGUI( None )
       vb.addWidget(self.inlineGUI)
-      
+
       # composition of the pipeline
       self.executionTree = QTreeWidget( self.eTreeWidget )
       self.executionTree.setSizePolicy( QSizePolicy( QSizePolicy.Preferred, QSizePolicy.Preferred ) )
@@ -1878,34 +1909,34 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       self.executionTree.setAllColumnsShowFocus( 1 )
       self.executionTree.setRootIsDecorated( 1 )
       self.executionTree.setContextMenuPolicy(Qt.CustomContextMenu)
-          # Popup Menu for toolboxes
-      self.executionTreeMenu = QMenu()
-      self.executionTreeMenu.addAction( _t_("Unselect before"), self.menuUnselectBefore)
-      self.executionTreeMenu.addAction( _t_("Unselect after"), self.menuUnselectAfter)
+      # Popup Menu for toolboxes
+      self.executionTreeMenu = QMenu( self )
+      _addAction( self.executionTreeMenu, _t_("Unselect before"), self.menuUnselectBefore)
+      _addAction( self.executionTreeMenu, _t_("Unselect after"), self.menuUnselectAfter)
       #self.executionTreeMenu.addAction( _t_("Unselect all"),  self.menuUnselectAll )
-      self.executionTreeMenu.addAction( _t_("Select before"), self.menuSelectBefore)
-      self.executionTreeMenu.addAction( _t_("Select after"), self.menuSelectAfter)
+      _addAction( self.executionTreeMenu, _t_("Select before"), self.menuSelectBefore)
+      _addAction( self.executionTreeMenu, _t_("Select after"), self.menuSelectAfter)
       #self.executionTreeMenu.addAction( _t_("Select all"), self.menuSelectAll )
-      self.executionTreeMenu.addSeparator()
-      self.executionTreeMenu.addAction( _t_("Unselect steps writing locked files"), self.menuUnselectLocked )
-      self.executionTreeMenu.addAction( _t_("Unselect steps upstream of locked files"), self.menuUnselectLockedUpstream )
-      self.executionTreeMenu.addSeparator()
-      self.executionTreeMenu._opennodeaction \
-        = self.executionTreeMenu.addAction( _t_("Open this step separately"),
-                                            self.menuDetachExecutionNode )
+      _addAction( self.executionTreeMenu )
+      _addAction( self.executionTreeMenu, _t_("Unselect steps writing locked files"), self.menuUnselectLocked )
+      _addAction( self.executionTreeMenu, _t_("Unselect steps upstream of locked files"), self.menuUnselectLockedUpstream )
+      _addAction( self.executionTreeMenu )
+      self.executionTreeMenu._opennodeaction = _addAction(
+        self.executionTreeMenu, _t_("Open this step separately"),
+        self.menuDetachExecutionNode )
       self.executionTreeMenu._showdocaction \
-        = self.executionTreeMenu.addAction( _t_("Show documentation"),
+        = _addAction( self.executionTreeMenu, _t_("Show documentation"),
                                             self.menuShowDocumentation )
-                                            
+
       self.executionTreeMenu._nodeactionseparator \
-        = self.executionTreeMenu.addSeparator()
+        = _addAction( self.executionTreeMenu )
       self.executionTreeMenu._addnodeaction \
-        = self.executionTreeMenu.addAction( _t_("Add node"),
+        = _addAction( self.executionTreeMenu, _t_("Add node"),
                                             self.menuAddExecutionNode )
       self.executionTreeMenu._removenodeaction \
-        = self.executionTreeMenu.addAction( _t_("Remove node"),
+        = _addAction( self.executionTreeMenu, _t_("Remove node"),
                                             self.menuRemoveExecutionNode )
-                                            
+
       self.connect(self.executionTree, SIGNAL( 'customContextMenuRequested ( const QPoint & )'), self.openContextMenu)
       #self.executionTree.setSortingEnabled( -1 )
       #self.eTreeWidget.setResizeMode( self.executionTree, QSplitter.KeepSize )
@@ -3565,17 +3596,18 @@ class ProcessTreesWidget(QSplitter):
     self.openedTreeWidget=None
     
     # Popup Menu for toolboxes
-    self.popupMenu = QMenu()
-    self.popupMenu.addAction( _t_("New"),  self.menuNewTabEvent )
-    self.popupMenu.addAction( _t_("Delete"),  self.menuDelTabEvent )
-    self.popupMenu.addAction( _t_("Open"), self.menuOpenTabEvent)
-    self.popupMenu.addAction( _t_("Set as default list"), self.menuSetDefaultEvent)
+    self.popupMenu = QMenu( self )
+    _addAction( self.popupMenu, _t_("New"),  self.menuNewTabEvent )
+    _addAction( self.popupMenu, _t_("Delete"),  self.menuDelTabEvent )
+    _addAction( self.popupMenu, _t_("Open"), self.menuOpenTabEvent)
+    _addAction( self.popupMenu, _t_("Set as default list"),
+      self.menuSetDefaultEvent)
     
     # Popup Menu for processes
-    self.processMenu = QMenu()
-    self.processMenu.addAction( _t_("Open"),  self.menuOpenProcessEvent )
-    self.processMenu.addAction( _t_("Edit documentation"),  self.menuEditProcessEvent )
-    self.processMenu.addAction( _t_("Iterate"), self.menuIterateProcessEvent)
+    self.processMenu = QMenu( self )
+    _addAction( self.processMenu, _t_("Open"),  self.menuOpenProcessEvent )
+    _addAction( self.processMenu, _t_("Edit documentation"),  self.menuEditProcessEvent )
+    _addAction( self.processMenu, _t_("Iterate"), self.menuIterateProcessEvent)
 
     self.setStretchFactor( 0, 2 )
     self.setStretchFactor( 1, 3 )
