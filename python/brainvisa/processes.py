@@ -1763,15 +1763,26 @@ class ProcessExecutionNode( ExecutionNode ):
 
   def __del__( self ):
     #print 'del ProcessExecutionNode', self
-    reloadNotifier = getattr( self._process, 'processReloadNotifier', None )
-    if reloadNotifier is not None:
-      try:
-        reloadNotifier.remove( ExecutionNode.MethodCallbackProxy( \
-          self.processReloaded ) )
-      except AttributeError:
-        # this try..except is here to prevent an error when quitting BrainVisa:
-        # ProcessExecutionNode class is set to None during module destruction
-        pass
+    if hasattr( self, '_process' ):
+      reloadNotifier = getattr( self._process, 'processReloadNotifier', None )
+      if reloadNotifier is not None:
+        try:
+          l = len( reloadNotifier._listeners )
+          z = ExecutionNode.MethodCallbackProxy( self.processReloaded )
+          # bidouille: hack z so as to contain a weakref to None
+          # since we are in __del__ and existing weakrefs to self have already
+          # been neutralized
+          class A(object): pass
+          w = weakref.ref(A()) # w points to None immediately
+          z.object = w
+          x = reloadNotifier.remove( z )
+        except AttributeError:
+          # this try..except is here to prevent an error when quitting BrainVisa:
+          # ProcessExecutionNode class is set to None during module destruction
+          pass
+    else:
+      # print 'del ProcessExecutionNode', self
+      print 'no _process in ProcessExecutionNode !'
     try:
       ExecutionNode.__del__( self )
     except:
@@ -1843,9 +1854,9 @@ class ProcessExecutionNode( ExecutionNode ):
     """
     event = ProcessExecutionEvent()
     event.setProcess( self._process )
-    self._process.processReloadNotifier.remove( self.processReloaded )
+    self._process.processReloadNotifier.remove( ExecutionNode.MethodCallbackProxy( self.processReloaded ) )
     self.__dict__[ '_process' ] = getProcessInstanceFromProcessEvent( event )
-    self._process.processReloadNotifier.add( self.processReloaded )
+    self._process.processReloadNotifier.add( ExecutionNode.MethodCallbackProxy( self.processReloaded ) )
 
   def addExecutionDependencies( self, deps ):
     ExecutionNode.addExecutionDependencies( self, deps )
