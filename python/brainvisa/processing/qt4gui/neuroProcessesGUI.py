@@ -109,7 +109,7 @@ def startShell():
   from PyQt4.QtGui import qApp
   try:
     import IPython
-    if [ int(x) for x in IPython.__version__.split('.') ] >= [ 0, 11 ]:
+    if [ int(x) for x in IPython.__version__.split('.')[:2] ] >= [ 0, 11 ]:
       # ipython >= 0.11, use client/server mode
       ipConsole = brainvisa.processes.runIPConsoleKernel()
       import subprocess
