@@ -271,7 +271,7 @@ if neuroConfig.shell:
   try:
     neuroConfig.shell = 0
     import IPython
-    if [ int(x) for x in IPython.__version__.split('.') ] >= [ 0, 11 ]:
+    if [ int(x) for x in IPython.__version__.split('.')[:2] ] >= [ 0, 11 ]:
       if not neuroConfig.gui: # with gui this is done earlier using qtconsole
         # ipython >= 0.11
         from IPython.frontend.terminal.ipapp import TerminalIPythonApp
