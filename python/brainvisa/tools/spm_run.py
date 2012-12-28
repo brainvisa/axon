@@ -2,6 +2,7 @@
 import distutils.spawn
 import os
 import sys
+from brainvisa.validation import ValidationError
 
 def getSpm8Path(configuration):  
   if(configuration.SPM.spm8_path is not None and configuration.SPM.spm8_path != ''):
