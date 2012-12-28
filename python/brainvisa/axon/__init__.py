@@ -55,11 +55,15 @@ import os, sys
 # Force QString API version in order to be compatible with recent version
 # of enthought.traits.ui (3.6 for instance)
 import sip
+PYQT_API_VERSION = 2
 try:
-  sip.setapi( 'QString', 2 )
-  sip.setapi( 'QVariant', 2 )
+  qt_api = [ "QDate", "QDateTime", "QString", "QTextStream", "QTime", "QUrl",
+    "QVariant" ]
+  for qt_class in qt_api:
+    sip.setapi( qt_class, PYQT_API_VERSION )
+  del qt_api, qt_class
 except:
-  print "WARNING: impossible to use version 2 of API QString."
+  print "WARNING: impossible to use version %d of sip/Qt API." % API_VERSION
 
 import brainvisa
 brainvisa_path=os.path.join( os.path.dirname( os.path.dirname( \

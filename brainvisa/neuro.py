@@ -43,8 +43,12 @@ import sys, os, signal, atexit, time
 # Force QString API version in order to be compatible with recent version
 # of enthought.traits.ui (3.6 for instance)
 import sip
-sip.setapi( 'QString', 2 )
-sip.setapi( 'QVariant', 2 )
+PYQT_API_VERSION = 2
+qt_api = [ "QDate", "QDateTime", "QString", "QTextStream", "QTime", "QUrl",
+"QVariant" ]
+for qt_class in qt_api:
+    sip.setapi( qt_class, PYQT_API_VERSION )
+del qt_api, qt_class
 
 if len( sys.argv ) > 1 and sys.platform[:6] == 'darwin' and sys.argv[1][:5] == '-psn_':
   # MacOS calls me with this strange argument, I don't want it.
