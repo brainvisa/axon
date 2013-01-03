@@ -56,6 +56,8 @@ class DatabasesTransformationManager( object ):
     if isinstance( diskItemOrId, DiskItem ):
       if diskItemOrId.type is not None and diskItemOrId.type.isA( 'Referential' ):
         uuid = diskItemOrId.uuid()
+        if uuid is not None: 
+            return diskItemOrId
       else:
         try:
           uuid = diskItemOrId.get( 'referential' )
@@ -227,7 +229,8 @@ class DatabasesTransformationManager( object ):
                       destinationDiskItem ):
     '''Copy the referential of sourceDiskItem to the one of destinationDiskItem.
     The minf file of destinationDiskItem is saved by this function.'''
-    if destinationDiskItem is None or not destinationDiskItem.isReadable(): return # do not create a .minf file for a diskitem that doesn't exist
+    if destinationDiskItem is None or not destinationDiskItem.isReadable():
+      return # do not create a .minf file for a diskitem that doesn't exist
     refId = self.referential( sourceDiskItem )
     from brainvisa.tools.aimsGlobals import aimsVolumeAttributes
     atts = aimsVolumeAttributes( sourceDiskItem, forceFormat=True )
@@ -237,18 +240,21 @@ class DatabasesTransformationManager( object ):
         uuid = refId.get( 'referential' )
         if uuid is None:
           uuid = refId.uuid()
-      if uuid is not None:
-        destinationDiskItem.readAndUpdateMinf()
-        destinationDiskItem.setMinf( 'referential', uuid )
-        refs = atts.get( 'referentials' )
-        trans = atts.get( 'transformations' )
-        if refs and trans:
-          destinationDiskItem.setMinf( 'referentials', refs )
-          destinationDiskItem.setMinf( 'transformations', trans )
-        try:
-          neuroHierarchy.databases.insertDiskItem( destinationDiskItem, update=True )
-        except:
-          pass
+    else:
+        # get ref uuid from source minf (maybe outside databases)
+        uuid = atts.get( 'referential' )
+    if uuid is not None:
+      destinationDiskItem.readAndUpdateMinf()
+      destinationDiskItem.setMinf( 'referential', uuid )
+      refs = atts.get( 'referentials' )
+      trans = atts.get( 'transformations' )
+      if refs and trans:
+        destinationDiskItem.setMinf( 'referentials', refs )
+        destinationDiskItem.setMinf( 'transformations', trans )
+      try:
+        neuroHierarchy.databases.insertDiskItem( destinationDiskItem, update=True )
+      except:
+        pass
 
 
   def createNewTransformation( self,
@@ -351,7 +357,10 @@ class DatabasesTransformationManager( object ):
         name = None,
         description = None ):
     if name is None and isinstance( transformation, DiskItem ):
-      name = transformation.name
+      if transformation.type is not None:
+        name = transformation.type.name
+      else:
+        name = transformation.name
     source_referential = self.referential( source_referential )
     destination_referential = self.referential( destination_referential )
     transformation.createParentDirectory()
@@ -362,7 +371,7 @@ class DatabasesTransformationManager( object ):
     if name is not None:
       transformation.setMinf( 'name', name )
     if description is not None:
-      transformation.setMinf( 'description', name )
+      transformation.setMinf( 'description', description )
     try:
       #transformation.saveMinf()
       neuroHierarchy.databases.insertDiskItem( transformation, update=True )
