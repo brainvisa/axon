@@ -229,7 +229,8 @@ class DatabasesTransformationManager( object ):
                       destinationDiskItem ):
     '''Copy the referential of sourceDiskItem to the one of destinationDiskItem.
     The minf file of destinationDiskItem is saved by this function.'''
-    if destinationDiskItem is None or not destinationDiskItem.isReadable(): return # do not create a .minf file for a diskitem that doesn't exist
+    if destinationDiskItem is None or not destinationDiskItem.isReadable():
+      return # do not create a .minf file for a diskitem that doesn't exist
     refId = self.referential( sourceDiskItem )
     from brainvisa.tools.aimsGlobals import aimsVolumeAttributes
     atts = aimsVolumeAttributes( sourceDiskItem, forceFormat=True )
@@ -239,18 +240,21 @@ class DatabasesTransformationManager( object ):
         uuid = refId.get( 'referential' )
         if uuid is None:
           uuid = refId.uuid()
-      if uuid is not None:
-        destinationDiskItem.readAndUpdateMinf()
-        destinationDiskItem.setMinf( 'referential', uuid )
-        refs = atts.get( 'referentials' )
-        trans = atts.get( 'transformations' )
-        if refs and trans:
-          destinationDiskItem.setMinf( 'referentials', refs )
-          destinationDiskItem.setMinf( 'transformations', trans )
-        try:
-          neuroHierarchy.databases.insertDiskItem( destinationDiskItem, update=True )
-        except:
-          pass
+    else:
+        # get ref uuid from source minf (maybe outside databases)
+        uuid = atts.get( 'referential' )
+    if uuid is not None:
+      destinationDiskItem.readAndUpdateMinf()
+      destinationDiskItem.setMinf( 'referential', uuid )
+      refs = atts.get( 'referentials' )
+      trans = atts.get( 'transformations' )
+      if refs and trans:
+        destinationDiskItem.setMinf( 'referentials', refs )
+        destinationDiskItem.setMinf( 'transformations', trans )
+      try:
+        neuroHierarchy.databases.insertDiskItem( destinationDiskItem, update=True )
+      except:
+        pass
 
 
   def createNewTransformation( self,
