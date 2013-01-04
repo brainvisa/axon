@@ -44,7 +44,7 @@ def validation():
 
 #------------------------------------------------------------------------------
 
-userLevel = 2
+userLevel = 0
 name = 'coregister (using SPM)'
 
 #------------------------------------------------------------------------------
@@ -67,39 +67,36 @@ signature = Signature(
 #------------------------------------------------------------------------------
 
 def initialization(self):
-  process = self
-  process.others = """{''}"""  
-  process.cost_fun = """'mi'"""
-  process.sep = """[4 2]""" 
-  process.tol = """[0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001]""" 
-  process.fwhm = """[7 7]""" 
-  process.interp = """1""" 
-  process.wrap = """[0 0 0]""" 
-  process.mask = """0""" 
-  process.prefix = """'spmCoregister_'"""
+  self.others = """{''}"""  
+  self.cost_fun = """'mi'"""
+  self.sep = """[4 2]""" 
+  self.tol = """[0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001]""" 
+  self.fwhm = """[7 7]""" 
+  self.interp = """1""" 
+  self.wrap = """[0 0 0]""" 
+  self.mask = """0""" 
+  self.prefix = """'spmCoregister_'"""
    
-  process.signature['others'].userLevel = 1
-  process.signature['cost_fun'].userLevel = 1
-  process.signature['sep'].userLevel = 1
-  process.signature['tol'].userLevel = 1
-  process.signature['fwhm'].userLevel = 1
-  process.signature['interp'].userLevel = 1
-  process.signature['wrap'].userLevel = 1
-  process.signature['mask'].userLevel = 1
-  process.signature['prefix'].userLevel = 1
+  self.signature['others'].userLevel = 1
+  self.signature['cost_fun'].userLevel = 1
+  self.signature['sep'].userLevel = 1
+  self.signature['tol'].userLevel = 1
+  self.signature['fwhm'].userLevel = 1
+  self.signature['interp'].userLevel = 1
+  self.signature['wrap'].userLevel = 1
+  self.signature['mask'].userLevel = 1
+  self.signature['prefix'].userLevel = 1
   
 #------------------------------------------------------------------------------
         
 def execution(self, context):  
   print "\n start ", name, "\n"  
-    
-  self = self
-  
+      
   sourcePath = self.source.fullPath()
   warpedPath = self.warped.fullPath()
   inDir = sourcePath[:sourcePath.rindex('/')]  
   
-  spmJobFile = inDir + '/' + self.prefix+'_job.m'
+  spmJobFile = inDir + '/coregister_job.m'
   mat_file = open(spmJobFile, 'w')
       
   matfilePath = spm.writeCoregisteredMatFile(context, sourcePath, self.reference.fullPath()
