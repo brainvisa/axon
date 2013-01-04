@@ -98,7 +98,6 @@ def runMatblatBatch(context, configuration, matlabBatchPath):
  
 #------------------------------------------------------------------------------
 
-# place output at correct location
 def moveSpmOutFiles(inDir, outPath, spmPrefixes, outDir=None, ext='.nii'):
   for i in range(0, len(spmPrefixes)):
     if(spmPrefixes[i].startswith("""'""")):
@@ -117,12 +116,16 @@ def moveSpmOutFiles(inDir, outPath, spmPrefixes, outDir=None, ext='.nii'):
         else:
           movePath(root + '/' + f, outDir + '/' + f)          
     
+def movePathToDiskItem(srcPath, dstDI):
+  if(dstDI is not None):
+    return movePath(srcPath, dstDI.fullPath())
+
 def movePath(srcPath, dstPath):
   if (os.path.exists(srcPath)):
     if(os.path.exists(dstPath)):      
       os.remove(dstPath) # do not use directly os.rename (but remove before) because : on windows, rename with dstPath already exists causes exception
     os.rename(srcPath, dstPath)
   if (os.path.exists(srcPath)):
-    os.remove(srcPath) # remove because if grey_probability_map does not exists, then user only wants to estimate transfo
+    os.remove(srcPath)
 
 #------------------------------------------------------------------------------

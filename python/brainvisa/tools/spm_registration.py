@@ -2,10 +2,11 @@ from brainvisa.tools.spm_run import getSpm8Path
 
 #------------------------------------------------------------------------------
     
-def writeCoregisteredMatFile(context, sourcePath, refPath, matfileDI, mat_file
+def writeCoregisteredMatFile(context, sourcePath, refPath, spmJobFile
 , others="""{''}""", cost_fun="""'nmi'""", sep="""[4 2]""", tol="""[0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001]"""
 , fwhm="""[7 7]""", interp="""1""", wrap="""[0 0 0]""", mask="""0""", prefix="""'spmCoregister_'"""):
 
+  mat_file = open(spmJobFile, 'w')
   refFilesInScript = """{'""" + refPath + """,1'}"""
   sourceFilesInScript = """{'""" + sourcePath + """,1'}"""
   mat_file.write("""matlabbatch{1}.spm.spatial.coreg.estwrite.ref = %s;  
@@ -25,13 +26,14 @@ matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.prefix = %s;
 
 #------------------------------------------------------------------------------
 
-def writeNormalizeMatFile(context, configuration, src, imgToWrite, matfileDI, mat_file
+def writeNormalizeMatFile(context, configuration, src, imgToWrite, spmJobFile
         , tmp=None, wtsrc="""''"""
         , weight="""''""", smosrc="""8""", smoref="""0""", regtype="""'mni'""", cutoff="""25""", nits="""16""", reg="""1"""
         , preserve="""0""", bb="""[-90 -126 -72  
                                       90 90 108]""", vox="""[2 2 2]""" # bouding box and voxel size value used for PET modality
         , interp="""1""", wrap="""[0 0 0]""", prefix="""'spmNormalized_'""" 
         ):
+  mat_file = open(spmJobFile, 'w')
   spm8Path = getSpm8Path(configuration)
   if(tmp == None):
     tmp = str(spm8Path) + """/templates/SPECT.nii"""

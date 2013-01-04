@@ -6,7 +6,7 @@ from brainvisa.tools.spm_run import getSpm8Path
 # 2 Segmentation : for PET
 # 3 VBM Segmentation : VBM toolboxe.
 
-def writeUnifiedSegmentationMatFile(context, configuration, volsPath, matfileDI, mat_file
+def writeUnifiedSegmentationMatFile(context, configuration, volsPath, spmJobFile
 , c_biasreg = """0.0001""", c_biasfwhm = """60""", c_write = """[0 0]"""
 , t1_tpm = None, t1_ngaus = """2""", t1_native = """[1 0]""", t1_warped = """[0 0]"""
 , t2_tpm = None, t2_ngaus = """2""", t2_native = """[1 0]""", t2_warped = """[0 0]"""
@@ -16,6 +16,7 @@ def writeUnifiedSegmentationMatFile(context, configuration, volsPath, matfileDI,
 , t6_tpm = None, t6_ngaus = """2""", t6_native = """[0 0]""", t6_warped = """[0 0]"""
 , w_mrf = """0""", w_reg = """4""", w_affreg = """'mni'""", w_samp = """3""", w_write = """[0 0]"""
 ):
+  mat_file = open(spmJobFile, 'w')
   spm8Path = getSpm8Path(configuration)
   if(t1_tpm is None):
     t1_tpm = spm8Path+'/toolbox/Seg/TPM.nii'
@@ -78,7 +79,7 @@ matlabbatch{1}.spm.tools.preproc8.warp.write = %s;
   mat_file.close()
   return mat_file.name
     
-def writeSegmentationMatFile(context, configuration, sourcePath, matfileDI, mat_file
+def writeSegmentationMatFile(context, configuration, sourcePath, spmJobFile
 , GM = """[0 1 0]""", WM = """[0 0 0]""", CSF = """[0 0 0]""", biascor = """0""", cleanup = """0"""
 , tpm = None
 , ngaus = """[2
@@ -88,7 +89,7 @@ def writeSegmentationMatFile(context, configuration, sourcePath, matfileDI, mat_
 , regtype = """'mni'""", warpreg = """1""", warpco = """25""", biasreg = """0.0001"""
 , biasfwhm = """60""", samp = """3""", msk = """{''}"""
 ):
-
+  mat_file = open(spmJobFile, 'w')
   spm8Path = getSpm8Path(configuration)
   if(tpm is None):
     tpm = """{
@@ -121,7 +122,7 @@ matlabbatch{1}.spm.spatial.preproc.opts.msk = %s;
   mat_file.close()
   return mat_file.name
 
-def writeVBMSegmentationMatFile(context, configuration, sourcePath, matfileDI, mat_file
+def writeVBMSegmentationMatFile(context, configuration, sourcePath, spmJobFile
 , tpm, ngaus = """[2 2 2 3 4 2]""", biasreg = """0.0001""", biasfwhm = """60""", affreg = """'mni'""", warpreg = """4""", samp = """3"""
 , normlow = """struct([])""", sanlm = """2""", mrf = """0.15""", cleanup = """1""", pprint = """1"""
 , native = """1""", warped = """0""", modulated = """0""", dartel = """0"""
@@ -129,6 +130,7 @@ def writeVBMSegmentationMatFile(context, configuration, sourcePath, matfileDI, m
 , csf_native = """1""", csf_warped = """0""", csf_modulated = """0""", csf_dartel = """0"""
 , saveBias = """0""",
 ):
+  mat_file = open(spmJobFile, 'w')
   mat_file.write("""matlabbatch{1}.spm.tools.vbm8.estwrite.data = {'%s,1'}
 matlabbatch{1}.spm.tools.vbm8.estwrite.opts.tpm = {'%s'};
 matlabbatch{1}.spm.tools.vbm8.estwrite.opts.ngaus = %s;
