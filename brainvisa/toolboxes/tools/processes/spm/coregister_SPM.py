@@ -34,7 +34,6 @@
 from brainvisa.processes import *
 import nuclearImaging.SPM as spm
 
-
 #------------------------------------------------------------------------------
 configuration = Application().configuration
 #------------------------------------------------------------------------------
@@ -97,10 +96,8 @@ def execution(self, context):
   inDir = sourcePath[:sourcePath.rindex('/')]  
   
   spmJobFile = inDir + '/coregister_job.m'
-  mat_file = open(spmJobFile, 'w')
       
-  matfilePath = spm.writeCoregisteredMatFile(context, sourcePath, self.reference.fullPath()
-                                             , None, mat_file
+  matfilePath = spm.writeCoregisteredMatFile(context, sourcePath, self.reference.fullPath(), spmJobFile
                                              , others=self.others, cost_fun=self.cost_fun, sep=self.sep, tol=self.tol, fwhm=self.fwhm
                                              , interp=self.interp, wrap=self.wrap, mask=self.mask, prefix=self.prefix)
     
