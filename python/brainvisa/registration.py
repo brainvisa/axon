@@ -89,7 +89,17 @@ class DatabasesTransformationManager( object ):
       destination_referential = self.getObjectUuid( destination_referential )
 
     for path in neuroHierarchy.databases.findTransformationPaths( source_referential, destination_referential, maxLength, bidirectional ):
-      yield [ neuroHierarchy.databases.getDiskItemFromUuid( i[0] ) for i in path ]
+      try:
+        yield [ neuroHierarchy.databases.getDiskItemFromUuid( i[0] ) for i in path ]
+      except neuroHierarchy.DatabaseError, e:
+        print e
+        print '  no transformation corresponds to this uuid: %s, used in a ' \
+          'possible path to link refs %s (%s) and %s (%s)' % \
+          ( i[0], source_referential,
+          neuroHierarchy.databases.getDiskItemFromUuid( source_referential ),
+          destination_referential,
+          neuroHierarchy.databases.getDiskItemFromUuid(
+            destination_referential ) )
 
 
   def setReferentialTo( self, diskItem, referential ):
