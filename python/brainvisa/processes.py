@@ -581,7 +581,9 @@ class Parameterized( object ):
   """
 
   def __init__( self, signature ):
-    #print 'create Parameterized', self
+    # print 'create Parameterized', self
+    self.__dict__[ '_deleted' ] = False # safety to avoid double deletion
+    # see http://code.activestate.com/lists/python-list/191512/
     self.__dict__[ 'signature' ] = signature
     self._convertedValues = {}
     self._links = {}
@@ -625,7 +627,10 @@ class Parameterized( object ):
                                    parameterizedObjects = parameterizedObjects )
 
   def __del__( self ):
-    #print 'del Parameterized', self
+    if not hasattr( self, '_deleted' ) or self._deleted:
+      return
+    # print 'del Parameterized', self
+    self._deleted = True
     debugHere()
     for x in self.deleteCallbacks:
       x( self )
@@ -1045,6 +1050,9 @@ class Process( Parameterized ):
     self.instance = self.__class__._instance
 
   def __del__( self ):
+    if self._deleted:
+      print '*** Process already deleted ***'
+      return
     try:
       Parameterized.__del__( self )
     except:
@@ -1249,6 +1257,14 @@ class IterationProcess( Process ):
       if isinstance( p, ExecutionNode ):
         sp._optional = p._optional
         sp._selected = p._selected
+
+  #def __del__( self ):
+    #print 'del IterationProcess', self, ', children:', len( self._processes )
+    #print 'children:', self._processes
+    #del self._processes
+    #import gc
+    #print 'refs to execution node:', len( gc.get_referrers( self._executionNode ) )
+    #print [ i.keys() for i in gc.get_referrers( self._executionNode ) ]
 
   def pipelineStructure( self ):
     return { 'type': 'iteration', 'name' : self.name, 'children':[p.pipelineStructure() for p in self._processes] }
@@ -1473,6 +1489,9 @@ class ExecutionNode( object ):
     :param parameterized: :py:class:`Parameterized` containing the signature of the node - default None.
     """
     # Initialize an empty execution node
+    #print 'ExecutionNode.__init__', self
+    self.__dict__[ '_deleted' ] = False # safety to avoid double deletion
+    # see http://code.activestate.com/lists/python-list/191512/
     self.__dict__[ '_children' ] = SortedDictionary()
     if parameterized is not None:
       parameterized = weakref.ref( parameterized )
@@ -1487,6 +1506,10 @@ class ExecutionNode( object ):
 
   def __del__( self ):
     #print 'del ExecutionNode', self
+    if not hasattr( self, '_deleted' ) or self.__dict__[ '_deleted' ]:
+      print '*** ExecutionNode already deleted ! ***'
+      return
+    self.__dict__[ '_deleted' ] = True
     debugHere()
 
   def _copy(self, node):
@@ -1750,11 +1773,13 @@ class ProcessExecutionNode( ExecutionNode ):
   def __init__( self, process, optional = False, selected = True,
                 guiOnly = False, expandedInGui = False ):
     process = getProcessInstance( process )
+    #print 'ProcessExecutionNode.__init__:', self, process.name
     ExecutionNode.__init__( self, process.name,
                             optional = optional,
                             selected = selected,
                             guiOnly = guiOnly,
-                            parameterized = process, expandedInGui = expandedInGui )
+                            parameterized = process,
+                            expandedInGui = expandedInGui )
     self.__dict__[ '_process' ] = process
     reloadNotifier = getattr( process, 'processReloadNotifier', None )
     if reloadNotifier is not None:
@@ -1763,7 +1788,11 @@ class ProcessExecutionNode( ExecutionNode ):
 
   def __del__( self ):
     #print 'del ProcessExecutionNode', self
+    if not hasattr( self, '_deleted' ) or self._deleted:
+      print '*** already deleted !***'
+      return
     if hasattr( self, '_process' ):
+      #print '     del proc:', self._process.name
       reloadNotifier = getattr( self._process, 'processReloadNotifier', None )
       if reloadNotifier is not None:
         try:
@@ -1777,7 +1806,8 @@ class ProcessExecutionNode( ExecutionNode ):
           z.object = w
           x = reloadNotifier.remove( z )
         except AttributeError:
-          # this try..except is here to prevent an error when quitting BrainVisa:
+          # this try..except is here to prevent an error when quitting
+          # BrainVisa:
           # ProcessExecutionNode class is set to None during module destruction
           pass
     else:
@@ -1872,6 +1902,7 @@ class SerialExecutionNode( ExecutionNode ):
   def __init__(self, name='', optional = False, selected = True,
                 guiOnly = False, parameterized = None, stopOnError=True,
                 expandedInGui = False, possibleChildrenProcesses = None, notify = False ):
+    #print 'SerialExecutionNode.__init__', self
     ExecutionNode.__init__(self, name, optional, selected, guiOnly, parameterized, expandedInGui=expandedInGui )
     self.stopOnError=stopOnError
     self.notify = notify
@@ -1975,13 +2006,18 @@ class SelectionExecutionNode( ExecutionNode ):
   '''An execution node that run one of its children'''
 
   def __init__( self, *args, **kwargs ):
+    #print 'SelectionExecutionNode.__init__', self
     ExecutionNode.__init__( self, *args, **kwargs )
 
   def __del__( self ):
+    #print 'SelectionExecutionNode.__del__', self
+    if not hasattr( self, '_deleted' ) or self._deleted:
+      print '*** SelectionExecutionNode already deleted'
+      return
     for node in self._children.values():
       node._selectionChange.remove( ExecutionNode.MethodCallbackProxy( \
         self.childSelectionChange ) )
-    super( SelectionExecutionNode, self ).__del__()
+    #print '__del__ finished'
 
   def _run( self, context ):
     'Run the selected child'
@@ -3258,7 +3294,7 @@ def getProcess( processId, ignoreValidation=False, checkUpdate=True ):
   """
   global _askUpdateProcess
   if processId is None: return None
-  if isinstance( processId, Process ) or ( type(processId) in (types.ClassType, types.TypeType) and issubclass( processId, Process ) ):
+  if isinstance( processId, Process ) or ( type(processId) in (types.ClassType, types.TypeType) and issubclass( processId, Process ) ) or isinstance( processId, weakref.ProxyType ):
     result = processId
     id = getattr( processId, '_id', None )
     if id is not None:
@@ -3399,6 +3435,8 @@ def getProcessInstance( processIdClassOrInstance ):
   :param processIdClassOrInstance: a process id, name, class, instance, execution node, or a the name of a file containing a backup copy of a process. 
   :returns: an instance of the :py:class:`NewProcess` class associated to the described process.
   """
+  if isinstance( processIdClassOrInstance, weakref.ProxyType ):
+    processIdClassOrInstance = copy.copy( processIdClassOrInstance )
   result = getProcess( processIdClassOrInstance )
   if isinstance( processIdClassOrInstance, Process ):
     if result is processIdClassOrInstance or result is processIdClassOrInstance.__class__:
