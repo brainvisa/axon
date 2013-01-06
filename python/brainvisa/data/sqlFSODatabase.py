@@ -798,6 +798,9 @@ class SQLDatabase( Database ):
         cursor.execute( 'DELETE FROM _FILENAMES_ WHERE _uuid=?', ( uuid, ) )
         tableName, tableFields, tableAttributes, sql = self._tableFieldsAndInsertByTypeName[ diskItem.type.name ]
         cursor.execute( 'DELETE FROM "' + tableName + '" WHERE _uuid=?', ( uuid, ) )
+        if diskItem.type.isA( 'Transformation' ):
+          cursor.execute( 'DELETE FROM _TRANSFORMATIONS_ WHERE _uuid=?',
+            ( uuid, ) )
         if eraseFiles:
           diskItem.eraseFiles()
     except sqlite3.OperationalError, e:
