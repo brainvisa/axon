@@ -1,10 +1,18 @@
-from brainvisa.tools.spm_run import getSpm8Path 
 
 #------------------------------------------------------------------------------
-    
+
+def ititializeCoregisterParameters_withSPM8DefaultValuesforPET(process):
+  process.others = """{''}"""
+  process.cost_fun = """'mi'"""
+  process.sep = """[4 2]"""
+  process.tol = """[0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001]"""
+  process.fwhm = """[7 7]"""
+  process.interp = """1"""
+  process.wrap = """[0 0 0]"""
+  process.mask = """0"""
+  
 def writeCoregisteredMatFile(context, sourcePath, refPath, spmJobFile
-, others="""{''}""", cost_fun="""'nmi'""", sep="""[4 2]""", tol="""[0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001]"""
-, fwhm="""[7 7]""", interp="""1""", wrap="""[0 0 0]""", mask="""0""", prefix="""'spmCoregister_'"""):
+, others, cost_fun, sep, tol, fwhm, interp, wrap, mask, prefix="""'spmCoregister_'"""):
 
   mat_file = open(spmJobFile, 'w')
   refFilesInScript = """{'""" + refPath + """,1'}"""
@@ -26,17 +34,26 @@ matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.prefix = %s;
 
 #------------------------------------------------------------------------------
 
-def writeNormalizeMatFile(context, configuration, src, imgToWrite, spmJobFile
-        , tmp=None, wtsrc="""''"""
-        , weight="""''""", smosrc="""8""", smoref="""0""", regtype="""'mni'""", cutoff="""25""", nits="""16""", reg="""1"""
-        , preserve="""0""", bb="""[-90 -126 -72  
-                                      90 90 108]""", vox="""[2 2 2]""" # bouding box and voxel size value used for PET modality
-        , interp="""1""", wrap="""[0 0 0]""", prefix="""'spmNormalized_'""" 
-        ):
+def initializeNormalizeParameters_usingSPM8DefaultValuesForPET(process):
+  process.wtsrc = """''"""
+  process.weight = """''"""
+  process.smosrc = """8"""
+  process.smoref = """0"""
+  process.regtype = """'mni'"""
+  
+  process.cutoff = """25"""
+  process.nits = """16"""
+  process.reg = """1"""
+  process.preserve = """0"""
+  process.bb = """[-90 -126 -72  
+                                                                        90 90 108]"""
+  process.vox = """[2 2 2]"""# bouding box and voxel size value used for PET modality
+  process.interp = """1"""
+  process.wrap = """[0 0 0]"""
+  
+def writeNormalizeMatFile(context, configuration, src, imgToWrite, spmJobFile, tmp
+        , wtsrc, weight, smosrc, smoref, regtype, cutoff, nits, reg, preserve, bb, vox, interp, wrap, prefix):
   mat_file = open(spmJobFile, 'w')
-  spm8Path = getSpm8Path(configuration)
-  if(tmp == None):
-    tmp = str(spm8Path) + """/templates/SPECT.nii"""
   mat_file.write("""matlabbatch{1}.spm.spatial.normalise.estwrite.subj.source = {'%s,1'};
 matlabbatch{1}.spm.spatial.normalise.estwrite.subj.wtsrc = %s;
 matlabbatch{1}.spm.spatial.normalise.estwrite.subj.resample = {'%s,1'};
