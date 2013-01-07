@@ -113,10 +113,12 @@ class HistoryBook( object ):
 
   @staticmethod
   def getHistoryBookDirectories( item ):
+    if item is None:
+      return None
     historyBook = None
     if hasattr( neuroConfig, 'historyBookDirectory' ):
       historyBook = neuroConfig.historyBookDirectory
-    if not historyBook and item is not None:
+    if not historyBook:
       database = item.getHierarchy( '_database' )
       if database:
         db=neuroHierarchy.databases.database(database)
@@ -128,7 +130,7 @@ class HistoryBook( object ):
 
   @staticmethod
   def storeProcessStart( executionContext, process ):
-    # print '!history! storeProcessStart:', process
+    # print '!history! storeProcessStart:', process
     historyBooksContext = {}
     for parameterized, attribute, type in process.getAllParameters():
       if isinstance( type, WriteDiskItem ):
@@ -139,7 +141,6 @@ class HistoryBook( object ):
             if not os.path.exists( historyBook ):
               os.mkdir(historyBook)
             historyBook = HistoryBook( historyBook, compression=True )
-            #print item
             historyBooksContext.setdefault( historyBook, {} )[ item.fullPath() ] = ( item, item.modificationHash() )
 
     event = None
