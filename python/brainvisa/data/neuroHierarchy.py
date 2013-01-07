@@ -50,7 +50,7 @@ The function :py:func:`hierarchies` enables to get the list of databases objects
 
 import os
 
-from brainvisa.data.sqlFSODatabase import SQLDatabase, SQLDatabases
+from brainvisa.data.sqlFSODatabase import SQLDatabase, SQLDatabases, DatabaseError
 from brainvisa.processing.neuroException import showException, showWarning
 from brainvisa.configuration import neuroConfig
 # Import read and write diskitem because neuroHierarchy.ReadDiskItem and neuroHierarchy.WriteDiskItem is used in some processes
