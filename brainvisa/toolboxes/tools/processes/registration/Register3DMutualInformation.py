@@ -34,7 +34,7 @@
 
 
 from neuroProcesses import *
-import shfjGlobals
+from brainvisa.tools import aimsGlobals
 from brainvisa import anatomist
 import os
 
@@ -43,8 +43,8 @@ userLevel = 0
 
 signature = Signature(
   
-  'source_image', ReadDiskItem( '4D Volume', shfjGlobals.aimsVolumeFormats ),
-  'reference_image', ReadDiskItem( '4D Volume', shfjGlobals.aimsVolumeFormats ),
+  'source_image', ReadDiskItem( '4D Volume', aimsGlobals.aimsVolumeFormats ),
+  'reference_image', ReadDiskItem( '4D Volume', aimsGlobals.aimsVolumeFormats ),
   'source_to_reference', WriteDiskItem( 'Transformation matrix', 'Transformation matrix' ),
   'reference_to_source', WriteDiskItem( 'Transformation matrix', 'Transformation matrix' ),
   
@@ -67,7 +67,8 @@ signature = Signature(
   'step_rotation_y', Float(),
   'step_rotation_z', Float(),
   'error_epsilon', Float(),
-  'resampled_image', WriteDiskItem( '4D Volume', shfjGlobals.aimsWriteVolumeFormats ),
+  'resampled_image', WriteDiskItem( '4D Volume',
+    aimsGlobals.aimsWriteVolumeFormats ),
   'resampled_interpolation', Choice ( ('nearest neighbor', 0),
                             ('linear', 1), 
                             ('quadratic', 2), 
@@ -108,20 +109,41 @@ def execution( self, context ):
   
   #IMAGE REF :
   reference_image = self.reference_image
-  dims = self.reference_image.get( 'volume_dimension',  [ 1, 1, 1, 1 ] )
-  if dims[ 3 ] > 1:
+  atts = aimsGlobals.aimsVolumeAttributes( reference_image )
+  dims = atts.get( 'volume_dimension',  [ 1, 1, 1, 1 ] )
+  if len( dims ) > 3 and dims[ 3 ] > 1:
     reference_image = context.temporary( 'GIS Image' )
     context.warning( 'Reference image is a 4D Volume ==> Conversion to 3D' )
     context.system( 'AimsSumFrame', '-i', self.reference_image, '-o', reference_image )
-
+  dtype = atts.get( 'data_type' )
+  if dtype and dtype in ( 'FLOAT', 'DOUBLE' ):
+    pdt = atts.get( 'possible_data_types' )
+    if not pdt or 'S16' not in pdt:
+      # convert to int type with rescaling
+      rim = context.temporary( 'GIS Image' )
+      context.warning( 'Reference image is a floating point data Volume ==> Conversion to int16' )
+      context.system( 'AimsFileConvert', '-i', reference_image, '-o', rim,
+        '-t', 'S16', '-r', '--omin', 0, '--omax', 4095 )
+      reference_image = rim
 
   #IMAGE TEST :
   source_image = self.source_image
-  dims = self.source_image.get( 'volume_dimension',  [ 1, 1, 1, 1 ] )
+  atts = aimsGlobals.aimsVolumeAttributes( source_image )
+  dims = atts.get( 'volume_dimension',  [ 1, 1, 1, 1 ] )
   if len( dims ) > 3 and dims[ 3 ] > 1:
     source_image = context.temporary( 'GIS Image' )
     context.warning('Test image is a 4D Volume ==> Conversion to 3D')
     context.system( 'AimsSumFrame', '-i', self.source_image, '-o', source_image )
+  dtype = atts.get( 'data_type' )
+  if dtype and dtype in ( 'FLOAT', 'DOUBLE' ):
+    pdt = atts.get( 'possible_data_types' )
+    if not pdt or 'S16' not in pdt:
+      # convert to int type with rescaling
+      sim = context.temporary( 'GIS Image' )
+      context.warning( 'Test image is a floating point data Volume ==> Conversion to int16' )
+      context.system( 'AimsFileConvert', '-i', source_image, '-o', sim,
+        '-t', 'S16', '-r', '--omin', 0, '--omax', 4095 )
+      source_image = sim
 
 
   command = [ 'AimsMIRegister', 
