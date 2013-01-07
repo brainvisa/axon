@@ -66,14 +66,7 @@ signature = Signature(
 #------------------------------------------------------------------------------
 
 def initialization(self):
-  self.others = """{''}"""  
-  self.cost_fun = """'mi'"""
-  self.sep = """[4 2]""" 
-  self.tol = """[0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001]""" 
-  self.fwhm = """[7 7]""" 
-  self.interp = """1""" 
-  self.wrap = """[0 0 0]""" 
-  self.mask = """0""" 
+  spm.ititializeCoregisterParameters_withSPM8DefaultValuesforPET(self) 
   self.prefix = """'spmCoregister_'"""
    
   self.signature['others'].userLevel = 1
@@ -113,6 +106,7 @@ def execution(self, context):
   print "\n stop ", name, "\n"
   
 #------------------------------------------------------------------------------
+# spm documentation : 
 
 #Coregister: Estimate & Reslice
 #The  registration  method  used  here  is  based  on  work  by  Collignon et al. 
@@ -127,18 +121,4 @@ def execution(self, context):
 #These images are also resliced to match the source image voxel-for-voxel. 
 #The resliced images are named the same as the originals except that they are prefixed by 'r'.
 #
-
-#COREGISTER: Estimation & Reslice
-#La méthode d'enregistrement utilisée ici est basée sur le travail par Collignon et al.
-#La méthode d'interpolation originale décrite dans le présent document a été modifié afin de donner une fonction plus lisse coût.
-#Les images sont également lissées légèrement, comme c'est l'histogramme.
-#Cela est d'autant afin de rendre la fonction de coût aussi lisse que possible, de donner fasterconvergence et moins de chances de minima locaux.
-#
-#À la fin de recalage, la matrice de voxel à voxel-transformation affine est affiché, ainsi que les histogrammes pour les images dans les orientations initiales, et les orientations finales.
-#Les images enregistrées sont affichées au bas.
-#
-#Paramètres d'enregistrement sont stockées dans les en-têtes de la «source» et les «autres» des images.
-#Ces images sont également resliced ​​pour correspondre à l'image source voxel-pour-voxel.
-#Les images resliced ​​portent le même nom que les originaux à l'exception qu'ils sont préfixés par «r».
-
-
+#------------------------------------------------------------------------------
