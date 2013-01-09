@@ -41,7 +41,7 @@ userLevel = 1
 
 signature = Signature(
   'image'   , ReadDiskItem( '4D Volume', shfjGlobals.aimsVolumeFormats ),
-  'transformation', WriteDiskItem('Transformation matrix', 'Transformation matrix'),
+  'transformation', ReadDiskItem('Transformation matrix', 'Transformation matrix'),
   'interpolation', Choice( ('nearest neighbor', 0),
                            ('linear', 1), 
                            ('quadratic', 2), 
