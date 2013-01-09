@@ -631,8 +631,14 @@ if anatomistImport:
       mask = self.loadObject( maskFile, duplicate=True)#forceReload=1 )
       mask.setPalette( palette )
       fusion = self.fusionObjects( [mri, mask], method='Fusion2DMethod' )
-      self.execute("Fusion2DParams", object=fusion, mode=mode, rate = rate,
+      fmode = mode
+      if mode not in ( 'linear', 'geometric', 'linear_on_defined' ):
+        self.execute( 'TexturingParams', objects=[fusion], mode=mode,
+          texture_index=1, rate=rate )
+        fmode = None
+      self.execute("Fusion2DParams", object=fusion, mode=fmode, rate = rate,
                           reorder_objects = [ mri, mask ] )
+      print 'mode:', mode
       window = self.createWindow( wintype )
       window.assignReferential( mri.referential )
       window.addObjects( [fusion] )
