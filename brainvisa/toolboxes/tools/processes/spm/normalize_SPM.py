@@ -45,7 +45,7 @@ def validation():
 #------------------------------------------------------------------------------
 
 userLevel = 0
-name = 'Normalize to MNI space (using SPM)'
+name = 'Normalize to MNI space (using SPM8)'
 
 #------------------------------------------------------------------------------
 

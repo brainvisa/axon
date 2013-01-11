@@ -5,6 +5,7 @@
     <xhtml name="short">Normaliser: Estimation et Ecrire
 Calcule la chaîne qui correspond le mieux enregistre une image source (ou d'une série d'images source) pour correspondre à un modèle, l'enregistrer dans le fichier imagename'_sn. Mat '.
 Cette option permet également le contenu des fichiers du mat imagename'_sn.; appliquer à une série d'images.</xhtml>
+    <xhtml name="long"/>
     <d name="parameters">
       <xhtml name="nits"/>
       <xhtml name="smosrc"/>
@@ -12,8 +13,8 @@ Cette option permet également le contenu des fichiers du mat imagename'_sn.; ap
       <xhtml name="bb"/>
       <xhtml name="weight"/>
       <xhtml name="cutoff"/>
-      <xhtml name="interp"/>
       <xhtml name="smoref"/>
+      <xhtml name="interp"/>
       <xhtml name="checkReg"/>
       <xhtml name="PET_Mni"/>
       <xhtml name="wtsrc"/>
@@ -25,12 +26,24 @@ Cette option permet également le contenu des fichiers du mat imagename'_sn.; ap
       <xhtml name="reg"/>
       <xhtml name="preserve"/>
     </d>
-    <xhtml name="long"/>
   </d>
   <d name="en">
-    <xhtml name="short">Normalise: Estimate and Write
-Computes  the warp that best registers a source image (or series of source images) to match a template, saving it to the file imagename'_sn.mat'. 
-This option also allows the contents of the imagename'_sn.mat' files to be applied to a series of images.</xhtml>
+    <xhtml name="short"><head>
+<style>
+  #warning {
+      background-color: #F6F6F6;
+      border: thin solid;
+      border-color: #E4E4E4;
+      padding: 1mm;
+  }
+</style>
+</head>
+
+<p id="warning">
+<b><font color="#b00000">if you have troubles:</font></b><br/>
+sometimes it does not work at all. In this case, you can try using "reset internal image transformation" on source image, before normalization. see in mophologist - registration - reset internal image transformation process.
+</p>
+</xhtml>
     <d name="parameters">
       <xhtml name="nits"><b>Nonlinear Iterations : </b>
 Number of iterations of nonlinear warping performed.</xhtml>
@@ -38,7 +51,6 @@ Number of iterations of nonlinear warping performed.</xhtml>
 Smoothing  to  apply  to  a  copy  of  the  source  image.  
 The  template  and  source images should have approximately the same smoothness. 
 Remember that the templates supplied with SPM have been smoothed by 8mm, and that smoothnesses combine by Pythagoras' rule.</xhtml>
-      <xhtml name="PET_Nat"/>
       <xhtml name="bb"><b>Bounding box : </b>
 The bounding box (in mm) of the volume which is to be written (relative to the anterior commissure).</xhtml>
       <xhtml name="weight"/>
@@ -61,10 +73,16 @@ Smoothing  to  apply  to  a  copy  of  the  template  image.
 The template and source images should have approximately the same smoothness. 
 Remember that the templates supplied with SPM have been smoothed by 8mm, and that smoothnesses combine by Pythagoras' rule.</xhtml>
       <xhtml name="checkReg"/>
-      <xhtml name="PET_Mni"/>
+      <xhtml name="reg"><b>Nonlinear Regularisation : </b>
+The amount of regularisation for the nonlinear part of the spatial normalisation. 
+Pick a value around one.  
+However, if your normalised images appear distorted, then it may be  an  idea  to increase the amount of regularisation (by an order of magnitude) - or even just use an affine normalisation. 
+The regularisation influences the smoothness of the deformation fields.</xhtml>
       <xhtml name="wtsrc"/>
+      <xhtml name="source"/>
       <xhtml name="prefix"><b>Filename Prefix : </b>
 Specify the string to be prepended to the filenames of the normalised image file(s). </xhtml>
+      <xhtml name="imageToWrite"/>
       <xhtml name="template"/>
       <xhtml name="wrap"><b>Wrapping : </b>
 These are typically:
@@ -78,11 +96,7 @@ If registering to a template that is close in size, then select the second optio
 If you do not want to regularise, then choose the third. * No regularisation</xhtml>
       <xhtml name="vox"><b>Voxel sizes : </b>
 The voxel sizes (x, y, z, in mm) of the written normalised images.</xhtml>
-      <xhtml name="reg"><b>Nonlinear Regularisation : </b>
-The amount of regularisation for the nonlinear part of the spatial normalisation. 
-Pick a value around one.  
-However, if your normalised images appear distorted, then it may be  an  idea  to increase the amount of regularisation (by an order of magnitude) - or even just use an affine normalisation. 
-The regularisation influences the smoothness of the deformation fields.</xhtml>
+      <xhtml name="warpedInMni"/>
       <xhtml name="preserve"><b>Preserve : </b>
 Preserve Concentrations: Spatially normalised images are not "modulated". 
 The warped images preserve the intensities of the original images.
@@ -90,7 +104,10 @@ The warped images preserve the intensities of the original images.
 Preserve  Total:  Spatially  normalised  images  are  "modulated"  in  order  to preserve the total amount of signal in the images. 
 Areas that are expanded during warping are correspondingly reduced in intensity.</xhtml>
     </d>
-    <xhtml name="long"/>
+    <xhtml name="long"><b>Normalise:</b> Estimate and Write
+<br/><br/>
+Computes  the warp that best registers a source image (or series of source images) to match a template, saving it to the file imagename'_sn.mat'. 
+<br/>This option also allows the contents of the imagename'_sn.mat' files to be applied to a series of images.</xhtml>
   </d>
 </d>
 </minf>
