@@ -434,7 +434,9 @@ class Boolean( Parameter ):
     Returns ``bool(value)``.
     """
     if value is None: return True # default is True
-    return bool( value )
+    # convert to int first because if value is a string, '0' or '1',
+    # direct bool conversion will not work.
+    return bool( int( value ) )
 
 
 #-------------------------------------------------------------------------------

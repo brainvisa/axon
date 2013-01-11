@@ -580,7 +580,8 @@ ignoreValidation = False
 def convertCommandLineParameter(i):
   try:
     res=eval(i)
-    if isinstance( res, int ) or isinstance( res, float ):
+    if not isinstance( res, bool ) and \
+        ( isinstance( res, int ) or isinstance( res, float ) ):
       res = i # keep string value for numbers to avoid precision / format loss
               # and in case we really want a string
   except:
