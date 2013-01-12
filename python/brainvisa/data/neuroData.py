@@ -436,6 +436,11 @@ class Boolean( Parameter ):
     if value is None: return True # default is True
     # convert to int first because if value is a string, '0' or '1',
     # direct bool conversion will not work.
+    if type( value ) in ( str, unicode ):
+      if value == 'True':
+        return True
+      elif value == 'False':
+        return False
     return bool( int( value ) )
 
 
