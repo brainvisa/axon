@@ -40,10 +40,10 @@ def validationSpm8Standalone(configuration):
 
 def validationSpm8(configuration):
   if(not distutils.spawn.find_executable(configuration.matlab.executable)):
-    print "Matlab executable is not found"
+    # print "Matlab executable is not found"
     raise ValidationError('Matlab is not found')
   if(not configuration.SPM.spm8_path):
-    print "SPM8 path is not found"
+    # print "SPM8 path is not found"
     raise ValidationError('SPM is not found')
   return True
 
@@ -68,7 +68,9 @@ def runSpm8Standalone(context, configuration, matfilePath, matlabCommande=None):
   os.chdir(pd)  
 
 def runSpm8(context, configuration, jobPath, spmCmd=None):
-  matlabBatchPath = str(jobPath).replace('_job', '')  
+  matlabBatchPath = str(jobPath).replace('_job', '')
+  if matlabBatchPath == str(jobPath):
+    matlabBatchPath = str(jobPath).replace('.m', '_batch.m')
   matlabBatchFile = open(matlabBatchPath, 'w')
   
   context.write("matlabBatchPath", matlabBatchPath)
@@ -84,7 +86,8 @@ def runSpm8(context, configuration, jobPath, spmCmd=None):
   matlabBatchFile.write("exit\n")
   matlabBatchFile.close()
 
-  runMatblatBatch(context, configuration, matlabBatchPath) 
+  runMatblatBatch(context, configuration, matlabBatchPath)
+  os.unlink( matlabBatchPath )
   
 def runMatblatBatch(context, configuration, matlabBatchPath):
   curDir = matlabBatchPath[:matlabBatchPath.rindex('/')]

@@ -65,17 +65,22 @@ matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.regtype = %s;
 matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.cutoff = %s;
 matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.nits = %s;
 matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.reg = %s;
-matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.preserve = %s;
-matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.bb = %s;
-matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.vox = %s;
-matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.interp = %s;
-matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.wrap = %s;
-matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.prefix = %s;
 """ % (src
       , wtsrc
       , imgToWrite, tmp
       , weight, smosrc, smoref, regtype, cutoff, nits, reg
-      , preserve, bb, vox, interp, wrap, prefix 
        ))
+  if preserve is not None:
+    mat_file.write(
+      'matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.preserve = %s;\n'
+      )
+  if bb is not None:
+    mat_file.write(
+      'matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.bb = %s;\n' )
+  mat_file.write("""matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.vox = %s;
+matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.interp = %s;
+matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.wrap = %s;
+matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.prefix = %s;
+""" % ( vox, interp, wrap, prefix ))
   mat_file.close()
   return mat_file.name 
