@@ -5,7 +5,6 @@
     <xhtml name="short">Normaliser: Estimation et Ecrire
 Calcule la chaîne qui correspond le mieux enregistre une image source (ou d'une série d'images source) pour correspondre à un modèle, l'enregistrer dans le fichier imagename'_sn. Mat '.
 Cette option permet également le contenu des fichiers du mat imagename'_sn.; appliquer à une série d'images.</xhtml>
-    <xhtml name="long"/>
     <d name="parameters">
       <xhtml name="nits"/>
       <xhtml name="smosrc"/>
@@ -13,8 +12,8 @@ Cette option permet également le contenu des fichiers du mat imagename'_sn.; ap
       <xhtml name="bb"/>
       <xhtml name="weight"/>
       <xhtml name="cutoff"/>
-      <xhtml name="smoref"/>
       <xhtml name="interp"/>
+      <xhtml name="smoref"/>
       <xhtml name="checkReg"/>
       <xhtml name="PET_Mni"/>
       <xhtml name="wtsrc"/>
@@ -26,6 +25,7 @@ Cette option permet également le contenu des fichiers du mat imagename'_sn.; ap
       <xhtml name="reg"/>
       <xhtml name="preserve"/>
     </d>
+    <xhtml name="long"/>
   </d>
   <d name="en">
     <xhtml name="short"><head>

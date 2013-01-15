@@ -50,10 +50,14 @@ name = 'Coregister (using SPM8)'
 
 signature = Signature(
     'source', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
-    'reference', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
     'other', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
+    'reference', ReadDiskItem('4D Volume', 'Aims readable volume formats'),    
+    'prefix', String(),
+    'spmSourceWarped', WriteDiskItem('4D Volume', 'Aims readable volume formats'),    
+    'spmOtherWarped', WriteDiskItem('4D Volume', 'Aims readable volume formats'),    
     'sourceWarped', WriteDiskItem('4D Volume', 'Aims readable volume formats'),    
-    'otherWarped', WriteDiskItem('4D Volume', 'Aims readable volume formats'),    
+    'otherWarped', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
+        
     'cost_fun', Choice(('Mutual Information', """'mi'"""), ('Normalized Mutual Information', """'nmi'"""), ('Entropy Correlation Coefficient', """'ecc'"""), ('Normalised Cross Correlation', """'ncc'""")),
     'sep', String(),
     'tol', String(),
@@ -61,16 +65,18 @@ signature = Signature(
     'interp', Choice(('Nearest neighbour', """0"""), ('Trilinear', """1"""), ('2nd Degree B-spline', """2"""), ('3rd Degree B-spline', """3"""), ('4th Degree B-spline', """4"""), ('5th Degree B-spline', """5"""), ('6thd Degree B-spline', """6"""), ('7th Degree B-spline', """7""")),
     'wrap', Choice(('No wrap', """[0 0 0]"""), ('Wrap X', """[1 0 0]"""), ('Wrap Y', """[0 1 0]"""), ('Wrap X & Y', """[1 1 0]"""), ('Wrap Z', """[0 0 1]"""), ('Wrap X & Z', """[1 0 1]"""), ('Wrap Y & Z', """[0 1 1]"""), ('Wrap X, Y, Z', """[1 1 1]""")),
     'mask', Choice(('Mask images', """1"""), ('Dont maks images', """0""")),
-    'prefix', String(),
   )
 
 #------------------------------------------------------------------------------
 
 def initialization(self):
-  self.setOptional('other', 'sourceWarped', 'otherWarped')
+  self.setOptional('other', 'spmSourceWarped', 'spmOtherWarped', 'sourceWarped', 'otherWarped')
   spm.ititializeCoregisterParameters_withSPM8DefaultValuesforPET(self) 
   self.prefix = """'spmCoregister_'"""
-   
+  
+  self.addLink('spmSourceWarped','source', self.update_spmSourceWarped)
+  self.addLink('spmOtherWarped','other', self.update_spmOtherWarped)
+  
   self.signature['other'].userLevel = 1
   self.signature['cost_fun'].userLevel = 1
   self.signature['sep'].userLevel = 1
@@ -82,7 +88,22 @@ def initialization(self):
   self.signature['prefix'].userLevel = 1
   
 #------------------------------------------------------------------------------
+def update_spmSourceWarped(self, proc):
+  if(self.source is not None):
+    return self.update_spmWarped(self.source.fullPath())
 
+def update_spmOtherWarped(self, proc):
+  if(self.other is not None):
+    return self.update_spmWarped(self.other.fullPath())
+    
+def update_spmWarped(self, inPath):
+  inFileName = inPath[inPath.rindex('/')+1:]
+  inDir = inPath[:inPath.rindex('/')+1]
+  outPath= inDir+self.prefix.replace("'", "")+inFileName
+  return outPath
+
+
+#------------------------------------------------------------------------------
 def execution(self, context):  
   print "\n start ", name, "\n"  
       
