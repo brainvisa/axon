@@ -48,7 +48,7 @@ import sys
 class MatlabConfiguration( ConfigurationGroup ):
   label = 'Matlab'
   icon = 'matlab.png'
-  optdef = u'-nosplash -nojvm'
+  optdef = u'-nosplash -nojvm -nodisplay'
   if sys.platform.startswith( 'win' ):
     optdef += u' -wait'
   signature = Signature(
