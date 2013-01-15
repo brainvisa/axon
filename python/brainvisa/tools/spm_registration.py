@@ -79,13 +79,17 @@ matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.reg = %s;
       , imgToWrite, tmp
       , weight, smosrc, smoref, regtype, cutoff, nits, reg
        ))
+  
   if preserve is not None:
     mat_file.write(
-      'matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.preserve = %s;\n'
-      )
+      """matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.preserve = %s;
+""" % (preserve))
+    
   if bb is not None:
     mat_file.write(
-      'matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.bb = %s;\n' )
+      """matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.bb = %s;
+"""%(bb) )
+    
   mat_file.write("""matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.vox = %s;
 matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.interp = %s;
 matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.wrap = %s;
