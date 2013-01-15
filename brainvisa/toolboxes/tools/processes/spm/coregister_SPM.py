@@ -51,8 +51,9 @@ name = 'Coregister (using SPM8)'
 signature = Signature(
     'source', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
     'reference', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
-    'warped', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
-    'others', String(),
+    'other', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
+    'sourceWarped', WriteDiskItem('4D Volume', 'Aims readable volume formats'),    
+    'otherWarped', WriteDiskItem('4D Volume', 'Aims readable volume formats'),    
     'cost_fun', Choice(('Mutual Information', """'mi'"""), ('Normalized Mutual Information', """'nmi'"""), ('Entropy Correlation Coefficient', """'ecc'"""), ('Normalised Cross Correlation', """'ncc'""")),
     'sep', String(),
     'tol', String(),
@@ -66,10 +67,11 @@ signature = Signature(
 #------------------------------------------------------------------------------
 
 def initialization(self):
+  self.setOptional('other', 'sourceWarped', 'otherWarped')
   spm.ititializeCoregisterParameters_withSPM8DefaultValuesforPET(self) 
   self.prefix = """'spmCoregister_'"""
    
-  self.signature['others'].userLevel = 1
+  self.signature['other'].userLevel = 1
   self.signature['cost_fun'].userLevel = 1
   self.signature['sep'].userLevel = 1
   self.signature['tol'].userLevel = 1
@@ -80,30 +82,44 @@ def initialization(self):
   self.signature['prefix'].userLevel = 1
   
 #------------------------------------------------------------------------------
-        
+
 def execution(self, context):  
   print "\n start ", name, "\n"  
       
   sourcePath = self.source.fullPath()
-  warpedPath = self.warped.fullPath()
+  sourceWarpedPath = self.sourceWarped.fullPath()
   inDir = sourcePath[:sourcePath.rindex('/')]  
   
   spmJobFile = inDir + '/coregister_job.m'
+  
+  othersPath=[self.other.fullPath()]
       
   matfilePath = spm.writeCoregisteredMatFile(context, sourcePath, self.reference.fullPath(), spmJobFile
-                                             , others=self.others, cost_fun=self.cost_fun, sep=self.sep, tol=self.tol, fwhm=self.fwhm
+                                             , othersPath=othersPath, cost_fun=self.cost_fun, sep=self.sep, tol=self.tol, fwhm=self.fwhm
                                              , interp=self.interp, wrap=self.wrap, mask=self.mask, prefix=self.prefix)
     
-  spm.run(context, configuration, matfilePath)    
+  #spm.run(context, configuration, matfilePath)    
   
-  spm.moveSpmOutFiles(inDir, warpedPath, [self.prefix])
+  if(self.other is not None and self.otherWarped is not None):
+    otherFileName = self.other.fullPath()[self.other.fullPath().rindex('/')+1:]
+    spm.moveSpmOutFiles(inDir, self.otherWarped.fullPath(), spmPrefixes=[self.prefix[:-1]+otherFileName])
+
+  if(self.source is not None and self.sourceWarped is not None):
+    sourceFileName=sourcePath[sourcePath.rindex('/')+1:]
+    spm.moveSpmOutFiles(inDir, sourceWarpedPath, spmPrefixes=[self.prefix[:-1]+sourceFileName])
     
-  os.system('AimsRemoveNaN' + ' -i ' + str(warpedPath) + ' -o ' + str(warpedPath) + '.noNan.nii')
-  os.remove(warpedPath)
-  os.rename(warpedPath + '.noNan.nii', warpedPath)
-  os.remove(warpedPath + '.noNan.nii.minf')    
+  removeNan(sourceWarpedPath) 
+  removeNan(self.otherWarped.fullPath())    
     
   print "\n stop ", name, "\n"
+  
+#------------------------------------------------------------------------------        
+
+def removeNan(filePath):
+  os.system('AimsRemoveNaN' + ' -i ' + str(filePath) + ' -o ' + str(filePath) + '.noNan.nii')
+  os.remove(filePath)
+  os.rename(filePath + '.noNan.nii', filePath)
+  os.remove(filePath + '.noNan.nii.minf')
   
 #------------------------------------------------------------------------------
 # spm documentation : 
