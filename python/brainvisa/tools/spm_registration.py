@@ -2,7 +2,7 @@
 #------------------------------------------------------------------------------
 
 def ititializeCoregisterParameters_withSPM8DefaultValuesforPET(process):
-  process.others = """{''}"""
+  process.others = []
   process.cost_fun = """'mi'"""
   process.sep = """[4 2]"""
   process.tol = """[0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001]"""
@@ -12,11 +12,20 @@ def ititializeCoregisterParameters_withSPM8DefaultValuesforPET(process):
   process.mask = """0"""
   
 def writeCoregisteredMatFile(context, sourcePath, refPath, spmJobFile
-, others, cost_fun, sep, tol, fwhm, interp, wrap, mask, prefix="""'spmCoregister_'"""):
+, othersPath, cost_fun, sep, tol, fwhm, interp, wrap, mask, prefix="""'spmCoregister_'"""):
 
   mat_file = open(spmJobFile, 'w')
   refFilesInScript = """{'""" + refPath + """,1'}"""
   sourceFilesInScript = """{'""" + sourcePath + """,1'}"""
+  if(othersPath is None or len(othersPath) == 0):
+    othersToWrite = """{''}"""
+  else:
+    othersToWrite="""{"""
+    for otherPath in othersPath:
+      othersToWrite+="'"+otherPath+",1'"
+    othersToWrite+="""}"""
+      
+  
   mat_file.write("""matlabbatch{1}.spm.spatial.coreg.estwrite.ref = %s;  
 matlabbatch{1}.spm.spatial.coreg.estwrite.source = %s;
 matlabbatch{1}.spm.spatial.coreg.estwrite.other = %s;
@@ -28,7 +37,7 @@ matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.interp = %s;
 matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.wrap = %s;
 matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.mask = %s;
 matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.prefix = %s;
-""" % (refFilesInScript, sourceFilesInScript, others, cost_fun, sep, tol, fwhm, interp, wrap, mask, prefix))
+""" % (refFilesInScript, sourceFilesInScript, othersToWrite, cost_fun, sep, tol, fwhm, interp, wrap, mask, prefix))
   mat_file.close()
   return mat_file.name
 
