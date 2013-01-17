@@ -2116,7 +2116,7 @@ class TemporaryDiskItem( File ):
               #sys.stdout.flush()
             else:
               #print 'exception while removing', f
-              showException( beforeError=_t_('temorary file <em>%s</em> not '
+              showException( beforeError=_t_('temporary file <em>%s</em> not '
                                              'deleted<br>') % f, gui=0 )
               # giving up, let it for later
               temporary.manager.registerPath( f )

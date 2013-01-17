@@ -37,6 +37,8 @@ try:
 except:
   from sets import Set as set
 
+manager = None
+
 #----------------------------------------------------------------------------
 def void( *args, **kwargs ):
   pass
@@ -74,6 +76,9 @@ class TemporaryFileManager:
             { 'path': self.data, 
               'error': _t_('file not controled by a TemporaryFileManager' ) } )
 
+  def freeManager( self ):
+    self.__manager = None
+
   # __SelfDestroyFileName instances are stored as string in minf files
   registerClassAs( 'minf_2.0', __SelfDestroyFileName, str )
 
@@ -84,8 +89,8 @@ class TemporaryFileManager:
     self.__lock = threading.RLock()
     self.__identifier = str( os.getpid() )
     self.__count = 0
-    
-    
+
+
   def registerPath( self, path ):
     self.__lock.acquire()
     try:
@@ -126,13 +131,16 @@ class TemporaryFileManager:
             except OSError, error:
               if raiseException: raise
         if error is not None:
-          warnings.warn( _t_('temorary path %(path)s not deleted: %(error)s')%\
+          warnings.warn( _t_('temporary path %(path)s not deleted: %(error)s')%\
             { 'path': path, 'error': unicode( error ) } )
+      if isinstance( path, self.__SelfDestroyFileName ):
+        path.freeManager()
     finally:
       self.__lock.release()
 
 
   #def __del__( self ):
+    #print 'TemporaryFileManager.__del__:', self
     #self.close()
   
   
@@ -146,6 +154,8 @@ class TemporaryFileManager:
     finally:
       self.__lock.release()
       self.__lock = None
+      global manager
+      manager = None
     
   
   def newFileName( self, suffix=None, prefix=None, directory=None ):
@@ -212,6 +222,10 @@ def getSystemDefaultTempDir():
 #----------------------------------------------------------------------------
 def initializeTemporaryFiles( defaultTemporaryDirectory ):
   global manager
-  manager = TemporaryFileManager( defaultTemporaryDirectory, 'bv_' )
+  if manager is None:
+    manager = TemporaryFileManager( defaultTemporaryDirectory, 'bv_' )
+  else:
+    print 'initializeTemporaryFiles - manager already exists!:', manager
+
 
 

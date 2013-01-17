@@ -48,17 +48,35 @@ from brainvisa.processing import neuroException, neuroLog
 # used to do: import many things here...
 from brainvisa.processes import *
 
+_count = 0
+
 def cleanup():
     """
     Cleanup to be done at Brainvisa exiting. This function is registered in atexit.
     """
+    # cleanup only when cleanup() has been called the same number of times
+    # as initializeProcesses()
+    global _count
+    _count -= 1
+    if _count != 0:
+      return
+
+    atexit._exithandlers.remove( ( cleanup, (), {} ) )
     if neuroConfig.runsInfo:
         neuroConfig.runsInfo.delete()
     neuroConfig.clearObjects()
     neuroHierarchy.databases.currentThreadCleanup()
     brainvisa.processes.cleanupProcesses()
     neuroLog.closeMainLog()
-    temporary.manager.close()
+    #print >> open( '/tmp/log', 'a' ), 'closing manager:', temporary.manager
+    sys.stdout.flush()
+    try:
+      temporary.manager.close()
+      #print >> open( '/tmp/log', 'a' ), '(set to None)'
+    except Exception, e:
+      print e
+      raise
+    sys.stdout.flush()
 
 
 def initializeProcesses():
@@ -73,6 +91,12 @@ def initializeProcesses():
     The types are available through functions in :py:mod:`brainvisa.data.neuroDiskItems`.
 
     '''
+    # protect agains recursive calls
+    global _count
+    _count += 1
+    if _count != 1:
+      return
+
     atexit.register(cleanup)
     if not neuroConfig.noToolBox:
         brainvisa.toolboxes.readToolboxes( neuroConfig.toolboxesDir,
