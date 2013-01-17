@@ -113,13 +113,15 @@ def execution(self, context):
   
   spmJobFile = inDir + '/coregister_job.m'
   
-  othersPath=[self.other.fullPath()]
+  othersPath=None
+  if(self.other is not None):
+    othersPath=[self.other.fullPath()]
       
   matfilePath = spm.writeCoregisteredMatFile(context, sourcePath, self.reference.fullPath(), spmJobFile
                                              , othersPath=othersPath, cost_fun=self.cost_fun, sep=self.sep, tol=self.tol, fwhm=self.fwhm
                                              , interp=self.interp, wrap=self.wrap, mask=self.mask, prefix=self.prefix)
     
-  #spm.run(context, configuration, matfilePath)    
+  spm.run(context, configuration, matfilePath)    
   
   if(self.other is not None and self.otherWarped is not None):
     otherFileName = self.other.fullPath()[self.other.fullPath().rindex('/')+1:]
@@ -130,7 +132,8 @@ def execution(self, context):
     spm.moveSpmOutFiles(inDir, sourceWarpedPath, spmPrefixes=[self.prefix[:-1]+sourceFileName])
     
   removeNan(sourceWarpedPath) 
-  removeNan(self.otherWarped.fullPath())    
+  if(self.other is not None):
+    removeNan(self.otherWarped.fullPath())    
     
   print "\n stop ", name, "\n"
   
