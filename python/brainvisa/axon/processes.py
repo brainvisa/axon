@@ -61,7 +61,10 @@ def cleanup():
     if _count != 0:
       return
 
-    atexit._exithandlers.remove( ( cleanup, (), {} ) )
+    try:
+      atexit._exithandlers.remove( ( cleanup, (), {} ) )
+    except ValueError:
+      pass
     if neuroConfig.runsInfo:
         neuroConfig.runsInfo.delete()
     neuroConfig.clearObjects()
