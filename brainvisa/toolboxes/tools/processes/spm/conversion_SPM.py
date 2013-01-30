@@ -45,73 +45,29 @@ def validation():
 #------------------------------------------------------------------------------
 
 userLevel = 0
-name = 'Normalize to MNI space (using SPM8)'
+name = 'Convert image from Spm to nii (using SPM8)'
 
 #------------------------------------------------------------------------------
 
 signature = Signature(
     'source', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
-    'imageToWrite', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
-    'warpedInMni', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
-    'template', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
-    'checkReg', WriteDiskItem('Postscript file', 'PS file'),
-    'wtsrc', String(),
-    'weight', String(),
-    'smosrc', String(),
-    'smoref', String(),
-    'regtype', String(),
-    'cutoff', String(),
-    'nits', String(),
-    'reg', String(),
-    'preserve', String(),
-    'bb', String(),
-    'vox', String(),
-    'interp', String(),
-    'wrap', String(),
-    'prefix', String(),
-     )
+    'converted', WriteDiskItem('4D Volume', 'NIFTI-1 image'),
+    'type', Choice(('SAME',0),('UINT8',2),('INT16',4),('INT32',8),('FLOAT32',16),('FLOAT64',32)),     
+    )
 #------------------------------------------------------------------------------
 
-def initialization(self):
- 
-  self.template = str(spm8Path) + """/templates/T1.nii""" # could be also : PET or SPECT etc...
-  spm.initializeNormalizeParameters_usingSPM8DefaultValuesForPET(self)
-  self.prefix = """'spmNormalized_'""" 
+def initialization(self):  
+  self.type = 0
+  self.addLink('converted', 'source')
 
 #------------------------------------------------------------------------------
 
 def execution(self, context):            
-  inDir = self.imageToWrite.fullPath()
-  inDir = inDir[:inDir.rindex('/')]  
-  spmJobFile = inDir + '/' + 'normalize_job.m'
-      
-  matfilePath = spm.writeNormalizeMatFile(context, configuration, self.source.fullPath(), self.imageToWrite.fullPath(), spmJobFile
-                                          , self.template.fullPath(), self.wtsrc, self.weight, self.smosrc, self.smoref, self.regtype, self.cutoff, self.nits, self.reg
-                                          , self.preserve, self.bb, self.vox, self.interp, self.wrap, self.prefix 
-                                          )  
-      
+  matfilePath = spm.writeConversionMatFile(context, self.source.fullPath()
+                                           , self.source.fullPath()[:self.source.fullPath().rindex('/')]+ '/' + 'conversion_job.m'
+                                           , self.converted.fullPath()[self.source.fullPath().rindex('/')+1:]
+                                           , self.type)       
   spm.run(context, configuration, matfilePath)    
-    
-  warpedPath = self.warpedInMni.fullPath()
-  spm.moveSpmOutFiles(inDir, warpedPath, [self.prefix])
-
-  psFileName = 'spm_' + spm.spm_today()
-  spm.moveSpmOutFiles(inDir, self.checkReg.fullPath(), [psFileName], ext='.ps')
-  
-  os.system('AimsRemoveNaN' + ' -i ' + str(warpedPath) + ' -o ' + str(warpedPath) + '.noNan.nii')
-  os.remove(warpedPath)
-  os.rename(warpedPath + '.noNan.nii', warpedPath)
-  os.rename(warpedPath + '.noNan.nii.minf',warpedPath+'.minf')    
-
-  #sdb.insertDiskItemInDataBase(self.warpedInMni) # insert DI in DB so the minf will be created ( essential to write roi mean )
-
-
-#------------------------------------------------------------------------------
-# spm documentation : 
-
-#Normalise: Estimate & Write
-#Computes  the warp that best registers a source image (or series of source images) to match a template, saving it to the file imagename'_sn.mat'. 
-#This option also allows the contents of the imagename'_sn.mat' files to be applied to a series of images.
 #------------------------------------------------------------------------------
 
 

@@ -143,7 +143,7 @@ def removeNan(filePath):
   os.system('AimsRemoveNaN' + ' -i ' + str(filePath) + ' -o ' + str(filePath) + '.noNan.nii')
   os.remove(filePath)
   os.rename(filePath + '.noNan.nii', filePath)
-  os.remove(filePath + '.noNan.nii.minf')
+  os.rename(filePath + '.noNan.nii.minf', filePath+'.minf')
   
 #------------------------------------------------------------------------------
 # spm documentation : 
