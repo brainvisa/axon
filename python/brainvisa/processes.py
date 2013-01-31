@@ -2446,7 +2446,7 @@ class ExecutionContext( object ):
         except:
           import traceback
           info = sys.exc_info()
-          sys.stderr.write('\n%s: %s\n' % (info[0].__name__, info[1].message))
+          sys.stderr.write('\n%s: %s\n' % (info[0].__name__, unicode(info[1])))
           traceback.print_tb(info[2], None, sys.stderr)
         logException( context=self )
         if self._depth() != 1 or not self.manageExceptions:
