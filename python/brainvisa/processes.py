@@ -2708,7 +2708,7 @@ class ExecutionContext( object ):
       stackTop = self._stackTop()
       if stackTop:
         outputLogFile = stackTop.process._outputLogFile
-        if outputLogFile:
+        if outputLogFile and not outputLogFile.closed:
           print >> outputLogFile, msg
           outputLogFile.flush()
       self._write( msg )
