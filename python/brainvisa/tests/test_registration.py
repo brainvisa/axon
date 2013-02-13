@@ -1,11 +1,14 @@
 import unittest
+import tempfile
+import os
+import shutil
+
 import brainvisa.axon
 from brainvisa.configuration import neuroConfig
 from brainvisa.data import neuroHierarchy
 from brainvisa.processes import defaultContext
 from brainvisa import registration
-import os
-from shutil import rmtree
+
 
 class TestTransformationManager(unittest.TestCase):
   
@@ -37,7 +40,7 @@ class TestTransformationManager(unittest.TestCase):
     print >> trm_minf, 'attributes =', repr( d )
 
   def create_test_database( self ):
-    database_directory = os.path.join( self.test_database_directory.fullPath(), 'database' )
+    database_directory = os.path.join( self.test_database_directory, 'database' )
     for database in neuroConfig.dataPath:
       if database.directory == database_directory:
         return neuroHierarchy.databases.database( database.directory )  
@@ -54,12 +57,13 @@ class TestTransformationManager(unittest.TestCase):
     self.number_of_subjects = 5
     self.number_of_sulci = 30
     brainvisa.axon.initializeProcesses()
-    self.test_database_directory = defaultContext().temporary("Directory")
+    tempdir=tempfile.gettempdir()
+    self.test_database_directory=os.path.join(tempdir, "tmp_tests_brainvisa", "database_registration")
     # Create test databases
     self.database = self.create_test_database()
     registration_directory = os.path.join( self.database.directory, 'transformation_manager', 'registration' )
     if os.path.exists( registration_directory ):
-      rmtree( registration_directory )
+      shutil.rmtree( registration_directory )
     os.makedirs( registration_directory )
     # Fill test database
     self.create_referential( registration_directory, 'Template for all subjects', 0 )
@@ -95,6 +99,7 @@ class TestTransformationManager(unittest.TestCase):
     self.assertEquals(len(paths), 0)
     
   def tearDown(self):
+    shutil.rmtree(self.test_database_directory)
     brainvisa.axon.cleanup()
     neuroConfig.dataPath.remove(self.database_settings)
 

@@ -18,13 +18,15 @@ def setup_doctest(test):
   db = list( neuroHierarchy.databases.iterDatabases() )[0]
   db.clear(context=defaultContext())
   db.update(context=defaultContext())
-  
-def teardown_doctest(test):
   brainvisa.axon.cleanup()
+
+def teardown_doctest(test):
+  pass
   
 def test_suite():
   suite =unittest.TestSuite()
-  doctest_suite = unittest.TestSuite(doctest.DocFileSuite("usecases.rst", setUp=setup_doctest, tearDown=teardown_doctest, \
+  doctest_suite = unittest.TestSuite(doctest.DocFileSuite("usecases.rst", setUp=setup_doctest, 
+                                                          tearDown=teardown_doctest,
                                                           optionflags=doctest.ELLIPSIS))
   suite.addTest(doctest_suite)
   suite.addTest(brainvisa.tests.test_history.test_suite())

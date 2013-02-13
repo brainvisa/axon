@@ -43,26 +43,22 @@ A pipeline is a process that have execution nodes. The method :py:meth:`brainvis
 The execution node of the pipeline contains child nodes, the name of these nodes can be obtained with the method :py:meth:`brainvisa.processes.ExecutionNode.childrenNames`.
 To get a specific child node, the method :py:meth:`brainvisa.processes.ExecutionNode.child` can be used.
 
-The following examples gets an instance of the Morphologist pipeline and selects it *sulci recognition* step:
+The following examples gets an instance of the *convertOldDatabase* pipeline and unselects all its steps:
 
->>> pipeline=brainvisa.processes.getProcessInstance("morphologist")
+
+>>> pipeline=brainvisa.processes.getProcessInstance("convertOldDatabase")
 >>> nodes=pipeline.executionNode()
 
 >>> nodes.childrenNames()
-['PrepareSubject', 'BiasCorrection', ...
->>> nodes.child("SulciRecognition").setSelected(1)
-<BLANKLINE>
-Process Check SPAM models ...
->>> nodes.child("SulciRecognition").isSelected()
-1
+['ConvertDatabase', 'CheckDatabase', 'CleanDatabase']
+>>> nodes.child("ConvertDatabase").setSelected(0)
+>>> nodes.child("ConvertDatabase").isSelected()
+0
+>>> nodes.child("CheckDatabase").setSelected(0)
+>>> nodes.child("CleanDatabase").setSelected(0)
 
-The process instance can be given as a parameter for the :py:meth:`brainvisa.processes.ExecutionContext.runProcess` method instead of the process id. 
-In the following exemple, the parameters of the process should be filled in to really execute the pipeline:
+The process instance can be given as a parameter for the :py:meth:`brainvisa.processes.ExecutionContext.runProcess` method instead of the process id.
 
->>> brainvisa.processes.defaultContext().runProcess(pipeline)
-Traceback (most recent call last):
-    ...
-Exception: Mandatory argument <em>mri</em> has not a valid value
 
 Query a database
 ----------------
@@ -109,8 +105,6 @@ The object :py:class:`brainvisa.data.writediskitem.WriteDiskItem` enables to cre
 >>> from brainvisa.data.writediskitem import WriteDiskItem
 >>> wd=WriteDiskItem("Raw T1 MRI", "NIFTI-1 image")
 >>> item=wd.findValue({"protocol" : 'test', "subject" : "mysubject"})
->>> item.isReadable()
-0
 
 Quit Brainvisa
 --------------
