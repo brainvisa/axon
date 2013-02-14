@@ -99,8 +99,8 @@ class TestTransformationManager(unittest.TestCase):
     self.assertEquals(len(paths), 0)
     
   def tearDown(self):
-    shutil.rmtree(self.test_database_directory)
     brainvisa.axon.cleanup()
+    shutil.rmtree(self.test_database_directory)
     neuroConfig.dataPath.remove(self.database_settings)
 
 def test_suite():
