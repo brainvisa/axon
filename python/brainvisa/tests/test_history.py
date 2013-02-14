@@ -30,6 +30,7 @@ class TestDatabaseHistory(unittest.TestCase):
                            self.dbs.expert_settings.ontology, context=defaultContext(), settings=self.dbs )
     neuroHierarchy.databases.add( self.db )
     self.example_data = tempfile.NamedTemporaryFile(suffix=".nii")
+    self.example_data.close()
     volume=aims.Volume( 256, 256, 128, dtype='int16' )
     volume.fill(0)
     aims.write(volume, self.example_data.name)
@@ -49,7 +50,7 @@ class TestDatabaseHistory(unittest.TestCase):
     self.assertTrue(os.path.exists(bvproc_file))
     
   def tearDown(self):
-    self.example_data.close()
+    os.remove(self.example_data.name)
     shutil.rmtree(self.dbs.directory)
     neuroConfig.dataPath.remove(self.dbs)
     brainvisa.axon.cleanup()
