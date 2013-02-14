@@ -50,10 +50,10 @@ class TestDatabaseHistory(unittest.TestCase):
     self.assertTrue(os.path.exists(bvproc_file))
     
   def tearDown(self):
+    brainvisa.axon.cleanup()
     os.remove(self.example_data.name)
     shutil.rmtree(self.dbs.directory)
     neuroConfig.dataPath.remove(self.dbs)
-    brainvisa.axon.cleanup()
 
 
 def test_suite():
