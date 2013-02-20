@@ -89,16 +89,19 @@ def runSpm8(context, configuration, jobPath, spmCmd=None):
   runMatblatBatch(context, configuration, matlabBatchPath)
   os.unlink( matlabBatchPath )
   
-def runMatblatBatch(context, configuration, matlabBatchPath):
+def runMatblatBatch(context, configuration, matlabBatchPath, removeCmdOption=None):
   curDir = matlabBatchPath[:matlabBatchPath.rindex('/')]
   os.chdir(curDir)
   # execution batch file
   mexe = distutils.spawn.find_executable(configuration.matlab.executable)
   matlabCmd = os.path.basename(matlabBatchPath)[:os.path.basename(matlabBatchPath).rindex('.')] # remove extension
-  cmd = [mexe] + configuration.matlab.options.split() + ['-r', matlabCmd]
+  matlabOptions = configuration.matlab.options
+  if(removeCmdOption is not None):
+    matlabOptions=matlabOptions.replace(removeCmdOption, '')
+  cmd = [mexe] + matlabOptions.split() + ['-r', matlabCmd]
   context.write('Running matlab command:', cmd)
   context.system(*cmd)
- 
+
 #------------------------------------------------------------------------------
 
 def moveSpmOutFiles(inDir, outPath, spmPrefixes, outDir=None, ext='.nii'):
