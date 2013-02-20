@@ -43,6 +43,7 @@ import os, fnmatch, glob, csv, math
 import anatomist.api as ana
 from anatomist.cpp.paletteEditor import PaletteEditor
 import numpy as np
+from brainvisa.tools.spm_run import runMatblatBatch 
 
 name = 'Display SPM analysis results'
 userLevel = 0
@@ -304,20 +305,6 @@ def computeResults_spm8( self, context ):
     
     context.write( 'SPM analysis: computing T-map' )
     runMatblatBatch(context, self.configuration, matlabBatchPath, removeCmdOption='-nodisplay') # why I need to remove nodisplay options (only for spm8)?
-
-def runMatblatBatch(context, configuration, matlabBatchPath, removeCmdOption=None):
-  curDir = matlabBatchPath[:matlabBatchPath.rindex('/')]
-  os.chdir(curDir)
-  # execution batch file
-  mexe = distutils.spawn.find_executable(configuration.matlab.executable)
-  matlabCmd = os.path.basename(matlabBatchPath)[:os.path.basename(matlabBatchPath).rindex('.')] # remove extension
-  matlabOptions = configuration.matlab.options
-  if(removeCmdOption is not None):
-    matlabOptions=matlabOptions.replace(removeCmdOption, '')
-  cmd = [mexe] + matlabOptions.split() + ['-r', matlabCmd]
-  context.write('Running matlab command:', cmd)
-  context.system(*cmd)
-
 
 def display( self, context ):
     """
