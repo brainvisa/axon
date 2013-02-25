@@ -119,9 +119,8 @@ def execution( self, context ):
   #écriture d'une image 
   if (b == 1) :
 
-    w = aims.Writer_AimsData_S16(self.image_output.fullPath())
     context.write('write image')
-    w.write(a)
+    aims.write(a, self.image_output.fullPath())
 
     if self.create_roigraph=='yes' :
       if self.graph_output is not None :
