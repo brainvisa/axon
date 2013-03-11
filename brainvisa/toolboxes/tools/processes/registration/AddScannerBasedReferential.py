@@ -32,8 +32,8 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-import registration
-import shfjGlobals
+from brainvisa import registration
+from brainvisa.tools import aimsGlobals
 from soma import aims
 
 
@@ -41,7 +41,8 @@ name = 'AddScannerBasedReferential'
 userLevel = 2
 
 signature = Signature( 
-  'volume_input', ReadDiskItem( "T1 MRI", getAllFormats() ),
+  'volume_input', ReadDiskItem( "T1 MRI", 'Aims readable volume formats',
+    enableConversion=False ),
   'referential_volume_input', WriteDiskItem( 'Referential of Raw T1 MRI', 'Referential' ),
   'T1_TO_Scanner_Based', WriteDiskItem( 'Transformation to Scanner Based Referential', 'Transformation matrix' ),
   'new_referential', WriteDiskItem( 'Scanner Based Referential', 'Referential' ),
@@ -56,7 +57,7 @@ def initialization( self ):
 
 def execution( self, context ):
   #Read header information
-  atts = shfjGlobals.aimsVolumeAttributes( self.volume_input )
+  atts = aimsGlobals.aimsVolumeAttributes( self.volume_input )
   ref = atts[ 'referentials' ]
   trf = atts[ 'transformations' ]
   if ("Scanner-based anatomical coordinates" in ref ):
@@ -66,6 +67,7 @@ def execution( self, context ):
   #Create a referential for Scanner-based
   tm = registration.getTransformationManager()
   dest = tm.referential( self.new_referential )
+  context.write( 'dest:', dest )
   if dest is None :
     dest = tm.createNewReferentialFor(self.new_referential, referentialType='Scanner Based Referential' )
     
@@ -81,6 +83,7 @@ def execution( self, context ):
     #print src
     
   src = tm.referential( self.referential_volume_input )
+  context.write( 'src:', src )
   #print "Attributes"
   #print self.volume_input.hierarchyAttributes()
   if src is None:
