@@ -123,13 +123,14 @@ class DatabasesTransformationManager( object ):
                               description = None,
                               dimension_count = 3,
                               referentialType = None,
-                              simulation = False ):
+                              simulation = False,
+                              output_diskitem = None ):
     '''Create a new referential for an object stored in a DiskItem and
     record it in the database. Returns None if the referential has not been
     created because its location in the database cannot be found with
     ReadDiskItem( 'Referential', 'Referential' ).findValue( diskItem ).'''
     # Find a location for the referential in the database
-    referential = None
+    referential = output_diskitem
     if referentialType is None:
       try:
         if diskItem.type is not None:
@@ -394,7 +395,8 @@ class DatabasesTransformationManager( object ):
                               name = None,
                               description = None,
                               dimension_count = 3,
-                              simulation = False, assign=False ):
+                              simulation = False, assign=False,
+                              output_diskitem = None ):
     """
     Search a referential of type referentialType for the data diskitem.
     if simulation is false, the referential will be created and added to the database and transformation manager.
@@ -409,7 +411,8 @@ class DatabasesTransformationManager( object ):
                               description = description,
                               dimension_count = dimension_count,
                               referentialType = referentialType,
-                              simulation = True )
+                              simulation = True,
+                              output_diskitem = output_diskitem )
     if result is not None:
       if not simulation:
         if not result.isReadable():

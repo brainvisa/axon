@@ -40,13 +40,20 @@ userLevel = 2
 signature = Signature(
   'data', ReadDiskItem( 'Any Type', getAllFormats() ),
   'referential_type', OpenChoice( 'Referential of Raw T1 MRI' ), 
-  # 'referential', WriteDiskItem( 'Referential', 'Referential' ), 
+  'referential', WriteDiskItem( 'Referential', 'Referential' ),
   )
 
 
 def initialization( self ):
-  # self.linkParameters( 'referential', 'data' )
-  self.setOptional( 'referential_type' )
+  def linkRef( self, dummy ):
+    if self.data is not None:
+      t = self.referential_type
+      if t == '':
+        t = None
+      return registration.getTransformationManager().findOrCreateReferential(
+        diskItem=self.data, referentialType=t, simulation=True )
+  self.linkParameters( 'referential', ( 'data', 'referential_type' ), linkRef )
+  self.setOptional( 'referential_type', 'referential' )
 
 
 def execution( self, context ):
@@ -58,6 +65,7 @@ def execution( self, context ):
   t = self.referential_type
   if t == '':
     t = None
-  ref = tm.findOrCreateReferential( diskItem=self.data, referentialType = t, assign=True )
+  ref = tm.findOrCreateReferential( diskItem=self.data, referentialType = t,
+    assign=True, output_diskitem=self.referential )
   context.write( 'new ref:', ref )
 

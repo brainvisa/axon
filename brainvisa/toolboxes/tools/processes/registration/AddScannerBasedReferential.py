@@ -84,7 +84,9 @@ def execution( self, context ):
   #print "Attributes"
   #print self.volume_input.hierarchyAttributes()
   if src is None:
-    src = tm.createNewReferentialFor(self.referential_volume_input , referentialType='Referential of Raw T1 MRI' )
+    src = tm.createNewReferentialFor(self.volume_input ,
+      referentialType='Referential of Raw T1 MRI',
+      output_diskitem=self.referential_volume_input )
     
 
   #Store information into the trm file
