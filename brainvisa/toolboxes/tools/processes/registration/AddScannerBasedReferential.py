@@ -90,7 +90,7 @@ def execution( self, context ):
     src = tm.createNewReferentialFor(self.volume_input ,
       referentialType='Referential of Raw T1 MRI',
       output_diskitem=self.referential_volume_input )
-    
+  dest.setMinf( 'direct_referential', 1, saveMinf=True )
 
   #Store information into the trm file
   mot = aims.Motion( trm_to_scannerBased )
