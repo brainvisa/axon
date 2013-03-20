@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
@@ -33,6 +33,8 @@
 # knowledge of the CeCILL-B license and that you accept its terms.
 
 '''
+This module is obsolete and should be replaced by soma.application
+
 @author: Yann Cointepas
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
@@ -51,6 +53,7 @@ from soma.translation import translate as _
 from soma.notification import Notifier
 from soma.wip.application.plugins import Plugins
 from soma.configuration import Configuration
+
 
 #-------------------------------------------------------------------------------
 class Application( Singleton, HasSignature ):
@@ -113,6 +116,8 @@ class Application( Singleton, HasSignature ):
   onInitialization = Notifier( 0 )
   
   def initialize( self, args=() ):
+    #import traceback
+    #traceback.print_stack()
     Application.onInitialization.notify()
     del Application.onInitialization
     i = 0
