@@ -241,10 +241,14 @@ def startConsoleShell():
   brainvisa.processes._ipsubprocs.append( sp )
 
 
-from soma.application import Application as SomaApplication
-soma_app = SomaApplication( 'brainvisa', versionString() )
-soma_app.plugin_modules.append( 'soma.fom' )
-soma_app.initialize()
+try:
+  from soma.application import Application as SomaApplication
+except ImportError:
+  SomaApplication = None
+if SomaApplication is not None:
+  soma_app = SomaApplication( 'brainvisa', versionString() )
+  soma_app.plugin_modules.append( 'soma.fom' )
+  soma_app.initialize()
 
 if neuroConfig.gui:
   neuroConfig.qtApplication.connect( neuroConfig.qtApplication,\

@@ -116,8 +116,6 @@ class Application( Singleton, HasSignature ):
   onInitialization = Notifier( 0 )
   
   def initialize( self, args=() ):
-    #import traceback
-    #traceback.print_stack()
     Application.onInitialization.notify()
     del Application.onInitialization
     i = 0
