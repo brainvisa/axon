@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -38,13 +38,13 @@ name = 'Linear Combination'
 userLevel=1
 
 signature = Signature(
-  #Modif à faire pour fusionner aussi des textures --> gestions format image et texture
+  #Modif ï¿½ faire pour fusionner aussi des textures --> gestions format image et texture
   #'read1', ReadDiskItem(  'Texture', ('Texture',)+ shfjGlobals.anatomistVolumeFormats),
   'read1', ReadDiskItem(  '3D Volume', shfjGlobals.anatomistVolumeFormats),
   'multiplicative_coefficient1', Float(),
   'divisor_coefficient1', Float(),
   
-  #Modif à faire pour fusionner aussi des textures --> gestions format image et texture
+  #Modif ï¿½ faire pour fusionner aussi des textures --> gestions format image et texture
   #'read2', ReadDiskItem(  'Texture', ('Texture',)+ shfjGlobals.anatomistVolumeFormats),
   'read2', ReadDiskItem(  '3D Volume', shfjGlobals.anatomistVolumeFormats),
   
@@ -52,14 +52,14 @@ signature = Signature(
   'divisor_coefficient2', Float(),
   'constant', Integer(),
   
-  #Modif à faire pour fusionner aussi des textures --> gestions format image et texture
+  #Modif ï¿½ faire pour fusionner aussi des textures --> gestions format image et texture
   #'write', WriteDiskItem(  'Texture', ('Texture',)+ shfjGlobals.anatomistVolumeFormats),
   'write', WriteDiskItem(  '3D Volume', shfjGlobals.anatomistVolumeFormats),
   'type', Choice( ( '<Same as input>', None), 'U8', 'S8', 'U16', 'S16', 'U32', 'S32', 'FLOAT', 'DOUBLE' ),  
 )
 
 def initialization( self ):
-  self.setOptional('multiplicative_coefficient1', 'divisor_coefficient1','multiplicative_coefficient2', 'divisor_coefficient2', 'constant', 'type')
+  self.setOptional('multiplicative_coefficient1', 'divisor_coefficient1', 'read2', 'multiplicative_coefficient2', 'divisor_coefficient2', 'constant', 'type')
   self.multiplicative_coefficient1=1
   self.multiplicative_coefficient2=1
   self.divisor_coefficient1=1
@@ -68,19 +68,22 @@ def initialization( self ):
   self.type = None
 
 def execution( self, context ):
-  command = [ 'AimsLinearComb', '-i', self.read1, '-j', self.read2, '-o', self.write]
+  command = [ 'AimsLinearComb', '-i', self.read1, '-o', self.write]
   
   if self.multiplicative_coefficient1 is not None :
     command += [ '-a', self.multiplicative_coefficient1 ]
     
   if self.divisor_coefficient1  is not None :
     command += [ '-b', self.divisor_coefficient1 ]
+  
+  if self.read2 is not None :
+    command += [ '-j', self.read2 ]
     
-  if self.multiplicative_coefficient2  is not None :
-    command += [ '-c', self.multiplicative_coefficient2 ]
-    
-  if self.divisor_coefficient2  is not None :
-    command += [ '-d', self.divisor_coefficient2 ]
+    if self.multiplicative_coefficient2  is not None :
+      command += [ '-c', self.multiplicative_coefficient2 ]
+      
+    if self.divisor_coefficient2  is not None :
+      command += [ '-d', self.divisor_coefficient2 ]
     
   if self.constant :
     command += [ '-e', self.constant ]
