@@ -422,6 +422,10 @@ class DatabasesTransformationManager( object ):
             neuroHierarchy.databases.insertDiskItem( result, update=True )
           except OSError:
             result = None
+        else:
+          # in case it is not inserted in a database
+          result.saveMinf()
+          neuroHierarchy.databases.insertDiskItem( result, update=True )
         if assign:
           if str(result.uuid()) != oldref and diskItem.isWriteable():
             diskItem.setMinf( 'referential', result.uuid() )
