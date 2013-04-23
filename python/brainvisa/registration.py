@@ -425,12 +425,18 @@ class DatabasesTransformationManager( object ):
         else:
           # in case it is not inserted in a database
           result.saveMinf()
-          neuroHierarchy.databases.insertDiskItem( result, update=True )
+          try:
+            neuroHierarchy.databases.insertDiskItem( result, update=True )
+          except:
+            pass # not in a database
         if assign:
           if str(result.uuid()) != oldref and diskItem.isWriteable():
             diskItem.setMinf( 'referential', result.uuid() )
             #diskItem.saveMinf()
-            neuroHierarchy.databases.insertDiskItem( diskItem, update=True )
+            try:
+              neuroHierarchy.databases.insertDiskItem( diskItem, update=True )
+            except:
+              pass # not in a database
 
     return result
 
