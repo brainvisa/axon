@@ -32,8 +32,11 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-from brainvisa.tools.spm_registration import ititializeCoregisterParameters_withSPM8DefaultValuesforPET, writeCoregisteredMatFile
+from brainvisa.tools.spm_registration import \
+  ititializeCoregisterParameters_withSPM8DefaultValuesforPET, \
+  writeCoregisteredMatFile
 import brainvisa.tools.spm_run as spm
+from brainvisa.tools.spm_utils import moveSpmOutFiles
 
 #------------------------------------------------------------------------------
 configuration = Application().configuration
@@ -52,11 +55,11 @@ name = 'Coregister (using SPM8)'
 signature = Signature(
     'source', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
     'other', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
-    'reference', ReadDiskItem('4D Volume', 'Aims readable volume formats'),    
+    'reference', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
     'prefix', String(),
-    'spmSourceWarped', WriteDiskItem('4D Volume', 'Aims readable volume formats'),    
-    'spmOtherWarped', WriteDiskItem('4D Volume', 'Aims readable volume formats'),    
-    'sourceWarped', WriteDiskItem('4D Volume', 'Aims readable volume formats'),    
+    'spmSourceWarped', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
+    'spmOtherWarped', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
+    'sourceWarped', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
     'otherWarped', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
         
     'cost_fun', Choice(('Mutual Information', """'mi'"""), ('Normalized Mutual Information', """'nmi'"""), ('Entropy Correlation Coefficient', """'ecc'"""), ('Normalised Cross Correlation', """'ncc'""")),
@@ -75,8 +78,8 @@ def initialization(self):
   ititializeCoregisterParameters_withSPM8DefaultValuesforPET(self) 
   self.prefix = """'spmCoregister_'"""
   
-  self.addLink('spmSourceWarped','source', self.update_spmSourceWarped)
-  self.addLink('spmOtherWarped','other', self.update_spmOtherWarped)
+  self.addLink('spmSourceWarped', 'source', self.update_spmSourceWarped)
+  self.addLink('spmOtherWarped', 'other', self.update_spmOtherWarped)
   
   self.signature['other'].userLevel = 1
   self.signature['cost_fun'].userLevel = 1
@@ -98,9 +101,9 @@ def update_spmOtherWarped(self, proc):
     return self.update_spmWarped(self.other.fullPath())
     
 def update_spmWarped(self, inPath):
-  inFileName = inPath[inPath.rindex('/')+1:]
-  inDir = inPath[:inPath.rindex('/')+1]
-  outPath= inDir+self.prefix.replace("'", "")+inFileName
+  inFileName = inPath[inPath.rindex('/') + 1:]
+  inDir = inPath[:inPath.rindex('/') + 1]
+  outPath = inDir + self.prefix.replace("'", "") + inFileName
   return outPath
 
 
@@ -114,9 +117,9 @@ def execution(self, context):
   
   spmJobFile = inDir + '/coregister_job.m'
   
-  othersPath=None
+  othersPath = None
   if(self.other is not None):
-    othersPath=[self.other.fullPath()]
+    othersPath = [self.other.fullPath()]
       
   matfilePath = writeCoregisteredMatFile(context, sourcePath, self.reference.fullPath(), spmJobFile
                                              , othersPath=othersPath, cost_fun=self.cost_fun, sep=self.sep, tol=self.tol, fwhm=self.fwhm
@@ -125,12 +128,12 @@ def execution(self, context):
   spm.run(context, configuration, matfilePath)    
   
   if(self.other is not None and self.otherWarped is not None):
-    otherFileName = self.other.fullPath()[self.other.fullPath().rindex('/')+1:]
-    spm.moveSpmOutFiles(inDir, self.otherWarped.fullPath(), spmPrefixes=[self.prefix[:-1]+otherFileName])
+    otherFileName = self.other.fullPath()[self.other.fullPath().rindex('/') + 1:]
+    moveSpmOutFiles(inDir, self.otherWarped.fullPath(), spmPrefixes=[self.prefix[:-1] + otherFileName])
 
   if(self.source is not None and self.sourceWarped is not None):
-    sourceFileName=sourcePath[sourcePath.rindex('/')+1:]
-    spm.moveSpmOutFiles(inDir, sourceWarpedPath, spmPrefixes=[self.prefix[:-1]+sourceFileName])
+    sourceFileName = sourcePath[sourcePath.rindex('/') + 1:]
+    moveSpmOutFiles(inDir, sourceWarpedPath, spmPrefixes=[self.prefix[:-1] + sourceFileName])
     
   removeNan(sourceWarpedPath) 
   if(self.other is not None):
@@ -144,7 +147,7 @@ def removeNan(filePath):
   os.system('AimsRemoveNaN' + ' -i ' + str(filePath) + ' -o ' + str(filePath) + '.noNan.nii')
   os.remove(filePath)
   os.rename(filePath + '.noNan.nii', filePath)
-  os.rename(filePath + '.noNan.nii.minf', filePath+'.minf')
+  os.rename(filePath + '.noNan.nii.minf', filePath + '.minf')
   
 #------------------------------------------------------------------------------
 # spm documentation : 

@@ -32,8 +32,11 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-import brainvisa.tools.spm_run as spm 
-from brainvisa.tools.spm_registration import writeNormalizeMatFile, initializeNormalizeParameters_usingSPM8DefaultValuesForPET
+from brainvisa.tools.spm_registration import writeNormalizeMatFile, \
+  initializeNormalizeParameters_usingSPM8DefaultValuesForPET
+from brainvisa.tools.spm_utils import spm_today
+import brainvisa.tools.spm_run as spm
+from brainvisa.tools.spm_utils import moveSpmOutFiles
 
 #------------------------------------------------------------------------------
 configuration = Application().configuration
@@ -94,15 +97,15 @@ def execution(self, context):
   spm.run(context, configuration, matfilePath)    
     
   warpedPath = self.warpedInMni.fullPath()
-  spm.moveSpmOutFiles(inDir, warpedPath, [self.prefix])
+  moveSpmOutFiles(inDir, warpedPath, [self.prefix])
 
-  psFileName = 'spm_' + spm.spm_today()
-  spm.moveSpmOutFiles(inDir, self.checkReg.fullPath(), [psFileName], ext='.ps')
+  psFileName = 'spm_' + spm_today()
+  moveSpmOutFiles(inDir, self.checkReg.fullPath(), [psFileName], ext='.ps')
   
   os.system('AimsRemoveNaN' + ' -i ' + str(warpedPath) + ' -o ' + str(warpedPath) + '.noNan.nii')
   os.remove(warpedPath)
   os.rename(warpedPath + '.noNan.nii', warpedPath)
-  os.rename(warpedPath + '.noNan.nii.minf',warpedPath+'.minf')    
+  os.rename(warpedPath + '.noNan.nii.minf', warpedPath + '.minf')    
 
   #sdb.insertDiskItemInDataBase(self.warpedInMni) # insert DI in DB so the minf will be created ( essential to write roi mean )
 
