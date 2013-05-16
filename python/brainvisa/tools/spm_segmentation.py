@@ -1,6 +1,5 @@
 from brainvisa.tools.spm_run import getSpm8Path 
     
-    
 def initializeUnifiedSegmentationParameters_usingSPM8DefaultValuesForPET(process):
   process.write_field = """[1 0]"""
   process.c_biasreg = """0.0001""" 
@@ -107,7 +106,25 @@ matlabbatch{1}.spm.tools.preproc8.warp.write = %s;
        ))
   mat_file.close()
   return mat_file.name
-    
+
+def initializeSegmentationParameters_usingSPM8DefaultValuesForPET(process):
+  process.GM = """[0 0 1]"""
+  process.WM = """[0 0 1]"""
+  process.CSF = """[0 0 1]"""
+  process.biascor = """0"""
+  process.cleanup = """0"""
+  process.ngaus = """[2
+                  2
+                  2
+                  4]"""
+  process.regtype = """'mni'"""
+  process.warpreg = """1"""
+  process.warpco = """25"""
+  process.biasreg = """0.0001"""
+  process.biasfwhm = """60"""
+  process.samp = """3"""
+  process.msk = """{''}"""
+      
 def writeSegmentationMatFile(context, configuration, sourcePath, spmJobFile
 , GM = """[0 1 0]""", WM = """[0 0 0]""", CSF = """[0 0 0]""", biascor = """0""", cleanup = """0"""
 , tpm = None
@@ -150,6 +167,33 @@ matlabbatch{1}.spm.spatial.preproc.opts.msk = %s;
        ))
   mat_file.close()
   return mat_file.name
+
+def initializeVBMSegmentationParameters_usingSPM8DefaultValuesForPET(process):
+  process.ngaus = """[2 2 2 3 4 2]"""
+  process.biasreg = """0.0001"""
+  process.biasfwhm = """60"""
+  process.affreg = """'mni'"""
+  process.warpreg = """4"""
+  process.samp = """3"""
+  process.normlow = """struct([])"""
+  process.sanlm = """2"""
+  process.mrf = """0.15"""
+  process.cleanup = """1"""
+  process.pprint = """1"""
+  
+  process.grey_native = """1"""
+  process.grey_warped = """0"""
+  process.grey_modulated = """0"""
+  process.grey_dartel = """0"""
+  process.wm_native = """1"""
+  process.wm_warped = """0"""
+  process.wm_modulated = """0"""
+  process.wm_dartel = """0"""
+  process.csf_native = """1"""
+  process.csf_warped = """0"""
+  process.csf_modulated = """0"""
+  process.csf_dartel = """0"""  
+  process.saveBias = """0"""
 
 def writeVBMSegmentationMatFile(context, configuration, sourcePath, spmJobFile
 , tpm, ngaus = """[2 2 2 3 4 2]""", biasreg = """0.0001""", biasfwhm = """60""", affreg = """'mni'""", warpreg = """4""", samp = """3"""
