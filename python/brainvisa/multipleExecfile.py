@@ -119,7 +119,7 @@ class MultipleExecfile( object ):
           if self._includeStack:
             raise RuntimeError( _t_( 'Include file %s not found (in %s)' ) % ( f, self._includeStack[ -1 ] ) )
           else:
-            raise RuntimeError( _t_( 'File %s does not exists' ) % ( f, ) )
+            raise RuntimeError( _t_( 'File %s does not exist' ) % ( f, ) )
   #dbg#      print '!MultipleExecfile!', f, '-->', file
         status = self._executedFiles.get( file )
         if status is None:

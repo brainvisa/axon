@@ -61,7 +61,11 @@ def myTranslator( toTranslate ):
     _translate = neuroConfig.Translator().translate
   l = translatables.setdefault( toTranslate, [] )
   f = sys._getframe( 1 )
-  l.append( ( os.path.join( mainPath, f.f_globals[ '__name__' ] ) + '.py', f.f_lineno ) )
+  modfile = sys.modules[ f.f_globals[ '__name__' ] ].__file__
+  if modfile.endswith( '.pyc' ) or modfile.endswith( '.pyo' ):
+    modfile = modfile[:-1]
+  l.append( ( modfile, f.f_lineno ) )
+  # l.append( ( os.path.join( mainPath, f.f_globals[ '__name__' ] ) + '.py', f.f_lineno ) )
   #print '!myTranslator!', toTranslate, l[ -1 ]
   return _translate( toTranslate )
 __builtin__.__dict__['_t_'] = myTranslator
@@ -212,6 +216,7 @@ def translationChanged_''' + language + '''():
   progress.setLabelText( 'Parsing BrainVISA sources...' )
   progress.setMinimumDuration( 0 )
   i = 0
+
   for item in files:
     if USE_QT4:
       progress.setValue( i )
@@ -222,7 +227,7 @@ def translationChanged_''' + language + '''():
       break
     chk = findTranslatableStrings( item, translatables )
     if chk:
-      toBeChecked[ item ] = sorted( list(toBeChecked) )
+      toBeChecked[ item ] = sorted( list(chk) )
     i += 1
   progress.close()
   del progress
