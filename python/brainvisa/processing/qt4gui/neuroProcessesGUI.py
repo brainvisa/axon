@@ -2679,17 +2679,13 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         itemType = "check"
       else:
         itemType = None
-        
+
       # Try to insert node at the matching index
       if key :
         index = eNode._children.index( key )
       else :
         index = None
-      
-      #names = [ x for x in eNode.childrenNames() if eNode.child(x) is childNode ]
-      #if len( names ) != 0:
-        #name = names[0]
-      #else:
+
       name = childNode.name()
       newItem = NodeCheckListItem( childNode, item, index, _t_( name ), itemType, read_only = self.read_only )
       if isinstance( childNode, weakref.ProxyType ):

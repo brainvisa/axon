@@ -1771,7 +1771,7 @@ class ProcessExecutionNode( ExecutionNode ):
   '''
 
   def __init__( self, process, optional = False, selected = True,
-                guiOnly = False, expandedInGui = False ):
+                guiOnly = False, expandedInGui = False, altname = None ):
     process = getProcessInstance( process )
     #print 'ProcessExecutionNode.__init__:', self, process.name
     ExecutionNode.__init__( self, process.name,
@@ -1781,6 +1781,8 @@ class ProcessExecutionNode( ExecutionNode ):
                             parameterized = process,
                             expandedInGui = expandedInGui )
     self.__dict__[ '_process' ] = process
+    if altname is not None:
+      self.__dict__[ '_name' ] = altname
     reloadNotifier = getattr( process, 'processReloadNotifier', None )
     if reloadNotifier is not None:
       reloadNotifier.add( ExecutionNode.MethodCallbackProxy( \
@@ -1832,9 +1834,6 @@ class ProcessExecutionNode( ExecutionNode ):
                           read_only=processView.read_only)
     else:
       return ProcessView( self._process, parent )
-
-  def name( self ):
-    return _t_(self._process.name)
 
   def children( self ):
     eNode = getattr( self._process, '_executionNode', None )
