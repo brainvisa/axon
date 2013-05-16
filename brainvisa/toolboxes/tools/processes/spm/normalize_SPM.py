@@ -32,7 +32,8 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-import nuclearImaging.SPM as spm
+import brainvisa.tools.spm_run as spm 
+from brainvisa.tools.spm_registration import writeNormalizeMatFile, initializeNormalizeParameters_usingSPM8DefaultValuesForPET
 
 #------------------------------------------------------------------------------
 configuration = Application().configuration
@@ -75,7 +76,7 @@ signature = Signature(
 def initialization(self):
  
   self.template = str(spm8Path) + """/templates/T1.nii""" # could be also : PET or SPECT etc...
-  spm.initializeNormalizeParameters_usingSPM8DefaultValuesForPET(self)
+  initializeNormalizeParameters_usingSPM8DefaultValuesForPET(self)
   self.prefix = """'spmNormalized_'""" 
 
 #------------------------------------------------------------------------------
@@ -85,7 +86,7 @@ def execution(self, context):
   inDir = inDir[:inDir.rindex('/')]  
   spmJobFile = inDir + '/' + 'normalize_job.m'
       
-  matfilePath = spm.writeNormalizeMatFile(context, configuration, self.source.fullPath(), self.imageToWrite.fullPath(), spmJobFile
+  matfilePath = writeNormalizeMatFile(context, configuration, self.source.fullPath(), self.imageToWrite.fullPath(), spmJobFile
                                           , self.template.fullPath(), self.wtsrc, self.weight, self.smosrc, self.smoref, self.regtype, self.cutoff, self.nits, self.reg
                                           , self.preserve, self.bb, self.vox, self.interp, self.wrap, self.prefix 
                                           )  

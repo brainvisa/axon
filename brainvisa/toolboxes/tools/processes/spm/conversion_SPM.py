@@ -32,7 +32,8 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-import nuclearImaging.SPM as spm
+from brainvisa.tools.spm_conversion import writeConversionMatFile
+import brainvisa.tools.spm_run as spm
 
 #------------------------------------------------------------------------------
 configuration = Application().configuration
@@ -63,7 +64,7 @@ def initialization(self):
 #------------------------------------------------------------------------------
 
 def execution(self, context):            
-  matfilePath = spm.writeConversionMatFile(context, self.source.fullPath()
+  matfilePath = writeConversionMatFile(context, self.source.fullPath()
                                            , self.source.fullPath()[:self.source.fullPath().rindex('/')]+ '/' + 'conversion_job.m'
                                            , self.converted.fullPath()[self.source.fullPath().rindex('/')+1:]
                                            , self.type)       

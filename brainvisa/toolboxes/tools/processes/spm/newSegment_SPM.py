@@ -41,7 +41,8 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-import nuclearImaging.SPM as spm
+from brainvisa.tools.spm_segmentation import initializeUnifiedSegmentationParameters_usingSPM8DefaultValuesForPET, writeUnifiedSegmentationMatFile
+import brainvisa.tools.spm_run as spm
 
 configuration = Application().configuration
 
@@ -55,7 +56,6 @@ def validation():
 signature = Signature(
   'MRI_Nat', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
   'analysis', String(),
-  'database', Choice(),
   'grey_tpm', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
   'spmJobName', String(),
   
@@ -74,7 +74,7 @@ signature = Signature(
   'write_field', Choice(('None', '[0 0]'), ("Inverse", '[1 0]'), ("Forward", '[0 1]'), ("Inverse + Forward", '[1 1]')),
   'deFld', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
   'invDeFld', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
-  'deFld_segMat', WriteDiskItem('4D Volume', 'Matlab file'),
+  'deFld_segMat', WriteDiskItem('Matlab SPM file', 'Matlab file'),
 
   'white_ngaus', Choice(('1', '1'), ('2', '2') , ('3', '3'), ('4', '4'), ('5', '5'), ('6', '6'), ('7', '7'), ('8', '8'), ('Nonparametric', 'Inf')),
   'white_native', Choice(('None', '[0 0]'), ("Native", '[1 0]'), ("DARTEL Imported", '[0 1]'), ("Native + DARTEL Imported", '[1 1]')),
@@ -112,34 +112,7 @@ def initialization(self):
   self.spmJobName = 'newSegment_job.m'
 
   initializeUnifiedSegmentationParameters_usingSPM8DefaultValuesForPET(self)
-    
-def initializeUnifiedSegmentationParameters_usingSPM8DefaultValuesForPET(process):
-  process.write_field = """[1 0]"""
-  process.c_biasreg = """0.0001""" 
-  process.c_biasfwhm = """60""" 
-  process.c_write = """[0 0]"""
-  process.grey_ngaus = """2""" 
-  process.grey_native = """[1 0]""" 
-  process.grey_warped = """[0 0]"""
-  process.white_ngaus = """2""" 
-  process.white_native = """[1 0]""" 
-  process.white_warped = """[0 0]"""
-  process.csf_ngaus = """2""" 
-  process.csf_native = """[1 0]""" 
-  process.csf_warped = """[0 0]"""
-  process.bone_ngaus = """3""" 
-  process.bone_native = """[1 0]""" 
-  process.bone_warped = """[0 0]"""
-  process.softTissuengaus = """4""" 
-  process.softTissuenative = """[1 0]""" 
-  process.softTissuewarped = """[0 0]"""
-  process.airAndBackground_ngaus = """2""" 
-  process.airAndBackground_native = """[0 0]""" 
-  process.airAndBackground_warped = """[0 0]"""
-  process.w_mrf = """0""" 
-  process.w_reg = """4""" 
-  process.w_affreg = """'mni'""" 
-  process.w_samp = """3""" 
+
 
 def execution(self, context):
   print "\n start ", name, "\n"
@@ -149,7 +122,7 @@ def execution(self, context):
   inDir = inDir[:inDir.rindex('/')]  
   spmJobFile = inDir + '/' + self.spmJobName
       
-  matfilePath = spm.writeUnifiedSegmentationMatFile(context, configuration, self.MRI_Nat.fullPath(), spmJobFile
+  matfilePath = writeUnifiedSegmentationMatFile(context, configuration, self.MRI_Nat.fullPath(), spmJobFile
        , self.c_biasreg, self.c_biasfwhm, self.c_write
        , self.grey_tpm, self.grey_ngaus, self.grey_native, self.grey_warped
        , self.grey_tpm, self.white_ngaus, self.white_native, self.white_warped
@@ -161,7 +134,6 @@ def execution(self, context):
     
   spm.run(context, configuration, matfilePath)    
   
-  self.moveSpmOutFiles()
   print "\n stop ", name, "\n"
 
 #New Segment

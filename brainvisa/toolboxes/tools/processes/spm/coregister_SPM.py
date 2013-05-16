@@ -32,7 +32,8 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-import nuclearImaging.SPM as spm
+from brainvisa.tools.spm_registration import ititializeCoregisterParameters_withSPM8DefaultValuesforPET, writeCoregisteredMatFile
+import brainvisa.tools.spm_run as spm
 
 #------------------------------------------------------------------------------
 configuration = Application().configuration
@@ -71,7 +72,7 @@ signature = Signature(
 
 def initialization(self):
   self.setOptional('other', 'spmSourceWarped', 'spmOtherWarped', 'sourceWarped', 'otherWarped')
-  spm.ititializeCoregisterParameters_withSPM8DefaultValuesforPET(self) 
+  ititializeCoregisterParameters_withSPM8DefaultValuesforPET(self) 
   self.prefix = """'spmCoregister_'"""
   
   self.addLink('spmSourceWarped','source', self.update_spmSourceWarped)
@@ -117,7 +118,7 @@ def execution(self, context):
   if(self.other is not None):
     othersPath=[self.other.fullPath()]
       
-  matfilePath = spm.writeCoregisteredMatFile(context, sourcePath, self.reference.fullPath(), spmJobFile
+  matfilePath = writeCoregisteredMatFile(context, sourcePath, self.reference.fullPath(), spmJobFile
                                              , othersPath=othersPath, cost_fun=self.cost_fun, sep=self.sep, tol=self.tol, fwhm=self.fwhm
                                              , interp=self.interp, wrap=self.wrap, mask=self.mask, prefix=self.prefix)
     
