@@ -41,7 +41,10 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-from brainvisa.tools.spm_segmentation import initializeUnifiedSegmentationParameters_usingSPM8DefaultValuesForPET, writeUnifiedSegmentationMatFile
+from brainvisa.tools.spm_segmentation import \
+  initializeUnifiedSegmentationParameters_usingSPM8DefaultValuesForPET, \
+  writeUnifiedSegmentationMatFile
+from brainvisa.tools.spm_utils import movePathToDiskItem, movePath
 import brainvisa.tools.spm_run as spm
 
 configuration = Application().configuration
@@ -109,7 +112,7 @@ signature = Signature(
 def initialization(self):
   self.setOptional('biasCorrected')  
   self.analysis = 'SpmNewSegmentation'
-  self.spmJobName = 'newSegment_job.m'
+  self.spmJobName = 'newSegment'
 
   initializeUnifiedSegmentationParameters_usingSPM8DefaultValuesForPET(self)
 
@@ -120,7 +123,7 @@ def execution(self, context):
  
   inDir = self.MRI_Nat.fullPath()  
   inDir = inDir[:inDir.rindex('/')]  
-  spmJobFile = inDir + '/' + self.spmJobName
+  spmJobFile = inDir + '/' + self.spmJobName+ "_job.m"
       
   matfilePath = writeUnifiedSegmentationMatFile(context, configuration, self.MRI_Nat.fullPath(), spmJobFile
        , self.c_biasreg, self.c_biasfwhm, self.c_write
@@ -133,9 +136,46 @@ def execution(self, context):
        , self.w_mrf, self.w_reg, self.w_affreg, self.w_samp, self.write_field)
     
   spm.run(context, configuration, matfilePath)    
+  self.moveSpmOutFiles()
   
   print "\n stop ", name, "\n"
 
+
+
+def moveSpmOutFiles(self):
+  subjectName = os.path.basename(self.MRI_Nat.fullPath()).partition(".")[0]
+  ext = os.path.basename(self.MRI_Nat.fullPath()).partition(".")[2]
+  inDir = os.path.dirname(self.MRI_Nat.fullName())
+  outDir = os.path.dirname(self.grey_nat.fullName())
+  
+  imSegUni1 = inDir + "/c1" + subjectName + "." + ext
+  movePathToDiskItem(imSegUni1, self.grey_nat)
+  imSegUni1 = inDir + "/wc1" + subjectName + "." + ext
+  movePathToDiskItem(imSegUni1, self.grey_Mni)
+  imSegUni2 = inDir + "/c2" + subjectName + "." + ext
+  movePathToDiskItem(imSegUni2, self.white_probability)
+  imSegUni3 = inDir + "/c3" + subjectName + "." + ext
+  movePathToDiskItem(imSegUni3, self.csf_probability)
+  imSegUni4 = inDir + "/c4" + subjectName + "." + ext
+  movePathToDiskItem(imSegUni4, self.bone_probability)
+  imSegUni5 = inDir + "/c5" + subjectName + "." + ext
+  movePathToDiskItem(imSegUni5, self.softTissue_probability)
+  
+  if self.write_field != '[0 0]':
+    imDefField = inDir + "/y_" + subjectName + "." + ext 
+    movePathToDiskItem(imDefField, self.deFld)
+    imInvDefField = inDir + "/iy_" + subjectName + "." + ext # /iy is inverse deformation field
+    movePathToDiskItem(imInvDefField, self.invDeFld)
+    trSeg8Mat = inDir + "/" + subjectName + "_seg8.mat"  
+    movePathToDiskItem(trSeg8Mat, self.deFld_segMat)
+    
+  job = inDir + '/' + self.spmJobName+ "_job.m"
+  movePath(job, outDir + '/' + self.spmJobName + "_job.m")
+  batch = inDir + '/' + self.spmJobName + ".m"
+  movePath(batch, outDir + '/' + self.spmJobName + ".m")
+
+  biasCorrected = inDir + "/m" + subjectName + ".nii"
+  movePathToDiskItem(biasCorrected, self.biasCorrected)
 #New Segment
 
 #This  toolbox  is  currently only work in progress, and is an extension of the default unified segmentation.  
