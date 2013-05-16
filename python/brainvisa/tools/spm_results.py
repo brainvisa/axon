@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from tempfile import mkstemp
 import os
-#momoTODO a mettre dans axon
 
 def writeResultsJob(spmJobPath, spmMatPath, title, pvalue_adjustment, pvalue_threshold, pvalue_extent_threshold):
   matFileFd = open(spmJobPath, 'w')

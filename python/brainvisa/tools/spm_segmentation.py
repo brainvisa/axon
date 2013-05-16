@@ -1,5 +1,34 @@
 from brainvisa.tools.spm_run import getSpm8Path 
     
+    
+def initializeUnifiedSegmentationParameters_usingSPM8DefaultValuesForPET(process):
+  process.write_field = """[1 0]"""
+  process.c_biasreg = """0.0001""" 
+  process.c_biasfwhm = """60""" 
+  process.c_write = """[0 0]"""
+  process.grey_ngaus = """2""" 
+  process.grey_native = """[1 0]""" 
+  process.grey_warped = """[0 0]"""
+  process.white_ngaus = """2""" 
+  process.white_native = """[1 0]""" 
+  process.white_warped = """[0 0]"""
+  process.csf_ngaus = """2""" 
+  process.csf_native = """[1 0]""" 
+  process.csf_warped = """[0 0]"""
+  process.bone_ngaus = """3""" 
+  process.bone_native = """[1 0]""" 
+  process.bone_warped = """[0 0]"""
+  process.softTissuengaus = """4""" 
+  process.softTissuenative = """[1 0]""" 
+  process.softTissuewarped = """[0 0]"""
+  process.airAndBackground_ngaus = """2""" 
+  process.airAndBackground_native = """[0 0]""" 
+  process.airAndBackground_warped = """[0 0]"""
+  process.w_mrf = """0""" 
+  process.w_reg = """4""" 
+  process.w_affreg = """'mni'""" 
+  process.w_samp = """3""" 
+
 #------------------------------------------------------------------------------
 # Segmentation with SPM : 
 # 1 Unified Segmentation ( in spm8 : newSegment)

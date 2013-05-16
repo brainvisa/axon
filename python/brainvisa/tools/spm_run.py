@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
 
 import distutils.spawn
 import os
 import sys
 from brainvisa.validation import ValidationError
+import shutil
 
 def getSpm8Path(configuration):  
   if(configuration.SPM.spm8_path is not None and configuration.SPM.spm8_path != ''):
@@ -130,8 +132,30 @@ def movePath(srcPath, dstPath):
   if (os.path.exists(srcPath)):
     if(os.path.exists(dstPath)):      
       os.remove(dstPath) # do not use directly os.rename (but remove before) because : on windows, rename with dstPath already exists causes exception
-    os.rename(srcPath, dstPath)
+    shutil.move(srcPath, dstPath) # shutil.move is better than os.rename, because os.rename failed if src and dst are not on the same filesystem
   if (os.path.exists(srcPath)):
     os.remove(srcPath)
 
 #------------------------------------------------------------------------------
+import datetime as dt
+import calendar
+import locale
+# momoTODO : this would be better in another file... like spm_utils
+def spm_today():  
+  now = dt.datetime.now()
+  
+  currentLocale = locale.getlocale(locale.LC_TIME)  
+  #locale.setlocale(locale.LC_TIME, ("en","us"))# mika : doesn't works for me
+  locale.setlocale(locale.LC_TIME, ('en_US', 'UTF8'))
+  month_name = calendar.month_name[now.month]
+  locale.setlocale(locale.LC_TIME, currentLocale)
+  
+  month = month_name[:3]
+  mth = month[0].upper() + month[1:]
+  mth=mth.replace('é', 'e')
+  mth=mth.replace('û', 'u')
+  spm_today = str(now.day)
+  if (now.day < 10):
+    spm_today = '0' + str(now.day)
+  d = str(now.year) + mth + spm_today
+  return d
