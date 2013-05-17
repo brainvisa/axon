@@ -459,21 +459,39 @@ class SQLDatabase( Database ):
       if neuroConfig.databaseVersionSync == 'auto':
         self._mustBeUpdated = True
         brainvisa.processes.defaultContext().write( "Database ",  self.name, " must be updated because it has been used with other versions of Brainvisa." )
-  
-  
+
+
+  def _scanDatabaseByChunks(
+      self, directoriesToScan, recursion=True, context=None, chunkSize=1000 ):
+
+    diskitems = []
+    n = 0
+    for i in self.scanDatabaseDirectories(
+        directoriesToScan=directoriesToScan, recursion=recursion,
+        context=context ):
+      if i.type is not None:
+        if i.isReadable():
+          diskitems.append(i)
+          n += 1
+          if n >= chunkSize:
+            yield diskitems
+            diskitems = []
+            n = 0
+        else:
+          if context is not None:
+            context.warning("The data ",i.fullPath(), "is not readable.")
+    if n != 0:
+      yield diskitems
+
+
   def update( self, directoriesToScan=None, recursion=True, context=None ):
     if context is not None:
       context.write( self.name + ': parse directories and insert items' )
     t0 = time.time()
-    diskitems=[]
-    for i in self.scanDatabaseDirectories( directoriesToScan=directoriesToScan, recursion=recursion, context=context ):
-      if i.type is not None:
-        if i.isReadable():
-          diskitems.append(i)
-        else:
-          if context is not None:
-            context.warning("The data ",i.fullPath(), "is not readable.")
-    self.insertDiskItems( diskitems, update=True, insertParentDirs=False )
+    for diskitems in self._scanDatabaseByChunks( 
+        directoriesToScan=directoriesToScan, recursion=recursion, 
+        context=context, chunkSize=1000 ):
+      self.insertDiskItems( diskitems, update=True, insertParentDirs=False )
     duration = time.time() - t0
     cursor = self._getDatabaseCursor()
     try:
