@@ -473,7 +473,7 @@ class SQLDatabase( Database ):
         else:
           if context is not None:
             context.warning("The data ",i.fullPath(), "is not readable.")
-    self.insertDiskItems( diskitems, update=True )
+    self.insertDiskItems( diskitems, update=True, insertParentDirs=False )
     duration = time.time() - t0
     cursor = self._getDatabaseCursor()
     try:
@@ -666,10 +666,41 @@ class SQLDatabase( Database ):
       self._closeDatabaseCursor( cursor )
     return tablesExist
 
-  def insertDiskItems( self, diskItems, update=False ):
+
+  def _diskItemsWithParents( self, diskItems ):
+    diSet = set( diskItems )
+    cursor = None
+    for diskItem in diskItems:
+      dirname = os.path.dirname( diskItem.fullPath() )
+      reldirname = relative_path( dirname, self.directory )
+      # add parents until one is already in the set or already in the 
+      # database
+      while reldirname:
+        dirItem = self.createDiskItemFromFileName( 
+          os.path.join( self.directory, reldirname ), None )
+        if dirItem:
+          if dirItem in diSet:
+            break
+          # check if it is already in the database
+          if cursor is None:
+            cursor = self._getDatabaseCursor()
+          uuid = cursor.execute( 
+            'SELECT _uuid FROM _FILENAMES_ WHERE filename=?', 
+            ( reldirname, ) ).fetchone()
+          if uuid:
+            break
+          diSet.add( dirItem )
+        reldirname = os.path.dirname( reldirname )
+    return diSet
+
+
+  def insertDiskItems( self, diskItems, update=False, insertParentDirs=True ):
     cursor = self._getDatabaseCursor()
+    diSet = diskItems
+    if insertParentDirs:
+      diSet = self._diskItemsWithParents( diskItems )
     try:
-      for diskItem in diskItems:
+      for diskItem in diSet:
         #print '!insertDiskItems!', diskItem
         if diskItem.type is None:
           raise DatabaseError( _('Cannot insert an item wthout type in a database: %s') % ( unicode( diskItem ), ) )
@@ -1522,7 +1553,7 @@ class SQLDatabases( Database ):
         pass
   
   
-  def insertDiskItems( self, diskItems, update=False ):
+  def insertDiskItems( self, diskItems, update=False, insertParentDirs=True ):
     for diskItem in diskItems:
       baseName = diskItem.getHierarchy( '_database' )
       if baseName is None:
@@ -1535,7 +1566,8 @@ class SQLDatabases( Database ):
           raise NotInDatabaseError( _( 'Cannot find out in which database "%s" should be inserted' ) % ( diskItem.fullPath(), ) )
       else:
         database = self._databases[ baseName ]
-      database.insertDiskItems( (diskItem,), update=update )
+      database.insertDiskItems( (diskItem,), update=update, 
+                                insertParentDirs=insertParentDirs )
   
   
   def removeDiskItems( self, diskItems, eraseFiles=False ):
