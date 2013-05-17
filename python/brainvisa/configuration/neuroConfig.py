@@ -466,7 +466,7 @@ useHTMLBrowser = 0
 
 matlabExecutable = 'matlab'
 matlabRelease = None
-matlabOptions = '-nosplash -nojvm'
+matlabOptions = '-nosplash -nodisplay'
 matlabPath = []
 tmp = [ os.path.join( homeBrainVISADir, 'matlab' ),
         os.path.join( mainPath, 'matlab' ) ]

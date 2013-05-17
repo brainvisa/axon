@@ -49,48 +49,105 @@ def validationSpm8(configuration):
   return True
 
 #------------------------------------------------------------------------------
-# first, try spm8, but if not in configuration, use spm8Standalone. Read note on top of this file
-def run(context, configuration, jobPath, cmd=None):  
-  if(configuration.SPM.spm8_path is not None and configuration.SPM.spm8_path != ''):
-    return runSpm8(context, configuration, jobPath, cmd)
-  elif(configuration.SPM.spm8_standalone_command is not None and len(configuration.SPM.spm8_standalone_command) > 0):
-    return runSpm8Standalone(context, configuration, jobPath, cmd)
-  else:
-    context.error('need SPM8 : see Brainvisa preferences and fill spm8 paths please.')
+# try spm8Standalone, but if not working, use spm8 Matlab. Read note on top of this file
+def run(context, configuration, jobPath, cmd=None, useMatlabFirst=False):
+  '''Run a SPM job using SPM8 standalone or SMP8 Matlab version, trying them
+  alternatively, with a specifiable priority
+  '''
 
-def runSpm8Standalone(context, configuration, matfilePath, matlabCommande=None):
+  hasexception = None
+
+  if useMatlabFirst:
+    try:
+      result = runSpm8(context, configuration, jobPath, cmd)
+      print 'spm_run.run, matlab version result:', result
+      if result == 0:
+        return result
+    except Exception, e:
+      print 'Exception in sun_spm.runSpm8:', e
+      hasexception = e
+
+  try:
+    result = runSpm8Standalone(context, configuration, jobPath)
+    print 'spm_run.run, standalone version result:', result
+    if result == 0:
+      return result
+
+  except Exception, e:
+    print 'Exception in run_spm.runSpm8Standalone:', e
+    if not hasexception:
+      hasexception = e
+
+  if not useMatlabFirst:
+    try:
+      result = runSpm8(context, configuration, jobPath, cmd)
+      print 'spm_run.run, matlab version result:', result
+    except Exception, e:
+      print 'Exception in run_spm.runSpm8:', e
+      if not hasexception:
+        hasexception = e
+
+  if hasexception:
+    raise hasexception
+
+  return result
+
+
+def runSpm8Standalone( context, configuration, matfilePath ):
+
+  if configuration.SPM.spm8_standalone_command is None or \
+      len(configuration.SPM.spm8_standalone_command) == 0:
+    raise SpmConfigError( 'SPM8 standalone is not configured' )
+
   context.write(_t_('Using SPM8 standalone version (compiled, Matlab not needed)'))
   mexe = configuration.SPM.spm8_standalone_command
   pd = os.getcwd()
   os.chdir(os.path.dirname(matfilePath))
   cmd = [mexe, configuration.SPM.spm8_standalone_mcr_path, 'run', matfilePath] # it's possible to use 'script' instead of 'run'
   context.write('running SPM command:', cmd)
-  context.system(*cmd)
-  os.chdir(pd)  
+  try:
+    result = context.system(*cmd)
+  finally:
+    os.chdir(pd)
+  return result
+
 
 def runSpm8(context, configuration, jobPath, spmCmd=None):
+
+  if configuration.SPM.spm8_path is None or configuration.SPM.spm8_path == '':
+    raise SpmConfigError( 'SPM8/Matlab is not configured' )
+
   matlabBatchPath = str(jobPath).replace('_job', '')
   if matlabBatchPath == str(jobPath):
     matlabBatchPath = str(jobPath).replace('.m', '_batch.m')
   matlabBatchFile = open(matlabBatchPath, 'w')
-  
+
   context.write("matlabBatchPath", matlabBatchPath)
-  curDir = matlabBatchPath[:matlabBatchPath.rindex('/')]
-  os.chdir(curDir)
-  
-  matlabBatchFile.write("addpath('" + configuration.SPM.spm8_path + "');\n")
-  matlabBatchFile.write("spm('pet');\n")
-  matlabBatchFile.write("jobid = cfg_util('initjob', '%s');\n" % jobPath)
-  matlabBatchFile.write("cfg_util('run', jobid);\n")
+
+  matlabBatchFile.write("try\n")
+  matlabBatchFile.write("  addpath('" + configuration.SPM.spm8_path + "');\n")
+  matlabBatchFile.write("  spm('pet');\n")
+  matlabBatchFile.write("  jobid = cfg_util('initjob', '%s');\n" % jobPath)
+  matlabBatchFile.write("  cfg_util('run', jobid);\n")
   if(spmCmd is not None):
-    matlabBatchFile.write(spmCmd + "\n")    
+    matlabBatchFile.write('  ' + spmCmd + "\n")
+  matlabBatchFile.write("catch\n")
+  matlabBatchFile.write("  disp('error running SPM');\n")
+  matlabBatchFile.write("  exit(1);\n")
+  matlabBatchFile.write("end\n")
   matlabBatchFile.write("exit\n")
   matlabBatchFile.close()
 
-  runMatblatBatch(context, configuration, matlabBatchPath)
-  os.unlink(matlabBatchPath)
-  
-def runMatblatBatch(context, configuration, matlabBatchPath, removeCmdOption=None):
+  try:
+    result = runMatblatBatch(context, configuration, matlabBatchPath)
+  finally:
+    os.unlink(matlabBatchPath)
+  return result
+
+
+def runMatblatBatch(context, configuration, matlabBatchPath,
+    removeCmdOption=None):
+  cwd = os.getcwd()
   curDir = matlabBatchPath[:matlabBatchPath.rindex('/')]
   os.chdir(curDir)
   # execution batch file
@@ -101,4 +158,8 @@ def runMatblatBatch(context, configuration, matlabBatchPath, removeCmdOption=Non
     matlabOptions = matlabOptions.replace(removeCmdOption, '')
   cmd = [mexe] + matlabOptions.split() + ['-r', matlabCmd]
   context.write('Running matlab command:', cmd)
-  context.system(*cmd)
+  try:
+    result = context.system(*cmd)
+  finally:
+    os.chdir( cwd )
+  return result
