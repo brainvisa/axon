@@ -156,7 +156,7 @@ class DatabaseManagerGUI( qt.QWidget ):
   def _add( self ):
     try:
       settings = DatabaseSettings()
-      settings.expert_settings.ontology = 'brainvisa-3.1.0'
+      settings.expert_settings.ontology = 'brainvisa-3.2.0'
       appgui = ApplicationQtGUI()
       if appgui.edit( settings, live=True, parent=self ):
         if settings.directory:

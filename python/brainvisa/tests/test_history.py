@@ -22,7 +22,7 @@ class TestDatabaseHistory(unittest.TestCase):
         os.makedirs(db_directory)
     # create a database in a temporary directory
     self.dbs = neuroConfig.DatabaseSettings( db_directory )
-    self.dbs.expert_settings.ontology = 'brainvisa-3.1.0'
+    self.dbs.expert_settings.ontology = 'brainvisa-3.2.0'
     self.dbs.expert_settings.sqliteFileName = os.path.join(db_directory, "database.sqlite")
     self.dbs.expert_settings.activate_history = True
     neuroConfig.dataPath.append( self.dbs )

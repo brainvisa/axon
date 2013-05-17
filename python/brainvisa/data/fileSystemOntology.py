@@ -907,7 +907,7 @@ class FileSystemOntology( object ):
     Satic factory for creation of FileSystemOntology instances. The source can be:
     
     * The name of one of the FSO directories located in one of the "hierarchies" directories
-      of neuroConfig.fileSystemOntologiesPath (for example 'brainvisa-3.1.0' is the main FSO).
+      of neuroConfig.fileSystemOntologiesPath (for example 'brainvisa-3.2.0' is the main FSO).
     * The name of any FSO directory.
     * The name of an old-style (prior to version 3.1) hierarchy file.
     '''

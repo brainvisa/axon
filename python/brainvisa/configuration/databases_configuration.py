@@ -100,7 +100,8 @@ class ExpertDatabaseSettings( HasSignature ):
       
   @staticmethod
   def availableOntologies():
-    ontologies = [ 'brainvisa-3.1.0', 'brainvisa-3.0', 'shared' ]
+    ontologies = [ 'brainvisa-3.2.0', 'brainvisa-3.1.0', 'brainvisa-3.0',
+      'shared' ]
     moreOntologies = set()
     for path in neuroConfig.fileSystemOntologiesPath:
       if os.path.exists( path ):
@@ -146,6 +147,6 @@ class DatabaseSettings( HasSignature ):
         it.next()
         for n, v in it:
           if n == 'ontology':
-            self.expert_settings.ontology = 'brainvisa-3.1.0'
+            self.expert_settings.ontology = 'brainvisa-3.2.0'
           else:
             setattr( self.expert_settings, n, v.defaultValue )

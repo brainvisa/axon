@@ -48,7 +48,7 @@ class TestTransformationManager(unittest.TestCase):
       os.makedirs( database_directory )
     self.database_settings = neuroConfig.DatabaseSettings( database_directory )
     database = neuroHierarchy.SQLDatabase( self.database_settings.expert_settings.sqliteFileName, 
-                                           database_directory, 'brainvisa-3.1.0', context=defaultContext(), settings=self.database_settings )
+                                           database_directory, 'brainvisa-3.2.0', context=defaultContext(), settings=self.database_settings )
     neuroHierarchy.databases.add( database )
     neuroConfig.dataPath.append( self.database_settings )
     return database
