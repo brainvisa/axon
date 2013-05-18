@@ -40,9 +40,9 @@ class TestDatabaseHistory(unittest.TestCase):
     Store data history when an output data of a process is written in a database for which the history is activated.
     """
     wd=WriteDiskItem("Raw T1 MRI", "NIFTI-1 image")
-    output=wd.findValue({"_database" : self.db.name, "protocol" : "myproto", "subject" : "mysubject"})
+    output=wd.findValue({"_database" : self.db.name, "center" : "mycenter", "subject" : "mysubject"})
     defaultContext().runProcess("importT1MRI", self.example_data.name, output)
-    diskitem = self.db.findDiskItem({"_type" : "Raw T1 MRI", "protocol" : "myproto", "subject" : "mysubject"})
+    diskitem = self.db.findDiskItem({"_type" : "Raw T1 MRI", "center" : "mycenter", "subject" : "mysubject"})
     self.assertTrue(diskitem is not None)
     bvproc_uuid = diskitem.get("lastHistoricalEvent")
     self.assertTrue(bvproc_uuid is not None)
