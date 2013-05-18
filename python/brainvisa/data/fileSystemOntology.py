@@ -37,7 +37,7 @@ In Brainvisa ontology, adding to the types and formats definition, it is possibl
 
 These rules describe the organization of data in the database filesystem. 
 Thanks to this description, the name and place of a file allows to guess its type and some information about it, 
-as for example the protocol, subject or acquisition associated to this data. 
+as for example the center, subject or acquisition associated to this data. 
 It also makes it possible to write data in the database using the same rules, 
 so the information can be retrieved when the data is reloaded later.
 

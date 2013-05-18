@@ -33,7 +33,12 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 class Subject(object):
     
-    def __init__(self, ReadDiskItem=None, protocol=None, subject=None, database=None, acquisition=None, session=None, model=None):
+    def __init__(self, ReadDiskItem=None, center=None, protocol=None, subject=None, database=None, acquisition=None, session=None, model=None):
+        '''center replaces protocol since brainvisa hierarchies 3.2.0 (BV 4.4)
+        but for older FSO, protocol should still be supported. So we store both
+        attributes in Subject (normally only one of them is used).
+        '''
+        self.center = center
         self.protocol = protocol
         self.subject = subject
         self.database = database
@@ -41,6 +46,7 @@ class Subject(object):
         self.model = model
         self.session = session
         if ReadDiskItem:
+            self.center = ReadDiskItem.get('center',None)
             self.protocol = ReadDiskItem.get('protocol',None)
             self.subject = ReadDiskItem.get('subject',None)
             self.database = ReadDiskItem.get('database',None)
@@ -50,6 +56,8 @@ class Subject(object):
 
     def __getinitkwargs__( self ):
         kwargs = {}
+        if self.center is not None:
+            kwargs[ 'center' ] = self.center
         if self.protocol is not None:
             kwargs[ 'protocol' ] = self.protocol
         if self.subject is not None:

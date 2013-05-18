@@ -39,6 +39,7 @@ from soma.sorted_dictionary import SortedDictionary
 from brainvisa.data.actions import FileProcess, Move, Remove, CallProcess, SetTransformationInfo
 from soma.minf.api import readMinf, writeMinf
 from brainvisa.data.sqlFSODatabase import SQLDatabase
+from brainvisa.data.readdiskitem import ReadDiskItem
 
 ###################################
 ## DBProcessor
@@ -255,14 +256,15 @@ class DBConverter(DBProcessor):
 class T1MriConverter(DBConverter):
   """
   In protocol/subject :
-  
+
+    * protocol -> center
     * anatomy -> t1mri/acquisition/analysis (raw t1 mri and acpc coordinates files are put in acquisition, the others in analysis)
     If anatomy already contains acquisition directories, they are moved in t1mri, and analysis level is added.
     * segment -> t1mri/acquisition/analysis/segmentation
     * tri, mesh -> t1mri/acquisition/analysis/segmentation/mesh
     * deepnuclei -> t1mri/acquisition/analysis/nuclei
     * Referential and transformations :
-      * <subject>_TO_talairach.trm -> <protocol>/<subject>/registration/RawT1-<subject>_<acquisition>_TO_Talairach-ACPC.trm
+      * <subject>_TO_talairach.trm -> <center>/<subject>/registration/RawT1-<subject>_<acquisition>_TO_Talairach-ACPC.trm
       * *<subject>.referential -> *<subject>-default_acquisition.referential, *<subject>_TO_*.trm -> *<subject>_default_acquisition_TO_*.trm
   """
   def __init__(self, dbDir, context=None):
@@ -271,10 +273,10 @@ class T1MriConverter(DBConverter):
     
   def findActions(self):
     self.fileProcesses=[]
-    protocols=os.listdir(self.dbDir) # first level : protocol
+    centers=os.listdir(self.dbDir) # first level : center/protocol
     currentDir=os.getcwdu()
     os.chdir(self.dbDir)
-    for p in protocols:
+    for p in centers:
       if os.path.isdir(p):
         subjects=os.listdir(p) # second level : subject
         for s in subjects: # in subjects directories, if there is an old dir, the database must be converted
@@ -647,7 +649,7 @@ class T1MriConverter(DBConverter):
 ###################################
 class DiffusionConverter(DBConverter):
   """
-  Add acquisition level in protocol/subject/diffusion if needed. 
+  Add acquisition level in center/subject/diffusion if needed. 
   """
   default_tracking_session='default_tracking_session'
   
@@ -657,10 +659,10 @@ class DiffusionConverter(DBConverter):
     
   def findActions(self):
     self.fileProcesses=[]
-    protocols=os.listdir(self.dbDir) # first level : protocol
+    centers=os.listdir(self.dbDir) # first level : center/protocol
     currentDir=os.getcwdu()
     os.chdir(self.dbDir)
-    for p in protocols:
+    for p in centers:
       if os.path.isdir(p):
         subjects=os.listdir(p) # second level : subject
         for s in subjects:
@@ -693,7 +695,7 @@ class DiffusionConverter(DBConverter):
                 if contentMatch(diffusionDir, t1mriPatterns[0]):
                   self.fileProcesses.append(FileProcess(diffusionDir, Move(os.path.join(subjectDir, "t1mri", self.default_acquisition), t1mriPatterns[0], t1mriPatterns[1]), t1mriPatterns[0]))
                 acquisitionDir=os.path.join(diffusionDir, self.default_acquisition)
-                # move some transformations that are directly in diffusion dir to protocol/subject/registration
+                # move some transformations that are directly in diffusion dir to center/subject/registration
                 oldRegistrationPatterns=self.getOldRegistrationPatterns(s)
                 self.convertFiles(oldRegistrationPatterns, diffusionDir, diffusionDir, os.path.join(subjectDir, "registration"), "")
                 # move all in default_acquisition
@@ -739,7 +741,7 @@ class DiffusionConverter(DBConverter):
               # intra subject and modality referentials and transformations moved from protocol/subject/registration to diffusion/acquisition/registration
               intraRegistrationPatterns=self.getIntraRegistrationPatterns(s)
               self.convertFiles(intraRegistrationPatterns, registrationDir, registrationDir, diffusionDir, self.default_acquisition, "registration")
-              # inter modality referentials and transformations stay  in protocol/subject/regsitration but are renamed
+              # inter modality referentials and transformations stay  in center/subject/regsitration but are renamed
               registrationPatterns=self.getRegistrationPatterns(s)
               self.convertFiles(registrationPatterns, registrationDir, registrationDir, registrationDir, "")
       os.chdir(currentDir)
@@ -835,7 +837,7 @@ def contentMatch(d, pattern):
 
 class PETConverter(DBConverter):
   """
-  Add acquisition level in protocol/subject/pet if needed. and analysis/segmentation and analysis/ROI
+  Add acquisition level in center/subject/pet if needed. and analysis/segmentation and analysis/ROI
   """
   
   def __init__(self, dbDir, context=None):
@@ -844,10 +846,10 @@ class PETConverter(DBConverter):
     
   def findActions(self):
     self.fileProcesses=[]
-    protocols=os.listdir(self.dbDir) # first level : protocol
+    centers=os.listdir(self.dbDir) # first level : center/protocol
     currentDir=os.getcwdu()
     os.chdir(self.dbDir)
-    for p in protocols:
+    for p in centers:
       if os.path.isdir(p):
         subjects=os.listdir(p) # second level : subject
         for s in subjects:
@@ -945,10 +947,10 @@ class BVConverter_3_1(DBConverter):
     self.fileProcesses=[]
     if self.segmentDefaultDestination or self.grapheDefaultDestination:
       self.context.write("\nRemaining files in segment and graphe directories will be moved to "+self.segmentDefaultDestination+" and "+self.grapheDefaultDestination)
-      protocols=os.listdir(self.dbDir) # first level : protocol
+      centers=os.listdir(self.dbDir) # first level : center
       currentDir=os.getcwdu()
       os.chdir(self.dbDir)
-      for p in protocols:
+      for p in centers:
         if os.path.isdir(p):
           subjects=os.listdir(p) # second level : subject
           for s in subjects:
@@ -1018,7 +1020,7 @@ class BVConverter_3_1(DBConverter):
         settings = readMinf( settingsFile )[ 0 ]
       else:
         settings={}
-      settings['ontology']='brainvisa-3.1.0'
+      settings['ontology']='brainvisa-3.2.0'
       writeMinf(settingsFile, [settings])
       self.newSettings=True
       self.db=SQLDatabase(self.db.sqlDatabaseFile, self.db.directory)
@@ -1143,7 +1145,17 @@ class DBChecker(DBProcessor):
     self.filters=[]
     self.searchTypes=[]
     self.fileProcesses=SortedDictionary()
-  
+
+  def centerAttribute(self):
+    '''determine if the current database uses 'center' or 'protocol' attribute
+    '''
+    rdi = ReadDiskItem( 'Center', 'Directory' )
+    if not self.db.fso.typeToPatterns.get( rdi.type ):
+      rdi = ReadDiskItem( 'Protocol', 'Directory' )
+      if self.db.fso.typeToPatterns.get( rdi.type ):
+        return 'protocol'
+    return 'center'
+
   def findActions(self, filters={}, component=None):
     if self.components:
       return super(DBChecker, self).findActions(component)
@@ -1242,13 +1254,13 @@ class BVChecker_3_1(DBChecker):
 ###################################
 class T1MriChecker(DBChecker):
   """
-  Checker for t1mri toolbox.
+  Checker for morphologist toolbox.
   Checks data generated by the segmentation pipeline. 
   All data must have a referential : each Raw T1 MRI have its own referential, each generated data have the same referential as corresponding raw t1 mri.
   """
   def __init__(self, db, context=None):
     super(T1MriChecker, self).__init__(db, context)
-    self.filters=["protocol", "subject", "acquisition", "analysis"]
+    self.filters=[self.centerAttribute(), "subject", "acquisition", "analysis"]
     # searched types are the parameters of the segmentation pipeline
     ### TODO : on pourrait eventuellement utiliser une signature, avec des ReadDiskItem, ce qui peut permettre de specifier des attributs en plus sur les donnees a rechecher, de mettre certains comme optionnels et de reperer les fichiers manquants dans une analyse...
     self.searchTypes=['Raw T1 MRI', 
@@ -1290,7 +1302,7 @@ class DiffusionChecker(DBChecker):
   """
   def __init__(self, db, context=None):
     super(DiffusionChecker, self).__init__(db, context)
-    self.filters=["protocol", "subject", "acquisition", "analysis"]
+    self.filters=[self.centerAttribute(), "subject", "acquisition", "analysis"]
     # searchTypes correspond to data written by brainvisa processes and which have a referential
     self.searchTypes=['Raw T2 Diffusion MR', 'Raw DW Diffusion MR', # import
     'Diffusion Model', 'Error Mask', #DiffusionDTIModel, DiffusionQBallModel
@@ -1315,7 +1327,7 @@ class DiffusionChecker(DBChecker):
       destRef=tm.referential(item.get("destination_referential", None))
       
       if (itemType == 'Transform Raw T1 MRI to AC/PC'):
-        # protocol subject source.acquisition destination.acquisition
+        # center subject source.acquisition destination.acquisition
         # Referential of Raw T1 MRI -> AC/PC referential
         sourceRefType="Referential of Raw T1 MRI"
         destRefType="AC/PC referential"
