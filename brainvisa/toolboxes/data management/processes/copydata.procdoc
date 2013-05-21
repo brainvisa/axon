@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="fr">
+    <xhtml name="short"/>
+    <d name="parameters">
+      <xhtml name="input_data"/>
+      <xhtml name="output_database"/>
+      <xhtml name="data_type"/>
+      <xhtml name="output_data"/>
+    </d>
+    <xhtml name="long"/>
+  </d>
+  <d name="en">
+    <xhtml name="short">Copy any kind of data between databases</xhtml>
+    <d name="parameters">
+      <xhtml name="input_data"/>
+      <xhtml name="output_database"/>
+      <xhtml name="data_type"/>
+      <xhtml name="output_data"/>
+    </d>
+    <xhtml name="long"><p>A general process which allows to copy any kind of data from one database to another.
+It copies any data type handled by both (input and output) databases, including directory data such as Subject or Center, which will be copied recursively.
+</p>
+<p>Data can also be copied into the input database under a new name, for instance copy an existing subject to a new one with a different name.
+</p>
+<p>The process relies on database organization, so it will appropriately rename data when needed to follow the right patterns. It can also operate between databases which do not follow the same ontology organization.
+</p>
+<p>There are a few restrictions, though:
+<ul>
+  <li>Input and output databases must use the same data types; each data to be copied must have a type which is understood and has a location in the output database. Moreover, the key attributes set for data must match "sufficiently" (links must work to generate output locations).</li>
+  <li>data UUIDs will change, but referentials UUIDs in data will not. Thus data will reference referentials at their former location. This is a limitation that may be overcome, one day.</li>
+</ul>
+</p></xhtml>
+  </d>
+</d>
+</minf>
