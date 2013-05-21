@@ -2283,7 +2283,6 @@ class ExecutionContext( object ):
           self._allWriteDiskItems = {}
         if ishead or (stackTop and stackTop.process._executionNode is None):
           writeParameters = []
-          #try: # an exception could occur if the user has not write permission on the database directory
           for parameterized, attribute, type in process.getAllParameters():
             if isinstance( type, WriteDiskItem ):
               item = getattr( parameterized, attribute )
@@ -2294,30 +2293,11 @@ class ExecutionContext( object ):
               if itemList:
                 writeParameters.extend(itemList)
           for item in writeParameters:
-            dirs=[]
             dirname = os.path.dirname( item.fullPath() )
-            dir=dirname
-            while not os.path.exists( dir ):
-              dirs.append(dir)
-              dir=os.path.dirname(dir)
-            if dirs:
-              try:
-                os.makedirs( dirname )
-              except OSError, e:
-                if not e.errno == errno.EEXIST:
-                  # filter out 'File exists' exception, if the same dir has
-                  # been created concurrently by another instance of BrainVisa
-                  # or another thread
-                  raise
-              for d in dirs:
-                dirItem=neuroHierarchy.databases.createDiskItemFromFileName(d, None)
-                if dirItem:
-                  uuid=dirItem.uuid()
-                  self._allWriteDiskItems[uuid] = [ dirItem, None ]
+            if not os.path.exists( dirname ):
+              os.makedirs( dirname )
             uuid=item.uuid()
             self._allWriteDiskItems[uuid] = [ item, item.modificationHash() ]
-          #except:
-            #showException()
         if ishead:
           log = neuroConfig.mainLog
         else:
