@@ -51,15 +51,15 @@ FileType('T1 MRI Mni ScalpMask', 'T1 MRI Mni Space Tissue Mask')
 ###################
 
 FileType('Deformation Field of T1 MRI', '4D Volume')
-FileType('InvDefField T1 MRI', 'Deformation Field of T1 MRI')
-FileType('FwdDefField T1 MRI', 'Deformation Field of T1 MRI')
+FileType('DefField T1 MRI from Mni to Native', 'Deformation Field of T1 MRI')
+FileType('DefField T1 MRI from Native to Mni', 'Deformation Field of T1 MRI')
 
 FileType('MatlabFile of Deformation Field of T1 MRI', 'Matlab SPM file')
-FileType('MatFwdDefField T1 MRI', 'MatlabFile of Deformation Field of T1 MRI')
+FileType('MatDefField T1 MRI from Native to Mni', 'MatlabFile of Deformation Field of T1 MRI')
 
 FileType('MatlabFile of Transformation of T1 MRI', 'Matlab SPM file')
-FileType('MatInv T1 MRI', 'MatlabFile of Transformation of T1 MRI')
-FileType('MatFwd T1 MRI', 'MatlabFile of Transformation of T1 MRI')
+FileType('Mat T1 MRI from Mni to Native', 'MatlabFile of Transformation of T1 MRI')
+FileType('Mat T1 MRI from Native to Mni', 'MatlabFile of Transformation of T1 MRI')
 
 ##################
 #                #

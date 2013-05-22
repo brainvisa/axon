@@ -52,23 +52,22 @@ insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
 
 
 
-#############
-# transformation #
-#############
-
-
-insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
-  'invDefField_<subject>', SetType('InvDefField T1 MRI'),)
+###################
+# transformations #
+###################
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
-  'fwdDefField_<subject>', SetType('FwdDefField T1 MRI'),)
+  'defField_<subject>_Mni_TO_Nat', SetType('DefField T1 MRI from Mni to Native'),)
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
-  'matFwdDefField_<subject>', SetType('MatFwdDefField T1 MRI'),)
+  'defField_<subject>_Nat_TO_Mni', SetType('DefField T1 MRI from Native to Mni'),)
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
-  'matInv_<subject>', SetType('MatInv T1 MRI'),)
+  'matDefField_<subject>_Nat_TO_Mni', SetType('MatDefField T1 MRI from Native to Mni'),)
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
-  'matFwd_<subject>', SetType('MatFwd T1 MRI'),)
+  'mat_<subject>_Mni_TO_Nat', SetType('Mat T1 MRI from Mni to Native'),)
+
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
+  'mat_<subject>_Nat_TO_Mni', SetType('Mat T1 MRI from Native to Mni'),)
 
