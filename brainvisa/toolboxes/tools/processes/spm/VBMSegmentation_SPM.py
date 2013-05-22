@@ -124,8 +124,8 @@ def execution(self, context):
                               , self.csf_native, self.csf_warped, self.csf_modulated, self.csf_dartel
                               , self.saveBias
                               )    
-  spm.run(context, configuration, matfilePath)   
-  self.moveSpmOutFiles
+  spm.run(context, configuration, matfilePath, useMatlabFirst=True)   
+  self.moveSpmOutFiles()
   
   print "\n stop ", name, "\n"
 
