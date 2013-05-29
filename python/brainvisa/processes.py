@@ -186,7 +186,7 @@ from soma.path import relative_path
 
 from brainvisa.data.neuroData import *
 from brainvisa.data.neuroDiskItems import *
-from brainvisa.data.readdiskitem import ReadDiskItem
+from brainvisa.data.readdiskitem import ReadDiskItem, ReadDiskItemIsNotReadableRuntimeError
 from brainvisa.data.writediskitem import WriteDiskItem
 from brainvisa.configuration import neuroConfig
 from brainvisa.data import neuroDiskItems
@@ -2152,7 +2152,7 @@ class ExecutionContext( object ):
     if len( stack ) == 0:
       return None
     return stack[-1]
-
+  
   def _processStackParent( self ):
     stack = self._processStack()
     if len( stack ) == 0:
@@ -2296,8 +2296,10 @@ class ExecutionContext( object ):
             dirname = os.path.dirname( item.fullPath() )
             if not os.path.exists( dirname ):
               os.makedirs( dirname )
+
             uuid=item.uuid()
             self._allWriteDiskItems[uuid] = [ item, item.modificationHash() ]
+
         if ishead:
           log = neuroConfig.mainLog
         else:
@@ -2416,10 +2418,13 @@ class ExecutionContext( object ):
           result = process.execution( self )
         else:
           result = executionFunction( self )
-      except:
+      except Exception, e:
         self._lastProcessRaisedException = True
         try:
-          self._showException()
+          if (isinstance(e , ReadDiskItemIsNotReadableRuntimeError) and neuroConfig.userLevel<2):
+            self._showException(showCallStack=False)
+          else:
+            self._showException(showCallStack=True)
         except SystemExit, e:
           neuroConfig.exitValue = e.args[0]
         except:
@@ -2762,10 +2767,17 @@ class ExecutionContext( object ):
     return None
 
 
-  def _showException( self ):
+  def _showException( self, showCallStack = False ):
     stackTop = self._stackTop()
-    msg = exceptionHTML(
-      beforeError=_t_( 'in <em>%s</em>' ) % ( _t_(stackTop.process.name) + ' ' + str( stackTop.process.instance ) ) )
+    
+    if(showCallStack == True):
+      exceptionInfo=sys.exc_info()
+    else:
+      exceptionType, exceptionMessage, _traceBack = sys.exc_info()
+      exceptionInfo=(exceptionType, exceptionMessage, None)
+
+    msg = exceptionHTML(beforeError=_t_( 'in <em>%s</em>' ) % ( _t_(stackTop.process.name) + ' ' + str( stackTop.process.instance ))
+                          , exceptionInfo=exceptionInfo )
     try:
       self.checkInterruption()
     except:

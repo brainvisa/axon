@@ -136,13 +136,14 @@ def exceptionTracebackHTML( exceptionInfo ):
     name = e.__name__
   except:
     name = str(e)
-  tb = traceback.extract_tb( t )
   msg = '<font color=red><b>' + name + '</b><br>'
-  for file, line ,function, text in tb:
-    if text is None:
-      text = '?'
-    msg += htmlEscape( os.path.basename( file ) + ' (' + str(line) + ') in ' + function + ': '  ) + \
-           '<blockquote> ' + htmlEscape( text ) + '</blockquote>'
+  if(t is not None):
+    tb = traceback.extract_tb( t )
+    for file, line ,function, text in tb:
+      if text is None:
+        text = '?'
+      msg += htmlEscape( os.path.basename( file ) + ' (' + str(line) + ') in ' + function + ': '  ) + \
+             '<blockquote> ' + htmlEscape( text ) + '</blockquote>'
   msg += '</font>'
   return msg
   
