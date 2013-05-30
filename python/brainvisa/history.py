@@ -31,7 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-import os
+import os, time, shutil
 from soma.minf.api import writeMinf
 from soma.uuid import Uuid
 from soma.translation import translate as _
@@ -47,6 +47,10 @@ import weakref
 import types
 from brainvisa.data.writediskitem import WriteDiskItem
 
+from brainvisa.data.neuroDiskItems import DiskItem
+
+
+
 minfHistory = 'brainvisa-history_2.0'
 
 class HistoryBook( object ):
@@ -55,9 +59,11 @@ class HistoryBook( object ):
   '''
   
   _allBooks = weakref.WeakValueDictionary()
+  #_today = "" #store date used to update expert_settings.last_modification when store process is finished
   
   def __new__( cls, directory, compression=False ):
     book = HistoryBook._allBooks.get( directory )
+#    print '!history! __new__ HistoryBook', directory
     if book is None:
       book = object.__new__( cls )
       HistoryBook._allBooks[ directory ] = book
@@ -65,17 +71,22 @@ class HistoryBook( object ):
   
   
   def __init__( self, directory, compression=False ):
+#    print '!history! __new__ HistoryBook', directory
     if hasattr( self, '_HistoryBook__dir' ):
       # self has already been created but __init__ is always
       # called after __new__
       return
     self.uuid = Uuid()
     if not os.path.isdir( directory ):
-      os.makedirs( directory )
+      os.makedirs( directory ) 
     self.__dir = directory
     self.__compression = compression
+
   
-  def storeEvent( self, event, compression=None ):
+
+
+  def storeEvent( self, event, compression=None , storeBvproc = False):
+    #print '! history : storeEvent', event
     if isinstance( event, ProcessExecutionEvent ):
       # Store an event corresponding to current BrainVISA session
       # if it is not already done.
@@ -87,9 +98,30 @@ class HistoryBook( object ):
     if compression is None:
       compression = self.__compression
     #print '!history! store in', self.__dir, ':', event
-    eventFileName = os.path.join( self.__dir,  str( event.uuid ) + '.' + event.eventType )
-    event.save( eventFileName, compression ) 
-  
+    #At first, save bvproc and bvsession directly into history_book directory. Then, at the end, 
+    #files will be moved into a directory with date. In fact, the date can change between the start 
+    #and the end.
+    
+    bvprocFileName = os.path.join( self.__dir, "bvsession",  str( event.uuid ) + '.' + event.eventType )
+    if storeBvproc : #called by storeProcessFinished
+      timeDirectory = time.strftime('%Y-%m-%d',time.localtime())  
+      eventDirectory = os.path.join( self.__dir, timeDirectory )
+      if not os.path.exists( eventDirectory ): 
+        os.mkdir(eventDirectory)
+      try:
+        eventFileName = os.path.join( eventDirectory, str( event.uuid ) + '.' + event.eventType )
+      except:
+        neuroException.showException()
+      #then rm the old file in history_book which is like a temporary file
+      os.remove(bvprocFileName) 
+    else :
+      eventFileName = bvprocFileName 
+    #print '! history : store event', eventFileName
+    event.save( eventFileName, compression, storeBvproc) 
+
+
+
+
   def findEvent( self, uuid, default=Undefined ):
     try:
       fileName = self._findEventFileName( uuid )
@@ -111,14 +143,16 @@ class HistoryBook( object ):
   def removeEvent( self, uuid ):
     os.remove( self._findEventFileName( uuid ) )
 
+
+
   @staticmethod
-  def getHistoryBookDirectories( item ):
+  def getHistoryBookDirectories(item ):
     if item is None:
       return None
     historyBook = None
-    if hasattr( neuroConfig, 'historyBookDirectory' ):
+    if hasattr( neuroConfig, 'historyBookDirectory' ): #used for distributed executions
       historyBook = neuroConfig.historyBookDirectory
-    if not historyBook:
+    if not historyBook: 
       database = item.getHierarchy( '_database' )
       if database:
         db=neuroHierarchy.databases.database(database)
@@ -130,7 +164,6 @@ class HistoryBook( object ):
 
   @staticmethod
   def storeProcessStart( executionContext, process ):
-    # print '!history! storeProcessStart:', process
     historyBooksContext = {}
     for parameterized, attribute, type in process.getAllParameters():
       if isinstance( type, WriteDiskItem ):
@@ -145,7 +178,7 @@ class HistoryBook( object ):
 
     event = None
     if historyBooksContext:
-      # print '!history! databases:', [i._HistoryBook__dir for i in historyBooksContext.iterkeys()]
+      #print '!history! databases:', [i._HistoryBook__dir for i in historyBooksContext.iterkeys()]
       event = executionContext.createProcessExecutionEvent()
       for book in historyBooksContext.iterkeys():
         book.storeEvent( event )
@@ -154,20 +187,21 @@ class HistoryBook( object ):
 
 
   @staticmethod
-  def storeProcessFinished( executionContext, process, event, historyBooksContext ):
-    #print '!history! storeProcessFinished:', process
+  def storeProcessFinished(executionContext, process, event, historyBooksContext ):
     event.setLog( event._logItem )
     for book, items in historyBooksContext.iteritems():
       changedItems = [item for item, hash in items.itervalues() if hash != item.modificationHash()]
+      #database = item.getHierarchy( '_database' )
       event.content[ 'modified_data' ] = [unicode(item) for item in changedItems]
-      book.storeEvent( event )
+      book.storeEvent( event, storeBvproc = True )
+      #update the the lastHistoricalEvent of each diskitems
       for item in changedItems:
         try:
           item.setMinf( 'lastHistoricalEvent', event.uuid )
         except:
           neuroException.showException()
-  
-  
+
+
 
 class HistoricalEvent( object ):
   """
@@ -176,9 +210,9 @@ class HistoricalEvent( object ):
   def __init__( self, uuid = None ):
     if uuid is None: uuid = Uuid()
     self.uuid = uuid
-  
-  
-  def save( self, eventFileName, compression=False ):
+
+
+  def save( self, eventFileName, compression=False, storeBvproc = False):
     close = True
     if type( eventFileName ) in ( str, unicode ):
       if compression:
@@ -188,9 +222,18 @@ class HistoricalEvent( object ):
     else:
       eventFile = eventFileName
       close = False
+
     writeMinf( eventFile, ( self, ), reducer=minfHistory )
+    if storeBvproc :
+      minf = {}
+      minf ['uuid'] = self.uuid
+      # bvProcDiskItem = neuroHierarchy.databases.createDiskItemFromFileName(eventFileName)
+      bvProcDiskItem = WriteDiskItem( 'Process execution event', 'Process execution event' ).findValue( eventFileName )
+      bvProcDiskItem._writeMinf(minf)
+    
     if close:
       eventFile.close()
+
 
 
 class ProcessExecutionEvent( HistoricalEvent ):

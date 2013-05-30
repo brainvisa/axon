@@ -39,6 +39,7 @@ from brainvisa.processes import getProcessInstanceFromProcessEvent
 from brainvisa.processing.qt4gui.neuroProcessesGUI import ProcessView
 from brainvisa.processing.qt4gui.neuroLogGUI import LogItemsViewer
 
+
 class DataHistoryWindow(QtGui.QMainWindow):
   """
   :Attributes:
@@ -91,19 +92,48 @@ class DataHistoryWindow(QtGui.QMainWindow):
     self.ui.info.setText("History of "+self.data.relativePath())
     self.ui.info.setToolTip(self.data.fullPath())
     
+    self.ui.text_widget.setReadOnly(True)
+    
+#    self.setAttribute(Q)
+#    QTextEdit.setReadOnly(True). While QTextEdit is a fairly
+#large class -- it really is a rich text editor -- setting
+#text is still easy: use QTextEdit.setText(text
+    
     if self.bvproc_uuid is not None:
-      bvproc_file = os.path.join(self.data.get("_database", ""), "history_book", self.bvproc_uuid + ".bvproc")
-      if os.path.exists(bvproc_file):
-        minf = readMinf(bvproc_file)
-        if minf:
-          process_event=minf[0]
-          process=getProcessInstanceFromProcessEvent(process_event)
-          if process is not None:
-            self.show_process(process)
-          bvsession=process_event.content.get("bvsession", None)
-          log=process_event.content.get("log", None)
-          if log:
-            self.show_log(log, bvsession)
+      
+      #print "! history qt4gui : " , type(self.data)
+      res = self.data.type.name 
+      #print "! history qt4gui print type " , res 
+      #print "! history qt4gui print type " , type(res) 
+      #bvproc_file = os.path.join(self.data.get("_database", ""), self.data.getFileNameFromUuid(self.bvproc_uuid))
+
+      #if self.data.type.name is not "Process execution event" :      
+      if str(res) != "Process execution event" :
+        bvproc_file =  self.data.getFileNameFromUuid(self.bvproc_uuid)
+        bvproc_file = os.path.join(self.data.get("_database", ""), bvproc_file)
+        #bvproc_file = os.path.join(self.data.get("_database", ""), "history_book", self.bvproc_uuid + ".bvproc")
+        #print 'bvproc_file ', bvproc_file
+        if os.path.exists(bvproc_file):
+          minf = readMinf(bvproc_file)
+          #print "minf ", minf
+          if minf:
+            process_event=minf[0]
+            #print "! history qt4gui process_event : " , process_event
+            process=getProcessInstanceFromProcessEvent(process_event)
+            if process is not None:
+              self.show_process(process)
+            bvsession=process_event.content.get("bvsession", None)
+            log=process_event.content.get("log", None)
+            if log:
+              self.show_log(log, bvsession)
+      else : 
+        file_name = self.data.fullPath()
+        #print "! history qt4gui print type " , type(file_name) 
+        read_bvproc = readMinf(self.data.fullPath())[0]
+        #print "! history qt4gui print type " , type(read_bvproc) 
+        self.ui.text_widget.setText(str(read_bvproc))
+        #print read_bvproc
+
 
   def closeEvent( self, event ):
     """Called when the window is closed. Cleans up the process view before closing."""
@@ -155,3 +185,4 @@ class DataHistoryWindow(QtGui.QMainWindow):
     logitems_viewer=LogItemsViewer(logitems, self)
     self.ui.log_widget.layout().addWidget(logitems_viewer)
     
+

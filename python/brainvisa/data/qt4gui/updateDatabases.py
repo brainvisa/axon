@@ -73,16 +73,38 @@ class UpdateDatabasesGUI( qt.QWidget ):
     layout.addLayout( layout1 )
     spacer1 = qt.QSpacerItem(1,1,qt.QSizePolicy.Expanding,qt.QSizePolicy.Minimum)
     layout1.addItem(spacer1)
+    
+    
+    self.classic_chkbx = qt.QCheckBox( _t_( '&classic' ) )
+    layout1.addWidget( self.classic_chkbx )
+    self.classic_chkbx.setCheckable(True)
+    self.classic_chkbx.setChecked( True )
+    
+    self.quick_incremental_method_chkbx = qt.QCheckBox( _t_( '&quick incremental method' ) )
+    layout1.addWidget( self.quick_incremental_method_chkbx )
+    self.quick_incremental_method_chkbx.setCheckable(True)
+    self.quick_incremental_method_chkbx.setChecked( False )
+    
+    self.incremental_method_chkbx = qt.QCheckBox( _t_( '&incremental method' ) )
+    layout1.addWidget( self.incremental_method_chkbx )
+    self.incremental_method_chkbx.setCheckable(True)
+    self.incremental_method_chkbx.setChecked( False )
+
+    self.button_group = qt.QButtonGroup(self)
+    self.button_group.addButton(self.incremental_method_chkbx)
+    self.button_group.addButton(self.quick_incremental_method_chkbx)
+    self.button_group.addButton(self.classic_chkbx)
 
     self.btnClearAndUpdate = qt.QPushButton( _t_( '&Update' ) )
     layout1.addWidget( self.btnClearAndUpdate )
-    
+
     #self.btnClear = qt.QPushButton( _t_( '&Clear' ), self )
     #layout1.addWidget( self.btnClear )
     
     spacer2 = qt.QSpacerItem(1,1,qt.QSizePolicy.Expanding,qt.QSizePolicy.Minimum)
     layout1.addItem(spacer2)
-  
+    
+        
   def selectedDatabases( self ):
     result = []
     i=0
@@ -93,7 +115,17 @@ class UpdateDatabasesGUI( qt.QWidget ):
       i+=1
     return result
 
+  def classic_method( self ):
+    return self.classic_chkbx.isChecked()
 
+  def quick_incremental_method( self ):
+    return self.quick_incremental_method_chkbx.isChecked()
+
+  def incremental_method( self ):
+    return self.incremental_method_chkbx.isChecked()
+
+  
+  
 _ontologiesModificationDialog = None
 
 

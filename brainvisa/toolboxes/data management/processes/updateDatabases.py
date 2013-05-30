@@ -52,13 +52,23 @@ userLevel = 0
 
 def execution( self, context ):
   databases = mainThreadActions().call( context.inlineGUI.selectedDatabases )
+  classic_method = mainThreadActions().call( context.inlineGUI.classic_method)
+  quick_incremental_method = mainThreadActions().call( context.inlineGUI.quick_incremental_method)
+  incremental_method = mainThreadActions().call( context.inlineGUI.incremental_method)
+
   for database in databases:
-    context.write( '<b>Clear database:', database.name, '</b>' )
     # must close the connection currently opened in the main thread before clearing and updating the database
     mainThreadActions().call( database.currentThreadCleanup )
-    database.clear( context=context )
+    if classic_method : 
+      database.clear( context=context )
+      context.write( '<b>Clear database:', database.name, '</b>' )
     context.write( '<b>Update database:', database.name, '</b>' )
-    database.update( context=context )
+    if quick_incremental_method :
+      database.updateIncremental( context=context, scanAllBvproc = False)
+    elif incremental_method :
+      database.updateIncremental( context=context, scanAllBvproc = True)
+    else :
+      database.update( context=context )
 
 def inlineGUI( self, values, context, parent, externalRunButton=False ):
   result = UpdateDatabasesGUI( parent )

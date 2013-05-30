@@ -34,6 +34,11 @@
       </property>
      </widget>
     </item>
+   <item>
+   <widget class="QTextEdit" name="text_widget">
+    <layout class="QVBoxLayout" name="verticalLayout_5"/>
+   </widget>
+   </item>
     <item>
      <widget class="QWidget" name="process_widget" native="true">
       <layout class="QVBoxLayout" name="verticalLayout_2">

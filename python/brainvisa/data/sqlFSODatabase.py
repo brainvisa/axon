@@ -44,7 +44,7 @@ from itertools import izip, chain
 from StringIO import StringIO
 import cPickle
 
-from soma.minf.api import readMinf
+from soma.minf.api import readMinf, writeMinf
 from soma.html import htmlEscape
 from soma.sorted_dictionary import SortedDictionary
 from soma.undefined import Undefined
@@ -59,7 +59,7 @@ import brainvisa.processes
 from brainvisa.configuration import neuroConfig
 from brainvisa.data import neuroDiskItems
 from brainvisa.processing.neuroException import showWarning, HTMLMessage
-from brainvisa.data.neuroDiskItems import getFormat, getFormats, Format, FormatSeries, File, Directory, getAllFormats, MinfFormat, getDiskItemType
+from brainvisa.data.neuroDiskItems import  DiskItem, getFormat, getFormats, Format, FormatSeries, File, Directory, getAllFormats, MinfFormat, getDiskItemType
 from brainvisa.data.patterns import DictPattern
 from brainvisa.data.sql import mangleSQL, unmangleSQL
 from brainvisa.data.fileformats import FileFormats
@@ -482,6 +482,113 @@ class SQLDatabase( Database ):
             context.warning("The data ",i.fullPath(), "is not readable.")
     if n != 0:
       yield diskitems
+
+
+  def updateIncremental( self, directoriesToScan=None, recursion=True, context=None, scanAllBvproc = False):
+    """
+    Method to update a database based on reading bvproc and the date of the last incremental date in order to avoid the whole scan
+    of files. Faster than updateAll method.
+    """
+    #INI
+    infiles = []
+    simulation = False
+    #if simulation: removeold = False
+    directory = os.path.join( self.name, "history_book" )
+    params = neuroConfig.DatabaseSettings(self.name)
+    last_incremental_update = params.expert_settings.last_incremental_update
+    t = time.mktime( time.strptime( last_incremental_update, '%Y-%m-%d-%H:%M' ) ) 
+    t0 = time.time()
+    #print '!updateIncremental ! : val de last_incremental_update ', t
+    
+    #INI of the list of bvproc files  
+    for f in os.listdir( directory ):
+      if os.path.isdir(os.path.join( directory, f)): 
+        for readFile in os.listdir(os.path.join( directory, f)) :
+          if readFile.endswith( '.bvproc' ):
+            ff = os.path.join( directory, f, readFile )
+            if not scanAllBvproc :
+              s = os.stat( ff )
+              if s.st_mtime >= t: infiles.append( ff )
+            else :
+              infiles.append( ff )
+
+    toadd = set() #diskItems to insert
+    deadhistories = set() #diskItems which doesn't exist anymore 
+    livehistories = set() #already inserted diskItems
+    scanned = 0
+    
+    if len(infiles)>0 :
+      for bvprocfile in infiles:
+        p = readMinf( bvprocfile )[0] # ProcessExecutionEvent object
+        idf = os.path.basename( bvprocfile )
+        idf = idf[ : idf.rfind( '.' ) ]
+        halive = False
+        listModifiedFiles = p.content.get( 'modified_data', [] ) 
+        listModifiedFiles.append(bvprocfile) #add the bvprocfile name in order to update it too
+        for par in listModifiedFiles:
+          addit = False
+          try:
+            item = self.getDiskItemFromFileName( par )  # already exists in DB: no need to add it
+          except:
+            try:
+              item = self.createDiskItemFromFileName( par )
+              addit = True
+            except:
+                context.write('Warning: file', par, 'cannot be inserted in any database.')
+                continue
+          scanned += 1
+          if item is not None and (isinstance( item, DiskItem )) and item.isReadable() and item.get("_database", None) and ( not hasattr( item, '_isTemporary' ) or not item._isTemporary ):
+            if addit : toadd.add( item )
+            lasth = item.get( 'lastHistoricalEvent', None )
+            if lasth is not None and lasth == idf : halive = True
+            if not halive:  #print 'history file', bvprocfile, 'is obsolete'
+              deadhistories.add( bvprocfile )
+            else:
+              livehistories.add( bvprocfile )
+    else : context.write("None history file to update, please check the organisation of history files. Use the BvProc sorting process into the Data Management toolbox.")
+
+    context.write('parsing done. Scanned %d files/items.' % scanned)
+    context.write('living history files:', len( livehistories ))
+    context.write('list history files:', livehistories )
+    context.write('dead history files:', len( deadhistories ))
+    context.write('list of dead history files:', deadhistories )
+
+    context.write('removing dead histories...')
+    for item in deadhistories:
+      diskItem = self.getDiskItemFromFileName( item, None )
+      if diskItem : #remove like a diskitem
+        self.removeDiskItem(diskItem, eraseFiles=True )
+      else : #remove like files, not created into database
+        os.unlink( item )
+        temporaryPath = item + ".minf"
+        os.unlink( temporaryPath )
+    context.write('done.')
+  
+    context.write('adding %d disk items...' % len( toadd ))
+    if simulation:
+      context.write('Nothing changed: we are in simulation mode.')
+    else:
+      for item in toadd:
+        try:
+          self.insertDiskItem( item, update=True )
+        except NotInDatabaseError:
+          pass
+#            except:
+#              showException()
+
+    #update the date of last_incremental_update
+    if not scanAllBvproc :
+      date_last_incremental_update = time.strftime('%Y-%m-%d-%H:%M',time.localtime())  
+      params = neuroConfig.DatabaseSettings(self.name)
+      params.expert_settings.last_incremental_update = date_last_incremental_update
+      try:
+        writeMinf( os.path.join( params.directory, 'database_settings.minf' ), ( params.expert_settings, ) )
+      except IOError:
+        pass
+      
+    duration = time.time() - t0
+    context.write( "All is done: ", timeDifferenceToString( duration ) )
+      
 
 
   def update( self, directoriesToScan=None, recursion=True, context=None ):

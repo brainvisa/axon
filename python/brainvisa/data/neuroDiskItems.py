@@ -30,6 +30,9 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+
+#from brainvisa.data.neuroHierarchy import databases
+
 """
 This module contains classes defining data items that are called **diskItems** in Brainvisa.
 These diskItems are associated to files that store data on a filesystem, 
@@ -106,6 +109,8 @@ from soma.uuid import Uuid
 from soma.path import split_path
 from soma.minf.api import readMinf, MinfError
 from soma.wip.application.api import Application
+from soma.sqlite_tools import sqlite3, ThreadSafeSQLiteConnection
+
 
 from brainvisa.configuration import neuroConfig
 from brainvisa.processing.neuroException import HTMLMessage, showException
@@ -114,6 +119,7 @@ from brainvisa.data.patterns import DictPattern
 from brainvisa import shelltools
 from brainvisa.multipleExecfile import MultipleExecfile
 from PyQt4.QtCore import QObject, SIGNAL
+
 
 #----------------------------------------------------------------------------
 def sameContent( a, b ):
@@ -760,6 +766,7 @@ class DiskItem(QObject):
     :param dict: dictionary containing the attributes that will be added to this diskItem minf attributes.
     :param bool saveMinf: if True the minf attributes will be saved in the minf file of the diskItem.
     """
+    #print '!neuroDiskItems !: updateMinf : ', dict
     for attrName, value in dict.items():
       self._otherAttributes.pop( attrName, None )
       self._minfAttributes[ attrName ] = value
@@ -930,6 +937,7 @@ class DiskItem(QObject):
     if minfContent is None, removes the minf file.
     """
     minf = self.minfFileName()
+    #print "!neuroDiskItems : _writeMinf : ", minf
     if minfContent:
       file = open( minf, 'w' )
       print >> file, 'attributes = ' + repr( minfContent )
@@ -946,6 +954,7 @@ class DiskItem(QObject):
     self._lock.acquire()
     try:
       attrs = self._readMinf()
+      #print '! neuroDiskItems : readAndUpdateMinf : ',  attrs
       if attrs is not None:
         if attrs.has_key( 'uuid' ):
           self._changeUuid( Uuid( attrs[ 'uuid' ] ) )
@@ -1130,7 +1139,42 @@ class DiskItem(QObject):
         fd = os.remove(nameFileLock)
 
   
-  
+  def getFileNameFromUuid( self, uuid):
+    """
+    get the bvproc filname where is stored the history
+    """
+    
+    from brainvisa.data.neuroHierarchy import databases
+    from brainvisa.processes import defaultContext
+    #print "! getFileNameFromUuid : "
+    #donner directement le bvprocfile
+    database=self.get("database")
+    if database is None:
+      database=self.get("_database")
+#    print "!neuroDiskItems : getFileNameFromUuid :", database
+#    print "!neuroDiskItems : getFileNameFromUuid :", type(database)
+#    print "!neuroDiskItems : getFileNameFromUuid :", databases._databases
+    db = databases._databases.get(database)
+#    print "!neuroDiskItems : getFileNameFromUuid :", db 
+#    print "!neuroDiskItems : getFileNameFromUuid :", type(db)
+
+    cursor = db._getDatabaseCursor()
+    bvproc_file=None
+    try:
+      sql = "SELECT filename FROM _FILENAMES_ WHERE _uuid='" + uuid + "'"
+      print sql
+      bvproc_file = cursor.execute( sql ).fetchone()
+    except sqlite3.OperationalError, e:
+      defaultContext().warning( "Cannot question database "+db.name+". You should update this database." )
+    finally:
+      db._closeDatabaseCursor( cursor )
+    
+    if bvproc_file is not None:
+      bvproc_file = bvproc_file[ 0 ] 
+    
+#    print "!neuroDiskItems : getFileNameFromUuid :", bvproc_file
+    
+    return bvproc_file
   
   
 #----------------------------------------------------------------------------

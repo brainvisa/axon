@@ -43,6 +43,8 @@ import brainvisa.processes
 from brainvisa.processing.neuroException import showException
 from brainvisa.data.qt4gui.history import DataHistoryWindow
 
+
+
 class HierarchyBrowser( QWidget ):
     """
     This widget enables to explore databases, get information about stored data, search and manage data.
@@ -128,8 +130,13 @@ class HierarchyBrowser( QWidget ):
       self.actionConditions[idConvert]=self.convertCondition
       self.graphConverter=brainvisa.processes.getProcess("CorticalFoldsGraphUpgradeFromOld")
       self.graphType=neuroDiskItems.getDiskItemType("Graph")
+      
       idHistory=self.popupMenu.addAction( self.pixView, _t_("Show history"), self.menuHistoryEvent )
       self.actionConditions[idHistory]=self.historyCondition
+      
+      idBvProc=self.popupMenu.addAction( self.pixView, _t_("Show bvproc"), self.menuBvProcEvent )
+      self.actionConditions[idBvProc]=self.bvProcCondition
+      
       self.connect(self.lstHierarchy, SIGNAL( 'customContextMenuRequested ( const QPoint & )'), self.openContextMenu)
     
       self.resize( 800, 600 )
@@ -165,7 +172,6 @@ class HierarchyBrowser( QWidget ):
           db=getattr(dbItem, "database", None)
           if db is not None:
             # scan database to fill the listview
-            #print '!openItem!', dbItem.path
             gen=db.scanDatabaseDirectories( directoriesToScan=( dbItem.path,), recursion=False, includeUnknowns=True )
             for item in gen:
               #print '!openItem! -->', item
@@ -364,12 +370,33 @@ class HierarchyBrowser( QWidget ):
       for item in items:
         if item.diskItem:
           bvproc_uuid=item.diskItem.get("lastHistoricalEvent", None)
+          #print '!menuHistoryEvent : type item.diskitem ', type(item.diskItem) #<class 'brainvisa.data.neuroDiskItems.File'>
           if bvproc_uuid is not None:
             history_window=DataHistoryWindow(item.diskItem, bvproc_uuid, parent=self)
             history_window.show()
       
     def historyCondition(self, item):
       return item and item.diskItem and item.diskItem.get("lastHistoricalEvent", None) is not None
+      
+    def bvProcCondition(self, item):
+      print '!bvProcCondition : type item ? ', type(item)
+      print '!bvProcCondition : type item.diskItem ? ', type(item.diskItem )
+      print '!bvProcCondition : type item.diskItem  ? ', item.diskItem.type
+      type_diskItem  = str(item.diskItem.type)
+      return item and item.diskItem and type_diskItem == "Process execution event"
+
+    def menuBvProcEvent(self):
+      items=self.selectedItems()
+      for item in items:
+        if item.diskItem:
+          bvproc_uuid=item.diskItem._uuid
+          print '!hierarchy browser , menuBvProcEvent type item.diskItem', type(item.diskItem) #<class 'brainvisa.data.neuroDiskItems.File'>
+          print '!hierarchy browser , menuBvProcEvent uuid ', bvproc_uuid #<class 'brainvisa.data.neuroDiskItems.File'>
+          if bvproc_uuid is not None:
+            history_window=DataHistoryWindow(item.diskItem, bvproc_uuid, parent=self)
+            history_window.show()
+
+
       
     def search(self):
       """
@@ -397,7 +424,8 @@ class HierarchyBrowser( QWidget ):
         #sitem.setSelected(True)
         #sitem.setDragEnabled(True)
         
-    def itemSelected( self, item ):
+    def itemSelected( self, item ):      
+      #print "!hierarchyBrowser ! : itemSelected "
       if item is not None and item.diskItem is not None:
         t = DiskItemBrowser.diskItemDisplayText(item.diskItem)
         self.textEditArea.setHtml( t )
@@ -406,6 +434,7 @@ class HierarchyBrowser( QWidget ):
   
     #------ Drag&Drop ------
     def mousePressEvent(self, event):
+      #print "!hierarchyBrowser ! : mousePressEvent "
       if (event.button() == Qt.LeftButton):
         self.dragStartPosition = QPoint(event.pos())
       QTreeWidget.mousePressEvent(self.lstHierarchy, event)
