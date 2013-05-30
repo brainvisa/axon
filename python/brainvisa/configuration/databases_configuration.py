@@ -82,7 +82,8 @@ class ExpertDatabaseSettings( HasSignature ):
     'ontology', OpenedChoice(), dict( defaultValue='brainvisa-3.0' ),
     'sqliteFileName', FileName, dict( defaultValue='' ),
     'activate_history', Boolean, dict( defaultValue=False ),
-    'uuid', Unicode(), dict( defaultValue='', visible = False)
+    'uuid', Unicode(), dict( defaultValue='', visible = False),
+    'last_incremental_update', Unicode(), dict( defaultValue='', visible = False),
   )
 
   def __init__( self ):
