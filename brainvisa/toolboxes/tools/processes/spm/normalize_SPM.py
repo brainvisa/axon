@@ -94,7 +94,7 @@ def execution(self, context):
                                           , self.preserve, self.bb, self.vox, self.interp, self.wrap, self.prefix 
                                           )  
       
-  spm.run(context, configuration, matfilePath)    
+  spm.run(context, configuration, matfilePath, useMatlabFirst=True)# I prefere to use matlab version, because only this version generate .ps file to check the registration  
     
   warpedPath = self.warpedInMni.fullPath()
   moveSpmOutFiles(inDir, warpedPath, [self.prefix])
