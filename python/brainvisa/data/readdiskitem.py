@@ -171,7 +171,7 @@ class ReadDiskItem( Parameter ):
     Parameter.checkValue( self, name, value )
     if ((value is not None) and (self.mandatory == True)):
       if not value.isReadable():
-        raise ReadDiskItemIsNotReadableRuntimeError( HTMLMessage(_t_( 'the parameter <em>%s</em> is not readable or does not exist : %s' ) % (unicode(name), unicode(value))) )
+        raise RuntimeError( HTMLMessage(_t_( 'the parameter <em>%s</em> is not readable or does not exist : %s' ) % (unicode(name), unicode(value))) )
 
 
   def findValue( self, selection, requiredAttributes=None, _debug=Undefined ):
@@ -522,6 +522,4 @@ class ReadDiskItem( Parameter ):
     from brainvisa.data.qtgui.readdiskitemGUI import DiskItemListEditor
     return DiskItemListEditor( self, parent, name, context=context, write=self._write )
 
-
-class ReadDiskItemIsNotReadableRuntimeError(RuntimeError):pass
     

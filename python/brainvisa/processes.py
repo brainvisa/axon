@@ -186,7 +186,7 @@ from soma.path import relative_path
 
 from brainvisa.data.neuroData import *
 from brainvisa.data.neuroDiskItems import *
-from brainvisa.data.readdiskitem import ReadDiskItem, ReadDiskItemIsNotReadableRuntimeError
+from brainvisa.data.readdiskitem import ReadDiskItem
 from brainvisa.data.writediskitem import WriteDiskItem
 from brainvisa.configuration import neuroConfig
 from brainvisa.data import neuroDiskItems
@@ -2421,10 +2421,7 @@ class ExecutionContext( object ):
       except Exception, e:
         self._lastProcessRaisedException = True
         try:
-          if (isinstance(e , ReadDiskItemIsNotReadableRuntimeError) and neuroConfig.userLevel<2):
-            self._showException(showCallStack=False)
-          else:
-            self._showException(showCallStack=True)
+          self._showException()
         except SystemExit, e:
           neuroConfig.exitValue = e.args[0]
         except:
@@ -2689,14 +2686,17 @@ class ExecutionContext( object ):
     self.checkInterruption()
     if messages:
       msg = u' '.join( unicode( i ) for i in messages )
-      stackTop = self._stackTop()
-      if stackTop:
-        outputLogFile = stackTop.process._outputLogFile
-        if outputLogFile and not outputLogFile.closed:
-          print >> outputLogFile, msg
-          outputLogFile.flush()
+      self._writeMessageInLogFile(msg)
       self._write( msg )
 
+  def _writeMessageInLogFile(self, msg):
+    stackTop = self._stackTop()
+    if stackTop:
+      outputLogFile = stackTop.process._outputLogFile
+      if outputLogFile and not outputLogFile.closed:
+        print >> outputLogFile, msg
+        outputLogFile.flush()
+        
   def _write( self, html ):
     if not hasattr( self, '_writeHTMLParser' ):
       self._writeHTMLParser = htmllib.HTMLParser( formatter.AbstractFormatter(
@@ -2766,27 +2766,35 @@ class ExecutionContext( object ):
     self.checkInterruption()
     return None
 
-
   def _showException( self, showCallStack = False ):
     stackTop = self._stackTop()
-    
-    if(showCallStack == True):
-      exceptionInfo=sys.exc_info()
-    else:
-      exceptionType, exceptionMessage, _traceBack = sys.exc_info()
-      exceptionInfo=(exceptionType, exceptionMessage, None)
-
-    msg = exceptionHTML(beforeError=_t_( 'in <em>%s</em>' ) % ( _t_(stackTop.process.name) + ' ' + str( stackTop.process.instance ))
-                          , exceptionInfo=exceptionInfo )
     try:
       self.checkInterruption()
     except:
       pass
-    self.write( '<table width=100% border=1><tr><td>'+ msg + '</td></tr></table>' )
+    
+    beforeError=_t_( 'in <em>%s</em>' ) % ( _t_(stackTop.process.name) + ' ' + str( stackTop.process.instance ))
+    exceptionType, exceptionMessage, _traceBack = sys.exc_info()
+    
+    msgFull = self._messageFromException(beforeError, (exceptionType, exceptionMessage, _traceBack  ))
+    msgBasic = self._messageFromException(beforeError, (exceptionType, exceptionMessage, None  ))
+    
+    self.checkInterruption()
+    
+    isNonExpertUser = neuroConfig.userLevel<2          
+    if(isNonExpertUser):
+      self._write( msgBasic )
+    else:
+      self._write( msgFull )
+    self._writeMessageInLogFile(msgFull)
+    
     if neuroConfig.fastStart and not neuroConfig.gui:
-      sys.exit( 1 )
+      sys.exit( 1 )  
 
-
+  def _messageFromException(self, beforeError, exceptionInfo):
+    exceptionMsgFull = exceptionMessageHTML(exceptionInfo, beforeError=beforeError) + '<hr>' + exceptionTracebackHTML(exceptionInfo)
+    return '<table width=100% border=1><tr><td>' + exceptionMsgFull + '</td></tr></table>'
+  
   def checkInterruption( self ):
     """
     This function is used to define breakpoints. When the process execution reach a breakpoint, the user can interrupt the process. There are 4 types of breakpoints automatically added :
