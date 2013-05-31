@@ -2,6 +2,7 @@ import unittest
 import os
 import tempfile
 import shutil
+import time
 
 import brainvisa.axon
 from brainvisa.configuration import neuroConfig
@@ -42,11 +43,18 @@ class TestDatabaseHistory(unittest.TestCase):
     wd=WriteDiskItem("Raw T1 MRI", "NIFTI-1 image")
     output=wd.findValue({"_database" : self.db.name, "center" : "mycenter", "subject" : "mysubject"})
     defaultContext().runProcess("importT1MRI", self.example_data.name, output)
+    loctime = time.localtime() # WARNING may be too late already
     diskitem = self.db.findDiskItem({"_type" : "Raw T1 MRI", "center" : "mycenter", "subject" : "mysubject"})
     self.assertTrue(diskitem is not None)
     bvproc_uuid = diskitem.get("lastHistoricalEvent")
     self.assertTrue(bvproc_uuid is not None)
-    bvproc_file = os.path.join(self.db.name, "history_book", str(bvproc_uuid)+".bvproc")
+    # the following should work "soon"
+    #bvproc_di = self.db.getDiskItemFromUuid( bvproc_uuid )
+    #print 'bvproc_di:', bvproc_di
+    #bvproc_file = bvproc_di.fullPath()
+    #bvproc_file = os.path.join(self.db.name, "history_book", str(bvproc_uuid)+".bvproc")
+    bvproc_file = os.path.join(self.db.name, "history_book",
+      time.strftime( '%Y-%m-%d', loctime ), str(bvproc_uuid)+".bvproc")
     self.assertTrue(os.path.exists(bvproc_file))
     
   def tearDown(self):
