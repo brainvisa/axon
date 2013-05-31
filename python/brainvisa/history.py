@@ -103,6 +103,8 @@ class HistoryBook( object ):
     #and the end.
     
     bvprocFileName = os.path.join( self.__dir, "bvsession",  str( event.uuid ) + '.' + event.eventType )
+    if not os.path.exists( os.path.join( self.__dir, "bvsession" ) ):
+      os.makedirs( os.path.join( self.__dir, "bvsession" ) )
     if storeBvproc : #called by storeProcessFinished
       timeDirectory = time.strftime('%Y-%m-%d',time.localtime())  
       eventDirectory = os.path.join( self.__dir, timeDirectory )
