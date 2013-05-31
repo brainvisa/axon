@@ -34,7 +34,11 @@ include( 'base' )
 
 insertFirst( '',
   'history_book', SetContent(
-    '*', SetType( 'Process execution event' ),
-    '*', SetType( 'BrainVISA session event' ),
+     'bvsession', SetContent(
+       '*', SetType( 'BrainVISA session event' ),
+    ),
+     '*', SetContent(
+       '*', SetType( 'Process execution event' ),
+    ),
   ),
 )
