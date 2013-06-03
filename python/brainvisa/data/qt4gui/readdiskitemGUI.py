@@ -33,7 +33,7 @@
 from brainvisa.processing.qtgui.backwardCompatibleQt \
     import QLineEdit, SIGNAL, QPushButton, QToolButton, \
            Qt, QIcon, QWidget, QFileDialog, QVBoxLayout, \
-           QListWidget, QHBoxLayout, QSpacerItem, QSizePolicy, QSize
+           QListWidget, QHBoxLayout, QSpacerItem, QSizePolicy, QSize, QMenu
 from soma.wip.application.api import findIconFile
 from soma.qtgui.api import largeIconSize
 from brainvisa.data.qtgui.diskItemBrowser import DiskItemBrowser
@@ -41,6 +41,7 @@ from brainvisa.data.qtgui.neuroDataGUI import DataEditor, StringListEditor, butt
 import brainvisa.processes
 from brainvisa.processing.qt4gui import neuroProcessesGUI
 from brainvisa.data.neuroDiskItems import DiskItem, Directory
+from brainvisa.data.qt4gui import history as historygui
 from brainvisa.configuration import neuroConfig
 from brainvisa.processing.neuroException import showException, HTMLMessage
 from PyQt4 import QtCore
@@ -50,7 +51,7 @@ import sys, os
 class RightClickablePushButton( QPushButton ):
   def mousePressEvent( self, e ):
     if e.button() == Qt.RightButton:
-      self.emit( SIGNAL( 'rightPressed' ) )
+      self.emit( SIGNAL( 'rightPressed' ), self.mapToGlobal( e.pos() ) )
     else:
       QPushButton.mousePressEvent( self, e )
 
@@ -64,6 +65,7 @@ class DiskItemEditor( QWidget, DataEditor ):
       setattr( DiskItemEditor, 'pixDatabaseWrite', QIcon( findIconFile( 'database_write.png' )) )
       setattr( DiskItemEditor, 'pixBrowseRead', QIcon( findIconFile( 'browse_read.png' )) )
       setattr( DiskItemEditor, 'pixBrowseWrite', QIcon( findIconFile( 'browse_write.png' )) )
+      setattr( DiskItemEditor, 'pixHistory', QIcon( findIconFile( 'history.png' )) )
     QWidget.__init__( self, parent )
     if name:
       self.setObjectName(name)
@@ -275,12 +277,36 @@ class DiskItemEditor( QWidget, DataEditor ):
       neuroProcessesGUI.mainThreadActions().push( self.btnShow.setEnabled, 1 )
     
 
-  def openViewerPressed( self ):
+  def openViewerPressed( self, pos ):
+    v = self.getValue()
+    if v.get( 'lastHistoricalEvent' ):
+      popup = QMenu( self )
+      op = popup.addAction( DiskItemEditor.pixShow, 'open viewer' )
+      sh = popup.addAction( DiskItemEditor.pixHistory, 'show history' )
+      ac = popup.exec_( pos )
+      if ac is not None:
+        if ac is sh:
+          self.openHistory()
+        else:
+          self.openViewer()
+    else:
+      self.openViewer()
+
+  def openViewer( self ):
     v = self.getValue()
     viewer = brainvisa.processes.getViewer( v, 1 )()
     neuroProcessesGUI.showProcess( viewer, v )
 
-  
+  def openHistory( self ):
+    v = self.getValue()
+    bvproc_uuid = v.get("lastHistoricalEvent", None)
+    if bvproc_uuid is not None:
+      history_window = historygui.DataHistoryWindow( v, bvproc_uuid,
+        parent=self)
+      history_window.setAttribute( Qt.WA_DeleteOnClose )
+      history_window.show()
+
+
   def editPressed( self ):
     if self.btnEdit.isChecked():
       self.btnEdit.setEnabled( 0 )

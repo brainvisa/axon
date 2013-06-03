@@ -67,6 +67,7 @@ class HierarchyBrowser( QWidget ):
         setattr( HierarchyBrowser, 'pixRemove', QIcon( findIconFile( 'remove.png' )) )
         setattr( HierarchyBrowser, 'pixConvert', QIcon( findIconFile( 'converter.png' )) )
         setattr( HierarchyBrowser, 'pixScan', QIcon( findIconFile( 'find_read.png' )) )
+        setattr( HierarchyBrowser, 'pixHistory', QIcon( findIconFile( 'history.png' )) )
         
       self.setWindowTitle( _t_( 'Data browser' ) )
       layout = QVBoxLayout( )
@@ -131,7 +132,7 @@ class HierarchyBrowser( QWidget ):
       self.graphConverter=brainvisa.processes.getProcess("CorticalFoldsGraphUpgradeFromOld")
       self.graphType=neuroDiskItems.getDiskItemType("Graph")
       
-      idHistory=self.popupMenu.addAction( self.pixView, _t_("Show history"), self.menuHistoryEvent )
+      idHistory=self.popupMenu.addAction( self.pixHistory, _t_("Show history"), self.menuHistoryEvent )
       self.actionConditions[idHistory]=self.historyCondition
       
       idBvProc=self.popupMenu.addAction( self.pixView, _t_("Show bvproc"), self.menuBvProcEvent )
@@ -373,6 +374,7 @@ class HierarchyBrowser( QWidget ):
           #print '!menuHistoryEvent : type item.diskitem ', type(item.diskItem) #<class 'brainvisa.data.neuroDiskItems.File'>
           if bvproc_uuid is not None:
             history_window=DataHistoryWindow(item.diskItem, bvproc_uuid, parent=self)
+            history_window.setAttribute( Qt.WA_DeleteOnClose )
             history_window.show()
       
     def historyCondition(self, item):
