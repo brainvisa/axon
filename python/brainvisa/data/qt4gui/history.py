@@ -35,7 +35,7 @@ import os
 from PyQt4 import uic, QtGui, QtCore
 from PyQt4.QtCore import Qt
 from soma.minf.api import readMinf
-from brainvisa.processes import getProcessInstanceFromProcessEvent
+from brainvisa.processes import getProcessInstanceFromProcessEvent, defaultContext
 from brainvisa.processing.qt4gui.neuroProcessesGUI import ProcessView
 from brainvisa.processing.qt4gui.neuroLogGUI import LogItemsViewer
 
@@ -110,8 +110,17 @@ class DataHistoryWindow(QtGui.QMainWindow):
       #if self.data.type.name is not "Process execution event" :      
       if str(res) != "Process execution event" :
         bvproc_file =  self.data.getFileNameFromUuid(self.bvproc_uuid)
-        bvproc_file = os.path.join(self.data.get("_database", ""), bvproc_file)
-        #bvproc_file = os.path.join(self.data.get("_database", ""), "history_book", self.bvproc_uuid + ".bvproc")
+        if bvproc_file is None:
+          # try the old way, for a non-updated database
+          bvproc_file = os.path.join(self.data.get( "_database", "" ), 
+            "history_book", self.bvproc_uuid + ".bvproc" )
+          if os.path.exists(bvproc_file):
+            defaultContext().warning( _t_( 'History file is not indexed in the database - databases should probably be updated.' ) )
+          else:
+            raise RuntimeError( 'The requested history file cannot be found.' )
+        else:
+          bvproc_file = os.path.join(self.data.get("_database", ""), 
+                                     bvproc_file)
         #print 'bvproc_file ', bvproc_file
         if os.path.exists(bvproc_file):
           minf = readMinf(bvproc_file)
