@@ -484,7 +484,7 @@ def generateHTMLProcessesDocumentation( procId = None ):
       ontology )
 
 #----------------------------------------------------------------------------
-def mapValuesToChildrenParameters(destNode, sourceNode, dest, source, value = None, defaultProcess = None, defaultProcessOptions = {}):
+def mapValuesToChildrenParameters(destNode, sourceNode, dest, source, value = None, defaultProcess = None, defaultProcessOptions = {}, name=None):
   sourceObject, sourceParameter = sourceNode.parseParameterString( source )
   l = getattr(sourceObject, sourceParameter, [])
   lsize = len(l)
@@ -504,7 +504,7 @@ def mapValuesToChildrenParameters(destNode, sourceNode, dest, source, value = No
                   selected = defaultProcessOptions.get('selected', True), 
                   expandedInGui = defaultProcessOptions.get('expandedInGui', False)
                 )
-        destNode.addChild(node = child)
+        destNode.addChild(name=name, node = child)
         
       csize += 1
 
@@ -1963,11 +1963,15 @@ class SerialExecutionNode( ExecutionNode ):
           name = node.name() + '_' + str(self._internalIndex)
         else :
           raise RuntimeError( HTMLMessage('<em>node</em> argument must be an execution node') )
+      else:
+        name += '_' + str(self._internalIndex)
+      if not node:
+        node = self.possibleChildrenProcesses
       self._internalIndex += 1
-      
+
     if self.notify :
       self.beforeChildAdded.notify( weakref.proxy( self ), name, weakref.proxy( node ) )
-      
+
     super( SerialExecutionNode, self ).addChild(name, node, index)
     
     if self.notify :
