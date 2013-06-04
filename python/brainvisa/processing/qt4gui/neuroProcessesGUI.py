@@ -1739,7 +1739,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
     self.action_run = QAction(_t_('Run') , self)
     self.action_run.triggered.connect(self._run)
-   
+
     self.action_run_with_sw = QAction(_t_('Run in parallel'), self)
     self.action_run_with_sw.setToolTip('Run in parallel using Soma-workflow')
     self.action_run_with_sw.triggered.connect(self._run_with_soma_workflow) 
@@ -1747,13 +1747,19 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     self.action_interupt = QAction(_t_('Interrupt'), self)
     self.action_interupt.triggered.connect(self._interruptButton) 
     self.action_interupt.setVisible(False)
-    
+
     self.action_interupt_step = QAction(_t_('Interrupt current step'), self)
     self.action_interupt_step.triggered.connect(self._interruptStepButton) 
     self.action_interupt_step.setVisible(False)
-    
+
     self.action_iterate = QAction(_t_('Iterate'), self)
     self.action_iterate.triggered.connect(self._iterateButton) 
+
+    self.action_lock_all = QAction(_t_('Lock all files'), self)
+    self.action_lock_all.triggered.connect(self.menuLockAllFiles)
+
+    self.action_unlock_all = QAction(_t_('Unlock all files'), self)
+    self.action_unlock_all.triggered.connect(self.menuUnlockAllfiles)
 
     if parent is None:
       neuroConfig.registerObject( self )
@@ -1775,6 +1781,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       processMenu.addAction(self.action_interupt_step)
       _addSeparator( processMenu )
       processMenu.addAction(self.action_run_with_sw)
+      _addSeparator( processMenu )
+      processMenu.addAction(self.action_lock_all)
+      processMenu.addAction(self.action_unlock_all)
 
       # warning: don't create the menu using addMenu() in PyQt
       view_menu = QMenu( "&View", self.menu )
@@ -1927,6 +1936,12 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       self.executionTreeMenu._showdocaction \
         = _addAction( self.executionTreeMenu, _t_("Show documentation"),
                                             self.menuShowDocumentation )
+
+      _addAction( self.executionTreeMenu )
+      _addAction( self.executionTreeMenu, _t_("Lock files under this node"), 
+                 self.menuLockStep )
+      _addAction( self.executionTreeMenu, _t_("Unlock files under this node"), 
+                 self.menuUnlockStep )
 
       self.executionTreeMenu._nodeactionseparator \
         = _addAction( self.executionTreeMenu )
@@ -2223,6 +2238,85 @@ class ProcessView( QWidget, ExecutionContextGUI ):
           item = p
 
 
+  def _changeAllLockedFiles( self, procOrNode, setLock ):
+    files = procOrNode.allParameterFiles()
+    # filter out non-existing files and already locked ones
+    if setLock:
+      files = [ f for f in files if f.isWriteable() and not f.isLockData() ]
+      message = _t_( 'The following files will be locked:' ) + '\n\n' \
+        + '\n'.join( [ f.fullPath() for f in files ] )
+    else:
+      files = [ f for f in files if f.isWriteable() and f.isLockData() ]
+      message = _t_( 'The following files will be unlocked:' ) + '\n\n' \
+        + '\n'.join( [ f.fullPath() for f in files ] )
+    # show and confirm
+    dialog = QDialog( self )
+    dialog.setModal( True )
+    vlay = QVBoxLayout( dialog )
+    if setLock:
+      dialog.setWindowTitle( _t_( 'Locking files' ) )
+      vlay.addWidget( QLabel( 
+        '<html>The following files will be <b>locked</b>:</html>', dialog ) )
+    else:
+      dialog.setWindowTitle( _t_( 'Unlocking files' ) )
+      vlay.addWidget( QLabel( 
+        '<html>The following files will be <b>unlocked</b>:</html>', dialog ) )
+    tablew = QTableWidget( dialog )
+    vlay.addWidget( tablew )
+    hbox = QWidget( dialog )
+    vlay.addWidget( hbox )
+    hlay = QHBoxLayout( hbox )
+    ok = QPushButton( _t_( 'OK' ), hbox )
+    hlay.addWidget( ok )
+    ok.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
+    cc = QPushButton( _t_( 'Cancel' ), hbox )
+    hlay.addWidget( cc )
+    cc.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
+    ok.clicked.connect( dialog.accept )
+    cc.clicked.connect( dialog.reject )
+    tablew.setColumnCount( 2 )
+    tablew.setHorizontalHeaderItem( 
+      0, QTableWidgetItem( _t_( 'short name' ) ) )
+    tablew.horizontalHeader().setStretchLastSection( False )
+    tablew.setHorizontalHeaderItem( 1, QTableWidgetItem( _t_( 'full name' ) ) )
+    tablew.horizontalHeader().setResizeMode(
+      0, QtGui.QHeaderView.ResizeToContents )
+    tablew.horizontalHeader().setResizeMode(
+      1, QtGui.QHeaderView.ResizeToContents )
+    tablew.setRowCount( len( files ) )
+    tablew.setSortingEnabled( True )
+    tablew.setSelectionMode( QTableWidget.NoSelection )
+    for i, di in enumerate( files ):
+      f = di.fullPath()
+      tablew.setItem( i, 0, QTableWidgetItem( os.path.basename( f ) ) )
+      tablew.setItem( i, 1, QTableWidgetItem( f ) )
+    dialog.resize( 800, 400 )
+    if dialog.exec_():
+      if setLock:
+        print 'Locking...'
+        for f in files:
+          try:
+            f.lockData()
+          except IOError:
+            pass # probably not writeable
+        print 'done.'
+      else:
+        print 'Unlocking...'
+        for f in files:
+          try:
+            f.unlockData()
+          except IOError:
+            pass
+        print 'done.'
+
+  def menuLockAllFiles( self ):
+    self._changeAllLockedFiles( self.process, True )
+
+
+  def menuUnlockAllfiles( self ):
+    self._changeAllLockedFiles( self.process, False )
+
+
   def menuDetachExecutionNode(self):
     item=self.executionTree.currentItem()
     if item:
@@ -2243,6 +2337,20 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         doc = brainvisa.processes.getHTMLFileName(proc)
         if os.path.exists(doc):
           _mainWindow.info.setSource(doc)
+
+  def menuLockStep(self):
+    global _mainWindow
+    item=self.executionTree.currentItem()
+    if item:
+      enode = item._executionNode
+      self._changeAllLockedFiles( enode, True )
+
+  def menuUnlockStep(self):
+    global _mainWindow
+    item=self.executionTree.currentItem()
+    if item:
+      enode = item._executionNode
+      self._changeAllLockedFiles( enode, False )
 
   def menuAddExecutionNode(self):
     item=self.executionTree.currentItem()

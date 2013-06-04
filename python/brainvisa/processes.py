@@ -1194,6 +1194,38 @@ class Process( Parameterized ):
           yield eNode._process
         stack.extend( eNode.children() )
 
+  def allParameterFiles( self ):
+    """Get recursively all parameters which are DiskItems, descending through
+    the pipeline structure.
+    """
+    params = []
+    files = set()
+    for paramname in self.signature.iterkeys():
+      param = self.__dict__.get( paramname )
+      if param is not None and isinstance( param, DiskItem ):
+        filename = param.fullPath()
+        if filename not in files:
+          params.append( param )
+          files.add( filename )
+    # parse pipeline structure
+    eNodes = []
+    eNode = self.executionNode()
+    if eNode is not None:
+      eNodes.append( eNode )
+    while eNodes:
+      eNode = eNodes.pop()
+      eNodes += list( eNode.children() )
+      if isinstance( eNode, ProcessExecutionNode ):
+        process = eNode._process
+        for paramname in process.signature.iterkeys():
+            param = process.__dict__.get( paramname )
+            if param is not None and isinstance( param, DiskItem ):
+              filename = param.fullPath()
+              if filename not in files:
+                params.append( param )
+                files.add( filename )
+    return params
+
 
   def saveStateInDictionary( self, result=None ):
     """Returns the description of the process in a dictionary."""
@@ -1614,6 +1646,28 @@ class ExecutionNode( object ):
   def child( self, name, default = None ):
     """Get a child node by name."""
     return self._children.get( name, default )
+
+  def allParameterFiles( self ):
+    """Get recursively all parameters which are DiskItems, descending through
+    the pipeline structure.
+    """
+    params = []
+    files = set()
+    # parse pipeline structure
+    eNodes = [ self ]
+    while eNodes:
+      eNode = eNodes.pop()
+      eNodes += list( eNode.children() )
+      if isinstance( eNode, ProcessExecutionNode ):
+        process = eNode._process
+        for paramname in process.signature.iterkeys():
+            param = process.__dict__.get( paramname )
+            if param is not None and isinstance( param, DiskItem ):
+              filename = param.fullPath()
+              if filename not in files:
+                params.append( param )
+                files.add( filename )
+    return params
 
   def run( self, context ):
     """
