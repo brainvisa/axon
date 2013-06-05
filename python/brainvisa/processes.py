@@ -2830,27 +2830,50 @@ class ExecutionContext( object ):
       self.checkInterruption()
     except:
       pass
-    
+
     beforeError=_t_( 'in <em>%s</em>' ) % ( _t_(stackTop.process.name) + ' ' + str( stackTop.process.instance ))
     exceptionType, exceptionMessage, _traceBack = sys.exc_info()
-    
+
     msgFull = self._messageFromException(beforeError, (exceptionType, exceptionMessage, _traceBack  ))
     msgBasic = self._messageFromException(beforeError, (exceptionType, exceptionMessage, None  ))
-    
+
     self.checkInterruption()
-    
-    isNonExpertUser = neuroConfig.userLevel<2          
+
+    isNonExpertUser = neuroConfig.userLevel<2
     if(isNonExpertUser):
       self._write( msgBasic )
     else:
       self._write( msgFull )
     self._writeMessageInLogFile(msgFull)
-    
-    if neuroConfig.fastStart and not neuroConfig.gui:
-      sys.exit( 1 )  
 
-  def _messageFromException(self, beforeError, exceptionInfo):
-    exceptionMsgFull = exceptionMessageHTML(exceptionInfo, beforeError=beforeError) + '<hr>' + exceptionTracebackHTML(exceptionInfo)
+    if neuroConfig.fastStart and not neuroConfig.gui:
+      sys.exit( 1 )
+
+  def showException( self, beforeError='', afterError='', exceptionInfo=None ):
+    '''same as the global brainvisa.processing.neuroException.showException()
+    but displays in the current context (the process output box for instance)
+    '''
+    if exceptionInfo is None:
+      exceptionInfo = sys.exc_info()
+    stackTop = self._stackTop()
+
+    if not beforeError:
+      beforeError=_t_( 'in <em>%s</em>' ) % ( _t_(stackTop.process.name) + ' ' + str( stackTop.process.instance ))
+    exceptionType, exceptionMessage, _traceBack = exceptionInfo
+
+    msgFull = self._messageFromException(beforeError, (exceptionType, exceptionMessage, _traceBack ), afterError=afterError)
+
+    isNonExpertUser = neuroConfig.userLevel<2
+    if(isNonExpertUser):
+      msgBasic = self._messageFromException(beforeError, (exceptionType, exceptionMessage, None  ))
+      self._write( msgBasic )
+    else:
+      self._write( msgFull )
+    self._writeMessageInLogFile( msgFull )
+
+
+  def _messageFromException(self, beforeError, exceptionInfo, afterError=''):
+    exceptionMsgFull = exceptionMessageHTML(exceptionInfo, beforeError=beforeError, afterError=afterError) + '<hr>' + exceptionTracebackHTML(exceptionInfo)
     return '<table width=100% border=1><tr><td>' + exceptionMsgFull + '</td></tr></table>'
   
   def checkInterruption( self ):

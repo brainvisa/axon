@@ -152,6 +152,8 @@ def generateHTMLDocumentation( processInfoOrId, translators, context, ontology )
           else:
             access = _t_( 'input' )
           f.write( access )
+        except context.UserInterruption:
+          raise
         except Exception, e:
           print e
         f.write( ' )</i>' )
@@ -162,6 +164,8 @@ def generateHTMLDocumentation( processInfoOrId, translators, context, ontology )
         try:
           if len( ti ) > 2:
             supportedFormats.append( ( i, ti[2][1] ) )
+        except context.UserInterruption:
+          raise
         except Exception, e:
           print e
 
@@ -179,6 +183,8 @@ def generateHTMLDocumentation( processInfoOrId, translators, context, ontology )
       try:
         for parameter, formats in supportedFormats:
           print >> f, '<blockquote>', parameter, ':<blockquote>', formats, '</blockquote>', '</blockquote>'
+      except context.UserInterruption:
+        raise
       except Exception, e:
         print e
       print >> f, '</p>'
@@ -203,10 +209,12 @@ def generateHTMLProcessesDocumentation( context, ontology ):
   for pi in allProcessesInfo():
     try:
       generateHTMLDocumentation( pi, translators, context, ontology )
+    except context.UserInterruption:
+      raise
     except ValidationError:
       pass
     except:
-      showException( beforeError=_t_('Cannot generate documentation for <em>%s</em>') % (pi.fileName,) )
+      context.showException( beforeError=_t_('Cannot generate documentation for <em>%s</em>') % (pi.fileName,) )
 
   #---------------------------------------
   # Generate documentation for categories
@@ -341,10 +349,12 @@ def execution( self, context ):
   for pi in allProcessesInfo():
     try:
       process = getProcessInstance(pi.id)
+    except context.UserInterruption:
+      raise
     except ValidationError:
       continue
     except:
-      showException()
+      context.showException()
       #context.error( exceptionHTML() )
       continue
     processTypes = set()
@@ -439,6 +449,8 @@ def execution( self, context ):
       dot.close()
       try:
         context.system( 'dot', '-Tpng', '-o' + os.path.join( imagesDirectory, typeFileName + '_inheritance.png' ), '-Tcmapx', '-o' + tmpMap, tmpDot )
+      except context.UserInterruption:
+        raise
       except:
         context.warning("Cannot generate inheritance graph, the dot command failed.")
   
@@ -543,8 +555,15 @@ def execution( self, context ):
       print >> typeHTML, '<h2>Used in the following processes</h2><blockquote>'
       processes=sorted(processesByTypes.get( type, () ), key=nameKey)
       for pi in processes:
-        href = htmlEscape( relative_path( getHTMLFileName( pi.id, language=l ), os.path.dirname( typeHTML.name ) ) )
-        print >> typeHTML, '<a href="' + href + '">' + htmlEscape( pi.name ) + '</a><br/>'
+        try:
+          href = htmlEscape( relative_path( getHTMLFileName( pi.id, language=l ), os.path.dirname( typeHTML.name ) ) )
+          print >> typeHTML, '<a href="' + href + '">' + htmlEscape( pi.name ) + '</a><br/>'
+        except context.UserInterruption:
+          raise
+        except Exception, e:
+          context.showException(
+            beforeError=_t_( 'error in process doc for:' )+'%s (%s)' \
+            % ( pi.id, pi.name ) )
       print >> typeHTML, '</blockquote>'
       
       print >> typeHTML, '<h2>Associated formats</h2><blockquote>'
@@ -627,8 +646,15 @@ def execution( self, context ):
       print >> formatHTML, '<h2>Used in the following processes</h2><blockquote>'
       processes=sorted(processesByFormats.get( format.name, () ), key=nameKey)
       for pi in processes:
-        href = htmlEscape( relative_path( getHTMLFileName( pi.id, language=l  ), os.path.dirname( formatHTML.name ) ) )
-        print >> formatHTML, '<a href="' + href + '">' + htmlEscape( pi.name ) + '</a><br/>'
+        try:
+          href = htmlEscape( relative_path( getHTMLFileName( pi.id, language=l  ), os.path.dirname( formatHTML.name ) ) )
+          print >> formatHTML, '<a href="' + href + '">' + htmlEscape( pi.name ) + '</a><br/>'
+        except context.UserInterruption:
+          raise
+        except Exception, e:
+          context.showException(
+            beforeError=_t_( 'error in process doc for:' )+'%s (%s)' \
+            % ( pi.id, pi.name ) )
       print >> formatHTML, '</blockquote>'
       
       print >> formatHTML, '<h2>Associated types</h2><blockquote>'
