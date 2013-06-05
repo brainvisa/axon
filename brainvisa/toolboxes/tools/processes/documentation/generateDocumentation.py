@@ -562,7 +562,7 @@ def execution( self, context ):
           raise
         except Exception, e:
           context.showException(
-            beforeError=_t_( 'error in process doc for:' )+'%s (%s)' \
+            beforeError=_t_( 'error in process doc for: ' )+' <b>%s</b> (%s)' \
             % ( pi.id, pi.name ) )
       print >> typeHTML, '</blockquote>'
       
@@ -653,7 +653,7 @@ def execution( self, context ):
           raise
         except Exception, e:
           context.showException(
-            beforeError=_t_( 'error in process doc for:' )+'%s (%s)' \
+            beforeError=_t_( 'error in process doc for:' )+' <b>%s</b> (%s)' \
             % ( pi.id, pi.name ) )
       print >> formatHTML, '</blockquote>'
       
