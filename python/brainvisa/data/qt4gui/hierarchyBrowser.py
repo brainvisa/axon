@@ -42,6 +42,7 @@ from brainvisa.data.actions import FileProcess, Remove, Move
 import brainvisa.processes
 from brainvisa.processing.neuroException import showException
 from brainvisa.data.qt4gui.history import DataHistoryWindow
+from brainvisa.data.qt4gui import lockFilesGUI
 
 
 
@@ -68,6 +69,7 @@ class HierarchyBrowser( QWidget ):
         setattr( HierarchyBrowser, 'pixConvert', QIcon( findIconFile( 'converter.png' )) )
         setattr( HierarchyBrowser, 'pixScan', QIcon( findIconFile( 'find_read.png' )) )
         setattr( HierarchyBrowser, 'pixHistory', QIcon( findIconFile( 'history.png' )) )
+        setattr( HierarchyBrowser, 'pixLock', QIcon( findIconFile( 'lock.png' )) )
         
       self.setWindowTitle( _t_( 'Data browser' ) )
       layout = QVBoxLayout( )
@@ -137,7 +139,20 @@ class HierarchyBrowser( QWidget ):
       
       idBvProc=self.popupMenu.addAction( self.pixView, _t_("Show bvproc"), self.menuBvProcEvent )
       self.actionConditions[idBvProc]=self.bvProcCondition
-      
+
+      idLockItem = self.popupMenu.addAction( self.pixLock, _t_('Lock item'),
+        self.menuLockItem )
+      self.actionConditions[idLockItem] = self.lockItemCondition
+      idUnLockItem = self.popupMenu.addAction( self.pixLock,
+        _t_('Unlock item'), self.menuUnlockItem )
+      self.actionConditions[idUnLockItem] = self.unlockItemCondition
+      idLockAll = self.popupMenu.addAction( self.pixLock,
+        _t_('Lock all items'), self.menuLockAll )
+      self.actionConditions[idLockAll] = self.lockAllCondition
+      idUnlockAll = self.popupMenu.addAction( self.pixLock,
+        _t_('Unlock all items'), self.menuUnlockAll )
+      self.actionConditions[idUnlockAll] = self.unlockAllCondition
+
       self.connect(self.lstHierarchy, SIGNAL( 'customContextMenuRequested ( const QPoint & )'), self.openContextMenu)
     
       self.resize( 800, 600 )
@@ -399,7 +414,105 @@ class HierarchyBrowser( QWidget ):
             history_window.show()
 
 
-      
+    def lockItemCondition( self, item ):
+      return item and item.diskItem and item.diskItem.isWriteable() \
+        and not item.diskItem.isLockData()
+
+
+    def unlockItemCondition( self, item ):
+      return item and item.diskItem and item.diskItem.isWriteable() \
+        and item.diskItem.isLockData()
+
+
+    def lockAllCondition( self, item ):
+      return item and item.diskItem and item.diskItem.isWriteable() \
+        and os.path.isdir( item.diskItem.fullPath() )
+
+
+    def unlockAllCondition( self, item ):
+      return item and item.diskItem and item.diskItem.isWriteable() \
+        and os.path.isdir( item.diskItem.fullPath() )
+
+
+    def menuLockItem( self ):
+      items=self.selectedItems()
+      for item in items:
+        if item.diskItem:
+          item.diskItem.lockData()
+
+
+    def menuUnlockItem( self ):
+      items=self.selectedItems()
+      for item in items:
+        if item.diskItem:
+          item.diskItem.unlockData()
+
+
+    def _menuLockAll( self, setLock ):
+      items = self.selectedItems()
+      ditems = []
+      files = set()
+      dirs = []
+      if setLock: # ensure real booleans
+        setLock = True
+      else:
+        setLock = False
+      for item in items:
+        di = item.diskItem
+        if di:
+          f = di.fullPath()
+          if di.isWriteable() and di.isLockData() != setLock \
+              and f not in files:
+            files.add( f )
+            ditems.append( di )
+          if os.path.isdir( f ):
+            dirs.append( f )
+      while dirs:
+        cdir = dirs.pop()
+        for f in os.listdir( cdir ):
+          fname = os.path.join( cdir, f )
+          try:
+            di = neuroHierarchy.databases.getDiskItemFromFileName( fname )
+          except:
+            di = None
+          if di is not None and di.isWriteable() \
+              and di.isLockData() != setLock:
+            ff = di.fullPath()
+            if ff not in files:
+              ditems.append( di )
+              files.add( ff )
+          if os.path.isdir( fname ):
+            dirs.append( fname )
+      dialog = lockFilesGUI.LockedFilesListEditor( self, ditems, setLock )
+      if dialog.exec_():
+        ditems = dialog.selectedDiskItems()
+        if ditems:
+          if setLock:
+            print 'Locking...'
+            for f in ditems:
+              try:
+                f.lockData()
+              except IOError:
+                pass # probably not writeable
+            print 'done.'
+          else:
+            print 'Unlocking...'
+            for f in ditems:
+              try:
+                f.unlockData()
+              except IOError:
+                pass
+            print 'done.'
+
+
+    def menuLockAll( self ):
+      self._menuLockAll( True )
+
+
+    def menuUnlockAll( self ):
+      self._menuLockAll( False )
+
+
     def search(self):
       """
       Opens a diskItemBrowser to set parameters to describe requested data. 

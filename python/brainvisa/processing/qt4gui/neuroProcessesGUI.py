@@ -52,6 +52,7 @@ import brainvisa.processes
 from brainvisa.data.neuroDiskItems import DiskItem
 from brainvisa.data.readdiskitem import ReadDiskItem
 from brainvisa.data.writediskitem import WriteDiskItem
+from brainvisa.data.qt4gui import lockFilesGUI
 import weakref
 from soma.minf.xhtml import XHTML
 from soma.qtgui.api import QtThreadCall, FakeQtThreadCall, WebBrowserWithSearch, bigIconSize, defaultIconSize
@@ -2238,86 +2239,6 @@ class ProcessView( QWidget, ExecutionContextGUI ):
           item = p
 
 
-  def _editLockedFilesList( self, files, setLock ):
-    if setLock:
-      message = _t_( 'The following files will be locked:' ) + '\n\n' \
-        + '\n'.join( [ f.fullPath() for f in files ] )
-    else:
-      message = _t_( 'The following files will be unlocked:' ) + '\n\n' \
-        + '\n'.join( [ f.fullPath() for f in files ] )
-    dialog = QDialog( self )
-    dialog.setModal( True )
-    dialog.setObjectName( 'locked_files_list_edition' )
-    vlay = QVBoxLayout( dialog )
-    if setLock:
-      dialog.setWindowTitle( _t_( 'Locking files' ) )
-      vlay.addWidget( QLabel( 
-        '<html>The following files will be <b>locked</b>:</html>', dialog ) )
-    else:
-      dialog.setWindowTitle( _t_( 'Unlocking files' ) )
-      vlay.addWidget( QLabel( 
-        '<html>The following files will be <b>unlocked</b>:</html>', dialog ) )
-    tablew = QTableWidget( dialog )
-    vlay.addWidget( tablew )
-    hbox = QWidget( dialog )
-    vlay.addWidget( hbox )
-    hlay = QHBoxLayout( hbox )
-    ok = QPushButton( _t_( 'OK' ), hbox )
-    hlay.addWidget( ok )
-    ok.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-    cc = QPushButton( _t_( 'Cancel' ), hbox )
-    hlay.addWidget( cc )
-    cc.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-    add = QPushButton( _t_( 'Add to sel.' ), hbox )
-    hlay.addWidget( add )
-    add.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-    rmv = QPushButton( _t_( 'Remove' ), hbox )
-    hlay.addWidget( rmv )
-    rmv.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-    ok.clicked.connect( dialog.accept )
-    cc.clicked.connect( dialog.reject )
-    add.clicked.connect( self._addToLockSelection )
-    rmv.clicked.connect( self._removeFromLockSelection )
-    tablew.setColumnCount( 3 )
-    tablew.setHorizontalHeaderItem( 
-      0, QTableWidgetItem( _t_( 'Sel.' ) ) )
-    tablew.setHorizontalHeaderItem( 
-      1, QTableWidgetItem( _t_( 'short name' ) ) )
-    tablew.horizontalHeader().setStretchLastSection( False )
-    tablew.setHorizontalHeaderItem( 1, QTableWidgetItem( _t_( 'full name' ) ) )
-    tablew.horizontalHeader().setResizeMode(
-      0, QtGui.QHeaderView.ResizeToContents )
-    tablew.horizontalHeader().setResizeMode(
-      1, QtGui.QHeaderView.ResizeToContents )
-    tablew.horizontalHeader().setResizeMode(
-      2, QtGui.QHeaderView.ResizeToContents )
-    tablew.setRowCount( len( files ) )
-    tablew.setSortingEnabled( True )
-    tablew.setSelectionMode( QTableWidget.ExtendedSelection )
-    tablew.setSelectionBehavior( QTableWidget.SelectRows )
-    for i, di in enumerate( files ):
-      f = di.fullPath()
-      item = QTableWidgetItem()
-      item.setData( Qt.DecorationRole, ProcessView.pixProcessFinished )
-      item.setData( Qt.DisplayRole, None )
-      item.setData( Qt.UserRole, '1' )
-      tablew.setItem( i, 0, item )
-      item = QTableWidgetItem( os.path.basename( f ) )
-      item.setData( Qt.UserRole, str(i) )
-      tablew.setItem( i, 1, item )
-      tablew.setItem( i, 2, QTableWidgetItem( f ) )
-    dialog.resize( 800, 400 )
-    if dialog.exec_():
-      selectedfiles = []
-      for i in xrange( tablew.rowCount() ):
-        item = tablew.item( i, 0 )
-        if item and item.data( Qt.UserRole ) == '1':
-          num = int( tablew.item( i, 1 ).data( Qt.UserRole ) )
-          selectedfiles.append( files[num] )
-      return selectedfiles
-    else:
-      return None
-
   def _addToLockSelection( self ):
     dialog = self.findChild( QDialog, 'locked_files_list_edition' )
     tablew = dialog.findChild( QTableWidget )
@@ -2346,7 +2267,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     else:
       files = [ f for f in files if f.isWriteable() and f.isLockData() ]
     # show and confirm
-    files = self._editLockedFilesList( files, setLock )
+    dialog = lockFilesGUI.LockedFilesListEditor( self, files, setLock )
+    if dialog.exec_():
+      files = dialog.selectedDiskItems()
     if files:
       if setLock:
         print 'Locking...'
