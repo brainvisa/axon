@@ -70,7 +70,8 @@ class HierarchyBrowser( QWidget ):
         setattr( HierarchyBrowser, 'pixScan', QIcon( findIconFile( 'find_read.png' )) )
         setattr( HierarchyBrowser, 'pixHistory', QIcon( findIconFile( 'history.png' )) )
         setattr( HierarchyBrowser, 'pixLock', QIcon( findIconFile( 'lock.png' )) )
-        
+        setattr( HierarchyBrowser, 'pixBknDirectory', QIcon( findIconFile( 'folder_broken.png' )) )
+
       self.setWindowTitle( _t_( 'Data browser' ) )
       layout = QVBoxLayout( )
       layout.setSpacing( 5 )
@@ -160,7 +161,8 @@ class HierarchyBrowser( QWidget ):
       neuroConfig.registerObject( self )
       self.lstHierarchy.clear()
       self.scanning=0 # count number of scanning items
-      self.stop_scanning=False
+      self.stop_scanning = False
+      self.close_on_stop = False
       self.dragStartPosition=0
       
       for db in neuroHierarchy.databases.iterDatabases():
@@ -177,6 +179,8 @@ class HierarchyBrowser( QWidget ):
 
     def openItem(self, dbItem):
       doscan = False
+      self.close_on_stop = False
+      self.stop_scanning = False
       try:
         if getattr(dbItem, "expand", True):
           doscan = True
@@ -243,7 +247,9 @@ class HierarchyBrowser( QWidget ):
       finally: # can occur if the window is closed during this method execution, it is possible because it calls qApp.processEvents
         if doscan:
           self.scanning-=1
-          if self.stop_scanning and  self.scanning == 0:
+          if self.stop_scanning:
+            dbItem.setIcon( 0, self.pixBknDirectory )
+          if self.stop_scanning and  self.scanning == 0 and self.close_on_stop:
             # if I am the last item to process events, then destroy the
             # view, otherwise someone else will do so soon.
             self.deleteLater()
@@ -268,7 +274,8 @@ class HierarchyBrowser( QWidget ):
         neuroConfig.unregisterObject( self )
         event.accept()
       else:
-        self.stop_scanning=True
+        self.close_on_stop = True
+        self.stop_scanning = True
         event.ignore()
     
     def selectedItems(self):
@@ -286,7 +293,29 @@ class HierarchyBrowser( QWidget ):
         item=it.value()
         item.viewer=None
         it+=1
-      
+
+    def keyPressEvent( self, event ):
+      if event.key() == Qt.Key_Escape:
+        self.close_on_stop = False
+        self.stop_scanning = True
+        event.accept()
+      elif event.key() == Qt.Key_F5:
+        self.refreshSelectedItems()
+        event.accept()
+      else:
+        super( self, QWidget ).keyPressEvent( self, event )
+
+    def refreshSelectedItems( self ):
+      selected = self.selectedItems()
+      for item in selected:
+        if hasattr( item, 'expand' ) and not item.expand:
+          item.expand = True
+          item.takeChildren()
+          self.openItem( item )
+          if self.stop_scanning:
+            break # abort requested
+
+
     # --------------------------------
     # Contextual menu functions
     # --------------------------------
@@ -396,11 +425,8 @@ class HierarchyBrowser( QWidget ):
       return item and item.diskItem and item.diskItem.get("lastHistoricalEvent", None) is not None
       
     def bvProcCondition(self, item):
-      print '!bvProcCondition : type item ? ', type(item)
-      print '!bvProcCondition : type item.diskItem ? ', type(item.diskItem )
-      print '!bvProcCondition : type item.diskItem  ? ', item.diskItem.type
-      type_diskItem  = str(item.diskItem.type)
-      return item and item.diskItem and type_diskItem == "Process execution event"
+      return item and item.diskItem \
+        and str(item.diskItem.type) == "Process execution event"
 
     def menuBvProcEvent(self):
       items=self.selectedItems()
