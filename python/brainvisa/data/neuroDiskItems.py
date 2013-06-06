@@ -1135,8 +1135,8 @@ class DiskItem(QObject):
 
     nameFileLock = str(self.fileName())  + ".lock"
     if os.path.isfile( nameFileLock ) :
-        self.emit(SIGNAL("lockChanged"), False)
         fd = os.remove(nameFileLock)
+        self.emit(SIGNAL("lockChanged"), False)
 
   
   def getFileNameFromUuid( self, uuid):
