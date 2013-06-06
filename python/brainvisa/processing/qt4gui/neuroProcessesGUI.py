@@ -1258,7 +1258,7 @@ class ParameterLabel( QLabel ):
     self.contextMenu.exec_( e.globalPos() )
     e.accept()
 
-  def setOptionMenu( self,  val_default_id, val_lock_id  ):
+  def paramLabelText( self,  val_default_id, val_lock_id  ):
     #CAS : val_default_id / val_lock_id 
     #val_default_id = 0 pas valeur par defaut donc icone
     #val_default_id = 1 valeur par defaut donc pas icone
@@ -1296,19 +1296,17 @@ class ParameterLabel( QLabel ):
     """ This function is to lock or unlock data if a user click on the lock menu  """    
     
     
-    if self.lock_id.isChecked():
+    if checked:
       self.emit( SIGNAL( 'lock_system' ), self.parameterName ) 
       #warning the value of lock_id can be become false if we can't write the lock file.
       #For example, if you try to lock a file which doesn't exist
-      self.setlock(self.lock_id.isChecked()) #on remet a jour en fonction du resultat du lock du fichier
-      txt = self.setOptionMenu(self.default_id.isChecked(), self.lock_id.isChecked())
-      #print " ParameterLabel : lockChanged self.lock_id.isChecked() a true - val de self.text(): " + self.text()
     else:
       self.emit( SIGNAL( 'unlock_system' ), self.parameterName )  
-      #txt = self.setOptionMenu(self.default_id.isChecked(), False) 
-      self.setlock(self.lock_id.isChecked()) #on remet a jour en fonction du resultat du unlock du fichier
-      txt = self.setOptionMenu(self.default_id.isChecked(), self.lock_id.isChecked())   
-      #print " ParameterLabel : lockChanged self.lock_id.isChecked() a false val de self.text() : " + self.text()
+      #txt = self.paramLabelText(self.default_id.isChecked(), False)
+
+    self.setlock(self.lock_id.isChecked()) #on remet a jour en fonction du resultat du unlock du fichier
+    txt = self.paramLabelText(self.default_id.isChecked(), self.lock_id.isChecked())
+    #print " ParameterLabel : lockChanged self.lock_id.isChecked() a false val de self.text() : " + self.text()
 
     txt_value_parameter = self.readText(self.text())
     while (self.readText(txt_value_parameter) != txt_value_parameter) :
@@ -1316,13 +1314,13 @@ class ParameterLabel( QLabel ):
 
     txt = txt + txt_value_parameter
     self.setText( unicode(txt) )
-                 
-          
+
+
   def setlock( self, default):
-    """ This function is to set lock or unlock data """   
+    """ This function is to set lock or unlock data """
     self.lock_id.setChecked(default)
 
-    txt = self.setOptionMenu(self.default_id.isChecked(), default)
+    txt = self.paramLabelText(self.default_id.isChecked(), default)
     
     txt_value_parameter = self.readText(self.text())
     while (self.readText(txt_value_parameter) != txt_value_parameter) :
@@ -1333,10 +1331,11 @@ class ParameterLabel( QLabel ):
     
 
   def defaultChanged( self, checked=False ):
-    #print "-- FUNCTION defaultChanged : neuroProcessesGUI / ParameterLabel --" 
+    # print "-- FUNCTION defaultChanged : neuroProcessesGUI / ParameterLabel --", checked
     self.emit( SIGNAL( 'toggleDefault' ), self.parameterName )
 
-    txt = self.setOptionMenu(self.default_id.isChecked(), self.lock_id.isChecked())
+    txt = self.paramLabelText(self.default_id.isChecked(), self.lock_id.isChecked())
+    print 'txt:', txt
 
     txt_value_parameter = self.readText(self.text())
     while (self.readText(txt_value_parameter) != txt_value_parameter) :
@@ -1348,12 +1347,12 @@ class ParameterLabel( QLabel ):
 
 
   def setDefault( self, default ):
-    #print "-- FUNCTION setDefault : neuroProcessesGUI / ParameterLabel --" 
+    # print "-- FUNCTION setDefault : neuroProcessesGUI / ParameterLabel --"
     self.default_id.setChecked( default )
     
     #self.lockChanged()
     
-    txt = self.setOptionMenu(self.default_id.isChecked(), self.lock_id.isChecked())
+    txt = self.paramLabelText(self.default_id.isChecked(), self.lock_id.isChecked())
 
     txt_value_parameter = self.readText(self.text())
     while (self.readText(txt_value_parameter) != txt_value_parameter) :
@@ -1551,8 +1550,7 @@ class ParameterizedWidget( QWidget ):
     self.readUserValues()
     self._doUpdateParameterValue = False
     default=parameterized.isDefault( parameterName )
-    self.setValue( parameterName, value,
-                                            default = default)
+    self.setValue( parameterName, value, default = default)
     self.labels[ parameterName ].setDefault( default )
     
     #lock system
@@ -1645,8 +1643,10 @@ class ParameterizedWidget( QWidget ):
     # DiskItems now inherit from QObject and emit lockChanged signal when the lock changes
     if isinstance(oldValue, QObject):
       self.disconnect(oldValue, SIGNAL("lockChanged"), self.labels[parameterName].setlock)
+      self.disconnect(oldValue, SIGNAL("lockChanged"), self.editors[parameterName].lockChanged)
     if isinstance(value, QObject):
       self.connect(value, SIGNAL("lockChanged"), self.labels[parameterName].setlock )
+      self.connect(value, SIGNAL("lockChanged"), self.editors[parameterName].lockChanged)
 
 
 #----------------------------------------------------------------------------
