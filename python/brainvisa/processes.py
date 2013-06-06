@@ -789,9 +789,14 @@ class Parameterized( object ):
         del self._warn[ parameterName ]
 
   def setOptional( self, *args ):
-    """Indicates the the parameters are not mandatory."""
+    """Indicates that the parameters are not mandatory."""
     for k in args:
       self.signature[ k ].mandatory = False
+
+  def setMandatory( self, *args ):
+    """Indicates that the parameters are mandatory."""
+    for k in args:
+      self.signature[ k ].mandatory = True
 
   def setConvertedValue( self, name, value ):
     """Sets the value but stores the previous value in an internal dictionary."""
