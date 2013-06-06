@@ -33,7 +33,8 @@
 from brainvisa.processing.qtgui.backwardCompatibleQt \
     import QLineEdit, SIGNAL, QPushButton, QToolButton, \
            Qt, QIcon, QWidget, QFileDialog, QVBoxLayout, \
-           QListWidget, QHBoxLayout, QSpacerItem, QSizePolicy, QSize, QMenu
+           QListWidget, QHBoxLayout, QSpacerItem, QSizePolicy, QSize, QMenu, \
+           QPalette, QColor
 from soma.wip.application.api import findIconFile
 from soma.qtgui.api import largeIconSize
 from brainvisa.data.qtgui.diskItemBrowser import DiskItemBrowser
@@ -208,6 +209,24 @@ class DiskItemEditor( QWidget, DataEditor ):
         self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.diskItem )
     self._textChanged = 0
     self.forceDefault = 0
+    self.valuePropertiesChanged( default )
+
+  def valuePropertiesChanged( self, isDefault ):
+    pal = QPalette()
+    #if not isDefault:
+      #pal.setColor( QPalette.Text, QColor( 0, 0, 255 ) )
+    if self.diskItem is not None and self.diskItem.isLockData():
+      pal.setColor( QPalette.Base, QColor( 255, 230, 230 ) )
+    self.led.setPalette( pal )
+
+  def lockChanged( self, locked ):
+    pal = self.led.palette()
+    if self.diskItem is not None and self.diskItem.isLockData():
+      pal.setColor( QPalette.Base, QColor( 255, 230, 230 ) )
+    else:
+      pal2 = QPalette()
+      pal.setColor( QPalette.Base, pal2.color( QPalette.Base ) )
+    self.led.setPalette( pal )
 
   def checkReadable( self ):
     if self.btnShow:
