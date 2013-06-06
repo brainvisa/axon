@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -35,52 +36,73 @@ name = 'Mesh smoothing'
 userLevel = 3
 
 signature = Signature(
-    'mesh', ReadDiskItem( 'Mesh', [ 'Mesh Mesh', 'Tri Mesh' ] ), 
-    'directory', ReadDiskItem( 'Directory', 'Directory' ), 
-    'iterations', Integer(), 
-    'rate', Float(), 
+    'mesh', ReadDiskItem( 'Mesh', ['Mesh Mesh', 'Tri Mesh'] ),
+    'ouput_mesh', WriteDiskItem( 'Mesh', ['Mesh Mesh', 'Tri Mesh'] ),
+    #'directory', ReadDiskItem( 'Directory', 'Directory' ),
+    'algorithm', Choice( 'Lowpass', 'SimpleSpring', 'PolygonSpring', 'Laplacian'),
+    'iterations', Integer(),
+    'rate', Float(),
 )
 
+def buildNewSignature(self, algo):
+    paramSignature = ['mesh', ReadDiskItem('Mesh', ['Mesh Mesh', 'Tri Mesh']),
+                      'ouput_mesh', WriteDiskItem('Mesh', ['Mesh Mesh', 'Tri Mesh'])]
+    #paramSignature += ['directory', ReadDiskItem( 'Directory', 'Directory' )]
+    paramSignature += ['algorithm', Choice('Lowpass', 'SimpleSpring', 'PolygonSpring', 'Laplacian'),
+                       'iterations', Integer(),
+                       'rate', Float()]
+    if algo=='Laplacian':
+        paramSignature += ['angle', Integer()]
+    elif algo=='SimpleSpring' or algo=='PolygonSpring':
+        paramSignature += ['restoringForce', Float()]
+    
+    signature = Signature( *paramSignature )
+    self.changeSignature( signature )
 
 def initialization( self ):
-    self.setOptional( 'mesh' )
-    self.setOptional( 'directory' )
-    self.setOptional( 'iterations' )
-    self.setOptional( 'rate' )
-    self.iterations = 10;
+    self.addLink( None, 'algorithm', self.buildNewSignature )
+    #self.setOptional( 'directory' )
+    self.algorithm = 'Lowpass'
+    self.iterations = 30
     self.rate = 0.2
+    self.angle = 180
+    self.restoringForce = 0.2
 
 def execution( self, context ):
-    files = []
-    if self.mesh is None:
-        if not ( self.directory is None ):
-            d = os.listdir( self.directory.fullPath() )
-            p = self.directory.fullPath()
-            for i in d:
-                try:
-                    msh = ReadDiskItem( 'Mesh', [ 'Mesh mesh', 'tri mesh' ] \
-                                        ).findValue( os.path.join( p, i ) )
-                    files.append( msh )
-                except:
-                    pass
-        else:
-            context.write( 'error: must specify one of "mesh" or "directory"' )
-            return
-    else:
-        if not ( self.directory is None ):
-            context.write( 'error: must specify only one of "mesh" or \
-            "directory"' )
-            return
-        else:
-            files = [ self.mesh ]
+    #files = []
+    #if self.mesh is None:
+        #if not ( self.directory is None ):
+            #d = os.listdir( self.directory.fullPath() )
+            #p = self.directory.fullPath()
+            #for i in d:
+                #try:
+                    #msh = ReadDiskItem( 'Mesh', [ 'Mesh mesh', 'tri mesh' ] \
+                                        #).findValue( os.path.join( p, i ) )
+                    #files.append( msh )
+                #except:
+                    #pass
+        #else:
+            #context.write( 'error: must specify one of "mesh" or "directory"' )
+            #return
+    #else:
+        #if not ( self.directory is None ):
+            #context.write( 'error: must specify only one of "mesh" or \
+            #"directory"' )
+            #return
+        #else:
+            #files = [ self.mesh ]
     tri = getFormat( 'tri mesh' )
-    for i in files:
-        cmd = [ 'AimsMeshSmoothing',  '-i', i.fullPath() ]
-        if i.format is tri:
-            cmd.append( '--tri' )
-        if self.iterations is not None:
-            cmd += [ '-n', str( self.iterations ) ]
-        if self.rate is not None:
-            cmd += [ '-I', '-r', str( self.rate ) ]
-        context.system( *cmd )
+    #for i in files:
+    cmd = [ 'AimsMeshSmoothing',  '-i', self.mesh, '--algoType', self.algorithm ]
+    if self.mesh.format is tri:
+        cmd += [ '--tri' ]
+    if self.iterations is not None:
+        cmd += [ '--nIteration', self.iterations ]
+    if self.rate is not None:
+        cmd += [ '--rate', self.rate ]
+    if self.algorithm == 'Laplacian':
+        cmd += [ '--featureAngle', self.angle ]
+    elif self.algorithm == 'SimpleSpring' or self.algorithm == 'PolygonSpring':
+        cmd += [ '--springForce', self.restoringForce ]
+    context.system( *cmd )
 
