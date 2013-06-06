@@ -2239,26 +2239,6 @@ class ProcessView( QWidget, ExecutionContextGUI ):
           item = p
 
 
-  def _addToLockSelection( self ):
-    dialog = self.findChild( QDialog, 'locked_files_list_edition' )
-    tablew = dialog.findChild( QTableWidget )
-    for i in xrange( tablew.rowCount() ):
-      item = tablew.item( i, 0 )
-      if item and item.isSelected() and item.data( Qt.UserRole ) != '1':
-        item = QTableWidgetItem()
-        item.setData( Qt.DecorationRole, ProcessView.pixProcessFinished )
-        item.setData( Qt.UserRole, '1' )
-        tablew.setItem( i, 0, item )
-
-  def _removeFromLockSelection( self ):
-    dialog = self.findChild( QDialog, 'locked_files_list_edition' )
-    tablew = dialog.findChild( QTableWidget )
-    for i in xrange( tablew.rowCount() ):
-      item = tablew.item( i, 0 )
-      if item and item.isSelected() and item.data( Qt.UserRole ) == '1':
-        item.setData( Qt.DecorationRole, None )
-        item.setData( Qt.UserRole, '0' )
-
   def _changeAllLockedFiles( self, procOrNode, setLock ):
     files = procOrNode.allParameterFiles()
     # filter out non-existing files and already locked ones
@@ -2270,23 +2250,23 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     dialog = lockFilesGUI.LockedFilesListEditor( self, files, setLock )
     if dialog.exec_():
       files = dialog.selectedDiskItems()
-    if files:
-      if setLock:
-        print 'Locking...'
-        for f in files:
-          try:
-            f.lockData()
-          except IOError:
-            pass # probably not writeable
-        print 'done.'
-      else:
-        print 'Unlocking...'
-        for f in files:
-          try:
-            f.unlockData()
-          except IOError:
-            pass
-        print 'done.'
+      if files:
+        if setLock:
+          print 'Locking...'
+          for f in files:
+            try:
+              f.lockData()
+            except IOError:
+              pass # probably not writeable
+          print 'done.'
+        else:
+          print 'Unlocking...'
+          for f in files:
+            try:
+              f.unlockData()
+            except IOError:
+              pass
+          print 'done.'
 
   def menuLockAllFiles( self ):
     self._changeAllLockedFiles( self.process, True )

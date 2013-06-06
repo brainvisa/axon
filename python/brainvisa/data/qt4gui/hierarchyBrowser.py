@@ -303,7 +303,7 @@ class HierarchyBrowser( QWidget ):
         self.refreshSelectedItems()
         event.accept()
       else:
-        super( self, QWidget ).keyPressEvent( self, event )
+        QWidget.keyPressEvent( self, event )
 
     def refreshSelectedItems( self ):
       selected = self.selectedItems()
