@@ -533,7 +533,8 @@ def mapChildrenParametersToValues(destNode, sourceNode, dest, source, value = No
 
   destObject, destParameter = destNode.parseParameterString( dest )
   setattr(destObject, destParameter, r)
-  
+
+
 #----------------------------------------------------------------------------
 class Parameterized( object ):
   """

@@ -62,6 +62,9 @@ class DataEditor( object ):
     '''
     pass
 
+  def valuePropertiesChanged( self, isdefault=None ):
+    pass
+
 
 #----------------------------------------------------------------------------
 class StringEditor( QLineEdit, DataEditor ):

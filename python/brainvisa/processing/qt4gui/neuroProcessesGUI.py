@@ -1335,7 +1335,6 @@ class ParameterLabel( QLabel ):
     self.emit( SIGNAL( 'toggleDefault' ), self.parameterName )
 
     txt = self.paramLabelText(self.default_id.isChecked(), self.lock_id.isChecked())
-    print 'txt:', txt
 
     txt_value_parameter = self.readText(self.text())
     while (self.readText(txt_value_parameter) != txt_value_parameter) :
@@ -1479,6 +1478,7 @@ class ParameterizedWidget( QWidget ):
         v = getattr( self.parameterized, k, None )
         if v is not None: 
           self.setValue( k, v, 1 )
+        e.valuePropertiesChanged( self.parameterized.isDefault( k ) )
         e.connect( e, SIGNAL('noDefault'), self.removeDefault )
         e.connect( e, SIGNAL('newValidValue'), self.updateParameterValue )
 #lock#        btn = NamedPushButton( hb, k )
@@ -1552,6 +1552,7 @@ class ParameterizedWidget( QWidget ):
     default=parameterized.isDefault( parameterName )
     self.setValue( parameterName, value, default = default)
     self.labels[ parameterName ].setDefault( default )
+    self.editors[ parameterName ].valuePropertiesChanged( default )
     
     #lock system
     self.labels[parameterName].setlock(self._setlock_system(parameterName))
@@ -1569,23 +1570,17 @@ class ParameterizedWidget( QWidget ):
     #lock system   
     self.labels[ name ].setlock(self._setlock_system(name))
     
-    self.parameterized.setDefault( name, False )  
+    self.parameterized.setDefault( name, False )
     self.labels[ name ].setDefault( False )
+    self.editors[ name ].valuePropertiesChanged( False )
 #lock#    self.btnLock[ name ].setPixmap( self.pixDefault )
 #lock#    self.btnLock[ name ].setOn( 1 )
 #lock#    self.btnLock[ name ].show()
 
   def _toggleDefault( self, name ):
-    if self.parameterized.isDefault( name ):
-      self.parameterized.setDefault( name, False )
-#lock#      self.btnLock[ name ].setPixmap( self.pixDefault )
-#lock#      self.btnLock[ name ].setOn( 1 )
-#lock#      self.btnLock[ name ].show()
-    else:
-      self.parameterized.setDefault( name, True )
-#lock#      self.btnLock[ name ].setPixmap( self.pixCustom )
-#lock#      self.btnLock[ name ].setOn( 0 )
-#lock#      self.btnLock[ name ].hide()
+    isdefault = not self.parameterized.isDefault( name )
+    self.parameterized.setDefault( name, isdefault )
+    self.editors[ name ].valuePropertiesChanged( isdefault )
 
 
   def _lock_system( self, name ):

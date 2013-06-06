@@ -213,8 +213,8 @@ class DiskItemEditor( QWidget, DataEditor ):
 
   def valuePropertiesChanged( self, isDefault ):
     pal = QPalette()
-    #if not isDefault:
-      #pal.setColor( QPalette.Text, QColor( 0, 0, 255 ) )
+    if not isDefault:
+      pal.setColor( QPalette.Text, QColor( 0, 0, 255 ) )
     if self.diskItem is not None and self.diskItem.isLockData():
       pal.setColor( QPalette.Base, QColor( 255, 230, 230 ) )
     self.led.setPalette( pal )
