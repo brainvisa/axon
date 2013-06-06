@@ -30,7 +30,7 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
-from brainvisa.processing.qtgui.backwardCompatibleQt import QWidget, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QIcon, QHBoxLayout, QVBoxLayout, QTextEdit, QSpacerItem, QSizePolicy, QSize, QPushButton, SIGNAL, qApp, QMenu, QCursor, QDrag, QPixmap, QMimeData, Qt, QMessageBox, QPoint, QApplication, QUrl, QSplitter
+from brainvisa.processing.qtgui.backwardCompatibleQt import QWidget, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QIcon, QHBoxLayout, QVBoxLayout, QTextEdit, QSpacerItem, QSizePolicy, QSize, QPushButton, SIGNAL, qApp, QMenu, QCursor, QDrag, QPixmap, QMimeData, Qt, QMessageBox, QPoint, QApplication, QUrl, QSplitter, QBrush, QColor
 import os
 
 from soma.wip.application.api import findIconFile
@@ -200,6 +200,8 @@ class HierarchyBrowser( QWidget ):
               # create or retrieve items for directories in the item's path
               #path=item.relativePath()
               path=item.fullPath()
+              if path.endswith( '.lock' ):
+                continue # skip .lock files
               if path.startswith( dbItem.path ):
                 path = path[ len( dbItem.path ) + 1: ]
               splitted = brainvisa.processes.pathsplit( path )
@@ -222,7 +224,10 @@ class HierarchyBrowser( QWidget ):
               viewItem.database = parentDir.database
               viewItem.diskItem = item
               viewItem.path = os.path.join( parentDir.path, splitted[ -1 ] )
-              viewItem.setText( 0, splitted[ -1 ] )
+              text = splitted[ -1 ]
+              viewItem.setText( 0, splitted[-1] )
+              if item.isLockData():
+                viewItem.setBackground( 0, QBrush( QColor( 255, 230, 230 ) ) )
               #viewItem.setDragEnabled(True)
               # File or Directory
               if isinstance( item, neuroDiskItems.Directory ):
@@ -301,6 +306,9 @@ class HierarchyBrowser( QWidget ):
         event.accept()
       elif event.key() == Qt.Key_F5:
         self.refreshSelectedItems()
+        event.accept()
+      elif event.key() == Qt.Key_W and event.modifiers() & Qt.ControlModifier:
+        self.close()
         event.accept()
       else:
         QWidget.keyPressEvent( self, event )
@@ -465,6 +473,8 @@ class HierarchyBrowser( QWidget ):
       for item in items:
         if item.diskItem:
           item.diskItem.lockData()
+          if item.diskItem.isLockData():
+            item.setBackground( 0, QBrush( QColor( 255, 230, 230 ) ) )
 
 
     def menuUnlockItem( self ):
@@ -472,6 +482,24 @@ class HierarchyBrowser( QWidget ):
       for item in items:
         if item.diskItem:
           item.diskItem.unlockData()
+          if not item.diskItem.isLockData():
+            item.setBackground( 0, QBrush( QColor( 255, 255, 255 ) ) )
+
+
+    def _updateSelectedItemsChildren( self ):
+      items = self.selectedItems()
+      while items:
+        item = items.pop()
+        if item.diskItem:
+          locked = item.diskItem.isLockData()
+          if locked:
+            if item.background( 0 ).color() != QColor( 255, 230, 230 ):
+              item.setBackground( 0, QBrush( QColor( 255, 230, 230 ) ) )
+          else:
+            if item.background( 0 ).color() != QColor( 255, 255, 255 ):
+              item.setBackground( 0, QBrush( QColor( 255, 255, 255 ) ) )
+        for i in xrange( item.childCount() ):
+          items.append( item.child( i ) )
 
 
     def _menuLockAll( self, setLock ):
@@ -529,6 +557,7 @@ class HierarchyBrowser( QWidget ):
               except IOError:
                 pass
             print 'done.'
+        self._updateSelectedItemsChildren()
 
 
     def menuLockAll( self ):
