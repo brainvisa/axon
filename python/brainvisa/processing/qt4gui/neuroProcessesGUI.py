@@ -3848,8 +3848,20 @@ class ProcessTreesWidget(QSplitter):
         item=it.value()
         if not item.isHidden():
           if item.model.isLeaf(): # for a leaf (process) search string in name
+            keep = False
             if item.model.name.lower().find(name) > -1 \
                 or item.model.id.lower().find(name) > -1:
+              keep = True
+            else:
+              # also try to find the untranslated process name
+              try:
+                proc = brainvisa.processes.getProcess( item.model.id )
+                pname = proc.name
+                if pname.lower().find(name) > -1:
+                  keep = True
+              except:
+                pass
+            if keep:
               self.select(widget, item, lastSelection)
               lastSelection=(widget, item)
               yield item
