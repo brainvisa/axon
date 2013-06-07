@@ -3848,7 +3848,8 @@ class ProcessTreesWidget(QSplitter):
         item=it.value()
         if not item.isHidden():
           if item.model.isLeaf(): # for a leaf (process) search string in name
-            if item.model.name.lower().find(name) > -1:
+            if item.model.name.lower().find(name) > -1 \
+                or item.model.id.lower().find(name) > -1:
               self.select(widget, item, lastSelection)
               lastSelection=(widget, item)
               yield item
