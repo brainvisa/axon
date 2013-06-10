@@ -48,6 +48,7 @@ import types
 from brainvisa.data.writediskitem import WriteDiskItem
 
 from brainvisa.data.neuroDiskItems import DiskItem
+from brainvisa.processes import defaultContext
 
 
 
@@ -59,11 +60,9 @@ class HistoryBook( object ):
   '''
   
   _allBooks = weakref.WeakValueDictionary()
-  #_today = "" #store date used to update expert_settings.last_modification when store process is finished
   
   def __new__( cls, directory, compression=False ):
     book = HistoryBook._allBooks.get( directory )
-#    print '!history! __new__ HistoryBook', directory
     if book is None:
       book = object.__new__( cls )
       HistoryBook._allBooks[ directory ] = book
@@ -71,7 +70,6 @@ class HistoryBook( object ):
   
   
   def __init__( self, directory, compression=False ):
-#    print '!history! __new__ HistoryBook', directory
     if hasattr( self, '_HistoryBook__dir' ):
       # self has already been created but __init__ is always
       # called after __new__
@@ -86,7 +84,6 @@ class HistoryBook( object ):
 
 
   def storeEvent( self, event, compression=None , storeBvproc = False):
-    #print '! history : storeEvent', event
     if isinstance( event, ProcessExecutionEvent ):
       # Store an event corresponding to current BrainVISA session
       # if it is not already done.
@@ -97,15 +94,13 @@ class HistoryBook( object ):
         self.storeEvent( bvsessionEvent )
     if compression is None:
       compression = self.__compression
-    #print '!history! store in', self.__dir, ':', event
-    #At first, save bvproc and bvsession directly into history_book directory. Then, at the end, 
-    #files will be moved into a directory with date. In fact, the date can change between the start 
-    #and the end.
     
     bvprocFileName = os.path.join( self.__dir, "bvsession",  str( event.uuid ) + '.' + event.eventType )
     if not os.path.exists( os.path.join( self.__dir, "bvsession" ) ):
       os.makedirs( os.path.join( self.__dir, "bvsession" ) )
+
     if storeBvproc : #called by storeProcessFinished
+      os.remove(bvprocFileName) 
       timeDirectory = time.strftime('%Y-%m-%d',time.localtime())  
       eventDirectory = os.path.join( self.__dir, timeDirectory )
       if not os.path.exists( eventDirectory ): 
@@ -114,14 +109,10 @@ class HistoryBook( object ):
         eventFileName = os.path.join( eventDirectory, str( event.uuid ) + '.' + event.eventType )
       except:
         neuroException.showException()
-      #then rm the old file in history_book which is like a temporary file
-      os.remove(bvprocFileName) 
     else :
       eventFileName = bvprocFileName 
-    #print '! history : store event', eventFileName
+    
     event.save( eventFileName, compression, storeBvproc) 
-
-
 
 
   def findEvent( self, uuid, default=Undefined ):
@@ -144,7 +135,6 @@ class HistoryBook( object ):
   
   def removeEvent( self, uuid ):
     os.remove( self._findEventFileName( uuid ) )
-
 
 
   @staticmethod
@@ -193,7 +183,6 @@ class HistoryBook( object ):
     event.setLog( event._logItem )
     for book, items in historyBooksContext.iteritems():
       changedItems = [item for item, hash in items.itervalues() if hash != item.modificationHash()]
-      #database = item.getHierarchy( '_database' )
       event.content[ 'modified_data' ] = [unicode(item) for item in changedItems]
       book.storeEvent( event, storeBvproc = True )
       #update the the lastHistoricalEvent of each diskitems
@@ -216,6 +205,8 @@ class HistoricalEvent( object ):
 
   def save( self, eventFileName, compression=False, storeBvproc = False):
     close = True
+    writeMinFile = False
+    
     if type( eventFileName ) in ( str, unicode ):
       if compression:
         eventFile = gzipOpen( eventFileName, mode='w' )
@@ -226,12 +217,25 @@ class HistoricalEvent( object ):
       close = False
 
     writeMinf( eventFile, ( self, ), reducer=minfHistory )
+    
+    #write the .minf
     if storeBvproc :
-      minf = {}
-      minf ['uuid'] = self.uuid
-      # bvProcDiskItem = neuroHierarchy.databases.createDiskItemFromFileName(eventFileName)
-      bvProcDiskItem = WriteDiskItem( 'Process execution event', 'Process execution event' ).findValue( eventFileName )
-      bvProcDiskItem._writeMinf(minf)
+      writeMinFile = True
+      if self.eventType == 'bvproc':
+        bvProcDiskItem = WriteDiskItem( 'Process execution event', 'Process execution event' ).findValue( eventFileName )
+    else :   
+      if self.eventType == 'bvsession':
+        writeMinFile = True
+        bvProcDiskItem = WriteDiskItem( 'BrainVISA session event', 'BrainVISA session event' ).findValue( eventFileName )
+     
+    if writeMinFile :  
+      if bvProcDiskItem is not None :
+        minf = {}
+        minf ['uuid'] = self.uuid
+        bvProcDiskItem._writeMinf(minf)
+      else :
+        defaultContext().warning("No diskitem for BrainVISA session event or Process execution event")
+    
     
     if close:
       eventFile.close()
