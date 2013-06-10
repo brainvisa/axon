@@ -484,7 +484,7 @@ class SQLDatabase( Database ):
       yield diskitems
 
 
-  def updateIncremental( self, directoriesToScan=None, recursion=True, context=None, scanAllBvproc = False):
+  def updateHistoryFiles( self, directoriesToScan=None, recursion=True, context=None, scanAllBvproc = False):
     """
     Method to update a database based on reading bvproc and the date of the last incremental date in order to avoid the whole scan
     of files. Faster than updateAll method.
@@ -496,15 +496,18 @@ class SQLDatabase( Database ):
     directory = os.path.join( self.name, "history_book" )
     params = neuroConfig.DatabaseSettings(self.name)
     last_incremental_update = params.expert_settings.last_incremental_update
-    t = time.mktime( time.strptime( last_incremental_update, '%Y-%m-%d-%H:%M' ) ) 
+    if last_incremental_update == "" :
+      t = time.mktime( time.strptime( "1970-01-01-00:00", '%Y-%m-%d-%H:%M' ) ) 
+    else :
+      t = time.mktime( time.strptime( last_incremental_update, '%Y-%m-%d-%H:%M' ) ) 
     t0 = time.time()
-    #print '!updateIncremental ! : val de last_incremental_update ', t
+
     
     #INI of the list of bvproc files  
     for f in os.listdir( directory ):
       if os.path.isdir(os.path.join( directory, f)): 
         for readFile in os.listdir(os.path.join( directory, f)) :
-          if readFile.endswith( '.bvproc' ):
+          if readFile.endswith( '.bvproc' ) or readFile.endswith( '.bvsession' ):
             ff = os.path.join( directory, f, readFile )
             if not scanAllBvproc :
               s = os.stat( ff )
@@ -519,32 +522,54 @@ class SQLDatabase( Database ):
     
     if len(infiles)>0 :
       for bvprocfile in infiles:
-        p = readMinf( bvprocfile )[0] # ProcessExecutionEvent object
-        idf = os.path.basename( bvprocfile )
-        idf = idf[ : idf.rfind( '.' ) ]
-        halive = False
-        listModifiedFiles = p.content.get( 'modified_data', [] ) 
-        listModifiedFiles.append(bvprocfile) #add the bvprocfile name in order to update it too
-        for par in listModifiedFiles:
-          addit = False
+        addit = False
+        #scan bvproc
+        if bvprocfile.endswith( '.bvproc' ):
+          p = readMinf( bvprocfile )[0] # ProcessExecutionEvent object
+          idf = os.path.basename( bvprocfile )
+          idf = idf[ : idf.rfind( '.' ) ]
+          halive = False
+          listModifiedFiles = p.content.get( 'modified_data', [] ) 
+          listModifiedFiles.append(bvprocfile) #add the bvprocfile name in order to update it too
+          for par in listModifiedFiles:
+            #addit = False
+            try:
+              item = self.getDiskItemFromFileName( par )  # already exists in DB: no need to add it
+            except:
+              try:
+                item = self.createDiskItemFromFileName( par )
+                addit = True
+              except:
+                  context.write('Warning: file', par, 'cannot be inserted in any database.')
+                  continue
+            scanned += 1
+            if item is not None and (isinstance( item, DiskItem )) and item.isReadable() and item.get("_database", None) and ( not hasattr( item, '_isTemporary' ) or not item._isTemporary ):
+              if addit : 
+                toadd.add( item )
+              lasth = item.get( 'lastHistoricalEvent', None )
+              if lasth is not None and lasth == idf : halive = True
+          if not halive:  #print 'history file', bvprocfile, 'is obsolete'
+            deadhistories.add( bvprocfile )
+          else:
+            livehistories.add( bvprocfile )
+        
+        #scan bvsession
+        elif bvprocfile.endswith( '.bvsession' ):
           try:
-            item = self.getDiskItemFromFileName( par )  # already exists in DB: no need to add it
+            item = self.getDiskItemFromFileName( bvprocfile )  # already exists in DB: no need to add it
           except:
             try:
-              item = self.createDiskItemFromFileName( par )
+              item = self.createDiskItemFromFileName( bvprocfile )
               addit = True
             except:
-                context.write('Warning: file', par, 'cannot be inserted in any database.')
-                continue
-          scanned += 1
+              context.write('Warning: file', bvprocfile, 'cannot be inserted in any database.')
+              continue
           if item is not None and (isinstance( item, DiskItem )) and item.isReadable() and item.get("_database", None) and ( not hasattr( item, '_isTemporary' ) or not item._isTemporary ):
-            if addit : toadd.add( item )
-            lasth = item.get( 'lastHistoricalEvent', None )
-            if lasth is not None and lasth == idf : halive = True
-            if not halive:  #print 'history file', bvprocfile, 'is obsolete'
-              deadhistories.add( bvprocfile )
-            else:
-              livehistories.add( bvprocfile )
+            if addit : 
+              toadd.add( item )
+              
+        
+        
     else : context.write("None history file to update, please check the organisation of history files. Use the BvProc sorting process into the Data Management toolbox.")
 
     context.write('parsing done. Scanned %d files/items.' % scanned)
@@ -553,6 +578,7 @@ class SQLDatabase( Database ):
     context.write('dead history files:', len( deadhistories ))
     context.write('list of dead history files:', deadhistories )
 
+    #dead files are not removed for the moment, because a bvproc could referenced other files. 
     context.write('removing dead histories...')
     for item in deadhistories:
       diskItem = self.getDiskItemFromFileName( item, None )
@@ -565,6 +591,7 @@ class SQLDatabase( Database ):
     context.write('done.')
   
     context.write('adding %d disk items...' % len( toadd ))
+    context.write('adding ', toadd )
     if simulation:
       context.write('Nothing changed: we are in simulation mode.')
     else:
@@ -573,11 +600,9 @@ class SQLDatabase( Database ):
           self.insertDiskItem( item, update=True )
         except NotInDatabaseError:
           pass
-#            except:
-#              showException()
 
     #update the date of last_incremental_update
-    if not scanAllBvproc :
+    if not scanAllBvproc or last_incremental_update == "":
       date_last_incremental_update = time.strftime('%Y-%m-%d-%H:%M',time.localtime())  
       params = neuroConfig.DatabaseSettings(self.name)
       params.expert_settings.last_incremental_update = date_last_incremental_update
@@ -825,8 +850,8 @@ class SQLDatabase( Database ):
     if insertParentDirs:
       diSet = self._diskItemsWithParents( diskItems )
     try:
+      #print "sqlFSODatabase : insertDiskItems ", diSet
       for diskItem in diSet:
-        #print '!insertDiskItems!', diskItem
         if diskItem.type is None:
           raise DatabaseError( _('Cannot insert an item wthout type in a database: %s') % ( unicode( diskItem ), ) )
         try:
@@ -869,6 +894,7 @@ class SQLDatabase( Database ):
           destination_referential = None
           source_referential = None
         try:
+          #print "!!!!!!insert into diskitem : insert", uuid, minf
           cursor.execute( 'INSERT INTO _DISKITEMS_ (_uuid, _diskItem) VALUES (? ,?)', ( uuid, minf ) )
           if source_referential and destination_referential:
             #print '!insert transformation!', uuid, source_referential, destination_referential 
@@ -930,7 +956,7 @@ class SQLDatabase( Database ):
               values.append( v )
             else:
               values.append( unicode( v ) )
-          #print '!insertDiskItems!', sql, values, [ type(i) for i in values ]
+          #print '!!', sql, values, [ type(i) for i in values ]
           if delete:
             cursor.execute( 'DELETE FROM "' + tableName + '" WHERE _uuid=?', ( uuid, ) )
           cursor.execute( sql, values )
@@ -947,9 +973,13 @@ class SQLDatabase( Database ):
   
   def removeDiskItems( self, diskItems, eraseFiles=False ):
     cursor = self._getDatabaseCursor()
+    print "sqlFSODatabase : removeDiskItems ", diskItems
+    print "sqlFSODatabase : type ", type(diskItems)
     try:
       for diskItem in diskItems:
+        print "avant uuid"
         uuid = str( diskItem.uuid( saveMinf=False ) )
+        print "sqlFSODatabase : removeDiskItems ", uuid
         cursor.execute( 'DELETE FROM _DISKITEMS_ WHERE _uuid=?', ( uuid, ) )
         cursor.execute( 'DELETE FROM _FILENAMES_ WHERE _uuid=?', ( uuid, ) )
         tableName, tableFields, tableAttributes, sql = self._tableFieldsAndInsertByTypeName[ diskItem.type.name ]

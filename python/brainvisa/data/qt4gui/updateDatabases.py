@@ -80,19 +80,19 @@ class UpdateDatabasesGUI( qt.QWidget ):
     self.classic_chkbx.setCheckable(True)
     self.classic_chkbx.setChecked( True )
     
-    self.quick_incremental_method_chkbx = qt.QCheckBox( _t_( '&quick incremental method' ) )
-    layout1.addWidget( self.quick_incremental_method_chkbx )
-    self.quick_incremental_method_chkbx.setCheckable(True)
-    self.quick_incremental_method_chkbx.setChecked( False )
+    self.quick_hf_method_chkbx = qt.QCheckBox( _t_( '&quick history files') )
+    layout1.addWidget( self.quick_hf_method_chkbx )
+    self.quick_hf_method_chkbx.setCheckable(True)
+    self.quick_hf_method_chkbx.setChecked( False )
     
-    self.incremental_method_chkbx = qt.QCheckBox( _t_( '&incremental method' ) )
-    layout1.addWidget( self.incremental_method_chkbx )
-    self.incremental_method_chkbx.setCheckable(True)
-    self.incremental_method_chkbx.setChecked( False )
+    self.history_files_method_chkbx= qt.QCheckBox( _t_( '&history files') )
+    layout1.addWidget( self.history_files_method_chkbx )
+    self.history_files_method_chkbx.setCheckable(True)
+    self.history_files_method_chkbx.setChecked( False )
 
     self.button_group = qt.QButtonGroup(self)
-    self.button_group.addButton(self.incremental_method_chkbx)
-    self.button_group.addButton(self.quick_incremental_method_chkbx)
+    self.button_group.addButton(self.history_files_method_chkbx)
+    self.button_group.addButton(self.quick_hf_method_chkbx)
     self.button_group.addButton(self.classic_chkbx)
 
     self.btnClearAndUpdate = qt.QPushButton( _t_( '&Update' ) )
@@ -118,11 +118,11 @@ class UpdateDatabasesGUI( qt.QWidget ):
   def classic_method( self ):
     return self.classic_chkbx.isChecked()
 
-  def quick_incremental_method( self ):
-    return self.quick_incremental_method_chkbx.isChecked()
+  def quick_hf_method( self ):
+    return self.quick_hf_method_chkbx.isChecked()
 
-  def incremental_method( self ):
-    return self.incremental_method_chkbx.isChecked()
+  def history_files_method( self ):
+    return self.history_files_method_chkbx.isChecked()
 
   
   

@@ -53,8 +53,8 @@ userLevel = 0
 def execution( self, context ):
   databases = mainThreadActions().call( context.inlineGUI.selectedDatabases )
   classic_method = mainThreadActions().call( context.inlineGUI.classic_method)
-  quick_incremental_method = mainThreadActions().call( context.inlineGUI.quick_incremental_method)
-  incremental_method = mainThreadActions().call( context.inlineGUI.incremental_method)
+  quick_hf_method = mainThreadActions().call( context.inlineGUI.quick_hf_method)
+  history_files_method = mainThreadActions().call( context.inlineGUI.history_files_method)
 
   for database in databases:
     # must close the connection currently opened in the main thread before clearing and updating the database
@@ -63,12 +63,17 @@ def execution( self, context ):
       database.clear( context=context )
       context.write( '<b>Clear database:', database.name, '</b>' )
     context.write( '<b>Update database:', database.name, '</b>' )
-    if quick_incremental_method :
-      database.updateIncremental( context=context, scanAllBvproc = False)
-    elif incremental_method :
-      database.updateIncremental( context=context, scanAllBvproc = True)
-    else :
+    
+    if classic_method:
       database.update( context=context )
+    elif database.activate_history:
+      if quick_hf_method :
+        database.updateHistoryFiles( context=context, scanAllBvproc = False)
+      elif history_files_method :
+        database.updateHistoryFiles( context=context, scanAllBvproc = True)
+    else :
+        context.write("The history option is not activated.")
+      
 
 def inlineGUI( self, values, context, parent, externalRunButton=False ):
   result = UpdateDatabasesGUI( parent )
