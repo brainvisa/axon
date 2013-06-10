@@ -93,6 +93,7 @@ class DataHistoryWindow(QtGui.QMainWindow):
     self.ui.info.setToolTip(self.data.fullPath())
     
     self.ui.text_widget.setReadOnly(True)
+    self.tabifyDockWidget( self.ui.text_dock, self.ui.log_dock )
     
 #    self.setAttribute(Q)
 #    QTextEdit.setReadOnly(True). While QTextEdit is a fairly
