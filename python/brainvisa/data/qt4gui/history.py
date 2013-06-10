@@ -121,27 +121,23 @@ class DataHistoryWindow(QtGui.QMainWindow):
         else:
           bvproc_file = os.path.join(self.data.get("_database", ""), 
                                      bvproc_file)
-        #print 'bvproc_file ', bvproc_file
-        if os.path.exists(bvproc_file):
-          minf = readMinf(bvproc_file)
-          #print "minf ", minf
-          if minf:
-            process_event=minf[0]
-            #print "! history qt4gui process_event : " , process_event
-            process=getProcessInstanceFromProcessEvent(process_event)
-            if process is not None:
-              self.show_process(process)
-            bvsession=process_event.content.get("bvsession", None)
-            log=process_event.content.get("log", None)
-            if log:
-              self.show_log(log, bvsession)
-      else : 
-        file_name = self.data.fullPath()
-        #print "! history qt4gui print type " , type(file_name) 
-        read_bvproc = readMinf(self.data.fullPath())[0]
-        #print "! history qt4gui print type " , type(read_bvproc) 
-        self.ui.text_widget.setText(str(read_bvproc))
-        #print read_bvproc
+      else :
+        bvproc_file = self.data.fullPath()
+      if os.path.exists(bvproc_file):
+        minf = readMinf(bvproc_file)
+        #print "minf ", minf
+        if minf:
+          process_event=minf[0]
+          #print "! history qt4gui process_event : " , process_event
+          process=getProcessInstanceFromProcessEvent(process_event)
+          if process is not None:
+            self.show_process(process)
+          bvsession=process_event.content.get("bvsession", None)
+          # print 'session:', bvsession
+          log=process_event.content.get("log", None)
+          if log:
+            self.show_log(log, bvsession)
+          self.ui.text_widget.setText(str(minf[0]))
 
 
   def closeEvent( self, event ):
@@ -179,7 +175,14 @@ class DataHistoryWindow(QtGui.QMainWindow):
     Enables to retrieve the brainvisa session history file and display it in the log window.
     """
     session_item=None
-    bvsession_file = os.path.join(self.data.get("_database", ""), "history_book", str(bvsession) + ".bvsession")
+    bvsession_file =  self.data.getFileNameFromUuid(str(bvsession))
+    if bvsession_file is None:
+      # try the old way, for a non-updated database
+      bvsession_file = os.path.join(self.data.get("_database", ""),
+        "history_book", str(bvsession) + ".bvsession")
+    else:
+      bvsession_file = os.path.join( self.data.get("_database", ""),
+        bvsession_file )
     if os.path.exists(bvsession_file):
       minf = readMinf(bvsession_file)
       if minf:
@@ -190,8 +193,8 @@ class DataHistoryWindow(QtGui.QMainWindow):
       logitems.extend(session_item)
     if log:
       logitems.extend(log)
-    
+
     logitems_viewer=LogItemsViewer(logitems, self)
     self.ui.log_widget.layout().addWidget(logitems_viewer)
-    
+
 
