@@ -35,6 +35,7 @@ from brainvisa.processes import *
 #from brainvisa.data import neuroHierarchy
 #from soma.minf.api import readMinf, writeMinf
 import sys, os
+from gadfly.gfsocket import LEN
 
 
 name = 'BvProc sorting'
@@ -65,7 +66,6 @@ def execution(self, context):
   
   #sort bvproc from a diretory
   history_directory = os.path.join(str(self.database.name), "history_book")
-  #bvsession_directory = os.path.join(history_directory, "bvsession")
   
   if (history_directory):  
     bvsession_directory = os.path.join(history_directory, "bvsession")
@@ -80,17 +80,16 @@ def execution(self, context):
       print path
       writeMinf( pathExpertSettings, ( params.expert_settings, ) )
     except IOError:
-      print "error"
+      print "params expert_settings error"
       pass
 
     fileCopy = False
     for fileToCopy in os.listdir( history_directory ):
-      print "FILE OR DIRECTORY", fileToCopy
+#      print "FILE OR DIRECTORY", fileToCopy
       if os.path.isfile(os.path.join(history_directory, fileToCopy)) :
-        print "FILE TO COPY", fileToCopy
+#        print "FILE TO COPY", fileToCopy
         if fileToCopy.endswith( '.bvproc' ) :
           f = os.path.join( history_directory, fileToCopy )
-          #infiles.append( ff )
           s = os.stat( f )
           date_fichier = time.strftime("%Y-%m-%d", time.gmtime(s.st_mtime))
           path = os.path.join( history_directory, date_fichier )
@@ -110,21 +109,14 @@ def execution(self, context):
   #        print to
           shutil.copyfile(fileToCopy, to)  
           shutil.copystat(fileToCopy, to)  
-          
-          #copy the .minf
-  #        minfFile = fileToCopy +  ".minf"
-  #        if os.path.isfile(minfFile) :
-  #          shutil.copyfile(minfFile, ( to +  ".minf" ))  
-  #          shutil.copystat(minfFile, ( to +  ".minf" ))  
-            
           itemToInsert.append(to)
   
           #Supprimer le fileCopy s'il correspond à un DiskItem
-          print "fileToCopy", fileToCopy 
+#          print "fileToCopy", fileToCopy 
           try :
             item_to_remove = self.database.getDiskItemFromFileName( fileToCopy )  # already exists in DB:   
-            print "Item to remove : ", item_to_remove
-            print "Item to remove : type ", type(item_to_remove)
+#            print "Item to remove : ", item_to_remove
+#            print "Item to remove : type ", type(item_to_remove)
             if item_to_remove : 
               uuid = str( item_to_remove.uuid( saveMinf=False ) )
               print "uuid : ", uuid
@@ -134,11 +126,10 @@ def execution(self, context):
             continue
           
           fileCopy = False
-           #insérer le diskitem         
           
     item = None
     item_exist = None
-    print itemToInsert
+#    print itemToInsert
     for file in itemToInsert :
       try: 
         item_exist = self.database.getDiskItemFromFileName( file )  # already exists in DB: no need to add it
@@ -147,23 +138,18 @@ def execution(self, context):
           item = self.database.createDiskItemFromFileName( file )
         except:
           context.write('Warning: file', file , 'cannot be inserted in any database.')
-#          print "item none"
-#  
-#      print "item_exist ", item_exist
-#      print "item ", item
+
       if item is not None and (isinstance( item, DiskItem )) and item.isReadable() and item.get("_database", None) and ( not hasattr( item, '_isTemporary' ) or not item._isTemporary ):
         tmp = os.path.splitext(item.name)
         uuid = os.path.basename(tmp[0])
         minf = {}
         minf ['uuid'] = uuid
-        print "FILE", file 
-        print "UUID", uuid
-        print "type item", type(item)
-         #bvProcDiskItem = WriteDiskItem( 'Process execution event', 'Process execution event' ).findValue( eventFileName )
+#        print "FILE", file 
+#        print "UUID", uuid
+#        print "type item", type(item)
         try :          
           item._writeMinf(minf)
           self.database.insertDiskItem( item, update=True, insertParentDirs=False)
-          #item._writeMinf(minf)
         except:
           context.write('WARNING: file', file , 'cannot be inserted in any database.')
         
@@ -192,9 +178,10 @@ def execution(self, context):
 #          bvProcMinf._writeMinf(minf)
 #        except :
 #          showException()
-    
-    context.write("The sorting is done.")
-    
+    if len(itemToInsert) !=0 :
+      context.write("The sorting is done.")
+    else : 
+      context.write("No bvproc or bvsession found, please check the history book directory might be empty !")
 #    context.write("Clear Database.")
 #    self.database.clear()
 #    context.write("Update Database.")
