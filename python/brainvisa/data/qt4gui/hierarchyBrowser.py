@@ -441,8 +441,6 @@ class HierarchyBrowser( QWidget ):
       for item in items:
         if item.diskItem:
           bvproc_uuid=item.diskItem._uuid
-          print '!hierarchy browser , menuBvProcEvent type item.diskItem', type(item.diskItem) #<class 'brainvisa.data.neuroDiskItems.File'>
-          print '!hierarchy browser , menuBvProcEvent uuid ', bvproc_uuid #<class 'brainvisa.data.neuroDiskItems.File'>
           if bvproc_uuid is not None:
             history_window=DataHistoryWindow(item.diskItem, bvproc_uuid, parent=self)
             history_window.show()
