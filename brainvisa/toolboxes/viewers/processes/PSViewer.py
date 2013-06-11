@@ -46,6 +46,8 @@ def findPSviewer():
     psviewer.append( 'gv' )
   if findInPath( 'kghostview' ):
     psviewer.append( 'kghostview' )
+  if findInPath( 'okular' ):
+    psviewer.append( 'okular' )
   return psviewer
 
 psviewers = findPSviewer()
@@ -64,26 +66,34 @@ def initialization( self ):
     self.PSviewer = 'kghostview'
   elif 'gv' in psviewers:
     self.PSviewer = 'gv'
+  elif 'okular' in psviewers:
+    self.PSviewer = 'okular'
   else:
     context.write( 'unknown PostScript Viewer')
-
 
 def execution( self, context ):
   PSExtension = os.path.splitext( self.psfile.fullPath( ) )
   print 'ps extension: ', str( PSExtension )
   if PSExtension[1]=='.gz':
     if self.PSviewer == 'kghostview':
-      tmpDir = context.temporary( 'Directory' )
-      if os.path.exists( tmpDir.fullPath() ) is None:
-        os.mkdir( tmpDir.fullPath( ) )
-      shelltools.cp( self.psfile.fullPath( ) , tmpDir.fullPath( ) )
-      PSGZTmpFile=os.path.join( tmpDir.fullPath( ), os.path.basename( self.psfile.fullPath( ) ) )
-      PSTmpFile = os.path.splitext(PSGZTmpFile )
-      context.system( 'gunzip ' + PSGZTmpFile )
-      context.system( 'kghostview ' + PSTmpFile[0] )
+      PSTmpFile = unzip(context, os)
+      context.system( 'kghostview ' + PSTmpFile )
     elif self.PSviewer == 'gv':
       cmd = ['gv', self.psfile.fullPath( ) ]
       context.system( *cmd )
+    elif self.PSviewer == 'okular':
+      PSTmpFile = unzip(context, os)
+      context.system( 'okular ' + PSTmpFile )
   else:
     cmd = [self.PSviewer, self.psfile.fullPath( ) ]
     context.system( *cmd )
+
+def unzip(context, os):
+  tmpDir = context.temporary('Directory')
+  if os.path.exists(tmpDir.fullPath()) is None:
+    os.mkdir(tmpDir.fullPath())
+  shelltools.cp(self.psfile.fullPath(), tmpDir.fullPath())
+  PSGZTmpFile = os.path.join(tmpDir.fullPath(), os.path.basename(self.psfile.fullPath()))
+  PSTmpFile = os.path.splitext(PSGZTmpFile)
+  context.system('gunzip ' + PSGZTmpFile)
+  return PSTmpFile[0]

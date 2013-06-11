@@ -5,7 +5,7 @@
     <xhtml name="short">Place une image IRM T1 dans la base de données de BrainVISA</xhtml>
     <d name="parameters">
       <xhtml name="input">image à placer dans la base</xhtml>
-      <xhtml name="input_spm_orientation"/>
+      <xhtml name="referential"/>
       <xhtml name="output">emplacement dans la base où placer l'image</xhtml>
     </d>
     <xhtml name="long">Cette brique permet de copier une image T1 initialement hors de la base pour la placer dans la base de données de BrainVISA.<br/>
@@ -27,11 +27,6 @@ Les champs nécessaires (protocole / sujet) peuvent dépendre de l'organisation 
   </d>
   <d name="en">
     <xhtml name="short">Places a T1 MRI image in BrainVISA database</xhtml>
-    <d name="parameters">
-      <xhtml name="input">image to import in the database</xhtml>
-      <xhtml name="input_spm_orientation"/>
-      <xhtml name="output">where in the database the image should be placed</xhtml>
-    </d>
     <xhtml name="long">This process enables to copy a T1 MRI image initially out of BrainVISA database to its location in the database.<br/>
 To do this, the parameter <tt>input</tt> <em>cannot</em> be set via the "database" icon <img src="../../images/icons/database_read.png"/> since the input image is not in the database. You must use the standard file browser <img src="../../images/icons/browse_read.png"/>.<br/>
 The <tt>output</tt> parameter can be set via the "database" icon <img src="../../images/icons/database_write.png"/>, and this is what is strongly encouraged to do.<br/>
@@ -48,6 +43,11 @@ Now you only have to select the image proposed on the right panel (here, <tt>mor
 This protocol / subject fields may vary according to the database organization in your site, but this is the default needed attributes.<br/>
 <b>Note:</b> If you are using the <em>iteration</em> mode to import several images, you can create several output database entries at the same time: typically, you can type several "subject" values, separated by space characters. Then you can select several items in the right selection panel:<br/>
 <img src="../../images/importT1-5.png"/><br/></xhtml>
+    <d name="parameters">
+      <xhtml name="input">image to import in the database</xhtml>
+      <xhtml name="input_spm_orientation"/>
+      <xhtml name="output">where in the database the image should be placed</xhtml>
+    </d>
   </d>
 </d>
 </minf>

@@ -55,49 +55,57 @@ def run(context, configuration, jobPath, cmd=None, useMatlabFirst=False):
   alternatively, with a specifiable priority
   '''
 
-  hasexception = None
+  firstException = None
+  spmRunResult = None
+  isSpmRunFailed=False
 
   if useMatlabFirst:
-    try:
-      result = runSpm8(context, configuration, jobPath, cmd)
-      print 'spm_run.run, matlab version result:', result
-      if result == 0:
-        return result
-    except Exception, e:
-      print 'Exception in sun_spm.runSpm8:', e
-      hasexception = e
+    spmRunResult, firstException = tryToRunSpm8(context, configuration, jobPath, cmd)
+    isSpmRunFailed = spmRunResult != 0 or firstException != None
+    
+  if (isSpmRunFailed or not useMatlabFirst):
+    spmRunResult, e = tryToRunSpm8Standalone(context, configuration, jobPath)
+    if not firstException:
+      firstException = e    
+    isSpmRunFailed = spmRunResult != 0 or firstException != None
+     
+    if (isSpmRunFailed and not useMatlabFirst):
+      spmRunResult, e = tryToRunSpm8(context, configuration, jobPath, cmd)
+      if not firstException:
+        firstException = e
+    
+  if firstException is not None:
+    raise firstException
+  
+  return spmRunResult
 
+def tryToRunSpm8(context, configuration, jobPath, cmd):
+  hasexception = None
+  result = None
+  try:
+    result = runSpm8(context, configuration, jobPath, cmd)
+    print 'spm_run.run, matlab version result:', result
+  except Exception as e:
+    print 'Exception in sun_spm.runSpm8:', e 
+    hasexception = e       
+  return result, hasexception
+
+def tryToRunSpm8Standalone(context, configuration, jobPath):
+  hasexception = None
+  result = None
   try:
     result = runSpm8Standalone(context, configuration, jobPath)
     print 'spm_run.run, standalone version result:', result
-    if result == 0:
-      return result
-
-  except Exception, e:
+  except Exception as e:
     print 'Exception in run_spm.runSpm8Standalone:', e
-    if not hasexception:
-      hasexception = e
+    hasexception = e       
+  return result, hasexception
 
-  if not useMatlabFirst:
-    try:
-      result = runSpm8(context, configuration, jobPath, cmd)
-      print 'spm_run.run, matlab version result:', result
-    except Exception, e:
-      print 'Exception in run_spm.runSpm8:', e
-      if not hasexception:
-        hasexception = e
-
-  if hasexception:
-    raise hasexception
-
-  return result
-
-
-def runSpm8Standalone( context, configuration, matfilePath ):
+def runSpm8Standalone(context, configuration, matfilePath):
 
   if configuration.SPM.spm8_standalone_command is None or \
       len(configuration.SPM.spm8_standalone_command) == 0:
-    raise SpmConfigError( 'SPM8 standalone is not configured' )
+    raise SpmConfigError('SPM8 standalone is not configured')
 
   context.write(_t_('Using SPM8 standalone version (compiled, Matlab not needed)'))
   mexe = configuration.SPM.spm8_standalone_command
@@ -115,7 +123,7 @@ def runSpm8Standalone( context, configuration, matfilePath ):
 def runSpm8(context, configuration, jobPath, spmCmd=None):
 
   if configuration.SPM.spm8_path is None or configuration.SPM.spm8_path == '':
-    raise SpmConfigError( 'SPM8/Matlab is not configured' )
+    raise SpmConfigError('SPM8/Matlab is not configured')
 
   matlabBatchPath = str(jobPath).replace('_job', '')
   if matlabBatchPath == str(jobPath):
@@ -161,5 +169,5 @@ def runMatblatBatch(context, configuration, matlabBatchPath,
   try:
     result = context.system(*cmd)
   finally:
-    os.chdir( cwd )
+    os.chdir(cwd)
   return result

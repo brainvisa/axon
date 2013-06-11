@@ -57,10 +57,10 @@ insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
 ###################
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
-  'defField_<subject>_Mni_TO_Nat', SetType('DefField T1 MRI from Mni to Native'),)
+  'iy_defField_<subject>_Mni_TO_Nat', SetType('DefField T1 MRI from Mni to Native'),) # need a spm prefix : iy to be used by SPM
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
-  'defField_<subject>_Nat_TO_Mni', SetType('DefField T1 MRI from Native to Mni'),)
+  'y_defField_<subject>_Nat_TO_Mni', SetType('DefField T1 MRI from Native to Mni'),)# need a spm prefix : y to be used by SPM
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
   'matDefField_<subject>_Nat_TO_Mni', SetType('MatDefField T1 MRI from Native to Mni'),)
