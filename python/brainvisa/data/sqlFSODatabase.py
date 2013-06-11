@@ -525,6 +525,7 @@ class SQLDatabase( Database ):
         addit = False
         #scan bvproc
         if bvprocfile.endswith( '.bvproc' ):
+          print "Name of bvproc", bvprocfile
           p = readMinf( bvprocfile )[0] # ProcessExecutionEvent object
           idf = os.path.basename( bvprocfile )
           idf = idf[ : idf.rfind( '.' ) ]

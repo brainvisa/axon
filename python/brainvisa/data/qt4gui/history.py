@@ -110,7 +110,7 @@ class DataHistoryWindow(QtGui.QMainWindow):
 
       #if self.data.type.name is not "Process execution event" :      
       if str(res) != "Process execution event" :
-        bvproc_file =  self.data.getFileNameFromUuid(self.bvproc_uuid)
+        bvproc_file =  self.data.getFileNameFromUuid(str(self.bvproc_uuid))
         if bvproc_file is None:
           # try the old way, for a non-updated database
           bvproc_file = os.path.join(self.data.get( "_database", "" ), 

@@ -83,8 +83,8 @@ def execution(self, context):
       print "params expert_settings error"
       pass
 
-    fileCopy = False
     for fileToCopy in os.listdir( history_directory ):
+      fileCopy = False
 #      print "FILE OR DIRECTORY", fileToCopy
       if os.path.isfile(os.path.join(history_directory, fileToCopy)) :
 #        print "FILE TO COPY", fileToCopy
@@ -125,7 +125,7 @@ def execution(self, context):
             context.write('Warning: file', fileToCopy, 'not found in any database.')
             continue
           
-          fileCopy = False
+
           
     item = None
     item_exist = None
