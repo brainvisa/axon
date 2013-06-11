@@ -45,6 +45,21 @@ if neuroConfig.anatomistImplementation != 'socket':
     print 'Warning: pyaimsgui not available'
 
   class ReusableWindowAction( QtGui.QAction ):
+    _actions = {} # dict to kee buttons alive
+
+    def __init__( self, icon, text, parent ):
+      QtGui.QAction.__init__( self, icon, text, parent )
+      from brainvisa import anatomist
+      a = anatomist.Anatomist( [ '-b' ] )
+      win = a.AWindow( a, parent, refType='Weak' )
+      ReusableWindowAction._actions[win] = self
+      acts = ReusableWindowAction._actions
+      # filter out dead windows
+      ReusableWindowAction._actions = {}
+      for w,b in acts.iteritems():
+        if w.get() is not None:
+          ReusableWindowAction._actions[w] = b
+
     def toggleReuseWindow( self, state ):
       win = self.parent()
       from brainvisa import anatomist
@@ -52,6 +67,13 @@ if neuroConfig.anatomistImplementation != 'socket':
       a.setReusableWindow( a.AWindow( a, win, refType='WeakShared' ), state )
 
   class ReusableWindowBlockAction( QtGui.QAction ):
+    _actions = {}
+
+    def __init__( self, icon, text, parent ):
+      QtGui.QAction.__init__( self, icon, text, parent )
+      ReusableWindowBlockAction._actions[parent] = [ self ]
+      parent.destroyed.connect( self.removeparent )
+
     def toggleReuseWindow( self, state ):
       win = self.parent()
       from brainvisa import anatomist
@@ -66,7 +88,15 @@ if neuroConfig.anatomistImplementation != 'socket':
           'Keep and reuse in BrainVisa, with all current views',
           'QAWindowBlock' ) )
 
+    def removeparent( self, parent ):
+      del ReusableWindowBlockAction._actions[parent]
+
   class ReusableWindowBlockWithViewsAction( QtGui.QAction ):
+
+    def __init__( self, icon, text, parent ):
+      QtGui.QAction.__init__( self, icon, text, parent )
+      ReusableWindowBlockAction._actions[parent].append( self )
+
     def toggleReuseWindowWithViews( self ):
       win = self.parent()
       reuseaction = win.findChild( QtGui.QAction, 'reuseAction' )
@@ -139,7 +169,6 @@ if neuroConfig.anatomistImplementation != 'socket':
     anacpp.CommandContext.defaultContext().evfilter.filter( 'CreateWindowBlock' )
 
   def uninstallWindowHandler():
-    print 'clearing windows handler'
     global handlers
     if handlers:
       anacpp.EventHandler.unregisterHandler( 'CreateWindow', handlers[0] )

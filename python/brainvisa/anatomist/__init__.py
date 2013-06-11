@@ -538,12 +538,11 @@ if anatomistImport:
         for w in win:
           wp = self.AWindowsBlock.findBlock( w )
           if wp is None:
-            wp = self.AWindowsBlock()
+            wp = self.AWindowsBlock( self )
             wp.setWidget( w )
+            wp = wp.widgetProxy()
           self._reusableWindowBlocks.add( wp )
-          wp.widget.connect( wp.widget,
-            QtCore.SIGNAL( 'destroyed( QObject* )' ),
-            self.removeReusableWindowBlock )
+          wp.widget.destroyed.connect( self.removeReusableWindowBlock )
       else:
         s2 = set()
         for w in self._reusableWindowBlocks:
@@ -554,9 +553,7 @@ if anatomistImport:
           wp = self.AWindowsBlock.findBlock( w )
           if wp is not None:
             self._reusableWindowBlocks.remove( wp )
-            wp.widget.disconnect( wp.widget,
-              QtCore.SIGNAL( 'destroyed( QObject* )' ),
-              self.removeReusableWindowBlock )
+            wp.widget.destroyed.disconnect( self.removeReusableWindowBlock )
       mainThread=QtThreadCall()
       for w in win:
         ac = w.findChild( reusablewinhook.ReusableWindowBlockAction )
