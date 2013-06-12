@@ -50,7 +50,7 @@ def validationSpm8(configuration):
 
 #------------------------------------------------------------------------------
 # try spm8Standalone, but if not working, use spm8 Matlab. Read note on top of this file
-def run(context, configuration, jobPath, cmd=None, useMatlabFirst=False):
+def run(context, configuration, jobPath, cmd=None, useMatlabFirst=False, isMatlabMandatory = False):
   '''Run a SPM job using SPM8 standalone or SMP8 Matlab version, trying them
   alternatively, with a specifiable priority
   '''
@@ -59,11 +59,11 @@ def run(context, configuration, jobPath, cmd=None, useMatlabFirst=False):
   spmRunResult = None
   isSpmRunFailed=False
 
-  if useMatlabFirst:
+  if useMatlabFirst or isMatlabMandatory:
     spmRunResult, firstException = tryToRunSpm8(context, configuration, jobPath, cmd)
     isSpmRunFailed = spmRunResult != 0 or firstException != None
     
-  if (isSpmRunFailed or not useMatlabFirst):
+  if ((isSpmRunFailed or not useMatlabFirst) and not isMatlabMandatory):
     spmRunResult, e = tryToRunSpm8Standalone(context, configuration, jobPath)
     if not firstException:
       firstException = e    
