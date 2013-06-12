@@ -10,6 +10,9 @@ insert( '{center}/{subject}/t1mri/{acquisition}/',
 insert('{center}/{subject}/t1mri/{acquisition}/',
   '<subject>_Nat_reseted', SetType('reseted Nat T1 MRI'),) # Native space
 
+insert( '{center}/{subject}/t1mri/{acquisition}/',
+  '{analysis}', SetType( 'T1 MRI Analysis Directory' ), SetContent(),) # SetContent() because it is a directory
+
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}',
   'nobias_<subject>', SetType('T1 MRI Bias Corrected'),) # already existed for morphologist # Native space
 
