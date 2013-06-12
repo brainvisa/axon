@@ -60,7 +60,6 @@ def validation():
 
 signature = Signature(
   'MRI_Nat', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
-  'analysis', String(),
   'MRI_Mni_tpmSeg', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
   'spmJobName', String(), 
   
@@ -100,7 +99,6 @@ signature = Signature(
 
 def initialization(self):
   self.setOptional('grey_Nat', 'biasCorrected')
-  self.analysis = 'SpmSegmentation'
   initializeSegmentationParameters_usingSPM8DefaultValuesForPET(self)
 
 def execution(self, context):
