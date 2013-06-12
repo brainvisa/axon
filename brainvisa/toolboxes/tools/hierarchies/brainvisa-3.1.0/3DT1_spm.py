@@ -5,7 +5,7 @@ insert( '{center}/{subject}/t1mri/{acquisition}/',
   '<subject>_dicoms', SetType( 'Dicoms T1 MRI' ),) # Native space
 
 insert( '{center}/{subject}/t1mri/{acquisition}/',
-  '<subject>', SetType( 'Raw T1 MRI' ),) # already existed for morphologist # Native space
+  '<subject>', SetType( 'Raw T1 MRI' ), SetPriorityOffset( +1 ), SetWeakAttr( 'normalized', 'no' ),) # already existed for morphologist # Native space
 
 insert('{center}/{subject}/t1mri/{acquisition}/',
   '<subject>_Nat_reseted', SetType('reseted Nat T1 MRI'),) # Native space
