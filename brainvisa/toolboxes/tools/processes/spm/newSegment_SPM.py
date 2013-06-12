@@ -57,9 +57,8 @@ def validation():
 
 # inputs/outputs definition
 signature = Signature(
-  'MRI_Nat', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
-  'analysis', String(),
-  'grey_tpm', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
+  'MRI_Nat', ReadDiskItem('4D Volume', 'Aims readable volume formats'),#T1 MRI
+  'grey_tpm', ReadDiskItem('4D Volume', 'Aims readable volume formats'),#tissue probability map
   'spmJobName', String(),
   
   'c_biasreg', Choice(('no regularisation (0)', '0'), ('extremely light regularisation (0.00001)', '0.00001'), ('very light regularisation (0.0001) *SPM default*', '0.0001')
@@ -111,7 +110,6 @@ signature = Signature(
 
 def initialization(self):
   self.setOptional('biasCorrected')  
-  self.analysis = 'SpmNewSegmentation'
   self.spmJobName = 'newSegment'
 
   initializeUnifiedSegmentationParameters_usingSPM8DefaultValuesForPET(self)

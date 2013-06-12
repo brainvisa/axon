@@ -159,6 +159,7 @@ def runMatblatBatch(context, configuration, matlabBatchPath,
   curDir = matlabBatchPath[:matlabBatchPath.rindex('/')]
   os.chdir(curDir)
   # execution batch file
+  # momoTODO check if mexe is None when no matlab then raise error or exception
   mexe = distutils.spawn.find_executable(configuration.matlab.executable)
   matlabCmd = os.path.basename(matlabBatchPath)[:os.path.basename(matlabBatchPath).rindex('.')] # remove extension
   matlabOptions = configuration.matlab.options

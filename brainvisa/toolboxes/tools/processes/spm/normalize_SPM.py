@@ -93,7 +93,7 @@ def execution(self, context):
                                           , self.template.fullPath(), self.wtsrc, self.weight, self.smosrc, self.smoref, self.regtype, self.cutoff, self.nits, self.reg
                                           , self.preserve, self.bb, self.vox, self.interp, self.wrap, self.prefix 
                                           )  
-      
+  # momoTODO remonter le flag dans la signature : generatePSFileUsingMatlab    
   spm.run(context, configuration, matfilePath, useMatlabFirst=True)# I prefere to use matlab version, because only this version generate .ps file to check the registration  
     
   warpedPath = self.warpedInMni.fullPath()
