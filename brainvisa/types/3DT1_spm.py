@@ -6,6 +6,8 @@ FileType('reseted Nat T1 MRI', 'T1 MRI')
 FileType('T1 MRI Bias Corrected', 'T1 MRI')
 FileType('T1 MRI Mni', 'T1 MRI')
 
+FileType('T1 MRI Analysis Directory', 'Directory')
+
 #################
 # segmentations #
 #################
