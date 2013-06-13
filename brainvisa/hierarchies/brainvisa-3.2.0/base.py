@@ -47,6 +47,12 @@ hierarchy = (
     'database_settings', SetType( 'Database settings' ),
     '*', SetType('Database Cache file'), # database cache
     'trash', #directory containing files that must be deleted
+    'analyzes', 
+    SetContent(
+      '{analysis}', SetType( 'Analysis Dir' ), 
+      SetContent(# Set Content must be present even if it is empty, otherwise it is impossible to insert something in subject directory
+      ),
+    ),
     '{center}', SetFileNameStrongAttribute( 'center' ), SetType( 'Center' ), SetDefaultAttributeValue( 'center', default_center ),
     SetContent(
       "group_analysis",
@@ -61,6 +67,10 @@ hierarchy = (
   ),
 )
 
+# analysis
+
+insert( 'analyzes/',
+  '{analysis}', SetType( 'Analysis Dir' ), SetContent(),) # SetContent() because it is a directory
 
 
 
