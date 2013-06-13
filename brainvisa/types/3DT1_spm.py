@@ -2,7 +2,7 @@
 include( 'builtin' )
 
 FileType('Dicoms T1 MRI', 'T1 MRI')
-FileType('reseted Nat T1 MRI', 'T1 MRI')
+FileType('T1 MRI Nat reseted', 'T1 MRI') # original name was reseted Nat T1 MRI
 FileType('T1 MRI Bias Corrected', 'T1 MRI')
 FileType('T1 MRI Mni', 'T1 MRI')
 

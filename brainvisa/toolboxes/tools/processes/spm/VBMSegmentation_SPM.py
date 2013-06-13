@@ -41,15 +41,16 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-from brainvisa.tools.spm_segmentation import \
-  initializeVBMSegmentationParameters_usingSPM8DefaultValuesForPET, \
-  writeVBMSegmentationMatFile
+from brainvisa.tools.spm_segmentation import writeVBMSegmentationMatFile
 from brainvisa.tools.spm_utils import movePathToDiskItem, movePath
 import brainvisa.tools.spm_run as spm
 
 configuration = Application().configuration
 spm8Path = spm.getSpm8Path(configuration)
 
+# you should use this process because :
+# - all types are generic : so can be used with any new hierarchy
+# - no links between parameters : so can be easily used in pipelines (no need to remove links when using it)
 name = 'VBM segment (no links between parameters)' # no links between parameters so can be easily used in pipelines
 userLevel = 2
 
@@ -59,7 +60,6 @@ def validation():
 # inputs/outputs definition
 signature = Signature(
   'MRI_Nat', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
-  'analysis', String(),
   'MRI_Mni_tpmSeg', ReadDiskItem('4D Volume', 'Aims readable volume formats'), 
   'spmJobName', String(), 
   
@@ -79,7 +79,7 @@ signature = Signature(
   'pprint', String(),
   
   'grey_native', Choice(('none', '0'), ('yes', '1')),
-  'grey_Nat', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
+  'grey_nat', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
   'grey_warped', Choice(('none', '0'), ('yes', '1')),
   'grey_Mni', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
   'grey_modulated', Choice(('none', '0'), ('affiche + non-linear (SPM8 default)', '1'), ('non-linear only', '2')),
@@ -105,7 +105,6 @@ signature = Signature(
 
 def initialization(self):  
   self.setOptional('biasCorrected')
-  self.analysis = 'VBMSegmentation'
   self.spmJobName = 'vbmSegment'
   initializeVBMSegmentationParameters_usingSPM8DefaultValuesForPET(self)
       
@@ -133,10 +132,10 @@ def moveSpmOutFiles(self):
   subjectName = os.path.basename(self.MRI_Nat.fullPath()).partition(".")[0]
   ext = os.path.basename(self.MRI_Nat.fullPath()).partition(".")[2]
   inDir = os.path.dirname(self.MRI_Nat.fullName())
-  outDir = os.path.dirname(self.grey_Nat.fullName())
+  outDir = os.path.dirname(self.grey_nat.fullName())
   
   grey = inDir + "/p1" + subjectName + "." + ext
-  movePathToDiskItem(grey, self.grey_Nat)
+  movePathToDiskItem(grey, self.grey_nat)
   grey = inDir + "/wp1" + subjectName + "." + ext
   movePathToDiskItem(grey, self.grey_Mni)
   white = inDir + "/p2" + subjectName + ".nii"

@@ -41,14 +41,15 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-from brainvisa.tools.spm_segmentation import \
-  initializeUnifiedSegmentationParameters_usingSPM8DefaultValuesForPET, \
-  writeUnifiedSegmentationMatFile
+from brainvisa.tools.spm_segmentation import writeUnifiedSegmentationMatFile
 from brainvisa.tools.spm_utils import movePathToDiskItem, movePath
 import brainvisa.tools.spm_run as spm
 
 configuration = Application().configuration
 
+# you should use this process because :
+# - all types are generic : so can be used with any new hierarchy
+# - no links between parameters : so can be easily used in pipelines (no need to remove links when using it)
 name = 'new segment (no links between parameters)' # no links between parameters so can be easily used in pipelines
 userLevel = 2
 
@@ -111,9 +112,6 @@ signature = Signature(
 def initialization(self):
   self.setOptional('biasCorrected')  
   self.spmJobName = 'newSegment'
-
-  initializeUnifiedSegmentationParameters_usingSPM8DefaultValuesForPET(self)
-
 
 def execution(self, context):
   print "\n start ", name, "\n"

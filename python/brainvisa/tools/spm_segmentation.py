@@ -6,23 +6,11 @@ def initializeUnifiedSegmentationParameters_usingSPM8DefaultValuesForPET(process
   process.c_biasfwhm = """60""" 
   process.c_write = """[0 0]"""
   process.grey_ngaus = """2""" 
-  process.grey_native = """[1 0]"""# ('None', '[0 0]'), ("Native", '[1 0]'), ("DARTEL Imported", '[0 1]'), ("Native + DARTEL Imported", '[1 1]') 
-  process.grey_warped = """[0 0]"""# ('None', '[0 0]'), ("Modulated", '[0 1]'), ("UnModulated", '[1 0]'), ("Modulated + UnModulated", '[1 1]')
   process.white_ngaus = """2""" 
-  process.white_native = """[1 0]""" # "Native"
-  process.white_warped = """[0 0]""" # 'None'
   process.csf_ngaus = """2""" 
-  process.csf_native = """[1 0]""" # "Native" 
-  process.csf_warped = """[0 0]""" # 'None'
   process.bone_ngaus = """3""" 
-  process.bone_native = """[1 0]""" # "Native"
-  process.bone_warped = """[0 0]""" # 'None'
   process.softTissuengaus = """4""" 
-  process.softTissuenative = """[1 0]""" # "Native"
-  process.softTissuewarped = """[0 0]""" # 'None'
   process.airAndBackground_ngaus = """2""" 
-  process.airAndBackground_native = """[0 0]""" 
-  process.airAndBackground_warped = """[0 0]"""
   process.w_mrf = """0""" 
   process.w_reg = """4""" 
   process.w_affreg = """'mni'""" 
@@ -108,11 +96,8 @@ matlabbatch{1}.spm.tools.preproc8.warp.write = %s;
   return mat_file.name
 
 def initializeSegmentationParameters_usingSPM8DefaultValuesForPET(process):
-  process.GM = """[0 0 1]"""
-  process.WM = """[0 0 1]"""
-  process.CSF = """[0 0 1]"""
-  process.biascor = """0"""
-  process.cleanup = """0"""
+  dontCleanUp = """0"""
+  process.cleanup = dontCleanUp
   process.ngaus = """[2
                   2
                   2
@@ -180,20 +165,6 @@ def initializeVBMSegmentationParameters_usingSPM8DefaultValuesForPET(process):
   process.mrf = """0.15"""
   process.cleanup = """1"""
   process.pprint = """1"""
-  
-  process.grey_native = """1"""
-  process.grey_warped = """0"""
-  process.grey_modulated = """0"""
-  process.grey_dartel = """0"""
-  process.wm_native = """1"""
-  process.wm_warped = """0"""
-  process.wm_modulated = """0"""
-  process.wm_dartel = """0"""
-  process.csf_native = """1"""
-  process.csf_warped = """0"""
-  process.csf_modulated = """0"""
-  process.csf_dartel = """0"""  
-  process.saveBias = """0"""
 
 def writeVBMSegmentationMatFile(context, configuration, sourcePath, spmJobFile
 , tpm, ngaus = """[2 2 2 3 4 2]""", biasreg = """0.0001""", biasfwhm = """60""", affreg = """'mni'""", warpreg = """4""", samp = """3"""

@@ -41,16 +41,17 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-from brainvisa.tools.spm_segmentation import \
-  initializeSegmentationParameters_usingSPM8DefaultValuesForPET, \
-  writeSegmentationMatFile
+from brainvisa.tools.spm_segmentation import writeSegmentationMatFile
 from brainvisa.tools.spm_utils import movePathToDiskItem, movePath
 import brainvisa.tools.spm_run as spm
 
 configuration = Application().configuration
 spm8Path = spm.getSpm8Path(configuration)
 
-name = 'segment (no links between parameters)' # no links between parameters so can be easily used in pipelines
+# you should use this process because :
+# - all types are generic : so can be used with any new hierarchy
+# - no links between parameters : so can be easily used in pipelines (no need to remove links when using it)
+name = 'segment (no links between parameters)' 
 userLevel = 2
 
 spmJobName = 'segment'
@@ -99,7 +100,6 @@ signature = Signature(
 
 def initialization(self):
   self.setOptional('grey_Nat', 'biasCorrected')
-  initializeSegmentationParameters_usingSPM8DefaultValuesForPET(self)
 
 def execution(self, context):
   print "\n start ", name, "\n"
