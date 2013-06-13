@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="fr">
+    <xhtml name="short"/>
+    <d name="parameters">
+      <xhtml name="csf_dartel"/>
+      <xhtml name="warpreg"/>
+      <xhtml name="deFld"/>
+      <xhtml name="sanlm"/>
+      <xhtml name="csf_Nat"/>
+      <xhtml name="grey_modulated"/>
+      <xhtml name="MRI_Mni_tpmSeg"/>
+      <xhtml name="affreg"/>
+      <xhtml name="biasreg"/>
+      <xhtml name="ngaus"/>
+      <xhtml name="biasCorrected"/>
+      <xhtml name="wm_native"/>
+      <xhtml name="grey_Nat"/>
+      <xhtml name="pprint"/>
+      <xhtml name="saveBias"/>
+      <xhtml name="grey_dartel"/>
+      <xhtml name="cleanup"/>
+      <xhtml name="samp"/>
+      <xhtml name="deFld_segMat"/>
+      <xhtml name="csf_native"/>
+      <xhtml name="white_Nat"/>
+      <xhtml name="grey_Mni"/>
+      <xhtml name="normlow"/>
+      <xhtml name="MRI_Nat"/>
+      <xhtml name="wm_warped"/>
+      <xhtml name="wm_modulated"/>
+      <xhtml name="spmJobName"/>
+      <xhtml name="grey_warped"/>
+      <xhtml name="invDeFld"/>
+      <xhtml name="wm_dartel"/>
+      <xhtml name="database"/>
+      <xhtml name="analysis"/>
+      <xhtml name="csf_warped"/>
+      <xhtml name="biasfwhm"/>
+      <xhtml name="grey_native"/>
+      <xhtml name="csf_modulated"/>
+      <xhtml name="mrf"/>
+    </d>
+    <xhtml name="long"><html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta content="text/html; charset=UTF-8" http-equiv="content-type"/>
+<meta content="0; url=VBMSegmentation_SPM.html" http-equiv="refresh"/>
+<title>Redirection</title>
+<meta content="noindex,follow" name="robots"/>
+</head>
+
+<body>
+<p><a href="VBMSegmentation_SPM.html">Redirection</a></p>
+</body>
+</html>
+</xhtml>
+  </d>
+</d>
+</minf>
