@@ -158,7 +158,7 @@ def getDatabase(self):
 def execution(self, context):
   print "\n start ", name, "\n"
   #momoTODO : c vraiment pas terrible de passer tous ces paramètres... faire de l'héritage de signature entre process?
-  context.runProcess('VBMSegmentation_SPM_noLinks', MRI_Nat=self.MRI_Nat, MRI_Mni_tpmSeg=self.MRI_Mni_tpmSeg, spmJobName = self.spmJobName
+  context.runProcess('segment_VBM_noLinks', MRI_Nat=self.MRI_Nat, MRI_Mni_tpmSeg=self.MRI_Mni_tpmSeg, spmJobName = self.spmJobName
                     , ngaus=self.ngaus, biasreg=self.biasreg, saveBias=self.saveBias, biasCorrected=self.biasCorrected
                     , biasfwhm=self.biasfwhm, affreg=self.affreg, warpreg=self.warpreg, samp=self.samp
                     , normlow=self.normlow, sanlm=self.sanlm, mrf=self.mrf, cleanup=self.cleanup, pprint=self.pprint

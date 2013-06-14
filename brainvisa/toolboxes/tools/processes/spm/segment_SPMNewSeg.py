@@ -169,7 +169,7 @@ def execution(self, context):
   print "\n start ", name, "\n"
   
   #momoTODO : c vraiment pas terrible de passer tous ces paramètres... faire de l'héritage de signature entre process?
-  context.runProcess('newSegment_SPM_noLinks', MRI_Nat=self.MRI_Nat, MRI_Mni_tpmSeg=self.MRI_Mni_tpmSeg, spmJobName=self.spmJobName
+  context.runProcess('segment_SPMNewSeg_noLinks', MRI_Nat=self.MRI_Nat, MRI_Mni_tpmSeg=self.MRI_Mni_tpmSeg, spmJobName=self.spmJobName
                      , c_biasreg=self.c_biasreg, c_biasfwhm=self.c_biasfwhm, c_write=self.c_write, biasCorrected=self.biasCorrected
                      , grey_ngaus=self.grey_ngaus, grey_native=self.grey_native, grey_nat=self.grey_nat, grey_warped=self.grey_warped, grey_Mni=self.grey_Mni
                      , write_field=self.write_field, deFld=self.deFld, invDeFld=self.invDeFld, deFld_segMat=self.deFld_segMat
