@@ -47,7 +47,7 @@ import brainvisa.tools.spm_segmentation as seg
 configuration = Application().configuration
 
 name = 'segment/normalize (using SPM New Segmentation)'
-userLevel = 2
+userLevel = 0
 
 spmJobName = 'newSegment'
 def validation():
@@ -169,7 +169,7 @@ def execution(self, context):
   print "\n start ", name, "\n"
   
   #momoTODO : c vraiment pas terrible de passer tous ces paramètres... faire de l'héritage de signature entre process?
-  context.runProcess('newSegment_SPM_noLinks', MRI_Nat=self.MRI_Nat, analysis=self.getAnalysis(), MRI_Mni_tpmSeg=self.MRI_Mni_tpmSeg, spmJobName=self.spmJobName
+  context.runProcess('newSegment_SPM_noLinks', MRI_Nat=self.MRI_Nat, MRI_Mni_tpmSeg=self.MRI_Mni_tpmSeg, spmJobName=self.spmJobName
                      , c_biasreg=self.c_biasreg, c_biasfwhm=self.c_biasfwhm, c_write=self.c_write, biasCorrected=self.biasCorrected
                      , grey_ngaus=self.grey_ngaus, grey_native=self.grey_native, grey_nat=self.grey_nat, grey_warped=self.grey_warped, grey_Mni=self.grey_Mni
                      , write_field=self.write_field, deFld=self.deFld, invDeFld=self.invDeFld, deFld_segMat=self.deFld_segMat

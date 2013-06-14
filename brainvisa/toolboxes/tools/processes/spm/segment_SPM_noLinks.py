@@ -51,7 +51,7 @@ spm8Path = spm.getSpm8Path(configuration)
 # you should use this process because :
 # - all types are generic : so can be used with any new hierarchy
 # - no links between parameters : so can be easily used in pipelines (no need to remove links when using it)
-name = 'segment (no links between parameters)' 
+name = 'segment/normalize (using SPM segmentation - no links between parameters)' 
 userLevel = 2
 
 spmJobName = 'segment'

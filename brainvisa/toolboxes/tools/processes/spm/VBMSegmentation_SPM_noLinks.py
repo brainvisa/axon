@@ -51,7 +51,7 @@ spm8Path = spm.getSpm8Path(configuration)
 # you should use this process because :
 # - all types are generic : so can be used with any new hierarchy
 # - no links between parameters : so can be easily used in pipelines (no need to remove links when using it)
-name = 'VBM segment (no links between parameters)' # no links between parameters so can be easily used in pipelines
+name = 'segment/normalize (using VBM toolboxe - no links between parameters)' # no links between parameters so can be easily used in pipelines
 userLevel = 2
 
 def validation():
@@ -106,7 +106,6 @@ signature = Signature(
 def initialization(self):  
   self.setOptional('biasCorrected')
   self.spmJobName = 'vbmSegment'
-  initializeVBMSegmentationParameters_usingSPM8DefaultValuesForPET(self)
       
 def execution(self, context):
   print "\n start ", name, "\n"

@@ -48,7 +48,7 @@ configuration = Application().configuration
 spm8Path = spm.getSpm8Path(configuration)
 
 name = 'segment/normalize (using VBM toolboxe)'
-userLevel = 2
+userLevel = 0
 
 def validation():
   return spm.validation(configuration)

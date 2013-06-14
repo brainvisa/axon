@@ -50,7 +50,7 @@ configuration = Application().configuration
 # you should use this process because :
 # - all types are generic : so can be used with any new hierarchy
 # - no links between parameters : so can be easily used in pipelines (no need to remove links when using it)
-name = 'new segment (no links between parameters)' # no links between parameters so can be easily used in pipelines
+name = 'segment/normalize (using SPM New Segmentation - no links between parameters)' # no links between parameters so can be easily used in pipelines
 userLevel = 2
 
 def validation():
@@ -59,7 +59,7 @@ def validation():
 # inputs/outputs definition
 signature = Signature(
   'MRI_Nat', ReadDiskItem('4D Volume', 'Aims readable volume formats'),#T1 MRI
-  'grey_tpm', ReadDiskItem('4D Volume', 'Aims readable volume formats'),#tissue probability map
+  'MRI_Mni_tpmSeg', ReadDiskItem('4D Volume', 'Aims readable volume formats'),#tissue probability map
   'spmJobName', String(),
   
   'c_biasreg', Choice(('no regularisation (0)', '0'), ('extremely light regularisation (0.00001)', '0.00001'), ('very light regularisation (0.0001) *SPM default*', '0.0001')
@@ -123,12 +123,12 @@ def execution(self, context):
       
   matfilePath = writeUnifiedSegmentationMatFile(context, configuration, self.MRI_Nat.fullPath(), spmJobFile
        , self.c_biasreg, self.c_biasfwhm, self.c_write
-       , self.grey_tpm, self.grey_ngaus, self.grey_native, self.grey_warped
-       , self.grey_tpm, self.white_ngaus, self.white_native, self.white_warped
-       , self.grey_tpm, self.csf_ngaus, self.csf_native, self.csf_warped
-       , self.grey_tpm, self.bone_ngaus, self.bone_native, self.bone_warped
-       , self.grey_tpm, self.softTissuengaus, self.softTissuenative, self.softTissuewarped
-       , self.grey_tpm, self.airAndBackground_ngaus, self.airAndBackground_native, self.airAndBackground_warped
+       , self.MRI_Mni_tpmSeg, self.grey_ngaus, self.grey_native, self.grey_warped
+       , self.MRI_Mni_tpmSeg, self.white_ngaus, self.white_native, self.white_warped
+       , self.MRI_Mni_tpmSeg, self.csf_ngaus, self.csf_native, self.csf_warped
+       , self.MRI_Mni_tpmSeg, self.bone_ngaus, self.bone_native, self.bone_warped
+       , self.MRI_Mni_tpmSeg, self.softTissuengaus, self.softTissuenative, self.softTissuewarped
+       , self.MRI_Mni_tpmSeg, self.airAndBackground_ngaus, self.airAndBackground_native, self.airAndBackground_warped
        , self.w_mrf, self.w_reg, self.w_affreg, self.w_samp, self.write_field)
     
   spm.run(context, configuration, matfilePath)    

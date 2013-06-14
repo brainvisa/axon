@@ -48,7 +48,7 @@ configuration = Application().configuration
 spm8Path = spm.getSpm8Path(configuration)
 
 name = 'segment/normalize (using SPM segmentation)'
-userLevel = 2
+userLevel = 0
 
 def validation():
   return spm.validation(configuration)
@@ -63,7 +63,7 @@ signature = Signature(
   'GM', Choice(('None', """[0 0 0]"""), ('Native Space', """[0 0 1]"""), ('Unmodulated Normalised', """[0 1 0]"""), ('Modulated Normalised', """[1 0 0]""")
               , ('Native + Unmodulated Normalised', """[0 1 1]"""), ('Native + Modulated Normalised', """[1 0 1]"""), ('Native + Modulated + Unmodulated', """[1 1 1]""")
               , ('Modulated + Unmodulated Normalised', """[1 1 0]""")),
-  'grey_Nat', WriteDiskItem('T1 MRI Nat GreyProba', 'NIFTI-1 image'),
+  'grey_nat', WriteDiskItem('T1 MRI Nat GreyProba', 'NIFTI-1 image'),
   'grey_Mni', WriteDiskItem('T1 MRI Mni GreyProba', 'NIFTI-1 image'),
 
   'WM', Choice(('None', """[0 0 0]"""), ('Native Space', """[0 0 1]"""), ('Unmodulated Normalised', """[0 1 0]"""), ('Modulated Normalised', """[1 0 0]""")
@@ -96,7 +96,7 @@ signature = Signature(
 
 def initialization(self):
 
-  self.setOptional('grey_Nat', 'biasCorrected')
+  self.setOptional('grey_nat', 'biasCorrected')
   
   self.spmJobName = 'segment'
   self.analysis = self.signature["analysis"].findValue({'analysis':'SpmSegmentation'})
@@ -110,15 +110,15 @@ def initialization(self):
   dontSave = """0"""
   self.biascor = dontSave
     
-  self.addLink("grey_Nat", "MRI_Nat", self.update_grey_Nat)
-  self.addLink("grey_Nat", "analysis", self.update_grey_Nat)
+  self.addLink("grey_nat", "MRI_Nat", self.update_grey_Nat)
+  self.addLink("grey_nat", "analysis", self.update_grey_Nat)
   
-  self.addLink('grey_Mni', 'grey_Nat')
-  self.addLink("white_Nat", "grey_Nat")
-  self.addLink("csf_Nat", "grey_Nat")        
-  self.addLink("biasCorrected", "grey_Nat")  
-  self.addLink('snMat', "grey_Nat")
-  self.addLink('snInvMat', "grey_Nat")    
+  self.addLink('grey_Mni', 'grey_nat')
+  self.addLink("white_Nat", "grey_nat")
+  self.addLink("csf_Nat", "grey_nat")        
+  self.addLink("biasCorrected", "grey_nat")  
+  self.addLink('snMat', "grey_nat")
+  self.addLink('snInvMat', "grey_nat")    
   
 def update_grey_Nat(self, proc):
   return self.update_WriteDiskItem('T1 MRI Nat GreyProba', 'NIFTI-1 image')
@@ -144,7 +144,7 @@ def execution(self, context):
   print "\n start ", name, "\n"
     
   context.runProcess('segment_SPM_noLinks', MRI_Nat=self.MRI_Nat, MRI_Mni_tpmSeg=self.MRI_Mni_tpmSeg, spmJobName=self.spmJobName
-                   , GM=self.GM, grey_Nat=self.grey_Nat, grey_Mni=self.grey_Mni
+                   , GM=self.GM, grey_Nat=self.grey_nat, grey_Mni=self.grey_Mni
                    , WM=self.WM, white_Nat=self.white_Nat, CSF=self.CSF, csf_Nat=self.csf_Nat, biasreg=self.biasreg, biascor=self.biascor
                    , biasCorrected=self.biasCorrected, cleanup=self.cleanup, ngaus=self.ngaus, regtype=self.regtype, warpreg=self.warpreg
                    , warpco=self.warpco, biasfwhm=self.biasfwhm, samp=self.samp, msk=self.msk
