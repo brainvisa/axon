@@ -55,7 +55,7 @@ def validation():
 
 # inputs/outputs definition
 signature = Signature(
-  'MRI_Nat', ReadDiskItem('T1 MRI Nat reseted', 'NIFTI-1 image'),
+  'MRI_Nat', ReadDiskItem('T1 MRI', 'NIFTI-1 image'),
   'analysis', WriteDiskItem('Analysis Dir', 'Directory'), # ce type ne dépend pas du sujet on peut donc donner une valeur par défaut à l'analyse. Inconvénient : cela créé un répertoire analysis à la racine
   'MRI_Mni_tpmSeg', ReadDiskItem('grey probability map', 'NIFTI-1 image'),
   'spmJobName', String(),
