@@ -71,8 +71,9 @@ def run(context, configuration, jobPath, cmd=None, useMatlabFirst=False, isMatla
      
     if (isSpmRunFailed and not useMatlabFirst):
       spmRunResult, e = tryToRunSpm8(context, configuration, jobPath, cmd)
-      if not firstException:
-        firstException = e
+      isSpmRunOK = spmRunResult == 0 and e == None
+      if isSpmRunOK:
+        firstException = None
     
   if firstException is not None:
     raise firstException
