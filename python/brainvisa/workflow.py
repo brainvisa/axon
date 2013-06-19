@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import collections
 import os
 import pickle
 import types
@@ -15,6 +16,7 @@ from soma.workflow.client import Job, FileTransfer, SharedResourcePath, Group, W
 
 class ProcessToWorkflow( object ):
   JOB = 'j'
+  NATIVE_JOB = 'n'
   PARALLEL_GROUP = 'p'
   SERIAL_GROUP = 's'
   FILE = 'f'
@@ -44,24 +46,26 @@ class ProcessToWorkflow( object ):
     self._identifiers[ type ] = count
     return type + str( count )
   
+  def flatten(self, l): 
+   return (sum(map(self.flatten, l),[]) if isinstance(l, list) else [l])
   
   def _processExecutionNode( self, eNode, inGroup, priority = None ):
     if eNode is not None and eNode.isSelected():
       if isinstance( eNode, ProcessExecutionNode ):
         pENode = eNode._process._executionNode
+        #print '==>eNode.name() :', eNode.name(), ', pENode : ', pENode
         if pENode is None:
-          # Create job
-          jobId = self._createIdentifier( self.JOB )
-          #print 'Create job:', jobId, '(', inGroup, ')', eNode._process.name
-          if priority == None:
-            self._jobs[ jobId ] = (eNode._process, 0)
-          else:
-            self._jobs[ jobId ] = (eNode._process, priority)
-          self._groups[ inGroup ][ 1 ].append( jobId )
-          self._inGroup[ jobId ] = inGroup
+          if hasattr(eNode._process, 'executionWorkflow'):
+            # Register native jobs from the process
+            jobId = self._registerJob(self.NATIVE_JOB, eNode._process, priority, inGroup)
+            
+          else :
+            # Create job
+            jobId = self._registerJob(self.JOB, eNode._process, priority, inGroup)
           return
       else:
         pENode = eNode
+            
       if isinstance( pENode, ParallelExecutionNode ):
         process = getattr( eNode, '_process', None )
         if process is None:
@@ -69,11 +73,7 @@ class ProcessToWorkflow( object ):
         else:
           label = process.name
         # Create parallel group
-        groupId = self._createIdentifier( self.PARALLEL_GROUP )
-        #print 'Create group (parallel):', groupId, '(', inGroup, ')', label
-        self._groups[ groupId ] = ( label, [] )
-        self._groups[ inGroup ][ 1 ].append( groupId )
-        self._inGroup[ groupId ] = inGroup
+        groupId = self._registerGroup( self.PARALLEL_GROUP, label, inGroup )
         self._nodeToId[ eNode ] = groupId
         children_count = len(eNode.childrenNames())
         cmpt = 0
@@ -93,12 +93,9 @@ class ProcessToWorkflow( object ):
         else:
           label = process.name
         # Create serial group
-        groupId = self._createIdentifier( self.SERIAL_GROUP )
-        #print 'Create group (serial):', groupId, '(', inGroup, ')', label
-        self._groups[ groupId ] = ( label, [] )
-        self._groups[ inGroup ][ 1 ].append( groupId )
-        self._inGroup[ groupId ] = inGroup
+        groupId = self._registerGroup( self.SERIAL_GROUP, label, inGroup )
         self._nodeToId[ eNode ] = groupId
+        
         if priority == None:
           for i in eNode.children():
             self._processExecutionNode( i, groupId, 0 )
@@ -113,7 +110,6 @@ class ProcessToWorkflow( object ):
           for i in eNode.children():
             self._processExecutionNode( i, inGroup, priority )
 
-
   def doIt( self ):
     self._historyBooks = {}
     # set the priority 0 to all jobs
@@ -121,16 +117,18 @@ class ProcessToWorkflow( object ):
     # if the root node is a parallel node, its children will have a decreasing
     # priorities
     if self.process._executionNode:
-      self._processExecutionNode( self.process._executionNode, None, priority=None )
+      self._processExecutionNode( self.process._executionNode, None )
       self._processNodes( 0, self._groups[ None ][ 1 ], None, set(), set(), False, None )
     else:
-      # Create job
-      jobId = self._createIdentifier( self.JOB )
-      self._jobs[ jobId ] = (self.process, 0)
-      groupId = self._createIdentifier( self.SERIAL_GROUP )
-      self._groups[ groupId ] = ( self.process.name, [] )
-      self._groups[ groupId ][ 1 ].append( jobId )
-      self._inGroup[ jobId ] = groupId
+      groupId = self._registerGroup(self.SERIAL_GROUP, self.process.name)
+      
+      if hasattr(self.process, 'executionWorkflow') :
+        # Create a native job
+        jobId = self._registerJob(self.NATIVE_JOB, self.process, 0, groupId)
+        
+      else :
+        jobId = self._registerJob(self.JOB, self.process, 0, groupId)
+        
       self._processNodes( 0, [groupId], None, set(), set(), False, None )
 
     self._processExtraDependencies()
@@ -181,12 +179,35 @@ class ProcessToWorkflow( object ):
     self._iofiles.setdefault( fileId, ( [], [] ) )[ 1 ].append( id )
     self._historyBooks[ fileName ] = fileId
 
+  def _registerJob( self, type, process, priority = None, inGroup = None ):
+    # Create job
+    jobId = self._createIdentifier( type )
+    #print 'Create job:', jobId, '(', inGroup, ')', process.name
+    if priority == None:
+      self._jobs[ jobId ] = (process, 0)
+    else:
+      self._jobs[ jobId ] = (process, priority)
+    self._groups[ inGroup ][ 1 ].append( jobId )
+    
+    if not inGroup is None :
+      self._inGroup[ jobId ] = inGroup
+    
+    return jobId
 
+  def _registerGroup( self, type, label, inGroup = None ):
+    groupId = self._createIdentifier( type )
+    #print 'Create group (', type, '):', groupId, '(', inGroup, ')', label
+    self._groups[ groupId ] = ( label, [] )
+    self._groups[ inGroup ][ 1 ].append( groupId )
+    self._inGroup[ groupId ] = inGroup
+    
+    return groupId
+  
   def _processNodes( self, depth, nodes, inGroup, begin, end, serial, previous ):
     first = None
     last = previous
     for id in nodes:
-      if id[ 0 ] == self.JOB:
+      if id[ 0 ] in ( self.JOB, self.NATIVE_JOB ):
         (process, priority) = self._jobs[ id ]
         for name, type in process.signature.iteritems():
           if isinstance( type, WriteDiskItem ):
@@ -287,7 +308,12 @@ class ProcessToWorkflow( object ):
                   fileId = self._fileNames[fileName.fullPath()]
                 self._iofiles.setdefault( fileId, ( [], [] ) )[ 0 ].append( id )
              
-        self._create_job( depth, id, process, inGroup, priority)
+        if (id[ 0 ] == self.NATIVE_JOB) :
+          self._append_native_jobs( depth, id, process, inGroup, priority)
+          
+        else :
+          self._create_job( depth, id, process, inGroup, priority)
+          
         if serial:
           if first is None:
             first = [ id ]
@@ -299,9 +325,8 @@ class ProcessToWorkflow( object ):
           if previous:
             for source in previous:
               if source != id:
-                self.create_link(  source, id )
-        
-        
+                self.create_link( source, id )
+                  
       elif id[ 0 ] == self.PARALLEL_GROUP:
         label, content = self._groups[ id ]
         self.open_group( depth, id, label, inGroup )
@@ -346,6 +371,7 @@ class ProcessToWorkflow( object ):
 
 
   def _create_job( self, depth, jobId, process, inGroup, priority ):
+    
     command = list( self.brainvisa_cmd )
     for hb in self._historyBooks:
       command += [ '--historyBook', hb ]
@@ -369,7 +395,6 @@ class ProcessToWorkflow( object ):
       command.append( value )
     # print "==> command " + repr(command)
     self.create_job( depth, jobId, command, inGroup, label=process.name, priority=priority )
-
 
   def _processExtraDependencies( self ):
     jobtoid = {}
@@ -399,7 +424,7 @@ class ProcessToWorkflow( object ):
       group = self._groups[ id ]
       for jid in group[1]:
         self._processExtraDependenciesFor( jid, deps, jobtoid )
-    elif id[0] == self.JOB:
+    elif id[0] in (self.JOB, self.NATIVE_JOB):
       # add source dependencies deps to a single job id
       for dep in deps:
         if type( dep ) not in ( str, unicode ):
@@ -422,7 +447,7 @@ class ProcessToWorkflow( object ):
               # depend on all jobs in the parallel group
               self._processExtraDependenciesFor( id, group, jobtoid )
         else: # dep as job/group id
-          if dep[0] == self.JOB:
+          if dep[0] == (self.JOB, self.NATIVE_JOB):
             print 'create_link( ', dep, ',', id, ')'
             self.create_link( dep, id )
           elif dep[0] == self.SERIAL_GROUP:
@@ -434,6 +459,8 @@ class ProcessToWorkflow( object ):
             # depend on all jobs in the parallel group
             self._processExtraDependenciesFor( id, group, jobtoid )
 
+  def _append_native_jobs( self, depth, jobId, process, inGroup, priority ):
+    pass
 
 class GraphvizProcessToWorkflow( ProcessToWorkflow ):
   def __init__( self, process, output, clusters=True, files=True ):
@@ -582,10 +609,12 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
     #self.linkcnt[(self.FILE, self.FILE)] = 0
     
     super( ProcessToSomaWorkflow, self ).doIt()
-    jobs = self.__jobs.values()
+    
+    # Due to native jobs, it is necessary to flatten jobs list
+    jobs = self.flatten(self.__jobs.values())
     dependencies = self.__dependencies
     root_group = self.__groups[self.__mainGroupId]
-     
+    
     workflow = Workflow(jobs, dependencies, root_group, name=self.process.name)
     if self.__out:
       Helper.serialize(self.__out, workflow)
@@ -633,6 +662,12 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
     #print 'create_job' + repr( ( depth, jobId, command, inGroup ) )
     self.__jobs[jobId] = Job(command=command, name=label, priority=priority)#jobId)#
     self.__groups[inGroup].elements.append(self.__jobs[jobId]) 
+  
+  def _append_native_jobs( self, depth, jobId, process, inGroup, priority ):
+    jobs, dependencies, groups = process.executionWorkflow()
+    self.__jobs[jobId] = jobs
+    self.__groups[inGroup].elements += groups
+    self.__dependencies += dependencies
   
   def open_group( self, depth, groupId, label, inGroup ):
     #print 'open_group' + repr( ( depth, groupId, label, inGroup ) )
@@ -683,12 +718,12 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
         jobs_to_inspect=[]
         for job_id in self._iofiles[fileId][0]:
           if isinstance(global_in_file, FileTransfer):
-            self.__jobs[job_id].referenced_input_files.append(global_in_file)
-          jobs_to_inspect.append(self.__jobs[job_id])
+            self.create_link((self.FILE, global_in_file), job_id)
+          jobs_to_inspect += self.flatten(self.__jobs[job_id])
         for job_id in self._iofiles[fileId][1]:
           if isinstance(global_in_file, FileTransfer):
-            self.__jobs[job_id].referenced_output_files.append(global_in_file)
-          jobs_to_inspect.append(self.__jobs[job_id])
+            self.create_link(job_id, (self.FILE, global_in_file))
+          jobs_to_inspect += self.flatten(self.__jobs[job_id])
         
         #print "job inspection: " + repr(len(jobs_to_inspect)) + " jobs."
         for job in jobs_to_inspect:
@@ -749,12 +784,12 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
         jobs_to_inspect=[]
         for job_id in self._iofiles[fileId][0]:
           if isinstance(global_out_file, FileTransfer):
-            self.__jobs[job_id].referenced_input_files.append(global_out_file)
-          jobs_to_inspect.append(self.__jobs[job_id])
+            self.create_link((self.FILE, global_out_file), job_id)
+          jobs_to_inspect += self.flatten(self.__jobs[job_id])
         for job_id in self._iofiles[fileId][1]:
           if isinstance(global_out_file, FileTransfer):
-            self.__jobs[job_id].referenced_output_files.append(global_out_file)
-          jobs_to_inspect.append(self.__jobs[job_id])
+            self.create_link(job_id, (self.FILE, global_out_file))
+          jobs_to_inspect += self.flatten(self.__jobs[job_id])
           
         #print "job inspection: " + repr(len(jobs_to_inspect)) + " jobs."
         for job in jobs_to_inspect:
@@ -785,31 +820,57 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
             job.stdout_file = global_out_file
           if job.stderr_file == fileName:
             job.stdout_file = global_out_file
+
+  def resolve_objects(self, k) :
     
-  
+    r = []
+    t = k[0]
+
+    if (type(k) is tuple) :
+      o = k[1]
+      
+    elif (t in (self.NATIVE_JOB, self.JOB) ):
+      o = self.__jobs[k]
+      
+    elif (t == self.FILE ):
+      o = self.__file_transfers[k]
+      
+    if type(o) is list : 
+      for c in o :
+        r += self.resolve_objects( (t, c) )
+        
+    elif not o is None :
+      r += [ (t, o) ]
+    
+    return r
+     
   def create_link( self, source, destination ):
-    #print 'create_link' + repr( ( source, destination ) )
-    if source[0] == self.JOB and destination[0] == self.JOB: 
-      self.__dependencies.append((self.__jobs[source], self.__jobs[destination]))
-      #self.linkcnt[(self.JOB, self.JOB)] = self.linkcnt[(self.JOB, self.JOB)] +1
-      #print repr(self.linkcnt[(self.JOB, self.JOB)]) +'     JOB  -> JOB  ' + repr( ( self.__jobs[source].name, self.__jobs[destination].name ) )
-    elif self.__file_transfers:
-      if source[0] == self.FILE and destination[0] == self.JOB:
-        file = self.__file_transfers[source]
-        job = self.__jobs[destination]
-        job.referenced_input_files.append(file)
-        #self.linkcnt[(self.FILE, self.JOB)] = self.linkcnt[(self.FILE, self.JOB)] +1
-        #print repr(self.linkcnt[(self.FILE, self.JOB)]) +'     FILE -> JOB  ' + repr( (file.name, job.name ) ) + ' len(job.referenced_input_files) = ' + repr(len(job.referenced_input_files))
-      elif source[0] == self.JOB and destination[0] == self.FILE: 
-        job = self.__jobs[source]
-        file = self.__file_transfers[destination]
-        job.referenced_output_files.append(file)
-        #self.linkcnt[(self.JOB, self.FILE)] = self.linkcnt[(self.JOB, self.FILE)] +1
-        #print repr(self.linkcnt[(self.JOB, self.FILE)]) +'     JOB  -> FILE ' + repr( (job.name, file.name ) ) + ' len(job.referenced_output_files) = ' + repr(len(job.referenced_output_files))
-      elif source[0] == self.FILE and destination[0] == self.FILE: 
-        self.__dependencies.append((self.__file_transfers[source], self.__file_transfers[source]))
-        #self.linkcnt[(self.FILE, self.FILE)] = self.linkcnt[(self.FILE, self.FILE)] +1
-        #print repr(self.linkcnt[(self.FILE, self.FILE)]) +'     FILE -> FILE ' + repr( ( self.__file_transfers[source].name, self.__file_transfers[destination].name ) )
+    #print '==>create_link' + repr( ( source, destination ) )
+
+    s = self.resolve_objects(source)
+    d = self.resolve_objects(destination)
+
+    for srctype, src in s :
+      for dsttype, dst in d :
+        if srctype in (self.JOB, self.NATIVE_JOB) \
+          and dsttype in (self.JOB, self.NATIVE_JOB): 
+
+          self.__dependencies.append((src, dst))
+          #self.linkcnt[(self.JOB, self.JOB)] = self.linkcnt[(self.JOB, self.JOB)] +1
+          #print repr(self.linkcnt[(self.JOB, self.JOB)]) +'     JOB  -> JOB  ' + repr( ( self.__jobs[source].name, self.__jobs[destination].name ) )
+        elif self.__file_transfers:
+          if srctype == self.FILE and dsttype in (self.JOB, self.NATIVE_JOB):
+            dst.referenced_input_files.append(src)
+            #self.linkcnt[(self.FILE, self.JOB)] = self.linkcnt[(self.FILE, self.JOB)] +1
+            #print repr(self.linkcnt[(self.FILE, self.JOB)]) +'     FILE -> JOB  ' + repr( (file.name, job.name ) ) + ' len(job.referenced_input_files) = ' + repr(len(job.referenced_input_files))
+          elif srctype in (self.JOB, self.NATIVE_JOB) and dsttype == self.FILE: 
+            src.referenced_output_files.append(dst)
+            #self.linkcnt[(self.JOB, self.FILE)] = self.linkcnt[(self.JOB, self.FILE)] +1
+            #print repr(self.linkcnt[(self.JOB, self.FILE)]) +'     JOB  -> FILE ' + repr( (job.name, file.name ) ) + ' len(job.referenced_output_files) = ' + repr(len(job.referenced_output_files))
+          elif srctype == self.FILE and dsttype == self.FILE: 
+            self.__dependencies.append((src, dst))
+            #self.linkcnt[(self.FILE, self.FILE)] = self.linkcnt[(self.FILE, self.FILE)] +1
+            #print repr(self.linkcnt[(self.FILE, self.FILE)]) +'     FILE -> FILE ' + repr( ( self.__file_transfers[source].name, self.__file_transfers[destination].name ) )
       
 
   

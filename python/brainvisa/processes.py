@@ -2380,7 +2380,14 @@ class ExecutionContext( object ):
           #print "Create subLog for process ", process.name
           newStackTop.log = log.subLog()
           process._log = newStackTop.log
-          content= '<html><body><h1>' + _t_(process.name) + '</h1><h2>' + _t_('Process identifier') + '</h2>' + process._id + '<h2>' + _t_('Parameters') +'</h2>'
+          content = '<html><body><h1>' + _t_(process.name) + '</h1><h2>' + _t_('Process identifier') + '</h2>' + process._id
+          content += '<h2>' + _t_('Execution platform') +'</h2>'
+          if(hasattr(process, 'executionWorkflow')):
+            content += 'Soma-Workflow'
+          else :
+            content += 'BrainVISA'
+            
+          content += '<h2>' + _t_('Parameters') +'</h2>'
           for n in process.signature.keys():
             content += '<em>' + n + '</em> = ' + htmlEscape( str( getattr( process, n, None ) ) ) + '<p>'
           content += '<h2>' + _t_( 'Output' ) + '</h2>'
@@ -2479,7 +2486,22 @@ class ExecutionContext( object ):
             if needsconv:
               process.setConvertedValue( n, converted )
         if executionFunction is None:
-          result = process.execution( self )
+          if(hasattr(process, 'executionWorkflow')) :
+            from soma.workflow.client import WorkflowController, Workflow, Helper
+            jobs, dependencies, root_group = process.executionWorkflow()
+            workflow = Workflow(jobs = jobs, dependencies = dependencies, root_group = root_group)
+            controller = WorkflowController()
+            wid = controller.submit_workflow(workflow=workflow, name=process.name)
+            Helper.wait_workflow(wid, controller)
+            list_failed_jobs = Helper.list_failed_jobs(wid, controller)
+            result = workflow
+            if (len(list_failed_jobs) > 0):
+              raise Exception('run through soma workflow failed, see details with soma-workflow-gui')
+            else :
+              # Delete the submitted workflow
+              controller.delete_workflow(wid, True)
+          else :
+            result = process.execution( self )
         else:
           result = executionFunction( self )
       except Exception, e:
