@@ -73,6 +73,7 @@ signature = Signature(
     'interp', String(),
     'wrap', String(),
     'prefix', String(),
+    'generatePsFileWithMatlab', Boolean(), 
      )
 #------------------------------------------------------------------------------
 
@@ -81,6 +82,7 @@ def initialization(self):
   self.template = str(spm8Path) + """/templates/T1.nii""" # could be also : PET or SPECT etc...
   initializeNormalizeParameters_usingSPM8DefaultValuesForPET(self)
   self.prefix = """'spmNormalized_'""" 
+  self.generatePsFileWithMatlab = True
 
 #------------------------------------------------------------------------------
 
@@ -94,7 +96,7 @@ def execution(self, context):
                                           , self.preserve, self.bb, self.vox, self.interp, self.wrap, self.prefix 
                                           )  
   # momoTODO remonter le flag dans la signature : generatePSFileUsingMatlab    
-  spm.run(context, configuration, matfilePath, useMatlabFirst=True)# I prefere to use matlab version, because only this version generate .ps file to check the registration  
+  spm.run(context, configuration, matfilePath, useMatlabFirst=self.generatePsFileWithMatlab)# I prefere to use matlab version, because only this version generate .ps file to check the registration  
     
   warpedPath = self.warpedInMni.fullPath()
   moveSpmOutFiles(inDir, warpedPath, [self.prefix])
