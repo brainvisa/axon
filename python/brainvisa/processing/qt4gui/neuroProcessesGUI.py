@@ -246,8 +246,22 @@ def runCsvViewer( source, existingWidget=None ):
     print e
     pass
   print 'using builting viewer.'
-  # by now, fallback to text editor
-  cmd = configuration.brainvisa.textEditor
+
+  # builtin browser, needs GenericTableEditor from datamind
+  try:
+    from datamind.gui.genericTableEditor import GenericTableEditor
+    if existingWidget is None:
+      existingWidget = GenericTableEditor( None )
+      existingWidget.setWindowTitle( _t_( 'CSV viewer' ) )
+      existingWidget.resize( 800, 600 )
+    existingWidget.load_from_file( source )
+    existingWidget.show()
+    existingWidget.raise_()
+    return existingWidget
+  except:
+    pass
+  # fallback to text editor
+  textEditor = configuration.brainvisa.textEditor
   if textEditor is not None:
     env=os.environ.copy()
     if (not textEditor.startswith(os.path.dirname(neuroConfig.mainPath))): # external command
@@ -255,16 +269,6 @@ def runCsvViewer( source, existingWidget=None ):
         env.update(neuroConfig.brainvisaSysEnv.getVariables())
     if os.spawnle( os.P_NOWAIT, textEditor, textEditor, source, env ) > 0:
       return
-  raise RuntimeError( 'CSV viewer program not found' )
-  # TODO
-  #if existingWidget is None:
-    #existingWidget = CsvViewer( None )
-    #existingWidget.setWindowTitle( _t_( 'CSV viewer' ) )
-    #existingWidget.resize( 800, 600 )
-  #existingWidget.setSource( source )
-  #existingWidget.show()
-  #existingWidget.raise_()
-  return existingWidget
 
 
 #----------------------------------------------------------------------------

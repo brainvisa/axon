@@ -43,9 +43,10 @@ signature = Signature(
 )
 
 def initialization( self ):
-  pass
+    pass
 
 def execution( self, context ):
-  return neuroProcessesGUI.runCsvViewer( self.csv_file.fullPath() )
+    return mainThreadActions().call( neuroProcessesGUI.runCsvViewer,
+        self.csv_file.fullPath() )
 
 

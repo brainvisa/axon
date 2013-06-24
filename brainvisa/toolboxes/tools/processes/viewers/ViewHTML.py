@@ -46,6 +46,7 @@ def initialization( self ):
   pass
 
 def execution( self, context ):
-  return neuroProcessesGUI.runHtmlBrowser( self.html_file.fullPath() )
+    return mainThreadActions().call( neuroProcessesGUI.runHtmlBrowser,
+        self.html_file.fullPath() )
 
 
