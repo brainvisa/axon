@@ -1,25 +1,33 @@
 # -*- coding: utf-8 -*-
 include('base')
- 
-insert( '{protocol}/{subject}/t1mri/{acquisition}/',
-  '<subject>_dicoms', SetType( 'Dicoms T1 MRI' ),) # Native space
 
-insert( '{protocol}/{subject}/t1mri/{acquisition}/',
-  '<subject>', SetType( 'Raw T1 MRI' ), SetPriorityOffset( +1 ), SetWeakAttr( 'normalized', 'no' ),) # already existed for morphologist # Native space
+insert( '{center}/{subject}',
+  't1mri', SetWeakAttr( 'modality', 't1mri' ),
+    SetContent(
+      '{acquisition}',
+        SetDefaultAttributeValue( 'acquisition', default_acquisition ), SetNonMandatoryKeyAttribute( 'acquisition' ),
+        SetContent(
+          # acquisition
 
-insert('{protocol}/{subject}/t1mri/{acquisition}/',
-  '<subject>_Nat_reseted', SetType('T1 MRI Nat reseted'),) # Native space
+          '<subject>_dicoms', SetType( 'Dicoms T1 MRI' ), # Native space
 
-insert( '{protocol}/{subject}/t1mri/{acquisition}',
+          '<subject>', SetType( 'Raw T1 MRI' ), SetPriorityOffset( +1 ),
+            SetWeakAttr( 'normalized', 'no' ), # already existed for morphologist # Native space
 
-  'registration', SetContent(), # is not an analysis
+          '<subject>_Nat_reseted', SetType('T1 MRI Nat reseted'), # Nat = Native space # original name was reseted Nat T1 MRI
 
-  '{analysis}',
-    SetType( 'T1 MRI Analysis Directory' ),
-    SetDefaultAttributeValue( 'analysis', default_analysis ),
-    SetNonMandatoryKeyAttribute( 'analysis' ),
-    SetContent(), # SetContent() because it is a directory
+        'registration', SetContent(), # is not an analysis
+
+        '{analysis}',
+          SetType( 'T1 MRI Analysis Directory' ),
+          SetDefaultAttributeValue( 'analysis', default_analysis ),
+          SetNonMandatoryKeyAttribute( 'analysis' ),
+          SetContent(), # SetContent() because it is a directory
+
+        ),
+    ),
 )
+
 
 insert('{protocol}/{subject}/t1mri/{acquisition}/{analysis}',
   'nobias_<subject>', SetType('T1 MRI Bias Corrected'),) # already existed for morphologist # Native space
