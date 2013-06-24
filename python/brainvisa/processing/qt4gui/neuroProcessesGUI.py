@@ -57,6 +57,7 @@ import weakref
 from soma.minf.xhtml import XHTML
 from soma.qtgui.api import QtThreadCall, FakeQtThreadCall, WebBrowserWithSearch, bigIconSize, defaultIconSize
 from soma.html import htmlEscape
+from soma.wip.application.api import Application
 import soma.functiontools
 import threading
 import socket
@@ -176,7 +177,10 @@ def helpRequest():
   url = QUrl.fromLocalFile( neuroConfig.getDocFile(os.path.join( 'help', 'index.html' ) ) ).toString()
   openWeb(url)
 
-def openWeb(source):
+def runHtmlBrowser( source, existingWidget=None ):
+  ''' run the HTML browser defined in BV config. If it is a builtin browser,
+  use an existing widget, or instantiate and return a new one.
+  '''
   try:
     browser = neuroConfig.HTMLBrowser
     if browser is not None:
@@ -196,17 +200,74 @@ def openWeb(source):
           return
   except:
     pass
-  global _helpWidget
-  if _helpWidget is None:
-    _helpWidget = HTMLBrowser( None )
-    _helpWidget.setWindowTitle( _t_( 'BrainVISA help' ) )
-    _helpWidget.resize( 800, 600 )
+  if existingWidget is None:
+    existingWidget = HTMLBrowser( None )
+    existingWidget.setWindowTitle( _t_( 'BrainVISA help' ) )
+    existingWidget.resize( 800, 600 )
   sys.stdout.flush()
-  _helpWidget.setSource( source )
-  _helpWidget.show()
-  _helpWidget.raise_()
-    
+  existingWidget.setSource( source )
+  existingWidget.show()
+  existingWidget.raise_()
+  return existingWidget
 
+def openWeb( source ):
+  global _helpWidget
+  widget = runHtmlBrowser( source, _helpWidget )
+  if widget is not None:
+    _helpWidget = widget
+
+#----------------------------------------------------------------------------
+
+def runCsvViewer( source, existingWidget=None ):
+  ''' run the CSV viewer defined in BV config. If it is a builtin viewer,
+  use an existing widget, or instantiate and return a new one.
+  '''
+  try:
+    configuration = Application().configuration
+    browser = configuration.brainvisa.csvViewer
+    print 'CSV viewer:', browser
+    if browser is not None:
+      browser = distutils.spawn.find_executable( browser )
+      if browser:
+        if sys.platform == "darwin":
+          m=re.match("\/Applications\/.+\.app/Contents/MacOS/(.*)", browser)
+          if m:
+            if os.system("open -a "+m.group(1)+" '"+source+"'") == 0:
+              return
+
+        env=os.environ.copy()
+        if (not browser.startswith(os.path.dirname(neuroConfig.mainPath))): # external command
+          if neuroConfig.brainvisaSysEnv:
+            env.update(neuroConfig.brainvisaSysEnv.getVariables())
+        if os.spawnle( os.P_NOWAIT, browser, browser, source, env ) > 0:
+          return
+  except Exception, e:
+    print 'exception.'
+    print e
+    pass
+  print 'using builting viewer.'
+  # by now, fallback to text editor
+  cmd = configuration.brainvisa.textEditor
+  if textEditor is not None:
+    env=os.environ.copy()
+    if (not textEditor.startswith(os.path.dirname(neuroConfig.mainPath))): # external command
+      if neuroConfig.brainvisaSysEnv:
+        env.update(neuroConfig.brainvisaSysEnv.getVariables())
+    if os.spawnle( os.P_NOWAIT, textEditor, textEditor, source, env ) > 0:
+      return
+  raise RuntimeError( 'CSV viewer program not found' )
+  # TODO
+  #if existingWidget is None:
+    #existingWidget = CsvViewer( None )
+    #existingWidget.setWindowTitle( _t_( 'CSV viewer' ) )
+    #existingWidget.resize( 800, 600 )
+  #existingWidget.setSource( source )
+  #existingWidget.show()
+  #existingWidget.raise_()
+  return existingWidget
+
+
+#----------------------------------------------------------------------------
 class SomaWorkflowMiniWidget(MiniComputingResourceWidget):
 
   def __init__(self, model, sw_widget, parent=None):

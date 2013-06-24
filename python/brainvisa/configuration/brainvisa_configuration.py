@@ -78,6 +78,22 @@ def defaultTextEditor():
   return defaultEditor
 
 #------------------------------------------------------------------------------
+def csvViewers():
+  return [i for i in ( 'gnumeric', 'openoffice', 'libreoffice' ) \
+    if find_executable( i ) ]
+
+def defaultCSVViewer():
+  """
+  If a real CSV viewer is found, use it dy default.
+  If there is no CSV viewer available, the built-in Qt viewer is used.
+  """
+  defaultCSVviewer=""
+  browsers=csvViewers()
+  if browsers:
+    defaultCSVviewer=browsers[0]
+  return defaultCSVviewer
+
+#------------------------------------------------------------------------------
 class BrainVISAConfiguration( ConfigurationGroup ):
   
   label = 'BrainVISA'
@@ -106,7 +122,8 @@ class BrainVISAConfiguration( ConfigurationGroup ):
     'processesPath', Sequence( FileName( directoryOnly=True ) ), dict( defaultValue=[], doc='List of directories containing BrainVISA processes.' ),
     'temporaryDirectory', FileName( directoryOnly=True ), dict( defaultValue=getSystemDefaultTempDir(), doc='Directory where temporary files are stored. Name of temporary files produced by BrainVISA starts with <tt>"bv_"</tt>.' ),
     'textEditor', OpenedChoice( * textEditors() ), dict( defaultValue=defaultTextEditor(), doc='Location of the program used to edit text files.' ),
-    'htmlBrowser', OpenedChoice( ( '<built-in>', '' ), * htmlBrowsers()  ), dict( defaultValue = defaultHTMLBrowser(), doc='Location of the program used to display HTML files.' ),
+    'htmlBrowser', OpenedChoice( ( '<built-in>', '' ), * htmlBrowsers() ), dict( defaultValue = defaultHTMLBrowser(), doc='Location of the program used to display HTML files.' ),
+    'csvViewer', OpenedChoice( ( '<built-in>', '' ), * csvViewers() ), dict( defaultValue = defaultCSVViewer(), doc='Location of the program used to display CSV files.' ),
     'removeTemporary', Boolean, dict( defaultValue=True, doc='unselect this option if you do not want temporary files and directories to be automatically deleted. This option is used for debugging. If unselected BrainVISA can leave a lot of files in temporary directory.' ),
     'SPM', SPMConfiguration, dict( defaultValue=SPMConfiguration() ),
     'support', SupportConfiguration, dict( defaultValue=SupportConfiguration() ),
