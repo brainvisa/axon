@@ -2,6 +2,8 @@
 include( 'builtin' )
 
 #--------------- Templates ------------------------
-FileType( 'anatomical Template', '3D Volume')
-FileType( 'grey probability map', '3D Volume')
-FileType( 'tissue probability map', '4D Volume')
+FileType( 'Template', '3D Volume')
+FileType( 'anatomical Template', 'Template')
+FileType( 'grey probability map', 'Template')
+FileType( 'tissue probability map', 'Template')
+FileType( 'PET Template', 'Template')
