@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from tempfile import mkstemp
 import os
+from soma.path import locate_file
 
 def writeResultsJob(spmJobPath, spmMatPath, title, pvalue_adjustment, pvalue_threshold, pvalue_extent_threshold):
   matFileFd = open(spmJobPath, 'w')
@@ -75,7 +76,7 @@ def createBrainMIPWithGridTextFiles(context, spm8_standalone_path, spm8_standalo
   matFileFd.write("""
   spm_get_defaults('cmdline', true);
   spm_jobman('initcfg');
-  load('%s/spm8_mcr/spm8/MIP.mat');
+  load('%s');
   
   [r,c,v] = find( grid_all > 0 );
   fid = fopen( '%s', 'wt' );
@@ -89,7 +90,8 @@ def createBrainMIPWithGridTextFiles(context, spm8_standalone_path, spm8_standalo
     fprintf( fid, '(%%d,%%d)\\n', r(i), c(i) );
   end
   fclose(fid);
-  """ % (spm8_standalone_path, gridFilePath, maskFilePath))
+  """ % (locate_file("MIP.mat", os.path.dirname(spm8_standalone_command)),
+         gridFilePath, maskFilePath))
   matFileFd.close()
   mexe = spm8_standalone_command
   cmd = [mexe, 
