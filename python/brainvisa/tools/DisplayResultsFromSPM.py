@@ -44,7 +44,8 @@ from brainvisa.tools.spm_results import createBrainMIPWithGridTextFiles
 
 class DisplayResultsFromSPM(object):
   def __init__(self, title, display_glass_brain, comment, resultMap, statsCsv, threshInfo, singleSubject, mipMat
-               , spm8_standalone_command, spm8_standalone_path, spm8_standalone_mcr_path, spm8_wfu_pickatlas_path):
+               , spm8_standalone_command, spm8_standalone_path, spm8_standalone_mcr_path, spm8_wfu_pickatlas_path,
+               info_widget=None):
       self.title = title
       self.display_glass_brain = display_glass_brain
       self.comment = comment
@@ -55,6 +56,8 @@ class DisplayResultsFromSPM(object):
       self.spm8_standalone_path = spm8_standalone_path
       self.spm8_standalone_mcr_path = spm8_standalone_mcr_path
       self.spm8_wfu_pickatlas_path = spm8_wfu_pickatlas_path
+      self.info_widget = info_widget
+      
       # Find the single subject MRI
       self.singleSubject = singleSubject
       self.mipMat = mipMat
@@ -256,28 +259,31 @@ class DisplayResultsFromSPM(object):
               # Disable glass brain
               self.display_glass_brain = 'No'
   
-      gridlay = QtGui.QGridLayout()
-      vlay.addLayout(gridlay) 
+      hlay = QtGui.QHBoxLayout()
+      vlay.addLayout(hlay) 
   
-      # Add title
-      gb = QtGui.QGroupBox("", frame)
-      gb.setStyleSheet(self._getGroupBoxStyle())
-      childhlay = QtGui.QHBoxLayout()
-      gridlay.addLayout(childhlay, 0, 0)
-      childhlay.addSpacerItem(QtGui.QSpacerItem(20, 20, hPolicy=QtGui.QSizePolicy.Expanding))
-      childhlay.addWidget(gb)
-      childhlay.addSpacerItem(QtGui.QSpacerItem(20, 20, hPolicy=QtGui.QSizePolicy.Expanding))
-      bgVlay = QtGui.QVBoxLayout(gb)
-      lbl = QtGui.QLabel(self.title)
-      font = lbl.font()
-      font.setBold(True)
-      font.setPointSize(12)
-      lbl.setFont(font)
-      bgVlay.addWidget(lbl)
+      if self.info_widget:
+          hlay.addWidget(self.info_widget.build(frame))
+      else:
+          # Add title
+          gb = QtGui.QGroupBox("", frame)
+          gb.setStyleSheet(self._getGroupBoxStyle())
+          childhlay = QtGui.QHBoxLayout()
+          hlay.addLayout(childhlay)
+          childhlay.addSpacerItem(QtGui.QSpacerItem(20, 20, hPolicy=QtGui.QSizePolicy.Expanding))
+          childhlay.addWidget(gb)
+          childhlay.addSpacerItem(QtGui.QSpacerItem(20, 20, hPolicy=QtGui.QSizePolicy.Expanding))
+          bgVlay = QtGui.QVBoxLayout(gb)
+          lbl = QtGui.QLabel(self.title)
+          font = lbl.font()
+          font.setBold(True)
+          font.setPointSize(12)
+          lbl.setFont(font)
+          bgVlay.addWidget(lbl)
       
       # Add tools for view editing
       toolVlay = QtGui.QVBoxLayout()
-      gridlay.addLayout(toolVlay, 0, 1)
+      hlay.addLayout(toolVlay)
       toolVlay.setSpacing(0)
       toolVlay.setMargin(0)
       # Add T-map LUT editor
@@ -333,15 +339,15 @@ class DisplayResultsFromSPM(object):
       gb = QtGui.QGroupBox("Threshold parameters", frame)
       gb.setStyleSheet(self._getGroupBoxStyle())
       childhlay = QtGui.QHBoxLayout()
-      gridlay.addLayout(childhlay, 0, 2)
+      hlay.addLayout(childhlay)
       childhlay.addSpacerItem(QtGui.QSpacerItem(20, 20, hPolicy=QtGui.QSizePolicy.Expanding))
       childhlay.addWidget(gb)
       childhlay.addSpacerItem(QtGui.QSpacerItem(20, 20, hPolicy=QtGui.QSizePolicy.Expanding))
       bgVlay = QtGui.QVBoxLayout(gb)
       bgVlay.addWidget(QtGui.QLabel(open(self.threshInfo, 'r').read()))
-      gridlay.setColumnStretch(0, 1)
-      gridlay.setColumnStretch(1, 1)
-      gridlay.setColumnStretch(2, 1)
+      hlay.setStretch(0, 1)
+      hlay.setStretch(1, 1)
+      hlay.setStretch(2, 1)
       vlay.setStretch(0, 6)
       vlay.setStretch(1, 1)
   
