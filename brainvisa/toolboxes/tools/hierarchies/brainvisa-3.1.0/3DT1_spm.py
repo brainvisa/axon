@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 include('base')
 
-insert( '{center}/{subject}',
+insert( '{protocol}/{subject}',
   't1mri', SetWeakAttr( 'modality', 't1mri' ),
     SetContent(
       '{acquisition}',
