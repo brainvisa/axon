@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <minf expander="minf_1.0">
 <d>
-  <s name="convert_old_database_steps">Convert old database steps</s>
+  <s name="T1_pipeline04">T1 Pipeline 2004</s>
+  <s name="Bad value in processPath: &lt;em&gt;%s&lt;/em&gt;">Bad value in processesPath: &lt;em&gt;%s&lt;/em&gt;</s>
+  <s name="NuclearImaging">Nuclear Imaging</s>
   <s name="t1mri">T1 MRI</s>
-  <s name="t1_pipeline05">T1 Pipeline 2005</s>
-  <s name="t1_pipeline04">T1 Pipeline 2004</s>
-  <s name="t1_pipeline05_components">T1 Pipeline 2005 components</s>
-  <s name="sulcalmodel">Sulcal Model</s>
-  <s name="biologicalData">Biological Data</s>
-  <s name="StructuralAnalysis">Structural Analysis</s>
   <s name="older_pipelines">Older pipelines</s>
   <s name="anatomistutils">anatomist tools</s>
-  <s name="structuralanalysis">structural analysis</s>
-  <s name="T1_pipeline04">T1 Pipeline 2004</s>
+  <s name="biologicalData">Biological Data</s>
+  <s name="sulcalmodel">Sulcal Model</s>
   <s name="segmentationpipeline">Segmentation Pipeline</s>
-  <s name="Bad value in processPath: &lt;em&gt;%s&lt;/em&gt;">Bad value in processesPath: &lt;em&gt;%s&lt;/em&gt;</s>
+  <s name="t1_pipeline05_components">T1 Pipeline 2005 components</s>
+  <s name="structuralanalysis">structural analysis</s>
   <s name="SurfaceBasedAnalysis">Surface Based Analysis</s>
-  <s name="NuclearImaging">Nuclear Imaging</s>
+  <s name="StructuralAnalysis">Structural Analysis</s>
+  <s name="t1_pipeline05">T1 Pipeline 2005</s>
+  <s name="t1_pipeline04">T1 Pipeline 2004</s>
+  <s name="convert_old_database_steps">Convert old database steps</s>
 </d>
 </minf>
