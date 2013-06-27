@@ -63,6 +63,8 @@ FileType('MatlabFile of Transformation of T1 MRI', 'Matlab SPM file')
 FileType('Mat T1 MRI from Mni to Native', 'MatlabFile of Transformation of T1 MRI')
 FileType('Mat T1 MRI from Native to Mni', 'MatlabFile of Transformation of T1 MRI')
 
+FileType('JacobianDeterminant', '4D Volume')
+
 ##################
 #                #
 ##################

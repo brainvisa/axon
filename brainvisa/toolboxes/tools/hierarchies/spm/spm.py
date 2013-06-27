@@ -38,13 +38,17 @@
 
 hierarchy = (
 SetWeakAttr( 'database', '%f', 'databasename', 'spm' ), SetPriorityOffset( -10 ), SetContent(
-  'tpm', SetContent('grey', SetType('grey probability map')),
-  'toolbox', SetContent('Seg', SetContent('TPM', SetType('tissue probability map'))),                                                                                             
+  'tpm', SetContent(
+    'grey', SetType('grey probability map')),
+  'toolbox', SetContent(
+    'Seg', SetContent(
+      'TPM', SetType('tissue probability map')),                                                                                             
+    'vbm8', SetContent(
+      'Template_1_IXI550_MNI152', SetType('Dartel Template'), SetWeakAttr( 'normalized', 'yes', 'databasename', 'spm' ))
+  ),# toolbox  
   'templates', SetContent(
-  'T1', SetType( 'anatomical Template' ),
-    SetWeakAttr( 'normalized', 'yes', 'skull_stripped', 'no', 'Size', '2 mm',
-     'referential', '19bfee8e-51b1-4d9e-8721-990b9f88b12f', 'databasename', 'spm' ),
-  'PET', SetType('PET Template'),
-    SetWeakAttr( 'normalized', 'yes', 'databasename', 'spm' ),
-) ) )
+    'T1', SetType( 'anatomical Template' ),SetWeakAttr( 'normalized', 'yes', 'skull_stripped', 'no', 'Size', '2 mm','referential', '19bfee8e-51b1-4d9e-8721-990b9f88b12f', 'databasename', 'spm' ),
+    'PET', SetType('PET Template'),SetWeakAttr( 'normalized', 'yes', 'databasename', 'spm' ),
+  )#templates     
+))
 

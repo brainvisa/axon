@@ -72,7 +72,8 @@ signature = Signature(
   'affreg', Choice(('No Affine Registration', """''"""), ("ICBM space template - European brains", """'mni'"""), ("ICBM space template - East Asian brains", """'eastern'"""), ("Average sized template", """'subj'"""), ("No regularisation", """'none'""")),
   'warpreg', String(),
   'samp', String(),
-  'normlow', Choice(('Low-dimensional: SPM default', """struct([])"""), ('High-dimensional: Dartel', """{'/coconut/applis/src/spm8_x64/toolbox/vbm8/Template_1_IXI550_MNI152.nii'};""")),
+  'norm', Choice(('Low-dimensional: SPM default', """Low"""), ('High-dimensional: Dartel', """Dartel""")),
+  'DartelTemplate', WriteDiskItem('Dartel Template', 'Aims readable volume formats'),
   'sanlm', Choice(('No denoising', '0'), ('Denoising', '1'), ('Denoising (multi-threaded)', '2')),
   'mrf', String(),
   'cleanup', Choice(('Dont do cleanup', '0'), ('Light Clean', '1'), ('Thorough Clean', '2')),
@@ -100,6 +101,9 @@ signature = Signature(
   'deFld', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
   'invDeFld', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
   'deFld_segMat', WriteDiskItem('Matlab SPM file', 'Matlab file'),
+
+  'generateJacobianDeterminant', Choice(('none', '0'), ('normalized', '1')),
+  'jacobianDeterminant', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
   
   )
 
@@ -113,14 +117,19 @@ def execution(self, context):
   inDir = self.MRI_Nat.fullPath()
   inDir = inDir[:inDir.rindex('/')]  
   spmJobFile = inDir + '/' + self.spmJobName+'_job.m'
+  
+  if(self.norm == "Dartel"):
+    norm="""high.darteltpm = {'"""+self.DartelTemplate.fullPath()+"""'}"""
+  else:
+    norm = """low = struct([])"""
 
   matfilePath = writeVBMSegmentationMatFile(context, configuration, self.MRI_Nat.fullPath(), spmJobFile
                               , self.MRI_Mni_tpmSeg, self.ngaus, self.biasreg, self.biasfwhm, self.affreg, self.warpreg, self.samp
-                              , self.normlow, self.sanlm, self.mrf, self.cleanup, self.pprint
+                              , norm, self.sanlm, self.mrf, self.cleanup, self.pprint
                               , self.grey_native, self.grey_warped, self.grey_modulated, self.grey_dartel
                               , self.wm_native, self.wm_warped, self.wm_modulated, self.wm_dartel
                               , self.csf_native, self.csf_warped, self.csf_modulated, self.csf_dartel
-                              , self.saveBias
+                              , self.saveBias, self.generateJacobianDeterminant
                               )    
   spm.run(context, configuration, matfilePath, isMatlabMandatory=True)   
   self.moveSpmOutFiles()
@@ -141,7 +150,9 @@ def moveSpmOutFiles(self):
   movePathToDiskItem(white, self.white_Nat)
   csf = inDir + "/p3" + subjectName + ".nii"
   movePathToDiskItem(csf, self.csf_Nat)
-  
+  jacobianDeterminant = inDir + "/jac_wrp1" + subjectName + ".nii"
+  movePathToDiskItem(jacobianDeterminant, self.jacobianDeterminant)
+    
   imDefField = inDir + "/y_" + subjectName + ".nii" # /iy is inverse deformation field
   movePathToDiskItem(imDefField, self.deFld)
   imInvDefField = inDir + "/iy_" + subjectName + "." + ext # /iy is inverse deformation field
@@ -158,3 +169,4 @@ def moveSpmOutFiles(self):
   
   biasCorrected = inDir + "/m" + subjectName + ".nii"
   movePathToDiskItem(biasCorrected, self.biasCorrected)
+  

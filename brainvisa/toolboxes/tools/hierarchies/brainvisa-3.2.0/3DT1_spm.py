@@ -90,3 +90,6 @@ insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
   'mat_<subject>_Nat_TO_Mni', SetType('Mat T1 MRI from Native to Mni'),)
 
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
+  'jac_wrp1<subject>_JacobianDeterminant', SetType('JacobianDeterminant'),)
+

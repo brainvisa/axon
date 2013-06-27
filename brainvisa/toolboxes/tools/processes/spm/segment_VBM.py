@@ -67,7 +67,8 @@ signature = Signature(
   'affreg', Choice(('No Affine Registration', """''"""), ("ICBM space template - European brains", """'mni'"""), ("ICBM space template - East Asian brains", """'eastern'"""), ("Average sized template", """'subj'"""), ("No regularisation", """'none'""")),
   'warpreg', String(),
   'samp', String(),
-  'normlow', Choice(('Low-dimensional: SPM default', """struct([])"""), ('High-dimensional: Dartel', """{'/coconut/applis/src/spm8_x64/toolbox/vbm8/Template_1_IXI550_MNI152.nii'};""")),
+  'norm', Choice(('Low-dimensional: SPM default', """Low"""), ('High-dimensional: Dartel', """Dartel""")),
+  'DartelTemplate', WriteDiskItem('Dartel Template', 'Aims readable volume formats'),
   'sanlm', Choice(('No denoising', '0'), ('Denoising', '1'), ('Denoising (multi-threaded)', '2')),
   'mrf', String(),
   'cleanup', Choice(('Dont do cleanup', '0'), ('Light Clean', '1'), ('Thorough Clean', '2')),
@@ -98,7 +99,10 @@ signature = Signature(
   
   'saveBias', Choice(('save bias corrected', '1'), ('None', '0')),
   'biasCorrected', WriteDiskItem('T1 MRI Bias Corrected', 'NIFTI-1 image'),
-  )
+
+  'generateJacobianDeterminant', Choice(('none', '0'), ('normalized', '1')),
+  'jacobianDeterminant', WriteDiskItem('JacobianDeterminant', 'Aims readable volume formats'),
+)
 
 def initialization(self):
   
@@ -134,6 +138,7 @@ def initialization(self):
   self.addLink('deFld', 'grey_nat')
   self.addLink('invDeFld', 'grey_nat')
   self.addLink('deFld_segMat', 'grey_nat')  
+  self.addLink('jacobianDeterminant', 'grey_nat')  
 
 def update_grey_Nat(self, proc):
   return self.update_WriteDiskItem('T1 MRI Nat GreyProba', 'NIFTI-1 image')
@@ -161,11 +166,12 @@ def execution(self, context):
   context.runProcess('segment_VBM_noLinks', MRI_Nat=self.MRI_Nat, MRI_Mni_tpmSeg=self.MRI_Mni_tpmSeg, spmJobName = self.spmJobName
                     , ngaus=self.ngaus, biasreg=self.biasreg, saveBias=self.saveBias, biasCorrected=self.biasCorrected
                     , biasfwhm=self.biasfwhm, affreg=self.affreg, warpreg=self.warpreg, samp=self.samp
-                    , normlow=self.normlow, sanlm=self.sanlm, mrf=self.mrf, cleanup=self.cleanup, pprint=self.pprint
+                    , norm=self.norm, DartelTemplate=self.DartelTemplate, sanlm=self.sanlm, mrf=self.mrf, cleanup=self.cleanup, pprint=self.pprint
                     , grey_native=self.grey_native, grey_nat=self.grey_nat, grey_warped=self.grey_warped, grey_Mni=self.grey_Mni,grey_modulated=self.grey_modulated, grey_dartel=self.grey_dartel
                     , wm_native=self.wm_native, white_Nat=self.white_Nat, wm_warped=self.wm_warped, wm_modulated=self.wm_modulated, wm_dartel=self.wm_dartel
                     , csf_native=self.csf_native, csf_Nat=self.csf_Nat, csf_warped=self.csf_warped, csf_modulated=self.csf_modulated, csf_dartel=self.csf_dartel
-                    , deFld=self.deFld, invDeFld=self.invDeFld, deFld_segMat=self.deFld_segMat)
+                    , deFld=self.deFld, invDeFld=self.invDeFld, deFld_segMat=self.deFld_segMat
+                    , generateJacobianDeterminant=self.generateJacobianDeterminant, jacobianDeterminant=self.jacobianDeterminant)
     
   print "\n stop ", name, "\n"
 

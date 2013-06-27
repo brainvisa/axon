@@ -160,19 +160,20 @@ def initializeVBMSegmentationParameters_usingSPM8DefaultValuesForPET(process):
   process.affreg = """'mni'"""
   process.warpreg = """4"""
   process.samp = """3"""
-  process.normlow = """struct([])"""
+  process.norm = """Low"""
   process.sanlm = """2"""
   process.mrf = """0.15"""
   process.cleanup = """1"""
   process.pprint = """1"""
+  process.generateJacobianDeterminant = """0"""
 
 def writeVBMSegmentationMatFile(context, configuration, sourcePath, spmJobFile
 , tpm, ngaus = """[2 2 2 3 4 2]""", biasreg = """0.0001""", biasfwhm = """60""", affreg = """'mni'""", warpreg = """4""", samp = """3"""
-, normlow = """struct([])""", sanlm = """2""", mrf = """0.15""", cleanup = """1""", pprint = """1"""
+, norm = """low = struct([])""", sanlm = """2""", mrf = """0.15""", cleanup = """1""", pprint = """1"""
 , native = """1""", warped = """0""", modulated = """0""", dartel = """0"""
 , wm_native = """1""", wm_warped = """0""", wm_modulated = """0""", wm_dartel = """0"""
 , csf_native = """1""", csf_warped = """0""", csf_modulated = """0""", csf_dartel = """0"""
-, saveBias = """0""",
+, saveBias = """0""",generateJacobianDeterminant="""0"""
 ):
   mat_file = open(spmJobFile, 'w')
   mat_file.write("""matlabbatch{1}.spm.tools.vbm8.estwrite.data = {'%s,1'}
@@ -183,7 +184,7 @@ matlabbatch{1}.spm.tools.vbm8.estwrite.opts.biasfwhm = %s;
 matlabbatch{1}.spm.tools.vbm8.estwrite.opts.affreg = %s;
 matlabbatch{1}.spm.tools.vbm8.estwrite.opts.warpreg = %s;
 matlabbatch{1}.spm.tools.vbm8.estwrite.opts.samp = %s;
-matlabbatch{1}.spm.tools.vbm8.estwrite.extopts.dartelwarp.normlow = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.extopts.dartelwarp.norm%s;
 matlabbatch{1}.spm.tools.vbm8.estwrite.extopts.sanlm = %s;
 matlabbatch{1}.spm.tools.vbm8.estwrite.extopts.mrf = %s;
 matlabbatch{1}.spm.tools.vbm8.estwrite.extopts.cleanup = %s;
@@ -206,16 +207,16 @@ matlabbatch{1}.spm.tools.vbm8.estwrite.output.bias.affine = 0;
 matlabbatch{1}.spm.tools.vbm8.estwrite.output.label.native = 0;
 matlabbatch{1}.spm.tools.vbm8.estwrite.output.label.warped = 0;
 matlabbatch{1}.spm.tools.vbm8.estwrite.output.label.dartel = 0;
-matlabbatch{1}.spm.tools.vbm8.estwrite.output.jacobian.warped = 0;
+matlabbatch{1}.spm.tools.vbm8.estwrite.output.jacobian.warped = %s;
 matlabbatch{1}.spm.tools.vbm8.estwrite.output.warps = [1 1];
 
 """ % (sourcePath
 , tpm, ngaus, biasreg, biasfwhm, affreg, warpreg, samp
-, normlow, sanlm, mrf, cleanup, pprint
+, norm, sanlm, mrf, cleanup, pprint
 , native, warped, modulated, dartel
 , wm_native, wm_warped, wm_modulated, wm_dartel
 , csf_native, csf_warped, csf_modulated, csf_dartel
-, saveBias
+, saveBias, generateJacobianDeterminant
        ))
   mat_file.close()
   return mat_file.name
