@@ -60,7 +60,7 @@ signature = Signature(
   'img11', ReadDiskItem('4D Volume', 'anatomist volume formats'),
   'img12', ReadDiskItem('4D Volume', 'anatomist volume formats'),
   'overlaid_images', ListOf( ReadDiskItem( '4D Volume',
-    'anatomist volume formats' ) ),
+    'anatomist volume formats' ), allowNone=True ),
   'windowTitle', String(),
   'rowTitles', ListOf(String()),
   'rowColors', ListOf(String()),
@@ -109,8 +109,12 @@ def execution(self, context):
     if col == len( self.colTitles ):
       col = 0
 
-  overlaidImages = [ x.fullPath() for x in self.overlaid_images \
-    if x is not None and os.path.exists(x.fullPath()) ]
+  def getPath( x ):
+    if x is None:
+      return None
+    return x.fullPath()
+
+  overlaidImages = [ getPath( x ) for x in self.overlaid_images ]
 
   objs = displayTitledGrid(registration.getTransformationManager(), context,
                            self.inverseRawColumn,

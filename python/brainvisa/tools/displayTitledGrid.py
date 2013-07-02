@@ -341,12 +341,15 @@ class DisplayTitledGrid():
   def _displayFusions( self ):
     for row, anaWinRow in enumerate( self.mw.anaWinMatrix ):
       if row < len( self._overlay_fusions ):
-        objRow = self._overlay_fusions[ row ]
+        fusRow = self._overlay_fusions[ row ]
+        objRow = self.anatomistObjectList[ row ]
         for col, win in enumerate( anaWinRow ):
           if win:
             if win.objects:
               win.removeObjects( win.objects )
-            if objRow[ col ]:
+            if fusRow[ col ]:
+              win.addObjects( fusRow[ col ] )
+            elif objRow[ col ]:
               win.addObjects( objRow[ col ] )
 
   def _onMixingRateChanged( self, value ):
