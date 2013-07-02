@@ -35,6 +35,11 @@ from brainvisa.processes import *
 from PyQt4 import QtCore
 from brainvisa import registration
 from brainvisa.tools.displayTitledGrid import displayTitledGrid
+# DEBUG during development
+#import brainvisa.tools.displayTitledGrid
+#reload( brainvisa.tools.displayTitledGrid )
+#displayTitledGrid = brainvisa.tools.displayTitledGrid.displayTitledGrid
+# end DEBUG
 
 userLevel = 2 
 name = 'view images in a titled grid'
@@ -42,24 +47,26 @@ name = 'view images in a titled grid'
 #------------------------------------------------------------------------------
 
 signature = Signature(
-  'img1', ReadDiskItem('4D Volume', 'NIFTI-1 image'),
-  'img2', ReadDiskItem('4D Volume', 'NIFTI-1 image'),
-  'img3', ReadDiskItem('4D Volume', 'NIFTI-1 image'),
-  'img4', ReadDiskItem('4D Volume', 'NIFTI-1 image'),
-  'img5', ReadDiskItem('4D Volume', 'NIFTI-1 image'),
-  'img6', ReadDiskItem('4D Volume', 'NIFTI-1 image'),
-  'img7', ReadDiskItem('4D Volume', 'NIFTI-1 image'),
-  'img8', ReadDiskItem('4D Volume', 'NIFTI-1 image'),
-  'img9', ReadDiskItem('4D Volume', 'NIFTI-1 image'),
-  'img10', ReadDiskItem('4D Volume', 'NIFTI-1 image'),
-  'img11', ReadDiskItem('4D Volume', 'NIFTI-1 image'),
-  'img12', ReadDiskItem('4D Volume', 'NIFTI-1 image'),
+  'img1', ReadDiskItem('4D Volume', 'anatomist volume formats'),
+  'img2', ReadDiskItem('4D Volume', 'anatomist volume formats'),
+  'img3', ReadDiskItem('4D Volume', 'anatomist volume formats'),
+  'img4', ReadDiskItem('4D Volume', 'anatomist volume formats'),
+  'img5', ReadDiskItem('4D Volume', 'anatomist volume formats'),
+  'img6', ReadDiskItem('4D Volume', 'anatomist volume formats'),
+  'img7', ReadDiskItem('4D Volume', 'anatomist volume formats'),
+  'img8', ReadDiskItem('4D Volume', 'anatomist volume formats'),
+  'img9', ReadDiskItem('4D Volume', 'anatomist volume formats'),
+  'img10', ReadDiskItem('4D Volume', 'anatomist volume formats'),
+  'img11', ReadDiskItem('4D Volume', 'anatomist volume formats'),
+  'img12', ReadDiskItem('4D Volume', 'anatomist volume formats'),
+  'overlaid_images', ListOf( ReadDiskItem( '4D Volume',
+    'anatomist volume formats' ) ),
   'windowTitle', String(),
   'rowTitles', ListOf(String()),
   'rowColors', ListOf(String()),
   'colTitles', ListOf(String()),
   'linkWindows', Choice(('all'), ('row'), ('space')),
-  
+
   'inverseRawColumn', Boolean(),
 )
   
@@ -89,17 +96,24 @@ def execution(self, context):
     if(selfImg is not None and os.path.exists(selfImg.fullPath())):
       img.append(selfImg.fullPath())
     else:
-      img.append(None)    
+      img.append(None)
 
-  objs = displayTitledGrid(registration.getTransformationManager(), context, self.inverseRawColumn
+  overlaid_images = [ x.fullPath() for x in self.overlaid_images \
+    if x is not None and os.path.exists(x.fullPath()) ]
+
+  objs = displayTitledGrid(registration.getTransformationManager(), context,
+                            self.inverseRawColumn
                             , [[img[0], img[1], img[2]]
                              , [img[3], img[4], img[5]]
                              , [img[6], img[7], img[8]]
                              , [img[9], img[10], img[11]]] 
-                             , rowTitle=self.rowTitles, rowColors=self.rowColors, colTitle=self.colTitles, windowTitle=self.windowTitle
-                             , linkWindows=self.linkWindows
-                             )
-                               
+                             , rowTitle=self.rowTitles,
+                             rowColors=self.rowColors, colTitle=self.colTitles,
+                             windowTitle=self.windowTitle
+                             , linkWindows=self.linkWindows,
+                             overlaid_images=overlaid_images
+                            )
+
   print "\n stop ", name, "\n"
   return objs
 
