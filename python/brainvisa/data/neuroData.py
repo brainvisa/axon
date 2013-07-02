@@ -634,12 +634,13 @@ class ListOf( Parameter ):
   :Methods:
   
   """
-  def __init__( self, contentType ):
+  def __init__( self, contentType, allowNone=False ):
     """
     :param contentType: type of the elements of the list.
     """
     Parameter.__init__( self )
     self.contentType = contentType
+    self._allowNone = allowNone
 
   def checkValue( self, name, value ):
     '''
@@ -651,7 +652,8 @@ class ListOf( Parameter ):
     
     if ( not value is None ) and ( type( value ) in ( types.ListType, types.TupleType ) ):
       for listvalue in value :
-        self.contentType.checkValue( name, listvalue )
+        if not self._allowNone or listvalue is not None:
+          self.contentType.checkValue( name, listvalue )
 
   def findValue( self, value ):
     """
@@ -663,7 +665,16 @@ class ListOf( Parameter ):
     if value is None:
       return []
     elif type( value ) in ( types.ListType, types.TupleType ):
-      return map( self.contentType.findValue, value )
+      if self._allowNone:
+        values = []
+        for val in value:
+          if val is None:
+            values.append( None )
+          else:
+            values.append( self.contentType.findValue( val ) )
+        return values
+      else:
+        return map( self.contentType.findValue, value )
     else:
       return [ self.contentType.findValue( value ) ]
 
