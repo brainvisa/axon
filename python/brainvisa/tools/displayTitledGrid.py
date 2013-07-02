@@ -112,8 +112,9 @@ class DisplayTitledGrid():
     # replace individual objects by overlays fusions when applicable
     self._displayFusions()
 
-    self.mw.connect(self.mw.comboBox, SIGNAL('currentIndexChanged(int)'),
-      partial(self._onComboBox_changed))
+    self.mw.comboBox.currentIndexChanged.connect(
+      partial(self._onComboBox_changed) )
+    self.mw.mixingSlider.valueChanged.connect( self._onMixingRateChanged )
 
     self.mw.show()
 
@@ -142,6 +143,7 @@ class DisplayTitledGrid():
     dotIdx = __file__.rindex('.')
     uiFileName = __file__[:dotIdx] + '.ui'
     mw = loadUi(uiFileName)
+    mw.mixRate.setText( '50 %' )
     return mw
 
   def _addColumnButton(self, buttonTitles, inverseRawColumn):
@@ -329,4 +331,13 @@ class DisplayTitledGrid():
               win.removeObjects( win.objects )
             if objRow[ col ]:
               win.addObjects( objRow[ col ] )
+
+  def _onMixingRateChanged( self, value ):
+    self.mw.mixRate.setText( str( value ) + ' %' )
+    a = ana.Anatomist()
+    objects = []
+    for fusRow in self._overlay_fusions:
+      objects.extend( [ x for x in fusRow if x ] )
+    a.execute( 'TexturingParams', objects=objects, texture_index=1,
+      rate=float(value)/100 )
 
