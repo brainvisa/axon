@@ -66,10 +66,11 @@ signature = Signature(
   'rowColors', ListOf(String()),
   'colTitles', ListOf(String()),
   'linkWindows', Choice(('all'), ('row'), ('space')),
-
   'inverseRawColumn', Boolean(),
+  'mainColormap', String(),
+  'overlayColormap', String(),
 )
-  
+
 #------------------------------------------------------------------------------
 
 def initialization(self):
@@ -80,7 +81,9 @@ def initialization(self):
   self.linkWindows = 'space'
   self.windowTitle = 'view grid'
   self.rowColors = ['darkOrange', 'blue', 'blue', 'magenta']# orange = rawSpace, blue = mri space, magenta = mni space
-   
+  self.mainColormap = 'B-W LINEAR'
+  self.overlayColormap = 'RAINBOW'
+
 #------------------------------------------------------------------------------
 
 def execution(self, context):
@@ -92,27 +95,34 @@ def execution(self, context):
   # qd on relance le process, closed n'est pas envoyé, donc mw reste
   
   img = []
+  col = 0
   for selfImg in [self.img1, self.img2, self.img3, self.img4, self.img5, self.img6, self.img7, self.img8, self.img9, self.img10, self.img11, self.img12 ]:
+    if col == 0:
+      imgcol = []
+      img.append( imgcol )
     if(selfImg is not None and os.path.exists(selfImg.fullPath())):
-      img.append(selfImg.fullPath())
+      ifile = selfImg.fullPath()
     else:
-      img.append(None)
+      ifile = None
+    imgcol.append( ifile )
+    col += 1
+    if col == len( self.colTitles ):
+      col = 0
 
-  overlaid_images = [ x.fullPath() for x in self.overlaid_images \
+  overlaidImages = [ x.fullPath() for x in self.overlaid_images \
     if x is not None and os.path.exists(x.fullPath()) ]
 
   objs = displayTitledGrid(registration.getTransformationManager(), context,
-                            self.inverseRawColumn
-                            , [[img[0], img[1], img[2]]
-                             , [img[3], img[4], img[5]]
-                             , [img[6], img[7], img[8]]
-                             , [img[9], img[10], img[11]]] 
-                             , rowTitle=self.rowTitles,
-                             rowColors=self.rowColors, colTitle=self.colTitles,
-                             windowTitle=self.windowTitle
-                             , linkWindows=self.linkWindows,
-                             overlaid_images=overlaid_images
-                            )
+                           self.inverseRawColumn,
+                           img,
+                           rowTitle=self.rowTitles,
+                           rowColors=self.rowColors, colTitle=self.colTitles,
+                           windowTitle=self.windowTitle
+                           , linkWindows=self.linkWindows,
+                           overlaidImages=overlaidImages,
+                           mainColormap = self.mainColormap,
+                           overlayColormap = self.overlayColormap
+                          )
 
   print "\n stop ", name, "\n"
   return objs

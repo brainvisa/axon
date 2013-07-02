@@ -52,7 +52,9 @@ def displayTitledGrid(transformationManager, context, inverseRawColumn,
                       colTitle=['PET', "MRI", "grey"],
                       windowTitle='View grid',
                       linkWindows='space', # linkWindows possible values : 'all' | none | row
-                      overlaid_images=[]
+                      overlaidImages=[],
+                      mainColormap = 'B-W LINEAR',
+                      overlayColormap = 'RAINBOW'
                      ):
   _mw = mainThreadActions().call(_displayTitledGrid_onGuiThread,
                                  transformationManager, context,
@@ -61,36 +63,46 @@ def displayTitledGrid(transformationManager, context, inverseRawColumn,
                                  rowColors=rowColors, colTitle=colTitle,
                                  windowTitle=windowTitle,
                                  linkWindows=linkWindows,
-                                 overlaid_images=overlaid_images)
+                                 overlaidImages=overlaidImages,
+                                 mainColormap=mainColormap,
+                                 overlayColormap=overlayColormap)
   mw = MainThreadLife(_mw)# pour etre sure que la destruction de la mw se fasse sur le thread de Gui
   return [mw]
 
 def _displayTitledGrid_onGuiThread(transformationManager, context,
                                    inverseRawColumn, objPathMatrix, rowTitle,
                                    rowColors, colTitle, windowTitle,
-                                   linkWindows, overlaid_images=[]):
+                                   linkWindows, overlaidImages, mainColormap,
+                                   overlayColormap):
   # DisplayTitledGrid doit etre construit sur le thread de Gui pour etre sure que la destruction de la mw se fasse sur le thread de Gui
-  TitledGrid = DisplayTitledGrid(objPathMatrix, parent=context)
+  TitledGrid = DisplayTitledGrid(objPathMatrix, parent=context,
+    mainColormap=mainColormap, overlayColormap=overlayColormap)
   mw = TitledGrid.display(inverseRawColumn=inverseRawColumn,
     windowFlag=QtCore.Qt.Window, windowTitle=windowTitle, rowTitle=rowTitle,
     colTitle=colTitle, rowColors=rowColors, linkWindows=linkWindows,
-    overlaid_images=overlaid_images)[0]
+    overlaidImages=overlaidImages)[0]
   return mw
 
 #------------------------------------------------------------------------------
 
 class DisplayTitledGrid():
 
-  def __init__(self, objPathMatrix, parent=None):
+  def __init__(self, objPathMatrix, parent=None,
+               mainColormap='B-W LINEAR',
+               overlayColormap='RAINBOW'):
     self.parent = parent
+    self._main_colormap = mainColormap
+    self._overlay_colormap = overlayColormap
     self._loadObjectInAnatomist(objPathMatrix)
     self._overlaid_images = []
     self._overlay_fusions = []
 
   def display(self, inverseRawColumn=False, windowFlag=QtCore.Qt.Window
-              , windowTitle='Compare', rowTitle=["row_1", "row_2", "row_3", "row_4"], colTitle=["col_1", "col_2", "col_3"]
+              , windowTitle='Compare',
+              rowTitle=["row_1", "row_2", "row_3", "row_4"],
+              colTitle=["col_1", "col_2", "col_3"]
               , rowColors=['darkOrange', 'blue', 'blue', 'magenta']# orange = rawSpace, blue = mri space, magenta = mni space
-              , linkWindows='space', overlaid_images=[]): # linkWindows possible values : 'all' | none | row
+              , linkWindows='space', overlaidImages=[] ): # linkWindows possible values : 'all' | none | row
 
     self.mw = self._loadUserInterface()  # create self.mw.gridLayout  
     self.mw.setWindowTitle(windowTitle)    
@@ -98,7 +110,7 @@ class DisplayTitledGrid():
     self.mw.setAttribute(QtCore.Qt.WA_DeleteOnClose)# if the mw is closed ( by user with X ) then mw will be destroyed
 
     # load overlay (fusionned) images, and make fusions
-    self._loadOverlayImages( overlaid_images )
+    self._loadOverlayImages( overlaidImages )
     self._createOverlayFusions()
 
     self._addColumnButton(colTitle, inverseRawColumn)
@@ -133,7 +145,9 @@ class DisplayTitledGrid():
       for c in range(0, len(objPathRow)):
         objPath = objPathRow[c]
         if (objPath is not None):
-          anaObjRow.append(a.loadObject(objPath, forceReload=False))
+          obj = a.loadObject(objPath, forceReload=False)
+          obj.setPalette( self._main_colormap )
+          anaObjRow.append( obj )
         else:
           anaObjRow.append(None)
 
@@ -289,13 +303,16 @@ class DisplayTitledGrid():
           elif(self.mw.comboBox.currentText() == 'Coronal'):
             w.muteCoronal()
 
-  def _loadOverlayImages( self, overlaid_images ):
+  def _loadOverlayImages( self, overlaidImages ):
     a = ana.Anatomist()
     images = []
-    for filename in overlaid_images:
-      image = a.loadObject( filename )
-      images.append( image )
-      image.setPalette( palette='RAINBOW' )
+    for filename in overlaidImages:
+      if filename: # may be None to leave an un-overlayed row
+        image = a.loadObject( filename )
+        images.append( image )
+        image.setPalette( palette=self._overlay_colormap )
+      else: # None
+        images.append( None )
     self._overlaid_images = images
 
   def _createOverlayFusions( self ):
