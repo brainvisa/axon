@@ -35,7 +35,7 @@
 
 from PyQt4 import QtCore, Qt
 from PyQt4.QtCore import SIGNAL
-from PyQt4.QtGui import QPushButton, QPalette
+from PyQt4.QtGui import QPushButton, QPalette, QButtonGroup
 from PyQt4.uic import loadUi
 from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
 from brainvisa.tools.mainthreadlife import MainThreadLife
@@ -54,7 +54,8 @@ def displayTitledGrid(transformationManager, context, inverseRawColumn,
                       linkWindows='space', # linkWindows possible values : 'all' | none | row
                       overlaidImages=[],
                       mainColormap = 'B-W LINEAR',
-                      overlayColormap = 'RAINBOW'
+                      overlayColormap = 'RAINBOW',
+                      customOverlayColormap='Blue-White'
                      ):
   _mw = mainThreadActions().call(_displayTitledGrid_onGuiThread,
                                  transformationManager, context,
@@ -65,7 +66,8 @@ def displayTitledGrid(transformationManager, context, inverseRawColumn,
                                  linkWindows=linkWindows,
                                  overlaidImages=overlaidImages,
                                  mainColormap=mainColormap,
-                                 overlayColormap=overlayColormap)
+                                 overlayColormap=overlayColormap,
+                                 customOverlayColormap=customOverlayColormap)
   mw = MainThreadLife(_mw)# pour etre sure que la destruction de la mw se fasse sur le thread de Gui
   return [mw]
 
@@ -73,7 +75,7 @@ def _displayTitledGrid_onGuiThread(transformationManager, context,
                                    inverseRawColumn, objPathMatrix, rowTitle,
                                    rowColors, colTitle, windowTitle,
                                    linkWindows, overlaidImages, mainColormap,
-                                   overlayColormap):
+                                   overlayColormap, customOverlayColormap):
   # DisplayTitledGrid doit etre construit sur le thread de Gui pour etre sure que la destruction de la mw se fasse sur le thread de Gui
   TitledGrid = DisplayTitledGrid(objPathMatrix, parent=context,
     mainColormap=mainColormap, overlayColormap=overlayColormap)
@@ -89,13 +91,19 @@ class DisplayTitledGrid():
 
   def __init__(self, objPathMatrix, parent=None,
                mainColormap='B-W LINEAR',
-               overlayColormap='RAINBOW'):
+               overlayColormap='RAINBOW',
+               customOverlayColormap='Blue-White'):
     self.parent = parent
     self._main_colormap = mainColormap
     self._overlay_colormap = overlayColormap
+    self._custom_overlay_colormap = customOverlayColormap
     self._loadObjectInAnatomist(objPathMatrix)
     self._overlaid_images = []
     self._overlay_fusions = []
+    self._custom_overlay_fusions = []
+    self._selectedRow = -1
+    self._row_titles = []
+    self._col_titles = []
 
   def display(self, inverseRawColumn=False, windowFlag=QtCore.Qt.Window
               , windowTitle='Compare',
@@ -108,6 +116,10 @@ class DisplayTitledGrid():
     self.mw.setWindowTitle(windowTitle)    
     self.mw.setParent(self.parent, windowFlag)# if the mw.parent is destroyed, mw is destroyed first
     self.mw.setAttribute(QtCore.Qt.WA_DeleteOnClose)# if the mw is closed ( by user with X ) then mw will be destroyed
+
+    self._row_titles = rowTitle
+    self._col_titles = colTitle
+    self._custom_row_titles = [ x for x in rowTitle ]
 
     # load overlay (fusionned) images, and make fusions
     self._loadOverlayImages( overlaidImages )
@@ -164,24 +176,32 @@ class DisplayTitledGrid():
     for buttonIndex in range(0, len(buttonTitles)):
       title = buttonTitles[buttonIndex]
       button = QPushButton(title)
-      button.setDisabled(True)
+      #button.setDisabled(True)
       if (inverseRawColumn):
         self.mw.gridLayout.addWidget(button, buttonIndex + 1, 0)
         self.mw.gridLayout.setRowStretch(buttonIndex + 1, 10)
       else:
         self.mw.gridLayout.addWidget(button, 0, buttonIndex + 1)
-        self.mw.gridLayout.setColumnStretch(buttonIndex + 1, 10) 
+        self.mw.gridLayout.setColumnStretch(buttonIndex + 1, 10)
+      button.clicked.connect(
+        partial( self._onColumnButtonClicked, buttonIndex ) )
 
   def _addRowButton(self, buttonTitles, buttonColors, inverseRawColumn):
+    bg = QButtonGroup( self.mw )
+    self.rowsButtonGroup = bg
+    bg.setExclusive( True )
     for buttonIndex in range(0, len(buttonTitles)):
       title = buttonTitles[buttonIndex]
       button = DisplayTitledGrid._createColoredButton(title, buttonColors[buttonIndex])
+      bg.addButton( button, buttonIndex )
       if (inverseRawColumn):
         self.mw.gridLayout.addWidget(button, 0, buttonIndex + 1)
         self.mw.gridLayout.setColumnStretch(buttonIndex + 1, 10)
       else:
         self.mw.gridLayout.addWidget(button, buttonIndex + 1, 0)
         self.mw.gridLayout.setRowStretch(buttonIndex + 1, 10)
+      button.setToolTip( '<p>Click on this button to superimpose a different image. To do so, click on this row button, then click on a column button to display the column main image as overlay on this row.<p><p>Click again on the tow button to go back to the initial views.</p>' )
+    bg.buttonClicked[int].connect( self._onRowButtonClicked )
 
   @staticmethod
   def _createColoredButton(title, color):
@@ -189,7 +209,8 @@ class DisplayTitledGrid():
     buttonPalette = QPalette()
     buttonPalette.setColor(QPalette.ButtonText, Qt.QColor(color))
     button.setPalette(buttonPalette)
-    button.setDisabled(True)
+    #button.setDisabled(True)
+    button.setCheckable( True )
     return button
 
   def _createAndLinkAnatomistWindowsInMainLayout(
@@ -338,19 +359,46 @@ class DisplayTitledGrid():
       fusions.append( fusline )
     self._overlay_fusions = fusions
 
+  def _createCustomOverlayFusions( self, row, overlayimage ):
+    a = ana.Anatomist()
+    newoverlay = a.duplicateObject( overlayimage )
+    newoverlay.setPalette( self._custom_overlay_colormap )
+    fusline = []
+    for obj in self.anatomistObjectList[ row ]:
+      if obj and obj is not overlayimage:
+        fusion = a.fusionObjects( objects=[obj, newoverlay],
+            method='Fusion2DMethod' )
+        fusline.append( fusion )
+      else:
+        fusline.append( None )
+    if len( self._custom_overlay_fusions ) <= row:
+      self._custom_overlay_fusions.extend(
+        [ [] ] * ( row + 1 - len( self._custom_overlay_fusions ) ) )
+    self._custom_overlay_fusions[ row ] = fusline
+    a.execute( 'TexturingParams', objects=[ x for x in fusline if x ],
+      texture_index=1, rate=float(self.mw.mixingSlider.value())/100 )
+
   def _displayFusions( self ):
     for row, anaWinRow in enumerate( self.mw.anaWinMatrix ):
       if row < len( self._overlay_fusions ):
         fusRow = self._overlay_fusions[ row ]
-        objRow = self.anatomistObjectList[ row ]
-        for col, win in enumerate( anaWinRow ):
-          if win:
-            if win.objects:
-              win.removeObjects( win.objects )
-            if fusRow[ col ]:
-              win.addObjects( fusRow[ col ] )
-            elif objRow[ col ]:
-              win.addObjects( objRow[ col ] )
+        self._displayFusionsRow( row, fusRow )
+
+  def _displayFusionsRow( self, row, fusRow ):
+    anaWinRow = self.mw.anaWinMatrix[ row ]
+    objRow = self.anatomistObjectList[ row ]
+    for col, win in enumerate( anaWinRow ):
+      if win:
+        if win.objects:
+          win.removeObjects( win.objects )
+        if fusRow[ col ]:
+          win.addObjects( fusRow[ col ] )
+        elif objRow[ col ]:
+          win.addObjects( objRow[ col ] )
+
+  def _removeCustomOverlays( self, row ):
+    self._custom_overlay_fusions[ row ] = []
+    self._displayFusionsRow( row, self._overlay_fusions[ row ] )
 
   def _onMixingRateChanged( self, value ):
     self.mw.mixRate.setText( str( value ) + ' %' )
@@ -358,6 +406,38 @@ class DisplayTitledGrid():
     objects = []
     for fusRow in self._overlay_fusions:
       objects.extend( [ x for x in fusRow if x ] )
+    for fusRow in self._custom_overlay_fusions:
+      objects.extend( [ x for x in fusRow if x ] )
     a.execute( 'TexturingParams', objects=objects, texture_index=1,
       rate=float(value)/100 )
+
+  def _onColumnButtonClicked( self, column ):
+    row = self.rowsButtonGroup.checkedId()
+    if row < 0:
+      return # no row selected, do nothing
+    overlayimage = self.anatomistObjectList[ row ][ column ]
+    if overlayimage is None:
+      return
+    self._createCustomOverlayFusions( row, overlayimage )
+    self._displayFusionsRow( row, self._custom_overlay_fusions[ row ] )
+    self._custom_row_titles[ row ] = 'with ' + self._col_titles[column]
+    self.rowsButtonGroup.button( row ).setText(
+      self._custom_row_titles[ row ] )
+
+  def _onRowButtonClicked( self, row ):
+    button = self.rowsButtonGroup.button( row )
+    if self._selectedRow == row:
+      self.rowsButtonGroup.setExclusive( False )
+      button.setChecked( False )
+      self.rowsButtonGroup.setExclusive( True )
+      self._selectedRow = -1
+      self._displayFusionsRow( row, self._overlay_fusions[ row ] )
+      button.setText( self._row_titles[ row ] )
+    else:
+      self._selectedRow = row
+      if len( self._custom_overlay_fusions ) > row:
+        fusions = self._custom_overlay_fusions[ row ]
+        if fusions:
+          self._displayFusionsRow( row, fusions )
+          button.setText( self._custom_row_titles[ row ] )
 

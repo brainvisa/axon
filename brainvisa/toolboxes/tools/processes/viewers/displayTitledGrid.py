@@ -69,6 +69,7 @@ signature = Signature(
   'inverseRawColumn', Boolean(),
   'mainColormap', String(),
   'overlayColormap', String(),
+  'customOverlayColormap', String(),
 )
 
 #------------------------------------------------------------------------------
@@ -83,6 +84,7 @@ def initialization(self):
   self.rowColors = ['darkOrange', 'blue', 'blue', 'magenta']# orange = rawSpace, blue = mri space, magenta = mni space
   self.mainColormap = 'B-W LINEAR'
   self.overlayColormap = 'RAINBOW'
+  self.customOverlayColormap = 'Blue-White'
 
 #------------------------------------------------------------------------------
 
@@ -124,8 +126,9 @@ def execution(self, context):
                            windowTitle=self.windowTitle
                            , linkWindows=self.linkWindows,
                            overlaidImages=overlaidImages,
-                           mainColormap = self.mainColormap,
-                           overlayColormap = self.overlayColormap
+                           mainColormap=self.mainColormap,
+                           overlayColormap=self.overlayColormap,
+                           customOverlayColormap=self.customOverlayColormap
                           )
 
   print "\n stop ", name, "\n"
