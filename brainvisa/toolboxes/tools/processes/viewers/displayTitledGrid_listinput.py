@@ -41,24 +41,14 @@ reload( brainvisa.tools.displayTitledGrid )
 displayTitledGrid = brainvisa.tools.displayTitledGrid.displayTitledGrid
 # end DEBUG
 
-userLevel = 2 
-name = 'view images in a titled grid'
+userLevel = 2
+name = 'view images in a titled grid (low level)'
 
 #------------------------------------------------------------------------------
 
 signature = Signature(
-  'img1', ReadDiskItem('4D Volume', 'anatomist volume formats'),
-  'img2', ReadDiskItem('4D Volume', 'anatomist volume formats'),
-  'img3', ReadDiskItem('4D Volume', 'anatomist volume formats'),
-  'img4', ReadDiskItem('4D Volume', 'anatomist volume formats'),
-  'img5', ReadDiskItem('4D Volume', 'anatomist volume formats'),
-  'img6', ReadDiskItem('4D Volume', 'anatomist volume formats'),
-  'img7', ReadDiskItem('4D Volume', 'anatomist volume formats'),
-  'img8', ReadDiskItem('4D Volume', 'anatomist volume formats'),
-  'img9', ReadDiskItem('4D Volume', 'anatomist volume formats'),
-  'img10', ReadDiskItem('4D Volume', 'anatomist volume formats'),
-  'img11', ReadDiskItem('4D Volume', 'anatomist volume formats'),
-  'img12', ReadDiskItem('4D Volume', 'anatomist volume formats'),
+  'images', ListOf( ReadDiskItem('4D Volume', 'anatomist volume formats'),
+    allowNone=True ),
   'overlaid_images', ListOf( ReadDiskItem( '4D Volume',
     'anatomist volume formats' ), allowNone=True ),
   'windowTitle', String(),
@@ -75,7 +65,6 @@ signature = Signature(
 #------------------------------------------------------------------------------
 
 def initialization(self):
-  self.setOptional('img1', 'img2', 'img3', 'img4', 'img5', 'img6', 'img7', 'img8', 'img9', 'img10', 'img11', 'img12') 
   self.inverseRawColumn = False
   self.rowTitles = ["row_1", "row_2", "row_3", "row_4"]
   self.colTitles = ["col_1", "col_2", "col_3"]
@@ -89,21 +78,48 @@ def initialization(self):
 #------------------------------------------------------------------------------
 
 def execution(self, context):
+  print "\n start ", name, "\n"
 
-  img = [ self.img1, self.img2, self.img3, self.img4, self.img5, self.img6, self.img7, self.img8, self.img9, self.img10, self.img11, self.img12 ]
+  # context will be mw's parent. This is essential if mw has connected buttons (or listen any signals)
+  # so when context is closed -> delete -> delete child -> mw will be deleted
+  context.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+  # qd on relance le process, closed n'est pas envoyé, donc mw reste
 
-  kwproc = {
-    'images' : img,
-    'overlaid_images' : self.overlaid_images,
-    'windowTitle' : 'Segmentations comparison',
-    'rowTitles' : self.rowTitles,
-    'rowColors' : self.rowColors,
-    'colTitles' : self.colTitles,
-    'linkWindows' : self.linkWindows,
-    'inverseRawColumn' : self.inverseRawColumn,
-    'mainColormap' : self.mainColormap,
-    'overlayColormap' : self.overlayColormap,
-    'customOverlayColormap' : self.customOverlayColormap,
-  }
-  return context.runProcess( 'displayTitledGrid_listinput', **kwproc )
+  img = []
+  col = 0
+  for selfImg in self.images:
+    if col == 0:
+      imgcol = []
+      img.append( imgcol )
+    if(selfImg is not None and os.path.exists(selfImg.fullPath())):
+      ifile = selfImg.fullPath()
+    else:
+      ifile = None
+    imgcol.append( ifile )
+    col += 1
+    if col == len( self.colTitles ):
+      col = 0
+
+  def getPath( x ):
+    if x is None:
+      return None
+    return x.fullPath()
+
+  overlaidImages = [ getPath( x ) for x in self.overlaid_images ]
+
+  objs = displayTitledGrid(registration.getTransformationManager(), context,
+                           self.inverseRawColumn,
+                           img,
+                           rowTitle=self.rowTitles,
+                           rowColors=self.rowColors, colTitle=self.colTitles,
+                           windowTitle=self.windowTitle
+                           , linkWindows=self.linkWindows,
+                           overlaidImages=overlaidImages,
+                           mainColormap=self.mainColormap,
+                           overlayColormap=self.overlayColormap,
+                           customOverlayColormap=self.customOverlayColormap
+                          )
+
+  print "\n stop ", name, "\n"
+  return objs
 
