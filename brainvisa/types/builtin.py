@@ -153,6 +153,9 @@ Format( 'Text Data Table', 'f|*.dat' )
 Format( 'Minf', 'f|*.minf' )
 Format( 'HTML', 'f|*.html' )
 
+#PDF format
+Format( 'PDF File', "f|*.pdf" )
+
 # Make 'Series of SPM image' format exists
 changeToFormatSeries( getFormat( 'SPM image' ) )
 
