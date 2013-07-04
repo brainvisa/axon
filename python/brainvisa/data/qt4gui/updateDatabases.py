@@ -59,7 +59,11 @@ class UpdateDatabasesGUI( qt.QWidget ):
     
     lastItem = None
     for dbs in neuroConfig.dataPath:
-      database=neuroHierarchy.databases.database(dbs.directory)
+      try:
+        database=neuroHierarchy.databases.database(dbs.directory)
+      except:
+        print 'PROBLEM: database', dbs.directory, 'is missing'
+        continue
       selected=not dbs.builtin
       item = qt.QListWidgetItem( database.name, self.lvDatabases )
       if selected:
