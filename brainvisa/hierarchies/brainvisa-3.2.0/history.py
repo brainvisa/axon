@@ -32,13 +32,13 @@
 include( 'base' )
 
 
-insertFirst( '',
-  'history_book', SetContent(
-     'bvsession', SetContent(
-       '*', SetType( 'BrainVISA session event' ),
-    ),
-     '*', SetContent(
-       '*', SetType( 'Process execution event' ),
-    ),
+insertFirst('',
+    'history_book', SetContent(
+                               'bvsession', SetType( 'Bvsession' ),
+                               SetContent('*', SetType( 'BrainVISA session event' ),),
+                               '*', SetContent('*', SetType( 'Process execution event' ),),
   ),
 )
+
+
+

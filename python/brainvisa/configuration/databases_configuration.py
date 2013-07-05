@@ -83,7 +83,7 @@ class ExpertDatabaseSettings( HasSignature ):
     'sqliteFileName', FileName, dict( defaultValue='' ),
     'activate_history', Boolean, dict( defaultValue=False ),
     'uuid', Unicode(), dict( defaultValue='', visible = False),
-    'last_incremental_update', Unicode(), dict( defaultValue='', visible = False),
+    'lastIncrementalUpdate', Unicode(), dict( defaultValue='', visible = False),
   )
 
   def __init__( self ):

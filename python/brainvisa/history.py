@@ -32,27 +32,55 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 import os, time, shutil
+from glob import glob
+import weakref
+import types
+from gzip import open as gzipOpen
+import threading
+
 from soma.minf.api import writeMinf
 from soma.uuid import Uuid
 from soma.translation import translate as _
 from soma.undefined import Undefined
 from soma.minf.api import readMinf
-from gzip import open as gzipOpen
+
 from brainvisa.processing import neuroLog
 from brainvisa.configuration import neuroConfig
 from brainvisa.data import  neuroHierarchy
 from brainvisa.processing import neuroException
-from glob import glob
-import weakref
-import types
 from brainvisa.data.writediskitem import WriteDiskItem
-
 from brainvisa.data.neuroDiskItems import DiskItem
 from brainvisa.processes import defaultContext
 
 
 
+
 minfHistory = 'brainvisa-history_2.0'
+
+
+_sessionIDs = {}
+_sessionsLock = threading.RLock()
+
+def sessionId( database ):
+  '''
+  Manage an id / database in order to give an id for each bvsession. 
+  '''
+  global _sessionIDs
+  global _sessionsLock
+  #_sessionsLock.lock()
+  _sessionsLock.acquire()
+  try:
+    idDb = _sessionIDs.get( database, None )
+    if idDb is None:
+      idDb = Uuid()
+      _sessionIDs[ database ] = idDb
+    return idDb
+  finally:
+  #  _sessionsLock.acquire()
+    _sessionsLock.release()
+
+
+
 
 class HistoryBook( object ):
   '''
@@ -61,7 +89,7 @@ class HistoryBook( object ):
   
   _allBooks = weakref.WeakValueDictionary()
   
-  def __new__( cls, directory, compression=False ):
+  def __new__( cls, directory = None, database = None, dirBvsession = None, compression=False ):
     book = HistoryBook._allBooks.get( directory )
     if book is None:
       book = object.__new__( cls )
@@ -69,18 +97,20 @@ class HistoryBook( object ):
     return book
   
   
-  def __init__( self, directory, compression=False ):
+  def __init__( self, directory = None, database = None, dirBvsession = None, compression=False ):
     if hasattr( self, '_HistoryBook__dir' ):
       # self has already been created but __init__ is always
       # called after __new__
       return
     self.uuid = Uuid()
+    self.__compression = compression
     if not os.path.isdir( directory ):
       os.makedirs( directory ) 
     self.__dir = directory
-    self.__compression = compression
-
-  
+    self.__database = database
+    if not os.path.isdir( dirBvsession ):
+      os.makedirs( dirBvsession ) 
+    self.__dirBvsession = dirBvsession
 
 
   def storeEvent( self, event, compression=None , storeBvproc = False):
@@ -90,29 +120,22 @@ class HistoryBook( object ):
       bvsessionEvent = self.findEvent( event.content[ 'bvsession' ], None )
       if bvsessionEvent is None:
         bvsessionEvent = BrainVISASessionEvent()
-        bvsessionEvent.setCurrentBrainVISASession()
+        bvsessionEvent.setCurrentBrainVISASession( sessionId( self.__database.name ) )
         self.storeEvent( bvsessionEvent )
     if compression is None:
       compression = self.__compression
-    
-    bvprocFileName = os.path.join( self.__dir, "bvsession",  str( event.uuid ) + '.' + event.eventType )
-    if not os.path.exists( os.path.join( self.__dir, "bvsession" ) ):
-      os.makedirs( os.path.join( self.__dir, "bvsession" ) )
 
-    if storeBvproc : #called by storeProcessFinished
-      os.remove(bvprocFileName) 
-      timeDirectory = time.strftime('%Y-%m-%d',time.localtime())  
-      eventDirectory = os.path.join( self.__dir, timeDirectory )
+    if event.eventType == "bvsession":
+      eventFileName = os.path.join( self.__dirBvsession, str( event.uuid ) + '.' + event.eventType )
+      #eventFileName = os.path.join( self.__dirBvsession, str( sessionId( self.__database.name ) ) + '.' + event.eventType )
+    elif event.eventType == "bvproc":
+      timeNameDirectory = time.strftime( '%Y-%m-%d',time.localtime() )  
+      eventDirectory = os.path.join( self.__dir, timeNameDirectory )
       if not os.path.exists( eventDirectory ): 
-        os.mkdir(eventDirectory)
-      try:
-        eventFileName = os.path.join( eventDirectory, str( event.uuid ) + '.' + event.eventType )
-      except:
-        neuroException.showException()
-    else :
-      eventFileName = bvprocFileName 
-    
-    event.save( eventFileName, compression, storeBvproc) 
+        os.mkdir( eventDirectory )
+      eventFileName = os.path.join( eventDirectory, str( event.uuid ) + '.' + event.eventType )
+      
+    event.save( eventFileName, compression, storeBvproc ) 
 
 
   def findEvent( self, uuid, default=Undefined ):
@@ -147,12 +170,16 @@ class HistoryBook( object ):
     if not historyBook: 
       database = item.getHierarchy( '_database' )
       if database:
-        db=neuroHierarchy.databases.database(database)
+        db = neuroHierarchy.databases.database( database )
         if db is not None and db.activate_history:
           historyBook = os.path.join( database, 'history_book' )
+        #ini the bvSession Directory
+        di = WriteDiskItem( 'Bvsession', 'Directory' )
+        dirBvsession = str(di.findValue({ '_database' : database }))
+        sessionId( database )
     if type( historyBook ) in types.StringTypes:
       historyBook = [ historyBook ]
-    return historyBook
+    return ( historyBook, db, dirBvsession )
 
   @staticmethod
   def storeProcessStart( executionContext, process ):
@@ -160,35 +187,48 @@ class HistoryBook( object ):
     for parameterized, attribute, type in process.getAllParameters():
       if isinstance( type, WriteDiskItem ):
         item = getattr( parameterized, attribute )
-        historyBooks = HistoryBook.getHistoryBookDirectories( item )
+        historyBooks, db, dirBvsession = HistoryBook.getHistoryBookDirectories( item )
         if historyBooks:
           for historyBook in historyBooks:
+            #event = None
             if not os.path.exists( historyBook ):
-              os.mkdir(historyBook)
-            historyBook = HistoryBook( historyBook, compression=True )
-            historyBooksContext.setdefault( historyBook, {} )[ item.fullPath() ] = ( item, item.modificationHash() )
+              os.mkdir( historyBook )
+            historyBook = HistoryBook( historyBook, db, dirBvsession, compression=True )
+            dHistoryBook = {}
+            historyBooksContext.setdefault( historyBook, dHistoryBook )[ item.fullPath() ] = ( item, item.modificationHash() )
+
 
     event = None
     if historyBooksContext:
-      #print '!history! databases:', [i._HistoryBook__dir for i in historyBooksContext.iterkeys()]
-      event = executionContext.createProcessExecutionEvent()
       for book in historyBooksContext.iterkeys():
+        event = executionContext.createProcessExecutionEvent()
+        event.setBvsession(sessionId( book.__database.name ) )
+        dirBook = historyBooksContext.get(book).copy()
+        dirBook [ "processExcutionEvent"] = event
+        historyBooksContext [ book ] = dirBook 
         book.storeEvent( event )
-      event._logItem = executionContext._lastStartProcessLogItem
+        event._logItem = executionContext._lastStartProcessLogItem
+
     return event, historyBooksContext
 
 
   @staticmethod
   def storeProcessFinished(executionContext, process, event, historyBooksContext ):
-    event.setLog( event._logItem )
     for book, items in historyBooksContext.iteritems():
-      changedItems = [item for item, hash in items.itervalues() if hash != item.modificationHash()]
-      event.content[ 'modified_data' ] = [unicode(item) for item in changedItems]
-      book.storeEvent( event, storeBvproc = True )
+      historyBooksContext[book].get('processExcutionEvent').setLog( historyBooksContext[book].get('processExcutionEvent')._logItem )
+      changedItems = []
+      g = items.itervalues()
+      for i in g :
+        if not isinstance(i, ProcessExecutionEvent) : 
+          val = [j for j in i]
+          if val[1] != val[0].modificationHash() :
+            changedItems.append(val[0])
+      historyBooksContext[book].get('processExcutionEvent').content[ 'modified_data' ] = [unicode(item) for item in changedItems]
+      book.storeEvent( historyBooksContext[book].get('processExcutionEvent'), storeBvproc = True )
       #update the the lastHistoricalEvent of each diskitems
       for item in changedItems:
         try:
-          item.setMinf( 'lastHistoricalEvent', event.uuid )
+          item.setMinf( 'lastHistoricalEvent', historyBooksContext[book].get('processExcutionEvent').uuid )
         except:
           neuroException.showException()
 
@@ -198,14 +238,14 @@ class HistoricalEvent( object ):
   """
   
   """
-  def __init__( self, uuid = None ):
+  def __init__( self, uuid = None):
     if uuid is None: uuid = Uuid()
     self.uuid = uuid
-
 
   def save( self, eventFileName, compression=False, storeBvproc = False):
     close = True
     writeMinFile = False
+    bvProcDiskItem = None 
     
     if type( eventFileName ) in ( str, unicode ):
       if compression:
@@ -218,24 +258,34 @@ class HistoricalEvent( object ):
 
     writeMinf( eventFile, ( self, ), reducer=minfHistory )
     
-    #write the .minf
-    if storeBvproc :
-      writeMinFile = True
-      if self.eventType == 'bvproc':
+    if self.eventType == 'bvproc': 
+      if storeBvproc:
+        #move the bvproc if the time is new
+        timeNameDirectory = time.strftime( '%Y-%m-%d',time.localtime() )  
+        s = os.stat( eventFileName )
+        fileDate = time.strftime( '%Y-%m-%d', time.localtime(s.st_mtime) )
+        if fileDate != timeNameDirectory: 
+          eventDirectory = os.path.join( self.__dir, timeNameDirectory )
+          if not os.path.exists( eventDirectory ): 
+            os.mkdir( eventDirectory )
+            newFile =  os.path.join( eventDirectory, os.path.basename( eventFileName ) )
+            shutil.move( eventFileName, newFile )
+            bvProcDiskItem = WriteDiskItem( 'Process execution event', 'Process execution event' ).findValue( eventFileName )
+      else :
         bvProcDiskItem = WriteDiskItem( 'Process execution event', 'Process execution event' ).findValue( eventFileName )
-    else :   
-      if self.eventType == 'bvsession':
-        writeMinFile = True
-        bvProcDiskItem = WriteDiskItem( 'BrainVISA session event', 'BrainVISA session event' ).findValue( eventFileName )
-     
-    if writeMinFile :  
-      if bvProcDiskItem is not None :
+    elif self.eventType == 'bvsession':
+      bvProcDiskItem = WriteDiskItem( 'BrainVISA session event', 'BrainVISA session event' ).findValue( eventFileName )
+    
+    if bvProcDiskItem is not None:
         minf = {}
         minf ['uuid'] = self.uuid
-        bvProcDiskItem._writeMinf(minf)
-      else :
-        defaultContext().warning("No diskitem for BrainVISA session event or Process execution event")
-    
+        bvProcDiskItem.saveMinf( minf )
+        database = bvProcDiskItem.getHierarchy( '_database' )
+        if database:
+          db = neuroHierarchy.databases.database( database )
+          db.insertDiskItem( bvProcDiskItem, update=True )
+#    else :
+#      defaultContext().warning("No diskitem found for BrainVISA session event or Process execution event")
     
     if close:
       eventFile.close()
@@ -247,16 +297,19 @@ class ProcessExecutionEvent( HistoricalEvent ):
   This object enables to store the state of a :py:class:`Process` instance in a dictionary format.
   """
   eventType = 'bvproc'
+    
   
   def __init__( self, uuid=None, content={} ):
     HistoricalEvent.__init__( self, uuid )
-    self.content = { 'bvsession': neuroConfig.sessionID }
+    self.content = {}
     self.content.update( content )
-    
   
   def __getinitargs__( self ):
     return ( self.uuid, self.content )
   
+  def setBvsession( self, uuid):
+    self.content[ 'bvsession' ] = uuid 
+
   
   def setProcess( self, process ):
     process.saveStateInDictionary( self.content )
@@ -285,10 +338,12 @@ class ProcessExecutionEvent( HistoricalEvent ):
     else:
       return str(self.content)
 
+
 class BrainVISASessionEvent( HistoricalEvent ):
   eventType = 'bvsession'
   
-  def __init__( self, uuid=None, content={} ):
+#  def __init__( self, uuid=None, content={}, database):
+  def __init__( self, uuid=None, content={}):
     HistoricalEvent.__init__( self, uuid )
     self.content = content.copy()
   
@@ -297,9 +352,9 @@ class BrainVISASessionEvent( HistoricalEvent ):
     return ( self.uuid, self.content )
   
   
-  def setCurrentBrainVISASession( self ):
+  def setCurrentBrainVISASession( self, uuidDb ):
     self.content[ 'version' ] = neuroConfig.versionString()
-    self.uuid = neuroConfig.sessionID
+    self.uuid = uuidDb 
     if neuroConfig.brainvisaSessionLogItem:
       neuroConfig.brainvisaSessionLogItem._expand({})
       self.content[ 'log' ] = [ neuroConfig.brainvisaSessionLogItem ]
@@ -307,3 +362,5 @@ class BrainVISASessionEvent( HistoricalEvent ):
   
   def __str__( self ):
     return 'bvsession<' + str(self.uuid) + '>'
+
+

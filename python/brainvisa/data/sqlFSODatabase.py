@@ -495,21 +495,20 @@ class SQLDatabase( Database ):
     #if simulation: removeold = False
     directory = os.path.join( self.name, "history_book" )
     params = neuroConfig.DatabaseSettings(self.name)
-    last_incremental_update = params.expert_settings.last_incremental_update
-    if last_incremental_update == "" :
+    lastIncrementalUpdate = params.expert_settings.lastIncrementalUpdate
+    if lastIncrementalUpdate == "":
       t = time.mktime( time.strptime( "1970-01-01-00:00", '%Y-%m-%d-%H:%M' ) ) 
-    else :
-      t = time.mktime( time.strptime( last_incremental_update, '%Y-%m-%d-%H:%M' ) ) 
+    else:
+      t = time.mktime( time.strptime( lastIncrementalUpdate, '%Y-%m-%d-%H:%M' ) ) 
     t0 = time.time()
 
-    
     #INI of the list of bvproc files  
     for f in os.listdir( directory ):
-      if os.path.isdir(os.path.join( directory, f)): 
-        for readFile in os.listdir(os.path.join( directory, f)) :
+      if os.path.isdir( os.path.join( directory, f ) ): 
+        for readFile in os.listdir( os.path.join( directory, f ) ) :
           if readFile.endswith( '.bvproc' ) or readFile.endswith( '.bvsession' ):
             ff = os.path.join( directory, f, readFile )
-            if not scanAllBvproc :
+            if not scanAllBvproc:
               s = os.stat( ff )
               if s.st_mtime >= t: infiles.append( ff )
             else :
@@ -531,7 +530,7 @@ class SQLDatabase( Database ):
           idf = idf[ : idf.rfind( '.' ) ]
           halive = False
           listModifiedFiles = p.content.get( 'modified_data', [] ) 
-          listModifiedFiles.append(bvprocfile) #add the bvprocfile name in order to update it too
+          listModifiedFiles.append( bvprocfile ) #add the bvprocfile name in order to update it too
           for par in listModifiedFiles:
             #addit = False
             try:
@@ -548,8 +547,9 @@ class SQLDatabase( Database ):
               if addit : 
                 toadd.add( item )
               lasth = item.get( 'lastHistoricalEvent', None )
-              if lasth is not None and lasth == idf : halive = True
-          if not halive:  #print 'history file', bvprocfile, 'is obsolete'
+              if lasth is not None and lasth == idf : 
+                halive = True
+          if not halive:
             deadhistories.add( bvprocfile )
           else:
             livehistories.add( bvprocfile )
@@ -583,18 +583,19 @@ class SQLDatabase( Database ):
     context.write('removing dead histories...')
     for item in deadhistories:
       diskItem = self.getDiskItemFromFileName( item, None )
-      if diskItem : #remove like a diskitem
+      if diskItem: #remove like a diskitem
         self.removeDiskItem(diskItem, eraseFiles=True )
-      else : #remove like files, not created into database
+      else: #remove like files, not created into database
         os.unlink( item )
         temporaryPath = item + ".minf"
-        os.unlink( temporaryPath )
+        if os.path.isfile( temporaryPath ):
+          os.unlink( temporaryPath )
     context.write('done.')
   
-    context.write('adding %d disk items...' % len( toadd ))
-    context.write('adding ', toadd )
+    context.write( 'adding %d disk items...' % len( toadd ) )
+    context.write( 'adding ', toadd )
     if simulation:
-      context.write('Nothing changed: we are in simulation mode.')
+      context.write( 'Nothing changed: we are in simulation mode.' )
     else:
       for item in toadd:
         try:
@@ -603,10 +604,10 @@ class SQLDatabase( Database ):
           pass
 
     #update the date of last_incremental_update
-    if not scanAllBvproc or last_incremental_update == "":
-      date_last_incremental_update = time.strftime('%Y-%m-%d-%H:%M',time.localtime())  
+    if not scanAllBvproc or lastIncrementalUpdate == "":
+      dateLastIncrementalUpdate = time.strftime('%Y-%m-%d-%H:%M',time.localtime())  
       params = neuroConfig.DatabaseSettings(self.name)
-      params.expert_settings.last_incremental_update = date_last_incremental_update
+      params.expert_settings.lastIncrementalUpdate = dateLastIncrementalUpdate
       try:
         writeMinf( os.path.join( params.directory, 'database_settings.minf' ), ( params.expert_settings, ) )
       except IOError:
@@ -614,7 +615,7 @@ class SQLDatabase( Database ):
       
     duration = time.time() - t0
     context.write( "All is done: ", timeDifferenceToString( duration ) )
-      
+
 
 
   def update( self, directoriesToScan=None, recursion=True, context=None ):
@@ -974,13 +975,9 @@ class SQLDatabase( Database ):
   
   def removeDiskItems( self, diskItems, eraseFiles=False ):
     cursor = self._getDatabaseCursor()
-    print "sqlFSODatabase : removeDiskItems ", diskItems
-    print "sqlFSODatabase : type ", type(diskItems)
     try:
       for diskItem in diskItems:
-        print "avant uuid"
         uuid = str( diskItem.uuid( saveMinf=False ) )
-        print "sqlFSODatabase : removeDiskItems ", uuid
         cursor.execute( 'DELETE FROM _DISKITEMS_ WHERE _uuid=?', ( uuid, ) )
         cursor.execute( 'DELETE FROM _FILENAMES_ WHERE _uuid=?', ( uuid, ) )
         tableName, tableFields, tableAttributes, sql = self._tableFieldsAndInsertByTypeName[ diskItem.type.name ]

@@ -32,10 +32,8 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-#from brainvisa.data import neuroHierarchy
-#from soma.minf.api import readMinf, writeMinf
 import sys, os
-from gadfly.gfsocket import LEN
+#from gadfly.gfsocket import LEN
 
 
 name = 'BvProc sorting'
@@ -60,136 +58,81 @@ def execution(self, context):
     directory parameter is for example history_book
   '''
   
-  infiles = []
   itemToInsert = []
-  path = ""
+  bvProcDirectory = ""
   
-  #sort bvproc from a diretory
-  history_directory = os.path.join(str(self.database.name), "history_book")
+  #sort bvproc from the history_book directory
+  historyDirectory = os.path.join(str(self.database.name), "history_book")
   
-  if (history_directory):  
-    bvsession_directory = os.path.join(history_directory, "bvsession")
-    if ( not os.path.isdir(bvsession_directory) ) : os.mkdir(bvsession_directory)
-    date_last_incremental_update = time.strftime('%Y-%m-%d-%H:%M',time.localtime())  
-    params = neuroConfig.DatabaseSettings(self.name)
-    context.write("date ", date_last_incremental_update)
-    params.expert_settings.last_incremental_update = date_last_incremental_update
-    try:
-      print params.expert_settings
-      pathExpertSettings = os.path.join( self.database.name, 'database_settings.minf' )
-      print path
-      writeMinf( pathExpertSettings, ( params.expert_settings, ) )
-    except IOError:
-      print "params expert_settings error"
-      pass
+  if historyDirectory:  
+    bvSessionDirectory = os.path.join( historyDirectory, "bvsession" )
+    if not os.path.isdir(bvSessionDirectory): 
+      os.mkdir( bvSessionDirectory )
 
-    for fileToCopy in os.listdir( history_directory ):
+    for fileToCopy in os.listdir( historyDirectory ):
       fileCopy = False
-#      print "FILE OR DIRECTORY", fileToCopy
-      if os.path.isfile(os.path.join(history_directory, fileToCopy)) :
-#        print "FILE TO COPY", fileToCopy
-        if fileToCopy.endswith( '.bvproc' ) :
-          f = os.path.join( history_directory, fileToCopy )
+      if os.path.isfile( os.path.join(historyDirectory, fileToCopy) ):
+        if fileToCopy.endswith( '.bvproc' ):
+          f = os.path.join( historyDirectory, fileToCopy )
           s = os.stat( f )
-          date_fichier = time.strftime("%Y-%m-%d", time.gmtime(s.st_mtime))
-          path = os.path.join( history_directory, date_fichier )
-          if ( not os.path.isdir(path) ) : os.mkdir(path)
-          to = os.path.join( path, os.path.basename(f) )
+          dateFile = time.strftime( "%Y-%m-%d", time.gmtime(s.st_mtime) )
+          bvProcDirectory = os.path.join( historyDirectory, dateFile )
+          if not os.path.isdir( bvProcDirectory ):
+            os.mkdir( bvProcDirectory )
+          to = os.path.join( bvProcDirectory, os.path.basename(f) )
           fileCopy = True
   
-        elif fileToCopy.endswith( '.bvsession' ) :
-          bvsession_file = os.path.join( history_directory, fileToCopy )
-          to = os.path.join( history_directory, "bvsession", fileToCopy )
+        elif fileToCopy.endswith( '.bvsession' ):
+          to = os.path.join( historyDirectory, "bvsession", fileToCopy )
           fileCopy = True
         
-        if fileCopy :
-          print "COPIE"
-          fileToCopy = os.path.join( history_directory, fileToCopy )
-  #        print fileToCopy
-  #        print to
-          shutil.copyfile(fileToCopy, to)  
-          shutil.copystat(fileToCopy, to)  
-          itemToInsert.append(to)
+        if fileCopy:
+          fileToCopy = os.path.join( historyDirectory, fileToCopy )
+          shutil.copyfile( fileToCopy, to )
+          shutil.copystat( fileToCopy, to )
+          itemToInsert.append( to ) 
   
-          #Supprimer le fileCopy s'il correspond à un DiskItem
-#          print "fileToCopy", fileToCopy 
-          try :
-            item_to_remove = self.database.getDiskItemFromFileName( fileToCopy )  # already exists in DB:   
-#            print "Item to remove : ", item_to_remove
-#            print "Item to remove : type ", type(item_to_remove)
-            if item_to_remove : 
+          #remove the diskItem if exists 
+          try:
+            item_to_remove = self.database.getDiskItemFromFileName( fileToCopy )  # already exists in DB
+            if item_to_remove: 
               uuid = str( item_to_remove.uuid( saveMinf=False ) )
-              print "uuid : ", uuid
-              self.database.removeDiskItem(item_to_remove, eraseFiles=True) #suppression dans la base
-          except :
-            context.write('Warning: file', fileToCopy, 'not found in any database.')
-            continue
-          
-
-          
+              self.database.removeDiskItem( item_to_remove, eraseFiles=True )
+          except:
+            context.write( 'Warning: file', fileToCopy, 'not found in any database.' )
+    
+    #insert bvproc and bvsession files
     item = None
-    item_exist = None
+    itemExist = None
 #    print itemToInsert
-    for file in itemToInsert :
+    for f in itemToInsert :
       try: 
-        item_exist = self.database.getDiskItemFromFileName( file )  # already exists in DB: no need to add it
+        itemExist = self.database.getDiskItemFromFileName( f )  # already exists in DB: no need to add it
       except:
         try:
-          item = self.database.createDiskItemFromFileName( file )
+          item = self.database.createDiskItemFromFileName( f )
         except:
           context.write('Warning: file', file , 'cannot be inserted in any database.')
 
       if item is not None and (isinstance( item, DiskItem )) and item.isReadable() and item.get("_database", None) and ( not hasattr( item, '_isTemporary' ) or not item._isTemporary ):
-        tmp = os.path.splitext(item.name)
-        uuid = os.path.basename(tmp[0])
+        tmp = os.path.splitext( item.name )
+        uuid = os.path.basename( tmp[0] )
         minf = {}
         minf ['uuid'] = uuid
-#        print "FILE", file 
-#        print "UUID", uuid
-#        print "type item", type(item)
-        try :          
-          item._writeMinf(minf)
-          self.database.insertDiskItem( item, update=True, insertParentDirs=False)
+        try :
+          #item._writeMinf( minf )
+          item.saveMinf( minf )
+          self.database.insertDiskItem( item, update=True, insertParentDirs=False )
         except:
-          context.write('WARNING: file', file , 'cannot be inserted in any database.')
-        
-        
-#        
-#    if len(infiles) != 0 :
-#      for f in infiles :
-#        s = os.stat( f )
-#        date_fichier = time.strftime("%Y-%m-%d", time.gmtime(s.st_mtime))
-#        path = os.path.join( history_directory, date_fichier )
-#        if ( not os.path.isdir(path) ) : os.mkdir(path)
-#        to = os.path.join( path, os.path.basename(f) )
-#        shutil.copyfile(f, to)  
-#        shutil.copystat(f, to) 
-        #insérer le diskitem
-#        try:
-#          item = self.database.createDiskItemFromFileName( to )
-#          self.database.insertDiskItem( item, update=True )
-#        except NotInDatabaseError:
-#          showException() 
-#        #réécrire le .minf
-#        try :
-#          minf = {}
-#          minf ['uuid'] = os.path.basename(f)
-#          bvProcMinf = WriteDiskItem( 'Process execution event', 'Process execution event' ).findValue( to )
-#          bvProcMinf._writeMinf(minf)
-#        except :
-#          showException()
-    if len(itemToInsert) !=0 :
-      context.write("The sorting is done.")
-    else : 
-      context.write("No bvproc or bvsession found, please check the history book directory might be empty !")
-#    context.write("Clear Database.")
-#    self.database.clear()
-#    context.write("Update Database.")
-#    self.database.update()    
+          context.write( 'WARNING: file', f , 'cannot be inserted in any database.' )
 
-    
-  
-  else : context.write("The history_book directory is not found, please check if the history is activate for this database.")
+    if len( itemToInsert ) != 0:
+      context.write( "The sorting is done." )
+    else: 
+      context.write( "No bvproc or bvsession found, please check the history book directory might be empty !" )
+
+  else:
+    context.write( "The history_book directory is not found, please check if the history is activate for this database." )
         
 
   
