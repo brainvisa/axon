@@ -446,3 +446,12 @@ class DisplayTitledGrid():
         # button = self.rowsButtonGroup.button( row )
 #        button.setText(self._custom_row_titles[self._selectedRow]) # momoTODO : pas besoin de changer le text si c'est un radio bouton. Le text peut contenir une information d'espace (mni, mri...) à ne pas mélanger avec la fusion
     return fusions
+
+# momoTODO : encadrer la reference utiliser pour la fusion    
+#    painter = QPainter(mw)
+#    painter.setPen(Qt.QColor('yellow'))
+#    cellRect = mw.gridLayout.cellRect (rowIndex + 1, c + 1 )
+#    cellRectWidth = cellRect.width()
+#    cellRect.setWidth(cellRectWidth+200)
+#    painter.fillRect(cellRect, Qt.QColor('yellow'))
+#    painter.drawRect(cellRect)
