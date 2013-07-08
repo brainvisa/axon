@@ -357,40 +357,43 @@ class DisplayTitledGrid():
       fusions.append( fusline )
     self._overlay_fusions = fusions
 
-  def _createCustomOverlayFusions( self, row, overlayimage ):
-    a = ana.Anatomist()
-    newoverlay = a.duplicateObject( overlayimage )
-    newoverlay.setPalette( self._custom_overlay_colormap )
-    fusline = []
-    for obj in self.anatomistObjectList[ row ]:
-      if obj and obj is not overlayimage:
-        fusion = a.fusionObjects( objects=[obj, newoverlay],
-            method='Fusion2DMethod' )
-        fusline.append( fusion )
-      else:
-        fusline.append( None )
-    if len( self._custom_overlay_fusions ) <= row:
-      self._custom_overlay_fusions.extend(
-        [ [] ] * ( row + 1 - len( self._custom_overlay_fusions ) ) )
-    self._custom_overlay_fusions[ row ] = fusline
-    a.execute( 'TexturingParams', objects=[ x for x in fusline if x ],
-      texture_index=1, rate=float(self.mw.mixingSlider.value())/100 )
+  def _createCustomOverlayFusions( self, row, column ):
+    if row >= 0 and column>=0:
+      overlayimage = self.anatomistObjectList[ row ][ column ]
+      if overlayimage is not None:
+        a = ana.Anatomist()
+        newoverlay = a.duplicateObject( overlayimage )
+        newoverlay.setPalette( self._custom_overlay_colormap )
+        fusline = []
+        for obj in self.anatomistObjectList[ row ]:
+          if obj and obj is not overlayimage:
+            fusion = a.fusionObjects( objects=[obj, newoverlay],
+                method='Fusion2DMethod' )
+            fusline.append( fusion )
+          else:
+            fusline.append( None )
+        if len( self._custom_overlay_fusions ) <= row:
+          self._custom_overlay_fusions.extend(
+            [ [] ] * ( row + 1 - len( self._custom_overlay_fusions ) ) )
+        self._custom_overlay_fusions[ row ] = fusline
+        a.execute( 'TexturingParams', objects=[ x for x in fusline if x ],
+          texture_index=1, rate=float(self.mw.mixingSlider.value())/100 )
 
   def _displayFusions( self ):
-    for row, anaWinRow in enumerate( self.mw.anaWinMatrix ):
+    for row, _anaWinRow in enumerate( self.mw.anaWinMatrix ):
       if row < len( self._overlay_fusions ):
         fusRow = self._overlay_fusions[ row ]
         self._displayFusionsRow( row, fusRow )
 
-  def _displayFusionsRow( self, row, fusRow ):
-    anaWinRow = self.mw.anaWinMatrix[ row ]
-    objRow = self.anatomistObjectList[ row ]
+  def _displayFusionsRow( self, rowIndex, rowFusions ): # rowFusions can be self._overlay_fusions or self._custom_overlay_fusions
+    anaWinRow = self.mw.anaWinMatrix[ rowIndex ]
+    objRow = self.anatomistObjectList[ rowIndex ]
     for col, win in enumerate( anaWinRow ):
       if win:
         if win.objects:
           win.removeObjects( win.objects )
-        if fusRow and fusRow[ col ]:
-          win.addObjects( fusRow[ col ] )
+        if rowFusions and rowFusions[ col ]:
+          win.addObjects( rowFusions[ col ] )
         elif objRow and objRow[ col ]:
           win.addObjects( objRow[ col ] )
 
@@ -410,18 +413,14 @@ class DisplayTitledGrid():
       rate=float(value)/100 )
 
   def _onColumnButtonClicked( self, column ):
+    self._selectedColumn = column
     row = self.rowsButtonGroup.checkedId()
-    if row < 0:
-      return # no row selected, do nothing
-    overlayimage = self.anatomistObjectList[ row ][ column ]
-    if overlayimage is None:
-      return
-    self._createCustomOverlayFusions( row, overlayimage )
-    self._displayFusionsRow( row, self._custom_overlay_fusions[ row ] )
-#    self._custom_row_titles[ row ] = 'with ' + self._col_titles[column]
-#    self.rowsButtonGroup.button( row ).setText(self._custom_row_titles[ row ] )
+    self._createCustomOverlayFusions( row, column )
+    if(row<len(self._custom_overlay_fusions)):
+      self._displayFusionsRow( row, self._custom_overlay_fusions[ row ] )
 
   def _onRowButtonClicked( self, row ):
+    self._createCustomOverlayFusions( row, self._selectedColumn )
     isRowAlreadySelected=self._selectedRow == row
     fusions=None
     if (isRowAlreadySelected == True):
