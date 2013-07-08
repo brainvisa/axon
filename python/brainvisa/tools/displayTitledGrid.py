@@ -135,7 +135,7 @@ class DisplayTitledGrid():
     self.mw.anatomistObjectList = self.anatomistObjectList # momo  :ca sert a quoi?
 
     # replace individual objects by overlays fusions when applicable
-    self._displayFusions()
+    self._addObjectOrFusion_inAnatomistWindows()
 
     self.mw.comboBox.currentIndexChanged.connect(
       partial(self._onComboBox_changed) )
@@ -233,7 +233,7 @@ class DisplayTitledGrid():
         w = a.createWindow(view, no_decoration=True)
         anaObj.addInWindows([w])
         anaWinRow.append(w)
-        if (inverseRawColumn):
+        if (inverseRawColumn):          
           mw.gridLayout.addWidget(w.getInternalRep(), c + 1, rowIndex + 1)
         else:
           mw.gridLayout.addWidget(w.getInternalRep(), rowIndex + 1, c + 1)
@@ -379,13 +379,13 @@ class DisplayTitledGrid():
         a.execute( 'TexturingParams', objects=[ x for x in fusline if x ],
           texture_index=1, rate=float(self.mw.mixingSlider.value())/100 )
 
-  def _displayFusions( self ):
+  def _addObjectOrFusion_inAnatomistWindows( self ):
     for row, _anaWinRow in enumerate( self.mw.anaWinMatrix ):
       if row < len( self._overlay_fusions ):
         fusRow = self._overlay_fusions[ row ]
-        self._displayFusionsRow( row, fusRow )
+        self._addObjectOrFusion_inAnatomistWindowsRow( row, fusRow )
 
-  def _displayFusionsRow( self, rowIndex, rowFusions ): # rowFusions can be self._overlay_fusions or self._custom_overlay_fusions
+  def _addObjectOrFusion_inAnatomistWindowsRow( self, rowIndex, rowFusions ): # rowFusions can be self._overlay_fusions or self._custom_overlay_fusions
     anaWinRow = self.mw.anaWinMatrix[ rowIndex ]
     objRow = self.anatomistObjectList[ rowIndex ]
     for col, win in enumerate( anaWinRow ):
@@ -399,7 +399,7 @@ class DisplayTitledGrid():
 
   def _removeCustomOverlays( self, row ):
     self._custom_overlay_fusions[ row ] = []
-    self._displayFusionsRow( row, self._overlay_fusions[ row ] )
+    self._addObjectOrFusion_inAnatomistWindowsRow( row, self._overlay_fusions[ row ] )
 
   def _onMixingRateChanged( self, value ):
     self.mw.mixRate.setText( str( value ) + ' %' )
@@ -417,7 +417,7 @@ class DisplayTitledGrid():
     row = self.rowsButtonGroup.checkedId()
     self._createCustomOverlayFusions( row, column )
     if(row<len(self._custom_overlay_fusions)):
-      self._displayFusionsRow( row, self._custom_overlay_fusions[ row ] )
+      self._addObjectOrFusion_inAnatomistWindowsRow( row, self._custom_overlay_fusions[ row ] )
 
   def _onRowButtonClicked( self, row ):
     self._createCustomOverlayFusions( row, self._selectedColumn )
@@ -427,7 +427,7 @@ class DisplayTitledGrid():
       self._unselectRowForFusion(row)
     else:
       fusions=self._selectRowForFusions(row)
-    self._displayFusionsRow(row, fusions)      
+    self._addObjectOrFusion_inAnatomistWindowsRow(row, fusions)      
 
   def _unselectRowForFusion(self, row):    
     self._selectedRow = -1
