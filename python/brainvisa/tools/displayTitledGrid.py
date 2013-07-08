@@ -35,7 +35,7 @@
 
 from PyQt4 import QtCore, Qt
 from PyQt4.QtCore import SIGNAL
-from PyQt4.QtGui import QRadioButton, QPalette, QButtonGroup
+from PyQt4.QtGui import QRadioButton, QPalette, QButtonGroup, QPainter
 from PyQt4.uic import loadUi
 from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
 from brainvisa.tools.mainthreadlife import MainThreadLife
@@ -53,8 +53,8 @@ def displayTitledGrid(transformationManager, context, inverseRawColumn,
                       windowTitle='View grid',
                       linkWindows='space', # linkWindows possible values : 'all' | none | row
                       overlaidImages=[],
-                      mainColormap = 'B-W LINEAR',
-                      overlayColormap = 'RAINBOW',
+                      mainColormap='B-W LINEAR',
+                      overlayColormap='RAINBOW',
                       customOverlayColormap='Blue-White'
                      ):
   _mw = mainThreadActions().call(_displayTitledGrid_onGuiThread,
@@ -111,7 +111,7 @@ class DisplayTitledGrid():
               , colTitle=["col_1", "col_2", "col_3"]
               , rowColors=['darkOrange', 'blue', 'blue', 'magenta']# orange = rawSpace, blue = mri space, magenta = mni space
               , linkWindows='space'# linkWindows possible values : 'all' | none | row, default value : space
-              , overlaidImages=[] ): 
+              , overlaidImages=[]): 
 
     self.mw = self._loadUserInterface()  # create self.mw.gridLayout  
     self.mw.setWindowTitle(windowTitle)    
@@ -123,7 +123,7 @@ class DisplayTitledGrid():
     #self._custom_row_titles = [ x for x in rowTitle ]
 
     # load overlay (fusionned) images, and make fusions
-    self._loadOverlayImages( overlaidImages )
+    self._loadOverlayImages(overlaidImages)
     self._createOverlayFusions()
 
     self._addColumnButton(colTitle, inverseRawColumn)
@@ -138,8 +138,8 @@ class DisplayTitledGrid():
     self._addObjectOrFusion_inAnatomistWindows()
 
     self.mw.comboBox.currentIndexChanged.connect(
-      partial(self._onComboBox_changed) )
-    self.mw.mixingSlider.valueChanged.connect( self._onMixingRateChanged )
+      partial(self._onComboBox_changed))
+    self.mw.mixingSlider.valueChanged.connect(self._onMixingRateChanged)
 
     self.mw.show()
 
@@ -159,8 +159,8 @@ class DisplayTitledGrid():
         objPath = objPathRow[c]
         if (objPath is not None):
           obj = a.loadObject(objPath, forceReload=False)
-          obj.setPalette( self._main_colormap )
-          anaObjRow.append( obj )
+          obj.setPalette(self._main_colormap)
+          anaObjRow.append(obj)
         else:
           anaObjRow.append(None)
 
@@ -170,7 +170,7 @@ class DisplayTitledGrid():
     dotIdx = __file__.rindex('.')
     uiFileName = __file__[:dotIdx] + '.ui'
     mw = loadUi(uiFileName)
-    mw.mixRate.setText( '50 %' )
+    mw.mixRate.setText('50 %')
     return mw
 
   def _addColumnButton(self, buttonTitles, inverseRawColumn):
@@ -183,23 +183,23 @@ class DisplayTitledGrid():
       else:
         self.mw.gridLayout.addWidget(button, 0, buttonIndex + 1)
         self.mw.gridLayout.setColumnStretch(buttonIndex + 1, 10)
-      button.clicked.connect(partial( self._onColumnButtonClicked, buttonIndex ) )
+      button.clicked.connect(partial(self._onColumnButtonClicked, buttonIndex))
 
   def _addRowButton(self, buttonTitles, buttonColors, inverseRawColumn):
-    self.rowsButtonGroup = QButtonGroup( self.mw )
-    self.rowsButtonGroup.setExclusive( True )
+    self.rowsButtonGroup = QButtonGroup(self.mw)
+    self.rowsButtonGroup.setExclusive(True)
     for buttonIndex in range(0, len(buttonTitles)):
       title = buttonTitles[buttonIndex]
       button = DisplayTitledGrid._createColoredButton(title, buttonColors[buttonIndex])
-      self.rowsButtonGroup.addButton( button, buttonIndex )
+      self.rowsButtonGroup.addButton(button, buttonIndex)
       if (inverseRawColumn):
         self.mw.gridLayout.addWidget(button, 0, buttonIndex + 1)
         self.mw.gridLayout.setColumnStretch(buttonIndex + 1, 10)
       else:
         self.mw.gridLayout.addWidget(button, buttonIndex + 1, 0)
         self.mw.gridLayout.setRowStretch(buttonIndex + 1, 10)
-      button.setToolTip( '<p>Click on this button to superimpose a different image. To do so, click on this row button, then click on a column button to display the column main image as overlay on this row.<p><p>Click again on the tow button to go back to the initial views.</p>' )
-    self.rowsButtonGroup.buttonClicked[int].connect( self._onRowButtonClicked )
+      button.setToolTip('<p>Click on this button to superimpose a different image. To do so, click on this row button, then click on a column button to display the column main image as overlay on this row.<p><p>Click again on the tow button to go back to the initial views.</p>')
+    self.rowsButtonGroup.buttonClicked[int].connect(self._onRowButtonClicked)
 
   @staticmethod
   def _createColoredButton(title, color):
@@ -208,7 +208,7 @@ class DisplayTitledGrid():
     buttonPalette.setColor(QPalette.ButtonText, Qt.QColor(color))
     button.setPalette(buttonPalette)
     #button.setDisabled(True)
-    button.setCheckable( True )
+    button.setCheckable(True)
     return button
 
   def _createAndLinkAnatomistWindowsInMainLayout(
@@ -220,14 +220,11 @@ class DisplayTitledGrid():
       anaWinRow = self._createAnatomistWindows_InMainLayout(inverseRawColumn, initialView, r)
       DisplayTitledGrid._linkAnatomistWindows(linkWindows, anaWinRow, spaceNames)
 
-  def _createAnatomistWindows_InMainLayout(
-      self, inverseRawColumn, view, rowIndex):
-
-    mw = self.mw
+  def _createAnatomistWindows_InMainLayout(self, inverseRawColumn, view, rowIndex):
+    mw = self.mw         
     a = ana.Anatomist()
     anaObjRow = self.anatomistObjectList[rowIndex]
-    anaWinRow = []
-    for c in range(0, len(anaObjRow)):
+    anaWinRow = []    for c in range(0, len(anaObjRow)):
       anaObj = anaObjRow[c]
       if (anaObj is not None):
         w = a.createWindow(view, no_decoration=True)
@@ -322,111 +319,111 @@ class DisplayTitledGrid():
           elif(self.mw.comboBox.currentText() == 'Coronal'):
             w.muteCoronal()
 
-  def _loadOverlayImages( self, overlaidImages ):
+  def _loadOverlayImages(self, overlaidImages):
     a = ana.Anatomist()
     images = []
     for filename in overlaidImages:
       if filename: # may be None to leave an un-overlayed row
-        image = a.loadObject( filename )
-        images.append( image )
-        image.setPalette( palette=self._overlay_colormap )
+        image = a.loadObject(filename)
+        images.append(image)
+        image.setPalette(palette=self._overlay_colormap)
       else: # None
-        images.append( None )
+        images.append(None)
     self._overlaid_images = images
 
-  def _createOverlayFusions( self ):
-    if len( self._overlaid_images ) == 0:
+  def _createOverlayFusions(self):
+    if len(self._overlaid_images) == 0:
       # no overlays, nothing to be done.
       return
 
     a = ana.Anatomist()
     fusions = []
-    for line, objRow in enumerate( self.anatomistObjectList ):
+    for line, objRow in enumerate(self.anatomistObjectList):
       fusline = []
-      if line >= len( self._overlaid_images ):
+      if line >= len(self._overlaid_images):
         overlayimage = self._overlaid_images[-1]
       else:
         overlayimage = self._overlaid_images[line]
       for obj in objRow:
         if obj and overlayimage:
-          fusion = a.fusionObjects( objects=[obj, overlayimage],
-            method='Fusion2DMethod' )
-          fusline.append( fusion )
+          fusion = a.fusionObjects(objects=[obj, overlayimage],
+            method='Fusion2DMethod')
+          fusline.append(fusion)
         else:
-          fusline.append( None )
-      fusions.append( fusline )
+          fusline.append(None)
+      fusions.append(fusline)
     self._overlay_fusions = fusions
 
-  def _createCustomOverlayFusions( self, row, column ):
-    if row >= 0 and column>=0:
+  def _createCustomOverlayFusions(self, row, column):
+    if row >= 0 and column >= 0:
       overlayimage = self.anatomistObjectList[ row ][ column ]
       if overlayimage is not None:
         a = ana.Anatomist()
-        newoverlay = a.duplicateObject( overlayimage )
-        newoverlay.setPalette( self._custom_overlay_colormap )
+        newoverlay = a.duplicateObject(overlayimage)
+        newoverlay.setPalette(self._custom_overlay_colormap)
         fusline = []
         for obj in self.anatomistObjectList[ row ]:
           if obj and obj is not overlayimage:
-            fusion = a.fusionObjects( objects=[obj, newoverlay],
-                method='Fusion2DMethod' )
-            fusline.append( fusion )
+            fusion = a.fusionObjects(objects=[obj, newoverlay],
+                method='Fusion2DMethod')
+            fusline.append(fusion)
           else:
-            fusline.append( None )
-        if len( self._custom_overlay_fusions ) <= row:
+            fusline.append(None)
+        if len(self._custom_overlay_fusions) <= row:
           self._custom_overlay_fusions.extend(
-            [ [] ] * ( row + 1 - len( self._custom_overlay_fusions ) ) )
+            [ [] ] * (row + 1 - len(self._custom_overlay_fusions)))
         self._custom_overlay_fusions[ row ] = fusline
-        a.execute( 'TexturingParams', objects=[ x for x in fusline if x ],
-          texture_index=1, rate=float(self.mw.mixingSlider.value())/100 )
+        a.execute('TexturingParams', objects=[ x for x in fusline if x ],
+          texture_index=1, rate=float(self.mw.mixingSlider.value()) / 100)
 
-  def _addObjectOrFusion_inAnatomistWindows( self ):
-    for row, _anaWinRow in enumerate( self.mw.anaWinMatrix ):
-      if row < len( self._overlay_fusions ):
+  def _addObjectOrFusion_inAnatomistWindows(self):
+    for row, _anaWinRow in enumerate(self.mw.anaWinMatrix):
+      if row < len(self._overlay_fusions):
         fusRow = self._overlay_fusions[ row ]
-        self._addObjectOrFusion_inAnatomistWindowsRow( row, fusRow )
+        self._addObjectOrFusion_inAnatomistWindowsRow(row, fusRow)
 
-  def _addObjectOrFusion_inAnatomistWindowsRow( self, rowIndex, rowFusions ): # rowFusions can be self._overlay_fusions or self._custom_overlay_fusions
+  def _addObjectOrFusion_inAnatomistWindowsRow(self, rowIndex, rowFusions): # rowFusions can be self._overlay_fusions or self._custom_overlay_fusions
     anaWinRow = self.mw.anaWinMatrix[ rowIndex ]
     objRow = self.anatomistObjectList[ rowIndex ]
-    for col, win in enumerate( anaWinRow ):
+    for col, win in enumerate(anaWinRow):
       if win:
         if win.objects:
-          win.removeObjects( win.objects )
+          win.removeObjects(win.objects)
         if rowFusions and rowFusions[ col ]:
-          win.addObjects( rowFusions[ col ] )
+          win.addObjects(rowFusions[ col ])
         elif objRow and objRow[ col ]:
-          win.addObjects( objRow[ col ] )
+          win.addObjects(objRow[ col ])
 
-  def _removeCustomOverlays( self, row ):
+  def _removeCustomOverlays(self, row):
     self._custom_overlay_fusions[ row ] = []
-    self._addObjectOrFusion_inAnatomistWindowsRow( row, self._overlay_fusions[ row ] )
+    self._addObjectOrFusion_inAnatomistWindowsRow(row, self._overlay_fusions[ row ])
 
-  def _onMixingRateChanged( self, value ):
-    self.mw.mixRate.setText( str( value ) + ' %' )
+  def _onMixingRateChanged(self, value):
+    self.mw.mixRate.setText(str(value) + ' %')
     a = ana.Anatomist()
     objects = []
     for fusRow in self._overlay_fusions:
-      objects.extend( [ x for x in fusRow if x ] )
+      objects.extend([ x for x in fusRow if x ])
     for fusRow in self._custom_overlay_fusions:
-      objects.extend( [ x for x in fusRow if x ] )
-    a.execute( 'TexturingParams', objects=objects, texture_index=1,
-      rate=float(value)/100 )
+      objects.extend([ x for x in fusRow if x ])
+    a.execute('TexturingParams', objects=objects, texture_index=1,
+      rate=float(value) / 100)
 
-  def _onColumnButtonClicked( self, column ):
+  def _onColumnButtonClicked(self, column):
     self._selectedColumn = column
     row = self.rowsButtonGroup.checkedId()
-    self._createCustomOverlayFusions( row, column )
-    if(row<len(self._custom_overlay_fusions)):
-      self._addObjectOrFusion_inAnatomistWindowsRow( row, self._custom_overlay_fusions[ row ] )
+    self._createCustomOverlayFusions(row, column)
+    if(row < len(self._custom_overlay_fusions)):
+      self._addObjectOrFusion_inAnatomistWindowsRow(row, self._custom_overlay_fusions[ row ])
 
-  def _onRowButtonClicked( self, row ):
-    self._createCustomOverlayFusions( row, self._selectedColumn )
-    isRowAlreadySelected=self._selectedRow == row
-    fusions=None
+  def _onRowButtonClicked(self, row):
+    self._createCustomOverlayFusions(row, self._selectedColumn)
+    isRowAlreadySelected = self._selectedRow == row
+    fusions = None
     if (isRowAlreadySelected == True):
       self._unselectRowForFusion(row)
     else:
-      fusions=self._selectRowForFusions(row)
+      fusions = self._selectRowForFusions(row)
     self._addObjectOrFusion_inAnatomistWindowsRow(row, fusions)      
 
   def _unselectRowForFusion(self, row):    
@@ -442,7 +439,7 @@ class DisplayTitledGrid():
     
   def _selectRowForFusions(self, row):
     self._selectedRow = row
-    fusions=None
+    fusions = None
     if len(self._custom_overlay_fusions) > self._selectedRow:
       fusions = self._custom_overlay_fusions[self._selectedRow]
 #      if(fusions):
