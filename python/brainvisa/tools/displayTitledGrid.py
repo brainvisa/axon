@@ -35,7 +35,7 @@
 
 from PyQt4 import QtCore, Qt
 from PyQt4.QtCore import SIGNAL
-from PyQt4.QtGui import QPushButton, QPalette, QButtonGroup
+from PyQt4.QtGui import QRadioButton, QPalette, QButtonGroup
 from PyQt4.uic import loadUi
 from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
 from brainvisa.tools.mainthreadlife import MainThreadLife
@@ -120,7 +120,7 @@ class DisplayTitledGrid():
 
     self._row_titles = rowTitle
     self._col_titles = colTitle
-    self._custom_row_titles = [ x for x in rowTitle ]
+    #self._custom_row_titles = [ x for x in rowTitle ]
 
     # load overlay (fusionned) images, and make fusions
     self._loadOverlayImages( overlaidImages )
@@ -176,25 +176,22 @@ class DisplayTitledGrid():
   def _addColumnButton(self, buttonTitles, inverseRawColumn):
     for buttonIndex in range(0, len(buttonTitles)):
       title = buttonTitles[buttonIndex]
-      button = QPushButton(title)
-      #button.setDisabled(True)
+      button = QRadioButton(title)
       if (inverseRawColumn):
         self.mw.gridLayout.addWidget(button, buttonIndex + 1, 0)
         self.mw.gridLayout.setRowStretch(buttonIndex + 1, 10)
       else:
         self.mw.gridLayout.addWidget(button, 0, buttonIndex + 1)
         self.mw.gridLayout.setColumnStretch(buttonIndex + 1, 10)
-      button.clicked.connect(
-        partial( self._onColumnButtonClicked, buttonIndex ) )
+      button.clicked.connect(partial( self._onColumnButtonClicked, buttonIndex ) )
 
   def _addRowButton(self, buttonTitles, buttonColors, inverseRawColumn):
-    bg = QButtonGroup( self.mw )
-    self.rowsButtonGroup = bg
-    bg.setExclusive( True )
+    self.rowsButtonGroup = QButtonGroup( self.mw )
+    self.rowsButtonGroup.setExclusive( True )
     for buttonIndex in range(0, len(buttonTitles)):
       title = buttonTitles[buttonIndex]
       button = DisplayTitledGrid._createColoredButton(title, buttonColors[buttonIndex])
-      bg.addButton( button, buttonIndex )
+      self.rowsButtonGroup.addButton( button, buttonIndex )
       if (inverseRawColumn):
         self.mw.gridLayout.addWidget(button, 0, buttonIndex + 1)
         self.mw.gridLayout.setColumnStretch(buttonIndex + 1, 10)
@@ -202,11 +199,11 @@ class DisplayTitledGrid():
         self.mw.gridLayout.addWidget(button, buttonIndex + 1, 0)
         self.mw.gridLayout.setRowStretch(buttonIndex + 1, 10)
       button.setToolTip( '<p>Click on this button to superimpose a different image. To do so, click on this row button, then click on a column button to display the column main image as overlay on this row.<p><p>Click again on the tow button to go back to the initial views.</p>' )
-    bg.buttonClicked[int].connect( self._onRowButtonClicked )
+    self.rowsButtonGroup.buttonClicked[int].connect( self._onRowButtonClicked )
 
   @staticmethod
   def _createColoredButton(title, color):
-    button = QPushButton(title)
+    button = QRadioButton(title)
     buttonPalette = QPalette()
     buttonPalette.setColor(QPalette.ButtonText, Qt.QColor(color))
     button.setPalette(buttonPalette)
@@ -421,9 +418,8 @@ class DisplayTitledGrid():
       return
     self._createCustomOverlayFusions( row, overlayimage )
     self._displayFusionsRow( row, self._custom_overlay_fusions[ row ] )
-    self._custom_row_titles[ row ] = 'with ' + self._col_titles[column]
-    self.rowsButtonGroup.button( row ).setText(
-      self._custom_row_titles[ row ] )
+#    self._custom_row_titles[ row ] = 'with ' + self._col_titles[column]
+#    self.rowsButtonGroup.button( row ).setText(self._custom_row_titles[ row ] )
 
   def _onRowButtonClicked( self, row ):
     isRowAlreadySelected=self._selectedRow == row
@@ -432,22 +428,25 @@ class DisplayTitledGrid():
       self._unselectRowForFusion(row)
     else:
       fusions=self._selectRowForFusions(row)
-    self._displayFusionsRow(row, fusions)
-      
+    self._displayFusionsRow(row, fusions)      
+
   def _unselectRowForFusion(self, row):    
     self._selectedRow = -1
-    button = self.rowsButtonGroup.button( row )
-    self.rowsButtonGroup.setExclusive(False)
-    button.setChecked(False) # momoTODO : utiliser un radio button car meilleur feedback pour l'utilisateur
-    self.rowsButtonGroup.setExclusive(True)
-    button.setText(self._row_titles[self._selectedRow])# momoTODO : pas besoin de changer le text si c'est un radio bouton. Le text peut contenir une information d'espace (mni, mri...) à ne pas mélanger avec la fusion
+    self._unselectButtonInGroup(self.rowsButtonGroup, row)
+#    button.setText(self._row_titles[self._selectedRow])# momoTODO : pas besoin de changer le text si c'est un radio bouton. Le text peut contenir une information d'espace (mni, mri...) à ne pas mélanger avec la fusion
 
+  def _unselectButtonInGroup(self, group, buttonId):
+    button = group.button(buttonId)
+    group.setExclusive(False)
+    button.setChecked(False)
+    group.setExclusive(True)
+    
   def _selectRowForFusions(self, row):
     self._selectedRow = row
-    button = self.rowsButtonGroup.button( row )
     fusions=None
     if len(self._custom_overlay_fusions) > self._selectedRow:
       fusions = self._custom_overlay_fusions[self._selectedRow]
-      if(fusions):
-        button.setText(self._custom_row_titles[self._selectedRow]) # momoTODO : pas besoin de changer le text si c'est un radio bouton. Le text peut contenir une information d'espace (mni, mri...) à ne pas mélanger avec la fusion
+#      if(fusions):
+        # button = self.rowsButtonGroup.button( row )
+#        button.setText(self._custom_row_titles[self._selectedRow]) # momoTODO : pas besoin de changer le text si c'est un radio bouton. Le text peut contenir une information d'espace (mni, mri...) à ne pas mélanger avec la fusion
     return fusions
