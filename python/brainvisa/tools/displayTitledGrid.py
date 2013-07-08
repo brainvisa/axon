@@ -106,11 +106,12 @@ class DisplayTitledGrid():
     self._col_titles = []
 
   def display(self, inverseRawColumn=False, windowFlag=QtCore.Qt.Window
-              , windowTitle='Compare',
-              rowTitle=["row_1", "row_2", "row_3", "row_4"],
-              colTitle=["col_1", "col_2", "col_3"]
+              , windowTitle='Compare'
+              , rowTitle=["row_1", "row_2", "row_3", "row_4"]
+              , colTitle=["col_1", "col_2", "col_3"]
               , rowColors=['darkOrange', 'blue', 'blue', 'magenta']# orange = rawSpace, blue = mri space, magenta = mni space
-              , linkWindows='space', overlaidImages=[] ): # linkWindows possible values : 'all' | none | row
+              , linkWindows='space'# linkWindows possible values : 'all' | none | row, default value : space
+              , overlaidImages=[] ): 
 
     self.mw = self._loadUserInterface()  # create self.mw.gridLayout  
     self.mw.setWindowTitle(windowTitle)    
@@ -391,9 +392,9 @@ class DisplayTitledGrid():
       if win:
         if win.objects:
           win.removeObjects( win.objects )
-        if fusRow[ col ]:
+        if fusRow and fusRow[ col ]:
           win.addObjects( fusRow[ col ] )
-        elif objRow[ col ]:
+        elif objRow and objRow[ col ]:
           win.addObjects( objRow[ col ] )
 
   def _removeCustomOverlays( self, row ):
@@ -425,19 +426,28 @@ class DisplayTitledGrid():
       self._custom_row_titles[ row ] )
 
   def _onRowButtonClicked( self, row ):
-    button = self.rowsButtonGroup.button( row )
-    if self._selectedRow == row:
-      self.rowsButtonGroup.setExclusive( False )
-      button.setChecked( False )
-      self.rowsButtonGroup.setExclusive( True )
-      self._selectedRow = -1
-      self._displayFusionsRow( row, self._overlay_fusions[ row ] )
-      button.setText( self._row_titles[ row ] )
+    isRowAlreadySelected=self._selectedRow == row
+    fusions=None
+    if (isRowAlreadySelected == True):
+      self._unselectRowForFusion(row)
     else:
-      self._selectedRow = row
-      if len( self._custom_overlay_fusions ) > row:
-        fusions = self._custom_overlay_fusions[ row ]
-        if fusions:
-          self._displayFusionsRow( row, fusions )
-          button.setText( self._custom_row_titles[ row ] )
+      fusions=self._selectRowForFusions(row)
+    self._displayFusionsRow(row, fusions)
+      
+  def _unselectRowForFusion(self, row):    
+    self._selectedRow = -1
+    button = self.rowsButtonGroup.button( row )
+    self.rowsButtonGroup.setExclusive(False)
+    button.setChecked(False) # momoTODO : utiliser un radio button car meilleur feedback pour l'utilisateur
+    self.rowsButtonGroup.setExclusive(True)
+    button.setText(self._row_titles[self._selectedRow])# momoTODO : pas besoin de changer le text si c'est un radio bouton. Le text peut contenir une information d'espace (mni, mri...) à ne pas mélanger avec la fusion
 
+  def _selectRowForFusions(self, row):
+    self._selectedRow = row
+    button = self.rowsButtonGroup.button( row )
+    fusions=None
+    if len(self._custom_overlay_fusions) > self._selectedRow:
+      fusions = self._custom_overlay_fusions[self._selectedRow]
+      if(fusions):
+        button.setText(self._custom_row_titles[self._selectedRow]) # momoTODO : pas besoin de changer le text si c'est un radio bouton. Le text peut contenir une information d'espace (mni, mri...) à ne pas mélanger avec la fusion
+    return fusions
