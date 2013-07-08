@@ -177,11 +177,12 @@ class DisplayTitledGrid():
     for buttonIndex in range(0, len(buttonTitles)):
       title = buttonTitles[buttonIndex]
       button = QRadioButton(title)
+      
       if (inverseRawColumn):
-        self.mw.gridLayout.addWidget(button, buttonIndex + 1, 0)
+        self.mw.gridLayout.addWidget(button, buttonIndex + 1, 0, QtCore.Qt.AlignHCenter)
         self.mw.gridLayout.setRowStretch(buttonIndex + 1, 10)
       else:
-        self.mw.gridLayout.addWidget(button, 0, buttonIndex + 1)
+        self.mw.gridLayout.addWidget(button, 0, buttonIndex + 1, QtCore.Qt.AlignHCenter)
         self.mw.gridLayout.setColumnStretch(buttonIndex + 1, 10)
       button.clicked.connect(partial(self._onColumnButtonClicked, buttonIndex))
 
@@ -224,7 +225,8 @@ class DisplayTitledGrid():
     mw = self.mw         
     a = ana.Anatomist()
     anaObjRow = self.anatomistObjectList[rowIndex]
-    anaWinRow = []    for c in range(0, len(anaObjRow)):
+    anaWinRow = []    
+    for c in range(0, len(anaObjRow)):
       anaObj = anaObjRow[c]
       if (anaObj is not None):
         w = a.createWindow(view, no_decoration=True)
