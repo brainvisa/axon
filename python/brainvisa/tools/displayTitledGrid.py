@@ -440,6 +440,8 @@ class DisplayTitledGrid():
     fusions = None
     if (isRowAlreadySelected == False):
       fusions = self._selectRowForFusions(row)
+    else:
+      self._unselectRowForFusion(row)
     self._addObjectOrFusion_inAnatomistWindowsRow(row, fusions)      
 
   def _unselectRowForFusion(self, row):    
