@@ -540,27 +540,38 @@ class SQLDatabase( Database ):
           listModifiedFiles.append( bvprocfile ) #add the bvprocfile name in order to update it too
           for par in listModifiedFiles:
             #addit = False
+            print '    param:', par
             try:
               item = self.getDiskItemFromFileName( par )  # already exists in DB: no need to add it
+              item.readAndUpdateMinf() # it may have been modified/rewritten.
             except:
               try:
                 item = self.createDiskItemFromFileName( par )
                 addit = True
               except:
-                  context.write('Warning: file', par, 'cannot be inserted in any database.')
-                  continue
+                context.write('Warning: file', par, 'cannot be inserted in any database.')
+                continue
             scanned += 1
+            # DEBUG
+            print '      caract:', item is not None, isinstance( item, DiskItem )
+            if item is not None and isinstance( item, DiskItem ):
+              print '        ', item.isReadable(), item.get("_database", None), hasattr( item, '_isTemporary' )
+
             if item is not None and (isinstance( item, DiskItem )) and item.isReadable() and item.get("_database", None) and ( not hasattr( item, '_isTemporary' ) or not item._isTemporary ):
-              if addit : 
+              if addit :
                 toadd.add( item )
               lasth = item.get( 'lastHistoricalEvent', None )
-              if lasth is not None and lasth == idf : 
+              print '        lasth:', lasth
+              if lasth is not None and lasth == idf :
                 halive = True
+                print '        alive.'
+              else: print '        * not alive *'
           if not halive:
+            print '  history dead.'
             deadhistories.add( bvprocfile )
           else:
             livehistories.add( bvprocfile )
-        
+
         #scan bvsession
         elif bvprocfile.endswith( '.bvsession' ):
           try:
