@@ -386,16 +386,17 @@ class DisplayTitledGrid():
         self._addObjectOrFusion_inAnatomistWindowsRow(row, fusRow)
 
   def _addObjectOrFusion_inAnatomistWindowsRow(self, rowIndex, rowFusions): # rowFusions can be self._overlay_fusions or self._custom_overlay_fusions
-    anaWinRow = self.mw.anaWinMatrix[ rowIndex ]
-    objRow = self.anatomistObjectList[ rowIndex ]
-    for col, win in enumerate(anaWinRow):
-      if win:
-        if win.objects:
-          win.removeObjects(win.objects)
-        if rowFusions and rowFusions[ col ]:
-          win.addObjects(rowFusions[ col ])
-        elif objRow and objRow[ col ]:
-          win.addObjects(objRow[ col ])
+    if(rowIndex>=0):
+      anaWinRow = self.mw.anaWinMatrix[ rowIndex ]
+      objRow = self.anatomistObjectList[ rowIndex ]
+      for col, win in enumerate(anaWinRow):
+        if win:
+          if win.objects:
+            win.removeObjects(win.objects)
+          if rowFusions and rowFusions[ col ]:
+            win.addObjects(rowFusions[ col ])
+          elif objRow and objRow[ col ]:
+            win.addObjects(objRow[ col ])
 
   def _removeCustomOverlays(self, row):
     self._custom_overlay_fusions[ row ] = []
@@ -421,11 +422,10 @@ class DisplayTitledGrid():
 
   def _onRowButtonClicked(self, row):
     self._createCustomOverlayFusions(row, self._selectedColumn)
+    self._addObjectOrFusion_inAnatomistWindowsRow(self._selectedRow, None)#remove previous fusion      
     isRowAlreadySelected = self._selectedRow == row
     fusions = None
-    if (isRowAlreadySelected == True):
-      self._unselectRowForFusion(row)
-    else:
+    if (isRowAlreadySelected == False):
       fusions = self._selectRowForFusions(row)
     self._addObjectOrFusion_inAnatomistWindowsRow(row, fusions)      
 
@@ -435,10 +435,11 @@ class DisplayTitledGrid():
 #    button.setText(self._row_titles[self._selectedRow])# momoTODO : pas besoin de changer le text si c'est un radio bouton. Le text peut contenir une information d'espace (mni, mri...) à ne pas mélanger avec la fusion
 
   def _unselectButtonInGroup(self, group, buttonId):
-    button = group.button(buttonId)
-    group.setExclusive(False)
-    button.setChecked(False)
-    group.setExclusive(True)
+    if(buttonId>=0):
+      button = group.button(buttonId)
+      group.setExclusive(False)
+      button.setChecked(False)
+      group.setExclusive(True)
     
   def _selectRowForFusions(self, row):
     self._selectedRow = row

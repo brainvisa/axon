@@ -95,7 +95,7 @@ def execution(self, context):
   kwproc = {
     'images' : img,
     'overlaid_images' : self.overlaid_images,
-    'windowTitle' : 'Segmentations comparison',
+    'windowTitle' : self.windowTitle,
     'rowTitles' : self.rowTitles,
     'rowColors' : self.rowColors,
     'colTitles' : self.colTitles,
