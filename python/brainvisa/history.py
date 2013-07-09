@@ -68,6 +68,8 @@ def sessionId( database ):
   global _sessionIDs
   global _sessionsLock
   #_sessionsLock.lock()
+  if database is None:
+    return neuroConfig.sessionID
   _sessionsLock.acquire()
   try:
     idDb = _sessionIDs.get( database, None )
@@ -102,6 +104,8 @@ class HistoryBook( object ):
       # self has already been created but __init__ is always
       # called after __new__
       return
+    if dirBvsession is None:
+      dirBvsession = os.path.join( directory, 'bvsession' )
     self.uuid = Uuid()
     self.__compression = compression
     if not os.path.isdir( directory ):
@@ -120,7 +124,10 @@ class HistoryBook( object ):
       bvsessionEvent = self.findEvent( event.content[ 'bvsession' ], None )
       if bvsessionEvent is None:
         bvsessionEvent = BrainVISASessionEvent()
-        bvsessionEvent.setCurrentBrainVISASession( sessionId( self.__database.name ) )
+        if self.__database is not None:
+          bvsessionEvent.setCurrentBrainVISASession( sessionId( self.__database.name ) )
+        else: # no database
+          bvsessionEvent.setCurrentBrainVISASession( sessionId( None ) )
         self.storeEvent( bvsessionEvent )
     if compression is None:
       compression = self.__compression
@@ -204,7 +211,10 @@ class HistoryBook( object ):
     if historyBooksContext:
       for book in historyBooksContext.iterkeys():
         event = executionContext.createProcessExecutionEvent()
-        event.setBvsession(sessionId( book.__database.name ) )
+        if book.__database is not None:
+          event.setBvsession(sessionId( book.__database.name ) )
+        else: # no database
+          event.setBvsession(sessionId( None ) )
         dirBook = historyBooksContext.get(book).copy()
         dirBook [ "processExcutionEvent"] = event
         historyBooksContext [ book ] = dirBook 
@@ -356,7 +366,10 @@ class BrainVISASessionEvent( HistoricalEvent ):
   
   def setCurrentBrainVISASession( self, uuidDb ):
     self.content[ 'version' ] = neuroConfig.versionString()
-    self.uuid = uuidDb 
+    if uuidDb is not None:
+      self.uuid = uuidDb
+    else:
+      self.uuid = neuroConfig.sessionID
     if neuroConfig.brainvisaSessionLogItem:
       neuroConfig.brainvisaSessionLogItem._expand({})
       self.content[ 'log' ] = [ neuroConfig.brainvisaSessionLogItem ]
