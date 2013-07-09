@@ -35,7 +35,7 @@
 
 from PyQt4 import QtCore, Qt
 from PyQt4.QtCore import SIGNAL
-from PyQt4.QtGui import QRadioButton, QPalette, QButtonGroup, QPainter
+from PyQt4.QtGui import QRadioButton, QPalette, QButtonGroup, QPainter, QLabel
 from PyQt4.uic import loadUi
 from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
 from brainvisa.tools.mainthreadlife import MainThreadLife
@@ -100,7 +100,7 @@ class DisplayTitledGrid():
     self._loadObjectInAnatomist(objPathMatrix)
     self._overlaid_images = []
     self._overlay_fusions = []
-    self._custom_overlay_fusions = []
+    self._custom_overlay_fusions = []#momoTODO : pas besoin d'une liste, un seul suffit sinon l'utilisateur s'y perd (selection avec row et column). 
     self._selectedRow = -1
     self._selectedColumn = -1
     self._row_titles = []
@@ -192,16 +192,21 @@ class DisplayTitledGrid():
     self.rowsButtonGroup.setExclusive(True)
     for buttonIndex in range(0, len(buttonTitles)):
       title = buttonTitles[buttonIndex]
-      button = DisplayTitledGrid._createColoredButton(title, buttonColors[buttonIndex])
-      self.rowsButtonGroup.addButton(button, buttonIndex)
+      NotNoneCount = len(filter(lambda x:x!=None,self.anatomistObjectList[ buttonIndex ]))
+      isFusionPossibleOnRow = NotNoneCount>1 or len(self._overlaid_images)>0
+      if(isFusionPossibleOnRow == False):
+        widget = DisplayTitledGrid._createColoredLabel(title, buttonColors[buttonIndex])
+      else:
+        widget = DisplayTitledGrid._createColoredButton(title, buttonColors[buttonIndex])
+        self.rowsButtonGroup.addButton(widget, buttonIndex)
+        widget.setToolTip('<p>Click on this button to superimpose a different image. To do so, click on this row button, then click on a column button to display the column main image as overlay on this row.<p><p>Click again on the tow button to go back to the initial views.</p>')
+        self.rowsButtonGroup.buttonClicked[int].connect(self._onRowButtonClicked)
       if (inverseRawColumn):
-        self.mw.gridLayout.addWidget(button, 0, buttonIndex + 1)
+        self.mw.gridLayout.addWidget(widget, 0, buttonIndex + 1)
         self.mw.gridLayout.setColumnStretch(buttonIndex + 1, 10)
       else:
-        self.mw.gridLayout.addWidget(button, buttonIndex + 1, 0)
+        self.mw.gridLayout.addWidget(widget, buttonIndex + 1, 0)
         self.mw.gridLayout.setRowStretch(buttonIndex + 1, 10)
-      button.setToolTip('<p>Click on this button to superimpose a different image. To do so, click on this row button, then click on a column button to display the column main image as overlay on this row.<p><p>Click again on the tow button to go back to the initial views.</p>')
-    self.rowsButtonGroup.buttonClicked[int].connect(self._onRowButtonClicked)
 
   @staticmethod
   def _createColoredButton(title, color):
@@ -213,6 +218,14 @@ class DisplayTitledGrid():
     button.setCheckable(True)
     return button
 
+  @staticmethod
+  def _createColoredLabel(title, color):
+    button = QLabel(title)
+    buttonPalette = QPalette()
+    buttonPalette.setColor(QPalette.ButtonText, Qt.QColor(color))
+    button.setPalette(buttonPalette)
+    return button
+  
   def _createAndLinkAnatomistWindowsInMainLayout(
       self, linkWindows, inverseRawColumn, initialView, spaceNames):
 
