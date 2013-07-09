@@ -163,7 +163,7 @@ class HistoryBook( object ):
   @staticmethod
   def getHistoryBookDirectories(item ):
     if item is None:
-      return None
+      return ( None, None, None )
     historyBook = None
     if hasattr( neuroConfig, 'historyBookDirectory' ): #used for distributed executions
       historyBook = neuroConfig.historyBookDirectory
