@@ -200,7 +200,7 @@ class DisplayTitledGrid():
         widget = DisplayTitledGrid._createColoredButton(title, buttonColors[buttonIndex])
         self.rowsButtonGroup.addButton(widget, buttonIndex)
         widget.setToolTip('<p>Click on this button to superimpose a different image. To do so, click on this row button, then click on a column button to display the column main image as overlay on this row.<p><p>Click again on the tow button to go back to the initial views.</p>')
-        self.rowsButtonGroup.buttonClicked[int].connect(self._onRowButtonClicked)
+        widget.clicked.connect(partial(self._onRowButtonClicked, buttonIndex))
       if (inverseRawColumn):
         self.mw.gridLayout.addWidget(widget, 0, buttonIndex + 1)
         self.mw.gridLayout.setColumnStretch(buttonIndex + 1, 10)
@@ -430,7 +430,7 @@ class DisplayTitledGrid():
     self._selectedColumn = column
     row = self.rowsButtonGroup.checkedId()
     self._createCustomOverlayFusions(row, column)
-    if(row < len(self._custom_overlay_fusions)):
+    if(0<row and row < len(self._custom_overlay_fusions)):
       self._addObjectOrFusion_inAnatomistWindowsRow(row, self._custom_overlay_fusions[ row ])
 
   def _onRowButtonClicked(self, row):
