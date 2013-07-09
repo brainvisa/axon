@@ -518,14 +518,21 @@ class SQLDatabase( Database ):
     deadhistories = set() #diskItems which doesn't exist anymore 
     livehistories = set() #already inserted diskItems
     scanned = 0
-    
+
     if len(infiles)>0 :
       for bvprocfile in infiles:
         addit = False
         #scan bvproc
         if bvprocfile.endswith( '.bvproc' ):
           print "Name of bvproc", bvprocfile
-          p = readMinf( bvprocfile )[0] # ProcessExecutionEvent object
+          try:
+            p = readMinf( bvprocfile )[0] # ProcessExecutionEvent object
+          except:
+            context.warning( 'process history file %s cannot be read.' % bvprocfile )
+            continue
+          if not hasattr( p, 'content' ):
+            context.warning( 'process history file %s is actually not an history file' % bvprocfile )
+            continue
           idf = os.path.basename( bvprocfile )
           idf = idf[ : idf.rfind( '.' ) ]
           halive = False
