@@ -102,6 +102,7 @@ class DisplayTitledGrid():
     self._overlay_fusions = []
     self._custom_overlay_fusions = []
     self._selectedRow = -1
+    self._selectedColumn = -1
     self._row_titles = []
     self._col_titles = []
 
