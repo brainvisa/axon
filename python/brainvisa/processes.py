@@ -2521,9 +2521,9 @@ class ExecutionContext( object ):
     finally:
       self._processFinished( result )
       process.restoreConvertedValues()
-      
+
       # update history
-      if self._allowHistory and ishead and self._historyBookEvent is not None:
+      if self._allowHistory and ishead and hasattr( self, '_historyBookEvent' ) and self._historyBookEvent is not None: # one of these conditions may be false when an exception occurs during execution
         HistoryBook.storeProcessFinished( self, process, self._historyBookEvent, self._historyBooksContext )
         self._historyBookEvent = None
         self._historyBooksContext = None
