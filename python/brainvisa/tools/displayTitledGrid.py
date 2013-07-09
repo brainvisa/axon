@@ -391,6 +391,9 @@ class DisplayTitledGrid():
         self._custom_overlay_fusions[ row ] = fusline
         a.execute('TexturingParams', objects=[ x for x in fusline if x ],
           texture_index=1, rate=float(self.mw.mixingSlider.value()) / 100)
+      else:
+        self._custom_overlay_fusions[ row ] = None
+        
 
   def _addObjectOrFusion_inAnatomistWindows(self):
     for row, _anaWinRow in enumerate(self.mw.anaWinMatrix):
@@ -435,7 +438,7 @@ class DisplayTitledGrid():
 
   def _onRowButtonClicked(self, row):
     self._createCustomOverlayFusions(row, self._selectedColumn)
-    self._addObjectOrFusion_inAnatomistWindowsRow(self._selectedRow, None)#remove previous fusion      
+    self._addObjectOrFusion_inAnatomistWindowsRow(self._selectedRow, None)#remove fusion in previous row       
     isRowAlreadySelected = self._selectedRow == row
     fusions = None
     if (isRowAlreadySelected == False):
