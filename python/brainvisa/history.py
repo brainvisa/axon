@@ -167,7 +167,9 @@ class HistoryBook( object ):
     historyBook = None
     if hasattr( neuroConfig, 'historyBookDirectory' ): #used for distributed executions
       historyBook = neuroConfig.historyBookDirectory
-    if not historyBook: 
+      db = None
+      dirBvsession = None
+    if not historyBook:
       database = item.getHierarchy( '_database' )
       if database:
         db = neuroHierarchy.databases.database( database )
