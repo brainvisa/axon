@@ -524,7 +524,7 @@ class SQLDatabase( Database ):
         addit = False
         #scan bvproc
         if bvprocfile.endswith( '.bvproc' ):
-          print "Name of bvproc", bvprocfile
+          # print "Name of bvproc", bvprocfile
           try:
             p = readMinf( bvprocfile )[0] # ProcessExecutionEvent object
           except:
@@ -540,7 +540,6 @@ class SQLDatabase( Database ):
           listModifiedFiles.append( bvprocfile ) #add the bvprocfile name in order to update it too
           for par in listModifiedFiles:
             #addit = False
-            print '    param:', par
             try:
               item = self.getDiskItemFromFileName( par )  # already exists in DB: no need to add it
               item.readAndUpdateMinf() # it may have been modified/rewritten.
@@ -552,22 +551,13 @@ class SQLDatabase( Database ):
                 context.write('Warning: file', par, 'cannot be inserted in any database.')
                 continue
             scanned += 1
-            # DEBUG
-            print '      caract:', item is not None, isinstance( item, DiskItem )
-            if item is not None and isinstance( item, DiskItem ):
-              print '        ', item.isReadable(), item.get("_database", None), hasattr( item, '_isTemporary' )
-
             if item is not None and (isinstance( item, DiskItem )) and item.isReadable() and item.get("_database", None) and ( not hasattr( item, '_isTemporary' ) or not item._isTemporary ):
               if addit :
                 toadd.add( item )
               lasth = item.get( 'lastHistoricalEvent', None )
-              print '        lasth:', lasth
               if lasth is not None and lasth == idf :
                 halive = True
-                print '        alive.'
-              else: print '        * not alive *'
           if not halive:
-            print '  history dead.'
             deadhistories.add( bvprocfile )
           else:
             livehistories.add( bvprocfile )
