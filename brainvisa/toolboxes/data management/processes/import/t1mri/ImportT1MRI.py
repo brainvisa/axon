@@ -45,7 +45,7 @@ userLevel = 0
 
 signature=Signature(
   'input', ReadDiskItem( 'Raw T1 MRI', 'Aims readable volume formats' ),
-  'output', WriteDiskItem( 'Raw T1 MRI', [ 'GIS image', 'NIFTI-1 image', 'gz compressed NIFTI-1 image' ] ),
+  'output', WriteDiskItem( 'Raw T1 MRI', [ 'gz compressed NIFTI-1 image', 'NIFTI-1 image', 'GIS image' ] ),
   'referential', WriteDiskItem( 'Referential of Raw T1 MRI', 'Referential' ),
 )
 
