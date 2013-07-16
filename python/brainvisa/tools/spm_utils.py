@@ -7,23 +7,26 @@ import os
 import shutil
 
 
-def moveSpmOutFiles(inDir, outPath, spmPrefixes, outDir=None, ext='.nii'):
-  for i in range(0, len(spmPrefixes)):
-    if(spmPrefixes[i].startswith("""'""")):
-      spmPrefixes[i] = spmPrefixes[i][1:-1]
-  for root, _dirs, filenames in os.walk(inDir):
-    for f in filenames:
-      goodPrefix = False;
-      for spmPrefix in spmPrefixes:
-        if(f.startswith(spmPrefix)):
-          goodPrefix = True;
-          break
-      goodExtension = f.endswith(ext) or f.endswith('.txt')
-      if (goodPrefix and goodExtension):
-        if(outPath is not None):
-          movePath(root + '/' + f, outPath)
-        else:
-          movePath(root + '/' + f, outDir + '/' + f)          
+def moveSpmOutFiles(inDir, outPath, spmPrefixes=['w'], outDir=None, ext='.nii'):
+  if not isinstance( spmPrefixes, list):
+    raise TypeError('a list is required for spmPrefixes')
+  else:
+    for i in range(0, len(spmPrefixes)):
+      if(spmPrefixes[i].startswith("""'""")):
+        spmPrefixes[i] = spmPrefixes[i][1:-1]
+    for root, _dirs, filenames in os.walk(inDir):
+      for f in filenames:
+        goodPrefix = False;
+        for spmPrefix in spmPrefixes:
+          if(f.startswith(spmPrefix)):
+            goodPrefix = True;
+            break
+        goodExtension = f.endswith(ext) or f.endswith('.txt')
+        if (goodPrefix and goodExtension):
+          if(outPath is not None):
+            movePath(root + '/' + f, outPath)
+          else:
+            movePath(root + '/' + f, outDir + '/' + f)          
     
 def movePathToDiskItem(srcPath, dstDI):
   if(dstDI is not None):
@@ -31,7 +34,7 @@ def movePathToDiskItem(srcPath, dstDI):
 
 def movePath(srcPath, dstPath):
   if (os.path.exists(srcPath)):
-    if(os.path.exists(dstPath)):      
+    if(os.path.exists(dstPath)): 
       os.remove(dstPath) # do not use directly os.rename (but remove before) because : on windows, rename with dstPath already exists causes exception
     shutil.move(srcPath, dstPath) # shutil.move is better than os.rename, because os.rename failed if src and dst are not on the same filesystem
   if (os.path.exists(srcPath)):
