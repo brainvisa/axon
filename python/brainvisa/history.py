@@ -43,6 +43,7 @@ from soma.uuid import Uuid
 from soma.translation import translate as _
 from soma.undefined import Undefined
 from soma.minf.api import readMinf
+from soma import safemkdir
 
 from brainvisa.processing import neuroLog
 from brainvisa.configuration import neuroConfig
@@ -109,11 +110,11 @@ class HistoryBook( object ):
     self.uuid = Uuid()
     self.__compression = compression
     if not os.path.isdir( directory ):
-      os.makedirs( directory ) 
+      safemkdir.makedirs( directory )
     self.__dir = directory
     self.__database = database
     if not os.path.isdir( dirBvsession ):
-      os.makedirs( dirBvsession ) 
+      safemkdir.makedirs( dirBvsession ) 
     self.__dirBvsession = dirBvsession
 
 
@@ -139,7 +140,7 @@ class HistoryBook( object ):
       timeNameDirectory = time.strftime( '%Y-%m-%d',time.localtime() )  
       eventDirectory = os.path.join( self.__dir, timeNameDirectory )
       if not os.path.exists( eventDirectory ): 
-        os.mkdir( eventDirectory )
+        safemkdir.mkdir( eventDirectory )
       eventFileName = os.path.join( eventDirectory, str( event.uuid ) + '.' + event.eventType )
       
     event.save( eventFileName, compression, storeBvproc ) 
@@ -201,7 +202,7 @@ class HistoryBook( object ):
           for historyBook in historyBooks:
             #event = None
             if not os.path.exists( historyBook ):
-              os.mkdir( historyBook )
+              safemkdir.mkdir( historyBook )
             historyBook = HistoryBook( historyBook, db, dirBvsession, compression=True )
             dHistoryBook = {}
             historyBooksContext.setdefault( historyBook, dHistoryBook )[ item.fullPath() ] = ( item, item.modificationHash() )
@@ -279,7 +280,7 @@ class HistoricalEvent( object ):
         if fileDate != timeNameDirectory: 
           eventDirectory = os.path.join( self.__dir, timeNameDirectory )
           if not os.path.exists( eventDirectory ): 
-            os.mkdir( eventDirectory )
+            safemkdir.mkdir( eventDirectory )
             newFile =  os.path.join( eventDirectory, os.path.basename( eventFileName ) )
             shutil.move( eventFileName, newFile )
             bvProcDiskItem = WriteDiskItem( 'Process execution event', 'Process execution event' ).findValue( eventFileName )

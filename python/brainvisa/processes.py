@@ -199,6 +199,7 @@ import brainvisa.toolboxes
 from brainvisa.data import fileSystemOntology
 from brainvisa.processing.qtgui.backwardCompatibleQt import QProcess
 from brainvisa.processing.qtgui.command import CommandWithQProcess as Command
+from soma import safemkdir
 
 
 #----------------------------------------------------------------------------
@@ -2359,7 +2360,7 @@ class ExecutionContext( object ):
           for item in writeParameters:
             dirname = os.path.dirname( item.fullPath() )
             if not os.path.exists( dirname ):
-              os.makedirs( dirname )
+              safemkdir.makedirs( dirname )
 
             uuid=item.uuid()
             self._allWriteDiskItems[uuid] = [ item, item.modificationHash() ]
