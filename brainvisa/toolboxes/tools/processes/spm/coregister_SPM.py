@@ -36,7 +36,7 @@ from brainvisa.tools.spm_registration import \
   ititializeCoregisterParameters_withSPM8DefaultValuesforPET, \
   writeCoregisteredMatFile
 import brainvisa.tools.spm_run as spm
-from brainvisa.tools.spm_utils import moveSpmOutFiles
+from brainvisa.tools.spm_utils import moveSpmOutFiles, removeNan
 
 #------------------------------------------------------------------------------
 configuration = Application().configuration
@@ -142,14 +142,6 @@ def execution(self, context):
   print "\n stop ", name, "\n"
   
 #------------------------------------------------------------------------------        
-
-def removeNan(filePath):
-  os.system('AimsRemoveNaN' + ' -i ' + str(filePath) + ' -o ' + str(filePath) + '.noNan.nii')
-  os.remove(filePath)
-  os.rename(filePath + '.noNan.nii', filePath)
-  os.rename(filePath + '.noNan.nii.minf', filePath + '.minf')
-  
-#------------------------------------------------------------------------------
 # spm documentation : 
 
 #Coregister: Estimate & Reslice

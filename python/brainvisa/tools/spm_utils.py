@@ -58,3 +58,10 @@ def spm_today():
     spm_today = '0' + str(now.day)
   d = str(now.year) + mth + spm_today
   return d
+
+def removeNan(filePath):
+  AimsRemoveNaNCmd='AimsRemoveNaN' + ' -i "' + str(filePath) + '" -o "' + str(filePath) + '.noNan.nii"'
+  os.system(AimsRemoveNaNCmd)
+  os.remove(filePath)
+  os.rename(filePath + '.noNan.nii', filePath)
+  os.rename(filePath + '.noNan.nii.minf', filePath + '.minf')

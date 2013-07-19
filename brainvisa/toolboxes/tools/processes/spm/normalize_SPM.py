@@ -36,7 +36,7 @@ from brainvisa.tools.spm_registration import writeNormalizeMatFile, \
   initializeNormalizeParameters_usingSPM8DefaultValuesForPET
 from brainvisa.tools.spm_utils import spm_today
 import brainvisa.tools.spm_run as spm
-from brainvisa.tools.spm_utils import moveSpmOutFiles
+from brainvisa.tools.spm_utils import moveSpmOutFiles, removeNan
 
 #------------------------------------------------------------------------------
 configuration = Application().configuration
@@ -95,7 +95,7 @@ def execution(self, context):
                                           , self.template.fullPath(), self.wtsrc, self.weight, self.smosrc, self.smoref, self.regtype, self.cutoff, self.nits, self.reg
                                           , self.preserve, self.bb, self.vox, self.interp, self.wrap, self.prefix 
                                           )  
-  # momoTODO remonter le flag dans la signature : generatePSFileUsingMatlab    
+
   spm.run(context, configuration, matfilePath, useMatlabFirst=self.generatePsFileWithMatlab)# I prefere to use matlab version, because only this version generate .ps file to check the registration  
     
   warpedPath = self.warpedInMni.fullPath()
@@ -104,13 +104,9 @@ def execution(self, context):
   psFileName = 'spm_' + spm_today()
   moveSpmOutFiles(inDir, self.checkReg.fullPath(), [psFileName], ext='.ps')
   
-  os.system('AimsRemoveNaN' + ' -i ' + str(warpedPath) + ' -o ' + str(warpedPath) + '.noNan.nii')
-  os.remove(warpedPath)
-  os.rename(warpedPath + '.noNan.nii', warpedPath)
-  os.rename(warpedPath + '.noNan.nii.minf', warpedPath + '.minf')    
+  removeNan(warpedPath) 
 
   #sdb.insertDiskItemInDataBase(self.warpedInMni) # insert DI in DB so the minf will be created ( essential to write roi mean )
-
 
 #------------------------------------------------------------------------------
 # spm documentation : 

@@ -47,7 +47,7 @@ configuration = Application().configuration
 
 name = 'Compare Grey Segmentations'
 userLevel = 0
-# momoTODO : faire l'import et le reset internal transformation
+
 #------------------------------------------------------------------------------
 
 def validation():
