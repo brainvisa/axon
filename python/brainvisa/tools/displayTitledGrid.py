@@ -423,9 +423,11 @@ class DisplayTitledGrid():
     a = ana.Anatomist()
     objects = []
     for fusRow in self._overlay_fusions:
-      objects.extend([ x for x in fusRow if x ])
+      if(fusRow):
+        objects.extend([ x for x in fusRow if x ])
     for fusRow in self._custom_overlay_fusions:
-      objects.extend([ x for x in fusRow if x ])
+      if(fusRow):
+        objects.extend([ x for x in fusRow if x ])
     a.execute('TexturingParams', objects=objects, texture_index=1,
       rate=float(value) / 100)
 
