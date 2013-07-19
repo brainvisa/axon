@@ -142,6 +142,7 @@ class DisplayTitledGrid():
     self.mw.comboBox.currentIndexChanged.connect(
       partial(self._onComboBox_changed))
     self.mw.mixingSlider.valueChanged.connect(self._onMixingRateChanged)
+    self.mw.maximizeButton.clicked.connect(self._onMaximizeButtonClicked)
 
     self.mw.show()
 
@@ -445,6 +446,7 @@ class DisplayTitledGrid():
     if(0<row and row < len(self._custom_overlay_fusions)):
       self._addObjectOrFusion_inAnatomistWindowsRow(row, self._custom_overlay_fusions[ row ])
     self._updatePalette()
+    self._updateSelectedImageLabel()
 
   def _onRowButtonClicked(self, row):
     self._createCustomOverlayFusions(row, self._selectedColumn)
@@ -455,6 +457,7 @@ class DisplayTitledGrid():
     else:
       self._addObjectOrFusion_inAnatomistWindowsRow(row, self._selectRowForFusions(row))    
     self._updatePalette()
+    self._updateSelectedImageLabel()
 
   def _updatePalette(self):
     if (self._selectedColumn >= 0 and self._selectedRow >= 0):
@@ -463,8 +466,14 @@ class DisplayTitledGrid():
       selectedImage = self.anatomistObjectList[self._selectedRow][self._selectedColumn]
       if(selectedImage is not None):
         self._paletteEditor = PaletteEditor(selectedImage, parent=self.mw, real_max=10000, sliderPrecision=10000, zoom=1)
-        self.mw.horizontalLayout.addWidget(self._paletteEditor)
-   
+        self.mw.horizontalLayout.insertWidget(2, self._paletteEditor)
+  
+  def _updateSelectedImageLabel(self):
+    if (self._selectedColumn >= 0 and self._selectedRow >= 0):
+      self.mw.selectedImageLabel.setText('<b>'+self._col_titles[self._selectedColumn]+'_'+self._row_titles[self._selectedRow]+'</b>')
+    else:
+      self.mw.selectedImageLabel.setText('None')
+    
   def _unselectRowForFusion(self, row):    
     self._selectedRow = -1
     self._unselectButtonInGroup(self.rowsButtonGroup, row)
@@ -488,6 +497,9 @@ class DisplayTitledGrid():
         fusions = self._overlay_fusions[self._selectedRow]
     return fusions
 
+  def _onMaximizeButtonClicked(self):
+    print "_onMaximizeButtonClicked"# momoTODO utiliser display fusion et afficher la fusion de tous les objets de la ligne sélectionnée
+  
 # momoTODO : encadrer la reference utiliser pour la fusion    
 #    painter = QPainter(mw)
 #    painter.setPen(Qt.QColor('yellow'))
