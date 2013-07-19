@@ -376,10 +376,11 @@ class DisplayTitledGrid():
       overlayimage = self.anatomistObjectList[ row ][ column ]
       if overlayimage is not None:
         a = ana.Anatomist()
-        newoverlay = a.duplicateObject(overlayimage)
         if(self._custom_overlay_colormap is not None):
+          newoverlay = a.duplicateObject(overlayimage)
           newoverlay.setPalette(self._custom_overlay_colormap)
         else:
+          newoverlay = overlayimage
           overlayimagepalette=(overlayimage.palette()).refPalette()
           paletteName=overlayimagepalette.name()      
           newoverlay.setPalette(paletteName)
@@ -397,8 +398,8 @@ class DisplayTitledGrid():
         self._custom_overlay_fusions[ row ] = fusline
         a.execute('TexturingParams', objects=[ x for x in fusline if x ],
           texture_index=1, rate=float(self.mw.mixingSlider.value()) / 100)
-      else:
-        self._custom_overlay_fusions[ row ] = None
+      elif(row < len(self._custom_overlay_fusions)):
+          self._custom_overlay_fusions[ row ] = None
         
 
   def _addObjectOrFusion_inAnatomistWindows(self):
@@ -461,13 +462,9 @@ class DisplayTitledGrid():
         self._paletteEditor.close()
       selectedImage = self.anatomistObjectList[self._selectedRow][self._selectedColumn]
       if(selectedImage is not None):
-        self._paletteEditor = PaletteEditor(selectedImage, parent=self.mw, real_max=10000, sliderPrecision=10000, zoom=1, onPaletteNameChanged_func=self._onPaletteNameChanged)
+        self._paletteEditor = PaletteEditor(selectedImage, parent=self.mw, real_max=10000, sliderPrecision=10000, zoom=1)
         self.mw.horizontalLayout.addWidget(self._paletteEditor)
-
-  def _onPaletteNameChanged(self):
-    self._createCustomOverlayFusions(self._selectedRow, self._selectedColumn)
-    self._addObjectOrFusion_inAnatomistWindowsRow(self._selectedRow, self._selectRowForFusions(self._selectedRow))    
-    
+   
   def _unselectRowForFusion(self, row):    
     self._selectedRow = -1
     self._unselectButtonInGroup(self.rowsButtonGroup, row)
