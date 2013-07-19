@@ -41,6 +41,7 @@ from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
 from brainvisa.tools.mainthreadlife import MainThreadLife
 from functools import partial
 import anatomist.threaded.api as ana
+from anatomist.cpp.paletteEditor import PaletteEditor
 
 #------------------------------------------------------------------------------
 def displayTitledGrid(transformationManager, context, inverseRawColumn,
@@ -77,8 +78,7 @@ def _displayTitledGrid_onGuiThread(transformationManager, context,
                                    linkWindows, overlaidImages, mainColormap,
                                    overlayColormap, customOverlayColormap):
   # DisplayTitledGrid doit etre construit sur le thread de Gui pour etre sure que la destruction de la mw se fasse sur le thread de Gui
-  TitledGrid = DisplayTitledGrid(objPathMatrix, parent=context,
-    mainColormap=mainColormap, overlayColormap=overlayColormap)
+  TitledGrid = DisplayTitledGrid(objPathMatrix, parent=context,mainColormap=mainColormap, overlayColormap=overlayColormap, customOverlayColormap=customOverlayColormap)
   mw = TitledGrid.display(inverseRawColumn=inverseRawColumn,
     windowFlag=QtCore.Qt.Window, windowTitle=windowTitle, rowTitle=rowTitle,
     colTitle=colTitle, rowColors=rowColors, linkWindows=linkWindows,
@@ -105,6 +105,7 @@ class DisplayTitledGrid():
     self._selectedColumn = -1
     self._row_titles = []
     self._col_titles = []
+    self._paletteEditor=None
 
   def display(self, inverseRawColumn=False, windowFlag=QtCore.Qt.Window
               , windowTitle='Compare'
@@ -376,7 +377,12 @@ class DisplayTitledGrid():
       if overlayimage is not None:
         a = ana.Anatomist()
         newoverlay = a.duplicateObject(overlayimage)
-        newoverlay.setPalette(self._custom_overlay_colormap)
+        if(self._custom_overlay_colormap is not None):
+          newoverlay.setPalette(self._custom_overlay_colormap)
+        else:
+          overlayimagepalette=(overlayimage.palette()).refPalette()
+          paletteName=overlayimagepalette.name()      
+          newoverlay.setPalette(paletteName)
         fusline = []
         for obj in self.anatomistObjectList[ row ]:
           if obj and obj is not overlayimage:
@@ -437,18 +443,31 @@ class DisplayTitledGrid():
     self._createCustomOverlayFusions(row, column)
     if(0<row and row < len(self._custom_overlay_fusions)):
       self._addObjectOrFusion_inAnatomistWindowsRow(row, self._custom_overlay_fusions[ row ])
+    self._updatePalette()
 
   def _onRowButtonClicked(self, row):
     self._createCustomOverlayFusions(row, self._selectedColumn)
-    self._addObjectOrFusion_inAnatomistWindowsRow(self._selectedRow, None)#remove fusion in previous row       
-    isRowAlreadySelected = self._selectedRow == row
-    fusions = None
-    if (isRowAlreadySelected == False):
-      fusions = self._selectRowForFusions(row)
-    else:
+    self._addObjectOrFusion_inAnatomistWindowsRow(self._selectedRow, self._selectRowForFusions(self._selectedRow, thisRowIsSelected=False))# reset previous selectedRow      
+    isRowUnselected = self._selectedRow == row
+    if (isRowUnselected):
       self._unselectRowForFusion(row)
-    self._addObjectOrFusion_inAnatomistWindowsRow(row, fusions)      
+    else:
+      self._addObjectOrFusion_inAnatomistWindowsRow(row, self._selectRowForFusions(row))    
+    self._updatePalette()
 
+  def _updatePalette(self):
+    if (self._selectedColumn >= 0 and self._selectedRow >= 0):
+      if (self._paletteEditor is not None):
+        self._paletteEditor.close()
+      selectedImage = self.anatomistObjectList[self._selectedRow][self._selectedColumn]
+      if(selectedImage is not None):
+        self._paletteEditor = PaletteEditor(selectedImage, parent=self.mw, real_max=10000, sliderPrecision=10000, zoom=1, onPaletteNameChanged_func=self._onPaletteNameChanged)
+        self.mw.horizontalLayout.addWidget(self._paletteEditor)
+
+  def _onPaletteNameChanged(self):
+    self._createCustomOverlayFusions(self._selectedRow, self._selectedColumn)
+    self._addObjectOrFusion_inAnatomistWindowsRow(self._selectedRow, self._selectRowForFusions(self._selectedRow))    
+    
   def _unselectRowForFusion(self, row):    
     self._selectedRow = -1
     self._unselectButtonInGroup(self.rowsButtonGroup, row)
@@ -461,14 +480,15 @@ class DisplayTitledGrid():
       button.setChecked(False)
       group.setExclusive(True)
     
-  def _selectRowForFusions(self, row):
+  def _selectRowForFusions(self, row, thisRowIsSelected = True):
     self._selectedRow = row
     fusions = None
-    if len(self._custom_overlay_fusions) > self._selectedRow:
-      fusions = self._custom_overlay_fusions[self._selectedRow]
-#      if(fusions):
-        # button = self.rowsButtonGroup.button( row )
-#        button.setText(self._custom_row_titles[self._selectedRow]) # momoTODO : pas besoin de changer le text si c'est un radio bouton. Le text peut contenir une information d'espace (mni, mri...) à ne pas mélanger avec la fusion
+    isCustomFusionsExist = len(self._custom_overlay_fusions)>0 and len(self._custom_overlay_fusions) > self._selectedRow
+    isFusionsExist = len(self._overlay_fusions)>0 and len(self._overlay_fusions) > self._selectedRow
+    if isCustomFusionsExist and thisRowIsSelected:
+        fusions = self._custom_overlay_fusions[self._selectedRow]
+    elif isFusionsExist:
+        fusions = self._overlay_fusions[self._selectedRow]
     return fusions
 
 # momoTODO : encadrer la reference utiliser pour la fusion    

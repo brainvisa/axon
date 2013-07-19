@@ -65,6 +65,7 @@ signature = Signature(
 #------------------------------------------------------------------------------
 
 def initialization(self):
+  self.setOptional('customOverlayColormap')
   self.inverseRawColumn = False
   self.rowTitles = ["row_1", "row_2", "row_3", "row_4"]
   self.colTitles = ["col_1", "col_2", "col_3"]
