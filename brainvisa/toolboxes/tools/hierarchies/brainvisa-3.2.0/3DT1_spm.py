@@ -70,6 +70,29 @@ insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
   '<subject>_Mni_greyProba', SetType('T1 MRI Mni GreyProba'),) 
 
 
+#############
+# PetSpc space #
+#############
+
+# probability map in native space
+
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_PetSpc_greyProba', SetType('T1 MRI PetSpc GreyProba'),)
+
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_PetSpc_whiteProba', SetType('T1 MRI PetSpc WhiteProba'),)
+
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_PetSpc_csfProba', SetType('T1 MRI PetSpc CSFProba'),)
+
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_PetSpc_skullProba', SetType('T1 MRI PetSpc SkullProba'),)
+
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_PetSpc_scalpProba', SetType('T1 MRI PetSpc ScalpProba'),)
+# mask in native space
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_PetSpc_greyMask_{method}', SetType('T1 MRI PetSpc GreyMask'),) # methode is the way to obtain the mask from the probability map. e.g. : apply a threshold, compare map...
 
 ###################
 # transformations #
@@ -80,6 +103,12 @@ insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
   'y_defField_<subject>_Nat_TO_Mni', SetType('DefField T1 MRI from Native to Mni'),)# need a spm prefix : y to be used by SPM
+  
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
+  'iy_defField_<subject>_Mni_TO_PetSpc', SetType('DefField T1 MRI from Mni to PetSpc'),) # need a spm prefix : iy to be used by SPM
+
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
+  'y_defField_<subject>_PetSpc_TO_Mni', SetType('DefField T1 MRI from PetSpc to Mni'),)# need a spm prefix : y to be used by SPM  
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
   'matDefField_<subject>_Nat_TO_Mni', SetType('MatDefField T1 MRI from Native to Mni'),)
@@ -92,4 +121,3 @@ insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
   'jac_wrp1<subject>_JacobianDeterminant', SetType('JacobianDeterminant'),)
-

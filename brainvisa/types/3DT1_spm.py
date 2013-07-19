@@ -12,7 +12,7 @@ FileType('T1 MRI Analysis Directory', 'Directory')
 # segmentations #
 #################
 
-# Tissue Probability Map : in native and mni space
+# Tissue Probability Map : in native, mni space and pet space
 
 FileType('T1 MRI Tissue Probability Map', '4D Volume')
 
@@ -30,7 +30,13 @@ FileType('T1 MRI Mni CSFProba', 'T1 MRI Mni Space Tissue Probability Map')
 FileType('T1 MRI Mni SkullProba', 'T1 MRI Mni Space Tissue Probability Map')
 FileType('T1 MRI Mni ScalpProba', 'T1 MRI Mni Space Tissue Probability Map')
 
-# Tissue Mask : in native and mni space
+FileType('T1 MRI PetSpc Space Tissue Probability Map', 'T1 MRI Tissue Probability Map')
+FileType('T1 MRI PetSpc GreyProba', 'T1 MRI PetSpc Space Tissue Probability Map')
+FileType('T1 MRI PetSpc WhiteProba', 'T1 MRI PetSpc Space Tissue Probability Map')
+FileType('T1 MRI PetSpc CSFProba', 'T1 MRI PetSpc Space Tissue Probability Map')
+FileType('T1 MRI PetSpc SkullProba', 'T1 MRI PetSpc Space Tissue Probability Map')
+FileType('T1 MRI PetSpc ScalpProba', 'T1 MRI PetSpc Space Tissue Probability Map')
+# Tissue Mask : in native, mni space and pet space
 
 FileType('T1 MRI Tissue Mask', '4D Volume')
 
@@ -48,6 +54,9 @@ FileType('T1 MRI Mni CSFMask', 'T1 MRI Mni Space Tissue Mask')
 FileType('T1 MRI Mni SKullMask', 'T1 MRI Mni Space Tissue Mask')
 FileType('T1 MRI Mni ScalpMask', 'T1 MRI Mni Space Tissue Mask')
 
+FileType('T1 MRI PetSpc Space Tissue Mask', 'T1 MRI Tissue Mask')
+FileType('T1 MRI PetSpc GreyMask', 'T1 MRI PetSpc Space Tissue Mask')
+
 ###################
 # transformations #
 ###################
@@ -55,6 +64,9 @@ FileType('T1 MRI Mni ScalpMask', 'T1 MRI Mni Space Tissue Mask')
 FileType('Deformation Field of T1 MRI', '4D Volume')
 FileType('DefField T1 MRI from Mni to Native', 'Deformation Field of T1 MRI')
 FileType('DefField T1 MRI from Native to Mni', 'Deformation Field of T1 MRI')
+
+FileType('DefField T1 MRI from Mni to PetSpc', 'Deformation Field of T1 MRI')
+FileType('DefField T1 MRI from PetSpc to Mni', 'Deformation Field of T1 MRI')
 
 FileType('MatlabFile of Deformation Field of T1 MRI', 'Matlab SPM file')
 FileType('MatDefField T1 MRI from Native to Mni', 'MatlabFile of Deformation Field of T1 MRI')
