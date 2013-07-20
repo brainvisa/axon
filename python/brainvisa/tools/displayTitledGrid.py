@@ -35,7 +35,7 @@
 
 from PyQt4 import QtCore, Qt
 from PyQt4.QtCore import SIGNAL
-from PyQt4.QtGui import QRadioButton, QPalette, QButtonGroup, QPainter, QLabel
+from PyQt4.QtGui import QRadioButton, QPalette, QButtonGroup, QPainter, QLabel, QFrame, QVBoxLayout, QColor
 from PyQt4.uic import loadUi
 from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
 from brainvisa.tools.mainthreadlife import MainThreadLife
@@ -238,20 +238,31 @@ class DisplayTitledGrid():
       DisplayTitledGrid._linkAnatomistWindows(linkWindows, anaWinRow, spaceNames)
 
   def _createAnatomistWindows_InMainLayout(self, inverseRawColumn, view, rowIndex):
-    mw = self.mw         
+    mw = self.mw
     a = ana.Anatomist()
     anaObjRow = self.anatomistObjectList[rowIndex]
     anaWinRow = []    
     for c in range(0, len(anaObjRow)):
       anaObj = anaObjRow[c]
       if (anaObj is not None):
+        frame = QFrame()
         w = a.createWindow(view, no_decoration=True)
         anaObj.addInWindows([w])
         anaWinRow.append(w)
-        if (inverseRawColumn):          
-          mw.gridLayout.addWidget(w.getInternalRep(), c + 1, rowIndex + 1)
+        flay = QVBoxLayout( frame )
+        flay.addWidget( w.getInternalRep() )
+        frame.setObjectName( 'winborder' )
+        frame.setStyleSheet( 'QFrame#winborder { border: 0px solid; border-radius: 4px; }' )
+        pal = frame.palette()
+        pal.setColor( QPalette.Dark, QColor( 255, 192, 0 ) )
+        pal.setColor( QPalette.Midlight, QColor( 192, 255, 0 ) )
+        pal.setColor( QPalette.Shadow, QColor( 192, 0, 255 ) )
+        pal.setColor( QPalette.Light, QColor( 0, 255, 192 ) )
+        pal.setColor( QPalette.Mid, QColor( 0, 192, 255 ) )
+        if (inverseRawColumn):
+          mw.gridLayout.addWidget(frame, c + 1, rowIndex + 1)
         else:
-          mw.gridLayout.addWidget(w.getInternalRep(), rowIndex + 1, c + 1)
+          mw.gridLayout.addWidget(frame, rowIndex + 1, c + 1)
       else:
         anaWinRow.append(None)
     mw.anaWinMatrix.append(anaWinRow)
@@ -439,23 +450,40 @@ class DisplayTitledGrid():
     a.execute('TexturingParams', objects=objects, texture_index=1,
       rate=float(value) / 100)
 
+  def _removeWinFrame( self, row, column ):
+    if row >= 0 and row < len( self.mw.anaWinMatrix ) and column >= 0:
+      winrow = self.mw.anaWinMatrix[row]
+      if column < len( winrow ):
+        winrow[column].parent().setStyleSheet('QFrame#winborder { border: 0px; }')
+
+  def _highlightWinFrame( self, row, column ):
+    if row >= 0 and row < len( self.mw.anaWinMatrix ) and column >= 0:
+      winrow = self.mw.anaWinMatrix[row]
+      if column < len( winrow ):
+        winrow[column].parent().setStyleSheet('QFrame#winborder { border: 2px solid #ffa000; border-radius: 4px; }')
+
   def _onColumnButtonClicked(self, column):
+    oldcolumn = self._selectedColumn
     self._selectedColumn = column
     row = self.rowsButtonGroup.checkedId()
+    self._removeWinFrame( row, oldcolumn )
     self._createCustomOverlayFusions(row, column)
     if(0<row and row < len(self._custom_overlay_fusions)):
       self._addObjectOrFusion_inAnatomistWindowsRow(row, self._custom_overlay_fusions[ row ])
+      self._highlightWinFrame( row, column )
     self._updatePalette()
     self._updateSelectedImageLabel()
 
   def _onRowButtonClicked(self, row):
     self._createCustomOverlayFusions(row, self._selectedColumn)
-    self._addObjectOrFusion_inAnatomistWindowsRow(self._selectedRow, self._selectRowForFusions(self._selectedRow, thisRowIsSelected=False))# reset previous selectedRow      
+    self._addObjectOrFusion_inAnatomistWindowsRow(self._selectedRow, self._selectRowForFusions(self._selectedRow, thisRowIsSelected=False))# reset previous selectedRow
+    self._removeWinFrame( self._selectedRow, self._selectedColumn )
     isRowUnselected = self._selectedRow == row
     if (isRowUnselected):
       self._unselectRowForFusion(row)
     else:
-      self._addObjectOrFusion_inAnatomistWindowsRow(row, self._selectRowForFusions(row))    
+      self._addObjectOrFusion_inAnatomistWindowsRow(row, self._selectRowForFusions(row))
+      self._highlightWinFrame( row, self._selectedColumn )
     self._updatePalette()
     self._updateSelectedImageLabel()
 
