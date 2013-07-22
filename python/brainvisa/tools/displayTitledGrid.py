@@ -245,20 +245,10 @@ class DisplayTitledGrid():
     for c in range(0, len(anaObjRow)):
       anaObj = anaObjRow[c]
       if (anaObj is not None):
-        frame = QFrame()
         w = a.createWindow(view, no_decoration=True)
         anaObj.addInWindows([w])
         anaWinRow.append(w)
-        flay = QVBoxLayout( frame )
-        flay.addWidget( w.getInternalRep() )
-        frame.setObjectName( 'winborder' )
-        frame.setStyleSheet( 'QFrame#winborder { border: 0px solid; border-radius: 4px; }' )
-        pal = frame.palette()
-        pal.setColor( QPalette.Dark, QColor( 255, 192, 0 ) )
-        pal.setColor( QPalette.Midlight, QColor( 192, 255, 0 ) )
-        pal.setColor( QPalette.Shadow, QColor( 192, 0, 255 ) )
-        pal.setColor( QPalette.Light, QColor( 0, 255, 192 ) )
-        pal.setColor( QPalette.Mid, QColor( 0, 192, 255 ) )
+        frame = self._createFrame(mw, w)
         if (inverseRawColumn):
           mw.gridLayout.addWidget(frame, c + 1, rowIndex + 1)
         else:
@@ -268,6 +258,20 @@ class DisplayTitledGrid():
     mw.anaWinMatrix.append(anaWinRow)
     return mw.anaWinMatrix
 
+  def _createFrame(self, mw, w):
+    mw.frame = QFrame()
+    mw.flay = QVBoxLayout(mw.frame)
+    mw.flay.addWidget(w.getInternalRep())
+    mw.frame.setObjectName('winborder')
+    mw.frame.setStyleSheet('QFrame#winborder { border: 0px solid; border-radius: 4px; }')
+    pal = mw.frame.palette()
+    pal.setColor(QPalette.Dark, QColor(255, 192, 0))
+    pal.setColor(QPalette.Midlight, QColor(192, 255, 0))
+    pal.setColor(QPalette.Shadow, QColor(192, 0, 255))
+    pal.setColor(QPalette.Light, QColor(0, 255, 192))
+    pal.setColor(QPalette.Mid, QColor(0, 192, 255))
+    return mw.frame
+  
   @staticmethod
   def _linkAnatomistWindows(linkWindows, anaWinRow, spaceNames):
     if (linkWindows == 'all'):
@@ -365,55 +369,53 @@ class DisplayTitledGrid():
       # no overlays, nothing to be done.
       return
 
-    a = ana.Anatomist()
-    fusions = []
-    for line, objRow in enumerate(self.anatomistObjectList):
-      fusline = []
-      if line >= len(self._overlaid_images):
+    matriceFusions = []
+    for row, objRow in enumerate(self.anatomistObjectList):
+      if row >= len(self._overlaid_images):
         overlayimage = self._overlaid_images[-1]
       else:
-        overlayimage = self._overlaid_images[line]
-      for obj in objRow:
-        if obj and overlayimage:
-          fusion = a.fusionObjects(objects=[obj, overlayimage],
-            method='Fusion2DMethod')
-          fusline.append(fusion)
-        else:
-          fusline.append(None)
-      fusions.append(fusline)
-    self._overlay_fusions = fusions
+        overlayimage = self._overlaid_images[row]
+      rowFusions=self._createFusionsWithOverlay(objRow, overlayimage)
+      matriceFusions.append(rowFusions)
+    self._overlay_fusions = matriceFusions
 
   def _createCustomOverlayFusions(self, row, column):
     if row >= 0 and column >= 0:
       overlayimage = self.anatomistObjectList[ row ][ column ]
       if overlayimage is not None:
-        a = ana.Anatomist()
-        if(self._custom_overlay_colormap is not None):
-          newoverlay = a.duplicateObject(overlayimage)
-          newoverlay.setPalette(self._custom_overlay_colormap)
-        else:
-          newoverlay = overlayimage
-          overlayimagepalette=(overlayimage.palette()).refPalette()
-          paletteName=overlayimagepalette.name()      
-          newoverlay.setPalette(paletteName)
-        fusline = []
-        for obj in self.anatomistObjectList[ row ]:
-          if obj and obj is not overlayimage:
-            fusion = a.fusionObjects(objects=[obj, newoverlay],
-                method='Fusion2DMethod')
-            fusline.append(fusion)
-          else:
-            fusline.append(None)
+        newoverlay = self._setPaletteOfOverlay(overlayimage)
+        rowFusions=self._createFusionsWithOverlay(self.anatomistObjectList[row], newoverlay)    
         if len(self._custom_overlay_fusions) <= row:
-          self._custom_overlay_fusions.extend(
-            [ [] ] * (row + 1 - len(self._custom_overlay_fusions)))
-        self._custom_overlay_fusions[ row ] = fusline
-        a.execute('TexturingParams', objects=[ x for x in fusline if x ],
-          texture_index=1, rate=float(self.mw.mixingSlider.value()) / 100)
+          self._custom_overlay_fusions.extend([[]] * (row + 1 - len(self._custom_overlay_fusions)))
+        self._custom_overlay_fusions[row] = rowFusions
+        a = ana.Anatomist()
+        a.execute('TexturingParams', objects=[x for x in rowFusions if x], texture_index=1, rate=float(self.mw.mixingSlider.value()) / 100)
       elif(row < len(self._custom_overlay_fusions)):
           self._custom_overlay_fusions[ row ] = None
-        
 
+  def _createFusionsWithOverlay(self, objects, overlayimage):
+    a = ana.Anatomist()
+    rowFusions=[]
+    for obj in objects:
+      if obj and overlayimage:
+        fusion = a.fusionObjects(objects=[obj, overlayimage], method='Fusion2DMethod')
+        rowFusions.append(fusion)
+      else:
+        rowFusions.append(None)
+    return rowFusions
+              
+  def _setPaletteOfOverlay(self, overlayimage):
+    a = ana.Anatomist()
+    if (self._custom_overlay_colormap is not None):
+      newoverlay = a.duplicateObject(overlayimage)
+      newoverlay.setPalette(self._custom_overlay_colormap)
+    else:
+      newoverlay = overlayimage
+      overlayimagepalette = overlayimage.palette().refPalette()
+      paletteName = overlayimagepalette.name()
+      newoverlay.setPalette(paletteName)
+    return newoverlay
+  
   def _addObjectOrFusion_inAnatomistWindows(self):
     for row, _anaWinRow in enumerate(self.mw.anaWinMatrix):
       if row < len(self._overlay_fusions):
@@ -454,7 +456,9 @@ class DisplayTitledGrid():
     if row >= 0 and row < len( self.mw.anaWinMatrix ) and column >= 0:
       winrow = self.mw.anaWinMatrix[row]
       if column < len( winrow ):
-        winrow[column].parent().setStyleSheet('QFrame#winborder { border: 0px; }')
+        anatomistWindow = winrow[column]
+        if(anatomistWindow.parent()):
+          anatomistWindow.parent().setStyleSheet('QFrame#winborder { border: 0px; }') # momoTODO : il n'y a pas de parent!
 
   def _highlightWinFrame( self, row, column ):
     if row >= 0 and row < len( self.mw.anaWinMatrix ) and column >= 0:
