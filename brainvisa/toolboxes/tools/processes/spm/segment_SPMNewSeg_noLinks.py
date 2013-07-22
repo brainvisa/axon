@@ -69,10 +69,11 @@ signature = Signature(
   'biasCorrected', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
 
   'grey_ngaus', Choice(('1', '1'), ('2', '2') , ('3', '3'), ('4', '4'), ('5', '5'), ('6', '6'), ('7', '7'), ('8', '8'), ('Nonparametric', 'Inf')),
-  'grey_native', Choice(('None', '[0 0]'), ("Native", '[1 0]'), ("DARTEL Imported", '[0 1]'), ("Native + DARTEL Imported", '[1 1]')),
-  'grey_nat', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
+  'grey_native_space', Choice(('None', '[0 0]'), ("Native", '[1 0]'), ("DARTEL Imported", '[0 1]'), ("Native + DARTEL Imported", '[1 1]')),
+  'grey_native', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
   'grey_warped', Choice(('None', '[0 0]'), ("Modulated", '[0 1]'), ("UnModulated", '[1 0]'), ("Modulated + UnModulated", '[1 1]')),
-  'grey_Mni', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
+  'grey_mni_unmodulated', WriteDiskItem('4D Volume', 'Aims readable volume formats', requiredAttributes = {'modulated':'no'}),
+  'grey_mni_modulated', WriteDiskItem('T1 MRI Mni GreyProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'yes'}),
   
   'write_field', Choice(('None', '[0 0]'), ("Inverse", '[1 0]'), ("Forward", '[0 1]'), ("Inverse + Forward", '[1 1]')),
   'deFld', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
@@ -80,27 +81,35 @@ signature = Signature(
   'deFld_segMat', WriteDiskItem('Matlab SPM file', 'Matlab file'),
 
   'white_ngaus', Choice(('1', '1'), ('2', '2') , ('3', '3'), ('4', '4'), ('5', '5'), ('6', '6'), ('7', '7'), ('8', '8'), ('Nonparametric', 'Inf')),
-  'white_native', Choice(('None', '[0 0]'), ("Native", '[1 0]'), ("DARTEL Imported", '[0 1]'), ("Native + DARTEL Imported", '[1 1]')),
-  'white_probability', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
+  'white_native_space', Choice(('None', '[0 0]'), ("Native", '[1 0]'), ("DARTEL Imported", '[0 1]'), ("Native + DARTEL Imported", '[1 1]')),
+  'white_native', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
   'white_warped', Choice(('None', '[0 0]'), ("Modulated", '[0 1]'), ("UnModulated", '[1 0]'), ("Modulated + UnModulated", '[1 1]')),
+  'white_mni_unmodulated', WriteDiskItem('T1 MRI Mni WhiteProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'no'}),
+  'white_mni_modulated', WriteDiskItem('T1 MRI Mni WhiteProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'yes'}),
 
   'csf_ngaus', Choice(('1', '1'), ('2', '2') , ('3', '3'), ('4', '4'), ('5', '5'), ('6', '6'), ('7', '7'), ('8', '8'), ('Nonparametric', 'Inf')),
-  'csf_native', Choice(('None', '[0 0]'), ("Native", '[1 0]'), ("DARTEL Imported", '[0 1]'), ("Native + DARTEL Imported", '[1 1]')),
-  'csf_probability', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
+  'csf_native_space', Choice(('None', '[0 0]'), ("Native", '[1 0]'), ("DARTEL Imported", '[0 1]'), ("Native + DARTEL Imported", '[1 1]')),
+  'csf_native', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
   'csf_warped', Choice(('None', '[0 0]'), ("Modulated", '[0 1]'), ("UnModulated", '[1 0]'), ("Modulated + UnModulated", '[1 1]')),
+  'csf_mni_unmodulated', WriteDiskItem('T1 MRI Mni CSFProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'no'}),
+  'csf_mni_modulated', WriteDiskItem('T1 MRI Mni CSFProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'yes'}),
 
   'bone_ngaus', Choice(('1', '1'), ('2', '2') , ('3', '3'), ('4', '4'), ('5', '5'), ('6', '6'), ('7', '7'), ('8', '8'), ('Nonparametric', 'Inf')),
-  'bone_native', Choice(('None', '[0 0]'), ("Native", '[1 0]'), ("DARTEL Imported", '[0 1]'), ("Native + DARTEL Imported", '[1 1]')),
-  'bone_probability', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
+  'bone_native_space', Choice(('None', '[0 0]'), ("Native", '[1 0]'), ("DARTEL Imported", '[0 1]'), ("Native + DARTEL Imported", '[1 1]')),
+  'bone_native', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
   'bone_warped', Choice(('None', '[0 0]'), ("Modulated", '[0 1]'), ("UnModulated", '[1 0]'), ("Modulated + UnModulated", '[1 1]')),
+  'bone_mni_unmodulated', WriteDiskItem('T1 MRI Mni SkullProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'no'}),
+  'bone_mni_modulated', WriteDiskItem('T1 MRI Mni SkullProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'yes'}),
 
-  'softTissuengaus', Choice(('1', '1'), ('2', '2') , ('3', '3'), ('4', '4'), ('5', '5'), ('6', '6'), ('7', '7'), ('8', '8'), ('Nonparametric', 'Inf')),
-  'softTissuenative', Choice(('None', '[0 0]'), ("Native", '[1 0]'), ("DARTEL Imported", '[0 1]'), ("Native + DARTEL Imported", '[1 1]')),
-  'softTissue_probability', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
-  'softTissuewarped', Choice(('None', '[0 0]'), ("Modulated", '[0 1]'), ("UnModulated", '[1 0]'), ("Modulated + UnModulated", '[1 1]')),
+  'softTissue_ngaus', Choice(('1', '1'), ('2', '2') , ('3', '3'), ('4', '4'), ('5', '5'), ('6', '6'), ('7', '7'), ('8', '8'), ('Nonparametric', 'Inf')),
+  'softTissue_native_space', Choice(('None', '[0 0]'), ("Native", '[1 0]'), ("DARTEL Imported", '[0 1]'), ("Native + DARTEL Imported", '[1 1]')),
+  'softTissue_native', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
+  'softTissue_warped', Choice(('None', '[0 0]'), ("Modulated", '[0 1]'), ("UnModulated", '[1 0]'), ("Modulated + UnModulated", '[1 1]')),
+  'softTissue_mni_unmodulated', WriteDiskItem('T1 MRI Mni ScalpProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'no'}),
+  'softTissue_mni_modulated', WriteDiskItem('T1 MRI Mni ScalpProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'yes'}),
 
   'airAndBackground_ngaus', Choice(('1', '1'), ('2', '2') , ('3', '3'), ('4', '4'), ('5', '5'), ('6', '6'), ('7', '7'), ('8', '8'), ('Nonparametric', 'Inf')),
-  'airAndBackground_native', Choice(('None', '[0 0]'), ("Native", '[1 0]'), ("DARTEL Imported", '[0 1]'), ("Native + DARTEL Imported", '[1 1]')),
+  'airAndBackground_native_space', Choice(('None', '[0 0]'), ("Native", '[1 0]'), ("DARTEL Imported", '[0 1]'), ("Native + DARTEL Imported", '[1 1]')),
   'airAndBackground_warped', Choice(('None', '[0 0]'), ("Modulated", '[0 1]'), ("UnModulated", '[1 0]'), ("Modulated + UnModulated", '[1 1]')),
 
   'w_mrf', String(),
@@ -123,15 +132,15 @@ def execution(self, context):
       
   matfilePath = writeUnifiedSegmentationMatFile(context, configuration, self.MRI_Nat.fullPath(), spmJobFile
        , self.c_biasreg, self.c_biasfwhm, self.c_write
-       , self.MRI_Mni_tpmSeg, self.grey_ngaus, self.grey_native, self.grey_warped
-       , self.MRI_Mni_tpmSeg, self.white_ngaus, self.white_native, self.white_warped
-       , self.MRI_Mni_tpmSeg, self.csf_ngaus, self.csf_native, self.csf_warped
-       , self.MRI_Mni_tpmSeg, self.bone_ngaus, self.bone_native, self.bone_warped
-       , self.MRI_Mni_tpmSeg, self.softTissuengaus, self.softTissuenative, self.softTissuewarped
-       , self.MRI_Mni_tpmSeg, self.airAndBackground_ngaus, self.airAndBackground_native, self.airAndBackground_warped
+       , self.MRI_Mni_tpmSeg, self.grey_ngaus, self.grey_native_space, self.grey_warped
+       , self.MRI_Mni_tpmSeg, self.white_ngaus, self.white_native_space, self.white_warped
+       , self.MRI_Mni_tpmSeg, self.csf_ngaus, self.csf_native_space, self.csf_warped
+       , self.MRI_Mni_tpmSeg, self.bone_ngaus, self.bone_native_space, self.bone_warped
+       , self.MRI_Mni_tpmSeg, self.softTissue_ngaus, self.softTissue_native_space, self.softTissue_warped
+       , self.MRI_Mni_tpmSeg, self.airAndBackground_ngaus, self.airAndBackground_native_space, self.airAndBackground_warped
        , self.w_mrf, self.w_reg, self.w_affreg, self.w_samp, self.write_field)
     
-  spm.run(context, configuration, matfilePath)    
+  spm.run(context, configuration, matfilePath)
   self.moveSpmOutFiles()
   
   print "\n stop ", name, "\n"
@@ -142,27 +151,45 @@ def moveSpmOutFiles(self):
   subjectName = os.path.basename(self.MRI_Nat.fullPath()).partition(".")[0]
   ext = os.path.basename(self.MRI_Nat.fullPath()).partition(".")[2]
   inDir = os.path.dirname(self.MRI_Nat.fullName())
-  outDir = os.path.dirname(self.grey_nat.fullName())
+  outDir = os.path.dirname(self.grey_native.fullName())
   
   imSegUni1 = inDir + "/c1" + subjectName + "." + ext
-  movePathToDiskItem(imSegUni1, self.grey_nat)
+  movePathToDiskItem(imSegUni1, self.grey_native)
   imSegUni1 = inDir + "/wc1" + subjectName + "." + ext
-  movePathToDiskItem(imSegUni1, self.grey_Mni)
+  movePathToDiskItem(imSegUni1, self.grey_mni_unmodulated)
+  imSegUni1 = inDir + "/mwc1" + subjectName + "." + ext
+  movePathToDiskItem(imSegUni1, self.grey_mni_modulated)
   imSegUni2 = inDir + "/c2" + subjectName + "." + ext
-  movePathToDiskItem(imSegUni2, self.white_probability)
+  movePathToDiskItem(imSegUni2, self.white_native)
+  imSegUni2 = inDir + "/wc2" + subjectName + "." + ext
+  movePathToDiskItem(imSegUni2, self.white_mni_unmodulated)
+  imSegUni2 = inDir + "/mwc2" + subjectName + "." + ext
+  movePathToDiskItem(imSegUni2, self.white_mni_modulated)
   imSegUni3 = inDir + "/c3" + subjectName + "." + ext
-  movePathToDiskItem(imSegUni3, self.csf_probability)
+  movePathToDiskItem(imSegUni3, self.csf_native)
+  imSegUni3 = inDir + "/wc3" + subjectName + "." + ext
+  movePathToDiskItem(imSegUni3, self.csf_mni_unmodulated)
+  imSegUni3 = inDir + "/mwc3" + subjectName + "." + ext
+  movePathToDiskItem(imSegUni3, self.csf_mni_modulated)
   imSegUni4 = inDir + "/c4" + subjectName + "." + ext
-  movePathToDiskItem(imSegUni4, self.bone_probability)
+  movePathToDiskItem(imSegUni4, self.bone_native)
+  imSegUni4 = inDir + "/wc4" + subjectName + "." + ext
+  movePathToDiskItem(imSegUni4, self.bone_mni_unmodulated)
+  imSegUni4 = inDir + "/mwc4" + subjectName + "." + ext
+  movePathToDiskItem(imSegUni4, self.bone_mni_modulated)
   imSegUni5 = inDir + "/c5" + subjectName + "." + ext
-  movePathToDiskItem(imSegUni5, self.softTissue_probability)
+  movePathToDiskItem(imSegUni5, self.softTissue_native)
+  imSegUni5 = inDir + "/wc5" + subjectName + "." + ext
+  movePathToDiskItem(imSegUni5, self.softTissue_mni_unmodulated)
+  imSegUni5 = inDir + "/mwc5" + subjectName + "." + ext
+  movePathToDiskItem(imSegUni5, self.softTissue_mni_modulated)
   
   if self.write_field != '[0 0]':
-    imDefField = inDir + "/y_" + subjectName + "." + ext 
+    imDefField = inDir + "/y_" + subjectName + "." + ext
     movePathToDiskItem(imDefField, self.deFld)
     imInvDefField = inDir + "/iy_" + subjectName + "." + ext # /iy is inverse deformation field
     movePathToDiskItem(imInvDefField, self.invDeFld)
-    trSeg8Mat = inDir + "/" + subjectName + "_seg8.mat"  
+    trSeg8Mat = inDir + "/" + subjectName + "_seg8.mat"
     movePathToDiskItem(trSeg8Mat, self.deFld_segMat)
     
   job = inDir + '/' + self.spmJobName+ "_job.m"

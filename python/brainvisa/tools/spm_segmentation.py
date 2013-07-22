@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
 from brainvisa.tools.spm_run import getSpm8Path 
     
-def initializeUnifiedSegmentationParameters_usingSPM8DefaultValuesForPET(process):
+def initializeUnifiedSegmentationParameters_usingSPM8DefaultValues(process):
   process.write_field = """[1 0]"""
   process.c_biasreg = """0.0001""" 
   process.c_biasfwhm = """60""" 
@@ -9,7 +10,7 @@ def initializeUnifiedSegmentationParameters_usingSPM8DefaultValuesForPET(process
   process.white_ngaus = """2""" 
   process.csf_ngaus = """2""" 
   process.bone_ngaus = """3""" 
-  process.softTissuengaus = """4""" 
+  process.softTissue_ngaus = """4""" 
   process.airAndBackground_ngaus = """2""" 
   process.w_mrf = """0""" 
   process.w_reg = """4""" 
