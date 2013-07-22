@@ -34,8 +34,7 @@
 #import anatomist.threaded.api as ana
 
 from PyQt4 import QtCore, Qt
-from PyQt4.QtCore import SIGNAL
-from PyQt4.QtGui import QRadioButton, QPalette, QButtonGroup, QPainter, QLabel, QFrame, QVBoxLayout, QColor
+from PyQt4.QtGui import QRadioButton, QPalette, QButtonGroup, QLabel, QFrame, QVBoxLayout, QColor
 from PyQt4.uic import loadUi
 from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
 from brainvisa.tools.mainthreadlife import MainThreadLife
@@ -56,7 +55,8 @@ def displayTitledGrid(transformationManager, context, inverseRawColumn,
                       overlaidImages=[],
                       mainColormap='B-W LINEAR',
                       overlayColormap='RAINBOW',
-                      customOverlayColormap='Blue-White'
+                      customOverlayColormap='Blue-White',
+                      rowButtonSubTitles=None
                      ):
   _mw = mainThreadActions().call(_displayTitledGrid_onGuiThread,
                                  transformationManager, context,
@@ -68,7 +68,8 @@ def displayTitledGrid(transformationManager, context, inverseRawColumn,
                                  overlaidImages=overlaidImages,
                                  mainColormap=mainColormap,
                                  overlayColormap=overlayColormap,
-                                 customOverlayColormap=customOverlayColormap)
+                                 customOverlayColormap=customOverlayColormap,
+                                 rowButtonSubTitles=rowButtonSubTitles)
   mw = MainThreadLife(_mw)# pour etre sure que la destruction de la mw se fasse sur le thread de Gui
   return [mw]
 
@@ -76,13 +77,13 @@ def _displayTitledGrid_onGuiThread(transformationManager, context,
                                    inverseRawColumn, objPathMatrix, rowTitle,
                                    rowColors, colTitle, windowTitle,
                                    linkWindows, overlaidImages, mainColormap,
-                                   overlayColormap, customOverlayColormap):
+                                   overlayColormap, customOverlayColormap, rowButtonSubTitles):
   # DisplayTitledGrid doit etre construit sur le thread de Gui pour etre sure que la destruction de la mw se fasse sur le thread de Gui
   TitledGrid = DisplayTitledGrid(objPathMatrix, parent=context,mainColormap=mainColormap, overlayColormap=overlayColormap, customOverlayColormap=customOverlayColormap)
   mw = TitledGrid.display(inverseRawColumn=inverseRawColumn,
     windowFlag=QtCore.Qt.Window, windowTitle=windowTitle, rowTitle=rowTitle,
     colTitle=colTitle, rowColors=rowColors, linkWindows=linkWindows,
-    overlaidImages=overlaidImages)[0]
+    overlaidImages=overlaidImages, rowButtonSubTitles=rowButtonSubTitles)[0]
   return mw
 
 #------------------------------------------------------------------------------
@@ -113,7 +114,8 @@ class DisplayTitledGrid():
               , colTitle=["col_1", "col_2", "col_3"]
               , rowColors=['darkOrange', 'blue', 'blue', 'magenta']# orange = rawSpace, blue = mri space, magenta = mni space
               , linkWindows='space'# linkWindows possible values : 'all' | none | row, default value : space
-              , overlaidImages=[]): 
+              , overlaidImages=[]
+              , rowButtonSubTitles=None): 
 
     self.mw = self._loadUserInterface()  # create self.mw.gridLayout  
     self.mw.setWindowTitle(windowTitle)    
@@ -129,7 +131,7 @@ class DisplayTitledGrid():
     self._createOverlayFusions()
 
     self._addColumnButton(colTitle, inverseRawColumn)
-    self._addRowButton(rowTitle, rowColors, inverseRawColumn)
+    self._addRowButton(rowTitle, rowColors, inverseRawColumn, rowButtonSubTitles)
     
     #self._createWinFrame(self.mw, self.mw.selectedReferenceLabel) # momoTODO : meme cadre autour de selected reference
 
@@ -189,7 +191,7 @@ class DisplayTitledGrid():
         self.mw.gridLayout.setColumnStretch(buttonIndex + 1, 10)
       button.clicked.connect(partial(self._onColumnButtonClicked, buttonIndex))
 
-  def _addRowButton(self, buttonTitles, buttonColors, inverseRawColumn):
+  def _addRowButton(self, buttonTitles, buttonColors, inverseRawColumn, rowButtonSubTitles=None):
     self.rowsButtonGroup = QButtonGroup(self.mw)
     self.rowsButtonGroup.setExclusive(True)
     for buttonIndex in range(0, len(buttonTitles)):
@@ -203,13 +205,27 @@ class DisplayTitledGrid():
         self.rowsButtonGroup.addButton(widget, buttonIndex)
         widget.setToolTip('<p>Click on this button to superimpose a different image. To do so, click on this row button, then click on a column button to display the column main image as overlay on this row.<p><p>Click again on the tow button to go back to the initial views.</p>')
         widget.clicked.connect(partial(self._onRowButtonClicked, buttonIndex))
-      if (inverseRawColumn):
-        self.mw.gridLayout.addWidget(widget, 0, buttonIndex + 1)
-        self.mw.gridLayout.setColumnStretch(buttonIndex + 1, 10)
+      if(rowButtonSubTitles is not None and buttonIndex< len(rowButtonSubTitles)):
+        subTitle = rowButtonSubTitles[buttonIndex]
+        vLay = QVBoxLayout()
+        vLay.insertStretch(0,2)
+        vLay.addWidget(widget)
+        vLay.addWidget(QLabel(subTitle))
+        vLay.addStretch(2)
+        if (inverseRawColumn):
+          self.mw.gridLayout.addLayout(vLay, 0, buttonIndex + 1)
+          self.mw.gridLayout.setColumnStretch(buttonIndex + 1, 10)
+        else:
+          self.mw.gridLayout.addLayout(vLay, buttonIndex + 1, 0)
+          self.mw.gridLayout.setRowStretch(buttonIndex + 1, 10)
       else:
-        self.mw.gridLayout.addWidget(widget, buttonIndex + 1, 0)
-        self.mw.gridLayout.setRowStretch(buttonIndex + 1, 10)
-
+        if (inverseRawColumn):
+          self.mw.gridLayout.addWidget(widget, 0, buttonIndex + 1)
+          self.mw.gridLayout.setColumnStretch(buttonIndex + 1, 10)
+        else:
+          self.mw.gridLayout.addWidget(widget, buttonIndex + 1, 0)
+          self.mw.gridLayout.setRowStretch(buttonIndex + 1, 10)
+          
   @staticmethod
   def _createColoredButton(title, color):
     button = QRadioButton(title)
