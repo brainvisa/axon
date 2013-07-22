@@ -50,9 +50,9 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0,0,0,0">
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0,0,0">
      <item>
-      <widget class="QLabel" name="mixrateLabel">
+      <widget class="QLabel" name="selectedReferenceLabel">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -65,7 +65,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="selectedImageLabel">
+      <widget class="QLabel" name="selectedReferenceName">
        <property name="text">
         <string>None</string>
        </property>
@@ -79,7 +79,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="fusionLlabel">
+      <widget class="QLabel" name="mixingRateLabel">
        <property name="text">
         <string>mixing rate : </string>
        </property>
@@ -114,13 +114,6 @@
        </property>
        <property name="text">
         <string>100 %</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="mixingRateLabel">
-       <property name="text">
-        <string/>
        </property>
       </widget>
      </item>

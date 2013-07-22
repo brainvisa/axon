@@ -130,17 +130,17 @@ class DisplayTitledGrid():
 
     self._addColumnButton(colTitle, inverseRawColumn)
     self._addRowButton(rowTitle, rowColors, inverseRawColumn)
+    
+    #self._createWinFrame(self.mw, self.mw.selectedReferenceLabel) # momoTODO : meme cadre autour de selected reference
 
-    self._createAndLinkAnatomistWindowsInMainLayout(
-      linkWindows, inverseRawColumn, 'Sagittal', rowTitle)
+    self._createAndLinkAnatomistWindowsInMainLayout(linkWindows, inverseRawColumn, 'Sagittal', rowTitle)
 
     self.mw.anatomistObjectList = self.anatomistObjectList # momo  :ca sert a quoi?
 
     # replace individual objects by overlays fusions when applicable
     self._addObjectOrFusion_inAnatomistWindows()
 
-    self.mw.comboBox.currentIndexChanged.connect(
-      partial(self._onComboBox_changed))
+    self.mw.comboBox.currentIndexChanged.connect(partial(self._onComboBox_changed))
     self.mw.mixingSlider.valueChanged.connect(self._onMixingRateChanged)
     self.mw.maximizeButton.clicked.connect(self._onMaximizeButtonClicked)
 
@@ -222,15 +222,13 @@ class DisplayTitledGrid():
 
   @staticmethod
   def _createColoredLabel(title, color):
-    button = QLabel(title)
+    label = QLabel(title)
     buttonPalette = QPalette()
     buttonPalette.setColor(QPalette.ButtonText, Qt.QColor(color))
-    button.setPalette(buttonPalette)
-    return button
+    label.setPalette(buttonPalette)
+    return label
   
-  def _createAndLinkAnatomistWindowsInMainLayout(
-      self, linkWindows, inverseRawColumn, initialView, spaceNames):
-
+  def _createAndLinkAnatomistWindowsInMainLayout(self, linkWindows, inverseRawColumn, initialView, spaceNames):
     mw = self.mw
     mw.anaWinMatrix = []
     for r in range(0, len(self.anatomistObjectList)):
@@ -248,7 +246,7 @@ class DisplayTitledGrid():
         w = a.createWindow(view, no_decoration=True)
         anaObj.addInWindows([w])
         anaWinRow.append(w)
-        frame = self._createFrame(mw, w)
+        frame = self._createWinFrame(mw, w.getInternalRep())
         if (inverseRawColumn):
           mw.gridLayout.addWidget(frame, c + 1, rowIndex + 1)
         else:
@@ -258,10 +256,10 @@ class DisplayTitledGrid():
     mw.anaWinMatrix.append(anaWinRow)
     return mw.anaWinMatrix
 
-  def _createFrame(self, mw, w):
+  def _createWinFrame(self, mw, widget):
     mw.frame = QFrame()
     mw.flay = QVBoxLayout(mw.frame)
-    mw.flay.addWidget(w.getInternalRep())
+    mw.flay.addWidget(widget)
     mw.frame.setObjectName('winborder')
     mw.frame.setStyleSheet('QFrame#winborder { border: 0px solid; border-radius: 4px; }')
     pal = mw.frame.palette()
@@ -452,6 +450,31 @@ class DisplayTitledGrid():
     a.execute('TexturingParams', objects=objects, texture_index=1,
       rate=float(value) / 100)
 
+  def _onColumnButtonClicked(self, column):
+    oldcolumn = self._selectedColumn
+    self._selectedColumn = column
+    row = self.rowsButtonGroup.checkedId()
+    self._removeWinFrame( row, oldcolumn )
+    self._createCustomOverlayFusions(row, column)
+    if(0<=row and row < len(self._custom_overlay_fusions)):
+      self._addObjectOrFusion_inAnatomistWindowsRow(row, self._custom_overlay_fusions[ row ])
+      self._highlightWinFrame( row, column )
+    self._updatePalette()
+    self._updateSelectedReferenceName()
+
+  def _onRowButtonClicked(self, row):
+    self._createCustomOverlayFusions(row, self._selectedColumn)
+    self._addObjectOrFusion_inAnatomistWindowsRow(self._selectedRow, self._selectRowForFusions(self._selectedRow, thisRowIsSelected=False))# reset previous selectedRow
+    self._removeWinFrame( self._selectedRow, self._selectedColumn )
+    isRowUnselected = self._selectedRow == row
+    if (isRowUnselected):
+      self._unselectRowForFusion(row)
+    else:
+      self._addObjectOrFusion_inAnatomistWindowsRow(row, self._selectRowForFusions(row))
+      self._highlightWinFrame( row, self._selectedColumn )
+    self._updatePalette()
+    self._updateSelectedReferenceName()
+
   def _removeWinFrame( self, row, column ):
     if row >= 0 and row < len( self.mw.anaWinMatrix ) and column >= 0:
       winrow = self.mw.anaWinMatrix[row]
@@ -466,32 +489,7 @@ class DisplayTitledGrid():
       if column < len( winrow ):
         if(winrow[column] is not None):
           winrow[column].parent().setStyleSheet('QFrame#winborder { border: 2px solid #ffa000; border-radius: 4px; }')
-
-  def _onColumnButtonClicked(self, column):
-    oldcolumn = self._selectedColumn
-    self._selectedColumn = column
-    row = self.rowsButtonGroup.checkedId()
-    self._removeWinFrame( row, oldcolumn )
-    self._createCustomOverlayFusions(row, column)
-    if(0<=row and row < len(self._custom_overlay_fusions)):
-      self._addObjectOrFusion_inAnatomistWindowsRow(row, self._custom_overlay_fusions[ row ])
-      self._highlightWinFrame( row, column )
-    self._updatePalette()
-    self._updateSelectedImageLabel()
-
-  def _onRowButtonClicked(self, row):
-    self._createCustomOverlayFusions(row, self._selectedColumn)
-    self._addObjectOrFusion_inAnatomistWindowsRow(self._selectedRow, self._selectRowForFusions(self._selectedRow, thisRowIsSelected=False))# reset previous selectedRow
-    self._removeWinFrame( self._selectedRow, self._selectedColumn )
-    isRowUnselected = self._selectedRow == row
-    if (isRowUnselected):
-      self._unselectRowForFusion(row)
-    else:
-      self._addObjectOrFusion_inAnatomistWindowsRow(row, self._selectRowForFusions(row))
-      self._highlightWinFrame( row, self._selectedColumn )
-    self._updatePalette()
-    self._updateSelectedImageLabel()
-
+          
   def _updatePalette(self):
     if (self._selectedColumn >= 0 and self._selectedRow >= 0):
       if (self._paletteEditor is not None):
@@ -501,11 +499,11 @@ class DisplayTitledGrid():
         self._paletteEditor = PaletteEditor(selectedImage, parent=self.mw, real_max=10000, sliderPrecision=10000, zoom=1)
         self.mw.horizontalLayout.insertWidget(2, self._paletteEditor)
   
-  def _updateSelectedImageLabel(self):
+  def _updateSelectedReferenceName(self):
     if (self._selectedColumn >= 0 and self._selectedRow >= 0):
-      self.mw.selectedImageLabel.setText('<b>'+self._col_titles[self._selectedColumn]+'_'+self._row_titles[self._selectedRow]+'</b>')
+      self.mw.selectedReferenceName.setText('<b>'+self._col_titles[self._selectedColumn]+'_'+self._row_titles[self._selectedRow]+'</b>')
     else:
-      self.mw.selectedImageLabel.setText('None')
+      self.mw.selectedReferenceName.setText('None')
     
   def _unselectRowForFusion(self, row):    
     self._selectedRow = -1
