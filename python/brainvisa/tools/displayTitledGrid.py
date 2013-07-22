@@ -457,14 +457,15 @@ class DisplayTitledGrid():
       winrow = self.mw.anaWinMatrix[row]
       if column < len( winrow ):
         anatomistWindow = winrow[column]
-        if(anatomistWindow.parent()):
+        if(anatomistWindow is not None):
           anatomistWindow.parent().setStyleSheet('QFrame#winborder { border: 0px; }') # momoTODO : il n'y a pas de parent!
 
   def _highlightWinFrame( self, row, column ):
     if row >= 0 and row < len( self.mw.anaWinMatrix ) and column >= 0:
       winrow = self.mw.anaWinMatrix[row]
       if column < len( winrow ):
-        winrow[column].parent().setStyleSheet('QFrame#winborder { border: 2px solid #ffa000; border-radius: 4px; }')
+        if(winrow[column] is not None):
+          winrow[column].parent().setStyleSheet('QFrame#winborder { border: 2px solid #ffa000; border-radius: 4px; }')
 
   def _onColumnButtonClicked(self, column):
     oldcolumn = self._selectedColumn
