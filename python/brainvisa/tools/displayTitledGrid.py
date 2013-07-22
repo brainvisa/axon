@@ -398,7 +398,7 @@ class DisplayTitledGrid():
       overlayimage = self.anatomistObjectList[ row ][ column ]
       if overlayimage is not None:
         newoverlay = self._setPaletteOfOverlay(overlayimage)
-        rowFusions=self._createFusionsWithOverlay(self.anatomistObjectList[row], newoverlay)    
+        rowFusions=self._createFusionsWithOverlay(self.anatomistObjectList[row], newoverlay, overlayimage)    
         if len(self._custom_overlay_fusions) <= row:
           self._custom_overlay_fusions.extend([[]] * (row + 1 - len(self._custom_overlay_fusions)))
         self._custom_overlay_fusions[row] = rowFusions
@@ -407,11 +407,11 @@ class DisplayTitledGrid():
       elif(row < len(self._custom_overlay_fusions)):
           self._custom_overlay_fusions[ row ] = None
 
-  def _createFusionsWithOverlay(self, objects, overlayimage):
+  def _createFusionsWithOverlay(self, objects, overlayimage, imageWithoutFusion=None):
     a = ana.Anatomist()
     rowFusions=[]
     for obj in objects:
-      if obj and overlayimage:
+      if obj and overlayimage and obj != overlayimage and (not imageWithoutFusion or imageWithoutFusion!=obj):
         fusion = a.fusionObjects(objects=[obj, overlayimage], method='Fusion2DMethod')
         rowFusions.append(fusion)
       else:
