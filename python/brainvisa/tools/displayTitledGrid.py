@@ -198,13 +198,10 @@ class DisplayTitledGrid():
       title = buttonTitles[buttonIndex]
       NotNoneCount = len(filter(lambda x:x!=None,self.anatomistObjectList[ buttonIndex ]))
       isFusionPossibleOnRow = NotNoneCount>1 or len(self._overlaid_images)>0
-      if(isFusionPossibleOnRow == False):
-        widget = DisplayTitledGrid._createColoredLabel(title, buttonColors[buttonIndex])
-      else:
-        widget = DisplayTitledGrid._createColoredButton(title, buttonColors[buttonIndex])
-        self.rowsButtonGroup.addButton(widget, buttonIndex)
-        widget.setToolTip('<p>Click on this button to superimpose a different image. To do so, click on this row button, then click on a column button to display the column main image as overlay on this row.<p><p>Click again on the tow button to go back to the initial views.</p>')
-        widget.clicked.connect(partial(self._onRowButtonClicked, buttonIndex))
+      widget = DisplayTitledGrid._createColoredButton(title, buttonColors[buttonIndex])
+      self.rowsButtonGroup.addButton(widget, buttonIndex)
+      widget.setToolTip('<p>Click on this button to superimpose a different image. To do so, click on this row button, then click on a column button to display the column main image as overlay on this row.<p><p>Click again on the tow button to go back to the initial views.</p>')
+      widget.clicked.connect(partial(self._onRowButtonClicked, buttonIndex))
       if(rowButtonSubTitles is not None and buttonIndex< len(rowButtonSubTitles)):
         subTitle = rowButtonSubTitles[buttonIndex]
         vLay = QVBoxLayout()
@@ -235,14 +232,6 @@ class DisplayTitledGrid():
     #button.setDisabled(True)
     button.setCheckable(True)
     return button
-
-  @staticmethod
-  def _createColoredLabel(title, color):
-    label = QLabel(title)
-    buttonPalette = QPalette()
-    buttonPalette.setColor(QPalette.ButtonText, Qt.QColor(color))
-    label.setPalette(buttonPalette)
-    return label
   
   def _createAndLinkAnatomistWindowsInMainLayout(self, linkWindows, inverseRawColumn, initialView, spaceNames):
     mw = self.mw
