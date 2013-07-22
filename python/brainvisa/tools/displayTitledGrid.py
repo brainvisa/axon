@@ -244,7 +244,9 @@ class DisplayTitledGrid():
     mw = self.mw
     a = ana.Anatomist()
     anaObjRow = self.anatomistObjectList[rowIndex]
-    anaWinRow = []    
+    anaWinRow = []
+    sizefac = a.config()[ 'windowSizeFactor' ]
+    a.config()[ 'windowSizeFactor' ] = 1.
     for c in range(0, len(anaObjRow)):
       anaObj = anaObjRow[c]
       if (anaObj is not None):
@@ -258,6 +260,7 @@ class DisplayTitledGrid():
           mw.gridLayout.addWidget(frame, rowIndex + 1, c + 1)
       else:
         anaWinRow.append(None)
+    a.config()[ 'windowSizeFactor' ] = sizefac
     mw.anaWinMatrix.append(anaWinRow)
     return mw.anaWinMatrix
 
@@ -507,9 +510,11 @@ class DisplayTitledGrid():
   def _updateSelectedReferenceName(self):
     if (self._selectedColumn >= 0 and self._selectedRow >= 0):
       self.mw.selectedReferenceName.setText('<b><font color=#c06000>'+self._col_titles[self._selectedColumn]+'_'+self._row_titles[self._selectedRow]+'</font></b>')
+      self.mw.selectedReferenceName.setStyleSheet('#selectedReferenceName { border: 2px solid #c06000; border-radius: 4px; padding: 4px; }')
     else:
       self.mw.selectedReferenceName.setText('None')
-    
+      self.mw.selectedReferenceName.setStyleSheet('#selectedReferenceName { border: 0px; }')
+
   def _unselectRowForFusion(self, row):    
     self._selectedRow = -1
     self._unselectButtonInGroup(self.rowsButtonGroup, row)
