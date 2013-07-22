@@ -74,7 +74,7 @@
      <item>
       <widget class="QPushButton" name="maximizeButton">
        <property name="text">
-        <string>Maximize Fusion</string>
+        <string>Maximize Selection</string>
        </property>
       </widget>
      </item>
