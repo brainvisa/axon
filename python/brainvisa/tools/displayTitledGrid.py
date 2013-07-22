@@ -472,7 +472,7 @@ class DisplayTitledGrid():
     row = self.rowsButtonGroup.checkedId()
     self._removeWinFrame( row, oldcolumn )
     self._createCustomOverlayFusions(row, column)
-    if(0<row and row < len(self._custom_overlay_fusions)):
+    if(0<=row and row < len(self._custom_overlay_fusions)):
       self._addObjectOrFusion_inAnatomistWindowsRow(row, self._custom_overlay_fusions[ row ])
       self._highlightWinFrame( row, column )
     self._updatePalette()
