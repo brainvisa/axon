@@ -504,7 +504,7 @@ class DisplayTitledGrid():
       winrow = self.mw.anaWinMatrix[row]
       if column < len( winrow ):
         if(winrow[column] is not None):
-          winrow[column].parent().setStyleSheet('QFrame#winborder { border: 2px solid #ffa000; border-radius: 4px; }')
+          winrow[column].parent().setStyleSheet('QFrame#winborder { border: 2px solid #c06000; border-radius: 4px; }')
           
   def _updatePalette(self):
     if (self._selectedColumn >= 0 and self._selectedRow >= 0):
@@ -513,11 +513,11 @@ class DisplayTitledGrid():
       selectedImage = self.anatomistObjectList[self._selectedRow][self._selectedColumn]
       if(selectedImage is not None):
         self._paletteEditor = PaletteEditor(selectedImage, parent=self.mw, real_max=10000, sliderPrecision=10000, zoom=1)
-        self.mw.horizontalLayout.insertWidget(2, self._paletteEditor)
+        self.mw.horizontalLayout.insertWidget(3, self._paletteEditor)
   
   def _updateSelectedReferenceName(self):
     if (self._selectedColumn >= 0 and self._selectedRow >= 0):
-      self.mw.selectedReferenceName.setText('<b>'+self._col_titles[self._selectedColumn]+'_'+self._row_titles[self._selectedRow]+'</b>')
+      self.mw.selectedReferenceName.setText('<b><font color=#c06000>'+self._col_titles[self._selectedColumn]+'_'+self._row_titles[self._selectedRow]+'</font></b>')
     else:
       self.mw.selectedReferenceName.setText('None')
     
