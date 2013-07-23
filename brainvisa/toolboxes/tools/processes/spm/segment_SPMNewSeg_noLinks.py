@@ -70,7 +70,8 @@ signature = Signature(
 
   'grey_ngaus', Choice(('1', '1'), ('2', '2') , ('3', '3'), ('4', '4'), ('5', '5'), ('6', '6'), ('7', '7'), ('8', '8'), ('Nonparametric', 'Inf')),
   'grey_native_space', Choice(('None', '[0 0]'), ("Native", '[1 0]'), ("DARTEL Imported", '[0 1]'), ("Native + DARTEL Imported", '[1 1]')),
-  'grey_native', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
+  'grey_native', WriteDiskItem('4D Volume', 'Aims readable volume formats', requiredAttributes={'dartel_imported':'no'}),
+  'grey_native_dartel', WriteDiskItem('T1 MRI Nat GreyProba', 'NIFTI-1 image', requiredAttributes={'dartel_imported':'yes'}),
   'grey_warped', Choice(('None', '[0 0]'), ("Modulated", '[0 1]'), ("UnModulated", '[1 0]'), ("Modulated + UnModulated", '[1 1]')),
   'grey_mni_unmodulated', WriteDiskItem('4D Volume', 'Aims readable volume formats', requiredAttributes = {'modulated':'no'}),
   'grey_mni_modulated', WriteDiskItem('T1 MRI Mni GreyProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'yes'}),
@@ -82,28 +83,32 @@ signature = Signature(
 
   'white_ngaus', Choice(('1', '1'), ('2', '2') , ('3', '3'), ('4', '4'), ('5', '5'), ('6', '6'), ('7', '7'), ('8', '8'), ('Nonparametric', 'Inf')),
   'white_native_space', Choice(('None', '[0 0]'), ("Native", '[1 0]'), ("DARTEL Imported", '[0 1]'), ("Native + DARTEL Imported", '[1 1]')),
-  'white_native', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
+  'white_native', WriteDiskItem('4D Volume', 'Aims readable volume formats', requiredAttributes={'dartel_imported':'no'}),
+  'white_native_dartel', WriteDiskItem('T1 MRI Nat WhiteProba', 'NIFTI-1 image', requiredAttributes={'dartel_imported':'yes'}),
   'white_warped', Choice(('None', '[0 0]'), ("Modulated", '[0 1]'), ("UnModulated", '[1 0]'), ("Modulated + UnModulated", '[1 1]')),
   'white_mni_unmodulated', WriteDiskItem('T1 MRI Mni WhiteProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'no'}),
   'white_mni_modulated', WriteDiskItem('T1 MRI Mni WhiteProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'yes'}),
 
   'csf_ngaus', Choice(('1', '1'), ('2', '2') , ('3', '3'), ('4', '4'), ('5', '5'), ('6', '6'), ('7', '7'), ('8', '8'), ('Nonparametric', 'Inf')),
   'csf_native_space', Choice(('None', '[0 0]'), ("Native", '[1 0]'), ("DARTEL Imported", '[0 1]'), ("Native + DARTEL Imported", '[1 1]')),
-  'csf_native', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
+  'csf_native', WriteDiskItem('4D Volume', 'Aims readable volume formats', requiredAttributes={'dartel_imported':'no'}),
+  'csf_native_dartel', WriteDiskItem('T1 MRI Nat CSFProba', 'NIFTI-1 image', requiredAttributes={'dartel_imported':'yes'}),
   'csf_warped', Choice(('None', '[0 0]'), ("Modulated", '[0 1]'), ("UnModulated", '[1 0]'), ("Modulated + UnModulated", '[1 1]')),
   'csf_mni_unmodulated', WriteDiskItem('T1 MRI Mni CSFProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'no'}),
   'csf_mni_modulated', WriteDiskItem('T1 MRI Mni CSFProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'yes'}),
 
   'bone_ngaus', Choice(('1', '1'), ('2', '2') , ('3', '3'), ('4', '4'), ('5', '5'), ('6', '6'), ('7', '7'), ('8', '8'), ('Nonparametric', 'Inf')),
   'bone_native_space', Choice(('None', '[0 0]'), ("Native", '[1 0]'), ("DARTEL Imported", '[0 1]'), ("Native + DARTEL Imported", '[1 1]')),
-  'bone_native', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
+  'bone_native', WriteDiskItem('4D Volume', 'Aims readable volume formats', requiredAttributes={'dartel_imported':'no'}),
+  'bone_native_dartel', WriteDiskItem('T1 MRI Nat SkullProba', 'NIFTI-1 image', requiredAttributes={'dartel_imported':'yes'}), # Skull = bone
   'bone_warped', Choice(('None', '[0 0]'), ("Modulated", '[0 1]'), ("UnModulated", '[1 0]'), ("Modulated + UnModulated", '[1 1]')),
   'bone_mni_unmodulated', WriteDiskItem('T1 MRI Mni SkullProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'no'}),
   'bone_mni_modulated', WriteDiskItem('T1 MRI Mni SkullProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'yes'}),
 
   'softTissue_ngaus', Choice(('1', '1'), ('2', '2') , ('3', '3'), ('4', '4'), ('5', '5'), ('6', '6'), ('7', '7'), ('8', '8'), ('Nonparametric', 'Inf')),
   'softTissue_native_space', Choice(('None', '[0 0]'), ("Native", '[1 0]'), ("DARTEL Imported", '[0 1]'), ("Native + DARTEL Imported", '[1 1]')),
-  'softTissue_native', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
+  'softTissue_native', WriteDiskItem('4D Volume', 'Aims readable volume formats', requiredAttributes={'dartel_imported':'no'}),
+  'softTissue_native_dartel', WriteDiskItem('T1 MRI Nat ScalpProba', 'NIFTI-1 image', requiredAttributes={'dartel_imported':'yes'}), # Scalp = soft tissus
   'softTissue_warped', Choice(('None', '[0 0]'), ("Modulated", '[0 1]'), ("UnModulated", '[1 0]'), ("Modulated + UnModulated", '[1 1]')),
   'softTissue_mni_unmodulated', WriteDiskItem('T1 MRI Mni ScalpProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'no'}),
   'softTissue_mni_modulated', WriteDiskItem('T1 MRI Mni ScalpProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'yes'}),
@@ -155,30 +160,40 @@ def moveSpmOutFiles(self):
   
   imSegUni1 = inDir + "/c1" + subjectName + "." + ext
   movePathToDiskItem(imSegUni1, self.grey_native)
+  imSegUni1 = inDir + "/rc1" + subjectName + "." + ext
+  movePathToDiskItem(imSegUni1, self.grey_native_dartel)
   imSegUni1 = inDir + "/wc1" + subjectName + "." + ext
   movePathToDiskItem(imSegUni1, self.grey_mni_unmodulated)
   imSegUni1 = inDir + "/mwc1" + subjectName + "." + ext
   movePathToDiskItem(imSegUni1, self.grey_mni_modulated)
   imSegUni2 = inDir + "/c2" + subjectName + "." + ext
   movePathToDiskItem(imSegUni2, self.white_native)
+  imSegUni2 = inDir + "/rc2" + subjectName + "." + ext
+  movePathToDiskItem(imSegUni2, self.white_native_dartel)
   imSegUni2 = inDir + "/wc2" + subjectName + "." + ext
   movePathToDiskItem(imSegUni2, self.white_mni_unmodulated)
   imSegUni2 = inDir + "/mwc2" + subjectName + "." + ext
   movePathToDiskItem(imSegUni2, self.white_mni_modulated)
   imSegUni3 = inDir + "/c3" + subjectName + "." + ext
   movePathToDiskItem(imSegUni3, self.csf_native)
+  imSegUni3 = inDir + "/rc3" + subjectName + "." + ext
+  movePathToDiskItem(imSegUni3, self.csf_native_dartel)
   imSegUni3 = inDir + "/wc3" + subjectName + "." + ext
   movePathToDiskItem(imSegUni3, self.csf_mni_unmodulated)
   imSegUni3 = inDir + "/mwc3" + subjectName + "." + ext
   movePathToDiskItem(imSegUni3, self.csf_mni_modulated)
   imSegUni4 = inDir + "/c4" + subjectName + "." + ext
   movePathToDiskItem(imSegUni4, self.bone_native)
+  imSegUni4 = inDir + "/rc4" + subjectName + "." + ext
+  movePathToDiskItem(imSegUni4, self.bone_native_dartel)
   imSegUni4 = inDir + "/wc4" + subjectName + "." + ext
   movePathToDiskItem(imSegUni4, self.bone_mni_unmodulated)
   imSegUni4 = inDir + "/mwc4" + subjectName + "." + ext
   movePathToDiskItem(imSegUni4, self.bone_mni_modulated)
   imSegUni5 = inDir + "/c5" + subjectName + "." + ext
   movePathToDiskItem(imSegUni5, self.softTissue_native)
+  imSegUni5 = inDir + "/rc5" + subjectName + "." + ext
+  movePathToDiskItem(imSegUni5, self.softTissue_native_dartel)
   imSegUni5 = inDir + "/wc5" + subjectName + "." + ext
   movePathToDiskItem(imSegUni5, self.softTissue_mni_unmodulated)
   imSegUni5 = inDir + "/mwc5" + subjectName + "." + ext
