@@ -22,7 +22,7 @@ def writeCoregisteredMatFile(context, sourcePath, refPath, spmJobFile
   else:
     othersToWrite="""{"""
     for otherPath in othersPath:
-      othersToWrite+="'"+otherPath+",1'"
+      othersToWrite+="\n\t'"+otherPath+",1'"
     othersToWrite+="""}"""
       
   

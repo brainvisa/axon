@@ -54,13 +54,13 @@ name = 'coregister (using SPM8)'
 
 signature = Signature(
     'source', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
-    'other', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
+    'others', ListOf(ReadDiskItem('4D Volume', 'Aims readable volume formats')),
     'reference', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
     'prefix', String(),
     'spmSourceWarped', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
-    'spmOtherWarped', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
+    'spmOthersWarped', ListOf(WriteDiskItem('4D Volume', 'Aims readable volume formats')),
     'sourceWarped', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
-    'otherWarped', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
+    'othersWarped', ListOf(WriteDiskItem('4D Volume', 'Aims readable volume formats')),
         
     'cost_fun', Choice(('Mutual Information', """'mi'"""), ('Normalized Mutual Information', """'nmi'"""), ('Entropy Correlation Coefficient', """'ecc'"""), ('Normalised Cross Correlation', """'ncc'""")),
     'sep', String(),
@@ -74,14 +74,14 @@ signature = Signature(
 #------------------------------------------------------------------------------
 
 def initialization(self):
-  self.setOptional('other', 'spmSourceWarped', 'spmOtherWarped', 'sourceWarped', 'otherWarped')
+  self.setOptional('others', 'spmSourceWarped', 'spmOthersWarped', 'sourceWarped', 'othersWarped')
   ititializeCoregisterParameters_withSPM8DefaultValuesforPET(self) 
   self.prefix = """'spmCoregister_'"""
   
   self.addLink('spmSourceWarped', 'source', self.update_spmSourceWarped)
-  self.addLink('spmOtherWarped', 'other', self.update_spmOtherWarped)
+  self.addLink('spmOthersWarped', 'others', self.update_spmOthersWarped)
   
-  self.signature['other'].userLevel = 1
+  self.signature['others'].userLevel = 1
   self.signature['cost_fun'].userLevel = 1
   self.signature['sep'].userLevel = 1
   self.signature['tol'].userLevel = 1
@@ -96,16 +96,19 @@ def update_spmSourceWarped(self, proc):
   if(self.source is not None):
     return self.update_spmWarped(self.source.fullPath())
 
-def update_spmOtherWarped(self, proc):
-  if(self.other is not None):
-    return self.update_spmWarped(self.other.fullPath())
-    
+def update_spmOthersWarped(self, proc):
+  if(self.others is not None):
+    outPaths=[]
+    for inDI in self.others:
+      outPath=self.update_spmWarped( inDI.fullPath())
+      outPaths.append(outPath)
+    return outPaths    
+  
 def update_spmWarped(self, inPath):
   inFileName = inPath[inPath.rindex('/') + 1:]
   inDir = inPath[:inPath.rindex('/') + 1]
   outPath = inDir + self.prefix.replace("'", "") + inFileName
   return outPath
-
 
 #------------------------------------------------------------------------------
 def execution(self, context):  
@@ -117,8 +120,8 @@ def execution(self, context):
   spmJobFile = inDir + '/coregister_job.m'
   
   othersPath = None
-  if(self.other is not None):
-    othersPath = [self.other.fullPath()]
+  if(self.others is not None):
+    othersPath = [other.fullPath() for other in self.others]
       
   matfilePath = writeCoregisteredMatFile(context, sourcePath, self.reference.fullPath(), spmJobFile
                                              , othersPath=othersPath, cost_fun=self.cost_fun, sep=self.sep, tol=self.tol, fwhm=self.fwhm
@@ -126,16 +129,24 @@ def execution(self, context):
     
   spm.run(context, configuration, matfilePath)    
   
-  if(self.other is not None and self.otherWarped is not None):
-    otherFileName = self.other.fullPath()[self.other.fullPath().rindex('/') + 1:]
-    moveSpmOutFiles(inDir, self.otherWarped.fullPath(), spmPrefixes=[self.prefix[:-1] + otherFileName])
-    removeNan(self.otherWarped.fullPath())    
+  for other, otherWarped in zip( self.others, self.othersWarped):
+    otherPathName = other.name
+    otherDir = otherPathName[:otherPathName.rindex('/')]  
+    otherFileName = otherPathName[otherPathName.rindex('/') + 1:]
+    spmOtherWarpedFileName = self.prefix[:-1] + otherFileName
+    _moved = moveSpmOutFiles(otherDir, otherWarped.fullPath(), spmPrefixes=[spmOtherWarpedFileName])
+    removeNan(otherWarped.fullPath())    
 
+  sourcePathName = self.source.name
+  sourceFileName = sourcePathName[sourcePathName.rindex('/') + 1:]
+  spmSourceWarpedFileName = self.prefix[:-1] + sourceFileName
   if(self.sourceWarped is not None):
     sourceWarpedPath = self.sourceWarped.fullPath()
-    sourceFileName = sourcePath[sourcePath.rindex('/') + 1:]
-    moveSpmOutFiles(inDir, sourceWarpedPath, spmPrefixes=[self.prefix[:-1] + sourceFileName])    
+    moveSpmOutFiles(inDir, sourceWarpedPath, spmPrefixes=[spmSourceWarpedFileName])    
     removeNan(sourceWarpedPath) 
+  else:
+    os.remove(self.spmSourceWarped.fullPath())
+    
         
   print "\n stop ", name, "\n"
   

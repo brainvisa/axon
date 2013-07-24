@@ -25,8 +25,12 @@ def moveSpmOutFiles(inDir, outPath, spmPrefixes=['w'], outDir=None, ext='.nii'):
         if (goodPrefix and goodExtension):
           if(outPath is not None):
             movePath(root + '/' + f, outPath)
+            return True
           else:
-            movePath(root + '/' + f, outDir + '/' + f)          
+            movePath(root + '/' + f, outDir + '/' + f)   
+            return True
+  return False
+       
     
 def movePathToDiskItem(srcPath, dstDI):
   if(dstDI is not None):
