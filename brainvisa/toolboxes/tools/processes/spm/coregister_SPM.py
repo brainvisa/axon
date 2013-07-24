@@ -112,7 +112,6 @@ def execution(self, context):
   print "\n start ", name, "\n"  
       
   sourcePath = self.source.fullPath()
-  sourceWarpedPath = self.sourceWarped.fullPath()
   inDir = sourcePath[:sourcePath.rindex('/')]  
   
   spmJobFile = inDir + '/coregister_job.m'
@@ -130,15 +129,14 @@ def execution(self, context):
   if(self.other is not None and self.otherWarped is not None):
     otherFileName = self.other.fullPath()[self.other.fullPath().rindex('/') + 1:]
     moveSpmOutFiles(inDir, self.otherWarped.fullPath(), spmPrefixes=[self.prefix[:-1] + otherFileName])
-
-  if(self.source is not None and self.sourceWarped is not None):
-    sourceFileName = sourcePath[sourcePath.rindex('/') + 1:]
-    moveSpmOutFiles(inDir, sourceWarpedPath, spmPrefixes=[self.prefix[:-1] + sourceFileName])
-    
-  removeNan(sourceWarpedPath) 
-  if(self.other is not None):
     removeNan(self.otherWarped.fullPath())    
-    
+
+  if(self.sourceWarped is not None):
+    sourceWarpedPath = self.sourceWarped.fullPath()
+    sourceFileName = sourcePath[sourcePath.rindex('/') + 1:]
+    moveSpmOutFiles(inDir, sourceWarpedPath, spmPrefixes=[self.prefix[:-1] + sourceFileName])    
+    removeNan(sourceWarpedPath) 
+        
   print "\n stop ", name, "\n"
   
 #------------------------------------------------------------------------------        

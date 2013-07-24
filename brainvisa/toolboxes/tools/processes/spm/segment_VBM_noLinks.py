@@ -108,7 +108,7 @@ signature = Signature(
   )
 
 def initialization(self):  
-  self.setOptional('biasCorrected')
+  self.setOptional('biasCorrected', 'DartelTemplate')
   self.spmJobName = 'vbmSegment'
       
 def execution(self, context):

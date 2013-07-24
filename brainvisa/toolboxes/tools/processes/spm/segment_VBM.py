@@ -106,7 +106,7 @@ signature = Signature(
 
 def initialization(self):
   
-  self.setOptional('biasCorrected')
+  self.setOptional('biasCorrected','DartelTemplate')
 
   self.spmJobName = 'vbmSegment'
   self.analysis = self.signature["analysis"].findValue({'analysis':'VBMSegmentation'})
