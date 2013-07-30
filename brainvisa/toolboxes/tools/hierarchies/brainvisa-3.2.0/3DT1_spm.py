@@ -79,15 +79,15 @@ insert('{center}/{subject}/t1mri/{acquisition}/',
 # probability map in mni space
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
-  '<subject>_Mni_unmodulated_greyProba', SetType('T1 MRI Mni GreyProba'), SetWeakAttr('modulated', 'no')) 
+  '<subject>_Mni_greyProba', SetType('T1 MRI Mni GreyProba'), SetWeakAttr('modulated', 'no')) 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
-  '<subject>_Mni_unmodulated_whiteProba', SetType('T1 MRI Mni WhiteProba'), SetWeakAttr('modulated', 'no')) 
+  '<subject>_Mni_whiteProba', SetType('T1 MRI Mni WhiteProba'), SetWeakAttr('modulated', 'no')) 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
-  '<subject>_Mni_unmodulated_csfProba', SetType('T1 MRI Mni CSFProba'), SetWeakAttr('modulated', 'no')) 
+  '<subject>_Mni_csfProba', SetType('T1 MRI Mni CSFProba'), SetWeakAttr('modulated', 'no')) 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
-  '<subject>_Mni_unmodulated_skullProba', SetType('T1 MRI Mni SkullProba'), SetWeakAttr('modulated', 'no')) 
+  '<subject>_Mni_skullProba', SetType('T1 MRI Mni SkullProba'), SetWeakAttr('modulated', 'no')) 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
-  '<subject>_Mni_unmodulated_scalpProba', SetType('T1 MRI Mni ScalpProba'), SetWeakAttr('modulated', 'no')) 
+  '<subject>_Mni_scalpProba', SetType('T1 MRI Mni ScalpProba'), SetWeakAttr('modulated', 'no')) 
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
   '<subject>_Mni_modulated_greyProba', SetType('T1 MRI Mni GreyProba'), SetWeakAttr('modulated', 'yes')) 
