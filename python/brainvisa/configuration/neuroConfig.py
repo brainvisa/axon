@@ -584,6 +584,8 @@ def convertCommandLineParameter(i):
         ( isinstance( res, int ) or isinstance( res, float ) ):
       res = i # keep string value for numbers to avoid precision / format loss
               # and in case we really want a string
+    elif type(res) in types.StringTypes:
+      res = i # keep real string in their original shape, including quotes
   except:
     res=i
   return res
