@@ -65,60 +65,60 @@ signature = Signature(
   'c_biasfwhm', Choice(('30mm cutoff', '30'), ('40mm cutoff', '40'), ('50mm cutoff', '50'), ('60mm cutoff', '60'), ('70mm cutoff', '70'), ('80mm cutoff', '80'), ('90mm cutoff', '90'), ('100mm cutoff', '100'), ('110mm cutoff', '110'), ('120mm cutoff', '120'), ('130mm cutoff', '130'), ('140mm cutoff', '140'), ('150mm cutoff', '150'), ('No correction', 'Inf')),
 
   'grey_ngaus', Choice(('1', '1'), ('2', '2') , ('3', '3'), ('4', '4'), ('5', '5'), ('6', '6'), ('7', '7'), ('8', '8'), ('Nonparametric', 'Inf')),
-  'grey_native_space', Choice(('None', '[0 0]'), ("Native", '[1 0]'), ("DARTEL Imported", '[0 1]'), ("Native + DARTEL Imported", '[1 1]')),
+  'grey_native_space', Choice(('None', '[0 0]'), ('Native', '[1 0]'), ('DARTEL Imported', '[0 1]'), ('Native + DARTEL Imported', '[1 1]')),
   'grey_native', WriteDiskItem('T1 MRI Nat GreyProba', 'NIFTI-1 image', requiredAttributes={'dartel_imported':'no'}),
   'grey_native_dartel', WriteDiskItem('T1 MRI Nat GreyProba', 'NIFTI-1 image', requiredAttributes={'dartel_imported':'yes'}),
-  'grey_warped', Choice(('None', '[0 0]'), ("Modulated", '[0 1]'), ("UnModulated", '[1 0]'), ("Modulated + UnModulated", '[1 1]')),
+  'grey_warped', Choice(('None', '[0 0]'), ('Modulated', '[0 1]'), ('Unmodulated', '[1 0]'), ('Modulated + Unmodulated', '[1 1]')),
   'grey_mni_unmodulated', WriteDiskItem('T1 MRI Mni GreyProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'no'}),
   'grey_mni_modulated', WriteDiskItem('T1 MRI Mni GreyProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'yes'}),
   
   'white_ngaus', Choice(('1', '1'), ('2', '2') , ('3', '3'), ('4', '4'), ('5', '5'), ('6', '6'), ('7', '7'), ('8', '8'), ('Nonparametric', 'Inf')),
-  'white_native_space', Choice(('None', '[0 0]'), ("Native", '[1 0]'), ("DARTEL Imported", '[0 1]'), ("Native + DARTEL Imported", '[1 1]')),
+  'white_native_space', Choice(('None', '[0 0]'), ('Native', '[1 0]'), ('DARTEL Imported', '[0 1]'), ('Native + DARTEL Imported', '[1 1]')),
   'white_native', WriteDiskItem('T1 MRI Nat WhiteProba', 'NIFTI-1 image', requiredAttributes={'dartel_imported':'no'}),
   'white_native_dartel', WriteDiskItem('T1 MRI Nat WhiteProba', 'NIFTI-1 image', requiredAttributes={'dartel_imported':'yes'}),
-  'white_warped', Choice(('None', '[0 0]'), ("Modulated", '[0 1]'), ("UnModulated", '[1 0]'), ("Modulated + UnModulated", '[1 1]')),
+  'white_warped', Choice(('None', '[0 0]'), ('Modulated', '[0 1]'), ('Unmodulated', '[1 0]'), ('Modulated + Unmodulated', '[1 1]')),
   'white_mni_unmodulated', WriteDiskItem('T1 MRI Mni WhiteProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'no'}),
   'white_mni_modulated', WriteDiskItem('T1 MRI Mni WhiteProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'yes'}),
 
   'csf_ngaus', Choice(('1', '1'), ('2', '2') , ('3', '3'), ('4', '4'), ('5', '5'), ('6', '6'), ('7', '7'), ('8', '8'), ('Nonparametric', 'Inf')),
-  'csf_native_space', Choice(('None', '[0 0]'), ("Native", '[1 0]'), ("DARTEL Imported", '[0 1]'), ("Native + DARTEL Imported", '[1 1]')),
+  'csf_native_space', Choice(('None', '[0 0]'), ('Native', '[1 0]'), ('DARTEL Imported', '[0 1]'), ('Native + DARTEL Imported', '[1 1]')),
   'csf_native', WriteDiskItem('T1 MRI Nat CSFProba', 'NIFTI-1 image', requiredAttributes={'dartel_imported':'no'}),
   'csf_native_dartel', WriteDiskItem('T1 MRI Nat CSFProba', 'NIFTI-1 image', requiredAttributes={'dartel_imported':'yes'}),
-  'csf_warped', Choice(('None', '[0 0]'), ("Modulated", '[0 1]'), ("UnModulated", '[1 0]'), ("Modulated + UnModulated", '[1 1]')),
+  'csf_warped', Choice(('None', '[0 0]'), ('Modulated', '[0 1]'), ('Unmodulated', '[1 0]'), ('Modulated + Unmodulated', '[1 1]')),
   'csf_mni_unmodulated', WriteDiskItem('T1 MRI Mni CSFProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'no'}),
   'csf_mni_modulated', WriteDiskItem('T1 MRI Mni CSFProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'yes'}),
 
   'bone_ngaus', Choice(('1', '1'), ('2', '2') , ('3', '3'), ('4', '4'), ('5', '5'), ('6', '6'), ('7', '7'), ('8', '8'), ('Nonparametric', 'Inf')),
-  'bone_native_space', Choice(('None', '[0 0]'), ("Native", '[1 0]'), ("DARTEL Imported", '[0 1]'), ("Native + DARTEL Imported", '[1 1]')),
+  'bone_native_space', Choice(('None', '[0 0]'), ('Native', '[1 0]'), ('DARTEL Imported', '[0 1]'), ('Native + DARTEL Imported', '[1 1]')),
   'bone_native', WriteDiskItem('T1 MRI Nat SkullProba', 'NIFTI-1 image', requiredAttributes={'dartel_imported':'no'}), # Skull = bone
   'bone_native_dartel', WriteDiskItem('T1 MRI Nat SkullProba', 'NIFTI-1 image', requiredAttributes={'dartel_imported':'yes'}), # Skull = bone
-  'bone_warped', Choice(('None', '[0 0]'), ("Modulated", '[0 1]'), ("UnModulated", '[1 0]'), ("Modulated + UnModulated", '[1 1]')),
+  'bone_warped', Choice(('None', '[0 0]'), ('Modulated', '[0 1]'), ('Unmodulated', '[1 0]'), ('Modulated + Unmodulated', '[1 1]')),
   'bone_mni_unmodulated', WriteDiskItem('T1 MRI Mni SkullProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'no'}),
   'bone_mni_modulated', WriteDiskItem('T1 MRI Mni SkullProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'yes'}),
 
   'softTissue_ngaus', Choice(('1', '1'), ('2', '2') , ('3', '3'), ('4', '4'), ('5', '5'), ('6', '6'), ('7', '7'), ('8', '8'), ('Nonparametric', 'Inf')),
-  'softTissue_native_space', Choice(('None', '[0 0]'), ("Native", '[1 0]'), ("DARTEL Imported", '[0 1]'), ("Native + DARTEL Imported", '[1 1]')),
-  'softTissue_native', WriteDiskItem('T1 MRI Nat ScalpProba', 'NIFTI-1 image', requiredAttributes={'dartel_imported':'no'}), # Scalp = soft tissus
-  'softTissue_native_dartel', WriteDiskItem('T1 MRI Nat ScalpProba', 'NIFTI-1 image', requiredAttributes={'dartel_imported':'yes'}), # Scalp = soft tissus
-  'softTissue_warped', Choice(('None', '[0 0]'), ("Modulated", '[0 1]'), ("UnModulated", '[1 0]'), ("Modulated + UnModulated", '[1 1]')),
+  'softTissue_native_space', Choice(('None', '[0 0]'), ('Native', '[1 0]'), ('DARTEL Imported', '[0 1]'), ('Native + DARTEL Imported', '[1 1]')),
+  'softTissue_native', WriteDiskItem('T1 MRI Nat ScalpProba', 'NIFTI-1 image', requiredAttributes={'dartel_imported':'no'}), # Scalp = soft tissues
+  'softTissue_native_dartel', WriteDiskItem('T1 MRI Nat ScalpProba', 'NIFTI-1 image', requiredAttributes={'dartel_imported':'yes'}), # Scalp = soft tissues
+  'softTissue_warped', Choice(('None', '[0 0]'), ('Modulated', '[0 1]'), ('Unmodulated', '[1 0]'), ('Modulated + Unmodulated', '[1 1]')),
   'softTissue_mni_unmodulated', WriteDiskItem('T1 MRI Mni ScalpProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'no'}),
   'softTissue_mni_modulated', WriteDiskItem('T1 MRI Mni ScalpProba', 'NIFTI-1 image', requiredAttributes = {'modulated':'yes'}),
 
   'airAndBackground_ngaus', Choice(('1', '1'), ('2', '2') , ('3', '3'), ('4', '4'), ('5', '5'), ('6', '6'), ('7', '7'), ('8', '8'), ('Nonparametric', 'Inf')),
-  'airAndBackground_native_space', Choice(('None', '[0 0]'), ("Native", '[1 0]'), ("DARTEL Imported", '[0 1]'), ("Native + DARTEL Imported", '[1 1]')),
-  'airAndBackground_warped', Choice(('None', '[0 0]'), ("Modulated", '[0 1]'), ("UnModulated", '[1 0]'), ("Modulated + UnModulated", '[1 1]')),
+  'airAndBackground_native_space', Choice(('None', '[0 0]'), ('Native', '[1 0]'), ('DARTEL Imported', '[0 1]'), ('Native + DARTEL Imported', '[1 1]')),
+  'airAndBackground_warped', Choice(('None', '[0 0]'), ('Modulated', '[0 1]'), ('Unmodulated', '[1 0]'), ('Modulated + Unmodulated', '[1 1]')),
 
-  'write_field', Choice(('None', '[0 0]'), ("Inverse", '[1 0]'), ("Forward", '[0 1]'), ("Inverse + Forward", '[1 1]')),
+  'write_field', Choice(('None', '[0 0]'), ('Inverse', '[1 0]'), ('Forward', '[0 1]'), ('Inverse + Forward', '[1 1]')),
   'deFld', WriteDiskItem('DefField T1 MRI from Native to Mni', 'NIFTI-1 image'),
   'invDeFld', WriteDiskItem('DefField T1 MRI from Mni to Native', 'NIFTI-1 image'),
   'deFld_segMat', WriteDiskItem('MatDefField T1 MRI from Native to Mni', 'Matlab file'),
 
-  'c_write', Choice(('save nothing', '[0 0]'), ("save bias corrected", '[0 1]'), ("save bias field", '[1 0]'), ("save field and corrected", '[1 1]')),
+  'c_write', Choice(('save nothing', '[0 0]'), ('save bias corrected', '[0 1]'), ('save bias field', '[1 0]'), ('save field and corrected', '[1 1]')),
   'biasCorrected', WriteDiskItem('T1 MRI Bias Corrected', 'NIFTI-1 image'),
 
   'w_mrf', String(),
   'w_reg', String(),
-  'w_affreg', Choice(('No Affine Registration', """''"""), ("ICBM space template - European brains", """'mni'"""), ("ICBM space template - East Asian brains", """'eastern'"""), ("Average sized template", """'subj'"""), ("No regularisation", """'none'""")),
+  'w_affreg', Choice(('No Affine Registration', """''"""), ('ICBM space template - European brains', """'mni'"""), ('ICBM space template - East Asian brains', """'eastern'"""), ('Average sized template', """'subj'"""), ('No regularisation', """'none'""")),
   'w_samp', String(),
 )
 
@@ -127,12 +127,11 @@ def initialization(self):
   self.setOptional('biasCorrected')
 
   self.spmJobName = 'newSegment'
-  self.analysis = self.signature["analysis"].findValue({'analysis':'SpmNewSegmentation'})
-  self.MRI_Mni_tpmSeg = self.signature["MRI_Mni_tpmSeg"].findValue({})
+  self.analysis = self.signature['analysis'].findValue({'analysis':'SpmNewSegmentation'})
+  self.MRI_Mni_tpmSeg = self.signature['MRI_Mni_tpmSeg'].findValue({})
   seg.initializeUnifiedSegmentationParameters_usingSPM8DefaultValues(self)
   generateInNativeSpace = """[1 0]"""
   NOgeneration = """[0 0]"""
-  UnModulated = """[1 0]"""
   self.grey_native_space = generateInNativeSpace
   self.grey_warped = NOgeneration
   self.white_native_space = generateInNativeSpace
@@ -146,40 +145,44 @@ def initialization(self):
   self.airAndBackground_native_space = NOgeneration
   self.airAndBackground_warped = NOgeneration
   
-  self.addLink('grey_native', 'MRI_Nat', self.update_grey_Nat)
-  self.addLink('grey_native', 'analysis', self.update_grey_Nat)
+  self.addLink('grey_native', ( 'MRI_Nat', 'analysis' ), self.update_grey_Nat)
 
   self.addLink('grey_native_dartel', 'grey_native')
   self.addLink('grey_mni_unmodulated', 'grey_native')
   self.addLink('grey_mni_modulated', 'grey_native')
-  self.addLink("white_native", "grey_native")
+  self.addLink('white_native', 'grey_native')
   self.addLink('white_native_dartel', 'grey_native')
-  self.addLink("white_mni_unmodulated", "grey_native")
-  self.addLink("white_mni_modulated", "grey_native")
-  self.addLink("csf_native", "grey_native")
+  self.addLink('white_mni_unmodulated', 'grey_native')
+  self.addLink('white_mni_modulated', 'grey_native')
+  self.addLink('csf_native', 'grey_native')
   self.addLink('csf_native_dartel', 'grey_native')
-  self.addLink("csf_mni_unmodulated", "grey_native")
-  self.addLink("csf_mni_modulated", "grey_native")
-  self.addLink("bone_native", "grey_native")
+  self.addLink('csf_mni_unmodulated', 'grey_native')
+  self.addLink('csf_mni_modulated', 'grey_native')
+  self.addLink('bone_native', 'grey_native')
   self.addLink('bone_native_dartel', 'grey_native')
-  self.addLink("bone_mni_unmodulated", "grey_native")
-  self.addLink("bone_mni_modulated", "grey_native")
-  self.addLink("softTissue_native", "grey_native")
+  self.addLink('bone_mni_unmodulated', 'grey_native')
+  self.addLink('bone_mni_modulated', 'grey_native')
+  self.addLink('softTissue_native', 'grey_native')
   self.addLink('softTissue_native_dartel', 'grey_native')
-  self.addLink("softTissue_mni_unmodulated", "grey_native")
-  self.addLink("softTissue_mni_modulated", "grey_native")
-  self.addLink("biasCorrected", "grey_native")
+  self.addLink('softTissue_mni_unmodulated', 'grey_native')
+  self.addLink('softTissue_mni_modulated', 'grey_native')
+  self.addLink('biasCorrected', 'grey_native')
   self.addLink('deFld', 'grey_native')
   self.addLink('deFld_segMat', 'grey_native')
   self.addLink('invDeFld', 'grey_native')
 
-def update_grey_Nat(self, proc):
+def update_grey_Nat(self, proc, dummy):
   return self.update_WriteDiskItem('T1 MRI Nat GreyProba', 'NIFTI-1 image')
 
 def update_WriteDiskItem(self, typeToCreate, formatToCreate):
   if(self.analysis is not None and self.MRI_Nat is not None):
     attributes = self.MRI_Nat.hierarchyAttributes()
-    attributes.update({'_database':self.getDatabase(), 'analysis':self.getAnalysis()})
+    db = self.getDatabase()
+    if db is not None:
+        attributes[ '_database' ] = db
+    analysis = self.getAnalysis()
+    if analysis is not None:
+        attributes[ 'analysis' ] = analysis
     return createDiskItem(typeToCreate, formatToCreate, attributes)
   
 def createDiskItem(typeToCreate, formatToCreate, attributes):
@@ -188,45 +191,61 @@ def createDiskItem(typeToCreate, formatToCreate, attributes):
     return DI
 
 def getAnalysis(self):
-  return self.analysis.hierarchyAttributes()['analysis']
+  return self.analysis.hierarchyAttributes().get('analysis')
 
 def getDatabase(self):
-  return self.analysis.hierarchyAttributes()['_database']
+  return self.analysis.hierarchyAttributes().get('_database')
 
 def execution(self, context):
   print "\n start ", name, "\n"
   
   #momoTODO : c vraiment pas terrible de passer tous ces paramètres... faire de l'héritage de signature entre process?
   context.runProcess('segment_SPMNewSeg_noLinks',
-                     MRI_Nat=self.MRI_Nat, MRI_Mni_tpmSeg=self.MRI_Mni_tpmSeg, spmJobName=self.spmJobName,
+                     MRI_Nat=self.MRI_Nat, MRI_Mni_tpmSeg=self.MRI_Mni_tpmSeg,
+                     spmJobName=self.spmJobName,
                      c_biasreg=self.c_biasreg, c_biasfwhm=self.c_biasfwhm,
                      c_write=self.c_write, biasCorrected=self.biasCorrected,
-                     grey_ngaus=self.grey_ngaus, grey_native_space=self.grey_native_space,
-                     grey_native=self.grey_native, grey_native_dartel=self.grey_native_dartel, grey_warped=self.grey_warped,
+                     grey_ngaus=self.grey_ngaus,
+                     grey_native_space=self.grey_native_space,
+                     grey_native=self.grey_native,
+                     grey_native_dartel=self.grey_native_dartel,
+                     grey_warped=self.grey_warped,
                      grey_mni_unmodulated=self.grey_mni_unmodulated,
                      grey_mni_modulated=self.grey_mni_modulated,
                      write_field=self.write_field, deFld=self.deFld,
                      invDeFld=self.invDeFld, deFld_segMat=self.deFld_segMat,
-                     white_ngaus=self.white_ngaus, white_native_space=self.white_native_space,
-                     white_native=self.white_native, white_native_dartel=self.white_native_dartel, white_warped=self.white_warped,
+                     white_ngaus=self.white_ngaus,
+                     white_native_space=self.white_native_space,
+                     white_native=self.white_native,
+                     white_native_dartel=self.white_native_dartel,
+                     white_warped=self.white_warped,
                      white_mni_unmodulated=self.white_mni_unmodulated,
                      white_mni_modulated=self.white_mni_modulated,
-                     csf_ngaus=self.csf_ngaus, csf_native_space=self.csf_native_space,
-                     csf_native=self.csf_native, csf_native_dartel=self.csf_native_dartel, csf_warped=self.csf_warped,
+                     csf_ngaus=self.csf_ngaus,
+                     csf_native_space=self.csf_native_space,
+                     csf_native=self.csf_native,
+                     csf_native_dartel=self.csf_native_dartel,
+                     csf_warped=self.csf_warped,
                      csf_mni_unmodulated=self.csf_mni_unmodulated,
                      csf_mni_modulated=self.csf_mni_modulated,
-                     bone_ngaus=self.bone_ngaus, bone_native_space=self.bone_native_space,
-                     bone_native=self.bone_native, bone_native_dartel=self.bone_native_dartel, bone_warped=self.bone_warped,
+                     bone_ngaus=self.bone_ngaus,
+                     bone_native_space=self.bone_native_space,
+                     bone_native=self.bone_native,
+                     bone_native_dartel=self.bone_native_dartel,
+                     bone_warped=self.bone_warped,
                      bone_mni_unmodulated=self.bone_mni_unmodulated,
                      bone_mni_modulated=self.bone_mni_modulated,
-                     softTissue_ngaus=self.softTissue_ngaus, softTissue_native_space=self.softTissue_native_space,
-                     softTissue_native=self.softTissue_native, softTissue_native_dartel=self.softTissue_native_dartel, softTissue_warped=self.softTissue_warped,
+                     softTissue_ngaus=self.softTissue_ngaus,
+                     softTissue_native_space=self.softTissue_native_space,
+                     softTissue_native=self.softTissue_native,
+                     softTissue_native_dartel=self.softTissue_native_dartel,
+                     softTissue_warped=self.softTissue_warped,
                      softTissue_mni_unmodulated=self.softTissue_mni_unmodulated,
                      softTissue_mni_modulated=self.softTissue_mni_modulated,
                      airAndBackground_ngaus=self.airAndBackground_ngaus,
                      airAndBackground_native_space=self.airAndBackground_native_space,
                      airAndBackground_warped=self.airAndBackground_warped,
-                     w_mrf=self.w_mrf, w_reg=self.w_reg, w_affreg=self.w_affreg, w_samp=self.w_samp
-                     )
+                     w_mrf=self.w_mrf, w_reg=self.w_reg,
+                     w_affreg=self.w_affreg, w_samp=self.w_samp)
     
   print "\n stop ", name, "\n"
