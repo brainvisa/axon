@@ -368,7 +368,7 @@ class Choice( Parameter ):
         i = self.findIndex( value )
         if i >= 0:
           return self.values[ i ][ 1 ]
-    raise KeyError( HTMLMessage(_t_('<em>%s</em> is not a valid choice') % unicode(value)) )
+    raise KeyError( '%s is not a valid choice' % unicode(value) )
     
   def findIndex( self, value ):
     """
