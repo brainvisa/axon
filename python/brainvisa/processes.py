@@ -591,9 +591,11 @@ class Parameterized( object ):
     self._links = {}
     self._isParameterSet = {}
     self._isDefault = {}
+    self._immutable = {}
     self._warn = {}
     self.signatureChangeNotifier = Notifier( 1 )
     self.deleteCallbacks = []
+    self._blocklinks = False
 
     for i, p in self.signature.items():
       np = copy.copy( p )
@@ -654,7 +656,7 @@ class Parameterized( object ):
       elif (not parameterizedObjects) or (parameterized in parameterizedObjects):
         if debug: print >> debug, ' ', name, 'is linked to parameter', attribute, 'of', parameterized, 'from', self, '(', len( self._links.get( name, [] ) ), ')'
         linkParamType = parameterized.signature[ attribute ]
-        if force or parameterized.parameterLinkable( attribute, debug=debug ):
+        if not parameterized._isImmutable( attribute ) and ( force or parameterized.parameterLinkable( attribute, debug=debug ) ):
           linkParamDebug = getattr( linkParamType, '_debug', None )
           if linkParamDebug is not None:
             print >> linkParamDebug, 'parameter', name, 'changed in', self, 'with value', newValue
@@ -693,6 +695,17 @@ class Parameterized( object ):
     if debug: print >> debug, '    setDefault(', key, ',', value, ')'
     self._isDefault[ key ] = value
 
+  def _isImmutable( self, key ):
+    """Returns True if the parameter `key` is immutable, ie can really be changed by a link. This is an internal state, used only temporarily during parameters assignment."""
+    return self._immutable.get( key, False )
+
+  def _clearImmutableParameters( self ):
+    self._immutable = {}
+
+  def _setImmutable( self, key, value ):
+    """Stores if the parameter `key` immutable, ie can really be changed by a link."""
+    self._immutable[ key ] = value
+
   def parameterLinkable( self, key, debug=None ):
     """Indicates if the value of the parameter can change through a parameter link."""
     if debug is None:
@@ -721,6 +734,13 @@ class Parameterized( object ):
       self.setValue( name, value )
     else:
       self.__dict__[ name ] = value
+
+  def blockLinks( self, blocked ):
+    """
+    While links are blocked, calls to setValue() or other parameters changes 
+    do not trigger links.
+    """
+    self._blocklinks = blocked
 
   def setValue( self, name, value, default=None ):
     """
@@ -1080,7 +1100,7 @@ class Process( Parameterized ):
       length = len( values )
       if length > 1:
         if requiredLength > 0 and length > 1 and requiredLength != length:
-          raise Exception( _t_( 'all lists of arguments with more than one values must have the same size' ) )
+          raise Exception( _t_( 'all lists of arguments with more than one value must have the same size' ) )
         else:
           requiredLength = length
 
@@ -1095,23 +1115,31 @@ class Process( Parameterized ):
 
     result = []
     for i in xrange( requiredLength ):
-      p = self._copy()
+      p = self._copy( withparams=False )
+      for argumentName in finalValues.keys():
+        p._setImmutable( argumentName, True )
       for argumentName, values in finalValues.iteritems():
         p.setValue( argumentName, values[ i ], default=0 )
+      p._clearImmutableParameters()
       result.append( p )
     return result
 
 
-  def _copy( self ):
-    """Returns a copy of the process. The value of the parameters are also copied"""
+  def _copy( self, withparams=True ):
+    """Returns a copy of the process. The value of the parameters are also copied if withparams is True (which is the default)"""
     result = self.__class__()
-    for ( n, p ) in self.signature.items():
-      if not self.isDefault( n ):
-#        result.setDefault( n, 0 )
-#        setattr( result, n, getattr( self, n ) )
-        result.setValue( n, getattr( self, n, None ), default=False )
+    if withparams:
+      # disable links
+      self.blockLinks( True )
+      # set params
+      for ( n, p ) in self.signature.items():
+        #if not self.isDefault( n ):
+          #result.setValue( n, getattr( self, n, None ), default=False )
+        result.setValue( n, getattr( self, n, None ),
+                        default=self.isDefault( n ) )
     if self._executionNode:
-      self._executionNode._copy(result.executionNode())
+      self._executionNode._copy(result.executionNode(), withparams=withparams)
+    self.blockLinks( False )
     return result
 
 
@@ -1551,25 +1579,29 @@ class ExecutionNode( object ):
     self.__dict__[ '_deleted' ] = True
     debugHere()
 
-  def _copy(self, node):
+  def _copy(self, node, withparams=True):
     """
-    Uses non default parameters values to initialize the parameters of the node given in argument.
+    Uses non default parameters values to initialize the parameters of the node given in argument, if withparams is True (which is the default).
     """
     # if execution node contains a process, copy the process parameters and copy its execution node parameters if any
     process=getattr(self, "_process", None)
     if process:
       processCopy=node._process
-      for ( n, v ) in process.signature.items():
-        if not self.isDefault( n ):
-          processCopy.setValue( n, getattr( process, n, None ), default=False )
+      if withparams:
+        for ( n, v ) in process.signature.items():
+          #if not self.isDefault( n ):
+            #processCopy.setValue( n, getattr( process, n, None ), 
+                                  #default=False )
+          processCopy.setValue( n, getattr( process, n, None ), 
+                                default=process.isDefault( n ) )
       processNode=process.executionNode()
       if processNode:
-        processNode._copy(processCopy.executionNode())
+        processNode._copy(processCopy.executionNode(), withparams=withparams)
     node.setSelected(self._selected)
     # if execution node have children nodes, copy the parameters of these nodes
     for name in self.childrenNames():
       child=self.child(name)
-      child._copy(node.child(name))
+      child._copy(node.child(name), withparams=withparams)
 
   def addChild( self, name, node, index = None):
     '''Add a new child execution node.
@@ -2226,21 +2258,30 @@ class ExecutionContext( object ):
 
   def _setArguments( self, _process, *args, **kwargs ):
     # Set arguments
-    i = 0
-    for v in args:
+    for i, v in enumerate( args ):
+      n = _process.signature.keys()[ i ]
+      _process._setImmutable( n, True )
+      # performing this 2 pass loop allows to set parameters with
+      # a forced value to immutable (ie non-linked) before actually
+      # setting values and running links. This avoids a bunch of unnecessary
+      # links to work (often several times)
+    for ( n, v ) in kwargs.items():
+      _process._setImmutable( n, True )
+
+    for i, v in enumerate( args ):
       n = _process.signature.keys()[ i ]
       _process.setDefault( n, 0 )
       if v is not None:
         _process.setValue( n, v )
       else:
         setattr( _process, n, None )
-      i += 1
     for ( n, v ) in kwargs.items():
       _process.setDefault( n, 0 )
       if v is not None:
         _process.setValue( n, v )
       else:
         setattr( _process, n, None )
+    _process._clearImmutableParameters()
     _process.checkArguments()
 
   def _startProcess( self, _process, executionFunction, *args, **kwargs ):
@@ -3476,27 +3517,70 @@ def getProcessInstanceFromProcessEvent( event ):
   if pipelineStructure is None:
     pipelineStructure = event.content.get( 'pipelineStructure' )
   result = getProcessInstance( pipelineStructure )
+  procs = set()
   if result is not None:
-    for n, v in event.content.get( 'parameters', {} ).get( 'selected', {} ).iteritems():
+    # 1st pass: disable links to parameters which have a saved value
+    selected = event.content.get( 'parameters', {} ).get( 'selected', {} )
+    procs.add( result )
+    for n, v in selected.iteritems():
+      try:
+        result._setImmutable( n, True )
+      except KeyError:
+        pass
+    defaultp = event.content.get( 'parameters', {} ).get( 'default', {} )
+    for n, v in defaultp.iteritems():
+      try:
+        result._setImmutable( n, True )
+      except KeyError:
+        pass
+    stackp = [ ( result.executionNode(), k, e.get( 'parameters' ), 
+                e[ 'selected' ],
+                e.get( 'executionNodes', {} ) ) for k, e in
+                event.content.get( 'executionNodes', {} ).iteritems() ]
+    stack = list( stackp ) # copy list
+    while stack:
+      eNodeParent, eNodeName, eNodeParameters, eNodeSelected, eNodeChildren = stack.pop( 0 )
+      eNode = eNodeParent.child( eNodeName )
+
+      if eNode :
+        eNode.setSelected( eNodeSelected )
+
+        if eNodeParameters:
+          for n, v in eNodeParameters[ 'selected' ].iteritems():
+            try:
+              eNode._setImmutable( n, True )
+              procs.add( eNode )
+            except KeyError:
+              pass
+          for n, v in eNodeParameters[ 'default' ].iteritems():
+            try:
+              eNode._setImmutable( n, True )
+              procs.add( eNode )
+            except KeyError:
+              pass
+        stackadd = [ ( eNode, k, e.get( 'parameters' ), e[ 'selected' ],
+                  e.get( 'executionNodes', {} ) ) for k, e in eNodeChildren.iteritems() ]
+        stackp += stackadd
+        stack += stackadd
+
+    # 2nd pass: now really set values
+    for n, v in selected.iteritems():
       try:
         result.setValue( n, v, default=False )
       except KeyError:
         pass
-    for n, v in event.content.get( 'parameters', {} ).get( 'default', {} ).iteritems():
+    for n, v in defaultp.iteritems():
       try:
         result.setValue( n, v, default=True )
       except KeyError:
         pass
-    stack = [ ( result.executionNode(), k, e.get( 'parameters' ), e[ 'selected' ],
-                e.get( 'executionNodes', {} ) ) for k, e in
-                event.content.get( 'executionNodes', {} ).iteritems() ]
-    while stack:
-      eNodeParent, eNodeName, eNodeParameters, eNodeSelected, eNodeChildren = stack.pop( 0 )
+    stack = stackp
+    for eNodeParent, eNodeName, eNodeParameters, eNodeSelected, eNodeChildren in stack:
       eNode = eNodeParent.child( eNodeName )
-      
+
       if eNode :
         eNode.setSelected( eNodeSelected )
-        
+
         if eNodeParameters:
           for n, v in eNodeParameters[ 'selected' ].iteritems():
             try:
@@ -3508,8 +3592,9 @@ def getProcessInstanceFromProcessEvent( event ):
               eNode.setValue( n, v, default=True )
             except KeyError:
               pass
-        stack += [ ( eNode, k, e.get( 'parameters' ), e[ 'selected' ],
-                  e.get( 'executionNodes', {} ) ) for k, e in eNodeChildren.iteritems() ]
+    for p in procs:
+      p._clearImmutableParameters()
+
     windowGeometry = event.content.get( 'window' )
     if windowGeometry is not None:
       result._windowGeometry = windowGeometry
