@@ -165,6 +165,7 @@ def moveSpmOutFiles(self):
   ext = os.path.basename(self.MRI_Nat.fullPath()).partition(".")[2]
   inDir = os.path.dirname(self.MRI_Nat.fullName())
   outDir = os.path.dirname(self.grey_native.fullName())
+  subjectRealName = os.path.basename(self.grey_native.fullName()).partition(".")[0][:-14]
   
   imSegUni1 = inDir + "/c1" + subjectName + "." + ext
   movePathToDiskItem(imSegUni1, self.grey_native)
@@ -216,7 +217,7 @@ def moveSpmOutFiles(self):
     movePathToDiskItem(trSeg8Mat, self.deFld_segMat)
     
   job = inDir + '/' + subjectName + "_" + self.spmJobName + "_job.m"
-  movePath(job, outDir + '/' + subjectName + "_" + self.spmJobName + "_job.m")
+  movePath(job, outDir + '/' + subjectRealName + "_" + self.spmJobName + "_job.m")
   batch = inDir + '/' + self.spmJobName + ".m"
   movePath(batch, outDir + '/' + self.spmJobName + ".m")
 
