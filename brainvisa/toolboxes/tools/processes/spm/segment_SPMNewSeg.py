@@ -118,7 +118,7 @@ signature = Signature(
 
   'w_mrf', String(),
   'w_reg', String(),
-  'w_affreg', Choice(('No Affine Registration', """''"""), ('ICBM space template - European brains', """'mni'"""), ('ICBM space template - East Asian brains', """'eastern'"""), ('Average sized template', """'subj'"""), ('No regularisation', """'none'""")),
+  'w_affreg', Choice(('No Affine Registration', ''), ('ICBM space template - European brains', 'mni'), ('ICBM space template - East Asian brains', 'eastern'), ('Average sized template', 'subj'), ('No regularisation', 'none')),
   'w_samp', String(),
 )
 
