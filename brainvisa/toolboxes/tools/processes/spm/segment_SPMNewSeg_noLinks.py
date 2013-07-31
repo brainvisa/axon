@@ -151,7 +151,7 @@ def execution(self, context):
         self.softTissue_native_space, self.softTissue_warped,
         self.MRI_Mni_tpmSeg, self.airAndBackground_ngaus,
         self.airAndBackground_native_space, self.airAndBackground_warped,
-        self.w_mrf, self.w_reg, "'"+self.w_affreg"'", self.w_samp, self.write_field)
+        self.w_mrf, self.w_reg, "'"+self.w_affreg+"'", self.w_samp, self.write_field)
   
   spm.run(context, configuration, matfilePath)
   self.moveSpmOutFiles()
