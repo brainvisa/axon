@@ -81,12 +81,12 @@ from brainvisa.data import neuroHierarchy
 from brainvisa.tools import checkbrainvisaupdates
 import urllib
 try: 
-  from soma.workflow.gui.workflowGui import SomaWorkflowWidget as ComputingResourceWidget
-  from soma.workflow.gui.workflowGui import SomaWorkflowMiniWidget as MiniComputingResourceWidget
-  import soma.workflow.gui.workflowGui
-  from soma.workflow.gui.workflowGui import ComputingResourcePool
-  from soma.workflow.gui.workflowGui import ApplicationModel as WorkflowApplicationModel
-  import soma.workflow.configuration
+  from soma_workflow.gui.workflowGui import SomaWorkflowWidget as ComputingResourceWidget
+  from soma_workflow.gui.workflowGui import SomaWorkflowMiniWidget as MiniComputingResourceWidget
+  import soma_workflow.gui.workflowGui
+  from soma_workflow.gui.workflowGui import ComputingResourcePool
+  from soma_workflow.gui.workflowGui import ApplicationModel as WorkflowApplicationModel
+  import soma_workflow.configuration
 except ImportError:
   _soma_workflow = False
   class ComputingResourceWidget(object): pass
@@ -448,31 +448,31 @@ class SomaWorkflowProcessView(QMainWindow):
       
     self.action_monitor_workflow = QAction(_t_('Monitor execution'), self)
     self.action_monitor_workflow.setCheckable(True)
-    self.action_monitor_workflow.setIcon(QIcon(os.path.join(os.path.dirname(soma.workflow.gui.__file__),"icon/monitor_wf.png")))
+    self.action_monitor_workflow.setIcon(QIcon(os.path.join(os.path.dirname(soma_workflow.gui.__file__),"icon/monitor_wf.png")))
     self.action_monitor_workflow.toggled.connect(self.enable_workflow_monitoring)
     self.action_monitor_workflow.setChecked(True)
 
-    self.workflow_tree_view = soma.workflow.gui.workflowGui.WorkflowTree(
+    self.workflow_tree_view = soma_workflow.gui.workflowGui.WorkflowTree(
                       _workflow_application_model, 
                       assigned_wf_id=self.workflow_id, 
                       assigned_resource_id=self.resource_id,
                       parent=self)
       
-    self.workflow_item_view = soma.workflow.gui.workflowGui.WorkflowElementInfo(
+    self.workflow_item_view = soma_workflow.gui.workflowGui.WorkflowElementInfo(
                     model=_workflow_application_model,
                     proxy_model=self.workflow_tree_view.proxy_model,
                     parent=self)
 
-    self.workflow_plot_view = soma.workflow.gui.workflowGui.WorkflowPlot(
+    self.workflow_plot_view = soma_workflow.gui.workflowGui.WorkflowPlot(
                     _workflow_application_model, 
                     assigned_wf_id=self.workflow_id, 
                     assigned_resource_id=self.resource_id,
                     parent=self)
-    if not soma.workflow.gui.workflowGui.MATPLOTLIB:
+    if not soma_workflow.gui.workflowGui.MATPLOTLIB:
       self.ui.dock_plot.hide()
       self.ui.dock_plot.toggleViewAction().setVisible(False)
 
-    self.workflow_info_view = soma.workflow.gui.workflowGui.WorkflowInfoWidget(
+    self.workflow_info_view = soma_workflow.gui.workflowGui.WorkflowInfoWidget(
                     _workflow_application_model, 
                     assigned_wf_id=self.workflow_id, 
                     assigned_resource_id=self.resource_id,
@@ -1852,7 +1852,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       view_menu.addAction(close_viewers_action(self))
 
       try:
-        import soma.workflow
+        import soma_workflow
         self.workflowEnabled = True
       except ImportError:
         pass
@@ -2586,10 +2586,10 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       serialized_process.close()
 
       _workflow_application_model.add_workflow(
-                            soma.workflow.gui.workflowGui.NOT_SUBMITTED_WF_ID, 
+                            soma_workflow.gui.workflowGui.NOT_SUBMITTED_WF_ID, 
                             datetime.now() + timedelta(days=5),
                             name,
-                            soma.workflow.constants.WORKFLOW_NOT_STARTED,
+                            soma_workflow.constants.WORKFLOW_NOT_STARTED,
                             workflow)
 
       (wf_id, resource_id) = _mainWindow.sw_widget.submit_workflow(date,

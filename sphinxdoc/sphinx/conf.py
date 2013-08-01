@@ -27,7 +27,7 @@ except Exception, e:
 import brainvisa.axon
 import brainvisa.config
 try:
-  from soma.workflow import version as swver
+  from soma_workflow import version as swver
   somaworkflow_version = swver.shortVersion
 except:
   somaworkflow_version = '2.3'

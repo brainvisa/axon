@@ -11,8 +11,8 @@ from brainvisa.data.neuroData import ListOf
 from brainvisa.data import neuroHierarchy
 from brainvisa.data.neuroDiskItems import DiskItem
 
-from soma.workflow.constants import *
-from soma.workflow.client import Job, FileTransfer, SharedResourcePath, Group, Workflow, Helper
+from soma_workflow.constants import *
+from soma_workflow.client import Job, FileTransfer, SharedResourcePath, Group, Workflow, Helper
 
 class ProcessToWorkflow( object ):
   JOB = 'j'

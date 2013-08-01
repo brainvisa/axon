@@ -5,7 +5,7 @@ Axon python API is used by BrainVISA software. It includes modules to manage Bra
 
 Axon libraries rely on :somabase:`soma.base <index.html>` and :somaqtgui:`soma.qtgui <index.html>` modules. 
 
-- It may use :somaworkflow:`soma.workflow <index.html>` to generate workflows for parallel execution on a cluster
+- It may use :somaworkflow:`soma_workflow <index.html>` to generate workflows for parallel execution on a cluster
 - It may also use of :py:mod:`soma.aims <soma.aims>` if available, for files conversion and identification.
 - and of :py:mod:`anatomist <anatomist>` if available, for viewers.
 
