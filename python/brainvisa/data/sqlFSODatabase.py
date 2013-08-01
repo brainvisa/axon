@@ -519,7 +519,7 @@ class SQLDatabase( Database ):
     livehistories = set() #already inserted diskItems
     scanned = 0
 
-    if len(infiles)>0 :
+    if len( infiles ) > 0:
       for bvprocfile in infiles:
         addit = False
         #scan bvproc
@@ -612,7 +612,7 @@ class SQLDatabase( Database ):
           pass
 
     #update the date of last_incremental_update
-    if not scanAllBvproc or lastIncrementalUpdate == "":
+    if not scanAllBvproc and len( infiles ) > 0:
       dateLastIncrementalUpdate = time.strftime('%Y-%m-%d-%H:%M',time.localtime())  
       params = neuroConfig.DatabaseSettings(self.name)
       params.expert_settings.lastIncrementalUpdate = dateLastIncrementalUpdate

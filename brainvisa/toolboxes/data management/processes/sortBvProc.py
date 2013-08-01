@@ -33,7 +33,7 @@
 
 from brainvisa.processes import *
 import sys, os
-#from gadfly.gfsocket import LEN
+
 
 
 name = 'BvProc sorting'
@@ -64,9 +64,9 @@ def execution(self, context):
   #sort bvproc from the history_book directory
   historyDirectory = os.path.join(str(self.database.name), "history_book")
   
-  if historyDirectory:  
+  if os.path.exists( historyDirectory ) :
     bvSessionDirectory = os.path.join( historyDirectory, "bvsession" )
-    if not os.path.isdir(bvSessionDirectory): 
+    if not os.path.isdir( bvSessionDirectory ) : 
       os.mkdir( bvSessionDirectory )
 
     for fileToCopy in os.listdir( historyDirectory ):
@@ -129,10 +129,10 @@ def execution(self, context):
     if len( itemToInsert ) != 0:
       context.write( "The sorting is done." )
     else: 
-      context.write( "No bvproc or bvsession found, please check the history book directory might be empty !" )
+      context.write( "No bvproc or bvsession found, please check if the history book directory is empty !" )
 
   else:
-    context.write( "The history_book directory is not found, please check if the history is activate for this database." )
+    context.write( "The history_book directory was not found, please check if the history option has been activated for this database." )
         
 
   

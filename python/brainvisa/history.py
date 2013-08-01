@@ -226,7 +226,7 @@ class HistoryBook( object ):
 
 
   @staticmethod
-  def storeProcessFinished(executionContext, process, event, historyBooksContext ):
+  def storeProcessFinished( executionContext, process, event, historyBooksContext ):
     for book, items in historyBooksContext.iteritems():
       historyBooksContext[book].get('processExcutionEvent').setLog( historyBooksContext[book].get('processExcutionEvent')._logItem )
       changedItems = []
