@@ -7,16 +7,16 @@
     <d name="parameters">
       <xhtml name="database">Select the database for which you want to update the organization of history files.</xhtml>
     </d>
-    <xhtml name="long"><u>Before the 4.4.0 version of BainVisa:</u>
+    <xhtml name="long"><u>Before the 4.4.0 version of BrainVisa:</u>
 all bvproc and bvsession files were stored in the same directory, which is called history_book.
 <br/><br/>
 <u>Since the 4.4.0 version of BrainVisa:</u>
-all bvproc and bvsession files are sorted by date in order to accelerate the database update  
-In fact, if you use the <b>incremental history</b> method (Data Management - Update databases process), instead to read all files stored into the database, 
-this method can select new data from the date of the last incremental update.  
+all bvproc and bvsession files are now sorted by date in order to accelerate the database update.
+In fact, if you use the <b>incremental history</b> method (Data Management - Update databases process), instead of to read all files stored into the database, 
+this method will select the new data by using the date of the last incremental update.  
 <br/><br/>
-<u>How does it work this process:</u>
-This process moves each bvproc file in a directory for which the name corresponds to the date and each bvsession into a global bvsession directory.</xhtml>
+<u>How does this process work:</u>
+this process moves each bvproc file in a directory for which the name corresponds to the date and each bvsession into a global bvsession directory.</xhtml>
   </d>
 </d>
 </minf>

@@ -174,6 +174,7 @@ class HistoryBook( object ):
       return ( None, None, None )
     historyBook = None
     if hasattr( neuroConfig, 'historyBookDirectory' ): #used for distributed executions
+      
       historyBook = neuroConfig.historyBookDirectory
       db = None
       dirBvsession = None
@@ -206,7 +207,6 @@ class HistoryBook( object ):
             historyBook = HistoryBook( historyBook, db, dirBvsession, compression=True )
             dHistoryBook = {}
             historyBooksContext.setdefault( historyBook, dHistoryBook )[ item.fullPath() ] = ( item, item.modificationHash() )
-
 
     event = None
     if historyBooksContext:

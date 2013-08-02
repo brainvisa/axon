@@ -3,12 +3,17 @@
 <d>
   <d name="fr">
     <xhtml name="short">Ce traitement permet de visualiser l'organisation des données dans les bases de données sélectionnées. Il permet aussi d'avoir des informations détaillées sur les fichiers enregistrés dans les bases. </xhtml>
+    <xhtml name="long"/>
     <d name="parameters">
     </d>
-    <xhtml name="long"/>
   </d>
   <d name="en">
-    <xhtml name="short">This process is useful to explore and manage databases. It shows data organization in selected databases and detailled information about files stored in databases. </xhtml>
+    <xhtml name="short">This process is useful to explore and manage databases. It shows data organization in selected databases and detailled information about files stored in databases. 
+<br/><br/>
+<font color="red">--  New in 4.4.0 version -- </font>
+<br/><br/>
+The organization of history has changed in order to accelerate the database update (incremental history method). Bvproc files are now organized by date.
+So to convert towards this new organization, please refer to the <a href="sortBvProc.html">Data Managment : BvProc sorting</a> process.</xhtml>
     <d name="parameters">
     </d>
     <xhtml name="long"><img src="../../images/database_browser.png" width="600"/>
