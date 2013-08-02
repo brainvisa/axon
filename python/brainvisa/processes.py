@@ -1115,7 +1115,7 @@ class Process( Parameterized ):
 
     result = []
     for i in xrange( requiredLength ):
-      p = self._copy( withparams=False )
+      p = self._copy( withparams=True ) # should copy only non-default params
       for argumentName in finalValues.keys():
         p._setImmutable( argumentName, True )
       for argumentName, values in finalValues.iteritems():
