@@ -38,6 +38,7 @@ class ProcessToWorkflow( object ):
     self._historyBooks = {}
     # execution node to group ID map
     self._nodeToId = {}
+    self._nodeHistoryBooks = set()
   
     self.brainvisa_cmd = [ 'python', '-m', 'brainvisa.axon.runprocess' ]
   
@@ -158,8 +159,8 @@ class ProcessToWorkflow( object ):
     '''
 
     #initialize the dict, because a directory history can have only one value, at less than ?
-    #?: in fact, self._historyBooks must be a string not a dict
-    self._historyBooks = {}
+    #?: in fact, self._historyBooks may be a string not a dict
+#    self._historyBooks = {}
     
     database = inputFileName.get( '_database' )
     if not database:
@@ -169,6 +170,7 @@ class ProcessToWorkflow( object ):
       return # will not record history for this.
     databaseUuid = neuroHierarchy.databases.database(database).uuid
     fileName = os.path.join( database, 'history_book' )
+    self._nodeHistoryBooks.add( fileName )
     if fileName in self._fileNames:
       fileId = self._historyBooks[ fileName ]
       if id not in self._iofiles[ fileId ][ 1 ]:
@@ -214,6 +216,7 @@ class ProcessToWorkflow( object ):
     last = previous
     for id in nodes:
       if id[ 0 ] in ( self.JOB, self.NATIVE_JOB ):
+        self._nodeHistoryBooks = set()
         (process, priority) = self._jobs[ id ]
         for name, type in process.signature.iteritems():
           if isinstance( type, WriteDiskItem ):
@@ -379,7 +382,7 @@ class ProcessToWorkflow( object ):
   def _create_job( self, depth, jobId, process, inGroup, priority ):
     
     command = list( self.brainvisa_cmd )
-    for hb in self._historyBooks:
+    for hb in self._nodeHistoryBooks:
       command += [ '--historyBook', hb ]
     command.append( process.id() )
     for name in process.signature.keys():
