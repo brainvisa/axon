@@ -156,6 +156,11 @@ class ProcessToWorkflow( object ):
     '''Appends the history_book directory as an output file transfer, for a
     given disk item, if it belongs to a database with history handling.
     '''
+
+    #initialize the dict, because a directory history can have only one value, at less than ?
+    #?: in fact, self._historyBooks must be a string not a dict
+    self._historyBooks = {}
+    
     database = inputFileName.get( '_database' )
     if not database:
       return # will not record history for this.
@@ -177,6 +182,7 @@ class ProcessToWorkflow( object ):
     self._files[fileId]=(fileName, full_paths, databaseUuid, database)
     self._fileNames[fileName]= fileId
     self._iofiles.setdefault( fileId, ( [], [] ) )[ 1 ].append( id )
+    
     self._historyBooks[ fileName ] = fileId
 
   def _registerJob( self, type, process, priority = None, inGroup = None ):
