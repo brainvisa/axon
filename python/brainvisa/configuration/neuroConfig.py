@@ -578,16 +578,9 @@ noToolBox = False
 ignoreValidation = False
 
 def convertCommandLineParameter(i):
-  if len(i) > 0 and ( i[0] in '[({' or i in 'None', 'True', 'False' ):
+  if len(i) > 0 and ( i[0] in '[({' or i in ( 'None', 'True', 'False' ) ):
     try:
       res=eval(i)
-      #if not isinstance( res, bool ) and \
-          #( isinstance( res, int ) or isinstance( res, float ) ):
-        #res = i # keep string value for numbers to avoid precision / format loss
-                ## and in case we really want a string
-      #elif type(res) in types.StringTypes:
-        #print 'string:', i
-        #res = i # keep real string in their original shape, including quotes
     except:
       res=i
   else:
