@@ -56,6 +56,8 @@ from brainvisa.processes import defaultContext
 
 
 
+
+
 minfHistory = 'brainvisa-history_2.0'
 
 
@@ -70,6 +72,7 @@ def sessionId( database ):
   global _sessionsLock
   #_sessionsLock.lock()
   if database is None:
+    #return Uuid()
     return neuroConfig.sessionID
   _sessionsLock.acquire()
   try:
@@ -128,7 +131,8 @@ class HistoryBook( object ):
         if self.__database is not None:
           bvsessionEvent.setCurrentBrainVISASession( sessionId( self.__database.name ) )
         else: # no database
-          bvsessionEvent.setCurrentBrainVISASession( sessionId( None ) )
+          bvsessionEvent.setCurrentBrainVISASession( sessionId( self.__dirBvsession ) )
+          #bvsessionEvent.setCurrentBrainVISASession( sessionId( None ) )
         self.storeEvent( bvsessionEvent )
     if compression is None:
       compression = self.__compression
@@ -174,7 +178,6 @@ class HistoryBook( object ):
       return ( None, None, None )
     historyBook = None
     if hasattr( neuroConfig, 'historyBookDirectory' ): #used for distributed executions
-      
       historyBook = neuroConfig.historyBookDirectory
       db = None
       dirBvsession = None
@@ -214,8 +217,10 @@ class HistoryBook( object ):
         event = executionContext.createProcessExecutionEvent()
         if book.__database is not None:
           event.setBvsession(sessionId( book.__database.name ) )
-        else: # no database
-          event.setBvsession(sessionId( None ) )
+        else: # no database, use the dirBvsession instead of the database name
+          #self.__dirBvsession
+          #event.setBvsession(sessionId( None ) )
+          event.setBvsession(sessionId( book.__dirBvsession ) )
         dirBook = historyBooksContext.get(book).copy()
         dirBook [ "processExcutionEvent"] = event
         historyBooksContext [ book ] = dirBook 
@@ -240,10 +245,16 @@ class HistoryBook( object ):
       book.storeEvent( historyBooksContext[book].get('processExcutionEvent'), storeBvproc = True )
       #update the the lastHistoricalEvent of each diskitems
       for item in changedItems:
-        try:
-          item.setMinf( 'lastHistoricalEvent', historyBooksContext[book].get('processExcutionEvent').uuid )
-        except:
-          neuroException.showException()
+        #need to test if the path of the item is compatible with the book (coming from the same database) otherwise 
+        #we could set a wrong uuid for lasthistoricalEvent 
+        head, tail = os.path.split(book.__dir)
+        listToCompare = [head, str(item)]
+        compare = os.path.commonprefix(listToCompare)
+        if ( tail == "history_book" and compare == head ):
+          try:
+            item.setMinf( 'lastHistoricalEvent', historyBooksContext[book].get('processExcutionEvent').uuid )
+          except:
+            neuroException.showException()
 
 
 
@@ -367,10 +378,12 @@ class BrainVISASessionEvent( HistoricalEvent ):
   
   def setCurrentBrainVISASession( self, uuidDb ):
     self.content[ 'version' ] = neuroConfig.versionString()
-    if uuidDb is not None:
-      self.uuid = uuidDb
-    else:
-      self.uuid = neuroConfig.sessionID
+    self.uuid = uuidDb
+#    if uuidDb is not None:
+#      self.uuid = uuidDb
+#    else:
+#      self.uuid = Uuid()
+      #self.uuid = neuroConfig.sessionID
     if neuroConfig.brainvisaSessionLogItem:
       neuroConfig.brainvisaSessionLogItem._expand({})
       self.content[ 'log' ] = [ neuroConfig.brainvisaSessionLogItem ]
