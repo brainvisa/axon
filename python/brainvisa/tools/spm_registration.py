@@ -96,4 +96,22 @@ matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.wrap = %s;
 matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.prefix = %s;
 """ % ( vox, interp, wrap, prefix ))
   mat_file.close()
-  return mat_file.name 
+  return mat_file.name
+  
+def writeNormalizeEstimationMatFile(spmJobFile, src, template,
+                                    wtsrc, weight, smosrc, smoref, regtype, cutoff, nits, reg):
+    matFile = open(spmJobFile, 'w')
+    matFile.write("""
+matlabbatch{1}.spm.spatial.normalise.est.subj.source = {'%s,1'};
+matlabbatch{1}.spm.spatial.normalise.est.subj.wtsrc = '%s';
+matlabbatch{1}.spm.spatial.normalise.est.eoptions.template = {'%s,1'};
+matlabbatch{1}.spm.spatial.normalise.est.eoptions.weight = '%s';
+matlabbatch{1}.spm.spatial.normalise.est.eoptions.smosrc = %s;
+matlabbatch{1}.spm.spatial.normalise.est.eoptions.smoref = %s;
+matlabbatch{1}.spm.spatial.normalise.est.eoptions.regtype = '%s';
+matlabbatch{1}.spm.spatial.normalise.est.eoptions.cutoff = %s;
+matlabbatch{1}.spm.spatial.normalise.est.eoptions.nits = %s;
+matlabbatch{1}.spm.spatial.normalise.est.eoptions.reg = %s;
+""" % (src, wtsrc, template, weight, smosrc, smoref, regtype, cutoff, nits, reg))
+    matFile.close()
+    return matFile.name
