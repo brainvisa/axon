@@ -5,7 +5,7 @@ import datetime as dt
 import locale
 import os
 import shutil
-
+import re
 
 def moveSpmOutFiles(inDir, outPath, spmPrefixes=['w'], outDir=None, ext='.nii'):
   if not isinstance( spmPrefixes, list):
@@ -43,6 +43,43 @@ def movePath(srcPath, dstPath):
     shutil.move(srcPath, dstPath) # shutil.move is better than os.rename, because os.rename failed if src and dst are not on the same filesystem
   if (os.path.exists(srcPath)):
     os.remove(srcPath)
+
+def merge_mat_files(mergedMatFile, *matFiles):
+    """
+    Create a .m file from a set of .m files
+    
+    :param string mergedMatFile
+        The .m file containing the merge result
+        
+    :param set *matFiles
+        The .m files to merge
+        
+    :returns:
+        True if the merge succeeds and False otherwise
+    """
+    mergedMatFileFo = open(mergedMatFile, 'w')
+    moduleNum = 1
+    for f in matFiles:
+        currentNum = None
+        previousNum = None
+        for l in open(f, 'r'):
+            if not l.strip():
+                continue
+            try:
+                currentNum = re.match(r"matlabbatch\{([0-9]*)\}(.*)",l).group(1)
+            except:
+                pass            
+            if previousNum and currentNum != previousNum:
+                moduleNum += 1
+            previousNum = currentNum
+            try:
+                mergedMatFileFo.write(re.sub(r"matlabbatch{([0-9]*)}", "matlabbatch{" + str(moduleNum) + "}", l))
+            except:
+                return False
+        moduleNum += 1
+    mergedMatFileFo.close()
+    
+    return True
 
 def spm_today():  
   now = dt.datetime.now()
