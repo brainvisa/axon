@@ -908,9 +908,15 @@ class DiskItem(QObject):
     if saveMinf:
       minf = self.minfFileName()
       if os.path.exists( minf ):
-        os.remove( minf )
-  
-  
+        try:
+          os.remove( minf )
+        except OSError:
+          # maybe the file has already been removed
+          if os.path.exists( minf ):
+            # if not, really trigger an error
+            raise
+
+
   def _readMinf( self ):
     """
     Reads the minf file and returns its content.
