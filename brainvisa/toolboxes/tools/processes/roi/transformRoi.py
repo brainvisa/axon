@@ -68,12 +68,6 @@ def findExtraFile(filename, type):
 
 def initialization(self):
     self.setOptional( 'outputRoi' )
-    
-    
-    self.images = ["/home/jmartini/projects/pet/segmentation/data/single_subj_T1.nii"]
-    self.inputRoi = ["/home/jmartini/projects/pet/segmentation/data/atlas/boom.arg"]
-    self.outputRoi = ["/home/jmartini/projects/pet/segmentation/data/atlas/boom-trsf.arg"]
-
 
 def execution(self, context):
     objs = transform_roi(self.images,
