@@ -102,7 +102,7 @@ def add_SegmentGrey_process(eNode, analysis):
 def add_fdgSegmentNewSeg_process(eNode, analysis):
   eNode.addChild('newSeg', ProcessExecutionNode('segment_SPMNewSeg', optional=True, selected=True))
   eNode.addDoubleLink('MRI_Nat_reseted', 'newSeg.MRI_Nat')
-  eNode.addDoubleLink('MRI_Nat_grey_newSeg', 'newSeg.grey_nat')
+  eNode.addDoubleLink('MRI_Nat_grey_newSeg', 'newSeg.grey_native')
   eNode.newSeg.c_write = '[0 1]' # save bias corrected
 
 def add_SegmentVBM_process(eNode, analysis):

@@ -123,6 +123,7 @@ signature = Signature(
 )
 
 def initialization(self):
+  # WARNING please inform nuclear imaging team (morphologist team, and maybe others...) before changing this value
 
   self.setOptional('biasCorrected')
 
@@ -132,8 +133,9 @@ def initialization(self):
   seg.initializeUnifiedSegmentationParameters_usingSPM8DefaultValues(self)
   generateInNativeSpace = """[1 0]"""
   NOgeneration = """[0 0]"""
+  Unmodulated = """[1 0]"""
   self.grey_native_space = generateInNativeSpace
-  self.grey_warped = NOgeneration
+  self.grey_warped = Unmodulated
   self.white_native_space = generateInNativeSpace
   self.white_warped = NOgeneration
   self.csf_native_space = generateInNativeSpace

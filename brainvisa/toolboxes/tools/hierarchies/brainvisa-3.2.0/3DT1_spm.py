@@ -78,6 +78,8 @@ insert('{center}/{subject}/t1mri/{acquisition}/',
 
 # probability map in mni space
 
+# WARNING please inform nuclear imaging team (morphologist team, and maybe others...) before changing this hierarchies
+
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
   '<subject>_Mni_greyProba', SetType('T1 MRI Mni GreyProba'), SetWeakAttr('modulated', 'no')) 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',

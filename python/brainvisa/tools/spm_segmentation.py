@@ -2,6 +2,7 @@
 from brainvisa.tools.spm_run import getSpm8Path 
     
 def initializeUnifiedSegmentationParameters_usingSPM8DefaultValues(process):
+  # WARNING please inform nuclear imaging team (morphologist team, and maybe others...) before changing this value
   process.write_field = """[1 0]"""
   process.c_biasreg = """0.0001""" 
   process.c_biasfwhm = """60""" 
