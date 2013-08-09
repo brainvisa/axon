@@ -58,7 +58,7 @@ from brainvisa.data.fileSystemOntology import FileSystemOntology, SetContent
 import brainvisa.processes
 from brainvisa.configuration import neuroConfig
 from brainvisa.data import neuroDiskItems
-from brainvisa.processing.neuroException import showWarning, HTMLMessage
+from brainvisa.processing.neuroException import showWarning, HTMLMessage, showException
 from brainvisa.data.neuroDiskItems import  DiskItem, getFormat, getFormats, Format, FormatSeries, File, Directory, getAllFormats, MinfFormat, getDiskItemType
 from brainvisa.data.patterns import DictPattern
 from brainvisa.data.sql import mangleSQL, unmangleSQL
@@ -156,8 +156,12 @@ class Database( object ):
             if dotIndex < 0:
               break
             patterns.append( p[ dotIndex + 1 : ] )
-          Database._all_formats.newFormat( format.name, patterns, isinstance( format, MinfFormat ) )
-          formatsAlreadyDefined.add( format.name )
+          try:
+            Database._all_formats.newFormat( format.name, patterns, isinstance( format, MinfFormat ) )
+            formatsAlreadyDefined.add( format.name )
+          except Exception, e:
+            print e
+            showException()
     return Database._all_formats
   
   
@@ -351,7 +355,12 @@ class SQLDatabase( Database ):
         if rule.formats:
           for format in rule.formats:
             typeFormats = self._formatsByTypeName.setdefault( type.name, [] )
-            formatName = self.formats.getFormat( format.name, format ).name
+            try:
+              formatName = self.formats.getFormat( format.name, format ).name
+	    except Exception, e:
+	      print '!!ERROR!! SQLDatabase: getFormat failed:', format.name
+              print 'Database', directory, 'will not be complete and fully working !'
+	      continue
             if formatName not in typeFormats:
               typeFormats.append( formatName )
       for lopa, lopaRules in rulesByLOPA.iteritems():
