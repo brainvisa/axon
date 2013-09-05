@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 include( 'builtin' )
 
-FileType('Dicoms T1 MRI', 'T1 MRI')
+FileType('Dicoms T1 MRI', 'Any Type') # does not work with T1 MRI or 4D volume instead of Any Type
 FileType('T1 MRI Nat reseted', 'T1 MRI') # original name was reseted Nat T1 MRI
 FileType('T1 MRI Bias Corrected', 'T1 MRI')
 FileType('T1 MRI Mni', 'T1 MRI')
