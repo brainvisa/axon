@@ -118,6 +118,7 @@ class TransformRoi():
         self.symPlaneChangeTransmitter = SymPlaneChangeTransmitter()
     
     def display(self):
+        self._temporaryObjects = []
         self.a = ana.Anatomist( '-b' )
         self._addTrsfAction()
         self._loadData()
@@ -281,7 +282,7 @@ class TransformRoi():
                                self._resetClicked)
         QtCore.QObject.connect(self._mainDiag.cancelBt,
                                QtCore.SIGNAL('clicked()'),
-                               self._mainDiag.accept)
+                               self._accept)
         QtCore.QObject.connect(self._mainDiag.validBt,
                                QtCore.SIGNAL('clicked()'),
                                self._validClicked)
@@ -571,9 +572,11 @@ class TransformRoi():
             label = 1
             for k, v in labels.iteritems():
                 imageFile = mktemp( suffix='.nii' )
+                self._addTemporaryObjects(imageFile)
                 aims.write(self._getImageFromRoi(roi, selectedLabel=label), imageFile)
                 images.append(imageFile)
                 trsfTmp = mktemp( suffix='.trm' )
+                self._addTemporaryObjects(trsfTmp)
                 aims.write(self._previousMotions[self._roiDict[roi]["sub_roi"][k]["meshes"][0]], trsfTmp)
                 check_call(['AimsResample', '-i', imageFile, '-o', imageFile, '-m', trsfTmp, '-t', 'n'])
                 label += 1
@@ -585,7 +588,8 @@ class TransformRoi():
                 currArr = np.array(currImg, copy=False)
                 firstArr[:] |= currArr[:]
             
-            imageFile = mktemp( suffix='.nii' )    
+            imageFile = mktemp( suffix='.nii' )
+            self._addTemporaryObjects(imageFile)    
             aims.write(firstImg, imageFile)
             check_call(['AimsGraphConvert', '-i', imageFile, '--roi', '--bucket', '-o', self._outputRoi[roi].fullPath()])
             check_call(['AimsGraphMesh', '-i', self._outputRoi[roi].fullPath(), '-o', self._outputRoi[roi].fullPath()])
@@ -625,7 +629,7 @@ class TransformRoi():
             if True in v:
                 return
         
-        self._mainDiag.accept()
+        self._accept()
 
     def _checkMeshValidity(self, roi):
         meshes = []
@@ -742,9 +746,11 @@ class TransformRoi():
             label = 1
             for k, v in labels.iteritems():
                 imageFile = mktemp( suffix='.nii' )
+                self._addTemporaryObjects(imageFile)
                 aims.write(self._getImageFromRoi(roi, selectedLabel=label), imageFile)
                 label += 1
                 tmpDir = mkdtemp()
+                self._addTemporaryObjects(tmpDir)
                 check_call(['AimsMesh', '-i', imageFile,
                                         '-o', os.path.join( tmpDir, "roi" ),
                                         '--smooth'])
@@ -949,7 +955,24 @@ class TransformRoi():
     
     def _getMotion(self, transformation):
         return aims.Motion(np.asarray(transformation).flatten())
+    
+    def _addTemporaryObjects(self, obj):
+        self._temporaryObjects.append(obj)
+    
+    def _cleanTemporaryObjects(self):
+        for o in self._temporaryObjects:
+            try:
+                if os.path.isdir(o):
+                    shutil.rmtree(o)
+                else:
+                    os.remove(o)
+            except:
+                pass
+                
 
+    def _accept(self):
+        self._cleanTemporaryObjects()
+        self._mainDiag.accept()
 
 class TrsfAction(anatomist.Action):
     _prevX = 0
