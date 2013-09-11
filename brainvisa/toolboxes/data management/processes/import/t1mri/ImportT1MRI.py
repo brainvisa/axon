@@ -36,7 +36,7 @@ from brainvisa import shelltools
 import shfjGlobals, stat
 import registration
 
-from corist.image_importation import Importer
+from brainvisa.tools.data_management.image_importation import Importer
 
 name = 'Import T1 MRI'
 roles = ('importer',)
