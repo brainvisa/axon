@@ -245,7 +245,11 @@ class DisplayTitledGrid():
     a = ana.Anatomist()
     anaObjRow = self.anatomistObjectList[rowIndex]
     anaWinRow = []
-    sizefac = a.config()[ 'windowSizeFactor' ]
+    anatomistConfig = a.config()
+    isWindowSizeFactorExistInConfig = False
+    if(anatomistConfig.has_key('windowSizeFactor')):
+      sizefac = a.config()['windowSizeFactor'  ]
+      isWindowSizeFactorExistInConfig=True
     a.config()[ 'windowSizeFactor' ] = 1.
     for c in range(0, len(anaObjRow)):
       anaObj = anaObjRow[c]
@@ -260,7 +264,8 @@ class DisplayTitledGrid():
           mw.gridLayout.addWidget(frame, rowIndex + 1, c + 1)
       else:
         anaWinRow.append(None)
-    a.config()[ 'windowSizeFactor' ] = sizefac
+    if(isWindowSizeFactorExistInConfig):
+      a.config()[ 'windowSizeFactor' ] = sizefac
     mw.anaWinMatrix.append(anaWinRow)
     return mw.anaWinMatrix
 
