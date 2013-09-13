@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -46,6 +47,12 @@ signature = Signature(
   'removeSource', Boolean(),
   'ascii', Boolean(),
   'voxelType', Choice( ( '<Same as input>', None), 'U8', 'S8', 'U16', 'S16', 'U32', 'S32', 'FLOAT', 'DOUBLE', 'RGB', 'RGBA' ),
+  'rescaleDynamic', Boolean(),
+  'useInputTypeLimits', Boolean(),
+  'inputDynamicMin', Float(),
+  'inputDynamicMax', Float(),
+  'outputDynamicMin', Float(),
+  'outputDynamicMax', Float(),
 )
 
 def findAppropriateFormat( values, proc ):
@@ -58,11 +65,29 @@ def findAppropriateFormat( values, proc ):
 def initialization( self ):
   self.linkParameters( 'write', [ 'read', 'preferedFormat' ], findAppropriateFormat )
   self.preferedFormat = None
-  self.setOptional( 'preferedFormat', 'voxelType' )
+  self.setOptional( 'preferedFormat', 
+                    'voxelType',
+                    'inputDynamicMin',
+                    'inputDynamicMax',
+                    'outputDynamicMin',
+                    'outputDynamicMax' )
   self.removeSource = 0
   self.ascii = 0
   self.voxelType = None
+  self.rescaleDynamic = False
+  self.useInputTypeLimits = False
+  self.inputDynamicMin = None
+  self.inputDynamicMax = None
+  self.outputDynamicMin = None
+  self.outputDynamicMax = None
   
+  self.signature[ 'rescaleDynamic' ].userLevel = 2
+  self.signature[ 'useInputTypeLimits' ].userLevel = 2
+  self.signature[ 'inputDynamicMin' ].userLevel = 2
+  self.signature[ 'inputDynamicMax' ].userLevel = 2
+  self.signature[ 'outputDynamicMin' ].userLevel = 2
+  self.signature[ 'outputDynamicMax' ].userLevel = 2
+
 
 def execution( self, context ):
   convert = 0
@@ -74,6 +99,24 @@ def execution( self, context ):
     convert = 1
     command += [ '-t', self.voxelType ]
 
+  if self.rescaleDynamic:
+    command += [ '-r' ]
+    
+    if self.useInputTypeLimits :
+      command += [ '--itypelimits' ]
+    
+    if self.inputDynamicMin != None :
+      command += [ '--imin', self.inputDynamicMin ]
+    
+    if self.inputDynamicMax != None :
+      command += [ '--imax', self.inputDynamicMax ]
+    
+    if self.outputDynamicMin != None :
+      command += [ '--omin', self.outputDynamicMin ]
+    
+    if self.outputDynamicMax != None :
+      command += [ '--omax', self.outputDynamicMax ]
+      
   if apply( context.system, command ):
     raise Exception( _t_('Error while converting <em>%s</em> to <em>%s</em>') % \
                          ( command[ 2 ], command[ 4 ] ) )
