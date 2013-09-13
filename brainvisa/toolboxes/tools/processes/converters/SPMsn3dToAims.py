@@ -66,9 +66,9 @@ signature = Signature(
   'target', Choice( 'MNI template', 'unspecified template',
     'normalized_volume in AIMS orientation' ),
   'source_volume', ReadDiskItem( '4D Volume', 
-     shfjGlobals.aimsVolumeFormats ),
+     [ 'NIFTI-1 image', 'SPM image' ] ),
   'normalized_volume', ReadDiskItem( '4D Volume', 
-     shfjGlobals.aimsVolumeFormats, 
+     [ 'NIFTI-1 image', 'SPM image' ],
      requiredAttributes = { 'referential' : \
       str( registration.talairachMNIReferentialId ) } ),
   'removeSource', Boolean(),
