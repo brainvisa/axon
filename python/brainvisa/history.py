@@ -177,9 +177,9 @@ class HistoryBook( object ):
     if item is None:
       return ( None, None, None )
     historyBook = None
+    db = None
     if hasattr( neuroConfig, 'historyBookDirectory' ): #used for distributed executions
       historyBook = neuroConfig.historyBookDirectory
-      db = None
       dirBvsession = None
     if not historyBook:
       database = item.getHierarchy( '_database' )
