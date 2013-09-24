@@ -91,10 +91,15 @@ def initialization(self):
 
 def execution(self, context):
 
-  img = [ self.img1, self.img2, self.img3, self.img4, self.img5, self.img6, self.img7, self.img8, self.img9, self.img10, self.img11, self.img12 ]
+  images = [ self.img1, self.img2, self.img3, self.img4, self.img5, self.img6, self.img7, self.img8, self.img9, self.img10, self.img11, self.img12 ]
+  invalidImages = []
+  for i in range(len(images)):
+    img = images[i]
+    if (img is not None and os.path.exists(img.fullPath()) == False):
+      images[i]=None
 
   kwproc = {
-    'images' : img,
+    'images' : images,
     'overlaid_images' : self.overlaid_images,
     'windowTitle' : self.windowTitle,
     'rowTitles' : self.rowTitles,
