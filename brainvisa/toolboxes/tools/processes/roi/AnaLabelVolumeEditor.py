@@ -58,7 +58,8 @@ def initialization( self ):
   
 def execution( self, context ):
   a = anatomist.Anatomist()
-  hie = a.loadObject( self.pipeline_mask_nomenclature )
+  if self.pipeline_mask_nomenclature is not None:
+    hie = a.loadObject( self.pipeline_mask_nomenclature )
 
   context.write( 'background:', self.background_label )
   if self.background_label != 'minimum':
