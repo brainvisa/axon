@@ -875,38 +875,44 @@ class DisplayResultsFromSPM(object):
       coordGrid = _readFile(gridFile)
       coordMask = _readFile(maskFile)
 
-      self._createBrainGrid(context, coordGrid, coordMask)
-      tmpAx, tmpSa, tmpFr = self._createBrainMIP(context)
+      glassBrainSize = (91, 109, 91) # (121, 145, 121) == shape de resultMap
+      
+      self._createBrainGrid(context, coordGrid, coordMask, glassBrainSize=glassBrainSize)
+      tmpAx, tmpSa, tmpFr = self._createBrainMIP(context, glassBrainSize=glassBrainSize)
   
       self._createFusionGridWithMIP(tmpAx, tmpSa, tmpFr)
   
-  def _createBrainGrid(self, context, coordGrid, coordMask):
+  def _createBrainGrid(self, context, coordGrid, coordMask, glassBrainSize = (91, 109, 91)):
       mipMat = self.mipMat 
       if not mipMat:
           return
           
-      imgAx = aims.Volume_FLOAT(91, 109)
-      imgSa = aims.Volume_FLOAT(109, 91)
-      imgFr = aims.Volume_FLOAT(91, 91)
+      imgAx = aims.Volume_FLOAT(glassBrainSize[0], glassBrainSize[1])
+      imgSa = aims.Volume_FLOAT(glassBrainSize[1], glassBrainSize[2])
+      imgFr = aims.Volume_FLOAT(glassBrainSize[0], glassBrainSize[2])
 
       arrAx = np.array(imgAx, copy=False)
       arrSa = np.array(imgSa, copy=False)
       arrFr = np.array(imgFr, copy=False)
-  
+      
+      YMax = 198
+      XMax = 157
+      scale = 0.5
+      
       gridValue = 2
       for i in coordGrid:
-          if i[0] <= 198:
-              if i[1] <= 157:
-                  curr_x = math.floor(i[1] * 0.5)
-                  curr_y = math.floor(i[0] * 0.5)
+          if (i[0] <= YMax):
+              if (i[1] <= XMax):
+                  curr_x = math.floor(i[1] * scale)
+                  curr_y = math.floor(i[0] * scale)
                   arrAx[ curr_x, curr_y ] = gridValue
               else:
-                  curr_x = math.floor(i[0] * 0.5)
-                  curr_y = math.floor((i[1] - 182) * 0.5)
+                  curr_x = math.floor(i[0] * scale)
+                  curr_y = math.floor((i[1] - (glassBrainSize[2]*2)) * scale)
                   arrSa[ curr_x, curr_y ] = gridValue
           else:
-              curr_x = math.floor((i[0] - 217) * 0.5)
-              curr_y = math.floor((i[1] - 182) * 0.5)
+              curr_x = math.floor((i[0] - (glassBrainSize[1]*2 -1)) * scale)
+              curr_y = math.floor((i[1] - (glassBrainSize[2]*2)) * scale)
               arrFr[ curr_x, curr_y ] = gridValue
   
       orientations = [ "axial", "coronal", "sagittal" ]
@@ -921,36 +927,34 @@ class DisplayResultsFromSPM(object):
               "sagittal" : (63, 36)
               }
       for k in orientations:
-          for i in xrange(arrays[ k ].shape[0]):
-              for j in xrange(arrays[ k ].shape[1]):
+          for i in xrange(1, arrays[ k ].shape[0]-1):
+              for j in xrange(1, arrays[ k ].shape[1]-1):
                   if i == acpc[ k ][ 0 ]:
                       continue
                   if j == acpc[ k ][ 1 ]:
                       continue
-                  if i < arrays[ k ].shape[0] and i > 0 and \
-                     arrays[ k ][i][j] == gridValue and arrays[ k ][i - 1][j] == gridValue and arrays[ k ][i + 1][j] == gridValue:
+                  if arrays[ k ][i][j] == gridValue and arrays[ k ][i - 1][j] == gridValue and arrays[ k ][i + 1][j] == gridValue:
                       arrays[ k ][i][j] = 0
-                  if j < arrays[ k ].shape[1] and j > 0 and \
-                     arrays[ k ][i][j] == gridValue and arrays[ k ][i][j - 1] == gridValue and arrays[ k ][i][j + 1] == gridValue:
+                  if arrays[ k ][i][j] == gridValue and arrays[ k ][i][j - 1] == gridValue and arrays[ k ][i][j + 1] == gridValue:
                       arrays[ k ][i][j] = 0
                       
                       
                       
       for i in coordMask:
-          if i[0] <= 198:
-              if i[1] <= 157:
-                  curr_x = math.floor(i[1] * 0.5)
-                  curr_y = math.floor(i[0] * 0.5)
+          if i[0] <= YMax:
+              if i[1] <= XMax:
+                  curr_x = math.floor(i[1] * scale)
+                  curr_y = math.floor(i[0] * scale)
                   if arrAx[ curr_x, curr_y ] != gridValue:
                       arrAx[ curr_x, curr_y ] = 1
               else:
-                  curr_x = math.floor(i[0] * 0.5)
-                  curr_y = math.floor((i[1] - 182) * 0.5)
+                  curr_x = math.floor(i[0] * scale)
+                  curr_y = math.floor((i[1] - (glassBrainSize[2]*2)) * scale)
                   if arrSa[ curr_x, curr_y ] != gridValue:
                       arrSa[ curr_x, curr_y ] = 1
           else:
-              curr_x = math.floor((i[0] - 217) * 0.5)
-              curr_y = math.floor((i[1] - 182) * 0.5)
+              curr_x = math.floor((i[0] - (glassBrainSize[1]*2 -1)) * scale)
+              curr_y = math.floor((i[1] - (glassBrainSize[2]*2)) * scale)
               if arrFr[ curr_x, curr_y ] != gridValue:
                   arrFr[ curr_x, curr_y ] = 1
                     
@@ -972,13 +976,18 @@ class DisplayResultsFromSPM(object):
                             '-o', i.fullPath(),
                             '-m', 'XXYY')
 
-  def _createBrainMIP(self, context, neurologicDisplay = False):
+  def _createBrainMIP(self, context, neurologicDisplay = False, glassBrainSize = (91, 109, 91)):
       img = aims.read(self.resultMap)
       arr = np.array(img, copy=False)
       # Get shape
-      sh = arr.shape
+      sh = arr.shape 
+      if(sh[0] > glassBrainSize[0]):
+        errMsg ='shape of resultMap : '+str(sh)+" expected : (91, 109, 91). Glassbrain not available" 
+        context.error(errMsg)
+        print errMsg
+                    
       # Glass brain axial
-      imgAx = aims.Volume_FLOAT(91, 109)
+      imgAx = aims.Volume_FLOAT(glassBrainSize[0], glassBrainSize[1])
       imgAx.fill(0)
       arrAx = np.array(imgAx, copy=False)
       for i in xrange(sh[0]):
@@ -987,16 +996,16 @@ class DisplayResultsFromSPM(object):
       tmpAx = context.temporary('NIFTI-1 image')
       aims.write(imgAx, tmpAx.fullPath())
       # Glass brain sagittal
-      imgSa = aims.Volume_FLOAT(109, 91)
+      imgSa = aims.Volume_FLOAT(glassBrainSize[1], glassBrainSize[2])
       imgSa.fill(0)
       arrSa = np.array(imgSa, copy=False)
       for i in xrange(sh[1]):
-          for j in xrange(sh[0]):
+          for j in xrange(sh[2]):
               arrSa[ i, j ] = np.nanmax(arr[ :, i, j, : ])
       tmpSa = context.temporary('NIFTI-1 image')
       aims.write(imgSa, tmpSa.fullPath())
       # Glass brain frontal
-      imgFr = aims.Volume_FLOAT(91, 91)
+      imgFr = aims.Volume_FLOAT(glassBrainSize[0], glassBrainSize[2])
       imgFr.fill(0)
       arrFr = np.array(imgFr, copy=False)
       for i in xrange(sh[0]):
