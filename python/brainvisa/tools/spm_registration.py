@@ -1,7 +1,7 @@
 
 #------------------------------------------------------------------------------
 
-def ititializeCoregisterParameters_withSPM8DefaultValuesforPET(process):
+def ititializeCoregisterParameters_withSPM8DefaultValues(process):
   process.others = []
   process.cost_fun = """'mi'"""
   process.sep = """[4 2]"""
@@ -43,7 +43,7 @@ matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.prefix = %s;
 
 #------------------------------------------------------------------------------
 
-def initializeNormalizeParameters_usingSPM8DefaultValuesForPET(process):
+def initializeNormalizeParameters_usingSPM8DefaultValues(process):
   process.wtsrc = """''"""
   process.weight = """''"""
   process.smosrc = """8"""
@@ -54,8 +54,8 @@ def initializeNormalizeParameters_usingSPM8DefaultValuesForPET(process):
   process.nits = """16"""
   process.reg = """1"""
   process.preserve = """0"""
-  process.bb = """[-90 -126 -72  
-                                                                        90 90 108]"""
+  process.bb = """[-78 -112 -50  
+                                                                        78 76 85]"""
   process.vox = """[2 2 2]"""# bouding box and voxel size value used for PET modality
   process.interp = """1"""
   process.wrap = """[0 0 0]"""

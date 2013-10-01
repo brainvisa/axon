@@ -111,7 +111,7 @@ def initialization(self):
   self.spmJobName = 'vbmSegment'
   self.analysis = self.signature["analysis"].findValue({'analysis':'VBMSegmentation'})
   self.MRI_Mni_tpmSeg = self.signature["MRI_Mni_tpmSeg"].findValue({})
-  seg.initializeVBMSegmentationParameters_usingSPM8DefaultValuesForPET(self) 
+  seg.initializeVBMSegmentationParameters_usingSPM8DefaultValues(self) 
   generate = """1"""
   NOgeneration = """0"""
   self.grey_native = generate

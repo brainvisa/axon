@@ -101,7 +101,7 @@ def initialization(self):
   self.spmJobName = 'segment'
   self.analysis = self.signature["analysis"].findValue({'analysis':'SpmSegmentation'})
   self.MRI_Mni_tpmSeg = self.signature["MRI_Mni_tpmSeg"].findValue({})
-  seg.initializeSegmentationParameters_usingSPM8DefaultValuesForPET(self)  
+  seg.initializeSegmentationParameters_usingSPM8DefaultValues(self)  
   nativeSpace= """[0 0 1]"""
   NativeAndUnmodulatedNormalised= """[0 1 1]"""
   self.GM = NativeAndUnmodulatedNormalised

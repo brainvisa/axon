@@ -97,7 +97,7 @@ matlabbatch{1}.spm.tools.preproc8.warp.write = %s;
   mat_file.close()
   return mat_file.name
 
-def initializeSegmentationParameters_usingSPM8DefaultValuesForPET(process):
+def initializeSegmentationParameters_usingSPM8DefaultValues(process):
   dontCleanUp = """0"""
   process.cleanup = dontCleanUp
   process.ngaus = """[2
@@ -155,7 +155,7 @@ matlabbatch{1}.spm.spatial.preproc.opts.msk = %s;
   mat_file.close()
   return mat_file.name
 
-def initializeVBMSegmentationParameters_usingSPM8DefaultValuesForPET(process):
+def initializeVBMSegmentationParameters_usingSPM8DefaultValues(process):
   process.ngaus = """[2 2 2 3 4 2]"""
   process.biasreg = """0.0001"""
   process.biasfwhm = """60"""

@@ -33,7 +33,7 @@
 
 from brainvisa.processes import *
 from brainvisa.tools.spm_registration import \
-  ititializeCoregisterParameters_withSPM8DefaultValuesforPET, \
+  ititializeCoregisterParameters_withSPM8DefaultValues, \
   writeCoregisteredMatFile
 import brainvisa.tools.spm_run as spm
 from brainvisa.tools.spm_utils import moveSpmOutFiles, removeNan
@@ -75,7 +75,7 @@ signature = Signature(
 
 def initialization(self):
   self.setOptional('others', 'spmSourceWarped', 'spmOthersWarped', 'sourceWarped', 'othersWarped')
-  ititializeCoregisterParameters_withSPM8DefaultValuesforPET(self) 
+  ititializeCoregisterParameters_withSPM8DefaultValues(self) 
   self.prefix = """'spmCoregister_'"""
   
   self.addLink('spmSourceWarped', 'source', self.update_spmSourceWarped)

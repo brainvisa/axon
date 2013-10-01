@@ -33,7 +33,7 @@
 
 from brainvisa.processes import *
 from brainvisa.tools.spm_registration import writeNormalizeMatFile, \
-  initializeNormalizeParameters_usingSPM8DefaultValuesForPET
+  initializeNormalizeParameters_usingSPM8DefaultValues
 from brainvisa.tools.spm_utils import spm_today
 import brainvisa.tools.spm_run as spm
 from brainvisa.tools.spm_utils import moveSpmOutFiles, removeNan
@@ -80,7 +80,7 @@ signature = Signature(
 def initialization(self):
  
   self.template = str(spm8Path) + """/templates/T1.nii""" # could be also : PET or SPECT etc...
-  initializeNormalizeParameters_usingSPM8DefaultValuesForPET(self)
+  initializeNormalizeParameters_usingSPM8DefaultValues(self)
   self.prefix = """'spmNormalized_'""" 
   self.generatePsFileWithMatlab = True
 
