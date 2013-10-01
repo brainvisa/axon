@@ -46,7 +46,9 @@ case 'n-ary'
     n(ni)   = 1:num;
     Z       = n(Z);
 end
+
 spm_write_filtered( Z, XYZ, xSPM.DIM, xSPM.M, '', '%s' );
+
 tmpfile = [ '%s' ];
 fid = fopen(tmpfile,'wt');
 fprintf(fid,[repmat('%%s,',1,11) '%%d,,\\n'],TabDat.hdr{1,:});
@@ -65,10 +67,12 @@ fprintf(fid, '%%s', sprintf('Height threshold %%c = %%0.2f {%%s}', xSPM.STAT, xS
 fprintf(fid, '\\n' );
 fprintf(fid, '%%s', sprintf('Extent threshold k = %%0.0f voxels', xSPM.k));
 fclose(fid);
+
+spm_DesRep('Files&Factors', reshape(cellstr(SPM.xY.P),size(SPM.xY.VY)),SPM.xX.I,SPM.xC,SPM.xX.sF,SPM.xsDes)
+saveas(gcf, 'spm_designExplore', 'ps')
 """ % (result_image_type, resultMap, statsCsv, threshInfo))
   matlabBatchFile.write("exit\n")
   matlabBatchFile.close()
-
 
 def createBrainMIPWithGridTextFiles(context, spm8_standalone_path, spm8_standalone_command, spm8_standalone_mcr_path, gridFilePath, maskFilePath):
   matFileFi, matFile = mkstemp(suffix=".m")
