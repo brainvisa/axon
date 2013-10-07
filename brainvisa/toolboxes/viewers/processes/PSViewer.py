@@ -48,13 +48,16 @@ def findPSviewer():
     psviewer.append( 'kghostview' )
   if findInPath( 'okular' ):
     psviewer.append( 'okular' )
+  if findInPath( 'evince' ):
+    psviewer.append( 'evince' )
   return psviewer
 
 psviewers = findPSviewer()
 
 signature = Signature(
         'psfile', ReadDiskItem( 'Postscript file', [ 'PS file', 'gz compressed PS file'] ),
-        'PSviewer', Choice( *psviewers ), 
+        'PSviewer', Choice( *psviewers ),
+        'waitFor_userFileClose', Boolean(), 
 )      
 
 def validation():
@@ -62,7 +65,10 @@ def validation():
     raise ValidationError( _t_( 'no PostScript viewer available' ) )
 
 def initialization( self ):
-  if 'kghostview' in psviewers:
+  self.waitFor_userFileClose = True
+  if 'evince' in psviewers:
+    self.PSviewer = 'evince'
+  elif 'kghostview' in psviewers:
     self.PSviewer = 'kghostview'
   elif 'gv' in psviewers:
     self.PSviewer = 'gv'
@@ -75,25 +81,34 @@ def execution( self, context ):
   PSExtension = os.path.splitext( self.psfile.fullPath( ) )
   print 'ps extension: ', str( PSExtension )
   if PSExtension[1]=='.gz':
-    if self.PSviewer == 'kghostview':
-      PSTmpFile = unzip(context, os)
-      context.system( 'kghostview ' + PSTmpFile )
+    
+    if self.PSviewer == 'kghostview' or self.PSviewer == 'evince' or self.PSviewer == 'okular': 
+      PSTmpFile = self.unzip(context, os)
+      if(self.waitFor_userFileClose):
+        cmd = [self.PSviewer,  PSTmpFile]
+        context.system(*cmd)
+      else:
+        os.system(self.PSviewer+' "'+PSGZTmpFile+'" &')# & so dont waitFor_userFileClose 
+    
     elif self.PSviewer == 'gv':
       cmd = ['gv', self.psfile.fullPath( ) ]
       context.system( *cmd )
-    elif self.PSviewer == 'okular':
-      PSTmpFile = unzip(context, os)
-      context.system( 'okular ' + PSTmpFile )
+    
   else:
-    cmd = [self.PSviewer, self.psfile.fullPath( ) ]
-    context.system( *cmd )
+    if(self.waitFor_userFileClose):
+      cmd = [self.PSviewer,self.psfile.fullPath( )]
+      context.system( *cmd )
+    else:
+      cmd = self.PSviewer+' "'+self.psfile.fullPath( )+'"'
+      os.system(cmd+' &')# & so dont waitFor_userFileClose
 
-def unzip(context, os):
+def unzip(self, context, os):
   tmpDir = context.temporary('Directory')
   if os.path.exists(tmpDir.fullPath()) is None:
     os.mkdir(tmpDir.fullPath())
   shelltools.cp(self.psfile.fullPath(), tmpDir.fullPath())
   PSGZTmpFile = os.path.join(tmpDir.fullPath(), os.path.basename(self.psfile.fullPath()))
   PSTmpFile = os.path.splitext(PSGZTmpFile)
-  context.system('gunzip ' + PSGZTmpFile)
+  cmd = ['gunzip', PSGZTmpFile ]
+  context.system(*cmd)
   return PSTmpFile[0]
