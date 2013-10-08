@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="fr">
+    <xhtml name="short"/>
+    <d name="parameters">
+      <xhtml name="image_labels"/>
+      <xhtml name="csv_output"/>
+      <xhtml name="label_images"/>
+    </d>
+    <xhtml name="long"/>
+  </d>
+  <d name="en">
+    <xhtml name="short">DICE index calculation on a set of images</xhtml>
+    <d name="parameters">
+      <xhtml name="image_labels">names of table headers in the csv_output</xhtml>
+      <xhtml name="csv_output"/>
+      <xhtml name="label_images"/>
+    </d>
+    <xhtml name="long">DICE index (2*intersection / union) is calculated for a set of label images. Each object (image value) has its DICE calculated for each pair of images. The output is a symmetric table, where each image is crossed to each other, for each object.
+</xhtml>
+  </d>
+</d>
+</minf>
