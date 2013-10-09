@@ -22,6 +22,7 @@
 
 
 <hr width="100%"> <br>
+<a href="#version-4.4.0"><b>Version 4.4.0</b></a><br>
 <a href="#version-4.3.0"><b>Version 4.3.0</b></a><br>
 <a href="#version-4.2.1"><b>Version 4.2.1</b></a><br>
 <a href="#version-4.2.0"><b>Version 4.2.0</b></a><br>
@@ -47,6 +48,60 @@
 <a href="#version-2.3.2"><b>Version 2.3.2</b></a><br>
 <a href="#version-2.3.0"><b>Version 2.3.0</b></a><br>
 <a href="#version-1.5"><b>Version 1.5</b></a><br>
+
+<!---------------------------------------------------------------------------->
+<h2><a name="version-4.4.0">2013/09/09 - Version 4.4.0</a></h2>
+
+<blockquote>
+<h3>General bug fixes and improvements:</h3>
+<ul>
+<li>History management has been improved: for databases which have enabled it, data are now linked to the process which have produced them. Such provenance information is available in the GUI (using right click on the eye icons, and in the database browser).
+</li>
+<li>Using the above history management, database update may be performed incrementally after a distributed execution, which saves a lot of time. It can be used this way as long as the files organization description (ontologies) have not changed.
+</li>
+<li>Visual improvements: manually modified processes parameters now appear in blue, and locked files appear with a red background.</li>
+<li>New ontology for databases: <tt>brainvisa-3.2.0</tt>. It does not change files location at all, but interprets them differenty: actually, the "protocol" attribute has been replaced with "center", which is more useful for many users. An existing brainvisa-3.1.0 database can be "upgraded" to brainvisa-3.2.0 just by changing their ontology property in the settings, and then updating the databases. It is recommended to upgrade, because new additions in ontologies may not be done in the older brainvisa-3.1.0.
+</li>
+<li>make process search match also processes IDs, not only name text.</li>
+<li>GUI improvements to easily manage locked files, and lock/unlock many files at one time: in pipeline nodes popup menus, and in the database browser.
+</li>
+<li>The database browser can now stop scanning a large tree (hit escape), or refresh selected items (hit F5).</li>
+<li>Don't show Python call stack when a process fails with an error, unless we are in expert user level: such messages are generally meaningless to novice users.
+</li>
+<li>Reduced the memory needed for database updates.</li>
+<li>(slightly) better management of referentials and databases, which now normally allow to avoid the need of the "check database" process after a distributed execution (of Morphologist, typically).
+</li>
+<li>Iteration pipelines may now be modified by the user: iteration nodes may be deleted or added after the pipeline is built.</li>
+<li>Several fixes in database management.</li>
+<li>Fixed some memory leaks.</li>
+<li>Processes programmers: a process may now provide a workflow (soma-workflow) for distributed execution, even if the process is not a pipeline or an iteration.
+</li>
+<li>Facilities are now offered for programming "dynamic pipelines", with varying number of sub-nodes (like iterations). This allows to program some limited kinds of map/reduce pipelines.
+</li>
+<li>For programmers, the "iteration edition" possibility may also be offered in pipeline nodes which children have all the same type.</li>
+</ul>
+</blockquote>
+
+<blockquote>
+<h3>General processes:</h3>
+<ul>
+<li>A bunch of SPM wrapping processes have been moved in the general Axon processes (in Tools), and allow to wrap normalization, coregistration, and the various tissue segmentation methods. They may be found in more specialized versions (with more specific parameters) in applicative toolboxes.
+</li>
+<li>New viewer for segmentations comparison.</li>
+</ul>
+</blockquote>
+
+<blockquote>
+<h3>Morphologist toolbox:</h3>
+<ul>
+<li>New version of the Morphologist pipeline: Morphologist 2013. The pipeline offers an improved parallelization for both hemispheres.
+</li>
+<li>Meshes (hemispheres, G/W interfaces, sulci...) use a different, more accurate, smoothing algorithm, and different decimation settings. As a result, meshes are far more accurate, and also bigger (about 60000 vertices for a G/W hemisphere instead of 30000 formerly).
+</li>
+<li>New viwer and editor for histogram analysis, allowing comprehensive visual feedback, and interactive modifications.</li>
+</ul>
+</blockquote>
+
 
 <!---------------------------------------------------------------------------->
 <h2><a name="version-4.3.0">2012/09/06 - Version 4.3.0</a></h2>
