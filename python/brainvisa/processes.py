@@ -1078,7 +1078,7 @@ class Process( Parameterized ):
 
   def __del__( self ):
     if self._deleted:
-      print '*** Process already deleted ***'
+      # print '*** Process already deleted ***'
       return
     try:
       Parameterized.__del__( self )
@@ -1574,7 +1574,7 @@ class ExecutionNode( object ):
   def __del__( self ):
     #print 'del ExecutionNode', self
     if not hasattr( self, '_deleted' ) or self.__dict__[ '_deleted' ]:
-      print '*** ExecutionNode already deleted ! ***'
+      # print '*** ExecutionNode already deleted ! ***'
       return
     self.__dict__[ '_deleted' ] = True
     debugHere()
@@ -1884,7 +1884,7 @@ class ProcessExecutionNode( ExecutionNode ):
   def __del__( self ):
     #print 'del ProcessExecutionNode', self
     if not hasattr( self, '_deleted' ) or self._deleted:
-      print '*** already deleted !***'
+      # print '*** already deleted !***'
       return
     if hasattr( self, '_process' ):
       #print '     del proc:', self._process.name
@@ -2108,7 +2108,7 @@ class SelectionExecutionNode( ExecutionNode ):
   def __del__( self ):
     #print 'SelectionExecutionNode.__del__', self
     if not hasattr( self, '_deleted' ) or self._deleted:
-      print '*** SelectionExecutionNode already deleted'
+      # print '*** SelectionExecutionNode already deleted'
       return
     for node in self._children.values():
       node._selectionChange.remove( ExecutionNode.MethodCallbackProxy( \
