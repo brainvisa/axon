@@ -101,6 +101,9 @@ def spm_today():
   return d
 
 def removeNan(filePath):
+  fileMinfPath=filePath+ '.minf'
+  if(os.path.exists(fileMinfPath)):
+    os.remove(fileMinfPath)
   AimsRemoveNaNCmd='AimsRemoveNaN' + ' -i "' + str(filePath) + '" -o "' + str(filePath) + '.noNan.nii"'
   os.system(AimsRemoveNaNCmd)
   os.remove(filePath)
