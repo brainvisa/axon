@@ -5,8 +5,7 @@ from soma.path import locate_file
 
 def writeResultsJob(spmJobPath, spmMatPath, title, pvalue_adjustment, pvalue_threshold, pvalue_extent_threshold):
   matFileFd = open(spmJobPath, 'w')
-  matFileFd.write(
-    """
+  matFileFd.write("""
 spm_get_defaults('stats.topoFDR', 0);
 spm_get_defaults('cmdline', true);
 spm_jobman('initcfg');
@@ -24,10 +23,7 @@ matlabbatch{1}.spm.stats.results.print = true;
   
 def writeSpmWriteFilteredBatch(matlabBatchPath, spm8_path, spmJobFilePath, result_image_type, resultMap, statsCsv, threshInfo):
   matlabBatchFile = open(matlabBatchPath, 'w')
-  matlabBatchFile.write("addpath('" + spm8_path + "');\n")
-  matlabBatchFile.write("spm('pet');\n")
-  matlabBatchFile.write("jobid = cfg_util('initjob', '%s');\n" % spmJobFilePath)
-  matlabBatchFile.write("cfg_util('run', jobid);\n")
+  matlabBatchFile = write_RunJob_inBatch(matlabBatchFile, spm8_path, spmJobFilePath)
   matlabBatchFile.write(
     """ 
 XYZ = xSPM.XYZ;
@@ -68,8 +64,6 @@ fprintf(fid, '\\n' );
 fprintf(fid, '%%s', sprintf('Extent threshold k = %%0.0f voxels', xSPM.k));
 fclose(fid);
 
-spm_DesRep('Files&Factors', reshape(cellstr(SPM.xY.P),size(SPM.xY.VY)),SPM.xX.I,SPM.xC,SPM.xX.sF,SPM.xsDes)
-saveas(gcf, 'spm_designExplore', 'ps')
 """ % (result_image_type, resultMap, statsCsv, threshInfo))
   matlabBatchFile.write("exit\n")
   matlabBatchFile.close()
@@ -98,8 +92,45 @@ def createBrainMIPWithGridTextFiles(context, spm8_standalone_path, spm8_standalo
          gridFilePath, maskFilePath))
   matFileFd.close()
   mexe = spm8_standalone_command
-  cmd = [mexe, 
-    spm8_standalone_mcr_path, 
-    'script', 
+  cmd = [mexe,
+    spm8_standalone_mcr_path,
+    'script',
     matFile]
   context.system(*cmd) # momoTODO utiliser spm_run au lieu de dupliquer le code!!
+
+def write_LoadSpmMatFile_Job(spmJobPath, spmMatPath):
+  matFileFd = open(spmJobPath, 'w')
+  matFileFd.write("""
+matlabbatch{1}.cfg_basicio.load_vars.matname = {'%s'};
+matlabbatch{1}.cfg_basicio.load_vars.loadvars.allvars = true;
+""" % (spmMatPath))
+  matFileFd.close()
+
+def write_DesignExploreFileAndFactor_Batch(matlabBatchPath, spm8_path, spmJobFilePath, spmMatPath, psFileName='spm_designExplore'):
+  matlabBatchFile = open(matlabBatchPath, 'w')
+  matlabBatchFile = write_RunJob_inBatch(matlabBatchFile, spm8_path, spmJobFilePath)
+  matlabBatchFile.write(""" 
+load('%s')
+spm_DesRep('Files&Factors', reshape(cellstr(SPM.xY.P),size(SPM.xY.VY)),SPM.xX.I,SPM.xC,SPM.xX.sF,SPM.xsDes)
+saveas(gcf, '%s', 'ps')
+""" % (spmMatPath, psFileName))
+  matlabBatchFile.write("exit\n")
+  matlabBatchFile.close()
+  
+def write_DesignMatrix_Batch(matlabBatchPath, spm8_path, spmJobFilePath, spmMatPath, psFileName='spm_designMatrix'):
+  matlabBatchFile = open(matlabBatchPath, 'w')
+  matlabBatchFile = write_RunJob_inBatch(matlabBatchFile, spm8_path, spmJobFilePath)
+  matlabBatchFile.write(""" 
+load('%s')
+spm_DesRep('DesMtx',SPM.xX, reshape(cellstr(SPM.xY.P),size(SPM.xY.VY)), SPM.xsDes)
+saveas(gcf, '%s', 'ps')
+""" % (spmMatPath, psFileName))
+  matlabBatchFile.write("exit\n")
+  matlabBatchFile.close()
+  
+def write_RunJob_inBatch(matlabBatchFile, spm8_path, spmJobFilePath):
+  matlabBatchFile.write("addpath('" + spm8_path + "');\n")
+  matlabBatchFile.write("spm('pet');\n")
+  matlabBatchFile.write("jobid = cfg_util('initjob', '%s');\n" % spmJobFilePath)
+  matlabBatchFile.write("cfg_util('run', jobid);\n")
+  return matlabBatchFile
