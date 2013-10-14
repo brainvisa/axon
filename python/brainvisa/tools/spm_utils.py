@@ -109,3 +109,24 @@ def removeNan(filePath):
   os.remove(filePath)
   os.rename(filePath + '.noNan.nii', filePath)
   os.rename(filePath + '.noNan.nii.minf', filePath + '.minf')
+  
+  
+#------------------------------------------------------------------------------
+
+def writeSmoothMatFile(context, data, matfileDI, mat_file
+                              , fwhm="""[8 8 8]"""
+                              , dtype="""0"""
+                              , im="""0""" 
+                              , prefix="""'spmSmooth_'"""                                           
+                            ):
+  mat_file.write("""
+matlabbatch{1}.spm.spatial.smooth.data = {'%s,1'};
+matlabbatch{1}.spm.spatial.smooth.fwhm = %s;
+matlabbatch{1}.spm.spatial.smooth.dtype = %s;
+matlabbatch{1}.spm.spatial.smooth.im = %s;
+matlabbatch{1}.spm.spatial.smooth.prefix = %s;
+""" % (data
+        , fwhm, dtype, im, prefix)
+                 )
+  mat_file.close()
+  return mat_file.name
