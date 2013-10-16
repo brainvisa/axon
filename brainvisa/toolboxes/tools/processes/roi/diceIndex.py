@@ -63,6 +63,7 @@ signature = Signature(
         'Label Volume', 'aims readable volume formats' ) ),
     'csv_output', WriteDiskItem( 'CSV file', 'CSV file' ),
     'image_labels', ListOf( String() ),
+    'output_format', Choice( 'matrix', 'linear' ),
 )
 
 
@@ -111,20 +112,34 @@ def execution( self, context ):
             for l in objects:
                 w = numpy.where( avol2 == l )
                 overlap = numpy.where( avol1[ w ] == l )[0].shape[0]
-                res = results.setdefault( l, numpy.zeros( ( n-1, n-1 ) ) )
-                res[ i, c-1 ] = float( overlap * 2 ) \
+                res = results.setdefault( l, numpy.zeros( ( n, n ) ) )
+                res[ i, c ] = float( overlap * 2 ) \
                     / ( w[0].shape[0] +vol[l] )
             context.progress( count, ntot, self )
 
-    out = open( self.csv_output.fullPath(), 'w' )
-    print >> out, 'method, label,', \
-        ', '.join( self.image_labels[1:] )
-    for l in sorted( results.keys() ):
-        d = results[ l ]
-        # symmetrize results
-        d += d.transpose()
-        d[ numpy.arange(d.shape[0]), numpy.arange(d.shape[0]) ] = 1.
-        for i in xrange( d.shape[0] ):
-            out.write( self.image_labels[i] + ', %d, ' % l )
-            out.write( ', '.join( [ str(x) for x in d[ i, : ] ] ) + '\n' )
+    if self.output_format == 'matrix':
+        out = open( self.csv_output.fullPath(), 'w' )
+        print >> out, 'method, label,', \
+            ', '.join( self.image_labels[1:] )
+        for l in sorted( results.keys() ):
+            d = results[ l ]
+            # symmetrize results
+            d += d.transpose()
+            d[ numpy.arange(d.shape[0]), numpy.arange(d.shape[0]) ] = 1.
+            for i in xrange( d.shape[0] ):
+                out.write( self.image_labels[i] + ', %d, ' % l )
+                out.write( ', '.join( [ str(x) for x in d[ i, 1: ] ] ) + '\n' )
 
+    else: # linear format
+        out = open( self.csv_output.fullPath(), 'w' )
+        print >> out, 'label, method1, method2, DICE'
+        for l in sorted( results.keys() ):
+            d = results[ l ]
+            # symmetrize results
+            d += d.transpose()
+            d[ numpy.arange(d.shape[0]), numpy.arange(d.shape[0]) ] = 1.
+            for i in xrange( d.shape[0] ):
+                for j in xrange( i+1, d.shape[1] ):
+                    out.write( '%d, %s, %s, %f\n' \
+                        % ( l, self.image_labels[i], self.image_labels[j],
+                            d[ i, j ] ) )
