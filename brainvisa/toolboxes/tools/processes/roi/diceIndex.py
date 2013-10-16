@@ -111,8 +111,8 @@ def execution( self, context ):
             for l in objects:
                 w = numpy.where( avol2 == l )
                 overlap = numpy.where( avol1[ w ] == l )[0].shape[0]
-                res = results.setdefault( l, numpy.zeros( ( n-1, n-1 ) ) )
-                res[ i, c-1 ] = float( overlap * 2 ) \
+                res = results.setdefault( l, numpy.zeros( ( n, n ) ) )
+                res[ i, c ] = float( overlap * 2 ) \
                     / ( w[0].shape[0] +vol[l] )
             context.progress( count, ntot, self )
 
@@ -126,5 +126,5 @@ def execution( self, context ):
         d[ numpy.arange(d.shape[0]), numpy.arange(d.shape[0]) ] = 1.
         for i in xrange( d.shape[0] ):
             out.write( self.image_labels[i] + ', %d, ' % l )
-            out.write( ', '.join( [ str(x) for x in d[ i, : ] ] ) + '\n' )
+            out.write( ', '.join( [ str(x) for x in d[ i, 1: ] ] ) + '\n' )
 
