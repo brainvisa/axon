@@ -225,7 +225,6 @@ def runCsvViewer( source, existingWidget=None ):
   try:
     configuration = Application().configuration
     browser = configuration.brainvisa.csvViewer
-    print 'CSV viewer:', browser
     if browser is not None:
       browser = distutils.spawn.find_executable( browser )
       if browser:
@@ -245,7 +244,6 @@ def runCsvViewer( source, existingWidget=None ):
     print 'exception.'
     print e
     pass
-  print 'using builting viewer.'
 
   # builtin browser, needs GenericTableEditor from datamind
   try:
