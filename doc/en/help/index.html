@@ -13,10 +13,14 @@
 <p>Website : <a href="http://brainvisa.info/index.html" target="blank">http://brainvisa.info</a></p>
 <hr width="100%">
 
-<p><b><font color="red">New: incremental databases update using history management</font></b></p>
+<p><b><font color="red">New in 4.4: incremental databases update using history management</font></b></p>
 <ul><p>
 For large databases, updating can now be performed in a faster way, using history management files. Moreover the "check database" step is not needed any longer after a distributed processing execution.
-</p></ul>
+</p>
+<p>
+  <b>Data organization:</b> there is now a newer ontology, named "brainvisa-3.2.0", which will replace the older "brainvisa-3.1.0". Note that it is entirely compatible with the former one: files are placed at the same locations, but interpretation changes. Namely we replaced the "protocol" attribute with "center" which better suits user needs and understandings. We encorage users to move to the new ontology since the older may not be entirely maintained in the future: new data types may not be referenced in the older ontology.
+</p>
+</ul>
 
 <p><b>New since 4.3.0 version: Data history recording in Brainvisa</b></p>
 <ul><p>
