@@ -1827,7 +1827,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       addBrainVISAMenu( self, self.menu )
 
       # warning: don't create the menu using addMenu() in PyQt
-      processMenu = QMenu( "&Process", self.menu )
+      processMenu = QMenu( _t_( "&Process" ), self.menu )
       self.menu.addMenu(processMenu)
       processMenu.addAction(self.action_save_process)
       processMenu.addAction(self.action_clone_process)
@@ -1845,7 +1845,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       processMenu.addAction(self.action_unlock_all)
 
       # warning: don't create the menu using addMenu() in PyQt
-      view_menu = QMenu( "&View", self.menu )
+      view_menu = QMenu( _t_( "&View" ), self.menu )
       self.menu.addMenu(view_menu)
       view_menu.addAction(close_viewers_action(self))
 
@@ -3402,21 +3402,21 @@ class ProcessSelectionWidget( QMainWindow ):
 
     self.dock_doc = QDockWidget("Documentation", self)
     self.dock_doc.setObjectName("documentation_dock")
-    self.dock_doc.toggleViewAction().setText("Documentation")
+    self.dock_doc.toggleViewAction().setText(_t_("Documentation"))
     self.dock_doc.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea |                                  QtCore.Qt.RightDockWidgetArea)
     self.dock_doc.show()
     self.addDockWidget(Qt.RightDockWidgetArea, self.dock_doc)
 
     self.dock_sw = QDockWidget("Execution", self)
     self.dock_sw.setObjectName("execution_dock")
-    self.dock_sw.toggleViewAction().setText("Workflow execution")
+    self.dock_sw.toggleViewAction().setText(_t_("Workflow execution"))
     self.dock_sw.setAllowedAreas(QtCore.Qt.BottomDockWidgetArea |                                  QtCore.Qt.TopDockWidgetArea)
     if _workflow_application_model != None:
       
       self.sw_widget = SomaWorkflowWidget(_workflow_application_model,
                          computing_resource=socket.gethostname(),
                          parent=None)
-      self.sw_widget.setWindowTitle("Workflow execution")
+      self.sw_widget.setWindowTitle(_t_("Workflow execution"))
       self.sw_mini_widget = SomaWorkflowMiniWidget(_workflow_application_model, 
                                                    self.sw_widget, 
                                                    self.dock_sw)
@@ -3438,7 +3438,7 @@ class ProcessSelectionWidget( QMainWindow ):
     menu = self.menuBar()
     addBrainVISAMenu( self, menu )
     neuroConfigGUI.addSupportMenu( self, menu )
-    view_menu = menu.addMenu("&View")
+    view_menu = menu.addMenu(_t_("&View"))
     view_menu.addAction(self.dock_doc.toggleViewAction())
     view_menu.addAction(self.dock_sw.toggleViewAction())
     view_menu.addAction(close_viewers_action(self))
@@ -4179,7 +4179,7 @@ def showMainWindow():
     
 def close_viewers_action(parent):
   action=QAction(parent)
-  action.setText("Close all viewers")
+  action.setText( _t_( "Close all viewers" ) )
   action.triggered.connect(close_viewers)
   return action
   
