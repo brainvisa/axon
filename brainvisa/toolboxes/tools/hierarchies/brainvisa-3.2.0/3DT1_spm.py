@@ -146,10 +146,14 @@ insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
   'matDefField_<subject>_Nat_TO_Mni', SetType('MatDefField T1 MRI from Native to Mni'),)
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
-  'mat_<subject>_Mni_TO_Nat', SetType('Mat T1 MRI from Mni to Native'),)
+  'mat_<subject>_Mni_TO_Nat', SetType('OLD Mat T1 MRI from Mni to Native'),)
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
+  'mat_<subject>_Mni_TO_Nat_sn', SetType('Mat T1 MRI from Mni to Native'),)
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
-  'mat_<subject>_Nat_TO_Mni', SetType('Mat T1 MRI from Native to Mni'),)
+  'mat_<subject>_Nat_TO_Mni', SetType('OLD Mat T1 MRI from Native to Mni'),)# old type without suffix _sn
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
+  'mat_<subject>_Nat_TO_Mni_sn', SetType('Mat T1 MRI from Native to Mni'),) # le process "deformation" de spm8 ne filtre que les .mat qui ont le suffixe _sn
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
   'jac_wrp1<subject>_JacobianDeterminant', SetType('JacobianDeterminant'),)
