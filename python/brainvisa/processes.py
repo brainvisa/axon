@@ -2313,6 +2313,14 @@ class ExecutionContext( object ):
     apply( self._setArguments, (_process,)+args, kwargs )
     result = self._processExecution( _process, None )
     self.checkInterruption()
+    if self._lastProcessRaisedException:
+      e = self._lastProcessRaisedException
+      self._lastProcessRaisedException = None # reset exception once used.
+      if isinstance( e, tuple ) and len( e ) == 2:
+        # e = ( exception, traceback )
+        raise e[0], None, e[1]
+      else:
+        raise e
     return result
 
 
@@ -2459,7 +2467,7 @@ class ExecutionContext( object ):
         self._processStarted()
         newStackTop.thread = threading.currentThread()
 
-        self._lastProcessRaisedException = False
+        self._lastProcessRaisedException = None
         # Check arguments and conversions
         def _getConvertedValue( v, p ):
           # v: value
@@ -2547,7 +2555,7 @@ class ExecutionContext( object ):
         else:
           result = executionFunction( self )
       except Exception, e:
-        self._lastProcessRaisedException = True
+        self._lastProcessRaisedException = ( e, sys.exc_info()[2] )
         try:
           self._showException()
         except SystemExit, e:
