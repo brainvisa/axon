@@ -2660,12 +2660,12 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     #Remove icon from all ListView items
     for item in self._executionNodeLVItems.values():
       item.setIcon( 0, self.pixNone )
-    self._lastProcessRaisedException = False
+    self._lastProcessRaisedException = None
     try:
       self._startProcess( self.process, executionFunction )
       self._running = True
-    except:
-      self._lastProcessRaisedException = True
+    except Exception, e:
+      self._lastProcessRaisedException = e
       neuroException.showException()
 
   def _write( self, html ):

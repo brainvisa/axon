@@ -5,14 +5,24 @@ import distutils.spawn
 import os
 import sys
 
-def getSpm8Path(configuration):  
+class Spm8_error( RuntimeError ):
+  pass
+
+class Spm8Standalone_error( RuntimeError ):
+  pass
+
+class SpmConfigError( RuntimeError ):
+  pass
+
+
+def getSpm8Path(configuration):
   if(configuration.SPM.spm8_path is not None and configuration.SPM.spm8_path != ''):
     return configuration.SPM.spm8_path
   elif(configuration.SPM.spm8_standalone_path is not None and configuration.SPM.spm8_standalone_path != ''):
     return configuration.SPM.spm8_standalone_path
   else:
     return None
-  
+
 #------------------------------------------------------------------------------
 # spm8_standalone : 
 #* does not generate spm_2012Oct03.ps file for result job 
@@ -28,7 +38,7 @@ def validation(configuration):
     try :
       validationSpm8Standalone(configuration)
     except Exception, Spm8Standalone_error:
-      raise Spm8_error    
+      raise Spm8_error
       raise Spm8Standalone_error
 
 def validationSpm8Standalone(configuration):
