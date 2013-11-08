@@ -2,7 +2,7 @@
 <minf version="1.0">
 
 <xhtml name="en">
-  <h1>Miscelaneous image processing tools</h1>
+  <h1>Miscellaneous image processing tools</h1>
   
   <p>Here you will find some common image processing tools that you may 
     need at any moment: thresholding, resampling, linear combination, 
@@ -15,8 +15,8 @@
   <h1>Divers outils de traitement d'image</h1>
   
   <p>Ici se trouvent des outils de traitement d'image courants, dont vous 
-    pouvez avoir besoin à peu près n'importe quand: seuillage, 
-    rééchantillonnage, combinaisons linéaires, morphologie mathématique de 
+    pouvez avoir besoin ï¿½ peu prï¿½s n'importe quand: seuillage, 
+    rï¿½ï¿½chantillonnage, combinaisons linï¿½aires, morphologie mathï¿½matique de 
     base...
   </p>
 
