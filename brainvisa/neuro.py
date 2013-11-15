@@ -247,7 +247,7 @@ except ImportError:
   SomaApplication = None
 if SomaApplication is not None:
   soma_app = SomaApplication( 'brainvisa', versionString() )
-  soma_app.plugin_modules.append( 'soma.fom' )
+  # soma_app.plugin_modules.append( 'soma.fom' )
   soma_app.initialize()
 
 if neuroConfig.gui:
