@@ -506,7 +506,7 @@ class SQLDatabase( Database ):
     params = neuroConfig.DatabaseSettings(self.name)
     lastIncrementalUpdate = params.expert_settings.lastIncrementalUpdate
     if lastIncrementalUpdate == "":
-      t = time.mktime( time.strptime( "1970-01-01-00:00", '%Y-%m-%d-%H:%M' ) ) 
+      t = 0.
     else:
       t = time.mktime( time.strptime( lastIncrementalUpdate, '%Y-%m-%d-%H:%M' ) ) 
     t0 = time.time()
