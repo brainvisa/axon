@@ -357,10 +357,10 @@ class SQLDatabase( Database ):
             typeFormats = self._formatsByTypeName.setdefault( type.name, [] )
             try:
               formatName = self.formats.getFormat( format.name, format ).name
-	    except Exception, e:
-	      print '!!ERROR!! SQLDatabase: getFormat failed:', format.name
+            except Exception, e:
+              print '!!ERROR!! SQLDatabase: getFormat failed:', format.name
               print 'Database', directory, 'will not be complete and fully working !'
-	      continue
+              continue
             if formatName not in typeFormats:
               typeFormats.append( formatName )
       for lopa, lopaRules in rulesByLOPA.iteritems():
@@ -963,8 +963,8 @@ class SQLDatabase( Database ):
           cursor.executemany( 'INSERT INTO _FILENAMES_ (filename, _uuid) VALUES (? ,?)', (( relative_path(i, self.directory), uuid ) for i in diskItem.fullPaths()) )
         except sqlite3.IntegrityError, e:
           raise DatabaseError( unicode(e)+': file names = ' + repr(diskItem.fullPaths()) )
-        
-        values = [ uuid, format, os.path.basename( diskItem.fullPath() ) ]					
+
+        values = [ uuid, format, os.path.basename( diskItem.fullPath() ) ]
         if diskItem.type.name in self._tableFieldsAndInsertByTypeName:
           tableName, tableFields, tableAttributes, sql = self._tableFieldsAndInsertByTypeName[ diskItem.type.name ]
           for i in tableAttributes[3:]:
@@ -979,7 +979,7 @@ class SQLDatabase( Database ):
           if delete:
             cursor.execute( 'DELETE FROM "' + tableName + '" WHERE _uuid=?', ( uuid, ) )
           cursor.execute( sql, values )
-          
+
     except sqlite3.OperationalError, e:
       self._closeDatabaseCursor( cursor, rollback=True )
       raise DatabaseError( "Cannot insert items in database " + self.name + ": "+e.message+". Item:" + diskItem.fullPath() + ". You should update this database." )
