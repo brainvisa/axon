@@ -34,7 +34,7 @@ from brainvisa.processing.qtgui.backwardCompatibleQt \
     import QLineEdit, SIGNAL, QPushButton, QToolButton, \
            Qt, QIcon, QWidget, QFileDialog, QVBoxLayout, \
            QListWidget, QHBoxLayout, QSpacerItem, QSizePolicy, QSize, QMenu, \
-           QPalette, QColor
+           QPalette, QColor, QItemSelectionModel
 from soma.wip.application.api import findIconFile
 from soma.qtgui.api import largeIconSize
 from brainvisa.data.qtgui.diskItemBrowser import DiskItemBrowser
@@ -469,6 +469,8 @@ class DiskItemListEditor( QWidget, DataEditor ):
           QIcon( findIconFile( 'browse_read.png' )) )
         setattr( DiskItemListEditor.DiskItemListSelect, 'pixBrowseWrite', 
           QIcon( findIconFile( 'browse_write.png' )) )
+        setattr( DiskItemListEditor.DiskItemListSelect, 'pixBrowseUpdate', 
+          QIcon( findIconFile( 'browse_update.png' )) )
       QWidget.__init__( self, dilEditor.topLevelWidget(), Qt.Dialog  | Qt.WindowStaysOnTopHint  )
       if name:
         self.setObjectName(name)
@@ -486,7 +488,9 @@ class DiskItemListEditor( QWidget, DataEditor ):
       self.findDialog = None
       
       self.lbxValues = QListWidget( )
-      self.connect( self.lbxValues, SIGNAL('currentRowChanged( int )'), self._currentChanged )
+      self.lbxValues.setSelectionMode(QListWidget.ExtendedSelection)
+      #self.connect( self.lbxValues, SIGNAL('currentRowChanged( int )'), self._currentChanged )
+      self.connect( self.lbxValues, SIGNAL('itemSelectionChanged()'), self._selectionChanged )
       layout.addWidget( self.lbxValues )
 
       hb = QHBoxLayout()
@@ -510,10 +514,20 @@ class DiskItemListEditor( QWidget, DataEditor ):
 
       self.btnDown = QPushButton( )
       self.btnDown.setIcon( self.pixDown )
+      self.btnDown.setIconSize(buttonIconSize)
       self.btnDown.setEnabled( 0 )
       self.connect( self.btnDown, SIGNAL( 'clicked()' ), self._down )
       hb.addWidget( self.btnDown )
 
+      if write :
+        # Add a button to change output directories of selected items
+        self.btnSetDirectory = QPushButton() 
+        self.btnSetDirectory.setIcon( self.pixBrowseUpdate )
+        self.btnSetDirectory.setIconSize(buttonIconSize)
+        self.btnSetDirectory.setEnabled( 0 )
+        self.connect( self.btnSetDirectory, SIGNAL( 'clicked()' ), self._setDirectory )
+        hb.addWidget( self.btnSetDirectory )
+        
       spacer = QSpacerItem( 10, 10, QSizePolicy.Expanding, QSizePolicy.Minimum )
       hb.addItem( spacer )
 
@@ -571,27 +585,51 @@ class DiskItemListEditor( QWidget, DataEditor ):
       neuroConfig.unregisterObject( self )
       QWidget.closeEvent( self, event )
       
-    def _currentChanged( self, index ):
-      if index >= 0 and index < len( self.values ):
-        if self.values[ index ] :
-          self.sle.setValue( [ self.values[ index ].fullPath() ] )
-        else :
-          self.sle.setValue( None )
+    #def _currentChanged( self, index ):
+      #if index >= 0 and index < len( self.values ):
+        #if self.values[ index ] :
+          #self.sle.setValue( [ self.values[ index ].fullPath() ] )
+        #else :
+          #self.sle.setValue( None )
           
+      #else:
+        #self.sle.setValue( None )
+        
+    def updateEditorValue( self ):
+      if len(self.lbxValues.selectedIndexes()) > 0 :
+        v = [ self.values[s.row()] for s in self.lbxValues.selectedIndexes() ]
+        self.sle.setValue( v )
+      else:
+        self.sle.setValue( None )
+        
+    def _selectionChanged( self ):
+      sindexes = [ i.row() for i in self.lbxValues.selectedIndexes() ]
+      sindexes.sort()
+      
+      if len(sindexes) > 0 :
         self.btnRemove.setEnabled( 1 )
-        if index > 0:
+        
+        if hasattr(self, 'btnSetDirectory' ) :
+          self.btnSetDirectory.setEnabled( 1 )
+          
+        if (sindexes[0] > 0) or (len(sindexes) > 1):
           self.btnUp.setEnabled( 1 )
         else:
           self.btnUp.setEnabled( 0 )
-        if index < ( len( self.values ) - 1 ):
+          
+        if (sindexes[-1] < (len(self.values) - 1)) or (len(sindexes) > 1):
           self.btnDown.setEnabled( 1 )
         else:
           self.btnDown.setEnabled( 0 )
-      else:
-        self.sle.setValue( None )
+          
+      else :
         self.btnRemove.setEnabled( 0 )
+        if hasattr(self, 'btnSetDirectory' ) :
+          self.btnSetDirectory.setEnabled( 0 )
         self.btnUp.setEnabled( 0 )
         self.btnDown.setEnabled( 0 )
+        
+      self.updateEditorValue()
 
     def _add( self ):
       try:
@@ -606,28 +644,92 @@ class DiskItemListEditor( QWidget, DataEditor ):
         showException( parent=self )
     
     def _remove( self ):
-      index = self.lbxValues.currentRow()
-      del self.values[ index ]
-      self.lbxValues.takeItem( index )
+      indexes = [ i.row() for i in self.lbxValues.selectedIndexes() ]
+      rindexes = list(indexes)
+      rindexes.sort()
+      lindex = rindexes.index(indexes[-1])
+      rindexes.reverse()
+      for index in rindexes:
+        del self.values[ index ]
+        self.lbxValues.takeItem( index )
+      
+      # Select the item preceding the last deleted item
+      if (indexes[-1] - lindex) <= 0 :
+        c = 0
+      elif (indexes[-1] - lindex) >= (len(self.values) - 1) :
+        c = len(self.values) - 1
+      else :
+        c = indexes[-1] - lindex
+      
+      self.lbxValues.setCurrentRow( c,
+                                    QItemSelectionModel.SelectCurrent )
+
+      #if (c == indexes[-1]) :
+        ## Artificially ensure that value was changed
+        #self.updateEditorValues()
       
     def _up( self ):
-      index = self.lbxValues.currentRow()
-      tmp = self.values[ index ]
-      self.values[ index ] = self.values[ index - 1 ]
-      self.values[ index - 1 ] = tmp
-      item=self.lbxValues.takeItem(index)
-      self.lbxValues.insertItem(index-1, item)
-      self.lbxValues.setCurrentRow(index-1)
+      indexes = [ i.row() for i in self.lbxValues.selectedIndexes() ]
+      sindexes = list(indexes)
+      sindexes.sort()
+      
+      for index in sindexes :
+        if index > 0 :
+          tmp = self.values[ index ]
+          self.values[ index ] = self.values[ index - 1 ]
+          self.values[ index - 1 ] = tmp
+          item = self.lbxValues.takeItem(index)
+          self.lbxValues.insertItem(index - 1, item)
+          self.lbxValues.setItemSelected(item, 1)
       
     def _down( self ):
-      index = self.lbxValues.currentRow()
-      tmp = self.values[ index ]
-      self.values[ index ] = self.values[ index + 1 ]
-      self.values[ index + 1 ] = tmp
-      item=self.lbxValues.takeItem(index)
-      self.lbxValues.insertItem(index+1, item)
-      self.lbxValues.setCurrentRow(index+1)
+      indexes = [ i.row() for i in self.lbxValues.selectedIndexes() ]
+      rindexes = list(indexes)
+      rindexes.sort()
+      rindexes.reverse()
+      for index in rindexes :
+        if (index + 1) < len(self.values) :
+          tmp = self.values[ index ]
+          self.values[ index ] = self.values[ index + 1 ]
+          self.values[ index + 1 ] = tmp
+          item = self.lbxValues.takeItem(index)
+          self.lbxValues.insertItem(index + 1, item)
+          self.lbxValues.setItemSelected(item, 1)
     
+    def _setDirectory( self ):
+      self.browseDirectoryDialog = QFileDialog( self.topLevelWidget() )
+      self.connect( self.browseDirectoryDialog, SIGNAL( 'accepted()' ), self._setDirectoryAccepted )
+      self.browseDirectoryDialog.setFileMode( QFileDialog.Directory )
+      self.browseDirectoryDialog.setOption(QFileDialog.ShowDirsOnly, True)
+      parent = self._context
+      if hasattr( parent, '_currentDirectory' ) and parent._currentDirectory:
+        self.browseDirectoryDialog.setDirectory( parent._currentDirectory )
+      else:
+        self.browseDirectoryDialog.setDirectory( os.getcwd() )
+      self.browseDirectoryDialog.show()
+
+    def _setDirectoryAccepted( self ):
+      parent = self._context
+      # Get the selected directory
+      directory = unicode( self.browseDirectoryDialog.selectedFiles()[0] )
+      if hasattr( parent, '_currentDirectory' ):
+        parent._currentDirectory = directory
+       
+      if self.isVisible():
+        indexes = [ i.row() for i in self.lbxValues.selectedIndexes() ]
+        for index in indexes :
+          # Replaces the disk item with a new one
+          self.values[ index ] = brainvisa.data.neuroDiskItems.File( os.path.join(directory, 
+                                                                     os.path.basename(self.values[ index ].fullPath())),
+                                                                     None )
+          self.lbxValues.item( index ).setText( self.values[ index ].fullPath() )
+        
+        # Updates current editor value
+        self.updateEditorValue()
+          
+      else:
+        self.emit( SIGNAL( 'accepted' ), unicode( directory ) )
+      
     def setValue( self, value ):
       if isinstance( value, ( list, tuple ) ):
         self.values = []
@@ -672,7 +774,10 @@ class DiskItemListEditor( QWidget, DataEditor ):
       if self.browseDialog is None:
         self.browseDialog = QFileDialog( self.topLevelWidget() )
         if not self.parameter._write :
-          self.browseDialog.setFileMode( self.browseDialog.ExistingFiles )
+          self.browseDialog.setFileMode( QFileDialog.ExistingFiles )
+        else :
+          self.browseDialog.setFileMode( QFileDialog.AnyFile )
+          
         filters = []
         allPatterns = {}
         dirOnly = 1
@@ -696,7 +801,8 @@ class DiskItemListEditor( QWidget, DataEditor ):
         # self.connect( self.browseDialog, SIGNAL( 'fileSelected( const QString & )' ), self.browseAccepted )
         self.connect( self.browseDialog, SIGNAL( 'accepted()' ), self.browseAccepted )
         if dirOnly:
-          self.browseDialog.setFileMode( self.browseDialog.Directory )
+          self.browseDialog.setFileMode( QFileDialog.Directory )
+          self.browseDialog.setOption( QFileDialog.ShowDirsOnly )
         parent = self._context
         if hasattr( parent, '_currentDirectory' ) and parent._currentDirectory:
           self.browseDialog.setDirectory( parent._currentDirectory )
@@ -710,7 +816,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
         parent._currentDirectory = unicode( self.browseDialog.directory().path() )
       l = [str(i) for i in self.browseDialog.selectedFiles()]
       if self.isVisible():
-        self.sle.setValue( l ) 
+        self.sle.setValue( l )
         self._add()
       else:
         self.emit( SIGNAL( 'accepted' ), l )
@@ -963,7 +1069,9 @@ class DiskItemListEditor( QWidget, DataEditor ):
     except:
       showException( parent = self )
     w.show()
-    w.browsePressed()
+    if len(self.sle.getValue()) == 0 :
+      # Only opens browser when no values were selected
+      w.browsePressed()
 
   def _newTextValue( self ):
     textValues = self.sle.getValue()
