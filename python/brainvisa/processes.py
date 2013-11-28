@@ -1098,7 +1098,7 @@ class Process( Parameterized ):
     requiredLength = 0
     for values in kwargs.itervalues():
       length = len( values )
-      if length > 1:
+      if length >= 1:
         if requiredLength > 0 and length > 1 and requiredLength != length:
           raise Exception( _t_( 'all lists of arguments with more than one value must have the same size' ) )
         else:
