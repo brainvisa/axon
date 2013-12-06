@@ -43,7 +43,7 @@ signature = Signature(
   'read', ReadDiskItem( '4D Volume', shfjGlobals.aimsVolumeFormats,
                         enableConversion = 0 ),
   'write', WriteDiskItem( '4D Volume',  shfjGlobals.aimsWriteVolumeFormats ),
-  'preferedFormat', apply( Choice, [ ( '<auto>', None ) ] + map( lambda x: (x,getFormat(x)), shfjGlobals.aimsVolumeFormats ) ),
+  'preferedFormat', apply( Choice, [ ( '<auto>', None ) ] + map( lambda x: (x,getFormat(x)), shfjGlobals.aimsWriteVolumeFormats ) ),
   'removeSource', Boolean(),
   'ascii', Boolean(),
   'voxelType', Choice( ( '<Same as input>', None), 'U8', 'S8', 'U16', 'S16', 'U32', 'S32', 'FLOAT', 'DOUBLE', 'RGB', 'RGBA' ),
@@ -57,9 +57,10 @@ signature = Signature(
 
 def findAppropriateFormat( values, proc ):
   if values.preferedFormat is None:
-    result = WriteDiskItem( '4D Volume', shfjGlobals.aimsVolumeFormats ).findValue( values.read )
+    result = WriteDiskItem( '4D Volume', shfjGlobals.aimsWriteVolumeFormats ).findValue( values.read )
   else:
     result = WriteDiskItem( '4D Volume', values.preferedFormat ).findValue( values.read )
+    
   return result
 
 def initialization( self ):

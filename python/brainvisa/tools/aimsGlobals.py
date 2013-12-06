@@ -116,6 +116,7 @@ def initializeFormatLists():
       'MINC image',
       'gz compressed MINC image',
       'DICOM image',
+      'FDF image',
     )
   )
   global aimsVolumeFormats
@@ -144,6 +145,7 @@ def initializeFormatLists():
       'MINC image',
       'gz compressed MINC image',
       'DICOM image',
+      'FDF image',
     )
   )
 
