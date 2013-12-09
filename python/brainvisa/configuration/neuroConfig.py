@@ -694,7 +694,19 @@ BrainVISA options:
                           (this mode is used when processes are run in parallel  via Soma-workflow).
   --debugHierarchy <file> Write ontology rules debug information in <file>.
   --debugLinks <file>     Write parameter links debug information in <file>.
-  
+  -r <process specs>      Run a process in batch mode, and quit after execution.
+                          The process specs can be either a .bvproc filename,
+                          or a process name followed by its paremeters.
+                          Parameters names cannot be specified in arguments,
+                          so they must be provided in the correct order:
+                          brainvisa -r process.bvproc
+                          brainvisa -r threshold ~/data/irm.ima /tmp/th.nii "greater than" 80
+                          This used to be the standard way to run batches, but
+                          now it is recommended to use
+                          "python -m brainvisa.axon.runprocess",
+                          which is lighter, instead, and more flexible on
+                          parameters (parameters names are allowed).
+
   -h  or --help           Show help message in batch mode and exit.
 
 Notes:
