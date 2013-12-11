@@ -46,7 +46,7 @@ signature = Signature(
   'preferedFormat', apply( Choice, [ ( '<auto>', None ) ] + map( lambda x: (x,getFormat(x)), aimsGlobals.aimsWriteVolumeFormats ) ),
   'removeSource', Boolean(),
   'ascii', Boolean(),
-  'voxelType', Choice( ( '<Same as input>', None), 'U8', 'S8', 'U16', 'S16', 'U32', 'S32', 'FLOAT', 'DOUBLE', 'RGB', 'RGBA' ),
+  'voxelType', Choice( ( '<Same as input>', None), 'U8', 'S8', 'U16', 'S16', 'U32', 'S32', 'FLOAT', 'DOUBLE', 'RGB', 'RGBA', 'HSV' ),
   'rescaleDynamic', Boolean(),
   'useInputTypeLimits', Boolean(),
   'inputDynamicMin', Float(),
