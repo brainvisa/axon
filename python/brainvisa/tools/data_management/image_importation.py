@@ -25,8 +25,9 @@ class Importer:
                 if cls._remove_nan_needed(input_vol):
                     ext = cls._file_extension(input_filename)
                     temp_file = tempfile.NamedTemporaryFile(suffix=ext)
+                    temp_filename = temp_file.name
                     command = [ "AimsRemoveNaN", "-i", input_filename, "-o",
-                        temp_file ]
+                        temp_filename ]
                     return_value = subprocess.call(command)
                     if return_value != 0:
                         raise ImportationError("The following command failed : \"%s\"" % '" "'.join(command))
@@ -42,6 +43,8 @@ class Importer:
                     raise ImportationError("The following command failed : \"%s\"" % '" "'.join(command_list))
             finally:
                 if temp_file is not None:
+                    if os.path.exists( temp_file.name + '.minf' ):
+                        os.unlink( temp_file.name + '.minf' )
                     temp_file.close()
                 if temp_input is not None:
                     os.remove(temp_input)
