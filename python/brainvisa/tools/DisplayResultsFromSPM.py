@@ -801,11 +801,12 @@ class DisplayResultsFromSPM(object):
       aimsImg = aims.read(atlasImg)
       
       labelDic = {}
-      labelFile = open(atlasTxt)
-      for line in labelFile.readlines():
-          fields = line.split()
-          labelDic.update({ fields[0] : fields[1] })
-          
+      with open(atlasTxt) as f:
+          next(f)
+          for line in f:
+              fields = line.split('\t')
+              labelDic.update({fields[0]: fields[1]})
+
       for i in xrange(2, self.table.rowCount()):
           try:
               coords = [ int(self.table.item(i, 9).text()),
