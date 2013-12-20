@@ -380,13 +380,7 @@ class ProcessToWorkflow( object ):
 
 
   def _create_job( self, depth, jobId, process, inGroup, priority ):
-    
-    command = list( self.brainvisa_cmd )
-    for hb in self._nodeHistoryBooks:
-      command += [ '--historyBook', hb ]
-    command.append( process.id() )
-    for name in process.signature.keys():
-      value = getattr( process, name )
+    def toString(value, level = 0):
       if isinstance( value, DiskItem ):
         hierarchyAttributes = value.hierarchyAttributes()
         hierarchyAttributes.pop( '_database', None )
@@ -394,15 +388,29 @@ class ProcessToWorkflow( object ):
           value = repr( hierarchyAttributes )
         else:
           value = str( value )
-      elif isinstance(value, list):
+      elif isinstance(value, list) \
+        or isinstance(value, tuple):
         new_value = []
         for element in value:
-          new_value.append(str(element))
-        value = new_value
-      else:
-        value = str( value )
+          new_value.append(toString(element, level + 1))
+        if isinstance(value, tuple):
+          value = tuple(new_value)
+        else:
+          value = new_value
+
+      if (level == 0) :
+        return str(value)
+      else :
+        return value
+      
+    command = list( self.brainvisa_cmd )
+    for hb in self._nodeHistoryBooks:
+      command += [ '--historyBook', hb ]
+    command.append( process.id() )
+    for name in process.signature.keys():
+      value = toString(getattr( process, name ))
       command.append( value )
-    # print "==> command " + repr(command)
+    #print "==> command " + repr(command)
     self.create_job( depth, jobId, command, inGroup, label=process.name, priority=priority )
 
   def _processExtraDependencies( self ):
