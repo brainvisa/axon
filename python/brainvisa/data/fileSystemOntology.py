@@ -226,20 +226,21 @@ class ScannerRule( object ):
     self.priority = None
     self.priorityOffset = 0
     self.nonMandatoryKeyAttributes = set()
+    self.declared_attributes = set()
     for fileNameAttribute in pattern.namedRegex():
       if fileNameAttribute != 'name_serie': break 
     else:
       fileNameAttribute = 'filename_variable'
     self.fileNameAttribute = fileNameAttribute
     self.fileNameAttributeIsWeak = 1
-    
+
   def __getstate__( self ):
     state = {}
     for n in ( 'pattern', 'globalAttributes', 'localAttributes',
                'defaultAttributesValues','scanner',
                'itemName', 'priority', 'priorityOffset', 
                'fileNameAttribute', 'fileNameAttributeIsWeak',
-               'nonMandatoryKeyAttributes' ):
+               'nonMandatoryKeyAttributes', 'declared_attributes' ):
       state[ n ] = getattr( self, n )
     if self.type is not None:
       state[ 'type' ] = self.type.id
@@ -255,7 +256,7 @@ class ScannerRule( object ):
     for n in ( 'pattern', 'globalAttributes', 'localAttributes', 'scanner',
                'defaultAttributesValues', 'itemName', 'priority',
                'priorityOffset', 'fileNameAttribute', 'fileNameAttributeIsWeak',
-               'nonMandatoryKeyAttributes' ):
+               'nonMandatoryKeyAttributes', 'declared_attributes' ):
       setattr( self, n, state[ n ] )
     t = state[ 'type' ]
     if t:
@@ -545,6 +546,21 @@ class SetFileNameStrongAttribute( ScannerRuleBuilder ):
 
 
 #----------------------------------------------------------------------------
+class DeclareAttributes( ScannerRuleBuilder ):
+  """
+  """
+  def __init__( self, *attributes ):
+    """
+    Lists attributes which should be added to the database columns, with no default value.
+    :param string attributes: name of the attributes
+    """
+    self.attributes = attributes
+
+  def build( self, scannerRule ):
+    scannerRule.declared_attributes.update( self.attributes )
+
+
+#----------------------------------------------------------------------------
 class DirectoryScanner( object ):
   """
   This object contains a list of :py:class:`ScannerRule` describing the content of a directory.
@@ -735,7 +751,7 @@ class DirectoryScanner( object ):
               print >> debug, '     rule has no scanner'
             else:
               print >> debug, '     rule scanner:', ', '.join( [i.pattern.pattern for i in rule.scanner.rules] )
-                              
+
           # A matching rule has been found, do not inspect other rules
           identified = 1
           break
@@ -885,6 +901,7 @@ class FileSystemOntology( object ):
           ruleInExtenso.localAttributes += r.localAttributes
           ruleInExtenso.priorityOffset += r.priorityOffset
           ruleInExtenso.nonMandatoryKeyAttributes.update( r.nonMandatoryKeyAttributes )
+          ruleInExtenso.declared_attributes.update( r.declared_attributes )
         ruleInExtenso.itemName = rule.itemName
         self.typeToPatterns.setdefault( rule.type, [] ).append( ruleInExtenso )
       if rule.scanner:

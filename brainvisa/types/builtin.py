@@ -199,6 +199,7 @@ HierarchyDirectoryType( 'Protocol', 'Any type' )
 HierarchyDirectoryType( 'Subject', 'Any type' )
 HierarchyDirectoryType( 'Session', 'Any type' )
 HierarchyDirectoryType( 'Bvsession', 'Any type' )
+HierarchyDirectoryType( 'Acquisition', 'Any type' )
 
 FileType( 'gz compressed TAR archive', 'Any Type', 'gz compressed TAR archive' )
 FileType( 'Scalar features', 'Any Type', 'Aims scalar features' )
