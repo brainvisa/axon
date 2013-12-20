@@ -1314,10 +1314,11 @@ class IterationProcess( Process ):
   
   It is used to iterate the same process on a set of data.
   """
-  def __init__( self, name, processes ):
+  def __init__( self, name, processes, base = None ):
     self._id = name + 'Iteration'
     self.name = name
     self.instance = 1
+    self.base = base
     self._processes = [getProcessInstance( p ) for p in processes]
     Process.__init__( self )
     for sp, p in zip( self._executionNode._children.values(), processes ):
@@ -1337,12 +1338,15 @@ class IterationProcess( Process ):
     return { 'type': 'iteration', 'name' : self.name, 'children':[p.pipelineStructure() for p in self._processes] }
 
   def initialization( self ):
-    if len( self._processes ) != 0:
+    
+    if not self.base is None:
+      dp = self.base
+    elif len( self._processes ) != 0:
       dp = self._processes[0].name
     else:
       dp = None
     eNode = ParallelExecutionNode( self.name, stopOnError=False,
-      possibleChildrenProcesses=dp, notify = True )
+                                   possibleChildrenProcesses=dp, notify = True )
 
     for i in xrange( len( self._processes ) ):
       self._processes[ i ].isMainProcess = True

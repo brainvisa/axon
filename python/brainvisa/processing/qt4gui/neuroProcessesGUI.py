@@ -2153,7 +2153,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       # Show/Hide node actions
       if isinstance( enode, brainvisa.processes.ProcessExecutionNode ) :
         enode = enode._executionNode
-      
+
       if isinstance( enode, brainvisa.processes.ParallelExecutionNode ) \
          and enode.possibleChildrenProcesses :
         self.executionTreeMenu._addnodeaction.setVisible( True )
@@ -2373,6 +2373,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     item=self.executionTree.currentItem()
     if item:
       enode = item._executionNode
+           
       if isinstance( enode, brainvisa.processes.ProcessExecutionNode ) :
         enode = enode._executionNode
       
@@ -2967,7 +2968,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     try:
       params = self._iterationDialog.getLists()
       processes = self.process._iterate( **params )
-      iterationProcess = brainvisa.processes.IterationProcess( self.process.name+" iteration", processes )
+      iterationProcess = brainvisa.processes.IterationProcess( self.process.name + " iteration", 
+                                                               processes, 
+                                                               self.process.name )
       showProcess( iterationProcess )
     except:
         neuroException.showException()
@@ -3631,7 +3634,10 @@ class ProcessSelectionWidget( QMainWindow ):
     try:
       params = self._iterationDialog.getLists()
       processes = self.currentProcess._iterate( **params )
-      iterationProcess = brainvisa.processes.IterationProcess( self.currentProcess.name+" iteration", processes )
+      iterationProcess = brainvisa.processes.IterationProcess( self.currentProcess.name + " iteration", 
+                                                               processes, 
+                                                               self.currentProcess.name )
+      #iterationProcess.possibleChildrenProcesses =
       showProcess( iterationProcess )
     except:
       neuroException.showException()
