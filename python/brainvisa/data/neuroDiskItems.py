@@ -769,6 +769,10 @@ class DiskItem(QObject):
     #print '!neuroDiskItems !: updateMinf : ', dict
     for attrName, value in dict.items():
       self._otherAttributes.pop( attrName, None )
+      if attrName in self._localAttributes:
+        self._localAttributes[ attrName ] = value
+      elif attrName in self._globalAttributes:
+        self._globalAttributes[ attrName ] = value
       self._minfAttributes[ attrName ] = value
     if saveMinf:
       minf = self._readMinf()

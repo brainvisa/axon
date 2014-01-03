@@ -310,9 +310,9 @@ class SQLDatabase( Database ):
     minf = os.path.join( self.directory, 'database_settings.minf' )
     if fso is None:
       if os.path.exists(minf):
-        fso = readMinf( minf )[ 0 ].get( 'ontology', 'brainvisa-3.0' )
+        fso = readMinf( minf )[ 0 ].get( 'ontology', 'brainvisa-3.2.0' )
       else:
-        fso='brainvisa-3.0'
+        fso='brainvisa-3.2.0'
     self.fso = FileSystemOntology.get( fso )
     self.otherSqliteFiles=otherSqliteFiles
     self._mustBeUpdated = False
@@ -363,6 +363,9 @@ class SQLDatabase( Database ):
               continue
             if formatName not in typeFormats:
               typeFormats.append( formatName )
+        for a in rule.declared_attributes:
+          if a not in keys:
+            keys.append( a )
       for lopa, lopaRules in rulesByLOPA.iteritems():
         for n in lopa:
           editableAttributes.add( n )
@@ -978,6 +981,10 @@ class SQLDatabase( Database ):
           #print '!!', sql, values, [ type(i) for i in values ]
           if delete:
             cursor.execute( 'DELETE FROM "' + tableName + '" WHERE _uuid=?', ( uuid, ) )
+          if diskItem.get( 'subject' ) and diskItem.get( 'subject' ) == 'sujet01_bis':
+            print '** insert atts for', diskItem, ':'
+            print '  keys:', tableAttributes[3:]
+            print '  values:', values
           cursor.execute( sql, values )
 
     except sqlite3.OperationalError, e:
@@ -1112,21 +1119,45 @@ class SQLDatabase( Database ):
         result.format = getFormat( str(format.name) )
         result._files = [ os.path.normpath( noExt + '.' + ext ) for ext in newFormat.extensions() ]
     return result
-  
-  
+
+
+  def _getParentAttributes( self, directory, attributes ):
+    parentDir = os.path.normpath( directory )
+    rejected = ( 'uuid', )
+    basedir = os.path.normpath( self.directory )
+    # DEBUG
+    modif = False
+    while parentDir != basedir:
+      minf = parentDir + '.minf'
+      if os.path.exists( minf ):
+        minfcontent = readMinf( minf )
+        for key, val in minfcontent[0].iteritems():
+          if key not in rejected and key not in attributes:
+            attributes[ key ] = val
+            modif = True
+      parentDir = os.path.dirname( parentDir )
+    if modif and attributes:
+      print 'minf atts for', directory, ':', attributes
+
+
   def scanDatabaseDirectories( self, directoriesIterator=None, includeUnknowns=False, directoriesToScan=None, recursion=True, debugHTML=None, context=None ):
     if debugHTML:
       print >> debugHTML, '<html><body><h1>Scan log for database <tt>' + self.name + '</tt></h1>\n<h2>Directory</h2><blockquote>'
       print >> debugHTML, self.directory, '</blockquote>'
     scanner = [i for i in self.fso.content if isinstance(i,SetContent)][0].scanner
+    print '## scanDatabaseDirectories', directoriesIterator, directoriesToScan, self.directory
+    # get specific attributes from parent directories
+    attributes = {}
+    if directoriesToScan and len( directoriesToScan ) == 1:
+      self._getParentAttributes( directoriesToScan[0], attributes )
     if directoriesIterator is None:
-      stack = [ ( DirectoryIterator(self.directory), scanner, { }, 0 ) ]
+      stack = [ ( DirectoryIterator(self.directory), scanner, attributes, 0 ) ]
     else:
-      stack = [ ( directoriesIterator, scanner, {  }, 0 ) ]
+      stack = [ ( directoriesIterator, scanner, attributes, 0 ) ]
 
     while stack:
       itDirectory, scanner, attributes, priorityOffset = stack.pop( 0 )
-      
+
 
       f = itDirectory.fullPath()
       if directoriesToScan is not None:
@@ -1196,13 +1227,13 @@ class SQLDatabase( Database ):
         if format == 'Directory':
           # Find directories corresponding to a rule with a SetContent
           f = it.fileName()
+          
           for rule in directoryRules:
             match = DictPattern.match( rule.pattern, f, attributes )
             if match is not None:
               a = attributes.copy()
               a.update( match )
               a.update( rule.localAttributes )
-              stack.append( ( it, rule.scanner, a, priorityOffset + rule.priorityOffset ) )
               if allowYield and ( rule.type is not None or includeUnknowns ):
                 diskItem = Directory( nameWithoutExtension, None )
                 diskItem.type = rule.type
@@ -1214,11 +1245,25 @@ class SQLDatabase( Database ):
                 diskItem._priority = priorityOffset + rule.priorityOffset
                 diskItem._identified = True
                 diskItem.readAndUpdateMinf()
+                # insert declared_attributes read from minf
+                for att in rule.declared_attributes:
+                  val = diskItem._minfAttributes.get( att )
+                  if val is not None:
+                    a[ att ] = val
+                    # FIXME: should we do the following line ?
+                    # diskItem._globalAttributes[ att ] = val
+                if a != attributes and 'time_point' in a and a['subject'] == 'sujet01_bis':
+                  print 'modified by minf:', a[ 'time_point' ], 'for', nameWithoutExtension
+                  if 'time_point' in attributes:
+                    print '    was:', attributes[ 'time_point' ]
+                stack.append( ( it, rule.scanner, a, priorityOffset +     rule.priorityOffset ) )
                 yield diskItem
                 if debugHTML:
                   print >> debugHTML, '<font color=darkblue><b>', diskItem, ':</b>', diskItem.type, '</font> (' + htmlEscape( rule.pattern.pattern ) + ':' + str( rule.type ) + ')<br>'
               #if debugHTML:
                 #print >> debugHTML, '<font color=darkorange><b>' + f + ':</b> ' + repr( match ) + '</font><br>'
+              else:
+                stack.append( ( it, rule.scanner, a, priorityOffset + rule.priorityOffset ) )
               break
           else:
             #for rule in directoryRules:
@@ -1249,8 +1294,8 @@ class SQLDatabase( Database ):
                 groupDiskItem = nameSeriesGroupedItems.get( key )
                 if groupDiskItem is None:
                   diskItem._globalAttributes[ '_ontology' ] = self.fso.name
-                  diskItem._globalAttributes.update( attributes )
                   diskItem._globalAttributes.update( match )
+                  diskItem._globalAttributes.update( attributes )
                   diskItem._globalAttributes.update( rule.localAttributes )
                   diskItem._priority = priorityOffset + rule.priorityOffset
                   diskItem._identified = True
@@ -1265,8 +1310,8 @@ class SQLDatabase( Database ):
                   groupDiskItem._getLocal( 'name_serie' ).add( name_serie )
               elif allowYield:
                 diskItem._globalAttributes[ '_ontology' ] = self.fso.name
-                diskItem._globalAttributes.update( attributes )
                 diskItem._globalAttributes.update( match )
+                diskItem._globalAttributes.update( attributes )
                 diskItem._globalAttributes.update( rule.localAttributes )
                 diskItem._priority = priorityOffset + rule.priorityOffset
                 diskItem.readAndUpdateMinf()

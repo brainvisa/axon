@@ -5,7 +5,10 @@ insert( '{center}/{subject}',
   't1mri', SetWeakAttr( 'modality', 't1mri' ),
     SetContent(
       '{acquisition}',
+        SetType( 'Acquisition' ),
         SetDefaultAttributeValue( 'acquisition', default_acquisition ), SetNonMandatoryKeyAttribute( 'acquisition' ),
+        DeclareAttributes( 'time_point', 'time_duration', 'rescan', 'acquitition_date' ),
+        #SetWeakAttr( 'time_point', 'M_0' ),
         SetContent(
           # acquisition
 
