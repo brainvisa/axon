@@ -27,7 +27,7 @@ if( soma-workflow_FOUND )
 endif()
 BRAINVISA_FIND_PACKAGE( brainvisa-release QUIET )
 if( BRAINVISA-RELEASE_FOUND )
-  BRAINVISA_DEPENDENCY( USRDOC RECOMMENDS "brainvisa-release" RUN BINARY_INDEPENDENT )
+  BRAINVISA_DEPENDENCY( RUN RECOMMENDS "brainvisa-release" RUN BINARY_INDEPENDENT )
 endif()
 
 BRAINVISA_DEPENDENCY( RUN DEPENDS python RUN ">= ${PYTHON_SHORT_VERSION}" )
@@ -49,9 +49,10 @@ BRAINVISA_COPY_PYTHON_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/brainvisa"
 BRAINVISA_COPY_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/share" 
                           "share/${PROJECT_NAME}-${BRAINVISA_PACKAGE_VERSION_MAJOR}.${BRAINVISA_PACKAGE_VERSION_MINOR}"
                           ${PROJECT_NAME} )
+# this doc should be part of the "run" package.
 BRAINVISA_COPY_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/doc" 
                           "share/doc/${PROJECT_NAME}-${BRAINVISA_PACKAGE_VERSION_MAJOR}.${BRAINVISA_PACKAGE_VERSION_MINOR}"
-                          ${PROJECT_NAME}-usrdoc )
+                          ${PROJECT_NAME} )
 BRAINVISA_COPY_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/bin"
                           bin
                           ${PROJECT_NAME} )
