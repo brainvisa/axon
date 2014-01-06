@@ -649,6 +649,7 @@ class TransformRoi():
                     outsideImageBounds = True
                     break
         
+        interExists = False
         for i in xrange(len(meshes)):
             for mesh in meshes[i+1:]:
                 interExists = aims.SurfaceManip.checkMeshIntersect( self._aimsMeshes[meshes[i]], self._aimsMeshes[mesh])
