@@ -357,6 +357,30 @@ class DiskItemBrowser( QDialog ):
   
   
   def rescan( self ):
+    def filterUniqueCols( allColsNonUnique, uniquecols, uniquecolsvals,
+        attrs ):
+      if not allColsNonUnique:
+        if len( uniquecolsvals ) == 0:
+          for att in attrs[:-1]:
+            if att is None: att = ''
+            uniquecolsvals.append( att )
+        else:
+          toremove = set()
+          for i in uniquecols:
+            att = attrs[i]
+            if att is None: att = u''
+            if i >= len( uniquecolsvals ):
+              while( len( uniquecolsvals ) < i ):
+                uniquecolsvals.append( u'' )
+              uniquecolsvals.append( att )
+              continue
+            if uniquecolsvals[i] != att:
+              toremove.add( i )
+          uniquecols.difference_update( toremove )
+          if len( uniquecols ) == 0:
+            allColsNonUnique = True
+      return allColsNonUnique
+
     QApplication.setOverrideCursor( Qt.WaitCursor )
     try:
       # Fill selection combos from requests in database
@@ -469,22 +493,38 @@ class DiskItemBrowser( QDialog ):
             if selected is not None and selected == v:
               cmb.setCurrentIndex( cmb.count() - 1 )
       self._items = []
-      keyAttributes = self._database.getTypesKeysAttributes( *selectedTypes )
+      rawKeyAttributes = self._database.getTypesKeysAttributes( *selectedTypes )
+      keyAttributes = []
+      for att in ( 'subject', 'center', 'protocol', 'time_point' ):
+        if att in rawKeyAttributes:
+          keyAttributes.append( att )
+      keyAttributes = keyAttributes + [ att for att in sorted( rawKeyAttributes ) if att not in keyAttributes ]
       self._tableData = SimpleTable( header=[ 'type' ] + keyAttributes + [ 'format', 'database' ] )
       # database attribute is also needed because two diskitems can have the same attributes values in two different databases
       readItems = set()
+      uniquecols = set( range( len( keyAttributes ) + 3 ) )
+      uniquecolsvals = []
+      allColsNonUnique = False
       for attrs in sorted( self._database.findAttributes( [ '_type' ] + keyAttributes + [ '_format', '_database', '_uuid' ], selection={}, exactType=self._exactType, **required ) ):
         self._tableData.addRow( attrs[:-1] )
         self._items.append( (attrs[-1], attrs[-2], ) )
         readItems.add( tuple( attrs[ :-1 ] ) )
+        allColsNonUnique = filterUniqueCols( allColsNonUnique, uniquecols,
+          uniquecolsvals, attrs )
       if self._write:
         for item in self._database.createDiskItems( {}, exactType=self._exactType, **required  ):
           attrs = [ item.type.name ] + [ unicode(item.getHierarchy(i)) for i in keyAttributes ] + [ item.format.name, item.getHierarchy('_database') ]
           if tuple( attrs ) not in readItems:
             self._tableData.addRow( attrs )
             self._items.append( item )
+            allColsNonUnique = filterUniqueCols( allColsNonUnique, uniquecols,
+              uniquecolsvals, attrs )
+      if len( self._items ) <= 1:
+        # if only one item, show all columns even if they are (all) unique
+        uniquecols = set()
       self._ui.tblItems.setModel( self._tableData )
       self._ui.labItems.setText( _t_( '%d item(s)' ) % ( len( self._items ), ) )
+      self._ui.tblItems.horizontalHeader().setMovable( True )
       if self._items:
         self._ui.tblItems.selectRow( 0 )
         self.itemSelected( 0 )
@@ -506,15 +546,17 @@ class DiskItemBrowser( QDialog ):
           else:
             cmb.show()
             cmb._label.show()
-      
+
       self.attributesWidget.adjustSize()
       self._ui.tblItems.resizeColumnsToContents()
+      for i in xrange( len( keyAttributes ) + 3 ):
+        self._ui.tblItems.setColumnHidden( i, i in uniquecols )
     finally:
       QApplication.restoreOverrideCursor()
 
 
   def getValues( self ):
-    return [ (self._items[ i ] if isinstance(self._items[ i ], DiskItem) else self._database.database(self._items[i][1]).getDiskItemFromUuid(self._items[ i ][0])) for i in [ self._tableData.sortedIndex( j.row() ) for j in self._ui.tblItems.selectedIndexes() if j.column() == 0 ] ]
+    return [ (self._items[ i ] if isinstance(self._items[ i ], DiskItem) else self._database.database(self._items[i][1]).getDiskItemFromUuid(self._items[ i ][0])) for i in set( [ self._tableData.sortedIndex( j.row() ) for j in self._ui.tblItems.selectedIndexes() ] ) ]
 
   def getAllValues( self ):
     """
