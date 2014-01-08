@@ -485,6 +485,7 @@ class DiskItemBrowser( QDialog ):
             self._items.append( item )
       self._ui.tblItems.setModel( self._tableData )
       self._ui.labItems.setText( _t_( '%d item(s)' ) % ( len( self._items ), ) )
+      self._ui.tblItems.horizontalHeader().setMovable( True )
       if self._items:
         self._ui.tblItems.selectRow( 0 )
         self.itemSelected( 0 )
