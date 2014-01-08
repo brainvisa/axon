@@ -981,10 +981,6 @@ class SQLDatabase( Database ):
           #print '!!', sql, values, [ type(i) for i in values ]
           if delete:
             cursor.execute( 'DELETE FROM "' + tableName + '" WHERE _uuid=?', ( uuid, ) )
-          if diskItem.get( 'subject' ) and diskItem.get( 'subject' ) == 'sujet01_bis':
-            print '** insert atts for', diskItem, ':'
-            print '  keys:', tableAttributes[3:]
-            print '  values:', values
           cursor.execute( sql, values )
 
     except sqlite3.OperationalError, e:
@@ -1136,8 +1132,8 @@ class SQLDatabase( Database ):
             attributes[ key ] = val
             modif = True
       parentDir = os.path.dirname( parentDir )
-    if modif and attributes:
-      print 'minf atts for', directory, ':', attributes
+    #if modif and attributes:
+      #print 'minf atts for', directory, ':', attributes
 
 
   def scanDatabaseDirectories( self, directoriesIterator=None, includeUnknowns=False, directoriesToScan=None, recursion=True, debugHTML=None, context=None ):
@@ -1145,7 +1141,7 @@ class SQLDatabase( Database ):
       print >> debugHTML, '<html><body><h1>Scan log for database <tt>' + self.name + '</tt></h1>\n<h2>Directory</h2><blockquote>'
       print >> debugHTML, self.directory, '</blockquote>'
     scanner = [i for i in self.fso.content if isinstance(i,SetContent)][0].scanner
-    print '## scanDatabaseDirectories', directoriesIterator, directoriesToScan, self.directory
+    # print '## scanDatabaseDirectories', directoriesIterator, directoriesToScan, self.directory
     # get specific attributes from parent directories
     attributes = {}
     if directoriesToScan and len( directoriesToScan ) == 1:
@@ -1252,10 +1248,6 @@ class SQLDatabase( Database ):
                     a[ att ] = val
                     # FIXME: should we do the following line ?
                     # diskItem._globalAttributes[ att ] = val
-                if a != attributes and 'time_point' in a and a['subject'] == 'sujet01_bis':
-                  print 'modified by minf:', a[ 'time_point' ], 'for', nameWithoutExtension
-                  if 'time_point' in attributes:
-                    print '    was:', attributes[ 'time_point' ]
                 stack.append( ( it, rule.scanner, a, priorityOffset +     rule.priorityOffset ) )
                 yield diskItem
                 if debugHTML:
