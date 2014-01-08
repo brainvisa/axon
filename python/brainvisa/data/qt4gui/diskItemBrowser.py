@@ -357,6 +357,30 @@ class DiskItemBrowser( QDialog ):
   
   
   def rescan( self ):
+    def filterUniqueCols( allColsNonUnique, uniquecols, uniquecolsvals,
+        attrs ):
+      if not allColsNonUnique:
+        if len( uniquecolsvals ) == 0:
+          for att in attrs[:-1]:
+            if att is None: att = ''
+            uniquecolsvals.append( att )
+        else:
+          toremove = set()
+          for i in uniquecols:
+            att = attrs[i]
+            if att is None: att = u''
+            if i >= len( uniquecolsvals ):
+              while( len( uniquecolsvals ) < i ):
+                uniquecolsvals.append( u'' )
+              uniquecolsvals.append( att )
+              continue
+            if uniquecolsvals[i] != att:
+              toremove.add( i )
+          uniquecols.difference_update( toremove )
+          if len( uniquecols ) == 0:
+            allColsNonUnique = True
+      return allColsNonUnique
+
     QApplication.setOverrideCursor( Qt.WaitCursor )
     try:
       # Fill selection combos from requests in database
@@ -485,27 +509,19 @@ class DiskItemBrowser( QDialog ):
         self._tableData.addRow( attrs[:-1] )
         self._items.append( (attrs[-1], attrs[-2], ) )
         readItems.add( tuple( attrs[ :-1 ] ) )
-        if not allColsNonUnique:
-          if len( uniquecolsvals ) == 0:
-            for att in attrs[:-1]:
-              if att is None: att = ''
-              uniquecolsvals.append( att )
-          else:
-            toremove = set()
-            for i in uniquecols:
-              att = attrs[i]
-              if att is None: att = u''
-              if uniquecolsvals[i] != att:
-                toremove.add( i )
-            uniquecols = uniquecols.difference( toremove )
-            if len( uniquecols ) == 0:
-              allColsNonUnique = True
+        allColsNonUnique = filterUniqueCols( allColsNonUnique, uniquecols,
+          uniquecolsvals, attrs )
       if self._write:
         for item in self._database.createDiskItems( {}, exactType=self._exactType, **required  ):
           attrs = [ item.type.name ] + [ unicode(item.getHierarchy(i)) for i in keyAttributes ] + [ item.format.name, item.getHierarchy('_database') ]
           if tuple( attrs ) not in readItems:
             self._tableData.addRow( attrs )
             self._items.append( item )
+            allColsNonUnique = filterUniqueCols( allColsNonUnique, uniquecols,
+              uniquecolsvals, attrs )
+      if len( self._items ) <= 1:
+        # if only one item, show all columns even if they are (all) unique
+        uniquecols = set()
       self._ui.tblItems.setModel( self._tableData )
       self._ui.labItems.setText( _t_( '%d item(s)' ) % ( len( self._items ), ) )
       self._ui.tblItems.horizontalHeader().setMovable( True )
