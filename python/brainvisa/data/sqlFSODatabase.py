@@ -1243,9 +1243,17 @@ class SQLDatabase( Database ):
                 diskItem.readAndUpdateMinf()
                 # insert declared_attributes read from minf and fso_attributes.csv file
                 if rule.declared_attributes and os.path.basename( diskItem.fullPath() ) != 'fso_attributes.csv':
-                  
+                  fso_attributes = {}
+                  if os.path.isdir( diskItem.fullPath() ):
+                    fso_attributes_file = os.path.join( diskItem.fullPath(),
+                      'fso_attributes.csv' )
+                    if os.path.isfile( fso_attributes_file ):
+                      fso_attributes = self.readFsoAttributesCSV(
+                        fso_attributes_file )
                   for att in rule.declared_attributes:
                     val = diskItem._minfAttributes.get( att )
+                    if val is None:
+                      val = fso_attributes.get( att )
                     if val is not None:
                       a[ att ] = val
                       # FIXME: should we do the following line ?
@@ -1339,6 +1347,26 @@ class SQLDatabase( Database ):
     
     if debugHTML:
       print >> debugHTML, '</body></html>'
+
+
+  @staticmethod
+  def readFsoAttributesCSV( filename ):
+    try:
+      attributes = {}
+      f = open( filename )
+      r = re.compile( '^\s*([^ \s,]+)\s*,?\s*(.*)$' )
+      empty = re.compile( '^(\s)*(#.*)?$' )
+      for line in f.xreadlines():
+        m = empty.match( line )
+        if m is not None:
+          continue
+        m = r.match( line )
+        attributes[ m.group(1) ] = m.group(2)
+      return attributes
+    except:
+      print 'Warning, error in CSV FSO attributes file %s' % filename
+      return {}
+
 
   def findAttributes( self, attributes, selection={}, _debug=None, exactType=False, **required ):
     if exactType:
