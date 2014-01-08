@@ -1241,13 +1241,15 @@ class SQLDatabase( Database ):
                 diskItem._priority = priorityOffset + rule.priorityOffset
                 diskItem._identified = True
                 diskItem.readAndUpdateMinf()
-                # insert declared_attributes read from minf
-                for att in rule.declared_attributes:
-                  val = diskItem._minfAttributes.get( att )
-                  if val is not None:
-                    a[ att ] = val
-                    # FIXME: should we do the following line ?
-                    # diskItem._globalAttributes[ att ] = val
+                # insert declared_attributes read from minf and fso_attributes.csv file
+                if rule.declared_attributes and os.path.basename( diskItem.fullPath() ) != 'fso_attributes.csv':
+                  
+                  for att in rule.declared_attributes:
+                    val = diskItem._minfAttributes.get( att )
+                    if val is not None:
+                      a[ att ] = val
+                      # FIXME: should we do the following line ?
+                      # diskItem._globalAttributes[ att ] = val
                 stack.append( ( it, rule.scanner, a, priorityOffset +     rule.priorityOffset ) )
                 yield diskItem
                 if debugHTML:
