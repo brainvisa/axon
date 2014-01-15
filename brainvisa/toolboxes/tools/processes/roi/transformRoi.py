@@ -231,6 +231,7 @@ class TransformRoi():
         self._mainDiag.imageCb.clear()
         for img in self._images:
             self._mainDiag.imageCb.addItem(os.path.splitext(os.path.basename(img.fullPath()))[0])
+        self._setComboboxViewMinimumWidth(self._mainDiag.imageCb)        
         QtCore.QObject.connect(self._mainDiag.imageCb,
                                QtCore.SIGNAL('currentIndexChanged(int)'),
                                self._imageSelectionChanged)
@@ -238,6 +239,7 @@ class TransformRoi():
         self._mainDiag.roiCb.clear()
         for roi in self._inputRoi:
             self._mainDiag.roiCb.addItem(os.path.splitext(os.path.basename(roi.fullPath()))[0])
+        self._setComboboxViewMinimumWidth(self._mainDiag.roiCb)
         QtCore.QObject.connect(self._mainDiag.roiCb,
                                QtCore.SIGNAL('currentIndexChanged(int)'),
                                self._roiSelectionChanged)
@@ -368,8 +370,15 @@ class TransformRoi():
             self._mainDiag.gapSp.blockSignals(True)
             self._mainDiag.rotationSymSp.setValue(currentTransformation["rotationSym"])
             self._mainDiag.gapSp.blockSignals(False)
-            
-        
+     
+    def _setComboboxViewMinimumWidth(self, cb):
+        longestText = ""
+        for i in range(cb.count()):
+            text = cb.itemText(i)
+            if len(text) > len(longestText):
+                longestText = text
+        cb.view().setMinimumWidth(QtGui.QFontMetrics(cb.font()).width(longestText+"  "))
+    
     def _createAnatomistImages(self):
         self._aImages = {}
         for img in self._images:
