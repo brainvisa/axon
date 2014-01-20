@@ -33,7 +33,8 @@
 
 from brainvisa.processes import *
 from brainvisa import shelltools
-import shfjGlobals, stat
+from brainvisa.tools import aimsGlobals
+import stat
 import registration
 
 from brainvisa.tools.data_management.image_importation import Importer
@@ -73,7 +74,7 @@ def execution( self, context ):
                       " orientation could be wrong.")
   Importer.import_t1mri(self.input.fullPath(), self.output.fullPath())
   # force completing .minf
-  minfatt = shfjGlobals.aimsVolumeAttributes( self.output )
+  minfatt = aimsGlobals.aimsVolumeAttributes( self.output )
   for x, y in minfatt.items():
     if x != "dicom":
       self.output.setMinf( x, y )
