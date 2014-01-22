@@ -591,15 +591,15 @@ class HierarchyBrowser( QWidget ):
         sitem.setIcon( 0, self.pixFile )
         #sitem.setSelected(True)
         #sitem.setDragEnabled(True)
-        
-    def itemSelected( self, item ):      
+
+    def itemSelected( self, item ):
       #print "!hierarchyBrowser ! : itemSelected "
       if item is not None and item.diskItem is not None:
         t = DiskItemBrowser.diskItemDisplayText(item.diskItem)
         self.textEditArea.setHtml( t )
       else:
         self.textEditArea.setText( '' )
-  
+
     #------ Drag&Drop ------
     def mousePressEvent(self, event):
       #print "!hierarchyBrowser ! : mousePressEvent "

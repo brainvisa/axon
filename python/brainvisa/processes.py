@@ -2464,6 +2464,7 @@ class ExecutionContext( object ):
                       children=newStackTop.log, icon='icon_process.png' )
         else:
           newStackTop.log = None
+          self._lastStartProcessLogItem = None
 
         if ishead and self._allowHistory:
           self._historyBookEvent, self._historyBooksContext = HistoryBook.storeProcessStart( self, process )
