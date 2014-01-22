@@ -119,6 +119,7 @@ from brainvisa.data.patterns import DictPattern
 from brainvisa import shelltools
 from brainvisa.multipleExecfile import MultipleExecfile
 from PyQt4.QtCore import QObject, SIGNAL
+import re
 
 
 #----------------------------------------------------------------------------
@@ -955,8 +956,31 @@ class DiskItem(QObject):
     else:
       if os.path.exists( minf ):
         os.remove( minf )
-  
-  
+
+  @staticmethod
+  def readFsoAttributesCSVFile( filename ):
+    try:
+      attributes = {}
+      f = open( filename )
+      r = re.compile( '^\s*([^ \s,]+)\s*,?\s*(.*)$' )
+      empty = re.compile( '^(\s)*(#.*)?$' )
+      for line in f.xreadlines():
+        m = empty.match( line )
+        if m is not None:
+          continue
+        m = r.match( line )
+        attributes[ m.group(1) ] = m.group(2)
+      return attributes
+    except:
+      print 'Warning, error reading CSV FSO attributes file %s' % filename
+      return {}
+
+  def readFsoAttributesCSV( self ):
+    filename =  os.path.join( self.fullPath(), 'fso_attributes.csv' )
+    return self.readFsoAttributesCSVFile( filename )
+
+
+
   def readAndUpdateMinf( self ):
     """
     Reads the content of the minf file and updates the minf attribute dictionary accordingly.
@@ -970,6 +994,11 @@ class DiskItem(QObject):
           self._changeUuid( Uuid( attrs[ 'uuid' ] ) )
           del attrs[ 'uuid' ]
         self.updateMinf( attrs, saveMinf=False )
+      if os.path.isdir( self.fullPath() ) \
+          and os.path.exists( os.path.join( self.fullPath(),
+            'fso_attributes.csv' ) ):
+        fso_attributes = self.readFsoAttributesCSV()
+        self._globalAttributes.update( fso_attributes )
     finally:
       self._lock.release()
   

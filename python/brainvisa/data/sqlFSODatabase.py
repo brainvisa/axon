@@ -1127,6 +1127,9 @@ class SQLDatabase( Database ):
       minf = parentDir + '.minf'
       if os.path.exists( minf ):
         minfcontent = readMinf( minf )
+        if os.path.exists( os.path.join( parentDir, 'fso_attributes.csv' ) ):
+          minfcontent[0].update( DiskItem.readFsoAttributesCSVFile(
+            os.path.join( parentDir, 'fso_attributes.csv' ) ) )
         for key, val in minfcontent[0].iteritems():
           if key not in rejected and key not in attributes:
             attributes[ key ] = val
@@ -1223,7 +1226,7 @@ class SQLDatabase( Database ):
         if format == 'Directory':
           # Find directories corresponding to a rule with a SetContent
           f = it.fileName()
-          
+
           for rule in directoryRules:
             match = DictPattern.match( rule.pattern, f, attributes )
             if match is not None:
@@ -1242,22 +1245,11 @@ class SQLDatabase( Database ):
                 diskItem._identified = True
                 diskItem.readAndUpdateMinf()
                 # insert declared_attributes read from minf and fso_attributes.csv file
-                if rule.declared_attributes and os.path.basename( diskItem.fullPath() ) != 'fso_attributes.csv':
-                  fso_attributes = {}
-                  if os.path.isdir( diskItem.fullPath() ):
-                    fso_attributes_file = os.path.join( diskItem.fullPath(),
-                      'fso_attributes.csv' )
-                    if os.path.isfile( fso_attributes_file ):
-                      fso_attributes = self.readFsoAttributesCSV(
-                        fso_attributes_file )
+                if rule.declared_attributes:
                   for att in rule.declared_attributes:
-                    val = diskItem._minfAttributes.get( att )
-                    if val is None:
-                      val = fso_attributes.get( att )
+                    val = diskItem.get( att )
                     if val is not None:
                       a[ att ] = val
-                      # FIXME: should we do the following line ?
-                      # diskItem._globalAttributes[ att ] = val
                 stack.append( ( it, rule.scanner, a, priorityOffset +     rule.priorityOffset ) )
                 yield diskItem
                 if debugHTML:
@@ -1347,25 +1339,6 @@ class SQLDatabase( Database ):
     
     if debugHTML:
       print >> debugHTML, '</body></html>'
-
-
-  @staticmethod
-  def readFsoAttributesCSV( filename ):
-    try:
-      attributes = {}
-      f = open( filename )
-      r = re.compile( '^\s*([^ \s,]+)\s*,?\s*(.*)$' )
-      empty = re.compile( '^(\s)*(#.*)?$' )
-      for line in f.xreadlines():
-        m = empty.match( line )
-        if m is not None:
-          continue
-        m = r.match( line )
-        attributes[ m.group(1) ] = m.group(2)
-      return attributes
-    except:
-      print 'Warning, error in CSV FSO attributes file %s' % filename
-      return {}
 
 
   def findAttributes( self, attributes, selection={}, _debug=None, exactType=False, **required ):
