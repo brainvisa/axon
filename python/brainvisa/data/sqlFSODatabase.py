@@ -847,10 +847,14 @@ class SQLDatabase( Database ):
       reldirname = relative_path( dirname, self.directory )
       # add parents until one is already in the set or already in the 
       # database
+      lastItem = diskItem
       while reldirname:
         dirItem = self.createDiskItemFromFileName( 
           os.path.join( self.directory, reldirname ), None )
         if dirItem:
+          # set/fix parent item
+          lastItem.parent = dirItem
+          lastItem = dirItem
           if dirItem in diSet:
             break
           # check if it is already in the database
