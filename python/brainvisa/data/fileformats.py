@@ -110,8 +110,10 @@ class FileFormats( object ):
   def _findMatchingFormat( self, f ):
     format = None
     noExt = ext = None
-    dotIndex = f.find( '.' )
+    path, filename = os.path.split( f )
+    dotIndex = filename.find( '.' )
     if dotIndex > -1:
+      dotIndex = len( path ) + dotIndex + 1
       ext = f[ dotIndex + 1 : ]
       noExt = f[ : dotIndex ]
       while True:
@@ -128,8 +130,8 @@ class FileFormats( object ):
       ext=None
       noExt=f
     return ( format, ext, noExt )
-  
-  
+
+
   def newFormatList( self, name, formats ):
     if self._formatLists.has_key( name ):
       raise KeyError( _( 'Format list "%s" already defined' ) % ( name,) )
