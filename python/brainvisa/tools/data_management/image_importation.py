@@ -3,6 +3,7 @@ import os
 import tempfile
 from optparse import OptionParser
 import subprocess
+import stat
 
 from soma import aims
 
@@ -62,7 +63,11 @@ class Importer:
                     shutil.copy(input_filename.replace(".ima", ".dim"), 
                                 output_filename.replace(".ima", ".dim"))
                 if os.path.exists(input_filename+".minf"):
-                    shutil.copy(input_filename+".minf", output_filename+".minf")
+                    ominf = output_filename+".minf"
+                    shutil.copy(input_filename+".minf", ominf)
+                    # .minf needs Read/write permission
+                    s = os.stat( ominf )
+                    os.chmod(ominf, s.st_mode | stat.S_IREAD | stat.S_IWUSR)
             except IOError, e:
                 raise ImportationError(e.message)
         return return_value
