@@ -34,7 +34,11 @@ def initialization( self ):
             odbo = [ p for p in neuroConfig.dataPath \
                 if p.expert_settings.ontology == onto ]
             if len( odbo ) >= 2:
-              return [ p.directory for p in odbo if p.directory != idbn ][0]
+                odb = [ p.directory for p in odbo if p.directory != idbn ]
+                if len( odb ) != 0:
+                    return odb[0]
+            if len( odbo ) >= 1:
+                return odbo[0].directory
         return proc.output_database
 
     def linkDtype( proc, dummy ):
