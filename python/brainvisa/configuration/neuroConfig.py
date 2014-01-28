@@ -445,7 +445,14 @@ if not homedir:
           else:
             drive = ''
       homedir = drive + homedir
-homeBrainVISADir = os.path.join( homedir, '.brainvisa' )
+
+# Try to get BrainVISA user dir from environment variable
+homeBrainVISADir = os.getenv('BRAINVISA_USER_DIR')
+
+if not homeBrainVISADir :
+  # Uses default BrainVISA home directory
+  homeBrainVISADir = os.path.join( homedir, '.brainvisa' )
+  
 if not os.path.exists( homeBrainVISADir ):
   try:
     os.mkdir( homeBrainVISADir )
