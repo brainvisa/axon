@@ -639,7 +639,10 @@ class DiskItemListEditor( QWidget, DataEditor ):
             self.lbxValues.addItem( '<' + _t_('None') + '>' )
           else:
             self.lbxValues.addItem( v.fileName() )
-        self.lbxValues.setCurrentRow( len( self.values ) - 1 )   
+            
+        self.lbxValues.clearSelection()
+        self.lbxValues.setCurrentRow( len( self.values ) - 1,
+                                      QItemSelectionModel.SelectCurrent )
       except:
         showException( parent=self )
     
