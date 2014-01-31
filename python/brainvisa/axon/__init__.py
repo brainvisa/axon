@@ -60,10 +60,12 @@ try:
   qt_api = [ "QDate", "QDateTime", "QString", "QTextStream", "QTime", "QUrl",
     "QVariant" ]
   for qt_class in qt_api:
-    sip.setapi( qt_class, PYQT_API_VERSION )
+    if sip.getapi( qt_class ) != PYQT_API_VERSION:
+      sip.setapi( qt_class, PYQT_API_VERSION )
   del qt_api, qt_class
 except:
-  print "WARNING: impossible to use version %d of sip/Qt API." % API_VERSION
+  print "WARNING: impossible to use version %d of sip/Qt API." \
+    % PYQT_API_VERSION
 
 import brainvisa
 brainvisa_path=os.path.join( os.path.dirname( os.path.dirname( \
