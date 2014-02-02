@@ -152,8 +152,6 @@ def converted_link( linkdef, links, pipeline, selfinparams, revinparams,
                 print revoutparams
                 return None
             linkdef = ( altp[0], altp[1], linkdef[2], linkdef[3] )
-            print 'LINK:', linkdef[0]().name, \
-                    ',', linkdef[1], ' ->', linkdef[2]().name, ',', linkdef[3]
     if linkdef in links:
         return None
     if linkdef[0] is not pipeline \
@@ -173,16 +171,6 @@ def converted_link( linkdef, links, pipeline, selfinparams, revinparams,
         # dest has an equivalent in exported inputs
         altp = revinparams[ ( linkdef[2], linkdef[3] ) ]
         linkdef = ( pipeline, altp, linkdef[0], linkdef[1] )
-    #if linkdef[0] is pipeline and linkdef[1] in selfinparams:
-        ## source in pipeline
-        #altp = selfinparams[ linkdef[1] ]
-        #alt = ( altp[0], altp[1], linkdef[2], linkdef[3] )
-        #if alt in links:
-            #return linkdef
-        #if linkdef[2] is pipeline and linkdef[3] in 
-        #return ( linkdef[] )
-    #if linkdef[2] is pipeline and linkdef[3] in selfparams:
-        #return True
     if linkdef in links:
         return None
     return linkdef
@@ -223,30 +211,7 @@ def make_node_name( name, nodenames ):
         return name
 
 
-def write_pipeline_definition( p, out ):
-    out.write( '\n\n' )
-    out.write( '    def pipeline_definition( self ):\n' )
-    enodes = [ ( p.executionNode(), None ) ]
-    links = parse_links( p, p )
-    procmap = { weakref.ref(p) : '' }
-    nodenames = {}
-    while enodes:
-      enode, enode_name = enodes.pop( 0 )
-      if isinstance( enode, procbv.ProcessExecutionNode ):
-          if enode_name is None:
-              enode_name = enode.name()
-          nodename = make_node_name( enode_name, nodenames )
-          proc = enode._process
-          procid = proc.id()
-          somaproc = soma_process_name( procid )
-          moduleprocid = '%s.%s' % ( procid, procid )
-          out.write( '        self.add_process( \'%s\', \'%s\' )\n' \
-              % ( str_to_name( nodename ), moduleprocid ) )
-          procmap[ use_weak_ref( proc ) ] = str_to_name( nodename )
-          links += parse_links( p, proc )
-      else:
-          enodes += [ ( enode.child( name ), name ) \
-              for name in enode.childrenNames() ]
+def write_pipeline_links( p, out, procmap, links ):
     # parse and set pipeline links
     selfinparams = {}
     revinparams = {}
@@ -318,7 +283,6 @@ def write_pipeline_definition( p, out ):
                       sparam2 = sparam + '2'
                   export_input( out, src, sname, sparam, p, sparam2, 
                       selfinparams, revinparams, processedlinks )
-                  print '*** export internal input:', sparam2, ', from:', src().name, sparam
                   # and link 2nd to this exported input
                   sparam = sparam2
                   spname = sparam2
@@ -327,6 +291,47 @@ def write_pipeline_definition( p, out ):
               '        self.add_link(\'%s->%s\')\n' % ( spname, dpname ) )
         processedlinks.add( ( src, sparam, dst, dparam ) )
         processedlinks.add( ( dst, dparam, src, sparam ) )
+
+
+def write_pipeline_definition( p, out ):
+    out.write( '\n\n' )
+    out.write( '    def pipeline_definition(self):\n' )
+    enodes = [ ( p.executionNode(), None ) ]
+    links = parse_links( p, p )
+    procmap = { weakref.ref(p) : '' }
+    nodenames = {}
+    while enodes:
+      enode, enode_name = enodes.pop( 0 )
+      if isinstance( enode, procbv.ProcessExecutionNode ):
+          if enode_name is None:
+              enode_name = enode.name()
+          nodename = make_node_name( enode_name, nodenames )
+          proc = enode._process
+          procid = proc.id()
+          somaproc = soma_process_name( procid )
+          moduleprocid = '%s.%s' % ( procid, procid )
+          out.write( '        self.add_process( \'%s\', \'%s\' )\n' \
+              % ( str_to_name( nodename ), moduleprocid ) )
+          procmap[ use_weak_ref( proc ) ] = str_to_name( nodename )
+          links += parse_links( p, proc )
+      else:
+          if isinstance( enode, procbv.SelectionExecutionNode ):
+              if enode_name is None:
+                  enode_name = 'switch'
+              nodename = make_node_name( enode_name, nodenames )
+              out.write( '        # warning, the switch output trait should be renamed to a more comprehensive name\n' )
+              out.write( '        # moreover, input items should be connected to adequate output items in each subprocess in the switch.\n')
+              out.write( '        self.add_trait(\'switch_out\', File())\n' )
+              out.write( '        self.add_switch(\'%s\', %s, \'%s\')\n' \
+                  % ( nodename, repr( enode.childrenNames() ), 'switch_out' ) )
+              out.write( 
+                  '        self.add_link(\'%s.switch_out->switch_out\')\n' \
+                      % nodename )
+          enodes += [ ( enode.child( name ), name ) \
+              for name in enode.childrenNames() ]
+    out.write( '\n' )
+
+    write_pipeline_links( p, out, procmap, links )
 
 
 # ----
