@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 from brainvisa.axon import processes
-from soma.pipeline import process, pipeline
+from soma.process import process
+from soma.pipeline import pipeline
 from brainvisa import processes as procbv
 from brainvisa.data import neuroData
 from brainvisa.data.readdiskitem import ReadDiskItem
@@ -333,8 +334,10 @@ def write_switch( enode, out, nodenames, links, p, processed_links,
     if not hasattr( enode, 'selection_outputs' ):
         out.write( '        # warning, input items should be connected to ' \
             'adequate output items in each subprocess in the switch.\n')
-    out.write( '        self.add_switch(\'%s\', %s, \'%s\', ' \
-        'output_type=File(output=True))\n' \
+    #out.write( '        self.add_switch(\'%s\', %s, \'%s\', ' \
+        #'output_type=File(output=True))\n' \
+        #% ( nodename, repr( enode.childrenNames() ), output_name ) )
+    out.write( '        self.add_switch(\'%s\', %s, \'%s\')\n' \
         % ( nodename, repr( enode.childrenNames() ), output_name ) )
     out.write( '        self.export_parameter(\'%s\', \'%s\', \'%s\' )\n' \
         % (nodename, output_name, output_name) )
@@ -472,7 +475,7 @@ except ImportError:
     from enthought.traits.api import File, Float, Int, Bool, Enum, String, \\
         List, ListFloat
 
-from soma.pipeline.process import Process
+from soma.process.process import Process
 from soma.pipeline.pipeline import Pipeline
 
 class ''' )
