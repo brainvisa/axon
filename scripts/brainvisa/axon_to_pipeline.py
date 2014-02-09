@@ -252,7 +252,7 @@ def write_pipeline_links( p, out, procmap, links, processed_links,
         sname = procmap.get( src, None )
         if sname is None:
             print 'warning, src process', src().name, 'not found in pipeline.'
-            print 'procmap:', [ k().name for k in procmap ]
+            # print 'procmap:', [ k().name for k in procmap ]
             continue # skip this one
         dname = procmap.get( dst, None )
         if dname is None:
@@ -361,9 +361,12 @@ def write_switch( enode, out, nodenames, links, p, processed_links,
     return nodename, self_out_traits
 
 
-def write_pipeline_definition( p, out ):
+def write_pipeline_definition( p, out, parse_subpipelines=False ):
     # write a pipeline structure in the out file, and links between pipeline
     # nodes
+    # if parse_subpipelines is set, the pipeline structure inside sub-pipelines
+    # which are already Axon processes is also parsed (this is generally
+    # unneeded)
 
     out.write( '\n\n' )
     out.write( '    def pipeline_definition(self):\n' )
@@ -375,7 +378,9 @@ def write_pipeline_definition( p, out ):
     self_out_traits = []
     while enodes:
         enode, enode_name = enodes.pop( 0 )
-        if isinstance( enode, procbv.ProcessExecutionNode ):
+        if isinstance( enode, procbv.ProcessExecutionNode ) \
+                and ( len( list( enode.children() ) ) == 0 \
+                    or not parse_subpipelines ):
             if enode_name is None:
                 enode_name = enode.name()
             nodename = make_node_name( enode_name, nodenames )
@@ -387,6 +392,9 @@ def write_pipeline_definition( p, out ):
                 % ( nodename, moduleprocid ) )
             procmap[ use_weak_ref( proc ) ] = nodename
             links += parse_links( p, proc )
+            #if parse_subpipelines:
+                #enodes += [ ( enode.child( name ), name ) \
+                    #for name in enode.childrenNames() ]
         else:
             if isinstance( enode, procbv.SelectionExecutionNode ):
                 nodename, out_traits = write_switch( enode, out, nodenames,
@@ -428,6 +436,14 @@ parser.add_option( '-p', '--process', dest='process', action='append',
 parser.add_option( '-o', '--output', dest='output', metavar='FILE', 
     action='append',
     help='output .py file for the converted process code' )
+parser.add_option( '-r', '--recursive_sub', dest='parse_subpipelines',
+    action='store_true', default=False,
+    help='recursively parse sub-pipelines of a pipeline. This is mostly a ' \
+    'debugging feature, since it is generally not needed because ' \
+    'sub-pipelines are processes and can be converted and used directly. ' \
+    'Moreover with this option, pipeline processes are not exported as ' \
+    'themselves, but may contain parameters which will not be exported and ' \
+    'may cause missing or broken links.' )
 
 options, args = parser.parse_args()
 if len( args ) != 0:
@@ -467,6 +483,7 @@ class ''' )
 
 
     if proctype is pipeline.Pipeline:
-        write_pipeline_definition( p, out )
+        write_pipeline_definition( p, out,
+            parse_subpipelines=options.parse_subpipelines )
     else:
         write_process_definition( p, out )
