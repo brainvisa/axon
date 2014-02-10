@@ -144,7 +144,15 @@ def is_output(proc, param):
 
 
 def converted_link(linkdef, links, pipeline, selfinparams, revinparams,
-        selfoutparams, revoutparams):
+        selfoutparams, revoutparams, procmap):
+    # find exported source/dest
+    real_source = find_param_in_parent(linkdef[0], linkdef[1], procmap)
+    real_dest = find_param_in_parent(linkdef[2], linkdef[3], procmap)
+    if real_source[0] is None or real_dest[0] is None:
+        print 'Warning, missing link info for:', linkdef[0]().name, \
+            ',', linkdef[1], ' ->', linkdef[2]().name, ',', linkdef[3]
+        return None
+    linkdef = (real_source[0], real_source[2], real_dest[0], real_dest[2])
     pipeline = use_weak_ref(pipeline)
     if linkdef[2] is pipeline and linkdef[3] in selfinparams:
         # output in pipeline inputs: invert link
@@ -238,6 +246,100 @@ def make_node_name(name, nodenames):
         return name
 
 
+def is_linked_to_parent(proc, param, parent):
+    # get links from proc.param
+    if isinstance(proc(), procbv.Process):
+        linkdefs = proc()._links.get( param )
+        for dstproc, dstparam, mlink, unknown in linkdefs:
+            if use_weak_ref(dstproc) == parent:
+                return dstparam
+        # get links to parent
+        for pparam, linkdefs in parent()._links.iteritems():
+            for srcproc, srcparam, mlink, unknown in linkdefs:
+                if use_weak_ref(srcproc) == proc and srcparam == param:
+                    return pparam
+    return None
+
+
+def find_param_in_parent(proc, param, procmap):
+    # parse all nodes since there is no notion of parent
+    pname, exported = procmap.get(proc, (None, None))
+    if exported:  # exported node: direct, OK
+        return (proc, pname, param)
+    last = (proc, param)
+    allnotfound = False
+    #print 'find_param_in_parent:', proc().name, param
+    while not allnotfound:
+        #print '    try:', last[0]().name, last[1]
+        for new_proc, (new_node_name, exported) in procmap.iteritems():
+            if isinstance(new_proc(), procbv.Process):
+                new_node = use_weak_ref(new_proc().executionNode())
+                if new_node is None:  # leaf: not a possible parent
+                    continue
+            else:
+                new_node = new_proc
+            children = set()
+            for n in new_node().children():
+                if isinstance(n, procbv.ProcessExecutionNode):
+                    children.add(n._process)
+                else:
+                    children.add(n)
+            if last[0]() in children:
+                #print '    test parent:', new_node_name
+                new_pname = '_'.join((new_node_name, last[1]))
+                if exported:
+                    parent_pname = last[1]
+                    #print 'find_param_in_parent:', proc().name, param
+                    #print 'found:', new_proc().name, parent_pname
+                    # now check if it is an exported param in the sub-pipeline
+                    opname = is_linked_to_parent(proc, param, new_proc)
+                    if opname is not None:
+                        # then return the exported parent one
+                        parent_pname = opname
+                        #print 'parent param translated:', parent_pname
+                    return (new_proc, new_node_name, parent_pname)
+                last = (new_proc, new_pname)
+                break
+        else: # loop through the end of procmap
+            allnotfound = True
+    # not found
+    print 'Warning: find_param_in_parent: NOT FOUND'
+    print '    was:', proc().name, '/', param
+    return (None, None, None)
+
+
+# is this function useful ?
+#def find_param_in_children(proc, param, procmap):
+    #print 'find_param_in_children:', proc().name, param
+    #node_name, exported = procmap[proc]
+    #if exported:  # exported node
+        #return proc, node_name, param
+    #if isinstance(proc, procbv.Process):
+        #node = proc.executionNode()
+    #else:
+        #node = proc
+    #nodes = [(node, param)]
+    #while nodes:
+        #node, pname = nodes.pop(0)
+        #for child_name in node.childrenNames():
+            #child = node.child(child_name)
+            #if isinstance(child, procbv.Process):
+                #new_node = child._process
+            #else:
+                #new_node = child
+            #new_node_name, exported = procmap.get(use_weak_ref(new_node),
+                #(None,None))
+            #if new_node_name is not None \
+                    #and pname.startswith(new_node_name + '_'):
+                #new_pname = pname[len(new_node_name) + 1:]
+                #if isinstance(new_node, procbv.Process) \
+                        #and new_node.signature.has_key(new_pname):
+                    ## found
+                    #return (new_node, new_node_name, new_pname)
+                #nodes.append((child, new_pname))
+    #return (None, None, None)
+
+
 def write_pipeline_links(p, out, procmap, links, processed_links,
         selfouttraits):
     # parse and set pipeline links
@@ -247,16 +349,16 @@ def write_pipeline_links(p, out, procmap, links, processed_links,
     revoutparams = {}
     for link in links:
         link = converted_link(link, processed_links, p, selfinparams,
-            revinparams, selfoutparams, revoutparams)
+            revinparams, selfoutparams, revoutparams, procmap)
         if link is None:
             continue
         src, sparam, dst, dparam = link
-        sname = procmap.get(src, None)
+        sname, sexported = procmap.get(src, (None, None))
         if sname is None:
             print 'warning, src process', src().name, 'not found in pipeline.'
-            # print 'procmap:', [ k().name for k in procmap ]
+            # print 'procmap:', [ k[0]().name for k in procmap ]
             continue  # skip this one
-        dname = procmap.get(dst, None)
+        dname, dexported = procmap.get(dst, (None, None))
         if dname is None:
             print 'warning, dst process', dst().name, 'not found in pipeline.'
             continue  # skip this one
@@ -335,9 +437,6 @@ def write_switch(enode, out, nodenames, links, p, processed_links,
     if not hasattr(enode, 'selection_outputs'):
         out.write('        # warning, input items should be connected to ' \
             'adequate output items in each subprocess in the switch.\n')
-    #out.write('        self.add_switch(\'%s\', %s, \'%s\', ' \
-        #'output_type=File(output=True))\n' \
-        #% (nodename, repr(enode.childrenNames()), output_name))
     out.write('        self.add_switch(\'%s\', %s, \'%s\')\n' \
         % (nodename, repr(enode.childrenNames()), output_name))
     out.write('        self.export_parameter(\'%s\', \'%s\', \'%s\' )\n' \
@@ -374,14 +473,16 @@ def write_pipeline_definition(p, out, parse_subpipelines=False):
 
     out.write('\n\n')
     out.write('    def pipeline_definition(self):\n')
-    enodes = [(p.executionNode(), None)]
+    enodes = [(p.executionNode(), None, True)]
     links = parse_links(p, p)
     processed_links = set()
-    procmap = {weakref.ref(p): ''}
+    # procmap: weak_ref(process) -> (node_name, exported)
+    # non-exported nodes are not built as nodes, but may be used by links
+    procmap = {weakref.ref(p): ('', True)}
     nodenames = {}
     self_out_traits = []
     while enodes:
-        enode, enode_name = enodes.pop(0)
+        enode, enode_name, exported = enodes.pop(0)
         if isinstance(enode, procbv.ProcessExecutionNode) \
                 and (len(list(enode.children())) == 0 \
                     or not parse_subpipelines):
@@ -392,20 +493,20 @@ def write_pipeline_definition(p, out, parse_subpipelines=False):
             procid = proc.id()
             somaproc = soma_process_name(procid)
             moduleprocid = '%s.%s' % (procid, procid)
-            out.write('        self.add_process(\'%s\', \'%s\')\n' \
-                % (nodename, moduleprocid))
-            procmap[use_weak_ref(proc)] = nodename
-            links += parse_links(p, proc)
-            #if parse_subpipelines:
-                #enodes += [(enode.child(name), name) \
-                    #for name in enode.childrenNames()]
+            procmap[use_weak_ref(proc)] = (nodename, exported)
+            if exported:
+                out.write('        self.add_process(\'%s\', \'%s\')\n' \
+                    % (nodename, moduleprocid))
+                links += parse_links(p, proc)
+            enodes += [(enode.child(name), name, False) \
+                for name in enode.childrenNames()]
         else:
             if isinstance(enode, procbv.SelectionExecutionNode):
                 nodename, out_traits = write_switch(enode, out, nodenames,
                     links, p, processed_links, enode_name)
                 self_out_traits += out_traits
-                procmap[use_weak_ref(enode)] = nodename
-            enodes += [(enode.child(name), name) \
+                procmap[use_weak_ref(enode)] = (nodename, exported)
+            enodes += [(enode.child(name), name, exported) \
                 for name in enode.childrenNames()]
     out.write('\n')
 
@@ -437,6 +538,7 @@ param_types_table = \
     ReadDiskItem: traits.File,
     WriteDiskItem: (traits.File, write_diskitem_options),
     neuroData.Choice: (traits.Enum, choice_options),
+    neuroData.OpenChoice: traits.String,
     neuroData.ListOf: traits.List,
     neuroData.Point3D: ('ListFloat', point3d_options),
 }
