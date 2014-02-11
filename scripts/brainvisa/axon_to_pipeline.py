@@ -456,9 +456,11 @@ def write_switch(enode, out, nodenames, links, p, processed_links,
                     src = src.child(srcname_short)
                 src = use_weak_ref(src._process)
                 link_par = link_par_split[-1]
-            links.append((src, link_par, use_weak_ref(enode), link_src))
-            processed_links.add((src, link_par,
-                use_weak_ref(p), output_name))
+            # in switches, input params are the concatenation of declared
+            # input params and the output "group" name
+            input_name = '-'.join((link_src, output_name))
+            links.append((src, link_par, use_weak_ref(enode), input_name))
+            processed_links.add((src, link_par, use_weak_ref(p), output_name))
             processed_links.add((use_weak_ref(p), output_name, src, link_par))
     return nodename, self_out_traits
 
