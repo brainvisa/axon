@@ -341,12 +341,10 @@ def find_param_in_parent(proc, param, procmap):
 
 
 def write_pipeline_links(p, out, procmap, links, processed_links,
-        selfouttraits):
+        selfoutparams, revoutparams, selfouttraits):
     # parse and set pipeline links
     selfinparams = {}
     revinparams = {}
-    selfoutparams = {}
-    revoutparams = {}
     for link in links:
         link = converted_link(link, processed_links, p, selfinparams,
             revinparams, selfoutparams, revoutparams, procmap)
@@ -423,8 +421,7 @@ def write_pipeline_links(p, out, procmap, links, processed_links,
 
 
 def write_switch(enode, out, nodenames, links, p, processed_links,
-        enode_name=None):
-    self_out_traits = []
+        selfoutparams, revoutparams, self_out_traits, enode_name=None):
     if enode_name is None:
         enode_name = enode.name()
     nodename = make_node_name(enode_name, nodenames)
@@ -439,9 +436,12 @@ def write_switch(enode, out, nodenames, links, p, processed_links,
             'adequate output items in each subprocess in the switch.\n')
     out.write('        self.add_switch(\'%s\', %s, \'%s\')\n' \
         % (nodename, repr(enode.childrenNames()), output_name))
-    out.write('        self.export_parameter(\'%s\', \'%s\', \'%s\' )\n' \
-        % (nodename, output_name, output_name))
-    self_out_traits.append(output_name)
+    #out.write('        self.export_parameter(\'%s\', \'%s\', \'%s\' )\n' \
+        #% (nodename, output_name, output_name))
+    #self_out_traits.append(output_name)
+    export_output(out, use_weak_ref(enode), nodename, output_name, p,
+        output_name, selfoutparams, revoutparams, processed_links,
+        self_out_traits)
     if hasattr(enode, 'selection_outputs'):
         # connect children outputs to the switch
         sel_out = enode.selection_outputs
@@ -462,7 +462,7 @@ def write_switch(enode, out, nodenames, links, p, processed_links,
             links.append((src, link_par, use_weak_ref(enode), input_name))
             processed_links.add((src, link_par, use_weak_ref(p), output_name))
             processed_links.add((use_weak_ref(p), output_name, src, link_par))
-    return nodename, self_out_traits
+    return nodename
 
 
 def write_pipeline_definition(p, out, parse_subpipelines=False):
@@ -482,6 +482,8 @@ def write_pipeline_definition(p, out, parse_subpipelines=False):
     # non-exported nodes are not built as nodes, but may be used by links
     procmap = {weakref.ref(p): ('', True)}
     nodenames = {}
+    selfoutparams = {}
+    revoutparams = {}
     self_out_traits = []
     while enodes:
         enode, enode_name, exported = enodes.pop(0)
@@ -504,16 +506,16 @@ def write_pipeline_definition(p, out, parse_subpipelines=False):
                 for name in enode.childrenNames()]
         else:
             if isinstance(enode, procbv.SelectionExecutionNode):
-                nodename, out_traits = write_switch(enode, out, nodenames,
-                    links, p, processed_links, enode_name)
-                self_out_traits += out_traits
+                nodename = write_switch(enode, out, nodenames, links, p,
+                    processed_links, selfoutparams, revoutparams,
+                    self_out_traits, enode_name)
                 procmap[use_weak_ref(enode)] = (nodename, exported)
             enodes += [(enode.child(name), name, exported) \
                 for name in enode.childrenNames()]
     out.write('\n')
 
     write_pipeline_links(p, out, procmap, links, processed_links,
-        self_out_traits)
+        selfoutparams, revoutparams, self_out_traits)
 
     # remove this when there is a more convenient method in Pipeline
     out.write('''
