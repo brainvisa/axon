@@ -1087,7 +1087,19 @@ class Process( Parameterized ):
       # not available any longer
       pass
 
-  def _iterate( self, **kwargs ):
+  def _checkIterateParam( self, warn = True, **kwargs ):
+    requiredLength = 0
+    for values in kwargs.itervalues():
+      length = len( values )
+      if length > 0:
+        if requiredLength > 1 and length > 1 and requiredLength != length:
+          if warn is True:
+            raise Exception( _t_( 'all lists of arguments with more than one value must have the same size' ) )
+        elif length > requiredLength:
+          requiredLength = length
+    return requiredLength
+
+  def _iterate( self, warn = True, **kwargs ):
     """
     Returns a list of copies of the current process with different parameters values. 
     
@@ -1095,14 +1107,7 @@ class Process( Parameterized ):
       The first value is for the first process of the iteration and so on...
     """
     # Find iteration size
-    requiredLength = 0
-    for values in kwargs.itervalues():
-      length = len( values )
-      if length >= 1:
-        if requiredLength > 0 and length > 1 and requiredLength != length:
-          raise Exception( _t_( 'all lists of arguments with more than one value must have the same size' ) )
-        else:
-          requiredLength = length
+    requiredLength = self._checkIterateParam( warn, **kwargs )
 
     # Set lists of values
     finalValues = {}
