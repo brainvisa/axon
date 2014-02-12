@@ -866,6 +866,14 @@ class Parameterized( object ):
         ( destObject, destParameter, multiLink, True ) )
 
 
+  def addDoubleLink( self, destination, source, function=None ):
+    """
+    Creates a double link source -> destination and destination -> source.
+    """
+    self.addLink( destination, source, function )
+    self.addLink( source, destination, function )
+
+
 
   def removeLink( self, destination, source ):
     """Removes a link added with :py:func:`addLink` function."""
