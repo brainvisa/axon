@@ -137,8 +137,15 @@ def is_output(proc, param):
         # SelectionExecutionNode nodes may be used for switch nodes.
         # They do not have parameters in the Axon API since they are not
         # processes. But the soma-pipeline side (Switch node) has input
-        # parameters which should be connected to children outputs to swith.
-        return False  # switch are used for inputs only
+        # parameters which should be connected from children outputs, and
+        # output parameters which should be exported.
+        if (hasattr(proc(), 'switch_output') \
+                    and proc().switch_output == param) \
+                or (not hasattr(proc(), 'switch_output') \
+                    and param=='switch_out'):
+            return True
+        else:
+            return False
     signp = proc().signature.get(param)
     return isinstance(signp, WriteDiskItem)
 
@@ -421,27 +428,29 @@ def write_pipeline_links(p, out, procmap, links, processed_links,
 
 
 def write_switch(enode, out, nodenames, links, p, processed_links,
-        selfoutparams, revoutparams, self_out_traits, enode_name=None):
+        selfoutparams, revoutparams, self_out_traits, exported,
+        enode_name=None):
     if enode_name is None:
         enode_name = enode.name()
     nodename = make_node_name(enode_name, nodenames)
     output_name = 'switch_out'
     if hasattr(enode, 'switch_output'):
         output_name = enode.switch_output
-    else:
+    elif exported:
         out.write('        # warning, the switch output trait should be ' \
             'renamed to a more comprehensive name\n')
-    if not hasattr(enode, 'selection_outputs'):
+    if exported and not hasattr(enode, 'selection_outputs'):
         out.write('        # warning, input items should be connected to ' \
             'adequate output items in each subprocess in the switch.\n')
-    out.write('        self.add_switch(\'%s\', %s, \'%s\')\n' \
-        % (nodename, repr(enode.childrenNames()), output_name))
-    #out.write('        self.export_parameter(\'%s\', \'%s\', \'%s\' )\n' \
-        #% (nodename, output_name, output_name))
-    #self_out_traits.append(output_name)
-    export_output(out, use_weak_ref(enode), nodename, output_name, p,
-        output_name, selfoutparams, revoutparams, processed_links,
-        self_out_traits)
+    if exported:
+        out.write('        self.add_switch(\'%s\', %s, \'%s\')\n' \
+            % (nodename, repr(enode.childrenNames()), output_name))
+        #out.write('        self.export_parameter(\'%s\', \'%s\', \'%s\' )\n' \
+            #% (nodename, output_name, output_name))
+        #self_out_traits.append(output_name)
+        export_output(out, use_weak_ref(enode), nodename, output_name, p,
+            output_name, selfoutparams, revoutparams, processed_links,
+            self_out_traits)
     if hasattr(enode, 'selection_outputs'):
         # connect children outputs to the switch
         sel_out = enode.selection_outputs
@@ -505,10 +514,12 @@ def write_pipeline_definition(p, out, parse_subpipelines=False):
             enodes += [(enode.child(name), name, False) \
                 for name in enode.childrenNames()]
         else:
-            if isinstance(enode, procbv.SelectionExecutionNode):
+            if isinstance(enode, procbv.SelectionExecutionNode) and exported:
+                # FIXME: BUG: if not exported, should we rebuild switch params
+                # list, and doing this, export again internal params ?
                 nodename = write_switch(enode, out, nodenames, links, p,
                     processed_links, selfoutparams, revoutparams,
-                    self_out_traits, enode_name)
+                    self_out_traits, exported, enode_name)
                 procmap[use_weak_ref(enode)] = (nodename, exported)
             enodes += [(enode.child(name), name, exported) \
                 for name in enode.childrenNames()]
@@ -520,13 +531,14 @@ def write_pipeline_definition(p, out, parse_subpipelines=False):
     # remove this when there is a more convenient method in Pipeline
     out.write('''
         for node_name, node in self.nodes.iteritems():
-          for parameter_name, plug in node.plugs.iteritems():
-            if parameter_name in ('nodes_activation', 'selection_changed'):
-              continue
-            if ((node_name, parameter_name) not in self.do_not_export and
-                not plug.links_to and not plug.links_from):
-              self.export_parameter(node_name, parameter_name,
-                  '_'.join((node_name, parameter_name)))
+            for parameter_name, plug in node.plugs.iteritems():
+                if parameter_name in ('nodes_activation', 'selection_changed'):
+                    continue
+                if ((node_name, parameter_name) not in self.do_not_export and
+                        not plug.links_to and not plug.links_from):
+                    self.export_parameter(node_name, parameter_name,
+                        '_'.join((node_name, parameter_name)), 
+                        only_if_activated=True)
 ''')
 
 
