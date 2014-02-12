@@ -270,14 +270,21 @@ def is_linked_to_parent(proc, param, parent):
 
 def find_param_in_parent(proc, param, procmap):
     # parse all nodes since there is no notion of parent
+    verbose = False  # debug flag - TODO: remove it when all is OK
     pname, exported = procmap.get(proc, (None, None))
     if exported:  # exported node: direct, OK
+        if verbose:
+            print '    direct export'
         return (proc, pname, param)
     last = (proc, param)
     allnotfound = False
-    #print 'find_param_in_parent:', proc().name, param
+    if verbose:
+        print '    find_param_in_parent:', proc().name, param, ':', pname
     while not allnotfound:
-        #print '    try:', last[0]().name, last[1]
+        if verbose:
+            print '    try as child:', last[0]().name, '/', last[1]
+        child_name = procmap[last[0]][0]
+        # look for parent enode
         for new_proc, (new_node_name, exported) in procmap.iteritems():
             if isinstance(new_proc(), procbv.Process):
                 new_node = use_weak_ref(new_proc().executionNode())
@@ -292,19 +299,23 @@ def find_param_in_parent(proc, param, procmap):
                 else:
                     children.add(n)
             if last[0]() in children:
-                #print '    test parent:', new_node_name
-                new_pname = '_'.join((new_node_name, last[1]))
+                if verbose:
+                    print '    test parent:', new_node_name
+                new_pname = '_'.join((child_name, last[1]))
                 if exported:
                     parent_pname = last[1]
-                    #print 'find_param_in_parent:', proc().name, param
-                    #print 'found:', new_proc().name, parent_pname
+                    if verbose:
+                        print '    find_param_in_parent:', proc().name, param
+                        print '    ** found:', new_proc().name, new_pname
                     # now check if it is an exported param in the sub-pipeline
                     opname = is_linked_to_parent(proc, param, new_proc)
                     if opname is not None:
                         # then return the exported parent one
-                        parent_pname = opname
-                        #print 'parent param translated:', parent_pname
-                    return (new_proc, new_node_name, parent_pname)
+                        #parent_pname = opname
+                        new_pname = opname
+                        if verbose:
+                            print '    parent param translated:', new_pname
+                    return (new_proc, new_node_name, new_pname)
                 last = (new_proc, new_pname)
                 break
         else: # loop through the end of procmap
@@ -584,6 +595,7 @@ if len(args) != 0:
     parser.print_help()
     sys.exit(1)
 
+processes.fastStart = True
 processes.initializeProcesses()
 
 
