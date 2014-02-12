@@ -456,9 +456,6 @@ def write_switch(enode, out, nodenames, links, p, processed_links,
     if exported:
         out.write('        self.add_switch(\'%s\', %s, \'%s\')\n' \
             % (nodename, repr(enode.childrenNames()), output_name))
-        #out.write('        self.export_parameter(\'%s\', \'%s\', \'%s\' )\n' \
-            #% (nodename, output_name, output_name))
-        #self_out_traits.append(output_name)
         export_output(out, use_weak_ref(enode), nodename, output_name, p,
             output_name, selfoutparams, revoutparams, processed_links,
             self_out_traits)
@@ -547,9 +544,12 @@ def write_pipeline_definition(p, out, parse_subpipelines=False):
                     continue
                 if ((node_name, parameter_name) not in self.do_not_export and
                         not plug.links_to and not plug.links_from):
+                    only_if_activated = False
+                    if self.nodes[node_name].process.user_traits()[parameter_name].output:
+                        only_if_activated = True
                     self.export_parameter(node_name, parameter_name,
                         '_'.join((node_name, parameter_name)), 
-                        only_if_activated=True)
+                        only_if_activated=only_if_activated)
 ''')
 
 
