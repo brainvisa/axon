@@ -714,13 +714,20 @@ class Signature( UserDict ):
       self.sortedKeys.append( name,)
       self.data[ name ] = value
       i += 2
-  
+
   def keys( self ):
     """
     Returns the list of parameters names.
     """
     return self.sortedKeys
-  
+
+  def iteritems( self ):
+    """
+    iterates over a list of tuple (parameter_name, parameter_type) for each parameter.
+    """
+    for x in self.sortedKeys:
+      yield (x, self.data[x])
+
   def items( self ):
     """
     Returns a list of tuple (parameter_name, parameter_type) for each parameter.
