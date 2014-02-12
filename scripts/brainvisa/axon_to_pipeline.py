@@ -10,6 +10,7 @@ from brainvisa.data.writediskitem import WriteDiskItem
 from traits import api as traits
 import weakref
 import sys
+import re
 
 from optparse import OptionParser
 
@@ -203,16 +204,16 @@ def converted_link(linkdef, links, pipeline, selfinparams, revinparams,
     return linkdef
 
 
-def export_output(out, src, sname, sparam, p, dparam, selfoutparams,
+def export_output(buffered_lines, src, sname, sparam, p, dparam, selfoutparams,
         revoutparams, processed_links, selfouttraits):
     if dparam in selfouttraits:
         # a trait has been manually declared
-        declare_output_trait(out, src, sname, sparam, p, dparam, selfoutparams,
-            revoutparams, processed_links)
+        declare_output_trait(buffered_lines, src, sname, sparam, p, dparam,
+            selfoutparams, revoutparams, processed_links)
     else:
         # global output param in pipeline signature
-        out.write('        # export output parameter\n')
-        out.write(
+        buffered_lines['exports'].append('        # export output parameter\n')
+        buffered_lines['exports'].append(
             '        self.export_parameter(\'%s\', \'%s\', \'%s\')\n' \
             % (sname, sparam, dparam))
         selfoutparams[dparam] = (src, sparam)
@@ -221,8 +222,8 @@ def export_output(out, src, sname, sparam, p, dparam, selfoutparams,
         processed_links.add((use_weak_ref(p), dparam, src, sparam))
 
 
-def declare_output_trait(out, src, sname, sparam, p, dparam, selfoutparams,
-        revoutparams, processed_links):
+def declare_output_trait(buffered_lines, src, sname, sparam, p, dparam,
+        selfoutparams, revoutparams, processed_links):
     # global output param in pipeline signature, as a trait
     selfoutparams[dparam] = (src, sparam)
     revoutparams[(src, sparam)] = dparam
@@ -230,11 +231,11 @@ def declare_output_trait(out, src, sname, sparam, p, dparam, selfoutparams,
     processed_links.add((use_weak_ref(p), dparam, src, sparam))
 
 
-def export_input(out, dst, dname, dparam, p, sparam, selfinparams,
+def export_input(buffered_lines, dst, dname, dparam, p, sparam, selfinparams,
         revinparams, processed_links):
     # global input param in pipeline signature
-    out.write('        # export input parameter\n')
-    out.write(
+    buffered_lines['exports'].append('        # export input parameter\n')
+    buffered_lines['exports'].append(
         '        self.export_parameter(\'%s\', \'%s\', \'%s\')\n' \
         % (dname, dparam, sparam))
     selfinparams[sparam] = (dst, dparam)
@@ -358,7 +359,7 @@ def find_param_in_parent(proc, param, procmap):
     #return (None, None, None)
 
 
-def write_pipeline_links(p, out, procmap, links, processed_links,
+def write_pipeline_links(p, buffered_lines, procmap, links, processed_links,
         selfoutparams, revoutparams, selfouttraits):
     # parse and set pipeline links
     selfinparams = {}
@@ -385,11 +386,11 @@ def write_pipeline_links(p, out, procmap, links, processed_links,
         if dname:
             dpname = '%s.%s' % (dname, dparam)
         if sname == '' and sparam not in selfinparams:
-            export_input(out, dst, dname, dparam, p, sparam, selfinparams,
-                revinparams, processed_links)
+            export_input(buffered_lines, dst, dname, dparam, p, sparam,
+                selfinparams, revinparams, processed_links)
         elif dname == '' and dparam not in selfoutparams:
-            export_output(out, src, sname, sparam, p, dparam, selfoutparams,
-                revoutparams, processed_links, selfouttraits)
+            export_output(buffered_lines, src, sname, sparam, p, dparam,
+                selfoutparams, revoutparams, processed_links, selfouttraits)
         else:
             if dname == '' and dparam in selfinparams:
                 # swap input/output
@@ -411,8 +412,8 @@ def write_pipeline_links(p, out, procmap, links, processed_links,
                     if sparam2 in selfoutparams or sparam2 in selfinparams:
                         # avoid duplicate name
                         sparam2 = sparam2 + '2'
-                    export_output(out, src, sname, sparam, p, sparam2,
-                        selfoutparams, revoutparams, processed_links,
+                    export_output(buffered_lines, src, sname, sparam, p,
+                        sparam2, selfoutparams, revoutparams, processed_links,
                         selfouttraits)
                     # and link 2nd to this exported output (and switch link)
                     src = dst
@@ -427,18 +428,18 @@ def write_pipeline_links(p, out, procmap, links, processed_links,
                     if sparam2 in selfinparams or sparam2 in selfoutparams:
                         # duplicate name
                         sparam2 = sparam + '2'
-                    export_input(out, src, sname, sparam, p, sparam2,
-                        selfinparams, revinparams, processed_links)
+                    export_input(buffered_lines, src, sname, sparam, p,
+                        sparam2, selfinparams, revinparams, processed_links)
                     # and link 2nd to this exported input
                     sparam = sparam2
                     spname = sparam2
-            out.write(
+            buffered_lines['links'].append(
                 '        self.add_link(\'%s->%s\')\n' % (spname, dpname))
         processed_links.add((src, sparam, dst, dparam))
         processed_links.add((dst, dparam, src, sparam))
 
 
-def write_switch(enode, out, nodenames, links, p, processed_links,
+def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
         selfoutparams, revoutparams, self_out_traits, exported,
         enode_name=None):
     if enode_name is None:
@@ -448,17 +449,20 @@ def write_switch(enode, out, nodenames, links, p, processed_links,
     if hasattr(enode, 'switch_output'):
         output_name = enode.switch_output
     elif exported:
-        out.write('        # warning, the switch output trait should be ' \
+        buffered_lines['nodes'].append(
+            '        # warning, the switch output trait should be ' \
             'renamed to a more comprehensive name\n')
     if exported and not hasattr(enode, 'selection_outputs'):
-        out.write('        # warning, input items should be connected to ' \
+        buffered_lines['nodes'].append(
+            '        # warning, input items should be connected to ' \
             'adequate output items in each subprocess in the switch.\n')
     if exported:
-        out.write('        self.add_switch(\'%s\', %s, \'%s\')\n' \
+        buffered_lines['nodes'].append(
+            '        self.add_switch(\'%s\', %s, \'%s\')\n' \
             % (nodename, repr(enode.childrenNames()), output_name))
-        export_output(out, use_weak_ref(enode), nodename, output_name, p,
-            output_name, selfoutparams, revoutparams, processed_links,
-            self_out_traits)
+        export_output(buffered_lines, use_weak_ref(enode), nodename,
+            output_name, p, output_name, selfoutparams, revoutparams,
+            processed_links, self_out_traits)
     if hasattr(enode, 'selection_outputs'):
         # connect children outputs to the switch
         sel_out = enode.selection_outputs
@@ -482,6 +486,59 @@ def write_switch(enode, out, nodenames, links, p, processed_links,
     return nodename
 
 
+def reorder_exports(buffered_lines, p):
+    old_lines = buffered_lines['exports']
+    reordered = [0] * len(old_lines)
+    delayed = False
+    linkre = re.compile(
+        '^ *self.export_parameter\(\'([^,]+)\', \'([^\']+)\'(, \'' \
+        '([^\']+)\')\)$')
+    omax = 0
+    for i, line in enumerate(old_lines):
+        if line.startswith('        #'):
+            delayed = True
+            reordered[i] = -1
+        else:
+            m = linkre.match(line)
+            if len(m.groups()) >= 4:
+                out_name = m.group(4)
+            else:
+                out_name = m.group(2)
+            if out_name in p.signature:
+                sign_ind = p.signature.sortedKeys.index(out_name)
+                reordered[i] = sign_ind * 2 + 1
+                if reordered[i] > omax:
+                    omax = reordered[i]
+                if delayed:
+                    # move comment line just before its command line
+                    reordered[i-1] = reordered[i] - 1
+            else:
+                reordered[i] = -1
+            delayed = False
+    omax += 1
+    revorder = {}
+    for i in xrange(len(reordered)):
+        # move non-recognized lines at the end
+        if reordered[i] < 0:
+            reordered[i] = omax
+            omax += 1
+        # inverse map
+        revorder[reordered[i]] = i
+    new_lines = []
+    for i in sorted(revorder.keys()):
+        j = revorder[i]
+        new_lines.append(old_lines[j])
+    buffered_lines['exports'] = new_lines
+
+
+def write_buffered_lines(out, buffered_lines):
+    for section in ('nodes', 'exports', 'links'):
+        out.write('        # %s section\n' % section)
+        for line in buffered_lines[section]:
+            out.write(line)
+        out.write('\n')
+
+
 def write_pipeline_definition(p, out, parse_subpipelines=False):
     '''Write a pipeline structure in the out file, and links between pipeline
     nodes.
@@ -490,6 +547,8 @@ def write_pipeline_definition(p, out, parse_subpipelines=False):
     unneeded).
     '''
 
+    # writing will be buffered so as to allow reordering
+    buffered_lines = {'nodes': [], 'exports': [], 'links': []}
     out.write('\n\n')
     out.write('    def pipeline_definition(self):\n')
     enodes = [(p.executionNode(), None, True)]
@@ -516,7 +575,8 @@ def write_pipeline_definition(p, out, parse_subpipelines=False):
             moduleprocid = '%s.%s' % (procid, procid)
             procmap[use_weak_ref(proc)] = (nodename, exported)
             if exported:
-                out.write('        self.add_process(\'%s\', \'%s\')\n' \
+                buffered_lines['nodes'].append(
+                    '        self.add_process(\'%s\', \'%s\')\n' \
                     % (nodename, moduleprocid))
                 links += parse_links(p, proc)
             enodes += [(enode.child(name), name, False) \
@@ -525,20 +585,24 @@ def write_pipeline_definition(p, out, parse_subpipelines=False):
             if isinstance(enode, procbv.SelectionExecutionNode) and exported:
                 # FIXME: BUG: if not exported, should we rebuild switch params
                 # list, and doing this, export again internal params ?
-                nodename = write_switch(enode, out, nodenames, links, p,
-                    processed_links, selfoutparams, revoutparams,
+                nodename = write_switch(enode, buffered_lines, nodenames,
+                    links, p, processed_links, selfoutparams, revoutparams,
                     self_out_traits, exported, enode_name)
                 procmap[use_weak_ref(enode)] = (nodename, exported)
             enodes += [(enode.child(name), name, exported) \
                 for name in enode.childrenNames()]
-    out.write('\n')
 
-    write_pipeline_links(p, out, procmap, links, processed_links,
+    write_pipeline_links(p, buffered_lines, procmap, links, processed_links,
         selfoutparams, revoutparams, self_out_traits)
 
+    # try to respect pipeline main parameters ordering
+    reorder_exports(buffered_lines, p)
+    # flush the write buffer
+    write_buffered_lines(out, buffered_lines)
+
     # remove this when there is a more convenient method in Pipeline
-    out.write('''
-        for node_name, node in self.nodes.iteritems():
+    out.write(
+'''        for node_name, node in self.nodes.iteritems():
             for parameter_name, plug in node.plugs.iteritems():
                 if parameter_name in ('nodes_activation', 'selection_changed'):
                     continue
