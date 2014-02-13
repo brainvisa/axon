@@ -479,8 +479,8 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
                 link_par = link_par_split[-1]
             # in switches, input params are the concatenation of declared
             # input params and the output "group" name
-            # input_name = '-'.join((link_src, output_name))
-            input_name = link_src  # has changed again in Switch...
+            input_name = '-'.join((link_src, output_name))
+            # input_name = link_src  # has changed again in Switch...
             links.append((src, link_par, use_weak_ref(enode), input_name))
             processed_links.add((src, link_par, use_weak_ref(p), output_name))
             processed_links.add((use_weak_ref(p), output_name, src, link_par))
