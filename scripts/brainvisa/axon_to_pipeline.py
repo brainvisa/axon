@@ -609,12 +609,8 @@ def write_pipeline_definition(p, out, parse_subpipelines=False):
                     continue
                 if ((node_name, parameter_name) not in self.do_not_export and
                         not plug.links_to and not plug.links_from):
-                    only_if_activated = False
-                    if self.nodes[node_name].process.user_traits()[parameter_name].output:
-                        only_if_activated = True
                     self.export_parameter(node_name, parameter_name,
-                        '_'.join((node_name, parameter_name)), 
-                        only_if_activated=only_if_activated)
+                        '_'.join((node_name, parameter_name)))
 ''')
 
 
