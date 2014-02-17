@@ -30,6 +30,7 @@ param_types_table = \
 {
     trait_types.Bool : neuroData.Boolean,
     trait_types.String : neuroData.String,
+    trait_types.Str : neuroData.String,
     trait_types.Float : neuroData.Number,
     trait_types.Int : neuroData.Integer,
     trait_types.File : fileOptions,

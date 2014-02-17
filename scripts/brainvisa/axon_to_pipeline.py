@@ -23,8 +23,18 @@ def choice_options(choice):
     return [repr(x[0]) for x in choice.values]
 
 
+def open_choice_options(choice):
+    if len(choice.values) != 0:
+        print choice.values
+        return ['default_value=' + repr(choice.values[0][0])]
+    else:
+        return []
+
+
 def point3d_options(point):
-    return ['minlen=3', 'maxlen=3']
+    # note: not using traits.ListFloat because its constructor doesn't seem
+    # to take parmeters into account (minlen, maxlen, value)
+    return ['trait=Float()', 'minlen=3', 'maxlen=3', 'value=[0, 0, 0]']
 
 
 def write_process_signature(p, out):
@@ -34,7 +44,7 @@ def write_process_signature(p, out):
         paramoptions = []
         if newtype is None:
             print 'write_process_signature: type', type(param), 'not found'
-            newtype = traits.String
+            newtype = traits.Str
         if isinstance(newtype, tuple):
             paramoptions = newtype[1](param)
             newtype = newtype[0]
@@ -619,16 +629,16 @@ def write_pipeline_definition(p, out, parse_subpipelines=False):
 param_types_table = \
 {
     neuroData.Boolean: traits.Bool,
-    neuroData.String: traits.String,
+    neuroData.String: traits.Str,
     neuroData.Number: traits.Float,
     neuroData.Float: traits.Float,
     neuroData.Integer: traits.Int,
     ReadDiskItem: traits.File,
     WriteDiskItem: (traits.File, write_diskitem_options),
     neuroData.Choice: (traits.Enum, choice_options),
-    neuroData.OpenChoice: traits.String,
+    neuroData.OpenChoice: (traits.Str, open_choice_options),
     neuroData.ListOf: traits.List,
-    neuroData.Point3D: ('ListFloat', point3d_options),
+    neuroData.Point3D: (traits.List, point3d_options),
 }
 
 
@@ -673,11 +683,9 @@ for procid, outfile in zip(options.process, options.output):
     out = open(outfile, 'w')
     out.write('''# -*- coding: utf-8 -*-
 try:
-    from traits.api import File, Float, Int, Bool, Enum, String, List, \\
-        ListFloat
+    from traits.api import File, Float, Int, Bool, Enum, Str, List
 except ImportError:
-    from enthought.traits.api import File, Float, Int, Bool, Enum, String, \\
-        List, ListFloat
+    from enthought.traits.api import File, Float, Int, Bool, Enum, Str, List
 
 from soma.process.process import Process
 from soma.pipeline.pipeline import Pipeline
