@@ -850,20 +850,30 @@ class Parameterized( object ):
     else:
       sources.append( ( self, source ) )
 
+    destinations = []
     if destination is None:
-      destObject, destParameter = ( None, None )
-    else:
-      destObject, destParameter = ( weakref.proxy( self ), destination )
+      destinations.append(( None, None ))
+    elif type( destination ) in ( types.ListType, types.TupleType ):
+      for i in destination:
+        if type( i ) in ( types.ListType, types.TupleType ):
+          destinations.append( i )
+        else:
+          destinations.append( ( weakref.proxy( self ), i ) )
+    else :
+      destinations.append( ( weakref.proxy( self ), destination ) )
+      
     # Check if a default function can be provided
     if function is None:
       if len( sources ) == 1:
         function = lambda x: x
       else:
         raise RuntimeError( HTMLMessage(_t_( 'No function provided in <em>addLink</em>' )) )
-    multiLink = ExecutionNode.MultiParameterLink( sources, function )
-    for sourceObject, sourceParameter in sources:
-      sourceObject._links.setdefault( sourceParameter, [] ).append (
-        ( destObject, destParameter, multiLink, True ) )
+      
+    for destObject, destParameter in destinations:
+      multiLink = ExecutionNode.MultiParameterLink( sources, (destObject, destParameter), function )
+      for sourceObject, sourceParameter in sources:
+        sourceObject._links.setdefault( sourceParameter, [] ).append (
+          ( destObject, destParameter, multiLink, True ) )
 
 
   def addDoubleLink( self, destination, source, function=None ):
@@ -1528,16 +1538,22 @@ class ExecutionNode( object ):
   Base class for the classes that describe a pipeline structure. 
   """
   class MultiParameterLink:
-    def __init__( self, sources, function ):
+    def __init__( self, sources, dest, function ):
       self.sources = []
       for p, n in sources:
         if type(p) is weakref.ReferenceType:
           self.sources.append( ( p, n ) )
         else:
           self.sources.append( ( weakref.ref( p ), n ) )
+          
+      # dest is the single destination given as a tuple containing
+      # the parameterized object and the attribute to set
+      self.dest = ( dest[0], dest[1] )
       self.function = function
       self.hasParameterized = hasParameter( function, 'parameterized' )
       self.hasNames = hasParameter( function, 'names' )
+      self.hasDestParameterized = hasParameter( function, 'destparameterized' )
+      self.hasDestNames = hasParameter( function, 'destnames' )
 
     def __call__( self, dummy1, dummy2 ):
       kwargs = {}
@@ -1545,6 +1561,11 @@ class ExecutionNode( object ):
         kwargs[ 'parameterized' ] = [i[0]() for i in self.sources]
       if self.hasNames:
         kwargs[ 'names' ] = [i[1] for i in self.sources]
+      if self.hasDestParameterized:
+        kwargs[ 'destparameterized' ] = self.dest[0]
+      if self.hasDestNames:
+        kwargs[ 'destnames' ] = self.dest[1]
+        
       return self.function( *[getattr( i[0](), i[1], None ) for i in self.sources],
                            **kwargs )
 
@@ -1770,19 +1791,28 @@ class ExecutionNode( object ):
     else:
       sources.append( self.parseParameterString( source ) )
 
-    destObject, destParameter = self.parseParameterString( destination )
-    if destObject is not None:
-      destObject = weakref.proxy( destObject )
+    # Parse destination
+    destinations = []
+    if type( destination ) in ( types.ListType, types.TupleType ):
+      for i in destination:
+        destinations.append( self.parseParameterString( i ) )
+    else:
+      destinations.append( self.parseParameterString( destination ) )
+
     # Check if a default function can be provided
     if function is None:
       if len( sources ) == 1:
         function = lambda x: x
       else:
         raise RuntimeError( HTMLMessage(_t_( 'No function provided in <em>addLink</em>' )) )
-    multiLink = self.MultiParameterLink( sources, function )
-    for sourceObject, sourceParameter in sources:
-      sourceObject._links.setdefault( sourceParameter, [] ).append (
-        ( destObject, destParameter, multiLink, True ) )
+    
+    for destObject, destParameter in destinations:
+      if destObject is not None:
+        destObject = weakref.proxy( destObject )
+      multiLink = self.MultiParameterLink( sources, (destObject, destParameter), function )
+      for sourceObject, sourceParameter in sources:
+        sourceObject._links.setdefault( sourceParameter, [] ).append (
+          ( destObject, destParameter, multiLink, True ) )
 
 
   def addDoubleLink( self, destination, source, function=None ):
@@ -3542,6 +3572,7 @@ def getProcessInstanceFromProcessEvent( event ):
   pipelineStructure = event.content.get( 'id' )
   if pipelineStructure is None:
     pipelineStructure = event.content.get( 'pipelineStructure' )
+  
   result = getProcessInstance( pipelineStructure )
   procs = set()
   if result is not None:
