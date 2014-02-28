@@ -649,7 +649,7 @@ class Parameterized( object ):
     for function in self._warn.get( name, [] ):
       if debug: print >> debug, '  call (_warn)', function, '(', name, ',', newValue, ')'
       function( self, name, newValue )
-    for parameterized, attribute, function, force in self._links.get( name, [] ):
+    for parameterized, attribute, function, force, destDefaultUpdate in self._links.get( name, [] ):
       if parameterized is None:
         if debug: print >> debug, '  call (_links)', function, '(', self, ',', self, ')'
         function( self, self )
@@ -660,7 +660,7 @@ class Parameterized( object ):
           linkParamDebug = getattr( linkParamType, '_debug', None )
           if linkParamDebug is not None:
             print >> linkParamDebug, 'parameter', name, 'changed in', self, 'with value', newValue
-          if force:
+          if destDefaultUpdate :
             parameterized.setDefault( attribute, self.isDefault( name ) )
           if function is None:
             if debug: print >> debug, '  ' + str(parameterized) + '.setValue(', repr(attribute), ',', newValue,')'
@@ -787,7 +787,7 @@ class Parameterized( object ):
     if function is None:
       function = getattr( self.signature[ destName ], 'defaultLinkParametersFunction', None )
     for p in sourcesList:
-      self._links.setdefault( p, [] ).append( ( weakref.proxy( self ), destName, function, False ) )
+      self._links.setdefault( p, [] ).append( ( weakref.proxy( self ), destName, function, False, False ) )
 
   def addParameterObserver( self, parameterName, function ):
     """Associates a callback function to the modifications of the parameter value.
@@ -830,7 +830,7 @@ class Parameterized( object ):
     self.__dict__.update( self._convertedValues )
     self._convertedValues.clear()
 
-  def addLink( self, destination, source, function=None ):
+  def addLink( self, destination, source, function = None, destDefaultUpdate = True ):
     """Add a link between `source` and `destination` parameters. When the value of `source` changes, the value of `destination` may change.
     Contrary to :py:func:`linkParameters`, the link will always be applied, even if the `destination` parameter has no more its default value.
     
@@ -838,6 +838,7 @@ class Parameterized( object ):
     :param source: one or several parameters, whose modification will activate the link function.
     :type source: string, tuple or list
     :param function function: specific function that will be called instead of the default one when the link is activated. The signature of the function is *function(self, *sources ) -> destination*
+    :param bool destDefaultUpdate: specify that destination attribute will be marked as manually changed if the default value was changed by the link.
     """
     # Parse source
     sources = []
@@ -873,7 +874,7 @@ class Parameterized( object ):
       multiLink = ExecutionNode.MultiParameterLink( sources, (destObject, destParameter), function )
       for sourceObject, sourceParameter in sources:
         sourceObject._links.setdefault( sourceParameter, [] ).append (
-          ( destObject, destParameter, multiLink, True ) )
+          ( destObject, destParameter, multiLink, True, destDefaultUpdate ) )
 
 
   def addDoubleLink( self, destination, source, function=None ):
@@ -1204,12 +1205,12 @@ class Process( Parameterized ):
     else:
       return self.id() + '_' + unicode( instance )
 
-  def addLink( self, destination, source, function=None ):
+  def addLink( self, destination, source, function = None, destDefaultUpdate = True ):
     eNode = getattr( self, '_executionNode', None )
     if eNode is None:
-      Parameterized.addLink( self, destination, source, function )
+      Parameterized.addLink( self, destination, source, function, destDefaultUpdate )
     else:
-      eNode.addLink( destination, source, function )
+      eNode.addLink( destination, source, function, destDefaultUpdate )
     
   def setExecutionNode( self, eNode ):
     """Sets the execution node of the pipeline.
@@ -1779,7 +1780,7 @@ class ExecutionNode( object ):
       return ExecutionNodeGUI(parent, self._parameterized())
     return None
 
-  def addLink( self, destination, source, function=None ):
+  def addLink( self, destination, source, function = None, destDefaultUpdate = True ):
     """
     Adds a parameter link like :py:meth:`Parameterized.addLink`.
     """
@@ -1812,7 +1813,7 @@ class ExecutionNode( object ):
       multiLink = self.MultiParameterLink( sources, (destObject, destParameter), function )
       for sourceObject, sourceParameter in sources:
         sourceObject._links.setdefault( sourceParameter, [] ).append (
-          ( destObject, destParameter, multiLink, True ) )
+          ( destObject, destParameter, multiLink, True, destDefaultUpdate ) )
 
 
   def addDoubleLink( self, destination, source, function=None ):
