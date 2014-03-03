@@ -957,7 +957,7 @@ class Parameterized( object ):
       for k, l in self._links.items():
         i = 0
         while i < len( l ):
-          do, dp, ml, f = l[ i ]
+          do, dp, ml, f, du = l[ i ]
           if ( destObject is None or destObject is do ) and \
              destParameter == dp:
             del l[ i ]
