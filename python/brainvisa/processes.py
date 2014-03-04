@@ -820,6 +820,11 @@ class Parameterized( object ):
     for k in args:
       self.signature[ k ].mandatory = True
 
+  def setUserLevel( self, userLevel, *args ):
+    """Assign a userLevel to a list of parameters."""
+    for k in args:
+      self.signature[ k ].userLevel = userLevel
+      
   def setConvertedValue( self, name, value ):
     """Sets the value but stores the previous value in an internal dictionary."""
     self._convertedValues[ name ] = getattr( self, name )
