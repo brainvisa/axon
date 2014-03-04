@@ -59,10 +59,16 @@ PYQT_API_VERSION = 2
 try:
   qt_api = [ "QDate", "QDateTime", "QString", "QTextStream", "QTime", "QUrl",
     "QVariant" ]
+  qt_api_ver = None
   for qt_class in qt_api:
-    if sip.getapi( qt_class ) != PYQT_API_VERSION:
-      sip.setapi( qt_class, PYQT_API_VERSION )
-  del qt_api, qt_class
+    try:
+      qt_api_ver = sip.getapi( qt_class )
+      if qt_api_ver == PYQT_API_VERSION:
+        continue
+    except:
+      pass # getapi() fails: probably not set yet
+    sip.setapi( qt_class, PYQT_API_VERSION )
+  del qt_api, qt_class, qt_api_ver
 except:
   print "WARNING: impossible to use version %d of sip/Qt API." \
     % PYQT_API_VERSION
