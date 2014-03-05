@@ -4572,7 +4572,7 @@ class ProcessTree( EditableTree ):
     
     A ProcessTree.Leaf represents a process.
     """
-    def __init__( self, id, name=None, editable=True, icon=None, *args, **kwargs ):
+    def __init__( self, id, name=None, editable=True, icon=None, userLevel=None, *args, **kwargs ):
       processInfo=getProcessInfo(id)
       pname=name
       if name is None:
@@ -4588,9 +4588,10 @@ class ProcessTree( EditableTree ):
           elif 'converter' in processInfo.roles:
             icon = 'converter.png'
           else:
-            icon = 'icon_process_' + str( min( processInfo.userLevel, 3 ) ) + '.png'
+            icon = 'icon_process_' + str( min( processInfo.userLevel if userLevel is None else userLevel, 3 ) ) + '.png'
       super(ProcessTree.Leaf, self).__init__(_t_(pname), id, icon, _t_("process"), True, editable, editable)
       self.initName=name
+      self.userLevel=userLevel
       self.onAttributeChange("name", self.updateName)
       self.setVisible(processInfo)
       if processInfo is not None:
@@ -4599,10 +4600,10 @@ class ProcessTree( EditableTree ):
         self.enabled = True
 
     def __getinitargs__(self):
-      return (self.id, self.initName, self.modifiable, self.icon)
+      return (self.id, self.initName, self.modifiable, self.icon, self.userLevel)
 
     def __getinitkwargs__(self):
-      return ( (), {'id' : self.id, 'name' : self.initName, 'editable' :  self.modifiable}) # do not save icon in minf file for processes because it is determined by its role and user level
+      return ( (), {'id' : self.id, 'name' : self.initName, 'editable' : self.modifiable, 'userLevel' : self.userLevel}) # do not save icon in minf file for processes because it is determined by its role and user level
 
     def __reduce__( self ):
       """This method is redefined for enable deepcopy of this object (and potentially pickle).
@@ -4616,7 +4617,8 @@ class ProcessTree( EditableTree ):
       """
       visible=False
       if processInfo is not None:
-        if (processInfo.userLevel <= neuroConfig.userLevel):
+        if (self.userLevel is not None and (self.userLevel <= neuroConfig.userLevel)) \
+           or (self.userLevel is None and (processInfo.userLevel <= neuroConfig.userLevel)):
           visible=True
       self.visible=visible
 
