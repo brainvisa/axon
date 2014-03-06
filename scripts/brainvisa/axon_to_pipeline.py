@@ -110,7 +110,7 @@ def parse_links(pipeline, proc):
     links = []
     proc = use_weak_ref(proc)
     for param, linkdefs in proc()._links.iteritems():
-        for dstproc, dstparam, mlink, unknown in linkdefs:
+        for dstproc, dstparam, mlink, unknown, force in linkdefs:
             dstproc = use_weak_ref(dstproc)
             # check if link is compatible
             if dstproc is None or dstparam is None or dstproc is proc:
@@ -268,12 +268,12 @@ def is_linked_to_parent(proc, param, parent):
     # get links from proc.param
     if isinstance(proc(), procbv.Process):
         linkdefs = proc()._links.get( param )
-        for dstproc, dstparam, mlink, unknown in linkdefs:
+        for dstproc, dstparam, mlink, unknown, force in linkdefs:
             if use_weak_ref(dstproc) == parent:
                 return dstparam
         # get links to parent
         for pparam, linkdefs in parent()._links.iteritems():
-            for srcproc, srcparam, mlink, unknown in linkdefs:
+            for srcproc, srcparam, mlink, unknown, force in linkdefs:
                 if use_weak_ref(srcproc) == proc and srcparam == param:
                     return pparam
     return None
