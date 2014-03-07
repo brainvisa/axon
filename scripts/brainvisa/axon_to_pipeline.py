@@ -59,7 +59,7 @@ def write_process_signature(p, out):
 
 
 def write_process_execution(p, out):
-    out.write('''    def __call__(self):
+    out.write('''    def _run_process(self):
         from brainvisa import axon
         from brainvisa.configuration import neuroConfig
         import brainvisa.processes
