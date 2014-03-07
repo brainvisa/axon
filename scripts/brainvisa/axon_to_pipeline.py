@@ -106,7 +106,7 @@ def use_weak_ref(obj):
     return weakref.ref(obj)
 
 
-def parse_links(pipeline, proc):
+def parse_links(pipeline, proc, weak_outputs=False):
     links = []
     proc = use_weak_ref(proc)
     for param, linkdefs in proc()._links.iteritems():
@@ -131,15 +131,27 @@ def parse_links(pipeline, proc):
                             or (not isinstance(srcsign, WriteDiskItem) \
                                 and dstproc is use_weak_ref(pipeline)):
                         # swap input/output
+                        this_weak_output = False
+                        if weak_outputs and proc is use_weak_ref(pipeline):
+                            this_weak_output = True
                         if (dstproc, dstparam, proc, param) not in links:
-                            links.append((dstproc, dstparam, proc, param))
+                            links.append((dstproc, dstparam, proc, param,
+                                this_weak_output))
                     else:
+                        this_weak_output = False
+                        if weak_outputs and dstproc is use_weak_ref(pipeline):
+                            this_weak_output = True
                         if (proc, param, dstproc, dstparam) not in links:
-                            links.append((proc, param, dstproc, dstparam))
+                            links.append((proc, param, dstproc, dstparam,
+                                this_weak_output))
             else:
                 # not DiskItems
+                this_weak_output = False
+                if weak_outputs and dstproc is use_weak_ref(pipeline):
+                    this_weak_output = True
                 if (proc, param, dstproc, dstparam) not in links:
-                    links.append((proc, param, dstproc, dstparam))
+                    links.append((proc, param, dstproc, dstparam,
+                        this_weak_output))
     return links
 
 
@@ -164,24 +176,27 @@ def is_output(proc, param):
 def converted_link(linkdef, links, pipeline, selfinparams, revinparams,
         selfoutparams, revoutparams, procmap):
     # find exported source/dest
+    weak_link = linkdef[4]
     real_source = find_param_in_parent(linkdef[0], linkdef[1], procmap)
     real_dest = find_param_in_parent(linkdef[2], linkdef[3], procmap)
     if real_source[0] is None or real_dest[0] is None:
         print 'Warning, missing link info for:', linkdef[0]().name, \
             ',', linkdef[1], ' ->', linkdef[2]().name, ',', linkdef[3]
         return None
-    linkdef = (real_source[0], real_source[2], real_dest[0], real_dest[2])
+    linkdef = (real_source[0], real_source[2], real_dest[0], real_dest[2],
+        weak_link)
     pipeline = use_weak_ref(pipeline)
     if linkdef[2] is pipeline and linkdef[3] in selfinparams:
         # output in pipeline inputs: invert link
-        linkdef = (linkdef[2], linkdef[3], linkdef[0], linkdef[1])
-    if linkdef in links:
+        linkdef = (linkdef[2], linkdef[3], linkdef[0], linkdef[1], weak_link)
+    if linkdef[:4] in links:
         return None
     if linkdef[0] is pipeline and linkdef[1] in selfoutparams:
         # source in pipeline outputs: either needs translation, or inversion
         if is_output(linkdef[2], linkdef[3]):
             # dest is an output: needs inversion
-            linkdef = (linkdef[2], linkdef[3], linkdef[0], linkdef[1])
+            linkdef = (linkdef[2], linkdef[3], linkdef[0], linkdef[1],
+                weak_link)
         else:
             altp = selfoutparams.get(linkdef[1])
             if altp is None:
@@ -189,33 +204,33 @@ def converted_link(linkdef, links, pipeline, selfinparams, revinparams,
                     ',', linkdef[1], ' ->', linkdef[2]().name, ',', linkdef[3]
                 print revoutparams
                 return None
-            linkdef = (altp[0], altp[1], linkdef[2], linkdef[3])
-    if linkdef in links:
+            linkdef = (altp[0], altp[1], linkdef[2], linkdef[3], weak_link)
+    if linkdef[:4] in links:
         return None
     if linkdef[0] is not pipeline \
             and (linkdef[0], linkdef[1]) in revinparams:
         # source has an equivalent in exported inputs
         altp = revinparams[(linkdef[0], linkdef[1])]
-        linkdef = (pipeline, altp, linkdef[2], linkdef[3])
+        linkdef = (pipeline, altp, linkdef[2], linkdef[3], weak_link)
     if linkdef[2] is not pipeline \
             and (linkdef[2], linkdef[3]) in revoutparams:
         # dest has an equivalent in exported outputs
         altp = revoutparams[(linkdef[2], linkdef[3])]
-        linkdef = (linkdef[0], linkdef[1], pipeline, altp)
-    if linkdef in links:
+        linkdef = (linkdef[0], linkdef[1], pipeline, altp, weak_link)
+    if linkdef[:4] in links:
         return None
     if linkdef[2] is not pipeline \
             and (linkdef[2], linkdef[3]) in revinparams:
         # dest has an equivalent in exported inputs
         altp = revinparams[(linkdef[2], linkdef[3])]
-        linkdef = (pipeline, altp, linkdef[0], linkdef[1])
-    if linkdef in links:
+        linkdef = (pipeline, altp, linkdef[0], linkdef[1], weak_link)
+    if linkdef[:4] in links:
         return None
     return linkdef
 
 
 def export_output(buffered_lines, src, sname, sparam, p, dparam, selfoutparams,
-        revoutparams, processed_links, selfouttraits):
+        revoutparams, processed_links, selfouttraits, weak_outputs=False):
     if dparam in selfouttraits:
         # a trait has been manually declared
         declare_output_trait(buffered_lines, src, sname, sparam, p, dparam,
@@ -223,9 +238,15 @@ def export_output(buffered_lines, src, sname, sparam, p, dparam, selfoutparams,
     else:
         # global output param in pipeline signature
         buffered_lines['exports'].append('        # export output parameter\n')
-        buffered_lines['exports'].append(
-            '        self.export_parameter(\'%s\', \'%s\', \'%s\')\n' \
-            % (sname, sparam, dparam))
+        if weak_outputs:
+            buffered_lines['exports'].append(
+                '        self.export_parameter(\'%s\', \'%s\', \'%s\', ' \
+                'weak_link=True)\n' \
+                % (sname, sparam, dparam))
+        else:
+            buffered_lines['exports'].append(
+                '        self.export_parameter(\'%s\', \'%s\', \'%s\')\n' \
+                % (sname, sparam, dparam))
         selfoutparams[dparam] = (src, sparam)
         revoutparams[(src, sparam)] = dparam
         processed_links.add((src, sparam, use_weak_ref(p), dparam))
@@ -379,7 +400,7 @@ def write_pipeline_links(p, buffered_lines, procmap, links, processed_links,
             revinparams, selfoutparams, revoutparams, procmap)
         if link is None:
             continue
-        src, sparam, dst, dparam = link
+        src, sparam, dst, dparam, weak_link = link
         sname, sexported = procmap.get(src, (None, None))
         if sname is None:
             print 'warning, src process', src().name, 'not found in pipeline.'
@@ -443,15 +464,20 @@ def write_pipeline_links(p, buffered_lines, procmap, links, processed_links,
                     # and link 2nd to this exported input
                     sparam = sparam2
                     spname = sparam2
-            buffered_lines['links'].append(
-                '        self.add_link(\'%s->%s\')\n' % (spname, dpname))
+            if weak_link:
+                buffered_lines['links'].append(
+                    '        self.add_link(\'%s->%s\', weak_link=True)\n' \
+                    % (spname, dpname))
+            else:
+                buffered_lines['links'].append(
+                    '        self.add_link(\'%s->%s\')\n' % (spname, dpname))
         processed_links.add((src, sparam, dst, dparam))
         processed_links.add((dst, dparam, src, sparam))
 
 
 def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
         selfoutparams, revoutparams, self_out_traits, exported,
-        enode_name=None):
+        enode_name=None, weak_outputs=False):
     if enode_name is None:
         enode_name = 'select_' + enode.name()
     nodename = make_node_name(enode_name, nodenames)
@@ -472,7 +498,7 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
             % (nodename, repr(enode.childrenNames()), output_name))
         export_output(buffered_lines, use_weak_ref(enode), nodename,
             output_name, p, output_name, selfoutparams, revoutparams,
-            processed_links, self_out_traits)
+            processed_links, self_out_traits, weak_outputs)
     if hasattr(enode, 'selection_outputs'):
         # connect children outputs to the switch
         sel_out = enode.selection_outputs
@@ -491,7 +517,8 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
             # input params and the output "group" name
             input_name = '-'.join((link_src, output_name))
             # input_name = link_src  # has changed again in Switch...
-            links.append((src, link_par, use_weak_ref(enode), input_name))
+            links.append((src, link_par, use_weak_ref(enode), input_name,
+                weak_outputs))
             processed_links.add((src, link_par, use_weak_ref(p), output_name))
             processed_links.add((use_weak_ref(p), output_name, src, link_par))
     return nodename
@@ -503,7 +530,7 @@ def reorder_exports(buffered_lines, p):
     delayed = False
     linkre = re.compile(
         '^ *self.export_parameter\(\'([^,]+)\', \'([^\']+)\'(, \'' \
-        '([^\']+)\')\)$')
+        '([^\']+)\')(, weak_link=True)?\)$')
     omax = 0
     for i, line in enumerate(old_lines):
         if line.startswith('        #'):
@@ -562,7 +589,9 @@ def write_pipeline_definition(p, out, parse_subpipelines=False):
     buffered_lines = {'nodes': [], 'exports': [], 'links': []}
     out.write('\n\n')
     out.write('    def pipeline_definition(self):\n')
-    enodes = [(p.executionNode(), None, True)]
+    # enodes list: each element is a 4-tuple:
+    # axon_node, name, exported, weak_outputs
+    enodes = [(p.executionNode(), None, True, False)]
     links = parse_links(p, p)
     processed_links = set()
     # procmap: weak_ref(process) -> (node_name, exported)
@@ -573,7 +602,7 @@ def write_pipeline_definition(p, out, parse_subpipelines=False):
     revoutparams = {}
     self_out_traits = []
     while enodes:
-        enode, enode_name, exported = enodes.pop(0)
+        enode, enode_name, exported, weak_outputs = enodes.pop(0)
         if isinstance(enode, procbv.ProcessExecutionNode) \
                 and (len(list(enode.children())) == 0 \
                     or not parse_subpipelines):
@@ -589,19 +618,32 @@ def write_pipeline_definition(p, out, parse_subpipelines=False):
                 buffered_lines['nodes'].append(
                     '        self.add_process(\'%s\', \'%s\')\n' \
                     % (nodename, moduleprocid))
-                links += parse_links(p, proc)
-            enodes += [(enode.child(name), name, False) \
+                if weak_outputs:
+                    print '  --> weak outputs for:', nodename
+                    buffered_lines['nodes'].append(
+                        '        self.nodes[\'%s\']._weak_outputs = True\n' \
+                        % nodename)
+                links += parse_links(p, proc, weak_outputs)
+            enodes += [(enode.child(name), name, False, weak_outputs) \
                 for name in enode.childrenNames()]
+            if weak_outputs and len(list(enode.children())) != 0:
+                print '** nodes with weak outputs:', [enode.child(name).name() for name in enode.childrenNames()]
         else:
             if isinstance(enode, procbv.SelectionExecutionNode) and exported:
                 # FIXME: BUG: if not exported, should we rebuild switch params
                 # list, and doing this, export again internal params ?
                 nodename = write_switch(enode, buffered_lines, nodenames,
                     links, p, processed_links, selfoutparams, revoutparams,
-                    self_out_traits, exported, enode_name)
+                    self_out_traits, exported, enode_name, weak_outputs)
                 procmap[use_weak_ref(enode)] = (nodename, exported)
-            enodes += [(enode.child(name), name, exported) \
+                # children should have weak outputs so that they can be
+                # deactivated by the switch
+                weak_outputs = True
+                print 'children of', nodename, 'will have weak links'
+            enodes += [(enode.child(name), name, exported, weak_outputs) \
                 for name in enode.childrenNames()]
+            if weak_outputs and len(list(enode.children())) != 0:
+                print '** nodes with weak outputs:', [enode.child(name).name() for name in enode.childrenNames()]
 
     write_pipeline_links(p, buffered_lines, procmap, links, processed_links,
         selfoutparams, revoutparams, self_out_traits)
@@ -614,13 +656,21 @@ def write_pipeline_definition(p, out, parse_subpipelines=False):
     # remove this when there is a more convenient method in Pipeline
     out.write(
 '''        for node_name, node in self.nodes.iteritems():
+            if hasattr(node, '_weak_outputs'):
+                weak_outputs = node._weak_outputs
+            else:
+                weak_outputs = False
             for parameter_name, plug in node.plugs.iteritems():
                 if parameter_name in ('nodes_activation', 'selection_changed'):
                     continue
                 if ((node_name, parameter_name) not in self.do_not_export and
                         not plug.links_to and not plug.links_from):
+                    weak_link = False
+                    if weak_outputs and plug.output:
+                        weak_link = True
                     self.export_parameter(node_name, parameter_name,
-                        '_'.join((node_name, parameter_name)))
+                        '_'.join((node_name, parameter_name)),
+                        weak_link=weak_link)
 ''')
 
 
