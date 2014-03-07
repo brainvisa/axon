@@ -89,6 +89,10 @@ def str_to_name(s):
     s = s.replace('\'', '_')
     s = s.replace('"', '_')
     s = s.replace(',', '_')
+    s = s.replace('-', '_')
+    s = s.replace('/', '_')
+    s = s.replace('+', '_')
+    s = s.replace('*', '_')
     return s
 
 
@@ -515,7 +519,7 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
                 link_par = link_par_split[-1]
             # in switches, input params are the concatenation of declared
             # input params and the output "group" name
-            input_name = '-'.join((link_src, output_name))
+            input_name = '_switch_'.join((link_src, output_name))
             # input_name = link_src  # has changed again in Switch...
             links.append((src, link_par, use_weak_ref(enode), input_name,
                 weak_outputs))
