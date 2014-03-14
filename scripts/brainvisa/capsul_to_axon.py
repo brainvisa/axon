@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from brainvisa.axon import processes
-from soma.pipeline import process, pipeline
+from capsul.pipeline import process, pipeline
 from brainvisa import processes as procbv
 from brainvisa.data import neuroData
 from brainvisa.data.readdiskitem import ReadDiskItem
@@ -41,7 +41,7 @@ param_types_table = \
 }
 
 
-parser = OptionParser( 'Convert an Soma-pipeline process into an Axon ' \
+parser = OptionParser( 'Convert a Capsul process into an Axon ' \
     'process.\nDoesn\'t work yet for pipelines.\nParameters links are not ' \
     'preserved (yet).' )
 parser.add_option( '-p', '--process', dest='process', action='append',

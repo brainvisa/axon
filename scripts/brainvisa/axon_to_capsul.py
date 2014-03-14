@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 from brainvisa.axon import processes
-from soma.process import process
-from soma.pipeline import pipeline
+from capsul.process import process
+from capsul.pipeline import pipeline
 from brainvisa import processes as procbv
 from brainvisa.data import neuroData
 from brainvisa.data.readdiskitem import ReadDiskItem
@@ -37,7 +37,7 @@ def point3d_options(point):
     return ['trait=Float()', 'minlen=3', 'maxlen=3', 'value=[0, 0, 0]']
 
 
-def write_process_signature(p, out):
+def write_process_signature(p, out, buffered_lines):
     # write signature
     for name, param in p.signature.iteritems():
         newtype = param_types_table.get(type(param))
@@ -55,6 +55,11 @@ def write_process_signature(p, out):
             newtype = newtype.__name__
         out.write('        self.add_trait(\'%s\', %s(%s))\n' \
             % (name, newtype, ', '.join(paramoptions)))
+        if not p.isDefault(name):
+            value = getattr(p, name)
+            buffered_lines['initialization'].append(
+                '        self.%s = %s\n' % (name, repr(value)))
+            print 'non-default value for %s in %s' % (name, p.name)
     out.write('\n\n')
 
 
@@ -78,7 +83,9 @@ def write_process_execution(p, out):
 
 
 def write_process_definition(p, out):
-    write_process_signature(p, out)
+    buffered_lines = {'initialization': []}
+    write_process_signature(p, out, buffered_lines)
+    write_buffered_lines(out, buffered_lines, sections=('initialization', ))
     write_process_execution(p, out)
 
 
@@ -96,7 +103,7 @@ def str_to_name(s):
     return s
 
 
-def soma_process_name(procid):
+def capsul_process_name(procid):
     return procid  # TODO
 
 
@@ -163,7 +170,7 @@ def is_output(proc, param):
     if isinstance(proc(), procbv.SelectionExecutionNode):
         # SelectionExecutionNode nodes may be used for switch nodes.
         # They do not have parameters in the Axon API since they are not
-        # processes. But the soma-pipeline side (Switch node) has input
+        # processes. But the Capsul pipeline side (Switch node) has input
         # parameters which should be connected from children outputs, and
         # output parameters which should be exported.
         if (hasattr(proc(), 'switch_output') \
@@ -525,6 +532,14 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
                 weak_outputs))
             processed_links.add((src, link_par, use_weak_ref(p), output_name))
             processed_links.add((use_weak_ref(p), output_name, src, link_par))
+
+    # select the right child
+    for sub_node_name in enode.childrenNames():
+        node = enode.child(sub_node_name)
+        if node.isSelected():
+            buffered_lines['initialization'].append(
+                '        self.nodes[\'%s\'].switch = \'%s\'\n' \
+                % (nodename, sub_node_name))
     return nodename
 
 
@@ -573,12 +588,15 @@ def reorder_exports(buffered_lines, p):
     buffered_lines['exports'] = new_lines
 
 
-def write_buffered_lines(out, buffered_lines):
-    for section in ('nodes', 'exports', 'links'):
-        out.write('        # %s section\n' % section)
-        for line in buffered_lines[section]:
-            out.write(line)
-        out.write('\n')
+def write_buffered_lines(out, buffered_lines, sections=None):
+    if sections is None:
+        sections = ('nodes', 'exports', 'links', 'initialization')
+    for section in sections:
+        if buffered_lines.get(section):
+            out.write('        # %s section\n' % section)
+            for line in buffered_lines[section]:
+                out.write(line)
+            out.write('\n')
 
 
 def write_pipeline_definition(p, out, parse_subpipelines=False):
@@ -590,12 +608,13 @@ def write_pipeline_definition(p, out, parse_subpipelines=False):
     '''
 
     # writing will be buffered so as to allow reordering
-    buffered_lines = {'nodes': [], 'exports': [], 'links': []}
+    buffered_lines = {'nodes': [], 'exports': [], 'links': [],
+        'initialization': []}
     out.write('\n\n')
     out.write('    def pipeline_definition(self):\n')
     # enodes list: each element is a 4-tuple:
     # axon_node, name, exported, weak_outputs
-    enodes = [(p.executionNode(), None, True, False)]
+    enodes = [(p.executionNode(), None, True, False, None, None)]
     links = parse_links(p, p)
     processed_links = set()
     # procmap: weak_ref(process) -> (node_name, exported)
@@ -606,7 +625,9 @@ def write_pipeline_definition(p, out, parse_subpipelines=False):
     revoutparams = {}
     self_out_traits = []
     while enodes:
-        enode, enode_name, exported, weak_outputs = enodes.pop(0)
+        enode, enode_name, exported, weak_outputs, parents, parentnode \
+            = enodes.pop(0)
+        nodename = None
         if isinstance(enode, procbv.ProcessExecutionNode) \
                 and (len(list(enode.children())) == 0 \
                     or not parse_subpipelines):
@@ -615,7 +636,7 @@ def write_pipeline_definition(p, out, parse_subpipelines=False):
             nodename = make_node_name(enode_name, nodenames)
             proc = enode._process
             procid = proc.id()
-            somaproc = soma_process_name(procid)
+            capsulproc = capsul_process_name(procid)
             moduleprocid = '%s.%s' % (procid, procid)
             procmap[use_weak_ref(proc)] = (nodename, exported)
             if exported:
@@ -623,15 +644,20 @@ def write_pipeline_definition(p, out, parse_subpipelines=False):
                     '        self.add_process(\'%s\', \'%s\')\n' \
                     % (nodename, moduleprocid))
                 if weak_outputs:
-                    print '  --> weak outputs for:', nodename
                     buffered_lines['nodes'].append(
                         '        self.nodes[\'%s\']._weak_outputs = True\n' \
                         % nodename)
                 links += parse_links(p, proc, weak_outputs)
-            enodes += [(enode.child(name), name, False, weak_outputs) \
-                for name in enode.childrenNames()]
-            if weak_outputs and len(list(enode.children())) != 0:
-                print '** nodes with weak outputs:', [enode.child(name).name() for name in enode.childrenNames()]
+                for param_name in proc.signature.iterkeys():
+                    if not proc.isDefault(param_name):
+                        value = getattr(proc, param_name)
+                        buffered_lines['initialization'].append(
+                            '        self.nodes[\'%s\'].%s = %s\n' \
+                            % (nodename, param_name, repr(value)))
+            new_parents = (parents or []) + [nodename]
+            enodes += [(enode.child(name), name, False, weak_outputs,
+                new_parents, enode) for name in enode.childrenNames()]
+            # parse process signature, look for non-default values
         else:
             if isinstance(enode, procbv.SelectionExecutionNode) and exported:
                 # FIXME: BUG: if not exported, should we rebuild switch params
@@ -643,11 +669,29 @@ def write_pipeline_definition(p, out, parse_subpipelines=False):
                 # children should have weak outputs so that they can be
                 # deactivated by the switch
                 weak_outputs = True
-                print 'children of', nodename, 'will have weak links'
-            enodes += [(enode.child(name), name, exported, weak_outputs) \
-                for name in enode.childrenNames()]
-            if weak_outputs and len(list(enode.children())) != 0:
-                print '** nodes with weak outputs:', [enode.child(name).name() for name in enode.childrenNames()]
+            new_parents = parents
+            enodes += [(enode.child(name), name, exported, weak_outputs,
+                new_parents, enode) for name in enode.childrenNames()]
+        if nodename and not enode.isSelected() and exported:
+            # FIXME: the exported flag filters out sub-nodes of sub-pipelines
+            # so it is not possible this way to unselect a node inside a
+            # sub-pipeline.
+            # To do so we would have to remove the exported test here,
+            # but it would cause other problems, such as sub-nodes naming,
+            # which should not follow the "global" rule make_node_name().
+            if parentnode \
+                    and isinstance(parentnode, procbv.SelectionExecutionNode):
+                continue # switches have already their selection activation
+            if parents:
+                sub_node_address = '.'.join(
+                    ['nodes[\'%s\'].process' % sub_name \
+                        for sub_name in parents])
+                buffered_lines['initialization'].append(
+                    '        self.%s.nodes_activation.%s = False\n' \
+                    % (sub_node_address, nodename))
+            else:
+                buffered_lines['initialization'].append(
+                    '        self.nodes_activation.%s = False\n' % nodename)
 
     write_pipeline_links(p, buffered_lines, procmap, links, processed_links,
         selfoutparams, revoutparams, self_out_traits)
@@ -655,7 +699,8 @@ def write_pipeline_definition(p, out, parse_subpipelines=False):
     # try to respect pipeline main parameters ordering
     reorder_exports(buffered_lines, p)
     # flush the write buffer
-    write_buffered_lines(out, buffered_lines)
+    write_buffered_lines(out, buffered_lines,
+        sections=('nodes', 'exports', 'links'))
 
     # remove this when there is a more convenient method in Pipeline
     out.write(
@@ -675,7 +720,11 @@ def write_pipeline_definition(p, out, parse_subpipelines=False):
                     self.export_parameter(node_name, parameter_name,
                         '_'.join((node_name, parameter_name)),
                         weak_link=weak_link)
+
 ''')
+
+    # flush the init section buffer
+    write_buffered_lines(out, buffered_lines, sections=('initialization', ))
 
 
 # ----
@@ -696,7 +745,7 @@ param_types_table = \
 }
 
 
-parser = OptionParser('Convert an Axon process into a Soma-pipeline ' \
+parser = OptionParser('Convert an Axon process into a Capsul ' \
     'process.\nAlso works for pipeline structures.\n' \
     'Parameters links for completion are not preserved (yet), but ' \
     'inter-process links in pipelines are (normally) rebuilt.')
@@ -741,8 +790,8 @@ try:
 except ImportError:
     from enthought.traits.api import File, Float, Int, Bool, Enum, Str, List
 
-from soma.process.process import Process
-from soma.pipeline.pipeline import Pipeline
+from capsul.process.process import Process
+from capsul.pipeline.pipeline import Pipeline
 
 class ''')
     out.write(procid + '(%s):\n' % proctype.__name__)
