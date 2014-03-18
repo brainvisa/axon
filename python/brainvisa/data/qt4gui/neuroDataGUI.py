@@ -37,7 +37,7 @@ from brainvisa.processing.neuroException import HTMLMessage
 from brainvisa.configuration import neuroConfig
 from soma.qtgui.api import largeIconSize
 from PyQt4 import QtCore
-import sys
+import decimal, sys
 
 buttonIconSize = QSize( *largeIconSize )
 buttonMargin = QSize( 4, 4 )
@@ -623,6 +623,7 @@ class NumberListEditor( StringListEditor ):
   def __init__( self, parent, name ):
     DataEditor.__init__( self )
     StringListEditor.__init__( self, parent, name )
+    self.precision = None
 
   def _valueFromText( self, text ):
     if not text: return None
@@ -886,6 +887,10 @@ class PointEditor( QWidget, DataEditor ):
     # Get only the numbers for the dimension
     if value is not None:
       value = value[ 0 : self.parameter.dimension ]
+      if self.parameter.precision is not None:
+        exp = decimal.Decimal(10) ** -self.parameter.precision
+        value = [ decimal.Decimal(str(v)).quantize(exp, decimal.ROUND_HALF_UP) for v in value ]
+        
     self.nle.setValue( value, default )
 
   def selectPressed( self ):

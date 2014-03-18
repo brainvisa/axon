@@ -449,13 +449,15 @@ class Point( Parameter ):
   """
   This parameter type represents the coordinates of a point.
   """
-  def __init__( self, dimension = 1 ):
+  def __init__( self, dimension = 1, precision = None ):
     """
     :param int dimension: dimension of the space in which the coordinates are given.
+    :param int precision: precision of the coordinates.
     """
     Parameter.__init__( self )
 #    self.linkParameterWithNonDefaultValue = 1
     self.dimension = dimension
+    self.precision = precision
     self._Link = None
 
   def findValue( self, value ):
@@ -483,16 +485,16 @@ class Point2D( Point ):
   """
   :py:class:`Point` in a two dimensions space.
   """
-  def __init__( self, dimension = 2 ):
-    Point.__init__( self, dimension )
+  def __init__( self, dimension = 2, precision = None ):
+    Point.__init__( self, dimension, precision )
 
 #-------------------------------------------------------------------------------
 class Point3D( Point ):
   """
   :py:class:`Point` in a three dimensions space.
   """
-  def __init__( self, dimension = 3 ):
-    Point.__init__( self, dimension )
+  def __init__( self, dimension = 3, precision = None ):
+    Point.__init__( self, dimension, precision )
 
   # We only keep the following method to have back compatibility with old
   # codes
