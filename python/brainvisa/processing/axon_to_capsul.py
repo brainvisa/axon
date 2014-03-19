@@ -37,7 +37,7 @@ def point3d_options(point):
     return ['trait=Float()', 'minlen=3', 'maxlen=3', 'value=[0, 0, 0]']
 
 
-def write_process_signature(p, out, buffered_lines):
+def write_process_signature(p, out, buffered_lines, get_all_values=False):
     # write signature
     for name, param in p.signature.iteritems():
         newtype = param_types_table.get(type(param))
@@ -55,11 +55,12 @@ def write_process_signature(p, out, buffered_lines):
             newtype = newtype.__name__
         out.write('        self.add_trait(\'%s\', %s(%s))\n' \
             % (name, newtype, ', '.join(paramoptions)))
-        if not p.isDefault(name):
+        if get_all_values or not p.isDefault(name):
             value = getattr(p, name)
-            buffered_lines['initialization'].append(
-                '        self.%s = %s\n' % (name, repr(value)))
-            print 'non-default value for %s in %s' % (name, p.name)
+            if value is not None:
+                buffered_lines['initialization'].append(
+                    '        self.%s = %s\n' % (name, repr(value)))
+                # print 'non-default value for %s in %s' % (name, p.name)
     out.write('\n\n')
 
 
@@ -82,9 +83,10 @@ def write_process_execution(p, out):
 ''')
 
 
-def write_process_definition(p, out):
+def write_process_definition(p, out, get_all_values=False):
     buffered_lines = {'initialization': []}
-    write_process_signature(p, out, buffered_lines)
+    write_process_signature(p, out, buffered_lines,
+        get_all_values=get_all_values)
     write_buffered_lines(out, buffered_lines, sections=('initialization', ))
     write_process_execution(p, out)
 
@@ -599,7 +601,8 @@ def write_buffered_lines(out, buffered_lines, sections=None):
             out.write('\n')
 
 
-def write_pipeline_definition(p, out, parse_subpipelines=False):
+def write_pipeline_definition(p, out, parse_subpipelines=False,
+        get_all_values=False):
     '''Write a pipeline structure in the out file, and links between pipeline
     nodes.
     If parse_subpipelines is set, the pipeline structure inside sub-pipelines
@@ -745,9 +748,25 @@ param_types_table = \
 }
 
 
-def axon_to_capsul(proc, outfile, parse_subpipelines=False):
+def axon_to_capsul(proc, outfile, parse_subpipelines=False,
+        get_all_values=False):
     '''Converts an Axon process or pipeline into a CAPSUL process or pipeline.
     The output is a file, named with the outfile parameter.
+
+    Parameters
+    ----------
+    proc: axon process ID (string) or instance
+        process to be converted
+    outfile: filename
+        output file name for the converted process in CAPSUL API
+    parse_subpipelines: bool (optional)
+        if True, sub-pipelines internals will be extracted in the current one
+        Experimental. Expect strange effects when you use it.
+        Default is False.
+    get_all_values: bool (optional)
+        if True, the current values of the input process instance will all be
+        reported to the output process.
+        Default is False.
     '''
 
     if isinstance(proc, procbv.Process):
@@ -756,7 +775,7 @@ def axon_to_capsul(proc, outfile, parse_subpipelines=False):
     else:
         procid = proc
         p = procbv.getProcessInstance(procid)
-    print 'process:', p
+    # print 'process:', p
 
     if p.executionNode():
         proctype = pipeline.Pipeline
@@ -781,12 +800,13 @@ class ''')
 
     if proctype is pipeline.Pipeline:
         write_pipeline_definition(p, out,
-            parse_subpipelines=parse_subpipelines)
+            parse_subpipelines=parse_subpipelines,
+            get_all_values=get_all_values)
     else:
-        write_process_definition(p, out)
+        write_process_definition(p, out, get_all_values=get_all_values)
 
 
-if __name__ == '__main__':
+def axon_to_capsul_main(argv):
 
     parser = OptionParser('Convert an Axon process into a Capsul ' \
         'process.\nAlso works for pipeline structures.\n' \
@@ -807,7 +827,7 @@ if __name__ == '__main__':
         'exported as themselves, but may contain parameters which will not ' \
         'be exported and may cause missing or broken links.')
 
-    options, args = parser.parse_args()
+    options, args = parser.parse_args(argv)
     if len(args) != 0:
         parser.print_help()
         sys.exit(1)
@@ -817,4 +837,8 @@ if __name__ == '__main__':
 
     for procid, outfile in zip(options.process, options.output):
         proc = axon_to_capsul(procid, outfile, options.parse_subpipelines)
+
+
+if __name__ == '__main__':
+    axon_to_capsul_main(sys.argv[1:])
 
