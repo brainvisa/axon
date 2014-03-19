@@ -108,10 +108,10 @@ insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
 # mask in MNI space
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
-  '<subject>_Nat_greyMask_{method}', SetType('T1 MRI Mni GreyMask'),) # methode is the way to obtain the mask from the probability map. e.g. : apply a threshold, compare map...
-
+  '<subject>_Mni_greyMask_{method}', SetType('T1 MRI Mni GreyMask'),) 
+  
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
-  '<subject>_Nat_whiteMask_{method}', SetType('T1 MRI Mni WhiteMask'),)
+  '<subject>_Mni_whiteMask_{method}', SetType('T1 MRI Mni WhiteMask'),)
   
 #############
 # PetSpc space #
