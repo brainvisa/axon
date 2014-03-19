@@ -745,37 +745,17 @@ param_types_table = \
 }
 
 
-parser = OptionParser('Convert an Axon process into a Capsul ' \
-    'process.\nAlso works for pipeline structures.\n' \
-    'Parameters links for completion are not preserved (yet), but ' \
-    'inter-process links in pipelines are (normally) rebuilt.')
-parser.add_option('-p', '--process', dest='process', action='append',
-    help='input process ID. Ex: NobiasHistoAnalysis. Several -p options are ' \
-    'allowed and should each correspond to a -o option.')
-parser.add_option('-o', '--output', dest='output', metavar='FILE',
-    action='append',
-    help='output .py file for the converted process code')
-parser.add_option('-r', '--recursive_sub', dest='parse_subpipelines',
-    action='store_true', default=False,
-    help='recursively parse sub-pipelines of a pipeline. This is mostly a ' \
-    'debugging feature, since it is generally not needed because ' \
-    'sub-pipelines are processes and can be converted and used directly. ' \
-    'Moreover with this option, pipeline processes are not exported as ' \
-    'themselves, but may contain parameters which will not be exported and ' \
-    'may cause missing or broken links.')
+def axon_to_capsul(proc, outfile, parse_subpipelines=False):
+    '''Converts an Axon process or pipeline into a CAPSUL process or pipeline.
+    The output is a file, named with the outfile parameter.
+    '''
 
-options, args = parser.parse_args()
-if len(args) != 0:
-    parser.print_help()
-    sys.exit(1)
-
-processes.fastStart = True
-processes.initializeProcesses()
-
-
-for procid, outfile in zip(options.process, options.output):
-
-    p = procbv.getProcessInstance(procid)
+    if isinstance(proc, procbv.Process):
+        procid = proc.id()
+        p = proc
+    else:
+        procid = proc
+        p = procbv.getProcessInstance(procid)
     print 'process:', p
 
     if p.executionNode():
@@ -796,11 +776,45 @@ from capsul.pipeline.pipeline import Pipeline
 class ''')
     out.write(procid + '(%s):\n' % proctype.__name__)
     out.write('''    def __init__(self, **kwargs):
-        super(%s, self).__init__(**kwargs)
-        self.name_process = '%s\'\n''' % (procid, procid))
+    super(%s, self).__init__(**kwargs)
+    self.name_process = '%s\'\n''' % (procid, procid))
 
     if proctype is pipeline.Pipeline:
         write_pipeline_definition(p, out,
-            parse_subpipelines=options.parse_subpipelines)
+            parse_subpipelines=parse_subpipelines)
     else:
         write_process_definition(p, out)
+
+
+if __name__ == '__main__':
+
+    parser = OptionParser('Convert an Axon process into a Capsul ' \
+        'process.\nAlso works for pipeline structures.\n' \
+        'Parameters links for completion are not preserved (yet), but ' \
+        'inter-process links in pipelines are (normally) rebuilt.')
+    parser.add_option('-p', '--process', dest='process', action='append',
+        help='input process ID. Ex: NobiasHistoAnalysis. Several -p options ' \
+        'are allowed and should each correspond to a -o option.')
+    parser.add_option('-o', '--output', dest='output', metavar='FILE',
+        action='append',
+        help='output .py file for the converted process code')
+    parser.add_option('-r', '--recursive_sub', dest='parse_subpipelines',
+        action='store_true', default=False,
+        help='recursively parse sub-pipelines of a pipeline. This is mostly ' \
+        'a debugging feature, since it is generally not needed because ' \
+        'sub-pipelines are processes and can be converted and used ' \
+        'directly. Moreover with this option, pipeline processes are not ' \
+        'exported as themselves, but may contain parameters which will not ' \
+        'be exported and may cause missing or broken links.')
+
+    options, args = parser.parse_args()
+    if len(args) != 0:
+        parser.print_help()
+        sys.exit(1)
+
+    processes.fastStart = True
+    processes.initializeProcesses()
+
+    for procid, outfile in zip(options.process, options.output):
+        proc = axon_to_capsul(procid, outfile, options.parse_subpipelines)
+
