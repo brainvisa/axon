@@ -56,6 +56,7 @@ FileType('T1 MRI Mni ScalpMask', 'T1 MRI Mni Space Tissue Mask')
 
 FileType('T1 MRI PetSpc Space Tissue Mask', 'T1 MRI Tissue Mask')
 FileType('T1 MRI PetSpc GreyMask', 'T1 MRI PetSpc Space Tissue Mask')
+FileType('T1 MRI PetSpc WhiteMask', 'T1 MRI PetSpc Space Tissue Mask')
 
 ###################
 # transformations #

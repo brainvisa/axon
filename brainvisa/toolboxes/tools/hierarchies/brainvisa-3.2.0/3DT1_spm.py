@@ -105,11 +105,19 @@ insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
   '<subject>_Mni_modulated_scalpProba', SetType('T1 MRI Mni ScalpProba'), SetWeakAttr('modulated', 'yes')) 
 
+# mask in MNI space
+
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_Nat_greyMask_{method}', SetType('T1 MRI Mni GreyMask'),) # methode is the way to obtain the mask from the probability map. e.g. : apply a threshold, compare map...
+
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_Nat_whiteMask_{method}', SetType('T1 MRI Mni WhiteMask'),)
+  
 #############
 # PetSpc space #
 #############
 
-# probability map in native space
+# probability map in pet space
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
   '<subject>_PetSpc_greyProba', SetType('T1 MRI PetSpc GreyProba'),)
@@ -125,9 +133,13 @@ insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
   '<subject>_PetSpc_scalpProba', SetType('T1 MRI PetSpc ScalpProba'),)
-# mask in native space
+# mask in pet space
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
-  '<subject>_PetSpc_greyMask_{method}', SetType('T1 MRI PetSpc GreyMask'),) # methode is the way to obtain the mask from the probability map. e.g. : apply a threshold, compare map...
+  '<subject>_PetSpc_greyMask_{method}', SetType('T1 MRI PetSpc GreyMask'),) 
+
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_PetSpc_whiteMask_{method}', SetType('T1 MRI PetSpc WhiteMask'),)
+
 
 ###################
 # transformations #
