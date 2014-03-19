@@ -776,8 +776,8 @@ from capsul.pipeline.pipeline import Pipeline
 class ''')
     out.write(procid + '(%s):\n' % proctype.__name__)
     out.write('''    def __init__(self, **kwargs):
-    super(%s, self).__init__(**kwargs)
-    self.name_process = '%s\'\n''' % (procid, procid))
+        super(%s, self).__init__(**kwargs)
+        self.name_process = '%s\'\n''' % (procid, procid))
 
     if proctype is pipeline.Pipeline:
         write_pipeline_definition(p, out,
