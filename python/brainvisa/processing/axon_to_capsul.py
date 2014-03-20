@@ -601,8 +601,15 @@ def write_buffered_lines(out, buffered_lines, sections=None):
             out.write('\n')
 
 
+def make_module_name(procid, module_name_prefix=None):
+    if module_name_prefix is None:
+        return '%s.%s' % (procid, procid)
+    else:
+        return '%s.%s.%s' % (module_name_prefix, procid, procid)
+
+
 def write_pipeline_definition(p, out, parse_subpipelines=False,
-        get_all_values=False):
+        get_all_values=False, module_name_prefix=None):
     '''Write a pipeline structure in the out file, and links between pipeline
     nodes.
     If parse_subpipelines is set, the pipeline structure inside sub-pipelines
@@ -640,7 +647,7 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
             proc = enode._process
             procid = proc.id()
             capsulproc = capsul_process_name(procid)
-            moduleprocid = '%s.%s' % (procid, procid)
+            moduleprocid = make_module_name(procid, module_name_prefix)
             procmap[use_weak_ref(proc)] = (nodename, exported)
             if exported:
                 buffered_lines['nodes'].append(
@@ -748,8 +755,8 @@ param_types_table = \
 }
 
 
-def axon_to_capsul(proc, outfile, parse_subpipelines=False,
-        get_all_values=False):
+def axon_to_capsul(proc, outfile, module_name_prefix=None,
+        parse_subpipelines=False, get_all_values=False):
     '''Converts an Axon process or pipeline into a CAPSUL process or pipeline.
     The output is a file, named with the outfile parameter.
 
@@ -759,6 +766,8 @@ def axon_to_capsul(proc, outfile, parse_subpipelines=False,
         process to be converted
     outfile: filename
         output file name for the converted process in CAPSUL API
+    module_name_prefix: module path (string) (optional)
+        if specified, this prefix will be prepended to processes module names
     parse_subpipelines: bool (optional)
         if True, sub-pipelines internals will be extracted in the current one
         Experimental. Expect strange effects when you use it.
@@ -801,7 +810,8 @@ class ''')
     if proctype is pipeline.Pipeline:
         write_pipeline_definition(p, out,
             parse_subpipelines=parse_subpipelines,
-            get_all_values=get_all_values)
+            get_all_values=get_all_values,
+            module_name_prefix=module_name_prefix)
     else:
         write_process_definition(p, out, get_all_values=get_all_values)
 
@@ -818,6 +828,9 @@ def axon_to_capsul_main(argv):
     parser.add_option('-o', '--output', dest='output', metavar='FILE',
         action='append',
         help='output .py file for the converted process code')
+    parser.add_option('-m', '--module', dest='module',
+        help='module name used as namespace to get the sub-processes in a ' \
+        'pipeline')
     parser.add_option('-r', '--recursive_sub', dest='parse_subpipelines',
         action='store_true', default=False,
         help='recursively parse sub-pipelines of a pipeline. This is mostly ' \
@@ -836,7 +849,9 @@ def axon_to_capsul_main(argv):
     processes.initializeProcesses()
 
     for procid, outfile in zip(options.process, options.output):
-        proc = axon_to_capsul(procid, outfile, options.parse_subpipelines)
+        proc = axon_to_capsul(procid, outfile,
+        module_name_prefix=options.module,
+        parse_subpipelines=options.parse_subpipelines)
 
 
 if __name__ == '__main__':
