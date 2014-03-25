@@ -79,7 +79,7 @@ def write_process_execution(p, out):
         kwargs = {name : getattr(self,name) for name in self.user_traits()}
 
         context = brainvisa.processes.defaultContext()
-        context.runProcess(self.name_process, **kwargs)
+        context.runProcess(self.id.split('.')[-1], **kwargs)
 ''')
 
 
@@ -804,8 +804,7 @@ from capsul.pipeline.pipeline import Pipeline
 class ''')
     out.write(procid + '(%s):\n' % proctype.__name__)
     out.write('''    def __init__(self, **kwargs):
-        super(%s, self).__init__(**kwargs)
-        self.name_process = '%s\'\n''' % (procid, procid))
+        super(%s, self).__init__(**kwargs)\n''' % procid)
 
     if proctype is pipeline.Pipeline:
         write_pipeline_definition(p, out,
