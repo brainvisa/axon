@@ -714,17 +714,32 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
 
     # remove this when there is a more convenient method in Pipeline
     out.write(
-'''        for node_name, node in self.nodes.iteritems():
+'''        # export orphan output parameters
+        for node_name, node in self.nodes.iteritems():
+            if node_name == '':
+                continue # skip main node
             if hasattr(node, '_weak_outputs'):
                 weak_outputs = node._weak_outputs
             else:
                 weak_outputs = False
-            for parameter_name, plug in node.plugs.iteritems():
+            for parameter_name, plug in node.plugs.items():
                 if parameter_name in ('nodes_activation', 'selection_changed'):
                     continue
-                if ((node_name, parameter_name) not in self.do_not_export and
-                        not plug.links_to and not plug.links_from):
+                if (node_name, parameter_name) not in self.do_not_export:
+                    if not plug.output and (plug.links_to or plug.links_from):
+                        continue
                     weak_link = False
+                    if plug.output:
+                        if plug.links_to or plug.links_from:
+                            # some links exist
+                            if [True for x in plug.links_to if x[0]==''] \\
+                                    or \\
+                                    [True for x in plug.links_from \\
+                                        if x[0]=='']:
+                                # a link to the main pipeline already exists
+                                continue
+                            # links exist but not to the pipeline: export
+                            # weak_link = True
                     if weak_outputs and plug.output:
                         weak_link = True
                     self.export_parameter(node_name, parameter_name,
