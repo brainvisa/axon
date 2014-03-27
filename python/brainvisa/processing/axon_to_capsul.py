@@ -183,6 +183,8 @@ def is_output(proc, param):
         else:
             return False
     signp = proc().signature.get(param)
+    if signp is None: # non-exported parameter: should be an output
+        return True
     return isinstance(signp, WriteDiskItem)
 
 
@@ -218,8 +220,8 @@ def converted_link(linkdef, links, pipeline, selfinparams, revinparams,
                 print revoutparams
                 return None
             linkdef = (altp[0], altp[1], linkdef[2], linkdef[3], weak_link)
-    if linkdef[:4] in links:
-        return None
+        if linkdef[:4] in links:
+            return None
     if linkdef[0] is not pipeline \
             and (linkdef[0], linkdef[1]) in revinparams:
         # source has an equivalent in exported inputs
@@ -288,13 +290,14 @@ def export_input(buffered_lines, dst, dname, dparam, p, sparam, selfinparams,
     processed_links.add((dst, dparam, use_weak_ref(p), sparam))
 
 
-def make_node_name(name, nodenames):
+def make_node_name(name, nodenames, parents):
     name = str_to_name(name)
-    if name in nodenames:
-        nodenames[name] += 1
-        return '%s_%d' % (name, nodenames[name])
+    full_name = '.'.join((parents or []) + [name])
+    if full_name in nodenames:
+        nodenames[full_name] += 1
+        return '%s_%d' % (name, nodenames[full_name])
     else:
-        nodenames[name] = 0
+        nodenames[full_name] = 0
         return name
 
 
@@ -302,9 +305,10 @@ def is_linked_to_parent(proc, param, parent):
     # get links from proc.param
     if isinstance(proc(), procbv.Process):
         linkdefs = proc()._links.get( param )
-        for dstproc, dstparam, mlink, unknown, force in linkdefs:
-            if use_weak_ref(dstproc) == parent:
-                return dstparam
+        if linkdefs:
+            for dstproc, dstparam, mlink, unknown, force in linkdefs:
+                if use_weak_ref(dstproc) == parent:
+                    return dstparam
         # get links to parent
         for pparam, linkdefs in parent()._links.iteritems():
             for srcproc, srcparam, mlink, unknown, force in linkdefs:
@@ -319,12 +323,13 @@ def find_param_in_parent(proc, param, procmap):
     pname, exported = procmap.get(proc, (None, None))
     if exported:  # exported node: direct, OK
         if verbose:
-            print '    direct export'
+            print '    find_param_in_parent:', proc().name, '/', param, \
+                ': direct export'
         return (proc, pname, param)
     last = (proc, param)
     allnotfound = False
     if verbose:
-        print '    find_param_in_parent:', proc().name, param, ':', pname
+        print '    find_param_in_parent:', proc().name, '/', param, ':', pname
     while not allnotfound:
         if verbose:
             print '    try as child:', last[0]().name, '/', last[1]
@@ -350,8 +355,10 @@ def find_param_in_parent(proc, param, procmap):
                 if exported:
                     parent_pname = last[1]
                     if verbose:
-                        print '    find_param_in_parent:', proc().name, param
-                        print '    ** found:', new_proc().name, new_pname
+                        print '    find_param_in_parent:', proc().name, '/', \
+                            param
+                        print '    ** found:', new_proc().name, '/', \
+                            new_pname
                     # now check if it is an exported param in the sub-pipeline
                     opname = is_linked_to_parent(proc, param, new_proc)
                     if opname is not None:
@@ -360,6 +367,8 @@ def find_param_in_parent(proc, param, procmap):
                         new_pname = opname
                         if verbose:
                             print '    parent param translated:', new_pname
+                    elif verbose:
+                        print '    not linked to parent: take:', new_pname
                     return (new_proc, new_node_name, new_pname)
                 last = (new_proc, new_pname)
                 break
@@ -450,6 +459,9 @@ def write_pipeline_links(p, buffered_lines, procmap, links, processed_links,
             # check for non-exported links with same IO status
             if sname != '' and dname != '' \
                     and is_output(src, sparam) == is_output(dst, dparam):
+                print 'Warning: write_pipeline_links, sname: %s, ' \
+                    'sparam: %s, dname: %s, dparam: %s: both same IO type:' \
+                    % (sname, sparam, dname, dparam), is_output(src, sparam)
                 if is_output(src, sparam):
                     # both outputs: export 1st
                     sparam2 = sname + '_' + sparam
@@ -489,14 +501,18 @@ def write_pipeline_links(p, buffered_lines, procmap, links, processed_links,
 
 
 def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
-        selfoutparams, revoutparams, self_out_traits, exported,
+        selfoutparams, revoutparams, self_out_traits, exported, parent_names,
         enode_name=None, weak_outputs=False):
     if enode_name is None:
         enode_name = 'select_' + enode.name()
-    nodename = make_node_name(enode_name, nodenames)
-    output_name = 'switch_out'
+    nodename = make_node_name(enode_name, nodenames, parent_names)
+    input_names = [input_name for input_name in enode.childrenNames()]
+    output_names = ['switch_out']
     if hasattr(enode, 'switch_output'):
-        output_name = enode.switch_output
+        output_names = enode.switch_output
+        if isinstance(output_names, str) \
+                or isinstance(output_names, unicode):
+            output_names = [output_names] # have a list
     elif exported:
         buffered_lines['nodes'].append(
             '        # warning, the switch output trait should be ' \
@@ -507,33 +523,44 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
             'adequate output items in each subprocess in the switch.\n')
     if exported:
         buffered_lines['nodes'].append(
-            '        self.add_switch(\'%s\', %s, \'%s\')\n' \
-            % (nodename, repr(enode.childrenNames()), output_name))
-        export_output(buffered_lines, use_weak_ref(enode), nodename,
-            output_name, p, output_name, selfoutparams, revoutparams,
-            processed_links, self_out_traits, weak_outputs)
+            '        self.add_switch(\'%s\', %s, %s)\n' \
+            % (nodename, repr(input_names), repr(output_names)))
+        for output_name in output_names:
+            export_output(buffered_lines, use_weak_ref(enode), nodename,
+                output_name, p, output_name, selfoutparams, revoutparams,
+                processed_links, self_out_traits, weak_outputs)
     if hasattr(enode, 'selection_outputs'):
         # connect children outputs to the switch
         sel_out = enode.selection_outputs
-        for link_src, link_par in zip(enode.childrenNames(), sel_out):
-            link_par_split = link_par.split('.')
-            if len(link_par_split) == 1:
-                src = use_weak_ref(enode.child(link_src)._process)
-            else:
-                src = enode.child(link_src)
-                while len(link_par_split) > 1:
-                    srcname_short = link_par_split.pop(0)
-                    src = src.child(srcname_short)
-                src = use_weak_ref(src._process)
-                link_par = link_par_split[-1]
-            # in switches, input params are the concatenation of declared
-            # input params and the output "group" name
-            input_name = '_switch_'.join((link_src, output_name))
-            # input_name = link_src  # has changed again in Switch...
-            links.append((src, link_par, use_weak_ref(enode), input_name,
-                weak_outputs))
-            processed_links.add((src, link_par, use_weak_ref(p), output_name))
-            processed_links.add((use_weak_ref(p), output_name, src, link_par))
+        for link_src, link_pars in zip(input_names, sel_out):
+            if not isinstance(link_pars, list) \
+                    and not isinstance(link_pars, tuple):
+                link_pars = [link_pars]
+            for link_par, output_name in zip(link_pars, output_names):
+                link_par_split = link_par.split('.')
+                if len(link_par_split) == 1:
+                    src = use_weak_ref(enode.child(link_src)._process)
+                else:
+                    src = enode.child(link_src)
+                    while len(link_par_split) > 1:
+                        srcname_short = link_par_split.pop(0)
+                        src = src.child(srcname_short)
+                    src = use_weak_ref(src._process)
+                    link_par = link_par_split[-1]
+                # in switches, input params are the concatenation of declared
+                # input params and the output "group" name
+                input_name = '_switch_'.join((link_src, output_name))
+                # input_name = link_src  # has changed again in Switch...
+                links.append((src, link_par, use_weak_ref(enode), input_name,
+                    weak_outputs))
+                processed_links.add(
+                    (src, link_par, use_weak_ref(p), output_name))
+                processed_links.add(
+                    (use_weak_ref(p), output_name, src, link_par))
+                processed_links.add(
+                    (src, link_par, use_weak_ref(p), input_name))
+                processed_links.add(
+                    (use_weak_ref(p), input_name, src, link_par))
 
     # select the right child
     for sub_node_name in enode.childrenNames():
@@ -622,8 +649,8 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
         'initialization': []}
     out.write('\n\n')
     out.write('    def pipeline_definition(self):\n')
-    # enodes list: each element is a 4-tuple:
-    # axon_node, name, exported, weak_outputs
+    # enodes list: each element is a 6-tuple:
+    # axon_node, name, exported, weak_outputs, parents, parentnode
     enodes = [(p.executionNode(), None, True, False, None, None)]
     links = parse_links(p, p)
     processed_links = set()
@@ -643,7 +670,7 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
                     or not parse_subpipelines):
             if enode_name is None:
                 enode_name = enode.name()
-            nodename = make_node_name(enode_name, nodenames)
+            nodename = make_node_name(enode_name, nodenames, parents)
             proc = enode._process
             procid = proc.id()
             capsulproc = capsul_process_name(procid)
@@ -674,7 +701,8 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
                 # list, and doing this, export again internal params ?
                 nodename = write_switch(enode, buffered_lines, nodenames,
                     links, p, processed_links, selfoutparams, revoutparams,
-                    self_out_traits, exported, enode_name, weak_outputs)
+                    self_out_traits, exported, parents, enode_name,
+                    weak_outputs)
                 procmap[use_weak_ref(enode)] = (nodename, exported)
                 # children should have weak outputs so that they can be
                 # deactivated by the switch
@@ -715,6 +743,15 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
     # remove this when there is a more convenient method in Pipeline
     out.write(
 '''        # export orphan output parameters
+        self.export_internal_parameters()
+
+''')
+    # flush the init section buffer
+    write_buffered_lines(out, buffered_lines, sections=('initialization', ))
+
+    out.write(
+'''    def export_internal_parameters(self):
+        \'\'\'export orphan and internal output parameters\'\'\'
         for node_name, node in self.nodes.iteritems():
             if node_name == '':
                 continue # skip main node
@@ -732,11 +769,13 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
                     if plug.output:
                         if plug.links_to or plug.links_from:
                             # some links exist
-                            if [True for x in plug.links_to if x[0]==''] \\
+                            if [True for x in plug.links_to \\
+                                    if x[0]=='' or isinstance(x[2], Switch)] \\
                                     or \\
                                     [True for x in plug.links_from \\
-                                        if x[0]=='']:
-                                # a link to the main pipeline already exists
+                                    if x[0]=='' or isinstance(x[2], Switch)]:
+                                # a link to the main pipeline or to a switch
+                                # already exists
                                 continue
                             # links exist but not to the pipeline: export
                             # weak_link = True
@@ -747,9 +786,6 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
                         weak_link=weak_link)
 
 ''')
-
-    # flush the init section buffer
-    write_buffered_lines(out, buffered_lines, sections=('initialization', ))
 
 
 # ----
@@ -813,8 +849,13 @@ try:
 except ImportError:
     from enthought.traits.api import File, Float, Int, Bool, Enum, Str, List
 
-from capsul.process.process import Process
-from capsul.pipeline.pipeline import Pipeline
+from capsul.process import Process
+''')
+    if proctype is pipeline.Pipeline:
+        out.write('''from capsul.pipeline import Pipeline
+from capsul.pipeline import Switch
+''')
+    out.write('''
 
 class ''')
     out.write(procid + '(%s):\n' % proctype.__name__)
@@ -863,6 +904,7 @@ def axon_to_capsul_main(argv):
     processes.initializeProcesses()
 
     for procid, outfile in zip(options.process, options.output):
+        # print 'Process:', procid, '\n'
         proc = axon_to_capsul(procid, outfile,
         module_name_prefix=options.module,
         parse_subpipelines=options.parse_subpipelines)
