@@ -639,6 +639,11 @@ class SQLDatabase( Database ):
 
 
   def update( self, directoriesToScan=None, recursion=True, context=None ):
+    if directoriesToScan:
+      directoriesToScan = [ d for d in directoriesToScan \
+        if os.path.normpath(d).startswith(os.path.normpath(self.directory)) ]
+      if not directoriesToScan:
+        return
     if context is not None:
       context.write( self.name + ': parse directories and insert items' )
     t0 = time.time()
@@ -1125,6 +1130,8 @@ class SQLDatabase( Database ):
     parentDir = os.path.normpath( directory )
     rejected = ( 'uuid', )
     basedir = os.path.normpath( self.directory )
+    if not parentDir.startswith( basedir ):
+      return
     # DEBUG
     modif = False
     while parentDir != basedir:
