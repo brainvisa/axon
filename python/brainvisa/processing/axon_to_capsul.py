@@ -741,17 +741,20 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
         sections=('nodes', 'exports', 'links'))
 
     # remove this when there is a more convenient method in Pipeline
-    out.write(
-'''        # export orphan output parameters
-        self.export_internal_parameters()
+    #out.write(
+#'''        # export orphan output parameters
+        #self.export_internal_parameters()
 
-''')
+#''')
     # flush the init section buffer
     write_buffered_lines(out, buffered_lines, sections=('initialization', ))
 
     out.write(
-'''    def export_internal_parameters(self):
+'''
+    def export_internal_parameters(self):
         \'\'\'export orphan and internal output parameters\'\'\'
+        # if not self.autoexport_node_parameters:
+        #     return
         for node_name, node in self.nodes.iteritems():
             if node_name == '':
                 continue # skip main node
@@ -785,6 +788,11 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
                         '_'.join((node_name, parameter_name)),
                         weak_link=weak_link)
 
+
+    def set_autoexport_parameters(self, enabled):
+        \'\'\'If disabled, export_internal_parameters() will not do anything
+        \'\'\'
+        self.autoexport_parameters = enabled
 ''')
 
 
@@ -859,15 +867,20 @@ from capsul.pipeline import Switch
 
 class ''')
     out.write(procid + '(%s):\n' % proctype.__name__)
-    out.write('''    def __init__(self, **kwargs):
-        super(%s, self).__init__(**kwargs)\n''' % procid)
 
     if proctype is pipeline.Pipeline:
+        out.write('''    def __init__(self, autoexport_node_parameters=True, **kwargs):
+        # self.autoexport_node_parameters = autoexport_node_parameters
+        super(%s, self).__init__(False, **kwargs)
+        if autoexport_node_parameters:
+            self.export_internal_parameters()\n''' % procid)
         write_pipeline_definition(p, out,
             parse_subpipelines=parse_subpipelines,
             get_all_values=get_all_values,
             module_name_prefix=module_name_prefix)
     else:
+        out.write('    def __init__(self, **kwargs):\n')
+        out.write('        super(%s, self).__init__(**kwargs)\n' % procid)
         write_process_definition(p, out, get_all_values=get_all_values)
 
 
