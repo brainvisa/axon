@@ -11,6 +11,7 @@ from traits import api as traits
 import weakref
 import sys
 import re
+import inspect
 
 from optparse import OptionParser
 
@@ -20,21 +21,71 @@ def write_diskitem_options(wdiskitem):
 
 
 def choice_options(choice):
-    return [repr(x[0]) for x in choice.values]
+    return [repr(x[min(1, len(x)-1)]) for x in choice.values]
 
 
 def open_choice_options(choice):
     if len(choice.values) != 0:
-        print choice.values
-        return ['default_value=' + repr(choice.values[0][0])]
+        options = []
+        trait_type = get_choice_type(choice)
+        if trait_type is not None:
+            options.append('trait=%s()' % trait_type.__name__)
+        value = choice.values[0][min(1, len(choice.values[0])-1)]
+        return options + ['default_value=' + repr(value)]
     else:
         return []
+
+
+def get_choice_type(choice):
+    if len(choice.values) == 0:
+        return None
+    element_types = {
+        bool: traits.Bool,
+        int: traits.Int,
+        float: traits.Float,
+        str: traits.Str,
+        unicode: traits.Str,
+        list: traits.List,
+        tuple: traits.List,
+    }
+    choice_types = [element_types[type(t[min(1, len(t)-1)])] \
+        for t in choice.values]
+    choice0 = choice_types[0]
+    if all([elem is choice0 for elem in choice_types[1:]]):
+        return choice0
+    # test compatible types, ie (int, float) -> float
+    if all([elem in (traits.Int, traits.Float) for elem in choice_types]):
+        return traits.Float
+    return None
+
+
+def get_openchoice_type(choice):
+    trait_type = get_choice_type(choice)
+    if trait_type is None:
+        trait_type = traits.Str # default to string
+    return trait_type
 
 
 def point3d_options(point):
     # note: not using traits.ListFloat because its constructor doesn't seem
     # to take parmeters into account (minlen, maxlen, value)
     return ['trait=Float()', 'minlen=3', 'maxlen=3', 'value=[0, 0, 0]']
+
+
+param_types_table = \
+{
+    neuroData.Boolean: traits.Bool,
+    neuroData.String: traits.Str,
+    neuroData.Number: traits.Float,
+    neuroData.Float: traits.Float,
+    neuroData.Integer: traits.Int,
+    ReadDiskItem: traits.File,
+    WriteDiskItem: (traits.File, write_diskitem_options),
+    neuroData.Choice: (traits.Enum, choice_options),
+    neuroData.OpenChoice: (get_openchoice_type, open_choice_options),
+    neuroData.ListOf: traits.List,
+    neuroData.Point3D: (traits.List, point3d_options),
+}
 
 
 def write_process_signature(p, out, buffered_lines, get_all_values=False):
@@ -50,6 +101,9 @@ def write_process_signature(p, out, buffered_lines, get_all_values=False):
             newtype = newtype[0]
         if not param.mandatory:
             paramoptions.append('optional=True')
+        if inspect.isfunction(newtype):
+            # newtype is a function: call it to get the actual type
+            newtype = newtype(param)
         if hasattr(newtype, '__name__'):
             # take name of a type class
             newtype = newtype.__name__
@@ -798,22 +852,6 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
 
 # ----
 
-param_types_table = \
-{
-    neuroData.Boolean: traits.Bool,
-    neuroData.String: traits.Str,
-    neuroData.Number: traits.Float,
-    neuroData.Float: traits.Float,
-    neuroData.Integer: traits.Int,
-    ReadDiskItem: traits.File,
-    WriteDiskItem: (traits.File, write_diskitem_options),
-    neuroData.Choice: (traits.Enum, choice_options),
-    neuroData.OpenChoice: (traits.Str, open_choice_options),
-    neuroData.ListOf: traits.List,
-    neuroData.Point3D: (traits.List, point3d_options),
-}
-
-
 def axon_to_capsul(proc, outfile, module_name_prefix=None,
         parse_subpipelines=False, get_all_values=False):
     '''Converts an Axon process or pipeline into a CAPSUL process or pipeline.
@@ -920,7 +958,8 @@ def axon_to_capsul_main(argv):
         # print 'Process:', procid, '\n'
         proc = axon_to_capsul(procid, outfile,
         module_name_prefix=options.module,
-        parse_subpipelines=options.parse_subpipelines)
+        parse_subpipelines=options.parse_subpipelines, 
+        get_all_values=True)
 
 
 if __name__ == '__main__':
