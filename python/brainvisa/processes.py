@@ -902,25 +902,35 @@ class Parameterized( object ):
     else:
       sources.append( ( self, source ) )
 
+    destinations = []
     if destination is None:
-      destObject, destParameter = ( None, None )
-    else:
-      destObject, destParameter = ( self, destination )
-
-    removed = False
-    for sourceObject, sourceParameter in sources:
-      l = sourceObject._links.get( sourceParameter, [] )
-      if l:
-        lbis = l
-        l = [i for i in l if ( i[0] is not destObject and i[0] is not weakref.proxy( destObject ) ) or i[1] != destParameter]
-        if len( lbis ) != len( l ):
-          removed = True
-          if l:
-            sourceObject._links[ sourceParameter ] = l
-          else:
-            del sourceObject._links[ sourceParameter ]
+      destinations.append(( None, None ))
+    elif type( destination ) in ( types.ListType, types.TupleType ):
+      for i in destination:
+        if type( i ) in ( types.ListType, types.TupleType ):
+          destinations.append( i )
         else:
-          print 'warning: link not removed:', self, destination, 'from:', source
+          destinations.append( ( self, i ) )
+    else :
+      destinations.append( ( self, destination ) )
+
+    for destObject, destParameter in destinations:
+      removed = False
+      for sourceObject, sourceParameter in sources:
+        l = sourceObject._links.get( sourceParameter, [] )
+        if l:
+          lbis = l
+          l = [i for i in l if ( i[0] is not destObject and i[0] is not weakref.proxy( destObject ) ) or i[1] != destParameter]
+          if len( lbis ) != len( l ):
+            removed = True
+            if l:
+              sourceObject._links[ sourceParameter ] = l
+            else:
+              del sourceObject._links[ sourceParameter ]
+          else:
+            print 'warning: link not removed:', self, destination, 'from:', source
+            
+    # TODO : set the removed value consistent with what happened
     return removed
 
 
@@ -1841,23 +1851,31 @@ class ExecutionNode( object ):
     else:
       sources.append( self.parseParameterString( source ) )
 
-    destObject, destParameter = self.parseParameterString( destination )
+    # Parse destination
+    destinations = []
+    if type( destination ) in ( types.ListType, types.TupleType ):
+      for i in destination:
+        destinations.append( self.parseParameterString( i ) )
+    else:
+      destinations.append( self.parseParameterString( destination ) )
 
-    removed = 0
-    for sourceObject, sourceParameter in sources:
-      l = sourceObject._links.get( sourceParameter, [] )
-      if l:
-        lbis = l
-        l = [i for i in l if ( destObject and i[0] is not destObject and ( i[0] is not weakref.proxy( destObject ) ) ) or i[1] != destParameter]
-        if len(l) != len(lbis):
-          removed = 1
+    for destObject, destParameter in destinations:
+      removed = False
+      for sourceObject, sourceParameter in sources:
+        l = sourceObject._links.get( sourceParameter, [] )
         if l:
-          sourceObject._links[ sourceParameter ] = l
-        else:
-          del sourceObject._links[ sourceParameter ]
-          removed=1
-    if removed == 0:
-      print 'warning: enode link not removed:', self, destination, 'from:', source, ', function:', function
+          lbis = l
+          l = [i for i in l if ( destObject and i[0] is not destObject and ( i[0] is not weakref.proxy( destObject ) ) ) or i[1] != destParameter]
+          if len(l) != len(lbis):
+            removed = True
+          if l:
+            sourceObject._links[ sourceParameter ] = l
+          else:
+            del sourceObject._links[ sourceParameter ]
+            removed = True
+            
+        if not removed :
+          print 'warning: enode link not removed:', self, destination, 'from:', source, ', function:', function
 
   def removeDoubleLink( self, destination, source, function=None ):
     """
