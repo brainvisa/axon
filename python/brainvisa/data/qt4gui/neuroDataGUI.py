@@ -1016,11 +1016,11 @@ class GenericListSelection( QWidget ):
   def __init__( self, parent, name ):
     if getattr( GenericListSelection, 'pixUp', None ) is None:
       setattr( GenericListSelection, 'pixUp', 
-        QIcon( findIconFile( 'up.png' )) )
+        QIcon( os.path.join( neuroConfig.iconPath, 'up.png' )) )
       setattr( GenericListSelection, 'pixDown', 
-        QIcon( findIconFile( 'down.png' )) )
+        QIcon( os.path.join( neuroConfig.iconPath, 'down.png' )) )
     
-    QWidget.__init__( self, parent.topLevelWidget(), Qt.Dialog | Qt.Tool | Qt.WindowStaysOnTop )
+    QWidget.__init__( self, parent.topLevelWidget(), Qt.Dialog | Qt.Tool | Qt.WindowStaysOnTopHint )
     if name:
       self.setObjectName( name )
     self.setWindowModality(Qt.WindowModal)
@@ -1168,6 +1168,7 @@ class GenericListSelection( QWidget ):
 class ListOfListEditor( QPushButton, DataEditor ):
   def __init__( self, parameter, parent, name, context=None ):
     QPushButton.__init__( self, parent )
+    self.editValuesDialog = None
     if name:
       self.setObjectName( name )
     self.setValue( None, True )
@@ -1185,7 +1186,7 @@ class ListOfListEditor( QPushButton, DataEditor ):
   
   def startEditValues( self ):
     if self.editValuesDialog is None:
-      self.editValuesDialog = GenericListSelection( parent, name )
+      self.editValuesDialog = GenericListSelection( self.parentWidget(), self.objectName() )
       self.connect( self.editValuesDialog, SIGNAL( 'accept' ), self.acceptEditedValues )
     self.editValuesDialog.show()
   
