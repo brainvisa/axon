@@ -42,6 +42,9 @@ class ProcessToWorkflow( object ):
   
     self.brainvisa_cmd = [ 'python', '-m', 'brainvisa.axon.runprocess' ]
   
+  def escape( self ):
+    return None
+    
   def _createIdentifier( self, type ):
     count = self._identifiers.get( type, 0 ) + 1
     self._identifiers[ type ] = count
@@ -49,6 +52,40 @@ class ProcessToWorkflow( object ):
   
   def flatten(self, l): 
    return (sum(map(self.flatten, l),[]) if isinstance(l, list) else [l])
+
+  def parameterToString(self, process, name):
+    def toString( value, useHierarchy, escape = None, level = 0 ):
+      # This function converts values to string 
+      # also converting lists recursively
+      if isinstance( value, DiskItem ):
+        hierarchyAttributes = value.hierarchyAttributes()
+        hierarchyAttributes.pop( '_database', None )
+        if hierarchyAttributes and useHierarchy:
+          value = repr( hierarchyAttributes )
+      else :
+        if isinstance(value, list) \
+        or isinstance(value, tuple):
+          new_value = []
+          for element in value:
+            new_value.append(toString(element, useHierarchy, escape, level + 1))
+          if isinstance(value, tuple):
+            value = tuple(new_value)
+          else:
+            value = new_value
+
+      if (level == 0) :
+        value = str(value)
+        if escape is not None :
+          for e, r in escape :
+            value = value.replace(e, r)
+            
+      return value
+            
+    value = getattr(process, name)
+    useHierarchy = name in getattr( process, 'workflow_transmit_by_attributes', () )
+    value = toString( value, useHierarchy, escape = self.escape() )
+    
+    return value
   
   def _processExecutionNode( self, eNode, inGroup, priority = None ):
     if eNode is not None and eNode.isSelected():
@@ -380,35 +417,14 @@ class ProcessToWorkflow( object ):
 
 
   def _create_job( self, depth, jobId, process, inGroup, priority ):
-    def toString(value, level = 0):
-      if isinstance( value, DiskItem ):
-        hierarchyAttributes = value.hierarchyAttributes()
-        hierarchyAttributes.pop( '_database', None )
-        if hierarchyAttributes and name in getattr( process, 'workflow_transmit_by_attributes', () ):
-          value = repr( hierarchyAttributes )
-        else:
-          value = str( value )
-      elif isinstance(value, list) \
-        or isinstance(value, tuple):
-        new_value = []
-        for element in value:
-          new_value.append(toString(element, level + 1))
-        if isinstance(value, tuple):
-          value = tuple(new_value)
-        else:
-          value = new_value
 
-      if (level == 0) :
-        return str(value)
-      else :
-        return value
       
     command = list( self.brainvisa_cmd )
     for hb in self._nodeHistoryBooks:
       command += [ '--historyBook', hb ]
     command.append( process.id() )
     for name in process.signature.keys():
-      value = toString(getattr( process, name ))
+      value = self.parameterToString(process, name)
       command.append( value )
     #print "==> command " + repr(command)
     self.create_job( depth, jobId, command, inGroup, label=process.name, priority=priority )
@@ -610,7 +626,9 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
     else:
       self.brainvisa_db = brainvisa_db
 
-
+  def escape( self ):
+    return [ ('\'', '"') ]
+  
   def doIt( self ):
     
     self.__jobs = {}
