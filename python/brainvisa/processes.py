@@ -1388,9 +1388,11 @@ class IterationProcess( Process ):
                                    possibleChildrenProcesses=dp, notify = True )
 
     for i in xrange( len( self._processes ) ):
+      n = self._processes[ i ].name
       self._processes[ i ].isMainProcess = True
-      self._processes[ i ].name = repr(i+1) + ". " + self._processes[ i ].name
-      eNode.addChild( node = ProcessExecutionNode( self._processes[ i ],
+      self._processes[ i ].name = repr(i+1) + ". " + n
+      eNode.addChild( name = n,
+                      node = ProcessExecutionNode( self._processes[ i ],
                       optional = True, selected = True ) )
       
     # Add callbacks to maintain synchronization
@@ -1428,13 +1430,14 @@ class ListOfIterationProcess( IterationProcess ):
 
   def __init__( self, name, processes ):
     IterationProcess.__init__( self, name, processes )
-    chs = list( self.executionNode().children() )[0]._process.signature
-    self.changeSignature( Signature( 'param', ListOf( chs.values()[0] ) ) )
     en = self.executionNode()
+    chs = list( en.children() )[0]._process.signature
+    self.changeSignature( Signature( 'param', ListOf( chs.values()[0] ) ) )
     en._parameterized = weakref.ref( self )
+    chkeys = self.executionNode()._children.keys()
     for i, p in enumerate( en.children() ):
       s = p._process.signature
-      en.addLink( str(i) + '.' + s.keys()[0], 'param', self.linkP( self, i ) )
+      en.addLink( str(chkeys[i]) + '.' + s.keys()[0], 'param', self.linkP( self, i ) )
 
 
 #----------------------------------------------------------------------------
@@ -2122,7 +2125,9 @@ class SerialExecutionNode( ExecutionNode ):
     
   def addChild(self, name = None, node = None, index = None):
     if self.possibleChildrenProcesses :
-      if not name :
+      # As it is possible to add other children from GUI
+      # so it is necessary to suffix children keys with an internal index
+      if name is None :
         if isinstance( node, ExecutionNode ):
           name = node.name() + '_' + str(self._internalIndex)
         else :

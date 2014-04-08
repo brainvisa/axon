@@ -967,7 +967,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
         viewer = brainvisa.processes.getViewer( v, 0, listof=True )()
         brainvisa.processes.defaultContext().runInteractiveProcess( self._viewerExited, viewer, v )
       except Exception, error :
-        raise RuntimeError( HTMLMessage(_t_( 'No viewer could be found or launched for type =<em>%s</em> and format=<em>%s</em>' ) % (unicode( v.type ), unicode(v.format))) )
+        raise RuntimeError( HTMLMessage(_t_( 'No viewer could be found or launched for type =<em>%s</em> and format=<em>%s</em>' ) % (unicode( v[0].type ), unicode(v[0].format))) )
     else:
       self._view = None
 
