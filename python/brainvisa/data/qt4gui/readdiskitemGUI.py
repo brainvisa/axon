@@ -497,6 +497,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
       hb.setSpacing( 6 )
       
       self.btnAdd = QPushButton( _t_( 'Add' ) )
+      self.btnAdd.setEnabled( 0 )
       self.connect( self.btnAdd, SIGNAL( 'clicked()' ), self._add )
       hb.addWidget( self.btnAdd )
 
@@ -537,6 +538,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
       hb.setSpacing( 6 )
 
       self.sle = StringListEditor( None, unicode(self.objectName()) )
+      self.connect( self.sle, SIGNAL( 'newValidValue' ), self.checkUI )
       hb.addWidget( self.sle )
 
       btn = QPushButton( )
@@ -584,25 +586,10 @@ class DiskItemListEditor( QWidget, DataEditor ):
     def closeEvent( self, event ):
       neuroConfig.unregisterObject( self )
       QWidget.closeEvent( self, event )
+
+    def checkUI( self ):
+      # Check that user interface buttons are coherent with values
       
-    #def _currentChanged( self, index ):
-      #if index >= 0 and index < len( self.values ):
-        #if self.values[ index ] :
-          #self.sle.setValue( [ self.values[ index ].fullPath() ] )
-        #else :
-          #self.sle.setValue( None )
-          
-      #else:
-        #self.sle.setValue( None )
-        
-    def updateEditorValue( self ):
-      if len(self.lbxValues.selectedIndexes()) > 0 :
-        v = [ self.values[s.row()] for s in self.lbxValues.selectedIndexes() ]
-        self.sle.setValue( v )
-      else:
-        self.sle.setValue( None )
-        
-    def _selectionChanged( self ):
       sindexes = [ i.row() for i in self.lbxValues.selectedIndexes() ]
       sindexes.sort()
       
@@ -628,7 +615,30 @@ class DiskItemListEditor( QWidget, DataEditor ):
           self.btnSetDirectory.setEnabled( 0 )
         self.btnUp.setEnabled( 0 )
         self.btnDown.setEnabled( 0 )
+
+      self.btnAdd.setEnabled( self.sle.getValue() is not None )
         
+      return None
+    
+    #def _currentChanged( self, index ):
+      #if index >= 0 and index < len( self.values ):
+        #if self.values[ index ] :
+          #self.sle.setValue( [ self.values[ index ].fullPath() ] )
+        #else :
+          #self.sle.setValue( None )
+          
+      #else:
+        #self.sle.setValue( None )
+        
+    def updateEditorValue( self ):
+      if len(self.lbxValues.selectedIndexes()) > 0 :
+        v = [ self.values[s.row()] for s in self.lbxValues.selectedIndexes() ]
+        self.sle.setValue( v )
+      else:
+        self.sle.setValue( None )
+        
+    def _selectionChanged( self ):
+      self.checkUI()
       self.updateEditorValue()
 
     def _add( self ):
