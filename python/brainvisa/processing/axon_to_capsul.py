@@ -842,11 +842,6 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
                         '_'.join((node_name, parameter_name)),
                         weak_link=weak_link)
 
-
-    def set_autoexport_parameters(self, enabled):
-        \'\'\'If disabled, export_internal_parameters() will not do anything
-        \'\'\'
-        self.autoexport_parameters = enabled
 ''')
 
 
@@ -918,7 +913,7 @@ class ''')
             module_name_prefix=module_name_prefix)
     else:
         out.write('    def __init__(self, **kwargs):\n')
-        out.write('        super(%s, self).__init__(**kwargs)\n' % procid)
+        out.write('        super(%s, self).__init__()\n' % procid)
         write_process_definition(p, out, get_all_values=get_all_values)
 
 
