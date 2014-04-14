@@ -4097,6 +4097,10 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
   
   """
   result = None
+  class NewProcess( Process ):
+    _instance = 0
+    _id = None
+
   try:
     global _processModules, _processes, _processesInfo, _processesInfoByName, _readProcessLog, _askUpdateProcess
     # If we do not remove user level here, default userLevel for process
@@ -4138,8 +4142,6 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
 
     if category is None:
       category = os.path.basename( os.path.dirname( fileName ) )
-    class NewProcess( Process ):
-      _instance = 0
 
     NewProcess._id = moduleName 
     NewProcess.name = moduleName
