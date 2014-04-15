@@ -7,6 +7,7 @@ from brainvisa import processes as procbv
 from brainvisa.data import neuroData
 from brainvisa.data.readdiskitem import ReadDiskItem
 from brainvisa.data.writediskitem import WriteDiskItem
+from brainvisa.data import neuroDiskItems
 from traits import api as traits
 import weakref
 import sys
@@ -14,10 +15,6 @@ import re
 import inspect
 
 from optparse import OptionParser
-
-
-def write_diskitem_options(wdiskitem):
-    return ['output=True']
 
 
 def choice_options(choice):
@@ -72,6 +69,40 @@ def point3d_options(point):
     return ['trait=Float()', 'minlen=3', 'maxlen=3', 'value=[0, 0, 0]']
 
 
+def diskitem_type(diskitem):
+    otype = None
+    for format in diskitem.formats:
+        f = neuroDiskItems.getFormat(format)
+        if otype is None and f.fileOrDirectory() is neuroDiskItems.Directory:
+            otype = traits.Directory
+        else:
+            otype = traits.File
+            break
+    if otype is None:
+        otype = traits.File
+    return otype
+
+
+def diskitem_options(diskitem):
+    extre = re.compile('^.*\|[^*]*\*(.*)$')
+    exts = []
+    options = []
+    formats = diskitem.formats
+    if diskitem.preferredFormat:
+        formats = [diskitem.preferredFormat] + list(diskitem.formats)
+    for format in formats:
+        f = neuroDiskItems.getFormat(format)
+        for pat in f.patterns.patterns:
+            m = extre.match(pat.pattern)
+            if m is not None and m.group(1) not in exts:
+                exts.append(m.group(1))
+    if len(exts) != 0:
+        options.append('allowed_extensions=%s' % repr(exts))
+    if isinstance(diskitem, WriteDiskItem):
+        options.append('output=True')
+    return options
+
+
 param_types_table = \
 {
     neuroData.Boolean: traits.Bool,
@@ -79,8 +110,8 @@ param_types_table = \
     neuroData.Number: traits.Float,
     neuroData.Float: traits.Float,
     neuroData.Integer: traits.Int,
-    ReadDiskItem: traits.File,
-    WriteDiskItem: (traits.File, write_diskitem_options),
+    ReadDiskItem: (diskitem_type, diskitem_options),
+    WriteDiskItem: (diskitem_type, diskitem_options),
     neuroData.Choice: (traits.Enum, choice_options),
     neuroData.OpenChoice: (get_openchoice_type, open_choice_options),
     neuroData.ListOf: traits.List,
@@ -886,9 +917,10 @@ def axon_to_capsul(proc, outfile, module_name_prefix=None,
     out = open(outfile, 'w')
     out.write('''# -*- coding: utf-8 -*-
 try:
-    from traits.api import File, Float, Int, Bool, Enum, Str, List
+    from traits.api import File, Directory, Float, Int, Bool, Enum, Str, List
 except ImportError:
-    from enthought.traits.api import File, Float, Int, Bool, Enum, Str, List
+    from enthought.traits.api import File, Directory, Float, Int, Bool, Enum, \\
+        Str, List
 
 from capsul.process import Process
 ''')
