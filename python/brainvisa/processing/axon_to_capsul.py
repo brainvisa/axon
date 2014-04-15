@@ -190,8 +190,27 @@ def str_to_name(s):
     return s
 
 
-def capsul_process_name(procid):
-    return procid  # TODO
+def make_module_name(procid, module_name_prefix=None, use_process_names={}):
+    '''module + process class name, ex: morpho.morphologist.morphologist.
+
+    Parameters
+    ----------
+    procid: string
+        Axon process id
+    module_name_prefix: string (optional)
+        base module name (ex: morpho). If not specified, no base module
+    use_process_names: dict (optional)
+        If specified, override some complete process names. Key is the axon ID,
+        value is the full name. 
+        Ex: {'morphologist': 'morpho.morphologist.Morphologist'}
+    '''
+    altname = use_process_names.get(procid)
+    if altname:
+        return altname
+    if module_name_prefix is None:
+        return '%s.%s' % (procid, procid)
+    else:
+        return '%s.%s.%s' % (module_name_prefix, procid, procid)
 
 
 def use_weak_ref(obj):
@@ -713,15 +732,8 @@ def write_buffered_lines(out, buffered_lines, sections=None):
             out.write('\n')
 
 
-def make_module_name(procid, module_name_prefix=None):
-    if module_name_prefix is None:
-        return '%s.%s' % (procid, procid)
-    else:
-        return '%s.%s.%s' % (module_name_prefix, procid, procid)
-
-
 def write_pipeline_definition(p, out, parse_subpipelines=False,
-        get_all_values=False, module_name_prefix=None):
+        get_all_values=False, module_name_prefix=None, use_process_names={}):
     '''Write a pipeline structure in the out file, and links between pipeline
     nodes.
     If parse_subpipelines is set, the pipeline structure inside sub-pipelines
@@ -758,8 +770,8 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
             nodename = make_node_name(enode_name, nodenames, parents)
             proc = enode._process
             procid = proc.id()
-            capsulproc = capsul_process_name(procid)
-            moduleprocid = make_module_name(procid, module_name_prefix)
+            moduleprocid = make_module_name(procid, module_name_prefix, 
+                use_process_names)
             procmap[use_weak_ref(proc)] = (nodename, exported)
             if exported:
                 buffered_lines['nodes'].append(
@@ -879,7 +891,8 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
 # ----
 
 def axon_to_capsul(proc, outfile, module_name_prefix=None,
-        parse_subpipelines=False, get_all_values=False):
+        parse_subpipelines=False, get_all_values=False, 
+        capsul_process_name=None, use_process_names={}):
     '''Converts an Axon process or pipeline into a CAPSUL process or pipeline.
     The output is a file, named with the outfile parameter.
 
@@ -899,6 +912,12 @@ def axon_to_capsul(proc, outfile, module_name_prefix=None,
         if True, the current values of the input process instance will all be
         reported to the output process.
         Default is False.
+    capsul_process_name: string (optional)
+        if specified, name of the converted Capsul process. Otherwise use the 
+        same name as the Axon process ID.
+    use_process_names: dict string:string (optional)
+        names mapping table between Axon process IDs and Capsul process names
+        when used as pipeline nodes. Default: same as Axon IDs.
     '''
 
     if isinstance(proc, procbv.Process):
@@ -907,7 +926,9 @@ def axon_to_capsul(proc, outfile, module_name_prefix=None,
     else:
         procid = proc
         p = procbv.getProcessInstance(procid)
-    # print 'process:', p
+
+    if capsul_process_name is None:
+        capsul_process_name = procid
 
     if p.executionNode():
         proctype = pipeline.Pipeline
@@ -931,21 +952,22 @@ from capsul.pipeline import Switch
     out.write('''
 
 class ''')
-    out.write(procid + '(%s):\n' % proctype.__name__)
+    out.write(capsul_process_name + '(%s):\n' % proctype.__name__)
 
     if proctype is pipeline.Pipeline:
         out.write('''    def __init__(self, autoexport_node_parameters=True, **kwargs):
         # self.autoexport_node_parameters = autoexport_node_parameters
         super(%s, self).__init__(False, **kwargs)
         if autoexport_node_parameters:
-            self.export_internal_parameters()\n''' % procid)
+            self.export_internal_parameters()\n''' % capsul_process_name)
         write_pipeline_definition(p, out,
             parse_subpipelines=parse_subpipelines,
             get_all_values=get_all_values,
-            module_name_prefix=module_name_prefix)
+            module_name_prefix=module_name_prefix, 
+            use_process_names=use_process_names)
     else:
         out.write('    def __init__(self, **kwargs):\n')
-        out.write('        super(%s, self).__init__()\n' % procid)
+        out.write('        super(%s, self).__init__()\n' % capsul_process_name)
         write_process_definition(p, out, get_all_values=get_all_values)
 
 
@@ -961,9 +983,22 @@ def axon_to_capsul_main(argv):
     parser.add_option('-o', '--output', dest='output', metavar='FILE',
         action='append',
         help='output .py file for the converted process code')
+    parser.add_option('-n', '--name', dest='name', action='append',
+        default=[],
+        help='name of converted Capsul processes. Default: same as Axon. ' \
+        'Individual processes may be renamed. The syntax is ' \
+        'axon_name:capsul_name, ex: "-n BiasCorrection:bias_correction". ' \
+        'Several -n options may be specified')
     parser.add_option('-m', '--module', dest='module',
         help='module name used as namespace to get the sub-processes in a ' \
         'pipeline')
+    parser.add_option('-u', '--use', dest='use_proc', action='append',
+        default=[],
+        help='names of processes to use in pipeline nodes. As for -n ' \
+        'option, the syntax is axon_name:capsul_name. But this table is not ' \
+        'used when generating a Capsul process class name, but only when ' \
+        'using it to get a process inside a pipeline. The capsul name is ' \
+        'the full module + class name, ex: morpho.morphologist.Morphologist')
     parser.add_option('-r', '--recursive_sub', dest='parse_subpipelines',
         action='store_true', default=False,
         help='recursively parse sub-pipelines of a pipeline. This is mostly ' \
@@ -980,13 +1015,19 @@ def axon_to_capsul_main(argv):
 
     processes.fastStart = True
     processes.initializeProcesses()
+    gen_process_names = {axon: capsul \
+        for (axon, capsul) in [name.split(':') for name in options.name]}
+    use_process_names = {axon: capsul \
+        for (axon, capsul) in [name.split(':') for name in options.use_proc]}
 
     for procid, outfile in zip(options.process, options.output):
         # print 'Process:', procid, '\n'
         proc = axon_to_capsul(procid, outfile,
-        module_name_prefix=options.module,
-        parse_subpipelines=options.parse_subpipelines, 
-        get_all_values=True)
+            module_name_prefix=options.module,
+            parse_subpipelines=options.parse_subpipelines, 
+            get_all_values=True, 
+            capsul_process_name=gen_process_names.get(procid),
+            use_process_names=use_process_names)
 
 
 if __name__ == '__main__':
