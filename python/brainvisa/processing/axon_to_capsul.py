@@ -119,7 +119,7 @@ param_types_table = \
 }
 
 
-def write_process_signature(p, out, buffered_lines, get_all_values=False):
+def write_process_signature(p, out, buffered_lines, get_all_values=True):
     # write signature
     for name, param in p.signature.iteritems():
         newtype = param_types_table.get(type(param))
@@ -146,6 +146,11 @@ def write_process_signature(p, out, buffered_lines, get_all_values=False):
                 buffered_lines['initialization'].append(
                     '        self.%s = %s\n' % (name, repr(value)))
                 # print 'non-default value for %s in %s' % (name, p.name)
+            elif type(param) in (neuroData.Boolean, neuroData.Number,
+                    neuroData.Float, neuroData.Integer):
+                # None as number is a forced optional value
+                buffered_lines['initialization'].append(
+                    '        self.%s = %s\n' % (name, 'Undefined'))
     out.write('\n\n')
 
 
@@ -161,14 +166,15 @@ def write_process_execution(p, out):
 
         axon.initializeProcesses()
 
-        kwargs = {name : getattr(self,name) for name in self.user_traits()}
+        kwargs = {name : getattr(self, name) for name in self.user_traits() \\
+            if getattr(self, name) is not Undefined}
 
         context = brainvisa.processes.defaultContext()
         context.runProcess(self.id.split('.')[-1], **kwargs)
 ''')
 
 
-def write_process_definition(p, out, get_all_values=False):
+def write_process_definition(p, out, get_all_values=True):
     buffered_lines = {'initialization': []}
     write_process_signature(p, out, buffered_lines,
         get_all_values=get_all_values)
@@ -482,38 +488,6 @@ def find_param_in_parent(proc, param, procmap):
     print 'Warning: find_param_in_parent: NOT FOUND'
     print '    was:', proc().name, '/', param
     return (None, None, None)
-
-
-# is this function useful ?
-#def find_param_in_children(proc, param, procmap):
-    #print 'find_param_in_children:', proc().name, param
-    #node_name, exported = procmap[proc]
-    #if exported:  # exported node
-        #return proc, node_name, param
-    #if isinstance(proc, procbv.Process):
-        #node = proc.executionNode()
-    #else:
-        #node = proc
-    #nodes = [(node, param)]
-    #while nodes:
-        #node, pname = nodes.pop(0)
-        #for child_name in node.childrenNames():
-            #child = node.child(child_name)
-            #if isinstance(child, procbv.Process):
-                #new_node = child._process
-            #else:
-                #new_node = child
-            #new_node_name, exported = procmap.get(use_weak_ref(new_node),
-                #(None,None))
-            #if new_node_name is not None \
-                    #and pname.startswith(new_node_name + '_'):
-                #new_pname = pname[len(new_node_name) + 1:]
-                #if isinstance(new_node, procbv.Process) \
-                        #and new_node.signature.has_key(new_pname):
-                    ## found
-                    #return (new_node, new_node_name, new_pname)
-                #nodes.append((child, new_pname))
-    #return (None, None, None)
 
 
 def write_pipeline_links(p, buffered_lines, procmap, links, processed_links,
@@ -891,7 +865,7 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
 # ----
 
 def axon_to_capsul(proc, outfile, module_name_prefix=None,
-        parse_subpipelines=False, get_all_values=False, 
+        parse_subpipelines=False, get_all_values=True,
         capsul_process_name=None, use_process_names={}):
     '''Converts an Axon process or pipeline into a CAPSUL process or pipeline.
     The output is a file, named with the outfile parameter.
@@ -938,10 +912,11 @@ def axon_to_capsul(proc, outfile, module_name_prefix=None,
     out = open(outfile, 'w')
     out.write('''# -*- coding: utf-8 -*-
 try:
-    from traits.api import File, Directory, Float, Int, Bool, Enum, Str, List
+    from traits.api import File, Directory, Float, Int, Bool, Enum, Str, \\
+        List, Undefined
 except ImportError:
     from enthought.traits.api import File, Directory, Float, Int, Bool, Enum, \\
-        Str, List
+        Str, List, Undefined
 
 from capsul.process import Process
 ''')
@@ -1024,8 +999,8 @@ def axon_to_capsul_main(argv):
         # print 'Process:', procid, '\n'
         proc = axon_to_capsul(procid, outfile,
             module_name_prefix=options.module,
-            parse_subpipelines=options.parse_subpipelines, 
-            get_all_values=True, 
+            parse_subpipelines=options.parse_subpipelines,
+            get_all_values=True,
             capsul_process_name=gen_process_names.get(procid),
             use_process_names=use_process_names)
 
