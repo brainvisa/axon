@@ -767,7 +767,26 @@ class Signature( UserDict ):
     new.sortedKeys = copy.copy(self.sortedKeys)
     return new
 
-   
+  def deepCopy(self):
+    """
+    Returns a deep copy of the current signature. Both the parameters names and list of parameters types are duplicated.
+    """
+    def copyType( t ):
+      n = copy.copy( t )
+      if hasattr(n, 'contentType') :
+        n.contentType = copyType( n.contentType )
+      
+      return n
+      
+    new = copy.copy(self)
+    new.sortedKeys = copy.copy(self.sortedKeys)
+    new.data = copy.copy( self.data )
+    
+    for k, i in new.data.iteritems():
+      new.data[ k ] = copyType( i )
+
+    return new
+    
 #----------------------------------------------------------------------------
 
 def initializeData():
