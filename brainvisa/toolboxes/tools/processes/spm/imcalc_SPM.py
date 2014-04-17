@@ -49,13 +49,22 @@
 
 from neuroProcesses import *
 import brainvisa.tools.spm_run as spm
-from nuclearImaging.SPM import writeImgCalcMatFile
+
+# As this process depends on nuclear imaging toolbox
+# it is necessary to test if this is available in the 
+# current context
+try :
+  from nuclearImaging.SPM import writeImgCalcMatFile
+except :
+  pass
 
 #------------------------------------------------------------------------------
 configuration = Application().configuration
 #------------------------------------------------------------------------------
 
 def validation():
+  from nuclearImaging.SPM import writeImgCalcMatFile
+  
   return spm.validation(configuration)
   
 name="Image Calculator (imcalc - SPM8)"
