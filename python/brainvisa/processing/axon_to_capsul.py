@@ -445,8 +445,9 @@ def find_param_in_parent(proc, param, procmap):
             print '    try as child:', last[0]().name, '/', last[1]
         if last[0] not in procmap:
             # probably an external link to a parent pipeline
-            print '*** not in procmap:', last, last[0]().name
-            print 'procmap:', [(p().name, p) for p in procmap.keys()]
+            if verbose:
+                print '    Warning: link to external node in "parent" ' \
+                    'pipeline:', last[0]().name
             return (None, None, None)
         child_name = procmap[last[0]][0]
         # look for parent enode
@@ -1053,12 +1054,8 @@ def axon_to_capsul_main(argv):
         todo += zip(list(added_processes),
             [p.id() + '.py' for p in added_processes])
 
-    print 'todo:'
-    for p,n in todo:
-        print p, n
-
     for proc, outfile in todo:
-        print 'Process:', proc, '\n'
+        # print 'Process:', proc, '\n'
         procid = get_process_id(proc)
         if procid in done_processes:
             continue
