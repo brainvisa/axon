@@ -443,6 +443,11 @@ def find_param_in_parent(proc, param, procmap):
     while not allnotfound:
         if verbose:
             print '    try as child:', last[0]().name, '/', last[1]
+        if last[0] not in procmap:
+            # probably an external link to a parent pipeline
+            print '*** not in procmap:', last, last[0]().name
+            print 'procmap:', [(p().name, p) for p in procmap.keys()]
+            return (None, None, None)
         child_name = procmap[last[0]][0]
         # look for parent enode
         for new_proc, (new_node_name, exported) in procmap.iteritems():
@@ -819,13 +824,14 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
 #''')
     # flush the init section buffer
     write_buffered_lines(out, buffered_lines, sections=('initialization', ))
+    if all([not buffered_lines.get(section) \
+        for section in ('nodes', 'exports', 'links', 'initialization')]):
+            out.write('        pass\n')
 
     out.write(
 '''
     def export_internal_parameters(self):
         \'\'\'export orphan and internal output parameters\'\'\'
-        # if not self.autoexport_node_parameters:
-        #     return
         for node_name, node in self.nodes.iteritems():
             if node_name == '':
                 continue # skip main node
@@ -931,7 +937,6 @@ class ''')
 
     if proctype is pipeline.Pipeline:
         out.write('''    def __init__(self, autoexport_node_parameters=True, **kwargs):
-        # self.autoexport_node_parameters = autoexport_node_parameters
         super(%s, self).__init__(False, **kwargs)
         if autoexport_node_parameters:
             self.export_internal_parameters()\n''' % capsul_process_name)
@@ -944,6 +949,42 @@ class ''')
         out.write('    def __init__(self, **kwargs):\n')
         out.write('        super(%s, self).__init__()\n' % capsul_process_name)
         write_process_definition(p, out, get_all_values=get_all_values)
+
+
+def get_subprocesses(procid):
+    '''Recursive list of children processes.
+
+    Parameters
+    ----------
+    procid: str or brainvisa Process
+        process (pipeline) to parse
+
+    Returns
+    -------
+    set of processes found inside procid
+    '''
+    subprocs = set()
+    if not isinstance(procid, procbv.Process):
+        proc = procbv.getProcessInstance(procid)
+    else:
+        proc = procid
+    enode = proc.executionNode()
+    if enode is None:
+        return subprocs
+    nodes = list(enode.children())
+    while nodes:
+        node = nodes.pop(0)
+        if isinstance(node, procbv.ProcessExecutionNode):
+            subprocs.add(node._process)
+        nodes += list(node.children())
+    return subprocs
+
+
+def get_process_id(proc):
+    '''ID of a process or ID'''
+    if isinstance(procbv, procbv.Process):
+        return proc.id()
+    return proc
 
 
 def axon_to_capsul_main(argv):
@@ -982,6 +1023,14 @@ def axon_to_capsul_main(argv):
         'directly. Moreover with this option, pipeline processes are not ' \
         'exported as themselves, but may contain parameters which will not ' \
         'be exported and may cause missing or broken links.')
+    parser.add_option('-s', '--subprocess', dest='subprocess',
+        action='store_true', default=False,
+        help='automatically convert sub-processes of a pipeline, using the ' \
+        'process IDs as both class name and output file names. Names ' \
+        'conversion through the -u option applies. This option mainly ' \
+        'avoids to specify all pipeline processes via series of -p/-o ' \
+        'parameters. Additional sub-processes specified through -p/-o may ' \
+        'replace them.')
 
     options, args = parser.parse_args(argv)
     if len(args) != 0:
@@ -990,14 +1039,31 @@ def axon_to_capsul_main(argv):
 
     processes.fastStart = True
     processes.initializeProcesses()
-    gen_process_names = {axon: capsul \
-        for (axon, capsul) in [name.split(':') for name in options.name]}
-    use_process_names = {axon: capsul \
-        for (axon, capsul) in [name.split(':') for name in options.use_proc]}
+    gen_process_names = dict([(axon, capsul) \
+        for (axon, capsul) in [name.split(':') for name in options.name]])
+    use_process_names = dict([(axon, capsul) \
+        for (axon, capsul) in [name.split(':') for name in options.use_proc]])
 
-    for procid, outfile in zip(options.process, options.output):
-        # print 'Process:', procid, '\n'
-        proc = axon_to_capsul(procid, outfile,
+    done_processes = set()
+    todo = zip([procbv.getProcessInstance(p) for p in options.process],
+        options.output)
+    if options.subprocess:
+        for proc, outfile in todo:
+          added_processes = get_subprocesses(proc)
+        todo += zip(list(added_processes),
+            [p.id() + '.py' for p in added_processes])
+
+    print 'todo:'
+    for p,n in todo:
+        print p, n
+
+    for proc, outfile in todo:
+        print 'Process:', proc, '\n'
+        procid = get_process_id(proc)
+        if procid in done_processes:
+            continue
+        done_processes.add(procid)
+        proc = axon_to_capsul(proc, outfile,
             module_name_prefix=options.module,
             parse_subpipelines=options.parse_subpipelines,
             get_all_values=True,
