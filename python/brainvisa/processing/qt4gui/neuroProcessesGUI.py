@@ -1195,6 +1195,10 @@ class NodeCheckListItem( QTreeWidgetItem ):
 
     self._node = node
     self.itemType=itemType
+    # the following flag is needed to block itemChanged signal processing
+    # before the item is completely setup, otherwise it will trigger a
+    # node selection change instead of the contrary
+    self.creating = True
     self.read_only = read_only
     if itemType == "radio" and not self.read_only:
       # if the item type is radio, create a custom item RadioItem to replace the current QTreeWidgetItem at display
@@ -1212,6 +1216,7 @@ class NodeCheckListItem( QTreeWidgetItem ):
         self.setText(0, text)
     self.setOn( node._selected )
     node._selectionChange.add( self.nodeStateChanged )
+    self.creating = False
 
   def radioClicked(self, checked):
     self.treeWidget().setCurrentItem(self)
@@ -2032,14 +2037,20 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       self.connect( self.executionTree,
                     SIGNAL( 'itemExpanded( QTreeWidgetItem * )' ),
                     self._executionNodeExpanded )
-      
+
       self.connect( self.executionTree,
                     SIGNAL( 'currentItemChanged( QTreeWidgetItem *, QTreeWidgetItem * )' ),
                     self.executionNodeSelected )
+      # don't listen to clicks, but to item changes instead
+      # because stats check can be triggereg via the keyboard, not only
+      # mouse clicks
+      #self.connect( self.executionTree,
+                    #SIGNAL( 'itemClicked( QTreeWidgetItem *, int )' ),
+                    #self.executionNodeClicked )
       self.connect( self.executionTree,
-                    SIGNAL( 'itemClicked( QTreeWidgetItem *, int )' ),
-                    self.executionNodeClicked )
-      
+                    SIGNAL( 'itemChanged( QTreeWidgetItem *, int )' ),
+                    self.executionNodeChanged )
+
       # Select and open the first item
       item = self.executionTree.topLevelItem(0)
       item.setExpanded( True )
@@ -2873,16 +2884,21 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       item.currentItemChanged(True)
     if previous is not None:
       previous.currentItemChanged(False)
-        
-        
+
+
       # Trick to have correct slider
 #      size = self.size()
       #self.resize( size.width()+1, size.height() )
       #qApp.processEvents()
       #self.resize( size )
 
-  def executionNodeClicked( self, item, column ):
-    item.itemClicked()    
+  #def executionNodeClicked( self, item, column ):
+    #item.itemClicked()
+
+  def executionNodeChanged( self, item, column ):
+    if item._node._selected != item.isOn() \
+        and ( not hasattr(item, 'creating') or not item.creating ):
+      item.itemClicked()
 
   def _executionNodeExpanded( self, item, eNodeAndChildren=None ):
     if item is not None and getattr( item, '_notExpandedYet', True ):
