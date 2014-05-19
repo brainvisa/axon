@@ -844,7 +844,7 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
                 if parameter_name in ('nodes_activation', 'selection_changed'):
                     continue
                 if (node_name, parameter_name) not in self.do_not_export:
-                    if not plug.output and (plug.links_to or plug.links_from):
+                    if not plug.output and plug.links_from:
                         continue
                     weak_link = False
                     if plug.output:
