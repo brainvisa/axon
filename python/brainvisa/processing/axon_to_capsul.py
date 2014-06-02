@@ -848,7 +848,7 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
                         continue
                     weak_link = False
                     if plug.output:
-                        if plug.links_to or plug.links_from:
+                        if plug.links_to: # or plug.links_from:
                             # some links exist
                             if [True for x in plug.links_to \\
                                     if x[0]=='' or isinstance(x[2], Switch)] \\
@@ -864,7 +864,7 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
                         weak_link = True
                     self.export_parameter(node_name, parameter_name,
                         '_'.join((node_name, parameter_name)),
-                        weak_link=weak_link)
+                        weak_link=weak_link, is_optional=True)
 
 ''')
 
