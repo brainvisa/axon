@@ -823,6 +823,12 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
         #self.export_internal_parameters()
 
 #''')
+    #
+    buffered_lines['initialization'] += [
+        "        # export orphan parameters\n",
+        "        if not hasattr(self, '_autoexport_nodes_parameters') \\\n",
+        "                or self._autoexport_nodes_parameters:\n",
+        "            self.autoexport_nodes_parameters()\n"]
     # flush the init section buffer
     write_buffered_lines(out, buffered_lines, sections=('initialization', ))
     if all([not buffered_lines.get(section) \
@@ -831,8 +837,9 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
 
     out.write(
 '''
-    def export_internal_parameters(self):
+    def autoexport_nodes_parameters(self):
         \'\'\'export orphan and internal output parameters\'\'\'
+        print '%s.autoexport_nodes_parameters' % self.__class__.__name__
         for node_name, node in self.nodes.iteritems():
             if node_name == '':
                 continue # skip main node
@@ -937,10 +944,12 @@ class ''')
     out.write(capsul_process_name + '(%s):\n' % proctype.__name__)
 
     if proctype is pipeline.Pipeline:
-        out.write('''    def __init__(self, autoexport_node_parameters=True, **kwargs):
+        out.write('''    def __init__(self, autoexport_nodes_parameters=True, **kwargs):
+        self._autoexport_nodes_parameters = autoexport_nodes_parameters
         super(%s, self).__init__(False, **kwargs)
-        if autoexport_node_parameters:
-            self.export_internal_parameters()\n''' % capsul_process_name)
+        del self._autoexport_nodes_parameters
+#        if autoexport_nodes_parameters:
+#            self.autoexport_nodes_parameters()\n''' % capsul_process_name)
         write_pipeline_definition(p, out,
             parse_subpipelines=parse_subpipelines,
             get_all_values=get_all_values,
