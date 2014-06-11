@@ -118,14 +118,18 @@ def initialization( self ):
 
 def execution( self, context ):
     acq_dir = os.path.dirname( self.output.fullPath() )
-    f = open( os.path.join( acq_dir, 'fso_attributes.csv' ), 'w' )
-    f.write( '# attribute, value\n' )
+    values = []
     for attribute in ( 'time_point', 'time_duration', 'rescan',
             'acquisition_date' ):
         value = getattr( self, attribute )
         if value:
-            f.write( '%s, %s\n' % ( attribute, value ) )
-    f.close()
+            values.append( ( attribute, value ) )
+    if len( values ) != 0:
+        f = open( os.path.join( acq_dir, 'fso_attributes.csv' ), 'w' )
+        f.write( '# attribute, value\n' )
+        for value in values:
+            f.write( '%s, %s\n' % value )
+        f.close()
     context.runProcess( 'ImportT1MRI', input=self.input, output=self.output,
         referential=self.referential )
 
