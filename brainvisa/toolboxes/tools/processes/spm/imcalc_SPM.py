@@ -49,12 +49,14 @@
 
 from neuroProcesses import *
 import brainvisa.tools.spm_run as spm
+from brainvisa.tools.spm_utils import spm_today
+import brainvisa.tools.spm_utils as spmUtils
 
 # As this process depends on nuclear imaging toolbox
 # it is necessary to test if this is available in the 
 # current context
 try :
-  from nuclearImaging.SPM import writeImgCalcMatFile
+  from nuclearImaging.SPM import writeImgCalcMatFile, initializeImcalc_withSPM8DefaultValues
 except :
   pass
 
@@ -72,24 +74,38 @@ userLevel = 1
 
 signature = Signature(
     'input_images', ListOf(ReadDiskItem('4D Volume', 'Aims readable volume formats')),
-    # In SPM, 2 options for the filename of the output and his location. Here they are gathered  in the output_filename variable.
-    'output_filename', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
+    # In SPM, 2 options available for the filename of the output and his location. Here they are gathered  in the output_filename variable.
+    'output_filename', WriteDiskItem('4D Volume', 'NIFTI-1 image'),
     #'output_directory' , WriteDiskItem('Directory', 'Directory'),  
     'expression', String(),     
     'data_matrix', Choice(('No',"""0"""),('Yes', """1""")),
     'masking', Choice(('No implicit zero mask',"""0"""),('Implicit zero mask', """1"""), ('NaNs should be zeroed',"""-1""")),
     'interpolation', Choice(('Nearest neighbour', """0"""), ('Trilinear', """1"""), ('2nd Degree sync', """-2"""), ('3rd Degree sync', """-3"""), ('4th Degree sync', """-4"""), ('5th Degree sync', """-5"""), ('6thd Degree sync', """-6"""), ('7th Degree sync', """-7""")),                  
     'data_type', Choice(('UINT8', """2"""), ('INT16', """4"""), ('INT32', """8"""), ('FLOAT 32', """16"""), ('FLOAT 64', """64""")),                  
+    'batch_location', String(),
     )
+
 
 
 def initialization(self):
    # SPM default values
-    self.data_matrix = 'No'
-    self.masking = 'No implicit zero mask'
-    self.interpolation = 'Trilinear'
-    self.data_type = 'INT16'
- 
+    initializeImcalc_withSPM8DefaultValues( self )
+    
+    self.addLink( 'batch_location', 'output_filename', self.updateBatchLocation )
+    
+    self.signature['data_matrix'].userLevel = 1
+    self.signature['masking'].userLevel = 1
+    self.signature['interpolation'].userLevel = 1
+    self.signature['data_type'].userLevel = 1
+    
+    
+#
+# Update batch_location when output_filename change
+#
+def updateBatchLocation( self, proc ):
+    if self.output_filename is not None:
+        outputDir = self.output_filename.fullPath()[:self.output_filename.fullPath().rindex('/') + 1]
+        return outputDir + 'batch_imcalc.m'
 
 
 def execution( self, context ):
@@ -97,7 +113,7 @@ def execution( self, context ):
     
     output_filename = "'" + str(self.output_filename.fullPath()) + "'"
         
-    spmJobFile = self.output_filename.fullPath()[:self.output_filename.fullPath().rindex('/')] + '/' + 'batch_imcalc_SPM.m'
+    spmJobFile = self.output_filename.fullPath()[:self.output_filename.fullPath().rindex('/')] + '/' + 'batch_imcalc_SPM_' + spm_today() + '.m'
     
     expr = "'" + str(self.expression) + "'"
     
@@ -111,7 +127,10 @@ def execution( self, context ):
                                       , dmtx=self.data_matrix, mask=self.masking, interp=self.interpolation, dtype=self.data_type
                                       )
     
-    spm.run(context, configuration, matfilePath)    
+    spm.run( context, configuration, matfilePath )    
+  
+    # Move SPM batch file in the same directory as deformation field
+    shutil.move( spmJobFile, self.batch_location )
   
     print "\n end ", name, "\n"
     
