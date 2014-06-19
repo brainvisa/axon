@@ -128,8 +128,7 @@ def initialization(self):
   self.csf_dartel = NOgeneration
   self.saveBias = NOgeneration
     
-  self.addLink('grey_nat', 'MRI_Nat', self.update_grey_Nat)
-  self.addLink('grey_nat', 'analysis', self.update_grey_Nat)
+  self.addLink('grey_nat', ( 'MRI_Nat', 'analysis' ), self.update_grey_Nat)
   
   self.addLink("grey_Mni", "grey_nat")
   self.addLink("white_Nat", "grey_nat")
@@ -140,13 +139,18 @@ def initialization(self):
   self.addLink('deFld_segMat', 'grey_nat')  
   self.addLink('jacobianDeterminant', 'grey_nat')  
 
-def update_grey_Nat(self, proc):
+def update_grey_Nat(self, proc, dummy):
   return self.update_WriteDiskItem('T1 MRI Nat GreyProba', 'NIFTI-1 image')
 
 def update_WriteDiskItem(self, typeToCreate, formatToCreate):
   if(self.analysis is not None and self.MRI_Nat is not None):    
     attributes = self.MRI_Nat.hierarchyAttributes()
-    attributes.update({'_database':self.getDatabase(), 'analysis':self.getAnalysis()})
+    db = self.getDatabase()
+    if db is not None:
+        attributes[ '_database' ] = db
+    analysis = self.getAnalysis()
+    if analysis is not None:
+        attributes[ 'analysis' ] = analysis
     return createDiskItem(typeToCreate, formatToCreate, attributes)
   
 def createDiskItem(typeToCreate, formatToCreate, attributes):
