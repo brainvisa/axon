@@ -69,7 +69,7 @@ signature = Signature(
   'saveBias', Choice(('save bias corrected', '1'), ('None', '0')),
   'biasCorrected', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
   'biasfwhm', Choice(('30mm cutoff', '30'), ('40mm cutoff', '40'), ('50mm cutoff', '50'), ('60mm cutoff', '60'), ('70mm cutoff', '70'), ('80mm cutoff', '80'), ('90mm cutoff', '90'), ('100mm cutoff', '100'), ('110mm cutoff', '110'), ('120mm cutoff', '120'), ('130mm cutoff', '130'), ('140mm cutoff', '140'), ('150mm cutoff', '150'), ('No correction', 'Inf')),
-  'affreg', Choice(('No Affine Registration', """''"""), ("ICBM space template - European brains", """'mni'"""), ("ICBM space template - East Asian brains", """'eastern'"""), ("Average sized template", """'subj'"""), ("No regularisation", """'none'""")),
+  'affreg', Choice(('No Affine Registration', ''), ("ICBM space template - European brains", 'mni'), ("ICBM space template - East Asian brains", 'eastern'), ("Average sized template", 'subj'), ("No regularisation", 'none')),
   'warpreg', String(),
   'samp', String(),
   'norm', Choice(('Low-dimensional: SPM default', """Low"""), ('High-dimensional: Dartel', """Dartel""")),
@@ -124,7 +124,7 @@ def execution(self, context):
     norm = """low = struct([])"""
 
   matfilePath = writeVBMSegmentationMatFile(context, configuration, self.MRI_Nat.fullPath(), spmJobFile
-                              , self.MRI_Mni_tpmSeg, self.ngaus, self.biasreg, self.biasfwhm, self.affreg, self.warpreg, self.samp
+                              , self.MRI_Mni_tpmSeg, self.ngaus, self.biasreg, self.biasfwhm, "'"+self.affreg+"'", self.warpreg, self.samp
                               , norm, self.sanlm, self.mrf, self.cleanup, self.pprint
                               , self.grey_native, self.grey_warped, self.grey_modulated, self.grey_dartel
                               , self.wm_native, self.wm_warped, self.wm_modulated, self.wm_dartel
