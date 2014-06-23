@@ -54,6 +54,7 @@ class BrainvisaSystemEnv(Singleton):
     """
     Define system environment variables that have to be passed to external command to restore environment if it have been modified at brainvisa startup
     """
+    super(BrainvisaSystemEnv, self).__singleton_init__()
     self.variables=None
     unenvVars = [ i for i in os.environ if i.startswith( 'BRAINVISA_UNENV_' ) ]
     if unenvVars:

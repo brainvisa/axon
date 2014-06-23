@@ -165,17 +165,18 @@ class ApplicationQt4GUI( ApplicationBaseGUI ):
   classQt4GUI = staticmethod( partial( ApplicationBaseGUI.classGUI, _suffix = 'Qt4' ) )
 
   def __singleton_init__( self ):
+    super( ApplicationQt4GUI, self ).__singleton_init__()
     self.widgetGeometryUpdater = WidgetGeometryUpdater()
-  
+
   def createEditionDialog( self, object, parent = None, name = None,
                            live=False, modal=False, wflags=QtCore.Qt.WindowFlags() ):
     '''
     Create a QDialog allowing to edit an object.
     '''
     return EditionDialog( object, parent=parent, name=name, live=live, modal=modal, wflags=wflags )
-    
 
-  
+
+
   def closeEditionDialog( self, dialog ):
     '''
     Must be called after a call to createEditionDialog. Properly destroy all 

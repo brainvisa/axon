@@ -6,6 +6,7 @@ from brainvisa.remote.server import BrainVISAServer
 
 class DatabaseServer( Singleton ):
   def __singleton_init__( self ):
+    super( DatabaseServer, self ).__singleton_init__()
     self.temporaries = []
   
   

@@ -311,10 +311,10 @@ LogLevel = Enum( 'NONE',
 class LogManager( Singleton ) :
   '''LogManager
   '''
-  
+
   def __singleton_init__( self ):
-    super( LogManager, self ).__init__()
-    
+    super( LogManager, self ).__singleton_init__()
+
     self._loglock = RLock()
     self._startdate = datetime.datetime.now()
     self._initialized = False

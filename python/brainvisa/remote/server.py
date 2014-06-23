@@ -7,8 +7,9 @@ from soma.qtgui.api import QtThreadCall
 
 class BrainVISAServer( Singleton ):
   def __singleton_init__( self ):
+    super( BrainVISAServer, self ).__singleton_init__()
     self.daemon = None
-  
+
   def initialize( self ):
     if self.daemon is None:
       Pyro.config.PYRO_TRACELEVEL = 3
