@@ -116,6 +116,7 @@ def initializeFormatLists():
       'MINC image',
       'gz compressed MINC image',
       'DICOM image',
+      'Directory', # dicom dir
       'FDF image',
     )
   )
@@ -145,6 +146,7 @@ def initializeFormatLists():
       'MINC image',
       'gz compressed MINC image',
       'DICOM image',
+      'Directory', # dicom dir
       'FDF image',
     )
   )
@@ -172,6 +174,9 @@ def initializeFormatLists():
       'XPM image',
       'TIFF image',
       'MINC image',
+      'gz compressed MINC image',
+      'DICOM image',
+      'Directory', # dicom dir
     )
   )
 

@@ -57,6 +57,7 @@ Format( 'ECAT i image', [ 'f|*.i' ] )
 Format( 'Z compressed ECAT i image', [ 'f|*.i.Z' ], attributes={'compressed': 'Z'} )
 Format( 'gz compressed ECAT i image', [ 'f|*.i.gz' ], attributes={'compressed': 'gz'} )
 Format( 'DICOM image', [ '*.dcm' ], exclusive=1, ignoreExclusive=1 )
+# Format( 'DICOM image directory', [ 'd|*' ] ) # does not seem to work
 #Format( 'VISTA image', "f|*.v" )
 Format( 'MINC image', "f|*.mnc" )
 Format( 'gz compressed MINC image', "f|*.mnc.gz", attributes={'compressed': 'gz'} )
