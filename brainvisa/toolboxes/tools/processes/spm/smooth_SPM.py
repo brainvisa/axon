@@ -34,6 +34,7 @@
 from brainvisa.processes import *
 import brainvisa.tools.spm_run as spm
 import brainvisa.tools.spm_utils as spmUtils
+
 #------------------------------------------------------------------------------
 configuration = Application().configuration
 #------------------------------------------------------------------------------
@@ -44,46 +45,93 @@ def validation():
 #------------------------------------------------------------------------------
 
 userLevel = 2
-name = 'smooth (using spm)'
+name = 'smooth one image (using SPM8)'
 
 #------------------------------------------------------------------------------
 
 signature = Signature(
-  'img', ReadDiskItem('4D Volume', 'NIFTI-1 image'),
-  'img_smoothed', WriteDiskItem('4D Volume', 'NIFTI-1 image'),
-  'fwhm', String(),
-  'dtype', String(),
-  'im', String(),
-  'prefix', String(),
-                        )
+    'img', ReadDiskItem('4D Volume', 'NIFTI-1 image'),
+    'img_smoothed', WriteDiskItem('4D Volume', 'NIFTI-1 image'),
+    'fwhm', String(),
+    'dtype', String(),
+    'im', String(),
+    'prefix', String(),
+    'batch_location', String(),
+
+)
 
 #------------------------------------------------------------------------------
 
 def initialization(self):
-  self.fwhm = """[12 12 12]"""
-  self.dtype = """0"""
-  self.im = """0""" 
-  self.prefix = """'spmSmooth_'"""
-  
+    self.setOptional('batch_location')  
+      
+    spmUtils.initializeSmooth_withSPM8DefaultValues( self )
+
+    self.signature['fwhm'].userLevel = 1
+    self.signature['dtype'].userLevel = 1
+    self.signature['prefix'].userLevel = 1
+    self.signature['im'].userLevel = 1
+    
+    self.addLink( 'img_smoothed', 'img', self.update_img_smoothed )
+    self.addLink( 'img_smoothed', 'prefix', self.update_img_smoothed )
+    self.addLink( 'batch_location', 'img_smoothed', self.update_batch_location )
+    
+    
+#
+# Update output image when the input and a prefix are defined
+#    
+def update_img_smoothed( self, proc ):
+    if self.img is None or self.prefix is None:
+        return
+    
+    img_in_path = str(self.img)
+    img_in_dir = img_in_path[:img_in_path.rindex('/')]
+    img_in_fn = img_in_path[img_in_path.rindex('/') + 1:]
+    
+    return img_in_dir + "/" + self.prefix + "_" + img_in_fn 
+    
+    
+#
+# Update batch location in the same directory as 
+# the image to smooth
+#
+def update_batch_location( self, proc ):
+    
+    if self.img_smoothed is not None:
+        img_out_path = str( self.img_smoothed )
+        img_out_dir = img_out_path[:img_out_path.rindex('/')+1]
+        img_in_path = str( self.img ) 
+        img_in_fn = img_in_path[img_in_path.rindex('/')+1:]
+        img_in_ext = img_in_fn[img_in_fn.index('.'):]
+        return img_out_dir + 'batch_smooth_' + img_in_path[img_in_path.rindex('/')+1:img_in_path.rindex('/')+1+len(img_in_fn)-len(img_in_ext)] + '.m'
+    
+    return ''
+    
+
 #------------------------------------------------------------------------------
 
 def execution(self, context):  
-  print "\n start ", name, "\n"
+    print "\n start ", name, "\n"
     
-  outDir = self.img_smoothed.fullPath()[:self.img_smoothed.fullPath().rindex('/')]  
-  spmJobFile = outDir + '/' + 'smooth_job.m'
-  inDir = self.img.fullPath()[:self.img.fullPath().rindex('/')]  
-
-  mat_file = open(spmJobFile, 'w')
-  matfileDI = None
-      
-  matfilePath = spmUtils.writeSmoothMatFile(context, self.img.fullPath()
-                                            , matfileDI, mat_file
-                                            , self.fwhm, self.dtype, self.im, self.prefix)
-   
-  spm.run(context, configuration, matfilePath)    
-  
-  spmUtils.moveSpmOutFiles(inDir, self.img_smoothed.fullPath(), spmPrefixes=[ self.prefix.replace("""'""", '') + os.path.basename(self.img.fullPath()) ])
-  print "\n stop ", name, "\n"
+    if self.batch_location is not None:
+        spmJobFile = self.batch_location
+    else:
+        outDir = self.img_smoothed.fullPath()[:self.img_smoothed.fullPath().rindex('/')]  
+        spmJobFile = outDir + '/' + 'smooth_job.m'
+    
+    inDir = self.img.fullPath()[:self.img.fullPath().rindex('/')]  
+    
+    mat_file = open(spmJobFile, 'w')
+    matfileDI = None
+        
+    matfilePath = spmUtils.writeSmoothMatFile(context, self.img.fullPath()
+                                              , matfileDI, mat_file
+                                              , self.fwhm, self.dtype, self.im, self.prefix)
+     
+    spm.run(context, configuration, matfilePath)    
+    
+    spmUtils.moveSpmOutFiles(inDir, self.img_smoothed.fullPath(), spmPrefixes=[ self.prefix.replace("""'""", '') + os.path.basename(self.img.fullPath()) ])
+    
+    print "\n stop ", name, "\n"
 
 #------------------------------------------------------------------------------
