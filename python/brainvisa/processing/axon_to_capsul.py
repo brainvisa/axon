@@ -168,7 +168,9 @@ def write_process_execution(p, out):
 
         kwargs = dict([(name, getattr(self, name)) \\
             for name in self.user_traits() \\
-            if getattr(self, name) is not Undefined])
+            if getattr(self, name) is not Undefined and \\
+                (not isinstance(self.user_traits()[name].trait_type, File) \\
+                    or getattr(self, name) != '')])
 
         context = brainvisa.processes.defaultContext()
         context.runProcess(self.id.split('.')[-1], **kwargs)
