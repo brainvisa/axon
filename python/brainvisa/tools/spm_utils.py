@@ -109,21 +109,91 @@ def removeNan(filePath):
   
   
 #------------------------------------------------------------------------------
-
+#
+# Write smooth batch for one image to smooth
+#
 def writeSmoothMatFile(context, data, matfileDI, mat_file
                               , fwhm="""[8 8 8]"""
                               , dtype="""0"""
                               , im="""0""" 
-                              , prefix="""'spmSmooth_'"""                                           
+                              , prefix="""spmSmooth_"""                                           
                             ):
   mat_file.write("""
 matlabbatch{1}.spm.spatial.smooth.data = {'%s,1'};
 matlabbatch{1}.spm.spatial.smooth.fwhm = %s;
 matlabbatch{1}.spm.spatial.smooth.dtype = %s;
 matlabbatch{1}.spm.spatial.smooth.im = %s;
-matlabbatch{1}.spm.spatial.smooth.prefix = %s;
+matlabbatch{1}.spm.spatial.smooth.prefix = '%s';
 """ % (data
         , fwhm, dtype, im, prefix)
                  )
   mat_file.close()
   return mat_file.name
+
+
+def initializeSmooth_withSPM8DefaultValues(process):
+	process.fwhm = """[12 12 12]"""
+	process.dtype = """0"""
+	process.im = """0""" 
+	process.prefix = """spmSmooth_12"""
+
+
+#
+# Write smooth batch for a list of images to smooth
+#
+#def writeSmoothListMatFile(context, images, matfileDI, mat_file
+#                              , fwhm="""[8 8 8]"""
+#                              , dtype="""0"""
+#                              , im="""0""" 
+#                              , prefix="""'spmSmooth8_'"""                                           
+#                            ):
+#
+#	images_to_smooth = ""
+#	for img in images:
+#	   images_to_smooth = images_to_smooth + " '" + img.fullPath() + ",1'" 
+#
+#	mat_file.write("""
+#		matlabbatch{1}.spm.spatial.smooth.data = { %s };
+#		matlabbatch{1}.spm.spatial.smooth.fwhm = %s;
+#		matlabbatch{1}.spm.spatial.smooth.dtype = %s;
+#		matlabbatch{1}.spm.spatial.smooth.im = %s;
+#		matlabbatch{1}.spm.spatial.smooth.prefix = '%s';
+#		""" % (images_to_smooth, fwhm, dtype, im, prefix)
+#                 )
+#  	mat_file.close()
+#  	return mat_file.name
+#
+
+
+#------------------------------------------------------------------------------
+#
+# SPM 8 imcalc batch creation
+#
+#def writeImageCalculatorMatFile(context, subjectsPathList, matfileDI, mat_file                                            
+#                                , output_filename
+#				, output_dir 
+#                                , expression 
+#                                , dmtx="""0""" 
+#                                , mask="""0""" 
+#                                , interp="""1""" 
+#                                , dtype="""4"""
+#                            ):
+#  scans = convertPathList(subjectsPathList)
+#  mat_file.write("""matlabbatch{1}.spm.util.imcalc.input = {%s
+#                                                           };
+#
+#matlabbatch{1}.spm.util.imcalc.output = %s
+#matlabbatch{1}.spm.util.imcalc.outdir = %s;
+#matlabbatch{1}.spm.util.imcalc.expression = %s;
+#matlabbatch{1}.spm.util.imcalc.options.dmtx = %s;
+#matlabbatch{1}.spm.util.imcalc.options.mask = %s;
+#matlabbatch{1}.spm.util.imcalc.options.interp = %s;
+#matlabbatch{1}.spm.util.imcalc.options.dtype = %s;
+#""" % (scans
+#, output_filename, output_dir, expression, dmtx, mask, interp, dtype)
+#                 )
+#  mat_file.close()
+#  return mat_file.name
+
+
+
