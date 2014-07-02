@@ -71,14 +71,14 @@ def writeCoregisteredMatFile(context, sourcePath, refPath, spmJobFile
   mat_file.write("""matlabbatch{1}.spm.spatial.coreg.estwrite.ref = %s;  
 matlabbatch{1}.spm.spatial.coreg.estwrite.source = %s;
 matlabbatch{1}.spm.spatial.coreg.estwrite.other = %s;
-matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.cost_fun = \'%s\';
+matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.cost_fun = %s;
 matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.sep = %s;
 matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.tol = %s;
 matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.fwhm = %s;
 matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.interp = %s;
 matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.wrap = %s;
 matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.mask = %s;
-matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.prefix = \'%s\';
+matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.prefix = %s;
 """ % (refFilesInScript, sourceFilesInScript, othersToWrite, cost_fun, sep, tol, fwhm, interp, wrap, mask, prefix))
   mat_file.close()
 
@@ -94,17 +94,17 @@ def initializeNormalizeParameters_usingSPM8DefaultValues(process):
   process.smosrc = """8"""
   process.smoref = """0"""
   process.regtype = """'mni'"""
-  
+
   process.cutoff = """25"""
   process.nits = """16"""
   process.reg = """1"""
   process.preserve = """0"""
-  process.bb = """[-78 -112 -50  
+  process.bb = """[-78 -112 -50
                                                                         78 76 85]"""
   process.vox = """[2 2 2]"""# bouding box and voxel size value used for PET modality
   process.interp = """1"""
   process.wrap = """[0 0 0]"""
-  
+
 # 
 # Create Normalize batch job
 #
@@ -127,17 +127,17 @@ matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.reg = %s;
       , imgToWrite, tmp
       , weight, smosrc, smoref, regtype, cutoff, nits, reg
        ))
-  
+
   if preserve is not None:
     mat_file.write(
       """matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.preserve = %s;
 """ % (preserve))
-    
+
   if bb is not None:
     mat_file.write(
       """matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.bb = %s;
 """%(bb) )
-    
+
   mat_file.write("""matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.vox = %s;
 matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.interp = %s;
 matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.wrap = %s;
@@ -145,7 +145,7 @@ matlabbatch{1}.spm.spatial.normalise.estwrite.roptions.prefix = %s;
 """ % ( vox, interp, wrap, prefix ))
   mat_file.close()
   return mat_file.name
-  
+
 def writeNormalizeEstimationMatFile(spmJobFile, src, template,
                                     wtsrc, weight, smosrc, smoref, regtype, cutoff, nits, reg):
     matFile = open(spmJobFile, 'w')
