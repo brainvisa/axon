@@ -1050,6 +1050,8 @@ def axon_to_capsul_main(argv):
         sys.exit(1)
 
     processes.fastStart = True
+    from brainvisa.configuration import neuroConfig
+    neuroConfig.ignoreValidation = True
     processes.initializeProcesses()
     gen_process_names = dict([(axon, capsul) \
         for (axon, capsul) in [name.split(':') for name in options.name]])
