@@ -67,6 +67,7 @@ signature = Signature(
   'step_rotation_y', Float(),
   'step_rotation_z', Float(),
   'error_epsilon', Float(),
+  'gray_level', Integer(),
   'resampled_image', WriteDiskItem( '4D Volume',
     aimsGlobals.aimsWriteVolumeFormats ),
   'resampled_interpolation', Choice ( ('nearest neighbor', 0),
@@ -102,6 +103,7 @@ def initialization( self ):
   self.reference_threshold = 0.05
   self.source_threshold = 0.1 
   self.error_epsilon = 0.01
+  self.gray_level = 64
   self.setOptional( 'resampled_image' )
   self.resampled_interpolation = 1
   
@@ -155,7 +157,8 @@ def execution( self, context ):
     '--refstartpyr', self.reference_reduction_factor,
     '--seuilref', self.reference_threshold,
     '--seuiltest', self.source_threshold, 
-    '--error', self.error_epsilon
+    '--error', self.error_epsilon,
+    '--graylevel', self.gray_level
   ]
   
   if self.init_with_gravity_center:
