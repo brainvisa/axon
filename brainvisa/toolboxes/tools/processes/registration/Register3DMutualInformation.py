@@ -68,6 +68,8 @@ signature = Signature(
   'step_rotation_z', Float(),
   'error_epsilon', Float(),
   'gray_level', Integer(),
+  'index_optimized', Choice( ( 'Mutual Information', 'mi' ),
+                             ( 'Correlation Ratio', 'cr' ) ),
   'resampled_image', WriteDiskItem( '4D Volume',
     aimsGlobals.aimsWriteVolumeFormats ),
   'resampled_interpolation', Choice ( ('nearest neighbor', 0),
@@ -158,7 +160,8 @@ def execution( self, context ):
     '--seuilref', self.reference_threshold,
     '--seuiltest', self.source_threshold, 
     '--error', self.error_epsilon,
-    '--graylevel', self.gray_level
+    '--graylevel', self.gray_level,
+    '--index', self.index_optimized
   ]
   
   if self.init_with_gravity_center:
