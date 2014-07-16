@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="iso-8859-1" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <minf version="1.0">
 
 <xhtml name="en">
   <h1>Miscellaneous image processing tools</h1>
-  
+
   <p>Here you will find some common image processing tools that you may 
     need at any moment: thresholding, resampling, linear combination, 
     basic mathematical morphology...
@@ -13,10 +13,10 @@
 
 <xhtml name="fr">
   <h1>Divers outils de traitement d'image</h1>
-  
+
   <p>Ici se trouvent des outils de traitement d'image courants, dont vous 
-    pouvez avoir besoin � peu pr�s n'importe quand: seuillage, 
-    r��chantillonnage, combinaisons lin�aires, morphologie math�matique de 
+    pouvez avoir besoin à peu près n'importe quand: seuillage, 
+    rééchantillonnage, combinaisons linéaires, morphologie mathématique de 
     base...
   </p>
 
