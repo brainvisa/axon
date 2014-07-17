@@ -3128,7 +3128,8 @@ class UserDialog( QDialog ):
   def __init__( self, parent, modal, message, signature, buttons ):
     flags =  Qt.Window | Qt.Dialog
     QDialog.__init__( self, parent, flags )
-    self.setWindowModality(Qt.WindowModal)
+    if modal:
+      self.setWindowModality(Qt.WindowModal)
     self.setAttribute(Qt.WA_DeleteOnClose, True)
     layout = QVBoxLayout( )
     self.setLayout(layout)
