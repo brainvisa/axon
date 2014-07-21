@@ -1261,6 +1261,8 @@ class SQLDatabase( Database ):
                     val = diskItem.get( att )
                     if val is not None:
                       a[ att ] = val
+                      print 'declared_attributes:', att
+                      print '  ', val
                 stack.append( ( it, rule.scanner, a, priorityOffset +     rule.priorityOffset ) )
                 yield diskItem
                 if debugHTML:
@@ -1547,7 +1549,12 @@ class SQLDatabase( Database ):
                     if n=="name_serie": # name_serie is a local attribute
                       diskItem._setLocal(n, c.get(n, ""))
                     else:
-                      diskItem._globalAttributes[ n ] = c.get( n, '' )
+                      value = c.get( n ) # c.get( n, '' )
+                      # don't set values on empty attributes -- this is
+                      # expected for optional declared_attributes, but is it
+                      # OK for standard ones ?
+                      if value:
+                        diskItem._globalAttributes[ n ] = value
                   for n, v in rule.localAttributes:
                     diskItem._globalAttributes[ n ] = v
                   diskItem._priority = rule.priorityOffset
