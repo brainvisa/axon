@@ -4853,9 +4853,15 @@ def reloadToolboxes():
 _ipsubprocs = []
 
 def runIPConsoleKernel():
+  import IPython
+  ipversion = [ int(x) for x in IPython.__version__.split('.') ]
   from IPython.lib import guisupport
-  guisupport.in_event_loop  = True
-  from IPython.zmq.ipkernel import IPKernelApp
+  if ipversion < [ 1, 0 ]:
+    guisupport.in_event_loop  = True
+    from IPython.zmq.ipkernel import IPKernelApp
+  else:
+    from IPython.kernel.zmq.kernelapp import IPKernelApp
+    app = IPKernelApp.instance()
   app = IPKernelApp.instance()
   if not app.initialized() or not app.kernel:
     print 'runing IP console kernel'
