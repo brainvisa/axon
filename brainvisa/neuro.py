@@ -231,11 +231,16 @@ else:
 def startConsoleShell():
   from PyQt4.QtGui import qApp
   import IPython
+  ipversion = [ int(x) for x in IPython.__version__.split('.') ]
   ipConsole = runIPConsoleKernel()
   import subprocess
+  if ipversion >= [ 1, 0 ]:
+    ipmodule = 'IPython.terminal.ipapp'
+  else:
+    ipmodule = 'IPython.frontend.terminal.ipapp'
   sp = subprocess.Popen( [ sys.executable, '-c',
-    'from IPython.frontend.terminal.ipapp import launch_new_instance; ' \
-    'launch_new_instance()', 'console', '--existing',
+    'from %s import launch_new_instance; launch_new_instance()' % ipmodule,
+    'console', '--existing',
     '--shell=%d' % ipConsole.shell_port, '--iopub=%d' % ipConsole.iopub_port,
     '--stdin=%d' % ipConsole.stdin_port, '--hb=%d' % ipConsole.hb_port ] )
   brainvisa.processes._ipsubprocs.append( sp )
@@ -284,10 +289,14 @@ if neuroConfig.shell:
   try:
     neuroConfig.shell = 0
     import IPython
-    if [ int(x) for x in IPython.__version__.split('.')[:2] ] >= [ 0, 11 ]:
+    ipversion = [ int(x) for x in IPython.__version__.split('.') ]
+    if ipversion >= [ 0, 11 ]:
       if not neuroConfig.gui: # with gui this is done earlier using qtconsole
         # ipython >= 0.11
-        from IPython.frontend.terminal.ipapp import TerminalIPythonApp
+        if ipversion >= [ 1, 0 ]:
+          from IPython.terminal.ipapp import TerminalIPythonApp
+        else:
+          from IPython.frontend.terminal.ipapp import TerminalIPythonApp
         app = TerminalIPythonApp.instance()
         app.initialize( [] )
         app.start()
