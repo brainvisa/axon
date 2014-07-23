@@ -34,7 +34,7 @@ from brainvisa.processing.qtgui.backwardCompatibleQt \
     import QLineEdit, SIGNAL, QPushButton, QToolButton, \
            Qt, QIcon, QWidget, QFileDialog, QVBoxLayout, \
            QListWidget, QHBoxLayout, QSpacerItem, QSizePolicy, QSize, QMenu, \
-           QPalette, QColor, QItemSelectionModel
+           QPalette, QColor, QItemSelectionModel, QLabel
 from soma.wip.application.api import findIconFile
 from soma.qtgui.api import largeIconSize
 from brainvisa.data.qtgui.diskItemBrowser import DiskItemBrowser
@@ -493,6 +493,9 @@ class DiskItemListEditor( QWidget, DataEditor ):
       self.connect( self.lbxValues, SIGNAL('itemSelectionChanged()'), self._selectionChanged )
       layout.addWidget( self.lbxValues )
 
+      self.textLine = QLabel()
+      layout.addWidget( self.textLine )
+
       hb = QHBoxLayout()
       hb.setSpacing( 6 )
       
@@ -640,6 +643,8 @@ class DiskItemListEditor( QWidget, DataEditor ):
     def _selectionChanged( self ):
       self.checkUI()
       self.updateEditorValue()
+      self.textLine.setText('items: %d, selected: %d' \
+        % (self.lbxValues.count(), len(self.lbxValues.selectedIndexes())))
 
     def _add( self ):
       try:
