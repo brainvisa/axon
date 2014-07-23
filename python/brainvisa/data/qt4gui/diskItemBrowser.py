@@ -136,8 +136,17 @@ class DiskItemBrowser( QDialog ):
     self.attributesWidget.show()
     scrollarea.setWidgetResizable(True)
     
-    self.connect( self._ui.tblItems, SIGNAL( 'clicked ( const QModelIndex & )' ), self.itemSelected )
-    
+    self.connect( self._ui.tblItems,
+        SIGNAL( 'clicked ( const QModelIndex & )' ), self.itemSelected )
+    #self.connect( self._ui.tblItems.selectionModel(),
+        #SIGNAL( 'selectionChanged( const QItemSelection & )' ),
+        #self.itemSelected )
+    self.connect( self._ui.tblItems,
+        SIGNAL( 'itemSelectionChanged()' ),
+        self.itemSelected )
+
+    print 'tblItems:', self._ui.tblItems.__class__
+
     #print '!DiskItemBrowser!', database, selection, required
     self._requiredAttributes = required
     self._database = database
@@ -277,6 +286,9 @@ class DiskItemBrowser( QDialog ):
     cmb.connect( cmb, SIGNAL( 'activated' ), self._comboSelected )
     gridLayout.addWidget( cmb, layoutRow, 1 )
     return cmb
+
+  def itemSelectionChanged( self, dummy1, dummy2 ):
+    self.itemSelected()
 
   def itemSelected( self, index=None ):
     if hasattr( index, 'isValid' ):
@@ -523,6 +535,9 @@ class DiskItemBrowser( QDialog ):
         # if only one item, show all columns even if they are (all) unique
         uniquecols = set()
       self._ui.tblItems.setModel( self._tableData )
+      self.connect( self._ui.tblItems.selectionModel(),
+        SIGNAL( 'selectionChanged( const QItemSelection &, const QItemSelection & )' ),
+        self.itemSelectionChanged )
       self._ui.labItems.setText( _t_( '%d item(s)' ) % ( len( self._items ), ) )
       self._ui.tblItems.horizontalHeader().setMovable( True )
       if self._items:
