@@ -1261,8 +1261,6 @@ class SQLDatabase( Database ):
                     val = diskItem.get( att )
                     if val is not None:
                       a[ att ] = val
-                      print 'declared_attributes:', att
-                      print '  ', val
                 stack.append( ( it, rule.scanner, a, priorityOffset +     rule.priorityOffset ) )
                 yield diskItem
                 if debugHTML:
