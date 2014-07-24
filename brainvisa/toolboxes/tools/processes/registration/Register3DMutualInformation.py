@@ -155,7 +155,6 @@ def execution( self, context ):
     '-t', source_image, 
     '--dir', self.source_to_reference,
     '--inv', self.reference_to_source, 
-    '--index', 'mi',
     '--refstartpyr', self.reference_reduction_factor,
     '--seuilref', self.reference_threshold,
     '--seuiltest', self.source_threshold, 
