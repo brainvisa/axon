@@ -74,7 +74,7 @@ def initialization(self):
     
     self.addLink( 'img_smoothed', 'img', self.update_img_smoothed )
     self.addLink( 'img_smoothed', 'prefix', self.update_img_smoothed )
-    self.addLink( 'batch_location', 'img_smoothed', self.update_batch_location )
+    self.linkParameters( 'batch_location', ('img', 'img_smoothed'), self.update_batch_location )
     
     
 #
@@ -95,9 +95,9 @@ def update_img_smoothed( self, proc ):
 # Update batch location in the same directory as 
 # the image to smooth
 #
-def update_batch_location( self, proc ):
+def update_batch_location( self, proc, dummy ):
     
-    if self.img_smoothed is not None:
+    if not None in [self.img_smoothed, self.img ]:
         img_out_path = str( self.img_smoothed )
         img_out_dir = img_out_path[:img_out_path.rindex('/')+1]
         img_in_path = str( self.img ) 
