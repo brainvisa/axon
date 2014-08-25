@@ -52,7 +52,9 @@ def validation():
 
 signature = Signature(
     'reference', ReadDiskItem('4D Volume', 'NIFTI-1 image'),
+    'reference_referential', ReadDiskItem( 'Referential', 'Referential' ),
     'source', ReadDiskItem('4D Volume', 'NIFTI-1 image'),
+    'source_referential', ReadDiskItem( 'Referential', 'Referential' ),
     'cost_fun', Choice(('Mutual Information', """'mi'"""), ('Normalized Mutual Information', """'nmi'"""), ('Entropy Correlation Coefficient', """'ecc'"""), ('Normalised Cross Correlation', """'ncc'""")),
     'sep', String(),
     'tol', String(),
@@ -65,7 +67,7 @@ signature = Signature(
 #------------------------------------------------------------------------------
 
 def initialization(self):
-
+  self.setOptional( 'reference_referential', 'source_referential' )
   initializeCoregisterEstimateParameters_withSPM8DefaultValues( self )
 
   self.signature['cost_fun'].userLevel = 1
@@ -117,14 +119,29 @@ def execution(self, context):
   source_reseted.clearMinf()
   reference_reseted.clearMinf()
 
-  coregister_matrix = self.extractCoregisterMatrix( source_reseted.fullPath(), reference_reseted.fullPath() )
-  self.writeAffineMatrixInTRMFormat(coregister_matrix, self.source_to_reference_trm.fullPath())
+  self.writeCoregisterMatrix( source_reseted.fullPath(), reference_reseted.fullPath(), self.source_to_reference_trm.fullPath() )
+
+  if not None in [ self.source_referential, self.reference_referential ]:
+    source_uuid = readMinf( self.source_referential.fullPath() )[0][ 'uuid' ]
+    reference_uuid = readMinf( self.reference_referential.fullPath() )[0][ 'uuid' ]
+    self.source_to_reference_trm.updateMinf( { 'source_referential':source_uuid, \
+                                               'destination_referential':reference_uuid \
+                                             }
+                                           )
+
 
   if self.compute_inverse_trm:
     context.runProcess( 'matrixInvert', \
                         transformation=self.source_to_reference_trm.fullPath(), \
                         inverted_transformation=self.reference_to_source_trm.fullPath() \
                       )
+    if not None in [ self.source_referential, self.reference_referential ]:
+      source_uuid = readMinf( self.source_referential.fullPath() )[0][ 'uuid' ]
+      reference_uuid = readMinf( self.reference_referential.fullPath() )[0][ 'uuid' ]
+      self.source_to_reference_trm.updateMinf( { 'source_referential':reference_uuid, \
+                                                 'destination_referential':source_uuid \
+                                               }
+                                             )
 
   print "\n stop ", name, "\n"
 
@@ -134,7 +151,7 @@ def resetInternalTransformation( self, context, source_path, source_reseted_path
                       output_image=source_reseted_path \
                     )
 
-def extractCoregisterMatrix(self, source_path, reference_path):
+def writeCoregisterMatrix(self, source_path, reference_path, output_path):
 
   source_vol = aims.read( source_path )
   source_aligned_trm = aims.AffineTransformation3d(source_vol.header()['transformations'][1])
@@ -149,16 +166,8 @@ def extractCoregisterMatrix(self, source_path, reference_path):
     reference_scanner_trm = aims.AffineTransformation3d(reference_vol.header()['transformations'][0])
     reference_trm = reference_scanner_trm.inverse()
 
-  coregister_trm = numpy.dot( reference_trm, source_aligned_trm )
+  aims.write( reference_trm * source_aligned_trm, output_path )
 
-  return coregister_trm
 
-def writeAffineMatrixInTRMFormat(self, affine_matrix, output_path):
-  trm = affine_matrix.toMatrix()
-  trm_to_write = str( trm[0][3] ) + ' ' + str( trm[1][3] ) + ' ' + str( trm[2][3] ) + '\n' + \
-                 str( trm[0][0] ) + ' ' + str( trm[0][1] ) + ' ' + str( trm[0][2] ) + '\n' + \
-                 str( trm[1][0] ) + ' ' + str( trm[1][1] ) + ' ' + str( trm[1][2] ) + '\n' + \
-                 str( trm[2][0] ) + ' ' + str( trm[2][1] ) + ' ' + str( trm[2][2] )
-  f = open( output_path, 'w' )
-  f.write( trm_to_write )
-  f.close()
+
+
