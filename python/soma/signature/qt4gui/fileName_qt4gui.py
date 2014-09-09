@@ -57,8 +57,7 @@ class FileName_Qt4GUI( Unicode_Qt4GUI ):
       self._lineEdit = TimeredQLineEdit( )
       if value is not None:
         self.updateEditionWidget( self._widget, value )
-      self._lineEdit.connect( self._lineEdit, SIGNAL( 'userModification' ), 
-                              self._userModification )
+      self._lineEdit.userModification.connect( self._userModification )
     else:
       self._lineEdit = QLineEdit( self._widget )
       if value is not None:
@@ -75,8 +74,7 @@ class FileName_Qt4GUI( Unicode_Qt4GUI ):
   
   def closeEditionWidget( self, editionWidget ):
     if self._live:
-      self._lineEdit.disconnect( self._lineEdit, SIGNAL( 'userModification' ), 
-                                 self._userModification )
+      self._lineEdit.userModification.disconnect( self._userModification )
     self._lineEdit = None
     self._widget.close()
     self._widget.deleteLater()

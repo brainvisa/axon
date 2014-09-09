@@ -282,7 +282,8 @@ class DiskItemBrowser( QDialog ):
     cmb.setSizePolicy( QSizePolicy( QSizePolicy.Expanding, QSizePolicy.Fixed ) )
     if editable:
       cmb._modificationTimer = QLineEditModificationTimer( cmb.lineEdit() )
-      self.connect( cmb._modificationTimer, SIGNAL( 'userModification' ), partial( self._comboTextChanged, name=attributeName ) )
+      cmb._modificationTimer.userModification.connect( partial(
+        self._comboTextChanged, name=attributeName ) )
     cmb.connect( cmb, SIGNAL( 'activated' ), self._comboSelected )
     gridLayout.addWidget( cmb, layoutRow, 1 )
     return cmb

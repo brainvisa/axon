@@ -67,8 +67,7 @@ class Bytes_Qt4GUI( Qt4GUI ):
         self._widget.startInternalModification()
         self._widget.setText( repr( value + '"' )[ 1: -2 ] )
         self._widget.stopInternalModification()
-      self._widget.connect( self._widget, QtCore.SIGNAL( 'userModification' ), 
-                            self._userModification )
+      self._widget.userModification.connect( self._userModification )
     else:
       self._widget = QtGui.QLineEdit( parent )
       if name:
@@ -80,8 +79,7 @@ class Bytes_Qt4GUI( Qt4GUI ):
   
   def closeEditionWidget( self, editionWidget ):
     if self._live:
-      self._widget.disconnect( self._widget, QtCore.SIGNAL( 'userModification' ), 
-                               self._userModification )
+      self._widget.userModification.disconnect( self._userModification )
     editionWidget.close()
     editionWidget.deleteLater()
     self._widget = None
