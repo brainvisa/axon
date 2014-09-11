@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>570</width>
-    <height>567</height>
+    <width>428</width>
+    <height>109</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Check registration</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_3" stretch="20,1">
+  <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <widget class="QFrame" name="mainFrame">
      <property name="frameShape">
@@ -25,7 +25,7 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QGroupBox" name="addRowGroupBox">
        <property name="title">
@@ -109,18 +109,22 @@
         </spacer>
        </item>
        <item>
-        <widget class="QToolButton" name="printBt">
-         <property name="text">
-          <string>Print</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QToolButton" name="closeBt">
-         <property name="text">
-          <string>Close</string>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QToolButton" name="printBt">
+           <property name="text">
+            <string>Print</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="closeBt">
+           <property name="text">
+            <string>Close</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </item>
