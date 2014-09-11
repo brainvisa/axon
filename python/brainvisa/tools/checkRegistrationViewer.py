@@ -155,8 +155,8 @@ class CheckRegistration():
         palette = self._mainDiag.palette()
         palette.setColor(self._mainDiag.backgroundRole(), QtGui.QColor(255, 255, 255))
         self._mainDiag.setPalette(palette)
-        
-        self._mainDiag.closeBt.setIcon(QtGui.QIcon(_findExtraFile("close_gray.png", "icons")))
+
+        self._mainDiag.closeBt.setIcon(QtGui.QIcon(_findExtraFile("check_gray.png", "icons")))
         self._mainDiag.closeBt.setIconSize(QtCore.QSize(24, 24))
         self._mainDiag.closeBt.setAutoRaise(True)
         self._mainDiag.printBt.setIcon(QtGui.QIcon(_findExtraFile("print_gray.png", "icons")))
