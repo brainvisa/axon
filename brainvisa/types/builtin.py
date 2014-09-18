@@ -178,7 +178,6 @@ createFormatList( 'BrainVISA image formats', 'Aims image formats' )
 createFormatList( 'BrainVISA mesh formats', 'Anatomist mesh formats' )
 createFormatList( 'BrainVISA texture formats', 'Anatomist texture formats' )
 
-
 FileType( '4D Volume', 'Any Type', 'BrainVISA volume formats') #minfAttributes=shfjGlobals.aimsVolumeAttributes )
 FileType( '3D Volume', '4D Volume' )
 FileType( '2D Image', '3D Volume', 'BrainVISA image formats' )
@@ -274,6 +273,7 @@ FileType( 'Hierarchy', 'Label translation or Nomenclature', 'Hierarchy' )
 FileType( 'Nomenclature', 'Hierarchy' )
 FileType( 'Label translation', 'Label translation or Nomenclature',
           [ 'Label Translation', 'DEF Label Translation' ] )
+
 
 #--- General types for fMRI ---------------------
 #FileType( 'Functional volume', '4D Volume' )
