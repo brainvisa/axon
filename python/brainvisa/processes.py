@@ -2671,6 +2671,12 @@ class ExecutionContext( object ):
     ignoreReturnValue: (bool)
         if True, ignore the command return value. Useful when you know the
         command will exit badly aven if the work is done.
+    stdout: (file object)
+       if specified, stdout will be written in this stream. It may be a
+       StringIO object.
+    stderr: (file object)
+       if specified, stderr will be written in this stream. It may be a
+       StringIO object.
 
     *Example*
 
@@ -2684,34 +2690,45 @@ class ExecutionContext( object ):
     self._systemOutputLevel = kwargs.get( 'outputLevel', 0 )
     old_stdoutInContext = self._stdoutInContext
     self._stdoutInContext = kwargs.get( 'stdoutInContext', False )
+    self._stdout = kwargs.get( 'stdout', None )
+    self._stderr = kwargs.get( 'stderr', None )
     ignoreReturnValue = kwargs.get( 'ignoreReturnValue', 0 )
     command = [str(i) for i in args]
 
     ret = self._system( command, self._systemStdout, self._systemStderr )
     self._stdoutInContext = old_stdoutInContext
+    self._stdout = None
+    self._stderr = None
     if ret and not ignoreReturnValue:
       raise RuntimeError( _t_( 'System command exited with non null value : %s' ) % str( ret ) )
     return ret
 
   def _systemStdout( self, line, logFile=None ):
+    if not line:
+      return
     if logFile is None:
       logFile = self._systemLogFile
-    if line and self._stdoutInContext:
+    if self._stdoutInContext:
       print 'line:', line
       lineInHTML = '<tt>' + htmlEscape(line).replace('\n', '<br/>') + '</tt>'
       self.write( lineInHTML )
-    if line and logFile is not None and self._showSystemOutput():
+    if self._stdout is not None:
+      self._stdout.write(line)
+    if logFile is not None and self._showSystemOutput():
       if line[ -1 ] not in ( '\b', '\r' ):
         logFile.write( htmlEscape(line))
         logFile.flush()
 
   def _systemStderr( self, line, logFile=None ):
+    if not line:
+      return
     if logFile is None:
       logFile = self._systemLogFile
-    if line:
-      lineInHTML = '<font color=red>' + htmlEscape(line) + '</font>'
-      self.write( lineInHTML )
-    if logFile is not None and line:
+    lineInHTML = '<font color=red>' + htmlEscape(line) + '</font>'
+    self.write( lineInHTML )
+    if self._stderr is not None:
+      self._stderr.write(line)
+    if logFile is not None:
       logFile.write( lineInHTML )
       logFile.flush()
 
