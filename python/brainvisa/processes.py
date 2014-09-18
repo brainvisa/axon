@@ -2206,6 +2206,7 @@ class ExecutionContext( object ):
     self._processStackHead = None
     self.manageExceptions = 1
     self._systemOutputLevel = 0
+    self._stdoutInContext = False
     self._systemLog = None
     self._systemLogFile = None
 
@@ -2660,21 +2661,34 @@ class ExecutionContext( object ):
     This function is used to call system commands. It is very similar to functions like os.system in Python and system in C. The main difference is the management of messages sent on standard output. These messages are intercepted and reported in BrainVISA interface according to the current execution context.
 
     If the command is given as one argument, it is converted to a string and passed to the system. If there are several arguments, each argument is converted to a string, surrounded by simple quotes and all elements are joined, separated by spaces. The resulting command is passed to the system. The second method is recommended because the usage of quotes enables to pass arguments that contain spaces. The function returns the value returned by the system command.
-    
+
+    *optional keyword paramerers*
+
+    outputLevel: (int)
+        if >=0 and < userLevel, write stdout in log
+    stdoutInContext: (bool)
+        if True, write stdout in the current context output
+    ignoreReturnValue: (bool)
+        if True, ignore the command return value. Useful when you know the
+        command will exit badly aven if the work is done.
+
     *Example*
-    
+
     >>> arg1 = 'x'
     >>> arg2 = 'y z'
     >>> context.system( 'command ' + arg1 + ' ' + arg2 )
     >>> context.system( 'command', arg1, arg2 )
-    
+
     The first call generates the command command x y z which calls the commands with 3 parameters. The second call generates the command 'command' 'x' 'y z' which calls the command with two parameters.
     """
     self._systemOutputLevel = kwargs.get( 'outputLevel', 0 )
+    old_stdoutInContext = self._stdoutInContext
+    self._stdoutInContext = kwargs.get( 'stdoutInContext', False )
     ignoreReturnValue = kwargs.get( 'ignoreReturnValue', 0 )
     command = [str(i) for i in args]
 
     ret = self._system( command, self._systemStdout, self._systemStderr )
+    self._stdoutInContext = old_stdoutInContext
     if ret and not ignoreReturnValue:
       raise RuntimeError( _t_( 'System command exited with non null value : %s' ) % str( ret ) )
     return ret
@@ -2682,6 +2696,10 @@ class ExecutionContext( object ):
   def _systemStdout( self, line, logFile=None ):
     if logFile is None:
       logFile = self._systemLogFile
+    if line and self._stdoutInContext:
+      print 'line:', line
+      lineInHTML = '<tt>' + htmlEscape(line).replace('\n', '<br/>') + '</tt>'
+      self.write( lineInHTML )
     if line and logFile is not None and self._showSystemOutput():
       if line[ -1 ] not in ( '\b', '\r' ):
         logFile.write( htmlEscape(line))
