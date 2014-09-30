@@ -128,8 +128,8 @@ def execution( self, context ):
                     notdone.append( item )
             if len( notdone ) != 0:
                 context.write( 'The following items could <b>not</b> be copied:' )
-                context.write( '\n'.join( notdone ) )
-                raise RuntimeError( 'Files not copied' )
+                context.write('\n'.join([str(item) for item in notdone]))
+                raise RuntimeError('Files not copied')
 
 
 
