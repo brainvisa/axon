@@ -2785,7 +2785,6 @@ class ExecutionContext( object ):
     if logFile is None:
       logFile = self._systemLogFile
     if self._stdoutInContext:
-      print 'line:', line
       lineInHTML = '<tt>' + htmlEscape(line).replace('\n', '<br/>') + '</tt>'
       self.write( lineInHTML )
     if self._stdout is not None:
