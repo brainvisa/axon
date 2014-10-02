@@ -3927,19 +3927,22 @@ def getViewer( source, enableConversion = 1, checkUpdate=True, listof=False ):
   if listof:
     if isinstance( source, tuple ) and len( source ) == 2:
       vrs = [ getViewer( source, enableConversion=enableConversion,
-                        checkUpdate=checkUpdate ) ]
+                         checkUpdate=checkUpdate ) ]
     else:
       vrs = [ getViewer( s, enableConversion=enableConversion,
-                        checkUpdate=checkUpdate ) for s in source ]
+                         checkUpdate=checkUpdate ) for s in source ]
     if None not in vrs and len( vrs ) != 0:
       class iterproc( object ):
-        def __init__( self, name, procs ):
+        def __init__( self, name, type_name ):
           self.name = name
-          self.procs = procs
+          self.type_name = type_name
         def __call__( self ):
-          ip = ListOfIterationProcess( self.name, self.procs )
+          ip = getProcess('inspectMultipleData')()
+          ip.name = self.name
+          ip.signature = Signature('items', ip.signature['items'], 'data_type', ip.signature['data_type'])
+          ip.data_type = self.type_name
           return ip
-      return iterproc( _t_( 'Viewer for list of ' ) + t0.name, vrs )
+      return iterproc( _t_( 'Viewer for list of ' ) + t0.name, t0.name )
   return None
 
 
