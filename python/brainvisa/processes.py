@@ -3939,7 +3939,9 @@ def getViewer( source, enableConversion = 1, checkUpdate=True, listof=False ):
         def __call__( self ):
           ip = getProcess('inspectMultipleData')()
           ip.name = self.name
-          ip.signature = Signature('items', ip.signature['items'], 'data_type', ip.signature['data_type'])
+          ip.signature = Signature(
+            'items', ip.signature['items'],
+            'data_type', ip.signature['data_type'])
           ip.data_type = self.type_name
           return ip
       return iterproc( _t_( 'Viewer for list of ' ) + t0.name, t0.name )

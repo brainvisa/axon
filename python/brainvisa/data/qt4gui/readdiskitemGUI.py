@@ -97,7 +97,10 @@ class DiskItemEditor( QWidget, DataEditor ):
     self.btnShow.setFixedSize( buttonIconSize + buttonMargin )
     self.btnShow.setFocusPolicy( Qt.NoFocus )
     self.btnShow.setEnabled( False )
-    if not brainvisa.processes.getViewer( (self.parameter.type, self.parameter.formats[0] ), 1, checkUpdate=False ):
+    format = None
+    if len(self.parameter.formats) != 0:
+        format = self.parameter.formats[0]
+    if not brainvisa.processes.getViewer( (self.parameter.type, format ), 1, checkUpdate=False ):
       self.btnShow.hide()
     self._view = None
     self.connect( self.btnShow, SIGNAL( 'clicked()' ), self.showPressed )
