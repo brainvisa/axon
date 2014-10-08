@@ -157,6 +157,7 @@ Format( 'HTML', 'f|*.html' )
 
 #PDF format
 Format( 'PDF File', "f|*.pdf" )
+Format( 'Soma-Workflow workflow', "f|*.workflow" )
 
 # Make 'Series of SPM image' format exists
 changeToFormatSeries( getFormat( 'SPM image' ) )
