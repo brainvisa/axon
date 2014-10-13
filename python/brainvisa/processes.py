@@ -781,13 +781,19 @@ class Parameterized( object ):
       sourcesList = [ sources ]
     else:
       sourcesList = sources
-    for p in [ destName ] + list( sourcesList ):
+    for p in [dest for dest in [destName] if dest is not None] \
+        + list(sourcesList):
       if not self.signature.has_key( p ):
         raise ValueError( HTMLMessage(_t_( '<em>%s</em> is not a valid parameter name' ) % p) )
     if function is None:
       function = getattr( self.signature[ destName ], 'defaultLinkParametersFunction', None )
     for p in sourcesList:
-      self._links.setdefault( p, [] ).append( ( weakref.proxy( self ), destName, function, False, False ) )
+      if destName is None:
+        self._links.setdefault( p, [] ).append(
+          ( None, None, function, False, False ) )
+      else:
+        self._links.setdefault( p, [] ).append(
+          ( weakref.proxy( self ), destName, function, False, False ) )
 
   def addParameterObserver( self, parameterName, function ):
     """Associates a callback function to the modifications of the parameter value.
