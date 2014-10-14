@@ -1168,7 +1168,6 @@ class SQLDatabase( Database ):
     while stack:
       itDirectory, scanner, attributes, priorityOffset = stack.pop( 0 )
 
-
       f = itDirectory.fullPath()
       if directoriesToScan is not None:
         ignore = True
@@ -1244,31 +1243,29 @@ class SQLDatabase( Database ):
               a = attributes.copy()
               a.update( match )
               a.update( rule.localAttributes )
-              if allowYield and ( rule.type is not None or includeUnknowns ):
-                diskItem = Directory( nameWithoutExtension, None )
-                diskItem.type = rule.type
-                diskItem.format = getFormat( 'Directory' )
-                diskItem._files = [ os.path.normpath( f ) for f in files ]
-                diskItem._globalAttributes[ '_database' ] = self.name
-                diskItem._globalAttributes[ '_ontology' ] = self.fso.name
-                diskItem._globalAttributes.update( a )
-                diskItem._priority = priorityOffset + rule.priorityOffset
-                diskItem._identified = True
-                diskItem.readAndUpdateMinf()
+              if rule.type is not None or includeUnknowns:
                 # insert declared_attributes read from minf and fso_attributes.csv file
                 if rule.declared_attributes:
                   for att in rule.declared_attributes:
+                    a.setdefault('_declared_attributes_location', {})[att] = os.path.join( nameWithoutExtension[len(self.directory)+1:], 'fso_attributes.csv' )
                     val = diskItem.get( att )
                     if val is not None:
                       a[ att ] = val
-                stack.append( ( it, rule.scanner, a, priorityOffset +     rule.priorityOffset ) )
-                yield diskItem
-                if debugHTML:
-                  print >> debugHTML, '<font color=darkblue><b>', diskItem, ':</b>', diskItem.type, '</font> (' + htmlEscape( rule.pattern.pattern ) + ':' + str( rule.type ) + ')<br>'
-              #if debugHTML:
-                #print >> debugHTML, '<font color=darkorange><b>' + f + ':</b> ' + repr( match ) + '</font><br>'
-              else:
-                stack.append( ( it, rule.scanner, a, priorityOffset + rule.priorityOffset ) )
+                if allowYield:
+                    diskItem = Directory( nameWithoutExtension, None )
+                    diskItem.type = rule.type
+                    diskItem.format = getFormat( 'Directory' )
+                    diskItem._files = [ os.path.normpath( f ) for f in files ]
+                    diskItem._globalAttributes[ '_database' ] = self.name
+                    diskItem._globalAttributes[ '_ontology' ] = self.fso.name
+                    diskItem._globalAttributes.update( a )
+                    diskItem._priority = priorityOffset + rule.priorityOffset
+                    diskItem._identified = True
+                    diskItem.readAndUpdateMinf()
+                    yield diskItem
+                    if debugHTML:
+                      print >> debugHTML, '<font color=darkblue><b>', diskItem, ':</b>', diskItem.type, '</font> (' + htmlEscape( rule.pattern.pattern ) + ':' + str( rule.type ) + ')<br>'
+              stack.append( ( it, rule.scanner, a, priorityOffset + rule.priorityOffset ) )
               break
           else:
             #for rule in directoryRules:
@@ -1541,7 +1538,7 @@ class SQLDatabase( Database ):
                   diskItem._globalAttributes[ '_database' ] = self.name
                   diskItem._globalAttributes[ '_ontology' ] = self.fso.name
                   diskItem._write = True
-                  
+                  diskItem._globalAttributes[ '_declared_attributes_location' ] = dict((att,os.path.normpath(os.path.join(diskItem.fullPath(),path))) for att, path in rule._declared_attributes_location.iteritems())
                   c = CombineGet( unmatchAttributes, required, selection, defaultAttributesValues )
                   for n in self.keysByType[ type ]:
                     if n=="name_serie": # name_serie is a local attribute

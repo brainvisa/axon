@@ -886,6 +886,7 @@ class FileSystemOntology( object ):
         ruleInExtenso.type = rule.type
         ruleInExtenso.formats = rule.formats
         ruleInExtenso.priority = rule.priority
+        ruleInExtenso._declared_attributes_location = {}
         for r in rules:
           ruleInExtenso.globalAttributes += r.globalAttributes
           ruleInExtenso.defaultAttributesValues.update( r.defaultAttributesValues )
@@ -902,11 +903,15 @@ class FileSystemOntology( object ):
           ruleInExtenso.priorityOffset += r.priorityOffset
           ruleInExtenso.nonMandatoryKeyAttributes.update( r.nonMandatoryKeyAttributes )
           ruleInExtenso.declared_attributes.update( r.declared_attributes )
-        ruleInExtenso.itemName = rule.itemName
+          # Prepend "../" to all _declared_attributes_location
+          ruleInExtenso._declared_attributes_location = \
+          dict((att,os.path.join('..', path)) for att, path in ruleInExtenso._declared_attributes_location.iteritems())
+          for att in r.declared_attributes:
+            ruleInExtenso._declared_attributes_location[att] = 'fso_attributes.csv'
+        ruleInExtenso.itemName = rule.itemName        
         self.typeToPatterns.setdefault( rule.type, [] ).append( ruleInExtenso )
       if rule.scanner:
         stack = [rules+(r,) for r in rule.scanner.rules] + stack
-
   def getOntologiesNames():
     """
     Lists all the ontologies names found in fileSystemOntologiesPath. 
