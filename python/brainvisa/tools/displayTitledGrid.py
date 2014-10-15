@@ -39,7 +39,7 @@ from PyQt4.uic import loadUi
 from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
 from brainvisa.tools.mainthreadlife import MainThreadLife
 from functools import partial
-import anatomist.threaded.api as ana
+import brainvisa.anatomist as ana
 from anatomist.cpp.paletteEditor import PaletteEditor
 
 #------------------------------------------------------------------------------
@@ -70,8 +70,8 @@ def displayTitledGrid(transformationManager, context, inverseRawColumn,
                                  overlayColormap=overlayColormap,
                                  customOverlayColormap=customOverlayColormap,
                                  rowButtonSubTitles=rowButtonSubTitles)
-  mw = MainThreadLife(_mw)# pour etre sure que la destruction de la mw se fasse sur le thread de Gui
-  return [mw]
+  mw = MainThreadLife(_mw)# ensure mw destruction takes place in the GUI thread
+  return mw
 
 def _displayTitledGrid_onGuiThread(transformationManager, context,
                                    inverseRawColumn, objPathMatrix, rowTitle,
