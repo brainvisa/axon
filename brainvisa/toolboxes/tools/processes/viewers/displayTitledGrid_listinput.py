@@ -80,7 +80,6 @@ def initialization(self):
 #------------------------------------------------------------------------------
 
 def execution(self, context):
-  print "\n start ", name, "\n"
 
   # context will be mw's parent. This is essential if mw has connected buttons (or listen any signals)
   # so when context is closed -> delete -> delete child -> mw will be deleted
@@ -93,21 +92,10 @@ def execution(self, context):
     if col == 0:
       imgcol = []
       img.append( imgcol )
-    if(selfImg is not None and os.path.exists(selfImg.fullPath())):
-      ifile = selfImg.fullPath()
-    else:
-      ifile = None
-    imgcol.append( ifile )
+    imgcol.append( selfImg )
     col += 1
     if col == len( self.colTitles ):
       col = 0
-
-  def getPath( x ):
-    if x is None:
-      return None
-    return x.fullPath()
-
-  overlaidImages = [ getPath( x ) for x in self.overlaid_images ]
 
   objs = displayTitledGrid(registration.getTransformationManager(), context,
                            self.inverseRawColumn,
@@ -116,13 +104,12 @@ def execution(self, context):
                            rowColors=self.rowColors, colTitle=self.colTitles,
                            windowTitle=self.windowTitle
                            , linkWindows=self.linkWindows,
-                           overlaidImages=overlaidImages,
+                           overlaidImages=self.overlaid_images,
                            mainColormap=self.mainColormap,
                            overlayColormap=self.overlayColormap,
                            customOverlayColormap=self.customOverlayColormap,
                            rowButtonSubTitles=self.rowButtonSubTitles
                           )
 
-  print "\n stop ", name, "\n"
   return objs
 
