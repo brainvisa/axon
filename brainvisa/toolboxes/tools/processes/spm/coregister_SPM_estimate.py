@@ -74,18 +74,23 @@ name = 'Coregister estimate only (using SPM8)'
 #------------------------------------------------------------------------------
 
 signature = Signature(
-    'reference', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
-    'source', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
-    'others', ListOf(ReadDiskItem('4D Volume', 'Aims readable volume formats')),   
+    'reference', ReadDiskItem('4D Volume',
+                              ['NIFTI-1 image', 'SPM image', 'MINC image']),
+    'source', ReadDiskItem('4D Volume',
+                           ['NIFTI-1 image', 'SPM image', 'MINC image']),
+    'others', ListOf(ReadDiskItem('4D Volume',
+        ['NIFTI-1 image', 'SPM image', 'MINC image'])),
     'cost_fun', Choice(('Mutual Information', """'mi'"""), ('Normalized Mutual Information', """'nmi'"""), ('Entropy Correlation Coefficient', """'ecc'"""), ('Normalised Cross Correlation', """'ncc'""")),
     'sep', String(),
     'tol', String(),
     'fwhm', String(),
     'prefix', String(),
-    'source_coreg_only', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
-    'others_coreg_only', ListOf( WriteDiskItem('4D Volume', 'Aims readable volume formats') ),
+    'source_coreg_only', WriteDiskItem('4D Volume',
+        ['NIFTI-1 image', 'SPM image', 'MINC image']),
+    'others_coreg_only', ListOf( WriteDiskItem('4D Volume',
+        ['NIFTI-1 image', 'SPM image', 'MINC image']) ),
     'batch_location', String(),
-    
+
   )
 
 #------------------------------------------------------------------------------
