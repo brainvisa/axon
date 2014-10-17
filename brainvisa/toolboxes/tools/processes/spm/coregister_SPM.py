@@ -61,8 +61,6 @@ signature = Signature(
     'reference', ReadDiskItem('4D Volume',
                               ['NIFTI-1 image', 'SPM image', 'MINC image']),
     'prefix', String(),
-    'spmSourceWarped', WriteDiskItem('4D Volume',
-        ['NIFTI-1 image', 'SPM image', 'MINC image']),
     'spmOthersWarped', ListOf(WriteDiskItem('4D Volume',
         ['NIFTI-1 image', 'SPM image', 'MINC image'])),
     'allow_modify_source', Boolean(),
@@ -85,14 +83,14 @@ signature = Signature(
 #------------------------------------------------------------------------------
 
 def initialization(self):
-    self.setOptional('others', 'spmSourceWarped', 'spmOthersWarped',
+    self.setOptional('others', 'spmOthersWarped',
                      'sourceWarped', 'othersWarped', 'modifiedSource')
     ititializeCoregisterParameters_withSPM8DefaultValues(self)
     self.prefix = 'spmCoregister_'
     self.allow_modify_source = True
 
     self.linkParameters('sourceWarped', 'source',
-                        self.update_spmSourceWarped)
+                        self.update_sourceWarped)
     self.linkParameters('spmOthersWarped', 'others',
                         self.update_spmOthersWarped)
     self.linkParameters('modifiedSource', 'source')
@@ -108,7 +106,7 @@ def initialization(self):
     self.signature['prefix'].userLevel = 1
 
 #------------------------------------------------------------------------------
-def update_spmSourceWarped(self, proc, dummy):
+def update_sourceWarped(self, proc, dummy):
     if self.source is not None:
         filename = self.update_spmWarped(self.source.fullPath())
         di = proc.signature['sourceWarped'].findValue(filename)
@@ -175,12 +173,9 @@ def execution(self, context):
 
     sourcePathName = self.source.name
     sourceFileName = os.path.basename(sourcePathName)
-    #spmSourceWarpedFileName = self.prefix + sourceFileName
     rmwarp = True
     if(self.sourceWarped is not None):
         sourceWarpedPath = self.sourceWarped.fullPath()
-        #moveSpmOutFiles(inDir, sourceWarpedPath,
-                        #spmPrefixes=[spmSourceWarpedFileName])
         if os.path.exists(warpedFilename + '.minf'):
             os.unlink(warpedFilename + '.minf')
         if warpedFilename != self.sourceWarped.fullPath():
@@ -189,9 +184,6 @@ def execution(self, context):
         removeNan(sourceWarpedPath)
         if warpedFilename == self.sourceWarped.fullPath():
             rmwarp = False
-    elif self.spmSourceWarped is not None \
-            and os.path.exists(self.spmSourceWarped.fullPath()):
-        os.remove(self.spmSourceWarped.fullPath())
     if rmwarp:
         os.remove(warpedFilename)
 
