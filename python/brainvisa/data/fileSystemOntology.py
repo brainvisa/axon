@@ -907,7 +907,7 @@ class FileSystemOntology( object ):
           ruleInExtenso._declared_attributes_location = \
           dict((att,os.path.join('..', path)) for att, path in ruleInExtenso._declared_attributes_location.iteritems())
           for att in r.declared_attributes:
-            ruleInExtenso._declared_attributes_location[att] = 'fso_attributes.csv'
+            ruleInExtenso._declared_attributes_location[att] = 'fso_attributes.json'
         ruleInExtenso.itemName = rule.itemName        
         self.typeToPatterns.setdefault( rule.type, [] ).append( ruleInExtenso )
       if rule.scanner:
@@ -1098,42 +1098,6 @@ class FileSystemOntology( object ):
       for s in parentScanners:
         s.possibleTypes.update( contentScanner.possibleTypes )
 
-  #def printOntology( self, file=sys.stdout ):
-    #print >> file, '\n\n#' + '=' * 79        
-    #print >> file, '#  Ontology:', self.name
-    #print >> file, '#' + '=' * 79
-    #allKeys = set()
-    #tab = '  '
-    #anyType = neuroDiskItems.getDiskItemType( 'Any type' )
-    #for type, rules in self.typeToPatterns.iteritems():
-      #print >> file
-      #print >> file, '#' + '-' * 79
-      #print >> file, 'newType( ' + repr(type.name) + ','
-      #keys = []
-      #for rule in rules:
-        #ruleAttributes = set( rule.pattern.namedRegex() )
-        #ruleAttributes.update( rule.pattern.attributes() )
-        #for keyAttributes in keys:
-          #if ruleAttributes.issubset( keyAttributes ):
-            #break
-          #elif keyAttributes and ruleAttributes.issuperset( keyAttributes ):
-            #keys.remove( keyAttributes )
-            #keys.append( ruleAttributes )
-            #break
-        #else:
-          #keys.append( ruleAttributes )
-        #allKeys.update( [tuple(i) for i in keys] )
-      #for attributes in keys:
-        #print >> file, tab + repr( tuple( attributes ) ) + ','
-      #if type.parent is not None and type.parent is not anyType:
-        #print >> file, tab + 'parent=' + repr(type.parent.name) + ','
-      #print >> file, '),'
-    #print >> file
-    #print >> file, '# all FSO keys:'
-    #for attributes in allKeys:
-      #print >> file, '#' + tab + ', '.join([repr(i) for i in attributes])
-  
-  
   def printOntology( self, file=sys.stdout ):
     """
     Writes ontology information.

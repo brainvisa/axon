@@ -102,6 +102,7 @@ import types, sys, os, errno, stat, operator, time, traceback
 from weakref import ref, WeakValueDictionary
 from UserList import UserList
 from threading import RLock
+import json
 
 from soma.html import htmlEscape
 from soma.undefined import Undefined
@@ -957,30 +958,18 @@ class DiskItem(QObject):
       if os.path.exists( minf ):
         os.remove( minf )
 
-  @staticmethod
-  def readFsoAttributesCSVFile( filename ):
-    try:
-      attributes = {}
-      f = open( filename )
-      r = re.compile( '^\s*([^ \s,]+)\s*,?\s*(.*)$' )
-      empty = re.compile( '^(\s)*(#.*)?$' )
-      for line in f.xreadlines():
-        m = empty.match( line )
-        if m is not None:
-          continue
-        m = r.match( line )
-        attributes[ m.group(1) ] = m.group(2)
-      return attributes
-    except:
-      print 'Warning, error reading CSV FSO attributes file %s' % filename
-      return {}
+  def readDeclaredAttributes( self ):
+    result = {}
+    for path in set(self.get('_declared_attributes_location',{}).itervalues()):
+        if os.path.exists(path):
+            result .update(json.load(open(path)))
+    return result
 
-  def readFsoAttributesCSV( self ):
-    filename =  os.path.join( self.fullPath(), 'fso_attributes.csv' )
-    return self.readFsoAttributesCSVFile( filename )
+    
+  def readAndUpdateDeclaredAttributes( self ):
+    self._globalAttributes.update( self.readDeclaredAttributes() )
 
-
-
+    
   def readAndUpdateMinf( self ):
     """
     Reads the content of the minf file and updates the minf attribute dictionary accordingly.
@@ -994,11 +983,6 @@ class DiskItem(QObject):
           self._changeUuid( Uuid( attrs[ 'uuid' ] ) )
           del attrs[ 'uuid' ]
         self.updateMinf( attrs, saveMinf=False )
-      if os.path.isdir( self.fullPath() ) \
-          and os.path.exists( os.path.join( self.fullPath(),
-            'fso_attributes.csv' ) ):
-        fso_attributes = self.readFsoAttributesCSV()
-        self._globalAttributes.update( fso_attributes )
     finally:
       self._lock.release()
   
@@ -1201,7 +1185,7 @@ class DiskItem(QObject):
     bvproc_file=None
     try:
       sql = "SELECT filename FROM _FILENAMES_ WHERE _uuid='" + uuid + "'"
-      print sql
+      #print sql
       bvproc_file = cursor.execute( sql ).fetchone()
     except sqlite3.OperationalError, e:
       defaultContext().warning( "Cannot question database "+db.name+". You should update this database." )
@@ -2203,7 +2187,7 @@ class TemporaryDiskItem( File ):
                                              'deleted<br>') % f, gui=0 )
               # giving up, let it for later
               temporary.manager.registerPath( f )
-              print 'continuing after failed rm'
+              print 'continuing after failed rm on %s' % f
               sys.stdout.flush()
               break
 

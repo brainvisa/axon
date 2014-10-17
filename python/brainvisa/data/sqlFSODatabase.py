@@ -160,7 +160,6 @@ class Database( object ):
             Database._all_formats.newFormat( format.name, patterns, isinstance( format, MinfFormat ) )
             formatsAlreadyDefined.add( format.name )
           except Exception, e:
-            print e
             showException()
     return Database._all_formats
   
@@ -338,6 +337,7 @@ class SQLDatabase( Database ):
       rulesDictionary = SortedDictionary()
       rulesByLOPA = {}
       editableAttributes = set()
+      declaredAttributes = set(chain(*(r.declared_attributes for r in rules)))
       selectedValueAttributes = {}
       nonMandatoryKeyAttributes = set()
       for rule in rules:
@@ -363,9 +363,9 @@ class SQLDatabase( Database ):
               continue
             if formatName not in typeFormats:
               typeFormats.append( formatName )
-        for a in rule.declared_attributes:
-          if a not in keys:
-            keys.append( a )
+        #for a in rule.declared_attributes:
+          #if a not in keys:
+            #keys.append( a )
       for lopa, lopaRules in rulesByLOPA.iteritems():
         for n in lopa:
           editableAttributes.add( n )
@@ -415,7 +415,7 @@ class SQLDatabase( Database ):
           self._tableAttributesByTypeName[ type.name ].append( a )
       self._nonMandatoryKeyAttributesByType[ type.name ] = nonMandatoryKeyAttributes
       self.ruleSelectionByType[ type.name ] = ( ruleSelectionByAttributeValue, ruleSelectionByMissingKeyAttributes, rulesDictionary, defaultAttributesValues )
-      self._attributesEditionByType[ type.name ] = ( editableAttributes, selectedValueAttributes )
+      self._attributesEditionByType[ type.name ] = ( editableAttributes, selectedValueAttributes, declaredAttributes )
       
     
     self.typesWithTable = set()
@@ -1126,28 +1126,26 @@ class SQLDatabase( Database ):
     return result
 
 
-  def _getParentAttributes( self, directory, attributes ):
-    parentDir = os.path.normpath( directory )
-    rejected = ( 'uuid', )
-    basedir = os.path.normpath( self.directory )
-    if not parentDir.startswith( basedir ):
-      return
-    # DEBUG
-    modif = False
-    while parentDir != basedir:
-      minf = parentDir + '.minf'
-      if os.path.exists( minf ):
-        minfcontent = readMinf( minf )
-        if os.path.exists( os.path.join( parentDir, 'fso_attributes.csv' ) ):
-          minfcontent[0].update( DiskItem.readFsoAttributesCSVFile(
-            os.path.join( parentDir, 'fso_attributes.csv' ) ) )
-        for key, val in minfcontent[0].iteritems():
-          if key not in rejected and key not in attributes:
-            attributes[ key ] = val
-            modif = True
-      parentDir = os.path.dirname( parentDir )
-    #if modif and attributes:
-      #print 'minf atts for', directory, ':', attributes
+  #def _getParentAttributes( self, directory, attributes ):
+    #parentDir = os.path.normpath( directory )
+    #rejected = ( 'uuid', )
+    #basedir = os.path.normpath( self.directory )
+    #if not parentDir.startswith( basedir ):
+      #return
+    ## DEBUG
+    #modif = False
+    #while parentDir != basedir:
+      #minf = parentDir + '.minf'
+      #if os.path.exists( minf ):
+        #minfcontent = readMinf( minf )
+        #if os.path.exists( os.path.join( parentDir, 'fso_attributes.json' ) ):
+          #minfcontent[0].update( DiskItem.readFsoAttributesCSVFile(
+            #os.path.join( parentDir, 'fso_attributes.json' ) ) )
+        #for key, val in minfcontent[0].iteritems():
+          #if key not in rejected and key not in attributes:
+            #attributes[ key ] = val
+            #modif = True
+      #parentDir = os.path.dirname( parentDir )
 
 
   def scanDatabaseDirectories( self, directoriesIterator=None, includeUnknowns=False, directoriesToScan=None, recursion=True, debugHTML=None, context=None ):
@@ -1158,8 +1156,8 @@ class SQLDatabase( Database ):
     # print '## scanDatabaseDirectories', directoriesIterator, directoriesToScan, self.directory
     # get specific attributes from parent directories
     attributes = {}
-    if directoriesToScan and len( directoriesToScan ) == 1:
-      self._getParentAttributes( directoriesToScan[0], attributes )
+    #if directoriesToScan and len( directoriesToScan ) == 1:
+      #self._getParentAttributes( directoriesToScan[0], attributes )
     if directoriesIterator is None:
       stack = [ ( DirectoryIterator(self.directory), scanner, attributes, 0 ) ]
     else:
@@ -1244,10 +1242,11 @@ class SQLDatabase( Database ):
               a.update( match )
               a.update( rule.localAttributes )
               if rule.type is not None or includeUnknowns:
-                # insert declared_attributes read from minf and fso_attributes.csv file
+                # insert declared_attributes read from minf and fso_attributes.json file
                 if rule.declared_attributes:
                   for att in rule.declared_attributes:
-                    a.setdefault('_declared_attributes_location', {})[att] = os.path.join( nameWithoutExtension[len(self.directory)+1:], 'fso_attributes.csv' )
+                    a.setdefault('_declared_attributes_location', {})[att] = \
+                      os.path.join( nameWithoutExtension, 'fso_attributes.json' )
                     val = diskItem.get( att )
                     if val is not None:
                       a[ att ] = val
@@ -1317,6 +1316,7 @@ class SQLDatabase( Database ):
                 diskItem._globalAttributes.update( rule.localAttributes )
                 diskItem._priority = priorityOffset + rule.priorityOffset
                 diskItem.readAndUpdateMinf()
+                diskItem.readAndUpdateDeclaredAttributes()
                 diskItem._identified = True
                 if debugHTML:
                   print >> debugHTML, '<font color=darkgreen><b>', diskItem, ':</b>', diskItem.type, '</font> (' + htmlEscape( rule.pattern.pattern ) + ':' + str( rule.type ) + ')<br>'
@@ -1325,6 +1325,7 @@ class SQLDatabase( Database ):
           else:
             if allowYield and includeUnknowns:
               diskItem.readAndUpdateMinf()
+              diskItem.readAndUpdateDeclaredAttributes()
               diskItem._identified = False
               yield diskItem
             unknownType.append( diskItem )
@@ -1332,6 +1333,7 @@ class SQLDatabase( Database ):
         for diskItem in nameSeriesGroupedItems.itervalues():
           diskItem._setLocal( 'name_serie', sorted( diskItem._getLocal( 'name_serie' ) ) )
           diskItem.readAndUpdateMinf()
+          diskItem.readAndUpdateDeclaredAttributes()
           yield diskItem
       if debugHTML:
         for diskItem in nameSeriesGroupedItems.itervalues():
@@ -1553,6 +1555,7 @@ class SQLDatabase( Database ):
                   for n, v in rule.localAttributes:
                     diskItem._globalAttributes[ n ] = v
                   diskItem._priority = rule.priorityOffset
+                  diskItem.readAndUpdateDeclaredAttributes()
                   yield diskItem
             elif _debug is not None:
               print >> _debug, '!createDiskItems! rule', rule.pattern.pattern, 'not "unmatched"'
@@ -1564,14 +1567,16 @@ class SQLDatabase( Database ):
   def getAttributesEdition( self, *types ):
     editable = set()
     values = {}
+    declared = set()
     for t1 in types:
       for t2 in self._childrenByTypeName[ t1 ]:
         e = self._attributesEditionByType.get( t2 )
         if e is not None:
           editable.update( e[0] )
+          declared.update( e[2] )
           for a, v in e[1].iteritems():
             values.setdefault( a, set() ).update( v )
-    return editable, values
+    return editable, values, declared
   
   
   def getTypeChildren( self, *types ):
@@ -1922,12 +1927,14 @@ class SQLDatabases( Database ):
   def getAttributesEdition( self, *types ):
     editable = set()
     values = { '_database': tuple( (i.name for i in self._databases.itervalues()) ) }
+    declared = set()
     for database in self._databases.itervalues():
-      e, d = database.getAttributesEdition( *types )
+      e, d, dcl = database.getAttributesEdition( *types )
       editable.update( e )
+      declared.update( dcl )
       for a, v  in d.iteritems():
         values.setdefault( a, set() ).update( v )
-    return editable, values
+    return editable, values, declared
   
   def getTypeChildren( self, *types ):
     if self._databases:

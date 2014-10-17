@@ -138,15 +138,9 @@ class DiskItemBrowser( QDialog ):
     
     self.connect( self._ui.tblItems,
         SIGNAL( 'clicked ( const QModelIndex & )' ), self.itemSelected )
-    #self.connect( self._ui.tblItems.selectionModel(),
-        #SIGNAL( 'selectionChanged( const QItemSelection & )' ),
-        #self.itemSelected )
     self.connect( self._ui.tblItems,
         SIGNAL( 'itemSelectionChanged()' ),
         self.itemSelected )
-
-    print 'tblItems:', self._ui.tblItems.__class__
-
     #print '!DiskItemBrowser!', database, selection, required
     self._requiredAttributes = required
     self._database = database
@@ -185,7 +179,7 @@ class DiskItemBrowser( QDialog ):
       self.connect( self._ui.tblItems, SIGNAL( 'doubleClicked ( const QModelIndex & )' ), self, SLOT('accept()') )
 
     layoutRow = 0
-    e,v = self._database.getAttributesEdition()
+    e,v,d = self._database.getAttributesEdition()
     databases = v.get( '_database', () )
     if len( databases ) > 1:
       self._cmbDatabase = self._createCombo( _t_( 'Database' ), '_database', False, layoutRow )
@@ -200,7 +194,7 @@ class DiskItemBrowser( QDialog ):
     self._cmbFormat = self._createCombo( _t_( 'File format' ), '_format', False, layoutRow )
     layoutRow += 1
     self._combos = {} # Dictionary of attribute combos (attribute name -> QComboBox instance)
-    self._editableAttributes, self._attributesValues = self._database.getAttributesEdition( *self._requestedTypes )
+    self._editableAttributes, self._attributesValues, self._declaredAttributes = self._database.getAttributesEdition( *self._requestedTypes )
     self._editableAttributes = tuple( self._editableAttributes )
     self._editableAttributesValues = dict( ( (i,set()) for i in self._editableAttributes ) )
     if write:
@@ -227,22 +221,20 @@ class DiskItemBrowser( QDialog ):
         elif a != '_database' and a in self._attributesValues:
           self._combos[ a ] = self._createCombo( _t_( a ), a, False, layoutRow )
           layoutRow += 1
+    for a in self._declaredAttributes:
+        self._combos[ a ] = self._createCombo( _t_( a ), a, True, layoutRow )
+        layoutRow += 1
     self._selectedAttributes={}
     # among selection attributes keep those related to the types searched to initialize the combos
-    for k, v in selection.items():
-      if k in allAttributes:
-        self._selectedAttributes[k]=v
-    #self._selectedAttributes = selection
-    
+    for k, v in selection.iteritems():
+      if k in allAttributes or k in self._declaredAttributes:
+        self._selectedAttributes[ k ] = v
+
     self._lastSelection = None
     self.rescan()
     
     self.connect( self._ui.btnReset, SIGNAL( 'clicked()' ), self.resetSelectedAttributes )
-    #btn.setText(_t_('Ok'))
-    #btn.setAutoDefault( False )
     self.connect( self._ui.btnOk, SIGNAL( 'clicked()' ), self, SLOT( 'accept()' ) )
-    #btn.setText(_t_('Cancel'))
-    #btn.setAutoDefault( False )
     self.connect( self._ui.btnCancel, SIGNAL( 'clicked()' ), self, SLOT( 'reject()' ) )
     self.connect( self._ui.hsplitter, SIGNAL( 'splitterMoved ( int, int )' ), self.saveLayout )
     self.connect( self._ui.vsplitter, SIGNAL( 'splitterMoved ( int, int )' ), self.saveLayout )
@@ -363,8 +355,7 @@ class DiskItemBrowser( QDialog ):
       v = l[ 0 ]
     else:
       v = l
-    self._selectedAttributes[ name ] = v
-      
+    self._selectedAttributes[ name ] = v      
     self._lastSelection = name
     self.rescan()
   
@@ -440,7 +431,8 @@ class DiskItemBrowser( QDialog ):
       for k, v in self._requiredAttributes.iteritems():
         required[ str( k ) ] = v
       for k, v in self._selectedAttributes.iteritems():
-        required[ str( k ) ] = v
+        if k not in self._declaredAttributes:
+          required[ str( k ) ] = v
       required[ '_type' ] = selectedTypes
       required[ '_format' ] = self._possibleFormats
       # create type and format combo
@@ -532,6 +524,10 @@ class DiskItemBrowser( QDialog ):
             self._items.append( item )
             allColsNonUnique = filterUniqueCols( allColsNonUnique, uniquecols,
               uniquecolsvals, attrs )
+          for a in self._declaredAttributes:
+            v = self._selectedAttributes.get(a)
+            if v and not item.getHierarchy(a):
+              item._globalAttributes[a] = v
       if len( self._items ) <= 1:
         # if only one item, show all columns even if they are (all) unique
         uniquecols = set()
@@ -686,16 +682,19 @@ class DiskItemBrowser( QDialog ):
     else:
       QDialog.keyPressEvent(self, event)
     
-  def resetSelectedAttributes( self, selectedAttributes={} ):
+  def resetSelectedAttributes( self, diskItem = None, selectedAttributes={} ):
     self._selectedAttributes = {}
     self._lastSelection = None
-    if isinstance( selectedAttributes, DiskItem ):
-      # if selectedAttributes is a diskitem, use getHierarchy instead of get to calling aimsFileInfo when searching attributes values.
-      get=selectedAttributes.getHierarchy
-      if selectedAttributes.type is not None:
-        self._selectedAttributes[ '_type' ] = selectedAttributes.type.name
-      if selectedAttributes.format is not None:
-        self._selectedAttributes[ '_format' ] = selectedAttributes.format.name
+    if diskItem is not None:
+      def get(k):
+          # use getHierarchy instead of get to calling aimsFileInfo when searching attributes values.
+          v = diskItem.getHierarchy(k)
+          if v is None:
+              v = selectedAttributes.get(v)
+      if diskItem.type is not None:
+        self._selectedAttributes[ '_type' ] = diskItem.type.name
+      if diskItem.format is not None:
+        self._selectedAttributes[ '_format' ] = diskItem.format.name
     else:
       get=selectedAttributes.get
     v = get( '_database' )

@@ -375,12 +375,7 @@ class DiskItemEditor( QWidget, DataEditor ):
       self.databaseDialog.setWindowTitle( _t_( self.parameter.type.name ) )
       self.connect( self.databaseDialog, SIGNAL( 'accepted()' ), self.databaseAccepted )
     else:
-      if self.diskItem:
-        self.databaseDialog.resetSelectedAttributes( self.diskItem )
-        #self.databaseDialog.rescan(selectedType=self.diskItem.type, selectedFormat=self.diskItem.format, selectedAttributes=self.diskItem.hierarchyAttributes())
-      else:
-        self.databaseDialog.resetSelectedAttributes( self.parameter._selectedAttributes )
-       #self.databaseDialog.rescan( selectedAttributes=self._selectedAttributes)
+      self.databaseDialog.resetSelectedAttributes( self.diskItem, self.parameter._selectedAttributes )
     self.databaseDialog.show()
 
   def databaseAccepted( self ):
