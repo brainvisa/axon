@@ -81,11 +81,6 @@ def initialization(self):
 
 def execution(self, context):
 
-  # context will be mw's parent. This is essential if mw has connected buttons (or listen any signals)
-  # so when context is closed -> delete -> delete child -> mw will be deleted
-  context.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-  # qd on relance le process, closed n'est pas envoyé, donc mw reste
-
   img = []
   col = 0
   for selfImg in self.images:
@@ -97,7 +92,7 @@ def execution(self, context):
     if col == len( self.colTitles ):
       col = 0
 
-  objs = displayTitledGrid(registration.getTransformationManager(), context,
+  objs = displayTitledGrid(registration.getTransformationManager(), None,
                            self.inverseRawColumn,
                            img,
                            rowTitle=self.rowTitles,

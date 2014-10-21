@@ -33,7 +33,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 #import anatomist.threaded.api as ana
 
-from PyQt4 import QtCore, Qt
+from PyQt4 import QtCore, Qt, QtGui
 from PyQt4.QtGui import QRadioButton, QPalette, QButtonGroup, QLabel, QFrame, QVBoxLayout, QColor
 from PyQt4.uic import loadUi
 from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
@@ -41,25 +41,35 @@ from brainvisa.tools.mainthreadlife import MainThreadLife
 from functools import partial
 import brainvisa.anatomist as ana
 from anatomist.cpp.paletteEditor import PaletteEditor
+import weakref
 
 #------------------------------------------------------------------------------
-def displayTitledGrid(transformationManager, context, inverseRawColumn,
+def displayTitledGrid(transformationManager, parent, inverseRawColumn,
                       objPathMatrix,
                       rowTitle=['raw_space', "MRI_native_space", "mask",
                         "MNI_space", ],
                       rowColors=['darkOrange', 'blue', "MRI", 'blue',
-                        'magenta'], # orange = rawSpace, blue = mri space, magenta = mni space
+                        'magenta'],
                       colTitle=['PET', "MRI", "grey"],
                       windowTitle='View grid',
-                      linkWindows='space', # linkWindows possible values : 'all' | none | row
+                      linkWindows='space',
                       overlaidImages=[],
                       mainColormap='B-W LINEAR',
                       overlayColormap='RAINBOW',
                       customOverlayColormap='Blue-White',
                       rowButtonSubTitles=None
                      ):
+  '''Grid of Anatomist views
+
+  Parameters:
+  linkWindows: str
+      possible values : 'all' | none | row
+  rowColors: list
+      default: ['darkOrange', 'blue', "MRI", 'blue', 'magenta']
+      orange = rawSpace, blue = mri space, magenta = mni space
+  '''
   _mw = mainThreadActions().call(_displayTitledGrid_onGuiThread,
-                                 transformationManager, context,
+                                 transformationManager, parent,
                                  inverseRawColumn,
                                  objPathMatrix, rowTitle=rowTitle,
                                  rowColors=rowColors, colTitle=colTitle,
@@ -73,28 +83,33 @@ def displayTitledGrid(transformationManager, context, inverseRawColumn,
   mw = MainThreadLife(_mw)# ensure mw destruction takes place in the GUI thread
   return mw
 
-def _displayTitledGrid_onGuiThread(transformationManager, context,
+def _displayTitledGrid_onGuiThread(transformationManager, parent,
                                    inverseRawColumn, objPathMatrix, rowTitle,
                                    rowColors, colTitle, windowTitle,
                                    linkWindows, overlaidImages, mainColormap,
-                                   overlayColormap, customOverlayColormap, rowButtonSubTitles):
-  # DisplayTitledGrid doit etre construit sur le thread de Gui pour etre sure que la destruction de la mw se fasse sur le thread de Gui
-  TitledGrid = DisplayTitledGrid(objPathMatrix, parent=context,mainColormap=mainColormap, overlayColormap=overlayColormap, customOverlayColormap=customOverlayColormap)
+                                   overlayColormap, customOverlayColormap,
+                                   rowButtonSubTitles):
+  # DisplayTitledGrid doit etre construit sur le thread de Gui pour etre sur
+  # que la destruction de la mw se fasse sur le thread de Gui
+  TitledGrid = DisplayTitledGrid(
+    objPathMatrix, parent=parent, mainColormap=mainColormap,
+    overlayColormap=overlayColormap,
+    customOverlayColormap=customOverlayColormap)
   mw = TitledGrid.display(inverseRawColumn=inverseRawColumn,
     windowFlag=QtCore.Qt.Window, windowTitle=windowTitle, rowTitle=rowTitle,
     colTitle=colTitle, rowColors=rowColors, linkWindows=linkWindows,
     overlaidImages=overlaidImages, rowButtonSubTitles=rowButtonSubTitles)[0]
-  return mw
+  return TitledGrid
 
 #------------------------------------------------------------------------------
 
-class DisplayTitledGrid():
+class DisplayTitledGrid(QtGui.QWidget):
 
   def __init__(self, objPathMatrix, parent=None,
                mainColormap='B-W LINEAR',
                overlayColormap='RAINBOW',
                customOverlayColormap='Blue-White'):
-    self.parent = parent
+    super(DisplayTitledGrid, self).__init__(parent)
     self._main_colormap = mainColormap
     self._overlay_colormap = overlayColormap
     self._custom_overlay_colormap = customOverlayColormap
@@ -108,19 +123,27 @@ class DisplayTitledGrid():
     self._col_titles = []
     self._paletteEditor=None
 
-  def display(self, inverseRawColumn=False, windowFlag=QtCore.Qt.Window
-              , windowTitle='Compare'
-              , rowTitle=["row_1", "row_2", "row_3", "row_4"]
-              , colTitle=["col_1", "col_2", "col_3"]
-              , rowColors=['darkOrange', 'blue', 'blue', 'magenta']# orange = rawSpace, blue = mri space, magenta = mni space
-              , linkWindows='space'# linkWindows possible values : 'all' | none | row, default value : space
-              , overlaidImages=[]
-              , rowButtonSubTitles=None): 
+  def __del__(self):
+    # make sure mw is deleted first, otherwise its connected signals still point
+    # to slots (in c++) in self, when self is already destroyed, which
+    # generally results in a crash
+    self.mw.close()
+    del self.mw
 
-    self.mw = self._loadUserInterface()  # create self.mw.gridLayout  
-    self.mw.setWindowTitle(windowTitle)    
-    self.mw.setParent(self.parent, windowFlag)# if the mw.parent is destroyed, mw is destroyed first
-    self.mw.setAttribute(QtCore.Qt.WA_DeleteOnClose)# if the mw is closed ( by user with X ) then mw will be destroyed
+  def display(self, inverseRawColumn=False, windowFlag=QtCore.Qt.Window,
+              windowTitle='Compare',
+              rowTitle=["row_1", "row_2", "row_3", "row_4"],
+              colTitle=["col_1", "col_2", "col_3"],
+              rowColors=['darkOrange', 'blue', 'blue', 'magenta'],
+              linkWindows='space',
+              overlaidImages=[],
+              rowButtonSubTitles=None):
+
+    layout = QtGui.QVBoxLayout(self)
+    self.setLayout(layout)
+    self.mw = self._loadUserInterface()  # create self.mw.gridLayout
+    self.mw.setWindowTitle(windowTitle)
+    layout.addWidget(self.mw)
 
     self._row_titles = rowTitle
     self._col_titles = colTitle
@@ -132,7 +155,7 @@ class DisplayTitledGrid():
 
     self._addColumnButton(colTitle, inverseRawColumn)
     self._addRowButton(rowTitle, rowColors, inverseRawColumn, rowButtonSubTitles)
-    
+
     #self._createWinFrame(self.mw, self.mw.selectedReferenceLabel) # momoTODO : meme cadre autour de selected reference
 
     self._createAndLinkAnatomistWindowsInMainLayout(linkWindows, inverseRawColumn, 'Sagittal', rowTitle)
@@ -142,11 +165,11 @@ class DisplayTitledGrid():
     # replace individual objects by overlays fusions when applicable
     self._addObjectOrFusion_inAnatomistWindows()
 
-    self.mw.comboBox.currentIndexChanged.connect(partial(self._onComboBox_changed))
+    self.mw.comboBox.currentIndexChanged.connect(self._onComboBox_changed)
     self.mw.mixingSlider.valueChanged.connect(self._onMixingRateChanged)
     self.mw.maximizeButton.clicked.connect(self._onMaximizeButtonClicked)
 
-    self.mw.show()
+    self.show()
 
     return [self.mw]
 
@@ -191,7 +214,8 @@ class DisplayTitledGrid():
       else:
         self.mw.gridLayout.addWidget(button, 0, buttonIndex + 1, QtCore.Qt.AlignHCenter)
         self.mw.gridLayout.setColumnStretch(buttonIndex + 1, 10)
-      button.clicked.connect(partial(self._onColumnButtonClicked, buttonIndex))
+      button.clicked.connect(partial(weakref.proxy(self._onColumnButtonClicked),
+                                     buttonIndex))
 
   def _addRowButton(self, buttonTitles, buttonColors, inverseRawColumn, rowButtonSubTitles=None):
     self.rowsButtonGroup = QButtonGroup(self.mw)
@@ -203,7 +227,8 @@ class DisplayTitledGrid():
       widget = DisplayTitledGrid._createColoredButton(title, buttonColors[buttonIndex])
       self.rowsButtonGroup.addButton(widget, buttonIndex)
       widget.setToolTip('<p>Click on this button to superimpose a different image. To do so, click on this row button, then click on a column button to display the column main image as overlay on this row.<p><p>Click again on the tow button to go back to the initial views.</p>')
-      widget.clicked.connect(partial(self._onRowButtonClicked, buttonIndex))
+      widget.clicked.connect(partial(weakref.proxy(self._onRowButtonClicked),
+                                     buttonIndex))
       if(rowButtonSubTitles is not None and buttonIndex< len(rowButtonSubTitles)):
         subTitle = rowButtonSubTitles[buttonIndex]
         vLay = QVBoxLayout()
