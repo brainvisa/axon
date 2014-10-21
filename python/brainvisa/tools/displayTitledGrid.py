@@ -98,7 +98,7 @@ class DisplayTitledGrid():
     self._main_colormap = mainColormap
     self._overlay_colormap = overlayColormap
     self._custom_overlay_colormap = customOverlayColormap
-    self._loadObjectInAnatomist(objPathMatrix)
+    self._loadObjectInAnatomist(objPathMatrix, interpolation=False)
     self._overlaid_images = []
     self._overlay_fusions = []
     self._custom_overlay_fusions = []#momoTODO : pas besoin d'une liste, un seul suffit sinon l'utilisateur s'y perd (selection avec row et column). 
@@ -154,7 +154,7 @@ class DisplayTitledGrid():
 # private : begins with _
 #-----------------------------------------------------------------------------    
 
-  def _loadObjectInAnatomist(self, objPathMatrix):
+  def _loadObjectInAnatomist(self, objPathMatrix, interpolation=True):
     a = ana.Anatomist()
     self.anatomistObjectList = []
     for r in range(0, len(objPathMatrix)):
@@ -164,6 +164,8 @@ class DisplayTitledGrid():
         objPath = objPathRow[c]
         if (objPath is not None):
           obj = a.loadObject(objPath, forceReload=False)
+          if not interpolation:
+            obj.attributed()['volumeInterpolation'] = False
           obj.setPalette(self._main_colormap)
           anaObjRow.append(obj)
         else:
@@ -368,7 +370,7 @@ class DisplayTitledGrid():
     images = []
     for filename in overlaidImages:
       if filename: # may be None to leave an un-overlayed row
-        image = a.loadObject(filename)
+        image = a.loadObject(filename, forceReload=False)
         images.append(image)
         image.setPalette(palette=self._overlay_colormap)
       else: # None
@@ -381,13 +383,27 @@ class DisplayTitledGrid():
       return
 
     matriceFusions = []
-    for row, objRow in enumerate(self.anatomistObjectList):
-      if row >= len(self._overlaid_images):
-        overlayimage = self._overlaid_images[-1]
-      else:
-        overlayimage = self._overlaid_images[row]
-      rowFusions=self._createFusionsWithOverlay(objRow, overlayimage)
-      matriceFusions.append(rowFusions)
+    if len(self._overlaid_images) == len(self.anatomistObjectList) \
+        * len(self.anatomistObjectList[0]):
+      indiv_index = 0
+      for row, objRow in enumerate(self.anatomistObjectList):
+        overlays = []
+        for col, objCol in enumerate(objRow):
+          index = indiv_index
+          indiv_index += 1
+          overlayimage = self._overlaid_images[index]
+          overlays.append(overlayimage)
+        rowFusions = self._createFusionsWithOverlay(objRow, overlays)
+        matriceFusions.append(rowFusions)
+    else:
+      for row, objRow in enumerate(self.anatomistObjectList):
+        index = row
+        if index >= len(self._overlaid_images):
+          overlayimage = self._overlaid_images[-1]
+        else:
+          overlayimage = self._overlaid_images[index]
+        rowFusions=self._createFusionsWithOverlay(objRow, overlayimage)
+        matriceFusions.append(rowFusions)
     self._overlay_fusions = matriceFusions
 
   def _createCustomOverlayFusions(self, row, column):
@@ -404,17 +420,24 @@ class DisplayTitledGrid():
       elif(row < len(self._custom_overlay_fusions)):
           self._custom_overlay_fusions[ row ] = None
 
-  def _createFusionsWithOverlay(self, objects, overlayimage, imageWithoutFusion=None):
+  def _createFusionsWithOverlay(self, objects, overlayimages,
+                                imageWithoutFusion=None):
+    if not isinstance(overlayimages, list):
+      overlayimages = [overlayimages]
     a = ana.Anatomist()
     rowFusions=[]
-    for obj in objects:
+    for index, obj in enumerate(objects):
+      if index < len(overlayimages):
+        overlayimage = overlayimages[index]
+      else:
+        overlayimage = overlayimages[-1]
       if obj and overlayimage and obj != overlayimage and (not imageWithoutFusion or imageWithoutFusion!=obj):
         fusion = a.fusionObjects(objects=[obj, overlayimage], method='Fusion2DMethod')
         rowFusions.append(fusion)
       else:
         rowFusions.append(None)
     return rowFusions
-              
+
   def _setPaletteOfOverlay(self, overlayimage):
     a = ana.Anatomist()
     if (self._custom_overlay_colormap is not None):
@@ -426,11 +449,21 @@ class DisplayTitledGrid():
       paletteName = overlayimagepalette.name()
       newoverlay.setPalette(paletteName)
     return newoverlay
-  
+
   def _addObjectOrFusion_inAnatomistWindows(self):
+    if len(self._overlay_fusions) == len(self.mw.anaWinMatrix):
+      byrow = False
+    else:
+      byrow = True
+    indiv_index = 0
     for row, _anaWinRow in enumerate(self.mw.anaWinMatrix):
-      if row < len(self._overlay_fusions):
-        fusRow = self._overlay_fusions[ row ]
+      if byrow:
+        index = row
+      else:
+        index = indiv_index
+        indiv_index += 1
+      if index < len(self._overlay_fusions):
+        fusRow = self._overlay_fusions[ index ]
         self._addObjectOrFusion_inAnatomistWindowsRow(row, fusRow)
 
   def _addObjectOrFusion_inAnatomistWindowsRow(self, rowIndex, rowFusions): # rowFusions can be self._overlay_fusions or self._custom_overlay_fusions
