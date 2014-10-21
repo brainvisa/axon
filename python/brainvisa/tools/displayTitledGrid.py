@@ -214,8 +214,9 @@ class DisplayTitledGrid(QtGui.QWidget):
       else:
         self.mw.gridLayout.addWidget(button, 0, buttonIndex + 1, QtCore.Qt.AlignHCenter)
         self.mw.gridLayout.setColumnStretch(buttonIndex + 1, 10)
-      button.clicked.connect(partial(weakref.proxy(self._onColumnButtonClicked),
-                                     buttonIndex))
+      button.clicked.connect(partial(
+        self.__class__._onColumnButtonClicked, weakref.proxy(self),
+        buttonIndex))
 
   def _addRowButton(self, buttonTitles, buttonColors, inverseRawColumn, rowButtonSubTitles=None):
     self.rowsButtonGroup = QButtonGroup(self.mw)
@@ -227,8 +228,9 @@ class DisplayTitledGrid(QtGui.QWidget):
       widget = DisplayTitledGrid._createColoredButton(title, buttonColors[buttonIndex])
       self.rowsButtonGroup.addButton(widget, buttonIndex)
       widget.setToolTip('<p>Click on this button to superimpose a different image. To do so, click on this row button, then click on a column button to display the column main image as overlay on this row.<p><p>Click again on the tow button to go back to the initial views.</p>')
-      widget.clicked.connect(partial(weakref.proxy(self._onRowButtonClicked),
-                                     buttonIndex))
+      widget.clicked.connect(partial(
+        self.__class__._onRowButtonClicked, weakref.proxy(self),
+        buttonIndex))
       if(rowButtonSubTitles is not None and buttonIndex< len(rowButtonSubTitles)):
         subTitle = rowButtonSubTitles[buttonIndex]
         vLay = QVBoxLayout()
