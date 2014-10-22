@@ -289,7 +289,7 @@ class DisplayResultsFromSPM(object):
       # Add T-map LUT editor
       self.paletteEditor = PaletteEditor(image=athreshImg,
                                           parent=frame,
-                                          palette_filter=[],
+                                          palette_filter=None,
                                           real_max=self.tMax)
       toolVlay.addWidget(self.paletteEditor)
       bgHlay = QtGui.QHBoxLayout()
