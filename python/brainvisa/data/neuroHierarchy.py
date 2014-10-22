@@ -57,12 +57,13 @@ from brainvisa.configuration import neuroConfig
 from brainvisa.data.readdiskitem import ReadDiskItem
 from brainvisa.data.writediskitem import WriteDiskItem
 
-databaseVersion='2.1' 
+databaseVersion='2.2'
 # mapping between databases versions and axon versions : database version -> first axon version where this database version is used
 databaseVersions={ '1.0': '3.1.0', 
                    '1.1': '3.2.0',
                    '2.0': '4.0.0',
-                   '2.1': '4.2.0' }
+                   '2.1': '4.2.0',
+                   '2.2': '4.5.0'}
 databases=None
 
 def initializeDatabases():
