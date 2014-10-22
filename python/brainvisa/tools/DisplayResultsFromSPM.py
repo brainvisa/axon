@@ -291,6 +291,9 @@ class DisplayResultsFromSPM(object):
                                           parent=frame,
                                           palette_filter=None,
                                           real_max=self.tMax)
+      self.paletteEditor.minsb.setValue(0)
+      self.paletteEditor.maxsb.setValue(100)
+      
       toolVlay.addWidget(self.paletteEditor)
       bgHlay = QtGui.QHBoxLayout()
       toolVlay.addLayout(bgHlay)
