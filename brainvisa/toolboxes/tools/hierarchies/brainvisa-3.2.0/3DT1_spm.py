@@ -67,10 +67,13 @@ insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
 # mask in native space
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
-  '<subject>_Nat_greyMask_{method}', SetType('T1 MRI Nat GreyMask'),) # methode is the way to obtain the mask from the probability map. e.g. : apply a threshold, compare map...
+  '<subject>_Nat_greyMask_{method}', SetType('T1 MRI Nat GreyMask'),) # method is the way to obtain the mask from the probability map (e.g., apply a threshold, compare map...)
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
-  '<subject>_Nat_whiteMask_{method}', SetType('T1 MRI Nat WhiteMask'),) # methode is the way to obtain the mask from the probability map. e.g. : apply a threshold, compare map...
+  '<subject>_Nat_whiteMask_{method}', SetType('T1 MRI Nat WhiteMask'),) # method is the way to obtain the mask from the probability map (e.g., apply a threshold, compare map...)
+
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_Nat_CSF_Mask_{method}', SetType('T1 MRI Nat CSFMask'),) # method is the way to obtain the mask from the probability map (e.g., apply a threshold, compare map...)
 
 #############
 # Mni space #
