@@ -293,3 +293,4 @@ FileType( 'Postscript file', 'Any Type', [ 'PS file', 'gz compressed PS file'] )
 
 #--- Group Snapshots with Snapbase------
 FileType('Snapshots Dir', 'Directory')
+FileType('Tables Directory', 'Directory')
