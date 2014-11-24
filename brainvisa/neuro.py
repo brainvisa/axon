@@ -216,7 +216,8 @@ if neuroConfig.gui:
     os.path.join( neuroConfig.docPath, 'processes' ) )
   neuroConfig.guiLoaded = True
 else:
-  neuroConfig.qtApplication = QApplication( sys.argv, QApplication.Tty )
+  # neuroConfig.qtApplication = QApplication( sys.argv, QApplication.Tty )
+  neuroConfig.qtApplication = QCoreApplication( sys.argv )
 
 if neuroConfig.profileFileName:
   import profile, pstats
