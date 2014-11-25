@@ -65,13 +65,14 @@ name="Deformation using Deformation Field (SPM8)"
 userLevel = 1
 
 signature = Signature(
-    'deformation_field', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
+    'deformation_field', ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image']),
     'save_as', String(),
-    'images_to_deform', ListOf(ReadDiskItem('4D Volume', 'Aims readable volume formats')),
+    'images_to_deform', ListOf(ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'])),
     'interpolation', Choice(('Nearest neighbour',"""0"""),('Trilinear',"""1"""),("""2nd Degree B-Spline""","""2"""),("""3rd Degree B-Spline""","""3"""),("""4th Degree B-Spline""","""4"""),("""5th Degree B-Spline""","""5"""),("""6th Degree B-Spline""","""6"""),("""7th Degree B-Spline""","""7""")),                
     'prefix', String(),
-    'output_destination', ListOf(WriteDiskItem( '4D Volume', 'Aims readable volume formats' )),
-    'batch_location', String(),
+    'output_destination', ListOf(WriteDiskItem( '4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'])),
+#    'batch_location', String(),
+    'batch_location', WriteDiskItem( 'Any Type', 'Matlab script' )
                       )
 
 #----------------------------------------------------------------------
@@ -86,23 +87,11 @@ def initialization(self):
     
     self.addLink( 'output_destination', 'images_to_deform', self.updateOutputDestination )
     self.addLink( 'output_destination', 'prefix', self.updateOutputDestination )
-    self.addLink( 'batch_location', 'output_destination', self.updateBatchLocation )
-    
+
     self.signature['interpolation'].userLevel = 1
     self.signature['prefix'].userLevel = 1
     self.signature['save_as'].userLevel = 1
 
-#
-# Update batch location
-# Write the batch in the same directory as the first image of the output_destination
-# with the name 'batch_deform_using_deformation_field.m'
-#
-def updateBatchLocation( self, proc ):
-    if len(self.output_destination):
-        if self.output_destination[0] is not None:
-            imgPath = str( self.output_destination[0] )
-            imgDir = imgPath[:imgPath.rindex('/') + 1]
-            return imgDir + 'batch_deform_using_deformation_field.m'
 
 #
 # update output_destination field
@@ -128,7 +117,11 @@ def execution( self, context ):
   
     itdPath = [images_to_deform.fullPath() for images_to_deform in self.images_to_deform]
   
-    spmJobFile = inDir + '/deformation_with_field_SPM_job.m'
+    # Use of temporary file when no batch location entered
+    if self.batch_location is None:
+        spmJobFile = context.temporary( 'Matlab script' ).fullPath()
+    else:
+        spmJobFile = self.batch_location.fullPath()
     
     matfilePath = writeDeformationWithField( spmJobFile, dfPath, imagesToDeformPath=itdPath, save_as=self.save_as, output_dir=inDir, interpolation=self.interpolation ) 
        
@@ -142,8 +135,6 @@ def execution( self, context ):
         orig = inDir + '/w' + in_img_filename
         
         shutil.move( orig, dest.fullPath()  )
-        
-    shutil.move( spmJobFile, self.batch_location )
    
     print "\n end ", name, "\n"
     
