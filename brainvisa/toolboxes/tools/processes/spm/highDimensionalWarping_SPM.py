@@ -72,17 +72,17 @@ name="High Dimensional Warping (using SPM8)"
 userLevel = 1
 
 signature = Signature(
-    'reference', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
-    'moved_image', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
+    'reference', ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image']),
+    'moved_image', ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image']),
     'bias_opts_nits', String(),
     'bias_opts_fwhm', Choice(('30mm cutoff',"""30"""),('40mm cutoff',"""40"""),('50mm cutoff',"""50"""),('60mm cutoff',"""60"""),('70mm cutoff',"""70"""),('80mm cutoff',"""80"""),('90mm cutoff',"""90"""),('100mm cutoff',"""100"""),('110mm cutoff',"""110"""),('120mm cutoff',"""120"""),('130mm cutoff',"""130"""),('140mm cutoff',"""140"""),('150mm cutoff',"""150"""),('No correction',"""Inf""")),
     'bias_opts_reg', Choice(('No regularisation',"""0"""),('Extremly light regularisation',"""1e-09"""),('Very light regularisation',"""1e-08"""),('Light regularisation',"""1e-07"""),('Medium regularisation',"""1e-06"""),('Heavy regularisation',"""1e-05"""),('Very heavy regularisation',"""0.0001"""),('Extremly heavy regularisation',"""0.001""")),
     'bias_opts_lmreg', Choice(('No regularisation',"""0"""),('Extremly light regularisation',"""1e-09"""),('Very light regularisation',"""1e-08"""),('Light regularisation',"""1e-07"""),('Medium regularisation',"""1e-06"""),('Heavy regularisation',"""1e-05"""),('Very heavy regularisation',"""0.0001"""),('Extremly heavy regularisation',"""0.001""")),
     'warp_opts_nits', String(),
     'warp_opts_reg', String(),
-    'jacobian', WriteDiskItem('4D Volume', 'NIFTI-1 image'),
-    'deformation_field', WriteDiskItem('4D Volume', 'NIFTI-1 image'),
-    'batch_location', String(),
+    'jacobian', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image']),
+    'deformation_field', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image']),
+    'batch_location', WriteDiskItem( 'Any Type', 'Matlab script' ),
                     
                       )
 
@@ -91,9 +91,10 @@ def initialization(self):
       #Default values from SPM8
       initializeHDWParameters_withSPM8DefaultValues( self )
       
+      self.setOptional( 'batch_location' )
+      
       self.addLink( 'jacobian', 'moved_image', self.updateJacobianParameter )
       self.addLink( 'deformation_field', 'moved_image', self.updateDeformationFieldParameter )
-      self.addLink( 'batch_location', 'deformation_field', self.updateBatchLocation )
       
       self.signature['bias_opts_nits'].userLevel = 1
       self.signature['bias_opts_fwhm'].userLevel = 1
@@ -104,16 +105,6 @@ def initialization(self):
       
     
 #----------------------------------------------------------------------------------------
-#
-# Update batch_location when deformation_field change 
-# (put batch in first image to moved 
-#  with name 'batch_high_dimensional_warping.m')
-#
-def updateBatchLocation( self, proc ):
-    if self.deformation_field is None:
-        return
-    deformationFieldDir = self.deformation_field.fullPath()[:self.deformation_field.fullPath().rindex('/') + 1]
-    return deformationFieldDir + 'batch_high_dimensional_warping.m'
 
 #
 # Update Jacobian parameter value thanks to moved_image attributes
@@ -155,7 +146,11 @@ def execution( self, context ):
     moved_imagePath = self.moved_image.fullPath()
     inDir = moved_imagePath[:moved_imagePath.rindex('/')+1]  
   
-    spmJobFile = inDir + 'highDimensionalWarpingSPM_job.m'
+    # Use of temporary file when no batch location entered
+    if self.batch_location is None:
+        spmJobFile = context.temporary( 'Matlab script' ).fullPath()
+    else:
+        spmJobFile = self.batch_location.fullPath()
    
     matfilePath = writeHighDimensionalWarpingMatFile(spmJobFile, self.reference.fullPath(), mov=self.moved_image.fullPath(),
                                     bias_opts_nits=self.bias_opts_nits, bias_opts_fwhm=self.bias_opts_fwhm, bias_opts_reg=self.bias_opts_reg, bias_opts_lmreg=self.bias_opts_lmreg, warp_opts_nits=self.warp_opts_nits, warp_opts_reg=self.warp_opts_reg) 
@@ -169,9 +164,6 @@ def execution( self, context ):
     shutil.move( inDir + 'y_' + moved_image_filename, self.deformation_field.fullPath() )
     
     shutil.move( inDir + 'jy_' + moved_image_filename, self.jacobian.fullPath() )
-    
-    # Move SPM batch file in the same directory as deformation field
-    shutil.move( spmJobFile, self.batch_location )
     
     print "\n end ", name, "\n"
     
