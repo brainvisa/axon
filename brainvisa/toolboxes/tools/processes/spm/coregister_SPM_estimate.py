@@ -89,14 +89,13 @@ signature = Signature(
         ['NIFTI-1 image', 'SPM image', 'MINC image']),
     'others_coreg_only', ListOf( WriteDiskItem('4D Volume',
         ['NIFTI-1 image', 'SPM image', 'MINC image']) ),
-    'batch_location', String(),
-
+    'batch_location', WriteDiskItem( 'Any Type', 'Matlab script' )
   )
 
 #------------------------------------------------------------------------------
 
 def initialization(self):
-  self.setOptional( 'others', 'source_coreg_only', 'others_coreg_only' )
+  self.setOptional( 'others', 'source_coreg_only', 'others_coreg_only', 'batch_location' )
   
   initializeCoregisterEstimateParameters_withSPM8DefaultValues( self )
   
@@ -105,8 +104,6 @@ def initialization(self):
   self.addLink( 'source_coreg_only', 'prefix', self.update_spmSourceCoregOnly )
   self.addLink( 'others_coreg_only', 'prefix', self.update_spmOthersCoregOnly )
   
-  self.addLink( 'batch_location', 'source_coreg_only', self.update_batch_location  )
-  
   self.signature['cost_fun'].userLevel = 1
   self.signature['sep'].userLevel = 1
   self.signature['tol'].userLevel = 1
@@ -114,16 +111,7 @@ def initialization(self):
   
   self.prefix = """coregister_only_"""
  
-#------------------------------------------------------------------------------
-#
-# Update batch location when source change
-# 
-def update_batch_location( self, proc ):
-    if self.source_coreg_only is  None:
-        return
-    sourceDir = self.source_coreg_only.fullPath()[:self.source_coreg_only.fullPath().rindex('/') + 1]
-    return sourceDir + 'batch_spm_coregister_estimate.m'
-    
+
 #------------------------------------------------------------------------------
 #
 # Update source_coreg_only location 
@@ -168,7 +156,12 @@ def execution(self, context):
   inDir = sourcePath[:sourcePath.rindex('/')]  
   inFileName = sourcePath[sourcePath.rindex('/') + 1:len(sourcePath)-(len(sourcePath)-sourcePath.rindex('.'))]
   
-  spmJobFile = inDir + '/coregisterSPM_estimate_job.m'
+  # Use of temporary file when no batch location entered
+  if self.batch_location is None:
+      spmJobFile = context.temporary( 'Matlab script' ).fullPath()
+  else:
+      spmJobFile = self.batch_location.fullPath()
+  
   
   # Create copy of source and others otherwise these 
   # images (theirs headers) are modified by SPM.
@@ -207,10 +200,6 @@ def execution(self, context):
   for otherCopy, other in zip(othersCopyPath, othersCoregOnlyPath):
     shutil.move( otherCopy, other )
     #movePathToDiskItem( otherCopy, other ) 
-  
-  # Move batch in the same directory as the coregister image  
-  shutil.move( spmJobFile, self.batch_location )  
-  #movePathToDiskItem( spmJobFile, self.batch_location )       
          
   print "\n stop ", name, "\n"
   
