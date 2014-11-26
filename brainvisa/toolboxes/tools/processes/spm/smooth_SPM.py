@@ -50,14 +50,13 @@ name = 'smooth one image (using SPM8)'
 #------------------------------------------------------------------------------
 
 signature = Signature(
-    'img', ReadDiskItem('4D Volume', 'NIFTI-1 image'),
-    'img_smoothed', WriteDiskItem('4D Volume', 'NIFTI-1 image'),
+    'img', ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image']),
+    'img_smoothed', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image']),
     'fwhm', String(),
     'dtype', String(),
     'im', String(),
     'prefix', String(),
-    'batch_location', String(),
-
+    'batch_location', WriteDiskItem( 'Any Type', 'Matlab script' )
 )
 
 #------------------------------------------------------------------------------
@@ -113,11 +112,11 @@ def update_batch_location( self, proc, dummy ):
 def execution(self, context):  
     print "\n start ", name, "\n"
     
-    if self.batch_location is not None:
-        spmJobFile = self.batch_location
+    # Use of temporary file when no batch location entered
+    if self.batch_location is None:
+        spmJobFile = context.temporary( 'Matlab script' ).fullPath()
     else:
-        outDir = self.img_smoothed.fullPath()[:self.img_smoothed.fullPath().rindex('/')]  
-        spmJobFile = outDir + '/' + 'smooth_job.m'
+        spmJobFile = self.batch_location.fullPath()
     
     inDir = self.img.fullPath()[:self.img.fullPath().rindex('/')]  
     
