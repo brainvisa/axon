@@ -99,7 +99,6 @@ def initialization(self):
   self.setOptional('grey_nat', 'biasCorrected')
   
   self.spmJobName = 'segment'
-  self.analysis = self.signature["analysis"].findValue({'analysis':'SpmSegmentation'})
   self.MRI_Mni_tpmSeg = self.signature["MRI_Mni_tpmSeg"].findValue({})
   seg.initializeSegmentationParameters_usingSPM8DefaultValues(self)  
   nativeSpace= """[0 0 1]"""
@@ -110,6 +109,7 @@ def initialization(self):
   dontSave = """0"""
   self.biascor = dontSave
     
+  self.addLink( 'analysis', 'MRI_Nat', self.updateAnalysis )  
   self.addLink("grey_nat", "MRI_Nat", self.update_grey_Nat)
   self.addLink("grey_nat", "analysis", self.update_grey_Nat)
   
@@ -119,6 +119,12 @@ def initialization(self):
   self.addLink("biasCorrected", "grey_nat")  
   self.addLink('snMat', "grey_nat")
   self.addLink('snInvMat', "grey_nat")    
+
+def updateAnalysis( self, proc ):
+  if self.MRI_Nat is not None:
+    d = {'_database':self.MRI_Nat.hierarchyAttributes()['_database']}
+    d['analysis'] = 'SpmSegmentation'
+    return self.signature['analysis'].findValue( d )
   
 def update_grey_Nat(self, proc):
   return self.update_WriteDiskItem('T1 MRI Nat GreyProba', 'NIFTI-1 image')

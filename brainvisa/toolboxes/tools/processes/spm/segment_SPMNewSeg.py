@@ -128,7 +128,6 @@ def initialization(self):
   self.setOptional('biasCorrected')
 
   self.spmJobName = 'newSegment'
-  self.analysis = self.signature['analysis'].findValue({'analysis':'SpmNewSegmentation'})
   self.MRI_Mni_tpmSeg = self.signature['MRI_Mni_tpmSeg'].findValue({})
   seg.initializeUnifiedSegmentationParameters_usingSPM8DefaultValues(self)
   generateInNativeSpace = """[1 0]"""
@@ -147,6 +146,7 @@ def initialization(self):
   self.airAndBackground_native_space = NOgeneration
   self.airAndBackground_warped = NOgeneration
   
+  self.addLink( 'analysis', 'MRI_Nat', self.updateAnalysis )
   self.addLink('grey_native', ( 'MRI_Nat', 'analysis' ), self.update_grey_Nat)
 
   self.addLink('grey_native_dartel', 'grey_native')
@@ -172,6 +172,12 @@ def initialization(self):
   self.addLink('deFld', 'grey_native')
   self.addLink('deFld_segMat', 'grey_native')
   self.addLink('invDeFld', 'grey_native')
+
+def updateAnalysis( self, proc ):
+  if self.MRI_Nat is not None:
+    d = {'_database':self.MRI_Nat.hierarchyAttributes()['_database']}
+    d['analysis'] = 'SpmNewSegmentation'
+    return self.signature['analysis'].findValue( d )
 
 def update_grey_Nat(self, proc, dummy):
   return self.update_WriteDiskItem('T1 MRI Nat GreyProba', 'NIFTI-1 image')

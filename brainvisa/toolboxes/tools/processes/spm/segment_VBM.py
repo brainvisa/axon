@@ -109,7 +109,6 @@ def initialization(self):
   self.setOptional('biasCorrected','DartelTemplate')
 
   self.spmJobName = 'vbmSegment'
-  self.analysis = self.signature["analysis"].findValue({'analysis':'VBMSegmentation'})
   self.MRI_Mni_tpmSeg = self.signature["MRI_Mni_tpmSeg"].findValue({})
   seg.initializeVBMSegmentationParameters_usingSPM8DefaultValues(self) 
   generate = """1"""
@@ -127,7 +126,8 @@ def initialization(self):
   self.csf_modulated = NOgeneration
   self.csf_dartel = NOgeneration
   self.saveBias = NOgeneration
-    
+
+  self.addLink( 'analysis', 'MRI_Nat', self.updateAnalysis )    
   self.addLink('grey_nat', ( 'MRI_Nat', 'analysis' ), self.update_grey_Nat)
   
   self.addLink("grey_Mni", "grey_nat")
@@ -138,6 +138,12 @@ def initialization(self):
   self.addLink('invDeFld', 'grey_nat')
   self.addLink('deFld_segMat', 'grey_nat')  
   self.addLink('jacobianDeterminant', 'grey_nat')  
+
+def updateAnalysis( self, proc ):
+  if self.MRI_Nat is not None:
+    d = {'_database':self.MRI_Nat.hierarchyAttributes()['_database']}
+    d['analysis'] = 'VBMSegmentation'
+    return self.signature['analysis'].findValue( d )
 
 def update_grey_Nat(self, proc, dummy):
   return self.update_WriteDiskItem('T1 MRI Nat GreyProba', 'NIFTI-1 image')
