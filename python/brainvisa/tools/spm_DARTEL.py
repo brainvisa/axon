@@ -7,7 +7,7 @@
 
 #
 # Initialize 'Run DARTEL: create Template' tool with
-# default parameters from SPM8 (same in SPM12b)
+# default parameters from SPM8 (same in SPM12b)
 #
 def initialize_DARTEL_create_templates_parameters_withSPM8Default( process ):
     
@@ -123,7 +123,7 @@ def write_DARTEL_create_Templates_batch( self, spmJobFile, images_1_path, images
 
 #------------------------------------------------------- 
 # Initialize 'DARTEL: create warped' tool with
-# default parameters from SPM8 (same in SPM12b)
+# default parameters from SPM8 (same in SPM12b)
 #
 def initialize_DARTEL_create_warped_parameters_withSPM8Default( process ):
     process.Modulation = 'Preserve concentration ("no modulation")'
@@ -159,6 +159,43 @@ def write_DARTEL_create_warped_batch( self, spmJobFile, flow_fields_path, images
             matlabbatch{1}.spm.tools.dartel.crt_warped.interp = %s; 
         """% ( flow_fields, images, modulation, time_steps, interpolation ) )
 
+    mat_file.close()
+    
+    return mat_file.name
+
+#------------------------------------------------------- 
+# Initialize 'DARTEL: create inverse warped' tool with
+# default parameters from SPM8 (same in SPM12b)
+#
+def initialize_DARTEL_create_inverse_warped_parameters_withSPM8Default( process ):
+    process.Time_steps = 64
+    process.Interpolation = 'Trilinear'    
+#----------------------------------------------------------------------------------
+
+# 
+# Create DARTEL inverse warped images batch job (for SPM8 and 12)
+#   
+def write_DARTEL_create_inverse_warped_batch( self, spmJobFile, flow_fields_path, images_path, time_steps, interpolation ):
+    
+    mat_file = open(spmJobFile, 'w')
+    
+    flow_fields = """{"""
+    for img in flow_fields_path:
+        flow_fields += "\n\t'" + img + "'"
+    flow_fields += """}""" 
+    
+    images = """{"""
+    for img in images_path:
+        images += "\n\t'" + img + "'"
+    images += """}""" 
+    
+    mat_file.write("""
+            matlabbatch{1}.spm.tools.dartel.crt_iwarped.flowfields = %s;
+            matlabbatch{1}.spm.tools.dartel.crt_iwarped.images = %s;
+            matlabbatch{1}.spm.tools.dartel.crt_iwarped.K = %s;
+            matlabbatch{1}.spm.tools.dartel.crt_iwarped.interp = %s;
+        """% ( flow_fields, images, time_steps, interpolation ) )
+    
     mat_file.close()
     
     return mat_file.name
