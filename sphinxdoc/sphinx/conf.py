@@ -23,6 +23,8 @@ try:
 except Exception, e:
   print 'warning:', e
 
+sys.path.insert(0,os.path.abspath('sphinxext'))
+
 # init brainvisa
 import brainvisa.axon
 import brainvisa.config
@@ -30,13 +32,22 @@ try:
   from soma_workflow import version as swver
   somaworkflow_version = swver.shortVersion
 except:
-  somaworkflow_version = '2.3'
+  somaworkflow_version = '2.7'
 
 # -- General configuration -----------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx', 'sphinx.ext.todo', 'sphinx.ext.coverage', 'sphinx.ext.ifconfig', 'sphinx.ext.viewcode', 'sphinx.ext.extlinks', 'sphinx.ext.inheritance_diagram']
+extensions = ['sphinx.ext.autodoc',
+              'sphinx.ext.intersphinx',
+              'sphinx.ext.todo',
+              'sphinx.ext.coverage',
+              'sphinx.ext.ifconfig',
+              'sphinx.ext.viewcode',
+              'sphinx.ext.extlinks',
+              'sphinx.ext.inheritance_diagram',
+              'sphinx.ext.autosummary',
+              'numpy_ext.numpydoc']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -141,6 +152,8 @@ html_theme_options = {  }
 # of the sidebar.
 html_logo = '../../doc/images/brainvisa.png'
 
+html_style = 'custom.css'
+
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
@@ -149,7 +162,7 @@ html_logo = '../../doc/images/brainvisa.png'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-#html_static_path = ['_static']
+html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
