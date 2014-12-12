@@ -193,10 +193,29 @@ brainvisa.data.neuroHierarchy
 brainvisa.data.fileSystemOntology
 ---------------------------------
 
+.. currentmodule:: brainvisa.data.fileSystemOntology
+
 .. automodule:: brainvisa.data.fileSystemOntology
   :members:
   :show-inheritance:
 
+.. py:function:: insert(path, *content)
+
+  Inserts rules in a :py:class:`DirectoryScanner` whose pattern matches *path*.
+
+  This function is only visible from inside a type or hierarchy file, during loading.
+
+.. py:function:: insertFirst(path, *content)
+
+  Inserts rules in a :py:class:`DirectoryScanner` whose pattern matches *path* at the beginning of the list of rules.
+
+  This function is only visible from inside a type or hierarchy file, during loading.
+
+.. py:function:: insertLast(path, *content)
+
+  Appends rules in a :py:class:`DirectoryScanner` whose pattern matches *path*.
+
+  This function is only visible from inside a type or hierarchy file, during loading.
 
 brainvisa.data.sqlFSODatabase
 -----------------------------
