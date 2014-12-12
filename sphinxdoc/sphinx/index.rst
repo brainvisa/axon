@@ -1,5 +1,13 @@
-Axon python API documentation
-=============================
+============================
+Axon developer documentation
+============================
+
+* :axon:`Slides of a development course <Programming_with_brainvisa.pdf>`, with :axon:`training course data <Programming_with_brainvisa.zip>`
+* :doc:`Developer manual <developer_manual>`
+
+
+Python API documentation
+========================
 
 Axon python API is used by BrainVISA software. It includes modules to manage BrainVISA toolboxes, processes, databases, graphical user interface, etc.
 
@@ -15,7 +23,7 @@ This API can be used in several contexts:
   - in a script executed from brainvisa in **batch mode**: ``brainvisa -b -e myScript.py``
   - in a **Python script** where Brainvisa is loaded using the module :py:mod:`brainvisa.axon`
 
-To know the version of the API, use ``brainvisa.config.shortVersion`` (|version|) or ``brainvisa.config.fullVersion`` (|release|).
+To determine the version of the API, use ``brainvisa.config.shortVersion`` (|version|) or ``brainvisa.config.fullVersion`` (|release|).
 
 Modules organization
 --------------------

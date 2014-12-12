@@ -63,9 +63,9 @@ class ReadDiskItem( Parameter ):
 
   This method of files selection ease file selection by showing the user only files that matches type and format required for this parameter. It also enables BrainVISA to automatically fill some parameters values. The ReadDiskItem class has methods to search matching diskitems in BrainVISA databases :
 
-    * ReadDiskItem.findItems( <database directory diskitem>, <attributes>) : this method returns a list of diskitems that exist in that database and match type, format and required attributes of the parameter. It is possible to specify additional attributes in the method parameters. Found items will have the selected value for these attributes if they have the attribute, but these attributes are not mandatory. That's the difference with the required attributes set in the constructor.
-    * ReadDiskItem.findValues( <value> ) : this method searches diskitems matching the value in parameter. This value can be a diskitem, a filename, a dictionary of attributes.
-    * ReadDiskItem.findValue( <value> ) : this method returns the best among possible value, that is to say with the more common attributes, highest priority. If there is an ambiguity, it returns None.
+    * :py:meth:`ReadDiskItem.findItems(\<database directory diskitem\> <ReadDiskItem.findItems>`, <attributes>) : this method returns a list of diskitems that exist in that database and match type, format and required attributes of the parameter. It is possible to specify additional attributes in the method parameters. Found items will have the selected value for these attributes if they have the attribute, but these attributes are not mandatory. That's the difference with the required attributes set in the constructor.
+    * :py:meth:`ReadDiskItem.findValues(\<value\>) <ReadDiskItem.findValues>` : this method searches diskitems matching the value in parameter. This value can be a diskitem, a filename, a dictionary of attributes.
+    * :py:meth:`ReadDiskItem.findValue(\<value\>) <ReadDiskItem.findValue>` : this method returns the best among possible value, that is to say with the more common attributes, highest priority. If there is an ambiguity, it returns None.
 
   **Examples**
 
@@ -100,6 +100,8 @@ class ReadDiskItem( Parameter ):
 
   
   def _getDatabase( self ):
+    '''Returns the database this disk item belongs to
+    '''
     # WARNING: don't import earlier to prevent a circular inclusion!
     from brainvisa.data import neuroHierarchy
     return neuroHierarchy.databases
@@ -175,6 +177,22 @@ class ReadDiskItem( Parameter ):
 
 
   def findValue( self, selection, requiredAttributes=None, _debug=Undefined ):
+    '''Find the best matching value for the ReadDiskItem, according to the given selection criterions.
+
+    The "best matching" criterion is the maximum number of common attributes with the selection, with required attributes satisfied.
+
+    If there is an ambiguity (no matches, or several equivalent matches), *None* is returned.
+
+    Parameters
+    ----------
+    selection: diskitem, or dictionary
+    requiredAttributes: dictionary (optional)
+    _debug: file-like object (optional)
+
+    Returns
+    -------
+    matching_value: :py:class:`DiskItem <brainvisa.data.neuroDiskItems.DiskItem>` instance, or *None*
+    '''
     if _debug is Undefined:
       _debug = self._debug
     if selection is None: return None
@@ -407,6 +425,21 @@ class ReadDiskItem( Parameter ):
     return ( -hierarchyCommon, other_priority - diskItem.priority(), -nonHierarchyCommon, readable  )
   
   
+  def findValues(self, selection, requiredAttributes={}, write=False,
+                 _debug=Undefined):
+    '''Find all DiskItems matching the selection criterions
+
+    Parameters
+    ----------
+    selection: :py:class:`DiskItem <brainvisa.data.neuroDiskItems.DiskItem>` or dictionary
+    requiredAttributes: dictionary (optional)
+    write: bool (optional)
+        if write is True, look for write diskitems
+    _debug: file-like object (optional)
+    '''
+    return self._findValues(selection, requiredAttributes, write, _debug)
+
+
   def _findValues( self, selection, requiredAttributes, write, _debug=Undefined ):
     if _debug is Undefined:
       _debug = self._debug

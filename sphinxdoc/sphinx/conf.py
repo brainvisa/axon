@@ -238,6 +238,7 @@ latex_documents = [
 autoclass_content = "both"
 
 extlinks = {
+  'axon': ('../%s', 'axon '),
   'aimsalgodox': ('../../aimsalgo-' + version + '/doxygen/%s',
     'aimsalgodox '),
   'aimsalgoepy': ('../../pyaimsalgo-' + version + '/epydoc/%s',
