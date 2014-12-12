@@ -9,8 +9,10 @@ This document should teach how to program BrainVisa and to create custom process
 
 If you are not, you are encouraged to look at the `Python tutorial <https://docs.python.org/tutorial/index.html>`_ and the `Python documentation <http://docs.python.org>`_.
 
+In addition to this manual, the reader may also have a look at :doc:`usecases`.
 
-Data management</classname>
+
+Data management
 ---------------
 
 The data management interface allows to organize data stored on a file system according to a (possibly user-defined) ontology. A *BrainVisa* user can provide a *files and directories ontology* (**FDO**) that is associated with a directory to define the organization of the whole directory's content (including sub-directories). The *FDO* contains naming conventions that allow to identify any file according to an ontology. *BrainVisa* provides a database system which is based on *FDO*. This system is organized in three layers (See the :ref:`figure below <figDataManagementSystem>`):
@@ -894,10 +896,376 @@ This process will be used every time an item of type *4D volume* needs to be vis
   All *Anatomist* objects and windows that should not be deleted at the end of the process must be returned by the execution function. Indeed, by default any python object is deleted when there are not references on it anymore. If the objects are returned, they will remain visible until the viewer process is closed.
 
 
-
----------------
-
 .. _toolboxes:
 
+Toolboxes
+=========
+
+*BrainVisa* is organised into several *toolboxes*. A toolbox can contain processes and data ontology elements (types and hierarchy files). It groups processes that are related to a same domain (or made by the same team). Each toolbox can be developped, maintained and distributed by a different group / lab. Toolboxes do not have to be a part of *BrainVisa* project and can be quite independant.
+
+
+How to create a toolbox ?
+-------------------------
+
+Files organisation
+++++++++++++++++++
+
+You must create in your project a directory ``brainvisa/toolboxes/<toolbox name>``. In this directory, you may create three sub-directories: ``processes``, ``types, ``hierarchies``. Some files can be added to the toolbox directory: a configuration file named ``<toolbox_name>.py`` and optionally, an icon to represent the toolbox and a file named ``<toolbox_name>.minf`` that describes links between this toolbox and others.
+
+.. _T1MRI_file_organisation:
+
+.. figure:: images/t1mri_files_organisation.png
+  :align: center
+
+  Example: Files organisation for the Morphologist toolbox
+
+
+Configuration file
+++++++++++++++++++
+
+This file enables to configure three attributes of the toolbox:
+
+* **userName**: the name that will be displayed in *BrainVisa* interface.
+* **icon**: file path of the icon that will reprensent the toolbox in graphical interface. Optional, there is a default icon.
+* **description**: tooltip for the toolbox, that will be displayed when the mouse cursor is over the toolbox name. Optional, default tooltip is the name of the toolbox.
+
+**Example**
+
+::
+
+  userName = 'Morphologist'
+  icon = 't1mri.png'
+  description = 'Anatomical MRI processing'
+
+
+Links with other toolboxes
+++++++++++++++++++++++++++
+
+Even if a process physically exists in only one toolbox, it is possible to create a link that makes it appear in several toolboxes. Information about these links is stored in a ``minf`` file named ``<toolbox_name>.minf``. This file describes processes trees: a process tree by toolbox in which you want to add links. The file format is the same as the one used to save user lists of processes. So the easiest way to create such a file is to create user lists that correspond to the links you want to create, using *BrainVisa* graphical interface. Then you can get the resulting file in ``<home directory>/.brainvisa/userProcessesTrees.minf``.
+
+Here are the steps to add a link to a process in a toolbox:
+
+* Create a user lists by right clicking on the toolbox panel
+* Change its name into  the destination toolbox's identifier, it is the name of the toolbox directory.
+* Open the source toolbox and find the process
+* Copy the process or the category into the new list by drag and drop
+* You can rename the processes and categories if you want.
+* Save the file ``userProcessesTrees.minf`` as ``<toolbox_name>.minf`` in your toolbox directory.
+
+Be careful with categories, if you create a new one with the same name instead of making a link, you will not see the associated documentation when clicking on it.
+
+.. raw:: html
+
+  <div class="figure" align="center">
+    <div class="mediaobject">
+      <object type="application/x-shockwave-flash" data="_static/images/create_toolbox_links.swf" width="800" height="620">
+        <param name="movie" value="_static/images/create_toolbox_links.swf"><param name="loop" value="true">
+      </object>
+    </div>
+    Creating a links file for a toolbox
+  </div>
+
+**Example: structural_analysis.minf**
+
+::
+
+  <?xml version="1.0" encoding="utf-8" ?>
+  <minf expander="brainvisa-tree_2.0">
+    <l length="1">
+      <f type="ProcessTree">
+        <s name="name">Data management</s>
+        <true name="editable"/>
+        <l length="1" name="content">
+          <f type="ProcessTree.Branch">
+            <l length="1" name="content">
+              <f type="ProcessTree.Branch">
+                <l length="1" name="content">
+                  <f type="ProcessTree.Leaf">
+                    <true name="editable"/>
+                    <s name="id">importSPMtForStructuralAnalysis</s>
+                    <none name="name"/>
+                  </f>
+                </l>
+                <true name="editable"/>
+                <s name="name">Structural analysis</s>
+                <s name="id">structural_analysis/volume_based/import</s>
+              </f>
+            </l>
+            <true name="editable"/>
+            <s name="name">import</s>
+            <s name="id">data management/import</s>
+          </f>
+        </l>
+        <true name="user"/>
+        <s name="id">-1222536820</s>
+        <s name="icon">folder_home.png</s>
+      </f>
+    </l>
+  </minf>
+
+With this file, the *Structural analysis* toolbox adds its importation process in the *Data Management* toolbox.
+
+Documentation page of the toolbox
++++++++++++++++++++++++++++++++++
+
+It is recommended to create a presentation page for the toolbox to be displayed in *BrainVisa* right panel when the user clicks on the toolbox. This page should explain the usage of the toolbox and present the toolbox authors and related articles.
+
+To create a help page, just create a file named ``category_documentation.minf`` and put it in the toolbox processes directory. This file has the same format as the documentation files for sub-directories in processes directory. See :ref:`documentation`
+
+
+.. _documentation:
+
+Documentation
+=============
+
+In *BrainVisa*, the panel on the right is dedicated to the documentation. When the user clicks on a toolbox, process or category (a sub-directory in processes directory), a help page is displayed in this panel. We will see in this chapter how to document processes and categories.
+
+
+Process documentation
+---------------------
+
+Each process documentation is stored in a file named ``<process file name>.procdoc`` which is placed in the same directory as the process file. This file is in minf format (xml). It can be edited with any text editor but there is a tool in *BrainVisa* that facilitates writing such a file. Select the process you want to document, right-click on it and select *edit documentation*. You can write the documentation in engish and in french but by default, if there is no documentation in the current language, *BrainVisa* shows the english documentation. So it is important to have at least an english documentation.
+
+**Example : convertOldDatabase.procdoc**
+
+::
+
+  <?xml version="1.0" encoding="utf-8" ?>
+  <minf expander="minf_2.0">
+    <d>
+      <d name="fr">
+        <xhtml name="short"/>
+        <d name="parameters">
+          <xhtml name="graphe_default_destination"/>
+          <xhtml name="segment_default_destination"/>
+          <xhtml name="undo"/>
+          <xhtml name="database"/>
+        </d>
+        <xhtml name="long"/>
+      </d>
+      <d name="en">
+        <xhtml name="short">Database hierarchy has changed since BrainVISA 3.1. Databases created with earlier versions are not compatible with this version.
+        This process  converts old databases to BrainVISA 3.1 hierarchy.
+        It is compound of three steps : conversion, checking and cleaning (optional).</xhtml>
+        <d name="parameters">
+          <xhtml name="graphe_default_destination">The destination where you want to put unrecognized data found in graphe directory.
+          By default, unrecognized data is put in t1mri folds directory.
+          But you can choose to put it in t1mri roi or in pet roi directory.
+          If you choose None, unrecognized data will stay in graphe directory.</xhtml>
+          <xhtml name="segment_default_destination">The destination where you want to put unrecognized data found in segment directory.
+          By default, unrecognized data is put in t1mri segmentation directory. But you can choose to put it in pet segmentation directory.
+          If you choose None, unrecognized data will stay in segment directory.</xhtml>
+          <xhtml name="undo">If true, the process will try to undo the last conversion of the database.</xhtml>
+          <xhtml name="database">The database to process.</xhtml>
+        </d>
+        <xhtml name="long"><p>The first process of the pipeline is "Convert database".</p>
+          <p>The second process is "Check database". In this process, the user can choose "Run later" instead of "Run now" to validate.
+          So, the actions are not performed immediately, but kept for the end of the pipeline.</p>
+          <p>The third process is "Clean database".
+          This step is not mandatory, you can unselect it if you have data not linked to brainvisa in your database.</p></xhtml>
+      </d>
+    </d>
+  </minf>
+
+.. _process_doc_edit:
+
+.. figure:: images/process_doc_edit.png
+  :align: center
+
+  Interface for editing a process documentation
+
+Each documentation field can contain HTML tags to modify display. It is also possible to include images in the documentation.
+
+As we can see in the process documentation edition window, there are several fields to fill in :
+
+* HTML Path: optional, you can choose the path were you want to put HTML generated files. By default, they will be in ``<build or install directory>/share/doc/axon-<version>/<language>/processes``.
+
+* Language: choose *en* to write english documentation, *fr* to write french documentation.
+
+* Short description: introduction, it is displayed between the name of the process and the title desription.
+
+* Parameter: choose the parameter in the process signature you want to document and write its description in the field below.
+
+* Long Description: Complete description of the process.
+
+
+Category documentation
+----------------------
+
+Each sub-directory in the processes directory can have an associated documentation page that is displayed when the user clicks on the directory. This documentation is stored in a file named ``category_documentation.minf``, which is placed in the sub-directory. This file is in minf/XML format and can be edited with any text editor. You can write the documentation in engish and in french but by default, if there is no documentation in the current language, *BrainVisa* shows the english documentation. So it is important to have at least an english documentation.
+
+**Example: category_documentation.minf for "segmentation pipeline" category**
+
+::
+
+  <?xml version="1.0" encoding="utf-8" ?>
+  <minf version="1.0">
+
+    <xhtml name="en">
+      <h1>2005-2007 T1-weighted pipeline</h1>
+
+      <p>
+        This is where the new 2007 pipeline is.
+      </p>
+      <p>
+        The development of this new pipeline aimed first at improving the robustness of the older (2004) one,
+        second at adding some features like providing a spherical mesh of the external interface of the cortex.
+        Up to now, we mainly focused on robustness.
+        We gathered 100 scans from all over the world, usually chosen for their poor quality in terms of contrast, signal to noise and spatial inhomogeneities.
+        The challenge is to get good results for most of them. This means each time we modify something (tuning parameters or changing algorithms),
+        the pipeline is iteratively triggered from the beginning for the 100 scans and the results are visually checked.
+      </p>
+
+    </xhtml>
+
+    <xhtml name="fr">
+      <h1>Analyse des images pondérées en T1 développée en 2005-2007</h1>
+
+      <p>
+        C'est ici que se trouve le nouveau pipeline 2007.
+      </p>
+      <p>
+        Le développement de ce nouveau pipeline visait à augmenter la robustesse du précédent (2004) mais aussi à apporter de nouvelles fonctionnalités,
+        comme un maillage sphérique de l'interface externe du cortex.
+        Jusqu'à présent, nous nous sommes surtout concentré sur la robustesse.
+        Notre manière de procéder a consisté à réunir une centaine d'examens provenant d'un peu partout dans le monde.
+        Ces examens ont surtout été sélectionnés pour leur faible qualité en termes de contraste, signal sur bruit et inhomogénéités spatiales.
+        Chaque fois que nous procédons à un changement (ajustement de paramètre ou nouvel algorithme),
+        nous relançons le pipeline sur l'ensemble des données et nous vérifions les résultats visuellement.
+      </p>
+
+    </xhtml>
+
+  </minf>
+
+The format of this file is very simple, it's a minf that contains two xhtml fields: *en* and *fr*, for the two possible languages of the documentation. In these two fields, you can put any xhtml page.
+
+
+Links in documentation
+----------------------
+
+In these documentation files, it is possible to make links to processes, categories and to include images. It is also possible to add in a documentation a web link (``http://...``) using the XHTML syntax.
+
+**Link to a process**
+
+::
+
+  <a href="bvprocess://process_id"><bvProcessName name="process_id"/></a>
+  Example: <a href="bvprocess://DiffusionTrackingPipeline"><bvProcessName name="DiffusionTrackingPipeline"/></a>
+
+  <a href="bvshowprocess://process_id"><img src="../../images/icons/icon_process.png" border="0"></a>
+  Example: <a href="bvshowprocess://ImportT1MRI"><img src="../../images/icons/icon_process.png" border="0"></a>
+
+The first syntax creates a link to the documentation page of the process. In the link, the name of the process will appear instead of its identifier.
+The second syntax creates a link that opens the process when the user clicks on it.
+
+**Link to a category**
+
+::
+
+  <a href="bvcategory://category_id"><_t_>category_name</_t_></a>
+  Example: <a href="bvcategory://data management/import"><_t_>import</_t_></a>
+
+It creates a link to the documentation page of the category. The tag <_t_> used in the previous example enables *BrainVisa* to translate the name into the current language if a translation exists. See :ref:`translation`.
+
+**Include an image**
+
+::
+
+  <img src="bvimage://image_relative_path" ... />
+  Example: <img src="bvimage://diffusion/tracking/pj_main_bundles_front.jpg" width="300"/>
+
+The image file path is relative to brainvisa images directory: ``<build or install directory>/share/doc/axon-<version>/images/``.
+
+
 .. _translation:
+
+Translation
+===========
+
+In *BrainVisa*, two languages are available: english and french. You can switch the current language in *BrainVisa* preferences. As seen in the previous chapter, documentation pages can be written in the both languages. But you can also translate strings appearing in *BrainVisa* user interface, as for example processes names, text in menus, buttons...
+
+Get a translation
+-----------------
+
+In a process, you can use the function **_t_(string)** to translate a string before displaying it. When the process is executed, *BrainVisa* will call this translation function which searches for a translation of the string in the current language. If no translation is found, the string is unchanged.
+It can be used for example to translate an error message:
+
+::
+
+  raise RuntimeError(_t_('Cannot convert input data'))
+
+
+Add a translation
+-----------------
+
+If you use a new string in a process and you want it to be translated, you will need to add its translation to *BrainVisa* base of translations.
+
+Translation files
++++++++++++++++++
+
+The translations are stored in files ``<brainvisa directory>/doc/<language>/translation.minf``. These files in ``minf`` format contain a map that matches a string in *BrainVisa* to its translation (in the language given by the directory where the file is).
+
+There is a file for french translations and another one for english translations. The main is the french one because messages are generally written in english in *BrainVisa* sources, so they do not need english translations. However, english translations are sometimes used to translate category names. Indeed, a category generally corresponds to a sub-directory in the processes directory, and directory names often miss spaces and case. For example, the category name "``segmentationpipeline``" has the english translation "``Segmentation Pipeline``", which is prettier.
+
+The format of these translation file is ``minf``. It is quite simple and can be edited with any text editor, but a script exists to facilitate the task. It is presented below in :ref:`translation_editor`.
+
+**Extract of the french translation.minf**
+
+::
+
+  <?xml version="1.0" encoding="utf-8" ?>
+  <minf expander="minf_1.0">
+    <d>
+      <s name="&lt;em&gt;%s&lt;/em&gt; is not an existing directory. Do you want to create it ?">&lt;em&gt;%s&lt;/em&gt; n'est pas un répertoire existant. Voulez-vous le créer ?</s>
+      <s name="roi">roi</s>
+      <s name="Anatomist Show Brain Mask on T1 MRI">Anatomist Voir le Masque du Cerveau sur l'IRM T1</s>
+      <s name="&lt;em&gt;%s&lt;/em&gt; processes updated">&lt;em&gt;%s&lt;/em&gt; traitements mis-à-jour</s>
+      <s name="Localize Talairach Coordinate">Localisation de coordonnées de Talairach</s>
+      <s name="Python version">Version de Python</s>
+      <s name="Anatomist Show Rainbow Volume">Anatomist Voir Volume Arc-en-ciel</s>
+      <s name="Create Label Texture">Création d'une Texture de Label</s>
+      <s name="Brainvisa Show Label Translation">BrainVISA Voir Traduction des Labels</s>
+      <s name="Nmr command(s) not found">Commande(s) Nmr non trouvée(s)</s>
+      <s name="(multiple selection possible)">(selection multiple possible)</s>
+      <s name="Brainvisa Show Text">BrainVISA Afficher du texte</s>
+      ....
+      <s name="Cannot convert input image to SPM format">Impossible de convertir l'image d'entrée au format SPM</s>
+      <s name="Mencoder MPEG encoder">Encodeur MPEG Mencoder</s>
+      <s name="show T2">voir T2</s>
+      <s name="Anatomist Show ROI">Anatomist Voir ROI</s>
+      <s name="validation">validation</s>
+      <s name="Server %s recieved an asynchonous request with invalid parameters from %s: %s">Le serveur %s a reçu une requête asynchrone avec des paramètres invalides de %s: %s</s>
+      <s name="Echoplanar Distortion Correction">Correction des Distorsions Echoplanaires</s>
+      <s name="Right Cingular Pole Projection">Projection du Pôle Cingulaire droit</s>
+    </d>
+  </minf>
+
+
+.. _translation_editor:
+
+Translation editor tool
++++++++++++++++++++++++
+
+The Translation editor is a tool that enables to edit and complete *BrainVisa* translation files easily. To start it, run the script ``srcipts/brainvisa/brainvisaTranslation``. It parses *BrainVisa* sources to find all strings on which the translation function is used. These strings are then presented in a window and for each, you can find the following information:
+
+* source text
+* english translation
+* french translation
+* source files were the string is used and line number
+
+An icon helps to see directly if a string:
+
+.. |ok| image:: images/ok.png
+.. |abort| image:: images/abort.png
+.. |help| image:: images/help.png
+
+* |ok| has a translation
+* |abort| has no translation
+* |help| is no longer used.
+
+.. figure:: images/translation_editor.png
+  :align: center
+
+  Translation editor interface
 

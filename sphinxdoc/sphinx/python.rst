@@ -33,6 +33,9 @@ This module contains the classes that manage BrainVisa set of options, accessibl
 - :py:mod:`brainvisa.configuration.spm_configuration`: options about SPM.
 - :py:mod:`brainvisa.configuration.r_configuration`: options about R.
 - :py:mod:`brainvisa.configuration.qt4gui`: specific graphical user interface for options about databases and Matlab.
+- :py:mod:`brainvisa.configuration.mpegConfig`
+- :py:mod:`brainvisa.configuration.qt4gui.neuroConfigGUI`: Bug report dialog.
+
 
 .. _brainvisa.data:
 
@@ -42,6 +45,7 @@ brainvisa.data
 - :py:mod:`brainvisa.data.neuroData`: classes defining the signature of a process, parameter types.
 - :py:mod:`brainvisa.data.neuroDiskItems`: class DiskItem that defines data and matching files.
 - :py:mod:`brainvisa.data.neuroHierarchy`: databases creation and initialization.
+- :py:mod:`brainvisa.data.fileSystemOntology`: classes to define a BrainVISA ontology.
 - :py:mod:`brainvisa.data.sqlFSODatabase`
 - :py:mod:`brainvisa.data.readdiskitem` 
 - :py:mod:`brainvisa.data.writediskitem`
@@ -49,10 +53,8 @@ brainvisa.data
 - :py:mod:`brainvisa.data.databaseCheck`
 - :py:mod:`brainvisa.data.directory_iterator`
 - :py:mod:`brainvisa.data.fileformats` 
-- :py:mod:`brainvisa.data.fileSystemOntology`: classes to define a BrainVISA ontology.
 - :py:mod:`brainvisa.data.ftpDirectory`
 - :py:mod:`brainvisa.data.labelSelection`
-- :py:mod:`brainvisa.data.localDirectory`
 - :py:mod:`brainvisa.data.minfExtensions`: declaration of the type of objects that can be written in minf format.
 - :py:mod:`brainvisa.data.patterns`
 - :py:mod:`brainvisa.data.sql` 
@@ -71,23 +73,37 @@ brainvisa.processing
 brainvisa.tools
 +++++++++++++++
 - :py:mod:`brainvisa.tools.aimsGlobals`: definition of named lists of formats.
-- :py:mod:`brainvisa.tools.matlabValidation`: validation function that checks if matlab is enable.
-  
+- :py:mod:`brainvisa.tools.mainthreadlife`: ensure an object is deleted in the main thread.
+- :py:mod:`brainvisa.tools.matlabValidation`: validation function that checks if matlab is enabled.
+- :py:mod:`brainvisa.tools.spm_conversion`
+- :py:mod:`brainvisa.tools.spm_registration`
+- :py:mod:`brainvisa.tools.spm_results`
+- :py:mod:`brainvisa.tools.spm_run`
+- :py:mod:`brainvisa.tools.spm_segmentation`
+- :py:mod:`brainvisa.tools.spm_utils`
+- :py:mod:`brainvisa.tools.DisplayResultsFromSPM`
+- :py:mod:`brainvisa.tools.displayTitledGrid`
+
 
 .. _brainvisa.processing.qt4gui:
 
 brainvisa.processing.qt4gui: GUI Modules
 +++++++++++++++++++++++++++++++++++++++++
 
-The classes related to the graphical user interface are located in ``qt4gui`` modules. They use `PyQt API <http://www.riverbankcomputing.co.uk/software/pyqt/intro>`_, a set of Python bindings for `Nokia's Qt application framework <http://qt.nokia.com/>`_:
-  
+The classes related to the graphical user interface are located in ``qt4gui`` modules. They use `PyQt API <http://www.riverbankcomputing.co.uk/software/pyqt/intro>`_, a set of Python bindings for `Qt application framework <http://qt.nokia.com/>`_:
+
   - :py:mod:`brainvisa.processing.qtgui.backwardCompatibleQt`: it has been used to keep backward compatibility with old versions of PyQt.
-  - :py:mod:`brainvisa.processing.qt4gui.neuroConfigGUI`: Bug report dialog.
   - :py:mod:`brainvisa.processing.qt4gui.neuroProcessesGUI`: BrainVISA main window and processes windows.
+  - :py:mod:`brainvisa.processing.qt4gui.neuroExceptionGUI`: Error and warning messages window.
   - :py:mod:`brainvisa.processing.qt4gui.neuroLogGUI`: Log window.
   - :py:mod:`brainvisa.processing.qt4gui.command`: class CommandWithQProcess used to call commands in Brainvisa processes. This module is not related to the graphical user interface but it uses Qt, that's why it is in ``qt4gui`` module.
-  - :py:mod:`brainvisa.data.qt4gui.neuroExceptionGUI`: Error and warning messages window.
-  
+
+Some ``qtgui`` modules also exist but are mainly just redirections to the corresponding ``qt4gui`` module. It was useful when we maintained the compatibility with qt3 but is no more the case.
+
+
+brainvisa.data.qt4gui: GUI Modules
+++++++++++++++++++++++++++++++++++
+
   - :py:mod:`brainvisa.data.qt4gui.databaseCheckGUI`
   - :py:mod:`brainvisa.data.qt4gui.diskItemBrowser`
   - :py:mod:`brainvisa.data.qt4gui.hierarchyBrowser`
@@ -97,42 +113,35 @@ The classes related to the graphical user interface are located in ``qt4gui`` mo
   - :py:mod:`brainvisa.data.qt4gui.readdiskitemGUI`
   - :py:mod:`brainvisa.data.qt4gui.scalarFeaturesViewer`
   - :py:mod:`brainvisa.data.qt4gui.updateDatabases`
-  
-A module ``qtgui`` also exists but it is just a redirection to the ``qt4gui`` module. It was useful when we maintained the compatibility with qt3 but is no more the case.
-  
 
-brainvisa.axon
---------------
 
-.. automodule:: brainvisa.axon
+brainvisa.shelltools
+--------------------
+
+.. automodule:: brainvisa.shelltools
   :members:
-    
-.. automodule:: brainvisa.axon.processes
-  :members:
-
-brainvisa.processes
--------------------
-
-.. automodule:: brainvisa.processes
-
+  :show-inheritance:
 
 brainvisa.anatomist: a specialized wrapper for Anatomist
 --------------------------------------------------------
 
 .. automodule:: brainvisa.anatomist
   :members:
+  :show-inheritance:
 
 brainvisa.toolboxes
 -------------------
 
 .. automodule:: brainvisa.toolboxes
   :members:
+  :show-inheritance:
 
 brainvisa.workflow
 ------------------
 
 .. automodule:: brainvisa.workflow
   :members:
+  :show-inheritance:
 
 
 brainvisa.validation
@@ -140,6 +149,7 @@ brainvisa.validation
 
 .. automodule:: brainvisa.validation
   :members:
+  :show-inheritance:
 
 brainvisa.history
 -----------------
@@ -160,7 +170,15 @@ brainvisa.registration
 
 .. automodule:: brainvisa.registration
   :members:
+  :show-inheritance:
 
+
+brainvisa.configuration.api
+---------------------------
+
+.. automodule:: brainvisa.configuration.api
+  :members:
+  :show-inheritance:
 
 brainvisa.configuration.neuroConfig
 -----------------------------------
@@ -169,107 +187,61 @@ brainvisa.configuration.neuroConfig
   :members:
   :show-inheritance:
 
-brainvisa.data.neuroData
-------------------------
+brainvisa.configuration.mpegConfig
+----------------------------------
 
-.. automodule:: brainvisa.data.neuroData
+.. automodule:: brainvisa.configuration.mpegConfig
   :members:
   :show-inheritance:
 
-brainvisa.data.neuroDiskItems
------------------------------
+brainvisa.configuration.brainvisa_configuration
+-----------------------------------------------
 
-.. automodule:: brainvisa.data.neuroDiskItems
+.. automodule:: brainvisa.configuration.brainvisa_configuration
   :members:
   :show-inheritance:
 
-brainvisa.data.neuroHierarchy
------------------------------
+brainvisa.configuration.anatomist_configuration
+-----------------------------------------------
 
-.. automodule:: brainvisa.data.neuroHierarchy
+.. automodule:: brainvisa.configuration.anatomist_configuration
   :members:
   :show-inheritance:
 
-brainvisa.data.fileSystemOntology
----------------------------------
+brainvisa.configuration.databases_configuration
+-----------------------------------------------
 
-.. currentmodule:: brainvisa.data.fileSystemOntology
-
-.. automodule:: brainvisa.data.fileSystemOntology
+.. automodule:: brainvisa.configuration.databases_configuration
   :members:
   :show-inheritance:
 
-.. py:function:: insert(path, *content)
+brainvisa.configuration.fsl_configuration
+-----------------------------------------
 
-  Inserts rules in a :py:class:`DirectoryScanner` whose pattern matches *path*.
-
-  This function is only visible from inside a type or hierarchy file, during loading.
-
-.. py:function:: insertFirst(path, *content)
-
-  Inserts rules in a :py:class:`DirectoryScanner` whose pattern matches *path* at the beginning of the list of rules.
-
-  This function is only visible from inside a type or hierarchy file, during loading.
-
-.. py:function:: insertLast(path, *content)
-
-  Appends rules in a :py:class:`DirectoryScanner` whose pattern matches *path*.
-
-  This function is only visible from inside a type or hierarchy file, during loading.
-
-brainvisa.data.sqlFSODatabase
------------------------------
-
-.. automodule:: brainvisa.data.sqlFSODatabase
+.. automodule:: brainvisa.configuration.fsl_configuration
   :members:
+  :show-inheritance:
 
-brainvisa.data.readdiskitem
----------------------------
+brainvisa.configuration.matlab_configuration
+--------------------------------------------
 
-.. automodule:: brainvisa.data.readdiskitem
+.. automodule:: brainvisa.configuration.matlab_configuration
   :members:
+  :show-inheritance:
 
-brainvisa.data.writediskitem
-----------------------------
+brainvisa.configuration.spm_configuration
+-----------------------------------------
 
-.. automodule:: brainvisa.data.writediskitem
+.. automodule:: brainvisa.configuration.spm_configuration
   :members:
+  :show-inheritance:
 
-brainvisa.data.patterns
------------------------
-
-.. automodule:: brainvisa.data.patterns
-  :members:
-    
-    
-brainvisa.data.temporary
-------------------------
-
-.. automodule:: brainvisa.data.temporary
-  :members:
-    
-    
-brainvisa.data.virtualDirectory
--------------------------------
-
-.. automodule:: brainvisa.data.virtualDirectory
-  :members:
-    
-    
-brainvisa.processing.neuroException
+brainvisa.configuration.r_configuration
 -----------------------------------
 
-.. automodule:: brainvisa.processing.neuroException
+.. automodule:: brainvisa.configuration.r_configuration
   :members:
   :show-inheritance:
-
-brainvisa.processing.neuroLog
------------------------------
-
-.. automodule:: brainvisa.processing.neuroLog
-  :members:
-  :show-inheritance:
-
 
 brainvisa.tools.aimsGlobals
 ---------------------------
@@ -278,17 +250,73 @@ brainvisa.tools.aimsGlobals
   :members:
   :show-inheritance:
 
-brainvisa.processing.qt4gui.neuroProcessesGUI
----------------------------------------------
+brainvisa.tools.mainthreadlife
+------------------------------
 
-.. automodule:: brainvisa.processing.qt4gui.neuroProcessesGUI
+.. automodule:: brainvisa.tools.mainthreadlife
   :members:
   :show-inheritance:
 
+brainvisa.tools.matlabValidation
+--------------------------------
 
-brainvisa.processing.qt4gui.neuroLogGUI
----------------------------------------
-
-.. automodule:: brainvisa.processing.qt4gui.neuroLogGUI
+.. automodule:: brainvisa.tools.matlabValidation
   :members:
   :show-inheritance:
+
+brainvisa.tools.spm_conversion
+------------------------------
+
+.. automodule:: brainvisa.tools.spm_conversion
+  :members:
+  :show-inheritance:
+
+brainvisa.tools.spm_registration
+--------------------------------
+
+.. automodule:: brainvisa.tools.spm_registration
+  :members:
+  :show-inheritance:
+
+brainvisa.tools.spm_results
+---------------------------
+
+.. automodule:: brainvisa.tools.spm_results
+  :members:
+  :show-inheritance:
+
+brainvisa.tools.spm_run
+-----------------------
+
+.. automodule:: brainvisa.tools.spm_run
+  :members:
+  :show-inheritance:
+
+brainvisa.tools.spm_segmentation
+--------------------------------
+
+.. automodule:: brainvisa.tools.spm_segmentation
+  :members:
+  :show-inheritance:
+
+brainvisa.tools.spm_utils
+-------------------------
+
+.. automodule:: brainvisa.tools.spm_utils
+  :members:
+  :show-inheritance:
+
+brainvisa.tools.DisplayResultsFromSPM
+-------------------------------------
+
+.. automodule:: brainvisa.tools.DisplayResultsFromSPM
+  :members:
+  :show-inheritance:
+
+brainvisa.tools.displayTitledGrid
+---------------------------------
+
+.. automodule:: brainvisa.tools.displayTitledGrid
+  :members:
+  :show-inheritance:
+
