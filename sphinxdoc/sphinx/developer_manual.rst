@@ -10,7 +10,7 @@ This document should teach how to program BrainVisa and to create custom process
 If you are not, you are encouraged to look at the `Python tutorial <https://docs.python.org/tutorial/index.html>`_ and the `Python documentation <http://docs.python.org>`_.
 
 
-Data management</classname>
+Data management
 ---------------
 
 The data management interface allows to organize data stored on a file system according to a (possibly user-defined) ontology. A *BrainVisa* user can provide a *files and directories ontology* (**FDO**) that is associated with a directory to define the organization of the whole directory's content (including sub-directories). The *FDO* contains naming conventions that allow to identify any file according to an ontology. *BrainVisa* provides a database system which is based on *FDO*. This system is organized in three layers (See the :ref:`figure below <figDataManagementSystem>`):
