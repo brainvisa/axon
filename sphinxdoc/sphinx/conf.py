@@ -241,17 +241,12 @@ extlinks = {
   'axon': ('../%s', 'axon '),
   'aimsalgodox': ('../../aimsalgo-' + version + '/doxygen/%s',
     'aimsalgodox '),
-  'aimsalgoepy': ('../../pyaimsalgo-' + version + '/epydoc/%s',
-    'aimsalgoepy '),
   'aimsalgoex': ('../../pyaimsalgo-' + version + '/examples/%s',
     'aimsalgoex '),
-  'aims': ('%s',
-    'aims '),
+  'aims': ('../../aimsdata-' + version + '/%s', 'aims '),
   'aimsdox': ('../../aimsdata-' + version + '/doxygen/%s',
     'aimsdox '),
   'aimsdata' : ('../../aimsdata-' + version + '/%s', 'aimsdata '),
-  'aimsepy': ('../../pyaims-' + version + '/epydoc/%s',
-    'aimsepy '),
   'cartobdox' : ('../../cartobase-' + version + '/doxygen/%s',
   'cartobdox '),
   'cartoddox' : ('../../cartodata-' + version + '/doxygen/%s',
@@ -262,6 +257,8 @@ extlinks = {
   'somaqtgui' : ( '../../soma-qtgui-' + version + '/sphinx/%s', 'somaqtgui' ),
   'somaworkflow' : ( '../../soma-workflow-' + somaworkflow_version \
     + '/sphinx/%s', 'somaworkflow' ),
+  'anatomist': ('../../anatomist-' + version + '/%s', 'anatomist '),
+  'pyanatomist': ('../../pyanatomist-' + version + '/sphinx/%s', 'pyanatomist '),
 }
 
 docpath = os.path.join( os.path.dirname( os.path.dirname( os.path.dirname( \

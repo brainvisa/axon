@@ -60,7 +60,7 @@ The software management system contains the architecture for the integration of 
   An example of a simple BrainVISA process: thresholding an image
 
 
-.. data:
+.. _data:
 
 Data ontology
 =============
@@ -243,7 +243,7 @@ The Python script contains :
 
 * a declarative part: some variables initialization to set process :py:attr:`name <NewProcess.name>`, :py:attr:`category <NewProcess.category>`, :py:attr:`visibility level <NewProcess.userLevel>`, parameters...
 
-* :py:meth:`initialization <Parameterized.initialization>`, :py:meth:`validation <Process.validation>` and :py:meth:`execution <Process.execution>` methods
+* :py:meth:`initialization <Parameterized.initialization>`, :py:meth:`validation <Process.validation>` and :py:meth:`execution <NewProcess.execution>` methods
 
 
 Declarative part
@@ -481,512 +481,423 @@ It has the same search methods as the :py:class:`ReadDiskItem <brainvisa.data.re
 Functions
 ---------
 
-        <para>
-          Some process functions can be defined in the script: validation, initialization and execution functions.
-        </para>
-        <sect2>
-          <title>Validation</title>
-          <para>
-            <programlisting>
-def validation():
-  <emphasis>function_body</emphasis>
-  if &lt;condition&gt;:
-    raise ValidationError( "error message" )
-            </programlisting>
-            This function is executed at *BrainVisa* startup when the process is loaded. It checks some conditions for the process to be available. For example, the presence of modules, programs needed by the process. If the process is not available in the current context, the validation function should raise an exception.
-            When the validation fails, the process is not available, it is shown disabled in *BrainVisa* interface. Each validation error is reported in *BrainVisa* log.
-          </para>
-        </sect2>
-        <sect2>
-          <title>Initialization</title>
-          <para>
-          <programlisting>
-def initialization( self ):
-  <emphasis>function_body</emphasis>
-          </programlisting>
-          This method is called when a new instance of the process is created. It is used to initialize parameters, set some parameters as optional and define links between parameters.
-          The self parameter represents the process (and is an instance of <classname>Process</classname> class).
-          </para>
-          <para>
-            **To  initialize parameters values**:
-          <programlisting>
-self.<emphasis>parameter_name</emphasis> = <emphasis>value</emphasis>
-          </programlisting>
-          Each parameter defined in the signature correspond to an attribute of the process object.
-        </para>
-        <para>
-          **To set one or several parameters as optional**:
-        <programlisting>
-self.setOptional( <emphasis>parameter_name</emphasis> )
-        </programlisting>
-        The user does not need to fill these parameters. Other parameters are mandatory, if the user doesn't fill them, *BrainVisa* will not execute the process and will show an error message.
-        </para>
-        <para>
-          **To link a parameter value to another parameter**:
-        <programlisting>
-self.linkParameters( destination, sources [, function] )
-self.addLink( destination, sources [, function] )
-        </programlisting>
+.. currentmodule:: brainvisa.processes
 
-        The function <function>linkParameters</function> is used for the links inside a process. To define links between steps of a pipeline, the function <function>addLink</function> must be used.
-      </para>
-      <sect3><title>linkParameters</title>
-      <para>
-        The parameter <emphasis>destination</emphasis> value is linked to <emphasis>sources</emphasis>, which can be either one parameter or a list of parameters. If a value changes in <emphasis>sources</emphasis>, *BrainVisa* updates <emphasis>destination</emphasis>, if it still has its default value. If the destination parameter has been modified by the user, it has no more a default value and is not modified by such a link.
-      </para>
-      <para>
-        The optional argument <emphasis>function</emphasis> is a function that is called when the link is activated. The value returned by this function is used to set the destination parameter value. If there is no function, the source parameter is used directly. Anyway, the value of <emphasis>destination</emphasis> is evaluated with <function>ReadDiskItem.findValue(value)</function>. The signature of the function is: <function>function(process, process) -&gt; value</function>.
-      </para>
-      </sect3>
-      <sect3><title>addLink</title>
-      <para>
-        This function do quite the same thing that the <function>linkParameters</function> function except that the link is always activated when the sources change, even if destination has no more a default value. That's why this link can be used as an equality link between parameters of two different steps of a pipeline. For example, this function is used to define a link between the output of one step and the input of the next step.
-      </para>
-      <para>
-        Using the <function>addLink</function> method, the argument <emphasis>function</emphasis> is mandatory if there are several sources parameters: it takes as arguments the sources parameters and returns the value that must be used to find the destination parameter value: <function>addLink(process, **sources) -&gt; value</function>.
-      </para>
-    </sect3>
-        <para>This is very useful to help the user fill in the process parameters. With the links correctly defined, the user will enter the first input parameter and BrainVISA will try to complete all other parameters automatically, trying to find values in the database for the other parameters using attributes of the first parameter. The default *BrainVisa* link mechanism assumes that parameters have common attributes, for example the protocol, subject, acquisition, which is generally the case.
-        </para>
-        </sect2>
-        <sect2>
-          <title>Execution</title>
-          <para>
-            This function is called when the process is started. All mandatory parameters must be set. This function is written in Python.
-            <programlisting>
-def execution(self, context):
-  <emphasis>function_body</emphasis>
-            </programlisting>
-          </para>
-          <para>
-            The <emphasis>self</emphasis> parameter of this function represents the process. It is mainly used to access parameters values:  <emphasis>self.&lt;parameter_name&gt;</emphasis>.
-          </para>
-          <para>The <emphasis>context</emphasis> object given as argument reprensents the execution context of the process. </para>
-          <para>Indeed, a process can be started in different contexts:
-          <itemizedlist>
-            <listitem>The user starts the process by clicking on the <emphasis>Run</emphasis> button in the graphical interface.</listitem>
-            <listitem>The process is started via a script. It is possible to run brainvisa in batch mode (without any graphical interface) and to run a process via a python function: <emphasis>brainvisa.processes.defaultContext().runProcess(...)</emphasis>.</listitem>
-            <listitem>The process is a converter, so it can be run automatically by *BrainVisa* when a conversion is needed for another process parameters.</listitem>
-            <listitem>The process is a viewer or an editor, it is run when the user clicks on the corresponding icon to view &eye; or edit &pencil; another process parameter. </listitem>
-          </itemizedlist>
-        </para>
-        <sect3><title>Execution context</title>
-          <para>
-            The <emphasis>context</emphasis> object offers several useful functions to interact with BrainVISA and to call system commands. Here are these functions:
-          <itemizedlist>
-          <listitem>write, warning, error: prints a message, either in the graphical process window (in GUI mode) or in the terminal (in batch mode).</listitem>
-          <listitem>log: writes a message in the *BrainVisa* log file.</listitem>
-          <listitem>ask, dialog: asks a question to the user.</listitem>
-          <listitem>temporary: creates a temporary file.</listitem>
-          <listitem>system: calls a system command.</listitem>
-          <listitem>runProcess: runs a *BrainVisa* process.</listitem>
-          <listitem>checkInterruption: defines a breakpoint.</listitem>
-          </itemizedlist>
-          </para>
-          <sect4 id="context_write"><title>write</title>
-          <para>
-            <programlisting>
-context.write(message [, message, ..., linebreak=1])
-example: context.write("Computing threshold of &lt;i&gt;", self.input.name, "&lt;/i&gt;..." )
-</programlisting>
-            This method is used to print information messages during the process execution. All arguments are converted into strings and joined to form the message. This message may contain HTML tags for an improved display. The result vary according to the context. If the process is run via its graphical interface, the message is displayed in the process window. If the process is run via a script, the message is displayed in the terminal. The message can also be ignored if the process is called automatically by brainvisa or another process.
-          </para>
-        </sect4>
-        <sect4><title>warning</title>
-          <para>
-            <programlisting>
-context.warning(message [, message, ...])
-            </programlisting>
-            This method is used to print a warning message. This function adds some HTML tags to change the appearance of the message and calls the <link linkend="context_write">write</link> function.
-          </para>
-        </sect4>
-        <sect4><title>error</title>
-          <para>
-            <programlisting>context.error(message [, message, ...])</programlisting>
-            This method is used to print an error message. Like the above function, it adds some HTML tags to change the appearance of the message and calls <link linkend="context_write">write</link> function.
-          </para>
-        </sect4>
-        <sect4><title>log</title>
-          <para>
-            <programlisting>context.log(what, when=None, html='', children=[], icon=None)</programlisting>
-            This method is used to add a message to *BrainVisa* log. The first parameter <emphasis>what</emphasis> is the name of the entry in the log, the message to write is in the <emphasis>html</emphasis> parameter.
-          </para>
-        </sect4>
-        <sect4><title>ask</title>
-          <para>
-            <programlisting>
-context.ask( message, choices [, modal=1] )
-choices &lt;- value, ...</programlisting>
-This method asks a question to the user. The message is displayed and the user is invited to choose a value among the propositions. The method returns the index of the chosen value, beginning by 0. If the answer is not valid, the returned value is -1. Sometimes, when the process is called automatically (in batch mode), these calls to context.ask are ignored and return directly -1 without asking question.
-</para>
-<para>
-<emphasis>Example</emphasis>
-<programlisting>
-if context.ask( 'Is the result ok ?', 'yes', 'no') == 1:
-  try_again()
-</programlisting>
-</para>
-        </sect4>
-        <sect4><title>dialog</title>
-          <para>
-            <programlisting>
-dialog=context.dialog( parentOrModal, message, signature, *buttons )
-              </programlisting>
-            This method is available only in a graphical context. Like ask, it is used to ask a question to the user, but the dialog interface is customisable. It is possible to add a signature to the dialog: fields that the user has to fill in.
-          </para>
-          <para>
-            <emphasis>Example</emphasis>
-            <programlisting>
-dial = context.dialog( 1, 'Enter a value', Signature( 'param', Number() ), _t_( 'OK' ), _t_( 'Cancel' ) )
-dial.setValue( 'param', 0 )
-r = dial.call()
-if r == 0:
-v=dial.getValue( 'param' )
-            </programlisting>
-          </para>
-        </sect4>
-        <sect4><title>temporary</title>
-          <para>
-            <programlisting>
-context.temporary( format )
-context.temporary( format, type )
-            </programlisting>
-            This method enables to get a temporary DiskItem. The argument format is the temporary data format. The optional argument type is the data type. It generates one or several unique filenames (according to the format) in the temporary directory of *BrainVisa* (it can be changed in *BrainVisa* configuration). No file is created by this function. The process has to create it. The temporary files are deleted automatically when the temporary diskitem returned by the function is no later used.
-          </para>
-          <para>
-            <emphasis>Example</emphasis>
-            <programlisting>
-tmp = context.temporary( 'GIS image' )
-context.runProcess( 'threshold', self.input, tmp, self.threshold )
-tmp2 = context.temporary( 'GIS image' )
-context.system( 'erosion', '-i', tmp.fullPath(), '-o', tmp2.fullPath(), '-s', self.size )
-del tmp
-            </programlisting>
-            In this example, a temporary data in GIS format is created and it is used to store the output of the process threshold. Then a new temporary data is created to store the output of a command line. At the end, the variable tmp is deleted, so the temporary data is no more referenced and the corresponding files are deleted.
-          </para>
-        </sect4>
-        <sect4><title>system</title>
-          <para>
-            <programlisting>
-context.system( command )
-context.system(commandName, parameter [, parameter, ...])
-            </programlisting>
-            This function is used to call system commands. It is very similar to functions like os.system in Python and system in C. The main difference is the management of messages sent on standard output. These messages are intercepted and reported in *BrainVisa* interface according to the current execution context.
-            Moreover, a command  started using this function can be interrupted via the <emphasis>Interrupt</emphasis> button in the interface which is not the case if the python os.system function is used directly.
-          </para>
-          <para>
-            If the command is given as one argument, it is converted to a string and passed to the system. If there are several arguments, each argument is converted to a string, surrounded by simple quotes and all elements are joined, separated by spaces. The resulting command is passed to the system. The second method is recommended because the usage of quotes enables to pass arguments that contain spaces.
-            The function returns the value returned by the system command.
-          </para>
-          <para>
-            <emphasis>Example</emphasis>
-            <programlisting>
-arg1 = 'x'
-arg2 = 'y z'
-context.system( 'command ' + arg1 + ' ' + arg2 )
-context.system( 'command', arg1, arg2 )
-            </programlisting>
-            The first call generates the command <command>command x y z</command> which calls the commands with 3 parameters. The second call generates the command <command>'command' 'x' 'y z'</command> which calls the command with two parameters.
-          </para>
-        </sect4>
-        <sect4><title>runProcess</title>
-          <para>
-            <programlisting>
-context.runProcess( process, value_list, named_value_list )
-value_list &lt;- value, ...
-named_value_list &lt;- argument_name = value, ...
-            </programlisting>
-          It is possible to call a sub-process in the current process by calling context.runProcess. The first argument is the process identifier, which is either the filename wihtout extension of the process or its english name. The other arguments are the values of the process parameters. All mandatory argument must have a value. The function returns the value returned by the sub-process execution method.
+Some process functions can be defined in the script: :py:meth:`validation <Process.validation>`, :py:meth:`initialization <Parameterized.initialization>` and :py:meth:`execution <NewProcess.execution>` methods.
 
-          </para>
-          <para>
-            <emphasis>Example</emphasis>
-            <programlisting>
-context.runProcess( 'do_something', self.input, self.output, value = 3.14 )
-            </programlisting>In this example, the process do_something is called with self.input as the first paramter value, self.ouput as the second parameter value and 3.14 to the parameter named value.
-          </para>
-        </sect4>
+Validation
+++++++++++
 
-        <sect4><title>checkInterruption</title>
-          <para>
-            <programlisting>
-context.checkInterruption( )
-            </programlisting>
-            This function is used to define breakpoints. When the process execution reach a breakpoint, the user can interrupt the process. There are 4 types of breakpoints automatically added:
-            <itemizedlist>
-              <listitem>before each system call (context.system)</listitem>
-              <listitem>after each system call (context.system)</listitem>
-              <listitem>before each sub-process call (context.runProcess)</listitem>
-              <listitem>after each sub-process call (context.runProcess)</listitem>
-            </itemizedlist>
-            To allow the user to interrupt the process at another place, you have to use the function context.checkInterruption. If the user has clicked on the <emphasis>Interrupt</emphasis> button while the process runs, it will stop when reaching the checkInterruption point.
-          </para>
-        </sect4>
-       </sect3>
-        </sect2>
-      </sect1>
+::
 
-      <sect1>
-        <title>Pipeline</title>
-        <para>
-          A pipeline is a particular process that is a combination of several other processes. It describes through a sort of graph the processes that it contains and the links between them. Pipelines are convenient for users because they use the parameters link system over several processes and chain their execution, so it requires less user interaction and is quicker to run.
-        </para>
-          <sect1><title>Writing a pipeline</title>
-            <sect2><title>Execution graph</title>
-            <para>
-              A pipeline file is very similar to a process file, except in the initialization function where you have to define the execution graph of the pipeline. This is done by calling:
-              <programlisting>self.setExecutionNode( eNode )
-eNode &lt;- SerialExecutionNode | ProcessExecutionNode | ParallelExecutionNode | SelectionExecutionNode</programlisting>
-              The different types of execution nodes are detailled below.
-            </para>
-            <sect3><title>SerialExecutionNode</title>
-              <para>It represents a series of processes that will be executed serially. It is generally the main node of a pipeline. It is used when the results of one step are needed to go on with next step.</para>
-              <para><programlisting>SerialExecutionNode(name='', optional = False, selected = True, guiOnly = False, parameterized = None, stopOnError=True)
-Example (first node of a pipeline):  eNode = SerialExecutionNode( self.name, parameterized=self )</programlisting></para>
-<para>
-To add the different steps, use the method: <programlisting>&lt;serial execution node&gt;.addChild(&lt;name&gt;, &lt;execution node&gt;)</programlisting>
-              </para>
-            </sect3>
-            <sect3><title>ParallelExecutionNode</title>
-              <para>As SerialExecutionNode, it has children, but they may be executed in parallel.</para>
-              <para><programlisting>ParallelExecutionNode(name='', optional = False, selected = True, guiOnly = False, parameterized = None, stopOnError=True)
-Example:    eNode = ParallelExecutionNode( 'SulciRecognition', optional = 1, selected=0  )
-                </programlisting>
-              </para>
-            </sect3>
-            <sect3><title>ProcessExecutionNode</title>
-              <para>It represents a leaf of the execution graph, this node cannot have children. It only calls one process, but obviously this process can be itself a pipeline. Any simple process has this type of execution node.</para>
-              <para><programlisting>ProcessExecutionNode( self, process,, optional = False, selected = True, guiOnly = False )
-Example:    eNode.addChild( 'ConvertDatabase', ProcessExecutionNode( 'convertDatabase', optional = 1 ) )
-                </programlisting>
-              </para>
-            </sect3>
-            <sect3><title>SelectionExecutionNode</title>
-              <para>It reprensents a choice between several alternative paths. The user will select the process he wants to execute. </para>
-              <para><programlisting>SelectionExecutionNode(name='', optional = False, selected = True, guiOnly = False, parameterized = None, stopOnError=True)
-Example:      eNode = SelectionExecutionNode( self.name, parameterized = self )
-eNode.addChild( 'BrainSegmentation05',
-ProcessExecutionNode( 'BrainSegmentation', selected = 0 ) )
-eNode.addChild( 'BrainSegmentation04',
-ProcessExecutionNode( 'VipGetBrain', selected = 1 ) )
-                </programlisting>
-              </para>
-            </sect3>
-            <sect3><title>Example of serial pipeline composed of 3 processes</title>
-            <para>
-              <programlisting> eNode = SerialExecutionNode( self.name, parameterized=self )
+  def validation():
+      # function_body
+      if <condition>:
+          raise ValidationError("error message")
 
-eNode.addChild( 'ConvertDatabase',
-ProcessExecutionNode( 'convertDatabase', optional = 1 ) )
+This function is executed at *BrainVisa* startup when the process is loaded. It checks some conditions for the process to be available. For example, the presence of modules, programs needed by the process. If the process is not available in the current context, the validation function should raise an exception.
 
-eNode.addChild( 'CheckDatabase',
-ProcessExecutionNode( 'checkDatabase',
-optional = 1 ) )
+When the validation fails, the process is not available, it is shown disabled in *BrainVisa* interface. Each validation error is reported in *BrainVisa* log.
 
-eNode.addChild( 'CleanDatabase',
-ProcessExecutionNode( 'cleanDatabase',
-optional = 1 ) )
-</programlisting>
-            </para>
-            </sect3>
-          </sect2>
-          <sect2><title>Links between steps</title>
-            <para>Generally, the different steps of a pipeline are linked. For example, the output of the first process is the input of the second process. These links must be explicitely defined. So *BrainVisa* can automatically fill in parameters of the different processes that composed the pipeline. </para>
-            <para><programlisting>&lt;execution node&gt;.addLink( &lt;destination parameter&gt;, &lt;source parameter&gt; )
-#Example:
-eNode.addLink( 'ConvertDatabase.database', 'database' )
-eNode.addLink( 'database', 'ConvertDatabase.database' )
-# This is equivalent to:
-eNode.addDoubleLink('ConvertDatabase.database', 'database')
-</programlisting>
-</para><para>
-In this example, the parameter database in the pipeline and in the sub-process ConvertDatabase are linked in the 2 directions. So if the user changes the parameter value in the main process interface or in the sub-process interface, the value will be reported in the linked parameter.</para>
-<warning>Sometimes, it can be necessary to remove existing links in a process when it is included in a pipeline to avoid having two incompatible links towards the same parameter.</warning>
- <figure>
-   <title>Example of a pipeline where links should be removed</title>
-   <mediaobject>
-     <imageobject><imagedata width="200" align="center" fileref="&DIR_IMG;/pipeline_links.png"/></imageobject>
-   </mediaobject>
- </figure>
- <para>In this example, when including the process A and the process B in a pipeline, new links are created to assess that A.Output1 is equal to B.Input1 and A.Output2 is equal to B.Input2. With these pipeline links, B.Input2 becomes linked to 2 parameters: A.Output2 and B.Input1. So, if the link between Input1 and Input2 in process B is not removed, the value of Input2 will be computed 2 times. But the second time (with the link in process B), the value of Input2 cannot be found because the file does not exist yet as it is an output of the pipeline. WriteDiskItems can generate new filenames for none existing files but not ReadDiskItems.</para>
- <para>In this case, this link should be remove in process B when creating the pipeline:</para>
-<programlisting>
-eNode.addChild("processA", ProcessExecutionNode("processA"))
-eNode.addChild("processB", ProcessExecutionNode("processB"))
-eNode.addDoubleLink("processA.Output1", "processB.Input1")
-eNode.addDoubleLink("processA.Output2", "processB.Input1")
-eNode.processB.removeLink("Input2", "Input1")
-</programlisting>
-          </sect2>
+Initialization
+++++++++++++++
 
-          </sect1>
-      </sect1>
-      <sect1><title>Graphical user interface</title>
-        <para>A graphical user interface is automatically generated by *BrainVisa* for each process. It allows the user to fill in the process's parameters via a form, to run and iterate the process via buttons and to see output log via a text panel. This default interface can be customized in several ways to better fit the user needs. This section will give an overview of the available GUI customizations.</para>
-            <sect2><title>Replacing the buttons</title>
-              <para>By default, two buttons are displayed in a process window: <emphasis>Execute</emphasis> to run the process and <emphasis>Iterate</emphasis> to repeat the process on a set of data. It is possible to replace these default buttons with a custom interface by redefining the method <emphasis>inlineGUI</emphasis>. </para>
-              <para><programlisting>def inlineGUI( self, values, context, parent ):
-  widget=<emphasis>Code to create the Qt widget that will replace the buttons</emphasis>
-  return widget
-</programlisting>The widget must have the parent widget given in parameters as a parent.</para>
-<para>**Example** (from <emphasis>ROI drawing</emphasis> process in toolbox <emphasis>Tools -&gt; roi</emphasis>)
-  <programlisting>def inlineGUI( self, values, context, parent, externalRunButton=False ):
-    btn = QPushButton( _t_( 'Show' ), parent )
-    btn.connect( btn, SIGNAL( 'clicked()' ), context._runButton )
-    return btn
- </programlisting>
- <figure>
-   <title>ROI drawing process</title>
-   <mediaobject>
-     <imageobject><imagedata width="400" align="center" fileref="&DIR_IMG;/roi_drawing.png"/></imageobject>
-   </mediaobject>
- </figure>
+::
 
- The default buttons are replaced with one button labelled "Show". This button has the same role as the <emphasis>Execute</emphasis> button because its <emphasis>clicked</emphasis> signal is connected to the <emphasis>_runButton</emphasis> callback function, that is connected to <emphasis>Execute</emphasis> button by default.
-</para>
-<para>The default GUI contains:
-  <itemizedlist>
-    <listitem>An <emphasis>Execute/Interrupt</emphasis> button whose click event is linked to the <emphasis>_runButton</emphasis> callback</listitem>
-    <listitem>An <emphasis>Iterate</emphasis> button whose click event is linked to the <emphasis>_iterateButton</emphasis> callback</listitem>
-    <listitem>If the process is an iteration, an <emphasis>Iterrupt current step</emphasis> button whose click event is linked to the <emphasis>_iterruptStepButton</emphasis> callback</listitem>
-    <listitem>If parrallel execution is available, a <emphasis>Distribute</emphasis> button whose click event is linked to the <emphasis>_distributedButton</emphasis> callback</listitem>
-  </itemizedlist>
-  </para>
-            </sect2>
-            <sect2><title>Calling GUI functions</title>
-        <para>Sometimes, you don't need to customize the process parameter interface but you want to
-          use custom windows during process execution to interact with the user. Of course, it is
-          possible to do so but you'll need to use a specific object to call GUI functions: the
-          object returned by <emphasis role="italic"
-            >brainvisa.processing.qt4gui.neuroProcessesGUI.mainThreadActions()</emphasis>. Indeed, the process execution
-          function is always started in a new thread to avoid blocking the whole application during
-          process execution. But graphical interface functions have to be called in the main thread
-          where Qt event loop is running. The role of the mainThreadActions object is to enable
-          passing actions to the main thread. </para>
-        <para>The mainThreadActions object has two methods:
-            <itemizedlist>
-              <listitem>
-                <para><emphasis role="italic">push( self, function, *args, **kwargs )</emphasis>:
-                  adds a function with its parameters to the actions list. It will be executed as
-                  soon as possible.</para>
-              </listitem>
-              <listitem>
-                <para><emphasis role="italic">call( self, function, *args, **kwargs ) -&gt;
-                    function call's result</emphasis>: sends the function call to be executed in the
-                  Qt thread and wait for the result.</para>
-              </listitem>
-            </itemizedlist>
-          </para>
-        <para>**Example** (from <emphasis role="italic">Show Scalar
-            Features</emphasis> process in toolbox <emphasis role="italic">Tools -&gt;
-            viewers</emphasis>):
-          <programlisting>from brainvisa.processing.qt4gui.neuroProcessesGUI import mainThreadActions
-import brainvisa.data.qtgui.scalarFeaturesViewer as sfv
+  def initialization(self):
+      # function_body
 
-def execution( self, context ):
-  data = readData( self.features.fullPath() )
-  view = mainThreadActions().call( sfv.ScalarFeaturesViewer )
-  mainThreadActions().push( view.setData, data )
-  mainThreadActions().push( view.show )
-  return view
-          </programlisting>
-          First, the <emphasis role="italic">call</emphasis> method of <emphasis role="italic"
-            >mainThreadActions</emphasis> is called to create an instance of <emphasis role="italic"
-            >sfv.ScalarFeaturesViewer</emphasis> widget. The <emphasis role="italic">call</emphasis>
-          method waits for the call to be executed and returns the result: <emphasis role="italic"
-            >view</emphasis>. The result can then be used in the rest of the execution function. As
-          we don't need the result of the next functions, the <emphasis role="italic"
-            >push</emphasis> method of the <emphasis role="italic">mainThreadActions</emphasis> can
-          be used. </para>
-              <figure>
-                <title>Show scalar features process</title>
-                <mediaobject>
-                  <imageobject><imagedata width="800" align="center" fileref="&DIR_IMG;/show_scalar_features.png"/></imageobject>
-                </mediaobject>
-              </figure>
+This method is called when a new instance of the process is created. It is used to initialize parameters, set some parameters as optional and define links between parameters.
 
-            </sect2>
-            <sect2><title>Changing the whole process window</title>
-        <para>In some case, you may need to customize the whole process interface and not use at all
-          the default interface generated from the process's signature. It is possible to replace
-          this default interface with a custom interface by redefining the method
-            <emphasis>overrideGUI</emphasis>.</para>
-        <para>
-          <programlisting>def overrideGUI( self ):
-  widget=<emphasis>Code to create the Qt widget that will replace the default interface of the process</emphasis>
-  return widget</programlisting>
-        </para>
-            </sect2>
-      <para>**Example** (from the <emphasis role="italic">Database
-          browser</emphasis> process in <emphasis role="italic">Data Management</emphasis> toolbox
-        ):<programlisting>from brainvisa.data.qtgui.hierarchyBrowser import HierarchyBrowser
+The self parameter represents the process (and is an instance of :py:class:`Process` class).
 
-def overrideGUI( self ):
-  return HierarchyBrowser()</programlisting></para>
-      <para>The HierarchyBrowser widget will be displayed when the process is opened instead of the
-        default process window.</para>
-        <figure>
-          <title>Database browser process</title>
-          <mediaobject>
-            <imageobject><imagedata width="600" align="center" fileref="&DIR_IMG;/database_browser.png"/></imageobject>
-          </mediaobject>
-        </figure>
+**To  initialize parameters values**:
 
-            <sect2><title>Creating a viewer</title>
-        <para>Another way to add graphical features to *BrainVisa* is the creation of a viewer
-          specialized for a type of data. A viewer is a special process that displays a view of the
-          data given in parameters. At initialization, *BrainVisa* indexes all the viewers by type of
-          data in order to call the appropriate viewer when a visualization of data is requested. </para>
-        <para>The &eye; button in process parameters interface is linked to the viewer
-          associated to the data type of the parameter. In <emphasis role="italic">Database
-            browser</emphasis> process, the view command in contextual menu also calls the viewer
-          associated to the data type of the current item.</para>
-        <para>A lot of *BrainVisa* viewers use <emphasis role="italic">Anatomist</emphasis> to display
-          neuroimaging data. These viewers uses the <emphasis role="italic">Pyanatomist</emphasis>
-          API, a python API that enables to drive <emphasis role="italic">Anatomist</emphasis>
-          application through python scripts. Refer to the <ulink url="#ana_training%pyanatomist"
-            >programming part of Anatomist training</ulink>  to learn how to use it.</para>
-        <para>**Example: Anatomist Show Volume**:
-          <programlisting>from brainvisa.processes import *
-from brainvisa.tools import aimsGlobals
-from brainvisa import anatomist
+::
 
-name = 'Anatomist Show Volume'
-roles = ('viewer',)
-userLevel = 0
+  self.parameter_name = value
 
-def validation():
-  anatomist.validation()
+Each parameter defined in the signature corresponds to an attribute of the process object.
 
-signature = Signature( 'read', ReadDiskItem( '4D Volume', aimsGlobals.anatomistVolumeFormats ), )
+**To set one or several parameters as optional**:
 
-def execution( self, context ):
-  a = anatomist.Anatomist()
-  return a.viewObject( self.read )
-          </programlisting>
-          </para>
-          <para>
-          This process will be used every time an item of type <emphasis role="italic">4D volume
-          </emphasis>needs to be visualized. The process is considered as a viewer because
-          it has the role viewer in roles attribute and because it has only one mandatory input
-          parameter.</para>
-          <warning>All <emphasis role="italic"
-            >Anatomist</emphasis> objects and window that should not be deleted at the end of the
-          process must be returned by the execution function. Indeed, by default any python object
-          is deleted when there are not references on it anymore. If the objects are returned, they
-          will remain visible until the viewer process is closed. </warning>
-            </sect2>
+::
 
-      </sect1>
-    </chapter>
+  self.setOptional(parameter_name)
+
+The user does not need to fill these parameters. Other parameters are mandatory, if the user doe not fill them, *BrainVisa* will not execute the process and will show an error message.
+
+**To link a parameter value to another parameter**:
+
+::
+
+  self.linkParameters(destination, sources [, function])
+  self.addLink(destination, sources [, function])
+
+The function :py:meth:`linkParameters <Parameterized.linkParameters>` is used for the links inside a process. To define links between steps of a pipeline, the function :py:meth:`addLink <Parameterized.addLink>` must be used.
+
+
+linkParameters
+##############
+
+The parameter *destination* value is linked to *sources*, which can be either one parameter or a list of parameters. If a value changes in *sources*, *BrainVisa* updates *destination*, if it still has its default value. If the destination parameter has been modified by the user, it has no more a default value and is not modified by such a link.
+
+The optional argument *function* is a function that is called when the link is activated. The value returned by this function is used to set the destination parameter value. If there is no function, the source parameter is used directly. Anyway, the value of *destination* is evaluated with :py:meth:`ReadDiskItem.findValue(value) <brainvisa.data.readdiskitem.ReadDiskItem.findValue>`. The signature of the function is: *function(process, process) -> value*.
+
+addLink
+#######
+
+This function does quite the same thing that the :py:meth:`linkParameters <Parameterized.linkParameters>` function except that the link is always activated when the sources change, even if destination has no more a default value. That is why this link can be used as an equality link between parameters of two different steps of a pipeline. For example, this function is used to define a link between the output of one step and the input of the next step.
+
+Using the :py:meth:`addLink <Parameterized.addLink>` method, the argument *function* is mandatory if there are several sources parameters: it takes as arguments the sources parameters and returns the value that must be used to find the destination parameter value: *addLink(process, **sources) -> value*.
+
+This is very useful to help the user fill in the process parameters. With the links correctly defined, the user will enter the first input parameter and *BrainVISA* will try to complete all other parameters automatically, trying to find values in the database for the other parameters using attributes of the first parameter. The default *BrainVisa* link mechanism assumes that parameters have common attributes, for example the protocol, subject, acquisition, which is generally the case.
+
+
+Execution
++++++++++
+
+This function is called when the process is started. All mandatory parameters must be set. This function is written in Python.
+
+::
+
+  def execution(self, context):
+      # function_body
+
+The *self* parameter of this function represents the process. It is mainly used to access parameters values:  *self.<parameter_name>*.
+
+The *context* object given as argument reprensents the execution context of the process.
+
+Indeed, a process can be started in different contexts:
+
+.. |eye| image:: images/eye.png
+.. |pencil| image:: images/pencil.png
+
+* The user starts the process by clicking on the *Run* button in the graphical interface.
+* The process is started via a script. It is possible to run brainvisa in batch mode (without any graphical interface) and to run a process via a python function:
+  ::
+
+    brainvisa.processes.defaultContext().runProcess(...)
+
+* The process is a converter, so it can be run automatically by *BrainVisa* when a conversion is needed for another process parameters.
+* The process is a viewer or an editor, it is run when the user clicks on the corresponding icon to view |eye| or edit |pencil| another process parameter.
+
+
+Execution context
+#################
+
+The *context* object offers several useful functions to interact with BrainVISA and to call system commands. Here are these functions:
+
+* :py:meth:`write <ExecutionContext.write>`, :py:meth:`warning <ExecutionContext.warning>`, :py:meth:`error <ExecutionContext.error>`: prints a message, either in the graphical process window (in GUI mode) or in the terminal (in batch mode).
+* :py:meth:`log <ExecutionContext.log>`: writes a message in the *BrainVisa* log file.
+* :py:meth:`ask <ExecutionContext.ask>`, :py:meth:`dialog <ExecutionContext.dialog>`: asks a question to the user.
+* :py:meth:`temporary <ExecutionContext.temporary>`: creates a temporary file.
+* :py:meth:`system <ExecutionContext.system>`: calls a system command.
+* :py:meth:`runProcess <ExecutionContext.runProcess>`: runs a *BrainVisa* process.
+* :py:meth:`checkInterruption <ExecutionContext.checkInterruption>`: defines a breakpoint.
+
+
+Pipeline
+--------
+
+A pipeline is a particular process that is a combination of several other processes. It describes through a sort of graph the processes that it contains and the links between them. Pipelines are convenient for users because they use the parameters link system over several processes and chain their execution, so it requires less user interaction and is quicker to run.
+
+**Writing a pipeline**
+
+
+Execution graph
++++++++++++++++
+
+A pipeline file is very similar to a process file, except in the initialization function where you have to define the execution graph of the pipeline. This is done by calling:
+
+::
+
+  self.setExecutionNode(eNode)
+  eNode <- SerialExecutionNode | ProcessExecutionNode | ParallelExecutionNode | SelectionExecutionNode
+
+The different types of execution nodes are detailed below.
+
+SerialExecutionNode
+###################
+
+:py:class:`SerialExecutionNode` represents a series of processes that will be executed serially. It is generally the main node of a pipeline. It is used when the results of one step are needed to go on with next step.
+
+::
+
+  SerialExecutionNode(name='', optional=False, selected=True, guiOnly=False, parameterized=None, stopOnError=True)
+
+Example (first node of a pipeline):
+
+::
+
+  eNode = SerialExecutionNode(self.name, parameterized=self)
+
+To add the different steps, use the method: :py:meth:`\<serial_execution_node\>.addChild(\<name\>, \<execution_node\>) <ExecutionNode.addChild>`
+
+
+ParallelExecutionNode
+#####################
+
+Like :py:class:`SerialExecutionNode`, :py:class:`ParallelExecutionNode` it has children, but they may be executed in parallel.
+
+::
+
+  ParallelExecutionNode(name='', optional=False, selected=True, guiOnly=False, parameterized=None, stopOnError=True)
+
+Example:
+
+::
+
+  eNode = ParallelExecutionNode('SulciRecognition', optional=True, selected=0)
+
+
+ProcessExecutionNode
+####################
+
+:py:class:`ProcessExecutionNode` represents a leaf of the execution graph, this node cannot have children. It only calls one process, but obviously this process can be itself a pipeline. Any simple process has this type of execution node.
+
+::
+
+  ProcessExecutionNode(self, process, optional=False, selected=True, guiOnly=False)
+
+Example:
+
+::
+
+  eNode.addChild('ConvertDatabase', ProcessExecutionNode('convertDatabase', optional=True))
+
+
+SelectionExecutionNode
+######################
+
+:py:class:`SelectionExecutionNode` reprensents a choice between several alternative children. The user will select the process he wants to execute.
+
+::
+
+  SelectionExecutionNode(name='', optional=False, selected=True, guiOnly=False, parameterized=None, stopOnError=True)
+
+Example:
+
+::
+
+  eNode = SelectionExecutionNode(self.name, parameterized=self)
+  eNode.addChild('BrainSegmentation05',
+                 ProcessExecutionNode('BrainSegmentation', selected=0))
+  eNode.addChild('BrainSegmentation04',
+                 ProcessExecutionNode('VipGetBrain', selected=True))
+
+
+Example of a serial pipeline composed of 3 processes
+####################################################
+
+::
+
+  eNode = SerialExecutionNode(self.name, parameterized=self)
+
+  eNode.addChild('ConvertDatabase',
+                 ProcessExecutionNode('convertDatabase', optional=True))
+
+  eNode.addChild('CheckDatabase',
+                 ProcessExecutionNode('checkDatabase', optional=True))
+
+  eNode.addChild('CleanDatabase',
+                 ProcessExecutionNode('cleanDatabase', optional=True))
+
+
+Links between steps
++++++++++++++++++++
+
+Generally, the different steps of a pipeline are linked. For example, the output of the first process is the input of the second process. These links must be explicitely defined. So *BrainVisa* can automatically fill in parameters of the different processes that composed the pipeline.
+
+::
+
+  execution_node.addLink(destination_parameter, source_parameter)
+  #Example:
+  eNode.addLink('ConvertDatabase.database', 'database')
+  eNode.addLink('database', 'ConvertDatabase.database')
+  # This is equivalent to:
+  eNode.addDoubleLink('ConvertDatabase.database', 'database')
+
+In this example, the parameter database in the pipeline and in the sub-process *ConvertDatabase* are linked in both directions. So if the user changes the parameter value in the main process interface or in the sub-process interface, the value will be reported in the linked parameter.
+
+.. warning::
+
+  Sometimes, it can be necessary to remove existing links in a process when it is included in a pipeline to avoid having two incompatible links towards the same parameter.
+
+.. figure:: images/pipeline_links.png
+  :align: center
+
+  Example of a pipeline where links should be removed
+
+In this example, when including the process *A* and the process *B* in a pipeline, new links are created to assess that *A.Output1* is equal to *B.Input1* and *A.Output2* is equal to *B.Input2*. With these pipeline links, *B.Input2* becomes linked to 2 parameters: *A.Output2* and *B.Input1*. So, if the link between *Input1* and *Input2* in process *B* is not removed, the value of *Input2* will be computed 2 times. But the second time (with the link in process *B*), the value of *Input2* cannot be found because the file does not exist yet as it is an output of the pipeline. :py:class:`WriteDiskItems <brainvisa.data.writediskitem.WriteDiskItem>` can generate new filenames for non-existing files but :py:class:`ReadDiskItems <brainvisa.data.readdiskitem.ReadDiskItem>` cannot.
+
+In this case, this link should be removed in process *B* when creating the pipeline:
+
+::
+
+  eNode.addChild("processA", ProcessExecutionNode("processA"))
+  eNode.addChild("processB", ProcessExecutionNode("processB"))
+  eNode.addDoubleLink("processA.Output1", "processB.Input1")
+  eNode.addDoubleLink("processA.Output2", "processB.Input1")
+  eNode.processB.removeLink("Input2", "Input1")
+
+
+Graphical user interface
+------------------------
+
+A graphical user interface is automatically generated by *BrainVisa* for each process. It allows the user to fill in the process parameters via a form, to run and iterate the process via buttons and to see output log via a text panel. This default interface can be customized in several ways to better fit the user needs. This section will give an overview of the available GUI customizations.
+
+Replacing the buttons
++++++++++++++++++++++
+
+By default, two buttons are displayed in a process window: *Execute* to run the process and *Iterate* to repeat the process on a set of data. It is possible to replace these default buttons with a custom interface by redefining the method :py:meth:`inlineGUI <Process.inlineGUI>`.
+
+::
+
+  def inlineGUI(self, values, context, parent, externalRunButton=False):
+      widget = ... # Code to create the Qt widget that will replace the buttons
+      return widget
+
+The widget must have the parent widget given as parameter as a parent.
+
+**Example** (from the *ROI drawing* process in the *Tools -> roi* toolbox)
+
+::
+
+  def inlineGUI(self, values, context, parent, externalRunButton=False):
+      btn = QPushButton(_t_('Show'), parent)
+      btn.connect(btn, SIGNAL('clicked()'), context._runButton)
+      return btn
+
+.. figure:: images/roi_drawing.png
+  :align: center
+
+  ROI drawing process
+
+Here the default buttons are replaced with one button labelled *"Show"*. This button has the same role as the *Execute* button because its *clicked* signal is connected to the *_runButton* callback function, that is connected to *Execute* button by default.
+
+The default GUI contains:
+
+* An *Execute/Interrupt* button whose click event is linked to the *_runButton* callback
+* An *Iterate* button whose click event is linked to the *_iterateButton* callback
+* If the process is an iteration, an *Iterrupt current step* button whose click event is linked to the *_iterruptStepButton* callback
+* If parrallel execution is available, a *Distribute* button whose click event is linked to the *_distributedButton* callback
+
+
+Calling GUI functions
++++++++++++++++++++++
+
+Sometimes, you do not need to customize the process parameter interface but you want to use custom windows during process execution to interact with the user. Of course, it is possible to do so but you will need to use a specific object to call GUI functions: the object returned by :py:func:`brainvisa.processing.qt4gui.neuroProcessesGUI.mainThreadActions`. Indeed, the process execution function is always started in a new thread to avoid blocking the whole application during process execution. But graphical interface functions have to be called in the main thread where the *Qt* event loop is running. The role of the *mainThreadActions* object is to enable passing actions to the main thread.
+
+The mainThreadActions object has two methods:
+
+.. currentmodule:: brainvisa.processing.qt4gui.neuroProcessesGUI
+
+* :py:meth:`push(self, function, *args, **kwargs) <soma.qtgui.api.QtThreadCall.push>`:
+  adds a function with its parameters to the actions list. It will be executed as soon as possible.
+
+* :py:meth:`call(self, function, *args, **kwargs) <soma.qtgui.api.QtThreadCall.call>` -> *function* result: sends the function call to be executed in the Qt thread and wait for the result.
+
+**Example** (from the *Show Scalar Features* process in the Tools -> viewers* toolbox):
+
+::
+
+  from brainvisa.processing.qt4gui.neuroProcessesGUI import mainThreadActions
+  import brainvisa.data.qtgui.scalarFeaturesViewer as sfv
+
+  def execution(self, context):
+      data = readData(self.features.fullPath())
+      view = mainThreadActions().call(sfv.ScalarFeaturesViewer)
+      mainThreadActions().push(view.setData, data)
+      mainThreadActions().push(view.show)
+      return view
+
+First, the :py:meth:`call <soma.qtgui.api.QtThreadCall.call>` method of *mainThreadActions* is called to create an instance of *sfv.ScalarFeaturesViewer* widget. The :py:meth:`call <soma.qtgui.api.QtThreadCall.call>` method waits for the call to be executed and returns the result: *view*. The result can then be used in the rest of the execution function. When we do not need the result of the next functions, the :py:func:`push <soma.qtgui.api.QtThreadCall.push>` method of the *mainThreadActions* object can be used.
+
+.. figure:: images/show_scalar_features.png
+  :align: center
+
+  Show scalar features process
+
+
+Changing the whole process window
++++++++++++++++++++++++++++++++++
+
+In some cases, you may need to customize the whole process interface and not use at all the default interface generated from the process's signature. It is possible to replace this default interface with a custom interface by redefining the method **overrideGUI**.
+
+::
+
+  def overrideGUI(self):
+      widget = ... # Code to create the Qt widget that will replace the default interface of the process
+      return widget
+
+**Example** (from the *Database browser* process in the *Data Management* toolbox):
+
+::
+
+  from brainvisa.data.qtgui.hierarchyBrowser import HierarchyBrowser
+
+  def overrideGUI( self ):
+      return HierarchyBrowser()
+
+The HierarchyBrowser widget will be displayed when the process is opened instead of the default process window.
+
+.. figure:: images/database_browser.png
+  :align: center
+
+  Database browser process
+
+.. currentmodule:: brainvisa.processes
+
+.. note::
+
+  Note that the method **overrideGUI** is an optional addition on a specific process. Its API is not defined at all in :py:class:`Process`, but is used if the method is actually present in a process object.
+
+
+Creating a viewer
++++++++++++++++++
+
+Another way to add graphical features to *BrainVisa* is the creation of a viewer specialized for a type of data. A viewer is a special process that displays a view of the data given in parameters. At initialization, *BrainVisa* indexes all the viewers by type of data in order to call the appropriate viewer when a visualization of data is requested.
+
+The |eye| button in process parameters interface is linked to the viewer associated to the data type of the parameter. In the *Database browser* process, the view command in contextual menu also calls the viewer associated to the data type of the current item.
+
+A lot of *BrainVisa* viewers use :anatomist:`Anatomist <user_doc/index.html>` to display neuroimaging data. These viewers uses the :pyanatomist:`Pyanatomist <index.html>` API, a python API that enables to drive *Anatomist* through python scripts. Refer to the :pyanatomist:`PyAnatomist tutorial <pyanatomist_tutorial.html>` to learn how to use it.
+
+*BrainVISA* has a slightly specialized :py:mod:`brainvisa.anatomist` module, which wraps the standard *PyAnatomist* module, and which allows to select a specific implementation, and to make smooth links with *BrainVisa* databases for automatic coordinates systems handling.
+
+**Example: Anatomist Show Volume**:
+
+::
+
+  from brainvisa.processes import *
+  from brainvisa.tools import aimsGlobals
+  from brainvisa import anatomist
+
+  name = 'Anatomist Show Volume'
+  roles = ('viewer',)
+  userLevel = 0
+
+  def validation():
+      anatomist.validation()
+
+  signature = Signature('read',
+      ReadDiskItem('4D Volume', aimsGlobals.anatomistVolumeFormats),)
+
+  def execution(self, context):
+      a = anatomist.Anatomist()
+      return a.viewObject(self.read)
+
+This process will be used every time an item of type *4D volume* needs to be visualized. The process is considered as a viewer because it has the role *viewer* in *roles* attribute and because it has only one mandatory input parameter.
+
+.. warning::
+
+  All *Anatomist* objects and windows that should not be deleted at the end of the process must be returned by the execution function. Indeed, by default any python object is deleted when there are not references on it anymore. If the objects are returned, they will remain visible until the viewer process is closed.
+
+
 
 ---------------
 
 .. _toolboxes:
 
 .. _translation:
-
-.. _writeDiskItem:
-
-.. _data:
 

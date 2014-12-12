@@ -31,6 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+import brainvisa.processes
 from datetime import date
 from datetime import datetime
 from datetime import timedelta
@@ -48,7 +49,6 @@ from brainvisa.configuration.qt4gui import neuroConfigGUI
 from brainvisa.processing.qt4gui import neuroLogGUI
 from brainvisa.data import neuroData
 from brainvisa.history import ProcessExecutionEvent
-import brainvisa.processes
 from brainvisa.data.neuroDiskItems import DiskItem
 from brainvisa.data.readdiskitem import ReadDiskItem
 from brainvisa.data.writediskitem import WriteDiskItem
@@ -1100,6 +1100,16 @@ class ExecutionContextGUI( brainvisa.processes.ExecutionContext):
 
   
   def mainThreadActions( self ):
+    '''Returns an object which allows to pass actions to be executed in the main thread. Its implementation may differ according to the presence of a running graphics event loop, thus the returned object may be an instance of different classes: :py:class:`soma.qtgui.api.QtThreadCall`, :py:class:`soma.qtgui.api.FakeQtThreadCall`, or even something else.
+
+    In any case the returned *mainthreadactions* object has 2 methods, *call()* and *push()*:
+
+    ::
+
+      result = mainthreadactions.call(function, *args, **kwargs)
+      #or
+      mainthreadactions.push(function, *args, **kwargs)
+    '''
     return mainThreadActions()
 
   def showProgress( self, value, maxval=None ):
@@ -4237,6 +4247,16 @@ def reloadToolboxesGUI():
   
 #----------------------------------------------------------------------------
 def mainThreadActions():
+  '''Returns an object which allows to pass actions to be executed in the main thread. Its implementation may differ according to the presence of a running graphics event loop, thus the returned object may be an instance of different classes: :py:class:`soma.qtgui.api.QtThreadCall`, :py:class:`soma.qtgui.api.FakeQtThreadCall`, or even something else.
+
+  In any case the returned *mainthreadactions* object has 2 methods, *call()* and *push()*:
+
+  ::
+
+    result = mainthreadactions.call(function, *args, **kwargs)
+    #or
+    mainthreadactions.push(function, *args, **kwargs)
+  '''
   return _mainThreadActions
 
 #----------------------------------------------------------------------------
