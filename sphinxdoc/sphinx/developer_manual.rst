@@ -355,113 +355,129 @@ To create an instance, you can use one of the following constructors:
 * :py:class:`ReadDiskItem <brainvisa.data.readdiskitem.ReadDiskItem>`: the parameter value is a :py:class:`DiskItem <brainvisa.data.neuroDiskItems.DiskItem>` object and represents one or several readeable files (see below :ref:`readDiskItem`).
 * :py:class:`WriteDiskItem <brainvisa.data.writediskitem.WriteDiskItem>`: the parameter value is a :py:class:`DiskItem <brainvisa.data.neuroDiskItems.DiskItem>` object and represents one or several writeable files (see below :ref:`writeDiskItem`).
 
-<para>
-          <emphasis role="bold">Example</emphasis>: Here is the signature of a thresholding process. *input* is the input image, *output* is the output image. *threshold* is the threshold value and *method* enables to choose the thresholding method.
-          <programlisting>
-signature = Signature(
-  'input', ReadDiskItem( "Volume 4D", [ 'GIS Image', 'VIDA image' ] ),
-  'output', WriteDiskItem( 'Volume 4D', 'GIS Image' ),
-  'threshold', Number(),
-  'method', Choice( 'gt', 'ge', 'lt', 'le' )
-)
-        </programlisting>
-        </para>
-        <para>
-          Some of these parameter types will be detailled below.
-        </para>
-        <sect3 id="parameter">
-        <title>Parameter</title>
-        Some attributes are common to all parameters:
-        <itemizedlist>
-        <listitem>*mandatory*: indicates if the parameter must have a value or not, default is True.</listitem>
-        <listitem>*userLevel*: indicates the minimum userLevel needed to see this parameter. Default is 0.</listitem>
-        <listitem>*databaseUserLevel*: Indicates the minimum userLevel needed to allow database selection for this parameter (useful only for diskitems).</listitem>
-        <listitem>*browseUserLevel*: Indicates the minimum userLevel needed to allow filesystem selection for this parameter (useful only for diskitems).</listitem>
-        </itemizedlist>
-        </sect3>
-        <sect3 id="choice">
-          <title>Choice</title>
-          <para>
-            <emphasis role="bold">Syntax</emphasis>
-            <programlisting>
-Choice( choice_list )
-<emphasis>choice_list</emphasis> &lt;- choice_item, ...
-<emphasis>choice_item</emphasis> &lt;- value
-<emphasis>choice_item</emphasis> &lt;- ( label, value )
-            </programlisting>
-            </para>
-            <para>
-            A <classname>Choice</classname> parameter allows the user to choose a value among a set of possible values. This set is given as parameter to the constructor. Each value is associated to a label, which is the string shown in the graphical interface, possibly after a translation. That's why a choice item can be a couple (label, value). When a choice item is a simple value, the label will be the string representation of the value ( label=str(value) ).
-          </para>
-          <para>
-            <emphasis role="bold">Examples</emphasis>
-            In the following example, the user can choose a number among three.
-            <programlisting>
-Choice( 1, 2, 3 )
-            </programlisting>
-          </para>
-          <para>
-            The following example associates a label to each number.
-            <programlisting>
-Choice( ( 'first', 1 ), ( 'second', 2 ), ( 'third', 3 ) )
-            </programlisting>
-          </para>
-        </sect3>
-        <sect3 id="readDiskItem">
-          <title>ReadDiskItem</title>
-          <para>
-            The <classname>ReadDiskItem</classname> class is defined in ``brainvisa.data.readdiskitem``.
-          </para>
-          <para>
-            <emphasis role="bold">Syntax</emphasis>
-            <programlisting>
-ReadDiskItem( file_type_name, formats [, required_attributes, enableConversion=1, ignoreAttributes=0 ])
-formats &lt;- format_name
-formats &lt;- [ format_name, ... ]
-required_attributes &lt;- { name: value, ...}
-           </programlisting>
-           </para>
-           <para>
-           The value of this parameter is a readable DiskItem. This parameter type uses *BrainVisa* data organization ( see <xref linkend="bv_pg%data"/> ) to select possible files.</para>
-           <para>*file_type_name* enables to select files of a specific type, that is to say DiskItem objects whose type is either file_name_type or a derived type.</para>
-           <para>The *formats* list gives the exhaustive list of accepted formats for this parameter. But if there are some converters ( see <xref linkend="roles"/>) from other formats to one of the accepted formats, they will be accepted too because *BrainVisa* can automatically convert the parameter (if enableConversion value is 1, which is the default).</para>
-           <para>*required_attributes* enables to add some conditions on the parameter value: it will have to match the given attributes value.
-          </para>
-           <warning>The type and formats given in parameters of ReadDiskItem constructor must have been defined in *BrainVisa* types and hierarchies files.</warning>
+**Example**: Here is the signature of a thresholding process. *input* is the input image, *output* is the output image. *threshold* is the threshold value and *method* enables to choose the thresholding method.
 
-          <para>
-            This method ease file selection by showing the user only files that matches type and format required for this parameter. It also enables *BrainVisa* to automatically fill some parameters values. The <classname>ReadDiskItem</classname> class has methods to search matching diskitems in *BrainVisa* databases:
-            <itemizedlist>
-              <listitem><function>ReadDiskItem.findItems( &lt;database directory diskitem&gt;, &lt;attributes&gt;)</function>: this method returns a list of diskitems that exist in that database and match type, format and required attributes of the parameter. It is possible to specify additional attributes in the method parameters. Found items will have the selected value for these attributes if they have the attribute, but these attributes are not mandatory. That's the difference with the required attributes set in the constructor.</listitem>
-              <listitem><function>ReadDiskItem.findValues( &lt;value&gt; )</function>: this method searches diskitems matching the value in parameter. This value can be a diskitem, a filename, a dictionary of attributes.</listitem>
-              <listitem><function>ReadDiskItem.findValue( &lt;value&gt; )</function>:  this method returns the best among possible value, that is to say with the more common attributes, highest priority. If there is an ambiguity, it returns None.</listitem>
-            </itemizedlist>
-          </para>
-          <para>
-            <emphasis role="bold">Examples:</emphasis>
-            <programlisting>
-ReadDiskItem( 'Volume 3D', [ 'GIS Image', 'VIDA image' ] )
-ReadDiskItem( 'Cortical folds graph', 'Graph', requiredAttributes = { 'labelled': 'No', 'side': 'left'} )
-            </programlisting>
-            </para>
-            <para>In the first example, the parameter will accept only a file whose type is 3D Volume and format is either GIS image or VIDA image, or a format that can be converted to GIS or VIDA image. These types and formats must have been defined first.</para>
-            <para>In the second example, the parameter value type must be "Cortical folds graph", its format must be "Graph". The required attributes add some conditions: the graph isn't labelled and represents the left hemisphere.
-          </para>
-        </sect3>
-        <sect3 id="writeDiskItem">
-          <title>WriteDiskItem</title>
-          <programlisting>
-WriteDiskItem( file_type_name, formats [, required_attributes={}, exactType=0, ignoreAttributes=0] )
-formats &lt;- format_name
-formats &lt;- [ format_name, ... ]
-        </programlisting>
-        <para>
-          This parameter type is very close to <classname>ReadDiskItem</classname> (<classname>WriteDiskItem</classname> derives from <classname>ReadDiskItem</classname>), but it accepts writable files. That is to say, it accepts not only files that are accepted by a <classname>ReadDiskItem</classname> but also files that doesn't exist yet.
-          It has the same search methods as the <classname>ReadDiskItem</classname> class but these methods generate diskitems that may not exist yet, using data ontology information.
-        </para>
-        </sect3>
-      </sect2>
-      </sect1>
+::
+
+  signature = Signature(
+      'input', ReadDiskItem("Volume 4D", ['GIS Image', 'VIDA image']),
+      'output', WriteDiskItem('Volume 4D', 'GIS Image'),
+      'threshold', Number(),
+      'method', Choice('gt', 'ge', 'lt', 'le')
+  )
+
+Some of these parameter types will be detailled below.
+
+.. _parameter:
+
+Parameter
+#########
+
+Some attributes are common to all parameters:
+
+* *mandatory*: indicates if the parameter must have a value or not, default is True.
+* *userLevel*: indicates the minimum userLevel needed to see this parameter. Default is 0.
+* *databaseUserLevel*: Indicates the minimum userLevel needed to allow database selection for this parameter (useful only for diskitems).
+* *browseUserLevel*: Indicates the minimum userLevel needed to allow filesystem selection for this parameter (useful only for diskitems).
+
+
+.. _choice:
+
+Choice
+######
+
+**Syntax**
+
+::
+
+  Choice(choice_list)
+  choice_list <- choice_item, ...
+  choice_item <- value
+  choice_item <- (label, value)
+
+A :py:class:`Choice` parameter allows the user to choose a value among a set of possible values. This set is given as parameter to the constructor. Each value is associated to a label, which is the string shown in the graphical interface, possibly after a translation. That's why a choice item can be a couple *(label, value)*. When a choice item is a simple value, the label will be the string representation of the value (``label = str(value)``).
+
+**Examples**
+
+In the following example, the user can choose a number among three.
+
+::
+
+  Choice(1, 2, 3)
+
+The following example associates a label to each number.
+
+::
+
+  Choice(('first', 1), ('second', 2), ('third', 3))
+
+.. _readDiskItem:
+
+ReadDiskItem
+############
+
+.. currentmodule:: brainvisa.data.readdiskitem
+
+The :py:class:`ReadDiskItem` class is defined in :py:mod:`brainvisa.data.readdiskitem`.
+
+**Syntax**
+
+::
+
+  ReadDiskItem(file_type_name, formats [, required_attributes, enableConversion=1, ignoreAttributes=0])
+  formats <- format_name
+  formats <- [format_name, ...]
+  required_attributes <- {name: value, ...}
+
+The value of this parameter is a readable **DiskItem**. This parameter type uses *BrainVisa* data organization (see :ref:`data`) to select possible files.
+
+*file_type_name* enables to select files of a specific type, that is to say **DiskItem** objects whose type is either ``file_name_type`` or a derived type.
+
+The *formats* list gives the exhaustive list of accepted formats for this parameter. But if there are some converters (see :ref:`roles`) from other formats to one of the accepted formats, they will be accepted too because *BrainVisa* can automatically convert the parameter (if *enableConversion* value is *1*, which is the default).
+
+*required_attributes* enables to add some conditions on the parameter value: it will have to match the given attributes value.
+
+.. warning::
+
+  The type and formats given in parameters of :py:class:`ReadDiskItem` constructor must have been defined in *BrainVisa* types and hierarchies files.
+
+This method eases file selection by showing the user only files that matches type and format required for this parameter. It also enables *BrainVisa* to automatically fill some parameters values. The :py:class:`ReadDiskItem` class has methods to search matching diskitems in *BrainVisa* databases:
+
+* :py:meth:`ReadDiskItem.findItems(\<database directory diskitem\>, \<attributes\>) <ReadDiskItem.findItems>`: this method returns a list of diskitems that exist in that database and match type, format and required attributes of the parameter. It is possible to specify additional attributes in the method parameters. Found items will have the selected value for these attributes if they have the attribute, but these attributes are not mandatory. That's the difference with the required attributes set in the constructor.
+
+* :py:meth:`ReadDiskItem.findValues(\<value\>) <ReadDiskItem.findValues>`: this method searches diskitems matching the value in parameter. This value can be a diskitem, a filename, a dictionary of attributes.
+
+* :py:meth:`ReadDiskItem.findValue(\<value\>) <ReadDiskItem.findValue>`:  this method returns the best among possible value, that is to say with the more common attributes, highest priority. If there is an ambiguity, it returns *None*.
+
+**Examples:**
+
+::
+
+  ReadDiskItem('Volume 3D', ['GIS Image', 'NIFTI-1 image'])
+  ReadDiskItem('Cortical folds graph', 'Graph', requiredAttributes={'labelled': 'No', 'side': 'left'})
+
+In the first example, the parameter will accept only a file whose type is 3D Volume and format is either *GIS image* or *NIFTI-1 image*, or a format that can be converted to *GIS* or *NIFTI-1 image*. These types and formats must have been defined first.
+
+In the second example, the parameter value type must be *"Cortical folds graph"*, its format must be *"Graph"*. The required attributes add some conditions: the graph is not labelled and represents the left hemisphere.
+
+
+.. _writeDiskItem:
+
+WriteDiskItem
+#############
+
+::
+
+  WriteDiskItem(file_type_name, formats [, required_attributes={}, exactType=0, ignoreAttributes=0])
+  formats <- format_name
+  formats <- [format_name, ...]
+
+This parameter type is very close to <classname>ReadDiskItem</classname> (<classname>WriteDiskItem</classname> derives from <classname>ReadDiskItem</classname>), but it accepts writable files. That is to say, it accepts not only files that are accepted by a <classname>ReadDiskItem</classname> but also files that doesn't exist yet.
+It has the same search methods as the <classname>ReadDiskItem</classname> class but these methods generate diskitems that may not exist yet, using data ontology information.
+</para>
+</sect3>
+</sect2>
+</sect1>
 
       <sect1>
         <title>Functions</title>
@@ -492,21 +508,21 @@ def initialization( self ):
           The self parameter represents the process (and is an instance of <classname>Process</classname> class).
           </para>
           <para>
-            <emphasis role="bold">To  initialize parameters values</emphasis>:
+            **To  initialize parameters values**:
           <programlisting>
 self.<emphasis>parameter_name</emphasis> = <emphasis>value</emphasis>
           </programlisting>
           Each parameter defined in the signature correspond to an attribute of the process object.
         </para>
         <para>
-          <emphasis role="bold">To set one or several parameters as optional</emphasis>:
+          **To set one or several parameters as optional**:
         <programlisting>
 self.setOptional( <emphasis>parameter_name</emphasis> )
         </programlisting>
         The user does not need to fill these parameters. Other parameters are mandatory, if the user doesn't fill them, *BrainVisa* will not execute the process and will show an error message.
         </para>
         <para>
-          <emphasis role="bold">To link a parameter value to another parameter</emphasis>:
+          **To link a parameter value to another parameter**:
         <programlisting>
 self.linkParameters( destination, sources [, function] )
 self.addLink( destination, sources [, function] )
@@ -813,7 +829,7 @@ eNode.processB.removeLink("Input2", "Input1")
   widget=<emphasis>Code to create the Qt widget that will replace the buttons</emphasis>
   return widget
 </programlisting>The widget must have the parent widget given in parameters as a parent.</para>
-<para><emphasis role="bold">Example</emphasis> (from <emphasis>ROI drawing</emphasis> process in toolbox <emphasis>Tools -&gt; roi</emphasis>)
+<para>**Example** (from <emphasis>ROI drawing</emphasis> process in toolbox <emphasis>Tools -&gt; roi</emphasis>)
   <programlisting>def inlineGUI( self, values, context, parent, externalRunButton=False ):
     btn = QPushButton( _t_( 'Show' ), parent )
     btn.connect( btn, SIGNAL( 'clicked()' ), context._runButton )
@@ -861,7 +877,7 @@ eNode.processB.removeLink("Input2", "Input1")
               </listitem>
             </itemizedlist>
           </para>
-        <para><emphasis role="bold">Example</emphasis> (from <emphasis role="italic">Show Scalar
+        <para>**Example** (from <emphasis role="italic">Show Scalar
             Features</emphasis> process in toolbox <emphasis role="italic">Tools -&gt;
             viewers</emphasis>):
           <programlisting>from brainvisa.processing.qt4gui.neuroProcessesGUI import mainThreadActions
@@ -901,7 +917,7 @@ def execution( self, context ):
   return widget</programlisting>
         </para>
             </sect2>
-      <para><emphasis role="bold">Example</emphasis> (from the <emphasis role="italic">Database
+      <para>**Example** (from the <emphasis role="italic">Database
           browser</emphasis> process in <emphasis role="italic">Data Management</emphasis> toolbox
         ):<programlisting>from brainvisa.data.qtgui.hierarchyBrowser import HierarchyBrowser
 
@@ -930,7 +946,7 @@ def overrideGUI( self ):
           API, a python API that enables to drive <emphasis role="italic">Anatomist</emphasis>
           application through python scripts. Refer to the <ulink url="#ana_training%pyanatomist"
             >programming part of Anatomist training</ulink>  to learn how to use it.</para>
-        <para><emphasis role="bold">Example: Anatomist Show Volume</emphasis>:
+        <para>**Example: Anatomist Show Volume**:
           <programlisting>from brainvisa.processes import *
 from brainvisa.tools import aimsGlobals
 from brainvisa import anatomist
@@ -970,9 +986,7 @@ def execution( self, context ):
 
 .. _translation:
 
-.. _choice:
-
-.. _readDiskItem:
-
 .. _writeDiskItem:
+
+.. _data:
 
