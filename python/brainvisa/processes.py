@@ -2297,15 +2297,15 @@ class ExecutionContext( object ):
 
   def runProcess( self, _process, *args, **kwargs ):
     """
-    It is possible to call a sub-process in the current process by calling context.runProcess. 
-    
+    It is possible to call a sub-process in the current process by calling context.runProcess.
+
     The first argument is the process identifier, which is either the filename wihtout extension of the process or its english name. 
-    The other arguments are the values of the process parameters. All mandatory argument must have a value. 
+    The other arguments are the values of the process parameters. All mandatory argument must have a value.
     The function returns the value returned by the sub-process execution method.
-    
+
     *Example*
 
-    >>> context.runProcess( 'do_something', self.input, self.output, value = 3.14 )
+    >>> context.runProcess('do_something', self.input, self.output, value=3.14)
 
     In this example, the process do_something is called with self.input as the first paramter value, self.ouput as the second parameter value and 3.14 to the parameter named value.
     """
@@ -2658,7 +2658,9 @@ class ExecutionContext( object ):
 
   def system( self, *args, **kwargs ):
     """
-    This function is used to call system commands. It is very similar to functions like os.system in Python and system in C. The main difference is the management of messages sent on standard output. These messages are intercepted and reported in BrainVISA interface according to the current execution context.
+    This function is used to call system commands. It is very similar to functions like ``os.system()`` in Python and ``system()`` in C. The main difference is the management of messages sent on standard output. These messages are intercepted and reported in *BrainVISA* interface according to the current execution context.
+
+    Moreover, a command  started using this function can be interrupted via the *Interrupt* button in the interface which is not the case if the python ``os.system()`` function is used directly.
 
     If the command is given as one argument, it is converted to a string and passed to the system. If there are several arguments, each argument is converted to a string, surrounded by simple quotes and all elements are joined, separated by spaces. The resulting command is passed to the system. The second method is recommended because the usage of quotes enables to pass arguments that contain spaces. The function returns the value returned by the system command.
 
@@ -2682,8 +2684,8 @@ class ExecutionContext( object ):
 
     >>> arg1 = 'x'
     >>> arg2 = 'y z'
-    >>> context.system( 'command ' + arg1 + ' ' + arg2 )
-    >>> context.system( 'command', arg1, arg2 )
+    >>> context.system('command ' + arg1 + ' ' + arg2)
+    >>> context.system('command', arg1, arg2)
 
     The first call generates the command command x y z which calls the commands with 3 parameters. The second call generates the command 'command' 'x' 'y z' which calls the command with two parameters.
     """
@@ -2836,13 +2838,13 @@ class ExecutionContext( object ):
   def temporary( self, format, diskItemType = None ):
     """
     This method enables to create a temporary DiskItem. The argument format is the temporary data format. The optional argument type is the data type. It generates one or several unique filenames (according to the format) in the temporary directory of BrainVISA (it can be changed in BrainVISA configuration). No file is created by this function. The process has to create it. The temporary files are deleted automatically when the temporary diskitem returned by the function is no later used.
-    
+
     *Example*
-    
-    >>> tmp = context.temporary( 'GIS image' )
-    >>> context.runProcess( 'threshold', self.input, tmp, self.threshold )
-    >>> tmp2 = context.temporary( 'GIS image' )
-    >>> context.system( 'erosion', '-i', tmp.fullPath(), '-o', tmp2.fullPath(), '-s', self.size )
+
+    >>> tmp = context.temporary('GIS image')
+    >>> context.runProcess('threshold', self.input, tmp, self.threshold)
+    >>> tmp2 = context.temporary('GIS image')
+    >>> context.system('AimsErosion', '-i', tmp.fullPath(), '-o', tmp2.fullPath(), '-s', self.size)
     >>> del tmp
 
     In this example, a temporary data in GIS format is created and it is used to store the output of the process threshold. Then a new temporary data is created to store the output of a command line. At the end, the variable tmp is deleted, so the temporary data is no more referenced and the corresponding files are deleted.
@@ -2852,7 +2854,11 @@ class ExecutionContext( object ):
 
   def write( self, *messages, **kwargs ):
     """
-     This method is used to print information messages during the process execution. All arguments are converted into strings and joined to form the message. This message may contain HTML tags for an improved display. The result vary according to the context. If the process is run via its graphical interface, the message is displayed in the process window. If the process is run via a script, the message is displayed in the terminal. The message can also be ignored if the process is called automatically by brainvisa or another process.
+    This method is used to print information messages during the process execution. All arguments are converted into strings and joined to form the message. This message may contain HTML tags for an improved display. The result vary according to the context. If the process is run via its graphical interface, the message is displayed in the process window. If the process is run via a script, the message is displayed in the terminal. The message can also be ignored if the process is called automatically by brainvisa or another process.
+
+    ::
+
+      context.write("Computing threshold of <i>", self.input.name, "</i>..." )
     """
     self.checkInterruption()
     if messages:
@@ -2867,7 +2873,7 @@ class ExecutionContext( object ):
       if outputLogFile and not outputLogFile.closed:
         print >> outputLogFile, msg
         outputLogFile.flush()
-        
+
   def _write( self, html ):
     if not hasattr( self, '_writeHTMLParser' ):
       self._writeHTMLParser = htmllib.HTMLParser( formatter.AbstractFormatter(
@@ -2900,8 +2906,8 @@ class ExecutionContext( object ):
 
     *Example*
 
->>> if context.ask( 'Is the result ok ?', 'yes', 'no') == 1:
->>>  try_again()
+>>> if context.ask('Is the result ok ?', 'yes', 'no') == 1:
+>>>     try_again()
 
     """
     self.checkInterruption()
@@ -2927,12 +2933,12 @@ class ExecutionContext( object ):
 
     *Example*
 
->>> dial = context.dialog( 1, 'Enter a value', Signature( 'param', Number() ), _t_( 'OK' ), _t_( 'Cancel' ) )
->>> dial.setValue( 'param', 0 )
+>>> dial = context.dialog(1, 'Enter a value', Signature('param', Number()), _t_('OK'), _t_('Cancel'))
+>>> dial.setValue('param', 0)
 >>> r = dial.call()
 >>> if r == 0:
->>>   v=dial.getValue( 'param' )
-            
+>>>     v=dial.getValue('param')
+
     """
     self.checkInterruption()
     return None
@@ -3052,7 +3058,7 @@ class ExecutionContext( object ):
   def log( self, *args, **kwargs ):
     """
     `context.log(what, when=None, html='', children=[], icon=None)`
-    
+
     This method is used to add a message to BrainVISA log. The first parameter what is the name of the entry in the log, the message to write is in the html parameter.
     """
     stackTop = self._stackTop()

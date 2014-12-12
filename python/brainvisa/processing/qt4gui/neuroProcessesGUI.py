@@ -4241,6 +4241,16 @@ def reloadToolboxesGUI():
   
 #----------------------------------------------------------------------------
 def mainThreadActions():
+  '''Returns an object which allows to pass actions to be executed in the main thread. Its implementation may differ according to the presence of a running graphics event loop, thus the returned object may be an instance of different classes: :py:class:`soma.qtgui.api.QtThreadCall`, :py:class:`soma.qtgui.api.FakeQtThreadCall`, or even something else.
+
+  In any case the returned *mainthreadactions* object has 2 methods, *call()* and *push()*:
+
+  ::
+
+    result = mainthreadactions.call(function, *args, **kwargs)
+    #or
+    mainthreadactions.push(function, *args, **kwargs)
+  '''
   return _mainThreadActions
 
 #----------------------------------------------------------------------------
