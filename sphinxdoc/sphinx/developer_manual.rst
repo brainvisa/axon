@@ -894,10 +894,126 @@ This process will be used every time an item of type *4D volume* needs to be vis
   All *Anatomist* objects and windows that should not be deleted at the end of the process must be returned by the execution function. Indeed, by default any python object is deleted when there are not references on it anymore. If the objects are returned, they will remain visible until the viewer process is closed.
 
 
-
----------------
-
 .. _toolboxes:
 
+Toolboxes
+=========
+
+*BrainVisa* is organised into several *toolboxes*. A toolbox can contain processes and data ontology elements (types and hierarchy files). It groups processes that are related to a same domain (or made by the same team). Each toolbox can be developped, maintained and distributed by a different group / lab. Toolboxes do not have to be a part of *BrainVisa* project and can be quite independant.
+
+
+How to create a toolbox ?
+-------------------------
+
+Files organisation
+++++++++++++++++++
+
+You must create in your project a directory ``brainvisa/toolboxes/<toolbox name>``. In this directory, you may create three sub-directories: ``processes``, ``types, ``hierarchies``. Some files can be added to the toolbox directory: a configuration file named ``<toolbox_name>.py`` and optionally, an icon to represent the toolbox and a file named ``<toolbox_name>.minf`` that describes links between this toolbox and others.
+
+.. _T1MRI_file_organisation:
+
+.. figure:: images/t1mri_files_organisation.png
+  :align: center
+
+  Example: Files organisation for the Morphologist toolbox
+
+
+Configuration file
+++++++++++++++++++
+
+This file enables to configure three attributes of the toolbox:
+
+* **userName**: the name that will be displayed in *BrainVisa* interface.
+* **icon**: file path of the icon that will reprensent the toolbox in graphical interface. Optional, there is a default icon.
+* **description**: tooltip for the toolbox, that will be displayed when the mouse cursor is over the toolbox name. Optional, default tooltip is the name of the toolbox.
+
+**Example**
+
+::
+
+  userName = 'Morphologist'
+  icon = 't1mri.png'
+  description = 'Anatomical MRI processing'
+
+
+Links with other toolboxes
+++++++++++++++++++++++++++
+
+Even if a process physically exists in only one toolbox, it is possible to create a link that makes it appear in several toolboxes. Information about these links is stored in a ``minf`` file named ``<toolbox_name>.minf``. This file describes processes trees: a process tree by toolbox in which you want to add links. The file format is the same as the one used to save user lists of processes. So the easiest way to create such a file is to create user lists that correspond to the links you want to create, using *BrainVisa* graphical interface. Then you can get the resulting file in ``<home directory>/.brainvisa/userProcessesTrees.minf``.
+
+Here are the steps to add a link to a process in a toolbox:
+
+* Create a user lists by right clicking on the toolbox panel
+* Change its name into  the destination toolbox's identifier, it is the name of the toolbox directory.
+* Open the source toolbox and find the process
+* Copy the process or the category into the new list by drag and drop
+* You can rename the processes and categories if you want.
+* Save the file ``userProcessesTrees.minf`` as ``<toolbox_name>.minf`` in your toolbox directory.
+
+Be careful with categories, if you create a new one with the same name instead of making a link, you will not see the associated documentation when clicking on it.
+
+.. raw:: html
+
+  <div class="figure" align="center">
+    <div class="mediaobject">
+      <object type="application/x-shockwave-flash" data="_static/images/create_toolbox_links.swf" width="800" height="620">
+        <param name="movie" value="_static/images/create_toolbox_links.swf"><param name="loop" value="true">
+      </object>
+    </div>
+    Creating a links file for a toolbox
+  </div>
+
+**Example: structural_analysis.minf**
+
+::
+
+  <?xml version="1.0" encoding="utf-8" ?>
+  <minf expander="brainvisa-tree_2.0">
+    <l length="1">
+      <f type="ProcessTree">
+        <s name="name">Data management</s>
+        <true name="editable"/>
+        <l length="1" name="content">
+          <f type="ProcessTree.Branch">
+            <l length="1" name="content">
+              <f type="ProcessTree.Branch">
+                <l length="1" name="content">
+                  <f type="ProcessTree.Leaf">
+                    <true name="editable"/>
+                    <s name="id">importSPMtForStructuralAnalysis</s>
+                    <none name="name"/>
+                  </f>
+                </l>
+                <true name="editable"/>
+                <s name="name">Structural analysis</s>
+                <s name="id">structural_analysis/volume_based/import</s>
+              </f>
+            </l>
+            <true name="editable"/>
+            <s name="name">import</s>
+            <s name="id">data management/import</s>
+          </f>
+        </l>
+        <true name="user"/>
+        <s name="id">-1222536820</s>
+        <s name="icon">folder_home.png</s>
+      </f>
+    </l>
+  </minf>
+
+With this file, the *Structural analysis* toolbox adds its importation process in the *Data Management* toolbox.
+
+Documentation page of the toolbox
++++++++++++++++++++++++++++++++++
+
+It is recommended to create a presentation page for the toolbox to be displayed in *BrainVisa* right panel when the user clicks on the toolbox. This page should explain the usage of the toolbox and present the toolbox authors and related articles.
+
+To create a help page, just create a file named ``category_documentation.minf`` and put it in the toolbox processes directory. This file has the same format as the documentation files for sub-directories in processes directory. See :ref:`documentation`
+
+
+------
+
 .. _translation:
+
+.. _documentation:
 
