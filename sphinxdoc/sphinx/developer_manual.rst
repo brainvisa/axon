@@ -472,15 +472,15 @@ WriteDiskItem
   formats <- format_name
   formats <- [format_name, ...]
 
-This parameter type is very close to <classname>ReadDiskItem</classname> (<classname>WriteDiskItem</classname> derives from <classname>ReadDiskItem</classname>), but it accepts writable files. That is to say, it accepts not only files that are accepted by a <classname>ReadDiskItem</classname> but also files that doesn't exist yet.
-It has the same search methods as the <classname>ReadDiskItem</classname> class but these methods generate diskitems that may not exist yet, using data ontology information.
-</para>
-</sect3>
-</sect2>
-</sect1>
+.. currentmodule:: brainvisa.data.writediskitem
 
-      <sect1>
-        <title>Functions</title>
+This parameter type is very close to :py:class:`ReadDiskItem <brainvisa.data.readdiskitem.ReadDiskItem>` (:py:class:`WriteDiskItem` derives from :py:class:`ReadDiskItem <brainvisa.data.readdiskitem.ReadDiskItem>`), but it accepts writable files. That is to say, it accepts not only files that are accepted by a :py:class:`ReadDiskItem <brainvisa.data.readdiskitem.ReadDiskItem>` but also files that do not exist yet.
+It has the same search methods as the :py:class:`ReadDiskItem <brainvisa.data.readdiskitem.ReadDiskItem>` class but these methods generate diskitems that may not exist yet, using data ontology information.
+
+
+Functions
+---------
+
         <para>
           Some process functions can be defined in the script: validation, initialization and execution functions.
         </para>
