@@ -214,7 +214,7 @@ htmlhelp_basename = 'axondoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'axon.tex', u'Axon Documentation',
+  ('index', 'axon.tex', u'Axon Developer Documentation',
    u'someone', 'manual'),
 ]
 
@@ -239,6 +239,8 @@ autoclass_content = "both"
 
 extlinks = {
   'axon': ('../%s', 'axon '),
+  'axonusr': ('../user_doc/%s', 'axon '),
+  'axondev': ('../dev_doc/%s', 'axon '),
   'aimsalgodox': ('../../aimsalgo-' + version + '/doxygen/%s',
     'aimsalgodox '),
   'aimsalgoex': ('../../pyaimsalgo-' + version + '/examples/%s',

@@ -70,11 +70,15 @@ BRAINVISA_GENERATE_DOCBOOK_DOC()
 #      EXCLUDE brainvisa.*.qt3gui )
 
 find_package( Sphinx )
-BRAINVISA_GENERATE_SPHINX_DOC( "sphinxdoc/sphinx"
-  "share/doc/axon-${BRAINVISA_PACKAGE_VERSION_MAJOR}.${BRAINVISA_PACKAGE_VERSION_MINOR}/sphinx" )
+BRAINVISA_GENERATE_SPHINX_DOC( "sphinxdoc/user_doc"
+  "share/doc/axon-${BRAINVISA_PACKAGE_VERSION_MAJOR}.${BRAINVISA_PACKAGE_VERSION_MINOR}/user_doc" USER )
+BRAINVISA_GENERATE_SPHINX_DOC( "sphinxdoc/dev_doc"
+  "share/doc/axon-${BRAINVISA_PACKAGE_VERSION_MAJOR}.${BRAINVISA_PACKAGE_VERSION_MINOR}/dev_doc" )
 
-BRAINVISA_COPY_FILES( ${PROJECT_NAME} "usecases.rst" SOURCE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/sphinxdoc/sphinx"      
-                       DESTINATION "python/brainvisa/tests" )
+BRAINVISA_COPY_FILES( ${PROJECT_NAME} "usecases.rst"
+    SOURCE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/sphinxdoc/dev_doc"
+    DESTINATION "python/brainvisa/tests" )
+
 add_test(axon-tests "${CMAKE_BINARY_DIR}/bin/bv_env" "${PYTHON_EXECUTABLE}" -m brainvisa.tests.test_axon)
 
 BRAINVISA_CREATE_CMAKE_CONFIG_FILES()

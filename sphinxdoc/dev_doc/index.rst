@@ -5,6 +5,7 @@ Axon developer documentation
 * :axon:`Slides of a development course <Programming_with_brainvisa.pdf>`, with :axon:`training course data <Programming_with_brainvisa.zip>`
 * :doc:`Developer manual <developer_manual>`
 
+* :axonusr:`Axon user documentation <index.html>`
 
 Python API documentation
 ========================
