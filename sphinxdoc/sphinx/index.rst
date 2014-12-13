@@ -54,13 +54,14 @@ Use cases & examples
 
 **Processes** : Any process available in BrainVISA may be used as an example to help in developing new processes. The source code of each process is available directly from BrainVISA inline documentation: just click on the file name in the technical information part of the process documentation.
 
-Other documentation
--------------------
-
-A **programming manual** is available `here <../bv_pg/en/html/index.html>`_. Among others, it shows how to use this API to develop new processes and toolboxes and to extend the data ontology 
 
 .. toctree::
    :hidden:
 
+   developer_manual
    usecases
    python
+   python_bv_data
+   python_bv_data_gui
+   python_bv_processing
+   python_bv_processing_gui
