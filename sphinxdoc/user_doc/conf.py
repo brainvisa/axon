@@ -262,6 +262,10 @@ extlinks = {
     + '/sphinx/%s', 'somaworkflow' ),
   'anatomist': ('../../anatomist-' + version + '/%s', 'anatomist '),
   'pyanatomist': ('../../pyanatomist-' + version + '/sphinx/%s', 'pyanatomist '),
+  'morphologist': ('../../morphologist-' + version + '/%s', 'morphologist'),
+  'morphologistusr': ('%s', 'morphologist '),
+  'connectomist': ('%s', 'connectomist '),
+  'brainrat': ('%s', 'brainrat '),
 }
 
 docpath = os.path.join( os.path.dirname( os.path.dirname( os.path.dirname( \

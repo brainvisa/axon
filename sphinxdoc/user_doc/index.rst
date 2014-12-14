@@ -26,3 +26,8 @@ Developers
   :hidden:
 
   tutorial
+  morphologist_tutorial
+  connectomist_tutorial
+  brainrat_tutorial
+
+
