@@ -2,6 +2,12 @@
 Axon documentation
 ==================
 
+.. image:: images/axon_schema.jpg
+  :align: center
+
+Axon is the glue between the different parts of the `BrainVISA project <http://brainvisa.info>`_. It performs data management, software glue, distributed processing, and offers the main user interface for all software. It is open, and extensible through additional and optional toolboxes.
+
+
 Users
 =====
 
@@ -9,9 +15,7 @@ Users
 
 * :axon:`User manual <bv_man/en/html/index.html>`
 
-* :axon:`Tutorial <bv_training/en/html/index.html>`
-
-* :doc:`New tutorial <tutorial>` (in development)
+* :doc:`Tutorial <tutorial>`
 
 * :axon:`GUI embedded main user documentation <en/help/index.html>`
 
@@ -28,6 +32,5 @@ Developers
   tutorial
   morphologist_tutorial
   connectomist_tutorial
-  brainrat_tutorial
 
 
