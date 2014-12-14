@@ -183,17 +183,17 @@ When this is done, you may continue to the next section.
 Diffusion data processing: Connectomist toolbox
 ===============================================
 
-This tutorial shall now be continued with :connectomist:`Connectomist-1 tutorial <connectomist_tutorial.html>`.
+This tutorial shall now be continued with :connectomistusr:`Connectomist-1 tutorial <connectomist_tutorial.html>`.
 
 When this is done, you may continue to the next section.
 
-Cyril Poupon's **Connectomist-2** should have replaced Connectomist-1, but is still not ready for public distribution.
+Cyril Poupon's **Connectomist-2** should replace Connectomist-1, but is still not ready for public distribution.
 
 
 Histological data processing: BrainRAT
 ======================================
 
-This tutorial shall now be continued with :brainrat:`BrainRAT tutorial <brainrat_tutorial.html>`.
+This tutorial shall now be continued with :brainrat:`BrainRAT manual <index.html>`.
 
 When this is done, you may continue to the next section.
 

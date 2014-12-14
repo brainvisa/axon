@@ -264,8 +264,9 @@ extlinks = {
   'pyanatomist': ('../../pyanatomist-' + version + '/sphinx/%s', 'pyanatomist '),
   'morphologist': ('../../morphologist-' + version + '/%s', 'morphologist'),
   'morphologistusr': ('%s', 'morphologist '),
-  'connectomist': ('%s', 'connectomist '),
-  'brainrat': ('%s', 'brainrat '),
+  'connectomist': ('../../connectomist-' + version + '/%s', 'connectomist '),
+  'connectomistusr': ('%s', 'connectomist '),
+  'brainrat': ('../../brainrat-gpl-' + version + '/brainrat_man/en/html/%s', 'brainrat '),
 }
 
 docpath = os.path.join( os.path.dirname( os.path.dirname( os.path.dirname( \
