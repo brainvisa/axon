@@ -33,6 +33,7 @@ Developers
   :hidden:
 
   axon_manual
+  axon_manual2
   tutorial
   morphologist_tutorial
   connectomist_tutorial
