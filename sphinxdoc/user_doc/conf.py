@@ -267,6 +267,8 @@ extlinks = {
   'connectomist': ('../../connectomist-' + version + '/%s', 'connectomist '),
   'connectomistusr': ('%s', 'connectomist '),
   'brainrat': ('../../brainrat-gpl-' + version + '/brainrat_man/en/html/%s', 'brainrat '),
+  'web': ('http://brainvisa.info/%s', 'brainvisa '),
+  'documentation': ('../../%s', 'docs '),
 }
 
 docpath = os.path.join( os.path.dirname( os.path.dirname( os.path.dirname( \
