@@ -261,12 +261,15 @@ extlinks = {
   'somaworkflow' : ( '../../soma-workflow-' + somaworkflow_version \
     + '/sphinx/%s', 'somaworkflow' ),
   'anatomist': ('../../anatomist-' + version + '/%s', 'anatomist '),
+  'anausr': ('../../anatomist-' + version + '/user_doc/%s', 'anatomist '),
   'pyanatomist': ('../../pyanatomist-' + version + '/sphinx/%s', 'pyanatomist '),
   'morphologist': ('../../morphologist-' + version + '/%s', 'morphologist'),
   'morphologistusr': ('%s', 'morphologist '),
   'connectomist': ('../../connectomist-' + version + '/%s', 'connectomist '),
   'connectomistusr': ('%s', 'connectomist '),
   'brainrat': ('../../brainrat-gpl-' + version + '/brainrat_man/en/html/%s', 'brainrat '),
+  'web': ('http://brainvisa.info/%s', 'brainvisa '),
+  'documentation': ('../../%s', 'docs '),
 }
 
 docpath = os.path.join( os.path.dirname( os.path.dirname( os.path.dirname( \

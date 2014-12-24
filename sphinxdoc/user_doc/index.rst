@@ -16,7 +16,7 @@ Users
 
 * :axon:`Introduction slides <intro_bv.pdf>`
 
-* :axon:`User manual <bv_man/en/html/index.html>`
+* :doc:`User manual <axon_manual>`
 
 * :doc:`Tutorial <tutorial>`
 
@@ -32,6 +32,8 @@ Developers
 .. toctree::
   :hidden:
 
+  axon_manual
+  axon_manual2
   tutorial
   morphologist_tutorial
   connectomist_tutorial
