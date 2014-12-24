@@ -16,9 +16,7 @@ Users
 
 * :axon:`Introduction slides <intro_bv.pdf>`
 
-* :axon:`User manual <bv_man/en/html/index.html>`
-  
-* :doc:`New user manual <axon_manual>`
+* :doc:`User manual <axon_manual>`
 
 * :doc:`Tutorial <tutorial>`
 
