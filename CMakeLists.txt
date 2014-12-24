@@ -61,8 +61,8 @@ BRAINVISA_COPY_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/scripts"
                           scripts
                           ${PROJECT_NAME} )
 
-# Docbook
-BRAINVISA_GENERATE_DOCBOOK_DOC()
+# Docbook - obsolete.
+# BRAINVISA_GENERATE_DOCBOOK_DOC()
 
 # find_package( Epydoc )
 # BRAINVISA_GENERATE_EPYDOC_DOC( "${CMAKE_BINARY_DIR}/python/brainvisa"
