@@ -966,7 +966,7 @@ We will take the following process as an example: *Prepare subject for anatomica
 
 .. note::
 
-  To do this example, first you must import data if you want to use a database as explained in :ref:`Data importation <importT1>` paragraph.
+  To do this example, first you must import data if you want to use a database as explained in :ref:`Data importation <importt1>` paragraph.
 
 Parameters are:
 

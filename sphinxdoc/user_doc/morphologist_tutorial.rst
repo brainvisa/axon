@@ -44,7 +44,7 @@ STEP 1: Data importation
 
 **Requirement**: if no database is setup yet, :axonusr:`add a database <tutorial.html#add-a-database>`
 
-For more details about data importation, see :axonman:`BrainVISA manual - Data importation chapter <ch04s05.html#bv_man%importT1>`.
+For more details about data importation, see :axonman:`BrainVISA manual - Data importation chapter <axon_manual2.html#importt1>`.
 
 * Open the process *Morphologist => import => Import T1 MRI*.
 * Select input data with |browse_write| icon: ``data_unprocessed/subject01/anatomy/subject01.ima``.
@@ -74,7 +74,7 @@ For more details about data importation, see :axonman:`BrainVISA manual - Data i
 
 .. note::
 
-  In this example, the raw data is in *GIS format* but it is possible to import data which are in various formats including **Dicom**. To import a Dicom image, select the first file of the series as input. You may have to change the file filter to *All files (*)* in the file browser to see the Dicom files if they have not the extension *.dcm*. Data will be converted to *GIS* or *Nifti* format in BrainVISA database. See :axonman:`the paragraph about importation of Dicom images in BrainVISA manual <ch04s05.html#bv_man%import_dicom>` for more details.
+  In this example, the raw data is in *GIS format* but it is possible to import data which are in various formats including **Dicom**. To import a Dicom image, select the first file of the series as input. You may have to change the file filter to *All files (*)* in the file browser to see the Dicom files if they have not the extension *.dcm*. Data will be converted to *GIS* or *Nifti* format in BrainVISA database. See :axonman:`the paragraph about importation of Dicom images in BrainVISA manual <axon_manual2.html#importation-of-dicom-images>` for more details.
 
 .. note::
 
@@ -88,7 +88,7 @@ The image has been copied in the BrainVISA database directory. Now, let us have 
 
 * Click on the |eye| icon to visualize the output image with Anatomist. Click again on the button to close the visualization. Right-click on the button to open the viewer process associated to this type of data.
 
-* Open the process *Data management => Database browser* to explore the database directory. Double-click on the database directory to see its content, open the subdirectories (``demo/subject01/t1mri/default_acquisition``) to find the imported image. Click on the image and see information about it in the right panel. Right-click on the image to open the contextual menu. Select view to vizualize the image with Anatomist. More information about the :axonman:`database browser in the BrainVISA manual <ch04s06.html#bv_man%db_browser>`.
+* Open the process *Data management => Database browser* to explore the database directory. Double-click on the database directory to see its content, open the subdirectories (``demo/subject01/t1mri/default_acquisition``) to find the imported image. Click on the image and see information about it in the right panel. Right-click on the image to open the contextual menu. Select view to vizualize the image with Anatomist. More information about the :axonman:`database browser in the BrainVISA manual <axon_manual2.html#db_browser>`.
 
 
 .. _prepare_subject:
@@ -228,7 +228,7 @@ If the automatic segmentation is not perfect, it is possible to correct it manua
 
 .. warning::
 
-  After a manual correction, do not start again the brain mask segmentation step, else the corrected mask will be erased. To be sure to not erase by mistake a data, it is possible to lock using the contextual menu *lock*. More information about this :axonman:`locking feature in the BrainVISA manual <ch03s05.html#bv_man%parameter_menu>`.
+  After a manual correction, do not start again the brain mask segmentation step, else the corrected mask will be erased. To be sure to not erase by mistake a data, it is possible to lock using the contextual menu *lock*. More information about this :axonman:`locking feature in the BrainVISA manual <axon_manual.html#menu-of-a-parameter>`.
 
 More information on the drawing tools of *Anatomist* is available in :anatomist:`The Anatomist ROI toolbox documentation <user_doc/anatomist_manual2.html#roi-drawing-toolbox>`.
 
@@ -334,7 +334,7 @@ Import several images
 
 To repeat the same process on several data, the *Iterate* feature of BrainVISA is useful.
 
-For more details about iteration of an importation process, see :axonman:`BrainVISA manual - Data importation <ch04s05.html#bv_man%iter_importT1>`
+For more details about iteration of an importation process, see :axonman:`BrainVISA manual - Data importation <axon_manual2.html#iter_importT1>`
 
 * Open the process *Morphologist => import => Import T1 MRI*.
 * Click on the *Iterate* button.

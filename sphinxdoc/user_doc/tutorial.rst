@@ -28,7 +28,7 @@ BrainVISA is developped by french governement founded research organizations (ma
 
 See the slides of an introduction to BrainVISA: :axon:`BrainVISA Advanced Training - Introduction <intro_bv.pdf>`
 
-BrainVISA is available for free download here: http://brainvisa.info/downloadpage.html. Installation instructions: http://brainvisa.info/download.html#installation and the :axon:`BrainVISA manual <bv_man/en/html/index.html>`.
+BrainVISA is available for free download here: http://brainvisa.info/downloadpage.html. Installation instructions: http://brainvisa.info/download.html#installation and the :axonman:`BrainVISA manual <axon_manual.html>`.
 
 In this tutorial, we will use demonstration data that are available for download here: ftp://ftp.cea.fr/pub/dsv/anatomist/data/demo_data.zip.
 
@@ -48,7 +48,7 @@ Here is a summary of the main steps that you need to follow to start with BrainV
 .. |database_read| image:: images/database_read.png
 .. |eye| image:: images/eye.png
 
-* **Create a database** where all data written by BrainVISA will be stored : *BrainVISA menu -> Preferences -> Databases -> Add button*. It is strongly advisable to use a database to process data with BrainVISA. Indeed, some important features are not available when you are using data outside a database. More information about databases in the :axonman:`Databases and ontology <ch04.html#bv_man%database>` chapter of the BrainVISA user manual.
+* **Create a database** where all data written by BrainVISA will be stored : *BrainVISA menu -> Preferences -> Databases -> Add button*. It is strongly advisable to use a database to process data with BrainVISA. Indeed, some important features are not available when you are using data outside a database. More information about databases in the :axonman:`Databases and ontology <axon_manual2.html#database>` chapter of the BrainVISA user manual.
 
 * **Import raw data**: *Data Management toolbox -> import...* Choose the process according to the type of data. Select raw data with |browse_write|. Fill in the database attributes using |database_write|. The process will copy the data in the BrainVISA database.
 
@@ -66,7 +66,7 @@ The log window enables the user to monitor all the actions performed by BrainVIS
 
 The information displayed in this window is stored in a file which you should therefore keep if you wish to submit an execution error to the BrainVISA support. In many cases, if this file is not available, the information submitted is not specific enough to enable the error to be understood or reproduced.
 
-More information about the :axonman:`log window in the BrainVISA user manual <ch03s03.html#bv_man%log>`.
+More information about the :axonman:`log window in the BrainVISA user manual <axon_manual.html#log>`.
 
 
 View the log window
@@ -106,7 +106,7 @@ Configuration
 
 You can change some options in BrainVISA via the menu *BrainVISA => Preferences*. Particularly, change the **user level** if you want to see all the processes. By default, the user level is *Basic*, so you only see basic processes.
 
-See the :axonman:`Preferences window chapter in BrainVISA user manual <ch03s02.html#bv_man%pref>` for more information about BrainVISA options.
+See the :axonman:`Preferences window chapter in BrainVISA user manual <axon_manual.html#pref>` for more information about BrainVISA options.
 
 .. raw:: html
 
@@ -128,7 +128,7 @@ Manage bookmarks
 
 The left panel of BrainVISA shows the list of available toolboxes. You can create here a new custom toolbox to store bookmarks on the processes that you most frequently use. To create such a bookmarks toolbox, use the contextual menu on the toolboxes panel.
 
-More information in the :axonman:`Custom Toolbox chapter in BrainVISA user manual <ch03.html#bv_man%bookmarks>`.
+More information in the :axonman:`Custom Toolbox chapter in BrainVISA user manual <axon_manual.html#bookmarks>`.
 
 .. raw:: html
 
@@ -205,7 +205,7 @@ Parallel computing with Soma-workflow
 
 This tool is included in BrainVISA package since version 4.1.0 and is really integrated in BrainVISA graphical user interface since version 4.2.0. It can be used to easily distribute BrainVISA iterations on a multi-core machine or on a cluster.
 
-See the :axonman:`chapter about Soma-workflow in BrainVISA manual <ch06.html#bv_man%soma-workflow>` for more details about using this tool within BrainVISA.
+See the :axonman:`chapter about Soma-workflow in BrainVISA manual <axon_manual2.html#soma-workflow>` for more details about using this tool within BrainVISA.
 
 
 Distributing a Morphologist iteration on a multi-core machine

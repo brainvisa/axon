@@ -113,7 +113,7 @@ Once the data is imported, a lot of search tools are available to easily retriev
 
 There are several importation processes according to the type of data. Some of these processes are grouped in *Data Management toolbox -> Import*. You can also usually find these processes in each toolbox in an *Import* category.
 
-.. _importT1:
+.. _importt1:
 
 Example: Importation of a T1 MRI
 ++++++++++++++++++++++++++++++++
@@ -153,7 +153,7 @@ Let us look at the following example, for importing a T1 weighted image:
 8. Click *Run* to start the importation process. During this process, your files will be converted to the *NIFTI* format (``.nii``). At the end of the process, a ``t1mri*`` folder will have been created in ``data_directory/center/subjet``. It will contain the imported file.
 
 
-.. _iter_importT1:
+.. _iter_importt1:
 
 Example 2: Iteration of Import T1 MRI
 +++++++++++++++++++++++++++++++++++++
@@ -463,12 +463,53 @@ However, these articles deal with BrainVISA as a framework but it is hosting var
   A complete bibliography is detailed at http://brainvisa.info/biblio/en/index.html
 
 
-
-
-
----------------
-
 .. _helpcom:
 
-.. _soma-workflow:
+Options for brainvisa command line
+==================================
+
+* ``-b``: Run in batch mode: no graphical interface started by BrainVISA
+
+* ``-e <file>``: Execute file which must be a valid Python script.
+
+* ``-c <command>``: Execute command which must be a valid Python command.
+
+* ``--shell``: Run BrainVISA in a IPython shell, if IPython is available (see http://ipython.scipy.org).
+
+* ``-s <process_id>``: Open a process window. Equivalent to:
+
+  ::
+
+    brainvisa -c 'brainvisa.processing.qt4gui.neuroProcessesGUI.showProcess("<process_id>")'.
+
+* ``-u <profile>``: Select a user profile. The options file and the log file names are then suffixed with the user profile name.
+
+* ``--logFile <file>``: Change the log file name (default=``$HOME/.brainvisa/brainvisa.log``).
+
+* ``--cleanLog``: Clean home brainvisa directory by removing session information (``current_runs.minf``) and all log files (``brainvisa*.log``)
+
+* ``--updateDocumentation``: Generate processes and types HTML documentation pages.
+
+* ``--setup``: Update the shared database at startup.
+
+* ``--noMainWindow``: Do not open Brainvisa main window.
+
+* ``--noToolBox``: Do not load any process nor toolbox.
+
+* ``--ignoreValidation``: Do not check vor invalid processes, all are enabled.
+
+* ``-r <processName> <parameters>``: Runs BrainVISA in batch mode, without databases, and executes the process given in arguments.
+
+* ``-f``: Run in faststart mode: databases are not loaded, processes are loaded from a cache (this mode is used when processes are run in parallel via Soma-workflow).
+
+* ``--debugHierarchy <file>``: Write ontology rules debug information in ``<file>``.
+
+* ``--debugLinks <file>``: Write parameter links debug information in ``<file>``.
+
+* ``-h  or --help``: Show help message in batch mode and exit.
+
+.. note::
+
+  Multiple ``-e`` and ``-c`` commands are executed in the order they are given after all initialization steps are done (options parsing, databases, processes loading, etc.).
+
 
