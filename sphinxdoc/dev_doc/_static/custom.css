@@ -1,8 +1,53 @@
 
 @import url("default.css");
 
+/* -- page layout ----------------------------------------------------------- */
+
+body {
+    background-color: #3A1F46;
+    color: #000;
+}
+
+div.document {
+    background-color: #656585;
+}
+
+div.related {
+    background-color: #4B3663;
+}
+
+div.sphinxsidebar input {
+    border: #db98cc;
+}
+
+/* -- hyperlink styles ------------------------------------------------------ */
+
+a {
+    color: #7c355f;
+}
+
+a:visited {
+    color: #7c355f;
+}
+
+div.sphinxsidebar a {
+    color: #A9A0B6;
+}
+
+/* -- body styles ----------------------------------------------------------- */
+
+div.body h1,
+div.body h2,
+div.body h3,
+div.body h4,
+div.body h5,
+div.body h6 {
+    background-color: #f6f0f2;
+    color: #5c2043;
+}
+
 dl.class dt {
-    background-color: #e0ecff;
+    background-color: #ffe8f0;
     border-bottom: 1px solid #ccc;
     border-top: 1px solid #ccc;
 }
@@ -38,26 +83,26 @@ dl.attribute dt {
 }
 
 dl.class dt:target, .highlighted {
-    background-color: #fbe54e;
+    background-color: #fb4ee5;
 }
 
 dl.method dt:target, .highlighted {
-    background-color: #fbe54e;
+    background-color: #fb4ee5;
 }
 
 dl.docutils dt:target, .highlighted {
-    background-color: #fbe54e;
+    background-color: #fb4ee5;
 }
 
 dl.staticmethod dt:target, .highlighted {
-    background-color: #fbe54e;
+    background-color: #fb4ee5;
 }
 
 dl.data dt:target, .highlighted {
-    background-color: #fbe54e;
+    background-color: #fb4ee5;
 }
 
 dl.attribute dt:target, .highlighted {
-    background-color: #fbe54e;
+    background-color: #fb4ee5;
 }
 
