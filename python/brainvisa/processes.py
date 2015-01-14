@@ -54,20 +54,20 @@ To modify, the lists of processes, several functions are also available:
   * :py:func:`addProcessInfo`
   * :py:func:`readProcess`
   * :py:func:`readProcesses`
-  
-  
+
+
 A pipeline is defined as a specific process that has an execution node that describes the pipeline structure. The base class for execution nodes is :py:class:`ExecutionNode`. This class is specialized into several other classes, defining different types of pipelines:
   * :py:class:`ProcessExecutionNode`: only one process
   * :py:class:`SerialExecutionNode`: a list of execution nodes that have to be executed serially.
   * :py:class:`ParallelExecutionNode`: a list of execution nodes that can be executed in parallel.
   * :py:class:`SelectionExecutionNode`: a choice between several execution nodes.
-  
+
 Specialized Process classes that use the different types of execution nodes also exist:
   * :py:class:`IterationProcess`: an iteration of a process on a set of data. Uses a :py:class:`ParallelExecutionNode`.
   * :py:class:`ListOfIterationProcess`
   * :py:class:`DistributedProcess`: a pipeline that have a :py:class:`ParallelExecutionNode`
   * :py:class:`SelectionProcess`: a pipeline that have a :py:class:`SelectionExecutionNode`.
-  
+
 As processes can be run in different contexts, an object representing this context is passed as a parameter in the processes execution function. This object is an intance of the class :py:class:`ExecutionContext`. A default context associated to the application also exists, to get it use the function :py:func:`defaultContext`.
 
 After loading, Brainvisa processes are stored in an object :py:class:`ProcessTrees` that represents the processes organization in toolboxes and categories. The function :py:func:`updatedMainProcessTree` creates this object if it doesn't exist yet and to returns it.
@@ -76,31 +76,31 @@ After loading, Brainvisa processes are stored in an object :py:class:`ProcessTre
 
 .. inheritance-diagram:: Parameterized Process ExecutionNode SerialExecutionNode ProcessExecutionNode SelectionExecutionNode ParallelExecutionNode ProcessInfo ExecutionContext IterationProcess SelectionProcess DistributedProcess ListOfIterationProcess ProcessTree ProcessTrees
 
-  
+
 :Classes:
-  
+
 .. autoclass:: Parameterized
   :show-inheritance:
-    
+
 .. autoclass:: Process
   :show-inheritance:
 
 .. autoclass:: ProcessInfo
   :members:
   :show-inheritance:
-    
+
 .. autoclass:: ExecutionNode
   :members:
   :show-inheritance:
-    
+
 .. autoclass:: ProcessExecutionNode
   :members:
   :show-inheritance:
-    
+
 .. autoclass:: SerialExecutionNode
   :members:
   :show-inheritance:
-    
+
 .. autoclass:: ParallelExecutionNode
   :members:
   :show-inheritance:
@@ -112,11 +112,11 @@ After loading, Brainvisa processes are stored in an object :py:class:`ProcessTre
 .. autoclass:: IterationProcess
   :members:
   :show-inheritance:
-    
+
 .. autoclass:: ListOfIterationProcess
   :members:
   :show-inheritance:
-    
+
 .. autoclass:: DistributedProcess
   :members:
   :show-inheritance:
@@ -128,16 +128,16 @@ After loading, Brainvisa processes are stored in an object :py:class:`ProcessTre
 .. autoclass:: ExecutionContext
   :members:
   :show-inheritance:
-    
+
 .. autoclass:: ProcessTree
   :members:
-   
+
 .. autoclass:: ProcessTrees
   :members:
   :show-inheritance:
 
 :Functions:
-  
+
 .. autofunction:: getProcessInfo
 .. autofunction:: allProcessesInfo
 .. autofunction:: getProcess
@@ -388,13 +388,13 @@ def convertSpecialLinks( msg, language, baseForLinks, translator ):
   """
   Converts special links and tags in a procdoc documentation.
   The possible special links or tags are:
-  
+
   * *bvcategory://* refers to the documentation of a processes category (directory containing processes).
   * *bvprocess://* refers to the documentation of a process
   * *bvimage://* refers to an image in Brainvisa images directory
-  * *<_t_>* translates the string in the selected language 
+  * *<_t_>* translates the string in the selected language
   * *<bvprocessname name=""> replaces the id by the name of the process
-  
+
   """
   stack = [ msg ]
   while stack:
@@ -471,7 +471,7 @@ def convertSpecialLinks( msg, language, baseForLinks, translator ):
 def generateHTMLProcessesDocumentation( procId = None ):
   """
   Generates HTML pages for the documentation of the process in parameter or for all processes if `procId` is None.
-  The process generateDocumentation is used. 
+  The process generateDocumentation is used.
   """
   if procId is None:
     defaultContext().runProcess("generateDocumentation")
@@ -485,44 +485,63 @@ def generateHTMLProcessesDocumentation( procId = None ):
       ontology )
 
 #----------------------------------------------------------------------------
-def mapValuesToChildrenParameters(destNode, sourceNode, dest, source, value = None, defaultProcess = None, defaultProcessOptions = {}, name=None):
+def mapValuesToChildrenParameters(
+  destNode, sourceNode, dest, source,
+  value = None, defaultProcess = None, defaultProcessOptions = {},
+  name=None, resultingSize = -1):
+  """
+  Maps values of parameter *sourceNode*.*source* (which is a list) to
+  *destNode*.*dest*.
+  *value* will receive parameter value when calling this function from a link.
+  If children are fewer than source values and a
+  *defaultProcess* is given, lacking children are added, with chosen
+  *defaultProcessOptions* and *name* if given.
+  Should *resultingSize* value differ from -1, the resulting number of
+  children will be set to this value.
+  """
   sourceObject, sourceParameter = sourceNode.parseParameterString( source )
   l = getattr(sourceObject, sourceParameter, [])
   lsize = len(l)
   csize = len(destNode.childrenNames())
-  initcsize = csize
-  
+
   # Resulting size is the max between children size and list size
   rsize = max(csize, lsize)
 
-  for i in xrange(rsize):
+  if (defaultProcess is not None) and (name is None):
+    name = getProcessInstance( defaultProcess ).name
+
+  for i in xrange( max(rsize,resultingSize) ):
     if i == csize:
-      if defaultProcess :
-        # Add a newc child node
-        child = brainvisa.processes.ProcessExecutionNode( 
+      if defaultProcess is not None:
+        # Add a new child node
+        child = brainvisa.processes.ProcessExecutionNode(
                   defaultProcess,
-                  optional = defaultProcessOptions.get('optional', True), 
-                  selected = defaultProcessOptions.get('selected', True), 
-                  expandedInGui = defaultProcessOptions.get('expandedInGui', False)
+                  optional = defaultProcessOptions.get('optional', True),
+                  selected = defaultProcessOptions.get('selected', True),
+                  expandedInGui = defaultProcessOptions.get('expandedInGui', False),
+                  altname = str(i+1) + '. ' + getProcessInstance( defaultProcess ).name
                 )
         destNode.addChild(name=name, node = child)
-        
-      csize += 1
+        csize += 1
+      else:
+        return
 
-      
-    if i < lsize :
-      v = l[i]
-    else :
-      v = None
-    
-    # Set node value
-    k = destNode.childrenNames()[i]
-    destChild = destNode._children[k]
-    destObject, destParameter = destChild.parseParameterString( dest )
-    setattr(destObject, destParameter, v)
-    
-    i += 1
-    
+    if (resultingSize > -1) and (i >= resultingSize):
+      destNode.removeChild( destNode.childrenNames()[-1] )
+    else:
+      if i < lsize :
+        v = l[i]
+      elif (resultingSize > -1) and (lsize > 0):
+        v = l[0]
+      else:
+        v = None
+      # Set node value
+      if lsize > 0:
+        k = destNode.childrenNames()[i]
+        destChild = destNode._children[k]
+        destObject, destParameter = destChild.parseParameterString( dest )
+        setattr(destObject, destParameter, v)
+
 #----------------------------------------------------------------------------
 def mapChildrenParametersToValues(destNode, sourceNode, dest, source, value = None):
   r = []
@@ -540,24 +559,24 @@ def mapChildrenParametersToValues(destNode, sourceNode, dest, source, value = No
 class Parameterized( object ):
   """
   This class represents an object that have a signature, that is to say a list of typed parameters.
-  
+
   A `Parameterized` object can notify the changes in its signature.
   The parameters can be linked together, that is to say, if the value of a parameter changes, the value of all linked parameters may change.
-  
+
   This object has an :py:func:`initialization` function that can define the links between the parameters and their initial values.
-  
+
   :Attributes:
-  
+
   .. py:attribute:: signature
-  
+
     The signature is a :py:class:`brainvisa.data.neuroData.Signature`. It contains the list of parameters accepted by the object and their types. The possible types are described in :py:mod:`brainvisa.data.neuroData`.
-  
+
   .. py:attribute:: signatureChangeNotifier
-  
+
     This variable is a :py:class:`soma.notification.Notifier`. It calls its notify function when the signature of the :py:class:`Parameterized` object changes.
-  
+
   :Methods:
-  
+
   .. automethod:: initialization
   .. automethod:: findValue
   .. automethod:: setValue
@@ -610,24 +629,24 @@ class Parameterized( object ):
     self.initialization()
     # Take into account links set during self.initialization() :
     self.linksInitialization()
-    
+
   def linksInitialization( self, parameterizedObjects = None, params = None, excluded = None ):
-      
+
     if parameterizedObjects :
       r = []
       for o in parameterizedObjects :
         if not isinstance(o, weakref.ProxyType):
           o = weakref.proxy(o)
         r.append(o)
-        
+
       parameterizedObjects = r
-      
+
     # Call parameterHasChanged for the parameters that have not their default value anymore or that have a not None value
     for name in [n for n, v in self.signature.items() if ( (self.__dict__[n] != v.defaultValue()) or (self.__dict__[n] != None) ) ]:
       if (not params or (name in params)) \
         and (not excluded or (not name in excluded)) :
-        self._parameterHasChanged( name, 
-                                   getattr( self, name ), 
+        self._parameterHasChanged( name,
+                                   getattr( self, name ),
                                    parameterizedObjects = parameterizedObjects )
 
   def __del__( self ):
@@ -644,7 +663,7 @@ class Parameterized( object ):
     This function is called when the value of an attribute described in the signature changes.
     """
     debug = neuroConfig.debugParametersLinks
-      
+
     if debug: print >> debug, 'parameter', name, 'changed in', self, 'with value', newValue
     for function in self._warn.get( name, [] ):
       if debug: print >> debug, '  call (_warn)', function, '(', name, ',', newValue, ')'
@@ -681,7 +700,7 @@ class Parameterized( object ):
           # activate the notifier with the parameter that receive a linked value and with the new value after evaluation of a link function.
           parameterized.signature[ attribute ].valueLinkedNotifier.notify(
             parameterized, attribute, valueSet )
-     
+
     if debug :
       debug.flush()
 
@@ -737,14 +756,14 @@ class Parameterized( object ):
 
   def blockLinks( self, blocked ):
     """
-    While links are blocked, calls to setValue() or other parameters changes 
+    While links are blocked, calls to setValue() or other parameters changes
     do not trigger links.
     """
     self._blocklinks = blocked
 
   def setValue( self, name, value, default=None ):
     """
-    Checks the value, sets the attribute `name`. 
+    Checks the value, sets the attribute `name`.
     If the value has changed, :py:meth:`_parameterHasChanged` is called to apply the links.
     """
     debug = neuroConfig.debugParametersLinks
@@ -770,7 +789,7 @@ class Parameterized( object ):
     """
     Links the parameters. When one of the `sources` parameters change, the value of `destName` parameter may change.
     It is possible to give a specific link function that will be called when the link is applied but it is not mandatory, a default function exists according to the type of parameter.
-        
+
     :param string destName: name of the parameter that may change when the sources parameters change. If None, the link function will be called every time the sources parameters change.
     :param sources: one or several parameters, whose modification will activate the link function.
     :type sources: string, tuple or list
@@ -797,7 +816,7 @@ class Parameterized( object ):
 
   def addParameterObserver( self, parameterName, function ):
     """Associates a callback function to the modifications of the parameter value.
-    
+
     :param parameterName: the name of the parameter whose modification will activate the callback.
     :param function: the callback function. its signature is *function(self, parameterName, newValue)*
     """
@@ -830,7 +849,7 @@ class Parameterized( object ):
     """Assign a userLevel to a list of parameters."""
     for k in args:
       self.signature[ k ].userLevel = userLevel
-      
+
   def setConvertedValue( self, name, value ):
     """Sets the value but stores the previous value in an internal dictionary."""
     self._convertedValues[ name ] = getattr( self, name )
@@ -844,7 +863,7 @@ class Parameterized( object ):
   def addLink( self, destination, source, function = None, destDefaultUpdate = True ):
     """Add a link between `source` and `destination` parameters. When the value of `source` changes, the value of `destination` may change.
     Contrary to :py:func:`linkParameters`, the link will always be applied, even if the `destination` parameter has no more its default value.
-    
+
     :param string destination: name of the parameter that may change when the source parameters change. If None, the link function will be called every time the source parameters change.
     :param source: one or several parameters, whose modification will activate the link function.
     :type source: string, tuple or list
@@ -873,14 +892,14 @@ class Parameterized( object ):
           destinations.append( ( weakref.proxy( self ), i ) )
     else :
       destinations.append( ( weakref.proxy( self ), destination ) )
-      
+
     # Check if a default function can be provided
     if function is None:
       if len( sources ) == 1:
         function = lambda x: x
       else:
         raise RuntimeError( HTMLMessage(_t_( 'No function provided in <em>addLink</em>' )) )
-      
+
     for destObject, destParameter in destinations:
       multiLink = ExecutionNode.MultiParameterLink( sources, (destObject, destParameter), function )
       for sourceObject, sourceParameter in sources:
@@ -935,7 +954,7 @@ class Parameterized( object ):
               del sourceObject._links[ sourceParameter ]
           else:
             print 'warning: link not removed:', self, destination, 'from:', source
-            
+
     # TODO : set the removed value consistent with what happened
     return removed
 
@@ -1041,31 +1060,31 @@ class Parameterized( object ):
 class Process( Parameterized ):
   """
   This class represents a Brainvisa process or pipeline.
-  
+
   This object has a **signature** that describes its inputs and outputs and an **execution function** :py:meth:`execution`.
   If it is a **pipeline**, it also have an **execution node** that describes the structure of the pipeline.
-  
+
   :Attributes:
-  
+
   .. py:attribute:: signature
-  
+
     The signature is a :py:class:`brainvisa.data.neuroData.Signature`. It contains the list of parameters accepted by the object and their types. The possible types are described in :py:mod:`brainvisa.data.neuroData`.
 
   .. py:attribute:: category (string)
-  
+
     The processes are organized into categories. Generally, the category is the name of the directory where the process file is located.
-  
+
   .. py:attribute:: userLevel (integer)
-  
+
     The process is available in Brainvisa interface if its userLevel is lower or equal than the userLevel selected in Brainvisa options.
     0 : Basic, 1: Advanced, 2: Expert.
-    
+
   .. py:attribute:: showMaximized (boolean)
-  
+
     If true, the process window is shown maximized with a frame around it.
-  
+
   :Methods:
-  
+
   .. automethod:: id
   .. automethod:: validation
   .. automethod:: execution
@@ -1074,15 +1093,15 @@ class Process( Parameterized ):
   .. automethod:: getAllParameters
   .. automethod:: allProcesses
   .. automethod:: pipelineStructure
-  
+
   .. automethod:: sourceFile
   .. automethod:: sourcePath
-  
+
   .. automethod:: inlineGUI
-  
+
   .. automethod:: _iterate
   .. automethod:: _copy
- 
+
   """
   signature = Signature()
   category = 'BrainVISA'
@@ -1141,9 +1160,9 @@ class Process( Parameterized ):
 
   def _iterate( self, warn = True, **kwargs ):
     """
-    Returns a list of copies of the current process with different parameters values. 
-    
-    :param kwargs: dictionary containing a list of values for each parameter name. 
+    Returns a list of copies of the current process with different parameters values.
+
+    :param kwargs: dictionary containing a list of values for each parameter name.
       The first value is for the first process of the iteration and so on...
     """
     # Find iteration size
@@ -1190,7 +1209,7 @@ class Process( Parameterized ):
 
   def inlineGUI( self, values, context, parent, externalRunButton=False ):
     """This method can be overrideed in order to specialize buttons of the process window.
-    
+
     :param context: the execution context of the process
     :param parent: The parent widget
     :returns: the widget containing the buttons that will replace the default buttons (Run and Iterate)
@@ -1202,7 +1221,7 @@ class Process( Parameterized ):
   def validation( self ):
     """This method can be overrideed in order to check if the process dependencies are available.
     It will be called at Brainvisa startup when the processes are loaded. If the method raises an exception, the process will not be available.
-    
+
     :raises: :py:class:`brainvisa.validation.ValidationError`
     """
     return 1
@@ -1232,10 +1251,10 @@ class Process( Parameterized ):
       Parameterized.addLink( self, destination, source, function, destDefaultUpdate )
     else:
       eNode.addLink( destination, source, function, destDefaultUpdate )
-    
+
   def setExecutionNode( self, eNode ):
     """Sets the execution node of the pipeline.
-    
+
     :param eNode: object that describes the structure of the pipeline.
     :type eNode: :py:class:`ExecutionNode`
     """
@@ -1262,7 +1281,7 @@ class Process( Parameterized ):
 
   def allProcesses( self ):
     """Returns the current process and all its children if it is a pipeline.
-    
+
     :rtype: generator
     """
     yield self
@@ -1330,7 +1349,7 @@ class Process( Parameterized ):
   def getAllParameters( self ):
     """
     Returns all the parameters of the current process and its children if it is a pipeline.
-    
+
     :returns: tuples (Parameterized, attribute name, attribute type)
     :rtype: generator
     """
@@ -1355,8 +1374,8 @@ class Process( Parameterized ):
 #----------------------------------------------------------------------------
 class IterationProcess( Process ):
   """
-  This class represents a set of process instances that can be executed in parallel. 
-  
+  This class represents a set of process instances that can be executed in parallel.
+
   It is used to iterate the same process on a set of data.
   """
   def __init__( self, name, processes, base = None ):
@@ -1383,7 +1402,7 @@ class IterationProcess( Process ):
     return { 'type': 'iteration', 'name' : self.name, 'children':[p.pipelineStructure() for p in self._processes] }
 
   def initialization( self ):
-    
+
     if not self.base is None:
       dp = self.base
     elif len( self._processes ) != 0:
@@ -1400,15 +1419,15 @@ class IterationProcess( Process ):
       eNode.addChild( name = n,
                       node = ProcessExecutionNode( self._processes[ i ],
                       optional = True, selected = True ) )
-      
+
     # Add callbacks to maintain synchronization
     eNode.beforeChildAdded.add(\
       ExecutionNode.MethodCallbackProxy( self.beforeChildAdded ) )
     eNode.beforeChildRemoved.add(\
       ExecutionNode.MethodCallbackProxy( self.beforeChildRemoved ) )
-      
+
     self._executionNode = eNode
-    
+
   def beforeChildAdded( self, parent, key, child ):
     child._process.isMainProcess = True
     child._process.name = repr(parent._internalIndex) + ". " + child._process.name
@@ -1417,13 +1436,13 @@ class IterationProcess( Process ):
   def beforeChildRemoved( self, parent, key, child ):
     if child._process in self._processes:
       self._processes.remove(child._process)
-      
+
 #----------------------------------------------------------------------------
 class ListOfIterationProcess( IterationProcess ):
   '''
   An IterationProcess which has on its main signature a list of the first
   element of each sub-process.
-  
+
   Used for viewers and editors of ListOf()
   '''
   class linkP( object ):
@@ -1449,7 +1468,7 @@ class ListOfIterationProcess( IterationProcess ):
 #----------------------------------------------------------------------------
 class DistributedProcess( Process ):
   """
-  This class represents a set of process instances that can be executed in parallel. 
+  This class represents a set of process instances that can be executed in parallel.
   """
   def __init__( self, name, processes ):
     self._id = name + 'DistributedIteration'
@@ -1478,7 +1497,7 @@ class DistributedProcess( Process ):
 #----------------------------------------------------------------------------
 class SelectionProcess( Process ):
   """
-  This class represents a choice between a list of processes. 
+  This class represents a choice between a list of processes.
   """
   def __init__( self, name, processes ):
     self._id = name + 'Selection'
@@ -1560,7 +1579,7 @@ def escapeQuoteForShell( s ):
 #-------------------------------------------------------------------------------
 class ExecutionNode( object ):
   """
-  Base class for the classes that describe a pipeline structure. 
+  Base class for the classes that describe a pipeline structure.
   """
   class MultiParameterLink:
     def __init__( self, sources, dest, function ):
@@ -1570,7 +1589,7 @@ class ExecutionNode( object ):
           self.sources.append( ( p, n ) )
         else:
           self.sources.append( ( weakref.ref( p ), n ) )
-          
+
       # dest is the single destination given as a tuple containing
       # the parameterized object and the attribute to set
       self.dest = ( dest[0], dest[1] )
@@ -1590,7 +1609,7 @@ class ExecutionNode( object ):
         kwargs[ 'destparameterized' ] = self.dest[0]
       if self.hasDestNames:
         kwargs[ 'destnames' ] = self.dest[1]
-        
+
       return self.function( *[getattr( i[0](), i[1], None ) for i in self.sources],
                            **kwargs )
 
@@ -1653,9 +1672,9 @@ class ExecutionNode( object ):
       if withparams:
         for ( n, v ) in process.signature.items():
           #if not self.isDefault( n ):
-            #processCopy.setValue( n, getattr( process, n, None ), 
+            #processCopy.setValue( n, getattr( process, n, None ),
                                   #default=False )
-          processCopy.setValue( n, getattr( process, n, None ), 
+          processCopy.setValue( n, getattr( process, n, None ),
                                 default=process.isDefault( n ) )
       processNode=process.executionNode()
       if processNode:
@@ -1668,7 +1687,7 @@ class ExecutionNode( object ):
 
   def addChild( self, name, node, index = None):
     '''Add a new child execution node.
-    
+
     :param string name: name which identifies the node
     :param node: an :py:class:`ExecutionNode` which will be added to this node's children.
     '''
@@ -1676,7 +1695,7 @@ class ExecutionNode( object ):
       raise KeyError( HTMLMessage(_t_( '<em>%s</em> already defined' ) % ( name, )) )
     if not isinstance( node, ExecutionNode ):
       raise RuntimeError( HTMLMessage('<em>node</em> argument must be an execution node') )
-    
+
     if not index is None :
       self._children.insert( index, name, node )
     else :
@@ -1684,14 +1703,14 @@ class ExecutionNode( object ):
 
   def removeChild( self, name ):
     '''Remove child execution node.
-    
+
     :param string name: name which identifies the node
     '''
     if not self._children.has_key( name ):
       raise KeyError( HTMLMessage(_t_( '<em>%s</em> not defined' ) % ( name, )) )
     c = self._children[ name ]
     del self._children[ name ]
-    
+
     return c
 
   def childrenNames( self ):
@@ -1712,7 +1731,7 @@ class ExecutionNode( object ):
 
   def setSelected( self, selected ):
     """Change the selection state of the node.
-    
+
     :param bool selected: new selection state of the node. If the selection changes, a selection change notifier is notified.
     """
     if selected != self._selected:
@@ -1785,7 +1804,7 @@ class ExecutionNode( object ):
 
   def _run( self, context ):
     """
-    Does nothing in the base class. It is overriden by derived classes. 
+    Does nothing in the base class. It is overriden by derived classes.
     """
     pass
 
@@ -1830,7 +1849,7 @@ class ExecutionNode( object ):
         function = lambda x: x
       else:
         raise RuntimeError( HTMLMessage(_t_( 'No function provided in <em>addLink</em>' )) )
-    
+
     for destObject, destParameter in destinations:
       if destObject is not None:
         destObject = weakref.proxy( destObject )
@@ -1882,7 +1901,7 @@ class ExecutionNode( object ):
           else:
             del sourceObject._links[ sourceParameter ]
             removed = True
-            
+
         if not removed :
           print 'warning: enode link not removed:', self, destination, 'from:', source, ', function:', function
 
@@ -1896,7 +1915,7 @@ class ExecutionNode( object ):
   def parseParameterString( self, parameterString ):
     """
     Returns a tuple containing the :py:class:`Parameterized` object of the child node indicated in the parameter string and the name of the parameter.
-    
+
     :param string parameterString: references a parameter of a child node with a path like <node name 1>.<node name 2>...<parameter name>
     """
     if parameterString is None: return ( None, None )
@@ -1940,7 +1959,7 @@ class ExecutionNode( object ):
 class ProcessExecutionNode( ExecutionNode ):
   '''
   An execution node that has no children and run one process
-  
+
   '''
 
   def __init__( self, process, optional = False, selected = True,
@@ -2078,24 +2097,24 @@ class SerialExecutionNode( ExecutionNode ):
     ExecutionNode.__init__(self, name, optional, selected, guiOnly, parameterized, expandedInGui=expandedInGui )
     self.stopOnError=stopOnError
     self.notify = notify
-    
+
     if possibleChildrenProcesses :
       if not isinstance( possibleChildrenProcesses, dict ) :
         if not isinstance( possibleChildrenProcesses, list ) \
           and not isinstance( possibleChildrenProcesses, tuple ) :
           possibleChildrenProcesses = [ possibleChildrenProcesses ]
-        
+
         r = {}
         for i in xrange(len(possibleChildrenProcesses)) :
           r[possibleChildrenProcesses[i]] = { 'optional' : True,
                                               'selected' : True,
                                               'expandedInGui' : False }
         possibleChildrenProcesses = r
-        
+
       self._internalIndex = 0
-      
+
     self.possibleChildrenProcesses = possibleChildrenProcesses
-    
+
     if self.notify :
       # Add child changes notifiers
       self.beforeChildRemoved = Notifier( 4 )
@@ -2128,7 +2147,7 @@ class SerialExecutionNode( ExecutionNode ):
           context.error("Error in execution node : "+unicode(e))
     context.progress()
     return result
-    
+
   def addChild(self, name = None, node = None, index = None):
     if self.possibleChildrenProcesses :
       # As it is possible to add other children from GUI
@@ -2148,21 +2167,21 @@ class SerialExecutionNode( ExecutionNode ):
       self.beforeChildAdded.notify( weakref.proxy( self ), name, weakref.proxy( node ) )
 
     super( SerialExecutionNode, self ).addChild(name, node, index)
-    
+
     if self.notify :
       self.afterChildAdded.notify( weakref.proxy( self ), name, weakref.proxy( node ) )
-  
+
   def removeChild(self, name):
     if self.possibleChildrenProcesses :
       if not self._children.has_key( name ):
         raise KeyError( HTMLMessage(_t_( '<em>%s</em> not defined' ) % ( name, )) )
-      
+
     if self.notify :
       node = self._children[ name ]
       self.beforeChildRemoved.notify( weakref.proxy( self ), name, weakref.proxy( node ) )
 
     super( SerialExecutionNode, self ).removeChild(name)
-    
+
     if self.notify :
       self.afterChildRemoved.notify( weakref.proxy( self ), name, weakref.proxy( node ) )
 
@@ -2173,12 +2192,12 @@ class ParallelExecutionNode( SerialExecutionNode ):
   An execution node that run all its children in any order (and in parallel
   if possible)
   """
-    
+
   def _run( self, context ):
     pi, p = context.getProgressInfo( self )
     # do as for serial node
     return super( ParallelExecutionNode, self )._run( context )
-    
+
 #-------------------------------------------------------------------------------
 class SelectionExecutionNode( ExecutionNode ):
   '''An execution node that run one of its children'''
@@ -2237,15 +2256,15 @@ class SelectionExecutionNode( ExecutionNode ):
 #-------------------------------------------------------------------------------
 class ExecutionContext( object ):
   """
-  This object represents the execution context of the processes. 
-  
+  This object represents the execution context of the processes.
+
   Indeed, a process can be started in different contexts :
 
     * The user starts the process by clicking on the Run button in the graphical interface.
     * The process is started via a script. It is possible to run brainvisa in batch mode (without any graphical interface) and to run a process via a python function : brainvisa.processes.defaultContext().runProcess(...).
     * The process is a converter, so it can be run automatically by BrainVISA when a conversion is needed for another process parameters.
-    * The process is a viewer or an editor, it is run when the user clicks on the corresponding icon to view or edit another process parameter. 
-    
+    * The process is a viewer or an editor, it is run when the user clicks on the corresponding icon to view or edit another process parameter.
+
   The interactions with the user are different according to the context. That's why the context object offers several useful functions to interact with BrainVISA and to call system commands.
   Here are these functions :
 
@@ -2332,7 +2351,7 @@ class ExecutionContext( object ):
     if len( stack ) == 0:
       return None
     return stack[-1]
-  
+
   def _processStackParent( self ):
     stack = self._processStack()
     if len( stack ) == 0:
@@ -2381,7 +2400,7 @@ class ExecutionContext( object ):
     """
     It is possible to call a sub-process in the current process by calling context.runProcess.
 
-    The first argument is the process identifier, which is either the filename wihtout extension of the process or its english name. 
+    The first argument is the process identifier, which is either the filename wihtout extension of the process or its english name.
     The other arguments are the values of the process parameters. All mandatory argument must have a value.
     The function returns the value returned by the sub-process execution method.
 
@@ -2414,8 +2433,8 @@ class ExecutionContext( object ):
 
   def runInteractiveProcess( self, callMeAtTheEnd, process, *args, **kwargs ):
     """
-    Runs a process in a new thread and calls a callback function when the execution is finished. 
-    
+    Runs a process in a new thread and calls a callback function when the execution is finished.
+
     :param function callMeAtTheEnd: callback function which will be called the process execution is finished.
     :param process: id of the process which will be run.
     """
@@ -2519,7 +2538,7 @@ class ExecutionContext( object ):
             content += 'Soma-Workflow'
           else :
             content += 'BrainVISA'
-            
+
           content += '<h2>' + _t_('Parameters') +'</h2>'
           for n in process.signature.keys():
             content += '<em>' + n + '</em> = ' + htmlEscape( str( getattr( process, n, None ) ) ) + '<p>'
@@ -2586,24 +2605,24 @@ class ExecutionContext( object ):
 
         converter = None
         for ( n, p ) in process.signature.items():
-                  
-          
-          if isinstance( p, ReadDiskItem ) and p.enableConversion:            
+
+
+          if isinstance( p, ReadDiskItem ) and p.enableConversion:
             v = getattr( process, n )
             tmp = _getConvertedValue( v, p )
             if tmp is not None:
               process.setConvertedValue( n, tmp )
           elif isinstance( p, WriteDiskItem ):
             v = getattr( process, n )
-   
+
             #test if data is locked
             if  (v is not None ):
               if v.isLockData() and (process.execution.im_func != super(process.__class__, process).execution.im_func ) :
                 # raise an error if the diskitem is an output of a process which has an execution function (not the default execution function of the Process class)
                 raise IOError ( HTMLMessage(_t_('<b>The file: <em>%s</em> is locked</b>. It cannot be opened for writing. You can unlock it if necessary using  the contextual menu of the parameter %s') % ( str(v), n ) ))
-            #end test if data is locked  
-   
-            
+            #end test if data is locked
+
+
             if v is not None:
               v.createParentDirectory()
           elif isinstance( p, ListOf ):
@@ -3076,7 +3095,7 @@ class ExecutionContext( object ):
   def _messageFromException(self, beforeError, exceptionInfo, afterError=''):
     exceptionMsgFull = exceptionMessageHTML(exceptionInfo, beforeError=beforeError, afterError=afterError) + '<hr>' + exceptionTracebackHTML(exceptionInfo)
     return '<table width=100% border=1><tr><td>' + exceptionMsgFull + '</td></tr></table>'
-  
+
   def checkInterruption( self ):
     """
     This function is used to define breakpoints. When the process execution reach a breakpoint, the user can interrupt the process. There are 4 types of breakpoints automatically added :
@@ -3237,13 +3256,13 @@ class ExecutionContext( object ):
     '''Get the progress info for a given process or execution node, or create
     one if none already exists.
     A regular process may call it.
-    
+
     The output is a tuple containing the ProgressInfo and the process itself,
     just in case the input process is in fact a ProgressInfo instance.
     A ProgressInfo has no hard reference in BrainVISA: when you don't need
     it anymore, it is destroyed via Python reference counting, and is
     considered done 100% for its parent.
-    
+
     :param childrencount: it is the number of children that the process will have, and is
       not the same as the own count of the process in itself, which is in
       addition to children (and independent), and specified when using the
@@ -3300,11 +3319,11 @@ class ExecutionContext( object ):
   def progress( self, value=None, count=None, process=None ):
     '''Set the progress information for the parent process or ProgressInfo
     instance, and output it using the context output mechanisms.
-    
+
     :param value: is the progress value to set. If none, the value will not be changed, but the current status will be shown.
-    
+
     :param count: is the maximum value for the process own progress value (not taking children into account).
-    
+
     :param process: is either the calling process, or the ProgressInfo.
     '''
     if value is not None:
@@ -3317,7 +3336,7 @@ class ExecutionContext( object ):
   def showProgress( self, value, count=None ):
     '''Output the given progress value. This is just the output method which
     is overriden in subclassed contexts.
-    
+
     Users should normally not call it directory, but use progress() instead.
     '''
     if count is None:
@@ -3331,7 +3350,7 @@ class ProgressInfo( object ):
   process or a pipeline. The final goal is to provide feedback to the user via
   a progress bar. ProgressInfo has children for sub-processes (when used in a
   pipeline), or a local value for its own progression.
-  
+
   A ProgressInfo normally registers itself in the calling Process, and is
   destroyed when the process is destroyed, or when the process _progressinfo
   variable is deleted.
@@ -3450,54 +3469,54 @@ class ProgressInfo( object ):
 class ProcessInfo:
   """
   This object stores information about a process. Such objects are created at BrainVISA startup when the processes are loaded.
-  
+
   .. py:attribute:: id
-  
+
     Id of the process. It is the name of the file without extension in lowercase.
-  
+
   .. py:attribute:: name
-  
+
     Name of the process as it is displayed in the GUI.
-  
+
   .. py:attribute:: signature
-    
+
     Process excepted parameters.
-  
+
   .. py:attribute:: userLevel
-  
+
     User level needed to see the process.
-  
+
   .. py:attribute:: category
-    
+
     Process category path: <toolbox>/<category1>/<category2>/...
-    
+
   .. py:attribute:: showMaximized
-  
+
     Process window maximized state.
-  
+
   .. py:attribute:: fileName
-  
+
     Path to the file containing the source code of the process.
-  
+
   .. py:attribute:: roles
-  
+
     Tuple containing the specific roles of the process: viewer, converter, editor, importer.
-  
+
   .. py:attribute:: valid
-  
+
     False if the validation method of the process fails - default True.
-  
+
   .. py:attribute:: procdoc
-  
+
     The content of the .procdoc file associated to this process in a dictionary. It represents the documentation of the process.
-  
+
   .. py:attribute:: toolbox
-  
+
     The id of the toolbox containing the process.
-  
+
   .. py:attribute:: module
-  
-    Module path to the source of the process related to the toolbox directory. 
+
+    Module path to the source of the process related to the toolbox directory.
     <processes>.<category1>...<process>
   """
   def __init__( self, id, name, signature, userLevel, category, fileName, roles, toolbox, module=None, showMaximized=False ):
@@ -3540,7 +3559,7 @@ class ProcessInfo:
 def getProcessInfo( processId ):
   """
   Gets information about the process whose id is given in parameter.
-  
+
   :return type: :py:class:`ProcessInfo`
   """
   if isinstance( processId, ProcessInfo ):
@@ -3564,16 +3583,16 @@ def addProcessInfo( processId, processInfo ):
 def getProcess( processId, ignoreValidation=False, checkUpdate=True ):
   """
   Gets the class associated to the process id given in parameter.
-  
-  When the processes are loaded, a new class called :py:class:`NewProcess` is created for each process. 
+
+  When the processes are loaded, a new class called :py:class:`NewProcess` is created for each process.
   This class inherits from :py:class:`Process` and adds an instance counter which is incremented each time a new instance of the process is created.
-  
+
   :param processId: the id or the name of the process, or a dictionary *{'type' : 'iteration|distributed|selection', 'children' : [...] }* to create an :py:class:`IterationProcess`, a :py:class:`DistributedProcess` or a :py:class:`SelectionProcess`.
-  
+
   :param boolean ignoreValidation: if True the validation function of the process won't be executed if the process need to be reloaded - default False.
-  
+
   :param boolean checkUpdate: If True, the modification date of the source file of the process will be checked. If the file has been modified since the process loading, it may need to be reloaded. The user will be asked what he wants to do. Default True.
-  
+
   :returns: a :py:class:`NewProcess` class which inherits from :py:class:`Process`.
   """
   global _askUpdateProcess
@@ -3640,14 +3659,14 @@ def getProcess( processId, ignoreValidation=False, checkUpdate=True ):
 def getProcessInstanceFromProcessEvent( event ):
   """
   Gets an instance of a process described in a :py:class:`brainvisa.history.ProcessExecutionEvent`.
-  
+
   :param event: a :py:class:`brainvisa.history.ProcessExecutionEvent` that describes the process: its structure and its parameters.
   :returns: an instance of the :py:class:`NewProcess` class associated to the described process. Parameters may have been set.
   """
   pipelineStructure = event.content.get( 'id' )
   if pipelineStructure is None:
     pipelineStructure = event.content.get( 'pipelineStructure' )
-  
+
   result = getProcessInstance( pipelineStructure )
   procs = set()
   if result is not None:
@@ -3665,7 +3684,7 @@ def getProcessInstanceFromProcessEvent( event ):
         result._setImmutable( n, True )
       except KeyError:
         pass
-    stackp = [ ( result.executionNode(), k, e.get( 'parameters' ), 
+    stackp = [ ( result.executionNode(), k, e.get( 'parameters' ),
                 e[ 'selected' ],
                 e.get( 'executionNodes', {} ) ) for k, e in
                 event.content.get( 'executionNodes', {} ).iteritems() ]
@@ -3737,10 +3756,10 @@ def getProcessInstanceFromProcessEvent( event ):
 def getProcessFromExecutionNode( node ):
   """
   Gets a process instance corresponding to the given execution node.
-  
+
   :param node: a process :py:class:`ExecutionNode`
   :returns: According to the type of node, it returns:
-  
+
     * a :py:class:`NewProcess` instance if the node is :py:class:`ProcessExecutionNode`,
     * an :py:class:`IterationProcess` if the node is a :py:class:`SerialExecutionNode`
     * a :py:class:`DistributedProcess` if the node is a :py:class:`ParallelExecutionNode`
@@ -3751,7 +3770,7 @@ def getProcessFromExecutionNode( node ):
     return node._process
   elif nt is SerialExecutionNode:
     return IterationProcess( node.name(), node.children() )
-  elif nt is ParallelExecutionNode:
+  elif isinstance( node, ParallelExecutionNode ):
     return DistributedProcess( node.name(), node._children.values() )
   elif nt is SelectionExecutionNode:
     return SelectionProcess( node.name(), node.children() )
@@ -3760,8 +3779,8 @@ def getProcessFromExecutionNode( node ):
 def getProcessInstance( processIdClassOrInstance ):
   """
   Gets an instance of the process given in parameter.
-  
-  :param processIdClassOrInstance: a process id, name, class, instance, execution node, or a the name of a file containing a backup copy of a process. 
+
+  :param processIdClassOrInstance: a process id, name, class, instance, execution node, or a the name of a file containing a backup copy of a process.
   :returns: an instance of the :py:class:`NewProcess` class associated to the described process.
   """
   if isinstance( processIdClassOrInstance, weakref.ProxyType ):
@@ -3805,7 +3824,7 @@ def getConverter( source, destination, checkUpdate=True ):
   """
   Gets a converter (a process that have the role converter) which can convert data from source format to destination format.
   Such converters can be used to extend the set of formats that a process accepts.
-  
+
   :param source: tuple (type, format). If a converter is not found directly, parent types are tried.
   :param destination: tuple (type, format)
   :param boolean checkUpdate: if True, Brainvisa will check if the converter needs to be reloaded. Default True.
@@ -3827,7 +3846,7 @@ def getConverter( source, destination, checkUpdate=True ):
 def getConvertersTo( destination, keepType=1, checkUpdate=True ):
   """
   Gets the converters which can convert data to destination format.
-  
+
   :param destination: tuple (type, format). If a converter is not found directly, parent types are tried.
   :param boolean keepType: if True, parent type won't be tried. Default True.
   :param boolean checkUpdate: if True, Brainvisa will check if the converters needs to be reloaded. Default True.
@@ -3849,7 +3868,7 @@ def getConvertersTo( destination, keepType=1, checkUpdate=True ):
 def getConvertersFrom( source, checkUpdate=True ):
   """
   Gets the converters which can convert data from source format to whatever format.
-  
+
   :param source: tuple (type, format). If a converter is not found directly, parent types are tried.
   :param boolean checkUpdate: if True, Brainvisa will check if the converters needs to be reloaded. Default True.
   :returns: a map (type, format) -> :py:class:`NewProcess` class associated to the found converter.
@@ -3872,21 +3891,21 @@ def getConverters():
     """
     global _converters
     results = []
-    
+
     for d in _converters.itervalues():
         for v in d.itervalues():
             if not v in results and type( v ) == str:
-                results.append( v )            
-    
+                results.append( v )
+
     return sorted( results )
-        
+
 
 #----------------------------------------------------------------------------
 def getViewer( source, enableConversion = 1, checkUpdate=True, listof=False ):
   """
   Gets a viewer (a process that have the role viewer) which can visualize source data.
   The viewer is returned only if its userLevel is lower than the current userLevel.
-  
+
   :param source: a :py:class:`neuroDiskItems.DiskItem`, a list of :py:class:`neuroDiskItems.DiskItem` (only the first will be taken into account), a tuple (type, format).
   :param boolean enableConversion: if True, a viewer that accepts a format in which source can be converted is also accepted. Default True
   :param boolean checkUpdate: if True, Brainvisa will check if the viewer needs to be reloaded. Default True.
@@ -3963,8 +3982,8 @@ def getViewer( source, enableConversion = 1, checkUpdate=True, listof=False ):
 #----------------------------------------------------------------------------
 def runViewer( source, context=None ):
   """
-  Searches for a viewer for source data and runs the process. 
-  
+  Searches for a viewer for source data and runs the process.
+
   :param source: a :py:class:`neuroDiskItems.DiskItem` or something that enables to find a :py:class:`neuroDiskItems.DiskItem`.
   :param context: the :py:class:`ExecutionContext`. If None, the default context is used.
   :returns: the result of the execution of the found viewer.
@@ -3982,7 +4001,7 @@ def getDataEditor( source, enableConversion = 0, checkUpdate=True, listof=False 
   """
   Gets a data editor (a process that have the role editor) which can open source data for edition (modification).
   The data editor is returned only if its userLevel is lower than the current userLevel.
-  
+
   :param source: a :py:class:`neuroDiskItems.DiskItem`, a list of :py:class:`neuroDiskItems.DiskItem` (only the first will be taken into account), a tuple (type, format).
   :param boolean enableConversion: if True, a data editor that accepts a format in which source can be converted is also accepted. Default False
   :param boolean checkUpdate: if True, Brainvisa will check if the editor needs to be reloaded. Default True.
@@ -4058,7 +4077,7 @@ def getDataEditor( source, enableConversion = 0, checkUpdate=True, listof=False 
 def getImporter( source, checkUpdate=True ):
   """
   Gets a importer (a process that have the role importer) which can import data in the database.
-  
+
   :param source: a :py:class:`neuroDiskItems.DiskItem` or a tuple (type, format).
   :param boolean checkUpdate: if True, Brainvisa will check if the process needs to be reloaded. Default True.
   :returns: the :py:class:`NewProcess` class associated to the found process.
@@ -4092,9 +4111,9 @@ _extToModuleDescription ={
 def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brainvisa' ):
   """
   Loads a process from its source file. The source file is a python file which defines some variables (signature, name, userLevel) and functions (validation, initialization, execution).
-  
+
   The process is indexed in the global lists of processes so it can be retrieved through the functions :py:func:`getProcess`, :py:func:`getProcessInfo`, :py:func:`getViewer`, ...
-  
+
   :param string fileName: the name of the file containing the source code of the process.
   :param string category: category of the process. If None, it is the name of the directory containing the process.
   :param boolean ignoreValidation: if True, the validation function of the process won't be executed.
@@ -4102,50 +4121,50 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
   :returns: A :py:class:`NewProcess` class representing the process if no exception is raised during the loading of the process.
 
   A new class derived from :py:class:`Process` is defined to store the content of the file:
-  
+
   .. py:class:: NewProcess
-  
+
     Bases: :py:class:`Process`
-  
-    All the elements defined in the file are added to the class. 
-    
-    .. py:attribute:: name 
-    
+
+    All the elements defined in the file are added to the class.
+
+    .. py:attribute:: name
+
       Name of the process. If it is not defined in the process file, it is the base name of the file without extension.
-     
+
     .. py:attribute:: category
-    
+
       The category of the process. If it is not given in parameter, it is the name of the directory containing the process file.
-    
+
     .. py:attribute:: dataDirectory
-      
+
       The data directory of the process is a directory near the process file with the same name and the extension .data. It is optional.
-    
+
     .. py::attribute:: toolbox
-      
+
       Name of the toolbox containing the process.
-    
+
     .. py:attribute:: processReloadNotifier
-      
+
       A :py:class:`soma.notification.Notifier` that will notify its observers when the process is reload.
-    
+
     .. py:attribute:: signature
-      
+
       The parameters excepted by the process.
-    
+
     .. py:attribute:: userLevel
-      
+
       Minimum userLevel needed to see the process.
-    
+
     .. py:attribute:: roles
-    
-      Roles of the process: viewer, converter, editor, impoter. 
-    
+
+      Roles of the process: viewer, converter, editor, impoter.
+
     .. py:method:: execution(self, context)
-    
+
       Execution function.
-    
-  
+
+
   """
   result = None
   class NewProcess( Process ):
@@ -4194,7 +4213,7 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
     if category is None:
       category = os.path.basename( os.path.dirname( fileName ) )
 
-    NewProcess._id = moduleName 
+    NewProcess._id = moduleName
     NewProcess.name = moduleName
     NewProcess.category = category
     NewProcess.dataDirectory = dataDirectory
@@ -4362,11 +4381,11 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
 #----------------------------------------------------------------------------
 def readProcesses( processesPath ):
   """
-  Read all the processes found in toolboxes and in a list of directories. 
+  Read all the processes found in toolboxes and in a list of directories.
   The toolboxes are found with the function :py:func:`brainvisa.toolboxes.allToolboxes`.
-  
-  A global object representing a tree of processes is created, it is an instance of the :py:class:`ProcessTree` 
-  
+
+  A global object representing a tree of processes is created, it is an instance of the :py:class:`ProcessTree`
+
   :param list processesPath: list of paths to directories containing processes files.
   """
   # New style processes initialization
@@ -4409,12 +4428,12 @@ def readProcesses( processesPath ):
 class ProcessTree( EditableTree ):
   """
   Bases: :py:class:`soma.notification.EditableTree`
-  
-  Represents a hierarchy of processes. 
+
+  Represents a hierarchy of processes.
   It is used to represent the processes of a toolbox or a set of personal bookmarks on processes.
-  
+
   The tree contains branches: categories or directories, and leaves: processes.
-  
+
   This object can be saved in a minf file (in userProcessTree.minf for user bookmarks).
   """
   defaultName = "New"
@@ -4425,7 +4444,7 @@ class ProcessTree( EditableTree ):
     :param string id: id of the process. if None, it is set to the name in lowercase.
     :param string icon: filename of an icon that represents the process tree.
     :param string tooltip: description associated to the process tree
-    :param boolean editable: if True, the tree can be modified after its creation. 
+    :param boolean editable: if True, the tree can be modified after its creation.
     :param boolean user: if True, this tree is a custom process tree created by the user (personal bookmarks on processes)
     :param list content: initial content, list of children to add in the tree.
     """
@@ -4461,7 +4480,7 @@ class ProcessTree( EditableTree ):
   def addDir(self, processesDir, category="", processesCache={}, toolbox='brainvisa' ):
     """
     Adds the processes from a directory to the current tree. Subdirectories will become the branches of the tree and processes will become the leaves of the tree.
-    
+
     :param string processesDir: directory where processes are recursively searched.
     :param string category: category prefix for all processes found in this directory (useful for toolboxes : all processes category begins with toolbox's name.
     :param dictionary processesCache: a dictionary containing previously saved processes info stored by id. Processes that are in this cache are not reread.
@@ -4544,8 +4563,8 @@ class ProcessTree( EditableTree ):
 
   def update(self):
     """
-   Recursively Updates `visible` attribute for each item in the tree. 
-   This method must be called when the visibility may have change. 
+   Recursively Updates `visible` attribute for each item in the tree.
+   This method must be called when the visibility may have change.
    For exemple when the userLevel has changed, some process must become visibles.
     """
     visibleChild=False
@@ -4557,7 +4576,7 @@ class ProcessTree( EditableTree ):
 
   def updateName(self):
     """
-    When the tree name is changed after construction. 
+    When the tree name is changed after construction.
     The new name must be saved if the tree is saved in minf file. So change the initName.
     """
     self.initName=self.name
@@ -4566,8 +4585,8 @@ class ProcessTree( EditableTree ):
   class Branch( EditableTree.Branch ):
     """
     Bases: :py:class:`soma.notification.EditableTree.Branch`
-    
-    A directory that contains processes and/or another branches. 
+
+    A directory that contains processes and/or another branches.
     Enables to organise processes by category.
     """
     _defaultIcon = 'folder.png'
@@ -4625,8 +4644,8 @@ class ProcessTree( EditableTree ):
 
     def update(self, userTree=False):
       """
-      Updates recursively visible attribute for each item in the branch. 
-      This method must be called when the visibility may have change. 
+      Updates recursively visible attribute for each item in the branch.
+      This method must be called when the visibility may have change.
       For exemple when the userLevel has changed, some processes must become visibles.
       """
       if len(self)==0:
@@ -4645,7 +4664,7 @@ class ProcessTree( EditableTree ):
   class Leaf( EditableTree.Leaf ):
     """
     Bases: :py:class:`soma.notification.EditableTree.Leaf`
-    
+
     A ProcessTree.Leaf represents a process.
     """
     def __init__( self, id, name=None, editable=True, icon=None, userLevel=None, *args, **kwargs ):
@@ -4715,26 +4734,26 @@ class ProcessTrees(ObservableAttributes, ObservableSortedDictionary):
   Model for the list of process trees in brainvisa. A process tree is an instance of the class :py:class:`ProcessTree`.
   It is a dictionary which maps each tree with its id.
   It contains several process trees :
-  
+
   * default process tree : all processes in brainvisa/processes (that are not in a toolbox). Not modifiable by user.
   * toolboxes : processes grouped by theme. Not modifiable by user.
   * user process trees (personal bookmarks): lists created by the user and saved in a minf file.
-  
+
   A tree can be set as default. It becomes the current tree at Brainvisa start.
-  
-  .. py:attribute:: name 
-  
+
+  .. py:attribute:: name
+
     Name of the object.
-  
+
   .. py:attribute:: userProcessTreeMinfFile
-  
-    Path to the file which stores the process trees created by the user as bookmarks. 
+
+    Path to the file which stores the process trees created by the user as bookmarks.
     Default filename is in brainvisa home directory and is called `userProcessTrees.minf`.
-  
+
   .. py:attribute:: selectedTree
-  
+
     :py:class:`ProcessTree` that is the current tree when Brainvisa starts.
-    
+
   """
 
   def __init__(self, name=None):
@@ -4855,7 +4874,7 @@ def allProcessesTree():
   """
   Get the tree that contains all processes. It is created when processes in processesPath are first read.
   Toolboxes processes are also added in this tree.
-  
+
   :rtype: :py:class:`ProcessTrees`
   :return: the tree that contains all processes.
   """
@@ -4882,7 +4901,7 @@ def mainThread():
 def defaultContext():
   """
   Gets the default execution context.
-  
+
   :rtype: :py:class:`ExecutionContext`
   :return: The default execution context associated to Brainvisa application.
   """
@@ -4892,8 +4911,8 @@ def defaultContext():
 #----------------------------------------------------------------------------
 def initializeProcesses():
   """
-  Intializes the global variables of the module. 
-  The current thread is stored as the main thread. 
+  Intializes the global variables of the module.
+  The current thread is stored as the main thread.
   A default execution context is created.
   """
   #TODO: A class would be more clean instead of all these global variables
@@ -4925,7 +4944,7 @@ def initializeProcesses():
 #----------------------------------------------------------------------------
 def cleanupProcesses():
   """
-  Callback associated to the application exit. 
+  Callback associated to the application exit.
   The global variables are cleaned.
   """
   global _processModules, _processes, _processesInfo, _processesInfoByName, \
@@ -4951,30 +4970,30 @@ def cleanupProcesses():
 #----------------------------------------------------------------------------
 def reloadToolboxes():
   """
-  Reloads toolboxes, processes, types, ontology rules, databases. 
+  Reloads toolboxes, processes, types, ontology rules, databases.
   Useful to take into account new files without having to quit and start again Brainvisa.
   """
   from brainvisa.data import neuroHierarchy
   global _mainProcessTree
-  
+
   # init typesPath and fileSystemOntologiesPath
   neuroConfig.initializeOntologyPaths()
-  
+
   # read toolboxes directories: useful if there are new toolbox, process, types, or hierarchy files
   brainvisa.toolboxes.readToolboxes(neuroConfig.toolboxesDir, neuroConfig.homeBrainVISADir)
   # execute intialization files of toolboxes
   for toolbox in brainvisa.toolboxes.allToolboxes():
     toolbox.init()
-  
+
   # reload lists of types and formats
   neuroDiskItems.reloadTypes()
-  
+
   # reload processes
   readProcesses(neuroConfig.processesPath)
   # update the list of processes
   _mainProcessTree=None
   updatedMainProcessTree()
-  
+
   # update databases and ontology rules
   fileSystemOntology.FileSystemOntology.clear()
   neuroHierarchy.initializeDatabases()
@@ -5006,6 +5025,80 @@ def runIPConsoleKernel():
         "--KernelApp.parent_appname='ipython-console'" ] )
     app.start()
   return app
+
+#----------------------------------------------------------------------------
+# (YB) Experimental class. It allows use of iterations inside pipelines.
+class IterationExecutionNode( ParallelExecutionNode ):
+
+  class IterationParameterized( Parameterized ):
+    signature = Signature()
+    base = None
+
+    def getNewSignature( self, base ):
+      process = getProcessInstance( base )
+      sig = []
+      for (name, value) in process.signature.items():
+        sig += [ name, ListOf( value ) ]
+      signature = Signature( *sig )
+      return signature
+
+    def __init__( self, base ):
+      self.signature = self.getNewSignature( base )
+      process = getProcessInstance( base )
+      for (name, value) in process.signature.items():
+          self.signature[name].mandatory = process.signature[name].mandatory
+      self.base = base
+      Parameterized.__init__( self, self.signature.shallowCopy() )
+
+
+  def updateNodes( self, changed ):
+    parameterized = self._parameterized()
+    childrennames = self.childrenNames()[:]
+
+    length = 0
+    for n, p in parameterized.signature.items():
+      length = max( length, len(getattr(parameterized,n,[])) )
+
+    for n, p in parameterized.signature.items():
+      mapValuesToChildrenParameters(
+        self, self, n, n,
+        defaultProcess = parameterized.base,
+        defaultProcessOptions = { 'optional':True, 'selected':True },
+        resultingSize = length
+      )
+
+    if getattr( self, '_hidechildren', True ):
+      for child in self.children():
+        child._hidden = True
+
+  def __init__( self, base, name = None, hidechildren = False,
+                optional = False, selected = True, notify = True ):
+    if name is None:
+      name = 'Iterate: ' + getProcessInstance( base ).name
+
+    self.__dict__['_parameterizedowned'] = self.IterationParameterized( base )
+    ParallelExecutionNode.__init__(
+      self,
+      name = name,
+      optional = optional,
+      selected = selected,
+      parameterized = self.__dict__['_parameterizedowned'],
+      notify = notify,
+      possibleChildrenProcesses = [ base ] )
+
+    for param in self.__dict__['_parameterized']().signature.keys():
+      self.addLink( None, param, self.updateNodes )
+    self.__dict__['_hidechildren'] = hidechildren
+
+  def _run( self, context ):
+    # check parameters correctness
+    parameterized = self._parameterized()
+    kwargs = {}
+    for n,p in parameterized.signature.items():
+      kwargs[n] = getattr( parameterized, n, None )
+    getProcessInstance( parameterized.base )._checkIterateParam( warn = True, **kwargs )
+    # do as for parallel node
+    return super( ParallelExecutionNode, self )._run( context )
 
 #----------------------------------------------------------------------------
 

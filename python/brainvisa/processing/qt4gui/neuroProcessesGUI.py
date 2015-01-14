@@ -2809,6 +2809,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       item.setChildIndicatorPolicy(item.DontShowIndicator)
     
   def executionNodeAddChild( self, item, eNode, key = None, childNode = None, previous = None ):
+    # 10-02-2014 : added possibility to hide nodes in GUI
     newItem = None
     if not getattr(childNode, '_guiItem', None) :
       if isinstance( childNode, brainvisa.processes.ProcessExecutionNode ):
@@ -2835,6 +2836,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
       name = childNode.name()
       newItem = NodeCheckListItem( childNode, item, index, _t_( name ), itemType, read_only = self.read_only )
+      newItem.setHidden( getattr( childNode, '_hidden', False ) )
       if isinstance( childNode, weakref.ProxyType ):
         newItem._executionNode = childNode
       else:
@@ -2857,16 +2859,22 @@ class ProcessView( QWidget, ExecutionContextGUI ):
           soma.functiontools.partial(
             self.__class__.executionNodeAddChild, weakref.proxy( self ),
             newItem) )
-        
-      if en.hasChildren():
+
+      # set children indicator for the new item
+      hiddens = [ getattr( c, '_hidden', False ) for c in en.children() ]
+      hasvisiblechildren = ( len( [ x for x in hiddens if not x ] ) > 0 )
+      if en.hasChildren() and hasvisiblechildren:
         newItem.setChildIndicatorPolicy(newItem.ShowIndicator)
       #newItem.setExpandable( en.hasChildren() )
       if isinstance( childNode, brainvisa.processes.ProcessExecutionNode ):
         self._executionNodeLVItems[ childNode._process ] = newItem
       
-      func = getattr(item, 'hasChildren', None)
       # Update children indicator for the current item
-      if func and func():
+      hiddens = [ getattr( c, '_hidden', False ) for c in eNode.children() ]
+      hasvisiblechildren = ( len( [ x for x in hiddens if not x ] ) > 0 )
+      func = getattr(item, 'hasChildren', None)
+      if func and func() \
+      and hasvisiblechildren:
         item.setChildIndicatorPolicy(item.ShowIndicator)
 
     if self._depth():

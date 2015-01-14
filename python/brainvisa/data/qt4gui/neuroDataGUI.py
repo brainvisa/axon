@@ -709,7 +709,12 @@ class ChoiceListEditor( QWidget, DataEditor ):
       self.parameter = clEditor.parameter
 
       hb = QHBoxLayout()
-      self.valueSelect = ChoiceEditor( self.parameter, self, name )
+      # OpenChoice
+      if isinstance( self.parameter, OpenChoice ):
+        self.valueSelect = OpenChoiceEditor( self.parameter, self, name )
+      # Choice
+      else:
+        self.valueSelect = ChoiceEditor( self.parameter, self, name )
       hb.addWidget( self.valueSelect )
       btn = QPushButton( _t_('Add'), self )
       hb.addWidget( btn )
@@ -761,6 +766,8 @@ class ChoiceListEditor( QWidget, DataEditor ):
     def add( self ):
       n = unicode( self.valueSelect.currentText() )
       v = self.valueSelect.getValue()
+      if v != self.valueSelect.parameter.findValue( n ):
+        self.valueSelect.setValue( str(n) )
       self.value.append( v )
       self.list.addItem( n )
     
@@ -810,7 +817,18 @@ class ChoiceListEditor( QWidget, DataEditor ):
   def _setValue( self, value, default=0):
     if value is not None:
       value = map( self.parameter.findValue, value )
-      labels = [self.parameter.values[ self.parameter.findIndex( x ) ][0] for x in value]
+      # OpenChoice
+      if isinstance( self.parameter, OpenChoice ):
+        labels = []
+        for x in value:
+          i = self.parameter.findIndex( x )
+          if i >= 0:
+            labels.append( self.parameter.values[i][0] )
+          else:
+            labels.append( str(x) )
+      # Choice
+      else:
+        labels = [self.parameter.values[ self.parameter.findIndex( x ) ][0] for x in value]
       self.sle.setValue( labels )
     if value != self.value:
       self.value = value
