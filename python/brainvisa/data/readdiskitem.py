@@ -262,6 +262,8 @@ class ReadDiskItem( Parameter ):
         # String value is a dictionary
         return self.findValue( eval( selection ), requiredAttributes=requiredAttributes, _debug=_debug )
       fullselection = None
+      if selection == '':
+        return None # avoid using cwd
       fileName = os.path.normpath( os.path.abspath( selection ) )
       result = self.database.getDiskItemFromFileName( fileName, None )
       if result is None:
