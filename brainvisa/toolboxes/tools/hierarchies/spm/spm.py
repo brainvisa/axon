@@ -36,19 +36,41 @@
 # templates.
 # The database root is the $FSLDIR/data directory.
 
+templates_contents = (
+    'T1', SetType('anatomical Template'),
+    SetWeakAttr('normalized', 'yes', 'skull_stripped', 'no', 'Size',
+        '2 mm','referential', '19bfee8e-51b1-4d9e-8721-990b9f88b12f',
+        'databasename', 'spm'),
+    'PET', SetType('PET Template'),
+    SetWeakAttr('normalized', 'yes', 'databasename', 'spm'),
+)
+
 hierarchy = (
-SetWeakAttr( 'database', '%f', 'databasename', 'spm' ), SetPriorityOffset( -10 ), SetContent(
-  'tpm', SetContent(
-    'grey', SetType('grey probability map')),
-  'toolbox', SetContent(
-    'Seg', SetContent(
-      'TPM', SetType('tissue probability map')),                                                                                             
-    'vbm8', SetContent(
-      'Template_1_IXI550_MNI152', SetType('Dartel Template'), SetWeakAttr( 'normalized', 'yes', 'databasename', 'spm' ))
-  ),# toolbox  
-  'templates', SetContent(
-    'T1', SetType( 'anatomical Template' ),SetWeakAttr( 'normalized', 'yes', 'skull_stripped', 'no', 'Size', '2 mm','referential', '19bfee8e-51b1-4d9e-8721-990b9f88b12f', 'databasename', 'spm' ),
-    'PET', SetType('PET Template'),SetWeakAttr( 'normalized', 'yes', 'databasename', 'spm' ),
-  )#templates     
-))
+    SetWeakAttr('database', '%f', 'databasename', 'spm'),
+    SetPriorityOffset(-10),
+    SetContent(
+        'tpm', SetContent(
+            'grey', SetType('grey probability map')),
+            # TMP in SPM12
+            'TPM', SetType('tissue probability map'),
+        'toolbox', SetContent(
+            'Seg', SetContent(
+                # TPM in SPM8
+                'TPM', SetType('tissue probability map')),
+            'vbm8', SetContent(
+                # SPM8
+                'Template_1_IXI550_MNI152', SetType('Dartel Template'),
+                SetWeakAttr('normalized', 'yes', 'databasename', 'spm')),
+            # this OldNorm is the location of templates in SPM12
+            'OldNorm', SetContent(*templates_contents),
+            'DARTEL', SetContent(
+                # in SPM12, but not exactly the same as in SPM8, this one
+                # looks more similar to Template_6_IXI550_MNI152 in SPM8
+                'icbm152', SetType('Dartel Template'),
+                SetWeakAttr('normalized', 'yes', 'databasename', 'spm')),
+        ),# toolbox
+        # this templates dir is for SPM8 and SPM5
+        'templates', SetContent(*templates_contents),
+    )
+)
 
