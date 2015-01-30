@@ -1049,7 +1049,7 @@ def axon_to_capsul_main(argv):
         parser.print_help()
         sys.exit(1)
 
-    processes.fastStart = True
+    #processes.fastStart = True
     from brainvisa.configuration import neuroConfig
     neuroConfig.ignoreValidation = True
     processes.initializeProcesses()
