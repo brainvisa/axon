@@ -624,15 +624,20 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
                     and not isinstance(link_pars, tuple):
                 link_pars = [link_pars]
             for link_par, output_name in zip(link_pars, output_names):
-                link_par_split = link_par.split('.')
-                if len(link_par_split) == 1:
-                    src = use_weak_ref(enode.child(link_src)._process)
+                if link_par.startswith('/'): # absolute name, not in child
+                    print '*** ABS link:', enode
+                    src = enode
+                    link_par = link_par[1:]
                 else:
                     src = enode.child(link_src)
+                link_par_split = link_par.split('.')
+                if len(link_par_split) == 1:
+                    src = use_weak_ref(src._parameterized)
+                else:
                     while len(link_par_split) > 1:
                         srcname_short = link_par_split.pop(0)
                         src = src.child(srcname_short)
-                    src = use_weak_ref(src._process)
+                    src = use_weak_ref(src._parameterized)
                     link_par = link_par_split[-1]
                 # in switches, input params are the concatenation of declared
                 # input params and the output "group" name
