@@ -624,8 +624,9 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
                     and not isinstance(link_pars, tuple):
                 link_pars = [link_pars]
             for link_par, output_name in zip(link_pars, output_names):
+                if link_par is None: # not connected
+                    continue
                 if link_par.startswith('/'): # absolute name, not in child
-                    print '*** ABS link:', enode
                     src = enode
                     link_par = link_par[1:]
                 else:
