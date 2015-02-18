@@ -86,7 +86,7 @@ signature = Signature(
   'biasCorrected', WriteDiskItem('4D Volume', 'Aims readable volume formats'),
   'cleanup', Choice(('Dont do cleanup', '0'), ('Light Clean', '1'), ('Thorough Clean', '2')),
   'ngaus', String(),
-  'regtype', Choice(('No Affine Registration', """''"""), ("ICBM space template - European brains", """'mni'"""), ("ICBM space template - East Asian brains", """'eastern'"""), ("Average sized template", """'subj'"""), ("No regularisation", """'none'""")),
+  'regtype', Choice(('No Affine Registration', """"""), ("ICBM space template - European brains", """mni"""), ("ICBM space template - East Asian brains", """eastern"""), ("Average sized template", """subj"""), ("No regularisation", """none""")),
   'warpreg', String(),
   'warpco', String(),
   'biasfwhm', Choice(('30mm cutoff', '30'), ('40mm cutoff', '40'), ('50mm cutoff', '50'), ('60mm cutoff', '60'), ('70mm cutoff', '70'), ('80mm cutoff', '80'), ('90mm cutoff', '90'), ('100mm cutoff', '100'), ('110mm cutoff', '110'), ('120mm cutoff', '120'), ('130mm cutoff', '130'), ('140mm cutoff', '140'), ('150mm cutoff', '150'), ('No correction', 'Inf')),
@@ -109,9 +109,9 @@ def execution(self, context):
   spmJobFile = inDir + '/' + spmJobName + '_job.m'
       
   tpms = """{
-                                                  '""" + str(self.MRI_Mni_tpmSeg.fullPath()) + """'
-                                                  '""" + str(spm8Path) + """/tpm/white.nii'
-                                                  '""" + str(spm8Path) + """/tpm/csf.nii'
+                                                  """ + str(self.MRI_Mni_tpmSeg.fullPath()) + """
+                                                  """ + str(spm8Path) + """/tpm/white.nii'
+                                                  """ + str(spm8Path) + """/tpm/csf.nii'
                                                   }"""
 
 
