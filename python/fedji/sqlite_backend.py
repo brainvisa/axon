@@ -103,7 +103,7 @@ class FedjiSqliteCollection(object):
     @property
     def fields(self):
         '''
-        Returns a dictionary whose keys are the attributes previously created 
+        Returns a dictionary whose keys are the fields previously created 
         with new_field and whose values are Python classes corresponding to
         the field type.
         '''
