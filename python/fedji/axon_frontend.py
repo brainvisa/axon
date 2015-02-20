@@ -5,7 +5,8 @@ import shutil
 
 from soma.uuid import Uuid
 from soma.undefined import Undefined
-from soma.fom import (FileOrganizationModelManager, 
+from soma.fom import (FileOrganizationModelManager,
+                      DirectoryAsDict,
                       PathToAttributes,
                       AttributesToPaths)
 from soma.minf.api import readMinf
@@ -140,10 +141,12 @@ class AxonFedjiDatabase(Database):
         if fileName.startswith(self.directory):
             diskItem = self.createDiskItemFromFormatExtension( fileName, None )
             if diskItem is not None:
-                dad = DirectoryAsDict.paths_to_dict(diskItem.fullPath()[len(self.directory)+1:])
-                for path, attributes in self.path_to_attributes.parse_directory(dad):
-                    if osp.join(path) == dad.directory:
-                        diskItem._updateGlobal(attributes)
+                relative_path = diskItem.fullPath()[len(self.directory)+1:]
+                dad = DirectoryAsDict.paths_to_dict(relative_path)
+                for path, st, attributes in self.path_to_attributes.parse_directory(dad, all_unknown=True):
+                    if osp.join(*path) == relative_path:
+                        if attributes:
+                            diskItem._updateGlobal(attributes)
                         return diskItem
         if defaultValue is Undefined:
             raise ValueError( 'Database "%(database)s" cannot reference file "%(filename)s"' % { 'database': self.name,  'filename': fileName } )
@@ -172,7 +175,10 @@ class AxonFedjiDatabase(Database):
             content = set(osp.join(directory,i) for i in os.listdir(directory))
             while content:
                 path = content.pop()
-                item = self.getDiskItemFromFileName(path)
+                try:
+                    item = self.getDiskItemFromFileName(path)
+                except ValueError:
+                    item = self.createDiskItemFromFileName(path)
                 for path in item.fullPaths():
                     content.discard(path)
                 content.discard(item.minfFileName())
