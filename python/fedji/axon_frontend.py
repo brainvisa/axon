@@ -5,7 +5,7 @@ from fedji.api import fedji_connect
 from brainvisa.data.fileSystemOntology import FileSystemOntology
 from soma.undefined import Undefined
 
-#import os
+import os
 #from soma.database.entity import EntityDefinition
 #import types
 #import sys
@@ -15,7 +15,7 @@ from soma.undefined import Undefined
 #from StringIO import StringIO
 #import cPickle
 
-#from soma.minf.api import readMinf
+from soma.minf.api import readMinf
 #from soma.html import htmlEscape
 #from soma.sorted_dictionary import SortedDictionary
 
@@ -26,9 +26,9 @@ from soma.undefined import Undefined
 #from soma.notification import Notifier
 #from soma.databases.api import sqlite3, ThreadSafeSQLiteConnection
 
-#from brainvisa.data.fileSystemOntology import FileSystemOntology, SetContent
+from brainvisa.data.fileSystemOntology import FileSystemOntology, SetContent
 #from brainvisa.processes import diskItemTypes, getDiskItemType
-#import brainvisa.processes
+import brainvisa.processes
 #from brainvisa.configuration import neuroConfig
 #from brainvisa.processing.neuroException import showWarning
 #from brainvisa.data.neuroDiskItems import DiskItem, getFormat, getFormats, Format, FormatSeries, File, Directory, getAllFormats, MinfFormat
@@ -51,12 +51,11 @@ class AxonFedjiDatabase(Database):
         minf = os.path.join(self.directory, 'database_settings.minf')
         if fso is None:
             if os.path.exists(minf):
-                fso = readMinf(minf)[ 0 ].get('ontology', 'brainvisa-3.1')
+                fso = readMinf(minf)[ 0 ].get('ontology', 'brainvisa-3.2.0')
             else:
-                fso='brainvisa-3.1'
+                fso='brainvisa-3.2.0'
         self.fso = FileSystemOntology.get(fso)
-    
-
+        
     def checkTables(self):
         """
         Checks if all types currently defined in the database ontology 
