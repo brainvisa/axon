@@ -912,6 +912,7 @@ class FileSystemOntology( object ):
         self.typeToPatterns.setdefault( rule.type, [] ).append( ruleInExtenso )
       if rule.scanner:
         stack = [rules+(r,) for r in rule.scanner.rules] + stack
+  
   def getOntologiesNames():
     """
     Lists all the ontologies names found in fileSystemOntologiesPath. 
@@ -969,6 +970,34 @@ class FileSystemOntology( object ):
   def clear():
     FileSystemOntology.__instances={}
   clear=staticmethod( clear )
+  
+  def getTypeChildren( self, types ):
+    if getattr(self, '_childrenByTypeName', None) is None:
+      self._childrenByTypeName = {}
+      for type in neuroDiskItems.diskItemTypes.itervalues():
+        self._childrenByTypeName.setdefault(type.name, set((type.name,)))
+        if type.parent:
+          self._childrenByTypeName.setdefault(type.parent.name, set((type.parent.name,))).append(type.name)
+    return chain(self._childrenByType.get(type,[]) for type in types)
+    
+  def getTypesFormats( self, types ):
+    if getattr(self, '_formatsByTypeName', None) is None:
+      self._formatsByTypeName = {}
+      for type, rules in self.typeToPatterns.iteritems():
+        typeFormats = self._formatsByTypeName.setdefault(type.name,[])
+        for rule in rules:
+          if rule.formats:
+            for format in rule.formats:
+              if format.name not in typeFormats:
+                  typeFormats.append(format.name)
+    result = set()
+    for t1 in types:
+      for t2 in self.getTypeChildren( t1 ):
+        f = self._formatsByTypeName.get( t2 )
+        if f:
+          result.update( f )
+    return result
+  
   #--------------------------------------------------------------------------
   class __Reader( MultipleExecfile ):
     """
