@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import os.path as osp
+from stat import S_ISDIR
 import shutil
 
 from soma.uuid import Uuid
@@ -73,6 +74,7 @@ class AxonFedjiDatabase(Database):
             databases.remove(old_db.name)
             old_db.close()
         databases.add(self)
+        return self
 
     def checkTables(self):
         """
@@ -113,7 +115,7 @@ class AxonFedjiDatabase(Database):
         diskitem.type = getDiskItemType(doc.pop('type')[0])
         diskitem.format = getFormat(doc.pop('format'))
         diskitem._globalAttributes["_database"] = self.name
-        diskItem._globalAttributes[ '_ontology' ] = self.fom.name
+        diskItem._globalAttributes[ '_ontology' ] = self.fom.fom_names[0]
         diskitem._changeUuid( doc.pop('_id') )
         diskitem._files = doc.pop['files']
         diskitem._updateGlobal(doc)
@@ -143,26 +145,44 @@ class AxonFedjiDatabase(Database):
             if diskItem is not None:
                 relative_path = diskItem.fullPath()[len(self.directory)+1:]
                 dad = DirectoryAsDict.paths_to_dict(relative_path)
-                for path, st, attributes in self.path_to_attributes.parse_directory(dad, all_unknown=True):
+                import sys
+                class log:
+                    @staticmethod
+                    def debug(msg):
+                        print msg
+                        sys.stdout.flush()
+                log.debug('createDiskItemFromFileName ' + fileName)
+                for path, st, attributes in self.path_to_attributes.parse_directory(dad, log=log):
                     if osp.join(*path) == relative_path:
                         if attributes:
+                            format = attributes.pop('fom_format', None)
+                            type = attributes.pop('fom_parameter',None)
+                            attributes.pop('fom_process',None)
+                            attributes.pop('fom_name',None)
+                            if format is not None:
+                                newItem = self.changeDiskItemFormat(diskItem, format)
+                            if newItem is not None:
+                                diskItem = newItem
+                            diskItem.type = getDiskItemType(type)
                             diskItem._updateGlobal(attributes)
-                        return diskItem
+                        log.debug('==> ' + fileName)
+                        sys.stderr.flush()
+                sys.stderr.flush()
+                return diskItem
+            elif defaultValue is Undefined:
+                raise ValueError( 'Database "%(database)s" cannot create DiskItem for %(filename)s"' % { 'database': self.name,  'filename': fileName } )
         if defaultValue is Undefined:
             raise ValueError( 'Database "%(database)s" cannot reference file "%(filename)s"' % { 'database': self.name,  'filename': fileName } )
         return defaultValue
       
     def changeDiskItemFormat( self, diskItem, newFormat ):
-        newFormat = getFormat(newFormat)
+        newFormat = self.formats.getFormat(newFormat)
         if newFormat is not None:
-            fp = diskItem.fullPath()
-            for ext in self.fso.formats.itervalues():
-                if fp.endswith('.'+ext):
-                    noExt = fp[:-len(ext)]
-                    result = diskItem.clone()
-                    result.format = newFormat
-                    result._files = [ osp.normpath( noExt + '.' + i ) for i in newFormat.extensions() ]
-                    return result
+            noExt = diskItem.fullName()
+            result = diskItem.clone()
+            result.format = getFormat(newFormat.name)
+            result._files = [ osp.normpath( noExt + '.' + i if i else noExt ) for i in newFormat.extensions() ]
+            return result
         return None
     
     
@@ -179,6 +199,10 @@ class AxonFedjiDatabase(Database):
                     item = self.getDiskItemFromFileName(path)
                 except ValueError:
                     item = self.createDiskItemFromFileName(path)
+                    item._globalAttributes["_database"] = self.name
+                    item._globalAttributes[ '_ontology' ] = self.fom.fom_names[0]
+                    if item.type is None and S_ISDIR(os.stat(path).st_mode):
+                        item.type = getDiskItemType('Directory')
                 for path in item.fullPaths():
                     content.discard(path)
                 content.discard(item.minfFileName())
