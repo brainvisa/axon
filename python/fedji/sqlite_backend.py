@@ -251,7 +251,10 @@ class FedjiSqliteQueryResult(object):
     def __init__(self, collection, query, fields, skip, limit):
         self.collection = collection
         self.query = query
-        self.fields = fields
+        if fields is not None:
+            self.fields = [f for f in fields if f in self.collection.fields]
+        else:
+            self.fields = None
         self.skip = skip
         self.limit = limit
         
@@ -260,14 +263,17 @@ class FedjiSqliteQueryResult(object):
         where = []
         where_data = []
         for field, value in self.query.iteritems():
-            if self.collection.fields[field] is list and not isinstance(value,list):
+            field_type = self.collection.fields.get(field)
+            if field_type is None:
+                return (None, None)
+            if field_type is list and not isinstance(value,list):
                 list_table = '%s_list_%s' % (self.collection._documents_table, field)
                 inner_join.append(' INNER JOIN %(list_table)s ON %(data_table)s.rowid = %(list_table)s.list' % {'data_table':self.collection._documents_table, 'list_table': list_table})
                 where.append('%s.value = ?' % list_table)
                 where_data.append(value)
             else:
                 where.append('%s=?' % field)
-                where_data.append(value_to_sql[self.collection.fields[field]](value))
+                where_data.append(value_to_sql[field_type](value))
         if inner_join:
             inner_join = ''.join(inner_join)
         else:
@@ -296,12 +302,13 @@ class FedjiSqliteQueryResult(object):
         else:
             columns = self.collection.fields.keys()
         sql, sql_data = self._get_sql('SELECT %s' % ', '.join(columns))
-        for row in cnx.execute(sql, sql_data):
-            document = dict((columns[i],sql_to_value[self.collection.fields[columns[i]]](row[i])) for i in xrange(len(columns)) if row[i] is not None)
-            _id = document.get('_id')
-            if _id is not None:
-                document['_id'] = uuid.UUID(bytes=_id)
-            yield document
+        if sql:
+            for row in cnx.execute(sql, sql_data):
+                document = dict((columns[i],sql_to_value[self.collection.fields[columns[i]]](row[i])) for i in xrange(len(columns)) if row[i] is not None)
+                _id = document.get('_id')
+                if _id is not None:
+                    document['_id'] = uuid.UUID(bytes=_id)
+                yield document
     
     def _rowids(self):
         '''
@@ -309,22 +316,25 @@ class FedjiSqliteQueryResult(object):
         '''
         cnx = self.collection._connect()
         sql, sql_data = self._get_sql('SELECT %s.rowid' % self.collection._documents_table)
-        for row in cnx.execute(sql, sql_data):
-            yield row[0]
+        if sql:
+            for row in cnx.execute(sql, sql_data):
+                yield row[0]
     
     def count(self):
         cnx = self.collection._connect()
         sql, sql_data = self._get_sql('SELECT COUNT(*)')
-        r = cnx.execute(sql, sql_data).fetchone()
-        if r:
-            return r[0]
+        if sql:
+            r = cnx.execute(sql, sql_data).fetchone()
+            if r:
+                return r[0]
         return 0
 
     def distinct(self, field):
         cnx = self.collection._connect()
         sql, sql_data = self._get_sql('SELECT DISTINCT %s' % field)
-        for i in cnx.execute(sql, sql_data):
-            yield i[0]
+        if sql:
+            for i in cnx.execute(sql, sql_data):
+                yield i[0]
 
             
 if __name__ == '__main__':

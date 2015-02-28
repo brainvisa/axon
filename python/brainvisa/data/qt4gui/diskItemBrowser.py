@@ -442,12 +442,13 @@ class DiskItemBrowser( QDialog ):
         else:
           typesList=self._database.findAttributes( ( '_type', ), {}, exactType=self._exactType, **required ) # types represented in the database : there is at least one diskitem of that type in the database
         for t in sorted(typesList):
-          t = t[0]
-          if t not in typesSet:
-            self._cmbType.addItem( t )
-            typesSet.add( t )
-            if selected is not None and selected == t:
-              self._cmbType.setCurrentIndex( self._cmbType.count() - 1 )
+          if t:
+            t = t[0]
+            if t not in typesSet:
+              self._cmbType.addItem( t )
+              typesSet.add( t )
+              if selected is not None and selected == t:
+                self._cmbType.setCurrentIndex( self._cmbType.count() - 1 )
       if '_format' not in preservedCombos:
         selected = self._selectedAttributes.get( '_format' )
         if self._write:
@@ -455,12 +456,13 @@ class DiskItemBrowser( QDialog ):
         else:
           formatsList=self._database.findAttributes( ( '_format', ), {}, exactType=self._exactType, **required  )
         for f in sorted(formatsList):
-          f = f[0]
-          if f not in formatsSet and f is not None:
-            self._cmbFormat.addItem( f )
-            formatsSet.add( f )
-            if selected is not None and selected == f:
-              self._cmbFormat.setCurrentIndex( self._cmbFormat.count() - 1 )
+          if f:
+            f = f[0]
+            if f not in formatsSet and f is not None:
+              self._cmbFormat.addItem( f )
+              formatsSet.add( f )
+              if selected is not None and selected == f:
+                self._cmbFormat.setCurrentIndex( self._cmbFormat.count() - 1 )
       # set selected in required dictionary to take it into account when requesting the database
       selected=self._selectedAttributes.get( '_format' )
       if selected is not None:

@@ -19,14 +19,15 @@ from brainvisa.data.neuroDiskItems import (DiskItem,
                                            getFormat,
                                            getFormats,
                                            Format,
-                                           getAllFormats)
+                                           getAllFormats,
+                                           getAllDiskItemTypes)
 
 class AxonFedjiDatabase(Database):
     def __init__( self, directory, fedji_url=None, fom_name=None):
         super(AxonFedjiDatabase, self).__init__()
         # Connect to FEDJI on database "axon" and collection "disk_items"
         if fedji_url is None:
-            fedji_url = 'sqlite:' + osp.join(directory, 'fedji')
+            fedji_url = 'sqlite://' + osp.join(directory, 'fedji')
         self.fedji_collection = fedji_connect(fedji_url).axon.disk_items
         if 'files' not in self.fedji_collection.fields:
             self.fedji_collection.new_field('files', list)
@@ -46,6 +47,7 @@ class AxonFedjiDatabase(Database):
         self.fom = fomm.load_foms(fom_name)
         self._pta = None
         self._atp = None
+        self._typeKeysAttributes = {}
     
     def close(self):
         self.fedji_collection = None
@@ -62,7 +64,7 @@ class AxonFedjiDatabase(Database):
     @property
     def attributes_to_paths(self):
         if self._atp is None:
-            self._atp = AttributesToPath(self.fom)
+            self._atp = AttributesToPaths(self.fom)
         return self._atp
     
     def add_to_axon(self):
@@ -144,7 +146,7 @@ class AxonFedjiDatabase(Database):
             diskItem = self.createDiskItemFromFormatExtension( fileName, None )
             if diskItem is not None:
                 relative_path = diskItem.fullPath()[len(self.directory)+1:]
-                dad = DirectoryAsDict.paths_to_dict(relative_path)
+                #dad = DirectoryAsDict.paths_to_dict(relative_path)
                 import sys
                 class log:
                     @staticmethod
@@ -152,7 +154,7 @@ class AxonFedjiDatabase(Database):
                         print msg
                         sys.stdout.flush()
                 log.debug('createDiskItemFromFileName ' + fileName)
-                for path, st, attributes in self.path_to_attributes.parse_directory(dad, log=log):
+                for path, st, attributes in self.path_to_attributes.parse_directory(relative_path, log=log):
                     if osp.join(*path) == relative_path:
                         if attributes:
                             format = attributes.pop('fom_format', None)
@@ -165,8 +167,8 @@ class AxonFedjiDatabase(Database):
                                 diskItem = newItem
                             diskItem.type = getDiskItemType(type)
                             diskItem._updateGlobal(attributes)
-                        log.debug('==> ' + fileName)
-                        sys.stderr.flush()
+                        break
+                log.debug('==> ' + fileName)
                 sys.stderr.flush()
                 return diskItem
             elif defaultValue is Undefined:
@@ -192,7 +194,15 @@ class AxonFedjiDatabase(Database):
         if recursion:
             raise NotImplementedError('On FEDJI databases, scanDatabaseDirectories cannot be called with recursion=True')
         for directory in directoriesToScan:
-            content = set(osp.join(directory,i) for i in os.listdir(directory))
+            content = set()
+            minf = set()
+            for i in os.listdir(directory):
+                fp = osp.join(directory,i)
+                if fp.endswith('.minf'):
+                    minf.add(fp)
+                else:
+                    content.add(fp)
+            
             while content:
                 path = content.pop()
                 try:
@@ -205,14 +215,17 @@ class AxonFedjiDatabase(Database):
                         item.type = getDiskItemType('Directory')
                 for path in item.fullPaths():
                     content.discard(path)
-                content.discard(item.minfFileName())
+                minf.discard(item.minfFileName())
                 yield item
+                if not content and minf:
+                    content = minf
+                    minf = set()
     
     def findAttributes( self, attributes, selection={}, _debug=None, exactType=False, **required ):
         query = selection.copy()
         query.update(required)
-        for attribute in attributes:
-            yield [i[attribute] for i in self.fedji_collection.find(query,fields=[attribute])]
+        for document in self.fedji_collection.find(query,fields=attributes):
+            yield [document.get(attribute) for attribute in attributes]
     
     
     def findDiskItems( self, selection={}, _debug=None, exactType=False, **required ):
@@ -225,6 +238,13 @@ class AxonFedjiDatabase(Database):
     def createDiskItems( self, selection={}, _debug=None, exactType=False, **required ):
         NotImplementedError('createDiskItems not implemented for FEDJI databases')
     
+    def getTypesKeysAttributes(self, type):
+        result = self._typeKeysAttributes.get(type)
+        if result is None:
+            result = list(self.attributes_to_paths.find_discriminant_attributes(fom_parameter=type))
+            self._typeKeysAttributes[type] = result
+        return result
+    
     def getAttributesEdition( self, *types ):
       editable = set()
       values = {}
@@ -236,15 +256,37 @@ class AxonFedjiDatabase(Database):
             #editable.update( e[0] )
             #for a, v in e[1].iteritems():
               #values.setdefault( a, set() ).update( v )
-      return editable, values
-    
+      return editable, values, ()
     
     def getTypeChildren( self, *types ):
-        return self.fso.getTypeChildren(types)
-        
+        if getattr(self, '_childrenByTypeName', None) is None:
+            self._childrenByTypeName = {}
+            for type in getAllDiskItemTypes():
+                self._childrenByTypeName.setdefault(type.name, set())
+                parent = type.parent
+                while parent is not None:
+                    self._childrenByTypeName.setdefault(type.parent.name, set()).add(type.name)
+                    parent = parent.parent
+        result = set()
+        for type in types:
+            try:
+                result.update(self._childrenByTypeName[type])
+            except KeyError:
+                import pprint
+                pprint.pprint(self._childrenByTypeName)
+        return result
     
     def getTypesFormats( self, *types ):
-        return self.fso.getTypesFormats(types)
+        if getattr(self, '_formatsByTypeName', None) is None:
+            self._formatsByTypeName = {}
+            for type in getAllDiskItemTypes():
+                #TODO: There should be a method in AttributesToPaths to avoid
+                # direct access to _db.
+                self._formatsByTypeName[type.name] = list(self.attributes_to_paths._db.execute('SELECT DISTINCT _fom_format FROM rules WHERE _fom_parameter="%s"' % type.name))
+        result = set()
+        for type in types:
+            result.update(self._formatsByTypeName[type])
+        return result
       
 
 

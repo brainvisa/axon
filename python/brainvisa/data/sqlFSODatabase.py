@@ -1855,7 +1855,7 @@ class SQLDatabases( Database ):
     for database in self._iterateDatabases( selection, required ):
       for tpl in database.findAttributes( attributes, selection, _debug=_debug, exactType=exactType, **required ):
         if index >= 0:
-          yield tpl[:index] + ( database.name, ) + tpl[index+1:]
+          yield tuple(chain(tpl[:index], ( database.name, ), tpl[index+1:]))
         else:
           yield tpl
   

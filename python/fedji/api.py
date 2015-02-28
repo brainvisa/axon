@@ -15,7 +15,7 @@ def fedji_connect(url):
     backend, protocol_path = url.split(':', 1)
     if backend == 'sqlite':
         from .sqlite_backend import FedjiSqlite
-        if protocol_path.startswith('//'):
+        if not protocol_path.startswith('//'):
             raise ValueError('Invalid FEDJI urL for sqlite backend: %s' % url)
         path = protocol_path[2:]
         return FedjiSqlite(path)

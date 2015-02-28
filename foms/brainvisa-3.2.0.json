@@ -1841,7 +1841,7 @@
       ], 
       "Native space ROI": [
         [
-          "<center>/<subject>/pet/<acquisition>/<tracer>/PET_<reconstruction>/thalamus_whitematter_analysis/<subject>_<acquisition>_<tracer>_<reconstruction>_<roiName>_in_PET_space", 
+          "<center>/<subject>/pet/<acquisition>/<tracer>/PET_<reconstruction>/thalamus_whitematter_analysis/<subject>_<acquisition>_<tracer>_<reconstruction>_<ROIName>_in_PET_space", 
           [
             "Graph and data", 
             "BrainVISA volume formats"
@@ -9099,1834 +9099,1834 @@
           }
         ]
       ], 
-      "Joint detection-estimation surfacic": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/jde_analysis_surface/<detect_estim_session>", 
-          [
-            "Directory"
-          ], 
-          {
-            "jde_type": "surface", 
-            "fom_process": "axon", 
-            "fom_parameter": "Joint detection-estimation surfacic"
-          }
-        ]
-      ], 
-      "pyHRF XML parameters": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/jde_analysis_surface/<detect_estim_session>/detectestim", 
-          [
-            "XML"
-          ], 
-          {
-            "jde_type": "surface", 
-            "fom_process": "axon", 
-            "fom_parameter": "pyHRF XML parameters"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/jde_analysis_volume/<detect_estim_session>/detectestim", 
-          [
-            "XML"
-          ], 
-          {
-            "jde_type": "volume", 
-            "fom_process": "axon", 
-            "fom_parameter": "pyHRF XML parameters"
-          }
-        ]
-      ], 
-      "pyHRF XML output": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/jde_analysis_surface/<detect_estim_session>/jde_output", 
-          [
-            "XML"
-          ], 
-          {
-            "jde_type": "surface", 
-            "fom_process": "axon", 
-            "fom_parameter": "pyHRF XML output"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/jde_analysis_volume/<detect_estim_session>/jde_output", 
-          [
-            "XML"
-          ], 
-          {
-            "jde_type": "volume", 
-            "fom_process": "axon", 
-            "fom_parameter": "pyHRF XML output"
-          }
-        ]
-      ], 
-      "pyHRF pickle dump": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/jde_analysis_surface/<detect_estim_session>/result", 
-          [
-            "pickle dump file"
-          ], 
-          {
-            "jde_type": "surface", 
-            "fom_process": "axon", 
-            "fom_parameter": "pyHRF pickle dump"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/jde_analysis_volume/<detect_estim_session>/result", 
-          [
-            "pickle dump file"
-          ], 
-          {
-            "jde_type": "volume", 
-            "fom_process": "axon", 
-            "fom_parameter": "pyHRF pickle dump"
-          }
-        ]
-      ], 
-      "Joint detection-estimation volumic": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/jde_analysis_volume/<detect_estim_session>", 
-          [
-            "Directory"
-          ], 
-          {
-            "jde_type": "volume", 
-            "fom_process": "axon", 
-            "fom_parameter": "Joint detection-estimation volumic"
-          }
-        ]
-      ], 
-      "NRL estimates": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/jde_analysis_volume/<detect_estim_session>/jde_pm_nrls_condition_<condition>", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "jde_type": "volume", 
-            "scale corrected": "no", 
-            "fom_process": "axon", 
-            "fom_parameter": "NRL estimates"
-          }
-        ]
-      ], 
-      "HRF estimates": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/jde_analysis_volume/<detect_estim_session>/jde_pm_hrf", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "jde_type": "volume", 
-            "fom_process": "axon", 
-            "fom_parameter": "HRF estimates"
-          }
-        ]
-      ], 
-      "pyHRF residual variance": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/jde_analysis_volume/<detect_estim_session>/jde_pm_noise_var", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "jde_type": "volume", 
-            "fom_process": "axon", 
-            "fom_parameter": "pyHRF residual variance"
-          }
-        ]
-      ], 
-      "pyHRF Parcel Image": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/jde_analysis_volume/<detect_estim_session>/jde_roi_mask", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "jde_type": "volume", 
-            "fom_process": "axon", 
-            "fom_parameter": "pyHRF Parcel Image"
-          }
-        ]
-      ], 
-      "HRF estimation": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/hrf_analysis/<HRF_estimation_session>", 
-          [
-            "Directory"
-          ], 
-          {
-            "HRF analysis": "FfX fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "HRF estimation"
-          }
-        ]
-      ], 
-      "GLM Model": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/glm/<model>", 
-          [
-            "Directory"
-          ], 
-          {
-            "within-subject": "FfX fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "GLM Model"
-          }
-        ]
-      ], 
-      "GLM analysis": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/glm/<model>/Contrast", 
-          [
-            "Directory"
-          ], 
-          {
-            "within-subject": "FfX fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "GLM analysis"
-          }
-        ]
-      ], 
-      "GLM results": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/glm/<model>/Contrast/<ContrastId>_con", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "within-subject": "FfX fMRI results", 
-            "GLM results": "contrast definition", 
-            "fom_process": "axon", 
-            "fom_parameter": "GLM results"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/glm/<model>/Contrast/<ContrastId>_T_map", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "within-subject": "FfX fMRI results", 
-            "GLM results": "Student-t tests", 
-            "fom_process": "axon", 
-            "fom_parameter": "GLM results"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/glm/<model>/Contrast/<ContrastId>_ResMS", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "within-subject": "FfX fMRI results", 
-            "GLM results": "Residual variance", 
-            "fom_process": "axon", 
-            "fom_parameter": "GLM results"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/glm/<model>/Contrast/<ContrastId>_F_map", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "within-subject": "FfX fMRI results", 
-            "GLM results": "Fisher tests", 
-            "fom_process": "axon", 
-            "fom_parameter": "GLM results"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/glm/<model>/Contrast/<ContrastId>_z_map", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "within-subject": "FfX fMRI results", 
-            "GLM results": "Z map", 
-            "fom_process": "axon", 
-            "fom_parameter": "GLM results"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/glm/<model>/Contrast/<ContrastId>_ldk_image", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "within-subject": "FfX fMRI results", 
-            "GLM results": "Landmark map", 
-            "fom_process": "axon", 
-            "fom_parameter": "GLM results"
-          }
-        ]
-      ], 
-      "GLM HTML results": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/glm/<model>/Contrast/<ContrastId>_ResultSheet", 
-          [
-            "HTML"
-          ], 
-          {
-            "within-subject": "FfX fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "GLM HTML results"
-          }
-        ]
-      ], 
-      "GLM Session": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/glm/<model>/<session>", 
-          [
-            "Directory"
-          ], 
-          {
-            "within-subject": "FfX fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "GLM Session"
-          }
-        ]
-      ], 
-      "GLM Design Matrix": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/glm/<model>/<session>/design_mat", 
-          [
-            "pickle file", 
-            "Matlab file", 
-            "CSV file"
-          ], 
-          {
-            "within-subject": "FfX fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "GLM Design Matrix"
-          }
-        ]
-      ], 
-      "Design Matrix Cond": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/glm/<model>/<session>/design_mat_cond", 
-          [
-            "CSV file"
-          ], 
-          {
-            "within-subject": "FfX fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "Design Matrix Cond"
-          }
-        ]
-      ], 
-      "VBA dump": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/glm/<model>/<session>/vba", 
-          [
-            "Numpy Dump file"
-          ], 
-          {
-            "within-subject": "FfX fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "VBA dump"
-          }
-        ]
-      ], 
-      "xY dump": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/glm/<model>/<session>/xY", 
-          [
-            "CSV file"
-          ], 
-          {
-            "within-subject": "FfX fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "xY dump"
-          }
-        ]
-      ], 
-      "VBA Config file": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/glm/<model>/<session>/vba_config", 
-          [
-            "ConfigObj file"
-          ], 
-          {
-            "within-subject": "FfX fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "VBA Config file"
-          }
-        ]
-      ], 
-      "fMRI activations": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/glm/<model>/<session>/param_image", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "within-subject": "FfX fMRI results", 
-            "GLM results": "parameter estimates", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI activations"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/glm/<model>/<session>/var_image", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "within-subject": "FfX fMRI results", 
-            "GLM results": "uncertainty estimates", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI activations"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/glm/<model>/<session>/Residual_Variance", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "within-subject": "FfX fMRI results", 
-            "GLM results": "s2", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI activations"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/glm/<model>/<session>/<cond>_beta", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "within-subject": "FfX fMRI results", 
-            "GLM results": "beta map", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI activations"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/<SPM_model>/spmT_<contrast>", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "SPM processing": "Student-t tests", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI activations"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/<SPM_model>/spmT_*", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "SPM processing": "Student-t tests", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI activations"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/<SPM_model>/ResMS", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "SPM processing": "Residual variance", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI activations"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/mean_<session>", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "preprocessings": "", 
-            "Distorsion correction": "no", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI activations"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/mean_<session>_corr", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "preprocessings": "", 
-            "Distorsion correction": "yes", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI activations"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/mean_s<session>", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "preprocessings": "s", 
-            "Distorsion correction": "no", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI activations"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/mean_s<session>_corr", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "preprocessings": "s", 
-            "Distorsion correction": "yes", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI activations"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/mean_a<session>", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "preprocessings": "ra", 
-            "Distorsion correction": "no", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI activations"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/mean_a<session>_corr", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "preprocessings": "ra", 
-            "Distorsion correction": "yes", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI activations"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/mean_r<session>", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "preprocessings": "r", 
-            "Distorsion correction": "no", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI activations"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/mean_r<session>_corr", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "preprocessings": "r", 
-            "Distorsion correction": "yes", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI activations"
-          }
-        ]
-      ], 
-      "Degree Of Freedom": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/glm/<model>/<session>/dof", 
-          [
-            "CSV file"
-          ], 
-          {
-            "within-subject": "FfX fMRI results", 
-            "Type": "Integer", 
-            "fom_process": "axon", 
-            "fom_parameter": "Degree Of Freedom"
-          }
-        ]
-      ], 
-      "Contrast file": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/glm/<model>/contrast", 
-          [
-            "ConfigObj file"
-          ], 
-          {
-            "within-subject": "FfX fMRI results", 
-            "Type": "ConfigObj file", 
-            "fom_process": "axon", 
-            "fom_parameter": "Contrast file"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/contrast", 
-          [
-            "ConfigObj file"
-          ], 
-          {
-            "within-subject": "Cortical fMRI results", 
-            "Type": "ConfigObj file", 
-            "fom_process": "axon", 
-            "fom_parameter": "Contrast file"
-          }
-        ]
-      ], 
-      "Parcel Image": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/glm/<model>/parcel", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "within-subject": "FfX fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "Parcel Image"
-          }
-        ]
-      ], 
-      "Cortical GLM Model": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>", 
-          [
-            "Directory"
-          ], 
-          {
-            "within-subject": "Cortical fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "Cortical GLM Model"
-          }
-        ]
-      ], 
-      "Cortical GLM analysis": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast", 
-          [
-            "Directory"
-          ], 
-          {
-            "within-subject": "Cortical fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "Cortical GLM analysis"
-          }
-        ]
-      ], 
-      "Cortical map": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast/<ContrastId>_left_con", 
-          [
-            "Anatomist texture formats"
-          ], 
-          {
-            "within-subject": "Cortical fMRI results", 
-            "GLM results": "contrast definition", 
-            "side": "left", 
-            "fom_process": "axon", 
-            "fom_parameter": "Cortical map"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast/<ContrastId>_left_T_map", 
-          [
-            "Anatomist texture formats"
-          ], 
-          {
-            "within-subject": "Cortical fMRI results", 
-            "GLM results": "Student-t tests", 
-            "side": "left", 
-            "fom_process": "axon", 
-            "fom_parameter": "Cortical map"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast/<ContrastId>_left_ResMS", 
-          [
-            "Anatomist texture formats"
-          ], 
-          {
-            "within-subject": "Cortical fMRI results", 
-            "GLM results": "Residual variance", 
-            "side": "left", 
-            "fom_process": "axon", 
-            "fom_parameter": "Cortical map"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast/<ContrastId>_left_F_map", 
-          [
-            "Anatomist texture formats"
-          ], 
-          {
-            "within-subject": "Cortical fMRI results", 
-            "GLM results": "Fisher tests", 
-            "side": "left", 
-            "fom_process": "axon", 
-            "fom_parameter": "Cortical map"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast/<ContrastId>_left_z_map", 
-          [
-            "Anatomist texture formats"
-          ], 
-          {
-            "within-subject": "Cortical fMRI results", 
-            "GLM results": "Z map", 
-            "side": "left", 
-            "fom_process": "axon", 
-            "fom_parameter": "Cortical map"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast/<ContrastId>_right_con", 
-          [
-            "Anatomist texture formats"
-          ], 
-          {
-            "within-subject": "Cortical fMRI results", 
-            "GLM results": "contrast definition", 
-            "side": "right", 
-            "fom_process": "axon", 
-            "fom_parameter": "Cortical map"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast/<ContrastId>_right_T_map", 
-          [
-            "Anatomist texture formats"
-          ], 
-          {
-            "within-subject": "Cortical fMRI results", 
-            "GLM results": "Student-t tests", 
-            "side": "right", 
-            "fom_process": "axon", 
-            "fom_parameter": "Cortical map"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast/<ContrastId>_right_ResMS", 
-          [
-            "Anatomist texture formats"
-          ], 
-          {
-            "within-subject": "Cortical fMRI results", 
-            "GLM results": "Residual variance", 
-            "side": "right", 
-            "fom_process": "axon", 
-            "fom_parameter": "Cortical map"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast/<ContrastId>_right_F_map", 
-          [
-            "Anatomist texture formats"
-          ], 
-          {
-            "within-subject": "Cortical fMRI results", 
-            "GLM results": "Fisher tests", 
-            "side": "right", 
-            "fom_process": "axon", 
-            "fom_parameter": "Cortical map"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast/<ContrastId>_right_z_map", 
-          [
-            "Anatomist texture formats"
-          ], 
-          {
-            "within-subject": "Cortical fMRI results", 
-            "GLM results": "Z map", 
-            "side": "right", 
-            "fom_process": "axon", 
-            "fom_parameter": "Cortical map"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast/left_labels", 
-          [
-            "Anatomist texture formats"
-          ], 
-          {
-            "within-subject": "Cortical fMRI results", 
-            "side": "left", 
-            "fom_process": "axon", 
-            "fom_parameter": "Cortical map"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast/right_labels", 
-          [
-            "Anatomist texture formats"
-          ], 
-          {
-            "within-subject": "Cortical fMRI results", 
-            "side": "right", 
-            "fom_process": "axon", 
-            "fom_parameter": "Cortical map"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/<session>/left_Residual_Variance", 
-          [
-            "Anatomist texture formats"
-          ], 
-          {
-            "within-subject": "Cortical fMRI results", 
-            "GLM results": "s2", 
-            "side": "left", 
-            "fom_process": "axon", 
-            "fom_parameter": "Cortical map"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/<session>/right_Residual_Variance", 
-          [
-            "Anatomist texture formats"
-          ], 
-          {
-            "within-subject": "Cortical fMRI results", 
-            "GLM results": "s2", 
-            "side": "right", 
-            "fom_process": "axon", 
-            "fom_parameter": "Cortical map"
-          }
-        ]
-      ], 
-      "Cortical GLM Session": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/<session>", 
-          [
-            "Directory"
-          ], 
-          {
-            "within-subject": "Cortical fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "Cortical GLM Session"
-          }
-        ]
-      ], 
-      "Cortical Design Matrix": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/<session>/design_mat", 
-          [
-            "pickle file", 
-            "Matlab file", 
-            "CSV file"
-          ], 
-          {
-            "within-subject": "Cortical fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "Cortical Design Matrix"
-          }
-        ]
-      ], 
-      "CorticalGLM dump": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/<session>/Lcortical_glm", 
-          [
-            "Numpy Dump file"
-          ], 
-          {
-            "within-subject": "Cortical fMRI results", 
-            "side": "left", 
-            "fom_process": "axon", 
-            "fom_parameter": "CorticalGLM dump"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/<session>/Rcortical_glm", 
-          [
-            "Numpy Dump file"
-          ], 
-          {
-            "within-subject": "Cortical fMRI results", 
-            "side": "right", 
-            "fom_process": "axon", 
-            "fom_parameter": "CorticalGLM dump"
-          }
-        ]
-      ], 
-      "CorticalGLM Config file": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/<session>/cortical_glm_config", 
-          [
-            "ConfigObj file"
-          ], 
-          {
-            "within-subject": "Cortical fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "CorticalGLM Config file"
-          }
-        ]
-      ], 
-      "fMRI Ref image": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/Minf/RefVolume", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "Meta Informations": "FfX fMRI informations", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI Ref image"
-          }
-        ]
-      ], 
-      "fMRI Brain Mask": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/Minf/mask", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "Meta Informations": "FfX fMRI informations", 
-            "Type": "Label Volume", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI Brain Mask"
-          }
-        ]
-      ], 
-      "Paradigm": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/Minf/paradigm", 
-          [
-            "CSV file"
-          ], 
-          {
-            "Meta Informations": "FfX fMRI informations", 
-            "Type": "CSV file", 
-            "fom_process": "axon", 
-            "fom_parameter": "Paradigm"
-          }
-        ]
-      ], 
-      "Eprime": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/Minf/experimental_paradigm", 
-          [
-            "CSV file"
-          ], 
-          {
-            "Meta Informations": "FfX fMRI informations", 
-            "Type": "CSV file", 
-            "fom_process": "axon", 
-            "fom_parameter": "Eprime"
-          }
-        ]
-      ], 
-      "Misc Info": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/Minf/misc_info", 
-          [
-            "ConfigObj file"
-          ], 
-          {
-            "Meta Informations": "FfX fMRI informations", 
-            "Type": "ConfigObj file", 
-            "fom_process": "axon", 
-            "fom_parameter": "Misc Info"
-          }
-        ]
-      ], 
-      "SPM default parameters": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/spm_current_defaults", 
-          [
-            "XML"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "Default type": "soft", 
-            "fom_process": "axon", 
-            "fom_parameter": "SPM default parameters"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/misc_defaults", 
-          [
-            "XML"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "Default type": "misc", 
-            "fom_process": "axon", 
-            "fom_parameter": "SPM default parameters"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/printing_defaults", 
-          [
-            "XML"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "Default type": "printing", 
-            "fom_process": "axon", 
-            "fom_parameter": "SPM default parameters"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/stats_defaults", 
-          [
-            "XML"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "Default type": "stats", 
-            "fom_process": "axon", 
-            "fom_parameter": "SPM default parameters"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/realign_defaults", 
-          [
-            "XML"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "Default type": "realign", 
-            "fom_process": "axon", 
-            "fom_parameter": "SPM default parameters"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/unwarp_defaults", 
-          [
-            "XML"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "Default type": "unwarp", 
-            "fom_process": "axon", 
-            "fom_parameter": "SPM default parameters"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/coreg_defaults", 
-          [
-            "XML"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "Default type": "coreg", 
-            "fom_process": "axon", 
-            "fom_parameter": "SPM default parameters"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/normalize_defaults", 
-          [
-            "XML"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "Default type": "normalize", 
-            "fom_process": "axon", 
-            "fom_parameter": "SPM default parameters"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/segment_defaults", 
-          [
-            "XML"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "Default type": "segment", 
-            "fom_process": "axon", 
-            "fom_parameter": "SPM default parameters"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/bias_defaults", 
-          [
-            "XML"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "Default type": "bias", 
-            "fom_process": "axon", 
-            "fom_parameter": "SPM default parameters"
-          }
-        ]
-      ], 
-      "SPM reslice parameters": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/reslice", 
-          [
-            "XML"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "Distorsion correction": "no", 
-            "Processing": "global", 
-            "fom_process": "axon", 
-            "fom_parameter": "SPM reslice parameters"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/reslice_corr", 
-          [
-            "XML"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "Distorsion correction": "yes", 
-            "Processing": "global", 
-            "fom_process": "axon", 
-            "fom_parameter": "SPM reslice parameters"
-          }
-        ]
-      ], 
-      "SPM alignment parameters": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/align", 
-          [
-            "XML"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "Distorsion correction": "no", 
-            "Processing": "global", 
-            "fom_process": "axon", 
-            "fom_parameter": "SPM alignment parameters"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/align_corr", 
-          [
-            "XML"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "Distorsion correction": "yes", 
-            "Processing": "global", 
-            "fom_process": "axon", 
-            "fom_parameter": "SPM alignment parameters"
-          }
-        ]
-      ], 
-      "SPM coregister parameters": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/coregister", 
-          [
-            "XML"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "Distorsion correction": "no", 
-            "Processing": "global", 
-            "fom_process": "axon", 
-            "fom_parameter": "SPM coregister parameters"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/coregister_corr", 
-          [
-            "XML"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "Distorsion correction": "yes", 
-            "Processing": "global", 
-            "fom_process": "axon", 
-            "fom_parameter": "SPM coregister parameters"
-          }
-        ]
-      ], 
-      "SPM normalize parameters": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/normalise", 
-          [
-            "XML"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "Distorsion correction": "no", 
-            "Processing": "global", 
-            "fom_process": "axon", 
-            "fom_parameter": "SPM normalize parameters"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/normalise_corr", 
-          [
-            "XML"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "Distorsion correction": "yes", 
-            "Processing": "global", 
-            "fom_process": "axon", 
-            "fom_parameter": "SPM normalize parameters"
-          }
-        ]
-      ], 
-      "SPM smoothing parameters": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/smooth", 
-          [
-            "XML"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "Distorsion correction": "no", 
-            "Processing": "global", 
-            "fom_process": "axon", 
-            "fom_parameter": "SPM smoothing parameters"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/smooth_corr", 
-          [
-            "XML"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "Distorsion correction": "yes", 
-            "Processing": "global", 
-            "fom_process": "axon", 
-            "fom_parameter": "SPM smoothing parameters"
-          }
-        ]
-      ], 
-      "SPM2 Log file": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/spm2log", 
-          [
-            "Log file"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "SPM2 Log file"
-          }
-        ]
-      ], 
-      "Postscript SPM file": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/spm2", 
-          [
-            "PS file", 
-            "gz compressed PS file"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "Type": "generic", 
-            "fom_process": "axon", 
-            "fom_parameter": "Postscript SPM file"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/spm2_realign", 
-          [
-            "PS file", 
-            "gz compressed PS file"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "Type": "realignement", 
-            "fom_process": "axon", 
-            "fom_parameter": "Postscript SPM file"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/spm2_normalize", 
-          [
-            "PS file", 
-            "gz compressed PS file"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "Type": "normalization", 
-            "fom_process": "axon", 
-            "fom_parameter": "Postscript SPM file"
-          }
-        ]
-      ], 
-      "SPM estimation": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/<SPM_model>", 
-          [
-            "Directory"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "SPM estimation"
-          }
-        ]
-      ], 
-      "Matlab design file": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/<SPM_model>/SPM_fMRIDesMtx", 
-          [
-            "Matlab file", 
-            "gz Matlab file", 
-            "bz2 Matlab file"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "SPM processing": "show design", 
-            "fom_process": "axon", 
-            "fom_parameter": "Matlab design file"
-          }
-        ]
-      ], 
-      "Matlab SPM file": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/<SPM_model>/SPM", 
-          [
-            "Matlab file", 
-            "gz Matlab file", 
-            "bz2 Matlab file"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "SPM processing": "load results", 
-            "fom_process": "axon", 
-            "fom_parameter": "Matlab SPM file"
-          }
-        ]
-      ], 
-      "SPM Brain Mask": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/spm_analysis/<SPM_model>/mask", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "SPM analysis": "FfX fMRI results", 
-            "Type": "SPM image", 
-            "fom_process": "axon", 
-            "fom_parameter": "SPM Brain Mask"
-          }
-        ]
-      ], 
-      "Double echo complex image": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_doubleEcho", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "fom_process": "axon", 
-            "fom_parameter": "Double echo complex image"
-          }
-        ]
-      ], 
-      "EPI distorsion parameters": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_paramdist", 
-          [], 
-          {
-            "fom_process": "axon", 
-            "fom_parameter": "EPI distorsion parameters"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>*_paramdist", 
-          [], 
-          {
-            "fom_process": "axon", 
-            "fom_parameter": "EPI distorsion parameters"
-          }
-        ]
-      ], 
-      "Difference Phase Map": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_wpm", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "Type": "wrapped", 
-            "fom_process": "axon", 
-            "fom_parameter": "Difference Phase Map"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_unwpm", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "Type": "unwrapped", 
-            "fom_process": "axon", 
-            "fom_parameter": "Difference Phase Map"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_Runwpm", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "Type": "unwrapped and regularized", 
-            "fom_process": "axon", 
-            "fom_parameter": "Difference Phase Map"
-          }
-        ]
-      ], 
-      "Echo magnitude image": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_mag_echo1", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "Type": "First", 
-            "fom_process": "axon", 
-            "fom_parameter": "Echo magnitude image"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_mag_echo2", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "Type": "Second", 
-            "fom_process": "axon", 
-            "fom_parameter": "Echo magnitude image"
-          }
-        ]
-      ], 
-      "Brain Mask": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_Mask", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "Type": "Binary", 
-            "fom_process": "axon", 
-            "fom_parameter": "Brain Mask"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_MorphoMask", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "Type": "Filled", 
-            "fom_process": "axon", 
-            "fom_parameter": "Brain Mask"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_Mask_resampled", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "Type": "Binary and Resampled", 
-            "fom_process": "axon", 
-            "fom_parameter": "Brain Mask"
-          }
-        ]
-      ], 
-      "Correlation Quality Map": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_quality", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "fom_process": "axon", 
-            "fom_parameter": "Correlation Quality Map"
-          }
-        ]
-      ], 
-      "Undistorted Shift Map": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_shift_map", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "Type": "global", 
-            "fom_process": "axon", 
-            "fom_parameter": "Undistorted Shift Map"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_Mshift_map", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "Type": "masked", 
-            "fom_process": "axon", 
-            "fom_parameter": "Undistorted Shift Map"
-          }
-        ]
-      ], 
-      "Marsbar ROI": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/marsbar_roi/<subject>_*_roi", 
-          [
-            "Matlab file"
-          ], 
-          {
-            "fom_process": "axon", 
-            "fom_parameter": "Marsbar ROI"
-          }
-        ]
-      ], 
-      "Marsbar ROI Label image": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/marsbar_roi/<subject>_*_roi_labelled", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "fom_process": "axon", 
-            "fom_parameter": "Marsbar ROI Label image"
-          }
-        ]
-      ], 
-      "Marsbar ROIs fMRI data": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/marsbar_roi/<subject>_mdata", 
-          [
-            "Matlab file", 
-            "bz2 Matlab file"
-          ], 
-          {
-            "fom_process": "axon", 
-            "fom_parameter": "Marsbar ROIs fMRI data"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/marsbar_roi/<subject>_*_mdata", 
-          [
-            "Matlab file", 
-            "bz2 Matlab file"
-          ], 
-          {
-            "fom_process": "axon", 
-            "fom_parameter": "Marsbar ROIs fMRI data"
-          }
-        ]
-      ], 
-      "Referential of fMRI": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/registration/fMRI-<subject>_<acquisition>", 
-          [
-            "Referential"
-          ], 
-          {
-            "fom_process": "axon", 
-            "fom_parameter": "Referential of fMRI"
-          }
-        ]
-      ], 
-      "Transform fMRI to Talairach-AC/PC-Anatomist": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/registration/fMRI-<subject>_<acquisition>_TO_Talairach-ACPC", 
-          [
-            "Transformation matrix", 
-            "Matlab file"
-          ], 
-          {
-            "fom_process": "axon", 
-            "fom_parameter": "Transform fMRI to Talairach-AC/PC-Anatomist"
-          }
-        ]
-      ], 
-      "Transform fMRI to Talairach-MNI template-SPM": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/registration/fMRI-<subject>_<acquisition>_TO_Talairach-MNI", 
-          [
-            "Transformation matrix", 
-            "Matlab file"
-          ], 
-          {
-            "destination_referential": "803552a6-ac4d-491d-99f5-b938392b674b", 
-            "fom_process": "axon", 
-            "fom_parameter": "Transform fMRI to Talairach-MNI template-SPM"
-          }
-        ]
-      ], 
-      "Session": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>", 
-          [
-            "Directory"
-          ], 
-          {
-            "fom_process": "axon", 
-            "fom_parameter": "Session"
-          }
-        ]
-      ], 
-      "Parcellation Texture": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/surface/parcellation_<side>", 
-          [
-            "Texture"
-          ], 
-          {
-            "fom_process": "axon", 
-            "fom_parameter": "Parcellation Texture"
-          }
-        ]
-      ], 
-      "fMRI Mean Image": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/meana<session>", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "preprocessings": "a", 
-            "Distorsion correction": "no", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI Mean Image"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/rmeana<session>", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "preprocessings": "ra", 
-            "Distorsion correction": "no", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI Mean Image"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/rmean<session>", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "preprocessings": "r", 
-            "Distorsion correction": "no", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI Mean Image"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/mean<session>", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "preprocessings": "", 
-            "Distorsion correction": "no", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI Mean Image"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/meana<session>_corr", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "preprocessings": "a", 
-            "Distorsion correction": "yes", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI Mean Image"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/rmeana<session>_corr", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "preprocessings": "ra", 
-            "Distorsion correction": "yes", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI Mean Image"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/mean<session>_corr", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "preprocessings": "", 
-            "Distorsion correction": "yes", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI Mean Image"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/rmean<session>_corr", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "preprocessings": "r", 
-            "Distorsion correction": "yes", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI Mean Image"
-          }
-        ]
-      ], 
-      "Realignment parameters": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/rp_<session>", 
-          [], 
-          {
-            "Distorsion correction": "no", 
-            "fom_process": "axon", 
-            "fom_parameter": "Realignment parameters"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/rp_<session>_corr", 
-          [], 
-          {
-            "Distorsion correction": "yes", 
-            "fom_process": "axon", 
-            "fom_parameter": "Realignment parameters"
-          }
-        ]
-      ], 
-      "Mask Image": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/mask_<session>", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "Distorsion correction": "no", 
-            "fom_process": "axon", 
-            "fom_parameter": "Mask Image"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/mask_<session>_corr", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "Distorsion correction": "yes", 
-            "fom_process": "axon", 
-            "fom_parameter": "Mask Image"
-          }
-        ]
-      ], 
-      "RAW fMRI Texture": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/L_a<session>_corr", 
-          [
-            "Anatomist texture formats"
-          ], 
-          {
-            "preprocessings": "a", 
-            "Distorsion correction": "yes", 
-            "side": "left", 
-            "fom_process": "axon", 
-            "fom_parameter": "RAW fMRI Texture"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/R_a<session>_corr", 
-          [
-            "Anatomist texture formats"
-          ], 
-          {
-            "preprocessings": "a", 
-            "Distorsion correction": "yes", 
-            "side": "right", 
-            "fom_process": "axon", 
-            "fom_parameter": "RAW fMRI Texture"
-          }
-        ]
-      ], 
-      "fMRI NIFTI image": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/<session>", 
-          [
-            "NIFTI-1 image", 
-            "gz compressed NIFTI-1 image"
-          ], 
-          {
-            "preprocessings": "", 
-            "Distorsion correction": "no", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI NIFTI image"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/<session>_corr", 
-          [
-            "NIFTI-1 image", 
-            "gz compressed NIFTI-1 image"
-          ], 
-          {
-            "preprocessings": "", 
-            "Distorsion correction": "yes", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI NIFTI image"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/<preprocessings><session>", 
-          [
-            "NIFTI-1 image", 
-            "gz compressed NIFTI-1 image"
-          ], 
-          {
-            "Distorsion correction": "no", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI NIFTI image"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/<preprocessings><session>_corr", 
-          [
-            "NIFTI-1 image", 
-            "gz compressed NIFTI-1 image"
-          ], 
-          {
-            "Distorsion correction": "yes", 
-            "fom_process": "axon", 
-            "fom_parameter": "fMRI NIFTI image"
-          }
-        ]
-      ], 
-      "fMRI": [], 
-      "Mouvement Correction": [
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/<preprocessings><session>_motion", 
-          [
-            "CSV file"
-          ], 
-          {
-            "fom_process": "axon", 
-            "fom_parameter": "Mouvement Correction"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/<session>/<session>_motion", 
-          [
-            "CSV file"
-          ], 
-          {
-            "preprocessings": "", 
-            "fom_process": "axon", 
-            "fom_parameter": "Mouvement Correction"
-          }
-        ]
-      ], 
+#       "Joint detection-estimation surfacic": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/jde_analysis_surface/<detect_estim_session>", 
+#           [
+#             "Directory"
+#           ], 
+#           {
+#             "jde_type": "surface", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Joint detection-estimation surfacic"
+#           }
+#         ]
+#       ], 
+#       "pyHRF XML parameters": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/jde_analysis_surface/<detect_estim_session>/detectestim", 
+#           [
+#             "XML"
+#           ], 
+#           {
+#             "jde_type": "surface", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "pyHRF XML parameters"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/jde_analysis_volume/<detect_estim_session>/detectestim", 
+#           [
+#             "XML"
+#           ], 
+#           {
+#             "jde_type": "volume", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "pyHRF XML parameters"
+#           }
+#         ]
+#       ], 
+#       "pyHRF XML output": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/jde_analysis_surface/<detect_estim_session>/jde_output", 
+#           [
+#             "XML"
+#           ], 
+#           {
+#             "jde_type": "surface", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "pyHRF XML output"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/jde_analysis_volume/<detect_estim_session>/jde_output", 
+#           [
+#             "XML"
+#           ], 
+#           {
+#             "jde_type": "volume", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "pyHRF XML output"
+#           }
+#         ]
+#       ], 
+#       "pyHRF pickle dump": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/jde_analysis_surface/<detect_estim_session>/result", 
+#           [
+#             "pickle dump file"
+#           ], 
+#           {
+#             "jde_type": "surface", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "pyHRF pickle dump"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/jde_analysis_volume/<detect_estim_session>/result", 
+#           [
+#             "pickle dump file"
+#           ], 
+#           {
+#             "jde_type": "volume", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "pyHRF pickle dump"
+#           }
+#         ]
+#       ], 
+#       "Joint detection-estimation volumic": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/jde_analysis_volume/<detect_estim_session>", 
+#           [
+#             "Directory"
+#           ], 
+#           {
+#             "jde_type": "volume", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Joint detection-estimation volumic"
+#           }
+#         ]
+#       ], 
+#       "NRL estimates": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/jde_analysis_volume/<detect_estim_session>/jde_pm_nrls_condition_<condition>", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "jde_type": "volume", 
+#             "scale corrected": "no", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "NRL estimates"
+#           }
+#         ]
+#       ], 
+#       "HRF estimates": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/jde_analysis_volume/<detect_estim_session>/jde_pm_hrf", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "jde_type": "volume", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "HRF estimates"
+#           }
+#         ]
+#       ], 
+#       "pyHRF residual variance": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/jde_analysis_volume/<detect_estim_session>/jde_pm_noise_var", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "jde_type": "volume", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "pyHRF residual variance"
+#           }
+#         ]
+#       ], 
+#       "pyHRF Parcel Image": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/jde_analysis_volume/<detect_estim_session>/jde_roi_mask", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "jde_type": "volume", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "pyHRF Parcel Image"
+#           }
+#         ]
+#       ], 
+#       "HRF estimation": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/hrf_analysis/<HRF_estimation_session>", 
+#           [
+#             "Directory"
+#           ], 
+#           {
+#             "HRF analysis": "FfX fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "HRF estimation"
+#           }
+#         ]
+#       ], 
+#       "GLM Model": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/glm/<model>", 
+#           [
+#             "Directory"
+#           ], 
+#           {
+#             "within-subject": "FfX fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "GLM Model"
+#           }
+#         ]
+#       ], 
+#       "GLM analysis": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/glm/<model>/Contrast", 
+#           [
+#             "Directory"
+#           ], 
+#           {
+#             "within-subject": "FfX fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "GLM analysis"
+#           }
+#         ]
+#       ], 
+#       "GLM results": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/glm/<model>/Contrast/<ContrastId>_con", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "within-subject": "FfX fMRI results", 
+#             "GLM results": "contrast definition", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "GLM results"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/glm/<model>/Contrast/<ContrastId>_T_map", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "within-subject": "FfX fMRI results", 
+#             "GLM results": "Student-t tests", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "GLM results"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/glm/<model>/Contrast/<ContrastId>_ResMS", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "within-subject": "FfX fMRI results", 
+#             "GLM results": "Residual variance", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "GLM results"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/glm/<model>/Contrast/<ContrastId>_F_map", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "within-subject": "FfX fMRI results", 
+#             "GLM results": "Fisher tests", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "GLM results"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/glm/<model>/Contrast/<ContrastId>_z_map", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "within-subject": "FfX fMRI results", 
+#             "GLM results": "Z map", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "GLM results"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/glm/<model>/Contrast/<ContrastId>_ldk_image", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "within-subject": "FfX fMRI results", 
+#             "GLM results": "Landmark map", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "GLM results"
+#           }
+#         ]
+#       ], 
+#       "GLM HTML results": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/glm/<model>/Contrast/<ContrastId>_ResultSheet", 
+#           [
+#             "HTML"
+#           ], 
+#           {
+#             "within-subject": "FfX fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "GLM HTML results"
+#           }
+#         ]
+#       ], 
+#       "GLM Session": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/glm/<model>/<session>", 
+#           [
+#             "Directory"
+#           ], 
+#           {
+#             "within-subject": "FfX fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "GLM Session"
+#           }
+#         ]
+#       ], 
+#       "GLM Design Matrix": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/glm/<model>/<session>/design_mat", 
+#           [
+#             "pickle file", 
+#             "Matlab file", 
+#             "CSV file"
+#           ], 
+#           {
+#             "within-subject": "FfX fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "GLM Design Matrix"
+#           }
+#         ]
+#       ], 
+#       "Design Matrix Cond": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/glm/<model>/<session>/design_mat_cond", 
+#           [
+#             "CSV file"
+#           ], 
+#           {
+#             "within-subject": "FfX fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Design Matrix Cond"
+#           }
+#         ]
+#       ], 
+#       "VBA dump": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/glm/<model>/<session>/vba", 
+#           [
+#             "Numpy Dump file"
+#           ], 
+#           {
+#             "within-subject": "FfX fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "VBA dump"
+#           }
+#         ]
+#       ], 
+#       "xY dump": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/glm/<model>/<session>/xY", 
+#           [
+#             "CSV file"
+#           ], 
+#           {
+#             "within-subject": "FfX fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "xY dump"
+#           }
+#         ]
+#       ], 
+#       "VBA Config file": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/glm/<model>/<session>/vba_config", 
+#           [
+#             "ConfigObj file"
+#           ], 
+#           {
+#             "within-subject": "FfX fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "VBA Config file"
+#           }
+#         ]
+#       ], 
+#       "fMRI activations": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/glm/<model>/<session>/param_image", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "within-subject": "FfX fMRI results", 
+#             "GLM results": "parameter estimates", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI activations"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/glm/<model>/<session>/var_image", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "within-subject": "FfX fMRI results", 
+#             "GLM results": "uncertainty estimates", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI activations"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/glm/<model>/<session>/Residual_Variance", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "within-subject": "FfX fMRI results", 
+#             "GLM results": "s2", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI activations"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/glm/<model>/<session>/<cond>_beta", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "within-subject": "FfX fMRI results", 
+#             "GLM results": "beta map", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI activations"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/<SPM_model>/spmT_<contrast>", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "SPM processing": "Student-t tests", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI activations"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/<SPM_model>/spmT_*", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "SPM processing": "Student-t tests", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI activations"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/<SPM_model>/ResMS", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "SPM processing": "Residual variance", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI activations"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/mean_<session>", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "preprocessings": "", 
+#             "Distorsion correction": "no", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI activations"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/mean_<session>_corr", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "preprocessings": "", 
+#             "Distorsion correction": "yes", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI activations"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/mean_s<session>", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "preprocessings": "s", 
+#             "Distorsion correction": "no", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI activations"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/mean_s<session>_corr", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "preprocessings": "s", 
+#             "Distorsion correction": "yes", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI activations"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/mean_a<session>", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "preprocessings": "ra", 
+#             "Distorsion correction": "no", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI activations"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/mean_a<session>_corr", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "preprocessings": "ra", 
+#             "Distorsion correction": "yes", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI activations"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/mean_r<session>", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "preprocessings": "r", 
+#             "Distorsion correction": "no", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI activations"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/mean_r<session>_corr", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "preprocessings": "r", 
+#             "Distorsion correction": "yes", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI activations"
+#           }
+#         ]
+#       ], 
+#       "Degree Of Freedom": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/glm/<model>/<session>/dof", 
+#           [
+#             "CSV file"
+#           ], 
+#           {
+#             "within-subject": "FfX fMRI results", 
+#             "Type": "Integer", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Degree Of Freedom"
+#           }
+#         ]
+#       ], 
+#       "Contrast file": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/glm/<model>/contrast", 
+#           [
+#             "ConfigObj file"
+#           ], 
+#           {
+#             "within-subject": "FfX fMRI results", 
+#             "Type": "ConfigObj file", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Contrast file"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/contrast", 
+#           [
+#             "ConfigObj file"
+#           ], 
+#           {
+#             "within-subject": "Cortical fMRI results", 
+#             "Type": "ConfigObj file", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Contrast file"
+#           }
+#         ]
+#       ], 
+#       "Parcel Image": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/glm/<model>/parcel", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "within-subject": "FfX fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Parcel Image"
+#           }
+#         ]
+#       ], 
+#       "Cortical GLM Model": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>", 
+#           [
+#             "Directory"
+#           ], 
+#           {
+#             "within-subject": "Cortical fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Cortical GLM Model"
+#           }
+#         ]
+#       ], 
+#       "Cortical GLM analysis": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast", 
+#           [
+#             "Directory"
+#           ], 
+#           {
+#             "within-subject": "Cortical fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Cortical GLM analysis"
+#           }
+#         ]
+#       ], 
+#       "Cortical map": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast/<ContrastId>_left_con", 
+#           [
+#             "Anatomist texture formats"
+#           ], 
+#           {
+#             "within-subject": "Cortical fMRI results", 
+#             "GLM results": "contrast definition", 
+#             "side": "left", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Cortical map"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast/<ContrastId>_left_T_map", 
+#           [
+#             "Anatomist texture formats"
+#           ], 
+#           {
+#             "within-subject": "Cortical fMRI results", 
+#             "GLM results": "Student-t tests", 
+#             "side": "left", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Cortical map"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast/<ContrastId>_left_ResMS", 
+#           [
+#             "Anatomist texture formats"
+#           ], 
+#           {
+#             "within-subject": "Cortical fMRI results", 
+#             "GLM results": "Residual variance", 
+#             "side": "left", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Cortical map"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast/<ContrastId>_left_F_map", 
+#           [
+#             "Anatomist texture formats"
+#           ], 
+#           {
+#             "within-subject": "Cortical fMRI results", 
+#             "GLM results": "Fisher tests", 
+#             "side": "left", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Cortical map"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast/<ContrastId>_left_z_map", 
+#           [
+#             "Anatomist texture formats"
+#           ], 
+#           {
+#             "within-subject": "Cortical fMRI results", 
+#             "GLM results": "Z map", 
+#             "side": "left", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Cortical map"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast/<ContrastId>_right_con", 
+#           [
+#             "Anatomist texture formats"
+#           ], 
+#           {
+#             "within-subject": "Cortical fMRI results", 
+#             "GLM results": "contrast definition", 
+#             "side": "right", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Cortical map"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast/<ContrastId>_right_T_map", 
+#           [
+#             "Anatomist texture formats"
+#           ], 
+#           {
+#             "within-subject": "Cortical fMRI results", 
+#             "GLM results": "Student-t tests", 
+#             "side": "right", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Cortical map"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast/<ContrastId>_right_ResMS", 
+#           [
+#             "Anatomist texture formats"
+#           ], 
+#           {
+#             "within-subject": "Cortical fMRI results", 
+#             "GLM results": "Residual variance", 
+#             "side": "right", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Cortical map"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast/<ContrastId>_right_F_map", 
+#           [
+#             "Anatomist texture formats"
+#           ], 
+#           {
+#             "within-subject": "Cortical fMRI results", 
+#             "GLM results": "Fisher tests", 
+#             "side": "right", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Cortical map"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast/<ContrastId>_right_z_map", 
+#           [
+#             "Anatomist texture formats"
+#           ], 
+#           {
+#             "within-subject": "Cortical fMRI results", 
+#             "GLM results": "Z map", 
+#             "side": "right", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Cortical map"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast/left_labels", 
+#           [
+#             "Anatomist texture formats"
+#           ], 
+#           {
+#             "within-subject": "Cortical fMRI results", 
+#             "side": "left", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Cortical map"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/Contrast/right_labels", 
+#           [
+#             "Anatomist texture formats"
+#           ], 
+#           {
+#             "within-subject": "Cortical fMRI results", 
+#             "side": "right", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Cortical map"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/<session>/left_Residual_Variance", 
+#           [
+#             "Anatomist texture formats"
+#           ], 
+#           {
+#             "within-subject": "Cortical fMRI results", 
+#             "GLM results": "s2", 
+#             "side": "left", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Cortical map"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/<session>/right_Residual_Variance", 
+#           [
+#             "Anatomist texture formats"
+#           ], 
+#           {
+#             "within-subject": "Cortical fMRI results", 
+#             "GLM results": "s2", 
+#             "side": "right", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Cortical map"
+#           }
+#         ]
+#       ], 
+#       "Cortical GLM Session": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/<session>", 
+#           [
+#             "Directory"
+#           ], 
+#           {
+#             "within-subject": "Cortical fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Cortical GLM Session"
+#           }
+#         ]
+#       ], 
+#       "Cortical Design Matrix": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/<session>/design_mat", 
+#           [
+#             "pickle file", 
+#             "Matlab file", 
+#             "CSV file"
+#           ], 
+#           {
+#             "within-subject": "Cortical fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Cortical Design Matrix"
+#           }
+#         ]
+#       ], 
+#       "CorticalGLM dump": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/<session>/Lcortical_glm", 
+#           [
+#             "Numpy Dump file"
+#           ], 
+#           {
+#             "within-subject": "Cortical fMRI results", 
+#             "side": "left", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "CorticalGLM dump"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/<session>/Rcortical_glm", 
+#           [
+#             "Numpy Dump file"
+#           ], 
+#           {
+#             "within-subject": "Cortical fMRI results", 
+#             "side": "right", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "CorticalGLM dump"
+#           }
+#         ]
+#       ], 
+#       "CorticalGLM Config file": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/cortical_glm/<model>/<session>/cortical_glm_config", 
+#           [
+#             "ConfigObj file"
+#           ], 
+#           {
+#             "within-subject": "Cortical fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "CorticalGLM Config file"
+#           }
+#         ]
+#       ], 
+#       "fMRI Ref image": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/Minf/RefVolume", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "Meta Informations": "FfX fMRI informations", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI Ref image"
+#           }
+#         ]
+#       ], 
+#       "fMRI Brain Mask": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/Minf/mask", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "Meta Informations": "FfX fMRI informations", 
+#             "Type": "Label Volume", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI Brain Mask"
+#           }
+#         ]
+#       ], 
+#       "Paradigm": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/Minf/paradigm", 
+#           [
+#             "CSV file"
+#           ], 
+#           {
+#             "Meta Informations": "FfX fMRI informations", 
+#             "Type": "CSV file", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Paradigm"
+#           }
+#         ]
+#       ], 
+#       "Eprime": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/Minf/experimental_paradigm", 
+#           [
+#             "CSV file"
+#           ], 
+#           {
+#             "Meta Informations": "FfX fMRI informations", 
+#             "Type": "CSV file", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Eprime"
+#           }
+#         ]
+#       ], 
+#       "Misc Info": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/Minf/misc_info", 
+#           [
+#             "ConfigObj file"
+#           ], 
+#           {
+#             "Meta Informations": "FfX fMRI informations", 
+#             "Type": "ConfigObj file", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Misc Info"
+#           }
+#         ]
+#       ], 
+#       "SPM default parameters": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/spm_current_defaults", 
+#           [
+#             "XML"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "Default type": "soft", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "SPM default parameters"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/misc_defaults", 
+#           [
+#             "XML"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "Default type": "misc", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "SPM default parameters"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/printing_defaults", 
+#           [
+#             "XML"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "Default type": "printing", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "SPM default parameters"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/stats_defaults", 
+#           [
+#             "XML"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "Default type": "stats", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "SPM default parameters"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/realign_defaults", 
+#           [
+#             "XML"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "Default type": "realign", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "SPM default parameters"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/unwarp_defaults", 
+#           [
+#             "XML"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "Default type": "unwarp", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "SPM default parameters"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/coreg_defaults", 
+#           [
+#             "XML"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "Default type": "coreg", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "SPM default parameters"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/normalize_defaults", 
+#           [
+#             "XML"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "Default type": "normalize", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "SPM default parameters"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/segment_defaults", 
+#           [
+#             "XML"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "Default type": "segment", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "SPM default parameters"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/bias_defaults", 
+#           [
+#             "XML"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "Default type": "bias", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "SPM default parameters"
+#           }
+#         ]
+#       ], 
+#       "SPM reslice parameters": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/reslice", 
+#           [
+#             "XML"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "Distorsion correction": "no", 
+#             "Processing": "global", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "SPM reslice parameters"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/reslice_corr", 
+#           [
+#             "XML"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "Distorsion correction": "yes", 
+#             "Processing": "global", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "SPM reslice parameters"
+#           }
+#         ]
+#       ], 
+#       "SPM alignment parameters": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/align", 
+#           [
+#             "XML"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "Distorsion correction": "no", 
+#             "Processing": "global", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "SPM alignment parameters"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/align_corr", 
+#           [
+#             "XML"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "Distorsion correction": "yes", 
+#             "Processing": "global", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "SPM alignment parameters"
+#           }
+#         ]
+#       ], 
+#       "SPM coregister parameters": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/coregister", 
+#           [
+#             "XML"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "Distorsion correction": "no", 
+#             "Processing": "global", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "SPM coregister parameters"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/coregister_corr", 
+#           [
+#             "XML"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "Distorsion correction": "yes", 
+#             "Processing": "global", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "SPM coregister parameters"
+#           }
+#         ]
+#       ], 
+#       "SPM normalize parameters": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/normalise", 
+#           [
+#             "XML"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "Distorsion correction": "no", 
+#             "Processing": "global", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "SPM normalize parameters"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/normalise_corr", 
+#           [
+#             "XML"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "Distorsion correction": "yes", 
+#             "Processing": "global", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "SPM normalize parameters"
+#           }
+#         ]
+#       ], 
+#       "SPM smoothing parameters": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/smooth", 
+#           [
+#             "XML"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "Distorsion correction": "no", 
+#             "Processing": "global", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "SPM smoothing parameters"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/smooth_corr", 
+#           [
+#             "XML"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "Distorsion correction": "yes", 
+#             "Processing": "global", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "SPM smoothing parameters"
+#           }
+#         ]
+#       ], 
+#       "SPM2 Log file": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/spm2log", 
+#           [
+#             "Log file"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "SPM2 Log file"
+#           }
+#         ]
+#       ], 
+#       "Postscript SPM file": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/spm2", 
+#           [
+#             "PS file", 
+#             "gz compressed PS file"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "Type": "generic", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Postscript SPM file"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/spm2_realign", 
+#           [
+#             "PS file", 
+#             "gz compressed PS file"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "Type": "realignement", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Postscript SPM file"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/spm2_normalize", 
+#           [
+#             "PS file", 
+#             "gz compressed PS file"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "Type": "normalization", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Postscript SPM file"
+#           }
+#         ]
+#       ], 
+#       "SPM estimation": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/<SPM_model>", 
+#           [
+#             "Directory"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "SPM estimation"
+#           }
+#         ]
+#       ], 
+#       "Matlab design file": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/<SPM_model>/SPM_fMRIDesMtx", 
+#           [
+#             "Matlab file", 
+#             "gz Matlab file", 
+#             "bz2 Matlab file"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "SPM processing": "show design", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Matlab design file"
+#           }
+#         ]
+#       ], 
+#       "Matlab SPM file": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/<SPM_model>/SPM", 
+#           [
+#             "Matlab file", 
+#             "gz Matlab file", 
+#             "bz2 Matlab file"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "SPM processing": "load results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Matlab SPM file"
+#           }
+#         ]
+#       ], 
+#       "SPM Brain Mask": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/spm_analysis/<SPM_model>/mask", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "SPM analysis": "FfX fMRI results", 
+#             "Type": "SPM image", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "SPM Brain Mask"
+#           }
+#         ]
+#       ], 
+#       "Double echo complex image": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_doubleEcho", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "fom_process": "axon", 
+#             "fom_parameter": "Double echo complex image"
+#           }
+#         ]
+#       ], 
+#       "EPI distorsion parameters": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_paramdist", 
+#           [], 
+#           {
+#             "fom_process": "axon", 
+#             "fom_parameter": "EPI distorsion parameters"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>*_paramdist", 
+#           [], 
+#           {
+#             "fom_process": "axon", 
+#             "fom_parameter": "EPI distorsion parameters"
+#           }
+#         ]
+#       ], 
+#       "Difference Phase Map": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_wpm", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "Type": "wrapped", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Difference Phase Map"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_unwpm", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "Type": "unwrapped", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Difference Phase Map"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_Runwpm", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "Type": "unwrapped and regularized", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Difference Phase Map"
+#           }
+#         ]
+#       ], 
+#       "Echo magnitude image": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_mag_echo1", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "Type": "First", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Echo magnitude image"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_mag_echo2", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "Type": "Second", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Echo magnitude image"
+#           }
+#         ]
+#       ], 
+#       "Brain Mask": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_Mask", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "Type": "Binary", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Brain Mask"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_MorphoMask", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "Type": "Filled", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Brain Mask"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_Mask_resampled", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "Type": "Binary and Resampled", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Brain Mask"
+#           }
+#         ]
+#       ], 
+#       "Correlation Quality Map": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_quality", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "fom_process": "axon", 
+#             "fom_parameter": "Correlation Quality Map"
+#           }
+#         ]
+#       ], 
+#       "Undistorted Shift Map": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_shift_map", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "Type": "global", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Undistorted Shift Map"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/fieldmap/<subject>_Mshift_map", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "Type": "masked", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Undistorted Shift Map"
+#           }
+#         ]
+#       ], 
+#       "Marsbar ROI": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/marsbar_roi/<subject>_*_roi", 
+#           [
+#             "Matlab file"
+#           ], 
+#           {
+#             "fom_process": "axon", 
+#             "fom_parameter": "Marsbar ROI"
+#           }
+#         ]
+#       ], 
+#       "Marsbar ROI Label image": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/marsbar_roi/<subject>_*_roi_labelled", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "fom_process": "axon", 
+#             "fom_parameter": "Marsbar ROI Label image"
+#           }
+#         ]
+#       ], 
+#       "Marsbar ROIs fMRI data": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/marsbar_roi/<subject>_mdata", 
+#           [
+#             "Matlab file", 
+#             "bz2 Matlab file"
+#           ], 
+#           {
+#             "fom_process": "axon", 
+#             "fom_parameter": "Marsbar ROIs fMRI data"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/marsbar_roi/<subject>_*_mdata", 
+#           [
+#             "Matlab file", 
+#             "bz2 Matlab file"
+#           ], 
+#           {
+#             "fom_process": "axon", 
+#             "fom_parameter": "Marsbar ROIs fMRI data"
+#           }
+#         ]
+#       ], 
+#       "Referential of fMRI": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/registration/fMRI-<subject>_<acquisition>", 
+#           [
+#             "Referential"
+#           ], 
+#           {
+#             "fom_process": "axon", 
+#             "fom_parameter": "Referential of fMRI"
+#           }
+#         ]
+#       ], 
+#       "Transform fMRI to Talairach-AC/PC-Anatomist": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/registration/fMRI-<subject>_<acquisition>_TO_Talairach-ACPC", 
+#           [
+#             "Transformation matrix", 
+#             "Matlab file"
+#           ], 
+#           {
+#             "fom_process": "axon", 
+#             "fom_parameter": "Transform fMRI to Talairach-AC/PC-Anatomist"
+#           }
+#         ]
+#       ], 
+#       "Transform fMRI to Talairach-MNI template-SPM": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/registration/fMRI-<subject>_<acquisition>_TO_Talairach-MNI", 
+#           [
+#             "Transformation matrix", 
+#             "Matlab file"
+#           ], 
+#           {
+#             "destination_referential": "803552a6-ac4d-491d-99f5-b938392b674b", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Transform fMRI to Talairach-MNI template-SPM"
+#           }
+#         ]
+#       ], 
+#       "Session": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>", 
+#           [
+#             "Directory"
+#           ], 
+#           {
+#             "fom_process": "axon", 
+#             "fom_parameter": "Session"
+#           }
+#         ]
+#       ], 
+#       "Parcellation Texture": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/surface/parcellation_<side>", 
+#           [
+#             "Texture"
+#           ], 
+#           {
+#             "fom_process": "axon", 
+#             "fom_parameter": "Parcellation Texture"
+#           }
+#         ]
+#       ], 
+#       "fMRI Mean Image": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/meana<session>", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "preprocessings": "a", 
+#             "Distorsion correction": "no", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI Mean Image"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/rmeana<session>", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "preprocessings": "ra", 
+#             "Distorsion correction": "no", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI Mean Image"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/rmean<session>", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "preprocessings": "r", 
+#             "Distorsion correction": "no", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI Mean Image"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/mean<session>", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "preprocessings": "", 
+#             "Distorsion correction": "no", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI Mean Image"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/meana<session>_corr", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "preprocessings": "a", 
+#             "Distorsion correction": "yes", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI Mean Image"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/rmeana<session>_corr", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "preprocessings": "ra", 
+#             "Distorsion correction": "yes", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI Mean Image"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/mean<session>_corr", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "preprocessings": "", 
+#             "Distorsion correction": "yes", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI Mean Image"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/rmean<session>_corr", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "preprocessings": "r", 
+#             "Distorsion correction": "yes", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI Mean Image"
+#           }
+#         ]
+#       ], 
+#       "Realignment parameters": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/rp_<session>", 
+#           [], 
+#           {
+#             "Distorsion correction": "no", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Realignment parameters"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/rp_<session>_corr", 
+#           [], 
+#           {
+#             "Distorsion correction": "yes", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Realignment parameters"
+#           }
+#         ]
+#       ], 
+#       "Mask Image": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/mask_<session>", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "Distorsion correction": "no", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Mask Image"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/mask_<session>_corr", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "Distorsion correction": "yes", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Mask Image"
+#           }
+#         ]
+#       ], 
+#       "RAW fMRI Texture": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/L_a<session>_corr", 
+#           [
+#             "Anatomist texture formats"
+#           ], 
+#           {
+#             "preprocessings": "a", 
+#             "Distorsion correction": "yes", 
+#             "side": "left", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "RAW fMRI Texture"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/R_a<session>_corr", 
+#           [
+#             "Anatomist texture formats"
+#           ], 
+#           {
+#             "preprocessings": "a", 
+#             "Distorsion correction": "yes", 
+#             "side": "right", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "RAW fMRI Texture"
+#           }
+#         ]
+#       ], 
+#       "fMRI NIFTI image": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/<session>", 
+#           [
+#             "NIFTI-1 image", 
+#             "gz compressed NIFTI-1 image"
+#           ], 
+#           {
+#             "preprocessings": "", 
+#             "Distorsion correction": "no", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI NIFTI image"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/<session>_corr", 
+#           [
+#             "NIFTI-1 image", 
+#             "gz compressed NIFTI-1 image"
+#           ], 
+#           {
+#             "preprocessings": "", 
+#             "Distorsion correction": "yes", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI NIFTI image"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/<preprocessings><session>", 
+#           [
+#             "NIFTI-1 image", 
+#             "gz compressed NIFTI-1 image"
+#           ], 
+#           {
+#             "Distorsion correction": "no", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI NIFTI image"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/<preprocessings><session>_corr", 
+#           [
+#             "NIFTI-1 image", 
+#             "gz compressed NIFTI-1 image"
+#           ], 
+#           {
+#             "Distorsion correction": "yes", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "fMRI NIFTI image"
+#           }
+#         ]
+#       ], 
+#       "fMRI": [], 
+#       "Mouvement Correction": [
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/<preprocessings><session>_motion", 
+#           [
+#             "CSV file"
+#           ], 
+#           {
+#             "fom_process": "axon", 
+#             "fom_parameter": "Mouvement Correction"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/<session>/<session>_motion", 
+#           [
+#             "CSV file"
+#           ], 
+#           {
+#             "preprocessings": "", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Mouvement Correction"
+#           }
+#         ]
+#       ], 
       "OLD T1MRI T1 Native": [
         [
           "<center>/<subject>//t1mri/<acquisition>/T1/<subject>_<acquisition>_T1_Native", 
