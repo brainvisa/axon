@@ -25,6 +25,7 @@ class_to_class_name = {
     float:   'float',
 }
 
+class_to_field_type = dict((i,eval(j)) for i,j in class_to_class_name.iteritems())
 
 class_to_column_type = {
     str:     'TEXT',
@@ -239,7 +240,7 @@ class FedjiSqliteCollection(object):
     def drop(self):
         cnx = self._connect()
         for field, type in self.fields.iteritems():
-            cnx.execute('DROP INDEX %s_%s' % (self._documents_table, field))
+            cnx.execute('DROP INDEX IF EXISTS %s_%s' % (self._documents_table, field))
             if type is list:
                 list_table = '%s_list_%s' % (self._documents_table, field)
                 cnx.execute('DROP TABLE %s' % list_table)    
@@ -258,22 +259,80 @@ class FedjiSqliteQueryResult(object):
         self.skip = skip
         self.limit = limit
         
+    def _get_sql_operator_eq(self, field, value, inner_join, where, where_data):
+        field_type = self.collection.fields.get(field)
+        if field_type is None:
+            return False
+        if value is None:
+            where.append('%s IS NULL' % field)
+        else:
+            where.append('%s=?' % field)
+            where_data.append(value_to_sql[field_type](value))
+        return True
+    
+    def _get_sql_operator_has(self, field, value, inner_join, where, where_data):
+        field_type = self.collection.fields.get(field)
+        if field_type is None:
+            return False
+        if field_type is list:
+            list_table = '%s_list_%s' % (self.collection._documents_table, field)
+            inner_join.append(' INNER JOIN %(list_table)s ON %(data_table)s.rowid = %(list_table)s.list' % {'data_table':self.collection._documents_table, 'list_table': list_table})
+            where.append('%s.value = ?' % list_table)
+            where_data.append(value)
+        else:
+            return self._get_sql_operator_eq(field, value, inner_join, where, where_data)
+        return True
+    
+    def _get_sql_operator_in(self, field, value, inner_join, where, where_data):
+        field_type = self.collection.fields.get(field)
+        if field_type is None:
+            return False
+        values = [value_to_sql[class_to_field_type[type(i)]](i) for i in value]
+        if field_type is list:
+            list_table = '%s_list_%s' % (self.collection._documents_table, field)
+            inner_join.append(' INNER JOIN %(list_table)s ON %(data_table)s.rowid = %(list_table)s.list' % {'data_table':self.collection._documents_table, 'list_table': list_table})
+            where.append('%s.value IN (%s)' % (list_table, ','.join(('NULL' if i is None else '?') for i in values)))
+            where_data.extend(i for i in values if i is not None)
+        else:
+            where.append('%s IN (%s)' % (field, ','.join('?' for i in values)))
+            where_data.extend(values)
+        return True
+
     def _get_sql(self, select):
         inner_join = []
         where = []
         where_data = []
         for field, value in self.query.iteritems():
-            field_type = self.collection.fields.get(field)
-            if field_type is None:
-                return (None, None)
-            if field_type is list and not isinstance(value,list):
-                list_table = '%s_list_%s' % (self.collection._documents_table, field)
-                inner_join.append(' INNER JOIN %(list_table)s ON %(data_table)s.rowid = %(list_table)s.list' % {'data_table':self.collection._documents_table, 'list_table': list_table})
-                where.append('%s.value = ?' % list_table)
-                where_data.append(value)
+            if isinstance(value,dict):
+                if len(value) != 1:
+                    raise ValueError('A dictionary with %d item(s) is not a valid query value.' % len(value))
+                operator, value = value.popitem()
             else:
-                where.append('%s=?' % field)
-                where_data.append(value_to_sql[field_type](value))
+                operator = '$has'
+            operator_method = None
+            if operator.startswith('$'):
+                operator_method = getattr(self, '_get_sql_operator_%s' % operator[1:], None)
+            if operator_method is None:
+                raise ValueError('%s is not a valid query operator for FEDJI' % str(operator))
+            if not operator_method(field, value, inner_join, where, where_data):
+                return (None, None)
+            
+            #field_type = self.collection.fields.get(field)
+            #if field_type is None:
+                #return (None, None)
+            #if field_type is list and not isinstance(value,list):
+                #list_table = '%s_list_%s' % (self.collection._documents_table, field)
+                #inner_join.append(' INNER JOIN %(list_table)s ON %(data_table)s.rowid = %(list_table)s.list' % {'data_table':self.collection._documents_table, 'list_table': list_table})
+                #where.append('%s.value = ?' % list_table)
+                #where_data.append(value)
+            #else:
+                #if in_operator:
+                    #values = [value_to_sql[class_to_field_type[type(i)]](i) for i in value]
+                    #where.append('%s IN (%s)' % (field, ','.join('?' for i in values)))
+                    #where_data.extend(values)
+                #else:
+                    #where.append('%s=?' % field)
+                    #where_data.append(value_to_sql[field_type](value))
         if inner_join:
             inner_join = ''.join(inner_join)
         else:
@@ -305,9 +364,6 @@ class FedjiSqliteQueryResult(object):
         if sql:
             for row in cnx.execute(sql, sql_data):
                 document = dict((columns[i],sql_to_value[self.collection.fields[columns[i]]](row[i])) for i in xrange(len(columns)) if row[i] is not None)
-                _id = document.get('_id')
-                if _id is not None:
-                    document['_id'] = uuid.UUID(bytes=_id)
                 yield document
     
     def _rowids(self):
