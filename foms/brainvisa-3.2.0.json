@@ -1119,416 +1119,416 @@
           }
         ]
       ], 
-      "HRF group session": [
-        [
-          "<center>/group_analysis/<group_of_subjects>/fMRI/hrf_analysis/<HRF_group_session>", 
-          [
-            "Directory"
-          ], 
-          {
-            "HRF analysis": "RfX fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "HRF group session"
-          }
-        ]
-      ], 
-      "Group definition of HRF session": [
-        [
-          "<center>/group_analysis/<group_of_subjects>/fMRI/hrf_analysis/<HRF_group_session>/<group_of_subjects>_<HRF_group_session>", 
-          [
-            "XML"
-          ], 
-          {
-            "HRF analysis": "RfX fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "Group definition of HRF session"
-          }
-        ]
-      ], 
-      "HRF parameters": [
-        [
-          "<center>/group_analysis/<group_of_subjects>/fMRI/hrf_analysis/<HRF_group_session>/<group_of_subjects>_<HRF_group_session>_hrf22_param", 
-          [
-            "XML", 
-            "Matlab file", 
-            "bz2 Matlab file"
-          ], 
-          {
-            "HRF analysis": "RfX fMRI results", 
-            "HRF processing": "group parameters", 
-            "fom_process": "axon", 
-            "fom_parameter": "HRF parameters"
-          }
-        ], 
-        [
-          "<center>/group_analysis/<group_of_subjects>/fMRI/hrf_analysis/<HRF_group_session>/<group_of_subjects>_<HRF_group_session>_*_param", 
-          [
-            "XML", 
-            "Matlab file", 
-            "bz2 Matlab file"
-          ], 
-          {
-            "HRF analysis": "RfX fMRI results", 
-            "HRF processing": "group parameters", 
-            "fom_process": "axon", 
-            "fom_parameter": "HRF parameters"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/hrf_analysis/<HRF_estimation_session>/<subject>_<HRF_estimation_session>_hrf22_defaults", 
-          [
-            "XML", 
-            "Matlab file", 
-            "bz2 Matlab file"
-          ], 
-          {
-            "HRF analysis": "FfX fMRI results", 
-            "HRF processing": "defaults", 
-            "fom_process": "axon", 
-            "fom_parameter": "HRF parameters"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/hrf_analysis/<HRF_estimation_session>/<subject>_<HRF_estimation_session>_hrf22_param", 
-          [
-            "XML", 
-            "Matlab file", 
-            "bz2 Matlab file"
-          ], 
-          {
-            "HRF analysis": "FfX fMRI results", 
-            "HRF processing": "current parameters", 
-            "fom_process": "axon", 
-            "fom_parameter": "HRF parameters"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/hrf_analysis/<HRF_estimation_session>/<subject>_<HRF_estimation_session>_*_hrf22_defaults", 
-          [
-            "XML", 
-            "Matlab file", 
-            "bz2 Matlab file"
-          ], 
-          {
-            "HRF analysis": "FfX fMRI results", 
-            "HRF processing": "defaults", 
-            "fom_process": "axon", 
-            "fom_parameter": "HRF parameters"
-          }
-        ]
-      ], 
-      "HRF results": [
-        [
-          "<center>/group_analysis/<group_of_subjects>/fMRI/hrf_analysis/<HRF_group_session>/<group_of_subjects>_<HRF_group_session>_hrf22_results", 
-          [
-            "Matlab file", 
-            "bz2 Matlab file"
-          ], 
-          {
-            "HRF analysis": "RfX fMRI results", 
-            "HRF processing": "group results", 
-            "fom_process": "axon", 
-            "fom_parameter": "HRF results"
-          }
-        ], 
-        [
-          "<center>/group_analysis/<group_of_subjects>/fMRI/hrf_analysis/<HRF_group_session>/<group_of_subjects>_<HRF_group_session>_*_results", 
-          [
-            "Matlab file", 
-            "bz2 Matlab file"
-          ], 
-          {
-            "HRF analysis": "RfX fMRI results", 
-            "HRF processing": "group results", 
-            "fom_process": "axon", 
-            "fom_parameter": "HRF results"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/hrf_analysis/<HRF_estimation_session>/<subject>_<HRF_estimation_session>_hrf22_results", 
-          [
-            "Matlab file", 
-            "bz2 Matlab file"
-          ], 
-          {
-            "HRF analysis": "FfX fMRI results", 
-            "HRF processing": "results", 
-            "fom_process": "axon", 
-            "fom_parameter": "HRF results"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/hrf_analysis/<HRF_estimation_session>/<subject>_<HRF_estimation_session>_*_hrf22_results", 
-          [
-            "Matlab file", 
-            "bz2 Matlab file"
-          ], 
-          {
-            "HRF analysis": "FfX fMRI results", 
-            "HRF processing": "results", 
-            "fom_process": "axon", 
-            "fom_parameter": "HRF results"
-          }
-        ]
-      ], 
-      "ASCII statistics results": [
-        [
-          "<center>/group_analysis/<group_of_subjects>/fMRI/hrf_analysis/<HRF_group_session>/<group_of_subjects>_<HRF_group_session>_Rfx_stats_detection", 
-          [
-            "Text Data Table"
-          ], 
-          {
-            "HRF analysis": "RfX fMRI results", 
-            "HRF processing": "Rfx statistics", 
-            "type": "detection", 
-            "fom_process": "axon", 
-            "fom_parameter": "ASCII statistics results"
-          }
-        ], 
-        [
-          "<center>/group_analysis/<group_of_subjects>/fMRI/hrf_analysis/<HRF_group_session>/<group_of_subjects>_<HRF_group_session>_Rfx_stats_comparison", 
-          [
-            "Text Data Table"
-          ], 
-          {
-            "HRF analysis": "RfX fMRI results", 
-            "HRF processing": "Rfx statistics", 
-            "type": "comparison", 
-            "fom_process": "axon", 
-            "fom_parameter": "ASCII statistics results"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/hrf_analysis/<HRF_estimation_session>/<subject>_<HRF_estimation_session>_stats_detection", 
-          [
-            "Text Data Table"
-          ], 
-          {
-            "HRF analysis": "FfX fMRI results", 
-            "HRF processing": "Ffx statistics", 
-            "type": "detection", 
-            "fom_process": "axon", 
-            "fom_parameter": "ASCII statistics results"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/hrf_analysis/<HRF_estimation_session>/<subject>_<HRF_estimation_session>_stats_comparison", 
-          [
-            "Text Data Table"
-          ], 
-          {
-            "HRF analysis": "FfX fMRI results", 
-            "HRF processing": "Ffx statistics", 
-            "type": "comparison", 
-            "fom_process": "axon", 
-            "fom_parameter": "ASCII statistics results"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/hrf_analysis/<HRF_estimation_session>/<subject>_<HRF_estimation_session>_*_stats_detection", 
-          [
-            "Text Data Table"
-          ], 
-          {
-            "HRF analysis": "FfX fMRI results", 
-            "HRF processing": "Ffx statistics", 
-            "type": "detection", 
-            "fom_process": "axon", 
-            "fom_parameter": "ASCII statistics results"
-          }
-        ], 
-        [
-          "<center>/<subject>/fMRI/<acquisition>/hrf_analysis/<HRF_estimation_session>/<subject>_<HRF_estimation_session>_*_stats_comparison", 
-          [
-            "Text Data Table"
-          ], 
-          {
-            "HRF analysis": "FfX fMRI results", 
-            "HRF processing": "Ffx statistics", 
-            "type": "comparison", 
-            "fom_process": "axon", 
-            "fom_parameter": "ASCII statistics results"
-          }
-        ]
-      ], 
-      "GLM group model": [
-        [
-          "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>", 
-          [
-            "Directory"
-          ], 
-          {
-            "GLM analysis": "RfX fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "GLM group model"
-          }
-        ]
-      ], 
-      "Group Design Matrix": [
-        [
-          "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/DesignMatrix", 
-          [
-            "CSV file"
-          ], 
-          {
-            "GLM analysis": "RfX fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "Group Design Matrix"
-          }
-        ]
-      ], 
-      "Group Dump": [
-        [
-          "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/<group_of_subjects>_<cond>_analysis", 
-          [
-            "Numpy Dump file"
-          ], 
-          {
-            "GLM analysis": "RfX fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "Group Dump"
-          }
-        ]
-      ], 
-      "Group fMRI activations": [
-        [
-          "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/<group_of_subjects>_<cond>_rfx_image", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "GLM analysis": "RfX fMRI results", 
-            "Result Type": "group Z map", 
-            "fom_process": "axon", 
-            "fom_parameter": "Group fMRI activations"
-          }
-        ], 
-        [
-          "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/<group_of_subjects>_<cond>_norm_image", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "GLM analysis": "RfX fMRI results", 
-            "Result Type": "z-variate normality test", 
-            "fom_process": "axon", 
-            "fom_parameter": "Group fMRI activations"
-          }
-        ], 
-        [
-          "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/<group_of_subjects>_<cond>_dens_image", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "GLM analysis": "RfX fMRI results", 
-            "Result Type": "spatial density map", 
-            "fom_process": "axon", 
-            "fom_parameter": "Group fMRI activations"
-          }
-        ], 
-        [
-          "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/<group_of_subjects>_<cond>_ldk_image", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "GLM analysis": "RfX fMRI results", 
-            "Result Type": "landmark map", 
-            "fom_process": "axon", 
-            "fom_parameter": "Group fMRI activations"
-          }
-        ], 
-        [
-          "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/<group_of_subjects>_<cond>_parcel_image", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "GLM analysis": "RfX fMRI results", 
-            "Result Type": "parcel map", 
-            "fom_process": "axon", 
-            "fom_parameter": "Group fMRI activations"
-          }
-        ], 
-        [
-          "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/<group_of_subjects>_<cond>_prfx_image", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "GLM analysis": "RfX fMRI results", 
-            "Result Type": "prfx map", 
-            "fom_process": "axon", 
-            "fom_parameter": "Group fMRI activations"
-          }
-        ], 
-        [
-          "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/<group_of_subjects>_<group_model>_ResMS", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "GLM analysis": "RfX fMRI results", 
-            "Result Type": "group Residual variance", 
-            "fom_process": "axon", 
-            "fom_parameter": "Group fMRI activations"
-          }
-        ]
-      ], 
-      "Functional Landmark HTML result": [
-        [
-          "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/<group_of_subjects>_<cond>_ldk_ResultSheet", 
-          [
-            "HTML"
-          ], 
-          {
-            "GLM analysis": "RfX fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "Functional Landmark HTML result"
-          }
-        ]
-      ], 
-      "Reproducibility HTML result": [
-        [
-          "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/<group_of_subjects>_<cond>_ReproducibilitySheet", 
-          [
-            "HTML"
-          ], 
-          {
-            "GLM analysis": "RfX fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "Reproducibility HTML result"
-          }
-        ]
-      ], 
-      "group HTML result": [
-        [
-          "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/<group_of_subjects>_<cond>_HTMLResults", 
-          [
-            "HTML"
-          ], 
-          {
-            "GLM analysis": "RfX fMRI results", 
-            "fom_process": "axon", 
-            "fom_parameter": "group HTML result"
-          }
-        ]
-      ], 
-      "Group fMRI contrast": [
-        [
-          "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/<group_of_subjects>_<cond>_<group_contrast>_stat_image", 
-          [
-            "BrainVISA volume formats"
-          ], 
-          {
-            "GLM analysis": "RfX fMRI results", 
-            "Result Type": "group Z map", 
-            "fom_process": "axon", 
-            "fom_parameter": "Group fMRI contrast"
-          }
-        ]
-      ], 
+#       "HRF group session": [
+#         [
+#           "<center>/group_analysis/<group_of_subjects>/fMRI/hrf_analysis/<HRF_group_session>", 
+#           [
+#             "Directory"
+#           ], 
+#           {
+#             "HRF analysis": "RfX fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "HRF group session"
+#           }
+#         ]
+#       ], 
+#       "Group definition of HRF session": [
+#         [
+#           "<center>/group_analysis/<group_of_subjects>/fMRI/hrf_analysis/<HRF_group_session>/<group_of_subjects>_<HRF_group_session>", 
+#           [
+#             "XML"
+#           ], 
+#           {
+#             "HRF analysis": "RfX fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Group definition of HRF session"
+#           }
+#         ]
+#       ], 
+#       "HRF parameters": [
+#         [
+#           "<center>/group_analysis/<group_of_subjects>/fMRI/hrf_analysis/<HRF_group_session>/<group_of_subjects>_<HRF_group_session>_hrf22_param", 
+#           [
+#             "XML", 
+#             "Matlab file", 
+#             "bz2 Matlab file"
+#           ], 
+#           {
+#             "HRF analysis": "RfX fMRI results", 
+#             "HRF processing": "group parameters", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "HRF parameters"
+#           }
+#         ], 
+#         [
+#           "<center>/group_analysis/<group_of_subjects>/fMRI/hrf_analysis/<HRF_group_session>/<group_of_subjects>_<HRF_group_session>_*_param", 
+#           [
+#             "XML", 
+#             "Matlab file", 
+#             "bz2 Matlab file"
+#           ], 
+#           {
+#             "HRF analysis": "RfX fMRI results", 
+#             "HRF processing": "group parameters", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "HRF parameters"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/hrf_analysis/<HRF_estimation_session>/<subject>_<HRF_estimation_session>_hrf22_defaults", 
+#           [
+#             "XML", 
+#             "Matlab file", 
+#             "bz2 Matlab file"
+#           ], 
+#           {
+#             "HRF analysis": "FfX fMRI results", 
+#             "HRF processing": "defaults", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "HRF parameters"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/hrf_analysis/<HRF_estimation_session>/<subject>_<HRF_estimation_session>_hrf22_param", 
+#           [
+#             "XML", 
+#             "Matlab file", 
+#             "bz2 Matlab file"
+#           ], 
+#           {
+#             "HRF analysis": "FfX fMRI results", 
+#             "HRF processing": "current parameters", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "HRF parameters"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/hrf_analysis/<HRF_estimation_session>/<subject>_<HRF_estimation_session>_*_hrf22_defaults", 
+#           [
+#             "XML", 
+#             "Matlab file", 
+#             "bz2 Matlab file"
+#           ], 
+#           {
+#             "HRF analysis": "FfX fMRI results", 
+#             "HRF processing": "defaults", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "HRF parameters"
+#           }
+#         ]
+#       ], 
+#       "HRF results": [
+#         [
+#           "<center>/group_analysis/<group_of_subjects>/fMRI/hrf_analysis/<HRF_group_session>/<group_of_subjects>_<HRF_group_session>_hrf22_results", 
+#           [
+#             "Matlab file", 
+#             "bz2 Matlab file"
+#           ], 
+#           {
+#             "HRF analysis": "RfX fMRI results", 
+#             "HRF processing": "group results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "HRF results"
+#           }
+#         ], 
+#         [
+#           "<center>/group_analysis/<group_of_subjects>/fMRI/hrf_analysis/<HRF_group_session>/<group_of_subjects>_<HRF_group_session>_*_results", 
+#           [
+#             "Matlab file", 
+#             "bz2 Matlab file"
+#           ], 
+#           {
+#             "HRF analysis": "RfX fMRI results", 
+#             "HRF processing": "group results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "HRF results"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/hrf_analysis/<HRF_estimation_session>/<subject>_<HRF_estimation_session>_hrf22_results", 
+#           [
+#             "Matlab file", 
+#             "bz2 Matlab file"
+#           ], 
+#           {
+#             "HRF analysis": "FfX fMRI results", 
+#             "HRF processing": "results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "HRF results"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/hrf_analysis/<HRF_estimation_session>/<subject>_<HRF_estimation_session>_*_hrf22_results", 
+#           [
+#             "Matlab file", 
+#             "bz2 Matlab file"
+#           ], 
+#           {
+#             "HRF analysis": "FfX fMRI results", 
+#             "HRF processing": "results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "HRF results"
+#           }
+#         ]
+#       ], 
+#       "ASCII statistics results": [
+#         [
+#           "<center>/group_analysis/<group_of_subjects>/fMRI/hrf_analysis/<HRF_group_session>/<group_of_subjects>_<HRF_group_session>_Rfx_stats_detection", 
+#           [
+#             "Text Data Table"
+#           ], 
+#           {
+#             "HRF analysis": "RfX fMRI results", 
+#             "HRF processing": "Rfx statistics", 
+#             "type": "detection", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "ASCII statistics results"
+#           }
+#         ], 
+#         [
+#           "<center>/group_analysis/<group_of_subjects>/fMRI/hrf_analysis/<HRF_group_session>/<group_of_subjects>_<HRF_group_session>_Rfx_stats_comparison", 
+#           [
+#             "Text Data Table"
+#           ], 
+#           {
+#             "HRF analysis": "RfX fMRI results", 
+#             "HRF processing": "Rfx statistics", 
+#             "type": "comparison", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "ASCII statistics results"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/hrf_analysis/<HRF_estimation_session>/<subject>_<HRF_estimation_session>_stats_detection", 
+#           [
+#             "Text Data Table"
+#           ], 
+#           {
+#             "HRF analysis": "FfX fMRI results", 
+#             "HRF processing": "Ffx statistics", 
+#             "type": "detection", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "ASCII statistics results"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/hrf_analysis/<HRF_estimation_session>/<subject>_<HRF_estimation_session>_stats_comparison", 
+#           [
+#             "Text Data Table"
+#           ], 
+#           {
+#             "HRF analysis": "FfX fMRI results", 
+#             "HRF processing": "Ffx statistics", 
+#             "type": "comparison", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "ASCII statistics results"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/hrf_analysis/<HRF_estimation_session>/<subject>_<HRF_estimation_session>_*_stats_detection", 
+#           [
+#             "Text Data Table"
+#           ], 
+#           {
+#             "HRF analysis": "FfX fMRI results", 
+#             "HRF processing": "Ffx statistics", 
+#             "type": "detection", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "ASCII statistics results"
+#           }
+#         ], 
+#         [
+#           "<center>/<subject>/fMRI/<acquisition>/hrf_analysis/<HRF_estimation_session>/<subject>_<HRF_estimation_session>_*_stats_comparison", 
+#           [
+#             "Text Data Table"
+#           ], 
+#           {
+#             "HRF analysis": "FfX fMRI results", 
+#             "HRF processing": "Ffx statistics", 
+#             "type": "comparison", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "ASCII statistics results"
+#           }
+#         ]
+#       ], 
+#       "GLM group model": [
+#         [
+#           "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>", 
+#           [
+#             "Directory"
+#           ], 
+#           {
+#             "GLM analysis": "RfX fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "GLM group model"
+#           }
+#         ]
+#       ], 
+#       "Group Design Matrix": [
+#         [
+#           "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/DesignMatrix", 
+#           [
+#             "CSV file"
+#           ], 
+#           {
+#             "GLM analysis": "RfX fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Group Design Matrix"
+#           }
+#         ]
+#       ], 
+#       "Group Dump": [
+#         [
+#           "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/<group_of_subjects>_<cond>_analysis", 
+#           [
+#             "Numpy Dump file"
+#           ], 
+#           {
+#             "GLM analysis": "RfX fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Group Dump"
+#           }
+#         ]
+#       ], 
+#       "Group fMRI activations": [
+#         [
+#           "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/<group_of_subjects>_<cond>_rfx_image", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "GLM analysis": "RfX fMRI results", 
+#             "Result Type": "group Z map", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Group fMRI activations"
+#           }
+#         ], 
+#         [
+#           "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/<group_of_subjects>_<cond>_norm_image", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "GLM analysis": "RfX fMRI results", 
+#             "Result Type": "z-variate normality test", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Group fMRI activations"
+#           }
+#         ], 
+#         [
+#           "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/<group_of_subjects>_<cond>_dens_image", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "GLM analysis": "RfX fMRI results", 
+#             "Result Type": "spatial density map", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Group fMRI activations"
+#           }
+#         ], 
+#         [
+#           "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/<group_of_subjects>_<cond>_ldk_image", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "GLM analysis": "RfX fMRI results", 
+#             "Result Type": "landmark map", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Group fMRI activations"
+#           }
+#         ], 
+#         [
+#           "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/<group_of_subjects>_<cond>_parcel_image", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "GLM analysis": "RfX fMRI results", 
+#             "Result Type": "parcel map", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Group fMRI activations"
+#           }
+#         ], 
+#         [
+#           "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/<group_of_subjects>_<cond>_prfx_image", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "GLM analysis": "RfX fMRI results", 
+#             "Result Type": "prfx map", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Group fMRI activations"
+#           }
+#         ], 
+#         [
+#           "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/<group_of_subjects>_<group_model>_ResMS", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "GLM analysis": "RfX fMRI results", 
+#             "Result Type": "group Residual variance", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Group fMRI activations"
+#           }
+#         ]
+#       ], 
+#       "Functional Landmark HTML result": [
+#         [
+#           "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/<group_of_subjects>_<cond>_ldk_ResultSheet", 
+#           [
+#             "HTML"
+#           ], 
+#           {
+#             "GLM analysis": "RfX fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Functional Landmark HTML result"
+#           }
+#         ]
+#       ], 
+#       "Reproducibility HTML result": [
+#         [
+#           "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/<group_of_subjects>_<cond>_ReproducibilitySheet", 
+#           [
+#             "HTML"
+#           ], 
+#           {
+#             "GLM analysis": "RfX fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Reproducibility HTML result"
+#           }
+#         ]
+#       ], 
+#       "group HTML result": [
+#         [
+#           "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/<group_of_subjects>_<cond>_HTMLResults", 
+#           [
+#             "HTML"
+#           ], 
+#           {
+#             "GLM analysis": "RfX fMRI results", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "group HTML result"
+#           }
+#         ]
+#       ], 
+#       "Group fMRI contrast": [
+#         [
+#           "<center>/group_analysis/<group_of_subjects>/fMRI/glm_analysis/<group_model>/<group_of_subjects>_<cond>_<group_contrast>_stat_image", 
+#           [
+#             "BrainVISA volume formats"
+#           ], 
+#           {
+#             "GLM analysis": "RfX fMRI results", 
+#             "Result Type": "group Z map", 
+#             "fom_process": "axon", 
+#             "fom_parameter": "Group fMRI contrast"
+#           }
+#         ]
+#       ], 
       "Group definition": [
         [
           "<center>/group_analysis/<group_of_subjects>/<group_of_subjects>_group", 
@@ -3072,7 +3072,7 @@
       ], 
       "Transform T2 Diffusion MR to Raw T1 MRI": [
         [
-          "<center>/<subject>/registration/t2diff_TO_t1mri_<subject>-<source.acquisition>-<destination.acquisition>", 
+          "<center>/<subject>/registration/t2diff_TO_t1mri_<subject>-<source_acquisition>-<destination_acquisition>", 
           [
             "Transformation matrix", 
             "Matlab file"
@@ -3085,7 +3085,7 @@
       ], 
       "Transform Raw T1 MRI to T2 Diffusion MR": [
         [
-          "<center>/<subject>/registration/t1mri_TO_t2diff_<subject>-<source.acquisition>-<destination.acquisition>", 
+          "<center>/<subject>/registration/t1mri_TO_t2diff_<subject>-<source_acquisition>-<destination_acquisition>", 
           [
             "Transformation matrix", 
             "Matlab file"
@@ -3098,7 +3098,7 @@
       ], 
       "Transform Raw T1 MRI to AC/PC T2 Diffusion MR": [
         [
-          "<center>/<subject>/registration/t1mri_TO_acpc_t2diff_<subject>-<source.acquisition>-<destination.acquisition>", 
+          "<center>/<subject>/registration/t1mri_TO_acpc_t2diff_<subject>-<source_acquisition>-<destination_acquisition>", 
           [
             "Transformation matrix", 
             "Matlab file"
@@ -3111,7 +3111,7 @@
       ], 
       "Transform Raw T1 MRI to Extended AC/PC T2 Diffusion MR": [
         [
-          "<center>/<subject>/registration/t1mri_TO_eacpc_t2diff_<subject>-<source.acquisition>-<destination.acquisition>", 
+          "<center>/<subject>/registration/t1mri_TO_eacpc_t2diff_<subject>-<source_acquisition>-<destination_acquisition>", 
           [
             "Transformation matrix", 
             "Matlab file"

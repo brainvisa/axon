@@ -3,8 +3,8 @@ import os
 import os.path as osp
 from stat import S_ISDIR
 import shutil
+from itertools import chain
 
-from soma.uuid import Uuid
 from soma.undefined import Undefined
 from soma.fom import (FileOrganizationModelManager,
                       DirectoryAsDict,
@@ -29,9 +29,9 @@ class AxonFedjiDatabase(Database):
         if fedji_url is None:
             fedji_url = 'sqlite://' + osp.join(directory, 'fedji')
         self.fedji_collection = fedji_connect(fedji_url).axon.disk_items
-        if 'files' not in self.fedji_collection.fields:
-            self.fedji_collection.new_field('files', list)
-            self.fedji_collection.create_index('files')
+        if '_files' not in self.fedji_collection.fields:
+            self.fedji_collection.new_field('_files', list)
+            self.fedji_collection.create_index('_files')
         
         self.name = directory
         self.directory = osp.normpath( directory )
@@ -98,10 +98,12 @@ class AxonFedjiDatabase(Database):
                 raise NotImplementedError('DiskItem update is not yet implemented')
             else:
                 documents = d.globalAttributes()
-                documents['type'] = [d.type.name] + [i.name for i in d.type.parents()]
-                documents['format'] = d.format.name
-                documents['_id'] = documents.pop('uuid')
-                documents['files'] = d._files
+                documents.pop('uuid', None)
+                documents['_id'] = str(d.uuid())
+                documents['_type'] = [d.type.name] + [i.name for i in d.type.parents()]
+                documents['_format'] = d.format.name
+                documents['_files'] = d._files
+                print '!fedji insert!', documents
                 self.fedji_collection.insert(documents)
   
     def removeDiskItems( self, diskItems, eraseFiles=False ):
@@ -114,12 +116,12 @@ class AxonFedjiDatabase(Database):
 
     def _createDiskitemFromDocument(self, doc):
         diskitem = DiskItem("Document " + doc['_id'], None)
-        diskitem.type = getDiskItemType(doc.pop('type')[0])
-        diskitem.format = getFormat(doc.pop('format'))
+        diskitem.type = getDiskItemType(doc.pop('_type')[0])
+        diskitem.format = getFormat(doc.pop('_format'))
         diskitem._globalAttributes["_database"] = self.name
-        diskItem._globalAttributes[ '_ontology' ] = self.fom.fom_names[0]
+        diskitem._globalAttributes[ '_ontology' ] = self.fom.fom_names[0]
         diskitem._changeUuid( doc.pop('_id') )
-        diskitem._files = doc.pop['files']
+        diskitem._files = doc.pop('_files')
         diskitem._updateGlobal(doc)
         return diskitem
     
@@ -133,7 +135,7 @@ class AxonFedjiDatabase(Database):
   
     def getDiskItemFromFileName( self, fileName, defaultValue=Undefined ):
         if fileName.startswith(self.directory):
-            documents = list(self.fedji_collection.find({'files':fileName}))
+            documents = list(self.fedji_collection.find({'_files':fileName}))
             if documents:
                 return self._createDiskitemFromDocument(documents[0])
         if defaultValue is Undefined:
@@ -141,42 +143,39 @@ class AxonFedjiDatabase(Database):
         return defaultValue
     
     
+    def _createDiskItemFromPathAttributes(self, path, attributes):
+        diskItem = self.createDiskItemFromFormatExtension( path, None )
+        if diskItem:
+            format = attributes.pop('fom_format', None)
+            type = attributes.pop('fom_parameter',None)
+            attributes.pop('fom_process',None)
+            attributes.pop('fom_name',None)
+            if format is not None:
+                newItem = self.changeDiskItemFormat(diskItem, format)
+            if newItem is not None:
+                diskItem = newItem
+            diskItem.type = getDiskItemType(type)
+            diskItem._updateGlobal(attributes)
+        return diskItem
+    
+    
     def createDiskItemFromFileName( self, fileName, defaultValue=Undefined ):
+        diskItem = None
         if fileName.startswith(self.directory):
-            diskItem = self.createDiskItemFromFormatExtension( fileName, None )
-            if diskItem is not None:
-                relative_path = diskItem.fullPath()[len(self.directory)+1:]
-                #dad = DirectoryAsDict.paths_to_dict(relative_path)
-                import sys
-                class log:
-                    @staticmethod
-                    def debug(msg):
-                        print msg
-                        sys.stdout.flush()
-                log.debug('createDiskItemFromFileName ' + fileName)
-                for path, st, attributes in self.path_to_attributes.parse_directory(relative_path, log=log):
-                    if osp.join(*path) == relative_path:
-                        if attributes:
-                            format = attributes.pop('fom_format', None)
-                            type = attributes.pop('fom_parameter',None)
-                            attributes.pop('fom_process',None)
-                            attributes.pop('fom_name',None)
-                            if format is not None:
-                                newItem = self.changeDiskItemFormat(diskItem, format)
-                            if newItem is not None:
-                                diskItem = newItem
-                            diskItem.type = getDiskItemType(type)
-                            diskItem._updateGlobal(attributes)
-                        break
-                log.debug('==> ' + fileName)
-                sys.stderr.flush()
-                return diskItem
-            elif defaultValue is Undefined:
-                raise ValueError( 'Database "%(database)s" cannot create DiskItem for %(filename)s"' % { 'database': self.name,  'filename': fileName } )
-        if defaultValue is Undefined:
-            raise ValueError( 'Database "%(database)s" cannot reference file "%(filename)s"' % { 'database': self.name,  'filename': fileName } )
+            relative_path = fileName[len(self.directory)+1:]
+            for path, st, attributes in self.path_to_attributes.parse_path(relative_path):
+                if attributes:
+                    diskItem = self._createDiskItemFromPathAttributes(fileName, attributes)
+                    break
+            else:
+                diskItem = self._createDiskItemFromPathAttributes(fileName, {})
+        if diskItem is not None:
+            return diskItem
+        elif defaultValue is Undefined:
+            raise ValueError( 'Database "%(database)s" cannot create DiskItem for %(filename)s"' % { 'database': self.name,  'filename': fileName } )
         return defaultValue
-      
+
+        
     def changeDiskItemFormat( self, diskItem, newFormat ):
         newFormat = self.formats.getFormat(newFormat)
         if newFormat is not None:
@@ -221,22 +220,108 @@ class AxonFedjiDatabase(Database):
                     content = minf
                     minf = set()
     
-    def findAttributes( self, attributes, selection={}, _debug=None, exactType=False, **required ):
-        query = selection.copy()
-        query.update(required)
-        for document in self.fedji_collection.find(query,fields=attributes):
-            yield [document.get(attribute) for attribute in attributes]
+    def update( self, directoriesToScan=None, depth=0):
+        if directoriesToScan is None:
+            directoriesToScan = [self.directory]
+        stack = [(d,0) for d in directoriesToScan]
+        while stack:
+            directory, dir_depth = stack.pop(0)
+            if depth and dir_depth > depth:
+                continue
+            content = set()
+            minf = set()
+            for i in os.listdir(directory):
+                fp = osp.join(directory,i)
+                if S_ISDIR(os.stat(fp).st_mode):
+                    stack.append((fp, dir_depth+1))
+                if fp.endswith('.minf'):
+                    minf.add(fp)
+                else:
+                    content.add(fp)
+            
+            while content:
+                path = content.pop()
+                try:
+                    item = self.getDiskItemFromFileName(path)
+                    print '!update! ignore already stored', item
+                except ValueError:
+                    item = self.createDiskItemFromFileName(path, None)
+                    if item and item.type:
+                        item._globalAttributes["_database"] = self.name
+                        item._globalAttributes[ '_ontology' ] = self.fom.fom_names[0]
+                        #if item.type is None and S_ISDIR(os.stat(path).st_mode):
+                            #item.type = getDiskItemType('Directory')
+                        self.insertDiskItems((item,))
+                        print '!update! store', item
+                if item:
+                    for path in item.fullPaths():
+                        content.discard(path)
+                    minf.discard(item.minfFileName())
+                
+                if not content and minf:
+                    content = minf
+                    minf = set()
     
+    @staticmethod
+    def _get_query(selection, required):
+        query = {}
+        for k, v in chain(selection.iteritems(), 
+                          required.iteritems()):
+            if k == '_uuid':
+                k = '_id'
+            if isinstance(v, basestring):
+                query[k] = v
+            elif not v:
+                continue
+            elif isinstance(v,list):
+                query[k] = {'$in': v}
+            else:
+                query[k] = {'$in': list(v)}
+        return query
+    
+    def findAttributes( self, attributes, selection={}, _debug=None, exactType=False, **required ):
+        #print '!findAttributes! 1', attributes, selection, required, exactType
+        query = self._get_query(selection,required)
+        #print '!findAttributes! 2 query=', query
+        
+        try:
+            type_index = attributes.index('_type')
+        except ValueError:
+            type_index = -1
+        
+        fields=list(attributes)
+        try:
+            i = attributes.index('_uuid')
+            fields[i] = '_id'
+        except:
+            pass
+        
+        for document in self.fedji_collection.find(query,fields=fields):
+            values = [document.get(f) for f in fields]
+            if type_index >= 0 and values[type_index]:
+                values[type_index] = values[type_index][0]
+            #print '!findAttributes! 3 -->', values
+            yield values
     
     def findDiskItems( self, selection={}, _debug=None, exactType=False, **required ):
-        query = selection.copy()
-        query.update(required)
+        #print '!findDiskItems! 1', selection, required, exactType
+        query = self._get_query(selection,required)
+        #print '!findDiskItems! 2 query=', query
         for document in self.fedji_collection.find(query):
-            yield self._createDiskitemFromDocument(documents)
-    
+            item = self._createDiskitemFromDocument(document)
+            #print '!findDiskItems! -->', item
+            yield item
     
     def createDiskItems( self, selection={}, _debug=None, exactType=False, **required ):
-        NotImplementedError('createDiskItems not implemented for FEDJI databases')
+        #print '!createDiskItems! 1', selection, exactType, required
+        query = self._get_query(selection,required)
+        #print '!createDiskItems! query=', query
+        for path, attributes in self.attributes_to_paths.find_paths(query):
+            #print '!createDiskItems! 3', path, attributes
+            item = self._createDiskItemFromPathAttributes(path, attributes)
+            #print '!createDiskItems! 4 -->', item
+            if item:
+                yield item
     
     def getTypesKeysAttributes(self, type):
         result = self._typeKeysAttributes.get(type)
@@ -247,33 +332,36 @@ class AxonFedjiDatabase(Database):
     
     def getAttributesEdition( self, *types ):
       editable = set()
-      values = {}
-      # TODO
-      #for t1 in types:
-        #for t2 in self._childrenByTypeName[ t1 ]:
-          #e = self._attributesEditionByType.get( t2 )
-          #if e is not None:
-            #editable.update( e[0] )
-            #for a, v in e[1].iteritems():
-              #values.setdefault( a, set() ).update( v )
-      return editable, values, ()
+      attribute_values = {}
+      for t in self.getTypeChildren(*types):
+          attributes = self.attributes_to_paths.find_discriminant_attributes(fom_parameter='Raw T1 MRI')
+          for attribute in attributes:
+              definition = self.fom.attribute_definitions.get(attribute,{})
+              values = set(definition.get('values',()))
+              values.update(str(i.popitem()[1]) for i in self.fedji_collection.find({}, fields=[attribute]) if i)
+              attribute_values[attribute] = values
+              if definition.get('fom_open_value', False):
+                  editable.add(attribute)
+      return editable, attribute_values, ()
     
     def getTypeChildren( self, *types ):
         if getattr(self, '_childrenByTypeName', None) is None:
             self._childrenByTypeName = {}
             for type in getAllDiskItemTypes():
+                self._childrenByTypeName.setdefault('Any', set()).add(type)
                 self._childrenByTypeName.setdefault(type.name, set())
                 parent = type.parent
                 while parent is not None:
                     self._childrenByTypeName.setdefault(type.parent.name, set()).add(type.name)
                     parent = parent.parent
-        result = set()
+        result = set(types)
         for type in types:
             try:
                 result.update(self._childrenByTypeName[type])
             except KeyError:
-                import pprint
-                pprint.pprint(self._childrenByTypeName)
+                pass
+                #import pprint
+                #pprint.pprint(self._childrenByTypeName)
         return result
     
     def getTypesFormats( self, *types ):
@@ -288,5 +376,9 @@ class AxonFedjiDatabase(Database):
             result.update(self._formatsByTypeName[type])
         return result
       
-
+    def findTransformationPaths(self, source_referential, destination_referential, maxLength, bidirectional):
+        #TODO
+        if False:
+            yield None
+    
 

@@ -79,9 +79,10 @@ class DatabasesConfiguration( ConfigurationGroup ):
 #------------------------------------------------------------------------------
 class ExpertDatabaseSettings( HasSignature ):
   signature = Signature(
-    'ontology', OpenedChoice(), dict( defaultValue='brainvisa-3.0' ),
+    'ontology', OpenedChoice(), dict( defaultValue='brainvisa-3.2.0' ),
     'sqliteFileName', FileName, dict( defaultValue='' ),
     'activate_history', Boolean, dict( defaultValue=False ),
+    'fedji_backend', Boolean, dict( defaultValue=False ),
     'uuid', Unicode(), dict( defaultValue='', visible = False),
     'lastIncrementalUpdate', Unicode(), dict( defaultValue='', visible = False),
   )

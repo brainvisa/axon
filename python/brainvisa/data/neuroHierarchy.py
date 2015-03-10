@@ -92,48 +92,53 @@ def openDatabases():
         newDatabases.append(databases.database(dbSettings.directory))
       else:
         databases.remove( dbSettings.directory )
-        remoteAccessURI = os.path.join( dbSettings.directory, 'remoteAccessURI' )
-        if os.path.exists( remoteAccessURI ):
-          import Pyro, Pyro.core
-          Pyro.config.PYRO_TRACELEVEL = 3
-          Pyro.config.PYRO_USER_TRACELEVEL = 3
-          Pyro.config.PYRO_LOGFILE='/dev/stderr'
-          Pyro.config.PYRO_STDLOGGING = 1
-          from soma.pyro import ThreadSafeProxy
-          uri = Pyro.core.PyroURI( open( remoteAccessURI ).read() )
-          print 'Database', dbSettings.directory, 'is remotely accessed from', uri.protocol+'://'+uri.address+':'+str(uri.port) #str( uri )
-          base = ThreadSafeProxy( uri.getAttrProxy() )
-          newDatabases.append( base )
+        if dbSettings.expert_settings.fedji_backend:
+            from fedji.axon_frontend import AxonFedjiDatabase
+            base = AxonFedjiDatabase(dbSettings.directory, fom_name=dbSettings.expert_settings.ontology)
+            newDatabases.append( base )
         else:
-          otherSqliteFiles=[]
-          if dbSettings.expert_settings.sqliteFileName != ":memory:" and dbSettings.expert_settings.sqliteFileName != ":temporary:":
-            if dbSettings.expert_settings.sqliteFileName:
-              path, ext = os.path.splitext(dbSettings.expert_settings.sqliteFileName)
-            else:
-              path=os.path.join( dbSettings.directory, 'database' )
-              ext='.sqlite'
-          
-            sqlite=path+"-"+databaseVersion+ext
-            # other versions of sqlite file
-            other=path+ext
-            if os.path.exists(other):
-              otherSqliteFiles.append(other)
-            for version in databaseVersions.keys():
-              if version != databaseVersion:
-                other=path+"-"+version+ext
-                if os.path.exists(other):
-                  otherSqliteFiles.append(path+"-"+version+ext)
+          remoteAccessURI = os.path.join( dbSettings.directory, 'remoteAccessURI' )
+          if os.path.exists( remoteAccessURI ):
+            import Pyro, Pyro.core
+            Pyro.config.PYRO_TRACELEVEL = 3
+            Pyro.config.PYRO_USER_TRACELEVEL = 3
+            Pyro.config.PYRO_LOGFILE='/dev/stderr'
+            Pyro.config.PYRO_STDLOGGING = 1
+            from soma.pyro import ThreadSafeProxy
+            uri = Pyro.core.PyroURI( open( remoteAccessURI ).read() )
+            print 'Database', dbSettings.directory, 'is remotely accessed from', uri.protocol+'://'+uri.address+':'+str(uri.port) #str( uri )
+            base = ThreadSafeProxy( uri.getAttrProxy() )
+            newDatabases.append( base )
           else:
-            sqlite=dbSettings.expert_settings.sqliteFileName
-          
-          base = SQLDatabase( sqlite, dbSettings.directory, fso=dbSettings.expert_settings.ontology, context=defaultContext(), otherSqliteFiles=otherSqliteFiles, settings=dbSettings )
-          newDatabases.append( base )
+            otherSqliteFiles=[]
+            if dbSettings.expert_settings.sqliteFileName != ":memory:" and dbSettings.expert_settings.sqliteFileName != ":temporary:":
+              if dbSettings.expert_settings.sqliteFileName:
+                path, ext = os.path.splitext(dbSettings.expert_settings.sqliteFileName)
+              else:
+                path=os.path.join( dbSettings.directory, 'database' )
+                ext='.sqlite'
             
-          # Usually users do not have to modify a builtin database. Therefore no warning is shown for these databases.
-          if ( (not dbSettings.builtin) and (not os.access(dbSettings.directory, os.W_OK) or ( os.path.exists(sqlite) and not os.access(sqlite, os.W_OK)) ) ):
-            showWarning(_t_("The database "+base.name+" is read only, you will not be able to add new items in this database."))
-          if base.fso.name == "brainvisa-3.0":
-            showWarning(_t_("The database "+base.name+" uses brainvisa-3.0 ontology which is deprecated. You should convert this database to the new ontology using the process Data management -> Convert Old database."))
+              sqlite=path+"-"+databaseVersion+ext
+              # other versions of sqlite file
+              other=path+ext
+              if os.path.exists(other):
+                otherSqliteFiles.append(other)
+              for version in databaseVersions.keys():
+                if version != databaseVersion:
+                  other=path+"-"+version+ext
+                  if os.path.exists(other):
+                    otherSqliteFiles.append(path+"-"+version+ext)
+            else:
+              sqlite=dbSettings.expert_settings.sqliteFileName
+            
+            base = SQLDatabase( sqlite, dbSettings.directory, fso=dbSettings.expert_settings.ontology, context=defaultContext(), otherSqliteFiles=otherSqliteFiles, settings=dbSettings )
+            newDatabases.append( base )
+              
+            # Usually users do not have to modify a builtin database. Therefore no warning is shown for these databases.
+            if ( (not dbSettings.builtin) and (not os.access(dbSettings.directory, os.W_OK) or ( os.path.exists(sqlite) and not os.access(sqlite, os.W_OK)) ) ):
+              showWarning(_t_("The database "+base.name+" is read only, you will not be able to add new items in this database."))
+            if base.fso.name == "brainvisa-3.0":
+              showWarning(_t_("The database "+base.name+" uses brainvisa-3.0 ontology which is deprecated. You should convert this database to the new ontology using the process Data management -> Convert Old database."))
     except:
       showException()    
   # update SQLDatabases object
