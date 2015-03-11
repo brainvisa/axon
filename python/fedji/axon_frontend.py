@@ -28,10 +28,8 @@ class AxonFedjiDatabase(Database):
         # Connect to FEDJI on database "axon" and collection "disk_items"
         if fedji_url is None:
             fedji_url = 'sqlite://' + osp.join(directory, 'fedji')
-        self.fedji_collection = fedji_connect(fedji_url).axon.disk_items
-        if '_files' not in self.fedji_collection.fields:
-            self.fedji_collection.new_field('_files', list)
-            self.fedji_collection.create_index('_files')
+        self.fedji_url = fedji_url
+        self._fedji_collection = None
         
         self.name = directory
         self.directory = osp.normpath( directory )
@@ -40,14 +38,23 @@ class AxonFedjiDatabase(Database):
         minf = osp.join(self.directory, 'database_settings.minf')
         if fom_name is None:
             if osp.exists(minf):
-                fom_name = readMinf(minf)[ 0 ].get('ontology', 'brainvisa-3.1')
+                fom_name = readMinf(minf)[ 0 ].get('ontology', 'brainvisa-3.2.0')
             else:
-                fom_name = 'brainvisa-3.2'
+                fom_name = 'brainvisa-3.2.0'
         fomm = FileOrganizationModelManager()
         self.fom = fomm.load_foms(fom_name)
         self._pta = None
         self._atp = None
         self._typeKeysAttributes = {}
+
+    @property
+    def fedji_collection(self):
+        if self._fedji_collection is None:
+            self._fedji_collection = fedji_connect(self.fedji_url).axon.disk_items
+            if '_files' not in self.fedji_collection.fields:
+                self.fedji_collection.new_field('_files', list)
+                self.fedji_collection.create_index('_files')
+        return self._fedji_collection
     
     def close(self):
         self.fedji_collection = None
@@ -152,9 +159,10 @@ class AxonFedjiDatabase(Database):
             attributes.pop('fom_name',None)
             if format is not None:
                 newItem = self.changeDiskItemFormat(diskItem, format)
-            if newItem is not None:
-                diskItem = newItem
-            diskItem.type = getDiskItemType(type)
+                if newItem is not None:
+                    diskItem = newItem
+            if type:
+                diskItem.type = getDiskItemType(type)
             diskItem._updateGlobal(attributes)
         return diskItem
     
@@ -220,7 +228,12 @@ class AxonFedjiDatabase(Database):
                     content = minf
                     minf = set()
     
-    def update( self, directoriesToScan=None, depth=0):
+    def clear(self, context=None):
+        db = self.fedji_collection.fedji_sqlite_db
+        self._fedji_collection = None
+        db.drop()
+        
+    def update(self, directoriesToScan=None, depth=0, context=None):
         if directoriesToScan is None:
             directoriesToScan = [self.directory]
         stack = [(d,0) for d in directoriesToScan]
