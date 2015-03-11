@@ -33,6 +33,7 @@
 from brainvisa.processes import *
 from brainvisa import shelltools
 import shfjGlobals
+from brainvisa import registration
 
 
 
@@ -71,4 +72,6 @@ def execution( self, context ):
         new_t1.getVoxelSize()[:3])
 
     aims.write(vol_resamp, self.image_output.fullPath())
+    tm = registration.getTransformationManager()
+    tm.copyReferential(self.target_space_image, self.image_output)
 
