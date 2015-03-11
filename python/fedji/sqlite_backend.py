@@ -92,6 +92,8 @@ class FedjiSqliteDB(object):
     def drop(self):
         if self._connection is not None:
             self._connection.close()
+            self._connection = None
+        os.remove(self.db)
             
 class FedjiSqliteCollection(object):
     def __init__(self, fedji_sqlite_db, collection):
@@ -132,7 +134,7 @@ class FedjiSqliteCollection(object):
                 self.create_index('_id')
             self._connection.commit()
         return self._connection
-    
+            
     def new_field(self, field, cls):
         '''
         Declare a new field. cls indicate the type of value for the field, it
