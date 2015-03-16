@@ -51,8 +51,8 @@ hierarchy = (
     SetContent(
         'tpm', SetContent(
             'grey', SetType('grey probability map')),
-            # TMP in SPM12
-            'TPM', SetType('tissue probability map'),
+        # TMP in SPM12
+        'TPM', SetType('tissue probability map'),
         'toolbox', SetContent(
             'Seg', SetContent(
                 # TPM in SPM8
@@ -69,6 +69,8 @@ hierarchy = (
                 'icbm152', SetType('Dartel Template'),
                 SetWeakAttr('normalized', 'yes', 'databasename', 'spm')),
         ),# toolbox
+        'rend', SetContent(
+            'render_{spm_render}', SetType('SPM Render')),
         # this templates dir is for SPM8 and SPM5
         'templates', SetContent(*templates_contents),
     )

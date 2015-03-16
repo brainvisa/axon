@@ -9,6 +9,9 @@ FileType( 'tissue probability map', 'Template')
 FileType( 'PET Template', 'Template')
 FileType( 'Dartel Template', 'Template')
 
+#-------------- Render SPM type ---------------------
+FileType( 'SPM Render', 'Matlab SPM file')
+
 #-------------- General SPM types ---------------------
 
 FileType( 'Matlab SPM script', 'Any Type', 'Matlab script'  )
