@@ -184,7 +184,7 @@ class DisplayResultsFromSPM(object):
       :returns:
           The display_glass_brain parameter value
       """
-      return self.display_glass_brain == 'Yes'
+      return self.display_glass_brain
   
   def _createTop(self, context, splitter):
       """
@@ -257,7 +257,7 @@ class DisplayResultsFromSPM(object):
               self._createGlassBrain(context) # default is rediologic display
           except:
               # Disable glass brain
-              self.display_glass_brain = 'No'
+              self.display_glass_brain = False
   
       hlay = QtGui.QHBoxLayout()
       vlay.addLayout(hlay) 
