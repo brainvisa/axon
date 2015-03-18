@@ -21,6 +21,7 @@ matlabbatch{1}.spm.stats.results.print = true;
 """ % (spmMatPath, title, pvalue_adjustment, pvalue_threshold, pvalue_extent_threshold))
   matFileFd.close()
   
+
 def writeSpmWriteFilteredBatch(matlabBatchPath, spm8_path, spmJobFilePath, result_image_type, result_map_path, stats_csv_path, thresholding_info_path):
   matlabBatchFile = open(matlabBatchPath, 'w')
   matlabBatchFile = write_RunJob_inBatch(matlabBatchFile, spm8_path, spmJobFilePath)
@@ -44,6 +45,10 @@ case 'n-ary'
 end
 
 spm_write_filtered( Z, XYZ, xSPM.DIM, xSPM.M, '', '%s' );
+""" % (result_image_type, result_map_path))
+  
+#write csv stats
+  matlabBatchFile.write("""
 tmpfile = [ '%s' ];
 fid = fopen(tmpfile,'wt');
 fprintf(fid,[repmat('%%s,',1,11) '%%d,,\\n'],TabDat.hdr{1,:});
@@ -55,7 +60,10 @@ for i=1:size(TabDat.dat,1)
   fprintf(fid,fmt,TabDat.dat{i,:});
 end
 fclose(fid);
+""" % (stats_csv_path))
 
+#write thresholding infos
+  matlabBatchFile.write("""
 tmpfile = [ '%s' ];
 fid = fopen(tmpfile, 'wt');
 fprintf(fid, '\\n' );
@@ -64,7 +72,7 @@ fprintf(fid, '\\n' );
 fprintf(fid, '%%s', sprintf('Extent threshold k = %%0.0f voxels', xSPM.k));
 fclose(fid);
 
-""" % (result_image_type, result_map_path, stats_csv_path, thresholding_info_path))
+""" % (thresholding_info_path))
   matlabBatchFile.close()
 
 def createBrainMIPWithGridTextFiles(context, spm8_standalone_path, spm8_standalone_command, spm8_standalone_mcr_path, gridFilePath, maskFilePath):
