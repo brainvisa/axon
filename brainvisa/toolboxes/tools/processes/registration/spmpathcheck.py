@@ -149,6 +149,9 @@ def execution( self, context ):
 
 from distutils.spawn import find_executable
 import re
+import subprocess
+
+
 def detectPathsForLinuxPlatform(context, configuration):
   context.write('Looking for spm12 standalone...')
   try:
@@ -205,48 +208,35 @@ def findStandAlonePaths(executable_name):
   text_in_executable = executable_file.read()
   executable_file.close()
 
-  main_directory_line = findMainDirectoryLine(text_in_executable)
-  environment_variable = extractEnvironmentVariable(main_directory_line)
-  main_directory_path = extractMainDirectoryPath(main_directory_line)
-
-  stand_alone_run_path = findStandAloneRunPath(text_in_executable, environment_variable, main_directory_path)
-  stand_alone_MCR_path = findStandAloneMCRPath(text_in_executable, environment_variable, main_directory_path)
+  main_directory_path = extractMainDirectoryPath(text_in_executable, executable_name)
+  stand_alone_run_path = findStandAloneRunPath(main_directory_path, executable_name)
+  stand_alone_MCR_path = findStandAloneMCRPath(main_directory_path)
 
   return main_directory_path, stand_alone_run_path, stand_alone_MCR_path
 
 
-def findMainDirectoryLine(text_in_executable):
-  #find the line looks like : SPM12_STANDALONE_HOME=/i2bm/local/spm12-standalone
-  match_object = re.search('[A-Z0-9_ ]*=[/A-z0-9_\- ]*', text_in_executable)
+def extractMainDirectoryPath(text_in_executable, executable_name):
+  #find the source directory
+  #This method can be optimize... its aims is to find the main directory in executable script as :
+  #SPM8_STANDALONE_HOME=/i2bm/local/spm8-standalone ==> neurospin
+  #export SPM8=/coconut/applis/src/spm8 ==> LIB
+  match_object = re.search('/[/A-z0-9_\-]*/' + executable_name + '[A-z0-9_\-]*', text_in_executable)
   if match_object:
     sentence = match_object.group(0)
   else:
     raise Exception('Unvalid regular expression pattern')
-  return sentence
-
-def extractEnvironmentVariable(main_directory_line):
-  return main_directory_line.split('=')[0]
-
-def extractMainDirectoryPath(main_directory_line):
-  return main_directory_line.split('=')[1]
-
-def findStandAloneRunPath(text_in_executable, environment_variable, main_directory_path):
-  #find the line looks like : "${SPM12_STANDALONE_HOME}/run_spm12.sh"
-  match_object = re.search('\{' + environment_variable + '\}/[/A-z0-9_\- ]*.sh', text_in_executable)
-  if match_object:
-    sentence = match_object.group(0)
+  if os.path.isdir(sentence):
+    return sentence
   else:
-    raise Exception('Unvalid regular expression pattern')
+    return os.path.dirname(sentence)
 
-  return sentence.replace('{' + environment_variable + '}', main_directory_path)
+def findStandAloneRunPath(main_directory_path, executable_name):
+  #find file looks like : run_spm12.sh"
+  executable_file_name = 'run_' + executable_name + '.sh'
+  find_line = subprocess.Popen('find ' + main_directory_path + '/ -name ' + executable_file_name, stdout=subprocess.PIPE, shell=True).communicate()[0]
+  return find_line.replace('\n', '')
 
-def findStandAloneMCRPath(text_in_executable, environment_variable, main_directory_path):
-  #find the line looks like : "${SPM12_STANDALONE_HOME}/mcr/v713"
-  match_object = re.search('\{' + environment_variable + '\}/([/A-z0-9_\- ]*)mcr([/A-z0-9_\- ]*)', text_in_executable)
-
-  if match_object:
-    sentence = match_object.group(0)
-  else:
-    raise Exception('Unvalid regular expression pattern')
-
-  return sentence.replace('{' + environment_variable + '}', main_directory_path)
+def findStandAloneMCRPath(main_directory_path):
+  #find the line looks like : "$/mcr/v713"
+  find_line = subprocess.Popen('find ' + main_directory_path + '/ -name "v713" -type d', stdout=subprocess.PIPE, shell=True).communicate()[0]
+  return find_line.replace('\n', '')
