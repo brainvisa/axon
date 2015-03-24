@@ -39,12 +39,16 @@ name = 'ffmpeg MPEG encoder'
 userLevel = 2
 
 def validation():
-  if 'ffmpeg' not in mpegConfig.encoders:
-    raise ValidationError( _t_( 'ffmpeg not present' ) )
+  if 'ffmpeg' not in mpegConfig.encoders \
+      and 'avconv' not in mpegConfig.encoders:
+    raise ValidationError( _t_( 'ffmpeg and avconv not present' ) )
 
 
 def codecs():
   c = mpegConfig.codecs.get( 'ffmpeg' )
+  if c is not None:
+    return c
+  c = mpegConfig.codecs.get( 'avconv' )
   if c is not None:
     return c
   return {}
@@ -76,6 +80,11 @@ def initialization( self ):
 def execution( self, context ):
   if len( self.images ) == 0:
     raise RuntimeError( 'No image selected' )
+  if 'ffmpeg' in mpegConfig.encoders:
+    encoder = 'ffmpeg'
+  else:
+    encoder = 'avconv'
+
   attrs = shfjGlobals.aimsVolumeAttributes( self.images[ 0 ], forceFormat=1 )
   # context.write( attrs )
   dims = attrs[ 'volume_dimension' ]
@@ -101,8 +110,9 @@ def execution( self, context ):
       if not m2 or m2.group(1) != m.group(1) or m2.span(2) != sp \
              or os.path.basename( self.images[0].fullPath() )[ sp[1]: ] != ext:
         pat = ''
-        msg = _t_( 'ffmpeg can ony handle a series of homogen, numbered image '
-                   'filenames. Image %s breaks the rule' ) % x.fullPath()
+        msg = _t_( 'ffmpeg/avconv can ony handle a series of homogen, '
+                   'numbered image filenames. Image %s breaks the rule' ) \
+          % x.fullPath()
         break
 
   if pat:
@@ -116,9 +126,9 @@ def execution( self, context ):
         m2 = numre.match( os.path.basename( x[:-n] ) )
         if m2 and m2.group(1) == m.group(1) and m2.span(2) == sp:
           pat = ''
-          msg = _t_( 'ffmpeg can ony handle a series of homogen, numbered '
-                     'image filenames. There are additional files in the '
-                     'images directory that would interfere with the '
+          msg = _t_( 'ffmpeg/avconv can ony handle a series of homogen, '
+                     'numbered image filenames. There are additional files '
+                     'in the images directory that would interfere with the '
                      'pattern: %s prevents if from working' ) % x
           break
   if pat:
@@ -147,7 +157,7 @@ def execution( self, context ):
 
   #im = map( lambda x: x.fullPath(), self.images )
   passlog = context.temporary( 'log file' )
-  cmd = [ 'ffmpeg' ]
+  cmd = [ encoder ]
   for x in im:
     cmd += [ '-i', x ]
   cmd += [ '-r', str( self.framesPerSecond ), 

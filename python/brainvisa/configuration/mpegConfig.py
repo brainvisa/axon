@@ -44,13 +44,16 @@ def findEncoders():
     enc.append( 'recmpeg' )
   if findInPath( 'ffmpeg' ):
     enc.append( 'ffmpeg' )
+  if findInPath( 'avconv' ):
+    enc.append( 'avconv' )
   return enc
 
 
 def findMpegFormats():
   form = [ 'MPEG film' ]
   enc = findEncoders()
-  if 'transcode' in enc or 'mencoder' in enc or 'ffmpeg' in enc:
+  if 'transcode' in enc or 'mencoder' in enc or 'ffmpeg' in enc \
+      or 'avconv' in enc:
     form.append( 'AVI film' )
   if 'mencoder' in enc or 'ffmpeg' in enc:
     form.append( 'QuickTime film' )
@@ -85,25 +88,27 @@ def findCodec( encoder ):
         #if m:
           #cx.append( m.group(1) )
     #return cx
-  elif encoder == 'ffmpeg':
+  elif encoder in ('ffmpeg', 'avconv'):
     #return [ 'asv1', 'asv2', 'dvvideo', 'ffv1', 'h263', 'huffyuv', 'h263p',
     #         'ljpeg', 'mjpeg', 'mpeg4', 'mpeg1video', 'mpeg2video', 'msmpeg4',
     #         'msmpeg4v1', 'msmpeg4v2', 'rv10', 'rv20', 'wmv1', 'wmv2', 'wmv3' ]
     try:
       # Valid only since Python 2.4
       import subprocess
-      sproc = subprocess.Popen( ( 'ffmpeg', '-codecs' ),
-                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE )
+      sproc = subprocess.Popen( ( encoder, '-codecs' ),
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE )
       out, err = sproc.communicate()
       if sproc.returncode != 0:
         # maybe the older ffmpeg using -formats argument
-        sproc = subprocess.Popen( ( 'ffmpeg', '-formats' ),
-                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE )
+        sproc = subprocess.Popen( ( encoder, '-formats' ),
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE )
         out, err = sproc.communicate()
     except ImportError:
       # Work with earlier Python version but generates the following error at exit:
       # Exception exceptions.TypeError: TypeError("'NoneType' object is not callable",) in <bound method Popen3.__del__ of <popen2.Popen3 instance at 0xb7303c2c>> ignored
-      stdin, stdout, stderr = os.popen3( 'ffmpeg -codecs' )
+      stdin, stdout, stderr = os.popen3( encoder + ' -codecs' )
       stdin.close()
       err = stderr.read()
       out = stdout.read()
