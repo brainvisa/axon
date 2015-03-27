@@ -34,3 +34,5 @@ FileType('History Sulcal Openings Table', 'Text file')
 FileType('History Cortical Thicknesses Table', 'Text file')
 FileType('History Global Volumetry Table', 'Text file')
 FileType('History Hippocampal Volumetry Table', 'Text file')
+
+FileType('Snapshots Features Table', 'Numerical Table')
