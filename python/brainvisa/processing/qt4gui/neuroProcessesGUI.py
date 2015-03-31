@@ -260,13 +260,17 @@ def runCsvViewer( source, existingWidget=None ):
     pass
   # fallback to text editor
   textEditor = configuration.brainvisa.textEditor
+  print textEditor
   if textEditor is not None:
-    env=os.environ.copy()
-    if (not textEditor.startswith(os.path.dirname(neuroConfig.mainPath))): # external command
-      if neuroConfig.brainvisaSysEnv:
-        env.update(neuroConfig.brainvisaSysEnv.getVariables())
-    if os.spawnle( os.P_NOWAIT, textEditor, textEditor, source, env ) > 0:
-      return
+    textEditor = distutils.spawn.find_executable( textEditor )
+    if textEditor:
+      env = os.environ.copy()
+      if (not textEditor.startswith(os.path.dirname(neuroConfig.mainPath))): # external command
+        if neuroConfig.brainvisaSysEnv:
+          env.update(neuroConfig.brainvisaSysEnv.getVariables())
+      if os.spawnle( os.P_NOWAIT, textEditor, textEditor, source, env ) != 0:
+        return
+  raise RuntimeError( _t_( 'Could not run a CSV viewer program.' ) )
 
 
 #----------------------------------------------------------------------------
