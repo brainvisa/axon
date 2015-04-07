@@ -57,6 +57,8 @@ signature = Signature(
   'threshold1', Float(),
   'threshold2', Float(),
   'binary', Boolean(),
+  'background_value', Float(),
+  'foreground_value', Integer(),
   )
 
 def initialization( self ):
@@ -64,11 +66,14 @@ def initialization( self ):
   self.binary = 0
   self.threshold1=0
   self.mode='gt'
-
+  self.background_value = 0.
+  self.foreground_value = 32767
+  self.addLink(None, 'binary', self._binaryModeChanged)
 
 def execution( self, context ):
 
-  command = [ 'AimsThreshold', '-i', self.image_input, '-o', self.image_output, '-m', self.mode, '-t', self.threshold1 ]
+  command = [ 'AimsThreshold', '-i', self.image_input, '-o', self.image_output, '-m', self.mode, '-t', self.threshold1,
+              '--bg', self.background_value, '--fg', self.foreground_value ]
 
   if self.threshold2 is not None :
     command += [ '-u', self.threshold2]
@@ -80,3 +85,9 @@ def execution( self, context ):
 
   context.system( *command )
 
+def _binaryModeChanged(self, proc):
+    bin = (self.binary == True)
+    signature = self.signature
+    signature['background_value'].userLevel = 0 if not bin else 3
+    signature['foreground_value'].userLevel = 0 if bin else 3
+    self.changeSignature(signature)
