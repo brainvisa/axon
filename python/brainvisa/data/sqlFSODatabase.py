@@ -330,6 +330,7 @@ class SQLDatabase( Database ):
     self.ruleSelectionByType = {}
     self._attributesEditionByType = {}
     self._formatsByTypeName = {}
+    self._declared_attributes = self.fso._declared_attributes
     for type, rules in self.fso.typeToPatterns.iteritems():
       keys = []
       ruleSelectionByAttributeValue = []
@@ -363,9 +364,9 @@ class SQLDatabase( Database ):
               continue
             if formatName not in typeFormats:
               typeFormats.append( formatName )
-        #for a in rule.declared_attributes:
-          #if a not in keys:
-            #keys.append( a )
+        for a in rule.declared_attributes:
+          if a not in keys:
+            keys.append( a )
       for lopa, lopaRules in rulesByLOPA.iteritems():
         for n in lopa:
           editableAttributes.add( n )
@@ -1124,28 +1125,6 @@ class SQLDatabase( Database ):
         result.format = getFormat( str(format.name) )
         result._files = [ os.path.normpath( noExt + '.' + ext ) for ext in newFormat.extensions() ]
     return result
-
-
-  #def _getParentAttributes( self, directory, attributes ):
-    #parentDir = os.path.normpath( directory )
-    #rejected = ( 'uuid', )
-    #basedir = os.path.normpath( self.directory )
-    #if not parentDir.startswith( basedir ):
-      #return
-    ## DEBUG
-    #modif = False
-    #while parentDir != basedir:
-      #minf = parentDir + '.minf'
-      #if os.path.exists( minf ):
-        #minfcontent = readMinf( minf )
-        #if os.path.exists( os.path.join( parentDir, 'fso_attributes.json' ) ):
-          #minfcontent[0].update( DiskItem.readFsoAttributesCSVFile(
-            #os.path.join( parentDir, 'fso_attributes.json' ) ) )
-        #for key, val in minfcontent[0].iteritems():
-          #if key not in rejected and key not in attributes:
-            #attributes[ key ] = val
-            #modif = True
-      #parentDir = os.path.dirname( parentDir )
 
 
   def scanDatabaseDirectories( self, directoriesIterator=None, includeUnknowns=False, directoriesToScan=None, recursion=True, debugHTML=None, context=None ):

@@ -876,6 +876,7 @@ class FileSystemOntology( object ):
       self.cacheName = self.name + '.fsd'
 
     # For each data type, build all the possible patterns in extenso
+    self._declared_attributes = set()
     self.typeToPatterns = SortedDictionary()
     stack = [ (r,) for r in [i for i in self.content if isinstance( i, SetContent)][0].scanner.rules ]
     while stack:
@@ -907,6 +908,7 @@ class FileSystemOntology( object ):
           ruleInExtenso._declared_attributes_location = \
           dict((att,os.path.join('..', path)) for att, path in ruleInExtenso._declared_attributes_location.iteritems())
           for att in r.declared_attributes:
+            self._declared_attributes.add(att)
             ruleInExtenso._declared_attributes_location[att] = 'fso_attributes.json'
         ruleInExtenso.itemName = rule.itemName        
         self.typeToPatterns.setdefault( rule.type, [] ).append( ruleInExtenso )

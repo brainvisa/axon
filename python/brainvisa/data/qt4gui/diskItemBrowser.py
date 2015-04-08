@@ -506,13 +506,14 @@ class DiskItemBrowser( QDialog ):
         if att in rawKeyAttributes:
           keyAttributes.append( att )
       keyAttributes = keyAttributes + [ att for att in sorted( rawKeyAttributes ) if att not in keyAttributes ]
+      keyAttributes.append(self._declaredAttributes)
       self._tableData = SimpleTable( header=[ 'type' ] + keyAttributes + [ 'format', 'database' ] )
       # database attribute is also needed because two diskitems can have the same attributes values in two different databases
       readItems = set()
       uniquecols = set( range( len( keyAttributes ) + 3 ) )
       uniquecolsvals = []
       allColsNonUnique = False
-      for attrs in sorted( self._database.findAttributes( [ '_type' ] + keyAttributes + [ '_format', '_database', '_uuid' ], selection={}, exactType=self._exactType, **required ) ):
+      for attrs in sorted( self._database.findAttributes( [ '_type' ] + keyAttributes + list(self._declaredAttributes) + [ '_format', '_database', '_uuid' ], selection={}, exactType=self._exactType, **required ) ):
         self._tableData.addRow( attrs[:-1] )
         self._items.append( (attrs[-1], attrs[-2], ) )
         readItems.add( tuple( attrs[ :-1 ] ) )
