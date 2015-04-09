@@ -614,8 +614,8 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
             % (nodename, repr(input_names), repr(output_names)))
         for output_name in output_names:
             export_output(buffered_lines, use_weak_ref(enode), nodename,
-                output_name, p, output_name, selfoutparams, revoutparams,
-                processed_links, self_out_traits, weak_outputs)
+                output_name, use_weak_ref(p), output_name, selfoutparams,
+                revoutparams, processed_links, self_out_traits, weak_outputs)
     if hasattr(enode, 'selection_outputs'):
         # connect children outputs to the switch
         sel_out = enode.selection_outputs
@@ -625,6 +625,10 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
                 link_pars = [link_pars]
             for link_par, output_name in zip(link_pars, output_names):
                 if link_par is None: # not connected
+                    input_name = '_switch_'.join((link_src, output_name))
+                    buffered_lines['exports'].append(
+                        '        self.do_not_export.add((\'%s\', \'%s\'))\n'
+                        % (nodename, input_name))
                     continue
                 if link_par.startswith('/'): # absolute name, not in child
                     src = enode
@@ -679,20 +683,23 @@ def reorder_exports(buffered_lines, p):
             reordered[i] = -1
         else:
             m = linkre.match(line)
-            if len(m.groups()) >= 4:
-                out_name = m.group(4)
-            else:
-                out_name = m.group(2)
-            if out_name in p.signature:
-                sign_ind = p.signature.sortedKeys.index(out_name)
-                reordered[i] = sign_ind * 2 + 1
-                if reordered[i] > omax:
-                    omax = reordered[i]
-                if delayed:
-                    # move comment line just before its command line
-                    reordered[i-1] = reordered[i] - 1
-            else:
+            if not m:
                 reordered[i] = -1
+            else:
+                if len(m.groups()) >= 4:
+                    out_name = m.group(4)
+                else:
+                    out_name = m.group(2)
+                if out_name in p.signature:
+                    sign_ind = p.signature.sortedKeys.index(out_name)
+                    reordered[i] = sign_ind * 2 + 1
+                    if reordered[i] > omax:
+                        omax = reordered[i]
+                    if delayed:
+                        # move comment line just before its command line
+                        reordered[i-1] = reordered[i] - 1
+                else:
+                    reordered[i] = -1
             delayed = False
     omax += 1
     revorder = {}
@@ -820,6 +827,10 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
     write_pipeline_links(p, buffered_lines, procmap, links, processed_links,
         selfoutparams, revoutparams, self_out_traits)
 
+    do_not_export = getattr(p, 'capsul_do_not_export', set())
+    if do_not_export:
+        buffered_lines['exports'].append(
+            '        self.do_not_export.update(%s)\n' % repr(do_not_export))
     # try to respect pipeline main parameters ordering
     reorder_exports(buffered_lines, p)
     # flush the write buffer
