@@ -7,9 +7,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -24,8 +24,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -80,7 +80,7 @@ from brainvisa.data.databaseCheck import BVChecker_3_1
 from brainvisa.data import neuroHierarchy
 from brainvisa.tools import checkbrainvisaupdates
 import urllib
-try: 
+try:
   from soma_workflow.gui.workflowGui import SomaWorkflowWidget as ComputingResourceWidget
   from soma_workflow.gui.workflowGui import SomaWorkflowMiniWidget as MiniComputingResourceWidget
   import soma_workflow.gui.workflowGui
@@ -277,7 +277,7 @@ def runCsvViewer( source, existingWidget=None ):
 class SomaWorkflowMiniWidget(MiniComputingResourceWidget):
 
   def __init__(self, model, sw_widget, parent=None):
-    super(SomaWorkflowMiniWidget, self).__init__(model, 
+    super(SomaWorkflowMiniWidget, self).__init__(model,
                                                  sw_widget,
                                                  parent)
     sw_widget.update_workflow_list_from_model = True
@@ -291,16 +291,16 @@ class SomaWorkflowWidget(ComputingResourceWidget):
   brainvisa_code = "brainvisa_"
 
   def __init__(self, model, computing_resource=None, parent=None):
-    super(SomaWorkflowWidget, self).__init__(model, 
-                                             None, 
-                                             False, 
-                                             computing_resource, 
-                                             parent, 
+    super(SomaWorkflowWidget, self).__init__(model,
+                                             None,
+                                             False,
+                                             computing_resource,
+                                             parent,
                                              0)
 
     self.ui.list_widget_submitted_wfs.itemDoubleClicked.connect(self.workflow_double_clicked)
     self.ui.resource_selection_frame.hide()
-    
+
   def workflow_filter(self, workflows):
     new_workflows = {}
     self.serialized_processes = {}
@@ -336,7 +336,7 @@ class SomaWorkflowWidget(ComputingResourceWidget):
     try:
       QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
       view = SomaWorkflowProcessView(self.model,
-                                    wf_id, 
+                                    wf_id,
                                     self.model.current_resource_id,
                                     serialized_process=serialized_process,
                                     parent=_mainWindow)
@@ -345,7 +345,7 @@ class SomaWorkflowWidget(ComputingResourceWidget):
     except Exception, e:
       QtGui.QApplication.restoreOverrideCursor()
       raise e
-      
+
     view.show()
 
 class WorkflowSubmissionDlg(QDialog):
@@ -365,15 +365,15 @@ class WorkflowSubmissionDlg(QDialog):
     self.combo_resource.setCurrentIndex(current_resource_index)
     self.resource_changed(current_resource_index)
 
-   
 
-    kind_of_file_processing = [ProcessToSomaWorkflow.NO_FILE_PROCESSING,    
+
+    kind_of_file_processing = [ProcessToSomaWorkflow.NO_FILE_PROCESSING,
                                ProcessToSomaWorkflow.FILE_TRANSFER,
                                ProcessToSomaWorkflow.SHARED_RESOURCE_PATH]
     self.combo_out_files.addItems(kind_of_file_processing)
     kind_of_file_processing.append(ProcessToSomaWorkflow.BV_DB_SHARED_PATH)
     self.combo_in_files.addItems(kind_of_file_processing)
-    
+
 
     self.lineedit_wf_name.setText("")
     self.dateTimeEdit_expiration.setDateTime(datetime.now() + timedelta(days=5))
@@ -388,7 +388,7 @@ class WorkflowSubmissionDlg(QDialog):
     queues.extend(_computing_resource_pool.connection(resource_id).config.get_queues())
     self.combo_queue.clear()
     self.combo_queue.addItems(queues)
-    
+
 
 
 
@@ -419,7 +419,7 @@ class SomaWorkflowProcessView(QMainWindow):
   workflow_menu = None
 
   workflow_tool_bar = None
-  
+
   def __init__(self,
                model,
                workflow_id,
@@ -447,7 +447,7 @@ class SomaWorkflowProcessView(QMainWindow):
     self.setCorner(QtCore.Qt.TopRightCorner, QtCore.Qt.RightDockWidgetArea)
     self.setCorner(QtCore.Qt.BottomLeftCorner, QtCore.Qt.LeftDockWidgetArea)
     self.setCorner(QtCore.Qt.BottomRightCorner, QtCore.Qt.RightDockWidgetArea)
-      
+
     self.action_monitor_workflow = QAction(_t_('Monitor execution'), self)
     self.action_monitor_workflow.setCheckable(True)
     self.action_monitor_workflow.setIcon(QIcon(os.path.join(os.path.dirname(soma_workflow.gui.__file__),"icon/monitor_wf.png")))
@@ -455,19 +455,19 @@ class SomaWorkflowProcessView(QMainWindow):
     self.action_monitor_workflow.setChecked(True)
 
     self.workflow_tree_view = soma_workflow.gui.workflowGui.WorkflowTree(
-                      _workflow_application_model, 
-                      assigned_wf_id=self.workflow_id, 
+                      _workflow_application_model,
+                      assigned_wf_id=self.workflow_id,
                       assigned_resource_id=self.resource_id,
                       parent=self)
-      
+
     self.workflow_item_view = soma_workflow.gui.workflowGui.WorkflowElementInfo(
                     model=_workflow_application_model,
                     proxy_model=self.workflow_tree_view.proxy_model,
                     parent=self)
 
     self.workflow_plot_view = soma_workflow.gui.workflowGui.WorkflowPlot(
-                    _workflow_application_model, 
-                    assigned_wf_id=self.workflow_id, 
+                    _workflow_application_model,
+                    assigned_wf_id=self.workflow_id,
                     assigned_resource_id=self.resource_id,
                     parent=self)
     if not soma_workflow.gui.workflowGui.MATPLOTLIB:
@@ -475,8 +475,8 @@ class SomaWorkflowProcessView(QMainWindow):
       self.ui.dock_plot.toggleViewAction().setVisible(False)
 
     self.workflow_info_view = soma_workflow.gui.workflowGui.WorkflowInfoWidget(
-                    _workflow_application_model, 
-                    assigned_wf_id=self.workflow_id, 
+                    _workflow_application_model,
+                    assigned_wf_id=self.workflow_id,
                     assigned_resource_id=self.resource_id,
                     parent=self)
 
@@ -509,13 +509,13 @@ class SomaWorkflowProcessView(QMainWindow):
     _addSeparator( self.workflow_tool_bar )
     self.workflow_tool_bar.addAction(_mainWindow.sw_widget.ui.action_transfer_infiles)
     self.workflow_tool_bar.addAction(_mainWindow.sw_widget.ui.action_transfer_outfiles)
-    
+
     self.ui.tool_bar.addWidget(self.workflow_tool_bar)
     _addSeparator( self.ui.tool_bar )
     self.ui.tool_bar.addAction(self.ui.dock_bv_process.toggleViewAction())
     _addSeparator( self.ui.tool_bar )
     self.ui.tool_bar.addAction(self.action_monitor_workflow)
-    
+
     tree_widget_layout = QtGui.QVBoxLayout()
     tree_widget_layout.setContentsMargins(2,2,2,2)
     tree_widget_layout.addWidget(self.workflow_tree_view)
@@ -524,7 +524,7 @@ class SomaWorkflowProcessView(QMainWindow):
     self.process_layout = QtGui.QVBoxLayout()
     self.process_layout.setContentsMargins(2,2,2,2)
     self.ui.dock_bv_process_contents.setLayout(self.process_layout)
-   
+
     item_info_layout = QtGui.QVBoxLayout()
     item_info_layout.setContentsMargins(2,2,2,2)
     item_info_layout.addWidget(self.workflow_item_view)
@@ -534,7 +534,7 @@ class SomaWorkflowProcessView(QMainWindow):
     wf_info_layout.setContentsMargins(2,2,2,2)
     wf_info_layout.addWidget(self.workflow_info_view)
     self.ui.dock_workflow_info_contents.setLayout(wf_info_layout)
-    
+
     plot_layout = QtGui.QVBoxLayout()
     plot_layout.setContentsMargins(2,2,2,2)
     plot_layout.addWidget(self.workflow_plot_view)
@@ -544,7 +544,7 @@ class SomaWorkflowProcessView(QMainWindow):
 
     self.connect(self.workflow_item_view, QtCore.SIGNAL('connection_closed_error'), _mainWindow.sw_widget.reconnectAfterConnectionClosed)
 
-      
+
     self.workflow_tree_view.current_workflow_changed()
     self.workflow_plot_view.current_workflow_changed()
     self.workflow_info_view.current_workflow_changed()
@@ -562,7 +562,7 @@ class SomaWorkflowProcessView(QMainWindow):
     else:
       title =  wf_name[len(SomaWorkflowWidget.brainvisa_code):] + "@" + self.resource_id
     self.setWindowTitle(title)
-    
+
     # warning message in the status bar about the need to check and update databases after execution
     warningMsg=QLabel("<div style='font-size:9pt'><i><font color='red'>Warning:</font> After execution with Soma-Workflow, the databases may need to be updated.<br>Use \"Process -> Check &amp; update databases\" menu to do it.</i></div>")
     warningMsg.setWordWrap(True)
@@ -579,12 +579,12 @@ class SomaWorkflowProcessView(QMainWindow):
       if self.model.current_wf_id == self.workflow_id and \
          self.model.current_resource_id == self.resource_id:
         self.model.clear_current_workflow()
-    else:      
+    else:
       if self.resource_id != self.model.current_resource_id:
         if self.model.resource_pool.resource_exist(self.resource_id):
           self.model.set_current_connection(self.resource_id)
         else:
-          (resource_id, 
+          (resource_id,
            new_connection) = _mainWindow.sw_widget.createConnection(self.resource_id,
                                                                     editable_resource=False)
           if new_connection:
@@ -664,7 +664,7 @@ class SomaWorkflowProcessView(QMainWindow):
       btn_save.setMinimumWidth(90)
       btn_save.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
       process_button_layout.addWidget(btn_save)
-      
+
       self.process_menu.addAction(self.process_view.action_save_process)
       self.process_menu.addAction(self.process_view.action_clone_process)
       self.process_menu.addAction(self.process_view.action_iterate)
@@ -700,7 +700,7 @@ class SomaWorkflowProcessView(QMainWindow):
       self.action_monitor_workflow.setChecked(False)
       self.workflow_tool_bar.setEnabled(False)
       self.workflow_menu.setEnabled(False)
-      
+
 
 
 _aboutWidget = None
@@ -940,7 +940,7 @@ class HTMLBrowser( QWidget ):
       browser.setSource )
 
     self.browser = browser
-    
+
     neuroConfig.registerObject( self )
 
     hbox.addWidget( QLabel( _t_( 'Search site:' ) ) )
@@ -968,10 +968,10 @@ class HTMLBrowser( QWidget ):
 
   def showCategoryDocumentation( self, category ):
     """
-    Searches for a documentation file associated to this category and opens it  in this browser. 
-    Documentation files are in docPath/processes/categories/category. Category is a relative path, so if no documentation is found with the entire path, it removes the first item and retries. 
+    Searches for a documentation file associated to this category and opens it  in this browser.
+    Documentation files are in docPath/processes/categories/category. Category is a relative path, so if no documentation is found with the entire path, it removes the first item and retries.
     For example, if "t1 mri/viewers" doesn't exists, tries "viewers".
-    If there is no documentation file, the browser page is empty. 
+    If there is no documentation file, the browser page is empty.
     """
     categoryPath=category.lower().split("/")
     found =False
@@ -981,7 +981,7 @@ class HTMLBrowser( QWidget ):
         self.setSource( html )
         found=True
       categoryPath=categoryPath[1:]
-        
+
     if not found:
       self.browser.setHtml( '' )
 
@@ -1102,7 +1102,7 @@ class ExecutionContextGUI( brainvisa.processes.ExecutionContext):
     return _mainThreadActions.call( UserDialog, parent, modal,
       message, signature, buttons )
 
-  
+
   def mainThreadActions( self ):
     '''Returns an object which allows to pass actions to be executed in the main thread. Its implementation may differ according to the presence of a running graphics event loop, thus the returned object may be an instance of different classes: :py:class:`soma.qtgui.api.QtThreadCall`, :py:class:`soma.qtgui.api.FakeQtThreadCall`, or even something else.
 
@@ -1141,7 +1141,7 @@ class ExecutionContextGUI( brainvisa.processes.ExecutionContext):
 
 #----------------------------------------------------------------------------
 class ExecutionNodeGUI(QWidget):
-  
+
   def __init__(self, parent, parameterized, read_only=False):
     QWidget.__init__(self, parent)
     layout = QVBoxLayout()
@@ -1156,7 +1156,7 @@ class ExecutionNodeGUI(QWidget):
   def closeEvent(self, event):
     self.parameterizedWidget.close()
     QWidget.closeEvent(self, event)
-    
+
   def _checkReadable( self ):
     if self.parameterizedWidget is not None:
       self.parameterizedWidget.checkReadable()
@@ -1168,7 +1168,7 @@ class VoidClass:
 
 #----------------------------------------------------------------------------
 class RadioItem(QWidget):
-  """An custom item to replace a QTreeWidgetItem for the representation of a SelectionExecutionNode item with a radio button. 
+  """An custom item to replace a QTreeWidgetItem for the representation of a SelectionExecutionNode item with a radio button.
   QTreeWidgetItem enables only check box items."""
   def __init__(self, text, group, parent=None):
     QWidget.__init__(self, parent)
@@ -1190,16 +1190,16 @@ class RadioItem(QWidget):
 
   def setChecked(self, checked):
     self.radio.setChecked(checked)
-    
+
   def isChecked(self):
     return self.radio.isChecked()
-  
+
   def setIcon(self, icon):
     self.icon.setPixmap(icon.pixmap(*defaultIconSize))
-  
+
 #----------------------------------------------------------------------------
 class NodeCheckListItem( QTreeWidgetItem ):
-  
+
   def __init__( self, node, parent, index=None, text=None, itemType=None, read_only=False ):
     if not index is None :
       QTreeWidgetItem.__init__( self )
@@ -1247,7 +1247,7 @@ class NodeCheckListItem( QTreeWidgetItem ):
       self.widget.setIcon(icon)
     else:
       QTreeWidgetItem.setIcon(self, col, icon)
-    
+
   def stateChange( self, selected ):
     self._node.setSelected( selected )
 
@@ -1271,7 +1271,7 @@ class NodeCheckListItem( QTreeWidgetItem ):
         self.setCheckState( 0, Qt.Checked )
       else:
         self.setCheckState( 0, Qt.Unchecked )
-      
+
   def isOn( self ):
     if self.read_only:
       return int(Qt.ItemIsEnabled & self.flags())>0
@@ -1283,7 +1283,7 @@ class NodeCheckListItem( QTreeWidgetItem ):
 
   def check(self, b):
     """
-    This method is used to check or uncheck a checkable item and warn the underlying model of the state change. 
+    This method is used to check or uncheck a checkable item and warn the underlying model of the state change.
     It is useful for the feature select/unselect before/after/all in pipelines and iterations.
     """
     if self.itemType=="check" and not self.read_only:
@@ -1292,11 +1292,11 @@ class NodeCheckListItem( QTreeWidgetItem ):
       else:
         self.setCheckState( 0, Qt.Unchecked )
       self.stateChange(b)
-      
+
   def currentItemChanged(self, current):
-    """ This function is called when the item gains or lose the status of current item of the tree widget. 
-    In case the item is a radio button, its background and foreground colors are changed to follow the tree item widget policy. 
-    
+    """ This function is called when the item gains or lose the status of current item of the tree widget.
+    In case the item is a radio button, its background and foreground colors are changed to follow the tree item widget policy.
+
     :param current: indicates if the item is the current item or not. boolean.
     """
     if self.itemType == "radio" and not self.read_only:
@@ -1306,7 +1306,7 @@ class NodeCheckListItem( QTreeWidgetItem ):
       else:
         self.widget.setBackgroundRole(QPalette.Base)
         self.widget.setForegroundRole(QPalette.Text)
-     
+
 #------------------------------------------------------------------------------
 class ParameterLabel( QLabel ):
   '''A QLabel that emits PYSIGNAL( 'contextMenuEvent' ) whenever a
@@ -1341,49 +1341,49 @@ class ParameterLabel( QLabel ):
     e.accept()
 
   def paramLabelText( self,  val_default_id, val_lock_id  ):
-    #CAS : val_default_id / val_lock_id 
+    #CAS : val_default_id / val_lock_id
     #val_default_id = 0 pas valeur par defaut donc icone
     #val_default_id = 1 valeur par defaut donc pas icone
     text = '' #cas 0 / 0
-#    if 
-#        1 / 0 
+#    if
+#        1 / 0
 #        if 1 / 1
 #    else 0 / 1
-    
+
     if val_default_id:
-        if val_lock_id : text =  text + '<img src="' + os.path.join( neuroConfig.iconPath, 'lock.png' ) + '" height="16"/> ' 
+        if val_lock_id : text =  text + '<img src="' + os.path.join( neuroConfig.iconPath, 'lock.png' ) + '" height="16"/> '
     else :
-        text =  '<img src="' + os.path.join( neuroConfig.iconPath, 'modified.png' ) + '" height="16"/> ' 
-        if  val_lock_id  : text =  text + '<img src="' + os.path.join( neuroConfig.iconPath, 'lock.png' ) + '" height="16"/> ' 
+        text =  '<img src="' + os.path.join( neuroConfig.iconPath, 'modified.png' ) + '" height="16"/> '
+        if  val_lock_id  : text =  text + '<img src="' + os.path.join( neuroConfig.iconPath, 'lock.png' ) + '" height="16"/> '
 
     return(text)
 
-  def addMenuLock( self ): 
+  def addMenuLock( self ):
     self.lock_id = _addAction( self.contextMenu, _t_( 'lock' ),
       self.lockChanged )
     self.lock_id.setCheckable(False)
     self.lock_id.setChecked( False )
-  
+
 
   def readText( self, txt ):
-    """ Function to return the value of text without value of tag for images """ 
+    """ Function to return the value of text without value of tag for images """
     if unicode( txt).startswith( '<img src=' ):
       x = txt.find( '/> ' )
       txt = txt[ x+3 : ]
       return txt
     return txt
-      
+
 
   def lockChanged( self, checked=False ):
-    """ This function is to lock or unlock data if a user click on the lock menu  """    
-    
-    
+    """ This function is to lock or unlock data if a user click on the lock menu  """
+
+
     if checked:
-      self.emit( SIGNAL( 'lock_system' ), self.parameterName ) 
+      self.emit( SIGNAL( 'lock_system' ), self.parameterName )
       #warning the value of lock_id can be become false if we can't write the lock file.
       #For example, if you try to lock a file which doesn't exist
     else:
-      self.emit( SIGNAL( 'unlock_system' ), self.parameterName )  
+      self.emit( SIGNAL( 'unlock_system' ), self.parameterName )
       #txt = self.paramLabelText(self.default_id.isChecked(), False)
 
     self.setlock(self.lock_id.isChecked()) #on remet a jour en fonction du resultat du unlock du fichier
@@ -1403,14 +1403,14 @@ class ParameterLabel( QLabel ):
     self.lock_id.setChecked(default)
 
     txt = self.paramLabelText(self.default_id.isChecked(), default)
-    
+
     txt_value_parameter = self.readText(self.text())
     while (self.readText(txt_value_parameter) != txt_value_parameter) :
         txt_value_parameter = self.readText(txt_value_parameter)
 
     txt = txt + txt_value_parameter
     self.setText( unicode(txt) )
-    
+
 
   def defaultChanged( self, checked=False ):
     # print "-- FUNCTION defaultChanged : neuroProcessesGUI / ParameterLabel --", checked
@@ -1424,24 +1424,24 @@ class ParameterLabel( QLabel ):
 
     txt = txt + txt_value_parameter
     self.setText(  unicode(txt) )
-    
+
 
 
   def setDefault( self, default ):
     # print "-- FUNCTION setDefault : neuroProcessesGUI / ParameterLabel --"
     self.default_id.setChecked( default )
-    
+
     #self.lockChanged()
-    
+
     txt = self.paramLabelText(self.default_id.isChecked(), self.lock_id.isChecked())
 
     txt_value_parameter = self.readText(self.text())
     while (self.readText(txt_value_parameter) != txt_value_parameter) :
         txt_value_parameter = self.readText(txt_value_parameter)
-    
+
     txt = txt + txt_value_parameter
     self.setText(  unicode(txt))
-    
+
 
 
 
@@ -1493,14 +1493,14 @@ class ParameterizedWidget( QWidget ):
     # the scroll widget will contain parameters widgets
     self.scrollWidget = WidgetScrollV( )
     layout.addWidget( self.scrollWidget )
-    
+
     #spacer = QSpacerItem( 0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding )
     #layout.addItem( spacer )
 
     # Using weakref here because self.parameterized may contain a reference
     # to self.parameterChanged (see below) which is a bound method that contains
     # a reference to self. If nothing is done self is never destroyed.
-    
+
     self.parameterized = weakref.proxy( parameterized )
     self.parameterized.deleteCallbacks.append( self.parameterizedDeleted )
     self.labels={}
@@ -1539,18 +1539,18 @@ class ParameterizedWidget( QWidget ):
         parametersWidgetLayout.addWidget(l, line, 0 )
         l.setDefault(self.parameterized.isDefault( k ))
         self.connect( l, SIGNAL( 'toggleDefault' ), self._toggleDefault )
-        
-        if isinstance( p, ReadDiskItem ):         
+
+        if isinstance( p, ReadDiskItem ):
             l.lock_id.setCheckable(True)
             l.setlock(self._setlock_system(k)) #ini la valeur de lock du parametre
             #self.connect( l, SIGNAL( 'setlock_system' ), self._setlock_system )
             self.connect( l, SIGNAL( 'lock_system' ), self._lock_system )
             self.connect( l, SIGNAL( 'unlock_system' ), self._unlock_system )
-        
+
         l.setSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed )
         self.labels[ k ] = l
         e = p.editor( None, k, weakref.proxy( self ) )
-        
+
         parametersWidgetLayout.addWidget(e, line, 1)
 
         self.parameterized.addParameterObserver( k, self.parameterChanged )
@@ -1558,7 +1558,7 @@ class ParameterizedWidget( QWidget ):
         self.editors[ k ] = e
         if first is None: first = e
         v = getattr( self.parameterized, k, None )
-        if v is not None: 
+        if v is not None:
           self.setValue( k, v, 1 )
         e.valuePropertiesChanged( self.parameterized.isDefault( k ) )
         e.connect( e, SIGNAL('noDefault'), self.removeDefault )
@@ -1571,7 +1571,7 @@ class ParameterizedWidget( QWidget ):
 #lock#        self.connect( btn, PYSIGNAL( 'clicked' ), self._toggleDefault )
 #lock#        self.btnLock[ k ] = btn
         if documentation is not None:
-          self.setParameterToolTip( k, 
+          self.setParameterToolTip( k,
             XHTML.html( documentation.get( 'parameters', {} ).get( k, '' ) ) \
             + '<br/><img src="' \
             + os.path.join( neuroConfig.iconPath, 'modified.png' )+ '"/><em>: ' \
@@ -1584,7 +1584,7 @@ class ParameterizedWidget( QWidget ):
     self.scrollWidget.setWidget(parametersWidget)
     if first: first.setFocus()
     self._doUpdateParameterValue = True
-    #self.scrollWidget.widget().resize(600, 200) 
+    #self.scrollWidget.widget().resize(600, 200)
 #    self.scrollWidget.show()
 
   def set_read_only(self, read_only):
@@ -1592,7 +1592,7 @@ class ParameterizedWidget( QWidget ):
       self.editors[x].set_read_only(read_only)
     for x in self.labels.keys():
       self.labels[x].set_read_only(read_only)
-    
+
   def parameterizedDeleted( self, parameterized ):
     for k, p in parameterized.signature.items():
       try:
@@ -1625,7 +1625,7 @@ class ParameterizedWidget( QWidget ):
     self.labels[ parameterName ].setToolTip(self.parameterized.signature[ parameterName ].toolTipText( parameterName, text ))
 
   def parameterChanged( self, parameterized, parameterName, value ):
-    """This method is called when an attribute has changed in the model. 
+    """This method is called when an attribute has changed in the model.
     A parameter can change in the model because it is links to another parameter that has changed or because the user changed it in the GUI."""
     # It is necessary to read user values before applying changes,
     # otherwise selected data are reset
@@ -1635,23 +1635,23 @@ class ParameterizedWidget( QWidget ):
     self.setValue( parameterName, value, default = default)
     self.labels[ parameterName ].setDefault( default )
     self.editors[ parameterName ].valuePropertiesChanged( default )
-    
+
     #lock system
     self.labels[parameterName].setlock(self._setlock_system(parameterName))
-    
+
     self._doUpdateParameterValue = True
 
   def updateParameterValue( self, name, value ):
     #lock system
     self.labels[name].setlock(self._setlock_system(name))
-    
+
     if self._doUpdateParameterValue:
       setattr( self.parameterized, name, value )
 
   def removeDefault( self, name ):
-    #lock system   
+    #lock system
     self.labels[ name ].setlock(self._setlock_system(name))
-    
+
     self.parameterized.setDefault( name, False )
     self.labels[ name ].setDefault( False )
     self.editors[ name ].valuePropertiesChanged( False )
@@ -1670,8 +1670,8 @@ class ParameterizedWidget( QWidget ):
       #print "-- FUNCTION _lock_system  : neuroProcessesGUI / ParameterizedWidget-- "
       #value = self.parameterized.__getattribute__(name)
       value = getattr(self.parameterized, name, None)
-      
-      if value is not None : 
+
+      if value is not None :
           isLock = value.lockData()
           if isLock : self.labels[name].lock_id.setChecked(True)
           else : self.labels[name].lock_id.setChecked(False)
@@ -1682,21 +1682,21 @@ class ParameterizedWidget( QWidget ):
       #print "-- FUNCTION _unlock_system : neuroProcessesGUI / ParameterizedWidget-- "
       #value = self.parameterized.__getattribute__(name)
       value = getattr(self.parameterized, name, None)
-      if value is not None :  
+      if value is not None :
           value.unlockData()
 
-  
+
   def _setlock_system( self, name ):
       """function for lock system : lock a diskItem if the file exists"""
       #from brainvisa.data.neuroDiskItems import DiskItem
       #print "-- FUNCTION _setlock_system : neuroProcessesGUI / ParameterizedWidget-- "
       #value = self.parameterized.__getattribute__(name)
       value = getattr(self.parameterized, name, None)
-      
+
       if value is not None and isinstance( value, DiskItem ):
         valueToSet =  value.isLockData()
         return valueToSet
-      else : 
+      else :
           return (False)
 
   def checkReadable( self ):
@@ -1744,14 +1744,14 @@ class BrainVISAAnimation( QLabel ):
     qApp.processEvents()
     self.mmovie.stop()
 
-    
+
 
 #----------------------------------------------------------------------------
 class ProcessView( QWidget, ExecutionContextGUI ):
 
   #actions:
   action_save_process = None
-  
+
   action_clone_process = None
 
   action_create_workflow = None
@@ -1774,9 +1774,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
   read_only = None
 
-  def __init__( self, 
-                processId, 
-                parent=None, 
+  def __init__( self,
+                processId,
+                parent=None,
                 externalInfo=None,
                 read_only=False):
     ExecutionContextGUI.__init__( self )
@@ -1788,13 +1788,13 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       setattr( ProcessView, 'pixProcessFinished', QIcon( os.path.join( neuroConfig.iconPath, 'ok.png' ) ) )
       setattr( ProcessView, 'pixProcessError', QIcon( os.path.join( neuroConfig.iconPath, 'abort.png' ) ) )
       setattr( ProcessView, 'pixNone', QIcon() )
-    
+
     self.read_only = read_only
 
-    # ProcessView cannot be a QMainWindow because it have to be included in a QStackedWidget in pipelines. 
+    # ProcessView cannot be a QMainWindow because it have to be included in a QStackedWidget in pipelines.
     #centralWidget=QWidget()
     #self.setCentralWidget(centralWidget)
-    
+
     centralWidgetLayout=QVBoxLayout()
     self.setLayout(centralWidgetLayout)
     centralWidgetLayout.setContentsMargins( 5, 5, 5, 5 )
@@ -1806,7 +1806,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     self.action_save_process = QAction(_t_( '&Save...' ), self)
     self.action_save_process.setShortcut( Qt.CTRL + Qt.Key_S )
     self.action_save_process.triggered.connect(self.saveAs)
-    
+
     self.action_clone_process = QAction(_t_( '&Clone...' ), self)
     self.action_clone_process.setShortcut(Qt.CTRL + Qt.Key_C)
     self.action_clone_process.triggered.connect(self.clone)
@@ -1820,24 +1820,28 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
     self.action_run_with_sw = QAction(_t_('Run in parallel'), self)
     self.action_run_with_sw.setToolTip('Run in parallel using Soma-workflow')
-    self.action_run_with_sw.triggered.connect(self._run_with_soma_workflow) 
+    self.action_run_with_sw.triggered.connect(self._run_with_soma_workflow)
 
     self.action_interupt = QAction(_t_('Interrupt'), self)
-    self.action_interupt.triggered.connect(self._interruptButton) 
+    self.action_interupt.triggered.connect(self._interruptButton)
     self.action_interupt.setVisible(False)
 
     self.action_interupt_step = QAction(_t_('Interrupt current step'), self)
-    self.action_interupt_step.triggered.connect(self._interruptStepButton) 
+    self.action_interupt_step.triggered.connect(self._interruptStepButton)
     self.action_interupt_step.setVisible(False)
 
     self.action_iterate = QAction(_t_('Iterate'), self)
-    self.action_iterate.triggered.connect(self._iterateButton) 
+    self.action_iterate.triggered.connect(self._iterateButton)
 
     self.action_lock_all = QAction(_t_('Lock all files'), self)
     self.action_lock_all.triggered.connect(self.menuLockAllFiles)
 
     self.action_unlock_all = QAction(_t_('Unlock all files'), self)
     self.action_unlock_all.triggered.connect(self.menuUnlockAllfiles)
+
+    self.action_manage_user_preference = QAction(_t_('Manage user preference'), self)
+    self.action_manage_user_preference.setShortcut(Qt.CTRL + Qt.Key_M)
+    self.action_manage_user_preference.triggered.connect(self.manageUserPreference)
 
     if parent is None:
       neuroConfig.registerObject( self )
@@ -1850,6 +1854,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       self.menu.addMenu(processMenu)
       processMenu.addAction(self.action_save_process)
       processMenu.addAction(self.action_clone_process)
+#      processMenu.addAction(self.action_manage_user_preference)
       processMenu.addAction(self.action_iterate)
       _addSeparator( processMenu )
       processMenu.addAction(self.action_create_workflow)
@@ -1902,10 +1907,10 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
     t = _t_(process.name) + ' ' + unicode( process.instance )
     self.setWindowTitle( t )
-    
+
     if process.showMaximized:
         self.showMaximized()
-    
+
     # title of the process : label + rotating icon when it's running
     titleLayout = QHBoxLayout( )
     centralWidgetLayout.addLayout(titleLayout)
@@ -1928,21 +1933,21 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       self.labName.setToolTip('<center><b>' + _t_(process.name) + '</b></center><hr><b>' + _t_('Description') + ':</b><br/>' + doc)
 
     if externalInfo is None:
-      
+
       self.movie = BrainVISAAnimation( )
       titleLayout.addWidget(self.movie)
       titleLayout.setSpacing(3)
-      
-      # vertical splitter : parameters, log text widget 
+
+      # vertical splitter : parameters, log text widget
       splitter = QSplitter( Qt.Vertical )
       centralWidgetLayout.addWidget(splitter)
-      
+
       # at the top of the splitter : the parameters
       self.parametersWidget = QWidget(splitter)
       parametersWidgetLayout = QVBoxLayout( )
       parametersWidgetLayout.setContentsMargins( 0, 0, 0, 0 )
       self.parametersWidget.setLayout(parametersWidgetLayout)
-      
+
       # at the bottom of the splitter : the text widget to log information about process execution
       self.info = QTextEdit( splitter )
       self.info.setReadOnly( True )
@@ -1975,12 +1980,12 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       #vb = QVBoxLayout( )
       #container.layout().addLayout(vb)
       vb=container.layout()
-      
+
       # splitter that shows the composition of the process on the left and the parameters of each step on the right
       self.eTreeWidget = QSplitter( Qt.Horizontal )
       vb.addWidget(self.eTreeWidget)
 
-      
+
       # Run and iterate buttons
       self.inlineGUI = self.process.inlineGUI( self.process, self, None,
                                                externalRunButton = True )
@@ -2016,9 +2021,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
                                             self.menuShowDocumentation )
 
       _addAction( self.executionTreeMenu )
-      _addAction( self.executionTreeMenu, _t_("Lock files under this node"), 
+      _addAction( self.executionTreeMenu, _t_("Lock files under this node"),
                  self.menuLockStep )
-      _addAction( self.executionTreeMenu, _t_("Unlock files under this node"), 
+      _addAction( self.executionTreeMenu, _t_("Unlock files under this node"),
                  self.menuUnlockStep )
 
       self.executionTreeMenu._nodeactionseparator \
@@ -2042,7 +2047,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       self._widgetStack.setSizePolicy( QSizePolicy( QSizePolicy.Preferred,
       QSizePolicy.Preferred ) )
       self._widgetStack._children = []
-    
+
       # set splitter sizes to avoid the widget stack to be hidden in case it is currently empty
       self.eTreeWidget.setSizes( [150, 250] )
 
@@ -2130,7 +2135,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 #      if documentation is not None:
 #        for ( k, p ) in self.process.signature.items():
 #          if neuroConfig.userLevel >= p.userLevel:
-#            self.parameterizedWidget.setParameterToolTip( k, 
+#            self.parameterizedWidget.setParameterToolTip( k,
 #              XHTML.html( documentation.get( 'parameters', {} ).get( k, '' ) ) \
 #              + '<br/><img src="' \
 #              + os.path.join( neuroConfig.iconPath, 'lock.png' )+ '"/><em>: ' \
@@ -2174,7 +2179,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         self.executionTreeMenu._showdocaction.setEnabled( True )
       else:
         self.executionTreeMenu._showdocaction.setEnabled( False )
-        
+
       # Show/Hide node actions
       if isinstance( enode, brainvisa.processes.ProcessExecutionNode ) :
         enode = enode._executionNode
@@ -2184,20 +2189,20 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         self.executionTreeMenu._addnodeaction.setVisible( True )
       else:
         self.executionTreeMenu._addnodeaction.setVisible( False )
-      
+
       if isinstance( pnode, brainvisa.processes.ProcessExecutionNode ) :
         pnode = pnode._executionNode
-        
+
       if isinstance( pnode, brainvisa.processes.ParallelExecutionNode ) \
          and pnode.possibleChildrenProcesses :
         self.executionTreeMenu._removenodeaction.setVisible( True )
       else:
         self.executionTreeMenu._removenodeaction.setVisible( False )
-      
+
       self.executionTreeMenu._nodeactionseparator.setVisible( \
           self.executionTreeMenu._addnodeaction.isVisible() or \
           self.executionTreeMenu._removenodeaction.isVisible() )
-        
+
       self.executionTreeMenu.exec_(QCursor.pos())
 
   def changeItemSelection(self, select=True, all=True, before=False ):
@@ -2223,7 +2228,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
           r=xrange(parent.indexOfTopLevelItem(item)+1, parent.topLevelItemCount())
         for i in r:
           parent.topLevelItem(i).check(select)
-  
+
   def menuUnselectBefore(self):
     self.changeItemSelection(select=False, all=False, before=True)
 
@@ -2398,25 +2403,25 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     item=self.executionTree.currentItem()
     if item:
       enode = item._executionNode
-           
+
       if isinstance( enode, brainvisa.processes.ProcessExecutionNode ) :
         enode = enode._executionNode
-      
+
       if isinstance( enode, brainvisa.processes.SerialExecutionNode ) \
          and enode.possibleChildrenProcesses :
         defaultProcess = enode.possibleChildrenProcesses.keys()[0]
         defaultProcessOptions = enode.possibleChildrenProcesses[defaultProcess]
-        child = brainvisa.processes.ProcessExecutionNode( 
+        child = brainvisa.processes.ProcessExecutionNode(
                   defaultProcess,
-                  optional = defaultProcessOptions.get('optional', True), 
-                  selected = defaultProcessOptions.get('selected', True), 
+                  optional = defaultProcessOptions.get('optional', True),
+                  selected = defaultProcessOptions.get('selected', True),
                   expandedInGui = defaultProcessOptions.get('expandedInGui', False)
                 )
         enode.addChild(node = child)
 
   def menuRemoveExecutionNode(self):
     item = self.executionTree.currentItem()
-    parent = item.parent() 
+    parent = item.parent()
     if parent:
       pnode = parent._executionNode
       if isinstance( pnode, brainvisa.processes.ProcessExecutionNode ) :
@@ -2430,7 +2435,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
             or (weakref.proxy(c) is item._executionNode )) :
             pnode.removeChild(k)
 
-        
+
   def defaultInlineGUI( self, parent, externalRunButton = False, container = None ):
     if container is None:
       container = QWidget( )
@@ -2455,7 +2460,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       self.btnInterrupt.setMinimumWidth(90)
       self.btnInterrupt.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
       self.btnInterrupt.setVisible(False)
-      
+
       self.btnInterruptStep =  QToolButton(self)
       self.btnInterruptStep.setDefaultAction(self.action_interupt_step)
       self.btnInterruptStep.setToolButtonStyle(Qt.ToolButtonTextOnly)
@@ -2463,7 +2468,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       self.btnInterruptStep.setMinimumWidth(90)
       self.btnInterruptStep.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
       self.btnInterruptStep.setVisible(False)
-      
+
     self.btnIterate = QToolButton(self)
     self.btnIterate.setDefaultAction(self.action_iterate)
     self.btnIterate.setToolButtonStyle(Qt.ToolButtonTextOnly)
@@ -2496,7 +2501,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
   def closeEvent( self, event ):
     self.cleanup()
     QWidget.closeEvent( self, event )
-  
+
   def cleanup( self ):
     self.process.cleanup()
     if self.parameterizedWidget is not None:
@@ -2524,7 +2529,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     self.parametersWidget = None
     self.info = None
     self.process._lastResult = None
-  
+
   def _run(self):
     self._runButton()
 
@@ -2551,7 +2556,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
   def _run_with_soma_workflow( self, executionFunction=None ):
     try:
       from brainvisa.workflow import ProcessToSomaWorkflow
-     
+
       submission_dlg = WorkflowSubmissionDlg(self)
       if submission_dlg.exec_() != QtGui.QDialog.Accepted:
         return
@@ -2561,7 +2566,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         _workflow_application_model.set_current_connection(resource_id)
 
       qtdt = submission_dlg.dateTimeEdit_expiration.dateTime()
-      date = datetime(qtdt.date().year(), qtdt.date().month(), qtdt.date().day(), 
+      date = datetime(qtdt.date().year(), qtdt.date().month(), qtdt.date().day(),
                       qtdt.time().hour(), qtdt.time().minute(), qtdt.time().second())
       queue =  unicode(submission_dlg.combo_queue.currentText()).encode('utf-8')
       if queue == "default queue": queue = None
@@ -2584,21 +2589,21 @@ class ProcessView( QWidget, ExecutionContextGUI ):
               print "warning ! db " + repr(db_setting.directory) + " has no uuid."
 
       ptowf = ProcessToSomaWorkflow(self.process,
-                                  input_file_processing=input_file_processing, 
+                                  input_file_processing=input_file_processing,
                                   output_file_processing=output_file_processing,
                                   brainvisa_cmd=brainvisa_cmd,
                                   brainvisa_db=builtin_db)
       workflow = ptowf.doIt()
 
       name = unicode(submission_dlg.lineedit_wf_name.text())
-      if name == "": 
+      if name == "":
         if workflow.name != None:
           name = SomaWorkflowWidget.brainvisa_code + workflow.name
         else:
           name = SomaWorkflowWidget.brainvisa_code
-      else: 
+      else:
         name = SomaWorkflowWidget.brainvisa_code + name
-      
+
       #store the process in workflow.user_storage
       serialized_process = StringIO.StringIO()
       event = self.createProcessExecutionEvent()
@@ -2606,11 +2611,11 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
       to_store = [SomaWorkflowWidget.brainvisa_code, serialized_process.getvalue()]
       workflow.user_storage = to_store
-      
+
       serialized_process.close()
 
       _workflow_application_model.add_workflow(
-                            soma_workflow.gui.workflowGui.NOT_SUBMITTED_WF_ID, 
+                            soma_workflow.gui.workflowGui.NOT_SUBMITTED_WF_ID,
                             datetime.now() + timedelta(days=5),
                             name,
                             soma_workflow.constants.WORKFLOW_NOT_STARTED,
@@ -2620,22 +2625,22 @@ class ProcessView( QWidget, ExecutionContextGUI ):
                                                                    name,
                                                                    queue)
       if wf_id == None:
-        return 
+        return
 
       view = SomaWorkflowProcessView(
                             _workflow_application_model,
-                            wf_id, 
+                            wf_id,
                             resource_id,
                             process=self.process,
                             parent=_mainWindow)
       view.setAttribute( QtCore.Qt.WA_DeleteOnClose )
       view.show()
-      
+
     except:
       neuroException.showException()
     finally:
       self.action_run_with_sw.setEnabled(True)
-  
+
   def _interruptButton(self):
     if self._running:
       try:
@@ -2679,9 +2684,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         result = self.clone()
         self.deleteLater()
     return result
-  
-  
-  
+
+
+
   def _startCurrentProcess( self, executionFunction ):
     #Remove icon from all ListView items
     for item in self._executionNodeLVItems.values():
@@ -2710,13 +2715,13 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       _mainThreadActions.push(self.action_interupt.setVisible, True)
       if self.process.__class__ == brainvisa.processes.IterationProcess:
         _mainThreadActions.push(self.action_interupt_step.setVisible, True)
-        
+
       if self.btnRun != None:
         _mainThreadActions.push(self.btnRun.setVisible, False)
         _mainThreadActions.push(self.btnInterrupt.setVisible, True)
         if self.process.__class__ == brainvisa.processes.IterationProcess:
           _mainThreadActions.push(self.btnInterruptStep.setVisible, True)
-        
+
 
     #Adds an icon on the ListViewItem corresponding to the current process
     # if any
@@ -2750,19 +2755,19 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       _mainThreadActions.push(self.action_interupt.setVisible, False)
       if self.process.__class__ == brainvisa.processes.IterationProcess:
         _mainThreadActions.push(self.action_interupt_step.setVisible, False)
-        
+
       if self.btnRun != None:
         _mainThreadActions.push( self.btnRun.setVisible, True)
         _mainThreadActions.push(self.btnInterrupt.setVisible, False)
         if self.process.__class__ == brainvisa.processes.IterationProcess:
           _mainThreadActions.push(self.btnInterruptStep.setVisible, False)
-          
+
       _mainThreadActions.push( self._checkReadable )
       self._running = False
     else:
       _mainThreadActions.push( self._checkReadable )
-  
-  
+
+
   def system( self, *args, **kwargs ):
     ret = apply( ExecutionContextGUI.system, (self,) + args, kwargs )
     _mainThreadActions.push( self._checkReadable )
@@ -2796,22 +2801,22 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     #txt.show()
 
   def executionNodeRemoveChild( self, item, eNode, key = None, childNode = None ):
-    
+
     childItem = getattr(childNode, '_guiItem', None)
     if childItem :
-      
+
       # Remove matching child item
       for i in xrange(item.childCount()):
         c = item.child(i)
         if (childItem == c) or (childItem is weakref.proxy(c)):
           item.takeChild(i)
           break
-    
+
     func = getattr(item, 'hasChildren', None)
     # Update children indicator for the current item
     if func and func():
       item.setChildIndicatorPolicy(item.DontShowIndicator)
-    
+
   def executionNodeAddChild( self, item, eNode, key = None, childNode = None, previous = None ):
     # 10-02-2014 : added possibility to hide nodes in GUI
     newItem = None
@@ -2853,10 +2858,10 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       beforeChildRemovedCallback = getattr(en, 'beforeChildRemoved', None)
       if beforeChildRemovedCallback:
         beforeChildRemovedCallback.add(
-          soma.functiontools.partial( 
+          soma.functiontools.partial(
             self.__class__.executionNodeRemoveChild, weakref.proxy( self ),
             newItem ) )
-      
+
       afterChildAddedCallback = getattr(en, 'afterChildAdded', None)
       if afterChildAddedCallback :
         afterChildAddedCallback.add(
@@ -2872,7 +2877,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       #newItem.setExpandable( en.hasChildren() )
       if isinstance( childNode, brainvisa.processes.ProcessExecutionNode ):
         self._executionNodeLVItems[ childNode._process ] = newItem
-      
+
       # Update children indicator for the current item
       hiddens = [ getattr( c, '_hidden', False ) for c in eNode.children() ]
       hasvisiblechildren = ( len( [ x for x in hiddens if not x ] ) > 0 )
@@ -2886,9 +2891,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       eNodeItem = self._executionNodeLVItems.get( p )
       if eNodeItem is not None:
         eNodeItem.setIcon( 0, self.pixInProcess )
-        
+
     return newItem
-    
+
   def executionNodeSelected( self, item, previous ):
     if item is not None:
       if (getattr(item, "_guiId", None)) is not None:
@@ -2934,7 +2939,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         eNode, eNodeChildren = eNodeAndChildren
 
       for childNode in eNodeChildren:
-        previous = self.executionNodeAddChild( item, eNode, 
+        previous = self.executionNodeAddChild( item, eNode,
                                                childNode = childNode )
         if childNode._expandedInGui:
           previous.setExpanded( True )
@@ -2942,24 +2947,24 @@ class ProcessView( QWidget, ExecutionContextGUI ):
   def _executionNodeActivated(self, item):
     if getattr(item, "activate", None):
       item.activate()
-  
-  
+
+
   def createWorkflow( self ):
     from brainvisa.workflow import ProcessToSomaWorkflow
     class Options( HasSignature ):
       signature = SomaSignature(
-        'output', 
-        SomaFileName, 
+        'output',
+        SomaFileName,
         dict( doc='Name of the output workflow file.' ),
-        'input_file_processing', 
-        SomaChoice( ( _t_( ProcessToSomaWorkflow.NO_FILE_PROCESSING ), 0 ), 
-                    ( _t_( ProcessToSomaWorkflow.FILE_TRANSFER ), 1 ), 
+        'input_file_processing',
+        SomaChoice( ( _t_( ProcessToSomaWorkflow.NO_FILE_PROCESSING ), 0 ),
+                    ( _t_( ProcessToSomaWorkflow.FILE_TRANSFER ), 1 ),
                     ( _t_( ProcessToSomaWorkflow.SHARED_RESOURCE_PATH ), 2 ),
                     ( _t_( ProcessToSomaWorkflow.BV_DB_SHARED_PATH ), 3 )),
         dict( defaultValue=0 ),
-        'output_file_processing', 
-        SomaChoice( ( _t_( ProcessToSomaWorkflow.NO_FILE_PROCESSING ), 0 ), 
-                    ( _t_( ProcessToSomaWorkflow.FILE_TRANSFER ), 1 ), 
+        'output_file_processing',
+        SomaChoice( ( _t_( ProcessToSomaWorkflow.NO_FILE_PROCESSING ), 0 ),
+                    ( _t_( ProcessToSomaWorkflow.FILE_TRANSFER ), 1 ),
                     ( _t_( ProcessToSomaWorkflow.SHARED_RESOURCE_PATH ), 2 )),
         dict( defaultValue=0 )
       )
@@ -2977,7 +2982,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         output_file_processing = ProcessToSomaWorkflow.FILE_TRANSFER
       if options.output_file_processing == 2:
         output_file_processing = ProcessToSomaWorkflow.SHARED_RESOURCE_PATH
- 
+
       builtin_db = []
       if input_file_processing == ProcessToSomaWorkflow.BV_DB_SHARED_PATH:
         for db_setting in neuroConfig.dataPath:
@@ -2988,13 +2993,13 @@ class ProcessView( QWidget, ExecutionContextGUI ):
             else:
               print "warning ! db " + repr(db_setting.directory) + " has no uuid."
 
-      ptowf = ProcessToSomaWorkflow(self.process, 
-                                  options.output, 
-                                  input_file_processing = input_file_processing, 
+      ptowf = ProcessToSomaWorkflow(self.process,
+                                  options.output,
+                                  input_file_processing = input_file_processing,
                                   output_file_processing = output_file_processing,
                                   brainvisa_db=builtin_db)
       ptowf.doIt()
-  
+
   def _iterateButton( self ):
     self.readUserValues()
     self._iterationDialog = IterationDialog( self, self.process, self )
@@ -3006,8 +3011,8 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     try:
       params = self._iterationDialog.getLists()
       processes = self.process._iterate( **params )
-      iterationProcess = brainvisa.processes.IterationProcess( self.process.name + " iteration", 
-                                                               processes, 
+      iterationProcess = brainvisa.processes.IterationProcess( self.process.name + " iteration",
+                                                               processes,
                                                                self.process.name )
       showProcess( iterationProcess )
     except:
@@ -3033,8 +3038,8 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     event = super( ProcessView, self ).createProcessExecutionEvent()
     mainThreadActions().call( event.setWindow, self )
     return event
-  
-  
+
+
   def saveAs( self ):
     minf = getattr( self.process, '_savedAs', '' )
     # workaround a bug in PyQt ? Param 5 doesn't work; try to use kwargs
@@ -3051,12 +3056,17 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       self.process._savedAs = minf
       event.save( minf )
 
-  
+  def manageUserPreference( self ):
+    from nuclearImaging.userPreferenceGUI import UserPreferenceGUI
+    user_preference_GUI = UserPreferenceGUI(self.process)
+    user_preference_GUI.show()
+    user_preference_GUI.exec_()
+
   def clone( self ):
     self.readUserValues()
     clone = brainvisa.processes.getProcessInstanceFromProcessEvent( self.createProcessExecutionEvent() )
     return showProcess( clone )
-  
+
 
   @staticmethod
   def open():
@@ -3120,7 +3130,7 @@ class IterationDialog( QDialog ):
 
     self.parameterizedWidget = ParameterizedWidget( self.parameterized, None )
     layout.addWidget(self.parameterizedWidget)
-  
+
     w=QWidget()
     hb = QHBoxLayout( )
     w.setLayout(hb)
@@ -3188,7 +3198,7 @@ class UserDialog( QDialog ):
         self.editors[ k ] = e
         if first is None: first = e
       sv.setWidget(svWidget)
-      
+
     self.group1 = QButtonGroup( )
     group1Widget=QWidget()
     group1Layout=QHBoxLayout()
@@ -3264,13 +3274,13 @@ class ProcessEdit( QDialog ):
     self.process = process
     t = _t_(process.name)
     self.setWindowTitle( t )
-    
+
     spl = QSplitter( Qt.Vertical )
     layout.addWidget(spl)
     w=QWidget(spl)
     vb = QVBoxLayout( )
     w.setLayout(vb)
-    
+
     self.labName = QLabel( '<center><h3>' + t + '</h3></center>', spl )
     vb.addWidget(self.labName)
 
@@ -3334,7 +3344,7 @@ class ProcessEdit( QDialog ):
 
     self.readDocumentation()
     self.setLanguage( unicode( self.cmbLanguage.currentText() ) )
-    
+
     w=QWidget()
     hb = QHBoxLayout( )
     w.setLayout(hb)
@@ -3400,8 +3410,8 @@ class ProcessEdit( QDialog ):
   @staticmethod
   def escapeXMLEntities( s ):
     return re.sub( r'&([a-z]+);', lambda m: '&amp;'+m.group(1)+';', s )
-  
-  
+
+
   def changeLanguage( self ):
     self.saveLanguage()
     self.setLanguage( unicode( self.cmbLanguage.currentText() ) )
@@ -3432,13 +3442,13 @@ class ProcessSelectionWidget( QMainWindow ):
 
   def __init__( self ):
     QMainWindow.__init__( self )
-    
+
     if getattr( ProcessSelectionWidget, '_pixmapCache', None ) is None:
       ProcessSelectionWidget._pixmapCache = {}
       for file in ( 'icon_process_0.png', 'icon_process_1.png', 'icon_process_2.png', 'icon_process_3.png', 'folder.png' ):
         fullPath = os.path.join( neuroConfig.iconPath, file )
         ProcessSelectionWidget._pixmapCache[ fullPath ] = QIcon( fullPath )
-    
+
     centralWidget=QWidget()
     self.setCentralWidget(centralWidget)
 
@@ -3454,16 +3464,16 @@ class ProcessSelectionWidget( QMainWindow ):
     self.dock_sw.toggleViewAction().setText(_t_("Workflow execution"))
     self.dock_sw.setAllowedAreas(QtCore.Qt.BottomDockWidgetArea |                                  QtCore.Qt.TopDockWidgetArea)
     if _workflow_application_model != None:
-      
+
       self.sw_widget = SomaWorkflowWidget(_workflow_application_model,
                          computing_resource=socket.gethostname(),
                          parent=None)
       self.sw_widget.setWindowTitle(_t_("Workflow execution"))
-      self.sw_mini_widget = SomaWorkflowMiniWidget(_workflow_application_model, 
-                                                   self.sw_widget, 
+      self.sw_mini_widget = SomaWorkflowMiniWidget(_workflow_application_model,
+                                                   self.sw_widget,
                                                    self.dock_sw)
       self.dock_sw.setWidget(self.sw_mini_widget)
-      
+
       self.dock_sw.hide()
       self.addDockWidget(Qt.BottomDockWidgetArea, self.dock_sw)
     else:
@@ -3548,7 +3558,7 @@ class ProcessSelectionWidget( QMainWindow ):
 
 
   def keyPressEvent(self, keyEvent):
-    if (keyEvent.matches(QKeySequence.Find) or keyEvent.matches(QKeySequence.FindNext) ): 
+    if (keyEvent.matches(QKeySequence.Find) or keyEvent.matches(QKeySequence.FindNext) ):
       if (self.searchboxLineEdit.text() == ""):
         self.info.browser.keyPressEvent(keyEvent)
       else:
@@ -3560,8 +3570,8 @@ class ProcessSelectionWidget( QMainWindow ):
 
   def buttonSearch(self):
     """
-    Called when user click on search / next button. 
-    The text written in the search box is searched in tree leaves names (processes). 
+    Called when user click on search / next button.
+    The text written in the search box is searched in tree leaves names (processes).
     The first item found which name contains the searched string becomes selected. If the user click another time on the search / next button, next item is searched...
     """
     # new search
@@ -3576,13 +3586,13 @@ class ProcessSelectionWidget( QMainWindow ):
     # next search
     if self.matchedProcs:
       try:# an exception will occur when there is no more items
-        item=self.matchedProcs.next() 
+        item=self.matchedProcs.next()
         self.searchboxLineEdit.setEnabled(False)
         self.searchboxSearchB.setText( 'next' )
 #        self.searchboxSearchB.setShortcut( QKeySequence.FindNext )
       except:
         self.resetSearch()
-        
+
   def resetSearch(self):
     """
     Called at the end of a search or when the user click on reset button.
@@ -3622,9 +3632,9 @@ class ProcessSelectionWidget( QMainWindow ):
 
   def openProcess( self, item=None ):
     """
-    Called to open current process. 
+    Called to open current process.
     If the process is not given, selected process in current tree is opened.
-    
+
     :param item: the process to open. :py:class:`ProcessTree.Item`
     """
     processId=None
@@ -3640,7 +3650,7 @@ class ProcessSelectionWidget( QMainWindow ):
           processId=item.id
           showProcess(processId)
     if processId != self.currentProcessId:
-      self.itemSelected(item) 
+      self.itemSelected(item)
 
   def editProcess( self, item=None ):
     processId=None
@@ -3665,7 +3675,7 @@ class ProcessSelectionWidget( QMainWindow ):
     self.connect( self._iterationDialog, SIGNAL( 'accept' ),
                   self._iterateAccept )
     self._iterationDialog.show()
-    
+
   def _iterateAccept( self ):
     """
     Call back when accepting iteration dialog. Iterates the selected process.
@@ -3673,8 +3683,8 @@ class ProcessSelectionWidget( QMainWindow ):
     try:
       params = self._iterationDialog.getLists()
       processes = self.currentProcess._iterate( **params )
-      iterationProcess = brainvisa.processes.IterationProcess( self.currentProcess.name + " iteration", 
-                                                               processes, 
+      iterationProcess = brainvisa.processes.IterationProcess( self.currentProcess.name + " iteration",
+                                                               processes,
                                                                self.currentProcess.name )
       #iterationProcess.possibleChildrenProcesses =
       showProcess( iterationProcess )
@@ -3696,50 +3706,50 @@ class ProcessSelectionWidget( QMainWindow ):
     state_file.close()
     quitRequest()
     event.ignore()
-            
+
 
 #----------------------------------------------------------------------------
 class ProcessTreesWidget(QSplitter):
   """
   A widget that shows a list of :py:class:`ProcessTree`.
   Each process tree presents a sub group of existing processes.
-  
-  It's composed of two parts : 
+
+  It's composed of two parts :
   * the list of process trees (use profiles)
   * a view of currently selected tree
-  Each process tree can be opened in another window in order to enable drag and drop from one tree to another. 
+  Each process tree can be opened in another window in order to enable drag and drop from one tree to another.
 
   .. py:attribute:: treeIndex
-  
+
     Widget containing items representing each process tree. TreeListWidget.
-    
+
   .. py:attribute:: treeStack
-  
+
     A stack of EditableTreeWidget, representing the content of each processTree. QWidgetStack.
-    
+
   .. py:attribute::  treeStackIdentifiers
-  
+
     dict associating a processTree to an unique integer identifier used with the widget stack. Only the selected processTree widget of the stack is visible.
-    
+
   .. py:attribute::  widgets
-  
+
     list of EditableTreeWidget currently in the stack. Useful because QWidgetStack doesn't provide iterator on its content.
-  
+
   .. py:attribute:: openedTreeWidget
-  
+
     Currently opened process tree. It is in a window independant from the main window. EditableTreeWidget
-    
+
   .. py:attribute:: model
-    
+
     list of ProcessTree which this widget represents. ProcessTrees
-  
+
   .. py:attribute:: popupMenu
-    
+
     QPopupMenu contextual menu associated to the list of process trees.
 
   .. py:attribute:: savesTimer
-  
-    QTimer started when the model has changed. When the timer times out, the model is saved. Used to delay model saves : it speeds up execution when there is several modification at the same time (drag&drop several elements). 
+
+    QTimer started when the model has changed. When the timer times out, the model is saved. Used to delay model saves : it speeds up execution when there is several modification at the same time (drag&drop several elements).
   """
 
   def __init__(self, processTrees=None, parent=None ):
@@ -3765,7 +3775,7 @@ class ProcessTreesWidget(QSplitter):
     #self.setResizeMode( self.treeIndex, QSplitter.FollowSizeHint )
     self.widgets=[]
     self.openedTreeWidget=None
-    
+
     # Popup Menu for toolboxes
     self.popupMenu = QMenu( self )
     _addAction( self.popupMenu, _t_("New"),  self.menuNewTabEvent )
@@ -3773,7 +3783,7 @@ class ProcessTreesWidget(QSplitter):
     _addAction( self.popupMenu, _t_("Open"), self.menuOpenTabEvent)
     _addAction( self.popupMenu, _t_("Set as default list"),
       self.menuSetDefaultEvent)
-    
+
     # Popup Menu for processes
     self.processMenu = QMenu( self )
     _addAction( self.processMenu, _t_("Open"),  self.menuOpenProcessEvent )
@@ -3787,9 +3797,9 @@ class ProcessTreesWidget(QSplitter):
 
   def setModel(self, processTrees):
     """
-    The widget is initialized with the given list of process tree. 
+    The widget is initialized with the given list of process tree.
     For each process tree, an item is added in treeIndex. A widget is created to represent each process tree and added to treeStack.
-  
+
     :param processTrees: the list of process trees which this widget represents
     """
     # clear widgets
@@ -3810,7 +3820,7 @@ class ProcessTreesWidget(QSplitter):
     for processTree in processTrees.values():
       self.addProcessTree(processTree)
     self.treeIndex.setModel(processTrees)
-    
+
     # if there's a selected tree by default, the corresponding item in widget is selected
     if self.model.selectedTree != None:
       found=False
@@ -3821,23 +3831,23 @@ class ProcessTreesWidget(QSplitter):
         if item.model==self.model.selectedTree:
           found=True
           self.treeIndex.setCurrentItem(item)
-    
+
     # Create a timer to delay model saves in minf file : it speeds up execution when there is several modification at the same time (drag&drop several elements)
     self.savesTimer=QTimer()
     self.savesTimer.setSingleShot(True)
     self.connect(self.savesTimer, SIGNAL("timeout()"), self.model.save)
 
-  
+
   def addProcessTree(self, processTree):
     """
-    Add elements in the widget to add a representation of this process tree. 
+    Add elements in the widget to add a representation of this process tree.
 
     :param processTree: new process tree for which the widget must be completed.
     """
     treeWidget=EditableTreeWidget( processTree, self.treeStack )
     if processTree.modifiable:
       treeWidget.setToolTip(_t_("This list is customizable. You can :<br>- move items by drag and drop,<br>- delete item with del key,<br>- copy items by drag and drop and ctrl key,<br>- create new category with contextual menu."))
-    # signals 
+    # signals
     # selectionChanged doesn't work with multiple selection
     # currentChanged isn't emited when click on an item that has already keyboeard focus and is not emited when click on an already selected item altought it may be necessary to update documentation because several items can be selected at the same time
     # -> so use clicked signal instead
@@ -3857,7 +3867,7 @@ class ProcessTreesWidget(QSplitter):
       self.treeIndex.show()
     else:
       self.treeIndex.hide()
-    
+
   def openContextMenu(self, point):
     """
     Called on contextMenuRequested signal. It opens the popup menu at cursor position.
@@ -3888,10 +3898,10 @@ class ProcessTreesWidget(QSplitter):
         w=self.treeStack.widget( self.treeStackIdentifiers.get( object.__hash__( processTree ) ) )
         self.treeStack.removeWidget(w)
         self.widgets.remove(w)
-  
+
   def updateSelectedTree(self, newSelection):
     """
-    Called when the selected tree changes. 
+    Called when the selected tree changes.
     """
     pass # maybe set a graphical element to show it is the default list...
 
@@ -3920,16 +3930,16 @@ class ProcessTreesWidget(QSplitter):
 
   def selectionChanged(self, item, col=0):
     """
-    Called when selected item has changed in current process tree. 
-    This method emits a signal that must be caught by parent widget. 
+    Called when selected item has changed in current process tree.
+    This method emits a signal that must be caught by parent widget.
     """
     if item is not None:
       self.emit(SIGNAL("selectionChanged"), item.model)
 
   def doubleClicked(self, item, col):
     """
-    Called on double click on an item of current process tree. 
-    This method emits a signal that must be caught by parent widget. 
+    Called on double click on an item of current process tree.
+    This method emits a signal that must be caught by parent widget.
     """
     self.emit(SIGNAL("doubleClicked"), item.model)
 
@@ -3944,9 +3954,9 @@ class ProcessTreesWidget(QSplitter):
     """
     Find items that contain the string given in parameters in their name. Each found item is selected and yield (and replace previous selection).
     Wide search.
-    
-    :param name: string searched in items names. 
-    
+
+    :param name: string searched in items names.
+
     :rtype:  generator
     """
     for widget in self.widgets: # for all process trees widgets
@@ -3979,7 +3989,7 @@ class ProcessTreesWidget(QSplitter):
     """
     Select a process tree and an item in it. Undo last selection.
 
-    :param widget:  EditableTreeWidget, the tree widget that contains the item to select. 
+    :param widget:  EditableTreeWidget, the tree widget that contains the item to select.
     :param item: EditableTreeItem, the item (process) to select
     :param lastSelection: tuple(EditableTreeWidget, EditableTreeItem), previous selected item and its container, to be unselected.
     """
@@ -3991,11 +4001,11 @@ class ProcessTreesWidget(QSplitter):
     if lastSelection:# undo last selection
       lastSelection[1].setSelected(False)
       #lastSelection[0].setSelected(lastSelection[1], 0)
- 
+
   def selectIndex(self, model):
     """
     Select a process tree in the left panel (toolboxes).
-    
+
     :param model: the process tree to select
     """
     i=0
@@ -4010,7 +4020,7 @@ class ProcessTreesWidget(QSplitter):
   #------ context menu events ------
   def menuNewTabEvent(self):
     """
-    Called on click on new option in contextual menu. 
+    Called on click on new option in contextual menu.
     Adds a new empty tree in the model.
     """
     processTree=brainvisa.processes.ProcessTree( name='Personal Bookmarks' )
@@ -4055,7 +4065,7 @@ class ProcessTreesWidget(QSplitter):
     item=self.treeStack.currentWidget().currentItem()
     if item:
       self.emit(SIGNAL("openProcess"), item.model )
-  
+
   def menuEditProcessEvent(self):
     """
     Called on click on edit option in process menu.
@@ -4120,12 +4130,12 @@ class RemoteContextGUI( QTreeWidgetItem ):
   """
   Specific GUI to display messages returned by processes executed remotely.
   """
-  
+
   def __init__(self, parent, name='Remote Hosts:'):
     """
     The specific GUI is a QListView. It is composed of an arborescence of QListViewItems that sorts
     the messages according to the process and the host they belong to::
-    
+
     Remote Hosts:
     |
     --host
@@ -4137,9 +4147,9 @@ class RemoteContextGUI( QTreeWidgetItem ):
       --process
         |
         --message
-        
+
     :param parent: the QListView.
-    :param name: name 
+    :param name: name
     """
 
     remoteView = QTreeWidget(parent)
@@ -4154,15 +4164,15 @@ class RemoteContextGUI( QTreeWidgetItem ):
     self.setText( 0, name )
 
     self.setExpanded(True)
-    
+
     self.processList = {}
     self.ipList = {}
-  
+
   def addIP(self, ip):
     i_item = QTreeWidgetItem(self, [ip] )
     self.ipList[str(ip)] = i_item
     i_item.setExpanded(True)
-    
+
   def addProcess(self, ip, pid, status=' Starting...', message=''):
     p_item = QTreeWidgetItem(self.ipList[str(ip)],
       ['Process', '%03d'%pid, status, message] )
@@ -4172,7 +4182,7 @@ class RemoteContextGUI( QTreeWidgetItem ):
     #p_item.setText( 3, message )
     self.processList[str(pid)] = p_item
     #self.ipList[str(ip)].insertItem(p_item)
-      
+
   def addMessage(self, pid, message):
     m_item = QTreeWidgetItem(self.processList[str(pid)],
       ['Message', '', '', message] )
@@ -4181,7 +4191,7 @@ class RemoteContextGUI( QTreeWidgetItem ):
     #m_item.setText( 2, '' )
     #m_item.setText( 3, message )
     #self.processList[str(pid)].insertItem(m_item)
-            
+
   def setProcessStatus(self, pid, status):
     self.processList[str(pid)].setText(2, status)
 
@@ -4192,7 +4202,7 @@ class RemoteContextGUI( QTreeWidgetItem ):
     for item in self.ipList.values():
       self.takeChild(self.indexOfChild(item))
       del(item)
-      
+
     self.processList = {}
     self.ipList = {}
 
@@ -4206,8 +4216,8 @@ class RemoteContextGUI( QTreeWidgetItem ):
 def mainWindow():
   global _mainWindow
   return _mainWindow
-  
-  
+
+
 def showMainWindow():
   global _mainWindow
   if neuroConfig.openMainWindow:
@@ -4221,13 +4231,13 @@ def showMainWindow():
         w.raise_()
   else:
     _mainWindow = None
-    
+
 def close_viewers_action(parent):
   action=QAction(parent)
   action.setText( _t_( "Close all viewers" ) )
   action.triggered.connect(close_viewers)
   return action
-  
+
 def close_viewers():
   from brainvisa.data.qt4gui.readdiskitemGUI import DiskItemEditor
   from brainvisa.data.qt4gui.hierarchyBrowser import HierarchyBrowser
@@ -4256,7 +4266,7 @@ def reloadToolboxesGUI():
   from brainvisa.data.qt4gui.updateDatabases import warnUserAboutDatabasesToUpdate
   warnUserAboutDatabasesToUpdate()
   QtGui.QApplication.restoreOverrideCursor()
-  
+
 #----------------------------------------------------------------------------
 def mainThreadActions():
   '''Returns an object which allows to pass actions to be executed in the main thread. Its implementation may differ according to the presence of a running graphics event loop, thus the returned object may be an instance of different classes: :py:class:`soma.qtgui.api.QtThreadCall`, :py:class:`soma.qtgui.api.FakeQtThreadCall`, or even something else.
