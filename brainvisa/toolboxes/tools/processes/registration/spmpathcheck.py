@@ -36,6 +36,10 @@ from soma.wip.application.api import Application
 from brainvisa.configuration import neuroConfig
 from brainvisa.data import neuroHierarchy
 
+from subprocess import check_output
+from distutils.spawn import find_executable
+
+import os
 import platform
 
 
@@ -147,15 +151,10 @@ def execution( self, context ):
     neuroHierarchy.update_soma_workflow_translations()
 
 
-from distutils.spawn import find_executable
-import re
-import subprocess
-
-
 def detectPathsForLinuxPlatform(context, configuration):
   context.write('Looking for spm12 standalone...')
   try:
-    spm12_directory_path, spm12_stand_alone_run_path, spm12_stand_alone_MCR_path = findStandAlonePaths('spm12')
+    spm12_directory_path, spm12_stand_alone_run_path, spm12_stand_alone_MCR_path = findStandAlonePaths('12')
     configuration.SPM.spm12_standalone_path = spm12_directory_path
     configuration.SPM.spm12_standalone_mcr_path = spm12_stand_alone_MCR_path
     configuration.SPM.spm12_standalone_command = spm12_stand_alone_run_path
@@ -169,10 +168,9 @@ def detectPathsForLinuxPlatform(context, configuration):
   except:
     context.warning('spm12 path not found, maybe Matlab is not available')
 
-
   context.write('Looking for spm8 standalone...')
   try:
-    spm8_directory_path, spm8_stand_alone_run_path, spm8_stand_alone_MCR_path = findStandAlonePaths('spm8')
+    spm8_directory_path, spm8_stand_alone_run_path, spm8_stand_alone_MCR_path = findStandAlonePaths('8')
     configuration.SPM.spm8_standalone_path = spm8_directory_path
     configuration.SPM.spm8_standalone_mcr_path = spm8_stand_alone_MCR_path
     configuration.SPM.spm8_standalone_command = spm8_stand_alone_run_path
@@ -194,7 +192,6 @@ def detectPathsForLinuxPlatform(context, configuration):
     else:
       context.warning('spm8 wfu pickatlas, not found')
 
-
   context.write('Looking for spm5 by Matlab...')
   try:
     spm_5_path = checkSPMCommand( context, 'spm5' )
@@ -202,41 +199,47 @@ def detectPathsForLinuxPlatform(context, configuration):
   except:
     context.warning('spm5 path not found, maybe Matlab is not available')
 
-def findStandAlonePaths(executable_name):
-  executable_path = find_executable(executable_name)
-  executable_file = open(executable_path, 'r')
-  text_in_executable = executable_file.read()
-  executable_file.close()
-
-  main_directory_path = extractMainDirectoryPath(text_in_executable, executable_name)
-  stand_alone_run_path = findStandAloneRunPath(main_directory_path, executable_name)
-  stand_alone_MCR_path = findStandAloneMCRPath(main_directory_path)
-
-  return main_directory_path, stand_alone_run_path, stand_alone_MCR_path
-
-
-def extractMainDirectoryPath(text_in_executable, executable_name):
-  #find the source directory
-  #This method can be optimize... its aims is to find the main directory in executable script as :
-  #SPM8_STANDALONE_HOME=/i2bm/local/spm8-standalone ==> neurospin
-  #export SPM8=/coconut/applis/src/spm8 ==> LIB
-  match_object = re.search('/[/A-z0-9_\-]*/' + executable_name + '[A-z0-9_\-]*', text_in_executable)
-  if match_object:
-    sentence = match_object.group(0)
+def findStandAlonePaths(spm_version):
+  if spm_version == '8':
+    executable_name = 'spm8'
+  elif spm_version == '12':
+    executable_name = 'spm12'
   else:
-    raise Exception('Unvalid regular expression pattern')
-  if os.path.isdir(sentence):
-    return sentence
+    raise ValueError('Unvalid SPM version')
+  
+  output = check_output('compgen -c | grep "spm"', shell=True, executable='/bin/bash')
+  command_contains_spm_list =  output.splitlines()
+  possible_right_command_list = []
+  for command_contains_spm in command_contains_spm_list:
+    if spm_version in command_contains_spm:
+      possible_right_command_list.append(command_contains_spm)
+      
+  for possible_right_command in possible_right_command_list:
+    executable_path = find_executable(possible_right_command)
+    stand_alone_run_path, stand_alone_MCR_path = extractPathFromExecutable(executable_path)
+    if not None in [stand_alone_run_path, stand_alone_MCR_path]:
+      if 'run_' + executable_name + '.sh' in stand_alone_run_path and\
+      'mcr/v713' in stand_alone_MCR_path:
+        standalone_directory = os.path.dirname(stand_alone_run_path)
+        return standalone_directory, stand_alone_run_path, stand_alone_MCR_path
+      else:
+        pass#This command is not the command searches
+    else:
+      pass#possible_right_command is not the command searches
+  
+  raise Exception('SPM standalone paths not found for SPM' + spm_version)
+
+def extractPathFromExecutable(executable_path):
+  shutil.copy(executable_path, '/tmp/SPMPathCheck')
+  os.system('sed -i "s/exec /echo /g" /tmp/SPMPathCheck')
+  output = check_output('sh /tmp/SPMPathCheck', shell=True)
+  output_line_list = output.splitlines()
+  if len(output_line_list) == 1:
+    output_splitted = output.splitlines()[0].split( )
+    if len(output_splitted) == 2:
+      return output_splitted
+    else:
+      #this command is not the command searches
+      return None, None
   else:
-    return os.path.dirname(sentence)
-
-def findStandAloneRunPath(main_directory_path, executable_name):
-  #find file looks like : run_spm12.sh"
-  executable_file_name = 'run_' + executable_name + '.sh'
-  find_line = subprocess.Popen('find ' + main_directory_path + '/ -name ' + executable_file_name, stdout=subprocess.PIPE, shell=True).communicate()[0]
-  return find_line.replace('\n', '')
-
-def findStandAloneMCRPath(main_directory_path):
-  #find the line looks like : "$/mcr/v713"
-  find_line = subprocess.Popen('find ' + main_directory_path + '/ -name "v713" -type d', stdout=subprocess.PIPE, shell=True).communicate()[0]
-  return find_line.replace('\n', '')
+    raise ValueError('More than 1 line exec found for ' + str(executable_path))
