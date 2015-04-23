@@ -337,22 +337,28 @@ class ProcessToWorkflow( object ):
             #print "file_list " + repr(file_list)
             if file_list is not None:
               for fileName in file_list:
-                if fileName.fullPath() not in self._fileNames:
-                  fileId = self._createIdentifier( self.FILE )
-                  database = fileName.get( '_database' )
-                  databaseUuid = None
-                  if database:
-                    databaseUuid = neuroHierarchy.databases.database( database ).uuid
-                  full_paths = [fileName.fullPath() + ".minf"]
-                  if fileName.fullPaths():
-                    full_paths.extend(fileName.fullPaths())
+                if name in getattr( process, 'workflow_transmit_by_attributes', () ):
+                  hierarchyAttributes = fileName.hierarchyAttributes()
+                  hierarchyAttributes.pop( '_database', None )
+                  if hierarchyAttributes:
+                    continue
+                if fileName is not None:
+                  if fileName.fullPath() not in self._fileNames:
+                    fileId = self._createIdentifier( self.FILE )
+                    database = fileName.get( '_database' )
+                    databaseUuid = None
+                    if database:
+                      databaseUuid = neuroHierarchy.databases.database( database ).uuid
+                    full_paths = [fileName.fullPath() + ".minf"]
+                    if fileName.fullPaths():
+                      full_paths.extend(fileName.fullPaths())
+                    else:
+                      full_paths.append(fileName.fullPath())
+                    self._files[fileId]=(fileName.fullPath(), full_paths, databaseUuid, database)
+                    self._fileNames[fileName.fullPath()]= fileId
                   else:
-                    full_paths.append(fileName.fullPath())
-                  self._files[fileId]=(fileName.fullPath(), full_paths, databaseUuid, database)
-                  self._fileNames[fileName.fullPath()]= fileId
-                else:
-                  fileId = self._fileNames[fileName.fullPath()]
-                self._iofiles.setdefault( fileId, ( [], [] ) )[ 0 ].append( id )
+                    fileId = self._fileNames[fileName.fullPath()]
+                  self._iofiles.setdefault( fileId, ( [], [] ) )[ 0 ].append( id )
              
         if (id[ 0 ] == self.NATIVE_JOB) :
           self._append_native_jobs( depth, id, process, inGroup, priority)
@@ -693,6 +699,39 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
     #print "<<< groups "
     ##########################
       
+  def parameterToString(self, process, name):
+    def toString( value, useHierarchy, escape = None, level = 0 ):
+      # This function converts values to string
+      # also converting lists recursively
+      if isinstance( value, DiskItem ):
+        hierarchyAttributes = value.hierarchyAttributes()
+        hierarchyAttributes.pop( '_database', None )
+        if hierarchyAttributes and useHierarchy:
+          value = repr( hierarchyAttributes )
+      else :
+        if isinstance(value, list) \
+        or isinstance(value, tuple):
+          new_value = []
+          for element in value:
+            new_value.append(toString(element, useHierarchy, escape, level + 1))
+          if isinstance(value, tuple):
+            value = tuple(new_value)
+          else:
+            value = new_value
+      if not isinstance(value, list) and not isinstance(value, tuple):
+        value = str(value)
+        if escape is not None :
+          for e, r in escape :
+            value = value.replace(e, r)
+
+      return value
+
+    value = getattr(process, name)
+    useHierarchy = name in getattr( process, 'workflow_transmit_by_attributes', () )
+    value = toString( value, useHierarchy, escape = self.escape() )
+
+    return value
+
   def create_job( self, depth, jobId, command, inGroup, label, priority ):
     #print 'create_job' + repr( ( depth, jobId, command, inGroup ) )
     self.__jobs[jobId] = Job(command=command, name=label, priority=priority)#jobId)#
