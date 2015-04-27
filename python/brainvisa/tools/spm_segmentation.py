@@ -226,3 +226,78 @@ matlabbatch{1}.spm.tools.vbm8.estwrite.output.warps = [1 1];
 # e.g. writeRealignMatFile(None, False, '/home_local/mreynal/MEMENTO_RAW_Subjects/Toulouse/005_0036_GUJE_M00', '/0050036GUJEM00-20120224-PT-MEMENTO_AC-CHU_Toulouse', None, open(spmJobFile, 'w'))
 
 #------------------------------------------------------------------------------
+def writeVBM8MatFile(context, configuration, sourcePath, spmJobFile
+, tpm, ngaus = """[2 2 2 3 4 2]""", biasreg = """0.0001""", biasfwhm = """60""", affreg = """'mni'""", warpreg = """4""", samp = """3"""
+, norm = """low = struct([])""", sanlm = """2""", mrf = """0.15""", cleanup = """1""", pprint = """1"""
+, gm_native = """0""", gm_normalized = """0""", gm_modulated = """2""", gm_dartel = """0"""
+, wm_native = """0""", wm_normalized = """0""", wm_modulated = """2""", wm_dartel = """0"""
+, csf_native = """0""", csf_normalized = """0""", csf_modulated = """0""", csf_dartel = """0"""
+, bias_native = """0""", bias_normalized = """1""", bias_affine = """0"""
+, pve_native = """0""", pve_normalized = """0""", pve_dartel = """0"""
+, generateJacobianDeterminant="""0""", deformation_fields = """[0 0]"""
+):
+  mat_file = open(spmJobFile, 'w')
+  mat_file.write("""matlabbatch{1}.spm.tools.vbm8.estwrite.data = {'%s,1'};
+matlabbatch{1}.spm.tools.vbm8.estwrite.opts.tpm = {'%s'};
+matlabbatch{1}.spm.tools.vbm8.estwrite.opts.ngaus = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.opts.biasreg = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.opts.biasfwhm = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.opts.affreg = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.opts.warpreg = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.opts.samp = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.extopts.dartelwarp.norm%s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.extopts.sanlm = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.extopts.mrf = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.extopts.cleanup = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.extopts.print = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.output.GM.native = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.output.GM.warped = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.output.GM.modulated = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.output.GM.dartel = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.output.WM.native = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.output.WM.warped = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.output.WM.modulated = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.output.WM.dartel = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.output.CSF.native = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.output.CSF.warped = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.output.CSF.modulated = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.output.CSF.dartel = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.output.bias.native = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.output.bias.warped = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.output.bias.affine = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.output.label.native = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.output.label.warped = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.output.label.dartel = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.output.jacobian.warped = %s;
+matlabbatch{1}.spm.tools.vbm8.estwrite.output.warps = %s;
+
+""" % (sourcePath
+, tpm, ngaus, biasreg, biasfwhm, affreg, warpreg, samp
+, norm, sanlm, mrf, cleanup, pprint
+, gm_native, gm_normalized, gm_modulated, gm_dartel
+, wm_native, wm_normalized, wm_modulated, wm_dartel
+, csf_native, csf_normalized, csf_modulated, csf_dartel
+, bias_native, bias_normalized, bias_affine
+, pve_native, pve_normalized, pve_dartel
+, generateJacobianDeterminant, deformation_fields
+
+       ))
+  mat_file.close()
+  return mat_file.name
+
+#
+# Initialize VBM parameters (estimation optins & extended options) with VBM8 Default values
+#
+def initializeVBMParameters_usingVBM8DefaultValues(process):
+  process.gaussian_classes = """[2 2 2 3 4 2]"""
+  process.bias_reg = """0.0001"""
+  process.bias_fwhm = """60"""
+  process.affine_reg = """'mni'"""
+  process.warping_reg = """4"""
+  process.samp = """3"""
+  process.norm = """Low"""
+  process.sanlm = """2"""
+  process.mrf = """0.15"""
+  process.clean_up = """1"""
+  process.print_results = """1"""
+ 
