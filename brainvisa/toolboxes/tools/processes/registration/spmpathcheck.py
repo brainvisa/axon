@@ -35,8 +35,6 @@ from brainvisa.processes import *
 from soma.wip.application.api import Application
 from brainvisa.configuration import neuroConfig
 from brainvisa.data import neuroHierarchy
-
-from subprocess import check_output
 from distutils.spawn import find_executable
 
 import os
@@ -207,8 +205,11 @@ def findStandAlonePaths(spm_version):
   else:
     raise ValueError('Unvalid SPM version')
   
-  output = check_output('compgen -c | grep "spm"', shell=True, executable='/bin/bash')
-  command_contains_spm_list =  output.splitlines()
+  #output = check_output('compgen -c | grep "spm"', shell=True, executable='/bin/bash')
+  #command_contains_spm_list =  output.splitlines()
+  
+  output = subprocess.Popen('compgen -c | grep "spm"', shell=True, stdout=subprocess.PIPE, executable='/bin/bash').communicate()[0]
+  command_contains_spm_list = output.split('\n')
   possible_right_command_list = []
   for command_contains_spm in command_contains_spm_list:
     if spm_version in command_contains_spm:
@@ -232,7 +233,7 @@ def findStandAlonePaths(spm_version):
 def extractPathFromExecutable(executable_path):
   shutil.copy(executable_path, '/tmp/SPMPathCheck')
   os.system('sed -i "s/exec /echo /g" /tmp/SPMPathCheck')
-  output = check_output('sh /tmp/SPMPathCheck', shell=True)
+  output = subprocess.Popen('sh /tmp/SPMPathCheck', shell=True, stdout=subprocess.PIPE).communicate()[0]
   output_line_list = output.splitlines()
   if len(output_line_list) == 1:
     output_splitted = output.splitlines()[0].split( )
@@ -242,4 +243,4 @@ def extractPathFromExecutable(executable_path):
       #this command is not the command searches
       return None, None
   else:
-    raise ValueError('More than 1 line exec found for ' + str(executable_path))
+    raise Exception('More than 1 line exec found for ' + str(executable_path))
