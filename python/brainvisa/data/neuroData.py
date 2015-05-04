@@ -417,7 +417,6 @@ class ChoiceInSection( Choice ):
     
     :param list args: list of possible value, each value can be a string or a tuple. 
     """
-    print 'init of ChoiceInSection'
     Parameter.__init__( self, section=args[1])
     self._warnChoices = {}
     self.values = []
