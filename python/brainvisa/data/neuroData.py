@@ -109,13 +109,14 @@ class Parameter( object ):
   :Methods:
   
   """
-  def __init__( self ):
+  def __init__( self, section=None ):
     self.mandatory = 1
     self.linkParameterWithNonDefaultValue = 0
     self.userLevel = 0
     self.valueLinkedNotifier = Notifier( 3 )
     self._name = None
     self._parameterized = None
+    self._section = section   
     
   def checkReadable( self, value ):
     """
@@ -161,6 +162,12 @@ class Parameter( object ):
     Virtual function. Returns a default value for the parameter (here None).
     """
     return None
+  
+  def getSectionTitleIfDefined(self):
+    """
+    return section title if defined and return None otherwise
+    """
+    return self._section
   
   def __getstate__( self ):
     return copy.copy( self.__dict__ )
@@ -400,7 +407,22 @@ class Choice( Parameter ):
       result[ attrName ] = copy.copy( result[ attrName ] )
     return result
     
-
+#----------------------------------------------------------------------------
+class ChoiceInSection( Choice ):
+  """
+  Subclass of Choice where input arguments changed, the first must be list of choices, the second must be section title
+  """
+  def __init__( self, *args ):
+    """
+    
+    :param list args: list of possible value, each value can be a string or a tuple. 
+    """
+    print 'init of ChoiceInSection'
+    Parameter.__init__( self, section=args[1])
+    self._warnChoices = {}
+    self.values = []
+    self.setChoices( *args[0] )
+    
 #----------------------------------------------------------------------------
 class OpenChoice( Choice ):
   """
@@ -420,14 +442,18 @@ class OpenChoice( Choice ):
     else:
       return str( value )
 
-
+class OpenChoiceInSection( OpenChoice ):
+  """
+  Subclass of OpenChoice where input arguments changed, the first must be list of choices, the second must be section title
+  """
+  def __init__( self, choiceList, section=None ):
+    ChoiceInSection.__init__( self, choiceList, section=None )
+    
 #----------------------------------------------------------------------------
 class Boolean( Parameter ):
   """
   A choice between 2 values: True or False.
   """
-  def __init__( self ):
-    Parameter.__init__( self )
 
   def findValue( self, value ):
     """
@@ -449,12 +475,12 @@ class Point( Parameter ):
   """
   This parameter type represents the coordinates of a point.
   """
-  def __init__( self, dimension = 1, precision = None ):
+  def __init__( self, dimension = 1, precision = None, section=None ):
     """
     :param int dimension: dimension of the space in which the coordinates are given.
     :param int precision: precision of the coordinates.
     """
-    Parameter.__init__( self )
+    Parameter.__init__( self, section )
 #    self.linkParameterWithNonDefaultValue = 1
     self.dimension = dimension
     self.precision = precision
@@ -485,16 +511,16 @@ class Point2D( Point ):
   """
   :py:class:`Point` in a two dimensions space.
   """
-  def __init__( self, dimension = 2, precision = None ):
-    Point.__init__( self, dimension, precision )
+  def __init__( self, dimension = 2, precision = None, section=None ):
+    Point.__init__( self, dimension, precision, section )
 
 #-------------------------------------------------------------------------------
 class Point3D( Point ):
   """
   :py:class:`Point` in a three dimensions space.
   """
-  def __init__( self, dimension = 3, precision = None ):
-    Point.__init__( self, dimension, precision )
+  def __init__( self, dimension = 3, precision = None, section=None ):
+    Point.__init__( self, dimension, precision, section )
 
   # We only keep the following method to have back compatibility with old
   # codes
@@ -585,11 +611,11 @@ class ListOfVector( Parameter ):
   """
   This parameter expects a list of vectors value.
   """
-  def __init__( self, length=None ):
+  def __init__( self, length=None, section=None ):
     """
     :param int length: number of vectors.
     """
-    Parameter.__init__( self )
+    Parameter.__init__( self, section )
     self.length =length
   
   def findValue( self, value ):
@@ -605,12 +631,12 @@ class Matrix( Parameter ):
   """
   This parameter expects a matrix value.
   """
-  def __init__( self, length=None, width=None ):
+  def __init__( self, length=None, width=None, section=None ):
     """
     :param int length: required number of lines of the matrix
     :param int width: required number of columns of the matrix.
     """
-    Parameter.__init__( self )
+    Parameter.__init__( self, section )
     self.length =length
     self.width = width
   
@@ -636,11 +662,11 @@ class ListOf( Parameter ):
   :Methods:
   
   """
-  def __init__( self, contentType, allowNone=False ):
+  def __init__( self, contentType, allowNone=False, section=None ):
     """
     :param contentType: type of the elements of the list.
     """
-    Parameter.__init__( self )
+    Parameter.__init__( self, section )
     self.contentType = contentType
     self._allowNone = allowNone
 

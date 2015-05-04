@@ -76,8 +76,8 @@ class ReadDiskItem( Parameter ):
   In the first example, the parameter will accept only a file whose type is 3D Volume and format is either GIS image or VIDA image, or a format that can be converted to GIS or VIDA image. These types and formats must have been defined first. In the second example, the parameter value type must be "Cortical folds graph", its format must be "Graph". The required attributes add some conditions : the graph isn't labelled and represents the left hemisphere.
   """
   def __init__( self, diskItemType, formats, requiredAttributes={},
-                enableConversion=True, ignoreAttributes=False, _debug=None, exactType=False ):
-    Parameter.__init__( self )
+                enableConversion=True, ignoreAttributes=False, _debug=None, exactType=False, section=None ):
+    Parameter.__init__( self, section )
     self._debug = _debug
     self.type = getDiskItemType( diskItemType )
     formatsList = getFormats( formats )

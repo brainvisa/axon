@@ -59,8 +59,8 @@ class WriteDiskItem( ReadDiskItem ):
   This parameter type is very close to ReadDiskItem (WriteDiskItem derives from ReadDiskItem), but it accepts writable files. That is to say, it accepts not only files that are accepted by a ReadDiskItem but also files that doesn't exist yet. It has the same search methods as the ReadDiskItem class but these methods generate diskitems that may not exist yet, using data ontology information. 
   """
   def __init__( self, diskItemType, formats, requiredAttributes={},
-                exactType=False, ignoreAttributes=False, _debug=None ):
-    ReadDiskItem.__init__( self, diskItemType, formats, requiredAttributes=requiredAttributes, ignoreAttributes=ignoreAttributes, enableConversion=False, _debug=_debug, exactType=exactType  )
+                exactType=False, ignoreAttributes=False, _debug=None, section=None ):
+    ReadDiskItem.__init__( self, diskItemType, formats, requiredAttributes=requiredAttributes, ignoreAttributes=ignoreAttributes, enableConversion=False, _debug=_debug, exactType=exactType, section=section  )
     self._write = True
         
   

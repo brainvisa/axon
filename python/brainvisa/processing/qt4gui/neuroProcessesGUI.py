@@ -147,7 +147,7 @@ def quitRequest():
     for w in wids:
       if isinstance( w, ProcessView ) or isinstance(w, SomaWorkflowProcessView):
         w.close()
-        del w
+        del w  
     try:
       from brainvisa import anatomist
       a = anatomist.Anatomist( create=False )
@@ -1526,7 +1526,7 @@ class ParameterizedWidget( QWidget ):
     # the widget that will contain parameters, it will be put in the scroll widget
     parametersWidget=QWidget()
     # QGridLayout : a label and an editor for each parameter, in 2 columns
-    parametersWidgetLayout=QGridLayout()
+    parametersWidgetLayout=QFormLayout()
     parametersWidgetLayout.setContentsMargins( 0, 0, 0, 0 )
     if sys.platform == 'darwin' and QtCore.qVersion() == '4.6.2':
       # is this layout problem a bug in qt/Mac 4.6.2 ?
@@ -1535,53 +1535,74 @@ class ParameterizedWidget( QWidget ):
       parametersWidgetLayout.setSpacing(2)
     parametersWidget.setLayout(parametersWidgetLayout)
     # create a widget for each parameter
-    line = 0
-    for k, p in self.parameterized.signature.items():
-      if neuroConfig.userLevel >= p.userLevel:
-        l = ParameterLabel( k, p.mandatory, None )
-        parametersWidgetLayout.addWidget(l, line, 0 )
-        l.setDefault(self.parameterized.isDefault( k ))
-        self.connect( l, SIGNAL( 'toggleDefault' ), self._toggleDefault )
+    
+    #sort signature item by section title
+    sectionTitleList = []#useful to keep signature order
+    sectionTitleSortedDict = {}
+    for key, parameter in self.parameterized.signature.items():
+      sectionTitle = parameter.getSectionTitleIfDefined()
+      sectionTitleList.append(sectionTitle)
+      if sectionTitle in sectionTitleSortedDict.keys():
+        sectionTitleSortedDict[sectionTitle].append( (key, parameter) )
+      else:
+        sectionTitleSortedDict[sectionTitle] = [ (key, parameter) ]
+    
+    sectionTitleList = list( set( sectionTitleList ) )
+    #the parameters not grouped will be added first
+    if None in sectionTitleList:
+      sectionTitleList.insert(0, sectionTitleList.pop( sectionTitleList.index(None) ) )
 
-        if isinstance( p, ReadDiskItem ):
-            l.lock_id.setCheckable(True)
-            l.setlock(self._setlock_system(k)) #ini la valeur de lock du parametre
-            #self.connect( l, SIGNAL( 'setlock_system' ), self._setlock_system )
-            self.connect( l, SIGNAL( 'lock_system' ), self._lock_system )
-            self.connect( l, SIGNAL( 'unlock_system' ), self._unlock_system )
+    for sectionTitle in sectionTitleList:
+      if len( sectionTitleList ) > 1 and sectionTitle is not None:
+        parametersWidgetLayout.addRow( SectionTitle(sectionTitle) )
+                          
+      for k, p in sectionTitleSortedDict[ sectionTitle ]:
+        if neuroConfig.userLevel >= p.userLevel:
+          l = ParameterLabel( k, p.mandatory, None )
+          l.setDefault(self.parameterized.isDefault( k ))
+          self.connect( l, SIGNAL( 'toggleDefault' ), self._toggleDefault )
+  
+          if isinstance( p, ReadDiskItem ):
+              l.lock_id.setCheckable(True)
+              l.setlock(self._setlock_system(k)) #ini la valeur de lock du parametre
+              #self.connect( l, SIGNAL( 'setlock_system' ), self._setlock_system )
+              self.connect( l, SIGNAL( 'lock_system' ), self._lock_system )
+              self.connect( l, SIGNAL( 'unlock_system' ), self._unlock_system )
+  
+          l.setSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed )
+          self.labels[ k ] = l
+          e = p.editor( None, k, weakref.proxy( self ) )
 
-        l.setSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed )
-        self.labels[ k ] = l
-        e = p.editor( None, k, weakref.proxy( self ) )
-
-        parametersWidgetLayout.addWidget(e, line, 1)
-
-        self.parameterized.addParameterObserver( k, self.parameterChanged )
-
-        self.editors[ k ] = e
-        if first is None: first = e
-        v = getattr( self.parameterized, k, None )
-        if v is not None:
-          self.setValue( k, v, 1 )
-        e.valuePropertiesChanged( self.parameterized.isDefault( k ) )
-        e.connect( e, SIGNAL('noDefault'), self.removeDefault )
-        e.connect( e, SIGNAL('newValidValue'), self.updateParameterValue )
-#lock#        btn = NamedPushButton( hb, k )
-#lock#        btn.setPixmap( self.pixCustom )
-#lock#        btn.setFocusPolicy( QWidget.NoFocus )
-#lock#        btn.setToggleButton( 1 )
-#lock#        btn.hide()
-#lock#        self.connect( btn, PYSIGNAL( 'clicked' ), self._toggleDefault )
-#lock#        self.btnLock[ k ] = btn
-        if documentation is not None:
-          self.setParameterToolTip( k,
-            XHTML.html( documentation.get( 'parameters', {} ).get( k, '' ) ) \
-            + '<br/><img src="' \
-            + os.path.join( neuroConfig.iconPath, 'modified.png' )+ '"/><em>: ' \
-            + _t_( \
-            'value has been manually changed and is not modified by links anymore' ) \
-            + '</em>' )
-        line += 1
+          #if p.getSectionTitleIfDefined() is not None:
+          #  parametersWidgetLayout.addRow( SectionTitle( p.getSectionTitleIfDefined() ) )
+          
+          parametersWidgetLayout.addRow( l, e )
+  
+          self.parameterized.addParameterObserver( k, self.parameterChanged )
+  
+          self.editors[ k ] = e
+          if first is None: first = e
+          v = getattr( self.parameterized, k, None )
+          if v is not None:
+            self.setValue( k, v, 1 )
+          e.valuePropertiesChanged( self.parameterized.isDefault( k ) )
+          e.connect( e, SIGNAL('noDefault'), self.removeDefault )
+          e.connect( e, SIGNAL('newValidValue'), self.updateParameterValue )
+  #lock#        btn = NamedPushButton( hb, k )
+  #lock#        btn.setPixmap( self.pixCustom )
+  #lock#        btn.setFocusPolicy( QWidget.NoFocus )
+  #lock#        btn.setToggleButton( 1 )
+  #lock#        btn.hide()
+  #lock#        self.connect( btn, PYSIGNAL( 'clicked' ), self._toggleDefault )
+  #lock#        self.btnLock[ k ] = btn
+          if documentation is not None:
+            self.setParameterToolTip( k,
+              XHTML.html( documentation.get( 'parameters', {} ).get( k, '' ) ) \
+              + '<br/><img src="' \
+              + os.path.join( neuroConfig.iconPath, 'modified.png' )+ '"/><em>: ' \
+              + _t_( \
+              'value has been manually changed and is not modified by links anymore' ) \
+              + '</em>' )
 
     parametersWidget.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum))
     self.scrollWidget.setWidget(parametersWidget)
@@ -1747,6 +1768,34 @@ class BrainVISAAnimation( QLabel ):
     qApp.processEvents()
     self.mmovie.stop()
 
+
+#----------------------------------------------------------------------------
+class SectionTitle( QLabel ):
+  """
+  This widget is used to create a virtual signature separation, called implicitly by "section" argument.
+  All parameters will be grouped by section in signature with this label text as title.
+  
+  **Examples**
+  
+  'bool_field', Boolean(section='Section title'),
+  or
+  'image', WriteDiskItem( '4D Volume', 'NIFTI-1 image', section='Output images' ),
+  """
+  def __init__(self, section_title):
+    QLabel.__init__(self, section_title)
+    font = QFont()
+    #font.setCapitalization(QFont.Capitalize)
+    font.setUnderline(True)
+    font.setItalic(True)
+    self.setFont(font)
+    self.setAlignment(Qt.AlignCenter)
+    
+    styleSheet = """
+    
+SectionTitle { border-top: 1px solid #6c6c6c;
+               border-top-style: double; 
+               border-top-color: silver; }"""
+    self.setStyleSheet(styleSheet)
 
 
 #----------------------------------------------------------------------------
