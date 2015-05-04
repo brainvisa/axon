@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from brainvisa.axon import processes
-from capsul.pipeline import process, pipeline
+from capsul import process, pipeline
 from brainvisa import processes as procbv
 from brainvisa.data import neuroData
 from brainvisa.data.readdiskitem import ReadDiskItem
