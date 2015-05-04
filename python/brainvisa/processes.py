@@ -844,6 +844,18 @@ class Parameterized( object ):
     """Indicates that the parameters are mandatory."""
     for k in args:
       self.signature[ k ].mandatory = True
+      
+  def setVisible( self, *args ):
+    currentUserLevel = Application().configuration.brainvisa.userLevel
+    """Indicates that the parameters are visible."""
+    for k in args:
+      self.signature[ k ].userLevel = currentUserLevel
+      
+  def setHidden(self, *args ):
+    """Indicates that the parameters are hidden."""
+    currentUserLevel = Application().configuration.brainvisa.userLevel
+    for k in args:
+      self.signature[ k ].userLevel = currentUserLevel + 1
 
   def setUserLevel( self, userLevel, *args ):
     """Assign a userLevel to a list of parameters."""
