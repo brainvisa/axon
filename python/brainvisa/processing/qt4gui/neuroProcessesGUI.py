@@ -148,11 +148,14 @@ def quitRequest():
       if isinstance( w, ProcessView ) or isinstance(w, SomaWorkflowProcessView):
         w.close()
         del w
-    from brainvisa import anatomist
-    a = anatomist.Anatomist( create=False )
-    if a:
-      close_viewers()
-      a.close()
+    try:
+      from brainvisa import anatomist
+      a = anatomist.Anatomist( create=False )
+      if a:
+        close_viewers()
+        a.close()
+    except:
+      pass
     if neuroConfig.shell:
       sys.exit()
     else:
