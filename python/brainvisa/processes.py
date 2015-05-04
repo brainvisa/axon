@@ -1866,8 +1866,8 @@ class ExecutionNode( object ):
     self.addLink( destination, source, function )
     self.addLink( source, destination, function )
 
-
-  def removeLink( self, destination, source, function=None ):
+  
+  def removeLink( self, destination, source, function=None, show_warnings=True ):
     """
     Removes a parameters link added with :py:meth:`addLink`.
     """
@@ -1902,7 +1902,7 @@ class ExecutionNode( object ):
             del sourceObject._links[ sourceParameter ]
             removed = True
 
-        if not removed :
+        if not removed and show_warnings:
           print 'warning: enode link not removed:', self, destination, 'from:', source, ', function:', function
 
   def removeDoubleLink( self, destination, source, function=None ):
