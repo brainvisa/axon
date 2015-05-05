@@ -928,7 +928,7 @@ class Parameterized( object ):
 
 
 
-  def removeLink( self, destination, source ):
+  def removeLink( self, destination, source, show_warnings=True ):
     """Removes a link added with :py:func:`addLink` function."""
     # print 'removeLink', self, destination, source
     # Parse source
@@ -965,7 +965,8 @@ class Parameterized( object ):
             else:
               del sourceObject._links[ sourceParameter ]
           else:
-            print 'warning: link not removed:', self, destination, 'from:', source
+            if show_warnings:
+              print 'warning: link not removed:', self, destination, 'from:', source
 
     # TODO : set the removed value consistent with what happened
     return removed
@@ -1917,12 +1918,12 @@ class ExecutionNode( object ):
         if not removed and show_warnings:
           print 'warning: enode link not removed:', self, destination, 'from:', source, ', function:', function
 
-  def removeDoubleLink( self, destination, source, function=None ):
+  def removeDoubleLink( self, destination, source, function=None, show_warnings=True ):
     """
     Removes a double link source -> destination and destination -> source.
     """
-    self.removeLink( destination, source, function )
-    self.removeLink( source, destination, function )
+    self.removeLink( destination, source, function, show_warnings )
+    self.removeLink( source, destination, function, show_warnings )
 
   def parseParameterString( self, parameterString ):
     """
