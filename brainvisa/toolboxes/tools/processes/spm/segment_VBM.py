@@ -173,15 +173,45 @@ def getDatabase(self):
 def execution(self, context):
   print "\n start ", name, "\n"
   #momoTODO : c vraiment pas terrible de passer tous ces paramètres... faire de l'héritage de signature entre process?
-  context.runProcess('segment_VBM_noLinks', MRI_Nat=self.MRI_Nat, MRI_Mni_tpmSeg=self.MRI_Mni_tpmSeg, spmJobName = self.spmJobName
-                    , ngaus=self.ngaus, biasreg=self.biasreg, saveBias=self.saveBias, biasCorrected=self.biasCorrected
-                    , biasfwhm=self.biasfwhm, affreg=self.affreg, warpreg=self.warpreg, samp=self.samp
-                    , norm=self.norm, DartelTemplate=self.DartelTemplate, sanlm=self.sanlm, mrf=self.mrf, cleanup=self.cleanup, pprint=self.pprint
-                    , grey_native=self.grey_native, grey_nat=self.grey_nat, grey_warped=self.grey_warped, grey_Mni=self.grey_Mni,grey_modulated=self.grey_modulated, grey_dartel=self.grey_dartel
-                    , wm_native=self.wm_native, white_Nat=self.white_Nat, wm_warped=self.wm_warped, wm_modulated=self.wm_modulated, wm_dartel=self.wm_dartel
-                    , csf_native=self.csf_native, csf_Nat=self.csf_Nat, csf_warped=self.csf_warped, csf_modulated=self.csf_modulated, csf_dartel=self.csf_dartel
-                    , deFld=self.deFld, invDeFld=self.invDeFld, deFld_segMat=self.deFld_segMat
-                    , generateJacobianDeterminant=self.generateJacobianDeterminant, jacobianDeterminant=self.jacobianDeterminant)
+  context.runProcess('segment_VBM_noLinks', 
+                     Volume_to_segment=self.MRI_Nat, 
+                     MRI_Mni_tpmSeg=self.MRI_Mni_tpmSeg, 
+                     gaussian_classes=self.ngaus, 
+                     bias_reg=self.biasreg, 
+                     bias_native=self.saveBias, 
+                     bias_native_fn=self.biasCorrected, 
+                     bias_fwhm=self.biasfwhm, 
+                     affine_reg=self.affreg, 
+                     warping_reg=self.warpreg, 
+                     samp=self.samp, 
+                     norm=self.norm,
+                     DARTEL_template=self.DartelTemplate, 
+                     sanlm=self.sanlm, 
+                     mrf=self.mrf, 
+                     clean_up=self.cleanup, 
+                     print_results=self.pprint, 
+                     grey_native=self.grey_native, 
+                     grey_native_fn=self.grey_nat, 
+                     grey_normalized=self.grey_warped, 
+                     grey_normalized_fn=self.grey_Mni,
+                     grey_modulated=self.grey_modulated, 
+                     grey_dartel=self.grey_dartel, 
+                     white_native=self.wm_native, 
+                     white_native_fn=self.white_Nat, 
+                     white_normalized=self.wm_warped, 
+                     white_modulated=self.wm_modulated, 
+                     white_dartel=self.wm_dartel, 
+                     csf_native=self.csf_native, 
+                     csf_native_fn=self.csf_Nat, 
+                     csf_normalized=self.csf_warped, 
+                     csf_modulated=self.csf_modulated, 
+                     csf_dartel=self.csf_dartel, 
+                     deformation_fields='inverse + forward',
+                     forward_DF_fn=self.deFld, 
+                     inverse_DF_fn=self.invDeFld, 
+                     DF_transformation_matrix=self.deFld_segMat, 
+                     jacobian_normalized=self.generateJacobianDeterminant, 
+                     jacobian_normalized_fn=self.jacobianDeterminant)
     
   print "\n stop ", name, "\n"
 
