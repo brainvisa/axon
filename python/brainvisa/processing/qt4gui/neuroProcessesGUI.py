@@ -1547,13 +1547,21 @@ class ParameterizedWidget( QWidget ):
       else:
         sectionTitleSortedDict[sectionTitle] = [ (key, parameter) ]
     
-    sectionTitleList = list( set( sectionTitleList ) )
-    #the parameters not grouped will be added first
-    if None in sectionTitleList:
-      sectionTitleList.insert(0, sectionTitleList.pop( sectionTitleList.index(None) ) )
-
+    #sectionTitleList = list( set( sectionTitleList ) )#this command do not keep the list order
+    uniqueSectionTitleList = []
     for sectionTitle in sectionTitleList:
-      if len( sectionTitleList ) > 1 and sectionTitle is not None:
+      if not sectionTitle in uniqueSectionTitleList:
+        uniqueSectionTitleList.append(sectionTitle)
+      else:
+        pass
+      
+    
+    #the parameters not grouped will be added first
+    if None in uniqueSectionTitleList:
+      uniqueSectionTitleList.insert(0, uniqueSectionTitleList.pop( uniqueSectionTitleList.index(None) ) )
+
+    for sectionTitle in uniqueSectionTitleList:
+      if len( uniqueSectionTitleList ) > 1 and sectionTitle is not None:
         parametersWidgetLayout.addRow( SectionTitle(sectionTitle) )
                           
       for k, p in sectionTitleSortedDict[ sectionTitle ]:
