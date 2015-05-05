@@ -310,12 +310,16 @@ class Choice( Parameter ):
   >>> c = Choice( ( 'first', 1 ), ( 'second', 2 ), ( 'third', 3 ) )
             
   """
-  def __init__( self, *args ):
+  def __init__( self, *args, **kwargs ):
     """
     
     :param list args: list of possible value, each value can be a string or a tuple. 
     """
-    Parameter.__init__( self )
+    if 'section' in kwargs.keys():
+      section = kwargs['section']
+    else:
+      section = None
+    Parameter.__init__( self, section )
     self._warnChoices = {}
     self.values = []
     self.setChoices( *args )
@@ -406,29 +410,14 @@ class Choice( Parameter ):
     for attrName in ( 'values', '_warnChoices' ):
       result[ attrName ] = copy.copy( result[ attrName ] )
     return result
-    
-#----------------------------------------------------------------------------
-class ChoiceInSection( Choice ):
-  """
-  Subclass of Choice where input arguments changed, the first must be list of choices, the second must be section title
-  """
-  def __init__( self, *args ):
-    """
-    
-    :param list args: list of possible value, each value can be a string or a tuple. 
-    """
-    Parameter.__init__( self, section=args[1])
-    self._warnChoices = {}
-    self.values = []
-    self.setChoices( *args[0] )
-    
+       
 #----------------------------------------------------------------------------
 class OpenChoice( Choice ):
   """
   An OpenChoice enables to choose a value in the list of choice or a new value that is not in the list.
   """
-  def __init__( self, *args ):
-    Choice.__init__( self, *args )
+  def __init__( self, *args, **kwargs ):
+    Choice.__init__( self, *args, **kwargs )
 
   def findValue( self, value ):
     """
@@ -440,14 +429,7 @@ class OpenChoice( Choice ):
       return self.values[ i ][ 1 ]
     else:
       return str( value )
-
-class OpenChoiceInSection( OpenChoice ):
-  """
-  Subclass of OpenChoice where input arguments changed, the first must be list of choices, the second must be section title
-  """
-  def __init__( self, choiceList, section=None ):
-    ChoiceInSection.__init__( self, choiceList, section=None )
-    
+   
 #----------------------------------------------------------------------------
 class Boolean( Parameter ):
   """
