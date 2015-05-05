@@ -846,21 +846,32 @@ class Parameterized( object ):
       self.signature[ k ].mandatory = True
       
   def setVisible( self, *args ):
-    currentUserLevel = Application().configuration.brainvisa.userLevel
     """Indicates that the parameters are visible."""
-    for k in args:
-      self.signature[ k ].userLevel = currentUserLevel
+    currentUserLevel = Application().configuration.brainvisa.userLevel
+    self.setUserLevel(currentUserLevel, *args)
       
-  def setHidden(self, *args ):
+  def setHidden( self, *args ):
     """Indicates that the parameters are hidden."""
     currentUserLevel = Application().configuration.brainvisa.userLevel
-    for k in args:
-      self.signature[ k ].userLevel = currentUserLevel + 1
+    self.setUserLevel(currentUserLevel+1, *args)
 
   def setUserLevel( self, userLevel, *args ):
     """Assign a userLevel to a list of parameters."""
     for k in args:
       self.signature[ k ].userLevel = userLevel
+      
+  def setEnable( self, mandatory, *args ):
+    """Indicates that the parameters are visible and mandatory or optional."""
+    self.setVisible(*args)
+    if mandatory:
+      self.setMandatory(*args)
+    else:
+      self.setOptional(*args)
+    
+  def setDisable( self, *args ):
+    """Indicates that the parameters are hidden and optional."""
+    self.setHidden(*args)
+    self.setOptional(*args)
 
   def setConvertedValue( self, name, value ):
     """Sets the value but stores the previous value in an internal dictionary."""
