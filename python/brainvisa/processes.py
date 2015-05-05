@@ -860,13 +860,32 @@ class Parameterized( object ):
     for k in args:
       self.signature[ k ].userLevel = userLevel
       
-  def setEnable( self, mandatory, *args ):
-    """Indicates that the parameters are visible and mandatory or optional."""
-    self.setVisible(*args)
-    if mandatory:
-      self.setMandatory(*args)
+  def setEnable( self, *args, **kwargs ):
+    """Indicates parameters visibility and mandatory
+    using examples : self.setEnable( *args)
+                     self.setEnable( *args, userLevel=0)
+                     self.setEnable( *args, userLevel=0, mandatory=True)
+    
+    *optional keyword paramerers*
+    
+    :param int userLevel, indicates that the parameters are visible or hidden regarding the userLevel.
+                          ( default value : Application().configuration.brainvisa.userLevel )
+    :param boolean mandatory, indicates that the parameters are mandatory(True) or optional(False).
+                              ( default value : True )
+    """
+    if 'userLevel' in kwargs.keys():
+      userLevel = kwargs['userLevel']
     else:
-      self.setOptional(*args)
+      userLevel = Application().configuration.brainvisa.userLevel
+    self.setUserLevel(userLevel, *args)
+    
+    if 'mandatory' in kwargs.keys():
+      if kwargs['mandatory']:
+        self.setMandatory(*args)
+      else:
+        self.setOptional(*args)
+    else:
+      self.setMandatory(*args)
     
   def setDisable( self, *args ):
     """Indicates that the parameters are hidden and optional."""
