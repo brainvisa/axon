@@ -71,6 +71,8 @@ hierarchy = (
         ),# toolbox
         'rend', SetContent(
             'render_{spm_render}', SetType('SPM Render')),
+        'canonical', SetContent(
+            'single_subj_T1', SetType('SPM single subject')),
         # this templates dir is for SPM8 and SPM5
         'templates', SetContent(*templates_contents),
     )
