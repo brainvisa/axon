@@ -230,7 +230,8 @@ class HierarchyBrowser( QWidget ):
                 viewItem.setBackground( 0, QBrush( QColor( 255, 230, 230 ) ) )
               #viewItem.setDragEnabled(True)
               # File or Directory
-              if isinstance( item, neuroDiskItems.Directory ) or ( item.format and
+              if isinstance( item, neuroDiskItems.Directory ) or ( item.type and
+                 item.type.name == 'Directory') or ( item.format and
                  item.format.name == 'Directory'):
                 viewItem.setIcon( 0, self.pixDirectory )
                 viewItem.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)

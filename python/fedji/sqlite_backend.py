@@ -77,7 +77,7 @@ class FedjiSqliteDB(object):
                 d = osp.dirname(self.db)
                 if not osp.exists(d):
                     os.makedirs(d)
-            cnx = self._connection = sqlite3.connect(self.db)
+            cnx = self._connection = sqlite3.connect(self.db, check_same_thread=False)
             # Optimize database for a safe single client
             cnx.execute('PRAGMA journal_mode = MEMORY')
             cnx.execute('PRAGMA synchronous = OFF')
