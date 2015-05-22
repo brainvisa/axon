@@ -33,6 +33,19 @@ try:
   somaworkflow_version = swver.shortVersion
 except:
   somaworkflow_version = '2.7'
+try:
+    import soma.info
+    somabase_version = '%d.%d' % (soma.info.version_major,
+                                  soma.info.version_minor)
+except:
+    somabase_version = '4.6'
+try:
+    from soma import aims
+    aims_version = '%d.%d' % aims.version()
+except:
+    aims_version = '4.5'
+anatmist_version = aims_version
+bv_release_version = aims_version
 
 # -- General configuration -----------------------------------------------------
 
@@ -63,7 +76,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Axon'
-copyright = u'2011, IFR49.org, CEA'
+copyright = u'2015, CEA'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -242,32 +255,36 @@ extlinks = {
   'axonusr': ('../user_doc/%s', 'axon '),
   'axondev': ('../dev_doc/%s', 'axon '),
   'axonman': ('../user_doc/%s', 'axon '),
-  'aimsalgodox': ('../../aimsalgo-' + version + '/doxygen/%s',
+  'aimsalgodox': ('../../aimsalgo-' + aims_version + '/doxygen/%s',
     'aimsalgodox '),
-  'aimsalgoex': ('../../pyaimsalgo-' + version + '/examples/%s',
+  'aimsalgoex': ('../../pyaimsalgo-' + aims_version + '/examples/%s',
     'aimsalgoex '),
-  'aims': ('../../aimsdata-' + version + '/%s', 'aims '),
-  'aimsdox': ('../../aimsdata-' + version + '/doxygen/%s',
+  'aims': ('../../aimsdata-' + aims_version + '/%s', 'aims '),
+  'aimsdox': ('../../aimsdata-' + aims_version + '/doxygen/%s',
     'aimsdox '),
-  'aimsdata' : ('../../aimsdata-' + version + '/%s', 'aimsdata '),
-  'cartobdox' : ('../../cartobase-' + version + '/doxygen/%s',
+  'aimsdata' : ('../../aimsdata-' + aims_version + '/%s', 'aimsdata '),
+  'cartobdox' : ('../../cartobase-' + aims_version + '/doxygen/%s',
   'cartobdox '),
-  'cartoddox' : ('../../cartodata-' + version + '/doxygen/%s',
+  'cartoddox' : ('../../cartodata-' + aims_version + '/doxygen/%s',
   'cartoddox '),
-  'graphdox' : ('../../graph-' + version + '/doxygen/%s',
+  'graphdox' : ('../../graph-' + aims_version + '/doxygen/%s',
   'graphdox '),
-  'somabase' : ( '../../soma-base-' + version + '/sphinx/%s', 'somabase' ),
-  'somaqtgui' : ( '../../soma-qtgui-' + version + '/sphinx/%s', 'somaqtgui' ),
+  'somabase' : ( '../../soma-base-' + somabase_version + '/sphinx/%s',
+                'somabase' ),
   'somaworkflow' : ( '../../soma-workflow-' + somaworkflow_version \
     + '/sphinx/%s', 'somaworkflow' ),
-  'anatomist': ('../../anatomist-' + version + '/%s', 'anatomist '),
+  'anatomist': ('../../anatomist-' + anatmist_version + '/%s', 'anatomist '),
   'anausr': ('../../anatomist-' + version + '/user_doc/%s', 'anatomist '),
-  'pyanatomist': ('../../pyanatomist-' + version + '/sphinx/%s', 'pyanatomist '),
-  'morphologist': ('../../morphologist-' + version + '/%s', 'morphologist'),
+  'pyanatomist': ('../../pyanatomist-' + anatmist_version + '/sphinx/%s',
+                  'pyanatomist '),
+  'morphologist': ('../../morphologist-' + bv_release_version + '/%s',
+                   'morphologist'),
   'morphologistusr': ('%s', 'morphologist '),
-  'connectomist': ('../../connectomist-' + version + '/%s', 'connectomist '),
+  'connectomist': ('../../connectomist-' + bv_release_version + '/%s',
+                   'connectomist '),
   'connectomistusr': ('%s', 'connectomist '),
-  'brainrat': ('../../brainrat-gpl-' + version + '/brainrat_man/en/html/%s', 'brainrat '),
+  'brainrat': ('../../brainrat-gpl-' + bv_release_version +
+               '/brainrat_man/en/html/%s', 'brainrat '),
   'web': ('http://brainvisa.info/%s', 'brainvisa '),
   'documentation': ('../../%s', 'docs '),
 }
@@ -276,10 +293,13 @@ docpath = os.path.join( os.path.dirname( os.path.dirname( os.path.dirname( \
   brainvisa.__file__ ) ) ), 'share', 'doc' )
 
 intersphinx_mapping = {
-  'somabase': ( os.path.join( docpath, 'soma-base-' + version + '/sphinx' ), None ),
-  'somaqtgui': ( os.path.join( docpath, 'soma-qtgui-' + version + '/sphinx' ), None ),
+  'somabase': ( os.path.join( docpath, 'soma-base-' + version + '/sphinx' ),
+               None ),
+  'somaqtgui': ( os.path.join( docpath, 'soma-qtgui-' + version + '/sphinx' ),
+                None ),
   'pyaims': ( os.path.join( docpath, 'pyaims-' + version + '/sphinx' ), None ),
-  'pyana': ( os.path.join( docpath, 'pyanatomist-' + version + '/sphinx' ), None ),
+  'pyana': ( os.path.join( docpath, 'pyanatomist-' + version + '/sphinx' ),
+            None ),
   'somaworkflow': ( os.path.join( docpath, 'soma-workflow-' \
     + somaworkflow_version + '/sphinx' ), None ),
   'python': ('http://docs.python.org/2.7', None),
