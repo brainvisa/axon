@@ -17,6 +17,8 @@ FileType('Snapshot Thickness Map', '2D Image', 'PNG image')
 FileType('Snapshot Gyral Parcellation', '2D Image', 'PNG image')
 FileType('Snapshot Curvature Map', '2D Image', 'PNG image')
 
+FileType('Snapshot SPM Analysis PET Result Map', '2D Image', 'PNG image')
+
 FileType('Snapshots Grey White Quality Scores', 'CSV file')
 FileType('Snapshots Split Brain Quality Scores', 'CSV file')
 FileType('Snapshots Meshcut Quality Scores', 'CSV file')
