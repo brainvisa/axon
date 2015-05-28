@@ -113,7 +113,8 @@ class Importer:
                 'dimension_count': 3,
                 'name': 'Referential of Raw T1 MRI',
             }
-            open(output_referential_filename, 'w').write(repr(ref_dict))
+            open(output_referential_filename, 'w').write(
+                'attributes = ' + repr(ref_dict))
             ominf = output_filename + ".minf"
             minf_content = minf.readMinf(ominf)[0]
             minf_content['referential'] = ouuid
@@ -172,10 +173,11 @@ class ImportationError(Exception):
 
 if __name__ == '__main__':
 
-    parser = OptionParser(usage='%prog input_file output_file')
+    parser = OptionParser(usage='%prog input_file output_file '
+                          '[output_referential_file]')
     options, args = parser.parse_args()
-    if len(args) != 2:
+    if len(args) < 2 or len(args) > 3:
         parser.error(
             'Invalid arguments : input_file and output_file are mandatory.')
-    Importer.import_t1mri(args[0], args[1])
+    Importer.import_t1mri(*args)
 
