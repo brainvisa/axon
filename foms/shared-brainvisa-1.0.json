@@ -22,6 +22,8 @@
             [["shared:nomenclature/surfaceanalysis/surfaceReferential", "label translations"]],
         "shared.sulci_labels_translation_map" :
             [["shared:nomenclature/translation/sulci_model_<sulci_database>", "label translations", {"sulci_database": "2008"}]],
+        "shared.split_template":
+            [["shared:hemitemplate/closedvoronoi", "GIS"]],
         "spam_models":
             "models/models_<sulci_database>/descriptive_models",
         "spam_labels_priors":
