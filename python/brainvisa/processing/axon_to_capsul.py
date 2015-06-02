@@ -155,6 +155,7 @@ def write_process_signature(p, out, buffered_lines, get_all_values=True):
 
 
 def write_process_execution(p, out):
+    axon_name = p.id()
     out.write('''    def _run_process(self):
         from brainvisa import axon
         from brainvisa.configuration import neuroConfig
@@ -173,8 +174,8 @@ def write_process_execution(p, out):
                     or getattr(self, name) != '')])
 
         context = brainvisa.processes.defaultContext()
-        context.runProcess(self.id.split('.')[-1], **kwargs)
-''')
+        context.runProcess('%s', **kwargs)
+''' % axon_name)
 
 
 def write_process_definition(p, out, get_all_values=True):
