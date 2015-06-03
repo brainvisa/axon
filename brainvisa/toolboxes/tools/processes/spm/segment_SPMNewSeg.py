@@ -174,10 +174,13 @@ def initialization(self):
   self.addLink('invDeFld', 'grey_native')
 
 def updateAnalysis( self, proc ):
-  if not None in [self.MRI_Nat, self.analysis]:
-    d = {'_database':self.MRI_Nat.hierarchyAttributes()['_database']}
-    d['analysis'] = self.getAnalysis()
-    return self.signature['analysis'].findValue( d )
+  if self.MRI_Nat is not None:
+    if self.analysis is not None:
+      return self.analysis
+    else:
+      d = {'_database':self.MRI_Nat.hierarchyAttributes()['_database']}
+      d['analysis'] = 'SpmNewSegmentation'
+      return self.signature['analysis'].findValue( d )
 
 def update_grey_Nat(self, proc, dummy):
   return self.update_WriteDiskItem('T1 MRI Nat GreyProba', 'NIFTI-1 image')
