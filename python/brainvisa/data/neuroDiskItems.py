@@ -2468,7 +2468,7 @@ def aimsFileInfo( fileName ):
   Reads the header of the file *fileName* and returns its attributes as a dictionary.
   """
   from brainvisa.processes import defaultContext
-  from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
+  from brainvisa.processes import mainThreadActions
   global _finder
   result = {}
   if fileName.endswith( '.ima.gz' ) or fileName.endswith( '.dim.gz' ) or fileName.endswith( '.ima.Z' ) or fileName.endswith( '.dim.Z' ):

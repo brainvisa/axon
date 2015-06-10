@@ -200,7 +200,10 @@ from brainvisa.data import fileSystemOntology
 from brainvisa.processing.qtgui.backwardCompatibleQt import QProcess
 from brainvisa.processing.qtgui.command import CommandWithQProcess as Command
 from soma import safemkdir
+from soma.qtgui.api import QtThreadCall, FakeQtThreadCall
 
+global _mainThreadActions
+_mainThreadActions = FakeQtThreadCall()
 
 #----------------------------------------------------------------------------
 def pathsplit( path ):
@@ -5142,6 +5145,32 @@ class IterationExecutionNode( ParallelExecutionNode ):
     getProcessInstance( parameterized.base )._checkIterateParam( warn = True, **kwargs )
     # do as for parallel node
     return super( ParallelExecutionNode, self )._run( context )
+
+#----------------------------------------------------------------------------
+def mainThreadActions():
+  '''Returns an object which allows to pass actions to be executed in the main thread. Its implementation may differ according to the presence of a running graphics event loop, thus the returned object may be an instance of different classes: :py:class:`soma.qtgui.api.QtThreadCall`, :py:class:`soma.qtgui.api.FakeQtThreadCall`, or even something else.
+
+  In any case the returned *mainthreadactions* object has 2 methods, *call()* and *push()*:
+
+  ::
+
+    result = mainthreadactions.call(function, *args, **kwargs)
+    #or
+    mainthreadactions.push(function, *args, **kwargs)
+  '''
+  return _mainThreadActions
+
+def setMainThreadActionsMethod(method):
+  '''
+  Set the mainThreadActions loop method.
+
+  Parameters
+  ----------
+  method: soma.qt_gui.qtThread.FakeQtThreadCall or soma.qt_gui.qtThread.QtThreadCall object
+    instance of the thread handler
+  '''
+  global _mainThreadActions
+  _mainThreadActions = method
 
 #----------------------------------------------------------------------------
 

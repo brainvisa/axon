@@ -66,6 +66,8 @@ try:
 except:
   # for sip 3.x (does it work ??)
   import libsip as sip
+# for comatibility, make mainThreadActions visible in neuroProcessesGUI
+from brainvisa.processes import mainThreadActions
 
 from brainvisa.processing import neuroException
 from soma.qtgui.api import EditableTreeWidget, TreeListWidget
@@ -95,8 +97,6 @@ except ImportError:
   class WorkflowApplicationModel(object): pass
 else:
   _soma_workflow = True
-
-_mainThreadActions = FakeQtThreadCall()
 
 #----------------------------------------------------------------------------
 def restartAnatomist():
@@ -1102,7 +1102,7 @@ class ExecutionContextGUI( brainvisa.processes.ExecutionContext):
       return self._dialog( *((None,parentOrFirstArgument)+args), **kwargs )
 
   def _dialog( self, parent, modal, message, signature, *buttons ):
-    return _mainThreadActions.call( UserDialog, parent, modal,
+    return mainThreadActions().call( UserDialog, parent, modal,
       message, signature, buttons )
 
 
@@ -2760,7 +2760,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       neuroException.showException()
 
   def _write( self, html ):
-    _mainThreadActions.push( self._appendInfo, html )
+    mainThreadActions().push( self._appendInfo, html )
 
   def _appendInfo( self, msg ):
     # the tags font are here just to avoid display problems in QTextEdit with non html content (color staying red after an error for example)
@@ -2769,18 +2769,18 @@ class ProcessView( QWidget, ExecutionContextGUI ):
   def _processStarted( self ):
     if self._depth() == 1:
       if self.movie is not None:
-        _mainThreadActions.push( self.movie.start )
+        mainThreadActions().push( self.movie.start )
 
-      _mainThreadActions.push(self.action_run.setEnabled, False)
-      _mainThreadActions.push(self.action_interupt.setVisible, True)
+      mainThreadActions().push(self.action_run.setEnabled, False)
+      mainThreadActions().push(self.action_interupt.setVisible, True)
       if self.process.__class__ == brainvisa.processes.IterationProcess:
-        _mainThreadActions.push(self.action_interupt_step.setVisible, True)
+        mainThreadActions().push(self.action_interupt_step.setVisible, True)
 
       if self.btnRun != None:
-        _mainThreadActions.push(self.btnRun.setVisible, False)
-        _mainThreadActions.push(self.btnInterrupt.setVisible, True)
+        mainThreadActions().push(self.btnRun.setVisible, False)
+        mainThreadActions().push(self.btnInterrupt.setVisible, True)
         if self.process.__class__ == brainvisa.processes.IterationProcess:
-          _mainThreadActions.push(self.btnInterruptStep.setVisible, True)
+          mainThreadActions().push(self.btnInterruptStep.setVisible, True)
 
 
     #Adds an icon on the ListViewItem corresponding to the current process
@@ -2788,7 +2788,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     p = self._currentProcess()
     eNodeItem = self._executionNodeLVItems.get( p )
     if eNodeItem is not None:
-      _mainThreadActions.push( eNodeItem.setIcon, 0, self.pixInProcess )
+      mainThreadActions().push( eNodeItem.setIcon, 0, self.pixInProcess )
 
     ExecutionContextGUI._processStarted( self )
 
@@ -2802,35 +2802,35 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     eNodeItem = self._executionNodeLVItems.get( p )
     if eNodeItem is not None:
       if self._lastProcessRaisedException:
-        _mainThreadActions.push( eNodeItem.setIcon, 0, self.pixProcessError )
+        mainThreadActions().push( eNodeItem.setIcon, 0, self.pixProcessError )
       else:
-        _mainThreadActions.push( eNodeItem.setIcon, 0,
+        mainThreadActions().push( eNodeItem.setIcon, 0,
                                  self.pixProcessFinished )
 
     if self._depth() == 1:
       if self.movie is not None:
-        _mainThreadActions.push( self.movie.stop )
+        mainThreadActions().push( self.movie.stop )
 
-      _mainThreadActions.push( self.action_run.setEnabled, True)
-      _mainThreadActions.push(self.action_interupt.setVisible, False)
+      mainThreadActions().push( self.action_run.setEnabled, True)
+      mainThreadActions().push(self.action_interupt.setVisible, False)
       if self.process.__class__ == brainvisa.processes.IterationProcess:
-        _mainThreadActions.push(self.action_interupt_step.setVisible, False)
+        mainThreadActions().push(self.action_interupt_step.setVisible, False)
 
       if self.btnRun != None:
-        _mainThreadActions.push( self.btnRun.setVisible, True)
-        _mainThreadActions.push(self.btnInterrupt.setVisible, False)
+        mainThreadActions().push( self.btnRun.setVisible, True)
+        mainThreadActions().push(self.btnInterrupt.setVisible, False)
         if self.process.__class__ == brainvisa.processes.IterationProcess:
-          _mainThreadActions.push(self.btnInterruptStep.setVisible, False)
+          mainThreadActions().push(self.btnInterruptStep.setVisible, False)
 
-      _mainThreadActions.push( self._checkReadable )
+      mainThreadActions().push( self._checkReadable )
       self._running = False
     else:
-      _mainThreadActions.push( self._checkReadable )
+      mainThreadActions().push( self._checkReadable )
 
 
   def system( self, *args, **kwargs ):
     ret = apply( ExecutionContextGUI.system, (self,) + args, kwargs )
-    _mainThreadActions.push( self._checkReadable )
+    mainThreadActions().push( self._checkReadable )
     return ret
 
   def _checkReadable( self ):
@@ -2843,7 +2843,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
           checkReadable()
 
   def dialog( self, modal, message, signature, *buttons ):
-    return _mainThreadActions.call( UserDialog, self, modal,
+    return mainThreadActions().call( UserDialog, self, modal,
       message, signature, buttons )
 
   #def showCallScript( self ):
@@ -4328,28 +4328,16 @@ def reloadToolboxesGUI():
   QtGui.QApplication.restoreOverrideCursor()
 
 #----------------------------------------------------------------------------
-def mainThreadActions():
-  '''Returns an object which allows to pass actions to be executed in the main thread. Its implementation may differ according to the presence of a running graphics event loop, thus the returned object may be an instance of different classes: :py:class:`soma.qtgui.api.QtThreadCall`, :py:class:`soma.qtgui.api.FakeQtThreadCall`, or even something else.
-
-  In any case the returned *mainthreadactions* object has 2 methods, *call()* and *push()*:
-
-  ::
-
-    result = mainthreadactions.call(function, *args, **kwargs)
-    #or
-    mainthreadactions.push(function, *args, **kwargs)
-  '''
-  return _mainThreadActions
-
-#----------------------------------------------------------------------------
 
 def initializeProcessesGUI():
-  global _mainThreadActions, _computing_resource_pool, _workflow_application_model
-  _mainThreadActions = QtThreadCall()
+
+  global _computing_resource_pool, _workflow_application_model
+
+  import brainvisa.processes
+  brainvisa.processes.setMainThreadActionsMethod(QtThreadCall())
   _computing_resource_pool = None
   _workflow_application_model = None
 
-  import brainvisa.processes
   if neuroConfig.gui:
     if _soma_workflow and neuroConfig.userLevel >= 1:
       _computing_resource_pool = ComputingResourcePool()
@@ -4358,7 +4346,5 @@ def initializeProcessesGUI():
 
     exec 'from brainvisa.processing.qt4gui.neuroProcessesGUI import *' in brainvisa.processes.__dict__
     brainvisa.processes._defaultContext = ExecutionContextGUI()
-  else:
-    exec 'from brainvisa.processing.qt4gui.neuroProcessesGUI import mainThreadActions' in brainvisa.processes.__dict__
 
 

@@ -47,7 +47,6 @@ import sys, os, traceback, htmllib, formatter
 from brainvisa.configuration.neuroConfig import *
 from brainvisa.configuration import neuroConfig
 from soma.html import htmlEscape
-from brainvisa.processing.qtgui.neuroExceptionGUI import ShowException
 
 class HTMLMessage:
   """
@@ -198,15 +197,19 @@ def showException( beforeError='', afterError='', parent = None,
                   exceptionInfo=exceptionInfo )
 
     if gui and neuroConfig.guiLoaded:
-      from brainvisa.processing.qtgui import neuroProcessesGUI
+      from brainvisa.processing.qtgui.neuroExceptionGUI import ShowException
       if ShowException._theExceptionDialog is not None:
-        neuroProcessesGUI.mainThreadActions().push( ShowException._theExceptionDialog.appendException, messageHTML, detailHTML )
+        from brainvisa.processes import mainThreadActions
+        mainThreadActions().push(
+          ShowException._theExceptionDialog.appendException, messageHTML,
+          detailHTML )
       else:
-        w = neuroProcessesGUI.mainThreadActions().call( ShowException, \
+        from brainvisa.processes import mainThreadActions
+        w = mainThreadActions().call( ShowException, \
               messageHTML, \
               detailHTML, \
               parent=parent )
-        neuroProcessesGUI.mainThreadActions().push( w.show )
+        mainThreadActions().push( w.show )
     else:
       htmllib.HTMLParser( formatter.AbstractFormatter( 
         formatter.DumbWriter( sys.stdout, 80 ) ) )\
@@ -234,15 +237,17 @@ def showWarning( message, parent = None, gui=None):
     messageHTML = warningMessageHTML( message )
 
     if gui and neuroConfig.guiLoaded:
-      from brainvisa.processing.qtgui import neuroProcessesGUI
+      from brainvisa.processes import mainThreadActions
+      from brainvisa.processing.qtgui.neuroExceptionGUI import ShowException
       if ShowException._theExceptionDialog is not None:
-        neuroProcessesGUI.mainThreadActions().push( ShowException._theExceptionDialog.appendException, messageHTML, "" )
+        mainThreadActions().push(
+          ShowException._theExceptionDialog.appendException, messageHTML, "" )
       else:
-        w = neuroProcessesGUI.mainThreadActions().call( ShowException, \
+        w = mainThreadActions().call( ShowException, \
               messageHTML, \
               "", \
               parent=parent )
-        neuroProcessesGUI.mainThreadActions().push( w.show )
+        mainThreadActions().push( w.show )
     else:
       htmllib.HTMLParser( formatter.AbstractFormatter( 
         formatter.DumbWriter( sys.stdout, 80 ) ) )\
@@ -251,4 +256,5 @@ def showWarning( message, parent = None, gui=None):
     traceback.print_exc()
 
 def exceptionHook( exceptType, value, traceback ):
+  from brainvisa.processing.qtgui.neuroExceptionGUI import ShowException
   showException( exceptionInfo=( exceptType, value, traceback ) )
