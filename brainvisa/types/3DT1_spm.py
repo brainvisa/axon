@@ -44,7 +44,7 @@ FileType('T1 MRI Native Space Tissue Mask', 'T1 MRI Tissue Mask')
 FileType('T1 MRI Nat GreyMask', 'T1 MRI Native Space Tissue Mask')
 FileType('T1 MRI Nat WhiteMask', 'T1 MRI Native Space Tissue Mask')
 FileType('T1 MRI Nat CSFMask', 'T1 MRI Native Space Tissue Mask')
-FileType('T1 MRI Nat SKullMask', 'T1 MRI Native Space Tissue Mask')
+FileType('T1 MRI Nat SkullMask', 'T1 MRI Native Space Tissue Mask')
 FileType('T1 MRI Nat ScalpMask', 'T1 MRI Native Space Tissue Mask')
 
 FileType('T1 MRI Mni Space Tissue Mask', 'T1 MRI Tissue Mask')
