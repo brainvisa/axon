@@ -34,7 +34,7 @@
 from brainvisa.processes import *
 from brainvisa.tools.spm_registration import initializeCoregisterEstimateParameters_withSPM8DefaultValues,\
  writeCoregisteredEstimateMatFile
-import nuclearImaging.SPM as spm
+import brainvisa.tools.spm_run as spm
 from soma import aims
 import numpy
 
