@@ -1,4 +1,6 @@
 
+from brainvisa.tools.spm_basic_models import * 
+
 #------------------------------------------------------------------------------
 
 def ititializeCoregisterParameters_withSPM8DefaultValues(process):
@@ -229,3 +231,97 @@ matlabbatch{1}.spm.util.defs.interp = %s;
     return matFile.name
 
 
+# 
+# Initialize Normalisation Estimate  parameters with default values from SPM8 
+# @in: process to initialize
+def initializeNormalizeEstimateParameters_usingSPM8DefaultValues( process ):
+    process.source_image_smoothing = """8"""
+    process.template_image_smoothing = """0"""
+    process.affine_regularisation = """mni"""
+    process.nonlinear_frequency_cutoff = """25""" 
+    process.nonlinear_iterations = """16"""
+    process.nonlinear_regularisation = """1"""
+
+
+# 
+# Initialize Normalisation Estimate  parameters with default values from SPM8 
+# @in: process to initialize
+def initializeCoregisterResliceParameters_withSPM8DefaultValues( process ):
+    process.prefix = """r"""
+    process.interp = """4"""
+    process.wrap = """[0 0 0]"""
+    process.mask = """0"""
+      
+#
+# Create SPM Coregister reslice batch 
+#
+def writeCoregisteredResliceMatFile(context, image_space, image_to_reslice, spmJobFile                                           
+                                , prefix = """r""" 
+                                , interp = """4"""
+                                , wrap = """[0 0 0]"""
+                                , mask = """0"""
+                            ):
+    
+ #   scans = convertPathList(images_to_reslice)
+    mat_file = open(spmJobFile, 'w')
+    mat_file.write("""
+        matlabbatch{1}.spm.spatial.coreg.write.ref = {'%s'};
+        matlabbatch{1}.spm.spatial.coreg.write.source = {'%s'};
+        matlabbatch{1}.spm.spatial.coreg.write.roptions.interp = %s;
+        matlabbatch{1}.spm.spatial.coreg.write.roptions.wrap = %s;
+        matlabbatch{1}.spm.spatial.coreg.write.roptions.mask = %s;
+        matlabbatch{1}.spm.spatial.coreg.write.roptions.prefix = '%s';
+    """ % (image_space, image_to_reslice
+    , interp, wrap, mask, prefix )
+                   )
+    mat_file.close()
+    return mat_file.name    
+    
+
+# 
+# Initialize Normalisation: write  parameters with default values from SPM8 
+# @in: process to initialize
+def initializeWriteNormalisation_withSPM8DefaultValues( process ):
+    process.preservation = """0"""
+    process.bounding_box = """[-78 -112 -50 \n 78 76 85]"""
+    process.voxel_sizes = """[2 2 2]"""
+    process.interpolation = """1"""
+    process.wrap = """[0 0 0]"""
+    process.prefix = """'w'"""
+    
+
+#
+# Create SPM Normalize write batch 
+#
+def writeNormalisationWriteBatch(context, parameter_file, images_to_write, spmJobFile                                           
+                                , preservation = """0"""
+                                , bounding_box = """[-78 -112 -50 \n 78 76 85]""" 
+                                , voxel_sizes = """[2 2 2]"""
+                                , interpolation = """1"""
+                                , wrap = """[0 0 0]"""
+                                , prefix = """w"""
+                            ):
+    
+#    scans = convertPathList( images_to_write )
+    mat_file = open(spmJobFile, 'w')
+    
+    mat_file.write("""
+matlabbatch{1}.spm.spatial.normalise.write.subj.matname = {'%s'};
+matlabbatch{1}.spm.spatial.normalise.write.subj.resample = {'%s'};
+matlabbatch{1}.spm.spatial.normalise.write.roptions.preserve = %s;
+matlabbatch{1}.spm.spatial.normalise.write.roptions.bb = %s;
+matlabbatch{1}.spm.spatial.normalise.write.roptions.vox = %s;
+matlabbatch{1}.spm.spatial.normalise.write.roptions.interp = %s;
+matlabbatch{1}.spm.spatial.normalise.write.roptions.wrap = %s;
+matlabbatch{1}.spm.spatial.normalise.write.roptions.prefix = '%s';
+    """ % ( parameter_file, images_to_write, preservation, bounding_box, voxel_sizes, interpolation, wrap, prefix ))
+#        """% ( parameter_file, scans, preservation, bounding_box, voxel_sizes, interpolation, wrap, prefix ))
+           
+    
+    mat_file.close()
+    return mat_file.name    
+
+
+
+ 
+    
