@@ -36,6 +36,7 @@ It is used to define an input data file as a parameter in a :py:class:`brainvisa
 """
 import os, operator
 #from soma.debug import print_stack
+from soma.path import remove_query_string
 from soma.undefined import Undefined
 from brainvisa.data.neuroData import Parameter
 from brainvisa.processes import getDiskItemType
@@ -277,7 +278,7 @@ class ReadDiskItem( Parameter ):
           if result is None:
             if _debug is not None:
               print >> _debug, '  DiskItem not created in databases from format extension'
-            if os.path.exists( fileName ):
+            if os.path.exists( remove_query_string( fileName ) ):
               from brainvisa.tools.aimsGlobals import aimsFileInfo
               file_type = aimsFileInfo( fileName ).get( 'file_type' )
               if _debug is not None:

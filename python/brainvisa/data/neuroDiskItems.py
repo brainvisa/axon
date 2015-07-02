@@ -107,7 +107,7 @@ import json
 from soma.html import htmlEscape
 from soma.undefined import Undefined
 from soma.uuid import Uuid
-from soma.path import split_path
+from soma.path import remove_query_string, split_path
 from soma.minf.api import readMinf, MinfError
 from soma.wip.application.api import Application
 from soma.sqlite_tools import sqlite3, ThreadSafeSQLiteConnection
@@ -161,7 +161,6 @@ def modificationHashOrEmpty( f ):
   except OSError:
     return ()
 
-
 #----------------------------------------------------------------------------
 class DiskItem(QObject):
   """
@@ -207,6 +206,7 @@ class DiskItem(QObject):
     if name and name[ -5: ] != '.minf': 
       self._files = [ name ]
     else: self._files = []
+    
     self.parent = parent
     if self.parent is None:
       self._topParentRef = ref( self )
@@ -781,8 +781,7 @@ class DiskItem(QObject):
       if minf is None: minf = {}
       minf.update( dict )
       self._writeMinf( minf )
-  
-  
+      
   def isReadable( self ):
     """
     Returns True if all the files associated to this diskItem exist and are readable.
@@ -790,8 +789,12 @@ class DiskItem(QObject):
     result = 1
     for p in self.fullPaths():
       if not os.access( p, os.F_OK + os.R_OK ):
-        result = 0
-        break
+        # Check that path contains a query string and remove it
+        p2 = remove_query_string( p )
+        if p == p2 or not os.access( p2, os.F_OK + os.R_OK ):
+          result = 0
+          break
+        
     return result
 
 
@@ -802,8 +805,12 @@ class DiskItem(QObject):
     result = 1
     for p in self.fullPaths():
       if not os.access( p, os.F_OK + os.R_OK + os.W_OK ):
-        result = 0
-        break
+        # Check that path contains a query string and remove it
+        p2 = remove_query_string( p )
+        if p == p2 or not os.access( p2, os.F_OK + os.R_OK ):
+          result = 0
+          break
+          
     return result
 
 
