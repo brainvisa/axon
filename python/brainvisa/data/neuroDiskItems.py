@@ -1072,7 +1072,11 @@ class DiskItem(QObject):
         if attrs and attrs.has_key( 'uuid' ):
           self._changeUuid( Uuid( attrs[ 'uuid' ] ) )
         else:
-          self.setUuid( Uuid(), saveMinf=saveMinf )
+          try:
+            self.setUuid( Uuid(), saveMinf=saveMinf )
+          except MinfError:
+            # probably read-only
+            self.setUuid(Uuid(), saveMinf=False)
       finally:
         self._minfLock.release()
     return self._uuid
