@@ -57,7 +57,9 @@ def execution(self, context):
     vol = aims.read(self.input_image.fullPath())
     vol_arr = np.asarray(vol)
     w = np.where(vol_arr == 0)
-    vol_arr[w] = np.random.normal(
+    noise = np.random.normal(
         self.noise_average, self.noise_stdev, w[0].shape)
+    noise[noise < 0] = 0
+    vol_arr[w] = noise
     aims.write(vol, self.output_image.fullPath())
 
