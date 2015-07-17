@@ -3,11 +3,15 @@
 
     "shared_patterns" : {
         "shared.anatomical_templates" :
-            [["shared:anatomical_templates/MNI152_T1_1mm ", "images"],
-                ["shared:anatomical_templates/MNI152_T1_2mm ", "images"],
+            [["shared:anatomical_templates/MNI152_T1_1mm", "images"],
+                ["shared:anatomical_templates/MNI152_T1_2mm", "images"],
                 ["shared:anatomical_templates/MNI152_T1_1mm_brain", "NIFTI"],
-                ["shared:anatomical_templates/MNI152_T1_2mm_brain", "NIFTI"            ]
+                ["shared:anatomical_templates/MNI152_T1_2mm_brain", "NIFTI"]
             ],
+        "shared.anatomical_template_t1":
+            [["shared:anatomical_templates/MNI152_T1_2mm", "NIFTI gz"]],
+        "shared.anatomical_template_t1_skull_stripped":
+            [["shared:anatomical_templates/MNI152_T1_2mm_brain", "NIFTI"]],
         "shared.mni_spm_referential" :
             [["shared:registration/Talairach-MNI_template-SPM", "Referential"]],
         "shared.acpc_referential" :
@@ -18,6 +22,8 @@
             [["shared:nomenclature/surfaceanalysis/surfaceReferential", "label translations"]],
         "shared.sulci_labels_translation_map" :
             [["shared:nomenclature/translation/sulci_model_<sulci_database>", "label translations", {"sulci_database": "2008"}]],
+        "shared.split_template":
+            [["shared:hemitemplate/closedvoronoi", "GIS"]],
         "spam_models":
             "models/models_<sulci_database>/descriptive_models",
         "spam_labels_priors":

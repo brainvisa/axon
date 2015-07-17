@@ -2645,7 +2645,7 @@ class ExecutionContext( object ):
             ##              tmp.type = v.type
             ##              tmp.copyAttributes( v )
             ##              self.runProcess( converter.name, read = v, write = tmp )
-            if not c: raise Exception( HTMLMessage(_t_('Cannot convert format <em>%s</em> to format <em>%s</em> for parameter <em>%s</em>') % ( _t_( v.format.name ), _t_( destinationFormat.name ), n )) )
+            if not c: raise Exception( HTMLMessage(_t_('Cannot convert format <em>%s</em> to format <em>%s</em> for parameter <em>%s</em>') % ( _t_( v.format.name ), _t_( formats[0].name ), n )) )
             self.runProcess( c )
             return tmp
 

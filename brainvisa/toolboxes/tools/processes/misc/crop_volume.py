@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+# -*- coding: iso-8859-1 -*-
+
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -31,35 +32,54 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-from brainvisa.processes import *
-from brainvisa.tools import aimsGlobals
 
-name = 'Add gaussian noise in image background'
-userLevel = 0
+#Interface de la serie de script fusionXContrastes datant de la version
+#d'anatomist 1.24 environ.
+
+
+from brainvisa.processes import *
+from soma import aims
+
+name = 'Crop volume'
+userLevel=1
 
 signature = Signature(
-    'input_image',
-        ReadDiskItem('3D Volume', 'aims readable volume formats'),
-    'output_image', WriteDiskItem('Raw T1 MRI', 'aims writable volume formats'),
-    'noise_average', Float(),
-    'noise_stdev', Float(),
+    'read', ReadDiskItem('3D Volume', 'aims readable volume formats'),
+    'write', WriteDiskItem('3D Volume', 'aims writable volume formats'),
+    'crop_top', Integer(),
+    'crop_bottom', Integer(),
+    'crop_left', Integer(),
+    'crop_right', Integer(),
+    'crop_front', Integer(),
+    'crop_back', Integer(),
 )
 
-
 def initialization(self):
-    self.noise_average = 20.
-    self.noise_stdev = 10.
-
+    self.crop_top = 0
+    self.crop_bottom = 0
+    self.crop_left = 0
+    self.crop_right = 0
+    self.crop_front = 0
+    self.crop_back = 0
+    self.linkParameters('write', 'read')
 
 def execution(self, context):
-    from soma import aims
-    import numpy as np
-    vol = aims.read(self.input_image.fullPath())
-    vol_arr = np.asarray(vol)
-    w = np.where(vol_arr == 0)
-    noise = np.random.normal(
-        self.noise_average, self.noise_stdev, w[0].shape)
-    noise[noise < 0] = 0
-    vol_arr[w] = noise
-    aims.write(vol, self.output_image.fullPath())
+    finder = aims.Finder()
+    finder.check(self.read.fullPath())
+    hdr = finder.header()
+    dims = hdr['volume_dimension'][:3]
+    vs = hdr['voxel_size'][:3]
+    dims[0] -= self.crop_left + self.crop_right
+    dims[1] -= self.crop_front + self.crop_back
+    dims[2] -= self.crop_top + self.crop_bottom
+    transfile = context.temporary('Transformation matrix')
+    trans = aims.AffineTransformation3d()
+    trans.setTranslation([-self.crop_right * vs[0], -self.crop_front * vs[1],
+        -self.crop_top * vs[2]])
+    print 'transfo:'
+    print trans
+    aims.write(trans, transfile.fullPath())
+    cmd = ['AimsResample', '-t', 'n', '-i', self.read, '-o', self.write,
+        '--dx', dims[0], '--dy', dims[1], '--dz', dims[2], '-m', transfile]
+    context.system(*cmd)
 

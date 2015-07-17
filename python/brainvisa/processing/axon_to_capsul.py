@@ -155,6 +155,7 @@ def write_process_signature(p, out, buffered_lines, get_all_values=True):
 
 
 def write_process_execution(p, out):
+    axon_name = p.id()
     out.write('''    def _run_process(self):
         from brainvisa import axon
         from brainvisa.configuration import neuroConfig
@@ -173,8 +174,8 @@ def write_process_execution(p, out):
                     or getattr(self, name) != '')])
 
         context = brainvisa.processes.defaultContext()
-        context.runProcess(self.id.split('.')[-1], **kwargs)
-''')
+        context.runProcess('%s', **kwargs)
+''' % axon_name)
 
 
 def write_process_definition(p, out, get_all_values=True):
@@ -199,7 +200,8 @@ def str_to_name(s):
     return s
 
 
-def make_module_name(procid, module_name_prefix=None, use_process_names={}):
+def make_module_name(procid, module_name_prefix=None, use_process_names={},
+                     lowercase_modules=True):
     '''module + process class name, ex: morpho.morphologist.morphologist.
 
     Parameters
@@ -217,9 +219,10 @@ def make_module_name(procid, module_name_prefix=None, use_process_names={}):
     if altname:
         return altname
     if module_name_prefix is None:
-        return '%s.%s' % (procid, procid)
+        return '%s.%s' % (fix_case(procid, lowercase_modules), procid)
     else:
-        return '%s.%s.%s' % (module_name_prefix, procid, procid)
+        return '%s.%s.%s' % (module_name_prefix,
+                             fix_case(procid, lowercase_modules), procid)
 
 
 def use_weak_ref(obj):
@@ -729,7 +732,8 @@ def write_buffered_lines(out, buffered_lines, sections=None):
 
 
 def write_pipeline_definition(p, out, parse_subpipelines=False,
-        get_all_values=False, module_name_prefix=None, use_process_names={}):
+        get_all_values=False, module_name_prefix=None, use_process_names={},
+        lowercase_modules=True):
     '''Write a pipeline structure in the out file, and links between pipeline
     nodes.
     If parse_subpipelines is set, the pipeline structure inside sub-pipelines
@@ -767,7 +771,7 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
             proc = enode._process
             procid = proc.id()
             moduleprocid = make_module_name(procid, module_name_prefix, 
-                use_process_names)
+                use_process_names, lowercase_modules)
             procmap[use_weak_ref(proc)] = (nodename, exported)
             if exported:
                 buffered_lines['nodes'].append(
@@ -899,7 +903,8 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
 
 def axon_to_capsul(proc, outfile, module_name_prefix=None,
         parse_subpipelines=False, get_all_values=True,
-        capsul_process_name=None, use_process_names={}):
+        capsul_process_name=None, use_process_names={},
+        lowercase_modules=True):
     '''Converts an Axon process or pipeline into a CAPSUL process or pipeline.
     The output is a file, named with the outfile parameter.
 
@@ -973,7 +978,8 @@ class ''')
             parse_subpipelines=parse_subpipelines,
             get_all_values=get_all_values,
             module_name_prefix=module_name_prefix, 
-            use_process_names=use_process_names)
+            use_process_names=use_process_names,
+            lowercase_modules=lowercase_modules)
     else:
         out.write('    def __init__(self, **kwargs):\n')
         out.write('        super(%s, self).__init__()\n' % capsul_process_name)
@@ -1011,9 +1017,21 @@ def get_subprocesses(procid):
 
 def get_process_id(proc):
     '''ID of a process or ID'''
-    if isinstance(procbv, procbv.Process):
+    if isinstance(proc, procbv.Process):
         return proc.id()
     return proc
+
+
+def fix_case(module_name, lowercase_modules):
+    if lowercase_modules:
+        return module_name.lower()
+    return module_name
+
+
+def module_filename(process_name, lowercase_modules, gen_process_names):
+    return fix_case(gen_process_names.get(process_name, process_name),
+                    lowercase_modules)
+
 
 
 def axon_to_capsul_main(argv):
@@ -1060,6 +1078,10 @@ def axon_to_capsul_main(argv):
         'avoids to specify all pipeline processes via series of -p/-o ' \
         'parameters. Additional sub-processes specified through -p/-o may ' \
         'replace them.')
+    parser.add_option('-l', '--lowercase_modules', dest='lowercase_modules',
+        action='store_true', default=True,
+        help='convert process/pipeline classes modules names to lowercase. '
+        'Used with the -s option. Default=True')
 
     options, args = parser.parse_args(argv)
     if len(args) != 0:
@@ -1070,10 +1092,19 @@ def axon_to_capsul_main(argv):
     from brainvisa.configuration import neuroConfig
     neuroConfig.ignoreValidation = True
     processes.initializeProcesses()
+    lowercase_modules = options.lowercase_modules
     gen_process_names = dict([(axon, capsul) \
         for (axon, capsul) in [name.split(':') for name in options.name]])
-    use_process_names = dict([(axon, capsul) \
-        for (axon, capsul) in [name.split(':') for name in options.use_proc]])
+    use_process_names = dict(
+        [(axon,
+          make_module_name(capsul, options.module, {},
+                           lowercase_modules))
+         for axon, capsul in gen_process_names.iteritems()])
+    print 'converted proc names:', use_process_names
+    use_process_names.update(dict([(axon, capsul) \
+        for (axon, capsul) in [name.split(':') for name in options.use_proc]]))
+
+    print 'use_process_names:', use_process_names
 
     done_processes = set()
     todo = zip([procbv.getProcessInstance(p) for p in options.process],
@@ -1082,11 +1113,13 @@ def axon_to_capsul_main(argv):
         for proc, outfile in todo:
           added_processes = get_subprocesses(proc)
         todo += zip(list(added_processes),
-            [p.id() + '.py' for p in added_processes])
+            [module_filename(p.id(), lowercase_modules,
+                             gen_process_names) + '.py'
+             for p in added_processes])
 
     for proc, outfile in todo:
-        # print 'Process:', proc, '\n'
         procid = get_process_id(proc)
+        # print 'Process:', procid, '->', gen_process_names.get(procid), '\n'
         if procid in done_processes:
             continue
         done_processes.add(procid)
@@ -1095,7 +1128,8 @@ def axon_to_capsul_main(argv):
             parse_subpipelines=options.parse_subpipelines,
             get_all_values=True,
             capsul_process_name=gen_process_names.get(procid),
-            use_process_names=use_process_names)
+            use_process_names=use_process_names,
+            lowercase_modules=lowercase_modules)
 
 
 if __name__ == '__main__':
