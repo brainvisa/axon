@@ -35,32 +35,47 @@ insert( '{center}/{subject}',
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}',
   'nobias_<subject>', SetType('T1 MRI Bias Corrected'),) # already existed for morphologist # Native space
 
+
+#PVE
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_Nat_pve', SetType('T1 MRI Nat Partial Volume Estimation'), SetWeakAttr('dartel_imported', 'no')), SetPriorityOffset( +1 )
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_Nat_dartel_pve', SetType('T1 MRI Nat Partial Volume Estimation'), SetWeakAttr('dartel_imported', 'yes', 'transformation', 'rigid'))
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_Nat_dartel_affine_pve', SetType('T1 MRI Nat Partial Volume Estimation'), SetWeakAttr('dartel_imported', 'yes', 'transformation', 'affine'))
+
 # probability map in native space
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
   '<subject>_Nat_greyProba', SetType('T1 MRI Nat GreyProba'), SetWeakAttr('dartel_imported', 'no'), SetPriorityOffset( +1 ))
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
-  '<subject>_Nat_dartel_greyProba', SetType('T1 MRI Nat GreyProba'), SetWeakAttr('dartel_imported', 'yes'))
+  '<subject>_Nat_dartel_greyProba', SetType('T1 MRI Nat GreyProba'), SetWeakAttr('dartel_imported', 'yes', 'transformation', 'rigid'))
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_Nat_dartel_affine_greyProba', SetType('T1 MRI Nat GreyProba'), SetWeakAttr('dartel_imported', 'yes', 'transformation', 'affine'))
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
   '<subject>_Nat_whiteProba', SetType('T1 MRI Nat WhiteProba'), SetWeakAttr('dartel_imported', 'no'), SetPriorityOffset( +1 ))
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
-  '<subject>_Nat_dartel_whiteProba', SetType('T1 MRI Nat WhiteProba'), SetWeakAttr('dartel_imported', 'yes'))
+  '<subject>_Nat_dartel_whiteProba', SetType('T1 MRI Nat WhiteProba'), SetWeakAttr('dartel_imported', 'yes', 'transformation', 'rigid'))
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_Nat_dartel_affine_whiteProba', SetType('T1 MRI Nat WhiteProba'), SetWeakAttr('dartel_imported', 'yes', 'transformation', 'affine'))
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
   '<subject>_Nat_csfProba', SetType('T1 MRI Nat CSFProba'), SetWeakAttr('dartel_imported', 'no')), SetPriorityOffset( +1 )
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
-  '<subject>_Nat_dartel_csfProba', SetType('T1 MRI Nat CSFProba'), SetWeakAttr('dartel_imported', 'yes'))
+  '<subject>_Nat_dartel_csfProba', SetType('T1 MRI Nat CSFProba'), SetWeakAttr('dartel_imported', 'yes', 'transformation', 'rigid'))
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_Nat_dartel_affine_csfProba', SetType('T1 MRI Nat CSFProba'), SetWeakAttr('dartel_imported', 'yes', 'transformation', 'affine'))
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
   '<subject>_Nat_skullProba', SetType('T1 MRI Nat SkullProba'), SetWeakAttr('dartel_imported', 'no'), SetPriorityOffset( +1 ))
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
-  '<subject>_Nat_dartel_skullProba', SetType('T1 MRI Nat SkullProba'), SetWeakAttr('dartel_imported', 'yes'))
+  '<subject>_Nat_dartel_skullProba', SetType('T1 MRI Nat SkullProba'), SetWeakAttr('dartel_imported', 'yes', 'transformation', 'rigid'))
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
   '<subject>_Nat_scalpProba', SetType('T1 MRI Nat ScalpProba'), SetWeakAttr('dartel_imported', 'no'), SetPriorityOffset( +1 ))
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
-  '<subject>_Nat_dartel_scalpProba', SetType('T1 MRI Nat ScalpProba'), SetWeakAttr('dartel_imported', 'yes'))
+  '<subject>_Nat_dartel_scalpProba', SetType('T1 MRI Nat ScalpProba'), SetWeakAttr('dartel_imported', 'yes', 'transformation', 'rigid'))
 
 
 
@@ -83,14 +98,31 @@ insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
 #############
 # Mni space #
 #############
+#PVE
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_Mni_pve', SetType('T1 MRI Mni Partial Volume Estimation'))
+
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_Mni_DARTEL_pve', SetType('T1 MRI DARTEL Mni Partial Volume Estimation'))
+
 
 insert('{center}/{subject}/t1mri/{acquisition}/',
   '<subject>_Mni', SetType('T1 MRI Mni'),)
 
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}',
+  'nobias_Mni_<subject>', SetType('T1 MRI Mni Bias Corrected'),)
+
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}',
+  'nobias_Mni_DARTEL_<subject>', SetType('T1 MRI DARTEL Mni Bias Corrected'),)
+
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}',
+  'nobias_Mni_affine_<subject>', SetType('T1 MRI affine Mni Bias Corrected'),)
+
+
 # probability map in mni space
 
 # WARNING please inform nuclear imaging team (morphologist team, and maybe others...) before changing this hierarchies
-
+#unmodulated
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
   '<subject>_Mni_greyProba', SetType('T1 MRI Mni GreyProba'), SetWeakAttr('modulated', 'no'), SetPriorityOffset( +1 )) 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
@@ -101,18 +133,48 @@ insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
   '<subject>_Mni_skullProba', SetType('T1 MRI Mni SkullProba'), SetWeakAttr('modulated', 'no'), SetPriorityOffset( +1 )) 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
   '<subject>_Mni_scalpProba', SetType('T1 MRI Mni ScalpProba'), SetWeakAttr('modulated', 'no'), SetPriorityOffset( +1 )) 
+#modulated affine and non-linear
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_Mni_modulated_greyProba', SetType('T1 MRI Mni GreyProba'), SetWeakAttr('modulated', 'yes', 'modulation', 'affine and non-linear')) 
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_Mni_modulated_whiteProba', SetType('T1 MRI Mni WhiteProba'), SetWeakAttr('modulated', 'yes', 'modulation', 'affine and non-linear')) 
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_Mni_modulated_csfProba', SetType('T1 MRI Mni CSFProba'), SetWeakAttr('modulated', 'yes', 'modulation', 'affine and non-linear')) 
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_Mni_modulated_skullProba', SetType('T1 MRI Mni SkullProba'), SetWeakAttr('modulated', 'yes', 'modulation', 'affine and non-linear')) 
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_Mni_modulated_scalpProba', SetType('T1 MRI Mni ScalpProba'), SetWeakAttr('modulated', 'yes', 'modulation', 'affine and non-linear')) 
 
+#Using only in VBM8 process -->
+#modulated non-linear only
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
-  '<subject>_Mni_modulated_greyProba', SetType('T1 MRI Mni GreyProba'), SetWeakAttr('modulated', 'yes')) 
+  '<subject>_Mni_non_linear_modulated_greyProba', SetType('T1 MRI Mni GreyProba'), SetWeakAttr('modulated', 'yes', 'modulation', 'non-linear only')) 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
-  '<subject>_Mni_modulated_whiteProba', SetType('T1 MRI Mni WhiteProba'), SetWeakAttr('modulated', 'yes')) 
+  '<subject>_Mni_non_linear_modulated_whiteProba', SetType('T1 MRI Mni WhiteProba'), SetWeakAttr('modulated', 'yes', 'modulation', 'non-linear only')) 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
-  '<subject>_Mni_modulated_csfProba', SetType('T1 MRI Mni CSFProba'), SetWeakAttr('modulated', 'yes')) 
+  '<subject>_Mni_non_linear_modulated_csfProba', SetType('T1 MRI Mni CSFProba'), SetWeakAttr('modulated', 'yes', 'modulation', 'non-linear only')) 
+#DARTEL unmodulated
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
-  '<subject>_Mni_modulated_skullProba', SetType('T1 MRI Mni SkullProba'), SetWeakAttr('modulated', 'yes')) 
+  '<subject>_Mni_DARTEL_greyProba', SetType('T1 MRI Mni DARTEL GreyProba'), SetWeakAttr('modulated', 'no'), SetPriorityOffset( +1 )) 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
-  '<subject>_Mni_modulated_scalpProba', SetType('T1 MRI Mni ScalpProba'), SetWeakAttr('modulated', 'yes')) 
-
+  '<subject>_Mni_DARTEL_whiteProba', SetType('T1 MRI Mni DARTEL WhiteProba'), SetWeakAttr('modulated', 'no'), SetPriorityOffset( +1 )) 
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_Mni_DARTEL_csfProba', SetType('T1 MRI Mni DARTEL CSFProba'), SetWeakAttr('modulated', 'no'), SetPriorityOffset( +1 )) 
+#DARTEL modulated affine and non-linear
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_Mni_DARTEL_modulated_greyProba', SetType('T1 MRI Mni DARTEL GreyProba'), SetWeakAttr('modulated', 'yes', 'modulation', 'affine and non-linear')) 
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_Mni_DARTEL_modulated_whiteProba', SetType('T1 MRI Mni DARTEL WhiteProba'), SetWeakAttr('modulated', 'yes', 'modulation', 'affine and non-linear')) 
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_Mni_DARTEL_modulated_csfProba', SetType('T1 MRI Mni DARTEL CSFProba'), SetWeakAttr('modulated', 'yes', 'modulation', 'affine and non-linear')) 
+#DARTEL modulated non-linear only
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_Mni_DARTEL_non_linear_modulated_greyProba', SetType('T1 MRI Mni DARTEL GreyProba'), SetWeakAttr('modulated', 'yes', 'modulation', 'non-linear only')) 
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_Mni_DARTEL_non_linear_modulated_whiteProba', SetType('T1 MRI Mni DARTEL WhiteProba'), SetWeakAttr('modulated', 'yes', 'modulation', 'non-linear only')) 
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_Mni_DARTEL_non_linear_modulated_csfProba', SetType('T1 MRI Mni DARTEL CSFProba'), SetWeakAttr('modulated', 'yes', 'modulation', 'non-linear only')) 
+#<--
 # mask in MNI space
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
@@ -180,3 +242,9 @@ insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
   'jac_wrp1<subject>_JacobianDeterminant', SetType('JacobianDeterminant'),)
+###################
+# Txt #
+###################
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/',
+  '<subject>_brain_matter_volumes', SetType('Brain Matter Volumes'),)
+
