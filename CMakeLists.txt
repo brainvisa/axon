@@ -8,9 +8,29 @@ BRAINVISA_FIND_PACKAGE( aims-free QUIET )
 BRAINVISA_FIND_PACKAGE( soma-workflow )
 BRAINVISA_FIND_PACKAGE( brainvisa-release QUIET )
 BRAINVISA_FIND_PACKAGE( datamind QUIET )
+if( NOT DESIRED_QT_VERSION )
+  find_package( Qt REQUIRED )
+endif()
 find_package( PyQt${DESIRED_QT_VERSION} REQUIRED )
 
 find_package( python REQUIRED )
+
+# compiled sip module, if sip is found
+find_package( SIP )
+if( SIP_FOUND )
+
+  find_package( Qt4 COMPONENTS QtCore QtGui Qt3Support REQUIRED )
+  find_package( QtVersion REQUIRED )
+
+  BRAINVISA_DEPENDENCY( RUN DEPENDS python-sip4 RUN )
+  BRAINVISA_DEPENDENCY( DEV DEPENDS python-sip4 DEV )
+
+  include( "${QT_USE_FILE}" )
+
+  add_subdirectory( src/sipsomaqt )
+
+endif()
+
 
 BRAINVISA_DEPENDENCY( DEV DEPENDS "${BRAINVISA_PACKAGE_NAME}" RUN "= ${${BRAINVISA_PACKAGE_NAME}_VERSION}" )
 math( EXPR result "${soma-base_VERSION_MINOR}+1" )
