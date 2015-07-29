@@ -5,12 +5,20 @@ FileType('Dicoms T1 MRI', 'Any Type') # does not work with T1 MRI or 4D volume i
 FileType('T1 MRI Nat reseted', 'T1 MRI') # original name was reseted Nat T1 MRI
 FileType('T1 MRI Bias Corrected', 'T1 MRI')
 FileType('T1 MRI Mni', 'T1 MRI')
+FileType('T1 MRI Mni Bias Corrected', 'T1 MRI')
+FileType('T1 MRI DARTEL Mni Bias Corrected', 'T1 MRI')
+FileType('T1 MRI affine Mni Bias Corrected', 'T1 MRI')
 
 FileType('T1 MRI Analysis Directory', 'Directory')
 
 #################
 # segmentations #
 #################
+#PVE image
+FileType('T1 MRI Partial Volume Estimation', '4D Volume')
+FileType('T1 MRI Nat Partial Volume Estimation', 'T1 MRI Partial Volume Estimation')
+FileType('T1 MRI Mni Partial Volume Estimation', 'T1 MRI Partial Volume Estimation')
+FileType('T1 MRI DARTEL Mni Partial Volume Estimation', 'T1 MRI Partial Volume Estimation')
 
 # Tissue Probability Map : in native, mni space and pet space
 
@@ -29,6 +37,12 @@ FileType('T1 MRI Mni WhiteProba', 'T1 MRI Mni Space Tissue Probability Map')
 FileType('T1 MRI Mni CSFProba', 'T1 MRI Mni Space Tissue Probability Map')
 FileType('T1 MRI Mni SkullProba', 'T1 MRI Mni Space Tissue Probability Map')
 FileType('T1 MRI Mni ScalpProba', 'T1 MRI Mni Space Tissue Probability Map')
+
+FileType('T1 MRI Mni DARTEL GreyProba', 'T1 MRI Mni Space Tissue Probability Map')
+FileType('T1 MRI Mni DARTEL WhiteProba', 'T1 MRI Mni Space Tissue Probability Map')
+FileType('T1 MRI Mni DARTEL CSFProba', 'T1 MRI Mni Space Tissue Probability Map')
+FileType('T1 MRI Mni DARTEL SkullProba', 'T1 MRI Mni Space Tissue Probability Map')
+FileType('T1 MRI Mni DARTEL ScalpProba', 'T1 MRI Mni Space Tissue Probability Map')
 
 FileType('T1 MRI PetSpc Space Tissue Probability Map', 'T1 MRI Tissue Probability Map')
 FileType('T1 MRI PetSpc GreyProba', 'T1 MRI PetSpc Space Tissue Probability Map')
@@ -83,6 +97,6 @@ FileType('JacobianDeterminant', '4D Volume')
 ##################
 #                #
 ##################
-
+FileType('Brain Matter Volumes', 'Text file')
 
 
