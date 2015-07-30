@@ -125,7 +125,6 @@ class Importer:
     @classmethod
     def _conversion_needed(cls, input_filename, input_vol, output_filename):
         convert = False
-
         if (cls._file_extension(input_filename)
                 != cls._file_extension(output_filename)):
             convert = True
@@ -133,7 +132,7 @@ class Importer:
             header = input_vol.header()
             data_type = header["data_type"]
             file_format = header["file_type"]
-            convert = ((file_format != "NIFTI1") and (file_format != 'GIS')) \
+            convert = ((file_format != "NIFTI-1") and (file_format != 'GIS')) \
                 or (data_type != "S16")
         return convert
 
