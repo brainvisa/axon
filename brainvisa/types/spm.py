@@ -18,3 +18,4 @@ FileType( 'SPM single subject', '3D Volume')
 #-------------- General SPM types ---------------------
 
 FileType( 'Matlab SPM script', 'Any Type', 'Matlab script'  )
+FileType( 'Transform Softmean to MNI', 'Transformation matrix' )
