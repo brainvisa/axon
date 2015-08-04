@@ -107,20 +107,32 @@ def restartAnatomist():
     del a._restartshell_launched
 
 
+class _ProcDeleter(object):
+    def __init__(self, o):
+        self.o = o
+    def __del__(self):
+        self.o.kill()
+
 def startShell():
   from PyQt4.QtGui import qApp
   try:
     import IPython
-    if [ int(x) for x in IPython.__version__.split('.')[:2] ] >= [ 0, 11 ]:
+    ipversion = [int(x) for x in IPython.__version__.split('.')]
+    if ipversion >= [0, 11]:
       # ipython >= 0.11, use client/server mode
       ipConsole = brainvisa.processes.runIPConsoleKernel()
       import subprocess
-      sp = subprocess.Popen( [ sys.executable, '-c',
-        'from IPython.frontend.terminal.ipapp import launch_new_instance; ' \
-        'launch_new_instance()', 'qtconsole', '--existing',
-        '--shell=%d' % ipConsole.shell_port, '--iopub=%d' % ipConsole.iopub_port,
-        '--stdin=%d' % ipConsole.stdin_port, '--hb=%d' % ipConsole.hb_port ] )
-      brainvisa.processes._ipsubprocs.append( sp )
+      if ipversion >= [1, 0]:
+        ipmodule = 'IPython.terminal.ipapp'
+      else:
+        ipmodule = 'IPython.frontend.terminal.ipapp'
+      sp = subprocess.Popen([sys.executable, '-c',
+        'from %s import launch_new_instance; launch_new_instance()' % ipmodule,
+        'qtconsole', '--existing',
+        '--shell=%d' % ipConsole.shell_port,
+        '--iopub=%d' % ipConsole.iopub_port,
+        '--stdin=%d' % ipConsole.stdin_port, '--hb=%d' % ipConsole.hb_port])
+      brainvisa.processes._ipsubprocs.append(_ProcDeleter(sp))
       return
   except:
     pass
