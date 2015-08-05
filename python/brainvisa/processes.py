@@ -3971,19 +3971,20 @@ def getViewer( source, enableConversion = 1, checkUpdate=True, listof=False ):
   elif isinstance( source, list):
     if source != [] and isinstance(source[0], DiskItem):
       t0 = source[0].type
-      f=source[0].format
+      f = source[0].format
   else:
     t0, f = source
   t = t0
-  v = viewers.get( ( t, f ) )
-  # if the diskitem has no type, get the more generic viewer that accept the format of the diskitem
+  v = viewers.get((t, f))
+  # if the diskitem has no type, get the less generic viewer that accepts
+  # the format of the diskitem
   if not v and t is None:
     for k in viewers.keys():
       t0b, fb = k
       if fb == f:
         if t is None or t.isA(t0b):
-          t=t0b
-          v=viewers.get((t, f))
+          t = t0b
+          v = viewers.get((t, f))
           if t.parent is None:
             break
   while not v and t:
@@ -4435,8 +4436,18 @@ def readProcesses( processesPath ):
   :param list processesPath: list of paths to directories containing processes files.
   """
   # New style processes initialization
-  global _processesInfo, _converters
+  global _processesInfo, _converters, _viewers, _listViewers
+  global _dataEditors, _listDataEditors, _importers
   global _allProcessesTree
+
+  _processesInfo = {}
+  _converters = {}
+  _viewers = {}
+  _listViewers = {}
+  _dataEditors = {}
+  _listDataEditors = {}
+  _importers = {}
+
   processesCacheFile = os.path.join( neuroConfig.homeBrainVISADir, 'processCache-' + neuroConfig.shortVersion )
   processesCache = {}
   if neuroConfig.fastStart and os.path.exists( processesCacheFile ):
