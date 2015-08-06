@@ -45,8 +45,10 @@ import site
 
 import __builtin__
 
-import sip
-sip.setapi( 'QString', 2 )
+from soma.qt_gui import qt_backend
+qt_backend.set_qt_backend('PyQt4', 2)
+#import sip
+#sip.setapi( 'QString', 2 )
 
 
 translatables = {}
