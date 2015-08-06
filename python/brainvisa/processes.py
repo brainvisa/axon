@@ -5056,6 +5056,8 @@ def reloadToolboxes():
   neuroHierarchy.initializeDatabases()
   neuroHierarchy.openDatabases()
 
+  neuroDiskItems.pruneObsoleteTypes()
+
 #----------------------------------------------------------------------------
 # helper function for ipython,
 
