@@ -53,9 +53,9 @@ name = 'Transform ROI'
 userLevel = 0
 
 signature = Signature( 
-  'images', ListOf( ReadDiskItem( '4D Volume', 'Aims readable volume formats' ) ),
-  'inputRoi', ListOf( ReadDiskItem( 'ROI', 'Graph and data' ) ),
-  'outputRoi', ListOf( WriteDiskItem( 'ROI', 'Graph and data' ) ),
+  'images', ListOf(ReadDiskItem('4D Volume', 'NIFTI-1 image')),
+  'inputRoi', ListOf(ReadDiskItem('ROI', ['Graph and data', 'NIFTI-1 image'])),
+  'outputRoi', ListOf(WriteDiskItem('ROI', ['Graph and data', 'NIFTI-1 image'])),
   )
 
 def findExtraFile(filename, type):
@@ -67,7 +67,7 @@ def findExtraFile(filename, type):
     return None
 
 def initialization(self):
-    self.setOptional( 'outputRoi' )
+    self.setOptional('outputRoi')
 
 def execution(self, context):
     objs = transform_roi(self.images,
@@ -102,8 +102,18 @@ def _transform_roi_on_gui_thread(images,
 
 class TransformRoi():
     def __init__(self, images, inputRoi, outputRoi, parent):
+        self._temporaryObjects = []
         self._images = images
-        self._inputRoi = inputRoi
+        self._inputRoi = []
+        for i, r in enumerate(inputRoi):
+            if os.path.splitext(r.fullPath())[1] == ".nii":
+                tmpDir = mkdtemp()
+                self._addTemporaryObjects(tmpDir)
+                name = os.path.splitext(os.path.basename(r.fullPath()))[0] + '.arg'
+                check_call(['AimsGraphConvert', '-i', r.fullPath(), '--roi', '--bucket', '-o', os.path.join(tmpDir, name)])
+                self._inputRoi.append(os.path.join(tmpDir, name))
+            else:
+                self._inputRoi.append(r.fullPath())
         self._outputRoi = {}
         for i in xrange(len(self._inputRoi)):
             if not outputRoi:
@@ -118,7 +128,6 @@ class TransformRoi():
         self.symPlaneChangeTransmitter = SymPlaneChangeTransmitter()
     
     def display(self):
-        self._temporaryObjects = []
         self.a = ana.Anatomist( '-b' )
         self._addTrsfAction()
         self._loadData()
@@ -149,7 +158,8 @@ class TransformRoi():
                                          "gap": gap
                                          },
                                       "sub_roi": {}}})
-            roiIt = aims.getRoiIterator(r.fullPath())
+            roiIt = aims.getRoiIterator(r)
+
             while roiIt.isValid():
                 translation = np.array( [ 0., 0., 0., 1. ] )
                 rotation = np.array( [ 0., 0., 0. ] )
@@ -238,7 +248,7 @@ class TransformRoi():
         
         self._mainDiag.roiCb.clear()
         for roi in self._inputRoi:
-            self._mainDiag.roiCb.addItem(os.path.splitext(os.path.basename(roi.fullPath()))[0])
+            self._mainDiag.roiCb.addItem(os.path.splitext(os.path.basename(roi))[0])
         self._setComboboxViewMinimumWidth(self._mainDiag.roiCb)
         QtCore.QObject.connect(self._mainDiag.roiCb,
                                QtCore.SIGNAL('currentIndexChanged(int)'),
@@ -413,7 +423,7 @@ class TransformRoi():
     
     def _roiSelectionChanged(self, index):
         self._mainDiag.subRoiList.clear()
-        for roiName in self._roiDict[self.getSelectedRoi()]["sub_roi"].keys():
+        for roiName in sorted(self._roiDict[self.getSelectedRoi()]["sub_roi"].keys()):
             self._mainDiag.subRoiList.addItem(roiName)
         self._forceSubRoiSelection(0)
         self._updateUi()
@@ -550,10 +560,11 @@ class TransformRoi():
         
         roiValidities = {}
         for roi in self._inputRoi:
-            meshValidity = self._checkMeshValidity(roi)
+#            meshValidity = self._checkMeshValidity(roi)
+            meshValidity = [False]
             roiValidities.update({roi: meshValidity})
             if True in meshValidity:
-                alertMessage = "Your transformation for " + os.path.splitext(os.path.basename(roi.fullPath()))[0] + " is not valid:"
+                alertMessage = "Your transformation for " + os.path.splitext(os.path.basename(roi))[0] + " is not valid:"
                 if meshValidity[0]:
                     alertMessage += "\n- meshes intersect"
                 if meshValidity[1]:
@@ -574,7 +585,7 @@ class TransformRoi():
                 continue
                 
             images = []
-            aimsRoi = aims.read(roi.fullPath())
+            aimsRoi = aims.read(roi)
             labels = {}
             for v in aimsRoi.vertices():
                 labels.update({v["name"]: int(v["roi_label"])})
@@ -597,21 +608,24 @@ class TransformRoi():
                 currArr = np.array(currImg, copy=False)
                 firstArr[:] |= currArr[:]
             
-            imageFile = mktemp( suffix='.nii' )
-            self._addTemporaryObjects(imageFile)    
-            aims.write(firstImg, imageFile)
-            check_call(['AimsGraphConvert', '-i', imageFile, '--roi', '--bucket', '-o', self._outputRoi[roi].fullPath()])
-            check_call(['AimsGraphMesh', '-i', self._outputRoi[roi].fullPath(), '-o', self._outputRoi[roi].fullPath()])
-            
-            g = aims.read(self._outputRoi[roi].fullPath())
-            names = dict((j, i) for i, j in labels.iteritems())
-            for v in g.vertices():
-                name = names.get(v['roi_label'])
-                if name:
-                    v['name'] = name
-                else:
-                    print 'WARNING: label %s of graph %s does not have a name' % str( v[ 'roi_label' ] )
-            aims.write(g, self._outputRoi[roi].fullPath())
+            if os.path.splitext(self._outputRoi[roi].fullPath())[1] == ".nii":
+                aims.write(firstImg, self._outputRoi[roi].fullPath())
+            else:
+                imageFile = mktemp( suffix='.nii' )
+                self._addTemporaryObjects(imageFile)    
+                aims.write(firstImg, imageFile)
+                check_call(['AimsGraphConvert', '-i', imageFile, '--roi', '--bucket', '-o', self._outputRoi[roi].fullPath()])
+                check_call(['AimsGraphMesh', '-i', self._outputRoi[roi].fullPath(), '-o', self._outputRoi[roi].fullPath()])
+                
+                g = aims.read(self._outputRoi[roi].fullPath())
+                names = dict((j, i) for i, j in labels.iteritems())
+                for v in g.vertices():
+                    name = names.get(v['roi_label'])
+                    if name:
+                        v['name'] = name
+                    else:
+                        print 'WARNING: label %s of graph %s does not have a name' % str( v[ 'roi_label' ] )
+                aims.write(g, self._outputRoi[roi].fullPath())
             
             trsfDict = {"global_transformation": self._roiDict[roi]["global_transformation"],
                         "sub_roi_transformation": {}}
@@ -738,7 +752,8 @@ class TransformRoi():
         self._aImages[self._currentImage].addInWindows(self._aViews)
         self._currentContourMesh = self.a.fusionObjects([self._aMeshes[mesh] for mesh in self._currentMeshes], "Fusion2DMeshMethod")
         self._currentContourMesh.addInWindows(self._aViews)
-        self._currentContourMesh.setVoxelSize(self._aImages[self._currentImage].VoxelSize())        
+        self._currentContourMesh.setVoxelSize(self._aImages[self._currentImage].VoxelSize())
+        self._currentContourMesh.setMaterial(diffuse=[0., 0., 0., 1.])        
         self.a.execute('LinkedCursor', window=self._aViews[0], position=self.a.lastPosition())
 
     def _createMeshes(self):
@@ -749,7 +764,7 @@ class TransformRoi():
         self._previousGlobalMotions = {}
         self._sideMeshes = {}
         for roi in self._inputRoi:
-            aimsRoi = aims.read(roi.fullPath())
+            aimsRoi = aims.read(roi)
             labels = {}
             for v in aimsRoi.vertices():
                 labels.update({v["name"]: int(v["roi_label"])})
@@ -757,14 +772,14 @@ class TransformRoi():
             for k, v in labels.iteritems():
                 imageFile = mktemp( suffix='.nii' )
                 self._addTemporaryObjects(imageFile)
-                aims.write(self._getImageFromRoi(roi, selectedLabel=label), imageFile)
+                aims.write(self._getImageFromRoi(roi, selectedLabel=v), imageFile)
                 label += 1
                 tmpDir = mkdtemp()
                 self._addTemporaryObjects(tmpDir)
                 check_call(['AimsMesh', '-i', imageFile,
                                         '-o', os.path.join( tmpDir, "roi" ),
                                         '--smooth'])
-                meshes = glob.glob(os.path.join(tmpDir, "*mesh"))
+                meshes = glob.glob(os.path.join(tmpDir, "*gii"))
                 self._roiDict[roi]["sub_roi"][k]["meshes"] = meshes
                 for mesh in meshes:
                     self._aimsMeshes.update({mesh: aims.read(mesh)})
@@ -789,7 +804,7 @@ class TransformRoi():
     def _getImageFromRoi(self, roi, selectedLabel=None):
         image = None
         labels = {}
-        roi_it = aims.getRoiIterator( roi.fullPath() )
+        roi_it = aims.getRoiIterator(roi)
         image_size = None
         while roi_it.isValid():
             region_name = roi_it.regionName()
@@ -802,7 +817,7 @@ class TransformRoi():
                 image_size = tuple( mask_it.volumeDimension() )
                 if image is None:
                     voxel_size = tuple( mask_it.voxelSize() )
-                    image = aims.Volume_U32( *image_size )
+                    image = aims.Volume_S16( *image_size )
                     image.header()[ 'voxel_size' ] = voxel_size
                 elif image_size != ( image.getSizeX(), image.getSizeY(), image.getSizeZ() ):
                     raise ValueError( 'Invalid volume dimension' )
