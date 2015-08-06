@@ -4348,9 +4348,12 @@ def save_and_close_all_processes():
   saved = []
   for w in qApp.allWidgets():
     if isinstance(w, ProcessView):
-      w.readUserValues()
-      clone = w.createProcessExecutionEvent()
-      saved.append(clone)
+      # dont' remember updateDatabases process, it will be shown
+      # again if needed after reload.
+      if w.process.id() != 'updateDatabases':
+        w.readUserValues()
+        clone = w.createProcessExecutionEvent()
+        saved.append(clone)
       w.close()
   return saved
 
