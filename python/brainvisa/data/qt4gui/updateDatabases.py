@@ -152,6 +152,8 @@ def warnUserAboutDatabasesToUpdate():
     if _ontologiesModificationDialog is None or _ontologiesModificationDialog.info is None:
       _ontologiesModificationDialog = neuroProcessesGUI.ProcessView( brainvisa.processes.getProcessInstance( 'updateDatabases' ) )
       _ontologiesModificationDialog.labName.setText( '<html><body><font color=red>' + _t_( 'Some ontologies (i.e. databases organization) have been modified but are used by currently selected databases. To take this modification into account, it is necessary to update the databases selected below. Please click on the "Update" button below.' ) +'</font></body></html>' )
+      from soma.qt_gui.qt_backend import QtCore
+      _ontologiesModificationDialog.setAttribute( QtCore.Qt.WA_DeleteOnClose )
       for i in xrange( _ontologiesModificationDialog.inlineGUI.lvDatabases.count() ):
         _ontologiesModificationDialog.inlineGUI.lvDatabases.item( i ).setCheckState(qt.Qt.Unchecked)
       #item = _ontologiesModificationDialog.inlineGUI.lvDatabases.firstChild()
@@ -167,3 +169,8 @@ def warnUserAboutDatabasesToUpdate():
       #item = item.nextSibling()
     _ontologiesModificationDialog.show()
     _ontologiesModificationDialog.raise_()
+    def clean_close():
+      global _ontologiesModificationDialog
+      _ontologiesModificationDialog = None
+    from soma.functiontools import partial
+    _ontologiesModificationDialog.destroyed.connect(clean_close)
