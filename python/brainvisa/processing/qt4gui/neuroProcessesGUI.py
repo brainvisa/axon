@@ -4333,11 +4333,34 @@ def reloadToolboxesGUI():
   If some databases should be updated, the user is warned.
   """
   QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+  # close all processes windows because processes will be reinstantiated
+  saved = save_and_close_all_processes()
   brainvisa.processes.reloadToolboxes()
   updateProcessList()
   from brainvisa.data.qt4gui.updateDatabases import warnUserAboutDatabasesToUpdate
   warnUserAboutDatabasesToUpdate()
+  # reopen processes
+  restore_all_processes(saved)
   QtGui.QApplication.restoreOverrideCursor()
+
+def save_and_close_all_processes():
+  close_viewers()
+  saved = []
+  for w in qApp.allWidgets():
+    if isinstance(w, ProcessView):
+      w.readUserValues()
+      clone = w.createProcessExecutionEvent()
+      saved.append(clone)
+      w.close()
+  return saved
+
+def restore_all_processes(saved):
+  uis = []
+  for event in saved:
+    proc = brainvisa.processes.getProcessInstanceFromProcessEvent(event)
+    procui = showProcess(proc)
+    uis.append(procui)
+  return uis
 
 #----------------------------------------------------------------------------
 

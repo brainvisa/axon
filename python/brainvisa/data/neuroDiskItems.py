@@ -1474,7 +1474,7 @@ formats = {}
 formatLists = {}
 
 #----------------------------------------------------------------------------
-class Format:
+class Format(object):
   """
   This class represents a data file format. It is used to define the format attribute of :py:class:`DiskItem` objects.
   It is also used to define new formats in brainvisa ontology files.
@@ -1506,9 +1506,50 @@ class Format:
   
   """
   _msgError = 'error in <em>%s</em> format'
-  
-  def __init__( self, formatName, patterns, attributes=None, exclusive=None, 
-                ignoreExclusive=0 ):
+  _reloaded_formats = {}
+
+  def __new__(cls, *args, **kwargs):
+    #print '** new **', cls, args, kwargs
+    global formats
+
+    # must get format ID from parameters -- not clean...
+    if 'formatName' in kwargs:
+      formatName = kwargs['formatName']
+    else:
+      if issubclass(cls, FormatSeries):
+        if len(args) >= 2:
+          formatName = args[1]
+        else:
+          if 'baseFormat' in kwargs:
+            baseFormat = kwargs['baseFormat']
+          elif len(args) >= 1:
+            baseFormat = args[0]
+          else:
+            raise ValueError(HTMLMessage(_t_(
+              '<em><code>%s</code></em> init parameter formatName is missing')
+              % cls))
+          formatName = 'Series of ' + baseFormat.name
+      else:
+        if len(args) >= 1:
+          formatName = args[0]
+        else:
+          raise ValueError(HTMLMessage(_t_(
+            '<em><code>%s</code></em> init parameter formatName is missing')
+            % cls))
+
+    id = getId(formatName)
+    instance = formats.get(id)
+
+    if instance is None:
+      instance = super(Format, cls).__new__(cls)
+    # to allow detecting new formats after reload
+    cls._reloaded_formats.setdefault(id, 0)
+    cls._reloaded_formats[id] += 1
+    return instance
+
+
+  def __init__(self, formatName, patterns, attributes=None, exclusive=None,
+               ignoreExclusive=0):
     """
     :param string formatName: name of the format. 
     :param patterns: string or :py:class:`BackwardCompatiblePatterns` describing the files patterns associated to this format.
@@ -1516,37 +1557,68 @@ class Format:
     :param bool exclusive: if True, a file should match only this pattern to match the format. Hardly ever used.
     :param bool ignoreExclusive: if True, this format will be ignored when exclusivity of a format is checked. Hardly ever used.
     """
-    if type( formatName ) is not types.StringType:
-      raise ValueError( HTMLMessage(_t_('<em><code>%s</code></em> is not a valid format name') % formatName) )
-    
-    tb=traceback.extract_stack(None, 3)
-    self.fileName=tb[0][0]
-    
-    self.name = formatName
-    self.id = getId( self.name )
-    self.toolbox = 'axon'
-    # Check patterns
-    if isinstance( patterns, BackwardCompatiblePatterns ):
-      self.patterns = patterns
-    else:
-      self.patterns = BackwardCompatiblePatterns( patterns )
+    global formats
+    tb = traceback.extract_stack(None, 3)
+    self.id = getId(formatName)
+
+    state = {'formatName': formatName,
+             'patterns': patterns,
+             'attributes': attributes,
+             'exclusive': exclusive,
+             'ignoreExclusive': ignoreExclusive,
+             'toolbox': 'axon',
+             'fileName': tb[0][0]}
+    self._update_internals(state)
+
     # Register self in formats
-    f = formats.get( self.id )
-    if f:
-      if self.patterns != f.patterns:
-        raise ValueError( HTMLMessage(_t_('format <em>%s</em> already exists whith a different pattern') % self.name) )
-    else:
-      formats[ self.id ] = self
-    self._formatAttributes = attributes
-    self._exclusive = exclusive
-    self._ignoreExclusive = ignoreExclusive
-    
+    formats[self.id] = self
+
   def __getstate__( self ):
     return { 'name' : self.name }
 
   def __setstate__( self, state ):
     f = getFormat( state[ 'name' ] )
     self.__dict__.update( f.__dict__ )
+
+  def _update_internals(self, state):
+    keys = state.keys()
+    if 'formatName' in keys:
+      keys = ['formatName'] + [k for k in keys if k != 'formatName']
+    for key in keys:
+      value = state[key]
+      if key == 'formatName':
+        formatName = value
+        if not isinstance(formatName, basestring):
+          raise ValueError(HTMLMessage(_t_(
+            '<em><code>%s</code></em> is not a valid format name')
+            % formatName))
+
+        self.name = formatName
+
+      elif key == 'patterns':
+        patterns = value
+        # Check patterns
+        if not isinstance(patterns, BackwardCompatiblePatterns):
+          patterns = BackwardCompatiblePatterns(patterns)
+        # Register self in formats
+        f = formats.get( self.id )
+        if f and self._reloaded_formats.get(self.id) \
+            and self.patterns != patterns:
+          raise ValueError( HTMLMessage(_t_(
+            'format <em>%s</em> already exists whith a different pattern')
+            % self.name))
+        self.patterns = patterns
+
+      elif key == 'attributes':
+        self._formatAttributes = value
+      elif key == 'exclusive':
+        self._exclusive = value
+      elif key == 'ignoreExclusive':
+        self._ignoreExclusive = value
+
+      else:
+        setattr(self, key, value)
+
 
   def match( self, item, returnPosition=0, ignoreExclusive=0 ):
     """
@@ -1676,26 +1748,26 @@ class FormatSeries( Format ):
   :Methods:
   
   """
-  def __init__( self, baseFormat, formatName=None, attributes=None ):
-    baseFormat = getFormat( baseFormat )
-    if isinstance( baseFormat, FormatSeries ):
-      raise ValueError( HTMLMessage(_t_('Impossible to build a format series of <em>%s</em> which is already a format series' ) % ( baseFormat.name )) )
+  def __init__(self, baseFormat, formatName=None, attributes=None):
+    baseFormat = getFormat(baseFormat)
+    if isinstance(baseFormat, FormatSeries):
+      raise ValueError(HTMLMessage(_t_(
+        'Impossible to build a format series of <em>%s</em> which is already a format series') % baseFormat.name))
     if formatName is None:
       formatName = 'Series of ' + baseFormat.name
-    if type( formatName ) is not types.StringType:
-      raise ValueError( HTMLMessage(_t_('<em><code>%s</code></em> is not a valid format name') % formatName) )
     if attributes is None:
       attributes = baseFormat._formatAttributes
-    
-    tb=traceback.extract_stack(None, 3)
-    self.fileName=tb[0][0]
-    self.name = formatName
-    self.id = getId( self.name )
-    self.toolbox = 'axon'
-    self.baseFormat = baseFormat
-    registerFormat( self )
-    self._formatAttributes = attributes
-    self._ignoreExclusive = baseFormat._ignoreExclusive
+
+    self.id = getId(formatName)
+    tb = traceback.extract_stack(None, 3)
+    state = {'formatName': formatName,
+             'fileName': tb[0][0],
+             'baseFormat': baseFormat,
+             'toolbox': 'axon',
+             'attributes': attributes,
+             'ignoreExclusive': baseFormat._ignoreExclusive}
+    self._update_internals(state)
+    registerFormat(self)
 
   def match( self, *args, **kwargs ):
     """
@@ -1947,7 +2019,7 @@ diskItemTypes = {}
 
 
 #----------------------------------------------------------------------------
-class DiskItemType:
+class DiskItemType(object):
   """
   This class represents a data type. It is used to define the type attribute of :py:class:`DiskItem` objects.
   
@@ -1979,6 +2051,21 @@ class DiskItemType:
   :Methods:
 
   """
+  _reloaded_types = {}
+
+  def __new__(cls, typeName, *args, **kwargs):
+    #print '** new **', cls, typeName, args, kwargs
+    global diskItemTypes
+    id = getId(typeName)
+    instance = diskItemTypes.get(id)
+    if instance is None:
+      instance = super(DiskItemType, cls).__new__(cls)
+    # to check double definition and removed types
+    cls._reloaded_types.setdefault(id, 0)
+    cls._reloaded_types[id] += 1
+    return instance
+
+
   def __init__( self, typeName, parent = None, attributes=None ):
     """
     :param string typeName: name of the type
@@ -1986,20 +2073,29 @@ class DiskItemType:
     :param attributes: dictionary containing attributes associated to this type. 
     """
     # Check name
-    if type( typeName ) is not types.StringType:
-      raise ValueError( _t_('a type name must be a string') )
+    if type(typeName) is not types.StringType:
+      raise ValueError(_t_('a type name must be a string'))
     
-    tb=traceback.extract_stack(None, 3)
-    self.fileName=tb[0][0]
     self.name = typeName
     self.id = getId( typeName )
+
+    if self._reloaded_types.get(self.id):
+      other = diskItemTypes.get(self.id)
+      if other:
+        other = dict(other.__dict__)
+    else:
+      other = None
+    # FIXME
+    other = None
+
+    tb = traceback.extract_stack(None, 3)
+    self.fileName = tb[0][0]
     self.toolbox = 'axon'
     if parent is None: self.parent = None
     else: self.parent = getDiskItemType( parent )
-    other = diskItemTypes.get( self.id )
     if other:
-      if not sameContent( self, other ):
-        raise ValueError( HTMLMessage(_t_( 'invalid redefinition for type <em>%s</em>') % self.name) )
+      if not sameContent(self, other):
+        raise ValueError( HTMLMessage(_t_('invalid redefinition for type <em>%s</em>') % self.name))
     else:
       diskItemTypes[ self.id ] = self
     if attributes is None:
@@ -2121,6 +2217,9 @@ class FileType( DiskItemType ):
     
     The formats and parents are compared using the function :py:func:`sameContent`.
     """
+    #if isinstance(other, dict):
+      #return sameContent(self.formats, other['formats']) \
+        #and sameContent(self.parent, other['parent'])
     return isinstance( other, FileType ) and \
            self.__class__ is  other.__class__ and \
            sameContent( self.formats, other.formats ) and \
@@ -2419,7 +2518,7 @@ def readTypes():
   try:
     files = shelltools.filesFromShPatterns( *[os.path.join( path, '*.py' ) for path in neuroConfig.typesPath] )
     files.sort()
-    exc=mef.execute( continue_on_error=True, *files )
+    exc = mef.execute( continue_on_error=True, *files )
     if exc:
       for e in exc:
         try:
@@ -2442,8 +2541,9 @@ def reloadTypes():
   global mef
   global directoryFormat
   global fileFormat
-  
-  formats={}
+
+  Format._reloaded_formats = {}
+  DiskItemType._reloaded_types = {}
   formatLists={}
   diskItemTypes={}
   typesLastModification=0
@@ -2451,10 +2551,24 @@ def reloadTypes():
   mef.fileExtensions.append( '.py' )
   directoryFormat = Format( 'Directory', 'd|*', ignoreExclusive=1 )
   fileFormat = Format( 'File', 'f|*', ignoreExclusive=1 )
-  
+
   readTypes()
-  
-  
+
+
+def pruneObsoleteTypes():
+  global formats
+  for format in formats.keys():
+    if format not in Format._reloaded_formats:
+      del formats[format]
+  Format._reloaded_formats = {}
+
+  global diskItemTypes
+  for type in diskItemTypes.keys():
+    if type not in DiskItemType._reloaded_types:
+      del diskItemTypes[type]
+  DiskItemType._reloaded_types = {}
+
+
 #----------------------------------------------------------------------------
 try:
   from soma import aims

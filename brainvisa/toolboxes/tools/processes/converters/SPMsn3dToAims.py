@@ -108,6 +108,8 @@ def initialization( self ):
         trans = tm.createNewTransformation( 'Transformation matrix',
           proc.source_volume, ref, simulation=True )
         return trans
+      else:
+        return WriteDiskItem('Transform Raw T1 MRI to Talairach-MNI template-SPM', 'Transformation Matrix').findValue(proc.source_volume)
 
   self.removeSource = 0
   self.linkParameters( 'write', 'source_volume',
