@@ -124,16 +124,20 @@ import re
 
 
 #----------------------------------------------------------------------------
-def sameContent( a, b ):
+def sameContent(a, b, as_dict=False):
   """
   Checks if *a* and *b* have the same content.
+
+  if as_dict it True, b may be a dict when a is an instance: b is an
+  instance.__dict__ for example.
   
-  If the two objects are lists, the function is called on each element of the list.
+  If the two objects are lists, the function is called on each element of the
+  list.
   If the first object has a method named *sameContent*, it is called. 
   Else, the result of a comparison with *==* operator is returned.
   """
   result = 0
-  if type( a ) is type( b ):
+  if as_dict or type( a ) is type( b ):
     if type( a ) in ( types.ListType, types.TupleType ):
       result = 1
       i = 0
@@ -143,9 +147,12 @@ def sameContent( a, b ):
           break
         i += 1
     elif hasattr( a, 'sameContent' ):
-      result = a.sameContent( b )
+      result = a.sameContent( b, as_dict=as_dict )
     else:
-      result = a == b
+      if as_dict and type(b) is dict and type(a) is not dict:
+        result = a.__dict__ == b
+      else:
+        result = a == b
   return result
 
 
@@ -1567,7 +1574,8 @@ class Format(object):
              'exclusive': exclusive,
              'ignoreExclusive': ignoreExclusive,
              'toolbox': 'axon',
-             'fileName': tb[0][0]}
+             'fileName': tb[0][0],
+             'parse_line': tb[0][1]}
     self._update_internals(state)
 
     # Register self in formats
@@ -1581,6 +1589,8 @@ class Format(object):
     self.__dict__.update( f.__dict__ )
 
   def _update_internals(self, state):
+    old_filename = getattr(self, 'fileName', None)
+    old_line = getattr(self, 'parse_line', None)
     keys = state.keys()
     if 'formatName' in keys:
       keys = ['formatName'] + [k for k in keys if k != 'formatName']
@@ -1604,9 +1614,10 @@ class Format(object):
         f = formats.get( self.id )
         if f and self._reloaded_formats.get(self.id) \
             and self.patterns != patterns:
+          line = state.get('parse_line') or getattr(self, 'parse_line', 0)
           raise ValueError( HTMLMessage(_t_(
-            'format <em>%s</em> already exists whith a different pattern')
-            % self.name))
+            'line %d, format %s already exists whith a different pattern. Previous definition in file: %s, line %d')
+            % (line, self.name, old_filename, old_line)))
         self.patterns = patterns
 
       elif key == 'attributes':
@@ -2079,23 +2090,30 @@ class DiskItemType(object):
     self.name = typeName
     self.id = getId( typeName )
 
-    if self._reloaded_types.get(self.id):
+    # try to compare to an older copy
+    if hasattr(self, '__older_type'):
+      other = self.__older_type
+      del self.__older_type
+    elif self._reloaded_types.get(self.id):
       other = diskItemTypes.get(self.id)
       if other:
-        other = dict(other.__dict__)
+        other = dict([(k, v) for k, v in other.__dict__.iteritems()
+                      if not k.startswith('_')])
     else:
       other = None
-    # FIXME
-    other = None
 
-    tb = traceback.extract_stack(None, 3)
+    tb = traceback.extract_stack(None, 4)
     self.fileName = tb[0][0]
+    self.parse_line = tb[0][1]
     self.toolbox = 'axon'
     if parent is None: self.parent = None
     else: self.parent = getDiskItemType( parent )
     if other:
-      if not sameContent(self, other):
-        raise ValueError( HTMLMessage(_t_('invalid redefinition for type <em>%s</em>') % self.name))
+      if not sameContent(self, other, as_dict=True):
+        raise ValueError(HTMLMessage(_t_(
+          'line %d, invalid redefinition for type %s, previous definition in file: %s, line %d')
+          % (self.parse_line, self.name, other['fileName'],
+             other['parse_line'])))
     else:
       diskItemTypes[ self.id ] = self
     if attributes is None:
@@ -2105,7 +2123,7 @@ class DiskItemType(object):
         self._typeAttributes = None
     else:
       self._typeAttributes = attributes
-  
+
   def __getstate__( self ):
     return { 'diskItemType' : self.name }
 
@@ -2200,6 +2218,14 @@ class FileType( DiskItemType ):
     :param formats: list of file formats associated to this type of data.
     :param minfAttributes: dictionary containing attributes associated to this type.
     """
+    # try to compare to an older copy
+    id = getId(typeName)
+    if not hasattr(self, '__older_type') and self._reloaded_types.get(id):
+      other = diskItemTypes.get(id)
+      if other:
+        other = dict([(k, v) for k, v in other.__dict__.iteritems()
+                      if not k.startswith('_')])
+        self.__older_type = other
     # Check formats
     if formats:
       self.formats = getFormats( formats )
@@ -2211,15 +2237,16 @@ class FileType( DiskItemType ):
     # Register type
     DiskItemType.__init__( self, typeName, parent, minfAttributes )
 
-  def sameContent( self, other ):
+  def sameContent( self, other, as_dict=False ):
     """
     Returns True if the two file types are instances of the same class and have the same list of formats and the same parent.
     
     The formats and parents are compared using the function :py:func:`sameContent`.
     """
-    #if isinstance(other, dict):
-      #return sameContent(self.formats, other['formats']) \
-        #and sameContent(self.parent, other['parent'])
+    sys.stdout.flush()
+    if as_dict and isinstance(other, dict):
+      return sameContent(self.formats, other['formats']) \
+        and sameContent(self.parent, other['parent'])
     return isinstance( other, FileType ) and \
            self.__class__ is  other.__class__ and \
            sameContent( self.formats, other.formats ) and \
