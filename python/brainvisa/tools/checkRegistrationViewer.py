@@ -134,6 +134,7 @@ class CheckRegistration():
         for img in self._images + self._overlays:
             aimsImg = aims.read(img)
             aImg = self._anatomist.loadObject(img)
+            aImg.attributed()["volumeInterpolation"] = 0
             try:
                 if aimsImg.header()["modality"] == "PT":
                     aImg.setPalette('Rainbow', minVal=0, maxVal=1)
