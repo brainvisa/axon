@@ -93,9 +93,13 @@ class Importer:
         else:
             try:
                 shutil.copy(input_filename, output_filename)
-                if input_filename.endswith(".ima"):
-                    shutil.copy(input_filename.replace(".ima", ".dim"),
-                                output_filename.replace(".ima", ".dim"))
+                exts = {'.ima': ['.dim'], '.img': ['.hdr'],
+                        '.vimg': ['.vinfo', '.vhdr']}
+                for ext, other_exts in exts.iteritems():
+                    if input_filename.endswith(ext):
+                        for oext in other_exts:
+                            shutil.copy(input_filename.replace(ext, oext),
+                                        output_filename.replace(ext, oext))
                 if os.path.exists(input_filename + ".minf"):
                     ominf = output_filename + ".minf"
                     shutil.copy(input_filename + ".minf", ominf)
@@ -132,7 +136,9 @@ class Importer:
             header = input_vol.header()
             data_type = header["data_type"]
             file_format = header["file_type"]
-            convert = ((file_format != "NIFTI-1") and (file_format != 'GIS')) \
+            supported_formats = ['NIFTI-1', 'NIFTI-2', 'GIS', 'VIDA', 'MINC',
+                                 'OpenSlide']
+            convert = (file_format not in supported_formats) \
                 or (data_type != "S16")
         return convert
 
