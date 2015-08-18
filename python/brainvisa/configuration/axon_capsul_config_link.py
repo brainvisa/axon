@@ -33,6 +33,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 import os
+import distutils.spawn
 from brainvisa.configuration import neuroConfig
 from soma.wip.application.api import Application
 
@@ -66,7 +67,14 @@ def axon_to_capsul_config_sync(study_config):
 
     # Matlab
     if ax_conf.matlab.executable:
-        study_config.matlab_exec = ax_conf.matlab.executable
+        # capsul only accepts complete file names
+        if ax_conf.matlab.executable \
+                == os.path.basename(ax_conf.matlab.executable):
+            matlab = distutils.spawn.find_executable(ax_conf.matlab.executable)
+            if matlab:
+                study_config.matlab_exec = matlab
+        else:
+            study_config.matlab_exec = ax_conf.matlab.executable
         study_config.use_matlab = True
 
     # SPM
