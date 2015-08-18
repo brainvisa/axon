@@ -52,11 +52,16 @@ def axon_to_capsul_config_sync(study_config):
     study_config.use_soma_workflow = True  # always. that's it.
 
     # FOMs
-    study_config.shared_fom = 'shared-brainvisa-1.0'
-    study_config.input_fom = 'morphologist-auto-1.0'
-    study_config.output_fom = 'morphologist-auto-1.0'
-    study_config.volumes_format = 'NIFTI'
-    study_config.meshes_format = 'GIFTI'
+    if not study_config.shared_fom:
+        study_config.shared_fom = 'shared-brainvisa-1.0'
+    if not study_config.input_fom:
+        study_config.input_fom = 'morphologist-auto-1.0'
+    if not study_config.output_fom:
+        study_config.output_fom = 'morphologist-auto-1.0'
+    if not study_config.volumes_format:
+        study_config.volumes_format = 'NIFTI'
+    if not study_config.meshes_format:
+        study_config.meshes_format = 'GIFTI'
     study_config.use_fom = True
 
     # Matlab
