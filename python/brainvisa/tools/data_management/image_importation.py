@@ -38,7 +38,11 @@ class Importer:
 
         Returns:
         --------
-        0 upon success. Exceptions may be raised in case of failure anyway.
+        res_state: dict
+            * return_value: 0 upon success. Exceptions may be raised in case of
+              failure anyway.
+            * warnings (if any): list of warning strings, meant to grant
+              notify to the user any unexpected images sizes, resolutions...
         """
         temp_input = None
         temp_file = None
@@ -124,7 +128,18 @@ class Importer:
             minf_content['referential'] = ouuid
             open(ominf, 'w').write('attributes = ' + repr(minf_content))
 
-        return return_value
+        # check dimensions for unexpected values
+        dims = input_vol.getSize()
+        vs = input_vol.getVoxelSize()
+        res_state = { 'return_value': return_value}
+        warns = []
+        if vs[0] <= 0.6 or vs[1] <= 0.6 or vs[2] <= 0.6:
+            warns.append('Voxel size is unexpectedly small for a standard human T1 MRI (%fx%fx%f) - Your image is probably oversampled (possibly from the scanner reconstruction). Results are likely to be less accurate or erroneous. Please check.' % vs[:3])
+        if dims[0] >= 400 or dims[1] >= 400 or dims[2] >= 200:
+            warns.append('Image size is unexpectedly large for a standard human T1 MRI (%dx%dx%d) - Your image is probably oversampled (possibly from the scanner reconstruction). The Morphologist pipeline is tuned for about 1mm resolution images (typically 256x256x128 voxels). Processing will be longer, and require more memory. Please check.' % dims[:3])
+        if warns:
+            res_state['warnings'] = warns
+        return res_state
 
     @classmethod
     def _conversion_needed(cls, input_filename, input_vol, output_filename):
@@ -184,5 +199,7 @@ if __name__ == '__main__':
     if len(args) < 2 or len(args) > 3:
         parser.error(
             'Invalid arguments : input_file and output_file are mandatory.')
-    Importer.import_t1mri(*args)
+    res = Importer.import_t1mri(*args)
+    if res['return_value'] != 0:
+        raise RuntimeError('importation failed')
 
