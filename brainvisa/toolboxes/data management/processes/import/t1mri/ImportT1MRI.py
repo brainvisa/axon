@@ -45,48 +45,57 @@ userLevel = 0
 
 
 signature=Signature(
-  'input', ReadDiskItem( 'Raw T1 MRI', 'Aims readable volume formats' ),
-  'output', WriteDiskItem( 'Raw T1 MRI', [ 'gz compressed NIFTI-1 image', 'NIFTI-1 image', 'GIS image' ] ),
-  'referential', WriteDiskItem( 'Referential of Raw T1 MRI', 'Referential' ),
+    'input', ReadDiskItem('Raw T1 MRI', 'Aims readable volume formats'),
+    'output', WriteDiskItem(
+        'Raw T1 MRI',
+        ['gz compressed NIFTI-1 image', 'NIFTI-1 image', 'GIS image']),
+    'referential', WriteDiskItem('Referential of Raw T1 MRI', 'Referential'),
 )
 
-def initSubject( self, inp ):
-  value=self.input
-  if self.input is not None and isinstance(self.input, DiskItem):
-    value=self.input.hierarchyAttributes()
-    if value.get("subject", None) is None:
-      value["subject"]=os.path.basename(self.input.fullPath()).partition(".")[0]
-  return value
+def initSubject(self, inp):
+    value = self.input
+    if self.input is not None and isinstance(self.input, DiskItem):
+        value = self.input.hierarchyAttributes()
+        if value.get("subject", None) is None:
+            value["subject"] = os.path.basename(
+                self.input.fullPath()).partition(".")[0]
+    return value
 
-def initialization( self ):
-  self.addLink( "output", "input", self.initSubject )
-  self.signature[ 'output' ].browseUserLevel = 3
-  self.signature[ 'input' ].databaseUserLevel = 2
-  self.signature[ 'referential' ].userLevel = 2
-  self.setOptional( 'referential' )
-  self.linkParameters( 'referential', 'output' )
+def initialization(self):
+    self.addLink("output", "input", self.initSubject)
+    self.signature['output'].browseUserLevel = 3
+    self.signature['input'].databaseUserLevel = 2
+    self.signature['referential'].userLevel = 2
+    self.setOptional('referential')
+    self.linkParameters('referential', 'output')
 
 
-def execution( self, context ):
-  if self.input.format in map( getFormat,
-                             ( 'SPM image', 'Series of SPM image' ) ):
-    context.warning("The image is in Analyze format: be careful, the image"
-                      " orientation could be wrong.")
-  Importer.import_t1mri(self.input.fullPath(), self.output.fullPath())
-  # force completing .minf
-  minfatt = aimsGlobals.aimsVolumeAttributes( self.output )
-  for x, y in minfatt.items():
-    if x != "dicom":
-      self.output.setMinf( x, y )
-  self.output.saveMinf()
-  self.output.readAndUpdateMinf( )
-  # the referential can be written in the file header (nifti)
-  if self.output.minf().get( 'referential', None ):
-    self.output.removeMinf( 'referential' )
-  tm = registration.getTransformationManager()
-  if self.referential is not None:
-    tm.createNewReferential( self.referential )
-    tm.setReferentialTo(self.output, self.referential)
-  else:
-    ref = tm.createNewReferentialFor( self.output, name='Raw T1 MRI' )
+def execution(self, context):
+    if self.input.format in map(getFormat,
+                                ('SPM image', 'Series of SPM image')):
+        context.warning("The image is in Analyze format: be careful, the image"
+                        " orientation could be wrong.")
+    results = Importer.import_t1mri(self.input.fullPath(),
+                                    self.output.fullPath())
+    if results['return_value'] != 0:
+        raise RuntimeError('Importation failed.')
+    if results.has_key('warnings'):
+        for message in results['warnings']:
+            context.warning(message)
+    # force completing .minf
+    minfatt = aimsGlobals.aimsVolumeAttributes(self.output)
+    for x, y in minfatt.items():
+        if x != "dicom":
+            self.output.setMinf(x, y)
+    self.output.saveMinf()
+    self.output.readAndUpdateMinf()
+    # the referential can be written in the file header (nifti)
+    if self.output.minf().get('referential', None):
+        self.output.removeMinf('referential')
+    tm = registration.getTransformationManager()
+    if self.referential is not None:
+        tm.createNewReferential(self.referential)
+        tm.setReferentialTo(self.output, self.referential)
+    else:
+        ref = tm.createNewReferentialFor(self.output, name='Raw T1 MRI')
 
