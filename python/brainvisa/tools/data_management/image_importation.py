@@ -135,7 +135,7 @@ class Importer:
         warns = []
         if vs[0] <= 0.6 or vs[1] <= 0.6 or vs[2] <= 0.6:
             warns.append('Voxel size is unexpectedly small for a standard human T1 MRI (%fx%fx%f) - Your image is probably oversampled (possibly from the scanner reconstruction). Results are likely to be less accurate or erroneous. Please check.' % tuple(vs[:3]))
-        if dims[0] >= 400 or dims[1] >= 400 or dims[2] >= 200:
+        if dims[0] >= 400 or dims[1] >= 400 or dims[2] >= 400:
             warns.append('Image size is unexpectedly large for a standard human T1 MRI (%dx%dx%d) - Your image is probably oversampled (possibly from the scanner reconstruction). The Morphologist pipeline is tuned for about 1mm resolution images (typically 256x256x128 voxels). Processing will be longer, and require more memory. Please check.' % tuple(dims[:3]))
         if warns:
             res_state['warnings'] = warns
