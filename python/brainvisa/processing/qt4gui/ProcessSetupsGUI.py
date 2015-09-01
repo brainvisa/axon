@@ -183,12 +183,16 @@ class LoadProcessSetupsGUI( QDialog ):
 # Initialisation
 #==============================================================================
     self._buildProcessesTree()
+    self._setEnableWidgets(False)
   
   def _updateWidgetEnabled(self, item, column):
     if item.data(0, Qt.UserRole) is not None:
       enable = True
     else:
       enable = False
+    self._setEnableWidgets(enable)
+  
+  def _setEnableWidgets(self, enable):
     self.process_name_combo_box.setEnabled(enable)
     self.description_plain_text.setEnabled(enable)
     self.load_button.setEnabled(enable)
