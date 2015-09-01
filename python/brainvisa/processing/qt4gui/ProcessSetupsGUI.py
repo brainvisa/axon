@@ -173,6 +173,7 @@ class LoadProcessSetupsGUI( QDialog ):
 #==============================================================================
 # signal connection
 #==============================================================================
+    self.process_tree.itemClicked.connect(self._updateWidgetEnabled)
     self.process_tree.itemClicked.connect(self._updateComboBox)
     self.process_name_combo_box.currentIndexChanged.connect(self._updateDescription)
     self.load_button.clicked.connect(self._loadProcess)
@@ -183,6 +184,16 @@ class LoadProcessSetupsGUI( QDialog ):
 #==============================================================================
     self._buildProcessesTree()
   
+  def _updateWidgetEnabled(self, item, column):
+    if item.data(0, Qt.UserRole) is not None:
+      enable = True
+    else:
+      enable = False
+    self.process_name_combo_box.setEnabled(enable)
+    self.description_plain_text.setEnabled(enable)
+    self.load_button.setEnabled(enable)
+    self.delete_button.setEnabled(enable)
+      
   def _updateComboBox(self, item, column):
     if item.data(0, Qt.UserRole) is not None:
       self.process_name_combo_box.clear()
@@ -254,7 +265,6 @@ class LoadProcessSetupsGUI( QDialog ):
           current_node = self._findOrCreateTopLevelItem(top_level)
           self._findOrCreateChildNode(current_node, categories_list, process_name, (process_nickname,(description,path)))
     self.process_tree.sortItems(1, Qt.AscendingOrder)
-    print(self.process_tree.columnCount())
           
   def _findOrCreateTopLevelItem(self, text):
     if self.process_tree.topLevelItemCount() != 0:
