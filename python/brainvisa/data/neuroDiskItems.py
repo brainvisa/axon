@@ -996,6 +996,7 @@ class DiskItem(QObject):
         if attrs.has_key( 'uuid' ):
           self._changeUuid( Uuid( attrs[ 'uuid' ] ) )
           del attrs[ 'uuid' ]
+        self.clearMinf(saveMinf=False)
         self.updateMinf( attrs, saveMinf=False )
     finally:
       self._lock.release()
