@@ -137,6 +137,8 @@ class LoadProcessSetupsGUI( QDialog ):
 #==============================================================================
     self.process_tree = QTreeWidget()
     self.process_tree.setHeaderHidden(True)
+    self.process_tree.setColumnCount(2)
+    self.process_tree.setColumnHidden(1, True)
     self.process_name_combo_box = QComboBox()
     self.description_plain_text = QPlainTextEdit()
     self.description_plain_text.setEnabled(False)
@@ -153,12 +155,17 @@ class LoadProcessSetupsGUI( QDialog ):
     button_layout = QHBoxLayout()
     
     splitter.addWidget(self.process_tree)  
+    splitter.setStretchFactor(0,1)
     splitter.addWidget(right_widget)
     main_layout.addWidget(splitter)
     
+    button_layout.addStretch()
     button_layout.addWidget(self.load_button)
+    button_layout.addStretch()
     button_layout.addWidget(self.delete_button)
+    button_layout.addStretch()
     button_layout.addWidget(self.cancel_button)
+    button_layout.addStretch()
     
     right_layout.addWidget(self.process_name_combo_box)
     right_layout.addWidget(self.description_plain_text)
@@ -246,6 +253,8 @@ class LoadProcessSetupsGUI( QDialog ):
           top_level = categories_list.pop(0)
           current_node = self._findOrCreateTopLevelItem(top_level)
           self._findOrCreateChildNode(current_node, categories_list, process_name, (process_nickname,(description,path)))
+    self.process_tree.sortItems(1, Qt.AscendingOrder)
+    print(self.process_tree.columnCount())
           
   def _findOrCreateTopLevelItem(self, text):
     if self.process_tree.topLevelItemCount() != 0:
@@ -266,7 +275,7 @@ class LoadProcessSetupsGUI( QDialog ):
           self._findOrCreateChildNode(current_node.child(child_index), directory_list, process_id, process_data)
           directory_found = True
       if not directory_found:
-        current_node = self._addQTreeChild(current_node, 0, first_directory, None)
+        current_node = self._addQTreeChild(current_node, first_directory, None)
         self._findOrCreateChildNode(current_node, directory_list, process_id, process_data)
     else:
       process_found = False
@@ -277,15 +286,17 @@ class LoadProcessSetupsGUI( QDialog ):
           current_node.child(child_index).setData(0, Qt.UserRole, current_data_list)
           process_found = True
       if not process_found:
-        self._addQTreeChild(current_node, 0, process_id, [process_data])
+        self._addQTreeChild(current_node, process_id, [process_data])
       
-  def _addQTreeChild(self, parent, column, title, data):
+  def _addQTreeChild(self, parent, title, data):
     item = QTreeWidgetItem(parent, [title])
     if data is not None:
-      item.setData(column, Qt.UserRole, data)
+      item.setData(0, Qt.UserRole, data)
+      item.setText(1, "process_" + title)#only use to sort it (first directory then processes)
       item.setIcon(0, QIcon(os.path.join(neuroConfig.iconPath,"icon_process_0.png")))
     else:
       item.setIcon(0, QIcon(os.path.join(neuroConfig.iconPath,"folder.png")))
+      item.setText(1, "directory_" + title)#only use to sort it (first directory then processes)
     return item       
           
           
