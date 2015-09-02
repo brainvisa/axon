@@ -194,7 +194,6 @@ class LoadProcessSetupsGUI( QDialog ):
   
   def _setEnableWidgets(self, enable):
     self.process_name_combo_box.setEnabled(enable)
-    self.description_plain_text.setEnabled(enable)
     self.load_button.setEnabled(enable)
     self.delete_button.setEnabled(enable)
       
