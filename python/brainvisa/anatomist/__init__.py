@@ -593,14 +593,74 @@ if anatomistImport:
       """
       return self.viewObject(fileRef, "3D")
 
-    def viewBias(self, fileRef, forceReload=False, wintype="Axial"):
+    def viewBias(self, fileRef, forceReload=False, wintype="Coronal",
+                 hanfile=None, parent=None):
       """
-      Loads an image, opens it in a new window in the object's referential. A palette is assigned to the object (Rainbow2) in order to see the bias.
+      Loads an image, opens it in a new window in the object's referential. A
+      palette is assigned to the object (Rainbow2) in order to see the bias.
+
+      Parameters
+      ----------
+      fileRef: string or ReadDiskItem
+          file name for the bias corrected image
+      forceReload: boolean
+          if True, the image is reloaded if already in memory.
+      wintype: string
+          "Axial", "Coronal", "Sagittal", "3D" (or other)
+      hanfile: string or ReadDiskItem
+          optional file name for histogram analysis file. If present it will be
+          used to set palette bounds.
+      parent: QWidget or anatomist block
+          parent widget or block
       """
       object = self.loadObject( fileRef, duplicate=True )
       object.setPalette( self.getPalette("Rainbow2") )
-      window = self.createWindow( wintype )
+      if isinstance(parent, self.AWindowsBlock):
+        window = self.createWindow(wintype, block=parent)
+      else:
+        window = self.createWindow(wintype)
+      if isinstance(parent, qt.QWidget):
+        mainThread = QtThreadCall()
+        mainThread.push(window.getInternalRep().reparent, parent)
       window.assignReferential( object.referential)
+
+      if hanfile is not None and (hasattr(hanfile, 'fullPath')
+                                  or  os.path.exists(hanfile)):
+
+        def load_histo_analysis(hanfile):
+          '''parse histo analysis file (.han) to extract gray and white
+          mean/std.
+          Returns a tuple in the following shape:
+          ( ( gray_mean, gray_stdev ), ( white_mean, white_stdev ) )
+          '''
+          import re
+          r = re.compile('^.*mean:\s*(-?[0-9]+(\.[0-9]*)?)\s*sigma:\s'
+                        '(-?[0-9]+(\.[0-9]*)?)\s*$')
+          gmean, gsigma, wmean, wsigma = None, None, None, None
+          for l in open(hanfile).xreadlines():
+              l = l.strip()
+              if l.startswith('gray:'):
+                  m = r.match(l)
+                  if m:
+                      gmean = float(m.group(1))
+                      gsigma = float(m.group(3))
+              elif l.startswith('white:'):
+                  m = r.match(l)
+                  if m:
+                      wmean = float(m.group(1))
+                      wsigma = float(m.group(3))
+          return [gmean, gsigma], [wmean, wsigma]
+
+        if hasattr(hanfile, 'fullPath'):
+          hanfile = hanfile.fullPath()
+        try:
+          grey, white = load_histo_analysis(hanfile)
+          object.setPalette(minVal=max(grey[0] - grey[1] * 8, 0),
+                            maxVal=white[0] + white[1] * 3,
+                            absoluteMode=True)
+        except:
+          print 'Warning: histogram could not be read:', hanfile
+
       window.addObjects( [object] )
       return {"object" : object, "window" : window, "file" : fileRef}
 
