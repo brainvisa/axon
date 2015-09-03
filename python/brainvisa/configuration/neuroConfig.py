@@ -264,13 +264,17 @@ if platform == 'windows':
 else:
   pathSeparator = ':'
 
-def findInPath( file,
-                pathlist = os.environ.get( 'PATH' ).split( pathSeparator ) ):
+def findInPath(file,
+               pathlist=os.environ.get( 'PATH' ).split( pathSeparator ),
+               is_dir=False):
+  """Returns the directory containing file"""
   for i in pathlist:
     p = os.path.normpath( os.path.abspath( i ) )
     if p:
       if os.path.isdir( p ) and os.path.exists( os.path.join( p, file ) ):
-        return p
+        if (is_dir and os.path.isdir(os.path.join(p, file))) \
+            or (not is_dir and not os.path.isdir(os.path.join(p, file))):
+          return p
 
 try:
   from brainvisa.config import fullVersion, shortVersion
