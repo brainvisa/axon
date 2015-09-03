@@ -19,7 +19,7 @@ find_package( python REQUIRED )
 find_package( SIP )
 if( SIP_FOUND )
 
-  find_package( Qt4 COMPONENTS QtCore QtGui Qt3Support REQUIRED )
+  find_package( Qt4 COMPONENTS QtCore QtGui REQUIRED )
   find_package( QtVersion REQUIRED )
 
   BRAINVISA_DEPENDENCY( RUN DEPENDS python-sip4 RUN )
