@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-include( 'builtin' )
+include('builtin')
+include('registration')
 
 #--------------- Templates ------------------------
 FileType( 'Template', '3D Volume')
