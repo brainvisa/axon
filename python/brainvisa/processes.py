@@ -2404,6 +2404,24 @@ class ExecutionContext( object ):
       return self._processStackHead
     return stack[-1]
 
+  def _get_process_and_argname(self, process, param_name):
+    '''Find process or subprocess and parameter name from a param name which
+    may address a sub-process: subprocess.param
+    '''
+    argnames = param_name.split('.')
+    current_proc = process
+    if len(argnames) > 1:
+      enode_meth = getattr(current_proc, 'executionNode')
+      if not enode_meth:
+        raise KeyError('Process %s has no children (looking for %s)'
+          % (current_proc.name, pname))
+      enode = enode_meth()
+      for pname in argnames[:-1]:
+        enode = enode.child(pname)
+      current_proc = enode._process
+
+    return current_proc, argnames[-1]
+
   def _setArguments( self, _process, *args, **kwargs ):
     # Set arguments
     for i, v in enumerate( args ):
@@ -2413,8 +2431,11 @@ class ExecutionContext( object ):
       # a forced value to immutable (ie non-linked) before actually
       # setting values and running links. This avoids a bunch of unnecessary
       # links to work (often several times)
+    to_restore = set()
     for ( n, v ) in kwargs.items():
-      _process._setImmutable( n, True )
+      proc, argname = self._get_process_and_argname(_process, n)
+      proc._setImmutable( argname, True )
+      to_restore.add(proc)
 
     for i, v in enumerate( args ):
       n = _process.signature.keys()[ i ]
@@ -2424,13 +2445,17 @@ class ExecutionContext( object ):
       else:
         setattr( _process, n, None )
     for ( n, v ) in kwargs.items():
-      _process.setDefault( n, 0 )
+      proc, argname = self._get_process_and_argname(_process, n)
+      proc.setDefault( argname, 0 )
       if v is not None:
-        _process.setValue( n, v )
+        proc.setValue( argname, v )
       else:
-        setattr( _process, n, None )
-    _process._clearImmutableParameters()
-    _process.checkArguments()
+        setattr( proc, argname, None )
+    for proc in to_restore:
+      proc._clearImmutableParameters()
+    to_restore.add(_process)
+    for proc in to_restore:
+      proc.checkArguments()
 
   def _startProcess( self, _process, executionFunction, *args, **kwargs ):
     if not isinstance( _process, Process ):
