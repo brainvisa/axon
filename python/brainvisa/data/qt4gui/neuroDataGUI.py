@@ -559,7 +559,7 @@ class StringListEditor( QLineEdit, DataEditor ):
         if c in ( "'", '"' ):
           quote = c
           current = ''
-        elif c != ' ':
+        elif c not in (' ', '\n'):
           quote = ' '
           if c == '\\': escape = 1
           else: current = c
