@@ -873,6 +873,10 @@ class HTMLBrowser( QWidget ):
         _t_('Open link in a text editor'), self)
       self.connect(self.openLinkInTextEditorAction, SIGNAL('triggered(bool)'),
                    self.openSourceLink)
+      self.copyLinkAction = QAction(_t_('Copy link URL'), self)
+      self.connect(self.copyLinkAction, SIGNAL('triggered(bool)'),
+                   self.copyLinkUrl)
+      self.linkUrl = None
 
     def setSource( self, url ):
       text = url.toString()
@@ -909,18 +913,21 @@ class HTMLBrowser( QWidget ):
     def customMenu(self, hit_url=None):
       menu = WebBrowserWithSearch.customMenu(self)
       menu.addSeparator()
-      menu.addAction( self.openWebAction )
+      menu.addAction(self.openWebAction)
+      self.linkUrl = hit_url
       if hit_url:
         menu.addSeparator()
-        self.openLinkWebAction.url = hit_url
         menu.addAction(self.openLinkWebAction)
         if unicode(hit_url.toString()).endswith('.py'):
-          self.openLinkInTextEditorAction.url = hit_url
           menu.addAction(self.openLinkInTextEditorAction)
+        menu.addAction(self.copyLinkAction)
       return menu
 
+    def copyLinkUrl(self, dummy):
+      QApplication.clipboard().setText(self.linkUrl.toString())
+
     def openLinkWeb(self, dummy):
-      openWeb(self.openLinkWebAction.url.toString())
+      openWeb(self.linkUrl.toString())
 
     def openSourceLink(self, dummy):
       configuration = Application().configuration
@@ -935,7 +942,7 @@ class HTMLBrowser( QWidget ):
               env.update(neuroConfig.brainvisaSysEnv.getVariables())
           os.spawnle(
             os.P_NOWAIT, textEditor, textEditor,
-            unicode(self.openLinkInTextEditorAction.url.toString()), env )
+            unicode(self.linkUrl.toString()), env )
 
     def openWeb(self):
       openWeb(self.url().toString())
