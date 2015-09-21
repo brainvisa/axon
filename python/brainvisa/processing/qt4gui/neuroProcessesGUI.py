@@ -866,10 +866,16 @@ class HTMLBrowser( QWidget ):
       self.openWebAction.setShortcut( Qt.CTRL + Qt.Key_W )
       self.connect( self.openWebAction, SIGNAL( 'triggered(bool)' ),
         self.openWeb )
-
+      self.openLinkWebAction = QAction(_t_('Open link in a web browser'), self)
+      self.connect(self.openLinkWebAction, SIGNAL('triggered(bool)'),
+        self.openLinkWeb)
+      self.openLinkInTextEditorAction = QAction(
+        _t_('Open link in a text editor'), self)
+      self.connect(self.openLinkInTextEditorAction, SIGNAL('triggered(bool)'),
+                   self.openSourceLink)
 
     def setSource( self, url ):
-      text=url.toString()
+      text = url.toString()
       bvp = unicode( text )
       if bvp.startswith( 'bvshowprocess://' ):
         bvp = bvp[16:]
@@ -890,10 +896,46 @@ class HTMLBrowser( QWidget ):
         WebBrowserWithSearch.setSource( self, url)
       self.page().setLinkDelegationPolicy( QtWebKit.QWebPage.DelegateAllLinks )
 
-    def customMenu(self):
-      menu=WebBrowserWithSearch.customMenu(self)
+    def contextMenuEvent(self, event):
+      rel_pos = event.pos()
+      main_frame = self.page().mainFrame()
+      hit_test = main_frame.hitTestContent(rel_pos)
+      hit_url = hit_test.linkUrl()
+      if hit_url.isEmpty():
+        hit_url = None
+      menu = self.customMenu(hit_url)
+      menu.exec_(event.globalPos());
+
+    def customMenu(self, hit_url=None):
+      menu = WebBrowserWithSearch.customMenu(self)
+      menu.addSeparator()
       menu.addAction( self.openWebAction )
+      if hit_url:
+        menu.addSeparator()
+        self.openLinkWebAction.url = hit_url
+        menu.addAction(self.openLinkWebAction)
+        if unicode(hit_url.toString()).endswith('.py'):
+          self.openLinkInTextEditorAction.url = hit_url
+          menu.addAction(self.openLinkInTextEditorAction)
       return menu
+
+    def openLinkWeb(self, dummy):
+      openWeb(self.openLinkWebAction.url.toString())
+
+    def openSourceLink(self, dummy):
+      configuration = Application().configuration
+      textEditor = configuration.brainvisa.textEditor
+      if textEditor is not None:
+        textEditor = distutils.spawn.find_executable( textEditor )
+        if textEditor:
+          env = os.environ.copy()
+          if not textEditor.startswith(os.path.dirname(neuroConfig.mainPath)):
+            # external command
+            if neuroConfig.brainvisaSysEnv:
+              env.update(neuroConfig.brainvisaSysEnv.getVariables())
+          os.spawnle(
+            os.P_NOWAIT, textEditor, textEditor,
+            unicode(self.openLinkInTextEditorAction.url.toString()), env )
 
     def openWeb(self):
       openWeb(self.url().toString())
