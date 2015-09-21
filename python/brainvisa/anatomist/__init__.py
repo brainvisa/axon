@@ -696,7 +696,6 @@ if anatomistImport:
         fmode = None
       self.execute("Fusion2DParams", object=fusion, mode=fmode, rate = rate,
                           reorder_objects = [ mri, mask ] )
-      print 'mode:', mode
       window = self.createWindow( wintype )
       window.assignReferential( mri.referential )
       window.addObjects( [fusion] )
