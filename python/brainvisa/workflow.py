@@ -73,8 +73,12 @@ class ProcessToWorkflow( object ):
           else:
             value = new_value
 
-      if (level == 0) :
-        value = str(value)
+      if level == 0:
+        if isinstance(value, basestring) and (value.startswith('"') \
+            or value.startswith("'") or value == "None"):
+          value = '"' + str(value) + '"'
+        else:
+          value = str(value)
         if escape is not None :
           for e, r in escape :
             value = value.replace(e, r)
@@ -719,7 +723,11 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
           else:
             value = new_value
       if not isinstance(value, list) and not isinstance(value, tuple):
-        value = str(value)
+        if isinstance(value, basestring) and (value.startswith('"') \
+            or value.startswith("'") or value == "None"):
+          value = '"' + str(value) + '"'
+        else:
+          value = str(value)
         if escape is not None :
           for e, r in escape :
             value = value.replace(e, r)
