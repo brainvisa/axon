@@ -44,6 +44,8 @@
             "{spam_models}/segments_relations/mindist_relations_<side>/gamma_exponential_mixture_distribs",
         "sulci_recognition_ann_model":
             "models/models_<sulci_database>/discriminative_models/<graph_version>/<side>folds_noroots",
+        "shared.sulcal_morphometry_sulci_file":
+            [["shared:nomenclature/translation/sulci_default_list", "JSON file"]],
     }
 }
   
