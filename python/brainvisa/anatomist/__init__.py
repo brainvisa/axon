@@ -342,7 +342,6 @@ if anatomistImport:
 
         try:
           p = pth.next()
-          print 'path:', p
 
           loadTrAndCreateRef = forceLoadTransformation
           try:
@@ -356,14 +355,11 @@ if anatomistImport:
             if not isinstance( ref1, self.Referential ):
               srcrDiskItem = tm.referential(id1)
               srcr = self.createReferential(srcrDiskItem)
-              print 'new src ref:', srcr.uuid()
               ref1 = srcr
             lastref = id1
             for t in p:
                 dstrid = t[ 'destination_referential' ]
                 srcrid = t[ 'source_referential' ]
-                print 'line in path:', srcrid, dstrid
-                print 'lastref:', lastref
 
                 if lastref == dstrid: # The transformation should be applied in reverse
                   wantedref = srcrid
@@ -378,7 +374,7 @@ if anatomistImport:
                 else:
                   dstr = ref2
 
-                print "load transformation", t, ":", srcr.uuid(), "->", dstr.uuid()
+                #print "load transformation", t, ":", srcr.uuid(), "->", dstr.uuid()
                 if wantedref == dstrid:
                   self.loadTransformation( t.fullPath(), srcr, dstr )
                 else:
