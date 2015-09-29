@@ -69,14 +69,25 @@ class DatabasesTransformationManager( object ):
     return neuroHierarchy.databases.getDiskItemFromUuid( uuid, None )
 
 
-  def findPaths( self, source_referential, destination_referential, maxLength=None, bidirectional=False ):
+  def findReferentialNeighbours(self, ref, bidirectional=True,
+                                flat_output=False):
+    return neuroHierarchy.databases.findReferentialNeighbours(
+      ref, bidirectional=bidirectional, flat_output=flat_output)
+
+  def findPaths(self, source_referential, destination_referential,
+                maxLength=None, bidirectional=False, extensive=True):
     '''Return a generator object that iterate over all the transformation
     paths going from source_referential to destination_referential.
     A transformation path is a list of transformation objects. The paths
     are returned in increasing length order. If maxlength is set to a
     non null positive value, it limits the size of the paths returned.
     Source and destination referentials can be given either as string uuid
-    or as referential object.'''
+    or as referential object.
+
+    If extensive is False, not all paths will be searched, and a faster
+    algorithm will be used which may stop when at least one matching path is
+    found. But ambiguous paths will not necessarily be detected.
+    '''
     ref = uuid.Uuid( source_referential )
     if ref is not None:
       source_referential = ref
@@ -88,7 +99,13 @@ class DatabasesTransformationManager( object ):
     else:
       destination_referential = self.getObjectUuid( destination_referential )
 
-    for path in neuroHierarchy.databases.findTransformationPaths( source_referential, destination_referential, maxLength, bidirectional ):
+    if extensive:
+      paths = neuroHierarchy.databases.findTransformationPaths(
+        source_referential, destination_referential, maxLength, bidirectional)
+    else:
+      paths = neuroHierarchy.databases.findTransformationPathsFast(
+        source_referential, destination_referential, maxLength, True)
+    for path in paths:
       try:
         yield [ neuroHierarchy.databases.getDiskItemFromUuid( i[0] ) for i in path ]
       except neuroHierarchy.DatabaseError, e:
