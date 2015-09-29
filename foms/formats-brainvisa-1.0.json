@@ -12,7 +12,7 @@
     "Text Data Table": "dat",
     "Text file": "txt",
     "CSV file": "csv",
-    "Text file": "txt",
+    "JSON file": "json",
     "Commissure coordinates" : "APC",
     "Matlab" : "mat",
     "Matlab bz2" : "mat.bz2",
