@@ -251,6 +251,127 @@ class Database( object ):
     return None
 
 
+  def findTransformationPaths( self, source_referential,
+                              destination_referential, maxLength=None,
+                              bidirectional=False ):
+    '''Return a generator object that iterate over all the transformation
+    paths going from source_referential to destination_referential.
+    A transformation path is a list of ( transformation uuid, destination
+    referentia uuid). The pathsare returned in increasing length order.
+    If maxlength is set to a non null positive value, it limits the size of
+    the paths returned. Source and destination referentials must be given as
+    string uuid.'''
+    if isinstance( source_referential, Uuid ):
+      source_referential = str( source_referential )
+    if isinstance( destination_referential, Uuid ):
+      destination_referential = str( destination_referential )
+
+    #print '!findTransformationPaths!', source_referential, destination_referential, maxLength, bidirectional
+    paths = self.findReferentialNeighbours(
+      source_referential, bidirectional=bidirectional,
+      flat_output=True)
+    paths = [([[t[0], t[1 if t[1] != source_referential else 2]]],
+              set([t[1 if t[1] != source_referential else 2]]))
+             for t in paths]
+    length = 1
+    while paths:
+      if maxLength and length > maxLength:
+        break
+      longerPaths = []
+      for path, referentials in paths:
+        # Get the last referential of the path
+        lastReferential = path[ -1][ 1 ]
+        # Check if the path reach the destination referential
+        #print '!findTransformationPaths 2!', path
+        if lastReferential == destination_referential:
+          #print '!findTransformationPaths! -->', path
+          yield path
+          continue
+        if lastReferential == source_referential:
+          continue
+
+        # Get all the transformations objects starting from the last referential
+        # of the path
+        newPaths = self.findReferentialNeighbours(
+          lastReferential, bidirectional=bidirectional,
+          flat_output=True)
+
+        for p in newPaths:
+          index = 1 if p[1] != lastReferential else 2
+          if p[index] not in referentials:
+            newReferentials = set( referentials )
+            newReferentials.add(p[index])
+            longerPaths.append((path + [[p[0], p[index]]], newReferentials))
+      paths = longerPaths
+      length += 1
+    #print '!findTransformationPaths! finished'
+
+
+  def findTransformationPathsFast(self, source_referential,
+                                  destination_referential, maxLength=4,
+                                  stopAtFirstPath=False):
+
+    if isinstance( source_referential, Uuid ):
+      source_referential = str( source_referential )
+    if isinstance( destination_referential, Uuid ):
+      destination_referential = str( destination_referential )
+
+    #print '!findTransformationPathsFast!', source_referential, destination_referential, maxLength
+    #cursor = self._getDatabaseCursor()
+
+    refs2explore = set([source_referential])
+    allRefs = refs2explore
+    #transfos = {source_referential:[[(None, None, None),],]}
+    transfos = {source_referential:[[],]} # transfos contains for each referential in refs2explore a list of triplet (transform, from, to)
+    length = 0
+    refs2explore2 = set()
+    #if '7c5de998-bce1-04b7-1b71-9f31ee946620' == source_referential or destination_referential == '7c5de998-bce1-04b7-1b71-9f31ee946620':
+      #import pdb; pdb.set_trace()
+    while destination_referential not in refs2explore and length <= maxLength and len(refs2explore)>0:
+      for r in refs2explore: # Parcourons les referentiels source disponibles
+        (refs, paths) = self.findReferentialNeighbours(r) #On obtient tous les référentiels cible et les chemins vers ceux-ci
+        #print "EXPAND REFS -> ",refs
+        refs2explore2.update(refs) # On ajoute ces référentiels dans ceux à explorer plus tard
+        for r2 in refs:# Pour les referentiels trouvés, on ajoute un chemin
+          if r2 not in transfos:# Si on n'a pas encore ce referentiel, on initialise ses chemins de transfos
+            transfos[r2] = []
+          for tr in transfos[r]:# On est partis du referentiel r pour trouver r2 -> on cherche les transfos qui menaient à r
+            for tr2 in paths[r2]: #S'il y a plusieurs transfos disponibles de r vers r2
+              if len(tr) > 0 and tr[-1] == tr2: # Do not add paths like transf12,transf12 (transf12 + transf12 in reverse goes back to the previous referential)
+                pass
+              else:
+                transfos[r2].append(tr+[tr2,]) # On ajoute à r2 les chemins vers r+les chemins r->r2
+
+      refs2explore = refs2explore2 - allRefs # Do not explore already explored ones (removes circular transforms)
+      allRefs.update(refs)
+      #print "--- all Refs ->", allRefs
+      #print "------transfos ->",transfos
+      if stopAtFirstPath ==  True and destination_referential in refs2explore: # Found it !
+        #print "FOUND :",transfos[destination_referential]
+        return iter(transfos[destination_referential]) # iter -> because calling function expects a generator
+
+      length += 1
+    if destination_referential in refs2explore: # Found it !
+      #print "FOUND :",transfos[destination_referential]
+      return iter(transfos[destination_referential])
+    else:
+      #print "NOT FOUND"
+      return iter([])
+
+        #for p in newPaths:
+          #if p[ 1 ] not in referentials:
+            #newReferentials = set( referentials )
+            #newReferentials.add( p[ 1 ] )
+            #longerPaths.append( ( path + [ p ], newReferentials ) )
+      #paths = longerPaths
+      #length += 1
+    #print '!findTransformationPaths! finished'
+
+
+  def findReferentialNeighbours(self, ref, bidirectional=True,
+                                flat_output=False):
+    raise NotImplementedError('findReferentialNeighbours has to be redefined in children classes of Database')
+
 
 #------------------------------------------------------------------------------
 #dbg# import weakref
@@ -1593,61 +1714,34 @@ class SQLDatabase( Database ):
       Format( name, bvPatterns )
       self.formats.newFormat( name, patterns )
 
-  def findTransformationPaths( self, source_referential, destination_referential, maxLength=None, bidirectional=False ):
-    '''Return a generator object that iterate over all the transformation
-    paths going from source_referential to destination_referential.
-    A transformation path is a list of ( transformation uuid, destination 
-    referentia uuid). The pathsare returned in increasing length order. 
-    If maxlength is set to a non null positive value, it limits the size of
-    the paths returned. Source and destination referentials must be given as
-    string uuid.'''
-    if isinstance( source_referential, Uuid ):
-      source_referential = str( source_referential )
-    if isinstance( destination_referential, Uuid ):
-      destination_referential = str( destination_referential )
-    
-    #print '!findTransformationPaths!', source_referential, destination_referential, maxLength, bidirectional
-    cursor = self._getDatabaseCursor()
-    paths = cursor.execute( 'SELECT DISTINCT _uuid, _to FROM _TRANSFORMATIONS_ WHERE _TRANSFORMATIONS_._from = ?', ( source_referential, ) ).fetchall()
+
+  def findReferentialNeighbours(self, source_referential, cursor=None,
+                                bidirectional=True, flat_output=False):
+    """From one referential, find all referentials directly linked by transforms
+    and return a tuple (referentials, paths), where paths is a dictionary which contains a list
+    of transforms that leads to each referential (key of the dictionary)
+    from the source_referential (a transform is a triplet (uuid_transform, uuid_from, uuid_to))
+
+    If flat_output is True, the output is a list of tuples
+    (transform, source, dest).
+    """
+    if cursor is None:
+      cursor = self._getDatabaseCursor()
     if bidirectional:
-      paths.extend( cursor.execute( 'SELECT DISTINCT _uuid, _from FROM _TRANSFORMATIONS_ WHERE _TRANSFORMATIONS_._to = ?', ( source_referential, ) ) )
-    #print '!findTransformationPaths 1!', paths
-    paths = [ ( [ t ], set( [ t[1] ] ) ) for t in paths ]
-    #print '!findTransformationPaths 1.1!', paths
-    length = 1
-    while paths:
-      if maxLength and length > maxLength:
-        break
-      longerPaths = []
-      for path, referentials in paths:
-        # Get the last referential of the path
-        lastReferential = path[ -1][ 1 ]
-        # Check if the path reach the destination referential
-        #print '!findTransformationPaths 2!', path
-        if lastReferential == destination_referential:
-          #print '!findTransformationPaths! -->', path
-          yield path
-          continue
-        if lastReferential == source_referential:
-          continue
-
-        # Get all the transformations objects starting from the last referential
-        # of the path
-        #trList = [ self.__transformations[ trId ] \
-                  #for trId in self.__transformationsFrom.get( lastReferential,
-                                                              #[] ) ]
-        newPaths = cursor.execute( 'SELECT DISTINCT _uuid, _to FROM _TRANSFORMATIONS_ WHERE _TRANSFORMATIONS_._from = ?', ( lastReferential, ) ).fetchall()
-        if bidirectional:
-          newPaths.extend( cursor.execute( 'SELECT DISTINCT _uuid, _from FROM _TRANSFORMATIONS_ WHERE _TRANSFORMATIONS_._to = ?', ( lastReferential, ) ) )
-
-        for p in newPaths:
-          if p[ 1 ] not in referentials:
-            newReferentials = set( referentials )
-            newReferentials.add( p[ 1 ] )
-            longerPaths.append( ( path + [ p ], newReferentials ) )
-      paths = longerPaths
-      length += 1
-    #print '!findTransformationPaths! finished'
+      paths = cursor.execute(
+        'SELECT DISTINCT _uuid, _from, _to FROM _TRANSFORMATIONS_ WHERE _TRANSFORMATIONS_._from = ? OR _TRANSFORMATIONS_._to = ?',
+        (source_referential, source_referential)).fetchall()
+    else:
+      paths = cursor.execute(
+        'SELECT DISTINCT _uuid, _from, _to FROM _TRANSFORMATIONS_ WHERE _TRANSFORMATIONS_._from = ?',
+        (source_referential,)).fetchall()
+    if flat_output:
+      return paths
+    refs = list(set([p[1] for p in paths]+[p[2] for p in paths]) \
+      - set([source_referential,]))
+    trsfs = dict(
+      [(r, [p for p in paths if p[1] == r or p[2] == r]) for r in refs])
+    return (refs, trsfs)
 
 
   def findTransformationWith( self, uuid ):
@@ -1951,39 +2045,24 @@ class SQLDatabases( Database ):
       database.newFormat( name, patterns )
 
 
-  def findTransformationPaths( self, source_referential, destination_referential, maxLength=None, bidirectional=False ):
-    if isinstance( source_referential, Uuid ):
-      source_referential = str( source_referential )
-    if isinstance( destination_referential, Uuid ):
-      destination_referential = str( destination_referential )
-      
-    iterators = [ d.findTransformationPaths( source_referential, destination_referential, maxLength, bidirectional ) for d in self._databases.itervalues() ]
-    currentLength = 1
-    paths_to_yield = []
-    while iterators and ( maxLength is None or currentLength <= maxLength ):
-      new_paths_to_yield = []
-      for p in paths_to_yield:
-        if len( p ) == currentLength:
-          yield p
-        else:
-          new_paths_to_yield.append( p )
-      paths_to_yield = new_paths_to_yield
-      for it in tuple( iterators ):
-        while True:
-          try:
-            path = it.next()
-          except StopIteration:
-            iterators.remove( it )
-            break
-          if len( path ) > currentLength:
-            if maxLength is None or len( path ) <= maxLength:
-              paths_to_yield.append( path )
-            else:
-              iterators.remove( it )
-            break
-          yield path  
-      currentLength += 1
-    if paths_to_yield:
-      paths_to_yield.sort( lambda a,b: cmp( len(a), len(b) ) )
-      for path in paths_to_yield:
-        yield path
+  def findReferentialNeighbours(self, ref, bidirectional=True,
+                                flat_output=False):
+    allrefs = []
+    alltrsfs = {}
+    allneigh = []
+    for database in self._iterateDatabases( {}, {} ):
+      neighbours = database.findReferentialNeighbours(
+        ref, bidirectional=bidirectional, flat_output=flat_output)
+      if flat_output:
+        allneigh += neighbours
+      else:
+        (refs, transfs) = neighbours
+        allrefs.extend(refs)
+        for r, p in transfs.iteritems():
+          alltrsfs.setdefault(r, []).extend(p)
+    if flat_output:
+      return allneigh
+    else:
+      return (allrefs, alltrsfs)
+
+
