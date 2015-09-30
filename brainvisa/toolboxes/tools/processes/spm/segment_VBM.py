@@ -77,7 +77,7 @@ signature = Signature(
   'grey_native', Choice(('none', '0'), ('yes', '1')),
   'grey_nat', WriteDiskItem('T1 MRI Nat GreyProba', 'NIFTI-1 image'),
   'grey_warped', Choice(('none', '0'), ('yes', '1')),
-  'grey_Mni', WriteDiskItem('T1 MRI Mni GreyProba', 'NIFTI-1 image'),
+  'grey_Mni', WriteDiskItem('T1 MRI Mni GreyProba', 'NIFTI-1 image', requiredAttributes={"modulated":"no", "normalization":"low-dimensional"}),
   'grey_modulated', Choice(('none', '0'), ('affiche + non-linear (SPM8 default)', '1'), ('non-linear only', '2')),
   'grey_dartel', Choice(('none', '0'), ('rigid (SPM8 default)', '1'), ('affine', '2')),
 

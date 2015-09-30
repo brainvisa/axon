@@ -131,11 +131,11 @@ matlabbatch{1}.spm.spatial.smooth.prefix = '%s';
   return mat_file.name
 
 
-def initializeSmooth_withSPM8DefaultValues(process):
-	process.fwhm = """[12 12 12]"""
-	process.dtype = """0"""
-	process.im = """0""" 
-	process.prefix = """spmSmooth_12"""
+#def initializeSmooth_withSPM8DefaultValues(process):
+#	process.fwhm = """[12 12 12]"""
+#	process.dtype = """0"""
+#	process.im = """0""" 
+#	process.prefix = """spmSmooth_12"""
 
 
 #

@@ -82,6 +82,12 @@ from brainvisa.data.databaseCheck import BVChecker_3_1
 from brainvisa.data import neuroHierarchy
 from brainvisa.tools import checkbrainvisaupdates
 import urllib
+
+# Because soma_workflow uses PyQt4.uic, we need to first initialize
+# soma.qt_gui.qt_backend.uic in order to hack PyQt4.uic and fix issue #13432
+# ref: https://bioproj.extra.cea.fr/redmine/issues/13432
+import soma.qt_gui.qt_backend.uic
+
 try:
   from soma_workflow.gui.workflowGui import SomaWorkflowWidget as ComputingResourceWidget
   from soma_workflow.gui.workflowGui import SomaWorkflowMiniWidget as MiniComputingResourceWidget
@@ -844,6 +850,7 @@ def addBrainVISAMenu( widget, menuBar ):
   _addAction( bvMenu, _t_( "Show &Log" ), logRequest, Qt.CTRL + Qt.Key_L )
   _addAction( bvMenu, _t_( "&Open process..." ), ProcessView.open,
     Qt.CTRL + Qt.Key_O )
+  _addAction( bvMenu, _t_( "Load process setups" ), loadProcessSetupsGUI )
   _addAction( bvMenu, _t_( "Reload toolboxes" ), reloadToolboxesGUI )
   _addAction( bvMenu, _t_( "Start &Shell" ), startShell, Qt.CTRL + Qt.Key_S )
   _addAction( bvMenu )
@@ -1965,9 +1972,8 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     self.action_unlock_all = QAction(_t_('Unlock all files'), self)
     self.action_unlock_all.triggered.connect(self.menuUnlockAllfiles)
 
-    self.action_manage_user_preference = QAction(_t_('Manage user preference'), self)
-    self.action_manage_user_preference.setShortcut(Qt.CTRL + Qt.Key_M)
-    self.action_manage_user_preference.triggered.connect(self.manageUserPreference)
+    self.action_manage_process_setups = QAction(_t_('Save process setups'), self)
+    self.action_manage_process_setups.triggered.connect(self.saveProcessSetupsGUI)
 
     if parent is None:
       neuroConfig.registerObject( self )
@@ -1980,7 +1986,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       self.menu.addMenu(processMenu)
       processMenu.addAction(self.action_save_process)
       processMenu.addAction(self.action_clone_process)
-#      processMenu.addAction(self.action_manage_user_preference)
+      processMenu.addAction(self.action_manage_process_setups)
       processMenu.addAction(self.action_iterate)
       _addSeparator( processMenu )
       processMenu.addAction(self.action_create_workflow)
@@ -3182,11 +3188,11 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       self.process._savedAs = minf
       event.save( minf )
 
-  def manageUserPreference( self ):
-    from nuclearImaging.userPreferenceGUI import UserPreferenceGUI
-    user_preference_GUI = UserPreferenceGUI(self.process)
-    user_preference_GUI.show()
-    user_preference_GUI.exec_()
+  def saveProcessSetupsGUI( self ):
+    from brainvisa.processing.qt4gui.ProcessSetupsGUI import SaveProcessSetupsGUI
+    save_process_setups_GUI = SaveProcessSetupsGUI(self)
+    save_process_setups_GUI.show()
+    save_process_setups_GUI.exec_()
 
   def clone( self ):
     self.readUserValues()
@@ -4397,6 +4403,12 @@ def reloadToolboxesGUI():
   restore_all_processes(saved)
   QtGui.QApplication.restoreOverrideCursor()
 
+def loadProcessSetupsGUI():
+  from brainvisa.processing.qt4gui.ProcessSetupsGUI import LoadProcessSetupsGUI
+  load_process_setups_GUI = LoadProcessSetupsGUI()
+  load_process_setups_GUI.show()
+  load_process_setups_GUI.exec_()
+  
 def save_and_close_all_processes():
   close_viewers()
   saved = []

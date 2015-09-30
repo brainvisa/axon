@@ -52,9 +52,10 @@ name = 'smooth one image (using SPM8)'
 signature = Signature(
     'img', ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image']),
     'img_smoothed', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image']),
-    'fwhm', String(),
-    'dtype', String(),
-    'im', String(),
+    'fwhm', ListOf(Integer()),
+    'data_type', Choice(("SAME", """0"""), ("UINT8", """0"""), ("INT16", """0"""), 
+                        ("INT32", """0"""), ("FLOAT32", """0"""), ("FLOAT64", """0""")),
+    'implicit_masking', Boolean(),
     'prefix', String(),
     'batch_location', WriteDiskItem( 'Any Type', 'Matlab script' )
 )
@@ -63,18 +64,20 @@ signature = Signature(
 
 def initialization(self):
     self.setOptional('batch_location')  
-      
-    spmUtils.initializeSmooth_withSPM8DefaultValues( self )
 
     self.signature['fwhm'].userLevel = 1
-    self.signature['dtype'].userLevel = 1
+    self.signature['data_type'].userLevel = 1
     self.signature['prefix'].userLevel = 1
-    self.signature['im'].userLevel = 1
+    self.signature['implicit_masking'].userLevel = 1
     
     self.addLink( 'img_smoothed', 'img', self.update_img_smoothed )
     self.addLink( 'img_smoothed', 'prefix', self.update_img_smoothed )
     self.linkParameters( 'batch_location', ('img', 'img_smoothed'), self.update_batch_location )
     
+    self.fwhm = [8, 8, 8]
+    self.data_type = """0"""
+    self.implicit_masking = False
+    self.prefix = 's'
     
 #
 # Update output image when the input and a prefix are defined
@@ -125,7 +128,7 @@ def execution(self, context):
         
     matfilePath = spmUtils.writeSmoothMatFile(context, self.img.fullPath()
                                               , matfileDI, mat_file
-                                              , self.fwhm, self.dtype, self.im, self.prefix)
+                                              , str(self.fwhm), self.data_type, str(self.implicit_masking), self.prefix)
      
     spm.run(context, configuration, matfilePath)    
     

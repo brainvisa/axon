@@ -35,7 +35,7 @@
 
 from PyQt4 import QtCore, Qt, QtGui
 from PyQt4.QtGui import QRadioButton, QPalette, QButtonGroup, QLabel, QFrame, QVBoxLayout, QColor
-from PyQt4.uic import loadUi
+from soma.qt_gui.qt_backend.uic import loadUi
 from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
 from brainvisa.tools.mainthreadlife import MainThreadLife
 from functools import partial

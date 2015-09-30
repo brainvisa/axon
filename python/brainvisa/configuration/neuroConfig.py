@@ -362,6 +362,7 @@ for projectName in ( 'axon', 'brainvisa' ):
     break
     
 iconPath = os.path.join( sharePath, 'icons' )
+uiPath = os.path.join(sharePath, 'ui')
 toolboxesDir = os.path.join( mainPath, 'toolboxes' )
 
 # environment variable holding path for dynamic libraries
