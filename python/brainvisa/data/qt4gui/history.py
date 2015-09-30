@@ -32,8 +32,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 import os
-from PyQt4 import uic, QtGui, QtCore
-from PyQt4.QtCore import Qt
+from soma.qt_gui.qt_backend import uic, QtCore, QtGui, Qt
 from soma.minf.api import readMinf
 from brainvisa.processes import getProcessInstanceFromProcessEvent, defaultContext
 from brainvisa.processing.qt4gui.neuroProcessesGUI import ProcessView

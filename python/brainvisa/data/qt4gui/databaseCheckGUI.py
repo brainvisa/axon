@@ -43,7 +43,7 @@ from brainvisa.configuration import neuroConfig
 #### WITH NEW DATABASE SYSTEM ####
 from brainvisa.data.qt4gui.diskItemBrowser import DiskItemBrowser
 import brainvisa.processing.qtgui.backwardCompatibleQt as qt
-from PyQt4 import uic
+from soma.qt_gui.qt_backend import uic
 import os
 from brainvisa.data import neuroDiskItems, neuroHierarchy
 from brainvisa.data.actions import Move, Remove, FileProcess, ImportData

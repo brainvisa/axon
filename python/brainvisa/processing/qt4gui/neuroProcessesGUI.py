@@ -82,6 +82,12 @@ from brainvisa.data.databaseCheck import BVChecker_3_1
 from brainvisa.data import neuroHierarchy
 from brainvisa.tools import checkbrainvisaupdates
 import urllib
+
+# Because soma_workflow uses PyQt4.uic, we need to first initialize
+# soma.qt_gui.qt_backend.uic in order to hack PyQt4.uic and fix issue #13432
+# ref: https://bioproj.extra.cea.fr/redmine/issues/13432
+import soma.qt_gui.qt_backend.uic
+
 try:
   from soma_workflow.gui.workflowGui import SomaWorkflowWidget as ComputingResourceWidget
   from soma_workflow.gui.workflowGui import SomaWorkflowMiniWidget as MiniComputingResourceWidget

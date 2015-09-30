@@ -39,7 +39,7 @@ import anatomist.direct.api as ana
 from neuroConfig import iconPath, uiPath
 from soma import aims
 from soma.path import locate_file
-from PyQt4 import QtCore, QtGui, uic
+from soma.qt_gui.qt_backend import QtCore, QtGui, uic
 import numpy as np
 import math
 from tempfile import mkstemp

@@ -37,7 +37,7 @@ import anatomist.api as ana
 from anatomist.cpp.paletteEditor import PaletteEditor
 import soma
 from soma import aims
-from PyQt4 import QtCore, QtGui, uic
+from soma.qt_gui.qt_backend import QtCore, QtGui, uic
 import glob
 import os
 
