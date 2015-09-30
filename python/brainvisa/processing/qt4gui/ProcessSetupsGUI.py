@@ -31,6 +31,7 @@ class SaveProcessSetupsGUI( QDialog ):
     self.process_name_label.setAlignment(Qt.AlignCenter)
     self.new_name_line_edit = QLineEdit()
     self.new_name_line_edit.setPlaceholderText("Enter name for your saving")
+    self.new_name_line_edit.setToolTip("Only alphanumeric characters and underscore allowed")
     self.description_plain_text = QPlainTextEdit()
     self.save_button = QPushButton('Save')
     self.cancel_button = QPushButton('Cancel')
@@ -154,7 +155,7 @@ class LoadProcessSetupsGUI( QDialog ):
     right_layout = QVBoxLayout(right_widget)
     button_layout = QHBoxLayout()
     
-    splitter.addWidget(self.process_tree)  
+    splitter.addWidget(self.process_tree)
     splitter.setStretchFactor(0,1)
     splitter.addWidget(right_widget)
     main_layout.addWidget(splitter)
