@@ -125,10 +125,11 @@ def execution(self, context):
     
     mat_file = open(spmJobFile, 'w')
     matfileDI = None
-        
+    fwhm = str(self.fwhm).replace(',', ' ') 
+    implicit_masking = str(int(self.implicit_masking))
     matfilePath = spmUtils.writeSmoothMatFile(context, self.img.fullPath()
                                               , matfileDI, mat_file
-                                              , str(self.fwhm), self.data_type, str(self.implicit_masking), self.prefix)
+                                              , fwhm, self.data_type, implicit_masking, self.prefix)
      
     spm.run(context, configuration, matfilePath)    
     
