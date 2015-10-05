@@ -149,7 +149,10 @@ class AxonCapsulConfSynchronizer(object):
                     study_config.matlab_exec = matlab
             else:
                 study_config.matlab_exec = ax_conf.matlab.executable
-            study_config.use_matlab = True
+            try:
+                study_config.use_matlab = True
+            except EnvironmentError:
+                pass # will be False finally.
 
         # SPM
         use_spm = False
