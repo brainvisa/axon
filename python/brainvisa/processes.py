@@ -2424,14 +2424,15 @@ class ExecutionContext( object ):
 
   def _setArguments( self, _process, *args, **kwargs ):
     # Set arguments
+    to_restore = set()
     for i, v in enumerate( args ):
       n = _process.signature.keys()[ i ]
       _process._setImmutable( n, True )
+      to_restore.add(_process)
       # performing this 2 pass loop allows to set parameters with
       # a forced value to immutable (ie non-linked) before actually
       # setting values and running links. This avoids a bunch of unnecessary
       # links to work (often several times)
-    to_restore = set()
     for ( n, v ) in kwargs.items():
       proc, argname = self._get_process_and_argname(_process, n)
       proc._setImmutable( argname, True )
@@ -2453,9 +2454,16 @@ class ExecutionContext( object ):
         setattr( proc, argname, None )
     for proc in to_restore:
       proc._clearImmutableParameters()
-    to_restore.add(_process)
-    for proc in to_restore:
-      proc.checkArguments()
+    # FIXME TODO WARNING
+    # calling checkArguments() on children breaks links from a WriteDiskItem
+    # to a child ReadDiskItem since it will fail if an input file is not
+    # actually existing. But not calling it will result in errors not being
+    # checked in children. However this used to be the behavior...
+    _process.checkArguments()
+    # instead of:
+    #to_restore.add(_process)
+    #for proc in to_restore:
+      #proc.checkArguments()
 
   def _startProcess( self, _process, executionFunction, *args, **kwargs ):
     if not isinstance( _process, Process ):
