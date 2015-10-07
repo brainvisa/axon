@@ -351,11 +351,24 @@ class ReadDiskItem( Parameter ):
           else:
             refOrder, refDiskItem = values[ 0 ]
             refHierarchy = refDiskItem.hierarchyAttributes()
+            # WARNING: this _declared_attributes_location attribute causes
+            # problems since it should not be compared between disk items
+            try:
+              del refHierarchy['_declared_attributes_location']
+            except KeyError:
+              pass
             differentOnFormatOnly = [ refDiskItem ]
             for checkOrder, checkDiskItem in values[1:]:
               if checkOrder != refOrder:
                 break
-              if ((refHierarchy == checkDiskItem.hierarchyAttributes()) and (refDiskItem.format.name != checkDiskItem.format.name)):
+              checkHierarchy = checkDiskItem.hierarchyAttributes()
+              # WARNING: this _declared_attributes_location attribute causes
+              # problems since it should not be compared between disk items
+              try:
+                del checkHierarchy['_declared_attributes_location']
+              except KeyError:
+                pass
+              if ((refHierarchy == checkHierarchy) and (refDiskItem.format.name != checkDiskItem.format.name)):
                 differentOnFormatOnly.append( checkDiskItem )
               else:
                 differentOnFormatOnly = []
