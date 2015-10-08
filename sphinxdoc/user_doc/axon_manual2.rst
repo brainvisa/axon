@@ -299,6 +299,24 @@ You might need to update your BrainVISA database also if you modify manually som
 
 Such udpate can be done with the special process *Data Management -> Update Databases*.
 
+.. _ontology_conversion:
+
+Ontologies and database conversion
+----------------------------------
+
+Several file organization models exist in BrainVISA: for different applicative toolboxes which organize their data differently (for instance: Morphologist and FreeSurfer organizations), or to handle evolutions of existing organization models.
+
+In the latter case, it is sometimes useful, or required, to change the organization of existing databases to follow the new models.
+
+There are several cases there:
+
+* The files structure has actually changed between two ontologies versions: it happened in brainvisa ontology from 3.0 to 3.1. In such a case, the authors may provide a conversion process.
+
+* The files structure has not changed, but some data attributes have changed, and new files have probably been added. This is what happed between brainvisa ontology 3.1 and 3.2. In this situation, files need not to move. It is normally enough to edit the database properties in the preferences, and change its ontology to the new one. Then the database update will be OK.
+
+* An intermediate situation is when files have actually changed location, but database attributes are still compatible (the same attributes are used to locate data in both ontologies). In this case the process :axonproc:`Copy data between databases <copydata.html>` may do the job. This process did not exist by the time of switching from brainvisa-3.0 to 3.1, but it might have worked then.
+
+
 
 Communication between BrainVISA and Anatomist
 =============================================

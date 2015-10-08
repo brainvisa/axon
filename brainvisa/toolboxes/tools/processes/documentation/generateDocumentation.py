@@ -297,7 +297,7 @@ def generateHTMLProcessesDocumentation( context, ontology ):
       print >> f, '</head>'
       print >> f, '<body>'
       print >> f, XHTML.html( c )
-      print >> f, '</html></body>'
+      print >> f, '</body></html>'
       f.close()
 
 #----------------------------------------------------------------------------

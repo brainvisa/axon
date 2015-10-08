@@ -121,7 +121,7 @@ See the :axonman:`Preferences window chapter in BrainVISA user manual <axon_manu
 
 .. image:: images/change_userlevel.png
 
-.. _bookmarks:
+.. _bookmarks_tuto:
 
 Manage bookmarks
 ================

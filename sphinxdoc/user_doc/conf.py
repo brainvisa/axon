@@ -255,6 +255,7 @@ extlinks = {
   'axonusr': ('../user_doc/%s', 'axon '),
   'axondev': ('../dev_doc/%s', 'axon '),
   'axonman': ('../user_doc/%s', 'axon '),
+  'axonproc': ('../en/processes/%s', 'axon'),
   'aimsalgodox': ('../../aimsalgo-' + aims_version + '/doxygen/%s',
     'aimsalgodox '),
   'aimsalgoex': ('../../pyaimsalgo-' + aims_version + '/examples/%s',
