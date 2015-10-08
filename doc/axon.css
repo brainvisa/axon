@@ -10,16 +10,6 @@ body {
     text-align: justify;
 }
 
-h1 {
-    background-color: #C8D0EF;
-    border-style: none;
-    border-width: 0px;
-    border-radius: 8px;
-    padding: 10px;
-    margin: -10px;
-    margin-bottom: 0px;
-}
-
 a {
     color: #2878A2;
     text-decoration: none;
@@ -60,6 +50,17 @@ hr {
     margin-bottom: 10px;
 }
 
+h1 {
+    background-color: #C8D0EF;
+    border-style: none;
+    border-width: 0px;
+    border-radius: 8px;
+    padding: 10px;
+    margin: -10px;
+    margin-bottom: 0px;
+    color: #2878A2;
+}
+
 h2 {
     background-color: #B0C0EB;
     border-style: none;
@@ -67,3 +68,93 @@ h2 {
     border-radius: 8px;
     padding: 5px;
 }
+
+h3 {
+    background-color: #EEEEEE;
+    border-style: none;
+    border-width: 0px;
+    border-radius: 8px;
+    padding: 3px;
+}
+
+h4 {
+    background-color: #F4F4F4;
+    border-style: none;
+    border-width: 0px;
+    border-radius: 0px;
+    padding: 2px;
+}
+
+h5 {
+    background-color: #F4F4F4;
+    border-style: none;
+    border-width: 0px;
+    border-radius: 0px;
+    padding: 0px;
+}
+
+h6 {
+    background-color: #F4F4F4;
+    border-style: none;
+    border-width: 0px;
+    border-radius: 0px;
+    padding: 0px;
+}
+
+blockquote blockquote{
+    margin-right: 0px;
+}
+
+.note {
+    background-color: #F6F6F6;
+    border: thin solid;
+    border-color: #E4E4E4;
+    padding: 1mm;
+}
+
+.warning {
+    background-color: #FFF6F6;
+    border: thin solid;
+    border-color: #F4E4E4;
+    padding: 1mm;
+}
+
+div.note {
+    padding-top: 0px;
+}
+
+.warning-title {
+    color: #b00000;
+    font-weight: bold;
+}
+
+div.note h4 {
+    margin-top: 0px;
+    margin-bottom: 2mm;
+    color: #a04040;
+    font-weight: bold;
+}
+
+div.note h5 {
+    display: inline;
+    margin-top: 0px;
+    margin-bottom: 2mm;
+    color: #a04040;
+    font-weight: bold;
+}
+
+div.warning h4 {
+    margin-top: 0px;
+    margin-bottom: 2mm;
+    color: #b00000;
+    font-weight: bold;
+}
+
+div.warning h5 {
+    display: inline;
+    margin-top: 0px;
+    margin-bottom: 2mm;
+    color: #b00000;
+    font-weight: bold;
+}
+
