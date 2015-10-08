@@ -184,11 +184,14 @@ class Parameter( object ):
     The tooltip shows the name of the parameter, indicates if it is optional, and shows ``documentation`` as a description of the parameter.
     """
     result = '<center>' + parameterName 
-    if not self.mandatory: result += ' (' + _t_( 'optional' ) + ')'
-    result += '</center><hr><b>' + _t_( 'Description' ) + ':</b><br>' + \
+    if not self.mandatory:
+      result += ' (' + _t_( 'optional' ) + ')'
+    result += '</center><hr><b>' + _t_( 'Type' ) + \
+              ':</b> ' + self.typeInfo()[0][1] + '<br>' + \
+              '<b>' + _t_( 'Description' ) + ':</b><br>' + \
               documentation + '<p>'
     return result
-  
+
   def checkValue( self, name, value ):
     '''This functions check if the given value is valid for the parameter. 
     If the value is not valid it raises an exception.'''
@@ -697,6 +700,16 @@ class ListOf( Parameter ):
     if hasattr( self, 'browseUserLevel' ):
       self.contentType.browseUserLevel = self.browseUserLevel
     return self.contentType.listEditor( parent, name, context )
+
+  def typeInfo(self, translator = None):
+    if translator is None:
+      translate = _t_
+    else:
+      translate = translator.translate
+    subti = self.contentType.typeInfo()
+    tdescr = (translate('Type'),
+             translate('ListOf') + '( ' + subti[0][1] + ' )')
+    return tuple((tdescr,) + subti[1:])
 
 
 #----------------------------------------------------------------------------

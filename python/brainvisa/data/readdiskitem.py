@@ -524,7 +524,7 @@ class ReadDiskItem( Parameter ):
   
   def typeInfo( self, translator = None ):
     if translator: translate = translator.translate
-    else: translate = _
+    else: translate = _t_
     formats = ''
     for f in self.formats:
       if formats: formats += ', '

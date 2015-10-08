@@ -131,7 +131,7 @@ def generateHTMLDocumentation( processInfoOrId, translators, context, ontology )
         descr = '<a href="' + htmlEscape( relative_path( typeHTML, os.path.dirname( f.name ) ) ) + '">' + descr + '</a>'
       elif isinstance(param_type, ListOf):
         subtype = param_type.contentType
-        descr = descr + '( ' + param_type_descr(subtype) + ' )'
+        descr = _t_('ListOf') + '( ' + param_type_descr(subtype) + ' )'
       return descr
 
     supportedFormats = []
