@@ -115,7 +115,10 @@ def generateHTMLDocumentation( processInfoOrId, translators, context, ontology )
       print >> f, long
       print >> f, '</blockquote>'
 
-    signature = getProcessInstance( processInfo.id ).signature
+    try:
+      signature = getProcessInstance( processInfo.id ).signature
+    except ValidationError:
+      signature = getProcess(processInfo.id, ignoreValidation=True).signature
     signature = signature.items()
 
     def param_type_descr(param_type):
