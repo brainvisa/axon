@@ -14,7 +14,7 @@
   Then you can use the import processes (which are in the sub category <em>import</em>) to put data in the database. 
   It is not mandatory to use a database in order to process data with BrainVISA but it is <a href="#whyADatabase">highly recommanded</a>.
 
-  <a name="whatIsADatabase">  
+  <a name="whatIsADatabase">
   <h2>What is a BrainVISA database ?</h2></a>
   <p>Data organization is an important point in BrainVISA.  
   Indeed, BrainVISA was conceived to allow a simplified use of neuroimagery tools coming from various laboratories and being able to combine data resulting from several acquisition modalities (aMRI, fMRI, dMRI, EEG/MEG, PET, etc).  
@@ -100,7 +100,7 @@ This is why BrainVISA is provided with a default data organization system that c
   Il n'est pas obligatoire d'utiliser une base de donnée avec BrainVISA mais c'est <a href="#whyADatabase">fortement recommandé</a></p>.
 
   <a name="whatIsADatabase">
-  <h2>Qu'est-ce qu'une base de donnée BrainVISA ?</h2>
+  <h2>Qu'est-ce qu'une base de donnée BrainVISA ?</h2></a>
   <p>L'organisation des données est un point important dans la compréhension et la prise en main de BrainVISA. En effet, BrainVISA a été conçu pour permettre une utilisation simplifiée d'outils de neuroimagerie issus de différents laboratoires et pouvant combiner des données issues de plusieurs modalités d'acquisition (IRMa, IRMf, IRMd, EEG/MEG, PET, etc.). Les interactions entre ces outils et les différentes modalités ont été rendues possibles grâce à un système d'organistion des données. Afin de rester compatible avec les logiciels existants, BrainVISA s'appuie principalement sur l'organisation des fichiers et des répertoires pour construire une base de données. </p>
   Un répertoire est une base de donnée BrainVISA si la structure de ses sous-répertoires et les noms des fichiers dans ce répertoire respectent un ensemble de règles. Ces règles permettent à BrainVISA de parcourir l'ensemble du contenu du répertoire de données et d'identifier sans ambiguïté les éléments composant la base de donnée. Ces éléments sont composés des informations  suivantes :
 
@@ -115,7 +115,6 @@ This is why BrainVISA is provided with a default data organization system that c
   </ul>
 
   Il est possible de définir complètement l'ensemble des règles qui permettent à BrainVISA de parcourir un répertoire pour construire une base de données. Cela permet l'utilisation de BrainVISA sans avoir à modifier une organisation de fichiers déjà en place. Cependant, l'écriture d'un tel système de règles nécessite un investissement important dans l'étude du fonctionnement de BrainVISA. C'est pourquoi BrainVISA est fourni avec un système de règles par défaut qui régit l'organisation des données. Ce système d'organisation est donc utilisable facilement.
-  </a>
 
 <h2>BrainVISA database organization</h2>
 <p>By default, data in a BrainVISA database are organized in a hierarchical structure with the following directories :</p>
@@ -129,14 +128,12 @@ This is why BrainVISA is provided with a default data organization system that c
  </ul>
 
   <a name="whyADatabase">
-  <h2>Pourquoi devrais-je utiliser une base de donnée BrainVISA ?</h2>
+  <h2>Pourquoi devrais-je utiliser une base de donnée BrainVISA ?</h2></a>
   Il n'est pas obligatoire d'utiliser une base de donnée pour traiter ses données avec BrainVISA. Cependant, certaines fonctionnalités importantes ne sont pas accessibles quand vous utilisez des données qui n'ont pas été importées dans une base de données. Par exemple, la possiblité pour BrainVISA de construire automatiquement le nom par défaut des fichiers de sortie quand un fichier d'entrée est sélectionné repose entièrement sur le système de base de données. De plus, certains traitements utilisent les bases de données pour retrouver des données ; par exemple, le visualiseur de masque du cerveau essaye de trouver l'IRM T1 utilisée pour créer le masque afin de superposer les deux images dans une fenêtre Anatomist.
-  </a>
 
   <a name="databaseManagement">
-  <h2>Comment créer ou éditer une base de données BrainVISA ?</h2>
+  <h2>Comment créer ou éditer une base de données BrainVISA ?</h2></a>
   Il est possible de créer plusieurs bases de données et de sélectionner celles que l'on souhaite activer. Il suffit d'utiliser la fenêtre d'édition des bases de données accessible par le menu <em>Préférences->Bases de données</em> de la fenêtre principale.
-  </a>
   <br/>
   <br/>
 
