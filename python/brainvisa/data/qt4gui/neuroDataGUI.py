@@ -234,8 +234,12 @@ class BooleanEditor( QCheckBox, DataEditor ):
     if name:
       self.setObjectName( name )
     self.connect( self, SIGNAL( 'stateChanged( int )' ), self.newValue )
+    self.value = None
 
   def getValue( self ):
+    return self.value
+
+  def _valueFromWidget(self):
     x = self.checkState()
     if x == Qt.Unchecked:
       return False
@@ -244,17 +248,27 @@ class BooleanEditor( QCheckBox, DataEditor ):
     return None
 
   def setValue( self, value, default = False ):
+    self.blockSignals(True) # don't call newValue now.
     if value:
-      self.setCheckState( Qt.Checked )
+      self.setCheckState(Qt.Checked)
     elif value == False:
-      self.setCheckState( Qt.Unchecked )
+      self.setCheckState(Qt.Unchecked)
     else:
-      self.setCheckState( Qt.PartiallyChecked )
+      self.setCheckState(Qt.PartiallyChecked)
+    self.blockSignals(False)
+    if value != self.value:
+      self.value = value
+      if not default:
+        self.emit(SIGNAL('noDefault'), unicode(self.objectName()))
+      self.emit(SIGNAL('newValidValue'), unicode(self.objectName()), value)
 
-  def newValue( self ):
-    self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
-    self.emit( SIGNAL('newValidValue'), unicode(self.objectName()),
-      self.checkState() == Qt.Checked )
+  def newValue(self):
+    value = self._valueFromWidget()
+    if value != self.value:
+      self.value = value
+      self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
+      self.emit( SIGNAL('newValidValue'), unicode(self.objectName()),
+        value )
 
 
 #----------------------------------------------------------------------------
