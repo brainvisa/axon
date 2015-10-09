@@ -388,10 +388,43 @@ class ReadDiskItem( Parameter ):
                 for i in differentOnFormatOnly:
                   print >> _debug, '   ', i.format
                 if result:
-                  print >> _debug, '  choosen format:', result.format
+                  print >> _debug, '  chosen format:', result.format
             elif _debug is not None:
                 print >> _debug, '  top priority values differ on ontology attributes ==> no selection on format'
-            
+
+    # this block of code was originally in WriteDiskItem.findValue().
+    # We do not remember what it was exactly meant for, and did not do
+    # correctly its job. We don't completely remove it because it might solve
+    # a very specific situation, but we also fix it: check requiredAttributes,
+    # and select prefered format instead of the first one.
+    # (Denis 2015/10/09)
+    if result is None and write and isinstance( selection, DiskItem ) and \
+        ( selection.type is None or selection.type is self.type
+          or (not self.exactType
+              and isSameDiskItemType( selection.type, self.type )) ):
+      format = requiredAttributes.get('_format') or self.preferredFormat \
+        or self.formats[0]
+      if _debug is not None:
+        print >> _debug, '  No unique best selection found. But compatible input DiskItem. Checking format.'
+        print >> _debug, '    Format:', format
+      if format in self.formats and format != selection.format:
+        # check requiredAttributes
+        sel_attr = selection.hierarchyAttributes()
+        ok = True
+        for attrib, value in requiredAttributes.iteritems():
+          if not attrib.startswith('_') and \
+              (not sel_attr.has_key(attrib) or sel_attr[attrib] != value):
+            ok = False
+            break
+        if _debug:
+          print >> _debug, '    checking RequiredAttributes:', ok
+        if ok:
+          result = self.database.changeDiskItemFormat( selection, format.name )
+          if _debug is not None:
+            print >> _debug, \
+              '  selection is compatible with a different format, select: %s' \
+              % format
+
     if _debug is not None:
       print >> _debug, '-> findValue return', result
       if result is not None:
