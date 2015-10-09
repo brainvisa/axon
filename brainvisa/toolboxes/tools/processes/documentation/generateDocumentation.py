@@ -625,7 +625,7 @@ def execution( self, context ):
           print >> typeHTML, htmlEscape(rule.pattern.pattern), "<br/>"
         print >> typeHTML, '</blockquote>'
       
-      print >> typeHTML, '<h2>Keys attributes</h2>'
+      print >> typeHTML, '<h2>Key attributes</h2>'
       ontKeys=typeKeys.get( type, {} )
       for ont, keys in ontKeys.items():
         if keys:
