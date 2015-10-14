@@ -26,10 +26,10 @@
   Each import process is designed for a specific data type and possibly for a specific data provider (scanner, software, etc.). The process ask the user to specify information that are required to process the data but cannot be extracted from the input files. 
   Then it writes this information along with the data in the BrainVISA database.
 
-  <a name="minf">
+  <a name="minf"> </a>
   <h2>How added information are stored in the database ?</h2>
 
-  Since BrainVISA and Aims library (SHFJ's C++ processing library) can recognize various file formats (DICOM, SPM/Analyse, GIS, MINC, etc.), we choosed to create a meta-header that can be attached to any file (not only images) and that can contain any structured information. The extension for this header is <code>'.minf'</code> and its actual format is an ascii version of a Python dictionary (in the future it will be an XML file). First, information stored in the image is extracted from its format (volume dimensions, voxel sizes, etc.). Then, this information is completed by the content of the <code>minf</code> file. The name of the <code>minf</code> file is the concatenation of the name of the first file of the image format (in BrainVISA definiton order) and <code>'.minf'</code> extension. For example SPM format is defined with <code>*.img</code> and <code>*.hdr</code> extension. Therefore, SPM readers will use the following files :
+  Since BrainVISA and Aims library (C++ processing library) can recognize various file formats (DICOM, Nifti, SPM/Analyse, GIS, MINC, etc.), we chose to create a meta-header that can be attached to any file (not only images) and that can contain any structured information. The extension for this header is <code>'.minf'</code> and its actual format is an ascii version of a Python dictionary (in the future it will be an XML file). First, information stored in the image is extracted from its format (volume dimensions, voxel sizes, etc.). Then, this information is completed by the content of the <code>minf</code> file. The name of the <code>minf</code> file is the concatenation of the name of the first file of the image format (in BrainVISA definiton order) and <code>'.minf'</code> extension. For example SPM format is defined with <code>*.img</code> and <code>*.hdr</code> extension. Therefore, SPM readers will use the following files :
 
   <ul>
   <li><code>*.img</code></li>
@@ -52,7 +52,6 @@
       'voxel_size' : [ 1.01562, 1.01562, 1.1, 1 ]
     }
   </pre>
-  </a>
   </body>
   </html>
 </xhtml>
@@ -82,10 +81,10 @@
       Chaque traitement d'importation est conçu pour un type de données spécifique et éventuellement pour une source de données spécifique (scanner, logiciel, etc.). Le traitement demande à l'utilisateur les informations nécéssaires pour traiter la données et qui ne peuvent pas être extraite des fichiers sources. 
       Il écrit alors ces informations avec la données dans la base de données BrainVISA.
       
-      <a name="minf">
+      <a name="minf"> </a>
         <h2>Comment les informations supplémentaires sont-elles stockées dans la base de données ?</h2>
         
-        Depuis que BrainVISA et la librairie Aims (librairie de traitement C++ du SHFJ) peuvent reconnaître plusieurs formats de fichiers (DICOM, SPM/Analyse, GIS, MINC, etc.), nous avons choisi de créer un fichier d'entête qui peut être attaché à n'importe quel fichier (pas seulement des images) et qui peut contenir n'importe quelle information structurée. L'extension de ce fichier d'entête est <code>'.minf'</code> et son format actuel est celui dictionnaire Python (il sera remplacé plus tard par un fichier XML). Les informations extraites du format de l'image (dimensions du volume, taille des voxels, etc.) sont complétées par celles de ce fichier <code>minf</code>. Le nom du fichier d'entête est la concaténation du nom du premier fichier de l'image (dans un ordre défini par BrainVISA) et de l'extension <code>'.minf'</code>. Par exemple, le format SPM est défini par les extensions <code>*.img</code> et <code>*.hdr</code>. Donc pour lire une image au format SPM, les fichiers suivants seront utilisés :
+        Depuis que BrainVISA et la librairie Aims (librairie de traitement C++) peuvent reconnaître plusieurs formats de fichiers (DICOM, Nifti, SPM/Analyse, GIS, MINC, etc.), nous avons choisi de créer un fichier d'entête qui peut être attaché à n'importe quel fichier (pas seulement des images) et qui peut contenir n'importe quelle information structurée. L'extension de ce fichier d'entête est <code>'.minf'</code> et son format actuel est celui dictionnaire Python (il sera remplacé plus tard par un fichier XML). Les informations extraites du format de l'image (dimensions du volume, taille des voxels, etc.) sont complétées par celles de ce fichier <code>minf</code>. Le nom du fichier d'entête est la concaténation du nom du premier fichier de l'image (dans un ordre défini par BrainVISA) et de l'extension <code>'.minf'</code>. Par exemple, le format SPM est défini par les extensions <code>*.img</code> et <code>*.hdr</code>. Donc pour lire une image au format SPM, les fichiers suivants seront utilisés :
         
         <ul>
           <li><code>*.img</code></li>
@@ -108,7 +107,6 @@
           'voxel_size' : [ 1.01562, 1.01562, 1.1, 1 ]
           }
         </pre>
-      </a>
     </body>
   </html>
 </xhtml>
