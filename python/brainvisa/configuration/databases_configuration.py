@@ -82,7 +82,7 @@ class ExpertDatabaseSettings( HasSignature ):
     'ontology', OpenedChoice(), dict( defaultValue='brainvisa-3.2.0' ),
     'sqliteFileName', FileName, dict( defaultValue='' ),
     'activate_history', Boolean, dict( defaultValue=False ),
-    'fedji_backend', Boolean, dict( defaultValue=False ),
+    #'fedji_backend', Boolean, dict( defaultValue=False ),
     'uuid', Unicode(), dict( defaultValue='', visible = False),
     'lastIncrementalUpdate', Unicode(), dict( defaultValue='', visible = False),
   )
@@ -93,10 +93,14 @@ class ExpertDatabaseSettings( HasSignature ):
     #if not ExpertDatabaseSettings.signature[ 'ontology' ].type.values:
     #  ExpertDatabaseSettings.signature[ 'ontology' ].type.setChoices( *ExpertDatabaseSettings.availableOntologies() )
     ExpertDatabaseSettings.signature[ 'ontology' ].type.setChoices( *ExpertDatabaseSettings.availableOntologies() )
-      
-      
+
     super( ExpertDatabaseSettings, self ).__init__()
-  
+    # fedj is hidden up to now, so is not in the signature but exists as an
+    # instance variable. To activate it again:
+    # * uncomment the fedji_backend item in the signature above
+    # * remove the following line
+    self.fedji_backend = False
+
   def __eq__( self , other):
     return ((self.ontology == other.ontology) and (self.sqliteFileName == other.sqliteFileName) and (self.activate_history == other.activate_history))
       
