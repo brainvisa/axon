@@ -183,6 +183,7 @@ class ChoiceEditor( QComboBox, DataEditor ):
     #self.connect( self, SIGNAL( 'returnPressed()' ), self.setFocusNext )
     #self.setSizePolicy( QSizePolicy( QSizePolicy.Expanding, 
                                      #QSizePolicy.Minimum ) )
+    self.setSizeAdjustPolicy(QComboBox.AdjustToContents)
     self.connect( self, SIGNAL( 'activated( int )' ), self.newValue )
     self.parameter = parameter
     for n, v in self.parameter.values:
@@ -202,18 +203,23 @@ class ChoiceEditor( QComboBox, DataEditor ):
   def getValue( self ):
     return self.value
 
-  def setValue( self, value, default = False ):
-    i = self.parameter.findIndex( value )
+  def setValue(self, value, default=False):
+    i = self.parameter.findIndex(value)
     if i >= 0:
-      self.value = self.parameter.values[ i ][ 1 ]
+      self.value = self.parameter.values[i][1]
     else:
-      raise Exception( HTMLMessage(_t_('<em>%s</em> is not a valid choice') % unicode(value)) )
-    self.setCurrentIndex( i )
-  
-  def newValue( self ):
-    self.value = self.parameter.values[ self.currentIndex() ][ 1 ]
-    self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
-    self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
+      raise Exception(HTMLMessage(_t_('<em>%s</em> is not a valid choice')
+                                  % unicode(value)))
+    self.blockSignals(True) # don't call newValue now.
+    self.setCurrentIndex(i)
+    self.blockSignals(False)
+
+  def newValue(self):
+    if self.value != self.currentText():
+      self.value = self.parameter.values[self.currentIndex()][1]
+      self.emit(SIGNAL('noDefault'), unicode(self.objectName()))
+      self.emit(SIGNAL('newValidValue'), unicode(self.objectName()),
+                self.value)
 
   def changeChoices( self ):
     oldValue = self.getValue()
@@ -452,18 +458,20 @@ class OpenChoiceEditor( QComboBox, DataEditor ):
 
   def getFocus( self ):
     self.lineEdit().selectAll()
-  
+
   def getValue( self ):
     return self.value
 
   def setValue( self, value, default=False ):
     i = self.parameter.findIndex( value )
+    self.blockSignals(True) # don't call newValue now.
     if i >= 0:
       self.value = self.parameter.values[ i ][ 1 ]
       self.setCurrentIndex( i )
     else:
       self.value = unicode( value )
       self.setEditText( self.value )
+    self.blockSignals(False)
 
   def setFocusNext( self ):
     self.checkValue()
@@ -474,7 +482,8 @@ class OpenChoiceEditor( QComboBox, DataEditor ):
     if value != self.getValue():
       self.value=value
       self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
-      self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
+      self.emit( SIGNAL('newValidValue'), unicode(self.objectName()),
+                self.value )
 
 
   def valueSelected( self, index ):
