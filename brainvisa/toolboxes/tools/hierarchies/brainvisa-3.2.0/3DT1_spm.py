@@ -1,7 +1,17 @@
 # -*- coding: utf-8 -*-
 include('base')
 
-insert( '{center}/{subject}',
+insert( 
+  'analyzes/{analysis}',
+  'DARTEL_{template}', SetContent(
+    '<template>_DARTEL_{step}', SetType('DARTEL created template'),
+    '{center}/{subject}/{acquisition}', SetContent(
+      '<subject>_DARTEL_flow_field', SetType('DARTEL flow field')  ,
+      '<subject>_Nat_greyProba_warped', SetType('T1 MRI Nat GreyProba DARTEL warped'),
+      '<subject>_Nat_whiteProba_warped', SetType('T1 MRI Nat WhiteProba DARTEL warped'),
+    ),
+  ),
+  '{center}/{subject}',
   't1mri', SetWeakAttr( 'modality', 't1mri' ),
     SetContent(
       '{acquisition}',

@@ -95,6 +95,12 @@ FileType('OLD Mat T1 MRI from Native to Mni', 'MatlabFile of Transformation of T
 
 FileType('JacobianDeterminant', '4D Volume')
 
+#DARTEL
+FileType('T1 MRI Nat GreyProba DARTEL warped', '4D Volume')
+FileType('T1 MRI Nat WhiteProba DARTEL warped', '4D Volume')
+FileType('DARTEL created template', '4D Volume')
+FileType('DARTEL flow field', '4D Volume')
+
 ##################
 #                #
 ##################
