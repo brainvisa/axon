@@ -1,22 +1,6 @@
 # -*- coding: utf-8 -*-
 include('base')
 
-insert( 
-  'analyzes/{analysis}',
-  'DARTEL_{template}', SetContent(
-    '<template>_DARTEL_{step}', SetType('DARTEL created template'),
-    '{center}',  SetContent( # Center directory
-      '{subject}', SetContent( # Subject directory
-        '{acquisition}', SetContent(  # Acquisition directory
-          '<subject>_DARTEL_flow_field', SetType('DARTEL flow field')  ,
-          '<subject>_Nat_greyProba_warped', SetType('T1 MRI Nat GreyProba DARTEL warped'),
-          '<subject>_Nat_whiteProba_warped', SetType('T1 MRI Nat WhiteProba DARTEL warped')
-        ),
-      ),
-    ),
-  ),
-)
-
 insert(
   '{center}/{subject}',
   't1mri', SetWeakAttr( 'modality', 't1mri' ),
@@ -48,6 +32,22 @@ insert(
     ),
 )
 
+
+insert( 
+  'analyzes/{analysis}',
+  'DARTEL_{template}', SetType('DARTEL analysis directory'), SetContent(
+    '<template>_DARTEL_{step}', SetType('DARTEL created template'),
+    '{center}',  SetContent( # Center directory
+      '{subject}', SetContent( # Subject directory
+        '{acquisition}', SetContent(  # Acquisition directory
+          '<subject>_DARTEL_flow_field', SetType('DARTEL flow field')  ,
+          '<subject>_Nat_greyProba_warped', SetType('T1 MRI Nat GreyProba DARTEL warped'),
+          '<subject>_Nat_whiteProba_warped', SetType('T1 MRI Nat WhiteProba DARTEL warped')
+        ),
+      ),
+    ),
+  ),
+)
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}',
   'nobias_<subject>', SetType('T1 MRI Bias Corrected'),) # already existed for morphologist # Native space
