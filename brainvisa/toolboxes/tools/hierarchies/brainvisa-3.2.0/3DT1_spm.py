@@ -15,6 +15,9 @@ insert(
       ),
     ),
   ),
+)
+
+insert(
   '{center}/{subject}',
   't1mri', SetWeakAttr( 'modality', 't1mri' ),
     SetContent(
