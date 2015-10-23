@@ -167,15 +167,26 @@ class Database( object ):
   @staticmethod
   def getAttributeValues( attributeName, selection, required, default=Undefined ):
     r = required.get( attributeName, Undefined )
-    s = selection.get( attributeName, default )
-    if s is Undefined:
+    s = selection.get( attributeName, Undefined )
+    t = selection.get( attributeName, default )
+    if t is Undefined:
       if r is Undefined:
         return []
       if r is None or isinstance( r, basestring ):
         return [ r ]
       return r
+    if t is None or isinstance( t, basestring ):
+      t = [ t ]
+    elif t is Undefined:
+      t = []
     if s is None or isinstance( s, basestring ):
       s = [ s ]
+    elif s is Undefined:
+      s = []
+    # if no selection is specified, we must try both None and default value
+    # otherwise we are making this attribute mandatory
+    if len(s) == 0:
+      s = s + [None] + t
     if r is Undefined:
       return s
     if r is None or isinstance( r, basestring ):
@@ -1558,7 +1569,7 @@ class SQLDatabase( Database ):
         required ) if x is not None ]
       types = set( chain( *( self._childrenByTypeName[ t ] for t in tval ) ) )
     if _debug is not None:
-      print >> _debug, '!createDiskItems!', tuple( types ), selection, required
+      print >> _debug, '!createDiskItems! database:', self.directory, tuple( types ), selection, required
     for type in types:
       r = self.ruleSelectionByType.get( type )
       if r is None:
