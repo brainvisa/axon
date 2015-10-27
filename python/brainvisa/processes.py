@@ -508,7 +508,10 @@ def mapValuesToChildrenParameters(
   csize = len(destNode.childrenNames())
 
   # Resulting size is the max between children size and list size
-  rsize = max(csize, lsize)
+  if lsize == 1:
+    rsize = csize
+  else:
+    rsize = max(csize, lsize)
 
   if (defaultProcess is not None) and (name is None):
     name = getProcessInstance( defaultProcess ).name
@@ -534,7 +537,8 @@ def mapValuesToChildrenParameters(
     else:
       if i < lsize :
         v = l[i]
-      elif (resultingSize > -1) and (lsize > 0):
+      #elif (resultingSize > -1) and (lsize > 0):
+      elif lsize == 1:
         v = l[0]
       else:
         v = None
