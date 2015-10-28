@@ -48,8 +48,8 @@ class AxonFsoToFom(object):
         '''
         database_name = item.get('_database')
         if not database_name:
-            print 'not in any database.'
-            return (None, None)
+            print item, 'not in any database.'
+            return (None, {})
         name_in_db = item.name[len(database_name) + 1:]
         database = neuroHierarchy.databases.database(database_name)
         rules = database.fso.typeToPatterns.get(item.type, None)
@@ -58,7 +58,7 @@ class AxonFsoToFom(object):
             m = rule.pattern.match(name_in_db, attribs)
             if m:
                 return (rule, m)
-        return (None, None)
+        return (None, {})
 
 
     def _get_fom_formats(self, formats):
@@ -255,7 +255,14 @@ class AxonFsoToFom(object):
         '''
         if isinstance(param, WriteDiskItem):
             return True
-        # TODO: check if this input is connected to an upstream output
+        # check if this input is connected to an upstream output
+        linkdefs = process._links.get(param_name)
+        if linkdefs is not None:
+            for linkdef in linkdefs:
+                other_proc, other_param_name = linkdef[:2]
+                other_param = other_proc.signature[other_param_name]
+                if isinstance(other_param, WriteDiskItem):
+                    return True
         return False
 
 
