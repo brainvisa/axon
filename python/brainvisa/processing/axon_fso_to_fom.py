@@ -195,11 +195,13 @@ class AxonFsoToFom(object):
                 'The input value for param %s.%s could not be set (using: %s)'
                 % (node_name, name, data))
         input_rule, input_attr = self._find_rule(value)
+        self._done_params = set()
         self.current_fom_def, default_atts = self._fso_to_fom_parse(
             process, node_name, input_attr)
         node_names = {}
         self._process_nodes_fso_to_fom(process, node_name, default_atts,
                                        input_attr, node_names)
+        del self._done_params
         return self.current_fom_def, default_atts
 
 
@@ -226,6 +228,9 @@ class AxonFsoToFom(object):
             #print '    %s.%s: %s' % (node_name, name, value)
             if value is None:
                 continue
+            if self._check_and_mark_done(process, name):
+                #print 'already done:', process, name
+                continue
             database_name = value.get('_database')
             rule, matched_attr = self._find_rule(value)
             if rule is None:
@@ -246,6 +251,9 @@ class AxonFsoToFom(object):
                 fom_pattern[0].append(fom_added_attr)
             proc_fom[param_name] = fom_pattern
 
+        if len(proc_fom) == 0:
+            del current_fom_def[node_name]
+
         return current_fom_def, default_atts
 
 
@@ -261,8 +269,39 @@ class AxonFsoToFom(object):
             for linkdef in linkdefs:
                 other_proc, other_param_name = linkdef[:2]
                 other_param = other_proc.signature[other_param_name]
-                if isinstance(other_param, WriteDiskItem):
+                if isinstance(other_param, WriteDiskItem) \
+                        and getattr(process, param_name) \
+                            == getattr(other_proc, other_param_name):
                     return True
+        return False
+
+
+    def _check_and_mark_done(self, process, param_name):
+        '''
+        Set param_name parameter of process process into processed list. Links
+        are followed recursively to avoid having another parameter duplicating
+        the current one.
+
+        Returns
+        -------
+        True if the parameter was already in the done list, False otherwise
+        '''
+        proc_ref = axon_to_capsul.use_weak_ref(process)
+        if (proc_ref, param_name) in self._done_params:
+            return True
+        stack = [(proc_ref, param_name)]
+        value = getattr(process, param_name)
+        while stack:
+            cprocess, cparam_name = stack.pop(0)
+            self._done_params.add((cprocess, cparam_name))
+            # propagate through links
+            links = cprocess()._links.get(cparam_name, [])
+            for link in links:
+                other_end = (axon_to_capsul.use_weak_ref(link[0]), link[1])
+                if other_end[0] is not None \
+                        and getattr(other_end[0](), link[1]) == value \
+                        and other_end not in self._done_params:
+                    stack.append(other_end)
         return False
 
 
@@ -294,9 +333,6 @@ class AxonFsoToFom(object):
                     else:
                         new_node_name = current_node_name
                     nodes.append((child, new_node_name, current_fom_def))
-                #nodes += [(node.child(child), '.'.join([current_node_name,
-                          # child]),
-                          #current_fom_def) for child in node.childrenNames()]
 
 
 def ordered_load(stream, Loader=yaml.Loader, object_pairs_hook=OrderedDict):
@@ -368,7 +404,7 @@ def fso_to_fom_main(argv):
         help='output file name for updated formats FOM')
     args = parser.parse_args(argv[1:])
 
-    from brainvisa.configuration import neuroConfig
+    #from brainvisa.configuration import neuroConfig
     #neuroConfig.ignoreValidation = True
     processes.initializeProcesses()
 
