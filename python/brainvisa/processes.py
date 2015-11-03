@@ -534,7 +534,8 @@ def mapValuesToChildrenParameters(
     else:
       if i < lsize :
         v = l[i]
-      elif (resultingSize > -1) and (lsize > 0):
+      #elif (resultingSize > -1) and (lsize > 0):
+      elif lsize == 1:
         v = l[0]
       else:
         v = None
