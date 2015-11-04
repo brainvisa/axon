@@ -8,7 +8,14 @@ FileType( 'anatomical Template', 'Template')
 FileType( 'grey probability map', 'Template')
 FileType( 'tissue probability map', 'Template')
 FileType( 'PET Template', 'Template')
-FileType( 'Dartel Template', 'Template')
+FileType( 'Dartel Template', 'Template')#False : Dartel has 2 dimensions!! (mickael L)
+
+
+FileType('T1 MRI template', '4D Volume')
+FileType('HDW template', 'T1 MRI template')
+FileType('SPM HDW template', 'HDW template')
+FileType('LDW template', 'T1 MRI template')
+FileType('SPM LDW template', 'LDW template')
 
 #-------------- Render SPM type ---------------------
 FileType( 'SPM Render', 'Matlab SPM file')
