@@ -531,7 +531,8 @@ class DiskItemBrowser( QDialog ):
             v = self._selectedAttributes.get(a)
             if v and not item.getHierarchy(a):
               item._globalAttributes[a] = v
-      if len( self._items ) <= 1:
+      if len( self._items ) <= 1 \
+          or len(uniquecols) == self._tableData.columnCount(None):
         # if only one item, show all columns even if they are (all) unique
         uniquecols = set()
       self._ui.tblItems.setModel( self._tableData )
