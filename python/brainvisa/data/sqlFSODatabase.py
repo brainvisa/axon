@@ -119,7 +119,69 @@ def tuplesWithMissingValues( tpl, missingValue ):
   yield tpl
   for t in _indicesForTuplesWithMissingValues( len( tpl ) ):
     yield tupleWithMissingValues( t, tpl, missingValue )
+
+#------------------------------------------------------------------------------
+_all_formats = None
+
+def getAllFileFormats():
+    global _all_formats
     
+    if _all_formats is None:
+        # Build list of all formats used in BrainVISA
+        _all_formats = FileFormats( 'All formats' )
+        formatsAlreadyDefined = set( ( 'Directory', 
+                                    'Graph', 
+                                    'Graph and data',
+                                    'mdata file' ) )
+        _all_formats.newFormat( 'Graph and data', ( 'arg', 'd|data' ) )
+        _all_formats.newAlias( 'Graph', 'Graph and data' )
+        for format in (i for i in getAllFormats() if not i.name.startswith( 
+                                                                    'Series of '
+                                                                )):
+            
+            if isinstance( format, FormatSeries ) or format.name == 'mdata file':
+                continue
+            
+            if format.name not in formatsAlreadyDefined:
+                patterns = []
+                for p in format.patterns.patterns:
+                    p = p.pattern
+                    dotIndex = p.find( '.' )
+                    if dotIndex < 0:
+                        break
+                    patterns.append( p[ dotIndex + 1 : ] )
+                try:
+                    _all_formats.newFormat( format.name, 
+                                            patterns, 
+                                            isinstance( format, MinfFormat ) )
+                    formatsAlreadyDefined.add( format.name )
+                except Exception, e:
+                    showException()
+                
+    return _all_formats
+
+#------------------------------------------------------------------------------
+def changeFormat( diskItem, 
+                  newFormat ):
+    
+    result = None
+    #print '!changeDiskItemFormat!', diskItem, newFormat, type( newFormat )
+    allFormats = getAllFileFormats()
+        
+    newFormat = allFormats.getFormat( newFormat.name, None )
+    if newFormat is not None:
+        #print '!changeDiskItemFormat!  ', newFormat, 'found.'
+        format, ext, noExt = allFormats._findMatchingFormat( 
+                                diskItem.fullPath()
+                             )
+        if format is not None:
+            #print '!changeDiskItemFormat!  ', format, 'matching.'
+            result = diskItem.clone()
+            result.format = getFormat( str(format.name) )
+            result._files = [ os.path.normpath( noExt + '.' + ext ) \
+                              for ext in newFormat.extensions() ]
+    
+    return result
 
 #------------------------------------------------------------------------------
 class DatabaseError( Exception ):
@@ -141,26 +203,7 @@ class Database( object ):
   @property
   def formats( self ):
     if Database._all_formats is None:
-      # Build list of all formats used in BrainVISA
-      Database._all_formats = FileFormats( 'All formats' )
-      formatsAlreadyDefined = set( ( 'Directory', 'Graph', 'Graph and data' ,'mdata file' ) )
-      Database._all_formats.newFormat( 'Graph and data', ( 'arg', 'd|data' ) )
-      Database._all_formats.newAlias( 'Graph', 'Graph and data' )
-      for format in (i for i in getAllFormats() if not i.name.startswith( 'Series of ' )):
-        if isinstance( format, FormatSeries ) or format.name == 'mdata file': continue
-        if format.name not in formatsAlreadyDefined:
-          patterns = []
-          for p in format.patterns.patterns:
-            p = p.pattern
-            dotIndex = p.find( '.' )
-            if dotIndex < 0:
-              break
-            patterns.append( p[ dotIndex + 1 : ] )
-          try:
-            Database._all_formats.newFormat( format.name, patterns, isinstance( format, MinfFormat ) )
-            formatsAlreadyDefined.add( format.name )
-          except Exception, e:
-            showException()
+        Database._all_formats = getAllFileFormats()
     return Database._all_formats
   
   
@@ -1245,18 +1288,8 @@ class SQLDatabase( Database ):
 
     
   def changeDiskItemFormat( self, diskItem, newFormat ):
-    #print '!changeDiskItemFormat!', self.name, diskItem, newFormat, type( newFormat )
-    result = None
-    newFormat = self.formats.getFormat( newFormat, None )
-    if newFormat is not None:
-      #print '!changeDiskItemFormat!  ', newFormat, 'found.'
-      format, ext, noExt = self.formats._findMatchingFormat( diskItem.fullPath() )
-      if format is not None:
-        #print '!changeDiskItemFormat!  ', format, 'matching.'
-        result = diskItem.clone()
-        result.format = getFormat( str(format.name) )
-        result._files = [ os.path.normpath( noExt + '.' + ext ) for ext in newFormat.extensions() ]
-    return result
+      return changeFormat( diskItem, 
+                           newFormat )
 
 
   def scanDatabaseDirectories( self, directoriesIterator=None, includeUnknowns=False, directoriesToScan=None, recursion=True, debugHTML=None, context=None ):
