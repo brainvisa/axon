@@ -848,12 +848,12 @@ class Parameterized( object ):
     """Indicates that the parameters are mandatory."""
     for k in args:
       self.signature[ k ].mandatory = True
-      
+
   def setVisible( self, *args ):
     """Indicates that the parameters are visible."""
     currentUserLevel = Application().configuration.brainvisa.userLevel
     self.setUserLevel(currentUserLevel, *args)
-      
+
   def setHidden( self, *args ):
     """Indicates that the parameters are hidden."""
     currentUserLevel = Application().configuration.brainvisa.userLevel
@@ -863,15 +863,15 @@ class Parameterized( object ):
     """Assign a userLevel to a list of parameters."""
     for k in args:
       self.signature[ k ].userLevel = userLevel
-      
+
   def setEnable( self, *args, **kwargs ):
     """Indicates parameters visibility and mandatory
     using examples : self.setEnable( *args)
                      self.setEnable( *args, userLevel=0)
                      self.setEnable( *args, userLevel=0, mandatory=True)
-    
+
     *optional keyword paramerers*
-    
+
     :param int userLevel, indicates that the parameters are visible or hidden regarding the userLevel.
                           ( default value : Application().configuration.brainvisa.userLevel )
     :param boolean mandatory, indicates that the parameters are mandatory(True) or optional(False).
@@ -882,7 +882,7 @@ class Parameterized( object ):
     else:
       userLevel = Application().configuration.brainvisa.userLevel
     self.setUserLevel(userLevel, *args)
-    
+
     if 'mandatory' in kwargs.keys():
       if kwargs['mandatory']:
         self.setMandatory(*args)
@@ -890,7 +890,7 @@ class Parameterized( object ):
         self.setOptional(*args)
     else:
       self.setMandatory(*args)
-    
+
   def setDisable( self, *args ):
     """Indicates that the parameters are hidden and optional."""
     self.setHidden(*args)
@@ -1005,6 +1005,13 @@ class Parameterized( object ):
     # TODO : set the removed value consistent with what happened
     return removed
 
+
+  def removeDoubleLink( self, destination, source, show_warnings=True ):
+    """
+    Removes a double link source -> destination and destination -> source.
+    """
+    self.removeLink( destination, source, show_warnings )
+    self.removeLink( source, destination, show_warnings )
 
   def changeSignature( self, signature ):
     """Sets a new signature. Previous values of attributes are kept if the attributes are still in the signature.
@@ -1913,7 +1920,7 @@ class ExecutionNode( object ):
     self.addLink( destination, source, function )
     self.addLink( source, destination, function )
 
-  
+
   def removeLink( self, destination, source, function=None, show_warnings=True ):
     """
     Removes a parameters link added with :py:meth:`addLink`.
