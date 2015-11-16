@@ -14,10 +14,10 @@ FileType('T1 MRI Analysis Directory', 'Directory')
 # segmentations #
 #################
 #PVE image
-FileType('T1 MRI Partial Volume Estimation', '4D Volume')
-FileType('T1 MRI Nat Partial Volume Estimation', 'T1 MRI Partial Volume Estimation')
-FileType('T1 MRI Mni Partial Volume Estimation', 'T1 MRI Partial Volume Estimation')
-FileType('T1 MRI Mni Partial Volume Estimation Dartel imported', 'T1 MRI Partial Volume Estimation')
+FileType('OLD T1 MRI Partial Volume Estimation', '4D Volume')
+FileType('T1 MRI Nat Partial Volume Estimation', 'OLD T1 MRI Partial Volume Estimation')
+FileType('T1 MRI Mni Partial Volume Estimation', 'OLD T1 MRI Partial Volume Estimation')
+FileType('T1 MRI Mni Partial Volume Estimation Dartel imported', 'OLD T1 MRI Partial Volume Estimation')
 
 # Tissue Probability Map : in native, mni space and pet space
 

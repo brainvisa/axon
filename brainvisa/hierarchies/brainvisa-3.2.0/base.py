@@ -78,5 +78,3 @@ hierarchy = (
 insert( 'analyzes/',
   '{analysis}', SetType( 'Analysis Dir' ), SetContent(),) # SetContent() because it is a directory
 
-
-

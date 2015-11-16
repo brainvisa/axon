@@ -11,11 +11,10 @@ FileType( 'PET Template', 'Template')
 FileType( 'Dartel Template', 'Template')#False : Dartel has 2 dimensions!! (mickael L)
 
 
-FileType('T1 MRI template', '4D Volume')
-FileType('HDW template', 'T1 MRI template')
-FileType('SPM HDW template', 'HDW template')
-FileType('LDW template', 'T1 MRI template')
-FileType('SPM LDW template', 'LDW template')
+FileType('TPM template', '4D Volume')
+FileType('SPM TPM template', 'TPM template')
+FileType('TPM HDW DARTEL template', '4D Volume')
+FileType('SPM TPM HDW DARTEL template', 'TPM HDW DARTEL template')
 
 #-------------- Render SPM type ---------------------
 FileType( 'SPM Render', 'Matlab SPM file')
