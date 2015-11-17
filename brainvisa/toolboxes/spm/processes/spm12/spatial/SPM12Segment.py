@@ -87,7 +87,11 @@ signature = Signature(
                         'save bias field',
                         'save field and corrected', section=channel_section),
   't1mri_bias_field', WriteDiskItem('T1 MRI Bias field', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=channel_section),
-  't1mri_bias_corrected', WriteDiskItem('T1 MRI Bias Corrected', 'NIFTI-1 image', section=channel_section),
+  't1mri_bias_corrected', 
+  WriteDiskItem('T1 MRI Bias Corrected', 'NIFTI-1 image', 
+                requiredAttributes={'transformation':'none',
+                                    'warping_method':'none'}, 
+                section=channel_section),
   #GREY CLASS
   'grey_gaussian_number', Choice(1, 2, 3, 4, 5, 6, 7, 8, 'Inf', section=grey_matter_section),
   'grey_native_type', Choice("Neither", 'Native', 'DARTEL Imported', 'Native + DARTEL Imported', section=grey_matter_section),
