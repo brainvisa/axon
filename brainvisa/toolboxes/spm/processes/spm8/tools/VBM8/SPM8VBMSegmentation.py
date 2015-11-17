@@ -388,36 +388,36 @@ def initialization(self):
   
   
   self.linkParameters("grey_native", ("t1mri", "analysis", "TPM_template"), self.updateGreyNative )
+  self.linkParameters("grey_HDW_warped_unmodulated", ("grey_native", "DARTEL_template"), self.updateHDWGrey)
   self.linkParameters('batch_location', 'grey_native', self.updateBatchLocation)
   self.linkParameters("grey_LDW_warped_unmodulated", "grey_native")
-  self.linkParameters("grey_HDW_warped_unmodulated", "grey_native")
   self.linkParameters("grey_LDW_warped_modulated", "grey_native")
   self.linkParameters("grey_HDW_warped_modulated", "grey_native")
   self.linkParameters("grey_dartel_imported", "grey_native")
   
   self.linkParameters("white_native", "grey_native" )
-  self.linkParameters("white_LDW_warped_unmodulated", "white_native")
-  self.linkParameters("white_HDW_warped_unmodulated", "white_native")
-  self.linkParameters("white_LDW_warped_modulated", "white_native")
-  self.linkParameters("white_HDW_warped_modulated", "white_native")
-  self.linkParameters("white_dartel_imported", "white_native")
+  self.linkParameters("white_LDW_warped_unmodulated", "grey_native")
+  self.linkParameters("white_HDW_warped_unmodulated", "grey_HDW_warped_unmodulated")
+  self.linkParameters("white_LDW_warped_modulated", "grey_native")
+  self.linkParameters("white_HDW_warped_modulated", "grey_HDW_warped_unmodulated")
+  self.linkParameters("white_dartel_imported", "grey_native")
   
   self.linkParameters("csf_native", "grey_native" )
-  self.linkParameters("csf_LDW_warped_unmodulated", "csf_native")
-  self.linkParameters("csf_HDW_warped_unmodulated", "csf_native")
-  self.linkParameters("csf_LDW_warped_modulated", "csf_native")
-  self.linkParameters("csf_HDW_warped_modulated", "csf_native")
-  self.linkParameters("csf_dartel_imported", "csf_native")
+  self.linkParameters("csf_LDW_warped_unmodulated", "grey_native")
+  self.linkParameters("csf_HDW_warped_unmodulated", "grey_HDW_warped_unmodulated")
+  self.linkParameters("csf_LDW_warped_modulated", "grey_native")
+  self.linkParameters("csf_HDW_warped_modulated", "grey_HDW_warped_unmodulated")
+  self.linkParameters("csf_dartel_imported", "grey_native")
   
   self.linkParameters("bias_native", "grey_native" )
-  self.linkParameters("bias_LDW_warped_unmodulated", "bias_native")
-  self.linkParameters("bias_HDW_warped_unmodulated", "bias_native")
-  self.linkParameters("bias_affine", "bias_native")
+  self.linkParameters("bias_LDW_warped_unmodulated", "grey_native")
+  self.linkParameters("bias_HDW_warped_unmodulated", "grey_HDW_warped_unmodulated")
+  self.linkParameters("bias_affine", "grey_native")
   
   self.linkParameters("pve_native", "grey_native" )
-  self.linkParameters("pve_LDW_warped_unmodulated", "pve_native")
-  self.linkParameters("pve_HDW_warped_unmodulated", "pve_native")
-  self.linkParameters("pve_dartel_imported", "pve_native")
+  self.linkParameters("pve_LDW_warped_unmodulated", "grey_native")
+  self.linkParameters("pve_HDW_warped_unmodulated", "grey_HDW_warped_unmodulated")
+  self.linkParameters("pve_dartel_imported", "grey_native")
   
   self.linkParameters("jacobian_normalized", "grey_native" )
   self.linkParameters("forward_field", "grey_native" )
@@ -624,6 +624,12 @@ def updateGreyNative(self, proc, dummy):
     d["template"] = self.TPM_template.hierarchyAttributes()["template"]
     return self.signature["grey_native"].findValue(d)
 
+def updateHDWGrey(self, proc, dummy):
+  if not None in [self.grey_native, self.DARTEL_template]:
+    d = self.grey_native.hierarchyAttributes()
+    d["template"] = self.DARTEL_template.hierarchyAttributes()["template"]
+    return self.signature["grey_HDW_warped_unmodulated"].findValue(d)
+    
 def updateBatchLocation(self, proc, dummy):
   path = self.grey_native.fullPath()
   path_dir = os.path.dirname(path)
