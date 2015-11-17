@@ -72,18 +72,30 @@ signature = Signature(
                           "6th Degree B-Spline",
                           "7th Degree B-Spline"),
   
+  "extract_coregister_matrix", Boolean(),
+  "coregister_matrix", WriteDiskItem("Transformation matrix", "Transformation matrix"),
 
   'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section='default SPM outputs' ),
 )
 def initialization(self):
   self.setOptional("others")
+  
+  self.addLink(None, "extract_coregister_matrix", self.updateSignatureAboutCoregisterMatrix)
     
   self.objective_function = "Normalised Mutual Information"
   self.separation = [4,2]
   self.tolerances = [0.02,  0.02,  0.02, 0.001, 0.001, 0.001,  0.01,  0.01,  0.01, 0.001, 0.001, 0.001]
   self.histogram_smoothing = [7,7]
   self.interpolation = "Trilinear"
+  self.extract_coregister_matrix = False
    
+def updateSignatureAboutCoregisterMatrix(self, proc):
+  if self.extract_coregister_matrix:
+    self.setEnable("coregister_matrix")
+  else:
+    self.setDisable("coregister_matrix")
+  self.signatureChangeNotifier.notify( self )
+  
 def execution( self, context ):
   
   estimation_options = EstimationOptions()
@@ -111,4 +123,26 @@ def execution( self, context ):
 
   estimate.replaceEstimationOptions(estimation_options)
   estimate.start(configuration, self.batch_location.fullPath())
+  
+  if self.extract_coregister_matrix and self.coregister_matrix is not None:
+    #very usefull because spm action doesn't recompute minf, so the transformation in minf files is wrong
+    self.source.clearMinf()
+    self.extractCoregisterMatrix( self.source.fullPath(), self.reference.fullPath(), self.coregister_matrix.fullPath() )
+    
+def extractCoregisterMatrix(self, source_path, reference_path, output_path):
+
+  source_vol = aims.read( source_path )
+  source_aligned_trm = aims.AffineTransformation3d(source_vol.header()['transformations'][1])
+  reference_vol = aims.read( reference_path )
+  #If reference volume has two transformations (scanner + aligned)
+  #the "aligned" trm of source "go" to the "aligned" of reference
+  #else go to the "scanner" of reference
+  if len(reference_vol.header()['transformations']) > 1:
+    reference_aligned_trm = aims.AffineTransformation3d(reference_vol.header()['transformations'][1])
+    reference_trm = reference_aligned_trm.inverse()
+  else:
+    reference_scanner_trm = aims.AffineTransformation3d(reference_vol.header()['transformations'][0])
+    reference_trm = reference_scanner_trm.inverse()
+
+  aims.write( reference_trm * source_aligned_trm, output_path )
   
