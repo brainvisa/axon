@@ -110,7 +110,8 @@ signature = Signature(
 
 def initialization(self):
     self.setOptional('images_2', 'output_flow_field', 'output_template')
-    self.linkParameters('batch_location', 'output_template', self.updateBatch)
+  
+    self.addLink("batch_location", "output_template", self.updateBatchPath)
     
     self.template_basename = 'Template'
     self.regularisation_form = 'Linear Elastic Energy'
@@ -148,12 +149,11 @@ def initialization(self):
     self.LM_Regularisation = 0.01
     self.cycles = 3
     self.iterations = 3
-
-def updateBatch(self, proc, dummy):
+    
+def updateBatchPath(self, proc):
   if self.output_template:
-    first_diskitem = self.output_template[0]
-    first_diskitem_dirname = os.path.dirname(first_diskitem.fullPath())
-    return os.path.join(first_diskitem_dirname, 'DARTEL_created_template.m')
+    directory_path = os.path.dirname(self.output_template[0].fullPath())
+    return os.path.join(directory_path, 'spm8_DARTEL_create_template_job.m')
 #------------------------------------------------------------------------------
 def execution( self, context ):
     if self.images_2:

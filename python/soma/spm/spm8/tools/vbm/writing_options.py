@@ -500,7 +500,16 @@ class WritingOptions():
   def saveDeformationFieldInverse(self): 
     self.deformation_fields = [0, 1] 
   
-  def saveDeformationFieldForward(self):   
+  def saveDeformationFieldForward(self): 
+    """
+    Forward deformations can be used to warp an image from native space to Dartel MNI space 
+    (if Dartel normalization is used) or to the MNI space of the TPM image (for low-dimensional warping). 
+    The backward deformations can be used to warp an image from Dartel MNI space or TPM MNI 
+    space to native space. As you suggested these deformations can be used to warp predefined atlases 
+    to native space. Another application is to warp coregistered fMRI data to Dartel MNI space.
+    Volumes should be calulated rather based on native space images than modulated normalized images 
+    (although the values should be similiar). Again, probabilities can be summed up to consider values >1. 
+    """  
     self.deformation_fields = [1, 0] 
   
   def saveDeformationFieldInverseAndForward(self):  

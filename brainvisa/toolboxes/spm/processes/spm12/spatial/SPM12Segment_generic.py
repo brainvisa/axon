@@ -211,6 +211,8 @@ def initialization(self):
   self.addLink(None, 'background_warped_type', self.updateSignatureAboutBackgroundWarpedType)
 
   self.addLink(None, 'deformation_field_type', self.updateSignatureAboutDeformationField)
+  
+  self.addLink("batch_location", "grey_native", self.updateBatchPath)
 
   #SPM default initialisation
   self.bias_regulatisation = 'light regularisation (0.001)'
@@ -352,7 +354,12 @@ def updateSignatureAboutDeformationField(self, proc):
     self.showAndMandadesSignatureFieldList(['forward_field'])
   elif self.deformation_field_type == 'Inverse + Forward':
     self.showAndMandadesSignatureFieldList(['forward_field', 'inverse_field'])
-
+    
+def updateBatchPath(self, proc):
+  if self.grey_native is not None:
+    directory_path = os.path.dirname(self.grey_native.fullPath())
+    return os.path.join(directory_path, 'spm12_segment_job.m')
+  
 def execution( self, context ):
   segment = Segment()
 

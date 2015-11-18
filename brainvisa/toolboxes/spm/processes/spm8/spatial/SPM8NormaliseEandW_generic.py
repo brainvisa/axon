@@ -106,6 +106,8 @@ def initialization(self):
   self.addLink(None, "custom_outputs", self.updateSignatureAboutOutputs)
   self.addLink(None, "filename_prefix", self.checkIfNotEmpty)
   
+  self.addLink("batch_location", "source", self.updateBatchPath)
+  
   #SPM default initialisation
   self.source_smoothing = 8
   self.template_smoothing = 0
@@ -134,6 +136,11 @@ def checkIfNotEmpty(self, proc):
     self.filename_prefix = 'w'
   else:
     pass
+    
+def updateBatchPath(self, proc):
+  if self.source is not None:
+    directory_path = os.path.dirname(self.source.fullPath())
+    return os.path.join(directory_path, 'spm8_normalise_EW_job.m')
   
 def execution( self, context ):
   estimate_and_write = EstimateAndWrite()

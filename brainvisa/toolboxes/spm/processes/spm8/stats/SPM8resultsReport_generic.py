@@ -83,6 +83,8 @@ def initialization( self ):
   self.contrast_current_number = 0
 
   self.addLink(None, 'contrast_number', self.updateSignatureAboutSimpleContrastNumber)
+  
+  self.addLink("batch_location", "results_report_mat_file", self.updateBatchPath)
 
   self.add_section_overlay = False
   self.add_render_overlay = False
@@ -164,6 +166,11 @@ def initializeNewContrastFields(self, contrast_index):
   self.setValue('contrast_' + str(contrast_index) + '_extent', 0)
   self.setValue('contrast_' + str(contrast_index) + '_masking', False)
   self.setValue('contrast_' + str(contrast_index) + '_mask_threshold', 0.05)
+    
+def updateBatchPath(self, proc):
+  if self.results_report_mat_file is not None:
+    directory_path = os.path.dirname(self.results_report_mat_file.fullPath())
+    return os.path.join(directory_path, 'spm8_results_report_job.m')
 
 def execution( self, context ):
   self.removeOldContrastMIPFile()

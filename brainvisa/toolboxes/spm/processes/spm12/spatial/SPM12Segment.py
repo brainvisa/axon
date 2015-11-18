@@ -320,8 +320,18 @@ signature = Signature(
   'smoothness', Float(section=warping_section),
   'sampling_distance', Float(section=warping_section),
   'deformation_field_type', Choice("Neither", 'Inverse', 'Forward', 'Inverse + Forward', section=warping_section),
-  'forward_field', WriteDiskItem('SPM deformation field', 'NIFTI-1 image', requiredAttributes = {'direction':'forward'}, section=warping_section),
-  'inverse_field', WriteDiskItem('SPM deformation field', 'NIFTI-1 image', requiredAttributes = {'direction':'inverse'}, section=warping_section),
+  'forward_field', 
+  WriteDiskItem('SPM deformation field', 
+                'NIFTI-1 image', 
+                requiredAttributes = {'direction':'forward',
+                                      'warping_method':'low-dimensional'}, 
+                section=warping_section),
+  'inverse_field', 
+  WriteDiskItem('SPM deformation field', 
+                'NIFTI-1 image', 
+                requiredAttributes = {'direction':'inverse',
+                                      'warping_method':'low-dimensional'}, 
+                section=warping_section),
   #'deformation_matrix', WriteDiskItem('Matlab SPM file', 'Matlab file'),
   #OUTPUT batch
   'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section='default SPM outputs' ),
@@ -347,8 +357,9 @@ def initialization(self):
   
   self.addLink(None, 'deformation_field_type', self.updateSignatureAboutDeformationField)
   
+  self.addLink("batch_location", "grey_native", self.updateBatchPath)
+  
   self.linkParameters('t1mri_bias_corrected', ('t1mri', 'analysis', 'TPM_template'), self.updateT1MRIBiasCorrected)
-  self.linkParameters('batch_location', 't1mri_bias_corrected', self.updateBatchLocation)
   self.linkParameters('t1mri_bias_field', 't1mri_bias_corrected')
   self.linkParameters('grey_native', 't1mri_bias_corrected')
   self.linkParameters('grey_dartel_imported', 't1mri_bias_corrected')
@@ -514,11 +525,11 @@ def updateT1MRIBiasCorrected(self, proc, dummy):
     d['analysis'] = self.analysis.hierarchyAttributes()['analysis']
     d['template'] = self.TPM_template.hierarchyAttributes()['template']
     return self.signature['t1mri_bias_corrected'].findValue(d)
-
-def updateBatchLocation(self, proc, dummy):
-  path = self.t1mri_bias_corrected.fullPath()
-  path_dir = os.path.dirname(path)
-  return os.path.join(path_dir, 'segment_job.m')
+    
+def updateBatchPath(self, proc):
+  if self.grey_native is not None:
+    directory_path = os.path.dirname(self.grey_native.fullPath())
+    return os.path.join(directory_path, 'spm12_segment_job.m')
 
 def execution( self, context ):
   context.runProcess('SPM12Segment_generic',

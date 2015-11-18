@@ -109,7 +109,8 @@ def initialization(self):
     
     self.linkParameters('output_flow_field', ('images_1', 'template_basename'), self.updateFlowFields)
     self.linkParameters('output_template', ('images_1', 'template_basename'), self.updateDartelTemplate)
-    self.linkParameters('batch_location', 'output_template', self.updateBatch)
+  
+    self.addLink("batch_location", "output_template", self.updateBatchPath)
     
     self.template_basename = 'Template'
     self.regularisation_form = 'Linear Elastic Energy'
@@ -167,12 +168,11 @@ def updateDartelTemplate(self, proc, dummy):
       d['step'] = str(index)
       output_diskitem_list.append(WriteDiskItem( 'DARTEL created template', 'NIFTI-1 image' ).findValue(d))
     return output_diskitem_list
-
-def updateBatch(self, proc, dummy):
+    
+def updateBatchPath(self, proc):
   if self.output_template:
-    first_diskitem = self.output_template[0]
-    first_diskitem_dirname = os.path.dirname(first_diskitem.fullPath())
-    return os.path.join(first_diskitem_dirname, 'DARTEL_created_template.m')
+    directory_path = os.path.dirname(self.output_template[0].fullPath())
+    return os.path.join(directory_path, 'spm8_DARTEL_create_template_job.m')
 #------------------------------------------------------------------------------
 def execution( self, context ):
   context.runProcess('SPM8DARTELCreateTemplates_generic',

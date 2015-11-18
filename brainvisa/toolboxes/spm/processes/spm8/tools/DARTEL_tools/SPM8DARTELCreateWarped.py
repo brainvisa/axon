@@ -79,7 +79,8 @@ def initialization(self):
     self.linkParameters("images_1_warped", "flow_fields")
     self.linkParameters("images_2_warped", "flow_fields")
     self.linkParameters("DARTEL_directory", "flow_fields", self.updateDARTELDirectory)
-    self.linkParameters('batch_location', 'DARTEL_directory', self.updateBatch)
+  
+    self.addLink("batch_location", "DARTEL_directory", self.updateBatchPath)
     
     #SPM8 default parameters
     self.modulation = False
@@ -90,9 +91,10 @@ def updateDARTELDirectory(self, proc, dummy):
   if self.flow_fields:
     d =self.flow_fields[0].hierarchyAttributes()
     return self.signature["DARTEL_directory"].findValue(d)
-
-def updateBatch(self, proc, dummy):
-  return os.path.join(self.DARTEL_directory.fullPath(), 'DARTEL_create_warped.m')
+    
+def updateBatchPath(self, proc):
+  if self.DARTEL_directory is not None:
+    return os.path.join(self.DARTEL_directory.fullPath(), 'spm8_DARTEL_created_warped_job.m')
   
 def execution( self, context ):
   context.runProcess('SPM8DARTELCreateWarped_generic',

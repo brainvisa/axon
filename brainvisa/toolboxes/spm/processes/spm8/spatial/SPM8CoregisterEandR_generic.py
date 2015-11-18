@@ -96,6 +96,8 @@ def initialization(self):
   self.addLink(None, "filename_prefix", self.checkIfNotEmpty)
   self.addLink(None, "extract_coregister_matrix", self.updateSignatureAboutCoregisterMatrix)
   
+  self.addLink("batch_location", "source", self.updateBatchPath)
+  
   #SPM default initialisation
   self.objective_function = "Normalised Mutual Information"
   self.separation = [4,2]
@@ -131,6 +133,11 @@ def updateSignatureAboutCoregisterMatrix(self, proc):
   else:
     self.setDisable("coregister_matrix")
   self.signatureChangeNotifier.notify( self )
+    
+def updateBatchPath(self, proc):
+  if self.source is not None:
+    directory_path = os.path.dirname(self.source.fullPath())
+    return os.path.join(directory_path, 'spm8_coregister_ER_job.m')
 
 def execution( self, context ):
   if self.others and self.custom_outputs:

@@ -86,8 +86,8 @@ def initialization( self ):
 
   self.addLink(None, 'global_calculation', self.updateGlobalCalculationFields)
   self.addLink(None, 'overall_grand_mean_scaling', self.updateOverallGrandMeanScalingFields)
-
-  self.addLink('batch_location', 'spm_workspace_directory', self.updateBatchLocation)
+  
+  self.addLink("batch_location", "spm_workspace_directory", self.updateBatchPath)
 
   self.setOptional( 'covariate_table', 'covariate_list', 'explicit_mask' )
 
@@ -148,10 +148,10 @@ def updateOverallGrandMeanScalingFields( self, proc ):
   else:
     self.setDisable('grand_mean_scaled_value')
   self.changeSignature( self.signature )
-
-def updateBatchLocation( self, proc ):
+    
+def updateBatchPath(self, proc):
   if self.spm_workspace_directory is not None:
-    return os.path.join( self.spm_workspace_directory.fullPath() , 'PairedTTest_job.m' )
+    return os.path.join(self.spm_workspace_directory.fullPath(), 'spm8_paired_ttest_job.m')
 
 def execution(self, context):
   if self.check_image_pairs:
@@ -166,7 +166,6 @@ def execution(self, context):
     os.remove(self.paired_T_test_mat_file.fullPath())
 
   spm_workspace_directory = os.path.dirname( self.batch_location.fullPath() )
-  spm_job_file = open( self.batch_location.fullPath(), 'w' )
 
   paired_t_test = PairedTTest()
   paired_t_test.setDirectory(str(spm_workspace_directory))

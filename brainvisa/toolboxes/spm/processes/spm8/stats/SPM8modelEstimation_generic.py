@@ -72,6 +72,7 @@ signature = Signature(
   'second_level_anova', Boolean(),
   #Simple Contrasts
   'simple_contrast_number', Integer(),
+  'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script' ),
 )
 
 def initialization( self ):
@@ -82,6 +83,8 @@ def initialization( self ):
   self.addLink(None, 'analysis_space', self.updateSignatureByAnalysisSpace)
   self.addLink(None, 'noise_priors', self.updateTissueTypeSignature)
   self.addLink(None, 'simple_contrast_number', self.updateSignatureAboutSimpleContrastNumber)
+  
+  self.addLink("batch_location", "basic_model_mat_file", self.updateBatchPath)
 
   self.analysis_space = 'Volume'
   self.AR_model_order = [3]
@@ -169,21 +172,23 @@ def removeSimpleContrastInSignature(self, simple_contrast_index):
 def addSimpleContrastInSignature(self, simple_contrast_index):
   self.signature["simple_contrast_%s_name" %simple_contrast_index] = String()
   self.signature["simple_contrast_%s_vector" %simple_contrast_index] = ListOf(Float())
+    
+def updateBatchPath(self, proc):
+  if self.basic_model_mat_file is not None:
+    directory_path = os.path.dirname(self.basic_model_mat_file.fullPath())
+    return os.path.join(directory_path, 'spm8_model_estimation_job.m')
 
 def execution( self, context ):
-  spm_workspace_directory = os.path.dirname( self.basic_model_mat_file.fullPath() )
-  spm_job_path = os.path.join( spm_workspace_directory, 'estimate_job.m' )
-
   if self.method == 'Classical':
     classical_estimation = ModelEstimationClassical()
     classical_estimation.setMatlabFilePath(str(self.basic_model_mat_file.fullPath()))
-    classical_estimation.start(context, configuration, spm_job_path)
+    classical_estimation.start(context, configuration, self.batch_location.fullPath())
     return
 
   elif self.method == 'Bayesian 2nd-level':
     bayesian_second_level_estimation = ModelEstimationBayesianSecondLevel()
     bayesian_second_level_estimation.setMatlabFilePath(str(self.basic_model_mat_file.fullPath()))
-    bayesian_second_level_estimation.start(context, configuration, spm_job_path)
+    bayesian_second_level_estimation.start(context, configuration, self.batch_location.fullPath())
     return
 
   else:
@@ -254,6 +259,6 @@ def execution( self, context ):
       simple_contrast_list.append(simple_contrast)
 
     bayesian_first_level_estimation.setSimpleContrastList(simple_contrast_list)
-    bayesian_first_level_estimation.start(configuration, spm_job_path)
-    return
+    bayesian_first_level_estimation.start(configuration, self.batch_location.fullPath())
+
 

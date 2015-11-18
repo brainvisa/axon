@@ -54,8 +54,8 @@ userLevel = 1
 name = 'spm8 - Deformations : apply deformation field- generic'
 #TODO : Add all available compositions but BV interface is not very efficient to do this
 signature = Signature(
-  'input_images', ListOf(ReadDiskItem('3D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'])),
-  'deformation_field', ReadDiskItem('3D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image']),
+  'input_images', ListOf(ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'])),#TODO : modify because 4D is unvailable from SPM
+  'deformation_field', ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image']),
   'interpolation', Choice("Nearest neighbour",
                           "Trilinear",
                           "2nd Degree B-Spline",
@@ -71,10 +71,10 @@ signature = Signature(
                                'Output directory'),
   'ouput_directory', WriteDiskItem('Directory', 'Directory'),
   'custom_outputs', Boolean(),
-  'output_composition', WriteDiskItem('3D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image']),
-  'images_deformed', ListOf(WriteDiskItem('3D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'])),
+  'output_composition', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image']),
+  'images_deformed', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'])),
   #Batch
-  'batch_location', WriteDiskItem( 'Any Type', 'Matlab script', section='default SPM outputs' )     
+  'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section='default SPM outputs' )     
 )
                       
 def initialization(self):
@@ -82,7 +82,8 @@ def initialization(self):
   self.addLink(None, 'custom_outputs', self.updateSignatureAboutOutputs)
   self.addLink(None, 'output_destination', self.updateSignatureAboutOutputDestination)
   
-  self.linkParameters("batch_location", "images_deformed", self.updateBatch)
+  self.addLink("batch_location", "deformation_field", self.updateBatchPath)
+  
   self.interpolation = "Trilinear"
   self.custom_outputs = False
 
@@ -101,10 +102,10 @@ def updateSignatureAboutOutputDestination(self, proc):
     self.setDisable('ouput_directory')
   self.changeSignature(self.signature)
    
-def updateBatch(self, proc, dummy):
-  if self.images_deformed:
-    ouput_directory = os.path.dirname(self.images_deformed[0].fullPath())
-    return os.path.join([ouput_directory, 'imcalc_job.m'])
+def updateBatchPath(self, proc):
+  if self.deformation_field is not None:
+    ouput_directory = os.path.dirname(self.deformation_field.fullPath())
+    return os.path.join(ouput_directory, 'spm8_deformations_job.m')
   
 def execution(self, context):
   deformations = Deformations()

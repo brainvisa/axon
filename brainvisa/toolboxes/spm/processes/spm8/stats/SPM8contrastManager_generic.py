@@ -64,9 +64,10 @@ signature = Signature(
 )
 
 def initialization( self ):
-  self.addLink('batch_location', 'contrast_mat_file', self.updateBatchLocation)
   self.addLink(None, 'T_contrast_number', self.updateSignatureAboutTContrast)
   self.addLink(None, 'F_contrast_number', self.updateSignatureAboutFContrast)
+  
+  self.addLink("batch_location", "contrast_mat_file", self.updateBatchPath)
 
   #----------------------------------------------------------------------------
   self.T_contrast_current_number = 0
@@ -81,11 +82,6 @@ def initialization( self ):
   
   #SPM default initialisation
   self.delete_existing_contrast = False
-
-def updateBatchLocation(self, proc):
-  if self.contrast_mat_file is not None:
-    spm_workspace_directory = os.path.dirname( self.contrast_mat_file.fullPath() )
-    return os.path.join( spm_workspace_directory, 'contrast_job.m' )
 #==============================================================================
 # T Contrast Dynamic Signature
 #==============================================================================
@@ -144,6 +140,12 @@ def addFContrastInSignature(self, F_contrast_index):
                                                                                'Replicate no averaging',
                                                                                'Replicate average'
                                                                                )
+
+    
+def updateBatchPath(self, proc):
+  if self.contrast_mat_file is not None:
+    directory_path = os.path.dirname(self.contrast_mat_file.fullPath())
+    return os.path.join(directory_path, 'spm8_contrast_manager_job.m')
 #==============================================================================
 # execution
 #==============================================================================

@@ -17,7 +17,7 @@ DARTEL_directory = (
   '{center}',  SetContent( # Center directory
     '{subject}', SetContent( # Subject directory
       '{acquisition}', SetContent(  # Acquisition directory
-        '<subject>_HSW_DARTEL_flow_field', SetType('HDW DARTEL flow field'),
+        '<subject>_HDW_DARTEL_flow_field', SetType('HDW DARTEL flow field'),
       ),
     ),
   ),
@@ -90,12 +90,6 @@ LDW_directory = (
                     'warping_method', 'none'),
   '<subject>_estimate_raw_volumes', 
         SetType('Estimate T1 MRI raw volumes'),
-  '<subject>_forward_deformation_field', 
-        SetType('SPM deformation field'), 
-        SetWeakAttr('direction', 'forward'),
-  '<subject>_inverse_deformation_field', 
-      SetType('SPM deformation field'), 
-      SetWeakAttr('direction', 'inverse'),
   '<subject>_bias_corrected', 
         SetType('T1 MRI Bias corrected'),
         SetWeakAttr('transformation', 'none',
@@ -321,6 +315,14 @@ def createHierarchyTreeDependingOnNormalization(warping_method):
   '<subject>_bias_corrected_warped_without_modulation', 
         SetType('T1 MRI Bias corrected'),
         SetWeakAttr('transformation', 'none',
+                    'warping_method', warping_method),
+  'y_<subject>_forward_deformation_field', 
+        SetType('SPM deformation field'), 
+        SetWeakAttr('direction', 'forward',
+                    'warping_method', warping_method),
+  'iy_<subject>_inverse_deformation_field', 
+        SetType('SPM deformation field'), 
+        SetWeakAttr('direction', 'inverse',
                     'warping_method', warping_method),
   )
 #{center}/{subject}/{analysis}/{acquisition}

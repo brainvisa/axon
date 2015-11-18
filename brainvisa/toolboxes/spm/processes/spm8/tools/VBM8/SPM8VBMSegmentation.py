@@ -341,8 +341,30 @@ signature = Signature(
 
   #Deformation Fields
   'save_deformation_fields', Choice("Neither", 'Image->Template (forward)', 'Template->Image (inverse)', 'inverse + forward', section=deformation_field),
-  'forward_field', WriteDiskItem('SPM deformation field', 'NIFTI-1 image', requiredAttributes = {'direction':'forward'}, section=deformation_field),
-  'inverse_field', WriteDiskItem('SPM deformation field', 'NIFTI-1 image', requiredAttributes = {'direction':'inverse'}, section=deformation_field),
+  'forward_LDW_field', 
+  WriteDiskItem('SPM deformation field', 
+                'NIFTI-1 image', 
+                requiredAttributes = {'direction':'forward',
+                                      'warping_method':'low-dimensional'}, 
+                section=deformation_field),
+  'forward_HDW_field', 
+  WriteDiskItem('SPM deformation field', 
+                'NIFTI-1 image', 
+                requiredAttributes = {'direction':'forward',
+                                      'warping_method':'high-dimensional'}, 
+                section=deformation_field),
+  'inverse_LDW_field', 
+  WriteDiskItem('SPM deformation field', 
+                'NIFTI-1 image', 
+                requiredAttributes = {'direction':'inverse',
+                                      'warping_method':'low-dimensional'}, 
+                section=deformation_field),
+  'inverse_HDW_field', 
+  WriteDiskItem('SPM deformation field', 
+                'NIFTI-1 image', 
+                requiredAttributes = {'direction':'inverse',
+                                      'warping_method':'high-dimensional'}, 
+                section=deformation_field),
   'DF_transformation_matrix', WriteDiskItem('MatDefField T1 MRI from Native to Mni', 'Matlab file', section=deformation_field),#TODO change this type
   
   #pfile.txt: GM, WM and CSF volume 
@@ -385,11 +407,13 @@ def initialization(self):
   self.addLink(None, 'save_jacobian_normalized', self.updateSignatureAboutJacobian)
   self.addLink(None, 'spatial_norm', self.updateSignatureAboutJacobian)
   self.addLink(None, 'save_deformation_fields', self.updateSignatureAboutDeformationField)
+  self.addLink(None, 'spatial_norm', self.updateSignatureAboutDeformationField)
+  
+  self.addLink("batch_location", "grey_native", self.updateBatchPath)
   
   
   self.linkParameters("grey_native", ("t1mri", "analysis", "TPM_template"), self.updateGreyNative )
   self.linkParameters("grey_HDW_warped_unmodulated", ("grey_native", "DARTEL_template"), self.updateHDWGrey)
-  self.linkParameters('batch_location', 'grey_native', self.updateBatchLocation)
   self.linkParameters("grey_LDW_warped_unmodulated", "grey_native")
   self.linkParameters("grey_LDW_warped_modulated", "grey_native")
   self.linkParameters("grey_HDW_warped_modulated", "grey_native")
@@ -420,8 +444,10 @@ def initialization(self):
   self.linkParameters("pve_dartel_imported", "grey_native")
   
   self.linkParameters("jacobian_normalized", "grey_native" )
-  self.linkParameters("forward_field", "grey_native" )
-  self.linkParameters("inverse_field", "grey_native" )
+  self.linkParameters("forward_LDW_field", "grey_native" )
+  self.linkParameters("inverse_LDW_field", "grey_native" )
+  self.linkParameters("forward_HDW_field", "grey_HDW_warped_unmodulated" )
+  self.linkParameters("inverse_HDW_field", "grey_HDW_warped_unmodulated" )
   self.linkParameters("DF_transformation_matrix", "grey_native" )
   self.linkParameters("GM_WM_CSF_volumes_txt", "grey_native" )
   
@@ -472,7 +498,8 @@ def updateSignatureAboutDartelTemplate(self, proc):
                     "white_LDW_warped_unmodulated", "white_LDW_warped_modulated", 
                     "csf_LDW_warped_unmodulated", "csf_LDW_warped_modulated", 
                     "bias_LDW_warped_unmodulated", 
-                    "pve_LDW_warped_unmodulated")
+                    "pve_LDW_warped_unmodulated",
+                    "forward_LDW_field", "inverse_LDW_field")
   else:
     self.save_jacobian_normalized = False
     self.setDisable("DARTEL_template", "save_jacobian_normalized")
@@ -480,7 +507,8 @@ def updateSignatureAboutDartelTemplate(self, proc):
                     "white_HDW_warped_unmodulated", "white_HDW_warped_modulated", 
                     "csf_HDW_warped_unmodulated", "csf_HDW_warped_modulated", 
                     "bias_HDW_warped_unmodulated", 
-                    "pve_HDW_warped_unmodulated")
+                    "pve_HDW_warped_unmodulated",
+                    "forward_HDW_field", "inverse_HDW_field")
   self.changeSignature(self.signature)
   
 #Grey links
@@ -576,18 +604,22 @@ def updateSignatureAboutJacobian(self, proc):
   else:
     self.setDisable("jacobian_normalized")
   self.signatureChangeNotifier.notify(self)
-  
 #Deformation field
 def updateSignatureAboutDeformationField(self, proc):
   if self.save_deformation_fields in ["Image->Template (forward)", "inverse + forward"]:
-    self.setEnable("forward_field")
+    self.setEnable("forward_LDW_field")
+    self.setEnable("forward_HDW_field")
   else:
-    self.setDisable("forward_field")
+    self.setDisable("forward_LDW_field")
+    self.setDisable("forward_HDW_field")
+    
   if self.save_deformation_fields in ["Template->Image (inverse)", "inverse + forward"]:
-    self.setEnable("inverse_field")
+    self.setEnable("inverse_LDW_field")
+    self.setEnable("inverse_HDW_field")
   else:
-    self.setDisable("inverse_field")
-  self.signatureChangeNotifier.notify( self )
+    self.setDisable("inverse_LDW_field")
+    self.setDisable("inverse_HDW_field")
+  self.updateSignatureAboutDartelTemplate(proc)
 
 def updateModulatedRequiredAttributes(self, matter_key):
   if eval("self.save_" + matter_key + "_modulated") == "affine + non-linear (SPM8 default)":
@@ -629,11 +661,11 @@ def updateHDWGrey(self, proc, dummy):
     d = self.grey_native.hierarchyAttributes()
     d["template"] = self.DARTEL_template.hierarchyAttributes()["template"]
     return self.signature["grey_HDW_warped_unmodulated"].findValue(d)
-    
-def updateBatchLocation(self, proc, dummy):
-  path = self.grey_native.fullPath()
-  path_dir = os.path.dirname(path)
-  return os.path.join(path_dir, 'VBMsegmentation_job.m')
+  
+def updateBatchPath(self, proc):
+  if self.grey_native is not None:
+    directory_path = os.path.dirname(self.grey_native.fullPath())
+    return os.path.join(directory_path, 'spm8_VBM_segmentation_job.m')
 
 def execution( self, context ):
   context.runProcess('SPM8VBMSegmentation_generic',
@@ -699,8 +731,10 @@ def execution( self, context ):
                      save_jacobian_normalized=self.save_jacobian_normalized,
                      jacobian_normalized=self.jacobian_normalized,
                      save_deformation_fields=self.save_deformation_fields,
-                     forward_field=self.forward_field,
-                     inverse_field=self.inverse_field,
+                     forward_LDW_field=self.forward_LDW_field,
+                     inverse_LDW_field=self.inverse_LDW_field,
+                     forward_HDW_field=self.forward_HDW_field,
+                     inverse_HDW_field=self.inverse_HDW_field,
                      DF_transformation_matrix=self.DF_transformation_matrix,
                      GM_WM_CSF_volumes_txt=self.GM_WM_CSF_volumes_txt,
                      batch_location =self.batch_location)

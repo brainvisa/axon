@@ -68,20 +68,22 @@ signature = Signature(
                       "FLOAT32 - single prec. float",
                       "FLOAT64 - double prec. float"),  
   #Batch
-  'batch_location', WriteDiskItem( 'Any Type', 'Matlab script', section='default SPM outputs' )            
+  'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section='default SPM outputs' )            
 )
                       
 def initialization(self):
-  self.linkParameters("batch_location", "output_image", self.updateBatch)
+  self.addLink("batch_location", "output_image", self.updateBatchPath)
+  
   self.data_matrix = False
   self.masking = "No implicit zero mask"
   self.interpolation = "Trilinear"
   self.data_type = "INT16   - signed short"
   
-def updateBatch(self, proc, dummy):
+def updateBatchPath(self, proc):
   if self.output_image is not None:
     ouput_directory = os.path.dirname(self.output_image.fullPath())
-    return os.path.join([ouput_directory, 'imcalc_job.m'])
+    return os.path.join(ouput_directory, 'spm8_imcalc_job.m')
+  
 def execution(self, context):
   imcalc = ImageCalculator()
   imcalc.setInputImagePathList([diskitem.fullPath() for diskitem in self.input_images])

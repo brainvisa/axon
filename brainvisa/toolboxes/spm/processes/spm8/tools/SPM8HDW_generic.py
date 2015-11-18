@@ -103,6 +103,8 @@ def initialization(self):
   
   self.addLink(None, "custom_outputs", self.updateSignatureAboutCustomOutputs)
   
+  self.addLink("batch_location", "deformation_field", self.updateBatchPath)
+  
   #SPM default initialisation
   self.bias_iteration = 8
   self.bias_FWHM = '60mm cutoff'
@@ -120,7 +122,11 @@ def updateSignatureAboutCustomOutputs(self, proc):
   else:
     self.setDisable("deformation_field", "jacobian_determinant")
   self.signatureChangeNotifier.notify( self )
-
+  
+def updateBatchPath(self, proc):
+  if self.deformation_field is not None:
+    directory_path = os.path.dirname(self.deformation_field.fullPath())
+    return os.path.join(directory_path, 'spm8_VBM_segmentation_job.m')
   
 def execution( self, context ):
   hdw = HDW()

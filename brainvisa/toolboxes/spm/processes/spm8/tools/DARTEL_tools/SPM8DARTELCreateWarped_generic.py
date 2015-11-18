@@ -51,8 +51,8 @@ name = "spm8 - create warped - generic"
 
 signature = Signature(
   "flow_fields", ListOf(ReadDiskItem( "4D Volume", ["NIFTI-1 image", "SPM image", "MINC image"])),
-  "images_1", ListOf(ReadDiskItem( "4D Volume", "NIFTI-1 image")),
-  "images_2", ListOf(ReadDiskItem( "4D Volume", "NIFTI-1 image")),
+  "images_1", ListOf(ReadDiskItem( "4D Volume", ["NIFTI-1 image", "SPM image", "MINC image"])),
+  "images_2", ListOf(ReadDiskItem( "4D Volume", ["NIFTI-1 image", "SPM image", "MINC image"])),
   "images_1_warped", ListOf(WriteDiskItem( "4D Volume", "NIFTI-1 image")),
   "images_2_warped", ListOf(WriteDiskItem( "4D Volume", "NIFTI-1 image")),
   "modulation", Boolean(),
@@ -77,11 +77,17 @@ def initialization(self):
     self.linkParameters("images_2", "flow_fields")
     self.linkParameters("images_1_warped", "flow_fields")
     self.linkParameters("images_2_warped", "flow_fields")
+  
+    self.addLink("batch_location", "images_1_warped", self.updateBatchPath)
     
     #SPM8 default parameters
     self.modulation = False
     self.time_steps = 64
     self.interpolation = "Trilinear"
+    
+def updateBatchPath(self, proc):
+  if self.images_1_warped:
+    return os.path.join(self.images_1_warped[0].fullPath(), 'spm8_DARTEL_created_warped_job.m')
   
 def execution( self, context ):
   if self.images_2:

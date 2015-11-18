@@ -48,7 +48,7 @@ userLevel = 1
 name = 'spm8 - Smooth - generic'
 
 signature = Signature(
-  "images", ListOf(ReadDiskItem("3D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image'])),
+  "images", ListOf(ReadDiskItem("4D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image'])),
   "fwhm", ListOf(Float()),
   'data_type', Choice("SAME",
                       "UINT8   - unsigned char",
@@ -59,15 +59,17 @@ signature = Signature(
   "implicit_masking", Boolean(),
   "custom_outputs", Boolean(),
   "filename_prefix", String(),
-  "images_smoothed", ListOf(WriteDiskItem("3D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image'])),
+  "images_smoothed", ListOf(WriteDiskItem("4D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image'])),
   #Batch
-  'batch_location', WriteDiskItem( 'Any Type', 'Matlab script', section='default SPM outputs' )    
+  'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section='default SPM outputs' )    
 )
 def initialization(self):
   self.setOptional("images_smoothed")
   
   self.addLink(None, "custom_outputs", self.updateSignatureAboutCustomOutputs)
   self.addLink(None, "filename_prefix", self.checkIfNotEmpty)
+  
+  self.addLink("batch_location", "images", self.updateBatchPath)
   
   #SPM default initialisation
   self.fwhm = [8, 8, 8]
@@ -91,6 +93,11 @@ def checkIfNotEmpty(self, proc):
     self.filename_prefix = 's'
   else:
     pass
+    
+def updateBatchPath(self, proc):
+  if self.images:
+    directory_path = os.path.dirname(self.images[0].fullPath())
+    return os.path.join(directory_path, 'spm8_smooth_job.m')
   
 def execution( self, context ):
   smooth = Smooth()

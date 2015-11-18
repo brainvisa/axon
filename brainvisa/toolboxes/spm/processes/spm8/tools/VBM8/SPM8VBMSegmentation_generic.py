@@ -104,7 +104,7 @@ signature = Signature(
   
   #Extended Options
   'spatial_norm', Choice('Low-dimensional: SPM default', 'High-dimensional: Dartel', section=extended_options_section),
-  'DARTEL_template', ReadDiskItem('TPM HDW DARTEL template', 'Aims readable volume formats', section=extended_options_section),
+  'DARTEL_template', ReadDiskItem('TPM HDW DARTEL template', 'NIFTI-1 image', section=extended_options_section),
   'sanlm', Choice('No denoising', 'Denoising', 'Denoising (multi-threaded)', section=extended_options_section),
   'mrf', Float(section=extended_options_section),
   'clean_up', Choice('Dont do cleanup', 'Light Clean', 'Thorough Clean', section=extended_options_section),
@@ -113,66 +113,68 @@ signature = Signature(
   # Writing Options
     #Grey Matter
   'save_grey_native', Boolean(section=grey_matter_options_section),
-  'grey_native', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=grey_matter_options_section),
+  'grey_native', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=grey_matter_options_section),
   'save_grey_normalized', Boolean(section=grey_matter_options_section),
-  'grey_LDW_warped_unmodulated', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=grey_matter_options_section),
-  'grey_HDW_warped_unmodulated', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=grey_matter_options_section),
+  'grey_LDW_warped_unmodulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=grey_matter_options_section),
+  'grey_HDW_warped_unmodulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=grey_matter_options_section),
   'save_grey_modulated', Choice("Neither", 'affine + non-linear (SPM8 default)', 'non-linear only', section=grey_matter_options_section),
-  'grey_LDW_warped_modulated', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=grey_matter_options_section),
-  'grey_HDW_warped_modulated', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=grey_matter_options_section),
+  'grey_LDW_warped_modulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=grey_matter_options_section),
+  'grey_HDW_warped_modulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=grey_matter_options_section),
   'save_grey_dartel_imported', Choice("Neither", 'rigid (SPM8 default)', 'affine', section=grey_matter_options_section),
-  'grey_dartel_imported', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=grey_matter_options_section),
+  'grey_dartel_imported', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=grey_matter_options_section),
   
     #White Matter
   'save_white_native', Boolean(section=white_matter_options_section),
-  'white_native', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=white_matter_options_section),
+  'white_native', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=white_matter_options_section),
   'save_white_normalized', Boolean(section=white_matter_options_section),
-  'white_LDW_warped_unmodulated', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=white_matter_options_section),
-  'white_HDW_warped_unmodulated', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=white_matter_options_section),
+  'white_LDW_warped_unmodulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=white_matter_options_section),
+  'white_HDW_warped_unmodulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=white_matter_options_section),
   'save_white_modulated', Choice("Neither", 'affine + non-linear (SPM8 default)', 'non-linear only', section=white_matter_options_section),
-  'white_LDW_warped_modulated', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=white_matter_options_section),
-  'white_HDW_warped_modulated', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=white_matter_options_section),
+  'white_LDW_warped_modulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=white_matter_options_section),
+  'white_HDW_warped_modulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=white_matter_options_section),
   'save_white_dartel_imported', Choice("Neither", 'rigid (SPM8 default)', 'affine', section=white_matter_options_section),
-  'white_dartel_imported', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=white_matter_options_section),
+  'white_dartel_imported', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=white_matter_options_section),
 
     #CSF
   'save_csf_native', Boolean(section=csf_matter_options_section),
-  'csf_native', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=csf_matter_options_section),
+  'csf_native', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=csf_matter_options_section),
   'save_csf_normalized', Boolean(section=csf_matter_options_section),
-  'csf_LDW_warped_unmodulated', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=csf_matter_options_section),
-  'csf_HDW_warped_unmodulated', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=csf_matter_options_section),
+  'csf_LDW_warped_unmodulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=csf_matter_options_section),
+  'csf_HDW_warped_unmodulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=csf_matter_options_section),
   'save_csf_modulated', Choice("Neither", 'affine + non-linear (SPM8 default)', 'non-linear only', section=csf_matter_options_section),
-  'csf_LDW_warped_modulated', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=csf_matter_options_section),
-  'csf_HDW_warped_modulated', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=csf_matter_options_section),
+  'csf_LDW_warped_modulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=csf_matter_options_section),
+  'csf_HDW_warped_modulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=csf_matter_options_section),
   'save_csf_dartel_imported', Choice("Neither", 'rigid (SPM8 default)', 'affine', section=csf_matter_options_section),
-  'csf_dartel_imported', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=csf_matter_options_section),
+  'csf_dartel_imported', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=csf_matter_options_section),
 
   #Bias Correction
   'save_bias_native', Boolean(section=bias_correction_options_section),
-  'bias_native', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=bias_correction_options_section),
+  'bias_native', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=bias_correction_options_section),
   'save_bias_normalized', Boolean(section=bias_correction_options_section),
-  'bias_LDW_warped_unmodulated', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=bias_correction_options_section),
-  'bias_HDW_warped_unmodulated', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=bias_correction_options_section),
+  'bias_LDW_warped_unmodulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=bias_correction_options_section),
+  'bias_HDW_warped_unmodulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=bias_correction_options_section),
   'save_bias_affine', Boolean(section=bias_correction_options_section),
-  'bias_affine', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=bias_correction_options_section),
+  'bias_affine', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=bias_correction_options_section),
   
   #PVE label image
   'save_pve_native', Boolean(section=PVE_options_section),
-  'pve_native', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=PVE_options_section),
+  'pve_native', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=PVE_options_section),
   'save_pve_normalized', Boolean(section=PVE_options_section),
-  'pve_LDW_warped_unmodulated', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=PVE_options_section),
-  'pve_HDW_warped_unmodulated', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=PVE_options_section),
+  'pve_LDW_warped_unmodulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=PVE_options_section),
+  'pve_HDW_warped_unmodulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=PVE_options_section),
   'save_pve_dartel_imported', Choice("Neither", 'rigid (SPM8 default)', 'affine', section=PVE_options_section),
-  'pve_dartel_imported', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=PVE_options_section),
+  'pve_dartel_imported', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=PVE_options_section),
   
   #Jacobian Determinant
   'save_jacobian_normalized', Boolean(section=jacobian_section),
-  'jacobian_normalized', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=jacobian_section),
+  'jacobian_normalized', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=jacobian_section),
 
   #Deformation Fields
   'save_deformation_fields', Choice("Neither", 'Image->Template (forward)', 'Template->Image (inverse)', 'inverse + forward', section=deformation_field),
-  'forward_field', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=deformation_field),
-  'inverse_field', WriteDiskItem('4D Volume', 'Aims readable volume formats', section=deformation_field),
+  'forward_LDW_field', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=deformation_field),
+  'forward_HDW_field', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=deformation_field),
+  'inverse_LDW_field', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=deformation_field),
+  'inverse_HDW_field', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=deformation_field),
   'DF_transformation_matrix', WriteDiskItem('Matlab SPM file', 'Matlab file', section=deformation_field),
   
   #pfile.txt: GM, WM and CSF volume 
@@ -215,6 +217,9 @@ def initialization(self):
   self.addLink(None, 'save_jacobian_normalized', self.updateSignatureAboutJacobian)
   self.addLink(None, 'spatial_norm', self.updateSignatureAboutJacobian)
   self.addLink(None, 'save_deformation_fields', self.updateSignatureAboutDeformationField)
+  self.addLink(None, 'spatial_norm', self.updateSignatureAboutDeformationField)
+  
+  self.addLink("batch_location", "grey_native", self.updateBatchPath)
   
   #SPM default initialisation
   self.gaussian_classes = [2, 2, 2, 3, 4, 2]
@@ -263,14 +268,16 @@ def updateSignatureAboutDartelTemplate(self, proc):
                     "white_LDW_warped_unmodulated", "white_LDW_warped_modulated", 
                     "csf_LDW_warped_unmodulated", "csf_LDW_warped_modulated", 
                     "bias_LDW_warped_unmodulated", 
-                    "pve_LDW_warped_unmodulated")
+                    "pve_LDW_warped_unmodulated",
+                    "forward_LDW_field", "inverse_LDW_field")
   else:
     self.setDisable("DARTEL_template", "save_jacobian_normalized")
     self.setDisable("grey_HDW_warped_unmodulated", "grey_HDW_warped_modulated", 
                     "white_HDW_warped_unmodulated", "white_HDW_warped_modulated", 
                     "csf_HDW_warped_unmodulated", "csf_HDW_warped_modulated", 
                     "bias_HDW_warped_unmodulated", 
-                    "pve_HDW_warped_unmodulated")
+                    "pve_HDW_warped_unmodulated",
+                    "forward_HDW_field", "inverse_HDW_field")
   self.changeSignature(self.signature)
   
 #Grey links
@@ -363,14 +370,19 @@ def updateSignatureAboutJacobian(self, proc):
 #Deformation field
 def updateSignatureAboutDeformationField(self, proc):
   if self.save_deformation_fields in ["Image->Template (forward)", "inverse + forward"]:
-    self.setEnable("forward_field")
+    self.setEnable("forward_LDW_field")
+    self.setEnable("forward_HDW_field")
   else:
-    self.setDisable("forward_field")
+    self.setDisable("forward_LDW_field")
+    self.setDisable("forward_HDW_field")
+    
   if self.save_deformation_fields in ["Template->Image (inverse)", "inverse + forward"]:
-    self.setEnable("inverse_field")
+    self.setEnable("inverse_LDW_field")
+    self.setEnable("inverse_HDW_field")
   else:
-    self.setDisable("inverse_field")
-  self.signatureChangeNotifier.notify( self )
+    self.setDisable("inverse_LDW_field")
+    self.setDisable("inverse_HDW_field")
+  self.updateSignatureAboutDartelTemplate(proc)
   
 #-----------------------------------------------------------------------------------
 def updateSignatureFieldToShow(self, field_to_check, field_to_modified):
@@ -380,6 +392,11 @@ def updateSignatureFieldToShow(self, field_to_check, field_to_modified):
     self.setEnable(field_to_modified)
   self.changeSignature(self.signature)
 #----------------------------------------------------------------------------------- 
+def updateBatchPath(self, proc):
+  if self.grey_native is not None:
+    directory_path = os.path.dirname(self.grey_native.fullPath())
+    return os.path.join(directory_path, 'spm8_VBM_segmentation_job.m')
+  
 def execution( self, context ):
   context.warning('The execution time is approximately 8 min')
   
@@ -662,6 +679,7 @@ def execution( self, context ):
 #===============================================================================
   wri_options = WritingOptions(dartel_normalization)
   #Standard SPM output
+  #=============================================================================
   if self.save_jacobian_normalized:
     wri_options.saveJacobianNormalized()
     wri_options.setJacobianPath(self.jacobian_normalized.fullPath())
@@ -669,14 +687,30 @@ def execution( self, context ):
     wri_options.discardJacobianNormalized()
   if self.save_deformation_fields in ["Image->Template (forward)"]:
     wri_options.saveDeformationFieldForward()
-    wri_options.setDeformationFieldPath(self.forward_field.fullPath())
+    if self.spatial_norm == "Low-dimensional: SPM default":
+      wri_options.setDeformationFieldPath(self.forward_LDW_field.fullPath())
+    elif self.spatial_norm == "High-dimensional: Dartel":
+      wri_options.setDeformationFieldPath(self.forward_HDW_field.fullPath())
+    else:
+      raise ValueError("Unvalid spatial_norm")
   elif self.save_deformation_fields in ["Template->Image (inverse)"]:
     wri_options.saveDeformationFieldInverse()
-    wri_options.setInverseDeformationFieldPath(self.inverse_field.fullPath())
+    if self.spatial_norm == "Low-dimensional: SPM default":
+      wri_options.setInverseDeformationFieldPath(self.inverse_LDW_field.fullPath())
+    elif self.spatial_norm == "High-dimensional: Dartel":
+      wri_options.setInverseDeformationFieldPath(self.inverse_HDW_field.fullPath())
+    else:
+      raise ValueError("Unvalid spatial_norm")
   elif self.save_deformation_fields in ["inverse + forward"]:
     wri_options.saveDeformationFieldInverseAndForward()
-    wri_options.setDeformationFieldPath(self.forward_field.fullPath())
-    wri_options.setInverseDeformationFieldPath(self.inverse_field.fullPath())
+    if self.spatial_norm == "Low-dimensional: SPM default":
+      wri_options.setDeformationFieldPath(self.forward_LDW_field.fullPath())
+      wri_options.setInverseDeformationFieldPath(self.inverse_LDW_field.fullPath())
+    elif self.spatial_norm == "High-dimensional: Dartel":
+      wri_options.setDeformationFieldPath(self.forward_HDW_field.fullPath())
+      wri_options.setInverseDeformationFieldPath(self.inverse_HDW_field.fullPath())
+    else:
+      raise ValueError("Unvalid spatial_norm")
   else:#"Neither"
     wri_options.discardDeformationField()
 

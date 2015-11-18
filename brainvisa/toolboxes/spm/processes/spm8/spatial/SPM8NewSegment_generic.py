@@ -209,6 +209,8 @@ def initialization(self):
   
   self.addLink(None, 'deformation_field_type', self.updateSignatureAboutDeformationField)
   
+  self.addLink("batch_location", "grey_native", self.updateBatchPath)
+  
   #SPM default initialisation
   self.bias_regulatisation = 'very light regularisation (0.0001)' 
   self.bias_FWHM = '60mm cutoff'
@@ -343,6 +345,11 @@ def updateSignatureAboutDeformationField(self, proc):
     self.showAndMandadesSignatureFieldList(['forward_field'])
   elif self.deformation_field_type == 'Inverse + Forward':
     self.showAndMandadesSignatureFieldList(['forward_field', 'inverse_field'])
+    
+def updateBatchPath(self, proc):
+  if self.grey_native is not None:
+    directory_path = os.path.dirname(self.grey_native.fullPath())
+    return os.path.join(directory_path, 'spm8_new_segment_job.m')
 
 def execution( self, context ):
   new_segment = NewSegment()
