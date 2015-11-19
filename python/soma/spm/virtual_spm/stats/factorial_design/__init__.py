@@ -77,11 +77,11 @@ class FactorialDesign():
   def unsetGlobalNormalisation( self):
     self.global_normalisation.unsetNormalisation()
 
-  def setProportionalGlobalNormalisation(self):
-    self.global_normalisation.setProportionalNormalisation()
+  def setGlobalNormalisationToProportional(self):
+    self.global_normalisation.setNormalisationToProportional()
 
-  def setANCOVAGlobalNormalisation(self):
-    self.global_normalisation.setANCOVANormalisation()
+  def setGlobalNormalisationToANCOVA(self):
+    self.global_normalisation.setNormalisationToANCOVA()
 #==============================================================================
 #
 #==============================================================================

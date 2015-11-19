@@ -47,7 +47,7 @@ userLevel = 0
 name = 'spm8 - Results report'
 
 signature = Signature(
-  'results_report_mat_file', ReadDiskItem('Matlab SPM script', 'Matlab script'),
+  'results_report_mat_file', ReadDiskItem('Matlab SPM file', 'Matlab file'),
   'data_type', Choice('Volumetric (2D/3D)',
                       'Scalp-Time',
                       'Scalp-Frequency',
@@ -58,7 +58,7 @@ signature = Signature(
   'result_image_type', Choice(('Thresholded SPM', 'thresh'),
                               ('All clusters (binary)', 'binary'),
                               ('All clusters (n-ary)', 'n-ary')),
-  'result_map', WriteDiskItem('3D Volume', 'SPM Image'),
+  'result_map', WriteDiskItem('4D Volume', 'SPM Image'),
 
   'add_section_overlay', Boolean(),
   'section_image', ReadDiskItem('anatomical Template', ['NIFTI-1 image', 'SPM image', 'MINC image']),
@@ -70,6 +70,8 @@ signature = Signature(
   'copy_MIP_to_pdf', Boolean(),
   'contrast_MIP_pdf', WriteDiskItem('Postscript file', 'PDF file'),
   'contrast_number', Integer(),
+
+  'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script' ),
 
 
 )

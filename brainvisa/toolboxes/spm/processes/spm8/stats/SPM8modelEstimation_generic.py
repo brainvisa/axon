@@ -49,7 +49,7 @@ userLevel = 0
 name = 'spm8 - Estimation Model - generic'
 
 signature = Signature(
-  'basic_model_mat_file', ReadDiskItem('Matlab SPM script', 'Matlab script'),
+  'basic_model_mat_file', ReadDiskItem('Matlab SPM file', 'Matlab file'),
   'method', Choice('Classical', 'Bayesian 1st-level', 'Bayesian 2nd-level'),
 
   #analysis Space

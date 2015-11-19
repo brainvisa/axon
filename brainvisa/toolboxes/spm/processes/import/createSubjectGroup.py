@@ -44,7 +44,7 @@ signature = Signature(
   'diskitem_format', OpenChoice(),
   'subjects', ListOf(ReadDiskItem(all_available_types[0], all_available_formats[0])),
   'field_needed', ListOf(Choice()),
-  'group', WriteDiskItem('Subject Group', 'Text file'),
+  'group', WriteDiskItem('Subject Group', 'JSON file'),
 )
 
 def initialization(self):
