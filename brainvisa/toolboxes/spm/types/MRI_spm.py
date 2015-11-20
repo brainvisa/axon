@@ -32,6 +32,8 @@
 
 include( 'builtin' )
 
+FileType('Matlab SPM deformation file', 'Matlab SPM file')
+
 FileType('DARTEL analysis directory', 'Directory')
 
 FileType('SPM field', '3D Volume')

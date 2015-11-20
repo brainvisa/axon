@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
-
-from soma.spm.virtual_spm.stats.contrast_manager.contrast import Contrast
 from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed
 
-class TContrast(Contrast):
+class TContrast():
   """
   * Simple one-dimensional contrasts for an SPM{T}
   A  simple  contrast  for  an  SPM{T}  tests  the  null  hypothesis  c'B=0 against the

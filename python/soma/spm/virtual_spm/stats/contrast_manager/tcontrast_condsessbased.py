@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
-
-from soma.spm.virtual_spm.stats.contrast_manager.contrast import Contrast
 from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed
 from soma.spm.spm_batch_maker_utils import addBatchKeyWordInEachItem
 
 import numbers
-class TContrastCondSessBased(Contrast):
+class TContrastCondSessBased():
   """
   Define  a  contrast in terms of conditions or regressors instead of columns of the
   design   matrix.   This  allows  to  create  contrasts  automatically  even  if  some

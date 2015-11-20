@@ -237,15 +237,15 @@ def createResultsReportBatch(self, context):
       result.appendContrastQuery(contrast)
 
     if self.data_type == 'Volumetric (2D/3D)':
-      result.setDataTypeOnVolumetric()
+      result.setDataTypeToVolumetric()
     elif self.data_type == 'Scalp-Time':
-      result.setDataTypeOnScalpTime()
+      result.setDataTypeToScalpTime()
     elif self.data_type == 'Scalp-Frequency':
-      result.setDataTypeOnScalpFrequency()
+      result.setDataTypeToScalpFrequency()
     elif self.data_type == 'Time-Frequency':
-      result.setDataTypeOnTimeFrequency()
+      result.setDataTypeToTimeFrequency()
     elif self.data_type == 'Scalp-Frequency':
-      result.setDataTypeOnFrequencyFrequency()
+      result.setDataTypeToFrequencyFrequency()
 
     if self.print_result:
       result.enablePrintResult()

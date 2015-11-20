@@ -182,13 +182,13 @@ def execution( self, context ):
   if self.method == 'Classical':
     classical_estimation = ModelEstimationClassical()
     classical_estimation.setMatlabFilePath(str(self.basic_model_mat_file.fullPath()))
-    classical_estimation.start(context, configuration, self.batch_location.fullPath())
+    classical_estimation.start(configuration, self.batch_location.fullPath())
     return
 
   elif self.method == 'Bayesian 2nd-level':
     bayesian_second_level_estimation = ModelEstimationBayesianSecondLevel()
     bayesian_second_level_estimation.setMatlabFilePath(str(self.basic_model_mat_file.fullPath()))
-    bayesian_second_level_estimation.start(context, configuration, self.batch_location.fullPath())
+    bayesian_second_level_estimation.start(configuration, self.batch_location.fullPath())
     return
 
   else:

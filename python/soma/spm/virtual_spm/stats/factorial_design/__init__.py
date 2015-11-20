@@ -43,11 +43,11 @@ class FactorialDesign():
   def removeExplicitMask(self):
     self.masking.removeExplicitMask()
 
-  def setAbsoluteThresholdMethod(self):
-    self.masking.setAbsoluteThresholdMethod()
+  def setThresholdMethodToAbsolute(self):
+    self.masking.setThresholdMethodToAbsolute()
 
-  def setRelativeThresholdMethod(self):
-    self.masking.setRelativeThresholdMethod()
+  def setThresholdMethodToRelative(self):
+    self.masking.setThresholdMethodToRelative()
 
   def unsetThreshold(self):
     self.masking.unsetThreshold()
@@ -57,10 +57,16 @@ class FactorialDesign():
 #==============================================================================
 #     global_calculation
 #==============================================================================
-  def setGlobalCalculationMethod(self, method):
-    self.global_calculation.setMethod(method)
-
-  def setValuesForUserGlobalCalculationMethod(self, values_list):
+  def setGlobalCalculationMethodToOmit(self):
+    self.global_calculation.setGlobalCalculationMethodToOmit()
+    
+  def setGlobalCalculationMethodToUser(self):
+    self.global_calculation.setGlobalCalculationMethodToUser()
+    
+  def setGlobalCalculationMethodToMean(self):
+    self.global_calculation.setGlobalCalculationMethodToMean()
+    
+  def setGlobalCalculationGlobalValues(self, values_list):
     self.global_calculation.setValuesForUserMethod(values_list)
 #==============================================================================
 # global_normalisation

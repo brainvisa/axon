@@ -186,9 +186,9 @@ def execution(self, context):
   if self.threshold_masking == "Neither":
     two_sample_t_test.unsetThreshold()
   elif self.threshold_masking == 'Absolute':
-    two_sample_t_test.setAbsoluteThresholdMethod()
+    two_sample_t_test.setThresholdMethodToAbsolute()
   elif self.threshold_masking == 'Relative':
-    two_sample_t_test.setRelativeThresholdMethod()
+    two_sample_t_test.setThresholdMethodToRelative()
 
   if self.implicit_mask:
     two_sample_t_test.enableImplicitMask()
@@ -198,9 +198,13 @@ def execution(self, context):
   if self.explicit_mask is not None:
     two_sample_t_test.setExplicitMask(self.explicit_mask.fullPath())
 
-  two_sample_t_test.setGlobalCalculationMethod(self.global_calculation)
+  if self.global_calculation == 'Omit':
+    two_sample_t_test.setGlobalCalculationMethodToOmit()
   if self.global_calculation == 'User':
-    two_sample_t_test.setValuesForUserGlobalCalculationMethod( self.user_global_values )
+    two_sample_t_test.setGlobalCalculationMethodToUser()
+    two_sample_t_test.setGlobalCalculationGlobalValues( self.user_global_values )
+  if self.global_calculation == 'Mean':
+    two_sample_t_test.setGlobalCalculationMethodToMean()
 
   if self.overall_grand_mean_scaling:
     two_sample_t_test.enableOverallGrandMeanScaling()

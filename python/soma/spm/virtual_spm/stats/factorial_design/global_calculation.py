@@ -9,17 +9,15 @@ class GlobalCalculation():
   vector  of  global  values)  (3)  Mean:  SPM  standard mean voxel value (within per
   image fullmean/8 mask)
   """
-  def setMethod(self, method):
-    """
-    One of the following options must be selected:
-    * Omit 
-    * User : User defined  global effects (enter your own vector of global values)
-    * Mean : SPM standard mean voxel value
-    """
-    if method in self.possible_method_list:
-      self.method = method
-    else:
-      raise ValueError('Global calculation methods possibilities are : Omit, User, Mean')
+   
+  def setGlobalCalculationMethodToOmit(self):
+    self.method = "Omit"
+    
+  def setGlobalCalculationMethodToUser(self):
+    self.method = "User"
+    
+  def setGlobalCalculationMethodToMean(self):
+    self.method = "Mean"
 
   @checkIfArgumentTypeIsAllowed(list, 1)
   def setValuesForUserMethod(self, values_list):

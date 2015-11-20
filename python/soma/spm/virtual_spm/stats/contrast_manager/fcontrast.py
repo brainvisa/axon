@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from soma.spm.virtual_spm.stats.contrast_manager.contrast import Contrast
 from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed
 from soma.spm.spm_batch_maker_utils import addBatchKeyWordInEachItem
 import numpy
 
-class FContrast(Contrast):
+class FContrast():
   """
   * Linear constraining matrices for an SPM{F}
   The  null  hypothesis  c'B=0  can  be thought of as a (linear) constraint on the full

@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+from soma.spm.spm8.stats.contrast_manager.contrast import Contrast
 from soma.spm.virtual_spm.stats.contrast_manager.fcontrast import FContrast as FContrast_virtual
 from soma.spm.virtual_spm.stats.contrast_manager.fcontrast import FContrastVector as FContrastVector_virtual
 from soma.spm.virtual_spm.stats.contrast_manager.fcontrast import FContrastVectorContainer as FContrastVectorContainer_virtual
 
-class FContrast(FContrast_virtual):
+class FContrast(FContrast_virtual, Contrast):
   def __init__(self):
     self.possible_options = {'Do not replicate':'none',
                              'Replicate average':'repl',

@@ -198,10 +198,14 @@ def execution(self, context):
   if self.explicit_mask is not None:
     paired_t_test.setExplicitMask(self.explicit_mask.fullPath())
 
-  paired_t_test.setGlobalCalculationMethod(self.global_calculation)
+  if self.global_calculation == 'Omit':
+    paired_t_test.setGlobalCalculationMethodToOmit()
   if self.global_calculation == 'User':
-    paired_t_test.setValuesForUserGlobalCalculationMethod( self.user_global_values )
-
+    paired_t_test.setGlobalCalculationMethodToUser()
+    paired_t_test.setGlobalCalculationGlobalValues( self.user_global_values )
+  if self.global_calculation == 'Mean':
+    paired_t_test.setGlobalCalculationMethodToMean()
+    
   if self.overall_grand_mean_scaling:
     paired_t_test.enableOverallGrandMeanScaling()
     paired_t_test.setOverallGrandMeanScalingValue(self.grand_mean_scaled_value)
