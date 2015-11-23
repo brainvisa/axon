@@ -32,33 +32,43 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-import shfjGlobals
 
 name = 'Morphomaths'
 userLevel = 0
 
 signature = Signature(
     'Nb_of_morpho_step',     Integer(),
-    'file_in',               ReadDiskItem( 'Label Volume',shfjGlobals.anatomistVolumeFormats),
-    'file_out',              WriteDiskItem( 'Label Volume',shfjGlobals.anatomistVolumeFormats)
+    'file_in',               ReadDiskItem('Label Volume',
+                                          'aims readable volume formats'),
+    'file_out',              WriteDiskItem('Label Volume',
+                                           'aims writable volume formats')
 )
 
 def buildNewSignature(self, number):
-    paramSignature  = ['Nb_of_morpho_step',Integer()]
-    paramSignature  += ['file_in',ReadDiskItem( 'Label Volume',shfjGlobals.anatomistVolumeFormats)]
-    paramSignature  += ['file_out',WriteDiskItem( 'Label Volume',shfjGlobals.anatomistVolumeFormats)]
+    paramSignature  = ['Nb_of_morpho_step', Integer()]
+    paramSignature  += ['file_in',
+                        ReadDiskItem('Label Volume',
+                                     'aims readable volume formats')]
+    paramSignature  += ['file_out',
+                        WriteDiskItem('Label Volume',
+                                      'aims writable volume formats')]
     for i in range(number):
-        paramSignature  += ['step'+str(i+1),Choice(('Closing',1),('Opening',2),('Errosion',3),('Dilation',4))]
+        paramSignature  += ['step'+str(i+1),
+                            Choice(('Closing', 'clo'), ('Opening', 'ope'),
+                                   ('Erosion', 'ero'),('Dilation', 'dil'))]
         paramSignature  += ['radius'+str(i+1), Number()]
 
     signature = Signature( *paramSignature )
     self.changeSignature( signature )
-    
-  
+    for i in range(number):
+        setattr(self, 'step'+str(i+1), 'clo')
+
+
 def initialization( self ):
     self.addLink( None,'Nb_of_morpho_step', self.buildNewSignature )
     self.Nb_of_morpho_step=1
-    
+
+
 def execution( self, context ):
 
 
