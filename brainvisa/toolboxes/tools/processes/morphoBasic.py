@@ -31,19 +31,20 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-import shfjGlobals
 name = 'Morphomaths basic'
 userLevel = 3
 
 
 signature = Signature(
-  'type'             , Choice(('Closing',1),
-                              ('Opening',2),
-                              ('Errosion',3),
-                              ('Dilation',4)),
-  'image_in'         , ReadDiskItem( 'Label Volume',shfjGlobals.anatomistVolumeFormats),
+  'type'             , Choice(('Closing', 'clo'),
+                              ('Opening', 'ope'),
+                              ('Erosion', 'ero'),
+                              ('Dilation', 'dil')),
+  'image_in'         , ReadDiskItem('Label Volume',
+                                    'Aims readable volume formats'),
   'radius'           , Number(),
-  'image_out'        , WriteDiskItem('Label Volume', shfjGlobals.anatomistVolumeFormats)
+  'image_out'        , WriteDiskItem('Label Volume',
+                                     'aims writable volume formats')
   )
 
 def initialization( self ):
@@ -51,48 +52,8 @@ def initialization( self ):
   self.radius=1;
 
 def execution( self, context ):
-    if self.type==1:
-      context.write('AimsClosing',
-                     "-i",self.image_in.fullPath(),
-                     "-o",self.image_out.fullPath(),
-                     "-r",str(self.radius)
-                     )
-      context.system('AimsClosing',
-                     "-i",self.image_in.fullPath(),
-                     "-o",self.image_out.fullPath(),
-                     "-r",str(self.radius)
-                     )
-    if self.type==2:
-      context.write('AimsOpening',
-                     "-i",self.image_in.fullPath(),
-                     "-o",self.image_out.fullPath(),
-                     "-e",str(self.radius)
-                     )
-      context.system('AimsOpening',
-                     "-i",self.image_in.fullPath(),
-                     "-o",self.image_out.fullPath(),
-                     "-e",str(self.radius)
-                     )
-    if self.type==3:
-      context.write('AimsErosion',
-                     "-i",self.image_in.fullPath(),
-                     "-o",self.image_out.fullPath(),
-                     "-e",str(self.radius)
-                     )
-      context.system('AimsErosion',
-                     "-i",self.image_in.fullPath(),
-                     "-o",self.image_out.fullPath(),
-                     "-e",str(self.radius)
-                     )
-    if self.type==4:
-      context.write('AimsDilation',
-                     "-i",self.image_in.fullPath(),
-                     "-o",self.image_out.fullPath(),
-                     "-e",str(self.radius)
-                     )
-      context.system('AimsDilation',
-                     "-i",self.image_in.fullPath(),
-                     "-o",self.image_out.fullPath(),
-                     "-e",str(self.radius)
-                     )
-            
+    cmd = ['AimsMorphoMath', '-m', self.type, '-i', self.image_in,
+           '-o', self.image_out, '-r', self.radius]
+    #context.write(' '.join(cmd))
+    context.system(*cmd)
+

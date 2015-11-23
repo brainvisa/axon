@@ -2893,6 +2893,20 @@ class ExecutionContext( object ):
       raise RuntimeError( _t_( 'System command exited with non null value : %s' ) % str( ret ) )
     return ret
 
+
+  def pythonSystem(self, *args, **kwargs ):
+    '''Same as system() but for python commands:
+
+    Prepends the python executable to the command, and use the executable full
+    path to call system(). The 1st arg should thus be the python script.
+    On Unix, this should have the same result as using system(), but on Windows
+    the script will not be recognized as a python script, so needs this
+    wrapping.
+    '''
+    exe = neuroConfig.executableWithPath(args[0])
+    return self.system('python', exe, *args[1:], **kwargs)
+
+
   def _systemStdout( self, line, logFile=None ):
     if not line:
       return
