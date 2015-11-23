@@ -2897,7 +2897,7 @@ class ExecutionContext( object ):
     wrapping.
     '''
     exe = neuroConfig.executableWithPath(args[0])
-    return self.system(sys.executable, exe, *args[1:], **kwargs)
+    return self.system('python', exe, *args[1:], **kwargs)
 
 
   def _systemStdout( self, line, logFile=None ):
