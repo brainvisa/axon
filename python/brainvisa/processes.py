@@ -4368,7 +4368,8 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
         setattr( oldProcess, n, getattr( NewProcess, n ).im_func )
       oldProcess._fileTime = NewProcess._fileTime
 
-    _processes[ processInfo.id.lower() ] = NewProcess
+    if not ignoreValidation:
+      _processes[ processInfo.id.lower() ] = NewProcess
     result = NewProcess
 
     def warnRole( processInfo, role ):
