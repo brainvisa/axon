@@ -59,7 +59,7 @@ deformation_field = "Deformation fields"
 
 signature = Signature(
   't1mri', ReadDiskItem('Raw T1 MRI', ['NIFTI-1 image', 'SPM image', 'MINC image']),#Input volume
-  'analysis', WriteDiskItem('Analysis Dir', 'Directory'),
+  'analysis', ReadDiskItem('Analysis Dir', 'Directory'),
    
   #Estimation Options
   'TPM_template', ReadDiskItem('TPM template', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=estimation_options_section),
@@ -670,7 +670,6 @@ def updateBatchPath(self, proc):
 def execution( self, context ):
   context.runProcess('SPM8VBMSegmentation_generic',
                      t1mri=self.t1mri,
-                     analysis=self.analysis,
                      TPM_template=self.TPM_template,
                      gaussian_classes=self.gaussian_classes,
                      bias_regulatisation=self.bias_regulatisation,

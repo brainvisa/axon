@@ -64,7 +64,6 @@ deformation_field = "Deformation fields"
 
 signature = Signature(
   't1mri', ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image']),#Input volume
-  'analysis', WriteDiskItem('Analysis Dir', 'Directory'),
    
   #Estimation Options
   'TPM_template', ReadDiskItem('TPM template', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=estimation_options_section),
