@@ -276,6 +276,15 @@ def findInPath(file,
             or (not is_dir and not os.path.isdir(os.path.join(p, file))):
           return p
 
+
+def executableWithPath(file,
+                       pathlist=os.environ.get('PATH').split(pathSeparator)):
+  if os.path.isabs(file) and os.path.exists(file):
+    return file
+  path = findInPath(file, pathlist)
+  return os.path.join(path, file)
+
+
 try:
   from brainvisa.config import fullVersion, shortVersion
 except ImportError:
