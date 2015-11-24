@@ -327,9 +327,9 @@ def createHierarchyTreeDependingOnNormalization(warping_method):
   )
 #{center}/{subject}/{analysis}/{acquisition}
 analysis_directory = (
-  'using_LDW_to_{template}', apply( SetContent, LDW_directory +
+  'using_LDW_from_t1mri_to_{template}', apply( SetContent, LDW_directory +
                                                 createHierarchyTreeDependingOnNormalization(warping_method='low-dimensional')),
-  'using_HDW_to_{template}', apply( SetContent, HDW_directory +
+  'using_HDW_from_t1mri_to_{template}', apply( SetContent, HDW_directory +
                                                 createHierarchyTreeDependingOnNormalization(warping_method='high-dimensional')),
 )
 
