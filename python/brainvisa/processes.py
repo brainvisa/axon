@@ -3046,7 +3046,7 @@ class ExecutionContext( object ):
     >>> tmp = context.temporary('GIS image')
     >>> context.runProcess('threshold', self.input, tmp, self.threshold)
     >>> tmp2 = context.temporary('GIS image')
-    >>> context.system('AimsErosion', '-i', tmp.fullPath(), '-o', tmp2.fullPath(), '-s', self.size)
+    >>> context.system('AimsMorphoMath', '-m', 'ero', '-i', tmp.fullPath(), '-o', tmp2.fullPath(), '-r', self.size)
     >>> del tmp
 
     In this example, a temporary data in GIS format is created and it is used to store the output of the process threshold. Then a new temporary data is created to store the output of a command line. At the end, the variable tmp is deleted, so the temporary data is no more referenced and the corresponding files are deleted.
