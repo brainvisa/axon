@@ -77,10 +77,10 @@ def execution( self, context ):
                   '-c', '1',
                   '-o', tAdd.fullPath() ]
      context.write('Dilation')
-     MaskDilation = [ 'AimsDilation',
+     MaskDilation = [ 'AimsMorphoMath', '-m', 'dil',
                   '-i', tAdd.fullPath(),
                   '-o', dilate.fullPath(),
-                  '-e', self.dilation ]
+                  '-r', self.dilation ]
      context.write('Conversion to float...')
      Conversion = [ 'AimsFileConvert',
                     '-i', dilate.fullPath(),
