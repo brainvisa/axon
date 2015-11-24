@@ -54,42 +54,51 @@ Named arguments (in the shape argx=valuex) may address sub-processes of a pipeli
 PrepareSubject.t1mri=/home/myself/mymri.nii
 '''
 
-parser = OptionParser( description = 'Run a single BrainVISA / Axon process',
-  usage=usage )
-parser.add_option( '--enabledb', dest='enabledb', action='store_true',
-  default=False,
-  help='enable databasing (slower startup, but all features enabled)' )
-parser.add_option( '--historyBook', dest='historyBook', action='append',
-  help='store history information files in this directory (otherwise disabled unless dabasing is enabled)' )
+parser = OptionParser(description = 'Run a single BrainVISA / Axon process',
+    usage=usage)
+parser.add_option('--enabledb', dest='enabledb', action='store_true',
+    default=False,
+    help='enable databasing (slower startup, but all features enabled)')
+parser.add_option('--historyBook', dest='historyBook', action='append',
+    help='store history information files in this directory (otherwise '
+    'disabled unless dabasing is enabled)')
+#parser.add_option('--enablegui', dest='enablegui', action='store_true',
+    #default=False,
+    #help='enable graphical user interface for interactive processes')
 
 parser.disable_interspersed_args()
 (options, args) = parser.parse_args()
 
+#if options.enablegui:
+    #neuroConfig.gui = True
+    #from PyQt4 import QtGui
+    #qapp = QtGui.QApplication([])
+#else:
 neuroConfig.gui = False
 if not options.enabledb:
-  neuroConfig.fastStart = True
+    neuroConfig.fastStart = True
 if options.historyBook:
-  neuroConfig.historyBookDirectory = options.historyBook
+    neuroConfig.historyBookDirectory = options.historyBook
 if not options.enabledb and not options.historyBook:
-  neuroConfig.logFileName = ''
+    neuroConfig.logFileName = ''
 
 axon.initializeProcesses()
 
-args = tuple( ( neuroConfig.convertCommandLineParameter( i ) for i in args ) )
-kwre = re.compile( '([a-zA-Z_](\.?[a-zA-Z0-9_])*)\s*=\s*(.*)$' )
+args = tuple((neuroConfig.convertCommandLineParameter(i) for i in args))
+kwre = re.compile('([a-zA-Z_](\.?[a-zA-Z0-9_])*)\s*=\s*(.*)$')
 kwargs = {}
 todel = []
 for arg in args:
-  if type( arg ) in types.StringTypes:
-    m = kwre.match( arg )
-    if m is not None:
-      kwargs[ m.group(1) ] = \
-        neuroConfig.convertCommandLineParameter( m.group(3) )
-      todel.append( arg )
-args = [ arg for arg in args if arg not in todel ]
+    if type(arg) in types.StringTypes:
+        m = kwre.match(arg)
+        if m is not None:
+            kwargs[m.group(1)] = \
+                neuroConfig.convertCommandLineParameter(m.group(3))
+            todel.append(arg)
+args = [arg for arg in args if arg not in todel]
 
-brainvisa.processes.defaultContext().runProcess( *args, **kwargs )
+brainvisa.processes.defaultContext().runProcess(*args, **kwargs)
 
-sys.exit( neuroConfig.exitValue )
+sys.exit(neuroConfig.exitValue)
 
 
