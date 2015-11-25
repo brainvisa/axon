@@ -41,6 +41,7 @@ python -m brainvisa.axon.runprocess <process name> <process arguments>
 from brainvisa import axon
 from brainvisa.configuration import neuroConfig
 import brainvisa.processes
+from brainvisa.axon import processinfo
 import sys, re, types
 from optparse import OptionParser
 
@@ -65,6 +66,23 @@ parser.add_option('--historyBook', dest='historyBook', action='append',
 #parser.add_option('--enablegui', dest='enablegui', action='store_true',
     #default=False,
     #help='enable graphical user interface for interactive processes')
+parser.add_option('--list-processes', dest='list_processes',
+    action='store_true',
+    help='List processes and exit. sorting / filtering are controlled by the '
+    'following options.')
+parser.add_option('--sort-by', dest='sort_by',
+    help='List processed by: id, name, toolbox, or role')
+parser.add_option('--proc-filter', dest='proc_filter', action='append',
+    help='filter processes list. Several filters may be used to setup several '
+    'rules. Rules have the shape: attribute="filter_expr", filter_expr is a '
+    'regex.\n'
+    'Ex: id=".*[Ss]ulci.*"')
+parser.add_option('--hide-proc-attrib', dest='hide_proc_attrib',
+    action='append',
+    help='in processes list, hide selected attribute (several values allowed)')
+parser.add_option('--process-help', dest='process_help',
+    action='append',
+    help='display specified process help')
 
 parser.disable_interspersed_args()
 (options, args) = parser.parse_args()
@@ -83,6 +101,21 @@ if not options.enabledb and not options.historyBook:
     neuroConfig.logFileName = ''
 
 axon.initializeProcesses()
+
+if options.list_processes:
+    sort_by = options.sort_by
+    if not sort_by:
+        sort_by = 'id'
+    else: print 'sort-by:', sort_by
+    processinfo.process_list_help(sort_by, sys.stdout,
+                                  proc_filter=options.proc_filter,
+                                  hide=options.hide_proc_attrib)
+    sys.exit(0)
+
+if options.process_help:
+    for process in options.process_help:
+        processinfo.process_help(process)
+    sys.exit(0)
 
 args = tuple((neuroConfig.convertCommandLineParameter(i) for i in args))
 kwre = re.compile('([a-zA-Z_](\.?[a-zA-Z0-9_])*)\s*=\s*(.*)$')
