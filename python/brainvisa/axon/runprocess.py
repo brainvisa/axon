@@ -78,7 +78,7 @@ parser.add_option('--proc-filter', dest='proc_filter', action='append',
     'regex.\n'
     'Ex: id=".*[Ss]ulci.*"')
 parser.add_option('--hide-proc-attrib', dest='hide_proc_attrib',
-    action='append',
+    action='append', default=[],
     help='in processes list, hide selected attribute (several values allowed)')
 parser.add_option('--process-help', dest='process_help',
     action='append',
