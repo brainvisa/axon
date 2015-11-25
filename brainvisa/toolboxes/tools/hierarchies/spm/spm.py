@@ -57,11 +57,9 @@ hierarchy = (
             'Seg', SetContent(
                 # TPM in SPM8
                 '{template}', SetType('SPM TPM template'),
-                'TPM', SetType('tissue probability map')),#obsolete Type
             'vbm8', SetContent(
                 # SPM8
-                'Template_{step}_{template}', SetType('SPM TPM HDW DARTEL template'),
-                'Template_1_IXI550_MNI152', SetType('Dartel Template'),#obsolete Type
+                'Template_{step}_IXI550_{template}', SetType('SPM TPM HDW DARTEL template'),
                 SetWeakAttr('normalized', 'yes', 'databasename', 'spm')),
             # this OldNorm is the location of templates in SPM12
             'OldNorm', SetContent(*templates_contents),
