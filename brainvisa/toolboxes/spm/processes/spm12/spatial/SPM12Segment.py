@@ -434,15 +434,15 @@ def initialization(self):
 
 def updateSignatureAboutBiasSaving(self, proc):
   if self.bias_saving == 'save nothing':
-    self.hideAndMakeOptionalSignatureFieldList(['t1mri_bias_field', 't1mri_bias_corrected'])
+    self.setDisable('t1mri_bias_field', 't1mri_bias_corrected')
   elif self.bias_saving == 'save bias corrected':
-    self.hideAndMakeOptionalSignatureFieldList(['t1mri_bias_field'])
-    self.showAndMandadesSignatureFieldList(['t1mri_bias_corrected'])
+    self.setDisable('t1mri_bias_field')
+    self.setEnable('t1mri_bias_corrected')
   elif self.bias_saving == 'save bias field':
-    self.hideAndMakeOptionalSignatureFieldList(['t1mri_bias_corrected'])
-    self.showAndMandadesSignatureFieldList(['t1mri_bias_field'])
+    self.setDisable('t1mri_bias_corrected')
+    self.setEnable('t1mri_bias_field')
   elif self.bias_saving == 'save field and corrected':
-    self.showAndMandadesSignatureFieldList(['t1mri_bias_field', 't1mri_bias_corrected'])
+    self.setEnable('t1mri_bias_field', 't1mri_bias_corrected')
   self.changeSignature(self.signature)
   
 def updateSignatureAboutGreyNativeType(self, proc):
@@ -466,15 +466,15 @@ def updateSignatureAboutBackgroundNativeType(self, proc):
 def _updateSignatureAboutNativeType(self, tissue_name):
   native_type = eval('self.' + tissue_name + '_native_type')
   if native_type == "Neither":
-    self.hideAndMakeOptionalSignatureFieldList([tissue_name + '_native', tissue_name + '_dartel_imported'])
+    self.setDisable(tissue_name + '_native', tissue_name + '_dartel_imported')
   elif native_type == 'Native':
-    self.showAndMandadesSignatureFieldList([tissue_name + '_native'])
-    self.hideAndMakeOptionalSignatureFieldList([tissue_name + '_dartel_imported'])
+    self.setEnable(tissue_name + '_native')
+    self.setDisable(tissue_name + '_dartel_imported')
   elif native_type == 'DARTEL Imported':
-    self.showAndMandadesSignatureFieldList([tissue_name + '_dartel_imported'])
-    self.hideAndMakeOptionalSignatureFieldList([tissue_name + '_native'])
+    self.setEnable(tissue_name + '_dartel_imported')
+    self.setDisable(tissue_name + '_native')
   elif native_type == 'Native + DARTEL Imported':
-    self.showAndMandadesSignatureFieldList([tissue_name + '_native', tissue_name + '_dartel_imported'])
+    self.setEnable(tissue_name + '_native', tissue_name + '_dartel_imported')
 
 def updateSignatureAboutGreyWarpedType(self, proc):
   self._updateSignatureAboutWarpedType('grey')
@@ -497,27 +497,27 @@ def updateSignatureAboutBackgroundWarpedType(self, proc):
 def _updateSignatureAboutWarpedType(self, tissue_name):
   native_type = eval('self.' + tissue_name + '_warped_type')
   if native_type == "Neither":
-    self.hideAndMakeOptionalSignatureFieldList([tissue_name + '_warped_unmodulated', tissue_name + '_warped_modulated'])
+    self.setDisable(tissue_name + '_warped_unmodulated', tissue_name + '_warped_modulated')
   elif native_type == 'Modulated':
-    self.showAndMandadesSignatureFieldList([tissue_name + '_warped_modulated'])
-    self.hideAndMakeOptionalSignatureFieldList([tissue_name + '_warped_unmodulated'])
+    self.setEnable(tissue_name + '_warped_modulated')
+    self.setDisable(tissue_name + '_warped_unmodulated')
   elif native_type == 'Unmodulated':
-    self.showAndMandadesSignatureFieldList([tissue_name + '_warped_unmodulated'])
-    self.hideAndMakeOptionalSignatureFieldList([tissue_name + '_warped_modulated'])
+    self.setEnable(tissue_name + '_warped_unmodulated')
+    self.setDisable(tissue_name + '_warped_modulated')
   elif native_type == 'Modulated + Unmodulated':
-    self.showAndMandadesSignatureFieldList([tissue_name + '_warped_modulated', tissue_name + '_warped_unmodulated'])
+    self.setEnable(tissue_name + '_warped_modulated', tissue_name + '_warped_unmodulated')
     
 def updateSignatureAboutDeformationField(self, proc):
   if self.deformation_field_type == "Neither":
-    self.hideAndMakeOptionalSignatureFieldList(['forward_field', 'inverse_field'])
+    self.setDisable('forward_field', 'inverse_field')
   elif self.deformation_field_type == 'Inverse':
-    self.hideAndMakeOptionalSignatureFieldList(['forward_field'])
-    self.showAndMandadesSignatureFieldList(['inverse_field'])
+    self.setDisable('forward_field')
+    self.setEnable('inverse_field')
   elif self.deformation_field_type == 'Forward':
-    self.hideAndMakeOptionalSignatureFieldList(['inverse_field'])
-    self.showAndMandadesSignatureFieldList(['forward_field'])
+    self.setDisable('inverse_field')
+    self.setEnable('forward_field')
   elif self.deformation_field_type == 'Inverse + Forward':
-    self.showAndMandadesSignatureFieldList(['forward_field', 'inverse_field'])
+    self.setEnable('forward_field', 'inverse_field')
 
 def updateT1MRIBiasCorrected(self, proc, dummy):
   if not None in [self.t1mri, self.analysis, self.TPM_template]:
@@ -596,15 +596,4 @@ def execution( self, context ):
 #===============================================================================
 # 
 #===============================================================================
-def showAndMandadesSignatureFieldList(self, field_list):
-  for field in field_list:
-    self.signature[field].userLevel = 0
-    self.signature[field].mandatory = True
-  self.changeSignature(self.signature)
-    
-def hideAndMakeOptionalSignatureFieldList(self, field_list):
-  for field in field_list:
-    self.signature[field].userLevel = 3
-    self.signature[field].mandatory = False
-  self.changeSignature(self.signature)
   
