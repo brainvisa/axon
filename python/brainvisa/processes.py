@@ -2862,11 +2862,17 @@ class ExecutionContext( object ):
         if True, ignore the command return value. Useful when you know the
         command will exit badly aven if the work is done.
     stdout: (file object)
-       if specified, stdout will be written in this stream. It may be a
-       StringIO object.
+        if specified, stdout will be written in this stream. It may be a
+        StringIO object.
     stderr: (file object)
-       if specified, stderr will be written in this stream. It may be a
-       StringIO object.
+        if specified, stderr will be written in this stream. It may be a
+        StringIO object.
+    nativeEnv: (bool or None)
+        if True, forces execution within the "native" system environment
+        variables (for commands external to the brainvisa binary distribution).
+        If False, force execution within the current brainvisa environment.
+        If None (default), guess if the executed command path is external to
+        the main brainvisa path.
 
     *Example*
 
@@ -2883,9 +2889,11 @@ class ExecutionContext( object ):
     self._stdout = kwargs.get( 'stdout', None )
     self._stderr = kwargs.get( 'stderr', None )
     ignoreReturnValue = kwargs.get( 'ignoreReturnValue', 0 )
+    nativeEnv = kwargs.get('nativeEnv', None)
     command = [str(i) for i in args]
 
-    ret = self._system( command, self._systemStdout, self._systemStderr )
+    ret = self._system(command, self._systemStdout, self._systemStderr,
+                       nativeEnv=nativeEnv)
     self._stdoutInContext = old_stdoutInContext
     self._stdout = None
     self._stderr = None
@@ -2935,7 +2943,8 @@ class ExecutionContext( object ):
       logFile.write( lineInHTML )
       logFile.flush()
 
-  def _system( self, command, stdoutAction = None, stderrAction = None ):
+  def _system(self, command, stdoutAction=None, stderrAction=None,
+              nativeEnv=None):
     self.checkInterruption()
     stackTop = self._stackTop()
 
@@ -2973,7 +2982,10 @@ class ExecutionContext( object ):
   ##      self.write( '<img alt="" src="' + os.path.join( neuroConfig.iconPath, 'icon_system.png' ) + '">' + c.commandName() + '<p>' )
 
       # Set environment for the command
-      if (not commandName.startswith(os.path.dirname(neuroConfig.mainPath))): # external command
+      if nativeEnv or \
+          (nativeEnv is None and
+           not commandName.startswith(os.path.dirname(neuroConfig.mainPath))):
+        # external command
         if neuroConfig.brainvisaSysEnv:
           c.setEnvironment(neuroConfig.brainvisaSysEnv.getVariables())
 
