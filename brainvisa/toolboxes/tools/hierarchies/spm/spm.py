@@ -56,7 +56,7 @@ hierarchy = (
         'toolbox', SetContent(
             'Seg', SetContent(
                 # TPM in SPM8
-                '{template}', SetType('SPM TPM template'),
+                '{template}', SetType('SPM TPM template')),
             'vbm8', SetContent(
                 # SPM8
                 'Template_{step}_IXI550_{template}', SetType('SPM TPM HDW DARTEL template'),
