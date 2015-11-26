@@ -1,5 +1,5 @@
  # -*- coding: utf-8 -*-
-from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed, checkIfArgumentIsInAllowedList
+from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed
 import numbers
 
 class WarpingOptions():

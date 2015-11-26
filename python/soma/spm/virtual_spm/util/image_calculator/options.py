@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed, checkIfArgumentTypeIsStrOrUnicode
-
 class Options():
   """
   Options for image calculator

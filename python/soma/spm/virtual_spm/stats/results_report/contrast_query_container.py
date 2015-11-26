@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from soma.spm.spm_batch_maker_utils import addBatchKeyWordInEachItem
 
-from soma.spm.spm_container import SPMContainer
-
 class ContrastQueryContainer():
 
   def getStringListForBatch( self ):
