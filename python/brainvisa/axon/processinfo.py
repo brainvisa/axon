@@ -50,7 +50,7 @@ def process_long_help(pi, indent=0, shorten_first=0, cols=None):
         help = xhtml_to_str(pdoc, indent=indent, shorten_first=shorten_first,
                             cols=cols)
         return help
-    return ''
+    return '(no description)\n'
 
 
 def process_parameters_help(pi, cols=None):
@@ -68,7 +68,7 @@ def process_parameters_help(pi, cols=None):
         return descr
 
     pdoc = pi.procdoc.get(processes.neuroConfig.language,
-                          pi.procdoc.get('en', {})).get('parameters')
+                          pi.procdoc.get('en', {})).get('parameters', {})
     lines = []
     try:
       signature = processes.getProcessInstance(pi.id).signature
@@ -76,29 +76,28 @@ def process_parameters_help(pi, cols=None):
       signature = processes.getProcess(pi.id, ignoreValidation=True).signature
     signature = signature.items()
 
-    if pdoc:
-        lines.append('    parameters:')
-        for param, p in signature:
-            ti = p.typeInfo()
-            type_descr = param_type_descr(p)
-            if not p.mandatory:
-                type_descr += ' (optional)'
-            if len(ti) > 1:
-                k, access = ti[1]
-            else:
-                access = 'input'
-            type_descr += ' (%s)' % access
-            lines.append('        %s: %s' % (param, type_descr))
+    lines.append('    parameters:')
+    for param, p in signature:
+        ti = p.typeInfo()
+        type_descr = param_type_descr(p)
+        if not p.mandatory:
+            type_descr += ' (optional)'
+        if len(ti) > 1:
+            k, access = ti[1]
+        else:
+            access = 'input'
+        type_descr += ' (%s)' % access
+        lines.append('        %s: %s' % (param, type_descr))
 
-            descr = pdoc.get(param)
-            if descr:
-                doc = xhtml_to_str(descr, indent=12, cols=cols)
-                if doc and doc != '\n':
-                    lines.append(doc)
-                else:
-                    lines.append('')
+        descr = pdoc.get(param)
+        if descr:
+            doc = xhtml_to_str(descr, indent=12, cols=cols)
+            if doc and doc != '\n':
+                lines.append(doc)
             else:
                 lines.append('')
+        else:
+            lines.append('')
 
     return '\n'.join(lines) + '\n'
 
