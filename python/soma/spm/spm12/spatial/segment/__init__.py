@@ -8,7 +8,9 @@ from soma.spm.spm12.spatial.segment.tissue_container import TissueContainer
 from soma.spm.spm12.spatial.segment.tissue import Tissue
 
 from soma.spm.spm_batch_maker_utils import addBatchKeyWordInEachItem, convertlistToSPMString
-from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed
+from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed, checkIfArgumentTypeIsStrOrUnicode
+
+import numbers
 
 class Segment(NewSegment_virtual, SPM12MainModule):
   def __init__(self):
@@ -28,16 +30,24 @@ class Segment(NewSegment_virtual, SPM12MainModule):
     self.forward_deformation_path = None
     self.inverse_deformation_path = None
     
-  def _setSPMDefautTissues(self, tissue_proba_map_path):
-    tissue_list = []
+  @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
+  def setSPMDefaultChannel(self, volume_path):
+    default_channel = Channel()
+    default_channel.setVolumePath(volume_path)
+    self.channel_container.clear()
+    self.channel_container.append(default_channel)
     
+  @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
+  def setSPMDefautTissues(self, tissue_proba_map_path):   
+    self.tissue_container.clear()
+     
     first_tissue = Tissue()
     first_tissue.setTissueProbilityMapPath(tissue_proba_map_path)
     first_tissue.setTissueProbilityDimension(1)
     first_tissue.setGaussianNumber(1)
     first_tissue.setNativeTissueNativeSpace()
     first_tissue.unsetWarpedTissue()
-    tissue_list.append(first_tissue)
+    self.tissue_container.append(first_tissue)
     
     second_tissue = Tissue()
     second_tissue.setTissueProbilityMapPath(tissue_proba_map_path)
@@ -45,7 +55,7 @@ class Segment(NewSegment_virtual, SPM12MainModule):
     second_tissue.setGaussianNumber(1)
     second_tissue.setNativeTissueNativeSpace()
     second_tissue.unsetWarpedTissue()
-    tissue_list.append(second_tissue)
+    self.tissue_container.append(second_tissue)
     
     third_tissue = Tissue()
     third_tissue.setTissueProbilityMapPath(tissue_proba_map_path)
@@ -53,7 +63,7 @@ class Segment(NewSegment_virtual, SPM12MainModule):
     third_tissue.setGaussianNumber(2)
     third_tissue.setNativeTissueNativeSpace()
     third_tissue.unsetWarpedTissue()
-    tissue_list.append(third_tissue)
+    self.tissue_container.append(third_tissue)
     
     fourth_tissue = Tissue()
     fourth_tissue.setTissueProbilityMapPath(tissue_proba_map_path)
@@ -61,7 +71,7 @@ class Segment(NewSegment_virtual, SPM12MainModule):
     fourth_tissue.setGaussianNumber(3)
     fourth_tissue.setNativeTissueNativeSpace()
     fourth_tissue.unsetWarpedTissue()
-    tissue_list.append(fourth_tissue)
+    self.tissue_container.append(fourth_tissue)
     
     fifth_tissue = Tissue()
     fifth_tissue.setTissueProbilityMapPath(tissue_proba_map_path)
@@ -69,7 +79,7 @@ class Segment(NewSegment_virtual, SPM12MainModule):
     fifth_tissue.setGaussianNumber(4)
     fifth_tissue.setNativeTissueNativeSpace()
     fifth_tissue.unsetWarpedTissue()
-    tissue_list.append(fifth_tissue)
+    self.tissue_container.append(fifth_tissue)
     
     sixth_tissue = Tissue()
     sixth_tissue.setTissueProbilityMapPath(tissue_proba_map_path)
@@ -77,9 +87,7 @@ class Segment(NewSegment_virtual, SPM12MainModule):
     sixth_tissue.setGaussianNumber(2)
     sixth_tissue.unsetNativeTissue()
     sixth_tissue.unsetWarpedTissue()
-    tissue_list.append(sixth_tissue)
-    
-    self.tissue_container.setTissueList(tissue_list)
+    self.tissue_container.append(sixth_tissue)
   
   def setCleanUpToLight(self):
     self.clean_up = 1
@@ -90,7 +98,7 @@ class Segment(NewSegment_virtual, SPM12MainModule):
   def unsetCleanUp(self):
     self.clean_up = 0
     
-  @checkIfArgumentTypeIsAllowed(float, 1)
+  @checkIfArgumentTypeIsAllowed(numbers.Real, 1)
   def setSmoothness(self, smoothness_factor):
     self.smoothness = smoothness_factor
     
