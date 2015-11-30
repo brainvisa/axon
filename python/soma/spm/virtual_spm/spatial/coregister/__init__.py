@@ -22,13 +22,6 @@ class Coregister():
     self.source_volume_path = source_volume_path
     
   @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
-  def setOtherVolumePath(self, other_volume_path):
-    """
-    These are any images that need to remain in alignment with the source image.
-    """
-    self.other_volume_path_list = [other_volume_path]
-    
-  @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
   def addOtherVolumePath(self, other_volume_path):
     """
     These are any images that need to remain in alignment with the source image.
