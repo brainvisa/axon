@@ -7,7 +7,7 @@ class EstimationOptions():
   Various registration options, which are passed to the Powell optimisation algorithm.
   """
     #===========================================================================    
-  def setObjectiveFunctioToMutualInformationn(self):
+  def setObjectiveFunctionToMutualInformation(self):
     """
     Registration  involves  finding parameters that either maximise or minimise some objective
     function.   For   inter-modal   registration,   use   Mutual   Information,  Normalised  Mutual
