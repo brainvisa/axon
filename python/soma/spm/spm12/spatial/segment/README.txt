@@ -1,11 +1,20 @@
 # HOW TO USE
 #===============================================================================
+# Start or call SPM instance (spm is singleton object)
+from soma.spm.spm_launcher import SPM12, SPM12Standalone
+spm = SPM12Standalone(spm_standalone_command,
+                      spm_standalone_mcr_path,
+                      spm_standalone_path)
+# or
+spm = SPM12(spm_path,
+            matlab.executable,
+            matlab.options)
+#===============================================================================
 #  Segment
 
 from soma.spm.spm12.spatial.segment import Segment
 from soma.spm.spm12.spatial.segment.channel import Channel
 from soma.spm.spm12.spatial.segment.tissue import Tissue
-from soma.spm.spm_launcher import SPM12, SPM12Standalone
 
 segment = Segment()
 #===============================================================================
@@ -86,4 +95,6 @@ segment.saveDeformationFieldInverseAndForward()
 segment.setDeformationFieldInverseOutputPath('/tmp/inverse_field.nii')
 segment.setDeformationFieldForwardOutputPath('/tmp/forward_field.nii')
 
-segment.start(configuration, '/tmp/batch_segment_12.m')#configuration is BV object (containing SPM & Matlab paths)
+spm.addModuleToExecutionQueue(segment)
+spm.setSPMScriptPath('/tmp/batch_segment_12.m')
+spm.run()

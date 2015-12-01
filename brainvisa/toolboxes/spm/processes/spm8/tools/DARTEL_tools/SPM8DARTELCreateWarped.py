@@ -38,9 +38,13 @@ configuration = Application().configuration
 #------------------------------------------------------------------------------
 def validation():
   try:
-    SPM8Standalone(configuration)
+    spm = SPM8Standalone(configuration.SPM.spm8_standalone_command,
+                         configuration.SPM.spm8_standalone_mcr_path,
+                         configuration.SPM.spm8_standalone_path)
   except:
-    SPM8(configuration)
+    spm = SPM8(configuration.SPM.spm8_path,
+               configuration.matlab.executable,
+               configuration.matlab.options)
 #------------------------------------------------------------------------------
 
 userLevel = 0

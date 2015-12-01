@@ -40,9 +40,14 @@ configuration = Application().configuration
 #------------------------------------------------------------------------------
 def validation():
   try:
-    SPM8Standalone(configuration)
+    spm = SPM8Standalone(configuration.SPM.spm8_standalone_command,
+                         configuration.SPM.spm8_standalone_mcr_path,
+                         configuration.SPM.spm8_standalone_path)
   except:
-    SPM8(configuration)
+    spm = SPM8(configuration.SPM.spm8_path,
+               configuration.matlab.executable,
+               configuration.matlab.options)
+  return spm
 #------------------------------------------------------------------------------
 
 userLevel = 1
@@ -537,8 +542,11 @@ def execution( self, context ):
     new_segment.setDeformationFieldForwardOutputPath(str(self.forward_field.fullPath()))
   else:
     raise ValueError('Unvalid deformation_field_type value')
-  
-  new_segment.start(configuration, self.batch_location.fullPath())
+    
+  spm = validation()
+  spm.addModuleToExecutionQueue(new_segment)
+  spm.setSPMScriptPath(self.batch_location.fullPath())
+  spm.run()
 
   
 def buildTissueObject(self, tissue_name, tissue_proba_dimension):

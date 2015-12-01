@@ -1,11 +1,20 @@
 # HOW TO USE
 #===============================================================================
+# Start or call SPM instance (spm is singleton object)
+from soma.spm.spm_launcher import SPM8, SPM8Standalone
+spm = SPM8Standalone(spm_standalone_command,
+                     spm_standalone_mcr_path,
+                     spm_standalone_path)
+# or
+spm = SPM8(spm_path,
+           matlab.executable,
+           matlab.options)
+#===============================================================================
 #  Coregister : Estimate & Reslice
 
 from soma.spm.spm8.spatial.coregister.reslice_options import ResliceOptions
 from soma.spm.spm8.spatial.coregister.estimation_options import EstimationOptions
 from soma.spm.spm8.spatial.coregister import EstimateAndReslice
-from soma.spm.spm_launcher import SPM8, SPM8Standalone
 
 estimation_options = EstimationOptions()
 #already initialize with spm defaults but to modify it, follow this example:
@@ -59,4 +68,7 @@ estimate.setSourceVolumePath('/tmp/source.nii')
 estimate.setOtherVolumesPathList(['/tmp/other_1.nii', '/tmp/other_2.nii'])
 
 estimate.replaceEstimationOptions(estimation_options)#already exists with spm defauts values(useless if spm default used)
-estimate.start(configuration, '/tmp/batch_coregister.m')#configuration is BV object (containing SPM & Matlab paths)
+
+spm.addModuleToExecutionQueue(estimation_options)
+spm.setSPMScriptPath('/tmp/batch_coregister.m')
+spm.run()

@@ -40,9 +40,14 @@ configuration = Application().configuration
 #------------------------------------------------------------------------------
 def validation():
   try:
-    SPM8Standalone(configuration)
+    spm = SPM8Standalone(configuration.SPM.spm8_standalone_command,
+                         configuration.SPM.spm8_standalone_mcr_path,
+                         configuration.SPM.spm8_standalone_path)
   except:
-    SPM8(configuration)
+    spm = SPM8(configuration.SPM.spm8_path,
+               configuration.matlab.executable,
+               configuration.matlab.options)
+  return spm
 #------------------------------------------------------------------------------
 
 userLevel = 0
@@ -182,13 +187,21 @@ def execution( self, context ):
   if self.method == 'Classical':
     classical_estimation = ModelEstimationClassical()
     classical_estimation.setMatlabFilePath(str(self.basic_model_mat_file.fullPath()))
-    classical_estimation.start(configuration, self.batch_location.fullPath())
+
+    spm = validation()
+    spm.addModuleToExecutionQueue(classical_estimation)
+    spm.setSPMScriptPath(self.batch_location.fullPath())
+    spm.run()
     return
 
   elif self.method == 'Bayesian 2nd-level':
     bayesian_second_level_estimation = ModelEstimationBayesianSecondLevel()
     bayesian_second_level_estimation.setMatlabFilePath(str(self.basic_model_mat_file.fullPath()))
-    bayesian_second_level_estimation.start(configuration, self.batch_location.fullPath())
+
+    spm = validation()
+    spm.addModuleToExecutionQueue(bayesian_second_level_estimation)
+    spm.setSPMScriptPath(self.batch_location.fullPath())
+    spm.run()
     return
 
   else:
@@ -260,5 +273,10 @@ def execution( self, context ):
 
     bayesian_first_level_estimation.setSimpleContrastList(simple_contrast_list)
     bayesian_first_level_estimation.start(configuration, self.batch_location.fullPath())
+
+    spm = validation()
+    spm.addModuleToExecutionQueue(bayesian_first_level_estimation)
+    spm.setSPMScriptPath(self.batch_location.fullPath())
+    spm.run()
 
 

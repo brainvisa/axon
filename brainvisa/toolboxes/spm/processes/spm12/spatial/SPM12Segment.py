@@ -39,9 +39,13 @@ configuration = Application().configuration
 #------------------------------------------------------------------------------
 def validation():
   try:
-    SPM12Standalone(configuration)
+    spm = SPM12Standalone(configuration.SPM.spm12_standalone_command,
+                          configuration.SPM.spm12_standalone_mcr_path,
+                          configuration.SPM.spm12_standalone_path)
   except:
-    SPM12(configuration)
+    spm = SPM12(configuration.SPM.spm12_path,
+                configuration.matlab.executable,
+                configuration.matlab.options)
 #------------------------------------------------------------------------------
 
 userLevel = 0

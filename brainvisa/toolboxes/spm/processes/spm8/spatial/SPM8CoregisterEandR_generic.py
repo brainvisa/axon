@@ -40,9 +40,14 @@ configuration = Application().configuration
 #------------------------------------------------------------------------------
 def validation():
   try:
-    SPM8Standalone(configuration)
+    spm = SPM8Standalone(configuration.SPM.spm8_standalone_command,
+                         configuration.SPM.spm8_standalone_mcr_path,
+                         configuration.SPM.spm8_standalone_path)
   except:
-    SPM8(configuration)
+    spm = SPM8(configuration.SPM.spm8_path,
+               configuration.matlab.executable,
+               configuration.matlab.options)
+  return spm
 #------------------------------------------------------------------------------
 
 userLevel = 1
@@ -210,8 +215,11 @@ def execution( self, context ):
 
   estimate_and_reslice.replaceEstimationOptions(estimation_options)
   estimate_and_reslice.replaceResliceOptions(reslice_options)
-
-  estimate_and_reslice.start(configuration, self.batch_location.fullPath())
+    
+  spm = validation()
+  spm.addModuleToExecutionQueue(estimate_and_reslice)
+  spm.setSPMScriptPath(self.batch_location.fullPath())
+  spm.run()
   
   if self.extract_coregister_matrix and self.coregister_matrix is not None:
     #very usefull because spm action doesn't recompute minf, so the transformation in minf files is wrong

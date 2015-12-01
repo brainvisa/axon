@@ -42,9 +42,14 @@ configuration = Application().configuration
 #------------------------------------------------------------------------------
 def validation():
   try:
-    SPM8Standalone(configuration)
+    spm = SPM8Standalone(configuration.SPM.spm8_standalone_command,
+                         configuration.SPM.spm8_standalone_mcr_path,
+                         configuration.SPM.spm8_standalone_path)
   except:
-    SPM8(configuration)
+    spm = SPM8(configuration.SPM.spm8_path,
+               configuration.matlab.executable,
+               configuration.matlab.options)
+  return spm
 #------------------------------------------------------------------------------
 
 userLevel = 1
@@ -156,88 +161,91 @@ def updateBatchPath(self, proc):
     return os.path.join(directory_path, 'spm8_DARTEL_create_template_job.m')
 #------------------------------------------------------------------------------
 def execution( self, context ):
-    if self.images_2:
-      if len(self.images_1) != len(self.images_2):
-        context.error("the length of images_1 and images_2 must be the same")
-        raise ValueError
-      else:
-        pass
+  if self.images_2:
+    if len(self.images_1) != len(self.images_2):
+      context.error("the length of images_1 and images_2 must be the same")
+      raise ValueError
     else:
       pass
-    
-    run_dartel = RunDartel()
-    run_dartel.setFirstImageList([diskitem.fullPath() for diskitem in self.images_1])
-    if self.images_2:
-      run_dartel.appendImageList([diskitem.fullPath() for diskitem in self.images_2])
-    
-    if self.output_flow_field is not None:
-      run_dartel.setOutputFlowFieldPathList([diskitem.fullPath() for diskitem in self.output_flow_field])
-    
-    if self.output_template is not None:
-      run_dartel.setOutputTemplatePathList([diskitem.fullPath() for diskitem in self.output_template])
-    
-    settings = Settings()
-    settings.setTemplateBasename(self.template_basename)
-    if self.regularisation_form == 'Linear Elastic Energy':
-      settings.setRegularisationFormToLinearElasticEnergy()
-    elif self.regularisation_form == 'Membrane Energy':
-      settings.setRegularisationFormToMembraneEnergy()
-    elif self.regularisation_form == 'Bending Energy':
-      settings.setRegularisationFormToBendingEnergy()
-    else:
-      raise ValueError("Invalid choice for regularisation_form")
-          
-    first_outer_iteration = OuterIteration()
-    first_outer_iteration.setInnerIterationsNumber(self.inner_iteration_1)
-    first_outer_iteration.setRegParams(self.regularisation_parameters_1)
-    first_outer_iteration.setTimeSteps(self.time_step_1)
-    first_outer_iteration.setSmoothingParameter(self.smoothing_parameter_1)
-    settings.appendOuterIteration(first_outer_iteration)
-    
-    second_outer_iteration = OuterIteration()
-    second_outer_iteration.setInnerIterationsNumber(self.inner_iteration_2)
-    second_outer_iteration.setRegParams(self.regularisation_parameters_2)
-    second_outer_iteration.setTimeSteps(self.time_step_2)
-    second_outer_iteration.setSmoothingParameter(self.smoothing_parameter_2)
-    settings.appendOuterIteration(second_outer_iteration)
-    
-    third_outer_iteration = OuterIteration()
-    third_outer_iteration.setInnerIterationsNumber(self.inner_iteration_3)
-    third_outer_iteration.setRegParams(self.regularisation_parameters_3)
-    third_outer_iteration.setTimeSteps(self.time_step_6)
-    third_outer_iteration.setSmoothingParameter(self.smoothing_parameter_3)
-    settings.appendOuterIteration(third_outer_iteration)
-    
-    fourth_outer_iteration = OuterIteration()
-    fourth_outer_iteration.setInnerIterationsNumber(self.inner_iteration_4)
-    fourth_outer_iteration.setRegParams(self.regularisation_parameters_4)
-    fourth_outer_iteration.setTimeSteps(self.time_step_4)
-    fourth_outer_iteration.setSmoothingParameter(self.smoothing_parameter_4)
-    settings.appendOuterIteration(fourth_outer_iteration)
-    
-    fifth_outer_iteration = OuterIteration()
-    fifth_outer_iteration.setInnerIterationsNumber(self.inner_iteration_5)
-    fifth_outer_iteration.setRegParams(self.regularisation_parameters_5)
-    fifth_outer_iteration.setTimeSteps(self.time_step_5)
-    fifth_outer_iteration.setSmoothingParameter(self.smoothing_parameter_5)
-    settings.appendOuterIteration(fifth_outer_iteration)
-    
-    sixth_outer_iteration = OuterIteration()
-    sixth_outer_iteration.setInnerIterationsNumber(self.inner_iteration_6)
-    sixth_outer_iteration.setRegParams(self.regularisation_parameters_6)
-    sixth_outer_iteration.setTimeSteps(self.time_step_6)
-    sixth_outer_iteration.setSmoothingParameter(self.smoothing_parameter_6)
-    settings.appendOuterIteration(sixth_outer_iteration)
-    
+  else:
+    pass
+  
+  run_dartel = RunDartel()
+  run_dartel.setFirstImageList([diskitem.fullPath() for diskitem in self.images_1])
+  if self.images_2:
+    run_dartel.appendImageList([diskitem.fullPath() for diskitem in self.images_2])
+  
+  if self.output_flow_field is not None:
+    run_dartel.setOutputFlowFieldPathList([diskitem.fullPath() for diskitem in self.output_flow_field])
+  
+  if self.output_template is not None:
+    run_dartel.setOutputTemplatePathList([diskitem.fullPath() for diskitem in self.output_template])
+  
+  settings = Settings()
+  settings.setTemplateBasename(self.template_basename)
+  if self.regularisation_form == 'Linear Elastic Energy':
+    settings.setRegularisationFormToLinearElasticEnergy()
+  elif self.regularisation_form == 'Membrane Energy':
+    settings.setRegularisationFormToMembraneEnergy()
+  elif self.regularisation_form == 'Bending Energy':
+    settings.setRegularisationFormToBendingEnergy()
+  else:
+    raise ValueError("Invalid choice for regularisation_form")
+        
+  first_outer_iteration = OuterIteration()
+  first_outer_iteration.setInnerIterationsNumber(self.inner_iteration_1)
+  first_outer_iteration.setRegParams(self.regularisation_parameters_1)
+  first_outer_iteration.setTimeSteps(self.time_step_1)
+  first_outer_iteration.setSmoothingParameter(self.smoothing_parameter_1)
+  settings.appendOuterIteration(first_outer_iteration)
+  
+  second_outer_iteration = OuterIteration()
+  second_outer_iteration.setInnerIterationsNumber(self.inner_iteration_2)
+  second_outer_iteration.setRegParams(self.regularisation_parameters_2)
+  second_outer_iteration.setTimeSteps(self.time_step_2)
+  second_outer_iteration.setSmoothingParameter(self.smoothing_parameter_2)
+  settings.appendOuterIteration(second_outer_iteration)
+  
+  third_outer_iteration = OuterIteration()
+  third_outer_iteration.setInnerIterationsNumber(self.inner_iteration_3)
+  third_outer_iteration.setRegParams(self.regularisation_parameters_3)
+  third_outer_iteration.setTimeSteps(self.time_step_6)
+  third_outer_iteration.setSmoothingParameter(self.smoothing_parameter_3)
+  settings.appendOuterIteration(third_outer_iteration)
+  
+  fourth_outer_iteration = OuterIteration()
+  fourth_outer_iteration.setInnerIterationsNumber(self.inner_iteration_4)
+  fourth_outer_iteration.setRegParams(self.regularisation_parameters_4)
+  fourth_outer_iteration.setTimeSteps(self.time_step_4)
+  fourth_outer_iteration.setSmoothingParameter(self.smoothing_parameter_4)
+  settings.appendOuterIteration(fourth_outer_iteration)
+  
+  fifth_outer_iteration = OuterIteration()
+  fifth_outer_iteration.setInnerIterationsNumber(self.inner_iteration_5)
+  fifth_outer_iteration.setRegParams(self.regularisation_parameters_5)
+  fifth_outer_iteration.setTimeSteps(self.time_step_5)
+  fifth_outer_iteration.setSmoothingParameter(self.smoothing_parameter_5)
+  settings.appendOuterIteration(fifth_outer_iteration)
+  
+  sixth_outer_iteration = OuterIteration()
+  sixth_outer_iteration.setInnerIterationsNumber(self.inner_iteration_6)
+  sixth_outer_iteration.setRegParams(self.regularisation_parameters_6)
+  sixth_outer_iteration.setTimeSteps(self.time_step_6)
+  sixth_outer_iteration.setSmoothingParameter(self.smoothing_parameter_6)
+  settings.appendOuterIteration(sixth_outer_iteration)
+  
 
-    optimisation_settings = OptimisationSettings()
-    optimisation_settings.setLMRegularisation(self.LM_Regularisation)
-    optimisation_settings.setCycles(self.cycles)
-    optimisation_settings.setIterations(self.iterations)
-    
-    settings.setOptimisationSettings(optimisation_settings)
-    
-    run_dartel.setSettings(settings)
-    
-    run_dartel.start(configuration, self.batch_location.fullPath())
-    
+  optimisation_settings = OptimisationSettings()
+  optimisation_settings.setLMRegularisation(self.LM_Regularisation)
+  optimisation_settings.setCycles(self.cycles)
+  optimisation_settings.setIterations(self.iterations)
+  
+  settings.setOptimisationSettings(optimisation_settings)
+  
+  run_dartel.setSettings(settings)
+
+  spm = validation()
+  spm.addModuleToExecutionQueue(run_dartel)
+  spm.setSPMScriptPath(self.batch_location.fullPath())
+  spm.run()
+  

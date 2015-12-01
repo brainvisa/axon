@@ -45,9 +45,14 @@ configuration = Application().configuration
 #------------------------------------------------------------------------------
 def validation():
   try:
-    SPM8Standalone(configuration)
+    spm = SPM8Standalone(configuration.SPM.spm8_standalone_command,
+                         configuration.SPM.spm8_standalone_mcr_path,
+                         configuration.SPM.spm8_standalone_path)
   except:
-    SPM8(configuration)
+    spm = SPM8(configuration.SPM.spm8_path,
+               configuration.matlab.executable,
+               configuration.matlab.options)
+  return spm
 #------------------------------------------------------------------------------
 
 userLevel = 1
@@ -167,5 +172,8 @@ def execution(self, context):
   else:
     raise ValueError("Unvalid interpolation")
   
-  deformations.start(configuration, self.batch_location.fullPath())
+  spm = validation()
+  spm.addModuleToExecutionQueue(deformations)
+  spm.setSPMScriptPath(self.batch_location.fullPath())
+  spm.run()    
   

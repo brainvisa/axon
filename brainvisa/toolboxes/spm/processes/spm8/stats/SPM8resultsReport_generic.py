@@ -40,7 +40,10 @@ from soma.spm.spm_launcher import SPM8
 configuration = Application().configuration
 #------------------------------------------------------------------------------
 def validation():
-  SPM8(configuration)
+  spm = SPM8(configuration.SPM.spm8_path,
+             configuration.matlab.executable,
+             configuration.matlab.options)
+  return spm
 #------------------------------------------------------------------------------
 
 userLevel = 0
@@ -181,11 +184,12 @@ def execution( self, context ):
   matlab_batch_path = os.path.join(spm_workspace_directory, 'result.m')
   spm_job_path = os.path.join(spm_workspace_directory, 'result_job.m')
 
-  spm = SPM8(configuration)#This is singleton object
+  spm = validation()#This is singleton object
   self.createResultsReportBatch(context)
-  spm.addMatlabCommandAfter(self.writeCompleteResultBatch(spm_workspace_directory, spm_job_path))
-  spm.setNewMatlabOptions("removeCmdOption='-nodisplay'")
-  spm.run(spm_job_path, matlab_batch_path)
+  spm.addMatlabCommandAfterSPMRunning(self.writeCompleteResultBatch(spm_workspace_directory, spm_job_path))
+  spm.setSPMScriptPath(spm_job_path)
+  spm.setMatlabScriptPath(matlab_batch_path)
+  spm.run()
 
 
 def removeOldContrastMIPFile(self):
@@ -252,9 +256,11 @@ def createResultsReportBatch(self, context):
     else:
       result.disablePrintResult()
     
-    spm = SPM8(configuration)#This is singleton object
-    spm.addSPMCommand(["spm_get_defaults('stats.topoFDR', 0);"])
-    spm.addBatchList(result.getStringListForBatch())
+    spm = validation()#This is singleton object
+    spm.addMatlabCommandBeforeSPMRunning(["spm_get_defaults('stats.topoFDR', 0);"])
+    spm.addModuleToExecutionQueue(result)
+    spm.setSPMScriptPath(self.batch_location.fullPath())
+    spm.run()
 
 #------------------------------------------------------------------------------
 def writeCompleteResultBatch(self, spm_workspace_directory, spm_job_path):

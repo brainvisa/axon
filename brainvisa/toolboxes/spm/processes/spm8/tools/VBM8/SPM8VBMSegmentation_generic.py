@@ -42,10 +42,10 @@ from soma.spm.spm_launcher import SPM8, SPM8Standalone
 configuration = Application().configuration
 #------------------------------------------------------------------------------
 def validation():
-  try:
-    SPM8Standalone(configuration)
-  except:
-    SPM8(configuration)
+  spm = SPM8(configuration.SPM.spm8_path,
+             configuration.matlab.executable,
+             configuration.matlab.options)
+  return spm
 #------------------------------------------------------------------------------
 
 userLevel = 1
@@ -727,6 +727,8 @@ def execution( self, context ):
   estimate_and_write.replaceExtendedOptions(ext_options)
   estimate_and_write.replaceWritingOptions(wri_options)
   
-  
-  estimate_and_write.startFromMatlab(configuration, self.batch_location.fullPath())
+  spm = validation()
+  spm.addModuleToExecutionQueue(estimate_and_write)
+  spm.setSPMScriptPath(self.batch_location.fullPath())
+  spm.run()           
   

@@ -32,7 +32,6 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from brainvisa.processes import *
 from soma.spm.spm8.tools.hdw import HDW
-from soma.spm.spm8.tools.hdw.subject_container import SubjectContainer
 from soma.spm.spm8.tools.hdw.subject import Subject
 from soma.spm.spm8.tools.hdw.bias_correction_options import BiasCorrectionOptions
 from soma.spm.spm8.tools.hdw.warping_options import WarpingOptions
@@ -43,9 +42,14 @@ configuration = Application().configuration
 #------------------------------------------------------------------------------
 def validation():
   try:
-    SPM8Standalone(configuration)
+    spm = SPM8Standalone(configuration.SPM.spm8_standalone_command,
+                         configuration.SPM.spm8_standalone_mcr_path,
+                         configuration.SPM.spm8_standalone_path)
   except:
-    SPM8(configuration)
+    spm = SPM8(configuration.SPM.spm8_path,
+               configuration.matlab.executable,
+               configuration.matlab.options)
+  return spm
 #------------------------------------------------------------------------------
 
 userLevel = 1
@@ -130,9 +134,6 @@ def updateBatchPath(self, proc):
   
 def execution( self, context ):
   hdw = HDW()
-  
-  subject_container = SubjectContainer()
-  
   subject = Subject()
   subject.setReferenceImage(self.reference.fullPath())
   subject.setMovedImage(self.moved.fullPath())
@@ -144,9 +145,7 @@ def execution( self, context ):
       pass#default SPM path used
   else:
     pass#default SPM path used
-  subject_container.appendSubject(subject)
-  
-  hdw.replaceSubjectContainer(subject_container)
+  hdw.appendSubject(subject)
   
   bias_correction = BiasCorrectionOptions()
   bias_correction.setIterations(self.bias_iteration)
@@ -227,5 +226,8 @@ def execution( self, context ):
   
   hdw.replaceWarpingOptions(warping)
   
-  hdw.start(configuration, self.batch_location.fullPath())
+  spm = validation()
+  spm.addModuleToExecutionQueue(hdw)
+  spm.setSPMScriptPath(self.batch_location.fullPath())
+  spm.run()    
   
