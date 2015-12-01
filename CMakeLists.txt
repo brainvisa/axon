@@ -72,8 +72,6 @@ configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/config/soma_config.py.in" "${CMAKE_
 BRAINVISA_INSTALL( FILES "${CMAKE_BINARY_DIR}/python/soma/config.py"
                    DESTINATION "python/soma"
                    COMPONENT ${PROJECT_NAME} )
-BRAINVISA_COPY_PYTHON_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/python"
-                                 ${PROJECT_NAME} )
 
 # For historical reasons, Axon needs to modify its encoding to iso-8859-1. 
 # In Python this can only be done in an early step of Python startup. This
