@@ -2,6 +2,7 @@
 from soma.spm.spm_main_module import SPM12MainModule
 from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed, checkIfArgumentTypeIsStrOrUnicode
 import numbers
+import numpy
 from soma.spm.spm_batch_maker_utils import convertPathListToSPMBatchString,\
   convertlistToSPMString, convertNumpyArrayToSPMString, moveSPMPath,\
   moveFileAndCreateFoldersIfNeeded
@@ -74,6 +75,7 @@ class PairwiseLongitudinalRegistration(SPM12MainModule):
     """
     self.time_difference_list = time_difference_list
     
+  @checkIfArgumentTypeIsAllowed(numpy.ndarray, 1)  
   def setNoiseEstimate(self, noise_estimate_numpy_array):
     """
     Specify  the  standard  deviation  of  the  noise  in the images.  If a scalar is entered, all
