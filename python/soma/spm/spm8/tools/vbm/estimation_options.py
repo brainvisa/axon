@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed, checkIfArgumentTypeIsStrOrUnicode
+import numbers
 
 class EstimationOptions():
   """
@@ -114,7 +115,7 @@ class EstimationOptions():
   def setWarpingRegularisation(self, regularisation_number):
     self.warping_regularisation = regularisation_number
     #===========================================================================     
-  @checkIfArgumentTypeIsAllowed(float, 1)
+  @checkIfArgumentTypeIsAllowed(numbers.Real, 1)
   def setSamplingDistance(self, sampling_distance):
     self.sampling_distance = sampling_distance
     

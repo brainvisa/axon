@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from soma.spm.spm_batch_maker_utils import addBatchKeyWordInEachItem
 from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed, checkIfArgumentTypeIsStrOrUnicode
+import numbers
 
 class ExtendedOptions():
   def __init__(self):
@@ -49,7 +50,7 @@ class ExtendedOptions():
     """
     self.SANLM_denoising_filter = 2
   
-  @checkIfArgumentTypeIsAllowed(float, 1)  
+  @checkIfArgumentTypeIsAllowed(numbers.Real, 1)  
   def setMRFWeighting(self, mrf_weighting):
     """
     A  Hidden  Markov  Random  Field  (HMRF)  is  used  to encode spatial information through

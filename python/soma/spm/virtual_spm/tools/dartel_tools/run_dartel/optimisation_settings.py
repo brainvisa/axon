@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed
+import numbers
 
 class OptimisationSettings():
   """
@@ -7,7 +8,7 @@ class OptimisationSettings():
   number  of  Levenberg-Marquardt  iterations,  in  which  the  equations  are  solved  using  a  full  multi-grid  (FMG)  scheme.  FMG and
   Levenberg-Marquardt are both described in Numerical Recipes (2nd edition).
   """
-  @checkIfArgumentTypeIsAllowed(float, 1)
+  @checkIfArgumentTypeIsAllowed(numbers.Real, 1)
   def setLMRegularisation(self, LM_regularisation):
     """
     Levenberg-Marquardt  regularisation.    Larger  values increase the the stability of

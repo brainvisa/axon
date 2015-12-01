@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from soma.spm.spm_batch_maker_utils import addBatchKeyWordInEachItem, moveSPMPath, convertlistToSPMString
 from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed, checkIfArgumentTypeIsStrOrUnicode
+import numbers
 
 class Smooth():
   """
@@ -26,9 +27,9 @@ class Smooth():
     """
     self.output_path_list = image_path_list
   
-  @checkIfArgumentTypeIsAllowed(float, 1)  
-  @checkIfArgumentTypeIsAllowed(float, 2)  
-  @checkIfArgumentTypeIsAllowed(float, 3)  
+  @checkIfArgumentTypeIsAllowed(numbers.Real, 1)  
+  @checkIfArgumentTypeIsAllowed(numbers.Real, 2)  
+  @checkIfArgumentTypeIsAllowed(numbers.Real, 3)  
   def setFWHM(self, x, y ,z):
     """
     Specify the full-width at half maximum (FWHM) of the Gaussian smoothing kernel

@@ -1,5 +1,6 @@
  # -*- coding: utf-8 -*-
 from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed, checkIfArgumentTypeIsStrOrUnicode
+import numbers 
 
 class EstimationOptions():
   """
@@ -31,7 +32,7 @@ class EstimationOptions():
     """
     self.template_weighting_path = template_weighting_path
     
-  @checkIfArgumentTypeIsAllowed(float, 1)
+  @checkIfArgumentTypeIsAllowed(numbers.Real, 1)
   def setSourceImageSmoothing(self, source_image_smoothing):
     """
     Smoothing  to  apply  to  a  copy  of  the  source image. The template and source
@@ -82,7 +83,7 @@ class EstimationOptions():
     """
     self.affine_regularisation = 'none'
     
-  @checkIfArgumentTypeIsAllowed(float, 1)
+  @checkIfArgumentTypeIsAllowed(numbers.Real, 1)
   def setNonLinearFrequencyCutOff(self, cutoff):
     """
     Cutoff  of DCT bases.  Only DCT bases of periods longer than the cutoff are used
@@ -98,7 +99,7 @@ class EstimationOptions():
     """
     self.iterations = iterations
     
-  @checkIfArgumentTypeIsAllowed(float, 1)
+  @checkIfArgumentTypeIsAllowed(numbers.Real, 1)
   def setNonLinearRegularisation(self, regularisation):
     """
     The  amount  of  regularisation for the nonlinear part of the spatial normalisation.
