@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from soma.spm.spm_batch_maker_utils import addBatchKeyWordInEachItem, convertPathListToSPMBatchString, moveFileAndCreateFoldersIfNeeded
-from soma.spm.spm_batch_maker_utils import moveSPMPath
 from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed, checkIfArgumentTypeIsStrOrUnicode
-from soma.spm.virtual_spm.util.deformations.composition import Composition
 import os
 
 class Deformations():
@@ -11,7 +9,7 @@ class Deformations():
   the results either saved to disk, or applied to some image.
   """
   def appendDeformation(self, deformation):
-    self.composition.append(deformation)
+    raise NotImplementedError("This method will be overwritten in inherited classes")
     
   @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
   def setCompositionName(self, composition_name):
