@@ -29,7 +29,7 @@ class Coregister():
     if self.other_volume_path_list is not None:
       self.other_volume_path_list.append(other_volume_path)
     else:
-      self.setOtherVolumePath(other_volume_path)
+      self.other_volume_path_list = [other_volume_path]
       
   @checkIfArgumentTypeIsAllowed(list, 1)  
   def setOtherVolumesPathList(self, other_volume_path_list):
