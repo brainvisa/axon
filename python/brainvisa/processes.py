@@ -3553,7 +3553,7 @@ class ProgressInfo( object ):
     print 'ProgressInfo:', self
     if hasattr( self, 'process' ):
       print '  process:', self.process
-    print '  local value:', self._localvalue, '/', self._localcount
+    print '  local value:', self._localvalue, '*', self._localcount
     print '  value:', self.value()
     print '  children:', len( self.children ) + self.childrendone
     print '  done:', self.childrendone

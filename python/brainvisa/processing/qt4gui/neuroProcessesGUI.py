@@ -121,6 +121,7 @@ class _ProcDeleter(object):
 
 def startShell():
   from PyQt4.QtGui import qApp
+  os.environ["QT_API"] = "pyqt" # prevent ipython from trying to use PySide
   try:
     import IPython
     ipversion = [int(x) for x in IPython.__version__.split('.')]
@@ -133,7 +134,7 @@ def startShell():
       else:
         ipmodule = 'IPython.frontend.terminal.ipapp'
       sp = subprocess.Popen([sys.executable, '-c',
-        'from %s import launch_new_instance; launch_new_instance()' % ipmodule,
+        'import os; os.environ["QT_API"] = "pyqt"; from %s import launch_new_instance; launch_new_instance()' % ipmodule,
         'qtconsole', '--existing',
         '--shell=%d' % ipConsole.shell_port,
         '--iopub=%d' % ipConsole.iopub_port,
