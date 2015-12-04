@@ -144,7 +144,7 @@ signature = Signature(
   'DF_transformation_matrix', WriteDiskItem('Matlab SPM file', 'Matlab file'),
   
   #pfile.txt: GM, WM and CSF volume 
-  'GM_WM_CSF_volumes_txt',  WriteDiskItem('Text file', 'Text file'),
+  'GM_WM_CSF_volumes_txt',  WriteDiskItem('CSV file', 'CSV file'),
 
   #Batch
   'batch_location', WriteDiskItem( 'Any Type', 'Matlab script' )
