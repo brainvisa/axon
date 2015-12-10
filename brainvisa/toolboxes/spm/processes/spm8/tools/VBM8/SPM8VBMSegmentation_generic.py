@@ -567,7 +567,7 @@ def execution( self, context ):
     else:
       white_options.setNormalizedPath(self.white_LDW_warped_unmodulated.fullPath())
   else:
-    white_options.unsetModulation()
+    white_options.unsetNormalized()
   if self.save_white_modulated == "affine + non-linear (SPM8 default)":
     white_options.setModulationToAffineAndNonLinear()
     if self.spatial_norm == "High-dimensional: Dartel":
