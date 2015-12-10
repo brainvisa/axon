@@ -1,11 +1,20 @@
 # HOW TO USE
 #===============================================================================
+# Start or call SPM instance (spm is singleton object)
+from soma.spm.spm_launcher import SPM8, SPM8Standalone
+spm = SPM8Standalone(spm_standalone_command,
+                     spm_standalone_mcr_path,
+                     spm_standalone_path)
+# or
+spm = SPM8(spm_path,
+           matlab.executable,
+           matlab.options)
+#===============================================================================
 #  Segment
 
 from soma.spm.spm8.spatial.new_segment import NewSegment
 from soma.spm.spm8.spatial.new_segment.channel import Channel
 from soma.spm.spm8.spatial.new_segment.tissue import Tissue
-from soma.spm.spm_launcher import SPM8, SPM8Standalone
 
 new_segment = NewSegment()
 #===============================================================================
@@ -84,4 +93,6 @@ new_segment.saveDeformationFieldInverseAndForward()
 new_segment.setDeformationFieldInverseOutputPath('/tmp/inverse_field.nii')
 new_segment.setDeformationFieldForwardOutputPath('/tmp/forward_field.nii')
 
-new_segment.start(configuration, '/tmp/batch_new_segment_8.m')#configuration is BV object (containing SPM & Matlab paths)
+spm.addModuleToExecutionQueue(new_segment)
+spm.setSPMScriptPath('/tmp/batch_new_segment_8.m')
+spm.run()
