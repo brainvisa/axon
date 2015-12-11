@@ -278,7 +278,50 @@ class SPM12Standalone(SPMStandalone):
     batch_list = spm_module.getStringListForBatch()
     self._addBatchListToExecutionQueue(batch_list)
     
-        
+def spm8(spm8_standalone_command = None,
+         spm8_standalone_mcr_path = None,
+         spm8_standalone_path = None,
+         spm8_path = None,
+         matlab_executable = None,
+         matlab_options = None):
+    spm8 = None
+    try:
+        spm8 = SPM8Standalone(spm8_standalone_command,
+                              spm8_standalone_mcr_path,
+                              spm8_standalone_path)
+    except:
+        try:
+            spm8 = SPM8(spm8_path,
+                        matlab_executable,
+                        matlab_options)
+        except:
+            raise RuntimeError( 'SPM8 is not available or configuration '
+                                'is incomplete' )
+      
+    return spm8
+
+def spm12(spm12_standalone_command = None,
+          spm12_standalone_mcr_path = None,
+          spm12_standalone_path = None,
+          spm12_path = None,
+          matlab_executable = None,
+          matlab_options = None):
+    spm12 = None
+    try:
+        spm12 = SPM12Standalone(spm12_standalone_command,
+                                spm12_standalone_mcr_path,
+                                spm12_standalone_path)
+    except:
+        try:
+            spm12 = SPM12(spm12_path,
+                          matlab_executable,
+                          matlab_options)
+        except:
+            raise RuntimeError( 'SPM12 is not available or configuration '
+                                'is incomplete' )
+      
+    return spm12
+
 #===========================================================================
 #===========================================================================
 # # 
