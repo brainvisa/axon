@@ -174,7 +174,7 @@ class SPM12(SPM):
     self.spm_defaults = spm_defaults
     
     self.spm_script_path = None
-    self.matlab_script_path = None
+    self.matlab_script_path = tempfile.NamedTemporaryFile(suffix=".m").name
     self.matlab_commands_before_list = []
     self.matlab_commands_after_list = []
     
