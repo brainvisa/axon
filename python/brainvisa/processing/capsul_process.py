@@ -7,8 +7,10 @@ from brainvisa.data.readdiskitem import ReadDiskItem
 from brainvisa.data.writediskitem import WriteDiskItem
 from brainvisa.processes import getAllFormats
 from brainvisa.data.neuroData import Signature
+from brainvisa.data.neuroDiskItems import DiskItem
 from traits import trait_types
 import traits.api as traits
+import six
 
 ''' Specialized Process class to link with CAPSUL processes and pipelines.
 
@@ -45,7 +47,7 @@ The process also does not have an execution() function. This is normal: CapsulPr
 
 
 def fileOptions(filep):
-    if hasattr(filep, 'output'):
+    if hasattr(filep, 'output') and filep.output:
         return (WriteDiskItem, ['Any Type', getAllFormats()])
     return (ReadDiskItem, ['Any Type', getAllFormats()])
 
@@ -89,6 +91,11 @@ def make_parameter(param, name='<unnamed>'):
 def convert_capsul_value(value):
     if isinstance(value, traits.TraitListObject):
         value = [convert_capsul_value(x) for x in value]
+    return value
+
+def convert_to_capsul_value(value):
+    if isinstance(value, DiskItem):
+        value = value.fullPath()
     return value
 
 
@@ -157,15 +164,16 @@ class CapsulProcess(processes.Process):
         By default, it assumes a direct correspondance between Axon and Capsul processes parameters, so it will just copy all parameters values. If the initialization() method has been specialized in a particular process, this direct correspondance will likely be broken, so this method should also be overloaded.
         '''
         process = self.get_capsul_process()
-        for name in self.signature:
-            setattr(process, name, getattr(self, name))
+        for name in six.iterkeys(self.signature):
+            setattr(process, name,
+                    convert_to_capsul_value(getattr(self, name)))
 
     def executionWorkflow(self):
         ''' Build the workflow for execution. The workflow will be integrated in the parent pipeline workflow, if any.
 
         **TODO**
 
-        StudyConfog options should be handled to support local or remote execution, file transfers / translations and other specific stuff. This is not done right now.
+        StudyConfig options should be handled to support local or remote execution, file transfers / translations and other specific stuff. This is not done right now.
 
         FOM completion is not performed also.
         '''
@@ -193,9 +201,47 @@ class CapsulProcess(processes.Process):
         ''' Build a Capsul StudyConfig object, set it up, and return it
         '''
         from capsul.study_config.study_config import StudyConfig
+        from soma.wip.application.api import Application as Appli2
+
+        axon_to_capsul_formats = {
+            'NIFTI-1 image': "NIFTI",
+            'gz compressed NIFTI-1 image': "NIFTI gz",
+            'GIS image': "GIS",
+            'MINC image': "MINC",
+            'SPM image': "SPM",
+            'GIFTI file': "GIFTI",
+            'MESH mesh': "MESH",
+            'PLY mesh': "PLY",
+            'siRelax Fold Energy': "Energy",
+        }
+
+        ditems = [(name, item) for name, item in six.iteritems(self.signature)
+                  if isinstance(item, DiskItem)]
+        if ditems:
+            item = ditems[0]
+            old_format = axon_to_capsul_formats.get(
+                item[1].format.name, item[1].format.name)
+            old_database = getattr(self, item[0]).get('_database', '')
+        else:
+            old_database = ''
+            old_format = ''
+
+        configuration = Appli2().configuration
+        initial_study_config = {
+            "input_directory" : old_database,
+            "output_directory" : old_database,
+            "input_fom" : "morphologist-auto-1.0",
+            "output_fom" : "morphologist-auto-1.0",
+            "shared_fom" : "shared-brainvisa-1.0",
+            "spm_directory" : configuration.SPM.spm8_standalone_path,
+            "use_soma_workflow" : True,
+            "use_fom" : True,
+            "volumes_format" : old_format,
+            "meshes_format" : "GIFTI",
+        }
 
         study_config = StudyConfig(
-            init_config=init_study_config,
+            init_config=initial_study_config,
             modules=StudyConfig.default_modules + ['BrainVISAConfig',
                                                    'FomConfig'])
 
