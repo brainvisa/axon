@@ -14,7 +14,7 @@ from optparse import OptionParser
 
 
 def fileOptions(filep):
-    if hasattr(filep, 'output'):
+    if hasattr(filep, 'output') and filep.output:
         return (WriteDiskItem, ['\'Any Type\'', 'getAllFormats()'])
     return (ReadDiskItem, ['\'Any Type\'', 'getAllFormats()'])
 
