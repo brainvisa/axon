@@ -4274,9 +4274,6 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
 
   """
   result = None
-  class NewProcess( Process ):
-    _instance = 0
-    _id = None
 
   try:
     global _processModules, _processes, _processesInfo, _processesInfoByName, _readProcessLog, _askUpdateProcess
@@ -4319,6 +4316,12 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
 
     if category is None:
       category = os.path.basename( os.path.dirname( fileName ) )
+
+    ProcessClass = getattr(processModule, 'base_class', Process)
+
+    class NewProcess( ProcessClass ):
+      _instance = 0
+      _id = None
 
     NewProcess._id = moduleName
     NewProcess.name = moduleName
