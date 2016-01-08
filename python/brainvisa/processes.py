@@ -2728,7 +2728,8 @@ class ExecutionContext( object ):
         if executionFunction is None:
           if(hasattr(process, 'executionWorkflow')) :
             from soma_workflow.client import WorkflowController, Workflow, Helper
-            jobs, dependencies, root_group = process.executionWorkflow()
+            jobs, dependencies, root_group \
+              = process.executionWorkflow(context=self)
             workflow = Workflow(jobs = jobs, dependencies = dependencies, root_group = root_group)
             controller = WorkflowController()
             wid = controller.submit_workflow(workflow=workflow, name=process.name)

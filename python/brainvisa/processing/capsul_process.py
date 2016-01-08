@@ -181,7 +181,7 @@ class CapsulProcess(processes.Process):
                     convert_to_capsul_value(getattr(self, name)))
 
 
-    def executionWorkflow(self):
+    def executionWorkflow(self, context=processes.defaultContext()):
         ''' Build the workflow for execution. The workflow will be integrated in the parent pipeline workflow, if any.
 
         **TODO**
