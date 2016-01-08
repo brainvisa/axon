@@ -60,6 +60,7 @@ def listOptions(param):
     item_type = param.inner_traits[0]
     return [make_parameter(item_type)]
 
+
 param_types_table = \
     {
         trait_types.Bool: neuroData.Boolean,
@@ -73,6 +74,7 @@ param_types_table = \
         trait_types.List: (neuroData.ListOf, listOptions),
         trait_types.ListFloat: (neuroData.ListOf, listOptions),
     }
+
 
 def make_parameter(param, name='<unnamed>'):
     newtype = param_types_table.get(type(param.trait_type))
@@ -88,10 +90,12 @@ def make_parameter(param, name='<unnamed>'):
         newtype, paramoptions = newtype(param)
     return newtype(*paramoptions)
 
+
 def convert_capsul_value(value):
     if isinstance(value, traits.TraitListObject):
         value = [convert_capsul_value(x) for x in value]
     return value
+
 
 def convert_to_capsul_value(value):
     if isinstance(value, DiskItem):
@@ -110,10 +114,12 @@ class CapsulProcess(processes.Process):
         self.setup_capsul_process()
         super(CapsulProcess, self).__init__()
 
+
     def set_capsul_process(self, process):
         ''' Sets a CAPSUL process into the Axon (proxy) process
         '''
         self._capsul_process = process
+
 
     def setup_capsul_process(self):
         ''' **Must be overloaded**
@@ -123,6 +129,7 @@ class CapsulProcess(processes.Process):
         This is basically the only thing the process must do.
         '''
         pass
+
 
     def get_capsul_process(self):
         ''' Get the underlying CAPSUL process '''
@@ -146,15 +153,20 @@ class CapsulProcess(processes.Process):
             parameter = make_parameter(param, name)
             signature_args += [name, parameter]
         signature = Signature(*signature_args)
+        signature['edit_pipeline'] = neuroData.Boolean()
         self.__class__.signature = signature
         self.changeSignature(signature)
 
+        self.edit_pipeline = False
         for name in process.user_traits():
             if name in excluded_traits:
                 continue
             value = getattr(process, name)
             if value not in (traits.Undefined, ''):
                 setattr(self, name, convert_capsul_value(value))
+
+        self.linkParameters(None, 'edit_pipeline', self._on_edit_pipeline)
+
 
     def propagate_parameters_to_capsul(self):
         ''' Set the underlying Capsul process parameters values from the Axon process (self) parameters values.
@@ -167,6 +179,7 @@ class CapsulProcess(processes.Process):
         for name in six.iterkeys(self.signature):
             setattr(process, name,
                     convert_to_capsul_value(getattr(self, name)))
+
 
     def executionWorkflow(self):
         ''' Build the workflow for execution. The workflow will be integrated in the parent pipeline workflow, if any.
@@ -196,6 +209,7 @@ class CapsulProcess(processes.Process):
         groups = wf.groups
 
         return jobs, dependencies, groups
+
 
     def init_study_config(self):
         ''' Build a Capsul StudyConfig object, set it up, and return it
@@ -246,3 +260,26 @@ class CapsulProcess(processes.Process):
                                                    'FomConfig'])
 
         return study_config
+
+
+    def _on_edit_pipeline(self, process, dummy):
+        from brainvisa.configuration import neuroConfig
+        if not neuroConfig.gui:
+            return
+        if process.edit_pipeline:
+            processes.mainThreadActions().push(self._open_pipeline)
+        else:
+            self._pipeline_view = None
+
+    def _open_pipeline(self):
+        from capsul.qt_gui.widgets import PipelineDevelopperView
+        from capsul.pipeline import Pipeline
+        from brainvisa.tools.mainthreadlife import MainThreadLife
+        Pipeline.hide_nodes_activation = False
+        mpv = PipelineDevelopperView(
+          self.get_capsul_process(), allow_open_controller=True,
+          show_sub_pipelines=True)
+        mpv.show()
+        self._pipeline_view = MainThreadLife(mpv)
+
+
