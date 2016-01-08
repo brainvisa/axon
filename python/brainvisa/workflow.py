@@ -610,7 +610,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
                 input_file_processing="use local path", 
                 output_file_processing="use local path",
                 brainvisa_cmd=["python", "-m", "brainvisa.axon.runprocess" ],
-                brainvisa_db=None):
+                brainvisa_db=None, context=None):
     '''
     brainvisa_db: list of the brainvisa db uuid which will be used in the case 
     of the option: BV_DB_SHARED_PATH
@@ -627,6 +627,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
     
     self.__input_file_processing = input_file_processing
     self.__output_file_processing = output_file_processing
+    self.context = context
     
     self.brainvisa_cmd = brainvisa_cmd
     if type( self.brainvisa_cmd ) in types.StringTypes:
@@ -746,7 +747,8 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
     self.__groups[inGroup].elements.append(self.__jobs[jobId]) 
   
   def _append_native_jobs( self, depth, jobId, process, inGroup, priority ):
-    jobs, dependencies, groups = process.executionWorkflow()
+    jobs, dependencies, groups \
+      = process.executionWorkflow(context=self.context)
     self.__jobs[jobId] = jobs
     self.__groups[inGroup].elements += groups
     self.__dependencies += dependencies
@@ -956,10 +958,15 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
       
 
   
-def process_to_workflow( process, output, input_file_processing = ProcessToSomaWorkflow.NO_FILE_PROCESSING, output_file_processing = ProcessToSomaWorkflow.NO_FILE_PROCESSING):
+def process_to_workflow(
+    process, output,
+    input_file_processing = ProcessToSomaWorkflow.NO_FILE_PROCESSING,
+    output_file_processing = ProcessToSomaWorkflow.NO_FILE_PROCESSING,
+    context=None):
   #ptwf = GraphvizProcessToWorkflow( process, output, clusters=clusters, files=files )
   #ptwf = ProcessToFastExecution( process, output )
-  ptwf = ProcessToSomaWorkflow(process, output, input_file_processing, output_file_processing)
+  ptwf = ProcessToSomaWorkflow(process, output, input_file_processing,
+                               output_file_processing, context=None)
   ptwf.doIt()
 
 
@@ -973,7 +980,8 @@ if __name__ == '__main__':
   #process_to_workflow(theProcess, open( 'test.dot', 'w' ), clusters = True, files = False)
   #process_to_workflow( theProcess, open( 'test.sh', 'w' ) )
   #process_to_workflow(theProcess, 'test.workflow')
-  process_to_workflow(process = theProcess, output = sys.argv[2], input_file_processing = sys.argv[3], output_file_processing = sys.argv[4])
-  
-  
-  
+  process_to_workflow(process = theProcess, output = sys.argv[2],
+                      input_file_processing = sys.argv[3],
+                      output_file_processing = sys.argv[4])
+
+

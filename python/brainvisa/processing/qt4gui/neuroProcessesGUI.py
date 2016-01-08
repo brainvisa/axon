@@ -2721,11 +2721,13 @@ class ProcessView( QWidget, ExecutionContextGUI ):
             else:
               print "warning ! db " + repr(db_setting.directory) + " has no uuid."
 
-      ptowf = ProcessToSomaWorkflow(self.process,
-                                  input_file_processing=input_file_processing,
-                                  output_file_processing=output_file_processing,
-                                  brainvisa_cmd=brainvisa_cmd,
-                                  brainvisa_db=builtin_db)
+      ptowf = ProcessToSomaWorkflow(
+        self.process,
+        input_file_processing=input_file_processing,
+        output_file_processing=output_file_processing,
+        brainvisa_cmd=brainvisa_cmd,
+        brainvisa_db=builtin_db,
+        context=self)
       workflow = ptowf.doIt()
 
       name = unicode(submission_dlg.lineedit_wf_name.text())
@@ -3126,11 +3128,13 @@ class ProcessView( QWidget, ExecutionContextGUI ):
             else:
               print "warning ! db " + repr(db_setting.directory) + " has no uuid."
 
-      ptowf = ProcessToSomaWorkflow(self.process,
-                                  options.output,
-                                  input_file_processing = input_file_processing,
-                                  output_file_processing = output_file_processing,
-                                  brainvisa_db=builtin_db)
+      ptowf = ProcessToSomaWorkflow(
+        self.process,
+        options.output,
+        input_file_processing = input_file_processing,
+        output_file_processing = output_file_processing,
+        brainvisa_db=builtin_db,
+        context=self)
       ptowf.doIt()
 
   def _iterateButton( self ):
