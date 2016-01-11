@@ -125,7 +125,7 @@ def initialization(self):
     self.smoothing_parameter_1 = 16
     
     self.inner_iteration_2 = 3
-    self.regularisation_parameters_2 = [2, 2, 1e-06]
+    self.regularisation_parameters_2 = [2, 1, 1e-06]
     self.time_step_2 = 1
     self.smoothing_parameter_2 = 8
     
