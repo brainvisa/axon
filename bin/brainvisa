@@ -74,8 +74,14 @@ else:
 LANG="$OLDLANG"
 unset OLDLANG
 
+if [ -n "$BRAINVISA_HOME" ]; then
+  BRAINVISA_EXE="$BRAINVISA_HOME/bin/brainvisa"
+else
+  BRAINVISA_EXE="$0"
+fi
+
 # Look for neuro.py
-"$python" -t -c "$runbrainvisa" "$0" "$@"
+"$python" -t -c "$runbrainvisa" "$BRAINVISA_EXE" "$@"
 returnValue=$?
 
 # After using IPython in brainvisa, console need to be reset otherwise
