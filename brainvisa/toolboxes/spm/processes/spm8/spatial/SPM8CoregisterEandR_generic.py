@@ -175,17 +175,17 @@ def execution( self, context ):
   elif self.interpolation == "Trilinear":
     reslice_options.setInterpolationToTrilinear()
   elif self.interpolation == "2nd Degree B-Spline":
-    reslice_options.setInterpolationToSecondDegreeBSpline()
+    reslice_options.setInterpolationTo2dDegreeBSpline()
   elif self.interpolation == "3rd Degree B-Spline":
-    reslice_options.setInterpolationToThirdDegreeBSpline()
+    reslice_options.setInterpolationTo3rdDegreeBSpline()
   elif self.interpolation == "4th Degree B-Spline":
-    reslice_options.setInterpolationToFourthDegreeBSpline()
+    reslice_options.setInterpolationTo4thDegreeBSpline()
   elif self.interpolation == "5th Degree B-Spline":
-    reslice_options.setInterpolationToFifthDegreeBSpline()
+    reslice_options.setInterpolationTo5thDegreeBSpline()
   elif self.interpolation == "6th Degree B-Spline":
-    reslice_options.setInterpolationToSixthDegreeBSpline()
+    reslice_options.setInterpolationTo6thDegreeBSpline()
   elif self.interpolation == "7th Degree B-Spline":
-    reslice_options.setInterpolationToSeventhDegreeBSpline()
+    reslice_options.setInterpolationTo7thDegreeBSpline()
   else:
     raise ValueError("Unvalid interpolation")
 

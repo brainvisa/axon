@@ -182,7 +182,7 @@ class Deformations():
     if self.output_destination_path is not None:
       output_directory = self.output_destination_path
     elif self.output_destination == "current directory":
-      raise NotImplementedError()#current directory is batch dirctory
+      raise NotImplementedError()#current directory is batch directory ?
     elif self.output_destination in ["source directory", "deformation directory"]:
       output_directory = os.path.dirname(self.composition.getFirstDeformationPath())
     else:

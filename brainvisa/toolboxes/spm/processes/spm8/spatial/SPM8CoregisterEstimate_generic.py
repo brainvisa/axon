@@ -68,14 +68,6 @@ signature = Signature(
   "separation", ListOf(Float()),
   "tolerances", ListOf(Float()),
   "histogram_smoothing", ListOf(Float()),
-  "interpolation", Choice("Nearest neighbour",
-                          "Trilinear",
-                          "2nd Degree B-Spline",
-                          "3rd Degree B-Spline",
-                          "4th Degree B-Spline",
-                          "5th Degree B-Spline",
-                          "6th Degree B-Spline",
-                          "7th Degree B-Spline"),
   
   "extract_coregister_matrix", Boolean(),
   "coregister_matrix", WriteDiskItem("Transformation matrix", "Transformation matrix"),
@@ -93,7 +85,6 @@ def initialization(self):
   self.separation = [4,2]
   self.tolerances = [0.02,  0.02,  0.02, 0.001, 0.001, 0.001,  0.01,  0.01,  0.01, 0.001, 0.001, 0.001]
   self.histogram_smoothing = [7,7]
-  self.interpolation = "Trilinear"
   self.extract_coregister_matrix = False
    
 def updateSignatureAboutCoregisterMatrix(self, proc):

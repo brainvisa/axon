@@ -31,13 +31,14 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from brainvisa.processes import *
+from soma.spm.spm8.util.deformations import Composition
 from soma.spm.spm8.util.deformations import Deformations
 # from soma.spm.spm8.util.deformations.composition import MatFileImported
 # from soma.spm.spm8.util.deformations.composition import DartelFlow
 from soma.spm.spm8.util.deformations.composition import DeformationField
 # from soma.spm.spm8.util.deformations.composition import IdentityFromImage
 # from soma.spm.spm8.util.deformations.composition import Identity
-# from soma.spm.spm8.util.deformations.composition import Inverse
+from soma.spm.spm8.util.deformations.composition import Inverse
 from soma.spm.spm_launcher import SPM8, SPM8Standalone
 
 #------------------------------------------------------------------------------
@@ -61,6 +62,8 @@ name = 'spm8 - Deformations : apply deformation field- generic'
 signature = Signature(
   'input_images', ListOf(ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'])),#TODO : modify because 4D is unvailable from SPM
   'deformation_field', ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image']),
+  'apply_inverse', Boolean(),
+  'reference_volume', ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image']),
   'interpolation', Choice("Nearest neighbour",
                           "Trilinear",
                           "2nd Degree B-Spline",
@@ -84,13 +87,22 @@ signature = Signature(
                       
 def initialization(self):
   self.setOptional('composition_name')
+  self.addLink(None, 'apply_inverse', self.updateSignatureAboutInverse)
   self.addLink(None, 'custom_outputs', self.updateSignatureAboutOutputs)
   self.addLink(None, 'output_destination', self.updateSignatureAboutOutputDestination)
   
   self.addLink("batch_location", "deformation_field", self.updateBatchPath)
   
+  self.apply_inverse = False
   self.interpolation = "Trilinear"
   self.custom_outputs = False
+  
+def updateSignatureAboutInverse(self, proc):
+  if self.apply_inverse:
+    self.setEnable('reference_volume')
+  else:
+    self.setDisable('reference_volume')
+  self.changeSignature(self.signature)
 
 def updateSignatureAboutOutputs(self, proc):
   if self.custom_outputs:
@@ -118,7 +130,15 @@ def execution(self, context):
   deformation_field = DeformationField()
   deformation_field.setDeformationFieldPath(self.deformation_field.fullPath())
   
-  deformations.appendDeformation(deformation_field)
+  if self.apply_inverse:
+    comp = Composition()
+    comp.append(deformation_field)
+    inverse = Inverse()
+    inverse.setDeformationComposition(comp)
+    inverse.setImageToBaseInverseOn(self.reference_volume.fullPath())
+    deformations.appendDeformation(inverse)
+  else:
+    deformations.appendDeformation(deformation_field)
   
   if not self.composition_name in [None, '']:
     deformations.setCompositionName(self.composition_name)

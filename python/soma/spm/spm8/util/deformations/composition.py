@@ -7,6 +7,7 @@ from soma.spm.virtual_spm.util.deformations.composition import IdentityFromImage
 from soma.spm.virtual_spm.util.deformations.composition import Identity as Identity_virtual
 from soma.spm.virtual_spm.util.deformations.composition import Inverse as Inverse_virtual
 
+from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed
 from soma.spm.spm_container import SPMContainer
 
 import abc
@@ -60,3 +61,7 @@ class Inverse(Inverse_virtual, Deformation):
   def __init__(self):
     self.composition = None
     self.reference_image_path = None
+    
+  @checkIfArgumentTypeIsAllowed(Composition, 1)
+  def setDeformationComposition(self, composition):
+    super(Inverse, self).setDeformationComposition(composition)

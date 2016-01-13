@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
-from soma.spm.virtual_spm.tools.dartel_tools.run_dartel.outer_iteration import OuterIteration
-from soma.spm.spm_container import SPMContainer
-
 from soma.spm.spm_batch_maker_utils import addBatchKeyWordInEachItem
 
-class OuterIterationContainer(SPMContainer):
+class OuterIterationContainer():
 
   def getStringListForBatch( self ):
     batch_list = []

@@ -329,7 +329,7 @@ class Inverse():
   one-to-one,  in  which  case they have a unique inverse.  If y':A->B is the inverse
   of y:B->A, then y' o y = y o y' = Id, where Id is the identity transform.
   """
-  @checkIfArgumentTypeIsAllowed(Composition, 1)
+
   def setDeformationComposition(self, composition):
     """
     Deformation  fields  can be thought of as mappings. These can be combined by the operation of
