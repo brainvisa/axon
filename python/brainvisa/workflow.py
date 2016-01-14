@@ -618,17 +618,17 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
 
     super( ProcessToSomaWorkflow, self ).__init__( process )
     self.__out = output
-    
+
     self.__jobs = {}
     self.__file_transfers = {}
     self.__groups = {}
     self.__mainGroupId = None
     self.__dependencies =[]
-    
+
     self.__input_file_processing = input_file_processing
     self.__output_file_processing = output_file_processing
     self.context = context
-    
+
     self.brainvisa_cmd = brainvisa_cmd
     if type( self.brainvisa_cmd ) in types.StringTypes:
       self.brainvisa_cmd = [ brainvisa_cmd ]
@@ -637,11 +637,41 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
     else:
       self.brainvisa_db = brainvisa_db
 
+    # setup soma-workflow context config (for executionWorkflow() process
+    # methods and links with Capsul
+    self.setup_workflow_context()
+
   def escape( self ):
     return [ ('\'', '"') ]
-  
+
+  def setup_workflow_context(self):
+    context = self.context
+    path_translations = {}
+    transfer_paths = []
+    if self.__input_file_processing in (self.BV_DB_SHARED_PATH,
+                                        self.SHARED_RESOURCE_PATH):
+      shared_db = [db
+                   for db in neuroHierarchy.databases.iterDatabases()
+                   if db.fso.name=='share']
+      path_translations = dict(
+        [(db.directory, ['brainvisa', db.uuid]) for db in shared_db])
+    if self.__input_file_processing == self.FILE_TRANSFER \
+        or self.__output_file_processing == self.FILE_TRANSFER:
+      for db in neuroHierarchy.databases.iterDatabases():
+        if db.fso.name != 'share' \
+            or self.__input_file_processing not in (self.BV_DB_SHARED_PATH,
+                                                    self.SHARED_RESOURCE_PATH):
+          transfer_paths.append(db.directory)
+    elif self.__input_file_processing == self.SHARED_RESOURCE_PATH \
+        or self.__output_file_processing == self.SHARED_RESOURCE_PATH:
+      for db in neuroHierarchy.databases.iterDatabases():
+        path_translations[db.directory] = ['brainvisa', db.uuid]
+
+    context.soma_workflow_config = {'path_translations': path_translations,
+                                    'transfer_paths': transfer_paths}
+
   def doIt( self ):
-    
+
     self.__jobs = {}
     self.__file_transfers = {}
     self.__groups = {}

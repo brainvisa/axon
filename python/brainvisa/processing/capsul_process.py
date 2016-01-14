@@ -8,6 +8,7 @@ from brainvisa.data.writediskitem import WriteDiskItem
 from brainvisa.processes import getAllFormats
 from brainvisa.data.neuroData import Signature
 from brainvisa.data.neuroDiskItems import DiskItem
+from brainvisa.data import neuroHierarchy
 from traits import trait_types
 import traits.api as traits
 import six
@@ -194,7 +195,7 @@ class CapsulProcess(processes.Process):
         from capsul.process import process_with_fom
         from capsul.pipeline import pipeline_workflow
 
-        study_config = self.init_study_config()
+        study_config = self.init_study_config(context)
 
         self.propagate_parameters_to_capsul()
         process = self.get_capsul_process()
@@ -211,53 +212,68 @@ class CapsulProcess(processes.Process):
         return jobs, dependencies, groups
 
 
-    def init_study_config(self):
-        ''' Build a Capsul StudyConfig object, set it up, and return it
+    def init_study_config(self, context=processes.defaultContext()):
+        ''' Build a Capsul StudyConfig object if not present in the context,
+        set it up, and return it
         '''
         from capsul.study_config.study_config import StudyConfig
         from soma.wip.application.api import Application as Appli2
 
-        axon_to_capsul_formats = {
-            'NIFTI-1 image': "NIFTI",
-            'gz compressed NIFTI-1 image': "NIFTI gz",
-            'GIS image': "GIS",
-            'MINC image': "MINC",
-            'SPM image': "SPM",
-            'GIFTI file': "GIFTI",
-            'MESH mesh': "MESH",
-            'PLY mesh': "PLY",
-            'siRelax Fold Energy': "Energy",
-        }
+        study_config = getattr(context, 'study_config', None)
+
+        #axon_to_capsul_formats = {
+            #'NIFTI-1 image': "NIFTI",
+            #'gz compressed NIFTI-1 image': "NIFTI gz",
+            #'GIS image': "GIS",
+            #'MINC image': "MINC",
+            #'SPM image': "SPM",
+            #'GIFTI file': "GIFTI",
+            #'MESH mesh': "MESH",
+            #'PLY mesh': "PLY",
+            #'siRelax Fold Energy': "Energy",
+        #}
 
         ditems = [(name, item) for name, item in six.iteritems(self.signature)
                   if isinstance(item, DiskItem)]
-        if ditems:
-            item = ditems[0]
-            old_format = axon_to_capsul_formats.get(
-                item[1].format.name, item[1].format.name)
-            old_database = getattr(self, item[0]).get('_database', '')
+        database = ''
+        #format = ''
+        for item in ditems:
+            #format = axon_to_capsul_formats.get(
+                #item[1].format.name, item[1].format.name)
+            database = getattr(self, item[0]).get('_database', '')
+            if database and \
+                    not neuroHierarchy.databases.database(database).builtin:
+                break
+            database = ''
+
+        if study_config:
+            study_config.input_directory = database
+            study_config.output_directory = database
         else:
-            old_database = ''
-            old_format = ''
+            configuration = Appli2().configuration
+            initial_study_config = {
+                "input_directory" : database,
+                "output_directory" : database,
+                "input_fom" : "morphologist-auto-1.0",
+                "output_fom" : "morphologist-auto-1.0",
+                "shared_fom" : "shared-brainvisa-1.0",
+                "spm_directory" : configuration.SPM.spm8_standalone_path,
+                "use_soma_workflow" : True,
+                "use_fom" : True,
+                "volumes_format" : "NIFTI gz",
+                "meshes_format" : "GIFTI",
+            }
 
-        configuration = Appli2().configuration
-        initial_study_config = {
-            "input_directory" : old_database,
-            "output_directory" : old_database,
-            "input_fom" : "morphologist-auto-1.0",
-            "output_fom" : "morphologist-auto-1.0",
-            "shared_fom" : "shared-brainvisa-1.0",
-            "spm_directory" : configuration.SPM.spm8_standalone_path,
-            "use_soma_workflow" : True,
-            "use_fom" : True,
-            "volumes_format" : old_format,
-            "meshes_format" : "GIFTI",
-        }
+            study_config = StudyConfig(
+                init_config=initial_study_config,
+                modules=StudyConfig.default_modules + ['BrainVISAConfig',
+                                                       'FomConfig'])
 
-        study_config = StudyConfig(
-            init_config=initial_study_config,
-            modules=StudyConfig.default_modules + ['BrainVISAConfig',
-                                                   'FomConfig'])
+        # soma-workflow execution settings
+        soma_workflow_config = getattr(context, 'soma_workflow_config', {})
+        study_config.somaworkflow_computing_resource = 'localhost'
+        study_config.somaworkflow_computing_resources_config.localhost \
+            = soma_workflow_config
 
         return study_config
 
