@@ -62,7 +62,6 @@ warping_section = "Warping and MRF parameters"
 
 signature = Signature(
   't1mri', ReadDiskItem('Raw T1 MRI', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=channel_section),
-  'analysis', ReadDiskItem('Analysis Dir', 'Directory', section=channel_section),
   'TPM_template', ReadDiskItem('TPM template', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=channel_section),
   'bias_regulatisation', Choice('no regularisation (0)',
                                 'extremely light regularisation (0.00001)',
@@ -363,7 +362,7 @@ def initialization(self):
   
   self.addLink("batch_location", "grey_native", self.updateBatchPath)
   
-  self.linkParameters('t1mri_bias_corrected', ('t1mri', 'analysis', 'TPM_template'), self.updateT1MRIBiasCorrected)
+  self.linkParameters('t1mri_bias_corrected', ('t1mri', 'TPM_template'), self.updateT1MRIBiasCorrected)
   self.linkParameters('t1mri_bias_field', 't1mri_bias_corrected')
   self.linkParameters('grey_native', 't1mri_bias_corrected')
   self.linkParameters('grey_dartel_imported', 't1mri_bias_corrected')
@@ -524,9 +523,11 @@ def updateSignatureAboutDeformationField(self, proc):
     self.setEnable('forward_field', 'inverse_field')
 
 def updateT1MRIBiasCorrected(self, proc, dummy):
-  if not None in [self.t1mri, self.analysis, self.TPM_template]:
+  if not None in [self.t1mri, self.TPM_template]:
     d = self.t1mri.hierarchyAttributes()
-    d['analysis'] = self.analysis.hierarchyAttributes()['analysis']
+    d['processing'] = 'spm12Segment'
+    d['bias_correction_process'] = 'spm12Segment'
+    d['analysis'] = "default"
     d['template'] = self.TPM_template.hierarchyAttributes()['template']
     return self.signature['t1mri_bias_corrected'].findValue(d)
     

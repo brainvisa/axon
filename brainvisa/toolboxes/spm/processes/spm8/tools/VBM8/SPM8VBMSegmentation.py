@@ -58,9 +58,7 @@ deformation_field = "Deformation fields"
 
 
 signature = Signature(
-  't1mri', ReadDiskItem('Raw T1 MRI', ['NIFTI-1 image', 'SPM image', 'MINC image']),#Input volume
-  'analysis', ReadDiskItem('Analysis Dir', 'Directory'),
-   
+  't1mri', ReadDiskItem('Raw T1 MRI', ['NIFTI-1 image', 'SPM image', 'MINC image']),#Input volume   
   #Estimation Options
   'TPM_template', ReadDiskItem('TPM template', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=estimation_options_section),
   'gaussian_classes', ListOf(Integer(),section=estimation_options_section),
@@ -283,7 +281,7 @@ signature = Signature(
                 section=csf_matter_options_section),
   #Bias Correction
   'save_bias_native', Boolean(section=bias_correction_options_section),
-  'bias_native', 
+  't1mri_bias_corrected', 
   WriteDiskItem('T1 MRI Bias Corrected', 'NIFTI-1 image', 
                 requiredAttributes={'transformation':'none',
                                     'warping_method':'none'}, 
@@ -412,7 +410,7 @@ def initialization(self):
   self.addLink("batch_location", "grey_native", self.updateBatchPath)
   
   
-  self.linkParameters("grey_native", ("t1mri", "analysis", "TPM_template"), self.updateGreyNative )
+  self.linkParameters("grey_native", ("t1mri", "TPM_template"), self.updateGreyNative )
   self.linkParameters("grey_HDW_warped_unmodulated", ("grey_native", "DARTEL_template"), self.updateHDWGrey)
   self.linkParameters("grey_LDW_warped_unmodulated", "grey_native")
   self.linkParameters("grey_LDW_warped_modulated", "grey_native")
@@ -433,10 +431,10 @@ def initialization(self):
   self.linkParameters("csf_HDW_warped_modulated", "grey_HDW_warped_unmodulated")
   self.linkParameters("csf_dartel_imported", "grey_native")
   
-  self.linkParameters("bias_native", "grey_native" )
-  self.linkParameters("bias_LDW_warped_unmodulated", "grey_native")
-  self.linkParameters("bias_HDW_warped_unmodulated", "grey_HDW_warped_unmodulated")
-  self.linkParameters("bias_affine", "grey_native")
+  self.linkParameters("t1mri_bias_corrected", "grey_native", self.updateT1MRIBiasCorrected )
+  self.linkParameters("bias_LDW_warped_unmodulated", "t1mri_bias_corrected")
+  self.linkParameters("bias_HDW_warped_unmodulated", "grey_HDW_warped_unmodulated", self.updateT1MRIBiasCorrectedHDW)
+  self.linkParameters("bias_affine", "t1mri_bias_corrected")
   
   self.linkParameters("pve_native", "grey_native" )
   self.linkParameters("pve_LDW_warped_unmodulated", "grey_native")
@@ -573,7 +571,7 @@ def updateSignatureAboutCSFDartel(self, proc):
   self.updateSignatureFieldToShow("save_csf_dartel_imported", "csf_dartel_imported")
 #Bias
 def updateSignatureAboutBiasNative(self, proc):
-  self.updateSignatureFieldToShow("save_bias_native", "bias_native")
+  self.updateSignatureFieldToShow("save_bias_native", "t1mri_bias_corrected")
   
 def updateSignatureAboutBiasNormalized(self, proc):
   if self.spatial_norm == "High-dimensional: Dartel":
@@ -650,9 +648,10 @@ def updateSignatureFieldToShow(self, field_to_check, field_to_modified):
   self.changeSignature(self.signature)
 #----------------------------------------------------------------------------------- 
 def updateGreyNative(self, proc, dummy):
-  if not None in [self.analysis, self.t1mri, self.TPM_template]:
+  if not None in [self.t1mri, self.TPM_template]:
     d = self.t1mri.hierarchyAttributes()
-    d["analysis"] = self.analysis.hierarchyAttributes()["analysis"]
+    d["processing"] = 'spm8VBMSegmentation'
+    d['analysis'] = "default"
     d["template"] = self.TPM_template.hierarchyAttributes()["template"]
     return self.signature["grey_native"].findValue(d)
 
@@ -661,7 +660,21 @@ def updateHDWGrey(self, proc, dummy):
     d = self.grey_native.hierarchyAttributes()
     d["template"] = self.DARTEL_template.hierarchyAttributes()["template"]
     return self.signature["grey_HDW_warped_unmodulated"].findValue(d)
+
+def updateT1MRIBiasCorrected(self, proc, dummy):
+  if self.grey_native is not None:
+    d = self.grey_native.hierarchyAttributes()
+    d["bias_correction_process"] = 'spm8VBMSegmentation'
+    return self.signature["t1mri_bias_corrected"].findValue(d)
   
+def updateT1MRIBiasCorrectedHDW(self, proc, dummy):
+  if self.grey_HDW_warped_unmodulated is not None:
+    d = self.t1mri_bias_corrected.hierarchyAttributes()  
+    d["bias_correction_process"] = 'spm8VBMSegmentation'
+    return self.signature['bias_HDW_warped_unmodulated'].findValue(d)
+  else:
+    return None
+
 def updateBatchPath(self, proc):
   if self.grey_native is not None:
     directory_path = os.path.dirname(self.grey_native.fullPath())
@@ -714,7 +727,7 @@ def execution( self, context ):
                      save_csf_dartel_imported=self.save_csf_dartel_imported,
                      csf_dartel_imported=self.csf_dartel_imported,
                      save_bias_native=self.save_bias_native,
-                     bias_native=self.bias_native,
+                     t1mri_bias_corrected=self.t1mri_bias_corrected,
                      save_bias_normalized=self.save_bias_normalized,
                      bias_LDW_warped_unmodulated=self.bias_LDW_warped_unmodulated,
                      bias_HDW_warped_unmodulated=self.bias_HDW_warped_unmodulated,

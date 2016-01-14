@@ -148,7 +148,7 @@ signature = Signature(
 
   #Bias Correction
   'save_bias_native', Boolean(section=bias_correction_options_section),
-  'bias_native', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=bias_correction_options_section),
+  't1mri_bias_corrected', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=bias_correction_options_section),
   'save_bias_normalized', Boolean(section=bias_correction_options_section),
   'bias_LDW_warped_unmodulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=bias_correction_options_section),
   'bias_HDW_warped_unmodulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=bias_correction_options_section),
@@ -335,7 +335,7 @@ def updateSignatureAboutCSFDartel(self, proc):
   self.updateSignatureFieldToShow("save_csf_dartel_imported", "csf_dartel_imported")
 #Bias
 def updateSignatureAboutBiasNative(self, proc):
-  self.updateSignatureFieldToShow("save_bias_native", "bias_native")
+  self.updateSignatureFieldToShow("save_bias_native", "t1mri_bias_corrected")
   
 def updateSignatureAboutBiasNormalized(self, proc):
   if self.spatial_norm == "High-dimensional: Dartel":
@@ -633,7 +633,7 @@ def execution( self, context ):
   bias_options = BiasCorrectedWritingOptions(dartel_normalization)
   if self.save_bias_native:
     bias_options.setNative()
-    bias_options.setNativePath(self.bias_native.fullPath())
+    bias_options.setNativePath(self.t1mri_bias_corrected.fullPath())
   else:
     bias_options.unsetNative()
   if self.save_bias_normalized:

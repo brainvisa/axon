@@ -23,7 +23,7 @@ DARTEL_directory = (
   ),
 )
 
-insert( 'analyzes/{analysis}', 'DARTEL_{template}', SetType('DARTEL analysis directory'), apply( SetContent, DARTEL_directory))
+insert( 'analyzes/{processing}', 'DARTEL_{template}', SetType('DARTEL analysis directory'), apply( SetContent, DARTEL_directory))
 
 subject_groups = (
   '{modality}_group', SetContent(
@@ -43,7 +43,7 @@ insertFirst( '', 'covariates', apply( SetContent, covariates))
 # subject specific
 #===============================================================================
 
-#{center}/{subject}/{analysis}/{acquisition}/using_LDW_to_{template}_with_{parameter}
+#{center}/{subject}/{processing}/{acquisition}/{analysis}_LDW_to_{template}_with_{parameter}
 LDW_directory = (
 #using TPM
   #-T1 MRI probability map native space->
@@ -141,33 +141,33 @@ LDW_directory = (
   '<subject>_grey_proba_affine_registered', 
 	SetType('T1 MRI tissue probability map'), 
 	SetWeakAttr('tissue_class', 'grey', 
-                    'transformation', 'affine',
-                    'modulation', 'none',
-                    'warping_method', 'none'),
+              'transformation', 'affine',
+              'modulation', 'none',
+              'warping_method', 'none'),
   '<subject>_white_proba_affine_registered', 
 	SetType('T1 MRI tissue probability map'), 
 	SetWeakAttr('tissue_class', 'white', 
-                    'transformation', 'affine',
-                    'modulation', 'none',
-                    'warping_method', 'none'),
+              'transformation', 'affine',
+              'modulation', 'none',
+              'warping_method', 'none'),
   '<subject>_csf_proba_affine_registered', 
 	SetType('T1 MRI tissue probability map'), 
 	SetWeakAttr('tissue_class', 'csf', 
-                    'transformation', 'affine',
-                    'modulation', 'none',
-                    'warping_method', 'none'),
+              'transformation', 'affine',
+              'modulation', 'none',
+              'warping_method', 'none'),
   '<subject>_skull_proba_affine_registered', 
 	SetType('T1 MRI tissue probability map'), 
 	SetWeakAttr('tissue_class', 'skull', 
-                    'transformation', 'affine',
-                    'modulation', 'none',
-                    'warping_method', 'none'),
+              'transformation', 'affine',
+              'modulation', 'none',
+              'warping_method', 'none'),
   '<subject>_scalp_proba_affine_registered', 
 	SetType('T1 MRI tissue probability map'), 
 	SetWeakAttr('tissue_class', 'scalp', 
-                    'transformation', 'affine',
-                    'modulation', 'none',
-                    'warping_method', 'none'),
+              'transformation', 'affine',
+              'modulation', 'none',
+              'warping_method', 'none'),
   '<subject>_background_proba_affine_registered', 
         SetType('T1 MRI tissue probability map'), 
         SetWeakAttr('tissue_class', 'none', 
@@ -179,7 +179,7 @@ LDW_directory = (
         SetType('T1 MRI Partial Volume Estimation'),
         SetWeakAttr('transformation', 'affine',
                     'warping_method', 'none'),
-  '<subject>_bias_corrected_affine_registered', 
+  '<subject>_bias_corrected_using_affine_registered', 
         SetType('T1 MRI Bias corrected'),
         SetWeakAttr('transformation', 'affine',
                     'warping_method', 'none'),
@@ -189,8 +189,8 @@ HDW_directory = (
   '<subject>_jacobian_warped', 
         SetType('Jacobian determinant'),
 )
-#{center}/{subject}/{analysis}/{acquisition}/using_LDW_to_{template} ==> warping_method : low-dimensional
-#{center}/{subject}/{analysis}/{acquisition}/using_HDW_to_{template} ==> warping_method : high-dimensional
+#{center}/{subject}/{processing}/{acquisition}/{analysis}_LDW_to_{template} ==> warping_method : low-dimensional
+#{center}/{subject}/{processing}/{acquisition}/{analysis}_HDW_to_{template} ==> warping_method : high-dimensional
 def createHierarchyTreeDependingOnNormalization(warping_method):
   return (
 #Warped on template, LDW(ex: TPM)/or/HDW(ex : DARTEL) depending on warping_method (low-dimensional/or/high-dimensional)
@@ -236,39 +236,39 @@ def createHierarchyTreeDependingOnNormalization(warping_method):
   '<subject>_grey_proba_warped_with_affine_and_non_linear_modulation', 
 	SetType('T1 MRI tissue probability map'), 
 	SetWeakAttr('tissue_class', 'grey', 
-                    'modulation', 'affine and non-linear',
-                    'warping_method', warping_method,
-                    'transformation', 'none'),
+              'modulation', 'affine and non-linear',
+              'warping_method', warping_method,
+              'transformation', 'none'),
   '<subject>_white_proba_warped_with_affine_and_non_linear_modulation', 
 	SetType('T1 MRI tissue probability map'), 
 	SetWeakAttr('tissue_class', 'white', 
-                    'modulation', 'affine and non-linear',
-                    'warping_method', warping_method,
-                    'transformation', 'none'),
+              'modulation', 'affine and non-linear',
+              'warping_method', warping_method,
+              'transformation', 'none'),
   '<subject>_csf_proba_warped_with_affine_and_non_linear_modulation', 
 	SetType('T1 MRI tissue probability map'), 
 	SetWeakAttr('tissue_class', 'csf', 
-                    'modulation', 'affine and non-linear',
-                    'warping_method', warping_method,
-                    'transformation', 'none'),
+              'modulation', 'affine and non-linear',
+              'warping_method', warping_method,
+              'transformation', 'none'),
   '<subject>_skull_proba_warped_with_affine_and_non_linear_modulation', 
 	SetType('T1 MRI tissue probability map'), 
 	SetWeakAttr('tissue_class', 'skull', 
-                    'modulation', 'affine and non-linear',
-                    'warping_method', warping_method,
-                    'transformation', 'none'),
+              'modulation', 'affine and non-linear',
+              'warping_method', warping_method,
+              'transformation', 'none'),
   '<subject>_scalp_proba_warped_with_affine_and_non_linear_modulation', 
 	SetType('T1 MRI tissue probability map'), 
 	SetWeakAttr('tissue_class', 'scalp',  
-                    'modulation', 'affine and non-linear',
-                    'warping_method', warping_method,
-                    'transformation', 'none'),
+              'modulation', 'affine and non-linear',
+              'warping_method', warping_method,
+              'transformation', 'none'),
   '<subject>_background_proba_warped_with_affine_and_non_linear_modulation', 
-        SetType('T1 MRI tissue probability map'), 
-        SetWeakAttr('tissue_class', 'none',  
-                    'modulation', 'affine and non-linear',
-                    'warping_method', warping_method,
-                    'transformation', 'none'),
+  SetType('T1 MRI tissue probability map'), 
+  SetWeakAttr('tissue_class', 'none',  
+              'modulation', 'affine and non-linear',
+              'warping_method', warping_method,
+              'transformation', 'none'),
   #<--
   #-T1 MRI probability map warped on TPM/or/DARTEL without modulation->
   '<subject>_grey_proba_warped_without_modulation', #TODO : check if without_modulation is useless
@@ -302,35 +302,36 @@ def createHierarchyTreeDependingOnNormalization(warping_method):
                     'modulation', 'none',
                     'transformation', 'none'),
   '<subject>_background_proba_warped_without_modulation', 
-        SetType('T1 MRI tissue probability map'), 
-        SetWeakAttr('tissue_class', 'none', 
-                    'warping_method', warping_method, 
-                    'modulation', 'none',
-                    'transformation', 'none'),
+  SetType('T1 MRI tissue probability map'), 
+  SetWeakAttr('tissue_class', 'none', 
+              'warping_method', warping_method, 
+              'modulation', 'none',
+              'transformation', 'none'),
   #<--
   '<subject>_PVE_warped_without_modulation', 
-        SetType('T1 MRI Partial Volume Estimation'),
-        SetWeakAttr('warping_method', warping_method,
-                    'transformation', 'none'),
-  '<subject>_bias_corrected_warped_without_modulation', 
-        SetType('T1 MRI Bias corrected'),
-        SetWeakAttr('transformation', 'none',
-                    'warping_method', warping_method),
+  SetType('T1 MRI Partial Volume Estimation'),
+  SetWeakAttr('warping_method', warping_method,
+              'transformation', 'none'),
+  '<subject>_bias_corrected_using_warped_without_modulation', 
+  SetType('T1 MRI Bias corrected'),
+  SetWeakAttr('transformation', 'none',
+              'warping_method', warping_method),
   'y_<subject>_forward_deformation_field', 
-        SetType('SPM deformation field'), 
-        SetWeakAttr('direction', 'forward',
-                    'warping_method', warping_method),
+  SetType('SPM deformation field'), 
+  SetWeakAttr('direction', 'forward',
+              'warping_method', warping_method),
   'iy_<subject>_inverse_deformation_field', 
-        SetType('SPM deformation field'), 
-        SetWeakAttr('direction', 'inverse',
-                    'warping_method', warping_method),
+  SetType('SPM deformation field'), 
+  SetWeakAttr('direction', 'inverse',
+              'warping_method', warping_method),
   )
-#{center}/{subject}/{analysis}/{acquisition}
+  
+#{center}/{subject}/{processing}/{acquisition}
 analysis_directory = (
-  'using_LDW_from_t1mri_to_{template}', apply( SetContent, LDW_directory +
-                                                createHierarchyTreeDependingOnNormalization(warping_method='low-dimensional')),
-  'using_HDW_from_t1mri_to_{template}', apply( SetContent, HDW_directory +
-                                                createHierarchyTreeDependingOnNormalization(warping_method='high-dimensional')),
+  '{analysis}_LDW_from_t1mri_to_{template}', apply(SetContent, LDW_directory +
+                                                   createHierarchyTreeDependingOnNormalization(warping_method='low-dimensional')),
+  '{analysis}_HDW_from_t1mri_to_{template}', apply(SetContent, HDW_directory +
+                                                   createHierarchyTreeDependingOnNormalization(warping_method='high-dimensional')),
 )
 
-insert( '{center}/{subject}/{analysis}', '{acquisition}', apply( SetContent, analysis_directory))
+insert( '{center}/{subject}/{processing}', '{acquisition}', apply( SetContent, analysis_directory))
