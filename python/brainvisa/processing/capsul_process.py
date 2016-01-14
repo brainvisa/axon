@@ -148,16 +148,21 @@ class CapsulProcess(processes.Process):
         process = self.get_capsul_process()
         signature_args = []
         excluded_traits = set(('nodes_activation', 'pipeline_steps'))
+        optional = []
         for name, param in process.user_traits().iteritems():
             if name in excluded_traits:
                 continue
             parameter = make_parameter(param, name)
             signature_args += [name, parameter]
+            if param.optional:
+                optional.append(name)
         signature = Signature(*signature_args)
         signature['edit_pipeline'] = neuroData.Boolean()
         self.__class__.signature = signature
         self.changeSignature(signature)
 
+        if optional:
+            self.setOptional(*optional)
         self.edit_pipeline = False
         for name in process.user_traits():
             if name in excluded_traits:
