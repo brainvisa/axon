@@ -31,6 +31,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 include( 'builtin' )
+include( 'MRI_spm' )
 
 FileType('Matlab SPM deformation file', 'Matlab SPM file')
 
@@ -39,7 +40,7 @@ FileType('DARTEL analysis directory', 'Directory')
 FileType('SPM field', '3D Volume')
 FileType('HDW DARTEL flow field', 'SPM field')
 FileType('SPM deformation field', 'SPM field')
-FileType('T1 MRI Bias field', 'SPM field')
+FileType('T1 MRI Bias field', 'SPM field')#Voir avec Morpho
 
 FileType('TPM HDW DARTEL created template', 'TPM HDW DARTEL template')
 
@@ -49,6 +50,7 @@ FileType('Jacobian determinant', '3D Volume')
 FileType('Estimate T1 MRI raw volumes', 'Text file')
 FileType('T1 MRI partial volume estimation', '3D Volume')
 FileType('T1 MRI tissue probability map', '4D Volume')
+FileType('T1 MRI tissue probability mask', 'Label volume')
 
 FileType('Subject Group', 'Any Type', 'JSON file')
 FileType('Covariate table for SPM', 'CSV file')
