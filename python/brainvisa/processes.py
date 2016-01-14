@@ -4342,27 +4342,22 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
     NewProcess.processReloadNotifier = Notifier( 1 )
 
     # Optional attributes
-    for n in ( 'signature', 'execution', 'name', 'userLevel', 'roles' ):
+    for n in ('signature', 'execution', 'name', 'userLevel', 'roles',
+              'category', 'showMaximized'):
       v = getattr( processModule, n, None )
       if v is not None:
         setattr( NewProcess, n, v )
-    v = getattr( processModule, 'category', None )
-    if v is not None:
-      NewProcess.category = v
-    v = getattr( processModule, 'showMaximized', None )
-    if v is not None:
-      NewProcess.showMaximized = v
 
     # Other attributes
     for n, v in processModule.__dict__.items():
-      if type( v ) is types.FunctionType and \
-        g.get( n ) is not v:
-        args = inspect.getargs( v.func_code )[ 0 ]
-        if args and args[ 0 ] == 'self':
-          setattr( NewProcess, n, v )
-          delattr( processModule, n )
-        else:
-          setattr( NewProcess, n, staticmethod( v ) )
+      if g.get( n ) is not v:
+        if type( v ) is types.FunctionType:
+          args = inspect.getargs( v.func_code )[ 0 ]
+          if args and args[ 0 ] == 'self':
+            setattr( NewProcess, n, v )
+            delattr( processModule, n )
+          else:
+            setattr( NewProcess, n, staticmethod( v ) )
 
 
     NewProcess._fileName = fileName

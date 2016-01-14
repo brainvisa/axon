@@ -23,16 +23,9 @@ the aim is to allow using a Capsul process/pipeline as an Axon process (or at le
     from brainvisa.processing import capsul_process
 
     name = 'A Capusl process ported to Axon'
-
     userLevel = 0
-
     base_class = capsul_process.CapsulProcess
-
-    def setup_capsul_process(self):
-        from capsul.process import get_process_instance
-        process = get_process_instance(
-            'morphologist.capsul.morphologist.Morphologist')
-        self.set_capsul_process(process)
+    capsul_process = 'morphologist.capsul.morphologist.Morphologist'
 
 Explanation:
 
@@ -123,13 +116,22 @@ class CapsulProcess(processes.Process):
 
 
     def setup_capsul_process(self):
-        ''' **Must be overloaded**
+        ''' This method is in charge of instantiating the appropriate CAPSUL process or pipeline, and setting it into the Axon process (self), using the set_capsul_process() method.
 
-        this method is in charge of instantiating the appropriate CAPSUL process or pipeline, and setting it into the Axon process (self), using the set_capsul_process() method.
+        It may be overloaded by children processes, but the default implementation looks for a variable "capsul_process" in the process source file which provides the Capsul module/process name (as a string), for instance:
+
+        ::
+
+          capsul_process = "morphologist.capsul.axon.t1biascorrection.T1BiasCorrection"
 
         This is basically the only thing the process must do.
         '''
-        pass
+        module = processes._processModules[self._id]
+        capsul_process = getattr(module, 'capsul_process')
+        if capsul_process:
+            from capsul.process import get_process_instance
+            process = get_process_instance(capsul_process)
+            self.set_capsul_process(process)
 
 
     def get_capsul_process(self):
