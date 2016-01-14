@@ -31,7 +31,6 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 include( 'builtin' )
-include( 'MRI_spm' )
 
 FileType('Matlab SPM deformation file', 'Matlab SPM file')
 
@@ -43,7 +42,6 @@ FileType('SPM deformation field', 'SPM field')
 FileType('T1 MRI Bias field', 'SPM field')#Voir avec Morpho
 
 FileType('TPM HDW DARTEL created template', 'TPM HDW DARTEL template')
-
 
 FileType('Jacobian determinant', '3D Volume')
 
