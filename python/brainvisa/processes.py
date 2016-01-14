@@ -204,13 +204,20 @@ from soma.qtgui.api import QtThreadCall, FakeQtThreadCall
 
 global _mainThreadActions
 _mainThreadActions = FakeQtThreadCall()
+global _defaultContext
+_defaultContext = None
 
 #----------------------------------------------------------------------------
 def pathsplit( path ):
   '''Returns a tuple corresponding to a recursive call to os.path.split
   for example on Unix:
-     pathsplit( 'toto/titi/tata' ) == ( 'toto', 'titi', 'tata' )
-     pathsplit( '/toto/titi/tata' ) == ( '/', 'toto', 'titi', 'tata' )'''
+
+  ::
+
+     pathsplit('toto/titi/tata') == ('toto', 'titi', 'tata')
+     pathsplit('/toto/titi/tata') == ('/', 'toto', 'titi', 'tata')
+
+  '''
   if isinstance( path, basestring ):
     if path:
       return pathsplit( ( path, ) )
@@ -579,30 +586,6 @@ class Parameterized( object ):
 
     This variable is a :py:class:`soma.notification.Notifier`. It calls its notify function when the signature of the :py:class:`Parameterized` object changes.
 
-  :Methods:
-
-  .. automethod:: initialization
-  .. automethod:: findValue
-  .. automethod:: setValue
-  .. automethod:: checkArguments
-  .. automethod:: setOptional
-  .. automethod:: isDefault
-  .. automethod:: setDefault
-  .. automethod:: setConvertedValue
-  .. automethod:: restoreConvertedValues
-
-  .. automethod:: parameterLinkable
-  .. automethod:: linkParameters
-  .. automethod:: addLink
-  .. automethod:: removeLink
-  .. automethod:: addParameterObserver
-  .. automethod:: removeParameterObserver
-  .. automethod:: changeSignature
-  .. automethod:: _parameterHasChanged
-  .. automethod:: clearLinksFrom
-  .. automethod:: clearLinksTo
-  .. automethod:: cleanup
-
   """
 
   def __init__( self, signature ):
@@ -794,10 +777,14 @@ class Parameterized( object ):
     Links the parameters. When one of the `sources` parameters change, the value of `destName` parameter may change.
     It is possible to give a specific link function that will be called when the link is applied but it is not mandatory, a default function exists according to the type of parameter.
 
-    :param string destName: name of the parameter that may change when the sources parameters change. If None, the link function will be called every time the sources parameters change.
-    :param sources: one or several parameters, whose modification will activate the link function.
-    :type sources: string, tuple or list
-    :param function function: specific function to call instead of the default one when the link is activated. The signature of the function is *function(self, process ) -> destination*
+    Parameters
+    ----------
+    destName: string
+        name of the parameter that may change when the sources parameters change. If None, the link function will be called every time the source parameters change.
+    sources: string, tuple or list of strings
+        one or several parameters, whose modification will activate the link function.
+    function: function
+        specific function to call instead of the default one when the link is activated. The signature of the function is function(self, process), returning destination
 
     """
     if type( sources ) is types.StringType:

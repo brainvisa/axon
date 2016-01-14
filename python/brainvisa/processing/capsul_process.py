@@ -1,18 +1,3 @@
-
-from __future__ import print_function
-
-import brainvisa.processes as processes
-from brainvisa.data import neuroData
-from brainvisa.data.readdiskitem import ReadDiskItem
-from brainvisa.data.writediskitem import WriteDiskItem
-from brainvisa.processes import getAllFormats
-from brainvisa.data.neuroData import Signature
-from brainvisa.data.neuroDiskItems import DiskItem
-from brainvisa.data import neuroHierarchy
-from traits import trait_types
-import traits.api as traits
-import six
-
 ''' Specialized Process class to link with CAPSUL processes and pipelines.
 
 the aim is to allow using a Capsul process/pipeline as an Axon process (or at least, ease it). Such a process would like the following:
@@ -37,7 +22,23 @@ The underlying Capsul process traits will be exported to the Axon signature auto
 
 The process also does not have an execution() function. This is normal: CapsulProcess already defines an executionWorkflow() method which will generate a Soma-Workflow workflow which will integrate in the process or parent pipeline (or iteration) workflow.
 
+See also :doc:`capsul`
+
 '''
+
+from __future__ import print_function
+
+import brainvisa.processes as processes
+from brainvisa.data import neuroData
+from brainvisa.data.readdiskitem import ReadDiskItem
+from brainvisa.data.writediskitem import WriteDiskItem
+from brainvisa.processes import getAllFormats
+from brainvisa.data.neuroData import Signature
+from brainvisa.data.neuroDiskItems import DiskItem
+from brainvisa.data import neuroHierarchy
+from traits import trait_types
+import traits.api as traits
+import six
 
 
 def fileOptions(filep):
@@ -100,7 +101,7 @@ def convert_to_capsul_value(value):
 class CapsulProcess(processes.Process):
     ''' Specialized Process to link with a CAPSUL process or pipeline.
 
-    See the brainvisa.processing.capsul_process doc for details.
+    See the :py:mod:`brainvisa.processing.capsul_process` doc for details.
     '''
 
     def __init__(self):
@@ -192,11 +193,9 @@ class CapsulProcess(processes.Process):
     def executionWorkflow(self, context=processes.defaultContext()):
         ''' Build the workflow for execution. The workflow will be integrated in the parent pipeline workflow, if any.
 
-        **TODO**
+        StudyConfig options are handled to support local or remote execution, file transfers / translations and other specific stuff.
 
-        StudyConfig options should be handled to support local or remote execution, file transfers / translations and other specific stuff. This is not done right now.
-
-        FOM completion is not performed also.
+        FOM completion is not performed yet.
         '''
 
         from capsul.process import process_with_fom

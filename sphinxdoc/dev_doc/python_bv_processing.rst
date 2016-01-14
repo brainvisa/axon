@@ -34,4 +34,11 @@ brainvisa.processing.neuroLog
   :members:
   :show-inheritance:
 
+brainvisa.processing.capsul_process
+-----------------------------------
+
+.. automodule:: brainvisa.processing.capsul_process
+  :members:
+  :show-inheritance:
+
 
