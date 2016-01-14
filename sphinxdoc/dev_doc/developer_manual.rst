@@ -12,6 +12,14 @@ If you are not, you are encouraged to look at the `Python tutorial <https://docs
 In addition to this manual, the reader may also have a look at :doc:`usecases`.
 
 
+Evolutions of Axon: CAPSUL
+--------------------------
+
+:capsul:`CAPSUL <index.html>` is a new pipelining system designed to replace Axon processes and pipelines API in the future. It is designed as an independent library, and has a different philosophy from Axon legacy system. CAPSUL is released with BrainVISA 4.5 but is not fully integrated yet.
+
+:doc:`Read more here <capsul>`.
+
+
 Data management
 ---------------
 

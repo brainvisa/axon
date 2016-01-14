@@ -29,10 +29,10 @@ sys.path.insert(0,os.path.abspath('sphinxext'))
 import brainvisa.axon
 import brainvisa.config
 try:
-  from soma_workflow import version as swver
-  somaworkflow_version = swver.shortVersion
+    from soma_workflow import version as swver
+    somaworkflow_version = swver.shortVersion
 except:
-  somaworkflow_version = '2.7'
+    somaworkflow_version = '2.8'
 try:
     import soma.info
     somabase_version = '%d.%d' % (soma.info.version_major,
@@ -46,6 +46,20 @@ except:
     aims_version = '4.5'
 anatmist_version = aims_version
 bv_release_version = aims_version
+
+try:
+    import capsul
+    capsul_version = '.'.join([capsul.info.version_major,
+                               capsul.info.version_minor])
+except:
+    capsul_version = '1.1'
+
+try:
+    import morphologist
+    morphoui_version = '.'.join([morphologist.info.version_major,
+                                 morphologist.info.version_minor])
+except:
+    morphoui_version = '1.0'
 
 # -- General configuration -----------------------------------------------------
 
@@ -273,6 +287,11 @@ extlinks = {
     + '/sphinx/%s', 'somaworkflow' ),
   'anatomist': ('../../anatomist-' + anatmist_version + '/%s', 'anatomist '),
   'pyanatomist': ('../../pyanatomist-' + anatmist_version + '/sphinx/%s', 'pyanatomist '),
+  'capsul': ('../../capsul-' + capsul_version + '/%s', 'capsul '),
+  'morphologist': ('../../morphologist-' + aims_version + '/dev_doc/%s',
+                   'morphologist '),
+  'morphoui': ('../../morphologist-ui-' + morphoui_version + '/%s',
+               'morphologist-ui '),
 }
 
 docpath = os.path.join( os.path.dirname( os.path.dirname( os.path.dirname( \

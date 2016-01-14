@@ -26,6 +26,14 @@ This API can be used in several contexts:
 
 To determine the version of the API, use ``brainvisa.config.shortVersion`` (|version|) or ``brainvisa.config.fullVersion`` (|release|).
 
+What about CAPSUL, and what are the plans ?
+-------------------------------------------
+
+:capsul:`CAPSUL <index.html>` is a new pipelining system designed to replace Axon processes and pipelines API in the future. It is designed as an independent library, and has a different philosophy from Axon legacy system. CAPSUL is released with BrainVISA 4.5 but is not fully integrated yet.
+
+:doc:`Read more here <capsul>`.
+
+
 Modules organization
 --------------------
 
@@ -66,3 +74,4 @@ Use cases & examples
    python_bv_data_gui
    python_bv_processing
    python_bv_processing_gui
+   capsul

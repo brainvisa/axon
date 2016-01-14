@@ -402,7 +402,7 @@ def fso_to_fom_main(argv):
         help='set this FOM name [default: output file name]')
     parser.add_argument('-F', '--Formats', dest='output_formats',
         help='output file name for updated formats FOM')
-    args = parser.parse_args(argv[1:])
+    args = parser.parse_args(argv)
 
     #from brainvisa.configuration import neuroConfig
     #neuroConfig.ignoreValidation = True
