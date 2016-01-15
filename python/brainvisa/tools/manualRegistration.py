@@ -544,10 +544,11 @@ class ManualRegistration():
         """
         Launches the browser to select the file where to save the transformation.
         """
-        saveFilename = QtGui.QFileDialog.getSaveFileName(self._mainDiag,
-                                                         caption='Save transformation as...',
-                                                         directory=os.path.dirname(self._movingImage),
-                                                         filter='Transformation file (*.trm)')
+        saveFilename = QtGui.QFileDialog.getSaveFileName(
+            self._mainDiag, caption='Save transformation as...',
+            directory=os.path.dirname(self._movingImage),
+            filter='Transformation file (*.trm)',
+            options=QtGui.QFileDialog.DontUseNativeDialog)
         if saveFilename == "" or saveFilename is None:
             return
         self._saveTransformation(saveFilename)
@@ -565,10 +566,11 @@ class ManualRegistration():
         """
         Resamples the moving image according to the transformation.
         """
-        saveFilename = QtGui.QFileDialog.getSaveFileName(self._mainDiag,
-                                                         caption='Save resample image as...',
-                                                         directory=os.path.dirname(self._movingImage),
-                                                         filter='NIfTI-1 image file (*.nii)')
+        saveFilename = QtGui.QFileDialog.getSaveFileName(
+            self._mainDiag, caption='Save resample image as...',
+            directory=os.path.dirname(self._movingImage),
+            filter='NIfTI-1 image file (*.nii)',
+            options=QtGui.QFileDialog.DontUseNativeDialog)
         if saveFilename == "" or saveFilename is None:
             return
         tmpTrsf = mkstemp()[1]
