@@ -31,6 +31,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 include( 'builtin' )
+include( 'spm' )
 
 FileType('Matlab SPM deformation file', 'Matlab SPM file')
 
