@@ -83,7 +83,9 @@ class FileName_Qt4GUI( Unicode_Qt4GUI ):
   
   def _browseClicked( self ):
     if self.dataTypeInstance.directoryOnly:
-      value = QFileDialog.getExistingDirectory ( self._widget, 'Select a directory', '', QFileDialog.ShowDirsOnly | QFileDialog.DontUseNativeDialog )
+      value = QFileDialog.getExistingDirectory(
+        self._widget, 'Select a directory', '',
+        QFileDialog.ShowDirsOnly | QFileDialog.DontUseNativeDialog)
     elif self.dataTypeInstance.readOnly:
       # workaround a bug in PyQt ? Param 5 doesn't work; try to use kwargs
       import sipconfig
