@@ -175,7 +175,7 @@ def execution( self, context ):
   elif self.interpolation == "Trilinear":
     reslice_options.setInterpolationToTrilinear()
   elif self.interpolation == "2nd Degree B-Spline":
-    reslice_options.setInterpolationTo2dDegreeBSpline()
+    reslice_options.setInterpolationTo2ndDegreeBSpline()
   elif self.interpolation == "3rd Degree B-Spline":
     reslice_options.setInterpolationTo3rdDegreeBSpline()
   elif self.interpolation == "4th Degree B-Spline":
