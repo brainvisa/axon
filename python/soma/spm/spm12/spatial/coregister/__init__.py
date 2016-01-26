@@ -10,7 +10,7 @@ class EstimateAndReslice(EstimateAndReslice_virtual, SPM12MainModule):
     self.reference_volume_path = None
     self.source_volume_path = None
     self.other_volume_path_list = None
-    self.estimate_options = EstimationOptions()
+    self.estimation_options = EstimationOptions()
     self.reslice_options = ResliceOptions()
     
     self.source_warped_volume_path = None
@@ -24,4 +24,4 @@ class Estimate(Estimate_virtual, SPM12MainModule):
     self.reference_volume_path = None
     self.source_volume_path = None
     self.other_volume_path_list = None
-    self.estimate_options = EstimationOptions()
+    self.estimation_options = EstimationOptions()

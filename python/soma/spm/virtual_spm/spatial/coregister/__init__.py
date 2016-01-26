@@ -57,9 +57,9 @@ class EstimateAndReslice(Coregister):
   images are named the same as the originals except that they are prefixed by 'r'.
   """
   @checkIfArgumentTypeIsAllowed(EstimationOptions, 1)  
-  def replaceEstimationOptions(self, estimate_options):
-    del self.estimate_options
-    self.estimate_options = estimate_options
+  def replaceEstimationOptions(self, estimation_options):
+    del self.estimation_options
+    self.estimation_options = estimation_options
     
   @checkIfArgumentTypeIsAllowed(ResliceOptions, 1)  
   def replaceResliceOptions(self, reslice_options):
@@ -87,7 +87,7 @@ class EstimateAndReslice(Coregister):
       batch_list.append("spm.spatial.coreg.estwrite.ref = {'%s,1'};" % self.reference_volume_path)
       batch_list.append("spm.spatial.coreg.estwrite.source = {'%s,1'};" % self.source_volume_path)
       batch_list.append("spm.spatial.coreg.estwrite.other = {%s};" % other_volume_path_for_batch)
-      batch_list.extend(addBatchKeyWordInEachItem("spm.spatial.coreg.estwrite", self.estimate_options.getStringListForBatch()))
+      batch_list.extend(addBatchKeyWordInEachItem("spm.spatial.coreg.estwrite", self.estimation_options.getStringListForBatch()))
       batch_list.extend(addBatchKeyWordInEachItem("spm.spatial.coreg.estwrite", self.reslice_options.getStringListForBatch()))
       return batch_list
     else:
@@ -125,9 +125,9 @@ class Estimate(Coregister):
   Registration parameters are stored in the headers of the "source" and the "other" images.
   """
   @checkIfArgumentTypeIsAllowed(EstimationOptions, 1)  
-  def replaceEstimationOptions(self, estimate_options):
-    del self.estimate_options
-    self.estimate_options = estimate_options
+  def replaceEstimationOptions(self, estimation_options):
+    del self.estimation_options
+    self.estimation_options = estimation_options
     
   def getStringListForBatch(self):
     if not None in [self.reference_volume_path, self.source_volume_path]: 
@@ -142,7 +142,7 @@ class Estimate(Coregister):
       batch_list.append("spm.spatial.coreg.estwrite.ref = {'%s,1'};" % self.reference_volume_path)
       batch_list.append("spm.spatial.coreg.estwrite.source = {'%s,1'};" % self.source_volume_path)
       batch_list.append("spm.spatial.coreg.estwrite.other = {%s};" % other_volume_path_for_batch)
-      batch_list.extend(addBatchKeyWordInEachItem("spm.spatial.coreg.estwrite", self.estimate_options.getStringListForBatch()))
+      batch_list.extend(addBatchKeyWordInEachItem("spm.spatial.coreg.estwrite", self.estimation_options.getStringListForBatch()))
       return batch_list
     else:
       raise ValueError('Reference and source volumes are mandatory')
