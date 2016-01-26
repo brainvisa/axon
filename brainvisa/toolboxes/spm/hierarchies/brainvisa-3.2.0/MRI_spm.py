@@ -93,7 +93,8 @@ LDW_directory = (
   '<subject>_bias_corrected', 
         SetType('T1 MRI Bias corrected'),
         SetWeakAttr('transformation', 'none',
-                    'warping_method', 'none'),
+                    'warping_method', 'none',
+                    'space', 't1mri'),
   '<subject>_bias_field', SetType('T1 MRI Bias field'),
   #-T1 MRI probability map DARTEL imported with rigid transform->
   '<subject>_grey_proba_rigid_registered', 
@@ -182,7 +183,8 @@ LDW_directory = (
   '<subject>_bias_corrected_using_affine_registered', 
         SetType('T1 MRI Bias corrected'),
         SetWeakAttr('transformation', 'affine',
-                    'warping_method', 'none'),
+                    'warping_method', 'none',
+                    'space', 'mni'),
 )
         
 HDW_directory = (
@@ -315,7 +317,8 @@ def createHierarchyTreeDependingOnNormalization(warping_method):
   '<subject>_bias_corrected_using_warped_without_modulation', 
   SetType('T1 MRI Bias corrected'),
   SetWeakAttr('transformation', 'none',
-              'warping_method', warping_method),
+              'warping_method', warping_method,
+              'space', 'mni'),
   'y_<subject>_forward_deformation_field', 
   SetType('SPM deformation field'), 
   SetWeakAttr('direction', 'forward',
