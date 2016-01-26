@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from soma.spm.spm_batch_maker_utils import addBatchKeyWordInEachItem, convertPathListToSPMBatchString, moveFileAndCreateFoldersIfNeeded
+from soma.spm.spm_batch_maker_utils import convertlistToSPMString
 from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed, checkIfArgumentTypeIsStrOrUnicode
 import numbers
 
@@ -16,7 +16,7 @@ class EstimationOptions():
     parameter is involved in selecting the number of voxels that are used.
     """
     self.quality = quality
-	
+
   @checkIfArgumentTypeIsAllowed(numbers.Real, 1)  
   def setSeparation(self, separation):
     """
@@ -130,5 +130,5 @@ class EstimationOptions():
     batch_list.append("eoptions.rtm = %i;" % self.num_passes)
     batch_list.append("eoptions.interp = %i;" % self.interpolation)
     batch_list.append("eoptions.wrap = %s;" % convertlistToSPMString(self.wrapping))
-    batch_list.append("eoptions.interp = '%s';" % self.weighting_image_path)
+    batch_list.append("eoptions.weight = '%s';" % self.weighting_image_path)
     return batch_list

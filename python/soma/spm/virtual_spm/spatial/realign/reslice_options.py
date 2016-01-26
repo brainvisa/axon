@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from soma.spm.spm_batch_maker_utils import addBatchKeyWordInEachItem, convertPathListToSPMBatchString, moveFileAndCreateFoldersIfNeeded
+from soma.spm.spm_batch_maker_utils import convertlistToSPMString
 from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed, checkIfArgumentTypeIsStrOrUnicode
-import numbers
+
 
 class ResliceOptions():
   """
@@ -150,6 +150,12 @@ class ResliceOptions():
   def setFilenamePrefix(self, filename_prefix):
     self.filename_prefix = filename_prefix 
 
+  def getReslicedImagesChoices(self):
+    return self.resliced_images
+  
+  def getCurrentFilenamePrefix(self):
+    return self.filename_prefix 
+  
   def getStringListForBatch(self):
     batch_list = []
     batch_list.append("roptions.which = %s;" % convertlistToSPMString(self.resliced_images))
