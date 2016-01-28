@@ -183,6 +183,16 @@ def changeFormat( diskItem,
     
     return result
 
+
+#------------------------------------------------------------------------------
+def getFileFormatExtensions( formatName ):
+    format = getAllFileFormats().getFormat(formatName)
+    if format is not None:
+        return format.extensions()
+    else:
+        return None
+
+
 #------------------------------------------------------------------------------
 class DatabaseError( Exception ):
   pass
