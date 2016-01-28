@@ -247,6 +247,7 @@ FileType( 'Anatomist BIC drawing', '3D Volume' )
 
 #----------------- Toolbox ----------------------
 FileType( 'Coordinates File', 'Text file' )
+FileType( 'Bounding Box Info', 'Any Type', 'JSON file' )
 
 #--------------- Subject Info -------------------
 FileType( 'Subject Info', 'Any Type', 'Info file' )
