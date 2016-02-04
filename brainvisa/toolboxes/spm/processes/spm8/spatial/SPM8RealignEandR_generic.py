@@ -76,7 +76,7 @@ signature = Signature(
                           "6th Degree B-Spline",
                           "7th Degree B-Spline",
                           section=estimation_section),
-  "wrappping", Choice(("No wrap",[False, False, False]),
+  "wrapping", Choice(("No wrap",[False, False, False]),
                       ("Wrap X",[True, False, False]),
                       ("Wrap Y",[False, True, False]),
                       ("Wrap X & Y",[True, True, False]),
@@ -102,7 +102,7 @@ signature = Signature(
                                    "6th Degree B-Spline",
                                    "7th Degree B-Spline",
                                    section=reslice_section),
-  "resliced_wrappping", Choice(("No wrap",[False, False, False]),
+  "resliced_wrapping", Choice(("No wrap",[False, False, False]),
                                ("Wrap X",[True, False, False]),
                                ("Wrap Y",[False, True, False]),
                                ("Wrap X & Y",[True, True, False]),
@@ -145,7 +145,7 @@ def initialization(self):
   
   self.resliced_images = "All Images + Mean Image"
   self.resliced_interpolation = "4th Degree B-Spline"
-  self.resliced_wrappping = "No wrap"
+  self.resliced_wrapping = "No wrap"
   self.masking = True
   self.filename_prefix = 'r'
 
@@ -193,7 +193,7 @@ def execution( self, context ):
   else:
     raise ValueError("Unvalid interpolation")
   
-  estimation_options.setWrapping(self.wrappping[0], self.wrappping[1], self.wrappping[2])
+  estimation_options.setWrapping(self.wrapping[0], self.wrapping[1], self.wrapping[2])
   if self.weighting is not None:
     estimation_options.setWeighting(self.weighting.fullPath())
   else:
@@ -231,9 +231,9 @@ def execution( self, context ):
   else:
     raise ValueError("Unvalid resliced_interpolation")
   
-  reslice_options.setWrapping(self.wrappping[0], 
-                              self.wrappping[1], 
-                              self.wrappping[2])
+  reslice_options.setWrapping(self.wrapping[0], 
+                              self.wrapping[1], 
+                              self.wrapping[2])
   
   
   
@@ -256,9 +256,9 @@ def execution( self, context ):
   else:
     raise ValueError("Unvalid interpolation")
 
-  reslice_options.setWrapping(self.resliced_wrappping[0], 
-                              self.resliced_wrappping[1], 
-                              self.resliced_wrappping[2])
+  reslice_options.setWrapping(self.resliced_wrapping[0], 
+                              self.resliced_wrapping[1], 
+                              self.resliced_wrapping[2])
   
   if self.masking:
     reslice_options.setMasking()
