@@ -180,17 +180,15 @@ def updateBatchPath(self, proc):
 def execution( self, context ):
   self.removeOldContrastMIPFile()
 
-  spm_workspace_directory = os.path.dirname(self.results_report_mat_file.fullPath())
+  spm_workspace_directory = os.path.dirname(self.batch_location.fullPath())
   matlab_batch_path = os.path.join(spm_workspace_directory, 'result.m')
-  spm_job_path = os.path.join(spm_workspace_directory, 'result_job.m')
 
+  result = self.createResultsReportBatch(context)
   spm = validation()#This is singleton object
-  self.createResultsReportBatch(context)
-  spm.addMatlabCommandAfterSPMRunning(self.writeCompleteResultBatch(spm_workspace_directory, spm_job_path))
-  spm.setSPMScriptPath(spm_job_path)
+  spm.addModuleToExecutionQueue(result)
+  spm.setSPMScriptPath(self.batch_location.fullPath())
   spm.setMatlabScriptPath(matlab_batch_path)
   spm.run()
-
 
 def removeOldContrastMIPFile(self):
   #By default SPM add to it so it is necessary to clean up before start
@@ -255,12 +253,10 @@ def createResultsReportBatch(self, context):
       result.enablePrintResult()
     else:
       result.disablePrintResult()
-    
-    spm = validation()#This is singleton object
-    spm.addMatlabCommandBeforeSPMRunning(["spm_get_defaults('stats.topoFDR', 0);"])
-    spm.addModuleToExecutionQueue(result)
-    spm.setSPMScriptPath(self.batch_location.fullPath())
-    spm.run()
+      
+    return result
+  else:
+    raise ValueError("At least one contrast_number is mandatory")
 
 #------------------------------------------------------------------------------
 def writeCompleteResultBatch(self, spm_workspace_directory, spm_job_path):
