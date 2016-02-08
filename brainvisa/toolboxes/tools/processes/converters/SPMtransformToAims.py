@@ -52,7 +52,7 @@ def validation():
     try:
       matlabValidation.validation()
     except:
-      raise ValisationError( 'no scipy matlab .mat IO functionality, and no '
+      raise ValidationError( 'no scipy matlab .mat IO functionality, and no '
         'working matlab installation available' )
 
 signature = Signature(

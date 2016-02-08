@@ -42,7 +42,7 @@ def validation():
   try:
     import soma.aims.GiftiToBrainvisa_code as g2b
   except:
-    raise ValisationError( 'no soma.aims module' )
+    raise ValidationError( 'no soma.aims module' )
 
 name = 'Gifti to Brainvisa'
 roles = ('converter',)

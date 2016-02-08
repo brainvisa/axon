@@ -53,11 +53,11 @@ def validation():
   try:
     from scipy.io import loadmat
   except:
-    raise ValisationError( 'no scipy matlab .mat IO functionality ' )
+    raise ValidationError( 'no scipy matlab .mat IO functionality ' )
   try:
     from soma import aims
   except:
-    raise ValisationError( 'no soma.aims module' )
+    raise ValidationError( 'no soma.aims module' )
 
 signature = Signature(
   'read', ReadDiskItem( 'SPM normalization matrix', 'Matlab file',
