@@ -4,7 +4,7 @@ import os
 import pickle
 import types
 
-from brainvisa.processes import ProcessExecutionNode, SerialExecutionNode, ParallelExecutionNode
+from brainvisa.processes import ProcessExecutionNode, SerialExecutionNode, ParallelExecutionNode, defaultContext
 from brainvisa.data.readdiskitem import ReadDiskItem
 from brainvisa.data.writediskitem import WriteDiskItem
 from brainvisa.data.neuroData import ListOf
@@ -646,6 +646,9 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
 
   def setup_workflow_context(self):
     context = self.context
+    if context is None:
+        context = defaultContext()
+        self.context = context
     path_translations = {}
     transfer_paths = []
     if self.__input_file_processing in (self.BV_DB_SHARED_PATH,
