@@ -31,37 +31,32 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from brainvisa.processes import *
-from soma.spm.spm8.tools.dartel_tools.run_dartel import RunDartel
-from soma.spm.spm8.tools.dartel_tools.run_dartel.outer_iteration import OuterIteration
-from soma.spm.spm8.tools.dartel_tools.run_dartel.optimisation_settings import OptimisationSettings
-from soma.spm.spm8.tools.dartel_tools.run_dartel.settings import Settings
-from soma.spm.spm_launcher import SPM8, SPM8Standalone
+from soma.spm.spm_launcher import SPM12, SPM12Standalone
 
 #------------------------------------------------------------------------------
 configuration = Application().configuration
 #------------------------------------------------------------------------------
 def validation():
   try:
-    spm = SPM8Standalone(configuration.SPM.spm8_standalone_command,
-                         configuration.SPM.spm8_standalone_mcr_path,
-                         configuration.SPM.spm8_standalone_path)
+    spm = SPM12Standalone(configuration.SPM.spm12_standalone_command,
+                          configuration.SPM.spm12_standalone_mcr_path,
+                          configuration.SPM.spm12_standalone_path)
   except:
-    spm = SPM8(configuration.SPM.spm8_path,
-               configuration.matlab.executable,
-               configuration.matlab.options)
-  return spm
+    spm = SPM12(configuration.SPM.spm12_path,
+                configuration.matlab.executable,
+                configuration.matlab.options)
 #------------------------------------------------------------------------------
 
-userLevel = 1
-name = 'spm8 - Run DARTEL (create Templates) - generic'
+userLevel = 0
+name = 'spm12 - Run DARTEL (create Templates)'
 
 #------------------------------------------------------------------------------
 
 signature = Signature(
-    'images_1', ListOf( ReadDiskItem( '4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'] ) ),
-    'images_2', ListOf( ReadDiskItem( '4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'] ) ),
-    'output_flow_field', ListOf( WriteDiskItem( '4D Volume', 'NIFTI-1 image' ) ),
-    'output_template', ListOf( WriteDiskItem( '4D Volume', 'NIFTI-1 image' ) ),
+    'images_1', ListOf( ReadDiskItem( "T1 MRI tissue probability map", ["NIFTI-1 image", "SPM image", "MINC image"] ) ),
+    'images_2', ListOf( ReadDiskItem( "T1 MRI tissue probability map", ["NIFTI-1 image", "SPM image", "MINC image"] ) ),
+    'output_flow_field', ListOf( WriteDiskItem( "HDW DARTEL flow field", "NIFTI-1 image" ) ),
+    'output_template', ListOf( WriteDiskItem( "TPM HDW DARTEL created template", "NIFTI-1 image" ) ),
     'template_basename', String(), 
     'regularisation_form', Choice('Linear Elastic Energy', 
                                   'Membrane Energy', 
@@ -115,6 +110,9 @@ signature = Signature(
 
 def initialization(self):
     self.setOptional('images_2', 'output_flow_field', 'output_template')
+    
+    self.linkParameters('output_flow_field', ('images_1', 'template_basename'), self.updateFlowFields)
+    self.linkParameters('output_template', ('images_1', 'template_basename'), self.updateDartelTemplate)
   
     self.addLink("batch_location", "output_template", self.updateBatchPath)
     
@@ -154,98 +152,66 @@ def initialization(self):
     self.LM_Regularisation = 0.01
     self.cycles = 3
     self.iterations = 3
+
+def updateFlowFields(self, proc, dummy):
+  if self.images_1 and self.template_basename:
+    output_diskitem_list = []
+    for diskitem in self.images_1:
+      d = diskitem.hierarchyAttributes()
+      d['template'] = self.template_basename
+      output_diskitem_list.append(WriteDiskItem( 'DARTEL flow field', 'NIFTI-1 image' ).findValue(d))
+    return output_diskitem_list
+  
+def updateDartelTemplate(self, proc, dummy):
+  if self.images_1 and self.template_basename:
+    output_diskitem_list = []
+    diskitem = self.images_1[0]
+    d = diskitem.hierarchyAttributes()
+    d['template'] = self.template_basename
+    for index in [1,2,3,4,5,6]:#TODO : 1->6 is the inner number...
+      d['step'] = str(index)
+      output_diskitem_list.append(WriteDiskItem( 'DARTEL created template', 'NIFTI-1 image' ).findValue(d))
+    return output_diskitem_list
     
 def updateBatchPath(self, proc):
   if self.output_template:
     directory_path = os.path.dirname(self.output_template[0].fullPath())
-    return os.path.join(directory_path, 'spm8_DARTEL_create_template_job.m')
+    return os.path.join(directory_path, 'spm12_DARTEL_create_template_job.m')
 #------------------------------------------------------------------------------
 def execution( self, context ):
-  if self.images_2:
-    if len(self.images_1) != len(self.images_2):
-      context.error("the length of images_1 and images_2 must be the same")
-      raise ValueError
-    else:
-      pass
-  else:
-    pass
-  
-  run_dartel = RunDartel()
-  run_dartel.setFirstImageList([diskitem.fullPath() for diskitem in self.images_1])
-  if self.images_2:
-    run_dartel.appendImageList([diskitem.fullPath() for diskitem in self.images_2])
-  
-  if self.output_flow_field:
-    run_dartel.setOutputFlowFieldPathList([diskitem.fullPath() for diskitem in self.output_flow_field])
-  
-  if self.output_template:
-    run_dartel.setOutputTemplatePathList([diskitem.fullPath() for diskitem in self.output_template])
-  
-  settings = Settings()
-  settings.setTemplateBasename(self.template_basename)
-  if self.regularisation_form == 'Linear Elastic Energy':
-    settings.setRegularisationFormToLinearElasticEnergy()
-  elif self.regularisation_form == 'Membrane Energy':
-    settings.setRegularisationFormToMembraneEnergy()
-  elif self.regularisation_form == 'Bending Energy':
-    settings.setRegularisationFormToBendingEnergy()
-  else:
-    raise ValueError("Invalid choice for regularisation_form")
-        
-  first_outer_iteration = OuterIteration()
-  first_outer_iteration.setInnerIterationsNumber(self.inner_iteration_1)
-  first_outer_iteration.setRegParams(self.regularisation_parameters_1)
-  first_outer_iteration.setTimeSteps(self.time_step_1)
-  first_outer_iteration.setSmoothingParameter(self.smoothing_parameter_1)
-  settings.appendOuterIteration(first_outer_iteration)
-  
-  second_outer_iteration = OuterIteration()
-  second_outer_iteration.setInnerIterationsNumber(self.inner_iteration_2)
-  second_outer_iteration.setRegParams(self.regularisation_parameters_2)
-  second_outer_iteration.setTimeSteps(self.time_step_2)
-  second_outer_iteration.setSmoothingParameter(self.smoothing_parameter_2)
-  settings.appendOuterIteration(second_outer_iteration)
-  
-  third_outer_iteration = OuterIteration()
-  third_outer_iteration.setInnerIterationsNumber(self.inner_iteration_3)
-  third_outer_iteration.setRegParams(self.regularisation_parameters_3)
-  third_outer_iteration.setTimeSteps(self.time_step_6)
-  third_outer_iteration.setSmoothingParameter(self.smoothing_parameter_3)
-  settings.appendOuterIteration(third_outer_iteration)
-  
-  fourth_outer_iteration = OuterIteration()
-  fourth_outer_iteration.setInnerIterationsNumber(self.inner_iteration_4)
-  fourth_outer_iteration.setRegParams(self.regularisation_parameters_4)
-  fourth_outer_iteration.setTimeSteps(self.time_step_4)
-  fourth_outer_iteration.setSmoothingParameter(self.smoothing_parameter_4)
-  settings.appendOuterIteration(fourth_outer_iteration)
-  
-  fifth_outer_iteration = OuterIteration()
-  fifth_outer_iteration.setInnerIterationsNumber(self.inner_iteration_5)
-  fifth_outer_iteration.setRegParams(self.regularisation_parameters_5)
-  fifth_outer_iteration.setTimeSteps(self.time_step_5)
-  fifth_outer_iteration.setSmoothingParameter(self.smoothing_parameter_5)
-  settings.appendOuterIteration(fifth_outer_iteration)
-  
-  sixth_outer_iteration = OuterIteration()
-  sixth_outer_iteration.setInnerIterationsNumber(self.inner_iteration_6)
-  sixth_outer_iteration.setRegParams(self.regularisation_parameters_6)
-  sixth_outer_iteration.setTimeSteps(self.time_step_6)
-  sixth_outer_iteration.setSmoothingParameter(self.smoothing_parameter_6)
-  settings.appendOuterIteration(sixth_outer_iteration)
-  
-
-  optimisation_settings = OptimisationSettings()
-  optimisation_settings.setLMRegularisation(self.LM_Regularisation)
-  optimisation_settings.setCycles(self.cycles)
-  optimisation_settings.setIterations(self.iterations)
-  
-  settings.setOptimisationSettings(optimisation_settings)
-  
-  run_dartel.setSettings(settings)
-
-  spm = validation()
-  spm.addModuleToExecutionQueue(run_dartel)
-  spm.setSPMScriptPath(self.batch_location.fullPath())
-  spm.run()
-  
+  context.runProcess('SPM12DARTELCreateTemplates_generic',
+                     images_1=self.images_1,
+                     images_2=self.images_2,
+                     output_flow_field=self.output_flow_field,
+                     output_template=self.output_template,
+                     template_basename=self.template_basename,
+                     regularisation_form=self.regularisation_form,
+                     inner_iteration_1=self.inner_iteration_1,
+                     regularisation_parameters_1=self.regularisation_parameters_1,
+                     time_step_1=self.time_step_1,
+                     smoothing_parameter_1=self.smoothing_parameter_1,
+                     inner_iteration_2=self.inner_iteration_2,
+                     regularisation_parameters_2=self.regularisation_parameters_2,
+                     time_step_2=self.time_step_2,
+                     smoothing_parameter_2=self.smoothing_parameter_2,
+                     inner_iteration_3=self.inner_iteration_3,
+                     regularisation_parameters_3=self.regularisation_parameters_3,
+                     time_step_3=self.time_step_3,
+                     smoothing_parameter_3=self.smoothing_parameter_3,
+                     inner_iteration_4=self.inner_iteration_4,
+                     regularisation_parameters_4=self.regularisation_parameters_4,
+                     time_step_4=self.time_step_4,
+                     smoothing_parameter_4=self.smoothing_parameter_4,
+                     inner_iteration_5=self.inner_iteration_5,
+                     regularisation_parameters_5=self.regularisation_parameters_5,
+                     time_step_5=self.time_step_5,
+                     smoothing_parameter_5=self.smoothing_parameter_5,
+                     inner_iteration_6=self.inner_iteration_6,
+                     regularisation_parameters_6=self.regularisation_parameters_6,
+                     time_step_6=self.time_step_6,
+                     smoothing_parameter_6=self.smoothing_parameter_6,
+                     LM_Regularisation=self.LM_Regularisation,
+                     cycles=self.cycles,
+                     iterations=self.iterations,
+                     batch_location=self.batch_location)
+                     

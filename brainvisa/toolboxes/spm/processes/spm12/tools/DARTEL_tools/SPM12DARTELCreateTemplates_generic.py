@@ -31,29 +31,29 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from brainvisa.processes import *
-from soma.spm.spm8.tools.dartel_tools.run_dartel import RunDartel
-from soma.spm.spm8.tools.dartel_tools.run_dartel.outer_iteration import OuterIteration
-from soma.spm.spm8.tools.dartel_tools.run_dartel.optimisation_settings import OptimisationSettings
-from soma.spm.spm8.tools.dartel_tools.run_dartel.settings import Settings
-from soma.spm.spm_launcher import SPM8, SPM8Standalone
+from soma.spm.spm12.tools.dartel_tools.run_dartel import RunDartel
+from soma.spm.spm12.tools.dartel_tools.run_dartel.outer_iteration import OuterIteration
+from soma.spm.spm12.tools.dartel_tools.run_dartel.optimisation_settings import OptimisationSettings
+from soma.spm.spm12.tools.dartel_tools.run_dartel.settings import Settings
+from soma.spm.spm_launcher import SPM12, SPM12Standalone
 
 #------------------------------------------------------------------------------
 configuration = Application().configuration
 #------------------------------------------------------------------------------
 def validation():
   try:
-    spm = SPM8Standalone(configuration.SPM.spm8_standalone_command,
-                         configuration.SPM.spm8_standalone_mcr_path,
-                         configuration.SPM.spm8_standalone_path)
+    spm = SPM12Standalone(configuration.SPM.spm12_standalone_command,
+                          configuration.SPM.spm12_standalone_mcr_path,
+                          configuration.SPM.spm12_standalone_path)
   except:
-    spm = SPM8(configuration.SPM.spm8_path,
-               configuration.matlab.executable,
-               configuration.matlab.options)
+    spm = SPM12(configuration.SPM.spm12_path,
+                configuration.matlab.executable,
+                configuration.matlab.options)
   return spm
 #------------------------------------------------------------------------------
 
 userLevel = 1
-name = 'spm8 - Run DARTEL (create Templates) - generic'
+name = 'spm12 - Run DARTEL (create Templates) - generic'
 
 #------------------------------------------------------------------------------
 
@@ -158,7 +158,7 @@ def initialization(self):
 def updateBatchPath(self, proc):
   if self.output_template:
     directory_path = os.path.dirname(self.output_template[0].fullPath())
-    return os.path.join(directory_path, 'spm8_DARTEL_create_template_job.m')
+    return os.path.join(directory_path, 'spm12_DARTEL_create_template_job.m')
 #------------------------------------------------------------------------------
 def execution( self, context ):
   if self.images_2:

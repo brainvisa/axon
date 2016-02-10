@@ -81,6 +81,8 @@ class RunDartel():
           moveFileAndCreateFoldersIfNeeded(spm_template_path, path)
       else:
         raise ValueError("Unvalid output_template_path_list length")
+    else:
+      pass
       
       
     

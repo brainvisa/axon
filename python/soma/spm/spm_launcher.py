@@ -118,8 +118,9 @@ class SPM(SPMLauncher):
     print('Running matlab command:', matlab_commmand)
     try:
       os.system(' '.join(matlab_commmand))
-    except:
+    except Exception as e:
       os.chdir(cwd)
+      print("Exception : %s"%e)
       raise RuntimeError("SPM or matlab execution failed")
     finally:
       os.chdir(cwd)
@@ -210,7 +211,8 @@ class SPMStandalone(SPMLauncher):
         self.resetExecutionQueue()#for avoid conflict during execution (if we start new module during first execution the second batch is added to the first)
         os.system(' '.join(standalone_command))
         self._moveSPMDefaultPathsIfNeeded(current_execution_module_deque)
-      except:
+      except Exception as e:
+        print("Exception : %s"%e)
         raise RuntimeError("SPM standalone execution failed")
       finally:
         os.chdir(cwd)
