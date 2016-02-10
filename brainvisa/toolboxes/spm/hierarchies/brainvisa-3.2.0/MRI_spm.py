@@ -43,7 +43,7 @@ insertFirst( '', 'covariates', apply( SetContent, covariates))
 # subject specific
 #===============================================================================
 
-#{center}/{subject}/{processing}/{acquisition}/{analysis}_LDW_to_{template}_with_{parameter}
+#{center}/{subject}/{processing}/{acquisition}/{analysis}_LDW_to_{template}
 LDW_directory = (
 #using TPM
   #-T1 MRI probability map native space->
