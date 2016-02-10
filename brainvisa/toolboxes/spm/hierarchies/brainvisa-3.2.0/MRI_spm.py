@@ -337,4 +337,4 @@ analysis_directory = (
                                                    createHierarchyTreeDependingOnNormalization(warping_method='high-dimensional')),
 )
 
-insert( '{center}/{subject}/{processing}', '{acquisition}', apply( SetContent, analysis_directory))
+insert( '{center}/{subject}/spm/{processing}', '{acquisition}', apply( SetContent, analysis_directory))
