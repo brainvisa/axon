@@ -284,7 +284,8 @@ signature = Signature(
   't1mri_bias_corrected', 
   WriteDiskItem('T1 MRI Bias Corrected', 'NIFTI-1 image', 
                 requiredAttributes={'transformation':'none',
-                                    'warping_method':'none'}, 
+                                    'warping_method':'none',
+                                    'space':'t1mri'}, 
                 section=bias_correction_options_section),
   'save_bias_normalized', Boolean(section=bias_correction_options_section),
   'bias_LDW_warped_unmodulated', 
@@ -669,7 +670,7 @@ def updateT1MRIBiasCorrected(self, proc, dummy):
   
 def updateT1MRIBiasCorrectedHDW(self, proc, dummy):
   if self.grey_HDW_warped_unmodulated is not None:
-    d = self.t1mri_bias_corrected.hierarchyAttributes()  
+    d = self.grey_HDW_warped_unmodulated.hierarchyAttributes()  
     d["bias_correction_process"] = 'spm8VBMSegmentation'
     return self.signature['bias_HDW_warped_unmodulated'].findValue(d)
   else:
