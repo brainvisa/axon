@@ -76,7 +76,9 @@ signature = Signature(
 #------------------------------------------------------------------------------
 
 def initialization(self):
-    self.setOptional("images_2")
+    self.setOptional("images_2",
+                     "images_1_warped",
+                     "images_2_warped")
     
     self.linkParameters("images_1", "flow_fields")
     self.linkParameters("images_2", "flow_fields")
