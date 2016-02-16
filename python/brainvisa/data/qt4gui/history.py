@@ -32,7 +32,8 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 import os
-from soma.qt_gui.qt_backend import uic, QtCore, QtGui, Qt
+from soma.qt_gui.qt_backend import uic, QtCore, QtGui
+from soma.qt_gui.qt_backend.QtCore import Qt
 from soma.minf.api import readMinf
 from brainvisa.processes import getProcessInstanceFromProcessEvent, defaultContext
 from brainvisa.processing.qt4gui.neuroProcessesGUI import ProcessView
@@ -77,7 +78,7 @@ class DataHistoryWindow(QtGui.QMainWindow):
                                                 'dataHistory.ui' ))[0]
     self.ui = UiDataHistory()
     self.ui.setupUi(self)
-    self.setAttribute(Qt.WA_DeleteOnClose)
+    self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
     self.data = data
     self.bvproc_uuid = bvproc_uuid
