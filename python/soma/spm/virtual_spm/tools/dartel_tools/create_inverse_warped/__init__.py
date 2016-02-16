@@ -127,9 +127,9 @@ class CreateInverseWarped():
   def getStringListForBatch( self ):
     if self.image_path_list and self.flow_field_list:
       batch_list = []
-      batch_list.append("spm.tools.dartel.crt_iwarped.flowfields = %s;" % convertPathListToSPMBatchString(self.flow_field_list,
+      batch_list.append("spm.tools.dartel.crt_iwarped.flowfields = {%s};" % convertPathListToSPMBatchString(self.flow_field_list,
                                                                                                           add_dimension=False))
-      batch_list.append("spm.tools.dartel.crt_iwarped.images = %s;" % convertPathListToSPMBatchString(self.image_path_list,
+      batch_list.append("spm.tools.dartel.crt_iwarped.images = {%s};" % convertPathListToSPMBatchString(self.image_path_list,
                                                                                                           add_dimension=False))
       batch_list.append("spm.tools.dartel.crt_iwarped.K = %i;" % self.time_steps)
       batch_list.append("spm.tools.dartel.crt_iwarped.interp = %i;" % self.interpolation)
@@ -143,8 +143,10 @@ class CreateInverseWarped():
       if len(self.image_path_list) == len(self.output_warped_path_list):
         for image_path, output_warped_path, flow_field in zip(self.image_path_list, self.output_warped_path_list, self.flow_field_list):
           flow_field_dir = os.path.dirname(flow_field)
-          image_basename = os.path.basename(image_path)
-          spm_default_output_path = os.path.join(flow_field_dir, "ww" + image_basename)
+          flow_field_basename = os.path.basename(flow_field)
+          image_basename = os.path.basename(image_path).split('.')[0]
+          output_basename = "w" + image_basename + '_' + flow_field_basename
+          spm_default_output_path = os.path.join(flow_field_dir, output_basename)
           moveFileAndCreateFoldersIfNeeded(spm_default_output_path, output_warped_path)
       else:
         raise ValueError("images_list length do not coincide with output_warped_path_list length")
