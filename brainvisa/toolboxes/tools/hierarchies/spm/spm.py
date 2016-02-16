@@ -32,7 +32,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 
-# The FSL database allows to use FSL shared data, especially the normalization
+# The SPM database allows to use SPM shared data, especially the normalization
 # templates.
 # The database root is the $FSLDIR/data directory.
 
