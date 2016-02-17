@@ -79,11 +79,6 @@ def initialization(self):
     self.setOptional("images_2",
                      "images_1_warped",
                      "images_2_warped")
-    
-    self.linkParameters("images_1", "flow_fields")
-    self.linkParameters("images_2", "flow_fields")
-    self.linkParameters("images_1_warped", "flow_fields")
-    self.linkParameters("images_2_warped", "flow_fields")
   
     self.addLink("batch_location", "images_1_warped", self.updateBatchPath)
     

@@ -74,10 +74,7 @@ signature = Signature(
 
 def initialization(self):
     self.setOptional("images_warped")
-    
-    self.linkParameters("images", "flow_fields")
-    self.linkParameters("images_warped", "flow_fields")
-  
+      
     self.addLink("batch_location", "images_warped", self.updateBatchPath)
     
     #SPM8 default parameters
