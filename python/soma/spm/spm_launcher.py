@@ -77,6 +77,9 @@ class SPM(SPMLauncher):
       self.resetExecutionQueue()#for avoid conflict during execution (if we start new module during first execution the second batch is added to the first)
       self._runMatlabScript(use_matlab_options)
       self._moveSPMDefaultPathsIfNeeded(current_execution_module_deque)
+      #reset matlab_commands list
+      self.matlab_commands_before_list = []
+      self.matlab_commands_after_list = []
     else:
       raise ValueError("job path and batch path are required")
     
