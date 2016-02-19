@@ -316,6 +316,7 @@ def _updateSignatureAboutNativeType(self, tissue_name):
     self.setDisable(tissue_name + '_native')
   elif native_type == 'Native + DARTEL Imported':
     self.setEnable(tissue_name + '_native', tissue_name + '_dartel_imported')
+  self.changeSignature(self.signature)
 
 def updateSignatureAboutGreyWarpedType(self, proc):
   self._updateSignatureAboutWarpedType('grey')
@@ -347,6 +348,7 @@ def _updateSignatureAboutWarpedType(self, tissue_name):
     self.setDisable(tissue_name + '_warped_modulated')
   elif native_type == 'Modulated + Unmodulated':
     self.setEnable(tissue_name + '_warped_modulated', tissue_name + '_warped_unmodulated')
+  self.changeSignature(self.signature)
 
 def updateSignatureAboutDeformationField(self, proc):
   if self.deformation_field_type == "Neither":
@@ -359,6 +361,7 @@ def updateSignatureAboutDeformationField(self, proc):
     self.setEnable('forward_field')
   elif self.deformation_field_type == 'Inverse + Forward':
     self.setEnable('forward_field', 'inverse_field')
+  self.changeSignature(self.signature)
     
 def updateBatchPath(self, proc):
   if self.grey_native is not None:
