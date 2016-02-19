@@ -188,6 +188,7 @@ def execution( self, context ):
   spm.addModuleToExecutionQueue(result)
   spm.setSPMScriptPath(self.batch_location.fullPath())
   spm.setMatlabScriptPath(matlab_batch_path)
+  spm.addMatlabCommandAfterSPMRunning(self.writeCompleteResultBatch(spm_workspace_directory))
   spm.run()
 
 def removeOldContrastMIPFile(self):
@@ -259,7 +260,7 @@ def createResultsReportBatch(self, context):
     raise ValueError("At least one contrast_number is mandatory")
 
 #------------------------------------------------------------------------------
-def writeCompleteResultBatch(self, spm_workspace_directory, spm_job_path):
+def writeCompleteResultBatch(self, spm_workspace_directory):
   stats_csv_path = os.path.join(spm_workspace_directory, "stats.csv")
   thresholding_info_path = os.path.join(spm_workspace_directory, "thresholding.info")
 
