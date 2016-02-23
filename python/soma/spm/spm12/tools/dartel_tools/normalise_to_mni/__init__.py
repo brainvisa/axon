@@ -12,5 +12,4 @@ class NormaliseToMNI(NormaliseToMNI_virtual, SPM12MainModule):
     self.bounding_box = numpy.array([["NaN", "NaN", "NaN"],["NaN", "NaN", "NaN"]])
     self.preserve = 0
     self.fwhm = convertlistToSPMString([8, 8, 8])
-    
-    
+

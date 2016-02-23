@@ -47,6 +47,7 @@ def validation():
     spm = SPM8(configuration.SPM.spm8_path,
                configuration.matlab.executable,
                configuration.matlab.options)
+  return spm
 #------------------------------------------------------------------------------
 
 userLevel = 0
@@ -54,38 +55,80 @@ name = 'spm8 - DARTEL - Normalise to mni'
 
 #------------------------------------------------------------------------------
 
+userLevel = 0
+name = 'spm12 - DARTEL - Normalise to mni'
+
+#------------------------------------------------------------------------------
+
 signature = Signature(
-  'template', ReadDiskItem( "TPM HDW DARTEL created template", "NIFTI-1 image" ),
-  'flow_fields', ListOf( WriteDiskItem( "HDW DARTEL flow field", "NIFTI-1 image" ) ),
+  'final_template', ReadDiskItem( "TPM HDW DARTEL created template", "NIFTI-1 image" ),
+  'flow_fields', ListOf( ReadDiskItem( "HDW DARTEL flow field", "NIFTI-1 image" ) ),
   'images_0', ListOf( ReadDiskItem( "T1 MRI tissue probability map", ["NIFTI-1 image", "SPM image", "MINC image"] ) ),
-  
+
   "preserve", Choice("Preserve Concentrations",
                      "Preserve Amount"),
-  "bounding_box", Matrix(length=2, width=3),
-  "voxel_size", ListOf(Float()),  
+  "bounding_box",Choice("default : NaN", "custom"),
+  "bounding_box_matrix", Matrix(length=2, width=3),
+  "voxel_size",Choice("default : NaN", "custom"),
+  "voxel_size_vector", ListOf(Float()),
   "fwhm", ListOf(Float()),
-  
+
   'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section='default SPM outputs'),
  )
 
 #------------------------------------------------------------------------------
 
 def initialization(self):
-  self.setOptional('template')
+  self.setOptional('final_template')
+
+  self.addLink(None, "bounding_box", self.updateSignatureAboutBoundingBox)
+  self.addLink(None, "voxel_size", self.updateSignatureAboutVoxelSize)
+  self.addLink("batch_location", "final_template", self.updateBatchPath)
+
+  self.fwhm = [8, 8, 8]
+
+def updateSignatureAboutBoundingBox(self, bounding_box, names, parameterized):
+  if bounding_box == "default : NaN":
+    self.setDisable("bounding_box_matrix")
+  else:
+    self.setEnable("bounding_box_matrix")
+  self.changeSignature(self.signature)
+
+def updateSignatureAboutVoxelSize(self, voxel_size, names, parameterized):
+  if voxel_size == "default : NaN":
+    self.setDisable("voxel_size_vector")
+  else:
+    self.setEnable("voxel_size_vector")
+  self.changeSignature(self.signature)
+
+def updateBatchPath(self, proc):
+  if self.final_template is not None:
+    return os.path.join(self.final_template.fullPath(), 'spm8_DARTEL_normalise_to_mni_job.m')
 
 #------------------------------------------------------------------------------
 def execution( self, context ):
+  if self.bounding_box == "default : NaN":
+    bounding_box = [["NaN", "NaN", "NaN"],["NaN", "NaN", "NaN"]]
+  else:
+    bounding_box = self.bounding_box_matrix
+
+  if self.voxel_size == "default : NaN":
+    voxel_size = ["NaN", "NaN", "NaN"]
+  else:
+    voxel_size = self.voxel_size_vector
+
+
   normalise = NormaliseToMNI()
-  
+
   if self.final_template is not None:
     normalise.setFinalTemplatePath(self.final_template.fullPath())
-    
+
   many_subjects = ManySubjects()
   many_subjects.setFlowFieldPathList([flow_field.fullPath() for flow_field in self.flow_fields])
   many_subjects.appendImagePathList([image.fullPath() for image in self.images_0])
-  
+
   normalise.setAccordingToManySubjects(many_subjects)
-  
+
   if self.preserve == "Preserve Concentrations":
     normalise.setPreserveToConcentrations()
   elif self.preserve == "Preserve Amount":
@@ -93,16 +136,15 @@ def execution( self, context ):
   else:
     raise ValueError("Unvalid preserve")
 
-  normalise.setBoundingBox(numpy.array(self.bounding_box))
-  normalise.setVoxelSize(self.voxel_size)
+  normalise.setBoundingBox(numpy.array(bounding_box))
+  normalise.setVoxelSize(voxel_size)
 
   if len(self.fwhm) == 3:
     normalise.setFWHM(self.fwhm[0], self.fwhm[1], self.fwhm[2])
   else:
     raise ValueError("Three  values  should  be  entered,  denoting the FWHM in the x, y and z  directions")
-  
+
   spm = validation()
   spm.addModuleToExecutionQueue(normalise)
   spm.setSPMScriptPath(self.batch_location.fullPath())
   spm.run()
-                     

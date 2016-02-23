@@ -3,6 +3,5 @@ from soma.spm.virtual_spm.tools.dartel_tools.normalise_to_mni.many_subjects impo
 
 class ManySubjects(ManySubjects_virtual):
   def __init__(self):
-    self.self.flow_field_path_list = None
+    self.flow_field_path_list = None
     self.image_path_list_list = []
-      

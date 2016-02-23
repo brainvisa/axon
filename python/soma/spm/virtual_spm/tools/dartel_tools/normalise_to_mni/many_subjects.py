@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from soma.spm.spm_batch_maker_utils import convertPathListToSPMBatchString
-from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed, checkIfArgumentTypeIsStrOrUnicode
+from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed
 
 class ManySubjects():
   """
@@ -15,7 +15,7 @@ class ManySubjects():
     exaggerated deformations).
     """
     self.flow_field_path_list = flow_field_path_list
-    
+
   @checkIfArgumentTypeIsAllowed(list, 1)
   def appendImagePathList(self, image_path_list):
     """
@@ -23,16 +23,17 @@ class ManySubjects():
     are choosing how many images each flow field should be applied to.
     """
     self.image_path_list_list.append(image_path_list)
-    
+
   def getStringListForBatch( self ):
     if self.flow_field_path_list is not None and self.image_path_list_list:
       batch_list = []
-      batch_list.append("data.subjs.flowfields = {%s};" % convertPathListToSPMBatchString(self.flow_field_path_list))
-      images_batch_string = '{\n'
+      batch_list.append("data.subjs.flowfields = {%s};" % convertPathListToSPMBatchString(self.flow_field_path_list,
+                                                                                          add_dimension=False))
+      images_batch_string = ''
       for image_path_list in self.image_path_list_list:
-        images_batch_string+=convertPathListToSPMBatchString(image_path_list)
-      images_batch_string = '\n};'
+        images_batch_string += '{' + convertPathListToSPMBatchString(image_path_list, add_dimension=False) + '}\n'
+
+      batch_list.append("data.subjs.images = {%s};" % images_batch_string)
       return batch_list
     else:
       raise ValueError("flow_field_path_list and at least image_path_list are required")
-      
