@@ -341,7 +341,8 @@ class Signature( DataType ):
                   doc=None,
                   readOnly=False,
                   visible=True,
-                  collapsed=False ):
+                  collapsed=False,
+                  **kwargs ):
       """
       @todo: documentation
       """
@@ -363,6 +364,11 @@ class Signature( DataType ):
       self.visible = bool( visible )
       #: If set to C{True}, the attribute is reduced on graphical interface (when possible)
       self.collapsed = bool( collapsed )
+      # store other kwargs as attributes
+      if kwargs:
+        self._options = kwargs.keys()
+        for k, v in kwargs.iteritems():
+          setattr(self, k, v)
     
     
     def copy( self ):
@@ -382,6 +388,10 @@ class Signature( DataType ):
       if self.collapsed:
         d[ 'collapsed' ] = self.collapsed
       return ( self.name, self.type ), d
+      if hasattr(self, '_options'):
+          d['_options'] = self._options
+          for k in self._options:
+            d[k] = getattr(self, k)
   
   
   _msgCannotModify = 'Cannot modify read-only signature'
