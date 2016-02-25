@@ -938,7 +938,7 @@ class FileSystemOntology( object ):
     '''
     # Get the source file
     if source is None:
-      source = 'brainvisa-3.0'
+      source = 'brainvisa-3.2.0'
     # Keep backward compatibility with old <mainPath>/*Hierarchy.py files
     source = os.path.normpath( source )
     if source == os.path.normpath( os.path.join( neuroConfig.mainPath, 'shfjHierarchy.py' ) ):
