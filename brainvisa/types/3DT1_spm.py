@@ -21,30 +21,30 @@ FileType('T1 MRI Mni Partial Volume Estimation Dartel imported', 'OLD T1 MRI Par
 
 # Tissue Probability Map : in native, mni space and pet space
 
-FileType('T1 MRI Tissue Probability Map', '4D Volume')
+FileType('OLD T1 MRI Tissue Probability Map', '4D Volume')
 
-FileType('T1 MRI Native Space Tissue Probability Map', 'T1 MRI Tissue Probability Map')
+FileType('T1 MRI Native Space Tissue Probability Map', 'OLD T1 MRI Tissue Probability Map')
 FileType('T1 MRI Nat GreyProba', 'T1 MRI Native Space Tissue Probability Map')
 FileType('T1 MRI Nat WhiteProba', 'T1 MRI Native Space Tissue Probability Map')
 FileType('T1 MRI Nat CSFProba', 'T1 MRI Native Space Tissue Probability Map')
 FileType('T1 MRI Nat SkullProba', 'T1 MRI Native Space Tissue Probability Map')
 FileType('T1 MRI Nat ScalpProba', 'T1 MRI Native Space Tissue Probability Map')
 
-FileType('T1 MRI Mni Space Tissue Probability Map', 'T1 MRI Tissue Probability Map')
+FileType('T1 MRI Mni Space Tissue Probability Map', 'OLD T1 MRI Tissue Probability Map')
 FileType('T1 MRI Mni GreyProba', 'T1 MRI Mni Space Tissue Probability Map')
 FileType('T1 MRI Mni WhiteProba', 'T1 MRI Mni Space Tissue Probability Map')
 FileType('T1 MRI Mni CSFProba', 'T1 MRI Mni Space Tissue Probability Map')
 FileType('T1 MRI Mni SkullProba', 'T1 MRI Mni Space Tissue Probability Map')
 FileType('T1 MRI Mni ScalpProba', 'T1 MRI Mni Space Tissue Probability Map')
 
-FileType('T1 MRI Mni Space Dartel imported Tissue Probability Map', 'T1 MRI Tissue Probability Map')
+FileType('T1 MRI Mni Space Dartel imported Tissue Probability Map', 'OLD T1 MRI Tissue Probability Map')
 FileType('T1 MRI Mni GreyProba Dartel imported', 'T1 MRI Mni Space Dartel imported Tissue Probability Map')
 FileType('T1 MRI Mni WhiteProba Dartel imported', 'T1 MRI Mni Space Dartel imported Tissue Probability Map')
 FileType('T1 MRI Mni CSFProba Dartel imported', 'T1 MRI Mni Space Dartel imported Tissue Probability Map')
 FileType('T1 MRI Mni SkullProba Dartel imported', 'T1 MRI Mni Space Dartel imported Tissue Probability Map')
 FileType('T1 MRI Mni ScalpProba Dartel imported', 'T1 MRI Mni Space Dartel imported Tissue Probability Map')
 
-FileType('T1 MRI PetSpc Space Tissue Probability Map', 'T1 MRI Tissue Probability Map')
+FileType('T1 MRI PetSpc Space Tissue Probability Map', 'OLD T1 MRI Tissue Probability Map')
 FileType('T1 MRI PetSpc GreyProba', 'T1 MRI PetSpc Space Tissue Probability Map')
 FileType('T1 MRI PetSpc WhiteProba', 'T1 MRI PetSpc Space Tissue Probability Map')
 FileType('T1 MRI PetSpc CSFProba', 'T1 MRI PetSpc Space Tissue Probability Map')
