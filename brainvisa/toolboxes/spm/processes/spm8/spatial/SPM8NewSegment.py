@@ -108,6 +108,7 @@ signature = Signature(
                                     'transformation':'none',
                                     'modulation':'none',
                                     'warping_method':'none'},
+                _debug=sys.stdout,
                 section=grey_matter_section),
   'grey_dartel_imported',
   WriteDiskItem('T1 MRI tissue probability map',
@@ -366,39 +367,39 @@ def initialization(self):
 
   self.linkParameters('t1mri_bias_corrected', ('t1mri', 'TPM_template'), self.updateT1MRIBiasCorrected)
   self.linkParameters('t1mri_bias_field', 't1mri_bias_corrected')
-  self.linkParameters('grey_native', 't1mri_bias_corrected')
-  self.linkParameters('grey_dartel_imported', 't1mri_bias_corrected')
-  self.linkParameters('grey_warped_unmodulated', 't1mri_bias_corrected')
-  self.linkParameters('grey_warped_modulated', 't1mri_bias_corrected')
+  self.linkParameters('grey_native', 't1mri_bias_corrected', self.updateGreyNative)
+  self.linkParameters('grey_dartel_imported', 'grey_native')
+  self.linkParameters('grey_warped_unmodulated', 'grey_native')
+  self.linkParameters('grey_warped_modulated', 'grey_native')
 
-  self.linkParameters('white_native', 't1mri_bias_corrected')
-  self.linkParameters('white_dartel_imported', 't1mri_bias_corrected')
-  self.linkParameters('white_warped_unmodulated', 't1mri_bias_corrected')
-  self.linkParameters('white_warped_modulated', 't1mri_bias_corrected')
+  self.linkParameters('white_native', 'grey_native')
+  self.linkParameters('white_dartel_imported', 'grey_native')
+  self.linkParameters('white_warped_unmodulated', 'grey_native')
+  self.linkParameters('white_warped_modulated', 'grey_native')
 
-  self.linkParameters('csf_native', 't1mri_bias_corrected')
-  self.linkParameters('csf_dartel_imported', 't1mri_bias_corrected')
-  self.linkParameters('csf_warped_unmodulated', 't1mri_bias_corrected')
-  self.linkParameters('csf_warped_modulated', 't1mri_bias_corrected')
+  self.linkParameters('csf_native', 'grey_native')
+  self.linkParameters('csf_dartel_imported', 'grey_native')
+  self.linkParameters('csf_warped_unmodulated', 'grey_native')
+  self.linkParameters('csf_warped_modulated', 'grey_native')
 
-  self.linkParameters('skull_native', 't1mri_bias_corrected')
-  self.linkParameters('skull_dartel_imported', 't1mri_bias_corrected')
-  self.linkParameters('skull_warped_unmodulated', 't1mri_bias_corrected')
-  self.linkParameters('skull_warped_modulated', 't1mri_bias_corrected')
+  self.linkParameters('skull_native', 'grey_native')
+  self.linkParameters('skull_dartel_imported', 'grey_native')
+  self.linkParameters('skull_warped_unmodulated', 'grey_native')
+  self.linkParameters('skull_warped_modulated', 'grey_native')
 
-  self.linkParameters('scalp_native', 't1mri_bias_corrected')
-  self.linkParameters('scalp_dartel_imported', 't1mri_bias_corrected')
-  self.linkParameters('scalp_warped_unmodulated', 't1mri_bias_corrected')
-  self.linkParameters('scalp_warped_modulated', 't1mri_bias_corrected')
+  self.linkParameters('scalp_native', 'grey_native')
+  self.linkParameters('scalp_dartel_imported', 'grey_native')
+  self.linkParameters('scalp_warped_unmodulated', 'grey_native')
+  self.linkParameters('scalp_warped_modulated', 'grey_native')
 
-  self.linkParameters('background_native', 't1mri_bias_corrected')
-  self.linkParameters('background_dartel_imported', 't1mri_bias_corrected')
-  self.linkParameters('background_warped_unmodulated', 't1mri_bias_corrected')
-  self.linkParameters('background_warped_modulated', 't1mri_bias_corrected')
+  self.linkParameters('background_native', 'grey_native')
+  self.linkParameters('background_dartel_imported', 'grey_native')
+  self.linkParameters('background_warped_unmodulated', 'grey_native')
+  self.linkParameters('background_warped_modulated', 'grey_native')
 
 
-  self.linkParameters('forward_field', 't1mri_bias_corrected')
-  self.linkParameters('inverse_field', 't1mri_bias_corrected')
+  self.linkParameters('forward_field', 'grey_native')
+  self.linkParameters('inverse_field', 'grey_native')
 
   #SPM default initialisation
   self.bias_regulatisation = 'very light regularisation (0.0001)'
@@ -530,6 +531,12 @@ def updateT1MRIBiasCorrected(self, proc, dummy):
     d['analysis'] = "default"
     d['template'] = self.TPM_template.hierarchyAttributes()['template']
     return self.signature['t1mri_bias_corrected'].findValue(d)
+
+def updateGreyNative(self, proc, dummy):
+  if self.t1mri_bias_corrected is not None:
+    d = self.t1mri_bias_corrected.hierarchyAttributes()
+    del d['space']
+    return self.signature['grey_native'].findValue(d)
 
 def updateBatchPath(self, proc):
   if self.grey_native is not None:

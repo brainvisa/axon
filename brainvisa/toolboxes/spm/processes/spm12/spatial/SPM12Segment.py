@@ -80,7 +80,7 @@ signature = Signature(
                       '90mm cutoff',
                       '100mm cutoff',
                       '110mm cutoff',
-                      '120mm cutoff', 
+                      '120mm cutoff',
                       '130mm cutoff',
                       '140mm cutoff',
                       '150mm cutoff',
@@ -90,42 +90,42 @@ signature = Signature(
                         'save bias field',
                         'save field and corrected', section=channel_section),
   't1mri_bias_field', WriteDiskItem('T1 MRI Bias field', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=channel_section),
-  't1mri_bias_corrected', 
-  WriteDiskItem('T1 MRI Bias Corrected', 'NIFTI-1 image', 
+  't1mri_bias_corrected',
+  WriteDiskItem('T1 MRI Bias Corrected', 'NIFTI-1 image',
                 requiredAttributes={'transformation':'none',
-                                    'warping_method':'none'}, 
+                                    'warping_method':'none'},
                 section=channel_section),
   #GREY CLASS
   'grey_gaussian_number', Choice(1, 2, 3, 4, 5, 6, 7, 8, 'Inf', section=grey_matter_section),
   'grey_native_type', Choice("Neither", 'Native', 'DARTEL Imported', 'Native + DARTEL Imported', section=grey_matter_section),
-  'grey_native', 
-  WriteDiskItem('T1 MRI tissue probability map', 
-                'NIFTI-1 image', 
+  'grey_native',
+  WriteDiskItem('T1 MRI tissue probability map',
+                'NIFTI-1 image',
                 requiredAttributes={'tissue_class':'grey',
                                     'transformation':'none',
                                     'modulation':'none',
                                     'warping_method':'none'},
                 section=grey_matter_section),
-  'grey_dartel_imported', 
+  'grey_dartel_imported',
   WriteDiskItem('T1 MRI tissue probability map',
-                'NIFTI-1 image', 
+                'NIFTI-1 image',
                 requiredAttributes={'tissue_class':'grey',
                                     'transformation':'rigid',
                                     'modulation':'none',
-                                    'warping_method':'none'}, 
+                                    'warping_method':'none'},
                 section=grey_matter_section),
   'grey_warped_type', Choice("Neither", 'Modulated', 'Unmodulated', 'Modulated + Unmodulated', section=grey_matter_section),
-  'grey_warped_unmodulated', 
-  WriteDiskItem('T1 MRI tissue probability map', 
-                'NIFTI-1 image', 
+  'grey_warped_unmodulated',
+  WriteDiskItem('T1 MRI tissue probability map',
+                'NIFTI-1 image',
                 requiredAttributes={"tissue_class":"grey",
                                     'transformation':'none',
                                     'modulation':'none',
-                                    'warping_method':'low-dimensional'}, 
+                                    'warping_method':'low-dimensional'},
                 section=grey_matter_section),
-  'grey_warped_modulated', 
-  WriteDiskItem('T1 MRI tissue probability map', 
-                'NIFTI-1 image', 
+  'grey_warped_modulated',
+  WriteDiskItem('T1 MRI tissue probability map',
+                'NIFTI-1 image',
                 requiredAttributes = {"tissue_class":"grey",
                                     'transformation':'none',
                                     'modulation':'affine and non-linear',
@@ -134,34 +134,34 @@ signature = Signature(
   #WHITE CLASS
   'white_gaussian_number', Choice(1, 2, 3, 4, 5, 6, 7, 8, 'Inf', section=white_matter_section),
   'white_native_type', Choice("Neither", 'Native', 'DARTEL Imported', 'Native + DARTEL Imported', section=white_matter_section),
-  'white_native', 
-  WriteDiskItem('T1 MRI tissue probability map', 
-                'NIFTI-1 image', 
+  'white_native',
+  WriteDiskItem('T1 MRI tissue probability map',
+                'NIFTI-1 image',
                 requiredAttributes={'tissue_class':'white',
                                     'transformation':'none',
                                     'modulation':'none',
                                     'warping_method':'none'},
                 section=white_matter_section),
-  'white_dartel_imported', 
+  'white_dartel_imported',
   WriteDiskItem('T1 MRI tissue probability map',
-                'NIFTI-1 image', 
+                'NIFTI-1 image',
                 requiredAttributes={'tissue_class':'white',
                                     'transformation':'rigid',
                                     'modulation':'none',
-                                    'warping_method':'none'}, 
+                                    'warping_method':'none'},
                 section=white_matter_section),
   'white_warped_type', Choice("Neither", 'Modulated', 'Unmodulated', 'Modulated + Unmodulated', section=white_matter_section),
-  'white_warped_unmodulated', 
-  WriteDiskItem('T1 MRI tissue probability map', 
-                'NIFTI-1 image', 
+  'white_warped_unmodulated',
+  WriteDiskItem('T1 MRI tissue probability map',
+                'NIFTI-1 image',
                 requiredAttributes={'tissue_class':'white',
                                     'transformation':'none',
                                     'modulation':'none',
-                                    'warping_method':'low-dimensional'}, 
+                                    'warping_method':'low-dimensional'},
                 section=white_matter_section),
-  'white_warped_modulated', 
-  WriteDiskItem('T1 MRI tissue probability map', 
-                'NIFTI-1 image', 
+  'white_warped_modulated',
+  WriteDiskItem('T1 MRI tissue probability map',
+                'NIFTI-1 image',
                 requiredAttributes={'tissue_class':'white',
                                     'transformation':'none',
                                     'modulation':'affine and non-linear',
@@ -170,34 +170,34 @@ signature = Signature(
   #CSF CLASS
   'csf_gaussian_number', Choice(1, 2, 3, 4, 5, 6, 7, 8, 'Inf', section=csf_matter_section),
   'csf_native_type', Choice("Neither", 'Native', 'DARTEL Imported', 'Native + DARTEL Imported', section=csf_matter_section),
-  'csf_native', 
-  WriteDiskItem('T1 MRI tissue probability map', 
-                'NIFTI-1 image', 
+  'csf_native',
+  WriteDiskItem('T1 MRI tissue probability map',
+                'NIFTI-1 image',
                 requiredAttributes={'tissue_class':'csf',
                                     'transformation':'none',
                                     'modulation':'none',
                                     'warping_method':'none'},
                 section=csf_matter_section),
-  'csf_dartel_imported', 
+  'csf_dartel_imported',
   WriteDiskItem('T1 MRI tissue probability map',
-                'NIFTI-1 image', 
+                'NIFTI-1 image',
                 requiredAttributes={'tissue_class':'csf',
                                     'transformation':'rigid',
                                     'modulation':'none',
-                                    'warping_method':'none'}, 
+                                    'warping_method':'none'},
                 section=csf_matter_section),
   'csf_warped_type', Choice("Neither", 'Modulated', 'Unmodulated', 'Modulated + Unmodulated', section=csf_matter_section),
-  'csf_warped_unmodulated', 
-  WriteDiskItem('T1 MRI tissue probability map', 
-                'NIFTI-1 image', 
+  'csf_warped_unmodulated',
+  WriteDiskItem('T1 MRI tissue probability map',
+                'NIFTI-1 image',
                 requiredAttributes={'tissue_class':'csf',
                                     'transformation':'none',
                                     'modulation':'none',
-                                    'warping_method':'low-dimensional'}, 
+                                    'warping_method':'low-dimensional'},
                 section=csf_matter_section),
-  'csf_warped_modulated', 
-  WriteDiskItem('T1 MRI tissue probability map', 
-                'NIFTI-1 image', 
+  'csf_warped_modulated',
+  WriteDiskItem('T1 MRI tissue probability map',
+                'NIFTI-1 image',
                 requiredAttributes={'tissue_class':'csf',
                                     'transformation':'none',
                                     'modulation':'affine and non-linear',
@@ -206,34 +206,34 @@ signature = Signature(
   #SKULL CLASS
   'skull_gaussian_number', Choice(1, 2, 3, 4, 5, 6, 7, 8, 'Inf', section=skull_matter_section),
   'skull_native_type', Choice("Neither", 'Native', 'DARTEL Imported', 'Native + DARTEL Imported', section=skull_matter_section),
-  'skull_native', 
-  WriteDiskItem('T1 MRI tissue probability map', 
-                'NIFTI-1 image', 
+  'skull_native',
+  WriteDiskItem('T1 MRI tissue probability map',
+                'NIFTI-1 image',
                 requiredAttributes={'tissue_class':'skull',
                                     'transformation':'none',
                                     'modulation':'none',
                                     'warping_method':'none'},
                 section=skull_matter_section),
-  'skull_dartel_imported', 
+  'skull_dartel_imported',
   WriteDiskItem('T1 MRI tissue probability map',
-                'NIFTI-1 image', 
+                'NIFTI-1 image',
                 requiredAttributes={'tissue_class':'skull',
                                     'transformation':'rigid',
                                     'modulation':'none',
-                                    'warping_method':'none'}, 
+                                    'warping_method':'none'},
                 section=skull_matter_section),
   'skull_warped_type', Choice("Neither", 'Modulated', 'Unmodulated', 'Modulated + Unmodulated', section=skull_matter_section),
-  'skull_warped_unmodulated', 
-  WriteDiskItem('T1 MRI tissue probability map', 
-                'NIFTI-1 image', 
+  'skull_warped_unmodulated',
+  WriteDiskItem('T1 MRI tissue probability map',
+                'NIFTI-1 image',
                 requiredAttributes={'tissue_class':'skull',
                                     'transformation':'none',
                                     'modulation':'none',
-                                    'warping_method':'low-dimensional'}, 
+                                    'warping_method':'low-dimensional'},
                 section=skull_matter_section),
-  'skull_warped_modulated', 
-  WriteDiskItem('T1 MRI tissue probability map', 
-                'NIFTI-1 image', 
+  'skull_warped_modulated',
+  WriteDiskItem('T1 MRI tissue probability map',
+                'NIFTI-1 image',
                 requiredAttributes={'tissue_class':'skull',
                                     'transformation':'none',
                                     'modulation':'affine and non-linear',
@@ -242,34 +242,34 @@ signature = Signature(
   #SCALP CLASS
   'scalp_gaussian_number', Choice(1, 2, 3, 4, 5, 6, 7, 8, 'Inf', section=scalp_matter_section),
   'scalp_native_type', Choice("Neither", 'Native', 'DARTEL Imported', 'Native + DARTEL Imported', section=scalp_matter_section),
-  'scalp_native', 
-  WriteDiskItem('T1 MRI tissue probability map', 
-                'NIFTI-1 image', 
+  'scalp_native',
+  WriteDiskItem('T1 MRI tissue probability map',
+                'NIFTI-1 image',
                 requiredAttributes={'tissue_class':'scalp',
                                     'transformation':'none',
                                     'modulation':'none',
                                     'warping_method':'none'},
                 section=scalp_matter_section),
-  'scalp_dartel_imported', 
+  'scalp_dartel_imported',
   WriteDiskItem('T1 MRI tissue probability map',
-                'NIFTI-1 image', 
+                'NIFTI-1 image',
                 requiredAttributes={'tissue_class':'scalp',
                                     'transformation':'rigid',
                                     'modulation':'none',
-                                    'warping_method':'none'}, 
+                                    'warping_method':'none'},
                 section=scalp_matter_section),
   'scalp_warped_type', Choice("Neither", 'Modulated', 'Unmodulated', 'Modulated + Unmodulated', section=scalp_matter_section),
-  'scalp_warped_unmodulated', 
-  WriteDiskItem('T1 MRI tissue probability map', 
-                'NIFTI-1 image', 
+  'scalp_warped_unmodulated',
+  WriteDiskItem('T1 MRI tissue probability map',
+                'NIFTI-1 image',
                 requiredAttributes={'tissue_class':'scalp',
                                     'transformation':'none',
                                     'modulation':'none',
-                                    'warping_method':'low-dimensional'}, 
+                                    'warping_method':'low-dimensional'},
                 section=scalp_matter_section),
-  'scalp_warped_modulated', 
-  WriteDiskItem('T1 MRI tissue probability map', 
-                'NIFTI-1 image', 
+  'scalp_warped_modulated',
+  WriteDiskItem('T1 MRI tissue probability map',
+                'NIFTI-1 image',
                 requiredAttributes={'tissue_class':'scalp',
                                     'transformation':'none',
                                     'modulation':'affine and non-linear',
@@ -278,40 +278,40 @@ signature = Signature(
   #BACKGROUND CLASS
   'background_gaussian_number', Choice(1, 2, 3, 4, 5, 6, 7, 8, 'Inf', section=background_matter_section),
   'background_native_type', Choice("Neither", 'Native', 'DARTEL Imported', 'Native + DARTEL Imported', section=background_matter_section),
-  'background_native', 
-  WriteDiskItem('T1 MRI tissue probability map', 
-                'NIFTI-1 image', 
+  'background_native',
+  WriteDiskItem('T1 MRI tissue probability map',
+                'NIFTI-1 image',
                 requiredAttributes={'tissue_class':'none',
                                     'transformation':'none',
                                     'modulation':'none',
                                     'warping_method':'none'},
                 section=background_matter_section),
-  'background_dartel_imported', 
+  'background_dartel_imported',
   WriteDiskItem('T1 MRI tissue probability map',
-                'NIFTI-1 image', 
+                'NIFTI-1 image',
                 requiredAttributes={'tissue_class':'none',
                                     'transformation':'rigid',
                                     'modulation':'none',
-                                    'warping_method':'none'}, 
+                                    'warping_method':'none'},
                 section=background_matter_section),
   'background_warped_type', Choice("Neither", 'Modulated', 'Unmodulated', 'Modulated + Unmodulated', section=background_matter_section),
-  'background_warped_unmodulated', 
-  WriteDiskItem('T1 MRI tissue probability map', 
-                'NIFTI-1 image', 
+  'background_warped_unmodulated',
+  WriteDiskItem('T1 MRI tissue probability map',
+                'NIFTI-1 image',
                 requiredAttributes={'tissue_class':'none',
                                     'transformation':'none',
                                     'modulation':'none',
-                                    'warping_method':'low-dimensional'}, 
+                                    'warping_method':'low-dimensional'},
                 section=background_matter_section),
-  'background_warped_modulated', 
-  WriteDiskItem('T1 MRI tissue probability map', 
-                'NIFTI-1 image', 
+  'background_warped_modulated',
+  WriteDiskItem('T1 MRI tissue probability map',
+                'NIFTI-1 image',
                 requiredAttributes={'tissue_class':'none',
                                     'transformation':'none',
                                     'modulation':'affine and non-linear',
                                     'warping_method':'low-dimensional'},
                 section=background_matter_section),
-  #WARPING                    
+  #WARPING
   'mrf', Float(section=warping_section),
   'clean_up', Choice('Dont do cleanup', 'Light Clean', 'Thorough Clean', section=warping_section),
   'warping_regularisation',ListOf(Float(), section=warping_section),
@@ -323,17 +323,17 @@ signature = Signature(
   'smoothness', Float(section=warping_section),
   'sampling_distance', Float(section=warping_section),
   'deformation_field_type', Choice("Neither", 'Inverse', 'Forward', 'Inverse + Forward', section=warping_section),
-  'forward_field', 
-  WriteDiskItem('SPM deformation field', 
-                'NIFTI-1 image', 
+  'forward_field',
+  WriteDiskItem('SPM deformation field',
+                'NIFTI-1 image',
                 requiredAttributes = {'direction':'forward',
-                                      'warping_method':'low-dimensional'}, 
+                                      'warping_method':'low-dimensional'},
                 section=warping_section),
-  'inverse_field', 
-  WriteDiskItem('SPM deformation field', 
-                'NIFTI-1 image', 
+  'inverse_field',
+  WriteDiskItem('SPM deformation field',
+                'NIFTI-1 image',
                 requiredAttributes = {'direction':'inverse',
-                                      'warping_method':'low-dimensional'}, 
+                                      'warping_method':'low-dimensional'},
                 section=warping_section),
   #'deformation_matrix', WriteDiskItem('Matlab SPM file', 'Matlab file'),
   #OUTPUT batch
@@ -343,90 +343,90 @@ signature = Signature(
 def initialization(self):
   #Modify signature by links
   self.addLink(None, 'bias_saving', self.updateSignatureAboutBiasSaving)
-  
+
   self.addLink(None, 'grey_native_type', self.updateSignatureAboutGreyNativeType)
   self.addLink(None, 'white_native_type', self.updateSignatureAboutWhiteNativeType)
   self.addLink(None, 'csf_native_type', self.updateSignatureAboutCSFNativeType)
   self.addLink(None, 'skull_native_type', self.updateSignatureAboutSkullNativeType)
   self.addLink(None, 'scalp_native_type', self.updateSignatureAboutScalpNativeType)
   self.addLink(None, 'background_native_type', self.updateSignatureAboutBackgroundNativeType)
-  
+
   self.addLink(None, 'grey_warped_type', self.updateSignatureAboutGreyWarpedType)
   self.addLink(None, 'white_warped_type', self.updateSignatureAboutWhiteWarpedType)
   self.addLink(None, 'csf_warped_type', self.updateSignatureAboutCSFWarpedType)
   self.addLink(None, 'skull_warped_type', self.updateSignatureAboutSkullWarpedType)
   self.addLink(None, 'scalp_warped_type', self.updateSignatureAboutScalpWarpedType)
   self.addLink(None, 'background_warped_type', self.updateSignatureAboutBackgroundWarpedType)
-  
+
   self.addLink(None, 'deformation_field_type', self.updateSignatureAboutDeformationField)
-  
+
   self.addLink("batch_location", "grey_native", self.updateBatchPath)
-  
+
   self.linkParameters('t1mri_bias_corrected', ('t1mri', 'TPM_template'), self.updateT1MRIBiasCorrected)
   self.linkParameters('t1mri_bias_field', 't1mri_bias_corrected')
-  self.linkParameters('grey_native', 't1mri_bias_corrected')
-  self.linkParameters('grey_dartel_imported', 't1mri_bias_corrected')
-  self.linkParameters('grey_warped_unmodulated', 't1mri_bias_corrected')
-  self.linkParameters('grey_warped_modulated', 't1mri_bias_corrected')
-  
-  self.linkParameters('white_native', 't1mri_bias_corrected')
-  self.linkParameters('white_dartel_imported', 't1mri_bias_corrected')
-  self.linkParameters('white_warped_unmodulated', 't1mri_bias_corrected')
-  self.linkParameters('white_warped_modulated', 't1mri_bias_corrected')
-  
-  self.linkParameters('csf_native', 't1mri_bias_corrected')
+  self.linkParameters('grey_native', 't1mri_bias_corrected', self.updateGreyNative)
+  self.linkParameters('grey_dartel_imported', 'grey_native')
+  self.linkParameters('grey_warped_unmodulated', 'grey_native')
+  self.linkParameters('grey_warped_modulated', 'grey_native')
+
+  self.linkParameters('white_native', 'grey_native')
+  self.linkParameters('white_dartel_imported', 'grey_native')
+  self.linkParameters('white_warped_unmodulated', 'grey_native')
+  self.linkParameters('white_warped_modulated', 'grey_native')
+
+  self.linkParameters('csf_native', 'grey_native')
   self.linkParameters('csf_dartel_imported', 'csf_native')
   self.linkParameters('csf_warped_unmodulated', 'csf_native')
   self.linkParameters('csf_warped_modulated', 'csf_native')
-  
-  self.linkParameters('skull_native', 't1mri_bias_corrected')
-  self.linkParameters('skull_dartel_imported', 't1mri_bias_corrected')
-  self.linkParameters('skull_warped_unmodulated', 't1mri_bias_corrected')
-  self.linkParameters('skull_warped_modulated', 't1mri_bias_corrected')
-  
-  self.linkParameters('scalp_native', 't1mri_bias_corrected')
-  self.linkParameters('scalp_dartel_imported', 't1mri_bias_corrected')
-  self.linkParameters('scalp_warped_unmodulated', 't1mri_bias_corrected')
-  self.linkParameters('scalp_warped_modulated', 't1mri_bias_corrected')
-  
-  self.linkParameters('background_native', 't1mri_bias_corrected')
-  self.linkParameters('background_dartel_imported', 't1mri_bias_corrected')
-  self.linkParameters('background_warped_unmodulated', 't1mri_bias_corrected')
-  self.linkParameters('background_warped_modulated', 't1mri_bias_corrected')
-  
-  
-  self.linkParameters('forward_field', 't1mri_bias_corrected')
-  self.linkParameters('inverse_field', 't1mri_bias_corrected')
-  
+
+  self.linkParameters('skull_native', 'grey_native')
+  self.linkParameters('skull_dartel_imported', 'grey_native')
+  self.linkParameters('skull_warped_unmodulated', 'grey_native')
+  self.linkParameters('skull_warped_modulated', 'grey_native')
+
+  self.linkParameters('scalp_native', 'grey_native')
+  self.linkParameters('scalp_dartel_imported', 'grey_native')
+  self.linkParameters('scalp_warped_unmodulated', 'grey_native')
+  self.linkParameters('scalp_warped_modulated', 'grey_native')
+
+  self.linkParameters('background_native', 'grey_native')
+  self.linkParameters('background_dartel_imported', 'grey_native')
+  self.linkParameters('background_warped_unmodulated', 'grey_native')
+  self.linkParameters('background_warped_modulated', 'grey_native')
+
+
+  self.linkParameters('forward_field', 'grey_native')
+  self.linkParameters('inverse_field', 'grey_native')
+
   #SPM default initialisation
-  self.bias_regulatisation = 'light regularisation (0.001)' 
+  self.bias_regulatisation = 'light regularisation (0.001)'
   self.bias_FWHM = '60mm cutoff'
   self.bias_saving = 'save nothing'
-  
+
   self.grey_gaussian_number = 1
   self.grey_native_type = 'Native'
   self.grey_warped_type = "Neither"
-  
+
   self.white_gaussian_number = 1
   self.white_native_type = 'Native'
   self.white_warped_type = "Neither"
-  
+
   self.csf_gaussian_number = 2
   self.csf_native_type = 'Native'
   self.csf_warped_type = "Neither"
-  
+
   self.skull_gaussian_number = 3
   self.skull_native_type = 'Native'
   self.skull_warped_type = "Neither"
-  
+
   self.scalp_gaussian_number = 4
   self.scalp_native_type = 'Native'
   self.scalp_warped_type = "Neither"
-  
+
   self.background_gaussian_number = 2
   self.background_native_type = "Neither"
   self.background_warped_type = "Neither"
-  
+
   self.mrf = 1
   self.clean_up = 'Light Clean'
   self.warping_regularisation = [0, 0.001, 0.5, 0.05, 0.2]
@@ -447,25 +447,25 @@ def updateSignatureAboutBiasSaving(self, proc):
   elif self.bias_saving == 'save field and corrected':
     self.setEnable('t1mri_bias_field', 't1mri_bias_corrected')
   self.changeSignature(self.signature)
-  
+
 def updateSignatureAboutGreyNativeType(self, proc):
   self._updateSignatureAboutNativeType('grey')
-  
+
 def updateSignatureAboutWhiteNativeType(self, proc):
   self._updateSignatureAboutNativeType('white')
-  
+
 def updateSignatureAboutCSFNativeType(self, proc):
   self._updateSignatureAboutNativeType('csf')
-  
+
 def updateSignatureAboutSkullNativeType(self, proc):
   self._updateSignatureAboutNativeType('skull')
-  
+
 def updateSignatureAboutScalpNativeType(self, proc):
   self._updateSignatureAboutNativeType('scalp')
-  
+
 def updateSignatureAboutBackgroundNativeType(self, proc):
   self._updateSignatureAboutNativeType('background')
-  
+
 def _updateSignatureAboutNativeType(self, tissue_name):
   native_type = eval('self.' + tissue_name + '_native_type')
   if native_type == "Neither":
@@ -482,22 +482,22 @@ def _updateSignatureAboutNativeType(self, tissue_name):
 
 def updateSignatureAboutGreyWarpedType(self, proc):
   self._updateSignatureAboutWarpedType('grey')
-  
+
 def updateSignatureAboutWhiteWarpedType(self, proc):
   self._updateSignatureAboutWarpedType('white')
-  
+
 def updateSignatureAboutCSFWarpedType(self, proc):
   self._updateSignatureAboutWarpedType('csf')
-  
+
 def updateSignatureAboutSkullWarpedType(self, proc):
   self._updateSignatureAboutWarpedType('skull')
-  
+
 def updateSignatureAboutScalpWarpedType(self, proc):
   self._updateSignatureAboutWarpedType('scalp')
-  
+
 def updateSignatureAboutBackgroundWarpedType(self, proc):
   self._updateSignatureAboutWarpedType('background')
-  
+
 def _updateSignatureAboutWarpedType(self, tissue_name):
   native_type = eval('self.' + tissue_name + '_warped_type')
   if native_type == "Neither":
@@ -511,7 +511,7 @@ def _updateSignatureAboutWarpedType(self, tissue_name):
   elif native_type == 'Modulated + Unmodulated':
     self.setEnable(tissue_name + '_warped_modulated', tissue_name + '_warped_unmodulated')
   self.changeSignature(self.signature)
-    
+
 def updateSignatureAboutDeformationField(self, proc):
   if self.deformation_field_type == "Neither":
     self.setDisable('forward_field', 'inverse_field')
@@ -533,7 +533,13 @@ def updateT1MRIBiasCorrected(self, proc, dummy):
     d['analysis'] = "default"
     d['template'] = self.TPM_template.hierarchyAttributes()['template']
     return self.signature['t1mri_bias_corrected'].findValue(d)
-    
+
+def updateGreyNative(self, proc, dummy):
+  if self.t1mri_bias_corrected is not None:
+    d = self.t1mri_bias_corrected.hierarchyAttributes()
+    del d["space"]
+    return self.signature["grey_native"].findValue(d)
+
 def updateBatchPath(self, proc):
   if self.grey_native is not None:
     directory_path = os.path.dirname(self.grey_native.fullPath())
@@ -600,8 +606,7 @@ def execution( self, context ):
                      forward_field=self.forward_field,
                      inverse_field=self.inverse_field,
                      batch_location=self.batch_location)
-  
+
 #===============================================================================
-# 
+#
 #===============================================================================
-  
