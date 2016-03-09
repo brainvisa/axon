@@ -83,7 +83,7 @@ signature = Signature(
                       '90mm cutoff',
                       '100mm cutoff',
                       '110mm cutoff',
-                      '120mm cutoff', 
+                      '120mm cutoff',
                       '130mm cutoff',
                       '140mm cutoff',
                       '150mm cutoff',
@@ -94,7 +94,7 @@ signature = Signature(
                         'save field and corrected', section=first_channel_section),
   't1mri_bias_field', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=first_channel_section),
   't1mri_bias_corrected', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=first_channel_section),
-  
+
   'second_channel', ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=second_channel_section),
   'bias_regulatisation_2c', Choice('no regularisation (0)',
                                 'extremely light regularisation (0.00001)',
@@ -113,7 +113,7 @@ signature = Signature(
                       '90mm cutoff',
                       '100mm cutoff',
                       '110mm cutoff',
-                      '120mm cutoff', 
+                      '120mm cutoff',
                       '130mm cutoff',
                       '140mm cutoff',
                       '150mm cutoff',
@@ -124,7 +124,7 @@ signature = Signature(
                         'save field and corrected', section=second_channel_section),
   't1mri_bias_field_2c', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=second_channel_section),
   't1mri_bias_corrected_2c', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=second_channel_section),
-  
+
   'TPM_template', ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section='Tissue probability map'),
 
   'grey_gaussian_number', Choice(1, 2, 3, 4, 5, 6, 7, 8, 'Inf', section=grey_matter_section),
@@ -190,13 +190,15 @@ signature = Signature(
   'forward_field', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=warping_section),
   'inverse_field', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=warping_section),
   #'deformation_matrix', WriteDiskItem('Matlab SPM file', 'Matlab file'),
+  'seg8_mat', WriteDiskItem('Matlab SPM file', 'Matlab file'),
 
   'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section='default SPM outputs' ),
 )
 
 def initialization(self):
-  self.setOptional("second_channel", "bias_regulatisation_2c", "bias_FWHM_2c", 
-                   "bias_saving_2c", "t1mri_bias_corrected_2c", "t1mri_bias_field_2c")
+  self.setOptional("second_channel", "bias_regulatisation_2c", "bias_FWHM_2c",
+                   "bias_saving_2c", "t1mri_bias_corrected_2c", "t1mri_bias_field_2c",
+                   "seg8_mat")
   #Modify signature by links
   self.addLink(None, 'bias_saving', self.updateSignatureAboutFirstBiasSaving)
   self.addLink(None, 'bias_saving_2c', self.updateSignatureAboutSecondBiasSaving)
@@ -216,14 +218,14 @@ def initialization(self):
   self.addLink(None, 'background_warped_type', self.updateSignatureAboutBackgroundWarpedType)
 
   self.addLink(None, 'deformation_field_type', self.updateSignatureAboutDeformationField)
-  
+
   self.addLink("batch_location", "grey_native", self.updateBatchPath)
 
   #SPM default initialisation
   self.bias_regulatisation = 'light regularisation (0.001)'
   self.bias_FWHM = '60mm cutoff'
   self.bias_saving = 'save nothing'
-  
+
   self.bias_regulatisation_2c = 'light regularisation (0.001)'
   self.bias_FWHM_2c = '60mm cutoff'
   self.bias_saving_2c = 'save nothing'
@@ -362,12 +364,12 @@ def updateSignatureAboutDeformationField(self, proc):
   elif self.deformation_field_type == 'Inverse + Forward':
     self.setEnable('forward_field', 'inverse_field')
   self.changeSignature(self.signature)
-    
+
 def updateBatchPath(self, proc):
   if self.grey_native is not None:
     directory_path = os.path.dirname(self.grey_native.fullPath())
     return os.path.join(directory_path, 'spm12_segment_job.m')
-  
+
 def execution( self, context ):
   segment = Segment()
 
@@ -462,7 +464,7 @@ def execution( self, context ):
       second_channel.setBiasRegularisationToExtremelyHeavy()
     else:
       raise ValueError('Unvalid bias_regulatisation value')
-  
+
     if self.bias_FWHM_2c == '30mm cutoff':
       second_channel.setBiasFWHMTo30cutoff()
     elif self.bias_FWHM_2c == '40mm cutoff':
@@ -493,7 +495,7 @@ def execution( self, context ):
       second_channel.unsetBiasFWHM()
     else:
       raise ValueError('Unvalid bias_FWHM value')
-  
+
     second_channel.setVolumePath(self.second_channel.fullPath())
     if self.bias_saving == 'save nothing':
       second_channel.discardBiasCorrected()
@@ -509,7 +511,7 @@ def execution( self, context ):
       second_channel.setBiasFieldPath(str(self.t1mri_bias_field_2c.fullPath()))
     else:
       raise ValueError('Unvalid bias_saving value')
-  
+
     segment.appendChannel(second_channel)
 
   segment.appendTissue(self.buildTissueObject('grey', 1))
@@ -562,6 +564,9 @@ def execution( self, context ):
     segment.setDeformationFieldForwardOutputPath(str(self.forward_field.fullPath()))
   else:
     raise ValueError('Unvalid deformation_field_type value')
+
+  if self.seg8_mat is not None:
+    segment.setSeg8MatOutputPath(self.seg8_mat.fullPath())
 
   spm = validation()
   spm.addModuleToExecutionQueue(segment)

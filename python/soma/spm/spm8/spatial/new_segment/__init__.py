@@ -17,24 +17,25 @@ class NewSegment(NewSegment_virtual, SPM8MainModule):
     self.affine_regularisation = 'mni'
     self.sampling_distance = 3.0
     self.deformation_fields = [0, 0]
-    
+
     self.forward_deformation_prefix = 'y_'
     self.inverse_deformation_prefix = 'iy_'
-    
+
     self.forward_deformation_path = None
     self.inverse_deformation_path = None
-    
+    self.seg8_mat_path = None
+
   @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
   def setSPMDefaultChannel(self, volume_path):
     default_channel = Channel()
     default_channel.setVolumePath(volume_path)
     self.channel_container.clear()
     self.channel_container.append(default_channel)
-    
+
   @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
-  def setSPMDefautTissues(self, tissue_proba_map_path): 
+  def setSPMDefautTissues(self, tissue_proba_map_path):
     self.tissue_container.clear()
-    
+
     first_tissue = Tissue()
     first_tissue.setTissueProbilityMapPath(tissue_proba_map_path)
     first_tissue.setTissueProbilityDimension(1)
@@ -42,7 +43,7 @@ class NewSegment(NewSegment_virtual, SPM8MainModule):
     first_tissue.setNativeTissueNativeSpace()
     first_tissue.unsetWarpedTissue()
     self.tissue_container.append(first_tissue)
-    
+
     second_tissue = Tissue()
     second_tissue.setTissueProbilityMapPath(tissue_proba_map_path)
     second_tissue.setTissueProbilityDimension(2)
@@ -50,7 +51,7 @@ class NewSegment(NewSegment_virtual, SPM8MainModule):
     second_tissue.setNativeTissueNativeSpace()
     second_tissue.unsetWarpedTissue()
     self.tissue_container.append(second_tissue)
-    
+
     third_tissue = Tissue()
     third_tissue.setTissueProbilityMapPath(tissue_proba_map_path)
     third_tissue.setTissueProbilityDimension(3)
@@ -58,7 +59,7 @@ class NewSegment(NewSegment_virtual, SPM8MainModule):
     third_tissue.setNativeTissueNativeSpace()
     third_tissue.unsetWarpedTissue()
     self.tissue_container.append(third_tissue)
-    
+
     fourth_tissue = Tissue()
     fourth_tissue.setTissueProbilityMapPath(tissue_proba_map_path)
     fourth_tissue.setTissueProbilityDimension(4)
@@ -66,7 +67,7 @@ class NewSegment(NewSegment_virtual, SPM8MainModule):
     fourth_tissue.setNativeTissueNativeSpace()
     fourth_tissue.unsetWarpedTissue()
     self.tissue_container.append(fourth_tissue)
-    
+
     fifth_tissue = Tissue()
     fifth_tissue.setTissueProbilityMapPath(tissue_proba_map_path)
     fifth_tissue.setTissueProbilityDimension(5)
@@ -74,7 +75,7 @@ class NewSegment(NewSegment_virtual, SPM8MainModule):
     fifth_tissue.setNativeTissueNativeSpace()
     fifth_tissue.unsetWarpedTissue()
     self.tissue_container.append(fifth_tissue)
-    
+
     sixth_tissue = Tissue()
     sixth_tissue.setTissueProbilityMapPath(tissue_proba_map_path)
     sixth_tissue.setTissueProbilityDimension(6)
@@ -82,4 +83,4 @@ class NewSegment(NewSegment_virtual, SPM8MainModule):
     sixth_tissue.unsetNativeTissue()
     sixth_tissue.unsetWarpedTissue()
     self.tissue_container.append(sixth_tissue)
-      
+

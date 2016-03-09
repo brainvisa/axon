@@ -19,19 +19,19 @@ class NewSegment():
   maps need further refinement. The current versions were crudely generated (by JA) using
   data  that  was  kindly  provided  by  Cynthia  Jongen  of  the  Imaging Sciences Institute at
   Utrecht, NL.
-  """    
+  """
   @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
   @checkIfArgumentTypeIsStrOrUnicode(argument_index=2)
   def setSPMDefaultSetting(self, volume_path, tissue_proba_map_path):
     self.setSPMDefaultChannel(volume_path)
-    self.setSPMDefautTissues(tissue_proba_map_path)    
-    
+    self.setSPMDefautTissues(tissue_proba_map_path)
+
   def appendChannel(self, channel):
     self.channel_container.append(channel)
-    
+
   def appendTissue(self, tissue):
     self.tissue_container.append(tissue)
-    
+
   @checkIfArgumentTypeIsAllowed(numbers.Real, 1)
   def setMRFParameter(self, MRF_parameter):
     """
@@ -41,7 +41,7 @@ class NewSegment():
     Evaluated statements are entered.
     """
     self.MRF_parameter = MRF_parameter
-    
+
   def unsetMRF(self):
     """
     When  tissue  class  images  are  written  out, a few iterations of a simple Markov
@@ -50,7 +50,7 @@ class NewSegment():
     Evaluated statements are entered.
     """
     self.MRF_parameter = 0
-    
+
   @checkIfArgumentTypeIsAllowed(numbers.Real, 1)
   def setWarpingRegularisation(self, regularisation_number):
     """
@@ -66,7 +66,7 @@ class NewSegment():
     determined by the bending energy of the deformations.
     """
     self.warping_regularisation = regularisation_number
-    
+
   def setAffineRegularisationToEuropeanBrains(self):
     """
     The  procedure  is  a  local  optimisation,  so  it  needs  reasonable  initial starting
@@ -81,7 +81,7 @@ class NewSegment():
     registration.
     """
     self.affine_regularisation = 'mni'
-    
+
   def setAffineRegularisationToAsianBrains(self):
     """
     The  procedure  is  a  local  optimisation,  so  it  needs  reasonable  initial starting
@@ -96,7 +96,7 @@ class NewSegment():
     registration.
     """
     self.affine_regularisation = 'eastern'
-    
+
   def setAffineRegularisationToAverageSizedTemplate(self):
     """
     The  procedure  is  a  local  optimisation,  so  it  needs  reasonable  initial starting
@@ -111,7 +111,7 @@ class NewSegment():
     registration.
     """
     self.affine_regularisation = 'subj'
-    
+
   def unsetAffineRegularisation(self):
     """
     The  procedure  is  a  local  optimisation,  so  it  needs  reasonable  initial starting
@@ -126,7 +126,7 @@ class NewSegment():
     registration.
     """
     self.affine_regularisation = ''
-    
+
   def unsetRegularisation(self):
     """
     The  procedure  is  a  local  optimisation,  so  it  needs  reasonable  initial starting
@@ -141,7 +141,7 @@ class NewSegment():
     registration.
     """
     self.affine_regularisation = 'none'
-     
+
   @checkIfArgumentTypeIsAllowed(numbers.Real, 1)
   def setSamplingDistance(self, sampling_distance):
     """
@@ -151,7 +151,7 @@ class NewSegment():
     compromise between speed and accuracy.
     """
     self.sampling_distance = sampling_distance
-      
+
   def discardDeformationField(self):
     """
     Deformation  fields  can  be  saved  to disk, and used by the Deformations Utility.
@@ -162,8 +162,8 @@ class NewSegment():
     files, which contain three volumes to encode the x, y and z coordinates.
     """
     self.deformation_fields = [0, 0]
-  
-  def saveDeformationFieldInverse(self): 
+
+  def saveDeformationFieldInverse(self):
     """
     Deformation  fields  can  be  saved  to disk, and used by the Deformations Utility.
     For   spatially   normalising  images  to  MNI  space,  you  will  need  the  forward
@@ -172,9 +172,9 @@ class NewSegment():
     subject, which also requires the inverse transform. Deformations are saved as .nii
     files, which contain three volumes to encode the x, y and z coordinates.
     """
-    self.deformation_fields = [1, 0] 
-  
-  def saveDeformationFieldForward(self):   
+    self.deformation_fields = [1, 0]
+
+  def saveDeformationFieldForward(self):
     """
     Deformation  fields  can  be  saved  to disk, and used by the Deformations Utility.
     For   spatially   normalising  images  to  MNI  space,  you  will  need  the  forward
@@ -183,9 +183,9 @@ class NewSegment():
     subject, which also requires the inverse transform. Deformations are saved as .nii
     files, which contain three volumes to encode the x, y and z coordinates.
     """
-    self.deformation_fields = [0, 1] 
-  
-  def saveDeformationFieldInverseAndForward(self): 
+    self.deformation_fields = [0, 1]
+
+  def saveDeformationFieldInverseAndForward(self):
     """
     Deformation  fields  can  be  saved  to disk, and used by the Deformations Utility.
     For   spatially   normalising  images  to  MNI  space,  you  will  need  the  forward
@@ -193,9 +193,9 @@ class NewSegment():
     the  inverse. It is also possible to transform data in MNI space on to the individual
     subject, which also requires the inverse transform. Deformations are saved as .nii
     files, which contain three volumes to encode the x, y and z coordinates.
-    """ 
+    """
     self.deformation_fields = [1, 1]
-    
+
   @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
   def setDeformationFieldForwardOutputPath(self, output_path):
     self.forward_deformation_path = output_path
@@ -203,7 +203,11 @@ class NewSegment():
   @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
   def setDeformationFieldInverseOutputPath(self, output_path):
     self.inverse_deformation_path = output_path
-      
+
+  @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
+  def setSeg8MatOutputPath(self, output_path):
+    self.seg8_mat_path = output_path
+
   def getStringListForBatch(self):
     batch_list = []
     batch_list.extend(self.channel_container.getStringListForBatch())
@@ -219,30 +223,40 @@ class NewSegment():
   def _addSpecificSPMPrefix(self, batch_list):
     spm8_keyword = 'spm.tools.preproc8'
     return addBatchKeyWordInEachItem(spm8_keyword, batch_list)
-    
+
   def _moveSPMDefaultPathsIfNeeded(self):
     self.channel_container.moveBiasSavingIfNeeded()
     self._moveTissuesIfNeeded()
     self._moveDeformationFieldsIfNeeded()
-    
+    self._moveSegmentationMatIfNeeded()
+
   def _moveTissuesIfNeeded(self):
     channel = self.channel_container[0]
     volume_path = channel.getVolumePath()
     if volume_path is not None:
       self.tissue_container.moveTissuesIfNeeded(volume_path)
     else:
-      raise ValueError('Volume path not found but is mandatory')  
-  
+      raise ValueError('Volume path not found but is mandatory')
+
   def _moveDeformationFieldsIfNeeded(self):
     volume_path = self.channel_container[0].getVolumePath()
     if volume_path is not None:
       if self.forward_deformation_path is not None:
-        moveSPMPath(volume_path, 
-                    self.forward_deformation_path, 
+        moveSPMPath(volume_path,
+                    self.forward_deformation_path,
                     prefix=self.forward_deformation_prefix)
       if self.inverse_deformation_path is not None:
-        moveSPMPath(volume_path, 
-                    self.inverse_deformation_path, 
+        moveSPMPath(volume_path,
+                    self.inverse_deformation_path,
                     prefix=self.inverse_deformation_prefix)
 
-      
+  def _moveSegmentationMatIfNeeded(self):
+    volume_path = self.channel_container[0].getVolumePath()
+    if volume_path is not None:
+      if self.seg8_mat_path is not None:
+        moveSPMPath(volume_path,
+                    self.seg8_mat_path,
+                    suffix="_seg8",
+                    extension="mat")
+
+

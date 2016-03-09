@@ -108,7 +108,6 @@ signature = Signature(
                                     'transformation':'none',
                                     'modulation':'none',
                                     'warping_method':'none'},
-                _debug=sys.stdout,
                 section=grey_matter_section),
   'grey_dartel_imported',
   WriteDiskItem('T1 MRI tissue probability map',
@@ -339,6 +338,7 @@ signature = Signature(
                                       'warping_method':'low-dimensional'},
                 section=warping_section),
   #'deformation_matrix', WriteDiskItem('Matlab SPM file', 'Matlab file'),
+  'seg8_mat', WriteDiskItem('Matlab SPM file', 'Matlab file', section='default SPM outputs'),
 
   'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section='default SPM outputs'),
 )
@@ -364,6 +364,7 @@ def initialization(self):
   self.addLink(None, 'deformation_field_type', self.updateSignatureAboutDeformationField)
 
   self.addLink("batch_location", "grey_native", self.updateBatchPath)
+  self.addLink("seg8_mat", "t1mri_bias_corrected", self.updateSeg8Path)
 
   self.linkParameters('t1mri_bias_corrected', ('t1mri', 'TPM_template'), self.updateT1MRIBiasCorrected)
   self.linkParameters('t1mri_bias_field', 't1mri_bias_corrected')
@@ -543,6 +544,11 @@ def updateBatchPath(self, proc):
     directory_path = os.path.dirname(self.grey_native.fullPath())
     return os.path.join(directory_path, 'spm8_new_segment_job.m')
 
+def updateSeg8Path(self, proc):
+  if self.t1mri_bias_corrected is not None:
+    t1mri_bias_corrected_name = self.t1mri_bias_corrected.fullName()
+    return t1mri_bias_corrected_name + "_seg8.mat"
+
 def execution( self, context ):
   context.runProcess('SPM8NewSegment_generic',
                      t1mri=self.t1mri,
@@ -601,6 +607,7 @@ def execution( self, context ):
                      deformation_field_type=self.deformation_field_type,
                      forward_field=self.forward_field,
                      inverse_field=self.inverse_field,
+                     seg8_mat=self.seg8_mat,
                      batch_location=self.batch_location)
 
 #===============================================================================

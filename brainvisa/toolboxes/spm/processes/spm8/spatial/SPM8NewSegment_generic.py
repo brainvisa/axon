@@ -82,7 +82,7 @@ signature = Signature(
                       '90mm cutoff',
                       '100mm cutoff',
                       '110mm cutoff',
-                      '120mm cutoff', 
+                      '120mm cutoff',
                       '130mm cutoff',
                       '140mm cutoff',
                       '150mm cutoff',
@@ -93,7 +93,7 @@ signature = Signature(
                         'save field and corrected', section=first_channel_section),
   't1mri_bias_field', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=first_channel_section),
   't1mri_bias_corrected', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=first_channel_section),
-  
+
   'second_channel', ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=second_channel_section),
   'bias_regulatisation_2c', Choice('no regularisation (0)',
                                 'extremely light regularisation (0.00001)',
@@ -112,7 +112,7 @@ signature = Signature(
                       '90mm cutoff',
                       '100mm cutoff',
                       '110mm cutoff',
-                      '120mm cutoff', 
+                      '120mm cutoff',
                       '130mm cutoff',
                       '140mm cutoff',
                       '150mm cutoff',
@@ -125,7 +125,7 @@ signature = Signature(
   't1mri_bias_corrected_2c', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=second_channel_section),
 
   'TPM_template', ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section='Tissue probability map'),
-  
+
   'grey_gaussian_number', Choice(1, 2, 3, 4, 5, 6, 7, 8, 'Inf', section=grey_matter_section),
   'grey_native_type', Choice("Neither", 'Native', 'DARTEL Imported', 'Native + DARTEL Imported', section=grey_matter_section),
   'grey_native', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=grey_matter_section),
@@ -173,7 +173,7 @@ signature = Signature(
   'background_warped_type', Choice("Neither", 'Modulated', 'Unmodulated', 'Modulated + Unmodulated', section=background_matter_section),
   'background_warped_unmodulated', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=background_matter_section),
   'background_warped_modulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=background_matter_section),
-  
+
   'mrf', Float(section=warping_section),
   'warping_regularisation',Integer(section=warping_section),
   'affine_regularisation', Choice('No Affine Registration',
@@ -182,69 +182,70 @@ signature = Signature(
                                   'Average sized template',
                                   'No regularisation', section=warping_section),
   'sampling_distance', Float(section=warping_section),
-  
+
   'deformation_field_type', Choice("Neither", 'Inverse', 'Forward', 'Inverse + Forward', section=warping_section),
   'forward_field', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=warping_section),
   'inverse_field', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=warping_section),
   #'deformation_matrix', WriteDiskItem('Matlab SPM file', 'Matlab file'),
-  
-  'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section="default SPM outputs" ),
+  'seg8_mat', WriteDiskItem('Matlab SPM file', 'Matlab file', section="default SPM outputs"),
+  'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section="default SPM outputs"),
 )
 
 def initialization(self):
-  self.setOptional("second_channel", "bias_regulatisation_2c", "bias_FWHM_2c", 
-                   "bias_saving_2c", "t1mri_bias_corrected_2c", "t1mri_bias_field_2c")
+  self.setOptional("second_channel", "bias_regulatisation_2c", "bias_FWHM_2c",
+                   "bias_saving_2c", "t1mri_bias_corrected_2c", "t1mri_bias_field_2c",
+                   "seg8_mat")
   #Modify signature by links
   self.addLink(None, 'bias_saving', self.updateSignatureAboutFirstChannelBiasSaving)
   self.addLink(None, 'bias_saving_2c', self.updateSignatureAboutSecondChannelBiasSaving)
-  
+
   self.addLink(None, 'grey_native_type', self.updateSignatureAboutGreyNativeType)
   self.addLink(None, 'white_native_type', self.updateSignatureAboutWhiteNativeType)
   self.addLink(None, 'csf_native_type', self.updateSignatureAboutCSFNativeType)
   self.addLink(None, 'skull_native_type', self.updateSignatureAboutSkullNativeType)
   self.addLink(None, 'scalp_native_type', self.updateSignatureAboutScalpNativeType)
   self.addLink(None, 'background_native_type', self.updateSignatureAboutBackgroundNativeType)
-  
+
   self.addLink(None, 'grey_warped_type', self.updateSignatureAboutGreyWarpedType)
   self.addLink(None, 'white_warped_type', self.updateSignatureAboutWhiteWarpedType)
   self.addLink(None, 'csf_warped_type', self.updateSignatureAboutCSFWarpedType)
   self.addLink(None, 'skull_warped_type', self.updateSignatureAboutSkullWarpedType)
   self.addLink(None, 'scalp_warped_type', self.updateSignatureAboutScalpWarpedType)
   self.addLink(None, 'background_warped_type', self.updateSignatureAboutBackgroundWarpedType)
-  
+
   self.addLink(None, 'deformation_field_type', self.updateSignatureAboutDeformationField)
-  
+
   self.addLink("batch_location", "grey_native", self.updateBatchPath)
-  
+
   #SPM default initialisation
-  self.bias_regulatisation = 'very light regularisation (0.0001)' 
+  self.bias_regulatisation = 'very light regularisation (0.0001)'
   self.bias_FWHM = '60mm cutoff'
   self.bias_saving = 'save nothing'
-  
+
   self.grey_gaussian_number = 2
   self.grey_native_type = 'Native'
   self.grey_warped_type = "Neither"
-  
+
   self.white_gaussian_number = 2
   self.white_native_type = 'Native'
   self.white_warped_type = "Neither"
-  
+
   self.csf_gaussian_number = 2
   self.csf_native_type = 'Native'
   self.csf_warped_type = "Neither"
-  
+
   self.skull_gaussian_number = 3
   self.skull_native_type = 'Native'
   self.skull_warped_type = "Neither"
-  
+
   self.scalp_gaussian_number = 4
   self.scalp_native_type = 'Native'
   self.scalp_warped_type = "Neither"
-  
+
   self.background_gaussian_number = 2
   self.background_native_type = "Neither"
   self.background_warped_type = "Neither"
-  
+
   self.mrf = 0
   self.warping_regularisation = 4
   self.affine_regularisation = 'ICBM space template - European brains'
@@ -276,25 +277,25 @@ def updateSignatureAboutSecondChannelBiasSaving(self, proc):
   elif self.bias_saving_2c == 'save field and corrected':
     self.showAndMandadesSignatureFieldList(['t1mri_bias_field_2c', 't1mri_bias_corrected_2c'])
   self.changeSignature(self.signature)
-  
+
 def updateSignatureAboutGreyNativeType(self, proc):
   self._updateSignatureAboutNativeType('grey')
-  
+
 def updateSignatureAboutWhiteNativeType(self, proc):
   self._updateSignatureAboutNativeType('white')
-  
+
 def updateSignatureAboutCSFNativeType(self, proc):
   self._updateSignatureAboutNativeType('csf')
-  
+
 def updateSignatureAboutSkullNativeType(self, proc):
   self._updateSignatureAboutNativeType('skull')
-  
+
 def updateSignatureAboutScalpNativeType(self, proc):
   self._updateSignatureAboutNativeType('scalp')
-  
+
 def updateSignatureAboutBackgroundNativeType(self, proc):
   self._updateSignatureAboutNativeType('background')
-  
+
 def _updateSignatureAboutNativeType(self, tissue_name):
   native_type = eval('self.' + tissue_name + '_native_type')
   if native_type == "Neither":
@@ -310,22 +311,22 @@ def _updateSignatureAboutNativeType(self, tissue_name):
 
 def updateSignatureAboutGreyWarpedType(self, proc):
   self._updateSignatureAboutWarpedType('grey')
-  
+
 def updateSignatureAboutWhiteWarpedType(self, proc):
   self._updateSignatureAboutWarpedType('white')
-  
+
 def updateSignatureAboutCSFWarpedType(self, proc):
   self._updateSignatureAboutWarpedType('csf')
-  
+
 def updateSignatureAboutSkullWarpedType(self, proc):
   self._updateSignatureAboutWarpedType('skull')
-  
+
 def updateSignatureAboutScalpWarpedType(self, proc):
   self._updateSignatureAboutWarpedType('scalp')
-  
+
 def updateSignatureAboutBackgroundWarpedType(self, proc):
   self._updateSignatureAboutWarpedType('background')
-  
+
 def _updateSignatureAboutWarpedType(self, tissue_name):
   native_type = eval('self.' + tissue_name + '_warped_type')
   if native_type == "Neither":
@@ -338,7 +339,7 @@ def _updateSignatureAboutWarpedType(self, tissue_name):
     self.hideAndMakeOptionalSignatureFieldList([tissue_name + '_warped_modulated'])
   elif native_type == 'Modulated + Unmodulated':
     self.showAndMandadesSignatureFieldList([tissue_name + '_warped_modulated', tissue_name + '_warped_unmodulated'])
-    
+
 def updateSignatureAboutDeformationField(self, proc):
   if self.deformation_field_type == "Neither":
     self.hideAndMakeOptionalSignatureFieldList(['forward_field', 'inverse_field'])
@@ -350,7 +351,7 @@ def updateSignatureAboutDeformationField(self, proc):
     self.showAndMandadesSignatureFieldList(['forward_field'])
   elif self.deformation_field_type == 'Inverse + Forward':
     self.showAndMandadesSignatureFieldList(['forward_field', 'inverse_field'])
-    
+
 def updateBatchPath(self, proc):
   if self.grey_native is not None:
     directory_path = os.path.dirname(self.grey_native.fullPath())
@@ -358,9 +359,9 @@ def updateBatchPath(self, proc):
 
 def execution( self, context ):
   new_segment = NewSegment()
-  
+
   first_channel = Channel()
-  
+
   if self.bias_regulatisation == 'no regularisation (0)':
     first_channel.unsetBiasRegularisation()
   elif self.bias_regulatisation == 'extremely light regularisation (0.00001)':
@@ -379,7 +380,7 @@ def execution( self, context ):
     first_channel.setBiasRegularisationToExtremelyHeavy()
   else:
     raise ValueError('Unvalid bias_regulatisation value')
-  
+
   if self.bias_FWHM == '30mm cutoff':
     first_channel.setBiasFWHMTo30cutoff()
   elif self.bias_FWHM == '40mm cutoff':
@@ -410,7 +411,7 @@ def execution( self, context ):
     first_channel.unsetBiasFWHM()
   else:
     raise ValueError('Unvalid bias_FWHM value')
-  
+
   first_channel.setVolumePath(self.t1mri.fullPath())
   if self.bias_saving == 'save nothing':
     first_channel.discardBiasCorrected()
@@ -426,12 +427,12 @@ def execution( self, context ):
     first_channel.setBiasFieldPath(str(self.t1mri_bias_field.fullPath()))
   else:
     raise ValueError('Unvalid bias_saving value')
-  
+
   new_segment.appendChannel(first_channel)
-  
+
   if self.second_channel is not None:
     second_channel = Channel()
-  
+
     if self.bias_regulatisation_2c == 'no regularisation (0)':
       second_channel.unsetBiasRegularisation()
     elif self.bias_regulatisation_2c == 'extremely light regularisation (0.00001)':
@@ -450,7 +451,7 @@ def execution( self, context ):
       second_channel.setBiasRegularisationToExtremelyHeavy()
     else:
       raise ValueError('Unvalid bias_regulatisation value')
-    
+
     if self.bias_FWHM_2c == '30mm cutoff':
       second_channel.setBiasFWHMTo30cutoff()
     elif self.bias_FWHM_2c == '40mm cutoff':
@@ -481,7 +482,7 @@ def execution( self, context ):
       second_channel.unsetBiasFWHM()
     else:
       raise ValueError('Unvalid bias_FWHM value')
-    
+
     second_channel.setVolumePath(self.second_channel.fullPath())
     if self.bias_saving_2c == 'save nothing':
       second_channel.discardBiasCorrected()
@@ -497,22 +498,22 @@ def execution( self, context ):
       second_channel.setBiasFieldPath(str(self.t1mri_bias_field_2c.fullPath()))
     else:
       raise ValueError('Unvalid bias_saving value')
-    
+
     new_segment.appendChannel(second_channel)
   else:
     pass#Second channel is optional
-  
+
   new_segment.appendTissue(self.buildTissueObject('grey', 1))
   new_segment.appendTissue(self.buildTissueObject('white', 2))
   new_segment.appendTissue(self.buildTissueObject('csf', 3))
   new_segment.appendTissue(self.buildTissueObject('skull', 4))
   new_segment.appendTissue(self.buildTissueObject('scalp', 5))
   new_segment.appendTissue(self.buildTissueObject('background', 6))
-  
+
   new_segment.setMRFParameter(self.mrf)
-  
+
   new_segment.setWarpingRegularisation(self.warping_regularisation)
-  
+
   if self.affine_regularisation == 'No Affine Registration':
     new_segment.unsetAffineRegularisation()
   elif self.affine_regularisation == 'ICBM space template - European brains':
@@ -527,7 +528,7 @@ def execution( self, context ):
     raise ValueError('Unvalid affine_regularisation value')
 
   new_segment.setSamplingDistance(self.sampling_distance)
-  
+
   if self.deformation_field_type == "Neither":
     new_segment.discardDeformationField()
   elif self.deformation_field_type == 'Inverse':
@@ -542,24 +543,27 @@ def execution( self, context ):
     new_segment.setDeformationFieldForwardOutputPath(str(self.forward_field.fullPath()))
   else:
     raise ValueError('Unvalid deformation_field_type value')
-    
+
+  if self.seg8_mat is not None:
+    new_segment.setSeg8MatOutputPath(self.seg8_mat.fullPath())
+
   spm = validation()
   spm.addModuleToExecutionQueue(new_segment)
   spm.setSPMScriptPath(self.batch_location.fullPath())
   spm.run()
 
-  
+
 def buildTissueObject(self, tissue_name, tissue_proba_dimension):
   tissue = Tissue()
-  
+
   tissue.setTissueProbilityMapPath(str(self.TPM_template.fullPath()))
   tissue.setTissueProbilityDimension(tissue_proba_dimension)
-  
+
   if eval('self.' + tissue_name + '_gaussian_number') == 'Inf':
     tissue.unsetGaussian()
   else:
     tissue.setGaussianNumber(eval('self.' + tissue_name + '_gaussian_number'))
-    
+
   if eval( 'self.' + tissue_name + '_native_type') == "Neither":
     tissue.unsetNativeTissue()
   elif eval( 'self.' + tissue_name + '_native_type') == 'Native':
@@ -589,22 +593,22 @@ def buildTissueObject(self, tissue_name, tissue_proba_dimension):
     tissue.setWarpedUnmodulatedOutputPath(str(eval('self.' + tissue_name + '_warped_unmodulated.fullPath()')))
   else:
     raise ValueError('Unvalid choice for ' + tissue_name + '_warped_type')
-  
+
   return tissue
-  
-  
+
+
 #===============================================================================
-# 
+#
 #===============================================================================
 def showAndMandadesSignatureFieldList(self, field_list):
   for field in field_list:
     self.signature[field].userLevel = 0
     self.signature[field].mandatory = True
   self.changeSignature(self.signature)
-    
+
 def hideAndMakeOptionalSignatureFieldList(self, field_list):
   for field in field_list:
     self.signature[field].userLevel = 3
     self.signature[field].mandatory = False
   self.changeSignature(self.signature)
-  
+

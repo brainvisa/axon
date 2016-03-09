@@ -23,24 +23,25 @@ class Segment(NewSegment_virtual, SPM12MainModule):
     self.smoothness = 0
     self.sampling_distance = 3.0
     self.deformation_fields = [0, 0]
-    
+
     self.forward_deformation_prefix = 'y_'
     self.inverse_deformation_prefix = 'iy_'
-    
+
     self.forward_deformation_path = None
     self.inverse_deformation_path = None
-    
+    self.seg8_mat_path = None
+
   @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
   def setSPMDefaultChannel(self, volume_path):
     default_channel = Channel()
     default_channel.setVolumePath(volume_path)
     self.channel_container.clear()
     self.channel_container.append(default_channel)
-    
+
   @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
-  def setSPMDefautTissues(self, tissue_proba_map_path):   
+  def setSPMDefautTissues(self, tissue_proba_map_path):
     self.tissue_container.clear()
-     
+
     first_tissue = Tissue()
     first_tissue.setTissueProbilityMapPath(tissue_proba_map_path)
     first_tissue.setTissueProbilityDimension(1)
@@ -48,7 +49,7 @@ class Segment(NewSegment_virtual, SPM12MainModule):
     first_tissue.setNativeTissueNativeSpace()
     first_tissue.unsetWarpedTissue()
     self.tissue_container.append(first_tissue)
-    
+
     second_tissue = Tissue()
     second_tissue.setTissueProbilityMapPath(tissue_proba_map_path)
     second_tissue.setTissueProbilityDimension(2)
@@ -56,7 +57,7 @@ class Segment(NewSegment_virtual, SPM12MainModule):
     second_tissue.setNativeTissueNativeSpace()
     second_tissue.unsetWarpedTissue()
     self.tissue_container.append(second_tissue)
-    
+
     third_tissue = Tissue()
     third_tissue.setTissueProbilityMapPath(tissue_proba_map_path)
     third_tissue.setTissueProbilityDimension(3)
@@ -64,7 +65,7 @@ class Segment(NewSegment_virtual, SPM12MainModule):
     third_tissue.setNativeTissueNativeSpace()
     third_tissue.unsetWarpedTissue()
     self.tissue_container.append(third_tissue)
-    
+
     fourth_tissue = Tissue()
     fourth_tissue.setTissueProbilityMapPath(tissue_proba_map_path)
     fourth_tissue.setTissueProbilityDimension(4)
@@ -72,7 +73,7 @@ class Segment(NewSegment_virtual, SPM12MainModule):
     fourth_tissue.setNativeTissueNativeSpace()
     fourth_tissue.unsetWarpedTissue()
     self.tissue_container.append(fourth_tissue)
-    
+
     fifth_tissue = Tissue()
     fifth_tissue.setTissueProbilityMapPath(tissue_proba_map_path)
     fifth_tissue.setTissueProbilityDimension(5)
@@ -80,7 +81,7 @@ class Segment(NewSegment_virtual, SPM12MainModule):
     fifth_tissue.setNativeTissueNativeSpace()
     fifth_tissue.unsetWarpedTissue()
     self.tissue_container.append(fifth_tissue)
-    
+
     sixth_tissue = Tissue()
     sixth_tissue.setTissueProbilityMapPath(tissue_proba_map_path)
     sixth_tissue.setTissueProbilityDimension(6)
@@ -88,27 +89,27 @@ class Segment(NewSegment_virtual, SPM12MainModule):
     sixth_tissue.unsetNativeTissue()
     sixth_tissue.unsetWarpedTissue()
     self.tissue_container.append(sixth_tissue)
-  
+
   def setCleanUpToLight(self):
     self.clean_up = 1
-    
+
   def setCleanUpToThorough(self):
     self.clean_up = 2
-  
+
   def unsetCleanUp(self):
     self.clean_up = 0
-    
+
   @checkIfArgumentTypeIsAllowed(numbers.Real, 1)
   def setSmoothness(self, smoothness_factor):
     self.smoothness = smoothness_factor
-    
+
   @checkIfArgumentTypeIsAllowed(list, 1)
   def setWarpingRegularisation(self, regularisation_list):
     if len(regularisation_list) == 5:
       self.warping_regularisation = regularisation_list
     else:
       raise ValueError('Warping regularisation value must be list of 5 numbers')
-         
+
   def getStringListForBatch(self):
     batch_list = []
     batch_list.extend(self.channel_container.getStringListForBatch())
@@ -125,7 +126,7 @@ class Segment(NewSegment_virtual, SPM12MainModule):
   def _addSpecificSPMPrefix(self, batch_list):
     spm8_keyword = 'spm.spatial.preproc'
     return addBatchKeyWordInEachItem(spm8_keyword, batch_list)
-  
 
 
-      
+
+
