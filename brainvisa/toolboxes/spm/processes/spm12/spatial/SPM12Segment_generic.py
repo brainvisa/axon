@@ -190,7 +190,7 @@ signature = Signature(
   'forward_field', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=warping_section),
   'inverse_field', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=warping_section),
   #'deformation_matrix', WriteDiskItem('Matlab SPM file', 'Matlab file'),
-  'seg8_mat', WriteDiskItem('Matlab SPM file', 'Matlab file'),
+  'seg8_mat', WriteDiskItem('Matlab SPM file', 'Matlab file', section='default SPM outputs'),
 
   'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section='default SPM outputs' ),
 )
