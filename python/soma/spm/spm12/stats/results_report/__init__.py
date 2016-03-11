@@ -12,7 +12,7 @@ class ResultsReport(ResultsReport_virtual, SPM12MainModule):
     self.matlab_file_path = None
     self.contrast_query_container = ContrastQueryContainer()
     self.data_type = 1
-    self.print_result = 'ps'
+    self.print_result = "'ps'"
 
   def enablePrintResult(self):
     raise NotImplementedError("it is deprecated in SPM12")
