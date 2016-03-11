@@ -88,7 +88,7 @@ def initialization( self ):
   self.contrast_current_number = 0
 
   self.addLink(None, 'contrast_number', self.updateSignatureAboutSimpleContrastNumber)
-  
+
   self.addLink("batch_location", "results_report_mat_file", self.updateBatchPath)
 
   self.add_section_overlay = False
@@ -116,7 +116,7 @@ def updateSignatureAboutRender(self, proc):
   else:
     self.setDisable('render_image', 'render_style', 'brightness')
   self.changeSignature(self.signature)
-    
+
 def updateSignatureAboutMIPPDF(self, proc):
   if self.copy_MIP_to_pdf:
     self.setEnable('contrast_MIP_pdf')
@@ -171,7 +171,7 @@ def initializeNewContrastFields(self, contrast_index):
   self.setValue('contrast_' + str(contrast_index) + '_extent', 0)
   self.setValue('contrast_' + str(contrast_index) + '_masking', False)
   self.setValue('contrast_' + str(contrast_index) + '_mask_threshold', 0.05)
-    
+
 def updateBatchPath(self, proc):
   if self.results_report_mat_file is not None:
     directory_path = os.path.dirname(self.results_report_mat_file.fullPath())
@@ -231,9 +231,14 @@ def createResultsReportBatch(self, context):
         masking.setContrastIndexList(mask_index_list)
 
         contrast_mask = eval('self.contrast_' + str(contrast_index) + '_mask')
-        if contrast_mask:
-          masking_threshold = eval('self.contrast_' + str(contrast_index) + '_mask_threshold')
-          masking.setMaskThreshold(masking_threshold)
+        if contrast_mask == "Inclusive":
+          masking.setNatureOfMaskToInclusive()
+        elif contrast_mask == "Exclusive":
+          masking.setNatureOfMaskToExclusive()
+
+        contrast_mask_threshold = eval('self.contrast_' + str(contrast_index) + '_mask_threshold')
+        if contrast_mask_threshold:
+          masking.setMaskThreshold(contrast_mask_threshold)
 
         contrast.setMasking(masking)
 
@@ -254,7 +259,7 @@ def createResultsReportBatch(self, context):
       result.enablePrintResult()
     else:
       result.disablePrintResult()
-      
+
     return result
   else:
     raise ValueError("At least one contrast_number is mandatory")
@@ -268,13 +273,13 @@ def writeCompleteResultBatch(self, spm_workspace_directory):
   matlab_script_list.extend(self.addSpmWriteFilteredToSPMBatch())
   matlab_script_list.extend(addScriptAboutCSVStatToSPMBatch(stats_csv_path))
   matlab_script_list.extend(addScriptAboutThresholdingInfoToSPMBatch(thresholding_info_path))
-                            
-  
+
+
   if self.add_section_overlay:
     matlab_script_list.extend(self.addSectionScriptToSPMBatch())
   if self.add_render_overlay:
     matlab_script_list.extend(self.addRenderScriptToSPMBatch())
-  
+
   return matlab_script_list
 
 
@@ -364,8 +369,8 @@ def convertPSToPDF(context, ps_path, pdf_path):
   tmp_ps = context.temporary('PS file')
   tmp_pdf = context.temporary('PDF file')
   shutil.copy(ps_path, tmp_ps.fullPath())
-  
+
   command = ['ps2pdf', tmp_ps.fullPath(), tmp_pdf.fullPath()]
   context.system( *command )
-  
+
   shutil.move(tmp_pdf.fullPath(), pdf_path)
