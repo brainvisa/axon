@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
-import os 
+import os
 import shutil
 import numpy
+import calendar
+import datetime as dt
+import locale
+import string
 
 from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed, checkIfArgumentTypeIsStrOrUnicode
 
@@ -12,14 +16,14 @@ def addBatchKeyWordInEachItem(key_word, item_list):
   for item in item_list:
     new_item_list.append(key_word + '.' + item)
   return new_item_list
- 
-@checkIfArgumentTypeIsAllowed(list, 0) 
+
+@checkIfArgumentTypeIsAllowed(list, 0)
 def convertlistToSPMString(list_to_convert):
   SPM_string_list = [str(item) for item in list_to_convert]
   return '[' + ' '.join(SPM_string_list) + ']'
-  
-@checkIfArgumentTypeIsAllowed(numpy.ndarray, 0) 
-def convertNumpyArrayToSPMString(numpy_array):  
+
+@checkIfArgumentTypeIsAllowed(numpy.ndarray, 0)
+def convertNumpyArrayToSPMString(numpy_array):
   if numpy_array.size > 1:
     array_list = numpy_array.tolist()
     SPM_row_list = []
@@ -40,11 +44,11 @@ def convertPathListToSPMBatchString(path_list, add_dimension=True):
     SPM_string_template = "'%s,1'"
   else:
     SPM_string_template = "'%s'"
-    
-  path_list_for_batch = [] 
+
+  path_list_for_batch = []
   for path in path_list:
     path_list_for_batch.append(SPM_string_template % path)
-    
+
   return '\n'.join(path_list_for_batch)
 #===============================================================================
 # Utils about Paths
@@ -58,7 +62,7 @@ def moveSPMPath(reference_path, output_path, prefix='', suffix='', extension=Non
   if extension is not None:
     default_spm_path = _replaceFilePathExtension(default_spm_path, extension)
   moveFileAndCreateFoldersIfNeeded(default_spm_path, output_path)
-  
+
 @checkIfArgumentTypeIsStrOrUnicode(argument_index=0)
 @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
 @checkIfArgumentTypeIsStrOrUnicode(argument_index=2)
@@ -87,3 +91,18 @@ def moveFileAndCreateFoldersIfNeeded(source_path, destination_path):
   else:
     pass#folder already exists
   shutil.move(source_path, destination_path)
+#==============================================================================
+#
+#==============================================================================
+def getTodayDateInSpmFormat():
+  now = dt.datetime.now()
+
+  currentLocale = locale.getlocale(locale.LC_TIME)
+  locale.setlocale(locale.LC_TIME, ('en_US', 'UTF8'))
+  month_name = calendar.month_name[now.month]
+  locale.setlocale(locale.LC_TIME, currentLocale)
+
+  month = string.capwords(month_name[:3])
+  day = "%02i" % now.day
+  spm_date = "%s%s%s" % (now.year, month, day)
+  return spm_date
