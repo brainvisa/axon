@@ -131,6 +131,7 @@ Format( 'ZIP file', 'f|*.zip' )
 #Format( 'Matlab design file', 'f|*DesMtx.mat' )
 #Postscript files for SPM results
 Format( 'PS file', "f|*.ps" )
+Format( 'EPS file', "f|*.eps" )
 Format( 'gz compressed PS file', "f|*.ps.gz" )
 
 Format( 'Log file', 'f|*.log' )
