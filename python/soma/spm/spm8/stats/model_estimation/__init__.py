@@ -5,7 +5,10 @@ from soma.spm.virtual_spm.stats.model_estimation import ModelEstimationBayesianS
 from soma.spm.virtual_spm.stats.model_estimation import ModelEstimationBayesianFirstLevel as ModelEstimationBayesianFirstLevel_virtual
 from soma.spm.spm_main_module import SPM8MainModule
 
-from soma.spm.spm8.stats.model_estimation.analysis_space import AnalysisSpace, AnalysisSpaceVolume
+from soma.spm.spm8.stats.model_estimation.anova import ANOVA
+from soma.spm.spm8.stats.model_estimation.simple_contrast_container import SimpleContrastContainer
+from soma.spm.spm8.stats.model_estimation.analysis_space import AnalysisSpaceVolume
+
 
 #==============================================================================
 #
