@@ -12,11 +12,11 @@ class Masking():
     else:
       raise ValueError('Threshold value must be "int" or "float" type, not : ' + str(type(threshold_value)))
 
-  def enableInclusiveMask(self):
-    self.mask_nature = 0
+  def setNatureOfMaskToInclusive(self):
+    self.nature_of_mask = 0
 
-  def enableExclusiveMask(self):
-    self.mask_nature = 1
+  def setNatureOfMaskToExclusive(self):
+    self.nature_of_mask = 1
 
   def getStringListForBatch( self ):
     if not None in [self.contrast_index_list, self.mask_nature]:
