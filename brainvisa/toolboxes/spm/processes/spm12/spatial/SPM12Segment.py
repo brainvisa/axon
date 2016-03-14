@@ -105,8 +105,7 @@ signature = Signature(
                                     'transformation':'none',
                                     'modulation':'none',
                                     'warping_method':'none'},
-                section=grey_matter_section,
-                _debug=sys.stdout),
+                section=grey_matter_section),
   'grey_dartel_imported',
   WriteDiskItem('T1 MRI tissue probability map',
                 'NIFTI-1 image',
@@ -367,7 +366,7 @@ def initialization(self):
 
   self.linkParameters('t1mri_bias_corrected', ('t1mri', 'TPM_template'), self.updateT1MRIBiasCorrected)
   self.linkParameters('t1mri_bias_field', 't1mri_bias_corrected')
-  self.linkParameters('grey_native', ('t1mri', 'TPM_template'), self.updateGreyNative)
+  self.linkParameters('grey_native', 't1mri_bias_corrected', self.updateGreyNative)
   self.linkParameters('grey_dartel_imported', 'grey_native')
   self.linkParameters('grey_warped_unmodulated', 'grey_native')
   self.linkParameters('grey_warped_modulated', 'grey_native')
@@ -538,12 +537,9 @@ def updateT1MRIBiasCorrected(self, proc, dummy):
     return self.signature['t1mri_bias_corrected'].findValue(d)
 
 def updateGreyNative(self, proc, dummy):
-  if not None in [self.t1mri, self.TPM_template]:
-    d = self.t1mri.hierarchyAttributes()
-    d['processing'] = 'spm12Segment'
-    d['bias_correction_process'] = 'spm12Segment'
-    d['analysis'] = "default"
-    d['template'] = self.TPM_template.hierarchyAttributes()['template']
+  if self.t1mri_bias_corrected is not None:
+    d = self.t1mri_bias_corrected.hierarchyAttributes()
+    del d["space"]
     return self.signature["grey_native"].findValue(d)
 
 def updateBatchPath(self, proc):
