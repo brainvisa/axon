@@ -7,9 +7,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -24,8 +24,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -48,18 +48,18 @@ from brainvisa.data.qtgui.diskItemBrowser import diskItemFilter
 #----------------------------------------------------------------------------
 class ReadDiskItem( Parameter ):
   """
-  The expected value for this parameter must be a readable :py:class:`brainvisa.data.neuroDiskItems.DiskItem`. 
-  This parameter type uses BrainVISA data organization to select possible files. 
-  
-  :Syntax: 
-  
+  The expected value for this parameter must be a readable :py:class:`brainvisa.data.neuroDiskItems.DiskItem`.
+  This parameter type uses BrainVISA data organization to select possible files.
+
+  :Syntax:
+
   ::
-  
+
     ReadDiskItem( file_type_name, formats [, required_attributes, enableConversion=1, ignoreAttributes=0 ])
     formats <- format_name
     formats <- [ format_name, ... ]
     required_attributes <- { name : value, ...}
-           
+
   file_type_name enables to select files of a specific type, that is to say DiskItem objects whose type is either file_name_type or a derived type. The formats list gives the exhaustive list of accepted formats for this parameter. But if there are some converters ( see the section called “Role”) from other formats to one of the accepted formats, they will be accepted too because BrainVISA can automatically convert the parameter (if enableConversion value is 1, which is the default). Warning : the type and formats given in parameters of ReadDiskItem constructor must have been defined in BrainVISA types and hierarchies files. required_attributes enables to add some conditions on the parameter value : it will have to match the given attributes value.
 
   This method of files selection ease file selection by showing the user only files that matches type and format required for this parameter. It also enables BrainVISA to automatically fill some parameters values. The ReadDiskItem class has methods to search matching diskitems in BrainVISA databases :
@@ -72,7 +72,7 @@ class ReadDiskItem( Parameter ):
 
   >>> ReadDiskItem( 'Volume 3D', [ 'GIS Image', 'VIDA image' ] )
   >>> ReadDiskItem( 'Cortical folds graph', 'Graph', requiredAttributes = { 'labelled' : 'No', 'side' : 'left'} )
-            
+
 
   In the first example, the parameter will accept only a file whose type is 3D Volume and format is either GIS image or VIDA image, or a format that can be converted to GIS or VIDA image. These types and formats must have been defined first. In the second example, the parameter value type must be "Cortical folds graph", its format must be "Graph". The required attributes add some conditions : the graph isn't labelled and represents the left hemisphere.
   """
@@ -96,10 +96,10 @@ class ReadDiskItem( Parameter ):
     self.ignoreAttributes = ignoreAttributes;
     self._selectedAttributes = {}
     self.valueLinkedNotifier.add( self.valueLinked )
-    
+
   _formatsAndConversionCache = {}
 
-  
+
   def _getDatabase( self ):
     '''Returns the database this disk item belongs to
     '''
@@ -107,8 +107,8 @@ class ReadDiskItem( Parameter ):
     from brainvisa.data import neuroHierarchy
     return neuroHierarchy.databases
   database = property( _getDatabase )
-  
-  
+
+
   # Allow direct affectation to requiredAttributes for backward compatibility
   def _getRequiredAttributes( self ):
     #_debug = self._debug
@@ -148,20 +148,20 @@ class ReadDiskItem( Parameter ):
     #if _debug is not None:
       #print >> _debug, '!_getRequiredAttributes! 6', self._requiredAttributes[ '_format' ]
     return self._requiredAttributes
-  
-  
+
+
   def _setRequiredAttributes( self, value ):
     self._requiredAttributes = value.copy()
     self._requiredAttributes[ '_type' ] = self.type.name
     self._requiredAttributes[ '_format' ] = None
   requiredAttributes = property( _getRequiredAttributes, _setRequiredAttributes )
-  
-  
+
+
   def valueLinked( self, parameterized, name, value ):
     """This method is a callback called when the valueLinkedNotifier is activated.
-    This notifier is shared between this parameter and the initial parameter in the static signature of the process. 
-    So when this function is called self is the initial parameter in the static signature. 
-    That why self is not used in this function. 
+    This notifier is shared between this parameter and the initial parameter in the static signature of the process.
+    So when this function is called self is the initial parameter in the static signature.
+    That why self is not used in this function.
     """
     if isinstance( value, DiskItem ):
       parameterized.signature[name]._selectedAttributes = value.hierarchyAttributes()
@@ -223,7 +223,7 @@ class ReadDiskItem( Parameter ):
        #print >> _debug, '- ' * 35
        #print_stack( file=_debug )
        #print >> _debug, '- ' * 35
-    
+
     result = None
     fullSelection = None
     write = False
@@ -234,12 +234,12 @@ class ReadDiskItem( Parameter ):
         if requiredAttributes.has_key( '_format' ):
           rr[ '_format' ] = requiredAttributes[ '_format' ]
         requiredAttributes = rr
-        
+
       if ( selection.type is None or (selection.type is self.type) or \
            (not self.exactType and (isSameDiskItemType( selection.type, self.type ) or isSameDiskItemType( self.type, selection.type )))) \
         and self.diskItemFilter( selection, requiredAttributes ):
           result = selection
-          
+
       else:
         if _debug is not None:
           print >> _debug, '  DiskItem rejected because:', self.diskItemFilter( selection, requiredAttributes, explainRejection=True )
@@ -252,12 +252,12 @@ class ReadDiskItem( Parameter ):
           fullSelection[ '_type' ] = None
         else :
           fullSelection[ '_type' ] = selection.type.name
-          
+
         if selection.format is None :
           fullSelection[ '_format' ] = None
         else :
           fullSelection[ '_format' ] = selection.format.name
-          
+
     elif isinstance( selection, basestring ):
       if selection.startswith( '{' ):
         # String value is a dictionary
@@ -331,8 +331,13 @@ class ReadDiskItem( Parameter ):
             print >> _debug, '  DiskItem rejected because:', self.diskItemFilter( result, requiredAttributes, explainRejection=True )
           result = None
     elif isinstance( selection, dict ):
+      if '_declared_attributes_location' in selection.keys():
+        #keep it could cause problems because it should not be compared between disk items
+        del selection['_declared_attributes_location']
+      else:
+        pass
       fullSelection = dict( selection )
-      
+
     if result is None and fullSelection is not None:
       values = list( self._findValues( fullSelection, requiredAttributes, write=(write or self._write) , _debug=_debug ) )
 
@@ -436,7 +441,7 @@ class ReadDiskItem( Parameter ):
       print >> _debug, '-' * 70 + '\n'
       _debug.flush()
     return result
-  
+
   def diskItemDistance( self, diskItem, other ):
     '''Returns a value that represents a sort of distance between two DiskItems.
         The distance is not a number but distances can be sorted.'''
@@ -460,11 +465,11 @@ class ReadDiskItem( Parameter ):
     else:
       getHierarchy = other.get
       getNonHierarchy = other.get
-    hierarchyCommon = reduce( operator.add, 
+    hierarchyCommon = reduce( operator.add,
         ( (getHierarchy( n ) == v) for n, v in diskItem.hierarchyAttributes().iteritems() ),
         ( int(diskItem_type==other_type) ) )
     # Count the number of common non hierarchy attributes
-    nonHierarchyCommon = reduce( operator.add, 
+    nonHierarchyCommon = reduce( operator.add,
         ( (getNonHierarchy( n ) == v) for n, v in diskItem.nonHierarchyAttributes().iteritems() ),
         (int(diskItem_type == other_type) ) )
     if getattr( other, '_write', False ) and diskItem.isReadable():
@@ -472,8 +477,8 @@ class ReadDiskItem( Parameter ):
     else:
       readable = 0
     return ( -hierarchyCommon, other_priority - diskItem.priority(), -nonHierarchyCommon, readable  )
-  
-  
+
+
   def findValues(self, selection, requiredAttributes={}, write=False,
                  _debug=Undefined):
     '''Find all DiskItems matching the selection criterions
@@ -521,8 +526,8 @@ class ReadDiskItem( Parameter ):
     else:
       for i in readValues:
         yield i
-  
-  
+
+
   def diskItemFilter( self, *args, **kwargs ):
     return diskItemFilter( self.database, *args, **kwargs )
     #if diskItem.type is not None:
@@ -553,8 +558,8 @@ class ReadDiskItem( Parameter ):
             #return 'DiskItem attribute ' + repr(key) + ' = ' + repr( itemValue ) + ' is not in ' + repr( tuple(values) )
         #return False
     #return True
-  
-  
+
+
   def typeInfo( self, translator = None ):
     if translator: translate = translator.translate
     else: translate = _t_
@@ -563,9 +568,9 @@ class ReadDiskItem( Parameter ):
       if formats: formats += ', '
       formats += translate( f.name )
     return  ( ( translate( 'Type' ), translate( self.type.name ) ),
-              ( translate( 'Access' ), translate( 'input' ) ), 
+              ( translate( 'Access' ), translate( 'input' ) ),
               ( translate( 'Formats' ), formats ) )
-  
+
   def toolTipText( self, parameterName, documentation ):
     result = '<center>' + parameterName
     if not self.mandatory: result += ' (' + _t_( 'optional' ) + ')'
@@ -597,4 +602,4 @@ class ReadDiskItem( Parameter ):
     from brainvisa.data.qtgui.readdiskitemGUI import DiskItemListEditor
     return DiskItemListEditor( self, parent, name, context=context, write=self._write )
 
-    
+
