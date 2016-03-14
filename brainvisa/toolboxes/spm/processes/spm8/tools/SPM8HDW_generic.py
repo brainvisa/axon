@@ -130,7 +130,7 @@ def updateSignatureAboutCustomOutputs(self, proc):
 def updateBatchPath(self, proc):
   if self.deformation_field is not None:
     directory_path = os.path.dirname(self.deformation_field.fullPath())
-    return os.path.join(directory_path, 'spm8_VBM_segmentation_job.m')
+    return os.path.join(directory_path, 'spm8_hdw_job.m')
   
 def execution( self, context ):
   hdw = HDW()
