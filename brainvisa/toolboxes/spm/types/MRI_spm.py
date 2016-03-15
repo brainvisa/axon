@@ -48,7 +48,7 @@ FileType('Jacobian determinant', '3D Volume')
 
 FileType('Estimate T1 MRI raw volumes', 'Text file')
 FileType('T1 MRI partial volume estimation', '3D Volume')
-FileType('T1 MRI tissue probability map', '4D Volume')
+FileType('T1 MRI tissue probability map', '3D Volume')
 FileType('T1 MRI tissue probability mask', 'Label volume')
 
 FileType('Subject Group', 'Any Type', 'JSON file')
