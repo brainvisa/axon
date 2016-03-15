@@ -139,10 +139,10 @@ class Estimate(Coregister):
       else:
         other_volume_path_for_batch = """''"""
       batch_list = []
-      batch_list.append("spm.spatial.coreg.estwrite.ref = {'%s,1'};" % self.reference_volume_path)
-      batch_list.append("spm.spatial.coreg.estwrite.source = {'%s,1'};" % self.source_volume_path)
-      batch_list.append("spm.spatial.coreg.estwrite.other = {%s};" % other_volume_path_for_batch)
-      batch_list.extend(addBatchKeyWordInEachItem("spm.spatial.coreg.estwrite", self.estimation_options.getStringListForBatch()))
+      batch_list.append("spm.spatial.coreg.estimate.ref = {'%s,1'};" % self.reference_volume_path)
+      batch_list.append("spm.spatial.coreg.estimate.source = {'%s,1'};" % self.source_volume_path)
+      batch_list.append("spm.spatial.coreg.estimate.other = {%s};" % other_volume_path_for_batch)
+      batch_list.extend(addBatchKeyWordInEachItem("spm.spatial.coreg.estimate", self.estimation_options.getStringListForBatch()))
       return batch_list
     else:
       raise ValueError('Reference and source volumes are mandatory')
