@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 from brainvisa.axon import processes
 from capsul.process import process
