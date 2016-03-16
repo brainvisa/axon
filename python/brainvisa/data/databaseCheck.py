@@ -139,7 +139,7 @@ class DBProcessor(object):
     if self.doneProcesses:
       undoScript=open(undoScriptName, "w")
       #print "Generate undo script ", undoScriptName
-      print >> undoScript, "#! /bin/env python"
+      print >> undoScript, "#! /usr/bin/env python2"
       print >> undoScript, "# This has been created by Brainvisa. "
       print >> undoScript, "# Run it to undo changes made by database processes."
       print >> undoScript, "import os, shutil, sys"
@@ -1048,7 +1048,7 @@ class BVConverter_3_1(DBConverter):
     else:
       undoScript=open(undoScriptName, "w")
       #print "Generate undo script ", undoScriptName
-      print >> undoScript, "#! /bin/env python"
+      print >> undoScript, "#! /usr/bin/env python2"
       print >> undoScript, "# This has been created by Brainvisa. "
       print >> undoScript, "# Run it to undo changes made by database processes."
       print >> undoScript, "import os, shutil, sys"
