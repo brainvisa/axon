@@ -68,6 +68,14 @@ from brainvisa.data import temporary
 
 out = sys.stdout
 
+databaseVersion='2.2'
+# mapping between databases versions and axon versions : database version -> first axon version where this database version is used
+databaseVersions={ '1.0': '3.1.0',
+                   '1.1': '3.2.0',
+                   '2.0': '4.0.0',
+                   '2.1': '4.2.0',
+                   '2.2': '4.5.0'}
+
 #------------------------------------------------------------------------------
 class CombineGet( object ):
   def __init__( self, *args ):
@@ -693,11 +701,15 @@ class SQLDatabase( Database ):
     #if simulation: removeold = False
     directory = os.path.join( self.name, "history_book" )
     params = neuroConfig.DatabaseSettings(self.name)
-    lastIncrementalUpdate = params.expert_settings.lastIncrementalUpdate
-    if lastIncrementalUpdate == "":
+    lastIncrementalUpdates = params.expert_settings.lastIncrementalUpdates
+    lastIncrementalUpdate = lastIncrementalUpdates.get(databaseVersion)
+    if lastIncrementalUpdate is None:
+      lastIncrementalUpdate = params.expert_settings.lastIncrementalUpdate
+    if not lastIncrementalUpdate:
       t = 0.
     else:
-      t = time.mktime( time.strptime( lastIncrementalUpdate, '%Y-%m-%d-%H:%M' ) ) 
+      t = time.mktime(time.strptime(lastIncrementalUpdate,
+                                    '%Y-%m-%d-%H:%M'))
     t0 = time.time()
 
     #INI of the list of bvproc files  
@@ -813,7 +825,8 @@ class SQLDatabase( Database ):
     if not scanAllBvproc and len( infiles ) > 0:
       dateLastIncrementalUpdate = time.strftime('%Y-%m-%d-%H:%M',time.localtime())  
       params = neuroConfig.DatabaseSettings(self.name)
-      params.expert_settings.lastIncrementalUpdate = dateLastIncrementalUpdate
+      params.expert_settings.lastIncrementalUpdates[databaseVersion] \
+        = dateLastIncrementalUpdate
       try:
         writeMinf( os.path.join( params.directory, 'database_settings.minf' ), ( params.expert_settings, ) )
       except IOError:

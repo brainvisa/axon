@@ -196,7 +196,7 @@ class Parameter( object ):
     '''This functions check if the given value is valid for the parameter. 
     If the value is not valid it raises an exception.'''
     if value is None and self.mandatory:
-      raise Exception( HTMLMessage(_t_('Mandatory argument <em>%s</em> has not a valid value') % name) )
+      raise Exception( HTMLMessage(_t_('Mandatory argument <em>%s</em> has no value') % name) )
   
   def setNameAndParameterized( self, name, parameterized ):
     """
