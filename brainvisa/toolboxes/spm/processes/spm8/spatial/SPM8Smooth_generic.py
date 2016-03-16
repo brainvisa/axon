@@ -66,24 +66,24 @@ signature = Signature(
   "filename_prefix", String(),
   "images_smoothed", ListOf(WriteDiskItem("4D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image'])),
   #Batch
-  'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section='default SPM outputs' )    
+  'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section='default SPM outputs' )
 )
 def initialization(self):
   self.setOptional("images_smoothed")
-  
+
   self.addLink(None, "custom_outputs", self.updateSignatureAboutCustomOutputs)
   self.addLink(None, "filename_prefix", self.checkIfNotEmpty)
-  
+
   self.addLink("batch_location", "images", self.updateBatchPath)
-  
+
   #SPM default initialisation
   self.fwhm = [8, 8, 8]
   self.data_type = "SAME"
   self.implicit_masking = False
   self.filename_prefix = 's'
-  
+
   self.custom_outputs = False
-  
+
 def updateSignatureAboutCustomOutputs(self, proc):
   if self.custom_outputs:
     self.setEnable("images_smoothed")
@@ -98,17 +98,17 @@ def checkIfNotEmpty(self, proc):
     self.filename_prefix = 's'
   else:
     pass
-    
+
 def updateBatchPath(self, proc):
   if self.images:
     directory_path = os.path.dirname(self.images[0].fullPath())
     return os.path.join(directory_path, 'spm8_smooth_job.m')
-  
+
 def execution( self, context ):
   smooth = Smooth()
   smooth.setInputImagePathList([diskitem.fullPath() for diskitem in self.images])
   smooth.setFilenamePrefix(self.filename_prefix)
-  
+
   if self.custom_outputs:
     if len(self.images) == len(self.images_smoothed):
       smooth.setOutputImagePathList([diskitem.fullPath() for diskitem in self.images_smoothed])
@@ -116,12 +116,12 @@ def execution( self, context ):
       raise ValueError("images has not the same length than images_smoothed")
   else:
     pass#prefix used
-  
+
   if len(self.fwhm) == 3:
     smooth.setFWHM(self.fwhm[0], self.fwhm[1], self.fwhm[2])
   else:
     raise ValueError("Three  values  should  be  entered,  denoting the FWHM in the x, y and z  directions")
-  
+
   if self.data_type == "SAME":
     smooth.setDataTypeToSame()
   elif self.data_type == "UINT8   - unsigned char":
@@ -136,14 +136,14 @@ def execution( self, context ):
     smooth.setDataTypeToFloat64()
   else:
     raise ValueError("Unvalid choice for data_type")
-  
+
   if self.implicit_masking:
     smooth.setImplicitMasking()
   else:
     smooth.unsetImplicitMasking()
-    
+
   spm = validation()
   spm.addModuleToExecutionQueue(smooth)
   spm.setSPMScriptPath(self.batch_location.fullPath())
-  spm.run()
-  
+  output = spm.run()
+  context.log(name, html=output)

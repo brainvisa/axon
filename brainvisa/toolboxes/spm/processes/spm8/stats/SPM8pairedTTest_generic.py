@@ -91,7 +91,7 @@ def initialization( self ):
 
   self.addLink(None, 'global_calculation', self.updateGlobalCalculationFields)
   self.addLink(None, 'overall_grand_mean_scaling', self.updateOverallGrandMeanScalingFields)
-  
+
   self.addLink("batch_location", "spm_workspace_directory", self.updateBatchPath)
 
   self.setOptional( 'covariate_table', 'covariate_list', 'explicit_mask' )
@@ -153,7 +153,7 @@ def updateOverallGrandMeanScalingFields( self, proc ):
   else:
     self.setDisable('grand_mean_scaled_value')
   self.changeSignature( self.signature )
-    
+
 def updateBatchPath(self, proc):
   if self.spm_workspace_directory is not None:
     return os.path.join(self.spm_workspace_directory.fullPath(), 'spm8_paired_ttest_job.m')
@@ -210,7 +210,7 @@ def execution(self, context):
     paired_t_test.setGlobalCalculationGlobalValues( self.user_global_values )
   if self.global_calculation == 'Mean':
     paired_t_test.setGlobalCalculationMethodToMean()
-    
+
   if self.overall_grand_mean_scaling:
     paired_t_test.enableOverallGrandMeanScaling()
     paired_t_test.setOverallGrandMeanScalingValue(self.grand_mean_scaled_value)
@@ -237,7 +237,8 @@ def execution(self, context):
   spm = validation()
   spm.addModuleToExecutionQueue(paired_t_test)
   spm.setSPMScriptPath(self.batch_location.fullPath())
-  spm.run()
+  output = spm.run()
+  context.log(name, html=output)
 
 #==============================================================================
 #==============================================================================

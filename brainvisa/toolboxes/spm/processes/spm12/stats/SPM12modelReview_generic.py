@@ -164,6 +164,7 @@ def execution( self, context ):
   spm = validation()
   spm.addModuleToExecutionQueue(model_review)
   spm.setSPMScriptPath(self.batch_location.fullPath())
-  spm.run()
+  output = spm.run()
+  context.log(name, html=output)
 
 

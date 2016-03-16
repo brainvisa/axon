@@ -73,30 +73,30 @@ signature = Signature(
                           "6th Degree B-Spline",
                           "7th Degree B-Spline"),
   'composition_name', String(),
-  'output_destination', Choice('Current directory', 
-                               'Source directories', 
-                               'Source directory (deformation)', 
+  'output_destination', Choice('Current directory',
+                               'Source directories',
+                               'Source directory (deformation)',
                                'Output directory'),
   'ouput_directory', WriteDiskItem('Directory', 'Directory'),
   'custom_outputs', Boolean(),
   'output_composition', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image']),
   'images_deformed', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'])),
   #Batch
-  'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section='default SPM outputs' )     
+  'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section='default SPM outputs' )
 )
-                      
+
 def initialization(self):
   self.setOptional('composition_name')
   self.addLink(None, 'apply_inverse', self.updateSignatureAboutInverse)
   self.addLink(None, 'custom_outputs', self.updateSignatureAboutOutputs)
   self.addLink(None, 'output_destination', self.updateSignatureAboutOutputDestination)
-  
+
   self.addLink("batch_location", "deformation_field", self.updateBatchPath)
-  
+
   self.apply_inverse = False
   self.interpolation = "Trilinear"
   self.custom_outputs = False
-  
+
 def updateSignatureAboutInverse(self, proc):
   if self.apply_inverse:
     self.setEnable('reference_volume')
@@ -111,25 +111,25 @@ def updateSignatureAboutOutputs(self, proc):
   else:
     self.setDisable('output_composition', 'images_deformed')
   self.changeSignature(self.signature)
-  
+
 def updateSignatureAboutOutputDestination(self, proc):
   if self.output_destination == 'Output directory':
     self.setEnable('ouput_directory')
   else:
     self.setDisable('ouput_directory')
   self.changeSignature(self.signature)
-   
+
 def updateBatchPath(self, proc):
   if self.deformation_field is not None:
     ouput_directory = os.path.dirname(self.deformation_field.fullPath())
     return os.path.join(ouput_directory, 'spm8_deformations_job.m')
-  
+
 def execution(self, context):
   deformations = Deformations()
-  
+
   deformation_field = DeformationField()
   deformation_field.setDeformationFieldPath(self.deformation_field.fullPath())
-  
+
   if self.apply_inverse:
     comp = Composition()
     comp.append(deformation_field)
@@ -139,13 +139,13 @@ def execution(self, context):
     deformations.appendDeformation(inverse)
   else:
     deformations.appendDeformation(deformation_field)
-  
+
   if not self.composition_name in [None, '']:
     deformations.setCompositionName(self.composition_name)
   else:
     pass#composition not saved
   deformations.setImageListToDeform([diskitem.fullPath() for diskitem in self.input_images])
-  
+
   if self.custom_outputs:
     if not self.composition_name in [None, '']:
       if not self.output_composition in [None, '']:
@@ -154,9 +154,9 @@ def execution(self, context):
         context.warning("output_composition will not saved")
     else:
       pass#composition not saved
-      
+
     deformations.setImageListDeformed([diskitem.fullPath() for diskitem in self.images_deformed])
-  
+
   if self.output_destination == 'Current directory':
 #     deformations.setOuputDestinationToCurrentDirectory()#SPM current directory == batch directory
     deformations.setOuputDestination(os.path.dirname(self.batch_location.fullPath()))
@@ -172,7 +172,7 @@ def execution(self, context):
     deformations.setOuputDestination(self.ouput_directory.fullPath())
   else:
     raise ValueError("Unvalid output_destination")
-  
+
   if self.interpolation == "Nearest neighbour":
     deformations.setInterpolationToNearestNeighbour()
   elif self.interpolation == "Trilinear":
@@ -191,9 +191,9 @@ def execution(self, context):
     deformations.setInterpolationTo7thDegreeBSpline()
   else:
     raise ValueError("Unvalid interpolation")
-  
+
   spm = validation()
   spm.addModuleToExecutionQueue(deformations)
   spm.setSPMScriptPath(self.batch_location.fullPath())
-  spm.run()    
-  
+  output = spm.run()
+  context.log(name, html=output)

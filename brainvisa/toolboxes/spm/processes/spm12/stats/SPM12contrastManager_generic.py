@@ -180,7 +180,8 @@ def execution(self, context):
   spm = validation()
   spm.addModuleToExecutionQueue(contrast_manager)
   spm.setSPMScriptPath(self.batch_location.fullPath())
-  spm.run()
+  output = spm.run()
+  context.log(name, html=output)
 
 def createFContrastMatrix(self, F_contrast_index):
   f_contrast_vector = FContrastVector()

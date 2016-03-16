@@ -83,7 +83,7 @@ signature = Signature(
 def initialization( self ):
   self.setDisable('threshold_value', 'user_global_values', 'grand_mean_scaled_value')
   self.setUserLevel(1, 'one_sample_T_test_mat_file')
-  
+
   self.addLink(None, 'images_are_parametric', self.updateSignatureAboutParametricImages)
   self.addLink(None, 'covariate_table', self.updateCovariate)
   self.addLink('interest_covariate_list', 'covariate_table', self.updateCovariate)
@@ -93,7 +93,7 @@ def initialization( self ):
   self.addLink( None, 'global_calculation', self.updateGlobalCalculationFields )
 
   self.addLink( None, 'overall_grand_mean_scaling', self.updateOverallGrandMeanScalingFields )
-  
+
   self.addLink("batch_location", "spm_workspace_directory", self.updateBatchPath)
 
   self.setOptional( 'covariate_table', 'nuisance_covariate_list', 'interest_covariate_list', 'explicit_mask' )
@@ -149,7 +149,7 @@ def updateOverallGrandMeanScalingFields( self, proc ):
   else:
     self.setDisable('grand_mean_scaled_value')
   self.changeSignature( self.signature )
-    
+
 def updateBatchPath(self, proc):
   if self.spm_workspace_directory is not None:
     return os.path.join(self.spm_workspace_directory.fullPath(), 'spm8_one_sample_ttest_job.m')
@@ -209,14 +209,15 @@ def execution(self, context):
     if self.interest_covariate_list is not None:
       covariate_name_list.extend(self.interest_covariate_list)
     covariate_list = createCovariateList(self.covariate_table, covariate_name_list, self.images)
-    
+
     for covariate in covariate_list:
       one_sample_t_test.appendCovariate(covariate)
 
   spm = validation()
   spm.addModuleToExecutionQueue(one_sample_t_test)
   spm.setSPMScriptPath(self.batch_location.fullPath())
-  spm.run()
+  output = spm.run()
+  context.log(name, html=output)
 
 #==============================================================================
 #==============================================================================

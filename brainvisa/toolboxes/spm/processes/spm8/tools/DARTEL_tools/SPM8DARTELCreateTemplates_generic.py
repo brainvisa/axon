@@ -62,52 +62,52 @@ signature = Signature(
     'images_2', ListOf( ReadDiskItem( '4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'] ) ),
     'output_flow_field', ListOf( WriteDiskItem( '4D Volume', 'NIFTI-1 image' ) ),
     'output_template', ListOf( WriteDiskItem( '4D Volume', 'NIFTI-1 image' ) ),
-    'template_basename', String(), 
-    'regularisation_form', Choice('Linear Elastic Energy', 
-                                  'Membrane Energy', 
+    'template_basename', String(),
+    'regularisation_form', Choice('Linear Elastic Energy',
+                                  'Membrane Energy',
                                   'Bending Energy'),
-    
+
     # Outer Iteration 1
     'inner_iteration_1', Choice(1, 2, 3 ,4, 5 ,6 ,7 ,8, 9 ,10),
     'regularisation_parameters_1', ListOf(Float()),
     'time_step_1', Choice(1, 2, 4, 8, 16, 32, 64, 128, 256, 512),
     'smoothing_parameter_1', Choice("""None""",  0.5, 1, 2, 4, 8, 16, 32),
-    
+
     # Outer Iteration 2
     'inner_iteration_2', Choice(1, 2, 3 ,4, 5 ,6 ,7 ,8, 9 ,10),
     'regularisation_parameters_2', ListOf(Float()),
     'time_step_2', Choice(1, 2, 4, 8, 16, 32, 64, 128, 256, 512),
     'smoothing_parameter_2', Choice("""None""",  0.5, 1, 2, 4, 8, 16, 32),
-    
+
     # Outer Iteration 3
     'inner_iteration_3', Choice(1, 2, 3 ,4, 5 ,6 ,7 ,8, 9 ,10),
     'regularisation_parameters_3', ListOf(Float()),
     'time_step_3', Choice(1, 2, 4, 8, 16, 32, 64, 128, 256, 512),
     'smoothing_parameter_3', Choice("""None""",  0.5, 1, 2, 4, 8, 16, 32),
-    
+
     # Outer Iteration 4
     'inner_iteration_4', Choice(1, 2, 3 ,4, 5 ,6 ,7 ,8, 9 ,10),
     'regularisation_parameters_4', ListOf(Float()),
     'time_step_4', Choice(1, 2, 4, 8, 16, 32, 64, 128, 256, 512),
     'smoothing_parameter_4', Choice("""None""",  0.5, 1, 2, 4, 8, 16, 32),
-    
+
     # Outer Iteration 5
     'inner_iteration_5', Choice(1, 2, 3 ,4, 5 ,6 ,7 ,8, 9 ,10),
     'regularisation_parameters_5', ListOf(Float()),
     'time_step_5', Choice(1, 2, 4, 8, 16, 32, 64, 128, 256, 512),
     'smoothing_parameter_5', Choice("""None""",  0.5, 1, 2, 4, 8, 16, 32),
-    
+
     # Outer Iteration 6
     'inner_iteration_6', Choice(1, 2, 3 ,4, 5 ,6 ,7 ,8, 9 ,10),
     'regularisation_parameters_6', ListOf(Float()),
     'time_step_6', Choice(1, 2, 4, 8, 16, 32, 64, 128, 256, 512),
     'smoothing_parameter_6', Choice("""None""",  0.5, 1, 2, 4, 8, 16, 32),
-   
+
     # Optimisation settings
     'LM_Regularisation', Float(),
     'cycles', Choice(1, 2, 3, 4, 5, 6, 7, 8),
     'iterations', Choice(1, 2, 3, 4, 5, 6, 7, 8),
-    
+
     'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section='default SPM outputs'),
  )
 
@@ -115,46 +115,46 @@ signature = Signature(
 
 def initialization(self):
     self.setOptional('images_2', 'output_flow_field', 'output_template')
-  
+
     self.addLink("batch_location", "output_template", self.updateBatchPath)
-    
+
     self.template_basename = 'Template'
     self.regularisation_form = 'Linear Elastic Energy'
-    
+
     self.inner_iteration_1 = 3
     self.regularisation_parameters_1 = [4, 2, 1e-06]
     self.time_step_1 = 1
     self.smoothing_parameter_1 = 16
-    
+
     self.inner_iteration_2 = 3
     self.regularisation_parameters_2 = [2, 1, 1e-06]
     self.time_step_2 = 1
     self.smoothing_parameter_2 = 8
-    
+
     self.inner_iteration_3 = 3
     self.regularisation_parameters_3 = [1, 0.5, 1e-06]
     self.time_step_3 = 2
     self.smoothing_parameter_3 = 4
-    
+
     self.inner_iteration_4 = 3
     self.regularisation_parameters_4 = [0.5, 0.25, 1e-06]
     self.time_step_4 = 4
     self.smoothing_parameter_4 = 2
-    
+
     self.inner_iteration_5 = 3
     self.regularisation_parameters_5 = [0.25, 0.125, 1e-06]
     self.time_step_5 = 16
     self.smoothing_parameter_5 = 1
-    
+
     self.inner_iteration_6 = 3
     self.regularisation_parameters_6 = [0.25, 0.125, 1e-06]
     self.time_step_6 = 64
     self.smoothing_parameter_6 = 0.5
-    
+
     self.LM_Regularisation = 0.01
     self.cycles = 3
     self.iterations = 3
-    
+
 def updateBatchPath(self, proc):
   if self.output_template:
     directory_path = os.path.dirname(self.output_template[0].fullPath())
@@ -169,18 +169,18 @@ def execution( self, context ):
       pass
   else:
     pass
-  
+
   run_dartel = RunDartel()
   run_dartel.setFirstImageList([diskitem.fullPath() for diskitem in self.images_1])
   if self.images_2:
     run_dartel.appendImageList([diskitem.fullPath() for diskitem in self.images_2])
-  
+
   if self.output_flow_field:
     run_dartel.setOutputFlowFieldPathList([diskitem.fullPath() for diskitem in self.output_flow_field])
-  
+
   if self.output_template:
     run_dartel.setOutputTemplatePathList([diskitem.fullPath() for diskitem in self.output_template])
-  
+
   settings = Settings()
   settings.setTemplateBasename(self.template_basename)
   if self.regularisation_form == 'Linear Elastic Energy':
@@ -191,61 +191,61 @@ def execution( self, context ):
     settings.setRegularisationFormToBendingEnergy()
   else:
     raise ValueError("Invalid choice for regularisation_form")
-        
+
   first_outer_iteration = OuterIteration()
   first_outer_iteration.setInnerIterationsNumber(self.inner_iteration_1)
   first_outer_iteration.setRegParams(self.regularisation_parameters_1)
   first_outer_iteration.setTimeSteps(self.time_step_1)
   first_outer_iteration.setSmoothingParameter(self.smoothing_parameter_1)
   settings.appendOuterIteration(first_outer_iteration)
-  
+
   second_outer_iteration = OuterIteration()
   second_outer_iteration.setInnerIterationsNumber(self.inner_iteration_2)
   second_outer_iteration.setRegParams(self.regularisation_parameters_2)
   second_outer_iteration.setTimeSteps(self.time_step_2)
   second_outer_iteration.setSmoothingParameter(self.smoothing_parameter_2)
   settings.appendOuterIteration(second_outer_iteration)
-  
+
   third_outer_iteration = OuterIteration()
   third_outer_iteration.setInnerIterationsNumber(self.inner_iteration_3)
   third_outer_iteration.setRegParams(self.regularisation_parameters_3)
   third_outer_iteration.setTimeSteps(self.time_step_6)
   third_outer_iteration.setSmoothingParameter(self.smoothing_parameter_3)
   settings.appendOuterIteration(third_outer_iteration)
-  
+
   fourth_outer_iteration = OuterIteration()
   fourth_outer_iteration.setInnerIterationsNumber(self.inner_iteration_4)
   fourth_outer_iteration.setRegParams(self.regularisation_parameters_4)
   fourth_outer_iteration.setTimeSteps(self.time_step_4)
   fourth_outer_iteration.setSmoothingParameter(self.smoothing_parameter_4)
   settings.appendOuterIteration(fourth_outer_iteration)
-  
+
   fifth_outer_iteration = OuterIteration()
   fifth_outer_iteration.setInnerIterationsNumber(self.inner_iteration_5)
   fifth_outer_iteration.setRegParams(self.regularisation_parameters_5)
   fifth_outer_iteration.setTimeSteps(self.time_step_5)
   fifth_outer_iteration.setSmoothingParameter(self.smoothing_parameter_5)
   settings.appendOuterIteration(fifth_outer_iteration)
-  
+
   sixth_outer_iteration = OuterIteration()
   sixth_outer_iteration.setInnerIterationsNumber(self.inner_iteration_6)
   sixth_outer_iteration.setRegParams(self.regularisation_parameters_6)
   sixth_outer_iteration.setTimeSteps(self.time_step_6)
   sixth_outer_iteration.setSmoothingParameter(self.smoothing_parameter_6)
   settings.appendOuterIteration(sixth_outer_iteration)
-  
+
 
   optimisation_settings = OptimisationSettings()
   optimisation_settings.setLMRegularisation(self.LM_Regularisation)
   optimisation_settings.setCycles(self.cycles)
   optimisation_settings.setIterations(self.iterations)
-  
+
   settings.setOptimisationSettings(optimisation_settings)
-  
+
   run_dartel.setSettings(settings)
 
   spm = validation()
   spm.addModuleToExecutionQueue(run_dartel)
   spm.setSPMScriptPath(self.batch_location.fullPath())
-  spm.run()
-  
+  output = spm.run()
+  context.log(name, html=output)

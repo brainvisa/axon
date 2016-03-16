@@ -204,7 +204,8 @@ def execution( self, context ):
   spm.setSPMScriptPath(self.batch_location.fullPath())
   spm.setMatlabScriptPath(matlab_batch_path)
   spm.addMatlabCommandAfterSPMRunning(self.writeCompleteResultBatch(spm_workspace_directory))
-  spm.run()
+  output = spm.run()
+  context.log(name, html=output)
 
 def removeOldContrastMIPFile(self):
   #By default SPM add to it so it is necessary to clean up before start

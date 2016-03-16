@@ -95,7 +95,7 @@ def initialization(self):
   self.save_jacobian_rate = False
   self.save_divergence_rate = True
   self.save_deformation_fields = False
-  
+
 def updateSignatureAboutNoise(self, proc):
   if self.noise_estimate == "NaN":
     self.setDisable("noise_estimate_value")
@@ -104,28 +104,28 @@ def updateSignatureAboutNoise(self, proc):
   else:
     raise ValueError("Unvalid noise_estimate")
   self.changeSignature(self.signature)
-  
+
 def updateSignatureAboutMPA(self, proc):
   if self.save_MPA and self.customs_outputs:
     self.setEnable("MPA")
   else:
     self.setDisable("MPA")
   self.changeSignature(self.signature)
-  
+
 def updateSignatureAboutJacobianRate(self, proc):
   if self.save_jacobian_rate and self.customs_outputs:
     self.setEnable("jacobian_rate")
   else:
     self.setDisable("jacobian_rate")
   self.changeSignature(self.signature)
-  
+
 def updateSignatureAboutDivergenceRate(self, proc):
   if self.save_divergence_rate and self.customs_outputs:
     self.setEnable("divergence_rate")
   else:
     self.setDisable("divergence_rate")
   self.changeSignature(self.signature)
-  
+
 def updateSignatureAboutDeformationField(self, proc):
   if self.save_deformation_fields and self.customs_outputs:
     self.setEnable("time_1_deformation_fields",
@@ -134,15 +134,15 @@ def updateSignatureAboutDeformationField(self, proc):
     self.setDisable("time_1_deformation_fields",
                     "time_2_deformation_fields")
   self.changeSignature(self.signature)
-    
+
 def updateBatchPath(self, proc):
   if self.time_1_volumes:
     directory_path = os.path.dirname(self.time_1_volumes[0].fullPath())
     return os.path.join(directory_path, 'spm12_pairwaise_job.m')
-  
+
 def execution( self, context ):
   pairwise = PairwiseLongitudinalRegistration()
-  
+
   pairwise.setTime1Volumes([diskitem.fullPath() for diskitem in self.time_1_volumes])
   pairwise.setTime2Volumes([diskitem.fullPath() for diskitem in self.time_2_volumes])
   pairwise.setTimeDifference(self.time_difference)
@@ -152,7 +152,7 @@ def execution( self, context ):
     pairwise.setNoiseEstimate(self.noise_estimate_value)
   else:
     raise ValueError("Unvalid noise_estimate")
-  
+
   pairwise.setWarpingRegulariation(self.warping_regularisation)
   pairwise.setBiasRegularisation(self.bias_regularisation)
   if self.save_MPA:
@@ -180,8 +180,9 @@ def execution( self, context ):
       pairwise.setOutputTime2VolumeDeformationField([diskitem.fullPath() for diskitem in self.time_2_deformation_fields])
   else:
     pairwise.discardDeformationFields()
-    
+
   spm = validation()
   spm.addModuleToExecutionQueue(pairwise)
   spm.setSPMScriptPath(self.batch_location.fullPath())
-  spm.run()
+  output = spm.run()
+  context.log(name, html=output)

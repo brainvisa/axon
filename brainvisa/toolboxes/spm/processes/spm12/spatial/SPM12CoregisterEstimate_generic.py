@@ -68,7 +68,7 @@ signature = Signature(
   "separation", ListOf(Float()),
   "tolerances", ListOf(Float()),
   "histogram_smoothing", ListOf(Float()),
-  
+
   "extract_coregister_matrix", Boolean(),
   "coregister_matrix", WriteDiskItem("Transformation matrix", "Transformation matrix"),
 
@@ -76,31 +76,31 @@ signature = Signature(
 )
 def initialization(self):
   self.setOptional("others")
-  
+
   self.addLink(None, "extract_coregister_matrix", self.updateSignatureAboutCoregisterMatrix)
-  
+
   self.addLink("batch_location", "source", self.updateBatchPath)
-    
+
   self.objective_function = "Normalised Mutual Information"
   self.separation = [4,2]
   self.tolerances = [0.02,  0.02,  0.02, 0.001, 0.001, 0.001,  0.01,  0.01,  0.01, 0.001, 0.001, 0.001]
   self.histogram_smoothing = [7,7]
   self.extract_coregister_matrix = False
-   
+
 def updateSignatureAboutCoregisterMatrix(self, proc):
   if self.extract_coregister_matrix:
     self.setEnable("coregister_matrix")
   else:
     self.setDisable("coregister_matrix")
   self.signatureChangeNotifier.notify( self )
-    
+
 def updateBatchPath(self, proc):
   if self.source is not None:
     directory_path = os.path.dirname(self.source.fullPath())
     return os.path.join(directory_path, 'spm12_coregister_estimate_job.m')
-  
+
 def execution( self, context ):
-  
+
   estimation_options = EstimationOptions()
   if self.objective_function == "Mutual Information":
     estimation_options.setObjectiveFunctionToMutualInformation()
@@ -125,17 +125,18 @@ def execution( self, context ):
       estimate.addOtherVolumePath(other_diskitem.fullPath())
 
   estimate.replaceEstimationOptions(estimation_options)
-    
+
   spm = validation()
   spm.addModuleToExecutionQueue(estimate)
   spm.setSPMScriptPath(self.batch_location.fullPath())
-  spm.run()
-  
+  output = spm.run()
+  context.log(name, html=output)
+
   if self.extract_coregister_matrix and self.coregister_matrix is not None:
     #very usefull because spm action doesn't recompute minf, so the transformation in minf files is wrong
     self.source.clearMinf()
     self.extractCoregisterMatrix( self.source.fullPath(), self.reference.fullPath(), self.coregister_matrix.fullPath() )
-    
+
 def extractCoregisterMatrix(self, source_path, reference_path, output_path):
 
   source_vol = aims.read( source_path )
@@ -152,4 +153,3 @@ def extractCoregisterMatrix(self, source_path, reference_path, output_path):
     reference_trm = reference_scanner_trm.inverse()
 
   aims.write( reference_trm * source_aligned_trm, output_path )
-  

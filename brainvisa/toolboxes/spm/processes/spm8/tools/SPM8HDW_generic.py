@@ -71,11 +71,11 @@ signature = Signature(
                       '90mm cutoff',
                       '100mm cutoff',
                       '110mm cutoff',
-                      '120mm cutoff', 
+                      '120mm cutoff',
                       '130mm cutoff',
                       '140mm cutoff',
                       '150mm cutoff',
-                      'No correction', 
+                      'No correction',
                       section=bias_correction_section),
   'bias_regulatisation', Choice('no regularisation (0)',
                                 'extremely light regularisation (1e-09)',
@@ -84,7 +84,7 @@ signature = Signature(
                                 'medium regularisation (1e-06)',
                                 'heavy regularisation (1e-05)',
                                 'very heavy regularisation (0.0001)',
-                                'extremely heavy regularisation (0.001)', 
+                                'extremely heavy regularisation (0.001)',
                                 section=bias_correction_section),
   'lm_regulatisation', Choice('no regularisation (0)',
                               'extremely light regularisation (1e-09)',
@@ -93,7 +93,7 @@ signature = Signature(
                               'medium regularisation (1e-06)',
                               'heavy regularisation (1e-05)',
                               'very heavy regularisation (0.0001)',
-                              'extremely heavy regularisation (0.001)', 
+                              'extremely heavy regularisation (0.001)',
                               section=bias_correction_section),
   "warping_iteration", Integer(section=warping_section),
   "warping_regularisation", Float(section=warping_section),
@@ -104,11 +104,11 @@ signature = Signature(
   'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section='default SPM outputs' ),
 )
 def initialization(self):
-  
+
   self.addLink(None, "custom_outputs", self.updateSignatureAboutCustomOutputs)
-  
+
   self.addLink("batch_location", "deformation_field", self.updateBatchPath)
-  
+
   #SPM default initialisation
   self.bias_iteration = 8
   self.bias_FWHM = '60mm cutoff'
@@ -116,7 +116,7 @@ def initialization(self):
   self.lm_regulatisation = 'medium regularisation (1e-06)'
   self.warping_iteration = 8
   self.warping_regularisation = 4
-  
+
   self.custom_outputs = False
 
 def updateSignatureAboutCustomOutputs(self, proc):
@@ -126,12 +126,12 @@ def updateSignatureAboutCustomOutputs(self, proc):
   else:
     self.setDisable("deformation_field", "jacobian_determinant")
   self.signatureChangeNotifier.notify( self )
-  
+
 def updateBatchPath(self, proc):
   if self.deformation_field is not None:
     directory_path = os.path.dirname(self.deformation_field.fullPath())
     return os.path.join(directory_path, 'spm8_hdw_job.m')
-  
+
 def execution( self, context ):
   hdw = HDW()
   subject = Subject()
@@ -146,7 +146,7 @@ def execution( self, context ):
   else:
     pass#default SPM path used
   hdw.appendSubject(subject)
-  
+
   bias_correction = BiasCorrectionOptions()
   bias_correction.setIterations(self.bias_iteration)
   if self.bias_FWHM == "30mm cutoff":
@@ -179,7 +179,7 @@ def execution( self, context ):
     bias_correction.unsetBiasFWHM()
   else:
     raise ValueError("Unvalid bias_correction")
-    
+
   if self.bias_regulatisation == 'no regularisation (0)':
     bias_correction.unsetBiasRegularisation()
   elif self.bias_regulatisation == 'extremely light regularisation (1e-09)':
@@ -198,7 +198,7 @@ def execution( self, context ):
     bias_correction.setBiasRegularisationToExtremelyHeavy()
   else:
     raise ValueError('Unvalid bias_regulatisation value')
-    
+
   if self.lm_regulatisation == 'no regularisation (0)':
     bias_correction.unsetLMRegularisation()
   elif self.lm_regulatisation == 'extremely light regularisation (1e-09)':
@@ -219,15 +219,15 @@ def execution( self, context ):
     raise ValueError('Unvalid bias_regulatisation value')
 
   hdw.replaceBiasCorrectionOptions(bias_correction)
-    
+
   warping = WarpingOptions()
   warping.setIterations(self.warping_iteration)
   warping.setWarpingRegularisation(self.warping_regularisation)
-  
+
   hdw.replaceWarpingOptions(warping)
-  
+
   spm = validation()
   spm.addModuleToExecutionQueue(hdw)
   spm.setSPMScriptPath(self.batch_location.fullPath())
-  spm.run()    
-  
+  output = spm.run()
+  context.log(name, html=output)

@@ -196,7 +196,8 @@ def execution( self, context ):
     spm = validation()
     spm.addModuleToExecutionQueue(classical_estimation)
     spm.setSPMScriptPath(self.batch_location.fullPath())
-    spm.run()
+    output = spm.run()
+    context.log(name, html=output)
     return
 
   elif self.method == 'Bayesian 2nd-level':
@@ -210,7 +211,8 @@ def execution( self, context ):
     spm = validation()
     spm.addModuleToExecutionQueue(bayesian_second_level_estimation)
     spm.setSPMScriptPath(self.batch_location.fullPath())
-    spm.run()
+    output = spm.run()
+    context.log(name, html=output)
     return
 
   else:
@@ -290,6 +292,7 @@ def execution( self, context ):
     spm = validation()
     spm.addModuleToExecutionQueue(bayesian_first_level_estimation)
     spm.setSPMScriptPath(self.batch_location.fullPath())
-    spm.run()
+    output = spm.run()
+    context.log(name, html=output)
 
 

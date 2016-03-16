@@ -62,7 +62,7 @@ output_section = "Outputs"
 signature = Signature(
   "session_paths_0", ListOf(ReadDiskItem("4D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image']), section=input_section),
   "session_paths_1", ListOf(ReadDiskItem("4D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image']), section=input_section),
-  
+
   "quality", Float(section=estimation_section),
   "separation", Float(section=estimation_section),
   "smoothing", Float(section=estimation_section),
@@ -86,13 +86,13 @@ signature = Signature(
                       ("Wrap X, Y & Z",[True, True, True]),
                       section=estimation_section),
   "weighting", ReadDiskItem("4D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image'], section=estimation_section),
-  
-  "resliced_images", Choice("All Images (1..n)", 
-                            "Images 2..n", 
-                            "All Images + Mean Image", 
-                            "Mean Image Only", 
+
+  "resliced_images", Choice("All Images (1..n)",
+                            "Images 2..n",
+                            "All Images + Mean Image",
+                            "Mean Image Only",
                             section=reslice_section),
-  
+
   "resliced_interpolation", Choice("Nearest neighbour",
                                    "Trilinear",
                                    "2nd Degree B-Spline",
@@ -111,9 +111,9 @@ signature = Signature(
                                ("Wrap Y & Z",[False, True, True]),
                                ("Wrap X, Y & Z",[True, True, True]),
                                section=reslice_section),
-  "masking", Boolean(section=reslice_section),   
-  "filename_prefix", String(section=reslice_section),    
-               
+  "masking", Boolean(section=reslice_section),
+  "filename_prefix", String(section=reslice_section),
+
   "realign_paths_0", ListOf(WriteDiskItem("4D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image']), section=output_section),
   "realign_paths_1", ListOf(WriteDiskItem("4D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image']), section=output_section),
   "ouput_mean", WriteDiskItem("4D Volume", "NIFTI-1 image", section=output_section),
@@ -130,11 +130,11 @@ def initialization(self):
                    "realign_paths_1",
                    "ouput_mean",
                    "realign_parameters")
-  
+
   self.addLink(None, "filename_prefix", self.checkIfNotEmpty)
-  
+
   self.addLink("batch_location", "session_paths_0", self.updateBatchPath)
-  
+
   #SPM default initialisation
   self.quality = 0.9
   self.separation = 4
@@ -142,7 +142,7 @@ def initialization(self):
   self.num_passes = "Register to mean"
   self.interpolation = "2nd Degree B-Spline"
   self.wrapping = "No wrap"
-  
+
   self.resliced_images = "All Images + Mean Image"
   self.resliced_interpolation = "4th Degree B-Spline"
   self.resliced_wrapping = "No wrap"
@@ -161,19 +161,19 @@ def updateBatchPath(self, proc):
     return os.path.join(directory_path, 'spm8_realign_ER_job.m')
 
 def execution( self, context ):
-  
+
   estimation_options = EstimationOptions()
   estimation_options.setQuality(self.quality)
   estimation_options.setSeparation(self.separation)
   estimation_options.setSmoothingFWHM(self.smoothing)
-  
+
   if self.num_passes == "Register to first":
     estimation_options.setNumPassesToRegisterToFirst()
   elif self.num_passes == "Register to mean":
     estimation_options.setNumPassesToRegisterToMean()
   else:
     raise ValueError("Unvalid num_passes")
-  
+
   if self.interpolation == "Nearest neighbour":
     estimation_options.setInterpolationToNearestNeighbour()
   elif self.interpolation == "Trilinear":
@@ -192,7 +192,7 @@ def execution( self, context ):
     estimation_options.setInterpolationTo7thDegreeBSpline()
   else:
     raise ValueError("Unvalid interpolation")
-  
+
   estimation_options.setWrapping(self.wrapping[0], self.wrapping[1], self.wrapping[2])
   if self.weighting is not None:
     estimation_options.setWeighting(self.weighting.fullPath())
@@ -211,7 +211,7 @@ def execution( self, context ):
     reslice_options.setReslicedImagesToMeanImageOnly()
   else:
     raise ValueError("Unvalid resliced_images")
-  
+
   if self.resliced_interpolation == "Nearest neighbour":
     reslice_options.setInterpolationToNearestNeighbour()
   elif self.resliced_interpolation == "Trilinear":
@@ -230,13 +230,13 @@ def execution( self, context ):
     reslice_options.setInterpolationTo7thDegreeBSpline()
   else:
     raise ValueError("Unvalid resliced_interpolation")
-  
-  reslice_options.setWrapping(self.wrapping[0], 
-                              self.wrapping[1], 
+
+  reslice_options.setWrapping(self.wrapping[0],
+                              self.wrapping[1],
                               self.wrapping[2])
-  
-  
-  
+
+
+
   if self.interpolation == "Nearest neighbour":
     reslice_options.setInterpolationToNearestNeighbour()
   elif self.interpolation == "Trilinear":
@@ -256,10 +256,10 @@ def execution( self, context ):
   else:
     raise ValueError("Unvalid interpolation")
 
-  reslice_options.setWrapping(self.resliced_wrapping[0], 
-                              self.resliced_wrapping[1], 
+  reslice_options.setWrapping(self.resliced_wrapping[0],
+                              self.resliced_wrapping[1],
                               self.resliced_wrapping[2])
-  
+
   if self.masking:
     reslice_options.setMasking()
   else:
@@ -273,34 +273,34 @@ def execution( self, context ):
     estimate_and_reslice.addSessionPathList([diskitem.fullPath() for diskitem in self.session_paths_1])
   else:
     pass
-    
+
   if self.realign_paths_0 is not None:
     estimate_and_reslice.addSessionRealignedPathList([diskitem.fullPath() for diskitem in self.realign_paths_0])
   else:
     pass
-  
+
   if not None in [self.session_paths_1, self.realign_paths_1]:
     estimate_and_reslice.addSessionRealignedPathList([diskitem.fullPath() for diskitem in self.realign_paths_1])
   else:
-    pass                                   
+    pass
 
   if self.ouput_mean is not None:
     estimate_and_reslice.setMeanOuputPath(self.ouput_mean.fullPath())
   else:
     pass
-  
+
   if self.realign_parameters:
     for diskitem in self.realign_parameters:
       estimate_and_reslice.addSessionRealignmentParametersPath(diskitem.fullPath())
   else:
     pass
-  
+
   estimate_and_reslice.replaceEstimationOptions(estimation_options)
   estimate_and_reslice.replaceResliceOptions(reslice_options)
-    
+
   spm = validation()
   spm.addModuleToExecutionQueue(estimate_and_reslice)
   spm.setSPMScriptPath(self.batch_location.fullPath())
-  spm.run()
-  
-  
+  output = spm.run()
+  context.log(name, html=output)
+

@@ -71,7 +71,7 @@ signature = Signature(
 def initialization( self ):
   self.addLink(None, 'T_contrast_number', self.updateSignatureAboutTContrast)
   self.addLink(None, 'F_contrast_number', self.updateSignatureAboutFContrast)
-  
+
   self.addLink("batch_location", "contrast_mat_file", self.updateBatchPath)
 
   #----------------------------------------------------------------------------
@@ -84,7 +84,7 @@ def initialization( self ):
   self.F_contrast_number = 0
   #self.T_contrast_cond_sess_based_current_number = 0#Not implemented yet
   #self.T_contrast_cond_sess_based_number = 0
-  
+
   #SPM default initialisation
   self.delete_existing_contrast = False
 #==============================================================================
@@ -146,7 +146,7 @@ def addFContrastInSignature(self, F_contrast_index):
                                                                                'Replicate average'
                                                                                )
 
-    
+
 def updateBatchPath(self, proc):
   if self.contrast_mat_file is not None:
     directory_path = os.path.dirname(self.contrast_mat_file.fullPath())
@@ -180,8 +180,9 @@ def execution(self, context):
   spm = validation()
   spm.addModuleToExecutionQueue(contrast_manager)
   spm.setSPMScriptPath(self.batch_location.fullPath())
-  spm.run()
-  
+  output = spm.run()
+  context.log(name, html=output)
+
 def createFContrastMatrix(self, F_contrast_index):
   f_contrast_vector = FContrastVector()
   row_count = eval('self.F_contrast_' + str(F_contrast_index) + '_matrix_row')

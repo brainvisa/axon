@@ -67,35 +67,35 @@ signature = Signature(
                           "5th Degree B-Spline",
                           "6th Degree B-Spline",
                           "7th Degree B-Spline"),
-    
+
   "batch_location", WriteDiskItem("Matlab SPM script", "Matlab script", section="default SPM outputs"),
 )
 #------------------------------------------------------------------------------
 
 def initialization(self):
     self.setOptional("images_warped")
-      
+
     self.addLink("batch_location", "images_warped", self.updateBatchPath)
-    
+
     #SPM8 default parameters
     self.time_steps = 64
     self.interpolation = "Trilinear"
-    
+
 def updateBatchPath(self, proc):
   if self.images_warped:
     return os.path.join(self.images_warped[0].fullPath(), 'spm8_DARTEL_created_inverse_warped_job.m')
-  
-def execution( self, context ): 
+
+def execution( self, context ):
   create_inverse_warped = CreateInverseWarped()
   create_inverse_warped.setFlowFieldPathList([diskitem.fullPath() for diskitem in self.flow_fields])
   create_inverse_warped.setImagePathList([diskitem.fullPath() for diskitem in self.images])
-  
+
   if self.images_warped:
     output_warped_list = [diskitem.fullPath() for diskitem in self.images_warped]
     create_inverse_warped.setOutputWarpedPathList(output_warped_list)
-       
+
   create_inverse_warped.setTimeSteps(self.time_steps)
-  
+
   if self.interpolation == "Nearest neighbour":
     create_inverse_warped.setInterpolationToNearestNeighbour()
   elif self.interpolation == "Trilinear":
@@ -118,5 +118,5 @@ def execution( self, context ):
   spm = validation()
   spm.addModuleToExecutionQueue(create_inverse_warped)
   spm.setSPMScriptPath(self.batch_location.fullPath())
-  spm.run()                           
-      
+  output = spm.run()
+  context.log(name, html=output)

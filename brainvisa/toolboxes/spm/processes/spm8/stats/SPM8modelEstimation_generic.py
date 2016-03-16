@@ -88,7 +88,7 @@ def initialization( self ):
   self.addLink(None, 'analysis_space', self.updateSignatureByAnalysisSpace)
   self.addLink(None, 'noise_priors', self.updateTissueTypeSignature)
   self.addLink(None, 'simple_contrast_number', self.updateSignatureAboutSimpleContrastNumber)
-  
+
   self.addLink("batch_location", "basic_model_mat_file", self.updateBatchPath)
 
   self.analysis_space = 'Volume'
@@ -126,7 +126,7 @@ def updateSignatureByMethodUsed(self, proc):
                     "first_level_anova",
                     "second_level_anova",
                     "simple_contrast_number")
-  
+
 
   for simple_contrast_index in range(self.simple_contrast_number):
     if self.method == 'Bayesian 1st-level':
@@ -177,7 +177,7 @@ def removeSimpleContrastInSignature(self, simple_contrast_index):
 def addSimpleContrastInSignature(self, simple_contrast_index):
   self.signature["simple_contrast_%s_name" %simple_contrast_index] = String()
   self.signature["simple_contrast_%s_vector" %simple_contrast_index] = ListOf(Float())
-    
+
 def updateBatchPath(self, proc):
   if self.basic_model_mat_file is not None:
     directory_path = os.path.dirname(self.basic_model_mat_file.fullPath())
@@ -191,7 +191,8 @@ def execution( self, context ):
     spm = validation()
     spm.addModuleToExecutionQueue(classical_estimation)
     spm.setSPMScriptPath(self.batch_location.fullPath())
-    spm.run()
+    output = spm.run()
+    context.log(name, html=output)
     return
 
   elif self.method == 'Bayesian 2nd-level':
@@ -201,7 +202,8 @@ def execution( self, context ):
     spm = validation()
     spm.addModuleToExecutionQueue(bayesian_second_level_estimation)
     spm.setSPMScriptPath(self.batch_location.fullPath())
-    spm.run()
+    output = spm.run()
+    context.log(name, html=output)
     return
 
   else:
@@ -277,6 +279,7 @@ def execution( self, context ):
     spm = validation()
     spm.addModuleToExecutionQueue(bayesian_first_level_estimation)
     spm.setSPMScriptPath(self.batch_location.fullPath())
-    spm.run()
+    output = spm.run()
+    context.log(name, html=output)
 
 

@@ -64,7 +64,7 @@ deformation_field = "Deformation fields"
 
 signature = Signature(
   't1mri', ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image']),#Input volume
-   
+
   #Estimation Options
   'TPM_template', ReadDiskItem('TPM template', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=estimation_options_section),
   'gaussian_classes', ListOf(Integer(),section=estimation_options_section),
@@ -75,7 +75,7 @@ signature = Signature(
                                 'medium regularisation (0.01)',
                                 'heavy regularisation (0.1)',
                                 'very heavy regularisation (1)',
-                                'extremely heavy regularisation (10)', 
+                                'extremely heavy regularisation (10)',
                                 section=estimation_options_section),
   'bias_FWHM', Choice('30mm cutoff',
                       '40mm cutoff',
@@ -86,11 +86,11 @@ signature = Signature(
                       '90mm cutoff',
                       '100mm cutoff',
                       '110mm cutoff',
-                      '120mm cutoff', 
+                      '120mm cutoff',
                       '130mm cutoff',
                       '140mm cutoff',
                       '150mm cutoff',
-                      'No correction', 
+                      'No correction',
                       section=estimation_options_section),
   'affine_regularisation', Choice("No Affine Registration",
                                   "ICBM space template - European brains",
@@ -100,7 +100,7 @@ signature = Signature(
                                   section=estimation_options_section),
   'warping_regularisation',Integer(section=estimation_options_section),
   'sampling_distance', Float(section=estimation_options_section),
-  
+
   #Extended Options
   'spatial_norm', Choice('Low-dimensional: SPM default', 'High-dimensional: Dartel', section=extended_options_section),
   'DARTEL_template', ReadDiskItem('TPM HDW DARTEL template', 'NIFTI-1 image', section=extended_options_section),
@@ -108,7 +108,7 @@ signature = Signature(
   'mrf', Float(section=extended_options_section),
   'clean_up', Choice('Dont do cleanup', 'Light Clean', 'Thorough Clean', section=extended_options_section),
   'print_results', Boolean(section=extended_options_section),
-  
+
   # Writing Options
     #Grey Matter
   'save_grey_native', Boolean(section=grey_matter_options_section),
@@ -121,7 +121,7 @@ signature = Signature(
   'grey_HDW_warped_modulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=grey_matter_options_section),
   'save_grey_dartel_imported', Choice("Neither", 'rigid (SPM8 default)', 'affine', section=grey_matter_options_section),
   'grey_dartel_imported', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=grey_matter_options_section),
-  
+
     #White Matter
   'save_white_native', Boolean(section=white_matter_options_section),
   'white_native', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=white_matter_options_section),
@@ -154,7 +154,7 @@ signature = Signature(
   'bias_HDW_warped_unmodulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=bias_correction_options_section),
   'save_bias_affine', Boolean(section=bias_correction_options_section),
   'bias_affine', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=bias_correction_options_section),
-  
+
   #PVE label image
   'save_pve_native', Boolean(section=PVE_options_section),
   'pve_native', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=PVE_options_section),
@@ -163,7 +163,7 @@ signature = Signature(
   'pve_HDW_warped_unmodulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=PVE_options_section),
   'save_pve_dartel_imported', Choice("Neither", 'rigid (SPM8 default)', 'affine', section=PVE_options_section),
   'pve_dartel_imported', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=PVE_options_section),
-  
+
   #Jacobian Determinant
   'save_jacobian_normalized', Boolean(section=jacobian_section),
   'jacobian_normalized', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=jacobian_section),
@@ -175,8 +175,8 @@ signature = Signature(
   'inverse_LDW_field', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=deformation_field),
   'inverse_HDW_field', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=deformation_field),
   'DF_transformation_matrix', WriteDiskItem('Matlab SPM file', 'Matlab file', section=deformation_field),
-  
-  #pfile.txt: GM, WM and CSF volume 
+
+  #pfile.txt: GM, WM and CSF volume
   'GM_WM_CSF_volumes_txt', WriteDiskItem('Text file', 'Text file', section='default SPM outputs'),
 
   #Batch
@@ -217,12 +217,12 @@ def initialization(self):
   self.addLink(None, 'spatial_norm', self.updateSignatureAboutJacobian)
   self.addLink(None, 'save_deformation_fields', self.updateSignatureAboutDeformationField)
   self.addLink(None, 'spatial_norm', self.updateSignatureAboutDeformationField)
-  
+
   self.addLink("batch_location", "grey_native", self.updateBatchPath)
-  
+
   #SPM default initialisation
   self.gaussian_classes = [2, 2, 2, 3, 4, 2]
-  self.bias_regulatisation = 'very light regularisation (0.0001)' 
+  self.bias_regulatisation = 'very light regularisation (0.0001)'
   self.bias_FWHM = '60mm cutoff'
   self.affine_regularisation = "ICBM space template - European brains"
   self.warping_regularisation = 4
@@ -232,30 +232,30 @@ def initialization(self):
   self.mrf = 0.15
   self.clean_up = "Light Clean"
   self.print_results = True
-  
+
   self.save_grey_native = False
   self.save_grey_normalized = False
   self.save_grey_modulated = "non-linear only"
   self.save_grey_dartel_imported = "Neither"
-  
+
   self.save_white_native = False
   self.save_white_normalized = False
   self.save_white_modulated = "non-linear only"
   self.save_white_dartel_imported = "Neither"
-  
+
   self.save_csf_native = False
   self.save_csf_normalized = False
   self.save_csf_modulated = "Neither"
   self.save_csf_dartel_imported = "Neither"
-  
+
   self.save_bias_native = False
   self.save_bias_normalized = True
   self.save_bias_affine = False
-  
+
   self.save_pve_native = False
   self.save_pve_normalized = False
   self.save_pve_dartel_imported = "Neither"
-  
+
   self.save_jacobian_normalized = False
   self.save_deformation_fields = "Neither"
 
@@ -263,22 +263,22 @@ def initialization(self):
 def updateSignatureAboutDartelTemplate(self, proc):
   if self.spatial_norm == "High-dimensional: Dartel":
     self.setEnable("DARTEL_template", "save_jacobian_normalized")
-    self.setDisable("grey_LDW_warped_unmodulated", "grey_LDW_warped_modulated", 
-                    "white_LDW_warped_unmodulated", "white_LDW_warped_modulated", 
-                    "csf_LDW_warped_unmodulated", "csf_LDW_warped_modulated", 
-                    "bias_LDW_warped_unmodulated", 
+    self.setDisable("grey_LDW_warped_unmodulated", "grey_LDW_warped_modulated",
+                    "white_LDW_warped_unmodulated", "white_LDW_warped_modulated",
+                    "csf_LDW_warped_unmodulated", "csf_LDW_warped_modulated",
+                    "bias_LDW_warped_unmodulated",
                     "pve_LDW_warped_unmodulated",
                     "forward_LDW_field", "inverse_LDW_field")
   else:
     self.setDisable("DARTEL_template", "save_jacobian_normalized")
-    self.setDisable("grey_HDW_warped_unmodulated", "grey_HDW_warped_modulated", 
-                    "white_HDW_warped_unmodulated", "white_HDW_warped_modulated", 
-                    "csf_HDW_warped_unmodulated", "csf_HDW_warped_modulated", 
-                    "bias_HDW_warped_unmodulated", 
+    self.setDisable("grey_HDW_warped_unmodulated", "grey_HDW_warped_modulated",
+                    "white_HDW_warped_unmodulated", "white_HDW_warped_modulated",
+                    "csf_HDW_warped_unmodulated", "csf_HDW_warped_modulated",
+                    "bias_HDW_warped_unmodulated",
                     "pve_HDW_warped_unmodulated",
                     "forward_HDW_field", "inverse_HDW_field")
   self.changeSignature(self.signature)
-  
+
 #Grey links
 def updateSignatureAboutGreyNative(self, proc):
   self.updateSignatureFieldToShow("save_grey_native", "grey_native")
@@ -336,28 +336,28 @@ def updateSignatureAboutCSFDartel(self, proc):
 #Bias
 def updateSignatureAboutBiasNative(self, proc):
   self.updateSignatureFieldToShow("save_bias_native", "t1mri_bias_corrected")
-  
+
 def updateSignatureAboutBiasNormalized(self, proc):
   if self.spatial_norm == "High-dimensional: Dartel":
     self.updateSignatureFieldToShow("save_bias_normalized", "bias_HDW_warped_unmodulated")
   else:
     self.updateSignatureFieldToShow("save_bias_normalized", "bias_LDW_warped_unmodulated")
-  
+
 def updateSignatureAboutBiasAffine(self, proc):
   self.updateSignatureFieldToShow("save_bias_affine", "bias_affine")
 #PVE
 def updateSignatureAboutPVENative(self, proc):
   self.updateSignatureFieldToShow("save_pve_native", "pve_native")
-  
+
 def updateSignatureAboutPVENormalized(self, proc):
   if self.spatial_norm == "High-dimensional: Dartel":
     self.updateSignatureFieldToShow("save_pve_normalized", "pve_HDW_warped_unmodulated")
   else:
     self.updateSignatureFieldToShow("save_pve_normalized", "pve_LDW_warped_unmodulated")
-  
+
 def updateSignatureAboutPVEDartel(self, proc):
   self.updateSignatureFieldToShow("save_pve_dartel_imported", "pve_dartel_imported")
-  
+
 #Jacobian
 def updateSignatureAboutJacobian(self, proc):
   if self.spatial_norm == "High-dimensional: Dartel":
@@ -365,7 +365,7 @@ def updateSignatureAboutJacobian(self, proc):
   else:
     self.setDisable("jacobian_normalized")
   self.signatureChangeNotifier.notify(self)
-  
+
 #Deformation field
 def updateSignatureAboutDeformationField(self, proc):
   if self.save_deformation_fields in ["Image->Template (forward)", "inverse + forward"]:
@@ -374,7 +374,7 @@ def updateSignatureAboutDeformationField(self, proc):
   else:
     self.setDisable("forward_LDW_field")
     self.setDisable("forward_HDW_field")
-    
+
   if self.save_deformation_fields in ["Template->Image (inverse)", "inverse + forward"]:
     self.setEnable("inverse_LDW_field")
     self.setEnable("inverse_HDW_field")
@@ -382,7 +382,7 @@ def updateSignatureAboutDeformationField(self, proc):
     self.setDisable("inverse_LDW_field")
     self.setDisable("inverse_HDW_field")
   self.updateSignatureAboutDartelTemplate(proc)
-  
+
 #-----------------------------------------------------------------------------------
 def updateSignatureFieldToShow(self, field_to_check, field_to_modified):
   if eval("self." + field_to_check) in [False, "Neither"]:
@@ -390,19 +390,19 @@ def updateSignatureFieldToShow(self, field_to_check, field_to_modified):
   else:
     self.setEnable(field_to_modified)
   self.changeSignature(self.signature)
-#----------------------------------------------------------------------------------- 
+#-----------------------------------------------------------------------------------
 def updateBatchPath(self, proc):
   if self.grey_native is not None:
     directory_path = os.path.dirname(self.grey_native.fullPath())
     return os.path.join(directory_path, 'spm8_VBM_segmentation_job.m')
-  
+
 def execution( self, context ):
   context.warning('The execution time is approximately 8 min')
-  
+
   estimate_and_write = EstimateAndWrite()
   estimate_and_write.setVolumePath(str(self.t1mri.fullPath()))
   #=============================================================================
-  # 
+  #
   #=============================================================================
   est_option = EstimationOptions()
   est_option.setTissueProbilityMapPath(str(self.TPM_template.fullPath()))
@@ -425,7 +425,7 @@ def execution( self, context ):
     est_option.setBiasRegularisationToExtremelyHeavy()
   else:
     raise ValueError('Unvalid bias_regulatisation value')
-  
+
   if self.bias_FWHM == '30mm cutoff':
     est_option.setBiasFWHMTo30cutoff()
   elif self.bias_FWHM == '40mm cutoff':
@@ -456,7 +456,7 @@ def execution( self, context ):
     est_option.unsetBiasFWHM()
   else:
     raise ValueError('Unvalid bias_FWHM value')
-  
+
   if self.affine_regularisation == 'No Affine Registration':
     est_option.unsetAffineRegularisation()
   elif self.affine_regularisation == 'ICBM space template - European brains':
@@ -469,12 +469,12 @@ def execution( self, context ):
     est_option.unsetRegularisation()
   else:
     raise ValueError('Unvalid affine_regularisation value')
-  
+
   est_option.setWarpingRegularisation(self.warping_regularisation)
   est_option.setSamplingDistance(self.sampling_distance)
-  
+
   #=============================================================================
-  # 
+  #
   #=============================================================================
   ext_options = ExtendedOptions()
   if self.spatial_norm == "High-dimensional: Dartel":
@@ -486,7 +486,7 @@ def execution( self, context ):
     ext_options.setSPMDefaultSpatialNormalization()
   else:
     raise ValueError('Unvalid spatial_norm value')
-  
+
   if self.sanlm == "No denoising":
     ext_options.unsetSANLMDenoising()
   elif self.sanlm == "Denoising":
@@ -495,9 +495,9 @@ def execution( self, context ):
     ext_options.setSANLMDenoisingToMultiThreaded()
   else:
     raise ValueError('Unvalid sanlm value')
-  
+
   ext_options.setMRFWeighting(self.mrf)
-  
+
   if self.clean_up == "Dont do cleanup":
     ext_options.unsetCleanUp()
   elif self.clean_up == "Light Clean":
@@ -506,14 +506,14 @@ def execution( self, context ):
     ext_options.setCleanUpToThorough()
   else:
     raise ValueError('Unvalid clean_up value')
-  
+
   if self.print_results:
     ext_options.enableDisplayAndPrintResult()
   else:
     ext_options.disableDisplayAndPrintResult()
-    
+
   #=============================================================================
-  # 
+  #
   #=============================================================================
   #Grey options
   grey_options = GreyMatterWritingOptions(dartel_normalization)
@@ -674,7 +674,7 @@ def execution( self, context ):
   else:
     pve_options.unsetDartelExport()
 #===============================================================================
-# 
+#
 #===============================================================================
   wri_options = WritingOptions(dartel_normalization)
   #Standard SPM output
@@ -722,13 +722,13 @@ def execution( self, context ):
   wri_options.replaceCSFMatterWritingOptions(csf_options)
   wri_options.replaceBiasCorrectedWritingOptions(bias_options)
   wri_options.replacePVELabelWritingOptions(pve_options)
-  
+
   estimate_and_write.replaceEstimationOptions(est_option)
   estimate_and_write.replaceExtendedOptions(ext_options)
   estimate_and_write.replaceWritingOptions(wri_options)
-  
+
   spm = validation()
   spm.addModuleToExecutionQueue(estimate_and_write)
   spm.setSPMScriptPath(self.batch_location.fullPath())
-  spm.run()           
-  
+  output = spm.run()
+  context.log(name, html=output)

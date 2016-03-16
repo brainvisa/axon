@@ -93,7 +93,7 @@ def initialization(self):
   self.save_jacobian_rate = False
   self.save_divergence_rate = True
   self.save_deformation_fields = False
-  
+
 def updateSignatureAboutNoise(self, proc):
   if self.noise_estimate == "NaN":
     self.setDisable("noise_estimate_value")
@@ -102,43 +102,43 @@ def updateSignatureAboutNoise(self, proc):
   else:
     raise ValueError("Unvalid noise_estimate")
   self.changeSignature(self.signature)
-  
+
 def updateSignatureAboutMPA(self, proc):
   if self.save_MPA and self.customs_outputs:
     self.setEnable("MPA")
   else:
     self.setDisable("MPA")
   self.changeSignature(self.signature)
-  
+
 def updateSignatureAboutJacobianRate(self, proc):
   if self.save_jacobian_rate and self.customs_outputs:
     self.setEnable("jacobian_rate")
   else:
     self.setDisable("jacobian_rate")
   self.changeSignature(self.signature)
-  
+
 def updateSignatureAboutDivergenceRate(self, proc):
   if self.save_divergence_rate and self.customs_outputs:
     self.setEnable("divergence_rate")
   else:
     self.setDisable("divergence_rate")
   self.changeSignature(self.signature)
-  
+
 def updateSignatureAboutDeformationField(self, proc):
   if self.save_deformation_fields and self.customs_outputs:
     self.setEnable("deformation_fields")
   else:
     self.setDisable("deformation_fields")
   self.changeSignature(self.signature)
-    
+
 def updateBatchPath(self, proc):
   if self.volumes:
     directory_path = os.path.dirname(self.volumes[0].fullPath())
     return os.path.join(directory_path, 'spm12_serial_job.m')
-  
+
 def execution( self, context ):
   serial = SerialLongitudinalRegistration()
-  
+
   serial.setVolumes([diskitem.fullPath() for diskitem in self.volumes])
   serial.setTimes(self.times)
   if self.noise_estimate == "NaN":
@@ -147,7 +147,7 @@ def execution( self, context ):
     serial.setNoiseEstimate(self.noise_estimate_value)
   else:
     raise ValueError("Unvalid noise_estimate")
-  
+
   serial.setWarpingRegulariation(self.warping_regularisation)
   serial.setBiasRegularisation(self.bias_regularisation)
   if self.save_MPA:
@@ -174,8 +174,9 @@ def execution( self, context ):
       serial.setOutputVolumeDeformationField([diskitem.fullPath() for diskitem in self.deformation_fields])
   else:
     serial.discardDeformationFields()
-    
+
   spm = validation()
   spm.addModuleToExecutionQueue(serial)
   spm.setSPMScriptPath(self.batch_location.fullPath())
-  spm.run()
+  output = spm.run()
+  context.log(name, html=output)

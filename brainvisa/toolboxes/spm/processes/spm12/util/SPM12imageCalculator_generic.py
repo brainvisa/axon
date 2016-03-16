@@ -71,24 +71,24 @@ signature = Signature(
                       "INT16   - signed short",
                       "INT32   - signed int",
                       "FLOAT32 - single prec. float",
-                      "FLOAT64 - double prec. float"),  
+                      "FLOAT64 - double prec. float"),
   #Batch
-  'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section='default SPM outputs' )            
+  'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section='default SPM outputs' )
 )
-                      
+
 def initialization(self):
   self.addLink("batch_location", "output_image", self.updateBatchPath)
-  
+
   self.data_matrix = False
   self.masking = "No implicit zero mask"
   self.interpolation = "Trilinear"
   self.data_type = "INT16   - signed short"
-  
+
 def updateBatchPath(self, proc):
   if self.output_image is not None:
     ouput_directory = os.path.dirname(self.output_image.fullPath())
     return os.path.join(ouput_directory, 'spm8_imcalc_job.m')
-  
+
 def execution(self, context):
   imcalc = ImageCalculator()
   imcalc.setInputImagePathList([diskitem.fullPath() for diskitem in self.input_images])
@@ -107,7 +107,7 @@ def execution(self, context):
     options.setDataMatrix()
   else:
     options.unsetDataMatrix()
-  
+
   if self.masking == "No implicit zero mask":
     options.setMaskingTypeToNoImplicitZero()
   elif self.masking == "Implicit zero mask":
@@ -116,7 +116,7 @@ def execution(self, context):
     options.setMaskingTypeToNaNShouldBeZeroed()
   else:
     raise ValueError("Unvalid choice for masking")
-  
+
   if self.interpolation == "Nearest neighbour":
     options.setInterpolationToNearestNeighbour()
   elif self.interpolation == "Trilinear":
@@ -135,7 +135,7 @@ def execution(self, context):
     options.setInterpolationTo7thDegreeBSpline()
   else:
     raise ValueError("Unvalid choice for interpolation")
-  
+
   if self.data_type == "UINT8   - unsigned char":
     options.setDataTypeToUint8()
   elif self.data_type == "INT16   - signed short":
@@ -148,10 +148,11 @@ def execution(self, context):
     options.setDataTypeToFloat64()
   else:
     raise ValueError("Unvalid choice for data_type")
-  
+
   imcalc.replaceOptions(options)
-  
+
   spm = validation()
   spm.addModuleToExecutionQueue(imcalc)
   spm.setSPMScriptPath(self.batch_location.fullPath())
-  spm.run()    
+  output = spm.run()
+  context.log(name, html=output)

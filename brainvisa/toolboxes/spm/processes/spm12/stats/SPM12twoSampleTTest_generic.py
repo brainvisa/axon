@@ -233,7 +233,8 @@ def execution(self, context):
   spm = validation()
   spm.addModuleToExecutionQueue(two_sample_t_test)
   spm.setSPMScriptPath(self.batch_location.fullPath())
-  spm.run()
+  output = spm.run()
+  context.log(name, html=output)
 
 #==============================================================================
 #==============================================================================

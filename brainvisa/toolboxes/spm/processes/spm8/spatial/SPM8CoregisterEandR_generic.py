@@ -96,13 +96,13 @@ signature = Signature(
 def initialization(self):
   self.setOptional("others")
   self.setDisable("source_warped", "others_warped")
-  
+
   self.addLink(None, "custom_outputs", self.updateSignatureAboutCustomOutputs)
   self.addLink(None, "filename_prefix", self.checkIfNotEmpty)
   self.addLink(None, "extract_coregister_matrix", self.updateSignatureAboutCoregisterMatrix)
-  
+
   self.addLink("batch_location", "source", self.updateBatchPath)
-  
+
   #SPM default initialisation
   self.objective_function = "Normalised Mutual Information"
   self.separation = [4,2]
@@ -113,7 +113,7 @@ def initialization(self):
   self.masking = False
   self.filename_prefix = 'r'
   self.extract_coregister_matrix = False
-  
+
   self.custom_outputs = False
 
 def updateSignatureAboutCustomOutputs(self, proc):
@@ -138,7 +138,7 @@ def updateSignatureAboutCoregisterMatrix(self, proc):
   else:
     self.setDisable("coregister_matrix")
   self.signatureChangeNotifier.notify( self )
-    
+
 def updateBatchPath(self, proc):
   if self.source is not None:
     directory_path = os.path.dirname(self.source.fullPath())
@@ -152,7 +152,7 @@ def execution( self, context ):
       pass#all is right
   else:
     pass#others_warped is useless
-  
+
   estimation_options = EstimationOptions()
   if self.objective_function == "Mutual Information":
     estimation_options.setObjectiveFunctionToMutualInformation()
@@ -204,7 +204,7 @@ def execution( self, context ):
   if self.others:
     for other_diskitem in self.others:
       estimate_and_reslice.addOtherVolumePath(other_diskitem.fullPath())
-  
+
   if self.custom_outputs:
     estimate_and_reslice.setSourceWarpedPath(self.source_warped.fullPath())
     if self.others:
@@ -215,17 +215,18 @@ def execution( self, context ):
 
   estimate_and_reslice.replaceEstimationOptions(estimation_options)
   estimate_and_reslice.replaceResliceOptions(reslice_options)
-    
+
   spm = validation()
   spm.addModuleToExecutionQueue(estimate_and_reslice)
   spm.setSPMScriptPath(self.batch_location.fullPath())
-  spm.run()
-  
+  output = spm.run()
+  context.log(name, html=output)
+
   if self.extract_coregister_matrix and self.coregister_matrix is not None:
     #very usefull because spm action doesn't recompute minf, so the transformation in minf files is wrong
     self.source.clearMinf()
     self.extractCoregisterMatrix( self.source.fullPath(), self.reference.fullPath(), self.coregister_matrix.fullPath() )
-    
+
 def extractCoregisterMatrix(self, source_path, reference_path, output_path):
 
   source_vol = aims.read( source_path )

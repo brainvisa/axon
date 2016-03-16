@@ -74,29 +74,29 @@ signature = Signature(
                           "7th Degree B-Spline"),
   'masking', Boolean(),
   'gaussian_fwhm', ListOf(Float()),
-  'output_destination', Choice('Current directory', 
-                               'Source directories', 
+  'output_destination', Choice('Current directory',
+                               'Source directories',
                                'Output directory'),
   'ouput_directory', WriteDiskItem('Directory', 'Directory'),
   'custom_outputs', Boolean(),
   'images_deformed', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'])),
   #Batch
-  'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section='default SPM outputs' )     
+  'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section='default SPM outputs' )
 )
-                      
+
 def initialization(self):
   self.addLink(None, 'apply_inverse', self.updateSignatureAboutInverse)
   self.addLink(None, 'custom_outputs', self.updateSignatureAboutOutputs)
   self.addLink(None, 'output_destination', self.updateSignatureAboutOutputDestination)
-  
+
   self.addLink("batch_location", "deformation_field", self.updateBatchPath)
-  
+
   self.apply_inverse = False
   self.interpolation = "4th Degree B-Spline"
   self.gaussian_fwhm = [0, 0, 0]
   self.custom_outputs = False
 
-  
+
 def updateSignatureAboutInverse(self, proc):
   if self.apply_inverse:
     self.setEnable('reference_volume')
@@ -110,25 +110,25 @@ def updateSignatureAboutOutputs(self, proc):
   else:
     self.setDisable('images_deformed')
   self.changeSignature(self.signature)
-  
+
 def updateSignatureAboutOutputDestination(self, proc):
   if self.output_destination == 'Output directory':
     self.setEnable('ouput_directory')
   else:
     self.setDisable('ouput_directory')
   self.changeSignature(self.signature)
-   
+
 def updateBatchPath(self, proc):
   if self.deformation_field is not None:
     ouput_directory = os.path.dirname(self.deformation_field.fullPath())
     return os.path.join(ouput_directory, 'spm12_deformations_job.m')
-  
+
 def execution(self, context):
   deformations = Deformations()
-  
+
   deformation_field = DeformationField()
   deformation_field.setDeformationFieldPath(self.deformation_field.fullPath())
-  
+
   if self.apply_inverse:
     comp = Composition()
     comp.append(deformation_field)
@@ -138,14 +138,14 @@ def execution(self, context):
     deformations.appendDeformation(inverse)
   else:
     deformations.appendDeformation(deformation_field)
-  
-  
+
+
   pull_back = PullBack()
   pull_back.setVolumeListToApply([diskitem.fullPath() for diskitem in self.input_images])
-  
+
   if self.custom_outputs:
     pull_back.setOuputPathList([diskitem.fullPath() for diskitem in self.images_deformed])
-  
+
   if self.output_destination == 'Current directory':
 #     deformations.setOuputDestinationToCurrentDirectory()#SPM current directory == batch directory
     pull_back.setOutputDestinationToOutputDirectory(os.path.dirname(self.batch_location.fullPath()))
@@ -159,7 +159,7 @@ def execution(self, context):
     pull_back.setOutputDestinationToOutputDirectory(self.ouput_directory.fullPath())
   else:
     raise ValueError("Unvalid output_destination")
-  
+
   if self.interpolation == "Nearest neighbour":
     pull_back.setInterpolationToNearestNeighbour()
   elif self.interpolation == "Trilinear":
@@ -178,23 +178,23 @@ def execution(self, context):
     pull_back.setInterpolationTo7thDegreeBSpline()
   else:
     raise ValueError("Unvalid interpolation")
-  
+
   if self.masking:
     pull_back.setMasking()
   else:
     pull_back.unsetMasking()
-    
+
   if len(self.gaussian_fwhm) == 3:
     pull_back.setFWHM(self.gaussian_fwhm[0],
                       self.gaussian_fwhm[1],
                       self.gaussian_fwhm[2])
   else:
     context.error("gaussian_fwhm requires 3 value")
-    
+
   deformations.appendOutput(pull_back)
-  
+
   spm = validation()
   spm.addModuleToExecutionQueue(deformations)
   spm.setSPMScriptPath(self.batch_location.fullPath())
-  spm.run()    
-  
+  output = spm.run()
+  context.log(name, html=output)

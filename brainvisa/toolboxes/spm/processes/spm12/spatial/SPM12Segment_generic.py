@@ -571,7 +571,8 @@ def execution( self, context ):
   spm = validation()
   spm.addModuleToExecutionQueue(segment)
   spm.setSPMScriptPath(self.batch_location.fullPath())
-  spm.run()
+  output = spm.run()
+  context.log(name, html=output)
 
 def buildTissueObject(self, tissue_name, tissue_proba_dimension):
   tissue = Tissue()

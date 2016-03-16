@@ -70,7 +70,7 @@ signature = Signature(
                           "5th Degree B-Spline",
                           "6th Degree B-Spline",
                           "7th Degree B-Spline"),
-    
+
   "batch_location", WriteDiskItem("Matlab SPM script", "Matlab script", section="default SPM outputs"),
 )
 #------------------------------------------------------------------------------
@@ -79,18 +79,18 @@ def initialization(self):
     self.setOptional("images_2",
                      "images_1_warped",
                      "images_2_warped")
-  
+
     self.addLink("batch_location", "images_1_warped", self.updateBatchPath)
-    
+
     #SPM8 default parameters
     self.modulation = False
     self.time_steps = 64
     self.interpolation = "Trilinear"
-    
+
 def updateBatchPath(self, proc):
   if self.images_1_warped:
     return os.path.join(self.images_1_warped[0].fullPath(), 'spm8_DARTEL_created_warped_job.m')
-  
+
 def execution( self, context ):
   if self.images_2:
     if len(self.images_1) != len(self.images_2):
@@ -100,26 +100,26 @@ def execution( self, context ):
       pass
   else:
     pass
-  
+
   create_warped = CreateWarped()
   create_warped.setFlowFieldPathList([diskitem.fullPath() for diskitem in self.flow_fields])
   create_warped.setFirstImagePathList([diskitem.fullPath() for diskitem in self.images_1])
   if self.images_2:
     create_warped.appendImageList([diskitem.fullPath() for diskitem in self.images_2])
-  
+
   if self.images_1_warped:
     output_warped_list = [[diskitem.fullPath() for diskitem in self.images_1_warped]]
     if self.images_2_warped:
       output_warped_list.append([diskitem.fullPath() for diskitem in self.images_2_warped])
     create_warped.setListOutputWarpedPathList(output_warped_list)
-    
+
   if self.modulation:
     create_warped.setModulation()
   else:
     create_warped.unsetModulation()
-    
+
   create_warped.setTimeSteps(self.time_steps)
-  
+
   if self.interpolation == "Nearest neighbour":
     create_warped.setInterpolationToNearestNeighbour()
   elif self.interpolation == "Trilinear":
@@ -142,5 +142,5 @@ def execution( self, context ):
   spm = validation()
   spm.addModuleToExecutionQueue(create_warped)
   spm.setSPMScriptPath(self.batch_location.fullPath())
-  spm.run()                           
-      
+  output = spm.run()
+  context.log(name, html=output)

@@ -65,7 +65,7 @@ signature = Signature(
   "source", ReadDiskItem("4D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image'], section=subject_section),
   "source_weighting", ReadDiskItem("4D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image'], section=subject_section),
   "images_to_write", ListOf(ReadDiskItem("4D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image']), section=subject_section),
-  
+
   "template", ReadDiskItem("4D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image'], section=estimation_section),
   "template_weighting", ReadDiskItem("4D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image'], section=estimation_section),
   "source_smoothing", Float(section=estimation_section),
@@ -76,12 +76,12 @@ signature = Signature(
   "frequency_cutoff", Float(section=estimation_section),
   "iterations", Integer(section=estimation_section),
   "regularisation", Float(section=estimation_section),
-                     
+
   "preserve", Choice("Preserve Concentrations",
                      "Preserve Amount",
                      section=writing_section),
   "bounding_box", Matrix(length=2, width=3, section=writing_section),
-  "voxel_size", ListOf(Float(),section=writing_section),           
+  "voxel_size", ListOf(Float(),section=writing_section),
   "interpolation", Choice("Nearest neighbour",
                           "Trilinear",
                           "2nd Degree B-Spline",
@@ -110,9 +110,9 @@ def initialization(self):
   self.setOptional("source_weighting", "template_weighting")
   self.addLink(None, "custom_outputs", self.updateSignatureAboutOutputs)
   self.addLink(None, "filename_prefix", self.checkIfNotEmpty)
-  
+
   self.addLink("batch_location", "source", self.updateBatchPath)
-  
+
   #SPM default initialisation
   self.source_smoothing = 8
   self.template_smoothing = 0
@@ -126,7 +126,7 @@ def initialization(self):
   self.interpolation = "Trilinear"
   self.wrappping = "No wrap"
   self.filename_prefix = 'w'
-  
+
 def updateSignatureAboutOutputs(self, proc):
   if self.custom_outputs:
     self.setEnable("images_written")
@@ -135,21 +135,21 @@ def updateSignatureAboutOutputs(self, proc):
     self.setDisable("images_written")
     self.setEnable("filename_prefix")
   self.changeSignature(self.signature)
-  
+
 def checkIfNotEmpty(self, proc):
   if self.filename_prefix in [None, '']:
     self.filename_prefix = 'w'
   else:
     pass
-    
+
 def updateBatchPath(self, proc):
   if self.source is not None:
     directory_path = os.path.dirname(self.source.fullPath())
     return os.path.join(directory_path, 'spm8_normalise_EW_job.m')
-  
+
 def execution( self, context ):
   estimate_and_write = EstimateAndWrite()
-  
+
   subject = SubjectToEstimateAndWrite()
   subject.setSourceImage(self.source.fullPath())
   if self.source_weighting is not None:
@@ -162,9 +162,9 @@ def execution( self, context ):
       raise ValueError("images_to_write and images_written must have the same length")
   else:
     pass#SPM default outputs
-  
+
   estimate_and_write.appendSubject(subject)
-  
+
   estimate = EstimationOptions()
   estimate.setTemplateImage(self.template.fullPath())
   if self.template_weighting is not None:
@@ -179,13 +179,13 @@ def execution( self, context ):
     estimate.unsetAffineRegularisation()
   else:
     raise ValueError("Unvalid choice for affine_regularisation")
-  
+
   estimate.setNonLinearFrequencyCutOff(self.frequency_cutoff)
   estimate.setNonLinearIterations(self.iterations)
   estimate.setNonLinearRegularisation(self.regularisation)
-  
+
   estimate_and_write.replaceEstimateOptions(estimate)
-  
+
   writing = WritingOptions()
   if self.preserve == "Preserve Concentrations":
     writing.setPreserveToConcentrations()
@@ -193,10 +193,10 @@ def execution( self, context ):
     writing.setPreserveToAmount()
   else:
     raise ValueError("Unvalid choice for preserve")
-  
+
   writing.setBoundingBox(numpy.array(self.bounding_box))
   writing.setVoxelSize(self.voxel_size)
-  
+
   if self.interpolation == "Nearest neighbour":
     writing.setInterpolationToNearestNeighbour()
   elif self.interpolation == "Trilinear":
@@ -215,14 +215,14 @@ def execution( self, context ):
     writing.setInterpolationTo7thDegreeBSpline()
   else:
     raise ValueError("Unvalid interpolation")
-  
+
   writing.setWrapping(self.wrappping[0], self.wrappping[1], self.wrappping[2])
   writing.setFilenamePrefix(self.filename_prefix)
-  
+
   estimate_and_write.replaceWrintingOptions(writing)
-    
+
   spm = validation()
   spm.addModuleToExecutionQueue(estimate_and_write)
   spm.setSPMScriptPath(self.batch_location.fullPath())
-  spm.run()
-  
+  output = spm.run()
+  context.log(name, html=output)
