@@ -2707,7 +2707,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       input_file_processing = submission_dlg.combo_in_files.currentText()
       output_file_processing = submission_dlg.combo_out_files.currentText()
 
-      brainvisa_cmd = [ 'python', '-m', 'brainvisa.axon.runprocess' ]
+      brainvisa_cmd = [ 'python2', '-m', 'brainvisa.axon.runprocess' ]
 
       self.readUserValues()
 
