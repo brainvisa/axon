@@ -2891,16 +2891,22 @@ class ExecutionContext( object ):
 
 
   def pythonSystem(self, *args, **kwargs ):
-    '''Same as system() but for python commands:
+    '''Same as system() but for python2 commands:
 
-    Prepends the python executable to the command, and use the executable full
+    Prepends the python2 executable to the command, and use the executable full
     path to call system(). The 1st arg should thus be the python script.
     On Unix, this should have the same result as using system(), but on Windows
     the script will not be recognized as a python script, so needs this
     wrapping.
     '''
+    # TODO this method's API does not specify which version of Python should be
+    # used. For now (March 2016) we may assume that all scripts are still using
+    # Python2, but in the future we may have to call Python 3 scripts. Maybe we
+    # should simply deprecate this method, which is very little used anyway
+    # (only 6 matches in the standard tree, all calls to cartoLinearComb.py in
+    # Morphologist).
     exe = neuroConfig.executableWithPath(args[0])
-    return self.system('python', exe, *args[1:], **kwargs)
+    return self.system('python2', exe, *args[1:], **kwargs)
 
 
   def _systemStdout( self, line, logFile=None ):
