@@ -45,7 +45,6 @@ def validation():
     spm = SPM8(configuration.SPM.spm8_path,
                configuration.matlab.executable,
                configuration.matlab.options)
-  return spm
 #------------------------------------------------------------------------------
 
 userLevel = 0
