@@ -76,7 +76,12 @@ class ModelReview(SPM12MainModule):
       workspace_diretory = os.path.dirname(self.matlab_file_path)
       ext = self.print_result.replace("'", '')
       spm_result_path = os.path.join(workspace_diretory, "spm_%s.%s" % (spm_date, ext))
-      shutil.move(spm_result_path, self.output_results_path)
+      if os.path.exists(spm_result_path):
+        shutil.move(spm_result_path, self.output_results_path)
+      elif os.path.exists(os.path.join('/tmp', "spm_%s.%s" % (spm_date, ext))):
+        shutil.move(os.path.join('/tmp', "spm_%s.%s" % (spm_date, ext)), self.output_results_path)
+      else:
+        raise RuntimeError("Output file not found")
     else:
       pass#default prefix used
 
