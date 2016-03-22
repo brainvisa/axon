@@ -15,7 +15,10 @@ class SubjectContainer():
     else:
       raise ValueError("At least one subject is required")
     return batch_list
-  
-  def movePathsIfNeeded(self, prefix):
+
+  def movePathsIfNeeded(self, prefix=None):
     for subject in self:
-      subject.movePathsIfNeeded(prefix)
+      if prefix is not None:
+        subject.movePathsIfNeeded(prefix)
+      else:
+        subject.movePathsIfNeeded()

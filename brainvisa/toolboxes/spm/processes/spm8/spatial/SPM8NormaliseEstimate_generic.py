@@ -31,8 +31,8 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from brainvisa.processes import *
-from soma.spm.spm8.spatial.normalise import EstimateAndWrite
-from soma.spm.spm8.spatial.normalise.subject import SubjectToEstimateAndWrite
+from soma.spm.spm8.spatial.normalise import Estimate
+from soma.spm.spm8.spatial.normalise.subject import SubjectToEstimate
 from soma.spm.spm8.spatial.normalise.writing_options import WritingOptions
 from soma.spm.spm8.spatial.normalise.estimation_options import EstimationOptions
 from soma.spm.spm_launcher import SPM8, SPM8Standalone
@@ -55,16 +55,14 @@ def validation():
 #------------------------------------------------------------------------------
 
 userLevel = 1
-name = 'spm8 - Normalise: Estimate & Write - generic'
+name = 'spm8 - Normalise: Estimate only - generic'
 
 subject_section = "subject options"
 estimation_section = "Estimation options"
-writing_section = "writing options"
 
 signature = Signature(
   "source", ReadDiskItem("4D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image'], section=subject_section),
   "source_weighting", ReadDiskItem("4D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image'], section=subject_section),
-  "images_to_write", ListOf(ReadDiskItem("4D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image']), section=subject_section),
 
   "template", ReadDiskItem("4D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image'], section=estimation_section),
   "template_weighting", ReadDiskItem("4D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image'], section=estimation_section),
@@ -77,38 +75,11 @@ signature = Signature(
   "iterations", Integer(section=estimation_section),
   "regularisation", Float(section=estimation_section),
 
-  "preserve", Choice("Preserve Concentrations",
-                     "Preserve Amount",
-                     section=writing_section),
-  "bounding_box", Matrix(length=2, width=3, section=writing_section),
-  "voxel_size", ListOf(Float(),section=writing_section),
-  "interpolation", Choice("Nearest neighbour",
-                          "Trilinear",
-                          "2nd Degree B-Spline",
-                          "3rd Degree B-Spline",
-                          "4th Degree B-Spline",
-                          "5th Degree B-Spline",
-                          "6th Degree B-Spline",
-                          "7th Degree B-Spline",
-                          section=writing_section),
-  "wrappping", Choice(("No wrap",[False, False, False]),
-                      ("Wrap X",[True, False, False]),
-                      ("Wrap Y",[False, True, False]),
-                      ("Wrap X & Y",[True, True, False]),
-                      ("Wrap Z",[False, False, True]),
-                      ("Wrap X & Z",[True, False, True]),
-                      ("Wrap Y & Z",[False, True, True]),
-                      ("Wrap X, Y & Z",[True, True, True]),
-                      section=writing_section),
-
-  "filename_prefix", String(section="outputs"),
-  "images_written", ListOf(WriteDiskItem("4D Volume", ["NIFTI-1 image", "SPM image", "MINC image"]), section="outputs"),
-  "sn_mat", WriteDiskItem("Matlab SPM script", "Matlab file", section="SPM outputs"),
-  'batch_location', WriteDiskItem("Matlab SPM script", "Matlab script", section="default SPM outputs"),
+  "sn_mat", WriteDiskItem( 'Matlab SPM script', 'Matlab file', section='SPM outputs' ),
+  'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section='default outputs' ),
 )
 def initialization(self):
-  self.setOptional("source_weighting", "template_weighting", "images_written", "sn_mat")
-  self.addLink(None, "filename_prefix", self.checkIfNotEmpty)
+  self.setOptional("source_weighting", "template_weighting", "sn_mat")
 
   self.addLink("batch_location", "source", self.updateBatchPath)
 
@@ -119,12 +90,6 @@ def initialization(self):
   self.frequency_cutoff = 25
   self.iterations = 16
   self.regularisation = 1
-  self.preserve = "Preserve Concentrations"
-  self.bounding_box = [[-78, -112, -50],[78, 76, 85]]
-  self.voxel_size = [2, 2, 2]
-  self.interpolation = "Trilinear"
-  self.wrappping = "No wrap"
-  self.filename_prefix = 'w'
 
 def checkIfNotEmpty(self, proc):
   if self.filename_prefix in [None, '']:
@@ -135,88 +100,47 @@ def checkIfNotEmpty(self, proc):
 def updateBatchPath(self, proc):
   if self.source is not None:
     directory_path = os.path.dirname(self.source.fullPath())
-    return os.path.join(directory_path, 'spm8_normalise_EW_job.m')
+    return os.path.join(directory_path, 'spm8_normalise_estimate_job.m')
 
 def execution( self, context ):
-  estimate_and_write = EstimateAndWrite()
+  estimate = Estimate()
 
-  subject = SubjectToEstimateAndWrite()
+  subject = SubjectToEstimate()
   subject.setSourceImage(self.source.fullPath())
+
   if self.source_weighting is not None:
     subject.setSourceWeightingImage(self.source_weighting.fullPath())
-  subject.setImageListToWrite([diskitem.fullPath() for diskitem in self.images_to_write])
-  if self.images_written:
-    if len(self.images_to_write) == len(self.images_written):
-      subject.setImageListWritten([diskitem.fullPath() for diskitem in self.images_written])
-    else:
-      raise ValueError("images_to_write and images_written must have the same length")
-  else:
-    pass#SPM default outputs
+
   if self.sn_mat is not None:
     subject.setSnMatOutputPath(self.sn_mat.fullPath())
   else:
     pass#SPM default outputs
 
-  estimate_and_write.appendSubject(subject)
+  estimate.appendSubject(subject)
 
-  estimate = EstimationOptions()
-  estimate.setTemplateImage(self.template.fullPath())
+  estimation_options = EstimationOptions()
+  estimation_options.setTemplateImage(self.template.fullPath())
   if self.template_weighting is not None:
-    estimate.setTemplateWeightingImage(self.template_weighting.fullPath())
-  estimate.setSourceImageSmoothing(self.source_smoothing)
-  estimate.setTemplateImageSmoothing(self.template_smoothing)
+    estimation_options.setTemplateWeightingImage(self.template_weighting.fullPath())
+  estimation_options.setSourceImageSmoothing(self.source_smoothing)
+  estimation_options.setTemplateImageSmoothing(self.template_smoothing)
   if self.affine_regularisation == "ICBM space template":
-    estimate.setAffineRegularisationToICBMSpaceTemplate()
+    estimation_options.setAffineRegularisationToICBMSpaceTemplate()
   elif self.affine_regularisation == "Average sized template":
-    estimate.setAffineRegularisationToAverageSizedTemplate()
+    estimation_options.setAffineRegularisationToAverageSizedTemplate()
   elif self.affine_regularisation == "No regularisation":
-    estimate.unsetAffineRegularisation()
+    estimation_options.unsetAffineRegularisation()
   else:
     raise ValueError("Unvalid choice for affine_regularisation")
 
-  estimate.setNonLinearFrequencyCutOff(self.frequency_cutoff)
-  estimate.setNonLinearIterations(self.iterations)
-  estimate.setNonLinearRegularisation(self.regularisation)
+  estimation_options.setNonLinearFrequencyCutOff(self.frequency_cutoff)
+  estimation_options.setNonLinearIterations(self.iterations)
+  estimation_options.setNonLinearRegularisation(self.regularisation)
 
-  estimate_and_write.replaceEstimateOptions(estimate)
-
-  writing = WritingOptions()
-  if self.preserve == "Preserve Concentrations":
-    writing.setPreserveToConcentrations()
-  elif self.preserve == "Preserve Amount":
-    writing.setPreserveToAmount()
-  else:
-    raise ValueError("Unvalid choice for preserve")
-
-  writing.setBoundingBox(numpy.array(self.bounding_box))
-  writing.setVoxelSize(self.voxel_size)
-
-  if self.interpolation == "Nearest neighbour":
-    writing.setInterpolationToNearestNeighbour()
-  elif self.interpolation == "Trilinear":
-    writing.setInterpolationToTrilinear()
-  elif self.interpolation == "2nd Degree B-Spline":
-    writing.setInterpolationTo2ndDegreeBSpline()
-  elif self.interpolation == "3rd Degree B-Spline":
-    writing.setInterpolationTo3rdDegreeBSpline()
-  elif self.interpolation == "4th Degree B-Spline":
-    writing.setInterpolationTo4thDegreeBSpline()
-  elif self.interpolation == "5th Degree B-Spline":
-    writing.setInterpolationTo5thDegreeBSpline()
-  elif self.interpolation == "6th Degree B-Spline":
-    writing.setInterpolationTo6thDegreeBSpline()
-  elif self.interpolation == "7th Degree B-Spline":
-    writing.setInterpolationTo7thDegreeBSpline()
-  else:
-    raise ValueError("Unvalid interpolation")
-
-  writing.setWrapping(self.wrappping[0], self.wrappping[1], self.wrappping[2])
-  writing.setFilenamePrefix(self.filename_prefix)
-
-  estimate_and_write.replaceWrintingOptions(writing)
+  estimate.replaceEstimateOptions(estimation_options)
 
   spm = validation()
-  spm.addModuleToExecutionQueue(estimate_and_write)
+  spm.addModuleToExecutionQueue(estimate)
   spm.setSPMScriptPath(self.batch_location.fullPath())
   output = spm.run()
   context.log(name, html=output)

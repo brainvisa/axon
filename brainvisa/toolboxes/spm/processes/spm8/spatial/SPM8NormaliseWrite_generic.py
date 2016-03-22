@@ -31,8 +31,8 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from brainvisa.processes import *
-from soma.spm.spm8.spatial.normalise import EstimateAndWrite
-from soma.spm.spm8.spatial.normalise.subject import SubjectToEstimateAndWrite
+from soma.spm.spm8.spatial.normalise import Write
+from soma.spm.spm8.spatial.normalise.subject import SubjectToWrite
 from soma.spm.spm8.spatial.normalise.writing_options import WritingOptions
 from soma.spm.spm8.spatial.normalise.estimation_options import EstimationOptions
 from soma.spm.spm_launcher import SPM8, SPM8Standalone
@@ -55,27 +55,14 @@ def validation():
 #------------------------------------------------------------------------------
 
 userLevel = 1
-name = 'spm8 - Normalise: Estimate & Write - generic'
+name = 'spm8 - Normalise: Write only - generic'
 
 subject_section = "subject options"
-estimation_section = "Estimation options"
 writing_section = "writing options"
 
 signature = Signature(
-  "source", ReadDiskItem("4D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image'], section=subject_section),
-  "source_weighting", ReadDiskItem("4D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image'], section=subject_section),
+  "sn_mat", ReadDiskItem("Matlab SPM script", "Matlab file", section="SPM outputs"),
   "images_to_write", ListOf(ReadDiskItem("4D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image']), section=subject_section),
-
-  "template", ReadDiskItem("4D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image'], section=estimation_section),
-  "template_weighting", ReadDiskItem("4D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image'], section=estimation_section),
-  "source_smoothing", Float(section=estimation_section),
-  "template_smoothing", Float(section=estimation_section),
-  "affine_regularisation", Choice("ICBM space template",
-                                  "Average sized template",
-                                  "No regularisation", section=estimation_section),
-  "frequency_cutoff", Float(section=estimation_section),
-  "iterations", Integer(section=estimation_section),
-  "regularisation", Float(section=estimation_section),
 
   "preserve", Choice("Preserve Concentrations",
                      "Preserve Amount",
@@ -103,22 +90,15 @@ signature = Signature(
 
   "filename_prefix", String(section="outputs"),
   "images_written", ListOf(WriteDiskItem("4D Volume", ["NIFTI-1 image", "SPM image", "MINC image"]), section="outputs"),
-  "sn_mat", WriteDiskItem("Matlab SPM script", "Matlab file", section="SPM outputs"),
   'batch_location', WriteDiskItem("Matlab SPM script", "Matlab script", section="default SPM outputs"),
 )
 def initialization(self):
-  self.setOptional("source_weighting", "template_weighting", "images_written", "sn_mat")
+  self.setOptional("images_written", "sn_mat")
   self.addLink(None, "filename_prefix", self.checkIfNotEmpty)
 
-  self.addLink("batch_location", "source", self.updateBatchPath)
+  self.addLink("batch_location", "sn_mat", self.updateBatchPath)
 
   #SPM default initialisation
-  self.source_smoothing = 8
-  self.template_smoothing = 0
-  self.affine_regularisation = "ICBM space template"
-  self.frequency_cutoff = 25
-  self.iterations = 16
-  self.regularisation = 1
   self.preserve = "Preserve Concentrations"
   self.bounding_box = [[-78, -112, -50],[78, 76, 85]]
   self.voxel_size = [2, 2, 2]
@@ -133,17 +113,15 @@ def checkIfNotEmpty(self, proc):
     pass
 
 def updateBatchPath(self, proc):
-  if self.source is not None:
-    directory_path = os.path.dirname(self.source.fullPath())
+  if self.sn_mat is not None:
+    directory_path = os.path.dirname(self.sn_mat.fullPath())
     return os.path.join(directory_path, 'spm8_normalise_EW_job.m')
 
 def execution( self, context ):
-  estimate_and_write = EstimateAndWrite()
+  write = Write()
 
-  subject = SubjectToEstimateAndWrite()
-  subject.setSourceImage(self.source.fullPath())
-  if self.source_weighting is not None:
-    subject.setSourceWeightingImage(self.source_weighting.fullPath())
+  subject = SubjectToWrite()
+  subject.setParameterFile(self.sn_mat.fullPath())
   subject.setImageListToWrite([diskitem.fullPath() for diskitem in self.images_to_write])
   if self.images_written:
     if len(self.images_to_write) == len(self.images_written):
@@ -152,71 +130,47 @@ def execution( self, context ):
       raise ValueError("images_to_write and images_written must have the same length")
   else:
     pass#SPM default outputs
-  if self.sn_mat is not None:
-    subject.setSnMatOutputPath(self.sn_mat.fullPath())
-  else:
-    pass#SPM default outputs
 
-  estimate_and_write.appendSubject(subject)
 
-  estimate = EstimationOptions()
-  estimate.setTemplateImage(self.template.fullPath())
-  if self.template_weighting is not None:
-    estimate.setTemplateWeightingImage(self.template_weighting.fullPath())
-  estimate.setSourceImageSmoothing(self.source_smoothing)
-  estimate.setTemplateImageSmoothing(self.template_smoothing)
-  if self.affine_regularisation == "ICBM space template":
-    estimate.setAffineRegularisationToICBMSpaceTemplate()
-  elif self.affine_regularisation == "Average sized template":
-    estimate.setAffineRegularisationToAverageSizedTemplate()
-  elif self.affine_regularisation == "No regularisation":
-    estimate.unsetAffineRegularisation()
-  else:
-    raise ValueError("Unvalid choice for affine_regularisation")
+  write.appendSubject(subject)
 
-  estimate.setNonLinearFrequencyCutOff(self.frequency_cutoff)
-  estimate.setNonLinearIterations(self.iterations)
-  estimate.setNonLinearRegularisation(self.regularisation)
-
-  estimate_and_write.replaceEstimateOptions(estimate)
-
-  writing = WritingOptions()
+  writing_options = WritingOptions()
   if self.preserve == "Preserve Concentrations":
-    writing.setPreserveToConcentrations()
+    writing_options.setPreserveToConcentrations()
   elif self.preserve == "Preserve Amount":
-    writing.setPreserveToAmount()
+    writing_options.setPreserveToAmount()
   else:
     raise ValueError("Unvalid choice for preserve")
 
-  writing.setBoundingBox(numpy.array(self.bounding_box))
-  writing.setVoxelSize(self.voxel_size)
+  writing_options.setBoundingBox(numpy.array(self.bounding_box))
+  writing_options.setVoxelSize(self.voxel_size)
 
   if self.interpolation == "Nearest neighbour":
-    writing.setInterpolationToNearestNeighbour()
+    writing_options.setInterpolationToNearestNeighbour()
   elif self.interpolation == "Trilinear":
-    writing.setInterpolationToTrilinear()
+    writing_options.setInterpolationToTrilinear()
   elif self.interpolation == "2nd Degree B-Spline":
-    writing.setInterpolationTo2ndDegreeBSpline()
+    writing_options.setInterpolationTo2ndDegreeBSpline()
   elif self.interpolation == "3rd Degree B-Spline":
-    writing.setInterpolationTo3rdDegreeBSpline()
+    writing_options.setInterpolationTo3rdDegreeBSpline()
   elif self.interpolation == "4th Degree B-Spline":
-    writing.setInterpolationTo4thDegreeBSpline()
+    writing_options.setInterpolationTo4thDegreeBSpline()
   elif self.interpolation == "5th Degree B-Spline":
-    writing.setInterpolationTo5thDegreeBSpline()
+    writing_options.setInterpolationTo5thDegreeBSpline()
   elif self.interpolation == "6th Degree B-Spline":
-    writing.setInterpolationTo6thDegreeBSpline()
+    writing_options.setInterpolationTo6thDegreeBSpline()
   elif self.interpolation == "7th Degree B-Spline":
-    writing.setInterpolationTo7thDegreeBSpline()
+    writing_options.setInterpolationTo7thDegreeBSpline()
   else:
     raise ValueError("Unvalid interpolation")
 
-  writing.setWrapping(self.wrappping[0], self.wrappping[1], self.wrappping[2])
-  writing.setFilenamePrefix(self.filename_prefix)
+  writing_options.setWrapping(self.wrappping[0], self.wrappping[1], self.wrappping[2])
+  writing_options.setFilenamePrefix(self.filename_prefix)
 
-  estimate_and_write.replaceWrintingOptions(writing)
+  write.replaceWrintingOptions(writing_options)
 
   spm = validation()
-  spm.addModuleToExecutionQueue(estimate_and_write)
+  spm.addModuleToExecutionQueue(write)
   spm.setSPMScriptPath(self.batch_location.fullPath())
   output = spm.run()
   context.log(name, html=output)
