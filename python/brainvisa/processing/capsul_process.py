@@ -130,7 +130,7 @@ class CapsulProcess(processes.Process):
         module = processes._processModules[self._id]
         capsul_process = getattr(module, 'capsul_process')
         if capsul_process:
-            from capsul.process import get_process_instance
+            from capsul.api import get_process_instance
             process = get_process_instance(capsul_process)
             self.set_capsul_process(process)
 
