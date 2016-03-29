@@ -290,7 +290,8 @@ signature = Signature(
   'bias_LDW_warped_unmodulated',
   WriteDiskItem('T1 MRI Bias Corrected', 'NIFTI-1 image',
                 requiredAttributes={'transformation':'none',
-                                    'warping_method':'low-dimensional'},
+                                    'warping_method':'low-dimensional',
+                                    'space':'mni'},
                 section=bias_correction_options_section),
   'bias_HDW_warped_unmodulated',
   WriteDiskItem('T1 MRI Bias Corrected', 'NIFTI-1 image',
@@ -301,7 +302,8 @@ signature = Signature(
   'bias_affine',
   WriteDiskItem('T1 MRI Bias Corrected', 'NIFTI-1 image',
                 requiredAttributes={'transformation':'affine',
-                                    'warping_method':'none'},
+                                    'warping_method':'none',
+                                    'space':'mni'},
                section=bias_correction_options_section),
 
   #PVE label image
@@ -407,14 +409,14 @@ def initialization(self):
   self.addLink(None, 'save_deformation_fields', self.updateSignatureAboutDeformationField)
   self.addLink(None, 'spatial_norm', self.updateSignatureAboutDeformationField)
 
-  self.addLink("batch_location", "grey_native", self.updateBatchPath)
-
+  self.addLink("batch_location", ("grey_native", "grey_HDW_warped_unmodulated", "spatial_norm"), self.updateBatchPath)
+  self.addLink("DF_transformation_matrix", ("grey_native", "grey_HDW_warped_unmodulated", "spatial_norm"), self.updateTransformMatrix)
 
   self.linkParameters("grey_native", ("t1mri", "TPM_template"), self.updateGreyNative )
-  self.linkParameters("grey_HDW_warped_unmodulated", ("grey_native", "DARTEL_template"), self.updateHDWGrey)
   self.linkParameters("grey_LDW_warped_unmodulated", "grey_native")
+  self.linkParameters("grey_HDW_warped_unmodulated", ("grey_native", "DARTEL_template"), self.updateHDWGrey)
   self.linkParameters("grey_LDW_warped_modulated", "grey_native")
-  self.linkParameters("grey_HDW_warped_modulated", "grey_native")
+  self.linkParameters("grey_HDW_warped_modulated", "grey_HDW_warped_unmodulated")
   self.linkParameters("grey_dartel_imported", "grey_native")
 
   self.linkParameters("white_native", "grey_native" )
@@ -446,7 +448,7 @@ def initialization(self):
   self.linkParameters("inverse_LDW_field", "grey_native" )
   self.linkParameters("forward_HDW_field", "grey_HDW_warped_unmodulated" )
   self.linkParameters("inverse_HDW_field", "grey_HDW_warped_unmodulated" )
-  self.linkParameters("DF_transformation_matrix", "grey_native" )
+  #self.linkParameters("DF_transformation_matrix", "grey_native" )
   self.linkParameters("GM_WM_CSF_volumes_txt", "grey_native" )
 
   #SPM default initialisation
@@ -675,10 +677,25 @@ def updateT1MRIBiasCorrectedHDW(self, proc, dummy):
   else:
     return None
 
-def updateBatchPath(self, proc):
-  if self.grey_native is not None:
-    directory_path = os.path.dirname(self.grey_native.fullPath())
-    return os.path.join(directory_path, 'spm8_VBM_segmentation_job.m')
+def updateBatchPath(self, proc, dummy, norm):
+  if self.spatial_norm == "Low-dimensional: SPM default":
+    if self.grey_native is not None:
+      directory_path = os.path.dirname(self.grey_native.fullPath())
+      return os.path.join(directory_path, 'spm8_VBM_segmentation_job.m')
+  elif self.spatial_norm == "High-dimensional: Dartel":
+    if self.grey_HDW_warped_unmodulated is not None:
+      directory_path = os.path.dirname(self.grey_HDW_warped_unmodulated.fullPath())
+      return os.path.join(directory_path, 'spm8_VBM_segmentation_job.m')
+
+def updateTransformMatrix(self, proc, dummy, norm):
+  if self.spatial_norm == "Low-dimensional: SPM default":
+    if self.grey_native is not None:
+      directory_path = os.path.dirname(self.grey_native.fullPath())
+      return os.path.join(directory_path, 'native_to_mni_matrix_transform.mat')
+  elif self.spatial_norm == "High-dimensional: Dartel":
+    if self.grey_HDW_warped_unmodulated is not None:
+      directory_path = os.path.dirname(self.grey_HDW_warped_unmodulated.fullPath())
+      return os.path.join(directory_path, 'native_to_mni_matrix_transform.mat')
 
 def execution( self, context ):
   context.runProcess('SPM8VBMSegmentation_generic',
