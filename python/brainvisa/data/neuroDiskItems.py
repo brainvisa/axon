@@ -807,17 +807,31 @@ class DiskItem(QObject):
 
   def isWriteable( self ):
     """
-    Returns True if all the files associated to this diskItem exist and are readable and writable.
+    Returns True if all the files associated to this diskItem which exist are readable and writable
+    and if they do not exist if the parent directories exist and are writable and executable.
     """
     result = 1
     for p in self.fullPaths():
-      if not os.access( p, os.F_OK + os.R_OK + os.W_OK ):
+      if os.access( p, os.F_OK ):
+        if not os.access( p, os.R_OK + os.W_OK ):
+          # Check that path contains a query string and remove it
+          p2 = remove_query_string( p )
+          if p == p2 or not os.access( p2, os.F_OK + os.R_OK + os.W_OK ):
+            result = 0
+            break
+      else:
         # Check that path contains a query string and remove it
         p2 = remove_query_string( p )
-        if p == p2 or not os.access( p2, os.F_OK + os.R_OK ):
-          result = 0
-          break
-          
+        if p == p2 or not os.access( p2, os.F_OK ):
+          # Check if the parent directory is writable for the inexistant files
+          p_dir = os.path.dirname( p )
+          if not os.access( p_dir, os.W_OK + os.X_OK ):
+            # Check that path contains a query string and remove it
+            p_dir2 = remove_query_string( p_dir )
+            if p_dir == p_dir2 or not os.access( p_dir2, os.W_OK + os.X_OK ):
+              result = 0
+              break
+    
     return result
 
 
