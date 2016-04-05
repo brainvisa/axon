@@ -16,7 +16,7 @@ DARTEL_directory = (
   '<template>_{step}_HDW_DARTEL', SetType('TPM HDW DARTEL created template'),
 )
 
-insert( 'analyzes/{processing}', 'DARTEL_{template}', SetType('DARTEL analysis directory'), apply( SetContent, DARTEL_directory))
+insert( 'analyzes/DARTEL/{processing}', 'DARTEL_{template}', SetType('DARTEL analysis directory'), apply( SetContent, DARTEL_directory))
 
 subject_groups = (
   '{modality}_group', SetContent(
