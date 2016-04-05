@@ -49,9 +49,9 @@ hierarchy = (
     'trash', #directory containing files that must be deleted
     'analyzes',
     SetContent(
-      '{analysis}', SetType( 'Analysis Dir' ),
-      SetContent(# Set Content must be present even if it is empty, otherwise it is impossible to insert something in subject directory
-      ),
+      #'{analysis}', SetType( 'Analysis Dir' ),#WARNING : all directory after analyzes was catch by it
+      #SetContent(# Set Content must be present even if it is empty, otherwise it is impossible to insert something in subject directory
+      #),
     ),
     'snapshots', SetType( 'Snapshots Dir'),
      SetContent(# Set Content must be present even if it is empty, otherwise it is impossible to insert something in subject directory
@@ -72,9 +72,4 @@ hierarchy = (
     ),
   ),
 )
-
-# analysis
-
-insert( 'analyzes/',
-  '{analysis}', SetType( 'Analysis Dir' ), SetContent(),) # SetContent() because it is a directory
 
