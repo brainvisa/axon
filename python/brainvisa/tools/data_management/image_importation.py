@@ -124,7 +124,10 @@ class Importer:
             open(output_referential_filename, 'w').write(
                 'attributes = ' + repr(ref_dict))
             ominf = output_filename + ".minf"
-            minf_content = minf.readMinf(ominf)[0]
+            if os.path.exists(ominf):
+                minf_content = minf.readMinf(ominf)[0]
+            else:
+                minf_content = {}
             minf_content['referential'] = ouuid
             open(ominf, 'w').write('attributes = ' + repr(minf_content))
 
