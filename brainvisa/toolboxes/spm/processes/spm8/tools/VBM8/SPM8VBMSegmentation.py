@@ -365,7 +365,7 @@ signature = Signature(
                 requiredAttributes = {'direction':'inverse',
                                       'warping_method':'high-dimensional'},
                 section=deformation_field),
-  'DF_transformation_matrix', WriteDiskItem('MatDefField T1 MRI from Native to Mni', 'Matlab file', section=deformation_field),#TODO change this type
+  'DF_transformation_matrix', WriteDiskItem('Matlab SPM file', 'Matlab file', section=deformation_field),
 
   #pfile.txt: GM, WM and CSF volume
   'GM_WM_CSF_volumes_txt', WriteDiskItem('Estimate T1 MRI raw volumes', 'Text file', section='default SPM outputs'),
@@ -448,7 +448,6 @@ def initialization(self):
   self.linkParameters("inverse_LDW_field", "grey_native" )
   self.linkParameters("forward_HDW_field", "grey_HDW_warped_unmodulated" )
   self.linkParameters("inverse_HDW_field", "grey_HDW_warped_unmodulated" )
-  #self.linkParameters("DF_transformation_matrix", "grey_native" )
   self.linkParameters("GM_WM_CSF_volumes_txt", "grey_native" )
 
   #SPM default initialisation

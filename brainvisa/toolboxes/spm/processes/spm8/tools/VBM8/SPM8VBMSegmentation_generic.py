@@ -391,10 +391,15 @@ def updateSignatureFieldToShow(self, field_to_check, field_to_modified):
     self.setEnable(field_to_modified)
   self.changeSignature(self.signature)
 #-----------------------------------------------------------------------------------
-def updateBatchPath(self, proc):
-  if self.grey_native is not None:
-    directory_path = os.path.dirname(self.grey_native.fullPath())
-    return os.path.join(directory_path, 'spm8_VBM_segmentation_job.m')
+def updateBatchPath(self, proc, dummy, norm):
+  if self.spatial_norm == "Low-dimensional: SPM default":
+    if self.grey_native is not None:
+      directory_path = os.path.dirname(self.grey_native.fullPath())
+      return os.path.join(directory_path, 'spm8_VBM_segmentation_job.m')
+  elif self.spatial_norm == "High-dimensional: Dartel":
+    if self.grey_HDW_warped_unmodulated is not None:
+      directory_path = os.path.dirname(self.grey_HDW_warped_unmodulated.fullPath())
+      return os.path.join(directory_path, 'spm8_VBM_segmentation_job.m')
 
 def execution( self, context ):
   context.warning('The execution time is approximately 8 min')
