@@ -4360,15 +4360,17 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
     NewProcess.module = processInfo.module
 
     # Process validation
-    if not ignoreValidation:
-      v = getattr( processModule, 'validation', None )
-      if v is not None:
-        try:
-          v()
-        except Exception, e:
-          import codecs
+    valid = True
+    v = getattr( processModule, 'validation', None )
+    if v is not None:
+      try:
+        v()
+      except Exception, e:
+        if not ignoreValidation:
           processInfo.valid=False
           raise ValidationError(HTMLMessage("The process <em>"+relative_path(processInfo.fileName, neuroConfig.toolboxesDir)+"</em> is not available: <b>"+unicode(e)+"</b>"))
+        else:
+          valid = False
 
     oldProcess = _processes.get( NewProcess._id.lower() )
     if oldProcess is not None:
@@ -4380,7 +4382,7 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
         setattr( oldProcess, n, getattr( NewProcess, n ).im_func )
       oldProcess._fileTime = NewProcess._fileTime
 
-    if not ignoreValidation:
+    if valid:
       _processes[ processInfo.id.lower() ] = NewProcess
     result = NewProcess
 
@@ -4392,7 +4394,7 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
       d = _converters.setdefault( dest, {} )
       oldc = d.get( source )
       if oldc:
-        oldproc = getProcess( oldc )
+        oldproc = _processes.get(oldc)
         oldpriority = 0
         if oldproc:
           oldpriority = getattr( oldproc, 'rolePriority', 0 )
