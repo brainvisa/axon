@@ -3870,16 +3870,25 @@ def getProcessFromExecutionNode( node ):
     return SelectionProcess( node.name(), node.children() )
 
 #----------------------------------------------------------------------------
-def getProcessInstance( processIdClassOrInstance ):
+def getProcessInstance( processIdClassOrInstance, ignoreValidation=False ):
   """
   Gets an instance of the process given in parameter.
 
-  :param processIdClassOrInstance: a process id, name, class, instance, execution node, or a the name of a file containing a backup copy of a process.
-  :returns: an instance of the :py:class:`NewProcess` class associated to the described process.
+  Parameters
+  ----------
+  processIdClassOrInstance: a process id, name, class, instance, execution node, or a the name of a file containing a backup copy of a process.
+  ignoreValidation: bool (optional)
+      if True, a validation failure will not prevent from building an instance
+      of the process.
+
+  Returns
+  -------
+  an instance of the :py:class:`NewProcess` class associated to the described process.
   """
   if isinstance( processIdClassOrInstance, weakref.ProxyType ):
     processIdClassOrInstance = copy.copy( processIdClassOrInstance )
-  result = getProcess( processIdClassOrInstance )
+  result = getProcess(processIdClassOrInstance,
+                      ignoreValidation=ignoreValidation)
   if isinstance( processIdClassOrInstance, Process ):
     if result is processIdClassOrInstance or result is processIdClassOrInstance.__class__:
       result = processIdClassOrInstance
@@ -4382,7 +4391,7 @@ def readProcess( fileName, category=None, ignoreValidation=False, toolbox='brain
         setattr( oldProcess, n, getattr( NewProcess, n ).im_func )
       oldProcess._fileTime = NewProcess._fileTime
 
-    if valid:
+    if valid or neuroConfig.ignoreValidation:
       _processes[ processInfo.id.lower() ] = NewProcess
     result = NewProcess
 

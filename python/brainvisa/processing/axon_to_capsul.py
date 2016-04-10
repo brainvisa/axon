@@ -87,9 +87,10 @@ def diskitem_options(diskitem):
     extre = re.compile('^.*\|[^*]*\*(.*)$')
     exts = []
     options = []
-    formats = diskitem.formats
+    formats = sorted(diskitem.formats)
     if diskitem.preferredFormat:
-        formats = [diskitem.preferredFormat] + list(diskitem.formats)
+        formats = [diskitem.preferredFormat] \
+            + [f for f in formats if f!= diskitem.preferredFormat]
     for format in formats:
         f = neuroDiskItems.getFormat(format)
         for pat in f.patterns.patterns:
@@ -937,7 +938,7 @@ def axon_to_capsul(proc, outfile, module_name_prefix=None,
         p = proc
     else:
         procid = proc
-        p = procbv.getProcessInstance(procid)
+        p = procbv.getProcessInstance(procid, ignoreValidation=True)
 
     if capsul_process_name is None:
         capsul_process_name = procid
@@ -1000,7 +1001,7 @@ def get_subprocesses(procid):
     '''
     subprocs = set()
     if not isinstance(procid, procbv.Process):
-        proc = procbv.getProcessInstance(procid)
+        proc = procbv.getProcessInstance(procid, ignoreValidation=True)
     else:
         proc = procid
     enode = proc.executionNode()
@@ -1107,7 +1108,8 @@ def axon_to_capsul_main(argv):
     print 'use_process_names:', use_process_names
 
     done_processes = set()
-    todo = zip([procbv.getProcessInstance(p) for p in options.process],
+    todo = zip([procbv.getProcessInstance(p, ignoreValidation=True)
+                for p in options.process],
         options.output)
     if options.subprocess:
         for proc, outfile in todo:
