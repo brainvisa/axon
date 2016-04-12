@@ -2861,6 +2861,12 @@ class ExecutionContext( object ):
         If False, force execution within the current brainvisa environment.
         If None (default), guess if the executed command path is external to
         the main brainvisa path.
+    env: dict
+        Environment variables to be set. Contrarily to subprocess.Popen, they
+        do not completely replace the current environment variables, but only
+        add / replace the given variables.
+        If both env and nativeEnv keyword arguments are used, nativeEnv acts
+        after env, thus native environment has priority over env.
 
     *Example*
 
@@ -2878,10 +2884,11 @@ class ExecutionContext( object ):
     self._stderr = kwargs.get( 'stderr', None )
     ignoreReturnValue = kwargs.get( 'ignoreReturnValue', 0 )
     nativeEnv = kwargs.get('nativeEnv', None)
+    env = kwargs.get('env', None)
     command = [str(i) for i in args]
 
     ret = self._system(command, self._systemStdout, self._systemStderr,
-                       nativeEnv=nativeEnv)
+                       nativeEnv=nativeEnv, env=env)
     self._stdoutInContext = old_stdoutInContext
     self._stdout = None
     self._stderr = None
@@ -2938,7 +2945,7 @@ class ExecutionContext( object ):
       logFile.flush()
 
   def _system(self, command, stdoutAction=None, stderrAction=None,
-              nativeEnv=None):
+              nativeEnv=None, env=None):
     self.checkInterruption()
     stackTop = self._stackTop()
 
@@ -2976,6 +2983,8 @@ class ExecutionContext( object ):
   ##      self.write( '<img alt="" src="' + os.path.join( neuroConfig.iconPath, 'icon_system.png' ) + '">' + c.commandName() + '<p>' )
 
       # Set environment for the command
+      if env is not None:
+        c.setEnvironment(env)
       if nativeEnv or \
           (nativeEnv is None and
            not commandName.startswith(os.path.dirname(neuroConfig.mainPath))):
