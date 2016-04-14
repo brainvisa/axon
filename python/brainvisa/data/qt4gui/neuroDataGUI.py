@@ -435,6 +435,8 @@ class OpenChoiceEditor( QComboBox, DataEditor ):
       self.setObjectName( name )
     self.setEditable(True)
     self.setSizeAdjustPolicy(QComboBox.AdjustToContents)
+    # when choices list is empty, avoid being too small
+    self.setMinimumWidth(150)
     self.parameter = parameter
     for n, v in self.parameter.values:
       self.addItem( n )
