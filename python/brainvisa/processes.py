@@ -188,7 +188,7 @@ import time
 import calendar
 
 from soma.sorted_dictionary import SortedDictionary
-from soma.functiontools import numberOfParameterRange, hasParameter
+from soma.functiontools import numberOfParameterRange, hasParameter, partial
 from soma.minf.api import readMinf, writeMinf, createMinfWriter, iterateMinf, minfFormat
 from soma.minf.xhtml import XHTML
 from soma.minf.xml_tags import xhtmlTag
@@ -844,19 +844,80 @@ class Parameterized(object):
         if changed:
             self._parameterHasChanged(name, newValue)
 
-    def linkParameters(self, destName, sources, function=None):
+    @staticmethod
+    def _explicit_default_link_function(parameter, src_param, parameterized,
+                                        source, linked_attributes={}):
+        value = getattr(source, src_param)
+        print '_explicit_default_link_function, init value:', value
+        if linked_attributes:
+            # linked_attributes only works on DiskItem objects which have
+            # attributes and their signature has the findValue() method
+            attr_values = {}
+            for dst_attr, src_attr in linked_attributes.iteritems():
+                src_spl = src_attr.split(':')
+                if len(src_spl) >= 2:
+                    # source is "param:attribute", get value in source.param
+                    src_value = getattr(source, src_spl[0])
+                    src_attr= src_spl[-1]
+                else:
+                    src_value = value
+                if src_value is None:
+                    return None
+                attr_values[dst_attr] = src_value.get(src_attr)
+            print 'linked atts:', attr_values
+            print 'param:', parameter
+            new_value = parameterized.signature[parameter].findValue(
+                value, requiredAttributes=attr_values)
+            print 'new_value:', new_value
+            return new_value
+        return value
+
+    def linkParameters(self, destName, sources, function=None,
+                       linked_attributes={}):
         """
-        Links the parameters. When one of the `sources` parameters change, the value of `destName` parameter may change.
-        It is possible to give a specific link function that will be called when the link is applied but it is not mandatory, a default function exists according to the type of parameter.
+        Links the parameters. When one of the `sources` parameters change, the
+        value of `destName` parameter may change.
+        It is possible to give a specific link function that will be called
+        when the link is applied but it is not mandatory, a default function
+        exists according to the type of parameter.
 
         Parameters
         ----------
         destName: string
-            name of the parameter that may change when the sources parameters change. If None, the link function will be called every time the source parameters change.
+            name of the parameter that may change when the sources parameters
+            change. If None, the link function will be called every time the
+            source parameters change.
         sources: string, tuple or list of strings
-            one or several parameters, whose modification will activate the link function.
+            one or several parameters, whose modification will activate the
+            link function.
         function: function
-            specific function to call instead of the default one when the link is activated. The signature of the function is function(self, process), returning destination
+            specific function to call instead of the default one when the link
+            is activated. The signature of the function is function(self,
+            process), returning destination
+        linked_attributes: dict (optional)
+            A dictionary of mandatory linked attributes. This is only
+            meaningful for DiskItem parameters, which have attributes.
+            Attributes listed here will be added as requiredAttributes to
+            ReadDiskItem.findValue(). The dict maps destination attributes
+            from source parameters attributes values.
+            Ex:
+            * {'dst_attrib': 'src_attrib'}
+              will get in the source parameter value the attribute
+              'src_attrib', and its value will be forced as the value of the
+              'dst_attrib' attribute of the destination parameter.
+            * {'dst_attrib1': 'src_param1:src_attrib1',
+               'dst_attrib2': 'src_param2:src_attrib2'}
+              will get the attribute value of 'src_attrib1' in source parameter
+              'src_param1', and set it as the value of 'dst_attrib1' of the
+              destination parameter. Same for 'dst_attrib2', but the value will
+              be taken from another source parameter.
+            As values are passed as requiredAttributes, they are thus
+            mandatory in the destination parameter value, and are "stronger"
+            than standard links. In this respect, it can be meaningful to
+            get an attribute which has already the same name/value in the
+            source parameter:
+            {'my_attrib': 'my_attrib'} will just reject values with
+            non-matching attribute 'my_attrib' (compared to a standard link).
 
         """
         if type(sources) is types.StringType:
@@ -870,12 +931,22 @@ class Parameterized(object):
                     HTMLMessage(_t_('<em>%s</em> is not a valid parameter name') % p))
         if function is None:
             function = getattr(
-                self.signature[destName], 'defaultLinkParametersFunction', None)
+                self.signature[destName], 'defaultLinkParametersFunction',
+                None)
         for p in sourcesList:
             if destName is None:
                 self._links.setdefault(p, []).append(
                     (None, None, function, False, False))
             else:
+                if linked_attributes:
+                    if function is None:
+                        function \
+                            = partial(self._explicit_default_link_function,
+                                      destName, p,
+                                      linked_attributes=linked_attributes)
+                    else:
+                        function = partial(function,
+                                           linked_attributes=linked_attributes)
                 self._links.setdefault(p, []).append(
                     (weakref.proxy(self), destName, function, False, False))
 
