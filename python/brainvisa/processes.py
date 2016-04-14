@@ -2859,7 +2859,7 @@ class ExecutionContext( object ):
         do not completely replace the current environment variables, but only
         add / replace the given variables.
         If both env and nativeEnv keyword arguments are used, nativeEnv acts
-        after env, thus native environment has priority over env.
+        before env, thus native environment can be overriden by env.
 
     *Example*
 
@@ -2970,14 +2970,17 @@ class ExecutionContext( object ):
   ##      self.write( '<img alt="" src="' + os.path.join( neuroConfig.iconPath, 'icon_system.png' ) + '">' + c.commandName() + '<p>' )
 
       # Set environment for the command
-      if env is not None:
-        c.setEnvironment(env)
-      if nativeEnv or \
-          (nativeEnv is None and
-           not commandName.startswith(os.path.dirname(neuroConfig.mainPath))):
-        # external command
-        if neuroConfig.brainvisaSysEnv:
-          c.setEnvironment(neuroConfig.brainvisaSysEnv.getVariables())
+      if env is not None or nativeEnv is not None:
+        own_env = {}
+        if nativeEnv or \
+            (nativeEnv is None and
+            not commandName.startswith(os.path.dirname(neuroConfig.mainPath))):
+          # external command
+          if neuroConfig.brainvisaSysEnv:
+            own_env.update(neuroConfig.brainvisaSysEnv.getVariables())
+        if env is not None:
+          own_env.update(env)
+        c.setEnvironment(own_env)
 
       if stdoutAction is not None:
         if stdoutAction is self._systemStdout:
