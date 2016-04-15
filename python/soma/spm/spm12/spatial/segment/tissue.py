@@ -8,15 +8,15 @@ class Tissue(Tissue_virtual):
     self.gaussian_number = 'Inf'
     self.native_tissue = [1, 0]
     self.warped_tissue = [0, 0]
-  
+
     self.native_tissue_prefix = 'c'
     self.dartel_tissue_prefix = 'rc'
     self.warped_unmodulated_tissue_prefix = 'wc'
     self.warped_modulated_tissue_prefix = 'mwc'
-  
-    self.native_tissue_path = None
-    self.dartel_tissue_path = None
-    self.warped_unmodulated_tissue_path = None
-    self.warped_modulated_tissue_path = None
-    
+
+    self.native_tissue_path_list = []
+    self.dartel_tissue_path_list = []
+    self.warped_unmodulated_tissue_path_list = []
+    self.warped_modulated_tissue_path_list = []
+
     self._SPM_output_prefix = None#changing it is forbidden by user, only TissueContainer change it

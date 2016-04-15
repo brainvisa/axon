@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsStrOrUnicode
+from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed
 from soma.spm.spm_batch_maker_utils import moveSPMPath, convertlistToSPMString
+from soma.spm.spm_batch_maker_utils import convertPathListToSPMBatchString
 
 class Channel():
   """
@@ -10,20 +11,19 @@ class Channel():
   (same  position,  size, voxel dims etc..). The different channels can be treated differently in
   terms  of inhomogeneity correction etc. You may wish to correct some channels and save
   the corrected images, whereas you may wish not to do this for other channels.
-  """    
-  @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
-  def setVolumePath(self, volume_path):
+  """
+  @checkIfArgumentTypeIsAllowed(list, 1)
+  def setVolumePathList(self, volume_path_list):
     """
-    --WARNING : Actually the case of only one scan is wrapped on this python module...--
     Select  scans  from  this  channel for processing. If multiple channels are used (eg
     T1 & T2), then the same order of subjects must be specified for each channel and
     they must be in register (same position, size, voxel dims etc..).
     """
-    self.volume_path = volume_path
-  
-  def getVolumePath(self):
-    return self.volume_path
-    
+    self.volume_path_list = volume_path_list
+
+  def getVolumePathList(self):
+    return self.volume_path_list
+
   def unsetBiasRegularisation(self):
     """
     MR  images  are  usually  corrupted  by  a  smooth,  spatially  varying artifact that
@@ -48,7 +48,7 @@ class Channel():
     there is very little bias in your data, so it does not try to model it.
     """
     self.bias_regularisation = 0
-    
+
   def setBiasRegularisationToExtremelyLight(self):
     """
     MR  images  are  usually  corrupted  by  a  smooth,  spatially  varying artifact that
@@ -73,7 +73,7 @@ class Channel():
     there is very little bias in your data, so it does not try to model it.
     """
     self.bias_regularisation = 0.00001
-    
+
   def setBiasRegularisationToVeryLight(self):
     """
     MR  images  are  usually  corrupted  by  a  smooth,  spatially  varying artifact that
@@ -98,7 +98,7 @@ class Channel():
     there is very little bias in your data, so it does not try to model it.
     """
     self.bias_regularisation = 0.0001
-    
+
   def setBiasRegularisationToLight(self):
     """
     MR  images  are  usually  corrupted  by  a  smooth,  spatially  varying artifact that
@@ -123,7 +123,7 @@ class Channel():
     there is very little bias in your data, so it does not try to model it.
     """
     self.bias_regularisation = 0.001
-    
+
   def setBiasRegularisationToMedium(self):
     """
     MR  images  are  usually  corrupted  by  a  smooth,  spatially  varying artifact that
@@ -148,7 +148,7 @@ class Channel():
     there is very little bias in your data, so it does not try to model it.
     """
     self.bias_regularisation = 0.01
-    
+
   def setBiasRegularisationToHeavy(self):
     """
     MR  images  are  usually  corrupted  by  a  smooth,  spatially  varying artifact that
@@ -173,7 +173,7 @@ class Channel():
     there is very little bias in your data, so it does not try to model it.
     """
     self.bias_regularisation = 0.1
-    
+
   def setBiasRegularisationToVeryHeavy(self):
     """
     MR  images  are  usually  corrupted  by  a  smooth,  spatially  varying artifact that
@@ -198,7 +198,7 @@ class Channel():
     there is very little bias in your data, so it does not try to model it.
     """
     self.bias_regularisation = 1
-    
+
   def setBiasRegularisationToExtremelyHeavy(self):
     """
     MR  images  are  usually  corrupted  by  a  smooth,  spatially  varying artifact that
@@ -223,7 +223,7 @@ class Channel():
     there is very little bias in your data, so it does not try to model it.
     """
     self.bias_regularisation = 10
-    
+
   def unsetBiasFWHM(self):
     """
     FWHM  of  Gaussian  smoothness of bias. If your intensity non-uniformity is very
@@ -391,7 +391,7 @@ class Channel():
     faster for smoother intensity non-uniformities.
     """
     self.bias_FWHM = '150'
-    
+
   def saveBiasCorrected(self):
     """
     This  is  the  option  to  save  a  bias  corrected  version of your images from this
@@ -402,7 +402,7 @@ class Channel():
     more uniform intensities within the different types of tissues.
     """
     self.save_bias_corrected = [0, 1]
-    
+
   def discardBiasCorrected(self):
     """
     This  is  the  option  to  save  a  bias  corrected  version of your images from this
@@ -413,7 +413,7 @@ class Channel():
     more uniform intensities within the different types of tissues.
     """
     self.save_bias_corrected = [0, 0]
-    
+
   def saveBiasField(self):
     """
     This  is  the  option  to  save  a  bias  corrected  version of your images from this
@@ -424,7 +424,7 @@ class Channel():
     more uniform intensities within the different types of tissues.
     """
     self.save_bias_corrected = [1, 0]
-    
+
   def saveBiasFieldAndBiasCorrected(self):
     """
     This  is  the  option  to  save  a  bias  corrected  version of your images from this
@@ -435,32 +435,36 @@ class Channel():
     more uniform intensities within the different types of tissues.
     """
     self.save_bias_corrected = [1, 1]
-    
-  @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
-  def setBiasCorrectedPath(self, output_path):
-    self.bias_corrected_path = output_path
-    
-  @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
-  def setBiasFieldPath(self, output_path):
-    self.bias_field_path = output_path
-    
+
+  @checkIfArgumentTypeIsAllowed(list, 1)
+  def setBiasCorrectedPathList(self, output_path_list):
+    self.bias_corrected_path_list = output_path_list
+
+  @checkIfArgumentTypeIsAllowed(list, 1)
+  def setBiasFieldPath(self, output_path_list):
+    self.bias_field_path_list = output_path_list
+
   def getStringListForBatch(self):
-    if self.volume_path is not None:
+    if self.volume_path_list:
       batch_list = []
-      batch_list.append("vols =  {'%s,1'};" % self.volume_path)
+      batch_list.append("vols = {%s};" % convertPathListToSPMBatchString(self.volume_path_list))
       batch_list.append("biasreg = %g;" % self.bias_regularisation)
       batch_list.append("biasfwhm = %s;" % self.bias_FWHM)
       batch_list.append("write = %s;" % convertlistToSPMString(self.save_bias_corrected))
-      return batch_list  
+      return batch_list
     else:
       raise ValueError('Channel volume is required')
-    
+
   def moveBiasSavingIfNeeded(self):
-    if self.bias_corrected_path is not None:
-      moveSPMPath(self.volume_path, 
-                  self.bias_corrected_path, 
-                  prefix=self.bias_corrected_prefix)
-    if self.bias_field_path is not None:
-      moveSPMPath(self.volume_path, 
-                  self.bias_field_path, 
-                  prefix=self.bias_field_prefix)
+    if self.bias_corrected_path_list:
+      for volume_path, bias_corrected_path in zip(self.volume_path_list,
+                                                  self.bias_corrected_path_list):
+        moveSPMPath(volume_path,
+                    bias_corrected_path,
+                    prefix=self.bias_corrected_prefix)
+    if self.bias_field_path_list:
+      for volume_path, bias_field_path in zip(self.volume_path_path,
+                                              self.bias_field_path_list):
+        moveSPMPath(volume_path,
+                    bias_field_path,
+                    prefix=self.bias_field_prefix)

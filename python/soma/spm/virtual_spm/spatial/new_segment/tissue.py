@@ -39,11 +39,11 @@ class Tissue():
     normalisation and segmentation to be combined into the same model.
     """
     self.tissue_probility_map_path = tissue_probility_map_path
-            
-  @checkIfArgumentTypeIsAllowed(int, 1)  
+
+  @checkIfArgumentTypeIsAllowed(int, 1)
   def setTissueProbilityDimension(self, tissue_probility_map_dimension_number):
     self.tissue_probility_map_dimension_number = tissue_probility_map_dimension_number
-    
+
   @checkIfArgumentTypeIsAllowed(int, 1)
   def setGaussianNumber(self, gaussian_number):
     """
@@ -76,10 +76,10 @@ class Tissue():
       self.gaussian_number = str(gaussian_number)
     else:
       raise ValueError('Gaussian number must be between 1 and 8')
-  
+
   def unsetGaussian(self):
     self.gaussian_number = 'Inf'
-    
+
   def setNativeTissueNativeSpace(self):
     """
     The  native space option allows you to produce a tissue class image (c*) that is in
@@ -87,7 +87,7 @@ class Tissue():
     can be used with the DARTEL toolbox (rc*).
     """
     self.native_tissue = [1, 0]
-      
+
   def setNativeTissueDARTELImported(self):
     """
     The  native space option allows you to produce a tissue class image (c*) that is in
@@ -95,7 +95,7 @@ class Tissue():
     can be used with the DARTEL toolbox (rc*).
     """
     self.native_tissue = [0, 1]
-      
+
   def setNativeTissueNativeSpaceAndDARTELImported(self):
     """
     The  native space option allows you to produce a tissue class image (c*) that is in
@@ -103,7 +103,7 @@ class Tissue():
     can be used with the DARTEL toolbox (rc*).
     """
     self.native_tissue = [1, 1]
-      
+
   def unsetNativeTissue(self):
     """
     The  native space option allows you to produce a tissue class image (c*) that is in
@@ -111,7 +111,7 @@ class Tissue():
     can be used with the DARTEL toolbox (rc*).
     """
     self.native_tissue = [0, 0]
-    
+
   def setWarpedTissueModulated(self):
     """
     You  can  produce  spatially  normalised  versions  of the tissue class - both with
@@ -143,7 +143,7 @@ class Tissue():
       be a good thing to do.
     """
     self.warped_tissue = [0, 1]
-      
+
   def setWarpedTissueUnmodulated(self):
     """
     You  can  produce  spatially  normalised  versions  of the tissue class - both with
@@ -175,7 +175,7 @@ class Tissue():
       be a good thing to do.
     """
     self.warped_tissue = [1, 0]
-      
+
   def setWarpedTissueModulatedAndUnmodulated(self):
     """
     You  can  produce  spatially  normalised  versions  of the tissue class - both with
@@ -207,7 +207,7 @@ class Tissue():
       be a good thing to do.
     """
     self.warped_tissue = [1, 1]
-      
+
   def unsetWarpedTissue(self):
     """
     You  can  produce  spatially  normalised  versions  of the tissue class - both with
@@ -239,54 +239,62 @@ class Tissue():
       be a good thing to do.
     """
     self.warped_tissue = [0, 0]
-    
-  @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
-  def setNativeOutputPath(self, output_path):
-    self.native_tissue_path = output_path
-    
-  @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
-  def setDartelOutputPath(self, output_path):
-    self.dartel_tissue_path = output_path
-    
-  @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
-  def setWarpedModulatedOutputPath(self, output_path):
-    self.warped_modulated_tissue_path = output_path
-    
-  @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
-  def setWarpedUnmodulatedOutputPath(self, output_path):
-    self.warped_unmodulated_tissue_path = output_path
-   
+
+  @checkIfArgumentTypeIsAllowed(list, 1)
+  def setNativeOutputPathList(self, output_path_list):
+    self.native_tissue_path_list = output_path_list
+
+  @checkIfArgumentTypeIsAllowed(list, 1)
+  def setDartelOutputPathList(self, output_path_list):
+    self.dartel_tissue_path_list = output_path_list
+
+  @checkIfArgumentTypeIsAllowed(list, 1)
+  def setWarpedModulatedOutputPathList(self, output_path_list):
+    self.warped_modulated_tissue_path_list = output_path_list
+
+  @checkIfArgumentTypeIsAllowed(list, 1)
+  def setWarpedUnmodulatedOutputPathList(self, output_path_list):
+    self.warped_unmodulated_tissue_path_list = output_path_list
+
   @checkIfArgumentTypeIsAllowed(int, 1)
   def setTissueIndex(self, tissue_index):
     self.tissue_index = tissue_index
-  
+
   def getStringListForBatch(self):
-    if self.tissue_probility_map_path is not None:  
+    if self.tissue_probility_map_path is not None:
       batch_list = []
       batch_list.append("tpm =  {'%s,%i'};" % (self.tissue_probility_map_path,self.tissue_probility_map_dimension_number))
       batch_list.append('ngaus = %s;' % self.gaussian_number)
       batch_list.append('native = %s;' % convertlistToSPMString(self.native_tissue))
       batch_list.append('warped = %s;' % convertlistToSPMString(self.warped_tissue))
-      return batch_list  
+      return batch_list
     else:
       raise ValueError('Tissue probability map is required')
-    
-  @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
-  def moveIfNeeded(self, volume_path):
-    if self.native_tissue_path is not None:
-      moveSPMPath(volume_path, 
-                  self.native_tissue_path, 
-                  prefix=self.native_tissue_prefix + str(self.tissue_index))
-    if self.dartel_tissue_path is not None:
-      moveSPMPath(volume_path, 
-                  self.dartel_tissue_path, 
-                  prefix=self.dartel_tissue_prefix + str(self.tissue_index))
-    if self.warped_unmodulated_tissue_path is not None:
-      moveSPMPath(volume_path, 
-                  self.warped_unmodulated_tissue_path, 
-                  prefix=self.warped_unmodulated_tissue_prefix + str(self.tissue_index))
-    if self.warped_modulated_tissue_path is not None:
-      moveSPMPath(volume_path, 
-                  self.warped_modulated_tissue_path, 
-                  prefix=self.warped_modulated_tissue_prefix + str(self.tissue_index))   
-    
+
+  @checkIfArgumentTypeIsAllowed(list, 1)
+  def moveIfNeeded(self, volume_path_list):
+    if self.native_tissue_path_list:
+      for native_tissue_path, volume_path in zip(self.native_tissue_path_list,
+                                                 volume_path_list):
+        moveSPMPath(volume_path,
+                    native_tissue_path,
+                    prefix=self.native_tissue_prefix + str(self.tissue_index))
+    if self.dartel_tissue_path_list:
+      for dartel_tissue_path, volume_path in zip(self.dartel_tissue_path_list,
+                                                 volume_path_list):
+        moveSPMPath(volume_path,
+                    dartel_tissue_path,
+                    prefix=self.dartel_tissue_prefix + str(self.tissue_index))
+    if self.warped_unmodulated_tissue_path_list:
+      for warped_unmodulated_tissue_path, volume_path in zip(self.warped_unmodulated_tissue_path_list,
+                                                             volume_path_list):
+         moveSPMPath(volume_path,
+                     warped_unmodulated_tissue_path,
+                     prefix=self.warped_unmodulated_tissue_prefix + str(self.tissue_index))
+    if self.warped_modulated_tissue_path_list:
+      for warped_modulated_tissue_path, volume_path in zip(self.warped_modulated_tissue_path_list,
+                                                           volume_path_list):
+         moveSPMPath(volume_path,
+                    warped_modulated_tissue_path,
+                    prefix=self.warped_modulated_tissue_prefix + str(self.tissue_index))
+

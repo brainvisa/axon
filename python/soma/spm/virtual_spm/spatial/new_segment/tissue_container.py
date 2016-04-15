@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsStrOrUnicode
+from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed
 from soma.spm.spm_batch_maker_utils import addBatchKeyWordInEachItem
 
 class TissueContainer():
@@ -11,10 +11,10 @@ class TissueContainer():
   matter,    white    matter,    CSF,    bone,    soft    tissue    and   air/background   (if   using
   toolbox/Seg/TPM.nii).
   """
-  @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
-  def moveTissuesIfNeeded(self, volume_path):
+  @checkIfArgumentTypeIsAllowed(list, 1)
+  def moveTissuesIfNeeded(self, volume_path_list):
     for tissue in self:
-      tissue.moveIfNeeded(volume_path)
+      tissue.moveIfNeeded(volume_path_list)
 
   def getStringListForBatch( self ):
     batch_list = []

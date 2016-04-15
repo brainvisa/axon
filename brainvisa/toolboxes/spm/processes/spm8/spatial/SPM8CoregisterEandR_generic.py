@@ -116,8 +116,8 @@ def initialization(self):
 
   self.custom_outputs = False
 
-def updateSignatureAboutCustomOutputs(self, proc):
-  if self.custom_outputs:
+def updateSignatureAboutCustomOutputs(self, custom_outputs):
+  if custom_outputs:
     self.setEnable("source_warped")
     self.setEnable("others_warped", mandatory=False)
     self.setDisable("filename_prefix")
@@ -126,22 +126,22 @@ def updateSignatureAboutCustomOutputs(self, proc):
     self.setEnable("filename_prefix")
   self.signatureChangeNotifier.notify( self )
 
-def checkIfNotEmpty(self, proc):
-  if self.filename_prefix in [None, '']:
+def checkIfNotEmpty(self, filename_prefix):
+  if filename_prefix in [None, '']:
     self.filename_prefix = 'r'
   else:
     pass
 
-def updateSignatureAboutCoregisterMatrix(self, proc):
-  if self.extract_coregister_matrix:
+def updateSignatureAboutCoregisterMatrix(self, extract_coregister_matrix):
+  if extract_coregister_matrix:
     self.setEnable("coregister_matrix")
   else:
     self.setDisable("coregister_matrix")
   self.signatureChangeNotifier.notify( self )
 
-def updateBatchPath(self, proc):
-  if self.source is not None:
-    directory_path = os.path.dirname(self.source.fullPath())
+def updateBatchPath(self, source):
+  if source is not None:
+    directory_path = os.path.dirname(source.fullPath())
     return os.path.join(directory_path, 'spm8_coregister_ER_job.m')
 
 def execution( self, context ):

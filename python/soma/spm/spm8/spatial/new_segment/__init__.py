@@ -2,6 +2,7 @@
 from soma.spm.virtual_spm.spatial.new_segment import NewSegment as NewSegment_virtual
 from soma.spm.spm_main_module import SPM8MainModule
 from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsStrOrUnicode
+from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed
 
 from soma.spm.spm8.spatial.new_segment.channel_container import ChannelContainer
 from soma.spm.spm8.spatial.new_segment.channel import Channel
@@ -21,14 +22,14 @@ class NewSegment(NewSegment_virtual, SPM8MainModule):
     self.forward_deformation_prefix = 'y_'
     self.inverse_deformation_prefix = 'iy_'
 
-    self.forward_deformation_path = None
-    self.inverse_deformation_path = None
-    self.seg8_mat_path = None
+    self.forward_deformation_path_list = []
+    self.inverse_deformation_path_list = []
+    self.seg8_mat_path_list = []
 
-  @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
-  def setSPMDefaultChannel(self, volume_path):
+  @checkIfArgumentTypeIsAllowed(list, 1)
+  def setSPMDefaultChannel(self, volume_path_list):
     default_channel = Channel()
-    default_channel.setVolumePath(volume_path)
+    default_channel.setVolumePathList(volume_path_list)
     self.channel_container.clear()
     self.channel_container.append(default_channel)
 

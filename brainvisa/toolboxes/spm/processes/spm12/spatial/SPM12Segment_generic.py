@@ -65,7 +65,7 @@ background_matter_section = "Background"
 warping_section = "Warping and MRF parameters"
 
 signature = Signature(
-  't1mri', ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=first_channel_section),
+  't1mri', ListOf(ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=first_channel_section)),
   'bias_regulatisation', Choice('no regularisation (0)',
                                 'extremely light regularisation (0.00001)',
                                 'very light regularisation (0.0001)',
@@ -92,10 +92,10 @@ signature = Signature(
                         'save bias corrected',
                         'save bias field',
                         'save field and corrected', section=first_channel_section),
-  't1mri_bias_field', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=first_channel_section),
-  't1mri_bias_corrected', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=first_channel_section),
+  't1mri_bias_field', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=first_channel_section)),
+  't1mri_bias_corrected', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=first_channel_section)),
 
-  'second_channel', ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=second_channel_section),
+  'second_channel', ListOf(ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=second_channel_section)),
   'bias_regulatisation_2c', Choice('no regularisation (0)',
                                 'extremely light regularisation (0.00001)',
                                 'very light regularisation (0.0001)',
@@ -122,58 +122,58 @@ signature = Signature(
                         'save bias corrected',
                         'save bias field',
                         'save field and corrected', section=second_channel_section),
-  't1mri_bias_field_2c', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=second_channel_section),
-  't1mri_bias_corrected_2c', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=second_channel_section),
+  't1mri_bias_field_2c', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=second_channel_section)),
+  't1mri_bias_corrected_2c', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=second_channel_section)),
 
   'TPM_template', ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section='Tissue probability map'),
 
   'grey_gaussian_number', Choice(1, 2, 3, 4, 5, 6, 7, 8, 'Inf', section=grey_matter_section),
   'grey_native_type', Choice("Neither", 'Native', 'DARTEL Imported', 'Native + DARTEL Imported', section=grey_matter_section),
-  'grey_native', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=grey_matter_section),
-  'grey_dartel_imported', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=grey_matter_section),
+  'grey_native', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=grey_matter_section)),
+  'grey_dartel_imported', ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image', section=grey_matter_section)),
   'grey_warped_type', Choice("Neither", 'Modulated', 'Unmodulated', 'Modulated + Unmodulated', section=grey_matter_section),
-  'grey_warped_unmodulated', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=grey_matter_section),
-  'grey_warped_modulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=grey_matter_section),
+  'grey_warped_unmodulated', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=grey_matter_section)),
+  'grey_warped_modulated', ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image', section=grey_matter_section)),
 
   'white_gaussian_number', Choice(1, 2, 3, 4, 5, 6, 7, 8, 'Inf', section=white_matter_section),
   'white_native_type', Choice("Neither", 'Native', 'DARTEL Imported', 'Native + DARTEL Imported', section=white_matter_section),
-  'white_native', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=white_matter_section),
-  'white_dartel_imported', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=white_matter_section),
+  'white_native', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=white_matter_section)),
+  'white_dartel_imported', ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image', section=white_matter_section)),
   'white_warped_type', Choice("Neither", 'Modulated', 'Unmodulated', 'Modulated + Unmodulated', section=white_matter_section),
-  'white_warped_unmodulated', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=white_matter_section),
-  'white_warped_modulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=white_matter_section),
+  'white_warped_unmodulated', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=white_matter_section)),
+  'white_warped_modulated', ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image', section=white_matter_section)),
 
   'csf_gaussian_number', Choice(1, 2, 3, 4, 5, 6, 7, 8, 'Inf', section=csf_matter_section),
   'csf_native_type', Choice("Neither", 'Native', 'DARTEL Imported', 'Native + DARTEL Imported', section=csf_matter_section),
-  'csf_native', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=csf_matter_section),
-  'csf_dartel_imported', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=csf_matter_section),
+  'csf_native', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=csf_matter_section)),
+  'csf_dartel_imported', ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image', section=csf_matter_section)),
   'csf_warped_type', Choice("Neither", 'Modulated', 'Unmodulated', 'Modulated + Unmodulated', section=csf_matter_section),
-  'csf_warped_unmodulated', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=csf_matter_section),
-  'csf_warped_modulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=csf_matter_section),
+  'csf_warped_unmodulated', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=csf_matter_section)),
+  'csf_warped_modulated', ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image', section=csf_matter_section)),
 
   'skull_gaussian_number', Choice(1, 2, 3, 4, 5, 6, 7, 8, 'Inf', section=skull_matter_section),
   'skull_native_type', Choice("Neither", 'Native', 'DARTEL Imported', 'Native + DARTEL Imported', section=skull_matter_section),
-  'skull_native', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=skull_matter_section),
-  'skull_dartel_imported', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=skull_matter_section),
+  'skull_native', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=skull_matter_section)),
+  'skull_dartel_imported', ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image', section=skull_matter_section)),
   'skull_warped_type', Choice("Neither", 'Modulated', 'Unmodulated', 'Modulated + Unmodulated', section=skull_matter_section),
-  'skull_warped_unmodulated', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=skull_matter_section),
-  'skull_warped_modulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=skull_matter_section),
+  'skull_warped_unmodulated', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=skull_matter_section)),
+  'skull_warped_modulated', ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image', section=skull_matter_section)),
 
   'scalp_gaussian_number', Choice(1, 2, 3, 4, 5, 6, 7, 8, 'Inf', section=scalp_matter_section),
   'scalp_native_type', Choice("Neither", 'Native', 'DARTEL Imported', 'Native + DARTEL Imported', section=scalp_matter_section),
-  'scalp_native', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=scalp_matter_section),
-  'scalp_dartel_imported', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=scalp_matter_section),
+  'scalp_native', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=scalp_matter_section)),
+  'scalp_dartel_imported', ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image', section=scalp_matter_section)),
   'scalp_warped_type', Choice("Neither", 'Modulated', 'Unmodulated', 'Modulated + Unmodulated', section=scalp_matter_section),
-  'scalp_warped_unmodulated', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=scalp_matter_section),
-  'scalp_warped_modulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=scalp_matter_section),
+  'scalp_warped_unmodulated', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=scalp_matter_section)),
+  'scalp_warped_modulated', ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image', section=scalp_matter_section)),
 
   'background_gaussian_number', Choice(1, 2, 3, 4, 5, 6, 7, 8, 'Inf', section=background_matter_section),
   'background_native_type', Choice("Neither", 'Native', 'DARTEL Imported', 'Native + DARTEL Imported', section=background_matter_section),
-  'background_native', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=background_matter_section),
-  'background_dartel_imported', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=background_matter_section),
+  'background_native', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=background_matter_section)),
+  'background_dartel_imported', ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image', section=background_matter_section)),
   'background_warped_type', Choice("Neither", 'Modulated', 'Unmodulated', 'Modulated + Unmodulated', section=background_matter_section),
-  'background_warped_unmodulated', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=background_matter_section),
-  'background_warped_modulated', WriteDiskItem('4D Volume', 'NIFTI-1 image', section=background_matter_section),
+  'background_warped_unmodulated', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=background_matter_section)),
+  'background_warped_modulated', ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image', section=background_matter_section)),
 
   'mrf', Float(section=warping_section),
   'clean_up', Choice('Dont do cleanup', 'Light Clean', 'Thorough Clean', section=warping_section),
@@ -187,10 +187,10 @@ signature = Signature(
   'sampling_distance', Float(section=warping_section),
 
   'deformation_field_type', Choice("Neither", 'Inverse', 'Forward', 'Inverse + Forward', section=warping_section),
-  'forward_field', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=warping_section),
-  'inverse_field', WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=warping_section),
-  #'deformation_matrix', WriteDiskItem('Matlab SPM file', 'Matlab file'),
-  'seg8_mat', WriteDiskItem('Matlab SPM file', 'Matlab file', section='default SPM outputs'),
+  'forward_field', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=warping_section)),
+  'inverse_field', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=warping_section)),
+  #'deformation_matrix', ListOf(WriteDiskItem('Matlab SPM file', 'Matlab file'),
+  'seg8_mat', ListOf(WriteDiskItem('Matlab SPM file', 'Matlab file', section='default SPM outputs')),
 
   'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section='default SPM outputs' ),
 )
@@ -366,8 +366,8 @@ def updateSignatureAboutDeformationField(self, proc):
   self.changeSignature(self.signature)
 
 def updateBatchPath(self, proc):
-  if self.grey_native is not None:
-    directory_path = os.path.dirname(self.grey_native.fullPath())
+  if self.grey_native:
+    directory_path = os.path.dirname(self.grey_native[0].fullPath())
     return os.path.join(directory_path, 'spm12_segment_job.m')
 
 def execution( self, context ):
@@ -425,25 +425,25 @@ def execution( self, context ):
   else:
     raise ValueError('Unvalid bias_FWHM value')
 
-  channel.setVolumePath(self.t1mri.fullPath())
+  channel.setVolumePathList([diskitem.fullPath() for diskitem in self.t1mri])
   if self.bias_saving == 'save nothing':
     channel.discardBiasCorrected()
   elif self.bias_saving == 'save bias corrected':
     channel.saveBiasCorrected()
-    channel.setBiasCorrectedPath(str(self.t1mri_bias_corrected.fullPath()))
+    channel.setBiasCorrectedPathist([diskitem.fullPath() for diskitem in self.t1mri_bias_corrected])
   elif self.bias_saving == 'save bias field':
     channel.saveBiasField()
-    channel.setBiasFieldPath(str(self.t1mri_bias_field.fullPath()))
+    channel.setBiasFieldPathist([diskitem.fullPath() for diskitem in self.t1mri_bias_field])
   elif self.bias_saving == 'save field and corrected':
     channel.saveBiasFieldAndBiasCorrected()
-    channel.setBiasCorrectedPath(str(self.t1mri_bias_corrected.fullPath()))
-    channel.setBiasFieldPath(str(self.t1mri_bias_field.fullPath()))
+    channel.setBiasCorrectedPathist([diskitem.fullPath() for diskitem in self.t1mri_bias_corrected])
+    channel.setBiasFieldPathist([diskitem.fullPath() for diskitem in self.t1mri_bias_field])
   else:
     raise ValueError('Unvalid bias_saving value')
 
   segment.appendChannel(channel)
 
-  if self.second_channel is not None:
+  if self.second_channel:
     second_channel = Channel()
 
     if self.bias_regulatisation_2c == 'no regularisation (0)':
@@ -496,19 +496,19 @@ def execution( self, context ):
     else:
       raise ValueError('Unvalid bias_FWHM value')
 
-    second_channel.setVolumePath(self.second_channel.fullPath())
+    second_channel.setVolumePathList([diskitem.fullPath() for diskitem in self.second_channel])
     if self.bias_saving == 'save nothing':
       second_channel.discardBiasCorrected()
     elif self.bias_saving == 'save bias corrected':
       second_channel.saveBiasCorrected()
-      second_channel.setBiasCorrectedPath(str(self.t1mri_bias_corrected_2c.fullPath()))
+      second_channel.setBiasCorrectedPathist([diskitem.fullPath() for diskitem in self.t1mri_bias_corrected_2c])
     elif self.bias_saving == 'save bias field':
       second_channel.saveBiasField()
-      second_channel.setBiasFieldPath(str(self.t1mri_bias_field_2c.fullPath()))
+      second_channel.setBiasFieldPathist([diskitem.fullPath() for diskitem in self.t1mri_bias_field_2c])
     elif self.bias_saving == 'save field and corrected':
       second_channel.saveBiasFieldAndBiasCorrected()
-      second_channel.setBiasCorrectedPath(str(self.t1mri_bias_corrected_2c.fullPath()))
-      second_channel.setBiasFieldPath(str(self.t1mri_bias_field_2c.fullPath()))
+      second_channel.setBiasCorrectedPathist([diskitem.fullPath() for diskitem in self.t1mri_bias_corrected_2c])
+      second_channel.setBiasFieldPathist([diskitem.fullPath() for diskitem in self.t1mri_bias_field_2c])
     else:
       raise ValueError('Unvalid bias_saving value')
 
@@ -554,19 +554,19 @@ def execution( self, context ):
     segment.discardDeformationField()
   elif self.deformation_field_type == 'Inverse':
     segment.saveDeformationFieldInverse()
-    segment.setDeformationFieldInverseOutputPath(str(self.inverse_field.fullPath()))
+    segment.setDeformationFieldInverseOutputPathList([diskitem.fullPath() for diskitem in self.inverse_field])
   elif self.deformation_field_type == 'Forward':
     segment.saveDeformationFieldForward()
-    segment.setDeformationFieldForwardOutputPath(str(self.forward_field.fullPath()))
+    segment.setDeformationFieldForwardOutputPathList([diskitem.fullPath() for diskitem in self.forward_field])
   elif self.deformation_field_type == 'Inverse + Forward':
     segment.saveDeformationFieldInverseAndForward()
-    segment.setDeformationFieldInverseOutputPath(str(self.inverse_field.fullPath()))
-    segment.setDeformationFieldForwardOutputPath(str(self.forward_field.fullPath()))
+    segment.setDeformationFieldInverseOutputPathList([diskitem.fullPath() for diskitem in self.inverse_field])
+    segment.setDeformationFieldForwardOutputPathList([diskitem.fullPath() for diskitem in self.forward_field])
   else:
     raise ValueError('Unvalid deformation_field_type value')
 
   if self.seg8_mat is not None:
-    segment.setSeg8MatOutputPath(self.seg8_mat.fullPath())
+    segment.setSeg8MatOutputPathList([diskitem.fullPath() for diskitem in self.seg8_mat])
 
   spm = validation()
   spm.addModuleToExecutionQueue(segment)
@@ -589,14 +589,18 @@ def buildTissueObject(self, tissue_name, tissue_proba_dimension):
     tissue.unsetNativeTissue()
   elif eval( 'self.' + tissue_name + '_native_type') == 'Native':
     tissue.setNativeTissueNativeSpace()
-    tissue.setNativeOutputPath(str(eval('self.' + tissue_name + '_native.fullPath()')))
+    diskitem_list = eval('self.%s_native' % tissue_name)
+    tissue.setNativeOutputPathList([diskitem.fullPath() for diskitem in diskitem_list])
   elif eval( 'self.' + tissue_name + '_native_type') == 'DARTEL Imported':
     tissue.setNativeTissueDARTELImported()
-    tissue.setDartelOutputPath(str(eval('self.' + tissue_name + '_dartel_imported.fullPath()')))
+    diskitem_list = eval('self.%s_dartel_imported' % tissue_name)
+    tissue.setDartelOutputPathList([diskitem.fullPath() for diskitem in diskitem_list])
   elif eval( 'self.' + tissue_name + '_native_type') == 'Native + DARTEL Imported':
     tissue.setNativeTissueNativeSpaceAndDARTELImported()
-    tissue.setNativeOutputPath(str(eval('self.' + tissue_name + '_native.fullPath()')))
-    tissue.setDartelOutputPath(str(eval('self.' + tissue_name + '_dartel_imported.fullPath()')))
+    diskitem_list = eval('self.%s_native' % tissue_name)
+    tissue.setNativeOutputPathList([diskitem.fullPath() for diskitem in diskitem_list])
+    diskitem_list = eval('self.%s_dartel_imported' % tissue_name)
+    tissue.setDartelOutputPathList([diskitem.fullPath() for diskitem in diskitem_list])
   else:
     raise ValueError('Unvalid choice for ' + tissue_name + '_native_type')
 
@@ -604,14 +608,18 @@ def buildTissueObject(self, tissue_name, tissue_proba_dimension):
     tissue.unsetWarpedTissue()
   elif eval( 'self.' + tissue_name + '_warped_type') == 'Modulated':
     tissue.setWarpedTissueModulated()
-    tissue.setWarpedModulatedOutputPath(str(eval('self.' + tissue_name + '_warped_modulated.fullPath()')))
+    diskitem_list = eval('self.%s_warped_modulated' % tissue_name)
+    tissue.setWarpedModulatedOutputPathList([diskitem.fullPath() for diskitem in diskitem_list])
   elif eval( 'self.' + tissue_name + '_warped_type') == 'Unmodulated':
     tissue.setWarpedTissueUnmodulated()
-    tissue.setWarpedUnmodulatedOutputPath(str(eval('self.' + tissue_name + '_warped_unmodulated.fullPath()')))
+    diskitem_list = eval('self.%s_warped_unmodulated' % tissue_name)
+    tissue.setWarpedUnmodulatedOutputPathList([diskitem.fullPath() for diskitem in diskitem_list])
   elif eval( 'self.' + tissue_name + '_warped_type') == 'Modulated + Unmodulated':
     tissue.setWarpedTissueModulatedAndUnmodulated()
-    tissue.setWarpedModulatedOutputPath(str(eval('self.' + tissue_name + '_warped_modulated.fullPath()')))
-    tissue.setWarpedUnmodulatedOutputPath(str(eval('self.' + tissue_name + '_warped_unmodulated.fullPath()')))
+    diskitem_list = eval('self.%s_warped_modulated' % tissue_name)
+    tissue.setWarpedModulatedOutputPathList([diskitem.fullPath() for diskitem in diskitem_list])
+    diskitem_list = eval('self.%s_warped_unmodulated' % tissue_name)
+    tissue.setWarpedUnmodulatedOutputPathList([diskitem.fullPath() for diskitem in diskitem_list])
   else:
     raise ValueError('Unvalid choice for ' + tissue_name + '_warped_type')
 

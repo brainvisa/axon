@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-from soma.spm.virtual_spm.spatial.new_segment.channel import Channel
-from soma.spm.virtual_spm.spatial.new_segment.tissue import Tissue
-
 from soma.spm.spm_batch_maker_utils import addBatchKeyWordInEachItem, moveSPMPath, convertlistToSPMString
 from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed, checkIfArgumentTypeIsStrOrUnicode
 
@@ -196,17 +193,17 @@ class NewSegment():
     """
     self.deformation_fields = [1, 1]
 
-  @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
-  def setDeformationFieldForwardOutputPath(self, output_path):
-    self.forward_deformation_path = output_path
+  @checkIfArgumentTypeIsAllowed(list, 1)
+  def setDeformationFieldForwardOutputPathList(self, output_path_list):
+    self.forward_deformation_path_list = output_path_list
 
-  @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
-  def setDeformationFieldInverseOutputPath(self, output_path):
-    self.inverse_deformation_path = output_path
+  @checkIfArgumentTypeIsAllowed(list, 1)
+  def setDeformationFieldInverseOutputPathList(self, output_path_list):
+    self.inverse_deformation_path_list = output_path_list
 
-  @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
-  def setSeg8MatOutputPath(self, output_path):
-    self.seg8_mat_path = output_path
+  @checkIfArgumentTypeIsAllowed(list, 1)
+  def setSeg8MatOutputPathList(self, output_path_list):
+    self.seg8_mat_path_list = output_path_list
 
   def getStringListForBatch(self):
     batch_list = []
@@ -232,30 +229,34 @@ class NewSegment():
 
   def _moveTissuesIfNeeded(self):
     channel = self.channel_container[0]
-    volume_path = channel.getVolumePath()
-    if volume_path is not None:
-      self.tissue_container.moveTissuesIfNeeded(volume_path)
+    volume_path_list = channel.getVolumePathList()
+    if volume_path_list:
+      self.tissue_container.moveTissuesIfNeeded(volume_path_list)
     else:
-      raise ValueError('Volume path not found but is mandatory')
+      raise ValueError('Volume path list is required')
 
   def _moveDeformationFieldsIfNeeded(self):
-    volume_path = self.channel_container[0].getVolumePath()
-    if volume_path is not None:
-      if self.forward_deformation_path is not None:
+    volume_path_list = self.channel_container[0].getVolumePathList()
+    if self.forward_deformation_path_list:
+      for volume_path, forward_deformation_path in zip(volume_path_list,
+                                                       self.forward_deformation_path_list):
         moveSPMPath(volume_path,
-                    self.forward_deformation_path,
+                    forward_deformation_path,
                     prefix=self.forward_deformation_prefix)
-      if self.inverse_deformation_path is not None:
-        moveSPMPath(volume_path,
-                    self.inverse_deformation_path,
-                    prefix=self.inverse_deformation_prefix)
+    if self.inverse_deformation_path_list:
+      for volume_path, inverse_deformation_path in zip(volume_path_list,
+                                                       self.inverse_deformation_path_list):
+          moveSPMPath(volume_path,
+                      inverse_deformation_path,
+                      prefix=self.inverse_deformation_prefix)
 
   def _moveSegmentationMatIfNeeded(self):
-    volume_path = self.channel_container[0].getVolumePath()
-    if volume_path is not None:
-      if self.seg8_mat_path is not None:
+    volume_path_list = self.channel_container[0].getVolumePathList()
+    if self.seg8_mat_path_list:
+      for volume_path, seg8_mat_path in zip(volume_path_list,
+                                            self.seg8_mat_path_list):
         moveSPMPath(volume_path,
-                    self.seg8_mat_path,
+                    seg8_mat_path,
                     suffix="_seg8",
                     extension="mat")
 
