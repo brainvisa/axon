@@ -465,14 +465,20 @@ class ReadDiskItem( Parameter ):
     else:
       getHierarchy = other.get
       getNonHierarchy = other.get
-    hierarchyCommon = reduce( operator.add,
-        ( (getHierarchy( n ) == v) for n, v in diskItem.hierarchyAttributes().iteritems() ),
-        ( int(diskItem_type==other_type) ) )
+    filtered_out_attribs = set(['_ontology', '_declared_attributes_location'])
+    hierarchyCommon = reduce(
+      operator.add,
+      ((getHierarchy(n) == v)
+       for n, v in diskItem.hierarchyAttributes().iteritems()
+       if n not in filtered_out_attribs),
+      (int(diskItem_type==other_type)))
     # Count the number of common non hierarchy attributes
-    nonHierarchyCommon = reduce( operator.add,
-        ( (getNonHierarchy( n ) == v) for n, v in diskItem.nonHierarchyAttributes().iteritems() ),
-        (int(diskItem_type == other_type) ) )
-    if getattr( other, '_write', False ) and diskItem.isReadable():
+    nonHierarchyCommon = reduce(
+      operator.add,
+      ((getNonHierarchy(n) == v)
+       for n, v in diskItem.nonHierarchyAttributes().iteritems()),
+      (int(diskItem_type == other_type)))
+    if getattr(other, '_write', False ) and diskItem.isReadable():
       readable = -1
     else:
       readable = 0
