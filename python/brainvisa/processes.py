@@ -1133,12 +1133,12 @@ class Parameterized(object):
         # TODO : set the removed value consistent with what happened
         return removed
 
-  def removeDoubleLink( self, destination, source, show_warnings=True ):
-    """
-    Removes a double link source -> destination and destination -> source.
-    """
-    self.removeLink( destination, source, show_warnings )
-    self.removeLink( source, destination, show_warnings )
+    def removeDoubleLink(self, destination, source, show_warnings=True):
+        """
+        Removes a double link source -> destination and destination -> source.
+        """
+        self.removeLink(destination, source, show_warnings)
+        self.removeLink(source, destination, show_warnings)
 
     def changeSignature(self, signature):
         """Sets a new signature. Previous values of attributes are kept if the attributes are still in the signature.
