@@ -50,9 +50,10 @@ hierarchy = (
     SetPriorityOffset(-10),
     SetContent(
         'tpm', SetContent(
-            'grey', SetType('grey probability map')),
-        # TMP in SPM12
-        'TPM', SetType('tissue probability map'),
+            'grey', SetType('grey probability map'),
+            # TMP in SPM12
+            'TPM', SetType('tissue probability map'),
+        ),
         'toolbox', SetContent(
             'Seg', SetContent(
                 # TPM in SPM8
