@@ -536,9 +536,9 @@ def generateHTMLProcessesDocumentation(procId=None):
 
 
 def mapValuesToChildrenParameters(
-    destNode, sourceNode, dest, source,
-  value=None, defaultProcess=None, defaultProcessOptions={},
-  name=None, resultingSize=-1):
+        destNode, sourceNode, dest, source,
+        value=None, defaultProcess=None, defaultProcessOptions={},
+        name=None, resultingSize=-1):
     """
     Maps values of parameter *sourceNode*.*source* (which is a list) to
     *destNode*.*dest*.
@@ -560,6 +560,8 @@ def mapValuesToChildrenParameters(
     if (defaultProcess is not None) and (name is None):
         name = getProcessInstance(defaultProcess).name
 
+    created_nodes = []
+
     for i in xrange(max(rsize, resultingSize)):
         if i == csize:
             if defaultProcess is not None:
@@ -576,6 +578,7 @@ def mapValuesToChildrenParameters(
                               defaultProcess).name
                 )
                 destNode.addChild(name=name, node=child)
+                created_nodes.append((i, child))
                 csize += 1
             else:
                 return
@@ -597,6 +600,59 @@ def mapValuesToChildrenParameters(
                 destObject, destParameter = destChild.parseParameterString(
                     dest)
                 setattr(destObject, destParameter, v)
+
+    # trigger callbacks to fill new nodes parameters
+    # PROBLEM: we only parse links from the *same* sourceObject - others may
+    # come from elsewhere, we don't have them here.
+    if len(created_nodes) != 0:
+        for param, plinks in sourceObject._links.iteritems():
+            for link in plinks:
+                function = link[2]
+                if not isinstance(function, ExecutionNode.MultiParameterLink) \
+                        or not isinstance(function.function, partial) \
+                        or function.function.func \
+                            is not mapValuesToChildrenParameters:
+                    continue
+                part_func = function.function
+                if len(part_func.args) >= 1:
+                    dest_node = part_func.args[0]
+                else:
+                    dest_node = part_func.kwargs.get('destNode')
+                if dest_node is not destNode:
+                    continue
+                if len(part_func.args) >= 2:
+                    src_node = part_func.args[1]
+                else:
+                    src_node = part_func.kwargs.get('sourceNode')
+                if not src_node:
+                    src_node = sourceNode
+                if len(part_func.args) >= 3:
+                    dest_par = part_func.args[2]
+                else:
+                    dest_par = part_func.kwargs.get('dest')
+                if not dest_par or dest_par == dest:
+                    # we are currently doing dest
+                    continue
+                if len(part_func.args) >= 4:
+                    src_par = part_func.args[3]
+                else:
+                    src_par = part_func.kwargs.get('source')
+                if not src_par:
+                    continue
+                src_obj, src_par = src_node.parseParameterString(src_par)
+                value = getattr(src_obj, src_par, [])
+                nval = len(value)
+                if nval == 0:
+                  continue
+                for i, child in created_nodes:
+                    v = None
+                    if i >= nval:
+                        if nval == 1:
+                            v = value[0]
+                    else:
+                        v = value[i]
+                    if v is not None:
+                        child.setValue(dest_par, v, True)
 
 #----------------------------------------------------------------------------
 
