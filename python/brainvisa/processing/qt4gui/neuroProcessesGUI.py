@@ -1272,12 +1272,13 @@ class RadioItem(QWidget):
 #----------------------------------------------------------------------------
 class NodeCheckListItem( QTreeWidgetItem ):
 
-  def __init__( self, node, parent, index=None, text=None, itemType=None, read_only=False ):
-    if not index is None :
-      QTreeWidgetItem.__init__( self )
+  def __init__(self, node, parent, index=None, text=None, itemType=None,
+               read_only=False ):
+    if not index is None and index < parent.childCount():
+      QTreeWidgetItem.__init__(self)
       parent.insertChild(index, self)
     else :
-      QTreeWidgetItem.__init__( self, parent )
+      QTreeWidgetItem.__init__(self, parent)
 
     self._node = node
     self.itemType=itemType
@@ -2954,8 +2955,14 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
   def executionNodeAddChild( self, item, eNode, key = None, childNode = None, previous = None ):
     # 10-02-2014 : added possibility to hide nodes in GUI
+    if isinstance(item, QTreeWidgetItem) and not item.isExpanded():
+      item.setChildIndicatorPolicy(item.ShowIndicator)
+      return
     newItem = None
-    if not getattr(childNode, '_guiItem', None) :
+    oldItem = getattr(childNode, '_guiItem', None)
+    if oldItem:
+      oldItem.setHidden(getattr(childNode, '_hidden', False))
+    else:
       if isinstance( childNode, brainvisa.processes.ProcessExecutionNode ):
         en = childNode._executionNode
         if en is None:
