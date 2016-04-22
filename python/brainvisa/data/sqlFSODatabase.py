@@ -1155,7 +1155,7 @@ class SQLDatabase( Database ):
             cursor = self._getDatabaseCursor()
             print >> sys.stderr, _( 'Warning: changed uuid of "%(newDiskItem)s" because another file has the same uuid: %(uuid)s' ) % {
                 'newDiskItem': repr( diskItem ),
-                'uuid': str( uuid ),
+                'uuid': str( diskItem._uuid ),
               }
             delete = False
             diskItem.setUuid( Uuid() )
