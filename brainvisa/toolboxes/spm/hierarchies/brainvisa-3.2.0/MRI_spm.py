@@ -11,7 +11,7 @@ templates = (
 )
 insertFirst( '', 'templates', apply( SetContent, templates))
 
-#'analyzes/{segmentation_method}/DARTEL_{template}'
+#'analyzes/DARTEL/{processing}/DARTEL_{template}/'
 DARTEL_directory = (
   '<template>_{step}_HDW_DARTEL', SetType('TPM HDW DARTEL created template'),
 )
