@@ -48,22 +48,19 @@ def validation():
                configuration.matlab.executable,
                configuration.matlab.options)
   return spm
-#------------------------------------------------------------------------------
-
-userLevel = 0
-name = 'spm8 - DARTEL - Normalise to mni'
 
 #------------------------------------------------------------------------------
 
 userLevel = 0
-name = 'spm12 - DARTEL - Normalise to mni'
+name = 'spm8 - DARTEL - Normalise to mni - generic'
 
 #------------------------------------------------------------------------------
 
 signature = Signature(
-  'final_template', ReadDiskItem( "TPM HDW DARTEL created template", "NIFTI-1 image" ),
-  'flow_fields', ListOf( ReadDiskItem( "HDW DARTEL flow field", "NIFTI-1 image" ) ),
-  'images_0', ListOf( ReadDiskItem( "T1 MRI tissue probability map", ["NIFTI-1 image", "SPM image", "MINC image"] ) ),
+  'final_template', ReadDiskItem("4D Volume", ["NIFTI-1 image", "SPM image", "MINC image"]),
+  'flow_fields', ListOf(ReadDiskItem("4D Volume", ["NIFTI-1 image", "SPM image", "MINC image"])),
+  'images_0', ListOf(ReadDiskItem("4D Volume", ["NIFTI-1 image", "SPM image", "MINC image"])),
+  'images_0_warped', ListOf(WriteDiskItem("4D Volume", ["NIFTI-1 image", "SPM image", "MINC image"])),
 
   "preserve", Choice("Preserve Concentrations",
                      "Preserve Amount"),
@@ -79,7 +76,7 @@ signature = Signature(
 #------------------------------------------------------------------------------
 
 def initialization(self):
-  self.setOptional('final_template')
+  self.setOptional('final_template', 'images_0_warped')
 
   self.addLink(None, "bounding_box", self.updateSignatureAboutBoundingBox)
   self.addLink(None, "voxel_size", self.updateSignatureAboutVoxelSize)
@@ -103,7 +100,8 @@ def updateSignatureAboutVoxelSize(self, voxel_size, names, parameterized):
 
 def updateBatchPath(self, proc):
   if self.final_template is not None:
-    return os.path.join(self.final_template.fullPath(), 'spm8_DARTEL_normalise_to_mni_job.m')
+    final_template_dir = os.path.dirname(self.final_template.fullPath())
+    return os.path.join(final_template_dir, 'spm8_DARTEL_normalise_to_mni_job.m')
 
 #------------------------------------------------------------------------------
 def execution( self, context ):
@@ -126,6 +124,8 @@ def execution( self, context ):
   many_subjects = ManySubjects()
   many_subjects.setFlowFieldPathList([flow_field.fullPath() for flow_field in self.flow_fields])
   many_subjects.appendImagePathList([image.fullPath() for image in self.images_0])
+  if self.images_0_warped:
+    many_subjects.appendOutputImagePathList([image_warped.fullPath() for image_warped in self.images_0_warped])
 
   normalise.setAccordingToManySubjects(many_subjects)
 

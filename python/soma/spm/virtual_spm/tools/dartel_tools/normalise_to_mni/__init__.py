@@ -126,7 +126,7 @@ class NormaliseToMNI():
       raise ValueError('At least one according_to option is required')
 
   def _moveSPMDefaultPathsIfNeeded(self):
-    pass
+    self.according_to.moveSPMDefaultPathsIfNeeded()
 
 
 

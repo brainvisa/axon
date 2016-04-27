@@ -14,3 +14,7 @@ class FewSubjectsContainer():
         key_word_subject =  'data.subj' + '(' + str(subject_index + 1) + ')'
         batch_list.extend(addBatchKeyWordInEachItem(key_word_subject, subject.getStringListForBatch()))
     return batch_list
+
+  def moveSPMDefaultPathsIfNeeded(self):
+    for subject in self:
+        subject.moveSPMDefaultPathsIfNeeded()

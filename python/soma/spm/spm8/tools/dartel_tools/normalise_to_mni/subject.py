@@ -6,5 +6,5 @@ class Subject(Subject_virtual):
   def __init__(self):
     self.flow_field_path_list = None
     self.image_path_list = None
-    
-      
+    self.output_image_path_list = []
+

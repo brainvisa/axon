@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from soma.spm.spm_batch_maker_utils import convertPathListToSPMBatchString
+from soma.spm.spm_batch_maker_utils import convertPathListToSPMBatchString, moveSPMPath
 from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed
 
 class ManySubjects():
@@ -24,6 +24,10 @@ class ManySubjects():
     """
     self.image_path_list_list.append(image_path_list)
 
+  @checkIfArgumentTypeIsAllowed(list, 1)
+  def appendOutputImagePathList(self, output_image_path_list):
+    self.output_image_path_list_list.append(output_image_path_list)
+
   def getStringListForBatch( self ):
     if self.flow_field_path_list is not None and self.image_path_list_list:
       batch_list = []
@@ -37,3 +41,14 @@ class ManySubjects():
       return batch_list
     else:
       raise ValueError("flow_field_path_list and at least image_path_list are required")
+
+  def moveSPMDefaultPathsIfNeeded(self):
+    if self.output_image_path_list_list:
+      for image_path_list, output_image_path_list in zip(self.image_path_list_list,
+                                                        self.output_image_path_list_list):
+        for image_path, output_image_path in zip(image_path_list, output_image_path_list):
+          moveSPMPath(image_path,
+                      output_image_path,
+                      prefix="sw")
+    else:
+        pass#  do not move default spm paths
