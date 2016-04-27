@@ -57,11 +57,11 @@ def convertPathListToSPMBatchString(path_list, add_dimension=True):
 @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
 #@checkIfArgumentTypeIsStrOrUnicode(argument_index=2)
 #@checkIfArgumentTypeIsStrOrUnicode(argument_index=3)
-def moveSPMPath(reference_path, output_path, prefix='', suffix='', extension=None):
+def moveSPMPath(reference_path, output_path, prefix='', suffix='', extension=None, no_image=False):
   default_spm_path = _addFileNamePrefixAndSuffixToPath(reference_path, prefix, suffix)
   if extension is not None:
     default_spm_path = _replaceFilePathExtension(default_spm_path, extension)
-  moveFileAndCreateFoldersIfNeeded(default_spm_path, output_path)
+  moveFileAndCreateFoldersIfNeeded(default_spm_path, output_path, no_image)
 
 @checkIfArgumentTypeIsStrOrUnicode(argument_index=0)
 @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
@@ -85,12 +85,15 @@ def _replaceFilePathExtension(path, extension):
 
 @checkIfArgumentTypeIsStrOrUnicode(argument_index=0)
 @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
-def moveFileAndCreateFoldersIfNeeded(source_path, destination_path):
+def moveFileAndCreateFoldersIfNeeded(source_path, destination_path, no_image=False):
   if not os.path.exists(os.path.dirname(destination_path)):
     os.makedirs(os.path.dirname(destination_path))
   else:
     pass#folder already exists
-  moveFile(source_path, destination_path)
+  if no_image:
+    shutil.move(source_path, destination_path)
+  else:
+    moveImage(source_path, destination_path)
 #==============================================================================
 #
 #==============================================================================
@@ -107,7 +110,7 @@ def getTodayDateInSpmFormat():
   spm_date = "%s%s%s" % (now.year, month, day)
   return spm_date
 
-def moveFile(source_path, destination_path):
+def moveImage(source_path, destination_path, no_image=False):
   try:
     r = os.system("AimsFileConvert %s %s" % (source_path, destination_path))
     if r != 0:

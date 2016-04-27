@@ -62,13 +62,13 @@ signature = Signature(
   'bias_regularisation', Float(),
   'customs_outputs', Boolean(),
   'save_MPA', Boolean(),
-  'MPA', WriteDiskItem('4D Volume', 'NIFTI-1 image'),
+  'MPA', WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"]),
   'save_jacobian_rate', Boolean(),
-  'jacobian_rate',ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image')),
+  'jacobian_rate',ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"])),
   'save_divergence_rate', Boolean(),
-  'divergence_rate',ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image')),
+  'divergence_rate',ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"])),
   'save_deformation_fields', Boolean(),
-  'deformation_fields', ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image')),
+  'deformation_fields', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"])),
   'batch_location', WriteDiskItem('Matlab SPM script', 'Matlab script', section='default SPM outputs')
 )
 

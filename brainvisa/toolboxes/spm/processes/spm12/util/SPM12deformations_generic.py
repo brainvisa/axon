@@ -79,7 +79,7 @@ signature = Signature(
                                'Output directory'),
   'ouput_directory', WriteDiskItem('Directory', 'Directory'),
   'custom_outputs', Boolean(),
-  'images_deformed', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'])),
+  'images_deformed', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"])),
   #Batch
   'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section='default SPM outputs' )
 )

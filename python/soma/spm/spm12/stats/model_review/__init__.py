@@ -3,6 +3,7 @@ from soma.spm.spm_main_module import SPM12MainModule
 from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsStrOrUnicode
 
 from soma.spm.spm_batch_maker_utils import checkIfArgumentTypeIsAllowed
+from soma.spm.spm_batch_maker_utils import moveFileAndCreateFoldersIfNeeded
 from soma.spm.spm_batch_maker_utils import addBatchKeyWordInEachItem
 from soma.spm.spm_batch_maker_utils import getTodayDateInSpmFormat
 from soma.spm.spm12.stats.model_review.display import Display, DesignMatrix
@@ -77,9 +78,12 @@ class ModelReview(SPM12MainModule):
       ext = self.print_result.replace("'", '')
       spm_result_path = os.path.join(workspace_diretory, "spm_%s.%s" % (spm_date, ext))
       if os.path.exists(spm_result_path):
-        shutil.move(spm_result_path, self.output_results_path)
+        moveFileAndCreateFoldersIfNeeded(spm_result_path,
+                                         self.output_results_path)
       elif os.path.exists(os.path.join('/tmp', "spm_%s.%s" % (spm_date, ext))):
-        shutil.move(os.path.join('/tmp', "spm_%s.%s" % (spm_date, ext)), self.output_results_path)
+        moveFileAndCreateFoldersIfNeeded(os.path.join('/tmp', "spm_%s.%s" % (spm_date, ext)),
+                                         self.output_results_path,
+                                         no_image=True)
       else:
         raise RuntimeError("Output file not found")
     else:

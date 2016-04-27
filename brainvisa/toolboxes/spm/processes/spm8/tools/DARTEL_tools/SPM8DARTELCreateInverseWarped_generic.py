@@ -57,7 +57,7 @@ name = "spm8 - create inverse warped - generic"
 signature = Signature(
   "flow_fields", ListOf(ReadDiskItem( "4D Volume", ["NIFTI-1 image", "SPM image", "MINC image"])),
   "images", ListOf(ReadDiskItem( "4D Volume", ["NIFTI-1 image", "SPM image", "MINC image"])),
-  "images_warped", ListOf(WriteDiskItem( "4D Volume", "NIFTI-1 image")),
+  "images_warped", ListOf(WriteDiskItem( "4D Volume", ["gz compressed NIFTI-1 image", "NIFTI-1 image"])),
   "time_steps", Choice(1, 2, 4, 8, 16, 32, 64, 128, 256, 512),
   "interpolation", Choice("Nearest neighbour",
                           "Trilinear",

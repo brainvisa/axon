@@ -60,7 +60,7 @@ signature = Signature(
   'final_template', ReadDiskItem("4D Volume", ["NIFTI-1 image", "SPM image", "MINC image"]),
   'flow_fields', ListOf(ReadDiskItem("4D Volume", ["NIFTI-1 image", "SPM image", "MINC image"])),
   'images_0', ListOf(ReadDiskItem("4D Volume", ["NIFTI-1 image", "SPM image", "MINC image"])),
-  'images_0_warped', ListOf(WriteDiskItem("4D Volume", ["NIFTI-1 image", "SPM image", "MINC image"])),
+  'images_0_warped', ListOf(WriteDiskItem("4D Volume", ["gz compressed NIFTI-1 image", "NIFTI-1 image"])),
 
   "preserve", Choice("Preserve Concentrations",
                      "Preserve Amount"),

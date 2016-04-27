@@ -114,9 +114,9 @@ signature = Signature(
   "masking", Boolean(section=reslice_section),
   "filename_prefix", String(section=reslice_section),
 
-  "realign_paths_0", ListOf(WriteDiskItem("4D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image']), section=output_section),
-  "realign_paths_1", ListOf(WriteDiskItem("4D Volume", ['NIFTI-1 image', 'SPM image', 'MINC image']), section=output_section),
-  "ouput_mean", WriteDiskItem("4D Volume", "NIFTI-1 image", section=output_section),
+  "realign_paths_0", ListOf(WriteDiskItem("4D Volume", ["gz compressed NIFTI-1 image", "NIFTI-1 image"]), section=output_section),
+  "realign_paths_1", ListOf(WriteDiskItem("4D Volume", ["gz compressed NIFTI-1 image", "NIFTI-1 image"]), section=output_section),
+  "ouput_mean", WriteDiskItem("4D Volume", ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=output_section),
   "realign_parameters", ListOf(WriteDiskItem("Text file", "Text file"), section=output_section),
 
   'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section='default SPM outputs' ),

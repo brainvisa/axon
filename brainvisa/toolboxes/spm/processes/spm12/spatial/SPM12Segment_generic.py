@@ -92,10 +92,10 @@ signature = Signature(
                         'save bias corrected',
                         'save bias field',
                         'save field and corrected', section=first_channel_section),
-  't1mri_bias_field', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=first_channel_section)),
-  't1mri_bias_corrected', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=first_channel_section)),
+  't1mri_bias_field', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=first_channel_section)),
+  't1mri_bias_corrected', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=first_channel_section)),
 
-  'second_channel', ListOf(ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=second_channel_section)),
+  'second_channel', ListOf(ReadDiskItem('4D Volume', ["NIFTI-1 image", "SPM image", "MINC image"], section=second_channel_section)),
   'bias_regulatisation_2c', Choice('no regularisation (0)',
                                 'extremely light regularisation (0.00001)',
                                 'very light regularisation (0.0001)',
@@ -122,58 +122,58 @@ signature = Signature(
                         'save bias corrected',
                         'save bias field',
                         'save field and corrected', section=second_channel_section),
-  't1mri_bias_field_2c', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=second_channel_section)),
-  't1mri_bias_corrected_2c', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=second_channel_section)),
+  't1mri_bias_field_2c', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=second_channel_section)),
+  't1mri_bias_corrected_2c', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=second_channel_section)),
 
   'TPM_template', ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section='Tissue probability map'),
 
   'grey_gaussian_number', Choice(1, 2, 3, 4, 5, 6, 7, 8, 'Inf', section=grey_matter_section),
   'grey_native_type', Choice("Neither", 'Native', 'DARTEL Imported', 'Native + DARTEL Imported', section=grey_matter_section),
-  'grey_native', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=grey_matter_section)),
-  'grey_dartel_imported', ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image', section=grey_matter_section)),
+  'grey_native', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=grey_matter_section)),
+  'grey_dartel_imported', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=grey_matter_section)),
   'grey_warped_type', Choice("Neither", 'Modulated', 'Unmodulated', 'Modulated + Unmodulated', section=grey_matter_section),
-  'grey_warped_unmodulated', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=grey_matter_section)),
-  'grey_warped_modulated', ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image', section=grey_matter_section)),
+  'grey_warped_unmodulated', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=grey_matter_section)),
+  'grey_warped_modulated', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=grey_matter_section)),
 
   'white_gaussian_number', Choice(1, 2, 3, 4, 5, 6, 7, 8, 'Inf', section=white_matter_section),
   'white_native_type', Choice("Neither", 'Native', 'DARTEL Imported', 'Native + DARTEL Imported', section=white_matter_section),
-  'white_native', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=white_matter_section)),
-  'white_dartel_imported', ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image', section=white_matter_section)),
+  'white_native', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=white_matter_section)),
+  'white_dartel_imported', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=white_matter_section)),
   'white_warped_type', Choice("Neither", 'Modulated', 'Unmodulated', 'Modulated + Unmodulated', section=white_matter_section),
-  'white_warped_unmodulated', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=white_matter_section)),
-  'white_warped_modulated', ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image', section=white_matter_section)),
+  'white_warped_unmodulated', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=white_matter_section)),
+  'white_warped_modulated', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=white_matter_section)),
 
   'csf_gaussian_number', Choice(1, 2, 3, 4, 5, 6, 7, 8, 'Inf', section=csf_matter_section),
   'csf_native_type', Choice("Neither", 'Native', 'DARTEL Imported', 'Native + DARTEL Imported', section=csf_matter_section),
-  'csf_native', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=csf_matter_section)),
-  'csf_dartel_imported', ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image', section=csf_matter_section)),
+  'csf_native', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=csf_matter_section)),
+  'csf_dartel_imported', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=csf_matter_section)),
   'csf_warped_type', Choice("Neither", 'Modulated', 'Unmodulated', 'Modulated + Unmodulated', section=csf_matter_section),
-  'csf_warped_unmodulated', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=csf_matter_section)),
-  'csf_warped_modulated', ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image', section=csf_matter_section)),
+  'csf_warped_unmodulated', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=csf_matter_section)),
+  'csf_warped_modulated', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=csf_matter_section)),
 
   'skull_gaussian_number', Choice(1, 2, 3, 4, 5, 6, 7, 8, 'Inf', section=skull_matter_section),
   'skull_native_type', Choice("Neither", 'Native', 'DARTEL Imported', 'Native + DARTEL Imported', section=skull_matter_section),
-  'skull_native', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=skull_matter_section)),
-  'skull_dartel_imported', ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image', section=skull_matter_section)),
+  'skull_native', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=skull_matter_section)),
+  'skull_dartel_imported', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=skull_matter_section)),
   'skull_warped_type', Choice("Neither", 'Modulated', 'Unmodulated', 'Modulated + Unmodulated', section=skull_matter_section),
-  'skull_warped_unmodulated', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=skull_matter_section)),
-  'skull_warped_modulated', ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image', section=skull_matter_section)),
+  'skull_warped_unmodulated', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=skull_matter_section)),
+  'skull_warped_modulated', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=skull_matter_section)),
 
   'scalp_gaussian_number', Choice(1, 2, 3, 4, 5, 6, 7, 8, 'Inf', section=scalp_matter_section),
   'scalp_native_type', Choice("Neither", 'Native', 'DARTEL Imported', 'Native + DARTEL Imported', section=scalp_matter_section),
-  'scalp_native', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=scalp_matter_section)),
-  'scalp_dartel_imported', ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image', section=scalp_matter_section)),
+  'scalp_native', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=scalp_matter_section)),
+  'scalp_dartel_imported', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=scalp_matter_section)),
   'scalp_warped_type', Choice("Neither", 'Modulated', 'Unmodulated', 'Modulated + Unmodulated', section=scalp_matter_section),
-  'scalp_warped_unmodulated', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=scalp_matter_section)),
-  'scalp_warped_modulated', ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image', section=scalp_matter_section)),
+  'scalp_warped_unmodulated', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=scalp_matter_section)),
+  'scalp_warped_modulated', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=scalp_matter_section)),
 
   'background_gaussian_number', Choice(1, 2, 3, 4, 5, 6, 7, 8, 'Inf', section=background_matter_section),
   'background_native_type', Choice("Neither", 'Native', 'DARTEL Imported', 'Native + DARTEL Imported', section=background_matter_section),
-  'background_native', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=background_matter_section)),
-  'background_dartel_imported', ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image', section=background_matter_section)),
+  'background_native', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=background_matter_section)),
+  'background_dartel_imported', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=background_matter_section)),
   'background_warped_type', Choice("Neither", 'Modulated', 'Unmodulated', 'Modulated + Unmodulated', section=background_matter_section),
-  'background_warped_unmodulated', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=background_matter_section)),
-  'background_warped_modulated', ListOf(WriteDiskItem('4D Volume', 'NIFTI-1 image', section=background_matter_section)),
+  'background_warped_unmodulated', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=background_matter_section)),
+  'background_warped_modulated', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=background_matter_section)),
 
   'mrf', Float(section=warping_section),
   'clean_up', Choice('Dont do cleanup', 'Light Clean', 'Thorough Clean', section=warping_section),
@@ -187,8 +187,8 @@ signature = Signature(
   'sampling_distance', Float(section=warping_section),
 
   'deformation_field_type', Choice("Neither", 'Inverse', 'Forward', 'Inverse + Forward', section=warping_section),
-  'forward_field', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=warping_section)),
-  'inverse_field', ListOf(WriteDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'], section=warping_section)),
+  'forward_field', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=warping_section)),
+  'inverse_field', ListOf(WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section=warping_section)),
   #'deformation_matrix', ListOf(WriteDiskItem('Matlab SPM file', 'Matlab file'),
   'seg8_mat', ListOf(WriteDiskItem('Matlab SPM file', 'Matlab file', section='default SPM outputs')),
 
@@ -430,14 +430,14 @@ def execution( self, context ):
     channel.discardBiasCorrected()
   elif self.bias_saving == 'save bias corrected':
     channel.saveBiasCorrected()
-    channel.setBiasCorrectedPathist([diskitem.fullPath() for diskitem in self.t1mri_bias_corrected])
+    channel.setBiasCorrectedPathList([diskitem.fullPath() for diskitem in self.t1mri_bias_corrected])
   elif self.bias_saving == 'save bias field':
     channel.saveBiasField()
-    channel.setBiasFieldPathist([diskitem.fullPath() for diskitem in self.t1mri_bias_field])
+    channel.setBiasFieldPathList([diskitem.fullPath() for diskitem in self.t1mri_bias_field])
   elif self.bias_saving == 'save field and corrected':
     channel.saveBiasFieldAndBiasCorrected()
-    channel.setBiasCorrectedPathist([diskitem.fullPath() for diskitem in self.t1mri_bias_corrected])
-    channel.setBiasFieldPathist([diskitem.fullPath() for diskitem in self.t1mri_bias_field])
+    channel.setBiasCorrectedPathList([diskitem.fullPath() for diskitem in self.t1mri_bias_corrected])
+    channel.setBiasFieldPathList([diskitem.fullPath() for diskitem in self.t1mri_bias_field])
   else:
     raise ValueError('Unvalid bias_saving value')
 
@@ -501,14 +501,14 @@ def execution( self, context ):
       second_channel.discardBiasCorrected()
     elif self.bias_saving == 'save bias corrected':
       second_channel.saveBiasCorrected()
-      second_channel.setBiasCorrectedPathist([diskitem.fullPath() for diskitem in self.t1mri_bias_corrected_2c])
+      second_channel.setBiasCorrectedPathList([diskitem.fullPath() for diskitem in self.t1mri_bias_corrected_2c])
     elif self.bias_saving == 'save bias field':
       second_channel.saveBiasField()
-      second_channel.setBiasFieldPathist([diskitem.fullPath() for diskitem in self.t1mri_bias_field_2c])
+      second_channel.setBiasFieldPathList([diskitem.fullPath() for diskitem in self.t1mri_bias_field_2c])
     elif self.bias_saving == 'save field and corrected':
       second_channel.saveBiasFieldAndBiasCorrected()
-      second_channel.setBiasCorrectedPathist([diskitem.fullPath() for diskitem in self.t1mri_bias_corrected_2c])
-      second_channel.setBiasFieldPathist([diskitem.fullPath() for diskitem in self.t1mri_bias_field_2c])
+      second_channel.setBiasCorrectedPathList([diskitem.fullPath() for diskitem in self.t1mri_bias_corrected_2c])
+      second_channel.setBiasFieldPathList([diskitem.fullPath() for diskitem in self.t1mri_bias_field_2c])
     else:
       raise ValueError('Unvalid bias_saving value')
 

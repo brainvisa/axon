@@ -2,8 +2,7 @@
 from soma.spm.spm_main_module import SPM12MainModule
 from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed, checkIfArgumentTypeIsStrOrUnicode
 from soma.spm.spm_batch_maker_utils import convertPathListToSPMBatchString, convertlistToSPMString
-from soma.spm.spm_batch_maker_utils import convertNumpyArrayToSPMString, moveSPMPath, moveFileAndCreateFoldersIfNeeded
-import os
+from soma.spm.spm_batch_maker_utils import convertNumpyArrayToSPMString, moveSPMPath
 import numpy
 import numbers
 
@@ -33,12 +32,12 @@ class SerialLongitudinalRegistration(SPM12MainModule):
     self.save_jacobian_rate = 0
     self.save_divergence_rate = 1
     self.save_deformation_fields = 0
-    
+
     self.ouput_mid_point_average_path = None
     self.ouput_jacobian_rate_path_list = None
     self.ouput_divergence_rate_path_list = None
     self.ouput_volume_deformation_field_path_list = None
-    
+
   @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
   def appendVolume(self, volume_path):
     """
@@ -48,24 +47,24 @@ class SerialLongitudinalRegistration(SPM12MainModule):
       self.volume_path_list.append(volume_path)
     else:
       self.volume_path_list = [volume_path]
-      
-  @checkIfArgumentTypeIsAllowed(list, 1)  
+
+  @checkIfArgumentTypeIsAllowed(list, 1)
   def setVolumes(self, volume_path_list):
     """
     Specify the times of the scans in years.
     """
     for volume_path in volume_path_list:
       self.appendVolume(volume_path)
-      
-  @checkIfArgumentTypeIsAllowed(list, 1)  
+
+  @checkIfArgumentTypeIsAllowed(list, 1)
   def setTimes(self, time_list):
     """
     Specify  the time difference between the scans in years.  This can be a single value (if it
     is the same for all subjects) or a vector of values (if it differs among subjects).
     """
     self.time_list = time_list
-    
-  @checkIfArgumentTypeIsAllowed(numpy.ndarray, 1)  
+
+  @checkIfArgumentTypeIsAllowed(numpy.ndarray, 1)
   def setNoiseEstimate(self, noise_estimate_numpy_array):
     """
     Specify  the  standard  deviation  of  the  noise  in the images.  If a scalar is entered, all
@@ -77,7 +76,7 @@ class SerialLongitudinalRegistration(SPM12MainModule):
     are i.i.d. Gaussian.
     """
     self.noise_estimate = convertNumpyArrayToSPMString(noise_estimate_numpy_array)
-    
+
   def setNoiseEstimateToNaN(self):
     """
     Specify  the  standard  deviation  of  the  noise  in the images.  If a scalar is entered, all
@@ -89,8 +88,8 @@ class SerialLongitudinalRegistration(SPM12MainModule):
     are i.i.d. Gaussian.
     """
     self.noise_estimate = "NaN"
-    
-  @checkIfArgumentTypeIsAllowed(list, 1)  
+
+  @checkIfArgumentTypeIsAllowed(list, 1)
   def setWarpingRegulariation(self, warping_regularisation_list):
     """
     Registration  involves simultaneously minimising two terms.  One of these is a measure
@@ -121,8 +120,8 @@ class SerialLongitudinalRegistration(SPM12MainModule):
       self.warping_regularisation_list = warping_regularisation_list
     else:
       raise ValueError("Unvalid warping_regularisation_list : 5 fields is required")
-    
-  @checkIfArgumentTypeIsAllowed(numbers.Real, 1)  
+
+  @checkIfArgumentTypeIsAllowed(numbers.Real, 1)
   def setBiasRegularisation(self, bias_regularisation):
     """
     MR  images are usually corrupted by a smooth, spatially varying artifact that modulates
@@ -143,7 +142,7 @@ class SerialLongitudinalRegistration(SPM12MainModule):
     very little bias in your data, so it does not try to model it.
     """
     self.bias_regularisation = bias_regularisation
-    
+
   def saveMidPointAverage(self):
     """
     Do  you  want to save the mid-point average template image? This is likely to be useful
@@ -151,7 +150,7 @@ class SerialLongitudinalRegistration(SPM12MainModule):
     directory of the first time point data.
     """
     self.save_mid_point_average = True
-    
+
   def discardMidPointAverage(self):
     """
     Do  you  want to save the mid-point average template image? This is likely to be useful
@@ -159,7 +158,7 @@ class SerialLongitudinalRegistration(SPM12MainModule):
     directory of the first time point data.
     """
     self.save_mid_point_average = False
-    
+
   def saveJacobianRate(self):
     """
     Do  you  want  to  save  a  map  of  the differences between the Jacobian determinants,
@@ -173,7 +172,7 @@ class SerialLongitudinalRegistration(SPM12MainModule):
     same directory of the first time point data.
     """
     self.save_jacobian_rate = 1
-    
+
   def discardJacobianRate(self):
     """
     Do  you  want  to  save  a  map  of  the differences between the Jacobian determinants,
@@ -187,8 +186,8 @@ class SerialLongitudinalRegistration(SPM12MainModule):
     same directory of the first time point data.
     """
     self.save_jacobian_rate = 0
-   
-  def saveDivergenceRate(self):  
+
+  def saveDivergenceRate(self):
     """
     Do  you  want  to  save  a  map  of  divergence  of  the velocity field?  This is useful for
     morphometrics,  and  may be considered as the rate of volumetric expansion.  Negative
@@ -197,8 +196,8 @@ class SerialLongitudinalRegistration(SPM12MainModule):
     been divided by the time interval between scans
     """
     self.save_divergence_rate = 1
-   
-  def discardDivergenceRate(self):  
+
+  def discardDivergenceRate(self):
     """
     Do  you  want  to  save  a  map  of  divergence  of  the velocity field?  This is useful for
     morphometrics,  and  may be considered as the rate of volumetric expansion.  Negative
@@ -207,7 +206,7 @@ class SerialLongitudinalRegistration(SPM12MainModule):
     been divided by the time interval between scans
     """
     self.save_divergence_rate = 0
-    
+
   def saveDeformationFields(self):
     """
     Deformation   fields  can  be  saved  to  disk,  and  used  by  the  Deformations  Utility.
@@ -215,7 +214,7 @@ class SerialLongitudinalRegistration(SPM12MainModule):
     and z coordinates.  They are written in the same directory as the corresponding image.
     """
     self.save_deformation_fields = 1
-    
+
   def discardDeformationFields(self):
     """
     Deformation   fields  can  be  saved  to  disk,  and  used  by  the  Deformations  Utility.
@@ -223,80 +222,80 @@ class SerialLongitudinalRegistration(SPM12MainModule):
     and z coordinates.  They are written in the same directory as the corresponding image.
     """
     self.save_deformation_fields = 0
-    
+
   def getStringListForBatch(self):
-    if not None in [self.volume_path_list, self.time_list]: 
+    if not None in [self.volume_path_list, self.time_list]:
       if len(self.volume_path_list) == len(self.time_list):
         batch_list = []
         batch_list.append("spm.tools.longit{1}.series.vols = {%s};" % convertPathListToSPMBatchString(self.volume_path_list))
         batch_list.append("spm.tools.longit{1}.series.times = %s;" % convertlistToSPMString( self.time_list))
-        batch_list.append("spm.tools.longit{1}.series.noise = %s;" % self.noise_estimate) 
-        batch_list.append("spm.tools.longit{1}.series.wparam = %s;" % convertlistToSPMString(self.warping_regularisation_list)) 
-        batch_list.append("spm.tools.longit{1}.series.bparam = %g;" % self.bias_regularisation) 
-        batch_list.append("spm.tools.longit{1}.series.write_avg = %i;" % self.save_mid_point_average) 
-        batch_list.append("spm.tools.longit{1}.series.write_jac = %i;" % self.save_jacobian_rate) 
-        batch_list.append("spm.tools.longit{1}.series.write_div = %i;" % self.save_divergence_rate) 
-        batch_list.append("spm.tools.longit{1}.series.write_def = %i;" % self.save_deformation_fields) 
+        batch_list.append("spm.tools.longit{1}.series.noise = %s;" % self.noise_estimate)
+        batch_list.append("spm.tools.longit{1}.series.wparam = %s;" % convertlistToSPMString(self.warping_regularisation_list))
+        batch_list.append("spm.tools.longit{1}.series.bparam = %g;" % self.bias_regularisation)
+        batch_list.append("spm.tools.longit{1}.series.write_avg = %i;" % self.save_mid_point_average)
+        batch_list.append("spm.tools.longit{1}.series.write_jac = %i;" % self.save_jacobian_rate)
+        batch_list.append("spm.tools.longit{1}.series.write_div = %i;" % self.save_divergence_rate)
+        batch_list.append("spm.tools.longit{1}.series.write_def = %i;" % self.save_deformation_fields)
         return batch_list
       else:
         raise ValueError("volume_path_list and time_list has not the same length")
     else:
       raise ValueError("volume_path_list and time_list are required")
-    
+
   @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
   def setOutputMidPointAverage(self, output_path):
     self.ouput_mid_point_average_path = output_path
-    
-  @checkIfArgumentTypeIsAllowed(list, 1)  
+
+  @checkIfArgumentTypeIsAllowed(list, 1)
   def setOutputJacobianRate(self, output_path_list):
     self.ouput_jacobian_rate_path_list = output_path_list
-    
-  @checkIfArgumentTypeIsAllowed(list, 1)  
+
+  @checkIfArgumentTypeIsAllowed(list, 1)
   def setOutputDivergeRate(self, output_path_list):
     self.ouput_divergence_rate_path_list = output_path_list
-    
-  @checkIfArgumentTypeIsAllowed(list, 1)  
+
+  @checkIfArgumentTypeIsAllowed(list, 1)
   def setOutputVolumeDeformationField(self, output_path_list):
     self.ouput_volume_deformation_field_path_list = output_path_list
-  
+
   def _moveSPMDefaultPathsIfNeeded(self):
     if self.ouput_mid_point_average_path is not None and self.save_mid_point_average:
-      moveSPMPath(self.volume_path_list[0], 
+      moveSPMPath(self.volume_path_list[0],
                   self.ouput_mid_point_average_path,
-                  prefix='avg_')       
+                  prefix='avg_')
     else:
-      pass         
-    
+      pass
+
     if self.ouput_volume_deformation_field_path_list is not None and self.save_deformation_fields:
       if len(self.ouput_volume_deformation_field_path_list) == len(self.volume_path_list):
         for reference_path, output_path in zip(self.volume_path_list, self.ouput_volume_deformation_field_path_list):
-          moveSPMPath(reference_path, 
+          moveSPMPath(reference_path,
                       output_path,
-                      prefix='y_')       
+                      prefix='y_')
       else:
-        raise ValueError("Unvalid ouput_volume_deformation_field_path_list") 
+        raise ValueError("Unvalid ouput_volume_deformation_field_path_list")
     else:
-      pass         
-          
+      pass
+
     if self.ouput_jacobian_rate_path_list is not None and self.save_jacobian_rate:
       if len(self.ouput_jacobian_rate_path_list) == len(self.volume_path_list):
         for reference_path, output_path in zip(self.volume_path_list, self.ouput_jacobian_rate_path_list):
-          moveSPMPath(reference_path, 
+          moveSPMPath(reference_path,
                       output_path,
-                      prefix='j_')     
+                      prefix='j_')
       else:
-        raise ValueError("Unvalid ouput_jacobian_rate_path_list") 
+        raise ValueError("Unvalid ouput_jacobian_rate_path_list")
     else:
-      pass           
-          
+      pass
+
     if self.ouput_divergence_rate_path_list is not None and self.save_divergence_rate:
       if len(self.ouput_divergence_rate_path_list) == len(self.volume_path_list):
         for reference_path, output_path in zip(self.volume_path_list, self.ouput_divergence_rate_path_list):
-          moveSPMPath(reference_path, 
+          moveSPMPath(reference_path,
                       output_path,
-                      prefix='dv_')    
+                      prefix='dv_')
       else:
-        raise ValueError("Unvalid ouput_divergence_rate_path_list") 
+        raise ValueError("Unvalid ouput_divergence_rate_path_list")
     else:
-      pass   
-          
+      pass
+

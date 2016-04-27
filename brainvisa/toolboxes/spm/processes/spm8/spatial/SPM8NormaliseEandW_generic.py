@@ -102,7 +102,7 @@ signature = Signature(
                       section=writing_section),
 
   "filename_prefix", String(section="outputs"),
-  "images_written", ListOf(WriteDiskItem("4D Volume", ["NIFTI-1 image", "SPM image", "MINC image"]), section="outputs"),
+  "images_written", ListOf(WriteDiskItem("4D Volume", ["gz compressed NIFTI-1 image", "NIFTI-1 image"]), section="outputs"),
   "sn_mat", WriteDiskItem("Matlab SPM script", "Matlab file", section="SPM outputs"),
   'batch_location', WriteDiskItem("Matlab SPM script", "Matlab script", section="default SPM outputs"),
 )

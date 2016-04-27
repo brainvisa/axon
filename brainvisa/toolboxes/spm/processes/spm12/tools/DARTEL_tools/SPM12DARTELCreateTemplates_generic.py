@@ -60,8 +60,8 @@ name = 'spm12 - Run DARTEL (create Templates) - generic'
 signature = Signature(
     'images_1', ListOf( ReadDiskItem( '4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'] ) ),
     'images_2', ListOf( ReadDiskItem( '4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'] ) ),
-    'output_flow_field', ListOf( WriteDiskItem( '4D Volume', 'NIFTI-1 image' ) ),
-    'output_template', ListOf( WriteDiskItem( '4D Volume', 'NIFTI-1 image' ) ),
+    'output_flow_field', ListOf( WriteDiskItem( '4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"] ) ),
+    'output_template', ListOf( WriteDiskItem( '4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"] ) ),
     'template_basename', String(),
     'regularisation_form', Choice('Linear Elastic Energy',
                                   'Membrane Energy',

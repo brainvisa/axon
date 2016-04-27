@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-from soma.spm.spm_batch_maker_utils import addBatchKeyWordInEachItem, convertPathListToSPMBatchString,\
-moveFileAndCreateFoldersIfNeeded, moveSPMPath
+from soma.spm.spm_batch_maker_utils import addBatchKeyWordInEachItem
+from soma.spm.spm_batch_maker_utils import convertPathListToSPMBatchString
+from soma.spm.spm_batch_maker_utils import moveSPMPath
 from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed, checkIfArgumentTypeIsStrOrUnicode
 from soma.spm.virtual_spm.spatial.realign.estimation_options import EstimationOptions
 from soma.spm.virtual_spm.spatial.realign.reslice_options import ResliceOptions
@@ -24,7 +25,7 @@ class EstimateAndReslice(Realign):
   they  match  the  first  image selected voxel-for-voxel. The resliced images are named the same as the originals, except
   that they are prefixed by 'r'.
   """
-  
+
   @checkIfArgumentTypeIsAllowed(list, 1)
   def addSessionPathList(self, session_path_list):
     """
@@ -36,29 +37,29 @@ class EstimateAndReslice(Realign):
     the images between sessions.
     """
     self.session_path_list.append(session_path_list)
-    
+
   @checkIfArgumentTypeIsAllowed(list, 1)
   def addSessionRealignedPathList(self, session_path_list):
     self.session_realigned_path_list.append(session_path_list)
-    
+
   @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
   def setMeanOuputPath(self, mean_output_path):
     self.mean_output_path = mean_output_path
-    
+
   @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
   def addSessionRealignmentParametersPath(self, realignment_parameters_path):
     self.realignment_parameters_path_list.append(realignment_parameters_path)
-    
+
   @checkIfArgumentTypeIsAllowed(EstimationOptions, 1)
   def replaceEstimationOptions(self, estimation_options):
     del self.estimation_options
     self.estimation_options = estimation_options
-    
+
   @checkIfArgumentTypeIsAllowed(ResliceOptions, 1)
   def replaceResliceOptions(self, reslice_options):
     del self.reslice_options
     self.reslice_options = reslice_options
-    
+
   def getStringListForBatch(self):
     if self.session_path_list:
       batch_list = []
@@ -72,7 +73,7 @@ class EstimateAndReslice(Realign):
       return batch_list
     else:
       raise ValueError("At least one session is required")
-    
+
   def _moveSPMDefaultPathsIfNeeded(self):
     reslice_choices = self.reslice_options.getReslicedImagesChoices()
     prefix = self.reslice_options.getCurrentFilenamePrefix()
@@ -90,12 +91,12 @@ class EstimateAndReslice(Realign):
             moveSPMPath(input_path, output_path, prefix=prefix)
       else:
         raise ValueError("Unvalid first resclices choices")
-      
+
       if self.realignment_parameters_path_list:
-        moveSPMPath(session_path[0], self.realignment_parameters_path_list[session_index], prefix="rp_", extension="txt")
+        moveSPMPath(session_path[0], self.realignment_parameters_path_list[session_index], prefix="rp_", extension="txt", no_image=True)
       else:
         pass
-      
+
     if reslice_choices[1] == 0:
       pass
     elif reslice_choices[1] == 1:
@@ -105,4 +106,4 @@ class EstimateAndReslice(Realign):
         pass
     else:
       raise ValueError("Unvalid second resclices choices")
-    
+

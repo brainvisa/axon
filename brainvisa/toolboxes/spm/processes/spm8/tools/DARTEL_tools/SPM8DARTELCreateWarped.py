@@ -55,10 +55,10 @@ name = "spm8 - create warped"
 signature = Signature(
   "flow_fields", ListOf(ReadDiskItem( "HDW DARTEL flow field", ["NIFTI-1 image", "SPM image", "MINC image"])),
   "DARTEL_directory", ReadDiskItem( "DARTEL analysis directory", "Directory"),
-  "images_1", ListOf(ReadDiskItem( "T1 MRI tissue probability map", "NIFTI-1 image")),
-  "images_2", ListOf(ReadDiskItem( "T1 MRI tissue probability map", "NIFTI-1 image")),
-  "images_1_warped", ListOf(WriteDiskItem( "T1 MRI tissue probability map", "NIFTI-1 image")),
-  "images_2_warped", ListOf(WriteDiskItem( "T1 MRI tissue probability map", "NIFTI-1 image")),
+  "images_1", ListOf(ReadDiskItem( "T1 MRI tissue probability map", ["NIFTI-1 image", "SPM image", "MINC image"])),
+  "images_2", ListOf(ReadDiskItem( "T1 MRI tissue probability map", ["NIFTI-1 image", "SPM image", "MINC image"])),
+  "images_1_warped", ListOf(WriteDiskItem( "T1 MRI tissue probability map", ["gz compressed NIFTI-1 image", "NIFTI-1 image"])),
+  "images_2_warped", ListOf(WriteDiskItem( "T1 MRI tissue probability map", ["gz compressed NIFTI-1 image", "NIFTI-1 image"])),
   "modulation", Boolean(),#TODO : hierarchy about modulation !!!!!
   "time_steps", Choice(1, 2, 4, 8, 16, 32, 64, 128, 256, 512),
   "interpolation", Choice("Nearest neighbour",
@@ -69,7 +69,7 @@ signature = Signature(
                           "5th Degree B-Spline",
                           "6th Degree B-Spline",
                           "7th Degree B-Spline"),
-    
+
   "batch_location", WriteDiskItem("Matlab SPM script", "Matlab script", section="default SPM outputs"),
 )
 #------------------------------------------------------------------------------
@@ -78,16 +78,16 @@ def initialization(self):
     self.setOptional("images_2",
                      "images_1_warped",
                      "images_2_warped")
-    
+
     self.linkParameters("DARTEL_directory", "flow_fields")
     self.linkParameters("images_1", "flow_fields")
     self.linkParameters("images_2", "flow_fields")
     self.linkParameters("images_1_warped", "flow_fields")
     self.linkParameters("images_2_warped", "flow_fields")
     self.linkParameters("DARTEL_directory", "flow_fields", self.updateDARTELDirectory)
-  
+
     self.addLink("batch_location", "DARTEL_directory", self.updateBatchPath)
-    
+
     #SPM8 default parameters
     self.modulation = False
     self.time_steps = 64
@@ -97,11 +97,11 @@ def updateDARTELDirectory(self, proc, dummy):
   if self.flow_fields:
     d =self.flow_fields[0].hierarchyAttributes()
     return self.signature["DARTEL_directory"].findValue(d)
-    
+
 def updateBatchPath(self, proc):
   if self.DARTEL_directory is not None:
     return os.path.join(self.DARTEL_directory.fullPath(), 'spm8_DARTEL_created_warped_job.m')
-  
+
 def execution( self, context ):
   context.runProcess('SPM8DARTELCreateWarped_generic',
                      flow_fields=self.flow_fields,
@@ -113,5 +113,4 @@ def execution( self, context ):
                      time_steps=self.time_steps,
                      interpolation=self.interpolation,
                      batch_location=self.batch_location)
-                          
-      
+

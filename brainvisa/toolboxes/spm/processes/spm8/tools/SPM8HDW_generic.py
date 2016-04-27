@@ -98,8 +98,8 @@ signature = Signature(
   "warping_iteration", Integer(section=warping_section),
   "warping_regularisation", Float(section=warping_section),
   "custom_outputs", Boolean(section='outputs'),
-  "deformation_field", WriteDiskItem("4D Volume", "NIFTI-1 image", section='outputs'),
-  "jacobian_determinant", WriteDiskItem("4D Volume", "NIFTI-1 image", section='outputs'),
+  "deformation_field", WriteDiskItem("4D Volume", ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section='outputs'),
+  "jacobian_determinant", WriteDiskItem("4D Volume", ["gz compressed NIFTI-1 image", "NIFTI-1 image"], section='outputs'),
 
   'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script', section='default SPM outputs' ),
 )
