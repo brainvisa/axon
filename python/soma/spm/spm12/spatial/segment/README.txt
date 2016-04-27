@@ -19,13 +19,14 @@ from soma.spm.spm12.spatial.segment.tissue import Tissue
 segment = Segment()
 #===============================================================================
 #The fastest way to use is using SPM defaults :
-segment.setSPMDefaultSetting('/tmp/t1mri.nii', '/tmp/TPM_template.nii')
-segment.setSPMDefaultChannel('/tmp/t1mri.nii')
+segment.setSPMDefaultSetting(['/tmp/t1mri.nii'], '/tmp/TPM_template.nii')
+#or
+segment.setSPMDefaultChannel(['/tmp/t1mri.nii'])
 segment.setSPMDefautTissues('/tmp/TPM_template.nii')
 #===============================================================================
 #But each parameters can be modified
 first_channel = Channel()
-first_channel.setVolumePath('/tmp/t1mri.nii')
+first_channel.setVolumePathList(['/tmp/t1mri.nii'])
 #the other parameters are already set with SPM default but to modify it, follow this example:
 first_channel.setBiasRegularisationToExtremelyLight()
 first_channel.setBiasFWHMTo40cutoff()
@@ -92,8 +93,8 @@ segment.setAffineRegularisationToEuropeanBrains()
 segment.setSmoothness(0)
 segment.setSamplingDistance(3)
 segment.saveDeformationFieldInverseAndForward()
-segment.setDeformationFieldInverseOutputPath('/tmp/inverse_field.nii')
-segment.setDeformationFieldForwardOutputPath('/tmp/forward_field.nii')
+segment.setDeformationFieldInverseOutputPathList('/tmp/inverse_field.nii')
+segment.setDeformationFieldForwardOutputPathList('/tmp/forward_field.nii')
 
 spm.addModuleToExecutionQueue(segment)
 spm.setSPMScriptPath('/tmp/batch_segment_12.m')

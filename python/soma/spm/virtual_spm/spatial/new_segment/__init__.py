@@ -17,10 +17,10 @@ class NewSegment():
   data  that  was  kindly  provided  by  Cynthia  Jongen  of  the  Imaging Sciences Institute at
   Utrecht, NL.
   """
-  @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
+  @checkIfArgumentTypeIsAllowed(list, 1)
   @checkIfArgumentTypeIsStrOrUnicode(argument_index=2)
-  def setSPMDefaultSetting(self, volume_path, tissue_proba_map_path):
-    self.setSPMDefaultChannel(volume_path)
+  def setSPMDefaultSetting(self, volume_path_list, tissue_proba_map_path):
+    self.setSPMDefaultChannel(volume_path_list)
     self.setSPMDefautTissues(tissue_proba_map_path)
 
   def appendChannel(self, channel):
