@@ -90,7 +90,7 @@ def moveFileAndCreateFoldersIfNeeded(source_path, destination_path):
     os.makedirs(os.path.dirname(destination_path))
   else:
     pass#folder already exists
-  shutil.move(source_path, destination_path)
+  moveFile(source_path, destination_path)
 #==============================================================================
 #
 #==============================================================================
@@ -106,3 +106,14 @@ def getTodayDateInSpmFormat():
   day = "%02i" % now.day
   spm_date = "%s%s%s" % (now.year, month, day)
   return spm_date
+
+def moveFile(source_path, destination_path):
+  try:
+    r = os.system("AimsFileConvert %s %s" % (source_path, destination_path))
+    if r != 0:
+        raise RuntimeError("AimsFileConvert failed")
+    os.remove(source_path)
+  except Exception, e:
+    print(e)
+    print("--> try : shutil.move")
+    shutil.move(source_path, destination_path)
