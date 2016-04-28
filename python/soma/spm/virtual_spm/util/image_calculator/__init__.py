@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from soma.spm.spm_batch_maker_utils import addBatchKeyWordInEachItem
+import tempfile
+from soma.spm.spm_batch_maker_utils import addBatchKeyWordInEachItem, moveFileAndCreateFoldersIfNeeded
 from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed, checkIfArgumentTypeIsStrOrUnicode
 
 class ImageCalculator():
@@ -26,7 +27,12 @@ class ImageCalculator():
     pathname  is  given. If a path name is given here, the output directory setting will
     be ignored.
     """
-    self.output_path = image_path
+    if image_path.split('.')[-1] != "nii":
+        self.real_output_path =  image_path
+        self.output_path = tempfile.NamedTemporaryFile(suffix=".nii").name
+    else:
+        self.real_output_path = None
+        
     
   @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
   def setOutputDirectory(self, directory_path):
@@ -76,3 +82,10 @@ class ImageCalculator():
       return batch_list
     else:
       raise ValueError("Missing input_path_list and/or expression")
+  
+  def _moveSPMDefaultPathsIfNeeded(self):
+      if self.real_output_path is not None:
+          moveFileAndCreateFoldersIfNeeded(self.output_path, 
+                                           self.real_output_path)
+      else:
+          pass#output is already in Nifti format
