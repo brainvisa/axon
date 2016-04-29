@@ -100,9 +100,17 @@ def execution( self, context ):
       pass
   else:
     pass
+  deformation_fullpath_list = []
+  for deformation_field in self.flow_fields:
+      if deformation_field.format == "gz compressed NIFTI-1 image":
+        context.system("gunzip", "-f", deformation_field.fullPath())
+        deformation_path = deformation_field.fullPath().replace(".nii.gz", ".nii")
+        deformation_fullpath_list.append(deformation_path)
+      else:
+        deformation_fullpath_list.append(deformation_field.fullPath())
 
   create_warped = CreateWarped()
-  create_warped.setFlowFieldPathList([diskitem.fullPath() for diskitem in self.flow_fields])
+  create_warped.setFlowFieldPathList(deformation_fullpath_list)
   create_warped.setFirstImagePathList([diskitem.fullPath() for diskitem in self.images_1])
   if self.images_2:
     create_warped.appendImageList([diskitem.fullPath() for diskitem in self.images_2])

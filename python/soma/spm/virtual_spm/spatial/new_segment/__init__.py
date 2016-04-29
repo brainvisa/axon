@@ -258,7 +258,6 @@ class NewSegment():
         moveSPMPath(volume_path,
                     seg8_mat_path,
                     suffix="_seg8",
-                    extension="mat",
-                    no_image=True)
+                    extension="mat")
 
 

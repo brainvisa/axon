@@ -93,7 +93,7 @@ class EstimateAndReslice(Realign):
         raise ValueError("Unvalid first resclices choices")
 
       if self.realignment_parameters_path_list:
-        moveSPMPath(session_path[0], self.realignment_parameters_path_list[session_index], prefix="rp_", extension="txt", no_image=True)
+        moveSPMPath(session_path[0], self.realignment_parameters_path_list[session_index], prefix="rp_", extension="txt")
       else:
         pass
 

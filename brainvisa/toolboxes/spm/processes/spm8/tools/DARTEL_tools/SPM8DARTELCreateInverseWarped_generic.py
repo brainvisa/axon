@@ -55,7 +55,7 @@ name = "spm8 - create inverse warped - generic"
 #------------------------------------------------------------------------------
 
 signature = Signature(
-  "flow_fields", ListOf(ReadDiskItem( "4D Volume", ["NIFTI-1 image", "SPM image", "MINC image"])),
+  "flow_fields", ListOf(ReadDiskItem( "4D Volume", ["gz compressed NIFTI-1 image", "NIFTI-1 image", "SPM image", "MINC image"])),
   "images", ListOf(ReadDiskItem( "4D Volume", ["NIFTI-1 image", "SPM image", "MINC image"])),
   "images_warped", ListOf(WriteDiskItem( "4D Volume", ["gz compressed NIFTI-1 image", "NIFTI-1 image"])),
   "time_steps", Choice(1, 2, 4, 8, 16, 32, 64, 128, 256, 512),
@@ -86,8 +86,17 @@ def updateBatchPath(self, proc):
     return os.path.join(self.images_warped[0].fullPath(), 'spm8_DARTEL_created_inverse_warped_job.m')
 
 def execution( self, context ):
+  deformation_fullpath_list = []
+  for deformation_field in self.flow_fields:
+      if deformation_field.format == "gz compressed NIFTI-1 image":
+        context.system("gunzip", "-f", deformation_field.fullPath())
+        deformation_path = deformation_field.fullPath().replace(".nii.gz", ".nii")
+        deformation_fullpath_list.append(deformation_path)
+      else:
+        deformation_fullpath_list.append(deformation_field.fullPath())
+
   create_inverse_warped = CreateInverseWarped()
-  create_inverse_warped.setFlowFieldPathList([diskitem.fullPath() for diskitem in self.flow_fields])
+  create_inverse_warped.setFlowFieldPathList(deformation_fullpath_list)
   create_inverse_warped.setImagePathList([diskitem.fullPath() for diskitem in self.images])
 
   if self.images_warped:

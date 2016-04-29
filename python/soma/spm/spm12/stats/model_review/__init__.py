@@ -82,8 +82,7 @@ class ModelReview(SPM12MainModule):
                                          self.output_results_path)
       elif os.path.exists(os.path.join('/tmp', "spm_%s.%s" % (spm_date, ext))):
         moveFileAndCreateFoldersIfNeeded(os.path.join('/tmp', "spm_%s.%s" % (spm_date, ext)),
-                                         self.output_results_path,
-                                         no_image=True)
+                                         self.output_results_path)
       else:
         raise RuntimeError("Output file not found")
     else:

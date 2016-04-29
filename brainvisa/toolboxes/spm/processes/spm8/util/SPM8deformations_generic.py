@@ -31,6 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from brainvisa.processes import *
+import tempfile
 from soma.spm.spm8.util.deformations import Composition
 from soma.spm.spm8.util.deformations import Deformations
 # from soma.spm.spm8.util.deformations.composition import MatFileImported
@@ -61,7 +62,7 @@ name = 'spm8 - Deformations : apply deformation field- generic'
 #TODO : Add all available compositions but BV interface is not very efficient to do this
 signature = Signature(
   'input_images', ListOf(ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'])),#TODO : modify because 4D is unvailable from SPM
-  'deformation_field', ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image']),
+  'deformation_field', ReadDiskItem('4D Volume', ["gz compressed NIFTI-1 image", 'NIFTI-1 image', 'SPM image', 'MINC image']),
   'apply_inverse', Boolean(),
   'reference_volume', ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image']),
   'interpolation', Choice("Nearest neighbour",
@@ -125,10 +126,18 @@ def updateBatchPath(self, proc):
     return os.path.join(ouput_directory, 'spm8_deformations_job.m')
 
 def execution(self, context):
+  context.write(str(self.deformation_field.format) == "gz compressed NIFTI-1 image")
+  if str(self.deformation_field.format) == "gz compressed NIFTI-1 image":
+    context.write(self.deformation_field.format)
+    context.system("gunzip", "-f", self.deformation_field.fullPath())
+    deformation_fullpath = self.deformation_field.fullPath().replace(".nii.gz", ".nii")
+  else:
+    deformation_fullpath = self.deformation_field.fullPath()
+
   deformations = Deformations()
 
   deformation_field = DeformationField()
-  deformation_field.setDeformationFieldPath(self.deformation_field.fullPath())
+  deformation_field.setDeformationFieldPath(deformation_fullpath)
 
   if self.apply_inverse:
     comp = Composition()

@@ -57,11 +57,11 @@ def convertPathListToSPMBatchString(path_list, add_dimension=True):
 @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
 #@checkIfArgumentTypeIsStrOrUnicode(argument_index=2)
 #@checkIfArgumentTypeIsStrOrUnicode(argument_index=3)
-def moveSPMPath(reference_path, output_path, prefix='', suffix='', extension=None, no_image=False):
+def moveSPMPath(reference_path, output_path, prefix='', suffix='', extension=None):
   default_spm_path = _addFileNamePrefixAndSuffixToPath(reference_path, prefix, suffix)
   if extension is not None:
     default_spm_path = _replaceFilePathExtension(default_spm_path, extension)
-  moveFileAndCreateFoldersIfNeeded(default_spm_path, output_path, no_image)
+  moveFileAndCreateFoldersIfNeeded(default_spm_path, output_path)
 
 @checkIfArgumentTypeIsStrOrUnicode(argument_index=0)
 @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
@@ -85,15 +85,16 @@ def _replaceFilePathExtension(path, extension):
 
 @checkIfArgumentTypeIsStrOrUnicode(argument_index=0)
 @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
-def moveFileAndCreateFoldersIfNeeded(source_path, destination_path, no_image=False):
+def moveFileAndCreateFoldersIfNeeded(source_path, destination_path):
   if not os.path.exists(os.path.dirname(destination_path)):
     os.makedirs(os.path.dirname(destination_path))
   else:
     pass#folder already exists
-  if no_image:
-    shutil.move(source_path, destination_path)
+  if destination_path.endswith(".gz"):
+    os.system("gzip %s" % source_path)
+    shutil.move(source_path+".gz", destination_path)
   else:
-    moveImage(source_path, destination_path)
+    shutil.move(source_path, destination_path)
 #==============================================================================
 #
 #==============================================================================
@@ -109,14 +110,3 @@ def getTodayDateInSpmFormat():
   day = "%02i" % now.day
   spm_date = "%s%s%s" % (now.year, month, day)
   return spm_date
-
-def moveImage(source_path, destination_path, no_image=False):
-  try:
-    r = os.system("AimsFileConvert %s %s" % (source_path, destination_path))
-    if r != 0:
-        raise RuntimeError("AimsFileConvert failed")
-    os.remove(source_path)
-  except Exception, e:
-    print(e)
-    print("--> try : shutil.move")
-    shutil.move(source_path, destination_path)

@@ -31,10 +31,12 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from brainvisa.processes import *
+import tempfile
 from soma.spm.spm12.tools.dartel_tools.normalise_to_mni import NormaliseToMNI
 from soma.spm.spm_launcher import SPM12, SPM12Standalone
 from soma.spm.spm12.tools.dartel_tools.normalise_to_mni.many_subjects import ManySubjects
 import numpy
+import gzip
 
 #------------------------------------------------------------------------------
 configuration = Application().configuration
@@ -58,7 +60,7 @@ name = 'spm12 - DARTEL - Normalise to mni - generic'
 
 signature = Signature(
   'final_template', ReadDiskItem("4D Volume", ["NIFTI-1 image", "SPM image", "MINC image"]),
-  'flow_fields', ListOf(ReadDiskItem("4D Volume", ["NIFTI-1 image", "SPM image", "MINC image"])),
+  'flow_fields', ListOf(ReadDiskItem("4D Volume", ["gz compressed NIFTI-1 image", "NIFTI-1 image", "SPM image", "MINC image"])),
   'images_0', ListOf(ReadDiskItem("4D Volume", ["NIFTI-1 image", "SPM image", "MINC image"])),
   'images_0_warped', ListOf(WriteDiskItem("4D Volume", ["gz compressed NIFTI-1 image", "NIFTI-1 image"])),
 
@@ -105,6 +107,15 @@ def updateBatchPath(self, proc):
 
 #------------------------------------------------------------------------------
 def execution( self, context ):
+  deformation_fullpath_list = []
+  for deformation_field in self.flow_fields:
+      if deformation_field.format == "gz compressed NIFTI-1 image":
+        context.system("gunzip", "-f", deformation_field.fullPath())
+        deformation_path = deformation_field.fullPath().replace(".nii.gz", ".nii")
+        deformation_fullpath_list.append(deformation_path)
+      else:
+        deformation_fullpath_list.append(deformation_field.fullPath())
+
   if self.bounding_box == "default : NaN":
     bounding_box = [["NaN", "NaN", "NaN"],["NaN", "NaN", "NaN"]]
   else:
@@ -122,7 +133,7 @@ def execution( self, context ):
     normalise.setFinalTemplatePath(self.final_template.fullPath())
 
   many_subjects = ManySubjects()
-  many_subjects.setFlowFieldPathList([flow_field.fullPath() for flow_field in self.flow_fields])
+  many_subjects.setFlowFieldPathList(deformation_fullpath_list)
   many_subjects.appendImagePathList([image.fullPath() for image in self.images_0])
   if self.images_0_warped:
     many_subjects.appendOutputImagePathList([image_warped.fullPath() for image_warped in self.images_0_warped])

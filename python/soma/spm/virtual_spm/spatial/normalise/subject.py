@@ -35,8 +35,7 @@ class SubjectToEstimate():
       moveSPMPath(self.source_image_path,
                   self.sn_mat_filepath,
                   suffix="_sn",
-                  extension="mat",
-                  no_image=True)
+                  extension="mat")
     else:
       pass#default prefix is used
 

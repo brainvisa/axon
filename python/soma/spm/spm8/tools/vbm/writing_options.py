@@ -600,12 +600,10 @@ class WritingOptions():
       moveSPMPath(volume_reference_path,
                   self.deformation_matrix_path,
                   suffix=self.deformation_matrix_suffix,
-                  extension=self.deformation_matrix_extension,
-                  no_image=True)
+                  extension=self.deformation_matrix_extension)
     if self.matter_volumes_path is not None:
       moveSPMPath(volume_reference_path,
                   self.matter_volumes_path,
                   prefix=self.matter_volumes_prefix,
                   suffix=self.matter_volumes_suffix,
-                  extension=self.matter_volumes_extension,
-                  no_image=True)
+                  extension=self.matter_volumes_extension)
