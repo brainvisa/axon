@@ -339,7 +339,9 @@ class ReadDiskItem( Parameter ):
       fullSelection = dict( selection )
 
     if result is None and fullSelection is not None:
-      values = list( self._findValues( fullSelection, requiredAttributes, write=(write or self._write) , _debug=_debug ) )
+      values = list(self._findValues(fullSelection, requiredAttributes,
+                                    write=(write or self._write),
+                                    _debug=_debug))
 
       if values:
         if len( values ) == 1:
@@ -443,7 +445,8 @@ class ReadDiskItem( Parameter ):
     return result
 
   def diskItemDistance( self, diskItem, other ):
-    '''Returns a value that represents a sort of distance between two DiskItems.
+    '''Returns a value that represents a sort of distance between two
+       DiskItems.
         The distance is not a number but distances can be sorted.'''
     # Count the number of common hierarchy attributes
     if isinstance( other, DiskItem ):
@@ -509,8 +512,15 @@ class ReadDiskItem( Parameter ):
     if selection:
       # in selection attributes, choose only key attributes because the request must not be too restrictive to avoid failure. The results will be sorted by distance to the selection later.
       keyAttributes=self.database.getTypesKeysAttributes(self.type.name)
-      keySelection=dict( (i,selection[i] ) for i in keyAttributes if i in selection )
-    readValues = ( i for i in self.database.findDiskItems( keySelection, _debug=_debug, exactType = self.exactType, **requiredAttributes ) if self.diskItemFilter( i, requiredAttributes ) )
+      keySelection=dict((i,selection[i]) for i in keyAttributes
+                        if i in selection)
+    # type is required in database selection
+    if '_type' not in keySelection:
+      keySelection['_type'] = self.type.name
+    readValues = (i for i in self.database.findDiskItems(
+        keySelection, _debug=_debug, exactType=self.exactType,
+        **requiredAttributes)
+      if self.diskItemFilter(i, requiredAttributes))
     if write:
       # use selection attributes to create a new diskitem
       fullPaths = set()
