@@ -41,6 +41,7 @@ from soma.spm.spm8.util.deformations.composition import DeformationField
 # from soma.spm.spm8.util.deformations.composition import Identity
 from soma.spm.spm8.util.deformations.composition import Inverse
 from soma.spm.spm_launcher import SPM8, SPM8Standalone
+from soma.spm.spm_batch_maker_utils import gunzipNifti
 
 #------------------------------------------------------------------------------
 configuration = Application().configuration
@@ -126,11 +127,10 @@ def updateBatchPath(self, proc):
     return os.path.join(ouput_directory, 'spm8_deformations_job.m')
 
 def execution(self, context):
-  context.write(str(self.deformation_field.format) == "gz compressed NIFTI-1 image")
   if str(self.deformation_field.format) == "gz compressed NIFTI-1 image":
-    context.write(self.deformation_field.format)
-    context.system("gunzip", "-f", self.deformation_field.fullPath())
-    deformation_fullpath = self.deformation_field.fullPath().replace(".nii.gz", ".nii")
+    deformation_fullpath = tempfile.NamedTemporaryFile(prefix="y_", suffix=".nii").name
+    gunzipNifti(self.deformation_field.fullPath(),
+                deformation_fullpath)
   else:
     deformation_fullpath = self.deformation_field.fullPath()
 

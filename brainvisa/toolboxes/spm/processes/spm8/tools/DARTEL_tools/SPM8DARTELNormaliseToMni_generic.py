@@ -35,6 +35,7 @@ import tempfile
 from soma.spm.spm8.tools.dartel_tools.normalise_to_mni import NormaliseToMNI
 from soma.spm.spm8.tools.dartel_tools.normalise_to_mni.many_subjects import ManySubjects
 from soma.spm.spm_launcher import SPM8, SPM8Standalone
+from soma.spm.spm_batch_maker_utils import gunzipNifti
 import numpy
 #------------------------------------------------------------------------------
 configuration = Application().configuration
@@ -108,9 +109,10 @@ def updateBatchPath(self, proc):
 def execution( self, context ):
   deformation_fullpath_list = []
   for deformation_field in self.flow_fields:
-      if deformation_field.format == "gz compressed NIFTI-1 image":
-        context.system("gunzip", "-f", deformation_field.fullPath())
-        deformation_path = deformation_field.fullPath().replace(".nii.gz", ".nii")
+      if str(deformation_field.format) == "gz compressed NIFTI-1 image":
+        deformation_path = tempfile.NamedTemporaryFile(prefix="y_", suffix=".nii").name
+        gunzipNifti(deformation_field.fullPath(),
+                    deformation_path)
         deformation_fullpath_list.append(deformation_path)
       else:
         deformation_fullpath_list.append(deformation_field.fullPath())

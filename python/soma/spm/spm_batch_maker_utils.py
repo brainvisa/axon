@@ -90,9 +90,8 @@ def moveFileAndCreateFoldersIfNeeded(source_path, destination_path):
     os.makedirs(os.path.dirname(destination_path))
   else:
     pass#folder already exists
-  if destination_path.endswith(".gz"):
-    os.system("gzip %s" % source_path)
-    shutil.move(source_path+".gz", destination_path)
+  if destination_path.endswith(".nii.gz") and source_path.endswith(".nii"):
+    gzipNifti(source_path, destination_path)
   else:
     shutil.move(source_path, destination_path)
 #==============================================================================
@@ -110,3 +109,9 @@ def getTodayDateInSpmFormat():
   day = "%02i" % now.day
   spm_date = "%s%s%s" % (now.year, month, day)
   return spm_date
+
+def gzipNifti(input_path, output_path):
+  os.system("gzip -f < %s > %s" % (input_path, output_path))
+
+def gunzipNifti(input_path, output_path):
+  os.system("gunzip -f -k < %s > %s" % (input_path, output_path))
