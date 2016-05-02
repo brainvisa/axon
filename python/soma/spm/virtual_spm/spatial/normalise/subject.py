@@ -65,7 +65,7 @@ class SubjectToEstimateAndWrite(SubjectToEstimate):
       raise ValueError("source_image_path and image_path_list_to_write are mandatory")
 
   def movePathsIfNeeded(self, prefix):
-    super(SubjectToEstimateAndWrite, self).movePathsIfNeeded()
+    SubjectToEstimate.movePathsIfNeeded(self)
     if self.image_path_list_written is not None:
       if len(self.image_path_list_to_write) == len(self.image_path_list_written):
         for input_path, output_path in zip(self.image_path_list_to_write, self.image_path_list_written):
