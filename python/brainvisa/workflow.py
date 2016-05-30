@@ -1000,7 +1000,7 @@ def process_to_workflow(
   #ptwf = ProcessToFastExecution( process, output )
   ptwf = ProcessToSomaWorkflow(process, output, input_file_processing,
                                output_file_processing, context=None)
-  ptwf.doIt()
+  return ptwf.doIt()
 
 
 if __name__ == '__main__':
@@ -1013,7 +1013,7 @@ if __name__ == '__main__':
   #process_to_workflow(theProcess, open( 'test.dot', 'w' ), clusters = True, files = False)
   #process_to_workflow( theProcess, open( 'test.sh', 'w' ) )
   #process_to_workflow(theProcess, 'test.workflow')
-  process_to_workflow(process = theProcess, output = sys.argv[2],
+  workflow = process_to_workflow(process = theProcess, output = sys.argv[2],
                       input_file_processing = sys.argv[3],
                       output_file_processing = sys.argv[4])
 
