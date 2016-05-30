@@ -1080,6 +1080,12 @@ class Parameterized(object):
         self.setHidden(*args)
         self.setOptional(*args)
 
+    def setSection(self, section, *args):
+      """Sets the section of the parameters. Parameters are then sorted by
+      section in the GUI"""
+      for k in args:
+          self.signature[k]._section = section
+
     def setConvertedValue(self, name, value):
         """Sets the value but stores the previous value in an internal dictionary."""
         self._convertedValues[name] = getattr(self, name)
