@@ -145,6 +145,7 @@ class ReadDiskItem( Parameter ):
         self._requiredAttributes[ '_format' ] = self._formatsWithConversion.union( formats )
       else:
         self._requiredAttributes[ '_format' ] = formats
+    self._requiredAttributes['_type'] = self.type.name
     #if _debug is not None:
       #print >> _debug, '!_getRequiredAttributes! 6', self._requiredAttributes[ '_format' ]
     return self._requiredAttributes
