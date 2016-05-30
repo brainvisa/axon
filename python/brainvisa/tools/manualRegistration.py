@@ -143,15 +143,11 @@ class ManualRegistration():
         self._previousTranslationValues.update({self._mainDiag.scaleSp: 1.})
         
         for sp in translationSp + rotationSp + [self._mainDiag.scaleSp]:
-            QtCore.QObject.connect(sp,
-                                   QtCore.SIGNAL('valueChanged(double )'),
-                                   self._spinChanged)
+            sp.valueChanged.connect(self._spinChanged)
             self._spinBoxTimers.update({sp: QtCore.QTimer()})
             self._spinBoxTimers[sp].setInterval(1)
             self._spinBoxTimers[sp].setSingleShot(True)
-            QtCore.QObject.connect(self._spinBoxTimers[sp],
-                                   QtCore.SIGNAL("timeout()"),
-                                   slots[sp])
+            self._spinBoxTimers[sp].timeout.connect(slots[sp])
 
         self._mainDiag.alignCentersBt.clicked.connect(self._alignCenters)
         self._mainDiag.goToRotationCenterBt.clicked.connect(self._goToRotationCenter)
