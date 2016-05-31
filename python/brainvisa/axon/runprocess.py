@@ -409,10 +409,11 @@ if options.soma_workflow:
     for io, opt in enumerate((options.input_file_processing,
                               options.output_file_processing)):
         if opt is None:
-            if resource_id in ('localhost', None, socket.gethostname()):
-                file_proc = workflow.ProcessToSomaWorkflow.NO_FILE_PROCESSING
-            else:
+            if io == 0 and resource_id not in ('localhost', None,
+                                           socket.gethostname()):
                 file_proc = workflow.ProcessToSomaWorkflow.BV_DB_SHARED_PATH
+            else:
+                file_proc = workflow.ProcessToSomaWorkflow.NO_FILE_PROCESSING
         elif opt == 'local_path':
             file_proc = workflow.ProcessToSomaWorkflow.NO_FILE_PROCESSING
         elif opt == 'transfer':
