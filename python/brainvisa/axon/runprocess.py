@@ -252,6 +252,9 @@ Example:
 Named arguments (in the shape argx=valuex) may address sub-processes of a pipeline, using the dot separator:
 
 PrepareSubject.t1mri=/home/myself/mymri.nii
+
+For a more precise description, please look at the web documentation:
+http://brainvisa.info/axon/user_doc/axon_manual2.html#brainvisa-commandline
 '''
 
 parser = OptionParser(description='Run a single BrainVISA / Axon process',
