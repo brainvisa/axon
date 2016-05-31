@@ -156,6 +156,8 @@ or:
 
   brainvisa --help
 
+It is also possible to use BrainVISA processing as commandline, see :ref:`the commandline section <brainvisa_commandline>` of the doc.
+
 
 Program: Anatomist
 ++++++++++++++++++

@@ -461,6 +461,135 @@ Here are the steps to distribute a BrainVISA iteration on the processors of your
     Another way to do the same is to run *Data management -> Update databases* process and then *Data management -> Convert old database steps -> 2 - Check database*.
 
 
+.. _brainvisa_commandline:
+
+Using BrainVISA as commandlines ("batch mode")
+==============================================
+
+All of BrainVISA functionalities may be used in a non-graphical, batch mode. Some advanced functionalities require scripting in Python language (see the :axondev:`developers section <index.html>`), but it is possible to use a commandline interface to perform processing with BrainVISA.
+
+
+Running a basic process
+-----------------------
+
+Running a process, or an iteration over a process, can be done using the commandline: ``axon-runprocess`` which is located (as every other program in BrainVISA) in the ``bin/`` directory of the installed BrainVISA distribution. For programmers, this command is exactly the same as running ``python -m brainvisa.axon.runprocess``.
+
+To get help for this command, use the ``-h`` (or ``--help``) option:
+
+.. code-block:: bash
+
+    axon-runprocess --help
+
+Basically running a process in sequential mode is just a matter of specifying the process identifier (the process ID is its short filename) and parameters. For instance:
+
+.. code-block:: bash
+
+    axon-runprocess threshold input_image.nii output_image.nii "greater than" 200 0 False 0 32767
+
+will call the process "threshold" (see in BrainVISA interface in tools/thresholding) with the specified parameters, all in the given order.
+
+Some parameters are optional and may be omitted:
+
+.. code-block:: bash
+
+    axon-runprocess threshold input_image.nii output_image.nii "greater than" 200
+
+Some parameters may be specified with their name:
+
+.. code-block:: bash
+
+    axon-runprocess threshold input_image.nii output_image.nii threshold1=200
+
+To get help on the specified process, type:
+
+.. code-block:: bash
+
+    axon-runprocess --process-help threshold
+
+will produce a text-only version of the process documentation available in the BrainVISA user interface.
+
+In the above example, however, all required parameters are filled in exhaustively: for the threshold process, the parameters ``image_input`` and ``image_output`` must be specified. This default mode of ``axon-runprocess`` is the lightweight mode, and does not use databasing (nor history logging). It is faster to start, but for complex processes and pipelines, using databasing and parameters completion is useful.
+
+
+Parameters types and syntax
+---------------------------
+
+BrainVISA accepts different parameters types. They can be mainly represented as strings, numbers, booleans, or lists.
+
+On commandline arguments, strings are represented directly, or between quotes to include spaces (using shell quotes interpretation). Numbers are also passed directly. Boolean values can be True or False, or 0 or 1.
+
+Lists are represented as in Python language syntax, between square braces, and values are separated by comas. Strings in lists must use quotes:
+
+::
+
+  ["file1", "file2]
+  [12.5, 3, 5]
+
+To pass through shell interpretation, commandline arguments for lists will genrerally require additional quotes or escaping:
+
+.. code-block:: bash
+
+    axon-runprocess a_process_with_list param_list='["file1", "file2"]'
+
+
+Running with databasing and parameters completion
+-------------------------------------------------
+
+``axon-runprocess`` can be given the parameter ``--enabledb`` to activate databasing and thus parameters completion. Databases must have been setup previously (using the GUI typically). If we suppose that we have a BrainVISA database in the directroy ``/data/database``, containing a T1 MRI for subject ``my_subject`` and center ``my_center``, we would like to run the Morphologist pipeline on it.
+
+Using as previously:
+
+.. code-block:: bash
+
+    axon-runprocess morphologist t1mri=/data/database/my_center/my_subject/t1mri/default/acquisition/my_subject.nii
+
+will **not work** because many parameters are missing, and databasing/completion is not activated here.
+
+However the following will work:
+
+.. code-block:: bash
+
+    axon-runprocess --enabledb morphologist t1mri=/data/database/my_center/my_subject/t1mri/default/acquisition/my_subject.nii
+
+
+Distributed execution with batch mode
+-------------------------------------
+
+In the above examples we only used sequential (mono-processor) execution. It is also possile to use the distributed execution features granted via :somaworkflow:`Soma-Workflow <index.html>` to activate either multiprocessor processing, or remote execution on a cluster, to run a pipeline in commandline mode.
+
+This is done using the ``--soma_workflow`` (or ``--swf``) option, and additional options to specify the computing resource to use, login, password parameters, the cluster queue tu use etc, and also specify if files have to be transfered through the network or translated for a different filesystem or mount point.
+
+Without other options, ``--swf`` will activate Soma-Workflow on the local machine, and will use the local cores or processors.
+
+For non-local mode, Soma-Workflow needs to be configured previously. See the help to get additional options.
+
+Note that the ``--enabledb`` option is especially useful with this mode:
+
+.. code-block:: bash
+
+    axon-runprocess --enabledb --swf morphologist t1mri=/data/database/my_center/my_subject/t1mri/default/acquisition/my_subject.nii
+
+
+Running iterations
+------------------
+
+The iteration mechanism can also be used in commandline mode. This is triggered using the option ``-i`` (or ``--iterate``). This option specifies on which parameter(s) the iteration should be done. To iterate over several parameters, use several ``-i`` options.
+
+The iterated values are still given as the parameters, but parameters which are iterated have to be lists (using the python-like syntax ``[value1, value2, ...]``). All iterated parameters are iterated jointly, and must have the same number of elements.
+
+Of course, the Soma-workflow mode is allowed.
+
+.. code-block:: bash
+
+    axon-runprocess --swf -i image_output -i threshold1 threshold input_image.nii '["output_image1.nii", "output_image2.nii"]' threshold1='[100, 200]'
+
+Combining this mode with the database completion mode, and distributed execution, grants all the processing power of BrainVISA in the batch mode.
+
+.. code-block:: bash
+
+    axon-runprocess --enabledb --swf --i t1mri morphologist t1mri='["/data/database/my_center/my_subject1/t1mri/default/acquisition/my_subject1.nii", "/data/database/my_center/my_subject2/t1mri/default/acquisition/my_subject2.nii"]'
+
+
 Bibliography
 ============
 
