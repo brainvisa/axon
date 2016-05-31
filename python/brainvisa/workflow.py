@@ -801,7 +801,8 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
   
   
   
-  def create_input_file( self, fileId, fileName, fullPaths = None, databaseUuid = None, database_dir = None ): 
+  def create_input_file(self, fileId, fileName, fullPaths=None,
+                        databaseUuid=None, database_dir=None):
     if not self.__input_file_processing == self.NO_FILE_PROCESSING:
       #print 'create_input_file' + repr( ( fileId, os.path.basename( fileName ), fullPaths, databaseUuid, database_dir ) )
       if self.__input_file_processing == self.FILE_TRANSFER:
@@ -813,9 +814,10 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
 
       elif self.__input_file_processing == self.SHARED_RESOURCE_PATH:
         if databaseUuid and database_dir:
-          global_in_file = SharedResourcePath(relative_path=fileName[(len(database_dir)+1):], 
-                                              namespace="brainvisa", 
-                                              uuid=databaseUuid)  
+          global_in_file = SharedResourcePath(
+            relative_path=fileName[(len(database_dir)+1):],
+            namespace="brainvisa",
+            uuid=databaseUuid)
         else: 
           print "Cannot find database uuid for file " + repr(fileName) + " => the file will be transfered."
           global_in_file = FileTransfer(is_input=True, 
@@ -874,7 +876,8 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
     
 
 
-  def create_output_file( self, fileId, fileName, fullPaths = None, databaseUuid = None, database_dir = None ):
+  def create_output_file(self, fileId, fileName, fullPaths=None,
+                         databaseUuid=None, database_dir=None):
     if not self.__output_file_processing == self.NO_FILE_PROCESSING:
       #print 'create_output_file' + repr( ( fileId, os.path.basename( fileName ), fullPaths, databaseUuid, database_dir ) )
       if self.__output_file_processing == self.FILE_TRANSFER:
