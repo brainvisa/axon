@@ -899,7 +899,10 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
                                        name=os.path.basename(fileName),
                                        client_paths=fullPaths)
           self.__file_transfers[fileId] = global_out_file
-        
+      else:
+          raise ValueError('Unsupported output file processing mode: %s'
+                           % self.__output_file_processing)
+
       if global_out_file:
         jobs_to_inspect=[]
         for job_id in self._iofiles[fileId][0]:
