@@ -64,7 +64,7 @@ param_types_table = \
         trait_types.Float: neuroData.Number,
         trait_types.Int: neuroData.Integer,
         trait_types.File: fileOptions,
-        trait_types.File: fileOptions,
+        trait_types.Directory: fileOptions,
         trait_types.Enum: (neuroData.Choice, choiceOptions),
         trait_types.List: (neuroData.ListOf, listOptions),
         trait_types.ListFloat: (neuroData.ListOf, listOptions),
@@ -89,14 +89,20 @@ def make_parameter(param, name='<unnamed>'):
 def convert_capsul_value(value):
     if isinstance(value, traits.TraitListObject):
         value = [convert_capsul_value(x) for x in value]
+    elif value is traits.Undefined or value in ("<undefined>", "None"):
+        # FIXME: "<undefined>" or "None" is a bug in the Controller GUI
+        value = None
     return value
 
 
-def convert_to_capsul_value(value):
+def convert_to_capsul_value(value, item_type=None):
     if isinstance(value, DiskItem):
         value = value.fullPath()
     elif isinstance(value, list):
-        value = [convert_to_capsul_value(x) for x in value]
+        value = [convert_to_capsul_value(x, item_type.contentType)
+                 for x in value]
+    elif value is None and isinstance(item_type, ReadDiskItem):
+        value = traits.Undefined
     return value
 
 
@@ -116,6 +122,7 @@ class CapsulProcess(processes.Process):
         ''' Sets a CAPSUL process into the Axon (proxy) process
         '''
         self._capsul_process = process
+        self._capsul_process.on_trait_change(self._process_trait_changed)
 
 
     def setup_capsul_process(self):
@@ -163,12 +170,14 @@ class CapsulProcess(processes.Process):
                 optional.append(name)
         signature = Signature(*signature_args)
         signature['edit_pipeline'] = neuroData.Boolean()
+        signature['edit_study_config'] = neuroData.Boolean()
         self.__class__.signature = signature
         self.changeSignature(signature)
 
         if optional:
             self.setOptional(*optional)
         self.edit_pipeline = False
+        self.edit_study_config = False
         for name in process.user_traits():
             if name in excluded_traits:
                 continue
@@ -177,6 +186,8 @@ class CapsulProcess(processes.Process):
                 setattr(self, name, convert_capsul_value(value))
 
         self.linkParameters(None, 'edit_pipeline', self._on_edit_pipeline)
+        self.linkParameters(None, 'edit_study_config',
+                            self._on_edit_study_config)
 
 
     def propagate_parameters_to_capsul(self):
@@ -187,9 +198,13 @@ class CapsulProcess(processes.Process):
         By default, it assumes a direct correspondance between Axon and Capsul processes parameters, so it will just copy all parameters values. If the initialization() method has been specialized in a particular process, this direct correspondance will likely be broken, so this method should also be overloaded.
         '''
         process = self.get_capsul_process()
-        for name in six.iterkeys(self.signature):
-            setattr(process, name,
-                    convert_to_capsul_value(getattr(self, name)))
+        for name, itype in six.iteritems(self.signature):
+            converted_value = convert_to_capsul_value(getattr(self, name),
+                                                      itype)
+            try:
+                setattr(process, name, converted_value)
+            except traits.TraitError:
+                pass
 
 
     def executionWorkflow(self, context=processes.defaultContext()):
@@ -203,7 +218,7 @@ class CapsulProcess(processes.Process):
         from capsul.process import process_with_fom
         from capsul.pipeline import pipeline_workflow
 
-        study_config = self.init_study_config(context)
+        study_config = self.get_study_config(context)
 
         self.propagate_parameters_to_capsul()
         process = self.get_capsul_process()
@@ -286,6 +301,15 @@ class CapsulProcess(processes.Process):
         return study_config
 
 
+    def get_study_config(self, context=processes.defaultContext()):
+        study_config = getattr(self._capsul_process, 'study_config', None)
+        if study_config is None:
+            study_config = self.init_study_config(context)
+            self._capsul_process.study_config = study_config
+        context.study_config = study_config
+        return study_config
+
+
     def _on_edit_pipeline(self, process, dummy):
         from brainvisa.configuration import neuroConfig
         if not neuroConfig.gui:
@@ -295,15 +319,48 @@ class CapsulProcess(processes.Process):
         else:
             self._pipeline_view = None
 
+
     def _open_pipeline(self):
         from capsul.qt_gui.widgets import PipelineDevelopperView
         from capsul.pipeline.pipeline import Pipeline
         from brainvisa.tools.mainthreadlife import MainThreadLife
         Pipeline.hide_nodes_activation = False
+        self.propagate_parameters_to_capsul()
         mpv = PipelineDevelopperView(
           self.get_capsul_process(), allow_open_controller=True,
           show_sub_pipelines=True)
         mpv.show()
         self._pipeline_view = MainThreadLife(mpv)
+
+
+    def _process_trait_changed(self, name, new_value):
+        if name == 'trait_added' \
+                or name not in self._capsul_process.user_traits().keys():
+            return
+        try:
+            self.setValue(name, convert_capsul_value(new_value))
+        except Exception as e:
+            print('exception in _process_trait_changed:', e)
+            print('param:', name, ', value:', new_value, 'of type:',
+                  type(new_value))
+
+
+    def _on_edit_study_config(self, process, dummy):
+        from brainvisa.configuration import neuroConfig
+        if not neuroConfig.gui:
+            return
+        if process.edit_study_config:
+            processes.mainThreadActions().push(self._open_study_config_editor)
+        else:
+            self._study_config_editor = None
+
+
+    def _open_study_config_editor(self):
+        from soma.qt_gui.controller_widget import ScrollControllerWidget
+        from brainvisa.tools.mainthreadlife import MainThreadLife
+        study_config = self.get_study_config()
+        scv = ScrollControllerWidget(study_config, live=True)
+        scv.show()
+        self._study_config_editor= MainThreadLife(scv)
 
 
