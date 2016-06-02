@@ -95,6 +95,8 @@ def convert_capsul_value(value):
 def convert_to_capsul_value(value):
     if isinstance(value, DiskItem):
         value = value.fullPath()
+    elif isinstance(value, list):
+        value = [convert_to_capsul_value(x) for x in value]
     return value
 
 
@@ -295,7 +297,7 @@ class CapsulProcess(processes.Process):
 
     def _open_pipeline(self):
         from capsul.qt_gui.widgets import PipelineDevelopperView
-        from capsul.pipeline import Pipeline
+        from capsul.pipeline.pipeline import Pipeline
         from brainvisa.tools.mainthreadlife import MainThreadLife
         Pipeline.hide_nodes_activation = False
         mpv = PipelineDevelopperView(
