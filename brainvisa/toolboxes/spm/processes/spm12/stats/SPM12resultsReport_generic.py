@@ -42,9 +42,14 @@ from soma.spm.spm_launcher import SPM12Standalone, SPM12
 configuration = Application().configuration
 #------------------------------------------------------------------------------
 def validation():
-  spm = SPM12(configuration.SPM.spm12_path,
-              configuration.matlab.executable,
-              configuration.matlab.options)
+  try:
+    spm = SPM12Standalone(configuration.SPM.spm12_standalone_command,
+                          configuration.SPM.spm12_standalone_mcr_path,
+                          configuration.SPM.spm12_standalone_path)
+  except:
+    spm = SPM12(configuration.SPM.spm12_path,
+                configuration.matlab.executable,
+                configuration.matlab.options)
   return spm
 #------------------------------------------------------------------------------
 
@@ -202,8 +207,8 @@ def execution( self, context ):
   spm = validation()#This is singleton object
   spm.addModuleToExecutionQueue(result)
   spm.setSPMScriptPath(self.batch_location.fullPath())
-  spm.setMatlabScriptPath(matlab_batch_path)
-  spm.addMatlabCommandAfterSPMRunning(self.writeCompleteResultBatch(spm_workspace_directory))
+  #spm.setMatlabScriptPath(matlab_batch_path)
+  #spm.addMatlabCommandAfterSPMRunning(self.writeCompleteResultBatch(spm_workspace_directory))
   output = spm.run()
   context.log(name, html=output)
 

@@ -58,8 +58,8 @@ name = 'spm12 - Run DARTEL (create Templates) - generic'
 #------------------------------------------------------------------------------
 
 signature = Signature(
-    'images_1', ListOf( ReadDiskItem( '4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'] ) ),
-    'images_2', ListOf( ReadDiskItem( '4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'] ) ),
+    'images_1', ListOf( ReadDiskItem( '4D Volume', ["gz compressed NIFTI-1 image", 'NIFTI-1 image', 'SPM image', 'MINC image'] ) ),
+    'images_2', ListOf( ReadDiskItem( '4D Volume', ["gz compressed NIFTI-1 image", 'NIFTI-1 image', 'SPM image', 'MINC image'] ) ),
     'output_flow_field', ListOf( WriteDiskItem( '4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"] ) ),
     'output_template', ListOf( WriteDiskItem( '4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"] ) ),
     'template_basename', String(),
@@ -169,11 +169,17 @@ def execution( self, context ):
       pass
   else:
     pass
-
-  run_dartel = RunDartel()
-  run_dartel.setFirstImageList([diskitem.fullPath() for diskitem in self.images_1])
+#==============================================================================
+# convert volumes (to keep spm internal transorm in qform or if 5D volume)
+#==============================================================================
+  images_1_diskitem_list = convertDiskitemList(self.images_1)
   if self.images_2:
-    run_dartel.appendImageList([diskitem.fullPath() for diskitem in self.images_2])
+    images_2_diskitem_list = convertDiskitemList(self.images_2)
+#==============================================================================
+  run_dartel = RunDartel()
+  run_dartel.setFirstImageList([diskitem.fullPath() for diskitem in images_1_diskitem_list])
+  if self.images_2:
+    run_dartel.appendImageList([diskitem.fullPath() for diskitem in images_2_diskitem_list])
 
   if self.output_flow_field:
     run_dartel.setOutputFlowFieldPathList([diskitem.fullPath() for diskitem in self.output_flow_field])
@@ -249,4 +255,22 @@ def execution( self, context ):
   spm.setSPMScriptPath(self.batch_location.fullPath())
   output = spm.run()
   context.log(name, html=output)
+
+#==============================================================================
+#
+#==============================================================================
+def convertDiskitemList(context, diskitem_list):
+    new_diskitem_list = list()
+    for diskitem in diskitem_list:
+        new_diskitem_list.append(convertDiskitem(context, diskitem))
+    return new_diskitem_list
+
+def convertDiskitem(context, diskitem):
+    """convert to .nii"""
+    if str(diskitem.format) != "NIFTI-1 image":
+        diskitem_tmp = context.temporary("NIFTI-1 image")
+        moveNifti(diskitem.fullPath(), diskitem_tmp.fullPath())
+        return diskitem_tmp
+    else:
+        return diskitem
 

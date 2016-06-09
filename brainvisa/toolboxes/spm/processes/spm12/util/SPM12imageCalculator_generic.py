@@ -54,7 +54,7 @@ userLevel = 1
 name = 'spm12 - Image calculator - generic'
 
 signature = Signature(
-  'input_images', ListOf(ReadDiskItem('3D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'])),
+  'input_images', ListOf(ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'])),
   'output_image', WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"]),
   'expression', String(),
   'data_matrix', Boolean(),
@@ -87,7 +87,7 @@ def initialization(self):
 def updateBatchPath(self, proc):
   if self.output_image is not None:
     ouput_directory = os.path.dirname(self.output_image.fullPath())
-    return os.path.join(ouput_directory, 'spm8_imcalc_job.m')
+    return os.path.join(ouput_directory, 'spm12_imcalc_job.m')
 
 def execution(self, context):
   imcalc = ImageCalculator()

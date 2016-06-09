@@ -33,7 +33,7 @@
 from brainvisa.processes import *
 from soma.spm.spm12.tools.dartel_tools.create_warped import CreateWarped
 from soma.spm.spm_launcher import SPM12, SPM12Standalone
-from soma.spm.spm_batch_maker_utils import gunzipNifti
+from soma.spm.spm_batch_maker_utils import moveNifti
 
 #------------------------------------------------------------------------------
 configuration = Application().configuration
@@ -56,9 +56,9 @@ name = "spm12 - create warped - generic"
 #------------------------------------------------------------------------------
 
 signature = Signature(
-  "flow_fields", ListOf(ReadDiskItem( "4D Volume", ["NIFTI-1 image", "SPM image", "MINC image"])),
-  "images_1", ListOf(ReadDiskItem( "4D Volume", ["NIFTI-1 image", "SPM image", "MINC image"])),
-  "images_2", ListOf(ReadDiskItem( "4D Volume", ["NIFTI-1 image", "SPM image", "MINC image"])),
+  "flow_fields", ListOf(ReadDiskItem( "4D Volume", ["gz compressed NIFTI-1 image", "NIFTI-1 image", "SPM image", "MINC image"])),
+  "images_1", ListOf(ReadDiskItem( "4D Volume", ["gz compressed NIFTI-1 image", "NIFTI-1 image", "SPM image", "MINC image"])),
+  "images_2", ListOf(ReadDiskItem( "4D Volume", ["gz compressed NIFTI-1 image", "NIFTI-1 image", "SPM image", "MINC image"])),
   "images_1_warped", ListOf(WriteDiskItem( "4D Volume", ["gz compressed NIFTI-1 image", "NIFTI-1 image"])),
   "images_2_warped", ListOf(WriteDiskItem( "4D Volume", ["gz compressed NIFTI-1 image", "NIFTI-1 image"])),
   "modulation", Boolean(),
@@ -101,21 +101,19 @@ def execution( self, context ):
       pass
   else:
     pass
-  deformation_fullpath_list = []
-  for deformation_field in self.flow_fields:
-      if str(deformation_field.format) == "gz compressed NIFTI-1 image":
-        deformation_path = tempfile.NamedTemporaryFile(prefix="y_", suffix=".nii").name
-        gunzipNifti(deformation_field.fullPath(),
-                    deformation_path)
-        deformation_fullpath_list.append(deformation_path)
-      else:
-        deformation_fullpath_list.append(deformation_field.fullPath())
+#==============================================================================
+# convert volumes (to keep spm internal transorm in qform or if 5D volume)
+#==============================================================================
+  flow_fields_diskitem_list = convertDiskitemList(self.flow_fields)
+  images_1_diskitem_list = convertDiskitemList(self.images_1)
+  images_2_diskitem_list = convertDiskitemList(self.images_2)
+#==============================================================================
 
   create_warped = CreateWarped()
-  create_warped.setFlowFieldPathList(deformation_fullpath_list)
-  create_warped.setFirstImagePathList([diskitem.fullPath() for diskitem in self.images_1])
+  create_warped.setFlowFieldPathList(flow_fields_diskitem_list)
+  create_warped.setFirstImagePathList([diskitem.fullPath() for diskitem in images_1_diskitem_list])
   if self.images_2:
-    create_warped.appendImageList([diskitem.fullPath() for diskitem in self.images_2])
+    create_warped.appendImageList([diskitem.fullPath() for diskitem in images_2_diskitem_list])
 
   if self.images_1_warped:
     output_warped_list = [[diskitem.fullPath() for diskitem in self.images_1_warped]]
@@ -155,3 +153,20 @@ def execution( self, context ):
   output = spm.run()
   context.log(name, html=output)
 
+#==============================================================================
+#
+#==============================================================================
+def convertDiskitemList(context, diskitem_list):
+    new_diskitem_list = list()
+    for diskitem in diskitem_list:
+        new_diskitem_list.append(convertDiskitem(context, diskitem))
+    return new_diskitem_list
+
+def convertDiskitem(context, diskitem):
+    """convert to .nii"""
+    if str(diskitem.format) != "NIFTI-1 image":
+        diskitem_tmp = context.temporary("NIFTI-1 image")
+        moveNifti(diskitem.fullPath(), diskitem_tmp.fullPath())
+        return diskitem_tmp
+    else:
+        return diskitem

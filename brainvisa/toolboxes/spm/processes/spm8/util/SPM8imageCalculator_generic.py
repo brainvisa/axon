@@ -54,7 +54,7 @@ userLevel = 1
 name = 'spm8 - Image calculator - generic'
 
 signature = Signature(
-  'input_images', ListOf(ReadDiskItem('3D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'])),
+  'input_images', ListOf(ReadDiskItem('4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'])),
   'output_image', WriteDiskItem('4D Volume', ["gz compressed NIFTI-1 image", "NIFTI-1 image"]),
   'expression', String(),
   'data_matrix', Boolean(),

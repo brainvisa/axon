@@ -53,8 +53,8 @@ name = 'spm8 - Run DARTEL (create Templates)'
 #------------------------------------------------------------------------------
 
 signature = Signature(
-    'images_1', ListOf( ReadDiskItem( "T1 MRI tissue probability map", ["NIFTI-1 image", "SPM image", "MINC image"] ) ),
-    'images_2', ListOf( ReadDiskItem( "T1 MRI tissue probability map", ["NIFTI-1 image", "SPM image", "MINC image"] ) ),
+    'images_1', ListOf( ReadDiskItem( "T1 MRI tissue probability map", ["gz compressed NIFTI-1 image", "NIFTI-1 image", "SPM image", "MINC image"] ) ),
+    'images_2', ListOf( ReadDiskItem( "T1 MRI tissue probability map", ["gz compressed NIFTI-1 image", "NIFTI-1 image", "SPM image", "MINC image"] ) ),
     'output_flow_field', ListOf( WriteDiskItem( "HDW DARTEL flow field", ["gz compressed NIFTI-1 image", "NIFTI-1 image"] ) ),
     'output_template', ListOf( WriteDiskItem( "TPM HDW DARTEL created template", ["gz compressed NIFTI-1 image", "NIFTI-1 image"] ) ),
     'template_basename', String(),

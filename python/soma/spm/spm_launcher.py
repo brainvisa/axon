@@ -4,7 +4,8 @@ from collections import deque
 import os
 import tempfile
 import copy
-import commands
+import sys
+import subprocess
 
 from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed, checkIfArgumentTypeIsStrOrUnicode
 from soma.spm.spm_batch_maker_utils import addBatchKeyWordInEachItem
@@ -83,12 +84,11 @@ class SPM(SPMLauncher):
             #reset matlab_commands list
             self.matlab_commands_before_list = []
             self.matlab_commands_after_list = []
-            if checkIfSpmHasFailed(output):
-                raise RuntimeError("SPM by Matlab execution failed")
-            elif checkIfMatlabFailedBeforSpm(output):
-                raise RuntimeError("Matlab execution failed")
-            else:
+            try:
+                checkIfMatlabFailedBeforSpm(output)
+                checkIfSpmHasFailed(output)
                 self._moveSPMDefaultPathsIfNeeded(current_execution_module_deque)
+            finally:
                 return output
         else:
             raise ValueError("job path and batch path are required")
@@ -130,8 +130,7 @@ class SPM(SPMLauncher):
 
         matlab_commmand = [self.matlab_executable_path, matlab_run_options, "-r \"run('%s');\"" %self.matlab_script_path]
         print('Running matlab command:', matlab_commmand)
-        output = commands.getoutput(' '.join(matlab_commmand))
-        print(output)#keep terminal printing
+        output = runCommand(matlab_commmand)
         os.chdir(cwd)
 
         return output
@@ -219,13 +218,12 @@ class SPMStandalone(SPMLauncher):
             current_execution_module_deque = copy.copy(self.execution_module_deque)
             self.resetExecutionQueue()
             print('running SPM standalone command:', standalone_command)
-            output = commands.getoutput(' '.join(standalone_command))
-            print(output)#keep terminal printing
+            output = runCommand(standalone_command)
             os.chdir(cwd)
-            if checkIfSpmHasFailed(output):
-                raise RuntimeError("SPM standalone execution failed")
-            else:
+            try:
+                checkIfSpmHasFailed(output)
                 self._moveSPMDefaultPathsIfNeeded(current_execution_module_deque)
+            finally:
                 return output
         else:
             raise ValueError("job path is required")
@@ -353,15 +351,36 @@ def checkIfExists(path, configuration_name):
 
 def checkIfMatlabFailedBeforSpm(output):
     """check if output terminal contains "spm" """
-    if not "spm" in output.lower():
-        return True
-    else:
-        return False
+    if "License checkout failed" in output.lower():
+        raise RuntimeError("Matlab execution failed : License checkout failed")
+    elif not "spm" in output.lower():
+        raise RuntimeError("Matlab execution failed")
 
 
 def checkIfSpmHasFailed(output):
     """check if output terminal contains "Execution failed" """
-    if "Execution failed" in output:
-        return True
-    else:
-        return False
+    common_spm_errors = ["Error reading information on",
+                         "Cant open image file",
+                         "Error while evaluating uicontrol Callback",
+                         "Index exceeds matrix dimensions"]
+    for common_spm_error in common_spm_errors:
+        if common_spm_error in output:
+            raise RuntimeError("SPM execution failed : %s" % common_spm_error)
+
+
+def runCommand(command_list):
+    #Popen run spm in background
+    process = subprocess.Popen(command_list,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
+    # Poll process for new output until finished
+    output_lines = []
+    while True:
+        nextline = process.stdout.readline()
+        if nextline == '' and process.poll() is not None:
+            break
+        output_lines.append(nextline)
+        sys.stdout.write(nextline)
+        sys.stdout.flush()
+
+    return ''.join(output_lines)

@@ -53,10 +53,10 @@ name = "spm12 - create warped"
 #------------------------------------------------------------------------------
 
 signature = Signature(
-  "flow_fields", ListOf(ReadDiskItem( "HDW DARTEL flow field", ["NIFTI-1 image", "SPM image", "MINC image"])),
+  "flow_fields", ListOf(ReadDiskItem( "HDW DARTEL flow field", ["gz compressed NIFTI-1 image", "NIFTI-1 image", "SPM image", "MINC image"])),
   "DARTEL_directory", ReadDiskItem( "DARTEL analysis directory", "Directory"),
-  "images_1", ListOf(ReadDiskItem( "T1 MRI tissue probability map", ["NIFTI-1 image", "SPM image", "MINC image"])),
-  "images_2", ListOf(ReadDiskItem( "T1 MRI tissue probability map", ["NIFTI-1 image", "SPM image", "MINC image"])),
+  "images_1", ListOf(ReadDiskItem( "T1 MRI tissue probability map", ["gz compressed NIFTI-1 image", "NIFTI-1 image", "SPM image", "MINC image"])),
+  "images_2", ListOf(ReadDiskItem( "T1 MRI tissue probability map", ["gz compressed NIFTI-1 image", "NIFTI-1 image", "SPM image", "MINC image"])),
   "images_1_warped", ListOf(WriteDiskItem( "T1 MRI tissue probability map", ["gz compressed NIFTI-1 image", "NIFTI-1 image"])),
   "images_2_warped", ListOf(WriteDiskItem( "T1 MRI tissue probability map", ["gz compressed NIFTI-1 image", "NIFTI-1 image"])),
   "modulation", Boolean(),#TODO : hierarchy about modulation !!!!!
