@@ -127,6 +127,9 @@ Format( 'XML', 'f|*.xml' )
 Format( 'gzipped XML', 'f|*.xml.gz' )
 Format( 'Info file', "f|*.info" )
 Format( 'ZIP file', 'f|*.zip' )
+Format( 'Excel file', 'f|*.xls' )
+Format( 'Office Open XML Excel file', 'f|*.xlsx' )
+
 
 #Format( 'Matlab design file', 'f|*DesMtx.mat' )
 #Postscript files for SPM results
