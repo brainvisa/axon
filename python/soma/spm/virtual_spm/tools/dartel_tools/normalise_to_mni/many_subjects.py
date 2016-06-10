@@ -42,13 +42,17 @@ class ManySubjects():
     else:
       raise ValueError("flow_field_path_list and at least image_path_list are required")
 
-  def moveSPMDefaultPathsIfNeeded(self):
+  def moveSPMDefaultPathsIfNeeded(self, smoothing):
     if self.output_image_path_list_list:
       for image_path_list, output_image_path_list in zip(self.image_path_list_list,
                                                         self.output_image_path_list_list):
         for image_path, output_image_path in zip(image_path_list, output_image_path_list):
+          if smoothing:
+            prefix = "sw"
+          else:
+            prefix = "w"
           moveSPMPath(image_path,
                       output_image_path,
-                      prefix="sw")
+                      prefix=prefix)
     else:
         pass#  do not move default spm paths

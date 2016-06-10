@@ -126,7 +126,8 @@ class NormaliseToMNI():
       raise ValueError('At least one according_to option is required')
 
   def _moveSPMDefaultPathsIfNeeded(self):
-    self.according_to.moveSPMDefaultPathsIfNeeded()
+    smoothing = (self.fwhm != convertlistToSPMString([0, 0, 0]))
+    self.according_to.moveSPMDefaultPathsIfNeeded(smoothing)
 
 
 

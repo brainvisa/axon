@@ -37,11 +37,15 @@ class Subject():
     else:
       raise ValueError("flow_field_path_list and image_path_list are required")
 
-  def moveSPMDefaultPathsIfNeeded(self):
+  def moveSPMDefaultPathsIfNeeded(self, smoothing):
     if self.output_image_path_list:
       for image_path, output_image_path in zip(self.image_path_list, self.output_image_path_list):
+        if smoothing:
+          prefix = "sw"
+        else:
+          prefix = "w"
         moveSPMPath(image_path,
                     output_image_path,
-                    prefix="sw")
+                    prefix=prefix)
     else:
         pass#  do not move default spm paths
