@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 import os
+import gzip
 import shutil
 import numpy
 import calendar
 import datetime as dt
 import locale
 import string
-import nibabel
 
 from soma.spm.custom_decorator_pattern import checkIfArgumentTypeIsAllowed, checkIfArgumentTypeIsStrOrUnicode
 
@@ -108,13 +108,45 @@ def getTodayDateInSpmFormat():
   spm_date = "%s%s%s" % (now.year, month, day)
   return spm_date
 
+#==============================================================================
+def gzipFile(input_path, output_path):
+  with open(input_path, 'rb') as f_in:
+    with gzip.open(output_path, 'wb') as f_out:
+      shutil.copyfileobj(f_in, f_out)
+
+def gunzipFile(input_path, output_path):
+  with gzip.open(input_path, 'rb') as f_in:
+    with open(output_path, 'wb') as f_out:
+      shutil.copyfileobj(f_in, f_out)
+
 def moveNifti(input_path, output_path):
-  copyNifti(input_path, output_path)
-  os.remove(input_path)
+  try:
+    if input_path.endswith(".nii.gz") and output_path.endswith(".nii"):
+      gunzipFile(input_path, output_path)
+      os.remove(input_path)
+    elif input_path.endswith(".nii") and output_path.endswith(".nii.gz"):
+      gzipFile(input_path, output_path)
+      os.remove(input_path)
+    elif input_path.endswith(".nii.gz") and output_path.endswith(".nii.gz"):
+      shutil.move(input_path, output_path)
+    elif input_path.endswith(".nii") and output_path.endswith(".nii"):
+      shutil.move(input_path, output_path)
+    else:
+      raise RuntimeError("unvalid extension file")
+  except Exception, e:
+    raise RuntimeError("Error during movign files: %s" % e)
 
 def copyNifti(input_path, output_path):
   try:
-    vol = nibabel.load(input_path)
-    nibabel.save(vol, output_path)
+    if input_path.endswith(".nii.gz") and output_path.endswith(".nii"):
+      gunzipFile(input_path, output_path)
+    elif input_path.endswith(".nii") and output_path.endswith(".nii.gz"):
+      gzipFile(input_path, output_path)
+    elif input_path.endswith(".nii.gz") and output_path.endswith(".nii.gz"):
+      shutil.copy(input_path, output_path)
+    elif input_path.endswith(".nii") and output_path.endswith(".nii"):
+      shutil.copy(input_path, output_path)
+    else:
+      raise RuntimeError("unvalid extension file")
   except Exception, e:
-    raise RuntimeError("nibabel failed : %s" % e)
+    raise RuntimeError("Error during movign files: %s" % e)
