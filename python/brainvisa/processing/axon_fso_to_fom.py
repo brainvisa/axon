@@ -242,7 +242,7 @@ class AxonFsoToFom(object):
             database = neuroHierarchy.databases.database(database_name)
             if database.fso.name == 'shared':
                 fom_type = 'shared'
-            if self._is_output(process, name, param):
+            elif self._is_output(process, name, param):
                 fom_type = 'output'
             else:
                 fom_type = 'input'
