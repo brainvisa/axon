@@ -91,7 +91,11 @@ class AxonFsoToFom(object):
         '''
         exts = []
         for pattern in format.patterns.patterns:
-            t, p = pattern.pattern.split('|')
+            sp = pattern.pattern.split('|')
+            if len(sp) != 2:
+                print 'malformed pattern for format:', format, ':', pattern
+                continue
+            t, p = sp
             x = p.split('*.')
             if len(x) == 1:
                 exts.append('')
@@ -268,6 +272,10 @@ class AxonFsoToFom(object):
         if linkdefs is not None:
             for linkdef in linkdefs:
                 other_proc, other_param_name = linkdef[:2]
+                if other_proc is None \
+                        or other_proc == axon_to_capsul.use_weak_ref(process):
+                    # internal link, doesn't count
+                    continue
                 other_param = other_proc.signature[other_param_name]
                 if isinstance(other_param, WriteDiskItem) \
                         and getattr(process, param_name) \
@@ -311,7 +319,8 @@ class AxonFsoToFom(object):
         Walks a pipeline tree structure and adds all its children to the FOM
         '''
 
-        if not hasattr(process, 'executionNode'):
+        if not hasattr(process, 'executionNode') \
+                or process.executionNode() is None:
             return # not a pipeline
 
         nodes = [(process.executionNode(), node_name, self.current_fom_def)]
@@ -419,7 +428,7 @@ def fso_to_fom_main(argv):
         formats = None
         fom_imports = fom_def.get('fom_import')
         if fom_imports:
-            formats_list = [x for x in fom_import if x.find('formats') >= 0]
+            formats_list = [x for x in fom_imports if x.find('formats') >= 0]
             if len(formats_list) >= 1:
                 formats = os.path.join(foms_dir, formats_list[0] + '.json')
     if not formats:
