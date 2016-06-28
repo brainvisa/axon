@@ -1724,7 +1724,9 @@ class ParameterizedWidget( QWidget ):
     QWidget.closeEvent( self, event )
 
   def setParameterToolTip( self, parameterName, text ):
-    self.labels[ parameterName ].setToolTip(self.parameterized.signature[ parameterName ].toolTipText( parameterName, text ))
+    self.labels[ parameterName ].setToolTip(html_with_local_images(
+      self.parameterized.signature[ parameterName ].toolTipText(
+        parameterName, text )))
 
   def parameterChanged( self, parameterized, parameterName, value ):
     """This method is called when an attribute has changed in the model.
@@ -2064,7 +2066,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     self.labName.setSizePolicy( QSizePolicy( QSizePolicy.Expanding, QSizePolicy.Preferred ) )
     doc =  XHTML.html( documentation.get( 'short', '' ) )
     if doc:
-      self.labName.setToolTip('<center><b>' + _t_(process.name) + '</b></center><hr><b>' + _t_('Description') + ':</b><br/>' + doc)
+      self.labName.setToolTip(html_with_local_images('<center><b>' + _t_(process.name) + '</b></center><hr><b>' + _t_('Description') + ':</b><br/>' + doc))
 
     if externalInfo is None:
 
@@ -2235,6 +2237,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
     if self.read_only and self.parameterizedWidget != None:
       self.parameterizedWidget.set_read_only(True)
+
 
   def createSignatureWidgets( self, documentation=None ):
     eNode = getattr( self.process, '_executionNode', None )
@@ -4462,5 +4465,19 @@ def initializeProcessesGUI():
 
     exec 'from brainvisa.processing.qt4gui.neuroProcessesGUI import *' in brainvisa.processes.__dict__
     brainvisa.processes._defaultContext = ExecutionContextGUI()
+
+def html_with_local_images(html):
+  images_basepath = neuroConfig.getDocPath('images', project='axon') \
+      + '-' + neuroConfig.shortVersion
+  html_repl = html.replace(' src="../../../../',
+                            ' src="%s/' % images_basepath)
+  html_repl = html_repl.replace(' SRC="../../../../',
+                            ' src="%s/' % images_basepath)
+  html_repl = html_repl.replace(' src="../../',
+                                ' src="%s/' % images_basepath)
+  html_repl = html_repl.replace(' SRC="../../',
+                                ' src="%s/' % images_basepath)
+  return html_repl
+
 
 
