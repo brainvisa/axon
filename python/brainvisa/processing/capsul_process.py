@@ -28,6 +28,7 @@ See also :doc:`capsul`
 
 from __future__ import print_function
 
+import os
 import brainvisa.processes as processes
 from brainvisa.data import neuroData
 from brainvisa.data.readdiskitem import ReadDiskItem
@@ -140,7 +141,8 @@ class CapsulProcess(processes.Process):
         capsul_process = getattr(module, 'capsul_process')
         if capsul_process:
             from capsul.api import get_process_instance
-            process = get_process_instance(capsul_process)
+            process = get_process_instance(capsul_process,
+                                           self.get_study_config())
             self.set_capsul_process(process)
 
 
@@ -215,16 +217,18 @@ class CapsulProcess(processes.Process):
         FOM completion is not performed yet.
         '''
 
-        from capsul.process import process_with_fom
         from capsul.pipeline import pipeline_workflow
+        from capsul.attributes.completion_engine import ProcessCompletionEngine
 
         study_config = self.get_study_config(context)
 
         self.propagate_parameters_to_capsul()
         process = self.get_capsul_process()
 
-        #capsul_pwf = process_with_fom.ProcessWithFom(process, study_config)
-        #capsul_pwf.create_completion()
+        completion_engine \
+            = ProcessCompletionEngine.get_completion_engine(process)
+        if completion_engine is not None:
+            completion_engine.complete_parameters()
 
         wf = pipeline_workflow.workflow_from_pipeline(
             process, study_config=study_config)  #, jobs_priority=priority)
@@ -233,6 +237,58 @@ class CapsulProcess(processes.Process):
         groups = wf.groups
 
         return jobs, dependencies, groups
+
+
+    def get_initial_study_config(self):
+        from soma.wip.application.api import Application as Appli2
+        configuration = Appli2().configuration
+        init_study_config = {
+            "input_fom" : "morphologist-auto-1.0",
+            "output_fom" : "morphologist-auto-1.0",
+            "shared_fom" : "shared-brainvisa-1.0",
+            "use_soma_workflow" : True,
+            "use_fom" : True,
+            "volumes_format" : 'NIFTI gz',
+            "meshes_format" : "GIFTI",
+        }
+        if configuration.SPM.spm12_standalone_path \
+                and configuration.SPM.spm12_standalone_command:
+            init_study_config['spm_standalone'] = True
+            init_study_config['spm_exec'] \
+                = configuration.SPM.spm12_standalone_command
+            init_study_config['spm_directory'] \
+                = configuration.SPM.spm12_standalone_path
+            init_study_config['use_spm'] = True
+        elif configuration.SPM.spm8_standalone_path \
+                and configuration.SPM.spm8_standalone_command:
+            init_study_config['spm_standalone'] = True
+            init_study_config['spm_exec'] \
+                = configuration.SPM.spm8_standalone_command
+            init_study_config['spm_directory'] \
+                = configuration.SPM.spm8_standalone_path
+            init_study_config['use_spm'] = True
+        elif configuration.matlab.executable:
+            init_study_config['matlab_exec'] = configuration.matlab.executable
+            init_study_config['use_matlab'] = True
+            if configuration.SPM.spm12_path:
+                init_study_config['spm_directory'] \
+                    = configuration.SPM.spm12_path
+                init_study_config['use_spm'] = True
+            elif configuration.SPM.spm8_path:
+                init_study_config['spm_directory'] \
+                    = configuration.SPM.spm8_path
+                init_study_config['use_spm'] = True
+            elif configuration.SPM.spm5_path:
+                init_study_config['spm_directory'] \
+                    = configuration.SPM.spm5_path
+                init_study_config['use_spm'] = True
+        if configuration.FSL.fsldir:
+              fsl = os.path.join(configuration.FSL.fsldir,
+                                 'etc/fslconf/fsl.sh')
+              if os.path.exists(fsl):
+                  init_study_config['fsl_config'] = fsl
+                  init_study_config['use_fsl'] = True
+        return init_study_config
 
 
     def init_study_config(self, context=processes.defaultContext()):
@@ -269,28 +325,16 @@ class CapsulProcess(processes.Process):
                 break
             database = ''
 
-        if study_config:
-            study_config.input_directory = database
-            study_config.output_directory = database
-        else:
+        if study_config is None:
             configuration = Appli2().configuration
-            initial_study_config = {
-                "input_directory" : database,
-                "output_directory" : database,
-                "input_fom" : "morphologist-auto-1.0",
-                "output_fom" : "morphologist-auto-1.0",
-                "shared_fom" : "shared-brainvisa-1.0",
-                "spm_directory" : configuration.SPM.spm8_standalone_path,
-                "use_soma_workflow" : True,
-                "use_fom" : True,
-                "volumes_format" : "NIFTI gz",
-                "meshes_format" : "GIFTI",
-            }
-
+            initial_study_config = self.get_initial_study_config()
             study_config = StudyConfig(
                 init_config=initial_study_config,
                 modules=StudyConfig.default_modules + ['BrainVISAConfig',
                                                        'FomConfig'])
+            context.study_config = study_config
+        study_config.input_directory = database
+        study_config.output_directory = database
 
         # soma-workflow execution settings
         soma_workflow_config = getattr(context, 'soma_workflow_config', {})
@@ -302,10 +346,13 @@ class CapsulProcess(processes.Process):
 
 
     def get_study_config(self, context=processes.defaultContext()):
-        study_config = getattr(self._capsul_process, 'study_config', None)
+        study_config = None
+        if self._capsul_process is not None:
+            study_config = getattr(self._capsul_process, 'study_config', None)
         if study_config is None:
             study_config = self.init_study_config(context)
-            self._capsul_process.study_config = study_config
+            if self._capsul_process is not None:
+                self._capsul_process.set_study_config(study_config)
         context.study_config = study_config
         return study_config
 
