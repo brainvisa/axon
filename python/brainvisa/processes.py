@@ -2996,7 +2996,8 @@ class ExecutionContext(object):
                             workflow=workflow, name=process.name)
                         Helper.wait_workflow(wid, controller)
                         list_failed_jobs = Helper.list_failed_jobs(
-                            wid, controller)
+                            wid, controller, include_aborted_jobs=True,
+                            include_user_killed_jobs=True)
                         result = workflow
                         if (len(list_failed_jobs) > 0):
                             raise Exception(
