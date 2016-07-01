@@ -2986,11 +2986,19 @@ class ExecutionContext(object):
                             process.setConvertedValue(n, converted)
                 if executionFunction is None:
                     if(hasattr(process, 'executionWorkflow')):
-                        from soma_workflow.client import WorkflowController, Workflow, Helper
-                        jobs, dependencies, root_group \
-                            = process.executionWorkflow(context=self)
-                        workflow = Workflow(
-                            jobs=jobs, dependencies=dependencies, root_group=root_group)
+                        from soma_workflow.client import WorkflowController, \
+                            Workflow, Helper
+                        workflow = process.executionWorkflow(context=self)
+                        if isinstance(workflow, tuple):
+                            if len(workflow) == 3:
+                                jobs, dependencies, root_group = workflow
+                            else:
+                                raise ValueError(
+                                    'Bad workflow in %s.executionWorkflow()'
+                                    % process.name)
+                            workflow = Workflow(
+                                jobs=jobs, dependencies=dependencies,
+                                root_group=root_group)
                         controller = WorkflowController()
                         wid = controller.submit_workflow(
                             workflow=workflow, name=process.name)
@@ -3000,8 +3008,9 @@ class ExecutionContext(object):
                             include_user_killed_jobs=True)
                         result = workflow
                         if (len(list_failed_jobs) > 0):
-                            raise Exception(
-                                'run through soma workflow failed, see details with soma-workflow-gui')
+                            raise RuntimeError(
+                                'run through soma workflow failed, see '
+                                'details with soma-workflow-gui')
                         else:
                             # Delete the submitted workflow
                             controller.delete_workflow(wid, True)
