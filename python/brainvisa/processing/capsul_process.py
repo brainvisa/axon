@@ -37,6 +37,7 @@ from brainvisa.processes import getAllFormats
 from brainvisa.data.neuroData import Signature
 from brainvisa.data.neuroDiskItems import DiskItem
 from brainvisa.data import neuroHierarchy
+from soma.functiontools import SomaPartial
 from traits import trait_types
 import traits.api as traits
 import distutils.spawn
@@ -178,7 +179,11 @@ class CapsulProcess(processes.Process):
     def set_capsul_process(self, process):
         ''' Sets a CAPSUL process into the Axon (proxy) process
         '''
+        from capsul.attributes.completion_engine import ProcessCompletionEngine
+
         self._capsul_process = process
+        completion_engine \
+            = ProcessCompletionEngine.get_completion_engine(process)
         self._capsul_process.on_trait_change(self._process_trait_changed)
 
 
@@ -242,6 +247,9 @@ class CapsulProcess(processes.Process):
             value = getattr(process, name)
             if value not in (traits.Undefined, ''):
                 setattr(self, name, convert_capsul_value(value))
+            self.linkParameters(None, name,
+                                SomaPartial(self._on_axon_parameter_changed,
+                                            name))
 
         self.linkParameters(None, 'edit_pipeline', self._on_edit_pipeline)
         self.linkParameters(None, 'edit_study_config',
@@ -413,4 +421,66 @@ class CapsulProcess(processes.Process):
         scv.show()
         self._study_config_editor= MainThreadLife(scv)
 
+
+    def _on_axon_parameter_changed(self, param, process, dummy):
+        from capsul.attributes.completion_engine import ProcessCompletionEngine
+
+        if getattr(self, '_capsul_process', None) is None:
+            return
+
+        if getattr(self, '_ongoing_completion', False):
+            return
+        self._ongoing_completion = True
+        try:
+            value = getattr(self, param, None)
+            itype = self.signature.get(param)
+            trait = self._capsul_process.trait(param)
+            setattr(self._capsul_process, param,
+                    convert_to_capsul_value(value, itype))
+            if not isinstance(itype, ReadDiskItem):
+                # not a DiskItem: nothing else to do.
+                return
+
+            completion_engine = ProcessCompletionEngine.get_completion_engine(
+                self._capsul_process)
+            if completion_engine is not None and isinstance(value, DiskItem):
+                attributes = value.hierarchyAttributes()
+                capsul_attr = completion_engine.get_attribute_values()
+                param_attr \
+                    = capsul_attr.get_parameters_attributes().get(param) \
+                        or capsul_attr.user_traits().keys()
+                if param_attr:
+                    modified = False
+                    for attribute, value in six.iteritems(attributes):
+                        if attribute in param_attr:
+                            if getattr(capsul_attr, attribute) != value:
+                                  setattr(capsul_attr, attribute, value)
+                                  modified = True
+
+                    database = attributes.get('_database', None)
+                    if database:
+                        if isinstance(itype, WriteDiskItem):
+                            db = ['output_directory', 'input_directory']
+                        else:
+                            allowed_db = [h.name
+                                          for h in neuroHierarchy.hierarchies()
+                                          if h.fso.name
+                                              not in ("shared", "spm", "fsl")]
+                            if database in allowed_db:
+                                db = ['input_directory', 'output_directory']
+                            else:
+                                db = None
+                            if db is not None:
+                                study_config \
+                                    = self._capsul_process.get_study_config()
+                                for idb in db:
+                                    if getattr(study_config, idb) != database:
+                                        modified = True
+                                        setattr(study_config, idb, database)
+
+                    if modified:
+                        completion_engine.complete_parameters()
+
+        finally:
+            self._ongoing_completion = False
 
