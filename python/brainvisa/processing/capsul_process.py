@@ -28,6 +28,7 @@ See also :doc:`capsul`
 
 from __future__ import print_function
 
+import os
 import brainvisa.processes as processes
 from brainvisa.data import neuroData
 from brainvisa.data.readdiskitem import ReadDiskItem
@@ -38,6 +39,7 @@ from brainvisa.data.neuroDiskItems import DiskItem
 from brainvisa.data import neuroHierarchy
 from traits import trait_types
 import traits.api as traits
+import distutils.spawn
 import six
 
 
@@ -104,6 +106,62 @@ def convert_to_capsul_value(value, item_type=None):
     elif value is None and isinstance(item_type, ReadDiskItem):
         value = traits.Undefined
     return value
+
+
+def get_initial_study_config():
+    from soma.wip.application.api import Application as Appli2
+    configuration = Appli2().configuration
+    init_study_config = {
+        "input_fom" : "morphologist-auto-1.0",
+        "output_fom" : "morphologist-auto-1.0",
+        "shared_fom" : "shared-brainvisa-1.0",
+        "use_soma_workflow" : True,
+        "use_fom" : True,
+        "volumes_format" : 'NIFTI gz',
+        "meshes_format" : "GIFTI",
+    }
+    if configuration.matlab.executable:
+        print('configuration.matlab.executable:', configuration.matlab.executable)
+        init_study_config['matlab_exec'] \
+            = distutils.spawn.find_executable(
+                configuration.matlab.executable)
+        init_study_config['use_matlab'] = configuration.matlab.enable_matlab
+    if configuration.SPM.spm12_standalone_path \
+            and configuration.SPM.spm12_standalone_command:
+        init_study_config['spm_standalone'] = True
+        init_study_config['spm_exec'] \
+            = configuration.SPM.spm12_standalone_command
+        init_study_config['spm_directory'] \
+            = configuration.SPM.spm12_standalone_path
+        init_study_config['use_spm'] = True
+    elif configuration.SPM.spm8_standalone_path \
+            and configuration.SPM.spm8_standalone_command:
+        init_study_config['spm_standalone'] = True
+        init_study_config['spm_exec'] \
+            = configuration.SPM.spm8_standalone_command
+        init_study_config['spm_directory'] \
+            = configuration.SPM.spm8_standalone_path
+        init_study_config['use_spm'] = True
+    elif configuration.matlab.executable:
+        if configuration.SPM.spm12_path:
+            init_study_config['spm_directory'] \
+                = configuration.SPM.spm12_path
+            init_study_config['use_spm'] = True
+        elif configuration.SPM.spm8_path:
+            init_study_config['spm_directory'] \
+                = configuration.SPM.spm8_path
+            init_study_config['use_spm'] = True
+        elif configuration.SPM.spm5_path:
+            init_study_config['spm_directory'] \
+                = configuration.SPM.spm5_path
+            init_study_config['use_spm'] = True
+    if configuration.FSL.fsldir:
+          fsl = os.path.join(configuration.FSL.fsldir,
+                              'etc/fslconf/fsl.sh')
+          if os.path.exists(fsl):
+              init_study_config['fsl_config'] = fsl
+              init_study_config['use_fsl'] = True
+    return init_study_config
 
 
 class CapsulProcess(processes.Process):
@@ -269,28 +327,15 @@ class CapsulProcess(processes.Process):
                 break
             database = ''
 
-        if study_config:
-            study_config.input_directory = database
-            study_config.output_directory = database
-        else:
-            configuration = Appli2().configuration
-            initial_study_config = {
-                "input_directory" : database,
-                "output_directory" : database,
-                "input_fom" : "morphologist-auto-1.0",
-                "output_fom" : "morphologist-auto-1.0",
-                "shared_fom" : "shared-brainvisa-1.0",
-                "spm_directory" : configuration.SPM.spm8_standalone_path,
-                "use_soma_workflow" : True,
-                "use_fom" : True,
-                "volumes_format" : "NIFTI gz",
-                "meshes_format" : "GIFTI",
-            }
-
+        if study_config is None:
+            initial_study_config = get_initial_study_config()
             study_config = StudyConfig(
                 init_config=initial_study_config,
                 modules=StudyConfig.default_modules + ['BrainVISAConfig',
                                                        'FomConfig'])
+
+        study_config.input_directory = database
+        study_config.output_directory = database
 
         # soma-workflow execution settings
         soma_workflow_config = getattr(context, 'soma_workflow_config', {})
