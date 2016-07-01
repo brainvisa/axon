@@ -121,7 +121,6 @@ def get_initial_study_config():
         "meshes_format" : "GIFTI",
     }
     if configuration.matlab.executable:
-        print('configuration.matlab.executable:', configuration.matlab.executable)
         init_study_config['matlab_exec'] \
             = distutils.spawn.find_executable(
                 configuration.matlab.executable)
