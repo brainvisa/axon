@@ -287,9 +287,9 @@ class CapsulProcess(processes.Process):
             process, study_config=study_config)  #, jobs_priority=priority)
         jobs = wf.jobs
         dependencies = wf.dependencies
-        groups = wf.groups
+        root_group = wf.root_group
 
-        return jobs, dependencies, groups
+        return jobs, dependencies, root_group
 
 
     def init_study_config(self, context=processes.defaultContext()):
