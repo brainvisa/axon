@@ -122,10 +122,14 @@ def get_initial_study_config():
         "meshes_format" : "GIFTI",
     }
     if configuration.matlab.executable:
-        init_study_config['matlab_exec'] \
-            = distutils.spawn.find_executable(
-                configuration.matlab.executable)
-        init_study_config['use_matlab'] = configuration.matlab.enable_matlab
+        matlab_exe = distutils.spawn.find_executable(
+            configuration.matlab.executable)
+        if matlab_exe is not None:
+            init_study_config['matlab_exec'] = matlab_exe
+            init_study_config['use_matlab'] \
+                = configuration.matlab.enable_matlab
+        else:
+            init_study_config['use_matlab'] = False
     if configuration.SPM.spm12_standalone_path \
             and configuration.SPM.spm12_standalone_command:
         init_study_config['spm_standalone'] = True
