@@ -35,7 +35,7 @@ from brainvisa.data.readdiskitem import ReadDiskItem
 from brainvisa.data.writediskitem import WriteDiskItem
 from brainvisa.processes import getAllFormats
 from brainvisa.data.neuroData import Signature
-from brainvisa.data.neuroDiskItems import DiskItem
+from brainvisa.data.neuroDiskItems import DiskItem, getAllDiskItemTypes
 from brainvisa.data import neuroHierarchy
 from soma.functiontools import SomaPartial
 from traits import trait_types
@@ -44,19 +44,19 @@ import distutils.spawn
 import six
 
 
-def fileOptions(filep):
+def fileOptions(filep, name, process):
     if hasattr(filep, 'output') and filep.output:
-        return (WriteDiskItem, ['Any Type', getAllFormats()])
-    return (ReadDiskItem, ['Any Type', getAllFormats()])
+        return (WriteDiskItem, get_best_type(process, name))
+    return (ReadDiskItem, get_best_type(process, name))
 
 
-def choiceOptions(choice):
+def choiceOptions(choice, name, process):
     return [x for x in choice.trait_type.values]
 
 
-def listOptions(param):
+def listOptions(param, name, process):
     item_type = param.inner_traits[0]
-    return [make_parameter(item_type)]
+    return [make_parameter(item_type, name, process)]
 
 
 param_types_table = \
@@ -74,7 +74,7 @@ param_types_table = \
     }
 
 
-def make_parameter(param, name='<unnamed>'):
+def make_parameter(param, name, process):
     newtype = param_types_table.get(type(param.trait_type))
     paramoptions = []
     if newtype is None:
@@ -82,10 +82,10 @@ def make_parameter(param, name='<unnamed>'):
               type(param.trait_type))
         newtype = neuroData.String
     if isinstance(newtype, tuple):
-        paramoptions = newtype[1](param)
+        paramoptions = newtype[1](param, name, process)
         newtype = newtype[0]
     elif hasattr(newtype, 'func_name'):
-        newtype, paramoptions = newtype(param)
+        newtype, paramoptions = newtype(param, name, process)
     return newtype(*paramoptions)
 
 
@@ -168,6 +168,58 @@ def get_initial_study_config():
     return init_study_config
 
 
+def match_ext(capsul_exts, axon_formats):
+    if not capsul_exts:
+        return True
+    for format in axon_formats:
+        for pattern in format.patterns.patterns:
+            f0 = pattern.pattern.split('|')[-1]
+            f1 = f0.split('*')[-1]
+            if f1 in capsul_exts:
+                return True
+    return False
+
+
+def get_best_type(process, param):
+    from capsul.attributes.completion_engine import ProcessCompletionEngine
+    from capsul.attributes.attributes_schema import ProcessAttributes
+
+    completion_engine = ProcessCompletionEngine.get_completion_engine(process)
+    try:
+        path_completion = completion_engine.get_path_completion_engine()
+    except RuntimeError:
+        return ('Any Type', getAllFormats())
+
+    orig_attributes = completion_engine.get_attribute_values()
+    attributes = orig_attributes.__deepcopy__(orig_attributes.__dict__)
+    for attr, trait in six.iteritems(attributes.user_traits()):
+        if isinstance(trait.trait_type, traits.Str):
+            setattr(attributes, attr, '<%s>' % attr)
+    path = path_completion.attributes_to_path(process, param, attributes)
+    if path is None:
+        print('no path for', process.name, param)
+        return ('Any Type', getAllFormats())
+    cext = process.trait(param).allowed_extensions
+
+    for db in neuroHierarchy.databases.iterDatabases():
+        for typeitem in getAllDiskItemTypes():
+            rules = db.fso.typeToPatterns.get(typeitem)
+            if rules:
+                for rule in rules:
+                    pattern = rule.pattern.pattern
+                    cpattern = pattern.replace('{', '<')
+                    cpattern = cpattern.replace('}', '>')
+                    if path.startswith(cpattern):
+                        if len(cpattern) < len(path):
+                            if path[len(cpattern)] != '.':
+                                continue
+                            if not match_ext(cext, rule.formats):
+                                continue
+                        return (typeitem.name, rule.formats)
+
+    return ('Any Type', getAllFormats())
+
+
 class CapsulProcess(processes.Process):
     ''' Specialized Process to link with a CAPSUL process or pipeline.
 
@@ -231,7 +283,7 @@ class CapsulProcess(processes.Process):
         for name, param in process.user_traits().iteritems():
             if name in excluded_traits:
                 continue
-            parameter = make_parameter(param, name)
+            parameter = make_parameter(param, name, process)
             signature_args += [name, parameter]
             if param.optional:
                 optional.append(name)
