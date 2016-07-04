@@ -44,19 +44,23 @@ import distutils.spawn
 import six
 
 
-def fileOptions(filep, name, process):
+def fileOptions(filep, name, process, attributes=None, path_completion=None):
     if hasattr(filep, 'output') and filep.output:
-        return (WriteDiskItem, get_best_type(process, name))
-    return (ReadDiskItem, get_best_type(process, name))
+        return (WriteDiskItem, get_best_type(process, name, attributes,
+                                             path_completion))
+    return (ReadDiskItem, get_best_type(process, name, attributes,
+                                        path_completion))
 
 
-def choiceOptions(choice, name, process):
+def choiceOptions(choice, name, process, attributes=None,
+                  path_completion=None):
     return [x for x in choice.trait_type.values]
 
 
-def listOptions(param, name, process):
+def listOptions(param, name, process, attributes=None, path_completion=None):
     item_type = param.inner_traits[0]
-    return [make_parameter(item_type, name, process)]
+    return [make_parameter(item_type, name, process, attributes,
+                           path_completion)]
 
 
 param_types_table = \
@@ -74,7 +78,8 @@ param_types_table = \
     }
 
 
-def make_parameter(param, name, process):
+def make_parameter(param, name, process, attributes=None,
+                   path_completion=None):
     newtype = param_types_table.get(type(param.trait_type))
     paramoptions = []
     if newtype is None:
@@ -82,10 +87,12 @@ def make_parameter(param, name, process):
               type(param.trait_type))
         newtype = neuroData.String
     if isinstance(newtype, tuple):
-        paramoptions = newtype[1](param, name, process)
+        paramoptions = newtype[1](param, name, process, attributes,
+                                  path_completion)
         newtype = newtype[0]
     elif hasattr(newtype, 'func_name'):
-        newtype, paramoptions = newtype(param, name, process)
+        newtype, paramoptions = newtype(param, name, process, attributes,
+                                        path_completion)
     return newtype(*paramoptions)
 
 
@@ -180,21 +187,24 @@ def match_ext(capsul_exts, axon_formats):
     return False
 
 
-def get_best_type(process, param):
+def get_best_type(process, param, attributes=None, path_completion=None):
     from capsul.attributes.completion_engine import ProcessCompletionEngine
     from capsul.attributes.attributes_schema import ProcessAttributes
 
     completion_engine = ProcessCompletionEngine.get_completion_engine(process)
-    try:
-        path_completion = completion_engine.get_path_completion_engine()
-    except RuntimeError:
-        return ('Any Type', getAllFormats())
+    if path_completion is None:
+        try:
+            path_completion = completion_engine.get_path_completion_engine()
+        except RuntimeError:
+            return ('Any Type', getAllFormats())
 
-    orig_attributes = completion_engine.get_attribute_values()
-    attributes = orig_attributes.__deepcopy__(orig_attributes.__dict__)
-    for attr, trait in six.iteritems(attributes.user_traits()):
-        if isinstance(trait.trait_type, traits.Str):
-            setattr(attributes, attr, '<%s>' % attr)
+    if attributes is None:
+        orig_attributes = completion_engine.get_attribute_values()
+        attributes = orig_attributes.__deepcopy__(orig_attributes.__dict__)
+        for attr, trait in six.iteritems(attributes.user_traits()):
+            if isinstance(trait.trait_type, traits.Str):
+                setattr(attributes, attr, '<%s>' % attr)
+
     path = path_completion.attributes_to_path(process, param, attributes)
     if path is None:
         print('no path for', process.name, param)
@@ -277,13 +287,33 @@ class CapsulProcess(processes.Process):
         In such a case, the process designer will also probably have to overload the propagate_parameters_to_capsul() method to setup the underlying Capsul process parameters from the Axon one, since there will not be a direct correspondance any longer.
         '''
         process = self.get_capsul_process()
+
+        # speedup attributes
+        from capsul.attributes.completion_engine import ProcessCompletionEngine
+        from capsul.attributes.attributes_schema import ProcessAttributes
+
+        completion_engine = ProcessCompletionEngine.get_completion_engine(
+            process)
+        try:
+            path_completion = completion_engine.get_path_completion_engine()
+        except RuntimeError:
+            path_completion = None
+
+        orig_attributes = completion_engine.get_attribute_values()
+        attributes = orig_attributes.__deepcopy__(orig_attributes.__dict__)
+        for attr, trait in six.iteritems(attributes.user_traits()):
+            if isinstance(trait.trait_type, traits.Str):
+                setattr(attributes, attr, '<%s>' % attr)
+        #
+
         signature_args = []
         excluded_traits = set(('nodes_activation', 'pipeline_steps'))
         optional = []
         for name, param in process.user_traits().iteritems():
             if name in excluded_traits:
                 continue
-            parameter = make_parameter(param, name, process)
+            parameter = make_parameter(param, name, process, attributes,
+                                       path_completion)
             signature_args += [name, parameter]
             if param.optional:
                 optional.append(name)
