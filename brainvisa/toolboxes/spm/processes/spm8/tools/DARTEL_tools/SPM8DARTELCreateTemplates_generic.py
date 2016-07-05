@@ -172,9 +172,9 @@ def execution( self, context ):
 #==============================================================================
 # convert volumes (to keep spm internal transorm in qform or if 5D volume)
 #==============================================================================
-  images_1_diskitem_list = convertDiskitemList(self.images_1)
+  images_1_diskitem_list = convertDiskitemList(context, self.images_1)
   if self.images_2:
-    images_2_diskitem_list = convertDiskitemList(self.images_2)
+    images_2_diskitem_list = convertDiskitemList(context, self.images_2)
 #==============================================================================
   run_dartel = RunDartel()
   run_dartel.setFirstImageList([diskitem.fullPath() for diskitem in images_1_diskitem_list])
