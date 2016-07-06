@@ -91,8 +91,8 @@ def execution( self, context ):
 #==============================================================================
 # convert volumes (to keep spm internal transorm in qform or if 5D volume)
 #==============================================================================
-  flow_fields_diskitem_list = convertDiskitemList(self.flow_fields)
-  images_diskitem_list = convertDiskitemList(self.images)
+  flow_fields_diskitem_list = convertDiskitemList(context, self.flow_fields)
+  images_diskitem_list = convertDiskitemList(context, self.images)
 #==============================================================================
   create_inverse_warped = CreateInverseWarped()
   create_inverse_warped.setFlowFieldPathList([diskitem.fullPath() for diskitem in flow_fields_diskitem_list])

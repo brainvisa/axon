@@ -118,9 +118,9 @@ def execution( self, context ):
 #==============================================================================
 # convert volumes (to keep spm internal transorm in qform or if 5D volume)
 #==============================================================================
-  flow_fields_diskitem_list = convertDiskitemList(self.flow_fields)
-  images_0_diskitem_list = convertDiskitemList(self.images_0)
-  final_template = convertDiskitem(self.final_template)
+  flow_fields_diskitem_list = convertDiskitemList(context, self.flow_fields)
+  images_0_diskitem_list = convertDiskitemList(context, self.images_0)
+  final_template = convertDiskitem(context, self.final_template)
 #==============================================================================
 
   if self.bounding_box == "default : NaN":
