@@ -120,25 +120,30 @@ param_types_table = \
 }
 
 
+def capsul_param_type(axon_param):
+    newtype = param_types_table.get(type(axon_param))
+    paramoptions = []
+    if newtype is None:
+        print 'write_process_signature: type', type(axon_param), 'not found'
+        newtype = traits.Str
+    if isinstance(newtype, tuple):
+        paramoptions = newtype[1](axon_param)
+        newtype = newtype[0]
+    if not axon_param.mandatory:
+        paramoptions.append('optional=True')
+    if inspect.isfunction(newtype):
+        # newtype is a function: call it to get the actual type
+        newtype = newtype(axon_param)
+    if hasattr(newtype, '__name__'):
+        # take name of a type class
+        newtype = newtype.__name__
+    return newtype, paramoptions
+
+
 def write_process_signature(p, out, buffered_lines, get_all_values=True):
     # write signature
     for name, param in p.signature.iteritems():
-        newtype = param_types_table.get(type(param))
-        paramoptions = []
-        if newtype is None:
-            print 'write_process_signature: type', type(param), 'not found'
-            newtype = traits.Str
-        if isinstance(newtype, tuple):
-            paramoptions = newtype[1](param)
-            newtype = newtype[0]
-        if not param.mandatory:
-            paramoptions.append('optional=True')
-        if inspect.isfunction(newtype):
-            # newtype is a function: call it to get the actual type
-            newtype = newtype(param)
-        if hasattr(newtype, '__name__'):
-            # take name of a type class
-            newtype = newtype.__name__
+        newtype, paramoptions = capsul_param_type(param)
         out.write('        self.add_trait(\'%s\', %s(%s))\n' \
             % (name, newtype, ', '.join(paramoptions)))
         if get_all_values or not p.isDefault(name):
@@ -620,13 +625,12 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
             '        # warning, input items should be connected to ' \
             'adequate output items in each subprocess in the switch.\n')
     if exported:
-        buffered_lines['nodes'].append(
-            '        self.add_switch(\'%s\', %s, %s)\n' \
-            % (nodename, repr(input_names), repr(output_names)))
+        # postpone add_switch line after we have determined its params types
         for output_name in output_names:
             export_output(buffered_lines, use_weak_ref(enode), nodename,
                 output_name, use_weak_ref(p), output_name, selfoutparams,
                 revoutparams, processed_links, self_out_traits, weak_outputs)
+    out_types = {}
     if hasattr(enode, 'selection_outputs'):
         # connect children outputs to the switch
         sel_out = enode.selection_outputs
@@ -658,6 +662,10 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
                 # in switches, input params are the concatenation of declared
                 # input params and the output "group" name
                 input_name = '_switch_'.join((link_src, output_name))
+                if output_name not in out_types:
+                    src_par = src().signature[link_par]
+                    trait_type, paramoptions = capsul_param_type(src_par)
+                    out_types[output_name] = (trait_type, paramoptions)
                 # input_name = link_src  # has changed again in Switch...
                 links.append((src, link_par, use_weak_ref(enode), input_name,
                     weak_outputs))
@@ -669,6 +677,27 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
                     (src, link_par, use_weak_ref(p), input_name))
                 processed_links.add(
                     (use_weak_ref(p), input_name, src, link_par))
+        if exported:
+            out_types_list = []
+            for out in output_names:
+                if out in out_types:
+                    ptype, options = out_types[out]
+                    todel = None
+                    for opt in options:
+                        if opt.startswith('output='):
+                            todel = opt
+                            break
+                    if todel:
+                        options.remove(todel)
+                    out_types_list.append('%s(%s)'
+                                          % (ptype, ', '.join(options)))
+                else:
+                    out_types.append('Any()')
+            buffered_lines['nodes'].append(
+                '        self.add_switch(\'%s\', %s, %s, output_types=[%s])\n'
+                % (nodename, repr(input_names), repr(output_names),
+                   ', '.join(out_types_list)))
+
 
     # select the right child
     for sub_node_name in enode.childrenNames():
