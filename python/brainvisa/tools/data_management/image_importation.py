@@ -14,7 +14,8 @@ class Importer:
 
     @classmethod
     def import_t1mri(cls, input_filename, output_filename,
-                     output_referential_filename=None):
+                     output_referential_filename=None,
+                     referential_name='Referential of Raw T1 MRI'):
         """
         Import the input T1 MRI file to the output filename location.
         Importation is specialized for T1 MRI and for subsequent Morphologist
@@ -119,7 +120,7 @@ class Importer:
             ref_dict = {
                 'uuid': ouuid,
                 'dimension_count': 3,
-                'name': 'Referential of Raw T1 MRI',
+                'name': referential_name,
             }
             open(output_referential_filename, 'w').write(
                 'attributes = ' + repr(ref_dict))
