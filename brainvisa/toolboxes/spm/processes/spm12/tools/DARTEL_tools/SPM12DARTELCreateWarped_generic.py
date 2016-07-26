@@ -110,7 +110,7 @@ def execution( self, context ):
 #==============================================================================
 
   create_warped = CreateWarped()
-  create_warped.setFlowFieldPathList(flow_fields_diskitem_list)
+  create_warped.setFlowFieldPathList([diskitem.fullPath() for diskitem in flow_fields_diskitem_list])
   create_warped.setFirstImagePathList([diskitem.fullPath() for diskitem in images_1_diskitem_list])
   if self.images_2:
     create_warped.appendImageList([diskitem.fullPath() for diskitem in images_2_diskitem_list])
