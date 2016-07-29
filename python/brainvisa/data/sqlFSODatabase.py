@@ -486,6 +486,14 @@ class SQLDatabase( Database ):
 
 
   def __init__( self, sqlDatabaseFile, directory, fso=None, context=None, otherSqliteFiles=[], settings=None ):
+    # print '!==================================!'
+    # print '!SQLDatabase, initialization started!'
+    # print '!==================================!'
+    # print '!sqlDatabaseFile:', sqlDatabaseFile, '!'
+    # print '!directory:', directory, '!'
+    # print '!otherSqliteFiles:', otherSqliteFiles, '!'
+    # print '!==================================!'
+    
     super(SQLDatabase, self).__init__()
     self._connection = None
     self.name = os.path.normpath( directory )
@@ -561,6 +569,7 @@ class SQLDatabase( Database ):
         for a in rule.declared_attributes:
           if a not in keys:
             keys.append( a )
+            nonMandatoryKeyAttributes.add(a)
       for lopa, lopaRules in rulesByLOPA.iteritems():
         for n in lopa:
           editableAttributes.add( n )
@@ -586,7 +595,10 @@ class SQLDatabase( Database ):
       ruleSelectionByMissingKeyAttributes = []
       for rule in rules:
         for n in keys:
-          if n not in ruleSelectionByAttributeValue and n not in rule.pattern.namedRegex() and n not in ruleSelectionByMissingKeyAttributes:
+          if n not in ruleSelectionByAttributeValue \
+            and n not in rule.pattern.namedRegex() \
+            and n not in ruleSelectionByMissingKeyAttributes \
+            and n not in nonMandatoryKeyAttributes:
             ruleSelectionByMissingKeyAttributes.append( n )
       for rule in rules:
         localAttributes = dict( rule.localAttributes )
@@ -611,6 +623,9 @@ class SQLDatabase( Database ):
       self._nonMandatoryKeyAttributesByType[ type.name ] = nonMandatoryKeyAttributes
       self.ruleSelectionByType[ type.name ] = ( ruleSelectionByAttributeValue, ruleSelectionByMissingKeyAttributes, rulesDictionary, defaultAttributesValues )
       self._attributesEditionByType[ type.name ] = ( editableAttributes, selectedValueAttributes, declaredAttributes )
+      
+    #print '!SQLDatabase, rule! selection by type :'
+    #print self.ruleSelectionByType    
       
     
     self.typesWithTable = set()
@@ -666,7 +681,10 @@ class SQLDatabase( Database ):
       if neuroConfig.databaseVersionSync == 'auto':
         self._mustBeUpdated = True
         brainvisa.processes.defaultContext().write( "Database ",  self.name, " must be updated because it has been used with other versions of Brainvisa." )
-
+        
+    # print '!==================================!'
+    # print '!SQLDatabase initialization ended!'
+    # print '!==================================!'
 
   def _scanDatabaseByChunks(
       self, directoriesToScan, recursion=True, context=None, chunkSize=1000 ):
@@ -1626,7 +1644,10 @@ class SQLDatabase( Database ):
         required ) if x is not None ]
       types = set( chain( *( self._childrenByTypeName[ t ] for t in tval ) ) )
     if _debug is not None:
-      print >> _debug, '!createDiskItems! database:', self.directory, tuple( types ), selection, required
+      print >> _debug, '!createDiskItems! database:', self.directory
+      print >> _debug, '!createDiskItems! types:', tuple( types )
+      print >> _debug, '!createDiskItems! selection:', selection
+      print >> _debug, '!createDiskItems! required:', required
     for type in types:
       r = self.ruleSelectionByType.get( type )
       if r is None:
@@ -1637,6 +1658,11 @@ class SQLDatabase( Database ):
       if _debug is not None:
         print >> _debug, '!createDiskItems! possibleFormats = ', possibleFormats
       ruleSelectionByAttributeValue, ruleSelectionByMissingKeyAttributes, rulesDictionary, defaultAttributesValues = r
+      if _debug is not None:
+        print >> _debug, '!createDiskItems! ruleSelectionByAttributeValue:', ruleSelectionByAttributeValue
+        print >> _debug, '!createDiskItems! ruleSelectionByMissingKeyAttributes:', ruleSelectionByMissingKeyAttributes
+        print >> _debug, '!createDiskItems! rulesDictionary:', rulesDictionary
+        print >> _debug, '!createDiskItems! defaultAttributesValues:', defaultAttributesValues
       #key = ( tuple( ( selection.get( i, required.get( i, '' ) ) for i in ruleSelectionByAttributeValue ) ),
               #tuple( ( (False if selection.get( i, required.get( i ) ) else True) for i in ruleSelectionByMissingKeyAttributes ) ) )
       keys = []
