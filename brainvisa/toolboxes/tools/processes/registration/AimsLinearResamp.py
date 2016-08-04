@@ -31,68 +31,67 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-from brainvisa import shelltools
-import shfjGlobals
-
-
 
 
 name = 'Resampling'
-userLevel = 2
+userLevel = 0
 
 signature = Signature( 
-  'image_input', ReadDiskItem( '4D Volume', shfjGlobals.aimsVolumeFormats ),
-  'image_output', WriteDiskItem( '4D Volume', shfjGlobals.anatomistVolumeFormats ),
-  'template', ReadDiskItem( '4D Volume', shfjGlobals.aimsVolumeFormats ),
-  'motion', ReadDiskItem ('Transformation matrix', 'Transformation matrix'),
-  'dimX', Integer(),
-  'dimY', Integer(),
-  'dimZ', Integer(),
-  'sizeX', Float(),
-  'sizeY', Float(),
-  'sizeZ', Float(),
+    'image_input', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
+    'image_output', WriteDiskItem('4D Volume', 'Aims writable volume formats'),
+    'volume_ref', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
+    'motion', ReadDiskItem ('Transformation matrix', 'Transformation matrix'),
+    'resampling_type', OpenChoice('nearest',
+                                  'linear',
+                                  'quadratic',
+                                  'cubic',
+                                  'quartic',
+                                  'quintic'),
+    'dimX', Integer(),
+    'dimY', Integer(),
+    'dimZ', Integer(),
+    'sizeX', Float(),
+    'sizeY', Float(),
+    'sizeZ', Float(),
  )
-  
+
 
 def initialization( self ):
-  self.linkParameters( 'image_output', 'image_input' )
-  self.setOptional('dimX', 'dimY', 'dimZ', 'sizeX', 'sizeY', 'sizeZ', 'motion', 'template')
-  
+    self.linkParameters('image_output', 'image_input')
+    self.resampling_type = 'linear'
+    self.setOptional('dimX', 'dimY', 'dimZ',
+                     'sizeX', 'sizeY', 'sizeZ',
+                     'volume_ref', 'motion')
+
 
 def execution( self, context ):
-  
-  command = [ 'AimsResample', '-i', self.image_input, '-o', self.image_output ]
-  
-  if self.template is not None :
-    template = str(self.template)
-    command += [ '-r', template]
-
-
-  if (self.dimX is None) and (self.dimY is None) and (self.dimZ is None) and (self.sizeX is None) and (self.sizeY is None) and (self.sizeZ is None) and (self.motion is None) :
-    context.write('One field is mandatory (dimX or dimY or dimZ or SizeX or SizeY or SizeZ or motion)')
-  else :  
-    if self.dimX is not None :
-      command += [ '--dx', self.dimX]
-
-    if self.dimY is not None :
-      command += [ '--dy', self.dimY]
-
-    if self.dimZ is not None :
-      command += [ '--dz', self.dimZ]
-
-    if self.sizeX is not None :
-      command += [ '--sx', self.sizeX]
-
-    if self.sizeY is not None :
-      command += [ '--sy', self.sizeY]
-
-    if self.sizeZ is not None :
-      command += [ '--sz', self.sizeZ]
-
+    command = ['AimsResample',
+               '-i', self.image_input,
+               '-o', self.image_output,
+               '-t', self.resampling_type]
+    
     if self.motion is not None :
-      command += [ '-m', self.motion]
+        motion = str(self.motion)
+        command += ['-m', motion]
 
-
+    if (self.dimX is None) and (self.dimY is None) and (self.dimZ is None) and (self.sizeX is None) and (self.sizeY is None) and (self.sizeZ is None) and (self.volume_ref is None):
+        context.write('One field is mandatory (dimX or dimY or dimZ or sizeX or sizeY or sizeZ or volume_ref)')
+    else:
+        if self.volume_ref is not None:
+            command += ['-t', self.volume_ref]
+        if self.dimX is not None:
+            command += ['--dx', self.dimX]
+        if self.dimY is not None:
+            command += ['--dy', self.dimY]
+        if self.dimZ is not None:
+            command += ['--dz', self.dimZ]
+        if self.sizeX is not None:
+            command += ['--sx', self.sizeX]
+        if self.sizeY is not None:
+            command += ['--sy', self.sizeY]
+        if self.sizeZ is not None:
+            command += ['--sz', self.sizeZ]
+    
     context.system( *command )
 
 
