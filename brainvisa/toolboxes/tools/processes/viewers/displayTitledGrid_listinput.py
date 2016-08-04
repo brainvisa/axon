@@ -95,8 +95,8 @@ def execution(self, context):
   objs = displayTitledGrid(registration.getTransformationManager(), None,
                            self.inverseRawColumn,
                            img,
-                           rowTitle=self.rowTitles,
-                           rowColors=self.rowColors, colTitle=self.colTitles,
+                           rowTitles=self.rowTitles,
+                           rowColors=self.rowColors, colTitles=self.colTitles,
                            windowTitle=self.windowTitle
                            , linkWindows=self.linkWindows,
                            overlaidImages=self.overlaid_images,

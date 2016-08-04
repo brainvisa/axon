@@ -46,11 +46,11 @@ import weakref
 #------------------------------------------------------------------------------
 def displayTitledGrid(transformationManager, parent, inverseRawColumn,
                       objPathMatrix,
-                      rowTitle=['raw_space', "MRI_native_space", "mask",
+                      rowTitles=['raw_space', "MRI_native_space", "mask",
                         "MNI_space", ],
                       rowColors=['darkOrange', 'blue', "MRI", 'blue',
                         'magenta'],
-                      colTitle=['PET', "MRI", "grey"],
+                      colTitles=['PET', "MRI", "grey"],
                       windowTitle='View grid',
                       linkWindows='space',
                       overlaidImages=[],
@@ -71,8 +71,8 @@ def displayTitledGrid(transformationManager, parent, inverseRawColumn,
   _mw = mainThreadActions().call(_displayTitledGrid_onGuiThread,
                                  transformationManager, parent,
                                  inverseRawColumn,
-                                 objPathMatrix, rowTitle=rowTitle,
-                                 rowColors=rowColors, colTitle=colTitle,
+                                 objPathMatrix, rowTitles=rowTitles,
+                                 rowColors=rowColors, colTitles=colTitles,
                                  windowTitle=windowTitle,
                                  linkWindows=linkWindows,
                                  overlaidImages=overlaidImages,
@@ -84,8 +84,8 @@ def displayTitledGrid(transformationManager, parent, inverseRawColumn,
   return mw
 
 def _displayTitledGrid_onGuiThread(transformationManager, parent,
-                                   inverseRawColumn, objPathMatrix, rowTitle,
-                                   rowColors, colTitle, windowTitle,
+                                   inverseRawColumn, objPathMatrix, rowTitles,
+                                   rowColors, colTitles, windowTitle,
                                    linkWindows, overlaidImages, mainColormap,
                                    overlayColormap, customOverlayColormap,
                                    rowButtonSubTitles):
@@ -96,8 +96,8 @@ def _displayTitledGrid_onGuiThread(transformationManager, parent,
     overlayColormap=overlayColormap,
     customOverlayColormap=customOverlayColormap)
   mw = TitledGrid.display(inverseRawColumn=inverseRawColumn,
-    windowFlag=QtCore.Qt.Window, windowTitle=windowTitle, rowTitle=rowTitle,
-    colTitle=colTitle, rowColors=rowColors, linkWindows=linkWindows,
+    windowFlag=QtCore.Qt.Window, windowTitle=windowTitle, rowTitles=rowTitles,
+    colTitles=colTitles, rowColors=rowColors, linkWindows=linkWindows,
     overlaidImages=overlaidImages, rowButtonSubTitles=rowButtonSubTitles)[0]
   return TitledGrid
 
@@ -132,8 +132,8 @@ class DisplayTitledGrid(QtGui.QWidget):
 
   def display(self, inverseRawColumn=False, windowFlag=QtCore.Qt.Window,
               windowTitle='Compare',
-              rowTitle=["row_1", "row_2", "row_3", "row_4"],
-              colTitle=["col_1", "col_2", "col_3"],
+              rowTitles=['row_1', 'row_2', 'row_3', 'row_4'],
+              colTitles=['col_1', 'col_2', 'col_3'],
               rowColors=['darkOrange', 'blue', 'blue', 'magenta'],
               linkWindows='space',
               overlaidImages=[],
@@ -145,20 +145,20 @@ class DisplayTitledGrid(QtGui.QWidget):
     self.mw.setWindowTitle(windowTitle)
     layout.addWidget(self.mw)
 
-    self._row_titles = rowTitle
-    self._col_titles = colTitle
-    #self._custom_row_titles = [ x for x in rowTitle ]
+    self._row_titles = rowTitles
+    self._col_titles = colTitles
+    #self._custom_row_titles = [ x for x in rowTitles ]
 
     # load overlay (fusionned) images, and make fusions
     self._loadOverlayImages(overlaidImages)
     self._createOverlayFusions()
 
-    self._addColumnButton(colTitle, inverseRawColumn)
-    self._addRowButton(rowTitle, rowColors, inverseRawColumn, rowButtonSubTitles)
+    self._addColumnButton(colTitles, inverseRawColumn)
+    self._addRowButton(rowTitles, rowColors, inverseRawColumn, rowButtonSubTitles)
 
     #self._createWinFrame(self.mw, self.mw.selectedReferenceLabel) # momoTODO : meme cadre autour de selected reference
 
-    self._createAndLinkAnatomistWindowsInMainLayout(linkWindows, inverseRawColumn, 'Sagittal', rowTitle)
+    self._createAndLinkAnatomistWindowsInMainLayout(linkWindows, inverseRawColumn, 'Sagittal', rowTitles)
 
     self.mw.anatomistObjectList = self.anatomistObjectList # momo  :ca sert a quoi?
 
