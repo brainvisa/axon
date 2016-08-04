@@ -63,8 +63,8 @@ def initialization(self):
 
 def execution(self, context):
     command = ['AimsSubSampling',
-               '-i', self.t1mri_input,
-               '-o', self.t1mri_output,
+               '-i', self.image_input,
+               '-o', self.image_output,
                '-t', self.subsampling_type,
                '-rx', self.rx,
                '-ry', self.ry,
