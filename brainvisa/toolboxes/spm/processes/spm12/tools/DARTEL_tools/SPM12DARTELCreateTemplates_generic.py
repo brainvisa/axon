@@ -36,6 +36,7 @@ from soma.spm.spm12.tools.dartel_tools.run_dartel.outer_iteration import OuterIt
 from soma.spm.spm12.tools.dartel_tools.run_dartel.optimisation_settings import OptimisationSettings
 from soma.spm.spm12.tools.dartel_tools.run_dartel.settings import Settings
 from soma.spm.spm_launcher import SPM12, SPM12Standalone
+from soma.spm.spm_batch_maker_utils import copyNifti
 
 #------------------------------------------------------------------------------
 configuration = Application().configuration
@@ -269,7 +270,7 @@ def convertDiskitem(context, diskitem):
     """convert to .nii"""
     if str(diskitem.format) != "NIFTI-1 image":
         diskitem_tmp = context.temporary("NIFTI-1 image")
-        moveNifti(diskitem.fullPath(), diskitem_tmp.fullPath())
+        copyNifti(diskitem.fullPath(), diskitem_tmp.fullPath())
         return diskitem_tmp
     else:
         return diskitem

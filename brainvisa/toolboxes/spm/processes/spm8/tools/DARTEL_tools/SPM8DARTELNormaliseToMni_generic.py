@@ -34,7 +34,7 @@ from brainvisa.processes import *
 from soma.spm.spm8.tools.dartel_tools.normalise_to_mni import NormaliseToMNI
 from soma.spm.spm8.tools.dartel_tools.normalise_to_mni.many_subjects import ManySubjects
 from soma.spm.spm_launcher import SPM8, SPM8Standalone
-from soma.spm.spm_batch_maker_utils import moveNifti
+from soma.spm.spm_batch_maker_utils import copyNifti
 import numpy
 #------------------------------------------------------------------------------
 configuration = Application().configuration
@@ -126,7 +126,7 @@ def execution( self, context ):
   for deformation_field in self.flow_fields:
       if str(deformation_field.format) == "gz compressed NIFTI-1 image":
         deformation_path = context.temporary("NIFTI-1 image")
-        moveNifti(deformation_field.fullPath(), deformation_path)
+        copyNifti(deformation_field.fullPath(), deformation_path)
         deformation_fullpath_list.append(deformation_path)
       else:
         deformation_fullpath_list.append(deformation_field.fullPath())
@@ -189,7 +189,7 @@ def convertDiskitem(context, diskitem):
     """convert to .nii"""
     if str(diskitem.format) != "NIFTI-1 image":
         diskitem_tmp = context.temporary("NIFTI-1 image")
-        moveNifti(diskitem.fullPath(), diskitem_tmp.fullPath())
+        copyNifti(diskitem.fullPath(), diskitem_tmp.fullPath())
         return diskitem_tmp
     else:
         return diskitem

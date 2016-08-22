@@ -33,7 +33,7 @@
 from brainvisa.processes import *
 from soma.spm.spm12.tools.dartel_tools.create_warped import CreateWarped
 from soma.spm.spm_launcher import SPM12, SPM12Standalone
-from soma.spm.spm_batch_maker_utils import moveNifti
+from soma.spm.spm_batch_maker_utils import copyNifti
 
 #------------------------------------------------------------------------------
 configuration = Application().configuration
@@ -166,7 +166,7 @@ def convertDiskitem(context, diskitem):
     """convert to .nii"""
     if str(diskitem.format) != "NIFTI-1 image":
         diskitem_tmp = context.temporary("NIFTI-1 image")
-        moveNifti(diskitem.fullPath(), diskitem_tmp.fullPath())
+        copyNifti(diskitem.fullPath(), diskitem_tmp.fullPath())
         return diskitem_tmp
     else:
         return diskitem
