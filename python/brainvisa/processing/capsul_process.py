@@ -75,6 +75,7 @@ param_types_table = \
         trait_types.Enum: (neuroData.Choice, choiceOptions),
         trait_types.List: (neuroData.ListOf, listOptions),
         trait_types.ListFloat: (neuroData.ListOf, listOptions),
+        trait_types.Set: (neuroData.ListOf, listOptions),
     }
 
 
@@ -97,7 +98,7 @@ def make_parameter(param, name, process, attributes=None,
 
 
 def convert_capsul_value(value):
-    if isinstance(value, traits.TraitListObject):
+    if isinstance(value, (traits.TraitListObject, traits.TraitSetObject)):
         value = [convert_capsul_value(x) for x in value]
     elif value is traits.Undefined or value in ("<undefined>", "None"):
         # FIXME: "<undefined>" or "None" is a bug in the Controller GUI
@@ -105,12 +106,17 @@ def convert_capsul_value(value):
     return value
 
 
-def convert_to_capsul_value(value, item_type=None):
+def convert_to_capsul_value(value, item_type=None, trait=None):
     if isinstance(value, DiskItem):
         value = value.fullPath()
     elif isinstance(value, list):
         value = [convert_to_capsul_value(x, item_type.contentType)
                  for x in value]
+        if trait is not None and type(trait.trait_type) is trait_types.Set:
+            value = set(value)
+    elif isinstance(value, set):
+        value = set([convert_to_capsul_value(x, item_type.contentType)
+                     for x in value])
     elif value is None and isinstance(item_type, ReadDiskItem):
         value = traits.Undefined
     return value
@@ -352,7 +358,8 @@ class CapsulProcess(processes.Process):
         process = self.get_capsul_process()
         for name, itype in six.iteritems(self.signature):
             converted_value = convert_to_capsul_value(getattr(self, name),
-                                                      itype)
+                                                      itype,
+                                                      process.trait(name))
             try:
                 setattr(process, name, converted_value)
             except traits.TraitError:
@@ -522,7 +529,8 @@ class CapsulProcess(processes.Process):
             itype = self.signature.get(param)
             trait = self._capsul_process.trait(param)
             setattr(self._capsul_process, param,
-                    convert_to_capsul_value(value, itype))
+                    convert_to_capsul_value(value, itype,
+                                            self._capsul_process.trait(param)))
             if not isinstance(itype, ReadDiskItem):
                 # not a DiskItem: nothing else to do.
                 return
