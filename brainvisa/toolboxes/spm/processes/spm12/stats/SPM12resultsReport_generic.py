@@ -73,12 +73,11 @@ signature = Signature(
                          "MATLAB figure",
                          "CSV file",
                          "NIDM (Neuroimaging Data Model)"),
-
   'write_filtered_images', Choice(('Thresholded SPM', 'thresh'),
                                   ('All clusters (binary)', 'binary'),
                                   ('All clusters (n-ary)', 'n-ary')),
   'write_filtered_images_basename', String(),
-  'result_map', WriteDiskItem('4D Volume', 'SPM Image'),
+  'filtered_image', WriteDiskItem('4D Volume', 'NIFTI-1 image'),
 
   'add_section_overlay', Boolean(),
   'section_image', ReadDiskItem('anatomical Template', ['NIFTI-1 image', 'SPM image', 'MINC image']),
@@ -86,9 +85,9 @@ signature = Signature(
   'render_image', ReadDiskItem('SPM Render', 'Matlab file'),
   'render_style', Choice(('New', '1'), ('Old', 'NaN')),
   'brightness', Choice(("Neither", 1), ('slightly', 0.75), ('more', 0.5), ('lots', 0.25)),
-  'contrast_MIP', WriteDiskItem('Postscript file', 'PS file'),
-  'copy_MIP_to_pdf', Boolean(),
-  'contrast_MIP_pdf', WriteDiskItem('Postscript file', 'PDF file'),
+  'results_report', WriteDiskItem('Postscript file', 'PS file'),
+  "results_report_directory", WriteDiskItem("Directory", "Directory"),
+  "results_report_basename", String(),
   'contrast_number', Integer(),
 
   'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script' ),
@@ -97,10 +96,12 @@ signature = Signature(
 )
 
 def initialization( self ):
+  self.setDisable("filtered_image")  # TODO : make link in python module
+  self.setOptional("results_report", "results_report_directory", "results_report_basename")
   self.addLink(None, 'add_section_overlay', self.updateSignatureAboutSection)
   self.addLink(None, 'add_render_overlay', self.updateSignatureAboutRender)
   self.addLink(None, 'render_style', self.updateSignatureAboutRender)
-  self.addLink(None, 'copy_MIP_to_pdf', self.updateSignatureAboutMIPPDF)
+  self.addLink(None, "print_result", self._updateSignatureAboutOutputs)
   self.contrast_number = 0
   self.contrast_current_number = 0
 
@@ -111,9 +112,6 @@ def initialization( self ):
   self.write_filtered_images_basename = "filtered_images"
   self.add_section_overlay = False
   self.add_render_overlay = False
-  self.copy_MIP_to_pdf = False
-
-  self.addLink('contrast_MIP_pdf', 'contrast_MIP')
 
 def updateSignatureAboutSection(self, proc):
   if self.add_section_overlay:
@@ -135,11 +133,15 @@ def updateSignatureAboutRender(self, proc):
     self.setDisable('render_image', 'render_style', 'brightness')
   self.changeSignature(self.signature)
 
-def updateSignatureAboutMIPPDF(self, proc):
-  if self.copy_MIP_to_pdf:
-    self.setEnable('contrast_MIP_pdf')
+def _updateSignatureAboutOutputs(self, print_result, names, parameterized):
+  if print_result == "none":
+    self.setDisable("results_report", "results_report_directory", "results_report_basename")
+  elif print_result == "PostScript (PS)":
+    self.setEnable("results_report", mandatory=False)
+    self.setDisable("results_report_directory", "results_report_basename")
   else:
-    self.setDisable('contrast_MIP_pdf')
+    self.setEnable("results_report_directory", "results_report_basename", mandatory=False)
+    self.setDisable("results_report")
   self.changeSignature(self.signature)
 
 def updateSignatureAboutSimpleContrastNumber(self, proc):
@@ -198,10 +200,8 @@ def updateBatchPath(self, proc):
     return os.path.join(directory_path, 'spm12_results_report_job.m')
 
 def execution( self, context ):
-  self.removeOldContrastMIPFile()
-
-  spm_workspace_directory = os.path.dirname(self.batch_location.fullPath())
-  matlab_batch_path = os.path.join(spm_workspace_directory, 'result.m')
+  #spm_workspace_directory = os.path.dirname(self.batch_location.fullPath())
+  #matlab_batch_path = os.path.join(spm_workspace_directory, 'result.m')
 
   result = self.createResultsReportBatch(context)
   spm = validation()#This is singleton object
@@ -211,11 +211,6 @@ def execution( self, context ):
   #spm.addMatlabCommandAfterSPMRunning(self.writeCompleteResultBatch(spm_workspace_directory))
   output = spm.run()
   context.log(name, html=output)
-
-def removeOldContrastMIPFile(self):
-  #By default SPM add to it so it is necessary to clean up before start
-  if(os.path.exists(self.contrast_MIP.fullPath())):
-    os.remove(self.contrast_MIP.fullPath())
 
 def createResultsReportBatch(self, context):
 
@@ -315,6 +310,16 @@ def createResultsReportBatch(self, context):
     else:
       raise ValueError("Unvalid print_result choice")
 
+    if self.print_result != "none":
+      if self.print_result == "PostScript (PS)" and self.results_report is not None:
+        result.setOutputResultPath(self.results_report.fullPath())
+      elif self.results_report_directory is not None and self.results_report_basename:
+        result.setOutputDirectoryAndBasename(self.results_report_directory.fullPath(), self.results_report_basename)
+      else:
+        pass#SPM default path used
+    else:
+      pass#result was not printed
+
     if self.write_filtered_images == "none":
       pass
     elif self.write_filtered_images == "thresh":
@@ -336,112 +341,74 @@ def createResultsReportBatch(self, context):
     raise ValueError("At least one contrast_number is mandatory")
 
 #------------------------------------------------------------------------------
-def writeCompleteResultBatch(self, spm_workspace_directory):
-  stats_csv_path = os.path.join(spm_workspace_directory, "stats.csv")
-  thresholding_info_path = os.path.join(spm_workspace_directory, "thresholding.info")
-
-  matlab_script_list = []
-  #matlab_script_list.extend(self.addSpmWriteFilteredToSPMBatch())#Useless in SPM12
-  matlab_script_list.extend(addScriptAboutCSVStatToSPMBatch(stats_csv_path))
-  matlab_script_list.extend(addScriptAboutThresholdingInfoToSPMBatch(thresholding_info_path))
-
-
-  if self.add_section_overlay:
-    matlab_script_list.extend(self.addSectionScriptToSPMBatch())
-  if self.add_render_overlay:
-    matlab_script_list.extend(self.addRenderScriptToSPMBatch())
-
-  return matlab_script_list
-
-
-
-def addSpmWriteFilteredToSPMBatch(self):
-  matlab_script_list = []
-  matlab_script_list.append("XYZ = xSPM.XYZ;")
-  matlab_script_list.append("switch lower( '%s' )"% self.write_filtered_images)
-  matlab_script_list.append("""
-case 'thresh'
-    Z = xSPM.Z;
-
-case 'binary'
-    Z = ones(size(xSPM.Z));
-
-case 'n-ary'
-    Z       = spm_clusters(XYZ);
-    num     = max(Z);
-    [n, ni] = sort(histc(Z,1:num), 2, 'descend');
-    n       = size(ni);
-    n(ni)   = 1:num;
-    Z       = n(Z);
-end""")
-  matlab_script_list.append("spm_write_filtered( Z, XYZ, xSPM.DIM, xSPM.M, '', '%s' );" % self.result_map.fullPath())
-  return matlab_script_list
-
-def addScriptAboutCSVStatToSPMBatch(stats_csv_path):
-  matlab_script_list = []
-  matlab_script_list.append("tmpfile = [ '%s' ];" % stats_csv_path)
-  matlab_script_list.append("fid = fopen(tmpfile,'wt');")
-  matlab_script_list.append("fprintf(fid,[repmat('%s,',1,11) '%d,,\\n'],TabDat.hdr{1,:});")
-  matlab_script_list.append("fprintf(fid,[repmat('%s,',1,12) '\\n'],TabDat.hdr{2,:});")
-  matlab_script_list.append("fmt = TabDat.fmt;")
-  matlab_script_list.append("[fmt{2,:}] = deal(','); fmt = [fmt{:}];")
-  matlab_script_list.append("fmt(end:end+1) = '\\n'; fmt = strrep(fmt,' ',',');")
-  matlab_script_list.append("""
-for i=1:size(TabDat.dat,1)
-  fprintf(fid,fmt,TabDat.dat{i,:});
-end""")
-  matlab_script_list.append("fclose(fid);")
-  return matlab_script_list
-
-def addScriptAboutThresholdingInfoToSPMBatch(thresholding_info_path):
-  matlab_script_list = []
-  matlab_script_list.append("tmpfile = [ '%s' ];" % thresholding_info_path)
-  matlab_script_list.append("fid = fopen(tmpfile, 'wt');")
-  matlab_script_list.append("fprintf(fid, '\\n' );")
-  matlab_script_list.append("fprintf(fid, '%s', sprintf('Height threshold %c = %0.2f {%s}', xSPM.STAT, xSPM.u, xSPM.thresDesc));")
-  matlab_script_list.append("fprintf(fid, '\\n' );")
-  matlab_script_list.append("fprintf(fid, '%s', sprintf('Extent threshold k = %0.0f voxels', xSPM.k));")
-  matlab_script_list.append("fclose(fid);")
-  return matlab_script_list
+#def writeCompleteResultBatch(self, spm_workspace_directory):
+#  stats_csv_path = os.path.join(spm_workspace_directory, "stats.csv")
+#  thresholding_info_path = os.path.join(spm_workspace_directory, "thresholding.info")
+#
+#  matlab_script_list = []
+#  matlab_script_list.extend(addScriptAboutCSVStatToSPMBatch(stats_csv_path))
+#  matlab_script_list.extend(addScriptAboutThresholdingInfoToSPMBatch(thresholding_info_path))
+#
+#
+#  if self.add_section_overlay:
+#    matlab_script_list.extend(self.addSectionScriptToSPMBatch())
+#  if self.add_render_overlay:
+#    matlab_script_list.extend(self.addRenderScriptToSPMBatch())
+#
+#  return matlab_script_list
+#
+#def addScriptAboutCSVStatToSPMBatch(stats_csv_path):
+#  matlab_script_list = []
+#  matlab_script_list.append("tmpfile = [ '%s' ];" % stats_csv_path)
+#  matlab_script_list.append("fid = fopen(tmpfile,'wt');")
+#  matlab_script_list.append("fprintf(fid,[repmat('%s,',1,11) '%d,,\\n'],TabDat.hdr{1,:});")
+#  matlab_script_list.append("fprintf(fid,[repmat('%s,',1,12) '\\n'],TabDat.hdr{2,:});")
+#  matlab_script_list.append("fmt = TabDat.fmt;")
+#  matlab_script_list.append("[fmt{2,:}] = deal(','); fmt = [fmt{:}];")
+#  matlab_script_list.append("fmt(end:end+1) = '\\n'; fmt = strrep(fmt,' ',',');")
+#  matlab_script_list.append("""
+#for i=1:size(TabDat.dat,1)
+#  fprintf(fid,fmt,TabDat.dat{i,:});
+#end""")
+#  matlab_script_list.append("fclose(fid);")
+#  return matlab_script_list
+#
+#def addScriptAboutThresholdingInfoToSPMBatch(thresholding_info_path):
+#  matlab_script_list = []
+#  matlab_script_list.append("tmpfile = [ '%s' ];" % thresholding_info_path)
+#  matlab_script_list.append("fid = fopen(tmpfile, 'wt');")
+#  matlab_script_list.append("fprintf(fid, '\\n' );")
+#  matlab_script_list.append("fprintf(fid, '%s', sprintf('Height threshold %c = %0.2f {%s}', xSPM.STAT, xSPM.u, xSPM.thresDesc));")
+#  matlab_script_list.append("fprintf(fid, '\\n' );")
+#  matlab_script_list.append("fprintf(fid, '%s', sprintf('Extent threshold k = %0.0f voxels', xSPM.k));")
+#  matlab_script_list.append("fclose(fid);")
+#  return matlab_script_list
 #------------------------------------------------------------------------------
 
-def addSectionScriptToSPMBatch(self):
-  matlab_script_list = []
-  matlab_script_list.append("spm_sections(xSPM,hReg,'%s');"% self.section_image.fullPath())
-  matlab_script_list.append("choice = spm_input('Print section view',1,'Cancel|Print',[0,1],1)")
-  matlab_script_list.append("""
-if choice == 1
-  spm_figure('Print');
-end;""")
-  return matlab_script_list
-
-
-def addRenderScriptToSPMBatch(self):
-  matlab_script_list = []
-  matlab_script_list.extend(self.addRenderInitValueToSPMBatch())
-  matlab_script_list.append("dat(1) = struct('XYZ', xSPM.XYZ,'t', xSPM.Z','mat', xSPM.M,'dim', xSPM.DIM);")
-  matlab_script_list.append("spm_render(dat, %s, '%s');"% (self.render_style, self.render_image.fullPath()))
-  matlab_script_list.append("spm_figure('Print');")
-  return matlab_script_list
-
-def addRenderInitValueToSPMBatch(self):
-#  This script part is use to avoid the user intervention on SPM gui
-# The color is set on RGB because the custom color choice is too hard to implement on Brainvisa. And usually users do not use it
-  matlab_script_list = []
-  matlab_script_list.append("global prevrend")
-  matlab_script_list.append("prevrend = struct('rendfile','%s', 'brt',%g, 'col',eye(3));" % (self.render_image.fullPath(), self.brightness))
-  return matlab_script_list
-
-#==============================================================================
+#def addSectionScriptToSPMBatch(self):
+#  matlab_script_list = []
+#  matlab_script_list.append("spm_sections(xSPM,hReg,'%s');"% self.section_image.fullPath())
+#  matlab_script_list.append("choice = spm_input('Print section view',1,'Cancel|Print',[0,1],1)")
+#  matlab_script_list.append("""
+#if choice == 1
+#  spm_figure('Print');
+#end;""")
+#  return matlab_script_list
 #
-#==============================================================================
-def convertPSToPDF(context, ps_path, pdf_path):
-  #if at least one path is too long ps2pdf doesn't work...
-  tmp_ps = context.temporary('PS file')
-  tmp_pdf = context.temporary('PDF file')
-  shutil.copy(ps_path, tmp_ps.fullPath())
+#
+#def addRenderScriptToSPMBatch(self):
+#  matlab_script_list = []
+#  matlab_script_list.extend(self.addRenderInitValueToSPMBatch())
+#  matlab_script_list.append("dat(1) = struct('XYZ', xSPM.XYZ,'t', xSPM.Z','mat', xSPM.M,'dim', xSPM.DIM);")
+#  matlab_script_list.append("spm_render(dat, %s, '%s');"% (self.render_style, self.render_image.fullPath()))
+#  matlab_script_list.append("spm_figure('Print');")
+#  return matlab_script_list
+#
+#def addRenderInitValueToSPMBatch(self):
+##  This script part is use to avoid the user intervention on SPM gui
+## The color is set on RGB because the custom color choice is too hard to implement on Brainvisa. And usually users do not use it
+#  matlab_script_list = []
+#  matlab_script_list.append("global prevrend")
+#  matlab_script_list.append("prevrend = struct('rendfile','%s', 'brt',%g, 'col',eye(3));" % (self.render_image.fullPath(), self.brightness))
+#  return matlab_script_list
 
-  command = ['ps2pdf', tmp_ps.fullPath(), tmp_pdf.fullPath()]
-  context.system( *command )
-
-  shutil.move(tmp_pdf.fullPath(), pdf_path)

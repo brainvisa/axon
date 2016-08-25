@@ -91,7 +91,10 @@ def moveFileAndCreateFoldersIfNeeded(source_path, destination_path):
     os.makedirs(os.path.dirname(destination_path))
   else:
     pass#folder already exists
-  moveNifti(source_path, destination_path)
+  if source_path.endswith(".nii") or source_path.endswith(".nii.gz"):
+    moveNifti(source_path, destination_path)
+  else:
+    shutil.move(source_path, destination_path)
 #==============================================================================
 #
 #==============================================================================

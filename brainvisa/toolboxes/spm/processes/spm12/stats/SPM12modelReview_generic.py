@@ -73,17 +73,20 @@ signature = Signature(
                          "PNG image",
                          "TIFF image",
                          "MATLAB figure"),
-  "result", WriteDiskItem("Any Type", "PS file"),
+  "results_report", WriteDiskItem("Any Type", "PS file"),
+  "results_report_directory", WriteDiskItem("Directory", "Directory"),
+  "results_report_basename", String(),
   'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script' ),
 )
 
 def initialization( self ):
-  self.setOptional("result")
+  self.setOptional("results_report", "results_report_directory", "results_report_basename")
 
   self.display = "Design Matrix"
   self.print_result = "PostScript (PS)"
 
   self.addLink(None, "display", self.updateSignatureAboutDisplay)
+  self.addLink(None, "print_result", self._updateSignatureAboutOutputs)
 
   self.addLink("batch_location", "basic_model_mat_file", self.updateBatchPath)
 
@@ -92,25 +95,18 @@ def updateSignatureAboutDisplay(self, display_choice, names, parameterized):
     self.setEnable("session", "condition")
   else:
     self.setDisable("session", "condition")
-  self._updateFormat()
   self.changeSignature(self.signature)
 
-def _updateFormat(self):
-  if self.print_result == "PostScript (PS)":
-    print_format = "PS file"
-  elif self.print_result == "Encapsulated PostScript (EPS)":
-    print_format = "EPS file"
-  elif self.print_result == "Portable Document Format (PDF)":
-    print_format = "PDF File"
-  elif self.print_result == "JPEG image":
-    print_format = "JPEG image"
-  elif self.print_result == "PNG image":
-    print_format = "PNG image"
-  elif self.print_result == "TIFF image":
-    print_format = "TIFF(.tif) image"
-  elif self.print_result == "MATLAB figure":
-    print_format = "Plot results"
-  self.signature["result"] =  WriteDiskItem("Any Type", print_format)
+def _updateSignatureAboutOutputs(self, print_result, names, parameterized):
+  if print_result == "none":
+    self.setDisable("results_report", "results_report_directory", "results_report_basename")
+  elif print_result == "PostScript (PS)":
+    self.setEnable("results_report", mandatory=False)
+    self.setDisable("results_report_directory", "results_report_basename")
+  else:
+    self.setEnable("results_report_directory", "results_report_basename", mandatory=False)
+    self.setDisable("results_report")
+  self.changeSignature(self.signature)
 
 def updateBatchPath(self, proc):
   if self.basic_model_mat_file is not None:
@@ -158,8 +154,15 @@ def execution( self, context ):
   else:
     raise ValueError("Unvalid print_result choice")
 
-  if self.result is not None:
-    model_review.setOutputResultPath(self.result.fullPath())
+  if self.print_result != "none":
+    if self.print_result == "PostScript (PS)" and self.results_report is not None:
+      model_review.setOutputResultPath(self.results_report.fullPath())
+    elif self.results_report_directory is not None and self.results_report_basename:
+      model_review.setOutputDirectoryAndBasename(self.results_report_directory.fullPath(), self.results_report_basename)
+    else:
+      pass#SPM default path used
+  else:
+    pass#result was not printed
 
   spm = validation()
   spm.addModuleToExecutionQueue(model_review)

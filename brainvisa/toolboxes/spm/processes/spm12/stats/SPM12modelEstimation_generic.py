@@ -92,6 +92,7 @@ def initialization( self ):
 
   self.addLink("batch_location", "basic_model_mat_file", self.updateBatchPath)
 
+  self.write_residuals = False
   self.analysis_space = 'Volume'
   self.AR_model_order = [3]
   self.signal_priors = 'UGL'

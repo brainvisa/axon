@@ -78,7 +78,7 @@ signature = Signature(
   'overall_grand_mean_scaling', Boolean(),
   'grand_mean_scaled_value', ListOf( Float() ),
   'normalisation', Choice("Neither", 'Proportional', 'ANCOVA'),
-  'spm_workspace_directory', WriteDiskItem('Voxel by voxel comparison SPM workspace directory', 'Directory'),
+  'spm_workspace_directory', WriteDiskItem('Directory', 'Directory'),
   'two_sample_T_test_mat_file', WriteDiskItem( 'Matlab SPM file', 'Matlab file' ),
   #job_batch_file
   'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script' ),
