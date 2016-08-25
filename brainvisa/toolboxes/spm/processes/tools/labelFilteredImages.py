@@ -33,12 +33,14 @@
 
 from brainvisa.processes import *
 from neuroProcessesGUI import mainThreadActions
-from nuclearImaging.LabelNameSetting import LabelNameSetting
 from soma import aims
 import os
 
 userLevel = 0
-name = "Import Vois"
+name = "Identify and label vois extracted from result report SPM12"
+
+def validation():
+    from nuclearImaging.LabelNameSetting import LabelNameSetting
 
 #------------------------------------------------------------------------------
 
