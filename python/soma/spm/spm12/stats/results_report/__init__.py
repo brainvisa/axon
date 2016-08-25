@@ -96,6 +96,10 @@ class ResultsReport(ResultsReport_virtual, SPM12MainModule):
       spm_date = getTodayDateInSpmFormat()
       workspace_diretory = os.path.dirname(self.matlab_file_path)
       ext = self.print_result.replace("'", '')
+      if self.print_resul == "'nidm'":
+        ext += ".zip"
+      else:
+        pass
       if self.output_results_path is not None:
         spm_result_path = os.path.join(workspace_diretory, "spm_%s.%s" % (spm_date, ext))
         if os.path.exists(spm_result_path):
