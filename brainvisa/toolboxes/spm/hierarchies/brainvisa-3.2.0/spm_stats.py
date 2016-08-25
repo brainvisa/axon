@@ -4,6 +4,8 @@ spm_files = (
     '{analysis}', SetType('SPM workspace directory'), SetContent(
         'SPM', SetType('SPM design specification'),
         'spm_{date}', SetType('SPM graphical report'),
+        'spm{contrast_type}_{contrast_index}_{basename}_labelled', SetType('SPM labelled filtered image'),
+        'spm{contrast_type}_{contrast_index}_{basename}_translation', SetType('SPM labelled filtered image translation'),
         'spm{contrast_type}_{contrast_index}_{basename}', SetType('SPM filtered image'),
     ),
 )
