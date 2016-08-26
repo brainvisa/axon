@@ -10,7 +10,7 @@ from soma.spm.spm8.stats.results_report.contrast_query_container import Contrast
 from soma.spm.spm12.stats.results_report.write_filtered_images import WriteFilteredImages
 
 import os
-
+import time
 
 class ResultsReport(ResultsReport_virtual, SPM12MainModule):
   def __init__(self):
@@ -96,21 +96,20 @@ class ResultsReport(ResultsReport_virtual, SPM12MainModule):
       spm_date = getTodayDateInSpmFormat()
       workspace_diretory = os.path.dirname(self.matlab_file_path)
       ext = self.print_result.replace("'", '')
-      if self.print_resul == "'nidm'":
+      if self.print_result == "'nidm'":
         ext += ".zip"
       else:
         pass
       if self.output_results_path is not None:
+        time.sleep(0.5)
         spm_result_path = os.path.join(workspace_diretory, "spm_%s.%s" % (spm_date, ext))
         if os.path.exists(spm_result_path):
           moveFileAndCreateFoldersIfNeeded(spm_result_path,
                                            self.output_results_path)
-#        elif os.path.exists(os.path.join('/tmp', "spm_%s.%s" % (spm_date, ext))):
-#          moveFileAndCreateFoldersIfNeeded(os.path.join('/tmp', "spm_%s.%s" % (spm_date, ext)),
-#                                           self.output_results_path)
         else:
           raise RuntimeError("Output file not found")
       elif not None in [self.output_directory, self.output_basename]:
+        time.sleep(0.5)
         if os.path.exists(os.path.join(workspace_diretory, "spm_%s_001.%s" % (spm_date, ext))):
           index = 1
           while(os.path.exists(os.path.join(workspace_diretory, "spm_%s_%03d.%s" % (spm_date, index, ext)))):
@@ -121,6 +120,7 @@ class ResultsReport(ResultsReport_virtual, SPM12MainModule):
         else:
           raise RuntimeError("Output file not found")
       else:
+        time.sleep(0.5)
         pass#default prefix used
     else:
       pass#default prefix used

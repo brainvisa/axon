@@ -2,7 +2,6 @@
 from distutils.spawn import find_executable
 from collections import deque
 import os
-import tempfile
 import copy
 import sys
 import subprocess
@@ -40,7 +39,13 @@ class SPMLauncher():
 
     def _moveSPMDefaultPathsIfNeeded(self, current_execution_module_deque):
         for module in current_execution_module_deque:
-            module._moveSPMDefaultPathsIfNeeded()
+            try:
+                module._moveSPMDefaultPathsIfNeeded()
+            except Exception, e:
+                raise RuntimeError("Move SPM default paths failed :\n%s" % e)
+                print("##############################")
+                print("Move SPM default paths failed :\n%s" % e)
+                print("##############################")
 
     #TODO : find an other way to re-initialize or destroy singleton function
     def resetExecutionQueue(self):
@@ -75,7 +80,7 @@ class SPM(SPMLauncher):
         self.matlab_commands_after_list.extend(matlab_commands_list)
 
     def run(self, use_matlab_options=True):
-        if not None in [self.spm_script_path, self.matlab_script_path]:
+        if self.spm_script_path is not None:
             self._writeSPMScript()
             self._writeMatlabScript()
             current_execution_module_deque = copy.copy(self.execution_module_deque)
@@ -88,12 +93,20 @@ class SPM(SPMLauncher):
                 checkIfMatlabFailedBeforSpm(output)
                 checkIfSpmHasFailed(output)
                 self._moveSPMDefaultPathsIfNeeded(current_execution_module_deque)
-            finally:
-                return output
+            except Exception, e:
+                raise RuntimeError("%s\n\nError after SPM finished :\n%s" % (output, e))
+
+            return output
         else:
             raise ValueError("job path and batch path are required")
 
     def _writeMatlabScript(self):
+        if self.matlab_script_path is None:
+            spm_path_splitted = self.spm_script_path.split('.')
+            spm_path_splitted[0] += "_matlab_script"
+            self.matlab_script_path = '.'.join(spm_path_splitted)
+        else:
+            pass
         if not os.path.exists(os.path.dirname(self.matlab_script_path)):
             os.makedirs(os.path.dirname(self.matlab_script_path))
         else:
@@ -153,7 +166,7 @@ class SPM8(SPM):
         self.spm_defaults = spm_defaults
 
         self.spm_script_path = None
-        self.matlab_script_path = tempfile.NamedTemporaryFile(suffix=".m").name
+        self.matlab_script_path = None
         self.matlab_commands_before_list = []
         self.matlab_commands_after_list = []
 
@@ -185,7 +198,7 @@ class SPM12(SPM):
         self.spm_defaults = spm_defaults
 
         self.spm_script_path = None
-        self.matlab_script_path = tempfile.NamedTemporaryFile(suffix=".m").name
+        self.matlab_script_path = None
         self.matlab_commands_before_list = []
         self.matlab_commands_after_list = []
 
@@ -223,8 +236,10 @@ class SPMStandalone(SPMLauncher):
             try:
                 checkIfSpmHasFailed(output)
                 self._moveSPMDefaultPathsIfNeeded(current_execution_module_deque)
-            finally:
-                return output
+            except Exception, e:
+                raise RuntimeError("%s\n\nError after SPM finished :\n%s" % (output, e))
+
+            return output
         else:
             raise ValueError("job path is required")
 
