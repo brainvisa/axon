@@ -310,7 +310,7 @@ def updateSPMMat(self, proc, dummy):
         attr = {"_database":self.group.hierarchyAttributes()["_database"]}
         if self.factorial_design_type == "One sample T-Test":
             attr.update({"group_name":self.group.hierarchyAttributes()["group_name"]})
-        elif self.factorial_design_type in ["Two sample T-Test", "Paired T-Test"]:
+        elif self.factorial_design_type in ["Two sample T-Test", "Paired T-Test"] and self.group_2 is not None:
             attr.update({"first_group_name":self.group.hierarchyAttributes()["group_name"]})
             attr.update({"second_group_name":self.group_2.hierarchyAttributes()["group_name"]})
         else:
@@ -377,6 +377,7 @@ def addProcessesToExecutionNode(self, analysis_serial_node):
     addModelEstimationProcess(analysis_serial_node)
     addContrastProcess(analysis_serial_node)
     addResultsReportProcess(analysis_serial_node)
+    addIdentifyAndLabelProcess(analysis_serial_node)
 
 def addOneSampleTTestProcess(self, node):
     node.addChild(
@@ -498,7 +499,6 @@ def addResultsReportProcess(analysis_serial_node):
             optional=True,
             selected=True))
     analysis_serial_node.results_report_SPM.contrast_number = 1
-    analysis_serial_node.results_report_SPM.write_filtered_image_basename = "write_filtered"
     analysis_serial_node.addDoubleLink("spm_mat", "results_report_SPM.results_report_mat_file")
     analysis_serial_node.addDoubleLink("print_result", "results_report_SPM.print_result")
     analysis_serial_node.addDoubleLink("add_section_overlay", "results_report_SPM.add_section_overlay")
@@ -512,6 +512,20 @@ def addResultsReportProcess(analysis_serial_node):
     analysis_serial_node.addDoubleLink("min_cluster_size", "results_report_SPM.contrast_0_extent")
     analysis_serial_node.addDoubleLink("filtered_image", "results_report_SPM.filtered_image")
     analysis_serial_node.addDoubleLink("spm_report", "results_report_SPM.results_report")
+
+def addIdentifyAndLabelProcess(analysis_serial_node):
+    analysis_serial_node.addChild(
+        "label_filtered_images",
+        ProcessExecutionNode(
+            "labelFilteredImages",
+            optional=True,
+            selected=False))
+    analysis_serial_node.addDoubleLink("label_filtered_images.results_report_mat_file",
+                                       "results_report_SPM.results_report_mat_file")
+    analysis_serial_node.addDoubleLink("label_filtered_images.write_filtered_images",
+                                       "results_report_SPM.write_filtered_images")
+    analysis_serial_node.addLink("label_filtered_images.write_filtered_images_basename",
+                                 "results_report_SPM.write_filtered_images_basename")
 #==============================================================================
 #
 #==============================================================================

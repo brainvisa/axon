@@ -41,7 +41,7 @@ name = "Identify and label vois extracted from result report SPM12"
 
 def validation():
     from nuclearImaging.LabelNameSetting import LabelNameSetting
-
+from nuclearImaging.LabelNameSetting import LabelNameSetting
 #------------------------------------------------------------------------------
 
 signature = Signature(
@@ -62,6 +62,7 @@ def initialization(self):
   self.setOptional("atlas_label_mask","atlas_label_translation")
   self.linkParameters( "atlas_label_translation", "atlas_label_mask" )
 
+  self.write_filtered_images_basename = "filtered_images"
   self.size_of_seeds = 10
 
 def execution( self, context ):
