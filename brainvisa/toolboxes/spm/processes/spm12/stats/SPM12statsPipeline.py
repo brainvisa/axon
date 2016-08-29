@@ -294,6 +294,7 @@ def findDiskitemListFromGroup(group_diskitem, type_to_find, common_attribute_dic
         if tmp_diskitem_list and len(tmp_diskitem_list) == 1:
           diskitem_list.append( tmp_diskitem_list[0] )
         else:
+            diskitem_list.append('')
             print("None or several diskitems found for type '%s' with these attributes:"%type_to_find)
             print(json.dumps( tmp_dict, indent=1))
     return diskitem_list
@@ -310,9 +311,12 @@ def updateSPMMat(self, proc, dummy):
         attr = {"_database":self.group.hierarchyAttributes()["_database"]}
         if self.factorial_design_type == "One sample T-Test":
             attr.update({"group_name":self.group.hierarchyAttributes()["group_name"]})
-        elif self.factorial_design_type in ["Two sample T-Test", "Paired T-Test"] and self.group_2 is not None:
-            attr.update({"first_group_name":self.group.hierarchyAttributes()["group_name"]})
-            attr.update({"second_group_name":self.group_2.hierarchyAttributes()["group_name"]})
+        elif self.factorial_design_type in ["Two sample T-Test", "Paired T-Test"]:
+            if self.group_2 is not None:
+                attr.update({"first_group_name":self.group.hierarchyAttributes()["group_name"]})
+                attr.update({"second_group_name":self.group_2.hierarchyAttributes()["group_name"]})
+            else:
+                pass
         else:
             raise ValueError("Invalid factorial_design_type")
         return makeDiskItem(attr)
