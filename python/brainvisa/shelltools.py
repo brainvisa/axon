@@ -31,6 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import print_function
 import sys, os, string, time, shutil, glob, errno
 
 def filesFromShPatterns( *args ):
@@ -60,7 +61,7 @@ def cp( *args, **kwargs):
         os.remove( dest )
       except:
         # try forcing permissions
-        os.chmod( dest, 0770 )
+        os.chmod( dest, 0o770 )
         os.remove( dest )
       copy( source, dest )
       return
@@ -70,7 +71,7 @@ def cp( *args, **kwargs):
       return
     try:
       os.mkdir( dest )
-    except OSError, e:
+    except OSError as e:
       if not e.errno == errno.EEXIST:
         # filter out 'File exists' exception, if the same dir has been created
         # concurrently by another instance of BrainVisa or another thread
@@ -82,7 +83,7 @@ def cp( *args, **kwargs):
       if not os.path.isdir( newpath ):
         try:
           os.mkdir( newpath )
-        except OSError, e:
+        except OSError as e:
           if not e.errno == errno.EEXIST:
             # filter out 'File exists' exception, if the same dir has been created
             # concurrently by another instance of BrainVisa or another thread
@@ -94,7 +95,7 @@ def cp( *args, **kwargs):
           os.remove( newpath )
         except:
           # try forcing permissions
-          os.chmod( newpath, 0770 )
+          os.chmod( newpath, 0o770 )
           os.remove( newpath )
       os.symlink( os.readlink( path ), newpath )
     else:
@@ -103,7 +104,7 @@ def cp( *args, **kwargs):
           os.remove( newpath )
         except:
           # try forcing permissions
-          os.chmod( newpath, 0770 )
+          os.chmod( newpath, 0o770 )
           os.remove( newpath )
       copy( path, newpath )
 
@@ -118,7 +119,7 @@ def symlink( *args ):
 
 def rm( *args ):
   def forceremove( func, path, excionfo ):
-    os.chmod( path, 0770 )
+    os.chmod( path, 0o770 )
     return func( path )
   sources = filesFromShPatterns( *args )
   for path in sources:
@@ -129,13 +130,13 @@ def rm( *args ):
         os.remove( path )
       except:
         # try forcing permissions
-        os.chmod( path, 0770 )
+        os.chmod( path, 0o770 )
         os.remove( path )
 
 def touch( *args ):
   sources = filesFromShPatterns( *args )
   for x in args:
-    print x
+    print(x)
     if x not in sources and x.find( '*' ) < 0 and x.find( '*' ) < 0:
       sources.append( x )
   for path in sources:

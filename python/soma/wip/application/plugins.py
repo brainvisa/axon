@@ -37,6 +37,7 @@
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
+from __future__ import print_function
 __docformat__ = "epytext en"
 
 import os
@@ -127,8 +128,8 @@ class Plugins( object ):
       pluginsPackage.__path__.append( plugin.directory )
       self._includedPlugins[ plugin.module ] = plugin
       if Application().verbose > 1:
-        print 'Included plugin', plugin.module, 'version', plugin.version, \
-              'from', repr( plugin.directory )
+        print('Included plugin', plugin.module, 'version', plugin.version,
+              'from', repr( plugin.directory ))
       if plugin.dependencies:
         for d in plugin.dependencies:
           self.includePlugin( d.module, d.version )
@@ -172,13 +173,14 @@ class Plugins( object ):
             self._availablePlugins.setdefault( plugin.module, [] ).append( 
               plugin )
             if app.verbose > 2: 
-              print 'Found plugin', plugin.module, 'version', plugin.version, \
-                    'in', repr( pluginDir )
+              print('Found plugin', plugin.module, 'version', plugin.version,
+                    'in', repr( pluginDir ))
             if plugin.auto_include:
               auto_include.append( plugin )
     for plugin in auto_include:
       if app.verbose > 2: 
-        print 'Automatic include for plugin', plugin.module, 'version', plugin.version
+        print('Automatic include for plugin', plugin.module, 'version',
+              plugin.version)
       self.includePlugin( plugin )
 
 from soma.wip.application.application import Application

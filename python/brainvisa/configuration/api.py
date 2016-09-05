@@ -51,7 +51,7 @@ from brainvisa.configuration.spm_configuration import SPMConfiguration
 from brainvisa.configuration.fsl_configuration import FSLConfiguration
 try :
   from brainvisa.configuration.datastorage_configuration import DataStorageConfiguration
-except Exception, e :
+except Exception:
   pass
 from soma.configuration import Configuration
 from soma.translation import translate as _
@@ -71,7 +71,7 @@ def initializeConfiguration():
   configuration.add( 'FSL', FSLConfiguration() )
   try :
     configuration.add( 'datastorage', DataStorageConfiguration() )
-  except Exception, e :
+  except Exception:
     pass
 
 

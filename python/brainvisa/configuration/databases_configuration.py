@@ -46,7 +46,6 @@ from soma.signature.api import HasSignature, Signature, FileName, \
                                Boolean, OpenedChoice, Sequence, Unicode, \
                                Choice, Any
 from soma.minf.api import readMinf
-import neuroConfig
 
 
 #------------------------------------------------------------------------------
@@ -114,6 +113,7 @@ class ExpertDatabaseSettings( HasSignature ):
     ontologies = [ 'brainvisa-3.2.0', 'brainvisa-3.1.0', 'brainvisa-3.0',
       'shared' ]
     moreOntologies = set()
+    from brainvisa.configuration import neuroConfig
     for path in neuroConfig.fileSystemOntologiesPath:
       if os.path.exists( path ):
         for ontology in os.listdir( path ):

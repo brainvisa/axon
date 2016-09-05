@@ -38,6 +38,7 @@
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
+from __future__ import print_function
 __docformat__ = "epytext en"
 
 
@@ -140,7 +141,7 @@ class BrainVISAConfiguration( ConfigurationGroup ):
   def _check_temporaryDirectory_value(self, newDirectory):
     if not newDirectory or \
       ( newDirectory and not os.path.exists(newDirectory) ):
-      print 'Configuration - temporaryDirectory option : No such file or directory: "' + newDirectory + '". Returned to default value.'
+      print('Configuration - temporaryDirectory option : No such file or directory: "' + newDirectory + '". Returned to default value.')
       return self.signature['temporaryDirectory'].defaultValue
     return newDirectory
   
