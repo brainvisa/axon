@@ -29,32 +29,35 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+from __future__ import print_function
 import os, sys, inspect
 
 debugLevel = 0
 
 #----------------------------------------------------------------------------
-def printReferrers( obj, levelMax=0, level=0 ):
-  import gc
-  for x in gc.get_referrers( obj ):
-    print '\n' + '    ' * ( level + 1 ) + str( x )
-    if level < levelMax:
-      printReferrers( x, levelMax, level+1 )
+def printReferrers(obj, levelMax=0, level=0):
+    import gc
+    for x in gc.get_referrers(obj):
+        print('\n' + '    ' * (level + 1) + str(x))
+        if level < levelMax:
+            printReferrers(x, levelMax, level+1)
 
 
 #----------------------------------------------------------------------------
-def debugHere( level=1, *args ):
-  if debugLevel >= level:
-    # Get the caller's frame information
-    frame = sys._getframe( 1 )
-    filename, currentLineInFile, functionName, lines, currentLineInLines = \
-    inspect.getframeinfo( frame )
-    # If 'self' is in locals consider the function as a method and displays
-    # its class and object
-    self = frame.f_locals.get( 'self' )
-    if self is not None:
-      functionName = self.__class__.__name__ + '.' + functionName + '(' + str( self ) + ')'
-    
-    print >> sys.stderr, '-=#)', functionName, ' in', os.path.basename( filename ), '[', currentLineInFile, ']', '(#=-'
-    if args:
-      print ' '.join( [str(x) for x in args] )
+def debugHere(level=1, *args):
+    if debugLevel >= level:
+      # Get the caller's frame information
+      frame = sys._getframe(1)
+      filename, currentLineInFile, functionName, lines, currentLineInLines = \
+          inspect.getframeinfo(frame)
+      # If 'self' is in locals consider the function as a method and displays
+      # its class and object
+      self = frame.f_locals.get('self')
+      if self is not None:
+          functionName = self.__class__.__name__ + '.' + functionName \
+              + '(' + str(self) + ')'
+
+      print('-=#)', functionName, ' in', os.path.basename(filename), '[',
+            currentLineInFile, ']', '(#=-', file=sys.stderr)
+      if args:
+          print(' '.join([str(x) for x in args]))

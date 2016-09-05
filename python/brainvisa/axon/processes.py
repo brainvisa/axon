@@ -36,6 +36,7 @@
 # This script is intended to get run using BrainVISA (BV) script support ('-e'
 # option). A independent GUI is displayed from BV and operates processes.
 
+from __future__ import print_function
 import brainvisa.axon
 import atexit, os
 from brainvisa.configuration import neuroConfig
@@ -47,6 +48,7 @@ from brainvisa.processing import neuroException, neuroLog
 # the environment has to contain everything necessary as neuroConfig
 # used to do: import many things here...
 from brainvisa.processes import *
+import six
 
 _count = 0
 
@@ -71,13 +73,13 @@ def cleanup():
     neuroHierarchy.databases.currentThreadCleanup()
     brainvisa.processes.cleanupProcesses()
     neuroLog.closeMainLog()
-    #print >> open( '/tmp/log', 'a' ), 'closing manager:', temporary.manager
+    #print('closing manager:', temporary.manager, file=open('/tmp/log', 'a'))
     sys.stdout.flush()
     try:
       temporary.manager.close()
-      #print >> open( '/tmp/log', 'a' ), '(set to None)'
-    except Exception, e:
-      print e
+      #print('(set to None)', file=open('/tmp/log', 'a'))
+    except Exception as e:
+      print(e)
       raise
     sys.stdout.flush()
 
@@ -164,7 +166,7 @@ def initializeProcesses():
         try:
             if isinstance( f, basestring ):
                 localsStartup = globals().copy()
-                exec f in localsStartup, localsStartup
+                six.exec_(f, localsStartup, localsStartup)
             else:
                 f()
         except:

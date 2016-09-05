@@ -106,14 +106,16 @@ class ExpertDatabaseSettings( HasSignature ):
     self.fedji_backend = False
 
   def __eq__( self , other):
+    if not isinstance(other, ExpertDatabaseSettings):
+      return False
     return ((self.ontology == other.ontology) and (self.sqliteFileName == other.sqliteFileName) and (self.activate_history == other.activate_history))
-      
+
   @staticmethod
   def availableOntologies():
     ontologies = [ 'brainvisa-3.2.0', 'brainvisa-3.1.0', 'brainvisa-3.0',
       'shared' ]
     moreOntologies = set()
-    from brainvisa.configuration import neuroConfig
+    import neuroConfig
     for path in neuroConfig.fileSystemOntologiesPath:
       if os.path.exists( path ):
         for ontology in os.listdir( path ):

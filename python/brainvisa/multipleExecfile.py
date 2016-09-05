@@ -32,6 +32,7 @@
 """
 This module defines the class :py:class:`MultipleExecfile` that is used to read Brainvisa ontology files.
 """
+from __future__ import print_function
 import sys, os
 from traceback      import format_exc
 
@@ -120,10 +121,10 @@ class MultipleExecfile( object ):
             raise RuntimeError( _t_( 'Include file %s not found (in %s)' ) % ( f, self._includeStack[ -1 ] ) )
           else:
             raise RuntimeError( _t_( 'File %s does not exist' ) % ( f, ) )
-  #dbg#      print '!MultipleExecfile!', f, '-->', file
+  #dbg#      print('!MultipleExecfile!', f, '-->', file)
         status = self._executedFiles.get( file )
         if status is None:
-  #dbg#        print '!MultipleExecfile! execute', file
+  #dbg#        print('!MultipleExecfile! execute', file)
           self._executedFiles[ file ] = False
           self._includeStack.append( file )
           self.localDict[ '__name__' ] = file
@@ -137,8 +138,8 @@ class MultipleExecfile( object ):
         elif status == False:
           raise RuntimeError( _t_( 'Circular dependencies in included files. Inclusion order: %s' ) % ( ', '.join( self._includeStack + [ file ] ), ) )
   #dbg#      else:
-  #dbg#        print '!MultipleExecfile!', file, 'already executed'
-      except Exception, e:
+  #dbg#        print('!MultipleExecfile!', file, 'already executed')
+      except Exception as e:
         msg = unicode( 'while executing file ' + f + ' ' )
         if file:
           msg += u'(' + unicode( file ) + u') '
@@ -149,7 +150,7 @@ class MultipleExecfile( object ):
         else:
           msg = msg + format_exc()
         e.args = ( msg, ) + e.args[1:]
-        print msg
+        print(msg)
         if not kwargs.get( 'continue_on_error', False ):
           raise e
         exc.append( e )
@@ -158,7 +159,7 @@ class MultipleExecfile( object ):
 
   def _include( self, *args ):
 #dbg#    for f in args:
-#dbg#      print '!MultipleExecfile! include', f, 'in', self._includeStack[ -1 ]
+#dbg#      print('!MultipleExecfile! include', f, 'in', self._includeStack[ -1 ])
 #dbg#      self.execute( f )
     self.execute( *args )
 

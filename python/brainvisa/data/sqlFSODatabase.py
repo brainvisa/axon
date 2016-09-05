@@ -36,13 +36,14 @@ This module contains classes defining Brainvisa **databases**.
 The main classes are :py:class:`SQLDatabases` and :py:class:`SQLDatabase`. 
 
 """
+from __future__ import print_function
 import sys
 import os, re
 
 import time
-from itertools import izip, chain
-from StringIO import StringIO
-import cPickle
+from itertools import chain
+from six.moves import StringIO
+from six.moves import cPickle
 
 from soma.minf.api import readMinf, writeMinf
 from soma.html import htmlEscape
@@ -65,6 +66,11 @@ from brainvisa.data.sql import mangleSQL, unmangleSQL
 from brainvisa.data.fileformats import FileFormats
 from brainvisa.data.directory_iterator import DirectoryIterator, VirtualDirectoryIterator
 from brainvisa.data import temporary
+
+if sys.version_info[0] >= 3:
+    izip = zip
+else:
+    from itertools import izip
 
 out = sys.stdout
 
@@ -163,7 +169,7 @@ def getAllFileFormats():
                                             patterns, 
                                             isinstance( format, MinfFormat ) )
                     formatsAlreadyDefined.add( format.name )
-                except Exception, e:
+                except Exception as e:
                     showException()
                 
     return _all_formats
@@ -173,17 +179,17 @@ def changeFormat( diskItem,
                   newFormat ):
     
     result = None
-    #print '!changeDiskItemFormat!', diskItem, newFormat, type( newFormat )
+    #print('!changeDiskItemFormat!', diskItem, newFormat, type( newFormat ))
     allFormats = getAllFileFormats()
         
     newFormat = allFormats.getFormat( newFormat.name, None )
     if newFormat is not None:
-        #print '!changeDiskItemFormat!  ', newFormat, 'found.'
+        #print('!changeDiskItemFormat!  ', newFormat, 'found.')
         format, ext, noExt = allFormats._findMatchingFormat( 
                                 diskItem.fullPath()
                              )
         if format is not None:
-            #print '!changeDiskItemFormat!  ', format, 'matching.'
+            #print('!changeDiskItemFormat!  ', format, 'matching.')
             result = diskItem.clone()
             result.format = getFormat( str(format.name) )
             result._files = [ os.path.normpath( noExt + '.' + ext ) \
@@ -338,7 +344,7 @@ class Database( object ):
     if isinstance( destination_referential, Uuid ):
       destination_referential = str( destination_referential )
 
-    #print '!findTransformationPaths!', source_referential, destination_referential, maxLength, bidirectional
+    #print('!findTransformationPaths!', source_referential, destination_referential, maxLength, bidirectional)
     paths = self.findReferentialNeighbours(
       source_referential, bidirectional=bidirectional,
       flat_output=True)
@@ -354,9 +360,9 @@ class Database( object ):
         # Get the last referential of the path
         lastReferential = path[ -1][ 1 ]
         # Check if the path reach the destination referential
-        #print '!findTransformationPaths 2!', path
+        #print('!findTransformationPaths 2!', path)
         if lastReferential == destination_referential:
-          #print '!findTransformationPaths! -->', path
+          #print('!findTransformationPaths! -->', path)
           yield path
           continue
         if lastReferential == source_referential:
@@ -376,7 +382,7 @@ class Database( object ):
             longerPaths.append((path + [[p[0], p[index]]], newReferentials))
       paths = longerPaths
       length += 1
-    #print '!findTransformationPaths! finished'
+    #print('!findTransformationPaths! finished')
 
 
   def findTransformationPathsFast(self, source_referential,
@@ -388,7 +394,7 @@ class Database( object ):
     if isinstance( destination_referential, Uuid ):
       destination_referential = str( destination_referential )
 
-    #print '!findTransformationPathsFast!', source_referential, destination_referential, maxLength
+    #print('!findTransformationPathsFast!', source_referential, destination_referential, maxLength)
     #cursor = self._getDatabaseCursor()
 
     refs2explore = set([source_referential])
@@ -402,7 +408,7 @@ class Database( object ):
     while destination_referential not in refs2explore and length <= maxLength and len(refs2explore)>0:
       for r in refs2explore: # Parcourons les referentiels source disponibles
         (refs, paths) = self.findReferentialNeighbours(r) #On obtient tous les référentiels cible et les chemins vers ceux-ci
-        #print "EXPAND REFS -> ",refs
+        #print("EXPAND REFS -> ",refs)
         refs2explore2.update(refs) # On ajoute ces référentiels dans ceux à explorer plus tard
         for r2 in refs:# Pour les referentiels trouvés, on ajoute un chemin
           if r2 not in transfos:# Si on n'a pas encore ce referentiel, on initialise ses chemins de transfos
@@ -416,18 +422,18 @@ class Database( object ):
 
       refs2explore = refs2explore2 - allRefs # Do not explore already explored ones (removes circular transforms)
       allRefs.update(refs)
-      #print "--- all Refs ->", allRefs
-      #print "------transfos ->",transfos
+      #print("--- all Refs ->", allRefs)
+      #print("------transfos ->",transfos)
       if stopAtFirstPath ==  True and destination_referential in refs2explore: # Found it !
-        #print "FOUND :",transfos[destination_referential]
+        #print("FOUND :",transfos[destination_referential])
         return iter(transfos[destination_referential]) # iter -> because calling function expects a generator
 
       length += 1
     if destination_referential in refs2explore: # Found it !
-      #print "FOUND :",transfos[destination_referential]
+      #print("FOUND :",transfos[destination_referential])
       return iter(transfos[destination_referential])
     else:
-      #print "NOT FOUND"
+      #print("NOT FOUND")
       return iter([])
 
         #for p in newPaths:
@@ -437,7 +443,7 @@ class Database( object ):
             #longerPaths.append( ( path + [ p ], newReferentials ) )
       #paths = longerPaths
       #length += 1
-    #print '!findTransformationPaths! finished'
+    #print('!findTransformationPaths! finished')
 
 
   def findReferentialNeighbours(self, ref, bidirectional=True,
@@ -481,7 +487,7 @@ class SQLDatabase( Database ):
       del self.__cursor
       
     def _debugMessage( self, message ):
-      print >> sys.stderr, '!cursor!', self._id, ':', message
+      print('!cursor!', self._id, ':', message, file=sys.stderr)
 
 
   def __init__( self, sqlDatabaseFile, directory, fso=None, context=None, otherSqliteFiles=[], settings=None ):
@@ -551,9 +557,9 @@ class SQLDatabase( Database ):
             typeFormats = self._formatsByTypeName.setdefault( type.name, [] )
             try:
               formatName = self.formats.getFormat( format.name, format ).name
-            except Exception, e:
-              print '!!ERROR!! SQLDatabase: getFormat failed:', format.name
-              print 'Database', directory, 'will not be complete and fully working !'
+            except Exception as e:
+              print('!!ERROR!! SQLDatabase: getFormat failed:', format.name)
+              print('Database', directory, 'will not be complete and fully working !')
               continue
             if formatName not in typeFormats:
               typeFormats.append( formatName )
@@ -734,7 +740,7 @@ class SQLDatabase( Database ):
         addit = False
         #scan bvproc
         if bvprocfile.endswith( '.bvproc' ):
-          # print "Name of bvproc", bvprocfile
+          # print("Name of bvproc", bvprocfile)
           try:
             p = readMinf( bvprocfile )[0] # ProcessExecutionEvent object
           except:
@@ -892,46 +898,51 @@ class SQLDatabase( Database ):
   
   def fsoToHTML( self, fileName ):
     out = open( fileName, 'w' )
-    print >> out, '<html>\n<body>\n<center><h1>' + self.fso.name + '</h1></center>'
+    print('<html>\n<body>\n<center><h1>' + self.fso.name + '</h1></center>',
+          file=out)
     for type in sorted( self.keysByType ):
-      print >> out, '<h3 id="' + htmlEscape( type ) + '">' + htmlEscape( type ) + '</h3><blockquote>'
+      print('<h3 id="' + htmlEscape( type ) + '">' + htmlEscape( type ) + '</h3><blockquote>',
+            file=out)
       parentType = getDiskItemType( type ).parent
       if parentType is not None:
-        print >> out, '<b>Parent types:<blockquote>'
+        print('<b>Parent types:<blockquote>', file=out)
         while parentType is not None:
           t = htmlEscape( parentType.name )
-          print >> out, '<a href="#' + t + '">' + htmlEscape( t ) + '</a></p>'
+          print('<a href="#' + t + '">' + htmlEscape( t ) + '</a></p>',
+                file=out)
           parentType = parentType.parent
-        print >> out, '</blockquote>'
+        print('</blockquote>', file=out)
       key = self.keysByType[ type ]
-      print >> out, '<b>Key: </b><font color="blue">' + htmlEscape( unicode( key ) ) + '</font><p>'
+      print('<b>Key: </b><font color="blue">' + htmlEscape( unicode( key ) ) + '</font><p>', file=out)
       nonMandatory = self._nonMandatoryKeyAttributesByType[ type ]
       if nonMandatory:
-        print >> out, '<blockquote><b>Non mandatory key attributes: </b>' + htmlEscape( tuple( nonMandatory ) ) + '<p>'
+        print('<blockquote><b>Non mandatory key attributes: </b>' + htmlEscape( tuple( nonMandatory ) ) + '<p>', file=out)
       ruleSelectionByAttributeValue, ruleSelectionByMissingKeyAttributes, rulesDictionary, defaultAttributesValues = self.ruleSelectionByType[ type ]
       if defaultAttributesValues:
-        print >> out, '<b>Default attributes values:</b><blockquote>'
+        print('<b>Default attributes values:</b><blockquote>', file=out)
         for n, v in defaultAttributesValues.iteritems():
-          print >> out, n + ' = ' + htmlEscape( repr(v) ) + '<br/>'
-        print >> out, '</blockquote>'
+          print(n + ' = ' + htmlEscape( repr(v) ) + '<br/>', file=out)
+        print('</blockquote>', file=out)
       if ruleSelectionByAttributeValue or ruleSelectionByMissingKeyAttributes:
-        print >> out, '<b>Rules selection key: </b><font color=darkgreen>' + htmlEscape( unicode( ruleSelectionByAttributeValue ) ) + '</font> <font color=blue>' + htmlEscape( unicode( ruleSelectionByMissingKeyAttributes ) ) + '</font><p>'
+        print('<b>Rules selection key: </b><font color=darkgreen>' + htmlEscape( unicode( ruleSelectionByAttributeValue ) ) + '</font> <font color=blue>' + htmlEscape( unicode( ruleSelectionByMissingKeyAttributes ) ) + '</font><p>', file=out)
       for ruleKey, rules in rulesDictionary.iteritems():
-        #print >> out,'<font color=darkgreen>' + htmlEscape( unicode( ruleKey[0] ) ) + '</font> <font color=blue>' + htmlEscape( unicode( ruleKey[1] ) ) + '</font><blockquote>'
+        #print('<font color=darkgreen>' + htmlEscape( unicode( ruleKey[0] ) ) + '</font> <font color=blue>' + htmlEscape( unicode( ruleKey[1] ) ) + '</font><blockquote>', file=out)
         if len( rules ) > 1:
-          print >> out, '<hr>'
+          print('<hr>', file=out)
         for rule in rules:
-          print >> out, htmlEscape( unicode( rule.pattern.pattern ) ) + '<br/>'
-          print >> out, '<blockquote>'
-          print >> out, '<b>Formats: </b>' + htmlEscape( repr(rule.formats) ) + '<br/>'
-          print >> out, 'Rule selection key: <font color=darkgreen>' + htmlEscape( unicode( ruleKey[0] ) ) + '</font> <font color=blue>' + htmlEscape( unicode( ruleKey[1] ) ) + '</font><br/>'
-          print >> out, 'Priority offset: ' + str(rule.priorityOffset) + '<br/>'
+          print(htmlEscape( unicode( rule.pattern.pattern ) ) + '<br/>',
+                file=out)
+          print('<blockquote>', file=out)
+          print('<b>Formats: </b>' + htmlEscape( repr(rule.formats) ) + '<br/>', file=out)
+          print('Rule selection key: <font color=darkgreen>' + htmlEscape( unicode( ruleKey[0] ) ) + '</font> <font color=blue>' + htmlEscape( unicode( ruleKey[1] ) ) + '</font><br/>', file=out)
+          print('Priority offset: ' + str(rule.priorityOffset) + '<br/>',
+                file=out)
           if rule.localAttributes:
             for n in key:
               if n in rule.pattern.namedRegex() or n in ruleSelectionByAttributeValue: continue
               f = '<font color=blue>'
               nf = '</font>'
-              print >> out, f + n + " = ''" + nf + '<br/>'
+              print(f + n + " = ''" + nf + '<br/>', file=out)
             for n, v in rule.localAttributes:
               if n in rule.pattern.namedRegex(): continue
               if n in ruleSelectionByAttributeValue:
@@ -939,13 +950,14 @@ class SQLDatabase( Database ):
                 nf = '</font>'
               else:
                 f = nf = ''
-              print >> out, f + n + ' = ' + htmlEscape( repr(v) ) + nf + '<br/>'
-          print >> out, '</blockquote>'
+              print(f + n + ' = ' + htmlEscape( repr(v) ) + nf + '<br/>',
+                    file=out)
+          print('</blockquote>', file=out)
         if len( rules ) > 1:
-          print >> out, '<hr>'
-        #print >> out, '</blockquote>'
-      print >> out, '</blockquote></blockquote>'
-    print >> out, '</body>\n<//html>\n'
+          print('<hr>', file=out)
+        #print('</blockquote>', file=out)
+      print('</blockquote></blockquote>', file=out)
+    print('</body>\n<//html>\n', file=out)
     out.close()
   
   
@@ -1004,7 +1016,7 @@ class SQLDatabase( Database ):
         tableAttributes = [ '_uuid', '_format', '_name' ] + [i for i in self._tableAttributesByTypeName[ type ]]
         if create:
           sql = 'CREATE TABLE ' + '"' + tableName + '" (_uuid CHAR(36) PRIMARY KEY, ' + ', '.join( (i + ' VARCHAR' for i in tableFields[1:]) ) + ')'
-          #print '!createTables!', sql
+          #print('!createTables!', sql)
           cursor.execute( sql )
           # create index
           keys = self.keysByType[ type ]
@@ -1036,7 +1048,7 @@ class SQLDatabase( Database ):
         res=cursor.execute( "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name" )
         tables=set([t[0] for t in res.fetchall()]) # fetchall returns a list of tuples
         tablesExist=self.typesWithTable.issubset(tables) # there are also tables for diskitems and filenames which does match a specific type.
-      except sqlite3.OperationalError, e:
+      except sqlite3.OperationalError as e:
         brainvisa.processes.defaultContext().warning(e.message)
     finally:
       self._closeDatabaseCursor( cursor )
@@ -1080,7 +1092,7 @@ class SQLDatabase( Database ):
     if insertParentDirs:
       diSet = self._diskItemsWithParents( diskItems )
     try:
-      #print "sqlFSODatabase : insertDiskItems ", diSet
+      #print("sqlFSODatabase : insertDiskItems ", diSet)
       for diskItem in diSet:
         if diskItem.type is None:
           raise DatabaseError( _('Cannot insert an item wthout type in a database: %s') % ( unicode( diskItem ), ) )
@@ -1124,13 +1136,13 @@ class SQLDatabase( Database ):
           destination_referential = None
           source_referential = None
         try:
-          #print "!!!!!!insert into diskitem : insert", uuid, minf
+          #print("!!!!!!insert into diskitem : insert", uuid, minf)
           cursor.execute( 'INSERT INTO _DISKITEMS_ (_uuid, _diskItem) VALUES (? ,?)', ( uuid, minf ) )
           if source_referential and destination_referential:
-            #print '!insert transformation!', uuid, source_referential, destination_referential 
+            #print('!insert transformation!', uuid, source_referential, destination_referential )
             cursor.execute( 'INSERT INTO _TRANSFORMATIONS_ (_uuid, _from, _to) VALUES (? ,?, ?)', ( str( uuid ), source_referential, destination_referential ) )
           delete = False
-        except sqlite3.IntegrityError, e:
+        except sqlite3.IntegrityError as e:
           # an item with the same uuid is already in the database
           uuid = cursor.execute( 'SELECT _uuid FROM _FILENAMES_ WHERE filename=?', ( relative_path(diskItem.fullPath(), self.directory), ) ).fetchone()
           if uuid:
@@ -1141,7 +1153,7 @@ class SQLDatabase( Database ):
                 delete = True
                 cursor.execute( 'UPDATE _DISKITEMS_ SET _diskItem=? WHERE _uuid=?', ( minf, uuid ) )
                 if source_referential and destination_referential:
-                  #print '!update transformation!', repr( uuid ), repr( source_referential ), repr( destination_referential  )
+                  #print('!update transformation!', repr( uuid ), repr( source_referential ), repr( destination_referential  ))
                   cursor.execute( 'UPDATE _TRANSFORMATIONS_ SET _from=?, _to=? WHERE _uuid=?', ( source_referential, destination_referential, str( uuid ) ) )
               else:
                 raise DatabaseError( 'Cannot insert "%s" because its uuid is in conflict with the uuid of another file in the database' % diskItem.fullPath() )
@@ -1152,10 +1164,10 @@ class SQLDatabase( Database ):
             # commit changes
             self._closeDatabaseCursor( cursor )
             cursor = self._getDatabaseCursor()
-            print >> sys.stderr, _( 'Warning: changed uuid of "%(newDiskItem)s" because another file has the same uuid: %(uuid)s' ) % {
+            print(_( 'Warning: changed uuid of "%(newDiskItem)s" because another file has the same uuid: %(uuid)s' ) % {
                 'newDiskItem': repr( diskItem ),
                 'uuid': str( diskItem._uuid ),
-              }
+              }, file=sys.stderr)
             delete = False
             diskItem.setUuid( Uuid() )
             uuid = str( diskItem._uuid )
@@ -1166,13 +1178,13 @@ class SQLDatabase( Database ):
             minf = cPickle.dumps( state )
             cursor.execute( 'INSERT INTO _DISKITEMS_ (_uuid, _diskItem) VALUES (? ,?)', ( uuid, minf ) )
             if source_referential and destination_referential:
-              #print '!insert transformation!', uuid, source_referential, destination_referential 
+              #print('!insert transformation!', uuid, source_referential, destination_referential )
               cursor.execute( 'INSERT INTO _TRANSFORMATIONS_ (_uuid, _from, _to) VALUES (? ,?, ?)', ( str( uuid ), source_referential, destination_referential ) )
         if delete:
           cursor.execute( 'DELETE FROM _FILENAMES_ WHERE _uuid=?', ( uuid, ) )
         try:
           cursor.executemany( 'INSERT INTO _FILENAMES_ (filename, _uuid) VALUES (? ,?)', (( relative_path(i, self.directory), uuid ) for i in diskItem.fullPaths()) )
-        except sqlite3.IntegrityError, e:
+        except sqlite3.IntegrityError as e:
           raise DatabaseError( unicode(e)+': file names = ' + repr(diskItem.fullPaths()) )
 
         values = [ uuid, format, os.path.basename( diskItem.fullPath() ) ]
@@ -1186,12 +1198,12 @@ class SQLDatabase( Database ):
               values.append( v )
             else:
               values.append( unicode( v ) )
-          #print '!!', sql, values, [ type(i) for i in values ]
+          #print('!!', sql, values, [ type(i) for i in values ])
           if delete:
             cursor.execute( 'DELETE FROM "' + tableName + '" WHERE _uuid=?', ( uuid, ) )
           cursor.execute( sql, values )
 
-    except sqlite3.OperationalError, e:
+    except sqlite3.OperationalError as e:
       self._closeDatabaseCursor( cursor, rollback=True )
       raise DatabaseError( "Cannot insert items in database " + self.name + ": "+e.message+". Item:" + diskItem.fullPath() + ". You should update this database." )
     except:
@@ -1215,7 +1227,7 @@ class SQLDatabase( Database ):
             ( uuid, ) )
         if eraseFiles:
           diskItem.eraseFiles()
-    except sqlite3.OperationalError, e:
+    except sqlite3.OperationalError as e:
       self._closeDatabaseCursor( cursor, rollback=True )
       raise DatabaseError( "Cannot remove items from database "+self.name+". You should update this database." )
     except:
@@ -1257,7 +1269,7 @@ class SQLDatabase( Database ):
     try:
       sql = "SELECT _diskItem from _DISKITEMS_ WHERE _uuid='" + str( uuid ) + "'"
       minf = cursor.execute( sql ).fetchone()
-    except sqlite3.OperationalError, e:
+    except sqlite3.OperationalError as e:
       brainvisa.processes.defaultContext().warning( "Cannot question database "+self.name+". You should update this database." )
     finally:
       self._closeDatabaseCursor( cursor )
@@ -1275,7 +1287,7 @@ class SQLDatabase( Database ):
       try:
         sql = "SELECT _diskItem FROM _FILENAMES_ F, _DISKITEMS_ D WHERE F._uuid=D._uuid AND F.filename='" + unicode( relative_path(fileName, self.directory) ) + "'"
         minf = cursor.execute( sql ).fetchone()
-      except sqlite3.OperationalError, e:
+      except sqlite3.OperationalError as e:
         brainvisa.processes.defaultContext().warning( "Cannot question database "+self.name+". You should update this database." )
       finally:
         self._closeDatabaseCursor( cursor )
@@ -1317,10 +1329,10 @@ class SQLDatabase( Database ):
 
   def scanDatabaseDirectories( self, directoriesIterator=None, includeUnknowns=False, directoriesToScan=None, recursion=True, debugHTML=None, context=None ):
     if debugHTML:
-      print >> debugHTML, '<html><body><h1>Scan log for database <tt>' + self.name + '</tt></h1>\n<h2>Directory</h2><blockquote>'
-      print >> debugHTML, self.directory, '</blockquote>'
+      print('<html><body><h1>Scan log for database <tt>' + self.name + '</tt></h1>\n<h2>Directory</h2><blockquote>', file=debugHTML)
+      print(self.directory, '</blockquote>', file=debugHTML)
     scanner = [i for i in self.fso.content if isinstance(i,SetContent)][0].scanner
-    # print '## scanDatabaseDirectories', directoriesIterator, directoriesToScan, self.directory
+    # print('## scanDatabaseDirectories', directoriesIterator, directoriesToScan, self.directory)
     # get specific attributes from parent directories
     attributes = {}
     #if directoriesToScan and len( directoriesToScan ) == 1:
@@ -1351,13 +1363,13 @@ class SQLDatabase( Database ):
               allowYield = allowYield or f == d
               ignore = not allowYield and not len( f ) <= len( d )
               if allowYield and not ignore: break
-        #print '!scanDatabaseDirectories! directory "' + f + '": ignore =', ignore, ', allowYield =', allowYield
+        #print('!scanDatabaseDirectories! directory "' + f + '": ignore =', ignore, ', allowYield =', allowYield)
         if ignore:
           continue
       else:
         allowYield = True
       if debugHTML:
-        print >> debugHTML, '<h2>' + itDirectory.fullPath() + '</h2>\nparents attributes: ' + repr( attributes )
+        print('<h2>' + itDirectory.fullPath() + '</h2>\nparents attributes: ' + repr( attributes ), file=debugHTML)
       directoryRules = []
       nonDirectoryRules = []
       for rule in getattr( scanner, 'rules', () ):
@@ -1366,17 +1378,17 @@ class SQLDatabase( Database ):
         else:
           nonDirectoryRules.append( rule )
       if debugHTML:
-        print >> debugHTML, '<h3>Rules</h3><blockquote>'
+        print('<h3>Rules</h3><blockquote>', file=debugHTML)
         for rule in directoryRules:
-          print >> debugHTML, '<font color=darkblue>' + htmlEscape( rule.pattern.pattern ) + ':</font>', rule.type, '<br>'
+          print('<font color=darkblue>' + htmlEscape( rule.pattern.pattern ) + ':</font>', rule.type, '<br>', file=debugHTML)
         for rule in nonDirectoryRules:
-          print >> debugHTML, '<font color=darkgreen>' + htmlEscape( rule.pattern.pattern ) + ':</font>', rule.type, '<br>'
-        print >> debugHTML, '</blockquote>'
+          print('<font color=darkgreen>' + htmlEscape( rule.pattern.pattern ) + ':</font>', rule.type, '<br>', file=debugHTML)
+        print('</blockquote>', file=debugHTML)
       # Identify formats
       try:
         knownFormat, unknownFormat = self.formats.identify( itDirectory, context=context )
-      except OSError, e:
-        print >> sys.stderr, e
+      except OSError as e:
+        print(e, file=sys.stderr)
         knownFormat = unknownFormat = []
       
       if includeUnknowns and allowYield:
@@ -1388,12 +1400,13 @@ class SQLDatabase( Database ):
           yield diskItem
       if debugHTML:
         if unknownFormat:
-          print >> debugHTML, '<h3>Unknown format</h3><blockquote>'
+          print('<h3>Unknown format</h3><blockquote>', file=debugHTML)
           for f in unknownFormat:
-            print >> debugHTML, '<font color=red>' + repr( f.fullPath() ) + '</font><br>'
-          print >> debugHTML, '</blockquote>'
-        print >> debugHTML, '<h3>Items identification</h3><blockquote>'
-      
+            print('<font color=red>' + repr( f.fullPath() ) + '</font><br>',
+                  file=debugHTML)
+          print('</blockquote>', file=debugHTML)
+        print('<h3>Items identification</h3><blockquote>', file=debugHTML)
+
       unknownType = []
       knownType = []
       nameSeriesGroupedItems = {}
@@ -1430,12 +1443,13 @@ class SQLDatabase( Database ):
                     diskItem.readAndUpdateMinf()
                     yield diskItem
                     if debugHTML:
-                      print >> debugHTML, '<font color=darkblue><b>', diskItem, ':</b>', diskItem.type, '</font> (' + htmlEscape( rule.pattern.pattern ) + ':' + str( rule.type ) + ')<br>'
+                      print('<font color=darkblue><b>', diskItem, ':</b>', diskItem.type, '</font> (' + htmlEscape( rule.pattern.pattern ) + ':' + str( rule.type ) + ')<br>',
+                            file=debugHTML)
               stack.append( ( it, rule.scanner, a, priorityOffset + rule.priorityOffset ) )
               break
           else:
             #for rule in directoryRules:
-              #print '  -->', rule.pattern
+              #print('  -->', rule.pattern)
             if includeUnknowns:
               stack.append( ( it, None, attributes, priorityOffset ) )
               if allowYield:
@@ -1486,7 +1500,8 @@ class SQLDatabase( Database ):
                 diskItem.readAndUpdateDeclaredAttributes()
                 diskItem._identified = True
                 if debugHTML:
-                  print >> debugHTML, '<font color=darkgreen><b>', diskItem, ':</b>', diskItem.type, '</font> (' + htmlEscape( rule.pattern.pattern ) + ':' + str( rule.type ) + ')<br>'
+                  print('<font color=darkgreen><b>', diskItem, ':</b>', diskItem.type, '</font> (' + htmlEscape( rule.pattern.pattern ) + ':' + str( rule.type ) + ')<br>',
+                        file=debugHTML)
                 yield diskItem
               break
           else:
@@ -1504,18 +1519,20 @@ class SQLDatabase( Database ):
           yield diskItem
       if debugHTML:
         for diskItem in nameSeriesGroupedItems.itervalues():
-          print >> debugHTML, '<font color=darkgreen><b>', diskItem, ':</b> ', diskItem.type, repr( diskItem._getLocal( 'name_serie' ) ) + '</font><br>'
+          print('<font color=darkgreen><b>', diskItem, ':</b> ', diskItem.type, repr( diskItem._getLocal( 'name_serie' ) ) + '</font><br>',
+                file=debugHTML)
           #for f in diskItem.fullPaths()[ 1: ]:
-            #print >> debugHTML, '&nbsp;' * 8 + f + '<br>'
-          #print >> debugHTML, '</font>'
+            #print('&nbsp;' * 8 + f + '<br>', file=debugHTML)
+          #print('</font>', file=debugHTML)
         for diskItem in unknownType:
-          print >> debugHTML, '<font color=red>', diskItem.fullPath(), '(' + diskItem.format.name + ')</font><br>'
-        
+          print('<font color=red>', diskItem.fullPath(), '(' + diskItem.format.name + ')</font><br>',
+                file=debugHTML)
+
       if debugHTML:
-        print >> debugHTML, '</blockquote>'
-    
+        print('</blockquote>', file=debugHTML)
+
     if debugHTML:
-      print >> debugHTML, '</body></html>'
+      print('</body></html>', file=debugHTML)
 
 
   def findAttributes( self, attributes, selection={}, _debug=None, exactType=False, **required ):
@@ -1525,20 +1542,22 @@ class SQLDatabase( Database ):
       types = set( chain( *( self._childrenByTypeName.get( t, ()) for t in self.getAttributeValues( '_type', selection, required ) ) ) )
     diskitem_searched="_diskItem" in attributes
     if _debug is not None:
-      print >> _debug, '!findAttributes!', repr(self.name), attributes, tuple( types ), selection, required
+      print('!findAttributes!', repr(self.name), attributes, tuple( types ),
+            selection, required, file=_debug)
     for t in types:
       try:
         tableName, tableFields, tableAttributes, sql = self._tableFieldsAndInsertByTypeName[ t ]
       except KeyError:
         if _debug is not None:
-          print >> _debug, '!findAttributes!  No table for type', t, 'in', repr(self.name)
+          print('!findAttributes!  No table for type', t, 'in',
+                repr(self.name), file=_debug)
         continue
       if diskitem_searched:
         tableAttributes = [ '_diskItem' ] + tableAttributes
         tableFields = [ '_diskItem', 'T._uuid' ] + tableFields[1:]
       nonMandatoryKeyAttributes = self._nonMandatoryKeyAttributesByType[ t ]
       #if _debug is not None:
-        #print >> _debug, '!findAttributes!  tableFields(', repr( t ), ') =', repr( tableFields )
+        #print('!findAttributes!  tableFields(', repr( t ), ') =', repr( tableFields ), file=_debug)
       select = []
       tupleIndices = []
       for a in attributes:
@@ -1559,14 +1578,16 @@ class SQLDatabase( Database ):
           typeOnly = True
         else:
           if _debug is not None:
-            print >> _debug, '!findAttributes!  No attribute selected for type', t, 'in', repr(self.name), 'possible values are:', tableAttributes
+            print('!findAttributes!  No attribute selected for type', t, 'in',
+                  repr(self.name), 'possible values are:', tableAttributes,
+                  file=_debug)
           continue
       where = {}
       for f, a in izip( tableFields, tableAttributes ):
         if a in required or a not in nonMandatoryKeyAttributes:
           v = self.getAttributeValues( a, selection, required )
           #if _debug is not None:
-            #print >> _debug, '!findAttributes!  getAttributeValues(', repr( a ), ', ... ) =', repr( v )
+            #print('!findAttributes!  getAttributeValues(', repr( a ), ', ... ) =', repr( v ), file=_debug)
           if v:
             where[ f ] = v
       sql = 'SELECT DISTINCT ' + ', '.join( select ) + " FROM '" + tableName + "' "
@@ -1593,13 +1614,13 @@ class SQLDatabase( Database ):
         else:
           sql += ' WHERE ' + ' AND '.join( sqlWhereClauses )
       if _debug is not None:
-        print >> _debug, '!findAttributes! ->', sql
+        print('!findAttributes! ->', sql, file=_debug)
       cursor = self._getDatabaseCursor()
       sqlResult=[]
       try:
         try:
           sqlResult = cursor.execute( sql ).fetchall()
-        except sqlite3.OperationalError, e:
+        except sqlite3.OperationalError as e:
           brainvisa.processes.defaultContext().warning("Cannot question database ", self.name, " : ", e.message, ". You should update this database.")
       finally:
         self._closeDatabaseCursor( cursor )
@@ -1625,16 +1646,19 @@ class SQLDatabase( Database ):
         required ) if x is not None ]
       types = set( chain( *( self._childrenByTypeName[ t ] for t in tval ) ) )
     if _debug is not None:
-      print >> _debug, '!createDiskItems! database:', self.directory, tuple( types ), selection, required
+      print('!createDiskItems! database:', self.directory, tuple( types ),
+            selection, required, file=_debug)
     for type in types:
       r = self.ruleSelectionByType.get( type )
       if r is None:
         if _debug is not None:
-          print >> _debug, '!createDiskItems! no rule selection found for type', type
+          print('!createDiskItems! no rule selection found for type', type,
+                file=_debug)
         continue
       possibleFormats = self.getAttributeValues( '_format', selection, required )
       if _debug is not None:
-        print >> _debug, '!createDiskItems! possibleFormats = ', possibleFormats
+        print('!createDiskItems! possibleFormats = ', possibleFormats,
+              file=_debug)
       ruleSelectionByAttributeValue, ruleSelectionByMissingKeyAttributes, rulesDictionary, defaultAttributesValues = r
       #key = ( tuple( ( selection.get( i, required.get( i, '' ) ) for i in ruleSelectionByAttributeValue ) ),
               #tuple( ( (False if selection.get( i, required.get( i ) ) else True) for i in ruleSelectionByMissingKeyAttributes ) ) )
@@ -1644,7 +1668,7 @@ class SQLDatabase( Database ):
                 [ self.getAttributeValues( i, selection, required, defaultAttributesValues.get( i, Undefined ) ) for i in ruleSelectionByMissingKeyAttributes ]
               ] ]
       if _debug is not None:
-        print >> _debug, '!createDiskItems! stack = ', stack
+        print('!createDiskItems! stack = ', stack, file=_debug)
       while stack:
         k1, k2 = stack.pop( 0 )
         for i in xrange( len(k1) ):
@@ -1664,12 +1688,14 @@ class SQLDatabase( Database ):
           if k2 is not None:
             keys.append( ( tuple(k1), tuple((not(i)) for i in k2) ) )
       if _debug is not None:
-        print >> _debug, '!createDiskItems! keys for rules selection = ', keys
+        print('!createDiskItems! keys for rules selection = ', keys,
+              file=_debug)
       for key in keys:
         rules = rulesDictionary.get( key )
         if rules is not None:
           if _debug is not None:
-            print >> _debug, '!createDiskItems! rules = ', [r.pattern.pattern for r in rules]
+            print('!createDiskItems! rules = ',
+                  [r.pattern.pattern for r in rules], file=_debug)
           for rule in rules:
             if rule._formatsNameSet:
               formats = rule._formatsNameSet.intersection( possibleFormats )
@@ -1677,7 +1703,8 @@ class SQLDatabase( Database ):
               formats = possibleFormats
             if not formats:
               if _debug is not None:
-                print >> _debug, '!createDiskItems! no possible format for type', type, 'and rule', rule.pattern.pattern
+                print('!createDiskItems! no possible format for type', type,
+                      'and rule', rule.pattern.pattern, file=_debug)
               continue
             cg = CombineGet( required, selection, defaultAttributesValues )
             names = rule.pattern.multipleUnmatch( cg )
@@ -1725,10 +1752,12 @@ class SQLDatabase( Database ):
                   diskItem.readAndUpdateDeclaredAttributes()
                   yield diskItem
             elif _debug is not None:
-              print >> _debug, '!createDiskItems! rule', rule.pattern.pattern, 'not "unmatched"'
+              print('!createDiskItems! rule', rule.pattern.pattern,
+                    'not "unmatched"', file=_debug)
         else:
           if _debug is not None:
-            print >> _debug, '!createDiskItems! no rule found for type', type,' and key =', key
+            print('!createDiskItems! no rule found for type', type,
+                  'and key =', key, file=_debug)
   
   
   def getAttributesEdition( self, *types ):
@@ -1820,9 +1849,9 @@ class SQLDatabase( Database ):
     try:
       sql = "SELECT _uuid, _from, _to from _TRANSFORMATIONS_ WHERE _to='" + str( uuid ) + "' OR " + "_from='" + str( uuid ) + "'"
       #sql = "SELECT _uuid, _from, _to from _TRANSFORMATIONS_ "
-      #print sql
+      #print(sql)
       pathsWith = cursor.execute( sql ).fetchall()
-    except sqlite3.OperationalError, e:
+    except sqlite3.OperationalError as e:
       brainvisa.processes.defaultContext().warning( "Cannot question database "+self.name+". You should update this database." )
     finally:
       self._closeDatabaseCursor( cursor )

@@ -549,7 +549,7 @@ def initializeLog():
           html=neuroConfig.environmentHTML(),
           children=neuroConfig.brainvisaSessionLog, icon='brainvisa_small.png' )
       neuroConfig.mainLog.append(neuroConfig.brainvisaSessionLogItem)
-  except Exception, e:
+  except Exception as e:
     import traceback
     traceback.print_exc()
     neuroConfig.mainLog = None

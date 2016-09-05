@@ -1038,7 +1038,7 @@ class FileSystemOntology( object ):
 
       try:
         fso.content = self.localDict[ 'hierarchy' ]
-      except Exception, e:
+      except Exception as e:
         msg = 'in filesystem ontology "' + directory + '": ' + e.message \
           + ', files=' + str( files )
         e.message = msg

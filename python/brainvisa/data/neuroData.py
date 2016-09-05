@@ -69,8 +69,9 @@ Matching graphical editors classes are defined in :py:mod:`brainvisa.data.qt4gui
   
 """
 import types, string, weakref, copy
-from UserDict import UserDict
-from UserList import UserList
+import six
+from six.moves import UserDict
+from six.moves import UserList
 from soma.notification import Notifier
 from brainvisa.processing.neuroException import HTMLMessage
 

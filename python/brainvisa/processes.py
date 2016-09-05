@@ -163,29 +163,31 @@ After loading, Brainvisa processes are stored in an object :py:class:`ProcessTre
 .. autofunction:: cleanupProcesses
 
 """
+from __future__ import print_function
+
 __docformat__ = 'restructuredtext en'
 
 import traceback
 import threading
 import pickle
 import formatter
-import htmllib
 import operator
 import inspect
 import signal
 import shutil
 import imp
-import StringIO
 import types
 import copy
 import weakref
-import cPickle
 import string
 import distutils.spawn
 import os
 import errno
 import time
 import calendar
+import six
+from six.moves import StringIO
+from six.moves import cPickle
 
 from soma.sorted_dictionary import SortedDictionary
 from soma.functiontools import numberOfParameterRange, hasParameter, partial
@@ -216,6 +218,11 @@ from brainvisa.processing.qtgui.backwardCompatibleQt import QProcess
 from brainvisa.processing.qtgui.command import CommandWithQProcess as Command
 from soma import safemkdir
 from soma.qtgui.api import QtThreadCall, FakeQtThreadCall
+
+if sys.version_info[0] >= 3:
+    from html import parser as html_parser
+else:
+    from htmllib import HTMLParser as html_parser
 
 global _mainThreadActions
 _mainThreadActions = FakeQtThreadCall()
@@ -283,7 +290,7 @@ def readProcdoc(processId):
                 try:
                     procdoc = readMinf(fileName)[0]
                 except:
-                    print '!Error in!', fileName
+                    print('!Error in!', fileName)
                     raise
             else:
                 procdoc = {}
@@ -351,7 +358,7 @@ def procdocToXHTML(procdoc):
                 goOn = False
                 try:
                     newValue = XHTML.buildFromHTML(value)
-                except Exception, e:
+                except Exception as e:
                     # Build a text editor
                     from soma.qt4gui.designer import loadUi
                     from PyQt4 import QtGui, QtCore
@@ -384,8 +391,8 @@ def procdocToXHTML(procdoc):
                         column = 0
                     if line == 0 and column == 0:
                         x = re.match('^[^0-9]*:([0-9]+):([0-9]+):', str(e))
-                        print x
-                        print str(e)
+                        print(x)
+                        print(str(e))
                         if x:
                             line = int(x.group(1)) - 3
                             column = int(x.group(2))  # it's not the column !
@@ -694,7 +701,7 @@ class Parameterized(object):
     """
 
     def __init__(self, signature):
-        # print 'create Parameterized', self
+        # print('create Parameterized', self)
         self.__dict__['_deleted'] = False  # safety to avoid double deletion
         # see http://code.activestate.com/lists/python-list/191512/
         self.__dict__['signature'] = signature
@@ -745,7 +752,7 @@ class Parameterized(object):
     def __del__(self):
         if not hasattr(self, '_deleted') or self._deleted:
             return
-        # print 'del Parameterized', self
+        # print('del Parameterized', self)
         self._deleted = True
         debugHere()
         for x in self.deleteCallbacks:
@@ -758,54 +765,57 @@ class Parameterized(object):
         debug = neuroConfig.debugParametersLinks
 
         if debug:
-            print >> debug, 'parameter', name, 'changed in', self, 'with value', newValue
+            print('parameter', name, 'changed in', self, 'with value', newValue, file=debug)
         for function in self._warn.get(name, []):
             if debug:
-                print >> debug, '  call (_warn)', function, '(', name, ',', newValue, ')'
+                print('  call (_warn)', function, '(', name, ',', newValue, ')', file=debug)
             function(self, name, newValue)
         for parameterized, attribute, function, force, destDefaultUpdate in self._links.get(name, []):
             if parameterized is None:
                 if debug:
-                    print >> debug, '  call (_links)', function, '(', self, ',', self, ')'
+                    print('  call (_links)', function, '(', self, ',', self, ')', file=debug)
                 function(self, self)
             elif (not parameterizedObjects) or (parameterized in parameterizedObjects):
                 if debug:
-                    print >> debug, ' ', name, 'is linked to parameter', attribute, 'of', parameterized, 'from', self, '(', len(
-                        self._links.get(name, [])), ')'
+                    print(' ', name, 'is linked to parameter', attribute, 'of', parameterized, 'from', self, '(', len(
+                        self._links.get(name, [])), ')', file=debug)
                 linkParamType = parameterized.signature[attribute]
                 if not parameterized._isImmutable(attribute) and (force or parameterized.parameterLinkable(attribute, debug=debug)):
                     linkParamDebug = getattr(linkParamType, '_debug', None)
                     if linkParamDebug is not None:
-                        print >> linkParamDebug, 'parameter', name, 'changed in', self, 'with value', newValue
+                        print('parameter', name, 'changed in', self, 'with value', newValue, file=linkParamDebug)
                     if destDefaultUpdate:
                         parameterized.setDefault(
                             attribute, self.isDefault(name))
                     if function is None:
                         if debug:
-                            print >> debug, '  ' + \
+                            print('  ' + \
                                 str(parameterized) + '.setValue(', repr(
-                                    attribute), ',', newValue, ')'
+                                    attribute), ',', newValue, ')', file=debug)
                         if linkParamDebug is not None:
-                            print >> linkParamDebug, '  ==> ' + \
-                                str(parameterized) + '.setValue(', repr(
-                                    attribute), ',', newValue, ')'
+                            print('  ==> ' + \
+                                  str(parameterized) + '.setValue(', repr(
+                                      attribute), ',', newValue, ')',
+                                  file=linkParamDebug)
                         valueSet = newValue
                         parameterized.setValue(attribute, newValue)
                     else:
                         if debug:
-                            print >> debug, '  call', function, '(', parameterized, ',', self, ')'
+                            print('  call', function, '(', parameterized, ',', self, ')', file=debug)
                         if linkParamDebug is not None:
-                            print >> linkParamDebug, '  ==> call', function, '(', parameterized, ',', self, ')'
+                            print('  ==> call', function, '(', parameterized, ',', self, ')', file=linkParamDebug)
                         v = function(parameterized, self)
                         valueSet = v
                         if debug:
-                            print >> debug, '  ' + \
-                                str(parameterized) + \
-                                    '.setValue(', repr(attribute), ',', v, ')'
+                            print('  ' + \
+                                  str(parameterized) + \
+                                      '.setValue(', repr(attribute), ',', v, ')',
+                                  file=debug)
                         if linkParamDebug is not None:
-                            print >> linkParamDebug, '      ' + \
-                                str(parameterized) + \
-                                    '.setValue(', repr(attribute), ',', v, ')'
+                            print('      ' + \
+                                  str(parameterized) + \
+                                      '.setValue(', repr(attribute), ',', v, ')',
+                                  file=linkParamDebug)
                         parameterized.setValue(attribute, v)
                     # activate the notifier with the parameter that receive a
                     # linked value and with the new value after evaluation of a
@@ -824,7 +834,7 @@ class Parameterized(object):
         """Stores if the parameter `key` have kept its default value or not."""
         debug = neuroConfig.debugParametersLinks
         if debug:
-            print >> debug, '    setDefault(', key, ',', value, ')'
+            print('    setDefault(', key, ',', value, ')', file=debug)
         self._isDefault[key] = value
 
     def _isImmutable(self, key):
@@ -845,7 +855,7 @@ class Parameterized(object):
         result = bool(self.signature[key].linkParameterWithNonDefaultValue or
                       self.isDefault(key))
         if debug:
-            print >> debug, '    parameterLinkable =', result
+            print('    parameterLinkable =', result, file=debug)
         return result
 
     def initialization(self):
@@ -882,8 +892,8 @@ class Parameterized(object):
         """
         debug = neuroConfig.debugParametersLinks
         if debug:
-            print >> debug, str(self) + '.setValue(', repr(
-                name), ',', repr(value), ',', repr(default), ')'
+            print(str(self) + '.setValue(', repr(
+                name), ',', repr(value), ',', repr(default), ')', file=debug)
         changed = False
         if default is not None:
             changed = self.isDefault(name) != default
@@ -1147,7 +1157,7 @@ class Parameterized(object):
 
     def removeLink(self, destination, source, show_warnings=True):
         """Removes a link added with :py:func:`addLink` function."""
-        # print 'removeLink', self, destination, source
+        # print('removeLink', self, destination, source)
         # Parse source
         sources = []
         if type(source) in (types.ListType, types.TupleType):
@@ -1184,7 +1194,7 @@ class Parameterized(object):
                             del sourceObject._links[sourceParameter]
                     else:
                         if show_warnings:
-                            print 'warning: link not removed:', self, destination, 'from:', source
+                            print('warning: link not removed:', self, destination, 'from:', source)
 
         # TODO : set the removed value consistent with what happened
         return removed
@@ -1371,7 +1381,7 @@ class Process(Parameterized):
 
     def __del__(self):
         if self._deleted:
-            # print '*** Process already deleted ***'
+            # print('*** Process already deleted ***')
             return
         try:
             Parameterized.__del__(self)
@@ -1629,12 +1639,12 @@ class IterationProcess(Process):
                 sp._selected = p._selected
 
     # def __del__( self ):
-        # print 'del IterationProcess', self, ', children:', len( self._processes )
-        # print 'children:', self._processes
+        # print('del IterationProcess', self, ', children:', len( self._processes))
+        # print('children:', self._processes)
         # del self._processes
         # import gc
-        # print 'refs to execution node:', len( gc.get_referrers( self._executionNode ) )
-        # print [ i.keys() for i in gc.get_referrers( self._executionNode ) ]
+        # print('refs to execution node:', len( gc.get_referrers( self._executionNode ) ))
+        # print([ i.keys() for i in gc.get_referrers( self._executionNode ) ])
 
     def pipelineStructure(self):
         return {'type': 'iteration', 'name': self.name, 'children': [p.pipelineStructure() for p in self._processes]}
@@ -1897,7 +1907,7 @@ class ExecutionNode(object):
         :param parameterized: :py:class:`Parameterized` containing the signature of the node - default None.
         """
         # Initialize an empty execution node
-        # print 'ExecutionNode.__init__', self
+        # print('ExecutionNode.__init__', self)
         self.__dict__['_deleted'] = False  # safety to avoid double deletion
         # see http://code.activestate.com/lists/python-list/191512/
         self.__dict__['_children'] = SortedDictionary()
@@ -1913,9 +1923,9 @@ class ExecutionNode(object):
         self.__dict__['_dependencies'] = []
 
     def __del__(self):
-        # print 'del ExecutionNode', self
+        # print('del ExecutionNode', self)
         if not hasattr(self, '_deleted') or self.__dict__['_deleted']:
-            # print '*** ExecutionNode already deleted ! ***'
+            # print('*** ExecutionNode already deleted ! ***')
             return
         self.__dict__['_deleted'] = True
         debugHere()
@@ -2171,7 +2181,7 @@ class ExecutionNode(object):
                         removed = True
 
                 if not removed and show_warnings:
-                    print 'warning: enode link not removed:', self, destination, 'from:', source, ', function:', function
+                    print('warning: enode link not removed:', self, destination, 'from:', source, ', function:', function)
 
     def removeDoubleLink(self, destination, source, function=None, show_warnings=True):
         """
@@ -2237,7 +2247,7 @@ class ProcessExecutionNode(ExecutionNode):
     def __init__(self, process, optional=False, selected=True,
                  guiOnly=False, expandedInGui=False, altname=None):
         process = getProcessInstance(process)
-        # print 'ProcessExecutionNode.__init__:', self, process.name
+        # print('ProcessExecutionNode.__init__:', self, process.name)
         ExecutionNode.__init__(self, process.name,
                                optional=optional,
                                selected=selected,
@@ -2253,12 +2263,12 @@ class ProcessExecutionNode(ExecutionNode):
                                self.processReloaded))
 
     def __del__(self):
-        # print 'del ProcessExecutionNode', self
+        # print('del ProcessExecutionNode', self)
         if not hasattr(self, '_deleted') or self._deleted:
-            # print '*** already deleted !***'
+            # print('*** already deleted !***')
             return
         if hasattr(self, '_process'):
-            # print '     del proc:', self._process.name
+            # print('     del proc:', self._process.name)
             reloadNotifier = getattr(
                 self._process, 'processReloadNotifier', None)
             if reloadNotifier is not None:
@@ -2282,8 +2292,8 @@ class ProcessExecutionNode(ExecutionNode):
                     # destruction
                     pass
         else:
-            # print 'del ProcessExecutionNode', self
-            print 'no _process in ProcessExecutionNode !'
+            # print('del ProcessExecutionNode', self)
+            print('no _process in ProcessExecutionNode !')
         try:
             ExecutionNode.__del__(self)
         except:
@@ -2375,7 +2385,7 @@ class SerialExecutionNode(ExecutionNode):
     def __init__(self, name='', optional=False, selected=True,
                  guiOnly=False, parameterized=None, stopOnError=True,
                  expandedInGui=False, possibleChildrenProcesses=None, notify=False):
-        # print 'SerialExecutionNode.__init__', self
+        # print('SerialExecutionNode.__init__', self)
         ExecutionNode.__init__(
             self, name, optional, selected, guiOnly, parameterized, expandedInGui=expandedInGui)
         self.stopOnError = stopOnError
@@ -2422,11 +2432,11 @@ class SerialExecutionNode(ExecutionNode):
                 try:
                     result.append(node.run(context))
                     del npi
-                except ExecutionContext.UserInterruptionStep, e:
+                except ExecutionContext.UserInterruptionStep as e:
                     context.error(unicode(e))
                 except ExecutionContext.UserInterruption:
                     raise
-                except Exception, e:
+                except Exception as e:
                     context.error("Error in execution node : " + unicode(e))
         context.progress()
         return result
@@ -2496,18 +2506,18 @@ class SelectionExecutionNode(ExecutionNode):
     '''An execution node that run one of its children'''
 
     def __init__(self, *args, **kwargs):
-        # print 'SelectionExecutionNode.__init__', self
+        # print('SelectionExecutionNode.__init__', self)
         ExecutionNode.__init__(self, *args, **kwargs)
 
     def __del__(self):
-        # print 'SelectionExecutionNode.__del__', self
+        # print('SelectionExecutionNode.__del__', self)
         if not hasattr(self, '_deleted') or self._deleted:
-            # print '*** SelectionExecutionNode already deleted'
+            # print('*** SelectionExecutionNode already deleted')
             return
         for node in self._children.values():
             node._selectionChange.remove(ExecutionNode.MethodCallbackProxy(
                                          self.childSelectionChange))
-        # print '__del__ finished'
+        # print('__del__ finished')
 
     def _run(self, context):
         'Run the selected child'
@@ -2753,7 +2763,7 @@ class ExecutionContext(object):
             self._lastProcessRaisedException = None  # reset exception once used.
             if isinstance(e, tuple) and len(e) == 2:
                 # e = ( exception, traceback )
-                raise e[0], None, e[1]
+                six.reraise(e[0], None, e[1])
             else:
                 raise e
         return result
@@ -2780,7 +2790,7 @@ class ExecutionContext(object):
     def _runInteractiveProcessThread(self, context, process, callMeAtTheEnd):
         try:
             result = context.runProcess(process)
-        except Exception, e:
+        except Exception as e:
             result = e
         callMeAtTheEnd(result)
 
@@ -2857,7 +2867,7 @@ class ExecutionContext(object):
                         # appended to the correct parent
                         log = self._processStackHead.log
                 if log is not None:
-                    # print "Create subLog for process ", process.name
+                    # print("Create subLog for process ", process.name)
                     newStackTop.log = log.subLog()
                     process._log = newStackTop.log
                     content = '<html><body><h1>' + \
@@ -2876,11 +2886,11 @@ class ExecutionContext(object):
                                 str(getattr(process, n, None))) + '<p>'
                     content += '<h2>' + _t_('Output') + '</h2>'
                     try:
-                        # print "Create subTextLog for process ", process.name
+                        # print("Create subTextLog for process ", process.name)
                         process._outputLog = log.subTextLog()
                         process._outputLogFile = open(
                             process._outputLog.fileName, 'w')
-                        print >> process._outputLogFile, content
+                        print(content, file=process._outputLogFile)
                         process._outputLogFile.flush()
                         content = process._outputLog
                     except:
@@ -3018,11 +3028,11 @@ class ExecutionContext(object):
                         result = process.execution(self)
                 else:
                     result = executionFunction(self)
-            except Exception, e:
+            except Exception as e:
                 self._lastProcessRaisedException = (e, sys.exc_info()[2])
                 try:
                     self._showException()
-                except SystemExit, e:
+                except SystemExit as e:
                     neuroConfig.exitValue = e.args[0]
                 except:
                     import traceback
@@ -3066,7 +3076,7 @@ class ExecutionContext(object):
 
             # Close output log file
             if process._outputLogFile is not None:
-                print >> process._outputLogFile, '</body></html>'
+                print('</body></html>', file=process._outputLogFile)
                 process._outputLogFile.close()
                 process.outputLogFile = None
             if process._outputLog is not None:
@@ -3246,7 +3256,7 @@ class ExecutionContext(object):
         systemLogFile = None
         systemLog = None
         if log is not None:
-            # print "Create subTextLog for command ", command[0]
+            # print("Create subTextLog for command ", command[0])
             systemLog = log.subTextLog()
             self._systemLog = systemLog
             systemLogFile = open(systemLog.fileName, 'w')
@@ -3259,10 +3269,10 @@ class ExecutionContext(object):
             if not commandName:
                 commandName = c.commandName()
             if systemLogFile:
-                print >> systemLogFile, '<html><body><h1>' + commandName + ' </h1><h2>' + _t_('Command line') + \
+                print('<html><body><h1>' + commandName + ' </h1><h2>' + _t_('Command line') + \
                     '</h2><code>' + \
                       htmlEscape(str(c)) + '</code></h2><h2>' + _t_(
-                          'Output') + '</h2><pre>'
+                          'Output') + '</h2><pre>', file=systemLogFile)
                 systemLogFile.flush()
 
     # if self._showSystemOutput() > 0:
@@ -3302,7 +3312,7 @@ class ExecutionContext(object):
                 try:
                     c.start()
                     retry = 0
-                except RuntimeError, e:
+                except RuntimeError as e:
                     if c.error() == QProcess.FailedToStart:
                         if first:
                             retry = 2
@@ -3328,9 +3338,10 @@ class ExecutionContext(object):
                 pass
             self.checkInterruption()
             if systemLogFile is not None:
-                print >> systemLogFile, '</pre><h2>' + \
-                    _t_('Result') + '</h2>' + _t_('Value returned') + \
-                        ' = ' + str(result) + '</body></html>'
+                print('</pre><h2>' + \
+                      _t_('Result') + '</h2>' + _t_('Value returned') + \
+                          ' = ' + str(result) + '</body></html>',
+                      file=systemLogFile)
         finally:
             if systemLogFile is not None:
                 systemLogFile.close()
@@ -3382,12 +3393,12 @@ class ExecutionContext(object):
         if stackTop:
             outputLogFile = stackTop.process._outputLogFile
             if outputLogFile and not outputLogFile.closed:
-                print >> outputLogFile, msg
+                print(msg, file=outputLogFile)
                 outputLogFile.flush()
 
     def _write(self, html):
         if not hasattr(self, '_writeHTMLParser'):
-            self._writeHTMLParser = htmllib.HTMLParser(formatter.AbstractFormatter(
+            self._writeHTMLParser = html_parser(formatter.AbstractFormatter(
                                                        formatter.DumbWriter(sys.stdout, 80)))
         self._writeHTMLParser.feed(html + '<br>\n')
 
@@ -3860,24 +3871,24 @@ class ProgressInfo(object):
         self.done = False
 
     def debugDump(self):
-        print 'ProgressInfo:', self
+        print('ProgressInfo:', self)
         if hasattr(self, 'process'):
-            print '  process:', self.process
-        print '  local value:', self._localvalue, '*', self._localcount
-        print '  value:', self.value()
-        print '  children:', len(self.children) + self.childrendone
-        print '  done:', self.childrendone
-        print '  not started:', len([x for x in self.children if x is None])
-        print '  running:'
+            print('  process:', self.process)
+        print('  local value:', self._localvalue, '*', self._localcount)
+        print('  value:', self.value())
+        print('  children:', len(self.children) + self.childrendone)
+        print('  done:', self.childrendone)
+        print('  not started:', len([x for x in self.children if x is None]))
+        print('  running:')
         todo = [(x(), 1) for x in self.children if x is not None]
         while len(todo) != 0:
             pi, indent = todo[0]
             del todo[0]
-            print '  ' * indent, pi, pi.childrendone,
+            print('  ' * indent, pi, pi.childrendone, end=' ')
             if hasattr(pi, 'process'):
-                print pi.process()
+                print(pi.process())
             else:
-                print
+                print()
             todo = [(x(), indent + 1)
                     for x in pi.children if x is not None] + todo
 
@@ -4245,7 +4256,7 @@ def getProcessInstance(processIdClassOrInstance, ignoreValidation=False):
                     result = getProcessInstanceFromProcessEvent(event)
                     if result is not None and isinstance(processIdClassOrInstance, basestring):
                         result._savedAs = processIdClassOrInstance
-            except IOError, e:
+            except IOError as e:
                 raise KeyError('Could not get process "' + repr(processIdClassOrInstance)
                                + '": invalid identifier or process file: ' + repr(e))
     elif not isinstance(result, Process):
@@ -4654,7 +4665,7 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
             try:
                 processModule = imp.load_module(
                     moduleName, fileIn, fileName, moduleDescription)
-            except NameError, e:
+            except NameError as e:
                 showException(beforeError=(_t_('In <em>%s</em>')) % (fileName, ), afterError=_t_(
                     ' (perharps you need to add the line <tt>"from brainvisa.processes import *"</tt> at the begining of the process)'))
                 return
@@ -4731,7 +4742,7 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
         if v is not None:
             try:
                 v()
-            except Exception, e:
+            except Exception as e:
                 if not ignoreValidation:
                     processInfo.valid = False
                     raise ValidationError(HTMLMessage("The process <em>" + relative_path(
@@ -4755,10 +4766,10 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
         result = NewProcess
 
         def warnRole(processInfo, role):
-            print >> sys.stderr, 'WARNING: process', processInfo.name, '(' + processInfo.fileName + ') is not a valid', role + \
-                '. Add the following line in the process to make it a', role + \
-                                                                             ':\nroles =', (
-                                                                                 role, )
+            print('WARNING: process', processInfo.name, '('
+                  + processInfo.fileName + ') is not a valid', role
+                  + '. Add the following line in the process to make it a',
+                  role + ':\nroles =', (role, ), file=sys.stderr)
         roles = getattr(processModule, 'roles', ())
 #    if NewProcess.category.lower() == 'converters/automatic':
 
@@ -5342,7 +5353,7 @@ class ProcessTrees(ObservableAttributes, ObservableSortedDictionary):
                     userTrees, currentTree = iterateMinf(
                         self.userProcessTreeMinfFile)
             except:
-                print "Error while reading", self.userProcessTreeMinfFile
+                print("Error while reading", self.userProcessTreeMinfFile)
         if userTrees != None:
             for userTree in userTrees:
                 self.add(userTree)
@@ -5758,7 +5769,7 @@ def runIPConsoleKernel(mode='qtconsole'):
         from IPython.kernel.zmq.kernelapp import IPKernelApp
         app = IPKernelApp.instance()
         if not app.initialized() or not app.kernel:
-            print 'runing IP console kernel'
+            print('runing IP console kernel')
             app.hb_port = 50042  # don't know why this is not set automatically
             app.initialize([mode, '--pylab=qt',
                             "--KernelApp.parent_appname='ipython-%s'" % mode])
@@ -5796,7 +5807,7 @@ def runIPConsoleKernel(mode='qtconsole'):
         from IPython.zmq.ipkernel import IPKernelApp
         app = IPKernelApp.instance()
         if not app.initialized() or not app.kernel:
-            print 'runing IP console kernel'
+            print('runing IP console kernel')
             app.hb_port = 50042  # don't know why this is not set automatically
             app.initialize(['qtconsole', '--pylab=qt',
                             "--KernelApp.parent_appname='ipython-qtconsole'"])

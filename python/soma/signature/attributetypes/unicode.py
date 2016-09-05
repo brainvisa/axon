@@ -30,7 +30,11 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL-B license and that you accept its terms.
 
+import sys
 from soma.signature.api import DataType
+
+if sys.version_info[0] >= 3:
+    unicode = str
 
 #-------------------------------------------------------------------------------
 class Unicode( DataType ):

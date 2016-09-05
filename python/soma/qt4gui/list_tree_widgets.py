@@ -44,7 +44,7 @@ They provide user interaction to modify the underlying model (drag&drop, context
 __docformat__ = "epytext en"
 
 import os
-from StringIO import StringIO
+from six.moves import StringIO
 from soma.qt_gui.qt_backend.QtGui import QTreeWidget, QTreeWidgetItem, QListWidget, QListWidgetItem, QPixmap, QDrag, QMenu, QPainter, QPen, QCursor, QSizePolicy, QIcon, qApp, QKeyEvent, QApplication
 from soma.qt_gui.qt_backend.QtCore import Qt, QEvent, QMimeData, QObject, QPoint, QRect, QSize, QTimer, SIGNAL
 import copy

@@ -130,7 +130,7 @@ class DictPattern:
     def __call__( self, dict, matchResult=None ):
       try:
         return dict[ self.__key ]
-      except KeyError, ke:
+      except KeyError as ke:
         splitted = self.__key.split( '.' )
         if len( splitted ) > 1:
           stack = splitted[:]
@@ -231,7 +231,7 @@ class DictPattern:
         self.groupnameToAttributes = {}
         matchRegexp = ''
         for i in matchList:
-          if type( i ) is types.TupleType:
+          if type( i ) is tuple:
             attribute, regexp = i
             groupname = attributeToGroupname.get( attribute )
             if groupname:
@@ -257,7 +257,7 @@ class DictPattern:
         self.groupnameToAttributes = {}
         self.__match = []
         for i in matchList:
-          if type( i ) is types.TupleType:
+          if type( i ) is tuple:
             attribute, regexp = i
             groupname = attributeToGroupname.get( attribute )
             if groupname:
@@ -458,7 +458,7 @@ class DictPattern:
     """
     try:
       return ''.join( [i( dict, matchResult ) for i in self.unmatchList] )
-    except KeyError, e:
+    except KeyError as e:
       #print '!unmatch!', e
       return None
   
@@ -531,7 +531,7 @@ class DictPattern:
 
   def __str__( self ):
     # return '<DictPattern ' + repr(self.matchPrefix) + ', ' + repr(self.matchInfix) + ', ' + repr(self.matchSufix) + '>'
-    return '<DictPattern ' + `self.pattern` + '>'
+    return '<DictPattern ' + repr(self.pattern) + '>'
 
 
   def __repr__( self ):

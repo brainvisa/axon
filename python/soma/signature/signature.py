@@ -521,14 +521,14 @@ class Signature( DataType ):
     """
     see L{SortedDictionary.iterkeys}
     """
-    return  self.__dict__[ '_signature_data' ].iterkeys()
+    return  six.iterkeys(self.__dict__[ '_signature_data' ])
 
 
   def itervalues( self ) :
     """
     see L{SortedDictionary.itervalues}
     """
-    return  self.__dict__[ '_signature_data' ].itervalues()
+    return  six.itervalues(self.__dict__[ '_signature_data' ])
 
 
   def iteritems( self ) :
@@ -590,7 +590,7 @@ class Signature( DataType ):
     args, kwargs = DataType.__getinitkwargs__( self )
     args = []
     it = six.iteritems(self)
-    it.next() # skip signature
+    six.next(it) # skip signature
     for name, type in it:
       args.append( name )
       args.append( type )
@@ -601,7 +601,7 @@ class Signature( DataType ):
     args, kwargs = DataType.__getinitkwargs__( self )
     args = []
     it = six.iteritems(self)
-    it.next() # skip signature
+    six.next(it) # skip signature
     for name, item in it:
       args.append( name )
       args.append( item.copy() )
@@ -610,8 +610,8 @@ class Signature( DataType ):
 
   def __repr__( self ):
     result = self.name + '( '
-    it = self.itervalues()
-    it.next()
+    it = six.itervalues(self)
+    six.next(it)
     for item in it:
       result += repr( item.name ) + ', ' + repr( item.type ) +', '
       args, kwargs = item.__getinitkwargs__()
@@ -705,7 +705,7 @@ class HasSignature( ObservableAttributes ):
     """
     # Copy the dictionary to allow modification
     it = six.iteritems(self.signature)
-    it.next()
+    six.next(it)
     for attributeName, signatureItem in it:
       value = attributesValues.pop( attributeName, Undefined )
       if value is Undefined:
@@ -714,7 +714,7 @@ class HasSignature( ObservableAttributes ):
         setattr( self, attributeName, value )
     if attributesValues:
       raise TypeError( _( "Attribute '%s' is not in the signature" ) % \
-                            ( attributesValues.iterkeys().next(), ) )
+                            (six.next(six.iterkeys(attributesValues)), ) )
   
   
   def __getattribute__( self, name ):
@@ -812,11 +812,11 @@ class HasSignature( ObservableAttributes ):
 
   def delayAttributeNotification( self, ignoreDoubles=False ):
     super( HasSignature, self ).delayAttributeNotification( ignoreDoubles )
-    for item in self.signature.itervalues():
+    for item in six.itervalues(self.signature):
       item.delayAttributeNotification( ignoreDoubles )
 
 
   def restartAttributeNotification( self ):
     super( HasSignature, self ).restartAttributeNotification()
-    for item in self.signature.itervalues():
+    for item in six.itervalues(self.signature):
       item.restartAttributeNotification()

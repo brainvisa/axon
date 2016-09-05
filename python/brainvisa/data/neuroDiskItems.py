@@ -98,9 +98,11 @@ All temporary files and directories are written in Brainvisa global temporary di
 :Classes:
 
 """
+from __future__ import print_function
 import types, sys, os, errno, stat, operator, time, traceback
 from weakref import ref, WeakValueDictionary
-from UserList import UserList
+import six
+from six.moves import UserList
 from threading import RLock
 import json
 
@@ -121,6 +123,9 @@ from brainvisa import shelltools
 from brainvisa.multipleExecfile import MultipleExecfile
 from PyQt4.QtCore import QObject, SIGNAL
 import re
+
+if sys.version_info[0] >= 3:
+    basestring = str
 
 
 #----------------------------------------------------------------------------
@@ -165,7 +170,7 @@ def modificationHashOrEmpty( f ):
   try:
     s = os.lstat( f )
     return ( s.st_mode, s.st_uid, s.st_gid, s.st_size, s.st_mtime, s.st_ctime )
-  except OSError:
+  except html_parserOSError:
     return ()
 
 #----------------------------------------------------------------------------
@@ -775,7 +780,7 @@ class DiskItem(QObject):
     :param dict: dictionary containing the attributes that will be added to this diskItem minf attributes.
     :param bool saveMinf: if True the minf attributes will be saved in the minf file of the diskItem.
     """
-    #print '!neuroDiskItems !: updateMinf : ', dict
+    #print('!neuroDiskItems !: updateMinf : ', dict)
     for attrName, value in dict.items():
       self._otherAttributes.pop( attrName, None )
       if attrName in self._localAttributes:
@@ -977,10 +982,10 @@ class DiskItem(QObject):
     if minfContent is None, removes the minf file.
     """
     minf = self.minfFileName()
-    #print "!neuroDiskItems : _writeMinf : ", minf
+    #print("!neuroDiskItems : _writeMinf : ", minf)
     if minfContent:
       file = open( minf, 'w' )
-      print >> file, 'attributes = ' + repr( minfContent )
+      print('attributes = ' + repr( minfContent ), file=file)
       file.close()
     else:
       if os.path.exists( minf ):
@@ -1005,7 +1010,7 @@ class DiskItem(QObject):
     self._lock.acquire()
     try:
       attrs = self._readMinf()
-      #print '! neuroDiskItems : readAndUpdateMinf : ',  attrs
+      #print('! neuroDiskItems : readAndUpdateMinf : ',  attrs)
       if attrs is not None:
         if attrs.has_key( 'uuid' ):
           self._changeUuid( Uuid( attrs[ 'uuid' ] ) )
@@ -1024,7 +1029,7 @@ class DiskItem(QObject):
     if not os.path.exists( p ):
       try:
         os.makedirs( p )
-      except OSError, e:
+      except OSError as e:
         if not e.errno == errno.EEXIST:
           # filter out 'File exists' exception, if the same dir has been created
           # concurrently by another instance of BrainVisa or another thread
@@ -1079,7 +1084,7 @@ class DiskItem(QObject):
         attrs[ 'uuid' ] = self._uuid
         try:
           self._writeMinf( attrs )
-        except Exception, e:
+        except Exception as e:
           raise MinfError( unicode( _t_( 'uuid cannot be saved in minf file' ) + ': ' ) + unicode( e ) )
   
   
@@ -1159,10 +1164,10 @@ class DiskItem(QObject):
     """
     Return True or False to know if a file is locked.
     """
-    #print "-- FUNCTION isLockData : neuroDiskItems -- "
+    #print("-- FUNCTION isLockData : neuroDiskItems -- ")
     nameFileLock = str(self.fileName())  + ".lock"
-    #print "File to test"
-    #print nameFileLock
+    #print("File to test")
+    #print(nameFileLock)
     return os.path.isfile( nameFileLock )
 
 
@@ -1171,10 +1176,10 @@ class DiskItem(QObject):
     function to lock file
     add a filename.lock file if the filename exists
     """
-    #print "-- FUNCTION lockData : neuroDiskItems -- "
+    #print("-- FUNCTION lockData : neuroDiskItems -- ")
     nameFileLock = str(self.fileName())  + ".lock"
     if os.path.isfile( self.fileName()) :
-        #print "File to lock" + nameFileLock
+        #print("File to lock" + nameFileLock)
         fd = open(nameFileLock, 'a')
         fd.close()
         self.emit(SIGNAL("lockChanged"), True)
@@ -1187,7 +1192,7 @@ class DiskItem(QObject):
     function to unlock file
     remove a .lock file 
     """
-    #print "-- FUNCTION unlockData : neuroDiskItems -- "
+    #print("-- FUNCTION unlockData : neuroDiskItems -- ")
 
     nameFileLock = str(self.fileName())  + ".lock"
     if os.path.isfile( nameFileLock ) :
@@ -1202,25 +1207,25 @@ class DiskItem(QObject):
     
     from brainvisa.data.neuroHierarchy import databases
     from brainvisa.processes import defaultContext
-    #print "! getFileNameFromUuid : "
+    #print("! getFileNameFromUuid : ")
     #donner directement le bvprocfile
     database=self.get("database")
     if database is None:
       database=self.get("_database")
-#    print "!neuroDiskItems : getFileNameFromUuid :", database
-#    print "!neuroDiskItems : getFileNameFromUuid :", type(database)
-#    print "!neuroDiskItems : getFileNameFromUuid :", databases._databases
+#    print("!neuroDiskItems : getFileNameFromUuid :", database)
+#    print("!neuroDiskItems : getFileNameFromUuid :", type(database))
+#    print("!neuroDiskItems : getFileNameFromUuid :", databases._databases)
     db = databases._databases.get(database)
-#    print "!neuroDiskItems : getFileNameFromUuid :", db 
-#    print "!neuroDiskItems : getFileNameFromUuid :", type(db)
+#    print("!neuroDiskItems : getFileNameFromUuid :", db)
+#    print("!neuroDiskItems : getFileNameFromUuid :", type(db))
 
     cursor = db._getDatabaseCursor()
     bvproc_file=None
     try:
       sql = "SELECT filename FROM _FILENAMES_ WHERE _uuid='" + uuid + "'"
-      #print sql
+      #print(sql)
       bvproc_file = cursor.execute( sql ).fetchone()
-    except sqlite3.OperationalError, e:
+    except sqlite3.OperationalError as e:
       defaultContext().warning( "Cannot question database "+db.name+". You should update this database." )
     finally:
       db._closeDatabaseCursor( cursor )
@@ -1228,7 +1233,7 @@ class DiskItem(QObject):
     if bvproc_file is not None:
       bvproc_file = bvproc_file[ 0 ] 
     
-#    print "!neuroDiskItems : getFileNameFromUuid :", bvproc_file
+#    print("!neuroDiskItems : getFileNameFromUuid :", bvproc_file)
     
     return bvproc_file
   
@@ -1293,7 +1298,7 @@ class Directory( DiskItem ):
       listdir = None
       if not self._topParent()._check_directory_time_only:
         modificationTime = 0
-        #print 'directory', fullName, 'NOT smart'
+        #print('directory', fullName, 'NOT smart')
         #sys.stdout.flush()
         listdir = []
         for n in os.listdir( fullName ):
@@ -1309,11 +1314,12 @@ class Directory( DiskItem ):
       debug = neuroConfig.debugHierarchyScanning
       if modificationTime >= self.lastModified:
         if debug:
-          print >> debug, '----------------------------------------------'
-          print >> debug, fullName, 'modified'
-          print >> debug, '----------------------------------------------'
-          print >> debug, 'modification time:', time.ctime( modificationTime )
-          print >> debug, 'last modification:', time.ctime( self.lastModified )
+          print('----------------------------------------------', file=debug)
+          print(fullName, 'modified', file=debug)
+          print('----------------------------------------------', file=debug)
+          print('modification time:', time.ctime(modificationTime), file=debug)
+          print('last modification:', time.ctime(self.lastModified),
+                file=debug)
           debug.flush()
         # Rescan directory
         childs = []
@@ -1324,7 +1330,7 @@ class Directory( DiskItem ):
           else:
             childs.append( File( n, self ) )
         if debug:
-          print >> debug, 'children count:', len( childs )
+          print('children count:', len(childs), file=debug)
         # Identify files
         if self.scanner:
           if self._childs:
@@ -1440,7 +1446,7 @@ class BackwardCompatiblePatterns:
     :param patterns: a string, a list of string, or a list of :py:class:`BackwardCompatiblePattern`. They are used to create the internal list of :py:class:`BackwardCompatiblePattern`.
     """
     # Build Pattern list in self.patterns
-    if type( patterns ) is types.StringType:
+    if type( patterns ) is str:
       self.patterns = [ BackwardCompatiblePattern( patterns ) ]
     elif type( patterns ) in ( types.TupleType, types.ListType ):
       self.patterns = []
@@ -1531,7 +1537,7 @@ class Format(object):
   _reloaded_formats = {}
 
   def __new__(cls, *args, **kwargs):
-    #print '** new **', cls, args, kwargs
+    #print('** new **', cls, args, kwargs)
     global formats
 
     # must get format ID from parameters -- not clean...
@@ -2080,7 +2086,7 @@ class DiskItemType(object):
   _reloaded_types = {}
 
   def __new__(cls, typeName, *args, **kwargs):
-    #print '** new **', cls, typeName, args, kwargs
+    #print'** new **', cls, typeName, args, kwargs
     global diskItemTypes
     id = getId(typeName)
     instance = diskItemTypes.get(id)
@@ -2294,8 +2300,8 @@ class TemporaryDirectory( Directory ):
       fullPath = name
     if not os.path.isdir( fullPath ):
       try:
-        os.mkdir( fullPath, 0770 )
-      except OSError, e:
+        os.mkdir( fullPath, 0o770 )
+      except OSError as e:
         if not e.errno == errno.EEXIST:
           # filter out 'File exists' exception, if the same dir has been created
           # concurrently by another instance of BrainVisa or another thread
@@ -2320,7 +2326,7 @@ class TemporaryDiskItem( File ):
     if Application().configuration.brainvisa.removeTemporary:
       toDelete = self.fullPaths()
       toDelete.append( toDelete[ 0 ] + '.minf' )
-      #print 'deleting temp DI:', toDelete
+      #print('deleting temp DI:', toDelete)
       for f in toDelete:
         n = 0
         while 1:
@@ -2331,15 +2337,15 @@ class TemporaryDiskItem( File ):
             if n < 100:
               n += 1
               time.sleep( 0.01 )
-              #print 'can\' delete', f, 'yet. waiting'
+              #print('can\' delete', f, 'yet. waiting')
               #sys.stdout.flush()
             else:
-              #print 'exception while removing', f
+              #print('exception while removing', f)
               showException( beforeError=_t_('temporary file <em>%s</em> not '
                                              'deleted<br>') % f, gui=0 )
               # giving up, let it for later
               temporary.manager.registerPath( f )
-              print 'continuing after failed rm on %s' % f
+              print('continuing after failed rm on %s' % f)
               sys.stdout.flush()
               break
 
