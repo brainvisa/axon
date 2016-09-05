@@ -45,10 +45,6 @@ L{soma.signature} module but it can be used in many other contexts.
 __docformat__ = "epytext en"
 
 
-import __builtin__
-if not hasattr( __builtin__, 'set' ):
-  from sets import Set as set
-
 from soma.translation import translate as _
 from soma.signature.api import DataType
 from soma.gui.base import ApplicationBaseGUI, GUI

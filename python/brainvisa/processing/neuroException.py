@@ -43,10 +43,14 @@ The functions are used to display error and warning messages in Brainvisa.
 >>>   neuroException.showException(beforeError="The following error occured when...:")
 
 """
-import sys, os, traceback, htmllib, formatter
+import sys, os, traceback, formatter
 from brainvisa.configuration.neuroConfig import *
 from brainvisa.configuration import neuroConfig
 from soma.html import htmlEscape
+if sys.version_info[0] >= 3:
+    from html import parser as html_parser
+else:
+    from htmllib import HTMLParser as html_parser
 
 class HTMLMessage:
   """
@@ -211,10 +215,10 @@ def showException( beforeError='', afterError='', parent = None,
               parent=parent )
         mainThreadActions().push( w.show )
     else:
-      htmllib.HTMLParser( formatter.AbstractFormatter( 
+      html_parser( formatter.AbstractFormatter(
         formatter.DumbWriter( sys.stdout, 80 ) ) )\
         .feed( messageHTML + '<hr>' + detailHTML ) 
-  except Exception, e:
+  except Exception as e:
     traceback.print_exc()
   if neuroConfig.fastStart and not neuroConfig.gui:
     sys.exit( 1 )
@@ -249,10 +253,10 @@ def showWarning( message, parent = None, gui=None):
               parent=parent )
         mainThreadActions().push( w.show )
     else:
-      htmllib.HTMLParser( formatter.AbstractFormatter( 
+      html_parser( formatter.AbstractFormatter(
         formatter.DumbWriter( sys.stdout, 80 ) ) )\
         .feed( messageHTML + '<hr>' + "" ) 
-  except Exception, e:
+  except Exception as e:
     traceback.print_exc()
 
 def exceptionHook( exceptType, value, traceback ):

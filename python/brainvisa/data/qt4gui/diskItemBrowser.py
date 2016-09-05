@@ -30,6 +30,7 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+from __future__ import print_function
 import sys, os
 from itertools import chain
 
@@ -141,16 +142,16 @@ class DiskItemBrowser( QDialog ):
     self.connect( self._ui.tblItems,
         SIGNAL( 'itemSelectionChanged()' ),
         self.itemSelected )
-    #print '!DiskItemBrowser!', database, selection, required
+    #print('!DiskItemBrowser!', database, selection, required)
     self._requiredAttributes = required
     self._database = database
     self._requestedTypes = database.getAttributeValues( '_type', {}, required )
-    #print '!DiskItemBrowser! _requestedTypes', self._requestedTypes
+    #print('!DiskItemBrowser! _requestedTypes', self._requestedTypes)
     if exactType:
       self._possibleTypes = set( self._requestedTypes )
     else:
       self._possibleTypes = set( chain( *( self._database.getTypeChildren(  t ) for t in self._requestedTypes ) ) )
-    #print '!DiskItemBrowser! _possibleTypes', self._possibleTypes
+    #print('!DiskItemBrowser! _possibleTypes', self._possibleTypes)
     self._possibleFormats = set( chain( *(self._database.getTypesFormats( t ) for t in self._possibleTypes) ) )
     requestedFormats = database.getAttributeValues( '_format', {}, required )
     if self._possibleFormats:
@@ -168,7 +169,7 @@ class DiskItemBrowser( QDialog ):
           if format.name not in self._possibleFormats:
             self._formatsWithConverter[ format.name ] = converter
     self._possibleFormats.update( self._formatsWithConverter.iterkeys() )
-    #print '!DiskItemBrowser! _possibleFormats', self._possibleFormats
+    #print('!DiskItemBrowser! _possibleFormats', self._possibleFormats)
     self._exactType=exactType
     self._write = write
     self._multiple = multiple
@@ -206,9 +207,9 @@ class DiskItemBrowser( QDialog ):
         for i in xrange( len(values) ):
           if values[ i ]:
             self._editableAttributesValues[ self._editableAttributes[ i ] ].add( values[ i ] )
-    #print '!DiskItemBrowser! _editableAttributes', self._editableAttributes
-    #print '!DiskItemBrowser! _editableAttributesValues', self._editableAttributesValues
-    #print '!DiskItemBrowser! _attributesValues', self._attributesValues
+    #print('!DiskItemBrowser! _editableAttributes', self._editableAttributes)
+    #print('!DiskItemBrowser! _editableAttributesValues', self._editableAttributesValues)
+    #print('!DiskItemBrowser! _attributesValues', self._attributesValues)
     allAttributes = list( self._database.getTypesKeysAttributes( *self._requestedTypes ) )
     for a in self._attributesValues:
       if a not in allAttributes:
@@ -489,7 +490,7 @@ class DiskItemBrowser( QDialog ):
             vstring=list_to_string(v)
           else:
             # WARNING DEBUG
-            print 'unexpected database value type in DiskItem browser combo:', type(v), 'for attribute:', a
+            print('unexpected database value type in DiskItem browser combo:', type(v), 'for attribute:', a)
             try:
               vstring = quote_string( str( v ) )
             except:

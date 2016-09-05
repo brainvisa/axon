@@ -31,7 +31,11 @@
 # knowledge of the CeCILL-B license and that you accept its terms.
 
 import types
+import sys
 from soma.signature.attributetypes.number import Number
+
+if sys.version_info[0] >= 3:
+    long = int
 
 #-------------------------------------------------------------------------------
 class Integer( Number ):

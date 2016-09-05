@@ -50,6 +50,7 @@ At the end of your script, call a cleanup function. It would be called automatic
   
 """
 
+from __future__ import print_function
 import os, sys
 
 # Force QString API version in order to be compatible with recent version
@@ -70,8 +71,8 @@ try:
     sip.setapi( qt_class, PYQT_API_VERSION )
   del qt_api, qt_class, qt_api_ver
 except:
-  print "WARNING: impossible to use version %d of sip/Qt API." \
-    % PYQT_API_VERSION
+  print("WARNING: impossible to use version %d of sip/Qt API."
+        % PYQT_API_VERSION)
 
 import brainvisa
 brainvisa_path=os.path.join( os.path.dirname( os.path.dirname( \

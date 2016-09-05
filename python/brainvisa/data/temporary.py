@@ -29,6 +29,7 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+from __future__ import print_function
 import os, threading, warnings, stat, platform
 from soma.minf.tree import registerClassAs
 
@@ -118,7 +119,7 @@ class TemporaryFileManager:
             os.chmod( path, self.__removePermissions )
             try:
               os.rmdir( path )
-            except OSError, error:
+            except OSError as error:
               if raiseException: raise
         else:
           try:
@@ -128,7 +129,7 @@ class TemporaryFileManager:
             try:
               os.chmod( path, self.__removePermissions )
               os.remove( path )
-            except OSError, error:
+            except OSError as error:
               if raiseException: raise
         if error is not None:
           warnings.warn( _t_('temporary path %(path)s not deleted: %(error)s')%\
@@ -225,7 +226,7 @@ def initializeTemporaryFiles( defaultTemporaryDirectory ):
   if manager is None:
     manager = TemporaryFileManager( defaultTemporaryDirectory, 'bv_' )
   else:
-    print 'initializeTemporaryFiles - manager already exists!:', manager
+    print('initializeTemporaryFiles - manager already exists!:', manager)
 
 
 

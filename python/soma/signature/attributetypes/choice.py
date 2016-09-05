@@ -33,9 +33,13 @@
 # knowledge of the CeCILL-B license and that you accept its terms.
 
 import types
+import sys
 
 from soma.translation import translate as _
 from soma.signature.api import DataType, Undefined
+
+if sys.version_info[0] >= 3:
+  unicode = str
 
 #-------------------------------------------------------------------------------
 class Choice( DataType ):
@@ -55,7 +59,7 @@ class Choice( DataType ):
     self.values = []
     self.labels = []
     for p in args:
-      if type( p ) in ( types.TupleType, types.ListType ) and \
+      if type( p ) in (tuple, list) and \
          len( p ) == 2:
         label, value = p
       else:

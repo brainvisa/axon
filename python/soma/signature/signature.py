@@ -33,6 +33,7 @@
 
 
 import types
+import sys
 from soma.translation import translate as _
 from soma.sorted_dictionary import SortedDictionary
 from soma.notification import Notifier, VariableParametersNotifier, \
@@ -40,7 +41,11 @@ from soma.notification import Notifier, VariableParametersNotifier, \
 from soma.singleton import Singleton
 from soma.undefined import Undefined
 
-import copy 
+import copy
+import six
+
+if sys.version_info[0] >= 3:
+    unicode = str
 
 #-------------------------------------------------------------------------------
 class DataType( object ):
@@ -77,7 +82,8 @@ class DataType( object ):
         C{L{ClassDataType}( value )}.
     Any other value lead to a C{TypeError} exception.
     """
-    if isinstance( value, type ) or type( value ) is types.ClassType:
+    if isinstance( value, type ) \
+        or (sys.version_info[0] < 3 and type( value ) is types.ClassType):
       if issubclass( value, DataType ):
         value = value()
       else:
@@ -245,7 +251,7 @@ class DataType( object ):
       strArgs = ''
     if kwargs:
       if strArgs: strArgs += ', '
-      strArgs += ', '.join( [n+'='+repr(v) for n,v in kwargs.iteritems()] )
+      strArgs += ', '.join( [n+'='+repr(v) for n,v in six.iteritems(kwargs)] )
     if strArgs:
       return self.name + '( ' + strArgs + ' )'
     else:
@@ -367,7 +373,7 @@ class Signature( DataType ):
       # store other kwargs as attributes
       if kwargs:
         self._options = kwargs.keys()
-        for k, v in kwargs.iteritems():
+        for k, v in six.iteritems(kwargs):
           setattr(self, k, v)
     
     
@@ -411,7 +417,7 @@ class Signature( DataType ):
       name = args[ i ]
       i += 1
       if isinstance( name, Signature ):
-        for n, item in name.iteritems():
+        for n, item in six.iteritems(name):
           if n == 'signature': continue
           self._insertElement( len(self), n, item.copy() )
       else:
@@ -431,7 +437,7 @@ class Signature( DataType ):
 
 
   def _insertElement( self, index, name, dataType, options={} ):
-    if self.has_key( name ):
+    if name in self:
       raise KeyError( _( 'Element "%s" is defined twice' % ( name, ) ) )
     if isinstance( dataType, Signature.Item ):
       item = self._copyItem( dataType )
@@ -445,7 +451,7 @@ class Signature( DataType ):
     """
     see L{SortedDictionary.has_key}
     """
-    return self.__dict__[ '_signature_data' ].has_key( key )
+    return key in self.__dict__[ '_signature_data' ]
 
 
   def __getitem__( self, key ):
@@ -515,21 +521,21 @@ class Signature( DataType ):
     """
     see L{SortedDictionary.iterkeys}
     """
-    return  self.__dict__[ '_signature_data' ].iterkeys()
+    return  six.iterkeys(self.__dict__[ '_signature_data' ])
 
 
   def itervalues( self ) :
     """
     see L{SortedDictionary.itervalues}
     """
-    return  self.__dict__[ '_signature_data' ].itervalues()
+    return  six.itervalues(self.__dict__[ '_signature_data' ])
 
 
   def iteritems( self ) :
     """
     see L{SortedDictionary.iteritems}
     """
-    return  self.__dict__[ '_signature_data' ].iteritems()
+    return  six.iteritems(self.__dict__[ '_signature_data' ])
 
 
   def insert( self, index, key, value, **kwargs ):
@@ -583,8 +589,8 @@ class Signature( DataType ):
   def __getinitkwargs__( self ):
     args, kwargs = DataType.__getinitkwargs__( self )
     args = []
-    it = self.iteritems()
-    it.next() # skip signature
+    it = six.iteritems(self)
+    six.next(it) # skip signature
     for name, type in it:
       args.append( name )
       args.append( type )
@@ -594,8 +600,8 @@ class Signature( DataType ):
   def copy( self ):
     args, kwargs = DataType.__getinitkwargs__( self )
     args = []
-    it = self.iteritems()
-    it.next() # skip signature
+    it = six.iteritems(self)
+    six.next(it) # skip signature
     for name, item in it:
       args.append( name )
       args.append( item.copy() )
@@ -604,13 +610,13 @@ class Signature( DataType ):
 
   def __repr__( self ):
     result = self.name + '( '
-    it = self.itervalues()
-    it.next()
+    it = six.itervalues(self)
+    six.next(it)
     for item in it:
       result += repr( item.name ) + ', ' + repr( item.type ) +', '
       args, kwargs = item.__getinitkwargs__()
       if kwargs:
-        result += 'dict( ' + ', '.join( [str(i) + '=' + repr(j) for i,j in kwargs.iteritems()] ) + '), '
+        result += 'dict( ' + ', '.join( [str(i) + '=' + repr(j) for i,j in six.iteritems(kwargs)] ) + '), '
     return result + ' )'
 
 #-------------------------------------------------------------------------------
@@ -698,8 +704,8 @@ class HasSignature( ObservableAttributes ):
 
     """
     # Copy the dictionary to allow modification
-    it = self.signature.iteritems()
-    it.next()
+    it = six.iteritems(self.signature)
+    six.next(it)
     for attributeName, signatureItem in it:
       value = attributesValues.pop( attributeName, Undefined )
       if value is Undefined:
@@ -708,7 +714,7 @@ class HasSignature( ObservableAttributes ):
         setattr( self, attributeName, value )
     if attributesValues:
       raise TypeError( _( "Attribute '%s' is not in the signature" ) % \
-                            ( attributesValues.iterkeys().next(), ) )
+                            (six.next(six.iterkeys(attributesValues)), ) )
   
   
   def __getattribute__( self, name ):
@@ -786,7 +792,7 @@ class HasSignature( ObservableAttributes ):
         if notifier is None:
           self._onAttributeChange[ attribute ] = self._createAttributeNotifier()
       for attribute in oldSignature:
-        if not newSignature.has_key( attribute ):
+        if not attribute in newSignature:
           del self._onAttributeChange[ attribute ]
     return signatureChanged
 
@@ -795,10 +801,10 @@ class HasSignature( ObservableAttributes ):
     """
     This method is called whenever the signature content is modified.
     """
-    if self._onAttributeChange.has_key( attributeName ):
-      if not self.signature.has_key( attributeName ):
+    if attributeName in self._onAttributeChange:
+      if attributeName not in self.signature:
         del self._onAttributeChange[ attributeName ]
-    elif self.signature.has_key( attributeName ):
+    elif attributeName in self.signature:
       self._onAttributeChange[ attributeName ] = self._createAttributeNotifier()
     self._onAttributeChange[ 'signature' ].notify( self, 'signature',
                                                    self.signature,
@@ -806,11 +812,11 @@ class HasSignature( ObservableAttributes ):
 
   def delayAttributeNotification( self, ignoreDoubles=False ):
     super( HasSignature, self ).delayAttributeNotification( ignoreDoubles )
-    for item in self.signature.itervalues():
+    for item in six.itervalues(self.signature):
       item.delayAttributeNotification( ignoreDoubles )
 
 
   def restartAttributeNotification( self ):
     super( HasSignature, self ).restartAttributeNotification()
-    for item in self.signature.itervalues():
+    for item in six.itervalues(self.signature):
       item.restartAttributeNotification()

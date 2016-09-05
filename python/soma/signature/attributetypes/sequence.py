@@ -92,7 +92,7 @@ class Sequence ( DataType ):
       # Check datatype for each element of the Sequence
       for element in value :
         self.elementType.checkValue( element )
-    except ValueError, e:
+    except ValueError as e:
       raise ValueError( _('One element of a sequence has an invalid value: %(errorMessage)s') % { 'errorMessage': str( e ) } )
     return value
 

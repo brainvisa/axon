@@ -195,12 +195,19 @@ Several global variables are defined in this module to store **Brainvisa configu
   May be a list of directories: in that case, history files are duplicated in each of them.
 """
 
+from __future__ import print_function
 __docformat__ = 'restructuredtext en'
 
-import __builtin__
+import sys
 _defaultTranslateFunction = lambda x: x
-if not __builtin__.__dict__.has_key( '_t_' ):
-  __builtin__.__dict__[ '_t_' ] = _defaultTranslateFunction
+if sys.version_info[0] >= 3:
+  import builtins
+  if '_t_' not in builtins.__dict__:
+    builtins._t_ = _defaultTranslateFunction
+else:
+  import __builtin__
+  if '_t_' not in __builtin__.__dict__:
+    __builtin__.__dict__[ '_t_' ] = _defaultTranslateFunction
 
 import sys, os, errno, re, time, socket
 from soma.wip.application.api import Application
@@ -420,7 +427,7 @@ if os.path.exists( docPath ):
     if len( l ) == 2 and os.path.isdir( os.path.join( mainDocPath, l ) ):
       _languages.append( l )
 else:
-  print >> sys.stderr, 'WARNING: You should check your BrainVISA installation because the following directory does not exists:', repr( docPath )
+  print('WARNING: You should check your BrainVISA installation because the following directory does not exists:', repr( docPath ), file=sys.stderr)
 for i in ( 'LANGUAGE', 'LC_ALL', 'LC_MESSAGES', 'LANG' ):
   language = os.environ.get( i, '' )[ : 2 ]
   if language in _languages: break
@@ -470,7 +477,7 @@ if not homeBrainVISADir :
 if not os.path.exists( homeBrainVISADir ):
   try:
     os.mkdir( homeBrainVISADir )
-  except OSError, e:
+  except OSError as e:
     if not e.errno == errno.EEXIST:
       # filter out 'File exists' exception, if the same dir has been created
       # concurrently by another instance of BrainVisa or another thread
@@ -633,7 +640,7 @@ else:
                                   "debugHierarchy=", "debugLinks=", "databaseServer", 
                                   "help", "setup", "noToolBox",
                                   "ignoreValidation" ] )
-  except getopt.GetoptError, msg:
+  except getopt.GetoptError as msg:
     # print help information and exit:
     sys.stderr.write( "error in options: %s\nUse -h or --help for help\n" % msg )
     sys.exit( 1 )
@@ -685,9 +692,9 @@ else:
     elif o in ( "--ignoreValidation"):
       ignoreValidation = True
 
-# Print help
+# Print(help)
 if showHelp == 1:
-  print '''
+  print('''
 Usage: brainvisa [ <BrainVISA options> ] [ -- <other options> ]
 
 <BrainVISA options> are interpreted by BrainVISA, <other options> are
@@ -734,7 +741,7 @@ Notes:
   Multiple -e and -c commands are executed in the order they are given after
   all initialization steps are done (options parsing, databases and processes
   parsing, etc.).
-'''
+''')
   sys.exit()
 
 if setup:
@@ -771,9 +778,9 @@ class RunsInfo:
         for f in os.listdir(homeBrainVISADir):
           if f.startswith("brainvisa") and (f.endswith(".log") or f.endswith(".log~")):
             os.remove(os.path.join(homeBrainVISADir, f) )
-      except Exception, e:
-        print "Fail cleaning log files:"
-        print e
+      except Exception as e:
+        print("Fail cleaning log files:")
+        print(e)
     self.currentRun=1
     self.timeout=604800 # 7 days in seconds
     self.runs={}
@@ -788,7 +795,7 @@ class RunsInfo:
       infos={ 'host' : socket.gethostname(), 'pid' : os.getpid(), 'time' : currentTime }
       self.count+=1
       i=1
-      while ((i<=self.count+1) and (self.runs.has_key(i))):
+      while ((i<=self.count+1) and i in self.runs):
         i+=1
       self.currentRun=i
       if logFileName is None:
@@ -806,9 +813,9 @@ class RunsInfo:
       infos["logFileName"]=logFileName
       self.runs[self.currentRun]=infos
       self.write()
-    except Exception, e:
-      print "Fail to get or set current runs information:"
-      print e
+    except Exception as e:
+      print("Fail to get or set current runs information:")
+      print(e)
       if os.path.exists( self.file ):
         os.remove(self.file)
       
@@ -837,9 +844,9 @@ class RunsInfo:
     if os.path.exists(self.file):
       try:
         self.runs, self.count=readMinf(self.file)
-      except Exception, e:
-        print >> sys.stderr, 'Cannot read "' + self.file + '":'
-        print >> sys.stderr, e
+      except Exception as e:
+        print('Cannot read "' + self.file + '":', file=sys.stderr)
+        print(e, file=sys.stderr)
         return
       currentTime = time.time() 
       # check for expired runs
@@ -868,9 +875,9 @@ class RunsInfo:
                 os.remove(logfile)
                 if os.path.exists(logfile+"~"):
                   os.remove(logfile+"~")
-              except Exception, e:
-                print e
-                print "Fail removing log file." 
+              except Exception as e:
+                print(e)
+                print("Fail removing log file.")
              del self.runs[n]
            self.count=len(self.runs)
         self.write()
@@ -957,7 +964,7 @@ def initGlobalVariables():
   if _t_ is _defaultTranslateFunction:
     try:
       __builtin__.__dict__['_t_'] = Translator(language).translate
-    except Exception, msg:
+    except Exception as msg:
       __builtin__.__dict__['_t_'] = lambda x: x
       sys.stderr.write( str(msg) + '\n' )
 
