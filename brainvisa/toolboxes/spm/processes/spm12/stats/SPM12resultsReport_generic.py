@@ -205,6 +205,11 @@ def execution( self, context ):
 
   result = self.createResultsReportBatch(context)
   spm = validation()#This is singleton object
+  for contrast_index in range(self.contrast_number):
+    contrast_threshold_type = eval('self.contrast_' + str(contrast_index) + '_threshold_type')
+    if contrast_threshold_type == "FDR":
+      spm.addSPMCommandToExecutionQueue(["spm_get_defaults('stats.topoFDR', 0);"])
+      continue
   spm.addModuleToExecutionQueue(result)
   spm.setSPMScriptPath(self.batch_location.fullPath())
   #spm.setMatlabScriptPath(matlab_batch_path)
