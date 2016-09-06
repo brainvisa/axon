@@ -127,9 +127,13 @@ if sys.version_info[0] >= 3:
     basestring = str
     from collections import UserList
     StringTypes = (str,)
+    def values(thing):
+        return list(thing.values())
 else:
     from UserList import UserList
     from types import StringTypes
+    def values(thing):
+        return thing.values()
 
 
 #----------------------------------------------------------------------------
@@ -2048,7 +2052,7 @@ def getAllFormats():
   Returns the list of all available formats.
   """
   global formats
-  return formats.values()
+  return values(formats)
 
 directoryFormat = Format( 'Directory', 'd|*', ignoreExclusive=1 )
 fileFormat = Format( 'File', 'f|*', ignoreExclusive=1 )
@@ -2219,7 +2223,7 @@ def getAllDiskItemTypes():
   """
   Gets all registered :py:class:`DiskItemType`.
   """
-  return diskItemTypes.values()
+  return values(diskItemTypes)
 
 
 #----------------------------------------------------------------------------
