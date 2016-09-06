@@ -170,7 +170,7 @@ def modificationHashOrEmpty( f ):
   try:
     s = os.lstat( f )
     return ( s.st_mode, s.st_uid, s.st_gid, s.st_size, s.st_mtime, s.st_ctime )
-  except html_parserOSError:
+  except OSError:
     return ()
 
 #----------------------------------------------------------------------------
