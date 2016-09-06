@@ -221,8 +221,10 @@ from soma.qtgui.api import QtThreadCall, FakeQtThreadCall
 
 if sys.version_info[0] >= 3:
     from html import parser as html_parser
+    getcwdu = os.getcwd
 else:
     from htmllib import HTMLParser as html_parser
+    from os import getcwdu
 
 global _mainThreadActions
 _mainThreadActions = FakeQtThreadCall()
@@ -326,7 +328,7 @@ def procdocToXHTML(procdoc):
     Converts HTML tags in the content of a .procdoc file to XHTML tags.
     Checks its syntax.
     """
-    stack = [(procdoc, key, key) for key in procdoc.iterkeys()]
+    stack = [(procdoc, key, key) for key in six.iterkeys(procdoc)]
     while stack:
         d, k, h = stack.pop()
         value = d[k]
@@ -411,7 +413,7 @@ def procdocToXHTML(procdoc):
             d[k] = newValue
         elif type(value) is types.DictType:
             stack += [(value, key, h + '.' + key)
-                      for key in value.iterkeys()]
+                      for key in six.iterkeys(value)]
 
 
 #----------------------------------------------------------------------------
@@ -612,7 +614,7 @@ def mapValuesToChildrenParameters(
     # PROBLEM: we only parse links from the *same* sourceObject - others may
     # come from elsewhere, we don't have them here.
     if len(created_nodes) != 0:
-        for param, plinks in sourceObject._links.iteritems():
+        for param, plinks in six.iteritems(sourceObject._links):
             for link in plinks:
                 function = link[2]
                 if not isinstance(function, ExecutionNode.MultiParameterLink) \
@@ -918,7 +920,7 @@ class Parameterized(object):
             # link_attributes only works on DiskItem objects which have
             # attributes and their signature has the findValue() method
             attr_values = {}
-            for dst_attr, src_attr in link_attributes.iteritems():
+            for dst_attr, src_attr in six.iteritems(link_attributes):
                 src_spl = src_attr.split(':')
                 if len(src_spl) >= 2:
                     # source is "param:attribute", get value in source.param
@@ -1273,7 +1275,7 @@ class Parameterized(object):
                            for itervalue in value)
         elif isinstance(value, dict):
             result = dict((key, self.convertStateValue(itervalue))
-                          for key, itervalue in value.iteritems())
+                          for key, itervalue in six.iteritems(value))
         else:
             result = value
 
@@ -1284,7 +1286,7 @@ class Parameterized(object):
             result = {}
         selected = {}
         default = {}
-        for n in self.signature.iterkeys():
+        for n in six.iterkeys(self.signature):
             value = getattr(self, n, None)
             value = self.convertStateValue(value)
 
@@ -1415,7 +1417,7 @@ class Process(Parameterized):
 
         # Set lists of values
         finalValues = {}
-        for key, values in kwargs.iteritems():
+        for key, values in six.iteritems(kwargs):
             if values:
                 if len(values) == 1:
                     finalValues[key] = [
@@ -1430,7 +1432,7 @@ class Process(Parameterized):
                            # should copy only non-default params
             for argumentName in finalValues.keys():
                 p._setImmutable(argumentName, True)
-            for argumentName, values in finalValues.iteritems():
+            for argumentName, values in six.iteritems(finalValues):
                 p.setValue(argumentName, values[i], default=0)
             p._clearImmutableParameters()
             result.append(p)
@@ -1546,7 +1548,7 @@ class Process(Parameterized):
         """
         params = []
         files = set()
-        for paramname in self.signature.iterkeys():
+        for paramname in six.iterkeys(self.signature):
             param = self.__dict__.get(paramname)
             if param is not None and isinstance(param, DiskItem):
                 filename = param.fullPath()
@@ -1563,7 +1565,7 @@ class Process(Parameterized):
             eNodes += list(eNode.children())
             if isinstance(eNode, ProcessExecutionNode):
                 process = eNode._process
-                for paramname in process.signature.iterkeys():
+                for paramname in six.iterkeys(process.signature):
                     param = process.__dict__.get(paramname)
                     if param is not None and isinstance(param, DiskItem):
                         filename = param.fullPath()
@@ -1613,7 +1615,7 @@ class Process(Parameterized):
                     parameterized = parameterized()
                 stack += [node.child(i) for i in node.childrenNames()]
             if parameterized is not None:
-                for attribute, type in parameterized.signature.iteritems():
+                for attribute, type in six.iteritems(parameterized.signature):
                     yield (parameterized, attribute, type)
 
 
@@ -2056,7 +2058,7 @@ class ExecutionNode(object):
             eNodes += list(eNode.children())
             if isinstance(eNode, ProcessExecutionNode):
                 process = eNode._process
-                for paramname in process.signature.iterkeys():
+                for paramname in six.iterkeys(process.signature):
                     param = process.__dict__.get(paramname)
                     if param is not None and isinstance(param, DiskItem):
                         filename = param.fullPath()
@@ -4114,13 +4116,13 @@ def getProcessInstanceFromProcessEvent(event):
         # 1st pass: disable links to parameters which have a saved value
         selected = event.content.get('parameters', {}).get('selected', {})
         procs.add(result)
-        for n, v in selected.iteritems():
+        for n, v in six.iteritems(selected):
             try:
                 result._setImmutable(n, True)
             except KeyError:
                 pass
         defaultp = event.content.get('parameters', {}).get('default', {})
-        for n, v in defaultp.iteritems():
+        for n, v in six.iteritems(defaultp):
             try:
                 result._setImmutable(n, True)
             except KeyError:
@@ -4128,7 +4130,7 @@ def getProcessInstanceFromProcessEvent(event):
         stackp = [(result.executionNode(), k, e.get('parameters'),
                    e['selected'],
                    e.get('executionNodes', {})) for k, e in
-                  event.content.get('executionNodes', {}).iteritems()]
+                  six.iteritems(event.content.get('executionNodes', {}))]
         stack = list(stackp)  # copy list
         while stack:
             eNodeParent, eNodeName, eNodeParameters, eNodeSelected, eNodeChildren = stack.pop(
@@ -4139,30 +4141,31 @@ def getProcessInstanceFromProcessEvent(event):
                 eNode.setSelected(eNodeSelected)
 
                 if eNodeParameters:
-                    for n, v in eNodeParameters['selected'].iteritems():
+                    for n, v in six.iteritems(eNodeParameters['selected']):
                         try:
                             eNode._setImmutable(n, True)
                             procs.add(eNode)
                         except KeyError:
                             pass
-                    for n, v in eNodeParameters['default'].iteritems():
+                    for n, v in six.iteritems(eNodeParameters['default']):
                         try:
                             eNode._setImmutable(n, True)
                             procs.add(eNode)
                         except KeyError:
                             pass
                 stackadd = [(eNode, k, e.get('parameters'), e['selected'],
-                             e.get('executionNodes', {})) for k, e in eNodeChildren.iteritems()]
+                             e.get('executionNodes', {})) for k, e in
+                              six.iteritems(eNodeChildren)]
                 stackp += stackadd
                 stack += stackadd
 
         # 2nd pass: now really set values
-        for n, v in selected.iteritems():
+        for n, v in six.iteritems(selected):
             try:
                 result.setValue(n, v, default=False)
             except KeyError:
                 pass
-        for n, v in defaultp.iteritems():
+        for n, v in six.iteritems(defaultp):
             try:
                 result.setValue(n, v, default=True)
             except KeyError:
@@ -4175,12 +4178,12 @@ def getProcessInstanceFromProcessEvent(event):
                 eNode.setSelected(eNodeSelected)
 
                 if eNodeParameters:
-                    for n, v in eNodeParameters['selected'].iteritems():
+                    for n, v in six.iteritems(eNodeParameters['selected']):
                         try:
                             eNode.setValue(n, v, default=False)
                         except KeyError:
                             pass
-                    for n, v in eNodeParameters['default'].iteritems():
+                    for n, v in six.iteritems(eNodeParameters['default']):
                         try:
                             eNode.setValue(n, v, default=True)
                         except KeyError:
@@ -4657,7 +4660,7 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
         if moduleDescription is None:
             raise RuntimeError(
                 HTMLMessage(_t_('Cannot load a process from file <em>%s</em>') % (fileName,)))
-        currentDirectory = os.getcwdu()
+        currentDirectory = getcwdu()
         fileIn = open(fileName, moduleDescription[1])
         try:
             if dataDirectory:
