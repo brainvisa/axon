@@ -33,11 +33,19 @@
 from __future__ import print_function
 import brainvisa.processes
 import os, traceback
+import sys
 from soma.minf.api import readMinf, minfFormat
 from soma.sorted_dictionary import SortedDictionary
 from soma.wip.application.api import findIconFile
 from brainvisa.processing.neuroException import showException
 from brainvisa.configuration import neuroConfig
+
+if sys.version_info[0] >= 3:
+    def execfile(filename, global_vars=globals(), local_vars=locals()):
+        with open(filename) as f:
+            code = compile(f.read(), filename, 'exec')
+            exec(code, global_vars, local_vars)
+
 
 class Toolbox( object ):
   """

@@ -126,8 +126,10 @@ import re
 if sys.version_info[0] >= 3:
     basestring = str
     from collections import UserList
+    StringTypes = (str,)
 else:
     from UserList import UserList
+    from types import StringTypes
 
 
 #----------------------------------------------------------------------------
@@ -145,7 +147,7 @@ def sameContent(a, b, as_dict=False):
   """
   result = 0
   if as_dict or type( a ) is type( b ):
-    if type( a ) in ( types.ListType, types.TupleType ):
+    if type(a) in (list, tuple):
       result = 1
       i = 0
       for x in a:
@@ -612,7 +614,7 @@ class DiskItem(QObject):
     if r is None: r = self._localAttributes.get( attrName )
     if r is None and search_header:
       info = aimsFileInfo( self.fullPath() )
-      for k, v in info.iteritems():
+      for k, v in six.iteritems(info):
         self._otherAttributes.setdefault( k, v )
       r = info.get( attrName )
     if r is None:
@@ -696,30 +698,34 @@ class DiskItem(QObject):
     result = {}
     self._mergeHierarchyAttributes( result )
     return result
-  
-  
-  def has_key( self, attrName ):
+
+
+  def __contains__(self, attrName):
     """
     Returns True if the diskItem has an attribute with this name in one of its dictionaries of attributes.
     """
-    r = self._minfAttributes.has_key( attrName )
+    r = attrName in self._minfAttributes
     if r: return r
-    r = self._otherAttributes.has_key( attrName )
+    r = attrName in self._otherAttributes
     if r: return r
-    r = self._localAttributes.has_key( attrName )
+    r = attrName in self._localAttributes
     if r: return r
-    r = self._globalAttributes.has_key( attrName )
+    r = attrName in self._globalAttributes
     if r: return r
-    if self.parent: return self.parent.has_key( attrName )
+    if self.parent: return attrName in self.parent
     return 0
-  
-  
+
+
+  def has_key( self, attrName ):
+    return self.__contains__(attrName)
+
+
   def _setGlobal( self, attrName, value ):
     if self.parent and self.parent._getGlobal( attrName ) is not None:
       raise AttributeError( HTMLMessage(_t_('a global attribute <em>%s</em> already exists in item <em><code>%s</code></em>') % ( str(attrName), str(self) )) )
     self._globalAttributes[ attrName ] = value
-  
-  
+
+
   def _updateGlobal( self, dict ):
     for attrName, value in dict.items():
       self._setGlobal( attrName, value )
@@ -1014,7 +1020,7 @@ class DiskItem(QObject):
       attrs = self._readMinf()
       #print('! neuroDiskItems : readAndUpdateMinf : ',  attrs)
       if attrs is not None:
-        if attrs.has_key( 'uuid' ):
+        if 'uuid' in attrs:
           self._changeUuid( Uuid( attrs[ 'uuid' ] ) )
           del attrs[ 'uuid' ]
         self.clearMinf(saveMinf=False)
@@ -1098,7 +1104,7 @@ class DiskItem(QObject):
       self._minfLock.acquire()
       try:
         attrs = self._readMinf()
-        if attrs and attrs.has_key( 'uuid' ):
+        if attrs and 'uuid' in attrs:
           self._changeUuid( Uuid( attrs[ 'uuid' ] ) )
         else:
           try:
@@ -1450,7 +1456,7 @@ class BackwardCompatiblePatterns:
     # Build Pattern list in self.patterns
     if type( patterns ) is str:
       self.patterns = [ BackwardCompatiblePattern( patterns ) ]
-    elif type( patterns ) in ( types.TupleType, types.ListType ):
+    elif type(patterns) in (tuple, list):
       self.patterns = []
       for i in patterns:
         if isinstance( i, BackwardCompatiblePattern ):
@@ -2004,7 +2010,7 @@ def createFormatList( listName, formats=[] ):
   """
   global formatLists
   key = getId( listName )
-  if formatLists.has_key( key ):
+  if key in formatLists:
     raise KeyError( listName )
   result = NamedFormatList( listName, getFormats( formats ) )
   formatLists[ key ] = result
@@ -2019,7 +2025,7 @@ def getFormats( formats ):
   """
   if formats is None: return None
   global formatLists
-  if type( formats ) in types.StringTypes:
+  if type( formats ) in StringTypes:
     key = getId( formats )
     result = formatLists.get( key )
     if result is None:
@@ -2107,7 +2113,7 @@ class DiskItemType(object):
     :param attributes: dictionary containing attributes associated to this type. 
     """
     # Check name
-    if type(typeName) is not types.StringType:
+    if type(typeName) is not str:
       raise ValueError(_t_('a type name must be a string'))
     
     self.name = typeName
@@ -2120,7 +2126,7 @@ class DiskItemType(object):
     elif self._reloaded_types.get(self.id):
       other = diskItemTypes.get(self.id)
       if other:
-        other = dict([(k, v) for k, v in other.__dict__.iteritems()
+        other = dict([(k, v) for k, v in six.iteritems(other.__dict__)
                       if not k.startswith('_')])
     else:
       other = None
@@ -2202,7 +2208,7 @@ def getDiskItemType( item ):
   Gets the :py:class:`DiskItemType` whose id is the given item.
   """
   if isinstance( item, DiskItemType ): return item
-  elif type( item ) is types.StringType or type( item ) is types.UnicodeType:
+  elif type( item ) is str or type( item ) is types.UnicodeType:
     result = diskItemTypes.get( getId( item ) )
     if result: return result
   raise ValueError( HTMLMessage(_t_('<em><code>%s</code></em> is not a valid file or directory type') % str( item )) )
@@ -2246,7 +2252,7 @@ class FileType( DiskItemType ):
     if not hasattr(self, '__older_type') and self._reloaded_types.get(id):
       other = diskItemTypes.get(id)
       if other:
-        other = dict([(k, v) for k, v in other.__dict__.iteritems()
+        other = dict([(k, v) for k, v in six.iteritems(other.__dict__)
                       if not k.startswith('_')])
         self.__older_type = other
     # Check formats

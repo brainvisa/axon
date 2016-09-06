@@ -35,6 +35,15 @@ This module defines the class :py:class:`MultipleExecfile` that is used to read 
 from __future__ import print_function
 import sys, os
 from traceback      import format_exc
+import six
+
+if sys.version_info[0] >= 3:
+    unicode = str
+    def execfile(filename, global_vars=globals(), local_vars=locals()):
+        with open(filename) as f:
+            code = compile(f.read(), filename, 'exec')
+            exec(code, global_vars, local_vars)
+
 
 class MultipleExecfile( object ):
   """
@@ -168,4 +177,4 @@ class MultipleExecfile( object ):
     """
     Returns the list of executed files.
     """
-    return self._executedFiles.iterkeys()
+    return six.iterkeys(self._executedFiles)
