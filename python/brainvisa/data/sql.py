@@ -29,6 +29,8 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+import six
+
 _mangleSQL = (
   ( '_', '__' ),
   ( ' ', '_s' ),
@@ -43,7 +45,7 @@ _reservedNames = {
   'from': '__from__',
 }
 
-_reservedNamesReversed = dict( (j , i) for i, j in _reservedNames.iteritems() )
+_reservedNamesReversed = dict( (j , i) for i, j in six.iteritems(_reservedNames) )
 
 def mangleSQL( sql ):
   global _mangleSQL, _reservedNames

@@ -962,10 +962,12 @@ def initGlobalVariables():
   os.environ[ 'LANGUAGE' ] = language
   docPath = os.path.join( docPath, language )
   if _t_ is _defaultTranslateFunction:
+    if sys.version_info[0] < 3:
+        buildins = __builtin__
     try:
-      __builtin__.__dict__['_t_'] = Translator(language).translate
+      builtins.__dict__['_t_'] = Translator(language).translate
     except Exception as msg:
-      __builtin__.__dict__['_t_'] = lambda x: x
+      builtins.__dict__['_t_'] = lambda x: x
       sys.stderr.write( str(msg) + '\n' )
 
 def getDocFile(filename):
