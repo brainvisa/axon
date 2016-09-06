@@ -228,8 +228,8 @@ if sys.version_info[0] >= 3:
 else:
     from htmllib import HTMLParser as html_parser
     from os import getcwdu
-    def items(things):
-        return things.items()
+    def items(thing):
+        return thing.items()
     from types import StringTypes
 
 global _mainThreadActions
