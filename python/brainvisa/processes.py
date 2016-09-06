@@ -1053,18 +1053,19 @@ class Parameterized(object):
 
     def setVisible(self, *args):
         """Indicates that the parameters are visible."""
-        currentUserLevel = Application().configuration.brainvisa.userLevel
-        self.setUserLevel(currentUserLevel, *args)
+        for k in args:
+            self.signature[k].visible = True
 
     def setHidden(self, *args):
         """Indicates that the parameters are hidden."""
-        currentUserLevel = Application().configuration.brainvisa.userLevel
-        self.setUserLevel(currentUserLevel + 1, *args)
+        for k in args:
+            self.signature[k].visible = False
 
     def setUserLevel(self, userLevel, *args):
         """Assign a userLevel to a list of parameters."""
+        from copy import copy
         for k in args:
-            self.signature[k].userLevel = userLevel
+            self.signature[k].userLevel = copy(userLevel)
 
     def setEnable(self, *args, **kwargs):
         """Indicates parameters visibility and mandatory
@@ -1075,15 +1076,15 @@ class Parameterized(object):
         *optional keyword paramerers*
 
         :param int userLevel, indicates that the parameters are visible or hidden regarding the userLevel.
-                              ( default value : Application().configuration.brainvisa.userLevel )
+                              ( default value : the previous userLevel is kept )
         :param boolean mandatory, indicates that the parameters are mandatory(True) or optional(False).
                                   ( default value : True )
         """
+        self.setVisible(*args)
+
         if 'userLevel' in kwargs.keys():
             userLevel = kwargs['userLevel']
-        else:
-            userLevel = Application().configuration.brainvisa.userLevel
-        self.setUserLevel(userLevel, *args)
+            self.setUserLevel(userLevel, *args)
 
         if 'mandatory' in kwargs.keys():
             if kwargs['mandatory']:
@@ -1101,8 +1102,9 @@ class Parameterized(object):
     def setSection(self, section, *args):
       """Sets the section of the parameters. Parameters are then sorted by
       section in the GUI"""
+      from copy import copy
       for k in args:
-          self.signature[k]._section = section
+          self.signature[k]._section = copy(section)
 
     def setConvertedValue(self, name, value):
         """Sets the value but stores the previous value in an internal dictionary."""

@@ -1418,18 +1418,6 @@ class ParameterLabel( QLabel ):
     self.addMenuLock()
     self.setAutoFillBackground(True)
     self.setBackgroundRole(QPalette.Window)
-    # if userLevel == 1:
-    #   palette = self.palette()
-    #   palette.setColor(QPalette.Window, QColor(255,255,0,127))
-    #   self.setPalette(palette)
-    # elif userLevel == 2:
-    #   palette = self.palette()
-    #   palette.setColor(QPalette.Window, QColor(255,0,0,127))
-    #   self.setPalette(palette)
-    # elif userLevel >= 3:
-    #   palette = self.palette()
-    #   palette.setColor(QPalette.Window, QColor(0,0,255,127))
-    #   self.setPalette(palette)
 
   def set_read_only(self, read_only):
     self.default_id.setEnabled(not read_only)
@@ -1616,7 +1604,7 @@ class ParameterizedWidget( QWidget ):
     sectionTitleList = []#useful to keep signature order
     sectionTitleSortedDict = {}
     for key, parameter in self.parameterized.signature.items():
-      if neuroConfig.userLevel >= parameter.userLevel:
+      if neuroConfig.userLevel >= parameter.userLevel and parameter.visible:
         sectionTitle = parameter.getSectionTitleIfDefined()
         sectionTitleList.append(sectionTitle)
         if sectionTitle in sectionTitleSortedDict.keys():
