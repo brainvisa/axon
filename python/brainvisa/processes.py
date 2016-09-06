@@ -222,9 +222,15 @@ from soma.qtgui.api import QtThreadCall, FakeQtThreadCall
 if sys.version_info[0] >= 3:
     from html import parser as html_parser
     getcwdu = os.getcwd
+    def items(thing):
+        return list(thing.items())
+    StringTypes = (str, )
 else:
     from htmllib import HTMLParser as html_parser
     from os import getcwdu
+    def items(things):
+        return things.items()
+    from types import StringTypes
 
 global _mainThreadActions
 _mainThreadActions = FakeQtThreadCall()
@@ -332,7 +338,7 @@ def procdocToXHTML(procdoc):
     while stack:
         d, k, h = stack.pop()
         value = d[k]
-        if isinstance(value, types.StringTypes):
+        if isinstance(value, StringTypes):
             # Convert HTML tags to XML valid tags
 
             # Put all tags in lower-case because <TAG> ... </tag> is illegal
@@ -717,7 +723,7 @@ class Parameterized(object):
         self.deleteCallbacks = []
         self._blocklinks = False
 
-        for i, p in self.signature.items():
+        for i, p in items(self.signature):
             np = copy.copy(p)
             self.signature[i] = np
             np.copyPostprocessing()
@@ -984,7 +990,7 @@ class Parameterized(object):
             non-matching attribute 'my_attrib' (compared to a standard link).
 
         """
-        if type(sources) is types.StringType:
+        if type(sources) is str:
             sourcesList = [sources]
         else:
             sourcesList = sources
@@ -3245,7 +3251,7 @@ class ExecutionContext(object):
         self.checkInterruption()
         stackTop = self._stackTop()
 
-        if type(command) in types.StringTypes:
+        if type(command) in StringTypes:
             c = Command(command)
         else:
             c = Command(*command)
@@ -3998,7 +4004,7 @@ def getProcessInfo(processId):
     if isinstance(processId, ProcessInfo):
         result = processId
     else:
-        if type(processId) in types.StringTypes:
+        if type(processId) in StringTypes:
             processId = processId.lower()
         result = _processesInfo.get(processId)
         if result is None:
@@ -4053,7 +4059,7 @@ def getProcess(processId, ignoreValidation=False, checkUpdate=True):
             raise TypeError(_t_('Unknown process type: %s') %
                             (unicode(processId['type'])))
     else:
-        if type(processId) in types.StringTypes:
+        if type(processId) in StringTypes:
             processId = processId.lower()
         result = _processes.get(processId)
     if result is None:
@@ -4710,10 +4716,14 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
                 setattr(NewProcess, n, v)
 
         # Other attributes
-        for n, v in processModule.__dict__.items():
+        for n, v in items(processModule.__dict__):
             if g.get(n) is not v:
                 if type(v) is types.FunctionType:
-                    args = inspect.getargs(v.func_code)[0]
+                    if sys.version_info[0] >= 3:
+                        code = v.__code__
+                    else:
+                        code = v.func_code
+                    args = inspect.getargs(code)[0]
                     if args and args[0] == 'self':
                         setattr(NewProcess, n, v)
                         delattr(processModule, n)

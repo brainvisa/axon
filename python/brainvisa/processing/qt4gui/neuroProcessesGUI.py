@@ -4464,8 +4464,8 @@ def initializeProcessesGUI():
       _computing_resource_pool.add_default_connection()
       _workflow_application_model = WorkflowApplicationModel(_computing_resource_pool)
 
-    six.exec('from brainvisa.processing.qt4gui.neuroProcessesGUI import *',
-             brainvisa.processes.__dict__)
+    six.exec_('from brainvisa.processing.qt4gui.neuroProcessesGUI import *',
+              brainvisa.processes.__dict__)
     brainvisa.processes._defaultContext = ExecutionContextGUI()
 
 def html_with_local_images(html):
