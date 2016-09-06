@@ -102,7 +102,7 @@ class Toolbox( object ):
         tooltip=self.description,
         editable=False, 
         user=False )
-      # create a process tree parsing the processes directory, 
+      # create a process tree parsing the processes directory,
       # category associated to processes while going throught directories : toolboxName/rep1/rep2...
       if os.path.exists( self.processesDir ):
         self.processTree.addDir( self.processesDir, self.id, toolbox=self.id )
