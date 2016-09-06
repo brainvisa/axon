@@ -1385,15 +1385,27 @@ class ParameterLabel( QLabel ):
   '''A QLabel that emits PYSIGNAL( 'contextMenuEvent' ) whenever a
   contextMenuEvent occurs'''
 
-  def __init__( self, parameterName, mandatory, parent ):
+  def __init__( self, parameterName, mandatory, parent, userLevel = 0 ):
     if mandatory:
-      QLabel.__init__( self, '<b>' + parameterName + ':</b>',
-                                              parent )
+      printParameterName = '<b>' + parameterName + ':</b>'
     else:
-      QLabel.__init__( self, parameterName + ':', parent )
+      printParameterName = parameterName + ':'
+
+
+    from soma.wip.application.api import Application
+    if Application().configuration.brainvisa.showParamUserLevel:
+      if userLevel == 1:
+        printParameterName = '<sup style="color:orange;">1</sup> ' + printParameterName
+      elif userLevel == 2:
+        printParameterName = '<sup style="color:red;">2</sup> ' + printParameterName
+      elif userLevel >= 3:
+        printParameterName = '<sup style="color:blue;">*</sup> ' + printParameterName
+
+    QLabel.__init__( self, printParameterName, parent )
 
     #Save parameter name
     self.parameterName = parameterName
+    self.printParameterName = printParameterName
 
     # Create popup menu
     self.contextMenu = QMenu( self )
@@ -1405,6 +1417,18 @@ class ParameterLabel( QLabel ):
     self.addMenuLock()
     self.setAutoFillBackground(True)
     self.setBackgroundRole(QPalette.Window)
+    # if userLevel == 1:
+    #   palette = self.palette()
+    #   palette.setColor(QPalette.Window, QColor(255,255,0,127))
+    #   self.setPalette(palette)
+    # elif userLevel == 2:
+    #   palette = self.palette()
+    #   palette.setColor(QPalette.Window, QColor(255,0,0,127))
+    #   self.setPalette(palette)
+    # elif userLevel >= 3:
+    #   palette = self.palette()
+    #   palette.setColor(QPalette.Window, QColor(0,0,255,127))
+    #   self.setPalette(palette)
 
   def set_read_only(self, read_only):
     self.default_id.setEnabled(not read_only)
@@ -1459,30 +1483,19 @@ class ParameterLabel( QLabel ):
       self.emit( SIGNAL( 'unlock_system' ), self.parameterName )
       #txt = self.paramLabelText(self.default_id.isChecked(), False)
 
-    self.setlock(self.lock_id.isChecked()) #on remet a jour en fonction du resultat du unlock du fichier
-    txt = self.paramLabelText(self.default_id.isChecked(), self.lock_id.isChecked())
-    #print " ParameterLabel : lockChanged self.lock_id.isChecked() a false val de self.text() : " + self.text()
-
-    txt_value_parameter = self.readText(self.text())
-    while (self.readText(txt_value_parameter) != txt_value_parameter) :
-        txt_value_parameter = self.readText(txt_value_parameter)
-
-    txt = txt + txt_value_parameter
-    self.setText( unicode(txt) )
+    # on remet a jour en fonction du resultat du unlock du fichier
+    self.setlock(self.lock_id.isChecked())
+    # label update is performed by setlock
 
 
   def setlock( self, default):
     """ This function is to set lock or unlock data """
     self.lock_id.setChecked(default)
 
-    txt = self.paramLabelText(self.default_id.isChecked(), default)
+    txt = self.paramLabelText(self.default_id.isChecked(), self.lock_id.isChecked())
 
-    txt_value_parameter = self.readText(self.text())
-    while (self.readText(txt_value_parameter) != txt_value_parameter) :
-        txt_value_parameter = self.readText(txt_value_parameter)
-
-    txt = txt + txt_value_parameter
-    self.setText( unicode(txt) )
+    txt += self.printParameterName
+    self.setText(unicode(txt))
 
 
   def defaultChanged( self, checked=False ):
@@ -1491,12 +1504,8 @@ class ParameterLabel( QLabel ):
 
     txt = self.paramLabelText(self.default_id.isChecked(), self.lock_id.isChecked())
 
-    txt_value_parameter = self.readText(self.text())
-    while (self.readText(txt_value_parameter) != txt_value_parameter) :
-        txt_value_parameter = self.readText(txt_value_parameter)
-
-    txt = txt + txt_value_parameter
-    self.setText(  unicode(txt) )
+    txt += self.printParameterName
+    self.setText(unicode(txt))
 
 
 
@@ -1508,12 +1517,8 @@ class ParameterLabel( QLabel ):
 
     txt = self.paramLabelText(self.default_id.isChecked(), self.lock_id.isChecked())
 
-    txt_value_parameter = self.readText(self.text())
-    while (self.readText(txt_value_parameter) != txt_value_parameter) :
-        txt_value_parameter = self.readText(txt_value_parameter)
-
-    txt = txt + txt_value_parameter
-    self.setText(  unicode(txt))
+    txt += self.printParameterName
+    self.setText(unicode(txt))
 
 
 
@@ -1632,11 +1637,13 @@ class ParameterizedWidget( QWidget ):
       uniqueSectionTitleList.insert(0, uniqueSectionTitleList.pop( uniqueSectionTitleList.index(None) ) )
 
     for sectionTitle in uniqueSectionTitleList:
+      currentSectionTitle = None
       if len( uniqueSectionTitleList ) > 1 and sectionTitle is not None:
-        parametersWidgetLayout.addRow( SectionTitle(sectionTitle) )
+        currentSectionTitle = SectionTitle(sectionTitle)
+        parametersWidgetLayout.addRow( currentSectionTitle )
 
       for k, p in sectionTitleSortedDict[ sectionTitle ]:
-        l = ParameterLabel( k, p.mandatory, None )
+        l = ParameterLabel( k, p.mandatory, None, userLevel=p.userLevel )
         l.setDefault(self.parameterized.isDefault( k ))
         self.connect( l, SIGNAL( 'toggleDefault' ), self._toggleDefault )
 
@@ -1655,6 +1662,8 @@ class ParameterizedWidget( QWidget ):
         #  parametersWidgetLayout.addRow( SectionTitle( p.getSectionTitleIfDefined() ) )
 
         parametersWidgetLayout.addRow( l, e )
+        if currentSectionTitle is not None:
+          currentSectionTitle.addSectionWidgets(l, e)
 
         self.parameterized.addParameterObserver( k, self.parameterChanged )
 
@@ -1866,11 +1875,15 @@ class SectionTitle( QLabel ):
   or
   'image', WriteDiskItem( '4D Volume', 'NIFTI-1 image', section='Output images' ),
   """
-  def __init__(self, section_title):
-    QLabel.__init__(self, section_title)
+  def __init__(self, section_title, section_widgets=[], collapsed=False):
+    if collapsed:
+      printSectionTitle = '<span style="font-size:smaller;">&#9654;</span> ' + section_title
+    else:
+      printSectionTitle = '<span style="font-size:smaller;">&#9660;</span> ' + section_title
+    QLabel.__init__(self, printSectionTitle)
     font = QFont()
     #font.setCapitalization(QFont.Capitalize)
-    font.setUnderline(True)
+    # font.setUnderline(True)
     font.setItalic(True)
     self.setFont(font)
     self.setAlignment(Qt.AlignCenter)
@@ -1881,6 +1894,32 @@ SectionTitle { border-top: 1px solid #6c6c6c;
                border-top-style: double;
                border-top-color: silver; }"""
     self.setStyleSheet(styleSheet)
+
+    self.section_title = section_title
+    self.section_widgets = [ w for w in section_widgets ]
+    self.collapsed = collapsed
+
+  def mouseReleaseEvent(self, ev):
+    self.changeVisibility()
+
+  def changeVisibility( self ):
+    self.collapsed = not self.collapsed
+    if self.collapsed:
+      printSectionTitle = '<span style="font-size:smaller;">&#9654;</span> ' + self.section_title
+    else:
+      printSectionTitle = '<span style="font-size:smaller;">&#9660;</span> ' + self.section_title
+    self.setText(printSectionTitle)
+    for widget in self.section_widgets:
+      if self.collapsed:
+        action = 'hide'
+        widget.hide()
+      else:
+        action = 'show'
+        widget.show()
+
+  def addSectionWidgets( self, *args ):
+    for w in args:
+      self.section_widgets.append(w)
 
 
 #----------------------------------------------------------------------------

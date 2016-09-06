@@ -8,9 +8,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -25,8 +25,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -128,13 +128,13 @@ def readConfiguration( mainPath, userProfile, homeBrainVISADir ):
         shelltools.cp( commonUserOptionFile, userOptionFile )
       if os.path.exists( commonUserStartupFile ):
         shelltools.cp( commonUserStartupFile, userStartupFile )
-  
+
   if os.path.exists( userOptionFile ):
     exceptions=configuration.load( userOptionFile )
     for exc in exceptions:
       showException(beforeError="Error while reading options from "+userOptionFile+"<br>", afterError="<br>The option will be ignored.", exceptionInfo=exc)
 
-  
+
   equiv31_30 = {
     'R.executable': 'Rexecutable',
     'R.options': 'Roptions',
@@ -149,13 +149,14 @@ def readConfiguration( mainPath, userProfile, homeBrainVISADir ):
     'brainvisa.temporaryDirectory': 'temporaryDirectory',
     'brainvisa.textEditor': 'textEditor',
     'brainvisa.userLevel': 'userLevel',
+    'brainvisa.showParamUserLevel': 'showParamUserLevel',
     'matlab.executable': 'matlabExecutable',
     'matlab.options': 'matlabOptions',
     'matlab.path': 'matlabPath',
     'matlab.startup': 'matlabStartup',
     'matlab.version': 'matlabRelease'
   }
-  
+
   yield ( 'siteOptionFile', siteOptionFile )
   yield ( 'userOptionFile', userOptionFile )
   yield ( 'siteStartupFile', siteStartupFile )
@@ -182,6 +183,7 @@ def convertConfiguration30To31( sourceFileName, destFileName,
     equiv30_31 = {
       'showSplashScreen': None,
       'userLevel': 'brainvisa.userLevel',
+      'showParamUserLevel': 'brainvisa.showParamUserLevel',
       'language': 'brainvisa.language',
       'processesPath': 'brainvisa.processesPath',
       'fileSystemOntologiesPath': None,
@@ -206,10 +208,10 @@ def convertConfiguration30To31( sourceFileName, destFileName,
       'supportEmail': 'brainvisa.support.supportEmail',
       'SMTP_server_name': 'brainvisa.support.smtpServer',
     }
-    
+
     def __init__( self, configuration ):
       self.configuration = configuration
-    
+
     def set( self, name, value ):
       dest = self.equiv30_31.get( name )
       if dest is not None:
@@ -218,12 +220,12 @@ def convertConfiguration30To31( sourceFileName, destFileName,
         for attr in dest[:-1]:
           obj = getattr( obj, attr )
         setattr( obj, dest[ -1 ], obj.signature[ dest[-1] ].type.convertAttribute( obj, dest[ -1 ], value ) )
-    
-    
+
+
     def addDatabaseDirectory( self, directory, hierarchy=None, selected=True ):
       self.configuration.databases.fso.append( DatabasesConfiguration.FileSystemOntology( directory, selected ) ) #DatabasesConfiguration.FileSystemOntology( directory, hierarchy, selected ) )
-    
-    
+
+
     def append( self, name, value ):
       dest = self.equiv30_31.get( name )
       if dest is not None:
@@ -275,7 +277,7 @@ def convertConfiguration30To31( sourceFileName, destFileName,
   configuration.add( 'anatomist',  AnatomistConfiguration() )
   configuration.add( 'R',  RConfiguration() )
   configuration.add( 'matlab', MatlabConfiguration() )
-  
+
   from brainvisa.configuration.neuroConfig import versionNumber
   d = { 'options': Options3_0( configuration ), 'versionNumber': versionNumber }
   try:
