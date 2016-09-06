@@ -46,6 +46,11 @@ import six
 
 if sys.version_info[0] >= 3:
     unicode = str
+    def next(iterator):
+        return iterator.__next__()
+else:
+    def next(iterator):
+        return iterator.next()
 
 #-------------------------------------------------------------------------------
 class DataType( object ):
@@ -590,7 +595,7 @@ class Signature( DataType ):
     args, kwargs = DataType.__getinitkwargs__( self )
     args = []
     it = six.iteritems(self)
-    six.next(it) # skip signature
+    next(it) # skip signature
     for name, type in it:
       args.append( name )
       args.append( type )
@@ -601,7 +606,7 @@ class Signature( DataType ):
     args, kwargs = DataType.__getinitkwargs__( self )
     args = []
     it = six.iteritems(self)
-    six.next(it) # skip signature
+    next(it) # skip signature
     for name, item in it:
       args.append( name )
       args.append( item.copy() )
@@ -611,7 +616,7 @@ class Signature( DataType ):
   def __repr__( self ):
     result = self.name + '( '
     it = six.itervalues(self)
-    six.next(it)
+    next(it)
     for item in it:
       result += repr( item.name ) + ', ' + repr( item.type ) +', '
       args, kwargs = item.__getinitkwargs__()
@@ -705,7 +710,7 @@ class HasSignature( ObservableAttributes ):
     """
     # Copy the dictionary to allow modification
     it = six.iteritems(self.signature)
-    six.next(it)
+    next(it)
     for attributeName, signatureItem in it:
       value = attributesValues.pop( attributeName, Undefined )
       if value is Undefined:
@@ -714,7 +719,7 @@ class HasSignature( ObservableAttributes ):
         setattr( self, attributeName, value )
     if attributesValues:
       raise TypeError( _( "Attribute '%s' is not in the signature" ) % \
-                            (six.next(six.iterkeys(attributesValues)), ) )
+                            (next(six.iterkeys(attributesValues)), ) )
   
   
   def __getattribute__( self, name ):
