@@ -31,7 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-
+from __future__ import print_function
 from brainvisa.configuration import neuroConfig
 from brainvisa.data import neuroHierarchy
 from brainvisa.data.neuroDiskItems import getDiskItemType, isSameDiskItemType, DiskItem
@@ -108,15 +108,15 @@ class DatabasesTransformationManager( object ):
     for path in paths:
       try:
         yield [ neuroHierarchy.databases.getDiskItemFromUuid( i[0] ) for i in path ]
-      except neuroHierarchy.DatabaseError, e:
-        print e
-        print '  no transformation corresponds to this uuid: %s, used in a ' \
+      except neuroHierarchy.DatabaseError as e:
+        print(e)
+        print('  no transformation corresponds to this uuid: %s, used in a ' \
           'possible path to link refs %s (%s) and %s (%s)' % \
           ( i[0], source_referential,
           neuroHierarchy.databases.getDiskItemFromUuid( source_referential ),
           destination_referential,
           neuroHierarchy.databases.getDiskItemFromUuid(
-            destination_referential ) )
+            destination_referential ) ))
 
 
   def setReferentialTo( self, diskItem, referential ):
@@ -216,10 +216,10 @@ class DatabasesTransformationManager( object ):
                 tdi = self.transformation( path[ 0 ][ 0 ] )
               if tdi:
                 trm = open( tdi.fullPath(), 'w' )
-                print >> trm, tr[3], tr[7], tr[11]
-                print >> trm, tr[0], tr[1], tr[2]
-                print >> trm, tr[4], tr[5], tr[6]
-                print >> trm, tr[8], tr[9], tr[10]
+                print(tr[3], tr[7], tr[11], file=trm)
+                print(tr[0], tr[1], tr[2], file=trm)
+                print(tr[4], tr[5], tr[6], file=trm)
+                print(tr[8], tr[9], tr[10], file=trm)
                 trm.close()
     return referential
 

@@ -963,7 +963,7 @@ def initGlobalVariables():
   docPath = os.path.join( docPath, language )
   if _t_ is _defaultTranslateFunction:
     if sys.version_info[0] < 3:
-        buildins = __builtin__
+        builtins = __builtin__
     try:
       builtins.__dict__['_t_'] = Translator(language).translate
     except Exception as msg:

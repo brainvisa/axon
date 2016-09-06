@@ -31,6 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import print_function
 import brainvisa.processes
 from datetime import date
 from datetime import datetime
@@ -152,14 +153,14 @@ def startShell():
         a.launched = False
         a._restartshell_launched = True
   except Exception, e:
-    print e
+    print(e)
   mainThreadActions().push( qApp.exit )
 
 
 #----------------------------------------------------------------------------
 def quitRequest():
   # Called when quitting brainvisa using quit menu or closing the main window
-  # print '!!!!!!!!!quitRequest!!!!!!!!'
+  # print('!!!!!!!!!quitRequest!!!!!!!!')
   a = QMessageBox.warning( None, _t_('Quit'),_t_( 'Do you really want to quit BrainVISA ?' ), QMessageBox.Yes | QMessageBox.Default, QMessageBox.No )
   if a == QMessageBox.Yes:
     wids = qApp.topLevelWidgets()
@@ -262,9 +263,9 @@ def runCsvViewer( source, existingWidget=None ):
             env.update(neuroConfig.brainvisaSysEnv.getVariables())
         if os.spawnle( os.P_NOWAIT, browser, browser, source, env ) > 0:
           return
-  except Exception, e:
-    print 'exception.'
-    print e
+  except Exception as e:
+    print('exception.')
+    print(e)
     pass
 
   # builtin browser, needs GenericTableEditor from datamind
@@ -282,7 +283,6 @@ def runCsvViewer( source, existingWidget=None ):
     pass
   # fallback to text editor
   textEditor = configuration.brainvisa.textEditor
-  print textEditor
   if textEditor is not None:
     textEditor = distutils.spawn.find_executable( textEditor )
     if textEditor:
@@ -364,7 +364,7 @@ class SomaWorkflowWidget(ComputingResourceWidget):
                                     parent=_mainWindow)
       view.setAttribute( QtCore.Qt.WA_DeleteOnClose )
       QtGui.QApplication.restoreOverrideCursor()
-    except Exception, e:
+    except Exception as e:
       QtGui.QApplication.restoreOverrideCursor()
       raise e
 
@@ -628,27 +628,27 @@ class SomaWorkflowProcessView(QMainWindow):
       return
     if checked and self.process_view == None:
       if self.process == None:
-        #print "before unserialize"
+        #print("before unserialize")
         QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
         #self.ui.statusbar.showMessage("Unserialize...")
         try:
           self.process = brainvisa.processes.getProcessInstance(self.serialized_process)
           QtGui.QApplication.restoreOverrideCursor()
-        except Exception, e:
+        except Exception as e:
           #self.ui.statusbar.clearMessage()
           QtGui.QApplication.restoreOverrideCursor()
           raise e
         else:
           #self.ui.statusbar.clearMessage()
           QtGui.QApplication.restoreOverrideCursor()
-        #print "after unserialize"
-      #print "before process view creation"
+        #print("after unserialize")
+      #print("before process view creation")
       QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
       #self.ui.statusbar.showMessage("Building the process view...")
       try:
         self.process_view = ProcessView(self.process, parent=self, read_only=True)
         QtGui.QApplication.restoreOverrideCursor()
-      except Exception, e:
+      except Exception as e:
         #self.ui.statusbar.clearMessage()
         QtGui.QApplication.restoreOverrideCursor()
         raise e
@@ -659,7 +659,7 @@ class SomaWorkflowProcessView(QMainWindow):
       self.process_view.info.hide()
       self.process_view.eTreeWidget.setOrientation(Qt.Vertical)
       self.process_layout.addWidget(self.process_view)
-      #print "After process view creation"
+      #print("After process view creation")
       self.ui.dock_bv_process.toggleViewAction().toggled.disconnect(self.show_process)
 
       process_button_layout = QtGui.QHBoxLayout()
@@ -896,7 +896,7 @@ class HTMLBrowser( QWidget ):
           bvp = bvp[ : -1 ]
         proc = brainvisa.processes.getProcess( bvp )
         if proc is None:
-          print 'No process of name', bvp
+          print('No process of name', bvp)
         else:
           win = ProcessView( proc() )
           win.show()
@@ -1461,7 +1461,7 @@ class ParameterLabel( QLabel ):
 
     self.setlock(self.lock_id.isChecked()) #on remet a jour en fonction du resultat du unlock du fichier
     txt = self.paramLabelText(self.default_id.isChecked(), self.lock_id.isChecked())
-    #print " ParameterLabel : lockChanged self.lock_id.isChecked() a false val de self.text() : " + self.text()
+    #print(" ParameterLabel : lockChanged self.lock_id.isChecked() a false val de self.text() : " + self.text())
 
     txt_value_parameter = self.readText(self.text())
     while (self.readText(txt_value_parameter) != txt_value_parameter) :
@@ -1486,7 +1486,7 @@ class ParameterLabel( QLabel ):
 
 
   def defaultChanged( self, checked=False ):
-    # print "-- FUNCTION defaultChanged : neuroProcessesGUI / ParameterLabel --", checked
+    # print("-- FUNCTION defaultChanged : neuroProcessesGUI / ParameterLabel --", checked)
     self.emit( SIGNAL( 'toggleDefault' ), self.parameterName )
 
     txt = self.paramLabelText(self.default_id.isChecked(), self.lock_id.isChecked())
@@ -1501,7 +1501,7 @@ class ParameterLabel( QLabel ):
 
 
   def setDefault( self, default ):
-    # print "-- FUNCTION setDefault : neuroProcessesGUI / ParameterLabel --"
+    # print("-- FUNCTION setDefault : neuroProcessesGUI / ParameterLabel --")
     self.default_id.setChecked( default )
 
     #self.lockChanged()
@@ -1776,7 +1776,7 @@ class ParameterizedWidget( QWidget ):
 
   def _lock_system( self, name ):
       """function for lock system : lock a diskItem if the file exists"""
-      #print "-- FUNCTION _lock_system  : neuroProcessesGUI / ParameterizedWidget-- "
+      #print("-- FUNCTION _lock_system  : neuroProcessesGUI / ParameterizedWidget-- ")
       #value = self.parameterized.__getattribute__(name)
       value = getattr(self.parameterized, name, None)
 
@@ -1788,7 +1788,7 @@ class ParameterizedWidget( QWidget ):
 
   def _unlock_system( self, name ):
       """function for lock system : unlock a file"""
-      #print "-- FUNCTION _unlock_system : neuroProcessesGUI / ParameterizedWidget-- "
+      #print("-- FUNCTION _unlock_system : neuroProcessesGUI / ParameterizedWidget-- ")
       #value = self.parameterized.__getattribute__(name)
       value = getattr(self.parameterized, name, None)
       if value is not None :
@@ -1798,7 +1798,7 @@ class ParameterizedWidget( QWidget ):
   def _setlock_system( self, name ):
       """function for lock system : lock a diskItem if the file exists"""
       #from brainvisa.data.neuroDiskItems import DiskItem
-      #print "-- FUNCTION _setlock_system : neuroProcessesGUI / ParameterizedWidget-- "
+      #print("-- FUNCTION _setlock_system : neuroProcessesGUI / ParameterizedWidget-- ")
       #value = self.parameterized.__getattribute__(name)
       value = getattr(self.parameterized, name, None)
 
@@ -2477,21 +2477,21 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       files = dialog.selectedDiskItems()
       if files:
         if setLock:
-          print 'Locking...'
+          print('Locking...')
           for f in files:
             try:
               f.lockData()
             except IOError:
               pass # probably not writeable
-          print 'done.'
+          print('done.')
         else:
-          print 'Unlocking...'
+          print('Unlocking...')
           for f in files:
             try:
               f.unlockData()
             except IOError:
               pass
-          print 'done.'
+          print('done.')
 
   def menuLockAllFiles( self ):
     self._changeAllLockedFiles( self.process, True )
@@ -2723,7 +2723,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
             if uuid:
               builtin_db.append(uuid)
             else:
-              print "warning ! db " + repr(db_setting.directory) + " has no uuid."
+              print("warning ! db " + repr(db_setting.directory) + " has no uuid.")
 
       ptowf = ProcessToSomaWorkflow(
         self.process,
@@ -2834,7 +2834,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     try:
       self._startProcess( self.process, executionFunction )
       self._running = True
-    except Exception, e:
+    except Exception as e:
       self._lastProcessRaisedException = e
       neuroException.showException()
 
@@ -3136,7 +3136,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
             if uuid:
               builtin_db.append(uuid)
             else:
-              print "warning ! db " + repr(db_setting.directory) + " has no uuid."
+              print("warning ! db " + repr(db_setting.directory) + " has no uuid.")
 
       ptowf = ProcessToSomaWorkflow(
         self.process,
@@ -3817,7 +3817,7 @@ class ProcessSelectionWidget( QMainWindow ):
     else:
       processId=self.currentProcessId
     self.currentProcess=brainvisa.processes.getProcessInstance(processId)
-    #print "iterate process", processId
+    #print("iterate process", processId)
     self._iterationDialog = IterationDialog( self, self.currentProcess, self )
     self.connect( self._iterationDialog, SIGNAL( 'accept' ),
                   self._iterateAccept )
@@ -4058,7 +4058,7 @@ class ProcessTreesWidget(QSplitter):
     New ProcessTree list must be saved in a minf file.
     If change is insertion of a new item in a tree, registers listeners on this new item.
     """
-    #print "model changed", action, "write to minf file processTrees.minf"
+    #print("model changed", action, "write to minf file processTrees.minf")
     if action==ObservableList.INSERT_ACTION:
       for item in items:
         # on insertion in a tree, listen changes of the new element
