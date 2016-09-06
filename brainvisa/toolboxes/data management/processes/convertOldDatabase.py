@@ -120,7 +120,7 @@ def execution( self, context ):
         context.write("* Process database with ", str(processor.__class__))
         try:
             processor.process(debug=True)
-        except Exception, e:
+        except Exception as e:
             context.error("Errors during processing : "+str(e))
         context.write("* Generate undo scripts in database directory.")
         processor.generateUndoScripts()

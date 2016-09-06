@@ -65,7 +65,7 @@ def execution( self, context ):
     context.write("run actions")
     try:
       checker.process(debug=True)
-    except Exception, e:
+    except Exception as e:
       context.error("Errors during conversion : "+str(e))
   elif dialogRes==2:
     res=checker

@@ -38,6 +38,7 @@
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
+from __future__ import print_function
 __docformat__ = "epytext en"
 
 from brainvisa.processing.qtgui import backwardCompatibleQt as qt
@@ -62,7 +63,7 @@ class UpdateDatabasesGUI( qt.QWidget ):
       try:
         database=neuroHierarchy.databases.database(dbs.directory)
       except:
-        print 'PROBLEM: database', dbs.directory, 'is missing'
+        print('PROBLEM: database', dbs.directory, 'is missing')
         continue
       selected=not dbs.builtin
       item = qt.QListWidgetItem( database.name, self.lvDatabases )
@@ -152,7 +153,7 @@ def warnUserAboutDatabasesToUpdate():
     if _ontologiesModificationDialog is None or _ontologiesModificationDialog.info is None:
       _ontologiesModificationDialog = neuroProcessesGUI.ProcessView( brainvisa.processes.getProcessInstance( 'updateDatabases' ) )
       if _ontologiesModificationDialog is None:
-        print 'updateDatabases process cannot be found.'
+        print('updateDatabases process cannot be found.')
         return
       _ontologiesModificationDialog.labName.setText( '<html><body><font color=red>' + _t_( 'Some ontologies (i.e. databases organization) have been modified but are used by currently selected databases. To take this modification into account, it is necessary to update the databases selected below. Please click on the "Update" button below.' ) +'</font></body></html>' )
       from soma.qt_gui.qt_backend import QtCore
