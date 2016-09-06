@@ -36,6 +36,7 @@
 This is the main module of BrainVISA. It is executed by ``brainvisa`` command to start the software.
 It loads a lot of other modules and initializes BrainVISA application according to the options given at startup. 
 """
+from __future__ import print_function
 __docformat__ = 'restructuredtext en'
 
 import sys, os, signal, atexit, time
@@ -158,11 +159,11 @@ def main():
       else:
         toUpdate = [i for i in neuroHierarchy.databases.iterDatabases() if getattr( i, '_mustBeUpdated', False )]
         if toUpdate:
-          print >> sys.stderr, _t_( 'WARNING' )+':', _t_( 'Some ontologies (i.e. databases organization) have been modified but are used by currently selected databases. To take this modification into account, it is necessary to update the following databases:' )
+          print(_t_( 'WARNING' )+':', _t_( 'Some ontologies (i.e. databases organization) have been modified but are used by currently selected databases. To take this modification into account, it is necessary to update the following databases:' ), file=sys.stderr)
           for i in toUpdate:
-            print >> sys.stderr, ' ', i.name
+            print(' ', i.name, file=sys.stderr)
         if ( nbDatabases == 0 and getattr( neuroConfig, 'databasesWarning', False ) ):
-          print >> sys.stderr, _t_( 'WARNING' )+':', _t_( 'You have not selected any database yet. It is strongly advisable to use a database to process data with BrainVISA. Indeed, some important features are not available where you are using data outside a database. To add a new database, go to databases tab in the preferences window and click on the add button.' )
+          print(_t_( 'WARNING' )+':', _t_( 'You have not selected any database yet. It is strongly advisable to use a database to process data with BrainVISA. Indeed, some important features are not available where you are using data outside a database. To add a new database, go to databases tab in the preferences window and click on the add button.' ), file=sys.stderr)
   except:
     raise
     showException()
@@ -266,7 +267,7 @@ if neuroConfig.gui:
     import IPython
     if [ int(x) for x in IPython.__version__.split('.')[:2] ] >= [ 0, 11 ]:
       # ipython >= 0.11, use client/server mode
-      print 'running shell...'
+      print('running shell...')
       neuroConfig.shell = False
       QTimer.singleShot( 0, startConsoleShell )
   if not neuroConfig.shell:
@@ -313,7 +314,7 @@ if neuroConfig.shell:
       ipshell.mainloop( sys_exit=1 )
       cleanupGui()
   except ImportError:
-    print >> sys.stderr, 'IPython not found - Shell mode disabled'
+    print('IPython not found - Shell mode disabled', file=sys.stderr)
     neuroConfig.shell = 0
 
 while len( ipsubprocs ) != 0:

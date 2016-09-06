@@ -50,6 +50,11 @@ from brainvisa.processing import neuroException, neuroLog
 # used to do: import many things here...
 from brainvisa.processes import *
 import six
+if sys.version_info[0] >= 3:
+    def execfile(filename, global_vars=globals(), local_vars=locals()):
+        with open(filename) as f:
+            code = compile(f.read(), filename, 'exec')
+            exec(code, global_vars, local_vars)
 
 _count = 0
 

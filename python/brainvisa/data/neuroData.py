@@ -73,6 +73,7 @@ import sys
 import six
 if sys.version_info[0] >= 3:
     from collections import UserDict, UserList
+    unicode = str
 else:
     from UserDict import UserDict
     from UserList import UserList
@@ -341,7 +342,7 @@ class Choice( Parameter ):
     if not args: args = [ ( '', None) ]
     values = []
     for p in args:
-      if type( p ) in ( types.TupleType, types.ListType ) and len( p ) == 2:
+      if type(p) in (tuple, list) and len(p) == 2:
         values.append( ( unicode( p[0] ), p[1] ) )
       else:
         values.append( ( unicode( p ), p ) )
@@ -666,8 +667,8 @@ class ListOf( Parameter ):
     An exception is raised if these conditions are not met.
     '''
     Parameter.checkValue( self, name, value )
-    
-    if ( not value is None ) and ( type( value ) in ( types.ListType, types.TupleType ) ):
+
+    if (not value is None) and (type(value) in (list, tuple)):
       for listvalue in value :
         if not self._allowNone or listvalue is not None:
           self.contentType.checkValue( name, listvalue )
@@ -681,7 +682,7 @@ class ListOf( Parameter ):
     """
     if value is None:
       return []
-    elif type( value ) in ( types.ListType, types.TupleType ):
+    elif type(value) in (list, tuple):
       if self._allowNone:
         values = []
         for val in value:

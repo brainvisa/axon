@@ -47,11 +47,12 @@ import sys, os, traceback, formatter
 from brainvisa.configuration.neuroConfig import *
 from brainvisa.configuration import neuroConfig
 from soma.html import htmlEscape
+import six
 if sys.version_info[0] >= 3:
-    from html import parser as html_parser
+    from html.parser import HTMLParser
     unicode = str
 else:
-    from htmllib import HTMLParser as html_parser
+    from htmllib import HTMLParser
 
 class HTMLMessage:
   """
@@ -115,7 +116,7 @@ def exceptionMessageHTML( exceptionInfo, beforeError='', afterError='' ):
             enco = sys.getdefaultencoding()
             if not enco:
               enco = 'utf8'
-          txt="<b>"+htmlEscape( str(v).decode(enco, 'replace') )+"</b>"
+          txt="<b>"+htmlEscape( six.u(v) )+"</b>"
   msg = '<table border=0><tr><td width=50><img alt="' + _t_('ERROR') + '" src="' \
     + os.path.join( neuroConfig.iconPath, 'error.png' ) + '"></td><td><font color=red> ' \
     + beforeError \
@@ -216,7 +217,7 @@ def showException( beforeError='', afterError='', parent = None,
               parent=parent )
         mainThreadActions().push( w.show )
     else:
-      html_parser( formatter.AbstractFormatter(
+      HTMLParser( formatter.AbstractFormatter(
         formatter.DumbWriter( sys.stdout, 80 ) ) )\
         .feed( messageHTML + '<hr>' + detailHTML ) 
   except Exception as e:
@@ -254,7 +255,7 @@ def showWarning( message, parent = None, gui=None):
               parent=parent )
         mainThreadActions().push( w.show )
     else:
-      html_parser( formatter.AbstractFormatter(
+      HTMLParser( formatter.AbstractFormatter(
         formatter.DumbWriter( sys.stdout, 80 ) ) )\
         .feed( messageHTML + '<hr>' + "" ) 
   except Exception as e:

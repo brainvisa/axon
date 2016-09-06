@@ -220,13 +220,13 @@ from soma import safemkdir
 from soma.qtgui.api import QtThreadCall, FakeQtThreadCall
 
 if sys.version_info[0] >= 3:
-    from html import parser as html_parser
+    from html.parser import HTMLParser
     getcwdu = os.getcwd
     def items(thing):
         return list(thing.items())
     StringTypes = (str, )
 else:
-    from htmllib import HTMLParser as html_parser
+    from htmllib import HTMLParser
     from os import getcwdu
     def items(thing):
         return thing.items()
@@ -3406,8 +3406,8 @@ class ExecutionContext(object):
 
     def _write(self, html):
         if not hasattr(self, '_writeHTMLParser'):
-            self._writeHTMLParser = html_parser(formatter.AbstractFormatter(
-                                                       formatter.DumbWriter(sys.stdout, 80)))
+            self._writeHTMLParser = HTMLParser(formatter.AbstractFormatter(
+                                                  formatter.DumbWriter(sys.stdout, 80)))
         self._writeHTMLParser.feed(html + '<br>\n')
 
     def warning(self, *messages):
