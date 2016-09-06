@@ -38,6 +38,7 @@
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
+from __future__ import print_function
 __docformat__ = "epytext en"
 
 import sys, os, time
@@ -56,6 +57,7 @@ except Exception:
 from soma.configuration import Configuration
 from soma.translation import translate as _
 from brainvisa import shelltools
+import six
 
 
 
@@ -160,7 +162,7 @@ def readConfiguration( mainPath, userProfile, homeBrainVISADir ):
   yield ( 'userOptionFile', userOptionFile )
   yield ( 'siteStartupFile', siteStartupFile )
   yield ( 'userStartupFile', userStartupFile )
-  for newKey, oldKey in equiv31_30.iteritems():
+  for newKey, oldKey in six.iteritems(equiv31_30):
     value = configuration
     for attr in newKey.split( '.' ):
       value = getattr( value, attr )
@@ -282,14 +284,14 @@ def convertConfiguration30To31( sourceFileName, destFileName,
     execfile( sourceFileName, d, d )
   except:
     import traceback
-    print >> sys.stderr, _( 'Cannot execute "%s":' % sourceFileName )
+    print(_( 'Cannot execute "%s":' % sourceFileName ), file=sys.stderr)
     traceback.print_exc()
     return
   try:
     configuration.save( destFileName )
   except:
-    print >> sys.stderr, _( 'Cannot convert "%(old)s" to "%(new)s"' % {
-                          'old': sourceFileName, 'new': destFileName } )
+    print(_( 'Cannot convert "%(old)s" to "%(new)s"' % {
+              'old': sourceFileName, 'new': destFileName } ), file=sys.stderr)
     #raise
   convertStartupCode30to31( sourceFileName, startupfileName )
 
@@ -300,22 +302,22 @@ def setSPM99Compatibility( values ):
   aimsrc = os.path.join( neuroConfig.homedir, '.aimsrc' )
   if values.SPM99_compatibility or ( not values.radiological_orientation ) or os.path.exists( aimsrc ):
     aimsrc = open( aimsrc, 'w' )
-    print >> aimsrc, "attributes = {\n  '__syntax__' : 'aims_settings',"
+    print("attributes = {\n  '__syntax__' : 'aims_settings',", file=aimsrc)
     if values.SPM99_compatibility:
-      print >> aimsrc, "  'spm_input_spm2_normalization' : 0,\n" \
-                       "  'spm_output_spm2_normalization' : 0,\n" \
-                       "  'spm_output_4d_volumes' : 0,\n" \
-                       "  'nifti_output_4d_volumes' : 0,"
+      print("  'spm_input_spm2_normalization' : 0,\n" \
+            "  'spm_output_spm2_normalization' : 0,\n" \
+            "  'spm_output_4d_volumes' : 0,\n" \
+            "  'nifti_output_4d_volumes' : 0,", file=aimsrc)
     else:
-      print >> aimsrc, "  'spm_input_spm2_normalization' : 1,\n" \
-                      "  'spm_output_spm2_normalization' : 1,\n" \
-                      "  'spm_output_4d_volumes' : 1,\n" \
-                      "  'nifti_output_4d_volumes' : 1,"
+      print("  'spm_input_spm2_normalization' : 1,\n" \
+            "  'spm_output_spm2_normalization' : 1,\n" \
+            "  'spm_output_4d_volumes' : 1,\n" \
+            "  'nifti_output_4d_volumes' : 1,", file=aimsrc)
     if values.radiological_orientation:
-      print >> aimsrc, "  'spm_input_radio_convention' : 1,\n" \
-                       "  'spm_output_radio_convention' : 1,"
+      print("  'spm_input_radio_convention' : 1,\n" \
+            "  'spm_output_radio_convention' : 1,", file=aimsrc)
     else:
-      print >> aimsrc, "  'spm_input_radio_convention' : 0,\n" \
-                       "  'spm_output_radio_convention' : 0,"
-    print >> aimsrc, "}"
+      print("  'spm_input_radio_convention' : 0,\n" \
+            "  'spm_output_radio_convention' : 0,", file=aimsrc)
+    print("}", file=aimsrc)
     aimsrc.close()

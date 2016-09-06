@@ -48,6 +48,7 @@ The function :py:func:`hierarchies` enables to get the list of databases objects
 
 """
 
+from __future__ import print_function
 import os
 
 from brainvisa.data.sqlFSODatabase import SQLDatabase, SQLDatabases, DatabaseError, databaseVersion, databaseVersions
@@ -99,7 +100,7 @@ def openDatabases():
             Pyro.config.PYRO_STDLOGGING = 1
             from soma.pyro import ThreadSafeProxy
             uri = Pyro.core.PyroURI( open( remoteAccessURI ).read() )
-            print 'Database', dbSettings.directory, 'is remotely accessed from', uri.protocol+'://'+uri.address+':'+str(uri.port) #str( uri )
+            print('Database', dbSettings.directory, 'is remotely accessed from', uri.protocol+'://'+uri.address+':'+str(uri.port))
             base = ThreadSafeProxy( uri.getAttrProxy() )
             newDatabases.append( base )
           else:
@@ -151,8 +152,8 @@ def update_soma_workflow_translations():
     for db in databases.iterDatabases():
       uuid = getattr( db, 'uuid', None )
       if uuid:
-        print >> translation_file, uuid, db.name
+        print(uuid, db.name, file=translation_file)
       else:
-        print "warning: " + repr(db.name) + " has no uuid"
+        print("warning: " + repr(db.name) + " has no uuid")
     translation_file.close()   
 

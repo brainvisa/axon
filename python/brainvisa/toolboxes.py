@@ -30,6 +30,7 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+from __future__ import print_function
 import brainvisa.processes
 import os, traceback
 from soma.minf.api import readMinf, minfFormat
@@ -137,7 +138,7 @@ _toolboxes = {}
   
 
 def addToolbox(name, dir):
-    print 'Loading toolbox', name
+    print('Loading toolbox', name)
     _toolboxes[ name ] = Toolbox( name, dir)
     return _toolboxes[ name ]
 
@@ -156,7 +157,7 @@ def readToolboxes( toolboxesDir, homeBrainVISADir ):
       addToolbox(name, os.path.join( toolboxesDir, name ) )
     except:
       traceback.print_exc() 
-  print 'Loading toolbox', 'My processes'
+  print('Loading toolbox', 'My processes')
   _toolboxes[ 'My processes' ] = Toolbox( 'My processes', toolboxDirectory= homeBrainVISADir )
 
 
