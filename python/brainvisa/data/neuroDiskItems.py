@@ -102,7 +102,6 @@ from __future__ import print_function
 import types, sys, os, errno, stat, operator, time, traceback
 from weakref import ref, WeakValueDictionary
 import six
-from six.moves import UserList
 from threading import RLock
 import json
 
@@ -126,6 +125,9 @@ import re
 
 if sys.version_info[0] >= 3:
     basestring = str
+    from collections import UserList
+else:
+    from UserList import UserList
 
 
 #----------------------------------------------------------------------------
