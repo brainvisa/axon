@@ -576,6 +576,7 @@ class SQLDatabase( Database ):
             except Exception as e:
               print('!!ERROR!! SQLDatabase: getFormat failed:', format.name)
               print('Database', directory, 'will not be complete and fully working !')
+              continue
             if formatName not in typeFormats:
               typeFormats.append( formatName )
         for a in rule.declared_attributes:
