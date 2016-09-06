@@ -31,6 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import print_function
 import os, shutil, re
 import  brainvisa.processes
 from brainvisa import registration
@@ -81,26 +82,26 @@ class FileProcess:
         for f in content:
           if  self.pattern.match(f):
             #if debug:
-              #print "-- ", self.action.tooltip, str(self.action), " pattern:"+self.pattern.pattern+" [ ", os.path.join(self.file, f)," ]"
+              #print("-- ", self.action.tooltip, str(self.action), " pattern:"+self.pattern.pattern+" [ ", os.path.join(self.file, f)," ]")
             if self.action.doit(os.path.join(self.file, f), debug=debug, context=context):
               self.files.append(f)
     elif self.diskItem: # a diskitem can represent several files
       self.action.initialize()
       if isinstance(self.action, CallProcess) or isinstance(self.action, SetTransformationInfo): # a process can use directly the diskitem, no use to call it for every file
         #if debug:
-          #print "-- ", self.action.tooltip, str(self.action), " [ ", self.file," ]"
+          #print("-- ", self.action.tooltip, str(self.action), " [ ", self.file," ]")
         if self.action.doit(self.file, debug=debug, context=context):
           self.files.append(self.file)
       else:
         for f in self.diskItem.existingFiles():
           #if debug:
-            #print "-- ", self.action.tooltip, str(self.action), " [ ", f," ]"
+            #print("-- ", self.action.tooltip, str(self.action), " [ ", f," ]")
           if self.action.doit(f, debug=debug, context=context):
             self.files.append(f)
     else:
       self.action.initialize()
       #if debug:
-        #print "-- ", self.action.tooltip, str(self.action), " [ ", self.file," ]"
+        #print("-- ", self.action.tooltip, str(self.action), " [ ", self.file," ]")
       if not self.action.doit(self.file, debug=debug, context=context):
         self.file=None
   
@@ -201,7 +202,7 @@ class Move(Action):
       os.mkdir(d)
     
   def doit(self, src, debug=False, context=None):
-    #print str(self)
+    #print(str(self))
     ret=True
     if self.patternSrc:
       match=self.patternSrc.match(os.path.basename(src))
@@ -213,7 +214,7 @@ class Move(Action):
       if context is None:
         context=brainvisa.processes.defaultContext()
       context.write("-- ", self.tooltip,  src, " -> ", dest)
-    #print "move", src, "->",  dest
+    #print("move", src, "->",  dest)
     # exception for graphs : must use AimsGraphConvert to copy .data with the graph
     if src[-4:]==".arg":
       os.system("AimsGraphConvert -i '"+src+"' -o '"+dest+"'")
@@ -240,7 +241,7 @@ class Move(Action):
     if dest[-4:]==".arg":
       undo="os.system(\"AimsGraphConvert -i '"+dest+"' -o '"+src+"'\")\n"+"os.remove('"+dest+"')\n"
     else:
-      undo="if not os.path.exists('"+dest+"'): print '!Warning MOVE : source "+dest+" do not exist, not moved to "+src+".'\n"+\
+      undo="if not os.path.exists('"+dest+"'): print('!Warning MOVE : source "+dest+" do not exist, not moved to "+src+".')\n"+\
       "else: shutil.move('"+dest+"','"+src+"')\n"
     return undo
   
@@ -268,7 +269,7 @@ class Remove(Move):
     src: directory in trash where to put files to remove
     """
     super(Remove, self).__init__(os.path.join("trash", srcDir))
-    #print "Remove ", src, " in ", self.dest
+    #print("Remove ", src, " in ", self.dest)
     
 ################################### 
 ## terminer de remplacer avec FileProcess pour pouvoir remplacer une action par une autre...
@@ -283,7 +284,7 @@ class Mkdir(Action):
       if context is None:
         context=brainvisa.processes.defaultContext()
       context.write("-- ", self.tooltip, newDir)
-    #print str(self)
+    #print(str(self))
     os.mkdir(newDir)
     return True
     
@@ -313,7 +314,7 @@ class CallProcess(Action):
       brainvisa.processes.defaultContext()
     try:
       context.runProcess(self.processName, *args, **kwargs)
-    except Exception, e:
+    except Exception as e:
       context.warning("Error while executing "+self.processName+" : "+unicode(e.message))
     return True
     

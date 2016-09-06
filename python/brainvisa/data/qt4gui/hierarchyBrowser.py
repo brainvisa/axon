@@ -30,6 +30,8 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+
+from __future__ import print_function
 from brainvisa.processing.qtgui.backwardCompatibleQt import QWidget, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QIcon, QHBoxLayout, QVBoxLayout, QTextEdit, QSpacerItem, QSizePolicy, QSize, QPushButton, SIGNAL, qApp, QMenu, QCursor, QDrag, QPixmap, QMimeData, Qt, QMessageBox, QPoint, QApplication, QUrl, QSplitter, QBrush, QColor
 import os
 
@@ -194,7 +196,7 @@ class HierarchyBrowser( QWidget ):
             # scan database to fill the listview
             gen=db.scanDatabaseDirectories( directoriesToScan=( dbItem.path,), recursion=False, includeUnknowns=True )
             for item in gen:
-              #print '!openItem! -->', item
+              #print('!openItem! -->', item)
               if self.stop_scanning:
                 break
               # create or retrieve items for directories in the item's path
@@ -205,7 +207,7 @@ class HierarchyBrowser( QWidget ):
               if path.startswith( dbItem.path ):
                 path = path[ len( dbItem.path ) + 1: ]
               splitted = brainvisa.processes.pathsplit( path )
-              #print '!openItem!   splitted =', splitted
+              #print('!openItem!   splitted =', splitted)
               parentDir=dbItem
               for directory in splitted[ :-1 ]:
                 dirItem=self.searchItem(parentDir, directory)
@@ -414,7 +416,7 @@ class HierarchyBrowser( QWidget ):
           # params : Cortical folds graph, Cortex skeleton, commissure coordinates, transform raw T1 MRI to talairach-AC/PC-anatomist
           try:
             brainvisa.processes.defaultContext().runProcess(self.graphConverter, item.diskItem)
-          except Exception, e:
+          except Exception as e:
               brainvisa.processes.defaultContext().error("Error during graph conversion : "+str(e))
       
     def convertCondition(self, item):
@@ -425,7 +427,7 @@ class HierarchyBrowser( QWidget ):
       for item in items:
         if item.diskItem:
           bvproc_uuid=item.diskItem.get("lastHistoricalEvent", None)
-          #print '!menuHistoryEvent : type item.diskitem ', type(item.diskItem) #<class 'brainvisa.data.neuroDiskItems.File'>
+          #print('!menuHistoryEvent : type item.diskitem ', type(item.diskItem)) #<class 'brainvisa.data.neuroDiskItems.File'>
           if bvproc_uuid is not None:
             history_window=DataHistoryWindow(item.diskItem, bvproc_uuid, parent=self)
             history_window.setAttribute( Qt.WA_DeleteOnClose )
@@ -542,21 +544,21 @@ class HierarchyBrowser( QWidget ):
         ditems = dialog.selectedDiskItems()
         if ditems:
           if setLock:
-            print 'Locking...'
+            print('Locking...')
             for f in ditems:
               try:
                 f.lockData()
               except IOError:
                 pass # probably not writeable
-            print 'done.'
+            print('done.')
           else:
-            print 'Unlocking...'
+            print('Unlocking...')
             for f in ditems:
               try:
                 f.unlockData()
               except IOError:
                 pass
-            print 'done.'
+            print('done.')
         self._updateSelectedItemsChildren()
 
 
@@ -595,7 +597,7 @@ class HierarchyBrowser( QWidget ):
         #sitem.setDragEnabled(True)
 
     def itemSelected( self, item ):
-      #print "!hierarchyBrowser ! : itemSelected "
+      #print("!hierarchyBrowser ! : itemSelected ")
       if item is not None and item.diskItem is not None:
         t = DiskItemBrowser.diskItemDisplayText(item.diskItem)
         self.textEditArea.setHtml( t )
@@ -604,7 +606,7 @@ class HierarchyBrowser( QWidget ):
 
     #------ Drag&Drop ------
     def mousePressEvent(self, event):
-      #print "!hierarchyBrowser ! : mousePressEvent "
+      #print("!hierarchyBrowser ! : mousePressEvent ")
       if (event.button() == Qt.LeftButton):
         self.dragStartPosition = QPoint(event.pos())
       QTreeWidget.mousePressEvent(self.lstHierarchy, event)
