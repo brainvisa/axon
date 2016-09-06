@@ -39,6 +39,7 @@
 from __future__ import print_function
 import brainvisa.axon
 import atexit, os
+import sys
 from brainvisa.configuration import neuroConfig
 import brainvisa.processes
 from brainvisa.data import neuroHierarchy, neuroData, temporary
@@ -64,7 +65,10 @@ def cleanup():
       return
 
     try:
-      atexit._exithandlers.remove( ( cleanup, (), {} ) )
+      if sys.version_info[0] >= 3:
+          atexit.unregister(cleanup)
+      else:
+          atexit._exithandlers.remove((cleanup, (), {}))
     except ValueError:
       pass
     if neuroConfig.runsInfo:

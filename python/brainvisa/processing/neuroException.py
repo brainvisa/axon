@@ -49,6 +49,7 @@ from brainvisa.configuration import neuroConfig
 from soma.html import htmlEscape
 if sys.version_info[0] >= 3:
     from html import parser as html_parser
+    unicode = str
 else:
     from htmllib import HTMLParser as html_parser
 
