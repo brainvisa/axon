@@ -47,6 +47,11 @@ from brainvisa.configuration import neuroConfig
 from brainvisa.processing.neuroException import showException, HTMLMessage
 from PyQt4 import QtCore
 import sys, os
+import six
+
+if sys.version_info[0] >= 3:
+    unicode = str
+
 
 #----------------------------------------------------------------------------
 class RightClickablePushButton( QPushButton ):
@@ -273,7 +278,7 @@ class DiskItemEditor( QWidget, DataEditor ):
         viewer = brainvisa.processes.getViewer( v, 1 )()
         viewerExists = True
         brainvisa.processes.defaultContext().runInteractiveProcess( self._viewerExited, viewer, v )
-      except Exception, error :
+      except Exception as error :
         self.btnShow.setChecked( False )
         if viewerExists:
           self.btnShow.setEnabled( True )
@@ -402,7 +407,7 @@ class DiskItemEditor( QWidget, DataEditor ):
         for t in [ self.parameter.type ] + self.parameter.type.parents():
           for f in self.parameter.formats:
             conv = brainvisa.processes.getConvertersTo( ( t, f ) )
-            for t2, f2 in conv.iterkeys():
+            for t2, f2 in six.iterkeys(conv):
               formats.add( f2 )
       for f in formats:
         if f.fileOrDirectory() is not Directory:
@@ -802,7 +807,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
           for t in [ self.parameter.type ] + self.parameter.type.parents():
             for f in self.parameter.formats:
               conv = brainvisa.processes.getConvertersTo( ( t, f ) )
-              for t2, f2 in conv.iterkeys():
+              for t2, f2 in six.iterkeys(conv):
                 formats.add( f2 )
         for f in formats:
           if f.fileOrDirectory() is not Directory:
@@ -979,7 +984,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
       try :
         viewer = brainvisa.processes.getViewer( v, 0, listof=True )()
         brainvisa.processes.defaultContext().runInteractiveProcess( self._viewerExited, viewer, v )
-      except Exception, error :
+      except Exception as error :
         raise RuntimeError( HTMLMessage(_t_( 'No viewer could be found or launched for type =<em>%s</em> and format=<em>%s</em>' ) % (unicode( v[0].type ), unicode(v[0].format))) )
     else:
       self._view = None

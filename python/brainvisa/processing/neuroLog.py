@@ -43,13 +43,23 @@ This main log is created in the function :py:func:`initializeLog`.
 :Classes and functions:
   
 """
+from __future__ import print_function
 import os, threading, shutil, time, weakref
+import sys
 
 from soma.minf.api import iterateMinf, createMinfWriter
 from brainvisa.data import temporary
 from brainvisa.configuration import neuroConfig
 from brainvisa.processing import neuroException
 import gzip
+
+if sys.version_info[0] >= 3:
+    unicode = str
+    def items(thing):
+        return list(thing.items())
+else:
+    def items(thing):
+        return thing.items()
 
 
 #------------------------------------------------------------------------------
@@ -75,7 +85,7 @@ class TextFileLink( FileLink ):
     """
     Reads the file and returns its content as a string.
     """
-    #print "expand text ", self
+    #print("expand text ", self)
     result = None
     try:
       file = open( self.fileName, 'r' )
@@ -104,13 +114,13 @@ class LogFileLink( FileLink ):
     """
     Reads the file and returns the content as a list of :py:class:`Item`.
     """
-    #print "expand file ", self
+    #print("expand file ", self)
     try:
       reader = LogFileReader( self.fileName )
       result = reader.read()
       reader.close()
     except:
-      #print "error while reading log file ", self
+      #print("error while reading log file ", self)
       result = [ LogFile.Item( icon='error.png', what='Error', html=neuroException.exceptionHTML() ) ]
     return result
   
@@ -149,7 +159,7 @@ class LogFile:
       :param parentLog: parent :py:class:`brainvisa.processing.neuroLog.LogFile`. 
       """
       self.fileName = fileName
-      #print "SubTextLog ", fileName, " of parent ", parentLog
+      #print("SubTextLog ", fileName, " of parent ", parentLog)
       # Create empty file
       file = open( unicode( self.fileName ), 'w' )
       file.close()
@@ -242,16 +252,16 @@ class LogFile:
       If the children items are in a log file and the associated file is not opened, 
       the file is read and the list of its children is stored directly in the current item.
       """
-      #print "expand item ", self._what
+      #print("expand item ", self._what)
       if isinstance( self._html, FileLink ) and \
          self._html.fileName not in openedFiles:
         self._html = self._html.expand()
       if isinstance( self._children, FileLink ) and \
          self._children.fileName not in openedFiles:
         children = []
-        #print "expand children"
+        #print("expand children")
         for child in self.children():
-          #print "a child : ", child
+          #print("a child : ", child)
           if isinstance( child, FileLink )and \
           child.fileName not in openedFiles:
             children.append( child.expand() )
@@ -284,7 +294,7 @@ class LogFile:
     :param lock: :py:func:`threading.RLock`, a lock to prevent from concurrent access to the file.
     :parent file: stream on the opened file.
     """
-    #print "New log file ", fileName, " of parent ", parentLog
+    #print("New log file ", fileName, " of parent ", parentLog)
     self._writer = None
     self._lock = lock
     self.fileName = fileName
@@ -324,7 +334,7 @@ class LogFile:
     except TypeError:
       self._lock = None
     try:
-      for n,children in self._opened.items():
+      for n,children in items(self._opened):
         children.close()
       if self._writer is not None:
         self._writer.flush()
@@ -356,7 +366,7 @@ class LogFile:
     try:
       if fileName is None:
         fileName = temporary.manager.new()
-      #print "Creating sublog..."
+      #print("Creating sublog...")
       result = LogFile( fileName, self, self._lock )
       self._opened[ unicode( result.fileName ) ] = result
     finally:
@@ -377,7 +387,7 @@ class LogFile:
     try:
       if fileName is None:
         fileName = temporary.manager.new()
-      #print "Creating subTextLog..."
+      #print("Creating subTextLog...")
       result = self.SubTextLog( fileName, self )
       self._opened[ unicode( result.fileName ) ] = result
     finally:
@@ -397,7 +407,7 @@ class LogFile:
       if getattr(subLog, "_closed", None):
         self._closed.update(subLog._closed)
       self._opened.pop( unicode( subLog.fileName ), None )
-      #print "subLogClosed ", subLog, "remaining opened : ", self._opened.values()
+      #print("subLogClosed ", subLog, "remaining opened : ", self._opened.values())
     finally:
       self._lock.release()
    
@@ -425,7 +435,7 @@ class LogFile:
     """
     Reads the current log file and the sub logs and items files and merges all their content in a same file.
     """
-    #print "expand ", self
+    #print("expand ", self)
     if force:
       opened = {}
     else:
@@ -437,7 +447,7 @@ class LogFile:
       self._file = None
       reader = LogFileReader( self.fileName )
       tmp = temporary.manager.new()
-      #print "Create temporary new log file for expand ", tmp
+      #print("Create temporary new log file for expand ", tmp)
       writer = newLogFile( tmp )
       logItem = reader.readItem()
       while logItem is not None:

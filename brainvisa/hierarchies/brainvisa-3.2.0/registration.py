@@ -88,6 +88,6 @@ coregistration_content = (
 
 insert( '{center}/{subject}',
   "recal",
-    apply( SetContent, recal_content ),
+  SetContent(*recal_content),
   "coregistration_{coregistration}", SetContent( *coregistration_content ),
 )

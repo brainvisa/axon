@@ -44,6 +44,7 @@ They provide user interaction to modify the underlying model (drag&drop, context
 __docformat__ = "epytext en"
 
 import os
+import sys
 from six.moves import StringIO
 from soma.qt_gui.qt_backend.QtGui import QTreeWidget, QTreeWidgetItem, QListWidget, QListWidgetItem, QPixmap, QDrag, QMenu, QPainter, QPen, QCursor, QSizePolicy, QIcon, qApp, QKeyEvent, QApplication
 from soma.qt_gui.qt_backend.QtCore import Qt, QEvent, QMimeData, QObject, QPoint, QRect, QSize, QTimer, SIGNAL
@@ -52,6 +53,9 @@ from soma.notification import ObservableList, EditableTree
 from soma.minf.api import defaultReducer, createMinfWriter, iterateMinf, minfFormat
 from soma.wip.application.api import findIconFile
 from soma.qt4gui.api import defaultIconSize
+
+if sys.version_info[0] >= 3:
+    unicode = str
 
 #----------------------------------------------------------------------------
 class EditableTreeWidget(QTreeWidget):
@@ -791,7 +795,7 @@ class EditableTreeController:
       if source == target: # insertion index can change if the item is moved inside its container
         index=None
       self.delete(item, source)
-      if item.copyEnabled and target.modifiable and not target.has_key(item.id): # if the item was not deletable, it is already in the target and can't be moved. 
+      if item.copyEnabled and target.modifiable and item.id not in target: # if the item was not deletable, it is already in the target and can't be moved.
         itemCopy = copy.deepcopy(item)
         # add this new item in the target item
         insertedItem, insertIndex=self.insert(itemCopy, target, after, before, index)
@@ -817,7 +821,7 @@ class EditableTreeController:
     """Insert item in target, eventually after or before an existing child."""
     insertedItem=item
     insertIndex=index
-    if not target.has_key(item.id): # can't copy an item that is already in the target
+    if item.id not in target: # can't copy an item that is already in the target
       if index is not None:
         target.insert(index, item.id, item)
       else:

@@ -66,11 +66,18 @@ from brainvisa.data.sql import mangleSQL, unmangleSQL
 from brainvisa.data.fileformats import FileFormats
 from brainvisa.data.directory_iterator import DirectoryIterator, VirtualDirectoryIterator
 from brainvisa.data import temporary
+import six
 
 if sys.version_info[0] >= 3:
     izip = zip
+    def values(thing):
+        return list(thing.values())
+    xrange = range
+    basestring = str
 else:
     from itertools import izip
+    def values(thing):
+        return thing.values()
 
 out = sys.stdout
 
@@ -105,7 +112,7 @@ class CombineGet( object ):
   def copy( self ):
     result = self.__objects[ 0 ].copy()
     for d in self.__objects[ 1: ]:
-      for k, v in d.iteritems():
+      for k, v in six.iteritems(d):
         result.setdefault( k, v )
     return result
 
@@ -530,7 +537,7 @@ class SQLDatabase( Database ):
     self._attributesEditionByType = {}
     self._formatsByTypeName = {}
     self._declared_attributes = self.fso._declared_attributes
-    for type, rules in self.fso.typeToPatterns.iteritems():
+    for type, rules in six.iteritems(self.fso.typeToPatterns):
       keys = []
       ruleSelectionByAttributeValue = []
       defaultAttributesValues = {}
@@ -542,7 +549,7 @@ class SQLDatabase( Database ):
       nonMandatoryKeyAttributes = set()
       for rule in rules:
         nonMandatoryKeyAttributes.update( rule.nonMandatoryKeyAttributes )
-        for n, v in rule.defaultAttributesValues.iteritems():
+        for n, v in six.iteritems(rule.defaultAttributesValues):
           vv = defaultAttributesValues.get( n, Undefined )
           if vv is Undefined:
             defaultAttributesValues[ n ] = v
@@ -560,13 +567,12 @@ class SQLDatabase( Database ):
             except Exception as e:
               print('!!ERROR!! SQLDatabase: getFormat failed:', format.name)
               print('Database', directory, 'will not be complete and fully working !')
-              continue
             if formatName not in typeFormats:
               typeFormats.append( formatName )
         for a in rule.declared_attributes:
           if a not in keys:
             keys.append( a )
-      for lopa, lopaRules in rulesByLOPA.iteritems():
+      for lopa, lopaRules in six.iteritems(rulesByLOPA):
         for n in lopa:
           editableAttributes.add( n )
         if len( lopaRules ) > 1:
@@ -595,19 +601,19 @@ class SQLDatabase( Database ):
             ruleSelectionByMissingKeyAttributes.append( n )
       for rule in rules:
         localAttributes = dict( rule.localAttributes )
-        for n, v in localAttributes.iteritems():
+        for n, v in six.iteritems(localAttributes):
           selectedValueAttributes.setdefault( n, set() ).add( v )
         ruleWithMissingValues = tuplesWithMissingValues(tuple((localAttributes.get(n, '') for n in ruleSelectionByAttributeValue)), '')
         ruleSelection = tuple(((not(n in rule.pattern.namedRegex())) for n in ruleSelectionByMissingKeyAttributes))
         ruleKeys = set((t, ruleSelection) for t in ruleWithMissingValues)
-        #if rulesDictionary.has_key( ruleKey ):
+        #if ruleKey in rulesDictionary:
           #raise ValueError( 'Two rules with the same selecion key' )
         for ruleKey in ruleKeys:
           rulesDictionary.setdefault( ruleKey, [] ).append( rule )
       # Sort rules by priorityOffset
-      for rules in rulesDictionary.itervalues():
+      for rules in six.itervalues(rulesDictionary):
         if len( rules ) > 1:
-          rules.sort( lambda x, y: cmp( y.priorityOffset, x.priorityOffset ) )
+          rules.sort(key=lambda x: x.priorityOffset)
       self.keysByType[ type ] = keys
       self._tableAttributesByTypeName[ type.name ] = list( keys )
       for a in selectedValueAttributes:
@@ -620,7 +626,7 @@ class SQLDatabase( Database ):
     
     self.typesWithTable = set()
     self._childrenByTypeName = {}
-    for type in neuroDiskItems.diskItemTypes.itervalues():
+    for type in six.itervalues(neuroDiskItems.diskItemTypes):
       self._childrenByTypeName.setdefault( type.name, set() ).add( type.name )
       p = type.parent
       while p is not None:
@@ -636,7 +642,8 @@ class SQLDatabase( Database ):
           self.typesParentOfATypeWithTable.add( parent )
         parent = parent.parent
     self.typesWithTable = set((t.name for t in self.typesWithTable))
-    self.keysByType = dict( ((t.name,v) for t,v in self.keysByType.iteritems()))
+    self.keysByType = dict( ((t.name,v)
+                             for t,v in six.iteritems(self.keysByType)))
     
     # init of _tableFieldsAndInsertByTypeName
     self._tableFieldsAndInsertByTypeName = {}
@@ -920,12 +927,12 @@ class SQLDatabase( Database ):
       ruleSelectionByAttributeValue, ruleSelectionByMissingKeyAttributes, rulesDictionary, defaultAttributesValues = self.ruleSelectionByType[ type ]
       if defaultAttributesValues:
         print('<b>Default attributes values:</b><blockquote>', file=out)
-        for n, v in defaultAttributesValues.iteritems():
+        for n, v in six.iteritems(defaultAttributesValues):
           print(n + ' = ' + htmlEscape( repr(v) ) + '<br/>', file=out)
         print('</blockquote>', file=out)
       if ruleSelectionByAttributeValue or ruleSelectionByMissingKeyAttributes:
         print('<b>Rules selection key: </b><font color=darkgreen>' + htmlEscape( unicode( ruleSelectionByAttributeValue ) ) + '</font> <font color=blue>' + htmlEscape( unicode( ruleSelectionByMissingKeyAttributes ) ) + '</font><p>', file=out)
-      for ruleKey, rules in rulesDictionary.iteritems():
+      for ruleKey, rules in six.iteritems(rulesDictionary):
         #print('<font color=darkgreen>' + htmlEscape( unicode( ruleKey[0] ) ) + '</font> <font color=blue>' + htmlEscape( unicode( ruleKey[1] ) ) + '</font><blockquote>', file=out)
         if len( rules ) > 1:
           print('<hr>', file=out)
@@ -1472,7 +1479,7 @@ class SQLDatabase( Database ):
               diskItem.type = rule.type
               name_serie = match.pop( 'name_serie', None )
               if name_serie is not None:
-                key = ( diskItem.type, format, rule.pattern.pattern, tuple( match.itervalues() ) )
+                key = ( diskItem.type, format, rule.pattern.pattern, tuple( six.itervalues(match) ) )
                 groupDiskItem = nameSeriesGroupedItems.get( key )
                 if groupDiskItem is None:
                   diskItem._globalAttributes[ '_ontology' ] = self.fso.name
@@ -1512,13 +1519,13 @@ class SQLDatabase( Database ):
               yield diskItem
             unknownType.append( diskItem )
       if allowYield:
-        for diskItem in nameSeriesGroupedItems.itervalues():
+        for diskItem in six.itervalues(nameSeriesGroupedItems):
           diskItem._setLocal( 'name_serie', sorted( diskItem._getLocal( 'name_serie' ) ) )
           diskItem.readAndUpdateMinf()
           diskItem.readAndUpdateDeclaredAttributes()
           yield diskItem
       if debugHTML:
-        for diskItem in nameSeriesGroupedItems.itervalues():
+        for diskItem in six.itervalues(nameSeriesGroupedItems):
           print('<font color=darkgreen><b>', diskItem, ':</b> ', diskItem.type, repr( diskItem._getLocal( 'name_serie' ) ) + '</font><br>',
                 file=debugHTML)
           #for f in diskItem.fullPaths()[ 1: ]:
@@ -1595,7 +1602,7 @@ class SQLDatabase( Database ):
         sql +=" T, _DISKITEMS_ D WHERE T._uuid=D._uuid "
       if where:
         sqlWhereClauses = []
-        for f, v in where.iteritems():
+        for f, v in six.iteritems(where):
           if v is None:
             sqlWhereClauses.append( f + '=NULL' )
           elif isinstance( v, basestring ):
@@ -1734,7 +1741,7 @@ class SQLDatabase( Database ):
                   diskItem._globalAttributes[ '_database' ] = self.name
                   diskItem._globalAttributes[ '_ontology' ] = self.fso.name
                   diskItem._write = True
-                  diskItem._globalAttributes[ '_declared_attributes_location' ] = dict((att,os.path.normpath(os.path.join(diskItem.fullPath(),path))) for att, path in rule._declared_attributes_location.iteritems())
+                  diskItem._globalAttributes[ '_declared_attributes_location' ] = dict((att,os.path.normpath(os.path.join(diskItem.fullPath(),path))) for att, path in six.iteritems(rule._declared_attributes_location))
                   c = CombineGet( unmatchAttributes, required, selection, defaultAttributesValues )
                   for n in self.keysByType[ type ]:
                     if n=="name_serie": # name_serie is a local attribute
@@ -1770,7 +1777,7 @@ class SQLDatabase( Database ):
         if e is not None:
           editable.update( e[0] )
           declared.update( e[2] )
-          for a, v in e[1].iteritems():
+          for a, v in six.iteritems(e[1]):
             values.setdefault( a, set() ).update( v )
     return editable, values, declared
   
@@ -1908,20 +1915,20 @@ class SQLDatabases( Database ):
   
   
   def iterDatabases( self ):
-    return self._databases.itervalues()
+    return six.itervalues(self._databases)
   
   
   def database( self, name ):
     return self._databases[ name ]
   
   def hasDatabase(self, name):
-    return self._databases.has_key(name)
+    return name in self._databases
   
   def add( self, database ):
     self._databases[ database.name ] = database
   
   def remove( self, name ):
-    if self._databases.has_key(name):
+    if name in self._databases:
       del self._databases[name]
     
   def removeDatabases( self ):
@@ -1941,7 +1948,7 @@ class SQLDatabases( Database ):
   def _iterateDatabases( self, selection, required={} ):
     databases = self.getAttributeValues( '_database', selection, required )
     if not databases:
-      for d in self._databases.itervalues():
+      for d in six.itervalues(self._databases):
         yield d
     for n in databases:
       try:
@@ -1956,8 +1963,8 @@ class SQLDatabases( Database ):
       if baseName is None:
         database = None
         if len( self._databases ) == 1:
-          database = self._databases.values()[0]
-          if not diskItem.fullPath().startswith( self._databases.values()[0].name ):
+          database = values(self._databases)[0]
+          if not diskItem.fullPath().startswith( values(self._databases)[0].name ):
             database = None
         if database is None:
           raise NotInDatabaseError( _( 'Cannot find out in which database "%s" should be inserted' ) % ( diskItem.fullPath(), ) )
@@ -1972,7 +1979,7 @@ class SQLDatabases( Database ):
       baseName = diskItem.getHierarchy( '_database' )
       if baseName is None:
         if len( self._databases ) == 1:
-          database = self._databases.values()[0]
+          database = values(self._databases)[0]
         else:
           raise NotInDatabaseError( _( 'Cannot find out from which database "%s" should be removed' ) % ( diskItem.fullPath(), ) )
       else:
@@ -1981,7 +1988,7 @@ class SQLDatabases( Database ):
   
   
   def getDiskItemFromUuid( self, uuid, defaultValue=Undefined ):
-    for database in self._databases.itervalues():
+    for database in six.itervalues(self._databases):
       item = database.getDiskItemFromUuid( uuid, None )
       if item is not None:
         return item
@@ -1992,7 +1999,7 @@ class SQLDatabases( Database ):
     
   def findTransformationWith( self, uuid):
     item = []
-    for database in self._databases.itervalues():
+    for database in six.itervalues(self._databases):
       val = database.findTransformationWith( uuid )
       if val != None :
         item.append(database.findTransformationWith( uuid ))
@@ -2004,7 +2011,7 @@ class SQLDatabases( Database ):
   
   
   def getDiskItemFromFileName( self, fileName, defaultValue=Undefined ):
-    for database in self._databases.itervalues():
+    for database in six.itervalues(self._databases):
       item = database.getDiskItemFromFileName( fileName, None )
       if item is not None:
         return item
@@ -2095,19 +2102,19 @@ class SQLDatabases( Database ):
   
   def getAttributesEdition( self, *types ):
     editable = set()
-    values = { '_database': tuple( (i.name for i in self._databases.itervalues()) ) }
+    values = { '_database': tuple( (i.name for i in six.itervalues(self._databases)) ) }
     declared = set()
-    for database in self._databases.itervalues():
+    for database in six.itervalues(self._databases):
       e, d, dcl = database.getAttributesEdition( *types )
       editable.update( e )
       declared.update( dcl )
-      for a, v  in d.iteritems():
+      for a, v  in six.iteritems(d):
         values.setdefault( a, set() ).update( v )
     return editable, values, declared
   
   def getTypeChildren( self, *types ):
     if self._databases:
-      return set( chain( *(d.getTypeChildren( *types ) for d in self._databases.itervalues() ) ) )
+      return set( chain( *(d.getTypeChildren( *types ) for d in six.itervalues(self._databases) ) ) )
     return ()
   
   
@@ -2117,7 +2124,7 @@ class SQLDatabases( Database ):
       # because this order is used to build combos on graphical interface
       result = []
       set_result = set()
-      for d in self._databases.itervalues():
+      for d in six.itervalues(self._databases):
         for a in d.getTypesKeysAttributes( *types ):
           if a not in set_result:
             result.append( a )
@@ -2128,7 +2135,7 @@ class SQLDatabases( Database ):
   
   def getTypesFormats( self, *types ):
     if self._databases:
-      return set( chain( *(d.getTypesFormats( *types ) for d in self._databases.itervalues() ) ) )
+      return set( chain( *(d.getTypesFormats( *types ) for d in six.itervalues(self._databases) ) ) )
     return ()
 
   def currentThreadCleanup( self ):

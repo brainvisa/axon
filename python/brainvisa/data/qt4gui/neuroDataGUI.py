@@ -331,7 +331,7 @@ class BooleanListEditor( QWidget, DataEditor ):
       self.list.clear()
       if value is None or value == '':
         pass
-      elif type( value ) in ( types.ListType, types.TupleType ):
+      elif type( value ) in (list, tuple):
         for v in value:
           fv = self.parameter.findValue( v )
           nn, nv  = self.parameter.values[ 0 ]
@@ -617,7 +617,7 @@ class StringListEditor( QLineEdit, DataEditor ):
     text = ''
     if value is None:
       pass
-    elif type( value ) in ( types.ListType, types.TupleType ):
+    elif type( value ) in (list, tuple):
       if value:
         text = self._quote( str(value[0]) )
         for v in value[ 1: ]:
@@ -784,7 +784,7 @@ class ChoiceListEditor( QWidget, DataEditor ):
       self.list.clear()
       if value is None or value == '':
         pass
-      elif type( value ) in ( types.ListType, types.TupleType ):
+      elif type( value ) in (list, tuple):
         for v in value:
           fv = self.parameter.findValue( v )
           nn, nv  = self.parameter.values[ 0 ]
@@ -1196,7 +1196,7 @@ class GenericListSelection( QWidget ):
     self.lbxValues.insertItem( index + 1, item )
   
   def setValue( self, value ):
-    if isinstance( value, ( list, tuple ) ):
+    if isinstance(value, (list, tuple)):
       self.values = []
       self.lbxValues.clear()
       for v in value:

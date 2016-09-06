@@ -87,7 +87,7 @@ def execution( self, context ):
         context.write("* Convert database")
         try:
           converter.process(debug=True)
-        except Exception, e:
+        except Exception as e:
           context.error("Errors during conversion : "+str(e))
         context.write("* Generate undo scripts in database directory.")
         converter.generateUndoScripts()

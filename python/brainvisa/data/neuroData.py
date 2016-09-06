@@ -781,7 +781,7 @@ class Signature( UserDict ):
     self.sortedKeys.remove(k)
 
   def __setitem__(self, k, value):
-    if not self.data.has_key(k):
+    if k not in self.data:
       self.sortedKeys.append(k)
     self.data[k] = value
 
@@ -808,7 +808,7 @@ class Signature( UserDict ):
     new.sortedKeys = copy.copy(self.sortedKeys)
     new.data = copy.copy( self.data )
     
-    for k, i in new.data.iteritems():
+    for k, i in six.iteritems(new.data):
       new.data[ k ] = copyType( i )
 
     return new
