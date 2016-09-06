@@ -123,6 +123,8 @@ def gunzipFile(input_path, output_path):
       shutil.copyfileobj(f_in, f_out)
 
 def moveNifti(input_path, output_path):
+  if not os.path.exists(os.path.dirname(output_path)):
+    os.makedirs(os.path.dirname(output_path))
   try:
     if input_path.endswith(".nii.gz") and output_path.endswith(".nii"):
       gunzipFile(input_path, output_path)
@@ -140,6 +142,8 @@ def moveNifti(input_path, output_path):
     raise RuntimeError("Error during movign files: %s" % e)
 
 def copyNifti(input_path, output_path):
+  if not os.path.exists(os.path.dirname(output_path)):
+    os.makedirs(os.path.dirname(output_path))
   try:
     if input_path.endswith(".nii.gz") and output_path.endswith(".nii"):
       gunzipFile(input_path, output_path)
