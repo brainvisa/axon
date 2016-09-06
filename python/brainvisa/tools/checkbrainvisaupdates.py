@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import urllib2, re, platform, sys
+import re, platform, sys
 from brainvisa.configuration import neuroConfig
+import six.moves.urllib.request as urllib2
 
 filesaddress = 'ftp://ftp.cea.fr/pub/dsv/anatomist/binary'
 

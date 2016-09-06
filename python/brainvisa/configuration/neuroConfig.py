@@ -962,7 +962,9 @@ def initGlobalVariables():
   os.environ[ 'LANGUAGE' ] = language
   docPath = os.path.join( docPath, language )
   if _t_ is _defaultTranslateFunction:
-    if sys.version_info[0] < 3:
+    if sys.version_info[0] >= 3:
+        import builtins
+    else:
         builtins = __builtin__
     try:
       builtins.__dict__['_t_'] = Translator(language).translate
