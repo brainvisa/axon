@@ -34,6 +34,7 @@
 This module defines the class :py:class:`ReadDiskItem` which is a subclass :py:class:`brainvisa.data.neuroData.Parameter`.
 It is used to define an input data file as a parameter in a :py:class:`brainvisa.processes.Process` :py:class:`brainvisa.data.neuroData.Signature`.
 """
+from __future__ import print_function
 import os, operator
 #from soma.debug import print_stack
 from soma.path import remove_query_string
@@ -44,6 +45,7 @@ import brainvisa.processes
 from brainvisa.data.neuroDiskItems import getFormat, getFormats, DiskItem, isSameDiskItemType, File, Directory
 from brainvisa.processing.neuroException import HTMLMessage
 from brainvisa.data.qtgui.diskItemBrowser import diskItemFilter
+import six
 
 #----------------------------------------------------------------------------
 class ReadDiskItem( Parameter ):
@@ -113,41 +115,41 @@ class ReadDiskItem( Parameter ):
   def _getRequiredAttributes( self ):
     #_debug = self._debug
     #if _debug is not None:
-      #print >> _debug, '!_getRequiredAttributes!', self, self.type, self.formats, self.enableConversion
+      #print('!_getRequiredAttributes!', self, self.type, self.formats, self.enableConversion, file=_debug)
     if self._requiredAttributes[ '_format' ] is None:
       cache = self._formatsAndConversionCache.get( ( self.type.name, self.formats ) )
       #if _debug is not None:
-        #print >> _debug, '!_getRequiredAttributes! 1', cache
+        #print('!_getRequiredAttributes! 1', cache, file=_debug)
       if cache is None:
         formats = set( self.database.formats.getFormat( f.name, f ).name for f in self.formats )
         #if _debug is not None:
-         #print >> _debug, '!_getRequiredAttributes! 2', formats
+         #print('!_getRequiredAttributes! 2', formats, file=_debug)
         formatsWithConversion = set()
         any = getDiskItemType( 'Any type' )
         for f in getFormats( self.formats ):
           convs = brainvisa.processes.getConvertersTo( ( any, f ), checkUpdate=False )
           convs.update( brainvisa.processes.getConvertersTo( ( self.type, f ), keepType=0, checkUpdate=False ) )
           #if _debug is not None:
-            #print >> _debug, '!_getRequiredAttributes! 3', self.type, object.__repr__( self.type ), f, object.__repr__( f ), convs
-          for type_format, converter in convs.iteritems():
+            #print('!_getRequiredAttributes! 3', self.type, object.__repr__( self.type ), f, object.__repr__( f ), convs, file=_debug)
+          for type_format, converter in six.iteritems(convs):
             typ, format = type_format
             formatName = self.database.formats.getFormat( format.name, format ).name
             #if _debug is not None:
-              #print >> _debug, '!_getRequiredAttributes! 4', formatName
+              #print('!_getRequiredAttributes! 4', formatName, file=_debug)
             if formatName not in formats:
               formatsWithConversion.add( formatName )
         cache = ( formats, formatsWithConversion )
         self._formatsAndConversionCache[ ( self.type.name, self.formats ) ] = cache
       formats, self._formatsWithConversion = cache
       #if _debug is not None:
-        #print >> _debug, '!_getRequiredAttributes! 5', formats, self._formatsWithConversion
+        #print('!_getRequiredAttributes! 5', formats, self._formatsWithConversion, file=_debug)
       if self.enableConversion:
         self._requiredAttributes[ '_format' ] = self._formatsWithConversion.union( formats )
       else:
         self._requiredAttributes[ '_format' ] = formats
     self._requiredAttributes['_type'] = self.type.name
     #if _debug is not None:
-      #print >> _debug, '!_getRequiredAttributes! 6', self._requiredAttributes[ '_format' ]
+      #print('!_getRequiredAttributes! 6', self._requiredAttributes[ '_format' ], file=_debug)
     return self._requiredAttributes
 
 
@@ -205,25 +207,25 @@ class ReadDiskItem( Parameter ):
       r.update( requiredAttributes )
       requiredAttributes = r
     if _debug is not None:
-       print >> _debug, '\n' + '-' * 70
-       print >> _debug, self.__class__.__name__ + '(\'' + str( self.type ) + '\').findValue'
+       print('\n' + '-' * 70, file=_debug)
+       print(self.__class__.__name__ + '(\'' + str( self.type ) + '\').findValue', file=_debug)
        if isinstance( selection, DiskItem ):
-         print >> _debug, '  value type = DiskItem'
-         print >> _debug, '  fullPath = ', repr( selection )
-         print >> _debug, '  type = ', repr( selection.type )
-         print >> _debug, '  format = ', repr( selection.format )
-         print >> _debug, '  attributes:'
+         print('  value type = DiskItem', file=_debug)
+         print('  fullPath = ', repr( selection ), file=_debug)
+         print('  type = ', repr( selection.type ), file=_debug)
+         print('  format = ', repr( selection.format ), file=_debug)
+         print('  attributes:', file=_debug)
          for n, v in selection.attributes().items():
-           print >> _debug, '   ', n, '=', repr( v )
+           print('   ', n, '=', repr( v ), file=_debug)
        else:
-         print >> _debug, '  value type =', type( selection )
-         print >> _debug, '  value = ', selection
-       print >> _debug, '  required attributes:'
-       for n, v in requiredAttributes.iteritems():
-         print >> _debug, '   ', n, '=', repr( v )
-       #print >> _debug, '- ' * 35
+         print('  value type =', type( selection ), file=_debug)
+         print('  value = ', selection, file=_debug)
+       print('  required attributes:', file=_debug)
+       for n, v in six.iteritems(requiredAttributes):
+         print('   ', n, '=', repr( v ), file=_debug)
+       #print('- ' * 35, file=_debug)
        #print_stack( file=_debug )
-       #print >> _debug, '- ' * 35
+       #print('- ' * 35, file=_debug)
 
     result = None
     fullSelection = None
@@ -243,10 +245,11 @@ class ReadDiskItem( Parameter ):
 
       else:
         if _debug is not None:
-          print >> _debug, '  DiskItem rejected because:', self.diskItemFilter( selection, requiredAttributes, explainRejection=True )
+          print('  DiskItem rejected because:', self.diskItemFilter( selection, requiredAttributes, explainRejection=True ), file=_debug)
         if selection._write:
           if _debug is not None:
-            print >> _debug, '  DiskItem has the _write attribute set to True'
+            print('  DiskItem has the _write attribute set to True',
+                  file=_debug)
           write = True
         fullSelection = selection.globalAttributes()
         if selection.type is None :
@@ -270,23 +273,25 @@ class ReadDiskItem( Parameter ):
       result = self.database.getDiskItemFromFileName( fileName, None )
       if result is None:
         if _debug is not None:
-          print >> _debug, '  DiskItem not found in databases'
+          print('  DiskItem not found in databases', file=_debug)
         result = self.database.createDiskItemFromFileName( fileName, None )
         if result is None:
           if _debug is not None:
-            print >> _debug, '  DiskItem not created in databases from file name'
+            print('  DiskItem not created in databases from file name',
+                  file=_debug)
           result = self.database.createDiskItemFromFormatExtension( fileName, None )
           if result is None:
             if _debug is not None:
-              print >> _debug, '  DiskItem not created in databases from format extension'
+              print('  DiskItem not created in databases from format extension', file=_debug)
             if os.path.exists( remove_query_string( fileName ) ):
               from brainvisa.tools.aimsGlobals import aimsFileInfo
               file_type = aimsFileInfo( fileName ).get( 'file_type' )
               if _debug is not None:
-                print >> _debug, '  aimsFileInfo returned file_type =', repr( file_type )
+                print('  aimsFileInfo returned file_type =', repr( file_type ),
+                      file=_debug)
               if file_type == 'DICOM':
                 if _debug is not None:
-                  print >> _debug, '  creating DICOM DiskItem'
+                  print('  creating DICOM DiskItem', file=_debug)
                 result = File( fileName, None )
                 result.format = getFormat( 'DICOM image' )
                 result.type = None
@@ -297,15 +302,15 @@ class ReadDiskItem( Parameter ):
         else:
           result.readAndUpdateMinf()
           if _debug is not None:
-            print >> _debug, '  DiskItem created in databases'
+            print('  DiskItem created in databases', file=_debug)
         if result is None:
           if _debug is not None:
-            print >> _debug, '  no format found for file name extension'
+            print('  no format found for file name extension', file=_debug)
           directoryFormat = getFormat( 'Directory' )
           if directoryFormat in self.formats:
             # In this case, item is a directory
             if _debug is not None:
-              print >> _debug, '  no extension ==> create Directory item'
+              print('  no extension ==> create Directory item', file=_debug)
             result = Directory( fileName, None )
             result.format = directoryFormat
             result._files = [ fileName ]
@@ -313,9 +318,9 @@ class ReadDiskItem( Parameter ):
             result.type = self.type
             result.readAndUpdateMinf()
         elif _debug is not None:
-          print >> _debug, '  found matching format:', result.format
+          print('  found matching format:', result.format, file=_debug)
       elif _debug is not None:
-        print >> _debug, '  DiskItem found in databases'
+        print('  DiskItem found in databases', file=_debug)
       if result is not None:
         if result.type is None :
           # Set the result type if this is not already done
@@ -329,7 +334,7 @@ class ReadDiskItem( Parameter ):
               self.database.changeDiskItemFormatToSeries(result)
         if not self.diskItemFilter( result, requiredAttributes ):
           if _debug is not None:
-            print >> _debug, '  DiskItem rejected because:', self.diskItemFilter( result, requiredAttributes, explainRejection=True )
+            print('  DiskItem rejected because:', self.diskItemFilter( result, requiredAttributes, explainRejection=True ), file=_debug)
           result = None
     elif isinstance( selection, dict ):
       if '_declared_attributes_location' in selection.keys():
@@ -351,9 +356,9 @@ class ReadDiskItem( Parameter ):
           # Find the item with the "smallest" "distance" from item
           values = sorted( (self.diskItemDistance( i, selection ), i ) for i in values )
           if _debug is not None:
-            print >> _debug, '  findValue priority sorted items:'
+            print('  findValue priority sorted items:', file=_debug)
             for l in values:
-              print >> _debug, '   ', l
+              print('   ', l, file=_debug)
           if values[ 0 ][ 0 ] != values[ 1 ] [ 0 ]:
             result = values[ 0 ][ 1 ]
           else:
@@ -392,13 +397,14 @@ class ReadDiskItem( Parameter ):
                   result = l[0]
                   break
               if _debug is not None:
-                print >> _debug, '  top priority values differ only by formats:'
+                print('  top priority values differ only by formats:',
+                      file=_debug)
                 for i in differentOnFormatOnly:
-                  print >> _debug, '   ', i.format
+                  print('   ', i.format, file=_debug)
                 if result:
-                  print >> _debug, '  chosen format:', result.format
+                  print('  chosen format:', result.format, file=_debug)
             elif _debug is not None:
-                print >> _debug, '  top priority values differ on ontology attributes ==> no selection on format'
+                print('  top priority values differ on ontology attributes ==> no selection on format', file=_debug)
 
     # this block of code was originally in WriteDiskItem.findValue().
     # We do not remember what it was exactly meant for, and did not do
@@ -413,35 +419,35 @@ class ReadDiskItem( Parameter ):
       format = requiredAttributes.get('_format') or self.preferredFormat \
         or self.formats[0]
       if _debug is not None:
-        print >> _debug, '  No unique best selection found. But compatible input DiskItem. Checking format.'
-        print >> _debug, '    Format:', format
+        print('  No unique best selection found. But compatible input DiskItem. Checking format.', file=_debug)
+        print('    Format:', format, file=_debug)
       if format in self.formats and format != selection.format:
         # check requiredAttributes
         sel_attr = selection.hierarchyAttributes()
         ok = True
-        for attrib, value in requiredAttributes.iteritems():
+        for attrib, value in six.iteritems(requiredAttributes):
           if not attrib.startswith('_') and \
               (not sel_attr.has_key(attrib) or sel_attr[attrib] != value):
             ok = False
             break
         if _debug:
-          print >> _debug, '    checking RequiredAttributes:', ok
+          print('    checking RequiredAttributes:', ok, file=_debug)
         if ok:
           result = self.database.changeDiskItemFormat( selection, format.name )
           if _debug is not None:
-            print >> _debug, \
+            print(
               '  selection is compatible with a different format, select: %s' \
-              % format
+              % format, file=_debug)
 
     if _debug is not None:
-      print >> _debug, '-> findValue return', result
+      print('-> findValue return', result, file=_debug)
       if result is not None:
-        print >> _debug, '-> type:', result.type
-        print >> _debug, '-> format:', result.format
-        print >> _debug, '-> attributes:'
+        print('-> type:', result.type, file=_debug)
+        print('-> format:', result.format, file=_debug)
+        print('-> attributes:', file=_debug)
         for n, v in result.attributes().items():
-          print >> _debug, '->  ', n, '=', v
-      print >> _debug, '-' * 70 + '\n'
+          print('->  ', n, '=', v, file=_debug)
+      print('-' * 70 + '\n', file=_debug)
       _debug.flush()
     return result
 
@@ -473,14 +479,14 @@ class ReadDiskItem( Parameter ):
     hierarchyCommon = reduce(
       operator.add,
       ((getHierarchy(n) == v)
-       for n, v in diskItem.hierarchyAttributes().iteritems()
+       for n, v in six.iteritems(diskItem.hierarchyAttributes())
        if n not in filtered_out_attribs),
       (int(diskItem_type==other_type)))
     # Count the number of common non hierarchy attributes
     nonHierarchyCommon = reduce(
       operator.add,
       ((getNonHierarchy(n) == v)
-       for n, v in diskItem.nonHierarchyAttributes().iteritems()),
+       for n, v in six.iteritems(diskItem.nonHierarchyAttributes())),
       (int(diskItem_type == other_type)))
     if getattr(other, '_write', False ) and diskItem.isReadable():
       readable = -1
@@ -537,7 +543,7 @@ class ReadDiskItem( Parameter ):
           if item.fullPath() not in fullPaths:
             yield item
         elif _debug is not None:
-          print >> _debug, ' ', item, 'rejected because:', self.diskItemFilter( item, requiredAttributes, explainRejection=True )
+          print(' ', item, 'rejected because:', self.diskItemFilter( item, requiredAttributes, explainRejection=True ), file=_debug)
       if self._formatsWithConversion:
         requiredAttributes[ '_format' ] = oldFormats
     else:

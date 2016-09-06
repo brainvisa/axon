@@ -30,7 +30,8 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
-import sys, new, os
+from __future__ import print_function
+import sys, os
 from brainvisa import registration
 from brainvisa.configuration import neuroConfig
 from brainvisa.processing import neuroLog
@@ -51,8 +52,8 @@ try:
   anatomistImport=True
   if neuroConfig.anatomistImplementation != 'socket':
     import reusablewinhook
-except Exception, e:
-  print e
+except Exception as e:
+  print(e)
   anatomistImport=False
 """
 This module enables to generate an implementation of anatomist api specialized for brainvisa.
@@ -296,15 +297,15 @@ if anatomistImport:
         # if it is a known referential, nothing to load
         if ruuid == registration.talairachACPCReferentialId :
           newRef=self.centralRef
-          #print "getCentralReferential", newRef
+          #print("getCentralReferential", newRef)
         elif ruuid == registration.talairachMNIReferentialId:
           newRef=self.mniTemplateRef
-          #print "getMniRef", newRef
+          #print("getMniRef", newRef)
         # unknown referential
         else:
-          #print "create referential", fileref.fullPath()
+          #print("create referential", fileref.fullPath())
           newRef=anatomistModule.Anatomist.createReferential(self, fileref.fullPath())
-          #print "created referential", newRef
+          #print("created referential", newRef)
           newRef.diskitem=fileref
       else:
         newRef=anatomistModule.Anatomist.createReferential(self, fileref)
@@ -370,11 +371,11 @@ if anatomistImport:
                     or not isinstance( ref2, self.Referential ):
                   dstrDiskItem = tm.referential(wantedref)
                   dstr = self.createReferential(dstrDiskItem)
-                  print 'new dst ref:', dstr.uuid()
+                  #print('new dst ref:', dstr.uuid())
                 else:
                   dstr = ref2
 
-                #print "load transformation", t, ":", srcr.uuid(), "->", dstr.uuid()
+                #print("load transformation", t, ":", srcr.uuid(), "->", dstr.uuid())
                 if wantedref == dstrid:
                   self.loadTransformation( t.fullPath(), srcr, dstr )
                 else:
@@ -398,7 +399,7 @@ if anatomistImport:
         if x==1:
           return x
 
-      #print "no path from/to [mni, central or spam], search for others (if no ambiguity : unique path only)."
+      #print("no path from/to [mni, central or spam], search for others (if no ambiguity : unique path only).")
       # try to find transformation between this referential and others
       allRefs=self.getReferentials()
 
@@ -442,7 +443,7 @@ if anatomistImport:
         self.lock.acquire()
         self.centralRef.diskitem=cr
         self.lock.release()
-        #print "central ref loaded", self.centralRef, self.centralRef.diskitem
+        #print("central ref loaded", self.centralRef, self.centralRef.diskitem)
         return self.centralRef
       elif name == "mniTemplateRef":
         tm = registration.getTransformationManager()
@@ -451,7 +452,7 @@ if anatomistImport:
         self.lock.acquire()
         self.mniTemplateRef.diskitem=mnir
         self.lock.release()
-        #print "mni ref loaded", self.mniTemplateRef, self.mniTemplateRef.diskitem
+        #print("mni ref loaded", self.mniTemplateRef, self.mniTemplateRef.diskitem)
         return self.mniTemplateRef
       else:
         anatomistModule.Anatomist.__getattr__(self, name)
@@ -667,7 +668,7 @@ if anatomistImport:
                             maxVal=white[0] + white[1] * 3,
                             absoluteMode=True)
         except:
-          print 'Warning: histogram could not be read:', hanfile
+          print('Warning: histogram could not be read:', hanfile)
 
       window.addObjects( [object] )
       return {"object" : object, "window" : window, "file" : fileRef}
@@ -754,7 +755,6 @@ if anatomistImport:
       interpolation=None ):
       """Load a mesh file and apply the texture with the palette"""
       mesh = self.loadObject( meshFile )
-      print mesh, type( mesh )
       if not mesh.getInternalRep():
         raise RuntimeError( 'Anatomist could not read file %s' \
           % meshFile.fullPath() )
@@ -783,7 +783,7 @@ if anatomistImport:
         "window" : window, "meshFile" : meshFile, "textureFile" : textureFile}
 
     def close( self ):
-      # print 'CLOSE !!!'
+      # print('CLOSE !!!')
       if neuroConfig.anatomistImplementation != 'threaded':
         anatomistModule.Anatomist.close( self )
       else:
@@ -791,7 +791,7 @@ if anatomistImport:
         #self.getControlWindow().close()
         reusablewinhook.uninstallWindowHandler()
         anatomistModule.Anatomist.close( self )
-      print 'anatomist closed.'
+      print('anatomist closed.')
 
   # end of Anatomist class
 

@@ -57,6 +57,7 @@ Several classes inheriting from :py:class:`ScannerRuleBuilder` are used to assoc
 
 
 """
+from __future__ import print_function
 import types, sys, os, time
 from brainvisa.configuration import neuroConfig
 from brainvisa.processing.neuroException import *
@@ -64,6 +65,7 @@ from brainvisa import shelltools
 from soma.sorted_dictionary import SortedDictionary
 from brainvisa.data import neuroDiskItems
 from brainvisa.multipleExecfile import MultipleExecfile
+import six
 
 #----------------------------------------------------------------------------
 class AttrValueFunction( object ):
@@ -367,10 +369,10 @@ class SetAttr( ScannerRuleBuilder ):
     while i+1 < len( params ):
       ( attr, value ) = ( params[ i ], params[ i+1 ] )
       # Check attribute name
-      if type( attr )  is not types.StringType:
+      if type( attr )  is not str:
         raise TypeError( HTMLMessage(_t_('<em><code>%s</code></em> is not a valid attribute name') % str( attr )) )
       # Check attribute value
-      if type( value ) is types.StringType:
+      if type( value ) is str:
         value = getAttrValue( value )
       self.attributes.append( ( attr, value ) )
       i += 2
@@ -616,14 +618,14 @@ class DirectoryScanner( object ):
     for item in directory:
       if item.name[-5: ] == '.minf':
         if debug:
-          print >> debug, '-> Skiping', item
+          print('-> Skiping', item, file=debug)
         continue
       if debug:
-        print >> debug, '-> Examining', item
-        print >> debug, '   time:', time.ctime()
-        print >> debug, '   attributes:'
+        print('-> Examining', item, file=debug)
+        print('   time:', time.ctime(), file=debug)
+        print('   attributes:', file=debug)
         for n, v in item.attributes().items():
-          print >> debug, '    ', n, '=', repr( v )
+          print('    ', n, '=', repr( v ), file=debug)
       checkedFormats = {}
       identified= 0
       for rule in self.rules:
@@ -632,10 +634,13 @@ class DirectoryScanner( object ):
         if rule.formats is None:
           # No format list check only pattern
           position = 0
-          if debug: print >> debug, '   rule (without formats list)', rule.pattern.pattern
+          if debug:
+            print('   rule (without formats list)', rule.pattern.pattern,
+                  file=debug)
           matchDict = rule.pattern.match( item )
           if matchDict is not None:
-            if debug: print >> debug, '   -> matched'
+            if debug:
+              print('   -> matched', file=debug)
             known.append( item )
         else:
           # Only formats in self.formats are allowed for this rule
@@ -658,7 +663,7 @@ class DirectoryScanner( object ):
               formatId = ( format, item.name )
               groupedItem = formatGroups.get( formatId )
               if groupedItem is not None:
-                if debug: print >> debug, '   -> grouped with ', groupedItem, 'at position', position
+                if debug: print('   -> grouped with ', groupedItem, 'at position', position, file=debug)
                 item = format.group( groupedItem, item, position = position )
                 formatGroups[ formatId ] = item
                 groupId = ( item.name, item.type, item.format )
@@ -670,10 +675,10 @@ class DirectoryScanner( object ):
 
               # Check if file/directory name without format prefix and sufix
               # match the current rule pattern
-              if debug: print >> debug, '   rule', rule.pattern.pattern
+              if debug: print('   rule', rule.pattern.pattern, file=debug)
               matchDict = rule.pattern.match( item )
               if matchDict is not None:
-                if debug: print >> debug, '   -> matched'
+                if debug: print('   -> matched', file=debug)
                 format.setFormat( item, ( rule, matchDict ) )
                 # Set the definite name of the item
                 if rule.itemName:
@@ -681,13 +686,14 @@ class DirectoryScanner( object ):
                     item.name = rule.itemName.getValue( item, matchDict )
                   else:
                     item.name = rule.itemName
-                if debug: print >> debug, '     item name set to', repr( item.name )
+                if debug:
+                  print('     item name set to', repr( item.name ), file=debug)
                 # Only one item is created for each ( item.name, item.type, item.format ) triplet.
                 # Items are grouped with format.group() method
                 groupId = ( item.name, rule.type, item.format )
                 groupedItem = groups.get( groupId )
                 if groupedItem is not None:
-                  if debug: print >> debug, '   -> grouped with ', groupedItem, 'at position', position
+                  if debug: print('   -> grouped with ', groupedItem, 'at position', position, file=debug)
                   item = format.group( groupedItem, item, position = position, matchRule=matchDict )
                   groups[ groupId ] = item
                   # item is merged into groupedItem (wich is identified). Therefore further
@@ -723,7 +729,7 @@ class DirectoryScanner( object ):
               debug.write( '   Setting local attribute: ' )
             else:
               debug.write( '   Setting global attribute: ' )
-            print >> debug, rule.fileNameAttribute, '=', repr( star )
+            print(rule.fileNameAttribute, '=', repr( star ), file=debug)
           if rule.fileNameAttributeIsWeak:
             item._setLocal( rule.fileNameAttribute, star )
           else:
@@ -746,11 +752,12 @@ class DirectoryScanner( object ):
           item.setPriority( rule.priority, priorityOffset=rule.priorityOffset )
 
           if debug:
-            print >> debug, '   identified as', item.name, 'by rule', rule.pattern
+            print('   identified as', item.name, 'by rule', rule.pattern,
+                  file=debug)
             if rule.scanner is None:
-              print >> debug, '     rule has no scanner'
+              print('     rule has no scanner', file=debug)
             else:
-              print >> debug, '     rule scanner:', ', '.join( [i.pattern.pattern for i in rule.scanner.rules] )
+              print('     rule scanner:', ', '.join( [i.pattern.pattern for i in rule.scanner.rules] ), file=debug)
 
           # A matching rule has been found, do not inspect other rules
           identified = 1
@@ -758,7 +765,7 @@ class DirectoryScanner( object ):
       # After for rule in ... 
       # if item is not identified, try to find its format accoding to filename and group files that are part of item format
       if not identified:
-        if debug: print >> debug, '     -> Not identified:', item
+        if debug: print('     -> Not identified:', item, file=debug)
         item.findFormat()
         if item.format:
           formatId = ( item.format, item.name )
@@ -906,7 +913,7 @@ class FileSystemOntology( object ):
           ruleInExtenso.declared_attributes.update( r.declared_attributes )
           # Prepend "../" to all _declared_attributes_location
           ruleInExtenso._declared_attributes_location = \
-          dict((att,os.path.join('..', path)) for att, path in ruleInExtenso._declared_attributes_location.iteritems())
+          dict((att,os.path.join('..', path)) for att, path in six.iteritems(ruleInExtenso._declared_attributes_location))
           for att in r.declared_attributes:
             self._declared_attributes.add(att)
             ruleInExtenso._declared_attributes_location[att] = 'fso_attributes.json'
@@ -985,7 +992,7 @@ class FileSystemOntology( object ):
   def getTypesFormats( self, types ):
     if getattr(self, '_formatsByTypeName', None) is None:
       self._formatsByTypeName = {}
-      for type, rules in self.typeToPatterns.iteritems():
+      for type, rules in six.iteritems(self.typeToPatterns):
         typeFormats = self._formatsByTypeName.setdefault(type.name,[])
         for rule in rules:
           if rule.formats:
@@ -1065,7 +1072,7 @@ class FileSystemOntology( object ):
       self._insert( True, False, path, *content )
 
     def _insert( self, first, last, path, *content ):
-#dbg#      print '!_insert! in', path, first, '(', self.localDict[ '__name__' ], ')'
+#dbg#      print('!_insert! in', path, first, '(', self.localDict[ '__name__' ], ')')
       contentScanner = SetContent( *content ).scanner
       for ruleBuilder in self.localDict[ 'hierarchy' ]:
         if isinstance( ruleBuilder, SetContent ):
@@ -1084,10 +1091,10 @@ class FileSystemOntology( object ):
               break
           if found is None:
             if pattern.find( '*' ) == -1:
-#dbg#              print '!_insert!   creating', '/'.join( currentPattern )
+#dbg#              print('!_insert!   creating', '/'.join( currentPattern ))
               # Create a rule for that directory
               found = SetContent( pattern, SetContent() ).scanner
-#dbg#              print '!_insert!     adding rules:', ', '.join( [r.pattern.pattern for r in found.rules] )
+#dbg#              print('!_insert!     adding rules:', ', '.join( [r.pattern.pattern for r in found.rules] ))
               scanner.rules += found.rules
               found = found.rules[0].scanner
             else:
@@ -1112,7 +1119,7 @@ class FileSystemOntology( object ):
                 scannerRule.scanner.possibleTypes.update( rule.scanner.possibleTypes )
                 break
           if not found:
-#dbg#            print '!_insert!   add', rule.pattern.pattern, first
+#dbg#            print('!_insert!   add', rule.pattern.pattern, first)
             if not hasattr( scanner, '_lastpos' ):
               scanner._lastpos = len( scanner.rules )
             if first:
@@ -1137,7 +1144,7 @@ class FileSystemOntology( object ):
     tab = '  '
     anyType = neuroDiskItems.getDiskItemType( 'Any type' )
     ontology = { anyType.name: [ (), None ] }
-    for type, rules in self.typeToPatterns.iteritems():
+    for type, rules in six.iteritems(self.typeToPatterns):
       keys = []
       for rule in rules:
         ruleAttributes = set( rule.pattern.namedRegex() )
@@ -1164,7 +1171,7 @@ class FileSystemOntology( object ):
       else:
         ontology[ type.name ] = [ keys, None ]
     for type in neuroDiskItems.diskItemTypes.itervalues():
-      if not ontology.has_key( type.name ):
+      if type.name not in ontology:
         if type.parent:
           ontology[ type.name ] = [ (), type.parent.name ]
         else:
@@ -1180,58 +1187,60 @@ class FileSystemOntology( object ):
           return False
         return keepAttribute( ontology, parent, attribute )
       return True
-    for k, v in ontology.iteritems():
+    for k, v in six.iteritems(ontology):
       v[ 0 ] = [i for i in v[0] if keepAttribute(ontology, k, i)]
     
-    print >> file, '\n\n#' + '=' * 79        
-    print >> file, '#  Ontology:', self.name
-    print >> file, '#' + '=' * 79
-    for typeName, ( attributes, parent ) in ontology.iteritems():
-      print >> file
-      print >> file, '#' + '-' * 79
-      print >> file, 'newType( ' + repr(typeName) + ','
+    print('\n\n#' + '=' * 79, file=file)
+    print('#  Ontology:', self.name, file=file)
+    print('#' + '=' * 79, file=file)
+    for typeName, ( attributes, parent ) in six.iteritems(ontology):
+      print(file=file)
+      print('#' + '-' * 79, file=file)
+      print('newType( ' + repr(typeName) + ',', file=file)
       for a in attributes:
-        print >> file, tab + repr( tuple( a ) ) + ','
+        print(tab + repr( tuple( a ) ) + ',', file=file)
       if parent is not None:
-        print >> file, tab + 'parent=' + repr(parent) + ','
-      print >> file, '),'
-    print >> file
-    print >> file, '# all FSO keys:'
+        print(tab + 'parent=' + repr(parent) + ',', file=file)
+      print('),', file=file)
+    print(file=file)
+    print('# all FSO keys:', file=file)
     for attributes in allKeys:
-      print >> file, '#' + tab + ', '.join([repr(i) for i in attributes])
+      print('#' + tab + ', '.join([repr(i) for i in attributes]), file=file)
 
   def printFSO( self, file=sys.stdout ):
-    print >> file, '\n\n#' + '=' * 79        
-    print >> file, '#  File System Ontology:', self.name
-    print >> file, '#' + '=' * 79
+    print('\n\n#' + '=' * 79, file=file)
+    print('#  File System Ontology:', self.name, file=file)
+    print('#' + '=' * 79, file=file)
     tab = '  '
-    for type, rules in self.typeToPatterns.iteritems():
-      print >> file
-      print >> file, '#' + '-' * 79
-      print >> file, 'newRules(', repr(type.name), ','
+    for type, rules in six.iteritems(self.typeToPatterns):
+      print(file=file)
+      print('#' + '-' * 79, file=file)
+      print('newRules(', repr(type.name), ',', file=file)
       for rule in rules:
         file.write( tab + repr( rule.pattern.pattern ) + "," )
         if rule.priority or rule.priorityOffset or \
            rule.localAttributes or rule.formats is not type.formats:
-          print >> file, ' {'
+          print(' {', file=file)
           if rule.formats is not type.formats:
-            print >> file, tab * 2 + "'formats':", repr(rule.formats) + ','
+            print(tab * 2 + "'formats':", repr(rule.formats) + ',', file=file)
           if rule.priority:
-            print >> file, tab * 2 + "'priority':", repr( rule.priority ) + ','
+            print(tab * 2 + "'priority':", repr( rule.priority ) + ',',
+                  file=file)
           if rule.priorityOffset:
-            print >> file, tab * 2 + "'priorityOffset':", repr( rule.priorityOffset ) + ','
+            print(tab * 2 + "'priorityOffset':",
+                  repr( rule.priorityOffset ) + ',', file=file)
           if rule.localAttributes:
             attributes = tuple(rule.pattern.namedRegex())
-            print >> file, tab * 2 + "'attributes': {"
+            print(tab * 2 + "'attributes': {", file=file)
             for n, v in rule.localAttributes:
               if n in attributes: continue
-              print >> file, tab * 3 + repr( n ) + ':', repr( v ) + ','
-            print >> file, tab * 2 + '},'
-          print >> file, tab + '},'
+              print(tab * 3 + repr( n ) + ':', repr( v ) + ',', file=file)
+            print(tab * 2 + '},', file=file)
+          print(tab + '},', file=file)
         else:
-          print >> file
-      print >> file, '),'
-    print >> file
+          print(file=file)
+      print('),', file=file)
+    print(file=file)
   
   
   def printFormats( self, file=sys.stdout ):
@@ -1251,9 +1260,9 @@ class FileSystemOntology( object ):
           output = '# ' + output +  '???'
         output +=  "', "
       output +=  ') )'
-      print >> file, output
-    print >> file
+      print(output, file=file)
+    print(file=file)
     
     for formatList in neuroDiskItems.formatLists.itervalues():
-      print >> file, 'newFormatList( ' + repr( formatList.name ) + ', ' + repr( tuple( (f.name for f in formatList) ) ) + ' )'
+      print('newFormatList( ' + repr( formatList.name ) + ', ' + repr( tuple( (f.name for f in formatList) ) ) + ' )', file=file)
 

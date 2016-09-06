@@ -41,11 +41,16 @@
 from __future__ import print_function
 __docformat__ = "epytext en"
 
+import sys
 from brainvisa.processing.qtgui import backwardCompatibleQt as qt
 from brainvisa.configuration import neuroConfig
 from brainvisa.data import neuroHierarchy
 import brainvisa.processes
 from brainvisa.processing.qt4gui import neuroProcessesGUI
+
+if sys.version_info[0] >= 3:
+    xrange = range
+    unicode = str
 
 
 class UpdateDatabasesGUI( qt.QWidget ):

@@ -30,8 +30,13 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 import os
+import sys
 from soma.translation import translate as _
 from soma.undefined import Undefined
+
+if sys.version_info[0] >= 3:
+    unicode = str
+
 
 class Format( object ):
   def __init__( self, name, extensions, isMinf=False ):

@@ -106,6 +106,15 @@ except ImportError:
 else:
   _soma_workflow = True
 
+if sys.version_info[0] >= 3:
+    def items(thing):
+        return list(thing.items())
+    unicode = str
+    xrange = range
+else:
+    def items(thing):
+        return thing.items()
+
 #----------------------------------------------------------------------------
 def restartAnatomist():
   from brainvisa import anatomist
@@ -327,7 +336,7 @@ class SomaWorkflowWidget(ComputingResourceWidget):
   def workflow_filter(self, workflows):
     new_workflows = {}
     self.serialized_processes = {}
-    for wf_id, (name, date) in workflows.iteritems():
+    for wf_id, (name, date) in six.iteritems(workflows):
       if name != None and \
         len(name) > len(SomaWorkflowWidget.brainvisa_code)-1 and \
         name[0:len(SomaWorkflowWidget.brainvisa_code)] == SomaWorkflowWidget.brainvisa_code:
@@ -1161,7 +1170,7 @@ class ExecutionContextGUI( brainvisa.processes.ExecutionContext):
 
   def ask( self, message, *buttons, **kwargs ):
     modal=kwargs.get("modal", 1)
-    dlg = apply( self.dialog, (modal, message, None) + buttons )
+    dlg = self.dialog(modal, message, None, *buttons)
     return mainThreadActions().call( dlg.call )
 
   def dialog( self, parentOrFirstArgument, *args, **kwargs ):
@@ -1603,7 +1612,7 @@ class ParameterizedWidget( QWidget ):
     #sort signature item by section title
     sectionTitleList = []#useful to keep signature order
     sectionTitleSortedDict = {}
-    for key, parameter in self.parameterized.signature.items():
+    for key, parameter in items(self.parameterized.signature):
       if neuroConfig.userLevel >= parameter.userLevel and parameter.visible:
         sectionTitle = parameter.getSectionTitleIfDefined()
         sectionTitleList.append(sectionTitle)
@@ -1694,7 +1703,7 @@ class ParameterizedWidget( QWidget ):
       self.labels[x].set_read_only(read_only)
 
   def parameterizedDeleted( self, parameterized ):
-    for k, p in parameterized.signature.items():
+    for k, p in items(parameterized.signature):
       try:
         parameterized.removeParameterObserver( k, self.parameterChanged )
       except ValueError:
@@ -1713,7 +1722,7 @@ class ParameterizedWidget( QWidget ):
       self.editors[x].releaseCallbacks()
 
   def closeEvent( self, event ):
-    for k, p in self.parameterized.signature.items():
+    for k, p in items(self.parameterized.signature):
       try:
         self.parameterized.removeParameterObserver( k, self.parameterChanged )
       except ValueError:
@@ -1807,7 +1816,7 @@ class ParameterizedWidget( QWidget ):
           return (False)
 
   def checkReadable( self ):
-    for ( n, p ) in self.parameterized.signature.items():
+    for ( n, p ) in items(self.parameterized.signature):
       if p.checkReadable( getattr( self.parameterized, n, None ) ):
         e = self.editors.get( n )
         if e is not None: e.checkReadable()
@@ -2298,7 +2307,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       self._widgetStack.setCurrentIndex( 0 )
 #    if self.parameterizedWidget is not None:
 #      if documentation is not None:
-#        for ( k, p ) in self.process.signature.items():
+#        for ( k, p ) in items(self.process.signature):
 #          if neuroConfig.userLevel >= p.userLevel:
 #            self.parameterizedWidget.setParameterToolTip( k,
 #              XHTML.html( documentation.get( 'parameters', {} ).get( k, '' ) ) \
@@ -2422,7 +2431,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       children = list( item.children() )
       if len( children ) == 0: # terminal node
         process = item._process
-        for n, p in process.signature.iteritems():
+        for n, p in six.iteritems(process.signature):
           if isinstance( p, WriteDiskItem ):
             v = getattr( item._process, n )
             #test if data is locked
@@ -2936,7 +2945,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
 
   def system( self, *args, **kwargs ):
-    ret = apply( ExecutionContextGUI.system, (self,) + args, kwargs )
+    ret = ExecutionContextGUI.system(self, *args, **kwargs)
     mainThreadActions().push( self._checkReadable )
     return ret
 
@@ -3388,7 +3397,7 @@ class UserDialog( QDialog ):
     deleteGroup1 = 1
     i=0
     for b in buttons:
-      if type( b ) in ( types.TupleType, types.ListType ):
+      if type( b ) in (tuple, list):
         caption, action = b
         btn = QPushButton( unicode( caption ) )
         group1Layout.addWidget(btn)

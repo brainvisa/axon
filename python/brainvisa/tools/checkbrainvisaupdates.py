@@ -4,6 +4,7 @@
 import re, platform, sys
 from brainvisa.configuration import neuroConfig
 import six.moves.urllib.request as urllib2
+import six
 
 filesaddress = 'ftp://ftp.cea.fr/pub/dsv/anatomist/binary'
 
@@ -35,13 +36,19 @@ def checkUpdates():
     upgrade = False
     exactarch = None
     compatiblearch = None
+    if sys.version_info[0] >= 3:
+        decode = True
+    else:
+        decode = False
     for l in lines:
+        if decode:
+            l = l.decode()
         m = rexp.match( l )
         if not m:
             continue
         system = m.group(2)
         osid = None
-        for s, sid in sysnames.iteritems():
+        for s, sid in six.iteritems(sysnames):
             if system.startswith( s ) and sys.platform == sid:
                 osid = sid
                 break

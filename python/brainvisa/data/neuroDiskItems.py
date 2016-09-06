@@ -1508,6 +1508,21 @@ class BackwardCompatiblePatterns:
   def __cmp__( self, other ):
     return self.patterns != other.patterns
 
+  def __eq__(self, other):
+    return self.patterns == other.patterns
+
+  def __lt__(self, other):
+    return self.patterns < other.patterns
+
+  def __le__(self, other):
+    return self.patterns <= other.patterns
+
+  def __gt__(self, other):
+    return self.patterns > other.patterns
+
+  def __ge__(self, other):
+    return self.patterns >= other.patterns
+
 
 #----------------------------------------------------------------------------
 formats = {}
@@ -1769,6 +1784,9 @@ class Format(object):
     """
     return self.patterns
 
+  def __lt__(self, other):
+    return self.name < other.name
+
 
 #----------------------------------------------------------------------------
 class MinfFormat( Format ):
@@ -1997,10 +2015,14 @@ class NamedFormatList( UserList ):
       return other + self.data
     else:
       return list(other) + self.data
-      
+
   def __mul__(self, n):
       return self.data*n
+
   __rmul__ = __mul__
+
+  def __len__(self):
+      return len(self.data)
 
 
 #----------------------------------------------------------------------------

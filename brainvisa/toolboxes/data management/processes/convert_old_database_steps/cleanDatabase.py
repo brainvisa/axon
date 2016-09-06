@@ -74,7 +74,7 @@ def execution( self, context ):
         context.write("* Clean database")
         try:
           cleaner.process(debug=True)
-        except Exception, e:
+        except Exception as e:
           context.error("Errors during conversion : "+str(e))
         context.write("* Generate undo script in database directory.")
         cleaner.generateUndoScripts()

@@ -438,7 +438,7 @@ def getHTMLFileName(processId, documentation=None, language=None):
     else:
         defaultPath = os.path.dirname(neuroConfig.docPath)
     return os.path.join(defaultPath, language, 'processes',
-                        string.replace(processInfo.id, ' ', '_') + '.html')
+                        processInfo.id.replace(' ', '_') + '.html')
 
 #----------------------------------------------------------------------------
 
@@ -881,7 +881,7 @@ class Parameterized(object):
 
     def __setattr__(self, name, value):
         """Calls :py:func:`setValue` if the parameter is described in the signature."""
-        if self.signature.has_key(name):
+        if name in self.signature:
             self.setValue(name, value)
         else:
             self.__dict__[name] = value
@@ -996,7 +996,7 @@ class Parameterized(object):
             sourcesList = sources
         for p in [dest for dest in [destName] if dest is not None] \
                 + list(sourcesList):
-            if not self.signature.has_key(p):
+            if p not in self.signature:
                 raise ValueError(
                     HTMLMessage(_t_('<em>%s</em> is not a valid parameter name') % p))
         if function is None:
@@ -1234,10 +1234,10 @@ class Parameterized(object):
 
         # Remove unused links
         for n in self._links.keys():
-            if not self.signature.has_key(n):
+            if n not in self.signature:
                 del self._links[n]
         for n in self._warn.keys():
-            if not self.signature.has_key(n):
+            if n not in self.signature:
                 del self._warn[n]
 
         # Notify listeners
@@ -1256,7 +1256,7 @@ class Parameterized(object):
                 do = self
             # do = (self if destObject is None else destObject) # not work in
             # python 2.4
-            if not do.signature.has_key(destParameter):
+            if destParameter not in do.signature:
                 raise KeyError(_t_('Object %(object)s has not parameter "%(param)s"') %
                                {'object': unicode(do), 'param': destParameter})
             for k, l in self._links.items():
@@ -1272,7 +1272,7 @@ class Parameterized(object):
     def clearLinksFrom(self, *args):
         """Removes all links associated to a parameter in `args` as a source. """
         for k in args:
-            if self._links.has_key(k):
+            if k in self._links:
                 del self._links[k]
 
     def cleanup(self):
@@ -1858,7 +1858,7 @@ def signalName(signalNumber):
 
 #----------------------------------------------------------------------------
 def escapeQuoteForShell(s):
-    return string.replace(s, "'",  "'\"'\"'")
+    return s.replace("'",  "'\"'\"'")
 
 
 #-------------------------------------------------------------------------
@@ -1986,7 +1986,7 @@ class ExecutionNode(object):
         :param string name: name which identifies the node
         :param node: an :py:class:`ExecutionNode` which will be added to this node's children.
         '''
-        if self._children.has_key(name):
+        if name in self._children:
             raise KeyError(
                 HTMLMessage(_t_('<em>%s</em> already defined') % (name, )))
         if not isinstance(node, ExecutionNode):
@@ -2003,7 +2003,7 @@ class ExecutionNode(object):
 
         :param string name: name which identifies the node
         '''
-        if not self._children.has_key(name):
+        if name not in self._children:
             raise KeyError(
                 HTMLMessage(_t_('<em>%s</em> not defined') % (name, )))
         c = self._children[name]
@@ -2043,9 +2043,9 @@ class ExecutionNode(object):
         If the attribute is in the signature of the corresponding parameterized object, it is modified.
         """
         if self._parameterized is not None and \
-           self._parameterized().signature.has_key(attribute):
+           attribute in self._parameterized().signature:
             setattr(self._parameterized(), attribute, value)
-        elif self._children.has_key(attribute):
+        elif attribute in self._children:
             raise RuntimeError(
                 HTMLMessage(_t_('Direct modification of execution node <em>%s</em> is not allowed.') % (attribute, )))
         else:
@@ -2058,7 +2058,7 @@ class ExecutionNode(object):
         if p is not None and hasattr(p, attribute):
             return getattr(p, attribute)
         children = self.__dict__['_children']
-        if children.has_key(attribute):
+        if attribute in children:
             return children[attribute]
         raise AttributeError(attribute)
 
@@ -2229,7 +2229,7 @@ class ExecutionNode(object):
         if parameterized is not None:
             parameterized = parameterized()
         name = l[-1]
-        if parameterized is None or not parameterized.signature.has_key(name):
+        if parameterized is None or name not in parameterized.signature:
             raise KeyError(name)
         return (parameterized, name)
 
@@ -2354,11 +2354,11 @@ class ProcessExecutionNode(ExecutionNode):
 
     def __setattr__(self, attribute, value):
         if self._parameterized is not None and \
-           self._parameterized().signature.has_key(attribute):
+           attribute in self._parameterized().signature:
             setattr(self._parameterized(), attribute, value)
         else:
             eNode = getattr(self._process, '_executionNode', None)
-            if eNode is not None and eNode._children.has_key(attribute):
+            if eNode is not None and attribute in eNode._children:
                 raise RuntimeError(
                     HTMLMessage(_t_('Direct modification of execution node <em>%s</em> is not allowed.') % (attribute, )))
             self.__dict__[attribute] = value
@@ -2492,7 +2492,7 @@ class SerialExecutionNode(ExecutionNode):
 
     def removeChild(self, name):
         if self.possibleChildrenProcesses:
-            if not self._children.has_key(name):
+            if name not in self._children:
                 raise KeyError(
                     HTMLMessage(_t_('<em>%s</em> not defined') % (name, )))
 
@@ -3427,8 +3427,18 @@ class ExecutionContext(object):
 
     def _write(self, html):
         if not hasattr(self, '_writeHTMLParser'):
-            self._writeHTMLParser = HTMLParser(formatter.AbstractFormatter(
-                                                  formatter.DumbWriter(sys.stdout, 80)))
+            if sys.version_info[0] >= 3:
+                class Parser(HTMLParser):
+                    def __init__(self, formatter):
+                        super(Parser, self).__init__()
+                        self.formatter = formatter
+                    def handle_data(self, data):
+                        self.formatter.add_flowing_data(data)
+            else:
+                Parser = HTMLParser
+            self._writeHTMLParser = Parser(
+                formatter.AbstractFormatter(
+                    formatter.DumbWriter(sys.stdout, 80)))
         self._writeHTMLParser.feed(html + '<br>\n')
 
     def warning(self, *messages):
@@ -3596,7 +3606,7 @@ class ExecutionContext(object):
     def _removeInterruptionAction(self, number):
         self._interruptionLock.acquire()
         try:
-            if self._interruptionActions.has_key(number):
+            if number in self._interruptionActions:
                 del self._interruptionActions[number]
         finally:
             self._interruptionLock.release()
@@ -4062,7 +4072,7 @@ def getProcess(processId, ignoreValidation=False, checkUpdate=True):
     global _askUpdateProcess
     if processId is None:
         return None
-    if isinstance(processId, Process) or (type(processId) in (types.ClassType, types.TypeType) and issubclass(processId, Process)) or isinstance(processId, weakref.ProxyType):
+    if isinstance(processId, Process) or (isinstance(processId, type) and issubclass(processId, Process)) or isinstance(processId, weakref.ProxyType):
         result = processId
         id = getattr(processId, '_id', None)
         if id is not None:
@@ -4991,7 +5001,7 @@ class ProcessTree(EditableTree):
         :param list content: initial content, list of children to add in the tree.
         """
         if id is None and name is not None:
-            id = string.lower(name)
+            id = name.lower()
         super(ProcessTree, self).__init__(_t_(name), id, editable, content)
         self.initName = name
         self.onAttributeChange("name", self.updateName)
@@ -5146,7 +5156,7 @@ class ProcessTree(EditableTree):
             defaultName = _t_(self.defaultName)
             if id is None or id == defaultName:
                 if name is not None and name != defaultName:
-                    id = string.lower(name)
+                    id = name.lower()
                 else:
                     id = None
             # from brainvisa.toolboxes import getToolbox
@@ -5339,7 +5349,7 @@ class ProcessTrees(ObservableAttributes, ObservableSortedDictionary):
         recursive method
         """
         key = processTree.id
-        if self.has_key(key):
+        if key in self:
             for v in processTree.values():  # item is also a dictionary and contains several elements, add each value in the tree item
                 self[key].add(v)
         else:  # new item
@@ -5396,7 +5406,7 @@ class ProcessTrees(ObservableAttributes, ObservableSortedDictionary):
             # The id of the selected tree is stored in the minf file. But
             # before, the name was stored, so if the value is not a key, search
             # by names
-            if self.has_key(currentTree):
+            if currentTree in self:
                 self.selectedTree = self[currentTree]
             else:
                 for tree in self.values():
