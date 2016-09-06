@@ -36,7 +36,7 @@ import brainvisa.processes
 from datetime import date
 from datetime import datetime
 from datetime import timedelta
-import StringIO
+from six.moves import StringIO
 import distutils, os, sys, re
 import types
 from brainvisa.processing.qtgui.backwardCompatibleQt import *
@@ -62,6 +62,7 @@ from soma.wip.application.api import Application
 import soma.functiontools
 import threading
 import socket
+import six
 try:
   import sip
 except:
@@ -82,7 +83,7 @@ from soma.qt4gui.api import ApplicationQt4GUI
 from brainvisa.data.databaseCheck import BVChecker_3_1
 from brainvisa.data import neuroHierarchy
 from brainvisa.tools import checkbrainvisaupdates
-import urllib
+from six.moves import urllib
 
 # Because soma_workflow uses PyQt4.uic, we need to first initialize
 # soma.qt_gui.qt_backend.uic in order to hack PyQt4.uic and fix issue #13432
@@ -152,7 +153,7 @@ def startShell():
       if a and a.launched:
         a.launched = False
         a._restartshell_launched = True
-  except Exception, e:
+  except Exception as e:
     print(e)
   mainThreadActions().push( qApp.exit )
 
@@ -4502,7 +4503,8 @@ def initializeProcessesGUI():
       _computing_resource_pool.add_default_connection()
       _workflow_application_model = WorkflowApplicationModel(_computing_resource_pool)
 
-    exec 'from brainvisa.processing.qt4gui.neuroProcessesGUI import *' in brainvisa.processes.__dict__
+    six.exec('from brainvisa.processing.qt4gui.neuroProcessesGUI import *',
+             brainvisa.processes.__dict__)
     brainvisa.processes._defaultContext = ExecutionContextGUI()
 
 def html_with_local_images(html):
