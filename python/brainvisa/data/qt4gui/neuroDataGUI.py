@@ -7,9 +7,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -24,8 +24,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -46,7 +46,7 @@ buttonMargin = QSize( 4, 4 )
 class DataEditor( object ):
   def __init__( self ):
     pass
-  
+
   def checkValue( self ):
     pass
 
@@ -68,24 +68,27 @@ class DataEditor( object ):
 
 #----------------------------------------------------------------------------
 class StringEditor( QLineEdit, DataEditor ):
-  def __init__( self, parent, name ):
+  def __init__( self, parameter, parent, name ):
     DataEditor.__init__( self )
     QLineEdit.__init__( self, parent )
     if name:
       self.setObjectName( name )
+    self.parameter = parameter
     self.setMaxLength(-1)
     self.connect( self, SIGNAL( 'returnPressed()' ), self.setFocusNext )
     self.connect( self, SIGNAL( 'lostFocus()' ), self.checkValue )
+    if self.parameter.placeholder_text is not None:
+      self.setPlaceholderText(self.parameter.placeholder_text)
     self.value = None
     self.setValue( None, True )
 
   def set_read_only(self, read_only):
     self.setReadOnly(read_only)
     self.setFrame(not read_only)
-      
+
   def getFocus( self ):
     self.selectAll()
-  
+
   def getValue( self ):
     return self.value
 
@@ -93,7 +96,7 @@ class StringEditor( QLineEdit, DataEditor ):
     if text:
       return text
     return None
-  
+
   def setValue( self, value, default = False ):
     if value is None:
       self.setText( '' )
@@ -104,7 +107,7 @@ class StringEditor( QLineEdit, DataEditor ):
       if not default:
         self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
       self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
-  
+
   def setFocusNext( self ):
     self.focusNextChild()
 
@@ -115,16 +118,16 @@ class StringEditor( QLineEdit, DataEditor ):
       self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
       self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
 
-  
+
 
 #----------------------------------------------------------------------------
 class PasswordEditor (StringEditor):
 
-  def __init__( self, parent, name ):
-    StringEditor.__init__( self, parent, name )
+  def __init__( self, parameter, parent, name ):
+    StringEditor.__init__( self, parameter, parent, name )
     self.setEchoMode(QLineEdit.Password)
-      
-      
+
+
 #----------------------------------------------------------------------------
 class NumberEditor( StringEditor ):
   def _valueFromText( self, value ):
@@ -504,8 +507,8 @@ class OpenChoiceEditor( QComboBox, DataEditor ):
 
 #----------------------------------------------------------------------------
 class ListOfVectorEditor( StringEditor ):
-  def __init__( self, parent, name ):
-    StringEditor.__init__( self, parent, name )
+  def __init__( self, parameter, parent, name ):
+    StringEditor.__init__( self, parameter, parent, name )
     self.value = None
 
   def setValue( self, value, default = 0 ):
@@ -527,15 +530,15 @@ class ListOfVectorEditor( StringEditor ):
 
 #----------------------------------------------------------------------------
 class MatrixEditor( StringEditor ):
-  def __init__( self, parent, name ):
-    StringEditor.__init__( self, parent, name )
+  def __init__( self, parameter, parent, name ):
+    StringEditor.__init__( self, parameter, parent, name )
     self.value = None
 
   def setValue( self, value, default = 0 ):
     if value is None:
       self.setText( '' )
     else:
-      self.setText( ' '.join( map( lambda x: ' '.join( map( str, x ) ),
+      self.setText( string.join( map( lambda x: string.join( map( str, x ) ), 
                                       value ), ';' ) )
     self.value = value
 
@@ -566,10 +569,10 @@ class StringListEditor( QLineEdit, DataEditor ):
   def set_read_only(self, read_only):
     self.setReadOnly(read_only)
     self.setFrame(not read_only)
-      
+
   def getFocus( self ):
     self.selectAll()
-  
+
   def getValue( self ):
     return self.value
 
@@ -604,14 +607,14 @@ class StringListEditor( QLineEdit, DataEditor ):
       result.append( current )
     return result
     return text
-  
+
   def setValue( self, value, default=False ):
     if value != self.value:
       self._setValue( value )
       if not default:
         self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
       self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
-    
+
   def _setValue( self, value ):
     self.value = value
     text = ''
@@ -625,7 +628,7 @@ class StringListEditor( QLineEdit, DataEditor ):
     elif value != '':
       text = self._quote( str(value) )
     self.setText( text )
-  
+
   def _quote( self, text ):
     quote = ''
     result = ''
@@ -641,7 +644,7 @@ class StringListEditor( QLineEdit, DataEditor ):
       result += c
     if not quote: quote = "'"
     return quote + result + quote
-  
+
   def setFocusNext( self ):
     self.focusNextChild()
 
@@ -651,7 +654,7 @@ class StringListEditor( QLineEdit, DataEditor ):
       self.value = currentValue
       self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
       self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
-        
+
 
 #----------------------------------------------------------------------------
 
@@ -740,7 +743,7 @@ class ChoiceListEditor( QWidget, DataEditor ):
       layout.setContentsMargins( 10, 10, 10, 10 )
       layout.setSpacing( 5 )
       self.setLayout(layout)
-      
+
       self.clEditor = clEditor
       self.parameter = clEditor.parameter
 
@@ -764,7 +767,7 @@ class ChoiceListEditor( QWidget, DataEditor ):
       layout.addLayout( hb )
       self.list = QListWidget( self )
       layout.addWidget( self.list )
-      
+
       hb = QHBoxLayout()
       hb.setSpacing(6)
       hb.setContentsMargins( 6, 6, 6, 6 )
@@ -806,7 +809,7 @@ class ChoiceListEditor( QWidget, DataEditor ):
         self.valueSelect.setValue( str(n) )
       self.value.append( v )
       self.list.addItem( n )
-    
+
     def addAll( self ):
       for n, v in self.valueSelect.parameter.values:
         self.value.append( v )
@@ -817,14 +820,14 @@ class ChoiceListEditor( QWidget, DataEditor ):
       if i >= 0:
         self.list.takeItem( i )
         del self.value[ i ]
-    
+
     def _ok( self ):
       self.clEditor.setValue( self.value )
       self.close( )
-      
+
     def _cancel( self ):
       self.close( )
-  
+
   def __init__( self, parameter, parent, name ):
     QWidget.__init__( self, parent )
     DataEditor.__init__( self )
@@ -843,10 +846,10 @@ class ChoiceListEditor( QWidget, DataEditor ):
     self.connect( self.btn, SIGNAL( 'clicked()' ), self._selectValues )
     self.value=None
     self.setValue( None, 1 )
-    
+
   def getValue( self ):
     return self.value
-  
+
   def setValue( self, value, default = 0 ):
     self._setValue( value, default )
 
@@ -892,14 +895,14 @@ class ChoiceListEditor( QWidget, DataEditor ):
     except:
       pass
     w.show()
-    
-  
+
+
  #-------------------------------------------------------------------------------
 class PointEditor( QWidget, DataEditor ):
   def __init__( self, parameter, parent, name ):
     if getattr( PointEditor, 'pixSelect', None ) is None:
       setattr( PointEditor, 'pixSelect',
-               QIcon( os.path.join( neuroConfig.iconPath, 
+               QIcon( os.path.join( neuroConfig.iconPath,
                                       'anaIcon_small.png' ) ) )
     DataEditor.__init__( self )
     QWidget.__init__( self, parent )
@@ -916,10 +919,10 @@ class PointEditor( QWidget, DataEditor ):
     self.parameter = parameter
     self.nle = NumberListEditor( None, name )
     layout.addWidget(self.nle)
-    
+
     self.connect( self.nle, SIGNAL( 'newValidValue' ), SIGNAL( 'newValidValue' ) )
     self.connect( self.nle, SIGNAL( 'noDefault' ), SIGNAL( 'noDefault' ) )
-    
+
     self.btnSelect = QPushButton( )
     layout.addWidget(self.btnSelect)
     self.btnSelect.setIcon( self.pixSelect )
@@ -927,13 +930,13 @@ class PointEditor( QWidget, DataEditor ):
     self.btnSelect.setFixedSize( buttonIconSize + buttonMargin )
     self.btnSelect.setFocusPolicy( Qt.NoFocus )
     self.connect( self.btnSelect, SIGNAL( 'clicked()' ), self.selectPressed )
-    
+
     self.nle.setValue( None )
 
   def set_read_only(self, read_only):
     self.btnSelect.setEnabled(not read_only)
     self.nle.set_read_only(read_only)
-    
+
   def getValue( self ):
     return self.nle.getValue()
 
@@ -944,13 +947,13 @@ class PointEditor( QWidget, DataEditor ):
       if self.parameter.precision is not None:
         exp = decimal.Decimal(10) ** -self.parameter.precision
         value = [ decimal.Decimal(str(v)).quantize(exp, decimal.ROUND_HALF_UP) for v in value ]
-        
+
     self.nle.setValue( value, default )
 
   def selectPressed( self ):
     from brainvisa import anatomist
     a= anatomist.Anatomist()
-    
+
     if self.parameter._Link is not None :
       linked = self.parameter._Link
       self.anatomistObject = a.loadObject( linked )
@@ -960,7 +963,7 @@ class PointEditor( QWidget, DataEditor ):
       position = a.linkCursorLastClickedPosition( self.anatomistObject.referential )
     else:
       position = a.linkCursorLastClickedPosition()
-    
+
     if position is None:
       position=[0 for i in xrange(self.parameter.dimension)]
 
@@ -1002,7 +1005,7 @@ class PointListEditor( QWidget, DataEditor ):
     self.btnSelect.setCheckable(True)
     self.btnSelect.setFocusPolicy( Qt.NoFocus )
     self.connect( self.btnSelect, SIGNAL( 'clicked()' ), self.selectPressed )
-    
+
     self.btnErase = QPushButton()
     layout.addWidget(self.btnErase)
     self.btnErase.setIcon( self.pixErase )
@@ -1010,17 +1013,17 @@ class PointListEditor( QWidget, DataEditor ):
     self.btnErase.setFixedSize( buttonIconSize + buttonMargin )
     self.btnSelect.setFocusPolicy( Qt.NoFocus )
     self.connect( self.btnErase, SIGNAL( 'clicked()' ), self.erasePressed )
-    
+
     self.setValue( None, 1 )
-     
+
   def getFocus( self ):
     self.led.selectAll()
-  
+
   def getValue( self ):
     text = unicode( self.led.text() )
     if text:
       return map(lambda x: map( float, x.split() ),
-                 strintext.split(','))
+                  string.split( text, ',' ) )      
 
   def setValue( self, value, default = 0 ):
     self._setValue( value )
@@ -1029,9 +1032,9 @@ class PointListEditor( QWidget, DataEditor ):
     if not value:
       self.led.setText( '' )
     else:
-      self.led.setText( ' '.join( map(
+      self.led.setText( string.join( map( 
         lambda point: ' '.join( map( str, point ) ), value ), ',' ) )
-  
+
   def setFocusNext( self ):
     self.focusNextChild()
 
@@ -1043,7 +1046,7 @@ class PointListEditor( QWidget, DataEditor ):
     else:
       self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
       self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), v )
-        
+
 
   def selectPressed( self ):
     from brainvisa import anatomist
@@ -1069,11 +1072,11 @@ class PointListEditor( QWidget, DataEditor ):
 class GenericListSelection( QWidget ):
   def __init__( self, parent, name ):
     if getattr( GenericListSelection, 'pixUp', None ) is None:
-      setattr( GenericListSelection, 'pixUp', 
+      setattr( GenericListSelection, 'pixUp',
         QIcon( os.path.join( neuroConfig.iconPath, 'up.png' )) )
-      setattr( GenericListSelection, 'pixDown', 
+      setattr( GenericListSelection, 'pixDown',
         QIcon( os.path.join( neuroConfig.iconPath, 'down.png' )) )
-    
+
     QWidget.__init__( self, parent.topLevelWidget(), Qt.Dialog | Qt.Tool | Qt.WindowStaysOnTopHint )
     if name:
       self.setObjectName( name )
@@ -1082,16 +1085,16 @@ class GenericListSelection( QWidget ):
     layout.setContentsMargins( 10, 10, 10, 10 )
     layout.setSpacing( 5 )
     self.setLayout(layout)
-    
+
     self.values = []
-    
+
     self.lbxValues = QListWidget( )
     self.connect( self.lbxValues, SIGNAL('currentItemChanged( QListWidgetItem *, QListWidgetItem *  )'), self._currentChanged )
     layout.addWidget( self.lbxValues )
 
     hb = QHBoxLayout()
     hb.setSpacing( 6 )
-    
+
     self.btnAdd = QPushButton( _t_( 'Add' ) )
     self.connect( self.btnAdd, SIGNAL( 'clicked()' ), self._add )
     hb.addWidget( self.btnAdd )
@@ -1100,7 +1103,7 @@ class GenericListSelection( QWidget ):
     self.btnRemove.setEnabled( 0 )
     self.connect( self.btnRemove, SIGNAL( 'clicked()' ), self._remove )
     hb.addWidget( self.btnRemove )
-    
+
     self.btnUp = QPushButton( )
     self.btnUp.setIcon( self.pixUp )
     self.btnUp.setIconSize(buttonIconSize)
@@ -1119,7 +1122,7 @@ class GenericListSelection( QWidget ):
     hb.addItem( spacer )
 
     layout.addLayout( hb )
-      
+
     hb = QHBoxLayout()
     hb.setSpacing(6)
     hb.setContentsMargins( 6, 6, 6, 6 )
@@ -1138,7 +1141,7 @@ class GenericListSelection( QWidget ):
   def closeEvent( self, event ):
     neuroConfig.unregisterObject( self )
     QWidget.closeEvent( self, event )
-    
+
   def _currentChanged( self ):
     index = self.lbxValues.currentRow()
     if index >= 0 and index < len( self.values ):
@@ -1170,15 +1173,15 @@ class GenericListSelection( QWidget ):
           #self.lbxValues.insertItem( '<' + _t_('None') + '>' )
         #else:
           #self.lbxValues.insertItem( v.fileName() )
-      #self.lbxValues.setCurrentItem( len( self.values ) - 1 )   
+      #self.lbxValues.setCurrentItem( len( self.values ) - 1 )
     except:
       showException( parent=self )
-  
+
   def _remove( self ):
     index = self.lbxValues.currentRow()
     del self.values[ index ]
     self.lbxValues.takeItem( index )
-    
+
   def _up( self ):
     index = self.lbxValues.currentRow()
     tmp = self.values[ index ]
@@ -1186,7 +1189,7 @@ class GenericListSelection( QWidget ):
     self.values[ index - 1 ] = tmp
     item=self.lbxValues.takeItem( index )
     self.lbxValues.insertItem( index - 1, item )
-    
+
   def _down( self ):
     index = self.lbxValues.currentRow()
     tmp = self.values[ index ]
@@ -1194,7 +1197,7 @@ class GenericListSelection( QWidget ):
     self.values[ index + 1 ] = tmp
     item=self.lbxValues.takeItem( index )
     self.lbxValues.insertItem( index + 1, item )
-  
+
   def setValue( self, value ):
     if isinstance(value, (list, tuple)):
       self.values = []
@@ -1207,12 +1210,12 @@ class GenericListSelection( QWidget ):
           pass
           # TODO
           #self.lbxValues.insertItem( v.fileName() )
-    
+
   def _ok( self ):
     # TODO
     #self.dilEditor._newValue( self.values )
     self.close( True )
-    
+
   def _cancel( self ):
     self.close( True )
 
@@ -1227,24 +1230,24 @@ class ListOfListEditor( QPushButton, DataEditor ):
       self.setObjectName( name )
     self.setValue( None, True )
     self.connect( self, SIGNAL( 'clicked()' ), self.startEditValues )
-  
+
   def getValue( self ):
     return self._value
-    
+
   def setValue( self, value, default = False ):
     self._value = value
     if value:
       self.setText( _t_( 'list of length %d' ) % ( len( value ), ) )
     else:
       self.setText( _t_( 'empty list' ) )
-  
+
   def startEditValues( self ):
     if self.editValuesDialog is None:
       self.editValuesDialog = GenericListSelection( self.parentWidget(), self.objectName() )
       self.connect( self.editValuesDialog, SIGNAL( 'accept' ), self.acceptEditedValues )
     self.editValuesDialog.show()
-  
-  
+
+
   def acceptEditedValues( self ):
     self.emit( SIGNAL( 'newValidValue' ), unicode(self.objectName()), self.acceptEditedValues.values )
     self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
@@ -1295,10 +1298,10 @@ class NotImplementedEditor( QLabel, DataEditor ):
     QLabel.__init__( self, '<font color=red>' + \
                      _t_( 'editor not implemented' ) + '</font>', parent )
     self._value = None
-    
+
   def setValue( self, value, default ):
     self._value = value
-    
+
   def getValue( self ):
     return self._value
 
@@ -1307,21 +1310,21 @@ def initializeDataGUI():
   # Connect editors to Parameters. This is done here to make module neuroData
   # independant from module neuroDataGUI
   String.editor = \
-    lambda self, parent, name, context: StringEditor( parent, name )
+    lambda self, parent, name, context: StringEditor( self, parent, name )
   String.listEditor = \
     lambda self, parent, name, context: StringListEditor( parent, name )
   Password.editor = \
-    lambda self, parent, name, context: PasswordEditor( parent, name )
+    lambda self, parent, name, context: PasswordEditor( self, parent, name )
   Number.editor = \
-    lambda self, parent, name, context: NumberEditor( parent, name )
+    lambda self, parent, name, context: NumberEditor( self, parent, name )
   Number.listEditor = \
     lambda self, parent, name, context: NumberListEditor( parent, name )
   Integer.editor = \
-    lambda self, parent, name, context: IntegerEditor( parent, name )
+    lambda self, parent, name, context: IntegerEditor( self, parent, name )
   Integer.listEditor = \
     lambda self, parent, name, context: IntegerListEditor( parent, name )
   Float.editor = \
-    lambda self, parent, name, context: FloatEditor( parent, name )
+    lambda self, parent, name, context: FloatEditor( self, parent, name )
   Float.listEditor = \
     lambda self, parent, name, context: FloatListEditor( parent, name )
   Choice.editor = \
@@ -1345,9 +1348,9 @@ def initializeDataGUI():
   Point3D.listEditor = \
     lambda self, parent, name, context: PointListEditor( self, parent, name )
   ListOfVector.editor = \
-    lambda self, parent, name, context: ListOfVectorEditor( parent, name )
+    lambda self, parent, name, context: ListOfVectorEditor( self, parent, name )
   Matrix.editor = \
-    lambda self, parent, name, context: MatrixEditor( parent, name )
+    lambda self, parent, name, context: MatrixEditor( self, parent, name )
   Boolean.editor = \
     lambda self, parent, name, context: BooleanEditor( parent, name )
   Boolean.listEditor = \

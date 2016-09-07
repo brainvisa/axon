@@ -240,6 +240,13 @@ class String( Parameter ):
   """
   This class represents a string parameter.
   """
+  def __init__( self, *args, **kwargs ):
+    """
+
+    :param list args: list of possible value, each value can be a string or a tuple.
+    """
+    Parameter.__init__( self, **kwargs )
+    self.placeholder_text = None
 
   def findValue( self, value ):
     """
@@ -247,6 +254,10 @@ class String( Parameter ):
     """
     if value is None: return None
     return str( value )
+
+  def setPlaceholderText( self, placeholder_text):
+    self.placeholder_text = placeholder_text
+
 
 
 #----------------------------------------------------------------------------
@@ -258,7 +269,7 @@ class Password( String ):
 
 
 #----------------------------------------------------------------------------
-class Number( Parameter ):
+class Number( String ):
   """
   This class represents a parameter that is a number, integer of float.
   """
@@ -616,7 +627,7 @@ class ListOfVector( Parameter ):
 
 
 #----------------------------------------------------------------------------
-class Matrix( Parameter ):
+class Matrix( String ):
   """
   This parameter expects a matrix value.
   """
@@ -625,7 +636,7 @@ class Matrix( Parameter ):
     :param int length: required number of lines of the matrix
     :param int width: required number of columns of the matrix.
     """
-    Parameter.__init__( self, **kwargs )
+    String.__init__( self, **kwargs )
     self.length =length
     self.width = width
 
