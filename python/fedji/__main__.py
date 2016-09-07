@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 import os
 from pprint import pprint
@@ -139,7 +140,7 @@ for i in xrange(nb_subjects):
         random.choice(letters),
         random.choice(letters),
         random.choice(letters))
-    print i, subject
+    print(i, subject)
     
     attributes = dict(study=study, center=center, subject=subject, modality='mri', sequence='t1mri')
     for visit in visits:
@@ -185,4 +186,4 @@ for i in xrange(nb_subjects):
             del attributes['scan']
     
 #db.commit()
-print 'duration:', time.time() - start
+print('duration:', time.time() - start)

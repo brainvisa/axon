@@ -42,6 +42,7 @@ L{soma.signature} module but it can be used in many other contexts.
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
+from __future__ import print_function
 __docformat__ = "epytext en"
 
 
@@ -165,11 +166,11 @@ class TgWindow( object ) :
         # Remove the reference 
         gc.collect()
         
-    except Exception, e :
-        print 'Error while closing : ', e
+    except Exception as e :
+        print('Error while closing : ', e)
     
   #def __del__(self):   
-    #print 'TgWindow deleted'
+    #print('TgWindow deleted')
 
 #------------------------------------------------------------------------------
 class EditionDialog( TgRemoteForm ):

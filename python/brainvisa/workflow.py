@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 import collections
 import os
 import pickle
@@ -95,7 +96,7 @@ class ProcessToWorkflow( object ):
     if eNode is not None and eNode.isSelected():
       if isinstance( eNode, ProcessExecutionNode ):
         pENode = eNode._process._executionNode
-        #print '==>eNode.name() :', eNode.name(), ', pENode : ', pENode
+        #print('==>eNode.name() :', eNode.name(), ', pENode : ', pENode)
         if pENode is None:
           if hasattr(eNode._process, 'executionWorkflow'):
             # Register native jobs from the process
@@ -180,10 +181,10 @@ class ProcessToWorkflow( object ):
     for fid, input_output in self._iofiles.iteritems():
       input, output = input_output
       #if len( output ) > 1:
-        #print '!!!', 'File "%s" is created by several processes: %s' % ( self._files[fid][0], ', '.join( self._jobs[ i ][0].name for i in output ) )
+        #print('!!!', 'File "%s" is created by several processes: %s' % ( self._files[fid][0], ', '.join( self._jobs[ i ][0].name for i in output ) ))
       #fileId = self._createIdentifier( self.FILE )
-      #print "------------"
-      #print repr(fid) + " " + repr(input) + " " + repr(output)
+      #print("------------")
+      #print(repr(fid) + " " + repr(input) + " " + repr(output))
       if output:
         self.create_output_file( fid, self._files[fid][0], self._files[fid][1], self._files[fid][2], self._files[fid][3] )
       else:
@@ -218,9 +219,9 @@ class ProcessToWorkflow( object ):
         self._iofiles[ fileId ][ 1 ].append( id )
       return # already done
     fileId = self._createIdentifier( self.FILE )
-    #print "file => " + repr(fileName.fullPath())
-    #print "database => " + repr(database)
-    #print "databaseUuid => " + repr(databaseUuid)
+    #print("file => " + repr(fileName.fullPath()))
+    #print("database => " + repr(database))
+    #print("databaseUuid => " + repr(databaseUuid))
     full_paths = [ fileName ]
     self._files[fileId]=(fileName, full_paths, databaseUuid, database)
     self._fileNames[fileName]= fileId
@@ -231,7 +232,7 @@ class ProcessToWorkflow( object ):
   def _registerJob( self, type, process, priority = None, inGroup = None ):
     # Create job
     jobId = self._createIdentifier( type )
-    #print 'Create job:', jobId, '(', inGroup, ')', process.name
+    #print('Create job:', jobId, '(', inGroup, ')', process.name)
     if priority == None:
       self._jobs[ jobId ] = (process, 0)
     else:
@@ -245,7 +246,7 @@ class ProcessToWorkflow( object ):
 
   def _registerGroup( self, type, label, inGroup = None ):
     groupId = self._createIdentifier( type )
-    #print 'Create group (', type, '):', groupId, '(', inGroup, ')', label
+    #print('Create group (', type, '):', groupId, '(', inGroup, ')', label)
     self._groups[ groupId ] = ( label, [] )
     self._groups[ inGroup ][ 1 ].append( groupId )
     self._inGroup[ groupId ] = inGroup
@@ -269,9 +270,9 @@ class ProcessToWorkflow( object ):
                 databaseUuid = None
                 if database:
                   databaseUuid = neuroHierarchy.databases.database(database).uuid
-                #print "file => " + repr(fileName.fullPath())
-                #print "database => " + repr(database)
-                #print "databaseUuid => " + repr(databaseUuid)
+                #print("file => " + repr(fileName.fullPath()))
+                #print("database => " + repr(database))
+                #print("databaseUuid => " + repr(databaseUuid))
                 full_paths = [fileName.fullPath() + ".minf"]
                 if fileName.fullPaths():
                   full_paths.extend(fileName.fullPaths())
@@ -312,8 +313,8 @@ class ProcessToWorkflow( object ):
           elif isinstance(type, ListOf) and \
                isinstance(type.contentType, WriteDiskItem):
             file_list = getattr(process, name, None)
-            #print "list of WriteDiskItem"
-            #print "file_list " + repr(file_list)
+            #print("list of WriteDiskItem")
+            #print("file_list " + repr(file_list))
             if file_list is not None:
               for fileName in file_list:
                 if not fileName.fullPath() in self._fileNames:
@@ -337,8 +338,8 @@ class ProcessToWorkflow( object ):
           elif isinstance(type, ListOf) and \
                isinstance(type.contentType, ReadDiskItem):
             file_list = getattr(process, name, None)
-            #print "list of ReadDiskItem"
-            #print "file_list " + repr(file_list)
+            #print("list of ReadDiskItem")
+            #print("file_list " + repr(file_list))
             if file_list is not None:
               for fileName in file_list:
                 if name in getattr( process, 'workflow_transmit_by_attributes', () ):
@@ -436,7 +437,7 @@ class ProcessToWorkflow( object ):
     for name in process.signature.keys():
       value = self.parameterToString(process, name)
       command.append( value )
-    #print "==> command " + repr(command)
+    #print("==> command " + repr(command))
     self.create_job( depth, jobId, command, inGroup, label=process.name, priority=priority )
 
   def _processExtraDependencies( self ):
@@ -478,7 +479,7 @@ class ProcessToWorkflow( object ):
               destid =  jobtoid[ dep._process ]
             else:
               destid = jobtoid[ dep ]
-            print 'create_link( ', destid, ',', id, ')'
+            print('create_link( ', destid, ',', id, ')')
             self.create_link( destid, id )
           elif dep in self._nodeToId: # dep is a group
             gid = self._nodeToId[ dep ]
@@ -491,7 +492,7 @@ class ProcessToWorkflow( object ):
               self._processExtraDependenciesFor( id, group, jobtoid )
         else: # dep as job/group id
           if dep[0] == (self.JOB, self.NATIVE_JOB):
-            print 'create_link( ', dep, ',', id, ')'
+            print('create_link( ', dep, ',', id, ')')
             self.create_link( dep, id )
           elif dep[0] == self.SERIAL_GROUP:
             # depend only on last task in serial group
@@ -515,47 +516,49 @@ class GraphvizProcessToWorkflow( ProcessToWorkflow ):
   
   
   def doIt( self ):
-    print >> self.out, 'digraph "' + self.process.name + '" {'
+    print('digraph "' + self.process.name + '" {', file=self.out)
     super( GraphvizProcessToWorkflow, self ).doIt()
     for source, destination in self.links:
-      print >> self.out, '  ', source, '->', destination
-    print >> self.out, '}'.edit( options )
+      print('  ', source, '->', destination, file=self.out)
+    print('}'.edit( options ), file=self.out)
   
     self.out.close()
   
   
   def create_job( self, depth, jobId, command, inGroup, label, priority ):
-    print 'create_job' + repr( ( depth, jobId, command, inGroup ) )
-    print >> self.out, '  ' * depth, jobId, '[ shape=ellipse, label="' + label + '" ]'
+    print('create_job' + repr( ( depth, jobId, command, inGroup ) ))
+    print('  ' * depth, jobId, '[ shape=ellipse, label="' + label + '" ]',
+          file=self.out)
   
   def open_group( self, depth, groupId, label, inGroup ):
-    print 'open_group' + repr( ( depth, groupId, label, inGroup ) )
+    print('open_group' + repr( ( depth, groupId, label, inGroup ) ))
     if self.clusters:
-      print >> self.out, '  ' * depth, 'subgraph cluster_' + str( groupId ), '{'
+      print('  ' * depth, 'subgraph cluster_' + str( groupId ), '{',
+            file=self.out)
       if label:
-        print >> self.out, '  ' * ( depth + 1 ), 'label = "' + label + '"'
+        print('  ' * ( depth + 1 ), 'label = "' + label + '"', file=self.out)
   
   
   def close_group( self, depth, groupId ):
-    print 'close_group' + repr( ( depth, groupId ) )
+    print('close_group' + repr( ( depth, groupId ) ))
     if self.clusters:
-      print >> self.out, '  ' * depth, '}'
+      print('  ' * depth, '}', file=self.out)
   
   
   def create_input_file( self, fileId, fileName, fullPaths, databaseUuid, database_dir ):
-    print 'create_input_file' + repr( ( fileId, fileName ) )
+    print('create_input_file' + repr( ( fileId, fileName ) ))
     if self.files:
-      print >> self.out, '  ', fileId, '[ shape=diamond, label="' + os.path.basename( fileName ) + '" ]'
+      print('  ', fileId, '[ shape=diamond, label="' + os.path.basename( fileName ) + '" ]', file=self.out)
 
 
   def create_output_file( self, fileId, fileName, fullPaths, databaseUuid, database_dir ):
-    print 'create_output_file' + repr( ( fileId, fileName ) )
+    print('create_output_file' + repr( ( fileId, fileName ) ))
     if self.files:
-      print >> self.out, '  ', fileId, '[ shape=diamond, label="' + os.path.basename( fileName ) + '" ]'
+      print('  ', fileId, '[ shape=diamond, label="' + os.path.basename( fileName ) + '" ]', file=self.out)
   
   
   def create_link( self, source, destination ):
-    print 'create_link' + repr( ( source, destination ) )
+    print('create_link' + repr( ( source, destination ) ))
     if self.files or ( source[0] != self.FILE and destination[0] != self.FILE ):
       self.links.add( ( source, destination ) )
 
@@ -572,8 +575,8 @@ class ProcessToFastExecution( ProcessToWorkflow ):
 
   
   def create_job( self, depth, jobId, command, inGroup, label, priority ):
-    print >> self.out, 'echo', ' '.join( repr(i) for i in command )
-    print >> self.out, ' '.join( repr(i) for i in command )
+    print('echo', ' '.join( repr(i) for i in command ), file=self.out)
+    print(' '.join( repr(i) for i in command ), file=self.out)
   
   
   def open_group( self, depth, groupId, label, inGroup ):
@@ -701,40 +704,40 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
       
       
     ##########################
-    #print ">>> referenced input and output"
+    #print(">>> referenced input and output")
     #for n in workflow.jobs:
       #if isinstance(n, Job):
-        #print "-------------"
-        #print "    " + n.name
-        #print "referenced inputs : " + repr(len(n.referenced_input_files)) 
+        #print("-------------")
+        #print("    " + n.name)
+        #print("referenced inputs : " + repr(len(n.referenced_input_files)))
         ##for r in n.referenced_input_files:
-          ##print "   %30s                              %s" %(r.name,r.client_path)
-        #print "referenced outputs :" + repr(len(n.referenced_output_files)) 
+          ##print("   %30s                              %s" %(r.name,r.client_path))
+        #print("referenced outputs :" + repr(len(n.referenced_output_files)))
         ##for r in n.referenced_output_files:
-          ##print "   %30s                              %s" %(r.name,r.client_path)
-    #print "<<< referenced input and output"
-    #print " "
-    #print ">>> jobs"
+          ##print("   %30s                              %s" %(r.name,r.client_path))
+    #print("<<< referenced input and output")
+    #print(" ")
+    #print(">>> jobs")
     #for n in workflow.jobs:
-      #print " " + n.name 
-    #print "<<< jobs"
-    #print " " 
-    #print ">>> dependencies "
+      #print(" " + n.name)
+    #print("<<< jobs")
+    #print(" ")
+    #print(">>> dependencies ")
     #for d in workflow.dependencies:
-      #print "   ( " + d[0].name + " , " + d[1].name + " ) "
-    #print "<<< dependencies "
-    #print " "
-    #print ">>> root group "
+      #print("   ( " + d[0].name + " , " + d[1].name + " ) ")
+    #print("<<< dependencies ")
+    #print(" ")
+    #print(">>> root group ")
     #for el in workflow.root_group:
-      #print " " + el.name
-    #print "<<< root group "
-    #print "  "
-    #print ">>> groups "
+      #print(" " + el.name)
+    #print("<<< root group ")
+    #print("  ")
+    #print(">>> groups ")
     #for g in workflow.groups:
-      #print "--------"
-      #print " " + g.name
-      #for el in g.elements: print "      " + el.name
-    #print "<<< groups "
+      #print("--------")
+      #print(" " + g.name)
+      #for el in g.elements: print("      " + el.name)
+    #print("<<< groups ")
     ##########################
       
   def parameterToString(self, process, name):
@@ -775,7 +778,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
     return value
 
   def create_job( self, depth, jobId, command, inGroup, label, priority ):
-    #print 'create_job' + repr( ( depth, jobId, command, inGroup ) )
+    #print('create_job' + repr( ( depth, jobId, command, inGroup ) ))
     self.__jobs[jobId] = Job(command=command, name=label, priority=priority)#jobId)#
     self.__groups[inGroup].elements.append(self.__jobs[jobId]) 
   
@@ -787,7 +790,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
     self.__dependencies += dependencies
   
   def open_group( self, depth, groupId, label, inGroup ):
-    #print 'open_group' + repr( ( depth, groupId, label, inGroup ) )
+    #print('open_group' + repr( ( depth, groupId, label, inGroup ) ))
     self.__groups[groupId] = Group(name=label, 
                                    elements=[])#groupId)#
     if not inGroup: 
@@ -796,7 +799,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
       self.__groups[inGroup].elements.append(self.__groups[groupId])
    
   def close_group( self, depth, groupId ):
-    #print 'close_group' + repr( ( depth, groupId ) )
+    #print('close_group' + repr( ( depth, groupId ) ))
     pass
   
   
@@ -804,7 +807,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
   def create_input_file(self, fileId, fileName, fullPaths=None,
                         databaseUuid=None, database_dir=None):
     if not self.__input_file_processing == self.NO_FILE_PROCESSING:
-      #print 'create_input_file' + repr( ( fileId, os.path.basename( fileName ), fullPaths, databaseUuid, database_dir ) )
+      #print('create_input_file' + repr( ( fileId, os.path.basename( fileName ), fullPaths, databaseUuid, database_dir ) ))
       if self.__input_file_processing == self.FILE_TRANSFER:
         global_in_file = FileTransfer(is_input=True, 
                                       client_path=fileName, 
@@ -819,7 +822,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
             namespace="brainvisa",
             uuid=databaseUuid)
         else: 
-          print "Cannot find database uuid for file " + repr(fileName) + " => the file will be transfered."
+          print("Cannot find database uuid for file " + repr(fileName) + " => the file will be transfered.")
           global_in_file = FileTransfer(is_input=True, 
                                         client_path=fileName, 
                                         name=os.path.basename(fileName), 
@@ -844,7 +847,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
             self.create_link(job_id, (self.FILE, global_in_file))
           jobs_to_inspect += self.flatten(self.__jobs[job_id])
         
-        #print "job inspection: " + repr(len(jobs_to_inspect)) + " jobs."
+        #print("job inspection: " + repr(len(jobs_to_inspect)) + " jobs.")
         for job in jobs_to_inspect:
           new_command = []
           for command_el in job.command:
@@ -879,7 +882,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
   def create_output_file(self, fileId, fileName, fullPaths=None,
                          databaseUuid=None, database_dir=None):
     if not self.__output_file_processing == self.NO_FILE_PROCESSING:
-      #print 'create_output_file' + repr( ( fileId, os.path.basename( fileName ), fullPaths, databaseUuid, database_dir ) )
+      #print('create_output_file' + repr( ( fileId, os.path.basename( fileName ), fullPaths, databaseUuid, database_dir ) ))
       if self.__output_file_processing == self.FILE_TRANSFER:
         global_out_file = FileTransfer(is_input=False,
                                        client_path=fileName,  
@@ -893,7 +896,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
                                                namespace="brainvisa", 
                                                uuid=databaseUuid)  
         else:
-          print "Cannot find database uuid for file " + repr(fileName) + " => the file will be transfered."
+          print("Cannot find database uuid for file " + repr(fileName) + " => the file will be transfered.")
           global_out_file = FileTransfer(is_input=False,
                                        client_path=fileName,  
                                        name=os.path.basename(fileName),
@@ -914,7 +917,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
             self.create_link(job_id, (self.FILE, global_out_file))
           jobs_to_inspect += self.flatten(self.__jobs[job_id])
           
-        #print "job inspection: " + repr(len(jobs_to_inspect)) + " jobs."
+        #print("job inspection: " + repr(len(jobs_to_inspect)) + " jobs.")
         for job in jobs_to_inspect:
           new_command = []
           for command_el in job.command:
@@ -968,7 +971,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
     return r
      
   def create_link( self, source, destination ):
-    #print '==>create_link' + repr( ( source, destination ) )
+    #print('==>create_link' + repr( ( source, destination ) ))
 
     s = self.resolve_objects(source)
     d = self.resolve_objects(destination)
@@ -980,20 +983,20 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
 
           self.__dependencies.append((src, dst))
           #self.linkcnt[(self.JOB, self.JOB)] = self.linkcnt[(self.JOB, self.JOB)] +1
-          #print repr(self.linkcnt[(self.JOB, self.JOB)]) +'     JOB  -> JOB  ' + repr( ( self.__jobs[source].name, self.__jobs[destination].name ) )
+          #print(repr(self.linkcnt[(self.JOB, self.JOB)]) +'     JOB  -> JOB  ' + repr( ( self.__jobs[source].name, self.__jobs[destination].name ) ))
         elif self.__file_transfers:
           if srctype == self.FILE and dsttype in (self.JOB, self.NATIVE_JOB):
             dst.referenced_input_files.append(src)
             #self.linkcnt[(self.FILE, self.JOB)] = self.linkcnt[(self.FILE, self.JOB)] +1
-            #print repr(self.linkcnt[(self.FILE, self.JOB)]) +'     FILE -> JOB  ' + repr( (file.name, job.name ) ) + ' len(job.referenced_input_files) = ' + repr(len(job.referenced_input_files))
+            #print(repr(self.linkcnt[(self.FILE, self.JOB)]) +'     FILE -> JOB  ' + repr( (file.name, job.name ) ) + ' len(job.referenced_input_files) = ' + repr(len(job.referenced_input_files)))
           elif srctype in (self.JOB, self.NATIVE_JOB) and dsttype == self.FILE: 
             src.referenced_output_files.append(dst)
             #self.linkcnt[(self.JOB, self.FILE)] = self.linkcnt[(self.JOB, self.FILE)] +1
-            #print repr(self.linkcnt[(self.JOB, self.FILE)]) +'     JOB  -> FILE ' + repr( (job.name, file.name ) ) + ' len(job.referenced_output_files) = ' + repr(len(job.referenced_output_files))
+            #print(repr(self.linkcnt[(self.JOB, self.FILE)]) +'     JOB  -> FILE ' + repr( (job.name, file.name ) ) + ' len(job.referenced_output_files) = ' + repr(len(job.referenced_output_files)))
           elif srctype == self.FILE and dsttype == self.FILE: 
             self.__dependencies.append((src, dst))
             #self.linkcnt[(self.FILE, self.FILE)] = self.linkcnt[(self.FILE, self.FILE)] +1
-            #print repr(self.linkcnt[(self.FILE, self.FILE)]) +'     FILE -> FILE ' + repr( ( self.__file_transfers[source].name, self.__file_transfers[destination].name ) )
+            #print(repr(self.linkcnt[(self.FILE, self.FILE)]) +'     FILE -> FILE ' + repr( ( self.__file_transfers[source].name, self.__file_transfers[destination].name ) ))
       
 
   

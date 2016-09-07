@@ -29,6 +29,7 @@
 # 
 # The fact that you are presently reading this means that you have had 
 # knowledge of the CeCILL-B license and that you accept its terms.
+from __future__ import print_function
 import operator
 import types
 
@@ -263,7 +264,7 @@ class LdapUserInfoProvider( UserInfoProvider ) :
             resultset.append(resultrecord)
           
     except ldap.LDAPError, errormessage :
-      print errormessage
+      print(errormessage)
 
     return getUsersInfo( resultset, formats, attributes, sorts )
 
@@ -390,7 +391,7 @@ class UserInfoProviderConfigurationGroup( ConfigurationGroup ) :
 def initializeUserInfoProvider():
   application = Application()
   if application.verbose:
-    print 'User info provider'
+    print('User info provider')
 
   application.configuration.add( 'userinfoprovider', UserInfoProviderConfigurationGroup() )
 

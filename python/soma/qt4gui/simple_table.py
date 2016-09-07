@@ -37,6 +37,7 @@
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
+from __future__ import print_function
 __docformat__ = "restructuredtext en"
 
 
@@ -67,7 +68,7 @@ class SimpleTable( QAbstractTableModel ):
 
     def clicked( index ):
       global m
-      print 'Selected', m.row( index.row() )[ index.column() ], 'in', m.row( index.row() )
+      print('Selected', m.row( index.row() )[ index.column() ], 'in', m.row( index.row() ))
 
     m = SimpleTable( ( 'a', 'b', 'c' ), ( ( 1, 2, 3 ), ( 4, 5, 6 ) ) )
     w = QWidget()

@@ -47,6 +47,16 @@ from turbogears.widgets.base import CSSLink, JSLink, js_location, mochikit
 from soma.functiontools import partial
 from soma.tggui import tools
 from soma.tggui.api import ApplicationTgGUI, TgGUI, TgFieldSet
+import six
+import sys
+
+if sys.version_info[0] >= 3:
+    def next(thing):
+        return thing.__next__()
+else:
+    def next(thing):
+        return thing.next()
+
 
 class HasSignatureEditionWidget( TgFieldSet ):
   _live = True
@@ -68,8 +78,8 @@ class HasSignatureEditionWidget( TgFieldSet ):
       self.__object = object
       self.__object.onAttributeChange( 'signature', self._signatureChanged )
       self.__object.onAttributeChange(  self._attributeChanged )
-      it = self.__object.signature.iteritems()
-      it.next() # skip signature attribute
+      it = six.iteritems(self.__object.signature)
+      next(it) # skip signature attribute
       for attributeName, signatureItem in it:
         signatureItem.onAttributeChange( 'type', self._signatureChanged )
         signatureItem.onAttributeChange( 'visible', self._signatureChanged )
@@ -85,8 +95,8 @@ class HasSignatureEditionWidget( TgFieldSet ):
     self._attributesGUI = {}
     self._attributesGUI2 = {}
 
-    it = object.signature.iteritems()
-    it.next() # skip signature attribute
+    it = six.iteritems(object.signature)
+    next(it) # skip signature attribute
 
     for attributeName, signatureItem in it:
       if not signatureItem.visible: continue
@@ -138,7 +148,7 @@ class HasSignatureEditionWidget( TgFieldSet ):
 
   def _deleteSignatureWidgets( self ):
     for attributeWidget, ( tggui, attributeName, labelWidget ) in \
-        self._attributesGUI.iteritems():
+        six.iteritems(self._attributesGUI):
 
       tggui.onWidgetChange.remove( self._attributeWidgetChanged )
       tggui.closeEditionWidget( attributeWidget )
@@ -156,7 +166,7 @@ class HasSignatureEditionWidget( TgFieldSet ):
 
   def _setObject( self, object ):
     for attributeWidget, ( tggui, attributeName, labelWidget ) in \
-        self._attributesGUI.iteritems():
+        six.iteritems(self._attributesGUI):
       if object.signature[ attributeName ].type.mutable:
         tggui.setObject( attributeWidget, getattr( object, attributeName ) )
       else:
@@ -183,13 +193,13 @@ class HasSignatureEditionWidget( TgFieldSet ):
       self.__object.removeOnAttributeChange( self._attributeChanged )
 
       it = self.__object.signature.itervalues()
-      it.next() # skip signature
+      next(it) # skip signature
       for signatureItem in it:
         
-        if signatureItem._onAttributeChange.has_key('type') :
+        if 'type' in signatureItem._onAttributeChange:
           signatureItem.removeOnAttributeChange( 'type', self._signatureChanged )
           
-        if signatureItem._onAttributeChange.has_key('visible') :
+        if 'visible' in signatureItem._onAttributeChange:
           signatureItem.removeOnAttributeChange( 'visible', self._signatureChanged )
       
       self.__object = None

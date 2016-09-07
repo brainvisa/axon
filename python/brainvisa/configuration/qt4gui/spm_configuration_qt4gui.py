@@ -32,6 +32,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import print_function
 
 from brainvisa.processing.qtgui.backwardCompatibleQt import QWidget, QVBoxLayout, QHBoxLayout, QSpacerItem, QSizePolicy, QPushButton, Qt, QApplication, QCursor
 import brainvisa.processing.qtgui.backwardCompatibleQt as qt
@@ -91,7 +92,7 @@ class SPMConfiguration_Qt4GUI( QtGUI ):
     self._defaultGUI.updateEditionWidget( self._defaultWidget, value )
 
   def guess( self ):
-    print 'Trying to guess SPM configuration...'
+    print('Trying to guess SPM configuration...')
     QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
     try:
       import brainvisa.processes

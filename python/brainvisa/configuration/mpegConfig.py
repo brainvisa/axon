@@ -33,6 +33,7 @@
 
 from brainvisa.configuration.neuroConfig import findInPath
 import os
+import six
 
 def findEncoders():
   enc = []
@@ -117,7 +118,7 @@ def findCodec( encoder ):
       del stdout, stderr, stdin
     
     codecs = []
-    lines = out.split( '\n' )
+    lines = out.split(six.b('\n'))
     codecsFound = False
     while lines:
       if lines.pop( 0 ) == 'Codecs:':

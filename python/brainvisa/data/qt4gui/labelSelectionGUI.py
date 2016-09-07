@@ -36,6 +36,7 @@
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
+from __future__ import print_function
 from PyQt4.QtGui import QWidget, QHBoxLayout, QPushButton
 from PyQt4.QtCore import SIGNAL, QSize
 from brainvisa.data.qtgui.neuroDataGUI import DataEditor
@@ -99,7 +100,7 @@ class LabelSelectionEditor( QWidget, DataEditor ):
                     stdout=subprocess.PIPE, close_fds=True )
             self._stdout, self._stdin = pipe.stdout, pipe.stdin
             if( psel ):
-                # print 'writing selection:', psel
+                # print('writing selection:', psel)
                 self._stdin.write( psel )
                 self._stdin.flush()
             self._thread = threading.Thread( target = self.read )
@@ -121,12 +122,12 @@ class LabelSelectionEditor( QWidget, DataEditor ):
         #self.emit( PYSIGNAL('noDefault'), ( self.name(),) )
 
     def diskItemChanged( self, name, val):
-        print 'Selector: file changed:', val
+        print('Selector: file changed:', val)
         self.value.file = val
         if val is None:
-            print 'temp'
+            print('temp')
         else:
             file = val.fullPath()
-            print file
+            print(file)
             if self.value.value.get( 'selection' ):
                 del self.value.value[ 'selection' ]

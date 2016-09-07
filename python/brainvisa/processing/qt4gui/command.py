@@ -31,6 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import print_function
 #import neuroConfig 
 import sys, os
 from brainvisa.processing.qtgui.backwardCompatibleQt import QProcess, QTimer, SIGNAL
@@ -44,6 +45,8 @@ if hasattr( backwardCompatibleQt, 'PYQT_VERSION' ):
     from soma import somaqt
 else:
   use_pyside = True
+if sys.version_info[0] >= 3:
+    unicode = str
 
 #import logging
 #LOG_FILENAME = '/tmp/commands.log'
@@ -131,9 +134,9 @@ class CommandWithQProcess( object ):
     the command (i.e. its return value) is returned, otherwise a RuntimeError
     is raised.'''
     self._qprocess.waitForFinished( -1 )
-    #print 'wait finished:', self.exitStatus, self.normalExit
+    #print('wait finished:', self.exitStatus, self.normalExit)
     if not self.normalExit:
-      #print 'raising exception...'
+      #print('raising exception...')
       if self._stopped:
         raise self.UserInterruption( _t_( 'System call interrupted' ) )
       raise self.SignalException( _t_( 'System call crashed' ) )
@@ -154,7 +157,7 @@ class CommandWithQProcess( object ):
     self._qprocess.terminate()
     if self._qprocess.state() == self._qprocess.Running:
       # If the command is not finished in 15 seconds, kill it
-      # print 'still running... violently killing it in 15 seconds'
+      # print('still running... violently killing it in 15 seconds')
       QTimer.singleShot( 15000, self._qprocess.kill )
 
 
@@ -184,7 +187,7 @@ class CommandWithQProcess( object ):
 
 
   def _createQProcess( self ):
-#    print threading.currentThread(), '_createQProcess()', self.args
+#    print(threading.currentThread(), '_createQProcess()', self.args)
       if use_pyside or PYQT_VERSION >= 0x040703:
         qprocess = QProcess()
       else:

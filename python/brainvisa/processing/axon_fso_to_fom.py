@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import os
 from brainvisa.axon import processes
 from brainvisa import processes as procbv
@@ -15,6 +16,7 @@ import yaml
 import json
 from collections import OrderedDict
 import axon_to_capsul
+import six
 
 
 class AxonFsoToFom(object):
@@ -71,7 +73,7 @@ class AxonFsoToFom(object):
         # special case of Directory format
         if len(fnames) >= 2 and 'Directory' in fnames:
             fnames.remove('Directory')
-        for flist_name, flist in formats_lists.iteritems():
+        for flist_name, flist in six.iteritems(formats_lists):
             if set(flist) == fnames:
                 return flist_name
         all_formats = self.formats_fom.setdefault('formats', {})
@@ -144,7 +146,7 @@ class AxonFsoToFom(object):
         fom_pattern = rule.pattern.unmatch(rule_attribs, {})
         fom_added_attr = {}
         defaults = {}
-        for k, value in matched_attr.iteritems():
+        for k, value in six.iteritems(matched_attr):
             if k not in input_attr and k not in non_transformed:
                 if k in rule.defaultAttributesValues:
                     defaults[k] = {'default_value':
@@ -185,7 +187,7 @@ class AxonFsoToFom(object):
         #print proc_name, node_name, data
         process = procbv.getProcessInstance(proc_name)
         signature = process.signature
-        for name, param in signature.iteritems():
+        for name, param in six.iteritems(signature):
             if isinstance(param, ReadDiskItem):
                 break
         else:
@@ -223,7 +225,7 @@ class AxonFsoToFom(object):
         signature = process.signature
         default_atts = OrderedDict()
 
-        for name, param in signature.iteritems():
+        for name, param in six.iteritems(signature):
             if not isinstance(param, ReadDiskItem):
                 # skip this param
                 continue
