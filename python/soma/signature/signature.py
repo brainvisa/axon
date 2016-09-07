@@ -229,7 +229,7 @@ class DataType( object ):
     C{self.L{__getinitkwargs__<DataType.__getinitkwargs__>}()} to the constructor.
     """
     args, kwargs = self.__getinitkwargs__()
-    return apply( self.__class__, args, kwargs )
+    return self.__class__(*args, **kwargs)
   
     
   def __getinitkwargs__( self ):
@@ -610,7 +610,7 @@ class Signature( DataType ):
     for name, item in it:
       args.append( name )
       args.append( item.copy() )
-    return apply( self.__class__, args, kwargs )
+    return self.__class__(*args, **kwargs)
 
 
   def __repr__( self ):

@@ -122,7 +122,7 @@ class Choice( DataType ):
 
 
   def copy( self ):
-    return apply( self.__class__, zip( self.labels, self.values ) )
+    return self.__class__(*zip(self.labels, self.values))
 
 
   def createValue( self ):

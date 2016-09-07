@@ -30,6 +30,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import print_function
 from brainvisa.processes import *
 from brainvisa import anatomist
 
@@ -56,7 +57,7 @@ def update( dialog ):
     if dialog.view is None:
       mri = dialog.getValue( 'mri' )
       if mri is not None:
-        print globals().keys()
+        print(globals().keys())
         dialog.view = a.viewActivationsOnMRI( mri, dialog.Zmap,
                                                            dialog.getValue( 'matrix' ),
                                                            both = 0 )
@@ -67,7 +68,7 @@ def update( dialog ):
     neuroConfig.showLastException()
 
 def execution( self, context ):
-  print self.name
+  print(self.name)
   
   a = anatomist.Anatomist()
   if self.view is None:
@@ -104,7 +105,7 @@ def execution( self, context ):
               0, 0, 1 ]
     else:
       f = open( trm.fullPath(), 'r' )
-      trm = string.split( string.join( f.readlines() ) )
+      trm = f.readlines().join().split()
       f.close()
     view = None
     if mri is not None:

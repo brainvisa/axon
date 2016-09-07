@@ -125,6 +125,7 @@ import re
 
 if sys.version_info[0] >= 3:
     basestring = str
+    unicode = str
     from collections import UserList
     StringTypes = (str,)
     def values(thing):
@@ -1005,7 +1006,7 @@ class DiskItem(QObject):
 
   def readDeclaredAttributes( self ):
     result = {}
-    for path in set(self.get('_declared_attributes_location',{}).itervalues()):
+    for path in set(six.itervalues(self.get('_declared_attributes_location',{}))):
         if os.path.exists(path):
             result .update(json.load(open(path)))
     return result
@@ -2234,7 +2235,7 @@ def getDiskItemType( item ):
   Gets the :py:class:`DiskItemType` whose id is the given item.
   """
   if isinstance( item, DiskItemType ): return item
-  elif type( item ) is str or type( item ) is types.UnicodeType:
+  elif type( item ) is str or type( item ) is unicode:
     result = diskItemTypes.get( getId( item ) )
     if result: return result
   raise ValueError( HTMLMessage(_t_('<em><code>%s</code></em> is not a valid file or directory type') % str( item )) )

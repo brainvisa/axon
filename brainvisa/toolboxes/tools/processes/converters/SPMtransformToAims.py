@@ -101,7 +101,7 @@ def initialization( self ):
   self.setOptional( 'central_to_registered' )
 
 def listToVectorString( l ):
-  return '[ ' + string.join( map( str, l ), ' ' ) + ' ]'
+  return '[ ' + ' '.join([str(x) for x in l]) + ' ]'
 
 
 def matlabExecution( self, context ):

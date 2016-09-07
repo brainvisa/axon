@@ -512,15 +512,15 @@ class ListOfVectorEditor( StringEditor ):
     if value is None:
       self.setText( '' )
     else:
-      self.setText( string.join( map( lambda x: string.join( map( str, x ) ),
+      self.setText( ' '.join( map( lambda x: ' '.join( map( str, x ) ),
                                       value ), ';' ) )
     self.value = value
 
   def _valueFromText( self, text ):
     if text:
       value = []
-      for line in string.split( text, ';' ):
-        value.append( string.split( line ) )
+      for line in text.split(';'):
+        value.append(line.split())
       return ListOfVectorValue( value )
     return None
 
@@ -535,7 +535,7 @@ class MatrixEditor( StringEditor ):
     if value is None:
       self.setText( '' )
     else:
-      self.setText( string.join( map( lambda x: string.join( map( str, x ) ), 
+      self.setText( ' '.join( map( lambda x: ' '.join( map( str, x ) ),
                                       value ), ';' ) )
     self.value = value
 
@@ -543,8 +543,8 @@ class MatrixEditor( StringEditor ):
     if text:
       value = []
       if text:
-        for line in string.split( text, ';' ):
-          value.append( string.split( line ) )
+        for line in text.split(';'):
+          value.append(line.split())
       return MatrixValue( value )
     return None
 
@@ -664,7 +664,7 @@ class NumberListEditor( StringListEditor ):
   def _valueFromText( self, text ):
     if not text: return None
     result = []
-    for s in string.split( text ):
+    for s in text.split():
       try: n = int( s )
       except:
         try: n = long( s )
@@ -681,13 +681,13 @@ class NumberListEditor( StringListEditor ):
     if value is None:
       pass
     elif isinstance( value, ( list, tuple ) ):
-      text = string.join( map( lambda x: str(x), value ) )
+      text = ' '.join( map( lambda x: str(x), value ) )
     elif isinstance( value, basestring ):
       text = str(value)
     else:
       try:
         valuel = list( value ) # can convert to a list ?
-        text = string.join( map( lambda x: str(x), valuel ) )
+        text = ' '.join( map( lambda x: str(x), valuel ) )
       except:
         text = str(value)
     self.setText( text )
@@ -701,7 +701,7 @@ class IntegerListEditor( NumberListEditor ):
   def _valueFromText( self, text ):
     if not text: return None
     result = []
-    for s in string.split( unicode(self.text() ) ):
+    for s in unicode(self.text()).split():
       try: n = int( s )
       except:
         try: n = long( s )
@@ -719,7 +719,7 @@ class FloatListEditor( NumberListEditor ):
   def _valueFromText( self, text ):
     if not text: return None
     result = []
-    for s in string.split( unicode(self.text() ) ):
+    for s in unicode(self.text()).split():
       try: n = float( s )
       except:
         raise ValueError( HTMLMessage( _t_('<em>%s</em> is not a valid float') % s) )
@@ -1019,8 +1019,8 @@ class PointListEditor( QWidget, DataEditor ):
   def getValue( self ):
     text = unicode( self.led.text() )
     if text:
-      return map( lambda x: map( float, string.split(x) ),
-                  string.split( text, ',' ) )      
+      return map(lambda x: map( float, x.split() ),
+                 strintext.split(','))
 
   def setValue( self, value, default = 0 ):
     self._setValue( value )
@@ -1029,8 +1029,8 @@ class PointListEditor( QWidget, DataEditor ):
     if not value:
       self.led.setText( '' )
     else:
-      self.led.setText( string.join( map( 
-        lambda point: string.join( map( str, point ) ), value ), ',' ) )
+      self.led.setText( ' '.join( map(
+        lambda point: ' '.join( map( str, point ) ), value ), ',' ) )
   
   def setFocusNext( self ):
     self.focusNextChild()

@@ -72,7 +72,7 @@ def execution( self, context ):
   tmp = tmpdi.fullPath()
   tfile = open( tmp, 'w' )
   im = map( lambda x: x.fullPath(), self.images )
-  tfile.write( string.join( im, '\n' ) )
+  tfile.write( '\n'.join(im) )
   tfile.write( '\n' )
   tfile.close()
   f = open( tmp )

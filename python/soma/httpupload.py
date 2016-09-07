@@ -197,7 +197,7 @@ def showNode( node, showattributes = False ):
     if ((child.nodeType == Node.TEXT_NODE) or (child.nodeType == Node.CDATA_SECTION_NODE)) :
       content.append( child.nodeValue )
 
-  return string.join( content )
+  return ' '.join( content )
 
 def getTextValue( node ) :
   '''
@@ -558,7 +558,7 @@ class ResourceManager( Singleton ) :
     
     - returns: *string* containing the result file name.
     '''
-    #return string.join( [ filename, unicode( filelength ) ] , '_' )
+    #return '_'.join( [ filename, unicode( filelength ) ])
     return filename
 
   def processFileStorage( self, filestorage, isheader ) :

@@ -75,5 +75,5 @@ recal_content = (
 
 insert( '{protocol}/{subject}',
   "recal",
-    apply( SetContent, recal_content )# + ( '{acquisition}', apply( SetContent, recal_content ), ) ),
+    SetContent(*recal_content) # + ( '{acquisition}', SetContent(*recal_content ), ),
 )

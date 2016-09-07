@@ -83,21 +83,21 @@ def execution( self, context ):
   b = 1 #en cas d'erreurs
   while tmp!='':
     tmp = fic.readline() 
-    tab = string.split(tmp)
+    tab = tmp.split()
 
     if len(tab)==4 :
 
       v = tab[0]
-      v = string.atoi(v)
+      v = int(v)
 
       x = tab[1]
-      x = string.atoi(x)
+      x = int(x)
 
       y = tab[2]
-      y = string.atoi(y)
+      y = int(y)
 
       z = tab[3]
-      z = string.atoi(z) 
+      z = int(z)
 
       if (x <= self.dimX) and (y <= self.dimY) and (z <= self.dimZ) :
         a.setValue(v, x, y, z)

@@ -31,6 +31,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 import re, types
+import six
 
 #------------------------------------------------------------------------------
 class DictPattern:
@@ -285,7 +286,7 @@ class DictPattern:
         m = self.__match.match( s )
       if m:
         result = {}
-        for groupname, value in m.groupdict().iteritems():
+        for groupname, value in six.iteritems(m.groupdict()):
           attributes = self.groupnameToAttributes[ groupname ]
           d = result
           for k in attributes[ :-1 ]:

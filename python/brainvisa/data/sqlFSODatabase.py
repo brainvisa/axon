@@ -74,6 +74,7 @@ if sys.version_info[0] >= 3:
         return list(thing.values())
     xrange = range
     basestring = str
+    unicode = str
 else:
     from itertools import izip
     def values(thing):

@@ -143,18 +143,18 @@ class BugReportDialog( QWidget ):
       if value:
         outer[ field ] = value
     to = unicode( self.ledTo.text() )
-    to = map( string.strip, string.split( to, ',' ) )
-    outer[ 'To' ] = string.join( to, ', ' )
+    to = [x.strip() for x in to.split(',')]
+    outer[ 'To' ] = ', '.join(to)
     if outer.get("Cc", None):
-      to.extend(map( string.strip, string.split( outer["Cc"], ',' ) ))
+      to.extend([x.strip() for x in outer["Cc"].split(',')])
     if outer.get("Bcc", None):
-      to.extend(map( string.strip, string.split( outer["Bcc"], ',' ) ))
+      to.extend([x.strip() for x in outer["Bcc"].split(',')])
 
-    
+
     outer.preamble = '\n'
     # To guarantee the message ends with a newline
     outer.epilogue = ''
-    
+
     msg = mailing.MIMEText( unicode( self.tedMessage.toPlainText() ), 'plain' )
     outer.attach( msg )
     if self.chkSendLog.isChecked() and neuroConfig.logFileName:
