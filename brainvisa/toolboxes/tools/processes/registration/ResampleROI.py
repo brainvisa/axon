@@ -30,6 +30,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import print_function
 from brainvisa.processes import *
 import shfjGlobals
 
@@ -75,12 +76,15 @@ def execution( self, context ):
   file = open( tmp.fullPath(), 'w' )
   for l in lines:
     if l[ :10 ] == 'voxel_size':
-      print >> file, 'voxel_size\t', string.join( map( str, self.destination_image.get( 'voxel_size' ) ) )
+      print('voxel_size\t',
+            ' '.join([str(x)
+                      for x in self.destination_image.get('voxel_size')]),
+            file=file)
     elif l[ :15 ] == 'boundingbox_max':
       vd = self.destination_image.get( 'volume_dimension' )
-      print >> file, 'boundingbox_max\t', vd[0]-1, vd[1]-1, vd[2]-1
+      print('boundingbox_max\t', vd[0]-1, vd[1]-1, vd[2]-1, file=file)
     else:
-     print >> file, l
+     print(l, file=file)
   file.close()
   context.system( 'AimsGraphConvert', '-i', tmp, '-o', self.result_graph,
     '--bucket' )

@@ -147,7 +147,8 @@ class Parameter( object ):
     """
     if translator is None: translate = _t_
     else: translate = translator.translate
-    return  ( ( translate( 'Type' ), translate( string.split( str( self.__class__.__name__ ), '.' )[ -1 ] ) ), )
+    return  ((translate('Type'),
+              translate(str(self.__class__.__name__).split('.')[ -1 ])), )
 
   def editor( self, parent, name, context ):
     """
@@ -265,7 +266,7 @@ class Number( Parameter ):
     If the value is not a python number, tries to convert it to a number with :py:func:`int`, :py:func:`long`, :py:func:`float`.
     """
     if value is None: return None
-    if type( value ) in ( types.FloatType, types.IntType, types.LongType ):
+    if type( value ) in six.integer_types + (six.types.FloatType,):
       return value
     try: return int( value )
     except:
@@ -285,7 +286,7 @@ class Integer( Number ):
     If the value is not a python integer, tries to convert it to an integer with :py:func:`int`, :py:func:`long`.
     """
     if value is None: return None
-    if type( value ) in ( types.IntType, types.LongType ):
+    if type( value ) in six.integer_types:
       return value
     try: return int( value )
     except:

@@ -41,11 +41,19 @@
 __docformat__ = "epytext en"
 
 import os
+import sys
 from soma.configuration import ConfigurationGroup
 from soma.signature.api import HasSignature, Signature, FileName, \
                                Boolean, OpenedChoice, Sequence, Unicode, \
                                Choice, Any
 from soma.minf.api import readMinf
+
+if sys.version_info[0] >= 3:
+    def next(iterator):
+        return iterator.__next__()
+else:
+    def next(iterator):
+        return iterator.next()
 
 
 #------------------------------------------------------------------------------
@@ -157,7 +165,7 @@ class DatabaseSettings( HasSignature ):
         readMinf( minf, targets=( self.expert_settings, ) )
       else:
         it = self.expert_settings.signature.iteritems()
-        it.next()
+        next(it)
         for n, v in it:
           if n == 'ontology':
             self.expert_settings.ontology = 'brainvisa-3.2.0'

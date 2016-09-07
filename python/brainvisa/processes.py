@@ -1809,7 +1809,7 @@ class TimeoutCall(object):
         self.functionLock.acquire()
         try:
             if self.callFunction:
-                apply(self.function, self.args, self.kwargs)
+                self.function(*self.args, **self.kwargs)
         finally:
             self.functionLock.release()
 
@@ -2740,7 +2740,7 @@ class ExecutionContext(object):
     def _startProcess(self, _process, executionFunction, *args, **kwargs):
         if not isinstance(_process, Process):
             _process = getProcessInstance(_process)
-        apply(self._setArguments, (_process,) + args, kwargs)
+        self._setArguments(_process, *args, **kwargs)
         # Launch process
         t = threading.Thread(target=self._processExecutionThread,
                              args=(_process, executionFunction))
@@ -2763,7 +2763,7 @@ class ExecutionContext(object):
         """
         _process = getProcessInstance(_process)
         self.checkInterruption()
-        apply(self._setArguments, (_process,) + args, kwargs)
+        self._setArguments(_process, *args, **kwargs)
         result = self._processExecution(_process, None)
         self.checkInterruption()
         if self._lastProcessRaisedException:
@@ -2790,7 +2790,7 @@ class ExecutionContext(object):
         context = self.createContext()
         process = getProcessInstance(process)
         self.checkInterruption()
-        apply(self._setArguments, (process,) + args, kwargs)
+        self._setArguments(process, *args, **kwargs)
         thread = threading.Thread(target=self._runInteractiveProcessThread,
                                   args=(context, process, callMeAtTheEnd))
         thread.start()
@@ -2947,8 +2947,7 @@ class ExecutionContext(object):
                                 c = getProcessInstance(converter.name)
                                 if c is not None:
                                     try:
-                                        apply(
-                                            self._setArguments, (c,), convargs)
+                                        self._setArguments(c, **convargs)
                                         if c.write is not None:
                                             break
                                     except:
@@ -3428,7 +3427,7 @@ class ExecutionContext(object):
         bmsg = '<table width=100% border=1><tr><td><font color=orange><img alt="WARNING: " src="' \
             + os.path.join(neuroConfig.iconPath, 'warning.png') + '">'
         emsg = '</font></td></tr></table>'
-        apply(self.write, (bmsg, ) + messages + (emsg, ))
+        self.write(*((bmsg, ) + messages + (emsg, )))
 
     def error(self, *messages):
         """
@@ -3438,7 +3437,7 @@ class ExecutionContext(object):
         bmsg = '<table width=100% border=1><tr><td><font color=red><img alt="ERROR: " src="' \
             + os.path.join(neuroConfig.iconPath, 'error.png') + '">'
         emsg = '</font></td></tr></table>'
-        apply(self.write, (bmsg, ) + messages + (emsg, ))
+        self.write(*((bmsg, ) + messages + (emsg, )))
 
     def ask(self, message, *buttons, **kwargs):
         """

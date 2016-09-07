@@ -48,6 +48,12 @@ from soma.stringtools import quote_string, unquote_string, string_to_list, list_
 from brainvisa.data.neuroDiskItems import DiskItem, getFormats, getDiskItemType
 import brainvisa.processes
 import types
+import six
+
+if sys.version_info[0] >= 3:
+    xrange = range
+    unicode = str
+    basestring = str
 
 #----------------------------------------------------------------------------
 class SignalNameComboBox( QComboBox ):
@@ -164,11 +170,11 @@ class DiskItemBrowser( QDialog ):
     self._formatsWithConverter = {}
     if enableConversion:
       any = getDiskItemType( 'Any type' )
-      for type_format, converter in chain( *( brainvisa.processes.getConvertersTo( ( any, f ), checkUpdate=False ).iteritems() for f in getFormats( self._possibleFormats ) ) ):
+      for type_format, converter in chain( *( six.iteritems(brainvisa.processes.getConvertersTo( ( any, f ), checkUpdate=False )) for f in getFormats( self._possibleFormats ) ) ):
           type, format = type_format
           if format.name not in self._possibleFormats:
             self._formatsWithConverter[ format.name ] = converter
-    self._possibleFormats.update( self._formatsWithConverter.iterkeys() )
+    self._possibleFormats.update(six.iterkeys(self._formatsWithConverter) )
     #print('!DiskItemBrowser! _possibleFormats', self._possibleFormats)
     self._exactType=exactType
     self._write = write
@@ -227,7 +233,7 @@ class DiskItemBrowser( QDialog ):
         layoutRow += 1
     self._selectedAttributes={}
     # among selection attributes keep those related to the types searched to initialize the combos
-    for k, v in selection.iteritems():
+    for k, v in six.iteritems(selection):
       if k in allAttributes or k in self._declaredAttributes:
         self._selectedAttributes[ k ] = v
 
@@ -403,7 +409,7 @@ class DiskItemBrowser( QDialog ):
       else:
         self._cmbFormat.clear()
         self._cmbFormat.addItem( any )
-      for a, cmb in self._combos.iteritems():
+      for a, cmb in six.iteritems(self._combos):
         if cmb.isEditable():
           cmb._modificationTimer.startInternalModification()
         elif cmb.count() and self._write:
@@ -429,9 +435,9 @@ class DiskItemBrowser( QDialog ):
       else:
         selectedTypes = self._requestedTypes
       required = {}
-      for k, v in self._requiredAttributes.iteritems():
+      for k, v in six.iteritems(self._requiredAttributes):
         required[ str( k ) ] = v
-      for k, v in self._selectedAttributes.iteritems():
+      for k, v in six.iteritems(self._selectedAttributes):
         if k not in self._declaredAttributes:
           required[ str( k ) ] = v
       required[ '_type' ] = selectedTypes
@@ -468,7 +474,7 @@ class DiskItemBrowser( QDialog ):
       selected=self._selectedAttributes.get( '_format' )
       if selected is not None:
         required["_format"]=[selected]
-      for a, cmb in self._combos.iteritems():
+      for a, cmb in six.iteritems(self._combos):
         if a in preservedCombos: continue
         selected = self._selectedAttributes.get( a )
         s = combosSets[ a ]
@@ -547,7 +553,7 @@ class DiskItemBrowser( QDialog ):
         self.itemSelected( 0 )
       else:
         self.itemSelected( None )
-      for a, cmb in self._combos.iteritems():
+      for a, cmb in six.iteritems(self._combos):
         if cmb.isEditable():
           selected = self._selectedAttributes.get( a )
           if selected is not None:

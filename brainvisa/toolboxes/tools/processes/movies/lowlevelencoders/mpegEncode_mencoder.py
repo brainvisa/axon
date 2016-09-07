@@ -77,7 +77,7 @@ def execution( self, context ):
 
   im = map( lambda x: x.fullPath(), self.images )
   passlog = context.temporary( 'log file' )
-  cmd = [ 'mencoder', 'mf://' + string.join( im, ',' ),
+  cmd = [ 'mencoder', 'mf://' + ','.join(im),
           '-o', self.animation.fullPath(), '-mf',
           'fps=' + str( self.framesPerSecond ), '-ovc', 'lavc',
           '-passlogfile', passlog, '-lavcopts',

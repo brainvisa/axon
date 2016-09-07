@@ -57,9 +57,13 @@ if sys.version_info[0] >= 3:
     unicode = str
     def items(thing):
         return list(thing.items())
+    def next(iterator):
+        return iterator.__next__()
 else:
     def items(thing):
         return thing.items()
+    def next(iterator):
+        return iterator.next()
 
 
 #------------------------------------------------------------------------------
@@ -500,7 +504,7 @@ class LogFileReader:
     Returns the next :py:class:`Item` in the current file.
     """
     try:
-      return self._iterator.next()
+      return next(self._iterator)
     except StopIteration:
       return None
   
