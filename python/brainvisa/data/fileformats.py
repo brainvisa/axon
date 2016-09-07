@@ -138,7 +138,7 @@ class FileFormats( object ):
 
 
   def newFormatList( self, name, formats ):
-    if self._formatLists.has_key( name ):
+    if name in self._formatLists:
       raise KeyError( _( 'Format list "%s" already defined' ) % ( name,) )
     self._formatLists[ name ] = tuple( (self._formatsByName[ f ] for f in formats) )
   

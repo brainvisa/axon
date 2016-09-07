@@ -23,6 +23,8 @@ from brainvisa.data.neuroDiskItems import (DiskItem,
                                            getAllDiskItemTypes,
                                            File,
                                            Directory)
+import six
+
 
 class AxonFedjiDatabase(Database):
     def __init__( self, directory, fedji_url=None, fom_name=None):
@@ -112,7 +114,7 @@ class AxonFedjiDatabase(Database):
                 documents['_type'] = [d.type.name] + [i.name for i in d.type.parents()]
                 documents['_format'] = d.format.name
                 documents['_files'] = d._files
-                print '!fedji insert!', documents
+                print('!fedji insert!', documents)
                 self.fedji_collection.insert(documents)
   
     def removeDiskItems( self, diskItems, eraseFiles=False ):
@@ -170,10 +172,10 @@ class AxonFedjiDatabase(Database):
     
     
     def createDiskItemFromFileName( self, fileName, defaultValue=Undefined ):
-        print '!createDiskItemFromFileName!', fileName
+        print('!createDiskItemFromFileName!', fileName)
         diskItem = None
         if fileName.startswith(self.directory):
-            print '!createDiskItemFromFileName! 2'
+            print('!createDiskItemFromFileName! 2')
             relative_path = fileName[len(self.directory)+1:]
             for path, st, attributes in self.path_to_attributes.parse_path(relative_path):
                 if attributes:
@@ -185,9 +187,9 @@ class AxonFedjiDatabase(Database):
                 diskItem.type = None
                 diskItem.format = None
                 diskItem.files= [fileName]
-                print '!createDiskItemFromFileName! 3', diskItem
+                print('!createDiskItemFromFileName! 3', diskItem)
         if diskItem is not None:
-            print '!createDiskItemFromFileName! -->', diskItem
+            print('!createDiskItemFromFileName! -->', diskItem)
             return diskItem
         elif defaultValue is Undefined:
             raise ValueError( 'Database "%(database)s" cannot create DiskItem for %(filename)s"' % { 'database': self.name,  'filename': fileName } )
@@ -206,7 +208,7 @@ class AxonFedjiDatabase(Database):
     
     
     def scanDatabaseDirectories( self, directoriesToScan, includeUnknowns=True, recursion=False ):
-        print '!scanDatabaseDirectories!', directoriesToScan
+        print('!scanDatabaseDirectories!', directoriesToScan)
         if not includeUnknowns:
             raise NotImplementedError('On FEDJI databases, scanDatabaseDirectories cannot be called with includeUnknowns=False')
         if recursion:
@@ -225,28 +227,28 @@ class AxonFedjiDatabase(Database):
                 path = content.pop()
                 try:
                     item = self.getDiskItemFromFileName(path)
-                    print '!scanDatabaseDirectories! 1', item
+                    print('!scanDatabaseDirectories! 1', item)
                 except ValueError:
                     item = self.createDiskItemFromFileName(path)
                     item._globalAttributes["_database"] = self.name
                     item._globalAttributes[ '_ontology' ] = self.fom.fom_names[0]
-                    print '!scanDatabaseDirectories! 2', item
+                    print('!scanDatabaseDirectories! 2', item)
                 if item.type:
                     for path in item.fullPaths():
                         content.discard(path)
                         unknown.pop(path, None)
                     minf.discard(item.minfFileName())
-                    print '!scanDatabaseDirectories! 3 -->', item, item.type, item.format
+                    print('!scanDatabaseDirectories! 3 -->', item, item.type, item.format)
                     yield item
                 else:
                     unknown[path] = item
                 if not content and minf:
                     content = minf
                     minf = set()
-            for path, item in unknown.iteritems():
+            for path, item in six.iteritems(unknown):
                 if S_ISDIR(os.stat(path).st_mode):
                     item.type = getDiskItemType('Directory')
-                print '!scanDatabaseDirectories! 4 -->', item, item.type, item.format
+                print('!scanDatabaseDirectories! 4 -->', item, item.type, item.format)
                 yield item
     def clear(self, context=None):
         db = self.fedji_collection.fedji_sqlite_db
@@ -276,7 +278,7 @@ class AxonFedjiDatabase(Database):
                 path = content.pop()
                 try:
                     item = self.getDiskItemFromFileName(path)
-                    print '!update! ignore already stored', item
+                    print('!update! ignore already stored', item)
                 except ValueError:
                     item = self.createDiskItemFromFileName(path)
                     if item.type:
@@ -285,7 +287,7 @@ class AxonFedjiDatabase(Database):
                         #if item.type is None and S_ISDIR(os.stat(path).st_mode):
                             #item.type = getDiskItemType('Directory')
                         self.insertDiskItems((item,))
-                        print '!update! store', item
+                        print('!update! store', item)
                 if item:
                     for path in item.fullPaths():
                         content.discard(path)
@@ -298,8 +300,8 @@ class AxonFedjiDatabase(Database):
     @staticmethod
     def _get_query(selection, required):
         query = {}
-        for k, v in chain(selection.iteritems(), 
-                          required.iteritems()):
+        for k, v in chain(six.iteritems(selection),
+                          six.iteritems(required)):
             if k == '_uuid':
                 k = '_id'
             if isinstance(v, basestring):
@@ -313,9 +315,9 @@ class AxonFedjiDatabase(Database):
         return query
     
     def findAttributes( self, attributes, selection={}, _debug=None, exactType=False, **required ):
-        #print '!findAttributes! 1', attributes, selection, required, exactType
+        #print('!findAttributes! 1', attributes, selection, required, exactType)
         query = self._get_query(selection,required)
-        #print '!findAttributes! 2 query=', query
+        #print('!findAttributes! 2 query=', query)
         
         try:
             type_index = attributes.index('_type')
@@ -333,24 +335,25 @@ class AxonFedjiDatabase(Database):
             values = [document.get(f) for f in fields]
             if type_index >= 0 and values[type_index]:
                 values[type_index] = values[type_index][0]
-            #print '!findAttributes! 3 -->', values
+            #print('!findAttributes! 3 -->', values)
             yield values
     
     def findDiskItems( self, selection={}, _debug=None, exactType=False, **required ):
-        #print '!findDiskItems! 1', selection, required, exactType
+        #print('!findDiskItems! 1', selection, required, exactType)
         query = self._get_query(selection,required)
-        #print '!findDiskItems! 2 query=', query
+        #print('!findDiskItems! 2 query=', query)
         for document in self.fedji_collection.find(query):
             item = self._createDiskitemFromDocument(document)
-            #print '!findDiskItems! -->', item
+            #print('!findDiskItems! -->', item)
             yield item
     
     def createDiskItems( self, selection={}, _debug=None, exactType=False, **required ):
         if _debug:
-            print >> _debug, '!createDiskItems! 1', selection, exactType, required
+            print('!createDiskItems! 1', selection, exactType, required,
+                  file=_debug)
         query = {}
-        for k, v in chain(selection.iteritems(), 
-                          required.iteritems()):
+        for k, v in chain(six.iteritems(selection),
+                          six.iteritems(required)):
             if k == '_format':
                 k = 'fom_format'
             if k == '_type':
@@ -363,21 +366,21 @@ class AxonFedjiDatabase(Database):
                 query[k] = v
             else:
                 query[k] = list(v)
-        #print '!createDiskItems! query=', query
+        #print('!createDiskItems! query=', query)
         if _debug:
             class debug:
                 @staticmethod
                 def debug(*args):
-                    print >> _debug, ' '.join(str(i) for i in args)
+                    print(' '.join(str(i) for i in args), file=_debug)
         else:
             debug = None
         for path, attributes in self.attributes_to_paths.find_paths(query,debug=debug):
-            #print '!createDiskItems! 3', path, attributes
+            #print('!createDiskItems! 3', path, attributes)
             item = self._createDiskItemFromPathAttributes(path, attributes)
-            #print '!createDiskItems! 4 -->', item
+            #print('!createDiskItems! 4 -->', item)
             if item:
                 if _debug:
-                    print >> _debug, '-->', item
+                    print('-->', item, file=_debug)
                 yield item
     
     def getTypesKeysAttributes(self, type):

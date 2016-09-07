@@ -488,7 +488,11 @@ class DiskItemBrowser( QDialog ):
           values.update( self._attributesValues.get(a) )
         else:
           values.update( v[0] for v in self._database.findAttributes( ( a, ), {}, exactType=self._exactType, **required ) )
-        for v in sorted(values):
+        if sys.version_info[0] >= 3:
+          key_func = lambda x: (type(x).__name__, x)
+        else:
+          key_func = None
+        for v in sorted(values, key=key_func):
           if not v: v = ''
           if isinstance( v, basestring ):
             vstring = quote_string(v)
@@ -520,7 +524,15 @@ class DiskItemBrowser( QDialog ):
       uniquecols = set( range( len( keyAttributes ) + 3 ) )
       uniquecolsvals = []
       allColsNonUnique = False
-      for attrs in sorted( self._database.findAttributes( [ '_type' ] + keyAttributes + list(self._declaredAttributes) + [ '_format', '_database', '_uuid' ], selection={}, exactType=self._exactType, **required ) ):
+      if sys.version_info[0] >= 3:
+        key_func = lambda x: [(type(y).__name__, y) for y in x]
+      else:
+        key_func = None
+      for attrs in sorted(self._database.findAttributes(
+          ['_type'] + keyAttributes + list(self._declaredAttributes)
+          + ['_format', '_database', '_uuid'], selection={},
+          exactType=self._exactType, **required),
+          key=key_func):
         self._tableData.addRow( attrs[:-1] )
         self._items.append( (attrs[-1], attrs[-2], ) )
         readItems.add( tuple( attrs[ :-1 ] ) )
@@ -638,14 +650,14 @@ class DiskItemBrowser( QDialog ):
       parent = diskItem.parent
       if parent is not None:
         p = parent.attributes()
-      for k in diskItem._globalAttributes.keys() + \
-               diskItem._minfAttributes.keys() + \
-               diskItem._otherAttributes.keys():
-        if p.has_key( k ):
+      for k in chain(diskItem._globalAttributes.keys(),
+                     diskItem._minfAttributes.keys(),
+                     diskItem._otherAttributes.keys()):
+        if k in p:
           del p[ k ]
       o = diskItem._otherAttributes.copy()
       for k in diskItem._minfAttributes.keys():
-        if o.has_key( k ):
+        if k in o:
           del o[ k ]
       attributeSets = ( 
         ( 'Hierarchy attributes', diskItem._globalAttributes ),

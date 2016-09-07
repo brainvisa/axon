@@ -31,7 +31,9 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import print_function
 from brainvisa.configuration import neuroConfig
+import six
 
 if neuroConfig.anatomistImplementation != 'socket':
 
@@ -42,7 +44,7 @@ if neuroConfig.anatomistImplementation != 'socket':
   try:
     from soma.aims import aimsgui
   except:
-    print 'Warning: pyaimsgui not available'
+    print('Warning: pyaimsgui not available')
 
   class ReusableWindowAction( QtGui.QAction ):
     _actions = {} # dict to kee buttons alive
@@ -56,7 +58,7 @@ if neuroConfig.anatomistImplementation != 'socket':
       acts = ReusableWindowAction._actions
       # filter out dead windows
       ReusableWindowAction._actions = {}
-      for w,b in acts.iteritems():
+      for w,b in six.iteritems(acts):
         if w.get() is not None:
           ReusableWindowAction._actions[w] = b
 

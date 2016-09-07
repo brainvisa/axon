@@ -1270,7 +1270,14 @@ class SQLDatabase( Database ):
       #minf=minf.encode("utf-8")
     #f = StringIO( minf )
     #state = readMinf( f )[ 0 ]
-    state = cPickle.loads( str( minf ) )
+    if sys.version_info[0] >= 3:
+      try:
+        state = cPickle.loads(minf)
+      except:
+        # pickes from python2 may look like this.
+        state = cPickle.loads(six.b(minf), encoding='latin1')
+    else:
+      state = cPickle.loads(str(minf))
     if state[ 'isDirectory' ]:
       diskItem = Directory( os.path.join( self.directory, state[ 'name' ]), None )
     else:

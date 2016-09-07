@@ -13,8 +13,12 @@ import weakref
 import sys
 import re
 import inspect
+import six
 
 from optparse import OptionParser
+
+if sys.version_info[0] >= 3:
+    unicode = str
 
 
 def choice_options(choice):
@@ -142,7 +146,7 @@ def capsul_param_type(axon_param):
 
 def write_process_signature(p, out, buffered_lines, get_all_values=True):
     # write signature
-    for name, param in p.signature.iteritems():
+    for name, param in six.iteritems(p.signature):
         newtype, paramoptions = capsul_param_type(param)
         out.write('        self.add_trait(\'%s\', %s(%s))\n' \
             % (name, newtype, ', '.join(paramoptions)))
@@ -251,7 +255,7 @@ def use_weak_ref(obj):
 def parse_links(pipeline, proc, weak_outputs=False):
     links = []
     proc = use_weak_ref(proc)
-    for param, linkdefs in proc()._links.iteritems():
+    for param, linkdefs in six.iteritems(proc()._links):
         for dstproc, dstparam, mlink, unknown, force in linkdefs:
             dstproc = use_weak_ref(dstproc)
             # check if link is compatible
@@ -439,7 +443,7 @@ def is_linked_to_parent(proc, param, parent):
                 if use_weak_ref(dstproc) == parent:
                     return dstparam
         # get links to parent
-        for pparam, linkdefs in parent()._links.iteritems():
+        for pparam, linkdefs in six.iteritems(parent()._links):
             for srcproc, srcparam, mlink, unknown, force in linkdefs:
                 if use_weak_ref(srcproc) == proc and srcparam == param:
                     return pparam
@@ -470,7 +474,7 @@ def find_param_in_parent(proc, param, procmap):
             return (None, None, None)
         child_name = procmap[last[0]][0]
         # look for parent enode
-        for new_proc, (new_node_name, exported) in procmap.iteritems():
+        for new_proc, (new_node_name, exported) in six.iteritems(procmap):
             if isinstance(new_proc(), procbv.Process):
                 new_node = use_weak_ref(new_proc().executionNode())
                 if new_node is None:  # leaf: not a possible parent
@@ -900,7 +904,7 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
 '''
     def autoexport_nodes_parameters(self):
         \'\'\'export orphan and internal output parameters\'\'\'
-        for node_name, node in self.nodes.iteritems():
+        for node_name, node in six.iteritems(self.nodes):
             if node_name == '':
                 continue # skip main node
             if hasattr(node, '_weak_outputs'):
@@ -994,6 +998,7 @@ except ImportError:
         Str, List, Undefined
 
 from capsul.api import Process
+import six
 ''')
     if proctype is Pipeline:
         out.write('''from capsul.api import Pipeline
@@ -1136,7 +1141,7 @@ def axon_to_capsul_main(argv):
         [(axon,
           make_module_name(capsul, options.module, {},
                            lowercase_modules))
-         for axon, capsul in gen_process_names.iteritems()])
+         for axon, capsul in six.iteritems(gen_process_names)])
     print 'converted proc names:', use_process_names
     use_process_names.update(dict([(axon, capsul) \
         for (axon, capsul) in [name.split(':') for name in options.use_proc]]))

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import shutil
 import os
 import tempfile
@@ -8,6 +9,7 @@ import stat
 from soma import aims
 from soma import uuid
 import soma.minf.api as minf
+import six
 
 
 class Importer:
@@ -51,7 +53,7 @@ class Importer:
 
         try:
             input_vol = aims.read(input_filename)
-        except (aims.aimssip.IOError, IOError), e:
+        except (aims.aimssip.IOError, IOError) as e:
             raise ImportationError(e.message)
 
         if cls._conversion_needed(input_filename, input_vol, output_filename):
@@ -92,15 +94,15 @@ class Importer:
                 input_filename))) == \
                 os.path.abspath(os.path.normpath(os.path.realpath(
                     output_filename))):
-            print 'Warning: input and output files are the same, ' \
-                'copy is skipped.'
+            print('Warning: input and output files are the same, '
+                  'copy is skipped.')
 
         else:
             try:
                 shutil.copy(input_filename, output_filename)
                 exts = {'.ima': ['.dim'], '.img': ['.hdr'],
                         '.vimg': ['.vinfo', '.vhdr']}
-                for ext, other_exts in exts.iteritems():
+                for ext, other_exts in six.iteritems(exts):
                     if input_filename.endswith(ext):
                         for oext in other_exts:
                             shutil.copy(input_filename.replace(ext, oext),
@@ -111,7 +113,7 @@ class Importer:
                     # .minf needs Read/write permission
                     s = os.stat(ominf)
                     os.chmod(ominf, s.st_mode | stat.S_IREAD | stat.S_IWUSR)
-            except IOError, e:
+            except IOError as e:
                 raise ImportationError(e.message)
 
         if output_referential_filename:

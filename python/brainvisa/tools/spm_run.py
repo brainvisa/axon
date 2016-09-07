@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
 from brainvisa.validation import ValidationError
 import distutils.spawn
 import os
@@ -34,10 +35,10 @@ def getSpm8Path(configuration):
 def validation(configuration):
   try:
     return validationSpm8(configuration)
-  except Exception, Spm8_error:
+  except Exception as Spm8_error:
     try :
       validationSpm8Standalone(configuration)
-    except Exception, Spm8Standalone_error:
+    except Exception as Spm8Standalone_error:
       raise Spm8_error
       raise Spm8Standalone_error
 
@@ -51,10 +52,10 @@ def validationSpm8Standalone(configuration):
 
 def validationSpm8(configuration):
   if(not distutils.spawn.find_executable(configuration.matlab.executable)):
-    # print "Matlab executable is not found"
+    # print("Matlab executable is not found")
     raise ValidationError('Matlab is not found')
   if(not configuration.SPM.spm8_path):
-    # print "SPM8 path is not found"
+    # print("SPM8 path is not found")
     raise ValidationError('SPM is not found')
   return True
 
@@ -95,10 +96,10 @@ def tryToRunSpm8(context, configuration, jobPath, cmd):
   result = None
   try:
     result = runSpm8(context, configuration, jobPath, cmd)
-    print 'spm_run.run, matlab version result:', result
+    print('spm_run.run, matlab version result:', result)
   except Exception as e:
-    print 'Exception in sun_spm.runSpm8:', e 
-    hasexception = e       
+    print('Exception in sun_spm.runSpm8:', e)
+    hasexception = e
   return result, hasexception
 
 def tryToRunSpm8Standalone(context, configuration, jobPath):
@@ -106,10 +107,10 @@ def tryToRunSpm8Standalone(context, configuration, jobPath):
   result = None
   try:
     result = runSpm8Standalone(context, configuration, jobPath)
-    print 'spm_run.run, standalone version result:', result
+    print('spm_run.run, standalone version result:', result)
   except Exception as e:
-    print 'Exception in run_spm.runSpm8Standalone:', e
-    hasexception = e       
+    print('Exception in run_spm.runSpm8Standalone:', e)
+    hasexception = e
   return result, hasexception
 
 def runSpm8Standalone(context, configuration, matfilePath):

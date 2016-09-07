@@ -315,7 +315,7 @@ class CapsulProcess(processes.Process):
         signature_args = []
         excluded_traits = set(('nodes_activation', 'pipeline_steps'))
         optional = []
-        for name, param in process.user_traits().iteritems():
+        for name, param in six.iteritems(process.user_traits()):
             if name in excluded_traits:
                 continue
             parameter = make_parameter(param, name, process, attributes,

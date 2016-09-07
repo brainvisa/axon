@@ -61,6 +61,7 @@ Http upload is processed as follow :
 - license: `CeCILL version 2 <http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>`_
 '''
 from __future__ import with_statement
+from __future__ import print_function
 __docformat__ = 'restructuredtext en'
 
 import datetime
@@ -86,16 +87,16 @@ from soma.singleton import Singleton
 
 
 #def displayHttpUploadDebugInfos() :
-    #print '1 - resourcemanager -> resourcelocks : ', len(resourcemanager.resourcelocks)
-    #print '                    -> builders : ', len(resourcemanager.builders)
-    #print '2 - filebuilderinfomanager -> filebuilderinfos : ', len(FileBuilderInfoManager().filebuilderinfos)
-    #print '                           -> queue : ', FileBuilderInfoManager().queue.qsize()
+    #print('1 - resourcemanager -> resourcelocks : ', len(resourcemanager.resourcelocks))
+    #print('                    -> builders : ', len(resourcemanager.builders))
+    #print('2 - filebuilderinfomanager -> filebuilderinfos : ', len(FileBuilderInfoManager().filebuilderinfos))
+    #print('                           -> queue : ', FileBuilderInfoManager().queue.qsize())
     
     #try :
         ## Try to get more debug information
         #import objgraph
-        #print '3 - objgraph -> filebuilderinfos : ', objgraph.count('FileBuilderInfo')
-        #print '             -> filefragments', objgraph.count('FileFragment')
+        #print('3 - objgraph -> filebuilderinfos : ', objgraph.count('FileBuilderInfo'))
+        #print('             -> filefragments', objgraph.count('FileFragment'))
     #except Exception, e :
         #pass
 
@@ -106,7 +107,7 @@ def displayFileBuilderInfos():
     Display current registered :py:class:`FileBuilderInfo`s.
   '''
   for filebuilderinfo in FileBuilderInfoManager().filebuilderinfos.itervalues() :
-    print filebuilderinfo
+    print(filebuilderinfo)
 
 def checkSha1( content, sha1 ) :
   '''
@@ -379,7 +380,7 @@ class LogManager( Singleton ) :
                   mode )
       except Exception, error :
         if ( self.loglevel() != LogLevel.NONE ) :
-          print 'Log was desactivated due to errors. %s. %s' % (error, traceback.format_exc() )
+          print('Log was desactivated due to errors. %s. %s' % (error, traceback.format_exc() ))
           
           # Desactivate log level for write
           self.setLogLevel( LogLevel.NONE )

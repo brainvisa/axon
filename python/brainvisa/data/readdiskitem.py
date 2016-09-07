@@ -46,6 +46,11 @@ from brainvisa.data.neuroDiskItems import getFormat, getFormats, DiskItem, isSam
 from brainvisa.processing.neuroException import HTMLMessage
 from brainvisa.data.qtgui.diskItemBrowser import diskItemFilter
 import six
+import sys
+
+if sys.version_info[0] >= 3:
+    basestring = str
+    unicode = str
 
 #----------------------------------------------------------------------------
 class ReadDiskItem( Parameter ):
@@ -234,7 +239,7 @@ class ReadDiskItem( Parameter ):
       if selection.getHierarchy( '_database' ) is None:
         # If DiskItem is not in a database, required attributes are ignored (except _format)
         rr = {}
-        if requiredAttributes.has_key( '_format' ):
+        if '_format' in requiredAttributes:
           rr[ '_format' ] = requiredAttributes[ '_format' ]
         requiredAttributes = rr
 
@@ -427,7 +432,7 @@ class ReadDiskItem( Parameter ):
         ok = True
         for attrib, value in six.iteritems(requiredAttributes):
           if not attrib.startswith('_') and \
-              (not sel_attr.has_key(attrib) or sel_attr[attrib] != value):
+              (attrib not in sel_attr or sel_attr[attrib] != value):
             ok = False
             break
         if _debug:

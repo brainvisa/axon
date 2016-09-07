@@ -182,7 +182,7 @@ class VirtualDirectoriesManager:
 
   def registerVirtualDirectory( self, virtualDirectory ):
     key = virtualDirectory.name()
-    if self.__virtualDirectories.has_key( key ):
+    if key in self.__virtualDirectories:
       raise RuntimeError( 'virtual directory "%s" already registered' % ( key, ) )
     if virtualDirectory.manager is not None:
       raise RuntimeError( 'virtual directory "%s" already registered in another VirtualDirectoriesManager' % ( key, ) )

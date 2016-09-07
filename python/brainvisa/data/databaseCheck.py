@@ -31,6 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import print_function
 import os, stat, re, shutil, time
 import operator
 from brainvisa.data import neuroHierarchy
@@ -138,16 +139,18 @@ class DBProcessor(object):
         
     if self.doneProcesses:
       undoScript=open(undoScriptName, "w")
-      #print "Generate undo script ", undoScriptName
-      print >> undoScript, "#! /usr/bin/env python2"
-      print >> undoScript, "# This has been created by Brainvisa. "
-      print >> undoScript, "# Run it to undo changes made by database processes."
-      print >> undoScript, "import os, shutil, sys"
+      #print("Generate undo script ", undoScriptName)
+      print("#!/usr/bin/env python2", file=undoScript)
+      print("# This has been created by Brainvisa. ", file=undoScript)
+      print("# Run it to undo changes made by database processes.",
+            file=undoScript)
+      print("import os, shutil, sys", file=undoScript)
       # the undo script is in database directory, so change dir to script directory is change dir to database directory
-      print >> undoScript, "os.chdir(os.path.dirname(os.path.dirname(sys.argv[0])))"
+      print("os.chdir(os.path.dirname(os.path.dirname(sys.argv[0])))",
+            file=undoScript)
       
       for action in self.doneProcesses:
-        print >> undoScript, action.undoCmd()
+        print(action.undoCmd(), file=undoScript)
       undoScript.close()
       # make the script executable
       os.chmod(undoScriptName, os.stat(undoScriptName)[stat.ST_MODE] | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
@@ -172,7 +175,7 @@ class DBProcessor(object):
     """
     undoScript=os.path.join(self.dbDir, "scripts", self.undoScriptName)
     if os.path.exists(undoScript):
-      #print "Execute undo script ", undoScript
+      #print("Execute undo script ", undoScript)
       os.spawnl(os.P_WAIT, undoScript)
     if component is not None:
         c=self.components.get(component)
@@ -1039,25 +1042,30 @@ class BVConverter_3_1(DBConverter):
     settingsFile='database_settings.minf'
     if self.doneProcesses: # a undo script has already been created by super class method, so open the file in append mode
       undoScript=open(undoScriptName, "a")
-      print >> undoScript, "os.chdir(os.path.dirname(os.path.dirname(sys.argv[0])))"
+      print("os.chdir(os.path.dirname(os.path.dirname(sys.argv[0])))",
+            file=undoScript)
       if self.oldSettings:
-        print >> undoScript, "os.rename('"+settingsFile+".sav', '"+settingsFile+"')\n"
+        print("os.rename('"+settingsFile+".sav', '"+settingsFile+"')\n",
+              file=undoScript)
       elif self.newSettings:
-        print >> undoScript, "os.remove('"+settingsFile+"')\n"
+        print("os.remove('"+settingsFile+"')\n", file=undoScript)
       undoScript.close()
     else:
       undoScript=open(undoScriptName, "w")
-      #print "Generate undo script ", undoScriptName
-      print >> undoScript, "#! /usr/bin/env python2"
-      print >> undoScript, "# This has been created by Brainvisa. "
-      print >> undoScript, "# Run it to undo changes made by database processes."
-      print >> undoScript, "import os, shutil, sys"
+      #print("Generate undo script ", undoScriptName)
+      print("#!/usr/bin/env python2", file=undoScript)
+      print("# This has been created by Brainvisa. ", file=undoScript)
+      print("# Run it to undo changes made by database processes.",
+            file=undoScript)
+      print("import os, shutil, sys", file=undoScript)
       # the undo script is in database directory, so change dir to script directory is change dir to database directory
-      print >> undoScript, "os.chdir(os.path.dirname(os.path.dirname(sys.argv[0])))"
+      print("os.chdir(os.path.dirname(os.path.dirname(sys.argv[0])))",
+            file=undoScript)
       if self.oldSettings:
-        print >> undoScript, "os.rename('"+settingsFile+".sav', '"+settingsFile+"')\n"
+        print("os.rename('"+settingsFile+".sav', '"+settingsFile+"')\n",
+              file=undoScript)
       elif self.newSettings:
-        print >> undoScript, "os.remove('"+settingsFile+"')\n"
+        print("os.remove('"+settingsFile+"')\n", file=undoScript)
       undoScript.close()
       # make the script executable
       os.chmod(undoScriptName, os.stat(undoScriptName)[stat.ST_MODE] | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)

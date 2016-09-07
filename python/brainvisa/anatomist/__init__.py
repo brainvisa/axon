@@ -51,7 +51,7 @@ try:
   exec("import "+anatomist.getDefaultImplementationModuleName()+" as anatomistModule")
   anatomistImport=True
   if neuroConfig.anatomistImplementation != 'socket':
-    import reusablewinhook
+    from . import reusablewinhook
 except Exception as e:
   print(e)
   anatomistImport=False
