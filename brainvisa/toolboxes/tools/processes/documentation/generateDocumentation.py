@@ -7,9 +7,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -24,8 +24,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -52,7 +52,7 @@ def initialization( self ):
 def generateHTMLDocumentation( processInfoOrId, translators, context, ontology ):
   processInfo = getProcessInfo( processInfoOrId )
   documentation = readProcdoc( processInfo.id )
-  
+
   if context is not None:
     # this <font></font> thing is a trick to allow text to be considered as
     # HTML, and the <br/> not escaped, otherwise either "<br/>" appears in
@@ -204,7 +204,7 @@ def generateHTMLDocumentation( processInfoOrId, translators, context, ontology )
 #----------------------------------------------------------------------------
 def generateHTMLProcessesDocumentation( context, ontology ):
   import sys
-  
+
   #--------------------------------------
   # Generate translators
   #--------------------------------------
@@ -241,16 +241,16 @@ def generateHTMLProcessesDocumentation( context, ontology ):
           categoryDocFiles.setdefault( category, f )
       elif os.path.isdir( f ):
         stack += [ os.path.join( r, c ) for c in os.listdir( f ) ]
-  
+
   # Find documentation files in toolboxes
   # processes are in toolboxesDir/toolboxName/processes by default. anyway they are in toolbox.processesDir
   # each relative directory dir in processes, matches a category named toolboxName/dir
   # a documentation for the toolbox may be in toolboxesDir/toolboxId
-  
+
   from brainvisa.toolboxes import allToolboxes
   for toolbox in allToolboxes():
     # search for a file category_documentation.minf in toolboxesDir/toolboxId, otherwise it can be in processesDir
-    # It is usefull for my processes toolbox because the toolbox and the processes are not in the same place and the documentation of the toolbox cannot be in the processes directory. 
+    # It is usefull for my processes toolbox because the toolbox and the processes are not in the same place and the documentation of the toolbox cannot be in the processes directory.
     toolboxDoc=os.path.join( neuroConfig.toolboxesDir, toolbox.id, "category_documentation.minf")
     if os.path.exists(toolboxDoc): # if it exists, add it to the doc file for which we have to generate an html file
         categoryDocFiles.setdefault( toolbox.id, toolboxDoc )
@@ -268,9 +268,10 @@ def generateHTMLProcessesDocumentation( context, ontology ):
         stack += [ (os.path.join( r, c ), cat) for c in os.listdir( f ) ]
 
   # Create category HTML files
-  
+
   baseDocDir = os.path.dirname( neuroConfig.docPath )
   for category, f in categoryDocFiles.iteritems():
+    context.write('Generate HTML for category "', category, '"')
     categoryPath=category.split("/")
     minfContent = readMinf( f )[ 0 ]
     enContent=minfContent['en']
@@ -280,9 +281,9 @@ def generateHTMLProcessesDocumentation( context, ontology ):
         c=enContent
       else:
         c=minfContent.get(l, enContent)
-        
+
       tr = translators.get( l )
-      
+
       c = convertSpecialLinks( c, l , '/'.join( ( '..', ) * (len( categoryPath )+1) ), tr ) # base dir for links : processes
       p = os.path.join( baseDocDir, l, 'processes', 'categories', category )
       if not os.path.isdir( p ):
@@ -316,7 +317,7 @@ def get_toolbox_name(toolbox_id):
   if name is None:
     name = '&lt;unnamed toolbox&gt;'
   return name
-  
+
 def nameKey(x):
   return x.name.lower()
 
@@ -331,7 +332,7 @@ def execution( self, context ):
     htmlDirectory=os.path.join( ontologyDirectory, l )
     if not os.path.exists( htmlDirectory ):
       os.makedirs( htmlDirectory )
-  
+
   # collect information about types and formats
   allFormats=sorted(getAllFormats(), key=nameKey)
   allTypes=sorted(getAllDiskItemTypes(), key=nameKey)
@@ -388,16 +389,16 @@ def execution( self, context ):
             formatsByTypes.setdefault( t, set() ).add( f )
             typesByFormats.setdefault( f, set() ).add( t )
             processesByFormats.setdefault( f, set() ).add( pi )
-  
+
   # create a temporary database for each ontology to get ontology rules
   tmpDatabase = context.temporary( 'Directory' )
   ontologies=sorted(FileSystemOntology.getOntologiesNames())
   databases=[]
-  for ontology in ontologies:  
+  for ontology in ontologies:
     database = SQLDatabase( ':memory:', tmpDatabase.fullPath(), fso=ontology )
     databases.append(database)
-  
-  
+
+
   if distutils.spawn.find_executable('dot') is None:
     self.write_graphs=False
     context.warning('Cannot find dot executable. Inheritance graphs won\'t be written.' )
@@ -425,7 +426,7 @@ def execution( self, context ):
       keys=database.getTypesKeysAttributes(type.name)
       if keys:
         typeKeys[type.name][database.fso.name]=keys
-  
+
   # Create types inheritance graphs (dot format)
   if self.write_graphs:
     imagesDirectory=os.path.join( ontologyDirectory, 'images' )
@@ -435,13 +436,13 @@ def execution( self, context ):
     for diskItemType in allTypes :
       type=diskItemType.name
       typeFileName = type.replace( '/', '_' )
-      
+
       context.write( '<font></font>Generate inheritance graph for type ', htmlEscape(type) +
         '<br/>' )
-      
+
       dot = open( tmpDot, 'w' )
       tmpMap = os.path.join( tmpDatabase.fullPath(), typeFileName+'_map.html' )
-  
+
       print >> dot, 'digraph "' + typeFileName + ' inheritance" {'
       print >> dot, '  node [style=filled,shape=box];'
       print >> dot, '  "' + type  + '" [color=orange];'
@@ -467,7 +468,7 @@ def execution( self, context ):
         raise
       except:
         context.warning("Cannot generate inheritance graph, the dot command failed.")
-  
+
   # Create documentation files for types and formats and index files
   # LANGUAGES
   for l in neuroConfig._languages:
@@ -489,17 +490,17 @@ def execution( self, context ):
     print >> index, '<a href="formats/index_toolboxes.html">Formats per toolbox</a>'
     print >> index, "</body></html>"
     index.close()
-    
+
     # TYPES
     typesDirectory=os.path.join( htmlDirectory, 'types' )
     formatsDirectory=os.path.join( htmlDirectory, 'formats' )
     if not os.path.exists( typesDirectory ):
       os.mkdir( typesDirectory )
-      
+
     return_to_index=htmlEscape( relative_path( index.name,  typesDirectory) )
 
     # types per toolbox index
-    types_toolboxes = open( os.path.join( typesDirectory, 'index_toolboxes.html' ), 'w' )  
+    types_toolboxes = open( os.path.join( typesDirectory, 'index_toolboxes.html' ), 'w' )
     print >> types_toolboxes, '''<html>
 <head>
   <title>Data types per toolbox</title>
@@ -519,9 +520,9 @@ def execution( self, context ):
     print >> types_toolboxes, '</body></html>'
     types_toolboxes.close()
 
-      
+
     # types per ontology index
-    types_ontologies = open( os.path.join( typesDirectory, 'index_ontologies.html' ), 'w' )  
+    types_ontologies = open( os.path.join( typesDirectory, 'index_ontologies.html' ), 'w' )
     print >> types_ontologies, '''<html>
 <head>
   <title>Data types per ontology</title>
@@ -568,7 +569,7 @@ def execution( self, context ):
       typeEscaped = htmlEscape( type )
       context.write( '<font></font>Generate HTML for type', typeEscaped, '( ' + str( count ) + ' / ' + str( len( allTypes ) ) + ' )<br/>' )
       print >> types, '<a href="' + htmlEscape( typeFileName ) + '.html">' + typeEscaped + '</a><br/>'
-      
+
       # documentation file for the type
       print >> typeHTML, '''<html>
 <head>
@@ -609,22 +610,22 @@ def execution( self, context ):
             beforeError=_t_( 'error in process doc for: ' )+' <b>%s</b> (%s)' \
             % ( pi.id, pi.name ) )
       print >> typeHTML, '</blockquote>'
-      
+
       print >> typeHTML, '<h2>Associated formats</h2><blockquote>'
       for f in sorted(formatsByTypes.get( type, () ), key=str.lower ):
         formatFileName = f.replace( '/', '_' )
         href = htmlEscape( relative_path( os.path.join( formatsDirectory, formatFileName + '.html' ), os.path.dirname( typeHTML.name ) ) )
         print >> typeHTML, '<a href="' + href + '">' + htmlEscape( f ) + '</a><br/>'
       print >> typeHTML, '</blockquote>'
-      
+
       print >> typeHTML, '<h2>Associated ontology rules</h2>'
       ontRules = typeRules.get( type, {} )
-      for ont, rules in ontRules.items():  
+      for ont, rules in ontRules.items():
         print >> typeHTML, "<li><b>", ont, "</b>:</li><blockquote>"
         for rule in rules:
           print >> typeHTML, htmlEscape(rule.pattern.pattern), "<br/>"
         print >> typeHTML, '</blockquote>'
-      
+
       print >> typeHTML, '<h2>Key attributes</h2>'
       ontKeys=typeKeys.get( type, {} )
       for ont, keys in ontKeys.items():
@@ -637,12 +638,12 @@ def execution( self, context ):
 
       print >> typeHTML, '</body></html>'
       typeHTML.close()
-      
-  
+
+
     # FORMATS
     if not os.path.exists( formatsDirectory ):
       os.mkdir( formatsDirectory )
-    
+
     formats_toolboxes=open(os.path.join( formatsDirectory, 'index_toolboxes.html' ), 'w')
     print >> formats_toolboxes, '''<html>
 <head>
@@ -662,7 +663,7 @@ def execution( self, context ):
     print >> formats_toolboxes, '</body></html>'
     formats_toolboxes.close()
 
-    
+
     formatsFileName=os.path.join( formatsDirectory, 'index.html' )
     formats = open( formatsFileName, 'w' )
     print >> formats, '''<html>
@@ -719,7 +720,7 @@ def execution( self, context ):
             beforeError=_t_( 'error in process doc for:' )+' <b>%s</b> (%s)' \
             % ( pi.id, pi.name ) )
       print >> formatHTML, '</blockquote>'
-      
+
       print >> formatHTML, '<h2>Associated types</h2><blockquote>'
       for t in sorted(typesByFormats.get( format.name, () ), key=str.lower):
         typeFileName = t.replace( '/', '_' )
@@ -730,10 +731,10 @@ def execution( self, context ):
       print >> formatHTML, '</body></html>'
       formatHTML.close()
 
-  
+
     # FORMATS LISTS
     print >> formats, '<h2><a name="formats_lists"/>Formats Lists in BrainVISA</h2>'
-    
+
     for listName, format in sorted( formatLists.items() ):
       formatFileName = format.name.replace( '/', '_' )
       htmlFileName = os.path.join( formatsDirectory, formatFileName + '.html' )
@@ -767,7 +768,7 @@ def execution( self, context ):
         href = htmlEscape( relative_path( getHTMLFileName( pi.id, language=l  ), os.path.dirname( formatHTML.name ) ) )
         print >> formatHTML, '<a href="' + href + '">' + htmlEscape( pi.name ) + '</a><br/>'
       print >> formatHTML, '</blockquote>'
-      
+
       print >> formatHTML, '<h2>Associated types</h2><blockquote>'
       for t in sorted(typesByFormats.get( format.name, () ), key=str.lower):
         typeFileName = t.replace( '/', '_' )
@@ -777,7 +778,7 @@ def execution( self, context ):
 
       print >> formatHTML, '</body></html>'
       formatHTML.close()
-  
+
     print >> formats, '</body></html>'
     formats.close()
 
