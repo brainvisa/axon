@@ -83,7 +83,11 @@ from soma.qt4gui.api import ApplicationQt4GUI
 from brainvisa.data.databaseCheck import BVChecker_3_1
 from brainvisa.data import neuroHierarchy
 from brainvisa.tools import checkbrainvisaupdates
-from six.moves import urllib
+try:
+    from six.moves.urllib import parse as urllib
+except ImportError:
+    # some six versions do not provide six.moves.urllib (Ubuntu 12.04)
+    import urllib
 
 # Because soma_workflow uses PyQt4.uic, we need to first initialize
 # soma.qt_gui.qt_backend.uic in order to hack PyQt4.uic and fix issue #13432
