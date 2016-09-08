@@ -3493,8 +3493,7 @@ class ProcessEdit( QDialog ):
 
     l=QLabel( _t_('Short description') + ':' )
     vb.addWidget(l)
-    self.mleShort = QTextEdit( )
-    self.mleShort.setAcceptRichText(False)
+    self.mleShort = QPlainTextEdit()
     vb.addWidget(self.mleShort)
 
     w=QWidget(spl)
@@ -3512,8 +3511,7 @@ class ProcessEdit( QDialog ):
     vb.addWidget(stack)
     self.mleParameters = {}
     for n in self.process.signature.keys():
-      mle = QTextEdit(  )
-      mle.setAcceptRichText(False)
+      mle = QPlainTextEdit()
       vb.addWidget(mle)
       stack.addWidget( mle )
       self.mleParameters[ self.cmbParameter.count() ] = mle
@@ -3526,8 +3524,7 @@ class ProcessEdit( QDialog ):
     w.setLayout(vb)
     l=QLabel( _t_('Long description') + ':' )
     vb.addWidget(l)
-    self.mleLong = QTextEdit( )
-    self.mleLong.setAcceptRichText(False)
+    self.mleLong = QPlainTextEdit()
     vb.addWidget(self.mleLong)
 
     self.readDocumentation()
@@ -3597,8 +3594,7 @@ class ProcessEdit( QDialog ):
 
   @staticmethod
   def escapeXMLEntities( s ):
-    return re.sub( r'&([a-z]+);', lambda m: '&amp;'+m.group(1)+';', s )
-
+    return re.sub( r'&(?![a-z]+;)', '&amp;', s )
 
   def changeLanguage( self ):
     self.saveLanguage()
