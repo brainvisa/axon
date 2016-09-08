@@ -3,7 +3,11 @@
 
 import re, platform, sys
 from brainvisa.configuration import neuroConfig
-import six.moves.urllib.request as urllib2
+try:
+    import six.moves.urllib.request as urllib2
+except ImportError:
+    # some six versions do not provide six.moves.urllib (Ubuntu 12.04)
+    import urllib2
 import six
 
 filesaddress = 'ftp://ftp.cea.fr/pub/dsv/anatomist/binary'

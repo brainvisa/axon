@@ -70,7 +70,7 @@ from soma.signature.api import DataType
 from soma.uuid import Uuid
 from soma.functiontools import partial
 
-import sys, os, os.path, urllib
+import sys, os, os.path
 import sip
 
 class TgWindowsManager( Singleton ) :
