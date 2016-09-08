@@ -67,6 +67,7 @@ from brainvisa.data.fileformats import FileFormats
 from brainvisa.data.directory_iterator import DirectoryIterator, VirtualDirectoryIterator
 from brainvisa.data import temporary
 import six
+from six.moves import reduce
 
 if sys.version_info[0] >= 3:
     izip = zip
