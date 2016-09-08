@@ -47,6 +47,7 @@ from brainvisa.processing.neuroException import HTMLMessage
 from brainvisa.data.qtgui.diskItemBrowser import diskItemFilter
 import six
 import sys
+from six.moves import reduce
 
 if sys.version_info[0] >= 3:
     basestring = str

@@ -122,6 +122,7 @@ from brainvisa import shelltools
 from brainvisa.multipleExecfile import MultipleExecfile
 from PyQt4.QtCore import QObject, SIGNAL
 import re
+from six.moves import reduce
 
 if sys.version_info[0] >= 3:
     basestring = str
@@ -311,6 +312,12 @@ class DiskItem(QObject):
     if isinstance( other, basestring ):
       return other not in self.fullPaths()
     return self is not other and ((not isinstance( other, DiskItem )) or self.fullPath() != other.fullPath() )
+
+  def __lt__(self, other):
+    if isinstance( other, basestring ):
+      return self.fullPath() < other
+    return self is not other and isinstance(other, DiskItem) \
+        and self.fullPath() < other.fullPath()
   
   
   def clone( self ):
