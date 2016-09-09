@@ -119,9 +119,11 @@ def execution( self, context ):
                                  list_int_index,
                                  output_label_volume_translation.fullPath(),
                                  filename)
-
-        self.createLabelFromGraph( tmp_graph.fullPath(), output_label_volume.fullPath() )
-
+        try: 
+            self.createLabelFromGraph( tmp_graph.fullPath(), output_label_volume.fullPath() )
+        except:
+            context.error("Extraction label failed, graph may be empty?")
+            
 def findVolumes(self):
     workspace_directory = os.path.dirname(self.results_report_mat_file.fullPath())
     filenames_in_directory = os.listdir(workspace_directory)
