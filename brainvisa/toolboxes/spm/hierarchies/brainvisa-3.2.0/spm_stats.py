@@ -13,10 +13,10 @@ spm_files = (
 spm_stats = (
     '{factorial_design}', SetContent(
         '{first_group_name}_compare_to_{second_group_name}',
-            apply(SetContent, spm_files),
+            SetContent(*spm_files),
         '{group_name}',
-            apply(SetContent, spm_files)
+            SetContent(*spm_files)
     ),
 )
 
-insert( 'analyzes', 'spm_stats', apply( SetContent, spm_stats))
+insert( 'analyzes', 'spm_stats', SetContent(*spm_stats))
