@@ -31,7 +31,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-import shfjGlobals
+from brainvisa.tools import aimsGlobals
 
 
 name = 'Threshold'
@@ -80,8 +80,6 @@ def execution( self, context ):
 
   if self.binary:
     command += [ '-b']
-
-  print command
 
   context.system( *command )
 

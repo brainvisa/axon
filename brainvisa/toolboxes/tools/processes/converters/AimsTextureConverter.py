@@ -33,45 +33,59 @@
 from brainvisa.processes import *
 from brainvisa.tools import aimsGlobals
 from brainvisa import shelltools
+import sys
+
+if sys.version_info[0] >= 3:
+    def map_list(func, thing):
+        return list(map(func, thing))
+else:
+    map_list = map
 
 name = 'Aims Texture Converter'
 roles = ('converter',)
 userLevel = 0
 
 signature = Signature(
-  'read', ReadDiskItem( 'Texture', 'Aims texture formats',
-                        enableConversion = 0 ),
-  'write', WriteDiskItem( 'Texture',  'Aims texture formats' ),
-  'preferedFormat', apply( Choice, [ ( '<auto>', None ) ] + map( lambda x: (x,getFormat(x)), aimsGlobals.aimsTextureFormats ) ),
-  'removeSource', Boolean(),
-  'ascii', Boolean(),
+    'read', ReadDiskItem('Texture', 'Aims texture formats',
+                        enableConversion=False),
+    'write', WriteDiskItem('Texture',  'Aims texture formats'),
+    'preferedFormat', Choice(*([('<auto>', None)]
+                              + map_list(lambda x: (x, getFormat(x)),
+                                         aimsGlobals.aimsTextureFormats))),
+    'removeSource', Boolean(),
+    'ascii', Boolean(),
 )
 
-def findAppropriateFormat( values, proc ):
-  if values.preferedFormat is None:
-    result = WriteDiskItem( 'Texture', 'Aims texture formats' ).findValue( values.read )
-  else:
-    result = WriteDiskItem( 'Texture', values.preferedFormat ).findValue( values.read )
-  return result
 
-def initialization( self ):
-  self.linkParameters( 'write', [ 'read', 'preferedFormat' ], findAppropriateFormat )
-  self.preferedFormat = None
-  self.setOptional( 'preferedFormat' )
-  self.removeSource = 0
-  self.ascii = 0
+def findAppropriateFormat(values, proc):
+    if values.preferedFormat is None:
+        result = WriteDiskItem(
+            'Texture', 'Aims texture formats').findValue(values.read)
+    else:
+        result = WriteDiskItem(
+            'Texture', values.preferedFormat).findValue(values.read)
+    return result
 
 
-def execution( self, context ):
-  convert = 0
-  command = [ 'AimsFileConvert', '-i', self.read, '-o', self.write ]
-  if self.ascii:
-    convert = 1
-    command += [ '-a' ]
+def initialization(self):
+    self.linkParameters('write', ['read', 'preferedFormat'],
+                        findAppropriateFormat)
+    self.preferedFormat = None
+    self.setOptional('preferedFormat')
+    self.removeSource = False
+    self.ascii = False
 
-  if apply( context.system, command ):
-    raise Exception( _t_('Error while converting <em>%s</em> to <em>%s</em>') % \
-                         ( command[ 2 ], command[ 4 ] ) )
-  if self.removeSource:
-    for f in self.read.fullPaths():
-      shelltools.rm( f )
+
+def execution(self, context):
+    command = ['AimsFileConvert', '-i', self.read, '-o', self.write]
+    if self.ascii:
+        command += ['-a']
+
+    if context.system(*command):
+        raise RuntimeError(_t_(
+            'Error while converting <em>%s</em> to <em>%s</em>')
+            % (command[2], command[4]))
+    if self.removeSource:
+        for f in self.read.fullPaths():
+            shelltools.rm(f)
+

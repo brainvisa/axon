@@ -56,7 +56,6 @@ signature = Signature(
 
 def initialization( self ):
   def writeName( self, proc ):
-    #print 'writeName'
     if self.registered_volume and self.read:
       file = WriteDiskItem( 'Transformation matrix',
                             'Transformation matrix' ).findValue( self.read )
@@ -71,7 +70,6 @@ def initialization( self ):
       if i >= 0:
         name = name[:i]
       name += ext
-      print name
       # il manque une fonction pour fixer ca...
       file.name = name
       return file

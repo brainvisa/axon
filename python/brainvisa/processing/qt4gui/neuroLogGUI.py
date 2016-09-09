@@ -38,6 +38,17 @@ from brainvisa.processing import neuroLog
 from brainvisa.processing import neuroException
 from brainvisa.configuration import neuroConfig
 from soma.qtgui.api import TextEditWithSearch
+import sys
+import sip
+
+if sys.version_info[0] >= 3:
+    unicode = str
+    def next(iterable):
+        return iterable.__next__()
+else:
+    def next(iterable):
+        return iterable.next()
+
 
 class LogItemsViewer( QWidget):
   """
@@ -112,6 +123,8 @@ class LogItemsViewer( QWidget):
 
   def _addLogItem( self, item, parent, after, itemIndex, listState, currentItemIndex, currentItemList ):
     viewItem = QTreeWidgetItem( parent )
+    if viewItem.__class__.__hash__ is None:
+      viewItem.__class__.__hash__ = lambda self: sip.unwrapinstance(self)
     viewItem.setText( 0, item.what() )
     viewItem.setText( 1, time.asctime( time.localtime( item.when() ) ) )
     if item.icon():
@@ -148,11 +161,11 @@ class LogItemsViewer( QWidget):
         if self.searchText and ok:
           self.searchResults=self.findItem(self.searchText)
           if (self.searchResults):
-            item=self.searchResults.next()
+            item = next(self.searchResults)
       elif (keyEvent.matches(QKeySequence.FindNext) ):
         if (self.searchResults is not None):
           if (self.searchResults):
-            item=self.searchResults.next()
+            item = next(self.searchResults)
             if item is None:
               self.searchResults.close()
               self.searchResults=None
