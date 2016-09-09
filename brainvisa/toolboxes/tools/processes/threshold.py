@@ -38,8 +38,8 @@ name = 'Threshold'
 userLevel = 1
 
 signature = Signature(
-  'image_input', ReadDiskItem( '4D Volume', shfjGlobals.anatomistVolumeFormats ),
-  'image_output', WriteDiskItem( '4D Volume',  shfjGlobals.aimsWriteVolumeFormats ),
+  'image_input', ReadDiskItem('4D Volume', 'aims readable volume formats'),
+  'image_output', WriteDiskItem('4D Volume', 'aims writabme volume formats'),
   'mode', Choice ( ( 'less than', 'lt' ), 
                    ( 'less or equal', 'le' ), 
                    ( 'greater than', 'gt' ),

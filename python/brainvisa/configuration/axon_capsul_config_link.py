@@ -191,10 +191,15 @@ class AxonCapsulConfSynchronizer(object):
             study_config.use_fsl = True
 
         # Freesurfer
-        if ax_conf.freesurfer.freesurfer_home_path:
-          study_config.freesurfer_config = os.path.join(
-              ax_conf.freesurfer.freesurfer_home_path, 'SetUpFreeSurfer.sh')
-          study_config.use_freesurfer = True
+        try:
+            if ax_conf.freesurfer.freesurfer_home_path:
+              study_config.freesurfer_config = os.path.join(
+                  ax_conf.freesurfer.freesurfer_home_path,
+                  'SetUpFreeSurfer.sh')
+              study_config.use_freesurfer = True
+        except AttributeError:
+            # FS toolbox is probably not installed.
+            study_config.use_freesurfer = False
 
 
     def sync_capsul_to_axon(self):
