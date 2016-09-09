@@ -55,6 +55,14 @@ try:
 except Exception as e:
   print(e)
   anatomistImport=False
+
+if sys.version_info[0] >= 3:
+    def next(iterator):
+        return iterator.__next__()
+else:
+    def next(iterator):
+        return iterator.next()
+
 """
 This module enables to generate an implementation of anatomist api specialized for brainvisa.
 It can use either socket or direct(sip bindings) implementation.
@@ -342,11 +350,11 @@ if anatomistImport:
         pth = tm.findPaths( id1, id2, extensive=False, maxLength=4 )
 
         try:
-          p = pth.next()
+          p = next(pth)
 
           loadTrAndCreateRef = forceLoadTransformation
           try:
-              p = pth.next()
+              p = next(pth)
               self.log(string.join('processTransformations warning: multiple transformations from', ref1, 'to', ref2))
               loadTrAndCreateRef = forceLoadTransformation
           except:
