@@ -7,6 +7,8 @@
 #
 # SPM8 default parameters for paired t-test analysis
 #
+from __future__ import print_function
+
 def initialize_pairedTTest_SPM8_default_parameters( process ):
     process.grandMeanScaling = 'No'
     process.ancova = 'No'
@@ -99,7 +101,7 @@ def writeGlobalNormalization_inMatfile(context, mat_file, gmsca_no, gmsca_yes_gm
     if (gmsca_no == """1"""):
         if (glonorm != """1"""):
             msg = 'no global normalization (gmsca_no == 1) so Normalization must be None (but is' + glonorm + ')'
-            print msg
+            print(msg)
             context.error(msg)
             raise Exception(msg)
         mat_file.write("""matlabbatch{1}.spm.stats.factorial_design.globalm.gmsca.gmsca_no = 1;

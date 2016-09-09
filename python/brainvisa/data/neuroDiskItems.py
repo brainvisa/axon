@@ -131,11 +131,14 @@ if sys.version_info[0] >= 3:
     StringTypes = (str,)
     def values(thing):
         return list(thing.values())
+    def map_list(func, thing):
+        return list(map(func, thing))
 else:
     from UserList import UserList
     from types import StringTypes
     def values(thing):
         return thing.values()
+    map_list = map
 
 
 #----------------------------------------------------------------------------
@@ -443,7 +446,8 @@ class DiskItem(QObject):
     if name_serie:
       return self.fileNameSerie( index / len( self._files ) , 
                                  index % len( self._files ) )
-    if self._files: return self._files[index]
+    if self._files:
+      return self._files[index]
     else: return self.name
 
 
@@ -1717,7 +1721,7 @@ class Format(object):
     if d:
       oldName = diskItem.name
       diskItem.name = f
-      result = map( lambda x, d=d: os.path.join( d, x ), self.patterns.unmatch( diskItem, matchResult, force=force ) )
+      result = map_list( lambda x, d=d: os.path.join( d, x ), self.patterns.unmatch( diskItem, matchResult, force=force ) )
       diskItem.name = oldName
     else:
       result =  self.patterns.unmatch( diskItem, matchResult, force=force )
@@ -2437,10 +2441,11 @@ def getTemporary( format, diskItemType = None, parent = None, name = None ):
     item = TemporaryDirectory( name, parent )
   else:
     item = TemporaryDiskItem( name, parent )
-  item._files = format.unmatch( item, { 'filename_variable': name, 'name_serie': None }, 1 )
+  item._files = format.unmatch( item, { 'filename_variable': name,
+                                       'name_serie': None }, 1 )
   item.format = format
   item.type = diskItemType
-  toDelete = item.fullPaths()
+  toDelete = list(item.fullPaths())
   toDelete.append( toDelete[ 0 ] + '.minf' )
   for f in toDelete:
     temporary.manager.registerPath( f )

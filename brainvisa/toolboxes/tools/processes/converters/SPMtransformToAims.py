@@ -31,6 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import print_function
 from brainvisa.processes import *
 from brainvisa.configuration import neuroConfig
 from brainvisa.tools import aimsGlobals
@@ -70,7 +71,6 @@ signature = Signature(
 
 def initialization( self ):
   def writeName( self, proc ):
-    #print 'writeName'
     if self.registered_volume and self.read:
       file = WriteDiskItem( 'Transformation matrix',
                             'Transformation matrix' ).findValue( self.read )
@@ -85,7 +85,6 @@ def initialization( self ):
       if i >= 0:
         name = name[:i]
       name += ext
-      print name
       # il manque une fonction pour fixer ca...
       file.name = name
       return file
@@ -106,11 +105,8 @@ def listToVectorString( l ):
 
 def matlabExecution( self, context ):
   aim = self.source_volume
-  #print aim
   amat = self.read
-  #print amat
   bim = self.registered_volume
-  #print bim
   if self.registered_volume is not None:
     bmatname = self.registered_volume.fullName() + '.mat'
     bmat = self.central_to_registered
@@ -381,9 +377,9 @@ def execution( self, context ):
   fid = open( trans1, 'w' )
 
   Mt = numpy.array( numpy.transpose( M[0:3,0:3] ) )
-  print >> fid, '%f %f %f' % tuple( T )
-  print >> fid, '%f %f %f' % tuple( Mt[ 0, : ] )
-  print >> fid, '%f %f %f' % tuple( Mt[ 1, : ] )
-  print >> fid, '%f %f %f' % tuple( Mt[ 2, : ] )
+  print('%f %f %f' % tuple( T ), file=fid)
+  print('%f %f %f' % tuple( Mt[ 0, : ] ), file=fid)
+  print('%f %f %f' % tuple( Mt[ 1, : ] ), file=fid)
+  print('%f %f %f' % tuple( Mt[ 2, : ] ), file=fid)
   fid.close()
 

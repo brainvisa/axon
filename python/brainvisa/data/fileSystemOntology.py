@@ -67,6 +67,14 @@ from brainvisa.data import neuroDiskItems
 from brainvisa.multipleExecfile import MultipleExecfile
 import six
 
+if sys.version_info[0] >= 3:
+    unicode = str
+    def next(iterable):
+        return iterable.__next__()
+else:
+    def next(iterable):
+        return iterable.next()
+
 #----------------------------------------------------------------------------
 class AttrValueFunction( object ):
   _msgBadValue = '<em>%s</em> is not a valid attribute value'
@@ -712,7 +720,7 @@ class DirectoryScanner( object ):
            # No format in self.formats allow self.pattern to match, the rule is rejected
             continue
 
-        # If all has been done for this item, go to the next item              
+        # If all has been done for this item, go to the next item
         if identified: break
 
         # Check if the current rule matched
@@ -928,7 +936,7 @@ class FileSystemOntology( object ):
     """
     ontologies=set()
     for fsoPath in neuroConfig.fileSystemOntologiesPath:
-      _, dirnames, _ = os.walk(fsoPath).next()
+      _, dirnames, _ = next(os.walk(fsoPath))
       for ontology in dirnames:
         ontologies.add(ontology)
     return ontologies

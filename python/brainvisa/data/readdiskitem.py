@@ -52,6 +52,11 @@ from six.moves import reduce
 if sys.version_info[0] >= 3:
     basestring = str
     unicode = str
+    def to_list(thing):
+        return list(thing)
+else:
+    def to_list(thing):
+        return thing
 
 #----------------------------------------------------------------------------
 class ReadDiskItem( Parameter ):
@@ -89,8 +94,8 @@ class ReadDiskItem( Parameter ):
     Parameter.__init__( self, section )
     self._debug = _debug
     self.type = getDiskItemType( diskItemType )
-    formatsList = getFormats( formats )
-    if len( formatsList ) != 0:
+    formatsList = to_list(getFormats(formats))
+    if len(formatsList) != 0:
       self.preferredFormat = formatsList[0]
     else:
       self.preferedFormat = None

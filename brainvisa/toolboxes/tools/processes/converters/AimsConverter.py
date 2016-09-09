@@ -34,93 +34,108 @@
 from brainvisa.processes import *
 from brainvisa.tools import aimsGlobals
 from brainvisa import shelltools
+import sys
+
+if sys.version_info[0] >= 3:
+    def map_list(func, thing):
+        return list(map(func, thing))
+else:
+    map_list = map
 
 name = 'Aims Converter'
 roles = ('converter',)
 userLevel = 0
 
 signature = Signature(
-  'read', ReadDiskItem( '4D Volume', aimsGlobals.aimsVolumeFormats,
-                        enableConversion = 0 ),
-  'write', WriteDiskItem( '4D Volume',  aimsGlobals.aimsWriteVolumeFormats ),
-  'preferedFormat', apply( Choice, [ ( '<auto>', None ) ] + map( lambda x: (x,getFormat(x)), aimsGlobals.aimsWriteVolumeFormats ) ),
-  'removeSource', Boolean(),
-  'ascii', Boolean(),
-  'voxelType', Choice( ( '<Same as input>', None), 'U8', 'S8', 'U16', 'S16', 'U32', 'S32', 'FLOAT', 'DOUBLE', 'RGB', 'RGBA', 'HSV' ),
-  'rescaleDynamic', Boolean(),
-  'useInputTypeLimits', Boolean(),
-  'inputDynamicMin', Float(),
-  'inputDynamicMax', Float(),
-  'outputDynamicMin', Float(),
-  'outputDynamicMax', Float(),
+    'read', ReadDiskItem('4D Volume', aimsGlobals.aimsVolumeFormats,
+                        enableConversion=False),
+    'write', WriteDiskItem('4D Volume',  aimsGlobals.aimsWriteVolumeFormats),
+    'preferedFormat', Choice(*([('<auto>', None)]
+                              + map_list(lambda x: (x, getFormat(x)),
+                                         aimsGlobals.aimsWriteVolumeFormats))),
+    'removeSource', Boolean(),
+    'ascii', Boolean(),
+    'voxelType', Choice(('<Same as input>', None), 'U8', 'S8', 'U16', 'S16',
+                        'U32', 'S32', 'FLOAT', 'DOUBLE', 'RGB', 'RGBA', 'HSV'),
+    'rescaleDynamic', Boolean(),
+    'useInputTypeLimits', Boolean(),
+    'inputDynamicMin', Float(),
+    'inputDynamicMax', Float(),
+    'outputDynamicMin', Float(),
+    'outputDynamicMax', Float(),
 )
 
-def findAppropriateFormat( values, proc ):
-  if values.preferedFormat is None:
-    result = WriteDiskItem( '4D Volume', aimsGlobals.aimsWriteVolumeFormats ).findValue( values.read )
-  else:
-    result = WriteDiskItem( '4D Volume', values.preferedFormat ).findValue( values.read )
-    
-  return result
 
-def initialization( self ):
-  self.linkParameters( 'write', [ 'read', 'preferedFormat' ], findAppropriateFormat )
-  self.preferedFormat = None
-  self.setOptional( 'preferedFormat', 
-                    'voxelType',
-                    'inputDynamicMin',
-                    'inputDynamicMax',
-                    'outputDynamicMin',
-                    'outputDynamicMax' )
-  self.removeSource = 0
-  self.ascii = 0
-  self.voxelType = None
-  self.rescaleDynamic = False
-  self.useInputTypeLimits = False
-  self.inputDynamicMin = None
-  self.inputDynamicMax = None
-  self.outputDynamicMin = None
-  self.outputDynamicMax = None
-  
-  self.signature[ 'rescaleDynamic' ].userLevel = 2
-  self.signature[ 'useInputTypeLimits' ].userLevel = 2
-  self.signature[ 'inputDynamicMin' ].userLevel = 2
-  self.signature[ 'inputDynamicMax' ].userLevel = 2
-  self.signature[ 'outputDynamicMin' ].userLevel = 2
-  self.signature[ 'outputDynamicMax' ].userLevel = 2
+def findAppropriateFormat(values, proc):
+    if values.preferedFormat is None:
+        result = WriteDiskItem(
+            '4D Volume',
+            aimsGlobals.aimsWriteVolumeFormats).findValue(values.read)
+    else:
+        result = WriteDiskItem(
+            '4D Volume', values.preferedFormat).findValue(values.read)
+
+    return result
 
 
-def execution( self, context ):
-  convert = 0
-  command = [ 'AimsFileConvert', '-i', self.read, '-o', self.write ]
-  if self.ascii:
-    convert = 1
-    command += [ '-a' ]
-  if self.voxelType is not None:
-    convert = 1
-    command += [ '-t', self.voxelType ]
+def initialization(self):
+    self.linkParameters('write', ['read', 'preferedFormat'],
+                        findAppropriateFormat)
+    self.preferedFormat = None
+    self.setOptional('preferedFormat',
+                     'voxelType',
+                     'inputDynamicMin',
+                     'inputDynamicMax',
+                     'outputDynamicMin',
+                     'outputDynamicMax')
+    self.removeSource = False
+    self.ascii = False
+    self.voxelType = None
+    self.rescaleDynamic = False
+    self.useInputTypeLimits = False
+    self.inputDynamicMin = None
+    self.inputDynamicMax = None
+    self.outputDynamicMin = None
+    self.outputDynamicMax = None
 
-  if self.rescaleDynamic:
-    command += [ '-r' ]
-    
-    if self.useInputTypeLimits :
-      command += [ '--itypelimits' ]
-    
-    if self.inputDynamicMin != None :
-      command += [ '--imin', self.inputDynamicMin ]
-    
-    if self.inputDynamicMax != None :
-      command += [ '--imax', self.inputDynamicMax ]
-    
-    if self.outputDynamicMin != None :
-      command += [ '--omin', self.outputDynamicMin ]
-    
-    if self.outputDynamicMax != None :
-      command += [ '--omax', self.outputDynamicMax ]
-      
-  if apply( context.system, command ):
-    raise Exception( _t_('Error while converting <em>%s</em> to <em>%s</em>') % \
-                         ( command[ 2 ], command[ 4 ] ) )
-  if self.removeSource:
-    for f in self.read.fullPaths():
-      shelltools.rm( f )
+    self.signature['rescaleDynamic'].userLevel = 2
+    self.signature['useInputTypeLimits'].userLevel = 2
+    self.signature['inputDynamicMin'].userLevel = 2
+    self.signature['inputDynamicMax'].userLevel = 2
+    self.signature['outputDynamicMin'].userLevel = 2
+    self.signature['outputDynamicMax'].userLevel = 2
+
+
+def execution(self, context):
+    command = ['AimsFileConvert', '-i', self.read, '-o', self.write]
+    if self.ascii:
+        command += ['-a']
+    if self.voxelType is not None:
+        command += ['-t', self.voxelType]
+
+    if self.rescaleDynamic:
+        command += ['-r']
+
+        if self.useInputTypeLimits :
+            command += ['--itypelimits']
+
+        if self.inputDynamicMin != None :
+            command += ['--imin', self.inputDynamicMin]
+
+        if self.inputDynamicMax != None :
+            command += ['--imax', self.inputDynamicMax]
+
+        if self.outputDynamicMin != None :
+            command += ['--omin', self.outputDynamicMin]
+
+        if self.outputDynamicMax != None :
+            command += ['--omax', self.outputDynamicMax]
+
+    if context.system(*command):
+        raise RuntimeError(_t_(
+            'Error while converting <em>%s</em> to <em>%s</em>')
+             % (command[2], command[4]))
+    if self.removeSource:
+        for f in self.read.fullPaths():
+            shelltools.rm(f)
+

@@ -1130,9 +1130,9 @@ class Parameterized(object):
         """
         # Parse source
         sources = []
-        if type(source) in (types.ListType, types.TupleType):
+        if type(source) in (list, tuple):
             for i in source:
-                if type(i) in (types.ListType, types.TupleType):
+                if type(i) in (list, tuple):
                     sources.append(i)
                 else:
                     sources.append((self, i))
@@ -1142,9 +1142,9 @@ class Parameterized(object):
         destinations = []
         if destination is None:
             destinations.append((None, None))
-        elif type(destination) in (types.ListType, types.TupleType):
+        elif type(destination) in (list, tuple):
             for i in destination:
-                if type(i) in (types.ListType, types.TupleType):
+                if type(i) in (list, tuple):
                     destinations.append(i)
                 else:
                     destinations.append((weakref.proxy(self), i))
@@ -1178,7 +1178,7 @@ class Parameterized(object):
         # print('removeLink', self, destination, source)
         # Parse source
         sources = []
-        if type(source) in (types.ListType, types.TupleType):
+        if type(source) in (list, tuple):
             for i in source:
                 sources.append((self, i))
         else:
@@ -1187,9 +1187,9 @@ class Parameterized(object):
         destinations = []
         if destination is None:
             destinations.append((None, None))
-        elif type(destination) in (types.ListType, types.TupleType):
+        elif type(destination) in (list, tuple):
             for i in destination:
-                if type(i) in (types.ListType, types.TupleType):
+                if type(i) in (list, tuple):
                     destinations.append(i)
                 else:
                     destinations.append((self, i))
@@ -1907,8 +1907,8 @@ class ExecutionNode(object):
     class MethodCallbackProxy(object):
 
         def __init__(self, method):
-            self.object = weakref.ref(method.im_self)
-            self.method = method.im_func
+            self.object = weakref.ref(method.__self__)
+            self.method = method.__func__
 
         def __call__(self, *args, **kwargs):
             o = self.object()
@@ -2131,7 +2131,7 @@ class ExecutionNode(object):
         """
         # Parse source
         sources = []
-        if type(source) in (types.ListType, types.TupleType):
+        if type(source) in (list, tuple):
             for i in source:
                 sources.append(self.parseParameterString(i))
         else:
@@ -2139,7 +2139,7 @@ class ExecutionNode(object):
 
         # Parse destination
         destinations = []
-        if type(destination) in (types.ListType, types.TupleType):
+        if type(destination) in (list, tuple):
             for i in destination:
                 destinations.append(self.parseParameterString(i))
         else:
@@ -2175,7 +2175,7 @@ class ExecutionNode(object):
         """
         # Parse sourceExecutionContext
         sources = []
-        if type(source) in (types.ListType, types.TupleType):
+        if type(source) in (list, tuple):
             for i in source:
                 sources.append(self.parseParameterString(i))
         else:
@@ -2183,7 +2183,7 @@ class ExecutionNode(object):
 
         # Parse destination
         destinations = []
-        if type(destination) in (types.ListType, types.TupleType):
+        if type(destination) in (list, tuple):
             for i in destination:
                 destinations.append(self.parseParameterString(i))
         else:
@@ -2255,7 +2255,7 @@ class ExecutionNode(object):
         tree, but can be a grapĥ. Dependencies are used to build Soma-Workflow
         workflows with correct dependencies.
         '''
-        if type(deps) not in (types.ListType, types.TupleType):
+        if type(deps) not in (list, tuple):
             deps = [deps]
         self._dependencies += [weakref.ref(x) for x in deps]
 
@@ -2994,7 +2994,7 @@ class ExecutionContext(object):
 
                         # test if data is locked
                         if (v is not None):
-                            if v.isLockData() and (process.execution.im_func != super(process.__class__, process).execution.im_func):
+                            if v.isLockData() and (process.execution.__func__ != super(process.__class__, process).execution.__func__):
                                 # raise an error if the diskitem is an output
                                 # of a process which has an execution function
                                 # (not the default execution function of the
@@ -4803,7 +4803,10 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
             NewProcess.toolbox = oldProcess.toolbox
             processInfo.toolbox = oldProcess.toolbox
             for n in ('execution', 'initialization', 'checkArguments'):
-                setattr(oldProcess, n, getattr(NewProcess, n).im_func)
+                if sys.version_info[0] >= 3:
+                    setattr(oldProcess, n, getattr(NewProcess, n))
+                else:
+                    setattr(oldProcess, n, getattr(NewProcess, n).__func__)
             oldProcess._fileTime = NewProcess._fileTime
 
         if valid or neuroConfig.ignoreValidation:

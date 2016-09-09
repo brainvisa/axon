@@ -448,7 +448,7 @@ class DictPattern:
     except KeyError:
       return None
   
-  def unmatch( self, matchResult, dict ):
+  def unmatch( self, matchResult, dic ):
     """
     The opposite of :py:meth:`match` method:  the matching string is found from a match result and a dictionary of attributes values. 
     
@@ -458,11 +458,11 @@ class DictPattern:
     :returns: the rebuilt matching string.
     """
     try:
-      return ''.join( [i( dict, matchResult ) for i in self.unmatchList] )
+      return ''.join( [i( dic, matchResult ) for i in self.unmatchList] )
     except KeyError as e:
-      #print '!unmatch!', e
+      #print('!unmatch!', e)
       return None
-  
+
   def multipleUnmatch( self, dict ):
     #print '!multipleUnmatch!', self, dict
     # Retrieve attributes() and namedRegex()
