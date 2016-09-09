@@ -2171,7 +2171,7 @@ class SQLDatabases( Database ):
       else:
         (refs, transfs) = neighbours
         allrefs.extend(refs)
-        for r, p in transfs.iteritems():
+        for r, p in six.iteritems(transfs):
           alltrsfs.setdefault(r, []).extend(p)
     if flat_output:
       return allneigh
