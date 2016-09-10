@@ -116,7 +116,7 @@ def exceptionMessageHTML( exceptionInfo, beforeError='', afterError='' ):
             enco = sys.getdefaultencoding()
             if not enco:
               enco = 'utf8'
-          txt="<b>"+htmlEscape( six.u(v) )+"</b>"
+          txt="<b>"+htmlEscape( unicode(v) )+"</b>"
   msg = '<table border=0><tr><td width=50><img alt="' + _t_('ERROR') + '" src="' \
     + os.path.join( neuroConfig.iconPath, 'error.png' ) + '"></td><td><font color=red> ' \
     + beforeError \

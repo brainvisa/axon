@@ -31,7 +31,6 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-from brainvisa.tools import aimsGlobals
 
 
 name = 'Threshold'
@@ -39,7 +38,7 @@ userLevel = 1
 
 signature = Signature(
   'image_input', ReadDiskItem('4D Volume', 'aims readable volume formats'),
-  'image_output', WriteDiskItem('4D Volume', 'aims writabme volume formats'),
+  'image_output', WriteDiskItem('4D Volume', 'aims writable volume formats'),
   'mode', Choice ( ( 'less than', 'lt' ), 
                    ( 'less or equal', 'le' ), 
                    ( 'greater than', 'gt' ),

@@ -166,6 +166,7 @@ def initializeProcesses():
               # executes startup.py of each toolbox if it exists
               if os.path.exists( toolbox.startupFile ):
                   try:
+                      print('exec:', toolbox.startupFile)
                       execfile( toolbox.startupFile, globals(), {} )
                   except:
                       neuroException.showException()
