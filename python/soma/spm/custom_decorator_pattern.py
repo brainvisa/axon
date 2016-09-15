@@ -2,10 +2,8 @@
 def checkIfArgumentTypeIsStrOrUnicode(argument_index):
   def decorator(function):
     def checkArgumentType(*args, **kwargs):
-      if not (isinstance(args[argument_index], str) or isinstance(args[argument_index], unicode)):
-        raise TypeError('str or unicode allowed but argument "' + str(argument_index) + '" is ' + str(type(args[argument_index])))
-      else:
-        pass
+      assert isinstance(args[argument_index], str) or isinstance(args[argument_index], unicode),\
+        "str or unicode allowed but argument %s is %s" % (argument_index, type(args[argument_index]))
       return function(*args, **kwargs)
     return checkArgumentType
   return decorator
@@ -13,10 +11,8 @@ def checkIfArgumentTypeIsStrOrUnicode(argument_index):
 def checkIfArgumentIsInAllowedList(allowed_argument_list, argument_index):
   def decorator(function):
     def checkArgumentType(*args, **kwargs):
-      if not argument_index in allowed_argument_list:
-        raise ValueError("Unvalid choice : '" + str(args[argument_index]) + "' , only one of them are allowed :" + str(allowed_argument_list))
-      else:
-        pass
+      assert argument_index in allowed_argument_list,\
+             "Unvalid choice : '%s' , only one of them are allowed : %s" % (args[argument_index], allowed_argument_list)
       return function(*args, **kwargs)
     return checkArgumentType
   return decorator
@@ -24,10 +20,8 @@ def checkIfArgumentIsInAllowedList(allowed_argument_list, argument_index):
 def checkIfArgumentTypeIsAllowed(type_allowed, argument_index):
   def decorator(function):
     def checkArgumentType(*args, **kwargs):
-      if not isinstance(args[argument_index], type_allowed):
-        raise TypeError(str(type_allowed) + ' allowed but argument "' + str(argument_index) + '" is ' + str(type(args[argument_index])))
-      else:
-        pass
+      assert isinstance(args[argument_index], type_allowed),\
+             "%s allowed but argument %s is %s" % (type_allowed, argument_index, type(args[argument_index]))
       return function(*args, **kwargs)
     return checkArgumentType
   return decorator
