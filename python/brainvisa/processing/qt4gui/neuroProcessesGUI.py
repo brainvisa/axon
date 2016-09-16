@@ -368,7 +368,7 @@ class SomaWorkflowWidget(ComputingResourceWidget):
         return
 
     serialized_process = self.serialized_processes[wf_id]
-    serialized_process = StringIO.StringIO(serialized_process)
+    serialized_process = StringIO(serialized_process)
     try:
       QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
       view = SomaWorkflowProcessView(self.model,
@@ -2785,7 +2785,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         name = SomaWorkflowWidget.brainvisa_code + name
 
       #store the process in workflow.user_storage
-      serialized_process = StringIO.StringIO()
+      serialized_process = StringIO()
       event = self.createProcessExecutionEvent()
       event.save(serialized_process)
 
