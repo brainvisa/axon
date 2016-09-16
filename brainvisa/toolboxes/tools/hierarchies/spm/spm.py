@@ -52,12 +52,14 @@ hierarchy = (
         'tpm', SetContent(
             'grey', SetType('grey probability map'),
             # TMP in SPM12
-            'TPM', SetType('tissue probability map'),
+            'TPM', SetType('SPM TPM template'),
+            SetWeakAttr('template', 'TPM', 'SPM_version', '12'),
         ),
         'toolbox', SetContent(
             'Seg', SetContent(
                 # TPM in SPM8
-                '{template}', SetType('SPM TPM template')),
+                'TPM', SetType('SPM TPM template')), 
+                SetWeakAttr('template', 'TPM', 'SPM_version', '8'),
             'vbm8', SetContent(
                 # SPM8
                 'Template_{step}_IXI550_{template}', SetType('SPM TPM HDW DARTEL template'),

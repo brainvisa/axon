@@ -8,7 +8,7 @@ FileType( 'anatomical Template', 'Template')
 FileType( 'grey probability map', 'Template')
 FileType( 'tissue probability map', 'Template')
 FileType( 'PET Template', 'Template')
-FileType( 'Dartel Template', 'Template')#False : Dartel has 2 dimensions!! (mickael L)
+FileType( 'Dartel Template', 'Template')#False : Dartel template is 4D Volume!! (mickael L)
 
 
 FileType('TPM template', '4D Volume')
