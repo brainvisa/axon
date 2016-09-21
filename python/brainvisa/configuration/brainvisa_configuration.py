@@ -95,7 +95,7 @@ def defaultCSVViewer():
   return defaultCSVviewer
 #------------------------------------------------------------------------------
 def pngViewers():
-  return [i for i in ( 'eog', 'feh', 'geeqie', 'gpicview', 'gwenview', 'mirage' ) if find_executable( i ) ]
+  return [i for i in ( 'eog', 'shotwell', 'feh', 'geeqie', 'gpicview', 'gwenview', 'mirage' ) if find_executable( i ) ]
 
 def defaultPNGViewer():
   """
