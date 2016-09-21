@@ -93,6 +93,20 @@ def defaultCSVViewer():
   if browsers:
     defaultCSVviewer=browsers[0]
   return defaultCSVviewer
+#------------------------------------------------------------------------------
+def pngViewers():
+  return [i for i in ( 'eog', 'feh', 'geeqie', 'gpicview', 'gwenview', 'mirage' ) if find_executable( i ) ]
+
+def defaultPNGViewer():
+  """
+  If a real PNG viewer is found, use it dy default.
+  If there is no PNG viewer available, the built-in Qt viewer is used.
+  """
+  defaultPNGviewer=""
+  browsers=pngViewers()
+  if browsers:
+    defaultPNGviewer=browsers[0]
+  return defaultPNGviewer
 
 #------------------------------------------------------------------------------
 class BrainVISAConfiguration( ConfigurationGroup ):
@@ -125,6 +139,7 @@ class BrainVISAConfiguration( ConfigurationGroup ):
     'textEditor', OpenedChoice( * textEditors() ), dict( defaultValue=defaultTextEditor(), doc='Location of the program used to edit text files.' ),
     'htmlBrowser', OpenedChoice( ( '<built-in>', '' ), * htmlBrowsers() ), dict( defaultValue = defaultHTMLBrowser(), doc='Location of the program used to display HTML files.' ),
     'csvViewer', OpenedChoice( ( '<built-in>', '' ), * csvViewers() ), dict( defaultValue = defaultCSVViewer(), doc='Location of the program used to display CSV files.' ),
+    'pngViewer', OpenedChoice( ( '<built-in>', '' ), * pngViewers() ), dict( defaultValue = defaultPNGViewer(), doc='Location of the program used to display PNG images.' ),
     'removeTemporary', Boolean, dict( defaultValue=True, doc='unselect this option if you do not want temporary files and directories to be automatically deleted. This option is used for debugging. If unselected BrainVISA can leave a lot of files in temporary directory.' ),
     'showParamUserLevel', Boolean, dict( defaultValue=False, doc='select this option if you want user levels shown along parameter names in the process window.' ),
     'SPM', SPMConfiguration, dict( defaultValue=SPMConfiguration() ),

@@ -7,9 +7,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -24,8 +24,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -47,14 +47,14 @@ import os
 def editConfiguration():
   """
   Opens Brainvisa options window. When the user closes the window, the configuration is saved in Brainvisa options file.
-  
+
   Some options are taken into account immediately:
-  
+
   * if databases selection has changed, databases are reloaded
   * if userLevel has changed, the list of available processes is updated
   * new HTML browser and new text editors are taken into account
   * language change is applied to documentation pages.
-  
+
   Some other options are not applied directly but are saved in the options file and will be applied next time Brainvisa is started.
   """
   from brainvisa.data.qtgui.updateDatabases import warnUserAboutDatabasesToUpdate
@@ -85,7 +85,7 @@ def editConfiguration():
     neuroConfig.docPath=os.path.join(neuroConfig.mainDocPath, neuroConfig.language)
     os.environ[ 'LANGUAGE' ] = neuroConfig.language
     brainvisa.processes.updateProcesses()
-    
+
 #----------------------------------------------------------------------------
 bugReportDialog = None
 
@@ -108,7 +108,7 @@ class BugReportDialog( QWidget ):
       setattr( self, 'led' + field, lineEdit )
       hb.addWidget(lineEdit)
       layout.addLayout(hb)
-    
+
     label=QLabel( _t_( 'Message' ) )
     layout.addWidget(label)
     self.tedMessage = QTextEdit( )
@@ -117,10 +117,10 @@ class BugReportDialog( QWidget ):
     self.chkSendLog = QCheckBox( _t_( 'Attach log file' ) )
     self.chkSendLog.setChecked( 1 )
     layout.addWidget(self.chkSendLog)
-    
+
     self.ledFrom.setText( neuroConfig.userEmail )
     self.ledTo.setText( neuroConfig.supportEmail )
-    
+
     hb = QHBoxLayout( )
     layout.addLayout(hb)
     hb.setSpacing(6)
@@ -175,9 +175,9 @@ class BugReportDialog( QWidget ):
     s = smtplib.SMTP( neuroConfig.SMTP_server_name )
     content = outer.as_string()
     s.sendmail( outer[ 'From' ], to, content )
-    s.close()      
+    s.close()
     self.close( )
-    
+
   def _cancel( self ):
     self.close( )
 
@@ -185,13 +185,13 @@ class BugReportDialog( QWidget ):
 #----------------------------------------------------------------------------
 def showBugReport():
   global bugReportDialog
-  
+
   if bugReportDialog is None:
     bugReportDialog = BugReportDialog()
   bugReportDialog.hide()
   bugReportDialog.show()
   bugReportDialog.raise_()
- 
+
 
 
 #----------------------------------------------------------------------------
