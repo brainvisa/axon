@@ -34,12 +34,12 @@
 from brainvisa.processes import *
 
 configuration = Application().configuration
-name = 'View snapshot (PNG file)'
+name = 'View 2D Image (PNG file)'
 userLevel=0
 roles=("viewer", )
 
 signature = Signature(
-    'png_image', ReadDiskItem( "Snapshot", "PNG image" )
+    'png_image', ReadDiskItem( "2D Image", "PNG image" )
 )
 
 def initialization( self ):
