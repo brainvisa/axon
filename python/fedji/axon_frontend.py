@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+
+from __future__ import print_function
 import os
 import os.path as osp
 from stat import S_ISDIR
