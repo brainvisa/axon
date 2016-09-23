@@ -50,7 +50,7 @@ class AxonFsoToFom(object):
         '''
         database_name = item.get('_database')
         if not database_name:
-            print item, 'not in any database.'
+            print(item, 'not in any database.')
             return (None, {})
         name_in_db = item.name[len(database_name) + 1:]
         database = neuroHierarchy.databases.database(database_name)
@@ -95,7 +95,7 @@ class AxonFsoToFom(object):
         for pattern in format.patterns.patterns:
             sp = pattern.pattern.split('|')
             if len(sp) != 2:
-                print 'malformed pattern for format:', format, ':', pattern
+                print('malformed pattern for format:', format, ':', pattern)
                 continue
             t, p = sp
             x = p.split('*.')
@@ -184,7 +184,7 @@ class AxonFsoToFom(object):
             the "attribute_definitions" section.
         '''
 
-        #print proc_name, node_name, data
+        #print(proc_name, node_name, data)
         process = procbv.getProcessInstance(proc_name)
         signature = process.signature
         for name, param in six.iteritems(signature):
@@ -193,7 +193,7 @@ class AxonFsoToFom(object):
         else:
             raise ValueError('No ReadDiskItem in signature of process %s'
                 % proc_name)
-        #print 'process %s, set param: %s' % (proc_name, name)
+        #print('process %s, set param: %s' % (proc_name, name))
         setattr(process, name, data)
         value = getattr(process, name)
         if value is None:
@@ -231,11 +231,11 @@ class AxonFsoToFom(object):
                 continue
             param_name = self._translate_param_name(process, name)
             value = getattr(process, name)
-            #print '    %s.%s: %s' % (node_name, name, value)
+            #print('    %s.%s: %s' % (node_name, name, value))
             if value is None:
                 continue
             if self._check_and_mark_done(process, name):
-                #print 'already done:', process, name
+                #print('already done:', process, name)
                 continue
             database_name = value.get('_database')
             rule, matched_attr = self._find_rule(value)
@@ -436,10 +436,10 @@ def fso_to_fom_main(argv):
     if not formats:
         formats = def_formats_fom
     if formats:
-        print 'using formats FOM:', formats
+        print('using formats FOM:', formats)
         formats_fom = ordered_load(open(formats))
     else:
-        print 'NO formats FOM !'
+        print('NO formats FOM !')
         #raise RuntimeError('No formats FOM')
         formats_fom = {}
 

@@ -33,6 +33,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 #import anatomist.threaded.api as ana
 
+from __future__ import print_function
 from PyQt4 import QtCore, Qt, QtGui
 from PyQt4.QtGui import QRadioButton, QPalette, QButtonGroup, QLabel, QFrame, QVBoxLayout, QColor
 from soma.qt_gui.qt_backend.uic import loadUi
@@ -604,7 +605,7 @@ class DisplayTitledGrid(QtGui.QWidget):
     return fusions
 
   def _onMaximizeButtonClicked(self):
-    print "_onMaximizeButtonClicked"# momoTODO utiliser display fusion et afficher la fusion de tous les objets de la ligne sélectionnée
+    print("_onMaximizeButtonClicked")# momoTODO utiliser display fusion et afficher la fusion de tous les objets de la ligne sélectionnée
   
 # momoTODO : encadrer la reference utiliser pour la fusion    
 #    painter = QPainter(mw)
