@@ -779,6 +779,10 @@ if anatomistImport:
         if 'palette' not in info \
             or info['palette']['palette'] == 'Blue-Red':
           duplicate = True
+          try:
+              self.unregisterObject(tex)
+          except AttributeError:
+              pass # socket implementation does not have this feature
           tex = self.duplicateObject(tex)
       if palette and duplicate:
         tex.setPalette(palette)
