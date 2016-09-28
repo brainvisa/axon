@@ -2,6 +2,7 @@
 from distutils.spawn import find_executable
 from collections import deque
 import os
+import tempfile
 import copy
 import sys
 import subprocess
@@ -83,7 +84,7 @@ class SPM(SPMLauncher):
         if self.spm_script_path is not None:
             self._writeSPMScript()
             self._writeMatlabScript()
-            current_execution_module_deque = copy.copy(self.execution_module_deque)
+            current_execution_module_deque = copy.deepcopy(self.execution_module_deque)
             self.resetExecutionQueue()
             output = self._runMatlabScript(use_matlab_options)
             #reset matlab_commands list
@@ -102,10 +103,10 @@ class SPM(SPMLauncher):
 
     def _writeMatlabScript(self):
         if self.matlab_script_path is None:
-            spm_path_splitted = self.spm_script_path.split('.')
-            spm_path_splitted[0] += "_matlab_script"
-            self.matlab_script_path = '.'.join(spm_path_splitted)
+            self.matlab_script_path = tempfile.NamedTemporaryFile(suffix=".m").name
+            wokspace_directory = os.path.dirname(self.spm_script_path)
         else:
+            print("**WARNING** User define its own matlab_script_path, so output volume moving, may not work")
             pass
         if not os.path.exists(os.path.dirname(self.matlab_script_path)):
             os.makedirs(os.path.dirname(self.matlab_script_path))
@@ -114,6 +115,8 @@ class SPM(SPMLauncher):
             pass
         if self.spm_path is not None:
             matlab_script_file = open(self.matlab_script_path, 'w+')
+            matlab_script_file.write("previous_pwd = pwd;\n" % wokspace_directory)
+            matlab_script_file.write("cd('%s');\n" % wokspace_directory)
             matlab_script_file.write("addpath('%s');\n" % self.spm_path)
             for matlab_command in self.matlab_commands_before_list:
                 matlab_script_file.write(matlab_command + "\n")
@@ -127,6 +130,7 @@ class SPM(SPMLauncher):
             matlab_script_file.write("end\n")
             for matlab_command in self.matlab_commands_after_list:
                 matlab_script_file.write(matlab_command + "\n")
+            matlab_script_file.write("cd(previous_pwd);\n")
             matlab_script_file.write("exit\n")
             matlab_script_file.close()
         else:
@@ -228,7 +232,7 @@ class SPMStandalone(SPMLauncher):
             job_directory = os.path.dirname(self.spm_script_path)
             os.chdir(job_directory)
             standalone_command = [self.standalone_command, self.standalone_mcr_path, 'run', self.spm_script_path]
-            current_execution_module_deque = copy.copy(self.execution_module_deque)
+            current_execution_module_deque = copy.deepcopy(self.execution_module_deque)
             self.resetExecutionQueue()
             print('running SPM standalone command:', standalone_command)
             output = runCommand(standalone_command)
