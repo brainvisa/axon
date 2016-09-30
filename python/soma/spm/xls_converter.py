@@ -230,7 +230,7 @@ class XlsConverter():
     """
     row_header_list = []
     column_index = 0
-    while(sheet.cell_type(1, column_index) in (xlrd.XL_CELL_EMPTY, xlrd.XL_CELL_BLANK)):
+    while(column_index < sheet.ncols and sheet.cell_type(1, column_index) in (xlrd.XL_CELL_EMPTY, xlrd.XL_CELL_BLANK)):
       row_header_list.append(sheet.cell_value(0, column_index))
       column_index += 1
     return self.separator.join(row_header_list)
@@ -242,7 +242,7 @@ class XlsConverter():
     first_row_data_index, first_column_data_index = self._getFirstCellIndexWithData(sheet)
     row_data_index = first_row_data_index
     column_values_dict = {}
-    while(sheet.cell_type(row_data_index, 0) not in (xlrd.XL_CELL_EMPTY, xlrd.XL_CELL_BLANK)):
+    while(row_data_index < sheet.nrows and sheet.cell_type(row_data_index, 0) not in (xlrd.XL_CELL_EMPTY, xlrd.XL_CELL_BLANK)):
       row_id = self._getRowId(sheet, row_data_index, first_column_data_index)
       column_values_dict[row_id] = self._getValues(sheet, row_data_index, first_row_data_index, first_column_data_index)
       row_data_index += 1
@@ -250,7 +250,7 @@ class XlsConverter():
 
   def _getFirstCellIndexWithData(self, sheet):
     """
-    extract position of first cell wich is not header
+    extract position of first cell wich is not header, works if column header contain at least 2 level
     """
     row_index = 1
     while(sheet.cell_type(row_index, 0) in (xlrd.XL_CELL_EMPTY, xlrd.XL_CELL_BLANK)):
