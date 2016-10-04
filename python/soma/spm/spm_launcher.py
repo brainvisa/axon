@@ -3,7 +3,6 @@ from distutils.spawn import find_executable
 from collections import deque
 import os
 import tempfile
-import copy
 import sys
 import subprocess
 
@@ -84,7 +83,7 @@ class SPM(SPMLauncher):
         if self.spm_script_path is not None:
             self._writeSPMScript()
             self._writeMatlabScript()
-            current_execution_module_deque = copy.deepcopy(self.execution_module_deque)
+            current_execution_module_deque = deque(self.execution_module_deque)
             self.resetExecutionQueue()
             output = self._runMatlabScript(use_matlab_options)
             #reset matlab_commands list
@@ -232,7 +231,7 @@ class SPMStandalone(SPMLauncher):
             job_directory = os.path.dirname(self.spm_script_path)
             os.chdir(job_directory)
             standalone_command = [self.standalone_command, self.standalone_mcr_path, 'run', self.spm_script_path]
-            current_execution_module_deque = copy.deepcopy(self.execution_module_deque)
+            current_execution_module_deque = deque(self.execution_module_deque)
             self.resetExecutionQueue()
             print('running SPM standalone command:', standalone_command)
             output = runCommand(standalone_command)
