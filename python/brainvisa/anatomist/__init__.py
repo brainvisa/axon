@@ -759,32 +759,42 @@ if anatomistImport:
       # deleted while in Anatomist
       return {"mri" : mri, "fmri" : fmri, "fusion" : fusion, "window" : window, "refMRI" : refMRI, "refFMRI" : refFMRI, "transformation" : transformation, "mriFile" : mriFile, "fmriFile" : fmriFile}
 
-    def viewTextureOnMesh( self, meshFile, textureFile, palette=None,
-      interpolation=None ):
+
+    def viewTextureOnMesh(self, meshFile, textureFile, palette=None,
+          interpolation=None, prefer_internal_palette=True):
       """Load a mesh file and apply the texture with the palette"""
-      mesh = self.loadObject( meshFile )
+      mesh = self.loadObject(meshFile)
       if not mesh.getInternalRep():
-        raise RuntimeError( 'Anatomist could not read file %s' \
-          % meshFile.fullPath() )
-      duplicate=False
-      if palette is not None:
-        duplicate=True
-      tex = self.loadObject( textureFile, duplicate=duplicate)
+        raise RuntimeError('Anatomist could not read file %s' \
+          % meshFile.fullPath())
+      duplicate = False
+      if palette is not None and not prefer_internal_palette:
+        duplicate = True
+      tex = self.loadObject(textureFile, duplicate=duplicate)
       if not tex.getInternalRep():
         raise RuntimeError( 'Anatomist could not read file %s' \
           % textureFile.fullPath() )
-      if palette:
-        tex.setPalette( palette )
+      if palette and prefer_internal_palette:
+        info = tex.getInfos()
+        if 'palette' not in info \
+            or info['palette']['palette'] == 'Blue-Red':
+          duplicate = True
+          try:
+              self.unregisterObject(tex)
+          except AttributeError:
+              pass # socket implementation does not have this feature
+          tex = self.duplicateObject(tex)
+      if palette and duplicate:
+        tex.setPalette(palette)
       # Fusion indexMESH with indexTEX
-      fusion = self.fusionObjects( [mesh, tex],
-        method = 'FusionTexSurfMethod' )
+      fusion = self.fusionObjects([mesh, tex], method = 'FusionTexSurfMethod')
       if interpolation:
         self.execute("TexturingParams", objects=[tex], interpolation =
           interpolation )
 
       window = self.createWindow( "3D" )
-      window.assignReferential( mesh.referential )
-      window.addObjects( [fusion] )
+      window.assignReferential(mesh.referential)
+      window.addObjects(fusion)
       # Keep a reference on mesh. In case of temporary file, it must not be
       # deleted while in Anatomist
       return {"mesh" : mesh, "texture" : tex, "fusion" : fusion,
