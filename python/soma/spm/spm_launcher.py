@@ -114,7 +114,7 @@ class SPM(SPMLauncher):
             pass
         if self.spm_path is not None:
             matlab_script_file = open(self.matlab_script_path, 'w+')
-            matlab_script_file.write("previous_pwd = pwd;\n" % wokspace_directory)
+            matlab_script_file.write("previous_pwd = pwd;\n")
             matlab_script_file.write("cd('%s');\n" % wokspace_directory)
             matlab_script_file.write("addpath('%s');\n" % self.spm_path)
             for matlab_command in self.matlab_commands_before_list:
