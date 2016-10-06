@@ -89,6 +89,8 @@ class SPM(SPMLauncher):
             #reset matlab_commands list
             self.matlab_commands_before_list = []
             self.matlab_commands_after_list = []
+            #reset Matlab Script path
+            self.matlab_script_path = None
             try:
                 checkIfMatlabFailedBeforSpm(output)
                 checkIfSpmHasFailed(output)
