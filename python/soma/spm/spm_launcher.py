@@ -103,7 +103,7 @@ class SPM(SPMLauncher):
     def _writeMatlabScript(self):
         if self.matlab_script_path is None:
             self.matlab_script_path = tempfile.NamedTemporaryFile(suffix=".m").name
-            wokspace_directory = os.path.dirname(self.spm_script_path)
+            workspace_directory = os.path.dirname(self.spm_script_path)
         else:
             print("**WARNING** User define its own matlab_script_path, so output volume moving, may not work")
             pass
@@ -115,7 +115,7 @@ class SPM(SPMLauncher):
         if self.spm_path is not None:
             matlab_script_file = open(self.matlab_script_path, 'w+')
             matlab_script_file.write("previous_pwd = pwd;\n")
-            matlab_script_file.write("cd('%s');\n" % wokspace_directory)
+            matlab_script_file.write("cd('%s');\n" % workspace_directory)
             matlab_script_file.write("addpath('%s');\n" % self.spm_path)
             for matlab_command in self.matlab_commands_before_list:
                 matlab_script_file.write(matlab_command + "\n")
