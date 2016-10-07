@@ -19,9 +19,16 @@ find_package( python REQUIRED )
 find_package( SIP )
 if( SIP_FOUND )
 
-  find_package( Qt4 COMPONENTS QtCore QtGui REQUIRED )
+  if( DESIRED_QT_VERSION EQUAL 4 )
+    find_package( Qt4 COMPONENTS QtCore QtGui REQUIRED )
+  elseif( DESIRED_QT_VERSION EQUAL 5 )
+    find_package( Qt5Widgets REQUIRED )
+    add_definitions( ${Qt5Widgets_DEFINITIONS} )
+    include_directories( ${Qt5Widgets_INCLUDE_DIRS} )
+    set( QT_LIBRARIES ${Qt5Widgets_LIBRARIES} )
+  endif()
   find_package( QtVersion REQUIRED )
-
+  
   BRAINVISA_DEPENDENCY( RUN DEPENDS python-sip4 RUN )
   BRAINVISA_DEPENDENCY( DEV DEPENDS python-sip4 DEV )
 
