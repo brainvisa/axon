@@ -31,9 +31,9 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-import neuroConfig
+from soma.qt_gui.qt_backend.QtGui import *
+from soma.qt_gui.qt_backend.QtCore import *
+from brainvisa.configuration import neuroConfig
 import os
 
 class LockedFilesListEditor( QDialog ):

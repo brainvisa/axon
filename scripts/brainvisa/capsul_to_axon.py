@@ -1,5 +1,6 @@
 #!/usr/bin/env python2
 
+from __future__ import print_function
 from brainvisa.axon import processes
 from capsul import process, pipeline
 from brainvisa import processes as procbv
@@ -9,6 +10,7 @@ from brainvisa.data.writediskitem import WriteDiskItem
 from traits import api as traits
 from traits import trait_types
 import importlib
+import six
 
 from optparse import OptionParser
 
@@ -85,7 +87,7 @@ for procid, outfile in zip(options.process, options.output):
     module = importlib.import_module(modname)
 
     p = getattr(module, procname)()
-    print 'process:', p
+    print('process:', p
 
     out = open(outfile, 'w')
     out.write( '''# -*- coding: utf-8 -*-
@@ -98,7 +100,7 @@ signature = Signature(
 ''' % procname )
 
     excluded_traits = set(('nodes_activation', 'pipeline_steps'))
-    for name, param in p.user_traits().iteritems():
+    for name, param in six.iteritems(p.user_traits()):
         if name in excluded_traits:
             continue
         parameter = make_parameter(param, name)

@@ -32,7 +32,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-from neuroHierarchy import databases
+from brainvisa.data.neuroHierarchy import databases
 import brainvisa.tools.spm_run as spm
 from brainvisa.tools.spm_basic_models import initialize_pairedTTest_SPM8_default_parameters, write_pairedTTest_matFile
 

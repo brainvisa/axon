@@ -36,7 +36,7 @@ from brainvisa.tools.mainthreadlife import MainThreadLife
 import anatomist.cpp as anatomist
 from anatomist.cpp.paletteEditor import PaletteEditor
 import anatomist.direct.api as ana
-from neuroConfig import iconPath, uiPath
+from brainvisa.configuration.neuroConfig import iconPath, uiPath
 from soma import aims
 from soma.path import locate_file
 from soma.qt_gui.qt_backend import QtCore, QtGui, uic

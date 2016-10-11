@@ -1,5 +1,6 @@
 #!/usr/bin/env python2
 
+from __future__ import print_function
 from brainvisa.axon import processes
 from capsul.api import Process
 from capsul.api import Pipeline
@@ -128,7 +129,7 @@ def capsul_param_type(axon_param):
     newtype = param_types_table.get(type(axon_param))
     paramoptions = []
     if newtype is None:
-        print 'write_process_signature: type', type(axon_param), 'not found'
+        print('write_process_signature: type', type(axon_param), 'not found')
         newtype = traits.Str
     if isinstance(newtype, tuple):
         paramoptions = newtype[1](axon_param)
@@ -155,7 +156,7 @@ def write_process_signature(p, out, buffered_lines, get_all_values=True):
             if value is not None:
                 buffered_lines['initialization'].append(
                     '        self.%s = %s\n' % (name, repr(value)))
-                # print 'non-default value for %s in %s' % (name, p.name)
+                # print('non-default value for %s in %s' % (name, p.name))
             elif type(param) in (neuroData.Boolean, neuroData.Number,
                     neuroData.Float, neuroData.Integer):
                 # None as number is a forced optional value
@@ -328,8 +329,8 @@ def converted_link(linkdef, links, pipeline, selfinparams, revinparams,
     real_source = find_param_in_parent(linkdef[0], linkdef[1], procmap)
     real_dest = find_param_in_parent(linkdef[2], linkdef[3], procmap)
     if real_source[0] is None or real_dest[0] is None:
-        print 'Warning, missing link info for:', linkdef[0]().name, \
-            ',', linkdef[1], ' ->', linkdef[2]().name, ',', linkdef[3]
+        print('Warning, missing link info for:', linkdef[0]().name,
+              ',', linkdef[1], ' ->', linkdef[2]().name, ',', linkdef[3])
         return None
     linkdef = (real_source[0], real_source[2], real_dest[0], real_dest[2],
         weak_link)
@@ -348,9 +349,10 @@ def converted_link(linkdef, links, pipeline, selfinparams, revinparams,
         else:
             altp = selfoutparams.get(linkdef[1])
             if altp is None:
-                print '** warning, probably bad link:', linkdef[0]().name, \
-                    ',', linkdef[1], ' ->', linkdef[2]().name, ',', linkdef[3]
-                print revoutparams
+                print('** warning, probably bad link:', linkdef[0]().name,
+                      ',', linkdef[1], ' ->', linkdef[2]().name, ',',
+                      linkdef[3])
+                print(revoutparams)
                 return None
             linkdef = (altp[0], altp[1], linkdef[2], linkdef[3], weak_link)
         if linkdef[:4] in links:
@@ -456,21 +458,21 @@ def find_param_in_parent(proc, param, procmap):
     pname, exported = procmap.get(proc, (None, None))
     if exported:  # exported node: direct, OK
         if verbose:
-            print '    find_param_in_parent:', proc().name, '/', param, \
-                ': direct export'
+            print('    find_param_in_parent:', proc().name, '/', param,
+                  ': direct export')
         return (proc, pname, param)
     last = (proc, param)
     allnotfound = False
     if verbose:
-        print '    find_param_in_parent:', proc().name, '/', param, ':', pname
+        print('    find_param_in_parent:', proc().name, '/', param, ':', pname)
     while not allnotfound:
         if verbose:
-            print '    try as child:', last[0]().name, '/', last[1]
+            print('    try as child:', last[0]().name, '/', last[1])
         if last[0] not in procmap:
             # probably an external link to a parent pipeline
             if verbose:
-                print '    Warning: link to external node in "parent" ' \
-                    'pipeline:', last[0]().name
+                print('    Warning: link to external node in "parent" '
+                      'pipeline:', last[0]().name)
             return (None, None, None)
         child_name = procmap[last[0]][0]
         # look for parent enode
@@ -489,15 +491,15 @@ def find_param_in_parent(proc, param, procmap):
                     children.add(n)
             if last[0]() in children:
                 if verbose:
-                    print '    test parent:', new_node_name
+                    print('    test parent:', new_node_name)
                 new_pname = '_'.join((child_name, last[1]))
                 if exported:
                     parent_pname = last[1]
                     if verbose:
-                        print '    find_param_in_parent:', proc().name, '/', \
-                            param
-                        print '    ** found:', new_proc().name, '/', \
-                            new_pname
+                        print('    find_param_in_parent:', proc().name, '/',
+                              param)
+                        print('    ** found:', new_proc().name, '/',
+                              new_pname)
                     # now check if it is an exported param in the sub-pipeline
                     opname = is_linked_to_parent(proc, param, new_proc)
                     if opname is not None:
@@ -505,17 +507,17 @@ def find_param_in_parent(proc, param, procmap):
                         #parent_pname = opname
                         new_pname = opname
                         if verbose:
-                            print '    parent param translated:', new_pname
+                            print('    parent param translated:', new_pname)
                     elif verbose:
-                        print '    not linked to parent: take:', new_pname
+                        print('    not linked to parent: take:', new_pname)
                     return (new_proc, new_node_name, new_pname)
                 last = (new_proc, new_pname)
                 break
         else: # loop through the end of procmap
             allnotfound = True
     # not found
-    print 'Warning: find_param_in_parent: NOT FOUND'
-    print '    was:', proc().name, '/', param
+    print('Warning: find_param_in_parent: NOT FOUND')
+    print('    was:', proc().name, '/', param)
     return (None, None, None)
 
 
@@ -532,12 +534,12 @@ def write_pipeline_links(p, buffered_lines, procmap, links, processed_links,
         src, sparam, dst, dparam, weak_link = link
         sname, sexported = procmap.get(src, (None, None))
         if sname is None:
-            print 'warning, src process', src().name, 'not found in pipeline.'
-            # print 'procmap:', [ k[0]().name for k in procmap ]
+            print('warning, src process', src().name, 'not found in pipeline.')
+            # print('procmap:', [ k[0]().name for k in procmap ])
             continue  # skip this one
         dname, dexported = procmap.get(dst, (None, None))
         if dname is None:
-            print 'warning, dst process', dst().name, 'not found in pipeline.'
+            print('warning, dst process', dst().name, 'not found in pipeline.')
             continue  # skip this one
         spname = sparam
         if sname:
@@ -566,9 +568,9 @@ def write_pipeline_links(p, buffered_lines, procmap, links, processed_links,
             # check for non-exported links with same IO status
             if sname != '' and dname != '' \
                     and is_output(src, sparam) == is_output(dst, dparam):
-                print 'Warning: write_pipeline_links, sname: %s, ' \
-                    'sparam: %s, dname: %s, dparam: %s: both same IO type:' \
-                    % (sname, sparam, dname, dparam), is_output(src, sparam)
+                print('Warning: write_pipeline_links, sname: %s, '
+                      'sparam: %s, dname: %s, dparam: %s: both same IO type:'
+                      % (sname, sparam, dname, dparam), is_output(src, sparam))
                 if is_output(src, sparam):
                     # both outputs: export 1st
                     sparam2 = sname + '_' + sparam
@@ -1142,11 +1144,11 @@ def axon_to_capsul_main(argv):
           make_module_name(capsul, options.module, {},
                            lowercase_modules))
          for axon, capsul in six.iteritems(gen_process_names)])
-    print 'converted proc names:', use_process_names
+    print('converted proc names:', use_process_names)
     use_process_names.update(dict([(axon, capsul) \
         for (axon, capsul) in [name.split(':') for name in options.use_proc]]))
 
-    print 'use_process_names:', use_process_names
+    print('use_process_names:', use_process_names)
 
     done_processes = set()
     todo = zip([procbv.getProcessInstance(p, ignoreValidation=True)
@@ -1162,7 +1164,7 @@ def axon_to_capsul_main(argv):
 
     for proc, outfile in todo:
         procid = get_process_id(proc)
-        # print 'Process:', procid, '->', gen_process_names.get(procid), '\n'
+        # print('Process:', procid, '->', gen_process_names.get(procid), '\n')
         if procid in done_processes:
             continue
         done_processes.add(procid)
