@@ -31,9 +31,10 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import print_function
 import warnings
 import traceback
 warnings.warn( 'use of obsolete neuroDiskItems. Please use brainvisa.data.neuroDiskItems instead now.', DeprecationWarning )
-print 'called from:'
+print('called from:')
 traceback.print_stack()
 from brainvisa.data.neuroDiskItems import *
