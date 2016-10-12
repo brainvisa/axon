@@ -244,7 +244,6 @@ class XlsConverter():
     while(row_header_background_pattern_colour_index == current_background_pattern_colour_index) :
         column_index += 1
         current_background_pattern_colour_index = workbook.xf_list[sheet.cell_xf_index(row_index,column_index)].background.pattern_colour_index
-
     return row_index, column_index
 
 
@@ -266,24 +265,32 @@ class XlsConverter():
     while(column_index < sheet.ncols):
       #iter on column until all row header are empty (end of header)
       val = sheet.cell_value(row_data_index, column_index)
-      for row_index in range(first_row_data_index, 0, -1):
-        tmp_dict = {self._getUpperHeaderWord(sheet, row_index, column_index):val}
+      #for row_index in range(first_row_data_index, 0, -1):
+      row_index = first_row_data_index-1
+      while (row_index >= 0):
+        header_name, row_index = self._getHeaderCellValue(sheet, row_index, column_index)
+        tmp_dict = {header_name:val}
         val = tmp_dict
+        if row_index >= 0:
+            row_index -= 1
+        elif row_index < 0:
+            pass  # while loop break
       values_dict = XlsConverter.mergeDict(values_dict, tmp_dict)
       column_index += 1
     return values_dict
-
-  def _getUpperHeaderWord(self, sheet, row_index, column_index):
+    
+  def _getHeaderCellValue(self, sheet, row_index, column_index):
     """
-        h1      |h2
-    sh1  |sh2   |sh1
-    if column_index = 0 and row_index = 1, return [h1, sh1]
-    if column_index = 1 and row_index = 1, return [h1, sh2]
+    method use to return header value even if cell is merged
     """
-    row_of_interest = row_index-1
-    while(sheet.cell_type(row_of_interest, column_index) in (xlrd.XL_CELL_EMPTY, xlrd.XL_CELL_BLANK)):
-      column_index -= 1
-    return sheet.cell_value(row_of_interest, column_index)
+    cell_is_empty = sheet.cell_type(row_index, column_index) in (xlrd.XL_CELL_EMPTY, xlrd.XL_CELL_BLANK)
+    if not cell_is_empty:  # merged cell is empty, it is not the left upper corner cell
+      return sheet.cell_value(row_index, column_index), row_index
+    else:  # check if cell is merged
+      for r_min, r_max, c_min, c_max in sheet.merged_cells:
+        if row_index >= r_min and row_index <= r_max and column_index >= c_min and column_index <= c_max:
+          return sheet.cell_value(r_min, c_min), r_min
+    raise ValueError("empty cell is actually forbidden in column header")
 #==============================================================================
 # Static method
 #==============================================================================
