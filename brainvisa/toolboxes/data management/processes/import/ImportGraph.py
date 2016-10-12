@@ -31,8 +31,6 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-from brainvisa import shelltools
-import shfjGlobals
 
 # This process should not be called directly unless you
 # exactly know what you are doing. Import processes for

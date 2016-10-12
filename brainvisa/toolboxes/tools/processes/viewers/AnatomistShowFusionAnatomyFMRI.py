@@ -33,8 +33,6 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-import shfjGlobals
-import string
 from brainvisa import anatomist
 
 name = 'anatomist Show fMRI-MRI Fusion'
@@ -45,8 +43,8 @@ def validation():
   anatomist.validation()
 
 signature = Signature(
-  'epi_series', ReadDiskItem( "fMRI", shfjGlobals.anatomistVolumeFormats ),
-  'anatomy',    ReadDiskItem( "T1 MRI", shfjGlobals.anatomistVolumeFormats ),
+  'epi_series', ReadDiskItem( "fMRI", 'anatomist Volume Formats' ),
+  'anatomy',    ReadDiskItem( "T1 MRI", 'anatomist Volume Formats' ),
   )
 
 def initialization( self ):

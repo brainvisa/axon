@@ -38,9 +38,7 @@ try:
 except:
   def validation():
     raise RuntimeError( _t_( 'module <em>aims</em> not available' ) )
-import shfjGlobals
 import os
-import string
 
 
 name = 'Create points ROI'
@@ -51,7 +49,7 @@ userLevel = 2
 
 signature = Signature(
   'file_of_point', ReadDiskItem( 'Coordinates File', 'Text file'),
-  'image_output', WriteDiskItem( '3D Volume',  shfjGlobals.aimsWriteVolumeFormats ),
+  'image_output', WriteDiskItem( '3D Volume',  'aims Writable Volume Formats' ),
   'dimX', Integer (),
   'dimY', Integer (),
   'dimZ', Integer (),

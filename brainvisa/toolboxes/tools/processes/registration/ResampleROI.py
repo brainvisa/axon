@@ -32,7 +32,6 @@
 
 from __future__ import print_function
 from brainvisa.processes import *
-import shfjGlobals
 
 name = 'Resample ROI graph'
 userLevel = 1
@@ -41,7 +40,7 @@ signature = Signature(
    'source_graph', ReadDiskItem( 'ROI','Graph and Data' ),
    'transformation', ReadDiskItem( 'Transformation matrix', 
                                    'Transformation matrix' ),
-   'destination_image', ReadDiskItem( '3D volume', shfjGlobals.aimsVolumeFormats ),
+   'destination_image', ReadDiskItem( '3D volume', 'aims readable Volume Formats' ),
    'result_graph', WriteDiskItem( 'ROI', 'Graph and data' ),
 )
 
@@ -60,7 +59,8 @@ def execution( self, context ):
     volume = os.path.join( tmp.fullName() + '.data', 'cluster_Volume.ima' )
     if not os.path.exists( volume ):
       raise RuntimeError( _t_( 'Can only resample ROI or Cluster graphs' ) )
-  context.system( 'AimsLinearComb', '-i', volume, '-e', 1, '-o', volume )
+  context.pythonSystem('cartoLinearComb.py', '-i', volume, '-o', volume, 
+                       '-f', 'I1 + 1')
   if ( self.transformation is None ):
     context.system( 'VipSplineResamp', '-i', volume, '-o', volume, '-w', 't',
       '-t', self.destination_image.fullName(), '-did',
@@ -69,7 +69,8 @@ def execution( self, context ):
     context.system( 'VipSplineResamp', '-i', volume, '-o', volume, '-w', 't',
       '-t', self.destination_image.fullName(), '-d', self.transformation,
       '-or', 0 )
-  context.system( 'AimsLinearComb', '-i', volume, '-e', -1, '-o', volume )
+  context.pythonSystem('cartoLinearComb.py', '-i', volume, '-o', volume, 
+                       '-f', 'I1 - 1')
   file = open( tmp.fullPath() )
   lines = file.readlines()
   file.close()

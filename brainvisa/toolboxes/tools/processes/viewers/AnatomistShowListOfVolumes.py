@@ -31,7 +31,6 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-import shfjGlobals
 from brainvisa import anatomist
 
 name = 'Anatomist Show List of Volumes'
@@ -42,7 +41,7 @@ def validation():
     anatomist.validation()
 
 signature = Signature(
-  'volumes', ListOf(ReadDiskItem( '4D Volume', shfjGlobals.anatomistVolumeFormats )),
+  'volumes', ListOf(ReadDiskItem( '4D Volume', 'anatomist Volume Formats' )),
 )
 
 def execution( self, context ):

@@ -31,14 +31,14 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-import shfjGlobals
+
 name = '3 - Structural Group Analysis'
 userLevel = 2
 
 
 signature = Signature(
-#     'Lwhitemesh', ReadDiskItem( 'Left Hemisphere White Mesh' , shfjGlobals.aimsMeshFormats),
-#     'Rwhitemesh', ReadDiskItem( 'Right Hemisphere White Mesh' , shfjGlobals.aimsMeshFormats),
+#     'Lwhitemesh', ReadDiskItem( 'Left Hemisphere White Mesh' , 'aims Mesh Formats'),
+#     'Rwhitemesh', ReadDiskItem( 'Right Hemisphere White Mesh' , 'aims Mesh Formats'),
     'primalsketches', ListOf(ReadDiskItem( 'Primalsketch graph', 'Graph' )),
     'model', ReadDiskItem( 'Model graph', 'Graph' ), 
     'temp', Float(),

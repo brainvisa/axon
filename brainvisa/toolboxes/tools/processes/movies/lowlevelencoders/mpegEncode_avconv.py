@@ -1,7 +1,6 @@
 from brainvisa.processes import *
 from brainvisa.validation import ValidationError
 from brainvisa.configuration import mpegConfig
-import shfjGlobals
 
 name = 'avconv MPEG encoder'
 userLevel = 2
@@ -19,7 +18,7 @@ def codecs():
 
 
 signature = Signature(
-    'images', ListOf(ReadDiskItem('2D Image', shfjGlobals.aimsImageFormats,
+    'images', ListOf(ReadDiskItem('2D Image', 'aims Image Formats',
                                   ignoreAttributes=1)),
     'animation', WriteDiskItem('MPEG film', mpegConfig.mpegFormats),
     'encoding', Choice(*codecs()),

@@ -30,7 +30,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from brainvisa.processes import *
-import shfjGlobals
+from brainvisa.tools import aimsGlobals
 import os.path
 
 name = 'Create a 4D volume from a list of 3D Volumes'
@@ -52,7 +52,7 @@ def execution( self, context ):
   if VolumeDimensions is not None:
     self.SPM4D_volume.setMinf( 'volume_dimension', VolumeDimensions  )
   else:
-    AimsFileInfo = shfjGlobals.aimsVolumeAttributes( self.SPM_files[0] )
+    AimsFileInfo = aimsGlobals.aimsVolumeAttributes( self.SPM_files[0] )
     volume_dimensionXYZ =  AimsFileInfo[ 'volume_dimension' ][ :3 ]
     context.write( volume_dimensionXYZ )
     self.SPM4D_volume.setMinf( 'volume_dimension',  volume_dimensionXYZ  + [ len( self.SPM_files ) ] )

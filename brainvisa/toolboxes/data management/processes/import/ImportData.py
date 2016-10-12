@@ -33,7 +33,7 @@
 
 from brainvisa.processes import *
 from brainvisa import shelltools
-import shfjGlobals
+from brainvisa.tools import aimsGlobals
 
 # This process should not be called directly unless you
 # exactly know what you are doing. Import processes for
@@ -60,7 +60,7 @@ def initialization( self ):
       if self.input is not None:
         if self.input.format in map( getFormat, ( 'SPM image', 'Series of SPM image' ) ):
           hide = 0
-          atts = shfjGlobals.aimsVolumeAttributes( self.input )
+          atts = aimsGlobals.aimsVolumeAttributes( self.input )
           tr = atts.get( 'storage_to_memory' )
           if tr is not None and tr[0] < 0:
             res = 'Neurological'
@@ -107,7 +107,7 @@ def execution( self, context ):
     input = self.input
     if self.input.format in map( getFormat,
                                  ( 'SPM image', 'Series of SPM image' ) ):
-      atts = shfjGlobals.aimsVolumeAttributes( self.input )
+      atts = aimsGlobals.aimsVolumeAttributes( self.input )
       tr = atts.get( 'storage_to_memory' )
       radio = None
       if tr:
@@ -160,7 +160,7 @@ def execution( self, context ):
 
     if self.input.format in map( getFormat,
                                  ( 'SPM image', 'Series of SPM image' ) ):
-      atts = shfjGlobals.aimsVolumeAttributes( self.input )
+      atts = aimsGlobals.aimsVolumeAttributes( self.input )
       radio = atts.get( 'spm_radio_convention' )
       if self.input_spm_orientation == 'Neurological':
         radio = 0

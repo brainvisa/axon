@@ -38,15 +38,14 @@
 
 
 from brainvisa.processes import *
-import shfjGlobals
 
 name = 'Fusion Linear Contrastes'
 userLevel=2
 
 signature = Signature(
-  'read', ListOf( ReadDiskItem( '3D Volume', shfjGlobals.anatomistVolumeFormats) ),
+  'read', ListOf( ReadDiskItem( '3D Volume', 'aims readable Volume Formats') ),
   'levels', ListOf( Number() ),
-  'write', WriteDiskItem( '3D Volume',shfjGlobals.aimsWriteVolumeFormats ),
+  'write', WriteDiskItem( '3D Volume', 'aims Writable Volume Formats' ),
 )
 
 def initialization( self ):

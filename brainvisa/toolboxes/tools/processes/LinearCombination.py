@@ -32,29 +32,22 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-import shfjGlobals
 
 name = 'Linear Combination'
 userLevel=1
 
 signature = Signature(
-  #Modif � faire pour fusionner aussi des textures --> gestions format image et texture
-  #'read1', ReadDiskItem(  'Texture', ('Texture',)+ shfjGlobals.anatomistVolumeFormats),
-  'read1', ReadDiskItem(  '3D Volume', shfjGlobals.anatomistVolumeFormats),
+  'read1', ReadDiskItem('3D Volume', 'aims readable Volume Formats'),
   'multiplicative_coefficient1', Float(),
   'divisor_coefficient1', Float(),
   
-  #Modif � faire pour fusionner aussi des textures --> gestions format image et texture
-  #'read2', ReadDiskItem(  'Texture', ('Texture',)+ shfjGlobals.anatomistVolumeFormats),
-  'read2', ReadDiskItem(  '3D Volume', shfjGlobals.anatomistVolumeFormats),
+  'read2', ReadDiskItem('3D Volume', 'aims readable Volume Formats'),
   
   'multiplicative_coefficient2', Float(),
   'divisor_coefficient2', Float(),
   'constant', Integer(),
   
-  #Modif � faire pour fusionner aussi des textures --> gestions format image et texture
-  #'write', WriteDiskItem(  'Texture', ('Texture',)+ shfjGlobals.anatomistVolumeFormats),
-  'write', WriteDiskItem(  '3D Volume', shfjGlobals.anatomistVolumeFormats),
+  'write', WriteDiskItem('3D Volume', 'aims writable Volume Formats'),
   'type', Choice( ( '<Same as input>', None), 'U8', 'S8', 'U16', 'S16', 'U32', 'S32', 'FLOAT', 'DOUBLE' ),  
 )
 
@@ -68,28 +61,32 @@ def initialization( self ):
   self.type = None
 
 def execution( self, context ):
-  command = [ 'AimsLinearComb', '-i', self.read1, '-o', self.write]
+  command = ['cartoLinearComb.py', '-i', self.read1, '-o', self.write]
   
+  formula = 'I1'
   if self.multiplicative_coefficient1 is not None :
-    command += [ '-a', self.multiplicative_coefficient1 ]
+    formula += ' * %f' % self.multiplicative_coefficient1
     
   if self.divisor_coefficient1  is not None :
-    command += [ '-b', self.divisor_coefficient1 ]
+    formula += ' / %f' % self.divisor_coefficient1
   
   if self.read2 is not None :
-    command += [ '-j', self.read2 ]
+    command += [ '-i', self.read2 ]
+    formula += ' + I2'
     
     if self.multiplicative_coefficient2  is not None :
-      command += [ '-c', self.multiplicative_coefficient2 ]
+      formula += ' * %f' % self.multiplicative_coefficient2
       
     if self.divisor_coefficient2  is not None :
-      command += [ '-d', self.divisor_coefficient2 ]
+      formula += ' / %f' % self.divisor_coefficient2
     
   if self.constant :
-    command += [ '-e', self.constant ]
+    formula += ' + %f' % self.constant
     
   if self.type is not None:
-    command += [ '-t', self.type ]
+    formula = '(%s).astype(%f)' % (formula, self.type)
+  
+  command += ['-f', formula]
 
-  apply( context.system, command )
+  context.pythonSystem(*command)
 

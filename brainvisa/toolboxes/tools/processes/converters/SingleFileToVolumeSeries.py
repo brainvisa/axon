@@ -31,17 +31,17 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-import shfjGlobals
+from brainvisa.tools import aimsGlobals
 
 name = 'Single file to volume series'
 roles = ('converter',)
 userLevel=1
 
 signature = Signature(
-  'read', ReadDiskItem( '4D Volume', shfjGlobals.aimsVolumeFormats, 
+  'read', ReadDiskItem( '4D Volume', 'aims readable Volume Formats', 
                         enableConversion = 0 ),
-  'write', WriteDiskItem( '4D Volume', map( lambda x: changeToFormatSeries( getFormat( x ) ), shfjGlobals.aimsWriteVolumeFormats ) ),
-###  'preferedFormat', apply( Choice, [ ( '<auto>', None ) ] + map( lambda x: (x,getFormat(x)), shfjGlobals.aimsVolumeFormats ) ),
+  'write', WriteDiskItem( '4D Volume', map( lambda x: changeToFormatSeries( getFormat( x ) ), aimsGlobals.aimsWriteVolumeFormats ) ),
+###  'preferedFormat', apply( Choice, [ ( '<auto>', None ) ] + map( lambda x: (x,getFormat(x)), aimsGlobals.aimsVolumeFormats ) ),
   'removeSource', Boolean(),
   'ascii', Boolean(),
   'voxelType', Choice( ( '<Same as input>', None), 'U8', 'S8', 'U16', 'S16', 'U32', 'S32', 'FLOAT', 'DOUBLE' ),
@@ -49,7 +49,7 @@ signature = Signature(
 
 ###def findAppropriateFormat( values, proc ):
 ###  if values.preferedFormat is None:
-###    result = WriteDiskItem( '4D Volume', shfjGlobals.aimsWriteVolumeFormats ).findValue( values.read )
+###    result = WriteDiskItem( '4D Volume', 'aims Writable Volume Formats' ).findValue( values.read )
 ###  else:
 ###    result = WriteDiskItem( '4D Volume', values.preferedFormat ).findValue( values.read )
 ###  return result
@@ -74,7 +74,7 @@ def execution( self, context ):
     convert = 1
     command += [ '-t', self.voxelType ]
 
-  voldim = shfjGlobals.aimsVolumeAttributes( self.read ).get( 'volume_dimension' )
+  voldim = aimsGlobals.aimsVolumeAttributes( self.read ).get( 'volume_dimension' )
   time_length = voldim[ 3 ]
   name_serie = self.write.get( 'name_serie' )
   if name_serie:
