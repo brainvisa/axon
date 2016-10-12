@@ -35,7 +35,7 @@ from brainvisa.processes import *
 from brainvisa import shelltools
 from brainvisa.tools import aimsGlobals
 import stat
-import registration
+from brainvisa import registration
 
 from brainvisa.tools.data_management.image_importation import Importer
 
