@@ -33,7 +33,8 @@
 from brainvisa.processes import *
 from brainvisa.validation import ValidationError
 from brainvisa.configuration import mpegConfig
-import os, shfjGlobals
+import os
+from brainvisa.tools import aimsGlobals
 
 name = 'Recmpeg MPEG encoder'
 userLevel = 2
@@ -51,7 +52,7 @@ def codecs():
 
 
 signature = Signature(
-  'images', ListOf( ReadDiskItem( '2D Image', shfjGlobals.aimsImageFormats,
+  'images', ListOf( ReadDiskItem( '2D Image', 'aims Image Formats',
                                   ignoreAttributes=1 ) ),
   'animation', WriteDiskItem( 'MPEG film', mpegConfig.mpegFormats ),
   'encoding', Choice( *codecs() ),
@@ -69,7 +70,7 @@ def initialization( self ):
 
 def execution( self, context ):
   #context.write( 'encoder:', self.encoder )
-  attrs = shfjGlobals.aimsVolumeAttributes( self.images[ 0 ], forceFormat=1 )
+  attrs = aimsGlobals.aimsVolumeAttributes( self.images[ 0 ], forceFormat=1 )
   width = attrs[ 'volume_dimension' ][ 0 ]
 
   mod16 = width % 16
