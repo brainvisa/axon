@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
 from brainvisa import axon
 import sys, time, traceback
 from optparse import OptionParser
@@ -31,14 +32,14 @@ if newdate:
     t = time.mktime( time.strptime( newdate, "%Y/%m/%d" ) )
   except:
     t = time.mktime( time.strptime( newdate, "%Y/%m/%d %H:%M:%S" ) )
-  print 'date:', t
+  print('date:', t)
 
 axon.initializeProcesses()
 
 from brainvisa.processes import *
 
 if directory:
-  print 'reading history book directory...'
+  print('reading history book directory...')
   for f in os.listdir( directory ):
     if f.endswith( '.bvproc' ):
       ff = os.path.join( directory, f )
@@ -48,9 +49,9 @@ if directory:
           infiles.append( ff )
       else:
         infiles.append( ff )
-  print 'done.'
+  print('done.')
 
-print 'parsing %d history files...' % len( infiles )
+print('parsing %d history files...' % len( infiles ))
 toadd = set()
 deadhistories = set()
 livehistories = set()
@@ -58,8 +59,8 @@ scanned = 0
 for bvprocfile in infiles:
   try:
     p = readMinf( bvprocfile )[0] # ProcessExecutionEvent object
-  except Exception, e:
-    print 'error reading', bvprocfile
+  except Exception as e:
+    print('error reading', bvprocfile)
     traceback.print_exc()
     continue
   idf = os.path.basename( bvprocfile )
@@ -76,7 +77,7 @@ for bvprocfile in infiles:
         item = neuroHierarchy.databases.createDiskItemFromFileName( par )
         addit = True
       except:
-          print 'Warning: file', par, 'cannot be inserted in any database.'
+          print('Warning: file', par, 'cannot be inserted in any database.')
           continue
     scanned += 1
     if item is not None and isinstance( item, DiskItem ) \
@@ -88,35 +89,35 @@ for bvprocfile in infiles:
       if lasth is not None and lasth == idf:
         halive = True
   if not halive:
-    #print 'history file', bvprocfile, 'is obsolete'
+    #print('history file', bvprocfile, 'is obsolete')
     deadhistories.add( bvprocfile )
   else:
     livehistories.add( bvprocfile )
-print 'parsing done. Scanned %d files/items.' % scanned
-print
-print 'living history files:', len( livehistories )
-print 'dead history files:', len( deadhistories )
-print
+print('parsing done. Scanned %d files/items.' % scanned)
+print()
+print('living history files:', len( livehistories ))
+print('dead history files:', len( deadhistories ))
+print()
 
 if removeold:
-  print 'removing dead histories...'
+  print('removing dead histories...')
   for bvprocfile in deadhistories:
     os.unlink( bvprocfile )
-  print 'done.'
+  print('done.')
 
-print 'adding %d disk items...' % len( toadd )
+print('adding %d disk items...' % len( toadd ))
 if simulation:
-  print 'Nothing changed: we are in simulation mode.'
+  print('Nothing changed: we are in simulation mode.')
 else:
   for item in toadd:
     try:
-      #print 'adding', item
+      #print('adding', item)
       neuroHierarchy.databases.insertDiskItem( item, update=True )
     except NotInDatabaseError:
       pass
     except:
       showException()
-  print 'done.'
+  print('done.')
 
 
 

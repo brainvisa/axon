@@ -29,6 +29,7 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+from __future__ import print_function
 from brainvisa.wip.newProcess import NewProcess
 from soma.signature.api import Signature, Unicode, Number
 
@@ -47,7 +48,8 @@ class TestProcess( NewProcess ):
   
   def run( self ):
     for n in self.signature.keys()[1:]:
-      print >> self.userContext.stdout, repr(n), '=', repr( getattr( self, n ) )
+      print(repr(n), '=', repr( getattr( self, n ) ),
+            file=self.userContext.stdout)
 
 
 class TestProcess2( TestProcess ):

@@ -29,6 +29,7 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+from __future__ import print_function
 from neuroProcesses import *
 
 requests = {}
@@ -36,7 +37,8 @@ requestsAccess = {}
 for pi in allProcessesInfo():
   process = getProcess( pi.id, ignoreValidation=True )
   if process is None:
-    print >> sys.stderr, 'WARNING: Cannot instanciate process', repr( pi.id )
+    print('WARNING: Cannot instanciate process', repr( pi.id ),
+          file=sys.stderr)
     continue
   for attrName, attrType in process.signature.items():
     if isinstance( attrType, ReadDiskItem ):
@@ -58,7 +60,7 @@ destDir='diskItemRequests'
 if not os.path.exists( destDir ):
   os.makedirs( destDir )
 index = open( os.path.join( destDir, 'index.html' ), 'w' )
-print >> index, '''<html>
+print('''<html>
 <head>
 <title>Database requests embedded in BrainVISA ''' + versionString() + ''' processes</title>
 </head>
@@ -67,18 +69,18 @@ print >> index, '''<html>
 <a href="allRequests.html">All requests (''' + str( len( requests ) ) + ''')</a><p/>
 </body>
 </html>
-'''
+''', file=index)
 index.close()
 
 
 allRequests = open( os.path.join( destDir, 'allRequests.html' ), 'w' )
-print >> allRequests, '''<html>
+print('''<html>
 <head>
 <title>All requests embedded in BrainVISA ''' + versionString() + ''' processes</title>
 </head>
 <body>
 <h1>All requests embedded in BrainVISA ''' + versionString() + ''' processes</h1>
-'''
+''', file=allRequests)
 count = 1
 requestsOrder = {}
 for request in sorted( requests.iterkeys() ):
@@ -92,27 +94,31 @@ for request in sorted( requests.iterkeys() ):
       access = 'read'
   else:
     access = 'write'
-  print >> allRequests, '<h2>Request ' + str( count ) + '</h2>'
-  print >> allRequests, '<b>Type:</b> ' + htmlEscape( type ) + '<br/>'
-  print >> allRequests, '<b>Access:</b> ' + access + '<br/>'
-  print >> allRequests, '<b>Formats:</b><blockquote>'
+  print('<h2>Request ' + str( count ) + '</h2>', file=allRequests)
+  print('<b>Type:</b> ' + htmlEscape( type ) + '<br/>', file=allRequests)
+  print('<b>Access:</b> ' + access + '<br/>', file=allRequests)
+  print('<b>Formats:</b><blockquote>', file=allRequests)
   for format in formats:
     formatName = htmlEscape( format )
-    print >> allRequests, '<a href="format_' + formatName + '">' + formatName + '</a><br/>'
-  print >> allRequests, '</blockquote>'
+    print('<a href="format_' + formatName + '">' + formatName + '</a><br/>',
+          file=allRequests)
+  print('</blockquote>', file=allRequests)
   if required:
-    print >> allRequests, '<b>Attributes:</b><blockquote>'
+    print('<b>Attributes:</b><blockquote>', file=allRequests)
     for n, v in required:
-      print >> allRequests, n + ' = ' + htmlEscape( repr( v ) ) + '<br/>'
-    print >> allRequests, '</blockquote>'
-  
-  print >> allRequests, '<b>Used in the following processes:</b><blockquote>'
+      print(n + ' = ' + htmlEscape( repr( v ) ) + '<br/>', file=allRequests)
+    print('</blockquote>', file=allRequests)
+
+  print('<b>Used in the following processes:</b><blockquote>',
+        file=allRequests)
   for pi in requests[ request ]:
-    print >> allRequests, '<a href="process_' + pi.id + '">' + htmlEscape( pi.name ) + '</a><br/>'
-  print >> allRequests, '</blockquote><hr/>'
+    print('<a href="process_' + pi.id + '">' + htmlEscape( pi.name )
+          + '</a><br/>', file=allRequests)
+  print('</blockquote><hr/>', file=allRequests)
   count += 1
-print >> allRequests, '''</body>
+print('''</body>
 </html>
-'''
+''', file=allRequests)
 allRequests.close()
-print 'Total:', len( requests )
+
+print('Total:', len(requests))

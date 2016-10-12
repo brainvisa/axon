@@ -41,6 +41,8 @@ from brainvisa.data.actions import FileProcess, Move, Remove, CallProcess, SetTr
 from soma.minf.api import readMinf, writeMinf
 from brainvisa.data.sqlFSODatabase import SQLDatabase
 from brainvisa.data.readdiskitem import ReadDiskItem
+import six
+import collections
 
 ###################################
 ## DBProcessor
@@ -111,7 +113,7 @@ class DBProcessor(object):
         c.process(debug=debug)
 
     self.doneProcesses=[]
-    currentDir=os.getcwdu()
+    currentDir = six.moves.getcwd()
     os.chdir(self.dbDir)
     for action in self.fileProcesses:
       if action.selected:
@@ -277,7 +279,7 @@ class T1MriConverter(DBConverter):
   def findActions(self):
     self.fileProcesses=[]
     centers=os.listdir(self.dbDir) # first level : center/protocol
-    currentDir=os.getcwdu()
+    currentDir = six.moves.getcwd()
     os.chdir(self.dbDir)
     for p in centers:
       if os.path.isdir(p):
@@ -663,7 +665,7 @@ class DiffusionConverter(DBConverter):
   def findActions(self):
     self.fileProcesses=[]
     centers=os.listdir(self.dbDir) # first level : center/protocol
-    currentDir=os.getcwdu()
+    currentDir = six.moves.getcwd()
     os.chdir(self.dbDir)
     for p in centers:
       if os.path.isdir(p):
@@ -850,7 +852,7 @@ class PETConverter(DBConverter):
   def findActions(self):
     self.fileProcesses=[]
     centers=os.listdir(self.dbDir) # first level : center/protocol
-    currentDir=os.getcwdu()
+    currentDir = six.moves.getcwd()
     os.chdir(self.dbDir)
     for p in centers:
       if os.path.isdir(p):
@@ -951,7 +953,7 @@ class BVConverter_3_1(DBConverter):
     if self.segmentDefaultDestination or self.grapheDefaultDestination:
       self.context.write("\nRemaining files in segment and graphe directories will be moved to "+self.segmentDefaultDestination+" and "+self.grapheDefaultDestination)
       centers=os.listdir(self.dbDir) # first level : center
-      currentDir=os.getcwdu()
+      currentDir = six.moves.getcwd()
       os.chdir(self.dbDir)
       for p in centers:
         if os.path.isdir(p):
@@ -1203,7 +1205,7 @@ class DBChecker(DBProcessor):
     @type component: string
     @param component: key of a component to process only a part of the database
     """
-    currentDir=os.getcwdu()
+    currentDir = six.moves.getcwd()
     os.chdir(self.dbDir)
     self.processRec(self.fileProcesses, debug=debug)
     
@@ -1229,12 +1231,12 @@ class DBChecker(DBProcessor):
       if item.selected and item.action:
         item.doit(debug, context=self.context)
     else:
-      if operator.isMappingType(item):
-        item=item.values()
+      if isinstance(item, collections.Mapping):
+        item = item.values()
       for i in item:
         self.processRec(i, debug)
-  
-                  
+
+
   def undo(self, component=None):
     """
     Undo checking is not possible.

@@ -35,7 +35,6 @@ from brainvisa.processes import *
 from brainvisa.data import neuroHierarchy, neuroDiskItems
 from brainvisa.data.databaseCheck import BVChecker_3_1
 from brainvisa.data.qtgui.databaseCheckGUI import CheckFilesWidget
-import brainvisa.tools.aimsGlobals as shfjGlobals
 import sys
 
 
@@ -80,10 +79,7 @@ def show(checker):
   """
   widget=CheckFilesWidget(checker)
   
-  if sys.modules.has_key( 'PyQt4' ):
-    result=widget.exec_()
-  else:
-    result=widget.exec_loop()
+  result=widget.exec_()
 
   return result # convert immediatly
 

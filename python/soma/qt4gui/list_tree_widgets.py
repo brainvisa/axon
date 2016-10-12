@@ -41,6 +41,8 @@ They provide user interaction to modify the underlying model (drag&drop, context
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
+from __future__ import print_function
+
 __docformat__ = "epytext en"
 
 import os
@@ -481,7 +483,7 @@ class EditableTreeWidget(QTreeWidget):
         self.takeTopLevelItem(i)
         i+=1
       self.insert(items, position)
-    #else: print action, "unknown action"
+    #else: print(action, "unknown action")
 
   def updateName(self, newName):
     self.setWindowTitle(newName)
@@ -500,8 +502,8 @@ class EditableTreeWidget(QTreeWidget):
       if item.unamed and self.hasFocus(): 
         self.editItem(itemBefore, 0)
         item.unamed=False
-    #print "current item : ", self.currentItem()
-    #print "set current item : ", itemBefore, itemBefore.text(0)
+    #print("current item : ", self.currentItem())
+    #print("set current item : ", itemBefore, itemBefore.text(0))
     self.setCurrentItem(itemBefore, 0)
     itemBefore.setSelected(True)
 
@@ -550,14 +552,14 @@ class EditableTreeWidget(QTreeWidget):
       #rect.setHeight( (min( self.dropAfter.totalHeight(), self.viewport().height() - rect.y() ) ) ) # stay in the viewport to keep the line visible
       #offset=self.indentation()
       painter.setBrush(Qt.black)
-      #print "draw drop after", self.dropAfter.getText(), rect.left(), rect.top(), rect.width(), rect.height()
+      #print("draw drop after", self.dropAfter.getText(), rect.left(), rect.top(), rect.width(), rect.height())
       painter.drawRect(rect.left(), rect.bottom()-self.MARGIN+1, rect.width(), self.MARGIN)
     elif self.dropOn!=None: #draw the rectangle containing the item
       if self.dropOn!=self:
         rect=self.visualItemRect(self.dropOn)
       else: #ajout dans le listview alors qu'il est vide
         rect=QRect(0, 0, self.columnWidth(0), self.MARGIN)
-      #print "draw drop on", self.dropOn.getText(), rect.left(), rect.top(), rect.width(), rect.height()
+      #print("draw drop on", self.dropOn.getText(), rect.left(), rect.top(), rect.width(), rect.height())
       painter.setPen(QPen(Qt.black, self.MARGIN, Qt.SolidLine))
       painter.drawRect(rect)
     painter.end()
@@ -630,7 +632,7 @@ class EditableTreeWidget(QTreeWidget):
       #pass
       self.setHidden(not newValue)
       #self.setText(0, self.getText()+"-hid")
-      #print "change visibility to ", newValue, " for ", self.getText()
+      #print("change visibility to ", newValue, " for ", self.getText())
   #----------------------------------------------------------------------------
   class Branch( Item ):
     """Item that represents a tree branch.
@@ -674,8 +676,8 @@ class EditableTreeWidget(QTreeWidget):
         for modelItem in items:
           self.takeChild(position) # when an item is removed, position becomes the index of the next item
         self.insert(items, position)
-      #else: print "unknown action"
-      #print str(self.listView())
+      #else: print("unknown action")
+      #print(str(self.listView()))
 
     def insert(self, items, position):
       """Insertion of items at position in the model
@@ -692,8 +694,8 @@ class EditableTreeWidget(QTreeWidget):
           self.editItem(newItem, 0)
           item.unamed=False
       self.setExpanded(True)
-      #print "current item : ", self.treeWidget().currentItem()
-      #print "set current item : ", newItem, newItem.text(0)
+      #print("current item : ", self.treeWidget().currentItem())
+      #print("set current item : ", newItem, newItem.text(0))
       self.treeWidget().setCurrentItem(newItem, 0)
       newItem.setSelected(True)
       
@@ -775,7 +777,7 @@ class EditableTreeController:
           if insertIndex is not None:
             insertIndex+=1
     else: # drop from one widget to another 
-      #print "drop on ", targetTreeWidget
+      #print("drop on ", targetTreeWidget)
       if not copyMode: sourceTreeWidget.deleteDraggedItems()
       for draggedItem in draggedItems:
         draggedItem.setAllModificationsEnabled(True)
@@ -814,7 +816,7 @@ class EditableTreeController:
       itemCopy.setAllModificationsEnabled(True)
       # add this new item in the target item
       insertedItem, insertIndex=self.insert(itemCopy, target, after, before, index)
-      #print self.model
+      #print(self.model)
     return (insertedItem, insertIndex)
 
   def insert(self, item, target, after, before, index):
@@ -832,7 +834,7 @@ class EditableTreeController:
           insertIndex=target.index(after.id)+1
           target.insert(insertIndex, item.id, item) # inserer le suivant en i+2
         else: # if no position, append the item
-          #print "model append", self.model.onChangeNotifier._listeners
+          #print("model append", self.model.onChangeNotifier._listeners)
           target[item.id]=item # rien a preciser on ajoute a la fin
     else:
       newItem=target[item.id]
@@ -848,7 +850,7 @@ class EditableTreeController:
     Delete item from source"""
     if item.delEnabled:
       del source[item.id]
-      #print self.model
+      #print(self.model)
 
   def newItem(self, target):
     """Creates a new child in target"""
@@ -965,7 +967,7 @@ class ObservableListWidget(QTreeWidget):
       for modelItem in items:
         self.takeTopLevelItem(position)
       self.insert(items, position)
-    #else: print action, "unknown action"
+    #else: print(action, "unknown action")
 
   def insert(self, items, position=None):
     """insertion of items at position in the model
@@ -1048,7 +1050,7 @@ class ObservableListWidget(QTreeWidget):
       The view should update its content to reflect the changes"""
       self.setText(0, newName)
       self.setToolTip(0, self.model.tooltip)
-      #else: print "unknown action"
+      #else: print("unknown action")
       
 #----------------------------------------------------------------------------
 class TreeListWidget(QTreeWidget):
@@ -1233,7 +1235,7 @@ class TreeListWidget(QTreeWidget):
       for modelItem in items:
         self.takeTopLevelItemItem(position)
       self.insert(items, position)
-    #else: print action, "unknown action"
+    #else: print(action, "unknown action")
 
   def insert(self, items, position=None):
     """insertion of items at position in the model
@@ -1324,7 +1326,7 @@ class TreeListWidget(QTreeWidget):
       """
       self.setText(0, newName)
       self.setToolTip(0, self.model.tooltip)
-      #else: print "unknown action"
+      #else: print("unknown action")
       
     def updateVisibility(self, newValue):
       """
