@@ -47,6 +47,10 @@ from soma.qt_gui.qt_backend import uic
 import os
 from brainvisa.data import neuroDiskItems, neuroHierarchy
 from brainvisa.data.actions import Move, Remove, FileProcess, ImportData
+import sys
+
+if sys.version_info[0] >= 3:
+    unicode = str
 
 ICON_SIZE=16
 

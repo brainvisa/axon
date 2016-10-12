@@ -31,7 +31,8 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-from PyQt4 import QtGui, QtCore
+from __future__ import print_function
+from soma.qt_gui.qt_backend import QtGui, QtCore
 from anatomist.cpp.paletteEditor import PaletteEditor
 from brainvisa.processes import *
 from tempfile import mkstemp
@@ -691,7 +692,7 @@ class DisplayResultsFromSPM(object):
                       currPos = v
               self.aviewGlass[ 0 ].moveLinkedCursor([ pos[0], currPos[1], currPos[2] ])
           else:
-              print "Error..."
+              print("Error...")
               
       except:
           pass
@@ -869,7 +870,7 @@ class DisplayResultsFromSPM(object):
           
           self._enablePaletteEditor(False)        
       else:
-          print "Error..."
+          print("Error...")
 
   def _createGlassBrain(self, context):
       "Creates the glass brain images"
@@ -988,7 +989,7 @@ class DisplayResultsFromSPM(object):
       if(sh[0] > glassBrainSize[0]):
         errMsg ='shape of resultMap : '+str(sh)+" expected : (91, 109, 91). Glassbrain not available" 
         context.error(errMsg)
-        print errMsg
+        print(errMsg)
                     
       # Glass brain axial
       imgAx = aims.Volume_FLOAT(glassBrainSize[0], glassBrainSize[1])

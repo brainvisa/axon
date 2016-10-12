@@ -1,3 +1,5 @@
+
+from __future__ import print_function
 import unittest
 import tempfile
 import os
@@ -27,17 +29,17 @@ class TestTransformationManager(unittest.TestCase):
     referential_uuid = self.create_uuid( referential_id )
     referential = open( os.path.join( registration_directory, referential_uuid + '.referential' ), 'w' )
     d = { 'uuid': referential_uuid, 'name': label }
-    print >> referential, 'attributes =', repr( d )
+    print('attributes =', repr( d ), file=referential)
 
   def create_transformation( self, registration_directory, transformation_id, source_id, destination_id ):
     transformation_uuid = self.create_uuid( transformation_id )
     source_uuid = self.create_uuid( source_id )
     destination_uuid = self.create_uuid( destination_id )
     trm = open( os.path.join( registration_directory, transformation_uuid + '.trm' ), 'w' )
-    print >> trm, '0 0 0\n1 0 0\n0 1 0\n0 0 1'
+    print('0 0 0\n1 0 0\n0 1 0\n0 0 1', file=trm)
     trm_minf = open( os.path.join( registration_directory, transformation_uuid + '.trm.minf' ), 'w' )
     d = { 'uuid': transformation_uuid, 'source_referential': source_uuid, 'destination_referential': destination_uuid }
-    print >> trm_minf, 'attributes =', repr( d )
+    print('attributes =', repr( d ), file=trm_minf)
 
   def create_test_database( self ):
     database_directory = os.path.join( self.test_database_directory, 'database' )
