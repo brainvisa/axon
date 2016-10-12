@@ -33,7 +33,7 @@
 from brainvisa.processes import *
 from brainvisa.validation import ValidationError
 from brainvisa.configuration import mpegConfig
-import os, shfjGlobals
+import os
 
 name = 'MPEG encoder'
 userLevel = 2
@@ -44,7 +44,7 @@ def validation():
 
 
 signature = Signature(
-  'images', ListOf( ReadDiskItem( '2D Image', shfjGlobals.aimsImageFormats,
+  'images', ListOf( ReadDiskItem( '2D Image', 'aims Image Formats',
                                   ignoreAttributes=1 ) ),
   'animation', WriteDiskItem( 'MPEG film', mpegConfig.mpegFormats ),
 )

@@ -33,7 +33,8 @@
 from brainvisa.processes import *
 from brainvisa.validation import ValidationError
 from brainvisa.configuration import mpegConfig
-import os, shfjGlobals, re, math
+import os, re, math
+from brainvisa.tools import aimsGlobals
 
 name = 'ffmpeg MPEG encoder'
 userLevel = 2
@@ -55,7 +56,7 @@ def codecs():
 
 
 signature = Signature(
-  'images', ListOf( ReadDiskItem( '2D Image', shfjGlobals.aimsImageFormats,
+  'images', ListOf( ReadDiskItem( '2D Image', 'aims Image Formats',
                                   ignoreAttributes=1 ) ),
   'animation', WriteDiskItem( 'MPEG film', mpegConfig.mpegFormats ),
   'encoding', Choice( *codecs() ),
@@ -85,7 +86,7 @@ def execution( self, context ):
   else:
     encoder = 'avconv'
 
-  attrs = shfjGlobals.aimsVolumeAttributes( self.images[ 0 ], forceFormat=1 )
+  attrs = aimsGlobals.aimsVolumeAttributes( self.images[ 0 ], forceFormat=1 )
   # context.write( attrs )
   dims = attrs[ 'volume_dimension' ]
   vs = attrs[ 'voxel_size' ]

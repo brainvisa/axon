@@ -33,7 +33,8 @@
 from brainvisa.processes import *
 from brainvisa.validation import ValidationError
 from brainvisa.configuration import mpegConfig
-import os, shfjGlobals
+import os
+from brainvisa.tools import aimsGlobals
 
 name = 'Mencoder MPEG encoder'
 userLevel = 2
@@ -51,7 +52,7 @@ def codecs():
 
 
 signature = Signature(
-  'images', ListOf( ReadDiskItem( '2D Image', shfjGlobals.aimsImageFormats,
+  'images', ListOf( ReadDiskItem( '2D Image', 'aims Image Formats',
                                   ignoreAttributes=1 ) ),
   'animation', WriteDiskItem( 'MPEG film', mpegConfig.mpegFormats ),
   'encoding', Choice( *codecs() ),
@@ -71,7 +72,7 @@ def execution( self, context ):
   if len( self.images ) == 0:
     raise RuntimeError( 'No image selected' )
   context.write( self.images[ 0 ] )
-  attrs = shfjGlobals.aimsVolumeAttributes( self.images[ 0 ], forceFormat=1 )
+  attrs = aimsGlobals.aimsVolumeAttributes( self.images[ 0 ], forceFormat=1 )
   context.write( attrs )
   width = attrs[ 'volume_dimension' ][ 0 ]
 
