@@ -31,7 +31,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-import shfjGlobals, neuroConfig
+from brainvisa.configuration import neuroConfig
 
 name = 'FSL to AIMS transformation converter'
 roles = ( 'converter', )
@@ -48,9 +48,9 @@ signature = Signature(
                         enableConversion = 0 ),
   'write', WriteDiskItem( 'Transformation matrix', 'Transformation matrix' ),
   'source_volume', ReadDiskItem( '4D Volume',
-                                 shfjGlobals.aimsVolumeFormats ),
-  'registered_volume', ReadDiskItem( '4D Volume',
-                                    shfjGlobals.aimsVolumeFormats ), 
+                                 'aims readable Volume Formats' ),
+  'registered_volume', ReadDiskItem('4D Volume',
+                                    'aims readable Volume Formats'),
   # 'removeSource', Boolean(),
 )
 
