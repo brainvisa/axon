@@ -30,15 +30,14 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from brainvisa.processes import *
-import shfjGlobals
 from brainvisa import anatomist
-import registration
+from brainvisa import registration
 
 name = 'ROI drawing'
 userLevel = 1
 
 signature = Signature(
-  'image', ReadDiskItem( '4D Volume', shfjGlobals.anatomistVolumeFormats ),
+  'image', ReadDiskItem( '4D Volume', 'anatomist Volume Formats' ),
   'ROI', WriteDiskItem( 'ROI', 'Graph and data' ),
 )
 

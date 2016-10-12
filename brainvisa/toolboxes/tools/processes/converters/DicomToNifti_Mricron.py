@@ -32,10 +32,9 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-import shfjGlobals
 from brainvisa import shelltools
 import glob
-import registration
+from brainvisa import registration
 
 name = 'Dicom to Nifti Converter Using MRICRON'
 roles = ('converter',)
