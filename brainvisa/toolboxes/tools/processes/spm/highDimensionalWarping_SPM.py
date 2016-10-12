@@ -54,7 +54,7 @@
 # on to the filename. Jacobian determinant images are also written (prefixed by ”jy ”).
 #------------------------------------------------------------------------------    
 
-from neuroProcesses import *
+from brainvisa.processes import *
 import brainvisa.tools.spm_run as spm
 from brainvisa.tools.spm_registration import writeHighDimensionalWarpingMatFile, initializeHDWParameters_withSPM8DefaultValues
 import shutil

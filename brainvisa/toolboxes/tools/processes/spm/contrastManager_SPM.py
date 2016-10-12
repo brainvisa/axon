@@ -41,7 +41,7 @@
 # Process allowing to create T contrasts for SPM8 from SPM.mat.
 #------------------------------------------------------------------------------
 
-from neuroProcesses import *
+from brainvisa.processes import *
 import brainvisa.tools.spm_run as spm
 from  brainvisa.tools.spm_basic_models import initialize_SPM8_default_contrastParameters, write_contrast_MatFile
 

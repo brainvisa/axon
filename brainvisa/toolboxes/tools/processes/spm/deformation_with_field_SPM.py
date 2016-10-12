@@ -47,7 +47,7 @@
 # images.
 #------------------------------------------------------------------------------        
 
-from neuroProcesses import *
+from brainvisa.processes import *
 import brainvisa.tools.spm_run as spm
 from brainvisa.tools.spm_registration import writeDeformationWithField, initializeDeformationWithField_withSPM8DefaultValues
 from brainvisa.tools.spm_utils import moveSpmOutFiles, movePath
