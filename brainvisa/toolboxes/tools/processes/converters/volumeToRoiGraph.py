@@ -31,7 +31,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-import shfjGlobals, registration
+from brainvisa import registration
 
 name = 'Volume To ROI Graph Converter'
 userLevel = 0
@@ -41,7 +41,7 @@ def validation():
   from soma import aims
 
 signature = Signature(
-  'read', ReadDiskItem( 'Label Volume', shfjGlobals.aimsVolumeFormats ),
+  'read', ReadDiskItem( 'Label Volume', 'aims readable Volume Formats' ),
   'write', WriteDiskItem( 'ROI Graph', 'Graph' ),
   'removeSource', Boolean(),
   )

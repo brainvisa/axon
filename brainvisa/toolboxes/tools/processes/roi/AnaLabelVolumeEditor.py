@@ -31,7 +31,6 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-import shfjGlobals
 from brainvisa import anatomist
 
 name = 'Label volume editor'
@@ -43,9 +42,9 @@ def validation():
 
 signature = Signature(
   'label_volume', WriteDiskItem( 'Label volume',
-                                 shfjGlobals.aimsVolumeFormats ),
+                                 'aims writable Volume Formats' ),
   'support_volume', ReadDiskItem( 'Raw T1 MRI',
-                                  shfjGlobals.anatomistVolumeFormats ),
+                                  'anatomist Volume Formats' ),
   'pipeline_mask_nomenclature', ReadDiskItem( 'Nomenclature', 'Hierarchy' ),
   'background_label', OpenChoice( 'minimum' ),
 )

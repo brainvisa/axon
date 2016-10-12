@@ -31,14 +31,13 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-import shfjGlobals
 
 name = 'Import SPMt for structural analysis'
 
 userLevel = 2
 
 signature = Signature(
-     'input', ReadDiskItem( 'SPMt map', shfjGlobals.aimsVolumeFormats ),
+     'input', ReadDiskItem( 'SPMt map', 'aims readable Volume Formats' ),
      'output', WriteDiskItem( 'SPMt map', 'Aims writable volume formats',
      exactType = 1,
      # Referential attribute must have the same value as subject attribute

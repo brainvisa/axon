@@ -33,15 +33,16 @@
 
 import os, sys
 USES_PYSIDE = False
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4 import QtCore
+from soma.qt_gui.qt_backend.QtCore import *
+from soma.qt_gui.qt_backend.QtGui import *
+from soma.qt_gui.qt_backend import QtCore
 # PyQt / PySide compatibility for signals/slots
 if hasattr( QtCore, 'pyqtSignal' ):
-  USES_PYSIDE = True
   QtCore.Signal = QtCore.pyqtSignal
   QtCore.Slot= QtCore.pyqtSlot
   QtCore.Property = QtCore.pyqtProperty
+else:
+  USES_PYSIDE = True
 
 
 # In BrainVISA, we try to use the latest version of PyQt. Unfortunately

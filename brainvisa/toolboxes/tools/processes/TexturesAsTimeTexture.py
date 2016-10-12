@@ -31,15 +31,14 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-import shfjGlobals
 
 name = 'Concatenate textures in one time-texture'
 
 userLevel = 2
 
 signature = Signature(
-      'input', ListOf( ReadDiskItem('Texture', 'Texture' )),
-      'output', WriteDiskItem('Texture', 'Texture')
+      'input', ListOf( ReadDiskItem('Texture', 'aims Texture formats' )),
+      'output', WriteDiskItem('Texture', 'aims Texture formats')
 )
 
 def execution( self, context ):

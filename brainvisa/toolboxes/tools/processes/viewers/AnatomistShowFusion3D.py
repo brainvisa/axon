@@ -31,7 +31,6 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-import shfjGlobals
 from brainvisa import anatomist
 
 name = 'Anatomist Show 3D Fusion'
@@ -42,8 +41,8 @@ def validation():
 
 signature = Signature(
   'functional_volume',
-  ReadDiskItem(  '4D Volume', shfjGlobals.anatomistVolumeFormats ),
-  'mesh', ReadDiskItem( "Mesh", shfjGlobals.anatomistMeshFormats ),
+  ReadDiskItem(  '4D Volume', 'anatomist Volume Formats' ),
+  'mesh', ReadDiskItem( "Mesh", 'anatomist Mesh Formats' ),
   'calculation_method', Choice( ( _t_( 'Point' ), 'point' ),
                                 ( _t_( 'Point shifted inside' ),
                                   'point_offset_internal' ),

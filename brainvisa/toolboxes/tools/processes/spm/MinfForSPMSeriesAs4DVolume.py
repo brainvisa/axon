@@ -30,7 +30,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from brainvisa.processes import *
-import shfjGlobals
+from brainvisa.tools import aimsGlobals
 import os.path
 
 name = 'Create minf for SPM Series as 4D Volume'
@@ -45,7 +45,7 @@ def initialization( self ):
   self.display_with_anatomist = False
 
 def execution( self, context ):
-  AimsFileInfo = shfjGlobals.aimsVolumeAttributes( self.SPM_files[0] )
+  AimsFileInfo = aimsGlobals.aimsVolumeAttributes( self.SPM_files[0] )
   self.SPM_files[0].updateMinf( AimsFileInfo )
 
   self.SPM_files[0].setMinf( 'series_filenames',

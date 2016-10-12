@@ -33,7 +33,6 @@
 
 import glob
 from brainvisa.processes import *
-import shfjGlobals
 import math, time, shutil
 from brainvisa import quaternion
 from brainvisa.configuration import mpegConfig
@@ -50,7 +49,7 @@ signature = Signature(
     'use_recorded_objects', Boolean(), 
     'keep_images', Boolean(),
     'images_basename', WriteDiskItem( '2D Image',
-                                      shfjGlobals.aimsImageFormats ),
+                                      'aims Image Formats' ),
     'animation', WriteDiskItem( 'MPEG film', mpegConfig.mpegFormats ),
     )
 

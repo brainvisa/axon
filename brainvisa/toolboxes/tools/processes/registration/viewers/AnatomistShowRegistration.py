@@ -31,8 +31,6 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-import shfjGlobals
-import string
 from brainvisa import anatomist
 
 name = 'Anatomist Show Registration'
@@ -41,8 +39,8 @@ userLevel = 0
 
 signature = Signature(
   'test_to_ref', ReadDiskItem( 'Transformation matrix', 'Transformation matrix' ), 
-  'image_reference', ReadDiskItem( '4D Volume', shfjGlobals.anatomistVolumeFormats ),
-  'image_test', ReadDiskItem( '4D Volume', shfjGlobals.anatomistVolumeFormats ),
+  'image_reference', ReadDiskItem( '4D Volume', 'anatomist Volume Formats' ),
+  'image_test', ReadDiskItem( '4D Volume', 'anatomist Volume Formats' ),
   #mettre un champ pour inverser la transfo ?
   )
   

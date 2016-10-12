@@ -34,13 +34,12 @@
 
 
 from brainvisa.processes import *
-import shfjGlobals
 
 name = 'Apply Transformation'
 userLevel = 1
 
 signature = Signature(
-  'image'   , ReadDiskItem( '4D Volume', shfjGlobals.aimsVolumeFormats ),
+  'image'   , ReadDiskItem( '4D Volume', 'aims readable Volume Formats' ),
   'transformation', ReadDiskItem('Transformation matrix', 'Transformation matrix'),
   'interpolation', Choice( ('nearest neighbor', 0),
                            ('linear', 1), 
@@ -50,8 +49,8 @@ signature = Signature(
                            ('quintic', 5), 
                            ('galactic', 6), 
                            ('intergalactic', 7) ),
-  'resampled_grid_geometry', ReadDiskItem( '4D Volume', shfjGlobals.aimsVolumeFormats ),
-  'resampled', WriteDiskItem( '4D Volume', shfjGlobals.aimsWriteVolumeFormats )
+  'resampled_grid_geometry', ReadDiskItem( '4D Volume', 'aims readable Volume Formats' ),
+  'resampled', WriteDiskItem( '4D Volume', 'aims Writable Volume Formats' )
   )
 
 

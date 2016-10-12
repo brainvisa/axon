@@ -31,7 +31,6 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-import shfjGlobals
 from brainvisa import anatomist
 
 name = 'Anatomist Extract Texture'
@@ -41,7 +40,7 @@ def validation():
     anatomist.validation()
 
 signature = Signature(
-    'output_texture', WriteDiskItem( 'Texture', 'Texture' ),
+    'output_texture', WriteDiskItem( 'Texture', 'anatomist Texture formats' ),
     'time', Float(), 
     )
 

@@ -31,7 +31,8 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-import shfjGlobals, registration
+from brainvisa import registration
+from brainvisa.tools import aimsGlobals
 from brainvisa import shelltools
 import numpy as np
 import sys
@@ -54,10 +55,10 @@ def validation():
 signature = Signature(
     'read', ReadDiskItem('Graph', 'Graph'),
     'write', WriteDiskItem('Label Volume',
-                           shfjGlobals.aimsWriteVolumeFormats ),
+                           'aims Writable Volume Formats' ),
     'preferedFormat', Choice(*([('<auto>', None)]
                               + map_list(lambda x: (x, getFormat(x)),
-                                         shfjGlobals.aimsVolumeFormats))),
+                                         aimsGlobals.aimsVolumeFormats))),
     'removeSource', Boolean(),
     'extract_volume', String(),
     'extract_contours', Choice('Yes', 'No')
@@ -68,7 +69,7 @@ def findAppropriateFormat(values, proc):
     if values.preferedFormat is None:
         result = WriteDiskItem(
             '4D Volume',
-            shfjGlobals.aimsVolumeFormats[0]).findValue(values.read)
+            aimsGlobals.aimsVolumeFormats[0]).findValue(values.read)
     else:
         result = WriteDiskItem(
             '4D Volume', values.preferedFormat).findValue(values.read)
