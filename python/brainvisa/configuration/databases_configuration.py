@@ -120,14 +120,21 @@ class ExpertDatabaseSettings( HasSignature ):
       'shared' ]
     moreOntologies = set()
 
-    from brainvisa.configuration import neuroConfig
+    try:
+      from brainvisa.configuration import neuroConfig
 
-    for path in neuroConfig.fileSystemOntologiesPath:
-      if os.path.exists( path ):
-        for ontology in os.listdir( path ):
-          if ontology == 'flat': continue
-          if ontology not in ontologies and ontology not in moreOntologies:
-            moreOntologies.add( ontology )
+      for path in neuroConfig.fileSystemOntologiesPath:
+        if os.path.exists( path ):
+          for ontology in os.listdir( path ):
+            if ontology == 'flat': continue
+            if ontology not in ontologies and ontology not in moreOntologies:
+              moreOntologies.add( ontology )
+    except ImportError:
+      # may happen at startup:
+      # neuroConfig is using DatabaseSettings and ExpertDatabaseSettings
+      # in its initialization, and here we cannot import neuroConfig which
+      # is currently initializing.
+      pass
     ontologies += sorted( moreOntologies )
     return ontologies
 
