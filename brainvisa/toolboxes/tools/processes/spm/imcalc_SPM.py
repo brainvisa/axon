@@ -47,7 +47,7 @@
 # etc.
 #------------------------------------------------------------------------------
 
-from neuroProcesses import *
+from brainvisa.processes import *
 import brainvisa.tools.spm_run as spm
 from brainvisa.tools.spm_utils import spm_today
 import brainvisa.tools.spm_utils as spmUtils

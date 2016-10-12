@@ -30,8 +30,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-from neuroProcesses import *
-import shfjGlobals
+from brainvisa.processes import *
 from brainvisa import anatomist
 
 name = 'Anatomist Fusion 3D/mesh'
@@ -42,8 +41,8 @@ def validation():
 
 signature = Signature(
     'volume',
-    ReadDiskItem(  '4D Volume', shfjGlobals.anatomistVolumeFormats ),
-    'mesh', ReadDiskItem( "Mesh", shfjGlobals.anatomistMeshFormats ),
+    ReadDiskItem(  '4D Volume', 'anatomist volume formats' ),
+    'mesh', ReadDiskItem( "Mesh", 'anatomist mesh formats' ),
     'output_texture', WriteDiskItem( 'Texture', 'Texture' ),
     'time', Float(), 
     )
