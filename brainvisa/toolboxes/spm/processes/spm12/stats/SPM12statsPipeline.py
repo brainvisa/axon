@@ -33,7 +33,7 @@
 
 from brainvisa.processes import *
 from soma.spm import csv_converter
-from neuroHierarchy import databases
+from brainvisa.data.neuroHierarchy import databases
 
 userLevel = 2
 name = "Stats pipeline (SPM12) (WIP...)"

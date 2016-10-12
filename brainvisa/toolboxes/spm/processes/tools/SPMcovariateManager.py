@@ -31,7 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from brainvisa.processes import *
-from neuroProcessesGUI import mainThreadActions
+from brainvisa.processing.qt4gui.neuroProcessesGUI import mainThreadActions
 from soma.spm import csv_converter
 
 userLevel = 0
@@ -73,14 +73,14 @@ def showInterface( self, context):
 #==============================================================================
 #==============================================================================
 
-from PyQt4.QtGui import QDialog
-from PyQt4.QtGui import QVBoxLayout, QHBoxLayout
-from PyQt4.QtGui import QTableWidget, QHeaderView, QTableWidgetItem
-from PyQt4.QtGui import QListWidget, QPushButton, QDialogButtonBox
-from PyQt4.QtGui import QApplication, QDesktopWidget, QAbstractItemView, QMessageBox
-from PyQt4.QtGui import QLabel, QLineEdit
-from PyQt4.QtGui import QFileDialog
-from PyQt4.QtCore import Qt
+from soma.qt_gui.qt_backend.QtGui import QDialog
+from soma.qt_gui.qt_backend.QtGui import QVBoxLayout, QHBoxLayout
+from soma.qt_gui.qt_backend.QtGui import QTableWidget, QHeaderView, QTableWidgetItem
+from soma.qt_gui.qt_backend.QtGui import QListWidget, QPushButton, QDialogButtonBox
+from soma.qt_gui.qt_backend.QtGui import QApplication, QDesktopWidget, QAbstractItemView, QMessageBox
+from soma.qt_gui.qt_backend.QtGui import QLabel, QLineEdit
+from soma.qt_gui.qt_backend.QtGui import QFileDialog
+from soma.qt_gui.qt_backend.QtCore import Qt
 
 from nuclearImaging.Interface_maker.GroupBoxCustom import GroupBoxCustom
 

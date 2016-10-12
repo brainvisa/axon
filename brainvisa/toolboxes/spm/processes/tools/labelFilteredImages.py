@@ -32,7 +32,7 @@
 ## knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-from neuroProcessesGUI import mainThreadActions
+from brainvisa.processing.qt4gui.neuroProcessesGUI import mainThreadActions
 from soma import aims
 import os
 
