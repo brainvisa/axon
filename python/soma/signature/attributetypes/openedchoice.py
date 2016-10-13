@@ -42,6 +42,11 @@ An L{OpenedChoice} accepts a set of predefined values and any unicode or string 
 __docformat__ = "epytext en"
 
 from soma.signature.attributetypes.choice import Choice
+import sys
+
+if sys.version_info[0] >= 3:
+    unicode = str
+    basestring = str
 
 #-------------------------------------------------------------------------------
 class OpenedChoice( Choice ):

@@ -41,10 +41,10 @@ import distutils, os, sys, re
 import types
 from brainvisa.processing.qtgui.backwardCompatibleQt import *
 from soma.qt4gui.designer import loadUi, loadUiType
-from PyQt4.QtGui import QKeySequence
-from PyQt4 import QtCore
-from PyQt4 import QtGui
-from PyQt4 import QtWebKit
+from soma.qt_gui.qt_backend.QtGui import QKeySequence
+from soma.qt_gui.qt_backend import QtCore
+from soma.qt_gui.qt_backend import QtGui
+from soma.qt_gui.qt_backend import QtWebKit
 from brainvisa.configuration import neuroConfig
 from brainvisa.configuration.qt4gui import neuroConfigGUI
 from brainvisa.processing.qt4gui import neuroLogGUI
@@ -89,8 +89,10 @@ except ImportError:
     # some six versions do not provide six.moves.urllib (Ubuntu 12.04)
     import urllib
 
-# Because soma_workflow uses PyQt4.uic, we need to first initialize
-# soma.qt_gui.qt_backend.uic in order to hack PyQt4.uic and fix issue #13432
+# Because soma_workflow uses soma.qt_gui.qt_backend.uic, we need to first 
+# initialize
+# soma.qt_gui.qt_backend.uic in order to hack soma.qt_gui.qt_backend.uic and 
+# fix issue #13432
 # ref: https://bioproj.extra.cea.fr/redmine/issues/13432
 import soma.qt_gui.qt_backend.uic
 
@@ -135,7 +137,7 @@ class _ProcDeleter(object):
         self.o.kill()
 
 def startShell():
-  from PyQt4.QtGui import qApp
+  from soma.qt_gui.qt_backend.QtGui import qApp
   os.environ["QT_API"] = "pyqt" # prevent ipython from trying to use PySide
   try:
     import IPython
@@ -1839,11 +1841,11 @@ class ParameterizedWidget( QWidget ):
     # use signals-slots to update the parameter label gui if the lock status of the matching value changes.
     # DiskItems now inherit from QObject and emit lockChanged signal when the lock changes
     if isinstance(oldValue, QObject):
-      self.disconnect(oldValue, SIGNAL("lockChanged"), self.labels[parameterName].setlock)
-      self.disconnect(oldValue, SIGNAL("lockChanged"), self.editors[parameterName].lockChanged)
-    if isinstance(value, QObject):
-      self.connect(value, SIGNAL("lockChanged"), self.labels[parameterName].setlock )
-      self.connect(value, SIGNAL("lockChanged"), self.editors[parameterName].lockChanged)
+      oldValue.lockChanged.disconnect(self.labels[parameterName].setlock)
+      oldValue.lockChanged.disconnect(self.editors[parameterName].lockChanged)
+    if isinstance(value, QObject) and hasattr(value, 'lockChanged'):
+      value.lockChanged.connect(self.labels[parameterName].setlock)
+      value.lockChanged.connect(self.editors[parameterName].lockChanged)
 
 
 #----------------------------------------------------------------------------

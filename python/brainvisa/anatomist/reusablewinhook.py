@@ -38,7 +38,7 @@ import six
 if neuroConfig.anatomistImplementation != 'socket':
 
   import anatomist.cpp as anacpp
-  from PyQt4 import QtGui, QtCore
+  from soma.qt_gui.qt_backend import QtGui, QtCore
   from soma.wip.application.api import findIconFile
   from soma import aims
   try:

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from PyQt4.QtGui import QDialog, QMessageBox, QIcon
-from PyQt4.QtGui import QVBoxLayout, QHBoxLayout, QFormLayout
-from PyQt4.QtGui import QLabel, QLineEdit, QPushButton, QPlainTextEdit
-from PyQt4.QtGui import QSplitter, QWidget, QTreeWidget, QTreeWidgetItem, QComboBox
-from PyQt4.QtCore import Qt
+from soma.qt_gui.qt_backend.QtGui import QDialog, QMessageBox, QIcon
+from soma.qt_gui.qt_backend.QtGui import QVBoxLayout, QHBoxLayout, QFormLayout
+from soma.qt_gui.qt_backend.QtGui import QLabel, QLineEdit, QPushButton, QPlainTextEdit
+from soma.qt_gui.qt_backend.QtGui import QSplitter, QWidget, QTreeWidget, QTreeWidgetItem, QComboBox
+from soma.qt_gui.qt_backend.QtCore import Qt
 from soma.minf.api import readMinf, createMinfWriter
 from brainvisa.processes import getProcessInstance
 from brainvisa.configuration import neuroConfig

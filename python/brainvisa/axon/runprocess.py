@@ -352,7 +352,7 @@ parser.disable_interspersed_args()
 
 #if options.enablegui:
     #neuroConfig.gui = True
-    #from PyQt4 import QtGui
+    #from soma.qt_gui.qt_backend import QtGui
     #qapp = QtGui.QApplication([])
 #else:
 neuroConfig.gui = False

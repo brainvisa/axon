@@ -34,8 +34,8 @@
 #import anatomist.threaded.api as ana
 
 from __future__ import print_function
-from PyQt4 import QtCore, Qt, QtGui
-from PyQt4.QtGui import QRadioButton, QPalette, QButtonGroup, QLabel, QFrame, QVBoxLayout, QColor
+from soma.qt_gui.qt_backend import QtCore, Qt, QtGui
+from soma.qt_gui.qt_backend.QtGui import QRadioButton, QPalette, QButtonGroup, QLabel, QFrame, QVBoxLayout, QColor
 from soma.qt_gui.qt_backend.uic import loadUi
 from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
 from brainvisa.tools.mainthreadlife import MainThreadLife

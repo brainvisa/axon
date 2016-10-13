@@ -39,7 +39,7 @@
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
 
-import PyQt4.Qt as qt
+import soma.qt_gui.qt_backend.Qt as qt
 from soma.qt4gui.api import ApplicationQt4GUI, Qt4GUI
 from soma.translation import translate as _
 from soma.wip.application.icons import findIconFile

@@ -36,7 +36,7 @@ from brainvisa.processing.qtgui.backwardCompatibleQt import *
 from brainvisa.processing.neuroException import HTMLMessage
 from brainvisa.configuration import neuroConfig
 from soma.qtgui.api import largeIconSize
-from PyQt4 import QtCore
+from soma.qt_gui.qt_backend import QtCore
 import decimal, sys
 
 buttonIconSize = QSize( *largeIconSize )

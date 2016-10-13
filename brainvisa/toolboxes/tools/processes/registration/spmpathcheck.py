@@ -52,7 +52,7 @@ def initialization( self ):
   pass
 
 def inlineGUI( self, values, pview, parent, externalRunButton=False ):
-  from PyQt4 import QtGui
+  from soma.qt_gui.qt_backend import QtGui
   from brainvisa.processing.qtgui import neuroProcessesGUI
   vb = QtGui.QWidget()
   lay = QtGui.QVBoxLayout( vb )

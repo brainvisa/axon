@@ -120,7 +120,7 @@ from brainvisa.data import temporary
 from brainvisa.data.patterns import DictPattern
 from brainvisa import shelltools
 from brainvisa.multipleExecfile import MultipleExecfile
-from PyQt4.QtCore import QObject, SIGNAL
+from soma.qt_gui.qt_backend.QtCore import QObject
 import re
 from six.moves import reduce
 
@@ -1206,7 +1206,7 @@ class DiskItem(QObject):
         #print("File to lock" + nameFileLock)
         fd = open(nameFileLock, 'a')
         fd.close()
-        self.emit(SIGNAL("lockChanged"), True)
+        selfl.ockChanged.emit(True)
         return(True)
     else : return(False)   
     
@@ -1221,7 +1221,7 @@ class DiskItem(QObject):
     nameFileLock = str(self.fileName())  + ".lock"
     if os.path.isfile( nameFileLock ) :
         fd = os.remove(nameFileLock)
-        self.emit(SIGNAL("lockChanged"), False)
+        self.lockChanged.emit(False)
 
   
   def getFileNameFromUuid( self, uuid):

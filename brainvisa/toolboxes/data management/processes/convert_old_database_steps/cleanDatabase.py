@@ -95,9 +95,6 @@ def showActions(dbCleaner):
   """
   actionsWidget=UnknownFilesWidget(dbCleaner)
   
-  if sys.modules.has_key( 'PyQt4' ):
-    result=actionsWidget.exec_()
-  else:
-    result=actionsWidget.exec_loop()
+  result = actionsWidget.exec_()
 
   return result # convert immediatly

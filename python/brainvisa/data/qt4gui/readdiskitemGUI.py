@@ -46,7 +46,7 @@ from brainvisa.data.neuroDiskItems import DiskItem, Directory
 from brainvisa.data.qt4gui import history as historygui
 from brainvisa.configuration import neuroConfig
 from brainvisa.processing.neuroException import showException, HTMLMessage
-from PyQt4 import QtCore
+from soma.qt_gui.qt_backend import QtCore
 import sys, os
 import six
 

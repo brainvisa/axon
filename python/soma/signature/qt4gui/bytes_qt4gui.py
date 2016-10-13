@@ -44,7 +44,7 @@ __docformat__ = "epytext en"
 
 from soma.translation import translate as _
 from soma.qt4gui.api import Qt4GUI, TimeredQLineEdit
-from PyQt4 import QtGui, QtCore
+from soma.qt_gui.qt_backend import QtGui, QtCore
 
 
 #-------------------------------------------------------------------------------

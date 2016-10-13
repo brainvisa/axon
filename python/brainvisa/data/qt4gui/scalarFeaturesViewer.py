@@ -43,7 +43,7 @@ from brainvisa.validation import ValidationError
 qwtAvailable=True
 try:
   try:
-    from PyQt4.Qwt5 import *
+    from soma.qt_gui.qt_backend.Qwt5 import *
   except Exception, e1:
     from qwt import *
 except Exception, e:
@@ -51,7 +51,7 @@ except Exception, e:
     
 def validation():
   if not qwtAvailable:
-    raise ValidationError('Cannot find PyQt4.Qwt5 or qwt module')
+    raise ValidationError('Cannot find soma.qt_gui.qt_backend.Qwt5 or qwt module')
 
 if qwtAvailable:
   class ScalarFeatureCurvesPlotter( QwtPlot ):

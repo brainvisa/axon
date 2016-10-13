@@ -32,8 +32,7 @@
 # knowledge of the CeCILL-B license and that you accept its terms.
 
 import os
-from PyQt4.QtGui import QWidget, QHBoxLayout, QLineEdit, QPushButton, QIcon, QFileDialog
-from PyQt4.QtCore import SIGNAL
+from soma.qt_gui.qt_backend.QtGui import QWidget, QHBoxLayout, QLineEdit, QPushButton, QIcon, QFileDialog
 from soma.signature.qt4gui.unicode_qt4gui import Unicode_Qt4GUI, \
                                                  Sequence_Unicode_Qt4GUI
 from soma.qt4gui.api import TimeredQLineEdit, getPixmap
@@ -67,7 +66,7 @@ class FileName_Qt4GUI( Unicode_Qt4GUI ):
     layout.addWidget(self._btnBrowse)
     self._btnBrowse.setIcon( QIcon(getPixmap( os.path.join( somaIconsDirectory, 
                                                         'browse_file.png' ) ) ) )
-    self._btnBrowse.connect( self._btnBrowse, SIGNAL( 'clicked()' ), self._browseClicked )
+    self._btnBrowse.clicked.connect( self._browseClicked )
     self._widget.setLayout(layout)
     return self._widget
   
