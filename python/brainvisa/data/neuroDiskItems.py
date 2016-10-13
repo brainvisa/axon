@@ -224,7 +224,7 @@ class DiskItem(QObject):
   """
   
   lockChanged = Signal(bool)
-
+  
   _minfLock=RLock()
   
   def __init__( self, name, parent ):
@@ -1208,11 +1208,11 @@ class DiskItem(QObject):
         #print("File to lock" + nameFileLock)
         fd = open(nameFileLock, 'a')
         fd.close()
-        selfl.ockChanged.emit(True)
+        self.lockChanged.emit(True)
         return(True)
-    else : return(False)   
-    
-    
+    else : return(False)
+
+
   def unlockData( self):
     """
     function to unlock file
