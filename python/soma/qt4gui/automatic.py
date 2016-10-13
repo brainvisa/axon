@@ -51,11 +51,15 @@ from soma.gui.base import ApplicationBaseGUI, GUI
 
 from soma.functiontools import partial
 import sys
+try:
+    import soma.aims.aimsguisip # force loading the right Qt
+except ImportError:
+    pass
 import soma.qt_gui.qt_backend
-from soma.qt_gui.qt_backend import QtGui, QtCore
-import sip
-
 soma.qt_gui.qt_backend.set_qt_backend(compatible_qt5=True)
+print('Qt backend:', soma.qt_gui.qt_backend.get_qt_backend())
+import sip
+from soma.qt_gui.qt_backend import QtGui, QtCore
 
 #-------------------------------------------------------------------------------
 class WidgetGeometryUpdater( object ):

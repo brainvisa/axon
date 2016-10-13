@@ -45,7 +45,7 @@ from brainvisa.data.neuroDiskItems import DiskItem, Directory
 from brainvisa.data.qt4gui import history as historygui
 from brainvisa.configuration import neuroConfig
 from brainvisa.processing.neuroException import showException, HTMLMessage
-from soma.qt_gui.qt_backend import QtCore
+from soma.qt_gui.qt_backend import QtCore, QtGui
 import sys, os
 import six
 
@@ -55,14 +55,21 @@ if sys.version_info[0] >= 3:
 
 #----------------------------------------------------------------------------
 class RightClickablePushButton( QPushButton ):
+  
+  rightPressed = QtCore.Signal(QtCore.QPoint)
+  
   def mousePressEvent( self, e ):
     if e.button() == Qt.RightButton:
-      self.emit( SIGNAL( 'rightPressed' ), self.mapToGlobal( e.pos() ) )
+      self.rightPressed.emit(self.mapToGlobal(e.pos()))
     else:
       QPushButton.mousePressEvent( self, e )
 
 #----------------------------------------------------------------------------
 class DiskItemEditor( QWidget, DataEditor ):
+
+  noDefault = QtCore.Signal(unicode)
+  newValidValue = QtCore.Signal(unicode, object)
+
   def __init__( self, parameter, parent, name, write = False, context = None ):
     if getattr( DiskItemEditor, 'pixShow', None ) is None:
       setattr( DiskItemEditor, 'pixShow', QIcon( findIconFile( 'eye.png' )) )
@@ -73,6 +80,7 @@ class DiskItemEditor( QWidget, DataEditor ):
       setattr( DiskItemEditor, 'pixBrowseWrite', QIcon( findIconFile( 'browse_write.png' )) )
       setattr( DiskItemEditor, 'pixHistory', QIcon( findIconFile( 'history.png' )) )
     QWidget.__init__( self, parent )
+    DataEditor.__init__(self)
     if name:
       self.setObjectName(name)
     hLayout=QHBoxLayout()
@@ -87,8 +95,8 @@ class DiskItemEditor( QWidget, DataEditor ):
     self.parameter =  parameter
     self.led = QLineEdit( )
     hLayout.addWidget(self.led)
-    self.connect( self.led, SIGNAL( 'textChanged( const QString & )' ), self.textChanged )
-    self.connect( self.led, SIGNAL( 'returnPressed()' ), self.checkValue )
+    self.led.textChanged.connect(self.textChanged)
+    self.led.returnPressed.connect(self.checkValue)
     self.setFocusProxy( self.led )
     self.diskItem = None
     self.forceDefault = False
@@ -108,8 +116,8 @@ class DiskItemEditor( QWidget, DataEditor ):
     if not brainvisa.processes.getViewer( (self.parameter.type, format ), 1, checkUpdate=False ):
       self.btnShow.hide()
     self._view = None
-    self.connect( self.btnShow, SIGNAL( 'clicked()' ), self.showPressed )
-    self.connect( self.btnShow, SIGNAL( 'rightPressed' ), self.openViewerPressed )
+    self.btnShow.clicked.connect(self.showPressed)
+    self.btnShow.rightPressed.connect(self.openViewerPressed)
     self._edit = None
     self.btnEdit = RightClickablePushButton( )
     hLayout.addWidget(self.btnEdit)
@@ -121,9 +129,8 @@ class DiskItemEditor( QWidget, DataEditor ):
     self.btnEdit.setEnabled( 0 )
     if not brainvisa.processes.getDataEditor( (self.parameter.type, self.parameter.formats ), checkUpdate=False ):
       self.btnEdit.hide()
-    self.connect( self.btnEdit, SIGNAL( 'clicked()' ), self.editPressed )
-    self.connect( self.btnEdit, SIGNAL( 'rightPressed' ),
-                  self.openEditorPressed )
+    self.btnEdit.clicked.connect(self.editPressed)
+    self.btnEdit.rightPressed.connect(self.openEditorPressed)
     self.btnDatabase = QPushButton( )
     hLayout.addWidget(self.btnDatabase)
     if write:
@@ -145,7 +152,7 @@ class DiskItemEditor( QWidget, DataEditor ):
       x = parameter.databaseUserLevel
       if x > neuroConfig.userLevel:
         self.btnDatabase.hide()
-    self.connect( self.btnDatabase, SIGNAL( 'clicked()' ), self.databasePressed )
+    self.btnDatabase.clicked.connect(self.databasePressed)
     self.databaseDialog = None
     self.btnBrowse = QPushButton( )
     hLayout.addWidget(self.btnBrowse)
@@ -163,7 +170,7 @@ class DiskItemEditor( QWidget, DataEditor ):
       x = parameter.browseUserLevel
       if x > neuroConfig.userLevel:
         self.btnBrowse.hide()
-    self.connect( self.btnBrowse, SIGNAL( 'clicked()' ), self.browsePressed )
+    self.btnBrowse.clicked.connect(self.browsePressed)
     self.browseDialog = None
     self._textChanged = False
 
@@ -210,11 +217,11 @@ class DiskItemEditor( QWidget, DataEditor ):
         if value is None: self.led.setText( '' )
         if self.btnShow: self.btnShow.setEnabled( 0 )
         if self.btnEdit: self.btnEdit.setEnabled( 0 )
-        self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.diskItem )
+        self.newValidValue.emit(unicode(self.objectName()), self.diskItem)
       else:
         self.led.setText( self.diskItem.fullPath() )
         self.checkReadable()
-        self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.diskItem )
+        self.newValidValue.emit(unicode(self.objectName()), self.diskItem)
     self._textChanged = 0
     self.forceDefault = 0
     self.valuePropertiesChanged( default )
@@ -263,7 +270,7 @@ class DiskItemEditor( QWidget, DataEditor ):
   def textChanged( self ):
     self._textChanged = 1
     if not self.forceDefault:
-      self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
+      self.noDefault.emit(unicode(self.objectName()))
 
   def checkValue( self ):
     if self._textChanged:
@@ -378,7 +385,7 @@ class DiskItemEditor( QWidget, DataEditor ):
       else: # if there is no value, we could have some selected attributes from a linked value, use it to initialize the browser
         self.databaseDialog = DiskItemBrowser( self.parameter.database, selection=self.parameter._selectedAttributes, required=self.parameter.requiredAttributes, parent=self, write = self._write, enableConversion=self.parameter.enableConversion, exactType=self.parameter.exactType )
       self.databaseDialog.setWindowTitle( _t_( self.parameter.type.name ) )
-      self.connect( self.databaseDialog, SIGNAL( 'accepted()' ), self.databaseAccepted )
+      self.databaseDialog.accepted.connect(self.databaseAccepted)
     else:
       self.databaseDialog.resetSelectedAttributes( self.diskItem, self.parameter._selectedAttributes )
     self.databaseDialog.show()
@@ -424,7 +431,7 @@ class DiskItemEditor( QWidget, DataEditor ):
       self.browseDialog.setFilters( filters )
       if self.customFileDialog and self.customFileDialog.customFilter != "":
           self.browseDialog.selectFilter( self.customFileDialog.customFilter )
-      self.connect( self.browseDialog, SIGNAL( 'accepted()' ), self.browseAccepted )
+      self.browseDialog.accepted.connect(self.browseAccepted)
     # set current directory
     parent = self._context
     if hasattr( parent, '_currentDirectory' ) and parent._currentDirectory:
@@ -452,7 +459,10 @@ class DiskItemEditor( QWidget, DataEditor ):
 
 #----------------------------------------------------------------------------
 class DiskItemListEditor( QWidget, DataEditor ):
-  
+
+  noDefault = QtCore.Signal(unicode)
+  newValidValue = QtCore.Signal(unicode, object)
+
   class DiskItemListSelect( QWidget ): # Ex QSemiModal
 
 
@@ -492,8 +502,8 @@ class DiskItemListEditor( QWidget, DataEditor ):
       
       self.lbxValues = QListWidget( )
       self.lbxValues.setSelectionMode(QListWidget.ExtendedSelection)
-      #self.connect( self.lbxValues, SIGNAL('currentRowChanged( int )'), self._currentChanged )
-      self.connect( self.lbxValues, SIGNAL('itemSelectionChanged()'), self._selectionChanged )
+      #self.lbxValues.currentRowChanged.connect(self._currentChanged)
+      self.lbxValues.itemSelectionChanged.connect(self._selectionChanged)
       layout.addWidget( self.lbxValues )
 
       self.textLine = QLabel()
@@ -504,19 +514,19 @@ class DiskItemListEditor( QWidget, DataEditor ):
       
       self.btnAdd = QPushButton( _t_( 'Add' ) )
       self.btnAdd.setEnabled( 0 )
-      self.connect( self.btnAdd, SIGNAL( 'clicked()' ), self._add )
+      self.btnAdd.clicked.connect(self._add)
       hb.addWidget( self.btnAdd )
 
       self.btnRemove = QPushButton( _t_( 'Remove' ) )
       self.btnRemove.setEnabled( 0 )
-      self.connect( self.btnRemove, SIGNAL( 'clicked()' ), self._remove )
+      self.btnRemove.clicked.connect(self._remove)
       hb.addWidget( self.btnRemove )
       
       self.btnUp = QPushButton( )
       self.btnUp.setIcon( self.pixUp )
       self.btnUp.setIconSize(buttonIconSize)
       self.btnUp.setEnabled( 0 )
-      self.connect( self.btnUp, SIGNAL( 'clicked()' ), self._up )
+      self.btnUp.clicked.connect(self._up)
       hb.addWidget( self.btnUp )
 
       self.btnDown = QPushButton( )
@@ -1104,8 +1114,9 @@ class DiskItemListEditor( QWidget, DataEditor ):
 
   def _newValue( self, v ):
     self._setValue( v )
-    self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), v )
-    if not self.forceDefault: self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
+    self.newValidValue.emit(unicode(self.objectName()), v)
+    if not self.forceDefault:
+      self.noDefault.emit(unicode(self.objectName()))
 
   def checkValue( self ):
     self.sle.checkValue()

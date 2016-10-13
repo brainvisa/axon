@@ -479,7 +479,7 @@ class SomaWorkflowProcessView(QMainWindow):
     self.workflow_id = workflow_id
     self.resource_id = resource_id
 
-    self.connect(self.model, QtCore.SIGNAL('current_workflow_changed()'),  self.current_workflow_changed)
+    self.model.current_workflow_changed.connect(self.current_workflow_changed)
 
     self.setCorner(QtCore.Qt.TopLeftCorner, QtCore.Qt.LeftDockWidgetArea)
     self.setCorner(QtCore.Qt.TopRightCorner, QtCore.Qt.RightDockWidgetArea)
@@ -578,9 +578,11 @@ class SomaWorkflowProcessView(QMainWindow):
     plot_layout.addWidget(self.workflow_plot_view)
     self.ui.dock_plot_contents.setLayout(plot_layout)
 
-    self.connect(self.workflow_tree_view, QtCore.SIGNAL('selection_model_changed(QItemSelectionModel)'), self.workflow_item_view.setSelectionModel)
+    self.workflow_tree_view.selection_model_changed.connect( 
+      self.workflow_item_view.setSelectionModel)
 
-    self.connect(self.workflow_item_view, QtCore.SIGNAL('connection_closed_error'), _mainWindow.sw_widget.reconnectAfterConnectionClosed)
+    self.workflow_item_view.connection_closed_error.connect( 
+      _mainWindow.sw_widget.reconnectAfterConnectionClosed)
 
 
     self.workflow_tree_view.current_workflow_changed()
@@ -818,7 +820,7 @@ class AboutWidget( QWidget ):
       layout.addWidget(self.btnClose)
       self.btnClose.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
       self.btnClose.setFocus()
-      QObject.connect( self.btnClose, SIGNAL( 'clicked()' ), self, SLOT( 'close()' ) )
+      self.btnClose.clicked.connect(self.close)
 
 def aboutRequest():
   global _aboutWidget
@@ -888,18 +890,14 @@ class HTMLBrowser( QWidget ):
       #self.mimeSourceFactory().setExtensionType("py", "text/plain")
       self.openWebAction = QAction( _t_( 'Open in a web browser' ), self )
       self.openWebAction.setShortcut( Qt.CTRL + Qt.Key_W )
-      self.connect( self.openWebAction, SIGNAL( 'triggered(bool)' ),
-        self.openWeb )
+      self.openWebAction.triggered.connect(self.openWeb)
       self.openLinkWebAction = QAction(_t_('Open link in a web browser'), self)
-      self.connect(self.openLinkWebAction, SIGNAL('triggered(bool)'),
-        self.openLinkWeb)
+      self.openLinkWebAction.triggered.connect(self.openLinkWeb)
       self.openLinkInTextEditorAction = QAction(
         _t_('Open link in a text editor'), self)
-      self.connect(self.openLinkInTextEditorAction, SIGNAL('triggered(bool)'),
-                   self.openSourceLink)
+      self.openLinkInTextEditorAction.triggered.connect(self.openSourceLink)
       self.copyLinkAction = QAction(_t_('Copy link URL'), self)
-      self.connect(self.copyLinkAction, SIGNAL('triggered(bool)'),
-                   self.copyLinkUrl)
+      self.copyLinkAction.triggered.connect(self.copyLinkUrl)
       self.linkUrl = None
 
     def setSource( self, url ):
@@ -1016,7 +1014,7 @@ class HTMLBrowser( QWidget ):
     browser.setSizePolicy( QSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding ) )
     vbox.addWidget( browser )
 
-    self.connect( self.homeAction, SIGNAL('triggered(bool)'), self.home )
+    self.homeAction.triggered.connect(self.home)
 
     btnHome.setDefaultAction( self.homeAction )
     btnForward.setDefaultAction( browser.pageAction( QtWebKit.QWebPage.Forward ) )
@@ -1024,8 +1022,7 @@ class HTMLBrowser( QWidget ):
     a = browser.pageAction( QtWebKit.QWebPage.Reload )
     a.setShortcut( QtGui.QKeySequence.Refresh )
     btnReload.setDefaultAction( a )
-    self.connect( browser, SIGNAL('linkClicked(const QUrl &)' ),
-      browser.setSource )
+    browser.linkClicked.connect(browser.setSource)
 
     self.browser = browser
 
@@ -1034,8 +1031,7 @@ class HTMLBrowser( QWidget ):
     hbox.addWidget( QLabel( _t_( 'Search site:' ) ) )
     self._siteSearch = QLineEdit()
     hbox.addWidget( self._siteSearch )
-    self.connect( self._siteSearch, SIGNAL( 'returnPressed()' ),
-      self.siteSearch )
+    self._siteSearch.returnPressed.connect(self.siteSearch)
 
   def setSource( self, source ):
     if not isinstance( source, QUrl ):
@@ -1113,10 +1109,10 @@ Download it on <a href="http://brainvisa.info/downloadpage.html">the BrainVISA d
 class NamedPushButton( QPushButton ):
   def __init__( self, parent, name ):
     QPushButton.__init__( self, parent, name )
-    self.connect( self, SIGNAL( 'clicked()' ), self._pyClicked )
+    self.clicked.connect(self._pyClicked)
 
   def _pyClicked( self ):
-    self.emit( SIGNAL( 'clicked' ), unicode( self.name()) )
+    self.clicked.emit(unicode( self.name()))
 
 
 #----------------------------------------------------------------------------
@@ -1312,8 +1308,8 @@ class NodeCheckListItem( QTreeWidgetItem ):
         self.parent().buttonGroup=buttonGroup
       self.widget=RadioItem(text, buttonGroup)
       self.treeWidget().setItemWidget(self, 0, self.widget)
-      QWidget.connect(self.widget.radio, SIGNAL("clicked(bool)"), self.radioClicked)
-      QWidget.connect(self.widget.radio, SIGNAL("toggled(bool)"), self.radioToggled)
+      self.widget.radio.clicked.connect(self.radioClicked)
+      self.widget.radio.toggled.connect(self.radioToggled)
     else:# not a radio button or read only, show text directly in the qtreeWidgetItem
       if text:
         self.setText(0, text)
@@ -1400,6 +1396,10 @@ class NodeCheckListItem( QTreeWidgetItem ):
 class ParameterLabel( QLabel ):
   '''A QLabel that emits PYSIGNAL( 'contextMenuEvent' ) whenever a
   contextMenuEvent occurs'''
+  
+  toggleDefault = QtCore.Signal(str)
+  lock_system = QtCore.Signal(str)
+  unlock_system = QtCore.Signal(str)
 
   def __init__( self, parameterName, mandatory, parent ):
     if mandatory:
@@ -1468,11 +1468,11 @@ class ParameterLabel( QLabel ):
 
 
     if checked:
-      self.emit( SIGNAL( 'lock_system' ), self.parameterName )
+      self.lock_system.emit(self.parameterName)
       #warning the value of lock_id can be become false if we can't write the lock file.
       #For example, if you try to lock a file which doesn't exist
     else:
-      self.emit( SIGNAL( 'unlock_system' ), self.parameterName )
+      self.unlock_system.emit(self.parameterName)
       #txt = self.paramLabelText(self.default_id.isChecked(), False)
 
     self.setlock(self.lock_id.isChecked()) #on remet a jour en fonction du resultat du unlock du fichier
@@ -1503,7 +1503,7 @@ class ParameterLabel( QLabel ):
 
   def defaultChanged( self, checked=False ):
     # print("-- FUNCTION defaultChanged : neuroProcessesGUI / ParameterLabel --", checked)
-    self.emit( SIGNAL( 'toggleDefault' ), self.parameterName )
+    self.toggleDefault.emit(self.parameterName)
 
     txt = self.paramLabelText(self.default_id.isChecked(), self.lock_id.isChecked())
 
@@ -1536,7 +1536,7 @@ class ParameterLabel( QLabel ):
 
   #def defaultChanged( self, checked=False ):
     ##self.default_id.toggle()
-    #self.emit( SIGNAL( 'toggleDefault' ), self.parameterName )
+    #self.toggleDefault.emit(self.parameterName)
     #if self.default_id.isChecked():
       #txt = unicode( self.text() )
       #if txt.startswith( '<img src=' ):
@@ -1573,7 +1573,7 @@ class ParameterizedWidget( QWidget ):
 #lock#      setattr( ParameterizedWidget, 'pixCustom', QPixmap( os.path.join( neuroConfig.iconPath, 'unlock.png' ) ) )
 
     QWidget.__init__( self, parent )
-    self.connect( self, SIGNAL( 'destroyed()' ), self.cleanup )
+    self.destroyed.connect(self.cleanup)
 
     layout = QVBoxLayout( )
     layout.setContentsMargins( 0, 0, 0, 0 )
@@ -1654,14 +1654,14 @@ class ParameterizedWidget( QWidget ):
         if neuroConfig.userLevel >= p.userLevel:
           l = ParameterLabel( k, p.mandatory, None )
           l.setDefault(self.parameterized.isDefault( k ))
-          self.connect( l, SIGNAL( 'toggleDefault' ), self._toggleDefault )
+          l.toggleDefault.connect(self._toggleDefault)
   
           if isinstance( p, ReadDiskItem ):
               l.lock_id.setCheckable(True)
               l.setlock(self._setlock_system(k)) #ini la valeur de lock du parametre
-              #self.connect( l, SIGNAL( 'setlock_system' ), self._setlock_system )
-              self.connect( l, SIGNAL( 'lock_system' ), self._lock_system )
-              self.connect( l, SIGNAL( 'unlock_system' ), self._unlock_system )
+              #l.setlock_system.connect(self._setlock_system)
+              l.lock_system.connect(self._lock_system)
+              l.unlock_system.connect(self._unlock_system)
   
           l.setSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed )
           self.labels[ k ] = l
@@ -1680,14 +1680,14 @@ class ParameterizedWidget( QWidget ):
           if v is not None:
             self.setValue( k, v, 1 )
           e.valuePropertiesChanged( self.parameterized.isDefault( k ) )
-          e.connect( e, SIGNAL('noDefault'), self.removeDefault )
-          e.connect( e, SIGNAL('newValidValue'), self.updateParameterValue )
+          e.noDefault.connect(self.removeDefault)
+          e.newValidValue.connect(self.updateParameterValue)
   #lock#        btn = NamedPushButton( hb, k )
   #lock#        btn.setPixmap( self.pixCustom )
   #lock#        btn.setFocusPolicy( QWidget.NoFocus )
   #lock#        btn.setToggleButton( 1 )
   #lock#        btn.hide()
-  #lock#        self.connect( btn, PYSIGNAL( 'clicked' ), self._toggleDefault )
+  #lock#        btn.clicked.connect(self._toggleDefault)
   #lock#        self.btnLock[ k ] = btn
           if documentation is not None:
             self.setParameterToolTip( k,
@@ -1843,7 +1843,7 @@ class ParameterizedWidget( QWidget ):
     self.editors[ parameterName ].setValue( value, default = default )
     # use signals-slots to update the parameter label gui if the lock status of the matching value changes.
     # DiskItems now inherit from QObject and emit lockChanged signal when the lock changes
-    if isinstance(oldValue, QObject):
+    if isinstance(oldValue, QObject) and hasattr(value, 'lockChanged'):
       try:
         oldValue.lockChanged.disconnect(self.labels[parameterName].setlock)
       except:
@@ -2041,7 +2041,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         self.action_create_workflow.setEnabled(False)
       centralWidgetLayout.addWidget(self.menu)
 
-    self.connect( self, SIGNAL( 'destroyed()' ), self.cleanup )
+    self.destroyed.connect(self.cleanup)
 
     process = brainvisa.processes.getProcessInstance( processId )
     if process is None:
@@ -2194,7 +2194,8 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         = _addAction( self.executionTreeMenu, _t_("Remove node"),
                                             self.menuRemoveExecutionNode )
 
-      self.connect(self.executionTree, SIGNAL( 'customContextMenuRequested ( const QPoint & )'), self.openContextMenu)
+      self.executionTree.customContextMenuRequested.connect(
+        self.openContextMenu)
       #self.executionTree.setSortingEnabled( -1 )
       #self.eTreeWidget.setResizeMode( self.executionTree, QSplitter.KeepSize )
 
@@ -2212,22 +2213,14 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
       self._guiId = 0
       self._executionNodeExpanded( self.executionTree, ( eNode, (eNode,) ) )
-      self.connect( self.executionTree,
-                    SIGNAL( 'itemExpanded( QTreeWidgetItem * )' ),
-                    self._executionNodeExpanded )
+      self.executionTree.itemExpanded.connect(self._executionNodeExpanded)
 
-      self.connect( self.executionTree,
-                    SIGNAL( 'currentItemChanged( QTreeWidgetItem *, QTreeWidgetItem * )' ),
-                    self.executionNodeSelected )
+      self.executionTree.currentItemChanged.connect(self.executionNodeSelected)
       # don't listen to clicks, but to item changes instead
-      # because stats check can be triggereg via the keyboard, not only
+      # because stats check can be triggered via the keyboard, not only
       # mouse clicks
-      #self.connect( self.executionTree,
-                    #SIGNAL( 'itemClicked( QTreeWidgetItem *, int )' ),
-                    #self.executionNodeClicked )
-      self.connect( self.executionTree,
-                    SIGNAL( 'itemChanged( QTreeWidgetItem *, int )' ),
-                    self.executionNodeChanged )
+      #self.executionTree.itemClicked.connect(self.executionNodeClicked)
+      self.executionTree.itemChanged.connect(self.executionNodeChanged)
 
       # Select and open the first item
       item = self.executionTree.topLevelItem(0)
@@ -3173,8 +3166,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
   def _iterateButton( self ):
     self.readUserValues()
     self._iterationDialog = IterationDialog( self, self.process, self )
-    self.connect( self._iterationDialog, SIGNAL( 'accept' ),
-                  self._iterateAccept )
+    self._iterationDialog.accepted.connect(self._iterateAccept)
     self._iterationDialog.show()
 
   def _iterateAccept( self ):
@@ -3310,11 +3302,11 @@ class IterationDialog( QDialog ):
     btn = QPushButton( _t_('Ok') )
     hb.addWidget(btn)
     btn.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-    self.connect( btn, SIGNAL( 'clicked()' ), self, SLOT( 'accept()' ) )
+    btn.clicked.connect(self.accept)
     btn = QPushButton( _t_('Cancel') )
     hb.addWidget(btn)
     btn.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-    self.connect( btn, SIGNAL( 'clicked()' ), self, SLOT( 'reject()' ) )
+    btn.clicked.connect(self.reject)
 
   def getLists( self ):
     result = {}
@@ -3323,9 +3315,8 @@ class IterationDialog( QDialog ):
     return result
 
   def accept( self ):
-    QDialog.accept( self )
     self.parameterizedWidget.readUserValues()
-    self.emit( SIGNAL( 'accept' ) )
+    QDialog.accept( self )
 
 #----------------------------------------------------------------------------
 
@@ -3401,9 +3392,9 @@ class UserDialog( QDialog ):
       group1Widget.close( )
     else:
       group1Widget.setSizePolicy( QSizePolicy( QSizePolicy.Minimum, QSizePolicy.Fixed ) )
-      self.connect( self.group1, SIGNAL( 'buttonClicked(int)' ), self._doAction )
+      self.group1.buttonClicked.connect(self._doAction)
     group2Widget.setSizePolicy( QSizePolicy( QSizePolicy.Minimum, QSizePolicy.Fixed ) )
-    self.connect( self.group2, SIGNAL( 'buttonClicked(int)' ), self.select )
+    self.group2.buttonClicked.connect(self.select)
 
   def select( self, value ):
     for e in self.editors.values():
@@ -3471,7 +3462,7 @@ class ProcessEdit( QDialog ):
       self.cmbLanguage.addItem( i )
       if i == neuroConfig.language:
         self.cmbLanguage.setCurrentIndex( self.cmbLanguage.count() - 1 )
-    self.connect( self.cmbLanguage, SIGNAL( 'activated(int)' ), self.changeLanguage )
+    self.cmbLanguage.activated.connect(self.changeLanguage)
 
     l=QLabel( _t_('Short description') + ':' )
     vb.addWidget(l)
@@ -3500,7 +3491,7 @@ class ProcessEdit( QDialog ):
       stack.addWidget( mle )
       self.mleParameters[ self.cmbParameter.count() ] = mle
       self.cmbParameter.addItem( n )
-      self.connect( self.cmbParameter, SIGNAL( 'activated(int)' ), stack, SLOT( 'setCurrentIndex(int)' ) )
+      self.cmbParameter.activated.connect(stack.setCurrentIndex)
     stack.setCurrentIndex( 0 )
 
     w=QWidget(spl)
@@ -3524,17 +3515,17 @@ class ProcessEdit( QDialog ):
     btn = QPushButton( _t_('apply') )
     hb.addWidget(btn)
     btn.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-    self.connect( btn, SIGNAL( 'clicked()' ), self.applyChanges )
+    btn.clicked.connect(self.applyChanges)
 
     btn = QPushButton( _t_('Ok') )
     hb.addWidget(btn)
     btn.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-    self.connect( btn, SIGNAL( 'clicked()' ), self, SLOT( 'accept()' ) )
+    btn.clicked.connect(self.accept)
 
     btn = QPushButton( _t_('Cancel') )
     hb.addWidget(btn)
     btn.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-    self.connect( btn, SIGNAL( 'clicked()' ), self, SLOT( 'reject()' ) )
+    btn.clicked.connect(self.reject)
 
     self.resize( 800, 600 )
 
@@ -3680,11 +3671,11 @@ class ProcessSelectionWidget( QMainWindow ):
     self.processTrees=ProcessTreesWidget()
     self.processTrees.setSizePolicy( QSizePolicy( QSizePolicy.Preferred,
       QSizePolicy.Preferred ) )
-    QObject.connect(self.processTrees, SIGNAL('selectionChanged'), self.itemSelected )
-    QObject.connect(self.processTrees, SIGNAL('doubleClicked'), self.openProcess )
-    QObject.connect(self.processTrees, SIGNAL('openProcess'), self.openProcess )
-    QObject.connect(self.processTrees, SIGNAL('editProcess'), self.editProcess )
-    QObject.connect(self.processTrees, SIGNAL('iterateProcess'), self.iterateProcess )
+    self.processTrees.selectionChanged.connect(self.itemSelected)
+    self.processTrees.doubleClicked.connect(self.openProcess)
+    self.processTrees.openProcess.connect(self.openProcess)
+    self.processTrees.editProcess.connect(self.editProcess)
+    self.processTrees.iterateProcess.connect(self.iterateProcess)
     # the hacked search box
     p = os.path.join( os.path.dirname( __file__ ), 'searchbox.ui' )
     self.searchbox = QWidget() # for PySide/PyQt compat
@@ -3694,8 +3685,8 @@ class ProcessSelectionWidget( QMainWindow ):
     self.searchboxResetSearchB = self.searchbox.BV_resetsearch
     self.searchboxLineEdit = self.searchbox.BV_searchlineedit
     self._continueSearching = 0
-    QObject.connect(self.searchboxSearchB, SIGNAL('clicked()'), self.buttonSearch)
-    QObject.connect(self.searchboxResetSearchB, SIGNAL('clicked()'), self.resetSearch )
+    self.searchboxSearchB.clicked.connect(self.buttonSearch)
+    self.searchboxResetSearchB.clicked.connect(self.resetSearch)
 
 
     vb.addWidget(self.processTrees)
@@ -3842,8 +3833,7 @@ class ProcessSelectionWidget( QMainWindow ):
     self.currentProcess=brainvisa.processes.getProcessInstance(processId)
     #print("iterate process", processId)
     self._iterationDialog = IterationDialog( self, self.currentProcess, self )
-    self.connect( self._iterationDialog, SIGNAL( 'accept' ),
-                  self._iterateAccept )
+    self._iterationDialog.accepted.connect(self._iterateAccept)
     self._iterationDialog.show()
 
   def _iterateAccept( self ):
@@ -3921,6 +3911,12 @@ class ProcessTreesWidget(QSplitter):
 
     QTimer started when the model has changed. When the timer times out, the model is saved. Used to delay model saves : it speeds up execution when there is several modification at the same time (drag&drop several elements).
   """
+  
+  selectionChanged = QtCore.Signal(soma.notification.EditableTree.Item)
+  doubleClicked = QtCore.Signal(soma.notification.EditableTree.Item)
+  openProcess = QtCore.Signal(soma.notification.EditableTree.Item)
+  editProcess = QtCore.Signal(soma.notification.EditableTree.Item)
+  iterateProcess = QtCore.Signal(soma.notification.EditableTree.Item)
 
   def __init__(self, processTrees=None, parent=None ):
     """
@@ -3931,10 +3927,10 @@ class ProcessTreesWidget(QSplitter):
     self.treeIndex=TreeListWidget(None, self, iconSize=bigIconSize)
     self.treeIndex.setSizePolicy( QSizePolicy( QSizePolicy.Preferred, QSizePolicy.Preferred ) )
     # signals
-    self.connect(self.treeIndex, SIGNAL( 'currentItemChanged ( QTreeWidgetItem *, QTreeWidgetItem * )' ), self.setCurrentTree)
+    self.treeIndex.currentItemChanged.connect(self.setCurrentTree)
     # on clicking on a tree, emit a pysignal for transmitting the signal to the parent. The shown documentation may need to be changed. (clicked instead of selectionChanged because the documentation may need to be changed event if the item was already selected)
-    self.connect(self.treeIndex, SIGNAL( 'itemClicked( QTreeWidgetItem *, int )' ), self.selectionChanged)
-    self.connect(self.treeIndex, SIGNAL( 'customContextMenuRequested ( const QPoint & )'), self.openContextMenu)
+    self.treeIndex.itemClicked.connect(self.selectionChanged_slot)
+    self.treeIndex.customContextMenuRequested.connect(self.openContextMenu)
     # help tooltip
     self.treeIndex.setToolTip(_t_("Create your own lists of processes choosing new in contextual menu.<br>To add items in a list, open an existing list and move items in the new list.<br>If you set a list as default, it will selected the next time you run brainvisa.") )
 
@@ -4005,7 +4001,7 @@ class ProcessTreesWidget(QSplitter):
     # Create a timer to delay model saves in minf file : it speeds up execution when there is several modification at the same time (drag&drop several elements)
     self.savesTimer=QTimer()
     self.savesTimer.setSingleShot(True)
-    self.connect(self.savesTimer, SIGNAL("timeout()"), self.model.save)
+    self.savesTimer.timeout.connect(self.model.save)
 
 
   def addProcessTree(self, processTree):
@@ -4021,9 +4017,10 @@ class ProcessTreesWidget(QSplitter):
     # selectionChanged doesn't work with multiple selection
     # currentChanged isn't emited when click on an item that has already keyboeard focus and is not emited when click on an already selected item altought it may be necessary to update documentation because several items can be selected at the same time
     # -> so use clicked signal instead
-    self.connect(treeWidget, SIGNAL( 'itemClicked( QTreeWidgetItem *, int )' ), self.selectionChanged)
-    self.connect(treeWidget, SIGNAL( 'itemDoubleClicked( QTreeWidgetItem *, int )' ), self.doubleClicked)
-    self.connect(treeWidget, SIGNAL( 'customContextMenuRequested ( const QPoint & )'), lambda p : self.openProcessMenu(treeWidget, p))
+    treeWidget.itemClicked.connect(self.selectionChanged_slot)
+    treeWidget.itemDoubleClicked.connect(self.doubleClicked_slot)
+    treeWidget.customContextMenuRequested.connect(
+      lambda p: self.openProcessMenu(treeWidget, p))
     # the new widget representing the process tree is added in treeStack and in widgets
     stackIdentifier = self.treeStack.addWidget( treeWidget )
     self.treeStackIdentifiers.setdefault( object.__hash__( processTree ), stackIdentifier )
@@ -4098,20 +4095,20 @@ class ProcessTreesWidget(QSplitter):
       self.savesTimer.start(0)
     #self.model.save()
 
-  def selectionChanged(self, item, col=0):
+  def selectionChanged_slot(self, item, col=0):
     """
     Called when selected item has changed in current process tree.
     This method emits a signal that must be caught by parent widget.
     """
     if item is not None:
-      self.emit(SIGNAL("selectionChanged"), item.model)
+      self.selectionChanged.emit(item.model)
 
-  def doubleClicked(self, item, col):
+  def doubleClicked_slot(self, item, col):
     """
     Called on double click on an item of current process tree.
     This method emits a signal that must be caught by parent widget.
     """
-    self.emit(SIGNAL("doubleClicked"), item.model)
+    self.doubleClicked.emit(item.model)
 
   def setCurrentTree(self, item, previous=None):
     """
@@ -4234,7 +4231,8 @@ class ProcessTreesWidget(QSplitter):
     """
     item=self.treeStack.currentWidget().currentItem()
     if item:
-      self.emit(SIGNAL("openProcess"), item.model )
+      print('item.model:', type(item.model))
+      self.openProcess.emit(item.model)
 
   def menuEditProcessEvent(self):
     """
@@ -4243,7 +4241,7 @@ class ProcessTreesWidget(QSplitter):
     """
     item=self.treeStack.currentWidget().currentItem()
     if item:
-      self.emit(SIGNAL("editProcess"), item.model )
+      self.editProcess.emit(item.model)
 
   def menuIterateProcessEvent(self):
     """
@@ -4252,7 +4250,7 @@ class ProcessTreesWidget(QSplitter):
     """
     item=self.treeStack.currentWidget().currentItem()
     if item:
-      self.emit(SIGNAL("iterateProcess"), item.model )
+      self.iterateProcess.emit(item.model)
 
 #----------------------------------------------------------------------------
 class MainWindow( QWidget ):
