@@ -120,7 +120,7 @@ from brainvisa.data import temporary
 from brainvisa.data.patterns import DictPattern
 from brainvisa import shelltools
 from brainvisa.multipleExecfile import MultipleExecfile
-from soma.qt_gui.qt_backend.QtCore import QObject
+from soma.qt_gui.qt_backend.QtCore import QObject, Signal
 import re
 from six.moves import reduce
 
@@ -223,6 +223,8 @@ class DiskItem(QObject):
 
   """
   
+  lockChanged = Signal(bool)
+
   _minfLock=RLock()
   
   def __init__( self, name, parent ):
