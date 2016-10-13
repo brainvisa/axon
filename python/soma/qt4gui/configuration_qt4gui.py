@@ -256,10 +256,8 @@ class Configuration_Qt4GUI( Qt4GUI ):
       self.__widget.wstPanels.addWidget( widget )
       self.__panels.append( ( qtgui, widget ) )
       count += 1
-    self.__widget.connect( self.__widget.lbxPanels, 
-                           qt.SIGNAL( 'currentRowChanged( int )' ),
-                           self.__widget.wstPanels,
-                           qt.SLOT( 'setCurrentIndex( int )' ) )
+    self.__widget.lbxPanels.currentRowChanged.connect(
+      self.__widget.wstPanels.setCurrentIndex)
     self.__widget.lbxPanels.setCurrentRow( 0 )
     return self.__widget
 

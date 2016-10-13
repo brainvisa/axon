@@ -94,18 +94,18 @@ class ActionsWidget( qt.QDialog ):
     # buttons to run actions
     self.runNowButton=self.ui.runNowButton
     self.runNowButton.setText(_t_("Run now"))
-    self.connect(self.runNowButton, qt.SIGNAL("clicked()"), self.runNow)#, qt.SLOT("done(1)")) #self.runActions)
+    self.runNowButton.clicked.connect(self.runNow)
     self.runNowButton.setToolTip(_t_("Executes checked actions immediatly"))
     
     self.runLaterButton=self.ui.runLaterButton
     self.runLaterButton.setText(_t_("Run later"))
-    self.connect(self.runLaterButton, qt.SIGNAL("clicked()"), self.runLater)#self, qt.SLOT("done(2)"))
+    self.runLaterButton.clicked.connect(self.runLater)
     self.runLaterButton.setToolTip(_t_("Executes checked actions at the end of the pipeline. Does nothing outside of the pipeline."))
     
     # button to invert the state of selected check box item
     self.selectButton=self.ui.selectButton
     self.selectButton.setText(_t_("Check/Uncheck selection"))
-    self.connect(self.selectButton, qt.SIGNAL("clicked()"), self.invertSelection)
+    self.selectButton.clicked.connect(self.invertSelection)
     self.selectButton.setToolTip( _t_("Inverts the state of selected items"))
       
     #print "item added"
@@ -212,11 +212,11 @@ class UnknownFilesWidget( ActionsWidget ):
     # there is two frames action1 and action2 to enable to add some buttons. 
     # Else I cannot add a button to the widget at a right place, added button are always on existing buttons...
     self.removeAllButton=qt.QPushButton(_t_("Remove all"), self.ui.action1)
-    self.connect(self.removeAllButton, qt.SIGNAL("clicked()"), self.removeAll)
+    self.removeAllButton.clicked.connect(self.removeAll)
     self.moveAllButton=qt.QPushButton(_t_("Move all"), self.ui.action2)
-    self.connect(self.moveAllButton, qt.SIGNAL("clicked()"), self.moveAll)
-    
-    
+    self.moveAllButton.clicked.connect(self.moveAll)
+
+
     # add a right click menu to change action for a particular file
     self.popupMenu = qt.QMenu()
     pix=qt.QIcon(os.path.join(neuroConfig.iconPath, Remove.icon))
@@ -226,8 +226,8 @@ class UnknownFilesWidget( ActionsWidget ):
     pix=qt.QIcon(os.path.join(neuroConfig.iconPath, ImportData.icon))
     self.popupMenu.addAction( pix, "Import",  self.menuImportEvent )
 
-    self.connect(self.actionsList, qt.SIGNAL( 'customContextMenuRequested ( const QPoint & )'), self.openContextMenu)
-  
+    self.actionsList.customContextMenuRequested.connect(self.openContextMenu)
+
   def openContextMenu(self, pos):
     """
     Called on contextMenuRequested signal. It opens the popup menu at cursor position.
@@ -277,7 +277,9 @@ class UnknownFilesWidget( ActionsWidget ):
 
       self.importDialog=DiskItemBrowser( neuroHierarchy.databases, self, write=True, selection=selection, required={'_type' : selection['_type'], '_format' : selection['_format'], 'database' : self.database.name} )
       self.importDialog.setWindowTitle( _t_( selection[ '_type' ] ) )
-      self.importDialog.connect( self.importDialog, qt.SIGNAL( 'accepted()' ), lambda item=item, action=action: self.importDialogAccepted(item, action) )
+      self.importDialog.accepted.connect(
+          lambda item=item, action=action:
+              self.importDialogAccepted(item, action))
       self.importDialog.show()
 
   def importDialogAccepted(self, item, action):

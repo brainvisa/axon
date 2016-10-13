@@ -258,9 +258,7 @@ if SomaApplication is not None:
   soma_app.initialize()
 
 if neuroConfig.gui:
-  neuroConfig.qtApplication.connect( neuroConfig.qtApplication,\
-                                     SIGNAL( 'lastWindowClosed ()' ),\
-                                     sys.exit )
+  neuroConfig.qtApplication.lastWindowClosed .connect(sys.exit)
   # Ctrl + C is now linked to qApp.exit()
   signal.signal( signal.SIGINT, qt_exit_handler )
   if neuroConfig.shell:

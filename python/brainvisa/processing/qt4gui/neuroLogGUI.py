@@ -33,7 +33,7 @@
 
 import time
 import os
-from brainvisa.processing.qtgui.backwardCompatibleQt import QWidget, QVBoxLayout, QIcon, QSplitter, Qt, QSizePolicy, QSize, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QHBoxLayout, QPushButton, QObject, SIGNAL, QFileDialog, QKeySequence, QInputDialog, QLineEdit, qApp
+from brainvisa.processing.qtgui.backwardCompatibleQt import QWidget, QVBoxLayout, QIcon, QSplitter, Qt, QSizePolicy, QSize, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QHBoxLayout, QPushButton, QObject, QFileDialog, QKeySequence, QInputDialog, QLineEdit, qApp
 from brainvisa.processing import neuroLog
 from brainvisa.processing import neuroException
 from brainvisa.configuration import neuroConfig
@@ -84,10 +84,9 @@ class LogItemsViewer( QWidget):
     self._content.setSizePolicy( QSizePolicy( QSizePolicy.Minimum, QSizePolicy.Expanding ) )
     splitter.setStretchFactor( 0, 1 )
     splitter.setStretchFactor( 1, 2 )
-    
-    QObject.connect( self._list, SIGNAL( 'currentItemChanged( QTreeWidgetItem *, QTreeWidgetItem * )' ),
-                     self._updateContent )
-                     
+
+    self._list.currentItemChanged.connect(self._updateContent)
+
     self.refresh(logitems)
       
     firstItem = self._list.topLevelItem(0)
@@ -224,15 +223,15 @@ class LogViewer( QWidget ):
     btn = QPushButton( _t_( '&Refresh' ) )
     btn.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
     hb.addWidget(btn)
-    QObject.connect( btn, SIGNAL( 'clicked()' ), self.refresh )
+    btn.clicked.connect(self.refresh)
     btn = QPushButton( _t_( '&Close' ) )
     hb.addWidget(btn)
     btn.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-    QObject.connect( btn, SIGNAL( 'clicked()' ), self.close )
+    btn.clicked.connect(self.close)
     btn = QPushButton( _t_( '&Open...' ) )
     hb.addWidget(btn)
     btn.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-    QObject.connect( btn, SIGNAL( 'clicked()' ), self.open )
+    btn.clicked.connect(self.open)
 
     neuroConfig.registerObject( self )
     self.setLogFile( fileName )
@@ -245,7 +244,7 @@ class LogViewer( QWidget ):
     self.refresh()
 
   def closeEvent( self, event ):
-    self.emit( SIGNAL( 'close' ) )
+    self.close.emit()
     neuroConfig.unregisterObject( self )
     QWidget.closeEvent( self, event )
 

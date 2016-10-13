@@ -31,7 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-from brainvisa.processing.qtgui.backwardCompatibleQt import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QCheckBox, QSizePolicy, QSpacerItem, QPushButton, SIGNAL, QMenu, QTextEdit
+from brainvisa.processing.qtgui.backwardCompatibleQt import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QCheckBox, QSizePolicy, QSpacerItem, QPushButton, QMenu, QTextEdit
 from soma.wip.application.api import Application
 from soma.qtgui.api import ApplicationQtGUI
 from brainvisa.configuration import neuroConfig
@@ -129,10 +129,10 @@ class BugReportDialog( QWidget ):
     hb.addItem( spacer )
     btn = QPushButton( _t_( 'Send' ) )
     hb.addWidget(btn)
-    self.connect( btn, SIGNAL( 'clicked()' ), self._ok )
+    btn.clicked.connect(self._ok)
     btn = QPushButton( _t_( 'Cancel' ) )
     hb.addWidget(btn)
-    self.connect( btn, SIGNAL( 'clicked()' ), self._cancel )
+    btn.clicked.connect(self._cancel)
 
   def _ok( self ):
     # Build email message

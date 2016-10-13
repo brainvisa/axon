@@ -129,14 +129,12 @@ if qwtAvailable:
       layout.addWidget(self.lbxItems)
       self.lbxItems.setSizePolicy( QSizePolicy( QSizePolicy.Preferred, 
                                                 QSizePolicy.Expanding ) )
-      self.connect( self.lbxItems, SIGNAL( 'currentRowChanged ( int ) ' ),
-                    self.selectionChanged )
+      self.lbxItems.currentRowChanged.connect(self.selectionChanged)
       self.lbxFeatures = QListWidget( self )
       layout.addWidget(self.lbxFeatures)
       self.lbxFeatures.setSizePolicy( QSizePolicy( QSizePolicy.Preferred, 
                                                   QSizePolicy.Expanding ) )
-      self.connect( self.lbxFeatures, SIGNAL( 'currentRowChanged ( int ) ' ),
-                    self.selectionChanged )
+      self.lbxFeatures.currentRowChanged.connect(self.selectionChanged)
       self.txtFeatures = QTextEdit( self )
       self.txtFeatures.setReadOnly( True )
       self.txtFeatures.setAcceptRichText( True )

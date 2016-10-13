@@ -83,15 +83,13 @@ class Choice_Qt4GUI( Qt4GUI ):
       self._widget.setCurrentIndex( index )
     self._live = live
     if live:
-      self._widget.connect( self._widget, QtCore.SIGNAL( 'activated( int )' ), 
-                            self._userModification )
+      self._widget.activated.connect(self._userModification)
     return self._widget
   
   
   def closeEditionWidget( self, editionWidget ):
     if self._live:
-      self._widget.disconnect( self._widget, QtCore.SIGNAL( 'activated( int )' ), 
-                               self._userModification )
+      self._widget.activated.disconnect(self._userModification)
     editionWidget.close()
     editionWidget.deleteLater()
     self._widget = None

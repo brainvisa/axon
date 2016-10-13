@@ -30,7 +30,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-from brainvisa.processing.qtgui.backwardCompatibleQt import QDialog, Qt, QVBoxLayout, QHBoxLayout, QPushButton, QSizePolicy, SIGNAL, SLOT, QTextCursor, QWidget
+from brainvisa.processing.qtgui.backwardCompatibleQt import QDialog, Qt, QVBoxLayout, QHBoxLayout, QPushButton, QSizePolicy, QTextCursor, QWidget
 from soma.qtgui.api import TextEditWithSearch
 
 class ShowException( QDialog ):
@@ -62,12 +62,12 @@ class ShowException( QDialog ):
     self.btnOk.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
     self.btnOk.setDefault( True )
     self.btnOk.setAutoDefault( True )
-    self.connect( self.btnOk, SIGNAL( 'clicked()' ), self, SLOT( 'close()' ) )
-    
+    self.btnOk.clicked.connect(self.close)
+
     self.btnAdvanced = QPushButton( _t_( 'more info' ), self )
     hb.addWidget( self.btnAdvanced )
     self.btnAdvanced.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
-    self.connect( self.btnAdvanced, SIGNAL( 'clicked()' ), self.changeAdvancedMode )
+    self.btnAdvanced.clicked.connect(self.changeAdvancedMode)
     self.updateText()
     
     self.setSizePolicy( QSizePolicy( QSizePolicy.Expanding, QSizePolicy.Expanding ) )

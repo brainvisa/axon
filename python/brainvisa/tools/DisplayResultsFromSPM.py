@@ -119,12 +119,8 @@ class DisplayResultsFromSPM(object):
       hlay.addWidget(printBt)
       okBt = QtGui.QPushButton("OK", self.awin)
       hlay.addWidget(okBt)
-      mainDialog.connect(printBt,
-                          QtCore.SIGNAL('clicked()'),
-                          self._printClicked)
-      mainDialog.connect(okBt,
-                          QtCore.SIGNAL('clicked()'),
-                          mainDialog.accept)
+      printBt.clicked.connect(self._printClicked)
+      okBt.clicked.connect(mainDialog.accept)
       
       # Add a 3D cursor notifier
       self.a.onCursorNotifier.add(self._cursorMoveHandler)
@@ -307,9 +303,7 @@ class DisplayResultsFromSPM(object):
       self.labelMixingRate = QtGui.QLabel("0", frame)
       bgHlay.addWidget(self.labelMixingRate)
       bgHlay.addSpacerItem(QtGui.QSpacerItem(20, 20, hPolicy=QtGui.QSizePolicy.Expanding))
-      frame.connect(self.sliderMixingRate,
-                     QtCore.SIGNAL('valueChanged( int )'),
-                     self._mixingRateValueChanged)
+      self.sliderMixingRate.valueChanged.connect(self._mixingRateValueChanged)
       # Add T-map/glass brain switcher
       bgHlay = QtGui.QHBoxLayout()
       toolVlay.addLayout(bgHlay)
@@ -332,12 +326,8 @@ class DisplayResultsFromSPM(object):
           comment.setFont(font)
           toolVlay.addWidget(comment, alignment=QtCore.Qt.AlignCenter)
   
-      self.awin.connect(self.tmapRadioBt,
-                         QtCore.SIGNAL('clicked()'),
-                         self._displayTypeChanged)
-      self.awin.connect(self.glassBrainRadioBt,
-                         QtCore.SIGNAL('clicked()'),
-                         self._displayTypeChanged)
+      self.tmapRadioBt.clicked.connect(self._displayTypeChanged)
+      self.glassBrainRadioBt.clicked.connect(self._displayTypeChanged)
   
       # Add SPM threshold parameter information
       gb = QtGui.QGroupBox("Threshold parameters", frame)
@@ -454,9 +444,7 @@ class DisplayResultsFromSPM(object):
       self.table.resizeRowsToContents()
       self.table.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
       
-      self.table.connect(self.table,
-                          QtCore.SIGNAL('cellClicked( int, int)'),
-                          self._tableClicked)
+      self.table.cellClicked.connect(self._tableClicked)
   
   def _mixingRateValueChanged(self, value):
       """
@@ -774,9 +762,7 @@ class DisplayResultsFromSPM(object):
           cBox.addItem("Atlas: none")
           cBox.setEnabled(False)
       
-      self.awin.connect(cBox,
-                         QtCore.SIGNAL('currentIndexChanged( const QString& )'),
-                         self._atlasChanged)
+      cBox.currentIndexChanged.connect(self._atlasChanged)
       
       self._atlasChanged(cBox.currentText())
       self.table.setCellWidget(0, 15, cBox)

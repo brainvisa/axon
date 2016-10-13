@@ -71,38 +71,38 @@ class DatabaseManagerGUI( qt.QWidget ):
     self._databaseEditor = None
     
     self.lvDatabases = qt.QListWidget( self )
-    self.connect( self.lvDatabases, qt.SIGNAL( 'itemSelectionChanged( )' ), self._selected )
+    self.lvDatabases.itemSelectionChanged.connect(self._selected)
     layout.addWidget( self.lvDatabases )
     
     hb = qt.QHBoxLayout()
     hb.setSpacing( 6 )
 
     self.btnEdit = qt.QPushButton( _( 'Edit' ), self )
-    self.connect( self.btnEdit, qt.SIGNAL( 'clicked()' ), self._edit )
+    self.btnEdit.clicked.connect(self._edit)
     self.btnEdit.setEnabled( 0 )
     hb.addWidget( self.btnEdit )
 
     self.btnAdd = qt.QPushButton( _( 'Add' ), self )
-    self.connect( self.btnAdd, qt.SIGNAL( 'clicked()' ), self._add )
+    self.btnAdd.clicked.connect(self._add)
     hb.addWidget( self.btnAdd )
 
     self.btnRemove = qt.QPushButton( _( 'Remove' ), self )
     self.btnRemove.setEnabled( 0 )
-    self.connect( self.btnRemove, qt.SIGNAL( 'clicked()' ), self._remove )
+    self.btnRemove.clicked.connect(self._remove)
     hb.addWidget( self.btnRemove )
 
     self.btnUp = qt.QPushButton( self )
     if self.pixUp:
       self.btnUp.setIcon( self.pixUp )
     self.btnUp.setEnabled( 0 )
-    self.connect( self.btnUp, qt.SIGNAL( 'clicked()' ), self._up )
+    self.btnUp.clicked.connect(self._up)
     hb.addWidget( self.btnUp )
 
     self.btnDown = qt.QPushButton( self )
     if self.pixDown:
       self.btnDown.setIcon( self.pixDown )
     self.btnDown.setEnabled( 0 )
-    self.connect( self.btnDown, qt.SIGNAL( 'clicked()' ), self._down )
+    self.btnDown.clicked.connect(self._down)
     hb.addWidget( self.btnDown )
 
     layout.addLayout( hb )

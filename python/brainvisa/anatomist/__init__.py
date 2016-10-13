@@ -104,12 +104,12 @@ if anatomistImport:
         if not instance.getControlWindow():
           mainThread=QtThreadCall()
           instance.createControlWindow()
-          win=instance.getControlWindow()
+          win = instance.getControlWindow()
           if win:
             win.enableClose( False )
-            mainThread.push( qt.QObject.connect, win, qt.SIGNAL("destroyed(QObject *)"), instance.anatomist_closed )
+            mainThread.push(win.destroyed.connect, instance.anatomist_closed)
       return instance
-      
+
     def __singleton_init__(self, *args, **kwargs):
       communicationLog = neuroConfig.mainLog.subTextLog()
       self.communicationLogFile = open( communicationLog.fileName,'w' )
@@ -146,7 +146,8 @@ if anatomistImport:
         a = anatomistModule.Anatomist( *args, **kwargs )
         if a.getControlWindow() is not None:
           a.getControlWindow().enableClose( False )
-          mainThread.push( qt.QObject.connect, a.getControlWindow(), qt.SIGNAL("destroyed(QObject *)"), self.anatomist_closed )
+          mainThread.push(a.getControlWindow().destroyed.connect,
+                          self.anatomist_closed)
         mainThread.push( reusablewinhook.installWindowHandler )
 
     def anatomist_closed(self):

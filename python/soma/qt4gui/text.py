@@ -144,28 +144,22 @@ class WebBrowserWithSearch(QtWebKit.QWebView):
     self.searchText=""
     self.findAction = QtGui.QAction( _t_( 'Find' ), self )
     self.findAction.setShortcut( QtGui.QKeySequence.Find )
-    self.connect( self.findAction, QtCore.SIGNAL( 'triggered(bool)' ),
-      self.search )
+    self.findAction.triggered.connect(self.search)
     self.findNextAction = QtGui.QAction( _t_( 'Find next' ), self )
     self.findNextAction.setShortcut( QtGui.QKeySequence.FindNext )
-    self.connect( self.findNextAction, QtCore.SIGNAL( 'triggered(bool)' ),
-      self.searchNext )
+    self.findNextAction.triggered.connect(self.searchNext)
     self.findPreviousAction = QtGui.QAction( _t_( 'Find previous' ), self )
     self.findPreviousAction.setShortcut( QtGui.QKeySequence.FindPrevious )
-    self.connect( self.findPreviousAction, QtCore.SIGNAL( 'triggered(bool)' ),
-      self.searchPrevious )
+    self.findPreviousAction.triggered.connect(self.searchPrevious)
     self.zoomInAction = QtGui.QAction( _t_( 'Zoom in' ), self )
     self.zoomInAction.setShortcut( QtCore.Qt.CTRL + QtCore.Qt.Key_Plus )
-    self.connect( self.zoomInAction, QtCore.SIGNAL( 'triggered(bool)' ),
-      self.zoomIn )
+    self.zoomInAction.triggered.connect(self.zoomIn)
     self.zoomOutAction = QtGui.QAction( _t_( 'Zoom out' ), self )
     self.zoomOutAction.setShortcut( QtCore.Qt.CTRL + QtCore.Qt.Key_Minus )
-    self.connect( self.zoomOutAction, QtCore.SIGNAL( 'triggered(bool)' ),
-      self.zoomOut )
+    self.zoomOutAction.triggered.connect(self.zoomOut)
     self.zoomOneAction = QtGui.QAction( _t_( 'Reset zoom' ), self )
     self.zoomOneAction.setShortcut( QtCore.Qt.CTRL + QtCore.Qt.Key_Equal )
-    self.connect( self.zoomOneAction, QtCore.SIGNAL( 'triggered(bool)' ),
-      self.zoomOne )
+    self.zoomOneAction.triggered.connect(self.zoomOne)
     self.addAction( self.findAction )
     self.addAction( self.findNextAction )
     self.addAction( self.findPreviousAction )

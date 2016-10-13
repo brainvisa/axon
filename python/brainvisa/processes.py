@@ -383,8 +383,7 @@ def procdocToXHTML(procdoc):
                         '<h2><font color="red">Error in ' + h + ':<br>  ' + str(e) + '</font></h1>')
                     editor.content.setAcceptRichText(False)
                     editor.content.setPlainText(value)
-                    editor.connect(
-                        editor.content, SIGNAL('cursorPositionChanged()'), f)
+                    editor.content.cursorPositionChanged.connect(f)
                     editor.btnOk.setText('Check and save as XHTML')
                     editor.btnCancel.setText('Save as simple text')
                     line = getattr(e, 'getLineNumber', None)

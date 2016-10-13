@@ -140,11 +140,11 @@ class EditionDialog( QtGui.QDialog ):
     self.btnOk = QtGui.QPushButton( _( '&Ok' ) )
     self.btnOk.setDefault( True )
     layout1.addWidget( self.btnOk )
-    self.connect( self.btnOk, QtCore.SIGNAL( 'clicked()' ), QtCore.SLOT( 'accept()' ) )
-    
+    self.btnOk.clicked.connect(self.accept)
+
     self.btnCancel = QtGui.QPushButton( _( '&Cancel' ) )
     layout1.addWidget( self.btnCancel )
-    self.connect( self.btnCancel, QtCore.SIGNAL( 'clicked()' ), QtCore.SLOT( 'reject()' ) )
+    self.btnCancel.clicked.connect(self.reject)
 
 
   def cleanup( self, alsoDelete=False ):
