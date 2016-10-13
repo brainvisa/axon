@@ -31,7 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from brainvisa.processing.qtgui.backwardCompatibleQt \
-    import QLineEdit, SIGNAL, QPushButton, QToolButton, \
+    import QLineEdit, QPushButton, QToolButton, \
            Qt, QIcon, QWidget, QFileDialog, QVBoxLayout, \
            QListWidget, QHBoxLayout, QSpacerItem, QSizePolicy, QSize, QMenu, \
            QPalette, QColor, QItemSelectionModel, QLabel
@@ -533,7 +533,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
       self.btnDown.setIcon( self.pixDown )
       self.btnDown.setIconSize(buttonIconSize)
       self.btnDown.setEnabled( 0 )
-      self.connect( self.btnDown, SIGNAL( 'clicked()' ), self._down )
+      self.btnDown.clicked.connect(self._down)
       hb.addWidget( self.btnDown )
 
       if write :
@@ -542,7 +542,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
         self.btnSetDirectory.setIcon( self.pixBrowseUpdate )
         self.btnSetDirectory.setIconSize(buttonIconSize)
         self.btnSetDirectory.setEnabled( 0 )
-        self.connect( self.btnSetDirectory, SIGNAL( 'clicked()' ), self._setDirectory )
+        self.btnSetDirectory.clicked(self._setDirectory)
         hb.addWidget( self.btnSetDirectory )
         
       spacer = QSpacerItem( 10, 10, QSizePolicy.Expanding, QSizePolicy.Minimum )
@@ -554,7 +554,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
       hb.setSpacing( 6 )
 
       self.sle = StringListEditor( None, unicode(self.objectName()) )
-      self.connect( self.sle, SIGNAL( 'newValidValue' ), self.checkUI )
+      self.sle.newValidValue.connect(self.checkUI)
       hb.addWidget( self.sle )
 
       btn = QPushButton( )
@@ -565,7 +565,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
       btn.setIconSize(buttonIconSize)
       if databaseUserLevel > neuroConfig.userLevel:
         btn.hide()
-      self.connect( btn, SIGNAL( 'clicked()' ), self.findPressed )
+      btn.clicked.connect(self.findPressed)
       hb.addWidget( btn )
 
       btn = QPushButton( )
@@ -576,7 +576,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
       btn.setIconSize(buttonIconSize)
       if browseUserLevel > neuroConfig.userLevel:
         btn.hide()
-      self.connect( btn, SIGNAL( 'clicked()' ), self.browsePressed )
+      btn.clicked.connect(self.browsePressed)
       hb.addWidget( btn )
 
       layout.addLayout( hb )
@@ -591,10 +591,10 @@ class DiskItemListEditor( QWidget, DataEditor ):
       hb.addItem( spacer )
       btn =QPushButton( _t_('Ok') )
       hb.addWidget( btn )
-      self.connect( btn, SIGNAL( 'clicked()' ), self._ok )
+      btn.clicked.connect(self._ok)
       btn =QPushButton( _t_('Cancel') )
       hb.addWidget( btn )
-      self.connect( btn, SIGNAL( 'clicked()' ), self._cancel )
+      btn.clicked.connect(self._cancel)
       layout.addLayout( hb )
 
       neuroConfig.registerObject( self )
@@ -729,7 +729,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
     
     def _setDirectory( self ):
       self.browseDirectoryDialog = QFileDialog( self.topLevelWidget() )
-      self.connect( self.browseDirectoryDialog, SIGNAL( 'accepted()' ), self._setDirectoryAccepted )
+      self.browseDirectoryDialog.accepted.connect(self._setDirectoryAccepted)
       self.browseDirectoryDialog.setFileMode( QFileDialog.Directory )
       self.browseDirectoryDialog.setOption(QFileDialog.ShowDirsOnly, True)
       parent = self._context
@@ -757,10 +757,10 @@ class DiskItemListEditor( QWidget, DataEditor ):
         
         # Updates current editor value
         self.updateEditorValue()
-          
+
       else:
-        self.emit( SIGNAL( 'accepted' ), unicode( directory ) )
-      
+        self.accepted.emit(unicode(directory))
+
     def setValue( self, value ):
       if isinstance( value, ( list, tuple ) ):
         self.values = []
@@ -788,7 +788,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
           enableConversion=self.parameter.enableConversion,
           multiple = True, 
           exactType=self.parameter.exactType )
-        self.connect( self.findDialog, SIGNAL( 'accepted()' ), self.findAccepted )
+        self.findDialog.accepted.connect(self.findAccepted)
       else:
         self.findDialog.rescan()
       self.findDialog.show()
@@ -799,7 +799,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
         self.sle.setValue( value )
         self._add()
       else:
-        self.emit( SIGNAL( 'accepted' ), value )
+        self.accepted.emit(value)
 
     def browsePressed( self ):
       if self.browseDialog is None:
@@ -829,8 +829,8 @@ class DiskItemListEditor( QWidget, DataEditor ):
           + ' '.join( allPatterns.keys() ) + ')' )
         filters.append( _t_( 'All files' ) + ' (*)' )
         self.browseDialog.setFilters( filters )
-        # self.connect( self.browseDialog, SIGNAL( 'fileSelected( const QString & )' ), self.browseAccepted )
-        self.connect( self.browseDialog, SIGNAL( 'accepted()' ), self.browseAccepted )
+        # self.browseDialog.fileSelected.connect(self.browseAccepted)
+        self.browseDialog.accepted.connect(self.browseAccepted)
         if dirOnly:
           self.browseDialog.setFileMode( QFileDialog.Directory )
           self.browseDialog.setOption( QFileDialog.ShowDirsOnly )
@@ -850,7 +850,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
         self.sle.setValue( l )
         self._add()
       else:
-        self.emit( SIGNAL( 'accepted' ), l )
+        self.accepted.emit(l)
 
 
   def __init__( self, parameter, parent, name, write = 0, context=None ):
@@ -874,8 +874,8 @@ class DiskItemListEditor( QWidget, DataEditor ):
     self.sle = StringListEditor( None, name )
     hb.addWidget(self.sle)
     self._value = None
-    self.connect( self.sle, SIGNAL( 'newValidValue' ), self._newTextValue )
-    
+    self.sle.newValidValue.connect(self._newTextValue)
+
     self.btnShow = RightClickablePushButton( )
     hb.addWidget(self.btnShow)
     self.btnShow.setCheckable(True)
@@ -887,8 +887,8 @@ class DiskItemListEditor( QWidget, DataEditor ):
     if not brainvisa.processes.getViewer( (self.parameter.type, self.parameter.formats[0] ), 0, checkUpdate=False, listof=True ):
       self.btnShow.hide()
     self._view = None
-    self.connect( self.btnShow, SIGNAL( 'clicked()' ), self.showPressed )
-    self.connect( self.btnShow, SIGNAL( 'rightPressed' ), self.openViewerPressed )
+    self.btnShow.clicked.connect(self.showPressed)
+    self.btnShow.rightPressed.connect(self.openViewerPressed)
     self._edit = None
     self.btnEdit = RightClickablePushButton( )
     hb.addWidget(self.btnEdit)
@@ -900,9 +900,8 @@ class DiskItemListEditor( QWidget, DataEditor ):
     self.btnEdit.setEnabled( 0 )
     if not brainvisa.processes.getDataEditor( (self.parameter.type, self.parameter.formats ), checkUpdate=False, listof=True ):
       self.btnEdit.hide()
-    self.connect( self.btnEdit, SIGNAL( 'clicked()' ), self.editPressed )
-    self.connect( self.btnEdit, SIGNAL( 'rightPressed' ),
-                  self.openEditorPressed )
+    self.btnEdit.clicked.connect(self.editPressed)
+    self.btnEdit.rightPressed.connect(self.openEditorPressed)
 
     self.btnFind = RightClickablePushButton( )
     hb.addWidget(self.btnFind)
@@ -917,9 +916,9 @@ class DiskItemListEditor( QWidget, DataEditor ):
       x = parameter.databaseUserLevel
       if x > neuroConfig.userLevel:
         self.btnFind.hide()
-    self.connect( self.btnFind, SIGNAL( 'clicked()' ), self.findPressed )
-    self.connect( self.btnFind, SIGNAL( 'rightPressed' ), self.findRightPressed )
-    self.btnBrowse = QPushButton( )
+    self.btnFind.clicked.connect(self.findPressed)
+    self.btnFind.rightPressed.connect(self.findRightPressed)
+    self.btnBrowse = QPushButton()
     hb.addWidget(self.btnBrowse)
     if write:
       self.btnBrowse.setIcon( self.pixBrowseWrite )
@@ -934,8 +933,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
         self.btnBrowse.hide()
     # only one click on the browse button : always open the diskItemListSelect widget
     # as we often need to select files in the filesystem in several steps when the files are not all in the same directory. 
-    self.connect( self.btnBrowse, SIGNAL( 'clicked()' ), self.browsePressed )
-    #self.connect( self.btnBrowse, SIGNAL( 'rightPressed' ), self.browseRightPressed )
+    self.btnBrowse.clicked.connect(self.browsePressed)
 
     self.setValue( None, 1 )
     
@@ -1051,7 +1049,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
       w.setValue( self.getValue() )
     except:
       showException( parent = self )
-    self.connect( w, SIGNAL( 'accepted' ), self._newValue )
+    w.accepted.connect(self._newValue)
     w.findPressed()
 
   def findRightPressed( self ):
@@ -1083,7 +1081,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
       #w.setValue( self.getValue() )
     #except:
       #showException( parent = self )
-    #self.connect( w, SIGNAL( 'accepted' ), self._newValue )
+    #w.accepted.connect(self._newValue)
     #w.browsePressed()
 
   def browsePressed( self ):

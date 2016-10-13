@@ -3912,11 +3912,11 @@ class ProcessTreesWidget(QSplitter):
     QTimer started when the model has changed. When the timer times out, the model is saved. Used to delay model saves : it speeds up execution when there is several modification at the same time (drag&drop several elements).
   """
   
-  selectionChanged = QtCore.Signal(soma.notification.EditableTree.Item)
-  doubleClicked = QtCore.Signal(soma.notification.EditableTree.Item)
-  openProcess = QtCore.Signal(soma.notification.EditableTree.Item)
-  editProcess = QtCore.Signal(soma.notification.EditableTree.Item)
-  iterateProcess = QtCore.Signal(soma.notification.EditableTree.Item)
+  selectionChanged = QtCore.Signal(soma.notification.ObservableAttributes)
+  doubleClicked = QtCore.Signal(soma.notification.ObservableAttributes)
+  openProcess = QtCore.Signal(soma.notification.ObservableAttributes)
+  editProcess = QtCore.Signal(soma.notification.ObservableAttributes)
+  iterateProcess = QtCore.Signal(soma.notification.ObservableAttributes)
 
   def __init__(self, processTrees=None, parent=None ):
     """
