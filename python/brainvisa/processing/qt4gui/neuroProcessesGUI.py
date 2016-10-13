@@ -1844,8 +1844,15 @@ class ParameterizedWidget( QWidget ):
     # use signals-slots to update the parameter label gui if the lock status of the matching value changes.
     # DiskItems now inherit from QObject and emit lockChanged signal when the lock changes
     if isinstance(oldValue, QObject):
-      oldValue.lockChanged.disconnect(self.labels[parameterName].setlock)
-      oldValue.lockChanged.disconnect(self.editors[parameterName].lockChanged)
+      try:
+        oldValue.lockChanged.disconnect(self.labels[parameterName].setlock)
+      except:
+        pass
+      try:
+        oldValue.lockChanged.disconnect(
+          self.editors[parameterName].lockChanged)
+      except:
+        pass
     if isinstance(value, QObject) and hasattr(value, 'lockChanged'):
       value.lockChanged.connect(self.labels[parameterName].setlock)
       value.lockChanged.connect(self.editors[parameterName].lockChanged)
