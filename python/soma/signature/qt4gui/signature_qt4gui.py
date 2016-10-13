@@ -43,7 +43,7 @@ data type.
 '''
 __docformat__ = "epytext en"
 
-from PyQt4 import QtGui, QtCore
+from soma.qt_gui.qt_backend import QtGui, QtCore
 from soma.functiontools import partial
 from soma.qt4gui.api import ApplicationQt4GUI, Qt4GUI
 

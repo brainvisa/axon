@@ -37,8 +37,8 @@
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
 from __future__ import print_function
-from PyQt4.QtGui import QWidget, QHBoxLayout, QPushButton
-from PyQt4.QtCore import SIGNAL, QSize
+from soma.qt_gui.qt_backend.QtGui import QWidget, QHBoxLayout, QPushButton
+from soma.qt_gui.qt_backend.QtCore import QSize
 from brainvisa.data.qtgui.neuroDataGUI import DataEditor
 from brainvisa.data.qtgui.readdiskitemGUI import DiskItemEditor
 from brainvisa.configuration import neuroConfig
@@ -46,6 +46,9 @@ from brainvisa.configuration import neuroConfig
 import threading
 import subprocess
 import sys
+
+if sys.version_info[0] >= 3:
+    unicode = str
 
 #----------------------------------------------------------------------------
 class LabelSelectionEditor( QWidget, DataEditor ):
@@ -63,10 +66,9 @@ class LabelSelectionEditor( QWidget, DataEditor ):
         self._edit = QPushButton( '...', self )
         self._edit.setObjectName('edit')
         layout.addWidget(self._edit)
-        self.connect( self._edit, SIGNAL( 'clicked()' ), self.run )
+        self._edit.clicked.connect( self.run )
         self._labelsel = 0
-        self.connect( self._disk, SIGNAL( 'newValidValue' ),
-                      self.diskItemChanged )
+        self._disk.newValidValue.connect( self.diskItemChanged )
 
     def setValue( self, value, default=0 ):
         if value is not None:
@@ -118,7 +120,7 @@ class LabelSelectionEditor( QWidget, DataEditor ):
         del self._thread
 
     def newValue( self ):
-        self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
+        self.newValidValue.emit( unicode(self.objectName()), self.value )
         #self.emit( PYSIGNAL('noDefault'), ( self.name(),) )
 
     def diskItemChanged( self, name, val):

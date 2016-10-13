@@ -57,7 +57,7 @@ if len( sys.argv ) > 1 and sys.platform[:6] == 'darwin' and sys.argv[1][:5] == '
 
 try:
   from soma.config import MAJOR_QT_VERSION
-  USE_QT4 = MAJOR_QT_VERSION == 4
+  USE_QT4 = MAJOR_QT_VERSION >= 4
 except ImportError:
   # in non-cmake version, soma.config does not exist.
   # Then we are forced to use the gui to check Qt
@@ -68,7 +68,7 @@ except ImportError:
     USE_QT4 = False
   del qg
 if USE_QT4:
-  import PyQt4
+  from soma.qt_gui.qt_backend import QtGui
 
 from soma.wip.application.api import Application
 from soma.signature.api import Choice as SomaChoice
@@ -231,7 +231,7 @@ else:
 
 
 def startConsoleShell():
-  from PyQt4.QtGui import qApp
+  from soma.qt_gui.qt_backend.QtGui import qApp
   import IPython
   ipversion = [ int(x) for x in IPython.__version__.split('.') ]
   ipConsole = runIPConsoleKernel()
@@ -307,7 +307,7 @@ if neuroConfig.shell:
       # and the API was different
       if USE_QT4:
         ipshell = IPython.Shell.IPShellQt4( [ '-q4thread' ] )
-        from PyQt4.QtCore import QTimer
+        from soma.qt_gui.qt_backend.QtCore import QTimer
       else:
         ipshell = IPython.Shell.IPShellQt( [ '-qthread' ] )
         from qt import QTimer

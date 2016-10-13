@@ -551,7 +551,7 @@ if anatomistImport:
       del win2
       if win is None:
         return
-      from PyQt4 import QtCore
+      from soma.qt_gui.qt_backend import QtCore
       if state:
         for w in win:
           wp = self.AWindowsBlock.findBlock( w )

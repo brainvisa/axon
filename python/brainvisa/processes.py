@@ -369,7 +369,7 @@ def procdocToXHTML(procdoc):
                 except Exception as e:
                     # Build a text editor
                     from soma.qt4gui.designer import loadUi
-                    from PyQt4 import QtGui, QtCore
+                    from soma.qt_gui.qt_backend import QtGui, QtCore
                     editor = loadUi(
                         os.path.join(mainPath, '..', 'python', 'brainvisa', 'textEditor.ui'))
                     # editor.setAttribute( QtCore.Qt.WA_DeleteOnClose, True )

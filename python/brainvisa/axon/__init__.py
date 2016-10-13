@@ -82,7 +82,8 @@ argv = sys.argv
 # to set paths
 sys.argv = [ os.path.join(brainvisa_path, 'neuro.py'), '-b' ]
 sys.path.insert( 0, brainvisa_path )
-import PyQt4
+from soma.qt_gui import qt_backend
+qt_backend.set_qt_backend(compatible_qt5=True)
 from brainvisa.configuration import neuroConfig
 from brainvisa.processing import neuroLog
 from brainvisa.axon.processes import initializeProcesses, cleanup
@@ -95,4 +96,4 @@ neuroConfig.initGlobalVariables()
 
 # once imported and initialized, the modules do not need to be
 # referenced any longer here.
-del brainvisa, PyQt4, neuroConfig, neuroLog, sys, os, sip
+del brainvisa, qt_backend, neuroConfig, neuroLog, sys, os, sip

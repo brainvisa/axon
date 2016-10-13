@@ -32,7 +32,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-from PyQt4 import QtCore
+from soma.qt_gui.qt_backend import QtCore
 from brainvisa import registration
 from brainvisa.tools.displayTitledGrid import displayTitledGrid
 # DEBUG during development

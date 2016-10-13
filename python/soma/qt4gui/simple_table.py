@@ -41,7 +41,7 @@ from __future__ import print_function
 __docformat__ = "restructuredtext en"
 
 
-from soma.qt_gui.qt_backend.QtCore import Qt, QAbstractTableModel, SIGNAL, QModelIndex
+from soma.qt_gui.qt_backend.QtCore import Qt, QAbstractTableModel, QModelIndex
 from soma.qt_gui.qt_backend.QtGui import QBrush
 from soma.qt_gui.qt_backend import QtCore, get_qt_backend
 use_qvariant = False
@@ -50,20 +50,20 @@ if get_qt_backend() == 'PyQt4':
     import sip
     use_qvariant = sip.getapi( 'QVariant' ) < 2
     if use_qvariant:
-      from PyQt4.QtCore import QVariant
+      from soma.qt_gui.qt_backend.QtCore import QVariant
   except:
     pass # PySide doesn't have QVariant at all.
 import operator
 
 class SimpleTable( QAbstractTableModel ):
   '''
-  A simple read-only table model allowing to display data with L{PyQt4.QtGui.QTableView}
+  A simple read-only table model allowing to display data with 
+  soma.qt_gui.qt_backend.QtGui.QTableView
   
   Example
   -------
-    from PyQt4.uic import loadUi
-    from PyQt4.QtGui import QWidget
-    from PyQt4.QtCore import SIGNAL
+    from soma.qt_gui.qt_backend.uic import loadUi
+    from soma.qt_gui.qt_backend.QtGui import QWidget
     from soma.qt4gui.api import SimpleTable
 
     def clicked( index ):
@@ -74,7 +74,7 @@ class SimpleTable( QAbstractTableModel ):
     w = QWidget()
     loadUi( '/tmp/test.ui', w )
     w.tableView.setModel( m )
-    w.tableView.connect( w.tableView, SIGNAL( 'clicked ( const QModelIndex & )' ), clicked )
+    w.tableView.clicked.connect(clicked)
     w.show()
   '''
   def __init__(self, header, data=(), parent=None ):
@@ -105,7 +105,7 @@ class SimpleTable( QAbstractTableModel ):
   
   def setRow( self, index, row ):
     self._data[ index ] = tuple( row ) + ( self._data[ index ][ -1 ], )
-    self.emit( SIGNAL( 'dataChanged ( const QModelIndex &, const QModelIndex & )' ), self.createIndex( index, 0 ), self.createIndex( index, len( row )-1 ) )
+    self.dataChanged.emit( self.createIndex( index, 0 ), self.createIndex( index, len( row )-1 ) )
 
   def row( self, index ):
     return self._data[ index ][ :-1 ]
@@ -123,7 +123,7 @@ class SimpleTable( QAbstractTableModel ):
       self._background.pop( index, None ) 
     else:
       self._background[ index ] = color 
-    self.emit( SIGNAL( 'dataChanged ( const QModelIndex &, const QModelIndex & )' ), self.createIndex( index, 0 ), self.createIndex( index, len( self._data[ index ] )-2 ) )
+    self.dataChanged.emit( self.createIndex( index, 0 ), self.createIndex( index, len( self._data[ index ] )-2 ) )
   
   def data( self, index, role=Qt.DisplayRole ):
     if use_qvariant:
@@ -162,9 +162,9 @@ class SimpleTable( QAbstractTableModel ):
   def sort( self, column, order ):
     """Sort table by given column number.
     """
-    self.emit( SIGNAL( "layoutAboutToBeChanged()" ) )
+    self.layoutAboutToBeChanged.emit()
     self._data.sort( key=operator.itemgetter( column ), reverse=(order == Qt.DescendingOrder) )
-    self.emit( SIGNAL( "layoutChanged()" ) )
+    self.layoutChanged.emit()
 
   def sortedIndex( self, index ):
     return self._data[ index ][ -1 ]

@@ -36,7 +36,7 @@ from itertools import chain
 
 from brainvisa.processing.qtgui.backwardCompatibleQt import QDialog, Qt, QVBoxLayout, QComboBox, SIGNAL, SLOT, QLabel, QApplication, QPixmap, QListWidget, QWidget, QGridLayout, QFrame, QSize
 from soma.qt4gui.designer import loadUi
-from PyQt4.QtGui import QAbstractItemView, QSizePolicy
+from soma.qt_gui.qt_backend.QtGui import QAbstractItemView, QSizePolicy
 from soma.qt4gui.api import SimpleTable
 from soma.functiontools import partial
 from soma.qtgui.api import QLineEditModificationTimer

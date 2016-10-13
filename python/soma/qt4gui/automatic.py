@@ -51,9 +51,11 @@ from soma.gui.base import ApplicationBaseGUI, GUI
 
 from soma.functiontools import partial
 import sys
-from PyQt4 import QtGui, QtCore
+import soma.qt_gui.qt_backend
+from soma.qt_gui.qt_backend import QtGui, QtCore
 import sip
 
+soma.qt_gui.qt_backend.set_qt_backend(compatible_qt5=True)
 
 #-------------------------------------------------------------------------------
 class WidgetGeometryUpdater( object ):
