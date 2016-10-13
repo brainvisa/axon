@@ -138,7 +138,7 @@ def moveNifti(input_path, output_path):
       shutil.move(input_path, output_path)
     else:
       raise RuntimeError("unvalid extension file")
-  except Exception, e:
+  except Exception as e:
     raise RuntimeError("Error during movign files: %s" % e)
 
 def copyNifti(input_path, output_path):
@@ -155,5 +155,5 @@ def copyNifti(input_path, output_path):
       shutil.copy(input_path, output_path)
     else:
       raise RuntimeError("unvalid extension file")
-  except Exception, e:
+  except Exception as e:
     raise RuntimeError("Error during movign files: %s" % e)
