@@ -181,7 +181,6 @@ def execution( self, context ):
   self.removeOldContrastMIPFile()
 
   spm_workspace_directory = os.path.dirname(self.batch_location.fullPath())
-  matlab_batch_path = os.path.join(spm_workspace_directory, 'result.m')
 
   result = self.createResultsReportBatch(context)
   spm = validation()#This is singleton object
@@ -192,7 +191,6 @@ def execution( self, context ):
       continue
   spm.addModuleToExecutionQueue(result)
   spm.setSPMScriptPath(self.batch_location.fullPath())
-  spm.setMatlabScriptPath(matlab_batch_path)
   spm.addMatlabCommandAfterSPMRunning(self.writeCompleteResultBatch(spm_workspace_directory))
   output = spm.run()
   context.log(name, html=output)

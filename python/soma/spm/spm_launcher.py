@@ -43,9 +43,6 @@ class SPMLauncher():
                 module._moveSPMDefaultPathsIfNeeded()
             except Exception, e:
                 raise RuntimeError("Move SPM default paths failed :\n%s" % e)
-                print("##############################")
-                print("Move SPM default paths failed :\n%s" % e)
-                print("##############################")
 
     #TODO : find an other way to re-initialize or destroy singleton function
     def resetExecutionQueue(self):
@@ -67,10 +64,6 @@ class SPM(SPMLauncher):
         else:
             raise RuntimeError('Matlab executable not found')
 
-    @checkIfArgumentTypeIsStrOrUnicode(argument_index=1)
-    def setMatlabScriptPath(self, matlab_script_path):
-        self.matlab_script_path = matlab_script_path
-
     @checkIfArgumentTypeIsAllowed(list, 1)
     def addMatlabCommandBeforeSPMRunning(self, matlab_commands_list):
         self.matlab_commands_before_list.extend(matlab_commands_list)
@@ -82,15 +75,10 @@ class SPM(SPMLauncher):
     def run(self, use_matlab_options=True):
         if self.spm_script_path is not None:
             self._writeSPMScript()
-            self._writeMatlabScript()
+            matlab_script_path = self._writeMatlabScript()
             current_execution_module_deque = deque(self.execution_module_deque)
             self.resetExecutionQueue()
-            output = self._runMatlabScript(use_matlab_options)
-            #reset matlab_commands list
-            self.matlab_commands_before_list = []
-            self.matlab_commands_after_list = []
-            #reset Matlab Script path
-            self.matlab_script_path = None
+            output = self._runMatlabScript(use_matlab_options, matlab_script_path)
             try:
                 checkIfMatlabFailedBeforSpm(output)
                 checkIfSpmHasFailed(output)
@@ -103,19 +91,18 @@ class SPM(SPMLauncher):
             raise ValueError("job path and batch path are required")
 
     def _writeMatlabScript(self):
-        if self.matlab_script_path is None:
-            self.matlab_script_path = tempfile.NamedTemporaryFile(suffix=".m").name
-            workspace_directory = os.path.dirname(self.spm_script_path)
-        else:
-            print("**WARNING** User define its own matlab_script_path, so output volume moving, may not work")
-            pass
-        if not os.path.exists(os.path.dirname(self.matlab_script_path)):
-            os.makedirs(os.path.dirname(self.matlab_script_path))
+        #matlab_script_path is created in tmp with little NamedTemporaryFile
+        #because matlab namelengthmax is 63
+        matlab_script_path = tempfile.NamedTemporaryFile(suffix=".m").name
+        workspace_directory = os.path.dirname(self.spm_script_path)
+
+        if not os.path.exists(os.path.dirname(matlab_script_path)):
+            os.makedirs(os.path.dirname(matlab_script_path))
         else:
             #folder already exists
             pass
         if self.spm_path is not None:
-            matlab_script_file = open(self.matlab_script_path, 'w+')
+            matlab_script_file = open(matlab_script_path, 'w+')
             matlab_script_file.write("previous_pwd = pwd;\n")
             matlab_script_file.write("cd('%s');\n" % workspace_directory)
             matlab_script_file.write("addpath('%s');\n" % self.spm_path)
@@ -136,17 +123,21 @@ class SPM(SPMLauncher):
             matlab_script_file.close()
         else:
             raise ValueError('SPM path not found')#This raise is normally useless!!
+        #reset matlab_commands list
+        self.matlab_commands_before_list = []
+        self.matlab_commands_after_list = []
+        return matlab_script_path
 
-    def _runMatlabScript(self, use_matlab_options):
+    def _runMatlabScript(self, use_matlab_options, matlab_script_path):
         cwd = os.getcwd()
-        batch_directory = os.path.dirname(self.matlab_script_path)
+        batch_directory = os.path.dirname(matlab_script_path)
         os.chdir(batch_directory)
         if not use_matlab_options:
             matlab_run_options = ''
         else:
             matlab_run_options = self.matlab_options
 
-        matlab_commmand = [self.matlab_executable_path, matlab_run_options, "-r \"run('%s');\"" %self.matlab_script_path]
+        matlab_commmand = [self.matlab_executable_path, matlab_run_options, "-r \"run('%s');\"" %matlab_script_path]
         print('Running matlab command:', matlab_commmand)
         output = runCommand(matlab_commmand)
         os.chdir(cwd)
@@ -171,7 +162,6 @@ class SPM8(SPM):
         self.spm_defaults = spm_defaults
 
         self.spm_script_path = None
-        self.matlab_script_path = None
         self.matlab_commands_before_list = []
         self.matlab_commands_after_list = []
 
@@ -203,7 +193,6 @@ class SPM12(SPM):
         self.spm_defaults = spm_defaults
 
         self.spm_script_path = None
-        self.matlab_script_path = None
         self.matlab_commands_before_list = []
         self.matlab_commands_after_list = []
 
