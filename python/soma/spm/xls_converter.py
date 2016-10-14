@@ -213,12 +213,16 @@ class XlsConverter():
     """
     extract each row value with all column header above
     """
+    import json
     first_row_data_index, first_column_data_index = self._getFirstCellIndexWithData(sheet, workbook)
+    header_tempalte_dict = self._createHeaderTemplate(sheet, first_row_data_index, first_column_data_index)
+    #print json.dumps(header_tempalte_dict, indent=1)
     row_data_index = first_row_data_index
     column_values_dict = {}
-    while(row_data_index < sheet.nrows and sheet.cell_type(row_data_index, 0) not in (xlrd.XL_CELL_EMPTY, xlrd.XL_CELL_BLANK)):
+    while(row_data_index <= self._getLastRowWithData(sheet)):
       row_id = self._getRowId(sheet, row_data_index, first_column_data_index)
-      column_values_dict[row_id] = self._getValues(sheet, row_data_index, first_row_data_index, first_column_data_index)
+      #print row_id
+      column_values_dict[row_id] = self._getValues(sheet, row_data_index, header_tempalte_dict)
       row_data_index += 1
     return column_values_dict
 
@@ -256,41 +260,73 @@ class XlsConverter():
       row_id_list.append(str(sheet.cell_value(row_data_index,column_index )))
     return self.separator.join(row_id_list)
 
-  def _getValues(self, sheet, row_data_index, first_row_data_index, column_data_index):
+  def _getValues(self, sheet, row_data_index, header_template_dict):
     """
     extract row value with all column header above
     """
     values_dict = {}
-    column_index = column_data_index
-    while(column_index < sheet.ncols):
-      #iter on column until all row header are empty (end of header)
+    for column_index, header_list in header_template_dict.items():
       val = sheet.cell_value(row_data_index, column_index)
-      #for row_index in range(first_row_data_index, 0, -1):
-      row_index = first_row_data_index-1
-      while (row_index >= 0):
-        header_name, row_index = self._getHeaderCellValue(sheet, row_index, column_index)
-        tmp_dict = {header_name:val}
-        val = tmp_dict
-        if row_index >= 0:
-            row_index -= 1
-        elif row_index < 0:
-            pass  # while loop break
-      values_dict = XlsConverter.mergeDict(values_dict, tmp_dict)
-      column_index += 1
+      if val:
+          current_col_dict = self._buildCompleteBranchDict(header_list, val)
+          values_dict = XlsConverter.mergeDict(values_dict, current_col_dict)
     return values_dict
-    
+
+  def _createHeaderTemplate(self, sheet, first_row_data_index, first_data_column_index):
+    """
+    create dict with all header hierarchy and column_index in leaves
+    """
+    header_template_dict={}
+    column_index = first_data_column_index
+    while(column_index <= self._getLastColumnWithData(sheet)):
+      row_index = 0
+      header_list = []
+      while (row_index < first_row_data_index):
+        header_name, row_index = self._getHeaderCellValue(sheet, row_index, column_index)
+        header_list.append(header_name)
+        row_index += 1
+      header_template_dict[column_index] = header_list
+      column_index += 1
+    return header_template_dict
+
+
+  def _buildCompleteBranchDict(self, header_list, last_value):
+    str_dict = "{u'%s':%s}" % ("':{u'".join(header_list), last_value)
+    str_dict += '}'*(len(header_list)-1)
+    return eval(str_dict)
+
   def _getHeaderCellValue(self, sheet, row_index, column_index):
     """
     method use to return header value even if cell is merged
     """
-    cell_is_empty = sheet.cell_type(row_index, column_index) in (xlrd.XL_CELL_EMPTY, xlrd.XL_CELL_BLANK)
-    if not cell_is_empty:  # merged cell is empty, it is not the left upper corner cell
+    if not self._isEmptyCell(sheet, row_index, column_index):  # merged cell is empty, it is not the left upper corner cell
       return sheet.cell_value(row_index, column_index), row_index
     else:  # check if cell is merged
       for r_min, r_max, c_min, c_max in sheet.merged_cells:
         if row_index >= r_min and row_index <= r_max and column_index >= c_min and column_index <= c_max:
-          return sheet.cell_value(r_min, c_min), r_min
+          return sheet.cell_value(r_min, c_min), r_max-1
     raise ValueError("empty cell is actually forbidden in column header")
+
+  def _getLastColumnWithData(self, sheet):
+    """
+    some soft as libreoffice add empty columns when user modify xls by hand
+    """
+    last_column_index = sheet.ncols -1
+    while(list(set(sheet.col_values(last_column_index))) == ['']):
+        last_column_index -= 1
+    return last_column_index
+
+  def _getLastRowWithData(self, sheet) :
+    """
+    some soft as libreoffice add empty rows when user modify xls by hand
+    """
+    last_row_index = sheet.nrows -1
+    while(list(set(sheet.row_values(last_row_index))) == ['']):
+        last_row_index -= 1
+    return last_row_index
+
+  def _isEmptyCell(self, sheet, row_index, column_index):
+      return sheet.cell_type(row_index, column_index) in (xlrd.XL_CELL_EMPTY, xlrd.XL_CELL_BLANK)
 #==============================================================================
 # Static method
 #==============================================================================
