@@ -465,7 +465,9 @@ class DiskItemListEditor( QWidget, DataEditor ):
   newValidValue = QtCore.Signal(unicode, object)
 
   class DiskItemListSelect( QWidget ): # Ex QSemiModal
-
+    
+    accepted = QtCore.Signal((unicode, ), (list,))
+    #accepted = QtCore.Signal(list)
 
     def __init__( self, dilEditor, name, write, context = None,
       databaseUserLevel=0, browseUserLevel=0 ):
@@ -730,7 +732,8 @@ class DiskItemListEditor( QWidget, DataEditor ):
 
     def _setDirectory( self ):
       self.browseDirectoryDialog = QFileDialog( self.topLevelWidget() )
-      self.browseDirectoryDialog.accepted.connect(self._setDirectoryAccepted)
+      self.browseDirectoryDialog.accepted[unicode].connect(
+        self._setDirectoryAccepted)
       self.browseDirectoryDialog.setFileMode( QFileDialog.Directory )
       self.browseDirectoryDialog.setOption(QFileDialog.ShowDirsOnly, True)
       parent = self._context
@@ -789,7 +792,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
           enableConversion=self.parameter.enableConversion,
           multiple = True,
           exactType=self.parameter.exactType )
-        self.findDialog.accepted.connect(self.findAccepted)
+        self.findDialog.accepted[()].connect(self.findAccepted)
       else:
         self.findDialog.rescan()
       self.findDialog.show()
@@ -800,7 +803,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
         self.sle.setValue( value )
         self._add()
       else:
-        self.accepted.emit(value)
+        self.accepted[list].emit(value)
 
     def browsePressed( self ):
       if self.browseDialog is None:
@@ -861,7 +864,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
         self.sle.setValue( l )
         self._add()
       else:
-        self.accepted.emit(l)
+        self.accepted[list].emit(l)
 
 
   def __init__( self, parameter, parent, name, write = 0, context=None ):
@@ -1060,7 +1063,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
       w.setValue( self.getValue() )
     except:
       showException( parent = self )
-    w.accepted.connect(self._newValue)
+    w.accepted[list].connect(self._newValue)
     w.findPressed()
 
   def findRightPressed( self ):
