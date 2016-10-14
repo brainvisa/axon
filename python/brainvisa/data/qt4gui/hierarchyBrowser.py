@@ -32,7 +32,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from __future__ import print_function
-from brainvisa.processing.qtgui.backwardCompatibleQt import QWidget, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QIcon, QHBoxLayout, QVBoxLayout, QTextEdit, QSpacerItem, QSizePolicy, QSize, QPushButton, SIGNAL, qApp, QMenu, QCursor, QDrag, QPixmap, QMimeData, Qt, QMessageBox, QPoint, QApplication, QUrl, QSplitter, QBrush, QColor
+from brainvisa.processing.qtgui.backwardCompatibleQt import QWidget, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QIcon, QHBoxLayout, QVBoxLayout, QTextEdit, QSpacerItem, QSizePolicy, QSize, QPushButton, qApp, QMenu, QCursor, QDrag, QPixmap, QMimeData, Qt, QMessageBox, QPoint, QApplication, QUrl, QSplitter, QBrush, QColor
 import os
 
 from soma.wip.application.api import findIconFile
@@ -113,14 +113,12 @@ class HierarchyBrowser( QWidget ):
       hl.addWidget( self.btnClose )
       self.btnSearch = QPushButton( _t_( 'Search' ) )
       hl.addWidget( self.btnSearch )
-      self.connect( self.btnSearch, SIGNAL( 'clicked()' ), self.search )
+      self.btnSearch.clicked.connect(self.search)
   
-      self.connect( self.btnClose, SIGNAL( 'clicked()' ), self.close )
-      self.connect( self.lstHierarchy, SIGNAL( 'itemClicked ( QTreeWidgetItem *, int )' ),
-                    self.itemSelected )
-      self.connect( self.lstHierarchy, SIGNAL( 'itemExpanded ( QTreeWidgetItem * )' ), self.openItem )
-      #self.connect( self.lstHierarchy, SIGNAL( 'collapsed( QListViewItem * )' ),
-                    #self.closeItem )
+      self.btnClose.clicked.connect(self.close)
+      self.lstHierarchy.itemClicked.connect(self.itemSelected)
+      self.lstHierarchy.itemExpanded.connect(self.openItem)
+      #self.lstHierarchy.collapsed.connect(self.closeItem)
   
       # add a right click menu to change action for a particular file
       self.popupMenu = QMenu()
@@ -156,8 +154,9 @@ class HierarchyBrowser( QWidget ):
         _t_('Unlock all items'), self.menuUnlockAll )
       self.actionConditions[idUnlockAll] = self.unlockAllCondition
 
-      self.connect(self.lstHierarchy, SIGNAL( 'customContextMenuRequested ( const QPoint & )'), self.openContextMenu)
-    
+      self.lstHierarchy.customContextMenuRequested.connect(
+        self.openContextMenu)
+
       self.resize( 800, 600 )
       self.searchResult=None
       neuroConfig.registerObject( self )
@@ -576,7 +575,7 @@ class HierarchyBrowser( QWidget ):
       """
       self.requestDialog = DiskItemBrowser( neuroHierarchy.databases, selection={}, required={"_type" : "Any Type"} )
       self.requestDialog.setWindowTitle( _t_( "Any Type" ) )
-      self.requestDialog.connect( self.requestDialog, SIGNAL( 'accepted()' ), self.requestDialogAccepted )
+      self.requestDialog.accepted.connect(self.requestDialogAccepted)
       self.requestDialog.show()
   
     def requestDialogAccepted(self):

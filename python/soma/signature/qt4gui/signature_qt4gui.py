@@ -127,8 +127,7 @@ class HasSignatureEditionWidget( QtGui.QGroupBox ):
     self.btnExpand.resize( 20, 20 )
     pos = self.size() - self.btnExpand.size()
     self.btnExpand.move( pos.width(), 0 )
-    self.connect( self.btnExpand, QtCore.SIGNAL( 'clicked()' ), 
-                  self._expandOrCollapse )
+    self.btnExpand.clicked.connect(self._expandOrCollapse)
     self.setTitle( label )
     self.setFlat( False )
     #self.setFrameShape( QtGui.QFrame.GroupBoxPanel )

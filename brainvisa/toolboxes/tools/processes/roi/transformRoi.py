@@ -237,67 +237,48 @@ class TransformRoi():
         palette = self._mainDiag.palette()
         palette.setColor( self._mainDiag.backgroundRole(), QtGui.QColor( 255, 255, 255 ) )
         self._mainDiag.setPalette( palette )
-        
+
         self._mainDiag.imageCb.clear()
         for img in self._images:
             self._mainDiag.imageCb.addItem(os.path.splitext(os.path.basename(img.fullPath()))[0])
         self._setComboboxViewMinimumWidth(self._mainDiag.imageCb)        
-        QtCore.QObject.connect(self._mainDiag.imageCb,
-                               QtCore.SIGNAL('currentIndexChanged(int)'),
-                               self._imageSelectionChanged)
-        
+        self._mainDiag.imageCb.currentIndexChanged.connect(
+            self._imageSelectionChanged)
+
         self._mainDiag.roiCb.clear()
         for roi in self._inputRoi:
             self._mainDiag.roiCb.addItem(os.path.splitext(os.path.basename(roi))[0])
         self._setComboboxViewMinimumWidth(self._mainDiag.roiCb)
-        QtCore.QObject.connect(self._mainDiag.roiCb,
-                               QtCore.SIGNAL('currentIndexChanged(int)'),
-                               self._roiSelectionChanged)
+        self._mainDiag.roiCb.currentIndexChanged.connect(
+            self._roiSelectionChanged)
         self._roiCbPreviousIndex = 0
-        QtCore.QObject.connect(self._mainDiag.subRoiList,
-                               QtCore.SIGNAL('itemClicked(QListWidgetItem *)'),
-                               self._subRoiSelectionChanged) 
-        
-        translationSp = [self._mainDiag.xSp, self._mainDiag.ySp, self._mainDiag.zSp]
+        self._mainDiag.subRoiList.itemClicked.connect(
+            self._subRoiSelectionChanged)
+
+        translationSp = [self._mainDiag.xSp, self._mainDiag.ySp,
+                         self._mainDiag.zSp]
         for sp in translationSp:
-            QtCore.QObject.connect(sp,
-                                   QtCore.SIGNAL('valueChanged(double )'),
-                                   self._translationChanged)
-        
+            sp.valueChanged.connect(self._translationChanged)
+
         rotationSp = [self._mainDiag.axialSp, self._mainDiag.sagittalSp, self._mainDiag.coronalSp]
         for sp in rotationSp:
-            QtCore.QObject.connect(sp,
-                                   QtCore.SIGNAL('valueChanged(double )'),
-                                   self._rotationChanged)    
-        
-        QtCore.QObject.connect(self._mainDiag.gapSp,
-                                QtCore.SIGNAL('valueChanged(double )'),
-                                self._gapChanged)
-        QtCore.QObject.connect(self._mainDiag.rotationSymSp,
-                               QtCore.SIGNAL('valueChanged(double )'),
-                               self._rotationSymChanged)
-        
+            sp.valueChanged.connect(self._rotationChanged)
+
+        self._mainDiag.gapSp.valueChanged.connect(self._gapChanged)
+        self._mainDiag.rotationSymSp.valueChanged.connect(
+            self._rotationSymChanged)
+
         self._mainDiag.globalCb.setChecked(self._globalModeOn)
-        QtCore.QObject.connect(self._mainDiag.globalCb,
-                               QtCore.SIGNAL('stateChanged(int)'),
-                               self._globalStatusChanged)
+        self._mainDiag.globalCb.stateChanged.connect(self._globalStatusChanged)
 
         self._mainDiag.symmetricCb.setChecked(self._symmetricModeOn)
-        QtCore.QObject.connect(self._mainDiag.symmetricCb,
-                               QtCore.SIGNAL('stateChanged(int)'),
-                               self._symmetricStatusChanged)
-        QtCore.QObject.connect(self._mainDiag.symmetricPlaneBt,
-                               QtCore.SIGNAL('toggled(bool)'),
-                               self._symmetricPlaneToggled)
-        QtCore.QObject.connect(self._mainDiag.resetBt,
-                               QtCore.SIGNAL('clicked()'),
-                               self._resetClicked)
-        QtCore.QObject.connect(self._mainDiag.cancelBt,
-                               QtCore.SIGNAL('clicked()'),
-                               self._accept)
-        QtCore.QObject.connect(self._mainDiag.validBt,
-                               QtCore.SIGNAL('clicked()'),
-                               self._validClicked)
+        self._mainDiag.symmetricCb.stateChanged.connect(
+            self._symmetricStatusChanged)
+        self._mainDiag.symmetricPlaneBt.toggled.connect(
+            self._symmetricPlaneToggled)
+        self._mainDiag.resetBt.clicked.connect(self._resetClicked)
+        self._mainDiag.cancelBt.clicked.connect(self._accept)
+        self._mainDiag.validBt.clicked.connect(self._validClicked)
 
         self._mainDiag.applyBt.setHidden(True)
         self._mainDiag.cursorMode.setIcon(QtGui.QIcon(findExtraFile("cursor3d.png", "icons")))
@@ -306,22 +287,17 @@ class TransformRoi():
         self._mainDiag.cancelBt.setIcon(QtGui.QIcon(findExtraFile("delete.png", "icons")))
         self._mainDiag.validBt.setIcon(QtGui.QIcon(findExtraFile("ok.png", "icons")))
         self._mainDiag.centerBt.setIcon(QtGui.QIcon(findExtraFile("target.png", "icons")))
-        
+
         self._addPaletteEditor()
-        
+
         controlBt = [self._mainDiag.cursorMode, self._mainDiag.transformMode]
         for bt in controlBt:
-            QtCore.QObject.connect(bt,
-                                   QtCore.SIGNAL('clicked()'),
-                                   self._updateControlMode)
+            bt.clicked.connect(self._updateControlMode)
 
-        QtCore.QObject.connect(self._mainDiag.displayCursor,
-                               QtCore.SIGNAL('stateChanged(int)'),
-                               self._displayCursorChecked)
-        
-        QtCore.QObject.connect(self._mainDiag.centerBt,
-                               QtCore.SIGNAL('clicked()'),
-                               self._centerClicked)
+        self._mainDiag.displayCursor.stateChanged.connect(
+            self._displayCursorChecked)
+
+        self._mainDiag.centerBt.clicked.connect(self._centerClicked)
 
     def _loadData(self):
         self._createAnatomistImages()
@@ -1259,9 +1235,11 @@ class SymEditControl(anatomist.Control):
         actionpool.action('SymEditAction').accept()
 
 class SymPlaneChangeTransmitter(QtCore.QObject):
+    symPlaneChanged = QtCore.Signal()
+
     def trigger(self):
-        self.emit(QtCore.SIGNAL("symPlaneChanged()"))
-        
+        self.symPlaneChanged.emit()
+
 class SymEditAction(anatomist.Action, QtCore.QObject):
     def name( self ):
         return 'SymEditAction'
@@ -1269,7 +1247,7 @@ class SymEditAction(anatomist.Action, QtCore.QObject):
     def __init__(self, process):
         anatomist.Action.__init__(self)
         QtCore.QObject.__init__(self)
-        
+
         self._mainProcess = process
         self._items = []
         self._startPos = aims.Point3df()
@@ -1277,10 +1255,9 @@ class SymEditAction(anatomist.Action, QtCore.QObject):
         self._pt1 = aims.Point3df()
         self._pt2 = aims.Point3df()
         self._blockUpdates = False
-        QtCore.QObject.connect(self._mainProcess.symPlaneChangeTransmitter,
-                               QtCore.SIGNAL("symPlaneChanged()"),
-                               self.symPlaneChanged)
-        
+        self._mainProcess.symPlaneChangeTransmitter.symPlaneChanged.connect(
+            self.symPlaneChanged)
+
     def setMainProcess(self, process):
         self._mainProcess = process
         self.initPositions()
@@ -1471,18 +1448,16 @@ class SymEditAction(anatomist.Action, QtCore.QObject):
         viewType = self._getViewType()
         if viewType != 1 and viewType != 3:
             return
-        
+
         try:
-            QtCore.QObject.disconnect(self.view().aWindow().getSliceSlider(),
-                                      QtCore.SIGNAL("valueChanged(int)"),
-                                      self._winSliderChanged)
+            self.view().aWindow().getSliceSlider().valueChanged.disconnect(
+                self._winSliderChanged)
         except:
             pass
-        
+
         try:
-            QtCore.QObject.connect(self.view().aWindow().getSliceSlider(),
-                                   QtCore.SIGNAL("valueChanged(int)"),
-                                   self._winSliderChanged)
+            self.view().aWindow().getSliceSlider().valueChanged.connect(
+                self._winSliderChanged)
         except:
             pass
         

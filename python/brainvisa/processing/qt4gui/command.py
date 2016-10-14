@@ -34,7 +34,7 @@
 from __future__ import print_function
 #import neuroConfig 
 import sys, os
-from brainvisa.processing.qtgui.backwardCompatibleQt import QProcess, QTimer, SIGNAL
+from brainvisa.processing.qtgui.backwardCompatibleQt import QProcess, QTimer
 from brainvisa.configuration import neuroConfig
 from brainvisa.processing.qtgui import backwardCompatibleQt
 if hasattr( backwardCompatibleQt, 'PYQT_VERSION' ):
@@ -192,13 +192,9 @@ class CommandWithQProcess( object ):
         qprocess = QProcess()
       else:
         qprocess = somaqt.makeQProcess()
-      qprocess.connect( qprocess,
-                        SIGNAL( 'finished( int, QProcess::ExitStatus )' ),
-                        self._processExited )
-      qprocess.connect( qprocess, SIGNAL( 'readyReadStandardOutput()' ),
-                        self._readStdout  )
-      qprocess.connect( qprocess, SIGNAL( 'readyReadStandardError()' ),
-                        self._readStderr  )
+      qprocess.finished.connect(self._processExited)
+      qprocess.readyReadStandardOutput.connect(self._readStdout)
+      qprocess.readyReadStandardError.connect(self._readStderr)
       return qprocess
 
 

@@ -51,11 +51,15 @@ from soma.gui.base import ApplicationBaseGUI, GUI
 
 from soma.functiontools import partial
 import sys
+try:
+    import soma.aims.aimsguisip # force loading the right Qt
+except ImportError:
+    pass
 import soma.qt_gui.qt_backend
-from soma.qt_gui.qt_backend import QtGui, QtCore
-import sip
-
 soma.qt_gui.qt_backend.set_qt_backend(compatible_qt5=True)
+print('Qt backend:', soma.qt_gui.qt_backend.get_qt_backend())
+import sip
+from soma.qt_gui.qt_backend import QtGui, QtCore
 
 #-------------------------------------------------------------------------------
 class WidgetGeometryUpdater( object ):
@@ -136,11 +140,11 @@ class EditionDialog( QtGui.QDialog ):
     self.btnOk = QtGui.QPushButton( _( '&Ok' ) )
     self.btnOk.setDefault( True )
     layout1.addWidget( self.btnOk )
-    self.connect( self.btnOk, QtCore.SIGNAL( 'clicked()' ), QtCore.SLOT( 'accept()' ) )
-    
+    self.btnOk.clicked.connect(self.accept)
+
     self.btnCancel = QtGui.QPushButton( _( '&Cancel' ) )
     layout1.addWidget( self.btnCancel )
-    self.connect( self.btnCancel, QtCore.SIGNAL( 'clicked()' ), QtCore.SLOT( 'reject()' ) )
+    self.btnCancel.clicked.connect(self.reject)
 
 
   def cleanup( self, alsoDelete=False ):

@@ -44,6 +44,7 @@ buttonMargin = QSize( 4, 4 )
 
 #----------------------------------------------------------------------------
 class DataEditor( object ):
+
   def __init__( self ):
     pass
 
@@ -68,6 +69,10 @@ class DataEditor( object ):
 
 #----------------------------------------------------------------------------
 class StringEditor( QLineEdit, DataEditor ):
+  
+  noDefault = QtCore.Signal(unicode)
+  newValidValue = QtCore.Signal(unicode, object)
+  
   def __init__( self, parameter, parent, name ):
     DataEditor.__init__( self )
     QLineEdit.__init__( self, parent )
@@ -75,8 +80,8 @@ class StringEditor( QLineEdit, DataEditor ):
       self.setObjectName( name )
     self.parameter = parameter
     self.setMaxLength(-1)
-    self.connect( self, SIGNAL( 'returnPressed()' ), self.setFocusNext )
-    self.connect( self, SIGNAL( 'lostFocus()' ), self.checkValue )
+    self.returnPressed.connect(self.setFocusNext)
+    self.lostFocus.connect(self.checkValue)
     if self.parameter.placeholder_text is not None:
       self.setPlaceholderText(self.parameter.placeholder_text)
     self.value = None
@@ -105,8 +110,8 @@ class StringEditor( QLineEdit, DataEditor ):
     if value != self.value:
       self.value = value
       if not default:
-        self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
-      self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
+        self.noDefault.emit(unicode(self.objectName()))
+      self.newValidValue.emit(unicode(self.objectName()), self.value)
 
   def setFocusNext( self ):
     self.focusNextChild()
@@ -115,8 +120,8 @@ class StringEditor( QLineEdit, DataEditor ):
     value = self._valueFromText( unicode( self.text() ) )
     if value != self.getValue():
       self.value = value
-      self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
-      self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
+      self.noDefault.emit(unicode(self.objectName()))
+      self.newValidValue.emit(unicode(self.objectName()), self.value)
 
 
 
@@ -178,20 +183,24 @@ class FloatEditor( StringEditor ):
 
 #----------------------------------------------------------------------------
 class ChoiceEditor( QComboBox, DataEditor ):
+
+  noDefault = QtCore.Signal(unicode)
+  newValidValue = QtCore.Signal(unicode, object)
+  
   def __init__( self, parameter, parent, name ):
     QComboBox.__init__( self, parent )
     DataEditor.__init__( self )
     if name:
       self.setObjectName( name )
     self.setSizeAdjustPolicy(QComboBox.AdjustToContents)
-    self.connect( self, SIGNAL( 'activated( int )' ), self.newValue )
+    self.activated.connect(self.newValue)
     self.parameter = parameter
     for n, v in self.parameter.values:
       self.addItem( n )
 #dbg#    print 'ChoiceEditor values:', self.parameter.values
     self.value = self.parameter.values[ 0 ][ 1 ]
     self.parameter.warnChoices( self.changeChoices )
-    self.connect( self, SIGNAL( 'destroyed()' ), self.releaseCallbacks )
+    self.destroyed.connect(self.releaseCallbacks)
 
   def releaseCallbacks( self ):
 #dbg#    print 'ChoiceEditor.releaseCallbacks'
@@ -223,9 +232,8 @@ class ChoiceEditor( QComboBox, DataEditor ):
       value = self.parameter.values[i][1]
     if self.value != value:
       self.value = self.parameter.values[self.currentIndex()][1]
-      self.emit(SIGNAL('noDefault'), unicode(self.objectName()))
-      self.emit(SIGNAL('newValidValue'), unicode(self.objectName()),
-                self.value)
+      self.noDefault.emit(unicode(self.objectName()))
+      self.newValidValue.emit(unicode(self.objectName()), self.value)
 
   def changeChoices( self ):
     oldValue = self.getValue()
@@ -242,12 +250,16 @@ class ChoiceEditor( QComboBox, DataEditor ):
 
 #----------------------------------------------------------------------------
 class BooleanEditor( QCheckBox, DataEditor ):
+
+  noDefault = QtCore.Signal(unicode)
+  newValidValue = QtCore.Signal(unicode, object)
+  
   def __init__( self, parent, name ):
     QCheckBox.__init__( self, parent )
     DataEditor.__init__( self )
     if name:
       self.setObjectName( name )
-    self.connect( self, SIGNAL( 'stateChanged( int )' ), self.newValue )
+    self.stateChanged.connect(self.newValue)
     self.value = None
 
   def getValue( self ):
@@ -273,20 +285,23 @@ class BooleanEditor( QCheckBox, DataEditor ):
     if value != self.value:
       self.value = value
       if not default:
-        self.emit(SIGNAL('noDefault'), unicode(self.objectName()))
-      self.emit(SIGNAL('newValidValue'), unicode(self.objectName()), value)
+        self.noDefault.emit(unicode(self.objectName()))
+      self.newValidValue.emit(unicode(self.objectName()), value)
 
   def newValue(self):
     value = self._valueFromWidget()
     if value != self.value:
       self.value = value
-      self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
-      self.emit( SIGNAL('newValidValue'), unicode(self.objectName()),
-        value )
+      self.noDefault.emit(unicode(self.objectName()))
+      self.newValidValue.emit(unicode(self.objectName()), value)
 
 
 #----------------------------------------------------------------------------
 class BooleanListEditor( QWidget, DataEditor ):
+
+  noDefault = QtCore.Signal(unicode)
+  newValidValue = QtCore.Signal(unicode, object)
+  
   class BooleanListSelect( QWidget ): # Ex QSemiModal
     def __init__( self, clEditor, name ):
       QWidget.__init__( self, clEditor.topLevelWidget(), Qt.Dialog | Qt.Tool | Qt.WindowStaysOnTopHint )
@@ -307,10 +322,10 @@ class BooleanListEditor( QWidget, DataEditor ):
       hb.addWidget( self.valueSelect )
       btn = QPushButton( _t_('Add'), self )
       hb.addWidget( btn )
-      self.connect( btn, SIGNAL( 'clicked()' ), self.add )
+      btn.clicked.connect(self.add)
       btn = QPushButton( _t_('Remove'), self )
       hb.addWidget( btn )
-      self.connect( btn, SIGNAL( 'clicked()' ), self.remove )
+      btn.clicked.connect(self.remove)
       layout.addLayout( hb )
       self.list = QListWidget( self )
       layout.addWidget( self.list )
@@ -322,10 +337,10 @@ class BooleanListEditor( QWidget, DataEditor ):
       hb.addItem( spacer )
       btn =QPushButton( _t_('Ok'), self )
       hb.addWidget( btn )
-      self.connect( btn, SIGNAL( 'clicked()' ), self._ok )
-      btn =QPushButton( _t_('Cancel'), self )
+      btn.clicked.connect(self._ok)
+      btn = QPushButton( _t_('Cancel'), self )
       hb.addWidget( btn )
-      self.connect( btn, SIGNAL( 'clicked()' ), self._cancel )
+      btn.clicked.connect(self._cancel)
       layout.addLayout( hb )
       self.value = []
 
@@ -383,10 +398,10 @@ class BooleanListEditor( QWidget, DataEditor ):
     self.parameter = parameter
     self.sle = StringListEditor( self, name )
     layout.addWidget(self.sle)
-    self.connect( self.sle, SIGNAL( 'newValidValue' ), self.checkValue )
+    self.sle.newValidValue.connect(self.checkValue)
     self.btn = QPushButton( '...', self )
     layout.addWidget(self.btn)
-    self.connect( self.btn, SIGNAL( 'clicked()' ), self._selectValues )
+    self.btn.clicked.connect(self._selectValues)
     self.value=None
     self.setValue( None, 1 )
 
@@ -404,8 +419,8 @@ class BooleanListEditor( QWidget, DataEditor ):
     if value != self.value:
       self.value = value
       if not default:
-        self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
-      self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
+        self.noDefault.emit(unicode(self.objectName()))
+      self.newValidValue.emit(unicode(self.objectName()), self.value)
 
 
   def checkValue( self ):
@@ -417,8 +432,8 @@ class BooleanListEditor( QWidget, DataEditor ):
       currentValue = None
     if currentValue != self.getValue():
       self.value = currentValue
-      self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
-      self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
+      self.noDefault.emit(unicode(self.objectName()))
+      self.newValidValue.emit(unicode(self.objectName()), self.value)
 
   def _selectValues( self ):
     w = self.BooleanListSelect( self, unicode(self.objectName()) )
@@ -431,6 +446,10 @@ class BooleanListEditor( QWidget, DataEditor ):
 
 #----------------------------------------------------------------------------
 class OpenChoiceEditor( QComboBox, DataEditor ):
+
+  noDefault = QtCore.Signal(unicode)
+  newValidValue = QtCore.Signal(unicode, object)
+  
   def __init__( self, parameter, parent, name ):
     DataEditor.__init__( self )
     QComboBox.__init__( self, parent )
@@ -445,10 +464,9 @@ class OpenChoiceEditor( QComboBox, DataEditor ):
       self.addItem( n )
     self.value = self.parameter.values[ 0 ][ 1 ]
     self.parameter.warnChoices( self.changeChoices )
-    self.connect( self, SIGNAL( 'activated( int )' ), self.valueSelected )
-    self.connect( self.lineEdit(), SIGNAL( 'returnPressed()' ),
-                  self.setFocusNext )
-    self.connect( self, SIGNAL( 'destroyed()' ), self.releaseCallbacks )
+    self.activated.connect(self.valueSelected)
+    self.lineEdit().returnPressed.connect(self.setFocusNext)
+    self.destroyed.connect(self.releaseCallbacks)
 
 
   def releaseCallbacks(self):
@@ -497,9 +515,8 @@ class OpenChoiceEditor( QComboBox, DataEditor ):
       value = self.parameter.values[i][1]
     if value != self.getValue():
       self.value = value
-      self.emit(SIGNAL('noDefault'), unicode(self.objectName()))
-      self.emit(SIGNAL('newValidValue'), unicode(self.objectName()),
-                self.value)
+      self.noDefault.emit(unicode(self.objectName()))
+      self.newValidValue.emit(unicode(self.objectName()), self.value)
 
 
   def valueSelected( self, index ):
@@ -555,14 +572,18 @@ class MatrixEditor( StringEditor ):
 
 #----------------------------------------------------------------------------
 class StringListEditor( QLineEdit, DataEditor ):
+
+  noDefault = QtCore.Signal(unicode)
+  newValidValue = QtCore.Signal(unicode, object)
+  
   def __init__( self, parent, name ):
     DataEditor.__init__( self )
     QLineEdit.__init__( self, parent )
     if name:
       self.setObjectName( name )
     self.setMaxLength(-1)
-    self.connect( self, SIGNAL( 'returnPressed()' ), self.setFocusNext )
-    self.connect( self, SIGNAL( 'lostFocus()' ), self.checkValue )
+    self.returnPressed.connect(self.setFocusNext)
+    self.lostFocus.connect(self.checkValue)
     self.value = None
     self.setValue( None, True )
 
@@ -612,8 +633,8 @@ class StringListEditor( QLineEdit, DataEditor ):
     if value != self.value:
       self._setValue( value )
       if not default:
-        self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
-      self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
+        self.noDefault.emit(unicode(self.objectName()))
+      self.newValidValue.emit(unicode(self.objectName()), self.value)
 
   def _setValue( self, value ):
     self.value = value
@@ -652,8 +673,8 @@ class StringListEditor( QLineEdit, DataEditor ):
     currentValue = self._valueFromText( unicode( self.text() ) )
     if currentValue != self.getValue() and ( self.getValue() or currentValue ):
       self.value = currentValue
-      self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
-      self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
+      self.noDefault.emit(unicode(self.objectName()) )
+      self.newValidValue.emit(unicode(self.objectName()), self.value )
 
 
 #----------------------------------------------------------------------------
@@ -732,6 +753,10 @@ class FloatListEditor( NumberListEditor ):
 
 #----------------------------------------------------------------------------
 class ChoiceListEditor( QWidget, DataEditor ):
+
+  noDefault = QtCore.Signal(unicode)
+  newValidValue = QtCore.Signal(unicode, object)
+  
   class ChoiceListSelect( QWidget ): # Ex QSemiModal
     def __init__( self, clEditor, name ):
       QWidget.__init__( self, clEditor.topLevelWidget(), Qt.Dialog | Qt.Tool | Qt.WindowStaysOnTopHint )
@@ -757,13 +782,13 @@ class ChoiceListEditor( QWidget, DataEditor ):
       hb.addWidget( self.valueSelect )
       btn = QPushButton( _t_('Add'), self )
       hb.addWidget( btn )
-      self.connect( btn, SIGNAL( 'clicked()' ), self.add )
+      btn.clicked.connect(self.add)
       btn = QPushButton( _t_('Add all'), self )
       hb.addWidget( btn )
-      self.connect( btn, SIGNAL( 'clicked()' ), self.addAll )
+      btn.clicked.connect(self.addAll)
       btn = QPushButton( _t_('Remove'), self )
       hb.addWidget( btn )
-      self.connect( btn, SIGNAL( 'clicked()' ), self.remove )
+      btn.clicked.connect(self.remove)
       layout.addLayout( hb )
       self.list = QListWidget( self )
       layout.addWidget( self.list )
@@ -775,10 +800,10 @@ class ChoiceListEditor( QWidget, DataEditor ):
       hb.addItem( spacer )
       btn =QPushButton( _t_('Ok'), self )
       hb.addWidget( btn )
-      self.connect( btn, SIGNAL( 'clicked()' ), self._ok )
+      btn.clicked.connect(self._ok)
       btn =QPushButton( _t_('Cancel'), self )
       hb.addWidget( btn )
-      self.connect( btn, SIGNAL( 'clicked()' ), self._cancel )
+      btn.clicked.connect(self._cancel)
       layout.addLayout( hb )
       self.value = []
 
@@ -840,10 +865,10 @@ class ChoiceListEditor( QWidget, DataEditor ):
     self.parameter = parameter
     self.sle = StringListEditor( self, name )
     layout.addWidget(self.sle)
-    self.connect( self.sle, SIGNAL( 'newValidValue' ), self.checkValue )
+    self.sle.newValidValue.connect(self.checkValue)
     self.btn = QPushButton( '...', self )
     layout.addWidget(self.btn)
-    self.connect( self.btn, SIGNAL( 'clicked()' ), self._selectValues )
+    self.btn.clicked.connect(self._selectValues)
     self.value=None
     self.setValue( None, 1 )
 
@@ -872,8 +897,8 @@ class ChoiceListEditor( QWidget, DataEditor ):
     if value != self.value:
       self.value = value
       if not default:
-        self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
-      self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
+        self.noDefault.emit(unicode(self.objectName()))
+      self.newValidValue.emit(unicode(self.objectName()), self.value)
 
 
   def checkValue( self ):
@@ -885,8 +910,8 @@ class ChoiceListEditor( QWidget, DataEditor ):
       currentValue = None
     if currentValue != self.getValue():
       self.value = currentValue
-      self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
-      self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), self.value )
+      self.noDefault.emit(unicode(self.objectName()))
+      self.newValidValue.emit(unicode(self.objectName()), self.value)
 
   def _selectValues( self ):
     w = self.ChoiceListSelect( self, unicode(self.objectName()) )
@@ -899,6 +924,10 @@ class ChoiceListEditor( QWidget, DataEditor ):
 
  #-------------------------------------------------------------------------------
 class PointEditor( QWidget, DataEditor ):
+
+  noDefault = QtCore.Signal(unicode)
+  newValidValue = QtCore.Signal(unicode, object)
+  
   def __init__( self, parameter, parent, name ):
     if getattr( PointEditor, 'pixSelect', None ) is None:
       setattr( PointEditor, 'pixSelect',
@@ -920,8 +949,8 @@ class PointEditor( QWidget, DataEditor ):
     self.nle = NumberListEditor( None, name )
     layout.addWidget(self.nle)
 
-    self.connect( self.nle, SIGNAL( 'newValidValue' ), SIGNAL( 'newValidValue' ) )
-    self.connect( self.nle, SIGNAL( 'noDefault' ), SIGNAL( 'noDefault' ) )
+    self.nle.newValidValue.connect(self.newValidValue)
+    self.nle.noDefault.connect(self.noDefault)
 
     self.btnSelect = QPushButton( )
     layout.addWidget(self.btnSelect)
@@ -929,7 +958,7 @@ class PointEditor( QWidget, DataEditor ):
     self.btnSelect.setIconSize(buttonIconSize)
     self.btnSelect.setFixedSize( buttonIconSize + buttonMargin )
     self.btnSelect.setFocusPolicy( Qt.NoFocus )
-    self.connect( self.btnSelect, SIGNAL( 'clicked()' ), self.selectPressed )
+    self.btnSelect.clicked.connect(self.selectPressed)
 
     self.nle.setValue( None )
 
@@ -975,6 +1004,10 @@ class PointEditor( QWidget, DataEditor ):
 
 #-------------------------------------------------------------------------------
 class PointListEditor( QWidget, DataEditor ):
+
+  noDefault = QtCore.Signal(unicode)
+  newValidValue = QtCore.Signal(unicode, object)
+  
   def __init__( self, parameter, parent, name ):
     if getattr( PointListEditor, 'pixSelect', None ) is None:
       setattr( PointListEditor, 'pixSelect',
@@ -992,9 +1025,8 @@ class PointListEditor( QWidget, DataEditor ):
     self.led = QLineEdit( )
     self.led.setMaxLength(-1)
     layout.addWidget(self.led)
-    self.connect( self.led, SIGNAL( 'textChanged( const QString & )' ),
-                  self.textChanged )
-    self.connect( self.led, SIGNAL( 'returnPressed()' ), self.setFocusNext )
+    self.led.textChanged.connect(self.textChanged)
+    self.led.returnPressed.connect(self.setFocusNext)
     self.setFocusProxy( self.led )
 
     self.btnSelect = QPushButton()
@@ -1004,7 +1036,7 @@ class PointListEditor( QWidget, DataEditor ):
     self.btnSelect.setFixedSize( buttonIconSize + buttonMargin )
     self.btnSelect.setCheckable(True)
     self.btnSelect.setFocusPolicy( Qt.NoFocus )
-    self.connect( self.btnSelect, SIGNAL( 'clicked()' ), self.selectPressed )
+    self.btnSelect.clicked.connect(self.selectPressed)
 
     self.btnErase = QPushButton()
     layout.addWidget(self.btnErase)
@@ -1012,7 +1044,7 @@ class PointListEditor( QWidget, DataEditor ):
     self.btnErase.setIconSize(buttonIconSize)
     self.btnErase.setFixedSize( buttonIconSize + buttonMargin )
     self.btnSelect.setFocusPolicy( Qt.NoFocus )
-    self.connect( self.btnErase, SIGNAL( 'clicked()' ), self.erasePressed )
+    self.btnErase.clicked.connect(self.erasePressed)
 
     self.setValue( None, 1 )
 
@@ -1044,8 +1076,8 @@ class PointListEditor( QWidget, DataEditor ):
     except:
       pass
     else:
-      self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
-      self.emit( SIGNAL('newValidValue'), unicode(self.objectName()), v )
+      self.noDefault.emit(unicode(self.objectName()))
+      self.newValidValue.emit(unicode(self.objectName()), v)
 
 
   def selectPressed( self ):
@@ -1089,33 +1121,33 @@ class GenericListSelection( QWidget ):
     self.values = []
 
     self.lbxValues = QListWidget( )
-    self.connect( self.lbxValues, SIGNAL('currentItemChanged( QListWidgetItem *, QListWidgetItem *  )'), self._currentChanged )
+    self.lbxValues.currentItemChanged.connect(self._currentChanged)
     layout.addWidget( self.lbxValues )
 
     hb = QHBoxLayout()
     hb.setSpacing( 6 )
 
     self.btnAdd = QPushButton( _t_( 'Add' ) )
-    self.connect( self.btnAdd, SIGNAL( 'clicked()' ), self._add )
+    self.btnAdd.clicked.connect(self._add)
     hb.addWidget( self.btnAdd )
 
     self.btnRemove = QPushButton( _t_( 'Remove' ) )
     self.btnRemove.setEnabled( 0 )
-    self.connect( self.btnRemove, SIGNAL( 'clicked()' ), self._remove )
+    self.btnRemove.clicked.connect(self._remove)
     hb.addWidget( self.btnRemove )
 
     self.btnUp = QPushButton( )
     self.btnUp.setIcon( self.pixUp )
     self.btnUp.setIconSize(buttonIconSize)
     self.btnUp.setEnabled( 0 )
-    self.connect( self.btnUp, SIGNAL( 'clicked()' ), self._up )
+    self.btnUp.clicked.connect(self._up)
     hb.addWidget( self.btnUp )
 
     self.btnDown = QPushButton( )
     self.btnDown.setIcon( self.pixDown )
     self.btnDown.setIconSize(buttonIconSize)
     self.btnDown.setEnabled( 0 )
-    self.connect( self.btnDown, SIGNAL( 'clicked()' ), self._down )
+    self.btnDown.clicked.connect(self._down)
     hb.addWidget( self.btnDown )
 
     spacer = QSpacerItem( 10, 10, QSizePolicy.Expanding, QSizePolicy.Minimum )
@@ -1130,10 +1162,10 @@ class GenericListSelection( QWidget ):
     hb.addItem( spacer )
     btn =QPushButton( _t_('Ok') )
     hb.addWidget( btn )
-    self.connect( btn, SIGNAL( 'clicked()' ), self._ok )
+    btn.clicked.connect(self._ok)
     btn =QPushButton( _t_('Cancel') )
     hb.addWidget( btn )
-    self.connect( btn, SIGNAL( 'clicked()' ), self._cancel )
+    btn.clicked.connect(self._cancel)
     layout.addLayout( hb )
 
     neuroConfig.registerObject( self )
@@ -1223,13 +1255,17 @@ class GenericListSelection( QWidget ):
 
 #----------------------------------------------------------------------------
 class ListOfListEditor( QPushButton, DataEditor ):
+
+  noDefault = QtCore.Signal(unicode)
+  newValidValue = QtCore.Signal(unicode, object)
+  
   def __init__( self, parameter, parent, name, context=None ):
     QPushButton.__init__( self, parent )
     self.editValuesDialog = None
     if name:
       self.setObjectName( name )
     self.setValue( None, True )
-    self.connect( self, SIGNAL( 'clicked()' ), self.startEditValues )
+    self.clicked.connect(self.startEditValues)
 
   def getValue( self ):
     return self._value
@@ -1244,13 +1280,14 @@ class ListOfListEditor( QPushButton, DataEditor ):
   def startEditValues( self ):
     if self.editValuesDialog is None:
       self.editValuesDialog = GenericListSelection( self.parentWidget(), self.objectName() )
-      self.connect( self.editValuesDialog, SIGNAL( 'accept' ), self.acceptEditedValues )
+      self.editValuesDialog.accept.connect(self.acceptEditedValues)
     self.editValuesDialog.show()
 
 
   def acceptEditedValues( self ):
-    self.emit( SIGNAL( 'newValidValue' ), unicode(self.objectName()), self.acceptEditedValues.values )
-    self.emit( SIGNAL('noDefault'), unicode(self.objectName()) )
+    self.newValidValue.emit(unicode(self.objectName()), 
+                            self.acceptEditedValues.values)
+    self.noDefault.emit(unicode(self.objectName()))
 
 
 ##----------------------------------------------------------------------------
@@ -1294,6 +1331,10 @@ class ObjectsSelection( QListWidget ):
 
 #----------------------------------------------------------------------------
 class NotImplementedEditor( QLabel, DataEditor ):
+
+  noDefault = QtCore.Signal(unicode)
+  newValidValue = QtCore.Signal(unicode, object)
+  
   def __init__( self, parent ):
     QLabel.__init__( self, '<font color=red>' + \
                      _t_( 'editor not implemented' ) + '</font>', parent )

@@ -34,7 +34,7 @@ from __future__ import print_function
 import sys, os
 from itertools import chain
 
-from brainvisa.processing.qtgui.backwardCompatibleQt import QDialog, Qt, QVBoxLayout, QComboBox, SIGNAL, SLOT, QLabel, QApplication, QPixmap, QListWidget, QWidget, QGridLayout, QFrame, QSize
+from brainvisa.processing.qtgui.backwardCompatibleQt import QDialog, Qt, QVBoxLayout, QComboBox, Signal, Slot, QLabel, QApplication, QPixmap, QListWidget, QWidget, QGridLayout, QFrame, QSize
 from soma.qt4gui.designer import loadUi
 from soma.qt_gui.qt_backend.QtGui import QAbstractItemView, QSizePolicy
 from soma.qt4gui.api import SimpleTable
@@ -57,16 +57,20 @@ if sys.version_info[0] >= 3:
 
 #----------------------------------------------------------------------------
 class SignalNameComboBox( QComboBox ):
+
+  activatedNamed = Signal(str, int)
+
   def __init__( self, editable, parent, name ):
     QComboBox.__init__( self, parent )
     if name:
       self.setObjectName(name)
     self.setEditable(editable)
-    self.connect( self, SIGNAL( 'activated(int)' ), self.signalName )
+    self.activated[int].connect(self.signalName)
     #self.setMaximumWidth(600)
-    
-  def signalName( self, index ):
-    self.emit( SIGNAL( 'activated' ), str( self.objectName() ), index )
+
+  @Slot(int)
+  def signalName(self, index):
+    self.activatedNamed.emit(str(self.objectName()), index)
 
 
 #----------------------------------------------------------------------------
@@ -110,6 +114,9 @@ def diskItemFilter( database, diskItem, required, explainRejection=False ):
 
 #----------------------------------------------------------------------------
 class DiskItemBrowser( QDialog ):
+
+  selected = Signal(DiskItem)
+
   _savedLayout = None
   
   def __init__( self, database, parent=None, write=False, multiple=False,
@@ -142,12 +149,11 @@ class DiskItemBrowser( QDialog ):
     scrollarea.setWidget(self.attributesWidget)
     self.attributesWidget.show()
     scrollarea.setWidgetResizable(True)
-    
-    self.connect( self._ui.tblItems,
-        SIGNAL( 'clicked ( const QModelIndex & )' ), self.itemSelected )
-    self.connect( self._ui.tblItems,
-        SIGNAL( 'itemSelectionChanged()' ),
-        self.itemSelected )
+
+    self._ui.tblItems.clicked.connect(self.itemSelected)
+    self._ui.tblItems.activated.connect(self.itemSelected)
+    self._ui.tblItems.entered.connect(self.itemSelected)
+    self._ui.tblItems.pressed.connect(self.itemSelected)
     #print('!DiskItemBrowser!', database, selection, required)
     self._requiredAttributes = required
     self._database = database
@@ -183,7 +189,7 @@ class DiskItemBrowser( QDialog ):
     if self._multiple:
       self._ui.tblItems.setSelectionMode( QAbstractItemView.ExtendedSelection )
     else:
-      self.connect( self._ui.tblItems, SIGNAL( 'doubleClicked ( const QModelIndex & )' ), self, SLOT('accept()') )
+      self._ui.tblItems.doubleClicked.connect(self.accept)
 
     layoutRow = 0
     e,v,d = self._database.getAttributesEdition()
@@ -239,12 +245,12 @@ class DiskItemBrowser( QDialog ):
 
     self._lastSelection = None
     self.rescan()
-    
-    self.connect( self._ui.btnReset, SIGNAL( 'clicked()' ), self.resetSelectedAttributes )
-    self.connect( self._ui.btnOk, SIGNAL( 'clicked()' ), self, SLOT( 'accept()' ) )
-    self.connect( self._ui.btnCancel, SIGNAL( 'clicked()' ), self, SLOT( 'reject()' ) )
-    self.connect( self._ui.hsplitter, SIGNAL( 'splitterMoved ( int, int )' ), self.saveLayout )
-    self.connect( self._ui.vsplitter, SIGNAL( 'splitterMoved ( int, int )' ), self.saveLayout )
+
+    self._ui.btnReset.clicked.connect(self.resetSelectedAttributes)
+    self._ui.btnOk.clicked.connect(self.accept)
+    self._ui.btnCancel.clicked.connect(self.reject)
+    self._ui.hsplitter.splitterMoved.connect(self.saveLayout)
+    self._ui.vsplitter.splitterMoved.connect(self.saveLayout)
 
   def sizeHint(self):
     attributeSize=self.attributesWidget.sizeHint()
@@ -283,7 +289,7 @@ class DiskItemBrowser( QDialog ):
       cmb._modificationTimer = QLineEditModificationTimer( cmb.lineEdit() )
       cmb._modificationTimer.userModification.connect( partial(
         self._comboTextChanged, name=attributeName ) )
-    cmb.connect( cmb, SIGNAL( 'activated' ), self._comboSelected )
+    cmb.activatedNamed.connect(self._comboSelected)
     gridLayout.addWidget( cmb, layoutRow, 1 )
     return cmb
 
@@ -301,9 +307,9 @@ class DiskItemBrowser( QDialog ):
       item = (self._items[ index ] if isinstance(self._items[ index ], DiskItem) else self._database.database(self._items[index][1]).getDiskItemFromUuid(self._items[ index ][0]))
       self._items[ index ] = item
       self._ui.textBrowser.setText( self.diskItemDisplayText( item ) )
-      self.emit( SIGNAL('selected'), item )
+      self.selected.emit(item)
     else:
-      self.emit( SIGNAL('selected'), None )
+      self.selected.emit(None)
     if self._multiple:
       self._ui.labItems.setText( _t_( '%d item(s) - %d selected' ) % ( len( self._items ), len(self._ui.tblItems.selectionModel().selectedRows(), ) ) )
 
@@ -555,9 +561,8 @@ class DiskItemBrowser( QDialog ):
         # if only one item, show all columns even if they are (all) unique
         uniquecols = set()
       self._ui.tblItems.setModel( self._tableData )
-      self.connect( self._ui.tblItems.selectionModel(),
-        SIGNAL( 'selectionChanged( const QItemSelection &, const QItemSelection & )' ),
-        self.itemSelectionChanged )
+      self._ui.tblItems.selectionModel().selectionChanged.connect(
+        self.itemSelectionChanged)
       self._ui.labItems.setText( _t_( '%d item(s)' ) % ( len( self._items ), ) )
       self._ui.tblItems.horizontalHeader().setMovable( True )
       if self._items:

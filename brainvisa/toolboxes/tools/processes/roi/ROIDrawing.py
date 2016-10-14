@@ -49,7 +49,7 @@ def initialize( self ):
 
 def inlineGUI( self, values, context, parent ):
   btn = QPushButton( _t_( 'Show' ), parent )
-  btn.connect( btn, SIGNAL( 'clicked()' ), context._runButton )
+  btn.clicked.connect(context._runButton)
   return btn
 
 def execution( self, context ):

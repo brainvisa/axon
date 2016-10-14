@@ -152,12 +152,9 @@ class TgStandardBase( TgBase, TgAutoNamed, ObservableAttributes ) :
       #self.timerInterval = timerInterval
     #self.__timer = qt.QTimer( self )
     #self.__internalModification = False
-    #self.connect( self.qLineEdit, qt.SIGNAL( 'textChanged( const QString & )'), 
-                  #self._userModification )
-    #self.connect( self.qLineEdit, qt.SIGNAL( 'lostFocus()' ), 
-                  #self._noMoreUserModification,  )
-    #self.connect( self.__timer, qt.SIGNAL( 'timeout()' ), 
-                  #qt.PYSIGNAL( 'userModification' ) )
+    #self.qLineEdit.textChanged.connect(self._userModification )
+    #self.qLineEdit.lostFocus.connect(self._noMoreUserModification)
+    #self.__timer.timeout.connect(userModification)
 
 
   #def _userModification( self ):

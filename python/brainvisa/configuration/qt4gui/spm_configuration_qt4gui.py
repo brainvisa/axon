@@ -72,7 +72,7 @@ class SPMConfiguration_Qt4GUI( QtGUI ):
     layout2.addWidget( self.btnGuess )
     spacer = QSpacerItem( 1, 1, QSizePolicy.Expanding, QSizePolicy.Minimum )
     layout2.addItem( spacer )
-    QWidget.connect( self.btnGuess, qt.SIGNAL( 'pressed()' ), self.guess )
+    self.btnGuess.pressed.connect(self.guess)
 
     layout.addLayout( layout2 )
     return widget

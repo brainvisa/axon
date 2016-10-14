@@ -49,7 +49,7 @@ import os
 import sys
 from six.moves import StringIO
 from soma.qt_gui.qt_backend.QtGui import QTreeWidget, QTreeWidgetItem, QListWidget, QListWidgetItem, QPixmap, QDrag, QMenu, QPainter, QPen, QCursor, QSizePolicy, QIcon, qApp, QKeyEvent, QApplication
-from soma.qt_gui.qt_backend.QtCore import Qt, QEvent, QMimeData, QObject, QPoint, QRect, QSize, QTimer, SIGNAL
+from soma.qt_gui.qt_backend.QtCore import Qt, QEvent, QMimeData, QObject, QPoint, QRect, QSize, QTimer
 import copy
 from soma.notification import ObservableList, EditableTree
 from soma.minf.api import defaultReducer, createMinfWriter, iterateMinf, minfFormat
@@ -153,8 +153,8 @@ class EditableTreeWidget(QTreeWidget):
     # keep a reference to the model for control event and register a listener to be aware of changes
     self.setModel(treeModel)
     
-    self.connect(self, SIGNAL("itemChanged( QTreeWidgetItem *, int )"), self.itemRenamed)
-    self.connect(self, SIGNAL( 'customContextMenuRequested ( const QPoint & )'), self.openContextMenu)
+    self.itemChanged.connect(self.itemRenamed)
+    self.customContextMenuRequested.connect(self.openContextMenu)
 
   def setModel(self, m):
     """Construct the children of the tree reading the model given.
@@ -907,7 +907,7 @@ class ObservableListWidget(QTreeWidget):
     self.setHeaderLabels([""])
     self.iconDim=iconSize
     self.setIconSize(QSize(*iconSize))
-    self.connect(self, SIGNAL("currentItemChanged (  QTreeWidgetItem *, QTreeWidgetItem * )", self.currentItemRenamed))
+    self.currentItemChanged.connect(self.currentItemRenamed)
     self.setContextMenuPolicy(Qt.CustomContextMenu)
     # keep a reference to the model for control event and register a listener to be aware of changes
     self.setModel(model)
@@ -1107,7 +1107,7 @@ class TreeListWidget(QTreeWidget):
     self.setAcceptDrops(True)
     self.draggedItems=[]
     self.dropOn=None
-    self.connect(self, SIGNAL("currentItemChanged ( QTreeWidgetItem *, QTreeWidgetItem * )"), self.currentItemRenamed )
+    self.currentItemChanged.connect(self.currentItemRenamed)
     self.setContextMenuPolicy(Qt.CustomContextMenu)
     # keep a reference to the model for control event and register a listener to be aware of changes
     self.setModel(model)

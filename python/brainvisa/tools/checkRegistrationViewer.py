@@ -163,19 +163,13 @@ class CheckRegistration():
         self._mainDiag.printBt.setIcon(QtGui.QIcon(_findExtraFile("print_gray.png", "icons")))
         self._mainDiag.printBt.setIconSize(QtCore.QSize(24, 24))
         self._mainDiag.printBt.setAutoRaise(True)
-        
-        QtCore.QObject.connect(self._mainDiag.displayRowOptionsCb,
-                               QtCore.SIGNAL('stateChanged(int)'),
-                               self._displayRowOptionsChecked)
-        QtCore.QObject.connect(self._mainDiag.display3DCursorCb,
-                               QtCore.SIGNAL('stateChanged(int)'),
-                               self._displayCursorChecked)
-        QtCore.QObject.connect(self._mainDiag.printBt,
-                               QtCore.SIGNAL('clicked()'),
-                               self._printClicked)
-        QtCore.QObject.connect(self._mainDiag.closeBt,
-                               QtCore.SIGNAL('clicked()'),
-                               self._mainDiag.accept)
+
+        self._mainDiag.displayRowOptionsCb.stateChanged.connect(
+            self._displayRowOptionsChecked)
+        self._mainDiag.display3DCursorCb.stateChanged.connect(
+            self._displayCursorChecked)
+        self._mainDiag.printBt.clicked.connect(self._printClicked)
+        self._mainDiag.closeBt.clicked.connect(self._mainDiag.accept)
         
         self._loadAddRowFrame()
         self._loadPaletteFrame()
@@ -304,9 +298,7 @@ class CheckRegistration():
         deleteBt.setIcon(QtGui.QIcon(_findExtraFile("close_gray.png", "icons")))
         deleteBt.setIconSize(QtCore.QSize(24, 24))
         deleteBt.setAutoRaise(True)
-        QtCore.QObject.connect(deleteBt,
-                               QtCore.SIGNAL("clicked()"),
-                               self._deleteRow)
+        deleteBt.clicked.connect(self._deleteRow)
         buttonHLay.addWidget(deleteBt)
         
         downBt = QtGui.QToolButton()
@@ -314,9 +306,7 @@ class CheckRegistration():
         downBt.setIcon(QtGui.QIcon(_findExtraFile("down_gray.png", "icons")))
         downBt.setIconSize(QtCore.QSize(24, 24))
         downBt.setAutoRaise(True)
-        QtCore.QObject.connect(downBt,
-                               QtCore.SIGNAL("clicked()"),
-                               self._downClicked)
+        downBt.clicked.connect(self._downClicked)
         buttonHLay.addWidget(downBt)
         
         upBt = QtGui.QToolButton()
@@ -324,9 +314,7 @@ class CheckRegistration():
         upBt.setIcon(QtGui.QIcon(_findExtraFile("up_gray.png", "icons")))
         upBt.setIconSize(QtCore.QSize(24, 24))
         upBt.setAutoRaise(True)
-        QtCore.QObject.connect(upBt,
-                               QtCore.SIGNAL("clicked()"),
-                               self._upClicked)
+        upBt.clicked.connect(self._upClicked)
         buttonHLay.addWidget(upBt)
         buttonHLay.addSpacerItem(QtGui.QSpacerItem(20, 20, hPolicy = QtGui.QSizePolicy.Expanding))
         vLay.addSpacerItem(QtGui.QSpacerItem(20, 20, vPolicy = QtGui.QSizePolicy.Expanding))
@@ -341,11 +329,9 @@ class CheckRegistration():
         else:
             slider.setValue(50)
         self._rowFrames[frame]["slider"] = slider
-        QtCore.QObject.connect(slider,
-                               QtCore.SIGNAL('valueChanged(int)'),
-                               self._mixingRateValueChanged)
+        slider.valueChanged.connect(self._mixingRateValueChanged)
         paramHLay.addWidget(slider)
-        
+
         paramVLay = QtGui.QVBoxLayout()
         paramHLay.addLayout(paramVLay)
         paramVLay.setMargin(0)
@@ -355,9 +341,7 @@ class CheckRegistration():
                 paramVLay.addSpacerItem(QtGui.QSpacerItem(20, 20, vPolicy = QtGui.QSizePolicy.Expanding))
 
             paramVLay.addWidget(imageCb)
-            QtCore.QObject.connect(imageCb,
-                                   QtCore.SIGNAL('currentIndexChanged(int)'),
-                                   self._imageSelectionChanged)
+            imageCb.currentIndexChanged.connect(self._imageSelectionChanged)
             self._rowFrames[frame]["combobox"][i] = imageCb
 
         vLay.addSpacerItem(QtGui.QSpacerItem(20, 20, vPolicy = QtGui.QSizePolicy.Expanding))
@@ -618,9 +602,7 @@ class CheckRegistration():
         bt.setIcon(QtGui.QIcon(_findExtraFile("plus_gray.png", "icons")))
         bt.setIconSize(QtCore.QSize(24, 24))
         bt.setAutoRaise(True)
-        QtCore.QObject.connect(bt,
-                               QtCore.SIGNAL("clicked()"),
-                               self._addRowClicked)
+        bt.clicked.connect(self._addRowClicked)
         hLay.addWidget(bt)
 
     def _loadPaletteFrame(self):
@@ -631,9 +613,8 @@ class CheckRegistration():
         self._paletteImageCb = self._createComboBoxFromImages(secondary=True)
         self._paletteImageCb.removeItem(0)
         hLay.addWidget(self._paletteImageCb)
-        QtCore.QObject.connect(self._paletteImageCb,
-                               QtCore.SIGNAL('currentIndexChanged(int)'),
-                               self._paletteImageChanged)
+        self._paletteImageCb.currentIndexChanged.connect(
+            self._paletteImageChanged)
         paletteFilter = ['B-W LINEAR', 'Blue-Green-Red-Yellow',
                          'Blue-Red2', 'French', 'RAINBOW',
                          'RED TEMPERATURE', 'Rainbow2',
@@ -642,9 +623,8 @@ class CheckRegistration():
                                             parent = self._mainDiag.paletteFrame,
                                             default = 'B-W LINEAR',
                                             palette_filter = paletteFilter)
-        QtCore.QObject.connect(self._paletteEditor,
-                               QtCore.SIGNAL("paletteMinMaxChanged(PyQt_PyObject)"),
-                               self._paletteMinMaxChanged)
+        self._paletteEditor.paletteMinMaxChanged.connect(
+            self._paletteMinMaxChanged)
         hLay.addWidget(self._paletteEditor)
     
     def _addRowClicked(self):
