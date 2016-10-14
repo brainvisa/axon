@@ -2686,7 +2686,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
   def _run(self):
     self._runButton()
 
-  def _runButton( self, checked=False, executionFunction=None ):
+  def _runButton( self, executionFunction=None ):
     try:
       try:
         # disable run button when clicked to avoid several successive clicks

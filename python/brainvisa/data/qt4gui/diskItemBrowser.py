@@ -246,7 +246,7 @@ class DiskItemBrowser( QDialog ):
     self._lastSelection = None
     self.rescan()
 
-    self._ui.btnReset.clicked.connect(self.resetSelectedAttributes)
+    self._ui.btnReset.clicked[()].connect(self.resetSelectedAttributes)
     self._ui.btnOk.clicked.connect(self.accept)
     self._ui.btnCancel.clicked.connect(self.reject)
     self._ui.hsplitter.splitterMoved.connect(self.saveLayout)
@@ -718,7 +718,7 @@ class DiskItemBrowser( QDialog ):
     else:
       QDialog.keyPressEvent(self, event)
     
-  def resetSelectedAttributes(self, checked=False, diskItem = None, 
+  def resetSelectedAttributes(self, diskItem = None, 
                               selectedAttributes={}):
     self._selectedAttributes = {}
     self._lastSelection = None
