@@ -1171,7 +1171,7 @@ class ExecutionContextGUI( brainvisa.processes.ExecutionContext):
     brainvisa.processes.ExecutionContext.__init__( self )
 
   def ask( self, message, *buttons, **kwargs ):
-    modal=kwargs.get("modal", 1)
+    modal = kwargs.get("modal", 1)
     dlg = self.dialog(modal, message, None, *buttons)
     return mainThreadActions().call( dlg.call )
 
@@ -3419,9 +3419,9 @@ class UserDialog( QDialog ):
       group1Widget.close( )
     else:
       group1Widget.setSizePolicy( QSizePolicy( QSizePolicy.Minimum, QSizePolicy.Fixed ) )
-      self.group1.buttonClicked.connect(self._doAction)
+      self.group1.buttonClicked[int].connect(self._doAction)
     group2Widget.setSizePolicy( QSizePolicy( QSizePolicy.Minimum, QSizePolicy.Fixed ) )
-    self.group2.buttonClicked.connect(self.select)
+    self.group2.buttonClicked[int].connect(self.select)
 
   def select( self, value ):
     for e in self.editors.values():
