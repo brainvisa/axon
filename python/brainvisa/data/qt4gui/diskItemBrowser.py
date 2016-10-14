@@ -718,7 +718,8 @@ class DiskItemBrowser( QDialog ):
     else:
       QDialog.keyPressEvent(self, event)
     
-  def resetSelectedAttributes( self, diskItem = None, selectedAttributes={} ):
+  def resetSelectedAttributes(self, checked=False, diskItem = None, 
+                              selectedAttributes={}):
     self._selectedAttributes = {}
     self._lastSelection = None
     if diskItem is not None:

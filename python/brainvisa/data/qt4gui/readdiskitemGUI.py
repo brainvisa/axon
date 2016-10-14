@@ -464,7 +464,8 @@ class DiskItemListEditor( QWidget, DataEditor ):
   newValidValue = QtCore.Signal(unicode, object)
 
   class DiskItemListSelect( QWidget ): # Ex QSemiModal
-
+    
+    accepted = QtCore.Signal(unicode)
 
     def __init__( self, dilEditor, name, write, context = None,
       databaseUserLevel=0, browseUserLevel=0 ):
