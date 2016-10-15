@@ -57,7 +57,7 @@ class UpdateDatabasesGUI( qt.QWidget ):
   def __init__( self, parent ):
     super( UpdateDatabasesGUI, self ).__init__( parent )
     layout = qt.QVBoxLayout( self)
-    layout.setMargin( 11 )
+    layout.setContentsMargins(11, 11, 11, 11)
     layout.setSpacing( 6 )
     self.setLayout(layout)
     self.lvDatabases = qt.QListWidget( )
@@ -78,7 +78,7 @@ class UpdateDatabasesGUI( qt.QWidget ):
         item.setCheckState(qt.Qt.Unchecked)
 
     layout1 = qt.QHBoxLayout()
-    layout1.setMargin(0)
+    layout1.setContentsMargins(0, 0, 0, 0)
     layout1.setSpacing(6)
     layout.addLayout( layout1 )
     spacer1 = qt.QSpacerItem(1,1,qt.QSizePolicy.Expanding,qt.QSizePolicy.Minimum)
