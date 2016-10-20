@@ -77,4 +77,5 @@ def execution( self, context ):
   proc.__dict__.update( params )
   pv = mainThreadActions().call( ProcessView, proc )
   mainThreadActions().call( pv.info.hide )
+  return pv
 
