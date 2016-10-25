@@ -7,7 +7,7 @@ Created on Wed Sep 28 11:20:25 2016
 import os
 import xlrd
 import xlwt
-from collections import deque
+from collections import deque, OrderedDict
 
 
 class XlsConverter():
@@ -191,7 +191,7 @@ class XlsConverter():
     workbook = xlrd.open_workbook(xls_path, formatting_info=True)
     sheet_names = workbook.sheet_names()
     for sheet_name in sheet_names:
-      sheet_dict = {}
+      sheet_dict = OrderedDict()
       sheet = workbook.sheet_by_name(sheet_name)
       sheet_dict["sheet_name"] = sheet.name
       sheet_dict["row_header"] = self._getRowHeaderFromSheet(sheet, workbook)
@@ -213,15 +213,12 @@ class XlsConverter():
     """
     extract each row value with all column header above
     """
-    import json
     first_row_data_index, first_column_data_index = self._getFirstCellIndexWithData(sheet, workbook)
     header_tempalte_dict = self._createHeaderTemplate(sheet, first_row_data_index, first_column_data_index)
-    #print json.dumps(header_tempalte_dict, indent=1)
     row_data_index = first_row_data_index
-    column_values_dict = {}
+    column_values_dict = OrderedDict()
     while(row_data_index <= self._getLastRowWithData(sheet)):
       row_id = self._getRowId(sheet, row_data_index, first_column_data_index)
-      #print row_id
       column_values_dict[row_id] = self._getValues(sheet, row_data_index, header_tempalte_dict)
       row_data_index += 1
     return column_values_dict
@@ -264,7 +261,7 @@ class XlsConverter():
     """
     extract row value with all column header above
     """
-    values_dict = {}
+    values_dict = OrderedDict()
     for column_index, header_list in header_template_dict.items():
       val = sheet.cell_value(row_data_index, column_index)
       if val:
@@ -276,7 +273,7 @@ class XlsConverter():
     """
     create dict with all header hierarchy and column_index in leaves
     """
-    header_template_dict={}
+    header_template_dict = OrderedDict()
     column_index = first_data_column_index
     while(column_index <= self._getLastColumnWithData(sheet)):
       row_index = 0
@@ -334,7 +331,7 @@ class XlsConverter():
   def mergeDict(d1, d2, d2_erase_d1=False ):
     """This method allow to merge two python dictionaries
     without erase the deep keys, contrary to classical "update" method"""
-    dict_merged = {}
+    dict_merged = OrderedDict()
     key_list = []
     key_list.extend( d1.keys() )
     key_list.extend( d2.keys() )
