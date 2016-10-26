@@ -66,9 +66,11 @@ signature = Signature(
 #  'T_contrast_cond_sess_based_number', Integer(),
   'delete_existing_contrast', Boolean(),
   'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script' ),
+  'start_now', Boolean(),
 )
 
 def initialization( self ):
+  self.setOptional("contrast_mat_file")  # because if spm pipeline in batch
   self.addLink(None, 'T_contrast_number', self.updateSignatureAboutTContrast)
   self.addLink(None, 'F_contrast_number', self.updateSignatureAboutFContrast)
 
@@ -146,7 +148,6 @@ def addFContrastInSignature(self, F_contrast_index):
                                                                                 'Replicate average'
                                                                                 )
 
-
 def updateBatchPath(self, proc):
   if self.contrast_mat_file is not None:
     directory_path = os.path.dirname(self.contrast_mat_file.fullPath())
@@ -179,9 +180,10 @@ def execution(self, context):
 
   spm = validation()
   spm.addModuleToExecutionQueue(contrast_manager)
-  spm.setSPMScriptPath(self.batch_location.fullPath())
-  output = spm.run()
-  context.log(name, html=output)
+  if self.start_now:
+      spm.setSPMScriptPath(self.batch_location.fullPath())
+      output = spm.run()
+      context.log(name, html=output)
 
 def createFContrastMatrix(self, F_contrast_index):
   f_contrast_vector = FContrastVector()

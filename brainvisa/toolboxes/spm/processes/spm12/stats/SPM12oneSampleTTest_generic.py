@@ -78,6 +78,7 @@ signature = Signature(
   'one_sample_T_test_mat_file', WriteDiskItem( 'Matlab SPM file', 'Matlab file' ),
   #job_batch_file
   'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script' ),
+  'start_now', Boolean(),
 )
 
 def initialization( self ):
@@ -215,9 +216,10 @@ def execution(self, context):
 
   spm = validation()
   spm.addModuleToExecutionQueue(one_sample_t_test)
-  spm.setSPMScriptPath(self.batch_location.fullPath())
-  output = spm.run()
-  context.log(name, html=output)
+  if self.start_now:
+    spm.setSPMScriptPath(self.batch_location.fullPath())
+    output = spm.run()
+    context.log(name, html=output)
 
 #==============================================================================
 #==============================================================================

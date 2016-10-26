@@ -77,7 +77,6 @@ signature = Signature(
                                   ('All clusters (binary)', 'binary'),
                                   ('All clusters (n-ary)', 'n-ary')),
   'write_filtered_images_basename', String(),
-  'filtered_image', WriteDiskItem('4D Volume', 'NIFTI-1 image'),
 
   'add_section_overlay', Boolean(),
   'section_image', ReadDiskItem('anatomical Template', ['NIFTI-1 image', 'SPM image', 'MINC image']),
@@ -91,12 +90,11 @@ signature = Signature(
   'contrast_number', Integer(),
 
   'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script' ),
-
-
+  'start_now', Boolean(),
 )
 
 def initialization( self ):
-  self.setDisable("filtered_image")  # TODO : make link in python module
+  self.setOptional("results_report_mat_file")  # because if spm pipeline in batch
   self.setOptional("results_report", "results_report_directory", "results_report_basename")
   self.addLink(None, 'add_section_overlay', self.updateSignatureAboutSection)
   self.addLink(None, 'add_render_overlay', self.updateSignatureAboutRender)
@@ -210,10 +208,11 @@ def execution( self, context ):
       spm.addSPMCommandToExecutionQueue(["spm_get_defaults('stats.topoFDR', 0);"])
       continue
   spm.addModuleToExecutionQueue(result)
-  spm.setSPMScriptPath(self.batch_location.fullPath())
-  #spm.addMatlabCommandAfterSPMRunning(self.writeCompleteResultBatch(spm_workspace_directory))
-  output = spm.run()
-  context.log(name, html=output)
+  if self.start_now:
+    spm.setSPMScriptPath(self.batch_location.fullPath())
+    #spm.addMatlabCommandAfterSPMRunning(self.writeCompleteResultBatch(spm_workspace_directory))
+    output = spm.run()
+    context.log(name, html=output)
 
 def createResultsReportBatch(self, context):
 

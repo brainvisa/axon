@@ -79,9 +79,11 @@ signature = Signature(
   #Simple Contrasts
   'simple_contrast_number', Integer(),
   'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script' ),
+  'start_now', Boolean(),
 )
 
 def initialization( self ):
+  self.setOptional("basic_model_mat_file")  # because if spm pipeline in batch
   self.simple_contrast_number = 0
   self.simple_contrast_current_number = 0
 
@@ -196,10 +198,11 @@ def execution( self, context ):
 
     spm = validation()
     spm.addModuleToExecutionQueue(classical_estimation)
-    spm.setSPMScriptPath(self.batch_location.fullPath())
-    output = spm.run()
-    context.log(name, html=output)
-    return
+    if self.start_now:
+      spm.setSPMScriptPath(self.batch_location.fullPath())
+      output = spm.run()
+      context.log(name, html=output)
+      return
 
   elif self.method == 'Bayesian 2nd-level':
     bayesian_second_level_estimation = ModelEstimationBayesianSecondLevel()
@@ -211,10 +214,11 @@ def execution( self, context ):
 
     spm = validation()
     spm.addModuleToExecutionQueue(bayesian_second_level_estimation)
-    spm.setSPMScriptPath(self.batch_location.fullPath())
-    output = spm.run()
-    context.log(name, html=output)
-    return
+    if self.start_now:
+      spm.setSPMScriptPath(self.batch_location.fullPath())
+      output = spm.run()
+      context.log(name, html=output)
+      return
 
   else:
     if self.analysis_space == 'Volume':
@@ -292,8 +296,9 @@ def execution( self, context ):
 
     spm = validation()
     spm.addModuleToExecutionQueue(bayesian_first_level_estimation)
-    spm.setSPMScriptPath(self.batch_location.fullPath())
-    output = spm.run()
-    context.log(name, html=output)
+    if self.start_now:
+      spm.setSPMScriptPath(self.batch_location.fullPath())
+      output = spm.run()
+      context.log(name, html=output)
 
 

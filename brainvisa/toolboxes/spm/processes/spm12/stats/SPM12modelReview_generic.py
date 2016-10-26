@@ -77,9 +77,11 @@ signature = Signature(
   "results_report_directory", WriteDiskItem("Directory", "Directory"),
   "results_report_basename", String(),
   'batch_location', WriteDiskItem( 'Matlab SPM script', 'Matlab script' ),
+  'start_now', Boolean(),
 )
 
 def initialization( self ):
+  self.setOptional("basic_model_mat_file")  # because if spm pipeline in batch
   self.setOptional("results_report", "results_report_directory", "results_report_basename")
 
   self.display = "Design Matrix"
@@ -166,8 +168,9 @@ def execution( self, context ):
 
   spm = validation()
   spm.addModuleToExecutionQueue(model_review)
-  spm.setSPMScriptPath(self.batch_location.fullPath())
-  output = spm.run()
-  context.log(name, html=output)
+  if self.start_now:
+    spm.setSPMScriptPath(self.batch_location.fullPath())
+    output = spm.run()
+    context.log(name, html=output)
 
 
