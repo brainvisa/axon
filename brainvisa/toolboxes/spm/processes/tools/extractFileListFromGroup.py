@@ -32,7 +32,10 @@
 ## knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
-from neuroProcessesGUI import mainThreadActions
+try:
+    from neuroProcessesGUI import mainThreadActions
+except:
+    pass
 from nuclearImaging.LabelNameSetting import LabelNameSetting
 from soma import aims
 import os
@@ -55,7 +58,10 @@ signature = Signature(
 )
 
 #------------------------------------------------------------------------------
-
+def validation(self):
+    import neuroProcessesGUI
+    return getattr(neuroProcessesGUI, 'mainThreadActions') is None
+    
 def initialization(self):
   self.setOptional("atlas_label_mask","atlas_label_translation")
   self.linkParameters( "atlas_label_translation", "atlas_label_mask" )
