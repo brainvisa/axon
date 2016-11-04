@@ -189,6 +189,7 @@ def execution( self, context ):
     run_dartel.setOutputTemplatePathList([diskitem.fullPath() for diskitem in self.output_template])
 
   settings = Settings()
+  settings.clearOuterIterationContainer()
   settings.setTemplateBasename(self.template_basename)
   if self.regularisation_form == 'Linear Elastic Energy':
     settings.setRegularisationFormToLinearElasticEnergy()

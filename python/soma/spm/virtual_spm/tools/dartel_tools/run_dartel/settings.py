@@ -17,7 +17,7 @@ class Settings():
     basename appended to them.
     """
     self.template_basename = template_basename
-    
+
   def setRegularisationFormToLinearElasticEnergy(self):
     """
     The  registration  is  penalised  by  some  ``energy'' term.  Here, the form of this
@@ -25,7 +25,7 @@ class Settings():
     used.
     """
     self.regularisation_form = 0
-    
+
   def setRegularisationFormToMembraneEnergy(self):
     """
     The  registration  is  penalised  by  some  ``energy'' term.  Here, the form of this
@@ -33,7 +33,7 @@ class Settings():
     used.
     """
     self.regularisation_form = 1
-    
+
   def setRegularisationFormToBendingEnergy(self):
     """
     The  registration  is  penalised  by  some  ``energy'' term.  Here, the form of this
@@ -41,14 +41,17 @@ class Settings():
     used.
     """
     self.regularisation_form = 2
-    
+
+  def clearOuterIterationContainer(self):
+    self.outer_iteration_container.clear()
+
   def appendOuterIteration(self, outer_iteration):
     self.outer_iteration_container.append(outer_iteration)
-    
+
   @checkIfArgumentTypeIsAllowed(OptimisationSettings, 1)
   def setOptimisationSettings(self, optimisation_settings):
     self.optimisation_settings = optimisation_settings
-    
+
   def getOuterIterationNumber(self):
     return len(self.outer_iteration_container)
 
@@ -65,7 +68,6 @@ class Settings():
       return batch_list
     else:
       raise ValueError('outer_iteration_container and/or optimisation_settings not found')
-    
-  
-    
-  
+
+
+
