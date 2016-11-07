@@ -7,6 +7,7 @@ Created on Wed Sep 28 11:20:25 2016
 import os
 import xlrd
 import xlwt
+import numpy
 from collections import deque, OrderedDict
 
 
@@ -288,6 +289,8 @@ class XlsConverter():
 
 
   def _buildCompleteBranchDict(self, header_list, last_value):
+    if numpy.isnan(last_value):
+      last_value = "'NaN'"
     str_dict = "{u'%s':%s}" % ("':{u'".join(header_list), last_value)
     str_dict += '}'*(len(header_list)-1)
     return eval(str_dict)
