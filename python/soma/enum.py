@@ -88,8 +88,8 @@ class EnumException(Exception):
     """ Base class for all exceptions in this module """
     def __init__(self):
         if self.__class__ is EnumException:
-            raise NotImplementedError, \
-                "%s is an abstract class for subclassing" % self.__class__
+            raise NotImplementedError(
+                "%s is an abstract class for subclassing" % self.__class__)
 
 class EnumEmptyError(AssertionError, EnumException):
     """ Raised when attempting to create an empty enumeration """

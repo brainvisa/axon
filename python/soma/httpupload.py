@@ -97,7 +97,7 @@ from soma.singleton import Singleton
         #import objgraph
         #print('3 - objgraph -> filebuilderinfos : ', objgraph.count('FileBuilderInfo'))
         #print('             -> filefragments', objgraph.count('FileFragment'))
-    #except Exception, e :
+    #except Exception as e :
         #pass
 
 config = dict()
@@ -378,7 +378,7 @@ class LogManager( Singleton ) :
                       threading.currentThread().getName() ),
                   filepath,
                   mode )
-      except Exception, error :
+      except Exception as error :
         if ( self.loglevel() != LogLevel.NONE ) :
           print('Log was desactivated due to errors. %s. %s' % (error, traceback.format_exc() ))
           
@@ -1004,7 +1004,7 @@ class FileBuilderInfo(object) :
             result = True
       resourcemanager.deleteResourceLock( filepath )
       
-    except Exception, error :
+    except Exception as error :
       logmanager.writeLogInfo( 'Error occured checking result file. %s. %s' % (error, traceback.format_exc() ), level = LogLevel.ERROR )
 
     return result
@@ -1097,7 +1097,7 @@ class FileBuilderInfo(object) :
           logmanager.writeLogInfo( 'Rebuild corrupted \'%s\'' % ( loginfopath, ), level = LogLevel.WARNING )
           self.status = FileBuilderInfoStatus.NOT_BUILT
           
-      except Exception, error :
+      except Exception as error :
         logmanager.writeLogInfo( 'Error occured building \'%s\'. %s. %s' % ( loginfopath, error, traceback.format_exc() ), level = LogLevel.ERROR )
         self.status = FileBuilderInfoStatus.NOT_BUILT
 
@@ -1303,7 +1303,7 @@ class FileFragment(object) :
         
         return True
 
-    except Exception, error :
+    except Exception as error :
       # If write in this directory fails we try the next directory
       logmanager.writeLogInfo( 'Error occured writing fragment data. %s. %s' % (error, traceback.format_exc() ), level = LogLevel.ERROR )
 
@@ -1345,7 +1345,7 @@ class FileFragment(object) :
           if ( len(filepath) > 0 ) and os.path.exists( filepath ) :
             os.remove( filepath )
         resourcemanager.deleteResourceLock( filepath )
-      except Exception, error :
+      except Exception as error :
         logmanager.writeLogInfo( 'Error occured deleting fragment data. %s. %s' % (error, traceback.format_exc() ), level = LogLevel.ERROR )
 
   def parseFromXml( self, document ) :
