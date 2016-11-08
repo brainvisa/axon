@@ -59,8 +59,11 @@ class TestTransformationManager(unittest.TestCase):
     self.number_of_subjects = 5
     self.number_of_sulci = 30
     brainvisa.axon.initializeProcesses()
-    tempdir=tempfile.gettempdir()
-    self.test_database_directory=os.path.join(tempdir, "tmp_tests_brainvisa", "database_registration")
+    test_dir = os.environ.get('BRAINVISA_TESTS_DIR')
+    if not test_dir:
+      test_dir = tempfile.gettempdir()
+    self.test_database_directory = os.path.join(
+      test_dir, "tmp_tests_brainvisa", "database_registration")
     # Create test databases
     self.database = self.create_test_database()
     registration_directory = os.path.join( self.database.directory, 'transformation_manager', 'registration' )
