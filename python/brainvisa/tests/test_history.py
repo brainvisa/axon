@@ -17,8 +17,11 @@ class TestDatabaseHistory(unittest.TestCase):
   
   def setUp(self):
     brainvisa.axon.initializeProcesses()
-    tempdir=tempfile.gettempdir()
-    db_directory=os.path.join(tempdir, "tmp_tests_brainvisa", "database_history")
+    test_dir = os.environ.get('BRAINVISA_TESTS_DIR')
+    if not test_dir:
+      test_dir = tempfile.gettempdir()
+    db_directory = os.path.join(test_dir, "tmp_tests_brainvisa",
+                                "database_history")
     if not os.path.exists(db_directory):
         os.makedirs(db_directory)
     # create a database in a temporary directory
