@@ -125,7 +125,7 @@ class EnhancedFTP:
       self._ftp.cwd( directory )
     try:
       l = self._ftp.nlst()
-    except ftplib.error_perm, e:
+    except ftplib.error_perm as e:
       if e.args[0][:3] == '550':
         # Error thrown when directory is empty
         l = []

@@ -1,3 +1,4 @@
+from __future__ import print_function
 from soma.singleton import Singleton
 from brainvisa.data.temporary import manager as temporaryManager
 from brainvisa.data.sqlFSODatabase import NoGeneratorSQLDatabase
@@ -17,7 +18,7 @@ class DatabaseServer( Singleton ):
   def addDatabase( self, database ):
     remoteAccessURI = os.path.join( database.directory, 'remoteAccessURI' )
     if os.path.exists( remoteAccessURI ):
-      print 'WARNING: database', repr( database.directory ), 'has the following remote access:', open( remoteAccessURI ).read()
+      print('WARNING: database', repr( database.directory ), 'has the following remote access:', open( remoteAccessURI ).read())
     else:
       if database.sqlDatabaseFile != ':memory:':
         try:
@@ -27,9 +28,9 @@ class DatabaseServer( Singleton ):
           uri = BrainVISAServer().addObject( obj )
           temporaries.append( temporaryManager.createSelfDestroyed( remoteAccessURI ) )
           dbfile.write( str( uri ) )
-          print 'Serving database', repr( database.directory ), 'with URI', uri
+          print('Serving database', repr( database.directory ), 'with URI', uri)
         except IOError:
-          print 'database', repr( database.directory ), 'cannot be used with server access'
+          print('database', repr( database.directory ), 'cannot be used with server access')
 
 
   def serve( self ):

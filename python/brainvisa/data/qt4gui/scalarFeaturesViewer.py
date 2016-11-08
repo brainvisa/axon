@@ -44,9 +44,9 @@ qwtAvailable=True
 try:
   try:
     from soma.qt_gui.qt_backend.Qwt5 import *
-  except Exception, e1:
+  except Exception as e1:
     from qwt import *
-except Exception, e:
+except Exception as e:
   qwtAvailable=False
     
 def validation():

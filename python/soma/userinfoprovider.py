@@ -263,7 +263,7 @@ class LdapUserInfoProvider( UserInfoProvider ) :
             
             resultset.append(resultrecord)
           
-    except ldap.LDAPError, errormessage :
+    except ldap.LDAPError as errormessage :
       print(errormessage)
 
     return getUsersInfo( resultset, formats, attributes, sorts )

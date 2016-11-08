@@ -101,7 +101,7 @@ class Choice_TgGUI( TgGUI ):
   def getPythonValue( self, attributeWidget ):
     try :
       result = self.dataTypeInstance.values[ int(attributeWidget.default) ]
-    except Exception, e :
+    except Exception as e :
       result = 0
 
     return result
@@ -123,7 +123,7 @@ class Choice_TgGUI( TgGUI ):
       res = self.findValueFromParams( value, self._widget.widgetid, self._name )
       try :
           index = int(res)
-      except Exception, e :
+      except Exception as e :
           index = self.dataTypeInstance.findIndex( res )
       
       if not index is None :

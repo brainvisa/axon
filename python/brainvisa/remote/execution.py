@@ -1,3 +1,4 @@
+from __future__ import print_function
 from soma.singleton import Singleton
 from brainvisa.remote.server import BrainVISAServer
 
@@ -13,7 +14,7 @@ class DatabaseServer( Singleton ):
     obj = Pyro.core.ObjBase()
     obj.delegateTo( self.context )
     uri = server.addObject( obj )
-    print 'Serving default execution context with URI', uri
+    print('Serving default execution context with URI', uri)
 
 
   def serve( self ):
