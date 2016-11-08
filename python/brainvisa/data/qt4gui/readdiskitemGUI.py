@@ -544,7 +544,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
         self.btnSetDirectory.setIcon( self.pixBrowseUpdate )
         self.btnSetDirectory.setIconSize(buttonIconSize)
         self.btnSetDirectory.setEnabled( 0 )
-        self.btnSetDirectory.clicked(self._setDirectory)
+        self.btnSetDirectory.clicked.connect(self._setDirectory)
         hb.addWidget( self.btnSetDirectory )
         
       spacer = QSpacerItem( 10, 10, QSizePolicy.Expanding, QSizePolicy.Minimum )
