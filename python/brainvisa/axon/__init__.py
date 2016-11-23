@@ -82,6 +82,10 @@ argv = sys.argv
 # to set paths
 sys.argv = [ os.path.join(brainvisa_path, 'neuro.py'), '-b' ]
 sys.path.insert( 0, brainvisa_path )
+try:
+    import soma.somaqt # force loading the right Qt
+except ImportError:
+    pass
 from soma.qt_gui import qt_backend
 qt_backend.set_qt_backend(compatible_qt5=True)
 from brainvisa.configuration import neuroConfig
