@@ -250,7 +250,7 @@ class Configuration_Qt4GUI( Qt4GUI ):
         if icon:
           self.__widget.lbxPanels.addItem( qt.QListWidgetItem(qt.QIcon( icon ), group.label) )
         else:
-          self.__widget.lbxPanels.addItem( qt.QListWidgetItem(self.__widget.icon(), group.label) )
+          self.__widget.lbxPanels.addItem( qt.QListWidgetItem(self.__widget.windowIcon(), group.label) )
       else:
         self.__widget.lbxPanels.addItem( group.label )
       self.__widget.wstPanels.addWidget( widget )
