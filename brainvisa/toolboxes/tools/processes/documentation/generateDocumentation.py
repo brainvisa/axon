@@ -503,13 +503,13 @@ def execution( self, context ):
 <body>
   <center><h1>Data types and formats in BrainVISA ontologies</h1></center>''',
         file=index)
-    print('<a href="types/index.html">All Data types</a><br>', fil=index)
-    print('<a href="types/index_toolboxes.html">Data types per toolbox</a><br>', fil=index)
-    print('<a href="types/index_ontologies.html">Data types per ontology</a><br><br>', fil=index)
-    print('<a href="formats/index.html">All Formats</a><br>', fil=index)
+    print('<a href="types/index.html">All Data types</a><br>', file=index)
+    print('<a href="types/index_toolboxes.html">Data types per toolbox</a><br>', file=index)
+    print('<a href="types/index_ontologies.html">Data types per ontology</a><br><br>', file=index)
+    print('<a href="formats/index.html">All Formats</a><br>', file=index)
     print('<a href="formats/index_toolboxes.html">Formats per toolbox</a>',
-          fil=index)
-    print("</body></html>", fil=index)
+          file=index)
+    print("</body></html>", file=index)
     index.close()
 
     # TYPES
