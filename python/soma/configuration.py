@@ -39,6 +39,7 @@
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
 
+import sys
 from soma.signature.api import HasSignature, Signature, VariableSignature
 from soma.minf.api import readMinf, writeMinf
 from soma.translation import translate as _
@@ -53,11 +54,14 @@ class Configuration( HasSignature ):
   def __init__( self ):
     super( Configuration, self ).__init__()
     self.signature = VariableSignature( self.signature )
-  
+    self._loaded = {}
 
   def add( self, key, value ):
     self.signature[ key ] = ConfigurationGroup
     setattr( self, key, value )
+    module_config = self._loaded.get(key)
+    if module_config is not None:
+        self.set_module_config(value, module_config)
   
   
   def save( self, minf ):
@@ -66,10 +70,28 @@ class Configuration( HasSignature ):
   
   def load( self, minf ):
     exceptions=[]
-    readMinf( minf, targets=( self, ), stop_on_error=False, exceptions=exceptions )
+    read = readMinf(minf, stop_on_error=False, 
+                    exceptions=exceptions)[0]
+    if not exceptions:
+        try:
+            for name in self.signature:
+                module_config = read.get(name)
+                if module_config is not None:
+                    self.set_module_config(getattr(self,name), module_config)
+            self._loaded.update(read)                
+        except:
+            exceptions = [sys.exc_info()]
     return exceptions
 
-
+  @classmethod
+  def set_module_config(cls, module, module_config):
+    for k, v in module_config.iteritems():
+        if isinstance(v, dict):
+            o = getattr(module, k, None)
+            if o is not None:
+                cls.set_module_config(o, v)
+        else:
+            setattr(module, k, v)
 #------------------------------------------------------------------------------
 class ConfigurationGroup( HasSignature ):
   '''
