@@ -117,7 +117,7 @@
   <s name="Image &lt;em&gt;%s&lt;/em&gt; ignored">Image &lt;em&gt;%s&lt;/em&gt; ignorée</s>
   <s name="importing grey/white segmentation...">importation de la segmentation gris/blanc...</s>
   <s name="SHFJ: Import GEMS reconstructed T1 MRI">SHFJ: Importation de données GEMS T1 reconstruites</s>
-  <s name="convert_old_database_steps">étapes de conversion d'une ancienne base de donnée</s>
+  <s name="convert_old_database_steps">étapes de conversion d'une ancienne base de données</s>
   <s name="Cannot create path for unnamed data">Impossible de créer un chemin pour des données anonymes</s>
   <s name="Anatomist Show Nomenclature">Anatomist Voir Nomenclature</s>
   <s name="Train SVM">Apprentissage de SVM</s>
@@ -278,7 +278,7 @@ Il faudra ensuite ré-ouvrir tout traitement qui dépend de SPM.</s>
   <s name="Normalization">Normalisation</s>
   <s name="Lesson 4">Leçon 4</s>
   <s name="Unlock item">Dévérouillage de l'élément</s>
-  <s name="Identified File not in database">Fichier identifié hors d'une base de donnée</s>
+  <s name="Identified File not in database">Fichier identifié hors d'une base de données</s>
   <s name="With QBall Model, You must provide bucket file">Avec le modèle QBall, vous devez spécifier un fichier "bucket"</s>
   <s name="nipy is not available">nipy n'est pas présent</s>
   <s name="Lesson 2">Leçon 2</s>
@@ -1213,7 +1213,7 @@ Il faudra ensuite ré-ouvrir tout traitement qui dépend de SPM.</s>
   <s name="SPM2 Preprocessings">Prétraitements SPM2</s>
   <s name="Workflow execution">Exécution distribuée</s>
   <s name="SPM to AIMS transformation converter">Conversion de transformation SPM vers AIMS</s>
-  <s name="Select the datas to open from the database">Selectionnez les données à lire depuis la base de donnée</s>
+  <s name="Select the datas to open from the database">Selectionnez les données à lire depuis la base de données</s>
   <s name="Running">En cours</s>
   <s name="Anatomist Show GreyWhite Snake on T1 MRI">Anatomist Voir Snake Gris/Blanc sur l'IRM T1</s>
   <s name="Slice Timing">Correction du délai inter-coupes</s>
