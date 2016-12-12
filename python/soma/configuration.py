@@ -40,7 +40,8 @@
 '''
 
 import sys
-from soma.signature.api import HasSignature, Signature, VariableSignature
+from soma.signature.api import (HasSignature, Signature, VariableSignature,
+                                Sequence)
 from soma.minf.api import readMinf, writeMinf
 from soma.translation import translate as _
 
@@ -83,15 +84,34 @@ class Configuration( HasSignature ):
             exceptions = [sys.exc_info()]
     return exceptions
 
+
+  @classmethod
+  def _create_and_set(cls, targetType, values):
+    result = targetType.createValue()
+    cls.set_module_config(result, values)
+    return result    
+        
+
   @classmethod
   def set_module_config(cls, module, module_config):
     for k, v in module_config.iteritems():
+        done = False
         if isinstance(v, dict):
-            o = getattr(module, k, None)
-            if o is not None:
-                cls.set_module_config(o, v)
-        else:
+            target = getattr(module, k, None)
+            if target is not None:
+                cls.set_module_config(target, v)
+            done = True
+        elif isinstance(v, list):
+            targetType = module.signature.get(k, None)
+            if targetType is not None:
+                targetType = targetType.type
+            if isinstance(targetType, Sequence) and targetType.elementType.mutable:
+                v = [cls._create_and_set(targetType.elementType, i) for i in v]
+                setattr(module, k, v)
+                done = True
+        if not done:
             setattr(module, k, v)
+
 #------------------------------------------------------------------------------
 class ConfigurationGroup( HasSignature ):
   '''

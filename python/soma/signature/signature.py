@@ -286,7 +286,7 @@ class ClassDataType( DataType ):
     Check that C{value} is an instance of L{self.cls}.
     """
     if not isinstance( value, self.cls ):
-      raise TypeError( _( '%(instance)s is no an instance of %(class)s' ) %\
+      raise TypeError( _( '%(instance)s is not an instance of %(class)s' ) %\
         { 'instance': str( value ),
           'class': str( self.cls )
         } )
