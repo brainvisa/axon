@@ -713,7 +713,7 @@ def execution( self, context ):
   <link rel="stylesheet" href="../../../axon.css" media="screen" />
 </head>
 <body>
-  <center><h1> Formats in BrainVISA </h1></center>''', fileformats)
+  <center><h1> Formats in BrainVISA </h1></center>''', file=formats)
     print('<p><a href="'+return_to_index+'">Return to index</a></p>',
           file=formats)
     print('<a href="#all_formats">All formats</a><br>', file=formats)
