@@ -126,7 +126,7 @@ BRAINVISA_COPY_FILES( ${PROJECT_NAME} "usecases.rst"
     SOURCE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/sphinxdoc/dev_doc"
     DESTINATION "python/brainvisa/tests" )
 
-add_test(axon-tests "${CMAKE_BINARY_DIR}/bin/bv_env_test" "${PYTHON_EXECUTABLE}" -m brainvisa.tests.test_axon)
+brainvisa_add_test(axon-tests "${TARGET_PYTHON_EXECUTABLE_NAME}" -m brainvisa.tests.test_axon)
 
 BRAINVISA_CREATE_CMAKE_CONFIG_FILES()
 
