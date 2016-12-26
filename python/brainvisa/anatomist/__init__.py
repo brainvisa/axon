@@ -139,8 +139,8 @@ if anatomistImport:
       mainThread=QtThreadCall()
       args = anatomistParameters
       super( Anatomist, self ).__singleton_init__( *args, **kwargs )
-      self._reusableWindows = set()
-      self._reusableWindowBlocks = set()
+      self._reusableWindows = []
+      self._reusableWindowBlocks = []
 
       if neuroConfig.anatomistImplementation != 'socket':
         a = anatomistModule.Anatomist( *args, **kwargs )
@@ -151,8 +151,8 @@ if anatomistImport:
         mainThread.push( reusablewinhook.installWindowHandler )
 
     def anatomist_closed(self):
-      self._reusableWindows = set()
-      self._reusableWindowBlocks = set()
+      self._reusableWindows = []
+      self._reusableWindowBlocks = []
       if neuroProcessesGUI:
         neuroProcessesGUI.close_viewers()
 
@@ -467,8 +467,7 @@ if anatomistImport:
         anatomistModule.Anatomist.__getattr__(self, name)
 
     def findReusableWindow( self, wintype = '3D', block=None ):
-      self._reusableWindows = set( [ w for w in self._reusableWindows \
-        if w ] )
+      self._reusableWindows = [w for w in self._reusableWindows if w]
       todel = set()
       try:
         for w in self._reusableWindows:
@@ -481,8 +480,8 @@ if anatomistImport:
             todel.add( w )
       finally:
         if len( todel ) != 0:
-          self._reusableWindows = set( [ w for w in self._reusableWindows \
-            if w not in todel ] )
+          self._reusableWindows = [w for w in self._reusableWindows
+                                   if w not in todel]
       return None
 
     def findReusableWindowBlock( self, block=None ):
@@ -491,8 +490,7 @@ if anatomistImport:
       if block is not None and hasattr( block, 'internalWidget' ) \
         and block.internalWidget:
         return block.internalWidget
-      self._reusableWindowBlocks = set( [ w for w in \
-        self._reusableWindowBlocks if w ] )
+      self._reusableWindowBlocks = [w for w in self._reusableWindowBlocks if w]
       todel = set()
       try:
         for w in self._reusableWindowBlocks:
@@ -511,18 +509,17 @@ if anatomistImport:
           return block.internalWidget
       finally:
         if len( todel ) != 0:
-          self._reusableWindowBlocks = set( [ w for w in \
-            self._reusableWindowBlocks if w not in todel ] )
+          self._reusableWindowBlocks = [w for w in self._reusableWindowBlocks
+                                        if w not in todel]
       return None
 
     def setReusableWindow( self, win, state=True ):
-      self._reusableWindows = set( [ w for w in self._reusableWindows \
-        if w ] )
+      self._reusableWindows = [w for w in self._reusableWindows if w]
       if type( win ) not in ( types.ListType, types.TupleType ):
         win = [ win ]
       if state:
         for w in win:
-          self._reusableWindows.add( w.getRef( 'WeakShared' ) )
+          self._reusableWindows.append( w.getRef( 'WeakShared' ) )
       else:
         s = set( [ w.getInternalRep() for w in win ] )
         s2 = set()
@@ -539,8 +536,6 @@ if anatomistImport:
             mainThread.push( ac.setChecked, state )
 
     def setReusableWindowBlock( self, win, state=True ):
-      #self._reusableWindowBlocks = set( [ w for w in \
-        #self._reusableWindowBlocks if w ] )
       if type( win ) not in ( types.ListType, types.TupleType ):
         win = [ win ]
       win2 = []
@@ -560,7 +555,7 @@ if anatomistImport:
             wp = self.AWindowsBlock( self )
             wp.setWidget( w )
             wp = wp.widgetProxy()
-          self._reusableWindowBlocks.add( wp )
+          self._reusableWindowBlocks.append(wp)
           wp.widget.destroyed.connect( self.removeReusableWindowBlock )
       else:
         s2 = set()
