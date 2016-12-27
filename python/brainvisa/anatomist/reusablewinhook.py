@@ -47,7 +47,7 @@ if neuroConfig.anatomistImplementation != 'socket':
     print('Warning: pyaimsgui not available')
 
   class ReusableWindowAction( QtGui.QAction ):
-    _actions = {} # dict to kee buttons alive
+    _actions = {} # dict to keep buttons alive
 
     def __init__( self, icon, text, parent ):
       QtGui.QAction.__init__( self, icon, text, parent )
