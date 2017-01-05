@@ -525,7 +525,11 @@ def updateSignatureAboutDeformationField(self, proc):
 
 def updateT1MRIBiasCorrected(self, proc, dummy):
   if not None in [self.t1mri, self.TPM_template]:
-    d = self.t1mri.hierarchyAttributes()
+    attr = self.t1mri.hierarchyAttributes()
+    d = {"_database": attr["_database"]}
+    d["center"] = attr["center"]
+    d["subject"] = attr["subject"]
+    d["acquisition"] = attr["acquisition"]
     d['processing'] = 'spm8NewSegment'
     d['bias_correction_process'] = 'spm8NewSegment'
     d['analysis'] = "default"
