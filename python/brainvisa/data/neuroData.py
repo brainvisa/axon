@@ -299,12 +299,17 @@ class Float( Number ):
   This class represents a parameter that is float number.
   """
 
+  def _makeValueReasonable( self, value ):
+    """limit float number to 10 decimal maximum, because of truncation with
+    QString/unicode convertion may cause comparison trouble"""
+    return float("{:.10e}".format(value))
+
   def findValue( self, value ):
     """
     Tries to convert the value to a float with :py:func:`float`.
     """
     if value is None: return None
-    return float( value )
+    return self._makeValueReasonable( value )
 
 
 #----------------------------------------------------------------------------
