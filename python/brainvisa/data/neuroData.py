@@ -315,7 +315,7 @@ class Float( Number ):
   def _makeValueReasonable( self, value ):
     """limit float number to 10 decimal maximum, because of truncation with
     QString/unicode convertion may cause comparison trouble"""
-    return float("{:.10e}".format(value))
+    return float("{:.10e}".format(float(value)))
 
   def findValue( self, value ):
     """
