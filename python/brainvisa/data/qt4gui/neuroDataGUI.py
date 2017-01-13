@@ -81,7 +81,7 @@ class StringEditor( QLineEdit, DataEditor ):
     self.parameter = parameter
     self.setMaxLength(-1)
     self.returnPressed.connect(self.setFocusNext)
-    self.lostFocus.connect(self.checkValue)
+    self.editingFinished.connect(self.checkValue)
     if self.parameter.placeholder_text is not None:
       self.setPlaceholderText(self.parameter.placeholder_text)
     self.value = None
@@ -583,7 +583,7 @@ class StringListEditor( QLineEdit, DataEditor ):
       self.setObjectName( name )
     self.setMaxLength(-1)
     self.returnPressed.connect(self.setFocusNext)
-    self.lostFocus.connect(self.checkValue)
+    self.editingFinished.connect(self.checkValue)
     self.value = None
     self.setValue( None, True )
 
