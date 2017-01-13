@@ -80,7 +80,7 @@ class StringEditor( QLineEdit, DataEditor ):
       self.setObjectName( name )
     self.setMaxLength(-1)
     self.returnPressed.connect(self.setFocusNext)
-    self.lostFocus.connect(self.checkValue)
+    self.editingFinished.connect(self.checkValue)
     self.value = None
     self.setValue( None, True )
 
@@ -580,7 +580,7 @@ class StringListEditor( QLineEdit, DataEditor ):
       self.setObjectName( name )
     self.setMaxLength(-1)
     self.returnPressed.connect(self.setFocusNext)
-    self.lostFocus.connect(self.checkValue)
+    self.editingFinished.connect(self.checkValue)
     self.value = None
     self.setValue( None, True )
 
