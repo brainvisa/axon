@@ -50,16 +50,15 @@ signature = Signature(
 def initialization(self):
   self.signature[ 'diskitem_type' ].setChoices(*all_available_types)
   self.signature[ 'diskitem_format' ].setChoices(*all_available_formats)
-  
+
   self.addLink(None, 'diskitem_type', self.updateSignatureAboutTypeAndFormat)
   self.addLink(None, 'diskitem_format', self.updateSignatureAboutTypeAndFormat)
   self.addLink(None, 'subjects', self.updateSignatureAboutFieldNeeded)
-  
+
   self.diskitem_type = "4D Volume"
   self.diskitem_format = "NIFTI-1 image"
 
 def updateSignatureAboutTypeAndFormat(self, proc):
-  print(self.diskitem_type, self.diskitem_format)
   if self.diskitem_type in all_available_types and self.diskitem_format in all_available_formats:
     self.signature["subjects"] = ListOf(ReadDiskItem(self.diskitem_type, self.diskitem_format))
     self.changeSignature(self.signature)
@@ -72,7 +71,7 @@ def updateSignatureAboutFieldNeeded(self, proc):
     self.changeSignature(self.signature)
   else:
     pass
-  
+
 def execution( self, context ):
   group_list = []
   if self.onlyOneDatabaseUsed():
@@ -86,12 +85,12 @@ def execution( self, context ):
     f.close()
   else:
     context.error("All subjects must come from same database")
-  
+
 def onlyOneDatabaseUsed(self):
   database_list = []
   for diskitem in self.subjects:
     database_list.append(diskitem.hierarchyAttributes()['_database'])
-  
+
   database_number = len(set(database_list))
   if database_number == 1:
     return True
