@@ -43,7 +43,7 @@ signature = Signature(
   'diskitem_type', OpenChoice(),
   'diskitem_format', OpenChoice(),
   'subjects', ListOf(ReadDiskItem(all_available_types[0], all_available_formats[0])),
-  'field_needed', ListOf(Choice()),
+  'field_needed', ListOf(OpenChoice()),
   'group', WriteDiskItem('Subject Group', 'JSON file'),
 )
 
