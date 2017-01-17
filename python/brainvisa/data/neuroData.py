@@ -247,6 +247,7 @@ class String( Parameter ):
     """
     Parameter.__init__( self, **kwargs )
     self.placeholder_text = None
+    self.read_only = False
 
   def findValue( self, value ):
     """
@@ -258,6 +259,8 @@ class String( Parameter ):
   def setPlaceholderText( self, placeholder_text):
     self.placeholder_text = placeholder_text
 
+  def setReadOnly( self, read_only):
+    self.read_only = read_only
 
 
 #----------------------------------------------------------------------------

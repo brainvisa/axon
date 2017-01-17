@@ -69,10 +69,10 @@ class DataEditor( object ):
 
 #----------------------------------------------------------------------------
 class StringEditor( QLineEdit, DataEditor ):
-  
+
   noDefault = QtCore.Signal(unicode)
   newValidValue = QtCore.Signal(unicode, object)
-  
+
   def __init__( self, parameter, parent, name ):
     DataEditor.__init__( self )
     QLineEdit.__init__( self, parent )
@@ -84,6 +84,8 @@ class StringEditor( QLineEdit, DataEditor ):
     self.editingFinished.connect(self.checkValue)
     if self.parameter.placeholder_text is not None:
       self.setPlaceholderText(self.parameter.placeholder_text)
+    if self.parameter.read_only is not None:
+      self.set_read_only(self.parameter.read_only)
     self.value = None
     self.setValue( None, True )
 
@@ -186,7 +188,7 @@ class ChoiceEditor( QComboBox, DataEditor ):
 
   noDefault = QtCore.Signal(unicode)
   newValidValue = QtCore.Signal(unicode, object)
-  
+
   def __init__( self, parameter, parent, name ):
     QComboBox.__init__( self, parent )
     DataEditor.__init__( self )
@@ -253,7 +255,7 @@ class BooleanEditor( QCheckBox, DataEditor ):
 
   noDefault = QtCore.Signal(unicode)
   newValidValue = QtCore.Signal(unicode, object)
-  
+
   def __init__( self, parent, name ):
     QCheckBox.__init__( self, parent )
     DataEditor.__init__( self )
@@ -301,7 +303,7 @@ class BooleanListEditor( QWidget, DataEditor ):
 
   noDefault = QtCore.Signal(unicode)
   newValidValue = QtCore.Signal(unicode, object)
-  
+
   class BooleanListSelect( QWidget ): # Ex QSemiModal
     def __init__( self, clEditor, name ):
       QWidget.__init__( self, clEditor.topLevelWidget(), Qt.Dialog | Qt.Tool | Qt.WindowStaysOnTopHint )
@@ -449,7 +451,7 @@ class OpenChoiceEditor( QComboBox, DataEditor ):
 
   noDefault = QtCore.Signal(unicode)
   newValidValue = QtCore.Signal(unicode, object)
-  
+
   def __init__( self, parameter, parent, name ):
     DataEditor.__init__( self )
     QComboBox.__init__( self, parent )
@@ -555,7 +557,7 @@ class MatrixEditor( StringEditor ):
     if value is None:
       self.setText( '' )
     else:
-      self.setText( string.join( map( lambda x: string.join( map( str, x ) ), 
+      self.setText( string.join( map( lambda x: string.join( map( str, x ) ),
                                       value ), ';' ) )
     self.value = value
 
@@ -575,7 +577,7 @@ class StringListEditor( QLineEdit, DataEditor ):
 
   noDefault = QtCore.Signal(unicode)
   newValidValue = QtCore.Signal(unicode, object)
-  
+
   def __init__( self, parent, name ):
     DataEditor.__init__( self )
     QLineEdit.__init__( self, parent )
@@ -756,7 +758,7 @@ class ChoiceListEditor( QWidget, DataEditor ):
 
   noDefault = QtCore.Signal(unicode)
   newValidValue = QtCore.Signal(unicode, object)
-  
+
   class ChoiceListSelect( QWidget ): # Ex QSemiModal
     def __init__( self, clEditor, name ):
       QWidget.__init__( self, clEditor.topLevelWidget(), Qt.Dialog | Qt.Tool | Qt.WindowStaysOnTopHint )
@@ -927,7 +929,7 @@ class PointEditor( QWidget, DataEditor ):
 
   noDefault = QtCore.Signal(unicode)
   newValidValue = QtCore.Signal(unicode, object)
-  
+
   def __init__( self, parameter, parent, name ):
     if getattr( PointEditor, 'pixSelect', None ) is None:
       setattr( PointEditor, 'pixSelect',
@@ -1007,7 +1009,7 @@ class PointListEditor( QWidget, DataEditor ):
 
   noDefault = QtCore.Signal(unicode)
   newValidValue = QtCore.Signal(unicode, object)
-  
+
   def __init__( self, parameter, parent, name ):
     if getattr( PointListEditor, 'pixSelect', None ) is None:
       setattr( PointListEditor, 'pixSelect',
@@ -1055,7 +1057,7 @@ class PointListEditor( QWidget, DataEditor ):
     text = unicode( self.led.text() )
     if text:
       return map(lambda x: map( float, x.split() ),
-                  string.split( text, ',' ) )      
+                  string.split( text, ',' ) )
 
   def setValue( self, value, default = 0 ):
     self._setValue( value )
@@ -1064,7 +1066,7 @@ class PointListEditor( QWidget, DataEditor ):
     if not value:
       self.led.setText( '' )
     else:
-      self.led.setText( string.join( map( 
+      self.led.setText( string.join( map(
         lambda point: ' '.join( map( str, point ) ), value ), ',' ) )
 
   def setFocusNext( self ):
@@ -1258,7 +1260,7 @@ class ListOfListEditor( QPushButton, DataEditor ):
 
   noDefault = QtCore.Signal(unicode)
   newValidValue = QtCore.Signal(unicode, object)
-  
+
   def __init__( self, parameter, parent, name, context=None ):
     QPushButton.__init__( self, parent )
     self.editValuesDialog = None
@@ -1285,7 +1287,7 @@ class ListOfListEditor( QPushButton, DataEditor ):
 
 
   def acceptEditedValues( self ):
-    self.newValidValue.emit(unicode(self.objectName()), 
+    self.newValidValue.emit(unicode(self.objectName()),
                             self.acceptEditedValues.values)
     self.noDefault.emit(unicode(self.objectName()))
 
@@ -1334,7 +1336,7 @@ class NotImplementedEditor( QLabel, DataEditor ):
 
   noDefault = QtCore.Signal(unicode)
   newValidValue = QtCore.Signal(unicode, object)
-  
+
   def __init__( self, parent ):
     QLabel.__init__( self, '<font color=red>' + \
                      _t_( 'editor not implemented' ) + '</font>', parent )
