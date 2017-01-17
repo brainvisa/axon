@@ -43,7 +43,7 @@ signature = Signature(
   'diskitem_type', OpenChoice(),
   'diskitem_format', OpenChoice(),
   'subjects', ListOf(ReadDiskItem(all_available_types[0], all_available_formats[0])),
-  'field_needed', ListOf(Choice()),
+  'field_needed', ListOf(OpenChoice()),
   'covariate_table', WriteDiskItem( 'Covariate table for SPM', 'CSV file'),
   'doing_if_exists', Choice("delete old", "keep old"),
 )
@@ -51,11 +51,11 @@ signature = Signature(
 def initialization(self):
   self.signature[ 'diskitem_type' ].setChoices(*all_available_types)
   self.signature[ 'diskitem_format' ].setChoices(*all_available_formats)
-  
+
   self.addLink(None, 'diskitem_type', self.updateSignatureAboutTypeAndFormat)
   self.addLink(None, 'diskitem_format', self.updateSignatureAboutTypeAndFormat)
   self.addLink(None, 'subjects', self.updateSignatureAboutFieldNeeded)
-  
+
   self.diskitem_type = "4D Volume"
   self.diskitem_format = "NIFTI-1 image"
 
@@ -73,7 +73,7 @@ def updateSignatureAboutFieldNeeded(self, proc):
     self.changeSignature(self.signature)
   else:
     pass
-  
+
 def execution( self, context ):
   if self.onlyOneDatabaseUsed():
     if os.path.exists(self.covariate_table.fullPath()):
@@ -86,7 +86,7 @@ def execution( self, context ):
     else:
       csv_dict = {}
       covariate_list = ['covariate']
-        
+
     old_subject_id_list = csv_dict.keys()
     new_subject_id_list = []
     for diskitem in self.subjects:
@@ -109,16 +109,16 @@ def execution( self, context ):
       pass#do nothing
     else:
       raise ValueError("Unvalid doing_if_exists choice")
-      
+
     csv_converter.convert(csv_dict, self.covariate_table.fullPath(), self.field_needed)
   else:
     context.error("All subjects must come from same database")
-  
+
 def onlyOneDatabaseUsed(self):
   database_list = []
   for diskitem in self.subjects:
     database_list.append(diskitem.hierarchyAttributes()['_database'])
-  
+
   database_number = len(set(database_list))
   if database_number == 1:
     return True
