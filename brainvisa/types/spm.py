@@ -20,7 +20,7 @@ FileType('SPM TPM HDW DARTEL template', 'TPM HDW DARTEL template')
 FileType( 'SPM Render', 'Matlab SPM file')
 
 #-------------- Canonical SPM types ---------------------
-FileType( 'SPM single subject', '3D Volume')
+FileType( 'SPM single subject', 'anatomical Template')
 
 #-------------- General SPM types ---------------------
 
