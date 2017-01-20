@@ -158,7 +158,7 @@ def checkIfNotEmpty(self, proc):
 def updateBatchPath(self, proc):
   if self.session_paths_0:
     directory_path = os.path.dirname(self.session_paths_0[0].fullPath())
-    return os.path.join(directory_path, 'spm8_realign_ER_job.m')
+    return os.path.join(directory_path, 'spm12_realign_ER_job.m')
 
 def execution( self, context ):
 
