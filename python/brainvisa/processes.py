@@ -3236,7 +3236,7 @@ class ExecutionContext(object):
     # (only 6 matches in the standard tree, all calls to cartoLinearComb.py in
     # Morphologist).
         exe = neuroConfig.executableWithPath(args[0])
-        return self.system('python2', exe, *args[1:], **kwargs)
+        return self.system(sys.executable, exe, *args[1:], **kwargs)
 
     def _systemStdout(self, line, logFile=None):
         if not line:

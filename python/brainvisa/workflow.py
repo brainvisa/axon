@@ -2,6 +2,7 @@
 from __future__ import print_function
 import collections
 import os
+import sys
 import pickle
 import types
 
@@ -41,7 +42,8 @@ class ProcessToWorkflow( object ):
     self._nodeToId = {}
     self._nodeHistoryBooks = set()
 
-    self.brainvisa_cmd = [ 'python2', '-m', 'brainvisa.axon.runprocess' ]
+    self.brainvisa_cmd = [ os.path.basename(sys.executable), 
+                           '-m', 'brainvisa.axon.runprocess' ]
 
   def escape( self ):
     return None
@@ -612,7 +614,8 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
                 output = None,
                 input_file_processing="use local path",
                 output_file_processing="use local path",
-                brainvisa_cmd=["python2", "-m", "brainvisa.axon.runprocess" ],
+                brainvisa_cmd=[os.path.basename(sys.executable), 
+                               "-m", "brainvisa.axon.runprocess" ],
                 brainvisa_db=None, context=None):
     '''
     brainvisa_db: list of the brainvisa db uuid which will be used in the case
@@ -1063,7 +1066,6 @@ def process_to_workflow(
 
 
 if __name__ == '__main__':
-  import sys
   try:
     theProcess
   except NameError:
