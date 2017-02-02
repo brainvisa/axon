@@ -63,7 +63,7 @@ signature = Signature(
   'grand_mean_scaling', Boolean(),
   'ancova', Boolean(),
   #Covariates
-  'covariate_table', ReadDiskItem('Covariate CSV Table', 'CSV file'),
+  'covariate_table', ReadDiskItem('Covariate table for SPM', 'CSV file'),
   'covariate_list', ListOf(Choice()),
   #Masking
   'threshold_masking', Choice( "Neither", 'Absolute', 'Relative' ),
@@ -119,13 +119,14 @@ def updateSignatureAboutParametricImages(self, proc):
     self.normalisation = 'Proportional'
 
 def updateCovariate(self, proc):
-  covariate_dict, row_keys_list = csv_converter.reverse(self.covariate_table.fullPath())
-  covariate_list = []
-  for subject_covariate_dict in covariate_dict.values():
-    covariate_list = list(set( covariate_list + subject_covariate_dict.keys()))
-  covariate_list.sort()
-  self.signature['covariate_list'] = ListOf(Choice(*covariate_list))
-  self.changeSignature(self.signature)
+  if self.covariate_table is not None:
+    covariate_dict, row_keys_list = csv_converter.reverse(self.covariate_table.fullPath())
+    covariate_list = []
+    for subject_covariate_dict in covariate_dict.values():
+      covariate_list = list(set( covariate_list + subject_covariate_dict.keys()))
+    covariate_list.sort()
+    self.signature['covariate_list'] = ListOf(Choice(*covariate_list))
+    self.changeSignature(self.signature)
 
 def updateThresholdMaskingFields( self, proc ):
   if self.threshold_masking == "Neither":

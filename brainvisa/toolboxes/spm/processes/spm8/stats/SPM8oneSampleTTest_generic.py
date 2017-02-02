@@ -59,7 +59,7 @@ signature = Signature(
   'images_are_parametric', Boolean(),
   'images', ListOf( ReadDiskItem( '4D Volume', ['NIFTI-1 image', 'SPM image', 'MINC image'] ) ),
   #Covariates
-  'covariate_table', ReadDiskItem('Covariate CSV Table', 'CSV file'),
+  'covariate_table', ReadDiskItem('Covariate table for SPM', 'CSV file'),
   'nuisance_covariate_list', ListOf(Choice()),
   'interest_covariate_list', ListOf(Choice()),
   #Masking
@@ -113,14 +113,15 @@ def updateSignatureAboutParametricImages(self, proc):
     self.normalisation = 'Proportional'
 
 def updateCovariate(self, proc):
-  covariate_dict, row_keys_list = csv_converter.reverse(self.covariate_table.fullPath())
-  nuisance_covariate_list = []
-  for subject_covariate_dict in covariate_dict.values():
-    nuisance_covariate_list = list(set( nuisance_covariate_list + subject_covariate_dict.keys()))
-  nuisance_covariate_list.sort()
-  self.signature['nuisance_covariate_list'] = ListOf(Choice(*nuisance_covariate_list))
-  self.signature['interest_covariate_list'] = ListOf(Choice(*nuisance_covariate_list))
-  self.changeSignature(self.signature)
+  if self.covariate_table is not None:
+    covariate_dict, row_keys_list = csv_converter.reverse(self.covariate_table.fullPath())
+    nuisance_covariate_list = []
+    for subject_covariate_dict in covariate_dict.values():
+      nuisance_covariate_list = list(set( nuisance_covariate_list + subject_covariate_dict.keys()))
+    nuisance_covariate_list.sort()
+    self.signature['nuisance_covariate_list'] = ListOf(Choice(*nuisance_covariate_list))
+    self.signature['interest_covariate_list'] = ListOf(Choice(*nuisance_covariate_list))
+    self.changeSignature(self.signature)
 
 
 def updateThresholdMaskingFields( self, proc ):
