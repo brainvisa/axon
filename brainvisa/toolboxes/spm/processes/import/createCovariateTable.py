@@ -46,6 +46,7 @@ signature = Signature(
   'field_needed', ListOf(OpenChoice()),
   'covariate_table', WriteDiskItem( 'Covariate table for SPM', 'CSV file'),
   'doing_if_exists', Choice("delete old", "keep old"),
+  'unique_database', Boolean(),
 )
 
 def initialization(self):
@@ -75,7 +76,7 @@ def updateSignatureAboutFieldNeeded(self, proc):
     pass
 
 def execution( self, context ):
-  if self.onlyOneDatabaseUsed():
+  if not self.unique_database or self.onlyOneDatabaseUsed():
     if os.path.exists(self.covariate_table.fullPath()):
       csv_dict, csv_row_header = csv_converter.reverse( self.covariate_table.fullPath() )
       covariate_list = csv_dict[csv_dict.keys()[0]].keys()
