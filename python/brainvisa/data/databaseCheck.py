@@ -43,6 +43,14 @@ from brainvisa.data.sqlFSODatabase import SQLDatabase
 from brainvisa.data.readdiskitem import ReadDiskItem
 import six
 import collections
+import sys
+
+if not hasattr(six.moves, 'getcwd'):
+    # missing in six
+    if sys.version_info[0] >= 3:
+        six.moves.getcwd = os.getcwd
+    else:
+        six.moves.getcwd = os.getcwdu
 
 ###################################
 ## DBProcessor
