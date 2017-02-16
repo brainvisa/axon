@@ -36,7 +36,7 @@ from soma.spm import csv_converter
 
 userLevel = 0
 name = 'Covariate manager'
-
+roles = ('viewer',)
 #------------------------------------------------------------------------------
 
 signature = Signature(
