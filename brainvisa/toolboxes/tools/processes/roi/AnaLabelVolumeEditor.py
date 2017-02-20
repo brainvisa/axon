@@ -32,6 +32,7 @@
 
 from brainvisa.processes import *
 from brainvisa import anatomist
+from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
 
 name = 'Label volume editor'
 roles = ('editor',)
@@ -54,7 +55,78 @@ def initialization( self ):
   self.pipeline_mask_nomenclature = self.signature[ 'pipeline_mask_nomenclature' ].findValue( {"filename_variable" : "pipeline_masks"}, requiredAttributes = { "filename_variable" : "pipeline_masks" } )
   self.setOptional('pipeline_mask_nomenclature')
   self.setOptional('support_volume')
-  
+
+
+def add_save_button(self, win):
+  if neuroConfig.anatomistImplementation == 'socket':
+    return None # cannot add buttons via socket API
+  from soma.wip.application.api import findIconFile
+  from soma.qt_gui.qt_backend import QtGui, QtCore
+
+  toolbar = win.findChild( QtGui.QToolBar, 'mutations' )
+  if toolbar is None:
+    toolbar = win.findChild( QtGui.QToolBar )
+    if toolbar is None:
+      toolbar = win.addToolBar( 'BV toolbar' )
+      if win.toolBarsVisible():
+        toolbar.show()
+  if toolbar is not None:
+    toolbar.addSeparator()
+    icon = QtGui.QIcon( findIconFile( 'save.png' ))
+    ac = QtGui.QAction( icon,
+      win.tr( 'Save ROI', 'QAWindow' ), win.getInternalRep() )
+    toolbar.addAction( ac )
+    ac.triggered.connect(self.save_roi)
+    self.win_deleted = False
+    win.getInternalRep().destroyed.connect(self.close_and_save)
+    return ac
+
+
+#def remove_save_button(self, win, ac):
+  #if neuroConfig.anatomistImplementation == 'socket':
+    #return None # cannot add buttons via socket API
+  #from soma.wip.application.api import findIconFile
+  #from soma.qt_gui.qt_backend import QtGui, QtCore
+
+  #toolbar = win.findChild( QtGui.QToolBar, 'mutations' )
+  #if toolbar is None:
+    #toolbar = win.findChild( QtGui.QToolBar )
+    #if toolbar is None:
+      #toolbar = win.addToolBar( 'BV toolbar' )
+      #if win.toolBarsVisible():
+        #toolbar.show()
+  #if toolbar is not None:
+    #import sip
+    #sip.transferbacck(ac)
+
+
+def close_and_save(self, win):
+    self.save_roi()
+    self.win_deleted = True
+
+
+def save_roi(self, message=None):
+  context  = self.context
+  if not isinstance(message, str) or not message:
+    message = 'Save ROI ?'
+  rep = context.ask(message, "OK", "Cancel", modal=0)
+  if rep != 1:
+    self.voigraphnum.save(self.voigraph)
+    a = anatomist.Anatomist()
+    a.sync() # make sure that anatomist has finished to process previous commands
+    #a.getInfo()
+    context.system( 'AimsGraphConvert',
+                    '-i', self.voigraph,
+                    '-o', self.finalgraph,
+                    '--volume' )
+    if self.background_label != 'minimum':
+      val = self.background_label
+    else:
+      val = 0
+    context.system( 'AimsReplaceLevel', '-i',
+      os.path.join( self.fgraphbase + '.data' , 'roi_Volume' ), '-o',
+      self.label_volume, '-g', -1, '-n', val )
+
 def execution( self, context ):
   a = anatomist.Anatomist()
   if self.pipeline_mask_nomenclature is not None:
@@ -100,30 +172,33 @@ def execution( self, context ):
   children = voigraphnum.children
   windownum.group.addToSelection( children )
   windownum.group.unSelect( children[1:] )
+
   del children
 
   a.execute( 'SetControl', windows=[windownum], control='PaintControl' )
   windownum.showToolbox(True)
-  
-  rep = context.ask( "Click here when finished","OK", "Cancel", modal=0 )
-  if rep != 1:
-    voigraphnum.save(voigraph)
-    a.sync() # make sure that anatomist has finished to process previous commands
-    #a.getInfo()
-    context.system( 'AimsGraphConvert', 
-                    '-i', voigraph, 
-                    '-o', finalgraph, 
-                    '--volume' )
-    if self.background_label != 'minimum':
-      val = self.background_label
-    else:
-      val = 0
-    context.system( 'AimsReplaceLevel', '-i',
-      os.path.join( fgraphbase + '.data' , 'roi_Volume' ), '-o',
-      self.label_volume, '-g', -1, '-n', val )
-    #context.system( 'VipMerge',
-                    #'-i', os.path.join( fgraphbase + '.data' , 'roi_Volume' ),
-                    #'-m', os.path.join( fgraphbase + '.data' , 'roi_Volume' ),
-                    #'-o', self.label_volume.fullPath(),
-                    #'-c', 'l', '-l', '-1', '-v', '0' )
-  #return ( imagenum, voigraphnum, windownum )
+
+  self.context = context
+  self.voigraph = voigraph
+  self.window = windownum
+  self.fgraphbase = fgraphbase
+  self.finalgraph = finalgraph
+  self.voigraphnum = voigraphnum
+  self.finished = False
+  ac = mainThreadActions().call(self.add_save_button, windownum)
+  if ac:
+    done = False
+    while not done:
+      time.sleep(0.1)
+      done = mainThreadActions().call(getattr, self, 'win_deleted')
+  else:
+    # ac is None, probably socket mode
+    self.save_roi(message='Click here when finished')
+
+  #mainThreadActions().call(self.remove_save_button, windownum, ac)
+  del self.context
+  del self.voigraph
+  del self.window
+  del self.fgraphbase
+  del self.finalgraph
+  del self.voigraphnum
