@@ -1,61 +1,35 @@
-<?xml version="1.0" encoding="iso-8859-1" ?>
-<minf version="1.0">
-  <d name="fr" length="3">
-    <xhtml name="short">Correction manuelle d'une image de labels ou d'un masque à partir du module de dessin d'Anatomist</xhtml>
-    <d name="parameters" length="4">
-      <xhtml name="support_volume">IRM de fond à afficher en même temps que les régions dessinées</xhtml>
-      <xhtml name="readme"/>
-      <xhtml name="label_volume">Volume à corriger</xhtml>
-      <xhtml name="pipeline_mask_nomenclature">noms des régions</xhtml>
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="fr">
+    <xhtml name="short">Correction manuelle d'une image de labels ou d'un masque Ã  partir du module de dessin d'Anatomist</xhtml>
+    <d name="parameters">
+      <xhtml name="support_volume">IRM de fond Ã  afficher en mÃªme temps que les rÃ©gions dessinÃ©es</xhtml>
+      <xhtml name="label_volume">Volume Ã  corriger</xhtml>
+      <xhtml name="pipeline_mask_nomenclature">noms des rÃ©gions</xhtml>
+      <xhtml name="background_label"/>
     </d>
-    <xhtml name="long">Sélectionnez l'image à modifier et déclenchez le traitement.
-Appuyez sur F1 après avoir placé la souris dans la fenêtre de visualisation d'Anatomist.
-Corrigez le problème et cliquez sur OK.
-NB L'interface de dessin n'est pas encore très conviviale.<br/><br/>
-
-Quelques trucs:
-<ul>
-<li>
-Si vous voulez rendre transparentes toutes les régions d'intérêt en même temps,
-sélectionnez "neuro_quelquechose.arg" dans la fenêtre de controle d'Anatomist,
-et modifiez la couleur de l'objet (agissez sur l'opacité)
-</li><li> Lorsque vous voulez alterner rapidement entre deux labels, plutôt
-que changer d'onglet, vous pouvez passer en mode séléection (la flèche
-de la fenêtre d'Anatomist, cliquer sur votre nouveau label à modifier,
-et revenir en mode dessin.
-</li>
-</ul>
-<img SRC="../../images/mask-editing.png" ALT=""/></xhtml>
+    <xhtml name="long">SÃ©lectionnez l'image Ã  modifier et dÃ©clenchez le traitement.<br/>
+Une fenÃªtre de visualisation d'Anatomist va s'ouvrir, ainsi que sa boÃ®te Ã  outils d'Ã©dition ROI. Une icÃ´ne supplÃ©mentaire, "sauvegarde" est visible sur la bare d'icÃ´nes horizontale de la fenÃªtre.<br/>
+Corrigez le problÃ¨me et cliquez sur l'icÃ´ne de sauvegarde de temps en temps pour conserver votre travail.<br/>
+Lorsque vous avez fini, fermez la fenÃªtre Anatomist. Il vous sera proposÃ© une derniÃ¨re sauvegarde.
+<br/><br/>
+<img SRC="../../images/mask-editing.png" ALT="" width="600"/></xhtml>
   </d>
-  <d name="en" length="3">
+  <d name="en">
     <xhtml name="short">Manual correction of a labels image or a mask using Anatomist's drawing module</xhtml>
-    <d name="parameters" length="4">
+    <d name="parameters">
       <xhtml name="support_volume">background MRI to display under the drawn regions</xhtml>
-      <xhtml name="readme"/>
       <xhtml name="label_volume">volume to modify</xhtml>
       <xhtml name="pipeline_mask_nomenclature">regions names</xhtml>
+      <xhtml name="background_label"/>
     </d>
-    <xhtml name="long">Select the image to modify,
-and trigger the treatment.
-Then press F1 with the mouse in Anatomist's window.
-Perform your corrections and press OK.
-NB: the drawing interface is still in progress... the conviviality
-has to be improved.
+    <xhtml name="long">Select the image to modify, and trigger the process.<br/>
+An Anatomist window will appear, together with its ROI toolbox. An additional icon, "save" will be visible on the horizontal icons toolbar of the Anatomist window.<br/>
+Perform your corrections and press the "save" button from time to time to save your work.<br/>
+When done, close the Anatomist window. A last save will pe proposed.<br/><br/>
 
-A fewtricks:
-<ul>
-<li>
- To get transparencies for all regions,
-select the neuro_something.arg in Anatomist interface
-and modify the color/material with the right click of the mouse (opacity slider)
-</li><li>
-To alternate easily from one label to another, you can click
-on Anatomist's window selection mode (the arrow), click
-on the new label you want to edit in the slice, go back to drawing mode.
-</li>
-</ul>
-
-
-<img SRC="../../images/mask-editing.png" ALT=""/></xhtml>
+<img SRC="../../images/mask-editing.png" ALT="" width="600"/></xhtml>
   </d>
+</d>
 </minf>
