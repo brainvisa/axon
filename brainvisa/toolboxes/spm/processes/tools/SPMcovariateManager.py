@@ -48,18 +48,18 @@ signature = Signature(
 
 def initialization(self):
   self.linkParameters("output_table", "input_table")
-  
+
 def execution( self, context ):
-  
+
   mainThreadActions().call(self.showInterface, context)
-  
+
 def showInterface( self, context):
-  
+
   csv_dict, csv_row_header = csv_converter.reverse( self.input_table.fullPath() )
   csv_editor = CSVEditor(csv_dict, csv_row_header)
   csv_editor.show()
   r = csv_editor.exec_()
-  
+
   if csv_editor.save_new_csv:
     csv_dict = csv_editor.csv_dict
     csv_converter.convert(csv_dict, self.output_table.fullPath(), csv_row_header)
@@ -109,11 +109,11 @@ class CSVEditor( QDialog ):
     self.extract_csv_button = QPushButton('Extract current table')
     self.add_covariate_button = QPushButton('Add new covariate')
     self.remove_covariate_button = QPushButton('Remove covariate')
-    self.table = TableWidgetCustom()    
+    self.table = TableWidgetCustom()
     self.table.verticalHeader().setVisible(False)
     self.table.verticalHeader().setResizeMode(QHeaderView.Stretch)
     self.table.setSortingEnabled(True)
-    
+
     self.button_box = QDialogButtonBox()
     self.button_box.setOrientation(Qt.Horizontal)
     self.button_box.setStandardButtons( QDialogButtonBox.Reset | QDialogButtonBox.Discard | QDialogButtonBox.Save)
@@ -121,7 +121,7 @@ class CSVEditor( QDialog ):
 # Layout Design
 #==============================================================================
     main_layout = QVBoxLayout(self)
-    
+
     parameters_layout = QHBoxLayout()
     parameters_layout.addStretch(1)
     parameters_layout.addWidget(self.results_filter_button)
@@ -149,10 +149,10 @@ class CSVEditor( QDialog ):
 #==============================================================================
     self._setQDialogSize()
     self._centerOnScreen()
-    
+
     self._fillHeaderTable()
     self._fillValueTable()
-    
+
   def _setQDialogSize( self ):
     resolution = QDesktopWidget().screenGeometry()
     width = int( float( resolution.width() ) * self.factor )
@@ -164,7 +164,7 @@ class CSVEditor( QDialog ):
     width = int( float( resolution.width() ) * ( 1 - self.factor ) / 2 )
     height = int( float( resolution.height() ) * ( 1 - self.factor ) / 2 )
     self.move( width, height )
-    
+
   def _fillHeaderTable(self):
     self.csv_column_header = sorted(self.csv_column_header)
     row_count = len(self.csv_dict.keys())
@@ -173,19 +173,19 @@ class CSVEditor( QDialog ):
     self.table.setHorizontalHeaderLabels(self.csv_row_header + self.csv_column_header)
     for row_id_header_index in range(len(self.csv_row_header)):
       self.table.horizontalHeader().setResizeMode(row_id_header_index, QHeaderView.ResizeToContents)
-    
+
     for value_header_index in range(len(self.csv_row_header), len(self.csv_row_header + self.csv_column_header)):
       self.table.horizontalHeader().setResizeMode(value_header_index, QHeaderView.Stretch)
-      
+
     self._adjustTableSizetoContents()
-  
+
   def _resetTable(self):
     self.csv_dict = copy.deepcopy(self.native_csv_dict)
     self.csv_row_header = copy.deepcopy(self.native_csv_row_header)
     self.csv_column_header = copy.deepcopy(self.native_csv_column_header)
     self.displaying_configuration_dict = None
     self._refreshTable()
-  
+
   def _refreshTable(self):
     self.table.clear()
     self.table.setSortingEnabled(False)
@@ -193,7 +193,7 @@ class CSVEditor( QDialog ):
     self._fillValueTable()
     self._setCurrentDisplayingConfiguration(self.displaying_configuration_dict)
     self.table.setSortingEnabled(True)
-        
+
   def _fillValueTable(self):
     table_row_index = 0
     for row_id in sorted(self.csv_dict.keys()):
@@ -206,7 +206,7 @@ class CSVEditor( QDialog ):
         cell.setBackground(Qt.lightGray)
         self.table.setItem(table_row_index, column_index, cell)
         column_index += 1
-        
+
       tmp_value_dict = self.csv_dict[row_id]
       while column_index < self.table.columnCount():
         column_header = str(self.table.horizontalHeaderItem(column_index).text())
@@ -219,48 +219,48 @@ class CSVEditor( QDialog ):
         column_index += 1
       table_row_index += 1
 
-    
+
   def _getAllColumnHeader(self):
     column_header_list = []
     for row_id in self.csv_dict.keys():
       column_header_list = list(set(column_header_list + self.csv_dict[row_id].keys()))
     return sorted(column_header_list)
-    
+
   def _adjustTableSizetoContents(self):
     self.table.resizeColumnsToContents()
     self.table.resizeRowsToContents()
-  
+
   def _showViewerParams(self):
     subject_id_dict = {}
     for column_index, column_header in enumerate(self.csv_row_header):
-      subject_id_dict[column_header] = self._getColumnItemList(column_index) 
+      subject_id_dict[column_header] = self._getColumnItemList(column_index)
     subject_id_dict["covariate"] = self.csv_column_header
     params_viewer = ListWidgetCheckBoxDialog(subject_id_dict)
     params_viewer.show()
     r = params_viewer.exec_()
-    
+
     self._setCurrentDisplayingConfiguration(params_viewer.item_selected_dict)
-    
+
     self._askAgainIfEmpty()
-  
+
   def _setCurrentDisplayingConfiguration(self, displaying_configuration_dict=None):
     if displaying_configuration_dict is not None:
       self.displaying_configuration_dict = displaying_configuration_dict
     else:
       self.displaying_configuration_dict = {}
       for column_index, column_header in enumerate(self.csv_row_header):
-        self.displaying_configuration_dict[column_header] = self._getColumnItemList(column_index) 
+        self.displaying_configuration_dict[column_header] = self._getColumnItemList(column_index)
       self.displaying_configuration_dict["covariate"] = copy.deepcopy(self.csv_column_header)
     self._updateTable(self.displaying_configuration_dict)
-    
+
   def _askAgainIfEmpty(self):
     visible_row = 0
     for row_index in range(self.table.rowCount()):
       if not self.table.isRowHidden(row_index):
         visible_row += 1
     if visible_row == 0:
-      QMessageBox.warning(self, 
-                          'No results', 
+      QMessageBox.warning(self,
+                          'No results',
                           'No results matching with these choices, please try again',
                           QMessageBox.Ok)
       self._showViewerParams()
@@ -282,14 +282,14 @@ class CSVEditor( QDialog ):
             column_header = str(self.table.horizontalHeaderItem(column_index).text())
             value = str(self.table.item(row_index, column_index).text())
             current_table_dict[row_id][column_header] = value
-    
+
     fileName = QFileDialog.getSaveFileName(self, "Export CSV",
                 '', "CSV Files (*.csv);;CSV Files (*.csv)")
     if fileName:
       csv_converter.convert(current_table_dict, fileName, self.csv_row_header)
     else:
       pass
-    
+
   def _addCovariate(self):
     dialog = UserAskDialog("What is the new covariate name ?",
                            unvalid_field=self.csv_column_header + [''])
@@ -300,15 +300,15 @@ class CSVEditor( QDialog ):
     else:
       pass#the user cancelled
     dialog.destroy()
-    
+
   def addCovariateInTable(self, covariate_name):
     for subject_id in self.csv_dict.keys():
       self.csv_dict[subject_id][covariate_name] = ''
-    self.csv_column_header.append(covariate_name) 
+    self.csv_column_header.append(covariate_name)
     if self.displaying_configuration_dict is not None:
-      self.displaying_configuration_dict['covariate'].append(covariate_name)    
+      self.displaying_configuration_dict['covariate'].append(covariate_name)
     self._refreshTable()
-    
+
   def _removeCovariate(self):
     dialog = UserAskDialog("Choose the covariate which will be deleted :",
                            valid_field=self.csv_column_header)
@@ -319,25 +319,25 @@ class CSVEditor( QDialog ):
     else:
       pass#the user cancelled
     dialog.destroy()
-  
+
   def removeCovariateInTable(self, covariate_name):
     for subject_id in self.csv_dict.keys():
       del self.csv_dict[subject_id][covariate_name]
-    
+
     self.csv_column_header.remove(covariate_name)
     if self.displaying_configuration_dict is not None:
       if covariate_name in self.displaying_configuration_dict['covariate']:
         self.displaying_configuration_dict['covariate'].remove(covariate_name)
     self._refreshTable()
-    
+
   def _getColumnItemList(self, column_index):
     item_list = []
     for row_index in range(self.table.rowCount()):
       item_list.append(str(self.table.item(row_index, column_index).text()))
     return list(set(item_list))
-  
+
   def _updateTable(self, item_selected_dict):
-    
+
     covariate_selected_list = item_selected_dict['covariate']
     length_header = len(item_selected_dict.keys()) - 1#without covariate
     for column_header_index in range(length_header, self.table.columnCount()):
@@ -345,17 +345,17 @@ class CSVEditor( QDialog ):
         self.table.setColumnHidden(column_header_index, False)
       else:
         self.table.setColumnHidden(column_header_index, True)
-        
+
     for row_index in range(self.table.rowCount()):
       hidden = False
       for column_index, column_header in enumerate(self.csv_row_header):
         if not str(self.table.item(row_index, column_index).text()) in item_selected_dict[column_header]:
           hidden = True
       self.table.setRowHidden(row_index, hidden)
-      
+
   def _closeWithoutSaving(self):
     self.close()
-    
+
   def _closeAndSaving(self):
     self.csv_dict = {}
     for row_index in range(self.table.rowCount()):
@@ -363,16 +363,16 @@ class CSVEditor( QDialog ):
       for column_index, column_header in enumerate(self.csv_row_header):
         row_id_list.append(str(self.table.item(row_index, column_index).text()))
       row_id = ';'.join(row_id_list)
-      
+
       self.csv_dict[row_id] = {}
       for column_index in range(len(self.csv_row_header), self.table.columnCount()):
         column_header = str(self.table.horizontalHeaderItem(column_index).text())
         value = str(self.table.item(row_index, column_index).text())
         self.csv_dict[row_id][column_header] = value
-        
+
     self.save_new_csv = True
     self.close()
-    
+
 class TableWidgetCustom(QTableWidget):
   def __init__(self, parent=None):
     QTableWidget.__init__(self)
@@ -405,8 +405,8 @@ class TableWidgetCustom(QTableWidget):
               if (first_row + row_hidden_increment + r) < self.rowCount() and (first_col + column_hidden_increment + c) < self.columnCount():
                 self.item(first_row + row_hidden_increment + r, first_col + column_hidden_increment + c).setText(text)
               else:
-                QMessageBox.warning(self, 
-                                    'Unvalid copy', 
+                QMessageBox.warning(self,
+                                    'Unvalid copy',
                                     'The table is too small compared to the cells to be copied',
                                     QMessageBox.Ok)
                 #raise ValueError('This table is too small compared to the cells to be copied')
@@ -422,7 +422,7 @@ class TableWidgetCustom(QTableWidget):
           self.clip.setText(s)
       else:
         pass
-        
+
     elif e.key() == Qt.Key_Delete:
       selected = self.selectedRanges()
       first_selected_row = selected[0].topRow()
@@ -475,21 +475,21 @@ class UserAskDialog(QDialog):
     self.button_layout.addStretch()
     self.button_layout.addWidget(self.validate_button)
     self.button_layout.addStretch()
-    
+
     main_layout.addWidget(self.label)
     main_layout.addWidget(self.line_edit)
     main_layout.addLayout(self.button_layout)
 #==============================================================================
 # signal connection
-#==============================================================================    
+#==============================================================================
     self.line_edit.textChanged.connect(self._checkIfValid)
     self.validate_button.clicked.connect(self._storeCovariateName)
     self.cancel_button.clicked.connect(self.close)
 #==============================================================================
 # Initialisation
-#==============================================================================    
+#==============================================================================
     self._checkIfValid()
-    
+
   def _checkIfValid(self):
     valid = True
     current_text = str(self.line_edit.text())
@@ -499,18 +499,18 @@ class UserAskDialog(QDialog):
     if self.valid_field is not None:
       if not current_text in self.valid_field:
         valid = False
-        
+
     if valid:
       self.validate_button.setEnabled(True)
       self.line_edit.setStyleSheet('background-color: none')
     else:
       self.validate_button.setEnabled(False)
       self.line_edit.setStyleSheet('background-color: rgb(255,255,153);')
-      
+
   def _storeCovariateName(self):
     self.user_choice = str(self.line_edit.text())
     self.close()
-    
+
   def getChoice(self):
     return self.user_choice
 #==============================================================================
@@ -521,12 +521,12 @@ class ListWidgetCheckBoxDialog(QDialog):
     QDialog.__init__(self)
 #==============================================================================
 # Variables member
-#==============================================================================   
+#==============================================================================
     self.subject_id_dict =  subject_id_dict
     self.item_selected_dict = {}
 
 #===============================================================================
-# 
+#
 #===============================================================================
     self.widget_dict = {}
     for key in subject_id_dict.keys():
@@ -534,13 +534,13 @@ class ListWidgetCheckBoxDialog(QDialog):
       self.widget_dict[key]["GroupBoxCustom"] = GroupBoxCustom(key, custom_style_sheet=True)
       self.widget_dict[key]["QListWidget"] = QListWidget()
       self.widget_dict[key]["QListWidget"].setSelectionMode(QAbstractItemView.ExtendedSelection)
-    
+
     for key in self.widget_dict.keys():
       self.widget_dict[key]["GroupBoxCustom"].addWidgetInLayout(self.widget_dict[key]["QListWidget"])
-    
-    
+
+
 #===============================================================================
-# 
+#
 #===============================================================================
 #==============================================================================
 # Qt Objects
@@ -554,8 +554,8 @@ class ListWidgetCheckBoxDialog(QDialog):
     select_all_layout.addStretch(0)
     select_all_layout.addWidget(self.select_all_button)
     select_all_layout.addStretch(0)
-    
-    main_layout = QVBoxLayout(self)    
+
+    main_layout = QVBoxLayout(self)
     group_box_layout = QHBoxLayout()
     for key in self.widget_dict.keys():
       group_box_layout.addWidget(self.widget_dict[key]["GroupBoxCustom"])
@@ -574,21 +574,20 @@ class ListWidgetCheckBoxDialog(QDialog):
     for key, values in self.subject_id_dict.items():
       self.widget_dict[key]["QListWidget"].addItems(sorted(values))
       self.widget_dict[key]["QListWidget"].setCurrentRow(0)
-    
+
   def selectAll(self):
     for key in self.widget_dict.keys():
       for item_index in range(self.widget_dict[key]["QListWidget"].count()):
         item = self.widget_dict[key]["QListWidget"].item(item_index)
         item.setSelected(True)
-    
+
   def _saveSelection(self):
     for key in self.widget_dict.keys():
       self.item_selected_dict[key] = []
       for item_selected in self.widget_dict[key]["QListWidget"].selectedItems():
         self.item_selected_dict[key].append(str(item_selected.text()))
-      
+
     self.close()
-      
-      
-      
-    
+
+
+
