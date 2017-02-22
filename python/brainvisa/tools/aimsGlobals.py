@@ -69,7 +69,8 @@ This module defines several lists of formats (:py:class:`neuroDiskItems.NamedFor
 These global variables are initialized through the function :py:func:`initializeFormatLists`.
 """
 import os, string
-from brainvisa.data.neuroDiskItems import createFormatList, getFormat, aimsFileInfo
+from brainvisa.data.neuroDiskItems import createFormatList, getFormat, \
+  aimsFileInfo
 
 #------------
 # IMPORTANT : In a formats list, the most common formats should be placed
@@ -279,8 +280,13 @@ def aimsVolumeAttributes( item, writeOnly=0, forceFormat=0 ):
       + map( getFormat, map( lambda x: 'Series of ' + x.name, aimsVolumeFormats ) )
 
   result = {}
-  if ( forceFormat or item.format in _aimsVolumeFormats ) and item.isReadable():
-    result = aimsFileInfo( item.fullPath() )
+  if isinstance(item, DiskItem) and \
+      (forceFormat or item.format in _aimsVolumeFormats) \
+      and item.isReadable():
+    result = aimsFileInfo(item.fullPath())
+  else:
+    # item is a string, use FileInfo directly
+    result = aimsFileInfo(item)
   # Byte swapping should not be in image header but Aims gives this internal information.
   result.pop( 'byte_swapping', None )
   return result
