@@ -70,7 +70,7 @@ These global variables are initialized through the function :py:func:`initialize
 """
 import os, string
 from brainvisa.data.neuroDiskItems import createFormatList, getFormat, \
-  aimsFileInfo
+  aimsFileInfo, DiskItem
 
 #------------
 # IMPORTANT : In a formats list, the most common formats should be placed
