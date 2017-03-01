@@ -5807,9 +5807,9 @@ def runIPConsoleKernel(mode='qtconsole'):
             app.kernel.start()
 
             from zmq.eventloop import ioloop
-            if ipversion >= [3, 0]:
-                            # IP 3 allows just calling the current callbacks.
-                            # For IP 1 it is not sufficient.
+            if ipversion >= [2, 0]:
+                # IP 2 allows just calling the current callbacks.
+                # For IP 1 it is not sufficient.
                 def my_start_ioloop_callbacks(self):
                     with self._callback_lock:
                         callbacks = self._callbacks
