@@ -732,7 +732,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
 
     def _setDirectory( self ):
       self.browseDirectoryDialog = QFileDialog( self.topLevelWidget() )
-      self.browseDirectoryDialog.accepted[unicode].connect(
+      self.browseDirectoryDialog.accepted.connect(
         self._setDirectoryAccepted)
       self.browseDirectoryDialog.setFileMode( QFileDialog.Directory )
       self.browseDirectoryDialog.setOption(QFileDialog.ShowDirsOnly, True)
