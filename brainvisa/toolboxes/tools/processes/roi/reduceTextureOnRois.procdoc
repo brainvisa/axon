@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="fr">
+    <xhtml name="short">Averages texture values inside regions, and output a numpy array file with one line per ROI, and possibly one column per timepoint.</xhtml>
+    <d name="parameters">
+      <xhtml name="output_reduced_data"/>
+      <xhtml name="input_texture"/>
+      <xhtml name="roi_texture"/>
+    </d>
+    <xhtml name="long"/>
+  </d>
+</d>
+</minf>
