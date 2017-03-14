@@ -31,6 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import print_function
 from brainvisa.processes import *
 from soma.wip.application.api import Application
 from brainvisa.configuration import neuroConfig
@@ -95,10 +96,10 @@ exit;
   cmd = [ mexe ] + configuration.matlab.options.split(' ') \
     + [ '-r', os.path.basename( matlab_script_diskitem.fullName() ) ]
   context.write('Attempt to run the matlab command: ' + repr(cmd))
-  #print 'running matlab command: ', cmd
+  #print('running matlab command: ', cmd)
   try:
     context.system( *cmd )
-  except Exception, e:
+  except Exception as e:
     return None
   os.chdir( pd )
   spm_path = open( spm_path_saving_text_file_diskitem.fullPath() ).read().strip()
