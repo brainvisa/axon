@@ -37,6 +37,7 @@
 #d'anatomist 1.24 environ.
 
 
+from __future__ import print_function
 from brainvisa.processes import *
 from soma import aims
 
@@ -76,8 +77,8 @@ def execution(self, context):
     trans = aims.AffineTransformation3d()
     trans.setTranslation([-self.crop_right * vs[0], -self.crop_front * vs[1],
         -self.crop_top * vs[2]])
-    print 'transfo:'
-    print trans
+    print('transfo:')
+    print(trans)
     aims.write(trans, transfile.fullPath())
     cmd = ['AimsResample', '-t', 'n', '-i', self.read, '-o', self.write,
         '--dx', dims[0], '--dy', dims[1], '--dz', dims[2], '-m', transfile]

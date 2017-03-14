@@ -32,6 +32,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import print_function
 from brainvisa.processes import *
 import string, types, os
 from brainvisa import shelltools
@@ -79,7 +80,7 @@ def initialization( self ):
 
 def execution( self, context ):
   PSExtension = os.path.splitext( self.psfile.fullPath( ) )
-  print 'ps extension: ', str( PSExtension )
+  print('ps extension: ', str( PSExtension ))
   if PSExtension[1]=='.gz':
     
     if self.PSviewer == 'kghostview' or self.PSviewer == 'evince' or self.PSviewer == 'okular': 
