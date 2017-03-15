@@ -244,9 +244,9 @@ class LogViewer( QWidget ):
     self.refresh()
 
   def closeEvent( self, event ):
-    self.close.emit()
     neuroConfig.unregisterObject( self )
     QWidget.closeEvent( self, event )
+    event.accept()
 
   def refresh( self ):
     try:
