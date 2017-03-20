@@ -100,7 +100,15 @@ def updateBatchPath(self, proc):
     return os.path.join(directory_path, 'spm8_coregister_estimate_job.m')
 
 def execution( self, context ):
-
+  if self.extract_coregister_matrix and self.coregister_matrix is not None:
+    source_vol = aims.read(self.source.fullPath())
+    if len(source_vol.header()['transformations']) > 1:
+      source_trm = aims.AffineTransformation3d(source_vol.header()['transformations'][1])
+    elif source_vol.header()['referentials'][0] == "Coordinates aligned to another file or to anatomical truth":
+      source_trm = aims.AffineTransformation3d(source_vol.header()['transformations'][0])
+    else:
+      source_trm = None
+      
   estimation_options = EstimationOptions()
   if self.objective_function == "Mutual Information":
     estimation_options.setObjectiveFunctionToMutualInformation()
@@ -135,12 +143,19 @@ def execution( self, context ):
   if self.extract_coregister_matrix and self.coregister_matrix is not None:
     #very usefull because spm action doesn't recompute minf, so the transformation in minf files is wrong
     self.source.clearMinf()
-    self.extractCoregisterMatrix( self.source.fullPath(), self.reference.fullPath(), self.coregister_matrix.fullPath() )
+    self.extractCoregisterMatrix(self.source.fullPath(), 
+                                 self.reference.fullPath(), 
+                                 self.coregister_matrix.fullPath(),
+                                 source_trm)
 
-def extractCoregisterMatrix(self, source_path, reference_path, output_path):
+def extractCoregisterMatrix(self, source_path, reference_path, output_path, previous_source_trm):
 
   source_vol = aims.read( source_path )
   source_aligned_trm = aims.AffineTransformation3d(source_vol.header()['transformations'][1])
+  if previous_source_trm is not None:
+    source_aligned_trm = previous_source_trm.inverse() * source_aligned_trm
+  else:
+    pass
   reference_vol = aims.read( reference_path )
   #If reference volume has two transformations (scanner + aligned)
   #the "aligned" trm of source "go" to the "aligned" of reference

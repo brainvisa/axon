@@ -64,7 +64,8 @@ signature = Signature(
   'grand_mean_scaling',Boolean(),
   'ANCOVA',Boolean(),
   #Covariates
-  'covariate_table', ReadDiskItem('Covariate table for SPM', 'CSV file'),
+  'covariate_table_group1', ReadDiskItem('Covariate table for SPM', 'CSV file'),
+  'covariate_table_group2', ReadDiskItem('Covariate table for SPM', 'CSV file'),
   'covariate_list', ListOf(Choice()),
   #Masking
   'threshold_masking', Choice( "Neither", 'Absolute', 'Relative' ),
@@ -87,7 +88,8 @@ signature = Signature(
 
 def initialization( self ):
   self.addLink(None, 'images_are_parametric', self.updateSignatureAboutParametricImages)
-  self.addLink(None, 'covariate_table', self.updateCovariate)
+  self.addLink(None, 'covariate_table_group1', self.updateCovariate)
+  self.addLink(None, 'covariate_table_group2', self.updateCovariate)
   self.addLink( None, 'threshold_masking', self.updateThresholdMaskingFields)
   self.addLink( 'threshold_value', 'threshold_masking', self.updateThresholdMaskingValue)
 
@@ -97,7 +99,7 @@ def initialization( self ):
 
   self.addLink("batch_location", "spm_workspace_directory", self.updateBatchPath)
 
-  self.setOptional('covariate_table', 'covariate_list', 'explicit_mask')
+  self.setOptional('covariate_table_group2', 'covariate_table_group1', 'covariate_list', 'explicit_mask')
 
   self.signature['two_sample_T_test_mat_file'].userLevel = 1
   self.signature[ 'threshold_value' ].userLevel = 3
@@ -121,14 +123,19 @@ def updateSignatureAboutParametricImages(self, proc):
     self.normalisation = 'Proportional'
 
 def updateCovariate(self, proc):
-  if self.covariate_table is not None:
-    covariate_dict, row_keys_list = csv_converter.reverse(self.covariate_table.fullPath())
-    covariate_list = []
-    for subject_covariate_dict in covariate_dict.values():
-      covariate_list = list(set( covariate_list + subject_covariate_dict.keys()))
-    covariate_list.sort()
-    self.signature['covariate_list'] = ListOf(Choice(*covariate_list))
-    self.changeSignature(self.signature)
+  if self.covariate_table_group1 is not None:
+    covariate_table_diskitem = self.covariate_table_group1
+  elif self.covariate_table_group2 is not None:
+    covariate_table_diskitem = self.covariate_table_group2
+  else:
+    return None
+  covariate_dict, row_keys_list = csv_converter.reverse(covariate_table_diskitem.fullPath())
+  covariate_list = []
+  for subject_covariate_dict in covariate_dict.values():
+    covariate_list = list(set( covariate_list + subject_covariate_dict.keys()))
+  covariate_list.sort()
+  self.signature['covariate_list'] = ListOf(Choice(*covariate_list))
+  self.changeSignature(self.signature)
 
 def updateThresholdMaskingFields( self, proc ):
   if self.threshold_masking == "Neither":
@@ -226,9 +233,13 @@ def execution(self, context):
   elif self.normalisation == 'ANCOVA':
     two_sample_t_test.setGlobalNormalisationToANCOVA()
 
-  if not None in [self.covariate_table, self.covariate_list]:
-    images_diskitem_list = self.group_1_images + self.group_2_images
-    covariate_list = createCovariateList(self.covariate_table, self.covariate_list, images_diskitem_list)
+  if not None in [self.covariate_table_group1, self.covariate_table_group2, self.covariate_list]:
+    #images_diskitem_list = self.group_1_images + self.group_2_images
+    covariate_list = createCovariateListForTwoSampleTTest(self.covariate_table_group1, 
+                                                          self.covariate_table_group2,
+                                                          self.covariate_list, 
+                                                          self.group_1_images,
+                                                          self.group_2_images)
     for covariate in covariate_list:
       two_sample_t_test.appendCovariate(covariate)
 
@@ -244,20 +255,33 @@ def execution(self, context):
 # #
 #==============================================================================
 #==============================================================================
-def createCovariateList(covariate_table_diskitem, covariate_name_list, image_diskitem_list):
+def createCovariateListForTwoSampleTTest(covariate_table_group1_diskitem, covariate_table_group2_diskitem, covariate_name_list, group1_image_diskitem_list, group2_image_diskitem_list):
+
   covariate_list = []
-  covariate_dict, header_id_list = csv_converter.reverse(covariate_table_diskitem.fullPath())
-  subject_id_list = buildSubjectIDList(header_id_list, image_diskitem_list)
+  #group1
+  covariate_group1_dict, group1_header_id_list = csv_converter.reverse(covariate_table_group1_diskitem.fullPath())
+  group1_subject_id_list = buildSubjectIDList(group1_header_id_list, group1_image_diskitem_list)
+  #group2
+  covariate_group2_dict, group2_header_id_list = csv_converter.reverse(covariate_table_group2_diskitem.fullPath())
+  group2_subject_id_list = buildSubjectIDList(group2_header_id_list, group2_image_diskitem_list)
 
   for covariate_name in covariate_name_list:
     cov = Covariate()
     cov.setName( covariate_name )
     covariate_vector = []
-    for subject_id in subject_id_list:
-      if isNumber(covariate_dict[subject_id][covariate_name]):
-        covariate_vector.append(covariate_dict[subject_id][covariate_name])
+    #group1
+    for subject_id in group1_subject_id_list:
+      if isNumber(covariate_group1_dict[subject_id][covariate_name]):
+        covariate_vector.append(covariate_group1_dict[subject_id][covariate_name])
       else:
         raise ValueError( 'Covariable "' + covariate_name + '" not found for ' + subject_id )
+    #group2
+    for subject_id in group2_subject_id_list:
+      if isNumber(covariate_group2_dict[subject_id][covariate_name]):
+        covariate_vector.append(covariate_group2_dict[subject_id][covariate_name])
+      else:
+        raise ValueError( 'Covariable "' + covariate_name + '" not found for ' + subject_id )
+
     cov.setVector(covariate_vector)
     covariate_list.append(cov)
   return covariate_list

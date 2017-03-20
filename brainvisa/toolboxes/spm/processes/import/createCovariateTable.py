@@ -59,7 +59,6 @@ def initialization(self):
 
   self.diskitem_type = "4D Volume"
   self.diskitem_format = "NIFTI-1 image"
-  
   self.doing_if_exists = "keep old"
 
 def updateSignatureAboutTypeAndFormat(self, proc):
