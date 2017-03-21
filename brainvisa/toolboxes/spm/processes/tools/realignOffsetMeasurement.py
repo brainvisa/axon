@@ -38,23 +38,24 @@ def execution(self, context):
     else:
         context.warning("no SPM transformation found")
 
-    f = open(self.acquisition_data.fullPath(), 'r')
-    data = json.load(f)
-    f.close()
-
-    offset_dict_key = "dynamic offset (mm)"
-    spm_version_dict_key = "%s realign" % self.spm_version
-    if offset_dict_key in  data.keys():
-        if spm_version_dict_key in data[offset_dict_key].keys():
-            data[offset_dict_key][spm_version_dict_key][str(self.box_size)] = realign_offset_dict
+    if realign_offset_dict:
+        f = open(self.acquisition_data.fullPath(), 'r')
+        data = json.load(f)
+        f.close()
+    
+        offset_dict_key = "dynamic offset (mm)"
+        spm_version_dict_key = "%s realign" % self.spm_version
+        if offset_dict_key in  data.keys():
+            if spm_version_dict_key in data[offset_dict_key].keys():
+                data[offset_dict_key][spm_version_dict_key][str(self.box_size)] = realign_offset_dict
+            else:
+                data[offset_dict_key][spm_version_dict_key] = {str(self.box_size): realign_offset_dict}
         else:
-            data[offset_dict_key][spm_version_dict_key] = {str(self.box_size): realign_offset_dict}
-    else:
-        data[offset_dict_key] = {spm_version_dict_key: {str(self.box_size): realign_offset_dict}}
-
-    f = open(self.acquisition_data.fullPath(), 'w')
-    json.dump(data, f, indent=2, sort_keys=True)
-    f.close()
+            data[offset_dict_key] = {spm_version_dict_key: {str(self.box_size): realign_offset_dict}}
+    
+        f = open(self.acquisition_data.fullPath(), 'w')
+        json.dump(data, f, indent=2, sort_keys=True)
+        f.close()
 
 
 def buildAimsTransfo(self, spm_line):
