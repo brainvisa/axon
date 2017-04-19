@@ -137,7 +137,7 @@ class SPM(SPMLauncher):
         else:
             matlab_run_options = self.matlab_options
 
-        matlab_commmand = [self.matlab_executable_path, matlab_run_options, "-r \"run('%s');\"" %matlab_script_path]
+        matlab_commmand = ['bv_unenv', self.matlab_executable_path, matlab_run_options, "-r \"run('%s');\"" %matlab_script_path]  # bv_unenv is needed for CentOs 7 (LIB & Pitie)
         print('Running matlab command:', matlab_commmand)
         output = runCommand(matlab_commmand)
         os.chdir(cwd)
