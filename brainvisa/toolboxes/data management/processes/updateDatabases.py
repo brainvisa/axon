@@ -77,8 +77,10 @@ def execution( self, context ):
 
 def inlineGUI( self, values, context, parent, externalRunButton=False ):
   result = UpdateDatabasesGUI( parent )
-  result.btnClearAndUpdate.clicked[()].connect(context._runButton)
-  #result.runClearDatabases = partial( context._runButton, executionFunction=self.clearDatabases, )
-  #result.btnClear.clicked.connect(result.runClearDatabases)
+  self.context = context
+  result.btnClearAndUpdate.clicked.connect(self.run_button_clicked)
   return result
+
+def run_button_clicked(self, checked=False):
+    self.context._runButton()
 
