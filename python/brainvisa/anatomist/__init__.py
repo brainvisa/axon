@@ -35,30 +35,32 @@ import sys, os
 from brainvisa.configuration import neuroConfig
 use_headless = False
 try:
-  import anatomist
-  anatomist.setDefaultImplementation(neuroConfig.anatomistImplementation)
-  if not neuroConfig.gui:
-      # use headless version
-      from anatomist import headless
-      use_headless = True
-      headless.setup_headless()
-  exec("import "+anatomist.getDefaultImplementationModuleName()+" as anatomistModule")
-  anatomistImport=True
+    import anatomist
+    anatomist.setDefaultImplementation(neuroConfig.anatomistImplementation)
+    if not neuroConfig.gui:
+        # use headless version
+        from anatomist import headless
+        use_headless = True
+        headless.setup_headless()
+    anatomistImport=True
+    exec("import " + anatomist.getDefaultImplementationModuleName()
+          + " as anatomistModule")
 except Exception as e:
-  print(e)
-  anatomistImport=False
+    print(e)
+    anatomistImport = False
 
-from brainvisa import registration
-from brainvisa.processing import neuroLog
-from brainvisa.processing import neuroException
-from brainvisa.data import neuroData
-from brainvisa.validation import ValidationError
-from soma.qtgui.api import QtThreadCall
-import distutils.spawn
-import weakref, types, threading
-import copy
-from brainvisa.processing.qtgui import backwardCompatibleQt as qt
-from brainvisa.processing.qtgui import neuroProcessesGUI
+if anatomistImport:
+    from brainvisa import registration
+    from brainvisa.processing import neuroLog
+    from brainvisa.processing import neuroException
+    from brainvisa.data import neuroData
+    from brainvisa.validation import ValidationError
+    from soma.qtgui.api import QtThreadCall
+    import distutils.spawn
+    import weakref, types, threading
+    import copy
+    from brainvisa.processing.qtgui import backwardCompatibleQt as qt
+    from brainvisa.processing.qtgui import neuroProcessesGUI
 
 if sys.version_info[0] >= 3:
     def next(iterator):
@@ -89,6 +91,7 @@ def validation():
     raise ValidationError('Cannot find anatomist module')
   elif distutils.spawn.find_executable('anatomist') is None:
     raise ValidationError( 'Cannot find Anatomist executable' )
+
 
 if anatomistImport:
   # dynamic class Anatomist inherits from one implementation of anatomist api
@@ -923,8 +926,9 @@ if anatomistImport:
 
 
 else: # if anatomist module is not available: empty classes
-  class Anatomist:
-    pass
-  class AWindowChoice:
-    pass
+    class Anatomist(object):
+        pass
+    class AWindowChoice(object):
+        def __init__(self, *args, **kwargs):
+            pass
 
