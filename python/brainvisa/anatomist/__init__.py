@@ -32,29 +32,35 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from __future__ import print_function
 import sys, os
-from brainvisa import registration
 from brainvisa.configuration import neuroConfig
-from brainvisa.processing import neuroLog
-from brainvisa.processing import neuroException
-from brainvisa.data import neuroData
-from brainvisa.validation import ValidationError
-from soma.qtgui.api import QtThreadCall
-import distutils.spawn
-import weakref, types, threading
-import atexit
-import copy
-from brainvisa.processing.qtgui import backwardCompatibleQt as qt
-from brainvisa.processing.qtgui import neuroProcessesGUI
+use_headless = False
 try:
-  import anatomist
-  anatomist.setDefaultImplementation( neuroConfig.anatomistImplementation )
-  exec("import "+anatomist.getDefaultImplementationModuleName()+" as anatomistModule")
-  anatomistImport=True
-  if neuroConfig.anatomistImplementation != 'socket':
-    from . import reusablewinhook
+    import anatomist
+    anatomist.setDefaultImplementation(neuroConfig.anatomistImplementation)
+    if not neuroConfig.gui:
+        # use headless version
+        from anatomist import headless
+        use_headless = True
+        headless.setup_headless()
+    anatomistImport=True
+    exec("import " + anatomist.getDefaultImplementationModuleName()
+          + " as anatomistModule")
 except Exception as e:
-  print(e)
-  anatomistImport=False
+    print(e)
+    anatomistImport = False
+
+if anatomistImport:
+    from brainvisa import registration
+    from brainvisa.processing import neuroLog
+    from brainvisa.processing import neuroException
+    from brainvisa.data import neuroData
+    from brainvisa.validation import ValidationError
+    from soma.qtgui.api import QtThreadCall
+    import distutils.spawn
+    import weakref, types, threading
+    import copy
+    from brainvisa.processing.qtgui import backwardCompatibleQt as qt
+    from brainvisa.processing.qtgui import neuroProcessesGUI
 
 if sys.version_info[0] >= 3:
     def next(iterator):
@@ -86,6 +92,7 @@ def validation():
   elif distutils.spawn.find_executable('anatomist') is None:
     raise ValidationError( 'Cannot find Anatomist executable' )
 
+
 if anatomistImport:
   # dynamic class Anatomist inherits from one implementation of anatomist api
   class Anatomist(anatomistModule.Anatomist):
@@ -98,6 +105,9 @@ if anatomistImport:
     #defaultRefType="WeakShared"
 
     def __new__(cls, *args, **kwargs ):
+      if neuroConfig.anatomistImplementation != 'socket':
+          from . import reusablewinhook
+          globals()['reusablewinhook'] = reusablewinhook
       instance=super(Anatomist, cls).__new__(cls, *args, **kwargs)
       if instance and '-b' not in args \
         and neuroConfig.anatomistImplementation != 'socket':
@@ -803,7 +813,8 @@ if anatomistImport:
       else:
         #self.execute( 'DeleteAll' )
         #self.getControlWindow().close()
-        reusablewinhook.uninstallWindowHandler()
+        if neuroConfig.anatomistImplementation != 'socket':
+          reusablewinhook.uninstallWindowHandler()
         anatomistModule.Anatomist.close( self )
       print('anatomist closed.')
 
@@ -915,8 +926,9 @@ if anatomistImport:
 
 
 else: # if anatomist module is not available: empty classes
-  class Anatomist:
-    pass
-  class AWindowChoice:
-    pass
+    class Anatomist(object):
+        pass
+    class AWindowChoice(object):
+        def __init__(self, *args, **kwargs):
+            pass
 
