@@ -769,7 +769,7 @@ class AboutWidget( QWidget ):
       pixmap = QPixmap( os.path.join( neuroConfig.iconPath, fileName ) )
       if desiredHeight:
         stretch = float( desiredHeight ) / pixmap.height()
-        matrix = QMatrix()
+        matrix = QTransform()
         matrix.scale( stretch, stretch )
         pixmap = pixmap.transformed( matrix )
       widget.setPixmap( pixmap )

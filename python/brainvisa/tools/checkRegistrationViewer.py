@@ -37,7 +37,7 @@ import anatomist.api as ana
 from anatomist.cpp.paletteEditor import PaletteEditor
 import soma
 from soma import aims
-from soma.qt_gui.qt_backend import QtCore, QtGui, uic
+from soma.qt_gui.qt_backend import QtCore, QtGui, uic, Qt
 import glob
 import os
 
@@ -703,14 +703,14 @@ class CheckRegistration():
         Opens a dialog box to print the current views
         """
         pix = QtGui.QPixmap.grabWindow(self._mainDiag.mainFrame.winId())
-        printer = QtGui.QPrinter()
-        printer.setOrientation(QtGui.QPrinter.Landscape)
-        printer.setPageMargins(0., 0., 0., 0., QtGui.QPrinter.Millimeter)
+        printer = Qt.QPrinter()
+        printer.setOrientation(Qt.QPrinter.Landscape)
+        printer.setPageMargins(0., 0., 0., 0., Qt.QPrinter.Millimeter)
         pdfPath = "/tmp"
         pdfName = "testBv"
         pdfName += ".pdf"
         printer.setOutputFileName(os.path.join(pdfPath, pdfName))
-        print_dialog = QtGui.QPrintDialog(printer)
+        print_dialog = Qt.QPrintDialog(printer)
         print_dialog.setOption(QtGui.QAbstractPrintDialog.PrintPageRange, False)
         if print_dialog.exec_() != QtGui.QDialog.Accepted:
             return

@@ -32,7 +32,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from __future__ import print_function
-from soma.qt_gui.qt_backend import QtGui, QtCore
+from soma.qt_gui.qt_backend import QtGui, QtCore, Qt
 from anatomist.cpp.paletteEditor import PaletteEditor
 from brainvisa.processes import *
 from tempfile import mkstemp
@@ -464,9 +464,9 @@ class DisplayResultsFromSPM(object):
       pix = QtGui.QPixmap.grabWindow(self.awin.winId())
       
       # Set the printer options
-      printer = QtGui.QPrinter()
-      printer.setOrientation(QtGui.QPrinter.Landscape)
-      printer.setPageMargins(0., 0., 0., 0., QtGui.QPrinter.Millimeter)
+      printer = Qt.QPrinter()
+      printer.setOrientation(Qt.QPrinter.Landscape)
+      printer.setPageMargins(0., 0., 0., 0., Qt.QPrinter.Millimeter)
       
       # Set the default PDF path
       pdfPath = os.path.join(os.getenv("HOME"), "Desktop")
@@ -475,7 +475,7 @@ class DisplayResultsFromSPM(object):
       printer.setOutputFileName(os.path.join(pdfPath, pdfName))
       
       # Create the print dialog
-      printDialog = QtGui.QPrintDialog(printer)
+      printDialog = Qt.QPrintDialog(printer)
       if printDialog.exec_() != QtGui.QDialog.Accepted:
           return
       
