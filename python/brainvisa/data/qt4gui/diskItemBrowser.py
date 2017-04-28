@@ -34,8 +34,9 @@ from __future__ import print_function
 import sys, os
 from itertools import chain
 
-from brainvisa.processing.qtgui.backwardCompatibleQt import QDialog, Qt, QVBoxLayout, QComboBox, Signal, Slot, QLabel, QApplication, QPixmap, QListWidget, QWidget, QGridLayout, QFrame, QSize
-from soma.qt4gui.designer import loadUi
+from soma.qt_gui.qt_backend import Qt
+from soma.qt_gui.qt_backend.Qt import QDialog, QVBoxLayout, QComboBox, Signal, Slot, QLabel, QApplication, QPixmap, QListWidget, QWidget, QGridLayout, QFrame, QSize
+from soma.qt_gui.qt_backend import loadUi
 from soma.qt_gui.qt_backend.QtGui import QAbstractItemView, QSizePolicy
 from soma.qt4gui.api import SimpleTable
 from soma.functiontools import partial
@@ -128,7 +129,10 @@ class DiskItemBrowser( QDialog ):
     layout = QVBoxLayout( )
     self.setLayout(layout)
 
-    p = os.path.join( os.path.dirname( __file__ ), 'diskItemBrowser.ui' )
+    if Qt.QT_VERSION >= 0x50000:
+      p = os.path.join( os.path.dirname( __file__ ), 'diskItemBrowser-qt5.ui' )
+    else:
+      p = os.path.join( os.path.dirname( __file__ ), 'diskItemBrowser.ui' )
     self._ui = QWidget()
     self._ui = loadUi(p, self._ui)
     layout.addWidget(self._ui)
@@ -246,7 +250,7 @@ class DiskItemBrowser( QDialog ):
     self._lastSelection = None
     self.rescan()
 
-    self._ui.btnReset.clicked[()].connect(self.resetSelectedAttributes)
+    self._ui.btnReset.clicked.connect(self.resetSelectedAttributes_callback)
     self._ui.btnOk.clicked.connect(self.accept)
     self._ui.btnCancel.clicked.connect(self.reject)
     self._ui.hsplitter.splitterMoved.connect(self.saveLayout)
@@ -398,7 +402,7 @@ class DiskItemBrowser( QDialog ):
             allColsNonUnique = True
       return allColsNonUnique
 
-    QApplication.setOverrideCursor( Qt.WaitCursor )
+    QApplication.setOverrideCursor( Qt.Qt.WaitCursor )
     try:
       # Fill selection combos from requests in database
       any= '<' + _t_( 'any' ) + '>'
@@ -564,7 +568,10 @@ class DiskItemBrowser( QDialog ):
       self._ui.tblItems.selectionModel().selectionChanged.connect(
         self.itemSelectionChanged)
       self._ui.labItems.setText( _t_( '%d item(s)' ) % ( len( self._items ), ) )
-      self._ui.tblItems.horizontalHeader().setMovable( True )
+      if Qt.QT_VERSION >= 0x50000:
+        self._ui.tblItems.horizontalHeader().setSectionsMovable( True )
+      else:
+        self._ui.tblItems.horizontalHeader().setMovable( True )
       if self._items:
         self._ui.tblItems.selectRow( 0 )
         self.itemSelected( 0 )
@@ -713,11 +720,14 @@ class DiskItemBrowser( QDialog ):
     return text
   
   def keyPressEvent(self, event):
-    if (event.key() == Qt.Key_Return):
+    if (event.key() == Qt.Qt.Key_Return):
       event.ignore()
     else:
       QDialog.keyPressEvent(self, event)
-    
+
+  def resetSelectedAttributes_callback(self, checked=False):
+    self.resetSelectedAttributes()
+
   def resetSelectedAttributes(self, diskItem = None, 
                               selectedAttributes={}):
     self._selectedAttributes = {}
