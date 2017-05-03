@@ -1394,7 +1394,7 @@ class NodeCheckListItem( QTreeWidgetItem ):
 
 #------------------------------------------------------------------------------
 class ParameterLabel( QLabel ):
-  '''A QLabel that emits PYSIGNAL( 'contextMenuEvent' ) whenever a
+  '''A QLabel that emits signal 'contextMenuEvent' whenever a
   contextMenuEvent occurs'''
   
   toggleDefault = QtCore.Signal(str)
