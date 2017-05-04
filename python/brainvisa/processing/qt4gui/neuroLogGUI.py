@@ -219,7 +219,7 @@ class LogViewer( QWidget ):
     
     hb = QHBoxLayout( )
     layout.addLayout(hb)
-    hb.setMargin( 5 )
+    hb.setContentsMargins(5, 5, 5, 5)
     btn = QPushButton( _t_( '&Refresh' ) )
     btn.setSizePolicy( QSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed ) )
     hb.addWidget(btn)
