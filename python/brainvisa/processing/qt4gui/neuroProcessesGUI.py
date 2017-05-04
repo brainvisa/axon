@@ -41,6 +41,7 @@ import distutils, os, sys, re
 import types
 from brainvisa.processing.qtgui.backwardCompatibleQt import *
 from soma.qt4gui.designer import loadUi, loadUiType
+from soma.qt_gui import qt_backend
 from soma.qt_gui.qt_backend.QtGui import QKeySequence
 from soma.qt_gui.qt_backend import QtCore
 from soma.qt_gui.qt_backend import QtGui
@@ -3207,7 +3208,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     # workaround a bug in PyQt ? Param 5 doesn't work; try to use kwargs
     import sipconfig
     if sipconfig.Configuration().sip_version >= 0x040a00:
-      minf = unicode( QFileDialog.getSaveFileName( None, 'Open a process file', minf, 'BrainVISA process (*.bvproc);;All files (*)', options=QFileDialog.DontUseNativeDialog ) )
+      minf = unicode(qt_backend.getSaveFileName(
+          None, 'Open a process file', minf,
+          'BrainVISA process (*.bvproc);;All files (*)', options=QFileDialog.DontUseNativeDialog))
     else:
       minf = unicode( QFileDialog.getSaveFileName( None, 'Open a process file', minf, 'BrainVISA process (*.bvproc);;All files (*)', None, QFileDialog.DontUseNativeDialog ) )
     if minf:
@@ -3234,11 +3237,15 @@ class ProcessView( QWidget, ExecutionContextGUI ):
   def open():
     import sipconfig
     if sipconfig.Configuration().sip_version >= 0x040a00:
-      minf = unicode( QFileDialog.getOpenFileName( None,
-      _t_( 'Open a process file' ), '', 'BrainVISA process (*.bvproc);;All files (*)', options=QFileDialog.DontUseNativeDialog ))
+      minf = unicode(qt_backend.getOpenFileName(
+          None, _t_( 'Open a process file' ), '',
+          'BrainVISA process (*.bvproc);;All files (*)',
+          options=QFileDialog.DontUseNativeDialog))
     else:
-      minf = unicode( QFileDialog.getOpenFileName( None,
-      _t_( 'Open a process file' ), '', 'BrainVISA process (*.bvproc);;All files (*)', None, QFileDialog.DontUseNativeDialog ))
+      minf = unicode(QFileDialog.getOpenFileName(
+          None, _t_( 'Open a process file' ), '',
+          'BrainVISA process (*.bvproc);;All files (*)', None,
+          QFileDialog.DontUseNativeDialog))
     if minf:
       showProcess( brainvisa.processes.getProcessInstance( minf ) )
 
