@@ -199,6 +199,19 @@ def updateBatchPath(self, proc):
     return os.path.join(directory_path, 'spm12_results_report_job.m')
 
 def execution( self, context ):
+  if self.add_section_overlay or self.add_render_overlay:
+    if "-nodisplay" in configuration.matlab.options:
+      r = context.ask('matlab.options contains -nodisplay, replace it by -nodesktop ?', 'yes', 'no')
+      if r == 0:
+        configuration.matlab.options = configuration.matlab.options.replace('-nodisplay', '-nodesktop')
+      else:
+        context.warning("nodisplay option is not working with render or section overlay, both will be disable")
+        self.add_section_overlay = False
+        self.add_render_overlay = False
+    else:
+      pass
+  else:
+    pass
   #spm_workspace_directory = os.path.dirname(self.batch_location.fullPath())
 
   result = self.createResultsReportBatch(context)
