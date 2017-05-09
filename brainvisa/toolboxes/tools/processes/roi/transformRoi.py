@@ -389,7 +389,7 @@ class TransformRoi():
                                             palette_filter = paletteFilter)
         layout = QtGui.QVBoxLayout(self._mainDiag.imagePalette)
         layout.setSpacing(0)
-        layout.setMargin(0)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self._paletteEditor)
     
         
@@ -666,7 +666,7 @@ class TransformRoi():
             newWin = self.a.createWindow(orientation[i], no_decoration=True)
             layout = QtGui.QVBoxLayout(cellDict[orientation[i]][2])
             layout.setSpacing(0)
-            layout.setMargin(0)
+            layout.setContentsMargins(0, 0, 0, 0)
             layout.addWidget(newWin.getInternalRep())
             self.a.execute('WindowConfig', windows=[newWin],
                            light={'background': [ 0., 0., 0., 1. ]})

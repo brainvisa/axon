@@ -59,14 +59,14 @@ class MatlabConfiguration_Qt4GUI( QtGUI ):
     if name:
       widget.setObjectName( name )
     layout = QVBoxLayout( )
-    layout.setMargin(0)
+    layout.setContentsMargins(0, 0, 0, 0)
     layout.setSpacing(6)
     self._defaultWidget = self._defaultGUI.editionWidget( value, parent=widget, live=live )
     layout.addWidget( self._defaultWidget )
     widget.setLayout(layout)
 
     layout2 = QHBoxLayout( )
-    layout2.setMargin(0)
+    layout2.setContentsMargins(0, 0, 0, 0)
     layout2.setSpacing(6)
     spacer = QSpacerItem( 1, 1, QSizePolicy.Expanding, QSizePolicy.Minimum )
     layout2.addItem( spacer )

@@ -486,7 +486,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
           QIcon( findIconFile( 'browse_write.png' )) )
         setattr( DiskItemListEditor.DiskItemListSelect, 'pixBrowseUpdate', 
           QIcon( findIconFile( 'browse_update.png' )) )
-      QWidget.__init__( self, dilEditor.topLevelWidget(), Qt.Dialog  | Qt.WindowStaysOnTopHint  )
+      QWidget.__init__( self, dilEditor.window(), Qt.Dialog  | Qt.WindowStaysOnTopHint  )
       if name:
         self.setObjectName(name)
       self.setAttribute(Qt.WA_DeleteOnClose, True)
@@ -730,7 +730,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
           self.lbxValues.setItemSelected(item, 1)
     
     def _setDirectory( self ):
-      self.browseDirectoryDialog = QFileDialog( self.topLevelWidget() )
+      self.browseDirectoryDialog = QFileDialog(self.window())
       self.browseDirectoryDialog.accepted.connect(
         self._setDirectoryAccepted)
       self.browseDirectoryDialog.setFileMode( QFileDialog.Directory )
@@ -806,7 +806,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
 
     def browsePressed( self ):
       if self.browseDialog is None:
-        self.browseDialog = QFileDialog( self.topLevelWidget() )
+        self.browseDialog = QFileDialog(self.window())
         if not self.parameter._write :
           self.browseDialog.setFileMode( QFileDialog.ExistingFiles )
         else :

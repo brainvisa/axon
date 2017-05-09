@@ -87,11 +87,11 @@ class DisplayResultsFromSPM(object):
       mainDialog.setPalette(palette);
       mainDialog.setAutoFillBackground(True);
       mainVlay = QtGui.QVBoxLayout(mainDialog)
-      mainVlay.setMargin(0)
+      mainVlay.setContentsMargins(0, 0, 0, 0)
       self.awin = QtGui.QFrame()
       mainVlay.addWidget(self.awin)
       vlay = QtGui.QVBoxLayout(self.awin)
-      vlay.setMargin(0)
+      vlay.setContentsMargins(0, 0, 0, 0)
       splitter = QtGui.QSplitter(QtCore.Qt.Vertical, self.awin)
       vlay.addWidget(splitter)
       
@@ -193,11 +193,11 @@ class DisplayResultsFromSPM(object):
       frame = QtGui.QFrame(self.awin)
       splitter.insertWidget(0, frame)
       vlay = QtGui.QVBoxLayout(frame)
-      vlay.setMargin(0)    
+      vlay.setContentsMargins(0, 0, 0, 0)
       lay = QtGui.QGridLayout()
       lay.setHorizontalSpacing(0)
       lay.setVerticalSpacing(0)
-      lay.setMargin(0)
+      lay.setContentsMargins(0, 0, 0, 0)
       vlay.addLayout(lay)
   
       # Create the T-map/single subject views
@@ -282,7 +282,7 @@ class DisplayResultsFromSPM(object):
       toolVlay = QtGui.QVBoxLayout()
       hlay.addLayout(toolVlay)
       toolVlay.setSpacing(0)
-      toolVlay.setMargin(0)
+      toolVlay.setContentsMargins(0, 0, 0, 0)
       # Add T-map LUT editor
       self.paletteEditor = PaletteEditor(image=athreshImg,
                                           parent=frame,
@@ -355,7 +355,7 @@ class DisplayResultsFromSPM(object):
       frame = QtGui.QFrame(self.awin)
       splitter.addWidget(frame)
       vlay = QtGui.QVBoxLayout(frame)
-      vlay.setMargin(0)
+      vlay.setContentsMargins(0, 0, 0, 0)
       
       gb = QtGui.QGroupBox("Statistics: p-values adjusted for search volume", self.awin)
       gb.setStyleSheet(self._getGroupBoxStyle())

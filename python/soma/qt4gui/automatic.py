@@ -116,7 +116,7 @@ class EditionDialog( QtGui.QDialog ):
     else:
       self.setWindowModality(QtCore.Qt.ApplicationModal)
     layout = QtGui.QVBoxLayout( )
-    layout.setMargin(11)
+    layout.setContentsMargins(11, 11, 11, 11)
     layout.setSpacing(6)
     self.setLayout(layout)
     
@@ -131,7 +131,7 @@ class EditionDialog( QtGui.QDialog ):
     self.setWindowTitle( self.__widget.windowTitle() )
     
     layout1 = QtGui.QHBoxLayout()
-    layout1.setMargin(0)
+    layout1.setContentsMargins(0, 0, 0, 0)
     layout1.setSpacing(6)
     layout.addLayout( layout1 )
     spacer1 = QtGui.QSpacerItem(31,20,QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Minimum)

@@ -58,7 +58,7 @@ class LabelSelectionEditor( QWidget, DataEditor ):
         self.setObjectName(name)
         layout=QHBoxLayout()
         self.setLayout(layout)
-        layout.setMargin(0)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(4)
         self.value = parameter
         self._disk = DiskItemEditor( self.value.fileDI, self, 'diskitem', 1 )

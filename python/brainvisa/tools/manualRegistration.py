@@ -174,14 +174,14 @@ class ManualRegistration():
                                       title='Fixed image')
         layout = QtGui.QVBoxLayout(self._mainDiag.fixedImagePalette)
         layout.setSpacing(0)
-        layout.setMargin(0)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(paletteEditor)
         paletteEditor = PaletteEditor(self._aImages[self._movingImage],
                                       palette_filter = paletteFilter,
                                       title='Moving image')
         layout = QtGui.QVBoxLayout(self._mainDiag.movingImagePalette)
         layout.setSpacing(0)
-        layout.setMargin(0)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(paletteEditor)
         
         self._mainDiag.mixingRateSlider.valueChanged.connect(self._mixingRateChanged)
@@ -212,7 +212,7 @@ class ManualRegistration():
             newWin = self._anatomist.createWindow(orientation[i], no_decoration=True)
             layout = QtGui.QVBoxLayout(cellDict[orientation[i]][2])
             layout.setSpacing(0)
-            layout.setMargin(0)
+            layout.setContentsMargins(0, 0, 0, 0)
             layout.addWidget(newWin.getInternalRep())
             self._anatomist.execute('WindowConfig', windows=[newWin],
                                     light={'background': [0., 0., 0., 1.]})
@@ -676,7 +676,7 @@ class ViewButtons():
         self._rigidFrame.setGeometry(QtCore.QRect(0, 0, 54, 36))
         self._rigidFrame.setStyleSheet("background: transparent; border: none")
         gLay = QtGui.QGridLayout(self._rigidFrame)
-        gLay.setMargin(0)
+        gLay.setContentsMargins(0, 0, 0, 0)
         gLay.setSpacing(0)
         proxy = scene.addWidget(self._rigidFrame, QtCore.Qt.Window|QtCore.Qt.FramelessWindowHint)
         tr = proxy.transform()
@@ -701,7 +701,7 @@ class ViewButtons():
         self._flipFrame = QtGui.QFrame()
         self._flipFrame.setStyleSheet("background: transparent; border: none")
         hLay = QtGui.QHBoxLayout(self._flipFrame)
-        hLay.setMargin(0)
+        hLay.setContentsMargins(0, 0, 0, 0)
         hLay.setSpacing(0)
         proxy = scene.addWidget(self._flipFrame, QtCore.Qt.Window|QtCore.Qt.FramelessWindowHint)
         tr = proxy.transform()

@@ -120,7 +120,7 @@ if qwtAvailable:
       QWidget.__init__( self, parent )
       layout=QHBoxLayout(self)
       layout.setSpacing( 5 )
-      layout.setMargin( 5 )
+      layout.setContentsMargins(5, 5, 5, 5)
   
       self._feature = None
       self._item = None
