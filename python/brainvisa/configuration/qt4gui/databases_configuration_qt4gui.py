@@ -64,7 +64,7 @@ class DatabaseManagerGUI( qt.QWidget ):
     if name:
       self.setObjectName(name)
     layout = qt.QVBoxLayout( self )
-    layout.setMargin( 10 )
+    layout.setContentsMargins(10, 10, 10, 10)
     layout.setSpacing( 5 )
     self.setLayout(layout)
     

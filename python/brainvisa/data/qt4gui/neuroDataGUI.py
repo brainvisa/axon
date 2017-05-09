@@ -306,7 +306,7 @@ class BooleanListEditor( QWidget, DataEditor ):
 
   class BooleanListSelect( QWidget ): # Ex QSemiModal
     def __init__( self, clEditor, name ):
-      QWidget.__init__( self, clEditor.topLevelWidget(), Qt.Dialog | Qt.Tool | Qt.WindowStaysOnTopHint )
+      QWidget.__init__(self, clEditor.window(), Qt.Dialog | Qt.Tool | Qt.WindowStaysOnTopHint)
       if name:
         self.setObjectName( name )
       self.setAttribute( Qt.WA_DeleteOnClose, True )
@@ -761,7 +761,7 @@ class ChoiceListEditor( QWidget, DataEditor ):
 
   class ChoiceListSelect( QWidget ): # Ex QSemiModal
     def __init__( self, clEditor, name ):
-      QWidget.__init__( self, clEditor.topLevelWidget(), Qt.Dialog | Qt.Tool | Qt.WindowStaysOnTopHint )
+      QWidget.__init__(self, clEditor.window(), Qt.Dialog | Qt.Tool | Qt.WindowStaysOnTopHint)
       if name:
         self.setObjectName( name )
       self.setAttribute( Qt.WA_DeleteOnClose, True )
@@ -1111,7 +1111,7 @@ class GenericListSelection( QWidget ):
       setattr( GenericListSelection, 'pixDown',
         QIcon( os.path.join( neuroConfig.iconPath, 'down.png' )) )
 
-    QWidget.__init__( self, parent.topLevelWidget(), Qt.Dialog | Qt.Tool | Qt.WindowStaysOnTopHint )
+    QWidget.__init__(self, parent.window(), Qt.Dialog | Qt.Tool | Qt.WindowStaysOnTopHint)
     if name:
       self.setObjectName( name )
     self.setWindowModality(Qt.WindowModal)

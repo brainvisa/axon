@@ -77,7 +77,7 @@ class HierarchyBrowser( QWidget ):
       self.setWindowTitle( _t_( 'Data browser' ) )
       layout = QVBoxLayout( )
       layout.setSpacing( 5 )
-      layout.setMargin( 10 )
+      layout.setContentsMargins(10, 10, 10, 10)
       self.setLayout(layout)
       self.setAttribute(Qt.WA_DeleteOnClose)
       

@@ -85,7 +85,7 @@ class Sequence_Qt4GUI( Qt4GUI ):
     # Create the widget and set its layout
     self._widget = QtGui.QWidget( parent )
     self._layout=self.__containerLayoutClass( self._widget )
-    self._layout.setMargin( 0 )
+    self._layout.setContentsMargins(0, 0, 0, 0)
     self._layout.setSpacing( 5 )
     
     # This call initializes the widget with sequence content

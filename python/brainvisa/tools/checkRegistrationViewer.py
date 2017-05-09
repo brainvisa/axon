@@ -175,7 +175,7 @@ class CheckRegistration():
         self._loadPaletteFrame()
         
         self._mainFrameVLayout = QtGui.QVBoxLayout(self._mainDiag.mainFrame)
-        self._mainFrameVLayout.setMargin(0)
+        self._mainFrameVLayout.setContentsMargins(0, 0, 0, 0)
         self._mainFrameVLayout.setSpacing(0)
         
         if not self._configuration:
@@ -280,7 +280,7 @@ class CheckRegistration():
         
         self._mainFrameVLayout.addWidget(frame)
         hLay = QtGui.QHBoxLayout(frame)
-        hLay.setMargin(0)
+        hLay.setContentsMargins(0, 0, 0, 0)
         hLay.setSpacing(0)
         
         toolFrame = QtGui.QFrame()
@@ -290,7 +290,7 @@ class CheckRegistration():
         vLay = QtGui.QVBoxLayout(toolFrame)
         
         buttonHLay = QtGui.QHBoxLayout()
-        buttonHLay.setMargin(0)
+        buttonHLay.setContentsMargins(0, 0, 0, 0)
         buttonHLay.setSpacing(0)
         vLay.addLayout(buttonHLay)
         
@@ -321,7 +321,7 @@ class CheckRegistration():
         
         paramHLay = QtGui.QHBoxLayout()
         vLay.addLayout(paramHLay)
-        paramHLay.setMargin(0)
+        paramHLay.setContentsMargins(0, 0, 0, 0)
         slider = QtGui.QSlider(QtCore.Qt.Horizontal)
         slider.setOrientation(QtCore.Qt.Vertical)
         if fusionRate is not None:
@@ -334,7 +334,7 @@ class CheckRegistration():
 
         paramVLay = QtGui.QVBoxLayout()
         paramHLay.addLayout(paramVLay)
-        paramVLay.setMargin(0)
+        paramVLay.setContentsMargins(0, 0, 0, 0)
         for i in [1,2]:
             imageCb = self._createComboBoxFromImages(secondary=(i==2))
             if i == 2:

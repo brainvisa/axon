@@ -101,12 +101,12 @@ class HasSignatureEditionWidget( QtGui.QGroupBox ):
     self._gridLayout = QtGui.QGridLayout()
     self._gridLayout.setAlignment( QtCore.Qt.AlignTop )
     self._gridLayout.setSpacing( 6 )
-    self._gridLayout.setMargin( 11 )
+    self._gridLayout.setContentsMargins(11, 11, 11, 11)
     self.setLayout(self._gridLayout)
     
     self.btnExpand = None
     self.setFlat( True )
-    #self._gridLayout.setMargin( 0 )
+    #self._gridLayout.setContentsMargins(0, 0, 0, 0)
     
     self._createSignatureWidgets( object, live )
     if live:
@@ -188,7 +188,7 @@ class HasSignatureEditionWidget( QtGui.QGroupBox ):
   def _signatureChanged( self ):
     self._deleteSignatureWidgets()
     self._createSignatureWidgets( self.__object, True )
-    ApplicationQt4GUI().widgetGeometryUpdater.update( self.topLevelWidget() )
+    ApplicationQt4GUI().widgetGeometryUpdater.update(self.window())
 
   
   def _attributeChanged( self, attributeName, attributeValue, oldValue ):
@@ -270,7 +270,7 @@ class HasSignatureEditionWidget( QtGui.QGroupBox ):
           labelWidget.setEnabled( False )
       self.btnExpand.setIcon( QtGui.QIcon(self._imageDown) )
       self._collapsed = True
-    ApplicationQt4GUI().widgetGeometryUpdater.update( self.topLevelWidget() )
+    ApplicationQt4GUI().widgetGeometryUpdater.update(self.window())
 
 
 #-------------------------------------------------------------------------------

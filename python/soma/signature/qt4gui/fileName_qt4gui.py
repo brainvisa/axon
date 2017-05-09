@@ -50,7 +50,7 @@ class FileName_Qt4GUI( Unicode_Qt4GUI ):
     layout=QHBoxLayout()
     if name:
       self._widget.setObjectName( name )
-    layout.setMargin( 0 )
+    layout.setContentsMargins(0, 0, 0, 0)
     layout.setSpacing( 5 )
     if live:
       self._lineEdit = TimeredQLineEdit( )

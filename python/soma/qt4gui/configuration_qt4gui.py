@@ -196,7 +196,7 @@ class ConfigurationWidget( qt.QWidget ):
     self.setWindowIcon( qt.QIcon(icon) )
 
     ConfigurationLayout = qt.QVBoxLayout( )
-    ConfigurationLayout.setMargin(0)
+    ConfigurationLayout.setContentsMargins(0, 0, 0, 0)
     ConfigurationLayout.setSpacing( 6 )
     self.setLayout(ConfigurationLayout)
     
@@ -208,14 +208,14 @@ class ConfigurationWidget( qt.QWidget ):
     self.lbxPanels.setFrameShape( qt.QFrame.NoFrame )
     self.lbxPanels.setFrameShadow( qt.QFrame.Plain )
     self.lbxPanels.setIconSize(qt.QSize(*bigIconSize))
-    #self.lbxPanels.setMargin( 6 )
+    #self.lbxPanels.setContentsMargins(6, 6, 6, 6)
     self.lbxPanels.setResizeMode( qt.QListView.Adjust )
     
     self.scv = qt.QScrollArea( self.splitter )
     #self.scv.setResizePolicy( qt.QScrollView.AutoOneFit )
     self.scv.setWidgetResizable(True)
     self.scv.setFrameStyle( qt.QFrame.NoFrame )
-    #self.scv.setMargin( 0 )
+    #self.scv.setContentsMargins(0, 0, 0, 0)
     self.wstPanels = qt.QStackedWidget( )
     self.scv.setWidget( self.wstPanels )
     
