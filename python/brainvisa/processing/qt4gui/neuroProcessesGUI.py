@@ -652,12 +652,7 @@ class SomaWorkflowProcessView(QMainWindow):
         #self.ui.statusbar.showMessage("Unserialize...")
         try:
           self.process = brainvisa.processes.getProcessInstance(self.serialized_process)
-          QtGui.QApplication.restoreOverrideCursor()
-        except Exception as e:
-          #self.ui.statusbar.clearMessage()
-          QtGui.QApplication.restoreOverrideCursor()
-          raise e
-        else:
+        finally:
           #self.ui.statusbar.clearMessage()
           QtGui.QApplication.restoreOverrideCursor()
         #print("after unserialize")
@@ -665,14 +660,9 @@ class SomaWorkflowProcessView(QMainWindow):
       QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
       #self.ui.statusbar.showMessage("Building the process view...")
       try:
-        self.process_view = ProcessView(self.process, parent=self, read_only=True)
-        QtGui.QApplication.restoreOverrideCursor()
-      except Exception as e:
-        #self.ui.statusbar.clearMessage()
-        QtGui.QApplication.restoreOverrideCursor()
-        raise e
-      else:
-        #self.ui.statusbar.clearMessage()
+        self.process_view = ProcessView(self.process, parent=self,
+                                        read_only=True)
+      finally:
         QtGui.QApplication.restoreOverrideCursor()
       self.process_view.inlineGUI.hide()
       self.process_view.info.hide()
@@ -2213,7 +2203,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       self.eTreeWidget.setSizes( [150, 250] )
 
       self._guiId = 0
-      self._executionNodeExpanded( self.executionTree, ( eNode, (eNode,) ) )
+      self._executionNodeExpanded(self.executionTree, (eNode, (eNode,)))
       self.executionTree.itemExpanded.connect(self._executionNodeExpanded)
 
       self.executionTree.currentItemChanged.connect(self.executionNodeSelected)
@@ -2225,8 +2215,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
       # Select and open the first item
       item = self.executionTree.topLevelItem(0)
-      item.setExpanded( True )
-      self.executionTree.setCurrentItem( item )
+      if item is not None:
+        item.setExpanded( True )
+        self.executionTree.setCurrentItem( item )
 
     # simple process : only a signature, no sub-processes
     else:
@@ -2956,7 +2947,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     #txt.resize( 800, 600 )
     #txt.show()
 
-  def executionNodeRemoveChild( self, item, eNode, key = None, childNode = None ):
+  def executionNodeRemoveChild(self, item, eNode, key=None, childNode=None):
 
     childItem = getattr(childNode, '_guiItem', None)
     if childItem :
@@ -2973,17 +2964,25 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     if func and func():
       item.setChildIndicatorPolicy(item.DontShowIndicator)
 
-  def executionNodeAddChild( self, item, eNode, key = None, childNode = None, previous = None ):
+  def executionNodeAddChild(self, item, eNode, key=None, childNode=None,
+                            previous=None):
     # 10-02-2014 : added possibility to hide nodes in GUI
     if isinstance(item, QTreeWidgetItem) and not item.isExpanded():
       item.setChildIndicatorPolicy(item.ShowIndicator)
-      return
+      return item
     newItem = None
     oldItem = getattr(childNode, '_guiItem', None)
     if oldItem:
+      # WARNING: an execution node has *one* _guiItem, so the current design
+      # only allows to have one widget view to the process tree. Thus this
+      # forbids displaying in a workflow window the pipeline if it is already
+      # displayed in a ProcessView. Even more problematic, it prevents
+      # displaying in a workflow window if it happened to have a GUI once in
+      # the past, since _guiItem is not cleared when the widget is closed.
       oldItem.setHidden(getattr(childNode, '_hidden', False))
+      newItem = oldItem
     else:
-      if isinstance( childNode, brainvisa.processes.ProcessExecutionNode ):
+      if isinstance(childNode, brainvisa.processes.ProcessExecutionNode):
         en = childNode._executionNode
         if en is None:
           en = childNode
@@ -3006,7 +3005,8 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         index = None
 
       name = childNode.name()
-      newItem = NodeCheckListItem( childNode, item, index, _t_( name ), itemType, read_only = self.read_only )
+      newItem = NodeCheckListItem(childNode, item, index, _t_(name),
+                                  itemType, read_only = self.read_only)
       newItem.setHidden( getattr( childNode, '_hidden', False ) )
       if isinstance( childNode, weakref.ProxyType ):
         newItem._executionNode = childNode
@@ -3101,9 +3101,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         eNode, eNodeChildren = eNodeAndChildren
 
       for childNode in eNodeChildren:
-        previous = self.executionNodeAddChild( item, eNode,
-                                               childNode = childNode )
-        if childNode._expandedInGui:
+        previous = self.executionNodeAddChild(item, eNode,
+                                              childNode = childNode)
+        if childNode._expandedInGui and previous is not None:
           previous.setExpanded( True )
 
   def _executionNodeActivated(self, item):
