@@ -41,6 +41,7 @@
 # Process allowing to create T contrasts for SPM8 from SPM.mat.
 #------------------------------------------------------------------------------
 
+from __future__ import print_function
 from brainvisa.processes import *
 import brainvisa.tools.spm_run as spm
 from  brainvisa.tools.spm_basic_models import initialize_SPM8_default_contrastParameters, write_contrast_MatFile
@@ -91,7 +92,7 @@ def update_batch_location( self, proc ):
         
 
 def execution(self, context):  
-  print "\n start ", name, "\n"
+  print("\n start ", name, "\n")
       
   spmJobFile = self.batch_location
     
@@ -99,6 +100,6 @@ def execution(self, context):
   
   spm.run(context, configuration, matfilePath)#, isMatlabMandatory=True) 
   
-  print "\n stop ", name, "\n"
+  print("\n stop ", name, "\n")
 
 #------------------------------------------------------------------------------

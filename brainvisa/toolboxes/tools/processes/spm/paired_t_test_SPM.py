@@ -31,6 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import print_function
 from brainvisa.processes import *
 from brainvisa.data.neuroHierarchy import databases
 import brainvisa.tools.spm_run as spm
@@ -121,7 +122,7 @@ def update_threshold_masking_value(self, proc):
 #------------------------------------------------------------------------------
 
 def execution(self, context):  
-    print "\n start ", name, "\n"
+    print("\n start ", name, "\n")
     
     context.write('Paired T-Test (using SPM8)')
     checkFilePaths(context, self.imagesInGroup1, 'group 1')
@@ -151,7 +152,7 @@ def execution(self, context):
         
         for suj, covName in subjectsWithoutCovariates:
             msg = "missing covariate " + covName + " for subject " + suj
-            print msg
+            print(msg)
             context.error(msg)
           
         outDir = self.pairedTTest_matFile.fullPath()[:self.pairedTTest_matFile.fullPath().rindex('/')]  
@@ -180,7 +181,7 @@ def execution(self, context):
         if(os.path.exists( outDir + "/SPM.mat")):
             os.system("mv " + outDir + "/SPM.mat " + self.pairedTTest_matFile.fullPath())
     
-    print "\n stop ", name, "\n"
+    print("\n stop ", name, "\n")
 
 #------------------------------------------------------------------------------
 

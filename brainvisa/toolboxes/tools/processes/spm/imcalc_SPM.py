@@ -47,6 +47,7 @@
 # etc.
 #------------------------------------------------------------------------------
 
+from __future__ import print_function
 from brainvisa.processes import *
 import brainvisa.tools.spm_run as spm
 from brainvisa.tools.spm_utils import spm_today
@@ -100,7 +101,7 @@ def initialization(self):
     
 
 def execution( self, context ):
-    print "\n start ", name, "\n"  
+    print("\n start ", name, "\n")
     
     output_filename = "'" + str(self.output_filename.fullPath()) + "'"
         
@@ -124,6 +125,6 @@ def execution( self, context ):
     
     spm.run( context, configuration, matfilePath )    
   
-    print "\n end ", name, "\n"
+    print("\n end ", name, "\n")
     
 

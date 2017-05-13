@@ -45,6 +45,7 @@
 # 
 #------------------------------------------------------------------------------        
 
+from __future__ import print_function
 from brainvisa.processes import *
 import brainvisa.tools.spm_run as spm
 from brainvisa.tools.spm_registration import  initializeWriteNormalisation_withSPM8DefaultValues, writeNormalisationWriteBatch
@@ -113,7 +114,7 @@ def updateOutputImages( self, proc ):
         
 #----------------------------------------------------------------------    
 def execution( self, context ):
-    print "\n start ", name, "\n"  
+    print("\n start ", name, "\n")
      
     if self.bounding_box.find('\n') == -1:
         context.error("Bounding box size does not match: required [2 3].") 
@@ -148,7 +149,7 @@ def execution( self, context ):
     
     shutil.move( spm_image_dir + "/"+ self.prefix + spm_image_fn , self.normalised_image.fullPath() )
 
-    print "\n end ", name, "\n"
+    print("\n end ", name, "\n")
     
     
  

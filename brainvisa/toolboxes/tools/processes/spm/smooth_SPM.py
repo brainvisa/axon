@@ -31,6 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import print_function
 from brainvisa.processes import *
 import brainvisa.tools.spm_run as spm
 import brainvisa.tools.spm_utils as spmUtils
@@ -113,7 +114,7 @@ def update_batch_location( self, proc, dummy ):
 #------------------------------------------------------------------------------
 
 def execution(self, context):  
-    print "\n start ", name, "\n"
+    print("\n start ", name, "\n")
     
     # Use of temporary file when no batch location entered
     if self.batch_location is None:
@@ -135,6 +136,6 @@ def execution(self, context):
     
     spmUtils.moveSpmOutFiles(inDir, self.img_smoothed.fullPath(), spmPrefixes=[ self.prefix.replace("""'""", '') + os.path.basename(self.img.fullPath()) ])
     
-    print "\n stop ", name, "\n"
+    print("\n stop ", name, "\n")
 
 #------------------------------------------------------------------------------

@@ -30,7 +30,9 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
- # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
+
+from __future__ import print_function
 from brainvisa.processes import *
 from brainvisa.data.neuroHierarchy import databases
 import os
@@ -82,7 +84,7 @@ def execution( self, context ):
         return
       if undo_python_script:
         undo_python_script = open( undo_python_script, 'w' )
-        print >> undo_python_script, 'import os\n\nrename = []'
+        print('import os\n\nrename = []', file=undo_python_script)
   else:
     undo_python_script = None
   it = databases.iterDatabases()
@@ -96,17 +98,17 @@ def execution( self, context ):
     if rename:
       context.write( '<font color="orange"><b>' + database.name + ':</b><br></font>' )
       if undo_python_script is not None:
-        print >> undo_python_script, '\n#', database.name
+        print('\n#', database.name, file=undo_python_script)
       for d,b in rename:
         context.write( os.path.join( d, b ) )
         src = os.path.join( d, b )
         dest = os.path.join( d, GOOD_PREFIX + b[ len( BAD_PREFIX ): ] )
         os.rename( src, dest )
         if undo_python_script is not None:
-          print >> undo_python_script, 'rename.append( (', repr( dest ) + ',\n               ', repr( src ), ') )'
+          print('rename.append( (', repr( dest ) + ',\n               ', repr( src ), ') )', file=undo_python_script)
     else:
       context.write( '<font color="darkgreen"><b>' + database.name + '</b></font>' )
   if undo_python_script is not None:
-    print >> undo_python_script, '\n\nfor src, dest in rename: os.rename( src, dest )'
+    print('\n\nfor src, dest in rename: os.rename( src, dest )', file=undo_python_script)
 
 

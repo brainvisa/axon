@@ -76,6 +76,7 @@
 # When using with many groups of images, check whether subjects are the same on the two lists
 #
 
+from __future__ import print_function
 from brainvisa.processes import *
 import brainvisa.tools.spm_run as spm
 from brainvisa.tools.spm_DARTEL import initialize_DARTEL_create_templates_parameters_withSPM8Default, write_DARTEL_create_Templates_batch
@@ -166,7 +167,7 @@ def update_batch_location( self, proc ):
 #------------------------------------------------------------------------------
 def execution( self, context ):
 
-    print "\n start ", name, "\n"
+    print("\n start ", name, "\n")
         
     spmJobFile = self.batch_location
         
@@ -216,4 +217,4 @@ def execution( self, context ):
         context.error( "ERROR (number of images in list 1 (Images_1 parameter) is different of number of images in list 2 (Images_2 parameter) " )
       
     
-    print "\n stop ", name, "\n"   
+    print("\n stop ", name, "\n")

@@ -40,6 +40,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import print_function
 from brainvisa.processes import *
 from brainvisa.tools.spm_segmentation import writeUnifiedSegmentationMatFile
 from brainvisa.tools.spm_utils import movePathToDiskItem, movePath
@@ -128,7 +129,7 @@ def initialization(self):
   self.spmJobName = 'newSegment'
 
 def execution(self, context):
-  print "\n start ", name, "\n"
+  print("\n start ", name, "\n")
   context.warning("unified segmentation with SPM can take time, around 7 min")
   
   inDir = self.MRI_Nat.fullPath()
@@ -156,7 +157,7 @@ def execution(self, context):
   spm.run(context, configuration, matfilePath)
   self.moveSpmOutFiles()
   
-  print "\n stop ", name, "\n"
+  print("\n stop ", name, "\n")
 
 
 

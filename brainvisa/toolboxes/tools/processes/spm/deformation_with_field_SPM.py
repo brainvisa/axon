@@ -110,7 +110,7 @@ def updateOutputDestination( self, proc ):
         
 #----------------------------------------------------------------------    
 def execution( self, context ):
-    print "\n start ", name, "\n"  
+    print("\n start ", name, "\n")
       
     dfPath = self.deformation_field.fullPath()
     inDir = dfPath[:dfPath.rindex('/')]  
@@ -136,7 +136,7 @@ def execution( self, context ):
         
         shutil.move( orig, dest.fullPath()  )
    
-    print "\n end ", name, "\n"
+    print("\n end ", name, "\n")
     
     
  
