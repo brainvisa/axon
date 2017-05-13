@@ -31,6 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import print_function
 from brainvisa.processes import *
 from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
 
@@ -600,7 +601,7 @@ class TransformRoi():
                     if name:
                         v['name'] = name
                     else:
-                        print 'WARNING: label %s of graph %s does not have a name' % str( v[ 'roi_label' ] )
+                        print('WARNING: label %s of graph %s does not have a name' % str( v[ 'roi_label' ] ))
                 aims.write(g, self._outputRoi[roi].fullPath())
             
             trsfDict = {"global_transformation": self._roiDict[roi]["global_transformation"],
@@ -619,7 +620,7 @@ class TransformRoi():
                 pass
             minf.update(trsfDict)
             fd = open( minfFile, 'w' )
-            print >> fd, "attributes = ", minf
+            print("attributes = ", minf, file=fd)
             fd.close()
         
         QtGui.qApp.restoreOverrideCursor()

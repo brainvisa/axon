@@ -40,6 +40,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import print_function
 from brainvisa.processes import *
 import brainvisa.tools.spm_run as spm
 import brainvisa.tools.spm_segmentation as seg
@@ -208,7 +209,7 @@ def getDatabase(self):
   return self.analysis.hierarchyAttributes().get('_database')
 
 def execution(self, context):
-  print "\n start ", name, "\n"
+  print("\n start ", name, "\n")
 
   #momoTODO : c vraiment pas terrible de passer tous ces paramètres... faire de l'héritage de signature entre process?
   context.runProcess('segment_SPMNewSeg_noLinks',
@@ -259,4 +260,4 @@ def execution(self, context):
                      w_mrf=self.w_mrf, w_reg=self.w_reg,
                      w_affreg=self.w_affreg, w_samp=self.w_samp)
 
-  print "\n stop ", name, "\n"
+  print("\n stop ", name, "\n")

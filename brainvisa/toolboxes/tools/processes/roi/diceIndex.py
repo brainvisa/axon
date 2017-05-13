@@ -40,6 +40,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import print_function
 from brainvisa.processes import *
 try:
   from soma import aims, aimsalgo
@@ -173,8 +174,7 @@ def execution(self, context):
 
     if self.output_format == 'matrix':
         out = open(self.csv_output.fullPath(), 'w')
-        print >> out, 'method, label,', \
-            ', '.join(self.image_labels[1:])
+        print('method, label,', ', '.join(self.image_labels[1:]), file=out)
         for l in sorted(results.keys()):
             d = results[ l ]
             # symmetrize results
@@ -186,7 +186,7 @@ def execution(self, context):
 
     else: # linear format
         out = open(self.csv_output.fullPath(), 'w')
-        print >> out, 'label, method1, method2, DICE'
+        print('label, method1, method2, DICE', file=out)
         for l in sorted(results.keys()):
             d = results[ l ]
             # symmetrize results

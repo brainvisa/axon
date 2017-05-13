@@ -46,6 +46,7 @@
 # 
 #
 
+from __future__ import print_function
 from brainvisa.processes import *
 from brainvisa.tools.spm_segmentation import writeVBM8MatFile, initializeVBMParameters_usingVBM8DefaultValues
 from brainvisa.tools.spm_utils import movePathToDiskItem, movePath
@@ -201,7 +202,7 @@ def update_batch_location( self, proc ):
   
 
 def execution(self, context):
-    print "\n start ", name, "\n"
+    print("\n start ", name, "\n")
  
     if self.batch_location is None:
       spmJobFile = context.temporary( 'Matlab script' ).fullPath()
@@ -227,7 +228,7 @@ def execution(self, context):
     
     self.moveSpmOutFiles()
     
-    print "\n stop ", name, "\n"
+    print("\n stop ", name, "\n")
     
 
 def moveSpmOutFiles( self ):

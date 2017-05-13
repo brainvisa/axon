@@ -31,6 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import print_function
 from brainvisa.processes import *
 from brainvisa.tools.spm_registration import \
   ititializeCoregisterParameters_withSPM8DefaultValues, \
@@ -112,7 +113,7 @@ def update_spmWarped(self, inPath):
 
 #------------------------------------------------------------------------------
 def execution(self, context):  
-    print "\n start ", name, "\n"  
+    print("\n start ", name, "\n")
     
     sourcePath = self.source.fullPath()
     inDir = sourcePath[:sourcePath.rindex('/')]  
@@ -151,7 +152,7 @@ def execution(self, context):
       
       shutil.move( inDir + "/" + self.prefix + sourceFilename , sourceWarpedPath )
    
-    print "\n stop ", name, "\n"
+    print("\n stop ", name, "\n")
   
 #------------------------------------------------------------------------------        
 # spm documentation : 

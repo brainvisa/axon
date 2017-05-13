@@ -51,6 +51,7 @@
 #------------------------------------------------------------------------------
 
 
+from __future__ import print_function
 from brainvisa.processes import *
 from brainvisa.tools.spm_registration import initializeCoregisterEstimateParameters_withSPM8DefaultValues,\
  writeCoregisteredEstimateMatFile
@@ -149,7 +150,7 @@ def update_spmWarped(self, inPath):
   
 #------------------------------------------------------------------------------
 def execution(self, context):  
-  print "\n start ", name, "\n"  
+  print("\n start ", name, "\n")
       
   sourcePath = self.source.fullPath()
   referencePath = self.reference.fullPath()
@@ -177,7 +178,7 @@ def execution(self, context):
     othersPath = [other.fullPath() for other in self.others]
     othersCopyPath = []
     for other in othersPath:
-        print other
+        print(other)
         othersDir = other[:other.rindex('/')+1]    
         inFileName = other[other.rindex('/') + 1:len(other)-(len(other)-other.rindex('.'))]
         tempoOtherCopy = othersDir + 'tempo_SPM_coreg_' + inFileName + '.nii'
@@ -201,7 +202,7 @@ def execution(self, context):
     shutil.move( otherCopy, other )
     #movePathToDiskItem( otherCopy, other ) 
          
-  print "\n stop ", name, "\n"
+  print("\n stop ", name, "\n")
   
 #------------------------------------------------------------------------------        
 

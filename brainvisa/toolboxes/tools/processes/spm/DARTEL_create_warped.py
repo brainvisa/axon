@@ -79,6 +79,7 @@
 # SPM.
 
 
+from __future__ import print_function
 from brainvisa.processes import *
 import brainvisa.tools.spm_run as spm
 from brainvisa.tools.spm_DARTEL import initialize_DARTEL_create_warped_parameters_withSPM8Default, write_DARTEL_create_warped_batch
@@ -125,7 +126,7 @@ def update_batch_location( self, proc ):
 #------------------------------------------------------------------------------
 def execution( self, context ):
 
-    print "\n start ", name, "\n"
+    print("\n start ", name, "\n")
         
     spmJobFile = self.batch_location
 
@@ -147,5 +148,5 @@ def execution( self, context ):
     else:
          context.error( "ERROR (the number of images to warp is different of the number of flow fields) " )
 
-    print "\n stop ", name, "\n"
+    print("\n stop ", name, "\n")
     

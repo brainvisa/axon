@@ -40,6 +40,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import print_function
 from brainvisa.processes import *
 import brainvisa.tools.spm_run as spm
 import brainvisa.tools.spm_segmentation as seg
@@ -150,7 +151,7 @@ def getDatabase(self):
   return self.analysis.hierarchyAttributes()['_database']
 
 def execution(self, context):
-  print "\n start ", name, "\n"
+  print("\n start ", name, "\n")
     
   context.runProcess('segment_SPM_noLinks', MRI_Nat=self.MRI_Nat, MRI_Mni_tpmSeg=self.MRI_Mni_tpmSeg, spmJobName=self.spmJobName
                    , GM=self.GM, grey_Nat=self.grey_nat, grey_Mni=self.grey_Mni
@@ -158,5 +159,5 @@ def execution(self, context):
                    , biasCorrected=self.biasCorrected, cleanup=self.cleanup, ngaus=self.ngaus, regtype=self.regtype, warpreg=self.warpreg
                    , warpco=self.warpco, biasfwhm=self.biasfwhm, samp=self.samp, msk=self.msk
                    , snMat=self.snMat, snInvMat=self.snInvMat)  
-  print "\n stop ", name, "\n"
+  print("\n stop ", name, "\n")
 

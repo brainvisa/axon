@@ -40,12 +40,12 @@ from six.moves import StringIO
 import distutils, os, sys, re
 import types
 from brainvisa.processing.qtgui.backwardCompatibleQt import *
-from soma.qt4gui.designer import loadUi, loadUiType
 from soma.qt_gui import qt_backend
 from soma.qt_gui.qt_backend.QtGui import QKeySequence
 from soma.qt_gui.qt_backend import QtCore
 from soma.qt_gui.qt_backend import QtGui
 from soma.qt_gui.qt_backend import QtWebKit
+from soma.qt_gui.qt_backend import loadUi, loadUiType
 from brainvisa.configuration import neuroConfig
 from brainvisa.configuration.qt4gui import neuroConfigGUI
 from brainvisa.processing.qt4gui import neuroLogGUI

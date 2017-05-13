@@ -30,6 +30,7 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+from __future__ import print_function
 import sys, time
 
 from brainvisa.data.sqlFSODatabase import SQLDatabase, SQLDatabases
@@ -105,7 +106,7 @@ baseDir = os.path.dirname( brainvisa.data.__file__ )
 databases = [ SQLDatabase( os.path.join( baseDir, i + '.sqlite' ), i, 'brainvisa-3.1' ) for i in directories ]
 for database in databases:
   if database.createTables():
-    print database.name + ': parse directories and insert items'
+    print(database.name + ': parse directories and insert items')
     t0 = time.time()
     database.insertDiskItems( database.scanDatabaseDirectories() )
     duration = time.time() - t0
@@ -113,7 +114,7 @@ for database in databases:
     c = d.cursor()
     fileCount = c.execute( 'select COUNT(*) from _filenames_' ).fetchone()[0]
     diskItemCount = c.execute( 'select COUNT(*) from _diskitems_' ).fetchone()[0]
-    print fileCount, 'files identified as', diskItemCount, 'DiskItems in', timeDifferenceToString( duration )
+    print(fileCount, 'files identified as', diskItemCount, 'DiskItems in', timeDifferenceToString( duration ))
 
 bases = SQLDatabases( databases )
 ReadDiskItem.database = bases
@@ -160,12 +161,12 @@ w.show()
 #cProfile.run( 'database.scanDatabaseDirectory()', 'profile' )
 
 
-#print 'Parsing', databaseDir, 'with new system'
+#print('Parsing', databaseDir, 'with new system')
 #newItems = {}
 #for diskItem in database.scanDatabaseDirectory( open( 'test.html', 'w' ) ):
   #newItems[ diskItem.fullPath() ] = diskItem
 
-#print 'Parsing', databaseDir, 'with current system'
+#print('Parsing', databaseDir, 'with current system')
 #oldItems = {}
 #d = Directory( os.path.abspath( databaseDir ), None )
 #d.scanner = [i for i in database.fso.content if isinstance(i,SetContent)][0].scanner
@@ -179,7 +180,7 @@ w.show()
 #import cPickle
 #oldItems = cPickle.load( open( 'oldItems.pickle' ) )
 
-#print 'Checking differences'
+#print('Checking differences')
 #new = 0
 #both = 0
 #oldItemsCopy = oldItems.copy()
@@ -187,7 +188,7 @@ w.show()
   #oldItem = oldItemsCopy.pop( newItemName, None )
   #if not oldItem:
     #new += 1
-    #print '  +NEW+', newItemName
+    #print('  +NEW+', newItemName)
   #else:
     #both += 1
     #oldAttributes = oldItem.hierarchyAttributes()
@@ -197,17 +198,17 @@ w.show()
     #if oldAttributes.get( 'filename_variable' ) == '':
       #del oldAttributes[ 'filename_variable' ]
     #if oldAttributes != newAttributes:
-      #print '  ~DIF~', newItemName
+      #print('  ~DIF~', newItemName)
       #for newKey, newValue in newAttributes.iteritems():
         #oldValue = oldAttributes.pop( newKey, None )
         #if oldValue is None:
-          #print '    ++', newKey, '=', repr( newValue )
+          #print('    ++', newKey, '=', repr( newValue ))
         #elif oldValue != newValue:
-          #print '    !=', newKey, ': new =', repr( newValue )+ ',', 'old =', repr( oldValue )
+          #print('    !=', newKey, ': new =', repr( newValue )+ ',', 'old =', repr( oldValue ))
       #for oldKey, oldValue in oldAttributes.iteritems():
-        #print '    --', oldKey, '=', repr( oldValue )
+        #print('    --', oldKey, '=', repr( oldValue ))
 #for oldItem in oldItemsCopy:
-  #print '  -OLD-', oldItem
-#print 'Items in both systems:', both
-#print 'Items only in new system:', new
-#print 'Items only in old system:', len( oldItemsCopy )
+  #print('  -OLD-', oldItem)
+#print('Items in both systems:', both)
+#print('Items only in new system:', new)
+#print('Items only in old system:', len( oldItemsCopy ))

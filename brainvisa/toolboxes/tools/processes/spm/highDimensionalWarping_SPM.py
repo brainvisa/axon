@@ -54,6 +54,7 @@
 # on to the filename. Jacobian determinant images are also written (prefixed by ”jy ”).
 #------------------------------------------------------------------------------    
 
+from __future__ import print_function
 from brainvisa.processes import *
 import brainvisa.tools.spm_run as spm
 from brainvisa.tools.spm_registration import writeHighDimensionalWarpingMatFile, initializeHDWParameters_withSPM8DefaultValues
@@ -141,7 +142,7 @@ def updateDeformationFieldParameter( self, proc ):
 
 #----------------------------------------------------------------------------------------
 def execution( self, context ):
-    print "\n start ", name, "\n"  
+    print("\n start ", name, "\n")
       
     moved_imagePath = self.moved_image.fullPath()
     inDir = moved_imagePath[:moved_imagePath.rindex('/')+1]  
@@ -165,6 +166,6 @@ def execution( self, context ):
     
     shutil.move( inDir + 'jy_' + moved_image_filename, self.jacobian.fullPath() )
     
-    print "\n end ", name, "\n"
+    print("\n end ", name, "\n")
     
     
