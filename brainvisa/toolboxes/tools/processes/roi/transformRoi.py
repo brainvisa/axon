@@ -39,7 +39,7 @@ import anatomist.cpp as anatomist
 import anatomist.api as ana
 from soma.qt_gui.qt_backend import QtCore, QtGui, uic
 from anatomist.cpp.paletteEditor import PaletteEditor
-from brainvisa.tools.mainthreadlife import MainThreadLife
+from soma.qt_gui.qtThread import MainThreadLife
 from soma import aims
 from soma.minf.api import *
 import soma
