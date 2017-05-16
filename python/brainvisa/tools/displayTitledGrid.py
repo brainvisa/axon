@@ -38,7 +38,7 @@ from soma.qt_gui.qt_backend import QtCore, Qt, QtGui
 from soma.qt_gui.qt_backend.QtGui import QRadioButton, QPalette, QButtonGroup, QLabel, QFrame, QVBoxLayout, QColor
 from soma.qt_gui.qt_backend.uic import loadUi
 from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
-from brainvisa.tools.mainthreadlife import MainThreadLife
+from soma.qt_gui.qtThread import MainThreadLife
 from functools import partial
 import brainvisa.anatomist as ana
 from anatomist.cpp.paletteEditor import PaletteEditor

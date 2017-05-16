@@ -371,7 +371,7 @@ class CapsulProcess(processes.Process):
     def _open_pipeline(self):
         from capsul.qt_gui.widgets import PipelineDevelopperView
         from capsul.pipeline.pipeline import Pipeline
-        from brainvisa.tools.mainthreadlife import MainThreadLife
+        from soma.qt_gui.qtThread import MainThreadLife
         Pipeline.hide_nodes_activation = False
         self.propagate_parameters_to_capsul()
         mpv = PipelineDevelopperView(
@@ -405,7 +405,7 @@ class CapsulProcess(processes.Process):
 
     def _open_study_config_editor(self):
         from soma.qt_gui.controller_widget import ScrollControllerWidget
-        from brainvisa.tools.mainthreadlife import MainThreadLife
+        from soma.qt_gui.qtThread import MainThreadLife
         study_config = self.get_study_config()
         scv = ScrollControllerWidget(study_config, live=True)
         scv.show()
