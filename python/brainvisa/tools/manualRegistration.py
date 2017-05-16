@@ -32,7 +32,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
-from brainvisa.tools.mainthreadlife import MainThreadLife
+from soma.qt_gui.qtThread import MainThreadLife
 import anatomist.cpp as anatomist
 from anatomist.cpp.paletteEditor import PaletteEditor
 import anatomist.direct.api as ana
