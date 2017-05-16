@@ -72,8 +72,6 @@ else:
     def next(iterator):
         return iterator.next()
 
-print('HERE 1')
-
 """
 This module enables to generate an implementation of anatomist api specialized for brainvisa.
 It can use either socket or direct(sip bindings) implementation.
