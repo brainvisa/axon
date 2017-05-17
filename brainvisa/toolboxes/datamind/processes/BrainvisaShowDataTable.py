@@ -32,22 +32,27 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from brainvisa.processes import *
 
+try:
+    from soma.qt_gui.generic_table_editor import GenericTableEditor
+except ImportError:
+    pass
+
 def validation():
-  global GenericTableEditor
-  from datamind.gui.genericTableEditor import GenericTableEditor
+    global GenericTableEditor
+    from soma.qt_gui.generic_table_editor import GenericTableEditor
 
 name = 'Show data table'
 roles = ( 'viewer', )
 userLevel = 0
 
 signature = Signature(
-  'input', ReadDiskItem( 'Data Table', ( 'Text data table', 'CSV file' ) )
+    'input', ReadDiskItem( 'Data Table', ( 'Text data table', 'CSV file' ) )
 )
 
 def execution( self, context ):
-  
-  view = context.mainThreadActions().call( GenericTableEditor,
-                                           self.input.fullPath() )
-  context.mainThreadActions().push( view.resize, 800, 400 )
-  context.mainThreadActions().call( view.show )
-  return view
+
+    view = context.mainThreadActions().call( GenericTableEditor,
+                                            self.input.fullPath() )
+    context.mainThreadActions().push( view.resize, 800, 400 )
+    context.mainThreadActions().push( view.show )
+    return view

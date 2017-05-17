@@ -285,9 +285,9 @@ def runCsvViewer( source, existingWidget=None ):
     print(e)
     pass
 
-  # builtin browser, needs GenericTableEditor from datamind
+  # builtin browser, needs GenericTableEditor
   try:
-    from datamind.gui.genericTableEditor import GenericTableEditor
+    from soma.qt_gui.generic_table_editor import GenericTableEditor
     if existingWidget is None:
       existingWidget = GenericTableEditor( None )
       existingWidget.setWindowTitle( _t_( 'CSV viewer' ) )
