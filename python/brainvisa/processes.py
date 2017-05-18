@@ -454,6 +454,7 @@ def convertSpecialLinks(msg, language, baseForLinks, translator):
     * *<bvprocessname name=""> replaces the id by the name of the process
 
     """
+    msg = copy.deepcopy(msg) # avoid modifying input msg
     stack = [msg]
     while stack:
         item = stack.pop()
