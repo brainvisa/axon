@@ -110,14 +110,84 @@ See the :axonman:`Preferences window chapter in BrainVISA user manual <axon_manu
 
 .. raw:: html
 
-  <div class="figure" align="center">
+  <script type="text/javascript">
+    var hasFlash = false;
+    try {
+      var fo = new ActiveXObject('ShockwaveFlash.ShockwaveFlash');
+      if (fo) {
+        hasFlash = true;
+      }
+    } catch (e) {
+      if (navigator.mimeTypes
+            && navigator.mimeTypes['application/x-shockwave-flash'] != undefined
+            && navigator.mimeTypes['application/x-shockwave-flash'].enabledPlugin) {
+        hasFlash = true;
+      }
+    }
+
+    function displayVideo(fig_node)
+    {
+      // assumes figure's 2 first children are flash and html5 videos
+      var flash = fig_node.firstChild.nextSibling;
+      var html5 = flash.nextSibling.nextSibling;
+      var btn = html5.nextSibling.nextSibling.firstChild.nextSibling;
+      if (hasFlash)
+      {
+        html5.style.display = 'none';
+        flash.style.display = 'block';
+        btn.textContent = 'Flash';
+      }
+      else
+      {
+        flash.style.display = 'none';
+        html5.style.display = 'block';
+        btn.textContent = 'HTML5';
+      }
+    };
+
+    function displayVideos()
+    {
+      var fig_nodes = document.getElementsByClassName('ana_video');
+      var fig_node = null;
+      for(i=0; i<fig_nodes.length; i++)
+      {
+        // var fig_node = document.getElementById(figure);
+        fig_node = fig_nodes[i];
+        displayVideo(fig_node);
+      }
+    };
+
+    function changeVideoType(event)
+    {
+      hasFlash = !hasFlash;
+      displayVideos();
+    };
+  </script>
+  <div class="figure ana_video" align="center">
     <div class="mediaobject">
       <object type="application/x-shockwave-flash" data="_static/images/change_userlevel.swf" width="974" height="808">
         <param name="movie" value="_static/images/change_userlevel.swf"><param name="loop" value="true">
       </object>
     </div>
+    <div align="center">
+      <video align="center" controls>
+        <source src="_static/images/change_userlevel.mp4" />
+        Your browser does not support the video tag.
+      </video>
+    </div>
+    <div align="right">
+      <button type="button" class="video_type_btn" onclick="return changeVideoType(event);">Flash
+      </button>
+    </div>
+    <script type="text/javascript">
+      var scriptTag = document.getElementsByTagName('script');
+      scriptTag = scriptTag[scriptTag.length - 1];
+      var fig_node = scriptTag.parentNode;
+      displayVideo(fig_node);
+    </script>
     Changing user level
   </div>
+
 
 .. image:: images/change_userlevel.png
 
@@ -132,13 +202,29 @@ More information in the :axonman:`Custom Toolbox chapter in BrainVISA user manua
 
 .. raw:: html
 
-  <div class="figure" align="center">
+  <div class="figure ana_video" align="center">
     <div class="mediaobject">
       <object type="application/x-shockwave-flash" data="_static/images/processes_list.swf" width="974" height="808">
         <param name="movie" value="_static/images/processes_list.swf"><param name="loop" value="true">
       </object>
     </div>
-    Changing user level
+    <div align="center">
+      <video align="center" controls>
+        <source src="_static/images/processes_list.mp4" />
+        Your browser does not support the video tag.
+      </video>
+    </div>
+    <div align="right">
+      <button type="button" class="video_type_btn" onclick="return changeVideoType(event);">Flash
+      </button>
+    </div>
+    <script type="text/javascript">
+      var scriptTag = document.getElementsByTagName('script');
+      scriptTag = scriptTag[scriptTag.length - 1];
+      var fig_node = scriptTag.parentNode;
+      displayVideo(fig_node);
+    </script>
+    Managing processes bookmarks
   </div>
 
 .. image:: images/processes_lists.png
@@ -160,13 +246,29 @@ When you run brainvisa for the first time, a message box appears inviting you to
 
 .. raw:: html
 
-  <div class="figure" align="center">
+  <div class="figure ana_video" align="center">
     <div class="mediaobject">
       <object type="application/x-shockwave-flash" data="_static/images/add_database.swf" width="974" height="808">
         <param name="movie" value="_static/images/add_database.swf"><param name="loop" value="true">
       </object>
     </div>
-    Changing user level
+    <div align="center">
+      <video align="center" controls>
+        <source src="_static/images/add_database.mp4" />
+        Your browser does not support the video tag.
+      </video>
+    </div>
+    <div align="right">
+      <button type="button" class="video_type_btn" onclick="return changeVideoType(event);">Flash
+      </button>
+    </div>
+    <script type="text/javascript">
+      var scriptTag = document.getElementsByTagName('script');
+      scriptTag = scriptTag[scriptTag.length - 1];
+      var fig_node = scriptTag.parentNode;
+      displayVideo(fig_node);
+    </script>
+    Adding a database
   </div>
 
 .. image:: images/add_database.png
