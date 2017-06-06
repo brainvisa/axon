@@ -1,4 +1,5 @@
 include( 'base' )
+# TODO : add covariate, fwhm and other parameters
 
 spm_files = (
     '{analysis}', SetType('SPM workspace directory'), SetContent(
@@ -12,7 +13,7 @@ spm_files = (
 #'analyzes/spm_stats/'
 spm_stats = (
     '{factorial_design}', SetContent(
-        '{first_group_name}_compare_to_{second_group_name}',
+        '{first_group}_compare_to_{second_group}',
             SetContent(*spm_files),
         '{group_name}',
             SetContent(*spm_files)
