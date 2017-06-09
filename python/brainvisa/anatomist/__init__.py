@@ -129,8 +129,12 @@ if anatomistImport:
             return instance
 
         def __singleton_init__(self, *args, **kwargs):
-            communicationLog = neuroConfig.mainLog.subTextLog()
-            self.communicationLogFile = open(communicationLog.fileName, 'w')
+            self.communicationLogFile = None
+            self.outputLog = None
+            if neuroConfig.mainLog is not None:
+                communicationLog = neuroConfig.mainLog.subTextLog()
+                self.communicationLogFile = open(communicationLog.fileName,
+                                                 'w')
             super(Anatomist, self).__singleton_init__(*args, **kwargs)
             anatomistParameters = []
             for a in args:
@@ -142,17 +146,18 @@ if anatomistImport:
                         eval("neuroConfig.anatomistExecutable")
                 # log file for writing traces from this class
                 # log for writing traces from anatomist process
-                self.outputLog = neuroConfig.mainLog.subTextLog()
-                # add a trace in brainvisa main log
-                neuroConfig.mainLog.append('Anatomist ', html=self.outputLog,
-                                           children=[neuroLog.LogFile.Item(
-                                                     'Communications',
-                                                     html=communicationLog)],
-                                           icon='anaIcon_small.png')
-                if neuroConfig.anatomistImplementation == 'socket':
-                    anatomistParameters += [
-                        '--cout', self.outputLog.fileName, '--cerr',
-                        self.outputLog.fileName]
+                if neuroConfig.mainLog is not None:
+                    self.outputLog = neuroConfig.mainLog.subTextLog()
+                    # add a trace in brainvisa main log
+                    neuroConfig.mainLog.append(
+                        'Anatomist ', html=self.outputLog,
+                        children=[neuroLog.LogFile.Item(
+                            'Communications', html=communicationLog)],
+                        icon='anaIcon_small.png')
+                    if neuroConfig.anatomistImplementation == 'socket':
+                        anatomistParameters += [
+                            '--cout', self.outputLog.fileName, '--cerr',
+                            self.outputLog.fileName]
             except:
                 neuroException.showException()
                 self.communicationLogFile = None

@@ -127,6 +127,7 @@ Format( 'XML', 'f|*.xml' )
 Format( 'gzipped XML', 'f|*.xml.gz' )
 Format( 'Info file', "f|*.info" )
 Format( 'ZIP file', 'f|*.zip' )
+Format( 'SVG file', 'f|*.svg' )
 Format( 'XLS file', 'f|*.xls' )
 Format( 'XLSX file', 'f|*.xlsx' )
 
@@ -197,6 +198,7 @@ FileType( 'CSV file', 'Text file', 'CSV file' )
 FileType( 'HTML file', 'Any Type', 'HTML')
 FileType( 'GIFTI geometry', 'Any type', 'GIFTI file' )
 FileType( 'Bucket', 'Any Type', 'Bucket' )
+FileType( 'SVG figure', 'Any Type', 'SVG file' )
 
 # There's a bug in BrainVISA when using 'Directory' as base type
 # FileType( 'Protocol','Directory' )
