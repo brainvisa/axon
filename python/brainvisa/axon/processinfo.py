@@ -2,6 +2,7 @@
 import sys
 import re
 from brainvisa import processes
+from brainvisa.processes import ValidationError
 
 
 def process_description(pi, hide=[]):
