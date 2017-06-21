@@ -37,16 +37,16 @@ import six
 
 def findEncoders():
   enc = []
+  if findInPath( 'ffmpeg' ):
+    enc.append( 'ffmpeg' )
+  if findInPath( 'avconv' ):
+    enc.append( 'avconv' )
   if findInPath( 'mencoder' ):
     enc.append( 'mencoder' )
   if findInPath( 'transcode' ):
     enc.append( 'transcode' )
   if findInPath( 'recmpeg' ):
     enc.append( 'recmpeg' )
-  if findInPath( 'ffmpeg' ):
-    enc.append( 'ffmpeg' )
-  if findInPath( 'avconv' ):
-    enc.append( 'avconv' )
   return enc
 
 
@@ -58,6 +58,8 @@ def findMpegFormats():
     form.append( 'AVI film' )
   if 'mencoder' in enc or 'ffmpeg' in enc:
     form.append( 'QuickTime film' )
+  if 'ffmpeg' in enc or 'avconv' in enc:
+      form += ['MP4 film', 'OGG film']
   return form
 
 

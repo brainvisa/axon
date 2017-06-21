@@ -37,6 +37,7 @@ import math, time, shutil
 from brainvisa import quaternion
 from brainvisa.configuration import mpegConfig
 from brainvisa import anatomist
+from soma.qt_gui.qtThread import MainThreadLife
 
 name = 'Anatomist View Animation'
 userLevel = 1
@@ -115,6 +116,7 @@ def execution( self, context ):
 
     a = anatomist.Anatomist()
     win = self.window()
+    winlife = MainThreadLife(win)
 
     context.ask( _t_( 'Now setup the window (add objects in the window)' ),
                  _t_( 'OK' ) )
@@ -175,7 +177,8 @@ def execution( self, context ):
     if self.keep_images == 0:
         imgbase = os.path.join( tmp, 'anim.jpg' )
     else:
-        imgbase = os.path.join( tmp, self.images_basename.fileName() )
+        imgbase = os.path.join(
+            tmp, os.path.basename(self.images_basename.fullPath()))
     p = imgbase.rfind( '.' )
     imgpattern = imgbase[:p] + '%04d' + imgbase[p:]
 
@@ -374,11 +377,17 @@ def execution( self, context ):
                 snapshot=imgpattern % num )
             num += 1
 
+    print('loop done')
     if self.animation is not None or self.keep_images:
         #a.execute("WindowConfig", windows=[win], record_mode = 0 )
         # This is needed to wait for Anatomist to finish what it is doing
         a.sync()
         #a.getInfo()
+    print('last sync done')
+    del win # we don't need the window any longer
+    del winlife
+    print('window released')
+
     if self.animation is not None:
         if len( mpegConfig.findEncoders() ) != 0:
             # make sure anatomist has finished its work
