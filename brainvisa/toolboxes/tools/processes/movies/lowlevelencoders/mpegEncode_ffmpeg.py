@@ -74,7 +74,7 @@ def initialization( self ):
     if c in codecs():
       self.encoding = c
       break
-  if self.encoding is None and len( codecs() ) >= 0:
+  if self.encoding is None and len( codecs() ) > 0:
     self.encoding = codecs()[0]
 
 
