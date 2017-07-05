@@ -310,3 +310,7 @@ FileType('Tables Directory', 'Directory')
 Format('Numpy Array', 'f|*.npy')
 FileType('Numpy Array', 'Any Type', 'Numpy Array')
 
+#--- Templates -------------------------
+FileType( 'anatomical Mask Template', '3D Volume' )
+
+
