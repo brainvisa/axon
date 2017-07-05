@@ -6,10 +6,17 @@ import numpy as np
 name = 'Reduce Texture on ROIs'
 userLevel = 1
 
+
+def mesh_type():
+    if 'White Mesh' in [x.name for x in getAllDiskItemTypes()]:
+        return 'White Mesh'
+    return 'Mesh'
+
+
 signature = Signature(
     'input_texture', ReadDiskItem('Texture', 'Aims texture formats'),
     'roi_texture', ReadDiskItem('ROI Texture', 'Aims texture formats'),
-    'mesh', ReadDiskItem('White Mesh', 'aims mesh formats'),
+    'mesh', ReadDiskItem(mesh_type(), 'aims mesh formats'),
     'output_reduced_data', WriteDiskItem('Numpy array', 'Numpy array')
 )
 

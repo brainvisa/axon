@@ -98,13 +98,13 @@ def findCodec( encoder ):
     try:
       # Valid only since Python 2.4
       import subprocess
-      sproc = subprocess.Popen( ( encoder, '-codecs' ),
+      sproc = subprocess.Popen( ( 'bv_unenv', encoder, '-codecs' ),
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE )
       out, err = sproc.communicate()
       if sproc.returncode != 0:
         # maybe the older ffmpeg using -formats argument
-        sproc = subprocess.Popen( ( encoder, '-formats' ),
+        sproc = subprocess.Popen( ( 'bv_unenv', encoder, '-formats' ),
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE )
         out, err = sproc.communicate()

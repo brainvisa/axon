@@ -47,10 +47,10 @@ def validation():
 
 def codecs():
   c = mpegConfig.codecs.get( 'ffmpeg' )
-  if c is not None:
+  if c is not None and len(c) > 0:
     return c
   c = mpegConfig.codecs.get( 'avconv' )
-  if c is not None:
+  if c is not None and len(c) > 0:
     return c
   return {}
 
