@@ -59,6 +59,8 @@ Use cases & examples
 
 .. ifconfig:: 'nbsphinx' in extensions
 
+    * :download:`download use cases notebook <usecases_nb.ipynb>`
+
     .. toctree::
 
       usecases_nb.ipynb
