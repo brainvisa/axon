@@ -3,6 +3,7 @@ import doctest
 import os
 import tempfile
 import shutil
+import sys
 
 # set en empty temporary user dir
 # BRAINVISA_USER_DIR soult be set before neuroConfig is imported
@@ -46,7 +47,17 @@ def test_suite():
 
 try:
     if __name__ == '__main__':
-        unittest.main(defaultTest='test_suite')
+        # try the notebook version if it can be processed on this system
+        from soma.test_utils import test_notebook as tnb
+        try:
+            if tnb.test_notebook(
+                os.path.join(os.path.dirname(sys.argv[0]),
+                             'usecases_nb.ipynb')):
+                sys.exit(0)
+            else:
+                sys.exit(1)
+        except Warning:
+            unittest.main(defaultTest='test_suite')
 finally:
     shutil.rmtree(homedir)
     del homedir

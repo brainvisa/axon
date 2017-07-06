@@ -122,7 +122,8 @@ BRAINVISA_GENERATE_SPHINX_DOC( "sphinxdoc/user_doc"
 BRAINVISA_GENERATE_SPHINX_DOC( "sphinxdoc/dev_doc"
   "share/doc/axon-${BRAINVISA_PACKAGE_VERSION_MAJOR}.${BRAINVISA_PACKAGE_VERSION_MINOR}/dev_doc" )
 
-BRAINVISA_COPY_FILES( ${PROJECT_NAME} "usecases.rst"
+BRAINVISA_COPY_FILES( ${PROJECT_NAME}
+    "usecases.rst" "usecases_nb.ipynb"
     SOURCE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/sphinxdoc/dev_doc"
     DESTINATION "python/brainvisa/tests" )
 
