@@ -57,18 +57,39 @@ Detailled list of modules in here: :doc:`python`.
 Use cases & examples
 --------------------
 
-.. toctree::
+.. ifconfig:: 'nbsphinx' in extensions
 
-  usecases
+    .. toctree::
+
+      usecases_nb.ipynb
+
+.. ifconfig:: 'nbsphinx' not in extensions
+
+    .. toctree::
+
+      usecases
 
 **Processes** : Any process available in BrainVISA may be used as an example to help in developing new processes. The source code of each process is available directly from BrainVISA inline documentation: just click on the file name in the technical information part of the process documentation.
 
+.. ifconfig:: 'nbsphinx' not in extensions
+
+  .. toctree::
+    :hidden:
+
+    developer_manual
+    usecases
+
+.. ifconfig:: 'nbsphinx' in extensions
+
+  .. toctree::
+    :hidden:
+
+    developer_manual
+    usecases_nb.ipynb
 
 .. toctree::
    :hidden:
 
-   developer_manual
-   usecases
    python
    python_bv_data
    python_bv_data_gui
