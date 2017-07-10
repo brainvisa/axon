@@ -246,18 +246,13 @@ def execution(self, context):
 
 
 def extractCoregisterMatrix(self, source_path, reference_path, output_path):
+    """ because of 'resetIfNecessary' method, reference_vol have exactly one transformation"""
     source_vol = aims.read(source_path)
     source_aligned_trm = aims.AffineTransformation3d(source_vol.header()['transformations'][1])
     reference_vol = aims.read(reference_path)
-    # If reference volume has two transformations (scanner + aligned)
-    # the "aligned" trm of source "go" to the "aligned" of reference
-    # else go to the "scanner" of reference
-    if len(reference_vol.header()['transformations']) > 1:
-        reference_aligned_trm = aims.AffineTransformation3d(reference_vol.header()['transformations'][1])
-        reference_trm = reference_aligned_trm.inverse()
-    else:
-        reference_scanner_trm = aims.AffineTransformation3d(reference_vol.header()['transformations'][0])
-        reference_trm = reference_scanner_trm.inverse()
+
+    reference_scanner_trm = aims.AffineTransformation3d(reference_vol.header()['transformations'][0])
+    reference_trm = reference_scanner_trm.inverse()
 
     aims.write(reference_trm * source_aligned_trm, output_path)
 
@@ -266,11 +261,11 @@ def resetIfNecessary(self, context, diskitem):
     vol = aims.read(diskitem.fullPath())
     ref = vol.header()['referentials']
     transfo = vol.header()['transformations']
-    if len(ref) != len(transfo) or ref[0] != 'Scanner-based anatomical coordinates':
+    if ref[0] != 'Scanner-based anatomical coordinates' or len(ref) >1 or len(transfo) > 1:
         tmp_diskitem = context.temporary(diskitem.format)
         context.runProcess('resetInternalImageTransformation',
-                           input_image=diskitem,
-                           output_image=tmp_diskitem)
+                           input_image = diskitem,
+                           output_image = tmp_diskitem)
         return tmp_diskitem
     else:
         return diskitem
