@@ -14,37 +14,37 @@ FileType('T1 MRI Analysis Directory', 'Directory')
 # segmentations #
 #################
 #PVE image
-FileType('T1 MRI Partial Volume Estimation', '4D Volume')
-FileType('T1 MRI Nat Partial Volume Estimation', 'T1 MRI Partial Volume Estimation')
-FileType('T1 MRI Mni Partial Volume Estimation', 'T1 MRI Partial Volume Estimation')
-FileType('T1 MRI Mni Partial Volume Estimation Dartel imported', 'T1 MRI Partial Volume Estimation')
+FileType('OLD T1 MRI Partial Volume Estimation', '4D Volume')
+FileType('T1 MRI Nat Partial Volume Estimation', 'OLD T1 MRI Partial Volume Estimation')
+FileType('T1 MRI Mni Partial Volume Estimation', 'OLD T1 MRI Partial Volume Estimation')
+FileType('T1 MRI Mni Partial Volume Estimation Dartel imported', 'OLD T1 MRI Partial Volume Estimation')
 
 # Tissue Probability Map : in native, mni space and pet space
 
-FileType('T1 MRI Tissue Probability Map', '4D Volume')
+FileType('OLD T1 MRI Tissue Probability Map', '4D Volume')
 
-FileType('T1 MRI Native Space Tissue Probability Map', 'T1 MRI Tissue Probability Map')
+FileType('T1 MRI Native Space Tissue Probability Map', 'OLD T1 MRI Tissue Probability Map')
 FileType('T1 MRI Nat GreyProba', 'T1 MRI Native Space Tissue Probability Map')
 FileType('T1 MRI Nat WhiteProba', 'T1 MRI Native Space Tissue Probability Map')
 FileType('T1 MRI Nat CSFProba', 'T1 MRI Native Space Tissue Probability Map')
 FileType('T1 MRI Nat SkullProba', 'T1 MRI Native Space Tissue Probability Map')
 FileType('T1 MRI Nat ScalpProba', 'T1 MRI Native Space Tissue Probability Map')
 
-FileType('T1 MRI Mni Space Tissue Probability Map', 'T1 MRI Tissue Probability Map')
+FileType('T1 MRI Mni Space Tissue Probability Map', 'OLD T1 MRI Tissue Probability Map')
 FileType('T1 MRI Mni GreyProba', 'T1 MRI Mni Space Tissue Probability Map')
 FileType('T1 MRI Mni WhiteProba', 'T1 MRI Mni Space Tissue Probability Map')
 FileType('T1 MRI Mni CSFProba', 'T1 MRI Mni Space Tissue Probability Map')
 FileType('T1 MRI Mni SkullProba', 'T1 MRI Mni Space Tissue Probability Map')
 FileType('T1 MRI Mni ScalpProba', 'T1 MRI Mni Space Tissue Probability Map')
 
-FileType('T1 MRI Mni Space Dartel imported Tissue Probability Map', 'T1 MRI Tissue Probability Map')
+FileType('T1 MRI Mni Space Dartel imported Tissue Probability Map', 'OLD T1 MRI Tissue Probability Map')
 FileType('T1 MRI Mni GreyProba Dartel imported', 'T1 MRI Mni Space Dartel imported Tissue Probability Map')
 FileType('T1 MRI Mni WhiteProba Dartel imported', 'T1 MRI Mni Space Dartel imported Tissue Probability Map')
 FileType('T1 MRI Mni CSFProba Dartel imported', 'T1 MRI Mni Space Dartel imported Tissue Probability Map')
 FileType('T1 MRI Mni SkullProba Dartel imported', 'T1 MRI Mni Space Dartel imported Tissue Probability Map')
 FileType('T1 MRI Mni ScalpProba Dartel imported', 'T1 MRI Mni Space Dartel imported Tissue Probability Map')
 
-FileType('T1 MRI PetSpc Space Tissue Probability Map', 'T1 MRI Tissue Probability Map')
+FileType('T1 MRI PetSpc Space Tissue Probability Map', 'OLD T1 MRI Tissue Probability Map')
 FileType('T1 MRI PetSpc GreyProba', 'T1 MRI PetSpc Space Tissue Probability Map')
 FileType('T1 MRI PetSpc WhiteProba', 'T1 MRI PetSpc Space Tissue Probability Map')
 FileType('T1 MRI PetSpc CSFProba', 'T1 MRI PetSpc Space Tissue Probability Map')
@@ -60,6 +60,7 @@ FileType('T1 MRI Nat WhiteMask', 'T1 MRI Native Space Tissue Mask')
 FileType('T1 MRI Nat CSFMask', 'T1 MRI Native Space Tissue Mask')
 FileType('T1 MRI Nat SkullMask', 'T1 MRI Native Space Tissue Mask')
 FileType('T1 MRI Nat ScalpMask', 'T1 MRI Native Space Tissue Mask')
+FileType('T1 MRI Nat BrainMask', 'T1 MRI Native Space Tissue Mask')
 
 FileType('T1 MRI Mni Space Tissue Mask', 'T1 MRI Tissue Mask')
 FileType('T1 MRI Mni GreyMask', 'T1 MRI Mni Space Tissue Mask')
@@ -93,6 +94,13 @@ FileType('Mat T1 MRI from Native to Mni', 'MatlabFile of Transformation of T1 MR
 FileType('OLD Mat T1 MRI from Native to Mni', 'MatlabFile of Transformation of T1 MRI')
 
 FileType('JacobianDeterminant', '4D Volume')
+
+#DARTEL
+FileType('T1 MRI Nat GreyProba DARTEL warped', '4D Volume')
+FileType('T1 MRI Nat WhiteProba DARTEL warped', '4D Volume')
+FileType('DARTEL created template', '4D Volume')
+FileType('DARTEL flow field', '4D Volume')
+FileType('DARTEL analysis directory', 'Directory')
 
 ##################
 #                #
