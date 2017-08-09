@@ -1984,7 +1984,8 @@ class ExecutionNode(object):
         '''Add a new child execution node.
 
         :param string name: name which identifies the node
-        :param node: an :py:class:`ExecutionNode` which will be added to this node's children.
+        :param node: an :py:class:`ExecutionNode` which will be added
+          to this node's children.
         '''
         if name in self._children:
             raise KeyError(
@@ -2028,7 +2029,8 @@ class ExecutionNode(object):
     def setSelected(self, selected):
         """Change the selection state of the node.
 
-        :param bool selected: new selection state of the node. If the selection changes, a selection change notifier is notified.
+        :param bool selected: new selection state of the node. If the
+          selection changes, a selection change notifier is notified.
         """
         if selected != self._selected:
             self._selected = selected
@@ -2039,8 +2041,8 @@ class ExecutionNode(object):
         return self._selected
 
     def __setattr__(self, attribute, value):
-        """
-        If the attribute is in the signature of the corresponding parameterized object, it is modified.
+        """ If the attribute is in the signature of the corresponding
+        parameterized object, it is modified.
         """
         if self._parameterized is not None and \
            attribute in self._parameterized().signature:
@@ -2193,8 +2195,12 @@ class ExecutionNode(object):
                 l = sourceObject._links.get(sourceParameter, [])
                 if l:
                     lbis = l
-                    l = [i for i in l if (destObject and i[0] is not destObject and (
-                        i[0] is not weakref.proxy(destObject))) or i[1] != destParameter]
+                    l = [i for i in l
+                         if ((destObject
+                              and i[0] is not destObject
+                              and i[0] is not weakref.proxy(destObject))
+                             or i[1] != destParameter)
+                         ]
                     if len(l) != len(lbis):
                         removed = True
                     if l:
@@ -2764,17 +2770,24 @@ class ExecutionContext(object):
 
     def runProcess(self, _process, *args, **kwargs):
         """
-        It is possible to call a sub-process in the current process by calling context.runProcess.
+        It is possible to call a sub-process in the current process by
+        calling context.runProcess.
 
-        The first argument is the process identifier, which is either the filename wihtout extension of the process or its english name.
-        The other arguments are the values of the process parameters. All mandatory argument must have a value.
-        The function returns the value returned by the sub-process execution method.
+        The first argument is the process identifier, which is either
+        the filename wihtout extension of the process or its english
+        name.
+        The other arguments are the values of the process parameters.
+        All mandatory argument must have a value.
+        The function returns the value returned by the sub-process
+        execution method.
 
         *Example*
 
         >>> context.runProcess('do_something', self.input, self.output, value=3.14)
 
-        In this example, the process do_something is called with self.input as the first paramter value, self.ouput as the second parameter value and 3.14 to the parameter named value.
+        In this example, the process do_something is called with
+        self.input as the first paramter value, self.ouput as the
+        second parameter value and 3.14 to the parameter named value.
         """
         _process = getProcessInstance(_process)
         self.checkInterruption()
@@ -4397,14 +4410,24 @@ def getConverters():
 #----------------------------------------------------------------------------
 def getViewer(source, enableConversion=1, checkUpdate=True, listof=False):
     """
-    Gets a viewer (a process that have the role viewer) which can visualize source data.
-    The viewer is returned only if its userLevel is lower than the current userLevel.
+    Gets a viewer (a process that have the role viewer) which can
+    visualize source data. The viewer is returned only if its userLevel
+    is lower than the current userLevel.
 
-    :param source: a :py:class:`neuroDiskItems.DiskItem`, a list of :py:class:`neuroDiskItems.DiskItem` (only the first will be taken into account), a tuple (type, format).
-    :param boolean enableConversion: if True, a viewer that accepts a format in which source can be converted is also accepted. Default True
-    :param boolean checkUpdate: if True, Brainvisa will check if the viewer needs to be reloaded. Default True.
-    :param boolean listof: If True, we need a viewer for a list of data. If there is no specific viewer for a list of this type of data, a :py:class:`ListOfIterationProcess` is created from the associated simple viewer. Default False.
-    :returns: the :py:class:`NewProcess` class associated to the found viewer.
+    :param source: a :py:class:`neuroDiskItems.DiskItem`, a list of
+        :py:class:`neuroDiskItems.DiskItem` (only the first will be
+        taken into account), a tuple (type, format).
+    :param boolean enableConversion: if True, a viewer that accepts a
+        format in which source can be converted is also accepted.
+        Default True
+    :param boolean checkUpdate: if True, Brainvisa will check if the
+        viewer needs to be reloaded. Default True.
+    :param boolean listof: If True, we need a viewer for a list of data.
+        If there is no specific viewer for a list of this type of data,
+        a :py:class:`ListOfIterationProcess` is created from the
+        associated simple viewer. Default False.
+    :returns: the :py:class:`NewProcess` class associated to the found
+        viewer.
     """
     global _viewers
     global _listViewers
