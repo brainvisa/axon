@@ -130,10 +130,13 @@ Format( 'gzipped XML', 'f|*.xml.gz' )
 Format( 'Info file', "f|*.info" )
 Format( 'ZIP file', 'f|*.zip' )
 Format( 'SVG file', 'f|*.svg' )
+Format( 'XLS file', 'f|*.xls' )
+Format( 'XLSX file', 'f|*.xlsx' )
 
 #Format( 'Matlab design file', 'f|*DesMtx.mat' )
 #Postscript files for SPM results
 Format( 'PS file', "f|*.ps" )
+Format( 'EPS file', "f|*.eps" )
 Format( 'gz compressed PS file', "f|*.ps.gz" )
 
 Format( 'Log file', 'f|*.log' )
