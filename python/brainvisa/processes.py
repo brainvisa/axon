@@ -1003,6 +1003,8 @@ class Parameterized(object):
             function = getattr(
                 self.signature[destName], 'defaultLinkParametersFunction',
                 None)
+        elif inspect.ismethod(function) and function.__self__ is self:
+            function = partial(function.__func__, weakref.proxy(self))
         for p in sourcesList:
             if destName is None:
                 self._links.setdefault(p, []).append(
@@ -1116,7 +1118,8 @@ class Parameterized(object):
         self.__dict__.update(self._convertedValues)
         self._convertedValues.clear()
 
-    def addLink(self, destination, source, function=None, destDefaultUpdate=True):
+    def addLink(self, destination, source, function=None,
+                destDefaultUpdate=True):
         """Add a link between `source` and `destination` parameters. When the value of `source` changes, the value of `destination` may change.
         Contrary to :py:func:`linkParameters`, the link will always be applied, even if the `destination` parameter has no more its default value.
 
@@ -1156,6 +1159,8 @@ class Parameterized(object):
             else:
                 raise RuntimeError(
                     HTMLMessage(_t_('No function provided in <em>addLink</em>')))
+        elif inspect.ismethod(function) and function.__self__ is self:
+            function = partial(function.__func__, weakref.proxy(self))
 
         for destObject, destParameter in destinations:
             multiLink = ExecutionNode.MultiParameterLink(
@@ -1515,8 +1520,11 @@ class Process(Parameterized):
         else:
             return self.id() + '_' + unicode(instance)
 
-    def addLink(self, destination, source, function=None, destDefaultUpdate=True):
+    def addLink(self, destination, source, function=None,
+                destDefaultUpdate=True):
         eNode = getattr(self, '_executionNode', None)
+        if inspect.ismethod(function) and function.__self__ is self:
+            function = partial(function.__func__, weakref.proxy(self))
         if eNode is None:
             Parameterized.addLink(
                 self, destination, source, function, destDefaultUpdate)
@@ -2125,7 +2133,8 @@ class ExecutionNode(object):
             return ExecutionNodeGUI(parent, self._parameterized())
         return None
 
-    def addLink(self, destination, source, function=None, destDefaultUpdate=True):
+    def addLink(self, destination, source, function=None,
+                destDefaultUpdate=True):
         """
         Adds a parameter link like :py:meth:`Parameterized.addLink`.
         """
@@ -2152,6 +2161,8 @@ class ExecutionNode(object):
             else:
                 raise RuntimeError(
                     HTMLMessage(_t_('No function provided in <em>addLink</em>')))
+        elif inspect.ismethod(function) and function.__self__ is self:
+            function = partial(function.__func__, weakref.proxy(self))
 
         for destObject, destParameter in destinations:
             if destObject is not None:
