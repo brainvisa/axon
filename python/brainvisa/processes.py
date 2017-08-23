@@ -3100,9 +3100,11 @@ class ExecutionContext(object):
                 self._historyBookEvent = None
                 self._historyBooksContext = None
 
-            for item_hash in self._allWriteDiskItems.values():
+            wdi_to_release = []
+            for uuid, item_hash in self._allWriteDiskItems.items():
                 item, hash = item_hash
                 if item.isReadable():
+                    wdi_to_release.append(uuid)
                     if item.modificationHash() != hash:
                         try:
                             # do not try to insert in the database an item that doesn't have any reference to a database
@@ -3119,7 +3121,11 @@ class ExecutionContext(object):
                         item_hash[1] = item.modificationHash()
                 elif (process.isMainProcess):  # clear unused minfs only when the main process is finished to avoid clearing minf that will be used in next steps
                     item.clearMinf()
-            self._allWriteDiskItems = {}
+            if process.isMainProcess:
+                self._allWriteDiskItems = {}
+            else:
+                for uuid in wdi_to_release:
+                    del self._allWriteDiskItems[uuid]
 
             # Close output log file
             if process._outputLogFile is not None:
