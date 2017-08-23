@@ -3119,6 +3119,7 @@ class ExecutionContext(object):
                         item_hash[1] = item.modificationHash()
                 elif (process.isMainProcess):  # clear unused minfs only when the main process is finished to avoid clearing minf that will be used in next steps
                     item.clearMinf()
+            self._allWriteDiskItems = {}
 
             # Close output log file
             if process._outputLogFile is not None:
