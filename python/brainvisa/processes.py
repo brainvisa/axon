@@ -1003,6 +1003,8 @@ class Parameterized(object):
             function = getattr(
                 self.signature[destName], 'defaultLinkParametersFunction',
                 None)
+        elif inspect.ismethod(function) and function.__self__ is self:
+            function = partial(function.__func__, weakref.proxy(self))
         for p in sourcesList:
             if destName is None:
                 self._links.setdefault(p, []).append(
