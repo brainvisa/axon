@@ -428,7 +428,7 @@ class DiskItemEditor( QWidget, DataEditor ):
       if dirOnly:
         mode = QFileDialog.Directory
       self.browseDialog.setFileMode( mode )
-      self.browseDialog.setFilters( filters )
+      self.browseDialog.setNameFilters( filters )
       if self.customFileDialog and self.customFileDialog.customFilter != "":
           self.browseDialog.selectFilter( self.customFileDialog.customFilter )
       self.browseDialog.accepted.connect(self.browseAccepted)
@@ -831,7 +831,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
         filters.insert( 0, _t_( 'Recognized formats' ) + ' (' \
           + ' '.join( allPatterns.keys() ) + ')' )
         filters.append( _t_( 'All files' ) + ' (*)' )
-        self.browseDialog.setFilters( filters )
+        self.browseDialog.setNameFilters( filters )
         # self.browseDialog.fileSelected.connect(self.browseAccepted)
         self.browseDialog.accepted.connect(self.browseAccepted)
         if dirOnly:
