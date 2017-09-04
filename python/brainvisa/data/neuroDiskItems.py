@@ -2371,7 +2371,8 @@ class TemporaryDiskItem( File ):
     self._isTemporary = 1
     
   def __del__( self ):
-    if Application().configuration.brainvisa.removeTemporary:
+    if Application().configuration.brainvisa.removeTemporary and \
+       temporary.manager is not None :
       toDelete = self.fullPaths()
       toDelete.append( toDelete[ 0 ] + '.minf' )
       #print('deleting temp DI:', toDelete)
