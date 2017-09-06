@@ -282,16 +282,25 @@ class DiskItemEditor( QWidget, DataEditor ):
       self.btnShow.setEnabled( 0 )
       v = self.getValue()
       viewerExists = False
-      try :
-        viewer = brainvisa.processes.getViewer( v, 1 )()
-        viewerExists = True
-        brainvisa.processes.defaultContext().runInteractiveProcess( self._viewerExited, viewer, v )
-      except Exception as error :
-        self.btnShow.setChecked( False )
-        if viewerExists:
-          self.btnShow.setEnabled( True )
-          raise RuntimeError( HTMLMessage( _t_( 'Viewer aborted for type =<em>%s</em> and format=<em>%s</em> (try using it interactively by right-clicking on the eye icon)' ) % (unicode( v.type ), unicode(v.format))) )
-        raise RuntimeError( HTMLMessage( _t_( 'No viewer could be found for type =<em>%s</em> and format=<em>%s</em>' ) % (unicode( v.type ), unicode(v.format))) )
+      try:
+        try :
+          viewer = brainvisa.processes.getViewer( v, 1 )()
+          viewerExists = True
+          brainvisa.processes.defaultContext().runInteractiveProcess( self._viewerExited, viewer, v )
+        except Exception as error :
+          self.btnShow.setChecked( False )
+          if viewerExists:
+            self.btnShow.setEnabled( True )
+            raise RuntimeError( HTMLMessage( _t_( 'Viewer aborted for type =<em>%s</em> and format=<em>%s</em> (try using it interactively by right-clicking on the eye icon)' ) % (unicode( v.type ), unicode(v.format))) )
+          raise RuntimeError( HTMLMessage( _t_( 'No viewer could be found for type =<em>%s</em> and format=<em>%s</em>' ) % (unicode( v.type ), unicode(v.format))) )
+      except Exception as error:
+          # transform the exception into a print message, and return.
+          # We are in a Qt slot here, raising an exception results in
+          # undefined behaviour, which happens to have changed between PyQt 5.4
+          # and PyQt 5.5
+          print(error)
+          import traceback
+          traceback.print_stack()
     else:
       self._view = None
 
