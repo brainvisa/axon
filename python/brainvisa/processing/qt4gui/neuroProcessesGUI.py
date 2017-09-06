@@ -184,7 +184,7 @@ def quitRequest():
     for w in wids:
       if isinstance( w, ProcessView ) or isinstance(w, SomaWorkflowProcessView):
         w.close()
-        del w  
+        del w
     try:
       from brainvisa import anatomist
       a = anatomist.Anatomist( create=False )
@@ -1392,15 +1392,27 @@ class ParameterLabel( QLabel ):
   lock_system = QtCore.Signal(str)
   unlock_system = QtCore.Signal(str)
 
-  def __init__( self, parameterName, mandatory, parent ):
+  def __init__( self, parameterName, mandatory, parent, userLevel = 0 ):
     if mandatory:
-      QLabel.__init__( self, '<b>' + parameterName + ':</b>',
-                                              parent )
+      printParameterName = '<b>' + parameterName + ':</b>'
     else:
-      QLabel.__init__( self, parameterName + ':', parent )
+      printParameterName = parameterName + ':'
+
+
+    from soma.wip.application.api import Application
+    if Application().configuration.brainvisa.showParamUserLevel:
+      if userLevel == 1:
+        printParameterName = '<sup style="color:orange;">1</sup> ' + printParameterName
+      elif userLevel == 2:
+        printParameterName = '<sup style="color:red;">2</sup> ' + printParameterName
+      elif userLevel >= 3:
+        printParameterName = '<sup style="color:blue;">*</sup> ' + printParameterName
+
+    QLabel.__init__( self, printParameterName, parent )
 
     #Save parameter name
     self.parameterName = parameterName
+    self.printParameterName = printParameterName
 
     # Create popup menu
     self.contextMenu = QMenu( self )
@@ -1466,30 +1478,19 @@ class ParameterLabel( QLabel ):
       self.unlock_system.emit(self.parameterName)
       #txt = self.paramLabelText(self.default_id.isChecked(), False)
 
-    self.setlock(self.lock_id.isChecked()) #on remet a jour en fonction du resultat du unlock du fichier
-    txt = self.paramLabelText(self.default_id.isChecked(), self.lock_id.isChecked())
-    #print(" ParameterLabel : lockChanged self.lock_id.isChecked() a false val de self.text() : " + self.text())
-
-    txt_value_parameter = self.readText(self.text())
-    while (self.readText(txt_value_parameter) != txt_value_parameter) :
-        txt_value_parameter = self.readText(txt_value_parameter)
-
-    txt = txt + txt_value_parameter
-    self.setText( unicode(txt) )
+    # on remet a jour en fonction du resultat du unlock du fichier
+    self.setlock(self.lock_id.isChecked())
+    # label update is performed by setlock
 
 
   def setlock( self, default):
     """ This function is to set lock or unlock data """
     self.lock_id.setChecked(default)
 
-    txt = self.paramLabelText(self.default_id.isChecked(), default)
+    txt = self.paramLabelText(self.default_id.isChecked(), self.lock_id.isChecked())
 
-    txt_value_parameter = self.readText(self.text())
-    while (self.readText(txt_value_parameter) != txt_value_parameter) :
-        txt_value_parameter = self.readText(txt_value_parameter)
-
-    txt = txt + txt_value_parameter
-    self.setText( unicode(txt) )
+    txt += self.printParameterName
+    self.setText(unicode(txt))
 
 
   def defaultChanged( self, checked=False ):
@@ -1498,12 +1499,8 @@ class ParameterLabel( QLabel ):
 
     txt = self.paramLabelText(self.default_id.isChecked(), self.lock_id.isChecked())
 
-    txt_value_parameter = self.readText(self.text())
-    while (self.readText(txt_value_parameter) != txt_value_parameter) :
-        txt_value_parameter = self.readText(txt_value_parameter)
-
-    txt = txt + txt_value_parameter
-    self.setText(  unicode(txt) )
+    txt += self.printParameterName
+    self.setText(unicode(txt))
 
 
 
@@ -1515,12 +1512,8 @@ class ParameterLabel( QLabel ):
 
     txt = self.paramLabelText(self.default_id.isChecked(), self.lock_id.isChecked())
 
-    txt_value_parameter = self.readText(self.text())
-    while (self.readText(txt_value_parameter) != txt_value_parameter) :
-        txt_value_parameter = self.readText(txt_value_parameter)
-
-    txt = txt + txt_value_parameter
-    self.setText(  unicode(txt))
+    txt += self.printParameterName
+    self.setText(unicode(txt))
 
 
 
@@ -1612,18 +1605,19 @@ class ParameterizedWidget( QWidget ):
       parametersWidgetLayout.setSpacing(2)
     parametersWidget.setLayout(parametersWidgetLayout)
     # create a widget for each parameter
-    
+
     #sort signature item by section title
     sectionTitleList = []#useful to keep signature order
     sectionTitleSortedDict = {}
     for key, parameter in items(self.parameterized.signature):
-      sectionTitle = parameter.getSectionTitleIfDefined()
-      sectionTitleList.append(sectionTitle)
-      if sectionTitle in sectionTitleSortedDict.keys():
-        sectionTitleSortedDict[sectionTitle].append( (key, parameter) )
-      else:
-        sectionTitleSortedDict[sectionTitle] = [ (key, parameter) ]
-    
+      if neuroConfig.userLevel >= parameter.userLevel and parameter.visible:
+        sectionTitle = parameter.getSectionTitleIfDefined()
+        sectionTitleList.append(sectionTitle)
+        if sectionTitle in sectionTitleSortedDict.keys():
+          sectionTitleSortedDict[sectionTitle].append( (key, parameter) )
+        else:
+          sectionTitleSortedDict[sectionTitle] = [ (key, parameter) ]
+
     #sectionTitleList = list( set( sectionTitleList ) )#this command do not keep the list order
     uniqueSectionTitleList = []
     for sectionTitle in sectionTitleList:
@@ -1631,63 +1625,66 @@ class ParameterizedWidget( QWidget ):
         uniqueSectionTitleList.append(sectionTitle)
       else:
         pass
-      
-    
+
+
     #the parameters not grouped will be added first
     if None in uniqueSectionTitleList:
       uniqueSectionTitleList.insert(0, uniqueSectionTitleList.pop( uniqueSectionTitleList.index(None) ) )
 
     for sectionTitle in uniqueSectionTitleList:
+      currentSectionTitle = None
       if len( uniqueSectionTitleList ) > 1 and sectionTitle is not None:
-        parametersWidgetLayout.addRow( SectionTitle(sectionTitle) )
-                          
-      for k, p in sectionTitleSortedDict[ sectionTitle ]:
-        if neuroConfig.userLevel >= p.userLevel:
-          l = ParameterLabel( k, p.mandatory, None )
-          l.setDefault(self.parameterized.isDefault( k ))
-          l.toggleDefault.connect(self._toggleDefault)
-  
-          if isinstance( p, ReadDiskItem ):
-              l.lock_id.setCheckable(True)
-              l.setlock(self._setlock_system(k)) #ini la valeur de lock du parametre
-              #l.setlock_system.connect(self._setlock_system)
-              l.lock_system.connect(self._lock_system)
-              l.unlock_system.connect(self._unlock_system)
-  
-          l.setSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed )
-          self.labels[ k ] = l
-          e = p.editor( None, k, weakref.proxy( self ) )
+        currentSectionTitle = SectionTitle(sectionTitle)
+        parametersWidgetLayout.addRow( currentSectionTitle )
 
-          #if p.getSectionTitleIfDefined() is not None:
-          #  parametersWidgetLayout.addRow( SectionTitle( p.getSectionTitleIfDefined() ) )
-          
-          parametersWidgetLayout.addRow( l, e )
-  
-          self.parameterized.addParameterObserver( k, self.parameterChanged )
-  
-          self.editors[ k ] = e
-          if first is None: first = e
-          v = getattr( self.parameterized, k, None )
-          if v is not None:
-            self.setValue( k, v, 1 )
-          e.valuePropertiesChanged( self.parameterized.isDefault( k ) )
-          e.noDefault.connect(self.removeDefault)
-          e.newValidValue.connect(self.updateParameterValue)
-  #lock#        btn = NamedPushButton( hb, k )
-  #lock#        btn.setPixmap( self.pixCustom )
-  #lock#        btn.setFocusPolicy( QWidget.NoFocus )
-  #lock#        btn.setToggleButton( 1 )
-  #lock#        btn.hide()
-  #lock#        btn.clicked.connect(self._toggleDefault)
-  #lock#        self.btnLock[ k ] = btn
-          if documentation is not None:
-            self.setParameterToolTip( k,
-              XHTML.html( documentation.get( 'parameters', {} ).get( k, '' ) ) \
-              + '<br/><img src="' \
-              + os.path.join( neuroConfig.iconPath, 'modified.png' )+ '"/><em>: ' \
-              + _t_( \
-              'value has been manually changed and is not modified by links anymore' ) \
-              + '</em>' )
+      for k, p in sectionTitleSortedDict[ sectionTitle ]:
+        l = ParameterLabel( k, p.mandatory, None, userLevel=p.userLevel )
+        l.setDefault(self.parameterized.isDefault( k ))
+        l.toggleDefault.connect(self._toggleDefault)
+
+        if isinstance( p, ReadDiskItem ):
+            l.lock_id.setCheckable(True)
+            l.setlock(self._setlock_system(k)) #ini la valeur de lock du parametre
+            #l.setlock_system.connect(self._setlock_system)
+            l.lock_system.connect(self._lock_system)
+            l.unlock_system.connect(self._unlock_system)
+
+        l.setSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed )
+        self.labels[ k ] = l
+        e = p.editor( None, k, weakref.proxy( self ) )
+
+        #if p.getSectionTitleIfDefined() is not None:
+        #  parametersWidgetLayout.addRow( SectionTitle( p.getSectionTitleIfDefined() ) )
+
+        parametersWidgetLayout.addRow( l, e )
+        if currentSectionTitle is not None:
+          currentSectionTitle.addSectionWidgets(l, e)
+
+        self.parameterized.addParameterObserver( k, self.parameterChanged )
+
+        self.editors[ k ] = e
+        if first is None: first = e
+        v = getattr( self.parameterized, k, None )
+        if v is not None:
+          self.setValue( k, v, 1 )
+        e.valuePropertiesChanged( self.parameterized.isDefault( k ) )
+        e.noDefault.connect(self.removeDefault)
+        e.newValidValue.connect(self.updateParameterValue)
+#lock#        btn = NamedPushButton( hb, k )
+#lock#        btn.setPixmap( self.pixCustom )
+#lock#        btn.setFocusPolicy( QWidget.NoFocus )
+#lock#        btn.setToggleButton( 1 )
+#lock#        btn.hide()
+#lock#        btn.clicked.connect(self._toggleDefault)
+#lock#        self.btnLock[ k ] = btn
+        if documentation is not None:
+          self.setParameterToolTip( k,
+            XHTML.html( documentation.get( 'parameters', {} ).get( k, '' ) ) \
+            + '<br/><img src="' \
+            + os.path.join( neuroConfig.iconPath, 'modified.png' )+ '"/><em>: ' \
+            + _t_( \
+            'value has been manually changed and is not modified by links anymore' ) \
+            + '</em>' )
 
     parametersWidget.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum))
     self.scrollWidget.setWidget(parametersWidget)
@@ -1873,28 +1870,58 @@ class SectionTitle( QLabel ):
   """
   This widget is used to create a virtual signature separation, called implicitly by "section" argument.
   All parameters will be grouped by section in signature with this label text as title.
-  
+
   **Examples**
-  
+
   'bool_field', Boolean(section='Section title'),
   or
   'image', WriteDiskItem( '4D Volume', 'NIFTI-1 image', section='Output images' ),
   """
-  def __init__(self, section_title):
-    QLabel.__init__(self, section_title)
+  def __init__(self, section_title, section_widgets=[], collapsed=False):
+    if collapsed:
+      printSectionTitle = '<span style="font-size:smaller;">&#9654;</span> ' + section_title
+    else:
+      printSectionTitle = '<span style="font-size:smaller;">&#9660;</span> ' + section_title
+    QLabel.__init__(self, printSectionTitle)
     font = QFont()
     #font.setCapitalization(QFont.Capitalize)
-    font.setUnderline(True)
+    # font.setUnderline(True)
     font.setItalic(True)
     self.setFont(font)
     self.setAlignment(Qt.AlignCenter)
-    
+
     styleSheet = """
-    
+
 SectionTitle { border-top: 1px solid #6c6c6c;
-               border-top-style: double; 
+               border-top-style: double;
                border-top-color: silver; }"""
     self.setStyleSheet(styleSheet)
+
+    self.section_title = section_title
+    self.section_widgets = [ w for w in section_widgets ]
+    self.collapsed = collapsed
+
+  def mouseReleaseEvent(self, ev):
+    self.changeVisibility()
+
+  def changeVisibility( self ):
+    self.collapsed = not self.collapsed
+    if self.collapsed:
+      printSectionTitle = '<span style="font-size:smaller;">&#9654;</span> ' + self.section_title
+    else:
+      printSectionTitle = '<span style="font-size:smaller;">&#9660;</span> ' + self.section_title
+    self.setText(printSectionTitle)
+    for widget in self.section_widgets:
+      if self.collapsed:
+        action = 'hide'
+        widget.hide()
+      else:
+        action = 'show'
+        widget.show()
+
+  def addSectionWidgets( self, *args ):
+    for w in args:
+      self.section_widgets.append(w)
 
 
 #----------------------------------------------------------------------------
@@ -2719,7 +2746,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       input_file_processing = submission_dlg.combo_in_files.currentText()
       output_file_processing = submission_dlg.combo_out_files.currentText()
 
-      brainvisa_cmd = [ 'python', '-m', 'brainvisa.axon.runprocess' ]
+      brainvisa_cmd = [ 'python2', '-m', 'brainvisa.axon.runprocess' ]
 
       self.readUserValues()
 
@@ -3473,8 +3500,7 @@ class ProcessEdit( QDialog ):
 
     l=QLabel( _t_('Short description') + ':' )
     vb.addWidget(l)
-    self.mleShort = QTextEdit( )
-    self.mleShort.setAcceptRichText(False)
+    self.mleShort = QPlainTextEdit()
     vb.addWidget(self.mleShort)
 
     w=QWidget(spl)
@@ -3492,8 +3518,7 @@ class ProcessEdit( QDialog ):
     vb.addWidget(stack)
     self.mleParameters = {}
     for n in self.process.signature.keys():
-      mle = QTextEdit(  )
-      mle.setAcceptRichText(False)
+      mle = QPlainTextEdit()
       vb.addWidget(mle)
       stack.addWidget( mle )
       self.mleParameters[ self.cmbParameter.count() ] = mle
@@ -3506,8 +3531,7 @@ class ProcessEdit( QDialog ):
     w.setLayout(vb)
     l=QLabel( _t_('Long description') + ':' )
     vb.addWidget(l)
-    self.mleLong = QTextEdit( )
-    self.mleLong.setAcceptRichText(False)
+    self.mleLong = QPlainTextEdit()
     vb.addWidget(self.mleLong)
 
     self.readDocumentation()
@@ -3577,8 +3601,7 @@ class ProcessEdit( QDialog ):
 
   @staticmethod
   def escapeXMLEntities( s ):
-    return re.sub( r'&([a-z]+);', lambda m: '&amp;'+m.group(1)+';', s )
-
+    return re.sub( r'&(?![a-z]+;)', '&amp;', s )
 
   def changeLanguage( self ):
     self.saveLanguage()
@@ -4451,7 +4474,7 @@ def loadProcessSetupsGUI():
   load_process_setups_GUI = LoadProcessSetupsGUI()
   load_process_setups_GUI.show()
   load_process_setups_GUI.exec_()
-  
+
 def save_and_close_all_processes():
   close_viewers()
   saved = []

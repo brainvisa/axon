@@ -8,9 +8,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -25,8 +25,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -54,13 +54,13 @@ def htmlBrowsers():
   return [i for i in ( 'firefox', 'konqueror', 'explorer', 'opera',
                        '/Applications/Internet\\ Explorer.app/Contents' \
                        '/MacOS/Internet\\ Explorer',
-                       '/Applications/Safari.app/Contents/MacOS/Safari', 
+                       '/Applications/Safari.app/Contents/MacOS/Safari',
                        'mozilla', 'netscape' ) if find_executable( i ) ]
 
 def defaultHTMLBrowser():
   """
-  If a real web browser is found, use it dy default. 
-  If there is no web browser available, the built-in Qt Browser is used but it cannot open websites. 
+  If a real web browser is found, use it dy default.
+  If there is no web browser available, the built-in Qt Browser is used but it cannot open websites.
   """
   defaultBrowser=""
   browsers=htmlBrowsers()
@@ -93,28 +93,42 @@ def defaultCSVViewer():
   if browsers:
     defaultCSVviewer=browsers[0]
   return defaultCSVviewer
+#------------------------------------------------------------------------------
+def pngViewers():
+  return [i for i in ( 'eog', 'shotwell', 'feh', 'geeqie', 'gpicview', 'gwenview', 'mirage' ) if find_executable( i ) ]
+
+def defaultPNGViewer():
+  """
+  If a real PNG viewer is found, use it dy default.
+  If there is no PNG viewer available, the built-in Qt viewer is used.
+  """
+  defaultPNGviewer=""
+  browsers=pngViewers()
+  if browsers:
+    defaultPNGviewer=browsers[0]
+  return defaultPNGviewer
 
 #------------------------------------------------------------------------------
 class BrainVISAConfiguration( ConfigurationGroup ):
-  
+
   label = 'BrainVISA'
   icon = 'brainvisa_small.png'
-  
+
   class SupportConfiguration( HasSignature ):
     signature = Signature(
       'userEmail', Unicode, dict( defaultValue='', doc='Your email address that will appear in the "From:" field of messages send to BrainVISA support team.' ),
       'supportEmail', Unicode, dict( defaultValue='support@brainvisa.info', doc='Email address of BrainVISA support team.' ),
       'smtpServer', Unicode, dict( defaultValue='', doc='Address of the server that will be used to send emails.' ),
     )
-  
+
   class SPMConfiguration( HasSignature ):
     signature = Signature(
       'SPM99_compatibility', Boolean, dict( defaultValue=False, doc='If selected, Analyse (*.hdr + *.img) images loaded from BrainVISA, Anatomist and Aims will use an heuristic to guess the orientationin in SPM99 compatible way.' ),
       'radiological_orientation', Boolean, dict( defaultValue=True, doc='If selected, SPM is supposed to use radiological orientation for images. Otherwise it is supposed to use neurological convention.' ),
     )
-  
+
   signature = Signature(
-    'userLevel', Choice( ( 'Basic', 0 ), 
+    'userLevel', Choice( ( 'Basic', 0 ),
                          ( 'Advanced', 1 ),
                          ( 'Expert', 2 ) ),
                  dict( defaultValue=0, doc='User level is used to hide experimental processes (and in some rare cases hide experimental parameters).' ),
@@ -125,7 +139,9 @@ class BrainVISAConfiguration( ConfigurationGroup ):
     'textEditor', OpenedChoice( * textEditors() ), dict( defaultValue=defaultTextEditor(), doc='Location of the program used to edit text files.' ),
     'htmlBrowser', OpenedChoice( ( '<built-in>', '' ), * htmlBrowsers() ), dict( defaultValue = defaultHTMLBrowser(), doc='Location of the program used to display HTML files.' ),
     'csvViewer', OpenedChoice( ( '<built-in>', '' ), * csvViewers() ), dict( defaultValue = defaultCSVViewer(), doc='Location of the program used to display CSV files.' ),
+    'pngViewer', OpenedChoice( ( '<built-in>', '' ), * pngViewers() ), dict( defaultValue = defaultPNGViewer(), doc='Location of the program used to display PNG images.' ),
     'removeTemporary', Boolean, dict( defaultValue=True, doc='unselect this option if you do not want temporary files and directories to be automatically deleted. This option is used for debugging. If unselected BrainVISA can leave a lot of files in temporary directory.' ),
+    'showParamUserLevel', Boolean, dict( defaultValue=False, doc='select this option if you want user levels shown along parameter names in the process window.' ),
     'SPM', SPMConfiguration, dict( defaultValue=SPMConfiguration() ),
     'support', SupportConfiguration, dict( defaultValue=SupportConfiguration() ),
     'gui_style', OpenedChoice( ('<system default>', None ) ), dict( defaultValue = None, doc='Style of the graphical interface.' ),
@@ -137,14 +153,14 @@ class BrainVISAConfiguration( ConfigurationGroup ):
 
   def _check_userLevel_value( self, value ):
     return int( value )
-  
+
   def _check_temporaryDirectory_value(self, newDirectory):
     if not newDirectory or \
       ( newDirectory and not os.path.exists(newDirectory) ):
       print('Configuration - temporaryDirectory option : No such file or directory: "' + newDirectory + '". Returned to default value.')
       return self.signature['temporaryDirectory'].defaultValue
     return newDirectory
-  
+
   def __init__( self ):
     super( BrainVISAConfiguration, self ).__init__()
     self.signature = VariableSignature( self.signature )

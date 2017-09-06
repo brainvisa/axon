@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 from __future__ import print_function
 from brainvisa.axon import processes
-from capsul.process import process
-from capsul.pipeline import pipeline
+from capsul.api import Process
+from capsul.api import Pipeline
 from brainvisa import processes as procbv
 from brainvisa.data import neuroData
 from brainvisa.data.readdiskitem import ReadDiskItem
@@ -986,9 +986,9 @@ def axon_to_capsul(proc, outfile, module_name_prefix=None,
         capsul_process_name = procid
 
     if p.executionNode():
-        proctype = pipeline.Pipeline
+        proctype = Pipeline
     else:
-        proctype = process.Process
+        proctype = Process
 
     out = open(outfile, 'w')
     out.write('''# -*- coding: utf-8 -*-
@@ -999,19 +999,19 @@ except ImportError:
     from enthought.traits.api import File, Directory, Float, Int, Bool, Enum, \\
         Str, List, Undefined
 
-from capsul.process import Process
+from capsul.api import Process
 import six
 ''')
-    if proctype is pipeline.Pipeline:
-        out.write('''from capsul.pipeline import Pipeline
-from capsul.pipeline import Switch
+    if proctype is Pipeline:
+        out.write('''from capsul.api import Pipeline
+from capsul.api import Switch
 ''')
     out.write('''
 
 class ''')
     out.write(capsul_process_name + '(%s):\n' % proctype.__name__)
 
-    if proctype is pipeline.Pipeline:
+    if proctype is Pipeline:
         out.write('''    def __init__(self, autoexport_nodes_parameters=True, **kwargs):
         self._autoexport_nodes_parameters = autoexport_nodes_parameters
         super(%s, self).__init__(False, **kwargs)

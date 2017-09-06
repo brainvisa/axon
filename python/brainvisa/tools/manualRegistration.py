@@ -72,6 +72,10 @@ class ManualRegistration():
         Launches the manual registration display.
         """
         self._anatomist = ana.Anatomist('-b')
+        try:
+            self._anatomist.config()['setAutomaticReferential'] = 0
+        except:
+            pass
         self._loadData()
         self._loadUi()
         self._createViews()

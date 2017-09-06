@@ -83,13 +83,14 @@ else:
 
 out = sys.stdout
 
-databaseVersion='2.2'
+databaseVersion='2.3'
 # mapping between databases versions and axon versions : database version -> first axon version where this database version is used
 databaseVersions={ '1.0': '3.1.0',
                    '1.1': '3.2.0',
                    '2.0': '4.0.0',
                    '2.1': '4.2.0',
-                   '2.2': '4.5.0'}
+                   '2.2': '4.5.0',
+                   '2.3': '4.6.0'}
 
 #------------------------------------------------------------------------------
 class CombineGet( object ):
@@ -500,6 +501,14 @@ class SQLDatabase( Database ):
 
 
   def __init__( self, sqlDatabaseFile, directory, fso=None, context=None, otherSqliteFiles=[], settings=None ):
+    # print('!==================================!')
+    # print('!SQLDatabase, initialization started!')
+    # print('!==================================!')
+    # print('!sqlDatabaseFile:', sqlDatabaseFile, '!')
+    # print('!directory:', directory, '!')
+    # print('!otherSqliteFiles:', otherSqliteFiles, '!')
+    # print('!==================================!')
+    
     super(SQLDatabase, self).__init__()
     self._connection = None
     self.name = os.path.normpath( directory )
@@ -575,6 +584,7 @@ class SQLDatabase( Database ):
         for a in rule.declared_attributes:
           if a not in keys:
             keys.append( a )
+            nonMandatoryKeyAttributes.add(a)
       for lopa, lopaRules in six.iteritems(rulesByLOPA):
         for n in lopa:
           editableAttributes.add( n )
@@ -600,7 +610,10 @@ class SQLDatabase( Database ):
       ruleSelectionByMissingKeyAttributes = []
       for rule in rules:
         for n in keys:
-          if n not in ruleSelectionByAttributeValue and n not in rule.pattern.namedRegex() and n not in ruleSelectionByMissingKeyAttributes:
+          if n not in ruleSelectionByAttributeValue \
+            and n not in rule.pattern.namedRegex() \
+            and n not in ruleSelectionByMissingKeyAttributes \
+            and n not in nonMandatoryKeyAttributes:
             ruleSelectionByMissingKeyAttributes.append( n )
       for rule in rules:
         localAttributes = dict( rule.localAttributes )
@@ -625,6 +638,9 @@ class SQLDatabase( Database ):
       self._nonMandatoryKeyAttributesByType[ type.name ] = nonMandatoryKeyAttributes
       self.ruleSelectionByType[ type.name ] = ( ruleSelectionByAttributeValue, ruleSelectionByMissingKeyAttributes, rulesDictionary, defaultAttributesValues )
       self._attributesEditionByType[ type.name ] = ( editableAttributes, selectedValueAttributes, declaredAttributes )
+      
+    #print('!SQLDatabase, rule! selection by type :')
+    #print(self.ruleSelectionByType)
       
     
     self.typesWithTable = set()
@@ -681,7 +697,10 @@ class SQLDatabase( Database ):
       if neuroConfig.databaseVersionSync == 'auto':
         self._mustBeUpdated = True
         brainvisa.processes.defaultContext().write( "Database ",  self.name, " must be updated because it has been used with other versions of Brainvisa." )
-
+        
+    # print('!==================================!')
+    # print('!SQLDatabase initialization ended!')
+    # print('!==================================!')
 
   def _scanDatabaseByChunks(
       self, directoriesToScan, recursion=True, context=None, chunkSize=1000 ):
@@ -1663,8 +1682,10 @@ class SQLDatabase( Database ):
         required ) if x is not None ]
       types = set( chain( *( self._childrenByTypeName[ t ] for t in tval ) ) )
     if _debug is not None:
-      print('!createDiskItems! database:', self.directory, tuple( types ),
-            selection, required, file=_debug)
+      print('!createDiskItems! database:', self.directory, file=_debug)
+      print(_debug, '!createDiskItems! types:', tuple( types ), file=_debug)
+      print(_debug, '!createDiskItems! selection:', selection, file=_debug)
+      print(_debug, '!createDiskItems! required:', required, file=_debug)
     for type in types:
       r = self.ruleSelectionByType.get( type )
       if r is None:
@@ -1677,6 +1698,11 @@ class SQLDatabase( Database ):
         print('!createDiskItems! possibleFormats = ', possibleFormats,
               file=_debug)
       ruleSelectionByAttributeValue, ruleSelectionByMissingKeyAttributes, rulesDictionary, defaultAttributesValues = r
+      if _debug is not None:
+        print('!createDiskItems! ruleSelectionByAttributeValue:', ruleSelectionByAttributeValue, file=_debug)
+        print('!createDiskItems! ruleSelectionByMissingKeyAttributes:', ruleSelectionByMissingKeyAttributes, file=_debug)
+        print('!createDiskItems! rulesDictionary:', rulesDictionary, file=_debug)
+        print('!createDiskItems! defaultAttributesValues:', defaultAttributesValues, file=_debug)
       #key = ( tuple( ( selection.get( i, required.get( i, '' ) ) for i in ruleSelectionByAttributeValue ) ),
               #tuple( ( (False if selection.get( i, required.get( i ) ) else True) for i in ruleSelectionByMissingKeyAttributes ) ) )
       keys = []

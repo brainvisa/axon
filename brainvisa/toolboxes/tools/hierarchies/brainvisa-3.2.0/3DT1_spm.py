@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 include('base')
 
-insert( '{center}/{subject}',
+insert(
+  '{center}/{subject}',
   't1mri', SetWeakAttr( 'modality', 't1mri' ),
     SetContent(
       '{acquisition}',
@@ -74,6 +75,9 @@ insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
 
 insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
   '<subject>_Nat_scalp_Mask_{method}', SetType('T1 MRI Nat ScalpMask'),) # method is the way to obtain the mask from the probability map (e.g., apply a threshold, compare map...)
+
+insert('{center}/{subject}/t1mri/{acquisition}/{analysis}/segmentation',
+  '<subject>_Nat_brain_Mask_{method}', SetType('T1 MRI Nat BrainMask'),)
 #############
 # Mni space #
 #############

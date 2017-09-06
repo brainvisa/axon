@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 #
 #  This software and supporting documentation were developed by
@@ -270,6 +270,10 @@ group1.add_option('--historyBook', dest='historyBook', action='append',
 #group1.add_option('--enablegui', dest='enablegui', action='store_true',
     #default=False,
     #help='enable graphical user interface for interactive processes')
+group1.add_option('--logFile', dest='logFile', default=None,
+    help='specify the log file to use. '
+    'Default is the usual brainvisa.log if databasing is enabled, else no log '
+    'file is used.')
 parser.add_option_group(group1)
 
 group2 = OptionGroup(parser, 'Processing',
@@ -356,8 +360,11 @@ if not options.enabledb:
     neuroConfig.fastStart = True
 if options.historyBook:
     neuroConfig.historyBookDirectory = options.historyBook
-if not options.enabledb and not options.historyBook:
-    neuroConfig.logFileName = ''
+if not options.logFile is None:
+    neuroConfig.logFileName = options.logFile
+else:
+    if not options.enabledb and not options.historyBook:
+        neuroConfig.logFileName = ''
 
 axon.initializeProcesses()
 

@@ -24,11 +24,7 @@ print os.path.abspath( p )'
 
 # Find Python executable in $python
 
-pythonexelist='python'
-os=`echo $OSTYPE | sed -e 's/^\([^0-9\.]*\).*/\1/'`
-if [ "$os" = "darwin" ]; then
-  pythonexelist=$pythonexelist' Python'
-fi
+pythonexelist='python2 Python2 python Python'
 unset python
 for pythonexe in $pythonexelist; do
   python=`which $pythonexe 2> /dev/null`
@@ -36,6 +32,7 @@ for pythonexe in $pythonexelist; do
 done
 [ -z "$python" ] && echo 'Cannot find Python executable' && exit 1
 
+os=`echo $OSTYPE | sed -e 's/^\([^0-9\.]*\).*/\1/'`
 if [ "$os" = "darwin" ]; then
   python=`"$python" -c "$nosymlink"` # "$python"`/$pythonexe
 fi

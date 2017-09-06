@@ -91,7 +91,7 @@ class ExpertDatabaseSettings( HasSignature ):
                                       writeIfDefault=True ),
     'sqliteFileName', FileName, dict( defaultValue='' ),
     'activate_history', Boolean, dict( defaultValue=False ),
-    #'fedji_backend', Boolean, dict( defaultValue=False ),
+    'fedji_backend', Boolean, dict( defaultValue=False ),
     'uuid', Unicode(), dict( defaultValue='', visible = False),
     # for compatibility only
     'lastIncrementalUpdate', Unicode(), dict(defaultValue='', visible=False),
@@ -105,14 +105,10 @@ class ExpertDatabaseSettings( HasSignature ):
     #if not ExpertDatabaseSettings.signature[ 'ontology' ].type.values:
     #  ExpertDatabaseSettings.signature[ 'ontology' ].type.setChoices( *ExpertDatabaseSettings.availableOntologies() )
     ExpertDatabaseSettings.signature[ 'ontology' ].type.setChoices( *ExpertDatabaseSettings.availableOntologies() )
-
+      
+      
     super( ExpertDatabaseSettings, self ).__init__()
-    # fedj is hidden up to now, so is not in the signature but exists as an
-    # instance variable. To activate it again:
-    # * uncomment the fedji_backend item in the signature above
-    # * remove the following line
-    self.fedji_backend = False
-
+  
   def __eq__( self , other):
     if not isinstance(other, ExpertDatabaseSettings):
       return False

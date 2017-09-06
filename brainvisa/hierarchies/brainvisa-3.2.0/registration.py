@@ -77,17 +77,17 @@ recal_content = (
 # Coregistration organization, jan. 2014
 #------------------------------------------------------------------------------
 
-coregistration_content = (
-    "{coregistration_analysis}", SetContent(
-        # FIXME: are they Raw T1 MRI ? Or T1 MRI ? Or a sub-type ?
-        "{subject}_{acquisition}_{coregistration_analysis}",
-            SetType( "Raw T1 MRI" ),
-    ),
-)
+#coregistration_content = (
+    #"{coregistration_analysis}", SetContent(
+        ## FIXME: are they Raw T1 MRI ? Or T1 MRI ? Or a sub-type ?
+        #"{subject}_{acquisition}_{coregistration_analysis}",
+            #SetType( "Raw T1 MRI" ),
+    #),
+#)
 
 
 insert( '{center}/{subject}',
   "recal",
   SetContent(*recal_content),
-  "coregistration_{coregistration}", SetContent( *coregistration_content ),
+  #"coregistration_{coregistration}", SetContent( *coregistration_content ),
 )

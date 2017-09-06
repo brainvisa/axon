@@ -7,9 +7,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -24,8 +24,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -42,20 +42,42 @@ import subprocess
 import six
 
 signature = Signature(
-  'write_graphs', Boolean(),
+  'toolbox',                Choice(('All', None)),
+  'write_category_html',    Boolean(),
+  'write_process_html',     Boolean(),
+  'write_type_html',        Boolean(),
+  'write_graphs',           Boolean(),
   #'htmlDirectory', WriteDiskItem( 'Any type', 'Directory' ),
 )
 
-def initialization( self ):
-  self.setOptional("write_graphs")
-  self.write_graphs=True
+def initialization(self):
+  def show_signature(*args):
+    if self.toolbox is not None:
+      self.setHidden('write_type_html', 'write_graphs')
+    else:
+      self.setVisible('write_type_html', 'write_graphs')
+    self.changeSignature(self.signature)
+
+  self.addLink(None, 'toolbox', show_signature)
+
+  from brainvisa.toolboxes import allToolboxes
+  toolboxes = [ (toolbox.name, toolbox.id) for toolbox in allToolboxes() ]
+  toolboxes = [('All', None)] + toolboxes
+  self.signature['toolbox'].setChoices(*toolboxes)
+
+  self.setOptional(*self.signature.keys())
+  self.toolbox = None
+  self.write_category_html = True
+  self.write_process_html = True
+  self.write_type_html = True
+  self.write_graphs = True
   #self.addLink( 'htmlDirectory', 'ontology', lambda ontology: os.path.join( neuroConfig.mainDocPath, 'ontology-' + ontology ) )
 
 #----------------------------------------------------------------------------
 def generateHTMLDocumentation( processInfoOrId, translators, context, ontology ):
   processInfo = getProcessInfo( processInfoOrId )
   documentation = readProcdoc( processInfo.id )
-  
+
   if context is not None:
     # this <font></font> thing is a trick to allow text to be considered as
     # HTML, and the <br/> not escaped, otherwise either "<br/>" appears in
@@ -216,106 +238,126 @@ def generateHTMLDocumentation( processInfoOrId, translators, context, ontology )
     f.close()
 
 #----------------------------------------------------------------------------
-def generateHTMLProcessesDocumentation( context, ontology ):
+def generateHTMLProcessesDocumentation(context,
+                                       ontology='all',
+                                       one_toolbox=None,
+                                       write_category_html=True,
+                                       write_process_html=True):
   import sys
-  
+
   #--------------------------------------
   # Generate translators
   #--------------------------------------
   translators = {}
   for l in neuroConfig._languages:
     translators[ l ] = neuroConfig.Translator( l )
+
   #--------------------------------------
   # Generate documentation for processes
   #--------------------------------------
-  for pi in allProcessesInfo():
-    try:
-      generateHTMLDocumentation( pi, translators, context, ontology )
-    except context.UserInterruption:
-      raise
-    except ValidationError:
-      pass
-    except:
-      context.showException( beforeError=_t_('Cannot generate documentation for <em>%s</em>') % (pi.fileName,) )
+  if write_process_html:
+    all_processes_info = [ pi for pi in allProcessesInfo()
+                           if one_toolbox is None or pi.toolbox == one_toolbox ]
+    for pi in all_processes_info:
+      try:
+        generateHTMLDocumentation( pi, translators, context, ontology )
+      except context.UserInterruption:
+        raise
+      except ValidationError:
+        pass
+      except:
+        context.showException( beforeError=_t_('Cannot generate documentation for <em>%s</em>') % (pi.fileName,) )
 
   #---------------------------------------
   # Generate documentation for categories
   #---------------------------------------
-  # Find all category_documentation.minf files in
-  # the order of neuroConfig.processesPath
-  categoryDocFiles = {}
-  for procPath in neuroConfig.processesPath:
-    stack = [ '' ]
-    while stack:
-      r = stack.pop()
-      f = os.path.join( procPath, r )
-      if os.path.basename( r ) == 'category_documentation.minf':
-        category = os.path.dirname(r).lower()
-        if category:
-          categoryDocFiles.setdefault( category, f )
-      elif os.path.isdir( f ):
-        stack += [ os.path.join( r, c ) for c in os.listdir( f ) ]
-  
-  # Find documentation files in toolboxes
-  # processes are in toolboxesDir/toolboxName/processes by default. anyway they are in toolbox.processesDir
-  # each relative directory dir in processes, matches a category named toolboxName/dir
-  # a documentation for the toolbox may be in toolboxesDir/toolboxId
-  
-  from brainvisa.toolboxes import allToolboxes
-  for toolbox in allToolboxes():
-    # search for a file category_documentation.minf in toolboxesDir/toolboxId, otherwise it can be in processesDir
-    # It is usefull for my processes toolbox because the toolbox and the processes are not in the same place and the documentation of the toolbox cannot be in the processes directory. 
-    toolboxDoc=os.path.join( neuroConfig.toolboxesDir, toolbox.id, "category_documentation.minf")
-    if os.path.exists(toolboxDoc): # if it exists, add it to the doc file for which we have to generate an html file
-        categoryDocFiles.setdefault( toolbox.id, toolboxDoc )
-    # search for category documentation files in processes directory
-    stack = [('', toolbox.id)] # relative directory, category name
-    while stack:
-      r, cat = stack.pop() # get current relative path and associated category
-      f=os.path.join(toolbox.processesDir, r)
-      currentItem=os.path.basename( r )
-      if currentItem == 'category_documentation.minf':
-          categoryDocFiles.setdefault( cat, f )
-      elif os.path.isdir( f ):
-        if currentItem:
-          cat=os.path.join(cat, currentItem.lower())
-        stack += [ (os.path.join( r, c ), cat) for c in os.listdir( f ) ]
+  if write_category_html:
 
-  # Create category HTML files
-  
-  baseDocDir = os.path.dirname( neuroConfig.docPath )
-  for category, f in six.iteritems(categoryDocFiles):
-    categoryPath=category.split("/")
-    minfContent = readMinf( f )[ 0 ]
-    enContent=minfContent['en']
-    for l in neuroConfig._languages:
-      #for l, c in six.iteritems(minfContent):
-      if l=='en':
-        c=enContent
-      else:
-        c=minfContent.get(l, enContent)
-        
-      tr = translators.get( l )
-      
-      c = convertSpecialLinks( c, l , '/'.join( ( '..', ) * (len( categoryPath )+1) ), tr ) # base dir for links : processes
-      p = os.path.join( baseDocDir, l, 'processes', 'categories', category )
-      if not os.path.isdir( p ):
-        os.makedirs( p )
-      nsubdirs = len(category.split('/')) + 3
-      f = open( os.path.join( p, 'category_documentation.html' ), 'w' )
-      print('<html>', file=f)
-      print('<head>', file=f)
-      print('  <meta http-equiv="Content-Type" content="text/html; charset='
-            + sys.getdefaultencoding()+'">', file=f)
-      print('  <meta content="BrainVISA ' + neuroConfig.shortVersion
-            + '" name="generator">', file=f)
-      print('  <link rel="stylesheet" href="' + ('../' * nsubdirs)
-            + 'axon.css" media="screen" />', file=f)
-      print('</head>', file=f)
-      print('<body>', file=f)
-      print(XHTML.html( c ), file=f)
-      print('</body></html>', file=f)
-      f.close()
+    # Find all category_documentation.minf files in
+    # the order of neuroConfig.processesPath
+    categoryDocFiles = {}
+    for procPath in neuroConfig.processesPath:
+      stack = [ '' ]
+      while stack:
+        r = stack.pop()
+        f = os.path.join( procPath, r )
+        if os.path.basename( r ) == 'category_documentation.minf':
+          category = os.path.dirname(r).lower()
+          if category and (one_toolbox is None or category == one_toolbox):
+            categoryDocFiles.setdefault( category, f )
+        elif os.path.isdir( f ):
+          stack += [ os.path.join( r, c ) for c in os.listdir( f ) ]
+
+    # Find documentation files in toolboxes.
+    # - Processes are in toolboxesDir/toolboxName/processes by default.
+    # - Anyway they are in toolbox.processesDir
+    # - Each relative directory dir in processes, matches a category
+    # named toolboxName/dir
+    # - A documentation for the toolbox may be in toolboxesDir/toolboxId
+    from brainvisa.toolboxes import allToolboxes
+    if one_toolbox is None:
+      all_toolboxes = allToolboxes()
+    else:
+      all_toolboxes = [ tbx for tbx in allToolboxes() if tbx.id == one_toolbox ]
+    for toolbox in all_toolboxes:
+      # search for a file category_documentation.minf in
+      # toolboxesDir/toolboxId, otherwise it can be in processesDir
+      # It is usefull for my processes toolbox because the toolbox and
+      # the processes are not in the same place and the documentation of
+      # the toolbox cannot be in the processes directory.
+      toolboxDoc=os.path.join( neuroConfig.toolboxesDir, toolbox.id, "category_documentation.minf")
+      # if it exists, add it to the doc file for which we have to
+      # generate an html file
+      if os.path.exists(toolboxDoc):
+          categoryDocFiles.setdefault( toolbox.id, toolboxDoc )
+      # search for category documentation files in processes directory
+      stack = [('', toolbox.id)] # relative directory, category name
+      while stack:
+        r, cat = stack.pop() # get current relative path and associated category
+        f=os.path.join(toolbox.processesDir, r)
+        currentItem=os.path.basename( r )
+        if currentItem == 'category_documentation.minf':
+            categoryDocFiles.setdefault( cat, f )
+        elif os.path.isdir( f ):
+          if currentItem:
+            cat=os.path.join(cat, currentItem.lower())
+          stack += [ (os.path.join( r, c ), cat) for c in os.listdir( f ) ]
+
+    # Create category HTML files
+    baseDocDir = os.path.dirname( neuroConfig.docPath )
+    for category, f in six.iteritems(categoryDocFiles):
+      context.write('Generate HTML for category "' + category + '"')
+      categoryPath=category.split("/")
+      minfContent = readMinf( f )[ 0 ]
+      enContent=minfContent['en']
+      for l in neuroConfig._languages:
+        #for l, c in six.iteritems(minfContent):
+        if l=='en':
+          c=enContent
+        else:
+          c=minfContent.get(l, enContent)
+
+        tr = translators.get( l )
+
+        c = convertSpecialLinks( c, l , '/'.join( ( '..', ) * (len( categoryPath )+1) ), tr ) # base dir for links : processes
+        p = os.path.join( baseDocDir, l, 'processes', 'categories', category )
+        if not os.path.isdir( p ):
+          os.makedirs( p )
+        nsubdirs = len(category.split('/')) + 3
+        f = open( os.path.join( p, 'category_documentation.html' ), 'w' )
+        print('<html>', file=f)
+        print('<head>', file=f)
+        print('  <meta http-equiv="Content-Type" content="text/html; charset='
+              + sys.getdefaultencoding()+'">', file=f)
+        print('  <meta content="BrainVISA ' + neuroConfig.shortVersion
+              + '" name="generator">', file=f)
+        print('  <link rel="stylesheet" href="' + ('../' * nsubdirs)
+              + 'axon.css" media="screen" />', file=f)
+        print('</head>', file=f)
+        print('<body>', file=f)
+        print(XHTML.html( c ), file=f)
+        print('</body></html>', file=f)
+        f.close()
 
 #----------------------------------------------------------------------------
 def get_link_to_documentation(item):
@@ -333,13 +375,23 @@ def get_toolbox_name(toolbox_id):
   if name is None:
     name = '&lt;unnamed toolbox&gt;'
   return name
-  
+
 def nameKey(x):
   return x.name.lower()
 
 #----------------------------------------------------------------------------
 def execution( self, context ):
-  generateHTMLProcessesDocumentation( context, "all" )
+
+  generateHTMLProcessesDocumentation(
+     context, 'all',
+     one_toolbox=self.toolbox,
+     write_process_html=self.write_process_html,
+     write_category_html=self.write_category_html)
+
+  # Exit if we do not generate type and format documentation
+  if not (self.toolbox is None and (self.write_type_html or self.write_graphs)):
+    return
+
   # Ontology documentation for each language
   # directory ontology-all
   ontologyDirectory=os.path.join( neuroConfig.mainDocPath, 'ontology-all')
@@ -348,7 +400,7 @@ def execution( self, context ):
     htmlDirectory=os.path.join( ontologyDirectory, l )
     if not os.path.exists( htmlDirectory ):
       os.makedirs( htmlDirectory )
-  
+
   # collect information about types and formats
   allFormats=sorted(getAllFormats(), key=nameKey)
   allTypes=sorted(getAllDiskItemTypes(), key=nameKey)
@@ -392,7 +444,7 @@ def execution( self, context ):
     processId=process.id()
     for param in six.itervalues(process.signature):
       if isinstance( param, ReadDiskItem ):
-        t=param.type.name
+        t = param.type.name
         processesByTypes.setdefault( t, set() ).add( pi )
         if isinstance(param.formats, NamedFormatList):
           f=param.formats.name
@@ -405,18 +457,18 @@ def execution( self, context ):
             formatsByTypes.setdefault( t, set() ).add( f )
             typesByFormats.setdefault( f, set() ).add( t )
             processesByFormats.setdefault( f, set() ).add( pi )
-  
+
   # create a temporary database for each ontology to get ontology rules
   tmpDatabase = context.temporary( 'Directory' )
   ontologies=sorted(FileSystemOntology.getOntologiesNames())
   databases=[]
-  for ontology in ontologies:  
+  for ontology in ontologies:
     database = SQLDatabase( ':memory:', tmpDatabase.fullPath(), fso=ontology )
     databases.append(database)
-  
-  
-  if distutils.spawn.find_executable('dot') is None:
-    self.write_graphs=False
+
+
+  if self.write_graphs and distutils.spawn.find_executable('dot') is None:
+    self.write_graphs = False
     context.warning('Cannot find dot executable. Inheritance graphs won\'t be written.' )
 
   # collect information about types inheritance, ontology rules and key attributes
@@ -442,7 +494,7 @@ def execution( self, context ):
       keys=database.getTypesKeysAttributes(type.name)
       if keys:
         typeKeys[type.name][database.fso.name]=keys
-  
+
   # Create types inheritance graphs (dot format)
   if self.write_graphs:
     imagesDirectory=os.path.join( ontologyDirectory, 'images' )
@@ -452,13 +504,13 @@ def execution( self, context ):
     for diskItemType in allTypes :
       type=diskItemType.name
       typeFileName = type.replace( '/', '_' )
-      
+
       context.write( '<font></font>Generate inheritance graph for type ', htmlEscape(type) +
         '<br/>' )
-      
+
       dot = open( tmpDot, 'w' )
       tmpMap = os.path.join( tmpDatabase.fullPath(), typeFileName+'_map.html' )
-  
+
       print('digraph "' + typeFileName + ' inheritance" {', file=dot)
       print('  node [style=filled,shape=box];', file=dot)
       print('  "' + type  + '" [color=orange];', file=dot)
@@ -486,357 +538,359 @@ def execution( self, context ):
         raise
       except:
         context.warning("Cannot generate inheritance graph, the dot command failed.")
-  
-  # Create documentation files for types and formats and index files
-  # LANGUAGES
-  for l in neuroConfig._languages:
-    context.write( '<p><b>Generate HTML for language ', l, "</b></p>" )
-    # INDEX.HTML
-    htmlDirectory=os.path.join( ontologyDirectory, l )
-    index = open( os.path.join( htmlDirectory, 'index.html' ), 'w' )
-    print('''<html>
-<head>
-  <title>Data types and formats in BrainVISA ontologies</title>
-  <link rel="stylesheet" href="../../axon.css" media="screen" />
-</head>
-<body>
-  <center><h1>Data types and formats in BrainVISA ontologies</h1></center>''',
-        file=index)
-    print('<a href="types/index.html">All Data types</a><br>', file=index)
-    print('<a href="types/index_toolboxes.html">Data types per toolbox</a><br>', file=index)
-    print('<a href="types/index_ontologies.html">Data types per ontology</a><br><br>', file=index)
-    print('<a href="formats/index.html">All Formats</a><br>', file=index)
-    print('<a href="formats/index_toolboxes.html">Formats per toolbox</a>',
-          file=index)
-    print("</body></html>", file=index)
-    index.close()
-    
-    # TYPES
-    typesDirectory=os.path.join( htmlDirectory, 'types' )
-    formatsDirectory=os.path.join( htmlDirectory, 'formats' )
-    if not os.path.exists( typesDirectory ):
-      os.mkdir( typesDirectory )
-      
-    return_to_index=htmlEscape( relative_path( index.name,  typesDirectory) )
 
-    # types per toolbox index
-    types_toolboxes = open( os.path.join( typesDirectory, 'index_toolboxes.html' ), 'w' )  
-    print('''<html>
-<head>
-  <title>Data types per toolbox</title>
-  <link rel="stylesheet" href="../../../axon.css" media="screen" />
-</head>
-<body>
-  <center><h1>Data types per toolbox</h1></center>''', file=types_toolboxes)
-    print('<p><a href="'+return_to_index+'">Return to index</a></p>',
-          file=types_toolboxes)
-    for toolbox in sorted(typesByToolboxes.keys()):
-      if toolbox is not None:
-        print('<a href=\'#toolbox_'+toolbox+'\'>', get_toolbox_name(toolbox),
-              '</a><br/>', file=types_toolboxes)
-    for toolbox in sorted(typesByToolboxes.keys()):
-      if toolbox is not None:
-        print('<a name=\'toolbox_'+toolbox+'\'/><h2>',
-              get_toolbox_name(toolbox), '</h2>', file=types_toolboxes)
-        for diskItemType in typesByToolboxes.get(toolbox, []):
-          print(get_link_to_documentation(diskItemType), file=types_toolboxes)
-    print('</body></html>', file=types_toolboxes)
-    types_toolboxes.close()
-
-      
-    # types per ontology index
-    types_ontologies = open( os.path.join( typesDirectory, 'index_ontologies.html' ), 'w' )  
-    print('''<html>
-<head>
-  <title>Data types per ontology</title>
-  <link rel="stylesheet" href="../../../axon.css" media="screen" />
-</head>
-<body>
-  <center><h1>Data types per ontology</h1></center>''', file=types_ontologies)
-    print('<p><a href="'+return_to_index+'">Return to index</a></p>',
-          file=types_ontologies)
-    ontologies.insert(0, "")
-    for ont in ontologies:
-      if ont == "":
-        print(types_ontologies, "<a href='#ont'>Common types</a><br/>",
-              file=types_ontologies)
-      else:
-        print(types_ontologies, '<a href=\'#ont_'+ont+'\'>', ont,
-              'ontology</a><br/>', file=types_ontologies)
-    for ontology in ontologies:
-      if ontology == "":
-        print(types_ontologies, "<a name='ont'/><h2>Common types</h2>",
-              file=types_ontologies)
-      else:
-        print('<a name=\'ont_'+ontology+'\'/><h2>', ontology, ' ontology</h2>',
-              file=types_ontologies)
-      for diskItemType in allTypes:
-         if ( ((ontology == "") and (typeRules.get( diskItemType.name ) == {})) or
-              (typeRules.get(diskItemType.name).get(ontology, None) is not None) ) :
-          print(get_link_to_documentation(diskItemType), file=types_ontologies)
-    print('</body></html>', file=types_ontologies)
-    types_ontologies.close()
-
-    # All types index + documentation file for each type
-    types = open( os.path.join( typesDirectory, 'index.html' ), 'w' )
-    print('''<html>
-<head>
-  <title>Data types in BrainVISA</title>
-  <link rel="stylesheet" href="../../../axon.css" media="screen" />
-</head>
-<body>
-  <center><h1>Data types in BrainVISA</h1></center>''', file=types)
-    print('<p><a href="'+return_to_index+'">Return to index</a></p>',
-           file=types)
-    count = 0
-    for diskItemType in allTypes :
-      type=diskItemType.name
-      count += 1
-      typeFileName = type.replace( '/', '_' )
-      htmlFileName = os.path.join( typesDirectory, typeFileName + '.html' )
-      typeHTML = open( htmlFileName, 'w' )
-      typeEscaped = htmlEscape( type )
-      context.write( '<font></font>Generate HTML for type', typeEscaped, '( ' + str( count ) + ' / ' + str( len( allTypes ) ) + ' )<br/>' )
-      print('<a href="' + htmlEscape( typeFileName ) + '.html">'
-            + typeEscaped + '</a><br/>', file=types)
-      
-      # documentation file for the type
+  if self.write_type_html:
+    # Create documentation files for types and formats and index files
+    # LANGUAGES
+    for l in neuroConfig._languages:
+      context.write( '<p><b>Generate HTML for language ', l, "</b></p>" )
+      # INDEX.HTML
+      htmlDirectory=os.path.join( ontologyDirectory, l )
+      index = open( os.path.join( htmlDirectory, 'index.html' ), 'w' )
       print('''<html>
-<head>
-  <title>''' + typeEscaped + '''</title>
-  <link rel="stylesheet" href="../../../axon.css" media="screen" />
-</head>
-<body>
-  <center><h1>''' + typeEscaped +'</h1></center>', file=typeHTML)
-      href=htmlEscape( relative_path( index.name, os.path.dirname( typeHTML.name ) ) )
-      print('<p><a href="'+href+'">Return to index</a></p>', file=typeHTML)
+  <head>
+    <title>Data types and formats in BrainVISA ontologies</title>
+    <link rel="stylesheet" href="../../axon.css" media="screen" />
+  </head>
+  <body>
+    <center><h1>Data types and formats in BrainVISA ontologies</h1></center>''',
+          file=index)
+      print('<a href="types/index.html">All Data types</a><br>', file=index)
+      print('<a href="types/index_toolboxes.html">Data types per toolbox</a><br>', file=index)
+      print('<a href="types/index_ontologies.html">Data types per ontology</a><br><br>', file=index)
+      print('<a href="formats/index.html">All Formats</a><br>', file=index)
+      print('<a href="formats/index_toolboxes.html">Formats per toolbox</a>',
+            file=index)
+      print("</body></html>", file=index)
+      index.close()
 
-      if self.write_graphs:
-        print('<h2>Inheritance graph</h2>', file=typeHTML)
-        src=htmlEscape( relative_path( os.path.join( imagesDirectory, typeFileName + '_inheritance.png'), os.path.dirname( typeHTML.name ) ) )
-        print('<center><img src="' +src + '" usemap="#'
-              + htmlEscape(typeFileName) + ' inheritance"/></center>',
-              file=typeHTML)
-        graphmap = os.path.join( tmpDatabase.fullPath(),
-          typeFileName+'_map.html' )
-        if os.path.exists( graphmap ):
-          print(open( graphmap ).read(), file=typeHTML)
+      # TYPES
+      typesDirectory=os.path.join( htmlDirectory, 'types' )
+      formatsDirectory=os.path.join( htmlDirectory, 'formats' )
+      if not os.path.exists( typesDirectory ):
+        os.mkdir( typesDirectory )
+
+      return_to_index=htmlEscape( relative_path( index.name,  typesDirectory) )
+
+      # types per toolbox index
+      types_toolboxes = open( os.path.join( typesDirectory, 'index_toolboxes.html' ), 'w' )
+      print('''<html>
+  <head>
+    <title>Data types per toolbox</title>
+    <link rel="stylesheet" href="../../../axon.css" media="screen" />
+  </head>
+  <body>
+    <center><h1>Data types per toolbox</h1></center>''', file=types_toolboxes)
+      print('<p><a href="'+return_to_index+'">Return to index</a></p>',
+            file=types_toolboxes)
+      for toolbox in sorted(typesByToolboxes.keys()):
+        if toolbox is not None:
+          print('<a href=\'#toolbox_'+toolbox+'\'>', get_toolbox_name(toolbox),
+                '</a><br/>', file=types_toolboxes)
+      for toolbox in sorted(typesByToolboxes.keys()):
+        if toolbox is not None:
+          print('<a name=\'toolbox_'+toolbox+'\'/><h2>',
+                get_toolbox_name(toolbox), '</h2>', file=types_toolboxes)
+          for diskItemType in typesByToolboxes.get(toolbox, []):
+            print(get_link_to_documentation(diskItemType), file=types_toolboxes)
+      print('</body></html>', file=types_toolboxes)
+      types_toolboxes.close()
+
+
+      # types per ontology index
+      types_ontologies = open( os.path.join( typesDirectory, 'index_ontologies.html' ), 'w' )
+      print('''<html>
+  <head>
+    <title>Data types per ontology</title>
+    <link rel="stylesheet" href="../../../axon.css" media="screen" />
+  </head>
+  <body>
+    <center><h1>Data types per ontology</h1></center>''', file=types_ontologies)
+      print('<p><a href="'+return_to_index+'">Return to index</a></p>',
+            file=types_ontologies)
+      ontologies.insert(0, "")
+      for ont in ontologies:
+        if ont == "":
+          print(types_ontologies, "<a href='#ont'>Common types</a><br/>",
+                file=types_ontologies)
         else:
-          print('<em>(no documentation for type', typeHTML.name,
-                ')</em>', file=typeHTML)
+          print(types_ontologies, '<a href=\'#ont_'+ont+'\'>', ont,
+                'ontology</a><br/>', file=types_ontologies)
+      for ontology in ontologies:
+        if ontology == "":
+          print(types_ontologies, "<a name='ont'/><h2>Common types</h2>",
+                file=types_ontologies)
+        else:
+          print('<a name=\'ont_'+ontology+'\'/><h2>', ontology, ' ontology</h2>',
+                file=types_ontologies)
+        for diskItemType in allTypes:
+           if ( ((ontology == "") and (typeRules.get( diskItemType.name ) == {})) or
+                (typeRules.get(diskItemType.name).get(ontology, None) is not None) ) :
+            print(get_link_to_documentation(diskItemType), file=types_ontologies)
+      print('</body></html>', file=types_ontologies)
+      types_ontologies.close()
 
-      typeFileRef=relative_path(diskItemType.fileName, os.path.dirname(htmlFileName))
-      typeFileName=relative_path(diskItemType.fileName, os.path.dirname(neuroConfig.mainPath))
-      print('<p><em>Defined in file : </em><nobr><code><a href="'
-            + typeFileRef+'">' + typeFileName + '</a></code></nobr></p>',
-            file=typeHTML)
+      # All types index + documentation file for each type
+      types = open( os.path.join( typesDirectory, 'index.html' ), 'w' )
+      print('''<html>
+  <head>
+    <title>Data types in BrainVISA</title>
+    <link rel="stylesheet" href="../../../axon.css" media="screen" />
+  </head>
+  <body>
+    <center><h1>Data types in BrainVISA</h1></center>''', file=types)
+      print('<p><a href="'+return_to_index+'">Return to index</a></p>',
+             file=types)
+      count = 0
+      for diskItemType in allTypes :
+        type=diskItemType.name
+        count += 1
+        typeFileName = type.replace( '/', '_' )
+        htmlFileName = os.path.join( typesDirectory, typeFileName + '.html' )
+        typeHTML = open( htmlFileName, 'w' )
+        typeEscaped = htmlEscape( type )
+        context.write( '<font></font>Generate HTML for type', typeEscaped, '( ' + str( count ) + ' / ' + str( len( allTypes ) ) + ' )<br/>' )
+        print('<a href="' + htmlEscape( typeFileName ) + '.html">'
+              + typeEscaped + '</a><br/>', file=types)
 
-      print('<h2>Used in the following processes</h2><blockquote>',
-            file=typeHTML)
-      processes=sorted(processesByTypes.get( type, () ), key=nameKey)
-      for pi in processes:
-        try:
-          href = htmlEscape( relative_path( getHTMLFileName( pi.id, language=l ), os.path.dirname( typeHTML.name ) ) )
-          print('<a href="' + href + '">' + htmlEscape( pi.name )
-                + '</a><br/>', file=typeHTML)
-        except context.UserInterruption:
-          raise
-        except Exception as e:
-          context.showException(
-            beforeError=_t_( 'error in process doc for: ' )+' <b>%s</b> (%s)' \
-            % ( pi.id, pi.name ) )
-      print('</blockquote>', file=typeHTML)
+        # documentation file for the type
+        print('''<html>
+  <head>
+    <title>''' + typeEscaped + '''</title>
+    <link rel="stylesheet" href="../../../axon.css" media="screen" />
+  </head>
+  <body>
+    <center><h1>''' + typeEscaped +'</h1></center>', file=typeHTML)
+        href=htmlEscape( relative_path( index.name, os.path.dirname( typeHTML.name ) ) )
+        print('<p><a href="'+href+'">Return to index</a></p>', file=typeHTML)
 
-      print('<h2>Associated formats</h2><blockquote>', file=typeHTML)
-      for f in sorted(formatsByTypes.get( type, () ), key=str.lower ):
-        formatFileName = f.replace( '/', '_' )
-        href = htmlEscape( relative_path( os.path.join( formatsDirectory, formatFileName + '.html' ), os.path.dirname( typeHTML.name ) ) )
-        print('<a href="' + href + '">' + htmlEscape( f ) + '</a><br/>',
+        if self.write_graphs:
+          print('<h2>Inheritance graph</h2>', file=typeHTML)
+          src=htmlEscape( relative_path( os.path.join( imagesDirectory, typeFileName + '_inheritance.png'), os.path.dirname( typeHTML.name ) ) )
+          print('<center><img src="' +src + '" usemap="#'
+                + htmlEscape(typeFileName) + ' inheritance"/></center>',
+                file=typeHTML)
+          graphmap = os.path.join( tmpDatabase.fullPath(),
+            typeFileName+'_map.html' )
+          if os.path.exists( graphmap ):
+            print(open( graphmap ).read(), file=typeHTML)
+          else:
+            print('<em>(no documentation for type', typeHTML.name,
+                  ')</em>', file=typeHTML)
+
+        typeFileRef=relative_path(diskItemType.fileName, os.path.dirname(htmlFileName))
+        typeFileName=relative_path(diskItemType.fileName, os.path.dirname(neuroConfig.mainPath))
+        print('<p><em>Defined in file : </em><nobr><code><a href="'
+              + typeFileRef+'">' + typeFileName + '</a></code></nobr></p>',
               file=typeHTML)
-      print('</blockquote>', file=typeHTML)
 
-      print('<h2>Associated ontology rules</h2>', file=typeHTML)
-      ontRules = typeRules.get( type, {} )
-      for ont, rules in ontRules.items():  
-        print("<li><b>", ont, "</b>:</li><blockquote>", file=typeHTML)
-        for rule in rules:
-          print(htmlEscape(rule.pattern.pattern), "<br/>", file=typeHTML)
+        print('<h2>Used in the following processes</h2><blockquote>',
+              file=typeHTML)
+        processes=sorted(processesByTypes.get( type, () ), key=nameKey)
+        for pi in processes:
+          try:
+            href = htmlEscape( relative_path( getHTMLFileName( pi.id, language=l ), os.path.dirname( typeHTML.name ) ) )
+            print('<a href="' + href + '">' + htmlEscape( pi.name )
+                  + '</a><br/>', file=typeHTML)
+          except context.UserInterruption:
+            raise
+          except Exception as e:
+            context.showException(
+              beforeError=_t_( 'error in process doc for: ' )+' <b>%s</b> (%s)' \
+              % ( pi.id, pi.name ) )
         print('</blockquote>', file=typeHTML)
 
-      print('<h2>Key attributes</h2>', file=typeHTML)
-      ontKeys=typeKeys.get( type, {} )
-      for ont, keys in ontKeys.items():
-        if keys:
+        print('<h2>Associated formats</h2><blockquote>', file=typeHTML)
+        for f in sorted(formatsByTypes.get( type, () ), key=str.lower ):
+          formatFileName = f.replace( '/', '_' )
+          href = htmlEscape( relative_path( os.path.join( formatsDirectory, formatFileName + '.html' ), os.path.dirname( typeHTML.name ) ) )
+          print('<a href="' + href + '">' + htmlEscape( f ) + '</a><br/>',
+                file=typeHTML)
+        print('</blockquote>', file=typeHTML)
+
+        print('<h2>Associated ontology rules</h2>', file=typeHTML)
+        ontRules = typeRules.get( type, {} )
+        for ont, rules in ontRules.items():
           print("<li><b>", ont, "</b>:</li><blockquote>", file=typeHTML)
-          print(htmlEscape(keys[0]), file=typeHTML)
-          for key in keys[1:]:
-            print(",&nbsp;", htmlEscape(key), file=typeHTML)
+          for rule in rules:
+            print(htmlEscape(rule.pattern.pattern), "<br/>", file=typeHTML)
           print('</blockquote>', file=typeHTML)
 
-      print('</body></html>', file=typeHTML)
-      typeHTML.close()
-      
-  
-    # FORMATS
-    if not os.path.exists( formatsDirectory ):
-      os.mkdir( formatsDirectory )
-    
-    formats_toolboxes=open(os.path.join( formatsDirectory, 'index_toolboxes.html' ), 'w')
-    print('''<html>
-<head>
-  <title>Formats per toolbox</title>
-  <link rel="stylesheet" href="../../../axon.css" media="screen" />
-</head>
-<body>
-  <center><h1> Formats per toolbox </h1></center>''', file=formats_toolboxes)
-    print('<p><a href="'+return_to_index+'">Return to index</a></p>',
-          file=formats_toolboxes)
-    for toolbox in sorted(formatsByToolboxes.keys()):
-      context.write('toolbox: ', repr(toolbox))
-      print('<a href=\'#toolbox_'+toolbox+'\'>', get_toolbox_name(toolbox),
-            '</a><br/>', file=formats_toolboxes)
-    for toolbox in sorted(formatsByToolboxes.keys()):
-      print('<a name=\'toolbox_'+toolbox+'\'/><h2>', get_toolbox_name(toolbox),
-            '</h2>', file=formats_toolboxes)
-      for diskItemFormat in formatsByToolboxes.get(toolbox, []):
-        print(get_link_to_documentation(diskItemFormat),
-              file=formats_toolboxes)
-    print('</body></html>', file=formats_toolboxes)
-    formats_toolboxes.close()
+        print('<h2>Key attributes</h2>', file=typeHTML)
+        ontKeys=typeKeys.get( type, {} )
+        for ont, keys in ontKeys.items():
+          if keys:
+            print("<li><b>", ont, "</b>:</li><blockquote>", file=typeHTML)
+            print(htmlEscape(keys[0]), file=typeHTML)
+            for key in keys[1:]:
+              print(",&nbsp;", htmlEscape(key), file=typeHTML)
+            print('</blockquote>', file=typeHTML)
+
+        print('</body></html>', file=typeHTML)
+        typeHTML.close()
 
 
-    formatsFileName=os.path.join( formatsDirectory, 'index.html' )
-    formats = open( formatsFileName, 'w' )
-    print('''<html>
-<head>
-  <title>Formats in BrainVISA</title>
-  <link rel="stylesheet" href="../../../axon.css" media="screen" />
-</head>
-<body>
-  <center><h1> Formats in BrainVISA </h1></center>''', file=formats)
-    print('<p><a href="'+return_to_index+'">Return to index</a></p>',
-          file=formats)
-    print('<a href="#all_formats">All formats</a><br>', file=formats)
-    print('<a href="#formats_lists">Formats lists</a><br>', file=formats)
-    print('<a name=\'all_formats\'/><h2>All formats</h2>', file=formats)
-    for format in allFormats :
-      formatFileName = format.name.replace( '/', '_' )
-      htmlFileName = os.path.join( formatsDirectory, formatFileName + '.html' )
-      formatHTML = open( htmlFileName, 'w' )
-      formatEscaped = htmlEscape( format.name )
-      context.write( '<font></font>Generate HTML for format ', formatEscaped, '<br/>' )
-      print('<a href="' + htmlEscape( formatFileName ) + '.html">'
-            + formatEscaped + '</a><br/>', file=formats)
+      # FORMATS
+      if not os.path.exists( formatsDirectory ):
+        os.mkdir( formatsDirectory )
+
+      formats_toolboxes=open(os.path.join( formatsDirectory, 'index_toolboxes.html' ), 'w')
       print('''<html>
-<head>
-  <title>''' + formatEscaped + '''</title>
-  <link rel="stylesheet" href="../../../axon.css" media="screen" />
-</head>
-<body>
-  <center><h1>''' + formatEscaped +'</h1></center>', file=formats)
-      href=htmlEscape( relative_path( index.name, os.path.dirname( formatHTML.name ) ) )
-      print('<p><a href="'+href+'">Return to index</a></p>', file=formatHTML)
+  <head>
+    <title>Formats per toolbox</title>
+    <link rel="stylesheet" href="../../../axon.css" media="screen" />
+  </head>
+  <body>
+    <center><h1> Formats per toolbox </h1></center>''', file=formats_toolboxes)
+      print('<p><a href="'+return_to_index+'">Return to index</a></p>',
+            file=formats_toolboxes)
+      for toolbox in sorted(formatsByToolboxes.keys()):
+        context.write('toolbox: ', repr(toolbox))
+        print('<a href=\'#toolbox_'+toolbox+'\'>', get_toolbox_name(toolbox),
+              '</a><br/>', file=formats_toolboxes)
+      for toolbox in sorted(formatsByToolboxes.keys()):
+        print('<a name=\'toolbox_'+toolbox+'\'/><h2>', get_toolbox_name(toolbox),
+              '</h2>', file=formats_toolboxes)
+        for diskItemFormat in formatsByToolboxes.get(toolbox, []):
+          print(get_link_to_documentation(diskItemFormat),
+                file=formats_toolboxes)
+      print('</body></html>', file=formats_toolboxes)
+      formats_toolboxes.close()
 
-      print('<h2>Files patterns</h2><blockquote>', file=formatHTML)
-      patterns=""
-      for p in format.getPatterns().patterns:
-        if patterns:
-          patterns+=", "+p.pattern
-        else:
-          patterns="<b>"+p.pattern+"</b>"
-      print(patterns, "</blockquote>", file=formatHTML)
 
-      formatFileRef=relative_path(format.fileName, os.path.dirname(htmlFileName))
-      formatFileName=relative_path(format.fileName, os.path.dirname(neuroConfig.mainPath))
-      print('<p><em>Defined in file: </em><nobr><code><a href="'
-            + formatFileRef+'">' + formatFileName + '</a></code></nobr></p>',
-            file=formatHTML)
+      formatsFileName=os.path.join( formatsDirectory, 'index.html' )
+      formats = open( formatsFileName, 'w' )
+      print('''<html>
+  <head>
+    <title>Formats in BrainVISA</title>
+    <link rel="stylesheet" href="../../../axon.css" media="screen" />
+  </head>
+  <body>
+    <center><h1> Formats in BrainVISA </h1></center>''', file=formats)
+      print('<p><a href="'+return_to_index+'">Return to index</a></p>',
+            file=formats)
+      print('<a href="#all_formats">All formats</a><br>', file=formats)
+      print('<a href="#formats_lists">Formats lists</a><br>', file=formats)
+      print('<a name=\'all_formats\'/><h2>All formats</h2>', file=formats)
+      for format in allFormats :
+        formatFileName = format.name.replace( '/', '_' )
+        htmlFileName = os.path.join( formatsDirectory, formatFileName + '.html' )
+        formatHTML = open( htmlFileName, 'w' )
+        formatEscaped = htmlEscape( format.name )
+        context.write( '<font></font>Generate HTML for format ', formatEscaped, '<br/>' )
+        print('<a href="' + htmlEscape( formatFileName ) + '.html">'
+              + formatEscaped + '</a><br/>', file=formats)
+        print('''<html>
+  <head>
+    <title>''' + formatEscaped + '''</title>
+    <link rel="stylesheet" href="../../../axon.css" media="screen" />
+  </head>
+  <body>
+    <center><h1>''' + formatEscaped +'</h1></center>', file=formats)
+        href=htmlEscape( relative_path( index.name, os.path.dirname( formatHTML.name ) ) )
+        print('<p><a href="'+href+'">Return to index</a></p>', file=formatHTML)
 
-      print('<h2>Used in the following processes</h2><blockquote>',
-            file=formatHTML)
-      processes=sorted(processesByFormats.get( format.name, () ), key=nameKey)
-      for pi in processes:
-        try:
+        print('<h2>Files patterns</h2><blockquote>', file=formatHTML)
+        patterns=""
+        for p in format.getPatterns().patterns:
+          if patterns:
+            patterns+=", "+p.pattern
+          else:
+            patterns="<b>"+p.pattern+"</b>"
+        print(patterns, "</blockquote>", file=formatHTML)
+
+        formatFileRef=relative_path(format.fileName, os.path.dirname(htmlFileName))
+        formatFileName=relative_path(format.fileName, os.path.dirname(neuroConfig.mainPath))
+        print('<p><em>Defined in file: </em><nobr><code><a href="'
+              + formatFileRef+'">' + formatFileName + '</a></code></nobr></p>',
+              file=formatHTML)
+
+        print('<h2>Used in the following processes</h2><blockquote>',
+              file=formatHTML)
+        processes=sorted(processesByFormats.get( format.name, () ), key=nameKey)
+        for pi in processes:
+          try:
+            href = htmlEscape( relative_path( getHTMLFileName( pi.id, language=l  ), os.path.dirname( formatHTML.name ) ) )
+            print('<a href="' + href + '">'
+                  + htmlEscape( pi.name ) + '</a><br/>', file=formatHTML)
+          except context.UserInterruption:
+            raise
+          except Exception as e:
+            context.showException(
+              beforeError=_t_( 'error in process doc for:' )+' <b>%s</b> (%s)' \
+              % ( pi.id, pi.name ) )
+        print('</blockquote>', file=formatHTML)
+
+        print('<h2>Associated types</h2><blockquote>', file=formatHTML)
+        for t in sorted(typesByFormats.get( format.name, () ), key=str.lower):
+          typeFileName = t.replace( '/', '_' )
+          href = htmlEscape( relative_path( os.path.join( typesDirectory, typeFileName + '.html' ), os.path.dirname( formatHTML.name ) ) )
+          print('<a href="' + href + '">' + htmlEscape( t ) + '</a><br/>',
+                file=formatHTML)
+        print('</blockquote>', file=formatHTML)
+
+        print('</body></html>', file=formatHTML)
+        formatHTML.close()
+
+
+      # FORMATS LISTS
+      print('<h2><a name="formats_lists"/>Formats Lists in BrainVISA</h2>',
+            file=formats)
+
+      for listName, format in sorted( formatLists.items() ):
+        formatFileName = format.name.replace( '/', '_' )
+        htmlFileName = os.path.join( formatsDirectory, formatFileName + '.html' )
+        formatHTML = open( htmlFileName, 'w' )
+        formatEscaped = htmlEscape( format.name )
+        context.write( '<font></font>Generate HTML for format', formatEscaped, '<br/>' )
+        print('<a href="' + htmlEscape( formatFileName ) + '.html">' + formatEscaped + '</a><br/>', file=formats)
+        print('''<html>
+  <head>
+    <title>''' + formatEscaped
+          + '''</title>
+    <link rel="stylesheet" href="../../../axon.css" media="screen" />
+  </head>
+  <body>
+    <center><h1>''' + formatEscaped +'</h1></center>', file=formatHTML)
+        href=htmlEscape( relative_path( index.name, os.path.dirname( formatHTML.name ) ) )
+        print('<p><a href="'+href+'">Return to index</a></p>', file=formatHTML)
+
+        print('<h2>Formats</h2><blockquote>', file=formatHTML)
+        for f in format:
+          fname=f.name.replace( "/", "_" )
+          print("<a href='" + htmlEscape(fname) + ".html'>", f.name, "</a><br/>",
+                file=formatHTML)
+        print("</blockquote>", file=formatHTML)
+
+        formatFileRef=relative_path(format.fileName, os.path.dirname(htmlFileName))
+        formatFileName=relative_path(format.fileName, os.path.dirname(neuroConfig.mainPath))
+        print('<p><em>Defined in file: </em><nobr><code><a href="'
+          + formatFileRef + '">' + formatFileName + '</a></code></nobr></p>',
+          file=formatHTML)
+
+        print('<h2>Used in the following processes</h2><blockquote>',
+              file=formatHTML)
+        processes=sorted(processesByFormats.get( format.name, () ), key=nameKey)
+        for pi in processes:
           href = htmlEscape( relative_path( getHTMLFileName( pi.id, language=l  ), os.path.dirname( formatHTML.name ) ) )
-          print('<a href="' + href + '">'
-                + htmlEscape( pi.name ) + '</a><br/>', file=formatHTML)
-        except context.UserInterruption:
-          raise
-        except Exception as e:
-          context.showException(
-            beforeError=_t_( 'error in process doc for:' )+' <b>%s</b> (%s)' \
-            % ( pi.id, pi.name ) )
-      print('</blockquote>', file=formatHTML)
-      
-      print('<h2>Associated types</h2><blockquote>', file=formatHTML)
-      for t in sorted(typesByFormats.get( format.name, () ), key=str.lower):
-        typeFileName = t.replace( '/', '_' )
-        href = htmlEscape( relative_path( os.path.join( typesDirectory, typeFileName + '.html' ), os.path.dirname( formatHTML.name ) ) )
-        print('<a href="' + href + '">' + htmlEscape( t ) + '</a><br/>',
-              file=formatHTML)
-      print('</blockquote>', file=formatHTML)
+          print('<a href="' + href + '">' + htmlEscape( pi.name ) + '</a><br/>',
+                file=formatHTML)
+        print('</blockquote>', file=formatHTML)
 
-      print('</body></html>', file=formatHTML)
-      formatHTML.close()
+        print('<h2>Associated types</h2><blockquote>', file=formatHTML)
+        for t in sorted(typesByFormats.get( format.name, () ), key=str.lower):
+          typeFileName = t.replace( '/', '_' )
+          href = htmlEscape( relative_path( os.path.join( typesDirectory, typeFileName + '.html' ), os.path.dirname( formatHTML.name ) ) )
+          print('<a href="' + href + '">' + htmlEscape( t ) + '</a><br/>',
+                file=formatHTML)
+        print('</blockquote>', file=formatHTML)
 
-  
-    # FORMATS LISTS
-    print('<h2><a name="formats_lists"/>Formats Lists in BrainVISA</h2>',
-          file=formats)
-    
-    for listName, format in sorted( formatLists.items() ):
-      formatFileName = format.name.replace( '/', '_' )
-      htmlFileName = os.path.join( formatsDirectory, formatFileName + '.html' )
-      formatHTML = open( htmlFileName, 'w' )
-      formatEscaped = htmlEscape( format.name )
-      context.write( '<font></font>Generate HTML for format', formatEscaped, '<br/>' )
-      print('<a href="' + htmlEscape( formatFileName ) + '.html">' + formatEscaped + '</a><br/>', file=formats)
-      print('''<html>
-<head>
-  <title>''' + formatEscaped
-        + '''</title>
-  <link rel="stylesheet" href="../../../axon.css" media="screen" />
-</head>
-<body>
-  <center><h1>''' + formatEscaped +'</h1></center>', file=formatHTML)
-      href=htmlEscape( relative_path( index.name, os.path.dirname( formatHTML.name ) ) )
-      print('<p><a href="'+href+'">Return to index</a></p>', file=formatHTML)
+        print('</body></html>', file=formatHTML)
+        formatHTML.close()
 
-      print('<h2>Formats</h2><blockquote>', file=formatHTML)
-      for f in format:
-        fname=f.name.replace( "/", "_" )
-        print("<a href='" + htmlEscape(fname) + ".html'>", f.name, "</a><br/>",
-              file=formatHTML)
-      print("</blockquote>", file=formatHTML)
+      print('</body></html>', file=formats)
+      formats.close()
 
-      formatFileRef=relative_path(format.fileName, os.path.dirname(htmlFileName))
-      formatFileName=relative_path(format.fileName, os.path.dirname(neuroConfig.mainPath))
-      print('<p><em>Defined in file: </em><nobr><code><a href="'
-        + formatFileRef + '">' + formatFileName + '</a></code></nobr></p>',
-        file=formatHTML)
-
-      print('<h2>Used in the following processes</h2><blockquote>',
-            file=formatHTML)
-      processes=sorted(processesByFormats.get( format.name, () ), key=nameKey)
-      for pi in processes:
-        href = htmlEscape( relative_path( getHTMLFileName( pi.id, language=l  ), os.path.dirname( formatHTML.name ) ) )
-        print('<a href="' + href + '">' + htmlEscape( pi.name ) + '</a><br/>',
-              file=formatHTML)
-      print('</blockquote>', file=formatHTML)
-      
-      print('<h2>Associated types</h2><blockquote>', file=formatHTML)
-      for t in sorted(typesByFormats.get( format.name, () ), key=str.lower):
-        typeFileName = t.replace( '/', '_' )
-        href = htmlEscape( relative_path( os.path.join( typesDirectory, typeFileName + '.html' ), os.path.dirname( formatHTML.name ) ) )
-        print('<a href="' + href + '">' + htmlEscape( t ) + '</a><br/>',
-              file=formatHTML)
-      print('</blockquote>', file=formatHTML)
-
-      print('</body></html>', file=formatHTML)
-      formatHTML.close()
-  
-    print('</body></html>', file=formats)
-    formats.close()
-
+  # cleanup
   for database in databases:
     database.currentThreadCleanup()
