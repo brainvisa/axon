@@ -1866,14 +1866,19 @@ class SQLDatabase( Database ):
     """
     if cursor is None:
       cursor = self._getDatabaseCursor()
-    if bidirectional:
-      paths = cursor.execute(
-        'SELECT DISTINCT _uuid, _from, _to FROM _TRANSFORMATIONS_ WHERE _TRANSFORMATIONS_._from = ? OR _TRANSFORMATIONS_._to = ?',
-        (source_referential, source_referential)).fetchall()
-    else:
-      paths = cursor.execute(
-        'SELECT DISTINCT _uuid, _from, _to FROM _TRANSFORMATIONS_ WHERE _TRANSFORMATIONS_._from = ?',
-        (source_referential,)).fetchall()
+    try:
+      if bidirectional:
+        paths = cursor.execute(
+          'SELECT DISTINCT _uuid, _from, _to FROM _TRANSFORMATIONS_ WHERE _TRANSFORMATIONS_._from = ? OR _TRANSFORMATIONS_._to = ?',
+          (source_referential, source_referential)).fetchall()
+      else:
+        paths = cursor.execute(
+          'SELECT DISTINCT _uuid, _from, _to FROM _TRANSFORMATIONS_ WHERE _TRANSFORMATIONS_._from = ?',
+          (source_referential,)).fetchall()
+    except Exception as e:
+      print('SQL error in database:', self.sqlDatabaseFile)
+      print(e)
+      return ()
     if flat_output:
       return paths
     refs = list(set([p[1] for p in paths]+[p[2] for p in paths]) \
