@@ -5,6 +5,7 @@ from brainvisa.configuration import mpegConfig
 name = 'avconv MPEG encoder'
 userLevel = 2
 
+
 def validation():
     if 'avconv' not in mpegConfig.encoders:
         raise ValidationError(_t_('avconv not present'))
@@ -25,25 +26,25 @@ signature = Signature(
     'quality', Integer(),
     'framesPerSecond', Integer(),
     'passes', Choice(1, 2),
+    'additional_encoder_options', ListOf(String()),
 )
 
 
 def initialization(self):
-  self.quality = 75
-  self.framesPerSecond = 25
-  self.passes = 1
-  for c in ('h264', 'mpeg4', 'msmpeg4'):
-    if c in codecs():
-      self.encoding = c
-      break
-  if self.encoding is None and len(codecs()) >= 0:
-    self.encoding = codecs()[0]
+    self.quality = 75
+    self.framesPerSecond = 25
+    self.passes = 1
+    for c in ('h264', 'mpeg4', 'msmpeg4'):
+        if c in codecs():
+            self.encoding = c
+            break
+    if self.encoding is None and len(codecs()) >= 0:
+        self.encoding = codecs()[0]
 
 
 def execution(self, context):
     context.runProcess(
         'mpegEncode_ffmpeg', images=self.images, animation=self.animation,
         encoding=self.encoding, quality=self.quality,
-        framesPerSecond=self.framesPerSecond, passes=self.passes)
-
-
+        framesPerSecond=self.framesPerSecond, passes=self.passes,
+        additional_encoder_options=self.additional_encoder_options)
