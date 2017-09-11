@@ -55,11 +55,12 @@ def codecs():
 signature = Signature(
     'images', ListOf(ReadDiskItem('2D Image', 'aims Image Formats',
                                   ignoreAttributes=1)),
-  'animation', WriteDiskItem('MPEG film', mpegConfig.mpegFormats),
-  'encoding', Choice(*codecs()),
-  'quality', Integer(),
-  'framesPerSecond', Integer(),
-  'coding', String(),
+    'animation', WriteDiskItem('MPEG film', mpegConfig.mpegFormats),
+    'encoding', Choice(*codecs()),
+    'quality', Integer(),
+    'framesPerSecond', Integer(),
+    'coding', String(),
+    'additional_encoder_options', ListOf(String()),
 )
 
 
@@ -91,6 +92,8 @@ def execution(self, context):
         # for n in xrange( self.frameRepetition ):
         context.system('cat "' + yuvImage + '" >> "' + yuvImages + '"',
                        outputLevel=-1)
-    context.system('recmpeg', '-P', self.encoding, '--coding', self.coding,
-                   '--quality', self.quality, '--fps', self.framesPerSecond,
-                   '--picture', size, self.animation.fullPath(), yuvImages)
+    cmd = ['recmpeg', '-P', self.encoding, '--coding', self.coding,
+           '--quality', self.quality, '--fps', self.framesPerSecond,
+           '--picture', size] + self.additional_encoder_options \
+          + [self.animation.fullPath(), yuvImages]
+    context.system(*cmd)

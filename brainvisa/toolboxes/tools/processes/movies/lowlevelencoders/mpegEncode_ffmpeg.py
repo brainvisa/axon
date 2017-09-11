@@ -61,11 +61,12 @@ def codecs():
 signature = Signature(
     'images', ListOf(ReadDiskItem('2D Image', 'aims Image Formats',
                                   ignoreAttributes=1)),
-  'animation', WriteDiskItem('MPEG film', mpegConfig.mpegFormats),
-  'encoding', Choice(*codecs()),
-  'quality', Integer(),
-  'framesPerSecond', Integer(),
-  'passes', Choice(1, 2),
+    'animation', WriteDiskItem('MPEG film', mpegConfig.mpegFormats),
+    'encoding', Choice(*codecs()),
+    'quality', Integer(),
+    'framesPerSecond', Integer(),
+    'passes', Choice(1, 2),
+    'additional_encoder_options', ListOf(String()),
 )
 
 
@@ -173,16 +174,14 @@ def execution(self, context):
             # '-b', str( bps ),
             '-qscale', str(qscale),
             '-aspect', str(aspect),
-            '-vcodec', self.encoding,
-            '-pass', '1',
-            '-passlogfile', passlog,
-            self.animation.fullPath(),
-            ]
+            '-vcodec', self.encoding]
     if self.encoding == 'msmpeg4':
         # force to be readable by MS Media player
         # see http://ffmpeg.sourceforge.net/compat.php
-        cmd.insert(-5, '-vtag')
-        cmd.insert(-5, 'MP43')
+        cmd += ['-vtag', 'MP43']
+    cmd += ['-pass', '1',
+            '-passlogfile', passlog] + self.additional_encoder_options \
+           + [self.animation.fullPath()]
     context.write(cmd)
     if os.path.exists(self.animation.fullPath()):
         # ffmpeg doesn't overwrite existing files

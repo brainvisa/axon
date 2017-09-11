@@ -55,9 +55,10 @@ def codecs():
 signature = Signature(
     'images', ListOf(ReadDiskItem('2D Image', 'aims Image Formats',
                                   ignoreAttributes=1)),
-  'animation', WriteDiskItem('MPEG film', mpegConfig.mpegFormats),
-  'encoding', Choice(*codecs()),
-  'framesPerSecond', Integer(),
+    'animation', WriteDiskItem('MPEG film', mpegConfig.mpegFormats),
+    'encoding', Choice(*codecs()),
+    'framesPerSecond', Integer(),
+    'additional_encoder_options', ListOf(String()),
 )
 
 
@@ -82,8 +83,8 @@ def execution(self, context):
     f.close()
     # os.system( 'cat ' + tmp )
     height = attrs['volume_dimension'][1]
-    context.system('transcode', '-x', 'imlist,null', '-y',
-                   self.encoding + ',null', '-i', tmp, '-g',
-                   str(width) + 'x' + str(height), '-H', 0,
-                   '-o', self.animation.fullPath(), '-f',
-                   self.framesPerSecond)
+    cmd = ['transcode', '-x', 'imlist,null', '-y', self.encoding + ',null',
+           '-i', tmp, '-g', str(width) + 'x' + str(height), '-H', 0,
+           '-o', self.animation.fullPath(), '-f', self.framesPerSecond] \
+          + self.additional_encoder_options
+    context.system(*cmd)

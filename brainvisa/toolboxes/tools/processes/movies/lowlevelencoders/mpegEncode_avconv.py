@@ -26,6 +26,7 @@ signature = Signature(
     'quality', Integer(),
     'framesPerSecond', Integer(),
     'passes', Choice(1, 2),
+    'additional_encoder_options', ListOf(String()),
 )
 
 
@@ -45,4 +46,5 @@ def execution(self, context):
     context.runProcess(
         'mpegEncode_ffmpeg', images=self.images, animation=self.animation,
         encoding=self.encoding, quality=self.quality,
-        framesPerSecond=self.framesPerSecond, passes=self.passes)
+        framesPerSecond=self.framesPerSecond, passes=self.passes,
+        additional_encoder_options=self.additional_encoder_options)

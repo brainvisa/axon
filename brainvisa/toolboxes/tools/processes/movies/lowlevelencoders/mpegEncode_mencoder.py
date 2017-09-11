@@ -55,11 +55,12 @@ def codecs():
 signature = Signature(
     'images', ListOf(ReadDiskItem('2D Image', 'aims Image Formats',
                                   ignoreAttributes=1)),
-  'animation', WriteDiskItem('MPEG film', mpegConfig.mpegFormats),
-  'encoding', Choice(*codecs()),
-  'quality', Integer(),
-  'framesPerSecond', Integer(),
-  'passes', Choice(1, 2),
+    'animation', WriteDiskItem('MPEG film', mpegConfig.mpegFormats),
+    'encoding', Choice(*codecs()),
+    'quality', Integer(),
+    'framesPerSecond', Integer(),
+    'passes', Choice(1, 2),
+    'additional_encoder_options', ListOf(String()),
 )
 
 
@@ -84,7 +85,7 @@ def execution(self, context):
            'fps=' + str(self.framesPerSecond), '-ovc', 'lavc',
            '-passlogfile', passlog, '-lavcopts',
            'vbitrate=' + str(self.quality * 10) + ':vcodec='
-           + self.encoding + ':vpass=1']
+           + self.encoding + ':vpass=1'] + self.additional_encoder_options
     # print cmd
     context.system(*cmd)
     if self.passes > 1:

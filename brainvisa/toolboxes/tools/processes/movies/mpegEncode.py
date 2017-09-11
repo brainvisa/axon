@@ -47,7 +47,8 @@ def validation():
 signature = Signature(
     'images', ListOf(ReadDiskItem('2D Image', 'aims Image Formats',
                                   ignoreAttributes=1)),
-  'animation', WriteDiskItem('MPEG film', mpegConfig.mpegFormats),
+    'animation', WriteDiskItem('MPEG film', mpegConfig.mpegFormats),
+    'additional_encoder_options', ListOf(String()),
 )
 
 
@@ -59,10 +60,10 @@ def initialization(self):
         if getProcess('mpegEncode_' + e):
             eNode.addChild(e, ProcessExecutionNode('mpegEncode_' + e,
                                                    selected=first))
-            eNode.addLink(e + '.images', 'images')
-            eNode.addLink('images', e + '.images')
-            eNode.addLink(e + '.animation', 'animation')
-            eNode.addLink('animation', e + '.animation')
+            eNode.addDoubleLink(e + '.images', 'images')
+            eNode.addDoubleLink(e + '.animation', 'animation')
+            eNode.addDoubleLink('additional_encoder_options',
+                                e + '.additional_encoder_options')
         if first:
             first = False
     self.setExecutionNode(eNode)
