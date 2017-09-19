@@ -169,8 +169,9 @@ Format( 'Soma-Workflow workflow', "f|*.workflow" )
 # Make 'Series of SPM image' format exists
 changeToFormatSeries( getFormat( 'SPM image' ) )
 
-import brainvisa.tools.aimsGlobals as shfjGlobals
-shfjGlobals.initializeFormatLists()
+import brainvisa.tools.aimsGlobals as aimsGlobals
+aimsGlobals.initializeFormatLists()
+
 
 #-------------- General types ---------------------
 
@@ -179,14 +180,14 @@ FileType( 'Any Type', None, [] )
 FileType( 'Directory', 'Any Type', 'Directory' )
 # Remove DICOM format from default '4D Volume' formats because
 # there is no specific file name extension for this format.
-volumeFormats = list( shfjGlobals.anatomistVolumeFormats )
+volumeFormats = list( aimsGlobals.anatomistVolumeFormats )
 del volumeFormats[ volumeFormats.index( getFormat( 'DICOM image' ) ) ]
 createFormatList( 'BrainVISA volume formats', volumeFormats )
 createFormatList( 'BrainVISA image formats', 'Aims image formats' )
 createFormatList( 'BrainVISA mesh formats', 'Anatomist mesh formats' )
 createFormatList( 'BrainVISA texture formats', 'Anatomist texture formats' )
 
-FileType( '4D Volume', 'Any Type', 'BrainVISA volume formats') #minfAttributes=shfjGlobals.aimsVolumeAttributes )
+FileType( '4D Volume', 'Any Type', 'BrainVISA volume formats') #minfAttributes=aimsGlobals.aimsVolumeAttributes )
 FileType( '3D Volume', '4D Volume' )
 FileType( '2D Image', '3D Volume', 'BrainVISA image formats' )
 FileType( 'Mesh', 'Any Type', 'BrainVISA mesh formats' )
@@ -312,4 +313,25 @@ FileType('Numpy Array', 'Any Type', 'Numpy Array')
 #--- Templates -------------------------
 FileType( 'anatomical Mask Template', '3D Volume' )
 
+#--- Fiber bundles ---------------------
+Format( 'Aims bundles', [ 'f|*.bundles', 'f|*.bundlesdata' ] )
+Format( 'Trackvis tracts', 'f|*.trk' )
+Format( 'Bundle Selection Rules', 'f|*.brules' )
+
+createFormatList(
+  'Aims readable bundles formats',
+  (
+    'Aims Bundles',
+    'Trackvis tracts',
+  )
+)
+
+createFormatList(
+  'Aims writable bundles formats',
+  (
+    'Aims Bundles',
+  )
+)
+
+FileType( 'Bundles', 'Any Type', 'Aims readable bundles formats' )
 
