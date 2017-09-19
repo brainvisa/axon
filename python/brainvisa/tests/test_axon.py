@@ -11,9 +11,10 @@ homedir = tempfile.mkdtemp(prefix='bv_home')
 os.environ['BRAINVISA_USER_DIR'] = homedir
 
 try:
-
+    import brainvisa.tests.test_core
     import brainvisa.tests.test_history
     import brainvisa.tests.test_registration
+    
 
     import brainvisa.axon
     from brainvisa.configuration import neuroConfig
@@ -43,6 +44,7 @@ try:
             tearDown=teardown_doctest,
             optionflags=doctest.ELLIPSIS))
         suite.addTest(doctest_suite)
+        suite.addTest(brainvisa.tests.test_core.test_suite())
         suite.addTest(brainvisa.tests.test_history.test_suite())
         suite.addTest(brainvisa.tests.test_registration.test_suite())
         return suite
