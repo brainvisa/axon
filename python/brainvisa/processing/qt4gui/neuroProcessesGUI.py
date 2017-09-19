@@ -54,7 +54,7 @@ from brainvisa.history import ProcessExecutionEvent
 from brainvisa.data.neuroDiskItems import DiskItem
 from brainvisa.data.readdiskitem import ReadDiskItem
 from brainvisa.data.writediskitem import WriteDiskItem
-from brainvisa.data.qt4gui import lockFilesGUI
+from brainvisa.data.qt4gui import lockFilesGUI, neuroDataGUI
 import weakref
 from soma.minf.xhtml import XHTML
 from soma.qtgui.api import QtThreadCall, FakeQtThreadCall, WebBrowserWithSearch, bigIconSize, defaultIconSize
@@ -1652,6 +1652,9 @@ class ParameterizedWidget( QWidget ):
         l.setSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed )
         self.labels[ k ] = l
         e = p.editor( None, k, weakref.proxy( self ) )
+        if isinstance(e, neuroDataGUI.DataEditor):
+            # Complete popup menu with specific actions of the editor
+            e.createPopupMenu(l.contextMenu)
 
         #if p.getSectionTitleIfDefined() is not None:
         #  parametersWidgetLayout.addRow( SectionTitle( p.getSectionTitleIfDefined() ) )

@@ -2976,8 +2976,14 @@ class ExecutionContext(object):
                         formats = [ p.preferredFormat ] \
                             + [f for f in p.formats if f is not p.preferredFormat]
                         for destinationFormat in formats:
-                            converter = getConverter((v.type, v.format), (
-                                p.type, destinationFormat), checkUpdate=False)
+                            cs = getConversionInfo((v.type, v.format), 
+                                                   (p.type, destinationFormat), 
+                                                   checkUpdate=False) \
+                                 .converters()
+                            converter = cs[0] if len(cs) > 0 else None
+                            #print('converter', converter, 
+                                  #'source', (v.type, v.format), 
+                                  #'destination', (p.type, destinationFormat))
                             if converter:
                                 tmp = self.temporary(destinationFormat)
                                 tmp.type = v.type
@@ -4424,9 +4430,461 @@ def getConverters():
 
     return sorted(results)
 
+#-------------------------------------------------------------------------------
+def getDiskItemSourceInfo(source):
+    """
+    Gets a tuple containing source :py:class:`neuroDiskItems.DiskItemType` 
+    and :py:class:`neuroDiskItems.Format`.
+    
+    :param source: a :py:class:`neuroDiskItems.DiskItem`, a list of
+        :py:class:`neuroDiskItems.DiskItem` (only the first will be
+        taken into account), a tuple (type, format).
+    """
+    if isinstance(source, DiskItem):
+        return (source.type,  source.format)
+    elif isinstance(source, list):
+        if source != [] and isinstance(source[0], DiskItem):
+            return (source[0].type, source[0].format)
+        # TODO: May a proper exception should be raised in case 
+        # that no DiskItem was given in the source list, because currently
+        # t0 and f have no valid values in the else case
+    else:
+        t, f = source
+        return (t, f)
+
+#-------------------------------------------------------------------------------
+class DiskItemConversionInfo:
+    """
+    Contains information about :py:class:`neuroDiskItems.DiskItem` conversions.
+    The conversion needs a source and a destination
+
+    The object can be used to determine, if the conversion is possible, if it
+    uses inheritance mechanisms, if it needs type conversion, if it needs format
+    conversion.
+    
+    If the conversion is possible, a distance between 
+    :py:class:`neuroDiskItems.DiskItem` can be processed. This is useful to
+    relevantly sort processes.DiskItemConversionInfo.
+    """
+    def __init__(self, source, dest, checkUpdate=True):
+        """
+        :param source: the source of :py:class:`neuroDiskItems.DiskItem` 
+        conversion. It can be :py:class:`neuroDiskItems.DiskItem`, a list of
+        :py:class:`neuroDiskItems.DiskItem` (only the first will be
+        taken into account), a tuple (type, format).
+        :param dest: the destination of :py:class:`neuroDiskItems.DiskItem` 
+        conversion. It can be :py:class:`neuroDiskItems.DiskItem`, a list of
+        :py:class:`neuroDiskItems.DiskItem` (only the first will be
+        taken into account), a tuple (type, format).
+        :param boolean checkUpdate: if the converters :py:class:`NewProcess`
+        must be reloaded when they changed. Default True.
+        """
+        self.source = source
+        self.dest = dest
+        self.__converters = SortedDictionary()
+        self.__need_conversion = -1
+        self.__types_distance = -1
+        self.__formats_distance = -1
+        
+        # Update conversion information
+        self.__update__(checkUpdate=checkUpdate)
+    
+    def __update__(self, checkUpdate=True):
+        """
+        Update processes.DiskItemConversionInfo internal information.
+        
+        :param boolean checkUpdate: if the converters :py:class:`NewProcess`
+        must be reloaded when they changed. Default True.
+        """
+        ts, fs = getDiskItemSourceInfo(self.source)
+        td, fd = getDiskItemSourceInfo(self.dest)
+        
+        converters = []
+        need_conversion, types_dist, formats_dist = (-1, -1, -1)
+        
+        # Search type matching the inheritance tree
+        types_dist = ts.inheritanceLevels(td)
+        if fs == fd:
+            formats_dist = 0
+            
+        if types_dist != -1 and formats_dist == 0:
+            # No conversion is necessary
+            need_conversion = 0       
+        else:
+            # Sets distance of 1 between types if source type and destination
+            # are not the same and need conversion
+            if types_dist != 0:
+                types_dist = 1
+            formats_dist = -1
+            converters_to_check = getConvertersFrom((ts, fs), 
+                                                    checkUpdate=checkUpdate)
+            for k, v in six.iteritems(converters_to_check):
+                tc, fc = k
+                l = td.inheritanceLevels(tc)
+                if (tc, fc) != (ts, fs) and l > -1 and fc == fd:
+                    # Found a converter
+                    converters.append((l, (tc, fc), v))
+                    
+            if len(converters) > 0:
+                need_conversion = 1
+                # Converters sorted by levels between conversion type and 
+                # destination type
+                converters = [(k, (l, c)) for l, k, c in sorted(converters)]
+                formats_dist = 0 if fs == fd else 1
+
+        # Store found converters
+        self.__converters = SortedDictionary(converters)
+        
+        # Store distance information
+        self.__need_conversion = need_conversion
+        self.__types_distance = types_dist
+        self.__formats_distance = formats_dist
+    
+    def exactDestTypeConverter(self):
+        if len(self.__converters) > 0:
+            l, c = self.__converters.values()[0]
+            if l == 0:
+                return c
+            
+        return None
+        
+    def converters(self, exactConversionTypeOnly=False):
+        return [c for l, c in self.__converters.values() \
+                  if (not exactConversionTypeOnly or l == 0)]
+    
+    def distance(self, useInheritanceOnly=False, exactConversionTypeOnly=False):
+        """
+        Gets a distance between source :py:class:`neuroDiskItems.DiskItem` and 
+        destination :py:class:`neuroDiskItems.DiskItem` of the 
+        processes.DiskItemConversionInfo. This is useful to
+        relevantly sort processes.DiskItemConversionInfo
+        
+        :param boolean useInheritanceOnly: Specify if the distance must be 
+        processed only when :py:class:`neuroDiskItems.DiskItemType` of the 
+        source inherits from :py:class:`neuroDiskItems.DiskItemType` of the 
+        destination and does not need a :py:class:`NewProcess` converter call.
+        Default False.
+        :param boolean exactConversionTypeOnly: Specify if the conversion is 
+        valid only when converter is registered for the exact destination
+        :py:class:`neuroDiskItems.DiskItemType`.
+        Default False
+        
+        :returns: None when conversion is not possible, else a tuple that 
+        contains:
+        1) if the conversion needs a call to a :py:class:`NewProcess` converter. 
+        When no converter call is needed, the value is 0, else the value is 1.
+        2) the distance between source :py:class:`neuroDiskItems.DiskItemType` 
+        and destination :py:class:`neuroDiskItems.DiskItemType`. When source 
+        type is equal to destination type, the value is 0. When source inherits 
+        from destination and no conversion is needed, the value is the number of
+        levels between them, else the value is 1.
+        3) if the source :py:class:`neuroDiskItems.Format` is identical 
+        to destination :py:class:`neuroDiskItems.Format` value is 0, else 1
+        """
+        if self.__types_distance > -1 \
+           and self.__formats_distance > -1 \
+           and self.__need_conversion > -1 \
+           and (not useInheritanceOnly or self.__need_conversion == 0) \
+           and (self.__need_conversion == 0 \
+                or not exactConversionTypeOnly \
+                or self.exactDestTypeConverter() is not None):
+            return (self.__need_conversion, 
+                    self.__types_distance,
+                    self.__formats_distance)
+        else:
+            return None
+        
+    def exists(self, useInheritanceOnly=False, exactConversionTypeOnly=False):
+        """
+        Checks that a conversion between source 
+        :py:class:`neuroDiskItems.DiskItem` and 
+        destination :py:class:`neuroDiskItems.DiskItem` exists.
+        
+        :param boolean useInheritanceOnly: Specify if the check must only 
+        consider inheritance between source 
+        :py:class:`neuroDiskItems.DiskItemType` and destination 
+        :py:class:`neuroDiskItems.DiskItemType`, without checking existing 
+        converter :py:class:`NewProcess`.
+        Default False.
+        :param boolean exactConversionTypeOnly: Specify if the conversion is 
+        valid only when converter is registered for the exact destination
+        :py:class:`neuroDiskItems.DiskItemType`.
+        Default False
+        
+        :returns: True if conversion is possible between source 
+        :py:class:`neuroDiskItems.DiskItem` and destination 
+        :py:class:`neuroDiskItems.DiskItem`, else False
+        """
+        return self.distance(useInheritanceOnly=useInheritanceOnly,
+                             exactConversionTypeOnly=exactConversionTypeOnly) \
+               is not None
+
+#-------------------------------------------------------------------------------
+_conversion_infos = dict()
+
+def getConversionInfo(source, dest, checkUpdate=True):
+    """
+    Gets information about conversion of a source 
+    :py:class:`neuroDiskItems.DiskItem` and destination 
+    :py:class:`neuroDiskItems.DiskItem`.
+    
+    :param source: the source of :py:class:`neuroDiskItems.DiskItem` 
+    conversion. It can be :py:class:`neuroDiskItems.DiskItem`, a list of
+    :py:class:`neuroDiskItems.DiskItem` (only the first will be
+    taken into account), a tuple (type, format).
+    :param dest: the destination of :py:class:`neuroDiskItems.DiskItem` 
+    conversion. It can be :py:class:`neuroDiskItems.DiskItem`, a list of
+    :py:class:`neuroDiskItems.DiskItem` (only the first will be
+    taken into account), a tuple (type, format).
+    :param boolean checkUpdate: if the converters :py:class:`NewProcess`
+    must be reloaded when they changed. Default True.
+    
+    :returns: a :py:class:`processes.DiskItemConversionInfo`
+    """
+    global _conversion_infos
+    
+    ts, fs = getDiskItemSourceInfo(source)
+    td, fd = getDiskItemSourceInfo(dest)
+    
+    # Check that conversion info is in cache for source->dest or initialize it
+    ci = _conversion_infos.setdefault((ts, fs), dict()) \
+                          .setdefault((td, fd), None)
+    if ci is None:
+        # Update cache for source->dest conversion
+        ci = DiskItemConversionInfo((ts, fs), (td, fd), 
+                                    checkUpdate=checkUpdate)
+        _conversion_infos[(ts, fs)][(td, fd)] = ci
+    
+    return ci
+
+#-------------------------------------------------------------------------------
+class ProcessSet(set):
+    """
+    Bases: :py:class:`set`
+    
+    Set of processes that can process :py:class:`neuroDiskItems.DiskItem` of 
+    a particular :py:class:`neuroDiskItems.DiskItemType` and 
+    :py:class:`neuroDiskItems.Format`
+    """
+    def __init__(self, type, format, ids = (), listof = False):
+        """
+        :param :py:class:`neuroDiskItems.DiskItemType` type: 
+        type of :py:class:`neuroDiskItems.DiskItem` that can be used by 
+        the set of processes.
+        :param :py:class:`neuroDiskItems.Format` format:
+        format of :py:class:`neuroDiskItems.DiskItem` that can be used by 
+        the processes of the ProcessSet.
+        :param tuple ids: identifiers of processes :py:class:`NewProcess` of the 
+        ProcessSet.
+        :param bool listof: if the registered processes are able to process a 
+        list of :py:class:`neuroDiskItems.DiskItem` or not.
+        """
+        set.__init__(self, ids)
+       
+        if type is None:
+            raise TypeError('Type can not be None')
+
+        if not issubclass(type.__class__, neuroDiskItems.DiskItemType):
+            raise TypeError('Class of type %s must be a subclass of'
+                            ' DiskItemType' % type)
+       
+        if format is None:
+            raise TypeError('Format can not be None')
+        
+        self.__type = type
+        self.__format = format
+        self.__listof = listof
+
+    def source(self):
+        """
+        :returns: a tuple containing :py:class:`neuroDiskItems.DiskItemType` 
+        and :py:class:`neuroDiskItems.Format` associated to the ProcessSet.
+        """
+        return (self.__type, self.__format)
+    
+    def accept(self, source, enableConversion=1, exactConversionTypeOnly=False,
+               checkUpdate=True):
+        """
+        Check that a :py:class:`neuroDiskItems.DiskItem` source is processable
+        using the processes of the current ProcessSet
+
+        :param int enableConversion: if the source can be converted to be 
+        processed by the processes of the current ProcessSet. Default 1.
+        :param boolean checkUpdate: if the converters :py:class:`NewProcess`
+        must be reloaded when they changed. Default True.
+        :param boolean exactConversionTypeOnly: Specify if the conversion is 
+        valid only when converter is registered for the exact destination
+        :py:class:`neuroDiskItems.DiskItemType`.
+        Default False
+    
+        :returns: True if the source is processable using the processes of the 
+        current ProcessSet, else False.
+        """
+        return getConversionInfo(source,
+                                 self.source(),
+                                 checkUpdate = checkUpdate) \
+               .exists(useInheritanceOnly = not enableConversion)
+
+    def processes(self, checkUpdate=True):
+        """
+        Get processes associated to the current ProcessSet and filtered for the 
+        current user level
+
+        :param boolean checkUpdate: if the processes :py:class:`NewProcess`
+        must be reloaded when they changed. Default True.
+    
+        :returns: a list of processes :py:class:`NewProcess` associated to the 
+        current ProcessSet and filtered for the current user level.
+        """
+        
+        # Filter processes using user level
+        procs = []
+        for v in self:
+            p = getProcess(v, checkUpdate=checkUpdate)
+            if p and p.userLevel <= neuroConfig.userLevel:
+                procs.append(p)
+                
+        return procs
+
+#-------------------------------------------------------------------------------
+def getProcesses(registry, source, enableConversion=1, 
+                 exactConversionTypeOnly=False, checkUpdate=True):
+    """
+    Get processes :py:class:`NewProcess` able to process a 
+    :py:class:`neuroDiskItems.DiskItem` source using a registry.
+    
+    Processes are ordered using the distance of 
+    :py:class:`processes.DiskItemConversionInfo` between the 
+    :py:class:`neuroDiskItems.DiskItem` source to process and the 
+    :py:class:`neuroDiskItems.DiskItem` source registered for the process.
+    The processes registered with closest sources appear first.
+
+    :param dict registry: the registry of :py:class:`processes.ProcessSet`. Keys
+    are a tuple containing :py:class:`neuroDiskItems.DiskItemType` and 
+    :py:class:`neuroDiskItems.Format`. Values are 
+    :py:class:`processes.ProcessSet`.
+    :param int enableConversion: if the source can be converted to be 
+    processed. Default 1.
+    :param boolean exactConversionTypeOnly: Specify if the conversion is 
+    valid only when converter is registered for the exact destination
+    :py:class:`neuroDiskItems.DiskItemType`.
+    Default False
+    :param boolean checkUpdate: if processes :py:class:`NewProcess` must be 
+    reloaded when they changed. Default True.
+
+    :returns: a list of processes :py:class:`NewProcess`.
+    """
+    # Create a list of process set that can be ordered by distance vector
+    r = list()
+    for k, ps in six.iteritems(registry):
+        d = getConversionInfo(source, ps.source(), 
+                              checkUpdate=checkUpdate) \
+              .distance(useInheritanceOnly=not enableConversion,
+                        exactConversionTypeOnly=exactConversionTypeOnly)
+        if d is not None:
+            r.append((d, ps))
+            
+    # Sort process sets using distance vector
+    s = sorted(r)
+
+    # Create result list
+    r = list()
+    unique = set()
+    #print('===== found processes for source', source, '=====')
+    for d, ps in s:
+        for p in ps.processes(checkUpdate=checkUpdate):
+            if not p in unique:
+                unique.add(p)
+                r.append(p)
+                #print(v.name, 'with distance', d)
+                
+    return r
+ 
+#-------------------------------------------------------------------------------
+def getViewers(source, enableConversion=1, checkUpdate=True, listof=False):
+    """
+    Get viewers :py:class:`NewProcess` able to visualize a 
+    :py:class:`neuroDiskItems.DiskItem` source.
+    
+    Viewers are ordered using the distance of 
+    :py:class:`processes.DiskItemConversionInfo` between the 
+    :py:class:`neuroDiskItems.DiskItem` source to visualize and the 
+    :py:class:`neuroDiskItems.DiskItem` source registered for the viewer.
+    The viewers registered with closest sources appear first.
+
+
+    :param int enableConversion: if the source can be converted to be 
+    visualized. Default 1.
+    :param boolean checkUpdate: if converters and viewers :py:class:`NewProcess`
+    must be reloaded when they changed. Default True.
+    :param boolean listof: if the viewers :py:class:`NewProcess`
+    must be able to display list of :py:class:`neuroDiskItems.DiskItem`.
+    Default False.
+
+    :returns: a list of viewers :py:class:`NewProcess`.
+    """
+    global _viewers
+    global _listViewers
+
+    if not listof:
+        registry = _viewers
+    else:
+        registry = _listViewers
+    
+    # Create a list of viewerset that can be ordered by distance vector
+    r = getProcesses(registry, 
+                     source, 
+                     enableConversion=enableConversion, 
+                     exactConversionTypeOnly=True,
+                     checkUpdate=checkUpdate)
+    
+    if listof:
+        # Gets default viewer
+        dv = getDefaultListOfViewer(source)
+        if dv:
+            r.append(dv)
+    
+    return r
 
 #----------------------------------------------------------------------------
-def getViewer(source, enableConversion=1, checkUpdate=True, listof=False):
+def getDefaultListOfViewer(source, enableConversion=1, checkUpdate=True):
+    """
+    Get a default viewer for a list of :py:class:`neuroDiskItems.DiskItem`.
+
+    :param int enableConversion: if the source can be converted to be 
+    visualized. Default 1.
+    :param boolean checkUpdate: if converters and viewers :py:class:`NewProcess`
+    must be reloaded when they changed. Default True.
+
+    :returns: Callable Object that can be used to visualize a list of 
+    :py:class:`neuroDiskItems.DiskItem`.
+    """
+    t, f = getDiskItemSourceInfo(source)
+    
+    vrs = []
+    if isinstance(source, tuple) and len(source) == 2:
+        vrs = [getViewer(source, 
+                         enableConversion=enableConversion,
+                         checkUpdate=checkUpdate)]
+    else:
+        vrs = [getViewer(s, enableConversion=enableConversion,
+                         checkUpdate=checkUpdate) for s in source]
+        
+    if len(vrs) != 0 and None not in vrs:
+        class iterproc(object):
+
+            def __init__(self, name, procs):
+                self.name = name
+                self.procs = procs
+
+            def __call__(self):
+                ip = ListOfIterationProcess(self.name, self.procs)
+                return ip
+        return iterproc(_t_('Viewer for list of ') + t.name, vrs)
+    
+#----------------------------------------------------------------------------
+def getViewer(source, enableConversion=1, checkUpdate=True, 
+              listof=False, index=0):
     """
     Gets a viewer (a process that have the role viewer) which can
     visualize source data. The viewer is returned only if its userLevel
@@ -4444,84 +4902,24 @@ def getViewer(source, enableConversion=1, checkUpdate=True, listof=False):
         If there is no specific viewer for a list of this type of data,
         a :py:class:`ListOfIterationProcess` is created from the
         associated simple viewer. Default False.
+    :param int index: index of the viewer to find. Default 0.
     :returns: the :py:class:`NewProcess` class associated to the found
-        viewer.
+        viewer or None if not found at the specified index.
     """
-    global _viewers
-    global _listViewers
-    if listof:
-        viewers = _listViewers
-    else:
-        viewers = _viewers
-
-    if isinstance(source, DiskItem):
-        t0 = source.type
-        f = source.format
-    elif isinstance(source, list):
-        if source != [] and isinstance(source[0], DiskItem):
-            t0 = source[0].type
-            f = source[0].format
-    else:
-        t0, f = source
-    t = t0
-    v = viewers.get((t, f))
-    # if the diskitem has no type, get the less generic viewer that accepts
-    # the format of the diskitem
-    if not v and t is None:
-        for k in viewers.keys():
-            t0b, fb = k
-            if fb == f:
-                if t is None or t.isA(t0b):
-                    t = t0b
-                    v = viewers.get((t, f))
-                    if t.parent is None:
-                        break
-    while not v and t:
-        t = t.parent
-        v = viewers.get((t, f))
-    if not v and enableConversion:
-        converters = getConvertersFrom((t0, f), checkUpdate=checkUpdate)
-        t = t0
-        while not v and t:
-            for tc, fc in converters.keys():
-                if (tc, fc) != (t0, f):
-                    v = viewers.get((t, fc))
-                    if v:
-                        break
-            t = t.parent
-    p = getProcess(v, checkUpdate=checkUpdate)
-    if p and p.userLevel <= neuroConfig.userLevel:
-        return p
-    if listof:
-        if isinstance(source, tuple) and len(source) == 2:
-            vrs = [getViewer(source, enableConversion=enableConversion,
-                             checkUpdate=checkUpdate)]
-        else:
-            vrs = [getViewer(s, enableConversion=enableConversion,
-                             checkUpdate=checkUpdate) for s in source]
-        if None not in vrs and len(vrs) != 0:
-            class iterproc(object):
-
-                def __init__(self, name, type_name):
-                    self.name = name
-                    self.type_name = type_name
-
-                def __call__(self):
-                    ip = getProcess('inspectMultipleData')()
-                    ip.name = self.name
-                    ip.signature = Signature(
-                        'items', ip.signature['items'],
-                      'data_type', ip.signature['data_type'])
-                    ip.data_type = self.type_name
-                    return ip
-            return iterproc(_t_('Viewer for list of ') + t0.name, t0.name)
-    return None
-
+    vl = getViewers(source,
+                    enableConversion = enableConversion,
+                    checkUpdate = checkUpdate,
+                    listof = listof)
+    #print('===== getViewer, viewers list', [v.name for v in vl], '=====')
+    if len(vl) > index:
+        #print('===== getViewer, found viewer ', vl[index].name, '=====')
+        return vl[index]
 
 #----------------------------------------------------------------------------
 def runViewer(source, context=None):
     """
     Searches for a viewer for source data and runs the process.
+    If viewer fail to display source, tries to get another.
 
     :param source: a :py:class:`neuroDiskItems.DiskItem` or something that enables to find a :py:class:`neuroDiskItems.DiskItem`.
     :param context: the :py:class:`ExecutionContext`. If None, the default context is used.
@@ -4531,9 +4929,16 @@ def runViewer(source, context=None):
         source = ReadDiskItem('Any Type', formats.keys()).findValue(source)
     if context is None:
         context = defaultContext()
-    viewer = getViewer(source, checkUpdate=False)
-    return context.runProcess(viewer, source)
 
+    viewers = getViewers(source, checkUpdate=False, index=index) 
+    for viewer in viewers:
+        try:
+            #print('Try to run viewer ', viewer.name, 'for', source)
+            context.runProcess(viewer, source)
+            return
+        except:
+            #print('Failed to run viewer ', viewer.name, 'for', source)
+            continue
 
 #----------------------------------------------------------------------------
 def getDataEditor(source, enableConversion=0, checkUpdate=True, listof=False):
@@ -4895,15 +5300,28 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
 #    elif NewProcess.category.lower() == 'viewers/automatic':
             global _viewers
             global _listViewers
-            arg = NewProcess.signature.values()[0]
+            arg = NewProcess.signature.values()[0]            
             if isinstance(arg, ListOf):
                 arg = arg.contentType
                 if hasattr(arg, 'formats'):
                     for format in arg.formats:
-                        _listViewers[(arg.type, format)] = NewProcess._id
+                        #print('===== registering viewer', NewProcess.name, 
+                              #'for list of type', arg.type, 'and format', format)
+                        _listViewers.setdefault((arg.type, format),
+                                                ProcessSet(
+                                                    arg.type, 
+                                                    format)) \
+                                    .add(NewProcess._id)
+                                                
             elif hasattr(arg, 'formats'):
                 for format in arg.formats:
-                    _viewers[(arg.type, format)] = NewProcess._id
+                    #print('===== registering viewer', NewProcess.name, 
+                          #'for type', arg.type, 'and format', format)
+                    _viewers.setdefault((arg.type, format),
+                                            ProcessSet(
+                                                arg.type, 
+                                                format)) \
+                                .add(NewProcess._id)
         elif NewProcess.category.lower() == 'viewers/automatic':
             warnRole(processInfo, 'viewer')
         if 'editor' in roles:

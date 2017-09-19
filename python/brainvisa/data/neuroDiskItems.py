@@ -2215,6 +2215,27 @@ class DiskItemType(object):
     if self.parent is None: return 0
     return self.parent.isA( diskItemType )
 
+  def inheritanceLevels( self, diskItemType ):
+    """
+    Returns -1 if the given diskItem type is not a parent (direct or indirect) 
+    of the current diskItem, else the number of levels between the given diskItem
+    type and the current diskItem type.
+    """
+    #levels = -1
+    #t = getDiskItemType( diskItemType )
+    #while t:
+        #levels += 1
+        #if t == self:
+            #return levels
+        #t = t.parent
+    #return -1
+    diskItemType = getDiskItemType( diskItemType )
+    if diskItemType is self: return 0
+    if self.parent is None: return -1
+
+    p = self.parent.inheritanceLevels( diskItemType )
+    return p if p < 0 else p + 1
+
   def parents( self ):
     """
     Returns the list of parents of this diskItem, that is to say its parent and its parent's parents.
