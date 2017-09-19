@@ -54,6 +54,9 @@ class DataEditor( object ):
   def checkReadable( self ):
     pass
 
+  def createPopupMenu(self, popup_menu):
+    pass
+
   def set_read_only(self, read_only):
     self.setEnabled(not read_only)
 

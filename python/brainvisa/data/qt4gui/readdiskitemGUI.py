@@ -31,11 +31,11 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from brainvisa.processing.qtgui.backwardCompatibleQt \
-    import QLineEdit, QPushButton, QToolButton, \
-           Qt, QIcon, QWidget, QFileDialog, QVBoxLayout, \
+    import QLineEdit, QPushButton, QToolButton, QComboBox, \
+           Qt, QIcon, QWidget, QWidgetAction, QFileDialog, QVBoxLayout, \
            QListWidget, QHBoxLayout, QSpacerItem, QSizePolicy, QSize, QMenu, \
            QPalette, QColor, QItemSelectionModel, QLabel, \
-           QListView, QTreeView, QAbstractItemView
+           QListView, QTreeView, QAbstractItemView, QPixmap
 from soma.wip.application.api import findIconFile
 from soma.qtgui.api import largeIconSize
 from brainvisa.data.qtgui.diskItemBrowser import DiskItemBrowser
@@ -111,11 +111,13 @@ class DiskItemEditor( QWidget, DataEditor ):
     self.btnShow.setFixedSize( buttonIconSize + buttonMargin )
     self.btnShow.setFocusPolicy( Qt.NoFocus )
     self.btnShow.setEnabled( False )
-    format = None
-    if len(self.parameter.formats) != 0:
-        format = self.parameter.formats[0]
-    if not brainvisa.processes.getViewer( (self.parameter.type, format ), 1, checkUpdate=False ):
-      self.btnShow.hide()
+    
+    # Sets default viewers list
+    self.actViewers = None
+    self.cmbViewersSeparator = None
+    self.cmbViewers = None
+    self.newValidValue.connect(self.updateViewers)
+    
     self._view = None
     self.btnShow.clicked.connect(self.showPressed)
     self.btnShow.rightPressed.connect(self.openViewerPressed)
@@ -185,6 +187,27 @@ class DiskItemEditor( QWidget, DataEditor ):
     self.led.setReadOnly(read_only)
     self.led.setFrame(not read_only)
 
+  def createPopupMenu(self, popup):     
+    self.cmbViewersSeparator = popup.addSeparator()
+
+    # Create viewers widget
+    layViewers = QHBoxLayout()
+    widViewers = QWidget(popup)
+    widViewers.setLayout(layViewers)
+    icon = QLabel(widViewers)
+    icon.setPixmap(QPixmap(findIconFile('eye.png')))
+    layViewers.addWidget(icon)
+    label = QLabel( _t_('Use viewer'), widViewers )
+    layViewers.addWidget(label)
+    self.cmbViewers = QComboBox(widViewers)
+    layViewers.addWidget(self.cmbViewers)
+    self.actViewers = QWidgetAction(popup)
+    self.actViewers.setDefaultWidget(widViewers)
+    popup.addAction(self.actViewers)
+    
+    # Update viewers
+    self.updateViewers()
+      
   def setContext( self, newContext ):
     oldContext = ( self.btnShow.isChecked(), self._view,
                    self.btnEdit.isChecked(), self._edit )
@@ -282,17 +305,31 @@ class DiskItemEditor( QWidget, DataEditor ):
       self.btnShow.setEnabled( 0 )
       v = self.getValue()
       viewerExists = False
-      try:
-        try :
-          viewer = brainvisa.processes.getViewer( v, 1 )()
-          viewerExists = True
-          brainvisa.processes.defaultContext().runInteractiveProcess( self._viewerExited, viewer, v )
-        except Exception as error :
-          self.btnShow.setChecked( False )
-          if viewerExists:
+      try:           
+        for viewer in self.viewersToTry():
+          try :
+            viewer = viewer()
+            viewerExists = True
+            brainvisa.processes.defaultContext().runInteractiveProcess( self._viewerExited, viewer, v )
             self.btnShow.setEnabled( True )
-            raise RuntimeError( HTMLMessage( _t_( 'Viewer aborted for type =<em>%s</em> and format=<em>%s</em> (try using it interactively by right-clicking on the eye icon)' ) % (unicode( v.type ), unicode(v.format))) )
-          raise RuntimeError( HTMLMessage( _t_( 'No viewer could be found for type =<em>%s</em> and format=<em>%s</em>' ) % (unicode( v.type ), unicode(v.format))) )
+            return
+        
+          except Exception:
+            # Try another viewer if possible
+            brainvisa.processes.defaultContext().log(
+              _t_('Warning for %s') % _t_(viewer.name),
+              html=_t_('Viewer aborted for type=<em>%s</em> and '
+              'format=<em>%s</em> value=<em>%s</em> '
+              '(try using it interactively by '
+              'right-clicking on the eye icon)') 
+              % (unicode(v.type), unicode(v.format), unicode(v)),
+              icon='eye.png')
+            continue
+
+        self.btnShow.setEnabled( False )
+        self.btnShow.setChecked( False )
+        raise RuntimeError( HTMLMessage( _t_( 'No viewer could be found for type=<em>%s</em> and format=<em>%s</em>' ) % (unicode( v.type ), unicode(v.format))) )
+    
       except Exception as error:
           # transform the exception into a print message, and return.
           # We are in a Qt slot here, raising an exception results in
@@ -313,7 +350,7 @@ class DiskItemEditor( QWidget, DataEditor ):
     neuroProcessesGUI.mainThreadActions().push( self.btnShow.setEnabled, 1 )
     if result is None:
       neuroProcessesGUI.mainThreadActions().push( self.btnShow.setChecked, False )
-
+  
   def close_viewer(self):
     if self._view is not None:
       self._view = None
@@ -337,10 +374,67 @@ class DiskItemEditor( QWidget, DataEditor ):
       self.openViewer()
 
   def openViewer( self ):
+    # Normally it is not possible to try to open viewer if none is available
+    viewer = self.viewersToTry()[0]() 
     v = self.getValue()
-    viewer = brainvisa.processes.getViewer( v, 1 )()
     neuroProcessesGUI.showProcess( viewer, v )
 
+  def selectedViewer(self):
+    # Current index is shifted in Combo box due to the 'Default value' item
+    if self.cmbViewers is not None:
+      index = self.cmbViewers.currentIndex()
+      if index != -1 and index > 0 and index <= len(self._viewers):
+        return self._viewers[index - 1]
+
+    return None
+      
+  def updateViewers(self):
+    if self.diskItem is None:
+      format = None
+      if len(self.parameter.formats) != 0:
+        format = self.parameter.formats[0]
+      source = (self.parameter.type, format)
+    else:
+      source = self.diskItem
+        
+    self._viewers = brainvisa.processes.getViewers(
+                            source, 
+                            1, checkUpdate=False)
+    
+    if self.cmbViewers is not None:
+      v = self.selectedViewer()
+      #print('selected viewer:', v)
+        
+      # Update viewers in combo box
+      self.cmbViewers.clear()
+      self.cmbViewers.addItem(_t_('Default'), None)
+      for viewer in self._viewers:
+        self.cmbViewers.addItem(_t_(viewer.name), viewer)
+            
+      if v is not None and v in self._viewers:
+        i = self._viewers.index(v)
+        self.cmbViewers.setCurrentIndex(i + 1)
+        
+      #else:
+        #print('Selecting default item with index', self.cmbViewers.findText(_t_('Default')))
+        ## Select default value
+        #self.cmbViewers.setCurrentIndex(0)
+
+      # Display or hide the viewer action in popup menu
+      visible = len(self._viewers) > 1      
+      self.cmbViewersSeparator.setVisible(visible)
+      self.actViewers.setVisible(visible)
+    
+    if len(self._viewers) == 0:
+      self.btnShow.hide()
+      
+  def viewersToTry(self):
+    viewer = self.selectedViewer()
+    if viewer is None:
+      return self._viewers
+    else:
+      return [viewer]
+      
   def openHistory( self ):
     v = self.getValue()
     bvproc_uuid = v.get("lastHistoricalEvent", None)
@@ -907,8 +1001,13 @@ class DiskItemListEditor( QWidget, DataEditor ):
     self.btnShow.setFixedSize( buttonIconSize + buttonMargin )
     self.btnShow.setFocusPolicy( Qt.NoFocus )
     self.btnShow.setEnabled( False )
-    if not brainvisa.processes.getViewer( (self.parameter.type, self.parameter.formats[0] ), 0, checkUpdate=False, listof=True ):
-      self.btnShow.hide()
+    
+    # Sets default viewers list
+    self.actViewers = None
+    self.cmbViewersSeparator = None
+    self.cmbViewers = None
+    self.newValidValue.connect(self.updateViewers)
+    
     self._view = None
     self.btnShow.clicked.connect(self.showPressed)
     self.btnShow.rightPressed.connect(self.openViewerPressed)
@@ -960,6 +1059,27 @@ class DiskItemListEditor( QWidget, DataEditor ):
 
     self.setValue( None, 1 )
 
+  def createPopupMenu(self, popup):     
+    self.cmbViewersSeparator = popup.addSeparator()
+
+    # Create viewers widget
+    layViewers = QHBoxLayout()
+    widViewers = QWidget(popup)
+    widViewers.setLayout(layViewers)
+    icon = QLabel(widViewers)
+    icon.setPixmap(QPixmap(findIconFile('eye.png')))
+    layViewers.addWidget(icon)
+    label = QLabel( _t_('Use viewer'), widViewers )
+    layViewers.addWidget(label)
+    self.cmbViewers = QComboBox(widViewers)
+    layViewers.addWidget(self.cmbViewers)
+    self.actViewers = QWidgetAction(popup)
+    self.actViewers.setDefaultWidget(widViewers)
+    popup.addAction(self.actViewers)
+    
+    # Update viewers
+    self.updateViewers()
+      
   def getValue( self ):
     return self._value
 
@@ -1012,14 +1132,45 @@ class DiskItemListEditor( QWidget, DataEditor ):
     if self.btnShow.isChecked():
       self.btnShow.setEnabled( 0 )
       v = self.getValue()
-      try :
-        viewer = brainvisa.processes.getViewer( v, 0, listof=True )()
-        brainvisa.processes.defaultContext().runInteractiveProcess( self._viewerExited, viewer, v )
-      except Exception as error :
-        raise RuntimeError( HTMLMessage(_t_( 'No viewer could be found or launched for type =<em>%s</em> and format=<em>%s</em>' ) % (unicode( v[0].type ), unicode(v[0].format))) )
+      viewerExists = False
+      try:
+        for viewer in self.viewersToTry():
+          try :
+            viewer = viewer()
+            viewerExists = True
+            brainvisa.processes.defaultContext().runInteractiveProcess(
+              self._viewerExited, viewer, v )
+            self.btnShow.setEnabled( True )
+            return
+        
+          except Exception:
+            # Log an error then try another viewer if possible
+            brainvisa.processes.defaultContext().log(
+              _t_('Warning for %s') % _t_(viewer.name),
+              html=_t_('Viewer aborted for type=<em>%s</em> and '
+              'format=<em>%s</em> value=<em>%s</em> '
+              '(try using it interactively by '
+              'right-clicking on the eye icon)') 
+              % (unicode(v.type), unicode(v.format), unicode(v)),
+              icon='eye.png')
+            continue
+        
+        self.btnShow.setEnabled( False )
+        self.btnShow.setChecked( False )
+        raise RuntimeError( HTMLMessage( _t_( 'No viewer could be found for '
+          'type=<em>%s</em> and format=<em>%s</em>' ) 
+          % (unicode( v.type ), unicode(v.format))) )
+    
+      except Exception as error:
+          # transform the exception into a print message, and return.
+          # We are in a Qt slot here, raising an exception results in
+          # undefined behaviour, which happens to have changed between PyQt 5.4
+          # and PyQt 5.5
+          print(error)
+          import traceback
+          traceback.print_stack()
     else:
       self._view = None
-
 
   def _viewerExited( self, result ):
     if isinstance( result, Exception ):
@@ -1028,12 +1179,68 @@ class DiskItemListEditor( QWidget, DataEditor ):
       self._view = result
     neuroProcessesGUI.mainThreadActions().push( self.btnShow.setEnabled, 1 )
 
-
   def openViewerPressed( self ):
+    # Normally it is not possible to try to open viewer if none is available
+    viewer = self.viewersToTry()[0]() 
     v = self.getValue()
-    viewer = brainvisa.processes.getViewer( v, 0, listof=True )()
     neuroProcessesGUI.showProcess( viewer, v )
 
+  def selectedViewer(self):
+    # Current index is shifted in Combo box due to the 'Default value' item
+    if self.cmbViewers is not None:
+      index = self.cmbViewers.currentIndex()
+      if index != -1 and index > 0 and index <= len(self._viewers):
+        return self._viewers[index - 1]
+
+    return None
+      
+  def updateViewers(self):
+    v = self.getValue()
+    if v is None or len(v) == 0:
+      format = None
+      if len(self.parameter.formats) != 0:
+        format = self.parameter.formats[0]
+      source = (self.parameter.type, format)
+    else:
+      source = v
+        
+    self._viewers = brainvisa.processes.getViewers(
+                            source, 
+                            1, checkUpdate=False, listof=True)
+    
+    if self.cmbViewers is not None:
+      v = self.selectedViewer()
+      #print('selected viewer:', v)
+        
+      # Update viewers in combo box
+      self.cmbViewers.clear()
+      self.cmbViewers.addItem(_t_('Default'), None)
+      for viewer in self._viewers:
+        self.cmbViewers.addItem(_t_(viewer.name), viewer)
+            
+      if v is not None and v in self._viewers:
+        i = self._viewers.index(v)
+        self.cmbViewers.setCurrentIndex(i + 1)
+        
+      #else:
+        #print('Selecting default item with index', self.cmbViewers.findText(_t_('Default')))
+        ## Select default value
+        #self.cmbViewers.setCurrentIndex(0)
+
+      # Display or hide the viewer action in popup menu
+      visible = len(self._viewers) > 1      
+      self.cmbViewersSeparator.setVisible(visible)
+      self.actViewers.setVisible(visible)
+    
+    if len(self._viewers) == 0:
+      self.btnShow.hide()
+      
+  def viewersToTry(self):
+    viewer = self.selectedViewer()
+    if viewer is None:
+      return self._viewers
+    else:
+      return [viewer]
 
   def editPressed( self ):
     if self.btnEdit.isChecked():
