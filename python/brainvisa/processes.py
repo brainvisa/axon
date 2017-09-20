@@ -4643,8 +4643,12 @@ def getConversionInfo(source, dest, checkUpdate=True):
     """
     global _conversion_infos
     
-    ts, fs = getDiskItemSourceInfo(source)
-    td, fd = getDiskItemSourceInfo(dest)
+    try:
+        ts, fs = getDiskItemSourceInfo(source)
+        td, fd = getDiskItemSourceInfo(dest)
+    except TypeError:
+        # may occur if source or dest is not valid
+        return None
     
     # Check that conversion info is in cache for source->dest or initialize it
     ci = _conversion_infos.setdefault((ts, fs), dict()) \
