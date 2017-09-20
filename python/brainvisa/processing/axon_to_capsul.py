@@ -253,52 +253,58 @@ def use_weak_ref(obj):
     return weakref.ref(obj)
 
 
+def parse_param_link(pipeline, proc, param, linkdefs, weak_outputs=False):
+    links = []
+    for dstproc, dstparam, mlink, unknown, force in linkdefs:
+        dstproc = use_weak_ref(dstproc)
+        # check if link is compatible
+        if dstproc is None or dstparam is None or dstproc is proc:
+            # intra-process links are dropped.
+            continue
+        srcsign = proc().signature[param]
+        dstsign = dstproc().signature[dstparam]
+        if type(srcsign) is not type(dstsign) \
+                and (not isinstance(srcsign, ReadDiskItem) \
+                    or not isinstance(dstsign, ReadDiskItem)):
+            # incompatible parameters types
+            continue
+        if isinstance(srcsign, ReadDiskItem):
+            if srcsign.type.isA(dstsign.type.name) \
+                    or dstsign.type.isA(srcsign.type.name):
+                # compatible type
+                if isinstance(dstsign, WriteDiskItem) \
+                        or (not isinstance(srcsign, WriteDiskItem) \
+                            and dstproc is use_weak_ref(pipeline)):
+                    # swap input/output
+                    this_weak_output = False
+                    if weak_outputs and proc is use_weak_ref(pipeline):
+                        this_weak_output = True
+                    if (dstproc, dstparam, proc, param) not in links:
+                        links.append((dstproc, dstparam, proc, param,
+                            this_weak_output))
+                else:
+                    this_weak_output = False
+                    if weak_outputs and dstproc is use_weak_ref(pipeline):
+                        this_weak_output = True
+                    if (proc, param, dstproc, dstparam) not in links:
+                        links.append((proc, param, dstproc, dstparam,
+                            this_weak_output))
+        else:
+            # not DiskItems
+            this_weak_output = False
+            if weak_outputs and dstproc is use_weak_ref(pipeline):
+                this_weak_output = True
+            if (proc, param, dstproc, dstparam) not in links:
+                links.append((proc, param, dstproc, dstparam,
+                    this_weak_output))
+    return links
+
+
 def parse_links(pipeline, proc, weak_outputs=False):
     links = []
     proc = use_weak_ref(proc)
     for param, linkdefs in six.iteritems(proc()._links):
-        for dstproc, dstparam, mlink, unknown, force in linkdefs:
-            dstproc = use_weak_ref(dstproc)
-            # check if link is compatible
-            if dstproc is None or dstparam is None or dstproc is proc:
-                # intra-process links are dropped.
-                continue
-            srcsign = proc().signature[param]
-            dstsign = dstproc().signature[dstparam]
-            if type(srcsign) is not type(dstsign) \
-                    and (not isinstance(srcsign, ReadDiskItem) \
-                        or not isinstance(dstsign, ReadDiskItem)):
-                # incompatible parameters types
-                continue
-            if isinstance(srcsign, ReadDiskItem):
-                if srcsign.type.isA(dstsign.type.name) \
-                        or dstsign.type.isA(srcsign.type.name):
-                    # compatible type
-                    if isinstance(dstsign, WriteDiskItem) \
-                            or (not isinstance(srcsign, WriteDiskItem) \
-                                and dstproc is use_weak_ref(pipeline)):
-                        # swap input/output
-                        this_weak_output = False
-                        if weak_outputs and proc is use_weak_ref(pipeline):
-                            this_weak_output = True
-                        if (dstproc, dstparam, proc, param) not in links:
-                            links.append((dstproc, dstparam, proc, param,
-                                this_weak_output))
-                    else:
-                        this_weak_output = False
-                        if weak_outputs and dstproc is use_weak_ref(pipeline):
-                            this_weak_output = True
-                        if (proc, param, dstproc, dstparam) not in links:
-                            links.append((proc, param, dstproc, dstparam,
-                                this_weak_output))
-            else:
-                # not DiskItems
-                this_weak_output = False
-                if weak_outputs and dstproc is use_weak_ref(pipeline):
-                    this_weak_output = True
-                if (proc, param, dstproc, dstparam) not in links:
-                    links.append((proc, param, dstproc, dstparam,
-                        this_weak_output))
+        links += parse_param_link(pipeline, proc, param, linkdefs, weak_outputs)
     return links
 
 
@@ -324,6 +330,10 @@ def is_output(proc, param):
 
 def converted_link(linkdef, links, pipeline, selfinparams, revinparams,
         selfoutparams, revoutparams, procmap):
+    # selfinparams: outputs which are in self (pipeline) and are thus inputs
+    # selfoutparams: inputs which are in self (pipeline) and are thus outpupts
+    # revinparams: input params which should be translated to pipeline
+    # revoutparams: dest params which should be translated to pipeline
     # find exported source/dest
     weak_link = linkdef[4]
     real_source = find_param_in_parent(linkdef[0], linkdef[1], procmap)
@@ -698,7 +708,8 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
                     out_types_list.append('%s(%s)'
                                           % (ptype, ', '.join(options)))
                 else:
-                    out_types.append('Any()')
+                    out_types[output_name] = (traits.Any, [])
+                    out_types_list.append('Any()')
             buffered_lines['nodes'].append(
                 '        self.add_switch(\'%s\', %s, %s, output_types=[%s])\n'
                 % (nodename, repr(input_names), repr(output_names),
@@ -994,10 +1005,10 @@ def axon_to_capsul(proc, outfile, module_name_prefix=None,
     out.write('''# -*- coding: utf-8 -*-
 try:
     from traits.api import File, Directory, Float, Int, Bool, Enum, Str, \\
-        List, Undefined
+        List, Any, Undefined
 except ImportError:
     from enthought.traits.api import File, Directory, Float, Int, Bool, Enum, \\
-        Str, List, Undefined
+        Str, List, Any, Undefined
 
 from capsul.api import Process
 import six
