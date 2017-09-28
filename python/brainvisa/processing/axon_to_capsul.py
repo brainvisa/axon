@@ -1096,10 +1096,11 @@ def axon_to_capsul_main(argv):
         'Parameters links for completion are not preserved (yet), but ' \
         'inter-process links in pipelines are (normally) rebuilt.')
     parser.add_option('-p', '--process', dest='process', action='append',
+        default=[],
         help='input process ID. Ex: NobiasHistoAnalysis. Several -p options ' \
         'are allowed and should each correspond to a -o option.')
     parser.add_option('-o', '--output', dest='output', metavar='FILE',
-        action='append',
+        action='append', default=[],
         help='output .py file for the converted process code')
     parser.add_option('-n', '--name', dest='name', action='append',
         default=[],
@@ -1142,6 +1143,10 @@ def axon_to_capsul_main(argv):
     if len(args) != 0:
         parser.print_help()
         sys.exit(1)
+
+    if len(options.process) != len(options.output):
+        raise ValueError(
+            'There should be the same number of -p options and -o options')
 
     #processes.fastStart = True
     from brainvisa.configuration import neuroConfig
