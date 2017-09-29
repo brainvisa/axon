@@ -57,7 +57,7 @@ except ImportError:
     pass
 import soma.qt_gui.qt_backend
 soma.qt_gui.qt_backend.set_qt_backend(compatible_qt5=True)
-print('Qt backend:', soma.qt_gui.qt_backend.get_qt_backend())
+#print('Qt backend:', soma.qt_gui.qt_backend.get_qt_backend())
 import sip
 from soma.qt_gui.qt_backend import QtGui, QtCore
 
@@ -191,7 +191,11 @@ class ApplicationQt4GUI( ApplicationBaseGUI ):
     dialog = self.createEditionDialog( object, parent=parent, live=live, modal=modal )
     result = dialog.exec_()
     if result:
-      dialog.setObject( object )
+      try:
+        dialog.setObject( object )
+      except:
+        import traceback
+        traceback.print_exc()
     self.closeEditionDialog( dialog )
     return result
 

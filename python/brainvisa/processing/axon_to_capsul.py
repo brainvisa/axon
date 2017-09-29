@@ -1160,23 +1160,26 @@ def axon_to_capsul_main(argv):
           make_module_name(capsul, options.module, {},
                            lowercase_modules))
          for axon, capsul in six.iteritems(gen_process_names)])
-    print('converted proc names:', use_process_names)
+    #print('converted proc names:', use_process_names)
     use_process_names.update(dict([(axon, capsul) \
         for (axon, capsul) in [name.split(':') for name in options.use_proc]]))
 
-    print('use_process_names:', use_process_names)
+    #print('use_process_names:', use_process_names)
 
     done_processes = set()
     todo = zip([procbv.getProcessInstance(p, ignoreValidation=True)
                 for p in options.process],
         options.output)
     if options.subprocess:
+        added_processes = []
         for proc, outfile in todo:
-          added_processes = get_subprocesses(proc)
+          added_processes += get_subprocesses(proc)
         todo += zip(list(added_processes),
             [module_filename(p.id(), lowercase_modules,
                              gen_process_names) + '.py'
              for p in added_processes])
+
+    todo = set(todo) # remove duplicates
 
     for proc, outfile in todo:
         procid = get_process_id(proc)
