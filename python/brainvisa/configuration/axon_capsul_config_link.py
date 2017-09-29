@@ -193,10 +193,10 @@ class AxonCapsulConfSynchronizer(object):
         # Freesurfer
         try:
             if ax_conf.freesurfer.freesurfer_home_path:
-              study_config.freesurfer_config = os.path.join(
-                  ax_conf.freesurfer.freesurfer_home_path,
-                  'SetUpFreeSurfer.sh')
-              study_config.use_freesurfer = True
+                study_config.freesurfer_config = os.path.join(
+                    ax_conf.freesurfer.freesurfer_home_path,
+                    'SetUpFreeSurfer.sh')
+                study_config.use_freesurfer = True
         except AttributeError:
             # FS toolbox is probably not installed.
             study_config.use_freesurfer = False
@@ -207,8 +207,68 @@ class AxonCapsulConfSynchronizer(object):
         Make sure to have initialized axon config before calling it (typically
         by calling brainvisa.axon.processes.initializeProcesses()).
         '''
-        #ax_conf = Application().configuration
-        raise NotImplementedError('To be done later...')
+        ax_conf = Application().configuration
+        study_config = self.study_config
+
+        # matlab
+        if study_config.use_matlab:
+            ax_conf.matlab.executable = study_config.matlab_exec
+        else:
+            ax_conf.matlab.executable = None
+
+        # SPM
+        if study_config.use_spm:
+            if getattr(study_config, 'spm_version', '12') == '12':
+                if study_config.spm_standalone:
+                    ax_conf.SPM.spm12_standalone_command = study_config.spm_exec
+                    ax_conf.SPM.spm12_standalone_path \
+                        = study_config.spm_directory
+                    ax_conf.SPM.spm12_standalone_mcr_path \
+                        = os.path.join(study_config.spm_directory, 'mcr',
+                                       'v713')
+                else:
+                    ax_conf.SPM.spm12_standalone_path = None
+                    ax_conf.SPM.spm12_standalone_command = None
+                    ax_conf.SPM.spm12_standalone_mcr_path = None
+                ax_conf.SPM.spm8_standalone_path = None
+                ax_conf.SPM.spm8_standalone_command = None
+                ax_conf.SPM.spm8_standalone_mcr_path = None
+            else:
+                if study_config.spm_standalone:
+                    ax_conf.SPM.spm8_standalone_command = study_config.spm_exec
+                    ax_conf.SPM.spm8_standalone_path \
+                        = study_config.spm_directory
+                    ax_conf.SPM.spm8_standalone_mcr_path \
+                        = os.path.join(study_config.spm_directory, 'mcr',
+                                       'v713')
+                else:
+                    ax_conf.SPM.spm8_standalone_path = None
+                    ax_conf.SPM.spm8_standalone_command = None
+                    ax_conf.SPM.spm8_standalone_mcr_path = None
+                ax_conf.SPM.spm12_standalone_path = None
+                ax_conf.SPM.spm12_standalone_command = None
+                ax_conf.SPM.spm12_standalone_mcr_path = None
+        else:
+            ax_conf.SPM.spm12_standalone_path = None
+            ax_conf.SPM.spm12_standalone_command = None
+            ax_conf.SPM.spm12_standalone_mcr_path = None
+            ax_conf.SPM.spm8_standalone_path = None
+            ax_conf.SPM.spm8_standalone_command = None
+            ax_conf.SPM.spm8_standalone_mcr_path = None
+
+        # FSL
+        if study_config.use_fsl:
+            ax_conf.FSL.fsldir = os.path.dirname(os.path.dirname(
+                os.path.dirname(study_config.fsl_config)))
+        else:
+            ax_conf.FSL.fsldir = None
+
+        # Freesurfer
+        if study_config.use_freesurfer:
+            ax_conf.freesurfer.freesurfer_home_path \
+                = os.path.dirname(study_config.freesurfer_config)
+        else:
+            ax_conf.freesurfer.freesurfer_home_path = None
 
 
     def _set_matlab_executable_capsul(self, value):
@@ -232,17 +292,22 @@ class AxonCapsulConfSynchronizer(object):
     def _set_spm_standalone_command_capsul(self, unused_value):
         study_config = self.study_config
         ax_conf = Application().configuration
-        variables = ('spm12_standalone_command', 'spm8_standalone_command')
-        for var in variables:
+        variables = (('spm12_standalone_command', '12'),
+                     ('spm8_standalone_command', '8'))
+        ver = None
+        value = None
+        for var, ver in variables:
             value = getattr(ax_conf.SPM, var)
             if value:
                 break
         if value:
             study_config.spm_exec = value
             study_config.spm_standalone = True
+            study_config.spm_standalone_version = ver
         else:
             study_config.spm_standalone = False
             study_config.spm_exec = ''
+            study_config.spm_standalone_version = None
         if study_config.spm_standalone \
                 or (study_config.use_matlab and study_config.spm_directory):
             study_config.use_spm = True
@@ -252,13 +317,16 @@ class AxonCapsulConfSynchronizer(object):
     def _set_spm_directory_capsul(self, unused_value):
         study_config = self.study_config
         ax_conf = Application().configuration
-        variables = ('spm12_standalone_path', 'spm12_path',
-                     'spm8_standalone_path', 'spm8_path')
-        for var in variables:
+        variables = (('spm12_standalone_path', '12'), ('spm12_path', '12'),
+                     ('spm8_standalone_path', '8'), ('spm8_path', '8'))
+        ver = None
+        value = None
+        for var, ver in variables:
             value = getattr(ax_conf.SPM, var)
             if value:
                 break
         study_config.spm_directory = value
+        study_config.spm_version = ver
 
     def _set_fsl_directory_capsul(self, value):
         study_config = self.study_config
