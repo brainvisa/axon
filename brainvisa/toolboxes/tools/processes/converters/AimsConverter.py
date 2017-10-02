@@ -67,13 +67,20 @@ signature = Signature(
 
 
 def findAppropriateFormat(values, proc):
-    if values.preferedFormat is None:
-        result = WriteDiskItem(
-            '4D Volume',
-            aimsGlobals.aimsWriteVolumeFormats).findValue(values.read)
-    else:
-        result = WriteDiskItem(
-            '4D Volume', values.preferedFormat).findValue(values.read)
+    result = None
+    if values.read is not None:
+        if values.preferedFormat is not None:
+            format = values.preferedFormat
+        else:
+            format = aimsGlobals.aimsWriteVolumeFormats[0]
+        fobj = getFormat(format)
+        if fobj is None:
+            return None
+        # I found no method to get the file extension from a format.
+        fp = fobj.patterns.patterns[0].pattern.split('|*')
+        if len(fp) == 2:
+            filename = values.read.fullName() + fp[1]
+            result = WriteDiskItem('4D Volume', format).findValue(filename)
 
     return result
 
