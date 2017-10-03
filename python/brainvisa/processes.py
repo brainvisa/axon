@@ -4781,12 +4781,12 @@ def getProcesses(registry, source, enableConversion=1,
     # Create a list of process set that can be ordered by distance vector
     r = list()
     for k, ps in six.iteritems(registry):
-        d = getConversionInfo(source, ps.source(), 
-                              checkUpdate=checkUpdate) \
-              .distance(useInheritanceOnly=not enableConversion,
-                        exactConversionTypeOnly=exactConversionTypeOnly)
-        if d is not None:
-            r.append((d, ps))
+        ci = getConversionInfo(source, ps.source(), checkUpdate=checkUpdate)
+        if ci is not None:
+            d = ci.distance(useInheritanceOnly=not enableConversion,
+                            exactConversionTypeOnly=exactConversionTypeOnly)
+            if d is not None:
+                r.append((d, ps))
             
     # Sort process sets using distance vector
     s = sorted(r)
