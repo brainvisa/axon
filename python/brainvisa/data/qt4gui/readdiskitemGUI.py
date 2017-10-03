@@ -1203,10 +1203,13 @@ class DiskItemListEditor( QWidget, DataEditor ):
       source = (self.parameter.type, format)
     else:
       source = v
-        
-    self._viewers = brainvisa.processes.getViewers(
+
+    try:
+      self._viewers = brainvisa.processes.getViewers(
                             source, 
                             1, checkUpdate=False, listof=True)
+    except:
+      self._viewers = []
     
     if self.cmbViewers is not None:
       v = self.selectedViewer()
