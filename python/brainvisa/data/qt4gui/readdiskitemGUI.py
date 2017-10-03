@@ -326,7 +326,9 @@ class DiskItemEditor( QWidget, DataEditor ):
               icon='eye.png')
             continue
 
-        self.btnShow.setEnabled( False )
+        # if a viewer exists, still keep the button enabled to allow using the
+        # right-click options
+        self.btnShow.setEnabled( viewerExists )
         self.btnShow.setChecked( False )
         raise RuntimeError( HTMLMessage( _t_( 'No viewer could be found for type=<em>%s</em> and format=<em>%s</em>' ) % (unicode( v.type ), unicode(v.format))) )
     
