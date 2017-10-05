@@ -102,7 +102,7 @@ def validation():
 
 if anatomistImport:
     # dynamic class Anatomist inherits from one implementation of anatomist api
-    class AnatomistImpl(anatomistModule.Anatomist):
+    class Anatomist(anatomistModule.Anatomist):
         # We shouldn't change the defaultRefType in fact.
         # Indeed, if Anatomist from brainvisa takes only weak shared references on objects and windows,
         # the user can close a window that is still used by python and it can creates pbs
@@ -112,10 +112,11 @@ if anatomistImport:
         # defaultRefType="WeakShared"
 
         def __new__(cls, *args, **kwargs):
+            import threading
             if neuroConfig.anatomistImplementation != 'socket':
                 from . import reusablewinhook
                 globals()['reusablewinhook'] = reusablewinhook
-            instance = super(AnatomistImpl, cls).__new__(cls, *args, **kwargs)
+            instance = super(Anatomist, cls).__new__(cls, *args, **kwargs)
             if instance and '-b' not in args \
                     and neuroConfig.anatomistImplementation != 'socket':
                 if not instance.getControlWindow():
@@ -129,13 +130,14 @@ if anatomistImport:
             return instance
 
         def __singleton_init__(self, *args, **kwargs):
+            import threading
             self.communicationLogFile = None
             self.outputLog = None
             if neuroConfig.mainLog is not None:
                 communicationLog = neuroConfig.mainLog.subTextLog()
                 self.communicationLogFile = open(communicationLog.fileName,
                                                  'w')
-            super(AnatomistImpl, self).__singleton_init__(*args, **kwargs)
+            super(Anatomist, self).__singleton_init__(*args, **kwargs)
             anatomistParameters = []
             for a in args:
                 anatomistParameters.append(a)
@@ -166,7 +168,7 @@ if anatomistImport:
                 anatomistParameters += ['-u', neuroConfig.userProfile]
             mainThread = QtThreadCall()
             args = anatomistParameters
-            super(AnatomistImpl, self).__singleton_init__(*args, **kwargs)
+            super(Anatomist, self).__singleton_init__(*args, **kwargs)
             self._reusableWindows = []
             self._reusableWindowBlocks = []
 
@@ -178,7 +180,7 @@ if anatomistImport:
                                     self.anatomist_closed)
                 mainThread.push(reusablewinhook.installWindowHandler)
 
-        def anatomist_closed(self):
+        def anatomist_closed(self, obj):
             self._reusableWindows = []
             self._reusableWindowBlocks = []
             if neuroProcessesGUI:
@@ -848,10 +850,7 @@ if anatomistImport:
                               interpolation=None,
                               prefer_internal_palette=True):
             """Load a mesh file and apply the texture with the palette"""
-            import threading
-            print('viewTextureOnMesh, thread:', threading.current_thread())
             mesh = self.loadObject(meshFile)
-            print('mesh loaded')
             if not mesh.getInternalRep():
                 raise RuntimeError('Anatomist could not read file %s'
                                    % meshFile.fullPath())
@@ -859,14 +858,11 @@ if anatomistImport:
             if palette is not None and not prefer_internal_palette:
                 duplicate = True
             tex = self.loadObject(textureFile, duplicate=duplicate)
-            print('obj loaded')
             if not tex.getInternalRep():
                 raise RuntimeError('Anatomist could not read file %s'
                                    % textureFile.fullPath())
             if palette and prefer_internal_palette:
-                print('palette in hdr')
                 info = tex.getInfos()
-                print('got info')
                 if 'palette' not in info \
                         or info['palette']['palette'] == 'Blue-Red':
                     duplicate = True
@@ -876,9 +872,7 @@ if anatomistImport:
                         pass  # socket implementation does not have this feature
                     tex = self.duplicateObject(tex)
             if palette and duplicate:
-                print('setting palette')
                 tex.setPalette(palette)
-                print('palette set')
             # Fusion indexMESH with indexTEX
             fusion = self.fusionObjects(
                 [mesh, tex], method='FusionTexSurfMethod')
@@ -1038,14 +1032,6 @@ if anatomistImport:
             if self.aslist:
                 return [win]
             return win
-
-    if neuroConfig.anatomistImplementation == 'threaded':
-        from anatomist import threadedimpl
-        import threading
-        Anatomist = threadedimpl.getThreadSafeClass(AnatomistImpl,
-                                                    mainThread=QtThreadCall())
-    else:
-        Anatomist = AnatomistImpl
 
 
 else:  # if anatomist module is not available: empty classes
