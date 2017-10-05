@@ -1753,11 +1753,15 @@ class ParameterizedWidget( QWidget ):
     self._doUpdateParameterValue = True
 
   def updateParameterValue( self, name, value ):
-    #lock system
-    self.labels[name].setlock(self._setlock_system(name))
+    try:
+      #lock system
+      self.labels[name].setlock(self._setlock_system(name))
 
-    if self._doUpdateParameterValue:
-      setattr( self.parameterized, name, value )
+      if self._doUpdateParameterValue:
+        setattr( self.parameterized, name, value )
+    except:
+      import traceback
+      traceback.print_exc()
 
   def removeDefault( self, name ):
     #lock system
