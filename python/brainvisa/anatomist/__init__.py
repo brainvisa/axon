@@ -112,6 +112,7 @@ if anatomistImport:
         # defaultRefType="WeakShared"
 
         def __new__(cls, *args, **kwargs):
+            import threading
             if neuroConfig.anatomistImplementation != 'socket':
                 from . import reusablewinhook
                 globals()['reusablewinhook'] = reusablewinhook
@@ -129,6 +130,7 @@ if anatomistImport:
             return instance
 
         def __singleton_init__(self, *args, **kwargs):
+            import threading
             self.communicationLogFile = None
             self.outputLog = None
             if neuroConfig.mainLog is not None:
@@ -178,7 +180,7 @@ if anatomistImport:
                                     self.anatomist_closed)
                 mainThread.push(reusablewinhook.installWindowHandler)
 
-        def anatomist_closed(self):
+        def anatomist_closed(self, obj):
             self._reusableWindows = []
             self._reusableWindowBlocks = []
             if neuroProcessesGUI:
