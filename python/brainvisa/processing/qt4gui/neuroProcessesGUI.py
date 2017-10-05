@@ -1753,11 +1753,15 @@ class ParameterizedWidget( QWidget ):
     self._doUpdateParameterValue = True
 
   def updateParameterValue( self, name, value ):
-    #lock system
-    self.labels[name].setlock(self._setlock_system(name))
+    try:
+      #lock system
+      self.labels[name].setlock(self._setlock_system(name))
 
-    if self._doUpdateParameterValue:
-      setattr( self.parameterized, name, value )
+      if self._doUpdateParameterValue:
+        setattr( self.parameterized, name, value )
+    except:
+      import traceback
+      traceback.print_exc()
 
   def removeDefault( self, name ):
     #lock system
@@ -1947,6 +1951,8 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
   action_iterate = None
 
+  action_show_doc = None
+
   eTreeWidget = None
 
   menu = None
@@ -2022,6 +2028,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
     self.action_manage_process_setups = QAction(_t_('Save process setups'), self)
     self.action_manage_process_setups.triggered.connect(self.saveProcessSetupsGUI)
+    self.action_show_doc = QAction(_t_('Show process documentation'), self)
+    self.action_show_doc.setShortcut(Qt.Key_F1)
+    self.action_show_doc.triggered.connect(self.show_process_doc)
 
     if parent is None:
       neuroConfig.registerObject( self )
@@ -2052,6 +2061,7 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       view_menu = QMenu( _t_( "&View" ), self.menu )
       self.menu.addMenu(view_menu)
       view_menu.addAction(close_viewers_action(self))
+      view_menu.addAction(self.action_show_doc)
 
       try:
         import soma_workflow
@@ -3261,6 +3271,13 @@ class ProcessView( QWidget, ExecutionContextGUI ):
     self.readUserValues()
     clone = brainvisa.processes.getProcessInstanceFromProcessEvent( self.createProcessExecutionEvent() )
     return showProcess( clone )
+
+
+  def show_process_doc(self):
+    global _mainWindow
+    doc = brainvisa.processes.getHTMLFileName(self.process)
+    if os.path.exists(doc):
+      _mainWindow.info.setSource(doc)
 
 
   @staticmethod

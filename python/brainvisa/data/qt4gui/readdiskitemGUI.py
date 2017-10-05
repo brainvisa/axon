@@ -130,7 +130,13 @@ class DiskItemEditor( QWidget, DataEditor ):
     self.btnEdit.setFixedSize( buttonIconSize + buttonMargin )
     self.btnEdit.setFocusPolicy( Qt.NoFocus )
     self.btnEdit.setEnabled( 0 )
-    if not brainvisa.processes.getDataEditor( (self.parameter.type, self.parameter.formats ), checkUpdate=False ):
+    editor = None
+    try:
+      editor = brainvisa.processes.getDataEditor(
+        (self.parameter.type, self.parameter.formats), checkUpdate=False)
+    except:
+      pass
+    if not editor:
       self.btnEdit.hide()
     self.btnEdit.clicked.connect(self.editPressed)
     self.btnEdit.rightPressed.connect(self.openEditorPressed)
