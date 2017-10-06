@@ -416,6 +416,8 @@ class ReadDiskItem( Parameter ):
                   print('  chosen format:', result.format, file=_debug)
             elif _debug is not None:
                 print('  top priority values differ on ontology attributes ==> no selection on format', file=_debug)
+                print('ref   element:', refDiskItem.fullPath(), refHierarchy, file=_debug)
+                print('check element:', checkDiskItem.fullPath(), checkHierarchy, file=_debug)
 
     # this block of code was originally in WriteDiskItem.findValue().
     # We do not remember what it was exactly meant for, and did not do
