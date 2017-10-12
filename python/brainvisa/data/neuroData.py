@@ -74,6 +74,7 @@ import six
 if sys.version_info[0] >= 3:
     from collections import UserDict, UserList
     unicode = str
+    basestring = str
 else:
     from UserDict import UserDict
     from UserList import UserList
@@ -660,6 +661,8 @@ class Matrix( String ):
     Returns a :py:class:`MatrixValue` created from the given value, checking that the required dimensions are respected.
     """
     if not value: return None
+    if isinstance(value, basestring):
+      value = eval(value)
     return MatrixValue( value, self.length, self.width )
 
 
