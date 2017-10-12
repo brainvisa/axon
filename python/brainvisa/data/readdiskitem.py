@@ -347,6 +347,15 @@ class ReadDiskItem( Parameter ):
           if _debug is not None:
             print('  DiskItem rejected because:', self.diskItemFilter( result, requiredAttributes, explainRejection=True ), file=_debug)
           result = None
+      if result is None and self._parameterized is not None \
+          and self._name is not None \
+          and not self._parameterized().isDefault(self._name):
+        try:
+          result = self.database.createDiskItemFromFormatExtension(selection)
+          if result is not None:
+            result.type = self.type
+        except:
+          pass
     elif isinstance( selection, dict ):
       if '_declared_attributes_location' in selection.keys():
         #keep it could cause problems because it should not be compared between disk items
