@@ -288,7 +288,10 @@ class Number( String ):
     except:
       try: return long( value )
       except:
-        return float( value )
+        try:
+          return float( value )
+        except:
+          raise ValueError('cannot convert value to number:', value)
 
 
 #----------------------------------------------------------------------------

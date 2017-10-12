@@ -4248,6 +4248,11 @@ def getProcessInstanceFromProcessEvent(event):
                 result.setValue(n, v, default=True)
             except KeyError:
                 pass
+            except:
+                defaultContext().showException(
+                    beforeError='<em>while loading process %s, setting '
+                    'parameter %s with value: %s</em>'
+                    % (result.name, n, str(v)))
         stack = stackp
         for eNodeParent, eNodeName, eNodeParameters, eNodeSelected, eNodeChildren in stack:
             eNode = eNodeParent.child(eNodeName)
