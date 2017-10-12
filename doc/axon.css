@@ -113,9 +113,9 @@ blockquote blockquote{
 }
 
 .warning {
-    background-color: #FFF6F6;
+    background-color: #FFECEC;
     border: thin solid;
-    border-color: #F4E4E4;
+    border-color: #F4D0D0;
     padding: 1mm;
 }
 
@@ -141,6 +141,7 @@ div.note h5 {
     margin-bottom: 2mm;
     color: #a04040;
     font-weight: bold;
+    background-color: #FFECEC;
 }
 
 div.warning h4 {
@@ -148,6 +149,7 @@ div.warning h4 {
     margin-bottom: 2mm;
     color: #b00000;
     font-weight: bold;
+    background-color: #FFECEC;
 }
 
 div.warning h5 {
@@ -156,5 +158,6 @@ div.warning h5 {
     margin-bottom: 2mm;
     color: #b00000;
     font-weight: bold;
+    background-color: #FFECEC;
 }
 
