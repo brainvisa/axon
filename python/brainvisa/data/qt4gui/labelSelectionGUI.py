@@ -39,6 +39,7 @@
 from __future__ import print_function
 from soma.qt_gui.qt_backend.QtGui import QWidget, QHBoxLayout, QPushButton
 from soma.qt_gui.qt_backend.QtCore import QSize
+from soma.qt_gui.qt_backend import Qt
 from brainvisa.data.qtgui.neuroDataGUI import DataEditor
 from brainvisa.data.qtgui.readdiskitemGUI import DiskItemEditor
 from brainvisa.configuration import neuroConfig
@@ -52,6 +53,10 @@ if sys.version_info[0] >= 3:
 
 #----------------------------------------------------------------------------
 class LabelSelectionEditor( QWidget, DataEditor ):
+
+    noDefault = Qt.Signal(unicode)
+    newValidValue = Qt.Signal(unicode, object)
+
     def __init__( self, parameter, parent, name ):
         DataEditor.__init__( self )
         QWidget.__init__( self, parent )
@@ -71,8 +76,11 @@ class LabelSelectionEditor( QWidget, DataEditor ):
         self._disk.newValidValue.connect( self.diskItemChanged )
 
     def setValue( self, value, default=0 ):
-        if value is not None:
+        if value is not None and value != self.value:
             self.value = value
+            if not default:
+                self.noDefault.emit(unicode(self.objectName()))
+            self.newValidValue.emit(unicode(self.objectName()), self.value)
 
     def getValue( self ):
         return self.value

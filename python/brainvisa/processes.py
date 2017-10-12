@@ -3271,7 +3271,12 @@ class ExecutionContext(object):
     # should simply deprecate this method, which is very little used anyway
     # (only 6 matches in the standard tree, all calls to cartoLinearComb.py in
     # Morphologist).
-        exe = neuroConfig.executableWithPath(args[0])
+        if args[0].startswith('-'):
+            # 1st arg is a flag, like -m or -c: use it as is
+            exe = args[0]
+        else:
+            # otherwise it should be a script name: find it in the path
+            exe = neuroConfig.executableWithPath(args[0])
         return self.system(sys.executable, exe, *args[1:], **kwargs)
 
     def _systemStdout(self, line, logFile=None):
@@ -4243,6 +4248,11 @@ def getProcessInstanceFromProcessEvent(event):
                 result.setValue(n, v, default=True)
             except KeyError:
                 pass
+            except:
+                defaultContext().showException(
+                    beforeError='<em>while loading process %s, setting '
+                    'parameter %s with value: %s</em>'
+                    % (result.name, n, str(v)))
         stack = stackp
         for eNodeParent, eNodeName, eNodeParameters, eNodeSelected, eNodeChildren in stack:
             eNode = eNodeParent.child(eNodeName)
