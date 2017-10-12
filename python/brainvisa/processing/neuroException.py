@@ -217,9 +217,9 @@ def showException( beforeError='', afterError='', parent = None,
               parent=parent )
         mainThreadActions().push( w.show )
     else:
-      HTMLParser( formatter.AbstractFormatter(
-        formatter.DumbWriter( sys.stdout, 80 ) ) )\
-        .feed( messageHTML + '<hr>' + detailHTML ) 
+      HTMLParser(formatter.AbstractFormatter(
+        formatter.DumbWriter(sys.stdout, 80)))\
+        .feed(messageHTML + '<hr>' + detailHTML)
   except Exception as e:
     traceback.print_exc()
   # why this violent exit ??

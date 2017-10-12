@@ -245,6 +245,11 @@ class DiskItemEditor( QWidget, DataEditor ):
       self.diskItem = self.parameter.findValue( value )
       if self.diskItem is None:
         if value is None: self.led.setText( '' )
+        else:
+          # value is not None but is invalid: make it appear
+          pal = QPalette()
+          pal.setColor( QPalette.Base, QColor( 200, 190, 190 ) )
+          self.led.setPalette( pal )
         if self.btnShow: self.btnShow.setEnabled( 0 )
         if self.btnEdit: self.btnEdit.setEnabled( 0 )
         self.newValidValue.emit(unicode(self.objectName()), self.diskItem)
@@ -257,7 +262,7 @@ class DiskItemEditor( QWidget, DataEditor ):
     self.valuePropertiesChanged( default )
 
   def valuePropertiesChanged( self, isDefault ):
-    pal = QPalette()
+    pal = self.led.palette()
     if not isDefault:
       pal.setColor( QPalette.Text, QColor( 0, 0, 255 ) )
     if self.diskItem is not None and self.diskItem.isLockData():
