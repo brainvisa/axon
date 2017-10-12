@@ -1792,9 +1792,15 @@ class ParameterizedWidget( QWidget ):
       value = getattr(self.parameterized, name, None)
 
       if value is not None :
-          isLock = value.lockData()
-          if isLock : self.labels[name].lock_id.setChecked(True)
-          else : self.labels[name].lock_id.setChecked(False)
+          try:
+              isLock = value.lockData()
+              if isLock : self.labels[name].lock_id.setChecked(True)
+              else : self.labels[name].lock_id.setChecked(False)
+          except:
+              self.labels[name].lock_id.setChecked(False)
+              print('Could not change lock for', name, ':')
+              import traceback
+              traceback.print_exc()
 
 
   def _unlock_system( self, name ):
