@@ -885,7 +885,6 @@ class Parameterized(object):
         """Calls :py:func:`setValue` if the parameter is described in the signature."""
         if name in self.signature:
             default = self._force_default_in_setattr
-            print('setattr', name, ':', value, ', default:', default)
             self.setValue(name, value, default)
         else:
             self.__dict__[name] = value
