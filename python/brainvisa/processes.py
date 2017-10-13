@@ -735,9 +735,9 @@ class Parameterized(object):
 
         self._force_default_in_setattr = None
         self.initialization()
-        self._force_default_in_setattr = False
         # Take into account links set during self.initialization() :
         self.linksInitialization()
+        self._force_default_in_setattr = False
 
     def linksInitialization(self, parameterizedObjects=None, params=None, excluded=None):
 
@@ -885,6 +885,7 @@ class Parameterized(object):
         """Calls :py:func:`setValue` if the parameter is described in the signature."""
         if name in self.signature:
             default = self._force_default_in_setattr
+            print('setattr', name, ':', value, ', default:', default)
             self.setValue(name, value, default)
         else:
             self.__dict__[name] = value
