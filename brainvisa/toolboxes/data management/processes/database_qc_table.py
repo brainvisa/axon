@@ -150,6 +150,7 @@ if neuroConfig.gui:
     from soma.qt_gui.qt_backend import Qt
 
     class RotatedHeaderView(Qt.QHeaderView):
+
         def __init__(self, orientation, parent=None):
             super(RotatedHeaderView, self).__init__(orientation, parent)
             self.setMinimumSectionSize(20)
@@ -177,11 +178,13 @@ if neuroConfig.gui:
             size = super(RotatedHeaderView, self).sectionSizeFromContents(
                 logicalIndex)
             size.transpose()
-            return size
+            return Qt.QSize(size.width(), size.height() * 0.8)
 
 
 def exec_mainthread(self, context):
+    from soma.qt_gui import qt_backend
     from soma.qt_gui.qt_backend import Qt
+    qt5 = qt_backend.get_qt_backend() == 'PyQt5'
 
     wid = Qt.QWidget()
     lay = Qt.QVBoxLayout()
@@ -201,11 +204,19 @@ def exec_mainthread(self, context):
     nkeys = len(self.keys)
 
     tablew.setHorizontalHeader(RotatedHeaderView(Qt.Qt.Horizontal, tablew))
-    tablew.setColumnCount(ncols + nkeys)
+
     header = tablew.horizontalHeader()
+    if qt5:
+        header.setSectionsClickable(True)
+    else:
+        header.setClickable(True)
+    header.setMovable(True)
+
+    tablew.setColumnCount(ncols + nkeys)
     header.setDefaultSectionSize(32)
     header.setDefaultAlignment(Qt.Qt.AlignLeft)
-    tablew.setHorizontalHeaderLabels(self.keys + self.data_types)
+    labels = self.keys + self.data_types
+    tablew.setHorizontalHeaderLabels(labels)
     tablew.setSortingEnabled(True)
     tablew.setEditTriggers(tablew.NoEditTriggers)
 
