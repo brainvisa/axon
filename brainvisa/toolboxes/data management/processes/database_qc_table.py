@@ -34,8 +34,10 @@ def initialization(self):
 
 
 def execution(self, context):
+    self.row_ids = {}
+    self.elements = None
     # find data
-    data = {}
+    data = []
     #db = neuroHierarchy.databases.database(self.database)
 
     for i, dtype in enumerate(self.data_types):
@@ -52,32 +54,35 @@ def execution(self, context):
         else:
             dfilt = {}
         rdi = ReadDiskItem(dtype, getAllFormats(), exactType=True)
-        data[dtype] = list(rdi.findValues({}, requiredAttributes=dfilt))
-        context.write(dtype, ':', len(list(data[dtype])), 'items')
+        data.append((dtype,
+                     list(rdi.findValues({}, requiredAttributes=dfilt))))
+        context.write(dtype, ':', len(list(data[-1][1])), 'items')
 
-    nrows = max([len(values) for values in data.values()])
+    nrows = max([len(values[1]) for values in data])
     ncols = len(self.data_types)
     elements = np.zeros((nrows, ncols), dtype=object)
     elements[:, :] = None
 
-    cols = {}
     keys = self.keys
-    for i, dtype in enumerate(self.data_types):
-        cols[dtype] = i
     key_values = []
     for i in keys:
         key_values.append(set())
     row_ids = {}
     max_row = 0
 
-    for dtype, items in six.iteritems(data):
-        elem_col = cols[dtype]
-        col = elem_col + len(keys)
+    for elem_col, (dtype, items) in enumerate(data):
         for item in items:
             key_vals = [item.get(att) for att in keys]
             row, row_id, changed_id = self.get_row(key_vals, row_ids,
                                                    key_values)
             if changed_id:
+                if row >= elements.shape[0]:
+                    # should not happen if get_row() had no bug...
+                    #print('warning: adding row', row, '>=', elements.shape[0])
+                    #print('row_ids:', row_ids)
+                    #print('row_id:', row_id)
+                    elements.resize((row + 1, ncols))
+                    elements[-1, :] = None
                 max_row = max((max_row, row))
             element = elements[row, elem_col]
             if isinstance(element, list):
@@ -96,6 +101,7 @@ def execution(self, context):
 
 
 def get_row(self, key_vals, row_ids, key_values):
+    #print('get_row for:', key_vals)
     kvals = list(key_vals)
     for i, key in enumerate(key_vals):
         kvalues = key_values[i]
@@ -107,6 +113,7 @@ def get_row(self, key_vals, row_ids, key_values):
             #print('add value for key:', i, ':', key)
 
     row_id = tuple(kvals)
+    #print('row_id:', row_id)
     row = row_ids.get(row_id)
     if row is not None:
         changed_id = False
@@ -114,23 +121,63 @@ def get_row(self, key_vals, row_ids, key_values):
     else:
         #print('changed id:', row_id)
         changed_id = True
-        row = -1
+        row = None
         for id, i in six.iteritems(row_ids):
             kvals2 = list(id)
-            for i, key in enumerate(id):
+            for j, key in enumerate(id):
                 if key is None:
-                    kvalues = key_values[i]
+                    kvalues = key_values[j]
                     if len(kvalues) != 0:
-                        kvals2[i] = next(iter(kvalues))
+                        kvals2[j] = next(iter(kvalues))
 
             if kvals2 == kvals:
+                #print('found old row:', i)
                 row = i
+                row_ids[row_id] = row
                 break
-        if row < 0:
-            row = len(row_ids)
+        if row is None:
+            if len(row_ids) == 0:
+                row = 0
+            else:
+                row = max(row_ids.values()) + 1
             row_ids[row_id] = row
+            #print('new row:', row)
 
     return row, row_id, changed_id
+
+
+if neuroConfig.gui:
+    from soma.qt_gui.qt_backend import Qt
+
+    class RotatedHeaderView(Qt.QHeaderView):
+        def __init__(self, orientation, parent=None):
+            super(RotatedHeaderView, self).__init__(orientation, parent)
+            self.setMinimumSectionSize(20)
+
+        def paintSection(self, painter, rect, logicalIndex ):
+            painter.save()
+            # translate the painter such that rotate will rotate around the
+            # correct point
+            #painter.translate(rect.x()+rect.width(), rect.y())
+            #painter.rotate(90)
+            painter.translate(rect.x(), rect.y()+rect.height())
+            painter.rotate(270)
+            # and have parent code paint at this location
+            newrect = Qt.QRect(0,0,rect.height(),rect.width())
+            super(RotatedHeaderView, self).paintSection(painter, newrect,
+                                                        logicalIndex)
+            painter.restore()
+
+        def minimumSizeHint(self):
+            size = super(RotatedHeaderView, self).minimumSizeHint()
+            size.transpose()
+            return size
+
+        def sectionSizeFromContents(self, logicalIndex):
+            size = super(RotatedHeaderView, self).sectionSizeFromContents(
+                logicalIndex)
+            size.transpose()
+            return size
 
 
 def exec_mainthread(self, context):
@@ -153,7 +200,11 @@ def exec_mainthread(self, context):
     nrows, ncols = self.elements.shape
     nkeys = len(self.keys)
 
+    tablew.setHorizontalHeader(RotatedHeaderView(Qt.Qt.Horizontal, tablew))
     tablew.setColumnCount(ncols + nkeys)
+    header = tablew.horizontalHeader()
+    header.setDefaultSectionSize(32)
+    header.setDefaultAlignment(Qt.Qt.AlignLeft)
     tablew.setHorizontalHeaderLabels(self.keys + self.data_types)
     tablew.setSortingEnabled(True)
     tablew.setEditTriggers(tablew.NoEditTriggers)
@@ -188,7 +239,8 @@ def exec_mainthread(self, context):
     tablew.itemDoubleClicked.connect(self.item_double_clicked)
 
     tablew.sortByColumn(0, Qt.Qt.AscendingOrder)
-    tablew.resizeColumnToContents(0)
+    for col in range(nkeys):
+        tablew.resizeColumnToContents(col)
     wid.resize(800, 800)
     wid.show()
 
