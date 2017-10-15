@@ -184,7 +184,7 @@ if neuroConfig.gui:
             size = super(RotatedHeaderView, self).sectionSizeFromContents(
                 logicalIndex)
             size.transpose()
-            return Qt.QSize(size.width(), size.height() * 0.8)
+            return Qt.QSize(size.width(), size.height() * 0.9)
 
 
 def exec_mainthread(self, context):
@@ -214,9 +214,10 @@ def exec_mainthread(self, context):
     header = tablew.horizontalHeader()
     if qt5:
         header.setSectionsClickable(True)
+        header.setSectionsMovable(True)
     else:
         header.setClickable(True)
-    header.setMovable(True)
+        header.setMovable(True)
 
     tablew.setColumnCount(ncols + nkeys)
     header.setDefaultSectionSize(32)
