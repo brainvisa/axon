@@ -14,6 +14,7 @@ signature = Signature(
     'data_types', ListOf(Choice('Any Type')),
     'data_filters', ListOf(String()),
     'keys', ListOf(String()),
+    'type_labels', ListOf(String()),
 )
 
 
@@ -220,7 +221,8 @@ def exec_mainthread(self, context):
     tablew.setColumnCount(ncols + nkeys)
     header.setDefaultSectionSize(32)
     header.setDefaultAlignment(Qt.Qt.AlignLeft)
-    labels = self.keys + self.data_types
+    labels = self.keys + self.type_labels \
+        + self.data_types[len(self.type_labels):]
     tablew.setHorizontalHeaderLabels(labels)
     tablew.setSortingEnabled(True)
     tablew.setEditTriggers(tablew.NoEditTriggers)
