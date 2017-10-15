@@ -54,9 +54,9 @@ def execution(self, context):
         else:
             dfilt = {}
         rdi = ReadDiskItem(dtype, getAllFormats(), exactType=True)
-        data.append((dtype,
-                     list(rdi.findValues({}, requiredAttributes=dfilt))))
-        context.write(dtype, ':', len(list(data[-1][1])), 'items')
+        items = list(rdi.findValues({}, requiredAttributes=dfilt))
+        data.append((dtype, items))
+        context.write(dtype, ':', len(items), 'items')
 
     nrows = max([len(values[1]) for values in data])
     ncols = len(self.data_types)
@@ -81,8 +81,10 @@ def execution(self, context):
                     #print('warning: adding row', row, '>=', elements.shape[0])
                     #print('row_ids:', row_ids)
                     #print('row_id:', row_id)
+                    old_nrow = elements.shape[0]
                     elements.resize((row + 1, ncols))
-                    elements[-1, :] = None
+                    elements[old_nrow:, :] = None
+                    print(elements)
                 max_row = max((max_row, row))
             element = elements[row, elem_col]
             if isinstance(element, list):
@@ -93,7 +95,10 @@ def execution(self, context):
                 elements[row, elem_col] = [element, item]
 
     nrows = max_row + 1
+    old_nrow = elements.shape[0]
     elements.resize((nrows, ncols))
+    if nrows > old_nrow:
+        elements[old_nrow:, :] = None
     self.elements = elements
     self.row_ids = row_ids
 
@@ -279,10 +284,12 @@ def item_clicked(self, item):
         element = None
         action = menu.exec_(Qt.QCursor.pos())
         if action is not None:
-            element = elements[abs(action.number)]
             if action.number < 0:
                 # use viewer
                 self.run_element_viewer(item, -action.number - 1)
+                element = elements[-action.number - 1]
+            else:
+                element = elements[action.number]
     else:
         element = elements
 
@@ -329,12 +336,15 @@ def run_element_viewer(self, item, num=0):
     if element is not None:
         if viewer_res[num] is not None:
             viewer_res[num] = None
+            if not any(viewer_res):
+                item.setBackground(Qt.QBrush(Qt.QColor(255, 255, 255)))
         else:
             viewers = getViewers(element)
             for viewer in viewers:
                 try:
                     res = defaultContext().runProcess(viewer, element)
                     viewer_res[num] = res
+                    item.setBackground(Qt.QBrush(Qt.QColor(210, 210, 230)))
                     break
                 except:
                     pass
