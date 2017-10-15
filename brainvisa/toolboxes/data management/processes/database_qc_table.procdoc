@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="en">
+    <xhtml name="short">Display a table with present and missing data in a database</xhtml>
+    <d name="parameters">
+      <xhtml name="data_filters"><p>For each data type to display, a selection filter can be specified. Each filter is given as a string for technical reasons, but the strings should contain python dictionaries code (JSON-like), for instance: {"acquisition": "timepoint_0"}.
+</p>
+<p>The number of filters should normally match the number of data types. However if only one filter is present, it will apply to all data types (specify a second empty filter if you need to avoid this behaviour), and "missing" filters are empty otherwise.
+</p>
+</xhtml>
+      <xhtml name="keys">Keys are used to sort and display data. One data line will be created for a single keys values combination.</xhtml>
+      <xhtml name="data_types">List of data types which should be displayed in the table. Data types are "exact" data types (inherited types are not displayed). It is possible to specify several times the same type, which can be useful when used with different filters (see the <tt>data_filters</tt> parameter).</xhtml>
+      <xhtml name="type_labels">Labels dispmlayed for each data type on the top header of the table. If not specified, use the data types names.</xhtml>
+      <xhtml name="database">Database to be displayed</xhtml>
+    </d>
+    <xhtml name="long"><p>A table with present and missing data is built for the given data types. Data filters can be provided for each. Data are sorted according to the given keys.</p>
+
+<p>This is a generic process, which can (should) be derived for some specific pipelines. See for instance <a href="bvprocess://morphologist_qc_table">Morphologist QC table</a> in the Morphologist toolbox, or <a href="bvprocess://freesurfer_qc_table">Freesurfer / BrainVISA QC table</a> in the Freesurfer toolbox.
+</p>
+
+<p>In the table, each present data can be clicked to display the data file name, and a double-click will trigger a viewer process (when available). In some cases multiple data will reside within a single table cell. In such a case, a menu will popup when clicking on it, and will allow to display the filename or view each of the data here.
+</p></xhtml>
+  </d>
+</d>
+</minf>
