@@ -32,7 +32,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from __future__ import print_function
-from brainvisa.processing.qtgui.backwardCompatibleQt import QWidget, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QIcon, QHBoxLayout, QVBoxLayout, QTextEdit, QSpacerItem, QSizePolicy, QSize, QPushButton, qApp, QMenu, QCursor, QDrag, QPixmap, QMimeData, Qt, QMessageBox, QPoint, QApplication, QUrl, QSplitter, QBrush, QColor
+from soma.qt_gui.qt_backend.Qt import QWidget, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QIcon, QHBoxLayout, QVBoxLayout, QTextEdit, QSpacerItem, QSizePolicy, QSize, QPushButton, qApp, QMenu, QCursor, QDrag, QPixmap, QMimeData, Qt, QMessageBox, QPoint, QApplication, QUrl, QSplitter, QBrush, QColor
 import os
 
 from soma.wip.application.api import findIconFile
@@ -90,6 +90,7 @@ class HierarchyBrowser( QWidget ):
       self.lstHierarchy.setHeaderLabels( [_t_( 'name' )] )
       self.lstHierarchy.setRootIsDecorated( True )
       self.lstHierarchy.setSortingEnabled(True)
+      self.lstHierarchy.sortByColumn(0, Qt.AscendingOrder)
       self.lstHierarchy.setIconSize(QSize(*defaultIconSize))
       # enable multiple selection
       self.lstHierarchy.setSelectionMode(QTreeWidget.ExtendedSelection)
