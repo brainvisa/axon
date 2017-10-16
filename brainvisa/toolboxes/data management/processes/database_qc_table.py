@@ -55,6 +55,7 @@ def execution(self, context):
         else:
             dfilt = {}
         rdi = ReadDiskItem(dtype, getAllFormats(), exactType=True)
+        dfilt['_database'] = self.database
         items = list(rdi.findValues({}, requiredAttributes=dfilt))
         data.append((dtype, items))
         context.write(dtype, ':', len(items), 'items')
@@ -187,6 +188,58 @@ if neuroConfig.gui:
             return Qt.QSize(size.width(), size.height() * 0.9)
 
 
+    class QActionWithViewer(Qt.QWidgetAction):
+
+        action_triggered = Qt.Signal(QTableWidgetItem, int)
+        viewer_triggered = Qt.Signal(QTableWidgetItem, int)
+
+        def __init__(self, text, checked, item, num, parent):
+            super(QActionWithViewer, self).__init__(parent)
+            self._widget = None
+            self._view_button = None
+            self.text = text
+            self._checked = checked
+            self._item = item
+            self.number = num
+
+        def createWidget(self, parent):
+            if self._widget is not None:
+                return self._widget
+
+            eye = Qt.QPixmap(findIconFile('eye.png')).scaledToHeight(
+                20, Qt.Qt.SmoothTransformation)
+            eye = Qt.QIcon(eye)
+            w = Qt.QWidget(parent)
+            l = Qt.QHBoxLayout()
+            l.setContentsMargins(0, 0, 0, 0)
+            l.setSpacing(5)
+            w.setLayout(l)
+            b = Qt.QToolButton(parent)
+            b.setCheckable(True)
+            b.setChecked(self._checked)
+            l.addWidget(b)
+            b.setIcon(eye)
+            label = Qt.QToolButton(parent)
+            label.setText(self.text)
+            l.addWidget(label)
+            self._view_button = b
+            self._widget = w
+            label.clicked.connect(self._action_triggered)
+            label.clicked.connect(self.triggered)
+            b.toggled.connect(self._viewer_triggered)
+            return w
+
+        def _action_triggered(self):
+            self.action_triggered.emit(self._item, self.number)
+
+        def _viewer_triggered(self, state):
+            self.viewer_triggered.emit(self._item, self.number)
+
+        def requestWidget(self, parent):
+            print('requestWidget')
+            return self._widget
+
+
 def exec_mainthread(self, context):
     from soma.qt_gui import qt_backend
     from soma.qt_gui.qt_backend import Qt
@@ -278,21 +331,37 @@ def item_clicked(self, item):
     element = None
     if isinstance(elements, list):
         menu = Qt.QMenu()
-        eye = Qt.QIcon(findIconFile('eye.png'))
-        for i, element in enumerate(elements):
-            action = menu.addAction(element.fullPath())
-            action.number = i
-            action = menu.addAction(eye, element.fullPath())
-            action.number = -i - 1
-        element = None
-        action = menu.exec_(Qt.QCursor.pos())
-        if action is not None:
-            if action.number < 0:
-                # use viewer
-                self.run_element_viewer(item, -action.number - 1)
-                element = elements[-action.number - 1]
-            else:
-                element = elements[action.number]
+        chosen_action = None
+        try:
+            eye = Qt.QIcon(findIconFile('eye.png'))
+            for i, element in enumerate(elements):
+                #action = menu.addAction(element.fullPath())
+                #action.setCheckable(True)
+                has_view = hasattr(item, 'viewer_res') \
+                    and item.viewer_res[i] is not None
+                #action.number = i
+                #action = menu.addAction(eye, element.fullPath())
+                #action.number = -i - 1
+                action = QActionWithViewer(element.fullPath(), has_view, item,
+                                          i, menu)
+                #action.number = i
+                menu.addAction(action)
+                action.action_triggered.connect(self.display_item)
+                action.viewer_triggered.connect(self.run_element_viewer)
+                action.triggered.connect(menu.close)
+            element = None
+            chosen_action = menu.exec_(Qt.QCursor.pos())
+        except:
+            import traceback
+            traceback.print_exc()
+            return
+        #if chosen_action is not None:
+            #if chosen_action.number < 0:
+                ## use viewer
+                #self.run_element_viewer(item, -chosen_action.number - 1)
+                #element = elements[-chosen_action.number - 1]
+            #else:
+                #element = elements[chosen_action.number]
     else:
         element = elements
 
@@ -316,6 +385,20 @@ def item_double_clicked(self, item):
 
     if element is not None:
         self.run_element_viewer(item)
+
+
+def display_item(self, item, num):
+    if not hasattr(item, 'position'):
+        # no data under this item
+        return
+    row, col = item.position
+    elements = self.elements[row, col]
+    element = None
+    if isinstance(elements, list):
+        element = elements[num]
+
+    if element is not None:
+        self.item_view.setText(element.fullPath())
 
 
 def run_element_viewer(self, item, num=0):
