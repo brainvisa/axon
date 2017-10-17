@@ -15,6 +15,7 @@ signature = Signature(
     'data_filters', ListOf(String()),
     'keys', ListOf(String()),
     'type_labels', ListOf(String()),
+    'output_file', WriteDiskItem('Text File', ['HTML', 'PDF file']),
 )
 
 
@@ -30,6 +31,8 @@ def initialization(self):
 
     possibleTypes = [t.name for t in getAllDiskItemTypes()]
     self.signature['data_types'].contentType.setChoices(*sorted(possibleTypes))
+
+    self.setOptional('output_file')
 
     self.keys = ['subject']
 
@@ -104,7 +107,10 @@ def execution(self, context):
     self.elements = elements
     self.row_ids = row_ids
 
-    return mainThreadActions().call(self.exec_mainthread, context)
+    if self.output_file:
+        self.save(context)
+    else:
+        return mainThreadActions().call(self.exec_mainthread, context)
 
 
 def get_row(self, key_vals, row_ids, key_values):
@@ -434,3 +440,144 @@ def run_element_viewer(self, item, num=0):
                     break
                 except:
                     pass
+
+
+def save(self, context):
+    context.write('output format:', self.output_file.format)
+    if self.output_file.format.name == 'HTML':
+        self.save_html(context)
+    elif self.output_file.format.name == 'PDF File':
+        self.save_pdf(context)
+    else:
+        raise('Unrecognized output format')
+
+
+def save_html(self, context):
+
+    f = open(self.output_file.fullPath(), 'w')
+    f.write('''<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <style type="text/css">
+    div.ok { width: 16px; height: 14px;
+             background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAYAAAAmL5yKAAAACXBIWXMAAAsOAAALDgFAvuFBAAAAB3RJTUUH0gEQFyIZJOsyvgAAAAZiS0dEAP8A/wD/oL2nkwAAAOxJREFUKM9jYBggwATFJAPGR3/3/V/xV+8/kC0OxJxkaW57wvA/YhoDyBB1Yp2GoVnHD2yAN4qCjX/9kJ3GiCpnha65AG4ASMHmv3b/J/xlAisCCmkAMTcQM8M0195D0VwMxKFgdSAB2yKG//nHGP5P/Mv2f8pfHrBioKQWSPOivzr/a54x/A/ow9CsCbWEgUFan+G/dR7D/6wjDGADJv5l+Q/T3PWG4b9vC07NMG8y6MMMAbmk8x8D2Nkgm4nRDAK8IAlkQ0DewONsRoxogkqADbEvwxpgODVjNQSquZBYzeiGgKLRB4o18GkGAPXUpkdmxKgBAAAAAElFTkSuQmCC");
+           }
+    div.no { width: 22px; height: 22px;
+             background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWAgMAAAC52oSoAAAADFBMVEUAAACAgIDAAAD/AAAn4XKoAAAAAXRSTlMAQObYZgAAAFVJREFUeF6FyLENQFAYReH7QiMRA5jAABRC8Y/wlmMCjVupVRLbsMGruH8vTvMlBz+VYkQSw0l7ufZV1Jw0A6PAbSLjIap5c+IiemscFKJDEC28HF890u0OS04UwuwAAAAASUVORK5CYII=");
+           }
+    div.ml { width: 22px; height: 22px;
+             background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAALEgAACxIB0t1+/AAAAAd0SU1FB9EBBg0gDndZibAAAAAGYktHRAAAAAAAAPlDu38AAAHfSURBVDjL1ZXLLythGMbHpVVNpVS1wwSdjl50VKczoxckxIpENCJsLCyI+8mRHukJKxuXJkVELM4hVhZEbC2wsFBx2UhsJedPeY75EhJp0pkyG8/6e37v973v8+ajqPyCvyUErkUE4xPgaAqihg2gkuFQXl0H6hOCtcqG7asX9C/tg2/rhKs1DiYQQa1fRPPAJPjhlAKG0cZoLoCD7D8M/30A7W+DwWTOMRaVGtGb3IU8uQqb2EcKqFIbOS+B8olZNQOBC4snmsDYPH9Cd/IPzLWc6mEuKCO+fgN+egsWTzTveXJbcXwVBqtDFdzg9iCxewdhbg8Wbzw/uGs+g9CPAwQGZmC106i0O6F2EXl6B+WMX70dnrENhJeP0ZG+Rs/aJWyu5hxTONJOUiOmTrUN7w3ODibJE6WfhzlGQY6S5ETXL9A09AsmJ1tQpgnQzIY+mKRIjECl9C3YxDyM9vpPLcoH8SGRQOXMPbwjv1HmcH0dGhRE0tPY1iO4ocWCNi5vWxSokgApdVTQsFTBC0dZyOksfKMrKDZV6AeOvw4rOJUB3TMOqrhEN/B7Sspot67Qbyh3uAO0T0KFs0G/VtTzMpJnzyRuSo6pEoM+cAvNEmBsooAfQ6uUTTNU1WnO8H/WKe+4kZpEygAAAABJRU5ErkJggg==");
+           }
+    .vert div {
+        transform: rotate(-90deg);
+        text-align: center;
+        vertical-align: middle;
+        white-space: nowrap;
+        margin-bottom: -50px;
+        #padding-left: 100px;
+        #padding-bottom: -50px;
+        #margin-right: 0px;
+        #margin-left: 100px;
+        position: relative;
+        left: 143px;
+        bottom: -80px;
+        height: 300px;
+        width: 24px;
+    }
+    table {
+        border: 1px solid #99b;
+        border-spacing: 0px;
+        padding: 2px;
+    }
+    tr {
+        border: none;
+    }
+    tr:nth-child(even) {
+        background-color: #ddd;
+    }
+    td {
+        border-collapse: collapse;
+        border: none;
+        padding: 1px;
+        margin: 0px;
+        vertical-align: middle;
+        position:relative;
+
+        a {
+            height: 100%;
+            display: block;
+            position: absolute;
+            top:0;
+            bottom:0;
+            right:0;
+            left:0;
+          }
+
+        .item-container {
+            padding: 0px;
+            margin: 0px;
+            border: none;
+        }
+    }
+    thead tr {
+      background-color: #ccf;
+    }
+  </style>
+  <!-- script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script>
+    $(document).ready(function() {
+  $('.vert').css('height', $('.vert').width());
+});
+  </script -->
+</head>
+<body>
+  <table>
+    <thead>
+      <tr>
+''')
+
+    nrows, ncols = self.elements.shape
+    nkeys = len(self.keys)
+
+    labels = self.keys + self.type_labels \
+        + self.data_types[len(self.type_labels):]
+    for label in labels:
+        f.write('        <td class="vert"><div>%s</div></td>\n' % label)
+    f.write('''      </tr>
+    </thead>
+    <tbody>
+''')
+
+    row_ids = self.row_ids
+
+    # sort items
+    rows_order = zip(*sorted(zip(row_ids.keys(), range(nrows))))[1]
+
+    for row in rows_order:
+        row_id = max([rid for rid in row_ids if row_ids[rid] == row])
+        f.write('      <tr>\n')
+        for key in row_id:
+            if key is None:
+                key = ''
+            f.write('        <td>%s</td>\n' % key)
+
+        for elem in self.elements[row]:
+            if elem is None:
+                f.write('        <td><div class="no" /></td>\n')
+            elif isinstance(elem, list):
+                f.write('        <td><div class="ml" /></td>\n')
+            else:
+                f.write('        <td><a href="file://%s"><div class="item-container"><div class="ok" /></div></a></td>\n' % elem)
+
+    f.write('''    </tbody>
+  </table>
+</body>
+</html>
+''')
+
+
+def save_pdf(self, context):
+    raise NotImplementedError('not done')
+
