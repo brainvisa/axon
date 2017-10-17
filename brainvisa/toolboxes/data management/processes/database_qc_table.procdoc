@@ -1,18 +1,31 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <minf expander="minf_2.0">
 <d>
+  <d name="fr">
+    <xhtml name="short"/>
+    <d name="parameters">
+      <xhtml name="database"/>
+      <xhtml name="keys"/>
+      <xhtml name="output_file"/>
+      <xhtml name="data_types"/>
+      <xhtml name="type_labels"/>
+      <xhtml name="data_filters"/>
+    </d>
+    <xhtml name="long"/>
+  </d>
   <d name="en">
     <xhtml name="short">Display a table with present and missing data in a database</xhtml>
     <d name="parameters">
+      <xhtml name="database">Database to be displayed</xhtml>
+      <xhtml name="keys">Keys are used to sort and display data. One data line will be created for a single keys values combination.</xhtml>
+      <xhtml name="output_file">Allows to save the QC table as a HTML file (maybe also PDF in the future). If this parameter is filled, then the process will not open the Qt GUI and will run in batch mode.</xhtml>
+      <xhtml name="data_types">List of data types which should be displayed in the table. Data types are "exact" data types (inherited types are not displayed). It is possible to specify several times the same type, which can be useful when used with different filters (see the <tt>data_filters</tt> parameter).</xhtml>
+      <xhtml name="type_labels">Labels dispmlayed for each data type on the top header of the table. If not specified, use the data types names.</xhtml>
       <xhtml name="data_filters"><p>For each data type to display, a selection filter can be specified. Each filter is given as a string for technical reasons, but the strings should contain python dictionaries code (JSON-like), for instance: {"acquisition": "timepoint_0"}.
 </p>
 <p>The number of filters should normally match the number of data types. However if only one filter is present, it will apply to all data types (specify a second empty filter if you need to avoid this behaviour), and "missing" filters are empty otherwise.
 </p>
 </xhtml>
-      <xhtml name="keys">Keys are used to sort and display data. One data line will be created for a single keys values combination.</xhtml>
-      <xhtml name="data_types">List of data types which should be displayed in the table. Data types are "exact" data types (inherited types are not displayed). It is possible to specify several times the same type, which can be useful when used with different filters (see the <tt>data_filters</tt> parameter).</xhtml>
-      <xhtml name="type_labels">Labels dispmlayed for each data type on the top header of the table. If not specified, use the data types names.</xhtml>
-      <xhtml name="database">Database to be displayed</xhtml>
     </d>
     <xhtml name="long"><p>A table with present and missing data is built for the given data types. Data filters can be provided for each. Data are sorted according to the given keys.</p>
 
