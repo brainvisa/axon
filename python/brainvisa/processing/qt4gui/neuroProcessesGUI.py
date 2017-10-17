@@ -3591,7 +3591,11 @@ class ProcessEdit( QDialog ):
     QWidget.closeEvent(self, event)
 
   def readDocumentation( self ):
-    self.documentation = brainvisa.processes.readProcdoc( self.process )
+    try:
+      self.documentation = brainvisa.processes.readProcdoc( self.process )
+    except:
+      import traceback
+      traceback.print_exc()
 
   def writeDocumentation( self ):
     brainvisa.processes.procdocToXHTML( self.documentation )
@@ -3831,12 +3835,16 @@ class ProcessSelectionWidget( QMainWindow ):
         processId = item.id
         self.currentProcessId = processId
         self.btnOpen.setEnabled( 1 )
-        documentation = brainvisa.processes.readProcdoc( self.currentProcessId )
-        source = brainvisa.processes.getHTMLFileName( self.currentProcessId )
-        if os.path.exists( source ):
-          self.info.setSource( source )
-        else:
-          self.info.setText( '' )
+        try:
+          documentation = brainvisa.processes.readProcdoc(self.currentProcessId)
+          source = brainvisa.processes.getHTMLFileName( self.currentProcessId )
+          if os.path.exists( source ):
+            self.info.setSource( source )
+          else:
+            self.info.setText( '' )
+        except:
+          import traceback
+          traceback.print_exc()
         if self.btnEdit is not None: self.btnEdit.setEnabled( 1 )
       else:
         self.currentProcessId = None
