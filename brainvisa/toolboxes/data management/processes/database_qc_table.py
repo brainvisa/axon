@@ -15,7 +15,7 @@ signature = Signature(
     'data_filters', ListOf(String()),
     'keys', ListOf(String()),
     'type_labels', ListOf(String()),
-    'output_file', WriteDiskItem('Text File', ['HTML', 'PDF file']),
+    'output_file', WriteDiskItem('Text File', ['HTML']), #, 'PDF file']),
 )
 
 
@@ -225,9 +225,12 @@ if neuroConfig.gui:
             b.setChecked(self._checked)
             l.addWidget(b)
             b.setIcon(eye)
+            b.setSizePolicy(Qt.QSizePolicy.Fixed, Qt.QSizePolicy.Fixed)
             label = Qt.QToolButton(parent)
             label.setText(self.text)
+            #label.setTextAlignment(Qt.Qt.LeftAlignment)
             l.addWidget(label)
+            l.addStretch(1.)
             self._view_button = b
             self._widget = w
             label.clicked.connect(self._action_triggered)
@@ -251,7 +254,9 @@ def exec_mainthread(self, context):
     from soma.qt_gui.qt_backend import Qt
     qt5 = qt_backend.get_qt_backend() == 'PyQt5'
 
+    mw = Qt.QMainWindow()
     wid = Qt.QWidget()
+    mw.setCentralWidget(wid)
     lay = Qt.QVBoxLayout()
     wid.setLayout(lay)
     tablew = Qt.QTableWidget()
@@ -290,8 +295,8 @@ def exec_mainthread(self, context):
     tablew.setRowCount(nrows)
 
     ok_icon = Qt.QIcon(findIconFile('ok.png'))
-    no_icon = Qt.QIcon(findIconFile('abort.png'))
-    mult_icon = Qt.QIcon(findIconFile('help.png'))
+    no_icon = Qt.QIcon(findIconFile('absent.png'))
+    mult_icon = Qt.QIcon(findIconFile('multiple.png'))
 
     row_ids = self.row_ids
 
@@ -319,10 +324,17 @@ def exec_mainthread(self, context):
     tablew.sortByColumn(0, Qt.Qt.AscendingOrder)
     for col in range(nkeys):
         tablew.resizeColumnToContents(col)
-    wid.resize(800, 800)
-    wid.show()
 
-    return [wid]
+    menu = Qt.QMenuBar()
+    fmenu = menu.addMenu('File')
+    action = fmenu.addAction('Save HTML...')
+    action.triggered.connect(self.save_gui)
+    mw.setMenuBar(menu)
+
+    mw.resize(800, 800)
+    mw.show()
+
+    return [mw]
 
 
 def item_clicked(self, item):
@@ -442,19 +454,36 @@ def run_element_viewer(self, item, num=0):
                     pass
 
 
-def save(self, context):
-    context.write('output format:', self.output_file.format)
-    if self.output_file.format.name == 'HTML':
-        self.save_html(context)
-    elif self.output_file.format.name == 'PDF File':
-        self.save_pdf(context)
+def save_gui(self):
+    from soma.qt_gui import qt_backend
+    filename = qt_backend.getSaveFileName(
+        None, 'Save QC table', '',
+        'Supported files (*.html *.pdf);; HTML files (*.html);; '
+        'PDF files (*.pdf)')
+    if filename is not None and filename != '':
+        try:
+            self.save_file(filename)
+        except:
+            import traceback
+            traceback.print_exc()
+
+
+def save(self, context=None):
+    self.save_file(self.output_file.fullPath(), context)
+
+
+def save_file(self, filename, context=None):
+    if filename.endswith('.html'):
+        self.save_html(filename, context)
+    elif filename.endswith('.pdf'):
+        self.save_pdf(filename, context)
     else:
         raise('Unrecognized output format')
 
 
-def save_html(self, context):
+def save_html(self, filename, context=None):
 
-    f = open(self.output_file.fullPath(), 'w')
+    f = open(filename, 'w')
     f.write('''<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -464,11 +493,11 @@ def save_html(self, context):
     div.ok { width: 16px; height: 14px;
              background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAYAAAAmL5yKAAAACXBIWXMAAAsOAAALDgFAvuFBAAAAB3RJTUUH0gEQFyIZJOsyvgAAAAZiS0dEAP8A/wD/oL2nkwAAAOxJREFUKM9jYBggwATFJAPGR3/3/V/xV+8/kC0OxJxkaW57wvA/YhoDyBB1Yp2GoVnHD2yAN4qCjX/9kJ3GiCpnha65AG4ASMHmv3b/J/xlAisCCmkAMTcQM8M0195D0VwMxKFgdSAB2yKG//nHGP5P/Mv2f8pfHrBioKQWSPOivzr/a54x/A/ow9CsCbWEgUFan+G/dR7D/6wjDGADJv5l+Q/T3PWG4b9vC07NMG8y6MMMAbmk8x8D2Nkgm4nRDAK8IAlkQ0DewONsRoxogkqADbEvwxpgODVjNQSquZBYzeiGgKLRB4o18GkGAPXUpkdmxKgBAAAAAElFTkSuQmCC");
            }
-    div.no { width: 22px; height: 22px;
-             background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWAgMAAAC52oSoAAAADFBMVEUAAACAgIDAAAD/AAAn4XKoAAAAAXRSTlMAQObYZgAAAFVJREFUeF6FyLENQFAYReH7QiMRA5jAABRC8Y/wlmMCjVupVRLbsMGruH8vTvMlBz+VYkQSw0l7ufZV1Jw0A6PAbSLjIap5c+IiemscFKJDEC28HF890u0OS04UwuwAAAAASUVORK5CYII=");
+    div.no { width: 15px; height: 16px;
+             background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAQAgMAAAC0OM2XAAAADFBMVEVlLWeAgIDAAAD/AADpI7RpAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfhChEICCvZr2gsAAAASklEQVQI12NggABmBgZ+BrsGBr4PryYwWK1bFcDAtmqpAwND1hSgpNUFIPFqA1DV0jVAYoomAwNfABeQcGByYOB1YAASIDMYgRgAgEcOCf2eaP8AAAAASUVORK5CYII=");
            }
     div.ml { width: 22px; height: 22px;
-             background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAALEgAACxIB0t1+/AAAAAd0SU1FB9EBBg0gDndZibAAAAAGYktHRAAAAAAAAPlDu38AAAHfSURBVDjL1ZXLLythGMbHpVVNpVS1wwSdjl50VKczoxckxIpENCJsLCyI+8mRHukJKxuXJkVELM4hVhZEbC2wsFBx2UhsJedPeY75EhJp0pkyG8/6e37v973v8+ajqPyCvyUErkUE4xPgaAqihg2gkuFQXl0H6hOCtcqG7asX9C/tg2/rhKs1DiYQQa1fRPPAJPjhlAKG0cZoLoCD7D8M/30A7W+DwWTOMRaVGtGb3IU8uQqb2EcKqFIbOS+B8olZNQOBC4snmsDYPH9Cd/IPzLWc6mEuKCO+fgN+egsWTzTveXJbcXwVBqtDFdzg9iCxewdhbg8Wbzw/uGs+g9CPAwQGZmC106i0O6F2EXl6B+WMX70dnrENhJeP0ZG+Rs/aJWyu5hxTONJOUiOmTrUN7w3ODibJE6WfhzlGQY6S5ETXL9A09AsmJ1tQpgnQzIY+mKRIjECl9C3YxDyM9vpPLcoH8SGRQOXMPbwjv1HmcH0dGhRE0tPY1iO4ocWCNi5vWxSokgApdVTQsFTBC0dZyOksfKMrKDZV6AeOvw4rOJUB3TMOqrhEN/B7Sspot67Qbyh3uAO0T0KFs0G/VtTzMpJnzyRuSo6pEoM+cAvNEmBsooAfQ6uUTTNU1WnO8H/WKe+4kZpEygAAAABJRU5ErkJggg==");
+             background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsOAAALDgFAvuFBAAAAB3RJTUUH4QoRCBERhKMYhgAAAjpJREFUOMvtk8tLlFEYh59vLs5oaSPpJIWTxoBZYBBEuAzKdkJQ/0MoaEbLWfgXtJSgiBZBLVzo6MJLfbTJRWAwjmaOZ4bm4mViupjOaPNdTgu/Yr7JgUyX/uBszuE873nOeQ8c5YBxWOPQohhClcbDDgmcAqoPFZrpQQ51IYG2SjaOf1RUDKGahO+xJuYIC5hIABDco7ABNDpsk8+6DaDRUlRs0MmQDRoWDFQqPNTFugPAEKrJ9CAsjpPpYR04C9QATl2oppwMkYzOlEIfACtAvJKN0h1EBuvhdhtcba4CZxXJ3BbnHnFRF+qCMtpHNjHPy0V4k4KxOCEpWQaiQNoQ6iaTIdYWbIUHXGGB0uFH6iaYskhnaxUBnwtdTC0oo318S87zNArvVsHr9eCv5/TXH8VpTZcreuz1JpbNRMJu4wTI5hnZMbib18DnLhKoNSG3TDY2y+O5XWhDrQfd6eF6QLkS+WK+2IpOf1TG+snGZhleglef/kBTwLzLuvxE5DMXgA9Yr9a0McNIbBe6+tOL2+vgZJ2LzjM6oaFxVRnrt9mUQoGU0wJrQCGb5/mOQa9uQm579xRTKceTJl/1ZZ+7yK2WPDeaNTwbCZtNORQoOEtaRv8N39LozRUgLLgvJaKmzv1+O69d03STxhowvqcZXoK3mb2hgFTKP4LVZs0lzR+vPe7aKBaNhvM+GbnZCi0nbA/1F3Rf3xk4BrRf8iO7g0hgALgDtFtrSvmG/cDLbQSQ/p+THuXg+QUn/kKA+EqPswAAAABJRU5ErkJggg==");
            }
     .vert div {
         transform: rotate(-90deg);
@@ -494,7 +523,10 @@ def save_html(self, context):
     tr {
         border: none;
     }
-    tr:nth-child(even) {
+    tbody tr:nth-child(4n) {
+        background-color: #ddd;
+    }
+    tbody tr:nth-child(4n+3) {
         background-color: #ddd;
     }
     td {
@@ -522,7 +554,16 @@ def save_html(self, context):
         }
     }
     thead tr {
-      background-color: #ccf;
+        background-color: #ddf;
+        font-weight: bold;
+    }
+    .key_col:nth-child(even) {
+        background-color: #f0f0f8;
+    }
+
+    .key_cell {
+        padding-left: 5px;
+        padding-right: 5px;
     }
   </style>
   <!-- script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
@@ -534,8 +575,7 @@ def save_html(self, context):
 </head>
 <body>
   <table>
-    <thead>
-      <tr>
+    <colgroup>
 ''')
 
     nrows, ncols = self.elements.shape
@@ -543,6 +583,14 @@ def save_html(self, context):
 
     labels = self.keys + self.type_labels \
         + self.data_types[len(self.type_labels):]
+    for label in self.keys:
+        f.write('      <col class="key_col" />\n')
+    for label in self.type_labels:
+        f.write('      <col />\n')
+    f.write('''    </colgroup>
+    <thead>
+      <tr>
+''')
     for label in labels:
         f.write('        <td class="vert"><div>%s</div></td>\n' % label)
     f.write('''      </tr>
@@ -552,8 +600,15 @@ def save_html(self, context):
 
     row_ids = self.row_ids
 
+    # eliminate duplicate rows by keeping most complete id for each
+    rev_row_ids = {}
+    for row_id, row in six.iteritems(row_ids):
+        rev_row_ids.setdefault(row, []).append(row_id)
+    rev_row_ids = dict([(row, max(row_id))
+                        for row, row_id in six.iteritems(rev_row_ids)])
+
     # sort items
-    rows_order = zip(*sorted(zip(row_ids.keys(), range(nrows))))[1]
+    rows_order = zip(*sorted(zip(rev_row_ids.values(), range(nrows))))[1]
 
     for row in rows_order:
         row_id = max([rid for rid in row_ids if row_ids[rid] == row])
@@ -561,7 +616,7 @@ def save_html(self, context):
         for key in row_id:
             if key is None:
                 key = ''
-            f.write('        <td>%s</td>\n' % key)
+            f.write('        <td class="key_cell">%s</td>\n' % key)
 
         for elem in self.elements[row]:
             if elem is None:
@@ -578,6 +633,6 @@ def save_html(self, context):
 ''')
 
 
-def save_pdf(self, context):
+def save_pdf(self, filename, context=None):
     raise NotImplementedError('not done')
 
