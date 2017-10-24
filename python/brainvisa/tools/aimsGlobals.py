@@ -66,11 +66,17 @@ This module defines several lists of formats (:py:class:`neuroDiskItems.NamedFor
 
   The name of the list is *Anatomist texture formats* and it contains the texture formats which are handled by Anatomist.
 
+.. py:data:: html_pdf_formats
+
+  Formats list for HTML format, and PDF if the wkhtmltopdf tool is installed on
+  the system and available in the PATH.
+
 These global variables are initialized through the function :py:func:`initializeFormatLists`.
 """
 import os, string
 from brainvisa.data.neuroDiskItems import createFormatList, getFormat, \
   aimsFileInfo, DiskItem
+from soma.path import find_in_path
 
 #------------
 # IMPORTANT : In a formats list, the most common formats should be placed
@@ -261,6 +267,15 @@ def initializeFormatLists():
       'gz compressed GIFTI file',
     )
   )
+
+  wkhtmltopdf = find_in_path('wkhtmltopdf')
+  if wkhtmltopdf is not None:
+      html_pdf_formats_l = ('HTML', 'PDF file')
+  else:
+      html_pdf_formats_l = ('HTML')
+  global html_pdf_formats
+  html_pdf_formats = createFormatList( 'HTML PDF', html_pdf_formats_l)
+
 
 
 def aimsVolumeAttributes( item, writeOnly=0, forceFormat=0 ):
