@@ -2242,6 +2242,18 @@ class DiskItemType(object):
     """
     if self.parent: return [ self.parent ] + self.parent.parents()
     return []
+       
+  def levels(self):
+    """
+    Returns hierarchy levels from the current diskItem. Each level is a tuple
+    that contains an integer and a diskItem type.
+    """
+    i = 0
+    t = self
+    while t:
+      yield (i, t)
+      t = t.parent
+      i += 1
 
   def __str__( self ):
     return self.name

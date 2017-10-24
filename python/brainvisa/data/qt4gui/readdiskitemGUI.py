@@ -206,6 +206,7 @@ class DiskItemEditor( QWidget, DataEditor ):
     label = QLabel( _t_('use viewer'), widViewers )
     layViewers.addWidget(label)
     self.cmbViewers = QComboBox(widViewers)
+    self.cmbViewers.currentIndexChanged.connect(popup.hide)
     layViewers.addWidget(self.cmbViewers)
     self.actViewers = QWidgetAction(popup)
     self.actViewers.setDefaultWidget(widViewers)
