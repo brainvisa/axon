@@ -4,10 +4,20 @@ from brainvisa.processes import *
 from brainvisa.data import neuroHierarchy
 from soma.wip.application.api import findIconFile
 import numpy as np
+import os
+import tempfile
 import six
+
 
 name = 'Database QC table'
 userLevel = 2
+
+wkhtmltopdf = findInPath('wkhtmltopdf')
+if wkhtmltopdf is not None:
+    export_formats = ['HTML', 'PDF file']
+else:
+    export_formats = ['HTML']
+
 
 signature = Signature(
     'database', Choice(),
@@ -15,7 +25,7 @@ signature = Signature(
     'data_filters', ListOf(String()),
     'keys', ListOf(String()),
     'type_labels', ListOf(String()),
-    'output_file', WriteDiskItem('Text File', ['HTML']), #, 'PDF file']),
+    'output_file', WriteDiskItem('Text File', export_formats),
 )
 
 
@@ -35,6 +45,10 @@ def initialization(self):
     self.setOptional('output_file')
 
     self.keys = ['subject']
+
+    # allow derived processes to access these variables
+    self.wkhtmltopdf = wkhtmltopdf
+    self.export_formats = export_formats
 
 
 def execution(self, context):
@@ -456,10 +470,13 @@ def run_element_viewer(self, item, num=0):
 
 def save_gui(self):
     from soma.qt_gui import qt_backend
+    if wkhtmltopdf is None:
+        filters = 'Supported files (*.html);; HTML files (*.html)'
+    else:
+        filters = 'Supported files (*.html *.pdf);; HTML files (*.html);; ' \
+            'PDF files (*.pdf)'
     filename = qt_backend.getSaveFileName(
-        None, 'Save QC table', '',
-        'Supported files (*.html *.pdf);; HTML files (*.html);; '
-        'PDF files (*.pdf)')
+        None, 'Save QC table', '', filters)
     if filename is not None and filename != '':
         try:
             self.save_file(filename)
@@ -634,5 +651,16 @@ def save_html(self, filename, context=None):
 
 
 def save_pdf(self, filename, context=None):
-    raise NotImplementedError('not done')
+    if context is not None:
+        temp = context.temporary('HTML')
+        temp_file = temp.fullPath()
+    else:
+        temp = tempfile.mkstemp(prefix='bv_', suffix='.html')
+        os.close(temp[0])
+        temp_file = temp[1]
+    self.save_html(temp_file)
+    if context is not None:
+        context.system('wkhtmltopdf', temp_file, filename)
+    else:
+        subprocess.check_call(['wkhtmltopdf', temp_file, filename])
 
