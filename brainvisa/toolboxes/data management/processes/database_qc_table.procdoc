@@ -18,7 +18,8 @@
     <d name="parameters">
       <xhtml name="database">Database to be displayed</xhtml>
       <xhtml name="keys">Keys are used to sort and display data. One data line will be created for a single keys values combination.</xhtml>
-      <xhtml name="output_file">Allows to save the QC table as a HTML file (maybe also PDF in the future). If this parameter is filled, then the process will not open the Qt GUI and will run in batch mode.</xhtml>
+      <xhtml name="output_file"><p>Allows to save the QC table as a HTML file. If this parameter is filled, then the process will not open the Qt GUI and will run in batch mode.</p>
+<p>PDF export is also possible, if the program <a href="https://wkhtmltopdf.org">wkhtmltopdf</a> is installad on the system and available in the PATH.</p></xhtml>
       <xhtml name="data_types">List of data types which should be displayed in the table. Data types are "exact" data types (inherited types are not displayed). It is possible to specify several times the same type, which can be useful when used with different filters (see the <tt>data_filters</tt> parameter).</xhtml>
       <xhtml name="type_labels">Labels dispmlayed for each data type on the top header of the table. If not specified, use the data types names.</xhtml>
       <xhtml name="data_filters"><p>For each data type to display, a selection filter can be specified. Each filter is given as a string for technical reasons, but the strings should contain python dictionaries code (JSON-like), for instance: {"acquisition": "timepoint_0"}.
