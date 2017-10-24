@@ -2979,11 +2979,10 @@ class ExecutionContext(object):
                         formats = [ p.preferredFormat ] \
                             + [f for f in p.formats if f is not p.preferredFormat]
                         for destinationFormat in formats:
-                            cs = getConversionInfo((v.type, v.format), 
+                            converter = getConversionInfo((v.type, v.format), 
                                                    (p.type, destinationFormat), 
                                                    checkUpdate=False) \
-                                 .converters()
-                            converter = cs[0] if len(cs) > 0 else None
+                                        .converter()
                             #print('converter', converter, 
                                   #'source', (v.type, v.format), 
                                   #'destination', (p.type, destinationFormat))
@@ -4380,55 +4379,144 @@ def getConverter(source, destination, checkUpdate=True):
         if isSameDiskItemType(st, dt):
             while result is None and st:
                 st = st.parent
-                result = _converters.get((st, df), {}).get((st, sf))
+                result = _converters.get(((st, df), (st, sf)))
     return getProcess(result, checkUpdate=checkUpdate)
 
+#-----------------------------------------------------------------------------
+def resetConverters():
+    """
+    Reset converters dictionaries.
+    """
+    global _converters, _converters_dist, _converters_from, _converters_to
+    
+    _converters = {}
+    _converters_dist = {}
+    _converters_from = {}
+    _converters_to = {}
+    
+#-----------------------------------------------------------------------------
+def registerConverter(source, dest, proc):
+    """
+    Registers converter from source to destination.
+    :param source: tuple (type, format). If a converter is not found directly, parent types are tried.
+    :param dest: tuple (type, format). If a converter is not found directly, parent types are tried.
+    :param proc: :py:class:`NewProcess` class associated to the converter
+    """
+    global _converters, _converters_dist, _converters_from, _converters_to
+    
+    #print('===== registering converter for (', source, dest, '):', proc)
+    _converters[(source, dest)] = proc._id
+    _converters_dist[(source, dest)] = ((0, 0), proc._id)
+    _converters_from.setdefault(source, {})[dest] = proc._id
+    _converters_to.setdefault(dest, {})[source] = proc._id
 
-#--------------------------------------------->-------------------------------
-def getConvertersTo(destination, keepType=1, checkUpdate=True):
+#-----------------------------------------------------------------------------
+def __getConverters(registry, key, keepType=1, checkUpdate=True):
+    """
+    Get converters from a registry using a key (type and format). If keepType is
+    False, parent types are tried to get converters.
+    
+    :param registry: dict of dict of converters.
+    :param key: tuple (type, format). The type and format to get converters for.
+    :param boolean keepType: if True, parent types won't be tried. Default True.
+    :param boolean checkUpdate: if True, Brainvisa will check if the converters 
+    needs to be reloaded. Default True.
+    :returns: a dict (type, format) -> :py:class:`NewProcess` class associated 
+    to the found converter.
+    """ 
+    type, format = key
+    stack = []
+    result = {}
+        
+    # Stack converters for parent types
+    while type:
+        d = registry.get((type, format), {})
+        if keepType:
+            result = d
+            break
+        
+        # Stack types to update
+        stack.append((type, d))
+        type = type.parent
+        
+    # Update converters from the stack
+    while len(stack) > 0:
+        type, d = stack.pop()
+        result.update(d)
+        
+    return dict([(k, getProcess(p, checkUpdate=checkUpdate)) \
+                for k, p in six.iteritems(result)])
+
+#-----------------------------------------------------------------------------
+def getConvertersTo(dest, keepType=1, checkUpdate=True):
     """
     Gets the converters which can convert data to destination format.
 
     :param destination: tuple (type, format). If a converter is not found directly, parent types are tried.
     :param boolean keepType: if True, parent type won't be tried. Default True.
     :param boolean checkUpdate: if True, Brainvisa will check if the converters needs to be reloaded. Default True.
-    :returns: a map (type, format) -> :py:class:`NewProcess` class associated to the found converter.
+    :returns: a dict (type, format) -> :py:class:`NewProcess` class associated to the found converter.
     """
-
-    global _converters
-    t, f = destination
-    c = _converters.get((t, f), {})
-    if keepType:
-        return c
-    while not c and t:
-        t = t.parent
-        c = _converters.get((t, f), {})
-    return dict([(n, getProcess(p, checkUpdate=checkUpdate,
-                                ignoreValidation=True)) for n, p in c.items()])
-
+    global _converters_to
+    
+    return __getConverters(_converters_to, dest,
+                           keepType=keepType, checkUpdate=checkUpdate)
 
 #----------------------------------------------------------------------------
-def getConvertersFrom(source, checkUpdate=True):
+def getConvertersFrom(source, keepType=1, checkUpdate=True):
     """
     Gets the converters which can convert data from source format to whatever format.
 
     :param source: tuple (type, format). If a converter is not found directly, parent types are tried.
     :param boolean checkUpdate: if True, Brainvisa will check if the converters needs to be reloaded. Default True.
-    :returns: a map (type, format) -> :py:class:`NewProcess` class associated to the found converter.
+    :returns: a dict (type, format) -> :py:class:`NewProcess` class associated to the found converter.
     """
-    global _converters
-    result = {}
-    for destination, i in _converters.items():
-        c = i.get(source)
-        t, f = source
-        while not c and t:
-            t = t.parent
-            c = i.get((t, f))
-        if c:
-            result[destination] = getProcess(c, checkUpdate=checkUpdate)
-    return result
+    global _converters_from
+    
+    return __getConverters(_converters_from, source,
+                           keepType=keepType, checkUpdate=checkUpdate)
 
+#-----------------------------------------------------------------------------
+def getNearestConverter(source, dest, checkUpdate=True):
+    """
+    Gets the nearest converter which can convert data from source to dest.
 
+    :param source: tuple (type, format). If a converter is not found directly, parent types are tried.
+    :param dest: tuple (type, format). If a converter is not found directly, parent types are tried.
+    :param boolean checkUpdate: if True, Brainvisa will check if the converters needs to be reloaded. Default True.
+    :returns: a tuple ((source_distance, dest_distance), process) :py:class:`NewProcess` class associated to the found converter.
+    """
+    global _converters_dist
+
+    stack = []
+    result = _converters_dist.get((source, dest))
+    
+    if result is None:
+        #print('Updating converter for source', source, 'dest', dest)
+        # Go through the list of converters
+        import itertools
+                
+        dst_type, dst_format = dest
+        src_type, src_format = source
+        src_parents = src_type.levels()
+        dst_parents = dst_type.levels()
+        result = ((-1, -1), None)
+        for (sl, s), (dl, d) in itertools.product(src_parents, dst_parents):
+            r = _converters_dist.get(((s, src_format), (d, dst_format)))
+            if r is not None:
+                (csl, cdl), c = r
+                if c:
+                    result = ((sl + csl, dl + cdl), c)
+                    break
+                
+        _converters_dist[(source, dest)] = result
+
+    if result[1] is not None:
+        return (result[0], getProcess(result[1], checkUpdate=checkUpdate))
+    else:
+        return ((-1, -1), None)
+
+#----------------------------------------------------------------------------
 def getConverters():
     """
     Gets the converter name list.
@@ -4436,10 +4524,9 @@ def getConverters():
     global _converters
     results = []
 
-    for d in _converters.itervalues():
-        for v in d.itervalues():
-            if not v in results and type(v) == str:
-                results.append(v)
+    for v in _converters.itervalues():
+        if not v in results and type(v) == str:
+            results.append(v)
 
     return sorted(results)
 
@@ -4494,76 +4581,89 @@ class DiskItemConversionInfo:
         """
         self.source = source
         self.dest = dest
-        self.__converters = SortedDictionary()
+        self.__converter = None
+        self.__converter_distance = (-1, -1)
         self.__need_conversion = -1
         self.__types_distance = -1
         self.__formats_distance = -1
+        self.__check_update = checkUpdate
+        self.__updated = False
         
-        # Update conversion information
-        self.__update__(checkUpdate=checkUpdate)
-    
-    def __update__(self, checkUpdate=True):
+        self.__update__()
+
+    def __update__(self):
         """
         Update processes.DiskItemConversionInfo internal information.
         
         :param boolean checkUpdate: if the converters :py:class:`NewProcess`
         must be reloaded when they changed. Default True.
         """
-        ts, fs = getDiskItemSourceInfo(self.source)
-        td, fd = getDiskItemSourceInfo(self.dest)
-        
-        converters = []
-        need_conversion, types_dist, formats_dist = (-1, -1, -1)
-        
-        # Search type matching the inheritance tree
-        types_dist = ts.inheritanceLevels(td)
-        if fs == fd:
-            formats_dist = 0
+        if not self.__updated:
+            ts, fs = getDiskItemSourceInfo(self.source)
+            td, fd = getDiskItemSourceInfo(self.dest)
             
-        if types_dist != -1 and formats_dist == 0:
-            # No conversion is necessary
-            need_conversion = 0       
-        else:
-            # Sets distance of 1 between types if source type and destination
-            # are not the same and need conversion
-            if types_dist != 0:
-                types_dist = 1
-            formats_dist = -1
-            converters_to_check = getConvertersFrom((ts, fs), 
-                                                    checkUpdate=checkUpdate)
-            for k, v in six.iteritems(converters_to_check):
-                tc, fc = k
-                l = td.inheritanceLevels(tc)
-                if (tc, fc) != (ts, fs) and l > -1 and fc == fd:
-                    # Found a converter
-                    converters.append((l, (tc, fc), v))
-                    
-            if len(converters) > 0:
-                need_conversion = 1
-                # Converters sorted by levels between conversion type and 
-                # destination type
-                converters = [(k, (l, c)) for l, k, c in sorted(converters)]
-                formats_dist = 0 if fs == fd else 1
+            converter = None
+            converter_dist = (-1, -1)
+            need_conversion, types_dist, formats_dist = (-1, -1, -1)
+            
+            # Search type matching the inheritance tree
+            types_dist = ts.inheritanceLevels(td)
+            if fs == fd:
+                formats_dist = 0
+                
+            if types_dist != -1 and formats_dist == 0:
+                # No conversion is necessary
+                need_conversion = 0       
+            else:
+                # Sets distance of 1 between types if source type and destination
+                # are not the same and need conversion
+                if types_dist != 0:
+                    types_dist = 1
+                formats_dist = -1
+                
+                converter_dist, converter = getNearestConverter(
+                                                (ts, fs), (td, fd),
+                                                checkUpdate=self.__check_update)
+                
+                if converter is not None:
+                    need_conversion = 1
+                    formats_dist = 0 if fs == fd else 1
 
-        # Store found converters
-        self.__converters = SortedDictionary(converters)
-        
-        # Store distance information
-        self.__need_conversion = need_conversion
-        self.__types_distance = types_dist
-        self.__formats_distance = formats_dist
+            # Store found converters
+            self.__converter = converter
+            self.__converter_distance = converter_dist
+            
+            # Store distance information
+            self.__need_conversion = need_conversion
+            self.__types_distance = types_dist
+            self.__formats_distance = formats_dist
+            
+            self.__updated = True
     
     def exactDestTypeConverter(self):
-        if len(self.__converters) > 0:
-            l, c = self.__converters.values()[0]
-            if l == 0:
-                return c
+        """
+        Get converter between source and exact destination type if needed and 
+        possible.
+        
+        :returns: the converter :py:class:`NewProcess` to exact destination 
+        type if needed and possible else None.
+        """
+        if self.__converter_distance[1] == 0:
+            return self.__converter
             
         return None
         
-    def converters(self, exactConversionTypeOnly=False):
-        return [c for l, c in self.__converters.values() \
-                  if (not exactConversionTypeOnly or l == 0)]
+    def converter(self, exactConversionTypeOnly=False):        
+        """
+        Get converter between source and destination type if needed and 
+        possible.
+        
+        :returns: the converter :py:class:`NewProcess` if needed and possible 
+        else None.
+        """
+        if (not exactConversionTypeOnly or self.__converter_distance[1] == 0):
+            return self.__converter
+            
     
     def distance(self, useInheritanceOnly=False, exactConversionTypeOnly=False):
         """
@@ -4666,6 +4766,8 @@ def getConversionInfo(source, dest, checkUpdate=True):
     # Check that conversion info is in cache for source->dest or initialize it
     ci = _conversion_infos.setdefault((ts, fs), dict()) \
                           .setdefault((td, fd), None)
+    #print('===== getting from cache source', (ts, fs), \
+          #'dest', (td, fd), 'ci', ci)
     if ci is None:
         # Update cache for source->dest conversion
         ci = DiskItemConversionInfo((ts, fs), (td, fd), 
@@ -4764,8 +4866,8 @@ class ProcessSet(set):
         return procs
 
 #-------------------------------------------------------------------------------
-def getProcesses(registry, source, enableConversion=1, 
-                 exactConversionTypeOnly=False, checkUpdate=True):
+def getProcessesBySourceDist(registry, source, enableConversion=1, 
+                             exactConversionTypeOnly=False, checkUpdate=True):
     """
     Get processes :py:class:`NewProcess` able to process a 
     :py:class:`neuroDiskItems.DiskItem` source using a registry.
@@ -4793,28 +4895,30 @@ def getProcesses(registry, source, enableConversion=1,
     """
     # Create a list of process set that can be ordered by distance vector
     r = list()
-    for k, ps in six.iteritems(registry):
-        ci = getConversionInfo(source, ps.source(), checkUpdate=checkUpdate)
-        if ci is not None:
-            d = ci.distance(useInheritanceOnly=not enableConversion,
-                            exactConversionTypeOnly=exactConversionTypeOnly)
-            if d is not None:
-                r.append((d, ps))
-            
+    converters = getConvertersFrom(source, keepType=0, checkUpdate=checkUpdate)
+    possible_sources = [source] + converters.keys()
+    for s in possible_sources:
+        ps = registry.get(s)
+        if ps is not None:
+            ci = getConversionInfo(source, s, checkUpdate=checkUpdate)
+            if ci is not None:
+                d = ci.distance(useInheritanceOnly=not enableConversion,
+                                exactConversionTypeOnly=exactConversionTypeOnly)
+                if d is not None:
+                    r.append((d, ps))
+                
     # Sort process sets using distance vector
     s = sorted(r)
 
     # Create result list
     r = list()
     unique = set()
-    #print('===== found processes for source', source, '=====')
     for d, ps in s:
         for p in ps.processes(checkUpdate=checkUpdate):
             if not p in unique:
                 unique.add(p)
                 r.append(p)
-                #print(v.name, 'with distance', d)
-                
+                #print(p.name, 'with distance', d)
     return r
  
 #-------------------------------------------------------------------------------
@@ -4849,12 +4953,12 @@ def getViewers(source, enableConversion=1, checkUpdate=True, listof=False):
         registry = _listViewers
     
     # Create a list of viewerset that can be ordered by distance vector
-    r = getProcesses(registry, 
-                     source, 
-                     enableConversion=enableConversion, 
-                     exactConversionTypeOnly=True,
-                     checkUpdate=checkUpdate)
-    
+    r = getProcessesBySourceDist(registry, 
+                                 getDiskItemSourceInfo(source), 
+                                 enableConversion=enableConversion, 
+                                 exactConversionTypeOnly=True,
+                                 checkUpdate=checkUpdate)
+    #print('=== found viewers by distance', r)
     if listof:
         # Gets default viewer
         dv = getDefaultListOfViewer(source)
@@ -5004,7 +5108,7 @@ def getDataEditor(source, enableConversion=0, checkUpdate=True, listof=False):
                 break
     if not v and enableConversion:
         for format in f:
-            converters = getConvertersFrom((t0, f), checkUpdate=checkUpdate)
+            converters = getConvertersFrom((t0, f), keepType=0, checkUpdate=checkUpdate)
             t = t0
             while not v and t:
                 for tc, fc in converters.keys():
@@ -5283,8 +5387,9 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
 #    if NewProcess.category.lower() == 'converters/automatic':
 
         def _setConverter(source, dest, proc):
-            d = _converters.setdefault(dest, {})
-            oldc = d.get(source)
+            global _converters
+            
+            oldc = _converters.get((source, dest))
             if oldc:
                 oldproc = _processes.get(oldc)
                 oldpriority = 0
@@ -5292,10 +5397,13 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
                     oldpriority = getattr(oldproc, 'rolePriority', 0)
                 newpriority = getattr(proc, 'rolePriority', 0)
                 if oldpriority > newpriority:
-                    return  # don't register because prioriry is not sufficient
-            d[source] = proc._id
+                    return  # don't register because priority is not sufficient
+                        
+            # Register all source parents types
+            #print('==== registering converter for source', source, 'dest', dest, 'proc', proc.name)
+            registerConverter(source, dest, proc)
+            
         if 'converter' in roles:
-            global _converters
             possibleConversions = getattr(
                 NewProcess, 'possibleConversions', None)
             if possibleConversions is None:
@@ -5306,8 +5414,7 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
                                       (destArg.type, destFormat), NewProcess)
             else:
                 for source, dest in possibleConversions():
-                    source = (
-                        getDiskItemType(source[0]), getFormat(source[1]))
+                    source = (getDiskItemType(source[0]), getFormat(source[1]))
                     dest = (getDiskItemType(dest[0]), getFormat(dest[1]))
                     _setConverter(source, dest, NewProcess)
 
@@ -5397,17 +5504,18 @@ def readProcesses(processesPath):
     :param list processesPath: list of paths to directories containing processes files.
     """
     # New style processes initialization
-    global _processesInfo, _converters, _viewers, _listViewers
+    global _viewers, _listViewers
     global _dataEditors, _listDataEditors, _importers
     global _allProcessesTree
 
     _processesInfo = {}
-    _converters = {}
     _viewers = {}
     _listViewers = {}
     _dataEditors = {}
     _listDataEditors = {}
     _importers = {}
+    
+    resetConverters()
 
     processesCacheFile = os.path.join(
         neuroConfig.homeBrainVISADir, 'processCache-' + neuroConfig.shortVersion)
@@ -5419,8 +5527,9 @@ def readProcesses(processesPath):
             # change _converters keys to use the same instances as the global
             # types / formats list
             for k in converters.keys():
-                _converters[
-                    (getDiskItemType(k[0].name), getFormat(k[1].name))] = converters[k]
+                src = (getDiskItemType(k[0].name), getFormat(k[1].name))
+                dst = (getDiskItemType(k[2].name), getFormat(k[3].name))
+                registerConverter(src, dst, converters[k])
         except:
             _processesInfo, _converters = {}, {}
             if neuroConfig.mainLog is not None:
@@ -5988,21 +6097,22 @@ def initializeProcesses():
     """
     # TODO: A class would be more clean instead of all these global variables
     global _processModules, _processes, _processesInfo, _processesInfoByName, \
-        _converters, _viewers, _listViewers, _mainThread, _defaultContext, _dataEditors, _listDataEditors, _importers,\
-        _askUpdateProcess, _readProcessLog
+        _viewers, _listViewers, _mainThread, _defaultContext, _dataEditors, \
+        _listDataEditors, _importers,_askUpdateProcess, _readProcessLog
     _mainThread = threading.currentThread()
     _processesInfo = {}
     _processesInfoByName = {}
     _processes = {}
     _processModules = {}
     _askUpdateProcess = {}
-    _converters = {}
     _viewers = {}
     _listViewers = {}
     _dataEditors = {}
     _listDataEditors = {}
     _importers = {}
     _defaultContext = ExecutionContext()
+    resetConverters()
+    
     if neuroConfig.mainLog is not None:
         _readProcessLog = neuroConfig.brainvisaSessionLog.subLog()
         neuroConfig.brainvisaSessionLog.append(_t_('Read processes'),
@@ -6020,9 +6130,10 @@ def cleanupProcesses():
     The global variables are cleaned.
     """
     global _processModules, _processes, _processesInfo, _processesInfoByName, \
-        _converters, _viewers, _listViewers, _mainThread, _defaultContext, _dataEditors, _listDataEditors, _importers, \
-        _askUpdateProcess, _readProcessLog
-    _converters = {}
+        _viewers, _listViewers, _mainThread, _defaultContext, _dataEditors, \
+        _listDataEditors, _importers, _askUpdateProcess, _readProcessLog
+
+    resetConverters()
     _viewers = {}
     _listViewers = {}
     _dataEditors = {}
@@ -6035,6 +6146,7 @@ def cleanupProcesses():
     _askUpdateProcess = {}
     _mainThread = None
     _defaultContext = None
+    
     if _readProcessLog is not None:
         _readProcessLog.close()
         _readProcessLog = None
