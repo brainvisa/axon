@@ -13,10 +13,6 @@ name = 'Database QC table'
 userLevel = 2
 
 wkhtmltopdf = findInPath('wkhtmltopdf')
-if wkhtmltopdf is not None:
-    export_formats = ['HTML', 'PDF file']
-else:
-    export_formats = ['HTML']
 
 
 signature = Signature(
@@ -25,7 +21,7 @@ signature = Signature(
     'data_filters', ListOf(String()),
     'keys', ListOf(String()),
     'type_labels', ListOf(String()),
-    'output_file', WriteDiskItem('Text File', export_formats),
+    'output_file', WriteDiskItem('Text File', 'HTML PDF'),
 )
 
 
@@ -45,10 +41,6 @@ def initialization(self):
     self.setOptional('output_file')
 
     self.keys = ['subject']
-
-    # allow derived processes to access these variables
-    self.wkhtmltopdf = wkhtmltopdf
-    self.export_formats = export_formats
 
 
 def execution(self, context):
