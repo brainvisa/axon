@@ -4443,7 +4443,6 @@ def __getConverters(registry, key, keepType=1, checkUpdate=True):
     while len(stack) > 0:
         type, d = stack.pop()
         result.update(d)
-        
     return dict([(k, getProcess(p, checkUpdate=checkUpdate)) \
                 for k, p in six.iteritems(result)])
 
@@ -4895,8 +4894,12 @@ def getProcessesBySourceDist(registry, source, enableConversion=1,
     """
     # Create a list of process set that can be ordered by distance vector
     r = list()
+    src_type, src_format = source
     converters = getConvertersFrom(source, keepType=0, checkUpdate=checkUpdate)
-    possible_sources = [source] + converters.keys()
+    
+    possible_sources = [source]
+    possible_sources += [(p, src_format) for p in src_type.parents()]
+    possible_sources += converters.keys()
     for s in possible_sources:
         ps = registry.get(s)
         if ps is not None:
@@ -5504,6 +5507,7 @@ def readProcesses(processesPath):
     :param list processesPath: list of paths to directories containing processes files.
     """
     # New style processes initialization
+    global _converters
     global _viewers, _listViewers
     global _dataEditors, _listDataEditors, _importers
     global _allProcessesTree
