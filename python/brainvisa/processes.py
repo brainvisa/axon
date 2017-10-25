@@ -1235,6 +1235,11 @@ class Parameterized(object):
         Links and observer callbacks that are no more associated to the signature parameters are deleted.
         The :py:attr:`signatureChangeNotifier` is notified.
         """
+        
+        # Temporarily disable setting non-default flags
+        _force_default_in_setattr = self._force_default_in_setattr
+        self._force_default_in_setattr = None
+        
         # Change signature
         self.signature = signature
         for n in self.signature.keys():
@@ -1250,6 +1255,9 @@ class Parameterized(object):
 
         # Notify listeners
         self.signatureChangeNotifier.notify(self)
+        
+        # Restore setting non-default flags
+        self._force_default_in_setattr = _force_default_in_setattr
 
     def clearLinksTo(self, *args):
         """Removes all links that have a parameter in `args` as a destination."""
