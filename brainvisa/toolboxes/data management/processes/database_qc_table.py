@@ -3,6 +3,7 @@ from __future__ import print_function
 from brainvisa.processes import *
 from brainvisa.data import neuroHierarchy
 from soma.wip.application.api import findIconFile
+from soma.qt_gui.qtThread import MainThreadLife
 import numpy as np
 import os
 import tempfile
@@ -95,7 +96,6 @@ def execution(self, context):
                     old_nrow = elements.shape[0]
                     elements.resize((row + 1, ncols))
                     elements[old_nrow:, :] = None
-                    print(elements)
                 max_row = max((max_row, row))
             element = elements[row, elem_col]
             if isinstance(element, list):
@@ -115,6 +115,8 @@ def execution(self, context):
 
     if self.output_file:
         self.save(context)
+        #if self.output_file.format.name == 'HTML':
+            #context.write(open(self.output_file.fullPath()).read())
     else:
         return mainThreadActions().call(self.exec_mainthread, context)
 
@@ -150,17 +152,21 @@ def get_row(self, key_vals, row_ids, key_values):
                         kvals2[j] = next(iter(kvalues))
 
             if kvals2 == kvals:
-                #print('found old row:', i)
+                #print('found old row:', i, 'for id:', row_id, ':', kvals2, id)
                 row = i
                 row_ids[row_id] = row
                 break
-        if row is None:
+        if row is not None:
+            # delete key with None values to avoid ambiguities with other
+            # different key values which may come later
+            del row_ids[id]
+        else:
             if len(row_ids) == 0:
                 row = 0
             else:
                 row = max(row_ids.values()) + 1
             row_ids[row_id] = row
-            #print('new row:', row)
+            #print('new row:', row, 'for id:', row_id)
 
     return row, row_id, changed_id
 
@@ -175,6 +181,9 @@ if neuroConfig.gui:
             self.setMinimumSectionSize(20)
 
         def paintSection(self, painter, rect, logicalIndex ):
+            import sip
+            if sip.isdeleted(self):
+                return
             painter.save()
             # translate the painter such that rotate will rotate around the
             # correct point
@@ -251,7 +260,6 @@ if neuroConfig.gui:
             self.viewer_triggered.emit(self._item, self.number)
 
         def requestWidget(self, parent):
-            print('requestWidget')
             return self._widget
 
 
@@ -340,7 +348,7 @@ def exec_mainthread(self, context):
     mw.resize(800, 800)
     mw.show()
 
-    return [mw]
+    return MainThreadLife(mw)
 
 
 def item_clicked(self, item):
