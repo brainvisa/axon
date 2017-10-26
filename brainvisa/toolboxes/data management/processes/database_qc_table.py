@@ -115,6 +115,8 @@ def execution(self, context):
 
     if self.output_file:
         self.save(context)
+        #if self.output_file.format.name == 'HTML':
+            #context.write(open(self.output_file.fullPath()).read())
     else:
         return mainThreadActions().call(self.exec_mainthread, context)
 
