@@ -21,6 +21,7 @@ if( SIP_FOUND )
 
   if( DESIRED_QT_VERSION EQUAL 4 )
     find_package( Qt4 COMPONENTS QtCore QtGui REQUIRED )
+    include( "${QT_USE_FILE}" )
   elseif( DESIRED_QT_VERSION EQUAL 5 )
     find_package( Qt5Widgets REQUIRED )
     add_definitions( ${Qt5Widgets_DEFINITIONS} )
@@ -31,8 +32,6 @@ if( SIP_FOUND )
   
   BRAINVISA_DEPENDENCY( RUN DEPENDS python-sip4 RUN )
   BRAINVISA_DEPENDENCY( DEV DEPENDS python-sip4 DEV )
-
-  include( "${QT_USE_FILE}" )
 
   add_subdirectory( src/sipsomaqt )
 
