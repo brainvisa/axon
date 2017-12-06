@@ -181,7 +181,7 @@ class TransformRoi():
     
     def _init3dCursor(self):
         aImg = self._aImages[self._getSelectedImage()]
-        bbox = aImg.boundingbox()
+        bbox = [aims.Point3df(x[:3]) for x in aImg.boundingbox()]
         position = (bbox[1] - bbox[0])*0.5
         t = self.a.getTransformation(aImg.getReferential(),
                                      self._aViews[0].getReferential())
@@ -903,7 +903,8 @@ class TransformRoi():
         bmin = None
         bmax = None
         for mesh in meshes:
-            bbox = self._aMeshes[mesh].boundingbox()
+            bbox = [aims.Point3df(x[:3])
+                    for x in self._aMeshes[mesh].boundingbox()]
             if bmin == None:
                 bmin = bbox[0]
                 bmax = bbox[1]
