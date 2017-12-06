@@ -203,7 +203,7 @@ class CheckRegistration():
         except:
             return
         
-        bbox = aImg.boundingbox()
+        bbox = [aims.Point3df(x[:3]) for x in aImg.boundingbox()]
         position = (bbox[1] - bbox[0])*0.5
         t = self._anatomist.getTransformation(aImg.getReferential(),
                                               view.getReferential())

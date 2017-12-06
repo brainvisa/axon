@@ -241,7 +241,8 @@ class ManualRegistration():
         self._anatomist.execute('TexturingParams', objects=[self._fusion], texture_index=1,
                                 rate=float(self._defaultMixingRate)/100)
         self._winGroup.setSelection([self._aImages[self._movingImage]])
-        bBox = self._aImages[self._movingImage].boundingbox()
+        bBox = [aims.Point3df(x[:3])
+                for x in self._aImages[self._movingImage].boundingbox()]
         center = (bBox[1] - bBox[0])*0.5
         for v in self._aViews:
             v.focusView()
@@ -377,8 +378,10 @@ class ManualRegistration():
         trsfAction = self._aViews[0].view().controlSwitch().getAction('Transformer')
         trsfAction.selectTransformations(trsfAction.tadView().aWindow())
         currentTrsf = trsfAction.mainTransformation()
-        movingBBox = self._aImages[self._movingImage].boundingbox()
-        fixedBBox = self._aImages[self._fixedImage].boundingbox()
+        movingBBox = [aims.Point3df(x[:3])
+                      for x in self._aImages[self._movingImage].boundingbox()]
+        fixedBBox = [aims.Point3df(x[:3])
+                     for x in self._aImages[self._fixedImage].boundingbox()]
         movingCenter = (movingBBox[1] - movingBBox[0])*0.5
         movingCenter = currentTrsf.transform(movingCenter)
         fixedCenter = (fixedBBox[1] - fixedBBox[0])*0.5
@@ -519,7 +522,8 @@ class ManualRegistration():
         Inits the 3D cursor coordinates.
         """
         aImg = self._aImages[self._fixedImage]
-        bbox = aImg.boundingbox()
+        bbox = [aims.Point3df(x[:3])
+                for x in aImg.boundingbox()]
         position = (bbox[1] - bbox[0])*0.5
         t = self._anatomist.getTransformation(aImg.getReferential(),
                                               self._aViews[0].getReferential())
