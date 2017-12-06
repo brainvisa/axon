@@ -37,6 +37,7 @@ from anatomist.cpp.paletteEditor import PaletteEditor
 from brainvisa.processes import *
 from tempfile import mkstemp
 import anatomist.api as ana
+from soma import aims
 import fnmatch
 import csv
 import math
@@ -240,7 +241,7 @@ class DisplayResultsFromSPM(object):
       self.fusion = self.a.fusionObjects([ self.asingleSubject, athreshImg ], "Fusion2DMethod")
       self.fusion.addInWindows(self.aviews)
       self.a.execute("Fusion2DParams", object=self.fusion, mode="linear_on_defined", rate=0)
-      bbox = self.asingleSubject.boundingbox()
+      bbox = [aims.Point3df(x[:3]) for x in self.asingleSubject.boundingbox()]
       position = (bbox[1] - bbox[0]) * 0.5
       t = self.a.getTransformation(self.asingleSubject.getReferential(),
                                     self.aviews[0].getReferential())
