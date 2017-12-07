@@ -38,6 +38,7 @@ from brainvisa.processing import neuroLog
 from brainvisa.processing import neuroException
 from brainvisa.configuration import neuroConfig
 from soma.qtgui.api import TextEditWithSearch
+from soma.qt_gui import qt_backend
 import sys
 import sip
 
@@ -264,11 +265,14 @@ class LogViewer( QWidget ):
      # workaround a bug in PyQt ? Param 5 doesn't work; try to use kwargs
     import sipconfig
     if sipconfig.Configuration().sip_version >= 0x040a00:
-      logFileName = unicode( QFileDialog.getOpenFileName( None, _t_( 'Open log file' ), self._fileName, '', options=QFileDialog.DontUseNativeDialog ) )
+      logFileName = unicode( qt_backend.getOpenFileName( None, _t_( 'Open log file' ), self._fileName, '', options=QFileDialog.DontUseNativeDialog ) )
     else:
-      logFileName = unicode( QFileDialog.getOpenFileName( None, _t_( 'Open log file' ), self._fileName, '', None, QFileDialog.DontUseNativeDialog ) )
+      logFileName = unicode( qt_backend.getOpenFileName( None, _t_( 'Open log file' ), self._fileName, '', None, QFileDialog.DontUseNativeDialog ) )
     if logFileName:
-      self.setLogFile( logFileName )
+      try:
+        self.setLogFile( logFileName )
+      except:
+        neuroException.showException()
 
 
 def showLog( fileName ):
