@@ -394,12 +394,18 @@ class HierarchyBrowser( QWidget ):
       items=self.selectedItems()
       for item in items:
         if item.diskItem:
-          viewer=brainvisa.processes.getViewer(item.diskItem)
+          try:
+            viewer=brainvisa.processes.getViewer(item.diskItem)
+          except:
+            viewer = None
           if viewer:
             item.viewer=brainvisa.processes.defaultContext().runProcess(viewer, item.diskItem)
   
     def viewCondition(self, item):
-      return item and item.diskItem and not getattr(item, "viewer", None) and brainvisa.processes.getViewer(item.diskItem, checkUpdate=False)
+      try:
+        return item and item.diskItem and not getattr(item, "viewer", None) and brainvisa.processes.getViewer(item.diskItem, checkUpdate=False)
+      except:
+        return False
     
     def menuHideEvent(self):
       items=self.selectedItems()
@@ -429,7 +435,8 @@ class HierarchyBrowser( QWidget ):
           bvproc_uuid=item.diskItem.get("lastHistoricalEvent", None)
           #print('!menuHistoryEvent : type item.diskitem ', type(item.diskItem)) #<class 'brainvisa.data.neuroDiskItems.File'>
           if bvproc_uuid is not None:
-            history_window=DataHistoryWindow(item.diskItem, bvproc_uuid, parent=self)
+            history_window = DataHistoryWindow(item.diskItem, bvproc_uuid,
+                                               parent=self)
             history_window.setAttribute( Qt.WA_DeleteOnClose )
             history_window.show()
       
