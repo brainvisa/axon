@@ -103,7 +103,10 @@ class DataHistoryWindow(QtGui.QMainWindow):
     if self.bvproc_uuid is not None:
       
       #print "! history qt4gui : " , type(self.data)
-      res = self.data.type.name 
+      if self.data.type:
+        res = self.data.type.name
+      else:
+        res = None
       #print "! history qt4gui print type " , res 
       #print "! history qt4gui print type " , type(res) 
       #bvproc_file = os.path.join(self.data.get("_database", ""), self.data.getFileNameFromUuid(self.bvproc_uuid))
