@@ -399,7 +399,12 @@ class HierarchyBrowser( QWidget ):
           except:
             viewer = None
           if viewer:
-            item.viewer=brainvisa.processes.defaultContext().runProcess(viewer, item.diskItem)
+            try:
+              item.viewer=brainvisa.processes.defaultContext().runProcess(
+                viewer, item.diskItem)
+            except:
+              showException()
+              brainvisa.processes.showProcess(viewer, item.diskItem)
   
     def viewCondition(self, item):
       try:
