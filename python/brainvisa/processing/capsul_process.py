@@ -66,10 +66,14 @@ def listOptions(param, name, process, attributes=None, path_completion=None):
 param_types_table = \
     {
         trait_types.Bool: neuroData.Boolean,
+        trait_types.CBool: neuroData.Boolean,
         trait_types.String: neuroData.String,
         trait_types.Str: neuroData.String,
+        trait_types.CStr: neuroData.String,
         trait_types.Float: neuroData.Number,
+        trait_types.CFloat: neuroData.Number,
         trait_types.Int: neuroData.Integer,
+        trait_types.CInt: neuroData.Integer,
         trait_types.File: fileOptions,
         trait_types.Directory: fileOptions,
         trait_types.Enum: (neuroData.Choice, choiceOptions),
