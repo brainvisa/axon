@@ -126,6 +126,10 @@ BRAINVISA_COPY_FILES( ${PROJECT_NAME}
     SOURCE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/sphinxdoc/dev_doc"
     DESTINATION "python/brainvisa/tests" )
 
+# commands list, doc
+set( axon-commands brainvisa;axon-runprocess
+     CACHE INTERNAL "Commands list for component axon" FORCE )
+
 brainvisa_add_test(axon-tests "${PYTHON_EXECUTABLE_NAME}" -m brainvisa.tests.test_axon)
 
 BRAINVISA_CREATE_CMAKE_CONFIG_FILES()
