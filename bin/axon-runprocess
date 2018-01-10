@@ -1,3 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env python2
+from runpy import run_module
 
-exec python2 -m brainvisa.axon.runprocess "$@"
+run_module('brainvisa.axon.runprocess')
