@@ -127,8 +127,15 @@ BRAINVISA_COPY_FILES( ${PROJECT_NAME}
     DESTINATION "python/brainvisa/tests" )
 
 # commands list, doc
-set( axon-commands brainvisa;axon-runprocess
-     CACHE INTERNAL "Commands list for component axon" FORCE )
+if(WIN32)
+    # Add bat extension for brainvisa command
+    brainvisa_add_executable(brainvisa.bat IS_SCRIPT 
+                             HELP_COMMAND cmd /Q /C "bin/brainvisa.bat" -h)
+else()
+    brainvisa_add_executable(brainvisa IS_SCRIPT)
+endif()
+
+brainvisa_add_executable(axon-runprocess IS_SCRIPT)
 
 brainvisa_add_test(axon-tests "${PYTHON_EXECUTABLE_NAME}" -m brainvisa.tests.test_axon)
 
