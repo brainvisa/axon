@@ -37,6 +37,7 @@ from brainvisa.processes import getAllFormats
 from brainvisa.data.neuroData import Signature
 from brainvisa.data.neuroDiskItems import DiskItem, getAllDiskItemTypes
 from brainvisa.data import neuroHierarchy
+from brainvisa.configuration import neuroConfig
 from soma.functiontools import SomaPartial
 from traits import trait_types
 import traits.api as traits
@@ -257,10 +258,18 @@ class CapsulProcess(processes.Process):
         '''
         from capsul.attributes.completion_engine import ProcessCompletionEngine
 
+        if neuroConfig.gui:
+            from soma.qt_gui import qt_backend
+            qt_backend.init_traitsui_handler()
+            dispatch = 'ui'
+        else:
+            dispatch = 'same'
+
         self._capsul_process = process
         completion_engine \
             = ProcessCompletionEngine.get_completion_engine(process)
-        self._capsul_process.on_trait_change(self._process_trait_changed)
+        self._capsul_process.on_trait_change(self._process_trait_changed,
+                                             dispatch=dispatch)
 
 
     def setup_capsul_process(self):
