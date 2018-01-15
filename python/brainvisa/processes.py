@@ -5652,7 +5652,7 @@ class ProcessTree(EditableTree):
                 for f in sorted(listdir):
                     ff = os.path.join(dir, f)
                     if os.path.isdir(ff):
-                        if not ff.endswith('.data'):
+                        if not ff.endswith('.data') and f != '__pycache__':
                             if category:
                                 c = category + '/' + f
                             else:
