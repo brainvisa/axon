@@ -3058,6 +3058,7 @@ class ExecutionContext(object):
                             process.setConvertedValue(n, converted)
                 if executionFunction is None:
                     if(hasattr(process, 'executionWorkflow')):
+                        from soma.wip.application.api import Application
                         from soma_workflow.client import WorkflowController, \
                             Workflow, Helper
                         workflow = process.executionWorkflow(context=self)
@@ -3079,13 +3080,18 @@ class ExecutionContext(object):
                             wid, controller, include_aborted_jobs=True,
                             include_user_killed_jobs=True)
                         result = workflow
+                        configuration = Application().configuration
                         if (len(list_failed_jobs) > 0):
+                            if not configuration.soma_workflow.somaworkflow_keep_failed_workflows:
+                                # Delete the submitted workflow
+                                controller.delete_workflow(wid, True)
                             raise RuntimeError(
                                 'run through soma workflow failed, see '
                                 'details with soma-workflow-gui')
                         else:
-                            # Delete the submitted workflow
-                            controller.delete_workflow(wid, True)
+                            if not configuration.soma_workflow.somaworkflow_keep_succeeded_workflows:
+                                # Delete the submitted workflow
+                                controller.delete_workflow(wid, True)
                     else:
                         result = process.execution(self)
                 else:
