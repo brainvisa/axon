@@ -81,6 +81,13 @@ class AxonCapsulConfSynchronizer(object):
         # Freesurfer
         ax_conf.FSL.onAttributeChange('freesurfer_home_path',
                                       self._set_fs_home_path_capsul)
+        # Soma-Workflow
+        ax_conf.soma_workflow.onAttributeChange(
+            'somaworkflow_keep_failed_workflows',
+            self._set_swf_keep_failed_wf_capsul)
+        ax_conf.soma_workflow.onAttributeChange(
+            'somaworkflow_keep_succeeded_workflows',
+            self._set_swf_keep_succeeded_wf_capsul)
 
     def uninstall_axon_to_capsul_config_sync(self):
         ax_conf = Application().configuration
@@ -108,6 +115,13 @@ class AxonCapsulConfSynchronizer(object):
         # Freesurfer
         ax_conf.FSL.removeOnAttributeChange(
             'freesurfer_home_path', self._set_fs_home_path_capsul)
+        # Soma-Workflow
+        ax_conf.soma_workflow.removeOnAttributeChange(
+            'somaworkflow_keep_failed_workflows',
+            self._set_swf_keep_failed_wf_capsul)
+        ax_conf.soma_workflow.removeOnAttributeChange(
+            'somaworkflow_keep_succeeded_workflows',
+            self._set_swf_keep_succeeded_wf_capsul)
 
 
     def sync_axon_to_capsul(self):
@@ -201,6 +215,12 @@ class AxonCapsulConfSynchronizer(object):
             # FS toolbox is probably not installed.
             study_config.use_freesurfer = False
 
+        # Soma-Workflow
+        study_config.somaworkflow_keep_failed_workflows \
+            = ax_conf.soma_workflow.somaworkflow_keep_failed_workflows
+        study_config.somaworkflow_keep_succeeded_workflows \
+            = ax_conf.soma_workflow.somaworkflow_keep_succeeded_workflows
+
 
     def sync_capsul_to_axon(self):
         '''Copies CAPSUL config options to their Axon equivalent.
@@ -211,64 +231,84 @@ class AxonCapsulConfSynchronizer(object):
         study_config = self.study_config
 
         # matlab
-        if study_config.use_matlab:
-            ax_conf.matlab.executable = study_config.matlab_exec
-        else:
-            ax_conf.matlab.executable = None
+        try:
+            if study_config.use_matlab:
+                ax_conf.matlab.executable = study_config.matlab_exec
+            else:
+                ax_conf.matlab.executable = ''
+        except Exception as e:
+            print('Exception:', e)
 
         # SPM
-        if study_config.use_spm:
-            if getattr(study_config, 'spm_version', '12') == '12':
-                if study_config.spm_standalone:
-                    ax_conf.SPM.spm12_standalone_command = study_config.spm_exec
-                    ax_conf.SPM.spm12_standalone_path \
-                        = study_config.spm_directory
-                    ax_conf.SPM.spm12_standalone_mcr_path \
-                        = os.path.join(study_config.spm_directory, 'mcr',
-                                       'v713')
+        try:
+            if study_config.use_spm:
+                if getattr(study_config, 'spm_version', '12') == '12':
+                    if study_config.spm_standalone:
+                        ax_conf.SPM.spm12_standalone_command \
+                            = study_config.spm_exec
+                        ax_conf.SPM.spm12_standalone_path \
+                            = study_config.spm_directory
+                        ax_conf.SPM.spm12_standalone_mcr_path \
+                            = os.path.join(study_config.spm_directory, 'mcr',
+                                          'v713')
+                    else:
+                        ax_conf.SPM.spm12_standalone_path = ''
+                        ax_conf.SPM.spm12_standalone_command = ''
+                        ax_conf.SPM.spm12_standalone_mcr_path = ''
+                    ax_conf.SPM.spm8_standalone_path = ''
+                    ax_conf.SPM.spm8_standalone_command = ''
+                    ax_conf.SPM.spm8_standalone_mcr_path = ''
                 else:
-                    ax_conf.SPM.spm12_standalone_path = None
-                    ax_conf.SPM.spm12_standalone_command = None
-                    ax_conf.SPM.spm12_standalone_mcr_path = None
-                ax_conf.SPM.spm8_standalone_path = None
-                ax_conf.SPM.spm8_standalone_command = None
-                ax_conf.SPM.spm8_standalone_mcr_path = None
+                    if study_config.spm_standalone:
+                        ax_conf.SPM.spm8_standalone_command \
+                            = study_config.spm_exec
+                        ax_conf.SPM.spm8_standalone_path \
+                            = study_config.spm_directory
+                        ax_conf.SPM.spm8_standalone_mcr_path \
+                            = os.path.join(study_config.spm_directory, 'mcr',
+                                          'v713')
+                    else:
+                        ax_conf.SPM.spm8_standalone_path = ''
+                        ax_conf.SPM.spm8_standalone_command = ''
+                        ax_conf.SPM.spm8_standalone_mcr_path = ''
+                    ax_conf.SPM.spm12_standalone_path = ''
+                    ax_conf.SPM.spm12_standalone_command = ''
+                    ax_conf.SPM.spm12_standalone_mcr_path = ''
             else:
-                if study_config.spm_standalone:
-                    ax_conf.SPM.spm8_standalone_command = study_config.spm_exec
-                    ax_conf.SPM.spm8_standalone_path \
-                        = study_config.spm_directory
-                    ax_conf.SPM.spm8_standalone_mcr_path \
-                        = os.path.join(study_config.spm_directory, 'mcr',
-                                       'v713')
-                else:
-                    ax_conf.SPM.spm8_standalone_path = None
-                    ax_conf.SPM.spm8_standalone_command = None
-                    ax_conf.SPM.spm8_standalone_mcr_path = None
-                ax_conf.SPM.spm12_standalone_path = None
-                ax_conf.SPM.spm12_standalone_command = None
-                ax_conf.SPM.spm12_standalone_mcr_path = None
-        else:
-            ax_conf.SPM.spm12_standalone_path = None
-            ax_conf.SPM.spm12_standalone_command = None
-            ax_conf.SPM.spm12_standalone_mcr_path = None
-            ax_conf.SPM.spm8_standalone_path = None
-            ax_conf.SPM.spm8_standalone_command = None
-            ax_conf.SPM.spm8_standalone_mcr_path = None
+                ax_conf.SPM.spm12_standalone_path = ''
+                ax_conf.SPM.spm12_standalone_command = ''
+                ax_conf.SPM.spm12_standalone_mcr_path = ''
+                ax_conf.SPM.spm8_standalone_path = ''
+                ax_conf.SPM.spm8_standalone_command = ''
+                ax_conf.SPM.spm8_standalone_mcr_path = ''
+        except Exception as e:
+            print('Exception:', e)
 
         # FSL
-        if study_config.use_fsl:
-            ax_conf.FSL.fsldir = os.path.dirname(os.path.dirname(
-                os.path.dirname(study_config.fsl_config)))
-        else:
-            ax_conf.FSL.fsldir = None
+        try:
+            if study_config.use_fsl:
+                ax_conf.FSL.fsldir = os.path.dirname(os.path.dirname(
+                    os.path.dirname(study_config.fsl_config)))
+            else:
+                ax_conf.FSL.fsldir = None
+        except Exception as e:
+            print('Exception:', e)
 
         # Freesurfer
-        if study_config.use_freesurfer:
-            ax_conf.freesurfer.freesurfer_home_path \
-                = os.path.dirname(study_config.freesurfer_config)
-        else:
-            ax_conf.freesurfer.freesurfer_home_path = None
+        try:
+            if study_config.use_freesurfer:
+                ax_conf.freesurfer.freesurfer_home_path \
+                    = os.path.dirname(study_config.freesurfer_config)
+            else:
+                ax_conf.freesurfer.freesurfer_home_path = None
+        except Exception as e:
+            print('Exception:', e)
+
+        # Soma-Workflow
+        ax_conf.soma_workflow.somaworkflow_keep_failed_workflows \
+            = study_config.somaworkflow_keep_failed_workflows
+        ax_conf.soma_workflow.somaworkflow_keep_succeeded_workflows \
+            = study_config.somaworkflow_keep_succeeded_workflows
 
 
     def _set_matlab_executable_capsul(self, value):
@@ -348,3 +388,10 @@ class AxonCapsulConfSynchronizer(object):
             study_config.freesurfer_config = Undefined
             study_config.use_freesurfer = False
 
+    def _set_swf_keep_failed_wf_capsul(self, value):
+        study_config = self.study_config
+        study_config.somaworkflow_keep_failed_workflows = value
+
+    def _set_swf_keep_succeeded_wf_capsul(self, value):
+        study_config = self.study_config
+        study_config.somaworkflow_keep_succeeded_workflows = value

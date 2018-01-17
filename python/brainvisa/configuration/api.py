@@ -46,6 +46,7 @@ from soma.wip.application.api import Application
 from brainvisa.configuration.brainvisa_configuration import BrainVISAConfiguration
 from brainvisa.configuration.databases_configuration import DatabasesConfiguration, DatabaseSettings
 from brainvisa.configuration.anatomist_configuration import AnatomistConfiguration
+from brainvisa.configuration.soma_workflow_configuration import SomaWorkflowConfiguration
 from brainvisa.configuration.r_configuration import RConfiguration
 from brainvisa.configuration.matlab_configuration import MatlabConfiguration
 from brainvisa.configuration.spm_configuration import SPMConfiguration
@@ -66,6 +67,7 @@ def initializeConfiguration():
   configuration = Application().configuration
   configuration.add( 'brainvisa', BrainVISAConfiguration() )
   configuration.add( 'databases',  DatabasesConfiguration() )
+  configuration.add( 'soma_workflow',  SomaWorkflowConfiguration() )
   configuration.add( 'anatomist',  AnatomistConfiguration() )
   configuration.add( 'R',  RConfiguration() )
   configuration.add( 'matlab', MatlabConfiguration() )

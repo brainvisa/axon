@@ -38,6 +38,7 @@ from brainvisa.data.neuroData import Signature
 from brainvisa.data.neuroDiskItems import DiskItem, getAllDiskItemTypes
 from brainvisa.data import neuroHierarchy
 from brainvisa.configuration import neuroConfig
+from brainvisa.configuration import axon_capsul_config_link
 from soma.functiontools import SomaPartial
 from traits import trait_types
 import traits.api as traits
@@ -139,50 +140,55 @@ def get_initial_study_config():
         "volumes_format" : 'NIFTI gz',
         "meshes_format" : "GIFTI",
     }
-    if configuration.matlab.executable:
-        matlab_exe = distutils.spawn.find_executable(
-            configuration.matlab.executable)
-        if matlab_exe is not None:
-            init_study_config['matlab_exec'] = matlab_exe
-            init_study_config['use_matlab'] \
-                = configuration.matlab.enable_matlab
-        else:
-            init_study_config['use_matlab'] = False
-    if configuration.SPM.spm12_standalone_path \
-            and configuration.SPM.spm12_standalone_command:
-        init_study_config['spm_standalone'] = True
-        init_study_config['spm_exec'] \
-            = configuration.SPM.spm12_standalone_command
-        init_study_config['spm_directory'] \
-            = configuration.SPM.spm12_standalone_path
-        init_study_config['use_spm'] = True
-    elif configuration.SPM.spm8_standalone_path \
-            and configuration.SPM.spm8_standalone_command:
-        init_study_config['spm_standalone'] = True
-        init_study_config['spm_exec'] \
-            = configuration.SPM.spm8_standalone_command
-        init_study_config['spm_directory'] \
-            = configuration.SPM.spm8_standalone_path
-        init_study_config['use_spm'] = True
-    elif configuration.matlab.executable:
-        if configuration.SPM.spm12_path:
-            init_study_config['spm_directory'] \
-                = configuration.SPM.spm12_path
-            init_study_config['use_spm'] = True
-        elif configuration.SPM.spm8_path:
-            init_study_config['spm_directory'] \
-                = configuration.SPM.spm8_path
-            init_study_config['use_spm'] = True
-        elif configuration.SPM.spm5_path:
-            init_study_config['spm_directory'] \
-                = configuration.SPM.spm5_path
-            init_study_config['use_spm'] = True
-    if configuration.FSL.fsldir:
-          fsl = os.path.join(configuration.FSL.fsldir,
-                              'etc/fslconf/fsl.sh')
-          if os.path.exists(fsl):
-              init_study_config['fsl_config'] = fsl
-              init_study_config['use_fsl'] = True
+
+    #if configuration.matlab.executable:
+        #matlab_exe = distutils.spawn.find_executable(
+            #configuration.matlab.executable)
+        #if matlab_exe is not None:
+            #init_study_config['matlab_exec'] = matlab_exe
+            #init_study_config['use_matlab'] \
+                #= configuration.matlab.enable_matlab
+        #else:
+            #init_study_config['use_matlab'] = False
+    #if configuration.SPM.spm12_standalone_path \
+            #and configuration.SPM.spm12_standalone_command:
+        #init_study_config['spm_standalone'] = True
+        #init_study_config['spm_exec'] \
+            #= configuration.SPM.spm12_standalone_command
+        #init_study_config['spm_directory'] \
+            #= configuration.SPM.spm12_standalone_path
+        #init_study_config['use_spm'] = True
+    #elif configuration.SPM.spm8_standalone_path \
+            #and configuration.SPM.spm8_standalone_command:
+        #init_study_config['spm_standalone'] = True
+        #init_study_config['spm_exec'] \
+            #= configuration.SPM.spm8_standalone_command
+        #init_study_config['spm_directory'] \
+            #= configuration.SPM.spm8_standalone_path
+        #init_study_config['use_spm'] = True
+    #elif configuration.matlab.executable:
+        #if configuration.SPM.spm12_path:
+            #init_study_config['spm_directory'] \
+                #= configuration.SPM.spm12_path
+            #init_study_config['use_spm'] = True
+        #elif configuration.SPM.spm8_path:
+            #init_study_config['spm_directory'] \
+                #= configuration.SPM.spm8_path
+            #init_study_config['use_spm'] = True
+        #elif configuration.SPM.spm5_path:
+            #init_study_config['spm_directory'] \
+                #= configuration.SPM.spm5_path
+            #init_study_config['use_spm'] = True
+    #if configuration.FSL.fsldir:
+          #fsl = os.path.join(configuration.FSL.fsldir,
+                              #'etc/fslconf/fsl.sh')
+          #if os.path.exists(fsl):
+              #init_study_config['fsl_config'] = fsl
+              #init_study_config['use_fsl'] = True
+    #init_study_config['somaworkflow_keep_failed_workflows'] \
+        #= configuration.soma_workflow.somaworkflow_keep_failed_workflows
+    #init_study_config['somaworkflow_keep_succeeded_workflows'] \
+        #= configuration.soma_workflow.somaworkflow_keep_succeeded_workflows
     return init_study_config
 
 
@@ -448,7 +454,13 @@ class CapsulProcess(processes.Process):
             study_config = StudyConfig(
                 init_config=initial_study_config,
                 modules=StudyConfig.default_modules + ['BrainVISAConfig',
-                                                       'FomConfig'])
+                                                       'FomConfig',
+                                                       'FreeSurferConfig'])
+        study_config.axon_link = \
+            axon_capsul_config_link.AxonCapsulConfSynchronizer(study_config)
+        study_config.axon_link.sync_axon_to_capsul()
+        study_config.on_trait_change(
+            study_config.axon_link.sync_capsul_to_axon)
 
         study_config.input_directory = database
         study_config.output_directory = database
