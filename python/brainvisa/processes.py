@@ -3071,7 +3071,8 @@ class ExecutionContext(object):
                                     % process.name)
                             workflow = Workflow(
                                 jobs=jobs, dependencies=dependencies,
-                                root_group=root_group)
+                                root_group=root_group,
+                                name='brainvisa_' + process.name)
                         controller = WorkflowController()
                         wid = controller.submit_workflow(
                             workflow=workflow, name=process.name)
