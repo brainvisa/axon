@@ -142,6 +142,9 @@ def capsul_param_type(axon_param):
     if hasattr(newtype, '__name__'):
         # take name of a type class
         newtype = newtype.__name__
+    section = axon_param.getSectionTitleIfDefined()
+    if section is not None:
+        paramoptions.append('groups=("%s",)' % section)
     return newtype, paramoptions
 
 
