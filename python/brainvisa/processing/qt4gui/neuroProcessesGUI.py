@@ -2013,7 +2013,8 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
     self.action_run_with_sw = QAction(_t_('Run in parallel'), self)
     self.action_run_with_sw.setToolTip('Run in parallel using Soma-workflow')
-    self.action_run_with_sw.triggered.connect(self._run_with_soma_workflow)
+    self.action_run_with_sw.triggered.connect(
+        self._run_with_soma_workflow_button)
 
     self.action_interupt = QAction(_t_('Interrupt'), self)
     self.action_interupt.triggered.connect(self._interruptButton)
@@ -2737,15 +2738,18 @@ class ProcessView( QWidget, ExecutionContextGUI ):
         else:
           processView.info.setText( '' )
           processView.warning( _t_('processes %s updated') % _t_(processView.process.name) )
-        processView._runningProcess = 0
-        processView._startCurrentProcess( executionFunction )
+        if hasattr(self.process, 'executionWorkflow'):
+          return self._run_with_soma_workflow(
+              executionFunction=executionFunction)
+        else:
+          processView._runningProcess = 0
+          processView._startCurrentProcess( executionFunction )
       except:
         neuroException.showException()
     finally:
       self.action_run.setEnabled(True)
 
   def _run_with_soma_workflow( self, executionFunction=None ):
-    try:
       from brainvisa.workflow import ProcessToSomaWorkflow
 
       submission_dlg = WorkflowSubmissionDlg(self)
@@ -2829,6 +2833,9 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       view.setAttribute( QtCore.Qt.WA_DeleteOnClose )
       view.show()
 
+  def _run_with_soma_workflow_button( self, executionFunction=None ):
+    try:
+      self._run_with_soma_workflow(executionFunction=executionFunction)
     except:
       neuroException.showException()
     finally:

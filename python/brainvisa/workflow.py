@@ -492,8 +492,7 @@ class ProcessToWorkflow(object):
                 self._processExtraDependenciesFor(id, deps, jobtoid)
         for id, group in self._groups.iteritems():
             if id is not None:  # None group has no deps.
-                print('    id:', id)
-                node = idtogroup[id]
+                node = idtogroup.get(id)
                 if hasattr(node, '_dependencies'):
                     deps = node._dependencies
                     self._processExtraDependenciesFor(id, deps, jobtoid)
