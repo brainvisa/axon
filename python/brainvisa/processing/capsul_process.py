@@ -152,6 +152,8 @@ def match_ext(capsul_exts, axon_formats):
     if not capsul_exts:
         return True
     for format in axon_formats:
+        if not hasattr(format, 'patterns'):
+            continue # probably a group
         for pattern in format.patterns.patterns:
             f0 = pattern.pattern.split('|')[-1]
             f1 = f0.split('*')[-1]
@@ -169,7 +171,10 @@ def get_best_type(process, param, attributes=None, path_completion=None):
         try:
             path_completion = completion_engine.get_path_completion_engine()
         except RuntimeError:
-            return ('Any Type', getAllFormats())
+            return ('Any Type',
+                    [f for f in getAllFormats() if match_ext(cext, [f])])
+
+    cext = process.trait(param).allowed_extensions
 
     if attributes is None:
         orig_attributes = completion_engine.get_attribute_values()
@@ -180,9 +185,12 @@ def get_best_type(process, param, attributes=None, path_completion=None):
 
     path = path_completion.attributes_to_path(process, param, attributes)
     if path is None:
-        print('no path for', process.name, param)
-        return ('Any Type', getAllFormats())
-    cext = process.trait(param).allowed_extensions
+        # fallback to the completed value
+        path = getattr(process, param)
+    if path in (None, traits.Undefined):
+        #print('no path for', process.name, param)
+        return ('Any Type',
+                [f for f in getAllFormats() if match_ext(cext, [f])])
 
     for db in neuroHierarchy.databases.iterDatabases():
         for typeitem in getAllDiskItemTypes():
@@ -200,7 +208,9 @@ def get_best_type(process, param, attributes=None, path_completion=None):
                                 continue
                         return (typeitem.name, rule.formats)
 
-    return ('Any Type', getAllFormats())
+    #print('no type found for', param)
+    return ('Any Type',
+            [f for f in getAllFormats() if match_ext(cext, [f])])
 
 
 class CapsulProcess(processes.Process):
@@ -220,18 +230,9 @@ class CapsulProcess(processes.Process):
         '''
         from capsul.attributes.completion_engine import ProcessCompletionEngine
 
-        if neuroConfig.gui:
-            from soma.qt_gui import qt_backend
-            qt_backend.init_traitsui_handler()
-            dispatch = 'ui'
-        else:
-            dispatch = 'same'
-
         self._capsul_process = process
         completion_engine \
             = ProcessCompletionEngine.get_completion_engine(process)
-        self._capsul_process.on_trait_change(self._process_trait_changed,
-                                             dispatch=dispatch)
 
 
     def setup_capsul_process(self):
@@ -280,12 +281,13 @@ class CapsulProcess(processes.Process):
         except RuntimeError:
             path_completion = None
 
-        orig_attributes = completion_engine.get_attribute_values()
-        attributes = orig_attributes.__deepcopy__(orig_attributes.__dict__)
+        attributes = completion_engine.get_attribute_values()
+        orig_attributes = dict(attributes.__dict__)
         for attr, trait in six.iteritems(attributes.user_traits()):
             if isinstance(trait.trait_type, traits.Str):
                 setattr(attributes, attr, '<%s>' % attr)
         #
+        completion_engine.complete_parameters()
 
         signature_args = []
         excluded_traits = set(('nodes_activation', 'visible_groups',
@@ -299,6 +301,12 @@ class CapsulProcess(processes.Process):
             signature_args += [name, parameter]
             if param.optional:
                 optional.append(name)
+
+        # restore attributes
+        for attr, trait in six.iteritems(attributes.user_traits()):
+            if isinstance(trait.trait_type, traits.Str):
+                setattr(attributes, attr, orig_attributes[attr])
+
         signature = Signature(*signature_args)
         signature['edit_pipeline'] = neuroData.Boolean()
         has_steps = False
@@ -308,6 +316,17 @@ class CapsulProcess(processes.Process):
         signature['edit_study_config'] = neuroData.Boolean()
         self.__class__.signature = signature
         self.changeSignature(signature)
+
+        # setup callbacks to sync capsul and axon parameters values
+        if neuroConfig.gui:
+            from soma.qt_gui import qt_backend
+            qt_backend.init_traitsui_handler()
+            dispatch = 'ui'
+        else:
+            dispatch = 'same'
+
+        self._capsul_process.on_trait_change(self._process_trait_changed,
+                                             dispatch=dispatch)
 
         if optional:
             self.setOptional(*optional)
@@ -506,6 +525,8 @@ class CapsulProcess(processes.Process):
             print('exception in _process_trait_changed:', e)
             print('param:', name, ', value:', new_value, 'of type:',
                   type(new_value))
+            import traceback
+            traceback.print_exc()
 
 
     def _on_edit_study_config(self, process, dummy):
