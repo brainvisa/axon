@@ -148,6 +148,40 @@ def capsul_param_type(axon_param):
     return newtype, paramoptions
 
 
+def capsul_merged_param_type(axon_params):
+    ''' get a "common" capsul parameter type for a list of axon parameters,
+        typically to form a swith output from its possible inputs. the
+        output allowed_extensions will be the union of input extensions
+        (which may not always be OK).
+    '''
+    ctype = None
+    coptions = []
+    allowed_extensions = []
+    for axon_param in axon_params:
+        newtype, paramoptions = capsul_param_type(axon_param)
+        if ctype is None:
+            ctype = newtype
+        else:
+            if ctype != newtype:
+                print('warning: unmatching input types (for switch) %s and %s'
+                      % (ctype, newtype))
+        for opt in paramoptions:
+            oname, oval = opt.split('=')
+            oname = oname.strip()
+            if oname == 'allowed_extensions':
+                oval = eval(oval)
+                for ext in oval:
+                    if ext not in allowed_extensions:
+                        allowed_extensions.append(ext)
+            elif opt not in coptions:
+                coptions.append(opt)
+    if len(allowed_extensions) != 0:
+        coptions.append('allowed_extensions=%s' % repr(allowed_extensions))
+    return ctype, coptions
+
+
+
+
 def write_process_signature(p, out, buffered_lines, get_all_values=True):
     # write signature
     for name, param in six.iteritems(p.signature):
@@ -681,10 +715,8 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
                 # in switches, input params are the concatenation of declared
                 # input params and the output "group" name
                 input_name = '_switch_'.join((link_src, output_name))
-                if output_name not in out_types:
-                    src_par = src().signature[link_par]
-                    trait_type, paramoptions = capsul_param_type(src_par)
-                    out_types[output_name] = (trait_type, paramoptions)
+                src_par = src().signature[link_par]
+                out_types.setdefault(output_name, []).append(src_par)
                 # input_name = link_src  # has changed again in Switch...
                 links.append((src, link_par, use_weak_ref(enode), input_name,
                     weak_outputs))
@@ -697,6 +729,9 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
                 processed_links.add(
                     (use_weak_ref(p), input_name, src, link_par))
         if exported:
+            for out_name in out_types.keys():
+                src = out_types[out_name]
+                out_types[out_name] = capsul_merged_param_type(src)
             out_types_list = []
             for out in output_names:
                 if out in out_types:
