@@ -89,6 +89,7 @@ def make_parameter(param, name, process, attributes=None,
                    path_completion=None):
     newtype = param_types_table.get(type(param.trait_type))
     paramoptions = []
+    kwoptions = {}
     if newtype is None:
         print('no known converted type for', name, ':',
               type(param.trait_type))
@@ -100,7 +101,10 @@ def make_parameter(param, name, process, attributes=None,
     elif hasattr(newtype, 'func_name'):
         newtype, paramoptions = newtype(param, name, process, attributes,
                                         path_completion)
-    return newtype(*paramoptions)
+    if param.groups:
+        section = param.groups[0]
+        kwoptions['section'] = section
+    return newtype(*paramoptions, **kwoptions)
 
 
 def convert_capsul_value(value):
@@ -141,54 +145,6 @@ def get_initial_study_config():
         "meshes_format" : "GIFTI",
     }
 
-    #if configuration.matlab.executable:
-        #matlab_exe = distutils.spawn.find_executable(
-            #configuration.matlab.executable)
-        #if matlab_exe is not None:
-            #init_study_config['matlab_exec'] = matlab_exe
-            #init_study_config['use_matlab'] \
-                #= configuration.matlab.enable_matlab
-        #else:
-            #init_study_config['use_matlab'] = False
-    #if configuration.SPM.spm12_standalone_path \
-            #and configuration.SPM.spm12_standalone_command:
-        #init_study_config['spm_standalone'] = True
-        #init_study_config['spm_exec'] \
-            #= configuration.SPM.spm12_standalone_command
-        #init_study_config['spm_directory'] \
-            #= configuration.SPM.spm12_standalone_path
-        #init_study_config['use_spm'] = True
-    #elif configuration.SPM.spm8_standalone_path \
-            #and configuration.SPM.spm8_standalone_command:
-        #init_study_config['spm_standalone'] = True
-        #init_study_config['spm_exec'] \
-            #= configuration.SPM.spm8_standalone_command
-        #init_study_config['spm_directory'] \
-            #= configuration.SPM.spm8_standalone_path
-        #init_study_config['use_spm'] = True
-    #elif configuration.matlab.executable:
-        #if configuration.SPM.spm12_path:
-            #init_study_config['spm_directory'] \
-                #= configuration.SPM.spm12_path
-            #init_study_config['use_spm'] = True
-        #elif configuration.SPM.spm8_path:
-            #init_study_config['spm_directory'] \
-                #= configuration.SPM.spm8_path
-            #init_study_config['use_spm'] = True
-        #elif configuration.SPM.spm5_path:
-            #init_study_config['spm_directory'] \
-                #= configuration.SPM.spm5_path
-            #init_study_config['use_spm'] = True
-    #if configuration.FSL.fsldir:
-          #fsl = os.path.join(configuration.FSL.fsldir,
-                              #'etc/fslconf/fsl.sh')
-          #if os.path.exists(fsl):
-              #init_study_config['fsl_config'] = fsl
-              #init_study_config['use_fsl'] = True
-    #init_study_config['somaworkflow_keep_failed_workflows'] \
-        #= configuration.soma_workflow.somaworkflow_keep_failed_workflows
-    #init_study_config['somaworkflow_keep_succeeded_workflows'] \
-        #= configuration.soma_workflow.somaworkflow_keep_succeeded_workflows
     return init_study_config
 
 
@@ -196,6 +152,8 @@ def match_ext(capsul_exts, axon_formats):
     if not capsul_exts:
         return True
     for format in axon_formats:
+        if not hasattr(format, 'patterns'):
+            continue # probably a group
         for pattern in format.patterns.patterns:
             f0 = pattern.pattern.split('|')[-1]
             f1 = f0.split('*')[-1]
@@ -213,7 +171,10 @@ def get_best_type(process, param, attributes=None, path_completion=None):
         try:
             path_completion = completion_engine.get_path_completion_engine()
         except RuntimeError:
-            return ('Any Type', getAllFormats())
+            return ('Any Type',
+                    [f for f in getAllFormats() if match_ext(cext, [f])])
+
+    cext = process.trait(param).allowed_extensions
 
     if attributes is None:
         orig_attributes = completion_engine.get_attribute_values()
@@ -224,9 +185,12 @@ def get_best_type(process, param, attributes=None, path_completion=None):
 
     path = path_completion.attributes_to_path(process, param, attributes)
     if path is None:
-        print('no path for', process.name, param)
-        return ('Any Type', getAllFormats())
-    cext = process.trait(param).allowed_extensions
+        # fallback to the completed value
+        path = getattr(process, param)
+    if path in (None, traits.Undefined):
+        #print('no path for', process.name, param)
+        return ('Any Type',
+                [f for f in getAllFormats() if match_ext(cext, [f])])
 
     for db in neuroHierarchy.databases.iterDatabases():
         for typeitem in getAllDiskItemTypes():
@@ -244,7 +208,9 @@ def get_best_type(process, param, attributes=None, path_completion=None):
                                 continue
                         return (typeitem.name, rule.formats)
 
-    return ('Any Type', getAllFormats())
+    #print('no type found for', param)
+    return ('Any Type',
+            [f for f in getAllFormats() if match_ext(cext, [f])])
 
 
 class CapsulProcess(processes.Process):
@@ -264,18 +230,9 @@ class CapsulProcess(processes.Process):
         '''
         from capsul.attributes.completion_engine import ProcessCompletionEngine
 
-        if neuroConfig.gui:
-            from soma.qt_gui import qt_backend
-            qt_backend.init_traitsui_handler()
-            dispatch = 'ui'
-        else:
-            dispatch = 'same'
-
         self._capsul_process = process
         completion_engine \
             = ProcessCompletionEngine.get_completion_engine(process)
-        self._capsul_process.on_trait_change(self._process_trait_changed,
-                                             dispatch=dispatch)
 
 
     def setup_capsul_process(self):
@@ -324,15 +281,17 @@ class CapsulProcess(processes.Process):
         except RuntimeError:
             path_completion = None
 
-        orig_attributes = completion_engine.get_attribute_values()
-        attributes = orig_attributes.__deepcopy__(orig_attributes.__dict__)
+        attributes = completion_engine.get_attribute_values()
+        orig_attributes = dict(attributes.__dict__)
         for attr, trait in six.iteritems(attributes.user_traits()):
             if isinstance(trait.trait_type, traits.Str):
                 setattr(attributes, attr, '<%s>' % attr)
         #
+        completion_engine.complete_parameters()
 
         signature_args = []
-        excluded_traits = set(('nodes_activation', 'pipeline_steps'))
+        excluded_traits = set(('nodes_activation', 'visible_groups',
+                               'pipeline_steps'))
         optional = []
         for name, param in six.iteritems(process.user_traits()):
             if name in excluded_traits:
@@ -342,15 +301,37 @@ class CapsulProcess(processes.Process):
             signature_args += [name, parameter]
             if param.optional:
                 optional.append(name)
+
+        # restore attributes
+        for attr, trait in six.iteritems(attributes.user_traits()):
+            if isinstance(trait.trait_type, traits.Str):
+                setattr(attributes, attr, orig_attributes[attr])
+
         signature = Signature(*signature_args)
         signature['edit_pipeline'] = neuroData.Boolean()
+        has_steps = False
+        if getattr(process, 'pipeline_steps', None):
+            has_steps = True
+            signature['edit_pipeline_steps'] = neuroData.Boolean()
         signature['edit_study_config'] = neuroData.Boolean()
         self.__class__.signature = signature
         self.changeSignature(signature)
 
+        # setup callbacks to sync capsul and axon parameters values
+        if neuroConfig.gui:
+            from soma.qt_gui import qt_backend
+            qt_backend.init_traitsui_handler()
+            dispatch = 'ui'
+        else:
+            dispatch = 'same'
+
+        self._capsul_process.on_trait_change(self._process_trait_changed,
+                                             dispatch=dispatch)
+
         if optional:
             self.setOptional(*optional)
         self.edit_pipeline = False
+        self.edit_pipeline_steps = False
         self.edit_study_config = False
         for name in process.user_traits():
             if name in excluded_traits:
@@ -363,6 +344,9 @@ class CapsulProcess(processes.Process):
                                             name))
 
         self.linkParameters(None, 'edit_pipeline', self._on_edit_pipeline)
+        if has_steps:
+            self.linkParameters(None, 'edit_pipeline_steps',
+                                self._on_edit_pipeline_steps)
         self.linkParameters(None, 'edit_study_config',
                             self._on_edit_study_config)
 
@@ -496,7 +480,29 @@ class CapsulProcess(processes.Process):
             self._pipeline_view = None
 
 
+    def _on_edit_pipeline_steps(self, process, dummy):
+        from brainvisa.configuration import neuroConfig
+        if not neuroConfig.gui:
+            return
+        steps = getattr(self._capsul_process, 'pipeline_steps', None)
+        if not self.edit_pipeline_steps or not steps:
+            steps_view = getattr(self, '_steps_view', None)
+            if steps_view is not None:
+                steps_view.ref().close()
+                del steps_view
+                del self._steps_view
+            return
+        from soma.qt_gui.controller_widget import ScrollControllerWidget
+        from soma.qt_gui.qtThread import MainThreadLife
+        steps_view = ScrollControllerWidget(steps, live=True)
+        steps_view.show()
+        self._steps_view = MainThreadLife(steps_view)
+
+
     def _open_pipeline(self):
+        from brainvisa.configuration import neuroConfig
+        if not neuroConfig.gui:
+            return
         from capsul.qt_gui.widgets import PipelineDevelopperView
         from capsul.pipeline.pipeline import Pipeline
         from soma.qt_gui.qtThread import MainThreadLife
@@ -519,6 +525,8 @@ class CapsulProcess(processes.Process):
             print('exception in _process_trait_changed:', e)
             print('param:', name, ', value:', new_value, 'of type:',
                   type(new_value))
+            import traceback
+            traceback.print_exc()
 
 
     def _on_edit_study_config(self, process, dummy):
@@ -537,7 +545,7 @@ class CapsulProcess(processes.Process):
         study_config = self.get_study_config()
         scv = ScrollControllerWidget(study_config, live=True)
         scv.show()
-        self._study_config_editor= MainThreadLife(scv)
+        self._study_config_editor = MainThreadLife(scv)
 
 
     def _on_axon_parameter_changed(self, param, process, dummy):
