@@ -178,7 +178,7 @@ def get_best_type(process, param, attributes=None, path_completion=None):
 
     if attributes is None:
         orig_attributes = completion_engine.get_attribute_values()
-        attributes = orig_attributes.__deepcopy__(orig_attributes.__dict__)
+        attributes = orig_attributes.export_to_dict()
         for attr, trait in six.iteritems(attributes.user_traits()):
             if isinstance(trait.trait_type, traits.Str):
                 setattr(attributes, attr, '<%s>' % attr)
@@ -281,8 +281,11 @@ class CapsulProcess(processes.Process):
         except RuntimeError:
             path_completion = None
 
+        # save parameters values
+        orig_params = process.export_to_dict()
+
         attributes = completion_engine.get_attribute_values()
-        orig_attributes = dict(attributes.__dict__)
+        orig_attributes = attributes.export_to_dict()
         for attr, trait in six.iteritems(attributes.user_traits()):
             if isinstance(trait.trait_type, traits.Str):
                 setattr(attributes, attr, '<%s>' % attr)
@@ -317,6 +320,11 @@ class CapsulProcess(processes.Process):
         self.__class__.signature = signature
         self.changeSignature(signature)
 
+        # restore parameters
+        for param, value in six.iteritems(orig_params):
+            if param not in ('pipeline_steps', 'nodes_activation'):
+                setattr(process, param, value)
+
         # setup callbacks to sync capsul and axon parameters values
         if neuroConfig.gui:
             from soma.qt_gui import qt_backend
@@ -339,6 +347,8 @@ class CapsulProcess(processes.Process):
             value = getattr(process, name)
             if value not in (traits.Undefined, ''):
                 setattr(self, name, convert_capsul_value(value))
+            else:
+                setattr(self, name, None)
             self.linkParameters(None, name,
                                 SomaPartial(self._on_axon_parameter_changed,
                                             name))
@@ -561,9 +571,11 @@ class CapsulProcess(processes.Process):
             value = getattr(self, param, None)
             itype = self.signature.get(param)
             trait = self._capsul_process.trait(param)
-            setattr(self._capsul_process, param,
-                    convert_to_capsul_value(value, itype,
-                                            self._capsul_process.trait(param)))
+            capsul_value = convert_to_capsul_value(
+                value, itype, self._capsul_process.trait(param))
+            if capsul_value == getattr(self._capsul_process, param):
+                return # not changed
+            setattr(self._capsul_process, param, capsul_value)
             if not isinstance(itype, ReadDiskItem):
                 # not a DiskItem: nothing else to do.
                 return
