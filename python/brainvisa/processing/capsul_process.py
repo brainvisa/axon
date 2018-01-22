@@ -167,14 +167,14 @@ def get_best_type(process, param, attributes=None, path_completion=None):
     from capsul.attributes.attributes_schema import ProcessAttributes
 
     completion_engine = ProcessCompletionEngine.get_completion_engine(process)
+    cext = process.trait(param).allowed_extensions
+
     if path_completion is None:
         try:
             path_completion = completion_engine.get_path_completion_engine()
         except RuntimeError:
             return ('Any Type',
                     [f for f in getAllFormats() if match_ext(cext, [f])])
-
-    cext = process.trait(param).allowed_extensions
 
     if attributes is None:
         orig_attributes = completion_engine.get_attribute_values()
