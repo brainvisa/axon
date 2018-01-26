@@ -49,6 +49,7 @@ from brainvisa.processing.neuroException import showException, HTMLMessage
 from soma.qt_gui.qt_backend import QtCore, QtGui
 import sys, os
 import six
+import weakref
 
 if sys.version_info[0] >= 3:
     unicode = str
@@ -71,7 +72,8 @@ class DiskItemEditor( QWidget, DataEditor ):
   noDefault = QtCore.Signal(unicode)
   newValidValue = QtCore.Signal(unicode, object)
 
-  def __init__( self, parameter, parent, name, write = False, context = None ):
+  def __init__(self, parameter, parent, name, write=False, context=None,
+               process=None):
     if getattr( DiskItemEditor, 'pixShow', None ) is None:
       setattr( DiskItemEditor, 'pixShow', QIcon( findIconFile( 'eye.png' )) )
       setattr( DiskItemEditor, 'pixEdit', QIcon( findIconFile( 'pencil.png' )) )
@@ -102,6 +104,10 @@ class DiskItemEditor( QWidget, DataEditor ):
     self.diskItem = None
     self.forceDefault = False
     self._context = context
+    if process is None:
+      self.process = None
+    else:
+      self.process = weakref.ref(process)
 
     self.btnShow = RightClickablePushButton( )
     hLayout.addWidget(self.btnShow)
@@ -283,7 +289,11 @@ class DiskItemEditor( QWidget, DataEditor ):
     if self.btnShow:
       enabled = 0
       if self.diskItem:
-        v = brainvisa.processes.getViewer( self.diskItem, 1, checkUpdate=False )
+        proc = self.process
+        if proc is not None:
+            proc = proc()
+        v = brainvisa.processes.getViewer(self.diskItem, 1, checkUpdate=False,
+                                          process=proc)
         if v:
           self.btnShow.show()
         else:
@@ -322,7 +332,12 @@ class DiskItemEditor( QWidget, DataEditor ):
           try :
             viewer = viewer()
             viewerExists = True
-            brainvisa.processes.defaultContext().runInteractiveProcess( self._viewerExited, viewer, v )
+            kwargs = {}
+            if self.process is not None \
+                    and hasattr(viewer, 'allowed_processes'):
+                kwargs['reference_process'] = self.process()
+            brainvisa.processes.defaultContext().runInteractiveProcess(
+                self._viewerExited, viewer, v, **kwargs)
             self.btnShow.setEnabled( True )
             return
         
@@ -391,7 +406,11 @@ class DiskItemEditor( QWidget, DataEditor ):
     # Normally it is not possible to try to open viewer if none is available
     viewer = self.viewersToTry()[0]() 
     v = self.getValue()
-    neuroProcessesGUI.showProcess( viewer, v )
+    kwargs = {}
+    if self.process is not None \
+            and hasattr(viewer, 'allowed_processes'):
+        kwargs['reference_process'] = self.process()
+    neuroProcessesGUI.showProcess(viewer, v, **kwargs)
 
   def selectedViewer(self):
     # Current index is shifted in Combo box due to the 'Default value' item
@@ -411,9 +430,11 @@ class DiskItemEditor( QWidget, DataEditor ):
     else:
       source = self.diskItem
         
+    proc = self.process
+    if proc is not None:
+        proc = proc()
     self._viewers = brainvisa.processes.getViewers(
-                            source, 
-                            1, checkUpdate=False)
+                            source, 1, checkUpdate=False, process=proc)
     
     if self.cmbViewers is not None:
       v = self.selectedViewer()
@@ -984,7 +1005,8 @@ class DiskItemListEditor( QWidget, DataEditor ):
         self.accepted[list].emit(l)
 
 
-  def __init__( self, parameter, parent, name, write = 0, context=None ):
+  def __init__(self, parameter, parent, name, write=0, context=None,
+               process=None):
     if getattr( DiskItemListEditor, 'pixFindRead', None ) is None:
       setattr( DiskItemListEditor, 'pixShow', QIcon( findIconFile( 'eye.png' )) )
       setattr( DiskItemListEditor, 'pixEdit', QIcon( findIconFile( 'pencil.png' )) )
@@ -1015,7 +1037,11 @@ class DiskItemListEditor( QWidget, DataEditor ):
     self.btnShow.setFixedSize( buttonIconSize + buttonMargin )
     self.btnShow.setFocusPolicy( Qt.NoFocus )
     self.btnShow.setEnabled( False )
-    
+    if process is None:
+      self.process = None
+    else:
+      self.process = weakref.ref(process)
+
     # Sets default viewers list
     self.actViewers = None
     self.cmbViewersSeparator = None
@@ -1153,8 +1179,12 @@ class DiskItemListEditor( QWidget, DataEditor ):
           try :
             viewer = viewer()
             viewerExists = True
+            kwargs = {}
+            if self.process is not None \
+                    and hasattr(viewer, 'allowed_processes'):
+                kwargs['reference_process'] = self.process()
             brainvisa.processes.defaultContext().runInteractiveProcess(
-              self._viewerExited, viewer, v )
+                self._viewerExited, viewer, v, **kwargs)
             self.btnShow.setEnabled( True )
             return
         
@@ -1198,7 +1228,11 @@ class DiskItemListEditor( QWidget, DataEditor ):
     # Normally it is not possible to try to open viewer if none is available
     viewer = self.viewersToTry()[0]() 
     v = self.getValue()
-    neuroProcessesGUI.showProcess( viewer, v )
+    kwargs = {}
+    if self.process is not None \
+            and hasattr(viewer, 'allowed_processes'):
+        kwargs['reference_process'] = self.process()
+    neuroProcessesGUI.showProcess(viewer, v, **kwargs)
 
   def selectedViewer(self):
     # Current index is shifted in Combo box due to the 'Default value' item
@@ -1220,9 +1254,12 @@ class DiskItemListEditor( QWidget, DataEditor ):
       source = v
 
     try:
+      proc = self.process
+      if proc is not None:
+          proc = proc()
       self._viewers = brainvisa.processes.getViewers(
-                            source, 
-                            1, checkUpdate=False, listof=True)
+                            source, 1, checkUpdate=False, listof=True,
+                            process=proc)
     except:
       self._viewers = []
     
