@@ -1621,21 +1621,25 @@ class ParameterizedWidget( QWidget ):
     #sectionTitleList = list( set( sectionTitleList ) )#this command do not keep the list order
     uniqueSectionTitleList = []
     for sectionTitle in sectionTitleList:
-      if not sectionTitle in uniqueSectionTitleList:
-        uniqueSectionTitleList.append(sectionTitle)
-      else:
-        pass
+        if not sectionTitle in uniqueSectionTitleList:
+            uniqueSectionTitleList.append(sectionTitle)
+        else:
+            pass
 
+    visible_sections = getattr(self.parameterized, 'visible_sections', None)
 
     #the parameters not grouped will be added first
     if None in uniqueSectionTitleList:
-      uniqueSectionTitleList.insert(0, uniqueSectionTitleList.pop( uniqueSectionTitleList.index(None) ) )
+        uniqueSectionTitleList.insert(0, uniqueSectionTitleList.pop( uniqueSectionTitleList.index(None) ) )
 
     for sectionTitle in uniqueSectionTitleList:
       currentSectionTitle = None
       if len( uniqueSectionTitleList ) > 1 and sectionTitle is not None:
-        currentSectionTitle = SectionTitle(sectionTitle)
-        parametersWidgetLayout.addRow( currentSectionTitle )
+          currentSectionTitle = SectionTitle(
+              sectionTitle,
+              collapsed=(visible_sections is not None
+                         and sectionTitle not in visible_sections))
+          parametersWidgetLayout.addRow( currentSectionTitle )
 
       for k, p in sectionTitleSortedDict[ sectionTitle ]:
         l = ParameterLabel( k, p.mandatory, None, userLevel=p.userLevel )
@@ -1661,7 +1665,7 @@ class ParameterizedWidget( QWidget ):
 
         parametersWidgetLayout.addRow( l, e )
         if currentSectionTitle is not None:
-          currentSectionTitle.addSectionWidgets(l, e)
+            currentSectionTitle.addSectionWidgets(l, e)
 
         self.parameterized.addParameterObserver( k, self.parameterChanged )
 
@@ -1669,7 +1673,7 @@ class ParameterizedWidget( QWidget ):
         if first is None: first = e
         v = getattr( self.parameterized, k, None )
         if v is not None:
-          self.setValue( k, v, 1 )
+            self.setValue( k, v, 1 )
         e.valuePropertiesChanged( self.parameterized.isDefault( k ) )
         e.noDefault.connect(self.removeDefault)
         e.newValidValue.connect(self.updateParameterValue)
@@ -1682,12 +1686,14 @@ class ParameterizedWidget( QWidget ):
 #lock#        self.btnLock[ k ] = btn
         if documentation is not None:
           self.setParameterToolTip( k,
-            XHTML.html( documentation.get( 'parameters', {} ).get( k, '' ) ) \
-            + '<br/><img src="' \
-            + os.path.join( neuroConfig.iconPath, 'modified.png' )+ '"/><em>: ' \
-            + _t_( \
-            'value has been manually changed and is not modified by links anymore' ) \
-            + '</em>' )
+              XHTML.html(documentation.get('parameters', {}).get(k, ''))
+              + '<br/><img src="'
+              + os.path.join(neuroConfig.iconPath, 'modified.png')
+              + '"/><em>: '
+              + _t_(
+                  'value has been manually changed and is not modified by '
+                  'links anymore')
+              + '</em>')
 
     parametersWidget.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum))
     self.scrollWidget.setWidget(parametersWidget)
@@ -1917,8 +1923,11 @@ SectionTitle { border-top: 1px solid #6c6c6c;
   def mouseReleaseEvent(self, ev):
     self.changeVisibility()
 
-  def changeVisibility( self ):
-    self.collapsed = not self.collapsed
+  def changeVisibility(self):
+    self.setCollapsed(not self.collapsed)
+
+  def setCollapsed(self, collapsed):
+    self.collapsed = collapsed
     if self.collapsed:
       printSectionTitle = '<span style="font-size:smaller;">&#9654;</span> ' + self.section_title
     else:
@@ -1935,6 +1944,10 @@ SectionTitle { border-top: 1px solid #6c6c6c;
   def addSectionWidgets( self, *args ):
     for w in args:
       self.section_widgets.append(w)
+      if self.collapsed:
+        w.hide()
+      else:
+        w.show()
 
 
 #----------------------------------------------------------------------------
