@@ -359,6 +359,8 @@ class CapsulProcess(processes.Process):
                                 self._on_edit_pipeline_steps)
         self.linkParameters(None, 'edit_study_config',
                             self._on_edit_study_config)
+        if hasattr(process, 'visible_groups'):
+            self.visible_sections = process.visible_groups
 
 
     def propagate_parameters_to_capsul(self):
