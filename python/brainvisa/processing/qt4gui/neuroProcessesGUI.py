@@ -1655,7 +1655,7 @@ class ParameterizedWidget( QWidget ):
 
         l.setSizePolicy( QSizePolicy.Fixed, QSizePolicy.Fixed )
         self.labels[ k ] = l
-        e = p.editor( None, k, weakref.proxy( self ) )
+        e = p.editor(None, k, weakref.proxy(self))
         if isinstance(e, neuroDataGUI.DataEditor):
             # Complete popup menu with specific actions of the editor
             e.createPopupMenu(l.contextMenu)

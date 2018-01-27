@@ -4998,7 +4998,7 @@ def getViewers(source, enableConversion=1, checkUpdate=True, listof=False,
         for v in r:
             rp = getattr(v, 'allowed_processes', None)
             if rp:
-                if process.id in rp:
+                if process.id() in rp:
                     r1.append(v)
             else:
                 r2.append(v)
@@ -5100,12 +5100,12 @@ def runViewer(source, context=None, process=None):
                          process=process)
     for viewer in viewers:
         try:
-            kwargs = {}
+            viewer = getProcessInstance(viewer)
             if process is not None \
                     and hasattr(viewer, 'allowed_processes'):
-                kwargs['reference_process'] = self.process()
+                viewer.reference_process = process
             #print('Try to run viewer ', viewer.name, 'for', source)
-            context.runProcess(viewer, source, **kwargs)
+            context.runProcess(viewer, source)
             return
         except:
             #print('Failed to run viewer ', viewer.name, 'for', source)
