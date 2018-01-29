@@ -366,7 +366,7 @@ class DiskItemEditor( QWidget, DataEditor ):
           # and PyQt 5.5
           print(error)
           import traceback
-          traceback.print_stack()
+          traceback.print_exc()
     else:
       self._view = None
 
@@ -404,12 +404,17 @@ class DiskItemEditor( QWidget, DataEditor ):
 
   def openViewer( self ):
     # Normally it is not possible to try to open viewer if none is available
-    viewer = getProcessInstance(self.viewersToTry()[0]())
-    v = self.getValue()
-    if self.process is not None \
-            and hasattr(viewer, 'allowed_processes'):
-        viewer.reference_process = self.process
-    neuroProcessesGUI.showProcess(viewer, v)
+    try:
+        viewer = getProcessInstance(self.viewersToTry()[0])
+        v = self.getValue()
+        if self.process is not None \
+                and hasattr(viewer, 'allowed_processes'):
+            viewer.reference_process = self.process
+        neuroProcessesGUI.showProcess(viewer, v)
+    except Exception as e:
+        print('openViewer failed:', e)
+        import traceback
+        traceback.print_exc()
 
   def selectedViewer(self):
     # Current index is shifted in Combo box due to the 'Default value' item
