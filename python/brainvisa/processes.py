@@ -4940,7 +4940,8 @@ def getProcessesBySourceDist(registry, source, enableConversion=1,
     return r
  
 #-------------------------------------------------------------------------------
-def getViewers(source, enableConversion=1, checkUpdate=True, listof=False):
+def getViewers(source, enableConversion=1, checkUpdate=True, listof=False,
+               process=None):
     """
     Get viewers :py:class:`NewProcess` able to visualize a 
     :py:class:`neuroDiskItems.DiskItem` source.
@@ -4952,15 +4953,24 @@ def getViewers(source, enableConversion=1, checkUpdate=True, listof=False):
     The viewers registered with closest sources appear first.
 
 
-    :param int enableConversion: if the source can be converted to be 
-    visualized. Default 1.
-    :param boolean checkUpdate: if converters and viewers :py:class:`NewProcess`
-    must be reloaded when they changed. Default True.
-    :param boolean listof: if the viewers :py:class:`NewProcess`
-    must be able to display list of :py:class:`neuroDiskItems.DiskItem`.
-    Default False.
+    Parameters
+    ----------
+    enableConversion: int
+        if the source can be converted to be visualized. Default 1.
+    checkUpdate: boolean
+        if converters and viewers :py:class:`NewProcess` must be reloaded when
+        they changed. Default True.
+    listof: boolean
+        if the viewers :py:class:`NewProcess` must be able to display list of
+        :py:class:`neuroDiskItems.DiskItem`. Default False.
+    process: None or NewProcess class or instance
+        if specified, specialized viewers having a variable 'allowed_processes'
+        which list this process, will be sorted first
 
-    :returns: a list of viewers :py:class:`NewProcess`.
+    Returns
+    -------
+    viewers:
+        a list of viewers :py:class:`NewProcess`.
     """
     global _viewers
     global _listViewers
@@ -4982,11 +4992,25 @@ def getViewers(source, enableConversion=1, checkUpdate=True, listof=False):
         dv = getDefaultListOfViewer(source)
         if dv:
             r.append(dv)
-    
+    if process is not None:
+        r1 = []
+        r2 = []
+        for v in r:
+            rp = getattr(v, 'allowed_processes', None)
+            if rp:
+                if process.id() in rp:
+                    r1.append(v)
+            else:
+                r2.append(v)
+        r = r1 + r2
+    else:
+        r = [v for v in r if not hasattr(v, 'allowed_processes')]
+
     return r
 
 #----------------------------------------------------------------------------
-def getDefaultListOfViewer(source, enableConversion=1, checkUpdate=True):
+def getDefaultListOfViewer(source, enableConversion=1, checkUpdate=True,
+                           process=None):
     """
     Get a default viewer for a list of :py:class:`neuroDiskItems.DiskItem`.
 
@@ -5004,10 +5028,12 @@ def getDefaultListOfViewer(source, enableConversion=1, checkUpdate=True):
     if isinstance(source, tuple) and len(source) == 2:
         vrs = [getViewer(source, 
                          enableConversion=enableConversion,
-                         checkUpdate=checkUpdate)]
+                         checkUpdate=checkUpdate,
+                         process=process)]
     else:
         vrs = [getViewer(s, enableConversion=enableConversion,
-                         checkUpdate=checkUpdate) for s in source]
+                         checkUpdate=checkUpdate,
+                         process=process) for s in source]
         
     if len(vrs) != 0 and None not in vrs:
         class iterproc(object):
@@ -5023,7 +5049,7 @@ def getDefaultListOfViewer(source, enableConversion=1, checkUpdate=True):
     
 #----------------------------------------------------------------------------
 def getViewer(source, enableConversion=1, checkUpdate=True, 
-              listof=False, index=0):
+              listof=False, index=0, process=None):
     """
     Gets a viewer (a process that have the role viewer) which can
     visualize source data. The viewer is returned only if its userLevel
@@ -5046,16 +5072,17 @@ def getViewer(source, enableConversion=1, checkUpdate=True,
         viewer or None if not found at the specified index.
     """
     vl = getViewers(source,
-                    enableConversion = enableConversion,
-                    checkUpdate = checkUpdate,
-                    listof = listof)
+                    enableConversion=enableConversion,
+                    checkUpdate=checkUpdate,
+                    listof=listof,
+                    process=process)
     #print('===== getViewer, viewers list', [v.name for v in vl], '=====')
     if len(vl) > index:
         #print('===== getViewer, found viewer ', vl[index].name, '=====')
         return vl[index]
 
 #----------------------------------------------------------------------------
-def runViewer(source, context=None):
+def runViewer(source, context=None, process=None):
     """
     Searches for a viewer for source data and runs the process.
     If viewer fail to display source, tries to get another.
@@ -5069,9 +5096,14 @@ def runViewer(source, context=None):
     if context is None:
         context = defaultContext()
 
-    viewers = getViewers(source, checkUpdate=False, index=index) 
+    viewers = getViewers(source, checkUpdate=False, index=index,
+                         process=process)
     for viewer in viewers:
         try:
+            viewer = getProcessInstance(viewer)
+            if process is not None \
+                    and hasattr(viewer, 'allowed_processes'):
+                viewer.reference_process = process
             #print('Try to run viewer ', viewer.name, 'for', source)
             context.runProcess(viewer, source)
             return
@@ -5080,7 +5112,8 @@ def runViewer(source, context=None):
             continue
 
 #----------------------------------------------------------------------------
-def getDataEditor(source, enableConversion=0, checkUpdate=True, listof=False):
+def getDataEditor(source, enableConversion=0, checkUpdate=True, listof=False,
+                  process=None):
     """
     Gets a data editor (a process that have the role editor) which can open source data for edition (modification).
     The data editor is returned only if its userLevel is lower than the current userLevel.
@@ -5143,10 +5176,11 @@ def getDataEditor(source, enableConversion=0, checkUpdate=True, listof=False):
     if listof:
         if isinstance(source, tuple) and len(source) == 2:
             vrs = [getDataEditor(source, enableConversion=enableConversion,
-                                 checkUpdate=checkUpdate)]
+                                 checkUpdate=checkUpdate, process=process)]
         else:
             vrs = [getDataEditor(s, enableConversion=enableConversion,
-                                 checkUpdate=checkUpdate) for s in source]
+                                 checkUpdate=checkUpdate, process=process)
+                   for s in source]
         if None not in vrs and len(vrs) != 0:
             class iterproc(object):
 
@@ -5325,7 +5359,7 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
 
         # Optional attributes
         for n in ('signature', 'execution', 'name', 'userLevel', 'roles',
-                  'category', 'showMaximized'):
+                  'category', 'showMaximized', 'allowed_processes'):
             v = getattr(processModule, n, None)
             if v is not None:
                 setattr(NewProcess, n, v)

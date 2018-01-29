@@ -638,7 +638,9 @@ class ReadDiskItem( Parameter ):
     # WARNING: don't import at the beginning of the module,
     # it would cause a circular inclusion
     from brainvisa.data.qtgui.readdiskitemGUI import DiskItemEditor
-    return DiskItemEditor( self, parent, name, context=context, write=self._write )
+    return DiskItemEditor(self, parent, name, context=context,
+                          write=self._write,
+                          process=getattr(context, 'parameterized', None))
 
 
   def listEditor( self, parent, name, context ):
