@@ -65,6 +65,27 @@ brainvisa.configuration.mpegConfig
   :members:
   :show-inheritance:
 
+brainvisa.configuration.spm_configuration
+-----------------------------------------
+
+.. automodule:: brainvisa.configuration.spm_configuration
+  :members:
+  :show-inheritance:
+
+brainvisa.configuration.r_configuration
+---------------------------------------
+
+.. automodule:: brainvisa.configuration.r_configuration
+  :members:
+  :show-inheritance:
+
+brainvisa.configuration.soma_workflow_configuration
+---------------------------------------------------
+
+.. automodule:: brainvisa.configuration.soma_workflow_configuration
+  :members:
+  :show-inheritance:
+
 brainvisa.configuration.qt4gui
 ------------------------------
 
@@ -85,27 +106,6 @@ brainvisa.configuration.qt4gui
   :show-inheritance:
 
 .. automodule:: brainvisa.configuration.qt4gui.spm_configuration_qt4gui
-  :members:
-  :show-inheritance:
-
-brainvisa.configuration.spm_configuration
------------------------------------------
-
-.. automodule:: brainvisa.configuration.spm_configuration
-  :members:
-  :show-inheritance:
-
-brainvisa.configuration.r_configuration
----------------------------------------
-
-.. automodule:: brainvisa.configuration.r_configuration
-  :members:
-  :show-inheritance:
-
-brainvisa.configuration.soma_workflow_configuration
----------------------------------------------------
-
-.. automodule:: brainvisa.configuration.soma_workflow_configuration
   :members:
   :show-inheritance:
 

@@ -67,7 +67,7 @@ brainvisa.data
 brainvisa.processing
 ++++++++++++++++++++
 
-- :py:mod:`brainvisa.processing.axon_fso_to_fom`: convert Axon File System Organization (hierarchies) to :capsul:`CAPSUL File Orgnaization Models <index.html>`.
+- :py:mod:`brainvisa.processing.axon_fso_to_fom`: convert Axon File System Organization (hierarchies) to :capsul:`CAPSUL File Orgnaization Models <user_guide_tree/advanced_usage.html#file-organization-model-fom>`.
 - :py:mod:`brainvisa.processing.axon_to_capsul`: convert Axon processes and pipelines :capsul:`CAPSUL processes or pipelines <index.html>`.
 - :py:mod:`brainvisa.processing.capsul_process`: wrapper class to make a :capsul:`CAPSUL process or pipeline <index.html>` available as an Axon process.
 - :py:mod:`brainvisa.processing.neuroException`: classes and functions defining error and warning messages.
