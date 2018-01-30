@@ -321,6 +321,8 @@ When a process defines one or more pre-defined roles, it can be used automatical
 
   A viewer is called when the user asks to see a data. Viewers are indexed by the type and format of data that they enable to display. To retrieve the viewer available for a specific data, use :py:func:`getViewer(data[, enableConversion=1]) <getViewer>`. This function is defined in :py:mod:`brainvisa.processes`.
 
+  Axon 4.6 also introduces specialized viewers, which are attached to a process in order to reuse its parameters values. This is especially useful when a viewer needs several parameters, and has to run in the context of a process which may have custom parameters values. See the :py:mod:`brainvisa.processing.process_based_viewer` module documentation for details.
+
 * Converter
 
   A converter is called automatically when the user gives input or output process parameters that are not in a format supported by the process. A converter must have two parameters: the source and destination data. Converters are indexed by destination type and format and by source type and format. To retrieve a converter, use :py:func:`getConverter(source, destination) <getConverter>`, or ::py:func:`getConvertersTo(destination) <getConvertersTo>` to get all possible converters for a destination data, or :py:func:`getConvertersFrom(source) <getConvertersFrom>` to get all possible converters for a source data.

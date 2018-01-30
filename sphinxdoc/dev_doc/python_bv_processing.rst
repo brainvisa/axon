@@ -41,4 +41,25 @@ brainvisa.processing.capsul_process
   :members:
   :show-inheritance:
 
+brainvisa.processing.process_based_viewer
+-----------------------------------------
+
+.. automodule:: brainvisa.processing.process_based_viewer
+  :members:
+  :show-inheritance:
+
+brainvisa.processing.axon_fso_to_fom
+------------------------------------
+
+.. automodule:: brainvisa.processing.axon_fso_to_fom
+  :members:
+  :show-inheritance:
+
+brainvisa.processing.axon_to_capsul
+-----------------------------------
+
+.. automodule:: brainvisa.processing.axon_to_capsul
+  :members:
+  :show-inheritance:
+
 

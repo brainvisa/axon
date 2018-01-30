@@ -5435,8 +5435,7 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
                   + processInfo.fileName + ') is not a valid', role
                   + '. Add the following line in the process to make it a',
                   role + ':\nroles =', (role, ), file=sys.stderr)
-        roles = getattr(processModule, 'roles', ())
-#    if NewProcess.category.lower() == 'converters/automatic':
+        roles = getattr(NewProcess, 'roles', ())
 
         def _setConverter(source, dest, proc):
             global _converters
@@ -5473,7 +5472,6 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
         elif NewProcess.category.lower() == 'converters/automatic':
             warnRole(processInfo, 'converter')
         if 'viewer' in roles:
-#    elif NewProcess.category.lower() == 'viewers/automatic':
             global _viewers
             global _listViewers
             arg = NewProcess.signature.values()[0]            
@@ -5501,7 +5499,6 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
         elif NewProcess.category.lower() == 'viewers/automatic':
             warnRole(processInfo, 'viewer')
         if 'editor' in roles:
-#    elif NewProcess.category.lower() == 'editors/automatic':
             global _dataEditors
             global _listDataEditors
             arg = NewProcess.signature.values()[0]
