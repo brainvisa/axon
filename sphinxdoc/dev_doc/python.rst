@@ -34,6 +34,7 @@ This module contains the classes that manage BrainVisa set of options, accessibl
 - :py:mod:`brainvisa.configuration.r_configuration`: options about R.
 - :py:mod:`brainvisa.configuration.qt4gui`: specific graphical user interface for options about databases and Matlab.
 - :py:mod:`brainvisa.configuration.mpegConfig`
+- :py:mod:`brainvisa.configuration.soma_workflow_configuration`: :somaworkflow:`Soma-Workflow-related config <index.html>`
 - :py:mod:`brainvisa.configuration.qt4gui.neuroConfigGUI`: Bug report dialog.
 
 
@@ -66,8 +67,12 @@ brainvisa.data
 brainvisa.processing
 ++++++++++++++++++++
 
+- :py:mod:`brainvisa.processing.axon_fso_to_fom`: convert Axon File System Organization (hierarchies) to :capsul:`CAPSUL File Orgnaization Models <user_guide_tree/advanced_usage.html#file-organization-model-fom>`.
+- :py:mod:`brainvisa.processing.axon_to_capsul`: convert Axon processes and pipelines :capsul:`CAPSUL processes or pipelines <index.html>`.
+- :py:mod:`brainvisa.processing.capsul_process`: wrapper class to make a :capsul:`CAPSUL process or pipeline <index.html>` available as an Axon process.
 - :py:mod:`brainvisa.processing.neuroException`: classes and functions defining error and warning messages.
 - :py:mod:`brainvisa.processing.neuroLog`: creation of BrainVISA log file.
+- :py:mod:`brainvisa.processing.process_based_viewer`: specialized viewer process, which works with a process or pipeline to get its parameters
 
   
 brainvisa.tools
@@ -90,7 +95,7 @@ brainvisa.tools
 brainvisa.processing.qt4gui: GUI Modules
 +++++++++++++++++++++++++++++++++++++++++
 
-The classes related to the graphical user interface are located in ``qt4gui`` modules. They use `PyQt API <http://www.riverbankcomputing.co.uk/software/pyqt/intro>`_, a set of Python bindings for `Qt application framework <http://qt.nokia.com/>`_:
+The classes related to the graphical user interface are located in ``qt4gui`` modules. They use `PyQt API <http://www.riverbankcomputing.co.uk/software/pyqt/intro>`_, a set of Python bindings for `Qt application framework <http://doc.qt.io>`_:
 
   - :py:mod:`brainvisa.processing.qtgui.backwardCompatibleQt`: it has been used to keep backward compatibility with old versions of PyQt.
   - :py:mod:`brainvisa.processing.qt4gui.neuroProcessesGUI`: BrainVISA main window and processes windows.
@@ -99,6 +104,8 @@ The classes related to the graphical user interface are located in ``qt4gui`` mo
   - :py:mod:`brainvisa.processing.qt4gui.command`: class CommandWithQProcess used to call commands in Brainvisa processes. This module is not related to the graphical user interface but it uses Qt, that's why it is in ``qt4gui`` module.
 
 Some ``qtgui`` modules also exist but are mainly just redirections to the corresponding ``qt4gui`` module. It was useful when we maintained the compatibility with qt3 but is no more the case.
+
+Note that the ``qt4gui`` modules do work for both Qt4 and Qt5.
 
 
 brainvisa.data.qt4gui: GUI Modules
@@ -172,151 +179,4 @@ brainvisa.registration
   :members:
   :show-inheritance:
 
-
-brainvisa.configuration.api
----------------------------
-
-.. automodule:: brainvisa.configuration.api
-  :members:
-  :show-inheritance:
-
-brainvisa.configuration.neuroConfig
------------------------------------
-
-.. automodule:: brainvisa.configuration.neuroConfig
-  :members:
-  :show-inheritance:
-
-brainvisa.configuration.mpegConfig
-----------------------------------
-
-.. automodule:: brainvisa.configuration.mpegConfig
-  :members:
-  :show-inheritance:
-
-brainvisa.configuration.brainvisa_configuration
------------------------------------------------
-
-.. automodule:: brainvisa.configuration.brainvisa_configuration
-  :members:
-  :show-inheritance:
-
-brainvisa.configuration.anatomist_configuration
------------------------------------------------
-
-.. automodule:: brainvisa.configuration.anatomist_configuration
-  :members:
-  :show-inheritance:
-
-brainvisa.configuration.databases_configuration
------------------------------------------------
-
-.. automodule:: brainvisa.configuration.databases_configuration
-  :members:
-  :show-inheritance:
-
-brainvisa.configuration.fsl_configuration
------------------------------------------
-
-.. automodule:: brainvisa.configuration.fsl_configuration
-  :members:
-  :show-inheritance:
-
-brainvisa.configuration.matlab_configuration
---------------------------------------------
-
-.. automodule:: brainvisa.configuration.matlab_configuration
-  :members:
-  :show-inheritance:
-
-brainvisa.configuration.spm_configuration
------------------------------------------
-
-.. automodule:: brainvisa.configuration.spm_configuration
-  :members:
-  :show-inheritance:
-
-brainvisa.configuration.r_configuration
------------------------------------
-
-.. automodule:: brainvisa.configuration.r_configuration
-  :members:
-  :show-inheritance:
-
-brainvisa.tools.aimsGlobals
----------------------------
-
-.. automodule:: brainvisa.tools.aimsGlobals
-  :members:
-  :show-inheritance:
-
-brainvisa.tools.mainthreadlife
-------------------------------
-
-.. automodule:: brainvisa.tools.mainthreadlife
-  :members:
-  :show-inheritance:
-
-brainvisa.tools.matlabValidation
---------------------------------
-
-.. automodule:: brainvisa.tools.matlabValidation
-  :members:
-  :show-inheritance:
-
-brainvisa.tools.spm_conversion
-------------------------------
-
-.. automodule:: brainvisa.tools.spm_conversion
-  :members:
-  :show-inheritance:
-
-brainvisa.tools.spm_registration
---------------------------------
-
-.. automodule:: brainvisa.tools.spm_registration
-  :members:
-  :show-inheritance:
-
-brainvisa.tools.spm_results
----------------------------
-
-.. automodule:: brainvisa.tools.spm_results
-  :members:
-  :show-inheritance:
-
-brainvisa.tools.spm_run
------------------------
-
-.. automodule:: brainvisa.tools.spm_run
-  :members:
-  :show-inheritance:
-
-brainvisa.tools.spm_segmentation
---------------------------------
-
-.. automodule:: brainvisa.tools.spm_segmentation
-  :members:
-  :show-inheritance:
-
-brainvisa.tools.spm_utils
--------------------------
-
-.. automodule:: brainvisa.tools.spm_utils
-  :members:
-  :show-inheritance:
-
-brainvisa.tools.DisplayResultsFromSPM
--------------------------------------
-
-.. automodule:: brainvisa.tools.DisplayResultsFromSPM
-  :members:
-  :show-inheritance:
-
-brainvisa.tools.displayTitledGrid
----------------------------------
-
-.. automodule:: brainvisa.tools.displayTitledGrid
-  :members:
-  :show-inheritance:
 

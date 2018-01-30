@@ -34,7 +34,7 @@ try:
     from soma_workflow import version as swver
     somaworkflow_version = swver.shortVersion
 except:
-    somaworkflow_version = '2.8'
+    somaworkflow_version = '2.9'
 try:
     import soma.info
     somabase_version = '%d.%d' % (soma.info.version_major,
@@ -50,11 +50,11 @@ anatmist_version = aims_version
 bv_release_version = aims_version
 
 try:
-    import capsul
+    import capsul.info
     capsul_version = '.'.join([capsul.info.version_major,
                                capsul.info.version_minor])
 except:
-    capsul_version = '1.1'
+    capsul_version = '2.1'
 
 try:
     import morphologist
