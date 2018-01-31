@@ -54,6 +54,22 @@ Technically, the ProcessBasedViewer class merely delclares some default attribut
     allowed_processes = []
 
 A viewer linked to a process could directly delclare these attibutes instead of inheriting the ProcessBasedViewer class - it is also a matter of code clarity. The viewer mechanism does not check inheritance, but tests the presence of these attributes in the viewer class. A specialized viewer can of course overwrite these attributes, and actually should, at least for the 'allowed_processes' variable.
+
+Note that the default roles, 'viewer' can be overwriten, typically to use the
+same mechanism for an editor.
+
+**allowed_processes alternative**
+
+In some cases allowed processes may not be a fixed list. To handle this situation, 'allowed_processes' may be a function instead of a list. This function will be called with a process as argument, and should return a boolean value to tell if the process is accepted for the viewer to work with it. Typically, it can test if the process is part of a specific pipeline:
+
+::
+
+    def allowed_processes(process):
+        if process.id() == 'morphologist':
+            return True
+        pipeline = process.parent_pipeline()
+        return pipeline is not None and pipeline.id() == 'morphologist'
+
 '''
 
 from brainvisa import processes

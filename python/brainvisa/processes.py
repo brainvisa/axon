@@ -1582,6 +1582,17 @@ class Process(Parameterized):
                     yield eNode._process
                 stack.extend(eNode.children())
 
+    def parent_pipeline(self):
+        ''' Returns the root pipeline process from which this process is part
+        of, if it is actually part of a pipeline (otherwise None is returned).
+
+        New in Axon 4.6.
+        '''
+        node = getattr(self, '_parent')
+        if node is None:
+            return None
+        return node().parent_pipeline()
+
     def allParameterFiles(self):
         """Get recursively all parameters which are DiskItems, descending through
         the pipeline structure.
@@ -1963,6 +1974,7 @@ class ExecutionNode(object):
         self.__dict__['_selectionChange'] = Notifier(1)
         self.__dict__['_expandedInGui'] = expandedInGui
         self.__dict__['_dependencies'] = []
+        self.__dict__['_parent'] = None
 
     def __del__(self):
         # print('del ExecutionNode', self)
@@ -2017,6 +2029,7 @@ class ExecutionNode(object):
             self._children.insert(index, name, node)
         else:
             self._children[name] = node
+        node._parent = weakref.ref(self)
 
     def removeChild(self, name):
         '''Remove child execution node.
@@ -2044,6 +2057,30 @@ class ExecutionNode(object):
     def hasChildren(self):
         """Returns True if this node has children."""
         return bool(self._children)
+
+    def parent_node(self):
+        ''' Returns the parent node, if any.
+
+        New in Axon 4.6.
+        '''
+        if self._parent is None:
+            return None
+        return self._parent()
+
+    def parent_pipeline(self):
+        ''' Returns the root pipeline process from which this node is part of,
+        if it is actually part of a pipeline (otherwise None is returned).
+
+        New in Axon 4.6.
+        '''
+        parent = self.parent_node()
+        next_parent = parent
+        while next_parent is not None:
+            next_parent = parent.parent_node()
+            if next_parent is not None:
+                parent = next_parent
+        if parent is not None:
+            return parent._parameterized()
 
     def setSelected(self, selected):
         """Change the selection state of the node.
@@ -2306,6 +2343,7 @@ class ProcessExecutionNode(ExecutionNode):
                                parameterized=process,
                                expandedInGui=expandedInGui)
         self.__dict__['_process'] = process
+        process._parent = weakref.ref(self)
         if altname is not None:
             self.__dict__['_name'] = altname
         reloadNotifier = getattr(process, 'processReloadNotifier', None)
@@ -2418,6 +2456,7 @@ class ProcessExecutionNode(ExecutionNode):
         self._process.processReloadNotifier.remove(
             ExecutionNode.MethodCallbackProxy(self.processReloaded))
         self.__dict__['_process'] = getProcessInstanceFromProcessEvent(event)
+        self._process._parent = weakref.ref(self)
         self._process.processReloadNotifier.add(
             ExecutionNode.MethodCallbackProxy(self.processReloaded))
 
@@ -4998,7 +5037,8 @@ def getViewers(source, enableConversion=1, checkUpdate=True, listof=False,
         for v in r:
             rp = getattr(v, 'allowed_processes', None)
             if rp:
-                if process.id() in rp:
+                if (isinstance(rp, types.FunctionType) and rp(process)) \
+                        or process.id() in rp:
                     r1.append(v)
             else:
                 r2.append(v)
