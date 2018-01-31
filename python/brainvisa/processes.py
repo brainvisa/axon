@@ -1028,8 +1028,12 @@ class Parameterized(object):
     def addParameterObserver(self, parameterName, function):
         """Associates a callback function to the modifications of the parameter value.
 
-        :param parameterName: the name of the parameter whose modification will activate the callback.
-        :param function: the callback function. its signature is *function(self, parameterName, newValue)*
+        Parameters
+        ----------
+        parameterName: str
+            the name of the parameter whose modification will activate the callback.
+        function: function
+            the callback function. its signature is *function(self, parameterName, newValue)*
         """
         minimum, maximum = numberOfParameterRange(function)
         if maximum == 0:
@@ -1080,10 +1084,12 @@ class Parameterized(object):
 
         *optional keyword paramerers*
 
-        :param int userLevel, indicates that the parameters are visible or hidden regarding the userLevel.
-                              ( default value : the previous userLevel is kept )
-        :param boolean mandatory, indicates that the parameters are mandatory(True) or optional(False).
-                                  ( default value : True )
+        userLevel: int
+            indicates that the parameters are visible or hidden regarding the userLevel.
+            ( default value : the previous userLevel is kept )
+        mandatory: boolean
+            indicates that the parameters are mandatory(True) or optional(False).
+            ( default value : True )
         """
         self.setVisible(*args)
 
@@ -1126,11 +1132,16 @@ class Parameterized(object):
         """Add a link between `source` and `destination` parameters. When the value of `source` changes, the value of `destination` may change.
         Contrary to :py:func:`linkParameters`, the link will always be applied, even if the `destination` parameter has no more its default value.
 
-        :param string destination: name of the parameter that may change when the source parameters change. If None, the link function will be called every time the source parameters change.
-        :param source: one or several parameters, whose modification will activate the link function.
-        :type source: string, tuple or list
-        :param function function: specific function that will be called instead of the default one when the link is activated. The signature of the function is *function(self, *sources ) -> destination*
-        :param bool destDefaultUpdate: specify that destination attribute will be marked as manually changed if the default value was changed by the link.
+        Parameters
+        ----------
+        destination: str
+            name of the parameter that may change when the source parameters change. If None, the link function will be called every time the source parameters change.
+        source: str, tuple or list
+            one or several parameters, whose modification will activate the link function.
+        function: function
+            specific function that will be called instead of the default one when the link is activated. The signature of the function is *function(self, *sources ) -> destination*
+        destDefaultUpdate: bool
+            specify that destination attribute will be marked as manually changed if the default value was changed by the link.
         """
         # Parse source
         sources = []
@@ -1446,7 +1457,12 @@ class Process(Parameterized):
         """
         Returns a list of copies of the current process with different parameters values.
 
-        :param kwargs: dictionary containing a list of values for each parameter name.
+        Parameters
+        ----------
+        warn: bool
+            raise an exception if iterated parameters lists sizes do not match
+        kwargs:
+            dictionary containing a list of values for each parameter name.
           The first value is for the first process of the iteration and so on...
         """
         # Find iteration size
@@ -1497,10 +1513,17 @@ class Process(Parameterized):
     def inlineGUI(self, values, context, parent, externalRunButton=False):
         """This method can be overrideed in order to specialize buttons of the process window.
 
-        :param context: the execution context of the process
-        :param parent: The parent widget
-        :returns: the widget containing the buttons that will replace the default buttons (Run and Iterate)
-        :rtype: QWidget
+        Parameters
+        ----------
+        context:
+            the execution context of the process
+        parent:
+            The parent widget
+
+        Returns
+        -------
+        widget: QWidget
+            the widget containing the buttons that will replace the default buttons (Run and Iterate)
         """
         return None
 
@@ -1545,8 +1568,10 @@ class Process(Parameterized):
     def setExecutionNode(self, eNode):
         """Sets the execution node of the pipeline.
 
-        :param eNode: object that describes the structure of the pipeline.
-        :type eNode: :py:class:`ExecutionNode`
+        Parameters
+        ----------
+        eNode: :py:class:`ExecutionNode`
+            object that describes the structure of the pipeline.
         """
         self._executionNode = eNode
 
@@ -1953,11 +1978,18 @@ class ExecutionNode(object):
     def __init__(self, name='', optional=False, selected=True,
                  guiOnly=False, parameterized=None, expandedInGui=False):
         """
-        :param string name: name of the node - default ''.
-        :param boolean optional: indicates if this node is optional in the pipeline - default False.
-        :param boolean selected: indicates if the node is selected in the pipeline - default True.
-        :param boolean guiOnly: default False.
-        :param parameterized: :py:class:`Parameterized` containing the signature of the node - default None.
+        Parameters
+        ----------
+        name: str
+            name of the node - default ''.
+        optional: boolean
+            indicates if this node is optional in the pipeline - default False.
+        selected: boolean
+            indicates if the node is selected in the pipeline - default True.
+        guiOnly: boolean
+            default False.
+        parameterized:
+            :py:class:`Parameterized` containing the signature of the node - default None.
         """
         # Initialize an empty execution node
         # print('ExecutionNode.__init__', self)
