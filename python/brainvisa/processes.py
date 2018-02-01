@@ -2111,8 +2111,9 @@ class ExecutionNode(object):
             next_parent = parent.parent_node()
             if next_parent is not None:
                 parent = next_parent
-        if parent is not None:
+        if parent is not None and parent._parameterized is not None:
             return parent._parameterized()
+        return None
 
     def setSelected(self, selected):
         """Change the selection state of the node.
@@ -5012,7 +5013,7 @@ def getProcessesBySourceDist(registry, source, enableConversion=1,
  
 #-------------------------------------------------------------------------------
 def getViewers(source, enableConversion=1, checkUpdate=True, listof=False,
-               process=None):
+               process=None, check_values=False):
     """
     Get viewers :py:class:`NewProcess` able to visualize a 
     :py:class:`neuroDiskItems.DiskItem` source.
@@ -5037,6 +5038,10 @@ def getViewers(source, enableConversion=1, checkUpdate=True, listof=False,
     process: None or NewProcess class or instance
         if specified, specialized viewers having a variable 'allowed_processes'
         which list this process, will be sorted first
+    check_values: bool
+        if True, check if the 1st parameter of each viewer actually accepts
+        the source value. This is not always true because some filtering may
+        happen using some requiredAttribues.
 
     Returns
     -------
@@ -5078,6 +5083,15 @@ def getViewers(source, enableConversion=1, checkUpdate=True, listof=False,
         r = r1 + r2
     else:
         r = [v for v in r if not hasattr(v, 'allowed_processes')]
+
+    if check_values and isinstance(source, DiskItem):
+        r2 = []
+        for p in r:
+            # get process signature, 1st param
+            param = p.signature[p.signature.keys()[0]]
+            if param.findValue(source) == source:
+                r2.append(p)
+        r = r2
 
     return r
 
@@ -5122,33 +5136,52 @@ def getDefaultListOfViewer(source, enableConversion=1, checkUpdate=True,
     
 #----------------------------------------------------------------------------
 def getViewer(source, enableConversion=1, checkUpdate=True, 
-              listof=False, index=0, process=None):
+              listof=False, index=0, process=None, check_values=False):
     """
     Gets a viewer (a process that have the role viewer) which can
     visualize source data. The viewer is returned only if its userLevel
     is lower than the current userLevel.
 
-    :param source: a :py:class:`neuroDiskItems.DiskItem`, a list of
+    Parameters
+    ----------
+    source:
+        a :py:class:`neuroDiskItems.DiskItem`, a list of
         :py:class:`neuroDiskItems.DiskItem` (only the first will be
         taken into account), a tuple (type, format).
-    :param boolean enableConversion: if True, a viewer that accepts a
+    enableConversion: boolean
+        if True, a viewer that accepts a
         format in which source can be converted is also accepted.
         Default True
-    :param boolean checkUpdate: if True, Brainvisa will check if the
+    checkUpdate: boolean
+        if True, Brainvisa will check if the
         viewer needs to be reloaded. Default True.
-    :param boolean listof: If True, we need a viewer for a list of data.
+    listof: boolean
+        If True, we need a viewer for a list of data.
         If there is no specific viewer for a list of this type of data,
         a :py:class:`ListOfIterationProcess` is created from the
         associated simple viewer. Default False.
-    :param int index: index of the viewer to find. Default 0.
-    :returns: the :py:class:`NewProcess` class associated to the found
+    index: int
+        index of the viewer to find. Default 0.
+    process: None or NewProcess class or instance
+        if specified, specialized viewers having a variable 'allowed_processes'
+        which list this process, will be sorted first
+    check_values: bool
+        if True, check if the 1st parameter of each viewer actually accepts
+        the source value. This is not always true because some filtering may
+        happen using some requiredAttribues.
+
+    Returns
+    -------
+    viewer:
+        the :py:class:`NewProcess` class associated to the found
         viewer or None if not found at the specified index.
     """
     vl = getViewers(source,
                     enableConversion=enableConversion,
                     checkUpdate=checkUpdate,
                     listof=listof,
-                    process=process)
+                    process=process,
+                    check_values=check_values)
     #print('===== getViewer, viewers list', [v.name for v in vl], '=====')
     if len(vl) > index:
         #print('===== getViewer, found viewer ', vl[index].name, '=====')
@@ -5186,16 +5219,32 @@ def runViewer(source, context=None, process=None):
 
 #----------------------------------------------------------------------------
 def getDataEditor(source, enableConversion=0, checkUpdate=True, listof=False,
-                  process=None):
+                  process=None, check_values=False):
     """
     Gets a data editor (a process that have the role editor) which can open source data for edition (modification).
     The data editor is returned only if its userLevel is lower than the current userLevel.
 
-    :param source: a :py:class:`neuroDiskItems.DiskItem`, a list of :py:class:`neuroDiskItems.DiskItem` (only the first will be taken into account), a tuple (type, format).
-    :param boolean enableConversion: if True, a data editor that accepts a format in which source can be converted is also accepted. Default False
-    :param boolean checkUpdate: if True, Brainvisa will check if the editor needs to be reloaded. Default True.
-    :param boolean listof: If True, we need an editor for a list of data. If there is no specific editor for a list of this type of data, a :py:class:`ListOfIterationProcess` is created from the associated simple editor. Default False.
-    :returns: the :py:class:`NewProcess` class associated to the found editor.
+    Parameters
+    ----------
+    source:
+        a :py:class:`neuroDiskItems.DiskItem`, a list of :py:class:`neuroDiskItems.DiskItem` (only the first will be taken into account), a tuple (type, format).
+    enableConversion: boolean
+        if True, a data editor that accepts a format in which source can be converted is also accepted. Default False
+    checkUpdate: boolean
+        if True, Brainvisa will check if the editor needs to be reloaded. Default True.
+    listof: boolean
+        If True, we need an editor for a list of data. If there is no specific editor for a list of this type of data, a :py:class:`ListOfIterationProcess` is created from the associated simple editor. Default False.
+    process: None or NewProcess class or instance
+        if specified, specialized viewers having a variable 'allowed_processes'
+        which list this process, will be sorted first
+    check_values: bool
+        if True, check if the 1st parameter of each viewer actually accepts
+        the source value. This is not always true because some filtering may
+        happen using some requiredAttribues.
+
+    Returns
+    -------
+    editor: the :py:class:`NewProcess` class associated to the found editor.
     """
     global _dataEditors
     global _listDataEditors

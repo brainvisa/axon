@@ -435,7 +435,8 @@ class DiskItemEditor( QWidget, DataEditor ):
       source = self.diskItem
 
     self._viewers = brainvisa.processes.getViewers(
-                            source, 1, checkUpdate=False, process=self.process)
+                            source, 1, checkUpdate=False, process=self.process,
+                            check_values=True)
 
     if self.cmbViewers is not None:
       v = self.selectedViewer()
@@ -1261,7 +1262,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
           proc = proc()
       self._viewers = brainvisa.processes.getViewers(
                             source, 1, checkUpdate=False, listof=True,
-                            process=proc)
+                            process=proc, check_values=True)
     except:
       self._viewers = []
     
