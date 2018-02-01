@@ -1613,7 +1613,7 @@ class Process(Parameterized):
 
         New in Axon 4.6.
         '''
-        node = getattr(self, '_parent')
+        node = getattr(self, '_parent', None)
         if node is None:
             return None
         return node().parent_pipeline()
@@ -5070,7 +5070,8 @@ def getViewers(source, enableConversion=1, checkUpdate=True, listof=False,
             rp = getattr(v, 'allowed_processes', None)
             if rp:
                 if (isinstance(rp, types.FunctionType) and rp(process)) \
-                        or process.id() in rp:
+                        or (not isinstance(rp, types.FunctionType)
+                            and process.id() in rp):
                     r1.append(v)
             else:
                 r2.append(v)
