@@ -384,7 +384,7 @@ class DiskItemEditor( QWidget, DataEditor ):
       showException( parent=self )
     else:
       self._view = result
-    neuroProcessesGUI.mainThreadActions().push( self.btnShow.setEnabled, 1 )
+    neuroProcessesGUI.mainThreadActions().push( self.btnShow.setEnabled, True )
     if result is None:
       neuroProcessesGUI.mainThreadActions().push( self.btnShow.setChecked, False )
   
@@ -392,8 +392,7 @@ class DiskItemEditor( QWidget, DataEditor ):
     if self._view is not None:
       self._view = None
       neuroProcessesGUI.mainThreadActions().push( self.btnShow.setChecked, False )
-      neuroProcessesGUI.mainThreadActions().push( self.btnShow.setEnabled, 1 )
-
+      neuroProcessesGUI.mainThreadActions().push( self.btnShow.setEnabled, True )
 
   def openViewerPressed( self, pos ):
     v = self.getValue()
@@ -551,10 +550,17 @@ class DiskItemEditor( QWidget, DataEditor ):
     if isinstance( result, Exception ):
       showException( parent=self )
     else:
-      self._edit = result
+      self._view = result
     neuroProcessesGUI.mainThreadActions().push( self.btnEdit.setEnabled, True )
-    neuroProcessesGUI.mainThreadActions().push( self.btnEdit.setChecked, False )
-       
+    if result is None:
+      neuroProcessesGUI.mainThreadActions().push( self.btnEdit.setChecked, False )
+  
+  def close_editor(self):
+    if self._edit is not None:
+      self._edit = None
+      neuroProcessesGUI.mainThreadActions().push( self.btnShow.setChecked, False )
+      neuroProcessesGUI.mainThreadActions().push( self.btnShow.setEnabled, True )
+      
   def openEditorPressed( self ):
     editor = getProcessInstance(self.dataEditorsToTry()[0]())
     v = self.getValue()
@@ -1347,7 +1353,15 @@ class DiskItemListEditor( QWidget, DataEditor ):
       showException( parent=self )
     else:
       self._view = result
-    neuroProcessesGUI.mainThreadActions().push( self.btnShow.setEnabled, 1 )
+    neuroProcessesGUI.mainThreadActions().push( self.btnShow.setEnabled, True )
+    if result is None:
+      neuroProcessesGUI.mainThreadActions().push( self.btnShow.setChecked, False )
+  
+  def close_viewer(self):
+    if self._view is not None:
+      self._view = None
+      neuroProcessesGUI.mainThreadActions().push( self.btnShow.setChecked, False )
+      neuroProcessesGUI.mainThreadActions().push( self.btnShow.setEnabled, True )
 
   def openViewerPressed( self ):
     # Normally it is not possible to try to open viewer if none is available
@@ -1482,10 +1496,17 @@ class DiskItemListEditor( QWidget, DataEditor ):
     if isinstance( result, Exception ):
       showException( parent=self )
     else:
-      self._edit = result
+      self._view = result
     neuroProcessesGUI.mainThreadActions().push( self.btnEdit.setEnabled, True )
-    neuroProcessesGUI.mainThreadActions().push( self.btnEdit.setChecked, False )
+    if result is None:
+      neuroProcessesGUI.mainThreadActions().push( self.btnEdit.setChecked, False )
   
+  def close_editor(self):
+    if self._edit is not None:
+      self._edit = None
+      neuroProcessesGUI.mainThreadActions().push( self.btnShow.setChecked, False )
+      neuroProcessesGUI.mainThreadActions().push( self.btnShow.setEnabled, True )
+
   def openEditorPressed( self ):
     editor = getProcessInstance(self.dataEditorsToTry()[0]())
     v = self.getValue()
