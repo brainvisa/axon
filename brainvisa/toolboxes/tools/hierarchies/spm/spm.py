@@ -34,7 +34,7 @@
 
 # The SPM database allows to use SPM shared data, especially the normalization
 # templates.
-# The database root is the $FSLDIR/data directory.
+# The database root is the spm_path or spm_standalone_path directory.
 
 templates_contents = (
     'T1', SetType('anatomical Template'),

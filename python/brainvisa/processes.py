@@ -2111,8 +2111,9 @@ class ExecutionNode(object):
             next_parent = parent.parent_node()
             if next_parent is not None:
                 parent = next_parent
-        if parent is not None:
+        if parent is not None and parent._parameterized is not None:
             return parent._parameterized()
+        return None
 
     def setSelected(self, selected):
         """Change the selection state of the node.
@@ -5009,10 +5010,211 @@ def getProcessesBySourceDist(registry, source, enableConversion=1,
                 r.append(p)
                 #print(p.name, 'with distance', d)
     return r
- 
+
+#----------------------------------------------------------------------------
+def getDefaultListOfProcesses(source, role, enableConversion=1, 
+                              checkUpdate=True, process=None):
+    """
+    Get a default processes able to play the given role for a list of 
+    :py:class:`neuroDiskItems.DiskItem`.
+
+    role: str
+        the role of processes to get (mainly 'viewer' or 'editor)
+    enableConversion: int
+        if the source can be converted to be used. Default 1.
+    checkUpdate: boolean
+        if processes :py:class:`NewProcess` must be reloaded when they changed. 
+        Default True.
+
+    :returns: Callable Object that can play the given role for a list of 
+    :py:class:`neuroDiskItems.DiskItem`.
+    """
+    if role == 'viewer':
+        default_func = getViewer
+        
+    elif role == 'editor':       
+        default_func = getDataEditor
+    
+    else:
+        raise RuntimeError('Unable to retrieve processes with role %s' % role)
+    
+    t, f = getDiskItemSourceInfo(source)
+    
+    pcs = []
+    if isinstance(source, tuple) and len(source) == 2:
+        pcs = [default_func(source, 
+                            enableConversion=enableConversion,
+                            checkUpdate=checkUpdate,
+                            process=process)]
+    else:
+        pcs = [default_func(s, enableConversion=enableConversion,
+                            checkUpdate=checkUpdate,
+                            process=process) for s in source]
+        
+    if len(pcs) != 0 and None not in pcs:
+        class iterproc(object):
+
+            def __init__(self, name, procs):
+                self.name = name
+                self.procs = procs
+
+            def __call__(self):
+                ip = ListOfIterationProcess(self.name, self.procs)
+                return ip
+        return iterproc(_t_('%s for list of ' % role.title()) + t.name, pcs)
+    
+#-------------------------------------------------------------------------------
+def getProcessesBySource(source, role, enableConversion=1, checkUpdate=True, 
+                         listof=False, process=None, check_values=False):
+    """
+    Get processes :py:class:`NewProcess` able to play the given role for a 
+    :py:class:`neuroDiskItems.DiskItem` source.
+    
+    Processes are ordered using the distance of 
+    :py:class:`processes.DiskItemConversionInfo` between the 
+    :py:class:`neuroDiskItems.DiskItem` source to use and the 
+    :py:class:`neuroDiskItems.DiskItem` source registered for the process.
+    The processes registered with closest sources appear first.
+
+
+    Parameters
+    ----------
+    role: str
+        the role of processes to get (mainly 'viewer' or 'editor')
+    enableConversion: int
+        if the source can be converted to find appropriate processes. Default 1.
+    checkUpdate: boolean
+        if processes :py:class:`NewProcess` must be reloaded when
+        they changed. Default True.
+    listof: boolean
+        if the processes :py:class:`NewProcess` must be able to use list of
+        :py:class:`neuroDiskItems.DiskItem`. Default False.
+    process: None or NewProcess class or instance
+        if specified, specialized processes having a variable 'allowed_processes'
+        which list this process, will be sorted first
+    check_values: bool
+        if True, check if the 1st parameter of each process actually accepts
+        the source value. This is not always true because some filtering may
+        happen using some requiredAttribues.
+
+    Returns
+    -------
+    processes:
+        a list of processes :py:class:`NewProcess`.
+    """
+    if role == 'viewer':
+        global _viewers
+        global _listViewers
+
+        if not listof:
+            registry = _viewers
+        else:
+            registry = _listViewers
+            
+        default_list_of_func = getDefaultListOfViewer
+        
+    elif role == 'editor':
+        global _dataEditors
+        global _listDataEditors
+
+        if not listof:
+            registry = _dataEditors
+        else:
+            registry = _listDataEditors
+            
+        default_list_of_func = getDefaultListOfDataEditor
+    
+    else:
+        raise RuntimeError('Unable to retrieve processes with role %s' % role)
+    
+    # Create a list of processset that can be ordered by distance vector
+    r = getProcessesBySourceDist(registry, 
+                                 getDiskItemSourceInfo(source), 
+                                 enableConversion=enableConversion, 
+                                 exactConversionTypeOnly=True,
+                                 checkUpdate=checkUpdate)
+    #print('=== found process by distance', r)
+    if listof:
+        # Gets default process for list
+        dv = default_list_of_func(source)
+        if dv:
+            r.append(dv)
+    if process is not None:
+        r1 = []
+        r2 = []
+        for p in r:
+            rp = getattr(p, 'allowed_processes', None)
+            if rp:
+                if (isinstance(rp, types.FunctionType) and rp(process)) \
+                        or (not isinstance(rp, types.FunctionType)
+                            and process.id() in rp):
+                    r1.append(p)        
+            else:
+                r2.append(p)
+        r = r1 + r2
+    else:
+        r = [p for p in r if not hasattr(p, 'allowed_processes')]
+
+    if check_values and isinstance(source, DiskItem):
+        r2 = []
+        for p in r:
+            # get process signature, 1st param
+            param = p.signature[p.signature.keys()[0]]
+            if param.findValue(source) == source:
+                r2.append(p)
+        r = r2
+
+    return r
+
+#----------------------------------------------------------------------------
+def runProcessBySource(source, role,
+                       context=None, process=None, continueOnError = True):
+    """
+    Searches for a viewer for source data and runs the process.
+    If viewer fail to display source, tries to get another.
+
+    :param source: a :py:class:`neuroDiskItems.DiskItem` or something that enables to find a :py:class:`neuroDiskItems.DiskItem`.
+    :param context: the :py:class:`ExecutionContext`. If None, the default context is used.
+    :returns: the result of the execution of the found viewer.
+    """
+    
+    def __runProcess(runnable_proc, source, reference_proc):
+        runnable_proc = getProcessInstance(runnable_proc)
+        if reference_proc is not None \
+                and hasattr(runnable_proc, 'allowed_processes'):
+            runnable_proc.reference_process = reference_proc
+        #print('__runProcess => Try to run ', runnable_proc.name, 'for', source)
+        context.runProcess(runnable_proc, source)
+    
+    if not isinstance(source, DiskItem):
+        source = ReadDiskItem('Any Type', formats.keys()).findValue(source)
+    if context is None:
+        context = defaultContext()
+
+    if role == 'viewer':
+        __get_procs = getViewers
+        
+    elif role == 'editor':
+        __get_procs = getDataEditors
+    else:
+        raise RuntimeError('Unable to retrieve processes with role %s' % role)
+    
+    runnable_procs = __get_procs(source, checkUpdate=False, process=process)
+    
+    for runnable_proc in runnable_procs:
+        if continueOnError:
+            try:
+                return __runProcess(runnable_proc, source, process)
+            
+            except Exception, e:
+                print('Failed to run process', runnable_proc.name, 'for', source)
+                continue
+        else:
+            return __runProcess(runnable_proc, source, process)
+        
 #-------------------------------------------------------------------------------
 def getViewers(source, enableConversion=1, checkUpdate=True, listof=False,
-               process=None):
+               process=None, check_values=False):
     """
     Get viewers :py:class:`NewProcess` able to visualize a 
     :py:class:`neuroDiskItems.DiskItem` source.
@@ -5037,49 +5239,20 @@ def getViewers(source, enableConversion=1, checkUpdate=True, listof=False,
     process: None or NewProcess class or instance
         if specified, specialized viewers having a variable 'allowed_processes'
         which list this process, will be sorted first
+    check_values: bool
+        if True, check if the 1st parameter of each viewer actually accepts
+        the source value. This is not always true because some filtering may
+        happen using some requiredAttribues.
 
     Returns
     -------
     viewers:
         a list of viewers :py:class:`NewProcess`.
     """
-    global _viewers
-    global _listViewers
-
-    if not listof:
-        registry = _viewers
-    else:
-        registry = _listViewers
-    
-    # Create a list of viewerset that can be ordered by distance vector
-    r = getProcessesBySourceDist(registry, 
-                                 getDiskItemSourceInfo(source), 
-                                 enableConversion=enableConversion, 
-                                 exactConversionTypeOnly=True,
-                                 checkUpdate=checkUpdate)
-    #print('=== found viewers by distance', r)
-    if listof:
-        # Gets default viewer
-        dv = getDefaultListOfViewer(source)
-        if dv:
-            r.append(dv)
-    if process is not None:
-        r1 = []
-        r2 = []
-        for v in r:
-            rp = getattr(v, 'allowed_processes', None)
-            if rp:
-                if (isinstance(rp, types.FunctionType) and rp(process)) \
-                        or (not isinstance(rp, types.FunctionType)
-                            and process.id() in rp):
-                    r1.append(v)
-            else:
-                r2.append(v)
-        r = r1 + r2
-    else:
-        r = [v for v in r if not hasattr(v, 'allowed_processes')]
-
-    return r
+    return getProcessesBySource(source, 'viewer', 
+                                enableConversion=enableConversion, 
+                                checkUpdate=checkUpdate, listof=listof, 
+                                process=process, check_values=check_values)
 
 #----------------------------------------------------------------------------
 def getDefaultListOfViewer(source, enableConversion=1, checkUpdate=True,
@@ -5095,60 +5268,58 @@ def getDefaultListOfViewer(source, enableConversion=1, checkUpdate=True,
     :returns: Callable Object that can be used to visualize a list of 
     :py:class:`neuroDiskItems.DiskItem`.
     """
-    t, f = getDiskItemSourceInfo(source)
-    
-    vrs = []
-    if isinstance(source, tuple) and len(source) == 2:
-        vrs = [getViewer(source, 
-                         enableConversion=enableConversion,
-                         checkUpdate=checkUpdate,
-                         process=process)]
-    else:
-        vrs = [getViewer(s, enableConversion=enableConversion,
-                         checkUpdate=checkUpdate,
-                         process=process) for s in source]
-        
-    if len(vrs) != 0 and None not in vrs:
-        class iterproc(object):
+    return getDefaultListOfProcesses(source, 'viewer',
+                                     enableConversion=enableConversion, 
+                                     checkUpdate=checkUpdate, process=process)
 
-            def __init__(self, name, procs):
-                self.name = name
-                self.procs = procs
-
-            def __call__(self):
-                ip = ListOfIterationProcess(self.name, self.procs)
-                return ip
-        return iterproc(_t_('Viewer for list of ') + t.name, vrs)
-    
 #----------------------------------------------------------------------------
 def getViewer(source, enableConversion=1, checkUpdate=True, 
-              listof=False, index=0, process=None):
+              listof=False, index=0, process=None, check_values=False):
     """
     Gets a viewer (a process that have the role viewer) which can
     visualize source data. The viewer is returned only if its userLevel
     is lower than the current userLevel.
 
-    :param source: a :py:class:`neuroDiskItems.DiskItem`, a list of
+    Parameters
+    ----------
+    source:
+        a :py:class:`neuroDiskItems.DiskItem`, a list of
         :py:class:`neuroDiskItems.DiskItem` (only the first will be
         taken into account), a tuple (type, format).
-    :param boolean enableConversion: if True, a viewer that accepts a
+    enableConversion: boolean
+        if True, a viewer that accepts a
         format in which source can be converted is also accepted.
         Default True
-    :param boolean checkUpdate: if True, Brainvisa will check if the
+    checkUpdate: boolean
+        if True, Brainvisa will check if the
         viewer needs to be reloaded. Default True.
-    :param boolean listof: If True, we need a viewer for a list of data.
+    listof: boolean
+        If True, we need a viewer for a list of data.
         If there is no specific viewer for a list of this type of data,
         a :py:class:`ListOfIterationProcess` is created from the
         associated simple viewer. Default False.
-    :param int index: index of the viewer to find. Default 0.
-    :returns: the :py:class:`NewProcess` class associated to the found
+    index: int
+        index of the viewer to find. Default 0.
+    process: None or NewProcess class or instance
+        if specified, specialized viewers having a variable 'allowed_processes'
+        which list this process, will be sorted first
+    check_values: bool
+        if True, check if the 1st parameter of viewer actually accepts
+        the source value. This is not always true because some filtering may
+        happen using some requiredAttribues.
+
+    Returns
+    -------
+    viewer:
+        the :py:class:`NewProcess` class associated to the found
         viewer or None if not found at the specified index.
     """
     vl = getViewers(source,
                     enableConversion=enableConversion,
                     checkUpdate=checkUpdate,
                     listof=listof,
-                    process=process)
+                    process=process,
+                    check_values=check_values)
     #print('===== getViewer, viewers list', [v.name for v in vl], '=====')
     if len(vl) > index:
         #print('===== getViewer, found viewer ', vl[index].name, '=====')
@@ -5164,112 +5335,124 @@ def runViewer(source, context=None, process=None):
     :param context: the :py:class:`ExecutionContext`. If None, the default context is used.
     :returns: the result of the execution of the found viewer.
     """
-    if not isinstance(source, DiskItem):
-        source = ReadDiskItem('Any Type', formats.keys()).findValue(source)
-    if context is None:
-        context = defaultContext()
+    runProcessBySource(source, 'viewer', 
+                       context=context, process=process)
 
-    viewers = getViewers(source, checkUpdate=False, index=index,
-                         process=process)
-    for viewer in viewers:
-        try:
-            viewer = getProcessInstance(viewer)
-            if process is not None \
-                    and hasattr(viewer, 'allowed_processes'):
-                viewer.reference_process = process
-            #print('Try to run viewer ', viewer.name, 'for', source)
-            context.runProcess(viewer, source)
-            return
-        except:
-            #print('Failed to run viewer ', viewer.name, 'for', source)
-            continue
+
+#-------------------------------------------------------------------------------
+def getDataEditors(source, enableConversion=1, checkUpdate=True, listof=False, 
+                   process=None, check_values=False):
+    """
+    Get data editors :py:class:`NewProcess` able to edit a 
+    :py:class:`neuroDiskItems.DiskItem` source.
+    
+    Data editors are ordered using the distance of 
+    :py:class:`processes.DiskItemConversionInfo` between the 
+    :py:class:`neuroDiskItems.DiskItem` source to edit and the 
+    :py:class:`neuroDiskItems.DiskItem` source registered for the data editor.
+    The data editors registered with closest sources appear first.
+
+
+    Parameters
+    ----------
+    enableConversion: int
+        if the source can be converted to be edited. Default 1.
+    checkUpdate: boolean
+        if converters and data editors :py:class:`NewProcess` must be reloaded 
+        when they changed. Default True.
+    listof: boolean
+        if the viewers :py:class:`NewProcess` must be able to edit list of
+        :py:class:`neuroDiskItems.DiskItem`. Default False.
+    process: None or NewProcess class or instance
+        if specified, specialized data editors having a variable 
+        'allowed_processes' which list this process, will be sorted first
+    check_values: bool
+        if True, check if the 1st parameter of each data editor actually accepts
+        the source value. This is not always true because some filtering may
+        happen using some requiredAttribues.
+        
+    Returns
+    -------
+    data editors:
+        a list of data editors :py:class:`NewProcess`.
+    """
+    return getProcessesBySource(source, 'editor', 
+                                enableConversion=enableConversion, 
+                                checkUpdate=checkUpdate, listof=listof, 
+                                process=process, check_values=check_values)
+
+#----------------------------------------------------------------------------
+def getDefaultListOfDataEditor(source, enableConversion=1, checkUpdate=True,
+                               process=None):
+    """
+    Get a default data editor for a list of :py:class:`neuroDiskItems.DiskItem`.
+
+    :param int enableConversion: if the source can be converted to be 
+    edited. Default 1.
+    :param boolean checkUpdate: if converters and data editors 
+    :py:class:`NewProcess` must be reloaded when they changed. Default True.
+
+    :returns: Callable Object that can be used to edit a list of 
+    :py:class:`neuroDiskItems.DiskItem`.
+    """
+    return getDefaultListOfProcesses(source, 'editor',
+                                     enableConversion=enableConversion, 
+                                     checkUpdate=checkUpdate, process=process)
 
 #----------------------------------------------------------------------------
 def getDataEditor(source, enableConversion=0, checkUpdate=True, listof=False,
-                  process=None):
+                  index=0, process=None, check_values=False):
     """
     Gets a data editor (a process that have the role editor) which can open source data for edition (modification).
     The data editor is returned only if its userLevel is lower than the current userLevel.
 
-    :param source: a :py:class:`neuroDiskItems.DiskItem`, a list of :py:class:`neuroDiskItems.DiskItem` (only the first will be taken into account), a tuple (type, format).
-    :param boolean enableConversion: if True, a data editor that accepts a format in which source can be converted is also accepted. Default False
-    :param boolean checkUpdate: if True, Brainvisa will check if the editor needs to be reloaded. Default True.
-    :param boolean listof: If True, we need an editor for a list of data. If there is no specific editor for a list of this type of data, a :py:class:`ListOfIterationProcess` is created from the associated simple editor. Default False.
-    :returns: the :py:class:`NewProcess` class associated to the found editor.
+    Parameters
+    ----------
+    source:
+        a :py:class:`neuroDiskItems.DiskItem`, a list of :py:class:`neuroDiskItems.DiskItem` (only the first will be taken into account), a tuple (type, format).
+    enableConversion: boolean
+        if True, a data editor that accepts a format in which source can be converted is also accepted. Default False
+    checkUpdate: boolean
+        if True, Brainvisa will check if the editor needs to be reloaded. Default True.
+    listof: boolean
+        If True, we need an editor for a list of data. If there is no specific editor for a list of this type of data, a :py:class:`ListOfIterationProcess` is created from the associated simple editor. Default False.
+    process: None or NewProcess class or instance
+        if specified, specialized viewers having a variable 'allowed_processes'
+        which list this process, will be sorted first
+    check_values: bool
+        if True, check if the 1st parameter of each data editor actually accepts
+        the source value. This is not always true because some filtering may
+        happen using some requiredAttribues.
+
+    Returns
+    -------
+    editor: the :py:class:`NewProcess` class associated to the found editor.
     """
-    global _dataEditors
-    global _listDataEditors
-    if listof:
-        dataEditors = _listDataEditors
-    else:
-        dataEditors = _dataEditors
-
-    if isinstance(source, DiskItem):
-        t0 = source.type
-        f = source.format
-    elif isinstance(source, list):
-        if source != [] and isinstance(source[0], DiskItem):
-            t0 = source[0].type
-            f = source[0].format
-    else:
-        t0, f = source
-    t = t0
-    if not isinstance(f, list) and not isinstance(f, tuple):
-        f = (f, )
-    v = None
-    for i in f:
-        v = dataEditors.get((t, i))
-        if v is not None:
-            format = i
-            break
-    while not v and t:
-        t = t.parent
-        v = None
-        for i in f:
-            v = dataEditors.get((t, i))
-            if v is not None:
-                format = i
-                break
-    if not v and enableConversion:
-        for format in f:
-            converters = getConvertersFrom((t0, f), keepType=0, checkUpdate=checkUpdate)
-            t = t0
-            while not v and t:
-                for tc, fc in converters.keys():
-                    if (tc, fc) != (t0, f):
-                        v = dataEditors.get((t, fc))
-                        if v:
-                            break
-                t = t.parent
-            if v:
-                break
-    p = getProcess(v, checkUpdate=checkUpdate)
-    if p and p.userLevel <= neuroConfig.userLevel:
-        return p
-    if listof:
-        if isinstance(source, tuple) and len(source) == 2:
-            vrs = [getDataEditor(source, enableConversion=enableConversion,
-                                 checkUpdate=checkUpdate, process=process)]
-        else:
-            vrs = [getDataEditor(s, enableConversion=enableConversion,
-                                 checkUpdate=checkUpdate, process=process)
-                   for s in source]
-        if None not in vrs and len(vrs) != 0:
-            class iterproc(object):
-
-                def __init__(self, name, procs):
-                    self.name = name
-                    self.procs = procs
-
-                def __call__(self):
-                    ip = ListOfIterationProcess(self.name, self.procs)
-                    return ip
-            return iterproc(_t_('Editor for list of ') + t0.name, vrs)
-    return None
+    dl = getDataEditors(source,
+                        enableConversion=enableConversion,
+                        checkUpdate=checkUpdate,
+                        listof=listof,
+                        process=process,
+                        check_values=check_values)
+    #print('===== getDataEditor, data editor list', [d.name for d in dl], '=====')
+    if len(dl) > index:
+        #print('===== getDataEditor, found data editor ', dl[index].name, '=====')
+        return dl[index]
 
 #----------------------------------------------------------------------------
+def runDataEditor(source, context=None, process=None):
+    """
+    Searches for a data editor for source data and runs the process.
+    If data editor fail to edit source, tries to get another.
 
-
+    :param source: a :py:class:`neuroDiskItems.DiskItem` or something that enables to find a :py:class:`neuroDiskItems.DiskItem`.
+    :param context: the :py:class:`ExecutionContext`. If None, the default context is used.
+    :returns: the result of the execution of the found data editor.
+    """
+    runProcessBySource(source, 'editor', 
+                       context=context, process=process)
+    
+#----------------------------------------------------------------------------
 def getImporter(source, checkUpdate=True):
     """
     Gets a importer (a process that have the role importer) which can import data in the database.
@@ -5574,15 +5757,28 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
         if 'editor' in roles:
             global _dataEditors
             global _listDataEditors
-            arg = NewProcess.signature.values()[0]
+            arg = NewProcess.signature.values()[0]            
             if isinstance(arg, ListOf):
                 arg = arg.contentType
                 if hasattr(arg, 'formats'):
                     for format in arg.formats:
-                        _listDataEditors[(arg.type, format)] = NewProcess._id
+                        #print('===== registering data editor', NewProcess.name, 
+                              #'for list of type', arg.type, 'and format', format)
+                        _listDataEditors.setdefault((arg.type, format),
+                                                    ProcessSet(
+                                                        arg.type, 
+                                                        format)) \
+                                    .add(NewProcess._id)
+                                                
             elif hasattr(arg, 'formats'):
                 for format in arg.formats:
-                    _dataEditors[(arg.type, format)] = NewProcess._id
+                    #print('===== registering data editor', NewProcess.name, 
+                          #'for type', arg.type, 'and format', format)
+                    _dataEditors.setdefault((arg.type, format),
+                                             ProcessSet(
+                                                arg.type, 
+                                                format)) \
+                                .add(NewProcess._id)
         elif NewProcess.category.lower() == 'editors/automatic':
             warnRole(processInfo.fileName, 'editor')
         if 'importer' in roles:

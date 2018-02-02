@@ -128,6 +128,12 @@ class DiskItemEditor( QWidget, DataEditor ):
     self.cmbViewers = None
     self.newValidValue.connect(self.updateViewers)
     
+    # Sets default data editors list
+    self.actDataEditors = None
+    self.cmbDataEditorsSeparator = None
+    self.cmbDataEditors = None
+    self.newValidValue.connect(self.updateDataEditors)
+    
     self._view = None
     self.btnShow.clicked.connect(self.showPressed)
     self.btnShow.rightPressed.connect(self.openViewerPressed)
@@ -140,14 +146,6 @@ class DiskItemEditor( QWidget, DataEditor ):
     self.btnEdit.setFixedSize( buttonIconSize + buttonMargin )
     self.btnEdit.setFocusPolicy( Qt.NoFocus )
     self.btnEdit.setEnabled( 0 )
-    editor = None
-    try:
-      editor = brainvisa.processes.getDataEditor(
-        (self.parameter.type, self.parameter.formats), checkUpdate=False)
-    except:
-      pass
-    if not editor:
-      self.btnEdit.hide()
     self.btnEdit.clicked.connect(self.editPressed)
     self.btnEdit.rightPressed.connect(self.openEditorPressed)
     self.btnDatabase = QPushButton( )
@@ -203,27 +201,36 @@ class DiskItemEditor( QWidget, DataEditor ):
     self.led.setReadOnly(read_only)
     self.led.setFrame(not read_only)
 
-  def createPopupMenu(self, popup):     
-    self.cmbViewersSeparator = popup.addSeparator()
+  def createPopupMenu(self, popup):
+    def __createProcessesMenu(role, icon_file, cmb_sep, cmb, act, update_func):           
+        setattr(self, cmb_sep, popup.addSeparator())
 
-    # Create viewers widget
-    layViewers = QHBoxLayout()
-    widViewers = QWidget(popup)
-    widViewers.setLayout(layViewers)
-    icon = QLabel(widViewers)
-    icon.setPixmap(QPixmap(findIconFile('eye.png')))
-    layViewers.addWidget(icon)
-    label = QLabel( _t_('use viewer'), widViewers )
-    layViewers.addWidget(label)
-    self.cmbViewers = QComboBox(widViewers)
-    self.cmbViewers.currentIndexChanged.connect(popup.hide)
-    layViewers.addWidget(self.cmbViewers)
-    self.actViewers = QWidgetAction(popup)
-    self.actViewers.setDefaultWidget(widViewers)
-    popup.addAction(self.actViewers)
+        # Create widget
+        lay = QHBoxLayout()
+        wid = QWidget(popup)
+        wid.setLayout(lay)
+        icon = QLabel(wid)
+        icon.setPixmap(QPixmap(findIconFile(icon_file)))
+        lay.addWidget(icon)
+        label = QLabel( _t_('use %s' % role), wid )
+        lay.addWidget(label)
+        setattr(self, cmb, QComboBox(wid))
+        getattr(self, cmb).currentIndexChanged.connect(popup.hide)
+        lay.addWidget(getattr(self, cmb))
+        setattr(self, act, QWidgetAction(popup))
+        getattr(self, act).setDefaultWidget(wid)
+        popup.addAction(getattr(self, act))
     
-    # Update viewers
-    self.updateViewers()
+        # Update list
+        update_func()
+        
+    __createProcessesMenu('viewer', 'eye.png', 'cmbViewersSeparator', 
+                          'cmbViewers', 'actViewers', 
+                          self.updateViewers)
+     
+    __createProcessesMenu('editor', 'pencil.png', 'cmbDataEditorsSeparator', 
+                          'cmbDataEditors', 'actDataEditors', 
+                          self.updateDataEditors)            
       
   def setContext( self, newContext ):
     oldContext = ( self.btnShow.isChecked(), self._view,
@@ -304,14 +311,15 @@ class DiskItemEditor( QWidget, DataEditor ):
       self.btnShow.setEnabled( enabled )
     if self.btnEdit:
       enabled = 0
-      v = brainvisa.processes.getDataEditor( (self.parameter.type, self.parameter.formats), checkUpdate=False )
-      if v:
-        self.btnEdit.show()
-      else:
-        self.btnEdit.hide()
       if self.diskItem:
-        if v:
-          enabled = self.diskItem.isWriteable()
+        e = brainvisa.processes.getDataEditor(self.diskItem, 1, checkUpdate=False,
+                                              process=self.process)
+        if e:
+            self.btnEdit.show()
+        else:
+            self.btnEdit.hide()
+        if e:
+            enabled = self.diskItem.isWriteable()
       self.btnEdit.setEnabled( enabled )
 
   def textChanged( self ):
@@ -376,7 +384,7 @@ class DiskItemEditor( QWidget, DataEditor ):
       showException( parent=self )
     else:
       self._view = result
-    neuroProcessesGUI.mainThreadActions().push( self.btnShow.setEnabled, 1 )
+    neuroProcessesGUI.mainThreadActions().push( self.btnShow.setEnabled, True )
     if result is None:
       neuroProcessesGUI.mainThreadActions().push( self.btnShow.setChecked, False )
   
@@ -384,8 +392,7 @@ class DiskItemEditor( QWidget, DataEditor ):
     if self._view is not None:
       self._view = None
       neuroProcessesGUI.mainThreadActions().push( self.btnShow.setChecked, False )
-      neuroProcessesGUI.mainThreadActions().push( self.btnShow.setEnabled, 1 )
-
+      neuroProcessesGUI.mainThreadActions().push( self.btnShow.setEnabled, True )
 
   def openViewerPressed( self, pos ):
     v = self.getValue()
@@ -435,8 +442,9 @@ class DiskItemEditor( QWidget, DataEditor ):
       source = self.diskItem
 
     self._viewers = brainvisa.processes.getViewers(
-                            source, 1, checkUpdate=False, process=self.process)
-
+                            source, 1, checkUpdate=False, process=self.process,
+                            check_values=True)
+    
     if self.cmbViewers is not None:
       v = self.selectedViewer()
       #print('selected viewer:', v)
@@ -481,30 +489,134 @@ class DiskItemEditor( QWidget, DataEditor ):
       history_window.show()
 
 
+  def selectedDataEditor(self):
+    # Current index is shifted in Combo box due to the 'Default value' item
+    if self.cmbDataEditors is not None:
+      index = self.cmbDataEditors.currentIndex()
+      if index != -1 and index > 0 and index <= len(self._editors):
+        return self._editors[index - 1]
+
+    return None
+
   def editPressed( self ):
     if self.btnEdit.isChecked():
       self.btnEdit.setEnabled( 0 )
       v = self.getValue()
-      editor = brainvisa.processes.getDataEditor( v )()
-      brainvisa.processes.defaultContext().runInteractiveProcess( self._editorExited, editor, v )
+      editorExists = False
+      try:
+        for editor in self.dataEditorsToTry():
+          #print('try editor:', editor.name)
+          try :
+            editor = getProcessInstance(editor())
+            editorExists = True
+            if self.process is not None \
+                    and hasattr(editor, 'allowed_processes'):
+                editor.reference_process = self.process
+            brainvisa.processes.defaultContext().runInteractiveProcess(
+                self._editorExited, editor, v)
+            self.btnEdit.setEnabled( True )
+            return
+        
+          except Exception:
+            # Log an error then try another editor if possible
+            brainvisa.processes.defaultContext().log(
+              _t_('Warning for %s') % _t_(editor.name),
+              html=_t_('Editor aborted for type=<em>%s</em> and '
+              'format=<em>%s</em> value=<em>%s</em> '
+              '(try using it interactively by '
+              'right-clicking on the pencil icon)') 
+              % (unicode(v.type), unicode(v.format), unicode(v)),
+              icon='pencil.png')
+            continue
+        
+        self.btnEdit.setEnabled( False )
+        self.btnEdit.setChecked( False )
+        raise RuntimeError( HTMLMessage( _t_( 'No editor could be found for '
+          'type=<em>%s</em> and format=<em>%s</em>' ) 
+          % (unicode( v.type ), unicode(v.format))) )
+    
+      except Exception as error:
+          # transform the exception into a print message, and return.
+          # We are in a Qt slot here, raising an exception results in
+          # undefined behaviour, which happens to have changed between PyQt 5.4
+          # and PyQt 5.5
+          print(error)
+          import traceback
+          traceback.print_stack()
     else:
       self._edit = None
-
 
   def _editorExited( self, result ):
     if isinstance( result, Exception ):
       showException( parent=self )
     else:
-      self._edit = result
+      self._view = result
     neuroProcessesGUI.mainThreadActions().push( self.btnEdit.setEnabled, True )
-    neuroProcessesGUI.mainThreadActions().push( self.btnEdit.setChecked, False )
-
-
+    if result is None:
+      neuroProcessesGUI.mainThreadActions().push( self.btnEdit.setChecked, False )
+  
+  def close_editor(self):
+    if self._edit is not None:
+      self._edit = None
+      neuroProcessesGUI.mainThreadActions().push( self.btnShow.setChecked, False )
+      neuroProcessesGUI.mainThreadActions().push( self.btnShow.setEnabled, True )
+      
   def openEditorPressed( self ):
+    editor = getProcessInstance(self.dataEditorsToTry()[0]())
     v = self.getValue()
-    editor = brainvisa.processes.getDataEditor( v )()
-    neuroProcessesGUI.showProcess( editor, v )
+    if self.process is not None \
+            and hasattr(editor, 'allowed_processes'):
+        editor.reference_process = self.process
+    neuroProcessesGUI.showProcess(editor, v)
 
+  def updateDataEditors(self):
+    if self.diskItem is None:
+      format = None
+      if len(self.parameter.formats) != 0:
+        format = self.parameter.formats[0]
+      source = (self.parameter.type, format)
+    else:
+      source = self.diskItem
+
+    try:
+      self._editors = brainvisa.processes.getDataEditors(
+                            source, 0, checkUpdate=False, process=self.process)
+    except:
+      self._editors = []
+    
+    if self.cmbDataEditors is not None:
+      e = self.selectedDataEditor()
+      #print('selected data editor:', v)
+        
+      # Update editors in combo box
+      self.cmbDataEditors.clear()
+      self.cmbDataEditors.addItem(_t_('Default'), None)
+      for editor in self._editors:
+        self.cmbDataEditors.addItem(_t_(editor.name), editor)
+            
+      if e is not None and e in self._editors:
+        i = self._editors.index(e)
+        self.cmbDataEditors.setCurrentIndex(i + 1)
+        
+      #else:
+        #print('Selecting default item with index', self.cmbDataEditors.findText(_t_('Default')))
+        ## Select default value
+        #self.cmbDataEditors.setCurrentIndex(0)
+
+      # Display or hide the data editor action in popup menu
+      visible = len(self._editors) > 1      
+      self.cmbDataEditorsSeparator.setVisible(visible)
+      self.actDataEditors.setVisible(visible)
+    
+    if len(self._editors) == 0:
+      self.btnEdit.hide()
+  
+  def dataEditorsToTry(self):
+    editor = getProcessInstance(self.selectedDataEditor())
+    if editor is None:
+      return self._editors
+    else:
+      return [editor]
 
   def databasePressed( self ):
     if self.databaseDialog is None or self.parameter._modified:
@@ -1051,10 +1163,11 @@ class DiskItemListEditor( QWidget, DataEditor ):
     self.cmbViewersSeparator = None
     self.cmbViewers = None
     self.newValidValue.connect(self.updateViewers)
-    
+   
     self._view = None
     self.btnShow.clicked.connect(self.showPressed)
     self.btnShow.rightPressed.connect(self.openViewerPressed)
+    
     self._edit = None
     self.btnEdit = RightClickablePushButton( )
     hb.addWidget(self.btnEdit)
@@ -1064,10 +1177,16 @@ class DiskItemListEditor( QWidget, DataEditor ):
     self.btnEdit.setFixedSize( buttonIconSize + buttonMargin )
     self.btnEdit.setFocusPolicy( Qt.NoFocus )
     self.btnEdit.setEnabled( 0 )
-    if not brainvisa.processes.getDataEditor( (self.parameter.type, self.parameter.formats ), checkUpdate=False, listof=True ):
-      self.btnEdit.hide()
+    #if not brainvisa.processes.getDataEditor( (self.parameter.type, self.parameter.formats ), checkUpdate=False, listof=True ):
+      #self.btnEdit.hide()
     self.btnEdit.clicked.connect(self.editPressed)
     self.btnEdit.rightPressed.connect(self.openEditorPressed)
+    
+    # Sets default data editors list
+    self.actDataEditors = None
+    self.cmbDataEditorsSeparator = None
+    self.cmbDataEditors = None
+    self.newValidValue.connect(self.updateDataEditors)
 
     self.btnFind = RightClickablePushButton( )
     hb.addWidget(self.btnFind)
@@ -1103,27 +1222,36 @@ class DiskItemListEditor( QWidget, DataEditor ):
 
     self.setValue( None, 1 )
 
-  def createPopupMenu(self, popup):     
-    self.cmbViewersSeparator = popup.addSeparator()
+  def createPopupMenu(self, popup):
+    def __createProcessesMenu(role, icon_file, cmb_sep, cmb, act, update_func):           
+        setattr(self, cmb_sep, popup.addSeparator())
 
-    # Create viewers widget
-    layViewers = QHBoxLayout()
-    widViewers = QWidget(popup)
-    widViewers.setLayout(layViewers)
-    icon = QLabel(widViewers)
-    icon.setPixmap(QPixmap(findIconFile('eye.png')))
-    layViewers.addWidget(icon)
-    label = QLabel( _t_('use viewer'), widViewers )
-    layViewers.addWidget(label)
-    self.cmbViewers = QComboBox(widViewers)
-    self.cmbViewers.currentIndexChanged.connect(popup.hide)
-    layViewers.addWidget(self.cmbViewers)
-    self.actViewers = QWidgetAction(popup)
-    self.actViewers.setDefaultWidget(widViewers)
-    popup.addAction(self.actViewers)
+        # Create widget
+        lay = QHBoxLayout()
+        wid = QWidget(popup)
+        wid.setLayout(lay)
+        icon = QLabel(wid)
+        icon.setPixmap(QPixmap(findIconFile(icon_file)))
+        lay.addWidget(icon)
+        label = QLabel( _t_('use %s' % role), wid )
+        lay.addWidget(label)
+        setattr(self, cmb, QComboBox(wid))
+        getattr(self, cmb).currentIndexChanged.connect(popup.hide)
+        lay.addWidget(getattr(self, cmb))
+        setattr(self, act, QWidgetAction(popup))
+        getattr(self, act).setDefaultWidget(wid)
+        popup.addAction(getattr(self, act))
     
-    # Update viewers
-    self.updateViewers()
+        # Update list
+        update_func()
+    
+    __createProcessesMenu('viewer', 'eye.png', 'cmbViewersSeparator', 
+                          'cmbViewers', 'actViewers', 
+                          self.updateViewers)
+     
+    __createProcessesMenu('editor', 'pencil.png', 'cmbDataEditorsSeparator', 
+                          'cmbDataEditors', 'actDataEditors', 
+                          self.updateDataEditors)            
       
   def getValue( self ):
     return self._value
@@ -1225,7 +1353,15 @@ class DiskItemListEditor( QWidget, DataEditor ):
       showException( parent=self )
     else:
       self._view = result
-    neuroProcessesGUI.mainThreadActions().push( self.btnShow.setEnabled, 1 )
+    neuroProcessesGUI.mainThreadActions().push( self.btnShow.setEnabled, True )
+    if result is None:
+      neuroProcessesGUI.mainThreadActions().push( self.btnShow.setChecked, False )
+  
+  def close_viewer(self):
+    if self._view is not None:
+      self._view = None
+      neuroProcessesGUI.mainThreadActions().push( self.btnShow.setChecked, False )
+      neuroProcessesGUI.mainThreadActions().push( self.btnShow.setEnabled, True )
 
   def openViewerPressed( self ):
     # Normally it is not possible to try to open viewer if none is available
@@ -1261,7 +1397,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
           proc = proc()
       self._viewers = brainvisa.processes.getViewers(
                             source, 1, checkUpdate=False, listof=True,
-                            process=proc)
+                            process=proc, check_values=True)
     except:
       self._viewers = []
     
@@ -1298,13 +1434,60 @@ class DiskItemListEditor( QWidget, DataEditor ):
       return self._viewers
     else:
       return [viewer]
+ 
+  def selectedDataEditor(self):
+    # Current index is shifted in Combo box due to the 'Default value' item
+    if self.cmbDataEditors is not None:
+      index = self.cmbDataEditors.currentIndex()
+      if index != -1 and index > 0 and index <= len(self._editors):
+        return self._editors[index - 1]
+
+    return None
 
   def editPressed( self ):
     if self.btnEdit.isChecked():
       self.btnEdit.setEnabled( 0 )
       v = self.getValue()
-      editor = brainvisa.processes.getDataEditor( v, listof=True )()
-      brainvisa.processes.defaultContext().runInteractiveProcess( self._editorExited, editor, v )
+      editorExists = False
+      try:
+        for editor in self.dataEditorsToTry():
+          try :
+            editor = getProcessInstance(editor())
+            editorExists = True
+            if self.process is not None \
+                    and hasattr(editor, 'allowed_processes'):
+                editor.reference_process = self.process
+            brainvisa.processes.defaultContext().runInteractiveProcess(
+                self._editorExited, editor, v)
+            self.btnEdit.setEnabled( True )
+            return
+        
+          except Exception:
+            # Log an error then try another editor if possible
+            brainvisa.processes.defaultContext().log(
+              _t_('Warning for %s') % _t_(editor.name),
+              html=_t_('Editor aborted for type=<em>%s</em> and '
+              'format=<em>%s</em> value=<em>%s</em> '
+              '(try using it interactively by '
+              'right-clicking on the pencil icon)') 
+              % (unicode(v.type), unicode(v.format), unicode(v)),
+              icon='pencil.png')
+            continue
+        
+        self.btnEdit.setEnabled( False )
+        self.btnEdit.setChecked( False )
+        raise RuntimeError( HTMLMessage( _t_( 'No editor could be found for '
+          'type=<em>%s</em> and format=<em>%s</em>' ) 
+          % (unicode( v.type ), unicode(v.format))) )
+    
+      except Exception as error:
+          # transform the exception into a print message, and return.
+          # We are in a Qt slot here, raising an exception results in
+          # undefined behaviour, which happens to have changed between PyQt 5.4
+          # and PyQt 5.5
+          print(error)
+          import traceback
+          traceback.print_stack()
     else:
       self._edit = None
 
@@ -1313,15 +1496,79 @@ class DiskItemListEditor( QWidget, DataEditor ):
     if isinstance( result, Exception ):
       showException( parent=self )
     else:
-      self._edit = result
+      self._view = result
     neuroProcessesGUI.mainThreadActions().push( self.btnEdit.setEnabled, True )
-    neuroProcessesGUI.mainThreadActions().push( self.btnEdit.setChecked, False )
-
+    if result is None:
+      neuroProcessesGUI.mainThreadActions().push( self.btnEdit.setChecked, False )
+  
+  def close_editor(self):
+    if self._edit is not None:
+      self._edit = None
+      neuroProcessesGUI.mainThreadActions().push( self.btnShow.setChecked, False )
+      neuroProcessesGUI.mainThreadActions().push( self.btnShow.setEnabled, True )
 
   def openEditorPressed( self ):
+    editor = getProcessInstance(self.dataEditorsToTry()[0]())
     v = self.getValue()
-    editor = brainvisa.processes.getDataEditor( v, listof=True )()
-    neuroProcessesGUI.showProcess( editor, v )
+    if self.process is not None \
+            and hasattr(editor, 'allowed_processes'):
+        editor.reference_process = self.process
+    neuroProcessesGUI.showProcess(editor, v)
+   
+  def updateDataEditors(self):
+    v = self.getValue()
+    if v is None or len(v) == 0:
+      format = None
+      if len(self.parameter.formats) != 0:
+        format = self.parameter.formats[0]
+      source = (self.parameter.type, format)
+    else:
+      source = v
+
+    try:
+        proc = self.process
+        if proc is not None:
+            proc = proc()
+        self._editors = brainvisa.processes.getDataEditors(
+                            source, 0, checkUpdate=False, listof=True,
+                            process=proc)
+        #print('getEditors:', self._editors)
+    except:
+      self._editors = []
+    
+    if self.cmbDataEditors is not None:
+      e = self.selectedDataEditor()
+      #print('selected data editor:', v)
+        
+      # Update editors in combo box
+      self.cmbDataEditors.clear()
+      self.cmbDataEditors.addItem(_t_('Default'), None)
+      for editor in self._editors:
+        self.cmbDataEditors.addItem(_t_(editor.name), editor)
+            
+      if e is not None and e in self._editors:
+        i = self._editors.index(e)
+        self.cmbDataEditors.setCurrentIndex(i + 1)
+        
+      #else:
+        #print('Selecting default item with index', self.cmbDataEditors.findText(_t_('Default')))
+        ## Select default value
+        #self.cmbDataEditors.setCurrentIndex(0)
+
+      # Display or hide the data editor action in popup menu
+      visible = len(self._editors) > 1      
+      self.cmbDataEditorsSeparator.setVisible(visible)
+      self.actDataEditors.setVisible(visible)
+    
+    if len(self._editors) == 0:
+      self.btnEdit.hide()
+      
+  def dataEditorsToTry(self):
+    editor = getProcessInstance(self.selectedDataEditor())
+    if editor is None:
+      return self._editors
+    else:
+      return [editor]
 
   def findPressed( self ):
     dul = 0
