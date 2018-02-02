@@ -457,7 +457,7 @@ def run_element_viewer(self, item, num=0):
             if not any(viewer_res):
                 item.setBackground(Qt.QBrush(Qt.QColor(255, 255, 255)))
         else:
-            viewers = getViewers(element, process=self)
+            viewers = getViewers(element, process=self, check_values=True)
             for viewer in viewers:
                 try:
                     viewer = getProcessInstance(viewer)
