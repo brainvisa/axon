@@ -2111,6 +2111,11 @@ class ExecutionNode(object):
             next_parent = parent.parent_node()
             if next_parent is not None:
                 parent = next_parent
+            elif parent._parameterized is not None:
+                node = getattr(parent._parameterized(), '_parent', None)
+                if node is not None:
+                    parent = node()
+                    next_parent = node()
         if parent is not None and parent._parameterized is not None:
             return parent._parameterized()
         return None
