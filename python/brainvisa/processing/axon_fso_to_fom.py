@@ -14,7 +14,11 @@ import sys
 from argparse import ArgumentParser
 import yaml
 import json
-from collections import OrderedDict
+try:
+    from collections import OrderedDict
+except:
+    # It is necessary to keep this for compatibility with python 2.6.*
+    from soma.sorted_dictionary import OrderedDict
 import axon_to_capsul
 import six
 
