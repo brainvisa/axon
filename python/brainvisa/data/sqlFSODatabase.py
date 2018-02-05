@@ -2085,8 +2085,9 @@ class SQLDatabases( Database ):
   
   def createDiskItems( self, selection={}, _debug=None, exactType=False, **required ):
     for database in self._iterateDatabases( {}, required ):
-      for item in database.createDiskItems( selection, _debug=_debug, exactType=exactType, **required ):
-        yield item
+      if not database.builtin: # buitin db are read-only
+        for item in database.createDiskItems( selection, _debug=_debug, exactType=exactType, **required ):
+          yield item
   
   
   def createDiskItemFromFileName( self, fileName, defaultValue=Undefined ):
