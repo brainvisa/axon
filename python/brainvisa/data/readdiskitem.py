@@ -547,7 +547,7 @@ class ReadDiskItem( Parameter ):
     if '_type' not in keySelection:
       keySelection['_type'] = self.type.name
     readValues = (i for i in self.database.findDiskItems(
-        keySelection, _debug=_debug, exactType=self.exactType,
+        keySelection, _debug=_debug, exactType=self.exactType, write=write,
         **requiredAttributes)
       if self.diskItemFilter(i, requiredAttributes))
     if write:
