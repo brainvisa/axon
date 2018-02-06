@@ -45,7 +45,8 @@ signature = Signature(
   'label_volume', WriteDiskItem( 'Label volume',
                                  'aims writable Volume Formats' ),
   'support_volume', ReadDiskItem( 'Raw T1 MRI',
-                                  'anatomist Volume Formats' ),
+                                  'anatomist Volume Formats',
+                                  exactType = True ),
   'pipeline_mask_nomenclature', ReadDiskItem( 'Nomenclature', 'Hierarchy' ),
   'background_label', OpenChoice( 'minimum' ),
 )
