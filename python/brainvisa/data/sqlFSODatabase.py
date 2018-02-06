@@ -2080,12 +2080,12 @@ class SQLDatabases( Database ):
           yield tuple(chain(tpl[:index], ( database.name, ), tpl[index+1:]))
         else:
           yield tpl
-  
-  
+
+
   def findDiskItems(self, selection={}, _debug=None, exactType=False,
                     write=False, **required ):
     for database in self._iterateDatabases( {}, required ):
-      if not write or not database.read_only and not database.builtin:
+      if not write or (not database.read_only and not database.builtin):
         for item in database.findDiskItems(selection, _debug=_debug,
                                            exactType=exactType, **required):
           yield item
