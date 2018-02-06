@@ -65,12 +65,14 @@ class DatabasesConfiguration( ConfigurationGroup ):
     signature = Signature(
       'directory', FileName, dict( defaultValue='' ),
       'selected', Boolean, dict( defaultValue=True ),
+      'read_only', Boolean, dict(defaultValue=False),
     )
   
-    def __init__( self, directory='', selected=True ):
+    def __init__(self, directory='', selected=True, read_only=False):
       super( DatabasesConfiguration.FileSystemOntology, self ).__init__()
       self.directory = directory
       self.selected = bool( selected )
+      self.read_only = bool(read_only)
       self.onAttributeChange( 'directory', self._directoryChanged )
 
     def _directoryChanged(self, newDirectory):
@@ -142,26 +144,32 @@ class ExpertDatabaseSettings( HasSignature ):
 class DatabaseSettings( HasSignature ):
   signature = Signature(
     'directory', FileName( readOnly=True, directoryOnly=True ), #dict( defaultValue='' ),
+    'read_only', Boolean(),
     'expert_settings', ExpertDatabaseSettings, dict( collapsed=True ),
   )
 
-  def __init__( self, directory=None, selected=True):
+  def __init__( self, directory=None, selected=True, read_only=False):
     HasSignature.__init__( self )
     self.expert_settings = ExpertDatabaseSettings()
     if directory :
       if os.path.exists( directory ) :
         self.directory = os.path.normpath(directory)
         self._selected = selected
+        if not os.access(directory, os.R_OK + os.W_OK + os.X_OK):
+          read_only = True
       else :
         self._selected = False
     else :
       self._selected = selected
-    self.builtin=False
+    self.builtin = False
+    self.read_only = read_only
     self.onAttributeChange( 'directory', self._directoryChanged )
     self._directoryChanged( directory )
 
   def __eq__( self , other):
-    return ((self.directory == other.directory) and (self.expert_settings == other.expert_settings))
+    return ((self.directory == other.directory)
+            and (self.expert_settings == other.expert_settings)
+            and self.read_only == other.read_only)
 
   def _directoryChanged( self, newDirectory ):
     if newDirectory:

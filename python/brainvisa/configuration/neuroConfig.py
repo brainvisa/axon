@@ -905,7 +905,7 @@ for p in ( os.path.join( getSharePath(), bvShareDirectory ),
           os.path.join( getSharePath(), 'shfj-' + shortVersion ),
           os.path.join( getSharePath(), 'shfj' ) ):
   if os.path.isdir( p ):
-    dataPath.insert( 0, DatabaseSettings( p ) )
+    dataPath.insert( 0, DatabaseSettings( p, read_only=True ) )
     dataPath[0].builtin = True # mark as a builtin, non-removable database
     sharedDatabaseFound=True
     break

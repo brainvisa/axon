@@ -533,13 +533,18 @@ class SQLDatabase( Database ):
     self.otherSqliteFiles=otherSqliteFiles
     self._mustBeUpdated = False
     if settings is not None:
-      self.builtin=settings.builtin
+      self.builtin = settings.builtin
+      self.read_only = settings.read_only or settings.builtin
       self.uuid=settings.expert_settings.uuid
       self.activate_history=settings.expert_settings.activate_history
     else:
-      self.builtin=False
-      self.uuid=None
-      self.activate_history=False
+      self.builtin = False
+      self.read_only = False
+      self.uuid = None
+      self.activate_history = False
+    if not self.read_only and not os.access(self.directory,
+                                            os.R_OK + os.W_OK + os.X_OK):
+      self.read_only = True
     
     self.keysByType = {}
     self._tableAttributesByTypeName = {}
@@ -2075,17 +2080,20 @@ class SQLDatabases( Database ):
           yield tuple(chain(tpl[:index], ( database.name, ), tpl[index+1:]))
         else:
           yield tpl
-  
-  
-  def findDiskItems( self, selection={}, _debug=None, exactType=False, **required ):
+
+
+  def findDiskItems(self, selection={}, _debug=None, exactType=False,
+                    write=False, **required ):
     for database in self._iterateDatabases( {}, required ):
-      for item in database.findDiskItems( selection, _debug=_debug, exactType=exactType, **required ):
-        yield item
-  
-  
+      if not write or (not database.read_only and not database.builtin):
+        for item in database.findDiskItems(selection, _debug=_debug,
+                                           exactType=exactType, **required):
+          yield item
+
+
   def createDiskItems( self, selection={}, _debug=None, exactType=False, **required ):
     for database in self._iterateDatabases( {}, required ):
-      if not database.builtin: # buitin db are read-only
+      if not database.read_only and not database.builtin:
         for item in database.createDiskItems( selection, _debug=_debug, exactType=exactType, **required ):
           yield item
   

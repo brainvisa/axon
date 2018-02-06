@@ -548,7 +548,7 @@ class ReadDiskItem( Parameter ):
       keySelection['_type'] = self.type.name
     readValues = (i for i in self.database.findDiskItems(
         keySelection, _debug=_debug, exactType=self.exactType,
-        **requiredAttributes)
+        write=self._write, **requiredAttributes)
       if self.diskItemFilter(i, requiredAttributes))
     if write:
       # use selection attributes to create a new diskitem
