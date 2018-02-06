@@ -265,9 +265,12 @@ FileType( 'Subject Info', 'Any Type', 'Info file' )
 FileType( 'T1 MRI', '3D Volume' )
 FileType( 'T2 MRI', '3D Volume' )
 FileType( 'Raw T1 MRI', 'T1 MRI' )
+FileType( 'T1 MRI Bias Corrected', 'T1 MRI' )
 FileType( 'Label volume', '3D Volume' )
 FileType( 'Rainbow 3D volume', '3D Volume' )
 FileType( 'Split Brain Mask', 'Label Volume' )
+
+FileType( 'T1 MRI Analysis Directory', 'Directory' )
 
 #----------------- Graphs -------------------------
 
