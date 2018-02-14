@@ -38,8 +38,8 @@ name = 'Inspect Multiple Data'
 userLevel = 0
 
 signature = Signature(
- 'data_type', Choice( 'Any Type' ),
  'items', ListOf( ReadDiskItem( 'Any Type', getAllFormats() ) ),
+ 'data_type', Choice( 'Any Type' ),
 )
 
 
@@ -55,8 +55,8 @@ def dataTypeChanged(self, dataType):
 def initialization( self ):
   possibleTypes = [ t.name for t in getAllDiskItemTypes() ]
   self.signature[ 'data_type' ].setChoices(*sorted(possibleTypes))
-  self.data_type='Any Type'
-  self.addLink( 'items', 'data_type' , self.dataTypeChanged )
+  self.data_type = 'Any Type'
+  self.addLink('items', 'data_type' , self.dataTypeChanged)
 
 
 def execution( self, context ):
@@ -66,12 +66,15 @@ def execution( self, context ):
   proc._id = 'MultipleDataInspector'
   proc.name = 'Multiple data inspector'
   proc.inlineGUI = lambda self, parent=None, other=None: QWidget( parent )
-  formats=list( databases.getTypesFormats( self.data_type ) )
+  if self.data_type != 'Any Type':
+      formats = list( databases.getTypesFormats( self.data_type ) )
+  else:
+      formats = list(databases.getTypesFormats(self.items[0].type.name))
   sign = []
   params = {}
   itemtypes = self.signature[ 'items' ]
   for i, p in enumerate( self.items ):
-    sign += [ 'item_%d' % i, ReadDiskItem( self.data_type, formats ) ]
+    sign += [ 'item_%d' % i, ReadDiskItem( self.items[i].type.name, formats ) ]
     params[ 'item_%d' % i ] = p
   proc.signature = Signature( *sign )
   proc.__dict__.update( params )
