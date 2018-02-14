@@ -4213,7 +4213,7 @@ def getProcessInfo(processId):
         result = _processesInfo.get(processId)
         if result is None:
             process = getProcess(processId, checkUpdate=False)
-            if process is not None:
+            if process not in (None, type(None)):
                 result = _processesInfo.get(process._id.lower())
     return result
 
@@ -4245,13 +4245,21 @@ def getProcess(processId, ignoreValidation=False, checkUpdate=True):
     global _askUpdateProcess
     if processId is None:
         return None
-    if isinstance(processId, Process) or (isinstance(processId, type) and issubclass(processId, Process)) or isinstance(processId, weakref.ProxyType):
+    if isinstance(processId, Process) \
+            or (isinstance(processId, type)
+                and issubclass(processId, Process)) \
+            or isinstance(processId, weakref.ProxyType):
         result = processId
         id = getattr(processId, '_id', None)
         if id is not None:
             process = getProcess(id, checkUpdate=False)
             if process is not None:
                 result = process
+            else:
+                if isinstance(processId, Process):
+                    result = process.__class__
+                else:
+                    result = processId
     elif isinstance(processId, dict):
         if processId['type'] == 'iteration':
             return IterationProcess(processId.get('name', 'Iteration'), [getProcessInstance(i) for i in processId['children']])
@@ -4463,7 +4471,11 @@ def getProcessInstance(processIdClassOrInstance, ignoreValidation=False):
         else:
             event = ProcessExecutionEvent()
             event.setProcess(processIdClassOrInstance)
-            result = getProcessInstanceFromProcessEvent(event)
+            try:
+                result = getProcessInstanceFromProcessEvent(event)
+            except KeyError:
+                # custom process built on-the-fly ? return the same instance
+                result = processIdClassOrInstance
     elif result is None:
         if isinstance(processIdClassOrInstance, ExecutionNode):
             result = getProcessFromExecutionNode(processIdClassOrInstance)
@@ -5095,6 +5107,11 @@ def getDefaultListOfProcesses(source, role, enableConversion=1,
                             process=process) for s in source]
         
     if len(pcs) != 0 and None not in pcs:
+        if role in ('viewer', 'editor'):
+            proc = getProcess('inspectMultipleData')
+            if proc is not None:
+                return proc
+
         class iterproc(object):
 
             def __init__(self, name, procs):
@@ -5105,7 +5122,7 @@ def getDefaultListOfProcesses(source, role, enableConversion=1,
                 ip = ListOfIterationProcess(self.name, self.procs)
                 return ip
         return iterproc(_t_('%s for list of ' % role.title()) + t.name, pcs)
-    
+
 #-------------------------------------------------------------------------------
 def getProcessesBySource(source, role, enableConversion=1, checkUpdate=True, 
                          listof=False, process=None, check_values=False):

@@ -1365,9 +1365,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
 
   def openViewerPressed( self ):
     # Normally it is not possible to try to open viewer if none is available
-    viewer = self.viewersToTry()[0]
-    if isinstance(viewer, weakref.ReferenceType):
-        viewer = viewer()
+    viewer = self.viewersToTry()[0]()
     viewer = getProcessInstance(viewer)
     v = self.getValue()
     if self.process is not None \
