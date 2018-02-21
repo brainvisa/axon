@@ -1653,6 +1653,13 @@ class Process(Parameterized):
         '''
         node = getattr(self, '_parent', None)
         if node is None:
+            ref_process = getattr(self, 'reference_process', None)
+            if ref_process is not None:
+                # point to another
+                parent = ref_process.parent_pipeline()
+                if parent is not None:
+                    return parent
+                return ref_process
             return None
         return node().parent_pipeline()
 
@@ -5086,15 +5093,15 @@ def getDefaultListOfProcesses(source, role, enableConversion=1,
     """
     if role == 'viewer':
         default_func = getViewer
-        
-    elif role == 'editor':       
+
+    elif role == 'editor':
         default_func = getDataEditor
-    
+
     else:
         raise RuntimeError('Unable to retrieve processes with role %s' % role)
-    
+
     t, f = getDiskItemSourceInfo(source)
-    
+
     pcs = []
     if isinstance(source, tuple) and len(source) == 2:
         pcs = [default_func(source, 
@@ -5193,10 +5200,10 @@ def getProcessesBySource(source, role, enableConversion=1, checkUpdate=True,
                                  enableConversion=enableConversion, 
                                  exactConversionTypeOnly=True,
                                  checkUpdate=checkUpdate)
-    #print('=== found process by distance', r)
+    # print('=== found process by distance', r, 'with process:', process)
     if listof:
         # Gets default process for list
-        dv = default_list_of_func(source)
+        dv = default_list_of_func(source, process=process)
         if dv:
             r.append(dv)
     if process is not None:
