@@ -643,7 +643,7 @@ def mapValuesToChildrenParameters(
                     destChild = destNode._children[k]
                     destObject, destParameter = destChild.parseParameterString(
                         d)
-                    setattr(destObject, destParameter, v)
+                    destObject.setValue(destParameter, v)
 
     # trigger callbacks to fill new nodes parameters
     # PROBLEM: we only parse links from the *same* sourceObject - others may
@@ -698,7 +698,7 @@ def mapValuesToChildrenParameters(
                         else:
                             v = value[i]
                         if v is not None:
-                            child.setValue(dest_par, v, True)
+                            child.setValue(dest_par, v)
 
     if allow_remove:
         # if we have too many nodes, remove the tailing ones
@@ -720,7 +720,8 @@ def mapChildrenParametersToValues(destNode, sourceNode, dest, source, value=None
         r.append(s)
 
     destObject, destParameter = destNode.parseParameterString(dest)
-    setattr(destObject, destParameter, r)
+    #setattr(destObject, destParameter, r)
+    destObject.setValue(destParameter, r)
 
 
 #----------------------------------------------------------------------------
