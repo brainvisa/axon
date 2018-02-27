@@ -643,7 +643,7 @@ def mapValuesToChildrenParameters(
                     destChild = destNode._children[k]
                     destObject, destParameter = destChild.parseParameterString(
                         d)
-                    setattr(destObject, destParameter, v)
+                    destObject.setValue(destParameter, v)
 
     # trigger callbacks to fill new nodes parameters
     # PROBLEM: we only parse links from the *same* sourceObject - others may
@@ -698,7 +698,7 @@ def mapValuesToChildrenParameters(
                         else:
                             v = value[i]
                         if v is not None:
-                            child.setValue(dest_par, v, True)
+                            child.setValue(dest_par, v)
 
     if allow_remove:
         # if we have too many nodes, remove the tailing ones
@@ -720,7 +720,8 @@ def mapChildrenParametersToValues(destNode, sourceNode, dest, source, value=None
         r.append(s)
 
     destObject, destParameter = destNode.parseParameterString(dest)
-    setattr(destObject, destParameter, r)
+    #setattr(destObject, destParameter, r)
+    destObject.setValue(destParameter, r)
 
 
 #----------------------------------------------------------------------------
@@ -1653,6 +1654,13 @@ class Process(Parameterized):
         '''
         node = getattr(self, '_parent', None)
         if node is None:
+            ref_process = getattr(self, 'reference_process', None)
+            if ref_process is not None:
+                # point to another
+                parent = ref_process.parent_pipeline()
+                if parent is not None:
+                    return parent
+                return ref_process
             return None
         return node().parent_pipeline()
 
@@ -4213,7 +4221,7 @@ def getProcessInfo(processId):
         result = _processesInfo.get(processId)
         if result is None:
             process = getProcess(processId, checkUpdate=False)
-            if process is not None:
+            if process not in (None, type(None)):
                 result = _processesInfo.get(process._id.lower())
     return result
 
@@ -4245,13 +4253,21 @@ def getProcess(processId, ignoreValidation=False, checkUpdate=True):
     global _askUpdateProcess
     if processId is None:
         return None
-    if isinstance(processId, Process) or (isinstance(processId, type) and issubclass(processId, Process)) or isinstance(processId, weakref.ProxyType):
+    if isinstance(processId, Process) \
+            or (isinstance(processId, type)
+                and issubclass(processId, Process)) \
+            or isinstance(processId, weakref.ProxyType):
         result = processId
         id = getattr(processId, '_id', None)
         if id is not None:
             process = getProcess(id, checkUpdate=False)
             if process is not None:
                 result = process
+            else:
+                if isinstance(processId, Process):
+                    result = process.__class__
+                else:
+                    result = processId
     elif isinstance(processId, dict):
         if processId['type'] == 'iteration':
             return IterationProcess(processId.get('name', 'Iteration'), [getProcessInstance(i) for i in processId['children']])
@@ -4463,7 +4479,11 @@ def getProcessInstance(processIdClassOrInstance, ignoreValidation=False):
         else:
             event = ProcessExecutionEvent()
             event.setProcess(processIdClassOrInstance)
-            result = getProcessInstanceFromProcessEvent(event)
+            try:
+                result = getProcessInstanceFromProcessEvent(event)
+            except KeyError:
+                # custom process built on-the-fly ? return the same instance
+                result = processIdClassOrInstance
     elif result is None:
         if isinstance(processIdClassOrInstance, ExecutionNode):
             result = getProcessFromExecutionNode(processIdClassOrInstance)
@@ -5074,15 +5094,15 @@ def getDefaultListOfProcesses(source, role, enableConversion=1,
     """
     if role == 'viewer':
         default_func = getViewer
-        
-    elif role == 'editor':       
+
+    elif role == 'editor':
         default_func = getDataEditor
-    
+
     else:
         raise RuntimeError('Unable to retrieve processes with role %s' % role)
-    
+
     t, f = getDiskItemSourceInfo(source)
-    
+
     pcs = []
     if isinstance(source, tuple) and len(source) == 2:
         pcs = [default_func(source, 
@@ -5095,6 +5115,11 @@ def getDefaultListOfProcesses(source, role, enableConversion=1,
                             process=process) for s in source]
         
     if len(pcs) != 0 and None not in pcs:
+        if role in ('viewer', 'editor'):
+            proc = getProcess('inspectMultipleData')
+            if proc is not None:
+                return proc
+
         class iterproc(object):
 
             def __init__(self, name, procs):
@@ -5105,7 +5130,7 @@ def getDefaultListOfProcesses(source, role, enableConversion=1,
                 ip = ListOfIterationProcess(self.name, self.procs)
                 return ip
         return iterproc(_t_('%s for list of ' % role.title()) + t.name, pcs)
-    
+
 #-------------------------------------------------------------------------------
 def getProcessesBySource(source, role, enableConversion=1, checkUpdate=True, 
                          listof=False, process=None, check_values=False):
@@ -5176,10 +5201,10 @@ def getProcessesBySource(source, role, enableConversion=1, checkUpdate=True,
                                  enableConversion=enableConversion, 
                                  exactConversionTypeOnly=True,
                                  checkUpdate=checkUpdate)
-    #print('=== found process by distance', r)
+    # print('=== found process by distance', r, 'with process:', process)
     if listof:
         # Gets default process for list
-        dv = default_list_of_func(source)
+        dv = default_list_of_func(source, process=process)
         if dv:
             r.append(dv)
     if process is not None:

@@ -1153,7 +1153,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
     if process is None:
       self.process = None
     else:
-      if isinstancetype(process, weakref.ProxyType):
+      if isinstance(process, weakref.ProxyType):
         self.process = process
       else:
         self.process = weakref.proxy(process)
@@ -1309,7 +1309,7 @@ class DiskItemListEditor( QWidget, DataEditor ):
       try:
         for viewer in self.viewersToTry():
           try :
-            viewer = getProcessInstance(viewer())
+            viewer = getProcessInstance(viewer)
             viewerExists = True
             if self.process is not None \
                     and hasattr(viewer, 'allowed_processes'):
@@ -1323,11 +1323,12 @@ class DiskItemListEditor( QWidget, DataEditor ):
             # Log an error then try another viewer if possible
             brainvisa.processes.defaultContext().log(
               _t_('Warning for %s') % _t_(viewer.name),
-              html=_t_('Viewer aborted for type=<em>%s</em> and '
+              html=_t_('Viewer aborted for type=<em>ListOf(%s)</em> and '
               'format=<em>%s</em> value=<em>%s</em> '
               '(try using it interactively by '
               'right-clicking on the eye icon)') 
-              % (unicode(v.type), unicode(v.format), unicode(v)),
+              % (unicode(self.parameter.type),
+                 unicode(self.parameter.formats), unicode(v)),
               icon='eye.png')
             continue
         
@@ -1335,7 +1336,8 @@ class DiskItemListEditor( QWidget, DataEditor ):
         self.btnShow.setChecked( False )
         raise RuntimeError( HTMLMessage( _t_( 'No viewer could be found for '
           'type=<em>%s</em> and format=<em>%s</em>' ) 
-          % (unicode( v.type ), unicode(v.format))) )
+          % (unicode( self.parameter.type ),
+             unicode(self.parameter.formats))) )
     
       except Exception as error:
           # transform the exception into a print message, and return.
@@ -1366,8 +1368,6 @@ class DiskItemListEditor( QWidget, DataEditor ):
   def openViewerPressed( self ):
     # Normally it is not possible to try to open viewer if none is available
     viewer = self.viewersToTry()[0]
-    if isinstance(viewer, weakref.ReferenceType):
-        viewer = viewer()
     viewer = getProcessInstance(viewer)
     v = self.getValue()
     if self.process is not None \
@@ -1395,25 +1395,22 @@ class DiskItemListEditor( QWidget, DataEditor ):
       source = v
 
     try:
-      proc = self.process
-      if proc is not None:
-          proc = proc()
       self._viewers = brainvisa.processes.getViewers(
                             source, 1, checkUpdate=False, listof=True,
-                            process=proc, check_values=True)
+                            process=self.process, check_values=True)
     except:
       self._viewers = []
-    
+
     if self.cmbViewers is not None:
       v = self.selectedViewer()
       #print('selected viewer:', v)
-        
+
       # Update viewers in combo box
       self.cmbViewers.clear()
       self.cmbViewers.addItem(_t_('Default'), None)
       for viewer in self._viewers:
         self.cmbViewers.addItem(_t_(viewer.name), viewer)
-            
+
       if v is not None and v in self._viewers:
         i = self._viewers.index(v)
         self.cmbViewers.setCurrentIndex(i + 1)

@@ -1,7 +1,6 @@
 from __future__ import print_function
 import shutil
 import os
-import tempfile
 from optparse import OptionParser
 import subprocess
 import stat
@@ -9,6 +8,7 @@ import stat
 from soma import aims
 from soma import uuid
 import soma.minf.api as minf
+import brainvisa.data.temporary as temporary
 import six
 
 
@@ -48,7 +48,7 @@ class Importer:
               notify to the user any unexpected images sizes, resolutions...
         """
         temp_input = None
-        temp_file = None
+        temp_filename = None
         return_value = 0
 
         try:
@@ -60,8 +60,7 @@ class Importer:
             try:
                 if cls._remove_nan_needed(input_vol):
                     ext = cls._file_extension(input_filename)
-                    temp_file = tempfile.NamedTemporaryFile(suffix=ext)
-                    temp_filename = temp_file.name
+                    temp_filename = temporary.manager.new(suffix=ext)
                     command = ["AimsRemoveNaN", "-i", input_filename, "-o",
                                temp_filename]
                     return_value = subprocess.call(command)
@@ -69,7 +68,7 @@ class Importer:
                         raise ImportationError(
                             "The following command failed : \"%s\"" % '" "'
                             .join(command))
-                    input_filename = temp_file.name
+                    input_filename = temp_filename
 
                 command_list = ['AimsFileConvert', '-i', input_filename,
                                 '-o', output_filename,
@@ -83,10 +82,9 @@ class Importer:
                         "The following command failed : \"%s\"" % '" "'
                         .join(command_list))
             finally:
-                if temp_file is not None:
-                    if os.path.exists(temp_file.name + '.minf'):
-                        os.unlink(temp_file.name + '.minf')
-                    temp_file.close()
+                if temp_filename is not None:
+                    if os.path.exists(temp_filename + '.minf'):
+                        os.unlink(temp_filename + '.minf')
                 if temp_input is not None:
                     os.remove(temp_input)
 

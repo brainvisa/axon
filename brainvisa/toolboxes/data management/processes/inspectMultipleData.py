@@ -37,45 +37,57 @@ from brainvisa.data.neuroHierarchy import databases
 name = 'Inspect Multiple Data'
 userLevel = 0
 
+
+def allowed_processes(process):
+    return True
+
+
 signature = Signature(
- 'data_type', Choice( 'Any Type' ),
- 'items', ListOf( ReadDiskItem( 'Any Type', getAllFormats() ) ),
+    'items', ListOf(ReadDiskItem('Any Type', getAllFormats())),
+    'data_type', Choice('Any Type'),
 )
 
 
 def dataTypeChanged(self, dataType):
-  if dataType:
-    formats=list(databases.getTypesFormats(dataType))
-    if not formats:
-      formats=getAllFormats()
-    self.signature['items'] = ListOf( ReadDiskItem( dataType, formats ) )
-    self.signatureChangeNotifier.notify(self)
+    if dataType:
+        formats = list(databases.getTypesFormats(dataType))
+        if not formats:
+            formats = getAllFormats()
+        self.signature['items'] = ListOf(ReadDiskItem(dataType, formats))
+        self.signatureChangeNotifier.notify(self)
 
 
-def initialization( self ):
-  possibleTypes = [ t.name for t in getAllDiskItemTypes() ]
-  self.signature[ 'data_type' ].setChoices(*sorted(possibleTypes))
-  self.data_type='Any Type'
-  self.addLink( 'items', 'data_type' , self.dataTypeChanged )
+def initialization(self):
+    possibleTypes = [t.name for t in getAllDiskItemTypes()]
+    self.signature['data_type'].setChoices(*sorted(possibleTypes))
+    self.data_type = 'Any Type'
+    self.addLink('items', 'data_type', self.dataTypeChanged)
 
 
-def execution( self, context ):
-  if len( self.items ) == 0:
-    return
-  proc = Process()
-  proc._id = 'MultipleDataInspector'
-  proc.name = 'Multiple data inspector'
-  proc.inlineGUI = lambda self, parent=None, other=None: QWidget( parent )
-  formats=list( databases.getTypesFormats( self.data_type ) )
-  sign = []
-  params = {}
-  itemtypes = self.signature[ 'items' ]
-  for i, p in enumerate( self.items ):
-    sign += [ 'item_%d' % i, ReadDiskItem( self.data_type, formats ) ]
-    params[ 'item_%d' % i ] = p
-  proc.signature = Signature( *sign )
-  proc.__dict__.update( params )
-  pv = mainThreadActions().call( ProcessView, proc )
-  mainThreadActions().call( pv.info.hide )
-  return pv
-
+def execution(self, context):
+    if len(self.items) == 0:
+        return
+    proc = Process()
+    proc._id = 'MultipleDataInspector'
+    proc.name = 'Multiple data inspector'
+    proc.inlineGUI = lambda self, parent=None, other=None: QWidget(parent)
+    if self.data_type != 'Any Type':
+        formats = list(databases.getTypesFormats(self.data_type))
+    else:
+        formats = list(databases.getTypesFormats(self.items[0].type.name))
+    sign = []
+    params = {}
+    itemtypes = self.signature['items']
+    for i, p in enumerate(self.items):
+        sign += ['item_%d' %
+                 i, ReadDiskItem(self.items[i].type.name, formats)]
+        params['item_%d' % i] = p
+    proc.signature = Signature(*sign)
+    proc.__dict__.update(params)
+    ref_proc = getattr(self, 'reference_process', None)
+    if ref_proc is not None:
+        proc.allowed_processes = lambda proc: True
+        proc.reference_process = ref_proc
+    pv = mainThreadActions().call(ProcessView, proc)
+    mainThreadActions().call(pv.info.hide)
+    return pv

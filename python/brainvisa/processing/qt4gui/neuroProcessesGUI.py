@@ -3324,14 +3324,14 @@ class ProcessView( QWidget, ExecutionContextGUI ):
 
 
 #----------------------------------------------------------------------------
-def showProcess( process, *args, **kwargs):
+def showProcess(process_id, *args, **kwargs):
   '''Opens a process window and set the corresponding arguments'''
   global _mainWindow
   view=None
   try:
-    process = brainvisa.processes.getProcessInstance( process )
+    process = brainvisa.processes.getProcessInstance(process_id)
     if process is None:
-      raise RuntimeError( neuroException.HTMLMessage(_t_( 'Invalid process <em>%s</em>' ) % ( str(process), )) )
+      raise RuntimeError( neuroException.HTMLMessage(_t_( 'Invalid process <em>%s</em>' ) % ( str(process_id), )) )
     for i in xrange( len( args ) ):
       k, p = process.signature.items()[ i ]
       process.setValue( k, args[ i ] )
