@@ -580,31 +580,41 @@ def mapValuesToChildrenParameters(
         sourceNode = [sourceNode]
     if not isinstance(source, list):
         source = [source]
-    nparam = max(len(dest), len(sourceNode), len(source))
+    nparam = max(len(dest), len(sourceNode), len(source))   
     dest += [dest[-1]] * (nparam - len(dest))
     sourceNode += [sourceNode[-1]] * (nparam - len(sourceNode))
     source += [source[-1]] * (nparam - len(source))
-
     sources = [n.parseParameterString(s) for n, s in zip(sourceNode, source)]
+    
+    #print('destination attributes', dest, 
+          #'source nodes', len(sourceNode), 
+          #'source attributes', len(source), 
+          #'number of values:', nparam);sys.stdout.flush()
 
     #sourceObject, sourceParameter = sourceNode.parseParameterString(source)
     #l = getattr(sourceObject, sourceParameter, [])
 
     ls = [getattr(s[0], s[1], []) for s in sources]
+    
     lsize = max([len(v) for v in ls])
     csize = len(destNode.childrenNames())
-
+    
     if allow_remove:
         rsize = lsize
     else:
         # Resulting size is the max between children size and list size
         rsize = max(csize, lsize)
-
+    
+    #print('list of source values', ls, 
+          #'maximum size of source values', lsize, 
+          #'number of destination children', csize,
+          #'predicted resulting size', rsize,
+          #'fixed resulting size', resultingSize);sys.stdout.flush()
+    
     if (defaultProcess is not None) and (name is None):
         name = getProcessInstance(defaultProcess).name
 
     created_nodes = []
-
     for i in xrange(max(rsize, resultingSize)):
         if i == csize:
             if defaultProcess is not None:
@@ -622,10 +632,10 @@ def mapValuesToChildrenParameters(
                 )
                 destNode.addChild(name=name, node=child)
                 created_nodes.append((i, child))
-                csize += 1
+
             else:
                 return
-
+            
         if (resultingSize > -1) and (i >= resultingSize):
             destNode.removeChild(destNode.childrenNames()[-1])
         else:
@@ -637,6 +647,7 @@ def mapValuesToChildrenParameters(
                     v = l[0]
                 else:
                     v = None
+                    
                 # Set node value
                 if len(l) > 0:
                     k = destNode.childrenNames()[i]
@@ -644,7 +655,10 @@ def mapValuesToChildrenParameters(
                     destObject, destParameter = destChild.parseParameterString(
                         d)
                     destObject.setValue(destParameter, v)
-
+                    
+        # update csize
+        csize = len(destNode.childrenNames())
+    
     # trigger callbacks to fill new nodes parameters
     # PROBLEM: we only parse links from the *same* sourceObject - others may
     # come from elsewhere, we don't have them here.
