@@ -30,7 +30,7 @@ Thus parameters types and filename completion is based on a different approach.
 
 
 Can I convert my old Axon processes and pipelines to CAPSUL, or will I have to rewrite them all ?
-================================================================================================
+=================================================================================================
 
 Conversion tools have been designed (and may evolve in next releases):
 
