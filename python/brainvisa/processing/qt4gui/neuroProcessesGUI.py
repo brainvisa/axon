@@ -44,7 +44,14 @@ from soma.qt_gui import qt_backend
 from soma.qt_gui.qt_backend.QtGui import QKeySequence
 from soma.qt_gui.qt_backend import QtCore
 from soma.qt_gui.qt_backend import QtGui
-from soma.qt_gui.qt_backend import QtWebKit
+try:
+    from soma.qt_gui.qt_backend import QtWebEngine
+    from soma.qt_gui.qt_backend.QtWebEngineWidgets import QWebEnginePage
+    use_webengine = True
+except ImportError:
+    from soma.qt_gui.qt_backend import QtWebKit
+    QWebEnginePage = QtWebKit.QWebPage
+    use_webengine = False
 from soma.qt_gui.qt_backend import loadUi, loadUiType
 from brainvisa.configuration import neuroConfig
 from brainvisa.configuration.qt4gui import neuroConfigGUI
@@ -911,15 +918,25 @@ class HTMLBrowser( QWidget ):
         sys.stdout.flush()
       else:
         WebBrowserWithSearch.setSource( self, url)
-      self.page().setLinkDelegationPolicy( QtWebKit.QWebPage.DelegateAllLinks )
+      if not use_webengine:
+        self.page().setLinkDelegationPolicy( QWebEnginePage.DelegateAllLinks )
 
     def contextMenuEvent(self, event):
       rel_pos = event.pos()
-      main_frame = self.page().mainFrame()
-      hit_test = main_frame.hitTestContent(rel_pos)
-      hit_url = hit_test.linkUrl()
-      if hit_url.isEmpty():
-        hit_url = None
+      if use_webengine:
+        cmdata = self.page().contextMenuData()
+        if not cmdata.isValid():
+          return
+        hit_url = cmdata.linkUrl()
+        if hit_url is not None \
+            and (not hit_url.isValid() or hit_url.isEmpty()):
+          hit_url = None
+      else:
+        main_frame = self.page().mainFrame()
+        hit_test = main_frame.hitTestContent(rel_pos)
+        hit_url = hit_test.linkUrl()
+        if hit_url.isEmpty():
+          hit_url = None
       menu = self.customMenu(hit_url)
       menu.exec_(event.globalPos());
 
@@ -1008,9 +1025,9 @@ class HTMLBrowser( QWidget ):
     self.homeAction.triggered.connect(self.home)
 
     btnHome.setDefaultAction( self.homeAction )
-    btnForward.setDefaultAction( browser.pageAction( QtWebKit.QWebPage.Forward ) )
-    btnBackward.setDefaultAction( browser.pageAction( QtWebKit.QWebPage.Back ) )
-    a = browser.pageAction( QtWebKit.QWebPage.Reload )
+    btnForward.setDefaultAction(browser.pageAction(QWebEnginePage.Forward))
+    btnBackward.setDefaultAction(browser.pageAction(QWebEnginePage.Back))
+    a = browser.pageAction(QWebEnginePage.Reload)
     a.setShortcut( QtGui.QKeySequence.Refresh )
     btnReload.setDefaultAction( a )
     browser.linkClicked.connect(browser.setSource)
