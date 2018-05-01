@@ -39,7 +39,20 @@
 '''
 
 from soma.qt_gui.qt_backend import QtGui, QtCore
-from soma.qt_gui.qt_backend import QtWebKit
+from soma.qt_gui import qt_backend
+try:
+    # use the newer Qt5 QtWebEngine
+    from soma.qt_gui.qt_backend import QtWebEngine
+    from soma.qt_gui.qt_backend.QtWebEngineWidgets \
+        import QWebEngineView, QWebEnginePage
+    use_webengine = True
+except ImportError:
+    from soma.qt_gui.qt_backend import QtWebKit
+    QWebEngineView = QtWebKit.QWebView
+    QWebPage = QtWebKit.QWebPage
+    QWebEnginePage = QWebPage
+    use_webengine = False
+
 
 class TextEditWithSearch(QtGui.QTextEdit):
   """
@@ -135,12 +148,35 @@ class TextBrowserWithSearch(QtGui.QTextBrowser):
     QtGui.QTextBrowser.setSource(self, QtCore.QUrl(textUrl))
 
 
-class WebBrowserWithSearch(QtWebKit.QWebView):
+if use_webengine:
+    # QtWebEngine doesn't allow directly to connect a slot to a web link
+    # click. We have to do it ourself.
+    class QWebPage(QWebEnginePage):
+
+        linkClicked = QtCore.Signal(QtCore.QUrl)
+
+        def __init__(self, *args):
+            super(QWebPage, self).__init__(*args)
+
+        def acceptNavigationRequest(self, url, type, isMainFrame):
+            if not url.url().startswith('file://') \
+                    and not url.url().startswith('http://') \
+                    and not url.url().startswith('https://'):
+                self.linkClicked.emit(url)
+                return False
+            return True
+
+
+class WebBrowserWithSearch(QWebEngineView):
   """
-  A QWebView with search feature to search a piece of text in the QWebView content.
+  A QWebEngineView with search feature to search a piece of text in the
+  QWebEngineView content.
   """
+  if use_webengine:
+    linkClicked = QtCore.Signal(QtCore.QUrl)
+
   def __init__(self, *args):
-    super(QtWebKit.QWebView, self).__init__(*args)
+    super(QWebEngineView, self).__init__(*args)
     self.searchText=""
     self.findAction = QtGui.QAction( _t_( 'Find' ), self )
     self.findAction.setShortcut( QtGui.QKeySequence.Find )
@@ -166,16 +202,19 @@ class WebBrowserWithSearch(QtWebKit.QWebView):
     self.addAction( self.zoomInAction )
     self.addAction( self.zoomOutAction )
     self.addAction( self.zoomOneAction )
+    if use_webengine:
+      self.setPage(QWebPage(self))
+      self.page().linkClicked.connect(self.linkClicked)
 
   def customMenu(self):
     menu=QtGui.QMenu(self)
-    menu.addAction( self.pageAction( QtWebKit.QWebPage.Back ) )
-    menu.addAction( self.pageAction( QtWebKit.QWebPage.Forward ) )
-    ra = self.pageAction( QtWebKit.QWebPage.Reload )
+    menu.addAction( self.pageAction( QWebEnginePage.Back ) )
+    menu.addAction( self.pageAction( QWebEnginePage.Forward ) )
+    ra = self.pageAction( QWebEnginePage.Reload )
     if ra.shortcut() != QtGui.QKeySequence.Refresh:
       ra.setShortcut( QtGui.QKeySequence.Refresh )
     menu.addAction( ra )
-    menu.addAction( self.pageAction( QtWebKit.QWebPage.Stop ) )
+    menu.addAction( self.pageAction( QWebEnginePage.Stop ) )
     menu.addSeparator()
     menu.addAction( self.findAction )
     menu.addAction( self.findNextAction )
@@ -203,13 +242,13 @@ class WebBrowserWithSearch(QtWebKit.QWebView):
   def searchNext(self, void):
     if self.searchText:
       # not case sensitive, not whole word
-      self.findText(self.searchText, QtWebKit.QWebPage.FindWrapsAroundDocument )
+      self.findText(self.searchText, QWebEnginePage.FindWrapsAroundDocument )
 
   def searchPrevious(self, void):
     if self.searchText:
       self.findText(self.searchText,
-        QtWebKit.QWebPage.FindFlags( QtWebKit.QWebPage.FindBackward \
-        + QtWebKit.QWebPage.FindWrapsAroundDocument ) )
+        QWebEnginePage.FindFlags( QWebEnginePage.FindBackward \
+        + QWebEnginePage.FindWrapsAroundDocument ) )
 
   def setSource(self, textUrl):
     self.load(QtCore.QUrl(textUrl))
