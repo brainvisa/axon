@@ -874,7 +874,7 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
                         '        self.nodes[\'%s\']._weak_outputs = True\n' \
                         % nodename)
                 links += parse_links(p, proc, weak_outputs)
-                for param_name in proc.signature.iterkeys():
+                for param_name in six.iterkeys(proc.signature):
                     if not proc.isDefault(param_name):
                         value = getattr(proc, param_name)
                         buffered_lines['initialization'].append(

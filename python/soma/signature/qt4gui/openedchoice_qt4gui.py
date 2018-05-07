@@ -43,6 +43,9 @@ data type.
 __docformat__ = "epytext en"
 
 from soma.signature.qt4gui.choice_qt4gui import Choice_Qt4GUI
+import sys
+if sys.version_info[0] >= 3:
+    unicode = str
 
 class OpenedChoice_Qt4GUI( Choice_Qt4GUI ):
   def __init__( self, instance ):

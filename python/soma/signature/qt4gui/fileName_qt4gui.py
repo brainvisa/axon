@@ -37,7 +37,9 @@ from soma.signature.qt4gui.unicode_qt4gui import Unicode_Qt4GUI, \
                                                  Sequence_Unicode_Qt4GUI
 from soma.qt4gui.api import TimeredQLineEdit, getPixmap
 from soma.wip.application.api import somaIconsDirectory
-
+import sys
+if sys.version_info[0] >= 3:
+    unicode = str
 
 #-------------------------------------------------------------------------------
 class FileName_Qt4GUI( Unicode_Qt4GUI ):

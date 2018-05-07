@@ -286,7 +286,11 @@ if anatomistImport:
                         if ref is not None:
                             # the referential is loaded only if necessary : if
                             # the object has not the right referential assigned
-                            ruuid = str(ref.uuid())
+                            if sys.version_info[0] >= 3:
+                                #ruuid = bytes(ref.uuid())
+                                ruuid = ref.uuid()
+                            else:
+                                ruuid = str(ref.uuid())
                             oruuid = newObject.referential.refUuid
                             if (ruuid != oruuid):
                         # create referential

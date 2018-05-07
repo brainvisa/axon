@@ -42,6 +42,7 @@ import fnmatch
 import csv
 import math
 import numpy as np
+import six
 from brainvisa.tools.spm_results import createBrainMIPWithGridTextFiles 
 
 class DisplayResultsFromSPM(object):
@@ -646,12 +647,12 @@ class DisplayResultsFromSPM(object):
           if clickedWin == self.aviewGlass[ 0 ]:
               # Axial
               currPos = None
-              for k, v in self.aviewGlass[ 1 ].getInfos().iteritems():
+              for k, v in six.iteritems(self.aviewGlass[ 1 ].getInfos()):
                   if k == 'position':
                       currPos = v
               self.aviewGlass[ 1 ].moveLinkedCursor([ pos[1], currPos[1], currPos[2] ])
               currPos = None
-              for k, v in self.aviewGlass[ 2 ].getInfos().iteritems():
+              for k, v in six.iteritems(self.aviewGlass[ 2 ].getInfos()):
                   if k == 'position':
                       currPos = v
               self.aviewGlass[ 2 ].moveLinkedCursor([ pos[0], currPos[1], currPos[2] ])
@@ -659,24 +660,24 @@ class DisplayResultsFromSPM(object):
           elif clickedWin == self.aviewGlass[ 1 ]:
               # Sagittal
               currPos = None
-              for k, v in self.aviewGlass[ 0 ].getInfos().iteritems():
+              for k, v in six.iteritems(self.aviewGlass[ 0 ].getInfos()):
                   if k == 'position':
                       currPos = v
               self.aviewGlass[ 0 ].moveLinkedCursor([ currPos[0], pos[0], currPos[2] ])
               currPos = None
-              for k, v in self.aviewGlass[ 2 ].getInfos().iteritems():
+              for k, v in six.iteritems(self.aviewGlass[ 2 ].getInfos()):
                   if k == 'position':
                       currPos = v
               self.aviewGlass[ 2 ].moveLinkedCursor([ currPos[0], pos[1], currPos[2] ])
           elif clickedWin == self.aviewGlass[ 2 ]:
               # Coronal
               currPos = None
-              for k, v in self.aviewGlass[ 1 ].getInfos().iteritems():
+              for k, v in six.iteritems(self.aviewGlass[ 1 ].getInfos()):
                   if k == 'position':
                       currPos = v
               self.aviewGlass[ 1 ].moveLinkedCursor([ currPos[0], pos[1], currPos[2] ])
               currPos = None
-              for k, v in self.aviewGlass[ 0 ].getInfos().iteritems():
+              for k, v in six.iteritems(self.aviewGlass[ 0 ].getInfos()):
                   if k == 'position':
                       currPos = v
               self.aviewGlass[ 0 ].moveLinkedCursor([ pos[0], currPos[1], currPos[2] ])

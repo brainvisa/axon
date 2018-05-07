@@ -224,13 +224,11 @@ if sys.version_info[0] >= 3:
     getcwdu = os.getcwd
     def items(thing):
         return list(thing.items())
-    StringTypes = (str, )
 else:
     from htmllib import HTMLParser
     from os import getcwdu
     def items(thing):
         return thing.items()
-    from types import StringTypes
 
 global _mainThreadActions
 _mainThreadActions = FakeQtThreadCall()
@@ -338,7 +336,7 @@ def procdocToXHTML(procdoc):
     while stack:
         d, k, h = stack.pop()
         value = d[k]
-        if isinstance(value, StringTypes):
+        if isinstance(value, six.string_types):
             # Convert HTML tags to XML valid tags
 
             # Put all tags in lower-case because <TAG> ... </tag> is illegal
@@ -2958,7 +2956,7 @@ class ExecutionContext(object):
             self._lastProcessRaisedException = None  # reset exception once used.
             if isinstance(e, tuple) and len(e) == 2:
                 # e = ( exception, traceback )
-                six.reraise(e[0], None, e[1])
+                six.reraise(type(e[0]), e[0], e[1])
             else:
                 raise e
         return result
@@ -3467,7 +3465,7 @@ class ExecutionContext(object):
         self.checkInterruption()
         stackTop = self._stackTop()
 
-        if type(command) in StringTypes:
+        if type(command) in six.string_types:
             c = Command(command)
         else:
             c = Command(*command)
@@ -4230,7 +4228,7 @@ def getProcessInfo(processId):
     if isinstance(processId, ProcessInfo):
         result = processId
     else:
-        if type(processId) in StringTypes:
+        if type(processId) in six.string_types:
             processId = processId.lower()
         result = _processesInfo.get(processId)
         if result is None:
@@ -4293,7 +4291,7 @@ def getProcess(processId, ignoreValidation=False, checkUpdate=True):
             raise TypeError(_t_('Unknown process type: %s') %
                             (unicode(processId['type'])))
     else:
-        if type(processId) in StringTypes:
+        if type(processId) in six.string_types:
             processId = processId.lower()
         result = _processes.get(processId)
     if result is None:
@@ -5288,7 +5286,7 @@ def runProcessBySource(source, role,
             try:
                 return __runProcess(runnable_proc, source, process)
             
-            except Exception, e:
+            except Exception as e:
                 print('Failed to run process', runnable_proc.name, 'for', source)
                 continue
         else:

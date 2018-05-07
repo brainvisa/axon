@@ -52,10 +52,11 @@ from brainvisa.processing import neuroException
 from brainvisa.data.writediskitem import WriteDiskItem
 from brainvisa.data.neuroDiskItems import DiskItem
 from brainvisa.processes import defaultContext
+import six
+import sys
 
-
-
-
+if sys.version_info[0] >= 3:
+    unicode = str
 
 
 minfHistory = 'brainvisa-history_2.0'
@@ -191,7 +192,7 @@ class HistoryBook( object ):
         di = WriteDiskItem( 'Bvsession', 'Directory' )
         dirBvsession = str(di.findValue({ '_database' : database }))
         sessionId( database )
-    if type( historyBook ) in types.StringTypes:
+    if type( historyBook ) in six.string_types:
       historyBook = [ historyBook ]
     return ( historyBook, db, dirBvsession )
 
@@ -213,7 +214,7 @@ class HistoryBook( object ):
 
     event = None
     if historyBooksContext:
-      for book in historyBooksContext.iterkeys():
+      for book in six.iterkeys(historyBooksContext):
         event = executionContext.createProcessExecutionEvent()
         if book.__database is not None:
           event.setBvsession(sessionId( book.__database.name ) )
@@ -232,7 +233,7 @@ class HistoryBook( object ):
 
   @staticmethod
   def storeProcessFinished( executionContext, process, event, historyBooksContext ):
-    for book, items in historyBooksContext.iteritems():
+    for book, items in six.iteritems(historyBooksContext):
       historyBooksContext[book].get('processExcutionEvent').setLog( historyBooksContext[book].get('processExcutionEvent')._logItem )
       changedItems = []
       g = items.itervalues()

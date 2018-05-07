@@ -75,6 +75,7 @@ import string
 import sys
 import traceback
 import gc
+import six
 
 from threading import RLock
 from Queue import Queue
@@ -1021,7 +1022,7 @@ class FileBuilderInfo(object) :
     fragmentlength = 0
 
     # Check file fragments contiguity
-    for fragmentkey in sorted( self.filefragments.iterkeys() ) :
+    for fragmentkey in sorted(six.iterkeys(self.filefragments)):
       fragment = self.filefragments[ fragmentkey ]
       fragmentoffset = fragment.getOffset()
       fragmentlength = fragment.getLength()
@@ -1079,7 +1080,7 @@ class FileBuilderInfo(object) :
             resourcelock = resourcemanager.getResourceLock( filepath )
             with resourcelock :
               file = open( filepath, "w+b" )
-              for filefragmentkey in sorted( filefragments.iterkeys() ) :
+              for filefragmentkey in sorted(six.iterkeys(filefragments)) :
                 filefragment = filefragments[ filefragmentkey ]
                 fragmentcontent = filefragment.readLocalData()
 

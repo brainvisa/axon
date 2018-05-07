@@ -32,6 +32,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from __future__ import print_function
 import sys, time
+import six
 
 from brainvisa.data.sqlFSODatabase import SQLDatabase, SQLDatabases
 from brainvisa.data.readdiskitem import ReadDiskItem
@@ -184,7 +185,7 @@ w.show()
 #new = 0
 #both = 0
 #oldItemsCopy = oldItems.copy()
-#for newItemName, newItem in newItems.iteritems():
+#for newItemName, newItem in six.iteritems(newItems):
   #oldItem = oldItemsCopy.pop( newItemName, None )
   #if not oldItem:
     #new += 1
@@ -199,13 +200,13 @@ w.show()
       #del oldAttributes[ 'filename_variable' ]
     #if oldAttributes != newAttributes:
       #print('  ~DIF~', newItemName)
-      #for newKey, newValue in newAttributes.iteritems():
+      #for newKey, newValue in six.iteritems(newAttributes):
         #oldValue = oldAttributes.pop( newKey, None )
         #if oldValue is None:
           #print('    ++', newKey, '=', repr( newValue ))
         #elif oldValue != newValue:
           #print('    !=', newKey, ': new =', repr( newValue )+ ',', 'old =', repr( oldValue ))
-      #for oldKey, oldValue in oldAttributes.iteritems():
+      #for oldKey, oldValue in six.iteritems(oldAttributes):
         #print('    --', oldKey, '=', repr( oldValue ))
 #for oldItem in oldItemsCopy:
   #print('  -OLD-', oldItem)

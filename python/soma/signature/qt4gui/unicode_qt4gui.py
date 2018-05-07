@@ -45,6 +45,9 @@ __docformat__ = "epytext en"
 from soma.translation import translate as _
 from soma.qt4gui.api import Qt4GUI, TimeredQLineEdit
 from soma.qt_gui.qt_backend import QtGui, QtCore
+import sys
+if sys.version_info[0] >= 3:
+    unicode = str
 
 
 #-------------------------------------------------------------------------------

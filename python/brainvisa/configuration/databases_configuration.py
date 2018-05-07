@@ -47,6 +47,7 @@ from soma.signature.api import HasSignature, Signature, FileName, \
                                Boolean, OpenedChoice, Sequence, Unicode, \
                                Choice, Any
 from soma.minf.api import readMinf
+import six
 
 if sys.version_info[0] >= 3:
     def next(iterator):
@@ -177,7 +178,7 @@ class DatabaseSettings( HasSignature ):
       if os.path.exists( minf ):
         readMinf( minf, targets=( self.expert_settings, ) )
       else:
-        it = self.expert_settings.signature.iteritems()
+        it = six.iteritems(self.expert_settings.signature)
         next(it)
         for n, v in it:
           if n == 'ontology':

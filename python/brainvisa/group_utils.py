@@ -31,6 +31,9 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+
+import six
+
 class Subject(object):
     
     def __init__(self, ReadDiskItem=None, center=None, protocol=None, subject=None, database=None, acquisition=None, session=None, model=None):
@@ -78,7 +81,8 @@ class Subject(object):
         if args or kwargs:
             result += ' ' + \
                 ', '.join( ( ', '.join( (repr(i) for i in args) ),
-                            ', '.join( (n+'='+repr(v) for n,v in kwargs.iteritems()) ) ) ) + \
+                            ', '.join( (n+'='+repr(v)
+                                        for n,v in six.iteritems(kwargs)) ) ) ) + \
                 ' '
             result += ')'
         return result

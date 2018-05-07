@@ -31,6 +31,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from __future__ import print_function
 from neuroProcesses import *
+import six
 
 requests = {}
 requestsAccess = {}
@@ -51,7 +52,7 @@ for pi in allProcessesInfo():
       write = isinstance( rdi, WriteDiskItem )
       type = rdi.type.name
       formats = tuple( sorted( i.name for i in getFormats( rdi.formats ) ) )
-      required = tuple( sorted( ( i, j ) for i, j in  rdi.requiredAttributes.iteritems() if i not in ( '_format', '_type' ) ) )
+      required = tuple( sorted( ( i, j ) for i, j in six.iteritems(rdi.requiredAttributes) if i not in ( '_format', '_type' ) ) )
       request = ( type, formats, required )
       requests.setdefault( request, set() ).add( pi )
       requestsAccess.setdefault( request, [ None, None ] )[ 1 if write else 0 ] = True
@@ -83,7 +84,7 @@ print('''<html>
 ''', file=allRequests)
 count = 1
 requestsOrder = {}
-for request in sorted( requests.iterkeys() ):
+for request in sorted(six.iterkeys(requests)):
   type, formats, required = request
   requestsOrder[ request ] = count
   read, write = requestsAccess[ request ]

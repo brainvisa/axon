@@ -388,7 +388,7 @@ kwre = re.compile('([a-zA-Z_](\.?[a-zA-Z0-9_])*)\s*=\s*(.*)$')
 kwargs = {}
 todel = []
 for arg in args:
-    if type(arg) in types.StringTypes:
+    if type(arg) in six.string_types:
         m = kwre.match(arg)
         if m is not None:
             kwargs[m.group(1)] = \

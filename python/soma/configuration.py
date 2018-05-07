@@ -44,6 +44,7 @@ from soma.signature.api import (HasSignature, Signature, VariableSignature,
                                 Sequence)
 from soma.minf.api import readMinf, writeMinf
 from soma.translation import translate as _
+import six
 
 #------------------------------------------------------------------------------
 class Configuration( HasSignature ):
@@ -94,7 +95,7 @@ class Configuration( HasSignature ):
 
   @classmethod
   def set_module_config(cls, module, module_config):
-    for k, v in module_config.iteritems():
+    for k, v in six.iteritems(module_config):
         done = False
         if isinstance(v, dict):
             target = getattr(module, k, None)
