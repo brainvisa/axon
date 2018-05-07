@@ -114,9 +114,9 @@ def execution( self, context ):
   impinst = getProcessInstance( importer )
   context.write( 'importer:', importer.name )
   kwargs = { 'input': self.input.fullPath(), 'output': self.output }
-  if impinst.signature.has_key( 'converter' ):
+  if 'converter' in impinst.signature:
     kwargs[ 'converter' ] = self.converter
-  if impinst.signature.has_key( 'input_spm_orientation' ):
+  if 'input_spm_orientation' in impinst.signature:
     kwargs[ 'input_spm_orientation' ] = self.input_spm_orientation
   context.runProcess(importer, **kwargs )
   if self.copy_referential_of:

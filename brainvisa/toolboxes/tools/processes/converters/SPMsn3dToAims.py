@@ -131,7 +131,7 @@ def execution( self, context ):
     self.source_volume.fullPath() )
   srcref = None
   h = AtoT.header()
-  if h.has_key( 'source_referential' ):
+  if 'source_referential' in h:
     srcref = h[ 'source_referential' ]
   tm = registration.getTransformationManager()
 
