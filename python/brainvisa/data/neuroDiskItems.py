@@ -465,8 +465,8 @@ class DiskItem(QObject):
     if name_serie:
       result = []
       for number in name_serie:
-        result += map( lambda x, number=number: expand_name_serie( x, number ),
-                       self._files )
+        result += map_list(lambda x, number=number: expand_name_serie(x, number),
+                       self._files)
       return result
     if self._files: return self._files
     else: return [ self.name ]
@@ -497,8 +497,8 @@ class DiskItem(QObject):
     """
     name_serie = self.get( 'name_serie' )
     if name_serie:
-      return map( lambda x, number=name_serie[serie]: expand_name_serie( x, number ),
-                   self._files )
+      return map_list(lambda x, number=name_serie[serie]: expand_name_serie(x, number),
+                   self._files)
     raise RuntimeError( HTMLMessage(_t_( '<em>%s</em> is not a file series' )) )
   
   
@@ -541,8 +541,8 @@ class DiskItem(QObject):
     if self.parent is None:
       return self.fileNames()
     else:
-      return list(map(lambda x, p=self.parent.fullPath(): os.path.join(p, x),
-                  self.fileNames()))
+      return map_list(lambda x, p=self.parent.fullPath(): os.path.join(p, x),
+                      self.fileNames())
 
   def existingFiles(self):
     """
@@ -580,16 +580,16 @@ class DiskItem(QObject):
     if self.parent is None:
       return self.fileNamesSerie( serie )
     else:
-      return list(map(lambda x, p=self.parent.fullPath(): os.path.join(p, x),
-                  self.fileNamesSerie(serie)))
+      return map_list(lambda x, p=self.parent.fullPath(): os.path.join(p, x),
+                      self.fileNamesSerie(serie))
 
 
   def firstFullPathsOfEachSeries( self ):
     """
     Returns the first file name of each item of the serie.
     """
-    return list(map(lambda i, self=self: self.fullPathSerie(i),
-                range(len(self.get('name_serie')))))
+    return map_list(lambda i, self=self: self.fullPathSerie(i),
+                    range(len(self.get('name_serie'))))
 
 
   def _getGlobal( self, attrName, default = None ):
@@ -2068,8 +2068,8 @@ def getFormats( formats ):
   """
   if formats is None: return None
   global formatLists
-  if type( formats ) in six.string_types:
-    key = getId( formats )
+  if isinstance(formats, six.string_types):
+    key = getId(formats)
     result = formatLists.get( key )
     if result is None:
       result = [ getFormat( formats ) ]
@@ -2348,7 +2348,6 @@ class FileType( DiskItemType ):
     
     The formats and parents are compared using the function :py:func:`sameContent`.
     """
-    sys.stdout.flush()
     if as_dict and isinstance(other, dict):
       return sameContent(self.formats, other['formats']) \
         and sameContent(self.parent, other['parent'])
@@ -2431,7 +2430,6 @@ class TemporaryDiskItem( File ):
               # giving up, let it for later
               temporary.manager.registerPath( f )
               print('continuing after failed rm on %s' % f)
-              sys.stdout.flush()
               break
 
   def clear( self ):

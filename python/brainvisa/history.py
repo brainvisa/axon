@@ -192,7 +192,7 @@ class HistoryBook( object ):
         di = WriteDiskItem( 'Bvsession', 'Directory' )
         dirBvsession = str(di.findValue({ '_database' : database }))
         sessionId( database )
-    if type( historyBook ) in six.string_types:
+    if isinstance(historyBook, six.string_types):
       historyBook = [ historyBook ]
     return ( historyBook, db, dirBvsession )
 

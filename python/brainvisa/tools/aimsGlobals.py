@@ -272,7 +272,7 @@ def initializeFormatLists():
   if wkhtmltopdf is not None:
       html_pdf_formats_l = ('HTML', 'PDF file')
   else:
-      html_pdf_formats_l = ('HTML')
+      html_pdf_formats_l = ('HTML', )
   global html_pdf_formats
   html_pdf_formats = createFormatList( 'HTML PDF', html_pdf_formats_l)
 

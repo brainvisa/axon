@@ -668,7 +668,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
         self.context = context
 
         self.brainvisa_cmd = brainvisa_cmd
-        if type(self.brainvisa_cmd) in six.string_types:
+        if isinstance(self.brainvisa_cmd, in six.string_types):
             self.brainvisa_cmd = [brainvisa_cmd]
         if brainvisa_db == None:
             self.brainvisa_db = []
