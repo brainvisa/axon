@@ -226,23 +226,23 @@ class CheckRegistration():
                 image1 = self._images[self._images.index(image1)]
             else:
                 image1 = self._overlays[self._overlays.index(image1)]
-            if row.has_key("image1Palette"):
+            if "image1Palette" in row:
                 self._aImages[image1].setPalette(row["image1Palette"]["name"],
                                                  minVal=row["image1Palette"]["min"],
                                                  maxVal=row["image1Palette"]["max"])
             image2 = None
             fusionRate = None
-            if row.has_key("image2"):
+            if "image2" in row:
                 image2 = row["image2"]
                 if image2 in self._images:
                     image2 = self._images[self._images.index(image2)]
                 else:
                     image2 = self._overlays[self._overlays.index(image2)]
-                if row.has_key("image2Palette"):
+                if "image2Palette" in row:
                     self._aImages[image2].setPalette(row["image2Palette"]["name"],
                                                      minVal=row["image2Palette"]["min"],
                                                      maxVal=row["image2Palette"]["max"])
-                if row.has_key("fusionRate"):
+                if "fusionRate" in row:
                     fusionRate = row["fusionRate"]
             self._addRow(image1=image1,
                          image2=image2,

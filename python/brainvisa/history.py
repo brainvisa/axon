@@ -236,7 +236,7 @@ class HistoryBook( object ):
     for book, items in six.iteritems(historyBooksContext):
       historyBooksContext[book].get('processExcutionEvent').setLog( historyBooksContext[book].get('processExcutionEvent')._logItem )
       changedItems = []
-      g = items.itervalues()
+      g = six.itervalues(items)
       for i in g :
         if not isinstance(i, ProcessExecutionEvent) : 
           val = [j for j in i]

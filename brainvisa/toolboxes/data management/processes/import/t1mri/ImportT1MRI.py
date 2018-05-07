@@ -79,7 +79,7 @@ def execution(self, context):
                                     self.output.fullPath())
     if results['return_value'] != 0:
         raise RuntimeError('Importation failed.')
-    if results.has_key('warnings'):
+    if 'warnings' in results:
         for message in results['warnings']:
             context.warning(message)
     # force completing .minf

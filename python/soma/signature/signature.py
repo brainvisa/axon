@@ -458,6 +458,8 @@ class Signature( DataType ):
     """
     return key in self.__dict__[ '_signature_data' ]
 
+  def __contains__(self, key):
+    return key in self.__dict__['_signature_data']
 
   def __getitem__( self, key ):
     """

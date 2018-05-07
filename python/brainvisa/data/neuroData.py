@@ -75,9 +75,12 @@ if sys.version_info[0] >= 3:
     from collections import UserDict, UserList
     unicode = str
     basestring = str
+    def list_map(f, sequence):
+        return list(map(f, sequence))
 else:
     from UserDict import UserDict
     from UserList import UserList
+    list_map = map
 from soma.notification import Notifier
 from brainvisa.processing.neuroException import HTMLMessage
 
@@ -283,7 +286,7 @@ class Number( String ):
     If the value is not a python number, tries to convert it to a number with :py:func:`int`, :py:func:`long`, :py:func:`float`.
     """
     if value is None: return None
-    if type( value ) in six.integer_types + (six.types.FloatType,):
+    if type( value ) in six.integer_types + (float,):
       return value
     try: return int( value )
     except:
@@ -507,7 +510,7 @@ class Point( Parameter ):
     Checks that the value is a list and returns a list with each valus converted to a float value.
     """
     if isinstance( value, list ):
-      return map( float, value )
+      return list_map( float, value )
 
   def addLink( self, sourceParameterized, sourceParameter ):
     """
@@ -581,7 +584,7 @@ class MatrixValue( UserList ):
             raise Exception( _t_( 'Invalid matrix size' ) )
         else:
           width = len( line )
-        self.data.append( map( lambda x, n=n: n.findValue( x ), line ) )
+        self.data.append(list_map(lambda x, n=n: n.findValue(x), line))
       if width is None: width = 0
       if ( requiredLength is not None and length != requiredLength ) or \
          ( requiredWidth is not None and width != requiredWidth ):
@@ -616,7 +619,7 @@ class ListOfVectorValue( UserList ):
       length = len( value )
       n = Number()
       for line in value:
-        self.data.append( map( lambda x, n=n: n.findValue( x ), line ) )
+        self.data.append(list_map(lambda x, n=n: n.findValue(x), line))
       if ( requiredLength is not None and length != requiredLength ):
         raise Exception( _t_( 'Invalid vector list size' ) )
       self.size = length
@@ -720,7 +723,7 @@ class ListOf( Parameter ):
             values.append( self.contentType.findValue( val ) )
         return values
       else:
-        return map( self.contentType.findValue, value )
+        return list_map(self.contentType.findValue, value)
     else:
       return [ self.contentType.findValue( value ) ]
 

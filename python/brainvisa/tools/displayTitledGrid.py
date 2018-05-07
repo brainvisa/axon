@@ -277,7 +277,7 @@ class DisplayTitledGrid(QtGui.QWidget):
     anaWinRow = []
     anatomistConfig = a.config()
     isWindowSizeFactorExistInConfig = False
-    if(anatomistConfig.has_key('windowSizeFactor')):
+    if 'windowSizeFactor' in anatomistConfig:
       sizefac = a.config()['windowSizeFactor'  ]
       isWindowSizeFactorExistInConfig=True
     a.config()[ 'windowSizeFactor' ] = 1.
@@ -357,7 +357,7 @@ class DisplayTitledGrid(QtGui.QWidget):
         keySpace = DisplayTitledGrid._convertSpaceName_to_key(spaceName)
         for w in anaWinRow:
           if (w is not None):
-            if (winsDico.has_key(keySpace)):
+            if keySpace in winsDico:
               prevWins = winsDico[keySpace]
               prevWins.append(w)
               winsDico.update({keySpace:prevWins})
