@@ -40,6 +40,7 @@ from soma import aims
 from soma.qt_gui.qt_backend import QtCore, QtGui, uic, Qt
 import glob
 import os
+import six
 
 def check_registration(images,
                        overlays,
@@ -431,7 +432,7 @@ class CheckRegistration():
         if currentPosition == 0:
             return
         newPosition = currentPosition - 1
-        for k, v in self._rowFrames.iteritems():
+        for k, v in six.iteritems(self._rowFrames):
             if v["layout_position"] == newPosition:
                 frame2 = k
                 break
@@ -446,7 +447,7 @@ class CheckRegistration():
         if currentPosition == len(self._rowFrames.keys())-1:
             return
         newPosition = currentPosition + 1
-        for k, v in self._rowFrames.iteritems():
+        for k, v in six.iteritems(self._rowFrames):
             if v["layout_position"] == newPosition:
                 frame2 = k
                 break
@@ -647,14 +648,14 @@ class CheckRegistration():
         Updates the frame fusion parameters
         """
         image = None
-        for k, v in self._aImages.iteritems():
+        for k, v in six.iteritems(self._aImages):
             if v == aImage:
                 image = k
                 break
         if not image or image not in self._overlays:
             return
      
-        for k, v in self._rowFrames.iteritems():
+        for k, v in six.iteritems(self._rowFrames):
             if v["image"][2] == image:
                 self._setFrameFusion(k, v["slider"].value())
             

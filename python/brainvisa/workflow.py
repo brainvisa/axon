@@ -5,6 +5,7 @@ import os
 import sys
 import pickle
 import types
+import six
 
 from brainvisa.processes import ProcessExecutionNode, SerialExecutionNode, ParallelExecutionNode, defaultContext
 from brainvisa.data.readdiskitem import ReadDiskItem
@@ -191,7 +192,7 @@ class ProcessToWorkflow(object):
 
         # import pprint
         # pprint.pprint( self._groups )
-        for fid, input_output in self._iofiles.iteritems():
+        for fid, input_output in six.iteritems(self._iofiles):
             input, output = input_output
             # if len( output ) > 1:
                 # print('!!!', 'File "%s" is created by several processes: %s' % ( self._files[fid][0], ', '.join( self._jobs[ i ][0].name for i in output ) ))
@@ -275,7 +276,7 @@ class ProcessToWorkflow(object):
             if id[0] in (self.JOB, self.NATIVE_JOB):
                 self._nodeHistoryBooks = set()
                 (process, priority) = self._jobs[id]
-                for name, type in process.signature.iteritems():
+                for name, type in six.iteritems(process.signature):
                     if isinstance(type, WriteDiskItem):
                         fileName = getattr(process, name, None)
                         if fileName is not None:
@@ -480,17 +481,17 @@ class ProcessToWorkflow(object):
 
     def _processExtraDependencies(self):
         jobtoid = {}
-        for id, job in self._jobs.iteritems():
+        for id, job in six.iteritems(self._jobs):
             jobtoid[job[0]] = id
         idtogroup = {}
-        for node, id in self._nodeToId.iteritems():
+        for node, id in six.iteritems(self._nodeToId):
             idtogroup[id] = node
-        for id, job in self._jobs.iteritems():
+        for id, job in six.iteritems(self._jobs):
             node = job[0].executionNode()
             if hasattr(node, '_dependencies'):
                 deps = node._dependencies
                 self._processExtraDependenciesFor(id, deps, jobtoid)
-        for id, group in self._groups.iteritems():
+        for id, group in six.iteritems(self._groups):
             if id is not None:  # None group has no deps.
                 node = idtogroup.get(id)
                 if hasattr(node, '_dependencies'):
@@ -667,7 +668,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
         self.context = context
 
         self.brainvisa_cmd = brainvisa_cmd
-        if type(self.brainvisa_cmd) in types.StringTypes:
+        if type(self.brainvisa_cmd) in six.string_types:
             self.brainvisa_cmd = [brainvisa_cmd]
         if brainvisa_db == None:
             self.brainvisa_db = []

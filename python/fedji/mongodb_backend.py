@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 from pymongo.database import Database
 from pymongo.collection import Collection
+import six
 
 class_to_class_name = {
     str:     'unicode',
@@ -55,7 +56,7 @@ class FedjiMongoCollection(Collection):
         if isinstance(doc_or_docs, dict):
             doc_or_docs = [doc_or_docs]
         for document in doc_or_docs:
-            for k, v in document.iteritems():
+            for k, v in six.iteritems(document):
                 self.new_field(k, v.__class__)
         Collection.insert(self, doc_or_docs, **kwargs)
     

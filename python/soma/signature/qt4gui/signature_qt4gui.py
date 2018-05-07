@@ -46,6 +46,7 @@ __docformat__ = "epytext en"
 from soma.qt_gui.qt_backend import QtGui, QtCore
 from soma.functiontools import partial
 from soma.qt4gui.api import ApplicationQt4GUI, Qt4GUI
+import six
 
 #-------------------------------------------------------------------------------
 class HasSignatureEditionWidget( QtGui.QGroupBox ):
@@ -62,34 +63,34 @@ class HasSignatureEditionWidget( QtGui.QGroupBox ):
     if HasSignatureEditionWidget._imageDown is None:
       HasSignatureEditionWidget._imageDown = QtGui.QPixmap()
       HasSignatureEditionWidget._imageDown.loadFromData( \
-        "\x89\x50\x4e\x47\x0d\x0a\x1a\x0a\x00\x00\x00\x0d" \
-        "\x49\x48\x44\x52\x00\x00\x00\x09\x00\x00\x00\x0b" \
-        "\x08\x06\x00\x00\x00\xad\x59\xa7\x1b\x00\x00\x00" \
-        "\x4f\x49\x44\x41\x54\x18\x95\x63\x7c\xf6\xec\x19" \
-        "\x03\x21\xc0\x04\x63\x48\x49\x49\xfd\x47\x96\x40" \
-        "\xe1\x43\x4d\xfa\x8f\x0b\x3f\x7b\xf6\x0c\x62\xd2" \
-        "\xb3\x67\xcf\x18\xb1\x59\x03\x13\x67\x42\x17\xc0" \
-        "\xc6\x67\xc2\x26\x81\xae\x81\x91\x24\xdf\xe1\x03" \
-        "\x2c\x30\xc6\xdd\xbb\x77\xff\xa3\x4b\x2a\x2b\x2b" \
-        "\xa3\x3a\x1c\x1f\x20\xca\x4d\x00\x23\x1d\x2b\x53" \
-        "\x5e\xdc\x34\x20\x00\x00\x00\x00\x49\x45\x4e\x44" \
-        "\xae\x42\x60\x82"
+        b"\x89\x50\x4e\x47\x0d\x0a\x1a\x0a\x00\x00\x00\x0d" \
+        b"\x49\x48\x44\x52\x00\x00\x00\x09\x00\x00\x00\x0b" \
+        b"\x08\x06\x00\x00\x00\xad\x59\xa7\x1b\x00\x00\x00" \
+        b"\x4f\x49\x44\x41\x54\x18\x95\x63\x7c\xf6\xec\x19" \
+        b"\x03\x21\xc0\x04\x63\x48\x49\x49\xfd\x47\x96\x40" \
+        b"\xe1\x43\x4d\xfa\x8f\x0b\x3f\x7b\xf6\x0c\x62\xd2" \
+        b"\xb3\x67\xcf\x18\xb1\x59\x03\x13\x67\x42\x17\xc0" \
+        b"\xc6\x67\xc2\x26\x81\xae\x81\x91\x24\xdf\xe1\x03" \
+        b"\x2c\x30\xc6\xdd\xbb\x77\xff\xa3\x4b\x2a\x2b\x2b" \
+        b"\xa3\x3a\x1c\x1f\x20\xca\x4d\x00\x23\x1d\x2b\x53" \
+        b"\x5e\xdc\x34\x20\x00\x00\x00\x00\x49\x45\x4e\x44" \
+        b"\xae\x42\x60\x82"
       )
       
       HasSignatureEditionWidget._imageUp = QtGui.QPixmap()
       HasSignatureEditionWidget._imageUp.loadFromData( \
-        "\x89\x50\x4e\x47\x0d\x0a\x1a\x0a\x00\x00\x00\x0d" \
-        "\x49\x48\x44\x52\x00\x00\x00\x09\x00\x00\x00\x0b" \
-        "\x08\x06\x00\x00\x00\xad\x59\xa7\x1b\x00\x00\x00" \
-        "\x52\x49\x44\x41\x54\x18\x95\x8d\x90\xbb\x0d\x00" \
-        "\x31\x08\x43\x0d\xba\x29\xdc\xb2\xff\x48\xb4\x5e" \
-        "\x23\x57\xe5\x14\x91\x9c\x02\x15\x9f\x27\x1b\x30" \
-        "\x49\xb8\xc5\x33\x93\xcc\x1c\x75\x18\x11\x06\x00" \
-        "\x7e\x95\x01\x60\x1d\xbb\x96\xd2\x06\x91\xdc\x76" \
-        "\xf3\x13\x50\x41\xaf\xc0\xa9\xf6\x3f\x8b\xb5\xff" \
-        "\x5d\x47\x72\x48\xb2\x15\x98\x75\xeb\x05\x2f\xc0" \
-        "\x1f\x1f\xf8\x34\x49\xac\xa1\x00\x00\x00\x00\x49" \
-        "\x45\x4e\x44\xae\x42\x60\x82"
+        b"\x89\x50\x4e\x47\x0d\x0a\x1a\x0a\x00\x00\x00\x0d" \
+        b"\x49\x48\x44\x52\x00\x00\x00\x09\x00\x00\x00\x0b" \
+        b"\x08\x06\x00\x00\x00\xad\x59\xa7\x1b\x00\x00\x00" \
+        b"\x52\x49\x44\x41\x54\x18\x95\x8d\x90\xbb\x0d\x00" \
+        b"\x31\x08\x43\x0d\xba\x29\xdc\xb2\xff\x48\xb4\x5e" \
+        b"\x23\x57\xe5\x14\x91\x9c\x02\x15\x9f\x27\x1b\x30" \
+        b"\x49\xb8\xc5\x33\x93\xcc\x1c\x75\x18\x11\x06\x00" \
+        b"\x7e\x95\x01\x60\x1d\xbb\x96\xd2\x06\x91\xdc\x76" \
+        b"\xf3\x13\x50\x41\xaf\xc0\xa9\xf6\x3f\x8b\xb5\xff" \
+        b"\x5d\x47\x72\x48\xb2\x15\x98\x75\xeb\x05\x2f\xc0" \
+        b"\x1f\x1f\xf8\x34\x49\xac\xa1\x00\x00\x00\x00\x49" \
+        b"\x45\x4e\x44\xae\x42\x60\x82"
       )
     
     QtGui.QGroupBox.__init__( self, parent )
@@ -113,8 +114,8 @@ class HasSignatureEditionWidget( QtGui.QGroupBox ):
       self.__object = object
       self.__object.onAttributeChange( 'signature', self._signatureChanged )
       self.__object.onAttributeChange(  self._attributeChanged )
-      it = self.__object.signature.iteritems()
-      it.next() # skip signature attribute
+      it = six.iteritems(self.__object.signature)
+      next(it) # skip signature attribute
       for attributeName, signatureItem in it:
         signatureItem.onAttributeChange( 'type', self._signatureChanged )
         signatureItem.onAttributeChange( 'visible', self._signatureChanged )
@@ -138,8 +139,8 @@ class HasSignatureEditionWidget( QtGui.QGroupBox ):
     self._attributesGUI2 = {}
     layout = self._gridLayout
     layoutRow = 0
-    it = object.signature.iteritems()
-    it.next() # skip signature attribute
+    it = six.iteritems(object.signature)
+    next(it) # skip signature attribute
     for attributeName, signatureItem in it:
       if not signatureItem.visible: continue
       qtgui = self._qtgui._createAttributeQt4GUI( signatureItem.type, object, 
@@ -179,7 +180,7 @@ class HasSignatureEditionWidget( QtGui.QGroupBox ):
   
   def _deleteSignatureWidgets( self ):
     for attributeWidget, ( qtgui, attributeName, labelWidget ) in \
-        self._attributesGUI.iteritems():
+        six.iteritems(self._attributesGUI):
       qtgui.onWidgetChange.remove( self._attributeWidgetChanged )
       qtgui.closeEditionWidget( attributeWidget )
       qtgui.closeLabelWidget( labelWidget )
@@ -202,7 +203,7 @@ class HasSignatureEditionWidget( QtGui.QGroupBox ):
   
   def _setObject( self, object ):
     for attributeWidget, ( qtgui, attributeName, labelWidget ) in \
-        self._attributesGUI.iteritems():
+        six.iteritems(self._attributesGUI):
       if object.signature[ attributeName ].type.mutable:
         qtgui.setObject( attributeWidget, getattr( object, attributeName ) )
       else:
@@ -229,7 +230,7 @@ class HasSignatureEditionWidget( QtGui.QGroupBox ):
       self.__object.removeOnAttributeChange( 'signature', self._signatureChanged )
       self.__object.removeOnAttributeChange( self._attributeChanged )
       it = self.__object.signature.itervalues()
-      it.next() # skip signature
+      next(it) # skip signature
       for signatureItem in it:
         signatureItem.removeOnAttributeChange( 'type', self._signatureChanged )
         signatureItem.removeOnAttributeChange( 'visible', self._signatureChanged )
@@ -255,7 +256,7 @@ class HasSignatureEditionWidget( QtGui.QGroupBox ):
                              QtGui.QSizePolicy.Fixed ) )
       self.setMaximumHeight( 32767 )
       for attributeWidget, ( qtgui, attributeName, labelWidget ) in \
-          self._attributesGUI.iteritems():
+          six.iteritems(self._attributesGUI):
         attributeWidget.setEnabled( True )
         if labelWidget is not None:
           labelWidget.setEnabled( True )
@@ -264,7 +265,7 @@ class HasSignatureEditionWidget( QtGui.QGroupBox ):
     else:
       self.setMaximumHeight( self.btnExpand.size().height() )
       for attributeWidget, ( qtgui, attributeName, labelWidget ) in \
-          self._attributesGUI.iteritems():
+          six.iteritems(self._attributesGUI):
         attributeWidget.setEnabled( False )
         if labelWidget is not None:
           labelWidget.setEnabled( False )

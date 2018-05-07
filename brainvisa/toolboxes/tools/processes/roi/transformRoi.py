@@ -48,6 +48,7 @@ from tempfile import mkdtemp, mktemp
 import glob
 import numpy as np
 import math
+import six
 # from brainvisa.tools.transformROI import transform_roi
 
 name = 'Transform ROI'
@@ -552,7 +553,7 @@ class TransformRoi():
             
             roiChanged = False
             meshes = []
-            for k, v in self._roiDict[roi]["sub_roi"].iteritems():
+            for k, v in six.iteritems(self._roiDict[roi]["sub_roi"]):
                 meshes += v["meshes"]
             for mesh in meshes:
                 if not self._previousMotions[mesh].isIdentity():
@@ -567,7 +568,7 @@ class TransformRoi():
             for v in aimsRoi.vertices():
                 labels.update({v["name"]: int(v["roi_label"])})
             label = 1
-            for k, v in labels.iteritems():
+            for k, v in six.iteritems(labels):
                 imageFile = mktemp( suffix='.nii' )
                 self._addTemporaryObjects(imageFile)
                 aims.write(self._getImageFromRoi(roi, selectedLabel=label), imageFile)
@@ -595,7 +596,7 @@ class TransformRoi():
                 check_call(['AimsGraphMesh', '-i', self._outputRoi[roi].fullPath(), '-o', self._outputRoi[roi].fullPath()])
                 
                 g = aims.read(self._outputRoi[roi].fullPath())
-                names = dict((j, i) for i, j in labels.iteritems())
+                names = dict((j, i) for i, j in six.iteritems(labels))
                 for v in g.vertices():
                     name = names.get(v['roi_label'])
                     if name:
@@ -608,7 +609,7 @@ class TransformRoi():
                         "sub_roi_transformation": {}}
             trsfDict["global_transformation"]["translation"] = list(trsfDict["global_transformation"]["translation"])
             trsfDict["global_transformation"]["rotation"] = list(trsfDict["global_transformation"]["rotation"])
-            for k, v in self._roiDict[roi]["sub_roi"].iteritems():
+            for k, v in six.iteritems(self._roiDict[roi]["sub_roi"]):
                 trsfDict["sub_roi_transformation"].update({k: v["transformation"]})
                 trsfDict["sub_roi_transformation"][k]["translation"] = list(trsfDict["sub_roi_transformation"][k]["translation"])
                 trsfDict["sub_roi_transformation"][k]["rotation"] = list(trsfDict["sub_roi_transformation"][k]["rotation"])
@@ -625,7 +626,7 @@ class TransformRoi():
         
         QtGui.qApp.restoreOverrideCursor()
         self._mainDiag.frame.setEnabled(True)
-        for k, v in roiValidities.iteritems():
+        for k, v in six.iteritems(roiValidities):
             if True in v:
                 return
         
@@ -633,7 +634,7 @@ class TransformRoi():
 
     def _checkMeshValidity(self, roi):
         meshes = []
-        for k, v in self._roiDict[roi]["sub_roi"].iteritems():
+        for k, v in six.iteritems(self._roiDict[roi]["sub_roi"]):
             meshes += v["meshes"]
         
         outsideImageBounds = False
@@ -746,7 +747,7 @@ class TransformRoi():
             for v in aimsRoi.vertices():
                 labels.update({v["name"]: int(v["roi_label"])})
             label = 1
-            for k, v in labels.iteritems():
+            for k, v in six.iteritems(labels):
                 imageFile = mktemp( suffix='.nii' )
                 self._addTemporaryObjects(imageFile)
                 aims.write(self._getImageFromRoi(roi, selectedLabel=v), imageFile)
@@ -809,7 +810,7 @@ class TransformRoi():
     def _defineRoiSides(self, roi):
         self._sideMeshes.update({roi: {}})
         centers = self.getCenters(roi)
-        for k, v in centers["locals"].iteritems():
+        for k, v in six.iteritems(centers["locals"]):
             if v[0] < centers["global"][0]:
                 self._sideMeshes[roi].update({k: "right"})
             else:
@@ -821,7 +822,7 @@ class TransformRoi():
         centers = self.getCenters(roi)
         centers = self.getCenters(roi)
         
-        for k, v in self._roiDict[roi]["sub_roi"].iteritems():
+        for k, v in six.iteritems(self._roiDict[roi]["sub_roi"]):
             globalTrsf = self._getTransformation(self._roiDict[roi]["global_transformation"],
                                                  centers["global"],
                                                  side=self._sideMeshes[roi][k])
@@ -846,7 +847,7 @@ class TransformRoi():
         rightMeshes = []
         leftMeshes = []
         meshes = []
-        for k, v in self._roiDict[roi]["sub_roi"].iteritems():
+        for k, v in six.iteritems(self._roiDict[roi]["sub_roi"]):
             centers["locals"].update({k: self._getCenter(v["meshes"])})
             meshes += v["meshes"]
             try:

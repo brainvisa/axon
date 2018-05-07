@@ -128,14 +128,12 @@ if sys.version_info[0] >= 3:
     basestring = str
     unicode = str
     from collections import UserList
-    StringTypes = (str,)
     def values(thing):
         return list(thing.values())
     def map_list(func, thing):
         return list(map(func, thing))
 else:
     from UserList import UserList
-    from types import StringTypes
     def values(thing):
         return thing.values()
     map_list = map
@@ -311,6 +309,11 @@ class DiskItem(QObject):
     if isinstance( other, basestring ):
       return other in self.fullPaths()
     return self is other or ( isinstance( other, DiskItem ) and self.fullPath() == other.fullPath() )
+
+  if sys.version_info[0] >= 3:
+    # defint q hqsh function for python3
+    def __hash__(self):
+        return self.fullPath().__hash__()
 
 
   def __ne__( self, other ):
@@ -538,8 +541,8 @@ class DiskItem(QObject):
     if self.parent is None:
       return self.fileNames()
     else:
-      return map( lambda x, p=self.parent.fullPath(): os.path.join( p, x ),
-                  self.fileNames() )
+      return list(map(lambda x, p=self.parent.fullPath(): os.path.join(p, x),
+                  self.fileNames()))
 
   def existingFiles(self):
     """
@@ -577,16 +580,16 @@ class DiskItem(QObject):
     if self.parent is None:
       return self.fileNamesSerie( serie )
     else:
-      return map( lambda x, p=self.parent.fullPath(): os.path.join( p, x ),
-                  self.fileNamesSerie( serie ) )
+      return list(map(lambda x, p=self.parent.fullPath(): os.path.join(p, x),
+                  self.fileNamesSerie(serie)))
 
 
   def firstFullPathsOfEachSeries( self ):
     """
     Returns the first file name of each item of the serie.
     """
-    return map( lambda i, self=self: self.fullPathSerie( i ),
-                range( len( self.get( 'name_serie' ) ) ) )
+    return list(map(lambda i, self=self: self.fullPathSerie(i),
+                range(len(self.get('name_serie')))))
 
 
   def _getGlobal( self, attrName, default = None ):
@@ -2065,7 +2068,7 @@ def getFormats( formats ):
   """
   if formats is None: return None
   global formatLists
-  if type( formats ) in StringTypes:
+  if type( formats ) in six.string_types:
     key = getId( formats )
     result = formatLists.get( key )
     if result is None:

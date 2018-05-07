@@ -32,7 +32,7 @@ def checkUpdates():
     # timeout parameter does not exists in python 2.5
     #lines = urllib2.urlopen( filesaddress, timeout=3 ).readlines()
     try:
-      lines = urllib2.urlopen( filesaddress ).readlines()
+      lines = urllib2.urlopen(filesaddress, timeout=5).readlines()
     except: # the network may be not available
       lines = []
     rexp = re.compile( \

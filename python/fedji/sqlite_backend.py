@@ -2,6 +2,7 @@ import os
 import os.path as osp
 import uuid
 import sqlite3
+import six
 
 '''
 A small subset of MongoDB Python API implemented with SQLite
@@ -25,7 +26,7 @@ class_to_class_name = {
     float:   'float',
 }
 
-class_to_field_type = dict((i,eval(j)) for i,j in class_to_class_name.iteritems())
+class_to_field_type = dict((i,eval(j)) for i,j in six.iteritems(class_to_class_name))
 
 class_to_column_type = {
     str:     'TEXT',
@@ -179,7 +180,7 @@ class FedjiSqliteCollection(object):
             list_fields = []
             list_values = []
             values = []
-            for k, v in document.iteritems():
+            for k, v in six.iteritems(document):
                 self.new_field(k, v.__class__)
                 if self.fields[k] is list:
                     list_fields.append(k)
@@ -222,7 +223,7 @@ class FedjiSqliteCollection(object):
     
     def remove(self, query):
         list_tables = []
-        for field, type in self.fields.iteritems():
+        for field, type in six.iteritems(self.fields):
             if type is list:
                 list_tables.append('%s_list_%s' % (self._documents_table, field))
                 
@@ -241,7 +242,7 @@ class FedjiSqliteCollection(object):
     
     def drop(self):
         cnx = self._connect()
-        for field, type in self.fields.iteritems():
+        for field, type in six.iteritems(self.fields):
             cnx.execute('DROP INDEX IF EXISTS %s_%s' % (self._documents_table, field))
             if type is list:
                 list_table = '%s_list_%s' % (self._documents_table, field)
@@ -304,7 +305,7 @@ class FedjiSqliteQueryResult(object):
         inner_join = []
         where = []
         where_data = []
-        for field, value in self.query.iteritems():
+        for field, value in six.iteritems(self.query):
             if isinstance(value,dict):
                 if len(value) != 1:
                     raise ValueError('A dictionary with %d item(s) is not a valid query value.' % len(value))

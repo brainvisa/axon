@@ -44,8 +44,8 @@ from brainvisa.data.qtgui.labelSelectionGUI import LabelSelectionEditor
 from brainvisa.processes import defaultContext
 from brainvisa.configuration import neuroConfig
 import soma.minf.api as minf
-import types
 import subprocess
+import six
 
 #----------------------------------------------------------------------------
 class LabelSelection( Parameter ):
@@ -69,7 +69,7 @@ class LabelSelection( Parameter ):
       + ", " + repr( self.fileDI.formats ) + " ) }"
 
   def findValue( self, value ):
-      if type( value ) in types.StringTypes:
+      if type( value ) in six.string_types:
         value = LabelSelection( **eval( value ) )
       return value
   

@@ -405,7 +405,7 @@ class Choice( Parameter ):
     i = self.findIndex( value )
     if i >= 0:
       return self.values[ i ][ 1 ]
-    elif type( value ) in types.StringTypes:
+    elif type( value ) in six.string_types:
       try:
         value = eval( value )
       except:
