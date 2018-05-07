@@ -69,7 +69,7 @@ class LabelSelection( Parameter ):
       + ", " + repr( self.fileDI.formats ) + " ) }"
 
   def findValue( self, value ):
-      if type( value ) in six.string_types:
+      if isinstance(value,six.string_types):
         value = LabelSelection( **eval( value ) )
       return value
   

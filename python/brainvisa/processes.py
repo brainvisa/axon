@@ -3465,7 +3465,7 @@ class ExecutionContext(object):
         self.checkInterruption()
         stackTop = self._stackTop()
 
-        if type(command) in six.string_types:
+        if isinstance(command, six.string_types):
             c = Command(command)
         else:
             c = Command(*command)
@@ -4228,7 +4228,7 @@ def getProcessInfo(processId):
     if isinstance(processId, ProcessInfo):
         result = processId
     else:
-        if type(processId) in six.string_types:
+        if isinstance(processId, six.string_types):
             processId = processId.lower()
         result = _processesInfo.get(processId)
         if result is None:
@@ -4291,7 +4291,7 @@ def getProcess(processId, ignoreValidation=False, checkUpdate=True):
             raise TypeError(_t_('Unknown process type: %s') %
                             (unicode(processId['type'])))
     else:
-        if type(processId) in six.string_types:
+        if isinstance(processId, six.string_types):
             processId = processId.lower()
         result = _processes.get(processId)
     if result is None:

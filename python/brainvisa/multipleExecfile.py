@@ -160,6 +160,8 @@ class MultipleExecfile( object ):
           msg = msg + format_exc()
         e.args = ( msg, ) + e.args[1:]
         print(msg)
+        import traceback
+        traceback.print_exc()
         if not kwargs.get( 'continue_on_error', False ):
           raise e
         exc.append( e )
