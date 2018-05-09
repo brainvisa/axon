@@ -39,11 +39,12 @@ userLevel = 2
 
 signature = Signature(
   'read', ReadDiskItem( '4D Volume', 
-                        map( lambda x: changeToFormatSeries( getFormat( x ) ), 
-                             aimsGlobals.aimsVolumeFormats ),
+                        [changeToFormatSeries(getFormat(x))
+                         for x in aimsGlobals.aimsVolumeFormats],
                         enableConversion = 0 ),
   'write', WriteDiskItem( '4D Volume',  'aims Writable Volume Formats' ),
-  'preferedFormat', apply( Choice, [ ( '<auto>', None ) ] + map( lambda x: (x,getFormat(x)), aimsGlobals.aimsVolumeFormats ) ),
+  'preferedFormat', Choice(*([('<auto>', None)]
+                             + [(x, getFormat(x)) for x in aimsGlobals.aimsVolumeFormats])),
   'removeSource', Boolean(),
   'ascii', Boolean(),
   'voxelType', Choice( ( '<Same as input>', None), 'U8', 'S8', 'U16', 'S16', 'U32', 'S32', 'FLOAT', 'DOUBLE' ),
