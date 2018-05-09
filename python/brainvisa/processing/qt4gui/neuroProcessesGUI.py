@@ -142,7 +142,10 @@ class _ProcDeleter(object):
     def __init__(self, o):
         self.o = o
     def __del__(self):
-        self.o.kill()
+        try:
+            self.o.kill()
+        except:
+            pass
 
 def startShell():
   from soma.qt_gui.qt_backend.QtGui import qApp
@@ -2793,13 +2796,19 @@ class ProcessView( QWidget, ExecutionContextGUI ):
       qtdt = submission_dlg.dateTimeEdit_expiration.dateTime()
       date = datetime(qtdt.date().year(), qtdt.date().month(), qtdt.date().day(),
                       qtdt.time().hour(), qtdt.time().minute(), qtdt.time().second())
-      queue =  unicode(submission_dlg.combo_queue.currentText()).encode('utf-8')
-      if queue == "default queue": queue = None
+      if sys.version_info[0] >= 3:
+          queue = submission_dlg.combo_queue.currentText()
+      else:
+          queue = unicode(
+              submission_dlg.combo_queue.currentText()).encode('utf-8')
+      if queue == "default queue":
+          queue = None
 
       input_file_processing = submission_dlg.combo_in_files.currentText()
       output_file_processing = submission_dlg.combo_out_files.currentText()
 
-      brainvisa_cmd = [ 'python2', '-m', 'brainvisa.axon.runprocess' ]
+      brainvisa_cmd = [os.path.basename(sys.executable),
+                       '-m', 'brainvisa.axon.runprocess']
 
       self.readUserValues()
 

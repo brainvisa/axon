@@ -6,6 +6,7 @@ import sys
 import pickle
 import types
 import six
+import sys
 
 from brainvisa.processes import ProcessExecutionNode, SerialExecutionNode, ParallelExecutionNode, defaultContext
 from brainvisa.data.readdiskitem import ReadDiskItem
@@ -17,6 +18,8 @@ from brainvisa.data.neuroDiskItems import DiskItem
 from soma_workflow.constants import *
 from soma_workflow.client import Job, FileTransfer, SharedResourcePath, Group, Workflow, Helper, OptionPath
 
+if sys.version_info[0] >= 3:
+    basestring = str
 
 class ProcessToWorkflow(object):
     JOB = 'j'
@@ -57,7 +60,11 @@ class ProcessToWorkflow(object):
         return type + str(count)
 
     def flatten(self, l):
-        return (sum(map(self.flatten, l), []) if isinstance(l, list) else [l])
+        try:
+            iterable = iter(l)
+        except TypeError:
+            return [l]
+        return sum(map(self.flatten, l), [])
 
     def parameterToString(self, process, name):
         def toString(value, useHierarchy, escape=None, level=0):
@@ -668,7 +675,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
         self.context = context
 
         self.brainvisa_cmd = brainvisa_cmd
-        if isinstance(self.brainvisa_cmd, in six.string_types):
+        if isinstance(self.brainvisa_cmd, six.string_types):
             self.brainvisa_cmd = [brainvisa_cmd]
         if brainvisa_db == None:
             self.brainvisa_db = []

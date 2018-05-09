@@ -35,11 +35,6 @@ from brainvisa.processes import *
 from soma.qt_gui.qt_backend import QtCore
 from brainvisa import registration
 from brainvisa.tools.displayTitledGrid import displayTitledGrid
-# DEBUG during development
-import brainvisa.tools.displayTitledGrid
-reload( brainvisa.tools.displayTitledGrid )
-displayTitledGrid = brainvisa.tools.displayTitledGrid.displayTitledGrid
-# end DEBUG
 
 userLevel = 2
 name = 'view images in a titled grid (low level)'
