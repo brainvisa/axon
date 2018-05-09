@@ -149,7 +149,13 @@ class _ProcDeleter(object):
 
 def startShell():
   from soma.qt_gui.qt_backend.QtGui import qApp
-  os.environ["QT_API"] = "pyqt" # prevent ipython from trying to use PySide
+  qt_impl = qt_backend.get_qt_backend()
+  if qt_impl == 'PyQt4':
+      os.environ["QT_API"] = "pyqt" # prevent ipython from trying to use PySide
+  elif qt_impl == 'PyQt5':
+      os.environ["QT_API"] = "pyqt5"
+  elif qt_impl == 'PySide':
+      os.environ["QT_API"] = "pyside"
   try:
     import IPython
     ipversion = [int(x) for x in IPython.__version__.split('.')]
