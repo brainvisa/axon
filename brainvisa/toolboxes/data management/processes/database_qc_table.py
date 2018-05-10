@@ -49,7 +49,7 @@ def execution(self, context):
     self.elements = None
     # find data
     data = []
-    #db = neuroHierarchy.databases.database(self.database)
+    # db = neuroHierarchy.databases.database(self.database)
 
     for i, dtype in enumerate(self.data_types):
         if len(self.data_filters) > i or len(self.data_filters) == 1:
@@ -73,7 +73,7 @@ def execution(self, context):
     nrows = max([len(values[1]) for values in data])
     ncols = len(self.data_types)
     elements = np.zeros((nrows, ncols), dtype=object)
-    elements[:, :] = None
+    elements[:,:] = None
 
     keys = self.keys
     key_values = []
@@ -90,12 +90,12 @@ def execution(self, context):
             if changed_id:
                 if row >= elements.shape[0]:
                     # should not happen if get_row() had no bug...
-                    #print('warning: adding row', row, '>=', elements.shape[0])
-                    #print('row_ids:', row_ids)
-                    #print('row_id:', row_id)
+                    # print('warning: adding row', row, '>=', elements.shape[0])
+                    # print('row_ids:', row_ids)
+                    # print('row_id:', row_id)
                     old_nrow = elements.shape[0]
                     elements.resize((row + 1, ncols))
-                    elements[old_nrow:, :] = None
+                    elements[old_nrow:,:] = None
                 max_row = max((max_row, row))
             element = elements[row, elem_col]
             if isinstance(element, list):
@@ -109,20 +109,20 @@ def execution(self, context):
     old_nrow = elements.shape[0]
     elements.resize((nrows, ncols))
     if nrows > old_nrow:
-        elements[old_nrow:, :] = None
+        elements[old_nrow:,:] = None
     self.elements = elements
     self.row_ids = row_ids
 
     if self.output_file:
         self.save(context)
-        #if self.output_file.format.name == 'HTML':
-            #context.write(open(self.output_file.fullPath()).read())
+        # if self.output_file.format.name == 'HTML':
+            # context.write(open(self.output_file.fullPath()).read())
     else:
         return mainThreadActions().call(self.exec_mainthread, context)
 
 
 def get_row(self, key_vals, row_ids, key_values):
-    #print('get_row for:', key_vals)
+    # print('get_row for:', key_vals)
     kvals = list(key_vals)
     for i, key in enumerate(key_vals):
         kvalues = key_values[i]
@@ -131,16 +131,16 @@ def get_row(self, key_vals, row_ids, key_values):
                 kvals[i] = next(iter(kvalues))
         elif key not in kvalues:
             kvalues.add(key)
-            #print('add value for key:', i, ':', key)
+            # print('add value for key:', i, ':', key)
 
     row_id = tuple(kvals)
-    #print('row_id:', row_id)
+    # print('row_id:', row_id)
     row = row_ids.get(row_id)
     if row is not None:
         changed_id = False
-        #print('existing id:', row_id)
+        # print('existing id:', row_id)
     else:
-        #print('changed id:', row_id)
+        # print('changed id:', row_id)
         changed_id = True
         row = None
         for id, i in six.iteritems(row_ids):
@@ -152,7 +152,7 @@ def get_row(self, key_vals, row_ids, key_values):
                         kvals2[j] = next(iter(kvalues))
 
             if kvals2 == kvals:
-                #print('found old row:', i, 'for id:', row_id, ':', kvals2, id)
+                # print('found old row:', i, 'for id:', row_id, ':', kvals2, id)
                 row = i
                 row_ids[row_id] = row
                 break
@@ -166,7 +166,7 @@ def get_row(self, key_vals, row_ids, key_values):
             else:
                 row = max(row_ids.values()) + 1
             row_ids[row_id] = row
-            #print('new row:', row, 'for id:', row_id)
+            # print('new row:', row, 'for id:', row_id)
 
     return row, row_id, changed_id
 
@@ -187,12 +187,12 @@ if neuroConfig.gui:
             painter.save()
             # translate the painter such that rotate will rotate around the
             # correct point
-            #painter.translate(rect.x()+rect.width(), rect.y())
-            #painter.rotate(90)
+            # painter.translate(rect.x()+rect.width(), rect.y())
+            # painter.rotate(90)
             painter.translate(rect.x(), rect.y()+rect.height())
             painter.rotate(270)
             # and have parent code paint at this location
-            newrect = Qt.QRect(0,0,rect.height(),rect.width())
+            newrect = Qt.QRect(0, 0, rect.height(), rect.width())
             super(RotatedHeaderView, self).paintSection(painter, newrect,
                                                         logicalIndex)
             painter.restore()
@@ -243,7 +243,7 @@ if neuroConfig.gui:
             b.setSizePolicy(Qt.QSizePolicy.Fixed, Qt.QSizePolicy.Fixed)
             label = Qt.QToolButton(parent)
             label.setText(self.text)
-            #label.setTextAlignment(Qt.Qt.LeftAlignment)
+            # label.setTextAlignment(Qt.Qt.LeftAlignment)
             l.addWidget(label)
             l.addStretch(1.)
             self._view_button = b
@@ -367,16 +367,16 @@ def item_clicked(self, item):
         try:
             eye = Qt.QIcon(findIconFile('eye.png'))
             for i, element in enumerate(elements):
-                #action = menu.addAction(element.fullPath())
-                #action.setCheckable(True)
+                # action = menu.addAction(element.fullPath())
+                # action.setCheckable(True)
                 has_view = hasattr(item, 'viewer_res') \
                     and item.viewer_res[i] is not None
-                #action.number = i
-                #action = menu.addAction(eye, element.fullPath())
-                #action.number = -i - 1
+                # action.number = i
+                # action = menu.addAction(eye, element.fullPath())
+                # action.number = -i - 1
                 action = QActionWithViewer(element.fullPath(), has_view, item,
                                           i, menu)
-                #action.number = i
+                # action.number = i
                 menu.addAction(action)
                 action.action_triggered.connect(self.display_item)
                 action.viewer_triggered.connect(self.run_element_viewer)
@@ -387,13 +387,13 @@ def item_clicked(self, item):
             import traceback
             traceback.print_exc()
             return
-        #if chosen_action is not None:
-            #if chosen_action.number < 0:
-                ## use viewer
-                #self.run_element_viewer(item, -chosen_action.number - 1)
-                #element = elements[-chosen_action.number - 1]
-            #else:
-                #element = elements[chosen_action.number]
+        # if chosen_action is not None:
+            # if chosen_action.number < 0:
+                # use viewer
+                # self.run_element_viewer(item, -chosen_action.number - 1)
+                # element = elements[-chosen_action.number - 1]
+            # else:
+                # element = elements[chosen_action.number]
     else:
         element = elements
 

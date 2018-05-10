@@ -7,9 +7,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -24,128 +24,147 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from __future__ import print_function
-import sys, os, string, time, shutil, glob, errno
+import sys
+import os
+import string
+import time
+import shutil
+import glob
+import errno
 
-def filesFromShPatterns( *args ):
-  result = []
-  for pattern in args:
-    result += glob.glob( pattern )
-  return result
+
+def filesFromShPatterns(*args):
+    result = []
+    for pattern in args:
+        result += glob.glob(pattern)
+    return result
 
 
-def cp( *args, **kwargs):
-  keepdate = kwargs.get('keepdate', 0)
-  if keepdate:
-    copy = shutil.copy2
-  else:
-     copy= shutil.copy
-  sources = apply( filesFromShPatterns, args[:-1] )
-  if not sources: return
-  dest = args[ -1 ]
-  symlinks = kwargs.get( 'symlinks', 0 )
+def cp(*args, **kwargs):
+    keepdate = kwargs.get('keepdate', 0)
+    if keepdate:
+        copy = shutil.copy2
+    else:
+        copy = shutil.copy
+    sources = apply(filesFromShPatterns, args[:-1])
+    if not sources:
+        return
+    dest = args[-1]
+    symlinks = kwargs.get('symlinks', 0)
 
-  if os.path.exists( dest ):
-    if not os.path.isdir( dest ):
-      if len( sources ) > 1:
-        raise IOError( errno.ENOTDIR, os.strerror( errno.ENOTDIR ), dest )
-      source = sources[ 0 ]
-      try:
-        os.remove( dest )
-      except:
-        # try forcing permissions
-        os.chmod( dest, 0o770 )
-        os.remove( dest )
-      copy( source, dest )
-      return
-  else:
-    if len( sources ) == 1 and not os.path.isdir( sources[0] ):
-      copy( sources[ 0 ], dest )
-      return
-    try:
-      os.mkdir( dest )
-    except OSError as e:
-      if not e.errno == errno.EEXIST:
-        # filter out 'File exists' exception, if the same dir has been created
-        # concurrently by another instance of BrainVisa or another thread
-        raise
-
-  for path in sources:
-    newpath = os.path.join( dest, os.path.normpath( os.path.basename( path ) ) )
-    if os.path.isdir( path ):
-      if not os.path.isdir( newpath ):
+    if os.path.exists(dest):
+        if not os.path.isdir(dest):
+            if len(sources) > 1:
+                raise IOError(
+                    errno.ENOTDIR, os.strerror(errno.ENOTDIR), dest)
+            source = sources[0]
+            try:
+                os.remove(dest)
+            except:
+                # try forcing permissions
+                os.chmod(dest, 0o770)
+                os.remove(dest)
+            copy(source, dest)
+            return
+    else:
+        if len(sources) == 1 and not os.path.isdir(sources[0]):
+            copy(sources[0], dest)
+            return
         try:
-          os.mkdir( newpath )
+            os.mkdir(dest)
         except OSError as e:
-          if not e.errno == errno.EEXIST:
-            # filter out 'File exists' exception, if the same dir has been created
-            # concurrently by another instance of BrainVisa or another thread
-            raise
-      cp( os.path.join( path, '*' ), os.path.join( path, '.*' ), newpath, symlinks=symlinks )
-    elif symlinks and os.path.islink( path ):
-      if os.path.exists( newpath ):
-        try:
-          os.remove( newpath )
-        except:
-          # try forcing permissions
-          os.chmod( newpath, 0o770 )
-          os.remove( newpath )
-      os.symlink( os.readlink( path ), newpath )
-    else:
-      if os.path.exists( newpath ):
-        try:
-          os.remove( newpath )
-        except:
-          # try forcing permissions
-          os.chmod( newpath, 0o770 )
-          os.remove( newpath )
-      copy( path, newpath )
+            if not e.errno == errno.EEXIST:
+                # filter out 'File exists' exception, if the same dir has been created
+                # concurrently by another instance of BrainVisa or another
+                # thread
+                raise
 
-def symlink( *args ):
-  sources = apply( filesFromShPatterns, args[:-1] )
-  if not sources: return
-  dest = args[ -1 ]
-  if not os.path.isdir( dest ):
-    raise IOError( errno.ENOTDIR, os.strerror( errno.ENOTDIR ), dest )
-  for link in sources:
-    os.symlink( link, os.path.join( dest, os.path.basename( os.path.normpath( link ) ) ) )
+    for path in sources:
+        newpath = os.path.join(
+            dest, os.path.normpath(os.path.basename(path)))
+        if os.path.isdir(path):
+            if not os.path.isdir(newpath):
+                try:
+                    os.mkdir(newpath)
+                except OSError as e:
+                    if not e.errno == errno.EEXIST:
+                        # filter out 'File exists' exception, if the same dir has been created
+                        # concurrently by another instance of BrainVisa or
+                        # another thread
+                        raise
+            cp(os.path.join(path, '*'), os.path.join(
+                path, '.*'), newpath, symlinks=symlinks)
+        elif symlinks and os.path.islink(path):
+            if os.path.exists(newpath):
+                try:
+                    os.remove(newpath)
+                except:
+                    # try forcing permissions
+                    os.chmod(newpath, 0o770)
+                    os.remove(newpath)
+            os.symlink(os.readlink(path), newpath)
+        else:
+            if os.path.exists(newpath):
+                try:
+                    os.remove(newpath)
+                except:
+                    # try forcing permissions
+                    os.chmod(newpath, 0o770)
+                    os.remove(newpath)
+            copy(path, newpath)
 
-def rm( *args ):
-  def forceremove( func, path, excionfo ):
-    os.chmod( path, 0o770 )
-    return func( path )
-  sources = filesFromShPatterns( *args )
-  for path in sources:
-    if os.path.isdir( path ):
-      shutil.rmtree( path, False, forceremove )
-    else:
-      try:
-        os.remove( path )
-      except:
-        # try forcing permissions
-        os.chmod( path, 0o770 )
-        os.remove( path )
 
-def touch( *args ):
-  sources = filesFromShPatterns( *args )
-  for x in args:
-    print(x)
-    if x not in sources and x.find( '*' ) < 0 and x.find( '*' ) < 0:
-      sources.append( x )
-  for path in sources:
-    if not os.path.exists( path ):
-      f = open( path, 'w' )
-      f.close()
-    else:
-      os.utime( path, None )
+def symlink(*args):
+    sources = apply(filesFromShPatterns, args[:-1])
+    if not sources:
+        return
+    dest = args[-1]
+    if not os.path.isdir(dest):
+        raise IOError(errno.ENOTDIR, os.strerror(errno.ENOTDIR), dest)
+    for link in sources:
+        os.symlink(
+            link, os.path.join(dest, os.path.basename(os.path.normpath(link))))
 
-def mv( *args, **kwargs ):
-  cp( *args, **kwargs )
-  rm( *args[:-1] )
+
+def rm(*args):
+    def forceremove(func, path, excionfo):
+        os.chmod(path, 0o770)
+        return func(path)
+    sources = filesFromShPatterns(*args)
+    for path in sources:
+        if os.path.isdir(path):
+            shutil.rmtree(path, False, forceremove)
+        else:
+            try:
+                os.remove(path)
+            except:
+                # try forcing permissions
+                os.chmod(path, 0o770)
+                os.remove(path)
+
+
+def touch(*args):
+    sources = filesFromShPatterns(*args)
+    for x in args:
+        print(x)
+        if x not in sources and x.find('*') < 0 and x.find('*') < 0:
+            sources.append(x)
+    for path in sources:
+        if not os.path.exists(path):
+            f = open(path, 'w')
+            f.close()
+        else:
+            os.utime(path, None)
+
+
+def mv(*args, **kwargs):
+    cp(*args, **kwargs)
+    rm(*args[:-1])

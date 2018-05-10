@@ -39,8 +39,8 @@
 templates_contents = (
     'T1', SetType('anatomical Template'),
     SetWeakAttr('normalized', 'yes', 'skull_stripped', 'no', 'Size',
-        '2 mm','referential', '19bfee8e-51b1-4d9e-8721-990b9f88b12f',
-        'databasename', 'spm'),
+                '2 mm', 'referential', '19bfee8e-51b1-4d9e-8721-990b9f88b12f',
+                'databasename', 'spm'),
     'PET', SetType('PET Template'),
     SetWeakAttr('normalized', 'yes', 'databasename', 'spm'),
 )
@@ -58,11 +58,12 @@ hierarchy = (
         'toolbox', SetContent(
             'Seg', SetContent(
                 # TPM in SPM8
-                'TPM', SetType('SPM TPM template')), 
+                'TPM', SetType('SPM TPM template')),
                 SetWeakAttr('template', 'TPM', 'SPM_version', '8'),
             'vbm8', SetContent(
                 # SPM8
-                'Template_{step}_IXI550_{template}', SetType('SPM TPM HDW DARTEL template'),
+                'Template_{step}_IXI550_{template}', SetType(
+                    'SPM TPM HDW DARTEL template'),
                 SetWeakAttr('normalized', 'yes', 'databasename', 'spm')),
             # this OldNorm is the location of templates in SPM12
             'OldNorm', SetContent(*templates_contents),
@@ -71,7 +72,7 @@ hierarchy = (
                 # looks more similar to Template_6_IXI550_MNI152 in SPM8
                 'icbm152', SetType('Dartel Template'),
                 SetWeakAttr('normalized', 'yes', 'databasename', 'spm')),
-        ),# toolbox
+        ),  # toolbox
         'rend', SetContent(
             'render_{spm_render}', SetType('SPM Render')),
         'canonical', SetContent(
@@ -80,4 +81,3 @@ hierarchy = (
         'templates', SetContent(*templates_contents),
     )
 )
-

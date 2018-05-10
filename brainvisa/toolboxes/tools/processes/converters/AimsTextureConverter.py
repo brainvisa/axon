@@ -47,11 +47,11 @@ userLevel = 0
 
 signature = Signature(
     'read', ReadDiskItem('Texture', 'Aims texture formats',
-                        enableConversion=False),
+                         enableConversion=False),
     'write', WriteDiskItem('Texture',  'Aims texture formats'),
     'preferedFormat', Choice(*([('<auto>', None)]
-                              + map_list(lambda x: (x, getFormat(x)),
-                                         aimsGlobals.aimsTextureFormats))),
+                               + map_list(lambda x: (x, getFormat(x)),
+                                          aimsGlobals.aimsTextureFormats))),
     'removeSource', Boolean(),
     'ascii', Boolean(),
 )
@@ -88,4 +88,3 @@ def execution(self, context):
     if self.removeSource:
         for f in self.read.fullPaths():
             shelltools.rm(f)
-

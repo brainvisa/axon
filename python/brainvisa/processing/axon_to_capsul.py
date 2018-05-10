@@ -23,7 +23,7 @@ if sys.version_info[0] >= 3:
 
 
 def choice_options(choice):
-    return [repr(x[min(1, len(x)-1)]) for x in choice.values]
+    return [repr(x[min(1, len(x) - 1)]) for x in choice.values]
 
 
 def open_choice_options(choice):
@@ -32,7 +32,7 @@ def open_choice_options(choice):
         trait_type = get_choice_type(choice)
         if trait_type is not None:
             options.append('trait=%s()' % trait_type.__name__)
-        value = choice.values[0][min(1, len(choice.values[0])-1)]
+        value = choice.values[0][min(1, len(choice.values[0]) - 1)]
         return options + ['default_value=' + repr(value)]
     else:
         return []
@@ -50,8 +50,8 @@ def get_choice_type(choice):
         list: traits.List,
         tuple: traits.List,
     }
-    choice_types = [element_types[type(t[min(1, len(t)-1)])] \
-        for t in choice.values]
+    choice_types = [element_types[type(t[min(1, len(t) - 1)])]
+                    for t in choice.values]
     choice0 = choice_types[0]
     if all([elem is choice0 for elem in choice_types[1:]]):
         return choice0
@@ -64,7 +64,7 @@ def get_choice_type(choice):
 def get_openchoice_type(choice):
     trait_type = get_choice_type(choice)
     if trait_type is None:
-        trait_type = traits.Str # default to string
+        trait_type = traits.Str  # default to string
     return trait_type
 
 
@@ -95,7 +95,7 @@ def diskitem_options(diskitem):
     formats = sorted(diskitem.formats)
     if diskitem.preferredFormat:
         formats = [diskitem.preferredFormat] \
-            + [f for f in formats if f!= diskitem.preferredFormat]
+            + [f for f in formats if f != diskitem.preferredFormat]
     for format in formats:
         f = neuroDiskItems.getFormat(format)
         for pat in f.patterns.patterns:
@@ -110,19 +110,19 @@ def diskitem_options(diskitem):
 
 
 param_types_table = \
-{
-    neuroData.Boolean: traits.Bool,
-    neuroData.String: traits.Str,
-    neuroData.Number: traits.Float,
-    neuroData.Float: traits.Float,
-    neuroData.Integer: traits.Int,
-    ReadDiskItem: (diskitem_type, diskitem_options),
-    WriteDiskItem: (diskitem_type, diskitem_options),
-    neuroData.Choice: (traits.Enum, choice_options),
-    neuroData.OpenChoice: (get_openchoice_type, open_choice_options),
-    neuroData.ListOf: traits.List,
-    neuroData.Point3D: (traits.List, point3d_options),
-}
+    {
+        neuroData.Boolean: traits.Bool,
+        neuroData.String: traits.Str,
+        neuroData.Number: traits.Float,
+        neuroData.Float: traits.Float,
+        neuroData.Integer: traits.Int,
+        ReadDiskItem: (diskitem_type, diskitem_options),
+        WriteDiskItem: (diskitem_type, diskitem_options),
+        neuroData.Choice: (traits.Enum, choice_options),
+        neuroData.OpenChoice: (get_openchoice_type, open_choice_options),
+        neuroData.ListOf: traits.List,
+        neuroData.Point3D: (traits.List, point3d_options),
+    }
 
 
 def capsul_param_type(axon_param):
@@ -180,14 +180,12 @@ def capsul_merged_param_type(axon_params):
     return ctype, coptions
 
 
-
-
 def write_process_signature(p, out, buffered_lines, get_all_values=True):
     # write signature
     for name, param in six.iteritems(p.signature):
         newtype, paramoptions = capsul_param_type(param)
-        out.write('        self.add_trait(\'%s\', %s(%s))\n' \
-            % (name, newtype, ', '.join(paramoptions)))
+        out.write('        self.add_trait(\'%s\', %s(%s))\n'
+                  % (name, newtype, ', '.join(paramoptions)))
         if get_all_values or not p.isDefault(name):
             value = getattr(p, name)
             if value is not None:
@@ -195,7 +193,7 @@ def write_process_signature(p, out, buffered_lines, get_all_values=True):
                     '        self.%s = %s\n' % (name, repr(value)))
                 # print('non-default value for %s in %s' % (name, p.name))
             elif type(param) in (neuroData.Boolean, neuroData.Number,
-                    neuroData.Float, neuroData.Integer):
+                                 neuroData.Float, neuroData.Integer):
                 # None as number is a forced optional value
                 buffered_lines['initialization'].append(
                     '        self.%s = %s\n' % (name, 'Undefined'))
@@ -236,7 +234,7 @@ def write_process_execution(p, out):
 def write_process_definition(p, out, get_all_values=True):
     buffered_lines = {'initialization': []}
     write_process_signature(p, out, buffered_lines,
-        get_all_values=get_all_values)
+                            get_all_values=get_all_values)
     write_buffered_lines(out, buffered_lines, sections=('initialization', ))
     write_process_execution(p, out)
 
@@ -267,7 +265,7 @@ def make_module_name(procid, module_name_prefix=None, use_process_names={},
         base module name (ex: morpho). If not specified, no base module
     use_process_names: dict (optional)
         If specified, override some complete process names. Key is the axon ID,
-        value is the full name. 
+        value is the full name.
         Ex: {'morphologist': 'morpho.morphologist.Morphologist'}
     '''
     altname = use_process_names.get(procid)
@@ -301,8 +299,8 @@ def parse_param_link(pipeline, proc, param, linkdefs, weak_outputs=False):
         srcsign = proc().signature[param]
         dstsign = dstproc().signature[dstparam]
         if type(srcsign) is not type(dstsign) \
-                and (not isinstance(srcsign, ReadDiskItem) \
-                    or not isinstance(dstsign, ReadDiskItem)):
+                and (not isinstance(srcsign, ReadDiskItem)
+                     or not isinstance(dstsign, ReadDiskItem)):
             # incompatible parameters types
             continue
         if isinstance(srcsign, ReadDiskItem):
@@ -310,7 +308,7 @@ def parse_param_link(pipeline, proc, param, linkdefs, weak_outputs=False):
                     or dstsign.type.isA(srcsign.type.name):
                 # compatible type
                 if isinstance(dstsign, WriteDiskItem) \
-                        or (not isinstance(srcsign, WriteDiskItem) \
+                        or (not isinstance(srcsign, WriteDiskItem)
                             and dstproc is use_weak_ref(pipeline)):
                     # swap input/output
                     this_weak_output = False
@@ -318,14 +316,14 @@ def parse_param_link(pipeline, proc, param, linkdefs, weak_outputs=False):
                         this_weak_output = True
                     if (dstproc, dstparam, proc, param) not in links:
                         links.append((dstproc, dstparam, proc, param,
-                            this_weak_output))
+                                      this_weak_output))
                 else:
                     this_weak_output = False
                     if weak_outputs and dstproc is use_weak_ref(pipeline):
                         this_weak_output = True
                     if (proc, param, dstproc, dstparam) not in links:
                         links.append((proc, param, dstproc, dstparam,
-                            this_weak_output))
+                                      this_weak_output))
         else:
             # not DiskItems
             this_weak_output = False
@@ -333,7 +331,7 @@ def parse_param_link(pipeline, proc, param, linkdefs, weak_outputs=False):
                 this_weak_output = True
             if (proc, param, dstproc, dstparam) not in links:
                 links.append((proc, param, dstproc, dstparam,
-                    this_weak_output))
+                              this_weak_output))
     return links
 
 
@@ -341,7 +339,8 @@ def parse_links(pipeline, proc, weak_outputs=False):
     links = []
     proc = use_weak_ref(proc)
     for param, linkdefs in six.iteritems(proc()._links):
-        links += parse_param_link(pipeline, proc, param, linkdefs, weak_outputs)
+        links += parse_param_link(
+            pipeline, proc, param, linkdefs, weak_outputs)
     return links
 
 
@@ -352,21 +351,21 @@ def is_output(proc, param):
         # processes. But the Capsul pipeline side (Switch node) has input
         # parameters which should be connected from children outputs, and
         # output parameters which should be exported.
-        if (hasattr(proc(), 'switch_output') \
-                    and proc().switch_output == param) \
-                or (not hasattr(proc(), 'switch_output') \
-                    and param=='switch_out'):
+        if (hasattr(proc(), 'switch_output')
+           and proc().switch_output == param) \
+                or (not hasattr(proc(), 'switch_output')
+                    and param == 'switch_out'):
             return True
         else:
             return False
     signp = proc().signature.get(param)
-    if signp is None: # non-exported parameter: should be an output
+    if signp is None:  # non-exported parameter: should be an output
         return True
     return isinstance(signp, WriteDiskItem)
 
 
 def converted_link(linkdef, links, pipeline, selfinparams, revinparams,
-        selfoutparams, revoutparams, procmap):
+                   selfoutparams, revoutparams, procmap):
     # selfinparams: outputs which are in self (pipeline) and are thus inputs
     # selfoutparams: inputs which are in self (pipeline) and are thus outpupts
     # revinparams: input params which should be translated to pipeline
@@ -380,7 +379,7 @@ def converted_link(linkdef, links, pipeline, selfinparams, revinparams,
               ',', linkdef[1], ' ->', linkdef[2]().name, ',', linkdef[3])
         return None
     linkdef = (real_source[0], real_source[2], real_dest[0], real_dest[2],
-        weak_link)
+               weak_link)
     pipeline = use_weak_ref(pipeline)
     if linkdef[2] is pipeline and linkdef[3] in selfinparams:
         # output in pipeline inputs: invert link
@@ -392,7 +391,7 @@ def converted_link(linkdef, links, pipeline, selfinparams, revinparams,
         if is_output(linkdef[2], linkdef[3]):
             # dest is an output: needs inversion
             linkdef = (linkdef[2], linkdef[3], linkdef[0], linkdef[1],
-                weak_link)
+                       weak_link)
         else:
             altp = selfoutparams.get(linkdef[1])
             if altp is None:
@@ -427,22 +426,22 @@ def converted_link(linkdef, links, pipeline, selfinparams, revinparams,
 
 
 def export_output(buffered_lines, src, sname, sparam, p, dparam, selfoutparams,
-        revoutparams, processed_links, selfouttraits, weak_outputs=False):
+                  revoutparams, processed_links, selfouttraits, weak_outputs=False):
     if dparam in selfouttraits:
         # a trait has been manually declared
         declare_output_trait(buffered_lines, src, sname, sparam, p, dparam,
-            selfoutparams, revoutparams, processed_links)
+                             selfoutparams, revoutparams, processed_links)
     else:
         # global output param in pipeline signature
         buffered_lines['exports'].append('        # export output parameter\n')
         if weak_outputs:
             buffered_lines['exports'].append(
-                '        self.export_parameter(\'%s\', \'%s\', \'%s\', ' \
-                'weak_link=True)\n' \
+                '        self.export_parameter(\'%s\', \'%s\', \'%s\', '
+                'weak_link=True)\n'
                 % (sname, sparam, dparam))
         else:
             buffered_lines['exports'].append(
-                '        self.export_parameter(\'%s\', \'%s\', \'%s\')\n' \
+                '        self.export_parameter(\'%s\', \'%s\', \'%s\')\n'
                 % (sname, sparam, dparam))
         selfoutparams[dparam] = (src, sparam)
         revoutparams[(src, sparam)] = dparam
@@ -451,7 +450,7 @@ def export_output(buffered_lines, src, sname, sparam, p, dparam, selfoutparams,
 
 
 def declare_output_trait(buffered_lines, src, sname, sparam, p, dparam,
-        selfoutparams, revoutparams, processed_links):
+                         selfoutparams, revoutparams, processed_links):
     # global output param in pipeline signature, as a trait
     selfoutparams[dparam] = (src, sparam)
     revoutparams[(src, sparam)] = dparam
@@ -460,11 +459,11 @@ def declare_output_trait(buffered_lines, src, sname, sparam, p, dparam,
 
 
 def export_input(buffered_lines, dst, dname, dparam, p, sparam, selfinparams,
-        revinparams, processed_links):
+                 revinparams, processed_links):
     # global input param in pipeline signature
     buffered_lines['exports'].append('        # export input parameter\n')
     buffered_lines['exports'].append(
-        '        self.export_parameter(\'%s\', \'%s\', \'%s\')\n' \
+        '        self.export_parameter(\'%s\', \'%s\', \'%s\')\n'
         % (dname, dparam, sparam))
     selfinparams[sparam] = (dst, dparam)
     revinparams[(dst, dparam)] = sparam
@@ -486,7 +485,7 @@ def make_node_name(name, nodenames, parents):
 def is_linked_to_parent(proc, param, parent):
     # get links from proc.param
     if isinstance(proc(), procbv.Process):
-        linkdefs = proc()._links.get( param )
+        linkdefs = proc()._links.get(param)
         if linkdefs:
             for dstproc, dstparam, mlink, unknown, force in linkdefs:
                 if use_weak_ref(dstproc) == parent:
@@ -551,7 +550,7 @@ def find_param_in_parent(proc, param, procmap):
                     opname = is_linked_to_parent(proc, param, new_proc)
                     if opname is not None:
                         # then return the exported parent one
-                        #parent_pname = opname
+                        # parent_pname = opname
                         new_pname = opname
                         if verbose:
                             print('    parent param translated:', new_pname)
@@ -560,7 +559,7 @@ def find_param_in_parent(proc, param, procmap):
                     return (new_proc, new_node_name, new_pname)
                 last = (new_proc, new_pname)
                 break
-        else: # loop through the end of procmap
+        else:  # loop through the end of procmap
             allnotfound = True
     # not found
     print('Warning: find_param_in_parent: NOT FOUND')
@@ -569,13 +568,13 @@ def find_param_in_parent(proc, param, procmap):
 
 
 def write_pipeline_links(p, buffered_lines, procmap, links, processed_links,
-        selfoutparams, revoutparams, selfouttraits):
+                         selfoutparams, revoutparams, selfouttraits):
     # parse and set pipeline links
     selfinparams = {}
     revinparams = {}
     for link in links:
         link = converted_link(link, processed_links, p, selfinparams,
-            revinparams, selfoutparams, revoutparams, procmap)
+                              revinparams, selfoutparams, revoutparams, procmap)
         if link is None:
             continue
         src, sparam, dst, dparam, weak_link = link
@@ -596,10 +595,10 @@ def write_pipeline_links(p, buffered_lines, procmap, links, processed_links,
             dpname = '%s.%s' % (dname, dparam)
         if sname == '' and sparam not in selfinparams:
             export_input(buffered_lines, dst, dname, dparam, p, sparam,
-                selfinparams, revinparams, processed_links)
+                         selfinparams, revinparams, processed_links)
         elif dname == '' and dparam not in selfoutparams:
             export_output(buffered_lines, src, sname, sparam, p, dparam,
-                selfoutparams, revoutparams, processed_links, selfouttraits)
+                          selfoutparams, revoutparams, processed_links, selfouttraits)
         else:
             if dname == '' and dparam in selfinparams:
                 # swap input/output
@@ -625,8 +624,8 @@ def write_pipeline_links(p, buffered_lines, procmap, links, processed_links,
                         # avoid duplicate name
                         sparam2 = sparam2 + '2'
                     export_output(buffered_lines, src, sname, sparam, p,
-                        sparam2, selfoutparams, revoutparams, processed_links,
-                        selfouttraits)
+                                  sparam2, selfoutparams, revoutparams, processed_links,
+                                  selfouttraits)
                     # and link 2nd to this exported output (and switch link)
                     src = dst
                     sparam = dparam
@@ -641,13 +640,13 @@ def write_pipeline_links(p, buffered_lines, procmap, links, processed_links,
                         # duplicate name
                         sparam2 = sparam + '2'
                     export_input(buffered_lines, src, sname, sparam, p,
-                        sparam2, selfinparams, revinparams, processed_links)
+                                 sparam2, selfinparams, revinparams, processed_links)
                     # and link 2nd to this exported input
                     sparam = sparam2
                     spname = sparam2
             if weak_link:
                 buffered_lines['links'].append(
-                    '        self.add_link(\'%s->%s\', weak_link=True)\n' \
+                    '        self.add_link(\'%s->%s\', weak_link=True)\n'
                     % (spname, dpname))
             else:
                 buffered_lines['links'].append(
@@ -657,8 +656,8 @@ def write_pipeline_links(p, buffered_lines, procmap, links, processed_links,
 
 
 def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
-        selfoutparams, revoutparams, self_out_traits, exported, parent_names,
-        enode_name=None, weak_outputs=False):
+                 selfoutparams, revoutparams, self_out_traits, exported, parent_names,
+                 enode_name=None, weak_outputs=False):
     if enode_name is None:
         enode_name = 'select_' + enode.name()
     nodename = make_node_name(enode_name, nodenames, parent_names)
@@ -668,21 +667,22 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
         output_names = enode.switch_output
         if isinstance(output_names, str) \
                 or isinstance(output_names, unicode):
-            output_names = [output_names] # have a list
+            output_names = [output_names]  # have a list
     elif exported:
         buffered_lines['nodes'].append(
-            '        # warning, the switch output trait should be ' \
+            '        # warning, the switch output trait should be '
             'renamed to a more comprehensive name\n')
     if exported and not hasattr(enode, 'selection_outputs'):
         buffered_lines['nodes'].append(
-            '        # warning, input items should be connected to ' \
+            '        # warning, input items should be connected to '
             'adequate output items in each subprocess in the switch.\n')
     if exported:
         # postpone add_switch line after we have determined its params types
         for output_name in output_names:
             export_output(buffered_lines, use_weak_ref(enode), nodename,
-                output_name, use_weak_ref(p), output_name, selfoutparams,
-                revoutparams, processed_links, self_out_traits, weak_outputs)
+                          output_name, use_weak_ref(
+                              p), output_name, selfoutparams,
+                          revoutparams, processed_links, self_out_traits, weak_outputs)
     out_types = {}
     if hasattr(enode, 'selection_outputs'):
         # connect children outputs to the switch
@@ -692,13 +692,13 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
                     and not isinstance(link_pars, tuple):
                 link_pars = [link_pars]
             for link_par, output_name in zip(link_pars, output_names):
-                if link_par is None: # not connected
+                if link_par is None:  # not connected
                     input_name = '_switch_'.join((link_src, output_name))
                     buffered_lines['exports'].append(
                         '        self.do_not_export.add((\'%s\', \'%s\'))\n'
                         % (nodename, input_name))
                     continue
-                if link_par.startswith('/'): # absolute name, not in child
+                if link_par.startswith('/'):  # absolute name, not in child
                     src = enode
                     link_par = link_par[1:]
                 else:
@@ -719,7 +719,7 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
                 out_types.setdefault(output_name, []).append(src_par)
                 # input_name = link_src  # has changed again in Switch...
                 links.append((src, link_par, use_weak_ref(enode), input_name,
-                    weak_outputs))
+                              weak_outputs))
                 processed_links.add(
                     (src, link_par, use_weak_ref(p), output_name))
                 processed_links.add(
@@ -753,13 +753,12 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
                 % (nodename, repr(input_names), repr(output_names),
                    ', '.join(out_types_list)))
 
-
     # select the right child
     for sub_node_name in enode.childrenNames():
         node = enode.child(sub_node_name)
         if node.isSelected():
             buffered_lines['initialization'].append(
-                '        self.nodes[\'%s\'].switch = \'%s\'\n' \
+                '        self.nodes[\'%s\'].switch = \'%s\'\n'
                 % (nodename, sub_node_name))
     return nodename
 
@@ -769,7 +768,7 @@ def reorder_exports(buffered_lines, p):
     reordered = [0] * len(old_lines)
     delayed = False
     linkre = re.compile(
-        '^ *self.export_parameter\(\'([^,]+)\', \'([^\']+)\'(, \'' \
+        '^ *self.export_parameter\(\'([^,]+)\', \'([^\']+)\'(, \''
         '([^\']+)\')(, weak_link=True)?\)$')
     omax = 0
     for i, line in enumerate(old_lines):
@@ -792,7 +791,7 @@ def reorder_exports(buffered_lines, p):
                         omax = reordered[i]
                     if delayed:
                         # move comment line just before its command line
-                        reordered[i-1] = reordered[i] - 1
+                        reordered[i - 1] = reordered[i] - 1
                 else:
                     reordered[i] = -1
             delayed = False
@@ -824,8 +823,8 @@ def write_buffered_lines(out, buffered_lines, sections=None):
 
 
 def write_pipeline_definition(p, out, parse_subpipelines=False,
-        get_all_values=False, module_name_prefix=None, use_process_names={},
-        lowercase_modules=True):
+                              get_all_values=False, module_name_prefix=None, use_process_names={},
+                              lowercase_modules=True):
     '''Write a pipeline structure in the out file, and links between pipeline
     nodes.
     If parse_subpipelines is set, the pipeline structure inside sub-pipelines
@@ -835,7 +834,7 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
 
     # writing will be buffered so as to allow reordering
     buffered_lines = {'nodes': [], 'exports': [], 'links': [],
-        'initialization': []}
+                      'initialization': []}
     out.write('\n\n')
     out.write('    def pipeline_definition(self):\n')
     # enodes list: each element is a 6-tuple:
@@ -855,50 +854,50 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
             = enodes.pop(0)
         nodename = None
         if isinstance(enode, procbv.ProcessExecutionNode) \
-                and (len(list(enode.children())) == 0 \
-                    or not parse_subpipelines):
+                and (len(list(enode.children())) == 0
+                     or not parse_subpipelines):
             if enode_name is None:
                 enode_name = enode.name()
             nodename = make_node_name(enode_name, nodenames, parents)
             proc = enode._process
             procid = proc.id()
-            moduleprocid = make_module_name(procid, module_name_prefix, 
-                use_process_names, lowercase_modules)
+            moduleprocid = make_module_name(procid, module_name_prefix,
+                                            use_process_names, lowercase_modules)
             procmap[use_weak_ref(proc)] = (nodename, exported)
             if exported:
                 buffered_lines['nodes'].append(
-                    '        self.add_process(\'%s\', \'%s\')\n' \
+                    '        self.add_process(\'%s\', \'%s\')\n'
                     % (nodename, moduleprocid))
                 if weak_outputs:
                     buffered_lines['nodes'].append(
-                        '        self.nodes[\'%s\']._weak_outputs = True\n' \
+                        '        self.nodes[\'%s\']._weak_outputs = True\n'
                         % nodename)
                 links += parse_links(p, proc, weak_outputs)
                 for param_name in six.iterkeys(proc.signature):
                     if not proc.isDefault(param_name):
                         value = getattr(proc, param_name)
                         buffered_lines['initialization'].append(
-                            '        self.nodes[\'%s\'].%s = %s\n' \
+                            '        self.nodes[\'%s\'].%s = %s\n'
                             % (nodename, param_name, repr(value)))
             new_parents = (parents or []) + [nodename]
             enodes += [(enode.child(name), name, False, weak_outputs,
-                new_parents, enode) for name in enode.childrenNames()]
+                        new_parents, enode) for name in enode.childrenNames()]
             # parse process signature, look for non-default values
         else:
             if isinstance(enode, procbv.SelectionExecutionNode) and exported:
                 # FIXME: BUG: if not exported, should we rebuild switch params
                 # list, and doing this, export again internal params ?
                 nodename = write_switch(enode, buffered_lines, nodenames,
-                    links, p, processed_links, selfoutparams, revoutparams,
-                    self_out_traits, exported, parents, enode_name,
-                    weak_outputs)
+                                        links, p, processed_links, selfoutparams, revoutparams,
+                                        self_out_traits, exported, parents, enode_name,
+                                        weak_outputs)
                 procmap[use_weak_ref(enode)] = (nodename, exported)
                 # children should have weak outputs so that they can be
                 # deactivated by the switch
                 weak_outputs = True
             new_parents = parents
             enodes += [(enode.child(name), name, exported, weak_outputs,
-                new_parents, enode) for name in enode.childrenNames()]
+                        new_parents, enode) for name in enode.childrenNames()]
         if nodename and not enode.isSelected() and exported:
             # FIXME: the exported flag filters out sub-nodes of sub-pipelines
             # so it is not possible this way to unselect a node inside a
@@ -908,20 +907,20 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
             # which should not follow the "global" rule make_node_name().
             if parentnode \
                     and isinstance(parentnode, procbv.SelectionExecutionNode):
-                continue # switches have already their selection activation
+                continue  # switches have already their selection activation
             if parents:
                 sub_node_address = '.'.join(
-                    ['nodes[\'%s\'].process' % sub_name \
+                    ['nodes[\'%s\'].process' % sub_name
                         for sub_name in parents])
                 buffered_lines['initialization'].append(
-                    '        self.%s.nodes_activation.%s = False\n' \
+                    '        self.%s.nodes_activation.%s = False\n'
                     % (sub_node_address, nodename))
             else:
                 buffered_lines['initialization'].append(
                     '        self.nodes_activation.%s = False\n' % nodename)
 
     write_pipeline_links(p, buffered_lines, procmap, links, processed_links,
-        selfoutparams, revoutparams, self_out_traits)
+                         selfoutparams, revoutparams, self_out_traits)
 
     do_not_export = getattr(p, 'capsul_do_not_export', set())
     if do_not_export:
@@ -931,12 +930,12 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
     reorder_exports(buffered_lines, p)
     # flush the write buffer
     write_buffered_lines(out, buffered_lines,
-        sections=('nodes', 'exports', 'links'))
+                         sections=('nodes', 'exports', 'links'))
 
     # remove this when there is a more convenient method in Pipeline
-    #out.write(
-#'''        # export orphan output parameters
-        #self.export_internal_parameters()
+    # out.write(
+# '''        # export orphan output parameters
+        # self.export_internal_parameters()
 
 #''')
     #
@@ -947,12 +946,12 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
         "            self.autoexport_nodes_parameters()\n"]
     # flush the init section buffer
     write_buffered_lines(out, buffered_lines, sections=('initialization', ))
-    if all([not buffered_lines.get(section) \
-        for section in ('nodes', 'exports', 'links', 'initialization')]):
-            out.write('        pass\n')
+    if all([not buffered_lines.get(section)
+            for section in ('nodes', 'exports', 'links', 'initialization')]):
+        out.write('        pass\n')
 
     out.write(
-'''
+        '''
     def autoexport_nodes_parameters(self):
         \'\'\'export orphan and internal output parameters\'\'\'
         for node_name, node in six.iteritems(self.nodes):
@@ -994,9 +993,9 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
 # ----
 
 def axon_to_capsul(proc, outfile, module_name_prefix=None,
-        parse_subpipelines=False, get_all_values=True,
-        capsul_process_name=None, use_process_names={},
-        lowercase_modules=True):
+                   parse_subpipelines=False, get_all_values=True,
+                   capsul_process_name=None, use_process_names={},
+                   lowercase_modules=True):
     '''Converts an Axon process or pipeline into a CAPSUL process or pipeline.
     The output is a file, named with the outfile parameter.
 
@@ -1017,7 +1016,7 @@ def axon_to_capsul(proc, outfile, module_name_prefix=None,
         reported to the output process.
         Default is False.
     capsul_process_name: string (optional)
-        if specified, name of the converted Capsul process. Otherwise use the 
+        if specified, name of the converted Capsul process. Otherwise use the
         same name as the Axon process ID.
     use_process_names: dict string:string (optional)
         names mapping table between Axon process IDs and Capsul process names
@@ -1068,11 +1067,11 @@ class ''')
 #        if autoexport_nodes_parameters:
 #            self.autoexport_nodes_parameters()\n''' % capsul_process_name)
         write_pipeline_definition(p, out,
-            parse_subpipelines=parse_subpipelines,
-            get_all_values=get_all_values,
-            module_name_prefix=module_name_prefix, 
-            use_process_names=use_process_names,
-            lowercase_modules=lowercase_modules)
+                                  parse_subpipelines=parse_subpipelines,
+                                  get_all_values=get_all_values,
+                                  module_name_prefix=module_name_prefix,
+                                  use_process_names=use_process_names,
+                                  lowercase_modules=lowercase_modules)
     else:
         out.write('    def __init__(self, **kwargs):\n')
         out.write('        super(%s, self).__init__()\n' % capsul_process_name)
@@ -1126,56 +1125,55 @@ def module_filename(process_name, lowercase_modules, gen_process_names):
                     lowercase_modules)
 
 
-
 def axon_to_capsul_main(argv):
 
-    parser = OptionParser('Convert an Axon process into a Capsul ' \
-        'process.\nAlso works for pipeline structures.\n' \
-        'Parameters links for completion are not preserved (yet), but ' \
-        'inter-process links in pipelines are (normally) rebuilt.')
+    parser = OptionParser('Convert an Axon process into a Capsul '
+                          'process.\nAlso works for pipeline structures.\n'
+                          'Parameters links for completion are not preserved (yet), but '
+                          'inter-process links in pipelines are (normally) rebuilt.')
     parser.add_option('-p', '--process', dest='process', action='append',
-        default=[],
-        help='input process ID. Ex: NobiasHistoAnalysis. Several -p options ' \
-        'are allowed and should each correspond to a -o option.')
+                      default=[],
+                      help='input process ID. Ex: NobiasHistoAnalysis. Several -p options '
+                      'are allowed and should each correspond to a -o option.')
     parser.add_option('-o', '--output', dest='output', metavar='FILE',
-        action='append', default=[],
-        help='output .py file for the converted process code')
+                      action='append', default=[],
+                      help='output .py file for the converted process code')
     parser.add_option('-n', '--name', dest='name', action='append',
-        default=[],
-        help='name of converted Capsul processes. Default: same as Axon. ' \
-        'Individual processes may be renamed. The syntax is ' \
-        'axon_name:capsul_name, ex: "-n BiasCorrection:bias_correction". ' \
-        'Several -n options may be specified')
+                      default=[],
+                      help='name of converted Capsul processes. Default: same as Axon. '
+                      'Individual processes may be renamed. The syntax is '
+                      'axon_name:capsul_name, ex: "-n BiasCorrection:bias_correction". '
+                      'Several -n options may be specified')
     parser.add_option('-m', '--module', dest='module',
-        help='module name used as namespace to get the sub-processes in a ' \
-        'pipeline')
+                      help='module name used as namespace to get the sub-processes in a '
+                      'pipeline')
     parser.add_option('-u', '--use', dest='use_proc', action='append',
-        default=[],
-        help='names of processes to use in pipeline nodes. As for -n ' \
-        'option, the syntax is axon_name:capsul_name. But this table is not ' \
-        'used when generating a Capsul process class name, but only when ' \
-        'using it to get a process inside a pipeline. The capsul name is ' \
-        'the full module + class name, ex: morpho.morphologist.Morphologist')
+                      default=[],
+                      help='names of processes to use in pipeline nodes. As for -n '
+                      'option, the syntax is axon_name:capsul_name. But this table is not '
+                      'used when generating a Capsul process class name, but only when '
+                      'using it to get a process inside a pipeline. The capsul name is '
+                      'the full module + class name, ex: morpho.morphologist.Morphologist')
     parser.add_option('-r', '--recursive_sub', dest='parse_subpipelines',
-        action='store_true', default=False,
-        help='recursively parse sub-pipelines of a pipeline. This is mostly ' \
-        'a debugging feature, since it is generally not needed because ' \
-        'sub-pipelines are processes and can be converted and used ' \
-        'directly. Moreover with this option, pipeline processes are not ' \
-        'exported as themselves, but may contain parameters which will not ' \
-        'be exported and may cause missing or broken links.')
+                      action='store_true', default=False,
+                      help='recursively parse sub-pipelines of a pipeline. This is mostly '
+                      'a debugging feature, since it is generally not needed because '
+                      'sub-pipelines are processes and can be converted and used '
+                      'directly. Moreover with this option, pipeline processes are not '
+                      'exported as themselves, but may contain parameters which will not '
+                      'be exported and may cause missing or broken links.')
     parser.add_option('-s', '--subprocess', dest='subprocess',
-        action='store_true', default=False,
-        help='automatically convert sub-processes of a pipeline, using the ' \
-        'process IDs as both class name and output file names. Names ' \
-        'conversion through the -u option applies. This option mainly ' \
-        'avoids to specify all pipeline processes via series of -p/-o ' \
-        'parameters. Additional sub-processes specified through -p/-o may ' \
-        'replace them.')
+                      action='store_true', default=False,
+                      help='automatically convert sub-processes of a pipeline, using the '
+                      'process IDs as both class name and output file names. Names '
+                      'conversion through the -u option applies. This option mainly '
+                      'avoids to specify all pipeline processes via series of -p/-o '
+                      'parameters. Additional sub-processes specified through -p/-o may '
+                      'replace them.')
     parser.add_option('-l', '--lowercase_modules', dest='lowercase_modules',
-        action='store_true', default=True,
-        help='convert process/pipeline classes modules names to lowercase. '
-        'Used with the -s option. Default=True')
+                      action='store_true', default=True,
+                      help='convert process/pipeline classes modules names to lowercase. '
+                      'Used with the -s option. Default=True')
 
     options, args = parser.parse_args(argv)
     if len(args) != 0:
@@ -1186,38 +1184,38 @@ def axon_to_capsul_main(argv):
         raise ValueError(
             'There should be the same number of -p options and -o options')
 
-    #processes.fastStart = True
+    # processes.fastStart = True
     from brainvisa.configuration import neuroConfig
     neuroConfig.ignoreValidation = True
     processes.initializeProcesses()
     lowercase_modules = options.lowercase_modules
-    gen_process_names = dict([(axon, capsul) \
-        for (axon, capsul) in [name.split(':') for name in options.name]])
+    gen_process_names = dict([(axon, capsul)
+                              for (axon, capsul) in [name.split(':') for name in options.name]])
     use_process_names = dict(
         [(axon,
           make_module_name(capsul, options.module, {},
                            lowercase_modules))
          for axon, capsul in six.iteritems(gen_process_names)])
-    #print('converted proc names:', use_process_names)
-    use_process_names.update(dict([(axon, capsul) \
-        for (axon, capsul) in [name.split(':') for name in options.use_proc]]))
+    # print('converted proc names:', use_process_names)
+    use_process_names.update(dict([(axon, capsul)
+                                   for (axon, capsul) in [name.split(':') for name in options.use_proc]]))
 
-    #print('use_process_names:', use_process_names)
+    # print('use_process_names:', use_process_names)
 
     done_processes = set()
     todo = zip([procbv.getProcessInstance(p, ignoreValidation=True)
                 for p in options.process],
-        options.output)
+               options.output)
     if options.subprocess:
         added_processes = []
         for proc, outfile in todo:
-          added_processes += get_subprocesses(proc)
+            added_processes += get_subprocesses(proc)
         todo += zip(list(added_processes),
-            [module_filename(p.id(), lowercase_modules,
-                             gen_process_names) + '.py'
-             for p in added_processes])
+                    [module_filename(p.id(), lowercase_modules,
+                                     gen_process_names) + '.py'
+                     for p in added_processes])
 
-    todo = set(todo) # remove duplicates
+    todo = set(todo)  # remove duplicates
 
     for proc, outfile in todo:
         procid = get_process_id(proc)
@@ -1226,14 +1224,14 @@ def axon_to_capsul_main(argv):
             continue
         done_processes.add(procid)
         proc = axon_to_capsul(proc, outfile,
-            module_name_prefix=options.module,
-            parse_subpipelines=options.parse_subpipelines,
-            get_all_values=True,
-            capsul_process_name=gen_process_names.get(procid),
-            use_process_names=use_process_names,
-            lowercase_modules=lowercase_modules)
+                              module_name_prefix=options.module,
+                              parse_subpipelines=options.parse_subpipelines,
+                              get_all_values=True,
+                              capsul_process_name=gen_process_names.get(
+                                  procid),
+                              use_process_names=use_process_names,
+                              lowercase_modules=lowercase_modules)
 
 
 if __name__ == '__main__':
     axon_to_capsul_main(sys.argv[1:])
-

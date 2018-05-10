@@ -6,9 +6,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -23,22 +23,22 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-include( 'base' )
+include('base')
 
 #------------------------------------------------------------------------------
 # New referentials and transformations organization
 #------------------------------------------------------------------------------
 
 allKindsOfRefAndTrans = (
-  '*', SetType( 'Referential' ),
-  '*', SetType( 'Transformation matrix' ),
+    '*', SetType('Referential'),
+  '*', SetType('Transformation matrix'),
 )
 
 # The "registration" directory in each subject contains:
@@ -46,34 +46,35 @@ allKindsOfRefAndTrans = (
 #   - all the transformations that links two referetials
 #     from this directory or from the common referentials
 #     directory (in "shared" directory)
-insertFirst( '{protocol}/{subject}',
-  'registration', SetType( 'Registration Directory' ),
-             SetContent( *allKindsOfRefAndTrans ),
-)
+insertFirst('{protocol}/{subject}',
+            'registration', SetType('Registration Directory'),
+            SetContent(*allKindsOfRefAndTrans),
+            )
 
 # The "registration" directory in each protocol contains
 # all the referentials and transformations for cross-subject
 # registration.
-insertFirst( '{protocol}',
-  'registration', SetType( 'Registration Directory' ), 
-  SetContent( *allKindsOfRefAndTrans ),
-)
+insertFirst('{protocol}',
+            'registration', SetType('Registration Directory'),
+            SetContent(*allKindsOfRefAndTrans),
+            )
 
 #------------------------------------------------------------------------------
 # Old transformations organization
 #------------------------------------------------------------------------------
 
 recal_content = (
-    "ref_TO_test", SetType( 'REF to TEST Transformation matrix' ), 
-      SetWeakAttr( 'from', 'REF' ), SetWeakAttr( 'to', 'TEST' ),
-    "test_TO_ref", SetType( 'TEST to REF Transformation matrix' ), 
-      SetWeakAttr( 'from', 'TEST' ), SetWeakAttr( 'to', 'REF' ),
+    "ref_TO_test", SetType('REF to TEST Transformation matrix'),
+      SetWeakAttr('from', 'REF'), SetWeakAttr('to', 'TEST'),
+    "test_TO_ref", SetType('TEST to REF Transformation matrix'),
+      SetWeakAttr('from', 'TEST'), SetWeakAttr('to', 'REF'),
      # --comment to avoid ambiguity # "<subject>_TO_talairach", SetType( 'RECAL Transformation matrix' ),
-    "rs_recal_<subject>", SetType( 'Resamp Spline Image' ),
+    "rs_recal_<subject>", SetType('Resamp Spline Image'),
 )
 
 
-insert( '{protocol}/{subject}',
-  "recal",
-    SetContent(*recal_content) # + ( '{acquisition}', SetContent(*recal_content ), ),
-)
+insert('{protocol}/{subject}',
+       "recal",
+       SetContent(*recal_content)
+       # + ( '{acquisition}', SetContent(*recal_content ), ),
+       )

@@ -35,18 +35,19 @@ from brainvisa.processes import *
 
 configuration = Application().configuration
 name = 'View 2D Image (PNG file)'
-userLevel=0
-roles=("viewer", )
+userLevel = 0
+roles = ("viewer", )
 
 signature = Signature(
-    'png_image', ReadDiskItem( "2D Image", "PNG image" )
+    'png_image', ReadDiskItem("2D Image", "PNG image")
 )
 
-def initialization( self ):
+
+def initialization(self):
     pass
 
-def execution( self, context ):
-  if configuration.brainvisa.pngViewer and self.png_image is not None and os.path.exists(self.png_image.fullPath()):
-    context.system( configuration.brainvisa.pngViewer, self.png_image.fullPath() )
 
-
+def execution(self, context):
+    if configuration.brainvisa.pngViewer and self.png_image is not None and os.path.exists(self.png_image.fullPath()):
+        context.system(
+            configuration.brainvisa.pngViewer, self.png_image.fullPath())

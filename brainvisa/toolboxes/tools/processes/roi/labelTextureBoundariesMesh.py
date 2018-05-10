@@ -40,38 +40,38 @@ except:
 name = 'Label Texture Boundaries Mesh'
 userLevel = 0
 
+
 def validation():
     try:
         from soma import aims
     except:
-        raise ValidationError( 'soma.aims module cannot be imported' )
+        raise ValidationError('soma.aims module cannot be imported')
 
 signature = Signature(
-    'label_texture', ReadDiskItem( 'Label Texture', 'aims texture formats' ),
-    'mesh', ReadDiskItem( 'Mesh', 'aims mesh formats' ),
-    'output_boundaries_mesh', WriteDiskItem( 'Mesh',
-        [ 'Mesh mesh', 'Texture' ] ),
+    'label_texture', ReadDiskItem('Label Texture', 'aims texture formats'),
+    'mesh', ReadDiskItem('Mesh', 'aims mesh formats'),
+    'output_boundaries_mesh', WriteDiskItem('Mesh',
+                                            ['Mesh mesh', 'Texture']),
     'line_width', Float(),
-    'mesh_color', ListOf( Float() ),
+    'mesh_color', ListOf(Float()),
 )
 
 
-def initialization( self ):
+def initialization(self):
     self.line_width = 5.
-    self.linkParameters( 'mesh', 'label_texture' )
+    self.linkParameters('mesh', 'label_texture')
 
 
-def execution( self, context ):
-    tex = aims.read( self.label_texture.fullPath() )
-    mesh = aims.read( self.mesh.fullPath() )
-    outmesh = aims.SurfaceManip.meshTextureBoundary( mesh, tex, -1 )
-    diffuse = [ 1., 0, 0., 1. ]
-    ncomp = min( len( self.mesh_color ), 4 )
-    diffuse[ : ncomp ] = self.mesh_color[ : ncomp ]
-    context.write( self.mesh_color )
+def execution(self, context):
+    tex = aims.read(self.label_texture.fullPath())
+    mesh = aims.read(self.mesh.fullPath())
+    outmesh = aims.SurfaceManip.meshTextureBoundary(mesh, tex, -1)
+    diffuse = [1., 0, 0., 1.]
+    ncomp = min(len(self.mesh_color), 4)
+    diffuse[: ncomp] = self.mesh_color[: ncomp]
+    context.write(self.mesh_color)
     outmesh.header()[ 'material' ] = \
-        { 'line_width' : self.line_width, 'diffuse' : diffuse }
-    aims.write( outmesh, self.output_boundaries_mesh.fullPath() )
+        {'line_width': self.line_width, 'diffuse': diffuse}
+    aims.write(outmesh, self.output_boundaries_mesh.fullPath())
     tm = registration.getTransformationManager()
-    tm.copyReferential( self.mesh, self.output_boundaries_mesh )
-
+    tm.copyReferential(self.mesh, self.output_boundaries_mesh)

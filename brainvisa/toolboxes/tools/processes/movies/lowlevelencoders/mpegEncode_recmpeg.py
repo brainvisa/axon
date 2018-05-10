@@ -78,8 +78,8 @@ def execution(self, context):
     mod16 = width % 16
     if mod16:
         raise RuntimeError(_t_('Image width must be a multiple of 16. Actual '
-                                'width is %d, closest good values are %d and '
-                                '%d.') %
+                               'width is %d, closest good values are %d and '
+                               '%d.') %
                            (width, width - mod16, width + 16 - mod16))
         return
     size = str( attrs[ 'volume_dimension' ][ 0 ] ) + 'x' \
@@ -95,5 +95,5 @@ def execution(self, context):
     cmd = ['recmpeg', '-P', self.encoding, '--coding', self.coding,
            '--quality', self.quality, '--fps', self.framesPerSecond,
            '--picture', size] + self.additional_encoder_options \
-          + [self.animation.fullPath(), yuvImages]
+        + [self.animation.fullPath(), yuvImages]
     context.system(*cmd)

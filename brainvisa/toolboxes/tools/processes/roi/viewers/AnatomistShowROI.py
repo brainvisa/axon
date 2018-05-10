@@ -6,9 +6,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -23,8 +23,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -37,23 +37,24 @@ name = 'Anatomist Show ROI'
 roles = ('viewer',)
 userLevel = 0
 
+
 def validation():
     anatomist.validation()
 
 signature = Signature(
-  'roi', ReadDiskItem( 'ROI', getDiskItemType( 'ROI' ).formats ),
+    'roi', ReadDiskItem('ROI', getDiskItemType('ROI').formats),
 )
 
 
-def execution( self, context ):
-  a = anatomist.Anatomist()
-  if self.roi.format is getFormat( 'Graph and data' ):
-    graph_object = a.loadObject( self.roi )
-    window = a.createWindow( '3D' )
-    window.assignReferential( graph_object.referential )
-    window.addObjects( [graph_object] )
-    nodes = graph_object.children
-    a.getDefaultWindowsGroup().setSelection(nodes)
-    return ( graph_object, window, nodes )
-  else:
-    return a.viewObject( self.roi )
+def execution(self, context):
+    a = anatomist.Anatomist()
+    if self.roi.format is getFormat('Graph and data'):
+        graph_object = a.loadObject(self.roi)
+        window = a.createWindow('3D')
+        window.assignReferential(graph_object.referential)
+        window.addObjects([graph_object])
+        nodes = graph_object.children
+        a.getDefaultWindowsGroup().setSelection(nodes)
+        return (graph_object, window, nodes)
+    else:
+        return a.viewObject(self.roi)

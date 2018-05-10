@@ -86,5 +86,5 @@ def execution(self, context):
     cmd = ['transcode', '-x', 'imlist,null', '-y', self.encoding + ',null',
            '-i', tmp, '-g', str(width) + 'x' + str(height), '-H', 0,
            '-o', self.animation.fullPath(), '-f', self.framesPerSecond] \
-          + self.additional_encoder_options
+        + self.additional_encoder_options
     context.system(*cmd)

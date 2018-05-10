@@ -8,9 +8,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -25,8 +25,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -50,37 +50,43 @@ from brainvisa.data.qtgui.updateDatabases import UpdateDatabasesGUI
 name = 'Update databases'
 userLevel = 0
 
-def execution( self, context ):
-  databases = mainThreadActions().call( context.inlineGUI.selectedDatabases )
-  classic_method = mainThreadActions().call( context.inlineGUI.classic_method)
-  quick_hf_method = mainThreadActions().call( context.inlineGUI.quick_hf_method)
-  history_files_method = mainThreadActions().call( context.inlineGUI.history_files_method)
 
-  for database in databases:
-    # must close the connection currently opened in the main thread before clearing and updating the database
-    mainThreadActions().call( database.currentThreadCleanup )
-    if classic_method : 
-      database.clear( context=context )
-      context.write( '<b>Clear database:', database.name, '</b>' )
-    context.write( '<b>Update database:', database.name, '</b>' )
-    
-    if classic_method:
-      database.update( context=context )
-    elif database.activate_history:
-      if quick_hf_method :
-        database.updateHistoryFiles( context=context, scanAllBvproc = False)
-      elif history_files_method :
-        database.updateHistoryFiles( context=context, scanAllBvproc = True)
-    else :
-        context.write("The history option is not activated.")
-      
+def execution(self, context):
+    databases = mainThreadActions().call(context.inlineGUI.selectedDatabases)
+    classic_method = mainThreadActions().call(context.inlineGUI.classic_method)
+    quick_hf_method = mainThreadActions().call(
+        context.inlineGUI.quick_hf_method)
+    history_files_method = mainThreadActions().call(
+        context.inlineGUI.history_files_method)
 
-def inlineGUI( self, values, context, parent, externalRunButton=False ):
-  result = UpdateDatabasesGUI( parent )
-  self.context = context
-  result.btnClearAndUpdate.clicked.connect(self.run_button_clicked)
-  return result
+    for database in databases:
+        # must close the connection currently opened in the main thread before
+        # clearing and updating the database
+        mainThreadActions().call(database.currentThreadCleanup)
+        if classic_method:
+            database.clear(context=context)
+            context.write('<b>Clear database:', database.name, '</b>')
+        context.write('<b>Update database:', database.name, '</b>')
+
+        if classic_method:
+            database.update(context=context)
+        elif database.activate_history:
+            if quick_hf_method:
+                database.updateHistoryFiles(
+                    context=context, scanAllBvproc=False)
+            elif history_files_method:
+                database.updateHistoryFiles(
+                    context=context, scanAllBvproc=True)
+        else:
+            context.write("The history option is not activated.")
+
+
+def inlineGUI(self, values, context, parent, externalRunButton=False):
+    result = UpdateDatabasesGUI(parent)
+    self.context = context
+    result.btnClearAndUpdate.clicked.connect(self.run_button_clicked)
+    return result
+
 
 def run_button_clicked(self, checked=False):
     self.context._runButton()
-

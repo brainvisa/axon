@@ -6,9 +6,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -23,8 +23,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -37,66 +37,74 @@ name = 'ROI drawing'
 userLevel = 1
 
 signature = Signature(
-  'image', ReadDiskItem( '4D Volume', 'anatomist Volume Formats' ),
-  'ROI', WriteDiskItem( 'ROI', 'Graph and data' ),
+    'image', ReadDiskItem('4D Volume', 'anatomist Volume Formats'),
+  'ROI', WriteDiskItem('ROI', 'Graph and data'),
 )
+
 
 def validation():
     anatomist.validation()
 
-def initialize( self ):
-  self.linkParameters( 'ROI', 'image' )
 
-def inlineGUI( self, values, context, parent ):
-  btn = QPushButton( _t_( 'Show' ), parent )
-  btn.clicked.connect(context._runButton)
-  return btn
+def initialize(self):
+    self.linkParameters('ROI', 'image')
 
-def execution( self, context ):
-  sourceUuid = self.image.uuid( saveMinf=False )
-  self.ROI.setMinf( 'source_volume', str( sourceUuid ) )
 
-  a = anatomist.Anatomist()
-  imageObject = a.loadObject( self.image )
+def inlineGUI(self, values, context, parent):
+    btn = QPushButton(_t_('Show'), parent)
+    btn.clicked.connect(context._runButton)
+    return btn
 
-  nodesObjects = []
-  if not self.ROI.isReadable():
-    regionsObject = a.createGraph( object=imageObject,
-                                   name=self.ROI.fullPath(),
-                                   filename=self.ROI.fullPath() )
-    # Create a region
-    nodesObjects.append( regionsObject.createNode( name='region',
-                                                   duplicate=False ) )
-  else:
-    regionsObject = a.loadObject( self.ROI )
-    nodesObjects = regionsObject.children
 
-  # Show regions and linked image
-  block = a.createWindowsBlock()
-  windowC = a.createWindow( 'Coronal', block=block )
-  windowS = a.createWindow( 'Sagittal', block=block )
-  windowA = a.createWindow( 'Axial', block=block )
-  window3 = a.createWindow( '3D', block=block )
-  
-  # set the referential of the image to all the window and to the roi graph
-  ref=imageObject.referential
-  if ref != a.centralRef:
-    a.assignReferential(ref, [windowC, windowS, windowA, window3, regionsObject])
-    
-  a.addObjects( [ imageObject, regionsObject ], [windowC, windowS, windowA] )
-  a.setWindowsControl( windows=[windowC, windowS, windowA], control="PaintControl" )
-  window3.addObjects( [regionsObject] )
-    
-  if nodesObjects: # the region must be selected to draw
-    a.getDefaultWindowsGroup().addToSelection(nodesObjects)
-  
-  rep = context.ask( "Click here when finished","OK", "Cancel", modal=0 )
-  if rep != 1:
-    regionsObject.save(self.ROI.fullPath())
-    a.sync() # make sure that anatomist has finished to process previous commands
-    
-  tm=registration.getTransformationManager()
-  tm.copyReferential(self.image, self.ROI)
+def execution(self, context):
+    sourceUuid = self.image.uuid(saveMinf=False)
+    self.ROI.setMinf('source_volume', str(sourceUuid))
 
-  #return ( imageObject, regionsObject, windowC, windowS, windowA, window3,
-           #nodesObjects, block )
+    a = anatomist.Anatomist()
+    imageObject = a.loadObject(self.image)
+
+    nodesObjects = []
+    if not self.ROI.isReadable():
+        regionsObject = a.createGraph(object=imageObject,
+                                      name=self.ROI.fullPath(),
+                                      filename=self.ROI.fullPath())
+        # Create a region
+        nodesObjects.append(regionsObject.createNode(name='region',
+                                                     duplicate=False))
+    else:
+        regionsObject = a.loadObject(self.ROI)
+        nodesObjects = regionsObject.children
+
+    # Show regions and linked image
+    block = a.createWindowsBlock()
+    windowC = a.createWindow('Coronal', block=block)
+    windowS = a.createWindow('Sagittal', block=block)
+    windowA = a.createWindow('Axial', block=block)
+    window3 = a.createWindow('3D', block=block)
+
+    # set the referential of the image to all the window and to the roi graph
+    ref = imageObject.referential
+    if ref != a.centralRef:
+        a.assignReferential(
+            ref, [windowC, windowS, windowA, window3, regionsObject])
+
+    a.addObjects([imageObject, regionsObject], [windowC, windowS, windowA])
+    a.setWindowsControl(
+        windows=[windowC, windowS, windowA], control="PaintControl")
+    window3.addObjects([regionsObject])
+
+    if nodesObjects:  # the region must be selected to draw
+        a.getDefaultWindowsGroup().addToSelection(nodesObjects)
+
+    rep = context.ask("Click here when finished", "OK", "Cancel", modal=0)
+    if rep != 1:
+        regionsObject.save(self.ROI.fullPath())
+        a.sync()
+               # make sure that anatomist has finished to process previous
+               # commands
+
+    tm = registration.getTransformationManager()
+    tm.copyReferential(self.image, self.ROI)
+
+    # return ( imageObject, regionsObject, windowC, windowS, windowA, window3,
+             # nodesObjects, block )

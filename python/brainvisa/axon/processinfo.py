@@ -15,7 +15,7 @@ def process_description(pi, hide=[]):
     for attrib in show:
         if attrib in hide:
             continue
-        name, val_trans = att_transl.get(attrib, (attrib+': ', None))
+        name, val_trans = att_transl.get(attrib, (attrib + ': ', None))
         value = getattr(pi, attrib)
         if val_trans:
             value = val_trans.get(value, value)
@@ -72,9 +72,10 @@ def process_parameters_help(pi, cols=None):
                           pi.procdoc.get('en', {})).get('parameters', {})
     lines = []
     try:
-      signature = processes.getProcessInstance(pi.id).signature
+        signature = processes.getProcessInstance(pi.id).signature
     except ValidationError:
-      signature = processes.getProcess(pi.id, ignoreValidation=True).signature
+        signature = processes.getProcess(
+            pi.id, ignoreValidation=True).signature
     signature = signature.items()
 
     lines.append('    parameters:')
@@ -101,7 +102,6 @@ def process_parameters_help(pi, cols=None):
             lines.append('')
 
     return '\n'.join(lines) + '\n'
-
 
 
 def xhtml_to_str(xhtml, indent=0, shorten_first=0, cols=None):
@@ -145,7 +145,7 @@ def process_help_pprint(text, indent=0, shorten_first=0, cols=None):
             maxw = cols
             if not new_lines:
                 maxw -= shorten_first
-                if maxw <=0:
+                if maxw <= 0:
                     new_lines.append('')
                     maxw = cols
             while len(line) > maxw:
@@ -154,7 +154,7 @@ def process_help_pprint(text, indent=0, shorten_first=0, cols=None):
                     w = line.find(' ')
                 if w >= 0:
                     new_lines.append(line[0:w])
-                    line = ' ' * indent + line[w+1:]
+                    line = ' ' * indent + line[w + 1:]
                 else:
                     new_lines.append(line)
                     line = ''
@@ -178,7 +178,7 @@ def process_list_help(sort_by='name', output=sys.stdout, proc_filter=None,
         for pf in proc_filter:
             sep = pf.find('=')
             attrib = pf[:sep]
-            rule = re.compile(pf[sep+1:])
+            rule = re.compile(pf[sep + 1:])
             proc_filters.append((attrib, rule))
 
     proc_list = {}
@@ -187,7 +187,7 @@ def process_list_help(sort_by='name', output=sys.stdout, proc_filter=None,
     else:
         key_att = sort_by
     for pi in processes.allProcessesInfo():
-        processes.readProcdoc(pi.id) # ensure doc is here
+        processes.readProcdoc(pi.id)  # ensure doc is here
         if proc_filter and not filter_process(pi, proc_filters):
             continue
         keys = getattr(pi, key_att)
@@ -210,11 +210,10 @@ def process_list_help(sort_by='name', output=sys.stdout, proc_filter=None,
 
 def process_help(process, output=sys.stdout, html=False, cols=80):
     pi = processes.getProcessInfo(process)
-    processes.readProcdoc(pi.id) # ensure doc is here
+    processes.readProcdoc(pi.id)  # ensure doc is here
     descr = process_description(pi)
     param_help = process_parameters_help(pi, cols=cols)
     long_help = process_long_help(pi, indent=8, shorten_first=17, cols=cols)
     descr += '%s    description: %s' % (param_help, long_help)
 
     output.write(descr)
-

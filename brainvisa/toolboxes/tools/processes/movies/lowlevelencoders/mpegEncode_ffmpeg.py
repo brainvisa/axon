@@ -115,7 +115,7 @@ def execution(self, context):
             m2 = numre.match(os.path.basename(x.fullName()))
             if not m2 or m2.group(1) != m.group(1) or m2.span(2) != sp \
                     or os.path.basename(self.images[0].fullPath())[sp[1]:] \
-                        != ext:
+                    != ext:
                 pat = ''
                 msg = _t_('ffmpeg/avconv can ony handle a series of homogen, '
                           'numbered image filenames. Image %s breaks the '
@@ -181,7 +181,7 @@ def execution(self, context):
         cmd += ['-vtag', 'MP43']
     cmd += ['-pass', '1',
             '-passlogfile', passlog] + self.additional_encoder_options \
-           + [self.animation.fullPath()]
+        + [self.animation.fullPath()]
     context.write(cmd)
     if os.path.exists(self.animation.fullPath()):
         # ffmpeg doesn't overwrite existing files

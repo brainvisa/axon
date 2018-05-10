@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-include( 'builtin' )
+include('builtin')
 
 #----------- Snapshots with snapbase ----------------------
 FileType('Snapshot', '2D Image', 'AIMS image formats')

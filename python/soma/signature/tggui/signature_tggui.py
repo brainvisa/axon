@@ -8,10 +8,10 @@
 #
 # This software is governed by the CeCILL-B license under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL-B license as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
-# 
+# and INRIA at the following URL "http://www.cecill.info".
+#
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
 # with a limited warranty  and the software's author,  the holder of the
@@ -25,8 +25,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -58,238 +58,248 @@ else:
         return thing.next()
 
 
-class HasSignatureEditionWidget( TgFieldSet ):
-  _live = True
+class HasSignatureEditionWidget(TgFieldSet):
+    _live = True
 
-  def __init__( self, tggui, object,
-                parent=None, name=None, live=False ):
+    def __init__(self, tggui, object,
+                 parent=None, name=None, live=False):
 
-    super(HasSignatureEditionWidget, self).__init__()
-    self.css = [ CSSLink('static', 'css/hassignature.css') ]
-    self.javascript = [mochikit, JSLink( 'static', 'js/soma.js' ) ]
+        super(HasSignatureEditionWidget, self).__init__()
+        self.css = [CSSLink('static', 'css/hassignature.css')]
+        self.javascript = [mochikit, JSLink('static', 'js/soma.js')]
 
-    self._tggui = tggui
-    self._live = live
-    self._createSignatureWidgets( object, live )
-    self.legend = name
-    self.field_class = 'collapsible'
+        self._tggui = tggui
+        self._live = live
+        self._createSignatureWidgets(object, live)
+        self.legend = name
+        self.field_class = 'collapsible'
 
-    if live:
-      self.__object = object
-      self.__object.onAttributeChange( 'signature', self._signatureChanged )
-      self.__object.onAttributeChange(  self._attributeChanged )
-      it = six.iteritems(self.__object.signature)
-      next(it) # skip signature attribute
-      for attributeName, signatureItem in it:
-        signatureItem.onAttributeChange( 'type', self._signatureChanged )
-        signatureItem.onAttributeChange( 'visible', self._signatureChanged )
-    
-  
-  def _setLabel( self, label ):
-    self.legend = label
+        if live:
+            self.__object = object
+            self.__object.onAttributeChange(
+                'signature', self._signatureChanged)
+            self.__object.onAttributeChange(self._attributeChanged)
+            it = six.iteritems(self.__object.signature)
+            next(it)  # skip signature attribute
+            for attributeName, signatureItem in it:
+                signatureItem.onAttributeChange(
+                    'type', self._signatureChanged)
+                signatureItem.onAttributeChange(
+                    'visible', self._signatureChanged)
 
-  def _createSignatureWidgets( self, object, live ):
+    def _setLabel(self, label):
+        self.legend = label
 
-    layoutRow = 0
-    self.fields = []
-    self._attributesGUI = {}
-    self._attributesGUI2 = {}
+    def _createSignatureWidgets(self, object, live):
 
-    it = six.iteritems(object.signature)
-    next(it) # skip signature attribute
+        layoutRow = 0
+        self.fields = []
+        self._attributesGUI = {}
+        self._attributesGUI2 = {}
 
-    for attributeName, signatureItem in it:
-      if not signatureItem.visible: continue
+        it = six.iteritems(object.signature)
+        next(it)  # skip signature attribute
 
-      tggui = self._tggui._createAttributeTgGUI( signatureItem.type, object,
-                                                  attributeName )
-      attributeWidget = tggui.editionWidget( getattr( object, attributeName ), self._tggui.window,
-                                             parent=self, name=unicode(attributeName),
-                                             live=live )
-      labelWidget = tggui.labelWidget( object, unicode(attributeName), attributeWidget,
-                                       parent=self )
-      if signatureItem.collapsed and isinstance( attributeWidget, HasSignatureEditionWidget ):
-        attributeWidget._expandOrCollapse()
-        
-      if live:
-        tggui.onWidgetChange.add( self._attributeWidgetChanged )
-        
-      if labelWidget is None:
-        self.fields.append( attributeWidget )
-        if signatureItem.doc :
-          tooltip = attributeName + ': ' + \
-                    signatureItem.doc
+        for attributeName, signatureItem in it:
+            if not signatureItem.visible:
+                continue
 
-          if hasattr(attributeWidget, 'label_attrs') :
-            attributeWidget.label_attrs['title'] = tooltip
-            
-          if hasattr(attributeWidget, 'attrs') :
-            attributeWidget.attrs['title'] = tooltip
-          
-      else:
-        self.fields.append( labelWidget )
-        self.fields.append( attributeWidget )
-        
-        if signatureItem.doc :
-          tooltip = attributeName + ': ' + \
-                    signatureItem.doc
+            tggui = self._tggui._createAttributeTgGUI(
+                signatureItem.type, object,
+                                                        attributeName)
+            attributeWidget = tggui.editionWidget(
+                getattr(object, attributeName), self._tggui.window,
+                                                   parent=self, name=unicode(
+                                                       attributeName),
+                                                   live=live)
+            labelWidget = tggui.labelWidget(
+                object, unicode(attributeName), attributeWidget,
+                                             parent=self)
+            if signatureItem.collapsed and isinstance(attributeWidget, HasSignatureEditionWidget):
+                attributeWidget._expandOrCollapse()
 
-          if hasattr(labelWidget, 'attrs') :
-            labelWidget.attrs['title'] = tooltip
-            
-          if hasattr(attributeWidget, 'attrs') :
-            attributeWidget.attrs['title'] = tooltip
+            if live:
+                tggui.onWidgetChange.add(self._attributeWidgetChanged)
 
-      self._attributesGUI[ attributeWidget ] = ( tggui, attributeName,
-                                                 labelWidget )
-      self._attributesGUI2[ attributeName ] = ( tggui, attributeWidget,
-                                                 labelWidget )
-      layoutRow += 1
+            if labelWidget is None:
+                self.fields.append(attributeWidget)
+                if signatureItem.doc:
+                    tooltip = attributeName + ': ' + \
+                        signatureItem.doc
 
-  def _deleteSignatureWidgets( self ):
-    for attributeWidget, ( tggui, attributeName, labelWidget ) in \
-        six.iteritems(self._attributesGUI):
+                    if hasattr(attributeWidget, 'label_attrs'):
+                        attributeWidget.label_attrs['title'] = tooltip
 
-      tggui.onWidgetChange.remove( self._attributeWidgetChanged )
-      tggui.closeEditionWidget( attributeWidget )
-      tggui.closeLabelWidget( labelWidget )
-  
-  def _signatureChanged( self ):
-    self._deleteSignatureWidgets()
-    self._createSignatureWidgets( self.__object, True )
+                    if hasattr(attributeWidget, 'attrs'):
+                        attributeWidget.attrs['title'] = tooltip
 
-  def _attributeChanged( self, attributeName, attributeValue, oldValue ):
-    x = self._attributesGUI2.get( attributeName )
-    if x is not None:
-      tggui, attributeWidget, labelWidget = x
-      tggui.updateEditionWidget( attributeWidget, attributeValue )
+            else:
+                self.fields.append(labelWidget)
+                self.fields.append(attributeWidget)
 
-  def _setObject( self, object ):
-    for attributeWidget, ( tggui, attributeName, labelWidget ) in \
-        six.iteritems(self._attributesGUI):
-      if object.signature[ attributeName ].type.mutable:
-        tggui.setObject( attributeWidget, getattr( object, attributeName ) )
-      else:
-        setattr(object, attributeName, tggui.getPythonValue( attributeWidget ) )
+                if signatureItem.doc:
+                    tooltip = attributeName + ': ' + \
+                        signatureItem.doc
 
-  def _attributeWidgetChanged( self, attributeWidget ):
-    tggui, attributeName, labelWidget = \
-      self._attributesGUI[ attributeWidget ]
-    try:
-      if tggui.dataTypeInstance.mutable:
-        tggui.setObject( attributeWidget,
-                        getattr( self.__object, attributeName ) )
-      else:
-        setattr( self.__object, attributeName,
-                 tggui.getPythonValue( attributeWidget ) )
-    except ValueError:
-      pass
-  
-  
-  def close( self ):
-    # Cleanup: remove callbacks and break garbage collection loops
-    if self._live:
-      self.__object.removeOnAttributeChange( 'signature', self._signatureChanged )
-      self.__object.removeOnAttributeChange( self._attributeChanged )
+                    if hasattr(labelWidget, 'attrs'):
+                        labelWidget.attrs['title'] = tooltip
 
-      it = self.__object.signature.itervalues()
-      next(it) # skip signature
-      for signatureItem in it:
-        
-        if 'type' in signatureItem._onAttributeChange:
-          signatureItem.removeOnAttributeChange( 'type', self._signatureChanged )
-          
-        if 'visible' in signatureItem._onAttributeChange:
-          signatureItem.removeOnAttributeChange( 'visible', self._signatureChanged )
-      
-      self.__object = None
-    self._deleteSignatureWidgets()
-    self._tggui = None
-    return None
+                    if hasattr(attributeWidget, 'attrs'):
+                        attributeWidget.attrs['title'] = tooltip
+
+            self._attributesGUI[attributeWidget] = (tggui, attributeName,
+                                                    labelWidget)
+            self._attributesGUI2[attributeName] = (tggui, attributeWidget,
+                                                   labelWidget)
+            layoutRow += 1
+
+    def _deleteSignatureWidgets(self):
+        for attributeWidget, ( tggui, attributeName, labelWidget ) in \
+                six.iteritems(self._attributesGUI):
+
+            tggui.onWidgetChange.remove(self._attributeWidgetChanged)
+            tggui.closeEditionWidget(attributeWidget)
+            tggui.closeLabelWidget(labelWidget)
+
+    def _signatureChanged(self):
+        self._deleteSignatureWidgets()
+        self._createSignatureWidgets(self.__object, True)
+
+    def _attributeChanged(self, attributeName, attributeValue, oldValue):
+        x = self._attributesGUI2.get(attributeName)
+        if x is not None:
+            tggui, attributeWidget, labelWidget = x
+            tggui.updateEditionWidget(attributeWidget, attributeValue)
+
+    def _setObject(self, object):
+        for attributeWidget, ( tggui, attributeName, labelWidget ) in \
+                six.iteritems(self._attributesGUI):
+            if object.signature[attributeName].type.mutable:
+                tggui.setObject(
+                    attributeWidget, getattr(object, attributeName))
+            else:
+                setattr(
+                    object, attributeName, tggui.getPythonValue(attributeWidget))
+
+    def _attributeWidgetChanged(self, attributeWidget):
+        tggui, attributeName, labelWidget = \
+            self._attributesGUI[attributeWidget]
+        try:
+            if tggui.dataTypeInstance.mutable:
+                tggui.setObject(attributeWidget,
+                                getattr(self.__object, attributeName))
+            else:
+                setattr(self.__object, attributeName,
+                        tggui.getPythonValue(attributeWidget))
+        except ValueError:
+            pass
+
+    def close(self):
+        # Cleanup: remove callbacks and break garbage collection loops
+        if self._live:
+            self.__object.removeOnAttributeChange(
+                'signature', self._signatureChanged)
+            self.__object.removeOnAttributeChange(self._attributeChanged)
+
+            it = self.__object.signature.itervalues()
+            next(it)  # skip signature
+            for signatureItem in it:
+
+                if 'type' in signatureItem._onAttributeChange:
+                    signatureItem.removeOnAttributeChange(
+                        'type', self._signatureChanged)
+
+                if 'visible' in signatureItem._onAttributeChange:
+                    signatureItem.removeOnAttributeChange(
+                        'visible', self._signatureChanged)
+
+            self.__object = None
+        self._deleteSignatureWidgets()
+        self._tggui = None
+        return None
+
+    def resizeEvent(self, resizeEvent):
+        return None
+
+    def _expandOrCollapse(self):
+        if self._collapsed:
+            self._collapsed = False
+        else:
+            self._collapsed = True
+
+    def setCaption(self, caption):
+        '''
+        @see: L{}
+        '''
+        self.legend = caption
+
+    def caption(self):
+        '''
+        @see: L{}
+        '''
+        return self.legend
+
+    def setIcon(self, icon):
+        '''
+        @see: L{}
+        '''
+        pass
+
+    def icon(self):
+        '''
+        @see: L{}
+        '''
+        return None
+
+#-------------------------------------------------------------------------
 
 
-  def resizeEvent( self, resizeEvent ):
-    return None
-  
-  
-  def _expandOrCollapse( self ):
-    if self._collapsed:
-      self._collapsed = False
-    else:
-      self._collapsed = True
+class HasSignature_TgGUI(TgGUI):
 
-  def setCaption( self, caption ):
+    def editionWidget(self, object, window, parent=None, name=None, live=False):
+        TgGUI.editionWidget(self, object, window, parent, name, live)
+        widget = HasSignatureEditionWidget(self, object, parent, name, live)
+
+        return widget
+
+    def closeEditionWidget(self, editionWidget):
+        editionWidget.close()
+
+    def setObject(self, editionWidget, object):
+        editionWidget._setObject(object)
+
+    def labelWidget(self, object, label, editionWidget, parent=None, name=None):
+        # editionWidget._setLabel( label )
+        return None
+
+    def updateEditionWidget(self, editionWidget, object):
+        '''
+        @todo: not implemented
+        '''
+
+    def _createAttributeTgGUI(self, dataType, object, attributeName):
+        customizedMethod = getattr(self, '_create_' + attributeName + '_TgGUI',
+                                   None)
+        if customizedMethod is not None:
+            return customizedMethod(dataType, object, attributeName)
+        else:
+            return ApplicationTgGUI.instanceTgGUI(dataType)
+
+
+#-------------------------------------------------------------------------
+class ClassDataType_TgGUI(TgGUI):
+
     '''
-    @see: L{}
-    '''
-    self.legend = caption
-
-  def caption( self ):
-    '''
-    @see: L{}
-    '''
-    return self.legend
-  
-  def setIcon( self, icon ):
-    '''
-    @see: L{}
-    '''
-    pass
-  
-  def icon( self ):
-    '''
-    @see: L{}
-    '''
-    return None
-
-#-------------------------------------------------------------------------------
-class HasSignature_TgGUI( TgGUI ):
-  def editionWidget( self, object, window, parent=None, name=None, live=False ):
-    TgGUI.editionWidget( self, object, window, parent, name, live )
-    widget = HasSignatureEditionWidget( self, object, parent, name, live )
-
-    return widget
-  
-  
-  def closeEditionWidget( self, editionWidget ):
-    editionWidget.close()
-  
-  
-  def setObject( self, editionWidget, object ):
-    editionWidget._setObject( object )
-  
-  
-  def labelWidget( self, object, label, editionWidget, parent=None, name=None ):
-    #editionWidget._setLabel( label )
-    return None
-
-  
-  def updateEditionWidget( self, editionWidget, object ):
-    '''
-    @todo: not implemented
+    A GUI for ClassDataType is a proxy on the GUI of the embedded class.
     '''
 
-  def _createAttributeTgGUI( self, dataType, object, attributeName ):
-    customizedMethod = getattr( self, '_create_' + attributeName + '_TgGUI',
-                                None )
-    if customizedMethod is not None:
-      return customizedMethod( dataType, object, attributeName )
-    else:
-      return ApplicationTgGUI.instanceTgGUI( dataType )
-  
+    def __init__(self, dataTypeInstance):
+        super(
+            ClassDataType_TgGUI, self).__setattr__('_ClassDataType_TgGUI__tggui',
+                                                   ApplicationTgGUI.classTgGUI(dataTypeInstance.cls)(dataTypeInstance))
 
-#-------------------------------------------------------------------------------
-class ClassDataType_TgGUI( TgGUI ):
-  '''
-  A GUI for ClassDataType is a proxy on the GUI of the embedded class.
-  '''
-  def __init__( self, dataTypeInstance ):
-    super( ClassDataType_TgGUI, self ).__setattr__(  '_ClassDataType_TgGUI__tggui', ApplicationTgGUI.classTgGUI( dataTypeInstance.cls )( dataTypeInstance ) )
-  
-  
-  def __getattribute__( self, name ):
-    return getattr( super( ClassDataType_TgGUI, self ).__getattribute__( '_ClassDataType_TgGUI__tggui' ), name )
-  
-  
-  def __setattr__( self, name, value ):
-    setattr( self.__tggui, name, value )
+    def __getattribute__(self, name):
+        return getattr(super(ClassDataType_TgGUI, self).__getattribute__('_ClassDataType_TgGUI__tggui'), name)
+
+    def __setattr__(self, name, value):
+        setattr(self.__tggui, name, value)

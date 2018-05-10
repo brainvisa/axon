@@ -6,9 +6,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -23,8 +23,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -37,30 +37,33 @@ name = 'Import SPMt for structural analysis'
 userLevel = 2
 
 signature = Signature(
-     'input', ReadDiskItem( 'SPMt map', 'aims readable Volume Formats' ),
-     'output', WriteDiskItem( 'SPMt map', 'Aims writable volume formats',
-     exactType = 1,
-     # Referential attribute must have the same value as subject attribute
-     requiredAttributes = { 'referential': \
-     lambda attribute, value, item : value == item.get( 'subject' )  },
-  ),
-  )
+    'input', ReadDiskItem('SPMt map', 'aims readable Volume Formats'),
+     'output', WriteDiskItem('SPMt map', 'Aims writable volume formats',
+                             exactType=1,
+                             # Referential attribute must have the same value
+                             # as subject attribute
+                             requiredAttributes={ 'referential': \
+                                                  lambda attribute, value, item: value == item.get(
+                                                      'subject')},
+                             ),
+)
 
 
-def initialization( self ):
-    self.signature[ 'output' ].browseUserLevel = 3
-    self.signature[ 'input' ].databaseUserLevel = 2
+def initialization(self):
+    self.signature['output'].browseUserLevel = 3
+    self.signature['input'].databaseUserLevel = 2
 
 
-def execution( self, context ):
-     context.system( 'AimsFileConvert', '-i', self.input.fullPath(), '-o',  self.output.fullPath() )
+def execution(self, context):
+    context.system('AimsFileConvert', '-i',
+                   self.input.fullPath(), '-o',  self.output.fullPath())
 #      context.sysrtem(
 #      if input1.format is not self.output.format:
-#           # Convert input to appropriate output format
+# Convert input to appropriate output format
 #           cmd = [ 'AimsFileConvert', '-i', input.fullPath(), '-o',
 #               self.output.fullPath() ]
 #      else:
-#           # Copy input files to output files
+# Copy input files to output files
 #           inputFiles = input1.fullPaths()
 #           outputFiles = self.output.fullPaths()
 #           if len( inputFiles ) != len( outputFiles ):

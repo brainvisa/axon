@@ -42,10 +42,10 @@ name = 'view images in a titled grid (low level)'
 #------------------------------------------------------------------------------
 
 signature = Signature(
-  'images', ListOf( ReadDiskItem('4D Volume', 'anatomist volume formats'),
-    allowNone=True ),
-  'overlaid_images', ListOf( ReadDiskItem( '4D Volume',
-    'anatomist volume formats' ), allowNone=True ),
+    'images', ListOf(ReadDiskItem('4D Volume', 'anatomist volume formats'),
+                     allowNone=True),
+  'overlaid_images', ListOf(ReadDiskItem('4D Volume',
+                                         'anatomist volume formats'), allowNone=True),
   'windowTitle', String(),
   'rowTitles', ListOf(String()),
   'rowButtonSubTitles', ListOf(String()),
@@ -60,46 +60,47 @@ signature = Signature(
 
 #------------------------------------------------------------------------------
 
+
 def initialization(self):
-  self.setOptional('customOverlayColormap', 'rowButtonSubTitles')
-  self.inverseRawColumn = False
-  self.rowTitles = ["row_1", "row_2", "row_3", "row_4"]
-  self.colTitles = ["col_1", "col_2", "col_3"]
-  self.linkWindows = 'space'
-  self.windowTitle = 'view grid'
-  self.rowColors = ['darkOrange', 'blue', 'blue', 'magenta']# orange = rawSpace, blue = mri space, magenta = mni space
-  self.mainColormap = 'B-W LINEAR'
-  self.overlayColormap = 'RAINBOW'
-  self.customOverlayColormap = 'Blue-White'
+    self.setOptional('customOverlayColormap', 'rowButtonSubTitles')
+    self.inverseRawColumn = False
+    self.rowTitles = ["row_1", "row_2", "row_3", "row_4"]
+    self.colTitles = ["col_1", "col_2", "col_3"]
+    self.linkWindows = 'space'
+    self.windowTitle = 'view grid'
+    self.rowColors = ['darkOrange', 'blue', 'blue', 'magenta']
+        # orange = rawSpace, blue = mri space, magenta = mni space
+    self.mainColormap = 'B-W LINEAR'
+    self.overlayColormap = 'RAINBOW'
+    self.customOverlayColormap = 'Blue-White'
 
 #------------------------------------------------------------------------------
 
+
 def execution(self, context):
 
-  img = []
-  col = 0
-  for selfImg in self.images:
-    if col == 0:
-      imgcol = []
-      img.append( imgcol )
-    imgcol.append( selfImg )
-    col += 1
-    if col == len( self.colTitles ):
-      col = 0
+    img = []
+    col = 0
+    for selfImg in self.images:
+        if col == 0:
+            imgcol = []
+            img.append(imgcol)
+        imgcol.append(selfImg)
+        col += 1
+        if col == len(self.colTitles):
+            col = 0
 
-  objs = displayTitledGrid(registration.getTransformationManager(), None,
-                           self.inverseRawColumn,
-                           img,
-                           rowTitles=self.rowTitles,
-                           rowColors=self.rowColors, colTitles=self.colTitles,
-                           windowTitle=self.windowTitle
-                           , linkWindows=self.linkWindows,
-                           overlaidImages=self.overlaid_images,
-                           mainColormap=self.mainColormap,
-                           overlayColormap=self.overlayColormap,
-                           customOverlayColormap=self.customOverlayColormap,
-                           rowButtonSubTitles=self.rowButtonSubTitles
-                          )
+    objs = displayTitledGrid(registration.getTransformationManager(), None,
+                             self.inverseRawColumn,
+                             img,
+                             rowTitles=self.rowTitles,
+                             rowColors=self.rowColors, colTitles=self.colTitles,
+                             windowTitle=self.windowTitle, linkWindows=self.linkWindows,
+                             overlaidImages=self.overlaid_images,
+                             mainColormap=self.mainColormap,
+                             overlayColormap=self.overlayColormap,
+                             customOverlayColormap=self.customOverlayColormap,
+                             rowButtonSubTitles=self.rowButtonSubTitles
+                             )
 
-  return objs
-
+    return objs

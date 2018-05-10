@@ -6,9 +6,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -23,8 +23,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -55,10 +55,10 @@ def validation():
 signature = Signature(
     'read', ReadDiskItem('Graph', 'Graph'),
     'write', WriteDiskItem('Label Volume',
-                           'aims Writable Volume Formats' ),
+                           'aims Writable Volume Formats'),
     'preferedFormat', Choice(*([('<auto>', None)]
-                              + map_list(lambda x: (x, getFormat(x)),
-                                         aimsGlobals.aimsVolumeFormats))),
+                               + map_list(lambda x: (x, getFormat(x)),
+                                          aimsGlobals.aimsVolumeFormats))),
     'removeSource', Boolean(),
     'extract_volume', String(),
     'extract_contours', Choice('Yes', 'No')
@@ -86,10 +86,10 @@ def initialization(self):
 
 
 def neighbors(t, z, y, x):
-    return [(t, z, y-1, x),
-            (t, z, y+1, x),
-            (t, z, y, x-1),
-            (t, z, y, x+1)]
+    return [(t, z, y - 1, x),
+            (t, z, y + 1, x),
+            (t, z, y, x - 1),
+            (t, z, y, x + 1)]
 
 
 def execution(self, context):
@@ -115,10 +115,10 @@ def execution(self, context):
     if bmin[:3] != [0, 0, 0] \
             or bmax[:3] != [vol.dimX(), vol.dimY(), vol.dimZ()]:
         # needs expanding in a bigger volume
-        vol2 = aims.Volume_S16(bmax[0]+1, bmax[1]+1, bmax[2]+1)
+        vol2 = aims.Volume_S16(bmax[0] + 1, bmax[1] + 1, bmax[2] + 1)
         vol2.fill(-1)
         ar = vol2.arraydata()
-        ar[:, bmin[2]:bmax[2]+1, bmin[1]:bmax[1]+1, bmin[0]:bmax[0]+1] \
+        ar[:, bmin[2]:bmax[2] + 1, bmin[1]:bmax[1] + 1, bmin[0]:bmax[0] + 1] \
             = vol.volume().arraydata()
 
         if self.extract_contours == 'Yes':
@@ -133,8 +133,8 @@ def execution(self, context):
                     if erase:
                         ar[i] = 0
 
-        for x,y in vol.header().items():
-          vol2.header()[x] = y
+        for x, y in vol.header().items():
+            vol2.header()[x] = y
         # add 1 to all voxels because the background is -1
     #    vol2 += 1
         aims.write(vol2, self.write.fullPath())
@@ -148,4 +148,3 @@ def execution(self, context):
     if self.removeSource:
         for f in self.read.fullPaths():
             shelltools.rm(f)
-

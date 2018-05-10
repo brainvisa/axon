@@ -46,6 +46,7 @@ from tempfile import mkstemp
 from subprocess import check_call
 import os
 
+
 def manual_registration(image1, image2, context=None):
     _mw = mainThreadActions().call(_manual_registration_on_gui_thread,
                                    image1,
@@ -54,6 +55,7 @@ def manual_registration(image1, image2, context=None):
     mw = MainThreadLife(_mw)
     return [mw]
 
+
 def _manual_registration_on_gui_thread(image1, image2,
                                        context):
     manualReg = ManualRegistration(image1, image2,
@@ -61,12 +63,14 @@ def _manual_registration_on_gui_thread(image1, image2,
     mw = manualReg.display()
     return mw
 
+
 class ManualRegistration():
+
     def __init__(self, movingImage, fixedImage, parent):
         self._movingImage = movingImage
         self._fixedImage = fixedImage
         self._defaultMixingRate = 50.
-    
+
     def display(self):
         """
         Launches the manual registration display.
@@ -97,7 +101,8 @@ class ManualRegistration():
         for v in self._aViews:
             v.removeObjects(v.objects)
             del v
-        self._anatomist.deleteObjects(self._aImages.values() + [self._fusion, self._winGroup])
+        self._anatomist.deleteObjects(
+            self._aImages.values() + [self._fusion, self._winGroup])
         for el in self._spinBoxTimers.values():
             del el
         self._mainDiag.close()
@@ -125,17 +130,21 @@ class ManualRegistration():
         """
         Loads the UI and sets the connections.
         """
-        self._mainDiag = uic.loadUi(locate_file("manualRegistration.ui", uiPath))
+        self._mainDiag = uic.loadUi(
+            locate_file("manualRegistration.ui", uiPath))
         self._mainDiag.setWindowTitle("Manual registration")
-        
+
         palette = self._mainDiag.palette()
-        palette.setColor(self._mainDiag.backgroundRole(), QtGui.QColor(255, 255, 255))
+        palette.setColor(
+            self._mainDiag.backgroundRole(), QtGui.QColor(255, 255, 255))
         self._mainDiag.setPalette(palette)
 
         self._previousTranslationValues = {}
         self._spinBoxTimers = {}
-        translationSp = [self._mainDiag.xSp, self._mainDiag.ySp, self._mainDiag.zSp]
-        rotationSp = [self._mainDiag.axialSp, self._mainDiag.sagittalSp, self._mainDiag.coronalSp]
+        translationSp = [
+            self._mainDiag.xSp, self._mainDiag.ySp, self._mainDiag.zSp]
+        rotationSp = [self._mainDiag.axialSp,
+                      self._mainDiag.sagittalSp, self._mainDiag.coronalSp]
         slots = {}
         for sp in translationSp:
             slots.update({sp: self._translationChanged})
@@ -145,7 +154,7 @@ class ManualRegistration():
             self._previousTranslationValues.update({sp: 0.})
         slots.update({self._mainDiag.scaleSp: self._scaleChanged})
         self._previousTranslationValues.update({self._mainDiag.scaleSp: 1.})
-        
+
         for sp in translationSp + rotationSp + [self._mainDiag.scaleSp]:
             sp.valueChanged.connect(self._spinChanged)
             self._spinBoxTimers.update({sp: QtCore.QTimer()})
@@ -154,8 +163,10 @@ class ManualRegistration():
             self._spinBoxTimers[sp].timeout.connect(slots[sp])
 
         self._mainDiag.alignCentersBt.clicked.connect(self._alignCenters)
-        self._mainDiag.goToRotationCenterBt.clicked.connect(self._goToRotationCenter)
-        self._mainDiag.setRotationCenterBt.clicked.connect(self._setRotationCenter)
+        self._mainDiag.goToRotationCenterBt.clicked.connect(
+            self._goToRotationCenter)
+        self._mainDiag.setRotationCenterBt.clicked.connect(
+            self._setRotationCenter)
         self._mainDiag.focusBt.clicked.connect(self._focusViews)
         self._mainDiag.undoBt.clicked.connect(self._undo)
         self._mainDiag.redoBt.clicked.connect(self._redo)
@@ -165,7 +176,7 @@ class ManualRegistration():
         self._mainDiag.saveBt.clicked.connect(self._saveTransformationClicked)
         self._mainDiag.resampleBt.clicked.connect(self._resampleImageClicked)
         self._mainDiag.closeBt.clicked.connect(self._mainDiag.accept)
-    
+
     def _addImageWidgets(self):
         """
         Adds the image widgets: palette editor and fusion mixer.
@@ -174,24 +185,24 @@ class ManualRegistration():
                          'Blue-Red2', 'French', 'RAINBOW',
                          'RED TEMPERATURE', 'Rainbow2']
         paletteEditor = PaletteEditor(self._aImages[self._fixedImage],
-                                      palette_filter = paletteFilter,
+                                      palette_filter=paletteFilter,
                                       title='Fixed image')
         layout = QtGui.QVBoxLayout(self._mainDiag.fixedImagePalette)
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(paletteEditor)
         paletteEditor = PaletteEditor(self._aImages[self._movingImage],
-                                      palette_filter = paletteFilter,
+                                      palette_filter=paletteFilter,
                                       title='Moving image')
         layout = QtGui.QVBoxLayout(self._mainDiag.movingImagePalette)
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(paletteEditor)
-        
-        self._mainDiag.mixingRateSlider.valueChanged.connect(self._mixingRateChanged)
+
+        self._mainDiag.mixingRateSlider.valueChanged.connect(
+            self._mixingRateChanged)
         self._mainDiag.mixingRateSlider.setValue(self._defaultMixingRate)
-        
-        
+
     def _mixingRateChanged(self, value):
         """
         Updates the texturing parameters according to the new value.
@@ -199,9 +210,10 @@ class ManualRegistration():
             The new value.
         """
         self._mainDiag.mixingRateLabel.setText("%d" % int(value) + "%")
-        self._anatomist.execute('TexturingParams', objects=[self._fusion], texture_index=1,
-                                rate=float(value)/100)
-    
+        self._anatomist.execute(
+            'TexturingParams', objects=[self._fusion], texture_index=1,
+                                rate=float(value) / 100)
+
     def _createViews(self):
         """
         Creates the image views
@@ -210,10 +222,11 @@ class ManualRegistration():
         self._aViewButtons = []
         orientation = ['Axial', 'Sagittal', 'Coronal']
         cellDict = {'Axial': (1, 0, self._mainDiag.axial, '_viewBtAxial'),
-                    'Sagittal': (0, 1,self._mainDiag.sagittal, '_viewBtSagittal'),
+                    'Sagittal': (0, 1, self._mainDiag.sagittal, '_viewBtSagittal'),
                     'Coronal': (0, 0, self._mainDiag.coronal, '_viewBtCoronal')}
-        for i in range(3): 
-            newWin = self._anatomist.createWindow(orientation[i], no_decoration=True)
+        for i in range(3):
+            newWin = self._anatomist.createWindow(
+                orientation[i], no_decoration=True)
             layout = QtGui.QVBoxLayout(cellDict[orientation[i]][2])
             layout.setSpacing(0)
             layout.setContentsMargins(0, 0, 0, 0)
@@ -221,58 +234,64 @@ class ManualRegistration():
             self._anatomist.execute('WindowConfig', windows=[newWin],
                                     light={'background': [0., 0., 0., 1.]})
             self._aViews.append(newWin)
-            trsfAction = newWin.view().controlSwitch().getAction('Transformer')            
+            trsfAction = newWin.view().controlSwitch().getAction('Transformer')
             trsfAction.toggleDisplayInfo()
-            viewBt = ViewButtons(newWin.view(), orientation[i], self._viewBtClicked)
+            viewBt = ViewButtons(
+                newWin.view(), orientation[i], self._viewBtClicked)
             self._aViewButtons.append(viewBt)
-            
+
         for ac in self._allActions():
-            ac.transformationChanged.connect(self._transformationChanged)   
+            ac.transformationChanged.connect(self._transformationChanged)
 
         self._winGroup = self._anatomist.linkWindows(self._aViews)
-        
-            
+
     def _addInViews(self):
         """
         Creates the image fusion and adds it to the views
         """
-        self._fusion = self._anatomist.fusionObjects([self._aImages[self._fixedImage], self._aImages[self._movingImage]], 'Fusion2DMethod')
+        self._fusion = self._anatomist.fusionObjects(
+            [self._aImages[self._fixedImage], self._aImages[self._movingImage]], 'Fusion2DMethod')
         self._fusion.addInWindows(self._aViews)
-        self._anatomist.execute('TexturingParams', objects=[self._fusion], texture_index=1,
-                                rate=float(self._defaultMixingRate)/100)
+        self._anatomist.execute(
+            'TexturingParams', objects=[self._fusion], texture_index=1,
+                                rate=float(self._defaultMixingRate) / 100)
         self._winGroup.setSelection([self._aImages[self._movingImage]])
         bBox = [aims.Point3df(x[:3])
                 for x in self._aImages[self._movingImage].boundingbox()]
-        center = (bBox[1] - bBox[0])*0.5
+        center = (bBox[1] - bBox[0]) * 0.5
         for v in self._aViews:
             v.focusView()
             v.view().setRotationCenter(center)
-    
+
     def _transformationChanged(self):
         """
         Updates the UI according to the current tranformation.
         """
-        trsfAction = self._aViews[0].view().controlSwitch().getAction('Transformer')
+        trsfAction = self._aViews[
+            0].view().controlSwitch().getAction('Transformer')
         mot = aims.Motion()
         trsfAction.getCurrentMotion(mot)
         translation = mot.translation()
         rot = mot.rotation()
-        scale = math.sqrt(rot.value(0, 0)*rot.value(0, 0) +\
-                          rot.value(0, 1)*rot.value(0, 1) +\
-                          rot.value(0, 2)*rot.value(0, 2))
-        rotX = math.atan2(rot.value(2, 1)/scale, rot.value(2, 2)/scale)
+        scale = math.sqrt(rot.value(0, 0) * rot.value(0, 0) +
+                          rot.value(0, 1) * rot.value(0, 1) +
+                          rot.value(0, 2) * rot.value(0, 2))
+        rotX = math.atan2(rot.value(2, 1) / scale, rot.value(2, 2) / scale)
         rotY = -np.arcsin(rot.value(2, 0))
-        rotZ = math.atan2(rot.value(1, 0)/scale, rot.value(0, 0)/scale)
-        rotationXYZ = (math.degrees(rotZ), math.degrees(rotX), math.degrees(rotY))
+        rotZ = math.atan2(rot.value(1, 0) / scale, rot.value(0, 0) / scale)
+        rotationXYZ = (
+            math.degrees(rotZ), math.degrees(rotX), math.degrees(rotY))
 
-        translationSp = [self._mainDiag.xSp, self._mainDiag.ySp, self._mainDiag.zSp]
+        translationSp = [
+            self._mainDiag.xSp, self._mainDiag.ySp, self._mainDiag.zSp]
         for i, sp in enumerate(translationSp):
             sp.blockSignals(True)
             sp.setValue(translation[i])
             self._previousTranslationValues.update({sp: translation[i]})
             sp.blockSignals(False)
-            
-        rotationSp = [self._mainDiag.axialSp, self._mainDiag.sagittalSp, self._mainDiag.coronalSp]
+
+        rotationSp = [self._mainDiag.axialSp,
+                      self._mainDiag.sagittalSp, self._mainDiag.coronalSp]
         for i, sp in enumerate(rotationSp):
             sp.blockSignals(True)
             sp.setValue(rotationXYZ[i])
@@ -288,7 +307,7 @@ class ManualRegistration():
         self._mainDiag.redoBt.setEnabled(trsfAction.redoable())
         self._mainDiag.saveBt.setEnabled(not mot.isIdentity())
         self._mainDiag.resampleBt.setEnabled(not mot.isIdentity())
-        
+
     def _spinChanged(self, value):
         """
         Launches spinbox timers.
@@ -301,13 +320,17 @@ class ManualRegistration():
         Updates the translation of the transformation according to the UI.
         """
         trsf = anatomist.Transformation(None, None)
-        trsfAction = self._aViews[0].view().controlSwitch().getAction('Transformer')
+        trsfAction = self._aViews[
+            0].view().controlSwitch().getAction('Transformer')
         trsfAction.selectTransformations(trsfAction.tadView().aWindow())
-        translationSp = [self._mainDiag.xSp, self._mainDiag.ySp, self._mainDiag.zSp]
+        translationSp = [
+            self._mainDiag.xSp, self._mainDiag.ySp, self._mainDiag.zSp]
         for i, sp in enumerate(translationSp):
-            trsf.SetTranslation(i, sp.value() - self._previousTranslationValues[sp])
-        trsfAction.setTransformData(trsf, False, True)        
-        translationSp = [self._mainDiag.xSp, self._mainDiag.ySp, self._mainDiag.zSp]
+            trsf.SetTranslation(
+                i, sp.value() - self._previousTranslationValues[sp])
+        trsfAction.setTransformData(trsf, False, True)
+        translationSp = [
+            self._mainDiag.xSp, self._mainDiag.ySp, self._mainDiag.zSp]
         for i, sp in enumerate(translationSp):
             self._previousTranslationValues.update({sp: sp.value()})
 
@@ -326,12 +349,14 @@ class ManualRegistration():
             sp = self._mainDiag.coronalSp
         else:
             return
-        
-        trsfAction = self._aViews[index].view().controlSwitch().getAction('Transformer')
+
+        trsfAction = self._aViews[
+            index].view().controlSwitch().getAction('Transformer')
         trsfAction.selectTransformations(trsfAction.tadView().aWindow())
-        axis = self._aViews[index].sliceQuaternion().transformInverse(aims.Point3df(0, 0, -1))
+        axis = self._aViews[index].sliceQuaternion().transformInverse(
+            aims.Point3df(0, 0, -1))
         angle = sp.value() - self._previousTranslationValues[sp]
-        angle = angle*math.pi/180
+        angle = angle * math.pi / 180
         q = aims.Quaternion()
         q.fromAxis(axis, angle)
         q.norm()
@@ -344,12 +369,13 @@ class ManualRegistration():
         trsf.SetTranslation(2, rotationCenter[2])
         trsfAction.setTransformData(trsf, False, True)
         self._previousTranslationValues.update({sp: sp.value()})
-    
+
     def _scaleChanged(self):
         """
         Updates the scale of the transformation according to the UI.
         """
-        trsfAction = self._aViews[0].view().controlSwitch().getAction('Transformer')
+        trsfAction = self._aViews[
+            0].view().controlSwitch().getAction('Transformer')
         trsfAction.selectTransformations(trsfAction.tadView().aWindow())
         rotationCenter = self._aViews[0].view().rotationCenter()
         scale = self._mainDiag.scaleSp.value()
@@ -365,26 +391,28 @@ class ManualRegistration():
         trsf.SetRotation(0, 0, scale)
         trsf.SetRotation(1, 1, scale)
         trsf.SetRotation(2, 2, scale)
-        trsf.SetTranslation(0, rotationCenter[0]*(1. - scale))
-        trsf.SetTranslation(1, rotationCenter[1]*(1. - scale))
-        trsf.SetTranslation(2, rotationCenter[2]*(1. - scale))
+        trsf.SetTranslation(0, rotationCenter[0] * (1. - scale))
+        trsf.SetTranslation(1, rotationCenter[1] * (1. - scale))
+        trsf.SetTranslation(2, rotationCenter[2] * (1. - scale))
         trsfAction.setTransformData(trsf, False, True)
-        self._previousTranslationValues.update({self._mainDiag.scaleSp: self._mainDiag.scaleSp.value()})
+        self._previousTranslationValues.update(
+            {self._mainDiag.scaleSp: self._mainDiag.scaleSp.value()})
 
     def _alignCenters(self):
         """
         Updates the transformation in order to align image centers.
         """
-        trsfAction = self._aViews[0].view().controlSwitch().getAction('Transformer')
+        trsfAction = self._aViews[
+            0].view().controlSwitch().getAction('Transformer')
         trsfAction.selectTransformations(trsfAction.tadView().aWindow())
         currentTrsf = trsfAction.mainTransformation()
         movingBBox = [aims.Point3df(x[:3])
                       for x in self._aImages[self._movingImage].boundingbox()]
         fixedBBox = [aims.Point3df(x[:3])
                      for x in self._aImages[self._fixedImage].boundingbox()]
-        movingCenter = (movingBBox[1] - movingBBox[0])*0.5
+        movingCenter = (movingBBox[1] - movingBBox[0]) * 0.5
         movingCenter = currentTrsf.transform(movingCenter)
-        fixedCenter = (fixedBBox[1] - fixedBBox[0])*0.5
+        fixedCenter = (fixedBBox[1] - fixedBBox[0]) * 0.5
         translation = fixedCenter - movingCenter
         trsf = anatomist.Transformation(None, None)
         for i in xrange(3):
@@ -405,8 +433,9 @@ class ManualRegistration():
         Sets the 3D cursor to the rotation center coordinates.
         """
         rotationCenter = self._aViews[0].view().rotationCenter()
-        self._anatomist.execute('LinkedCursor', window=self._aViews[0], position=rotationCenter)
-        
+        self._anatomist.execute(
+            'LinkedCursor', window=self._aViews[0], position=rotationCenter)
+
     def _setRotationCenter(self):
         """
         Sets the rotation center with the 3D cursor coordinates.
@@ -428,40 +457,43 @@ class ManualRegistration():
         """
         Undo the last transformation.
         """
-        trsfAction = self._aViews[0].view().controlSwitch().getAction('Transformer')
+        trsfAction = self._aViews[
+            0].view().controlSwitch().getAction('Transformer')
         trsfAction.undo()
-    
+
     def _redo(self):
         """
         Redo the last transformation.
         """
-        trsfAction = self._aViews[0].view().controlSwitch().getAction('Transformer')
-        trsfAction.redo()    
+        trsfAction = self._aViews[
+            0].view().controlSwitch().getAction('Transformer')
+        trsfAction.redo()
 
     def _flipLR(self):
         """
         Updates the transformation in order to X flip the image (left/right).
         """
         self._flip(0)
-        
+
     def _flipAP(self):
         """
         Updates the transformation in order to Y flip the image (anterior/posterior).
         """
         self._flip(1)
-        
+
     def _flipUD(self):
         """
         Updates the transformation in order to Z flip the image (up/down).
         """
         self._flip(2)
-        
+
     def _flip(self, index):
         """
         Updates the transformation in order to flip the image.
         """
         trsf = anatomist.Transformation(None, None)
-        trsfAction = self._aViews[0].view().controlSwitch().getAction('Transformer')
+        trsfAction = self._aViews[
+            0].view().controlSwitch().getAction('Transformer')
         trsfAction.selectTransformations(trsfAction.tadView().aWindow())
         mat = np.identity(4)
         mat[index][index] = -1
@@ -472,41 +504,53 @@ class ManualRegistration():
         trsf.SetTranslation(1, rotationCenter[1])
         trsf.SetTranslation(2, rotationCenter[2])
         trsfAction.setTransformData(trsf, False, True)
-        
+
     def _viewBtClicked(self, orientation, action):
         """
         Updates the UI according to the view button clicked.
         """
         if (orientation == 'Axial' and action == 'up') or \
            (orientation == 'Sagittal' and action == 'left'):
-            self._mainDiag.ySp.setValue(self._mainDiag.ySp.value() - self._mainDiag.ySp.singleStep())
+            self._mainDiag.ySp.setValue(
+                self._mainDiag.ySp.value() - self._mainDiag.ySp.singleStep())
         elif (orientation == 'Axial' and action == 'down') or \
              (orientation == 'Sagittal' and action == 'right'):
-            self._mainDiag.ySp.setValue(self._mainDiag.ySp.value() + self._mainDiag.ySp.singleStep())
+            self._mainDiag.ySp.setValue(
+                self._mainDiag.ySp.value() + self._mainDiag.ySp.singleStep())
         elif (orientation == 'Axial' and action == 'left') or \
              (orientation == 'Coronal' and action == 'left'):
-            self._mainDiag.xSp.setValue(self._mainDiag.xSp.value() - self._mainDiag.xSp.singleStep())
+            self._mainDiag.xSp.setValue(
+                self._mainDiag.xSp.value() - self._mainDiag.xSp.singleStep())
         elif (orientation == 'Axial' and action == 'right') or \
              (orientation == 'Coronal' and action == 'right'):
-            self._mainDiag.xSp.setValue(self._mainDiag.xSp.value() + self._mainDiag.xSp.singleStep())
+            self._mainDiag.xSp.setValue(
+                self._mainDiag.xSp.value() + self._mainDiag.xSp.singleStep())
         elif (orientation == 'Sagittal' and action == 'up') or \
              (orientation == 'Coronal' and action == 'up'):
-            self._mainDiag.zSp.setValue(self._mainDiag.zSp.value() - self._mainDiag.zSp.singleStep())
+            self._mainDiag.zSp.setValue(
+                self._mainDiag.zSp.value() - self._mainDiag.zSp.singleStep())
         elif (orientation == 'Sagittal' and action == 'down') or \
              (orientation == 'Coronal' and action == 'down'):
-            self._mainDiag.zSp.setValue(self._mainDiag.zSp.value() + self._mainDiag.zSp.singleStep())
+            self._mainDiag.zSp.setValue(
+                self._mainDiag.zSp.value() + self._mainDiag.zSp.singleStep())
         elif (orientation == 'Axial' and action == 'rotation_left'):
-            self._mainDiag.axialSp.setValue(self._mainDiag.axialSp.value() - self._mainDiag.axialSp.singleStep())
+            self._mainDiag.axialSp.setValue(
+                self._mainDiag.axialSp.value() - self._mainDiag.axialSp.singleStep())
         elif (orientation == 'Axial' and action == 'rotation_right'):
-            self._mainDiag.axialSp.setValue(self._mainDiag.axialSp.value() + self._mainDiag.axialSp.singleStep())
+            self._mainDiag.axialSp.setValue(
+                self._mainDiag.axialSp.value() + self._mainDiag.axialSp.singleStep())
         elif (orientation == 'Sagittal' and action == 'rotation_left'):
-            self._mainDiag.sagittalSp.setValue(self._mainDiag.sagittalSp.value() - self._mainDiag.sagittalSp.singleStep())
+            self._mainDiag.sagittalSp.setValue(
+                self._mainDiag.sagittalSp.value() - self._mainDiag.sagittalSp.singleStep())
         elif (orientation == 'Sagittal' and action == 'rotation_right'):
-            self._mainDiag.sagittalSp.setValue(self._mainDiag.sagittalSp.value() + self._mainDiag.sagittalSp.singleStep())
+            self._mainDiag.sagittalSp.setValue(
+                self._mainDiag.sagittalSp.value() + self._mainDiag.sagittalSp.singleStep())
         elif (orientation == 'Coronal' and action == 'rotation_left'):
-            self._mainDiag.coronalSp.setValue(self._mainDiag.coronalSp.value() + self._mainDiag.coronalSp.singleStep())
+            self._mainDiag.coronalSp.setValue(
+                self._mainDiag.coronalSp.value() + self._mainDiag.coronalSp.singleStep())
         elif (orientation == 'Coronal' and action == 'rotation_right'):
-            self._mainDiag.coronalSp.setValue(self._mainDiag.coronalSp.value() - self._mainDiag.coronalSp.singleStep())
+            self._mainDiag.coronalSp.setValue(
+                self._mainDiag.coronalSp.value() - self._mainDiag.coronalSp.singleStep())
         elif (orientation == 'Axial' and action == 'flip_horizontal') or \
              (orientation == 'Coronal' and action == 'flip_horizontal'):
             self._flipLR()
@@ -524,22 +568,25 @@ class ManualRegistration():
         aImg = self._aImages[self._fixedImage]
         bbox = [aims.Point3df(x[:3])
                 for x in aImg.boundingbox()]
-        position = (bbox[1] - bbox[0])*0.5
+        position = (bbox[1] - bbox[0]) * 0.5
         t = self._anatomist.getTransformation(aImg.getReferential(),
                                               self._aViews[0].getReferential())
         if t:
             position = t.transform(position)
-        self._anatomist.execute('LinkedCursor', window=self._aViews[0], position=position)
+        self._anatomist.execute(
+            'LinkedCursor', window=self._aViews[0], position=position)
 
     def _updateControlMode(self):
         """
         Updates the view control mode.
         """
         if self._mainDiag.control3dRb.isChecked():
-            self._anatomist.setWindowsControl(windows=self._aViews, control='Default 3D control')
+            self._anatomist.setWindowsControl(
+                windows=self._aViews, control='Default 3D control')
         elif self._mainDiag.trsfControlRb.isChecked():
-            self._anatomist.setWindowsControl(windows=self._aViews, control='TransformControl')
-            
+            self._anatomist.setWindowsControl(
+                windows=self._aViews, control='TransformControl')
+
     def _saveTransformationClicked(self):
         """
         Launches the browser to select the file where to save the transformation.
@@ -552,16 +599,17 @@ class ManualRegistration():
         if saveFilename == "" or saveFilename is None:
             return
         self._saveTransformation(saveFilename)
-    
+
     def _saveTransformation(self, outputFile):
         """
         Saves the transformation.
         """
-        trsfAction = self._aViews[0].view().controlSwitch().getAction('Transformer')
+        trsfAction = self._aViews[
+            0].view().controlSwitch().getAction('Transformer')
         mot = aims.Motion()
         trsfAction.getCurrentMotion(mot)
         aims.write(mot, outputFile)
-    
+
     def _resampleImageClicked(self):
         """
         Resamples the moving image according to the transformation.
@@ -578,7 +626,7 @@ class ManualRegistration():
         check_call(['AimsResample',
                     '-i', self._movingImage, '-o', saveFilename,
                     '-m', tmpTrsf, '-r', self._fixedImage])
-    
+
     def _allActions(self, view=None):
         """
         Gets all control actions.
@@ -591,19 +639,23 @@ class ManualRegistration():
             views = self._aViews
         else:
             views = [view]
-        
-        actionNames = ('Transformer', 'PlanarTransformer', 'TranslaterAction', 'ResizerAction')
+
+        actionNames = (
+            'Transformer', 'PlanarTransformer', 'TranslaterAction', 'ResizerAction')
         actions = []
         for v in views:
             for ac in actionNames:
                 actions.append(v.view().controlSwitch().getAction(ac))
-        
+
         return actions
 
+
 class ViewButtons():
+
     """
     Builds a group of control buttons to add on an image view.
     """
+
     def __init__(self, view, orientation, slot):
         self._items = []
         self._view = view
@@ -616,21 +668,21 @@ class ViewButtons():
         Shows the view buttons.
         """
         self._graphicsViewOnWindow().show()
-        
+
     def hide(self):
         """
         Hides the view buttons.
         """
         self._graphicsViewOnWindow().hide()
-        
+
     def buttons(self):
         """
         Gets all the buttons.
         :returns:
             All the buttons.
         """
-        return self._buttons.values()        
-        
+        return self._buttons.values()
+
     def _graphicsViewOnWindow(self):
         """
         Gets the QGraphicsView instance.
@@ -679,31 +731,35 @@ class ViewButtons():
         scene.changed.connect(self._update)
 
         self._buttons = {}
-        
+
         self._rigidFrame = QtGui.QFrame()
         self._rigidFrame.setGeometry(QtCore.QRect(0, 0, 54, 36))
         self._rigidFrame.setStyleSheet("background: transparent; border: none")
         gLay = QtGui.QGridLayout(self._rigidFrame)
         gLay.setContentsMargins(0, 0, 0, 0)
         gLay.setSpacing(0)
-        proxy = scene.addWidget(self._rigidFrame, QtCore.Qt.Window|QtCore.Qt.FramelessWindowHint)
+        proxy = scene.addWidget(
+            self._rigidFrame, QtCore.Qt.Window | QtCore.Qt.FramelessWindowHint)
         tr = proxy.transform()
         tr.translate(10, 10)
         proxy.setTransform(tr)
-        
+
         index = 0
-        btList = ('rotation_left', 'up', 'rotation_right', 'left', 'down', 'right')
+        btList = ('rotation_left', 'up',
+                  'rotation_right', 'left', 'down', 'right')
         for btName in btList:
             bt = QtGui.QToolButton()
             bt.setAutoRepeat(True)
-            bt.clicked[()].connect(lambda orientation=self._orientation, action=btName: self._slot(orientation, action))
+            bt.clicked[()].connect(lambda orientation=self._orientation,
+                                   action=btName: self._slot(orientation, action))
             bt.setText(btName)
             self._buttons.update({btName: bt})
-            bt.setIcon(QtGui.QIcon(locate_file(btName + "_arrow_64x64.png", iconPath)))
+            bt.setIcon(
+                QtGui.QIcon(locate_file(btName + "_arrow_64x64.png", iconPath)))
             bt.setIconSize(QtCore.QSize(18, 18))
             bt.setAutoRaise(True)
             bt.setStyleSheet("background: transparent; border: none")
-            gLay.addWidget(bt, index/3, index%3)
+            gLay.addWidget(bt, index / 3, index % 3)
             index += 1
 
         self._flipFrame = QtGui.QFrame()
@@ -711,19 +767,22 @@ class ViewButtons():
         hLay = QtGui.QHBoxLayout(self._flipFrame)
         hLay.setContentsMargins(0, 0, 0, 0)
         hLay.setSpacing(0)
-        proxy = scene.addWidget(self._flipFrame, QtCore.Qt.Window|QtCore.Qt.FramelessWindowHint)
+        proxy = scene.addWidget(
+            self._flipFrame, QtCore.Qt.Window | QtCore.Qt.FramelessWindowHint)
         tr = proxy.transform()
         tr.translate(10, 10)
         proxy.setTransform(tr)
-        
+
         btList = ('flip_horizontal', 'flip_vertical')
         for btName in btList:
             bt = QtGui.QToolButton()
             bt.setAutoRepeat(True)
-            bt.clicked[()].connect(lambda orientation=self._orientation, action=btName: self._slot(orientation, action))
+            bt.clicked[()].connect(lambda orientation=self._orientation,
+                                   action=btName: self._slot(orientation, action))
             bt.setText(btName)
             self._buttons.update({btName: bt})
-            bt.setIcon(QtGui.QIcon(locate_file(btName + "_64x64.png", iconPath)))
+            bt.setIcon(
+                QtGui.QIcon(locate_file(btName + "_64x64.png", iconPath)))
             bt.setIconSize(QtCore.QSize(32, 32))
             bt.setAutoRaise(True)
             bt.setStyleSheet("background: transparent; border: none")
@@ -736,5 +795,8 @@ class ViewButtons():
         """
         gv = self._graphicsViewOnWindow()
         scene = gv.scene()
-        self._flipFrame.setGeometry(QtCore.QRect(scene.sceneRect().right() - 80, scene.sceneRect().bottom() - 50,
+        self._flipFrame.setGeometry(
+            QtCore.QRect(
+                scene.sceneRect().right() -
+                                80, scene.sceneRect().bottom() - 50,
                                                  64, 32))

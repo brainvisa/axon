@@ -2,12 +2,13 @@ import unittest
 
 import brainvisa.axon
 from brainvisa.processes import getDiskItemType, getFormat, getConversionInfo
-    
+
+
 class TestCore(unittest.TestCase):
 
     def setUp(self):
         brainvisa.axon.initializeProcesses()
-        
+
     def test_types(self):
         # Check inheritance levels
         # Must be 0
@@ -46,7 +47,7 @@ class TestCore(unittest.TestCase):
         # but convertible formats
         ts = getDiskItemType('3D Volume')
         td = getDiskItemType('Brain Mask')
-        ci = getConversionInfo((ts, fs),(td, fd))
+        ci = getConversionInfo((ts, fs), (td, fd))
         self.assertEqual(ci.distance(useInheritanceOnly=1), None)
         self.assertEqual(ci.distance(useInheritanceOnly=0), (1, 1, 0))
 
@@ -54,7 +55,7 @@ class TestCore(unittest.TestCase):
         ts = getDiskItemType('3D Volume')
         td = ts
         fd = getFormat('NIFTI-1 Image')
-        ci = getConversionInfo((ts, fs),(td, fd))
+        ci = getConversionInfo((ts, fs), (td, fd))
         self.assertEqual(ci.distance(useInheritanceOnly=1), None)
         self.assertEqual(ci.distance(useInheritanceOnly=0), (1, 0, 1))
 
@@ -63,7 +64,7 @@ class TestCore(unittest.TestCase):
         ts = getDiskItemType('Brain Mask')
         td = getDiskItemType('3D Volume')
         fd = getFormat('NIFTI-1 Image')
-        ci = getConversionInfo((ts, fs),(td, fd))
+        ci = getConversionInfo((ts, fs), (td, fd))
         self.assertEqual(ci.distance(useInheritanceOnly=1), None)
         self.assertEqual(ci.distance(useInheritanceOnly=0), (1, 1, 1))
 
@@ -74,22 +75,23 @@ class TestCore(unittest.TestCase):
         fs = format('ROI Graph')
         td = getDiskItemType('3D Volume')
         fd = getFormat('NIFTI-1 Image')
-        ci = getConversionInfo((ts, fs),(td, fd))
+        ci = getConversionInfo((ts, fs), (td, fd))
         self.assertEqual(ci.distance(useInheritanceOnly=1), None)
         self.assertEqual(ci.distance(useInheritanceOnly=0), None)
-        # (because I think that no converter between 4D Volume and Graph is 
+        # (because I think that no converter between 4D Volume and Graph is
         # registered, but it is necessary to check)
 
         ts = getDiskItemType('3D Volume')
         fs = getFormat('NIFTI-1 Image')
         td = getDiskItemType('ROI Graph')
         fd = format('ROI Graph')
-        ci = getConversionInfo((ts, fs),(td, fd))
+        ci = getConversionInfo((ts, fs), (td, fd))
         self.assertEqual(ci.distance(useInheritanceOnly=1), None)
         self.assertEqual(ci.distance(useInheritanceOnly=0), None)
 
     def tearDown(self):
         brainvisa.axon.cleanup()
+
 
 def test_suite():
     return unittest.TestLoader().loadTestsFromTestCase(TestCore)

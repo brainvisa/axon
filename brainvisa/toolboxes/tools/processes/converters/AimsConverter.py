@@ -7,9 +7,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -24,8 +24,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -48,11 +48,11 @@ userLevel = 0
 
 signature = Signature(
     'read', ReadDiskItem('4D Volume', aimsGlobals.aimsVolumeFormats,
-                        enableConversion=False),
+                         enableConversion=False),
     'write', WriteDiskItem('4D Volume',  aimsGlobals.aimsWriteVolumeFormats),
     'preferedFormat', Choice(*([('<auto>', None)]
-                              + map_list(lambda x: (x, getFormat(x)),
-                                         aimsGlobals.aimsWriteVolumeFormats))),
+                               + map_list(lambda x: (x, getFormat(x)),
+                                          aimsGlobals.aimsWriteVolumeFormats))),
     'removeSource', Boolean(),
     'ascii', Boolean(),
     'voxelType', Choice(('<Same as input>', None), 'U8', 'S8', 'U16', 'S16',
@@ -123,26 +123,25 @@ def execution(self, context):
     if self.rescaleDynamic:
         command += ['-r']
 
-        if self.useInputTypeLimits :
+        if self.useInputTypeLimits:
             command += ['--itypelimits']
 
-        if self.inputDynamicMin != None :
+        if self.inputDynamicMin != None:
             command += ['--imin', self.inputDynamicMin]
 
-        if self.inputDynamicMax != None :
+        if self.inputDynamicMax != None:
             command += ['--imax', self.inputDynamicMax]
 
-        if self.outputDynamicMin != None :
+        if self.outputDynamicMin != None:
             command += ['--omin', self.outputDynamicMin]
 
-        if self.outputDynamicMax != None :
+        if self.outputDynamicMax != None:
             command += ['--omax', self.outputDynamicMax]
 
     if context.system(*command):
         raise RuntimeError(_t_(
             'Error while converting <em>%s</em> to <em>%s</em>')
-             % (command[2], command[4]))
+            % (command[2], command[4]))
     if self.removeSource:
         for f in self.read.fullPaths():
             shelltools.rm(f)
-

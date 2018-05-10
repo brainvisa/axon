@@ -8,9 +8,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -25,8 +25,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -45,19 +45,27 @@ from soma.signature.api import Signature, Unicode, Sequence, Boolean
 import sys
 
 #------------------------------------------------------------------------------
-class MatlabConfiguration( ConfigurationGroup ):
-  label = 'Matlab'
-  icon = 'matlab.png'
-  optdef = u'-nosplash -nodisplay'
-  if sys.platform.startswith( 'win' ):
-    optdef += u' -wait'
-  signature = Signature(
-    'enable_matlab', Boolean, dict( defaultValue=False, doc='if unchecked, matlab is disabled' ),
-    'executable', Unicode, dict( defaultValue='matlab', doc='location of the Matlab program' ),
-    'version', Unicode, dict( defaultValue=u'', doc='Matlab version' ),
-    'options', Unicode, dict( defaultValue=optdef, doc='Options passed to Matlab executable.' ),
-    'path', Sequence( Unicode ), dict( defaultValue=[], doc='List of directories that will be added to Matlab path.' ),
-    'startup', Sequence( Unicode ), dict( defaultValue=[], doc='List of Matlab commands to execute at startup.' ),
-  )
-  del optdef
 
+
+class MatlabConfiguration(ConfigurationGroup):
+    label = 'Matlab'
+    icon = 'matlab.png'
+    optdef = u'-nosplash -nodisplay'
+    if sys.platform.startswith('win'):
+        optdef += u' -wait'
+    signature = Signature(
+        'enable_matlab', Boolean, dict(
+            defaultValue=False, doc='if unchecked, matlab is disabled'),
+      'executable', Unicode, dict(
+          defaultValue='matlab', doc='location of the Matlab program'),
+      'version', Unicode, dict(defaultValue=u'', doc='Matlab version'),
+      'options', Unicode, dict(
+          defaultValue=optdef, doc='Options passed to Matlab executable.'),
+      'path', Sequence(Unicode), dict(
+          defaultValue=[
+          ], doc='List of directories that will be added to Matlab path.'),
+      'startup', Sequence(Unicode), dict(
+          defaultValue=[
+          ], doc='List of Matlab commands to execute at startup.'),
+    )
+    del optdef

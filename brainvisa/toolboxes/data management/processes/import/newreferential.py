@@ -6,9 +6,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -23,8 +23,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -37,34 +37,34 @@ name = 'New Referential'
 userLevel = 2
 
 signature = Signature(
-  'data', ReadDiskItem( 'Any Type', getAllFormats() ),
-  'referential_type', OpenChoice( 'Referential of Raw T1 MRI' ), 
-  'referential', WriteDiskItem( 'Referential', 'Referential' ),
-  )
+    'data', ReadDiskItem('Any Type', getAllFormats()),
+  'referential_type', OpenChoice('Referential of Raw T1 MRI'),
+  'referential', WriteDiskItem('Referential', 'Referential'),
+)
 
 
-def initialization( self ):
-  def linkRef( self, dummy ):
-    if self.data is not None:
-      t = self.referential_type
-      if t == '':
+def initialization(self):
+    def linkRef(self, dummy):
+        if self.data is not None:
+            t = self.referential_type
+            if t == '':
+                t = None
+            return registration.getTransformationManager().findOrCreateReferential(
+                diskItem=self.data, referentialType=t, simulation=True)
+    self.linkParameters('referential', ('data', 'referential_type'), linkRef)
+    self.setOptional('referential_type', 'referential')
+
+
+def execution(self, context):
+    context.write('data:', self.data)
+    tm = registration.getTransformationManager()
+    ref = tm.referential(self.data)
+    context.write('existing referential:', ref)
+    # even if a referential exists, it can be incorrect, so use find or create
+    # referential
+    t = self.referential_type
+    if t == '':
         t = None
-      return registration.getTransformationManager().findOrCreateReferential(
-        diskItem=self.data, referentialType=t, simulation=True )
-  self.linkParameters( 'referential', ( 'data', 'referential_type' ), linkRef )
-  self.setOptional( 'referential_type', 'referential' )
-
-
-def execution( self, context ):
-  context.write( 'data:', self.data )
-  tm = registration.getTransformationManager()
-  ref = tm.referential( self.data )
-  context.write( 'existing referential:', ref )
-  # even if a referential exists, it can be incorrect, so use find or create referential
-  t = self.referential_type
-  if t == '':
-    t = None
-  ref = tm.findOrCreateReferential( diskItem=self.data, referentialType = t,
-    assign=True, output_diskitem=self.referential )
-  context.write( 'new ref:', ref )
-
+    ref = tm.findOrCreateReferential(diskItem=self.data, referentialType=t,
+                                     assign=True, output_diskitem=self.referential)
+    context.write('new ref:', ref)

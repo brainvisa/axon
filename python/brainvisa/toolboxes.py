@@ -48,7 +48,7 @@ if sys.version_info[0] >= 3:
         if locals is None:
             locals = sys._getframe(1).f_locals
         with open(filename, "r") as fh:
-            exec(fh.read()+"\n", globals, locals)
+            exec(fh.read() + "\n", globals, locals)
 
 
 class Toolbox(object):

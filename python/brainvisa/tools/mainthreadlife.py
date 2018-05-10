@@ -5,4 +5,3 @@
 '''
 
 from soma.qt_gui.qtThread import MainThreadLife
-

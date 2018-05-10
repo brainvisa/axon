@@ -8,9 +8,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -25,8 +25,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -49,220 +49,230 @@ from brainvisa.processing.neuroException import showException
 from brainvisa.configuration.databases_configuration import DatabaseSettings, DatabasesConfiguration
 
 #------------------------------------------------------------------------------
-class DatabaseManagerGUI( qt.QWidget ):
-  def __init__( self, parent=None, name=None ):
-    if getattr( DatabaseManagerGUI, 'pixUp', None ) is None:
-      pixUp=findIconFile( 'up.png' )
-      if pixUp:
-        pixUp=qt.QIcon( pixUp )
-      setattr( DatabaseManagerGUI, 'pixUp', pixUp )
-      pixDown=findIconFile( 'down.png' )
-      if pixDown:
-        pixDown=qt.QIcon( pixDown )
-      setattr( DatabaseManagerGUI, 'pixDown', pixDown )
-      pixLock = findIconFile('lock.png')
-      if pixLock:
-        pixLock = qt.QIcon(pixLock)
-      setattr(DatabaseManagerGUI, 'pixLock', pixLock)
-    qt.QWidget.__init__( self, parent )
-    if name:
-      self.setObjectName(name)
-    layout = qt.QVBoxLayout( self )
-    layout.setContentsMargins(10, 10, 10, 10)
-    layout.setSpacing( 5 )
-    self.setLayout(layout)
-    
-    self._databaseEditor = None
-    
-    self.lvDatabases = qt.QListWidget( self )
-    self.lvDatabases.itemSelectionChanged.connect(self._selected)
-    layout.addWidget( self.lvDatabases )
-    
-    hb = qt.QHBoxLayout()
-    hb.setSpacing( 6 )
 
-    self.btnEdit = qt.QPushButton( _( 'Edit' ), self )
-    self.btnEdit.clicked.connect(self._edit)
-    self.btnEdit.setEnabled( 0 )
-    hb.addWidget( self.btnEdit )
 
-    self.btnAdd = qt.QPushButton( _( 'Add' ), self )
-    self.btnAdd.clicked.connect(self._add)
-    hb.addWidget( self.btnAdd )
+class DatabaseManagerGUI(qt.QWidget):
 
-    self.btnRemove = qt.QPushButton( _( 'Remove' ), self )
-    self.btnRemove.setEnabled( 0 )
-    self.btnRemove.clicked.connect(self._remove)
-    hb.addWidget( self.btnRemove )
+    def __init__(self, parent=None, name=None):
+        if getattr(DatabaseManagerGUI, 'pixUp', None) is None:
+            pixUp = findIconFile('up.png')
+            if pixUp:
+                pixUp = qt.QIcon(pixUp)
+            setattr(DatabaseManagerGUI, 'pixUp', pixUp)
+            pixDown = findIconFile('down.png')
+            if pixDown:
+                pixDown = qt.QIcon(pixDown)
+            setattr(DatabaseManagerGUI, 'pixDown', pixDown)
+            pixLock = findIconFile('lock.png')
+            if pixLock:
+                pixLock = qt.QIcon(pixLock)
+            setattr(DatabaseManagerGUI, 'pixLock', pixLock)
+        qt.QWidget.__init__(self, parent)
+        if name:
+            self.setObjectName(name)
+        layout = qt.QVBoxLayout(self)
+        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(5)
+        self.setLayout(layout)
 
-    self.btnUp = qt.QPushButton( self )
-    if self.pixUp:
-      self.btnUp.setIcon( self.pixUp )
-    self.btnUp.setEnabled( 0 )
-    self.btnUp.clicked.connect(self._up)
-    hb.addWidget( self.btnUp )
+        self._databaseEditor = None
 
-    self.btnDown = qt.QPushButton( self )
-    if self.pixDown:
-      self.btnDown.setIcon( self.pixDown )
-    self.btnDown.setEnabled( 0 )
-    self.btnDown.clicked.connect(self._down)
-    hb.addWidget( self.btnDown )
+        self.lvDatabases = qt.QListWidget(self)
+        self.lvDatabases.itemSelectionChanged.connect(self._selected)
+        layout.addWidget(self.lvDatabases)
 
-    layout.addLayout( hb )
+        hb = qt.QHBoxLayout()
+        hb.setSpacing(6)
 
-    hb = qt.QHBoxLayout()
-    hb.setSpacing( 6 )
+        self.btnEdit = qt.QPushButton(_('Edit'), self)
+        self.btnEdit.clicked.connect(self._edit)
+        self.btnEdit.setEnabled(0)
+        hb.addWidget(self.btnEdit)
 
-    spacer = qt.QSpacerItem( 10, 10, qt.QSizePolicy.Expanding, qt.QSizePolicy.Minimum )
-    hb.addItem( spacer )
+        self.btnAdd = qt.QPushButton(_('Add'), self)
+        self.btnAdd.clicked.connect(self._add)
+        hb.addWidget(self.btnAdd)
 
-    layout.addLayout( hb )
-    self.modification = 0
-    self.setWindowTitle( 'Select databases directories' )
-    
-  def getConfiguredDatabases( self ):
-    for i in range(self.lvDatabases.count()):
-      item = self.lvDatabases.item(i)
-      directory, selected, read_only = item._value
-      yield (directory, (item.checkState()==qt.Qt.Checked), read_only)
+        self.btnRemove = qt.QPushButton(_('Remove'), self)
+        self.btnRemove.setEnabled(0)
+        self.btnRemove.clicked.connect(self._remove)
+        hb.addWidget(self.btnRemove)
 
-  def update( self, databases ):
-    self.lvDatabases.clear()
-    for d in databases:
-      self._addDatabase(d.directory, d.selected, d.read_only)
-  
-  
-  def _getDatabaseEditor( self ):
-    if self._databaseEditor is None:
-      self._databaseEditor = self.DatabaseEditor( parent=self )
-    return self._databaseEditor
-  
-  def _edit( self ):
-    try:
-      settings = DatabaseSettings( *self.lvDatabases.currentItem()._value )
-      appgui = ApplicationQtGUI()
-      if appgui.edit( settings, live=True, parent=self ):
-        if settings.directory:
-          item = self.lvDatabases.currentItem()
-          item._value = (settings.directory, settings._selected,
-                         settings.read_only)
-          item.setText( settings.directory )
-          if settings.read_only:
-            item.setIcon(self.pixLock)
-          else:
-            item.setIcon(qt.QIcon())
-          if not settings._selected: item.setCheckState( qt.Qt.Unchecked )
-          self.modification = 1
-          try:
-            writeMinf( os.path.join( settings.directory, 'database_settings.minf' ),
-                      ( settings.expert_settings, ) )
-          except IOError:
-            pass
-    except:
-      showException()
+        self.btnUp = qt.QPushButton(self)
+        if self.pixUp:
+            self.btnUp.setIcon(self.pixUp)
+        self.btnUp.setEnabled(0)
+        self.btnUp.clicked.connect(self._up)
+        hb.addWidget(self.btnUp)
 
-  def _add( self ):
-    try:
-      settings = DatabaseSettings()
-      settings.expert_settings.ontology = 'brainvisa-3.2.0'
-      appgui = ApplicationQtGUI()
-      if appgui.edit( settings, live=True, parent=self ):
-        if settings.directory:
-          self._addDatabase(settings.directory, settings._selected,
-                            settings.read_only)
-          self.modification = True
-          try:
-            writeMinf( os.path.join( settings.directory, 'database_settings.minf' ),
-                      ( settings.expert_settings, ) )
-          except IOError:
-            pass
-    except:
-      showException()
+        self.btnDown = qt.QPushButton(self)
+        if self.pixDown:
+            self.btnDown.setIcon(self.pixDown)
+        self.btnDown.setEnabled(0)
+        self.btnDown.clicked.connect(self._down)
+        hb.addWidget(self.btnDown)
 
-  def _remove( self ):
-    row = self.lvDatabases.currentRow()
-    self.lvDatabases.takeItem( row )
-    self._selected()
-    self.modification = 1
+        layout.addLayout(hb)
 
-  def _up( self ):
-    row = self.lvDatabases.currentRow()
-    newRow = row-1
-    if newRow >=0:
-      self._moveDatabase( row, newRow )
-    
-  def _moveDatabase( self, row, otherRow ):
-    item=self.lvDatabases.takeItem( row )
-    self.lvDatabases.insertItem(otherRow, item)
-    self.lvDatabases.setCurrentItem( item )
-    self.modification = 1
+        hb = qt.QHBoxLayout()
+        hb.setSpacing(6)
 
-  def _down( self ):
-    row = self.lvDatabases.currentRow()
-    newRow = row+1
-    if newRow < self.lvDatabases.count():
-      self._moveDatabase( row, newRow )
+        spacer = qt.QSpacerItem(
+            10, 10, qt.QSizePolicy.Expanding, qt.QSizePolicy.Minimum)
+        hb.addItem(spacer)
 
-  def _selected( self ):
-    item=self.lvDatabases.currentItem()
-    row=self.lvDatabases.currentRow()
-    if item is None:
-      self.btnEdit.setEnabled( 0 )
-      self.btnRemove.setEnabled( 0 )
-      self.btnUp.setEnabled( 0 )
-      self.btnDown.setEnabled( 0 )
-    else:
-      self.btnEdit.setEnabled( 1 )
-      self.btnRemove.setEnabled( 1 )
-      if row != 0:
-        self.btnUp.setEnabled( 1 )
-      else:
-        self.btnUp.setEnabled( 0 )
-      if (row < (self.lvDatabases.count() - 1)) :
-        self.btnDown.setEnabled( 1 )
-      else:
-        self.btnDown.setEnabled( 0 )
+        layout.addLayout(hb)
+        self.modification = 0
+        self.setWindowTitle('Select databases directories')
 
-  def _addDatabase(self, directory, selected, read_only=False):
-    item = qt.QListWidgetItem( self.lvDatabases)
-    if os.path.isdir(directory) and not os.access(directory,
-                                                  os.R_OK + os.W_OK + os.X_OK):
-      read_only = True
-    if read_only:
-      from brainvisa.configuration import neuroConfig
-      item.setIcon(qt.QIcon(os.path.join(neuroConfig.iconPath, 'lock.png')))
-    item.setText(directory)
-    if selected:
-      item.setCheckState( qt.Qt.Checked )
-    else:
-      item.setCheckState( qt.Qt.Unchecked )
-    item._value = (directory, selected, read_only)
+    def getConfiguredDatabases(self):
+        for i in range(self.lvDatabases.count()):
+            item = self.lvDatabases.item(i)
+            directory, selected, read_only = item._value
+            yield (directory, (item.checkState() == qt.Qt.Checked), read_only)
+
+    def update(self, databases):
+        self.lvDatabases.clear()
+        for d in databases:
+            self._addDatabase(d.directory, d.selected, d.read_only)
+
+    def _getDatabaseEditor(self):
+        if self._databaseEditor is None:
+            self._databaseEditor = self.DatabaseEditor(parent=self)
+        return self._databaseEditor
+
+    def _edit(self):
+        try:
+            settings = DatabaseSettings(
+                *self.lvDatabases.currentItem()._value)
+            appgui = ApplicationQtGUI()
+            if appgui.edit(settings, live=True, parent=self):
+                if settings.directory:
+                    item = self.lvDatabases.currentItem()
+                    item._value = (settings.directory, settings._selected,
+                                   settings.read_only)
+                    item.setText(settings.directory)
+                    if settings.read_only:
+                        item.setIcon(self.pixLock)
+                    else:
+                        item.setIcon(qt.QIcon())
+                    if not settings._selected:
+                        item.setCheckState(qt.Qt.Unchecked)
+                    self.modification = 1
+                    try:
+                        writeMinf(
+                            os.path.join(
+                                settings.directory, 'database_settings.minf'),
+                                  (settings.expert_settings, ))
+                    except IOError:
+                        pass
+        except:
+            showException()
+
+    def _add(self):
+        try:
+            settings = DatabaseSettings()
+            settings.expert_settings.ontology = 'brainvisa-3.2.0'
+            appgui = ApplicationQtGUI()
+            if appgui.edit(settings, live=True, parent=self):
+                if settings.directory:
+                    self._addDatabase(settings.directory, settings._selected,
+                                      settings.read_only)
+                    self.modification = True
+                    try:
+                        writeMinf(
+                            os.path.join(
+                                settings.directory, 'database_settings.minf'),
+                                  (settings.expert_settings, ))
+                    except IOError:
+                        pass
+        except:
+            showException()
+
+    def _remove(self):
+        row = self.lvDatabases.currentRow()
+        self.lvDatabases.takeItem(row)
+        self._selected()
+        self.modification = 1
+
+    def _up(self):
+        row = self.lvDatabases.currentRow()
+        newRow = row - 1
+        if newRow >= 0:
+            self._moveDatabase(row, newRow)
+
+    def _moveDatabase(self, row, otherRow):
+        item = self.lvDatabases.takeItem(row)
+        self.lvDatabases.insertItem(otherRow, item)
+        self.lvDatabases.setCurrentItem(item)
+        self.modification = 1
+
+    def _down(self):
+        row = self.lvDatabases.currentRow()
+        newRow = row + 1
+        if newRow < self.lvDatabases.count():
+            self._moveDatabase(row, newRow)
+
+    def _selected(self):
+        item = self.lvDatabases.currentItem()
+        row = self.lvDatabases.currentRow()
+        if item is None:
+            self.btnEdit.setEnabled(0)
+            self.btnRemove.setEnabled(0)
+            self.btnUp.setEnabled(0)
+            self.btnDown.setEnabled(0)
+        else:
+            self.btnEdit.setEnabled(1)
+            self.btnRemove.setEnabled(1)
+            if row != 0:
+                self.btnUp.setEnabled(1)
+            else:
+                self.btnUp.setEnabled(0)
+            if (row < (self.lvDatabases.count() - 1)):
+                self.btnDown.setEnabled(1)
+            else:
+                self.btnDown.setEnabled(0)
+
+    def _addDatabase(self, directory, selected, read_only=False):
+        item = qt.QListWidgetItem(self.lvDatabases)
+        if os.path.isdir(directory) and not os.access(directory,
+                                                      os.R_OK + os.W_OK + os.X_OK):
+            read_only = True
+        if read_only:
+            from brainvisa.configuration import neuroConfig
+            item.setIcon(
+                qt.QIcon(os.path.join(neuroConfig.iconPath, 'lock.png')))
+        item.setText(directory)
+        if selected:
+            item.setCheckState(qt.Qt.Checked)
+        else:
+            item.setCheckState(qt.Qt.Unchecked)
+        item._value = (directory, selected, read_only)
 
 #------------------------------------------------------------------------------
-class DatabasesConfiguration_Qt4GUI( QtGUI ):
-  def editionWidget( self, object, parent=None, name=None, live=False ):
-    editionWidget = DatabaseManagerGUI( parent=parent, name=name )
-    editionWidget.update( object.fso )
-    return editionWidget
-  
-  
-  def closeEditionWidget( self, editionWidget ):
-    editionWidget.close()
-  
-  
-  def setObject( self, editionWidget, object ):
-    fso = []
-    for directory, selected, read_only \
-        in editionWidget.getConfiguredDatabases():
-      fso.append(DatabasesConfiguration.FileSystemOntology(
-        directory=directory, selected=selected, read_only=read_only))
-    object.fso = fso
-  
 
-  def updateEditionWidget( self, editionWidget, object ):
-    '''
-    Update C{editionWidget} to reflect the current state of C{object}.
-    This method must be defined for both mutable and immutable DataType.
-    '''
-    editionWidget.update( object.fso )
+
+class DatabasesConfiguration_Qt4GUI(QtGUI):
+
+    def editionWidget(self, object, parent=None, name=None, live=False):
+        editionWidget = DatabaseManagerGUI(parent=parent, name=name)
+        editionWidget.update(object.fso)
+        return editionWidget
+
+    def closeEditionWidget(self, editionWidget):
+        editionWidget.close()
+
+    def setObject(self, editionWidget, object):
+        fso = []
+        for directory, selected, read_only \
+                in editionWidget.getConfiguredDatabases():
+            fso.append(DatabasesConfiguration.FileSystemOntology(
+                       directory=directory, selected=selected, read_only=read_only))
+        object.fso = fso
+
+    def updateEditionWidget(self, editionWidget, object):
+        '''
+        Update C{editionWidget} to reflect the current state of C{object}.
+        This method must be defined for both mutable and immutable DataType.
+        '''
+        editionWidget.update(object.fso)

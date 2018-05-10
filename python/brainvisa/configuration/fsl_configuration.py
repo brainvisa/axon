@@ -44,11 +44,15 @@ from soma.configuration import ConfigurationGroup
 from soma.signature.api import Signature, Unicode, FileName, Sequence, Boolean
 
 #------------------------------------------------------------------------------
-class FSLConfiguration( ConfigurationGroup ):
-  label = 'FSL'
-  icon = 'fsl-logo-big.jpg'
-  signature = Signature(
-    'fsldir', FileName(directoryOnly=True), dict( defaultValue=os.environ.get( 'FSLDIR', '' ), doc='location of FSL installation directory' ),
-    'fsl_commands_prefix', Unicode, dict( defaultValue='', doc='prefix, prepended to FSL commands names, used in some installations (Ubuntu uses "fsl4.1-")' ),
-  )
 
+
+class FSLConfiguration(ConfigurationGroup):
+    label = 'FSL'
+    icon = 'fsl-logo-big.jpg'
+    signature = Signature(
+        'fsldir', FileName(directoryOnly=True), dict(
+            defaultValue=os.environ.get(
+                'FSLDIR', ''), doc='location of FSL installation directory'),
+      'fsl_commands_prefix', Unicode, dict(
+          defaultValue='', doc='prefix, prepended to FSL commands names, used in some installations (Ubuntu uses "fsl4.1-")'),
+    )

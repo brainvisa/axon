@@ -32,44 +32,48 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 # Constants for default attributes values
-default_center="subjects"
-default_acquisition="default_acquisition"
-default_analysis="default_analysis"
-default_session="default_session"
-default_graph_version="3.0"
+default_center = "subjects"
+default_acquisition = "default_acquisition"
+default_analysis = "default_analysis"
+default_session = "default_session"
+default_graph_version = "3.0"
 
 hierarchy = (
-  SetWeakAttr( 'database', '%f' ),
+    SetWeakAttr('database', '%f'),
   SetContent(
-    'scripts', SetContent('*', SetType('Script')), # directory that contains scripts to undo conversion or cleaning database processes
-    'database', SetType( 'Database Cache file' ),
-    'database_fso', SetType( 'Database description page' ),
-    'database_settings', SetType( 'Database settings' ),
-    '*', SetType('Database Cache file'), # database cache
-    'trash', #directory containing files that must be deleted
-    'analyzes',
-    SetContent(
-      #'{analysis}', SetType( 'Analysis Dir' ),#WARNING : all directory after analyzes was catch by it
-      #SetContent(# Set Content must be present even if it is empty, otherwise it is impossible to insert something in subject directory
-      #),
-    ),
-    'snapshots', SetType( 'Snapshots Dir'),
-     SetContent(# Set Content must be present even if it is empty, otherwise it is impossible to insert something in subject directory
-    ),
-    'tables', SetType( 'Tables Directory'),
-     SetContent(# Set Content must be present even if it is empty, otherwise it is impossible to insert something in subject directory
-    ),
-    '{center}', SetFileNameStrongAttribute( 'center' ), SetType( 'Center' ), SetDefaultAttributeValue( 'center', default_center ),
-    SetContent(
-      "group_analysis",
-      SetContent( '{group_of_subjects}',
-        SetContent( '<group_of_subjects>_group', SetType( 'Group definition' ),
-        ),
+      'scripts', SetContent('*', SetType('Script')),
+                          # directory that contains scripts to undo conversion
+                          # or cleaning database processes
+      'database', SetType('Database Cache file'),
+      'database_fso', SetType('Database description page'),
+      'database_settings', SetType('Database settings'),
+      '*', SetType('Database Cache file'),  # database cache
+      'trash',  # directory containing files that must be deleted
+      'analyzes',
+      SetContent(
+          # '{analysis}', SetType( 'Analysis Dir' ),#WARNING : all directory after analyzes was catch by it
+          # SetContent(# Set Content must be present even if it is empty, otherwise it is impossible to insert something in subject directory
+          #),
       ),
-      '{subject}', SetFileNameStrongAttribute( 'subject' ), SetType( 'Subject' ),
-      SetContent( # Set Content must be present even if it is empty, otherwise it is impossible to insert something in subject directory
+      'snapshots', SetType('Snapshots Dir'),
+     SetContent(  # Set Content must be present even if it is empty, otherwise it is impossible to insert something in subject directory
+     ),
+      'tables', SetType('Tables Directory'),
+     SetContent(  # Set Content must be present even if it is empty, otherwise it is impossible to insert something in subject directory
+     ),
+      '{center}', SetFileNameStrongAttribute('center'), SetType(
+          'Center'), SetDefaultAttributeValue('center', default_center),
+      SetContent(
+          "group_analysis",
+          SetContent('{group_of_subjects}',
+                     SetContent(
+                     '<group_of_subjects>_group', SetType('Group definition'),
+                     ),
+                     ),
+          '{subject}', SetFileNameStrongAttribute(
+              'subject'), SetType('Subject'),
+          SetContent(  # Set Content must be present even if it is empty, otherwise it is impossible to insert something in subject directory
+          ),
       ),
-    ),
   ),
 )
-

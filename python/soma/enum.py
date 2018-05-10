@@ -8,10 +8,10 @@
 #
 # This software is governed by the CeCILL-B license under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL-B license as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
-# 
+# and INRIA at the following URL "http://www.cecill.info".
+#
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
 # with a limited warranty  and the software's author,  the holder of the
@@ -25,8 +25,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -85,19 +85,25 @@ __version__ = "0.4.3"
 
 
 class EnumException(Exception):
+
     """ Base class for all exceptions in this module """
+
     def __init__(self):
         if self.__class__ is EnumException:
             raise NotImplementedError(
                 "%s is an abstract class for subclassing" % self.__class__)
 
+
 class EnumEmptyError(AssertionError, EnumException):
+
     """ Raised when attempting to create an empty enumeration """
 
     def __str__(self):
         return "Enumerations cannot be empty"
 
+
 class EnumBadKeyError(TypeError, EnumException):
+
     """ Raised when creating an Enum with non-string keys """
 
     def __init__(self, key):
@@ -106,7 +112,9 @@ class EnumBadKeyError(TypeError, EnumException):
     def __str__(self):
         return "Enumeration keys must be strings: %s" % (self.key,)
 
+
 class EnumMissingKeyError(TypeError, EnumException):
+
     """ Raised when creating an Enum with non-string keys """
 
     def __init__(self, enumtype, key):
@@ -116,7 +124,9 @@ class EnumMissingKeyError(TypeError, EnumException):
     def __str__(self):
         return "Enumeration key '%s' does not exists in enumeration : %s" % (self.key, self.__enumtype)
 
+
 class EnumImmutableError(TypeError, EnumException):
+
     """ Raised when attempting to modify an Enum """
 
     def __init__(self, *args):
@@ -124,79 +134,82 @@ class EnumImmutableError(TypeError, EnumException):
 
     def __str__(self):
         return "Enumeration does not allow modification"
-    
+
 
 class EnumValues(object):
+
     """ Values of an enumerated type """
 
-    def __init__(self, enumtype, values = 0):
+    def __init__(self, enumtype, values=0):
         """ Set up a new instance """
         super(EnumValues, self).__init__()
-        
+
         self.__enumtype = enumtype
         self.__values = 0
-        
-        if not hasattr(values, '__iter__') :
+
+        if not hasattr(values, '__iter__'):
             values = [values]
-        
-        for value in values :
-            try :
+
+        for value in values:
+            try:
                 self.__values |= int(value)
             except Exception as e:
-                try :
-                    self |= self.__enumtype.__dict__.get( value )
+                try:
+                    self |= self.__enumtype.__dict__.get(value)
                 except Exception as e:
-                    try :
+                    try:
                         self |= value
                     except Exception as e:
-                        raise EnumMissingKeyError( values, self.__enumtype )
+                        raise EnumMissingKeyError(values, self.__enumtype)
 
-    def __contains__(self, enumval) :
-        if (enumval not in self.__enumtype) :
+    def __contains__(self, enumval):
+        if (enumval not in self.__enumtype):
             raise EnumMissingKeyError(self.__enumtype, enumval)
-        
-        return int(self.__values) & int( math.pow(2, enumval.index) )
 
-    def __eq__( self, enumval ) :
-        if ( type(enumval) == EnumValues ) and ( enumval.__enumtype == self.__enumtype ) :
-            return ( self.__values == enumval.__values )
-        elif (enumval in self.__enumtype) :
-            return ( self.__values == int( math.pow(2, enumval.index) ) )
-        else :
+        return int(self.__values) & int(math.pow(2, enumval.index))
+
+    def __eq__(self, enumval):
+        if (type(enumval) == EnumValues) and (enumval.__enumtype == self.__enumtype):
+            return (self.__values == enumval.__values)
+        elif (enumval in self.__enumtype):
+            return (self.__values == int(math.pow(2, enumval.index)))
+        else:
             raise EnumMissingKeyError(self.__enumtype, enumval)
-        
-    def __ne__( self, enumval ) :
+
+    def __ne__(self, enumval):
         return not (self == enumval)
-    
-    def __ior__( self, enumval ) :
-        if (enumval not in self.__enumtype) :
+
+    def __ior__(self, enumval):
+        if (enumval not in self.__enumtype):
             raise EnumMissingKeyError(self.__enumtype, enumval)
-        
-        self.__values |= int( math.pow(2, enumval.index) )
+
+        self.__values |= int(math.pow(2, enumval.index))
         return self
 
-    def __ixor__( self, enumval ) :
-        if (enumval not in self.__enumtype) :
+    def __ixor__(self, enumval):
+        if (enumval not in self.__enumtype):
             raise EnumMissingKeyError(self.__enumtype, enumval)
-        
-        self.__values ^= int( math.pow(2, enumval.index) )
+
+        self.__values ^= int(math.pow(2, enumval.index))
         return self
-    
-    def __iter__( self ):
-        for value in self.__enumtype :
-            if value in self :
+
+    def __iter__(self):
+        for value in self.__enumtype:
+            if value in self:
                 yield value
-        
-    def __len__( self ):
+
+    def __len__(self):
         return len(list(iter(self)))
-    
-    def empty( self ):
-        return (self.__values == 0 )
-    
-    def __str__( self ):
+
+    def empty(self):
+        return (self.__values == 0)
+
+    def __str__(self):
         return str(list(iter(self)))
-            
+
+
 class EnumValue(object):
+
     """ A specific value of an enumerated type """
 
     def __init__(self, enumtype, index, key):
@@ -241,7 +254,9 @@ class EnumValue(object):
 
         return result
 
+
 class Enum(object):
+
     """ Enumerated type """
 
     def __init__(self, *keys, **kwargs):

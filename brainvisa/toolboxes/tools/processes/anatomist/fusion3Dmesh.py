@@ -6,9 +6,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -23,8 +23,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -36,31 +36,34 @@ from brainvisa import anatomist
 name = 'Anatomist Fusion 3D/mesh'
 userLevel = 2
 
+
 def validation():
     anatomist.validation()
 
 signature = Signature(
     'volume',
-    ReadDiskItem(  '4D Volume', 'anatomist volume formats' ),
-    'mesh', ReadDiskItem( "Mesh", 'anatomist mesh formats' ),
-    'output_texture', WriteDiskItem( 'Texture', 'Texture' ),
-    'time', Float(), 
-    )
+    ReadDiskItem('4D Volume', 'anatomist volume formats'),
+    'mesh', ReadDiskItem("Mesh", 'anatomist mesh formats'),
+    'output_texture', WriteDiskItem('Texture', 'Texture'),
+    'time', Float(),
+)
 
-def initialization( self ):
-    self.setOptional( 'time' )
 
-def execution( self, context ):
+def initialization(self):
+    self.setOptional('time')
+
+
+def execution(self, context):
     a = anatomist.Anatomist()
-    #info = a.getInfo( name_objects=1, selections=1 )
+    # info = a.getInfo( name_objects=1, selections=1 )
     time = -1
     if time is not None:
         time = self.time
-    mesh = a.loadObject( self.mesh )
-    func = a.loadObject( self.volume )
-    func.setPalette( palette = a.getPalette("Rainbow1-fusion") )
-    fusion = a.fusionObjects( [mesh, func], method='Fusion3DMethod' )
-    win = a.createWindow( '3D' )
-    win.addObjects( [fusion] )
-    #a.execute('Select')
+    mesh = a.loadObject(self.mesh)
+    func = a.loadObject(self.volume)
+    func.setPalette(palette=a.getPalette("Rainbow1-fusion"))
+    fusion = a.fusionObjects([mesh, func], method='Fusion3DMethod')
+    win = a.createWindow('3D')
+    win.addObjects([fusion])
+    # a.execute('Select')
     fusion.exportTexture(filename=self.output_texture.fullPath(), time=time)

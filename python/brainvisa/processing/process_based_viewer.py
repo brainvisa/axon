@@ -74,7 +74,9 @@ In some cases allowed processes may not be a fixed list. To handle this situatio
 
 from brainvisa import processes
 
+
 class ProcessBasedViewer(processes.Process):
+
     ''' Specialized viewer process, working with an underlying process.
 
     See the :py:mod:`brainvisa.processing.process_based_viewer` doc for
@@ -89,4 +91,3 @@ class ProcessBasedViewer(processes.Process):
         self.reference_process = None
         if not hasattr(self, 'allowed_processes'):
             self.allowed_processes = []
-

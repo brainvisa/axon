@@ -45,10 +45,8 @@ class AxonCapsulConfSynchronizer(object):
         self.study_config = study_config
         self.install_axon_to_capsul_config_sync()
 
-
     def __del__(self):
         self.uninstall_axon_to_capsul_config_sync()
-
 
     def install_axon_to_capsul_config_sync(self):
         '''Notifies Axon config options changes and sync them into CAPSUL
@@ -123,7 +121,6 @@ class AxonCapsulConfSynchronizer(object):
             'somaworkflow_keep_succeeded_workflows',
             self._set_swf_keep_succeeded_wf_capsul)
 
-
     def sync_axon_to_capsul(self):
         '''Copies Axon config options to their CAPSUL equivalent.
 
@@ -166,7 +163,7 @@ class AxonCapsulConfSynchronizer(object):
             try:
                 study_config.use_matlab = True
             except EnvironmentError:
-                pass # will be False finally.
+                pass  # will be False finally.
 
         # SPM
         use_spm = False
@@ -221,7 +218,6 @@ class AxonCapsulConfSynchronizer(object):
         study_config.somaworkflow_keep_succeeded_workflows \
             = ax_conf.soma_workflow.somaworkflow_keep_succeeded_workflows
 
-
     def sync_capsul_to_axon(self):
         '''Copies CAPSUL config options to their Axon equivalent.
         Make sure to have initialized axon config before calling it (typically
@@ -250,7 +246,7 @@ class AxonCapsulConfSynchronizer(object):
                             = study_config.spm_directory
                         ax_conf.SPM.spm12_standalone_mcr_path \
                             = os.path.join(study_config.spm_directory, 'mcr',
-                                          'v713')
+                                           'v713')
                     else:
                         ax_conf.SPM.spm12_standalone_path = ''
                         ax_conf.SPM.spm12_standalone_command = ''
@@ -266,7 +262,7 @@ class AxonCapsulConfSynchronizer(object):
                             = study_config.spm_directory
                         ax_conf.SPM.spm8_standalone_mcr_path \
                             = os.path.join(study_config.spm_directory, 'mcr',
-                                          'v713')
+                                           'v713')
                     else:
                         ax_conf.SPM.spm8_standalone_path = ''
                         ax_conf.SPM.spm8_standalone_command = ''
@@ -309,7 +305,6 @@ class AxonCapsulConfSynchronizer(object):
             = study_config.somaworkflow_keep_failed_workflows
         ax_conf.soma_workflow.somaworkflow_keep_succeeded_workflows \
             = study_config.somaworkflow_keep_succeeded_workflows
-
 
     def _set_matlab_executable_capsul(self, value):
         study_config = self.study_config

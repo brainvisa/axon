@@ -34,8 +34,6 @@ from brainvisa.processes import *
 from brainvisa import registration
 
 
-
-
 name = 'Resampling to image space'
 userLevel = 2
 
@@ -48,11 +46,11 @@ signature = Signature(
 )
 
 
-def initialization( self ):
-  self.resampling_order = 1
+def initialization(self):
+    self.resampling_order = 1
 
 
-def execution( self, context ):
+def execution(self, context):
     from soma import aims, aimsalgo
     import numpy as np
     vol = aims.read(self.image_input.fullPath())
@@ -63,13 +61,12 @@ def execution( self, context ):
         new_t1.header()['transformations'][0])
     old_to_new = new_t1_to_scanner.inverse() * old_t1_to_scanner
     rsp = getattr(aims, 'ResamplerFactory_'
-        + aims.typeCode(np.asarray(vol).dtype))().getResampler(0)
+                  + aims.typeCode(np.asarray(vol).dtype))().getResampler(0)
     rsp.setRef(vol)
     vol_resamp = rsp.doit(old_to_new, new_t1.getSizeX(),
-        new_t1.getSizeY(), new_t1.getSizeZ(),
-        new_t1.getVoxelSize()[:3])
+                          new_t1.getSizeY(), new_t1.getSizeZ(),
+                          new_t1.getVoxelSize()[:3])
 
     aims.write(vol_resamp, self.image_output.fullPath())
     tm = registration.getTransformationManager()
     tm.copyReferential(self.target_space_image, self.image_output)
-
