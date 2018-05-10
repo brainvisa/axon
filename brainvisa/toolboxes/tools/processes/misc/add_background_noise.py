@@ -40,7 +40,8 @@ userLevel = 0
 signature = Signature(
     'input_image',
         ReadDiskItem('3D Volume', 'aims readable volume formats'),
-    'output_image', WriteDiskItem('Raw T1 MRI', 'aims writable volume formats'),
+    'output_image', WriteDiskItem(
+        'Raw T1 MRI', 'aims writable volume formats'),
     'noise_average', Float(),
     'noise_stdev', Float(),
 )
@@ -62,4 +63,3 @@ def execution(self, context):
     noise[noise < 0] = 0
     vol_arr[w] = noise
     aims.write(vol, self.output_image.fullPath())
-

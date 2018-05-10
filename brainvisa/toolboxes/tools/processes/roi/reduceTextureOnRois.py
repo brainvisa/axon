@@ -70,4 +70,3 @@ def execution(self, context):
     if nt == 1:
         out_data = out_data.ravel()
     np.save(self.output_reduced_data.fullPath(), out_data)
-

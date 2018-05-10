@@ -8,9 +8,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -25,8 +25,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -34,10 +34,10 @@
 
 from brainvisa.processes import *
 try:
-  from soma import aims
+    from soma import aims
 except:
-  def validation():
-    raise RuntimeError( _t_( 'module <em>aims</em> not available' ) )
+    def validation():
+        raise RuntimeError(_t_('module <em>aims</em> not available'))
 import os
 
 
@@ -45,87 +45,94 @@ name = 'Create points ROI'
 userLevel = 2
 
 
-#Creation d'une image S16 à partir d'un fichier texte
+# Creation of a S16 image from a text file
 
 signature = Signature(
-  'file_of_point', ReadDiskItem( 'Coordinates File', 'Text file'),
-  'image_output', WriteDiskItem( '3D Volume',  'aims Writable Volume Formats' ),
-  'dimX', Integer (),
-  'dimY', Integer (),
-  'dimZ', Integer (),
-  'sizeX', Float (),
-  'sizeY', Float (),
-  'sizeZ', Float (),
-  'create_roigraph', Choice ('yes', 'no'),
-  'graph_output', WriteDiskItem( 'Roi graph', 'Graph' )
-  )
+    'file_of_point', ReadDiskItem('Coordinates File', 'Text file'),
+  'image_output', WriteDiskItem('3D Volume',  'aims Writable Volume Formats'),
+  'dimX', Integer(),
+  'dimY', Integer(),
+  'dimZ', Integer(),
+  'sizeX', Float(),
+  'sizeY', Float(),
+  'sizeZ', Float(),
+  'create_roigraph', Choice('yes', 'no'),
+  'graph_output', WriteDiskItem('Roi graph', 'Graph')
+)
 
-def initialization( self ):
-  self.dimX=256
-  self.dimY=256
-  self.dimZ=120
-  self.sizeX=1
-  self.sizeY=1
-  self.sizeZ=1
-  self.setOptional('create_roigraph', 'graph_output') 
 
-def execution( self, context ):
+def initialization(self):
+    self.dimX = 256
+    self.dimY = 256
+    self.dimZ = 120
+    self.sizeX = 1
+    self.sizeY = 1
+    self.sizeZ = 1
+    self.setOptional('create_roigraph', 'graph_output')
 
-  fic = self.file_of_point
-  a = aims.AimsData_S16(self.dimX, self.dimY, self.dimZ)
-  a.setSizeXYZT(self.sizeX, self.sizeY, self.sizeZ)
-  #mettre les valeurs :
 
-  fic = open(self.file_of_point.fullPath(), 'r')
-  tmp ='x'
-  b = 1 #en cas d'erreurs
-  while tmp!='':
-    tmp = fic.readline() 
-    tab = tmp.split()
+def execution(self, context):
 
-    if len(tab)==4 :
+    fic = self.file_of_point
+    a = aims.AimsData_S16(self.dimX, self.dimY, self.dimZ)
+    a.setSizeXYZT(self.sizeX, self.sizeY, self.sizeZ)
+    # mettre les valeurs :
 
-      v = tab[0]
-      v = int(v)
+    fic = open(self.file_of_point.fullPath(), 'r')
+    tmp = 'x'
+    b = 1  # en cas d'erreurs
+    while tmp != '':
+        tmp = fic.readline()
+        tab = tmp.split()
 
-      x = tab[1]
-      x = int(x)
+        if len(tab) == 4:
 
-      y = tab[2]
-      y = int(y)
+            v = tab[0]
+            v = int(v)
 
-      z = tab[3]
-      z = int(z)
+            x = tab[1]
+            x = int(x)
 
-      if (x <= self.dimX) and (y <= self.dimY) and (z <= self.dimZ) :
-        a.setValue(v, x, y, z)
-      elif (x > self.dimX) :
-        context.write('dimX is strong - too long - perhaps ''file_of_point'' contains error')
-        b = 0
-        break
-      elif (y > self.dimY) :
-        context.write('dimY is strong - too long - perhaps ''file_of_point'' contains error')
-        b = 0
-        break
-      elif (z > self.dimZ) :
-        context.write('dimZ is strong - too long - perhaps ''file_of_point'' contains error')
-        b = 0
-        break
+            y = tab[2]
+            y = int(y)
 
-  fic.close()
-  
-  #écriture d'une image 
-  if (b == 1) :
+            z = tab[3]
+            z = int(z)
 
-    context.write('write image')
-    aims.write(a, self.image_output.fullPath())
+            if (x <= self.dimX) and (y <= self.dimY) and (z <= self.dimZ):
+                a.setValue(v, x, y, z)
+            elif (x > self.dimX):
+                context.write(
+                    'dimX is strong - too long - perhaps "file_of_point" contains error')
+                b = 0
+                break
+            elif (y > self.dimY):
+                context.write(
+                    'dimY is strong - too long - perhaps "file_of_point" contains error')
+                b = 0
+                break
+            elif (z > self.dimZ):
+                context.write(
+                    'dimZ is strong - too long - perhaps "file_of_point" contains error')
+                b = 0
+                break
 
-    if self.create_roigraph=='yes' :
-      if self.graph_output is not None :
-        command = [ 'AimsGraphConvert', '-i', self.image_output, '-o', self.graph_output, '--roi', '--bucket']
-        context.system( *command )
-      else : 
-        context.write('graph_output is mandatory because you are chose create_roigraph=yes !')
-  else :
+    fic.close()
 
-    context.write('correct error and try again')
+    # write image
+    if (b == 1):
+
+        context.write('write image')
+        aims.write(a, self.image_output.fullPath())
+
+        if self.create_roigraph == 'yes':
+            if self.graph_output is not None:
+                command = ['AimsGraphConvert', '-i', self.image_output,
+                           '-o', self.graph_output, '--roi', '--bucket']
+                context.system(*command)
+            else:
+                context.write(
+                    'graph_output is mandatory because you are chose create_roigraph=yes !')
+    else:
+
+        context.write('correct error and try again')

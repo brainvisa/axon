@@ -14,7 +14,6 @@ try:
     import brainvisa.tests.test_core
     import brainvisa.tests.test_history
     import brainvisa.tests.test_registration
-    
 
     import brainvisa.axon
     from brainvisa.configuration import neuroConfig
@@ -38,7 +37,7 @@ try:
         pass
 
     def test_suite():
-        suite =unittest.TestSuite()
+        suite = unittest.TestSuite()
         doctest_suite = unittest.TestSuite(doctest.DocFileSuite(
             "usecases.rst", setUp=setup_doctest,
             tearDown=teardown_doctest,

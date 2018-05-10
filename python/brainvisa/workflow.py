@@ -21,6 +21,7 @@ from soma_workflow.client import Job, FileTransfer, SharedResourcePath, Group, W
 if sys.version_info[0] >= 3:
     basestring = str
 
+
 class ProcessToWorkflow(object):
     JOB = 'j'
     NATIVE_JOB = 'n'

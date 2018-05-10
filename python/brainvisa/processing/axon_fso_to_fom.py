@@ -4,11 +4,11 @@ from __future__ import print_function
 import os
 from brainvisa.axon import processes
 from brainvisa import processes as procbv
-#from brainvisa.data import neuroData
-#from brainvisa.data import neuroDiskItems
+# from brainvisa.data import neuroData
+# from brainvisa.data import neuroDiskItems
 from brainvisa.data.readdiskitem import ReadDiskItem
 from brainvisa.data.writediskitem import WriteDiskItem
-#from traits import api as traits
+# from traits import api as traits
 from brainvisa.data import neuroHierarchy
 import sys
 from argparse import ArgumentParser
@@ -24,6 +24,7 @@ import six
 
 
 class AxonFsoToFom(object):
+
     '''
     Converter for Axon hierarchies (File System Ontologies) to CAPSUL/Soma-Base
     FOM (File Organization Model).
@@ -47,7 +48,6 @@ class AxonFsoToFom(object):
         self.current_fom_def = init_fom_def
         self.formats_fom = formats_fom
 
-
     def _find_rule(self, item):
         '''
         Find Axon FSO rule for a given distitem
@@ -65,7 +65,6 @@ class AxonFsoToFom(object):
             if m:
                 return (rule, m)
         return (None, {})
-
 
     def _get_fom_formats(self, formats):
         '''
@@ -90,7 +89,6 @@ class AxonFsoToFom(object):
                     = self._extensions_from_format(format)[0]
         return list(fnames)
 
-
     def _extensions_from_format(self, format):
         '''
         File extensions for a given Axon Format
@@ -109,7 +107,6 @@ class AxonFsoToFom(object):
                 exts.append(x[-1])
         return exts
 
-
     def _translate_param_name(self, process, name):
         '''
         Translate a parameter name for a given process into the resulting one
@@ -117,7 +114,6 @@ class AxonFsoToFom(object):
         By default, just output the input name.
         '''
         return name
-
 
     def _transform_rule(self, rule, matched_attr, input_attr):
         '''
@@ -141,7 +137,7 @@ class AxonFsoToFom(object):
         '''
 
         rule_attribs = dict([(k, '<%s>' % k) for k in matched_attr.keys()])
-        non_transformed = ['filename_variable',]
+        non_transformed = ['filename_variable', ]
         # such attributes are not considered attributes: take their real value
         for k in non_transformed:
             value = matched_attr.get(k)
@@ -154,11 +150,10 @@ class AxonFsoToFom(object):
             if k not in input_attr and k not in non_transformed:
                 if k in rule.defaultAttributesValues:
                     defaults[k] = {'default_value':
-                                      rule.defaultAttributesValues[k]}
+                                   rule.defaultAttributesValues[k]}
                 else:
                     fom_added_attr[k] = value
         return fom_pattern, fom_added_attr, defaults
-
 
     def fso_to_fom(self, proc_name, node_name, data):
         '''
@@ -188,7 +183,7 @@ class AxonFsoToFom(object):
             the "attribute_definitions" section.
         '''
 
-        #print(proc_name, node_name, data)
+        # print(proc_name, node_name, data)
         process = procbv.getProcessInstance(proc_name)
         signature = process.signature
         for name, param in six.iteritems(signature):
@@ -196,8 +191,8 @@ class AxonFsoToFom(object):
                 break
         else:
             raise ValueError('No ReadDiskItem in signature of process %s'
-                % proc_name)
-        #print('process %s, set param: %s' % (proc_name, name))
+                             % proc_name)
+        # print('process %s, set param: %s' % (proc_name, name))
         setattr(process, name, data)
         value = getattr(process, name)
         if value is None:
@@ -213,7 +208,6 @@ class AxonFsoToFom(object):
                                        input_attr, node_names)
         del self._done_params
         return self.current_fom_def, default_atts
-
 
     def _fso_to_fom_parse(self, process, node_name, input_attr,
                           current_fom_def=None):
@@ -235,11 +229,11 @@ class AxonFsoToFom(object):
                 continue
             param_name = self._translate_param_name(process, name)
             value = getattr(process, name)
-            #print('    %s.%s: %s' % (node_name, name, value))
+            # print('    %s.%s: %s' % (node_name, name, value))
             if value is None:
                 continue
             if self._check_and_mark_done(process, name):
-                #print('already done:', process, name)
+                # print('already done:', process, name)
                 continue
             database_name = value.get('_database')
             rule, matched_attr = self._find_rule(value)
@@ -266,7 +260,6 @@ class AxonFsoToFom(object):
 
         return current_fom_def, default_atts
 
-
     def _is_output(self, process, param_name, param):
         '''
         Checks if a given Axon process parameter is an output.
@@ -285,10 +278,9 @@ class AxonFsoToFom(object):
                 other_param = other_proc.signature[other_param_name]
                 if isinstance(other_param, WriteDiskItem) \
                         and getattr(process, param_name) \
-                            == getattr(other_proc, other_param_name):
+                        == getattr(other_proc, other_param_name):
                     return True
         return False
-
 
     def _check_and_mark_done(self, process, param_name):
         '''
@@ -318,7 +310,6 @@ class AxonFsoToFom(object):
                     stack.append(other_end)
         return False
 
-
     def _process_nodes_fso_to_fom(self, process, node_name, default_atts,
                                   input_attr, node_names):
         '''
@@ -327,7 +318,7 @@ class AxonFsoToFom(object):
 
         if not hasattr(process, 'executionNode') \
                 or process.executionNode() is None:
-            return # not a pipeline
+            return  # not a pipeline
 
         nodes = [(process.executionNode(), node_name, self.current_fom_def)]
         while nodes:
@@ -356,6 +347,7 @@ def ordered_load(stream, Loader=yaml.Loader, object_pairs_hook=OrderedDict):
     '''
     class OrderedLoader(Loader):
         pass
+
     def construct_mapping(loader, node):
         loader.flatten_mapping(node)
         return object_pairs_hook(loader.construct_pairs(node))
@@ -374,6 +366,7 @@ def ordered_dump(data, stream=None, Dumper=yaml.Dumper, **kwds):
     '''
     class OrderedDumper(Dumper):
         pass
+
     def _dict_representer(dumper, data):
         return dumper.represent_mapping(
             yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
@@ -393,7 +386,7 @@ def fso_to_fom_main(argv):
 
     basedir = os.path.dirname(__file__)
     for i in range(3):
-      basedir = os.path.dirname(basedir)
+        basedir = os.path.dirname(basedir)
     foms_dir = os.path.join(basedir, 'share', 'foms')
     def_formats_fom = os.path.join(foms_dir, 'brainvisa-formats-3.2.0.json')
 
@@ -401,26 +394,26 @@ def fso_to_fom_main(argv):
         description='Convert an Axon FSO hierarchy into FOM entries, for '
         'given Axon processes.')
     parser.add_argument('-p', '--process', dest='process', action='append',
-        help='input process ID. Ex: NobiasHistoAnalysis. Several -p options '
-        'are allowed. Processes may be specified as id,name (no space) to '
-        'force a new name')
+                        help='input process ID. Ex: NobiasHistoAnalysis. Several -p options '
+                        'are allowed. Processes may be specified as id,name (no space) to '
+                        'force a new name')
     parser.add_argument('-o', '--output', dest='output',
-        help='output FOM rules files')
+                        help='output FOM rules files')
     parser.add_argument('-a', '--append', action='store_true',
-        help='append output to the end of an existing FOM file')
+                        help='append output to the end of an existing FOM file')
     parser.add_argument('-d', '--data', dest='data',
-        help='input data file for process 1st arg (ex: '
-        '/home/bob/bvdata/center/subject01/t1mri/default_acquisition/subject01.nii')
+                        help='input data file for process 1st arg (ex: '
+                        '/home/bob/bvdata/center/subject01/t1mri/default_acquisition/subject01.nii')
     parser.add_argument('-f', '--formats', dest='formats',
-        help='formats FOM file [default: %s]' % def_formats_fom)
+                        help='formats FOM file [default: %s]' % def_formats_fom)
     parser.add_argument('-n', '--name', dest='fom_name',
-        help='set this FOM name [default: output file name]')
+                        help='set this FOM name [default: output file name]')
     parser.add_argument('-F', '--Formats', dest='output_formats',
-        help='output file name for updated formats FOM')
+                        help='output file name for updated formats FOM')
     args = parser.parse_args(argv)
 
-    #from brainvisa.configuration import neuroConfig
-    #neuroConfig.ignoreValidation = True
+    # from brainvisa.configuration import neuroConfig
+    # neuroConfig.ignoreValidation = True
     processes.initializeProcesses()
 
     append = args.append
@@ -444,7 +437,7 @@ def fso_to_fom_main(argv):
         formats_fom = ordered_load(open(formats))
     else:
         print('NO formats FOM !')
-        #raise RuntimeError('No formats FOM')
+        # raise RuntimeError('No formats FOM')
         formats_fom = {}
 
     fom_name = args.fom_name
@@ -478,7 +471,7 @@ def fso_to_fom_main(argv):
             proc_name, node_name, args.data)
         default_atts.update(added_default_atts)
 
-    #ordered_dump(fom_def, open(args.output, 'w'))
+    # ordered_dump(fom_def, open(args.output, 'w'))
     json.dump(fom_def, open(args.output, 'w'), indent=4)
     if args.output_formats:
         json.dump(fso_to_fom.formats_fom, open(args.output_formats, 'w'),
@@ -487,4 +480,3 @@ def fso_to_fom_main(argv):
 
 if __name__ == '__main__':
     fso_to_fom_main(sys.argv[1:])
-

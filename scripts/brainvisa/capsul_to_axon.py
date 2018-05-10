@@ -94,7 +94,7 @@ for procid, outfile in zip(options.process, options.output):
     p = getattr(module, procname)()
     print('process:', p
 
-    out = open(outfile, 'w')
+    out=open(outfile, 'w')
     out.write( '''# -*- coding: utf-8 -*-
 
 from brainvisa.processes import *
@@ -104,25 +104,25 @@ name = '%s'
 signature = Signature(
 ''' % procname )
 
-    excluded_traits = set(('nodes_activation', 'pipeline_steps'))
+    excluded_traits=set(('nodes_activation', 'pipeline_steps'))
     for name, param in six.iteritems(p.user_traits()):
         if name in excluded_traits:
             continue
-        parameter = make_parameter(param, name)
+        parameter=make_parameter(param, name)
         out.write('    \'%s\', %s,\n' % (name, parameter))
 
     out.write( ''')
 
 def initialization(self):
 ''')
-    init_empty = True
+    init_empty=True
     for name in p.user_traits():
         if name in excluded_traits:
             continue
-        value = getattr(p, name)
+        value=getattr(p, name)
         if value not in (traits.Undefined, ''):
             out.write('    self.%s = %s\n' % (name, repr(value)))
-            init_empty = False
+            init_empty=False
     if init_empty:
         out.write('    pass\n')
     out.write('''

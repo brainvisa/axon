@@ -38,7 +38,8 @@
 
 from __future__ import print_function
 import brainvisa.axon
-import atexit, os
+import atexit
+import os
 import sys
 from brainvisa.configuration import neuroConfig
 import brainvisa.processes
@@ -57,9 +58,10 @@ if sys.version_info[0] >= 3:
         if locals is None:
             locals = sys._getframe(1).f_locals
         with open(filename, "r") as fh:
-            exec(fh.read()+"\n", globals, locals)
+            exec(fh.read() + "\n", globals, locals)
 
 _count = 0
+
 
 def cleanup():
     """
@@ -70,29 +72,29 @@ def cleanup():
     global _count
     _count -= 1
     if _count != 0:
-      return
+        return
 
     try:
-      if sys.version_info[0] >= 3:
-          atexit.unregister(cleanup)
-      else:
-          atexit._exithandlers.remove((cleanup, (), {}))
+        if sys.version_info[0] >= 3:
+            atexit.unregister(cleanup)
+        else:
+            atexit._exithandlers.remove((cleanup, (), {}))
     except ValueError:
-      pass
+        pass
     if neuroConfig.runsInfo:
         neuroConfig.runsInfo.delete()
     neuroConfig.clearObjects()
     neuroHierarchy.databases.currentThreadCleanup()
     brainvisa.processes.cleanupProcesses()
     neuroLog.closeMainLog()
-    #print('closing manager:', temporary.manager, file=open('/tmp/log', 'a'))
+    # print('closing manager:', temporary.manager, file=open('/tmp/log', 'a'))
     sys.stdout.flush()
     try:
-      temporary.manager.close()
-      #print('(set to None)', file=open('/tmp/log', 'a'))
+        temporary.manager.close()
+        # print('(set to None)', file=open('/tmp/log', 'a'))
     except Exception as e:
-      print(e)
-      raise
+        print(e)
+        raise
     sys.stdout.flush()
 
 
@@ -112,28 +114,28 @@ def initializeProcesses():
     global _count
     _count += 1
     if _count != 1:
-      return
+        return
 
     atexit.register(cleanup)
     if not neuroConfig.noToolBox:
-        brainvisa.toolboxes.readToolboxes( neuroConfig.toolboxesDir,
-            neuroConfig.homeBrainVISADir )
+        brainvisa.toolboxes.readToolboxes(neuroConfig.toolboxesDir,
+                                          neuroConfig.homeBrainVISADir)
     for toolbox in brainvisa.toolboxes.allToolboxes():
-      toolbox.init()
+        toolbox.init()
 
     temporary.initializeTemporaryFiles(
-            defaultTemporaryDirectory = neuroConfig.temporaryDirectory )
+        defaultTemporaryDirectory=neuroConfig.temporaryDirectory)
 
     initializeMinfExtensions()
 
     if not neuroConfig.fastStart or neuroConfig.historyBookDirectory:
         # check for expired run information : ask user what to do
         if neuroConfig.fastStart:
-          dontrecordruns = True
+            dontrecordruns = True
         else:
-          dontrecordruns = False
-        neuroConfig.runsInfo = neuroConfig.RunsInfo( \
-          dontrecordruns=dontrecordruns )
+            dontrecordruns = False
+        neuroConfig.runsInfo = neuroConfig.RunsInfo(
+            dontrecordruns=dontrecordruns)
 
     neuroLog.initializeLog()
     neuroData.initializeData()
@@ -147,7 +149,8 @@ def initializeProcesses():
 
     if not neuroConfig.fastStart:
         # write information about brainvisa log file
-        brainvisa.processes.defaultContext().write("The log file for this session is " + repr(neuroConfig.logFileName) )
+        brainvisa.processes.defaultContext().write(
+            "The log file for this session is " + repr(neuroConfig.logFileName))
         neuroConfig.runsInfo.check(brainvisa.processes.defaultContext())
 
     # brainvisa.processes.readTypes() (actually imported from neuroDiskItems)
@@ -166,18 +169,18 @@ def initializeProcesses():
 
     if not neuroConfig.fastStart:
         for toolbox in brainvisa.toolboxes.allToolboxes():
-              # executes startup.py of each toolbox if it exists
-              if os.path.exists( toolbox.startupFile ):
-                  try:
-                      print('exec:', toolbox.startupFile)
-                      execfile( toolbox.startupFile, globals(), {} )
-                  except:
-                      neuroException.showException()
+            # executes startup.py of each toolbox if it exists
+            if os.path.exists(toolbox.startupFile):
+                try:
+                    print('exec:', toolbox.startupFile)
+                    execfile(toolbox.startupFile, globals(), {})
+                except:
+                    neuroException.showException()
 
     localsStartup = {}
     for f in neuroConfig.startup:
         try:
-            if isinstance( f, basestring ):
+            if isinstance(f, basestring):
                 localsStartup = globals().copy()
                 six.exec_(f, localsStartup, localsStartup)
             else:

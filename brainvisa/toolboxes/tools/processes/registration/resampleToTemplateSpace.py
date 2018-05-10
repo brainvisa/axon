@@ -42,50 +42,50 @@ name = 'Resample to Template Space'
 userLevel = 0
 
 signature = Signature(
-  'image'   , ReadDiskItem( '4D Volume', 'aims readable volume formats' ),
-  'transformation', ReadDiskItem( 'Transformation matrix',
-    'Transformation matrix'),
-  'interpolation', Choice( ('nearest neighbor', 0),
-                           ('linear', 1),
-                           ('quadratic', 2),
-                           ('cubic', 3),
-                           ('quartic', 4),
-                           ('quintic', 5),
-                           ('galactic', 6),
-                           ('intergalactic', 7) ),
-  'template_image', ReadDiskItem( '4D Volume',
-    'aims readable volume formats' ),
-  'resampled', WriteDiskItem( '4D Volume', 'aims writable volume formats' )
+    'image', ReadDiskItem('4D Volume', 'aims readable volume formats'),
+  'transformation', ReadDiskItem('Transformation matrix',
+                                 'Transformation matrix'),
+  'interpolation', Choice(('nearest neighbor', 0),
+                          ('linear', 1),
+                          ('quadratic', 2),
+                          ('cubic', 3),
+                          ('quartic', 4),
+                          ('quintic', 5),
+                          ('galactic', 6),
+                          ('intergalactic', 7)),
+  'template_image', ReadDiskItem('4D Volume',
+                                 'aims readable volume formats'),
+  'resampled', WriteDiskItem('4D Volume', 'aims writable volume formats')
 )
 
 
-def initialization( self ):
-  self.interpolation = 1
-  self.template_image = ReadDiskItem( 'anatomical Template', 'NIFTI-1 image'
-    ).findValue( { 'databasename' : 'spm', 'skull_stripped' : 'no' } )
+def initialization(self):
+    self.interpolation = 1
+    self.template_image = ReadDiskItem('anatomical Template', 'NIFTI-1 image'
+                                       ).findValue({'databasename': 'spm', 'skull_stripped': 'no'})
 
 
-def execution( self, context ):
-  thdr = aimsGlobals.aimsVolumeAttributes( self.template_image )
-  trans = thdr.get( 'transformations' )
-  if not trans or len( trans ) == 0:
-    raise KeyError( 'transformations not set in template header' )
-  ttrans = aims.AffineTransformation3d( trans[-1] ) # last transformation
-  vol = aims.read( self.image.fullPath() )
-  dtype = aims.typeCode( numpy.asarray( vol ).dtype.type )
-  resampler = getattr( aims, 'ResamplerFactory_' + dtype )().getResampler(
-    self.interpolation )
-  resampler.setRef( vol )
-  dims = thdr[ 'volume_dimension' ]
-  vs = aims.Point3df( thdr[ 'voxel_size' ][:3] )
-  itrans = aims.read( self.transformation.fullPath() )
-  trans = ttrans.inverse() * itrans
-  context.write( 'trans:', trans )
-  resampled = resampler.doit( trans, dims[0], dims[1], dims[2], vs )
-  hdr = resampled.header()
-  hdr[ 'transformations' ] = thdr[ 'transformations' ]
-  hdr[ 'referentials' ] = thdr[ 'referentials' ]
-  ref = thdr.get( 'referential' )
-  if ref:
-    hdr[ 'referential' ] = ref
-  aims.write( resampled, self.resampled.fullPath() )
+def execution(self, context):
+    thdr = aimsGlobals.aimsVolumeAttributes(self.template_image)
+    trans = thdr.get('transformations')
+    if not trans or len(trans) == 0:
+        raise KeyError('transformations not set in template header')
+    ttrans = aims.AffineTransformation3d(trans[-1])  # last transformation
+    vol = aims.read(self.image.fullPath())
+    dtype = aims.typeCode(numpy.asarray(vol).dtype.type)
+    resampler = getattr(aims, 'ResamplerFactory_' + dtype)().getResampler(
+        self.interpolation)
+    resampler.setRef(vol)
+    dims = thdr['volume_dimension']
+    vs = aims.Point3df(thdr['voxel_size'][:3])
+    itrans = aims.read(self.transformation.fullPath())
+    trans = ttrans.inverse() * itrans
+    context.write('trans:', trans)
+    resampled = resampler.doit(trans, dims[0], dims[1], dims[2], vs)
+    hdr = resampled.header()
+    hdr['transformations'] = thdr['transformations']
+    hdr['referentials'] = thdr['referentials']
+    ref = thdr.get('referential')
+    if ref:
+        hdr['referential'] = ref
+    aims.write(resampled, self.resampled.fullPath())

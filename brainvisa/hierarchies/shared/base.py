@@ -6,9 +6,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -23,31 +23,31 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 hierarchy = (
-  SetContent(
-    'database', SetType( 'Database Cache file' ),
-    'database_fso', SetType( 'Database description page' ),
-    'database_settings', SetType( 'Database settings' ),
-    '*', SetType('Database Cache file'), # database cache
-    'trash', #directory containing files that must be deleted
-    'nomenclature', SetContent( 
-      'hierarchy', SetWeakAttr( 'category', 'nomenclature' ), SetContent(
-        "*", SetType( 'Nomenclature' ),
-      ),
-      'translation', SetWeakAttr( 'category', 'translation' ), SetContent(
-        '*', SetType( "Label Translation" ),
-      ),
+    SetContent(
+        'database', SetType('Database Cache file'),
+        'database_fso', SetType('Database description page'),
+        'database_settings', SetType('Database settings'),
+        '*', SetType('Database Cache file'),  # database cache
+        'trash',  # directory containing files that must be deleted
+        'nomenclature', SetContent(
+            'hierarchy', SetWeakAttr('category', 'nomenclature'), SetContent(
+                "*", SetType('Nomenclature'),
+            ),
+            'translation', SetWeakAttr('category', 'translation'), SetContent(
+                '*', SetType("Label Translation"),
+            ),
+        ),
+        'standardmeshes', SetWeakAttr('category', 'standardmeshes'),
+        SetContent(
+            "*", SetType("Mesh"),
+        ),
     ),
-    'standardmeshes', SetWeakAttr( 'category', 'standardmeshes' ),
-    SetContent( 
-        "*", SetType( "Mesh" ), 
-    ), 
-  ),
 )

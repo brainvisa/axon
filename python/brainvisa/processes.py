@@ -222,11 +222,13 @@ from soma.qtgui.api import QtThreadCall, FakeQtThreadCall
 if sys.version_info[0] >= 3:
     from html.parser import HTMLParser
     getcwdu = os.getcwd
+
     def items(thing):
         return list(thing.items())
 else:
     from htmllib import HTMLParser
     from os import getcwdu
+
     def items(thing):
         return thing.items()
 
@@ -455,7 +457,7 @@ def convertSpecialLinks(msg, language, baseForLinks, translator):
     * *<bvprocessname name=""> replaces the id by the name of the process
 
     """
-    msg = copy.deepcopy(msg) # avoid modifying input msg
+    msg = copy.deepcopy(msg)  # avoid modifying input msg
     stack = [msg]
     while stack:
         item = stack.pop()
@@ -578,37 +580,37 @@ def mapValuesToChildrenParameters(
         sourceNode = [sourceNode]
     if not isinstance(source, list):
         source = [source]
-    nparam = max(len(dest), len(sourceNode), len(source))   
+    nparam = max(len(dest), len(sourceNode), len(source))
     dest += [dest[-1]] * (nparam - len(dest))
     sourceNode += [sourceNode[-1]] * (nparam - len(sourceNode))
     source += [source[-1]] * (nparam - len(source))
     sources = [n.parseParameterString(s) for n, s in zip(sourceNode, source)]
-    
-    #print('destination attributes', dest, 
-          #'source nodes', len(sourceNode), 
-          #'source attributes', len(source), 
+
+    # print('destination attributes', dest,
+          #'source nodes', len(sourceNode),
+          #'source attributes', len(source),
           #'number of values:', nparam);sys.stdout.flush()
 
-    #sourceObject, sourceParameter = sourceNode.parseParameterString(source)
-    #l = getattr(sourceObject, sourceParameter, [])
+    # sourceObject, sourceParameter = sourceNode.parseParameterString(source)
+    # l = getattr(sourceObject, sourceParameter, [])
 
     ls = [getattr(s[0], s[1], []) for s in sources]
-    
+
     lsize = max([len(v) for v in ls])
     csize = len(destNode.childrenNames())
-    
+
     if allow_remove:
         rsize = lsize
     else:
         # Resulting size is the max between children size and list size
         rsize = max(csize, lsize)
-    
-    #print('list of source values', ls, 
-          #'maximum size of source values', lsize, 
+
+    # print('list of source values', ls,
+          #'maximum size of source values', lsize,
           #'number of destination children', csize,
           #'predicted resulting size', rsize,
           #'fixed resulting size', resultingSize);sys.stdout.flush()
-    
+
     if (defaultProcess is not None) and (name is None):
         name = getProcessInstance(defaultProcess).name
 
@@ -633,7 +635,7 @@ def mapValuesToChildrenParameters(
 
             else:
                 return
-            
+
         if (resultingSize > -1) and (i >= resultingSize):
             destNode.removeChild(destNode.childrenNames()[-1])
         else:
@@ -645,7 +647,7 @@ def mapValuesToChildrenParameters(
                     v = l[0]
                 else:
                     v = None
-                    
+
                 # Set node value
                 if len(l) > 0:
                     k = destNode.childrenNames()[i]
@@ -653,10 +655,10 @@ def mapValuesToChildrenParameters(
                     destObject, destParameter = destChild.parseParameterString(
                         d)
                     destObject.setValue(destParameter, v)
-                    
+
         # update csize
         csize = len(destNode.childrenNames())
-    
+
     # trigger callbacks to fill new nodes parameters
     # PROBLEM: we only parse links from the *same* sourceObject - others may
     # come from elsewhere, we don't have them here.
@@ -669,7 +671,7 @@ def mapValuesToChildrenParameters(
                                       ExecutionNode.MultiParameterLink) \
                             or not isinstance(function.function, partial) \
                             or function.function.func \
-                                is not mapValuesToChildrenParameters:
+                            is not mapValuesToChildrenParameters:
                         continue
                     part_func = function.function
                     if len(part_func.args) >= 1:
@@ -701,7 +703,7 @@ def mapValuesToChildrenParameters(
                     value = getattr(src_obj, src_par, [])
                     nval = len(value)
                     if nval == 0:
-                      continue
+                        continue
                     for i, child in created_nodes:
                         v = None
                         if i >= nval:
@@ -732,7 +734,7 @@ def mapChildrenParametersToValues(destNode, sourceNode, dest, source, value=None
         r.append(s)
 
     destObject, destParameter = destNode.parseParameterString(dest)
-    #setattr(destObject, destParameter, r)
+    # setattr(destObject, destParameter, r)
     destObject.setValue(destParameter, r)
 
 
@@ -826,15 +828,18 @@ class Parameterized(object):
         debug = neuroConfig.debugParametersLinks
 
         if debug:
-            print('parameter', name, 'changed in', self, 'with value', newValue, file=debug)
+            print('parameter', name, 'changed in',
+                  self, 'with value', newValue, file=debug)
         for function in self._warn.get(name, []):
             if debug:
-                print('  call (_warn)', function, '(', name, ',', newValue, ')', file=debug)
+                print('  call (_warn)', function,
+                      '(', name, ',', newValue, ')', file=debug)
             function(self, name, newValue)
         for parameterized, attribute, function, force, destDefaultUpdate in self._links.get(name, []):
             if parameterized is None:
                 if debug:
-                    print('  call (_links)', function, '(', self, ',', self, ')', file=debug)
+                    print('  call (_links)', function,
+                          '(', self, ',', self, ')', file=debug)
                 function(self, self)
             elif (not parameterizedObjects) or (parameterized in parameterizedObjects):
                 if debug:
@@ -844,17 +849,18 @@ class Parameterized(object):
                 if not parameterized._isImmutable(attribute) and (force or parameterized.parameterLinkable(attribute, debug=debug)):
                     linkParamDebug = getattr(linkParamType, '_debug', None)
                     if linkParamDebug is not None:
-                        print('parameter', name, 'changed in', self, 'with value', newValue, file=linkParamDebug)
+                        print('parameter', name, 'changed in', self,
+                              'with value', newValue, file=linkParamDebug)
                     if destDefaultUpdate:
                         parameterized.setDefault(
                             attribute, self.isDefault(name))
                     if function is None:
                         if debug:
-                            print('  ' + \
-                                str(parameterized) + '.setValue(', repr(
-                                    attribute), ',', newValue, ')', file=debug)
+                            print('  ' +
+                                  str(parameterized) + '.setValue(', repr(
+                                  attribute), ',', newValue, ')', file=debug)
                         if linkParamDebug is not None:
-                            print('  ==> ' + \
+                            print('  ==> ' +
                                   str(parameterized) + '.setValue(', repr(
                                       attribute), ',', newValue, ')',
                                   file=linkParamDebug)
@@ -862,20 +868,24 @@ class Parameterized(object):
                         parameterized.setValue(attribute, newValue)
                     else:
                         if debug:
-                            print('  call', function, '(', parameterized, ',', self, ')', file=debug)
+                            print(
+                                '  call', function, '(', parameterized, ',', self, ')', file=debug)
                         if linkParamDebug is not None:
-                            print('  ==> call', function, '(', parameterized, ',', self, ')', file=linkParamDebug)
+                            print(
+                                '  ==> call', function, '(', parameterized, ',', self, ')', file=linkParamDebug)
                         v = function(parameterized, self)
                         valueSet = v
                         if debug:
-                            print('  ' + \
-                                  str(parameterized) + \
-                                      '.setValue(', repr(attribute), ',', v, ')',
+                            print('  ' +
+                                  str(parameterized) +
+                                  '.setValue(', repr(
+                                      attribute), ',', v, ')',
                                   file=debug)
                         if linkParamDebug is not None:
-                            print('      ' + \
-                                  str(parameterized) + \
-                                      '.setValue(', repr(attribute), ',', v, ')',
+                            print('      ' +
+                                  str(parameterized) +
+                                  '.setValue(', repr(
+                                      attribute), ',', v, ')',
                                   file=linkParamDebug)
                         parameterized.setValue(attribute, v)
                     # activate the notifier with the parameter that receive a
@@ -985,7 +995,7 @@ class Parameterized(object):
                 if len(src_spl) >= 2:
                     # source is "param:attribute", get value in source.param
                     src_value = getattr(source, src_spl[0])
-                    src_attr= src_spl[-1]
+                    src_attr = src_spl[-1]
                 else:
                     src_value = value
                 if src_value is None:
@@ -1162,11 +1172,11 @@ class Parameterized(object):
         self.setOptional(*args)
 
     def setSection(self, section, *args):
-      """Sets the section of the parameters. Parameters are then sorted by
-      section in the GUI"""
-      from copy import copy
-      for k in args:
-          self.signature[k]._section = copy(section)
+        """Sets the section of the parameters. Parameters are then sorted by
+        section in the GUI"""
+        from copy import copy
+        for k in args:
+            self.signature[k]._section = copy(section)
 
     def setConvertedValue(self, name, value):
         """Sets the value but stores the previous value in an internal dictionary."""
@@ -1280,7 +1290,8 @@ class Parameterized(object):
                             del sourceObject._links[sourceParameter]
                     else:
                         if show_warnings:
-                            print('warning: link not removed:', self, destination, 'from:', source)
+                            print(
+                                'warning: link not removed:', self, destination, 'from:', source)
 
         # TODO : set the removed value consistent with what happened
         return removed
@@ -1297,11 +1308,11 @@ class Parameterized(object):
         Links and observer callbacks that are no more associated to the signature parameters are deleted.
         The :py:attr:`signatureChangeNotifier` is notified.
         """
-        
+
         # Temporarily disable setting non-default flags
         _force_default_in_setattr = self._force_default_in_setattr
         self._force_default_in_setattr = None
-        
+
         # Change signature
         self.signature = signature
         for n in self.signature.keys():
@@ -1317,7 +1328,7 @@ class Parameterized(object):
 
         # Notify listeners
         self.signatureChangeNotifier.notify(self)
-        
+
         # Restore setting non-default flags
         self._force_default_in_setattr = _force_default_in_setattr
 
@@ -2365,7 +2376,8 @@ class ExecutionNode(object):
                         removed = True
 
                 if not removed and show_warnings:
-                    print('warning: enode link not removed:', self, destination, 'from:', source, ', function:', function)
+                    print('warning: enode link not removed:', self,
+                          destination, 'from:', source, ', function:', function)
 
     def removeDoubleLink(self, destination, source, function=None, show_warnings=True):
         """
@@ -3122,12 +3134,13 @@ class ExecutionContext(object):
                         formats = [ p.preferredFormat ] \
                             + [f for f in p.formats if f is not p.preferredFormat]
                         for destinationFormat in formats:
-                            converter = getConversionInfo((v.type, v.format), 
-                                                   (p.type, destinationFormat), 
-                                                   checkUpdate=False) \
-                                        .converter()
-                            #print('converter', converter, 
-                                  #'source', (v.type, v.format), 
+                            converter = getConversionInfo((v.type, v.format),
+                                                          (p.type,
+                                                           destinationFormat),
+                                                          checkUpdate=False) \
+                                .converter()
+                            # print('converter', converter,
+                                  #'source', (v.type, v.format),
                                   #'destination', (p.type, destinationFormat))
                             if converter:
                                 tmp = self.temporary(destinationFormat)
@@ -3491,8 +3504,8 @@ class ExecutionContext(object):
             if not commandName:
                 commandName = c.commandName()
             if systemLogFile:
-                print('<html><body><h1>' + commandName + ' </h1><h2>' + _t_('Command line') + \
-                    '</h2><code>' + \
+                print('<html><body><h1>' + commandName + ' </h1><h2>' + _t_('Command line') +
+                      '</h2><code>' +
                       htmlEscape(str(c)) + '</code></h2><h2>' + _t_(
                           'Output') + '</h2><pre>', file=systemLogFile)
                 systemLogFile.flush()
@@ -3560,9 +3573,9 @@ class ExecutionContext(object):
                 pass
             self.checkInterruption()
             if systemLogFile is not None:
-                print('</pre><h2>' + \
-                      _t_('Result') + '</h2>' + _t_('Value returned') + \
-                          ' = ' + str(result) + '</body></html>',
+                print('</pre><h2>' +
+                      _t_('Result') + '</h2>' + _t_('Value returned') +
+                      ' = ' + str(result) + '</body></html>',
                       file=systemLogFile)
         finally:
             if systemLogFile is not None:
@@ -3622,9 +3635,11 @@ class ExecutionContext(object):
         if not hasattr(self, '_writeHTMLParser'):
             if sys.version_info[0] >= 3:
                 class Parser(HTMLParser):
+
                     def __init__(self, formatter):
                         super(Parser, self).__init__()
                         self.formatter = formatter
+
                     def handle_data(self, data):
                         self.formatter.add_flowing_data(data)
             else:
@@ -4393,7 +4408,7 @@ def getProcessInstanceFromProcessEvent(event):
                             pass
                 stackadd = [(eNode, k, e.get('parameters'), e['selected'],
                              e.get('executionNodes', {})) for k, e in
-                              six.iteritems(eNodeChildren)]
+                            six.iteritems(eNodeChildren)]
                 stackp += stackadd
                 stack += stackadd
 
@@ -4545,18 +4560,22 @@ def getConverter(source, destination, checkUpdate=True):
     return getProcess(result, checkUpdate=checkUpdate)
 
 #-----------------------------------------------------------------------------
+
+
 def resetConverters():
     """
     Reset converters dictionaries.
     """
     global _converters, _converters_dist, _converters_from, _converters_to
-    
+
     _converters = {}
     _converters_dist = {}
     _converters_from = {}
     _converters_to = {}
-    
+
 #-----------------------------------------------------------------------------
+
+
 def registerConverter(source, dest, proc):
     """
     Registers converter from source to destination.
@@ -4565,50 +4584,54 @@ def registerConverter(source, dest, proc):
     :param proc: :py:class:`NewProcess` class associated to the converter
     """
     global _converters, _converters_dist, _converters_from, _converters_to
-    
-    #print('===== registering converter for (', source, dest, '):', proc)
+
+    # print('===== registering converter for (', source, dest, '):', proc)
     _converters[(source, dest)] = proc._id
     _converters_dist[(source, dest)] = ((0, 0), proc._id)
     _converters_from.setdefault(source, {})[dest] = proc._id
     _converters_to.setdefault(dest, {})[source] = proc._id
 
 #-----------------------------------------------------------------------------
+
+
 def __getConverters(registry, key, keepType=1, checkUpdate=True):
     """
     Get converters from a registry using a key (type and format). If keepType is
     False, parent types are tried to get converters.
-    
+
     :param registry: dict of dict of converters.
     :param key: tuple (type, format). The type and format to get converters for.
     :param boolean keepType: if True, parent types won't be tried. Default True.
-    :param boolean checkUpdate: if True, Brainvisa will check if the converters 
+    :param boolean checkUpdate: if True, Brainvisa will check if the converters
     needs to be reloaded. Default True.
-    :returns: a dict (type, format) -> :py:class:`NewProcess` class associated 
+    :returns: a dict (type, format) -> :py:class:`NewProcess` class associated
     to the found converter.
-    """ 
+    """
     type, format = key
     stack = []
     result = {}
-        
+
     # Stack converters for parent types
     while type:
         d = registry.get((type, format), {})
         if keepType:
             result = d
             break
-        
+
         # Stack types to update
         stack.append((type, d))
         type = type.parent
-        
+
     # Update converters from the stack
     while len(stack) > 0:
         type, d = stack.pop()
         result.update(d)
-    return dict([(k, getProcess(p, checkUpdate=checkUpdate)) \
+    return dict([(k, getProcess(p, checkUpdate=checkUpdate))
                 for k, p in six.iteritems(result)])
 
 #-----------------------------------------------------------------------------
+
+
 def getConvertersTo(dest, keepType=1, checkUpdate=True):
     """
     Gets the converters which can convert data to destination format.
@@ -4619,11 +4642,13 @@ def getConvertersTo(dest, keepType=1, checkUpdate=True):
     :returns: a dict (type, format) -> :py:class:`NewProcess` class associated to the found converter.
     """
     global _converters_to
-    
+
     return __getConverters(_converters_to, dest,
                            keepType=keepType, checkUpdate=checkUpdate)
 
 #----------------------------------------------------------------------------
+
+
 def getConvertersFrom(source, keepType=1, checkUpdate=True):
     """
     Gets the converters which can convert data from source format to whatever format.
@@ -4633,11 +4658,13 @@ def getConvertersFrom(source, keepType=1, checkUpdate=True):
     :returns: a dict (type, format) -> :py:class:`NewProcess` class associated to the found converter.
     """
     global _converters_from
-    
+
     return __getConverters(_converters_from, source,
                            keepType=keepType, checkUpdate=checkUpdate)
 
 #-----------------------------------------------------------------------------
+
+
 def getNearestConverter(source, dest, checkUpdate=True):
     """
     Gets the nearest converter which can convert data from source to dest.
@@ -4651,12 +4678,12 @@ def getNearestConverter(source, dest, checkUpdate=True):
 
     stack = []
     result = _converters_dist.get((source, dest))
-    
+
     if result is None:
-        #print('Updating converter for source', source, 'dest', dest)
+        # print('Updating converter for source', source, 'dest', dest)
         # Go through the list of converters
         import itertools
-                
+
         dst_type, dst_format = dest
         src_type, src_format = source
         src_parents = src_type.levels()
@@ -4669,7 +4696,7 @@ def getNearestConverter(source, dest, checkUpdate=True):
                 if c:
                     result = ((sl + csl, dl + cdl), c)
                     break
-                
+
         _converters_dist[(source, dest)] = result
 
     if result[1] is not None:
@@ -4678,6 +4705,8 @@ def getNearestConverter(source, dest, checkUpdate=True):
         return ((-1, -1), None)
 
 #----------------------------------------------------------------------------
+
+
 def getConverters():
     """
     Gets the converter name list.
@@ -4691,12 +4720,14 @@ def getConverters():
 
     return sorted(results)
 
-#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------
+
+
 def getDiskItemSourceInfo(source):
     """
-    Gets a tuple containing source :py:class:`neuroDiskItems.DiskItemType` 
+    Gets a tuple containing source :py:class:`neuroDiskItems.DiskItemType`
     and :py:class:`neuroDiskItems.Format`.
-    
+
     :param source: a :py:class:`neuroDiskItems.DiskItem`, a list of
         :py:class:`neuroDiskItems.DiskItem` (only the first will be
         taken into account), a tuple (type, format).
@@ -4706,15 +4737,18 @@ def getDiskItemSourceInfo(source):
     elif isinstance(source, list):
         if source != [] and isinstance(source[0], DiskItem):
             return (source[0].type, source[0].format)
-        # TODO: May a proper exception should be raised in case 
+        # TODO: May a proper exception should be raised in case
         # that no DiskItem was given in the source list, because currently
         # t0 and f have no valid values in the else case
     else:
         t, f = source
         return (t, f)
 
-#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------
+
+
 class DiskItemConversionInfo:
+
     """
     Contains information about :py:class:`neuroDiskItems.DiskItem` conversions.
     The conversion needs a source and a destination
@@ -4722,18 +4756,19 @@ class DiskItemConversionInfo:
     The object can be used to determine, if the conversion is possible, if it
     uses inheritance mechanisms, if it needs type conversion, if it needs format
     conversion.
-    
-    If the conversion is possible, a distance between 
+
+    If the conversion is possible, a distance between
     :py:class:`neuroDiskItems.DiskItem` can be processed. This is useful to
     relevantly sort processes.DiskItemConversionInfo.
     """
+
     def __init__(self, source, dest, checkUpdate=True):
         """
-        :param source: the source of :py:class:`neuroDiskItems.DiskItem` 
+        :param source: the source of :py:class:`neuroDiskItems.DiskItem`
         conversion. It can be :py:class:`neuroDiskItems.DiskItem`, a list of
         :py:class:`neuroDiskItems.DiskItem` (only the first will be
         taken into account), a tuple (type, format).
-        :param dest: the destination of :py:class:`neuroDiskItems.DiskItem` 
+        :param dest: the destination of :py:class:`neuroDiskItems.DiskItem`
         conversion. It can be :py:class:`neuroDiskItems.DiskItem`, a list of
         :py:class:`neuroDiskItems.DiskItem` (only the first will be
         taken into account), a tuple (type, format).
@@ -4749,43 +4784,43 @@ class DiskItemConversionInfo:
         self.__formats_distance = -1
         self.__check_update = checkUpdate
         self.__updated = False
-        
+
         self.__update__()
 
     def __update__(self):
         """
         Update processes.DiskItemConversionInfo internal information.
-        
+
         :param boolean checkUpdate: if the converters :py:class:`NewProcess`
         must be reloaded when they changed. Default True.
         """
         if not self.__updated:
             ts, fs = getDiskItemSourceInfo(self.source)
             td, fd = getDiskItemSourceInfo(self.dest)
-            
+
             converter = None
             converter_dist = (-1, -1)
             need_conversion, types_dist, formats_dist = (-1, -1, -1)
-            
+
             # Search type matching the inheritance tree
             types_dist = ts.inheritanceLevels(td)
             if fs == fd:
                 formats_dist = 0
-                
+
             if types_dist != -1 and formats_dist == 0:
                 # No conversion is necessary
-                need_conversion = 0       
+                need_conversion = 0
             else:
                 # Sets distance of 1 between types if source type and destination
                 # are not the same and need conversion
                 if types_dist != 0:
                     types_dist = 1
                 formats_dist = -1
-                
+
                 converter_dist, converter = getNearestConverter(
-                                                (ts, fs), (td, fd),
+                    (ts, fs), (td, fd),
                                                 checkUpdate=self.__check_update)
-                
+
                 if converter is not None:
                     need_conversion = 1
                     formats_dist = 0 if fs == fd else 1
@@ -4793,263 +4828,269 @@ class DiskItemConversionInfo:
             # Store found converters
             self.__converter = converter
             self.__converter_distance = converter_dist
-            
+
             # Store distance information
             self.__need_conversion = need_conversion
             self.__types_distance = types_dist
             self.__formats_distance = formats_dist
-            
+
             self.__updated = True
-    
+
     def exactDestTypeConverter(self):
         """
-        Get converter between source and exact destination type if needed and 
+        Get converter between source and exact destination type if needed and
         possible.
-        
-        :returns: the converter :py:class:`NewProcess` to exact destination 
+
+        :returns: the converter :py:class:`NewProcess` to exact destination
         type if needed and possible else None.
         """
         if self.__converter_distance[1] == 0:
             return self.__converter
-            
+
         return None
-        
-    def converter(self, exactConversionTypeOnly=False):        
+
+    def converter(self, exactConversionTypeOnly=False):
         """
-        Get converter between source and destination type if needed and 
+        Get converter between source and destination type if needed and
         possible.
-        
-        :returns: the converter :py:class:`NewProcess` if needed and possible 
+
+        :returns: the converter :py:class:`NewProcess` if needed and possible
         else None.
         """
         if (not exactConversionTypeOnly or self.__converter_distance[1] == 0):
             return self.__converter
-            
-    
+
     def distance(self, useInheritanceOnly=False, exactConversionTypeOnly=False):
         """
-        Gets a distance between source :py:class:`neuroDiskItems.DiskItem` and 
-        destination :py:class:`neuroDiskItems.DiskItem` of the 
+        Gets a distance between source :py:class:`neuroDiskItems.DiskItem` and
+        destination :py:class:`neuroDiskItems.DiskItem` of the
         processes.DiskItemConversionInfo. This is useful to
         relevantly sort processes.DiskItemConversionInfo
-        
-        :param boolean useInheritanceOnly: Specify if the distance must be 
-        processed only when :py:class:`neuroDiskItems.DiskItemType` of the 
-        source inherits from :py:class:`neuroDiskItems.DiskItemType` of the 
+
+        :param boolean useInheritanceOnly: Specify if the distance must be
+        processed only when :py:class:`neuroDiskItems.DiskItemType` of the
+        source inherits from :py:class:`neuroDiskItems.DiskItemType` of the
         destination and does not need a :py:class:`NewProcess` converter call.
         Default False.
-        :param boolean exactConversionTypeOnly: Specify if the conversion is 
+        :param boolean exactConversionTypeOnly: Specify if the conversion is
         valid only when converter is registered for the exact destination
         :py:class:`neuroDiskItems.DiskItemType`.
         Default False
-        
-        :returns: None when conversion is not possible, else a tuple that 
+
+        :returns: None when conversion is not possible, else a tuple that
         contains:
-        1) if the conversion needs a call to a :py:class:`NewProcess` converter. 
+        1) if the conversion needs a call to a :py:class:`NewProcess` converter.
         When no converter call is needed, the value is 0, else the value is 1.
-        2) the distance between source :py:class:`neuroDiskItems.DiskItemType` 
-        and destination :py:class:`neuroDiskItems.DiskItemType`. When source 
-        type is equal to destination type, the value is 0. When source inherits 
+        2) the distance between source :py:class:`neuroDiskItems.DiskItemType`
+        and destination :py:class:`neuroDiskItems.DiskItemType`. When source
+        type is equal to destination type, the value is 0. When source inherits
         from destination and no conversion is needed, the value is the number of
         levels between them, else the value is 1.
-        3) if the source :py:class:`neuroDiskItems.Format` is identical 
+        3) if the source :py:class:`neuroDiskItems.Format` is identical
         to destination :py:class:`neuroDiskItems.Format` value is 0, else 1
         """
         if self.__types_distance > -1 \
            and self.__formats_distance > -1 \
            and self.__need_conversion > -1 \
            and (not useInheritanceOnly or self.__need_conversion == 0) \
-           and (self.__need_conversion == 0 \
-                or not exactConversionTypeOnly \
+           and (self.__need_conversion == 0
+                or not exactConversionTypeOnly
                 or self.exactDestTypeConverter() is not None):
-            return (self.__need_conversion, 
+            return (self.__need_conversion,
                     self.__types_distance,
                     self.__formats_distance)
         else:
             return None
-        
+
     def exists(self, useInheritanceOnly=False, exactConversionTypeOnly=False):
         """
-        Checks that a conversion between source 
-        :py:class:`neuroDiskItems.DiskItem` and 
+        Checks that a conversion between source
+        :py:class:`neuroDiskItems.DiskItem` and
         destination :py:class:`neuroDiskItems.DiskItem` exists.
-        
-        :param boolean useInheritanceOnly: Specify if the check must only 
-        consider inheritance between source 
-        :py:class:`neuroDiskItems.DiskItemType` and destination 
-        :py:class:`neuroDiskItems.DiskItemType`, without checking existing 
+
+        :param boolean useInheritanceOnly: Specify if the check must only
+        consider inheritance between source
+        :py:class:`neuroDiskItems.DiskItemType` and destination
+        :py:class:`neuroDiskItems.DiskItemType`, without checking existing
         converter :py:class:`NewProcess`.
         Default False.
-        :param boolean exactConversionTypeOnly: Specify if the conversion is 
+        :param boolean exactConversionTypeOnly: Specify if the conversion is
         valid only when converter is registered for the exact destination
         :py:class:`neuroDiskItems.DiskItemType`.
         Default False
-        
-        :returns: True if conversion is possible between source 
-        :py:class:`neuroDiskItems.DiskItem` and destination 
+
+        :returns: True if conversion is possible between source
+        :py:class:`neuroDiskItems.DiskItem` and destination
         :py:class:`neuroDiskItems.DiskItem`, else False
         """
         return self.distance(useInheritanceOnly=useInheritanceOnly,
                              exactConversionTypeOnly=exactConversionTypeOnly) \
-               is not None
+            is not None
 
-#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------
 _conversion_infos = dict()
+
 
 def getConversionInfo(source, dest, checkUpdate=True):
     """
-    Gets information about conversion of a source 
-    :py:class:`neuroDiskItems.DiskItem` and destination 
+    Gets information about conversion of a source
+    :py:class:`neuroDiskItems.DiskItem` and destination
     :py:class:`neuroDiskItems.DiskItem`.
-    
-    :param source: the source of :py:class:`neuroDiskItems.DiskItem` 
+
+    :param source: the source of :py:class:`neuroDiskItems.DiskItem`
     conversion. It can be :py:class:`neuroDiskItems.DiskItem`, a list of
     :py:class:`neuroDiskItems.DiskItem` (only the first will be
     taken into account), a tuple (type, format).
-    :param dest: the destination of :py:class:`neuroDiskItems.DiskItem` 
+    :param dest: the destination of :py:class:`neuroDiskItems.DiskItem`
     conversion. It can be :py:class:`neuroDiskItems.DiskItem`, a list of
     :py:class:`neuroDiskItems.DiskItem` (only the first will be
     taken into account), a tuple (type, format).
     :param boolean checkUpdate: if the converters :py:class:`NewProcess`
     must be reloaded when they changed. Default True.
-    
+
     :returns: a :py:class:`processes.DiskItemConversionInfo`
     """
     global _conversion_infos
-    
+
     try:
         ts, fs = getDiskItemSourceInfo(source)
         td, fd = getDiskItemSourceInfo(dest)
     except TypeError:
         # may occur if source or dest is not valid
         return None
-    
+
     # Check that conversion info is in cache for source->dest or initialize it
     ci = _conversion_infos.setdefault((ts, fs), dict()) \
                           .setdefault((td, fd), None)
-    #print('===== getting from cache source', (ts, fs), \
-          #'dest', (td, fd), 'ci', ci)
+    # print('===== getting from cache source', (ts, fs), \
+            #'dest', (td, fd), 'ci', ci)
     if ci is None:
         # Update cache for source->dest conversion
-        ci = DiskItemConversionInfo((ts, fs), (td, fd), 
+        ci = DiskItemConversionInfo((ts, fs), (td, fd),
                                     checkUpdate=checkUpdate)
         _conversion_infos[(ts, fs)][(td, fd)] = ci
-    
+
     return ci
 
-#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------
+
+
 class ProcessSet(set):
+
     """
     Bases: :py:class:`set`
-    
-    Set of processes that can process :py:class:`neuroDiskItems.DiskItem` of 
-    a particular :py:class:`neuroDiskItems.DiskItemType` and 
+
+    Set of processes that can process :py:class:`neuroDiskItems.DiskItem` of
+    a particular :py:class:`neuroDiskItems.DiskItemType` and
     :py:class:`neuroDiskItems.Format`
     """
-    def __init__(self, type, format, ids = (), listof = False):
+
+    def __init__(self, type, format, ids=(), listof=False):
         """
-        :param :py:class:`neuroDiskItems.DiskItemType` type: 
-        type of :py:class:`neuroDiskItems.DiskItem` that can be used by 
+        :param :py:class:`neuroDiskItems.DiskItemType` type:
+        type of :py:class:`neuroDiskItems.DiskItem` that can be used by
         the set of processes.
         :param :py:class:`neuroDiskItems.Format` format:
-        format of :py:class:`neuroDiskItems.DiskItem` that can be used by 
+        format of :py:class:`neuroDiskItems.DiskItem` that can be used by
         the processes of the ProcessSet.
-        :param tuple ids: identifiers of processes :py:class:`NewProcess` of the 
+        :param tuple ids: identifiers of processes :py:class:`NewProcess` of the
         ProcessSet.
-        :param bool listof: if the registered processes are able to process a 
+        :param bool listof: if the registered processes are able to process a
         list of :py:class:`neuroDiskItems.DiskItem` or not.
         """
         set.__init__(self, ids)
-       
+
         if type is None:
             raise TypeError('Type can not be None')
 
         if not issubclass(type.__class__, neuroDiskItems.DiskItemType):
             raise TypeError('Class of type %s must be a subclass of'
                             ' DiskItemType' % type)
-       
+
         if format is None:
             raise TypeError('Format can not be None')
-        
+
         self.__type = type
         self.__format = format
         self.__listof = listof
 
     def source(self):
         """
-        :returns: a tuple containing :py:class:`neuroDiskItems.DiskItemType` 
+        :returns: a tuple containing :py:class:`neuroDiskItems.DiskItemType`
         and :py:class:`neuroDiskItems.Format` associated to the ProcessSet.
         """
         return (self.__type, self.__format)
-    
+
     def accept(self, source, enableConversion=1, exactConversionTypeOnly=False,
                checkUpdate=True):
         """
         Check that a :py:class:`neuroDiskItems.DiskItem` source is processable
         using the processes of the current ProcessSet
 
-        :param int enableConversion: if the source can be converted to be 
+        :param int enableConversion: if the source can be converted to be
         processed by the processes of the current ProcessSet. Default 1.
         :param boolean checkUpdate: if the converters :py:class:`NewProcess`
         must be reloaded when they changed. Default True.
-        :param boolean exactConversionTypeOnly: Specify if the conversion is 
+        :param boolean exactConversionTypeOnly: Specify if the conversion is
         valid only when converter is registered for the exact destination
         :py:class:`neuroDiskItems.DiskItemType`.
         Default False
-    
-        :returns: True if the source is processable using the processes of the 
+
+        :returns: True if the source is processable using the processes of the
         current ProcessSet, else False.
         """
         return getConversionInfo(source,
                                  self.source(),
-                                 checkUpdate = checkUpdate) \
-               .exists(useInheritanceOnly = not enableConversion)
+                                 checkUpdate=checkUpdate) \
+            .exists(useInheritanceOnly=not enableConversion)
 
     def processes(self, checkUpdate=True):
         """
-        Get processes associated to the current ProcessSet and filtered for the 
+        Get processes associated to the current ProcessSet and filtered for the
         current user level
 
         :param boolean checkUpdate: if the processes :py:class:`NewProcess`
         must be reloaded when they changed. Default True.
-    
-        :returns: a list of processes :py:class:`NewProcess` associated to the 
+
+        :returns: a list of processes :py:class:`NewProcess` associated to the
         current ProcessSet and filtered for the current user level.
         """
-        
+
         # Filter processes using user level
         procs = []
         for v in self:
             p = getProcess(v, checkUpdate=checkUpdate)
             if p and p.userLevel <= neuroConfig.userLevel:
                 procs.append(p)
-                
+
         return procs
 
-#-------------------------------------------------------------------------------
-def getProcessesBySourceDist(registry, source, enableConversion=1, 
+#-------------------------------------------------------------------------
+
+
+def getProcessesBySourceDist(registry, source, enableConversion=1,
                              exactConversionTypeOnly=False, checkUpdate=True):
     """
-    Get processes :py:class:`NewProcess` able to process a 
+    Get processes :py:class:`NewProcess` able to process a
     :py:class:`neuroDiskItems.DiskItem` source using a registry.
-    
-    Processes are ordered using the distance of 
-    :py:class:`processes.DiskItemConversionInfo` between the 
-    :py:class:`neuroDiskItems.DiskItem` source to process and the 
+
+    Processes are ordered using the distance of
+    :py:class:`processes.DiskItemConversionInfo` between the
+    :py:class:`neuroDiskItems.DiskItem` source to process and the
     :py:class:`neuroDiskItems.DiskItem` source registered for the process.
     The processes registered with closest sources appear first.
 
     :param dict registry: the registry of :py:class:`processes.ProcessSet`. Keys
-    are a tuple containing :py:class:`neuroDiskItems.DiskItemType` and 
-    :py:class:`neuroDiskItems.Format`. Values are 
+    are a tuple containing :py:class:`neuroDiskItems.DiskItemType` and
+    :py:class:`neuroDiskItems.Format`. Values are
     :py:class:`processes.ProcessSet`.
-    :param int enableConversion: if the source can be converted to be 
+    :param int enableConversion: if the source can be converted to be
     processed. Default 1.
-    :param boolean exactConversionTypeOnly: Specify if the conversion is 
+    :param boolean exactConversionTypeOnly: Specify if the conversion is
     valid only when converter is registered for the exact destination
     :py:class:`neuroDiskItems.DiskItemType`.
     Default False
-    :param boolean checkUpdate: if processes :py:class:`NewProcess` must be 
+    :param boolean checkUpdate: if processes :py:class:`NewProcess` must be
     reloaded when they changed. Default True.
 
     :returns: a list of processes :py:class:`NewProcess`.
@@ -5058,7 +5099,7 @@ def getProcessesBySourceDist(registry, source, enableConversion=1,
     r = list()
     src_type, src_format = source
     converters = getConvertersFrom(source, keepType=0, checkUpdate=checkUpdate)
-    
+
     possible_sources = [source]
     possible_sources += [(p, src_format) for p in src_type.parents()]
     possible_sources += converters.keys()
@@ -5071,7 +5112,7 @@ def getProcessesBySourceDist(registry, source, enableConversion=1,
                                 exactConversionTypeOnly=exactConversionTypeOnly)
                 if d is not None:
                     r.append((d, ps))
-                
+
     # Sort process sets using distance vector
     s = sorted(r)
 
@@ -5083,14 +5124,16 @@ def getProcessesBySourceDist(registry, source, enableConversion=1,
             if not p in unique:
                 unique.add(p)
                 r.append(p)
-                #print(p.name, 'with distance', d)
+                # print(p.name, 'with distance', d)
     return r
 
 #----------------------------------------------------------------------------
-def getDefaultListOfProcesses(source, role, enableConversion=1, 
+
+
+def getDefaultListOfProcesses(source, role, enableConversion=1,
                               checkUpdate=True, process=None):
     """
-    Get a default processes able to play the given role for a list of 
+    Get a default processes able to play the given role for a list of
     :py:class:`neuroDiskItems.DiskItem`.
 
     role: str
@@ -5098,10 +5141,10 @@ def getDefaultListOfProcesses(source, role, enableConversion=1,
     enableConversion: int
         if the source can be converted to be used. Default 1.
     checkUpdate: boolean
-        if processes :py:class:`NewProcess` must be reloaded when they changed. 
+        if processes :py:class:`NewProcess` must be reloaded when they changed.
         Default True.
 
-    :returns: Callable Object that can play the given role for a list of 
+    :returns: Callable Object that can play the given role for a list of
     :py:class:`neuroDiskItems.DiskItem`.
     """
     if role == 'viewer':
@@ -5117,7 +5160,7 @@ def getDefaultListOfProcesses(source, role, enableConversion=1,
 
     pcs = []
     if isinstance(source, tuple) and len(source) == 2:
-        pcs = [default_func(source, 
+        pcs = [default_func(source,
                             enableConversion=enableConversion,
                             checkUpdate=checkUpdate,
                             process=process)]
@@ -5125,7 +5168,7 @@ def getDefaultListOfProcesses(source, role, enableConversion=1,
         pcs = [default_func(s, enableConversion=enableConversion,
                             checkUpdate=checkUpdate,
                             process=process) for s in source]
-        
+
     if len(pcs) != 0 and None not in pcs:
         if role in ('viewer', 'editor'):
             proc = getProcess('inspectMultipleData')
@@ -5143,16 +5186,18 @@ def getDefaultListOfProcesses(source, role, enableConversion=1,
                 return ip
         return iterproc(_t_('%s for list of ' % role.title()) + t.name, pcs)
 
-#-------------------------------------------------------------------------------
-def getProcessesBySource(source, role, enableConversion=1, checkUpdate=True, 
+#-------------------------------------------------------------------------
+
+
+def getProcessesBySource(source, role, enableConversion=1, checkUpdate=True,
                          listof=False, process=None, check_values=False):
     """
-    Get processes :py:class:`NewProcess` able to play the given role for a 
+    Get processes :py:class:`NewProcess` able to play the given role for a
     :py:class:`neuroDiskItems.DiskItem` source.
-    
-    Processes are ordered using the distance of 
-    :py:class:`processes.DiskItemConversionInfo` between the 
-    :py:class:`neuroDiskItems.DiskItem` source to use and the 
+
+    Processes are ordered using the distance of
+    :py:class:`processes.DiskItemConversionInfo` between the
+    :py:class:`neuroDiskItems.DiskItem` source to use and the
     :py:class:`neuroDiskItems.DiskItem` source registered for the process.
     The processes registered with closest sources appear first.
 
@@ -5190,9 +5235,9 @@ def getProcessesBySource(source, role, enableConversion=1, checkUpdate=True,
             registry = _viewers
         else:
             registry = _listViewers
-            
+
         default_list_of_func = getDefaultListOfViewer
-        
+
     elif role == 'editor':
         global _dataEditors
         global _listDataEditors
@@ -5201,16 +5246,16 @@ def getProcessesBySource(source, role, enableConversion=1, checkUpdate=True,
             registry = _dataEditors
         else:
             registry = _listDataEditors
-            
+
         default_list_of_func = getDefaultListOfDataEditor
-    
+
     else:
         raise RuntimeError('Unable to retrieve processes with role %s' % role)
-    
+
     # Create a list of processset that can be ordered by distance vector
-    r = getProcessesBySourceDist(registry, 
-                                 getDiskItemSourceInfo(source), 
-                                 enableConversion=enableConversion, 
+    r = getProcessesBySourceDist(registry,
+                                 getDiskItemSourceInfo(source),
+                                 enableConversion=enableConversion,
                                  exactConversionTypeOnly=True,
                                  checkUpdate=checkUpdate)
     # print('=== found process by distance', r, 'with process:', process)
@@ -5228,7 +5273,7 @@ def getProcessesBySource(source, role, enableConversion=1, checkUpdate=True,
                 if (isinstance(rp, types.FunctionType) and rp(process)) \
                         or (not isinstance(rp, types.FunctionType)
                             and process.id() in rp):
-                    r1.append(p)        
+                    r1.append(p)
             else:
                 r2.append(p)
         r = r1 + r2
@@ -5247,8 +5292,10 @@ def getProcessesBySource(source, role, enableConversion=1, checkUpdate=True,
     return r
 
 #----------------------------------------------------------------------------
+
+
 def runProcessBySource(source, role,
-                       context=None, process=None, continueOnError = True):
+                       context=None, process=None, continueOnError=True):
     """
     Searches for a viewer for source data and runs the process.
     If viewer fail to display source, tries to get another.
@@ -5257,15 +5304,16 @@ def runProcessBySource(source, role,
     :param context: the :py:class:`ExecutionContext`. If None, the default context is used.
     :returns: the result of the execution of the found viewer.
     """
-    
+
     def __runProcess(runnable_proc, source, reference_proc):
         runnable_proc = getProcessInstance(runnable_proc)
         if reference_proc is not None \
                 and hasattr(runnable_proc, 'allowed_processes'):
             runnable_proc.reference_process = reference_proc
-        #print('__runProcess => Try to run ', runnable_proc.name, 'for', source)
+        # print('__runProcess => Try to run ', runnable_proc.name, 'for',
+        # source)
         context.runProcess(runnable_proc, source)
-    
+
     if not isinstance(source, DiskItem):
         source = ReadDiskItem('Any Type', formats.keys()).findValue(source)
     if context is None:
@@ -5273,35 +5321,38 @@ def runProcessBySource(source, role,
 
     if role == 'viewer':
         __get_procs = getViewers
-        
+
     elif role == 'editor':
         __get_procs = getDataEditors
     else:
         raise RuntimeError('Unable to retrieve processes with role %s' % role)
-    
+
     runnable_procs = __get_procs(source, checkUpdate=False, process=process)
-    
+
     for runnable_proc in runnable_procs:
         if continueOnError:
             try:
                 return __runProcess(runnable_proc, source, process)
-            
+
             except Exception as e:
-                print('Failed to run process', runnable_proc.name, 'for', source)
+                print('Failed to run process',
+                      runnable_proc.name, 'for', source)
                 continue
         else:
             return __runProcess(runnable_proc, source, process)
-        
-#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------
+
+
 def getViewers(source, enableConversion=1, checkUpdate=True, listof=False,
                process=None, check_values=False):
     """
-    Get viewers :py:class:`NewProcess` able to visualize a 
+    Get viewers :py:class:`NewProcess` able to visualize a
     :py:class:`neuroDiskItems.DiskItem` source.
-    
-    Viewers are ordered using the distance of 
-    :py:class:`processes.DiskItemConversionInfo` between the 
-    :py:class:`neuroDiskItems.DiskItem` source to visualize and the 
+
+    Viewers are ordered using the distance of
+    :py:class:`processes.DiskItemConversionInfo` between the
+    :py:class:`neuroDiskItems.DiskItem` source to visualize and the
     :py:class:`neuroDiskItems.DiskItem` source registered for the viewer.
     The viewers registered with closest sources appear first.
 
@@ -5329,31 +5380,35 @@ def getViewers(source, enableConversion=1, checkUpdate=True, listof=False,
     viewers:
         a list of viewers :py:class:`NewProcess`.
     """
-    return getProcessesBySource(source, 'viewer', 
-                                enableConversion=enableConversion, 
-                                checkUpdate=checkUpdate, listof=listof, 
+    return getProcessesBySource(source, 'viewer',
+                                enableConversion=enableConversion,
+                                checkUpdate=checkUpdate, listof=listof,
                                 process=process, check_values=check_values)
 
 #----------------------------------------------------------------------------
+
+
 def getDefaultListOfViewer(source, enableConversion=1, checkUpdate=True,
                            process=None):
     """
     Get a default viewer for a list of :py:class:`neuroDiskItems.DiskItem`.
 
-    :param int enableConversion: if the source can be converted to be 
+    :param int enableConversion: if the source can be converted to be
     visualized. Default 1.
     :param boolean checkUpdate: if converters and viewers :py:class:`NewProcess`
     must be reloaded when they changed. Default True.
 
-    :returns: Callable Object that can be used to visualize a list of 
+    :returns: Callable Object that can be used to visualize a list of
     :py:class:`neuroDiskItems.DiskItem`.
     """
     return getDefaultListOfProcesses(source, 'viewer',
-                                     enableConversion=enableConversion, 
+                                     enableConversion=enableConversion,
                                      checkUpdate=checkUpdate, process=process)
 
 #----------------------------------------------------------------------------
-def getViewer(source, enableConversion=1, checkUpdate=True, 
+
+
+def getViewer(source, enableConversion=1, checkUpdate=True,
               listof=False, index=0, process=None, check_values=False):
     """
     Gets a viewer (a process that have the role viewer) which can
@@ -5400,12 +5455,14 @@ def getViewer(source, enableConversion=1, checkUpdate=True,
                     listof=listof,
                     process=process,
                     check_values=check_values)
-    #print('===== getViewer, viewers list', [v.name for v in vl], '=====')
+    # print('===== getViewer, viewers list', [v.name for v in vl], '=====')
     if len(vl) > index:
-        #print('===== getViewer, found viewer ', vl[index].name, '=====')
+        # print('===== getViewer, found viewer ', vl[index].name, '=====')
         return vl[index]
 
 #----------------------------------------------------------------------------
+
+
 def runViewer(source, context=None, process=None):
     """
     Searches for a viewer for source data and runs the process.
@@ -5415,20 +5472,20 @@ def runViewer(source, context=None, process=None):
     :param context: the :py:class:`ExecutionContext`. If None, the default context is used.
     :returns: the result of the execution of the found viewer.
     """
-    runProcessBySource(source, 'viewer', 
+    runProcessBySource(source, 'viewer',
                        context=context, process=process)
 
 
-#-------------------------------------------------------------------------------
-def getDataEditors(source, enableConversion=1, checkUpdate=True, listof=False, 
+#-------------------------------------------------------------------------
+def getDataEditors(source, enableConversion=1, checkUpdate=True, listof=False,
                    process=None, check_values=False):
     """
-    Get data editors :py:class:`NewProcess` able to edit a 
+    Get data editors :py:class:`NewProcess` able to edit a
     :py:class:`neuroDiskItems.DiskItem` source.
-    
-    Data editors are ordered using the distance of 
-    :py:class:`processes.DiskItemConversionInfo` between the 
-    :py:class:`neuroDiskItems.DiskItem` source to edit and the 
+
+    Data editors are ordered using the distance of
+    :py:class:`processes.DiskItemConversionInfo` between the
+    :py:class:`neuroDiskItems.DiskItem` source to edit and the
     :py:class:`neuroDiskItems.DiskItem` source registered for the data editor.
     The data editors registered with closest sources appear first.
 
@@ -5438,48 +5495,52 @@ def getDataEditors(source, enableConversion=1, checkUpdate=True, listof=False,
     enableConversion: int
         if the source can be converted to be edited. Default 1.
     checkUpdate: boolean
-        if converters and data editors :py:class:`NewProcess` must be reloaded 
+        if converters and data editors :py:class:`NewProcess` must be reloaded
         when they changed. Default True.
     listof: boolean
         if the viewers :py:class:`NewProcess` must be able to edit list of
         :py:class:`neuroDiskItems.DiskItem`. Default False.
     process: None or NewProcess class or instance
-        if specified, specialized data editors having a variable 
+        if specified, specialized data editors having a variable
         'allowed_processes' which list this process, will be sorted first
     check_values: bool
         if True, check if the 1st parameter of each data editor actually accepts
         the source value. This is not always true because some filtering may
         happen using some requiredAttribues.
-        
+
     Returns
     -------
     data editors:
         a list of data editors :py:class:`NewProcess`.
     """
-    return getProcessesBySource(source, 'editor', 
-                                enableConversion=enableConversion, 
-                                checkUpdate=checkUpdate, listof=listof, 
+    return getProcessesBySource(source, 'editor',
+                                enableConversion=enableConversion,
+                                checkUpdate=checkUpdate, listof=listof,
                                 process=process, check_values=check_values)
 
 #----------------------------------------------------------------------------
+
+
 def getDefaultListOfDataEditor(source, enableConversion=1, checkUpdate=True,
                                process=None):
     """
     Get a default data editor for a list of :py:class:`neuroDiskItems.DiskItem`.
 
-    :param int enableConversion: if the source can be converted to be 
+    :param int enableConversion: if the source can be converted to be
     edited. Default 1.
-    :param boolean checkUpdate: if converters and data editors 
+    :param boolean checkUpdate: if converters and data editors
     :py:class:`NewProcess` must be reloaded when they changed. Default True.
 
-    :returns: Callable Object that can be used to edit a list of 
+    :returns: Callable Object that can be used to edit a list of
     :py:class:`neuroDiskItems.DiskItem`.
     """
     return getDefaultListOfProcesses(source, 'editor',
-                                     enableConversion=enableConversion, 
+                                     enableConversion=enableConversion,
                                      checkUpdate=checkUpdate, process=process)
 
 #----------------------------------------------------------------------------
+
+
 def getDataEditor(source, enableConversion=0, checkUpdate=True, listof=False,
                   index=0, process=None, check_values=False):
     """
@@ -5514,12 +5575,16 @@ def getDataEditor(source, enableConversion=0, checkUpdate=True, listof=False,
                         listof=listof,
                         process=process,
                         check_values=check_values)
-    #print('===== getDataEditor, data editor list', [d.name for d in dl], '=====')
+    # print('===== getDataEditor, data editor list', [d.name for d in dl],
+    # '=====')
     if len(dl) > index:
-        #print('===== getDataEditor, found data editor ', dl[index].name, '=====')
+        # print('===== getDataEditor, found data editor ', dl[index].name,
+        # '=====')
         return dl[index]
 
 #----------------------------------------------------------------------------
+
+
 def runDataEditor(source, context=None, process=None):
     """
     Searches for a data editor for source data and runs the process.
@@ -5529,10 +5594,12 @@ def runDataEditor(source, context=None, process=None):
     :param context: the :py:class:`ExecutionContext`. If None, the default context is used.
     :returns: the result of the execution of the found data editor.
     """
-    runProcessBySource(source, 'editor', 
+    runProcessBySource(source, 'editor',
                        context=context, process=process)
-    
+
 #----------------------------------------------------------------------------
+
+
 def getImporter(source, checkUpdate=True):
     """
     Gets a importer (a process that have the role importer) which can import data in the database.
@@ -5667,6 +5734,11 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
                 # fileName, ) + " <b>"+str(e)+"</b> "+_t_(' (perharps you need
                 # to add the line <tt>"from brainvisa.processes import *"</tt>
                 # at the begining of the process)') ))
+            except Exception as e:
+                six.reraise(type(e),
+                            type(e)(*(('%s: %s' % (str(fileIn), e.args[0]), )
+                                    + e.args[1:])),
+                            sys.exc_info()[2])
         finally:
             fileIn.close()
             if dataDirectory:
@@ -5775,7 +5847,7 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
 
         def _setConverter(source, dest, proc):
             global _converters
-            
+
             oldc = _converters.get((source, dest))
             if oldc:
                 oldproc = _processes.get(oldc)
@@ -5785,11 +5857,12 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
                 newpriority = getattr(proc, 'rolePriority', 0)
                 if oldpriority > newpriority:
                     return  # don't register because priority is not sufficient
-                        
+
             # Register all source parents types
-            #print('==== registering converter for source', source, 'dest', dest, 'proc', proc.name)
+            # print('==== registering converter for source', source, 'dest',
+            # dest, 'proc', proc.name)
             registerConverter(source, dest, proc)
-            
+
         if 'converter' in roles:
             possibleConversions = getattr(
                 NewProcess, 'possibleConversions', None)
@@ -5810,53 +5883,53 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
         if 'viewer' in roles:
             global _viewers
             global _listViewers
-            arg = NewProcess.signature.values()[0]            
+            arg = NewProcess.signature.values()[0]
             if isinstance(arg, ListOf):
                 arg = arg.contentType
                 if hasattr(arg, 'formats'):
                     for format in arg.formats:
-                        #print('===== registering viewer', NewProcess.name, 
+                        # print('===== registering viewer', NewProcess.name,
                               #'for list of type', arg.type, 'and format', format)
                         _listViewers.setdefault((arg.type, format),
                                                 ProcessSet(
-                                                    arg.type, 
+                                                    arg.type,
                                                     format)) \
                                     .add(NewProcess._id)
-                                                
+
             elif hasattr(arg, 'formats'):
                 for format in arg.formats:
-                    #print('===== registering viewer', NewProcess.name, 
+                    # print('===== registering viewer', NewProcess.name,
                           #'for type', arg.type, 'and format', format)
                     _viewers.setdefault((arg.type, format),
-                                            ProcessSet(
-                                                arg.type, 
+                                        ProcessSet(
+                        arg.type,
                                                 format)) \
-                                .add(NewProcess._id)
+                        .add(NewProcess._id)
         elif NewProcess.category.lower() == 'viewers/automatic':
             warnRole(processInfo, 'viewer')
         if 'editor' in roles:
             global _dataEditors
             global _listDataEditors
-            arg = NewProcess.signature.values()[0]            
+            arg = NewProcess.signature.values()[0]
             if isinstance(arg, ListOf):
                 arg = arg.contentType
                 if hasattr(arg, 'formats'):
                     for format in arg.formats:
-                        #print('===== registering data editor', NewProcess.name, 
+                        # print('===== registering data editor', NewProcess.name,
                               #'for list of type', arg.type, 'and format', format)
                         _listDataEditors.setdefault((arg.type, format),
                                                     ProcessSet(
-                                                        arg.type, 
+                                                        arg.type,
                                                         format)) \
-                                    .add(NewProcess._id)
-                                                
+                            .add(NewProcess._id)
+
             elif hasattr(arg, 'formats'):
                 for format in arg.formats:
-                    #print('===== registering data editor', NewProcess.name, 
+                    # print('===== registering data editor', NewProcess.name,
                           #'for type', arg.type, 'and format', format)
                     _dataEditors.setdefault((arg.type, format),
-                                             ProcessSet(
-                                                arg.type, 
+                                            ProcessSet(
+                        arg.type,
                                                 format)) \
                                 .add(NewProcess._id)
         elif NewProcess.category.lower() == 'editors/automatic':
@@ -5913,7 +5986,7 @@ def readProcesses(processesPath):
     _dataEditors = {}
     _listDataEditors = {}
     _importers = {}
-    
+
     resetConverters()
 
     processesCacheFile = os.path.join(
@@ -6497,7 +6570,7 @@ def initializeProcesses():
     # TODO: A class would be more clean instead of all these global variables
     global _processModules, _processes, _processesInfo, _processesInfoByName, \
         _viewers, _listViewers, _mainThread, _defaultContext, _dataEditors, \
-        _listDataEditors, _importers,_askUpdateProcess, _readProcessLog
+        _listDataEditors, _importers, _askUpdateProcess, _readProcessLog
     _mainThread = threading.currentThread()
     _processesInfo = {}
     _processesInfoByName = {}
@@ -6511,7 +6584,7 @@ def initializeProcesses():
     _importers = {}
     _defaultContext = ExecutionContext()
     resetConverters()
-    
+
     if neuroConfig.mainLog is not None:
         _readProcessLog = neuroConfig.brainvisaSessionLog.subLog()
         neuroConfig.brainvisaSessionLog.append(_t_('Read processes'),
@@ -6545,7 +6618,7 @@ def cleanupProcesses():
     _askUpdateProcess = {}
     _mainThread = None
     _defaultContext = None
-    
+
     if _readProcessLog is not None:
         _readProcessLog.close()
         _readProcessLog = None

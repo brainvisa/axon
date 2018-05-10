@@ -37,16 +37,17 @@ from brainvisa import anatomist
 name = 'Anatomist Mark Reusable Window'
 userLevel = 0
 
+
 def validation():
     anatomist.validation()
 
 signature = Signature(
-    'windows', anatomist.AWindowChoice( aslist=True ),
+    'windows', anatomist.AWindowChoice(aslist=True),
 )
 
 
-def execution( self, context ):
+def execution(self, context):
     a = anatomist.Anatomist()
     windows = self.windows()
     if windows:
-      a.setReusableWindow( windows )
+        a.setReusableWindow(windows)

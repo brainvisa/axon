@@ -40,172 +40,180 @@ from brainvisa.data import neuroHierarchy
 import brainvisa.processes
 from brainvisa.processing import neuroLog
 import brainvisa.mailing as mailing
-import smtplib, string
+import smtplib
+import string
 import os
 
 #------------------------------------------------------------------------------
+
+
 def editConfiguration():
-  """
-  Opens Brainvisa options window. When the user closes the window, the configuration is saved in Brainvisa options file.
+    """
+    Opens Brainvisa options window. When the user closes the window, the configuration is saved in Brainvisa options file.
 
-  Some options are taken into account immediately:
+    Some options are taken into account immediately:
 
-  * if databases selection has changed, databases are reloaded
-  * if userLevel has changed, the list of available processes is updated
-  * new HTML browser and new text editors are taken into account
-  * language change is applied to documentation pages.
+    * if databases selection has changed, databases are reloaded
+    * if userLevel has changed, the list of available processes is updated
+    * new HTML browser and new text editors are taken into account
+    * language change is applied to documentation pages.
 
-  Some other options are not applied directly but are saved in the options file and will be applied next time Brainvisa is started.
-  """
-  from brainvisa.data.qtgui.updateDatabases import warnUserAboutDatabasesToUpdate
-  configuration = Application().configuration
-  appGUI = ApplicationQtGUI()
-  if appGUI.edit( configuration, live=False, modal=True ):
-    configuration.save( neuroConfig.userOptionFile )
-    setSPM99Compatibility( configuration.brainvisa.SPM )
-  newDataPath = [ x for x in neuroConfig.dataPath if hasattr( x, 'builtin' ) and x.builtin ]
-  for fso in configuration.databases.fso:
-    if fso.selected and fso.directory and os.path.exists(fso.directory):
-      newDataPath.append(DatabaseSettings(fso.directory,
-                                          read_only=fso.read_only))
-  if neuroConfig.dataPath != newDataPath:
-    neuroConfig.dataPath = newDataPath
-    neuroHierarchy.openDatabases()
-    warnUserAboutDatabasesToUpdate()
+    Some other options are not applied directly but are saved in the options file and will be applied next time Brainvisa is started.
+    """
+    from brainvisa.data.qtgui.updateDatabases import warnUserAboutDatabasesToUpdate
+    configuration = Application().configuration
+    appGUI = ApplicationQtGUI()
+    if appGUI.edit(configuration, live=False, modal=True):
+        configuration.save(neuroConfig.userOptionFile)
+        setSPM99Compatibility(configuration.brainvisa.SPM)
+    newDataPath = [
+        x for x in neuroConfig.dataPath if hasattr(x, 'builtin') and x.builtin]
+    for fso in configuration.databases.fso:
+        if fso.selected and fso.directory and os.path.exists(fso.directory):
+            newDataPath.append(DatabaseSettings(fso.directory,
+                                                read_only=fso.read_only))
+    if neuroConfig.dataPath != newDataPath:
+        neuroConfig.dataPath = newDataPath
+        neuroHierarchy.openDatabases()
+        warnUserAboutDatabasesToUpdate()
 
-  neuroHierarchy.update_soma_workflow_translations()
+    neuroHierarchy.update_soma_workflow_translations()
 
-  if neuroConfig.userLevel != configuration.brainvisa.userLevel:
-    neuroConfig.userLevel = configuration.brainvisa.userLevel
-    brainvisa.processes.updateProcesses()
-  neuroConfig.HTMLBrowser=configuration.brainvisa.htmlBrowser
-  neuroConfig.textEditor=configuration.brainvisa.textEditor
-  if neuroConfig.language != configuration.brainvisa.language \
-    and configuration.brainvisa.language is not None:
-    neuroConfig.language=configuration.brainvisa.language
-    neuroConfig.docPath=os.path.join(neuroConfig.mainDocPath, neuroConfig.language)
-    os.environ[ 'LANGUAGE' ] = neuroConfig.language
-    brainvisa.processes.updateProcesses()
+    if neuroConfig.userLevel != configuration.brainvisa.userLevel:
+        neuroConfig.userLevel = configuration.brainvisa.userLevel
+        brainvisa.processes.updateProcesses()
+    neuroConfig.HTMLBrowser = configuration.brainvisa.htmlBrowser
+    neuroConfig.textEditor = configuration.brainvisa.textEditor
+    if neuroConfig.language != configuration.brainvisa.language \
+            and configuration.brainvisa.language is not None:
+        neuroConfig.language = configuration.brainvisa.language
+        neuroConfig.docPath = os.path.join(
+            neuroConfig.mainDocPath, neuroConfig.language)
+        os.environ['LANGUAGE'] = neuroConfig.language
+        brainvisa.processes.updateProcesses()
 
 #----------------------------------------------------------------------------
 bugReportDialog = None
 
-class BugReportDialog( QWidget ):
-  def __init__( self, parent=None, name=None ):
-    QWidget.__init__( self, parent )
-    if name:
-      self.setObjectName( name )
-    layout=QVBoxLayout()
-    self.setLayout(layout)
-    layout.setSpacing( 2 )
-    layout.setContentsMargins(10, 10, 10, 10)
-    self.setLayout(layout)
-    self.setWindowTitle( _t_( 'Bug report' ) )
-    for field in ( 'From', 'To', 'Cc', 'Bcc' ):
-      hb = QHBoxLayout( )
-      label=QLabel( _t_( field ))
-      hb.addWidget(label)
-      lineEdit= QLineEdit( )
-      setattr( self, 'led' + field, lineEdit )
-      hb.addWidget(lineEdit)
-      layout.addLayout(hb)
 
-    label=QLabel( _t_( 'Message' ) )
-    layout.addWidget(label)
-    self.tedMessage = QTextEdit( )
-    layout.addWidget(self.tedMessage)
+class BugReportDialog(QWidget):
 
-    self.chkSendLog = QCheckBox( _t_( 'Attach log file' ) )
-    self.chkSendLog.setChecked( 1 )
-    layout.addWidget(self.chkSendLog)
+    def __init__(self, parent=None, name=None):
+        QWidget.__init__(self, parent)
+        if name:
+            self.setObjectName(name)
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+        layout.setSpacing(2)
+        layout.setContentsMargins(10, 10, 10, 10)
+        self.setLayout(layout)
+        self.setWindowTitle(_t_('Bug report'))
+        for field in ('From', 'To', 'Cc', 'Bcc'):
+            hb = QHBoxLayout()
+            label = QLabel(_t_(field))
+            hb.addWidget(label)
+            lineEdit = QLineEdit()
+            setattr(self, 'led' + field, lineEdit)
+            hb.addWidget(lineEdit)
+            layout.addLayout(hb)
 
-    self.ledFrom.setText( neuroConfig.userEmail )
-    self.ledTo.setText( neuroConfig.supportEmail )
+        label = QLabel(_t_('Message'))
+        layout.addWidget(label)
+        self.tedMessage = QTextEdit()
+        layout.addWidget(self.tedMessage)
 
-    hb = QHBoxLayout( )
-    layout.addLayout(hb)
-    hb.setSpacing(6)
-    hb.setContentsMargins(6, 6, 6, 6)
-    spacer = QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-    hb.addItem( spacer )
-    btn = QPushButton( _t_( 'Send' ) )
-    hb.addWidget(btn)
-    btn.clicked.connect(self._ok)
-    btn = QPushButton( _t_( 'Cancel' ) )
-    hb.addWidget(btn)
-    btn.clicked.connect(self._cancel)
+        self.chkSendLog = QCheckBox(_t_('Attach log file'))
+        self.chkSendLog.setChecked(1)
+        layout.addWidget(self.chkSendLog)
 
-  def _ok( self ):
-    # Build email message
-    outer = mailing.MIMEMultipart()
-    outer['Subject'] = '[BrainVISA ' + neuroConfig.versionString() + '] Bug report'
-    for field in ( 'From', 'Cc', 'Bcc' ):
-      value = unicode( getattr( self, 'led'+ field ).text() )
-      if value:
-        outer[ field ] = value
-    to = unicode( self.ledTo.text() )
-    to = [x.strip() for x in to.split(',')]
-    outer[ 'To' ] = ', '.join(to)
-    if outer.get("Cc", None):
-      to.extend([x.strip() for x in outer["Cc"].split(',')])
-    if outer.get("Bcc", None):
-      to.extend([x.strip() for x in outer["Bcc"].split(',')])
+        self.ledFrom.setText(neuroConfig.userEmail)
+        self.ledTo.setText(neuroConfig.supportEmail)
 
+        hb = QHBoxLayout()
+        layout.addLayout(hb)
+        hb.setSpacing(6)
+        hb.setContentsMargins(6, 6, 6, 6)
+        spacer = QSpacerItem(
+            20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        hb.addItem(spacer)
+        btn = QPushButton(_t_('Send'))
+        hb.addWidget(btn)
+        btn.clicked.connect(self._ok)
+        btn = QPushButton(_t_('Cancel'))
+        hb.addWidget(btn)
+        btn.clicked.connect(self._cancel)
 
-    outer.preamble = '\n'
-    # To guarantee the message ends with a newline
-    outer.epilogue = ''
+    def _ok(self):
+        # Build email message
+        outer = mailing.MIMEMultipart()
+        outer['Subject'] = '[BrainVISA ' + \
+            neuroConfig.versionString() + '] Bug report'
+        for field in ('From', 'Cc', 'Bcc'):
+            value = unicode(getattr(self, 'led' + field).text())
+            if value:
+                outer[field] = value
+        to = unicode(self.ledTo.text())
+        to = [x.strip() for x in to.split(',')]
+        outer['To'] = ', '.join(to)
+        if outer.get("Cc", None):
+            to.extend([x.strip() for x in outer["Cc"].split(',')])
+        if outer.get("Bcc", None):
+            to.extend([x.strip() for x in outer["Bcc"].split(',')])
 
-    msg = mailing.MIMEText( unicode( self.tedMessage.toPlainText() ), 'plain' )
-    outer.attach( msg )
-    if self.chkSendLog.isChecked() and neuroConfig.logFileName:
-      # Copy and expand log file
-      tmp = brainvisa.processes.defaultContext().temporary( 'File' )
-      neuroLog.expandedCopy( neuroConfig.logFileName, tmp.fullPath() )
+        outer.preamble = '\n'
+        # To guarantee the message ends with a newline
+        outer.epilogue = ''
 
-      # Attach log file content
-      file = open( tmp.fullPath(), 'rb' )
-      msg = mailing.MIMEBase( 'application', 'octet-stream' )
-      msg.set_payload( file.read() )
-      file.close()
-      mailing.email.Encoders.encode_base64( msg )
-      msg.add_header('Content-Disposition', 'attachment', filename=neuroConfig.logFileName )
-      outer.attach( msg )
+        msg = mailing.MIMEText(
+            unicode(self.tedMessage.toPlainText()), 'plain')
+        outer.attach(msg)
+        if self.chkSendLog.isChecked() and neuroConfig.logFileName:
+            # Copy and expand log file
+            tmp = brainvisa.processes.defaultContext().temporary('File')
+            neuroLog.expandedCopy(neuroConfig.logFileName, tmp.fullPath())
 
-    # Send message
-    s = smtplib.SMTP( neuroConfig.SMTP_server_name )
-    content = outer.as_string()
-    s.sendmail( outer[ 'From' ], to, content )
-    s.close()
-    self.close( )
+            # Attach log file content
+            file = open(tmp.fullPath(), 'rb')
+            msg = mailing.MIMEBase('application', 'octet-stream')
+            msg.set_payload(file.read())
+            file.close()
+            mailing.email.Encoders.encode_base64(msg)
+            msg.add_header(
+                'Content-Disposition', 'attachment', filename=neuroConfig.logFileName)
+            outer.attach(msg)
 
-  def _cancel( self ):
-    self.close( )
+        # Send message
+        s = smtplib.SMTP(neuroConfig.SMTP_server_name)
+        content = outer.as_string()
+        s.sendmail(outer['From'], to, content)
+        s.close()
+        self.close()
+
+    def _cancel(self):
+        self.close()
 
 
 #----------------------------------------------------------------------------
 def showBugReport():
-  global bugReportDialog
+    global bugReportDialog
 
-  if bugReportDialog is None:
-    bugReportDialog = BugReportDialog()
-  bugReportDialog.hide()
-  bugReportDialog.show()
-  bugReportDialog.raise_()
-
+    if bugReportDialog is None:
+        bugReportDialog = BugReportDialog()
+    bugReportDialog.hide()
+    bugReportDialog.show()
+    bugReportDialog.raise_()
 
 
 #----------------------------------------------------------------------------
-def addSupportMenu( widget, menuBar ):
-  if mailing.canMail:
-    supportMenu = menuBar.addMenu( _t_( "&Support" ) )
-    try:
-      supportMenu.addAction( _t_( 'Bug report' ), showBugReport )
-    except:
-      showException()
-  else:
-    brainvisa.processes.defaultContext().log( _t_( 'Feature disabled' ),
-                          html=_t_( 'Bug report feature is disabled due to ' \
-                               'missing email module in python' ),
-                          icon='warning.png' )
-
+def addSupportMenu(widget, menuBar):
+    if mailing.canMail:
+        supportMenu = menuBar.addMenu(_t_("&Support"))
+        try:
+            supportMenu.addAction(_t_('Bug report'), showBugReport)
+        except:
+            showException()
+    else:
+        brainvisa.processes.defaultContext().log(_t_('Feature disabled'),
+                                                 html=_t_('Bug report feature is disabled due to '
+                                                          'missing email module in python'),
+                                                 icon='warning.png')

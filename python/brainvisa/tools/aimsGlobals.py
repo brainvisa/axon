@@ -36,12 +36,12 @@ This module defines several lists of formats (:py:class:`neuroDiskItems.NamedFor
 .. py:data:: anatomistVolumeFormats
 
   The name of the list is *Anatomist volume formats* and it contains the volume formats which are handled by Anatomist.
-  
+
 .. py:data:: aimsVolumeFormats
              vipVolumeFormats
 
   The name of the list is *Aims readable volume formats* and it contains the volume formats which can be read with Aims.
-  
+
 .. py:data:: aimsWriteVolumeFormats
 
   The name of the list is *Aims writable volume formats* and it contains the volume formats which can be written with Aims.
@@ -73,9 +73,10 @@ This module defines several lists of formats (:py:class:`neuroDiskItems.NamedFor
 
 These global variables are initialized through the function :py:func:`initializeFormatLists`.
 """
-import os, string
+import os
+import string
 from brainvisa.data.neuroDiskItems import createFormatList, getFormat, \
-  aimsFileInfo, DiskItem
+    aimsFileInfo, DiskItem
 from soma.path import find_in_path
 
 #------------
@@ -83,238 +84,239 @@ from soma.path import find_in_path
 # at the begining of the list.
 #------------
 
+
 def initializeFormatLists():
-  """
-  Initializes several lists of formats. The lists are stored in global variables.
-  """
-  global anatomistVolumeFormats
-  anatomistVolumeFormats = createFormatList(
-    'Anatomist volume formats',
-    (
-      'gz compressed NIFTI-1 image',
-      'NIFTI-1 image',
-      'GIS Image',
-      'SPM image',
-      'VIDA Image',
-      'ECAT v image',
-      'ECAT i image',
-      'Z Compressed GIS Image',
-      'gz Compressed GIS Image',
-      'Z compressed VIDA Image',
-      'gz compressed VIDA Image',
-      'Z compressed SPM image',
-      'gz compressed SPM image',
-      'Z compressed ECAT v image',
-      'gz compressed ECAT v image',
-      'Z compressed ECAT i image',
-      'gz compressed ECAT i image',
-      'JPEG image',
-      'GIF image',
-      'PNG image',
-      'MNG image',
-      'BMP image',
-      'PBM image',
-      'PGM image',
-      'PPM image',
-      'XBM image',
-      'XPM image',
-      'TIFF image',
-      'TIFF(.tif) image',
-      'MINC image',
-      'gz compressed MINC image',
-      'DICOM image',
-      'Directory', # dicom dir
-      'FDF image',
+    """
+    Initializes several lists of formats. The lists are stored in global variables.
+    """
+    global anatomistVolumeFormats
+    anatomistVolumeFormats = createFormatList(
+        'Anatomist volume formats',
+      (
+        'gz compressed NIFTI-1 image',
+        'NIFTI-1 image',
+        'GIS Image',
+        'SPM image',
+        'VIDA Image',
+        'ECAT v image',
+        'ECAT i image',
+        'Z Compressed GIS Image',
+        'gz Compressed GIS Image',
+        'Z compressed VIDA Image',
+        'gz compressed VIDA Image',
+        'Z compressed SPM image',
+        'gz compressed SPM image',
+        'Z compressed ECAT v image',
+        'gz compressed ECAT v image',
+        'Z compressed ECAT i image',
+        'gz compressed ECAT i image',
+        'JPEG image',
+        'GIF image',
+        'PNG image',
+        'MNG image',
+        'BMP image',
+        'PBM image',
+        'PGM image',
+        'PPM image',
+        'XBM image',
+        'XPM image',
+        'TIFF image',
+        'TIFF(.tif) image',
+        'MINC image',
+        'gz compressed MINC image',
+        'DICOM image',
+        'Directory',  # dicom dir
+        'FDF image',
+      )
     )
-  )
-  global aimsVolumeFormats
-  aimsVolumeFormats = createFormatList(
-    'Aims readable volume formats',
-    (
-      'gz compressed NIFTI-1 image',
-      'NIFTI-1 image',
-      'GIS Image',
-      'SPM image',
-      'VIDA Image',
-      'ECAT v image',
-      'ECAT i image',
-      'JPEG image',
-      'GIF image',
-      'PNG image',
-      'MNG image',
-      'BMP image',
-      'PBM image',
-      'PGM image',
-      'PPM image',
-      'XBM image',
-      'XPM image',
-      'TIFF image',
-      'TIFF(.tif) image',
-      'MINC image',
-      'gz compressed MINC image',
-      'DICOM image',
-      'Directory', # dicom dir
-      'FDF image',
+    global aimsVolumeFormats
+    aimsVolumeFormats = createFormatList(
+        'Aims readable volume formats',
+      (
+        'gz compressed NIFTI-1 image',
+        'NIFTI-1 image',
+        'GIS Image',
+        'SPM image',
+        'VIDA Image',
+        'ECAT v image',
+        'ECAT i image',
+        'JPEG image',
+        'GIF image',
+        'PNG image',
+        'MNG image',
+        'BMP image',
+        'PBM image',
+        'PGM image',
+        'PPM image',
+        'XBM image',
+        'XPM image',
+        'TIFF image',
+        'TIFF(.tif) image',
+        'MINC image',
+        'gz compressed MINC image',
+        'DICOM image',
+        'Directory',  # dicom dir
+        'FDF image',
+      )
     )
-  )
 
-  global aimsWriteVolumeFormats
-  aimsWriteVolumeFormats = createFormatList(
-    'Aims writable volume formats',
-    (
-      'gz compressed NIFTI-1 image',
-      'NIFTI-1 image',
-      'GIS Image',
-      'SPM image',
-      'VIDA Image',
-      'ECAT v image',
-      'ECAT i image',
-      'JPEG image',
-      'GIF image',
-      'PNG image',
-      'MNG image',
-      'BMP image',
-      'PBM image',
-      'PGM image',
-      'PPM image',
-      'XBM image',
-      'XPM image',
-      'TIFF image',
-      'MINC image',
-      'gz compressed MINC image',
-      'DICOM image',
-      'Directory', # dicom dir
+    global aimsWriteVolumeFormats
+    aimsWriteVolumeFormats = createFormatList(
+        'Aims writable volume formats',
+      (
+        'gz compressed NIFTI-1 image',
+        'NIFTI-1 image',
+        'GIS Image',
+        'SPM image',
+        'VIDA Image',
+        'ECAT v image',
+        'ECAT i image',
+        'JPEG image',
+        'GIF image',
+        'PNG image',
+        'MNG image',
+        'BMP image',
+        'PBM image',
+        'PGM image',
+        'PPM image',
+        'XBM image',
+        'XPM image',
+        'TIFF image',
+        'MINC image',
+        'gz compressed MINC image',
+        'DICOM image',
+        'Directory',  # dicom dir
+      )
     )
-  )
 
-  global aimsImageFormats
-  aimsImageFormats = createFormatList(
-    'Aims image formats',
-    (
-      'JPEG image',
-      'GIF image',
-      'PNG image',
-      'MNG image',
-      'BMP image',
-      'PBM image',
-      'PGM image',
-      'PPM image',
-      'XBM image',
-      'XPM image',
-      'TIFF image',
-      'TIFF(.tif) image',
+    global aimsImageFormats
+    aimsImageFormats = createFormatList(
+        'Aims image formats',
+      (
+        'JPEG image',
+        'GIF image',
+        'PNG image',
+        'MNG image',
+        'BMP image',
+        'PBM image',
+        'PGM image',
+        'PPM image',
+        'XBM image',
+        'XPM image',
+        'TIFF image',
+        'TIFF(.tif) image',
+      )
     )
-  )
-  
-  global _aimsVolumeFormats
-  _aimsVolumeFormats = None
 
-  global anatomistMeshFormats
-  anatomistMeshFormats = createFormatList(
-    'Anatomist mesh formats',
-    (
-      'GIFTI file',
-      'MESH mesh',
-      'TRI mesh',
-      'Z compressed MESH mesh',
-      'gz compressed MESH mesh',
-      'Z compressed TRI mesh',
-      'gz compressed TRI mesh',
-      'PLY mesh',
-      'Z compressed PLY mesh',
-      'gz compressed PLY mesh',
-      'Z compressed GIFTI file',
-      'gz compressed GIFTI file',
-      'MNI OBJ mesh',
-      'Z compressed MNI OBJ mesh',
-      'gz compressed MNI OBJ mesh',
+    global _aimsVolumeFormats
+    _aimsVolumeFormats = None
+
+    global anatomistMeshFormats
+    anatomistMeshFormats = createFormatList(
+        'Anatomist mesh formats',
+      (
+        'GIFTI file',
+        'MESH mesh',
+        'TRI mesh',
+        'Z compressed MESH mesh',
+        'gz compressed MESH mesh',
+        'Z compressed TRI mesh',
+        'gz compressed TRI mesh',
+        'PLY mesh',
+        'Z compressed PLY mesh',
+        'gz compressed PLY mesh',
+        'Z compressed GIFTI file',
+        'gz compressed GIFTI file',
+        'MNI OBJ mesh',
+        'Z compressed MNI OBJ mesh',
+        'gz compressed MNI OBJ mesh',
+      )
     )
-  )
 
-  global vipVolumeFormats
-  vipVolumeFormats = aimsVolumeFormats
+    global vipVolumeFormats
+    vipVolumeFormats = aimsVolumeFormats
 
-  global aimsMeshFormats
-  aimsMeshFormats = createFormatList(
-    'Aims mesh formats',
-    (
-      'GIFTI file',
-      'MESH mesh',
-      'TRI mesh',
-      'PLY mesh',
-      'MNI OBJ mesh',
+    global aimsMeshFormats
+    aimsMeshFormats = createFormatList(
+        'Aims mesh formats',
+      (
+        'GIFTI file',
+        'MESH mesh',
+        'TRI mesh',
+        'PLY mesh',
+        'MNI OBJ mesh',
+      )
     )
-  )
 
-  global aimsTextureFormats
-  aimsTextureFormats = createFormatList(
-    'Aims texture formats',
-    (
-      'GIFTI file',
-      'Texture',
+    global aimsTextureFormats
+    aimsTextureFormats = createFormatList(
+        'Aims texture formats',
+      (
+        'GIFTI file',
+        'Texture',
+      )
     )
-  )
 
-  global anatomistTextureFormats
-  anatomistTextureFormats = createFormatList(
-    'Anatomist texture formats',
-    (
-      'GIFTI file',
-      'Texture',
-      'Z compressed Texture',
-      'gz compressed texture',
-      'Z compressed GIFTI file',
-      'gz compressed GIFTI file',
+    global anatomistTextureFormats
+    anatomistTextureFormats = createFormatList(
+        'Anatomist texture formats',
+      (
+        'GIFTI file',
+        'Texture',
+        'Z compressed Texture',
+        'gz compressed texture',
+        'Z compressed GIFTI file',
+        'gz compressed GIFTI file',
+      )
     )
-  )
 
-  wkhtmltopdf = find_in_path('wkhtmltopdf')
-  if wkhtmltopdf is not None:
-      html_pdf_formats_l = ('HTML', 'PDF file')
-  else:
-      html_pdf_formats_l = ('HTML', )
-  global html_pdf_formats
-  html_pdf_formats = createFormatList( 'HTML PDF', html_pdf_formats_l)
-
+    wkhtmltopdf = find_in_path('wkhtmltopdf')
+    if wkhtmltopdf is not None:
+        html_pdf_formats_l = ('HTML', 'PDF file')
+    else:
+        html_pdf_formats_l = ('HTML', )
+    global html_pdf_formats
+    html_pdf_formats = createFormatList('HTML PDF', html_pdf_formats_l)
 
 
-def aimsVolumeAttributes( item, writeOnly=0, forceFormat=0 ):
-  """
-  Gets the header attributes of a :py:class:`DiskItem` if the item is a readable volume. 
-  
-  :param item: the diskitem
-  :param writeonly: if True, the function just returns an empty dictionary
-  :param forceFormat: if True, the format of the diskitem is not checked
-  :returns: a dictionary containing the attributes of the header.
-  """
-  if writeOnly: return {}
-  # Get formats objects from formats names
-  global _aimsVolumeFormats
-  if _aimsVolumeFormats is None:
-    _aimsVolumeFormats = list(map(getFormat, aimsVolumeFormats)) \
-      + list(map(getFormat, map(lambda x: 'Series of ' + x.name,
-                                aimsVolumeFormats)))
+def aimsVolumeAttributes(item, writeOnly=0, forceFormat=0):
+    """
+    Gets the header attributes of a :py:class:`DiskItem` if the item is a readable volume.
 
-  result = {}
-  if isinstance(item, DiskItem) and \
-      (forceFormat or item.format in _aimsVolumeFormats) \
-      and item.isReadable():
-    result = aimsFileInfo(item.fullPath())
-  else:
-    # item is a string, use FileInfo directly
-    result = aimsFileInfo(item)
-  # Byte swapping should not be in image header but Aims gives this internal information.
-  result.pop( 'byte_swapping', None )
-  return result
+    :param item: the diskitem
+    :param writeonly: if True, the function just returns an empty dictionary
+    :param forceFormat: if True, the format of the diskitem is not checked
+    :returns: a dictionary containing the attributes of the header.
+    """
+    if writeOnly:
+        return {}
+    # Get formats objects from formats names
+    global _aimsVolumeFormats
+    if _aimsVolumeFormats is None:
+        _aimsVolumeFormats = list(map(getFormat, aimsVolumeFormats)) \
+            + list(map(getFormat, map(lambda x: 'Series of ' + x.name,
+                                      aimsVolumeFormats)))
+
+    result = {}
+    if isinstance(item, DiskItem) and \
+        (forceFormat or item.format in _aimsVolumeFormats) \
+            and item.isReadable():
+        result = aimsFileInfo(item.fullPath())
+    else:
+        # item is a string, use FileInfo directly
+        result = aimsFileInfo(item)
+    # Byte swapping should not be in image header but Aims gives this internal
+    # information.
+    result.pop('byte_swapping', None)
+    return result
 
 # Try to open ftp connection to pelles to see if we are in shfj
 import ftplib
 from brainvisa.validation import ValidationError
 
-inSHFJ = os.path.exists( '/product' ) # and os.path.exists( '/home/appli' )
+inSHFJ = os.path.exists('/product')  # and os.path.exists( '/home/appli' )
 
 
 def validationOnlyInSHFJ():
-  if not inSHFJ:
-    raise ValidationError( _t_( 'not available outside SHFJ' ) )
-
+    if not inSHFJ:
+        raise ValidationError(_t_('not available outside SHFJ'))

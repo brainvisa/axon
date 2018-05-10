@@ -35,18 +35,18 @@ from brainvisa.processes import *
 from brainvisa.processing.qtgui import neuroProcessesGUI
 
 name = 'View CSV file'
-userLevel=0
-roles=("viewer", )
+userLevel = 0
+roles = ("viewer", )
 
 signature = Signature(
-    'csv_file', ReadDiskItem( "CSV file", "CSV file" )
+    'csv_file', ReadDiskItem("CSV file", "CSV file")
 )
 
-def initialization( self ):
+
+def initialization(self):
     pass
 
-def execution( self, context ):
-    return mainThreadActions().call( neuroProcessesGUI.runCsvViewer,
-        self.csv_file.fullPath() )
 
-
+def execution(self, context):
+    return mainThreadActions().call(neuroProcessesGUI.runCsvViewer,
+                                    self.csv_file.fullPath())

@@ -1804,7 +1804,7 @@ class ParameterizedWidget(QWidget):
                 if isinstance(p, ReadDiskItem):
                     l.lock_id.setCheckable(True)
                     l.setlock(self._setlock_system(k))
-                              #ini la valeur de lock du parametre
+                              # ini la valeur de lock du parametre
                     # l.setlock_system.connect(self._setlock_system)
                     l.lock_system.connect(self._lock_system)
                     l.unlock_system.connect(self._unlock_system)

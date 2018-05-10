@@ -37,12 +37,12 @@ import time
 from brainvisa.tools.data_management.image_importation import Importer
 
 name = 'Import T1 MRI, longitudinal version'
-#roles = ('importer',)
+# roles = ('importer',)
 userLevel = 0
 
 
-signature=Signature(
-    'input', ReadDiskItem( 'Raw T1 MRI', 'Aims readable volume formats' ),
+signature = Signature(
+    'input', ReadDiskItem('Raw T1 MRI', 'Aims readable volume formats'),
     'output_database', Choice(),
     'center', String(),
     'subject', String(),
@@ -51,25 +51,24 @@ signature=Signature(
     'time_duration', String(),
     'rescan', String(),
     'acquisition_date', String(),
-    'output', WriteDiskItem( 'Raw T1 MRI',
-        [ 'gz compressed NIFTI-1 image', 'NIFTI-1 image', 'GIS image' ] ),
-    'referential', WriteDiskItem( 'Referential of Raw T1 MRI', 'Referential' ),
+    'output', WriteDiskItem('Raw T1 MRI',
+                            ['gz compressed NIFTI-1 image', 'NIFTI-1 image', 'GIS image']),
+    'referential', WriteDiskItem('Referential of Raw T1 MRI', 'Referential'),
 )
 
 
-def initialization( self ):
+def initialization(self):
 
-    def linkDB( proc, dummy ):
+    def linkDB(proc, dummy):
         if proc.input is not None:
-            idbn = proc.input.get( '_database' )
+            idbn = proc.input.get('_database')
             if idbn is not None:
                 return idbn
         return proc.output_database
 
-
-    def linkSubject( proc, dummy ):
+    def linkSubject(proc, dummy):
         subject = ''
-        if proc.input is not None  and isinstance(proc.input, DiskItem):
+        if proc.input is not None and isinstance(proc.input, DiskItem):
             value = proc.input.hierarchyAttributes()
             subject = value.get("subject", None)
             if subject is None:
@@ -77,58 +76,56 @@ def initialization( self ):
                     os.path.basename(proc.input.fullPath()).partition(".")[0]
         return subject
 
-
-    def initSubject( proc, dummy ):
+    def initSubject(proc, dummy):
         value = proc.input
         if proc.input is not None and isinstance(proc.input, DiskItem):
             value = proc.input.hierarchyAttributes()
             if proc.output_database:
-                value[ '_database' ] = proc.output_database.directory
-            for attribute in ( 'center', 'subject', 'acquisition', ):
-                attval = getattr( proc, attribute, None )
+                value['_database'] = proc.output_database.directory
+            for attribute in ('center', 'subject', 'acquisition', ):
+                attval = getattr(proc, attribute, None)
                 if attval:
-                    value[ attribute ] = attval
+                    value[attribute] = attval
         return value
 
     databases = [
         (dbs.directory, neuroHierarchy.databases.database(dbs.directory))
         for dbs in neuroConfig.dataPath
-        if not dbs.builtin \
-            and dbs.expert_settings.ontology.startswith( 'brainvisa-' ) ]
+        if not dbs.builtin
+            and dbs.expert_settings.ontology.startswith('brainvisa-')]
     self.signature['output_database'].setChoices(*databases)
-    if len( databases ) != 0:
+    if len(databases) != 0:
         self.output_database = databases[0][0]
-    self.linkParameters( 'output_database', 'input', linkDB )
-    self.linkParameters( 'subject', 'input', linkSubject )
-    self.linkParameters( "output",
-        [ 'input', 'output_database', 'center', 'subject', 'acquisition',
-          'time_point', 'time_duration', 'rescan', 'acquisition_date' ],
-        initSubject )
-    self.signature[ 'output' ].browseUserLevel = 3
-    self.signature[ 'input' ].databaseUserLevel = 2
-    self.signature[ 'referential' ].userLevel = 2
-    self.setOptional( 'referential' )
-    self.linkParameters( 'referential', 'output' )
-    self.acquisition_date = time.strftime("%Y/%m/%d" )
+    self.linkParameters('output_database', 'input', linkDB)
+    self.linkParameters('subject', 'input', linkSubject)
+    self.linkParameters("output",
+                        ['input', 'output_database', 'center', 'subject', 'acquisition',
+                         'time_point', 'time_duration', 'rescan', 'acquisition_date'],
+                        initSubject)
+    self.signature['output'].browseUserLevel = 3
+    self.signature['input'].databaseUserLevel = 2
+    self.signature['referential'].userLevel = 2
+    self.setOptional('referential')
+    self.linkParameters('referential', 'output')
+    self.acquisition_date = time.strftime("%Y/%m/%d")
     self.time_point = 'timepoint_0'
     self.time_duration = '0'
-    self.setOptional( 'center', 'acquisition', 'time_point', 'time_duration',
-        'rescan', 'acquisition_date' )
+    self.setOptional('center', 'acquisition', 'time_point', 'time_duration',
+                     'rescan', 'acquisition_date')
 
 
-def execution( self, context ):
-    acq_dir = os.path.dirname( self.output.fullPath() )
+def execution(self, context):
+    acq_dir = os.path.dirname(self.output.fullPath())
     values = {}
-    for attribute in ( 'time_point', 'time_duration', 'rescan',
-            'acquisition_date' ):
-        value = getattr( self, attribute )
+    for attribute in ('time_point', 'time_duration', 'rescan',
+                      'acquisition_date'):
+        value = getattr(self, attribute)
         if value:
             values[attribute] = value
-    if len( values ) != 0:
+    if len(values) != 0:
         f = open(os.path.join(acq_dir, 'fso_attributes.json'), 'w')
         json.dump(values, f)
     del f
-    context.runProcess( 'ImportT1MRI', input=self.input, output=self.output,
-        referential=self.referential )
+    context.runProcess('ImportT1MRI', input=self.input, output=self.output,
+                       referential=self.referential)
     self.output.readAndUpdateDeclaredAttributes()
-

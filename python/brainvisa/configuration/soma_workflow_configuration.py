@@ -48,5 +48,4 @@ class SomaWorkflowConfiguration(ConfigurationGroup):
         'somaworkflow_keep_succeeded_workflows', Boolean,
         dict(defaultValue=False,
              doc='Keep workflow in SWF database after running'),
-)
-
+    )

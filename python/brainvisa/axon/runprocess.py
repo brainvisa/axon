@@ -44,7 +44,9 @@ from brainvisa import axon
 from brainvisa.configuration import neuroConfig
 import brainvisa.processes
 from brainvisa.axon import processinfo
-import sys, re, types
+import sys
+import re
+import types
 from optparse import OptionParser, OptionGroup
 import six
 
@@ -112,7 +114,7 @@ def get_process_with_params(process_name, iterated_params=[], *args, **kwargs):
         # build list of processes for iteration
         processes = [process] \
             + [brainvisa.processes.getProcessInstance(process_name)
-              for i in xrange(n_iter - 1)]
+               for i in xrange(n_iter - 1)]
         # fill in their parameters
         for i_proc, process in enumerate(processes):
             p_args = list(args)
@@ -215,9 +217,9 @@ def run_process_with_distribution(
         print('finished.')
         workflow_status = wc.workflow_status(wid)
         elements_status = wc.workflow_elements_status(wid)
-        failed_jobs = [element for element in elements_status[0] \
-            if element[1] != swconstants.DONE \
-                or element[3][0] != swconstants.FINISHED_REGULARLY]
+        failed_jobs = [element for element in elements_status[0]
+                       if element[1] != swconstants.DONE
+                       or element[3][0] != swconstants.FINISHED_REGULARLY]
 
         if output_file_processing \
                 == workflow.ProcessToSomaWorkflow.FILE_TRANSFER:
@@ -230,7 +232,7 @@ def run_process_with_distribution(
 
         if workflow_status != swconstants.WORKFLOW_DONE:
             raise RuntimeError('Workflow did not finish regularly: %s'
-                              % workflow_status)
+                               % workflow_status)
         print('workflow status OK')
         if len(failed_jobs) != 0:
             raise RuntimeError('Morphologist jobs failed:', failed_jobs)
@@ -258,22 +260,22 @@ http://brainvisa.info/axon/user_doc/axon_manual2.html#brainvisa-commandline
 '''
 
 parser = OptionParser(description='Run a single BrainVISA / Axon process',
-    usage=usage)
+                      usage=usage)
 group1 = OptionGroup(parser, 'Config',
                      description='Processing configuration, database options')
 group1.add_option('--enabledb', dest='enabledb', action='store_true',
-    default=False,
-    help='enable databasing (slower startup, but all features enabled)')
+                  default=False,
+                  help='enable databasing (slower startup, but all features enabled)')
 group1.add_option('--historyBook', dest='historyBook', action='append',
-    help='store history information files in this directory (otherwise '
-    'disabled unless dabasing is enabled)')
-#group1.add_option('--enablegui', dest='enablegui', action='store_true',
-    #default=False,
-    #help='enable graphical user interface for interactive processes')
+                  help='store history information files in this directory (otherwise '
+                  'disabled unless dabasing is enabled)')
+# group1.add_option('--enablegui', dest='enablegui', action='store_true',
+    # default=False,
+    # help='enable graphical user interface for interactive processes')
 group1.add_option('--logFile', dest='logFile', default=None,
-    help='specify the log file to use. '
-    'Default is the usual brainvisa.log if databasing is enabled, else no log '
-    'file is used.')
+                  help='specify the log file to use. '
+                  'Default is the usual brainvisa.log if databasing is enabled, else no log '
+                  'file is used.')
 parser.add_option_group(group1)
 
 group2 = OptionGroup(parser, 'Processing',
@@ -329,32 +331,32 @@ parser.add_option_group(group3)
 group4 = OptionGroup(parser, 'Help',
                      description='Help and documentation options')
 group4.add_option('--list-processes', dest='list_processes',
-    action='store_true',
-    help='List processes and exit. sorting / filtering are controlled by the '
-    'following options.')
+                  action='store_true',
+                  help='List processes and exit. sorting / filtering are controlled by the '
+                  'following options.')
 group4.add_option('--sort-by', dest='sort_by',
-    help='List processed by: id, name, toolbox, or role')
+                  help='List processed by: id, name, toolbox, or role')
 group4.add_option('--proc-filter', dest='proc_filter', action='append',
-    help='filter processes list. Several filters may be used to setup several '
-    'rules. Rules have the shape: attribute="filter_expr", filter_expr is a '
-    'regex.\n'
-    'Ex: id=".*[Ss]ulci.*"')
+                  help='filter processes list. Several filters may be used to setup several '
+                  'rules. Rules have the shape: attribute="filter_expr", filter_expr is a '
+                  'regex.\n'
+                  'Ex: id=".*[Ss]ulci.*"')
 group4.add_option('--hide-proc-attrib', dest='hide_proc_attrib',
-    action='append', default=[],
-    help='in processes list, hide selected attribute (several values allowed)')
+                  action='append', default=[],
+                  help='in processes list, hide selected attribute (several values allowed)')
 group4.add_option('--process-help', dest='process_help',
-    action='append',
-    help='display specified process help')
+                  action='append',
+                  help='display specified process help')
 parser.add_option_group(group4)
 
 parser.disable_interspersed_args()
 (options, args) = parser.parse_args()
 
-#if options.enablegui:
-    #neuroConfig.gui = True
-    #from soma.qt_gui.qt_backend import QtGui
-    #qapp = QtGui.QApplication([])
-#else:
+# if options.enablegui:
+    # neuroConfig.gui = True
+    # from soma.qt_gui.qt_backend import QtGui
+    # qapp = QtGui.QApplication([])
+# else:
 neuroConfig.gui = False
 if not options.enabledb:
     neuroConfig.fastStart = True
@@ -372,7 +374,8 @@ if options.list_processes:
     sort_by = options.sort_by
     if not sort_by:
         sort_by = 'id'
-    else: print('sort-by:', sort_by)
+    else:
+        print('sort-by:', sort_by)
     processinfo.process_list_help(sort_by, sys.stdout,
                                   proc_filter=options.proc_filter,
                                   hide=options.hide_proc_attrib)
@@ -406,7 +409,7 @@ process = get_process_with_params(process_name, iterated, *args, **kwargs)
 resource_id = options.resource_id
 login = options.login
 password = options.password
-config = None #options.config
+config = None  # options.config
 rsa_key_pass = options.rsa_key_pass
 queue = options.queue
 file_processing = []
@@ -420,7 +423,7 @@ if options.soma_workflow:
                               options.output_file_processing)):
         if opt is None:
             if io == 0 and resource_id not in ('localhost', None,
-                                           socket.gethostname()):
+                                               socket.gethostname()):
                 file_proc = workflow.ProcessToSomaWorkflow.BV_DB_SHARED_PATH
             else:
                 file_proc = workflow.ProcessToSomaWorkflow.NO_FILE_PROCESSING
@@ -449,5 +452,3 @@ run_process_with_distribution(
 
 
 sys.exit(neuroConfig.exitValue)
-
-

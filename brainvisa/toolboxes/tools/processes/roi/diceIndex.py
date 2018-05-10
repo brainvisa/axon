@@ -43,17 +43,18 @@
 from __future__ import print_function
 from brainvisa.processes import *
 try:
-  from soma import aims, aimsalgo
-  import numpy
+    from soma import aims, aimsalgo
+    import numpy
 except:
-  pass
+    pass
+
 
 def validation():
-  try:
-    from soma import aims
-    import numpy
-  except:
-    raise ValidationError('PyAims is not available')
+    try:
+        from soma import aims
+        import numpy
+    except:
+        raise ValidationError('PyAims is not available')
 
 userLevel = 0
 name = 'DICE index'
@@ -66,9 +67,9 @@ signature = Signature(
     'image_labels', ListOf(String()),
     'output_format', Choice('matrix', 'linear'),
     'reference_space_image', ReadDiskItem('Label Volume',
-        'aims readable volume formats'),
+                                          'aims readable volume formats'),
     'transformations', ListOf(ListOf(ReadDiskItem('Transformation matrix',
-                                           'Transformation matrix'))),
+                                                  'Transformation matrix'))),
 )
 
 
@@ -111,7 +112,7 @@ def resample_volume(self, volume, ref_dims, ref_vs, trans):
 
 def check_resampled(self, i, volume, ref_dims, ref_vs):
     if self.reference_space_image is not None \
-            and len(self.transformations)> i \
+            and len(self.transformations) > i \
             and self.transformations[i]:
         trans = self.build_transformation(self.transformations[i], volume)
         vol1 = self.resample_volume(volume, ref_dims, ref_vs, trans)
@@ -123,8 +124,8 @@ def check_resampled(self, i, volume, ref_dims, ref_vs):
 def execution(self, context):
 
     count = 0
-    ntot = (len(self.label_images)+ 2)\
-        * (len(self.label_images)- 1)/ 2
+    ntot = (len(self.label_images) + 2)\
+        * (len(self.label_images) - 1) / 2
     context.progress(0, ntot, self)
 
     n = len(self.label_images)
@@ -142,58 +143,58 @@ def execution(self, context):
         ref_vs = f.header()['voxel_size'][:3]
 
     for i, seg1 in enumerate(self.label_images[:-1]):
-        context.write('comparisons with %s (%d / %d)' \
-            % (self.image_labels[i], count+1, ntot))
+        context.write('comparisons with %s (%d / %d)'
+                      % (self.image_labels[i], count + 1, ntot))
         vol1 = aims.read(seg1.fullPath())
         vol1 = self.check_resampled(i, vol1, ref_dims, ref_vs)
 
         avol1 = numpy.asarray(vol1)
         objects = numpy.unique(avol1)
-        objects = [ o for o in objects if o != 0 ]
+        objects = [o for o in objects if o != 0]
         vol = {}
         for l in objects:
             vol[l] = len(numpy.where(avol1 == l)[0])
         count += 1
         context.progress(count, ntot, self)
-        for j, seg2 in enumerate(self.label_images[i+1:]):
+        for j, seg2 in enumerate(self.label_images[i + 1:]):
             c = j + i + 1
             count += 1
-            context.write('processing: %s - %s (%d / %d)' \
-                % (self.image_labels[i], self.image_labels[c],
-                    count, ntot))
+            context.write('processing: %s - %s (%d / %d)'
+                          % (self.image_labels[i], self.image_labels[c],
+                             count, ntot))
             vol2 = aims.read(seg2.fullPath())
             vol2 = self.check_resampled(c, vol2, ref_dims, ref_vs)
             avol2 = numpy.asarray(vol2)
             for l in objects:
                 w = numpy.where(avol2 == l)
-                overlap = numpy.where(avol1[ w ] == l)[0].shape[0]
+                overlap = numpy.where(avol1[w] == l)[0].shape[0]
                 res = results.setdefault(l, numpy.zeros((n, n)))
                 res[ i, c ] = float(overlap * 2)\
-                    / (w[0].shape[0] +vol[l])
+                    / (w[0].shape[0] + vol[l])
             context.progress(count, ntot, self)
 
     if self.output_format == 'matrix':
         out = open(self.csv_output.fullPath(), 'w')
         print('method, label,', ', '.join(self.image_labels[1:]), file=out)
         for l in sorted(results.keys()):
-            d = results[ l ]
+            d = results[l]
             # symmetrize results
             d += d.transpose()
-            d[ numpy.arange(d.shape[0]), numpy.arange(d.shape[0])] = 1.
-            for i in xrange(d.shape[0]-1):
+            d[numpy.arange(d.shape[0]), numpy.arange(d.shape[0])] = 1.
+            for i in xrange(d.shape[0] - 1):
                 out.write(self.image_labels[i] + ', %d, ' % l)
-                out.write(', '.join([ str(x)for x in d[ i, 1: ] ])+ '\n')
+                out.write(', '.join([str(x)for x in d[i, 1:]]) + '\n')
 
-    else: # linear format
+    else:  # linear format
         out = open(self.csv_output.fullPath(), 'w')
         print('label, method1, method2, DICE', file=out)
         for l in sorted(results.keys()):
-            d = results[ l ]
+            d = results[l]
             # symmetrize results
             d += d.transpose()
-            d[ numpy.arange(d.shape[0]), numpy.arange(d.shape[0])] = 1.
-            for i in xrange(d.shape[0]-1):
-                for j in xrange(i+1, d.shape[1]):
-                    out.write('%d, %s, %s, %f\n' \
-                        % (l, self.image_labels[i], self.image_labels[j],
-                            d[ i, j ]))
+            d[numpy.arange(d.shape[0]), numpy.arange(d.shape[0])] = 1.
+            for i in xrange(d.shape[0] - 1):
+                for j in xrange(i + 1, d.shape[1]):
+                    out.write('%d, %s, %s, %f\n'
+                              % (l, self.image_labels[i], self.image_labels[j],
+                                 d[i, j]))

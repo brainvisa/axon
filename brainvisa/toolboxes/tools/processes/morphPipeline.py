@@ -7,9 +7,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -24,8 +24,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -44,43 +44,43 @@ signature = Signature(
                                            'aims writable volume formats')
 )
 
+
 def buildNewSignature(self, number):
-    paramSignature  = ['Nb_of_morpho_step', Integer()]
-    paramSignature  += ['file_in',
-                        ReadDiskItem('Label Volume',
-                                     'aims readable volume formats')]
-    paramSignature  += ['file_out',
-                        WriteDiskItem('Label Volume',
-                                      'aims writable volume formats')]
+    paramSignature = ['Nb_of_morpho_step', Integer()]
+    paramSignature += ['file_in',
+                       ReadDiskItem('Label Volume',
+                                    'aims readable volume formats')]
+    paramSignature += ['file_out',
+                       WriteDiskItem('Label Volume',
+                                     'aims writable volume formats')]
     for i in range(number):
-        paramSignature  += ['step'+str(i+1),
-                            Choice(('Closing', 'clo'), ('Opening', 'ope'),
-                                   ('Erosion', 'ero'),('Dilation', 'dil'))]
-        paramSignature  += ['radius'+str(i+1), Number()]
+        paramSignature += ['step' + str(i + 1),
+                           Choice(('Closing', 'clo'), ('Opening', 'ope'),
+                                  ('Erosion', 'ero'), ('Dilation', 'dil'))]
+        paramSignature += ['radius' + str(i + 1), Number()]
 
-    signature = Signature( *paramSignature )
-    self.changeSignature( signature )
+    signature = Signature(*paramSignature)
+    self.changeSignature(signature)
     for i in range(number):
-        setattr(self, 'step'+str(i+1), 'clo')
+        setattr(self, 'step' + str(i + 1), 'clo')
 
 
-def initialization( self ):
-    self.addLink( None,'Nb_of_morpho_step', self.buildNewSignature )
-    self.Nb_of_morpho_step=1
+def initialization(self):
+    self.addLink(None, 'Nb_of_morpho_step', self.buildNewSignature)
+    self.Nb_of_morpho_step = 1
 
 
-def execution( self, context ):
-
+def execution(self, context):
 
     for i in range(self.Nb_of_morpho_step):
-        if i==0:
+        if i == 0:
             ima_in = self.file_in.fullPath()
-            ima_out= self.file_out.fullPath()
+            ima_out = self.file_out.fullPath()
         else:
             ima_in = self.file_out.fullPath()
-            ima_out= self.file_out.fullPath()
-        t = getattr(self,'step'+str(i+1))
-        r = getattr(self,'radius'+str(i+1))
+            ima_out = self.file_out.fullPath()
+        t = getattr(self, 'step' + str(i + 1))
+        r = getattr(self, 'radius' + str(i + 1))
         context.runProcess('morphoBasic',
                            type=t,
                            radius=r,

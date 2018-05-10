@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import re, platform, sys
+import re
+import platform
+import sys
 from brainvisa.configuration import neuroConfig
 try:
     import six.moves.urllib.request as urllib2
@@ -11,6 +13,7 @@ except ImportError:
 import six
 
 filesaddress = 'ftp://ftp.cea.fr/pub/dsv/anatomist/binary'
+
 
 def checkUpdates():
     '''Checks on the BrainVisa servers if there is a newer version than the
@@ -23,20 +26,20 @@ def checkUpdates():
     achitecture, False if it is a compatible, but different architecture (i686
     on a x86_64)
     '''
-    refversion = [ int(x) for x in neuroConfig.versionString().split( '.' ) ]
+    refversion = [int(x) for x in neuroConfig.versionString().split('.')]
 
-    sysnames = { 'Fedora' : 'linux2', 'Mandriva' : 'linux2',
-        'Ubuntu' : 'linux2', 'MacOS' : 'darwin', 'Windows' : 'win32' }
-    archs = { 'i686' : '32bit', 'x86_64' : '64bit' }
+    sysnames = {'Fedora': 'linux2', 'Mandriva': 'linux2',
+                'Ubuntu': 'linux2', 'MacOS': 'darwin', 'Windows': 'win32'}
+    archs = {'i686': '32bit', 'x86_64': '64bit'}
 
     # timeout parameter does not exists in python 2.5
-    #lines = urllib2.urlopen( filesaddress, timeout=3 ).readlines()
+    # lines = urllib2.urlopen( filesaddress, timeout=3 ).readlines()
     try:
-      lines = urllib2.urlopen(filesaddress, timeout=5).readlines()
-    except: # the network may be not available
-      lines = []
-    rexp = re.compile( \
-        '^.*(brainvisa-(.*)-(i686|x86_64).*-([^-]+)-.*)\.README.*$' )
+        lines = urllib2.urlopen(filesaddress, timeout=5).readlines()
+    except:  # the network may be not available
+        lines = []
+    rexp = re.compile(
+        '^.*(brainvisa-(.*)-(i686|x86_64).*-([^-]+)-.*)\.README.*$')
     upgrade = False
     exactarch = None
     compatiblearch = None
@@ -47,45 +50,44 @@ def checkUpdates():
     for l in lines:
         if decode:
             l = l.decode()
-        m = rexp.match( l )
+        m = rexp.match(l)
         if not m:
             continue
         system = m.group(2)
         osid = None
         for s, sid in six.iteritems(sysnames):
-            if system.startswith( s ) and sys.platform == sid:
+            if system.startswith(s) and sys.platform == sid:
                 osid = sid
                 break
         if not osid:
             continue
         arch = m.group(3)
         if archs[ arch ] != platform.architecture()[0] \
-            and ( arch != 'i686' or platform.architecture()[0] != '64bit' ):
+                and (arch != 'i686' or platform.architecture()[0] != '64bit'):
             continue
-        version = [ int(x) for x in m.group(4).split('.') ]
+        version = [int(x) for x in m.group(4).split('.')]
         if version > refversion:
             upgrade = True
-            if archs[ arch ] == platform.architecture()[0]:
+            if archs[arch] == platform.architecture()[0]:
                 if not exactarch or version > exactarch[0]:
-                    exactarch = [ version, m.group(1) ]
+                    exactarch = [version, m.group(1)]
             else:
                 if not compatiblearch or version > compatiblearch[0]:
-                    compatiblearch = [ version, m.group(1) ]
+                    compatiblearch = [version, m.group(1)]
     highest = None
     if upgrade:
         if exactarch:
-            #print 'can upgrade to:', exactarch
-            highest = ( exactarch[0], filesaddress + '/' + exactarch[1], True )
+            # print 'can upgrade to:', exactarch
+            highest = (exactarch[0], filesaddress + '/' + exactarch[1], True)
         if compatiblearch and \
-            ( not exactarch or compatiblearch[0] > exactarch[0] ):
-            #print 'higher compatible version:', compatiblearch
-            highest = ( compatiblearch[0],
-                filesaddress + '/' + compatiblearch[1], False )
+                (not exactarch or compatiblearch[0] > exactarch[0]):
+            # print 'higher compatible version:', compatiblearch
+            highest = (compatiblearch[0],
+                       filesaddress + '/' + compatiblearch[1], False)
 
     if highest:
         if sys.platform == 'win32':
-            highest = ( highest[0], highest[1] + '.zip', highest[2] )
+            highest = (highest[0], highest[1] + '.zip', highest[2])
         else:
-            highest = ( highest[0], highest[1] + '.tar.gz', highest[2] )
+            highest = (highest[0], highest[1] + '.tar.gz', highest[2])
     return highest
-

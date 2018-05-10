@@ -45,122 +45,161 @@ __docformat__ = "epytext en"
 from soma.configuration import ConfigurationGroup
 from brainvisa.data.temporary import getSystemDefaultTempDir
 from soma.signature.api import HasSignature, Signature, VariableSignature, Unicode, \
-                               Choice, OpenedChoice, Boolean, Sequence, FileName
+    Choice, OpenedChoice, Boolean, Sequence, FileName
 from distutils.spawn import find_executable
 import os
 
 #------------------------------------------------------------------------------
+
+
 def htmlBrowsers():
-  return [i for i in ( 'firefox', 'konqueror', 'explorer', 'opera',
-                       '/Applications/Internet\\ Explorer.app/Contents' \
-                       '/MacOS/Internet\\ Explorer',
-                       '/Applications/Safari.app/Contents/MacOS/Safari',
-                       'mozilla', 'netscape' ) if find_executable( i ) ]
+    return [i for i in ('firefox', 'konqueror', 'explorer', 'opera',
+                        '/Applications/Internet\\ Explorer.app/Contents'
+                        '/MacOS/Internet\\ Explorer',
+                        '/Applications/Safari.app/Contents/MacOS/Safari',
+                        'mozilla', 'netscape') if find_executable(i)]
+
 
 def defaultHTMLBrowser():
-  """
-  If a real web browser is found, use it dy default.
-  If there is no web browser available, the built-in Qt Browser is used but it cannot open websites.
-  """
-  defaultBrowser=""
-  browsers=htmlBrowsers()
-  if browsers:
-    defaultBrowser=browsers[0]
-  return defaultBrowser
+    """
+    If a real web browser is found, use it dy default.
+    If there is no web browser available, the built-in Qt Browser is used but it cannot open websites.
+    """
+    defaultBrowser = ""
+    browsers = htmlBrowsers()
+    if browsers:
+        defaultBrowser = browsers[0]
+    return defaultBrowser
+
 
 def textEditors():
-  return [t for t in ('nedit', 'kedit', 'kwrite', 'xemacs', 'emacs', 'textedit', 'notepad', 'write' ) if find_executable( t ) ]
+    return [t for t in ('nedit', 'kedit', 'kwrite', 'xemacs', 'emacs', 'textedit', 'notepad', 'write') if find_executable(t)]
+
 
 def defaultTextEditor():
-  defaultEditor=''
-  editors=textEditors()
-  if editors:
-    defaultEditor=editors[0]
-  return defaultEditor
+    defaultEditor = ''
+    editors = textEditors()
+    if editors:
+        defaultEditor = editors[0]
+    return defaultEditor
 
 #------------------------------------------------------------------------------
+
+
 def csvViewers():
-  return [i for i in ( 'gnumeric', 'openoffice', 'libreoffice' ) \
-    if find_executable( i ) ]
+    return [i for i in ('gnumeric', 'openoffice', 'libreoffice')
+            if find_executable(i)]
+
 
 def defaultCSVViewer():
-  """
-  If a real CSV viewer is found, use it dy default.
-  If there is no CSV viewer available, the built-in Qt viewer is used.
-  """
-  defaultCSVviewer=""
-  browsers=csvViewers()
-  if browsers:
-    defaultCSVviewer=browsers[0]
-  return defaultCSVviewer
+    """
+    If a real CSV viewer is found, use it dy default.
+    If there is no CSV viewer available, the built-in Qt viewer is used.
+    """
+    defaultCSVviewer = ""
+    browsers = csvViewers()
+    if browsers:
+        defaultCSVviewer = browsers[0]
+    return defaultCSVviewer
 #------------------------------------------------------------------------------
+
+
 def pngViewers():
-  return [i for i in ( 'eog', 'shotwell', 'feh', 'geeqie', 'gpicview', 'gwenview', 'mirage' ) if find_executable( i ) ]
+    return [i for i in ('eog', 'shotwell', 'feh', 'geeqie', 'gpicview', 'gwenview', 'mirage') if find_executable(i)]
+
 
 def defaultPNGViewer():
-  """
-  If a real PNG viewer is found, use it dy default.
-  If there is no PNG viewer available, the built-in Qt viewer is used.
-  """
-  defaultPNGviewer=""
-  browsers=pngViewers()
-  if browsers:
-    defaultPNGviewer=browsers[0]
-  return defaultPNGviewer
+    """
+    If a real PNG viewer is found, use it dy default.
+    If there is no PNG viewer available, the built-in Qt viewer is used.
+    """
+    defaultPNGviewer = ""
+    browsers = pngViewers()
+    if browsers:
+        defaultPNGviewer = browsers[0]
+    return defaultPNGviewer
 
 #------------------------------------------------------------------------------
-class BrainVISAConfiguration( ConfigurationGroup ):
 
-  label = 'BrainVISA'
-  icon = 'brainvisa_small.png'
 
-  class SupportConfiguration( HasSignature ):
+class BrainVISAConfiguration(ConfigurationGroup):
+
+    label = 'BrainVISA'
+    icon = 'brainvisa_small.png'
+
+    class SupportConfiguration(HasSignature):
+        signature = Signature(
+            'userEmail', Unicode, dict(
+                defaultValue='', doc='Your email address that will appear in the "From:" field of messages send to BrainVISA support team.'),
+          'supportEmail', Unicode, dict(
+              defaultValue='support@brainvisa.info', doc='Email address of BrainVISA support team.'),
+          'smtpServer', Unicode, dict(
+              defaultValue='', doc='Address of the server that will be used to send emails.'),
+        )
+
+    class SPMConfiguration(HasSignature):
+        signature = Signature(
+            'SPM99_compatibility', Boolean, dict(
+                defaultValue=False, doc='If selected, Analyse (*.hdr + *.img) images loaded from BrainVISA, Anatomist and Aims will use an heuristic to guess the orientationin in SPM99 compatible way.'),
+          'radiological_orientation', Boolean, dict(
+              defaultValue=True, doc='If selected, SPM is supposed to use radiological orientation for images. Otherwise it is supposed to use neurological convention.'),
+        )
+
     signature = Signature(
-      'userEmail', Unicode, dict( defaultValue='', doc='Your email address that will appear in the "From:" field of messages send to BrainVISA support team.' ),
-      'supportEmail', Unicode, dict( defaultValue='support@brainvisa.info', doc='Email address of BrainVISA support team.' ),
-      'smtpServer', Unicode, dict( defaultValue='', doc='Address of the server that will be used to send emails.' ),
+        'userLevel', Choice(('Basic', 0),
+                            ('Advanced', 1),
+                            ('Expert', 2)),
+                   dict(
+                       defaultValue=0, doc='User level is used to hide experimental processes (and in some rare cases hide experimental parameters).'),
+      'language', Choice(
+          ('<system default>', None), ('english', 'en'), ('french', 'fr')),
+                  dict(
+                      defaultValue='en', doc='Language of the graphical interface (it is necessary to restart BrainVISA to take the modification into account).'),
+      'processesPath', Sequence(FileName(directoryOnly=True)), dict(
+          defaultValue=[
+          ], doc='List of directories containing BrainVISA processes.'),
+      'temporaryDirectory', FileName(directoryOnly=True), dict(defaultValue=getSystemDefaultTempDir(),
+                                                               doc='Directory where temporary files are stored. Name of temporary files produced by BrainVISA starts with <tt>"bv_"</tt>.'),
+      'textEditor', OpenedChoice(* textEditors()), dict(
+          defaultValue=defaultTextEditor(
+          ), doc='Location of the program used to edit text files.'),
+      'htmlBrowser', OpenedChoice(('<built-in>', ''), * htmlBrowsers()), dict(
+          defaultValue=defaultHTMLBrowser(
+          ), doc='Location of the program used to display HTML files.'),
+      'csvViewer', OpenedChoice(('<built-in>', ''), * csvViewers()), dict(
+          defaultValue=defaultCSVViewer(
+          ), doc='Location of the program used to display CSV files.'),
+      'pngViewer', OpenedChoice(('<built-in>', ''), * pngViewers()), dict(
+          defaultValue=defaultPNGViewer(
+          ), doc='Location of the program used to display PNG images.'),
+      'removeTemporary', Boolean, dict(
+          defaultValue=True, doc='unselect this option if you do not want temporary files and directories to be automatically deleted. This option is used for debugging. If unselected BrainVISA can leave a lot of files in temporary directory.'),
+      'showParamUserLevel', Boolean, dict(
+          defaultValue=False, doc='select this option if you want user levels shown along parameter names in the process window.'),
+      'SPM', SPMConfiguration, dict(defaultValue=SPMConfiguration()),
+      'support', SupportConfiguration, dict(
+          defaultValue=SupportConfiguration()),
+      'gui_style', OpenedChoice(('<system default>', None)), dict(
+          defaultValue=None, doc='Style of the graphical interface.'),
+      'databasesWarning', Boolean, dict(
+          defaultValue=True, doc='Unselect this option to disable the warning message that is shown when you have not created any database.'),
+      'databaseVersionSync', Choice(
+          ('Ask User', None), ('Automatic', 'auto'), ('Manual', 'man')),
+          dict(defaultValue=None,
+               doc='Management of the database synchronization throught BrainVISA versions. Ask User : BrainVISA will ask what to do when a database need to be updated. Automatic : BrainVISA will automatically update your database if you switch from one BrainVISA version to another. Manual : If you modify a database and then switch from one BrainVISA version to another, you will have to update the database if you want BrainVISA take into account the modifications.'),
     )
 
-  class SPMConfiguration( HasSignature ):
-    signature = Signature(
-      'SPM99_compatibility', Boolean, dict( defaultValue=False, doc='If selected, Analyse (*.hdr + *.img) images loaded from BrainVISA, Anatomist and Aims will use an heuristic to guess the orientationin in SPM99 compatible way.' ),
-      'radiological_orientation', Boolean, dict( defaultValue=True, doc='If selected, SPM is supposed to use radiological orientation for images. Otherwise it is supposed to use neurological convention.' ),
-    )
+    def _check_userLevel_value(self, value):
+        return int(value)
 
-  signature = Signature(
-    'userLevel', Choice( ( 'Basic', 0 ),
-                         ( 'Advanced', 1 ),
-                         ( 'Expert', 2 ) ),
-                 dict( defaultValue=0, doc='User level is used to hide experimental processes (and in some rare cases hide experimental parameters).' ),
-    'language', Choice( ( '<system default>', None ), ( 'english', 'en' ), ( 'french', 'fr' ) ),
-                dict( defaultValue='en', doc='Language of the graphical interface (it is necessary to restart BrainVISA to take the modification into account).' ),
-    'processesPath', Sequence( FileName( directoryOnly=True ) ), dict( defaultValue=[], doc='List of directories containing BrainVISA processes.' ),
-    'temporaryDirectory', FileName( directoryOnly=True ), dict( defaultValue=getSystemDefaultTempDir(), doc='Directory where temporary files are stored. Name of temporary files produced by BrainVISA starts with <tt>"bv_"</tt>.' ),
-    'textEditor', OpenedChoice( * textEditors() ), dict( defaultValue=defaultTextEditor(), doc='Location of the program used to edit text files.' ),
-    'htmlBrowser', OpenedChoice( ( '<built-in>', '' ), * htmlBrowsers() ), dict( defaultValue = defaultHTMLBrowser(), doc='Location of the program used to display HTML files.' ),
-    'csvViewer', OpenedChoice( ( '<built-in>', '' ), * csvViewers() ), dict( defaultValue = defaultCSVViewer(), doc='Location of the program used to display CSV files.' ),
-    'pngViewer', OpenedChoice( ( '<built-in>', '' ), * pngViewers() ), dict( defaultValue = defaultPNGViewer(), doc='Location of the program used to display PNG images.' ),
-    'removeTemporary', Boolean, dict( defaultValue=True, doc='unselect this option if you do not want temporary files and directories to be automatically deleted. This option is used for debugging. If unselected BrainVISA can leave a lot of files in temporary directory.' ),
-    'showParamUserLevel', Boolean, dict( defaultValue=False, doc='select this option if you want user levels shown along parameter names in the process window.' ),
-    'SPM', SPMConfiguration, dict( defaultValue=SPMConfiguration() ),
-    'support', SupportConfiguration, dict( defaultValue=SupportConfiguration() ),
-    'gui_style', OpenedChoice( ('<system default>', None ) ), dict( defaultValue = None, doc='Style of the graphical interface.' ),
-    'databasesWarning', Boolean, dict( defaultValue=True, doc='Unselect this option to disable the warning message that is shown when you have not created any database.'),
-    'databaseVersionSync', Choice(('Ask User', None), ('Automatic', 'auto'), ('Manual', 'man')),
-        dict( defaultValue=None, doc='Management of the database synchronization throught BrainVISA versions. Ask User : BrainVISA will ask what to do when a database need to be updated. Automatic : BrainVISA will automatically update your database if you switch from one BrainVISA version to another. Manual : If you modify a database and then switch from one BrainVISA version to another, you will have to update the database if you want BrainVISA take into account the modifications.' ),
-  )
+    def _check_temporaryDirectory_value(self, newDirectory):
+        if not newDirectory or \
+                (newDirectory and not os.path.exists(newDirectory)):
+            print('Configuration - temporaryDirectory option : No such file or directory: "' +
+                  newDirectory + '". Returned to default value.')
+            return self.signature['temporaryDirectory'].defaultValue
+        return newDirectory
 
-
-  def _check_userLevel_value( self, value ):
-    return int( value )
-
-  def _check_temporaryDirectory_value(self, newDirectory):
-    if not newDirectory or \
-      ( newDirectory and not os.path.exists(newDirectory) ):
-      print('Configuration - temporaryDirectory option : No such file or directory: "' + newDirectory + '". Returned to default value.')
-      return self.signature['temporaryDirectory'].defaultValue
-    return newDirectory
-
-  def __init__( self ):
-    super( BrainVISAConfiguration, self ).__init__()
-    self.signature = VariableSignature( self.signature )
+    def __init__(self):
+        super(BrainVISAConfiguration, self).__init__()
+        self.signature = VariableSignature(self.signature)

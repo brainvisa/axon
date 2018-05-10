@@ -136,13 +136,13 @@ def get_initial_study_config():
     from soma.wip.application.api import Application as Appli2
     configuration = Appli2().configuration
     init_study_config = {
-        "input_fom" : "morphologist-auto-1.0",
-        "output_fom" : "morphologist-auto-1.0",
-        "shared_fom" : "shared-brainvisa-1.0",
-        "use_soma_workflow" : True,
-        "use_fom" : True,
-        "volumes_format" : 'NIFTI gz',
-        "meshes_format" : "GIFTI",
+        "input_fom": "morphologist-auto-1.0",
+        "output_fom": "morphologist-auto-1.0",
+        "shared_fom": "shared-brainvisa-1.0",
+        "use_soma_workflow": True,
+        "use_fom": True,
+        "volumes_format": 'NIFTI gz',
+        "meshes_format": "GIFTI",
     }
 
     return init_study_config
@@ -153,7 +153,7 @@ def match_ext(capsul_exts, axon_formats):
         return True
     for format in axon_formats:
         if not hasattr(format, 'patterns'):
-            continue # probably a group
+            continue  # probably a group
         for pattern in format.patterns.patterns:
             f0 = pattern.pattern.split('|')[-1]
             f1 = f0.split('*')[-1]
@@ -188,7 +188,7 @@ def get_best_type(process, param, attributes=None, path_completion=None):
         # fallback to the completed value
         path = getattr(process, param)
     if path in (None, traits.Undefined):
-        #print('no path for', process.name, param)
+        # print('no path for', process.name, param)
         return ('Any Type',
                 [f for f in getAllFormats() if match_ext(cext, [f])])
 
@@ -208,12 +208,13 @@ def get_best_type(process, param, attributes=None, path_completion=None):
                                 continue
                         return (typeitem.name, rule.formats)
 
-    #print('no type found for', param)
+    # print('no type found for', param)
     return ('Any Type',
             [f for f in getAllFormats() if match_ext(cext, [f])])
 
 
 class CapsulProcess(processes.Process):
+
     ''' Specialized Process to link with a CAPSUL process or pipeline.
 
     See the :py:mod:`brainvisa.processing.capsul_process` doc for details.
@@ -224,7 +225,6 @@ class CapsulProcess(processes.Process):
         self.setup_capsul_process()
         super(CapsulProcess, self).__init__()
 
-
     def set_capsul_process(self, process):
         ''' Sets a CAPSUL process into the Axon (proxy) process
         '''
@@ -233,7 +233,6 @@ class CapsulProcess(processes.Process):
         self._capsul_process = process
         completion_engine \
             = ProcessCompletionEngine.get_completion_engine(process)
-
 
     def setup_capsul_process(self):
         ''' This method is in charge of instantiating the appropriate CAPSUL process or pipeline, and setting it into the Axon process (self), using the set_capsul_process() method.
@@ -254,11 +253,9 @@ class CapsulProcess(processes.Process):
                                            self.get_study_config())
             self.set_capsul_process(process)
 
-
     def get_capsul_process(self):
         ''' Get the underlying CAPSUL process '''
         return self._capsul_process
-
 
     def initialization(self):
         ''' This specialized initialization() method sets up a default signature for the process, duplicating every user trait of the underlying CAPSUL process.
@@ -362,7 +359,6 @@ class CapsulProcess(processes.Process):
         if hasattr(process, 'visible_groups'):
             self.visible_sections = process.visible_groups
 
-
     def propagate_parameters_to_capsul(self):
         ''' Set the underlying Capsul process parameters values from the Axon process (self) parameters values.
 
@@ -379,7 +375,6 @@ class CapsulProcess(processes.Process):
                 setattr(process, name, converted_value)
             except traits.TraitError:
                 pass
-
 
     def executionWorkflow(self, context=processes.defaultContext()):
         ''' Build the workflow for execution. The workflow will be integrated in the parent pipeline workflow, if any.
@@ -403,13 +398,12 @@ class CapsulProcess(processes.Process):
             completion_engine.complete_parameters()
 
         wf = pipeline_workflow.workflow_from_pipeline(
-            process, study_config=study_config)  #, jobs_priority=priority)
+            process, study_config=study_config)  # , jobs_priority=priority)
         jobs = wf.jobs
         dependencies = wf.dependencies
         root_group = wf.root_group
 
         return jobs, dependencies, root_group
-
 
     def init_study_config(self, context=processes.defaultContext()):
         ''' Build a Capsul StudyConfig object if not present in the context,
@@ -420,7 +414,7 @@ class CapsulProcess(processes.Process):
 
         study_config = getattr(context, 'study_config', None)
 
-        #axon_to_capsul_formats = {
+        # axon_to_capsul_formats = {
             #'NIFTI-1 image': "NIFTI",
             #'gz compressed NIFTI-1 image': "NIFTI gz",
             #'GIS image': "GIS",
@@ -435,10 +429,10 @@ class CapsulProcess(processes.Process):
         ditems = [(name, item) for name, item in six.iteritems(self.signature)
                   if isinstance(item, DiskItem)]
         database = ''
-        #format = ''
+        # format = ''
         for item in ditems:
-            #format = axon_to_capsul_formats.get(
-                #item[1].format.name, item[1].format.name)
+            # format = axon_to_capsul_formats.get(
+                # item[1].format.name, item[1].format.name)
             database = getattr(self, item[0]).get('_database', '')
             if database and \
                     not neuroHierarchy.databases.database(database).builtin:
@@ -469,7 +463,6 @@ class CapsulProcess(processes.Process):
 
         return study_config
 
-
     def get_study_config(self, context=processes.defaultContext()):
         study_config = None
         if self._capsul_process is not None:
@@ -481,7 +474,6 @@ class CapsulProcess(processes.Process):
         context.study_config = study_config
         return study_config
 
-
     def _on_edit_pipeline(self, process, dummy):
         from brainvisa.configuration import neuroConfig
         if not neuroConfig.gui:
@@ -490,7 +482,6 @@ class CapsulProcess(processes.Process):
             processes.mainThreadActions().push(self._open_pipeline)
         else:
             self._pipeline_view = None
-
 
     def _on_edit_pipeline_steps(self, process, dummy):
         from brainvisa.configuration import neuroConfig
@@ -510,7 +501,6 @@ class CapsulProcess(processes.Process):
         steps_view.show()
         self._steps_view = MainThreadLife(steps_view)
 
-
     def _open_pipeline(self):
         from brainvisa.configuration import neuroConfig
         if not neuroConfig.gui:
@@ -521,11 +511,10 @@ class CapsulProcess(processes.Process):
         Pipeline.hide_nodes_activation = False
         self.propagate_parameters_to_capsul()
         mpv = PipelineDevelopperView(
-          self.get_capsul_process(), allow_open_controller=True,
+            self.get_capsul_process(), allow_open_controller=True,
           show_sub_pipelines=True)
         mpv.show()
         self._pipeline_view = MainThreadLife(mpv)
-
 
     def _process_trait_changed(self, name, new_value):
         if name == 'trait_added' \
@@ -540,7 +529,6 @@ class CapsulProcess(processes.Process):
             import traceback
             traceback.print_exc()
 
-
     def _on_edit_study_config(self, process, dummy):
         from brainvisa.configuration import neuroConfig
         if not neuroConfig.gui:
@@ -550,7 +538,6 @@ class CapsulProcess(processes.Process):
         else:
             self._study_config_editor = None
 
-
     def _open_study_config_editor(self):
         from soma.qt_gui.controller_widget import ScrollControllerWidget
         from soma.qt_gui.qtThread import MainThreadLife
@@ -558,7 +545,6 @@ class CapsulProcess(processes.Process):
         scv = ScrollControllerWidget(study_config, live=True)
         scv.show()
         self._study_config_editor = MainThreadLife(scv)
-
 
     def _on_axon_parameter_changed(self, param, process, dummy):
         from capsul.attributes.completion_engine import ProcessCompletionEngine
@@ -576,7 +562,7 @@ class CapsulProcess(processes.Process):
             capsul_value = convert_to_capsul_value(
                 value, itype, self._capsul_process.trait(param))
             if capsul_value == getattr(self._capsul_process, param):
-                return # not changed
+                return  # not changed
             setattr(self._capsul_process, param, capsul_value)
             if not isinstance(itype, ReadDiskItem):
                 # not a DiskItem: nothing else to do.
@@ -589,14 +575,14 @@ class CapsulProcess(processes.Process):
                 capsul_attr = completion_engine.get_attribute_values()
                 param_attr \
                     = capsul_attr.get_parameters_attributes().get(param) \
-                        or capsul_attr.user_traits().keys()
+                    or capsul_attr.user_traits().keys()
                 if param_attr:
                     modified = False
                     for attribute, value in six.iteritems(attributes):
                         if attribute in param_attr:
                             if getattr(capsul_attr, attribute) != value:
-                                  setattr(capsul_attr, attribute, value)
-                                  modified = True
+                                setattr(capsul_attr, attribute, value)
+                                modified = True
 
                     database = attributes.get('_database', None)
                     if database:
@@ -606,7 +592,7 @@ class CapsulProcess(processes.Process):
                             allowed_db = [h.name
                                           for h in neuroHierarchy.hierarchies()
                                           if h.fso.name
-                                              not in ("shared", "spm", "fsl")]
+                                          not in ("shared", "spm", "fsl")]
                             if database in allowed_db:
                                 db = ['input_directory', 'output_directory']
                             else:
@@ -624,4 +610,3 @@ class CapsulProcess(processes.Process):
 
         finally:
             self._ongoing_completion = False
-

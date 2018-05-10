@@ -38,30 +38,31 @@ name = 'Anatomist Show Texture'
 roles = ('viewer',)
 userLevel = 0
 
+
 def validation():
     anatomist.validation()
 
 signature = Signature(
-    'read', ReadDiskItem( 'Texture', 'Anatomist texture formats' ),
-    'mesh', ReadDiskItem( 'Mesh', 'Anatomist mesh formats' ),
+    'read', ReadDiskItem('Texture', 'Anatomist texture formats'),
+    'mesh', ReadDiskItem('Mesh', 'Anatomist mesh formats'),
     'rgb_interpolation', Boolean(),
     'palette', String(),
 )
 
 
-def initialization( self ):
-    def linkInterpol( proc, dummy ):
+def initialization(self):
+    def linkInterpol(proc, dummy):
         if proc.read is not None:
-            if self.read.type.isA( 'Label Texture' ):
+            if self.read.type.isA('Label Texture'):
                 return True
         return False
     self.rgb_interpolation = False
     self.palette = 'Blue-Red'
-    self.linkParameters( 'mesh', 'read' )
-    self.linkParameters( 'rgb_interpolation', 'read', linkInterpol )
+    self.linkParameters('mesh', 'read')
+    self.linkParameters('rgb_interpolation', 'read', linkInterpol)
 
 
-def execution( self, context ):
+def execution(self, context):
     a = anatomist.Anatomist()
     palette = None
     if self.palette:
@@ -69,5 +70,5 @@ def execution( self, context ):
     interpolation = None
     if self.rgb_interpolation:
         interpolation = 'rgb'
-    return a.viewTextureOnMesh( self.mesh, self.read, palette=palette,
-        interpolation=interpolation )
+    return a.viewTextureOnMesh(self.mesh, self.read, palette=palette,
+                               interpolation=interpolation)

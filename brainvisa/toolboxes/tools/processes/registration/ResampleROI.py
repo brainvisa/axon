@@ -6,9 +6,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -23,8 +23,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -37,55 +37,61 @@ name = 'Resample ROI graph'
 userLevel = 1
 
 signature = Signature(
-   'source_graph', ReadDiskItem( 'ROI','Graph and Data' ),
-   'transformation', ReadDiskItem( 'Transformation matrix', 
-                                   'Transformation matrix' ),
-   'destination_image', ReadDiskItem( '3D volume', 'aims readable Volume Formats' ),
-   'result_graph', WriteDiskItem( 'ROI', 'Graph and data' ),
+    'source_graph', ReadDiskItem('ROI', 'Graph and Data'),
+   'transformation', ReadDiskItem('Transformation matrix',
+                                  'Transformation matrix'),
+   'destination_image', ReadDiskItem(
+       '3D volume', 'aims readable Volume Formats'),
+   'result_graph', WriteDiskItem('ROI', 'Graph and data'),
 )
 
 
-def initialization( self ):
+def initialization(self):
 
-  self.setOptional( 'transformation' )
+    self.setOptional('transformation')
 
 
-def execution( self, context ):
-  tmp = context.temporary( 'Graph and data' )
-  context.system( 'AimsGraphConvert', '-i', self.source_graph, '-o', tmp, 
-    '--volume' )
-  volume = os.path.join( tmp.fullName() + '.data', 'roi_Volume.ima' )
-  if not os.path.exists( volume ):
-    volume = os.path.join( tmp.fullName() + '.data', 'cluster_Volume.ima' )
-    if not os.path.exists( volume ):
-      raise RuntimeError( _t_( 'Can only resample ROI or Cluster graphs' ) )
-  context.pythonSystem('cartoLinearComb.py', '-i', volume, '-o', volume, 
-                       '-f', 'I1 + 1')
-  if ( self.transformation is None ):
-    context.system( 'VipSplineResamp', '-i', volume, '-o', volume, '-w', 't',
-      '-t', self.destination_image.fullName(), '-did',
-      '-or', 0 )
-  else:
-    context.system( 'VipSplineResamp', '-i', volume, '-o', volume, '-w', 't',
-      '-t', self.destination_image.fullName(), '-d', self.transformation,
-      '-or', 0 )
-  context.pythonSystem('cartoLinearComb.py', '-i', volume, '-o', volume, 
-                       '-f', 'I1 - 1')
-  file = open( tmp.fullPath() )
-  lines = file.readlines()
-  file.close()
-  file = open( tmp.fullPath(), 'w' )
-  for l in lines:
-    if l[ :10 ] == 'voxel_size':
-      print('voxel_size\t',
-            ' '.join([str(x)
-                      for x in self.destination_image.get('voxel_size')]),
-            file=file)
-    elif l[ :15 ] == 'boundingbox_max':
-      vd = self.destination_image.get( 'volume_dimension' )
-      print('boundingbox_max\t', vd[0]-1, vd[1]-1, vd[2]-1, file=file)
+def execution(self, context):
+    tmp = context.temporary('Graph and data')
+    context.system('AimsGraphConvert', '-i', self.source_graph, '-o', tmp,
+                   '--volume')
+    volume = os.path.join(tmp.fullName() + '.data', 'roi_Volume.ima')
+    if not os.path.exists(volume):
+        volume = os.path.join(tmp.fullName() + '.data', 'cluster_Volume.ima')
+        if not os.path.exists(volume):
+            raise RuntimeError(
+                _t_('Can only resample ROI or Cluster graphs'))
+    context.pythonSystem('cartoLinearComb.py', '-i', volume, '-o', volume,
+                         '-f', 'I1 + 1')
+    if (self.transformation is None):
+        context.system(
+            'VipSplineResamp', '-i', volume, '-o', volume, '-w', 't',
+          '-t', self.destination_image.fullName(), '-did',
+          '-or', 0)
     else:
-     print(l, file=file)
-  file.close()
-  context.system( 'AimsGraphConvert', '-i', tmp, '-o', self.result_graph,
-    '--bucket' )
+        context.system(
+            'VipSplineResamp', '-i', volume, '-o', volume, '-w', 't',
+          '-t', self.destination_image.fullName(), '-d', self.transformation,
+          '-or', 0)
+    context.pythonSystem('cartoLinearComb.py', '-i', volume, '-o', volume,
+                         '-f', 'I1 - 1')
+    file = open(tmp.fullPath())
+    lines = file.readlines()
+    file.close()
+    file = open(tmp.fullPath(), 'w')
+    for l in lines:
+        if l[:10] == 'voxel_size':
+            print('voxel_size\t',
+                  ' '.join([str(x)
+                            for x in self.destination_image.get(
+                                'voxel_size')]),
+                  file=file)
+        elif l[:15] == 'boundingbox_max':
+            vd = self.destination_image.get('volume_dimension')
+            print('boundingbox_max\t', vd[
+                  0] - 1, vd[1] - 1, vd[2] - 1, file=file)
+        else:
+            print(l, file=file)
+    file.close()
+    context.system('AimsGraphConvert', '-i', tmp, '-o', self.result_graph,
+                   '--bucket')

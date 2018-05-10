@@ -8,10 +8,10 @@
 #
 # This software is governed by the CeCILL-B license under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL-B license as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
-# 
+# and INRIA at the following URL "http://www.cecill.info".
+#
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
 # with a limited warranty  and the software's author,  the holder of the
@@ -25,8 +25,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -51,65 +51,58 @@ if sys.version_info[0] >= 3:
     unicode = str
 
 
-#-------------------------------------------------------------------------------
-class Choice_Qt4GUI( Qt4GUI ):  
-  def __init__( self, instance ):
-    Qt4GUI.__init__( self, instance )
-    self._widget = None
-    self.__ignoreModification = False
-  
-  
-  def editionWidget( self, value, parent=None, name=None, live=False, editable=False ):
-    if self._widget is not None:
-      raise RuntimeError( _( 'editionWidget() cannot be called twice without'\
-                               'a call to closeEditionWidget()' ) )
-    self._widget = QtGui.QComboBox( parent )
-    if name:
-      self._widget.setObjectName(name)
-    self._widget.setEditable( editable )
-    for i in self.dataTypeInstance.labels:
-      self._widget.addItem( i )
-    if value is not Undefined:
-      index = self.dataTypeInstance.findIndex( value )
-      if index == -1:
-        if editable:
-          self._widget.setEditText( unicode( value ) )
+#-------------------------------------------------------------------------
+class Choice_Qt4GUI(Qt4GUI):
+
+    def __init__(self, instance):
+        Qt4GUI.__init__(self, instance)
+        self._widget = None
+        self.__ignoreModification = False
+
+    def editionWidget(self, value, parent=None, name=None, live=False, editable=False):
+        if self._widget is not None:
+            raise RuntimeError(_('editionWidget() cannot be called twice without'
+                                 'a call to closeEditionWidget()'))
+        self._widget = QtGui.QComboBox(parent)
+        if name:
+            self._widget.setObjectName(name)
+        self._widget.setEditable(editable)
+        for i in self.dataTypeInstance.labels:
+            self._widget.addItem(i)
+        if value is not Undefined:
+            index = self.dataTypeInstance.findIndex(value)
+            if index == -1:
+                if editable:
+                    self._widget.setEditText(unicode(value))
+                else:
+                    label = unicode(value)
+                    self._widget.addItem(label)
+                    self.dataTypeInstance.labels.append(label)
+                    self.dataTypeInstance.values.append(value)
+                    index = len(self.dataTypeInstance.labels) - 1
         else:
-          label = unicode( value )
-          self._widget.addItem( label )
-          self.dataTypeInstance.labels.append( label )
-          self.dataTypeInstance.values.append( value )
-          index = len( self.dataTypeInstance.labels ) - 1
-    else:
-      index = 0
-    if index >= 0:
-      self._widget.setCurrentIndex( index )
-    self._live = live
-    if live:
-      self._widget.activated.connect(self._userModification)
-    return self._widget
-  
-  
-  def closeEditionWidget( self, editionWidget ):
-    if self._live:
-      self._widget.activated.disconnect(self._userModification)
-    editionWidget.close()
-    editionWidget.deleteLater()
-    self._widget = None
-    
-  
-  def getPythonValue( self, attributeWidget ):
-    return self.dataTypeInstance.values[ attributeWidget.currentIndex() ]
+            index = 0
+        if index >= 0:
+            self._widget.setCurrentIndex(index)
+        self._live = live
+        if live:
+            self._widget.activated.connect(self._userModification)
+        return self._widget
 
+    def closeEditionWidget(self, editionWidget):
+        if self._live:
+            self._widget.activated.disconnect(self._userModification)
+        editionWidget.close()
+        editionWidget.deleteLater()
+        self._widget = None
 
-  def _userModification( self ):
-    self.onWidgetChange.notify( self._widget )
-  
-  
-  def updateEditionWidget( self, editionWidget, value ):
-    index = self.dataTypeInstance.findIndex( value )
-    if index != editionWidget.currentIndex():
-      editionWidget.setCurrentIndex( index )
+    def getPythonValue(self, attributeWidget):
+        return self.dataTypeInstance.values[attributeWidget.currentIndex()]
 
+    def _userModification(self):
+        self.onWidgetChange.notify(self._widget)
 
-
+    def updateEditionWidget(self, editionWidget, value):
+        index = self.dataTypeInstance.findIndex(value)
+        if index != editionWidget.currentIndex():
+            editionWidget.setCurrentIndex(index)

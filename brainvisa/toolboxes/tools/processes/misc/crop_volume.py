@@ -33,8 +33,8 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 
-#Interface de la serie de script fusionXContrastes datant de la version
-#d'anatomist 1.24 environ.
+# Interface de la serie de script fusionXContrastes datant de la version
+# d'anatomist 1.24 environ.
 
 
 from __future__ import print_function
@@ -42,7 +42,7 @@ from brainvisa.processes import *
 from soma import aims
 
 name = 'Crop volume'
-userLevel=1
+userLevel = 1
 
 signature = Signature(
     'read', ReadDiskItem('3D Volume', 'aims readable volume formats'),
@@ -55,6 +55,7 @@ signature = Signature(
     'crop_back', Integer(),
 )
 
+
 def initialization(self):
     self.crop_top = 0
     self.crop_bottom = 0
@@ -63,6 +64,7 @@ def initialization(self):
     self.crop_front = 0
     self.crop_back = 0
     self.linkParameters('write', 'read')
+
 
 def execution(self, context):
     finder = aims.Finder()
@@ -76,11 +78,10 @@ def execution(self, context):
     transfile = context.temporary('Transformation matrix')
     trans = aims.AffineTransformation3d()
     trans.setTranslation([-self.crop_right * vs[0], -self.crop_front * vs[1],
-        -self.crop_top * vs[2]])
+                          -self.crop_top * vs[2]])
     print('transfo:')
     print(trans)
     aims.write(trans, transfile.fullPath())
     cmd = ['AimsResample', '-t', 'n', '-i', self.read, '-o', self.write,
-        '--dx', dims[0], '--dy', dims[1], '--dz', dims[2], '-m', transfile]
+           '--dx', dims[0], '--dy', dims[1], '--dz', dims[2], '-m', transfile]
     context.system(*cmd)
-

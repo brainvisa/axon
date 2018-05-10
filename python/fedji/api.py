@@ -9,7 +9,7 @@ def fedji_connect(url):
              or a directory previously created by a FEDJI SQLite backend.
     mongodb : Not finished yet, raises an error if used. An implementation
               based on MongoDB.
-    catidb : Not implemented yet. A read-only implementation based on 
+    catidb : Not implemented yet. A read-only implementation based on
              Cubicweb with catidb schema.
     '''
     backend, protocol_path = url.split(':', 1)

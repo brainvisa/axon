@@ -287,7 +287,7 @@ if anatomistImport:
                             # the referential is loaded only if necessary : if
                             # the object has not the right referential assigned
                             if sys.version_info[0] >= 3:
-                                #ruuid = bytes(ref.uuid())
+                                # ruuid = bytes(ref.uuid())
                                 ruuid = ref.uuid()
                             else:
                                 ruuid = str(ref.uuid())

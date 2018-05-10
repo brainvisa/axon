@@ -6,9 +6,9 @@
 #
 # This software is governed by the CeCILL license version 2 under
 # French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the 
+# You can  use, modify and/or redistribute the software under the
 # terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info". 
+# and INRIA at the following URL "http://www.cecill.info".
 #
 # As a counterpart to the access to the source code and  rights to copy,
 # modify and redistribute granted by the license, users are provided only
@@ -23,8 +23,8 @@
 # therefore means  that it is reserved for developers  and  experienced
 # professionals having in-depth computer knowledge. Users are therefore
 # encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or 
-# data to be ensured and,  more generally, to use and operate it in the 
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
 # same conditions as regards security.
 #
 # The fact that you are presently reading this means that you have had
@@ -36,11 +36,11 @@ from brainvisa.processes import *
 name = 'Resampling'
 userLevel = 0
 
-signature = Signature( 
+signature = Signature(
     'image_input', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
     'image_output', WriteDiskItem('4D Volume', 'Aims writable volume formats'),
     'volume_ref', ReadDiskItem('4D Volume', 'Aims readable volume formats'),
-    'motion', ReadDiskItem ('Transformation matrix', 'Transformation matrix'),
+    'motion', ReadDiskItem('Transformation matrix', 'Transformation matrix'),
     'resampling_type', OpenChoice('nearest',
                                   'linear',
                                   'quadratic',
@@ -53,10 +53,10 @@ signature = Signature(
     'sizeX', Float(),
     'sizeY', Float(),
     'sizeZ', Float(),
- )
+)
 
 
-def initialization( self ):
+def initialization(self):
     self.linkParameters('image_output', 'image_input')
     self.resampling_type = 'linear'
     self.setOptional('dimX', 'dimY', 'dimZ',
@@ -64,18 +64,19 @@ def initialization( self ):
                      'volume_ref', 'motion')
 
 
-def execution( self, context ):
+def execution(self, context):
     command = ['AimsResample',
                '-i', self.image_input,
                '-o', self.image_output,
                '-t', self.resampling_type]
-    
-    if self.motion is not None :
+
+    if self.motion is not None:
         motion = str(self.motion)
         command += ['-m', motion]
 
     if (self.dimX is None) and (self.dimY is None) and (self.dimZ is None) and (self.sizeX is None) and (self.sizeY is None) and (self.sizeZ is None) and (self.volume_ref is None):
-        context.write('One field is mandatory (dimX or dimY or dimZ or sizeX or sizeY or sizeZ or volume_ref)')
+        context.write(
+            'One field is mandatory (dimX or dimY or dimZ or sizeX or sizeY or sizeZ or volume_ref)')
     else:
         if self.volume_ref is not None:
             command += ['-t', self.volume_ref]
@@ -91,8 +92,5 @@ def execution( self, context ):
             command += ['--sy', self.sizeY]
         if self.sizeZ is not None:
             command += ['--sz', self.sizeZ]
-    
-    context.system( *command )
 
-
-  
+    context.system(*command)

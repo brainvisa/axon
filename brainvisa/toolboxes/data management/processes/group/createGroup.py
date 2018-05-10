@@ -7,23 +7,22 @@ name = '1 Creation of a group of subject'
 userLevel = 1
 
 signature = Signature(
-  'list_of_subjects',ListOf ( ReadDiskItem("Subject", 'Directory' ) ),
-  'group_definition', WriteDiskItem( 'Group definition', 'XML' ),
-);
+    'list_of_subjects', ListOf(ReadDiskItem("Subject", 'Directory')),
+  'group_definition', WriteDiskItem('Group definition', 'XML'),
+)
+
 
 def initialization(self):
-  pass
+    pass
 
 
-  
 def execution(self, context):
-  groupOfSubjects = list()
+    groupOfSubjects = list()
 
-  for subject in self.list_of_subjects:
-    groupOfSubjects.append(Subject(subject))
+    for subject in self.list_of_subjects:
+        groupOfSubjects.append(Subject(subject))
 
-  registerClass('minf_2.0', Subject, 'Subject')
+    registerClass('minf_2.0', Subject, 'Subject')
 
-  writeMinf(self.group_definition.fullPath(), groupOfSubjects,
-            reducer='minf_2.0')
-
+    writeMinf(self.group_definition.fullPath(), groupOfSubjects,
+              reducer='minf_2.0')

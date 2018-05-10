@@ -43,8 +43,10 @@ signature = Signature(
     'fixed_image', ReadDiskItem('4D Volume', 'NIFTI-1 image'),
 )
 
+
 def initialization(self):
     pass
+
 
 def execution(self, context):
     objs = manual_registration(self.moving_image.fullPath(),

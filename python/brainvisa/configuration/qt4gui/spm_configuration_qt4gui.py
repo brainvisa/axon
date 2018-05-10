@@ -42,65 +42,68 @@ from soma.translation import translate as _t_
 from soma.wip.application.api import Application
 
 #------------------------------------------------------------------------------
-class SPMConfiguration_Qt4GUI( QtGUI ):
-  '''
-  This class adds a 'guess configuration' button to default GUI.
-  '''
-  def __init__( self, instance ):
-    QtGUI.__init__( self, instance )
-    self._defaultGUI = HasSignature_Qt4GUI( instance )
 
 
-  def editionWidget( self, value, parent=None, name=None, live=True ):
-    widget = QWidget( parent )
-    if name:
-      widget.setObjectName( name )
-    layout = QVBoxLayout( )
-    layout.setContentsMargins(0, 0, 0, 0)
-    layout.setSpacing(6)
-    self._defaultWidget = self._defaultGUI.editionWidget( value, parent=widget, live=True )
-    layout.addWidget( self._defaultWidget )
-    widget.setLayout(layout)
+class SPMConfiguration_Qt4GUI(QtGUI):
 
-    layout2 = QHBoxLayout( )
-    layout2.setContentsMargins(0, 0, 0, 0)
-    layout2.setSpacing(6)
-    spacer = QSpacerItem( 1, 1, QSizePolicy.Expanding, QSizePolicy.Minimum )
-    layout2.addItem( spacer )
-    self.btnGuess = QPushButton(  _t_( 'Auto detect' ), widget )
-    #self.btnGuess.setEnabled( False )
-    layout2.addWidget( self.btnGuess )
-    spacer = QSpacerItem( 1, 1, QSizePolicy.Expanding, QSizePolicy.Minimum )
-    layout2.addItem( spacer )
-    self.btnGuess.pressed.connect(self.guess)
+    '''
+    This class adds a 'guess configuration' button to default GUI.
+    '''
 
-    layout.addLayout( layout2 )
-    return widget
+    def __init__(self, instance):
+        QtGUI.__init__(self, instance)
+        self._defaultGUI = HasSignature_Qt4GUI(instance)
 
+    def editionWidget(self, value, parent=None, name=None, live=True):
+        widget = QWidget(parent)
+        if name:
+            widget.setObjectName(name)
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(6)
+        self._defaultWidget = self._defaultGUI.editionWidget(
+            value, parent=widget, live=True)
+        layout.addWidget(self._defaultWidget)
+        widget.setLayout(layout)
 
-  def closeEditionWidget( self, editionWidget ):
-    self.btnGuess.deleteLater()
-    self._defaultGUI.closeEditionWidget( self._defaultWidget )
-    editionWidget.close()
-    editionWidget.deleteLater()
+        layout2 = QHBoxLayout()
+        layout2.setContentsMargins(0, 0, 0, 0)
+        layout2.setSpacing(6)
+        spacer = QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        layout2.addItem(spacer)
+        self.btnGuess = QPushButton(_t_('Auto detect'), widget)
+        # self.btnGuess.setEnabled( False )
+        layout2.addWidget(self.btnGuess)
+        spacer = QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        layout2.addItem(spacer)
+        self.btnGuess.pressed.connect(self.guess)
 
+        layout.addLayout(layout2)
+        return widget
 
-  def setObject( self, editionWidget, value ):
-    self._defaultGUI.setObject( self._defaultWidget, value )
-  
-  def updateEditionWidget( self, editionWidget, value ):
-    self._defaultGUI.updateEditionWidget( self._defaultWidget, value )
+    def closeEditionWidget(self, editionWidget):
+        self.btnGuess.deleteLater()
+        self._defaultGUI.closeEditionWidget(self._defaultWidget)
+        editionWidget.close()
+        editionWidget.deleteLater()
 
-  def guess( self ):
-    print('Trying to guess SPM configuration...')
-    QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
-    try:
-      import brainvisa.processes
-      spmpathcheck = brainvisa.processes.getProcessInstance( 'spmpathcheck' )
-      if spmpathcheck:
-        brainvisa.processes.defaultContext().runProcess( spmpathcheck )
-        # spmpathcheck modifies the configuration object and the GUI is automatically updated because it is edited with live=True option which enables the GUI to listen the model changes.
-    finally:
-      QApplication.restoreOverrideCursor()
+    def setObject(self, editionWidget, value):
+        self._defaultGUI.setObject(self._defaultWidget, value)
 
+    def updateEditionWidget(self, editionWidget, value):
+        self._defaultGUI.updateEditionWidget(self._defaultWidget, value)
 
+    def guess(self):
+        print('Trying to guess SPM configuration...')
+        QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
+        try:
+            import brainvisa.processes
+            spmpathcheck = brainvisa.processes.getProcessInstance(
+                'spmpathcheck')
+            if spmpathcheck:
+                brainvisa.processes.defaultContext().runProcess(spmpathcheck)
+                # spmpathcheck modifies the configuration object and the GUI is
+                # automatically updated because it is edited with live=True
+                # option which enables the GUI to listen the model changes.
+        finally:
+            QApplication.restoreOverrideCursor()
