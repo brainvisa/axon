@@ -51,7 +51,8 @@ from soma.html import htmlEscape
 from soma.sorted_dictionary import SortedDictionary
 from soma.undefined import Undefined
 from soma.translation import translate as _
-from soma.path import split_path, relative_path
+from soma.path import split_path, relative_path, parse_query_string,\
+                      remove_query_string, split_query_string
 from soma.somatime import timeDifferenceToString
 from soma.uuid import Uuid
 from soma.sqlite_tools import sqlite3, ThreadSafeSQLiteConnection
@@ -211,7 +212,7 @@ def changeFormat(diskItem,
     if newFormat is not None:
         # print('!changeDiskItemFormat!  ', newFormat, 'found.')
         format, ext, noExt = allFormats._findMatchingFormat(
-            diskItem.fullPath()
+            diskItem.fullPath(withQueryString=False)
         )
         if format is not None:
             # print('!changeDiskItemFormat!  ', format, 'matching.')
@@ -330,6 +331,7 @@ class Database(object):
         pass
 
     def createDiskItemFromFormatExtension(self, fileName, defaultValue=Undefined):
+        fileName, queryString = split_query_string(fileName)
         format, ext, noExt = self.formats._findMatchingFormat(fileName)
         if format is not None:
             extensions = format.extensions()
@@ -344,6 +346,8 @@ class Database(object):
             diskItem.format = getFormat(str(format.name))
             diskItem.type = None
             diskItem._files = files
+            diskItem._queryStringAttributes = parse_query_string(queryString) \
+                                              if queryString else {}
             return diskItem
         if defaultValue is Undefined:
             raise DatabaseError(
@@ -1263,6 +1267,7 @@ class SQLDatabase(Database):
                   '_globalAttributes': diskItem._globalAttributes,
                   '_minfAttributes': diskItem._minfAttributes,
                   '_otherAttributes': diskItem._otherAttributes,
+                  '_queryStringAttributes': diskItem._queryStringAttributes,
                   '_uuid': diskItem._uuid,
                   '_priority': getattr(diskItem, '_priority', 0),
                 }
@@ -1438,6 +1443,7 @@ class SQLDatabase(Database):
         diskItem._globalAttributes["_database"] = self.name
         diskItem._minfAttributes = state['_minfAttributes']
         diskItem._otherAttributes = state['_otherAttributes']
+        diskItem._queryStringAttributes = state.get('_queryStringAttributes', {})
         diskItem._changeUuid(state.get('_uuid'))
         diskItem._priority = state['_priority']
         return diskItem
@@ -1482,7 +1488,9 @@ class SQLDatabase(Database):
         return defaultValue
 
     def createDiskItemFromFileName(self, fileName, defaultValue=Undefined):
-        diskItem = self.createDiskItemFromFormatExtension(fileName, None)
+        fileName, queryString = split_query_string(fileName)
+        diskItem = self.createDiskItemFromFormatExtension(fileName + queryString, 
+                                                          None)
         if diskItem is not None:
             d = self.directory
             if fileName.startswith(d):
@@ -1497,7 +1505,9 @@ class SQLDatabase(Database):
                 lastItem = None
                 for item in self.scanDatabaseDirectories(vdi):
                     lastItem = item
-                if lastItem is not None and fileName in lastItem.fullPaths():
+                if lastItem is not None and fileName in lastItem.fullPaths(withQueryString=False):
+                    lastItem._queryStringAttributes = parse_query_string(
+                        queryString)
                     return lastItem
         if defaultValue is Undefined:
             raise DatabaseError(_('Database "%(database)s" cannot reference file "%(filename)s"') %
