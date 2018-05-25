@@ -5097,34 +5097,35 @@ def getProcessesBySourceDist(registry, source, enableConversion=1,
     """
     # Create a list of process set that can be ordered by distance vector
     r = list()
-    src_type, src_format = source
-    converters = getConvertersFrom(source, keepType=0, checkUpdate=checkUpdate)
+    if not source is None:
+        src_type, src_format = source
+        converters = getConvertersFrom(source, keepType=0, checkUpdate=checkUpdate)
 
-    possible_sources = [source]
-    possible_sources += [(p, src_format) for p in src_type.parents()]
-    possible_sources += converters.keys()
-    for s in possible_sources:
-        ps = registry.get(s)
-        if ps is not None:
-            ci = getConversionInfo(source, s, checkUpdate=checkUpdate)
-            if ci is not None:
-                d = ci.distance(useInheritanceOnly=not enableConversion,
-                                exactConversionTypeOnly=exactConversionTypeOnly)
-                if d is not None:
-                    r.append((d, ps))
+        possible_sources = [source]
+        possible_sources += [(p, src_format) for p in src_type.parents()]
+        possible_sources += converters.keys()
+        for s in possible_sources:
+            ps = registry.get(s)
+            if ps is not None:
+                ci = getConversionInfo(source, s, checkUpdate=checkUpdate)
+                if ci is not None:
+                    d = ci.distance(useInheritanceOnly=not enableConversion,
+                                    exactConversionTypeOnly=exactConversionTypeOnly)
+                    if d is not None:
+                        r.append((d, ps))
 
-    # Sort process sets using distance vector
-    s = sorted(r)
+        # Sort process sets using distance vector
+        s = sorted(r)
 
-    # Create result list
-    r = list()
-    unique = set()
-    for d, ps in s:
-        for p in ps.processes(checkUpdate=checkUpdate):
-            if not p in unique:
-                unique.add(p)
-                r.append(p)
-                # print(p.name, 'with distance', d)
+        # Create result list
+        r = list()
+        unique = set()
+        for d, ps in s:
+            for p in ps.processes(checkUpdate=checkUpdate):
+                if not p in unique:
+                    unique.add(p)
+                    r.append(p)
+                    # print(p.name, 'with distance', d)
     return r
 
 #----------------------------------------------------------------------------

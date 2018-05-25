@@ -475,7 +475,7 @@ class DictPattern:
         :returns: the rebuilt matching string.
         """
         try:
-            return ''.join([i(dic, matchResult) for i in self.unmatchList])
+            return ''.join( [unicode(i( dic, matchResult )) for i in self.unmatchList] )
         except KeyError as e:
             # print('!unmatch!', e)
             return None

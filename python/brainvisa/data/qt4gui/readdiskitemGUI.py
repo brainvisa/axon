@@ -31,19 +31,22 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from brainvisa.processing.qtgui.backwardCompatibleQt \
-    import QLineEdit, QPushButton, QToolButton, QComboBox, \
+    import QAction, QLineEdit, QPushButton, QToolButton, QComboBox, \
            Qt, QIcon, QWidget, QWidgetAction, QFileDialog, QVBoxLayout, \
            QListWidget, QHBoxLayout, QSpacerItem, QSizePolicy, QSize, QMenu, \
            QPalette, QColor, QItemSelectionModel, QLabel, \
            QListView, QTreeView, QAbstractItemView, QPixmap
 from soma.wip.application.api import findIconFile
 from soma.qtgui.api import largeIconSize
+from soma.path import remove_query_string, parse_query_string, \
+                      update_query_string, QueryStringParamUpdateMode
 from brainvisa.data.qtgui.diskItemBrowser import DiskItemBrowser
 from brainvisa.data.qtgui.neuroDataGUI import DataEditor, StringListEditor, buttonMargin, buttonIconSize
 import brainvisa.processes
 from brainvisa.processes import getProcessInstance
 from brainvisa.processing.qt4gui import neuroProcessesGUI
-from brainvisa.data.neuroDiskItems import DiskItem, Directory
+from brainvisa.data.neuroDiskItems import DiskItem, Directory, aimsFileInfo, \
+                                          getResolutionsFromItems
 from brainvisa.data.qt4gui import history as historygui
 from brainvisa.configuration import neuroConfig
 from brainvisa.processing.neuroException import showException, HTMLMessage
@@ -56,6 +59,79 @@ import weakref
 if sys.version_info[0] >= 3:
     unicode = str
 
+class ComboBoxAction(QWidgetAction):
+    
+    def __init__(self, parent, text = None, icon_file = None):
+        super(ComboBoxAction, self).__init__(parent)
+        
+        widget = QWidget(parent)
+        layout = QHBoxLayout()
+        widget.setLayout(layout)
+        self._icon = QLabel(widget)
+        self._text = QLabel(widget)
+        self._combo = QComboBox(widget)
+        layout.addWidget(self._icon)
+        layout.addWidget(self._text)
+        layout.addWidget(self._combo)
+                
+        if (icon_file):
+            self.setIconFile(icon_file)
+        else:
+            self._icon.setVisible(False)
+
+        if (text):
+            self.setText(text)
+        else:
+            self._text.setVisible(False)
+        
+        self._combo.setSizePolicy(QSizePolicy(QSizePolicy.MinimumExpanding,
+                                              QSizePolicy.Fixed))
+        self._combo.activated.connect(self.triggered)
+        self.setDefaultWidget(widget)
+        
+    def triggered(self, value):
+        self.parentWidget().setVisible(False)
+        
+    def setIconFile(self, icon_file):
+        if icon_file:
+            self._icon.setPixmap(QPixmap(findIconFile(icon_file)))
+            self._icon.setSizePolicy(QSizePolicy(QSizePolicy.Fixed,
+                                                 QSizePolicy.Fixed))
+            self._icon.setVisible(True)
+            
+        else:
+            self.setVisible(False)
+       
+    def setText(self, text):
+        if text:
+            self._text.setText(text)
+            self._text.setVisible(True)   
+            
+        else:
+            self.setVisible(False)
+      
+    def text(self):
+        return self._text.text()
+    
+    def comboBoxWidget(self):
+        return self._combo
+    
+    def setVisible(self, visible):
+        super(ComboBoxAction, self).setVisible(visible)
+        self.defaultWidget().setVisible(visible)
+        
+def addComboBoxMenu(parent, menu, title, icon_file, cmb, act, update_func):
+
+    # Create ComboBoxAction widget
+    a = ComboBoxAction(menu, title, icon_file)
+    c = a.comboBoxWidget()
+    
+    setattr(parent, act, a)
+    setattr(parent, cmb, c)
+    
+    # Update menu with the new action
+    menu.addAction(a)
+    menu.aboutToShow.connect(update_func)
 
 #----------------------------------------------------------------------------
 class RightClickablePushButton(QPushButton):
@@ -133,17 +209,24 @@ class DiskItemEditor(QWidget, DataEditor):
         self.btnShow.setEnabled(False)
 
         # Sets default viewers list
+        self._viewers = None
         self.actViewers = None
         self.cmbViewersSeparator = None
         self.cmbViewers = None
         self.newValidValue.connect(self.updateViewers)
 
         # Sets default data editors list
+        self._editors = []
         self.actDataEditors = None
         self.cmbDataEditorsSeparator = None
         self.cmbDataEditors = None
         self.newValidValue.connect(self.updateDataEditors)
 
+        # Sets default resolutions list
+        self.actResolutions = None
+        self.cmbResolutionsSeparator = None
+        self.cmbResolutions = None
+    
         self._view = None
         self.btnShow.clicked.connect(self.showPressed)
         self.btnShow.rightPressed.connect(self.openViewerPressed)
@@ -201,48 +284,83 @@ class DiskItemEditor(QWidget, DataEditor):
         self.browseDialog = None
         self._textChanged = False
 
-    def __del__(self):
-        self._ = None
+    def isViewable(self):
+        viewers = self.getViewers()
+        return self.diskItem is not None and self.diskItem.isReadable() \
+               and len(viewers) > 0
+    
+    def isEditable(self):
+        editors = self.getDataEditors()
+        return self.diskItem is not None and not self.diskItem.isLockData() \
+           and self.diskItem.isWriteable() and len(editors) > 0
 
     def set_read_only(self, read_only):
         self.btnDatabase.setEnabled(not read_only)
         self.btnBrowse.setEnabled(not read_only)
-        self.btnEdit.setEnabled(not read_only)
+        self.btnEdit.setEnabled(not read_only and self.isEditable())
         self.led.setReadOnly(read_only)
         self.led.setFrame(not read_only)
 
     def createPopupMenu(self, popup):
-        def __createProcessesMenu(role, icon_file, cmb_sep, cmb, act, update_func):
-            setattr(self, cmb_sep, popup.addSeparator())
+        if self.parameter.enableMultiResolution:
+            self.cmbResolutionsSeparator = popup.addSeparator()
+            addComboBoxMenu(self, popup, 
+                            'resolution','resolution.png', 
+                            'cmbResolutions', 'actResolutions', 
+                            self.updateResolutions)
+            self.cmbResolutions.currentIndexChanged[int].connect(
+                self.setResolutionLevel)
+        
+        self.cmbViewersSeparator = popup.addSeparator()
+        addComboBoxMenu(self, popup, 
+                        'viewer', 'eye.png', 
+                        'cmbViewers', 'actViewers',
+                        self.updateViewersComboBox)
 
-            # Create widget
-            lay = QHBoxLayout()
-            wid = QWidget(popup)
-            wid.setLayout(lay)
-            icon = QLabel(wid)
-            icon.setPixmap(QPixmap(findIconFile(icon_file)))
-            lay.addWidget(icon)
-            label = QLabel(_t_('use %s' % role), wid)
-            lay.addWidget(label)
-            setattr(self, cmb, QComboBox(wid))
-            getattr(self, cmb).currentIndexChanged.connect(popup.hide)
-            lay.addWidget(getattr(self, cmb))
-            setattr(self, act, QWidgetAction(popup))
-            getattr(self, act).setDefaultWidget(wid)
-            popup.addAction(getattr(self, act))
+        self.cmbDataEditorsSeparator = popup.addSeparator()
+        addComboBoxMenu(self, popup, 
+                        'editor', 'pencil.png',
+                        'cmbDataEditors', 'actDataEditors',
+                        self.updateDataEditorsComboBox)
 
-            # Update list
-            update_func()
+    def setResolutionLevel(self, resolution_level):
+        v = self.getValue()
+        if v is not None:
+            v.setResolutionLevel(resolution_level)
+            self.setValue(v)
 
-        __createProcessesMenu('viewer', 'eye.png', 'cmbViewersSeparator',
-                              'cmbViewers', 'actViewers',
-                              self.updateViewers)
-
-        __createProcessesMenu(
-            'editor', 'pencil.png', 'cmbDataEditorsSeparator',
-                              'cmbDataEditors', 'actDataEditors',
-                              self.updateDataEditors)
-
+    def updateResolutions(self):
+        if self.parameter.enableMultiResolution:
+            v = self.getValue()
+            self.cmbResolutions.clear()
+            
+            if v is not None:
+                res_infos = getResolutionsFromItems(v)
+                
+                if res_infos is not None and len(res_infos) > 1:           
+                    
+                    for level in xrange(len(res_infos)):
+                        self.cmbResolutions.addItem(res_infos[level], 
+                                                    str(level))
+                    resolution_level = v.resolutionLevel()                        
+                        
+                    if resolution_level is None:
+                        resolution_level = len(res_infos) - 1
+                        
+                    self.cmbResolutions.setCurrentIndex(resolution_level)
+                        
+                    visible = True
+                    
+                else:
+                    visible = False
+                    
+            else:
+                visible = False
+                
+            # Display or hide the viewer action in popup menu
+            self.cmbResolutionsSeparator.setVisible(visible)
+            self.actResolutions.setVisible(visible)
+      
     def setContext(self, newContext):
         oldContext = (self.btnShow.isChecked(), self._view,
                       self.btnEdit.isChecked(), self._edit)
@@ -269,8 +387,11 @@ class DiskItemEditor(QWidget, DataEditor):
     def setValue(self, value, default=0):
         self.forceDefault = default
         pal = QPalette()
-        if (self.diskItem != value):
+        if self.diskItem != value or \
+           (not(value is None and self.led.text() == '') \
+            and (value != self.led.text())):
             self.diskItem = self.parameter.findValue(value)
+            
             if self.diskItem is None:
                 if value is None:
                     self.led.setText('')
@@ -314,28 +435,22 @@ class DiskItemEditor(QWidget, DataEditor):
         if self.btnShow:
             enabled = 0
             if self.diskItem:
-                v = brainvisa.processes.getViewer(
-                    self.diskItem, 1, checkUpdate=False,
-                                                  process=self.process)
-                if v:
+                if len(self.getViewers()) > 0:
                     self.btnShow.show()
                 else:
                     self.btnShow.hide()
-                if v:
-                    enabled = self.diskItem.isReadable()
+                enabled = self.isViewable()
+                
             self.btnShow.setEnabled(enabled)
+            
         if self.btnEdit:
             enabled = 0
             if self.diskItem:
-                e = brainvisa.processes.getDataEditor(
-                    self.diskItem, 1, checkUpdate=False,
-                                                      process=self.process)
-                if e:
+                if len(self.getDataEditors()) > 0:
                     self.btnEdit.show()
                 else:
                     self.btnEdit.hide()
-                if e:
-                    enabled = self.diskItem.isWriteable()
+                enabled = self.isEditable()
             self.btnEdit.setEnabled(enabled)
 
     def textChanged(self):
@@ -444,6 +559,12 @@ class DiskItemEditor(QWidget, DataEditor):
             import traceback
             traceback.print_exc()
 
+    def getViewers(self, update = False):
+        if self._viewers is None or update:
+            self.updateViewers()
+        
+        return self._viewers
+
     def selectedViewer(self):
         # Current index is shifted in Combo box due to the 'Default value' item
         if self.cmbViewers is not None:
@@ -466,6 +587,7 @@ class DiskItemEditor(QWidget, DataEditor):
             source, 1, checkUpdate=False, process=self.process,
                                 check_values=True)
 
+    def updateViewersComboBox(self):
         if self.cmbViewers is not None:
             v = self.selectedViewer()
             # print('selected viewer:', v)
@@ -509,6 +631,12 @@ class DiskItemEditor(QWidget, DataEditor):
             history_window.setAttribute(Qt.WA_DeleteOnClose)
             history_window.show()
 
+    def getDataEditors(self, update = False):
+        if self._editors is None or update:
+            self.updateDataEditors()
+        
+        return self._editors
+    
     def selectedDataEditor(self):
         # Current index is shifted in Combo box due to the 'Default value' item
         if self.cmbDataEditors is not None:
@@ -608,6 +736,7 @@ class DiskItemEditor(QWidget, DataEditor):
         except:
             self._editors = []
 
+    def updateDataEditorsComboBox(self):
         if self.cmbDataEditors is not None:
             e = self.selectedDataEditor()
             # print('selected data editor:', v)
@@ -1048,7 +1177,7 @@ class DiskItemListEditor(QWidget, DataEditor):
                                      os.path.basename(
                                      self.values[index].fullPath(
                                      ))),
-                                                                               None)
+                        None)
                     self.lbxValues.item(index).setText(
                         self.values[index].fullPath())
 
@@ -1210,6 +1339,7 @@ class DiskItemListEditor(QWidget, DataEditor):
                 self.process = weakref.proxy(process)
 
         # Sets default viewers list
+        self._viewers = None
         self.actViewers = None
         self.cmbViewersSeparator = None
         self.cmbViewers = None
@@ -1234,10 +1364,17 @@ class DiskItemListEditor(QWidget, DataEditor):
         self.btnEdit.rightPressed.connect(self.openEditorPressed)
 
         # Sets default data editors list
+        self._editors = None
         self.actDataEditors = None
         self.cmbDataEditorsSeparator = None
         self.cmbDataEditors = None
         self.newValidValue.connect(self.updateDataEditors)
+        
+        # Sets default resolutions list
+        self.actResolutions = None
+        self.cmbResolutionsSeparator = None
+        self.cmbResolutions = None
+        self._res_infos = None
 
         self.btnFind = RightClickablePushButton()
         hb.addWidget(self.btnFind)
@@ -1275,36 +1412,77 @@ class DiskItemListEditor(QWidget, DataEditor):
         self.setValue(None, 1)
 
     def createPopupMenu(self, popup):
-        def __createProcessesMenu(role, icon_file, cmb_sep, cmb, act, update_func):
-            setattr(self, cmb_sep, popup.addSeparator())
+        if self.parameter.enableMultiResolution:
+            self.cmbResolutionsSeparator = popup.addSeparator()
+            addComboBoxMenu(self, popup, 
+                            'resolution','resolution.png', 
+                            'cmbResolutions', 'actResolutions', 
+                            self.updateResolutions)
+            self.cmbResolutions.currentIndexChanged[int].connect(
+                self.setResolutionLevel)
+        
+        self.cmbViewersSeparator = popup.addSeparator()
+        addComboBoxMenu(self, popup, 
+                        'viewer', 'eye.png', 
+                        'cmbViewers', 'actViewers',
+                        self.updateViewersComboBox)
 
-            # Create widget
-            lay = QHBoxLayout()
-            wid = QWidget(popup)
-            wid.setLayout(lay)
-            icon = QLabel(wid)
-            icon.setPixmap(QPixmap(findIconFile(icon_file)))
-            lay.addWidget(icon)
-            label = QLabel(_t_('use %s' % role), wid)
-            lay.addWidget(label)
-            setattr(self, cmb, QComboBox(wid))
-            getattr(self, cmb).currentIndexChanged.connect(popup.hide)
-            lay.addWidget(getattr(self, cmb))
-            setattr(self, act, QWidgetAction(popup))
-            getattr(self, act).setDefaultWidget(wid)
-            popup.addAction(getattr(self, act))
+        self.cmbDataEditorsSeparator = popup.addSeparator()
+        addComboBoxMenu(self, popup, 
+                        'editor', 'pencil.png',
+                        'cmbDataEditors', 'actDataEditors',
+                         self.updateDataEditorsComboBox)
 
-            # Update list
-            update_func()
+    def setResolutionLevel(self, resolution_level):
+        v = self.getValue()
+        if v is not None:
+            for i in v:
+                if i is not None:
+                    i.setResolutionLevel(resolution_level)
+            self.setValue(v)
 
-        __createProcessesMenu('viewer', 'eye.png', 'cmbViewersSeparator',
-                              'cmbViewers', 'actViewers',
-                              self.updateViewers)
-
-        __createProcessesMenu(
-            'editor', 'pencil.png', 'cmbDataEditorsSeparator',
-                              'cmbDataEditors', 'actDataEditors',
-                              self.updateDataEditors)
+    def updateResolutions(self):
+        v = self.getValue()
+        visible = False
+        
+        if v is not None and None not in v:
+            res_infos = getResolutionsFromItems(v)
+            
+            if self._res_infos != res_infos:
+                self._res_infos = res_infos
+                if res_infos is not None and len(res_infos) > 1:
+                    self.cmbResolutions.clear()
+                    for level in xrange(len(res_infos)):
+                        self.cmbResolutions.addItem(res_infos[level], 
+                                                    str(level))
+                    
+                    resolution_level = None
+                    for i in xrange(len(v)):
+                        if i == 0:
+                            resolution_level = v[i].resolutionLevel()
+                            
+                        else:
+                            r = v[i].resolutionLevel()
+                            
+                            # If 2 items do not have the same resolution level
+                            # select default (this choice can be discussed)
+                            if resolution_level != r:
+                                resolution_level = None
+                                break
+                            
+                    if resolution_level is None:
+                        resolution_level = len(res_infos) - 1
+                        
+                    self.cmbResolutions.setCurrentIndex(resolution_level)
+                    
+                    visible = True
+            
+            else:
+                visible = res_infos is not None and len(res_infos) > 1
+                
+        # Display or hide the viewer action in popup menu
+        self.cmbResolutionsSeparator.setVisible(visible)
+        self.actResolutions.setVisible(visible)
 
     def getValue(self):
         return self._value
@@ -1339,22 +1517,64 @@ class DiskItemListEditor(QWidget, DataEditor):
                 self.btnShow.setEnabled(0)
             if self.btnEdit:
                 self.btnEdit.setEnabled(0)
+        
         self.sle.setValue(value, default)
         self.forceDefault = 0
 
+    def isViewable(self):
+        if self._value:
+            viewable = True
+            viewers = self.getViewers()
+            for v in self._value:
+                if not (v and isinstance(v, DiskItem) and v.isReadable()):
+                    viewable = False
+                    break
+                
+            return viewable and len(viewers) > 0
+        
+        return False
+    
+    def isEditable(self):
+        if self._value:
+            editable = True
+            editors = self.getDataEditors()
+            for v in self._value:
+                if v is None or not isinstance(v, DiskItem) or v.isLockData() \
+                   or not v.isWriteable():
+                    editable = False
+                    break
+                
+            return editable and len(editors) > 0
+        
+        return False
+
+    def set_read_only(self, read_only):
+        self.btnFind.setEnabled(not read_only)
+        self.btnBrowse.setEnabled(not read_only)
+        self.btnEdit.setEnabled(not read_only and self.isEditable())
+        self.sle.setReadOnly(read_only)
+        self.sle.setFrame(not read_only)
+        
     def checkReadable(self):
         if self.btnShow:
             enabled = True
-            for v in self._value:
-                if not (v and isinstance(v, DiskItem) and v.isReadable()):
-                    enabled = False
-            self.btnShow.setEnabled(enabled)
+            
+            if len(self.getViewers()) > 0:
+                self.btnShow.show()
+            else:
+                self.btnShow.hide()
+                
+            self.btnShow.setEnabled(self.isViewable())
+            
         if self.btnEdit:
             enabled = True
-            for v in self._value:
-                if not (v and isinstance(v, DiskItem) and v.isWriteable()):
-                    enabled = False
-            self.btnEdit.setEnabled(enabled)
+            
+            if len(self.getDataEditors()) > 0:
+                self.btnEdit.show()
+            else:
+                self.btnEdit.hide()
+
+            self.btnEdit.setEnabled(self.isEditable())
 
     def showPressed(self):
         if self.btnShow.isChecked():
@@ -1435,6 +1655,12 @@ class DiskItemListEditor(QWidget, DataEditor):
             viewer.reference_process = self.process
         neuroProcessesGUI.showProcess(viewer, v)
 
+    def getViewers(self, update = False):
+        if self._viewers is None or update:
+            self.updateViewers()
+        
+        return self._viewers
+    
     def selectedViewer(self):
         # Current index is shifted in Combo box due to the 'Default value' item
         if self.cmbViewers is not None:
@@ -1460,7 +1686,8 @@ class DiskItemListEditor(QWidget, DataEditor):
                                   process=self.process, check_values=True)
         except:
             self._viewers = []
-
+            
+    def updateViewersComboBox(self):
         if self.cmbViewers is not None:
             v = self.selectedViewer()
             # print('selected viewer:', v)
@@ -1495,6 +1722,13 @@ class DiskItemListEditor(QWidget, DataEditor):
         else:
             return [viewer]
 
+
+    def getDataEditors(self, update = False):
+        if self._editors is None or update:
+            self.updateDataEditors()
+        
+        return self._editors
+    
     def selectedDataEditor(self):
         # Current index is shifted in Combo box due to the 'Default value' item
         if self.cmbDataEditors is not None:
@@ -1599,6 +1833,7 @@ class DiskItemListEditor(QWidget, DataEditor):
         except:
             self._editors = []
 
+    def updateDataEditorsComboBox(self):
         if self.cmbDataEditors is not None:
             e = self.selectedDataEditor()
             # print('selected data editor:', v)

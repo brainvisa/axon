@@ -115,7 +115,8 @@ import json
 from soma.html import htmlEscape
 from soma.undefined import Undefined
 from soma.uuid import Uuid
-from soma.path import remove_query_string, split_path
+from soma.path import parse_query_string, update_query_string, \
+                      remove_query_string, split_path
 from soma.minf.api import readMinf, MinfError
 from soma.wip.application.api import Application
 from soma.sqlite_tools import sqlite3, ThreadSafeSQLiteConnection
@@ -240,9 +241,9 @@ class DiskItem(QObject):
 
     def __init__(self, name, parent):
         super(DiskItem, self).__init__()
-        self.name = name
+        self.name = remove_query_string(name)
         if name and name[-5:] != '.minf':
-            self._files = [name]
+            self._files = [remove_query_string(name)]
         else:
             self._files = []
 
@@ -255,6 +256,7 @@ class DiskItem(QObject):
         self._globalAttributes = {}
         self._minfAttributes = {}
         self._otherAttributes = {}
+        self._queryStringAttributes = parse_query_string(name) if name else {}
         self.type = None
         self.format = None
         self._setLocal('name_serie', [])
@@ -266,13 +268,14 @@ class DiskItem(QObject):
 
     def __getstate__(self):
         state = {
-            'name': self.name,
+          'name': self.name,
           '_files': self._files,
           'parent': self.parent,
           '_localAttributes': self._localAttributes,
           '_globalAttributes': self._globalAttributes,
           '_minfAttributes': self._minfAttributes,
           '_otherAttributes': self._otherAttributes,
+          '_queryStringAttributes': self._queryStringAttributes,
           '_uuid': self._uuid,
           '_write': self._write,
           '_identified': self._identified,
@@ -310,6 +313,7 @@ class DiskItem(QObject):
         self._globalAttributes = state['_globalAttributes']
         self._minfAttributes = state['_minfAttributes']
         self._otherAttributes = state['_otherAttributes']
+        self._queryStringAttributes = state['_queryStringAttributes']
         self._isTemporary = 0
         priority = state.get('_priority')
         if priority is not None:
@@ -404,6 +408,7 @@ class DiskItem(QObject):
         self._globalAttributes = other._globalAttributes.copy()
         self._minfAttributes = other._minfAttributes.copy()
         self._otherAttributes = other._otherAttributes.copy()
+        self._queryStringAttributes = other._queryStringAttributes.copy()
 
     def _mergeAttributes(self, result):
         """
@@ -415,6 +420,7 @@ class DiskItem(QObject):
         result.update(self._localAttributes)
         result.update(self._otherAttributes)
         result.update(self._minfAttributes)
+        result.update(self._queryStringAttributes)
 
     def _mergeGlobalAttributes(self, result):
         """
@@ -430,6 +436,7 @@ class DiskItem(QObject):
         result.update(self._localAttributes)
         result.update(self._otherAttributes)
         result.update(self._minfAttributes)
+        result.update(self._queryStringAttributes)
 
     def _mergeHierarchyAttributes(self, result):
         if self.parent:
@@ -443,22 +450,29 @@ class DiskItem(QObject):
             self.parent._mergeNonHierarchyAttributes(result)
         result.update(self._otherAttributes)
         result.update(self._minfAttributes)
+        result.update(self._queryStringAttributes)
 
-    def fileName(self, index=0):
+    def fileName(self, index=0, withQueryString=True):
         """
         Returns the filename of the file number index in the list of files associated to this diskItem.
         The absolute files paths are generally stored in diskItems. So this function is equivalent to :py:meth:`fullPath`.
         """
         name_serie = self.get('name_serie')
         if name_serie:
-            return self.fileNameSerie(index / len(self._files),
-                                      index % len(self._files))
+            fname = self.fileNameSerie(index / len(self._files),
+                                       index % len(self._files))
         if self._files:
-            return self._files[index]
+            fname = self._files[index]
         else:
-            return self.name
-
-    def fileNames(self):
+            fname = self.name
+        
+        if withQueryString:
+            return update_query_string(fname, self._queryStringAttributes)
+        
+        else:
+            return fname
+ 
+    def fileNames(self, withQueryString=True):
         """
         Returns the list of filenames of the files associated to this diskItem.
         The absolute files paths are generally stored in diskItems. So this function is equivalent to :py:meth:`fullPaths`.
@@ -470,11 +484,14 @@ class DiskItem(QObject):
                 result += map_list(
                     lambda x, number=number: expand_name_serie(x, number),
                                self._files)
-            return result
-        if self._files:
-            return self._files
+        
+        elif self._files:
+            result = self._files
         else:
-            return [self.name]
+            result = [self.name]
+
+        return [update_query_string(r, self._queryStringAttributes) \
+                if withQueryString else r for r in result]
 
     def fileNameSerie(self, serie, index=0):
         """
@@ -530,31 +547,36 @@ class DiskItem(QObject):
             path = path[len(database) + 1:]
         return path
 
-    def fullPath(self, index=0):
+    def fullPath(self, index=0, withQueryString=True):
         """
         Returns the absolute file name of the index number file of the diskItem.
         """
         if self.parent is None:
-            return self.fileName(index)
+            fp = self.fileName(index, withQueryString=withQueryString)
         else:
-            return os.path.join(self.parent.fullPath(), self.fileName(index))
+            fp = os.path.join(self.parent.fullPath(withQueryString = False), 
+                              self.fileName(index, 
+                                            withQueryString=withQueryString))
 
-    def fullPaths(self):
+        return fp
+
+    def fullPaths(self, withQueryString=True):
         """
         Returns the absolute file names of the all the files of the diskItem.
         """
         if self.parent is None:
-            return self.fileNames()
+            return self.fileNames(withQueryString=withQueryString)
         else:
             return map_list(
-                lambda x, p=self.parent.fullPath(): os.path.join(p, x),
-                            self.fileNames())
-
+                    lambda x, p=self.parent.fullPath(withQueryString = False): \
+                            os.path.join(p, x), \
+                            self.fileNames(withQueryString=withQueryString))
+            
     def existingFiles(self):
         """
         Returns all files associated to this diskitem, that really exist plus its minf file if it exists.
         """
-        files = [f for f in self.fullPaths() if os.path.exists(f)]
+        files=[f for f in self.fullPaths(withQueryString=False) if os.path.exists(f)]
         minfFile = self.minfFileName()
         if minfFile != self.fullPath() and os.path.exists(minfFile):
             files.append(minfFile)
@@ -623,6 +645,15 @@ class DiskItem(QObject):
                 return default
         return r
 
+    def _getQueryString(self, attrName, default=None):
+        r = self._queryStringAttributes.get(attrName)
+        if r is None:
+            if self.parent:
+                return self.parent._getQueryString(attrName, default)
+            else:
+                return default
+        return r
+    
     def get(self, attrName, default=None, search_header=False):
         """
         Gets the value of an attribute.
@@ -643,6 +674,8 @@ class DiskItem(QObject):
             r = self._otherAttributes.get(attrName)
         if r is None:
             r = self._localAttributes.get(attrName)
+        if r is None:
+            r = self._queryStringAttributes.get(attrName)
         if r is None and search_header:
             info = aimsFileInfo(self.fullPath())
             for k, v in six.iteritems(info):
@@ -712,6 +745,8 @@ class DiskItem(QObject):
         if r is None:
             r = self._otherAttributes.get(attrName)
         if r is None:
+            r = self._queryStringAttributes.get(attrName)
+        if r is None:
             if self.parent:
                 return self.parent.getNonHierarchy(attrName, default)
             else:
@@ -742,6 +777,9 @@ class DiskItem(QObject):
         if r:
             return r
         r = attrName in self._otherAttributes
+        if r:
+            return r
+        r = attrName in self._queryStringAttributes
         if r:
             return r
         r = attrName in self._localAttributes
@@ -791,6 +829,16 @@ class DiskItem(QObject):
     def _updateOther(self, dict):
         for attrName, value in dict.items():
             self._setOther(attrName, value)
+            
+    def _setQueryString(self, attrName, value):
+        if self._getOther(attrName) is not None:
+            raise AttributeError(
+                HTMLMessage(_t_('an attribute <em>%s</em> already exists in item <em><code>%s</code></em>') % (str(attrName), str(self))))
+        self._queryStringAttributes[attrName] = value
+
+    def _updateQueryString(self, dict):
+        for attrName, value in dict.items():
+            self._setQueryString(attrName, value)
 
     def setMinf(self, attrName, value, saveMinf=True):
         """
@@ -801,6 +849,7 @@ class DiskItem(QObject):
         :param bool saveMinf: if True the modified attributes are written to the diskItem minf file.
         """
         self._otherAttributes.pop(attrName, None)
+        self._queryStringAttributes.pop(attrName, None)
         self._minfAttributes[attrName] = value
         if saveMinf:
             minf = self._readMinf()
@@ -825,6 +874,7 @@ class DiskItem(QObject):
         # print('!neuroDiskItems !: updateMinf : ', dict)
         for attrName, value in dict.items():
             self._otherAttributes.pop(attrName, None)
+            self._queryStringAttributes.pop(attrName, None)
             if attrName in self._localAttributes:
                 self._localAttributes[attrName] = value
             elif attrName in self._globalAttributes:
@@ -842,13 +892,10 @@ class DiskItem(QObject):
         Returns True if all the files associated to this diskItem exist and are readable.
         """
         result = 1
-        for p in self.fullPaths():
+        for p in self.fullPaths(withQueryString=False):
             if not os.access(p, os.F_OK + os.R_OK):
-                # Check that path contains a query string and remove it
-                p2 = remove_query_string(p)
-                if p == p2 or not os.access(p2, os.F_OK + os.R_OK):
-                    result = 0
-                    break
+                result = 0
+                break
 
         return result
 
@@ -858,27 +905,18 @@ class DiskItem(QObject):
         and if they do not exist if the parent directories exist and are writable and executable.
         """
         result = 1
-        for p in self.fullPaths():
+        for p in self.fullPaths(withQueryString=False):
             if os.access(p, os.F_OK):
                 if not os.access(p, os.R_OK + os.W_OK):
-                    # Check that path contains a query string and remove it
-                    p2 = remove_query_string(p)
-                    if p == p2 or not os.access(p2, os.F_OK + os.R_OK + os.W_OK):
-                        result = 0
-                        break
+                    result = 0
+                    break
             else:
-                # Check that path contains a query string and remove it
-                p2 = remove_query_string(p)
-                if p == p2 or not os.access(p2, os.F_OK):
-                    # Check if the parent directory is writable for the
-                    # inexistant files
-                    p_dir = os.path.dirname(p)
-                    if not os.access(p_dir, os.W_OK + os.X_OK):
-                        # Check that path contains a query string and remove it
-                        p_dir2 = remove_query_string(p_dir)
-                        if p_dir == p_dir2 or not os.access(p_dir2, os.W_OK + os.X_OK):
-                            result = 0
-                            break
+                # Check if the parent directory is writable for the
+                # inexistant files
+                p_dir = os.path.dirname(p)
+                if not os.access(p_dir, os.W_OK + os.X_OK):
+                    result = 0
+                    break
 
         return result
 
@@ -940,9 +978,9 @@ class DiskItem(QObject):
         Returns the name of the minf file associated to this diskItem. It is generally the name of the main file of the diskItem + the *.minf* extension.
         """
         if self.format is not None and (isinstance(self.format, MinfFormat) or self.format.name == 'Minf'):
-            return self.fullPath()
+            return self.fullPath(withQueryString=False)
         else:
-            return self.fullPath() + '.minf'
+            return self.fullPath(withQueryString=False) + '.minf'
 
     def saveMinf(self, overrideMinfContent=None):
         """
@@ -1055,7 +1093,7 @@ class DiskItem(QObject):
         """
         According to the file path of the diskItem, creates the directory that should contain the files if it doesn't exist.
         """
-        p = os.path.dirname(self.fullPath())
+        p = os.path.dirname(self.fullPath(withQueryString=False))
         if not os.path.exists(p):
             try:
                 os.makedirs(p)
@@ -1181,6 +1219,7 @@ class DiskItem(QObject):
         Deletes all files associated to this diskItem.
         """
         for fp in self.fullPaths():
+            
             if os.path.exists(fp):
                 shelltools.rm(fp)
         fp = self.minfFileName()
@@ -1262,6 +1301,84 @@ class DiskItem(QObject):
 #    print("!neuroDiskItems : getFileNameFromUuid :", bvproc_file)
 
         return bvproc_file
+        
+    def setResolutionLevel(self, resolution_level):
+        """
+            Sets the resolution level in the queryString of a DiskItem. 
+            It allows to use a specific resolution for multi resolution data. 
+            Once set, the fullPath of the DiskItem becomes 
+            '/dir/name.ext?resolution_level=<resolution_level>'
+            
+            :param resolution_level: The DiskItem resolution level 
+            to use.
+        """
+        dims = self.get('resolutions_dimension', search_header = True)
+        value_resolution_level = self.get('resolution_level')
+        if dims is not None and len(dims) > 1:
+            
+            # Remove the query string resolution_level option if the default
+            # value is selected
+            if resolution_level == (len(dims) - 1):
+                resolution_level = None
+            if value_resolution_level != resolution_level:
+                # Update query string only when levels are not the same
+                if resolution_level is None:
+                    # Remove the resolution level because it is the default
+                    # level
+                    del self._queryStringAttributes['resolution_level']
+                    
+                    
+                else:
+                    self._setQueryString('resolution_level', resolution_level)
+                
+        elif value_resolution_level is not None:
+            # Not a multiresolution file so remove resolution_level
+            del self._queryStringAttributes['resolution_level']       
+
+    def resolutionLevel(self):
+        '''
+            Get the current resolution level of a DiskItem. The resolution level
+            is read from the querystring.
+            :return: The current resolution level of DiskItem.
+        '''
+        dims = self.get('resolutions_dimension', search_header = True)
+        if dims is not None:
+            opts = parse_query_string(self.fullPath())
+            resolution_level = opts.get('resolution_level')
+            
+            if resolution_level is None:
+                resolution_level = len(dims) - 1
+                
+            else:
+                resolution_level = int(resolution_level)
+                
+                if resolution_level < 0:
+                    resolution_level = len(dims) + resolution_level
+                
+                if resolution_level < 0 or resolution_level >= len(dims):
+                    # Set default resolution level if resolution level 
+                    # is out of valid resolution levels
+                    resolution_level = len(dims) - 1
+                    
+            return resolution_level
+            
+        return 0
+
+    def getResolutionDimensions(self):
+        '''
+            Get the multi resolution dimensions for a . If the file
+            is not an image, None is returned.
+            :return: The current resolution level of :py:class:`DiskItem`.
+        '''
+        dims = self.get('resolutions_dimension', search_header = True)
+        
+        if dims is None:
+            dims = self.get('volume_dimension', search_header = True)
+            
+            if dims is not None:
+                dims = [ self.get('volume_dimension', search_header = True) ]
+                
+        return dims
 
 
 #----------------------------------------------------------------------------
@@ -1273,7 +1390,6 @@ class File(DiskItem):
 
     def __init__(self, name, parent):
         DiskItem.__init__(self, name, parent)
-
 
 #----------------------------------------------------------------------------
 class Directory(DiskItem):
@@ -1469,6 +1585,137 @@ class BackwardCompatiblePattern(DictPattern):
             matchResult.setdefault('filename_variable', '')
             matchResult.setdefault('name_serie', [])
         return DictPattern.unmatch(self, matchResult, diskItem)
+
+
+#----------------------------------------------------------------------------
+def getResolutionsFromItems(items):
+    """
+    Get the multi resolutions string for common resolution levels of a list of 
+    items.
+
+    :param items: list of py:class:`DiskItem`.
+    :returns: The list of common resolutions.
+    """
+    def format_size(size, unit = None, precision = None):
+        if unit:
+            unit = unit + (str(len(size)) if len(size) > 1 else '')
+            
+        return 'x'.join([('%.' + str(precision) + 'f') % s \
+                        if precision else str(s) \
+                        for s in size]) + (' ' + unit if unit else '')
+    
+    def get_resolution_string(level, ldim = None):
+                
+        if len(uniform_ratios) > level:
+            res_vs = [(r * d) for r, d in zip(uniform_ratios[level][:ldim], 
+                                              uniform_vs[:ldim])]
+        
+            if len(res_vs) > 0:
+                res_dim = []
+                if len(uniform_dims) > level:
+                    res_dim = uniform_dims[level][:ldim]
+
+                return '%s: %s (%s)' % (level, 
+                                        format_size(res_dim) 
+                                        if len(res_dim) > 0 
+                                        else 'item specific', 
+                                        format_size(res_vs, unit = 'mm', 
+                                                    precision = 6))
+        
+        return str(level)
+                                        
+    resolutions = []
+    if items is not None:
+        if not isinstance(items, (list, tuple)):
+            items = [items]
+            
+        items_dims = [i.getResolutionDimensions() for i in items]
+        
+        # Process items level ratios for each dimension
+        items_ratios = []
+        for i_dims in items_dims:
+            i_ratios = []
+            if i_dims is not None:
+                for d in xrange(len(i_dims)):
+                    i_ratios.append([(a / b) for a, b in zip(i_dims[0], 
+                                                             i_dims[d])])    
+            items_ratios.append(i_ratios)
+        
+        # Process item full resolution voxel size
+        items_vs = list()
+        
+        for i, r in zip(items, items_ratios):
+            vs = i.get('voxel_size', search_header = True)
+            res = i.resolutionLevel()
+            if vs is not None and res is not None:
+                items_vs.append([s / f for s, f in zip(vs, r[res])])
+                
+            else:
+                items_vs.append([])
+                
+        # Check that each resolution level has uniform ratios for all items
+        uniform_ratios = dict()
+        for i in xrange(len(items_ratios)):
+            i_ratios = items_ratios[i]
+            for d in xrange(len(i_ratios)):
+                ratios = uniform_ratios.get(d)
+                if i == 0:
+                    uniform_ratios[d] = i_ratios[d]
+                    
+                elif ratios is None:
+                    uniform_ratios[d] = []
+                    
+                elif len(ratios) > 0:
+                    if ratios != i_ratios[d]:
+                        # Update to non uniform ratios
+                        uniform_ratios[d] = []
+        
+        # Check that voxel sizes at highest resolution are uniform
+        uniform_vs = None
+        for i_vs in items_vs:
+            if uniform_vs is None:
+                uniform_vs = i_vs
+            elif uniform_vs != i_vs:
+                uniform_vs = []
+                break
+ 
+        # Check that each resolution level has uniform dimensions for all items
+        uniform_dims = dict()            
+        for i in xrange(len(items_dims)):
+            i_dims = items_dims[i]
+            for d in xrange(len(i_dims)):
+                dims = uniform_dims.get(d)
+                if i == 0:
+                    uniform_dims[d] = i_dims[d]
+                    
+                elif dims is None:
+                    uniform_dims[d] = []
+                    
+                elif len(dims) > 0:
+                    if dims != i_dims[d]:
+                        # Update to non uniform dimensions
+                        uniform_dims[d] = []
+                   
+        # Get dimension limits
+        max_ldim = 0
+        for i in xrange(len(items_dims)):
+            dims = items_dims[i]
+            ldim = len(dims[0])
+            
+            # Does not display dimension with size 1
+            for d in xrange(len(dims[0]) - 1, -1, -1):
+                if dims[0][d] == 1:
+                    ldim -= 1
+                else:
+                    break
+                
+            if ldim > max_ldim:
+                max_ldim = ldim
+        
+        resolutions  = [get_resolution_string(level, ldim = max_ldim) 
+                        for level in xrange(len(uniform_dims))]
+        
+    return resolutions
 
 
 #----------------------------------------------------------------------------

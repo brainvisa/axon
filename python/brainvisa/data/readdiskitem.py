@@ -38,7 +38,7 @@ from __future__ import print_function
 import os
 import operator
 # from soma.debug import print_stack
-from soma.path import remove_query_string
+from soma.path import split_query_string
 from soma.undefined import Undefined
 from brainvisa.data.neuroData import Parameter
 from brainvisa.processes import getDiskItemType
@@ -96,7 +96,8 @@ class ReadDiskItem(Parameter):
     """
 
     def __init__(self, diskItemType, formats, requiredAttributes={},
-                 enableConversion=True, ignoreAttributes=False, _debug=None, exactType=False, section=None):
+                enableConversion=True, ignoreAttributes=False, _debug=None, 
+                exactType=False, section=None, enableMultiResolution=False ):
         Parameter.__init__(self, section)
         self._debug = _debug
         self.type = getDiskItemType(diskItemType)
@@ -108,6 +109,7 @@ class ReadDiskItem(Parameter):
         self.formats = tuple(sorted(formatsList))
         self.enableConversion = enableConversion
         self.exactType = exactType
+        self.enableMultiResolution = enableMultiResolution
         self._formatsWithConversion = None
         self.requiredAttributes = requiredAttributes
         self._write = False
@@ -299,31 +301,33 @@ class ReadDiskItem(Parameter):
             if selection.startswith('{'):
                 # String value is a dictionary
                 return self.findValue(eval(selection), requiredAttributes=requiredAttributes, _debug=_debug)
-            fullselection = None
+            fullSelection = None
             if selection == '':
                 return None  # avoid using cwd
+            selection, query_string = split_query_string(selection)
             fileName = os.path.normpath(os.path.abspath(selection))
-            result = self.database.getDiskItemFromFileName(fileName, None)
+            result = self.database.getDiskItemFromFileName(
+                fileName + query_string, None)
             if result is None:
                 if _debug is not None:
                     print('  DiskItem not found in databases', file=_debug)
                 result = self.database.createDiskItemFromFileName(
-                    fileName, None)
+                    fileName + query_string, None)
                 if result is None:
                     if _debug is not None:
                         print(
                             '  DiskItem not created in databases from file name',
                               file=_debug)
                     result = self.database.createDiskItemFromFormatExtension(
-                        fileName, None)
+                        fileName + query_string, None)
                     if result is None:
                         if _debug is not None:
                             print(
-                                '  DiskItem not created in databases from format extension', file=_debug)
-                        if os.path.exists(remove_query_string(fileName)):
+                                '  DiskItem not created in databases from format extension', 
+                                file=_debug)
+                        if os.path.exists( fileName ):
                             from brainvisa.tools.aimsGlobals import aimsFileInfo
-                            file_type = aimsFileInfo(
-                                fileName).get('file_type')
+                            file_type = aimsFileInfo(fileName).get('file_type')
                             if _debug is not None:
                                 print(
                                     '  aimsFileInfo returned file_type =', repr(
@@ -333,7 +337,7 @@ class ReadDiskItem(Parameter):
                                 if _debug is not None:
                                     print(
                                         '  creating DICOM DiskItem', file=_debug)
-                                result = File(fileName, None)
+                                result = File(fileName + query_string, None)
                                 result.format = getFormat('DICOM image')
                                 result.type = None
                                 result._files = [fileName]
@@ -354,7 +358,7 @@ class ReadDiskItem(Parameter):
                         if _debug is not None:
                             print(
                                 '  no extension ==> create Directory item', file=_debug)
-                        result = Directory(fileName, None)
+                        result = Directory(fileName + query_string, None)
                         result.format = directoryFormat
                         result._files = [fileName]
                         result._identified = False
@@ -391,7 +395,7 @@ class ReadDiskItem(Parameter):
                     and not self._parameterized().isDefault(self._name):
                 try:
                     result = self.database.createDiskItemFromFormatExtension(
-                        selection)
+                        selection + query_string)
                     if result is not None:
                         result.type = self.type
                 except:
