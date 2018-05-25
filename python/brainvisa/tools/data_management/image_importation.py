@@ -13,20 +13,20 @@ import six
 
 
 class Importer:
-
+    
     @classmethod
-    def import_t1mri(cls, input_filename, output_filename,
-                     output_referential_filename=None,
-                     referential_name='Referential of Raw T1 MRI'):
+    def import_image(cls, input_filename, output_filename, 
+                     conversion_needed = False,
+                     remove_nan_needed = False,
+                     resampling_needed = False,
+                     conversion_data_type = None, 
+                     conversion_omin = None, 
+                     conversion_omax = None,
+                     resolution_level = None):
         """
-        Import the input T1 MRI file to the output filename location.
-        Importation is specialized for T1 MRI and for subsequent Morphologist
-        processing. Some checking and conversions may be done during the
+        Import the input image file to the output filename location.
+        Some checking and conversions may be done during the
         process.
-
-        NaN/infinite values are replaced by 0.
-        Voxel type is converted to 16 bit int.
-        Values dynamics is rescaled to 0-4095 if it exceeds this range.
 
         Parameters:
         -----------
@@ -34,31 +34,40 @@ class Importer:
             input image location
         output_filename: string
             output image location after importation
-        output_referential_filename: string (optional)
-            if specified a referential file (.refetential) will be created with
-            a new UUID at this location, and the imported image header will
-            reference it as referential.
-
+        conversion_needed: bool
+            wether conversion is needed or not
+        remove_nan_needed: bool
+            wether remove nan is needed or not
+        resampling_needed: bool
+            wether resampling is needed or not
+        conversion_data_type: string
+            data type to use if conversion is needed
+        conversion_omin: numeric
+            output minimum dynamic value if resampling is needed
+        conversion_omax: numeric
+            output maximum dynamic value if resampling is needed
+        resolution_level: int
+            resolution level to import
+            
         Returns:
         --------
-        res_state: dict
-            * return_value: 0 upon success. Exceptions may be raised in case of
-              failure anyway.
-            * warnings (if any): list of warning strings, meant to grant
-              notify to the user any unexpected images sizes, resolutions...
+        return_value: 0 upon success. Exceptions may be raised in case of
+                      failure anyway.
         """
+        from soma.path                     import update_query_string
+        
         temp_input = None
         temp_filename = None
         return_value = 0
-
-        try:
-            input_vol = aims.read(input_filename)
-        except (aims.aimssip.IOError, IOError) as e:
-            raise ImportationError(e.message)
-
-        if cls._conversion_needed(input_filename, input_vol, output_filename):
+ 
+        if conversion_needed or resolution_level is not None:
             try:
-                if cls._remove_nan_needed(input_vol):
+                if resolution_level is not None:
+                    input_filename = update_query_string(input_filename,
+                                                         {'resolution_level':
+                                                          resolution_level})
+                    
+                if remove_nan_needed:
                     ext = cls._file_extension(input_filename)
                     temp_filename = temporary.manager.new(suffix=ext)
                     command = ["AimsRemoveNaN", "-i", input_filename, "-o",
@@ -71,11 +80,22 @@ class Importer:
                     input_filename = temp_filename
 
                 command_list = ['AimsFileConvert', '-i', input_filename,
-                                '-o', output_filename,
-                                '-t', 'S16']
-                if cls._resampling_needed(input_vol):
-                    command_list.extend(['-r', '--omin', "0", '--omax',
-                                         "4095"])
+                                '-o', output_filename]
+                
+                if conversion_data_type is not None:
+                    command_list.extend(['-t', 'S16'])
+                
+                if resampling_needed:
+                    if conversion_omin is not None \
+                       or conversion_omax is not None:
+                       command_list.append('-r')
+                       
+                       if conversion_omin is not None:
+                           command_list.extend(['--omin', str(conversion_omin)])
+                           
+                       if conversion_omax is not None:
+                           command_list.extend(['--omax', str(conversion_omax)])
+
                 return_value = subprocess.call(command_list)
                 if return_value != 0:
                     raise ImportationError(
@@ -113,6 +133,64 @@ class Importer:
                     os.chmod(ominf, s.st_mode | stat.S_IREAD | stat.S_IWUSR)
             except IOError as e:
                 raise ImportationError(e.message)
+            
+        return return_value
+    
+    @classmethod
+    def import_t1mri(cls, input_filename, output_filename,
+                     output_referential_filename=None,
+                     referential_name='Referential of Raw T1 MRI'):
+        """
+        Import the input T1 MRI file to the output filename location.
+        Importation is specialized for T1 MRI and for subsequent Morphologist
+        processing. Some checking and conversions may be done during the
+        process.
+
+        NaN/infinite values are replaced by 0.
+        Voxel type is converted to 16 bit int.
+        Values dynamics is rescaled to 0-4095 if it exceeds this range.
+
+        Parameters:
+        -----------
+        input_filename: string
+            input image location
+        output_filename: string
+            output image location after importation
+        output_referential_filename: string (optional)
+            if specified a referential file (.refetential) will be created with
+            a new UUID at this location, and the imported image header will
+            reference it as referential.
+
+        Returns:
+        --------
+        res_state: dict
+            * return_value: 0 upon success. Exceptions may be raised in case of
+              failure anyway.
+            * warnings (if any): list of warning strings, meant to grant
+              notify to the user any unexpected images sizes, resolutions...
+        """
+        #temp_input = None
+        #temp_filename = None
+        return_value = 0
+    
+        try:
+            input_vol = aims.read(input_filename)
+        except (aims.aimssip.IOError, IOError) as e:
+            raise ImportationError(e.message)
+        
+        conversion_needed = cls._conversion_needed(input_filename, input_vol,
+                                                   output_filename)
+        remove_nan_needed = cls._remove_nan_needed(input_vol)
+        resampling_needed = cls._resampling_needed(input_vol)
+        
+        return_value = cls.import_image(input_filename, 
+                                        output_filename,
+                                        conversion_needed = conversion_needed,
+                                        remove_nan_needed = remove_nan_needed,
+                                        resampling_needed = resampling_needed,
+                                        conversion_data_type = 'S16',
+                                        conversion_omin = 0,
+                                        conversion_omax = 4095)
 
         if output_referential_filename:
             # write referential file and set the ref uuid in the image .minf
@@ -179,7 +257,7 @@ class Importer:
         need_resampling = False
         if data_type in ('FLOAT', 'DOUBLE'):
             need_resampling = True
-        else:
+        elif data_type not in ('RGB', 'RGBA', 'HSV'):
             min_value = input_vol.arraydata().min()
             max_value = input_vol.arraydata().max()
             if (min_value < 0) or (max_value < 100) or (max_value > 20000):
