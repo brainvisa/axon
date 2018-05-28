@@ -256,8 +256,8 @@ class HistoryBook(object):
             for item in changedItems:
                 # need to test if the path of the item is compatible with the book (coming from the same database) otherwise
                 # we could set a wrong uuid for lasthistoricalEvent
-                head, tail = os.path.split(book.__dir)
-                listToCompare = [head, str(item)]
+                head, tail = map(os.path.normcase, os.path.split(book.__dir))
+                listToCompare = [head, os.path.normcase(str(item))]
                 compare = os.path.commonprefix(listToCompare)
                 if (tail == "history_book" and compare == head):
                     try:
