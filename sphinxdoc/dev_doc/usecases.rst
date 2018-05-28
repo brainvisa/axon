@@ -87,8 +87,8 @@ Here is a request for all DiskItems of type "Model graph" with the value of *sid
 >>> items = databases.findDiskItems({"_type" : "Model graph", "side": "left"})
 >>> items
 <generator object ...>
->>> model_filename = items.next().fileName()
->>> model_filename.startswith(os.path.join(getSharePath(), bvShareDirectory, "models"))
+>>> model_filename = os.path.normcase(items.next().fileName())
+>>> model_filename.startswith(os.path.normcase(os.path.join(getSharePath(), bvShareDirectory, "models")))
 True
 
 The object :py:class:`brainvisa.data.readdiskitem.ReadDiskItem` enables to search for an existing DiskItem in the databases using the method :py:meth:`ReadDiskItem.findValue`. If the request is not precise enought and several DiskItems match, the method returns nothing.
@@ -97,7 +97,7 @@ The object :py:class:`brainvisa.data.readdiskitem.ReadDiskItem` enables to searc
 >>> rd=ReadDiskItem("Model graph", "Graph and Data")
 >>> rd.findValue({"side" : "left"})
 >>> model = rd.findValue({"side" : "left", "sulci_database" : "2001"})
->>> model.fileName().startswith(os.path.join(getSharePath(), bvShareDirectory, "models"))
+>>> os.path.normcase(model.fileName()).startswith(os.path.normcase(os.path.join(getSharePath(), bvShareDirectory, "models")))
 True
 
 The object :py:class:`brainvisa.data.writediskitem.WriteDiskItem` enables to create new DiskItems to write output data according to Brainvisa hierarchy of directories.
