@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -31,32 +32,52 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
+from brainvisa import shelltools
+import glob
+from brainvisa import registration
 
-
-name = 'Import Dicom T1 MRI'
+name = 'Dicom to Nifti Converter Using Aims'
+roles = ('converter',)
+rolePriority = 10  # override Aims converter
 userLevel = 0
 
+
+def validation():
+    mricron = distutils.spawn.find_executable('AimsFileConvert')
+    if not mricron:
+        raise ValidationError('AimsFileConvert program not found')
+
 signature = Signature(
+    'input_file', ReadDiskItem('4D Volume', 'DICOM image',
+                               enableConversion=0),
+    'write', WriteDiskItem('4D Volume',
+                           ['NIFTI-1 image', 'gz compressed NIFTI-1 image']),
     'input_directory', ReadDiskItem('Directory', 'Directory'),
-    'output', WriteDiskItem(
-        'Raw T1 MRI', ['NIFTI-1 image', 'gz compressed NIFTI-1 image', 'GIS image']),
+    'removeSource', Boolean(),
 )
 
 
 def initialization(self):
-    pass
+    self.removeSource = False
+    self.setOptional('input_file')
+    self.setOptional('input_directory')
 
 
 def execution(self, context):
-    # Dicom converter -> to nifti
-    converted = context.temporary('NIFTI-1 image', self.output.type)
-    try:
-        context.runProcess('DicomToNifti_Mricron',
-                           write=converted,
-                           input_directory=self.input_directory)
-    except:
-        context.runProcess('DicomToNifti_aims',
-                           write=converted,
-                           input_directory=self.input_directory)
-    # Import T1MRI
-    context.runProcess('importT1MRI', input=converted, output=self.output)
+    self.read = None
+    if self.input_file:
+        self.read = self.input_file
+    elif self.input_directory:
+        self.read = self.input_directory
+    else:
+        context.error(
+            "You must give a valid value for input_file or input_directory.")
+    if self.read:
+        context.system(
+            'AimsFileConvert', '-i', self.read, '-o', self.write)
+
+        registration.getTransformationManager().copyReferential(self.read,
+                                                                self.write)
+        if self.removeSource:
+            for f in self.read.fullPaths():
+                shelltools.rm(f)
