@@ -338,7 +338,10 @@ class Integer(Number):
         try:
             return int(value)
         except:
-            return long(value)
+            try:
+                return long(value)
+            except:
+                return None
 
 
 #----------------------------------------------------------------------------

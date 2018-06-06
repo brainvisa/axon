@@ -30,6 +30,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import print_function
 import re
 import types
 import six
@@ -200,7 +201,7 @@ class DictPattern:
             result = matchResult.get(self.__key, None)
             if type(result) is list and result:  # case of name_serie
                 result = result[0]
-            if result:
+            if result is not None:
                 return result
             # if not found, search for matchResult["att1"][att2]...
             try:
@@ -214,7 +215,7 @@ class DictPattern:
                 pass
             # if not found, search in dict
             result = dict.get(self.__key, None)
-            if result:
+            if result is not None:
                 return result
             try:
                 stack = self.__splittedKey[:]
@@ -480,8 +481,9 @@ class DictPattern:
             # print('!unmatch!', e)
             return None
 
-    def multipleUnmatch(self, dict):
-        # print '!multipleUnmatch!', self, dict
+    def multipleUnmatch(self, dict, _debug = None):
+        if _debug is not None:
+            print('!multipleUnmatch!', self, dict, file=_debug)
         # Retrieve attributes() and namedRegex()
         attributes = []
         for i in self.unmatchList:
@@ -491,7 +493,8 @@ class DictPattern:
             elif isinstance(i, DictPattern.MatchResult):
                 if i._MatchResult__key not in attributes:
                     attributes.append(i._MatchResult__key)
-        # print '!multipleUnmatch! attributes =', attributes
+        if _debug is not None:
+            print('!multipleUnmatch! attributes =', attributes, file=_debug)
         # Check attributes values that are list
         multipleValues = []
         for a in attributes:
@@ -509,24 +512,31 @@ class DictPattern:
                     multipleValues = newMultipleValues
                 else:
                     multipleValues = [{a: i} for i in v]
-        # print '!multipleUnmatch! multipleValues =', multipleValues
+        if _debug is not None:
+            print('!multipleUnmatch! multipleValues =', multipleValues, 
+                  file=_debug)
         if multipleValues:
             result = []
             d = dict.copy()
             for d2 in multipleValues:
                 d.update(d2)
                 r = self.unmatch(d, d)
-                # print '!multipleUnmatch! call unmatch', d, '-->', r
+                if _debug is not None:
+                    print('!multipleUnmatch! call unmatch', d, '-->', r,
+                          file=_debug)
                 if r:
                     result.append((r, d2))
-            # print '!multipleUnmatch! -->', result
+            if _debug is not None:
+                print('!multipleUnmatch! -->', result, file=_debug)
             return result
         else:
             r = self.unmatch(dict, dict)
             if r:
-                # print '!multipleUnmatch! -->', [ ( r, {} ) ]
+                if _debug is not None:
+                    print('!multipleUnmatch! -->', [ ( r, {} ) ], file=_debug)
                 return [(r, {})]
-        # print '!multipleUnmatch! -->', []
+        if _debug is not None:
+            print('!multipleUnmatch! -->', [], file=_debug)
         return []
 
     def attributes(self):
