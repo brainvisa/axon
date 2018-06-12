@@ -35,6 +35,9 @@ import re
 import types
 import six
 
+if six.PY3:
+    unicode = str
+
 #------------------------------------------------------------------------------
 
 

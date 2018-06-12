@@ -24,7 +24,7 @@ print os.path.abspath( p )'
 
 # Find Python executable in $python
 
-pythonexelist='python2 Python2 python Python'
+pythonexelist='python Python python2 Python2'
 unset python
 for pythonexe in $pythonexelist; do
   python=`which $pythonexe 2> /dev/null`
