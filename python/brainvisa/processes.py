@@ -3372,7 +3372,7 @@ class ExecutionContext(object):
             if True, write stdout in the current context output
         ignoreReturnValue: (bool)
             if True, ignore the command return value. Useful when you know the
-            command will exit badly aven if the work is done.
+            command will exit badly even if the work is done.
         stdout: (file object)
             if specified, stdout will be written in this stream. It may be a
             StringIO object.
@@ -3385,6 +3385,9 @@ class ExecutionContext(object):
             If False, force execution within the current brainvisa environment.
             If None (default), guess if the executed command path is external to
             the main brainvisa path.
+        cwd: (str or None)
+            Current directory of the child process (by default or if None,
+            it is inherited from the parent process i.e. BrainVISA).
         env: dict
             Environment variables to be set. Contrarily to subprocess.Popen, they
             do not completely replace the current environment variables, but only
@@ -3408,11 +3411,12 @@ class ExecutionContext(object):
         self._stderr = kwargs.get('stderr', None)
         ignoreReturnValue = kwargs.get('ignoreReturnValue', 0)
         nativeEnv = kwargs.get('nativeEnv', None)
+        cwd = kwargs.get('cwd', None)
         env = kwargs.get('env', None)
         command = [str(i) for i in args]
 
         ret = self._system(command, self._systemStdout, self._systemStderr,
-                           nativeEnv=nativeEnv, env=env)
+                           nativeEnv=nativeEnv, cwd=cwd, env=env)
         self._stdoutInContext = old_stdoutInContext
         self._stdout = None
         self._stderr = None
@@ -3474,7 +3478,7 @@ class ExecutionContext(object):
             logFile.flush()
 
     def _system(self, command, stdoutAction=None, stderrAction=None,
-                nativeEnv=None, env=None):
+                nativeEnv=None, cwd=None, env=None):
         self.checkInterruption()
         stackTop = self._stackTop()
 
@@ -3513,6 +3517,10 @@ class ExecutionContext(object):
     # if self._showSystemOutput() > 0:
     # self.write( '<img alt="" src="' + os.path.join( neuroConfig.iconPath,
     # 'icon_system.png' ) + '">' + c.commandName() + '<p>' )
+
+            # Set working directory for the command
+            if cwd is not None:
+                c.setWorkingDirectory(cwd)
 
             # Set environment for the command
             if env is not None or nativeEnv is not None:
