@@ -47,10 +47,10 @@ def initialization(self):
 
 
 def execution(self, context):
-
+    
+    input_list = [i.fullPath() for i in self.input]
     call_list = ['AimsAverage', '-i']
-    for i in input_list:
-        call_list.append(i)
+    call_list.extend(input_list)
     call_list.extend(['-o', self.output])
     context.system(*call_list)
 
