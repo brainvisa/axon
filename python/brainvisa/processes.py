@@ -2899,7 +2899,6 @@ class ExecutionContext(object):
             proc, argname = self._get_process_and_argname(_process, n)
             proc._setImmutable(argname, True)
             to_restore.add(proc)
-
         for i, v in enumerate(args):
             n = _process.signature.keys()[i]
             _process.setDefault(n, 0)
@@ -2907,13 +2906,20 @@ class ExecutionContext(object):
                 _process.setValue(n, v)
             else:
                 setattr(_process, n, None)
-        for (n, v) in kwargs.items():
-            proc, argname = self._get_process_and_argname(_process, n)
-            proc.setDefault(argname, 0)
-            if v is not None:
-                proc.setValue(argname, v)
-            else:
-                setattr(proc, argname, None)
+        # Set kwargs in the order that they appear in the Signature, instead of
+        # the order that the kwargs dict returns them (which is not
+        # predictable).
+        # FIXME: some values may not be set if they are added dynamically to
+        # the signature by parameter links.
+        for n in _process.signature.keys():
+            if n in kwargs:
+                v = kwargs[n]
+                proc, argname = self._get_process_and_argname(_process, n)
+                proc.setDefault(argname, 0)
+                if v is not None:
+                    proc.setValue(argname, v)
+                else:
+                    setattr(proc, argname, None)
         for proc in to_restore:
             proc._clearImmutableParameters()
         # FIXME TODO WARNING
@@ -4420,22 +4426,29 @@ def getProcessInstanceFromProcessEvent(event):
                 stackp += stackadd
                 stack += stackadd
 
-        # 2nd pass: now really set values
-        for n, v in six.iteritems(selected):
-            try:
-                result.setValue(n, v, default=False)
-            except KeyError:
-                pass
-        for n, v in six.iteritems(defaultp):
-            try:
-                result.setValue(n, v, default=True)
-            except KeyError:
-                pass
-            except:
-                defaultContext().showException(
-                    beforeError='<em>while loading process %s, setting '
-                    'parameter %s with value: %s</em>'
-                    % (result.name, n, str(v)))
+        # 2nd pass: now really set values, in the order that they appear in the
+        # Signature, instead of the order of dict entries (which is not
+        # predictable).
+        # FIXME: some values may not be set if they are added dynamically to
+        # the signature by parameter links.
+        for n in result.signature.keys():
+            if n in selected:
+                try:
+                    result.setValue(n, selected[n], default=False)
+                except KeyError:
+                    pass
+        for n in result.signature.keys():
+            if n in defaultp:
+                v = defaultp[n]
+                try:
+                    result.setValue(n, v, default=True)
+                except KeyError:
+                    pass
+                except:
+                    defaultContext().showException(
+                        beforeError='<em>while loading process %s, setting '
+                        'parameter %s with value: %s</em>'
+                        % (result.name, n, str(v)))
         stack = stackp
         for eNodeParent, eNodeName, eNodeParameters, eNodeSelected, eNodeChildren in stack:
             eNode = eNodeParent.child(eNodeName)
@@ -4444,6 +4457,10 @@ def getProcessInstanceFromProcessEvent(event):
                 eNode.setSelected(eNodeSelected)
 
                 if eNodeParameters:
+                    # FIXME: do these parameters concern the ExecutionNode
+                    # itself or are they forwarded to the underlying
+                    # Parameterized? In the latter case, they should also be
+                    # set in the order of its signature.
                     for n, v in six.iteritems(eNodeParameters['selected']):
                         try:
                             eNode.setValue(n, v, default=False)
