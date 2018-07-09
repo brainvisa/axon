@@ -93,17 +93,14 @@ end
 exit;
 '''
     open(matlab_script_path, 'w').write(matlab_script)
-    pd = os.getcwd()
-    os.chdir(os.path.dirname(matlab_script_path))
     cmd = [ mexe ] + configuration.matlab.options.split(' ') \
         + ['-r', os.path.basename(matlab_script_diskitem.fullName())]
     context.write('Attempt to run the matlab command: ' + repr(cmd))
     # print('running matlab command: ', cmd)
     try:
-        context.system(*cmd)
+        context.system(*cmd, cwd=os.path.dirname(matlab_script_path))
     except Exception as e:
         return None
-    os.chdir(pd)
     spm_path = open(
         spm_path_saving_text_file_diskitem.fullPath()).read().strip()
     spm_directory = os.path.dirname(spm_path)

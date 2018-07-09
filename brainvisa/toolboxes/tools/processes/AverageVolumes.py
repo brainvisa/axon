@@ -37,8 +37,8 @@ name = 'Create an Average Volume from Different Volumes'
 userLevel = 0
 
 signature = Signature(
-    'input', ReadDiskItem('4D Volume', 'BrainVISA volume formats'),
-      'output', WriteDiskItem('3D Volume', 'BrainVISA volume formats')
+    'input', ListOf(ReadDiskItem('4D Volume', 'BrainVISA volume formats')),
+    'output', WriteDiskItem('3D Volume', 'BrainVISA volume formats')
 )
 
 
@@ -47,9 +47,11 @@ def initialization(self):
 
 
 def execution(self, context):
-
-    call_list = ['AimsAverage', '-i', self.input,
-                 '-o', self.output]
-    apply(context.system, call_list)
+    
+    input_list = [i.fullPath() for i in self.input]
+    call_list = ['AimsAverage', '-i']
+    call_list.extend(input_list)
+    call_list.extend(['-o', self.output])
+    context.system(*call_list)
 
     context.write("Finished")

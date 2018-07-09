@@ -137,16 +137,11 @@ def runSpm8Standalone(context, configuration, matfilePath):
     context.write(
         _t_('Using SPM8 standalone version (compiled, Matlab not needed)'))
     mexe = configuration.SPM.spm8_standalone_command
-    pd = os.getcwd()
-    os.chdir(os.path.dirname(matfilePath))
     cmd = [mexe, configuration.SPM.spm8_standalone_mcr_path,
            'run', matfilePath]
         # it's possible to use 'script' instead of 'run'
     context.write('running SPM command:', cmd)
-    try:
-        result = context.system(*cmd)
-    finally:
-        os.chdir(pd)
+    result = context.system(*cmd, cwd=os.path.dirname(matfilePath))
     return result
 
 
@@ -186,9 +181,7 @@ def runSpm8(context, configuration, jobPath, spmCmd=None):
 
 def runMatblatBatch(context, configuration, matlabBatchPath,
                     removeCmdOption=None):
-    cwd = os.getcwd()
     curDir = matlabBatchPath[:matlabBatchPath.rindex('/')]
-    os.chdir(curDir)
     # execution batch file
     # momoTODO check if mexe is None when no matlab then raise error or
     # exception
@@ -200,8 +193,5 @@ def runMatblatBatch(context, configuration, matlabBatchPath,
         matlabOptions = matlabOptions.replace(removeCmdOption, '')
     cmd = [mexe] + matlabOptions.split() + ['-r', matlabCmd]
     context.write('Running matlab command:', cmd)
-    try:
-        result = context.system(*cmd)
-    finally:
-        os.chdir(cwd)
+    result = context.system(*cmd, cwd=curDir)
     return result

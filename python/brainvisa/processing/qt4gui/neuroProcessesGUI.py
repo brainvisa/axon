@@ -3517,11 +3517,11 @@ class ProcessView(QWidget, ExecutionContextGUI):
         import sipconfig
         if sipconfig.Configuration().sip_version >= 0x040a00:
             minf = unicode(qt_backend.getSaveFileName(
-                None, 'Open a process file', minf,
+                None, 'Save a process file', minf,
                 'BrainVISA process (*.bvproc);;All files (*)', options=QFileDialog.DontUseNativeDialog))
         else:
             minf = unicode(
-                QFileDialog.getSaveFileName(None, 'Open a process file', minf,
+                QFileDialog.getSaveFileName(None, 'Save a process file', minf,
                                             'BrainVISA process (*.bvproc);;All files (*)', None, QFileDialog.DontUseNativeDialog))
         if minf:
             if not minf.endswith('.bvproc'):

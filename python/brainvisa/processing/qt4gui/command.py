@@ -92,6 +92,12 @@ class CommandWithQProcess(object):
         self.exitStatus = None
         self._stopped = False
 
+    def setWorkingDirectory(self, cwd):
+        """
+        Set the working directory for the process.
+        """
+        self._qprocess.setWorkingDirectory(cwd)
+
     def setEnvironment(self, env):
         """
         Set a map of environment variables that have to be change at starting the process.
