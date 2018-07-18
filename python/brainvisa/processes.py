@@ -3055,7 +3055,9 @@ class ExecutionContext(object):
                         elif isinstance(type, ListOf) and isinstance(type.contentType, WriteDiskItem):
                             itemList = getattr(parameterized, attribute)
                             if itemList:
-                                writeParameters.extend(itemList)
+                                writeParameters.extend(
+                                    item for item in itemList if item is not None
+                                )
                     for item in writeParameters:
                         dirname = os.path.dirname(item.fullPath())
                         if not os.path.exists(dirname):
