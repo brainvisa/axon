@@ -579,7 +579,7 @@ def openDebugFile(fileName):
     '''
     result = _openedDebugFiles.get(fileName)
     if result is None:
-        result = open(fileName, 'w')
+        result = open(fileName, 'a')
         _openedDebugFiles[fileName] = result
     return result
 

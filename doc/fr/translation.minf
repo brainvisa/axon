@@ -1167,7 +1167,7 @@ Il faudra ensuite ré-ouvrir tout traitement qui dépend de SPM.</s>
   <s name='&lt;h4&gt;Perform incremental update by parsing all history files in the databases.&lt;/h4&gt;&lt;p align="justify"&gt;This method is the same as the incremental one, except that it will parse all history files present in the database, regardless of date or already indexed data. It may be useful if the last database update date gets wrong for some reason. However for large databases, it may get even longer than the full update.&lt;/p&gt;'>&lt;h4&gt;Mise à jour incrémentale en parcourant tous les fichiers d'historique.&lt;/h4&gt;&lt;p align="justify"&gt;Cette méthode est la même que la méthode incrémentale, sauf que tous les fichiers d'historique d'exécution de traitements dans la base de données seront parcourus, quelle que soit leur date ou les données déjà indexées. Cela peut être utile si la dernière actualisation n'a pas bien fonctionné pour une raison ou pour une autre. Cependant pour des grandes bases de données, cette méthode peut devenir encore plus longue que l'actualisation complète.&lt;/p&gt;</s>
   <s name="Average Gyri Texture">Texture moyenne de gyri</s>
   <s name="SHFJ: Import &amp; reconstruct GEMS double-echo volumes (2x3D)">SHFJ: Importation et reconstruction de données GEMS double-écho (2x3D)</s>
-  <s name='Object %(object)s has not parameter "%(param)s"'>L'objet %(object)s n'a pas de paramètre "%(param)s"</s>
+  <s name='Object %(object)s has no such parameter: %(param)s'>L'objet %(object)s n'a pas ce paramètre : %(param)s</s>
   <s name="Check &amp;&amp; update databases">Vérification et actualisation de bases de données</s>
   <s name="Enhanced mean">Moyenne rehaussée</s>
   <s name="Sulcal Parcellation">Parcellisation sulcale</s>
