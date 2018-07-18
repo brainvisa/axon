@@ -1339,21 +1339,24 @@ class Parameterized(object):
                 destObject,  destParameter = None, i
             else:
                 destObject,  destParameter = i
-            if destObject:
-                do = destObject
-            else:
-                do = self
-            # do = (self if destObject is None else destObject) # not work in
-            # python 2.4
-            if destParameter not in do.signature:
-                raise KeyError(_t_('Object %(object)s has not parameter "%(param)s"') %
-                               {'object': unicode(do), 'param': destParameter})
+            if destObject is None:
+                destObject = self
+            if destParameter not in destObject.signature:
+                raise KeyError(_t_('Object %(object)s has no such parameter: %(param)s') %
+                               {'object': unicode(destObject), 'param': destParameter})
             for k, l in self._links.items():
                 i = 0
                 while i < len(l):
                     do, dp, ml, f, du = l[i]
-                    if ( destObject is None or destObject is do ) and \
-                       destParameter == dp:
+                    # There is no API to retrieve a strong reference from a
+                    # weakref.proxy. This hack uses an undocumented property of
+                    # weakref.proxy: it will always return the same object when
+                    # called for a given object.
+                    #
+                    # FIXME: _links should only store weakref.ref objects (no
+                    # strong references, no proxies)
+                    if ((do is destObject or do is weakref.proxy(destObject))
+                            and destParameter == dp):
                         del l[i]
                     else:
                         i += 1
