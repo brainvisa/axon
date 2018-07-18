@@ -30,6 +30,8 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+from __future__ import print_function
+
 from brainvisa.processing.qtgui.backwardCompatibleQt \
     import QAction, QLineEdit, QPushButton, QToolButton, QComboBox, \
            Qt, QIcon, QWidget, QWidgetAction, QFileDialog, QVBoxLayout, \
@@ -216,7 +218,7 @@ class DiskItemEditor(QWidget, DataEditor):
         self.newValidValue.connect(self.updateViewers)
 
         # Sets default data editors list
-        self._editors = []
+        self._editors = None
         self.actDataEditors = None
         self.cmbDataEditorsSeparator = None
         self.cmbDataEditors = None
@@ -634,9 +636,9 @@ class DiskItemEditor(QWidget, DataEditor):
     def getDataEditors(self, update = False):
         if self._editors is None or update:
             self.updateDataEditors()
-        
+
         return self._editors
-    
+
     def selectedDataEditor(self):
         # Current index is shifted in Combo box due to the 'Default value' item
         if self.cmbDataEditors is not None:
@@ -734,7 +736,7 @@ class DiskItemEditor(QWidget, DataEditor):
             self._editors = brainvisa.processes.getDataEditors(
                 source, 0, checkUpdate=False, process=self.process)
         except:
-            self._editors = []
+            self._editors = None
 
     def updateDataEditorsComboBox(self):
         if self.cmbDataEditors is not None:
@@ -1829,7 +1831,6 @@ class DiskItemListEditor(QWidget, DataEditor):
             self._editors = brainvisa.processes.getDataEditors(
                 source, 0, checkUpdate=False, listof=True,
                                 process=proc)
-            # print('getEditors:', self._editors)
         except:
             self._editors = []
 
