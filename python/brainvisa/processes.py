@@ -167,6 +167,11 @@ from __future__ import print_function
 
 __docformat__ = 'restructuredtext en'
 
+# Be careful, it is necessary to initialize
+# subprocess with subprocess32 when it is possible because of known
+# issues in subprocess module that can lead to lock in subprocess run
+import soma.subprocess
+
 import traceback
 import threading
 import pickle
