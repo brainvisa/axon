@@ -214,8 +214,8 @@ def findStandAlonePaths(spm_version):
     # output = check_output('compgen -c | grep "spm"', shell=True, executable='/bin/bash')
     # command_contains_spm_list =  output.splitlines()
 
-    output = subprocess.Popen('compgen -c | grep "spm"', shell=True,
-                              stdout=subprocess.PIPE, executable='/bin/bash').communicate()[0]
+    output = soma.subprocess.Popen('compgen -c | grep "spm"', shell=True,
+                              stdout=soma.subprocess.PIPE, executable='/bin/bash').communicate()[0]
     command_contains_spm_list = output.split('\n')
     possible_right_command_list = []
     for command_contains_spm in command_contains_spm_list:
@@ -242,8 +242,8 @@ def findStandAlonePaths(spm_version):
 def extractPathFromExecutable(executable_path):
     shutil.copy(executable_path, '/tmp/SPMPathCheck')
     os.system('sed -i "s/exec /echo /g" /tmp/SPMPathCheck')
-    output = subprocess.Popen(
-        'sh /tmp/SPMPathCheck', shell=True, stdout=subprocess.PIPE).communicate()[0]
+    output = soma.subprocess.Popen(
+        'sh /tmp/SPMPathCheck', shell=True, stdout=soma.subprocess.PIPE).communicate()[0]
     output_line_list = output.splitlines()
     if len(output_line_list) == 1:
         output_splitted = output.splitlines()[0].split()

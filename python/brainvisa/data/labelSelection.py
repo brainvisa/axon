@@ -44,7 +44,7 @@ from brainvisa.data.qtgui.labelSelectionGUI import LabelSelectionEditor
 from brainvisa.processes import defaultContext
 from brainvisa.configuration import neuroConfig
 import soma.minf.api as minf
-import subprocess
+import soma.subprocess
 import six
 
 #----------------------------------------------------------------------------
@@ -98,11 +98,11 @@ class LabelSelection(Parameter):
         elif fsel:
             cmd += ['-p', fsel.fullPath()]
         if neuroConfig.platform == 'windows':
-            pipe = subprocess.Popen(cmd, stdin=subprocess.PIPE,
-                                    stdout=subprocess.PIPE)
+            pipe = soma.subprocess.Popen(cmd, stdin=soma.subprocess.PIPE,
+                                    stdout=soma.subprocess.PIPE)
         else:
-            pipe = subprocess.Popen(cmd, stdin=subprocess.PIPE,
-                                    stdout=subprocess.PIPE, close_fds=True)
+            pipe = soma.subprocess.Popen(cmd, stdin=soma.subprocess.PIPE,
+                                    stdout=soma.subprocess.PIPE, close_fds=True)
         stdout, stdin = pipe.stdout, pipe.stdin
         if(psel):
             stdin.write(psel)

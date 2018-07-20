@@ -179,12 +179,12 @@ def startShell():
         if ipversion >= [0, 11]:
         # ipython >= 0.11, use client/server mode
             ipConsole = brainvisa.processes.runIPConsoleKernel()
-            import subprocess
+            import soma.subprocess
             if ipversion >= [1, 0]:
                 ipmodule = 'IPython.terminal.ipapp'
             else:
                 ipmodule = 'IPython.frontend.terminal.ipapp'
-            sp = subprocess.Popen([sys.executable, '-c',
+            sp = soma.subprocess.Popen([sys.executable, '-c',
                                    'import os; os.environ["QT_API"] = "pyqt"; from %s import launch_new_instance; launch_new_instance()' % ipmodule,
                                    'qtconsole', '--existing',
                                    '--shell=%d' % ipConsole.shell_port,

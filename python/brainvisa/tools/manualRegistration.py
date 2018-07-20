@@ -43,7 +43,7 @@ from soma.qt_gui.qt_backend import QtCore, QtGui, uic
 import numpy as np
 import math
 from tempfile import mkstemp
-from subprocess import check_call
+from soma.subprocess import check_call
 import os
 
 

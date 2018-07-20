@@ -45,7 +45,7 @@ from brainvisa.data.qtgui.readdiskitemGUI import DiskItemEditor
 from brainvisa.configuration import neuroConfig
 
 import threading
-import subprocess
+import soma.subprocess
 import sys
 
 if sys.version_info[0] >= 3:
@@ -105,11 +105,11 @@ class LabelSelectionEditor(QWidget, DataEditor):
                 cmd += ['-p', fsel.fullPath()]
             sys.stdout.flush()
             if neuroConfig.platform == 'windows':
-                pipe = subprocess.Popen(cmd, stdin=subprocess.PIPE,
-                                        stdout=subprocess.PIPE)
+                pipe = soma.subprocess.Popen(cmd, stdin=soma.subprocess.PIPE,
+                                        stdout=soma.subprocess.PIPE)
             else:
-                pipe = subprocess.Popen(cmd, stdin=subprocess.PIPE,
-                                        stdout=subprocess.PIPE, close_fds=True)
+                pipe = soma.subprocess.Popen(cmd, stdin=soma.subprocess.PIPE,
+                                        stdout=soma.subprocess.PIPE, close_fds=True)
             self._stdout, self._stdin = pipe.stdout, pipe.stdin
             if(psel):
                 # print('writing selection:', psel)

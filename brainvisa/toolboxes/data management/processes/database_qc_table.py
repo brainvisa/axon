@@ -664,5 +664,5 @@ def save_pdf(self, filename, context=None):
     if context is not None:
         context.system('wkhtmltopdf', temp_file, filename)
     else:
-        subprocess.check_call(['wkhtmltopdf', temp_file, filename])
+        soma.subprocess.check_call(['wkhtmltopdf', temp_file, filename])
 
