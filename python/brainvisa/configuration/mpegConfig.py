@@ -98,16 +98,16 @@ def findCodec(encoder):
         #         'msmpeg4v1', 'msmpeg4v2', 'rv10', 'rv20', 'wmv1', 'wmv2', 'wmv3' ]
         try:
         # Valid only since Python 2.4
-            import subprocess
-            sproc = subprocess.Popen(('bv_unenv', encoder, '-codecs'),
-                                     stdout=subprocess.PIPE,
-                                     stderr=subprocess.PIPE)
+            import soma.subprocess
+            sproc = soma.subprocess.Popen(('bv_unenv', encoder, '-codecs'),
+                                     stdout=soma.subprocess.PIPE,
+                                     stderr=soma.subprocess.PIPE)
             out, err = sproc.communicate()
             if sproc.returncode != 0:
             # maybe the older ffmpeg using -formats argument
-                sproc = subprocess.Popen(('bv_unenv', encoder, '-formats'),
-                                         stdout=subprocess.PIPE,
-                                         stderr=subprocess.PIPE)
+                sproc = soma.subprocess.Popen(('bv_unenv', encoder, '-formats'),
+                                         stdout=soma.subprocess.PIPE,
+                                         stderr=soma.subprocess.PIPE)
                 out, err = sproc.communicate()
         except ImportError:
             # Work with earlier Python version but generates the following error at exit:

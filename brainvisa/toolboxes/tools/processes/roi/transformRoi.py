@@ -43,7 +43,7 @@ from soma.qt_gui.qtThread import MainThreadLife
 from soma import aims
 from soma.minf.api import *
 import soma
-from subprocess import check_call
+from soma.subprocess import check_call
 from tempfile import mkdtemp, mktemp
 import glob
 import numpy as np

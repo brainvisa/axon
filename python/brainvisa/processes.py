@@ -3405,7 +3405,7 @@ class ExecutionContext(object):
             Current directory of the child process (by default or if None,
             it is inherited from the parent process i.e. BrainVISA).
         env: dict
-            Environment variables to be set. Contrarily to subprocess.Popen, they
+            Environment variables to be set. Contrarily to soma.subprocess.Popen, they
             do not completely replace the current environment variables, but only
             add / replace the given variables.
             If both env and nativeEnv keyword arguments are used, nativeEnv acts

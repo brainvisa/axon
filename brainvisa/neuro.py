@@ -260,12 +260,12 @@ def startConsoleShell():
     import IPython
     ipversion = [int(x) for x in IPython.__version__.split('.')]
     ipConsole = runIPConsoleKernel()
-    import subprocess
+    import soma.subprocess
     if ipversion >= [1, 0]:
         ipmodule = 'IPython.terminal.ipapp'
     else:
         ipmodule = 'IPython.frontend.terminal.ipapp'
-    sp = subprocess.Popen([sys.executable, '-c',
+    sp = soma.subprocess.Popen([sys.executable, '-c',
                            'from %s import launch_new_instance; launch_new_instance()' % ipmodule,
                            'console', '--existing',
                            '--shell=%d' % ipConsole.shell_port, '--iopub=%d' % ipConsole.iopub_port,

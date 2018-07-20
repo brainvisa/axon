@@ -38,7 +38,7 @@ from brainvisa.data.sqlFSODatabase import SQLDatabase
 from soma.path import relative_path
 from brainvisa.toolboxes import getToolbox
 from brainvisa.data.fileSystemOntology import FileSystemOntology
-import subprocess
+import soma.subprocess
 import six
 
 signature = Signature(

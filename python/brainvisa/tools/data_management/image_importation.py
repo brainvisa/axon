@@ -2,7 +2,7 @@ from __future__ import print_function
 import shutil
 import os
 from optparse import OptionParser
-import subprocess
+import soma.subprocess
 import stat
 
 from soma import aims
@@ -63,7 +63,7 @@ class Importer:
                     temp_filename = temporary.manager.new(suffix=ext)
                     command = ["AimsRemoveNaN", "-i", input_filename, "-o",
                                temp_filename]
-                    return_value = subprocess.call(command)
+                    return_value = soma.subprocess.call(command)
                     if return_value != 0:
                         raise ImportationError(
                             "The following command failed : \"%s\"" % '" "'
@@ -76,7 +76,7 @@ class Importer:
                 if cls._resampling_needed(input_vol):
                     command_list.extend(['-r', '--omin', "0", '--omax',
                                          "4095"])
-                return_value = subprocess.call(command_list)
+                return_value = soma.subprocess.call(command_list)
                 if return_value != 0:
                     raise ImportationError(
                         "The following command failed : \"%s\"" % '" "'
