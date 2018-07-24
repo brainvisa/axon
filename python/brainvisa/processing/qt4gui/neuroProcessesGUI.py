@@ -3145,7 +3145,8 @@ class ProcessView(QWidget, ExecutionContextGUI):
     def _appendInfo(self, msg):
         # the tags font are here just to avoid display problems in QTextEdit
         # with non html content (color staying red after an error for example)
-        self.info.append("<font>" + msg + "</font>")
+        if not self.info is None:
+            self.info.append("<font>" + msg + "</font>")
 
     def _processStarted(self):
         if self._depth() == 1:
