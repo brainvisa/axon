@@ -2428,6 +2428,9 @@ class DiskItemType(object):
         cls._reloaded_types[id] += 1
         return instance
 
+    def __getnewargs__(self):
+        return (self.name,)
+
     def __init__(self, typeName, parent=None, attributes=None):
         """
         :param string typeName: name of the type
