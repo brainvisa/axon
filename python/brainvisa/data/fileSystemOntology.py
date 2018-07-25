@@ -248,6 +248,8 @@ class ScannerRule(object):
         self.pattern = pattern
         self.type = None
         self.formats = None
+        #self.formatNamesInSet??
+        #self.fileNameAttributeDefault??
         self.globalAttributes = []
         self.localAttributes = []
         self.defaultAttributesValues = {}
@@ -266,29 +268,17 @@ class ScannerRule(object):
         self.fileNameAttributeIsWeak = 1
 
     def __getstate__(self):
-        state = {}
-        for n in ('pattern', 'globalAttributes', 'localAttributes',
-                  'defaultAttributesValues', 'scanner',
-                  'itemName', 'priority', 'priorityOffset',
-                  'fileNameAttribute', 'fileNameAttributeIsWeak',
-                  'nonMandatoryKeyAttributes', 'declared_attributes'):
-            state[n] = getattr(self, n)
+        state = self.__dict__.copy()
         if self.type is not None:
             state['type'] = self.type.id
-        else:
-            state['type'] = None
         if self.formats is not None:
             state['formats'] = [x.id for x in self.formats]
         else:
             state['formats'] = None
+        del state['_ScannerRule__formats']  # Do not store self.__formats
         return state
 
     def __setstate__(self, state):
-        for n in ('pattern', 'globalAttributes', 'localAttributes', 'scanner',
-                  'defaultAttributesValues', 'itemName', 'priority',
-                  'priorityOffset', 'fileNameAttribute', 'fileNameAttributeIsWeak',
-                  'nonMandatoryKeyAttributes', 'declared_attributes'):
-            setattr(self, n, state[n])
         t = state['type']
         if t:
             self.type = neuroDiskItems.getDiskItemType(t)
@@ -299,6 +289,8 @@ class ScannerRule(object):
             self.formats = [neuroDiskItems.getFormat(i) for i in t]
         else:
             self.formats = None
+        del state['type'], state['formats']
+        self.__dict__.update(state)
 
     def _getFormats(self):
         return self.__formats
