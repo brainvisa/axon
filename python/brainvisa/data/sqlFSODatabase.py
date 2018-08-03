@@ -2127,7 +2127,7 @@ class SQLDatabase(Database):
         except Exception as e:
             print('SQL error in database:', self.sqlDatabaseFile)
             print(e)
-            return ()
+            paths = []
         if flat_output:
             return paths
         refs = list(set([p[1] for p in paths] + [p[2] for p in paths])

@@ -71,8 +71,24 @@ class DatabasesTransformationManager(object):
 
     def findReferentialNeighbours(self, ref, bidirectional=True,
                                   flat_output=False):
+        """From one referential, find all referentials directly linked by transforms
+        and return a tuple (referentials, paths), where paths is a dictionary which contains a list
+        of transforms that leads to each referential (key of the dictionary)
+        from the source_referential (a transform is a triplet (uuid_transform, uuid_from, uuid_to))
+
+        If flat_output is True, the output is a list of tuples
+        (transform, source, dest).
+        """
+        ref_uuid = None
+        try:
+            ref_uuid = uuid.Uuid(ref)
+        except ValueError:
+            pass
+        if ref_uuid is None:
+            ref_uuid = self.referential(ref).uuid()
+
         return neuroHierarchy.databases.findReferentialNeighbours(
-            ref, bidirectional=bidirectional, flat_output=flat_output)
+            str(ref_uuid), bidirectional=bidirectional, flat_output=flat_output)
 
     def findPaths(self, source_referential, destination_referential,
                   maxLength=None, bidirectional=False, extensive=True):
@@ -88,17 +104,25 @@ class DatabasesTransformationManager(object):
         algorithm will be used which may stop when at least one matching path is
         found. But ambiguous paths will not necessarily be detected.
         '''
-        ref = uuid.Uuid(source_referential)
+        ref = None
+        try:
+            ref = uuid.Uuid(source_referential)
+        except ValueError:
+            pass
         if ref is not None:
             source_referential = ref
         else:
-            source_referential = self.getObjectUuid(source_referential)
-        ref = uuid.Uuid(destination_referential)
+            source_referential = self.referential(source_referential).uuid()
+
+        ref = None
+        try:
+            ref = uuid.Uuid(destination_referential)
+        except ValueError:
+            pass
         if ref is not None:
             destination_referential = ref
         else:
-            destination_referential = self.getObjectUuid(
-                destination_referential)
+            destination_referential = self.referential(destination_referential).uuid()
 
         if extensive:
             paths = neuroHierarchy.databases.findTransformationPaths(
