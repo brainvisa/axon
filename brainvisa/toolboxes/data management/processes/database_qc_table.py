@@ -366,7 +366,7 @@ def exec_mainthread(self, context):
 
     menu = Qt.QMenuBar()
     fmenu = menu.addMenu('File')
-    action = fmenu.addAction('Save HTML...')
+    action = fmenu.addAction('Save HTML or PDF...')
     action.triggered.connect(self.save_gui)
     mw.setMenuBar(menu)
 
