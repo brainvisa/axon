@@ -266,6 +266,7 @@ if neuroConfig.gui:
 def exec_mainthread(self, context):
     from soma.qt_gui import qt_backend
     from soma.qt_gui.qt_backend import Qt
+    from brainvisa.data.qt4gui.readdiskitemGUI import RightClickablePushButton
     qt5 = qt_backend.get_qt_backend() == 'PyQt5'
 
     mw = Qt.QMainWindow()
@@ -276,13 +277,32 @@ def exec_mainthread(self, context):
     tablew = Qt.QTableWidget()
     lay.addWidget(tablew)
 
+    eye = Qt.QIcon(findIconFile('eye.png'))
+    pen = Qt.QIcon(findIconFile('pencil.png'))
+
     vlay = Qt.QVBoxLayout()
     lay.addLayout(vlay)
     vlay.addWidget(Qt.QLabel('Selected item:'))
+    hlay = Qt.QHBoxLayout()
+    vlay.addLayout(hlay)
+    self.view_btn = RightClickablePushButton()
+    self.view_btn.setIcon(eye)
+    self.view_btn.setCheckable(True)
+    hlay.addWidget(self.view_btn)
+    self.edit_btn = RightClickablePushButton()
+    self.edit_btn.setIcon(pen)
+    self.edit_btn.setCheckable(True)
+    hlay.addWidget(self.edit_btn)
     item_view = Qt.QLineEdit()
-    vlay.addWidget(item_view)
+    hlay.addWidget(item_view)
     self.item_view = item_view
     item_view.setReadOnly(True)
+    self.view_btn.setEnabled(False)
+    self.edit_btn.setEnabled(False)
+    self.current_item = None
+    self._viewer = None
+    self._editor = None
+    self.context = context
 
     nrows, ncols = self.elements.shape
     nkeys = len(self.keys)
@@ -339,6 +359,11 @@ def exec_mainthread(self, context):
     for col in range(nkeys):
         tablew.resizeColumnToContents(col)
 
+    self.view_btn.toggled.connect(self.viewer_clicked)
+    self.edit_btn.toggled.connect(self.editor_clicked)
+    self.view_btn.rightPressed.connect(self.viewer_right_clicked)
+    self.edit_btn.rightPressed.connect(self.editor_right_clicked)
+
     menu = Qt.QMenuBar()
     fmenu = menu.addMenu('File')
     action = fmenu.addAction('Save HTML...')
@@ -354,9 +379,15 @@ def exec_mainthread(self, context):
 def item_clicked(self, item):
     from soma.qt_gui.qt_backend import Qt
 
+    if not self._viewer:
+        self.view_btn.setEnabled(False)
+    if not self._editor:
+        self.edit_btn.setEnabled(False)
+
     if not hasattr(item, 'position'):
         # no data under this item
         self.item_view.setText('')
+        self.current_item = None
         return
     row, col = item.position
     elements = self.elements[row, col]
@@ -399,6 +430,13 @@ def item_clicked(self, item):
 
     if element is not None:
         self.item_view.setText(element.fullPath())
+        self.current_item = element
+        viewers = getViewers(element, process=self, check_values=True)
+        if viewers:
+            self.view_btn.setEnabled(True)
+        editors = getDataEditors(element, process=self, check_values=True)
+        if editors:
+            self.edit_btn.setEnabled(True)
 
 
 def item_double_clicked(self, item):
@@ -420,6 +458,10 @@ def item_double_clicked(self, item):
 
 
 def display_item(self, item, num):
+    if not self._viewer:
+        self.view_btn.setEnabled(False)
+    if not self._editor:
+        self.edit_btn.setEnabled(False)
     if not hasattr(item, 'position'):
         # no data under this item
         return
@@ -431,6 +473,13 @@ def display_item(self, item, num):
 
     if element is not None:
         self.item_view.setText(element.fullPath())
+        self.current_item = element
+        viewers = getViewers(element, process=self, check_values=True)
+        if viewers:
+            self.view_btn.setEnabled(True)
+        editors = getDataEditors(element, process=self, check_values=True)
+        if editors:
+            self.edit_btn.setEnabled(True)
 
 
 def run_element_viewer(self, item, num=0):
@@ -468,6 +517,87 @@ def run_element_viewer(self, item, num=0):
                     break
                 except:
                     pass
+
+
+def viewer_clicked(self, checked):
+    if checked:
+        element = self.current_item
+        if element is None:
+            return
+        viewers = getViewers(element, process=self, check_values=True)
+        for viewer in viewers:
+            try:
+                viewer = getProcessInstance(viewer)
+                viewer.reference_process = self
+                res = defaultContext().runProcess(viewer, element)
+                self._viewer = res
+                break
+            except:
+                pass
+    else:
+        self._viewer = None
+        if self.current_item is None:
+            self.view_btn.setEnabled(False)
+
+
+def editor_clicked(self, checked):
+    if checked:
+        element = self.current_item
+        if element is None:
+            return
+        editors = getDataEditors(element, process=self, check_values=True)
+        for editor in editors:
+            try:
+                editor = getProcessInstance(editor)
+                editor.reference_process = self
+                import threading
+                print('run editor from thread:', threading.current_thread())
+                res = defaultContext().runProcess(editor, element)
+                print('res:', res)
+                self._editor = res
+                break
+            except:
+                pass
+    else:
+        self._editor = None
+        if self.current_item is None:
+            self.edit_btn.setEnabled(False)
+
+
+def viewer_right_clicked(self, pos):
+    element = self.current_item
+    if element is None:
+        return
+    viewers = getViewers(element, process=self, check_values=True)
+    self.show_interactive_viewers(element, viewers)
+
+
+def editor_right_clicked(self, pos):
+    element = self.current_item
+    if element is None:
+        return
+    viewers = getDataEditors(element, process=self, check_values=True)
+    self.show_interactive_viewers(element, viewers)
+
+
+def show_interactive_viewers(self, element, viewers):
+    if len(viewers) != 0:
+        menu = Qt.QMenu()
+        for i, viewer in enumerate(viewers):
+            action = Qt.QAction(viewer.name, menu)
+            action.viewer = viewer
+            menu.addAction(action)
+            #action.triggered.connect(self.run_interactive_viewer)
+        chosen_action = menu.exec_(Qt.QCursor.pos())
+        del menu
+        if chosen_action is not None:
+            viewer = chosen_action.viewer
+            try:
+                viewer = getProcessInstance(viewer)
+                viewer.reference_process = self
+                showProcess(viewer, element)
+            except:
+                showException()
 
 
 def save_gui(self):
