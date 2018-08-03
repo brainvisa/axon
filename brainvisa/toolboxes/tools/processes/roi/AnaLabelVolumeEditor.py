@@ -82,6 +82,7 @@ def add_save_button(self, win):
         toolbar.addAction(ac)
         ac.triggered.connect(self.save_roi)
         self.win_deleted = False
+        self.local_event_loop = None
         win.getInternalRep().destroyed.connect(self.close_and_save)
         return ac
 
@@ -107,6 +108,9 @@ def add_save_button(self, win):
 def close_and_save(self, win):
     self.save_roi()
     self.win_deleted = True
+    if self.local_event_loop is not None:
+        # if a local event loop runs in the main thread, quit it
+        self.local_event_loop.quit()
 
 
 def save_roi(self, message=None):
@@ -195,8 +199,13 @@ def execution(self, context):
     self.finished = False
     ac = mainThreadActions().call(self.add_save_button, windownum)
     if ac:
+        self.wait_for_close(windownum)
+        import threading
+        from soma.qt_gui.qt_backend import Qt
         done = False
         while not done:
+            if isinstance(threading.current_thread(), threading._MainThread):
+                Qt.qApp.processEvents()
             time.sleep(0.1)
             done = mainThreadActions().call(getattr, self, 'win_deleted')
     else:
@@ -210,3 +219,21 @@ def execution(self, context):
     del self.fgraphbase
     del self.finalgraph
     del self.voigraphnum
+
+
+def wait_for_close(self, win):
+    import threading
+    from soma.qt_gui.qt_backend import Qt
+    if isinstance(threading.current_thread(), threading._MainThread):
+        # we are running in the main thread: use a local event loop to wait
+        # for the editor window to be closed by the user. The destroyed
+        # callback will take care of ending the loop.
+        self.local_event_loop = Qt.QEventLoop()
+        self.local_event_loop.exec_()
+    else:
+        # we are running in a secondary thrad: poll in the main thread for
+        # the editor window to be closed by the user
+        done = False
+        while not done:
+            time.sleep(0.1)
+            done = mainThreadActions().call(getattr, self, 'win_deleted')
