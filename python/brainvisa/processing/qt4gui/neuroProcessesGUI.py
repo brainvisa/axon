@@ -3097,7 +3097,7 @@ class ProcessView(QWidget, ExecutionContextGUI):
         reload = False
         for p in self.process.allProcesses():
             pp = brainvisa.processes.getProcess(p)
-            if pp is not p and pp is not p.__class__:
+            if pp is not None and pp is not p and pp is not p.__class__:
                 reload = True
                 break
         result = None

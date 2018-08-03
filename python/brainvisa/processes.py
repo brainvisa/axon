@@ -4272,7 +4272,7 @@ def getProcessInfo(processId):
         result = _processesInfo.get(processId)
         if result is None:
             process = getProcess(processId, checkUpdate=False)
-            if process not in (None, type(None)):
+            if process not in (None, type(None)) and hasattr(process, '_id'):
                 result = _processesInfo.get(process._id.lower())
     return result
 
@@ -4316,7 +4316,7 @@ def getProcess(processId, ignoreValidation=False, checkUpdate=True):
                 result = process
             else:
                 if isinstance(processId, Process):
-                    result = process.__class__
+                    result = processId.__class__
                 else:
                     result = processId
     elif isinstance(processId, dict):
