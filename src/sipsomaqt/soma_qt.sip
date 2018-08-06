@@ -1,6 +1,6 @@
 %Import QtCore/QtCoremod.sip
 
-%Module somaqt 0
+%Module somaqt
 
 %If (WS_WIN)
 
