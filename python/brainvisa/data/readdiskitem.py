@@ -306,19 +306,31 @@ class ReadDiskItem(Parameter):
                 return None  # avoid using cwd
             selection, query_string = split_query_string(selection)
             fileName = os.path.normpath(os.path.abspath(selection))
-            result = self.database.getDiskItemFromFileName(
+            for database in self.database.iterDatabases():
+                if fileName.startswith(database.directory + os.sep):
+                    break
+            else:
+                database = self.database
+            result = database.getDiskItemFromFileName(
                 fileName + query_string, None)
             if result is None:
                 if _debug is not None:
                     print('  DiskItem not found in databases', file=_debug)
-                result = self.database.createDiskItemFromFileName(
-                    fileName + query_string, None)
+                directory = getFormat('Directory') in self.formats
+                result = database.createDiskItemFromFileName(
+                    fileName + query_string, None, directory=directory)
                 if result is None:
                     if _debug is not None:
                         print(
                             '  DiskItem not created in databases from file name',
                               file=_debug)
-                    result = self.database.createDiskItemFromFormatExtension(
+                    # WARNING FIXME QUESTION ??
+                    # Denis 2018/08/07
+                    # createDiskItemFromFileName() 3 lines earlier already
+                    # calls createDiskItemFromFormatExtension(), so if we
+                    # are here, createDiskItemFromFormatExtension can just not
+                    # work, right ?
+                    result = database.createDiskItemFromFormatExtension(
                         fileName + query_string, None)
                     if result is None:
                         if _debug is not None:
@@ -384,7 +396,7 @@ class ReadDiskItem(Parameter):
                     # to a format series.
                     if not self.diskItemFilter(result, requiredAttributes):
                         if ("Series of " + result.format.name in requiredAttributes.get("_format")):
-                            self.database.changeDiskItemFormatToSeries(result)
+                            database.changeDiskItemFormatToSeries(result)
                 if not self.diskItemFilter(result, requiredAttributes):
                     if _debug is not None:
                         print('  DiskItem rejected because:', self.diskItemFilter(
@@ -394,7 +406,7 @@ class ReadDiskItem(Parameter):
                 and self._name is not None \
                     and not self._parameterized().isDefault(self._name):
                 try:
-                    result = self.database.createDiskItemFromFormatExtension(
+                    result = database.createDiskItemFromFormatExtension(
                         selection + query_string)
                     if result is not None:
                         result.type = self.type

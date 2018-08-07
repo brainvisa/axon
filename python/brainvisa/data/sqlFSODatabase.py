@@ -165,7 +165,7 @@ def getAllFileFormats():
     global _all_formats
 
     if _all_formats is None:
-                # Build list of all formats used in BrainVISA
+        # Build list of all formats used in BrainVISA
         _all_formats = FileFormats('All formats')
         formatsAlreadyDefined = set(('Directory',
                                     'Graph',
@@ -330,9 +330,14 @@ class Database(object):
     def currentThreadCleanup(self):
         pass
 
-    def createDiskItemFromFormatExtension(self, fileName, defaultValue=Undefined):
+    def createDiskItemFromFormatExtension(self, fileName,
+                                          defaultValue=Undefined,
+                                          directory=False):
         fileName, queryString = split_query_string(fileName)
         format, ext, noExt = self.formats._findMatchingFormat(fileName)
+        if format is None and directory:
+            format = self.formats.getFormat('Directory')
+            noExt = fileName
         if format is not None:
             extensions = format.extensions()
             if len(extensions) == 1:
@@ -342,7 +347,10 @@ class Database(object):
                     files = [noExt]
             else:
                 files = [noExt + '.' + ext for ext in extensions]
-            diskItem = File(noExt, None)
+            if directory:
+                diskItem = Directory(noExt, None)
+            else:
+                diskItem = File(noExt, None)
             diskItem.format = getFormat(str(format.name))
             diskItem.type = None
             diskItem._files = files
@@ -1487,20 +1495,23 @@ class SQLDatabase(Database):
                                 {'database': self.name,  'filename': fileName})
         return defaultValue
 
-    def createDiskItemFromFileName(self, fileName, defaultValue=Undefined):
+    def createDiskItemFromFileName(self, fileName, defaultValue=Undefined,
+                                   directory=False):
         fileName, queryString = split_query_string(fileName)
-        diskItem = self.createDiskItemFromFormatExtension(fileName + queryString, 
-                                                          None)
+        diskItem = self.createDiskItemFromFormatExtension(
+            fileName + queryString, None, directory=directory)
         if diskItem is not None:
             d = self.directory
             if fileName.startswith(d):
                 splitted = split_path(fileName[len(d) + 1:])
-                if os.path.isdir(fileName):
+                if os.path.isdir(fileName) or directory:
                     lastContent = []
                 else:
                     lastContent = None
-                content = reduce(lambda x, y: [(y, x)], reversed(splitted[:-1]), [
-                                 (os.path.basename(f), lastContent) for f in diskItem._files])
+                content = reduce(lambda x, y: [(y, x)],
+                                 reversed(splitted[:-1]), [
+                                    (os.path.basename(f), lastContent) for f in
+                                    diskItem._files])
                 vdi = VirtualDirectoryIterator(fileName[:len(d)], content)
                 lastItem = None
                 for item in self.scanDatabaseDirectories(vdi):
@@ -2329,9 +2340,11 @@ class SQLDatabases(Database):
                 for item in database.createDiskItems(selection, _debug=_debug, exactType=exactType, **required):
                     yield item
 
-    def createDiskItemFromFileName(self, fileName, defaultValue=Undefined):
+    def createDiskItemFromFileName(self, fileName, defaultValue=Undefined,
+                                   directory=False):
         for database in self._iterateDatabases({}, {}):
-            item = database.createDiskItemFromFileName(fileName, None)
+            item = database.createDiskItemFromFileName(fileName, None,
+                                                       directory=False)
             if item is not None:
                 return item
         if defaultValue is Undefined:
