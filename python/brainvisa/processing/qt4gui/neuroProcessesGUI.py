@@ -2155,6 +2155,8 @@ class ProcessView(QWidget, ExecutionContextGUI):
 
     read_only = None
 
+    closed = QtCore.Signal()
+
     def __init__(self,
                  processId,
                  parent=None,
@@ -2919,6 +2921,7 @@ class ProcessView(QWidget, ExecutionContextGUI):
 
     def closeEvent(self, event):
         self.cleanup()
+        self.closed.emit()
         QWidget.closeEvent(self, event)
 
     def cleanup(self):
