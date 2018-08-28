@@ -107,7 +107,7 @@ def resample_volume(self, volume, ref_dims, ref_vs, trans):
     resampler.setRef(volume)
     resampled = resampler.doit(trans, ref_dims[0], ref_dims[1], ref_dims[2],
                                ref_vs)
-    return resampled.volume()
+    return resampled
 
 
 def check_resampled(self, i, volume, ref_dims, ref_vs):
