@@ -147,12 +147,18 @@ class DatabasesTransformationManager(object):
     def setReferentialTo(self, diskItem, referential):
         '''Assign to the given diskItem the given referential (as Referential
         object or uuid)'''
-        ref = self.referential(referential)
-        if not ref:
-            raise RuntimeError('Referential ' + str(referential) +
-                               ' is not in a configured database')
+        try:
+            ref_uuid = uuid.Uuid(referential)
+        except ValueError:
+            ref_uuid = None
+        if ref_uuid is None:
+            ref = self.referential(referential)
+            if not ref:
+                raise RuntimeError('Referential ' + str(referential) +
+                                   ' is not in a configured database')
+            ref_uuid = ref.uuid()
         diskItem.readAndUpdateMinf()
-        diskItem.setMinf('referential', ref.uuid())
+        diskItem.setMinf('referential', str(ref_uuid))
         try:
             neuroHierarchy.databases.insertDiskItem(diskItem, update=True)
         except:
