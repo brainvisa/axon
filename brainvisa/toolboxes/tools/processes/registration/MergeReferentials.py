@@ -127,7 +127,7 @@ def execution(self, context):
                             # context.write ( "Change the %s referential by  %s
                             # in %s" %(ref1.uuid(), ref2.uuid() ,v) )
                             tm.setNewTransformationInfo(
-                                self, v, ref2.uuid(), destPath, v)
+                                v, ref2.uuid(), destPath)
 
                         # Remove the referential from database
                         res = tm.removeReferential(
