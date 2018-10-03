@@ -3287,9 +3287,26 @@ class ExecutionContext(object):
                 self._historyBookEvent = None
                 self._historyBooksContext = None
 
+            processWriteParameters = []
+            for attribute, type in six.iteritems(process.signature):
+                if isinstance(type, WriteDiskItem):
+                    item = getattr(process, attribute)
+                    if item is not None:
+                        processWriteParameters.append(item)
+                elif isinstance(type, ListOf) and isinstance(type.contentType, WriteDiskItem):
+                    itemList = getattr(process, attribute)
+                    if itemList:
+                        processWriteParameters.extend(
+                            item for item in itemList if item is not None
+                        )
             wdi_to_release = []
-            for uuid, item_hash in self._allWriteDiskItems.items():
-                item, hash = item_hash
+            #for uuid, item_hash in self._allWriteDiskItems.items():
+            for item in processWriteParameters:
+                uuid = item.uuid()
+                item_hash = self._allWriteDiskItems.get(uuid)
+                if not item_hash:
+                    continue
+                hash = item_hash[1]
                 if item.isReadable():
                     wdi_to_release.append(uuid)
                     if item.modificationHash() != hash:
@@ -3308,11 +3325,8 @@ class ExecutionContext(object):
                         item_hash[1] = item.modificationHash()
                 elif (process.isMainProcess):  # clear unused minfs only when the main process is finished to avoid clearing minf that will be used in next steps
                     item.clearMinf()
-            if process.isMainProcess:
-                self._allWriteDiskItems = {}
-            else:
-                for uuid in wdi_to_release:
-                    del self._allWriteDiskItems[uuid]
+            for uuid in wdi_to_release:
+                del self._allWriteDiskItems[uuid]
 
             # Close output log file
             if process._outputLogFile is not None:
