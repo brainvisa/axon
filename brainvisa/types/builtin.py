@@ -177,8 +177,6 @@ Format('HTML', 'f|*.html')
 Format('PDF File', "f|*.pdf")
 Format('Soma-Workflow workflow', "f|*.workflow")
 
-Format('Bval File', "f|*.bval") ##########################
-Format('Bvec File', "f|*.bvec") ##########################
 
 # Make 'Series of SPM image' format exists
 changeToFormatSeries(getFormat('SPM image'))
@@ -217,8 +215,6 @@ FileType('GIFTI geometry', 'Any type', 'GIFTI file')
 FileType('Bucket', 'Any Type', 'Bucket')
 FileType('SVG figure', 'Any Type', 'SVG file')
 
-FileType('B values','Bval File') ##########################
-FileType('B vectors','Bvec File') ##########################
 
 # There's a bug in BrainVISA when using 'Directory' as base type
 # FileType( 'Protocol','Directory' )
