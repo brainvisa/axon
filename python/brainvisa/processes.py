@@ -3299,7 +3299,7 @@ class ExecutionContext(object):
                         processWriteParameters.extend(
                             item for item in itemList if item is not None
                         )
-            wdi_to_release = []
+            wdi_to_release = set()
             #for uuid, item_hash in self._allWriteDiskItems.items():
             for item in processWriteParameters:
                 uuid = item.uuid()
@@ -3308,7 +3308,7 @@ class ExecutionContext(object):
                     continue
                 hash = item_hash[1]
                 if item.isReadable():
-                    wdi_to_release.append(uuid)
+                    wdi_to_release.add(uuid)
                     if item.modificationHash() != hash:
                         try:
                             # do not try to insert in the database an item that doesn't have any reference to a database
