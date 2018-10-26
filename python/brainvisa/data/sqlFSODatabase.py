@@ -1322,8 +1322,23 @@ class SQLDatabase(Database):
                                     cursor.execute('UPDATE _TRANSFORMATIONS_ SET _from=?, _to=? WHERE _uuid=?', (
                                         source_referential, destination_referential, str(uuid)))
                             else:
+                                print('UUID conflict in database, uuid:',
+                                      str(uuid), file=sys.stderr)
+                                print('while inserting:', diskItem.fullPath(),
+                                      file=sys.stderr)
+                                print('file(s) with the same UUID:',
+                                      file=sys.stderr)
+                                files = cursor.execute(
+                                    'SELECT filename FROM _FILENAMES_ '
+                                    'WHERE _uuid=?', (uuid, ))
+                                for f in files:
+                                    print(f, file=sys.stderr)
+                                print('error:', e)
                                 raise DatabaseError(
-                                    'Cannot insert "%s" because its uuid is in conflict with the uuid of another file in the database' % diskItem.fullPath())
+                                    'Cannot insert "%s" because its uuid is '
+                                    'in conflict with the uuid of another '
+                                    'file in the database.'
+                                    % diskItem.fullPath())
                         else:
                             raise DatabaseError(
                                 'Cannot insert "%s" because it is already in the database' % diskItem.fullPath())
@@ -2245,6 +2260,9 @@ class SQLDatabases(Database):
             for d in six.itervalues(self._databases):
                 yield d
         for n in databases:
+            print('_iterateDatabases:', repr(n))
+        for n in databases:
+            print('   _iterateDatabases:', repr(n))
             try:
                 yield self._databases[os.path.normpath(n)]
             except KeyError:
