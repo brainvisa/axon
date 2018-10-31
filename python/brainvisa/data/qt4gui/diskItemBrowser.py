@@ -100,11 +100,7 @@ def diskItemFilter(database, diskItem, required, explainRejection=False):
         if key in ('_type', '_format'):
             continue
         values = database.getAttributeValues(key, {}, required)
-        itemValue = diskItem.get(key, Undefined)
-        if itemValue is Undefined:
-            if explainRejection:
-                return 'DiskItem do not have the required ' + repr(key) + ' attribute'
-            return False
+        itemValue = diskItem.get(key, '')
         if (key == 'name_serie'):
             if itemValue != values:
                 if explainRejection:
