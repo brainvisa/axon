@@ -1324,13 +1324,15 @@ class SQLDatabase(Database):
                             else:
                                 print('UUID conflict in database, uuid:',
                                       str(uuid), file=sys.stderr)
-                                print('while inserting:', diskItem.fullPath(),
+                                print('while inserting:',
+                                      relative_path(diskItem.fullPath(),
+                                                    self.directory),
                                       file=sys.stderr)
                                 print('file(s) with the same UUID:',
                                       file=sys.stderr)
                                 files = cursor.execute(
                                     'SELECT filename FROM _FILENAMES_ '
-                                    'WHERE _uuid=?', (uuid, ))
+                                    'WHERE _uuid=?', (diskItem._uuid, ))
                                 for f in files:
                                     print(f, file=sys.stderr)
                                 print('error:', e)
