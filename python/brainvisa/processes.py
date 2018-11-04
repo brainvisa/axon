@@ -3685,7 +3685,12 @@ class ExecutionContext(object):
             self._writeHTMLParser = Parser(
                 formatter.AbstractFormatter(
                     formatter.DumbWriter(sys.stdout, 80)))
-        self._writeHTMLParser.feed(html + '<br>\n')
+        try: ## WARNING DEBUG
+            self._writeHTMLParser.feed(html + '<br>\n')
+        except:
+            print('** could not write HTML string: **')
+            print(repr(html))
+            print('-----')
 
     def warning(self, *messages):
         """
