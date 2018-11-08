@@ -462,11 +462,19 @@ class Choice(Parameter):
         :rtype: integer
         :returns: the index of the value if found, else -1.
         """
-        i = 0
-        for n, v in self.values:
-            if value == v or str(value) == n:
+        for i, (n, v) in enumerate(self.values):
+            if value == v:
                 return i
-            i += 1
+        # Labels are only searched if the provided value can be converted to a
+        # string with str(value)
+        try:
+            str_value = str(value)
+        except Exception:
+            pass
+        else:
+            for i, (n, v) in enumerate(self.values):
+                if str_value == n:
+                    return i
         return -1
 
     def defaultValue(self):
