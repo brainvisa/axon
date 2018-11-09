@@ -33,6 +33,7 @@
 
 from soma.qt_gui.qt_backend.QtGui import *
 from soma.qt_gui.qt_backend.QtCore import *
+from soma.qt_gui import qt_backend
 from brainvisa.configuration import neuroConfig
 import os
 
@@ -93,12 +94,20 @@ class LockedFilesListEditor(QDialog):
         tablew.horizontalHeader().setStretchLastSection(False)
         tablew.setHorizontalHeaderItem(
             1, QTableWidgetItem(_t_('full name')))
-        tablew.horizontalHeader().setResizeMode(
-            0, QHeaderView.ResizeToContents)
-        tablew.horizontalHeader().setResizeMode(
-            1, QHeaderView.ResizeToContents)
-        tablew.horizontalHeader().setResizeMode(
-            2, QHeaderView.ResizeToContents)
+        if qt_backend.get_qt_backend() == 'PyQt5':
+            tablew.horizontalHeader().setSectionResizeMode(
+                0, QHeaderView.ResizeToContents)
+            tablew.horizontalHeader().setSectionResizeMode(
+                1, QHeaderView.ResizeToContents)
+            tablew.horizontalHeader().setSectionResizeMode(
+                2, QHeaderView.ResizeToContents)
+        else:
+            tablew.horizontalHeader().setResizeMode(
+                0, QHeaderView.ResizeToContents)
+            tablew.horizontalHeader().setResizeMode(
+                1, QHeaderView.ResizeToContents)
+            tablew.horizontalHeader().setResizeMode(
+                2, QHeaderView.ResizeToContents)
         tablew.setRowCount(len(files))
         tablew.setSortingEnabled(True)
         tablew.setSelectionMode(QTableWidget.ExtendedSelection)

@@ -1332,7 +1332,7 @@ class SQLDatabase(Database):
                                       file=sys.stderr)
                                 files = cursor.execute(
                                     'SELECT filename FROM _FILENAMES_ '
-                                    'WHERE _uuid=?', (diskItem._uuid, ))
+                                    'WHERE _uuid=?', (str(diskItem._uuid), ))
                                 for f in files:
                                     print(f, file=sys.stderr)
                                 print('error:', e)

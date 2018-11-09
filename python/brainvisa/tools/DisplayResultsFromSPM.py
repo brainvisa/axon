@@ -33,6 +33,7 @@
 
 from __future__ import print_function
 from soma.qt_gui.qt_backend import QtGui, QtCore, Qt
+from soma.qt_gui import qt_backend
 from anatomist.cpp.paletteEditor import PaletteEditor
 from brainvisa.processes import *
 from tempfile import mkstemp
@@ -444,7 +445,12 @@ class DisplayResultsFromSPM(object):
         self.table.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding);
         self.table.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.table.resizeRowsToContents()
-        self.table.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
+        if qt_backend.get_qt_backend() == 'PyQt5':
+            self.table.horizontalHeader().setSectionResizeMode(
+                QtGui.QHeaderView.Stretch)
+        else:
+            self.table.horizontalHeader().setResizeMode(
+                QtGui.QHeaderView.Stretch)
 
         self.table.cellClicked.connect(self._tableClicked)
 
