@@ -20,6 +20,14 @@ try:
     from brainvisa.data import neuroHierarchy
     from brainvisa.processes import defaultContext
 
+    class TestNotebook(unittest.TestCase):
+
+        def runTest(self):
+            from soma.test_utils import test_notebook as tnb
+            self.assertTrue(tnb.test_notebook(
+                os.path.join(os.path.dirname(sys.argv[0]),
+                            'usecases_nb.ipynb')))
+
     def setup_doctest(test):
         brainvisa.axon.initializeProcesses()
         # set english language because doctest tests the output of commands which
@@ -38,28 +46,24 @@ try:
 
     def test_suite():
         suite = unittest.TestSuite()
-        doctest_suite = unittest.TestSuite(doctest.DocFileSuite(
-            "usecases.rst", setUp=setup_doctest,
-            tearDown=teardown_doctest,
-            optionflags=doctest.ELLIPSIS))
-        suite.addTest(doctest_suite)
+        # try the notebook version if it can be processed on this system
+        from soma.test_utils import test_notebook as tnb
+        if tnb.main_jupyter:
+            suite.addTest(TestNotebook())
+        else:
+            doctest_suite = unittest.TestSuite(doctest.DocFileSuite(
+                "usecases.rst", setUp=setup_doctest,
+                tearDown=teardown_doctest,
+                optionflags=doctest.ELLIPSIS))
+            suite.addTest(doctest_suite)
         suite.addTest(brainvisa.tests.test_core.test_suite())
         suite.addTest(brainvisa.tests.test_history.test_suite())
         suite.addTest(brainvisa.tests.test_registration.test_suite())
         return suite
 
     if __name__ == '__main__':
-        # try the notebook version if it can be processed on this system
-        from soma.test_utils import test_notebook as tnb
-        try:
-            if tnb.test_notebook(
-                os.path.join(os.path.dirname(sys.argv[0]),
-                             'usecases_nb.ipynb')):
-                sys.exit(0)
-            else:
-                sys.exit(1)
-        except Warning:
-            unittest.main(defaultTest='test_suite')
+        unittest.main(defaultTest='test_suite')
+
 finally:
     shutil.rmtree(homedir)
     del homedir
