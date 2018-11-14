@@ -50,19 +50,27 @@ from brainvisa.data.qtgui.updateDatabases import UpdateDatabasesGUI
 name = 'Update databases'
 userLevel = 0
 
+signature = Signature(
+    'databases', ListOf(ReadDiskItem('Directory', 'Directory'),
+                        userLevel=1000),
+    'method', Choice('full', 'incremental', 'full_history', userLevel=1000),
+)
+
+
+def initialization(self):
+    self.method = 'full'
+
 
 def execution(self, context):
-    databases = mainThreadActions().call(context.inlineGUI.selectedDatabases)
-    classic_method = mainThreadActions().call(context.inlineGUI.classic_method)
-    quick_hf_method = mainThreadActions().call(
-        context.inlineGUI.quick_hf_method)
-    history_files_method = mainThreadActions().call(
-        context.inlineGUI.history_files_method)
+    dbases = [databases.database(d.fullPath()) for d in self.databases]
+    classic_method = (self.method == 'full')
+    quick_hf_method = (self.method == 'incremental')
+    history_files_method = (self.method == 'full_history')
 
-    for database in databases:
+    for database in dbases:
         # must close the connection currently opened in the main thread before
         # clearing and updating the database
-        mainThreadActions().call(database.currentThreadCleanup)
+        #mainThreadActions().call(database.currentThreadCleanup)
         if classic_method:
             database.clear(context=context)
             context.write('<b>Clear database:', database.name, '</b>')
@@ -89,4 +97,22 @@ def inlineGUI(self, values, context, parent, externalRunButton=False):
 
 
 def run_button_clicked(self, checked=False):
-    self.context._runButton()
+    try:
+        databases = self.context.inlineGUI.selectedDatabases()
+        # must close the connection currently opened in the main thread before
+        # clearing and updating the database
+        for database in databases:
+            database.currentThreadCleanup()
+
+        self.databases = [x.directory for x in databases]
+        if self.context.inlineGUI.quick_hf_method():
+            self.method = 'incremental'
+        elif self.context.inlineGUI.history_files_method():
+            self.method = 'full_history'
+        else:
+            self.method = 'full'
+        self.context._runButton()
+    except Exception as e:
+        #self.context.showException()
+        import traceback
+        traceback.print_exc()
