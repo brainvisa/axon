@@ -2262,9 +2262,6 @@ class SQLDatabases(Database):
             for d in six.itervalues(self._databases):
                 yield d
         for n in databases:
-            print('_iterateDatabases:', repr(n))
-        for n in databases:
-            print('   _iterateDatabases:', repr(n))
             try:
                 yield self._databases[os.path.normpath(n)]
             except KeyError:
