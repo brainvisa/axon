@@ -33,6 +33,7 @@
 
 import os
 from soma.qt_gui.qt_backend.QtGui import QWidget, QHBoxLayout, QLineEdit, QPushButton, QIcon, QFileDialog
+from soma.qt_gui import qt_backend
 from soma.signature.qt4gui.unicode_qt4gui import Unicode_Qt4GUI, \
     Sequence_Unicode_Qt4GUI
 from soma.qt4gui.api import TimeredQLineEdit, getPixmap
@@ -86,7 +87,7 @@ class FileName_Qt4GUI(Unicode_Qt4GUI):
 
     def _browseClicked(self):
         if self.dataTypeInstance.directoryOnly:
-            value = QFileDialog.getExistingDirectory(
+            value = qt_backend.getExistingDirectory(
                 self._widget, 'Select a directory', '',
               QFileDialog.ShowDirsOnly | QFileDialog.DontUseNativeDialog)
         elif self.dataTypeInstance.readOnly:
@@ -94,20 +95,20 @@ class FileName_Qt4GUI(Unicode_Qt4GUI):
             # kwargs
             import sipconfig
             if sipconfig.Configuration().sip_version >= 0x040a00:
-                value = QFileDialog.getOpenFileName(
+                value = qt_backend.getOpenFileName(
                     self._widget, 'Select a file', '', '', options=QFileDialog.DontUseNativeDialog)
             else:
-                value = QFileDialog.getOpenFileName(
+                value = qt_backend.getOpenFileName(
                     self._widget, 'Select a file', '', '', 0, QFileDialog.DontUseNativeDialog)
         else:
             # workaround a bug in PyQt ? Param 5 doesn't work; try to use
             # kwargs
             import sipconfig
             if sipconfig.Configuration().sip_version >= 0x040a00:
-                value = QFileDialog.getSaveFileName(
+                value = qt_backend.getSaveFileName(
                     self._widget, 'Select a file', '', '', options=QFileDialog.DontUseNativeDialog)
             else:
-                value = QFileDialog.getSaveFileName(
+                value = qt_backend.getSaveFileName(
                     self._widget, 'Select a file', '', '', None, QFileDialog.DontUseNativeDialog)
         self._lineEdit.setText(unicode(value))
 
