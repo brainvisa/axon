@@ -2,7 +2,7 @@
 Axon developer documentation
 ============================
 
-* :axon:`Slides of a development course <Programming_with_brainvisa.pdf>`, with :axon:`training course data <Programming_with_brainvisa.zip>`
+* :axon:`Slides of a development course <Programming_with_brainvisa.pdf>`, with :axon:`training course data <ftp://ftp.cea.fr/pub/dsv/anatomist/data/Programming_with_brainvisa.zip>`_
 * :doc:`Developer manual <developer_manual>`
 
 * :axonusr:`Axon user documentation <index.html>`
