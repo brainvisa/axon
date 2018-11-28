@@ -138,6 +138,9 @@ endif()
 brainvisa_add_executable(axon-runprocess IS_SCRIPT)
 
 brainvisa_add_test(axon-tests "${PYTHON_EXECUTABLE_NAME}" -m brainvisa.tests.test_axon)
+brainvisa_add_test(axon-tests "${PYTHON_EXECUTABLE_NAME}" -m brainvisa.tests.test_core)
+brainvisa_add_test(axon-tests "${PYTHON_EXECUTABLE_NAME}" -m brainvisa.tests.test_history)
+brainvisa_add_test(axon-tests "${PYTHON_EXECUTABLE_NAME}" -m brainvisa.tests.test_registration)
 
 BRAINVISA_CREATE_CMAKE_CONFIG_FILES()
 
