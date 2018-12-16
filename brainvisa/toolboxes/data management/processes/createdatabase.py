@@ -6,6 +6,7 @@ from soma.wip.application.api import Application
 from brainvisa.configuration import databases_configuration
 from brainvisa.processes import Signature, WriteDiskItem, OpenChoice, Boolean
 import os
+from brainvisa.data.sqlFSODatabase import databaseVersion
 
 name = 'Create database'
 userLevel = 0
@@ -53,7 +54,8 @@ def create_database(database_directory, ontology='brainvisa-3.2.0',
         os.makedirs(database_directory)
     database_settings = neuroConfig.DatabaseSettings(database_directory)
     database = neuroHierarchy.SQLDatabase(
-        os.path.join(database_directory, "database.sqlite"),
+        os.path.join(database_directory,
+                     "database-%s.sqlite" % databaseVersion),
         database_directory,
         ontology,
         context=processes.defaultContext(),
