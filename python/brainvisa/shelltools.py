@@ -49,11 +49,31 @@ def filesFromShPatterns(*args):
 
 
 def cp(*args, **kwargs):
+    def copy_as_you_can(source, dest, keepdate):
+        if keepdate:
+            copy = shutil.copy2
+        else:
+            copy = shutil.copy
+        try:
+            copy(source, dest)
+        except Exception as e:
+            # some filesystems (CIFS) do not accept changing file stat info
+            # and raise an exception in shutil.copy2() or shutil.copy()
+            if keepdate:
+                try:
+                    shutil.copy(source, dest)
+                    return
+                except:
+                    pass
+            try:
+                shutil.copyfile(source, dest)
+                return
+            except:
+                pass
+            # nothing has worked
+            raise
+
     keepdate = kwargs.get('keepdate', 0)
-    if keepdate:
-        copy = shutil.copy2
-    else:
-        copy = shutil.copy
     sources = apply(filesFromShPatterns, args[:-1])
     if not sources:
         return
@@ -72,11 +92,11 @@ def cp(*args, **kwargs):
                 # try forcing permissions
                 os.chmod(dest, 0o770)
                 os.remove(dest)
-            copy(source, dest)
+            copy_as_you_can(source, dest, keepdate)
             return
     else:
         if len(sources) == 1 and not os.path.isdir(sources[0]):
-            copy(sources[0], dest)
+            copy_as_you_can(sources[0], dest, keepdate)
             return
         try:
             os.mkdir(dest)
@@ -119,7 +139,7 @@ def cp(*args, **kwargs):
                     # try forcing permissions
                     os.chmod(newpath, 0o770)
                     os.remove(newpath)
-            copy(path, newpath)
+            copy_as_you_can(path, newpath, keepdate)
 
 
 def symlink(*args):
