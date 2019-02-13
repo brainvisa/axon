@@ -210,10 +210,12 @@ class ReadDiskItem(Parameter):
                 raise RuntimeError(
                     HTMLMessage(_t_('the parameter <em>%s</em> is not readable or does not exist : %s') % (unicode(name), unicode(value))))
 
-    def findValue(self, selection, requiredAttributes=None, fileExists=False, _debug=Undefined):
+    def findValue(self, selection, requiredAttributes=None, preferExisting=False, _debug=Undefined):
         '''Find the best matching value for the ReadDiskItem, according to the given selection criterions.
 
         The "best matching" criterion is the maximum number of common attributes with the selection, with required attributes satisfied.
+
+        In case of WriteDiskItem, if preferExisting, also search for value already in database.
 
         If there is an ambiguity (no matches, or several equivalent matches), *None* is returned.
 
@@ -221,6 +223,7 @@ class ReadDiskItem(Parameter):
         ----------
         selection: diskitem, or dictionary
         requiredAttributes: dictionary (optional)
+        preferExisting: boolean
         _debug: file-like object (optional)
 
         Returns
@@ -423,7 +426,7 @@ class ReadDiskItem(Parameter):
 
         if result is None and fullSelection is not None:
             values = []
-            if fileExists and (write or self._write):
+            if preferExisting and (write or self._write):
                 values = list(self._findValues(fullSelection, requiredAttributes,
                                                write=False,
                                                _debug=_debug))
