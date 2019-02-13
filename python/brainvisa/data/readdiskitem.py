@@ -422,9 +422,18 @@ class ReadDiskItem(Parameter):
             fullSelection = dict(selection)
 
         if result is None and fullSelection is not None:
-            values = list(self._findValues(fullSelection, requiredAttributes,
-                                           write=not fileExists and (write or self._write),
-                                           _debug=_debug))
+            if fileExists and (write or self._write):
+                values = list(self._findValues(fullSelection, requiredAttributes,
+                                               write=False,
+                                               _debug=_debug))
+                if not values:
+                    values = list(self._findValues(fullSelection, requiredAttributes,
+                                                   write=(write or self._write),
+                                                   _debug=_debug))
+            else:
+                values = list(self._findValues(fullSelection, requiredAttributes,
+                                               write=(write or self._write),
+                                               _debug=_debug))
 
             if values:
                 if len(values) == 1:
