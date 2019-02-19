@@ -588,6 +588,7 @@ class DiskItemEditor(QWidget, DataEditor):
         self._viewers = brainvisa.processes.getViewers(
             source, 1, checkUpdate=False, process=self.process,
                                 check_values=True)
+        print(self._viewers)
 
     def updateViewersComboBox(self):
         if self.cmbViewers is not None:
@@ -597,6 +598,8 @@ class DiskItemEditor(QWidget, DataEditor):
             # Update viewers in combo box
             self.cmbViewers.clear()
             self.cmbViewers.addItem(_t_('Default'), None)
+            print(self._viewers)
+            self.getViewers() # to update if needed
             for viewer in self._viewers:
                 self.cmbViewers.addItem(_t_(viewer.name), viewer)
 
@@ -620,7 +623,7 @@ class DiskItemEditor(QWidget, DataEditor):
     def viewersToTry(self):
         viewer = getProcessInstance(self.selectedViewer())
         if viewer is None:
-            return self._viewers
+            return self.getViewers()
         else:
             return [viewer]
 
@@ -641,6 +644,7 @@ class DiskItemEditor(QWidget, DataEditor):
 
     def selectedDataEditor(self):
         # Current index is shifted in Combo box due to the 'Default value' item
+        self.getDataEditors() # trigger update if needed
         if self.cmbDataEditors is not None:
             index = self.cmbDataEditors.currentIndex()
             if index != -1 and index > 0 and index <= len(self._editors):
@@ -746,6 +750,7 @@ class DiskItemEditor(QWidget, DataEditor):
             # Update editors in combo box
             self.cmbDataEditors.clear()
             self.cmbDataEditors.addItem(_t_('Default'), None)
+            self.getDataEditors() # update if needed
             for editor in self._editors:
                 self.cmbDataEditors.addItem(_t_(editor.name), editor)
 
@@ -769,7 +774,7 @@ class DiskItemEditor(QWidget, DataEditor):
     def dataEditorsToTry(self):
         editor = getProcessInstance(self.selectedDataEditor())
         if editor is None:
-            return self._editors
+            return self.getDataEditors()
         else:
             return [editor]
 
