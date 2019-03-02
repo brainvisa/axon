@@ -40,6 +40,7 @@ from soma.sorted_dictionary import SortedDictionary
 from soma.wip.application.api import findIconFile
 from brainvisa.processing.neuroException import showException
 from brainvisa.configuration import neuroConfig
+import six
 
 if sys.version_info[0] >= 3:
     def execfile(filename, globals=None, locals=None):
@@ -190,7 +191,7 @@ def allToolboxes():
     @return: all loaded toolboxes.
     """
     global _toolboxes
-    return _toolboxes.itervalues()
+    return six.itervalues(_toolboxes)
 
 
 def getToolbox(id):

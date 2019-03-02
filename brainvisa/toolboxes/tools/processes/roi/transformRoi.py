@@ -188,7 +188,7 @@ class TransformRoi():
                                          }
                                      }
                      })
-                roiIt.next()
+                next(roiIt)
 
     def _init3dCursor(self):
         aImg = self._aImages[self._getSelectedImage()]
@@ -851,7 +851,7 @@ class TransformRoi():
             region_name = roi_it.regionName()
             label = labels.setdefault(region_name, len(labels) + 1)
             if label != selectedLabel:
-                roi_it.next()
+                next(roi_it)
                 continue
             mask_it = roi_it.maskIterator()
             if image_size is None:
@@ -865,8 +865,8 @@ class TransformRoi():
             while mask_it.isValid():
                 pos = mask_it.value()
                 image.setValue(label, *pos)
-                mask_it.next()
-            roi_it.next()
+                next(mask_it)
+            next(roi_it)
 
         return image
 

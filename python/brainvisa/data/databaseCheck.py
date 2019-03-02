@@ -755,7 +755,7 @@ class T1MriConverter(DBConverter):
         @param destDir : directory where the recognition sessions must be moved
         """
         #
-        root, subdirs, files = os.walk(oldDir).next()
+        root, subdirs, files = next(os.walk(oldDir))
         data = re.compile(".*\.data")
         for d in subdirs:
             if not data.match(d):

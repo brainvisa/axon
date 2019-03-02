@@ -109,7 +109,7 @@ def displayFileBuilderInfos():
     '''
       Display current registered :py:class:`FileBuilderInfo`s.
     '''
-    for filebuilderinfo in FileBuilderInfoManager().filebuilderinfos.itervalues():
+    for filebuilderinfo in six.itervalues(FileBuilderInfoManager().filebuilderinfos):
         print(filebuilderinfo)
 
 
@@ -876,7 +876,7 @@ class FileBuilderInfoManager(Singleton):
         objectlock = resourcemanager.getObjectLock(self)
         with objectlock:
             # This prevent changes to the dictionary during iteration
-            for filebuilderinfo in self.filebuilderinfos.itervalues():
+            for filebuilderinfo in six.itervalues(self.filebuilderinfos):
                 filefragment = filebuilderinfo.getFileFragment(
                     filefragmentsha1)
 
@@ -1264,7 +1264,7 @@ class FileBuilderInfo(object):
 
         objectlock = resourcemanager.getObjectLock(self)
         with objectlock:
-            for filefragment in self.filefragments.itervalues():
+            for filefragment in six.itervalues(self.filefragments):
                 result += '  --> filebuilderinfo - filefragment : ' + \
                     str(filefragment) + '\n'
         return result

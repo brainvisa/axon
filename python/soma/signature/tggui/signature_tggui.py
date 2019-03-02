@@ -50,13 +50,6 @@ from soma.tggui.api import ApplicationTgGUI, TgGUI, TgFieldSet
 import six
 import sys
 
-if sys.version_info[0] >= 3:
-    def next(thing):
-        return thing.__next__()
-else:
-    def next(thing):
-        return thing.next()
-
 
 class HasSignatureEditionWidget(TgFieldSet):
     _live = True
@@ -201,7 +194,7 @@ class HasSignatureEditionWidget(TgFieldSet):
                 'signature', self._signatureChanged)
             self.__object.removeOnAttributeChange(self._attributeChanged)
 
-            it = self.__object.signature.itervalues()
+            it = six.itervalues(self.__object.signature)
             next(it)  # skip signature
             for signatureItem in it:
 

@@ -1040,13 +1040,13 @@ def getDocFile(filename):
 # Pathes for binaries and libraries
 # (shouldn't we just test platform != 'windows' ?) (Denis)
 # if platform != 'windows':
-    # if os.environ.has_key( 'PATH' ):
+    # if 'PATH' in os.environ:
         # os.environ[ 'PATH' ] = os.path.join( mainPath, 'bin', platform ) + ':' + os.path.join( mainPath, 'bin' ) + ':' + \
                              # os.environ[ 'PATH' ]
     # else:
         # os.environ[ 'PATH' ] = os.path.join( mainPath, 'bin', platform ) + ':' + os.path.join( mainPath, 'bin' )
     # libpathenv = libraryPathEnvironmentVariable()
-    # if os.environ.has_key( libpathenv ):
+    # if libpathenv in os.environ:
         # os.environ[ libpathenv ] = \
             # os.path.join( mainPath, 'lib', platform ) + ':' + \
             # os.environ[ libpathenv ]

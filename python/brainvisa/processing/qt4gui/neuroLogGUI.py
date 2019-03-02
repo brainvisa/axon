@@ -45,11 +45,11 @@ import sip
 if sys.version_info[0] >= 3:
     unicode = str
 
-    def next(iterable):
-        return iterable.__next__()
-else:
-    def next(iterable):
-        return iterable.next()
+    #def next(iterable):
+        #return iterable.__next__()
+#else:
+    #def next(iterable):
+        #return iterable.next()
 
 
 class LogItemsViewer(QWidget):

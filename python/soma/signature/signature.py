@@ -47,11 +47,6 @@ import six
 if sys.version_info[0] >= 3:
     unicode = str
 
-    def next(iterator):
-        return iterator.__next__()
-else:
-    def next(iterator):
-        return iterator.next()
 
 #-------------------------------------------------------------------------
 

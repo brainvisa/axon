@@ -105,6 +105,6 @@ def execution(self, context):
         label = ['siRelax', config.fullPath()]
         analyse = ['siFunctionalGraphs', config.fullPath()]
         context.write('Labelling graphs')
-        apply(context.system, label)
+        context.system(*label)
         context.write('Post-labelling analysis')
-        apply(context.system, analyse)
+        context.system(*analyse)

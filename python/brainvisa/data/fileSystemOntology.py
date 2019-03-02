@@ -73,11 +73,11 @@ import six
 if sys.version_info[0] >= 3:
     unicode = str
 
-    def next(iterable):
-        return iterable.__next__()
-else:
-    def next(iterable):
-        return iterable.next()
+    #def next(iterable):
+        #return iterable.__next__()
+#else:
+    #def next(iterable):
+        #return iterable.next()
 
 #----------------------------------------------------------------------------
 
@@ -1080,7 +1080,7 @@ class FileSystemOntology(object):
     def getTypeChildren(self, types):
         if getattr(self, '_childrenByTypeName', None) is None:
             self._childrenByTypeName = {}
-            for type in neuroDiskItems.diskItemTypes.itervalues():
+            for type in six.itervalues(neuroDiskItems.diskItemTypes):
                 self._childrenByTypeName.setdefault(
                     type.name, set((type.name,)))
                 if type.parent:
@@ -1282,7 +1282,7 @@ class FileSystemOntology(object):
                 ontology[type.name] = [keys, type.parent.name]
             else:
                 ontology[type.name] = [keys, None]
-        for type in neuroDiskItems.diskItemTypes.itervalues():
+        for type in six.itervalues(neuroDiskItems.diskItemTypes):
             if type.name not in ontology:
                 if type.parent:
                     ontology[type.name] = [(), type.parent.name]
@@ -1364,7 +1364,7 @@ class FileSystemOntology(object):
         """
         Prints information about formats.
         """
-        for format in neuroDiskItems.formats.itervalues():
+        for format in six.itervalues(neuroDiskItems.formats):
             output = 'newFormat( ' + repr(format.name) + ', ( '
             for pattern in format.getPatterns().patterns:
                 output += "'"
@@ -1380,6 +1380,6 @@ class FileSystemOntology(object):
             print(output, file=file)
         print(file=file)
 
-        for formatList in neuroDiskItems.formatLists.itervalues():
+        for formatList in six.itervalues(neuroDiskItems.formatLists):
             print('newFormatList( ' + repr(
                 formatList.name) + ', ' + repr(tuple((f.name for f in formatList))) + ' )', file=file)

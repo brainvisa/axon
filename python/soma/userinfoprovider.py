@@ -36,6 +36,7 @@ import types
 from soma.signature.api import Signature, VariableSignature, Unicode, Sequence, Integer, Choice
 from soma.configuration import ConfigurationGroup
 from soma.wip.application.api import Application
+import six
 
 
 def getUsersInfo(dataset, formats, keys, sorts):
@@ -348,7 +349,7 @@ class NisUserInfoProvider(UserInfoProvider):
             sorts = appli.configuration.userinfoprovider.nis.sorts
 
         resultset = list()
-        for value in nis.cat(map, domain).itervalues():
+        for value in six.itervalues(nis.cat(map, domain)):
             if not re.match(filter, value) is None:
                 resultrecord = list()
                 nisvalues = value.split(separator)

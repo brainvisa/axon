@@ -203,8 +203,8 @@ class FedjiSqliteCollection(object):
                        values=', '.join('?' for i in values))
             cnx.execute(sql, values)
             if list_fields:
-                list_index = cnx.execute(
-                    'SELECT last_insert_rowid()').next()[0]
+                list_index = next(cnx.execute(
+                    'SELECT last_insert_rowid()'))[0]
                 for i in xrange(len(list_fields)):
                     field = list_fields[i]
                     list_table = '%s_list_%s' % (self._documents_table, field)
@@ -229,7 +229,7 @@ class FedjiSqliteCollection(object):
         return FedjiSqliteQueryResult(self, query, fields, skip, limit)
 
     def find_one(self, query={}, fields=None):
-        return iter(self.find(query, fields=fields)).next()
+        return next(iter(self.find(query, fields=fields)))
 
     def remove(self, query):
         list_tables = []

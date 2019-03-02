@@ -153,4 +153,4 @@ class Sequence_TgGUI(TgGUI):
             itSequenceObject = iter(sequenceObject)
             for elementTggui, elementWidget in self._elementsGUI:
                 elementTggui.updateEditionWidget(elementWidget,
-                                                 itSequenceObject.next())
+                                                 next(itSequenceObject))

@@ -88,10 +88,10 @@ def execution(self, context):
                   '-o', self.mask.fullPath(),
                   '-t', 'FLOAT']
 
-    apply(context.system, ThreshA)
-    apply(context.system, ThreshB)
-    apply(context.system, Addition)
-    apply(context.system, MaskDilation)
-    apply(context.system, Conversion)
+    context.system(*ThreshA)
+    context.system(*ThreshB)
+    context.system(*Addition)
+    context.system(*MaskDilation)
+    context.system(*Conversion)
 
     context.write('Finished')

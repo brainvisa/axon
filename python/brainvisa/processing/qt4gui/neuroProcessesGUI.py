@@ -4103,7 +4103,7 @@ class ProcessSelectionWidget(QMainWindow):
         # next search
         if self.matchedProcs:
             try:  # an exception will occur when there is no more items
-                item = self.matchedProcs.next()
+                item = next(self.matchedProcs)
                 self.searchboxLineEdit.setEnabled(False)
                 self.searchboxSearchB.setText('next')
 #        self.searchboxSearchB.setShortcut( QKeySequence.FindNext )
