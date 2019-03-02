@@ -2552,7 +2552,7 @@ class ProcessExecutionNode(ExecutionNode):
             if p is not None and hasattr(p, attribute):
                 return getattr(p, attribute)
         try:
-            proc = getattr(self.__dict__, '_process')
+            proc = self.__dict__.get('_process')
             if proc is not None:
                 eNode = getattr(proc, '_executionNode', None)
                 if eNode is not None:
