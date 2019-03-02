@@ -74,7 +74,7 @@ def cp(*args, **kwargs):
             raise
 
     keepdate = kwargs.get('keepdate', 0)
-    sources = apply(filesFromShPatterns, args[:-1])
+    sources = filesFromShPatterns(*args[:-1])
     if not sources:
         return
     dest = args[-1]
@@ -143,7 +143,7 @@ def cp(*args, **kwargs):
 
 
 def symlink(*args):
-    sources = apply(filesFromShPatterns, args[:-1])
+    sources = filesFromShPatterns(*args[:-1])
     if not sources:
         return
     dest = args[-1]

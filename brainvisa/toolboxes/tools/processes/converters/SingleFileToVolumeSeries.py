@@ -42,7 +42,7 @@ signature = Signature(
                          enableConversion=0),
   'write', WriteDiskItem(
       '4D Volume', map(lambda x: changeToFormatSeries(getFormat(x)), aimsGlobals.aimsWriteVolumeFormats)),
-    # 'preferedFormat', apply( Choice, [ ( '<auto>', None ) ] + map( lambda x: (x,getFormat(x)), aimsGlobals.aimsVolumeFormats ) ),
+    # 'preferedFormat', Choice(*([ ( '<auto>', None ) ] + map( lambda x: (x,getFormat(x)), aimsGlobals.aimsVolumeFormats ))),
   'removeSource', Boolean(),
   'ascii', Boolean(),
   'voxelType', Choice(('<Same as input>', None), 'U8',
@@ -105,14 +105,14 @@ def execution(self, context):
         [ '-t' ] + range( len( name_serie ) ) + \
         ['-T'] + range(len(name_serie))
 
-    if apply(context.system, command):
+    if context.system(*command):
         raise Exception(_t_('Error while splitting <em>%s</em>') %
                         (self.read.fullPath(), ))
     if convert:
         for f in self.write.firstFullPathsOfEachSeries():
             command[2] = f
             command[4] = f
-            if apply(context.system, command):
+            if context.system(*command):
                 raise Exception(_t_('Error while converting <em>%s</em> to <em>%s</em>') %
                                 (command[2], command[4]))
 

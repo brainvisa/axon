@@ -231,7 +231,7 @@ class HasSignatureEditionWidget(QtGui.QGroupBox):
             self.__object.removeOnAttributeChange(
                 'signature', self._signatureChanged)
             self.__object.removeOnAttributeChange(self._attributeChanged)
-            it = self.__object.signature.itervalues()
+            it = six.itervalues(self.__object.signature)
             next(it)  # skip signature
             for signatureItem in it:
                 signatureItem.removeOnAttributeChange(

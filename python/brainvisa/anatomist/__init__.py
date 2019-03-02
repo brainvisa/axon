@@ -65,12 +65,12 @@ if anatomistImport:
     from brainvisa.processing.qtgui import backwardCompatibleQt as qt
     from brainvisa.processing.qtgui import neuroProcessesGUI
 
-if sys.version_info[0] >= 3:
-    def next(iterator):
-        return iterator.__next__()
-else:
-    def next(iterator):
-        return iterator.next()
+#if sys.version_info[0] >= 3:
+    #def next(iterator):
+        #return iterator.__next__()
+#else:
+    #def next(iterator):
+        #return iterator.next()
 
 """
 This module enables to generate an implementation of anatomist api specialized for brainvisa.

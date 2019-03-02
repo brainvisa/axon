@@ -1324,10 +1324,10 @@ class Parameterized(object):
             setattr(self, n, getattr(self, n, None))
 
         # Remove unused links
-        for n in self._links.keys():
+        for n in list(self._links.keys()):
             if n not in self.signature:
                 del self._links[n]
-        for n in self._warn.keys():
+        for n in list(self._warn.keys()):
             if n not in self.signature:
                 del self._warn[n]
 
@@ -1512,7 +1512,7 @@ class Process(Parameterized):
 
     def _checkIterateParam(self, warn=True, **kwargs):
         requiredLength = 0
-        for values in kwargs.itervalues():
+        for values in six.itervalues(kwargs):
             length = len(values)
             if length > 0:
                 if requiredLength > 1 and length > 1 and requiredLength != length:
@@ -1868,11 +1868,11 @@ class ListOfIterationProcess(IterationProcess):
         chs = list(en.children())[0]._process.signature
         self.changeSignature(Signature('param', ListOf(chs.values()[0])))
         en._parameterized = weakref.ref(self)
-        chkeys = self.executionNode()._children.keys()
+        chkeys = list(self.executionNode()._children.keys())
         for i, p in enumerate(en.children()):
             s = p._process.signature
-            en.addLink(str(chkeys[i]) + '.' + s.keys()[
-                       0], 'param', self.linkP(self, i))
+            en.addLink(str(chkeys[i]) + '.' + list(s.keys())[0], 'param',
+                       self.linkP(self, i))
 
 
 #----------------------------------------------------------------------------
@@ -2157,11 +2157,11 @@ class ExecutionNode(object):
         '''
         Returns the list of names of the children execution nodes.
         '''
-        return self._children.keys()
+        return list(self._children.keys())
 
     def children(self):
         """Returns the list of children execution nodes."""
-        return self._children.itervalues()
+        return six.itervalues(self._children)
 
     def hasChildren(self):
         """Returns True if this node has children."""
@@ -2523,14 +2523,14 @@ class ProcessExecutionNode(ExecutionNode):
     def children(self):
         eNode = getattr(self._process, '_executionNode', None)
         if eNode is not None:
-            return eNode._children.itervalues()
+            return six.itervalues(eNode._children)
         else:
             return []
 
     def childrenNames(self):
         eNode = getattr(self._process, '_executionNode', None)
         if eNode is not None:
-            return eNode._children.keys()
+            return list(eNode._children.keys())
         else:
             return []
 
@@ -2546,14 +2546,21 @@ class ProcessExecutionNode(ExecutionNode):
             self.__dict__[attribute] = value
 
     def __getattr__(self, attribute):
-        p = self.__dict__.get('_parameterized')()
-        if p is not None and hasattr(p, attribute):
-            return getattr(p, attribute)
-        eNode = getattr(self._process, '_executionNode', None)
-        if eNode is not None:
-            c = eNode.child(attribute)
-            if c is not None:
-                return c
+        p = self.__dict__.get('_parameterized')
+        if p is not None: # None if in deletion ?
+            p = p()
+            if p is not None and hasattr(p, attribute):
+                return getattr(p, attribute)
+        try:
+            proc = getattr(self.__dict__, '_process')
+            if proc is not None:
+                eNode = getattr(proc, '_executionNode', None)
+                if eNode is not None:
+                    c = eNode.child(attribute)
+                    if c is not None:
+                        return c
+        except ReferenceError:
+            pass
         raise AttributeError(attribute)
 
     def child(self, name, default=None):
@@ -2896,7 +2903,7 @@ class ExecutionContext(object):
         # Set arguments
         to_restore = set()
         for i, v in enumerate(args):
-            n = _process.signature.keys()[i]
+            n = list(_process.signature.keys())[i]
             _process._setImmutable(n, True)
             to_restore.add(_process)
             # performing this 2 pass loop allows to set parameters with
@@ -2908,7 +2915,7 @@ class ExecutionContext(object):
             proc._setImmutable(argname, True)
             to_restore.add(proc)
         for i, v in enumerate(args):
-            n = _process.signature.keys()[i]
+            n = list(_process.signature.keys())[i]
             _process.setDefault(n, 0)
             if v is not None:
                 _process.setValue(n, v)
@@ -4768,7 +4775,7 @@ def getConverters():
     global _converters
     results = []
 
-    for v in _converters.itervalues():
+    for v in six.itervalues(_converters):
         if not v in results and type(v) == str:
             results.append(v)
 
@@ -5157,7 +5164,7 @@ def getProcessesBySourceDist(registry, source, enableConversion=1,
 
         possible_sources = [source]
         possible_sources += [(p, src_format) for p in src_type.parents()]
-        possible_sources += converters.keys()
+        possible_sources += list(converters.keys())
         for s in possible_sources:
             ps = registry.get(s)
             if ps is not None:
@@ -5339,7 +5346,7 @@ def getProcessesBySource(source, role, enableConversion=1, checkUpdate=True,
         r2 = []
         for p in r:
             # get process signature, 1st param
-            param = p.signature[p.signature.keys()[0]]
+            param = p.signature[list(p.signature.keys())[0]]
             if param.findValue(source) == source:
                 r2.append(p)
         r = r2
@@ -5370,7 +5377,8 @@ def runProcessBySource(source, role,
         context.runProcess(runnable_proc, source)
 
     if not isinstance(source, DiskItem):
-        source = ReadDiskItem('Any Type', formats.keys()).findValue(source)
+        source = ReadDiskItem('Any Type',
+                              list(formats.keys())).findValue(source)
     if context is None:
         context = defaultContext()
 

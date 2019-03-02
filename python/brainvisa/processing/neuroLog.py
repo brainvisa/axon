@@ -63,14 +63,14 @@ if sys.version_info[0] >= 3:
     def items(thing):
         return list(thing.items())
 
-    def next(iterator):
-        return iterator.__next__()
+    #def next(iterator):
+        #return iterator.__next__()
 else:
     def items(thing):
         return thing.items()
 
-    def next(iterator):
-        return iterator.next()
+    #def next(iterator):
+        #return iterator.next()
 
 
 #------------------------------------------------------------------------------

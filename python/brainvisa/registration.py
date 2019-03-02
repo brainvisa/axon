@@ -242,9 +242,9 @@ class DatabasesTransformationManager(object):
                             tr = trans[i]
                             dref = self.referential(talairachMNIReferentialId)
                             try:
-                                path = self.findTransformationPaths(
+                                path = next(self.findTransformationPaths(
                                     referential.uuid(), dref.uuid(),
-                                  maxLength=1).next()
+                                  maxLength=1))
                             except StopIteration:
                                 tdi = self.createNewTransformation(
                                     'Transformation Matrix',

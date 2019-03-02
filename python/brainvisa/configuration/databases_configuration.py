@@ -49,12 +49,12 @@ from soma.signature.api import HasSignature, Signature, FileName, \
 from soma.minf.api import readMinf
 import six
 
-if sys.version_info[0] >= 3:
-    def next(iterator):
-        return iterator.__next__()
-else:
-    def next(iterator):
-        return iterator.next()
+#if sys.version_info[0] >= 3:
+    #def next(iterator):
+        #return iterator.__next__()
+#else:
+    #def next(iterator):
+        #return iterator.next()
 
 
 #------------------------------------------------------------------------------

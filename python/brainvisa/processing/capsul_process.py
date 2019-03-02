@@ -98,7 +98,7 @@ def make_parameter(param, name, process, attributes=None,
         paramoptions = newtype[1](param, name, process, attributes,
                                   path_completion)
         newtype = newtype[0]
-    elif hasattr(newtype, 'func_name'):
+    elif hasattr(newtype, '__code__'): # function
         newtype, paramoptions = newtype(param, name, process, attributes,
                                         path_completion)
     if param.groups:

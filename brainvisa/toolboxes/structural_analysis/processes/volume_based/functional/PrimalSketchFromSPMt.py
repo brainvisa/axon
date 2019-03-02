@@ -79,5 +79,5 @@ def execution(self, context):
         context.write('Starting with no stat file. Sure about that ?')
 
     context.write('Starting primal sketch computation')
-    apply(context.system, call_list + option_list)
+    context.system(*(call_list + option_list))
     context.write('Finished')

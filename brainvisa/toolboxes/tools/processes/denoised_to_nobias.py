@@ -98,7 +98,7 @@ def execution(self, context):
     else:
         undo_python_script = None
     it = databases.iterDatabases()
-    it.next()  # Skip shared database
+    next(it)  # Skip shared database
     for database in it:
         rename = []
         databaseDirectory = database.directory

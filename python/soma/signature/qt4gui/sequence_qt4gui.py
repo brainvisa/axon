@@ -160,4 +160,4 @@ class Sequence_Qt4GUI(Qt4GUI):
             itSequenceObject = iter(sequenceObject)
             for elementQtgui, elementWidget in self._elementsGUI:
                 elementQtgui.updateEditionWidget(elementWidget,
-                                                 itSequenceObject.next())
+                                                 next(itSequenceObject))

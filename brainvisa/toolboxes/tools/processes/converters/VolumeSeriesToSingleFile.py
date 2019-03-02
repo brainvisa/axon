@@ -82,13 +82,14 @@ def execution(self, context):
         convert = 1
         command += ['-t', self.voxelType]
 
-    if apply(context.system, ['AimsTCat', '-o', self.write, '-i'] + self.read.firstFullPathsOfEachSeries()):
+    if context.system(*(['AimsTCat', '-o', self.write, '-i']
+                        + self.read.firstFullPathsOfEachSeries())):
         raise Exception(_t_('Error while pulling <em>%s</em> to <em>%s</em>') %
                         (self.read.fullPath(), self.write.fullPath()))
     if convert:
         command[2] = self.write
         command[4] = self.write
-        if apply(context.system, command):
+        if context.system(*command):
             raise Exception(_t_('Error while converting <em>%s</em> to <em>%s</em>') %
                             (command[2], command[4]))
     if self.removeSource:
