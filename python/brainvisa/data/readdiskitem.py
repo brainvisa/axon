@@ -427,7 +427,9 @@ class ReadDiskItem(Parameter):
         if result is None and fullSelection is not None:
             values = []
             if preferExisting and (write or self._write):
-                values = list(self._findValues(fullSelection, requiredAttributes,
+                fullAttributes = fullSelection.copy()
+                fullAttributes.update(requiredAttributes)
+                values = list(self._findValues(fullSelection, fullAttributes,
                                                write=False,
                                                _debug=_debug))
             if not values:
