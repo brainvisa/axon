@@ -74,6 +74,8 @@ Format('FDF image', ['f|*.fdf'])
 Format('NIFTI-1 image', "f|*.nii")
 Format('gz compressed NIFTI-1 image',
        "f|*.nii.gz", attributes={'compressed': 'gz'})
+Format('FreesurferMGZ', "f|*.mgz")
+Format('FreesurferMGH', "f|*.mgh")
 # Format( 'BRUKER fieldmap', "f|*.raw" )
 # Format( 'Z compressed BRUKER fieldmap', "f|*.raw.Z", attributes={'compressed': 'Z'} )
 # Format( 'gz compressed BRUKER fieldmap', "f|*.raw.gz",
@@ -94,6 +96,9 @@ Format('gz compressed GIFTI file', 'f|*.gii.gz')
 Format('MNI OBJ mesh', "f|*.obj")
 Format('Z compressed MNI OBJ mesh', 'f|*.obj.Z')
 Format('gz compressed MNI OBJ mesh', 'f|*.obj.gz')
+# Format('WAVEFRONT mesh', 'f|*.obj')
+# Format('Z compressed WAVEFRONT mesh', 'f|*.obj.Z')
+# Format('gz compressed WAVEFRONT mesh', 'f|*.obj.gz')
 
 Format('Texture', 'f|*.tex')
 Format('Z compressed Texture', 'f|*.tex.Z')
