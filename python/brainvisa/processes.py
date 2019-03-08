@@ -5833,7 +5833,8 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
 
         # Optional attributes
         for n in ('signature', 'execution', 'name', 'userLevel', 'roles',
-                  'category', 'showMaximized', 'allowed_processes'):
+                  'category', 'showMaximized', 'allowed_processes',
+                  'rolePriority'):
             v = getattr(processModule, n, None)
             if v is not None:
                 setattr(NewProcess, n, v)
@@ -5916,11 +5917,15 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
 
             oldc = _converters.get((source, dest))
             if oldc:
+                # print('converter conflict for', source, dest)
                 oldproc = _processes.get(oldc.lower())
                 oldpriority = 0
                 if oldproc:
                     oldpriority = getattr(oldproc, 'rolePriority', 0)
+                    # print('old:', oldproc._id, oldpriority)
+                # else: print('old', oldc, 'does not exist !')
                 newpriority = getattr(proc, 'rolePriority', 0)
+                # print('new:', proc._id, newpriority)
                 if oldpriority > newpriority:
                     return  # don't register because priority is not sufficient
 
