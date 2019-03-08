@@ -4610,9 +4610,9 @@ def getConverter(source, destination, checkUpdate=True):
     :returns: the :py:class:`NewProcess` class associated to the found converter.
     """
     global _processes
-    result = _converters.get((destination, source))
+    result = _converters.get((source, destination))
     if result is None:
-        result = _converters.get(destination, {}).get(source)
+        result = _converters_to.get(destination, {}).get(source)
 
     if result is None:
         dt, df = destination
@@ -4620,7 +4620,7 @@ def getConverter(source, destination, checkUpdate=True):
         if isSameDiskItemType(st, dt):
             while result is None and st:
                 st = st.parent
-                result = _converters.get(((st, df), (st, sf)))
+                result = _converters.get(((st, sf), (st, df)))
     return getProcess(result, checkUpdate=checkUpdate)
 
 #-----------------------------------------------------------------------------
@@ -5916,7 +5916,7 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
 
             oldc = _converters.get((source, dest))
             if oldc:
-                oldproc = _processes.get(oldc)
+                oldproc = _processes.get(oldc.lower())
                 oldpriority = 0
                 if oldproc:
                     oldpriority = getattr(oldproc, 'rolePriority', 0)
