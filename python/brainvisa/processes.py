@@ -4610,7 +4610,10 @@ def getConverter(source, destination, checkUpdate=True):
     :returns: the :py:class:`NewProcess` class associated to the found converter.
     """
     global _processes
-    result = _converters.get(destination, {}).get(source)
+    result = _converters.get((destination, source))
+    if result is None:
+        result = _converters.get(destination, {}).get(source)
+
     if result is None:
         dt, df = destination
         st, sf = source
