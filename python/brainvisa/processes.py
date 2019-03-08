@@ -4610,14 +4610,17 @@ def getConverter(source, destination, checkUpdate=True):
     :returns: the :py:class:`NewProcess` class associated to the found converter.
     """
     global _processes
-    result = _converters.get(destination, {}).get(source)
+    result = _converters.get((source, destination))
+    if result is None:
+        result = _converters_to.get(destination, {}).get(source)
+
     if result is None:
         dt, df = destination
         st, sf = source
         if isSameDiskItemType(st, dt):
             while result is None and st:
                 st = st.parent
-                result = _converters.get(((st, df), (st, sf)))
+                result = _converters.get(((st, sf), (st, df)))
     return getProcess(result, checkUpdate=checkUpdate)
 
 #-----------------------------------------------------------------------------
@@ -5830,7 +5833,8 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
 
         # Optional attributes
         for n in ('signature', 'execution', 'name', 'userLevel', 'roles',
-                  'category', 'showMaximized', 'allowed_processes'):
+                  'category', 'showMaximized', 'allowed_processes',
+                  'rolePriority'):
             v = getattr(processModule, n, None)
             if v is not None:
                 setattr(NewProcess, n, v)
@@ -5913,11 +5917,15 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
 
             oldc = _converters.get((source, dest))
             if oldc:
-                oldproc = _processes.get(oldc)
+                # print('converter conflict for', source, dest)
+                oldproc = _processes.get(oldc.lower())
                 oldpriority = 0
                 if oldproc:
                     oldpriority = getattr(oldproc, 'rolePriority', 0)
+                    # print('old:', oldproc._id, oldpriority)
+                # else: print('old', oldc, 'does not exist !')
                 newpriority = getattr(proc, 'rolePriority', 0)
+                # print('new:', proc._id, newpriority)
                 if oldpriority > newpriority:
                     return  # don't register because priority is not sufficient
 
