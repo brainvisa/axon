@@ -403,8 +403,8 @@ def procdocToXHTML(procdoc):
                         column = 0
                     if line == 0 and column == 0:
                         x = re.match('^[^0-9]*:([0-9]+):([0-9]+):', str(e))
-                        print(x)
-                        print(str(e))
+                        # print(x)
+                        # print(str(e))
                         if x:
                             line = int(x.group(1)) - 3
                             column = int(x.group(2))  # it's not the column !
