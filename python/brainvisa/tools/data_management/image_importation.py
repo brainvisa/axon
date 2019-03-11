@@ -54,7 +54,7 @@ class Importer:
         try:
             input_vol = aims.read(input_filename)
         except (aims.aimssip.IOError, IOError) as e:
-            raise ImportationError(e.message)
+            raise ImportationError(str(e))
 
         if cls._conversion_needed(input_filename, input_vol, output_filename):
             try:
@@ -112,7 +112,7 @@ class Importer:
                     s = os.stat(ominf)
                     os.chmod(ominf, s.st_mode | stat.S_IREAD | stat.S_IWUSR)
             except IOError as e:
-                raise ImportationError(e.message)
+                raise ImportationError(str(e))
 
         if output_referential_filename:
             # write referential file and set the ref uuid in the image .minf

@@ -227,6 +227,7 @@ from soma.qtgui.api import QtThreadCall, FakeQtThreadCall
 if sys.version_info[0] >= 3:
     from html.parser import HTMLParser
     getcwdu = os.getcwd
+    unicode = str
 
     def items(thing):
         return list(thing.items())
@@ -3599,7 +3600,7 @@ class ExecutionContext(object):
                             first = False
                         else:
                             retry = retry - 1
-                        self._systemStderr(e.message + "\n", systemLogFile)
+                        self._systemStderr(unicode(e) + "\n", systemLogFile)
                         if (retry != 0):
                             self._systemStderr(
                                 "Try to restart the command...\n", systemLogFile)
