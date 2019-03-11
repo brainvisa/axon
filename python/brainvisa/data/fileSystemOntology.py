@@ -1149,9 +1149,10 @@ class FileSystemOntology(object):
             try:
                 fso.content = self.localDict['hierarchy']
             except Exception as e:
-                msg = 'in filesystem ontology "' + directory + '": ' + e.message \
+                msg = 'in filesystem ontology "' + directory + '": ' + unicode(e) \
                     + ', files=' + str(files)
-                e.message = msg
+                if hasattr(e, 'messsage'):
+                    e.message = msg
                 e.args = (msg, ) + e.args[1:]
                 raise
             fso.lastModification = max(

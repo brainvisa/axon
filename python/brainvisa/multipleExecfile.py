@@ -166,7 +166,7 @@ class MultipleExecfile(object):
                     msg += u'(' + unicode(file) + u') '
                 msg += ': '
                 if hasattr(e, 'message'):
-                    msg = msg + unicode(e.message)
+                    msg = msg + unicode(e)
                     e.message = msg
                 else:
                     msg = msg + format_exc()

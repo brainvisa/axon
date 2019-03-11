@@ -1204,7 +1204,7 @@ class SQLDatabase(Database):
                 tablesExist = self.typesWithTable.issubset(
                     tables)  # there are also tables for diskitems and filenames which does match a specific type.
             except sqlite3.OperationalError as e:
-                brainvisa.processes.defaultContext().warning(e.message)
+                brainvisa.processes.defaultContext().warning(unicode(e))
         finally:
             self._closeDatabaseCursor(cursor)
         return tablesExist
@@ -1400,7 +1400,7 @@ class SQLDatabase(Database):
         except sqlite3.OperationalError as e:
             self._closeDatabaseCursor(cursor, rollback=True)
             raise DatabaseError("Cannot insert items in database " + self.name + ": " +
-                                e.message + ". Item:" + diskItem.fullPath() + ". You should update this database.")
+                                unicode(e) + ". Item:" + diskItem.fullPath() + ". You should update this database.")
         except:
             self._closeDatabaseCursor(cursor, rollback=True)
             raise
@@ -1906,7 +1906,7 @@ class SQLDatabase(Database):
                     sqlResult = cursor.execute(sql).fetchall()
                 except sqlite3.OperationalError as e:
                     brainvisa.processes.defaultContext().warning(
-                        "Cannot question database ", self.name, " : ", e.message, ". You should update this database.")
+                        "Cannot question database ", self.name, " : ", unicode(e), ". You should update this database.")
             finally:
                 self._closeDatabaseCursor(cursor)
             for tpl in sqlResult:

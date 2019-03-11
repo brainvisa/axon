@@ -353,7 +353,7 @@ class CallProcess(Action):
             context.runProcess(self.processName, *args, **kwargs)
         except Exception as e:
             context.warning(
-                "Error while executing " + self.processName + " : " + unicode(e.message))
+                "Error while executing " + self.processName + " : " + unicode(e))
         return True
 
     def __str__(self):

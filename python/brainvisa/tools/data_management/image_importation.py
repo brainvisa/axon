@@ -132,7 +132,7 @@ class Importer:
                     s = os.stat(ominf)
                     os.chmod(ominf, s.st_mode | stat.S_IREAD | stat.S_IWUSR)
             except IOError as e:
-                raise ImportationError(e.message)
+                raise ImportationError(str(e))
             
         return return_value
     
@@ -176,7 +176,7 @@ class Importer:
         try:
             input_vol = aims.read(input_filename)
         except (aims.aimssip.IOError, IOError) as e:
-            raise ImportationError(e.message)
+            raise ImportationError(str(e))
         
         conversion_needed = cls._conversion_needed(input_filename, input_vol,
                                                    output_filename)
