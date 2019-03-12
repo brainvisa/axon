@@ -3064,7 +3064,7 @@ def aimsFileInfo(fileName):
             nan = None
         if _finder is not None:
             finder = aims.Finder()
-            if type(fileName) is unicode:
+            if sys.version_info[0] < 3 and type(fileName) is unicode:
                 # convert to str
                 import codecs
                 fileName = codecs.getencoder('utf8')(fileName)[0]
