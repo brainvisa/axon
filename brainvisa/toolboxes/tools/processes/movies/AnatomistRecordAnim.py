@@ -35,6 +35,7 @@ import math
 from brainvisa import quaternion
 import copy
 from brainvisa import anatomist
+import six
 
 name = 'Anatomist record animation'
 userLevel = 1
@@ -107,7 +108,7 @@ def execution(self, context):
             s0 = slicequat0
             s1 = slicequat
             incr = 1. / (steps - 1)
-            for i in xrange(steps):
+            for i in six.moves.xrange(steps):
                 win.camera(
                     zoom=zoom0 * (1 - incr * i) + zoom * incr * i,
                     view_quaternion=quaternion.Quaternion((

@@ -36,6 +36,7 @@ from soma.qt_gui.qt_backend.QtCore import *
 from soma.qt_gui import qt_backend
 from brainvisa.configuration import neuroConfig
 import os
+import six
 
 
 class LockedFilesListEditor(QDialog):
@@ -127,7 +128,7 @@ class LockedFilesListEditor(QDialog):
 
     def _addToLockSelection(self):
         tablew = self._tablew
-        for i in xrange(tablew.rowCount()):
+        for i in six.moves.xrange(tablew.rowCount()):
             item = tablew.item(i, 0)
             if item and item.isSelected() and item.data(Qt.UserRole) != '1':
                 item = QTableWidgetItem()
@@ -137,7 +138,7 @@ class LockedFilesListEditor(QDialog):
 
     def _removeFromLockSelection(self):
         tablew = self._tablew
-        for i in xrange(tablew.rowCount()):
+        for i in six.moves.xrange(tablew.rowCount()):
             item = tablew.item(i, 0)
             if item and item.isSelected() and item.data(Qt.UserRole) == '1':
                 item.setData(Qt.DecorationRole, None)
@@ -146,7 +147,7 @@ class LockedFilesListEditor(QDialog):
     def selectedDiskItems(self):
         tablew = self._tablew
         selectedfiles = []
-        for i in xrange(tablew.rowCount()):
+        for i in six.moves.xrange(tablew.rowCount()):
             item = tablew.item(i, 0)
             if item and item.data(Qt.UserRole) == '1':
                 num = int(tablew.item(i, 1).data(Qt.UserRole))

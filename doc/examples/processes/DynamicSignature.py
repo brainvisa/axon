@@ -30,6 +30,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from neuroProcesses import *
+import six
 
 signature = Signature('number', Number())
 
@@ -37,11 +38,11 @@ signature = Signature('number', Number())
 def buildNewSignature(self, number):
     # Create a new Signature object
     paramSignature = ['number', Number()]
-    for i in xrange(number):
+    for i in six.moves.xrange(number):
         paramSignature += ['n' + str(i), Number()]
     signature = Signature(*paramSignature)
     # Set optional parameters
-    for i in xrange(number):
+    for i in six.moves.xrange(number):
         signature['n' + str(i)].mandatory = False
 
     # Change the signature

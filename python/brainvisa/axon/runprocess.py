@@ -114,7 +114,7 @@ def get_process_with_params(process_name, iterated_params=[], *args, **kwargs):
         # build list of processes for iteration
         processes = [process] \
             + [brainvisa.processes.getProcessInstance(process_name)
-               for i in xrange(n_iter - 1)]
+               for i in six.moves.xrange(n_iter - 1)]
         # fill in their parameters
         for i_proc, process in enumerate(processes):
             p_args = list(args)

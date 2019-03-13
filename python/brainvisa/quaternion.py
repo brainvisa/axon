@@ -32,6 +32,7 @@
 
 import types
 import math
+import six
 
 # Quaternion class
 # API (and internals) is a copy of the C++ class of Anatomist
@@ -207,7 +208,7 @@ class Quaternion:
         d = self.vectmultscal(other._vector, self._vector[3])
         e = self.cross(other._vector, self._vector)
         q = Quaternion()
-        for i in xrange(3):
+        for i in six.moves.xrange(3):
             q._vector[i] = c[i] + d[i] + e[i]
         q._vector[3] = self._vector[3] * other._vector[3] \
             - self.dot(self._vector, other._vector)

@@ -33,6 +33,7 @@
 from brainvisa.processes import *
 import gzip
 import shutil
+import six
 
 name = 'uncompress GIS'
 roles = ('converter',)
@@ -55,7 +56,7 @@ def initialization(self):
 def execution(self, context):
     source = self.read.fullPaths()
     dest = self.write.fullPaths()
-    for i in xrange(len(source)):
+    for i in six.moves.xrange(len(source)):
         f = gzip.open(source[i], 'rb')
         g = open(dest[i], 'wb')
         while 1:

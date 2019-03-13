@@ -341,7 +341,7 @@ class DiskItemEditor(QWidget, DataEditor):
                 
                 if res_infos is not None and len(res_infos) > 1:           
                     
-                    for level in xrange(len(res_infos)):
+                    for level in six.moves.xrange(len(res_infos)):
                         self.cmbResolutions.addItem(res_infos[level], 
                                                     str(level))
                     resolution_level = v.resolutionLevel()                        
@@ -1459,12 +1459,12 @@ class DiskItemListEditor(QWidget, DataEditor):
                 self._res_infos = res_infos
                 if res_infos is not None and len(res_infos) > 1:
                     self.cmbResolutions.clear()
-                    for level in xrange(len(res_infos)):
+                    for level in six.moves.xrange(len(res_infos)):
                         self.cmbResolutions.addItem(res_infos[level], 
                                                     str(level))
                     
                     resolution_level = None
-                    for i in xrange(len(v)):
+                    for i in six.moves.xrange(len(v)):
                         if i == 0:
                             resolution_level = v[i].resolutionLevel()
                             

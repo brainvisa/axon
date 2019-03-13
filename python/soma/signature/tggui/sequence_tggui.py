@@ -50,6 +50,7 @@ import turbogears
 from soma.translation import translate as _
 from soma.tggui.api import ApplicationTgGUI, TgGUI
 from soma.signature.api import HasSignature
+import six
 
 #-------------------------------------------------------------------------
 
@@ -101,7 +102,7 @@ class Sequence_TgGUI(TgGUI):
         self._sequenceObject = None
 
     def setObject(self, editionWidget, sequenceObject):
-        for index in xrange(len(self._elementsGUI)):
+        for index in six.moves.xrange(len(self._elementsGUI)):
             self._setElement(sequenceObject, index)
 
     def _setElement(self, sequenceObject, index):
@@ -134,7 +135,7 @@ class Sequence_TgGUI(TgGUI):
             elementsCount = len(sequenceObject)
 
             # Create new elements GUI
-            for i in xrange(elementsCount):
+            for i in six.moves.xrange(elementsCount):
                 elementTggui = \
                     ApplicationTgGUI.instanceTgGUI(
                         self.dataTypeInstance.elementType)

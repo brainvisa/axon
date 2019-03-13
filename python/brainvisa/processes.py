@@ -411,9 +411,9 @@ def procdocToXHTML(procdoc):
                             column = int(x.group(2))  # it's not the column !
                             # (maybe the XML tag number ?)
                     editor.content.moveCursor(QtGui.QTextCursor.Start)
-                    for i in xrange(line - 1):
+                    for i in six.moves.xrange(line - 1):
                         editor.content.moveCursor(QtGui.QTextCursor.NextBlock)
-                    # for i in xrange( column - 1 ):
+                    # for i in six.moves.xrange( column - 1 ):
                         # editor.content.moveCursor( QtGui.QTextCursor.Right )
                     if editor.exec_() == QDialog.Accepted:
                         value = unicode(editor.content.toPlainText())
@@ -621,7 +621,7 @@ def mapValuesToChildrenParameters(
         name = getProcessInstance(defaultProcess).name
 
     created_nodes = []
-    for i in xrange(max(rsize, resultingSize)):
+    for i in six.moves.xrange(max(rsize, resultingSize)):
         if i == csize:
             if defaultProcess is not None:
                 # Add a new child node
@@ -1551,7 +1551,7 @@ class Process(Parameterized):
                         self.signature[key].findValue(v) for v in values]
 
         result = []
-        for i in xrange(requiredLength):
+        for i in six.moves.xrange(requiredLength):
             p = self._copy(withparams=True)
                            # should copy only non-default params
             for argumentName in finalValues.keys():
@@ -1816,7 +1816,7 @@ class IterationProcess(Process):
         eNode = ParallelExecutionNode(self.name, stopOnError=False,
                                       possibleChildrenProcesses=dp, notify=True)
 
-        for i in xrange(len(self._processes)):
+        for i in six.moves.xrange(len(self._processes)):
             n = self._processes[i].name
             self._processes[i].isMainProcess = True
             self._processes[i].name = repr(i + 1) + ". " + n
@@ -1899,7 +1899,7 @@ class DistributedProcess(Process):
 
     def initialization(self):
         eNode = ParallelExecutionNode(self.name)
-        for i in xrange(len(self._processes)):
+        for i in six.moves.xrange(len(self._processes)):
             self._processes[i].isMainProcess = True
             subENode = self._processes[i]._executionNode
             eNode.addChild(str(i), ProcessExecutionNode(self._processes[i],
@@ -1930,7 +1930,7 @@ class SelectionProcess(Process):
 
     def initialization(self):
         eNode = SelectionExecutionNode(self.name)
-        for i in xrange(len(self._processes)):
+        for i in six.moves.xrange(len(self._processes)):
             self._processes[i].isMainProcess = True
             eNode.addChild(str(i), ProcessExecutionNode(self._processes[i],
                                                         optional=True, selected=True))
@@ -2612,7 +2612,7 @@ class SerialExecutionNode(ExecutionNode):
                     possibleChildrenProcesses = [possibleChildrenProcesses]
 
                 r = {}
-                for i in xrange(len(possibleChildrenProcesses)):
+                for i in six.moves.xrange(len(possibleChildrenProcesses)):
                     r[possibleChildrenProcesses[i]] = {'optional': True,
                                                        'selected': True,
                                                        'expandedInGui': False}

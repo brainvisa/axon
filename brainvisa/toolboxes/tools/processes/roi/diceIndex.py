@@ -42,6 +42,7 @@
 
 from __future__ import print_function
 from brainvisa.processes import *
+import six
 try:
     from soma import aims, aimsalgo
     import numpy
@@ -181,7 +182,7 @@ def execution(self, context):
             # symmetrize results
             d += d.transpose()
             d[numpy.arange(d.shape[0]), numpy.arange(d.shape[0])] = 1.
-            for i in xrange(d.shape[0] - 1):
+            for i in six.moves.xrange(d.shape[0] - 1):
                 out.write(self.image_labels[i] + ', %d, ' % l)
                 out.write(', '.join([str(x)for x in d[i, 1:]]) + '\n')
 
@@ -193,8 +194,8 @@ def execution(self, context):
             # symmetrize results
             d += d.transpose()
             d[numpy.arange(d.shape[0]), numpy.arange(d.shape[0])] = 1.
-            for i in xrange(d.shape[0] - 1):
-                for j in xrange(i + 1, d.shape[1]):
+            for i in six.moves.xrange(d.shape[0] - 1):
+                for j in six.moves.xrange(i + 1, d.shape[1]):
                     out.write('%d, %s, %s, %f\n'
                               % (l, self.image_labels[i], self.image_labels[j],
                                  d[i, j]))

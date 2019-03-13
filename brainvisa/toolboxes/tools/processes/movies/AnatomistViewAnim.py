@@ -40,6 +40,7 @@ from brainvisa import quaternion
 from brainvisa.configuration import mpegConfig
 from brainvisa import anatomist
 from soma.qt_gui.qtThread import MainThreadLife
+import six
 
 name = 'Anatomist View Animation'
 userLevel = 1
@@ -193,7 +194,7 @@ def execution(self, context):
 
     preloadedFiles = self.preloadfiles(anim)
     # Loop over scenes
-    for j in xrange(n - 1):
+    for j in six.moves.xrange(n - 1):
         x0 = anim[j]
         x1 = anim[j + 1]
         obj0 = x0.get('objects')
@@ -258,7 +259,7 @@ def execution(self, context):
                 group.unSelect(tounsel)
 
         # play anim
-        for i in xrange(steps):
+        for i in six.moves.xrange(steps):
             if self.use_recorded_objects and obj0 and obj1:
                 for o in obj1:
                     if o in obj0 and o in preloadedFiles:
@@ -436,7 +437,7 @@ def execution(self, context):
             context.write('imgbase: ', imgbase)
             inputs = os.listdir(tmp)
             inputs.sort()
-            for i in xrange(len(inputs)):
+            for i in six.moves.xrange(len(inputs)):
                 inputs[i] = os.path.join(tmp, inputs[i])
             context.write('num images: ', len(inputs))
             # context.ask( 'check ' + tmp, 'OK' )
@@ -452,7 +453,7 @@ def execution(self, context):
         inputs = os.listdir(tmp)
         context.write('images:', len(inputs))
         dst = os.path.dirname(self.images_basename.fullPath())
-        for i in xrange(len(inputs)):
+        for i in six.moves.xrange(len(inputs)):
             s = os.path.join(tmp, inputs[i])
             d = os.path.join(dst, inputs[i])
             # context.write( 'move: ', s, ' -> ', d )

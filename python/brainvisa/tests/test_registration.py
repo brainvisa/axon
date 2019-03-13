@@ -10,6 +10,7 @@ from brainvisa.configuration import neuroConfig
 from brainvisa.data import neuroHierarchy
 from brainvisa.processes import defaultContext
 from brainvisa import registration
+import six
 
 
 class TestTransformationManager(unittest.TestCase):
@@ -81,15 +82,15 @@ class TestTransformationManager(unittest.TestCase):
         # Fill test database
         self.create_referential(
             registration_directory, 'Template for all subjects', 0)
-        for s in xrange(1, self.number_of_subjects + 1):
+        for s in six.moves.xrange(1, self.number_of_subjects + 1):
             self.create_referential(
                 registration_directory, 'Subject ' + str(s), s)
             self.create_transformation(
                 registration_directory, (1, 0, 0, 0, s), s, 0)
-            for s2 in xrange(s + 1, self.number_of_subjects + 1):
+            for s2 in six.moves.xrange(s + 1, self.number_of_subjects + 1):
                 self.create_transformation(
                     registration_directory, (1, 0, 0, s, s2), s, s2)
-            for n in xrange(1, self.number_of_sulci + 1):
+            for n in six.moves.xrange(1, self.number_of_sulci + 1):
                 self.create_referential(
                     registration_directory, 'Sulci ' + str(n) + ' of subject ' + str(s), (s, n))
                 self.create_transformation(

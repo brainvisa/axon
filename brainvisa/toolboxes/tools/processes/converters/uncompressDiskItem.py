@@ -35,6 +35,7 @@ from brainvisa.processes import *
 import brainvisa.tools.aimsGlobals as shfjGlobals
 from brainvisa.data import neuroDiskItems
 import gzip
+import six
 
 name = 'uncompress any disk item'
 roles = ('converter',)
@@ -83,7 +84,7 @@ def initialization(self):
 def execution(self, context):
     source = self.read.fullPaths()
     dest = [] + self.write.fullPaths()  # force copy
-    for i in xrange(len(source)):
+    for i in six.moves.xrange(len(source)):
         d = dest[0]
         s = os.path.basename(source[i])
         x = s.rfind('.')

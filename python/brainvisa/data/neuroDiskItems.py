@@ -1636,7 +1636,7 @@ def getResolutionsFromItems(items):
         for i_dims in items_dims:
             i_ratios = []
             if i_dims is not None:
-                for d in xrange(len(i_dims)):
+                for d in six.moves.xrange(len(i_dims)):
                     i_ratios.append([(a / b) for a, b in zip(i_dims[0], 
                                                              i_dims[d])])    
             items_ratios.append(i_ratios)
@@ -1655,9 +1655,9 @@ def getResolutionsFromItems(items):
                 
         # Check that each resolution level has uniform ratios for all items
         uniform_ratios = dict()
-        for i in xrange(len(items_ratios)):
+        for i in six.moves.xrange(len(items_ratios)):
             i_ratios = items_ratios[i]
-            for d in xrange(len(i_ratios)):
+            for d in six.moves.xrange(len(i_ratios)):
                 ratios = uniform_ratios.get(d)
                 if i == 0:
                     uniform_ratios[d] = i_ratios[d]
@@ -1681,9 +1681,9 @@ def getResolutionsFromItems(items):
  
         # Check that each resolution level has uniform dimensions for all items
         uniform_dims = dict()            
-        for i in xrange(len(items_dims)):
+        for i in six.moves.xrange(len(items_dims)):
             i_dims = items_dims[i]
-            for d in xrange(len(i_dims)):
+            for d in six.moves.xrange(len(i_dims)):
                 dims = uniform_dims.get(d)
                 if i == 0:
                     uniform_dims[d] = i_dims[d]
@@ -1698,12 +1698,12 @@ def getResolutionsFromItems(items):
                    
         # Get dimension limits
         max_ldim = 0
-        for i in xrange(len(items_dims)):
+        for i in six.moves.xrange(len(items_dims)):
             dims = items_dims[i]
             ldim = len(dims[0])
             
             # Does not display dimension with size 1
-            for d in xrange(len(dims[0]) - 1, -1, -1):
+            for d in six.moves.xrange(len(dims[0]) - 1, -1, -1):
                 if dims[0][d] == 1:
                     ldim -= 1
                 else:
@@ -1713,7 +1713,7 @@ def getResolutionsFromItems(items):
                 max_ldim = ldim
         
         resolutions  = [get_resolution_string(level, ldim = max_ldim) 
-                        for level in xrange(len(uniform_dims))]
+                        for level in six.moves.xrange(len(uniform_dims))]
         
     return resolutions
 
