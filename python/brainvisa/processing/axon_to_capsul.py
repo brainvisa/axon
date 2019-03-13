@@ -797,7 +797,7 @@ def reorder_exports(buffered_lines, p):
             delayed = False
     omax += 1
     revorder = {}
-    for i in xrange(len(reordered)):
+    for i in six.moves.xrange(len(reordered)):
         # move non-recognized lines at the end
         if reordered[i] < 0:
             reordered[i] = omax

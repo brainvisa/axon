@@ -127,7 +127,7 @@ class TransformRoi():
             else:
                 self._inputRoi.append(r.fullPath())
         self._outputRoi = {}
-        for i in xrange(len(self._inputRoi)):
+        for i in six.moves.xrange(len(self._inputRoi)):
             if not outputRoi:
                 self._outputRoi.update({self._inputRoi[i]: self._inputRoi[i]})
             else:
@@ -370,14 +370,14 @@ class TransformRoi():
 
         translationSp = [
             self._mainDiag.xSp, self._mainDiag.ySp, self._mainDiag.zSp]
-        for i in xrange(len(translationSp)):
+        for i in six.moves.xrange(len(translationSp)):
             translationSp[i].blockSignals(True)
             translationSp[i].setValue(currentTransformation["translation"][i])
             translationSp[i].blockSignals(False)
 
         rotationSp = [self._mainDiag.axialSp,
             self._mainDiag.sagittalSp, self._mainDiag.coronalSp]
-        for i in xrange(len(rotationSp)):
+        for i in six.moves.xrange(len(rotationSp)):
             rotationSp[i].blockSignals(True)
             rotationSp[i].setValue(currentTransformation["rotation"][i])
             rotationSp[i].blockSignals(False)
@@ -701,14 +701,14 @@ class TransformRoi():
             [minMesh, maxMesh] = self._aMeshes[mesh].boundingbox()
             minMesh = self._previousMotions[mesh].transform(minMesh)
             maxMesh = self._previousMotions[mesh].transform(maxMesh)
-            for i in xrange(3):
+            for i in six.moves.xrange(3):
                 if maxMesh[i] > maxImg[i] or\
                    minMesh[i] < minImg[i]:
                     outsideImageBounds = True
                     break
 
         interExists = False
-        for i in xrange(len(meshes)):
+        for i in six.moves.xrange(len(meshes)):
             for mesh in meshes[i + 1:]:
                 interExists = aims.SurfaceManip.checkMeshIntersect(
                     self._aimsMeshes[meshes[i]], self._aimsMeshes[mesh])
@@ -976,7 +976,7 @@ class TransformRoi():
                 bmin = bbox[0]
                 bmax = bbox[1]
             else:
-                for i in xrange(len(bbox[0])):
+                for i in six.moves.xrange(len(bbox[0])):
                     if bbox[0][i] < bmin[i]:
                         bmin[i] = bbox[0][i]
                     if bbox[1][i] > bmax[i]:
@@ -1377,8 +1377,8 @@ class SymEditAction(anatomist.Action, QtCore.QObject):
             axialPts = self._mainProcess.getSymmetricPlanes()[roi]["axial_pts"]
             coronalPts = (self._pt1, self._pt2)
 
-        ab = [axialPts[1][i] - axialPts[0][i] for i in xrange(3)]
-        cd = [coronalPts[1][i] - coronalPts[0][i] for i in xrange(3)]
+        ab = [axialPts[1][i] - axialPts[0][i] for i in six.moves.xrange(3)]
+        cd = [coronalPts[1][i] - coronalPts[0][i] for i in six.moves.xrange(3)]
         vn = [ab[1] * cd[2] - ab[2] * cd[1],
               ab[2] * cd[0] - ab[0] * cd[2],
               ab[0] * cd[1] - ab[1] * cd[0]]

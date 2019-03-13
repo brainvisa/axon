@@ -49,6 +49,7 @@ from soma.qt_gui.qt_backend import QtGui, QtCore
 from soma.translation import translate as _
 from soma.qt4gui.api import ApplicationQt4GUI, Qt4GUI
 from soma.signature.api import HasSignature
+import six
 
 #-------------------------------------------------------------------------
 
@@ -107,7 +108,7 @@ class Sequence_Qt4GUI(Qt4GUI):
         self._sequenceObject = None
 
     def setObject(self, editionWidget, sequenceObject):
-        for index in xrange(len(self._elementsGUI)):
+        for index in six.moves.xrange(len(self._elementsGUI)):
             self._setElement(sequenceObject, index)
 
     def _setElement(self, sequenceObject, index):
@@ -140,7 +141,7 @@ class Sequence_Qt4GUI(Qt4GUI):
             elementsCount = len(sequenceObject)
 
             # Create new elements GUI
-            for i in xrange(elementsCount):
+            for i in six.moves.xrange(elementsCount):
                 elementQtgui = \
                     ApplicationQt4GUI.instanceQt4GUI(
                         self.dataTypeInstance.elementType)

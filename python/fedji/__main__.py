@@ -8,6 +8,7 @@ from tempfile import mkdtemp
 from shutil import rmtree
 from pprint import pprint
 from fedji.sqlite_backend import FedjiSqlite
+import six
 
 tmp = mkdtemp()
 try:
@@ -132,7 +133,7 @@ bias_corrections = [None, ['nobias1'], ['nobias2'], ['nobias1', 'nobias2']]
 geo_corrections = [None, ['geo1'], ['geo2'], ['geo1', 'geo2']]
 
 count_by_center = {}
-for i in xrange(nb_subjects):
+for i in six.moves.xrange(nb_subjects):
     # if i % 100 == 0:
         # db.commit()
     study = random.choice(studies)

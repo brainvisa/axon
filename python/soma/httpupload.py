@@ -450,7 +450,7 @@ class ResourceManager(Singleton):
         if len(self.builders) == 0:
             logmanager.writeLogInfo('Module started')
 
-            for x in xrange(count):
+            for x in six.moves.xrange(count):
                 builder = FileBuilder()
                 self.builders.append(builder)
                 builder.setDaemon(True)

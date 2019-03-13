@@ -48,6 +48,7 @@ from soma.translation import translate as _
 from soma.signature.api import Undefined
 from soma.tggui.api import TgGUI, TgSingleSelectField
 from soma.tggui import tools
+import six
 
 #-------------------------------------------------------------------------
 
@@ -71,7 +72,7 @@ class Choice_TgGUI(TgGUI):
             label=self._name, validator=turbogears.validators.String)
 
         # self._widget.setEditable( editable )
-        for i in xrange(len(self.dataTypeInstance.labels)):
+        for i in six.moves.xrange(len(self.dataTypeInstance.labels)):
             label = self.dataTypeInstance.labels[i]
             self._widget.options += [(unicode(i), label)]
 

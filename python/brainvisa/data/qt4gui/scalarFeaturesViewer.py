@@ -40,6 +40,7 @@ from brainvisa.processing.qtgui.backwardCompatibleQt import *
 
 import operator
 from brainvisa.validation import ValidationError
+import six
 qwtAvailable = True
 try:
     try:
@@ -79,11 +80,11 @@ if qwtAvailable:
             mean = data['mean']
             stddev = data['stddev']
             mean_s_stddev = [mean[i] - stddev[i]
-                             for i in xrange(len(mean))]
+                             for i in six.moves.xrange(len(mean))]
             mean_p_stddev = [mean[i] + stddev[i]
-                             for i in xrange(len(mean))]
+                             for i in six.moves.xrange(len(mean))]
 
-            for i in xrange(len(mean)):
+            for i in six.moves.xrange(len(mean)):
                 curve = QwtPlotCurve('stddev')
                 curve.setStyle(style)
                 color = self._colors[color_index % len(self._colors)]

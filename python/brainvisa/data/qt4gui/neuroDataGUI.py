@@ -39,6 +39,8 @@ from soma.qtgui.api import largeIconSize
 from soma.qt_gui.qt_backend import QtCore
 import decimal
 import sys
+import six
+
 
 buttonIconSize = QSize(*largeIconSize)
 buttonMargin = QSize(4, 4)
@@ -1038,7 +1040,7 @@ class PointEditor(QWidget, DataEditor):
             position = a.linkCursorLastClickedPosition()
 
         if position is None:
-            position = [0 for i in xrange(self.parameter.dimension)]
+            position = [0 for i in six.moves.xrange(self.parameter.dimension)]
 
         self.setValue(position)
         self.checkValue()  # to force link mechanism to run

@@ -35,6 +35,7 @@ from brainvisa.validation import ValidationError
 from brainvisa.configuration import mpegConfig
 import os
 from brainvisa.tools import aimsGlobals
+import six
 
 name = 'Recmpeg MPEG encoder'
 userLevel = 2
@@ -89,7 +90,7 @@ def execution(self, context):
     yuvImages = os.path.join(dir.fullPath(), 'yuvImages.yuv')
     for image in self.images:
         context.system('convert', image.fullPath(), yuvImage, outputLevel=-1)
-        # for n in xrange( self.frameRepetition ):
+        # for n in six.moves.xrange( self.frameRepetition ):
         context.system('cat "' + yuvImage + '" >> "' + yuvImages + '"',
                        outputLevel=-1)
     cmd = ['recmpeg', '-P', self.encoding, '--coding', self.coding,

@@ -205,7 +205,7 @@ class FedjiSqliteCollection(object):
             if list_fields:
                 list_index = next(cnx.execute(
                     'SELECT last_insert_rowid()'))[0]
-                for i in xrange(len(list_fields)):
+                for i in six.moves.xrange(len(list_fields)):
                     field = list_fields[i]
                     list_table = '%s_list_%s' % (self._documents_table, field)
                     sql = ('INSERT INTO %s '
@@ -213,7 +213,7 @@ class FedjiSqliteCollection(object):
                            'VALUES (?, ?, ?)' % list_table)
 
                     values = [[list_index, j, list_values[i][j]]
-                              for j in xrange(len(list_values[i]))]
+                              for j in six.moves.xrange(len(list_values[i]))]
                     cnx.executemany(sql, values)
         cnx.commit()
 
@@ -389,7 +389,7 @@ class FedjiSqliteQueryResult(object):
         if sql:
             for row in cnx.execute(sql, sql_data):
                 document = dict((columns[i], sql_to_value[self.collection.fields[columns[i]]](row[i]))
-                                for i in xrange(len(columns)) if row[i] is not None)
+                                for i in six.moves.xrange(len(columns)) if row[i] is not None)
                 yield document
 
     def _rowids(self):

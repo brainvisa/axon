@@ -38,14 +38,15 @@
 
 
 from brainvisa.processes import *
+import six
 
-name = 'Fusion Linear Contrastes'
+name = 'Fusion Linear Contrasts'
 userLevel = 2
 
 signature = Signature(
     'read', ListOf(ReadDiskItem('3D Volume', 'aims readable Volume Formats')),
-  'levels', ListOf(Number()),
-  'write', WriteDiskItem('3D Volume', 'aims Writable Volume Formats'),
+    'levels', ListOf(Number()),
+    'write', WriteDiskItem('3D Volume', 'aims Writable Volume Formats'),
 )
 
 
@@ -70,9 +71,10 @@ def execution(self, context):
         list_write.append(write)
         i = i + 1
 
-    for i in xrange(len(list_write) - 2):
-        context.system('AimsLinearComb', '-i', list_write[
-                       0], '-j', list_write[i + 1], '-o', list_write[0])
+    for i in six.moves.xrange(len(list_write) - 2):
+        context.pythonSystem('cartoLinearComb.py', '-i', list_write[0],
+                             '-i', list_write[i + 1], '-o', list_write[0],
+                             '-f', 'I1 + I2')
     context.system('AimsLinearComb', '-i', list_write[
                    0], '-j', list_write[-1], '-o', self.write)
 

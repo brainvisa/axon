@@ -31,6 +31,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
+import six
 
 name = 'Import SPMt for structural analysis'
 
@@ -71,7 +72,7 @@ def execution(self, context):
 #           InputMinf = self.input.minfFileName()
 #           if os.path.isfile( InputMinf ):
 #                 shelltools.cp( InputMinf, self.output.fullPath() + '.minf' )
-#           for i in xrange( len(inputFiles) ):
+#           for i in six.moves.xrange( len(inputFiles) ):
 #                context.write( 'cp', inputFiles[ i ], outputFiles[ i ] )
 #                shelltools.cp( inputFiles[ i ], outputFiles[ i ] )
 #           self.output.readAndUpdateMinf( )

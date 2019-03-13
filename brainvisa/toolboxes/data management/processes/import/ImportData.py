@@ -34,6 +34,7 @@
 from brainvisa.processes import *
 from brainvisa import shelltools
 from brainvisa.tools import aimsGlobals
+import six
 
 # This process should not be called directly unless you
 # exactly know what you are doing. Import processes for
@@ -127,7 +128,7 @@ def execution(self, context):
                 if len(inputFiles) != len(outputFiles):
                     raise RuntimeError(
                         _t_('input and output do not have the same number of files'))
-                for i in xrange(len(inputFiles)):
+                for i in six.moves.xrange(len(inputFiles)):
                     if neuroConfig.platform != 'windows':
                         os.symlink(inputFiles[i], outputFiles[i])
                     else:
@@ -159,7 +160,7 @@ def execution(self, context):
         if len(inputFiles) != len(outputFiles):
             raise RuntimeError(
                 _t_('input and output do not have the same number of files'))
-        for i in xrange(len(inputFiles)):
+        for i in six.moves.xrange(len(inputFiles)):
             context.write('cp', inputFiles[i], outputFiles[i])
             shelltools.cp(inputFiles[i], outputFiles[i])
 

@@ -45,6 +45,7 @@ import brainvisa.processes
 from brainvisa.processing.neuroException import showException
 from brainvisa.data.qt4gui.history import DataHistoryWindow
 from brainvisa.data.qt4gui import lockFilesGUI
+import six
 
 
 class HierarchyBrowser(QWidget):
@@ -547,7 +548,7 @@ class HierarchyBrowser(QWidget):
                 else:
                     if item.background(0).color() != QColor(255, 255, 255):
                         item.setBackground(0, QBrush(QColor(255, 255, 255)))
-            for i in xrange(item.childCount()):
+            for i in six.moves.xrange(item.childCount()):
                 items.append(item.child(i))
 
     def _menuLockAll(self, setLock):

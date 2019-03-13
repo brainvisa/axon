@@ -45,6 +45,7 @@ import math
 from tempfile import mkstemp
 from soma.subprocess import check_call
 import os
+import six
 
 
 def manual_registration(image1, image2, context=None):
@@ -415,7 +416,7 @@ class ManualRegistration():
         fixedCenter = (fixedBBox[1] - fixedBBox[0]) * 0.5
         translation = fixedCenter - movingCenter
         trsf = anatomist.Transformation(None, None)
-        for i in xrange(3):
+        for i in six.moves.xrange(3):
             trsf.SetTranslation(i, translation[i])
         trsfAction.setTransformData(trsf, False, True)
         for v in self._aViews:

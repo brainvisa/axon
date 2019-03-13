@@ -31,6 +31,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from brainvisa.processes import *
+import six
 
 name = 'Concatenate textures in one time-texture'
 
@@ -49,12 +50,12 @@ def execution(self, context):
     texture2 = reader.read(str(self.input[0]))
     texture = aims.TimeTexture_FLOAT(len(self.input), len(texture2[0]))
 
-    # for i in xrange(len(texture2[0])):
+    # for i in six.moves.xrange(len(texture2[0])):
       # texture[0][i] = texture2[0][i]
 
-    for i in xrange(len(self.input)):
+    for i in six.moves.xrange(len(self.input)):
         aux = reader.read(str(self.input[i]))
-        for j in xrange(len(aux[0])):
+        for j in six.moves.xrange(len(aux[0])):
             texture[i][j] = aux[0][j]
     context.write(texture.size())
     writer = aims.Writer()

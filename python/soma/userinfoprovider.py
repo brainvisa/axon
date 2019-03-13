@@ -86,7 +86,7 @@ def getUsersInfo(dataset, formats, keys, sorts):
 
     for datarecord in recordset:
         parameters = dict()
-        for index in xrange(len(columnset)):
+        for index in six.moves.xrange(len(columnset)):
             parameters[columnset[index]] = datarecord[index]
 
         # Instanciates user info object

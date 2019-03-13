@@ -235,7 +235,7 @@ class DisplayResultsFromSPM(object):
         # Create T-map LUT
         customPalette = self.a.createPalette("customPalette")
         paletteColors = [ 255, 255, 255 ]
-        for x in xrange(255):
+        for x in six.moves.xrange(255):
             paletteColors.extend([ 255, x, 0 ])
         customPalette.setColors(colors=paletteColors)
         athreshImg.setPalette(customPalette, minVal=0, maxVal=1)
@@ -599,14 +599,14 @@ class DisplayResultsFromSPM(object):
 
         font.setBold(False)
         labels = [ "x", "y", "z" ]
-        for i in xrange(len(labels)):
+        for i in six.moves.xrange(len(labels)):
             item = QtGui.QTableWidgetItem(labels[i])
             item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
             item.setBackgroundColor(QtGui.QColor(202, 202, 202))
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.table.setItem(1, 12 + i, item)
 
-        for i in xrange(2, self.table.rowCount()):
+        for i in six.moves.xrange(2, self.table.rowCount()):
             try:
                 coords = [ int(self.table.item(i, 9).text()),
                            int(self.table.item(i, 10).text()),
@@ -620,7 +620,7 @@ class DisplayResultsFromSPM(object):
             else:
                 font.setBold(True)
 
-            for j in xrange(3):
+            for j in six.moves.xrange(3):
                 item = QtGui.QTableWidgetItem(str(round(float(coords[j]), 1)))
                 item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
                 item.setBackgroundColor(QtGui.QColor(255, 255, 255))
@@ -699,8 +699,8 @@ class DisplayResultsFromSPM(object):
         """
         Manages the Qt table cell colors
         """
-        for i in xrange(2, self.table.rowCount()):
-            for j in xrange(self.table.columnCount()):
+        for i in six.moves.xrange(2, self.table.rowCount()):
+            for j in six.moves.xrange(self.table.columnCount()):
                 if row and i == row:
                     try:
                         self.table.item(i, j).setBackgroundColor(QtGui.QColor(217, 255, 217))
@@ -785,12 +785,12 @@ class DisplayResultsFromSPM(object):
         try:
             atlasImg = self.atlasFiles[ atlasName ]
         except:
-            for i in xrange(2, self.table.rowCount()):
+            for i in six.moves.xrange(2, self.table.rowCount()):
                 item = QtGui.QTableWidgetItem("-")
                 item.setBackgroundColor(self.table.item(i, 14).backgroundColor())
                 item.setTextAlignment(QtCore.Qt.AlignCenter)
                 self.table.setItem(i, 15, item)
-            for i in xrange(0, self.table.columnCount()):
+            for i in six.moves.xrange(0, self.table.columnCount()):
                 self.table.setSpan(i, 15, 1, 2)
             return
 
@@ -805,7 +805,7 @@ class DisplayResultsFromSPM(object):
                 fields = line.split('\t')
                 labelDic.update({fields[0]: fields[1]})
 
-        for i in xrange(2, self.table.rowCount()):
+        for i in six.moves.xrange(2, self.table.rowCount()):
             try:
                 coords = [ int(self.table.item(i, 9).text()),
                            int(self.table.item(i, 10).text()),
@@ -832,7 +832,7 @@ class DisplayResultsFromSPM(object):
 
             self.table.setItem(i, 15, item)
 
-        for i in xrange(0, self.table.columnCount()):
+        for i in six.moves.xrange(0, self.table.columnCount()):
             self.table.setSpan(i, 15, 1, 2)
 
 
@@ -926,8 +926,8 @@ class DisplayResultsFromSPM(object):
                 "sagittal" : (63, 36)
                 }
         for k in orientations:
-            for i in xrange(1, arrays[ k ].shape[0]-1):
-                for j in xrange(1, arrays[ k ].shape[1]-1):
+            for i in six.moves.xrange(1, arrays[ k ].shape[0]-1):
+                for j in six.moves.xrange(1, arrays[ k ].shape[1]-1):
                     if i == acpc[ k ][ 0 ]:
                         continue
                     if j == acpc[ k ][ 1 ]:
@@ -989,8 +989,8 @@ class DisplayResultsFromSPM(object):
         imgAx = aims.Volume_FLOAT(glassBrainSize[0], glassBrainSize[1])
         imgAx.fill(0)
         arrAx = np.array(imgAx, copy=False)
-        for i in xrange(sh[0]):
-            for j in xrange(sh[1]):
+        for i in six.moves.xrange(sh[0]):
+            for j in six.moves.xrange(sh[1]):
                 arrAx[ i, j ] = np.nanmax(arr[ i, j,:,: ])
         tmpAx = context.temporary('NIFTI-1 image')
         aims.write(imgAx, tmpAx.fullPath())
@@ -998,8 +998,8 @@ class DisplayResultsFromSPM(object):
         imgSa = aims.Volume_FLOAT(glassBrainSize[1], glassBrainSize[2])
         imgSa.fill(0)
         arrSa = np.array(imgSa, copy=False)
-        for i in xrange(sh[1]):
-            for j in xrange(sh[2]):
+        for i in six.moves.xrange(sh[1]):
+            for j in six.moves.xrange(sh[2]):
                 arrSa[ i, j ] = np.nanmax(arr[:, i, j,: ])
         tmpSa = context.temporary('NIFTI-1 image')
         aims.write(imgSa, tmpSa.fullPath())
@@ -1007,8 +1007,8 @@ class DisplayResultsFromSPM(object):
         imgFr = aims.Volume_FLOAT(glassBrainSize[0], glassBrainSize[2])
         imgFr.fill(0)
         arrFr = np.array(imgFr, copy=False)
-        for i in xrange(sh[0]):
-            for j in xrange(sh[2]):
+        for i in six.moves.xrange(sh[0]):
+            for j in six.moves.xrange(sh[2]):
                 arrFr[ i, j ] = np.nanmax(arr[ i,:, j,: ])
         tmpFr = context.temporary('NIFTI-1 image')
         aims.write(imgFr, tmpFr.fullPath())
