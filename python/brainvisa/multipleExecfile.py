@@ -46,8 +46,8 @@ if sys.version_info[0] >= 3:
             globals = sys._getframe(1).f_globals
         if locals is None:
             locals = sys._getframe(1).f_locals
-        with open(filename, "r") as fh:
-            exec(fh.read() + "\n", globals, locals)
+        with open(filename, "rb") as fh:
+            exec(fh.read() + b"\n", globals, locals)
 
 
 class MultipleExecfile(object):

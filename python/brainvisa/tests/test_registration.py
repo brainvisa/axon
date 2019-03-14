@@ -28,10 +28,12 @@ class TestTransformationManager(unittest.TestCase):
 
     def create_referential(self, registration_directory, label, referential_id):
         referential_uuid = self.create_uuid(referential_id)
-        referential = open(
-            os.path.join(registration_directory, referential_uuid + '.referential'), 'w')
-        d = {'uuid': referential_uuid, 'name': label}
-        print('attributes =', repr(d), file=referential)
+        with open(
+                os.path.join(registration_directory,
+                             referential_uuid + '.referential'), 'w') \
+                as referential:
+            d = {'uuid': referential_uuid, 'name': label}
+            print('attributes =', repr(d), file=referential)
 
     def create_transformation(self, registration_directory, transformation_id, source_id, destination_id):
         transformation_uuid = self.create_uuid(transformation_id)
@@ -40,11 +42,13 @@ class TestTransformationManager(unittest.TestCase):
         trm = open(
             os.path.join(registration_directory, transformation_uuid + '.trm'), 'w')
         print('0 0 0\n1 0 0\n0 1 0\n0 0 1', file=trm)
+        trm.close()
         trm_minf = open(
             os.path.join(registration_directory, transformation_uuid + '.trm.minf'), 'w')
         d = {'uuid': transformation_uuid, 'source_referential':
              source_uuid, 'destination_referential': destination_uuid}
         print('attributes =', repr(d), file=trm_minf)
+        trm_minf.close()
 
     def create_test_database(self):
         database_directory = os.path.join(
