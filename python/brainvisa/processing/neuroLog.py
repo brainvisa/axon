@@ -102,7 +102,10 @@ class TextFileLink(FileLink):
         # print("expand text ", self)
         result = None
         try:
-            file = open(self.fileName, 'r')
+            if sys.version_info[0] >= 3:
+                file = open(self.fileName, 'r', encoding='utf-8')
+            else:
+                file = open(self.fileName, 'r')
             result = file.read()
             file.close()
         except:
@@ -181,7 +184,10 @@ class LogFile:
             self.fileName = fileName
             # print("SubTextLog ", fileName, " of parent ", parentLog)
             # Create empty file
-            file = open(unicode(self.fileName), 'w')
+            if sys.version_info[0] >= 3:
+                file = open(unicode(self.fileName), 'w', encoding='utf-8')
+            else:
+                file = open(unicode(self.fileName), 'w')
             file.close()
             self._parent = parentLog
 
@@ -323,7 +329,10 @@ class LogFile:
         self._closed = set()
         self._temporary = temporary
         if file is None:
-            self._file = open(fileName, 'w')
+            if sys.version_info[0] >= 3:
+                self._file = open(fileName, 'w', encoding='utf-8')
+            else:
+                self._file = open(fileName, 'w')
         else:
             self._file = file
         self._writer = createMinfWriter(self._file, format='XML',
@@ -472,7 +481,10 @@ class LogFile:
             reader.close()
             self._closed.clear()
             shutil.copyfile(tmp, self.fileName)
-            self._file = open(self.fileName, 'a+')
+            if sys.version_info[0] >= 3:
+                self._file = open(self.fileName, 'a+', encoding='utf-8')
+            else:
+                self._file = open(self.fileName, 'a+')
             self._writer.change_file(self._file)
         finally:
             self._lock.release()
