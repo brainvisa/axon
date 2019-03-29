@@ -30,19 +30,18 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-import types
 import math
 import six
 
 # Quaternion class
-# API (and internals) is a copy of the C++ class of Anatomist
+# API (and internals) is a copy of the C++ class of Aims
 # (just translated to python)
 
 
 class Quaternion:
 
     def __init__(self, quat=None):
-        if type( quat ) in ( types.TupleType, types.ListType ) \
+        if type(quat) in (tuple, list) \
            and len(quat) == 4:
             # vector of 4 figures (axis + angle)
             self._vector = [quat[0], quat[1], quat[2], quat[3]]
