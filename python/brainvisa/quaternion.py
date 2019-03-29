@@ -189,7 +189,7 @@ class Quaternion:
         return math.acos(self._vector[3]) * 2
 
     def vectmultscal(self, v1, scale):
-        return map(lambda x: x * scale, v1)
+        return [x * scale for x in  v1]
 
     def cross(self, v1, v2):
         return [v1[1] * v2[2] - v1[2] * v2[1],
