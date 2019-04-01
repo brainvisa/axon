@@ -234,7 +234,7 @@ def showException(beforeError='', afterError='', parent=None,
                 mainThreadActions().push(w.show)
         else:
             HTMLParser(formatter.AbstractFormatter(
-                       formatter.DumbWriter(sys.stdout, 80)))\
+                       formatter.DumbWriter(sys.stdout, maxcol=80)))\
                 .feed(messageHTML + '<hr>' + detailHTML)
     except Exception as e:
         traceback.print_exc()
