@@ -3979,8 +3979,7 @@ class ProcessSelectionWidget(QMainWindow):
         if _workflow_application_model != None:
 
             self.sw_widget = SomaWorkflowWidget(_workflow_application_model,
-                                                computing_resource=socket.gethostname(
-                                                ),
+                                                computing_resource=None,
                                                 parent=None)
             self.sw_widget.setWindowTitle(_t_("Workflow execution"))
             self.sw_mini_widget = SomaWorkflowMiniWidget(
