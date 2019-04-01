@@ -124,7 +124,7 @@ def execution(self, context):
 
     if pat:
         # check if the pattern only includes theimages we want
-        imnames = map(lambda x: os.path.basename(x.fullPath()), self.images)
+        imnames = [os.path.basename(x.fullPath()) for x in self.images]
         # context.write( imnames )
         d = os.listdir(dirn)
         n = len(ext)
@@ -164,7 +164,7 @@ def execution(self, context):
         context.write('copy done')
         im = [os.path.join(td, 'img%' + str(snum) + 'd' + ext)]
 
-    # im = map( lambda x: x.fullPath(), self.images )
+    # im = [x.fullPath() for x in self.images]
     passlog = context.temporary('log file')
     cmd = [encoder]
     for x in im:

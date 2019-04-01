@@ -1227,7 +1227,7 @@ class DiskItemListEditor(QWidget, DataEditor):
             self.findDialog.show()
 
         def findAccepted(self):
-            value = map(lambda x: x.fullPath(), self.findDialog.getValues())
+            value = [x.fullPath() for x in self.findDialog.getValues()]
             if self.isVisible():
                 self.sle.setValue(value)
                 self._add()

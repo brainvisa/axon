@@ -41,8 +41,9 @@ signature = Signature(
     'read', ReadDiskItem('4D Volume', 'aims readable Volume Formats',
                          enableConversion=0),
   'write', WriteDiskItem(
-      '4D Volume', map(lambda x: changeToFormatSeries(getFormat(x)), aimsGlobals.aimsWriteVolumeFormats)),
-    # 'preferedFormat', Choice(*([ ( '<auto>', None ) ] + map( lambda x: (x,getFormat(x)), aimsGlobals.aimsVolumeFormats ))),
+      '4D Volume', [changeToFormatSeries(getFormat(x))
+                    for x in aimsGlobals.aimsWriteVolumeFormats]),
+    # 'preferedFormat', Choice(*([('<auto>', None)] + [(x,getFormat(x)) for x in aimsGlobals.aimsVolumeFormats])),
   'removeSource', Boolean(),
   'ascii', Boolean(),
   'voxelType', Choice(('<Same as input>', None), 'U8',
@@ -96,7 +97,7 @@ def execution(self, context):
             while len(n) < nb_digit:
                 n = "0" + n
             name_serie.append(n)
-        # name_serie = map( str, range( time_length ) )
+        # name_serie = [str(x) for x in range(time_length)]
 
     self.write._setLocal('name_serie', name_serie)
 

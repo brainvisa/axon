@@ -1002,17 +1002,18 @@ if anatomistImport:
                                self.newWindowA, self.newWindowS,
                                self.newWindowC,
                                self.newWindowB ] + \
-                        map( lambda w, self=self: \
-                             # (repr(w), lambda w=w: w), windows ) # label=repr(window), value=a lambda function that returns the window
-                             (repr(w), lambda wr=w.getRef("Weak"): wr), windows)  # label=repr(window), value=a lambda function that returns the window
-                            # before value was weakref.ref(w,
-                            # self.refreshChoices) but it doesn't work with
-                            # current anatomist api objects : the window object
-                            # is not a permanant object, it is only created for
-                            # the getWindows method and is destroyed at the end
-                            # of refreshChoices, which calls the callback,
-                            # which create a new window object (proxy for
-                            # anatomist window)... -> infinite loop
+                        [
+                         # (repr(w), lambda w=w: w), windows ) # label=repr(window), value=a lambda function that returns the window
+                         (repr(w), lambda wr=w.getRef("Weak"): wr)
+                         for w in windows]  # label=repr(window), value=a lambda function that returns the window
+                        # before value was weakref.ref(w,
+                        # self.refreshChoices) but it doesn't work with
+                        # current anatomist api objects : the window object
+                        # is not a permanant object, it is only created for
+                        # the getWindows method and is destroyed at the end
+                        # of refreshChoices, which calls the callback,
+                        # which create a new window object (proxy for
+                        # anatomist window)... -> infinite loop
                     self.setChoices(*choices)
                 except:
                     # if it is impossible to get informations about anatomist

@@ -78,7 +78,7 @@ def execution(self, context):
     context.write(attrs)
     width = attrs['volume_dimension'][0]
 
-    im = map(lambda x: x.fullPath(), self.images)
+    im = [x.fullPath() for x in self.images]
     passlog = context.temporary('log file')
     cmd = ['mencoder', 'mf://' + ','.join(im),
            '-o', self.animation.fullPath(), '-mf',

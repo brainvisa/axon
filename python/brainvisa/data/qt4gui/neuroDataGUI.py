@@ -431,7 +431,7 @@ class BooleanListEditor(QWidget, DataEditor):
 
     def _setValue(self, value, default=0):
         if value is not None:
-            value = map(self.parameter.findValue, value)
+            value = [self.parameter.findValue(x) for x in value]
             labels = [str(x) for x in value]
             self.sle.setValue(labels)
         if value != self.value:
@@ -550,8 +550,8 @@ class ListOfVectorEditor(StringEditor):
         if value is None:
             self.setText('')
         else:
-            self.setText(' '.join(map(lambda x: ' '.join(map(str, x)),
-                                      value), ';'))
+            self.setText(';'.join([' '.join([str(y) for y in x])
+                                   for x in value]))
         self.value = value
 
     def _valueFromText(self, text):
@@ -574,8 +574,8 @@ class MatrixEditor(StringEditor):
         if value is None:
             self.setText('')
         else:
-            self.setText(string.join(map(lambda x: string.join(map(str, x)),
-                                         value), ';'))
+            self.setText(';'.join([' '.join([str(y) for y in x])
+                                   for x in value]))
         self.value = value
 
     def _valueFromText(self, text):
@@ -735,13 +735,13 @@ class NumberListEditor(StringListEditor):
         if value is None:
             pass
         elif isinstance(value, (list, tuple)):
-            text = ' '.join(map(lambda x: str(x), value))
+            text = ' '.join([str(x) for x in value])
         elif isinstance(value, basestring):
             text = str(value)
         else:
             try:
                 valuel = list(value)  # can convert to a list ?
-                text = ' '.join(map(lambda x: str(x), valuel))
+                text = ' '.join([str(x) for x in valuel])
             except:
                 text = str(value)
         self.setText(text)
@@ -923,7 +923,7 @@ class ChoiceListEditor(QWidget, DataEditor):
 
     def _setValue(self, value, default=0):
         if value is not None:
-            value = map(self.parameter.findValue, value)
+            value = [self.parameter.findValue(x) for x in value]
             # OpenChoice
             if isinstance(self.parameter, OpenChoice):
                 labels = []
@@ -948,7 +948,7 @@ class ChoiceListEditor(QWidget, DataEditor):
         self.sle.checkValue()
         sleValue = self.sle.getValue()
         if sleValue is not None:
-            currentValue = map(self.parameter.findValue, sleValue)
+            currentValue = [self.parameter.findValue(x) for x in sleValue]
         else:
             currentValue = None
         if currentValue != self.getValue():
@@ -1102,8 +1102,7 @@ class PointListEditor(QWidget, DataEditor):
     def getValue(self):
         text = unicode(self.led.text())
         if text:
-            return map(lambda x: map(float, x.split()),
-                       string.split(text, ','))
+            return [[float(y) for y in x.split()] for x in text.split(',')]
 
     def setValue(self, value, default=0):
         self._setValue(value)
@@ -1112,8 +1111,8 @@ class PointListEditor(QWidget, DataEditor):
         if not value:
             self.led.setText('')
         else:
-            self.led.setText(string.join(map(
-                                         lambda point: ' '.join(map(str, point)), value), ','))
+            self.led.setText(','.join([' '.join([str(x) for x in point])
+                                       for point in value]))
 
     def setFocusNext(self):
         self.focusNextChild()
@@ -1141,7 +1140,7 @@ class PointListEditor(QWidget, DataEditor):
         v = self.getValue()
         if v is None:
             v = []
-        v.append(map(float, position[:self.parameter.dimension]))
+        v.append([float(x) for x in position[:self.parameter.dimension]])
         self.setValue(v)
 
     def erasePressed(self):
@@ -1251,7 +1250,7 @@ class GenericListSelection(QWidget):
         try:
             pass
             # TODO
-            # for v in map( self.parameter.findValue, self.sle.getValue() ):
+            # for v in [self.parameter.findValue(x) for x in self.sle.getValue()]:
                 # self.values.append( v )
                 # if v is None:
                     # self.lbxValues.insertItem( '<' + _t_('None') + '>' )
@@ -1346,7 +1345,7 @@ class ListOfListEditor(QPushButton, DataEditor):
     # def __init__( self, objects, names = None, parent = None, name = None ):
         # QComboBox.__init__( self, 0, parent, name )
         # if names is None:
-            # names = map( str, objects )
+            # names = [str(x) for x in objects]
         # self.objects = objects
         # for n in names:
             # self.addItem( n )
@@ -1366,7 +1365,7 @@ class ObjectsSelection(QListWidget):
             self.setObjectName(name)
         self.setSelectionMode(self.ExtendedSelection)
         if names is None:
-            names = map(str, objects)
+            names = [str(x) for x in objects]
         self.objects = objects
         for n in names:
             self.addItem(n)
