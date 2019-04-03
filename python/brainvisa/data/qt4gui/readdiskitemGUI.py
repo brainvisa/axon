@@ -588,7 +588,6 @@ class DiskItemEditor(QWidget, DataEditor):
         self._viewers = brainvisa.processes.getViewers(
             source, 1, checkUpdate=False, process=self.process,
                                 check_values=True)
-        print(self._viewers)
 
     def updateViewersComboBox(self):
         if self.cmbViewers is not None:
@@ -598,7 +597,6 @@ class DiskItemEditor(QWidget, DataEditor):
             # Update viewers in combo box
             self.cmbViewers.clear()
             self.cmbViewers.addItem(_t_('Default'), None)
-            print(self._viewers)
             self.getViewers() # to update if needed
             for viewer in self._viewers:
                 self.cmbViewers.addItem(_t_(viewer.name), viewer)
@@ -1227,7 +1225,7 @@ class DiskItemListEditor(QWidget, DataEditor):
             self.findDialog.show()
 
         def findAccepted(self):
-            value = map(lambda x: x.fullPath(), self.findDialog.getValues())
+            value = [x.fullPath() for x in self.findDialog.getValues()]
             if self.isVisible():
                 self.sle.setValue(value)
                 self._add()

@@ -376,9 +376,9 @@ def aimsVolumeAttributes(item, writeOnly=0, forceFormat=0):
     # Get formats objects from formats names
     global _aimsVolumeFormats
     if _aimsVolumeFormats is None:
-        _aimsVolumeFormats = list(map(getFormat, aimsVolumeFormats)) \
-            + list(map(getFormat, map(lambda x: 'Series of ' + x.name,
-                                      aimsVolumeFormats)))
+        _aimsVolumeFormats = [getFormat(x) for x in aimsVolumeFormats] \
+            + [getFormat(y) for y in ['Series of ' + x.name
+                                      for x in aimsVolumeFormats]]
 
     result = {}
     if isinstance(item, DiskItem) and \

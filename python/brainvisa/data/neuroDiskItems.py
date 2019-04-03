@@ -130,7 +130,6 @@ from brainvisa import shelltools
 from brainvisa.multipleExecfile import MultipleExecfile
 from soma.qt_gui.qt_backend.QtCore import QObject, Signal
 import re
-from six.moves import reduce
 
 if sys.version_info[0] >= 3:
     basestring = str
@@ -141,7 +140,7 @@ if sys.version_info[0] >= 3:
         return list(thing.values())
 
     def map_list(func, thing):
-        return list(map(func, thing))
+        return [func(x) for x in thing]
 else:
     from UserList import UserList
 
@@ -1115,20 +1114,14 @@ class DiskItem(QObject):
            The distance is not a number but distances can be sorted, it is a tuple of numbers.'''
         # Count the number of common hierarchy attributes
         hierarchyCommon = \
-            reduce(
-                operator.add,
-                map(
-                    lambda nv, other=other: other.getHierarchy(nv[0]) == nv[1],
-                    self.hierarchyAttributes().items()),
+            sum([other.getHierarchy(nv[0]) == nv[1]
+                 for nv in self.hierarchyAttributes().items()],
                 self.type is other.type)
         # Count the number of common non hierarchy attributes
         nonHierarchyCommon = \
-            reduce(
-                operator.add,
-                map(
-                    lambda nv, other=other: other.getNonHierarchy(
-                        nv[0]) == nv[1],
-                    self.nonHierarchyAttributes().items()),
+            sum(
+                [other.getNonHierarchy(nv[0]) == nv[1]
+                 for nv in self.nonHierarchyAttributes().items()],
                 self.type is other.type)
         return (-hierarchyCommon, self.priority() - other.priority(), -nonHierarchyCommon, )
 

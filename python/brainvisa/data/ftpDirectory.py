@@ -144,7 +144,7 @@ class EnhancedFTP:
         self._disconnect()
         result = self._dir[1:]  # Suppress 'total ...' line
         del self._dir
-        return map(lambda x, parent=directory: self.Item(x, parent), result)
+        return [self.Item(x, directory) for x in result]
 
     def getItem(self, path):
         i = path.rfind('/')

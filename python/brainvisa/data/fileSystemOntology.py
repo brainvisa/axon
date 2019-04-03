@@ -355,9 +355,9 @@ class SetType(ScannerRuleBuilder):
         if self.type.formats:
             if scannerRule.formats is None:
                 if 'name_serie' in scannerRule.pattern.namedRegex():
-                    scannerRule.formats = map(
-                        neuroDiskItems.changeToFormatSeries,
-                                               self.type.formats)
+                    scannerRule.formats \
+                        = [neuroDiskItems.changeToFormatSeries(x)
+                           for x in self.type.formats]
                 else:
                     scannerRule.formats = self.type.formats
                 scannerRule.formatNamesInSet = set(
@@ -546,8 +546,8 @@ class SetFormats(ScannerRuleBuilder):
 
     def build(self, scannerRule):
         if scannerRule.pattern.number:
-            scannerRule.formats = map(neuroDiskItems.changeToFormatSeries,
-                                      self.formats)
+            scannerRule.formats = [neuroDiskItems.changeToFormatSeries(x)
+                                   for x in self.formats]
         else:
             scannerRule.formats = self.formats
         scannerRule.formatNamesInSet = set(
@@ -651,7 +651,7 @@ class DirectoryScanner(object):
     def __getstate__(self):
         return {
             'rules': self.rules,
-          'possibleTypes': map(lambda x: x.id, self.possibleTypes.keys())
+            'possibleTypes': [x.id for x in self.possibleTypes.keys()]
         }
 
     def __setstate__(self, state):
@@ -866,8 +866,8 @@ class DirectoryScanner(object):
     def attributesDependencies(self, parentAttributes, result):
         allRulesAttributes = []
         for rule in self.rules:
-            currentAttributes = map(
-                lambda x: x[0], rule.globalAttributes + rule.localAttributes)
+            currentAttributes = [x[0] for x in rule.globalAttributes
+                                 + rule.localAttributes]
             if rule.fileNameAttribute != 'filename_variable':
                 currentAttributes.append(rule.fileNameAttribute)
             allRulesAttributes = currentAttributes

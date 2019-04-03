@@ -74,7 +74,7 @@ def execution(self, context):
     tmpdi = context.temporary('File')
     tmp = tmpdi.fullPath()
     tfile = open(tmp, 'w')
-    im = map(lambda x: x.fullPath(), self.images)
+    im = [x.fullPath() for x in self.images]
     tfile.write('\n'.join(im))
     tfile.write('\n')
     tfile.close()
