@@ -41,12 +41,13 @@ __docformat__ = "epytext en"
 
 import os
 import brainvisa.processing.qtgui.backwardCompatibleQt as qt
+Qt = qt
 from soma.translation import translate as _
 from soma.qtgui.api import ApplicationQtGUI, QtGUI
 from soma.wip.application.api import findIconFile
 from soma.minf.api import writeMinf
 from brainvisa.processing.neuroException import showException
-from brainvisa.configuration.databases_configuration import DatabaseSettings, DatabasesConfiguration
+from brainvisa.configuration.databases_configuration import DatabaseSettings, DatabasesConfiguration, FormatsSequence
 
 #------------------------------------------------------------------------------
 
@@ -276,3 +277,122 @@ class DatabasesConfiguration_Qt4GUI(QtGUI):
         This method must be defined for both mutable and immutable DataType.
         '''
         editionWidget.update(object.fso)
+
+
+class FormatsSequence_Qt4GUI(QtGUI):
+
+    def editionWidget(self, object, parent=None, name=None, live=False):
+        editionWidget = Qt.QWidget()
+        l = Qt.QVBoxLayout()
+        editionWidget.setLayout(l)
+        edit = Qt.QListWidget()
+        l.addWidget(edit)
+        self.edit = edit
+        self.edit.itemSelectionChanged.connect(self._selected)
+
+        hb = Qt.QHBoxLayout()
+        hb.setSpacing(6)
+
+        #self.btnAdd = Qt.QPushButton(_('Add'), editionWidget)
+        #self.btnAdd.clicked.connect(self._add)
+        #hb.addWidget(self.btnAdd)
+
+        #self.btnRemove = Qt.QPushButton(_('Remove'), editionWidget)
+        #self.btnRemove.setEnabled(0)
+        #self.btnRemove.clicked.connect(self._remove)
+        #hb.addWidget(self.btnRemove)
+
+        self.btnUp = Qt.QPushButton(editionWidget)
+        if DatabaseManagerGUI.pixUp:
+            self.btnUp.setIcon(DatabaseManagerGUI.pixUp)
+        self.btnUp.setEnabled(0)
+        self.btnUp.clicked.connect(self._up)
+        hb.addWidget(self.btnUp)
+
+        self.btnDown = Qt.QPushButton(editionWidget)
+        if DatabaseManagerGUI.pixDown:
+            self.btnDown.setIcon(DatabaseManagerGUI.pixDown)
+        self.btnDown.setEnabled(0)
+        self.btnDown.clicked.connect(self._down)
+        hb.addWidget(self.btnDown)
+
+        l.addLayout(hb)
+
+        #hb = Qt.QHBoxLayout()
+        #hb.setSpacing(6)
+
+        #spacer = qt.QSpacerItem(
+            #10, 10, Qt.QSizePolicy.Expanding, Qt.QSizePolicy.Minimum)
+        #hb.addItem(spacer)
+
+        self.modification = 0
+
+        self.updateEditionWidget(editionWidget, object)
+        return editionWidget
+
+    def closeEditionWidget(self, editionWidget):
+        editionWidget.close()
+
+    def setObject(self, editionWidget, object):
+        # clear list without reinstantiating it
+        while object:
+            object.pop()
+        for i in range(self.edit.count()):
+            item = self.edit.item(i)
+            object.append(item.text())
+        object += [f for f in FormatsSequence.all_formats() if f not in object]
+        print('setObject:', object)
+
+    def updateEditionWidget(self, editionWidget, object):
+        print('updateEditionWidget:', object)
+        self.edit.clear()
+        for item in object:
+            self.edit.addItem(item)
+
+    def _add(self):
+        try:
+            pass
+        except:
+            showException()
+
+    def _remove(self):
+        row = self.edit.currentRow()
+        self.edit.takeItem(row)
+        self._selected()
+        self.modification = 1
+
+    def _up(self):
+        row = self.edit.currentRow()
+        newRow = row - 1
+        if newRow >= 0:
+            self._moveItem(row, newRow)
+
+    def _moveItem(self, row, otherRow):
+        item = self.edit.takeItem(row)
+        self.edit.insertItem(otherRow, item)
+        self.edit.setCurrentItem(item)
+        self.modification = 1
+
+    def _down(self):
+        row = self.edit.currentRow()
+        newRow = row + 1
+        if newRow < self.edit.count():
+            self._moveItem(row, newRow)
+
+    def _selected(self):
+        item = self.edit.currentItem()
+        row = self.edit.currentRow()
+        if item is None:
+            #self.btnRemove.setEnabled(0)
+            self.btnUp.setEnabled(0)
+            self.btnDown.setEnabled(0)
+        else:
+            #self.btnRemove.setEnabled(1)
+            if row != 0:
+                self.btnUp.setEnabled(1)
+            else:
+                self.btnUp.setEnabled(0)
+            if (row < (self.edit.count() - 1)):
+                self.btnDown.setEnabled(1)
+            else:
+                self.btnDown.setEnabled(0)
