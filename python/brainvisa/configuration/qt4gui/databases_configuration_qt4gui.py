@@ -341,10 +341,8 @@ class FormatsSequence_Qt4GUI(QtGUI):
             item = self.edit.item(i)
             object.append(item.text())
         object += [f for f in FormatsSequence.all_formats() if f not in object]
-        print('setObject:', object)
 
     def updateEditionWidget(self, editionWidget, object):
-        print('updateEditionWidget:', object)
         self.edit.clear()
         for item in object:
             self.edit.addItem(item)

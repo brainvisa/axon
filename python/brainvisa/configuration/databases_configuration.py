@@ -88,12 +88,16 @@ class FormatsSequence(Sequence):
     @staticmethod
     def all_formats():
         from brainvisa.tools import aimsGlobals
+        from brainvisa.data.sqlFSODatabase import getAllFileFormats
+        formats = []
         if 'aimsWriteVolumeFormats' in aimsGlobals.__dict__:
+            print('use aims formats')
             formats = [x.name for x in aimsGlobals.aimsWriteVolumeFormats.data]
             mesh = [x.name for x in aimsGlobals.aimsMeshFormats.data]
             formats += [f for f in mesh if f not in formats]
-            return formats
-        return []
+        formats += [f for f in getAllFileFormats().format_names()
+                    if f not in formats]
+        return formats
 
 
 #------------------------------------------------------------------------------
@@ -206,10 +210,8 @@ class DatabaseSettings(HasSignature):
         if newDirectory:
             minf = os.path.join(newDirectory, 'database_settings.minf')
             if os.path.exists(minf):
-                self.expert_settings.preferred_formats_order = []
+                #self.expert_settings.preferred_formats_order = []
                 readMinf(minf, targets=(self.expert_settings, ))
-                print('read database_settings:', minf)
-                print('***formats***:', self.expert_settings.preferred_formats_order)
             else:
                 it = six.iteritems(self.expert_settings.signature)
                 next(it)
