@@ -92,6 +92,7 @@ class MultipleExecfile(object):
         self.fileExtensions = ['']
         self._executedFiles = {}
         self._includeStack = []
+        self._last_line = 0
 
     def findFile(self, localFileName):
         """
@@ -103,7 +104,7 @@ class MultipleExecfile(object):
         """
         result = None
         if self._includeStack:
-            path = [ os.path.dirname( self._includeStack[ -1 ] ) ] + \
+            path = [os.path.dirname(self._includeStack[-1][0])] + \
                 list(self.includePath)
         else:
             path = list(self.includePath) + ['']
@@ -137,7 +138,9 @@ class MultipleExecfile(object):
                 if file is None:
                     if self._includeStack:
                         raise RuntimeError(
-                            _t_('Include file %s not found (in %s)') % (f, self._includeStack[-1]))
+                            _t_('Include file %s not found (in %s:%d)')
+                            % (f, self._includeStack[-1][0],
+                               self._includeStack[-1][1]))
                     else:
                         raise RuntimeError(
                             _t_('File %s does not exist') % (f, ))
@@ -146,22 +149,27 @@ class MultipleExecfile(object):
                 if status is None:
     # dbg#        print('!MultipleExecfile! execute', file)
                     self._executedFiles[file] = False
-                    self._includeStack.append(file)
+                    self._includeStack.append((file, self._last_line))
                     self.localDict['__name__'] = file
                     execfile(file, self.globalDict, self.localDict)
                     self._includeStack.pop()
                     if self._includeStack:
-                        self.localDict['__name__'] = self._includeStack[-1]
+                        self.localDict['__name__'] = self._includeStack[-1][0]
                     else:
                         self.localDict['__name__'] = None
                     self._executedFiles[file] = True
                 elif status == False:
-                    raise RuntimeError(_t_('Circular dependencies in included files. Inclusion order: %s') %
-                                       (', '.join(self._includeStack + [file]), ))
+                    raise RuntimeError(
+                        _t_('Circular dependencies in included files. Inclusion order: %s')
+                        % ', '.join([':'.join(x)
+                                     for x in self._includeStack
+                                        + [(file, self._last_line)]]))
     # dbg#      else:
     # dbg#        print('!MultipleExecfile!', file, 'already executed')
             except Exception as e:
-                msg = unicode('while executing file ' + f + ' ')
+                msg = unicode('while executing file ' + f
+                              + ':%d' % sys.exc_info()[2].tb_next.tb_lineno
+                              + ' ')
                 if file:
                     msg += u'(' + unicode(file) + u') '
                 msg += ': '
@@ -181,8 +189,10 @@ class MultipleExecfile(object):
             return exc
 
     def _include(self, *args):
-# dbg#    for f in args:
-# dbg#      print('!MultipleExecfile! include', f, 'in', self._includeStack[ -1 ])
+        import traceback
+        self._last_line = traceback.extract_stack()[-2][1]
+        #for f in args:
+            #print('!MultipleExecfile! include', f, 'in', self._includeStack[-1], ':', traceback.extract_stack()[-2][1])
 # dbg#      self.execute( f )
         self.execute(*args)
 
