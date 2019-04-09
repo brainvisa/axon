@@ -267,6 +267,8 @@ def initializeFormatLists():
         from soma import aims
         # fix mgz format
         aims.carto.PluginLoader.load()
+        io = aims.supported_io_formats() # to test is works
+        del io
         if 'mgz' in aims.Finder.extensions('MINC'):
             global _formats_table
             _formats_table['MINC'] = (
