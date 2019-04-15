@@ -49,7 +49,7 @@ signature = Signature(
     'read', ReadDiskItem('Texture', 'Aims texture formats',
                          enableConversion=False),
     'write', WriteDiskItem('Texture',  'Aims texture formats'),
-    'preferedFormat', Choice(*([('<auto>', None)]
+    'preferredFormat', Choice(*([('<auto>', None)]
                                + map_list(lambda x: (x, getFormat(x)),
                                           aimsGlobals.aimsTextureFormats))),
     'removeSource', Boolean(),
@@ -58,20 +58,20 @@ signature = Signature(
 
 
 def findAppropriateFormat(values, proc):
-    if values.preferedFormat is None:
+    if values.preferredFormat is None:
         result = WriteDiskItem(
             'Texture', 'Aims texture formats').findValue(values.read)
     else:
         result = WriteDiskItem(
-            'Texture', values.preferedFormat).findValue(values.read)
+            'Texture', values.preferredFormat).findValue(values.read)
     return result
 
 
 def initialization(self):
-    self.linkParameters('write', ['read', 'preferedFormat'],
+    self.linkParameters('write', ['read', 'preferredFormat'],
                         findAppropriateFormat)
-    self.preferedFormat = None
-    self.setOptional('preferedFormat')
+    self.preferredFormat = None
+    self.setOptional('preferredFormat')
     self.removeSource = False
     self.ascii = False
 

@@ -105,7 +105,7 @@ class ReadDiskItem(Parameter):
         if len(formatsList) != 0:
             self.preferredFormat = formatsList[0]
         else:
-            self.preferedFormat = None
+            self.preferredFormat = None
         self.formats = tuple(sorted(formatsList))
         self.enableConversion = enableConversion
         self.exactType = exactType
@@ -210,7 +210,9 @@ class ReadDiskItem(Parameter):
                 raise RuntimeError(
                     HTMLMessage(_t_('the parameter <em>%s</em> is not readable or does not exist : %s') % (unicode(name), unicode(value))))
 
-    def findValue(self, selection, requiredAttributes=None, preferExisting=False, _debug=Undefined):
+    def findValue(self, selection, requiredAttributes=None,
+                  preferExisting=False, ignore_db_formats_sorting=False,
+                  _debug=Undefined):
         '''Find the best matching value for the ReadDiskItem, according to the given selection criterions.
 
         The "best matching" criterion is the maximum number of common attributes with the selection, with required attributes satisfied.
@@ -224,6 +226,10 @@ class ReadDiskItem(Parameter):
         selection: diskitem, or dictionary
         requiredAttributes: dictionary (optional)
         preferExisting: boolean
+        ignore_db_formats_sorting: boolean
+            by default, in Axon >= 4.6.2, formats are sorted according to
+            database-specific formats orders, thus overriding process-specified
+            formats orders. This flag allows to disable this behavior.
         _debug: file-like object (optional)
 
         Returns
@@ -485,9 +491,9 @@ class ReadDiskItem(Parameter):
                             if self.preferredFormat:
                                 formatsToTest = [self.preferredFormat]
                             formatsToTest += self.formats
-                            for preferedFormat in formatsToTest:
+                            for preferredFormat in formatsToTest:
                                 l = [
-                                    i for i in differentOnFormatOnly if i.format is preferedFormat]
+                                    i for i in differentOnFormatOnly if i.format is preferredFormat]
                                 if l:
                                     result = l[0]
                                     break
@@ -512,7 +518,7 @@ class ReadDiskItem(Parameter):
         # We do not remember what it was exactly meant for, and did not do
         # correctly its job. We don't completely remove it because it might solve
         # a very specific situation, but we also fix it: check requiredAttributes,
-        # and select prefered format instead of the first one.
+        # and select preferred format instead of the first one.
         # (Denis 2015/10/09)
         if result is None and write and isinstance( selection, DiskItem ) and \
             (selection.type is None or selection.type is self.type
