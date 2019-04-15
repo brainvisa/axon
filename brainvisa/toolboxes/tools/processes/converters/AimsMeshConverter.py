@@ -49,7 +49,7 @@ signature = Signature(
     'read', ReadDiskItem('Mesh', 'Aims mesh formats',
                          enableConversion=False),
     'write', WriteDiskItem('Mesh', 'Aims mesh formats'),
-    'preferedFormat', Choice(*([('<auto>', None)]
+    'preferredFormat', Choice(*([('<auto>', None)]
                                + map_list(lambda x: (x, getFormat(x)),
                                           aimsGlobals.aimsMeshFormats))),
     'removeSource', Boolean(),
@@ -58,20 +58,20 @@ signature = Signature(
 
 
 def findAppropriateFormat(values, proc):
-    if values.preferedFormat is None:
+    if values.preferredFormat is None:
         result = WriteDiskItem(
             'Mesh', 'Aims mesh formats').findValue(values.read)
     else:
         result = WriteDiskItem('Mesh',
-                               values.preferedFormat).findValue(values.read)
+                               values.preferredFormat).findValue(values.read)
     return result
 
 
 def initialization(self):
-    self.linkParameters('write', ['read', 'preferedFormat'],
+    self.linkParameters('write', ['read', 'preferredFormat'],
                         findAppropriateFormat)
-    self.preferedFormat = None
-    self.setOptional('preferedFormat')
+    self.preferredFormat = None
+    self.setOptional('preferredFormat')
     self.removeSource = False
     self.ascii = False
 

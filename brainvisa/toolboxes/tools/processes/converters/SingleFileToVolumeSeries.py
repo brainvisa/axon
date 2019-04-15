@@ -43,7 +43,7 @@ signature = Signature(
   'write', WriteDiskItem(
       '4D Volume', [changeToFormatSeries(getFormat(x))
                     for x in aimsGlobals.aimsWriteVolumeFormats]),
-    # 'preferedFormat', Choice(*([('<auto>', None)] + [(x,getFormat(x)) for x in aimsGlobals.aimsVolumeFormats])),
+    # 'preferredFormat', Choice(*([('<auto>', None)] + [(x,getFormat(x)) for x in aimsGlobals.aimsVolumeFormats])),
   'removeSource', Boolean(),
   'ascii', Boolean(),
   'voxelType', Choice(('<Same as input>', None), 'U8',
@@ -51,19 +51,19 @@ signature = Signature(
 )
 
 # def findAppropriateFormat( values, proc ):
-# if values.preferedFormat is None:
+# if values.preferredFormat is None:
 # result = WriteDiskItem( '4D Volume', 'aims Writable Volume Formats' ).findValue( values.read )
 # else:
-# result = WriteDiskItem( '4D Volume', values.preferedFormat ).findValue( values.read )
+# result = WriteDiskItem( '4D Volume', values.preferredFormat ).findValue( values.read )
 # return result
 
 
 def initialization(self):
-# self.linkParameters( 'write', [ 'read', 'preferedFormat' ],
+# self.linkParameters( 'write', [ 'read', 'preferredFormat' ],
 # findAppropriateFormat )
     self.linkParameters('write', 'read')
-    self.preferedFormat = None
-# self.setOptional( 'preferedFormat', 'voxelType' )
+    #self.preferredFormat = None
+# self.setOptional( 'preferredFormat', 'voxelType' )
     self.setOptional('voxelType')
     self.removeSource = 0
     self.ascii = 0

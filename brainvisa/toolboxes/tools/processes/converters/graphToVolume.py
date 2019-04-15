@@ -56,7 +56,7 @@ signature = Signature(
     'read', ReadDiskItem('Graph', 'Graph'),
     'write', WriteDiskItem('Label Volume',
                            'aims Writable Volume Formats'),
-    'preferedFormat', Choice(*([('<auto>', None)]
+    'preferredFormat', Choice(*([('<auto>', None)]
                                + map_list(lambda x: (x, getFormat(x)),
                                           aimsGlobals.aimsVolumeFormats))),
     'removeSource', Boolean(),
@@ -66,21 +66,21 @@ signature = Signature(
 
 
 def findAppropriateFormat(values, proc):
-    if values.preferedFormat is None:
+    if values.preferredFormat is None:
         result = WriteDiskItem(
             '4D Volume',
             aimsGlobals.aimsVolumeFormats[0]).findValue(values.read)
     else:
         result = WriteDiskItem(
-            '4D Volume', values.preferedFormat).findValue(values.read)
+            '4D Volume', values.preferredFormat).findValue(values.read)
     return result
 
 
 def initialization(self):
-    self.linkParameters('write', ['read', 'preferedFormat'],
+    self.linkParameters('write', ['read', 'preferredFormat'],
                         findAppropriateFormat)
-    self.preferedFormat = None
-    self.setOptional('preferedFormat', 'extract_volume')
+    self.preferredFormat = None
+    self.setOptional('preferredFormat', 'extract_volume')
     self.removeSource = False
     self.extract_contours = 'No'
 
