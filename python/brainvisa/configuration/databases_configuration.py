@@ -88,15 +88,16 @@ class FormatsSequence(Sequence):
     @staticmethod
     def all_formats():
         from brainvisa.tools import aimsGlobals
-        from brainvisa.data.sqlFSODatabase import getAllFileFormats
+        from brainvisa.data.fileformats import getAllFileFormats
         formats = []
         if 'aimsWriteVolumeFormats' in aimsGlobals.__dict__:
-            print('use aims formats')
+            #print('use aims formats')
             formats = [x.name for x in aimsGlobals.aimsWriteVolumeFormats.data]
             mesh = [x.name for x in aimsGlobals.aimsMeshFormats.data]
             formats += [f for f in mesh if f not in formats]
-        formats += [f for f in getAllFileFormats().format_names()
-                    if f not in formats]
+            formats += [f for f in getAllFileFormats().format_names()
+                        if f not in formats]
+        print('all_formats:', formats)
         return formats
 
 
