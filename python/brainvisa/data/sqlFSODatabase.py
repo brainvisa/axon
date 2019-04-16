@@ -65,7 +65,7 @@ from brainvisa.processing.neuroException import showWarning, HTMLMessage, showEx
 from brainvisa.data.neuroDiskItems import DiskItem, getFormat, getFormats, Format, FormatSeries, File, Directory, getAllFormats, MinfFormat, getDiskItemType
 from brainvisa.data.patterns import DictPattern
 from brainvisa.data.sql import mangleSQL, unmangleSQL
-from brainvisa.data.fileformats import FileFormats
+from brainvisa.data.fileformats import FileFormats, getAllFileFormats
 from brainvisa.data.directory_iterator import DirectoryIterator, VirtualDirectoryIterator
 from brainvisa.data import temporary
 import six
@@ -157,46 +157,6 @@ def tuplesWithMissingValues(tpl, missingValue):
     for t in _indicesForTuplesWithMissingValues(len(tpl)):
         yield tupleWithMissingValues(t, tpl, missingValue)
 
-#------------------------------------------------------------------------------
-_all_formats = None
-
-
-def getAllFileFormats():
-    global _all_formats
-
-    if _all_formats is None:
-        # Build list of all formats used in BrainVISA
-        _all_formats = FileFormats('All formats')
-        formatsAlreadyDefined = set(('Directory',
-                                    'Graph',
-                                     'Graph and data',
-                                     'mdata file'))
-        _all_formats.newFormat('Graph and data', ('arg', 'd|data'))
-        _all_formats.newAlias('Graph', 'Graph and data')
-        for format in (i for i in getAllFormats() if not i.name.startswith(
-            'Series of '
-        )):
-
-            if isinstance(format, FormatSeries) or format.name == 'mdata file':
-                continue
-
-            if format.name not in formatsAlreadyDefined:
-                patterns = []
-                for p in format.patterns.patterns:
-                    p = p.pattern
-                    dotIndex = p.find('.')
-                    if dotIndex < 0:
-                        break
-                    patterns.append(p[dotIndex + 1:])
-                try:
-                    _all_formats.newFormat(format.name,
-                                           patterns,
-                                           isinstance(format, MinfFormat))
-                    formatsAlreadyDefined.add(format.name)
-                except Exception as e:
-                    showException()
-
-    return _all_formats
 
 #------------------------------------------------------------------------------
 
