@@ -777,32 +777,35 @@ class DiskItemEditor(QWidget, DataEditor):
             return [editor]
 
     def databasePressed(self):
-        if self.databaseDialog is None or self.parameter._modified:
-            self.parameter._modified = 0
-            if self.diskItem:  # this parameter has already a value, use it to initialize the browser
-                selection = self.diskItem.hierarchyAttributes()
-                if self.diskItem.type is None:
-                    selection['_type'] = None
-                else:
-                    selection['_type'] = self.diskItem.type.name
-                if self.diskItem.format is None:
-                    selection['_format'] = None
-                else:
-                    selection['_format'] = self.diskItem.format.name
+        try:
+            if self.databaseDialog is None or self.parameter._modified:
+                self.parameter._modified = 0
+                if self.diskItem:  # this parameter has already a value, use it to initialize the browser
+                    selection = self.diskItem.hierarchyAttributes()
+                    if self.diskItem.type is None:
+                        selection['_type'] = None
+                    else:
+                        selection['_type'] = self.diskItem.type.name
+                    if self.diskItem.format is None:
+                        selection['_format'] = None
+                    else:
+                        selection['_format'] = self.diskItem.format.name
 
-                self.databaseDialog = DiskItemBrowser(
-                    self.parameter.database, selection=selection, required=self.parameter.requiredAttributes, parent=self, write=self._write,
-                    enableConversion=self.parameter.enableConversion, exactType=self.parameter.exactType)
-            else:  # if there is no value, we could have some selected attributes from a linked value, use it to initialize the browser
-                self.databaseDialog = DiskItemBrowser(
-                    self.parameter.database, selection=self.parameter._selectedAttributes, required=self.parameter.requiredAttributes,
-                                                      parent=self, write=self._write, enableConversion=self.parameter.enableConversion, exactType=self.parameter.exactType)
-            self.databaseDialog.setWindowTitle(_t_(self.parameter.type.name))
-            self.databaseDialog.accepted.connect(self.databaseAccepted)
-        else:
-            self.databaseDialog.resetSelectedAttributes(
-                self.diskItem, self.parameter._selectedAttributes)
-        self.databaseDialog.show()
+                    self.databaseDialog = DiskItemBrowser(
+                        self.parameter.database, selection=selection, required=self.parameter.requiredAttributes, parent=self, write=self._write,
+                        enableConversion=self.parameter.enableConversion, exactType=self.parameter.exactType)
+                else:  # if there is no value, we could have some selected attributes from a linked value, use it to initialize the browser
+                    self.databaseDialog = DiskItemBrowser(
+                        self.parameter.database, selection=self.parameter._selectedAttributes, required=self.parameter.requiredAttributes,
+                                                          parent=self, write=self._write, enableConversion=self.parameter.enableConversion, exactType=self.parameter.exactType)
+                self.databaseDialog.setWindowTitle(_t_(self.parameter.type.name))
+                self.databaseDialog.accepted.connect(self.databaseAccepted)
+            else:
+                self.databaseDialog.resetSelectedAttributes(
+                    self.diskItem, self.parameter._selectedAttributes)
+            self.databaseDialog.show()
+        except Exception:
+            showException(parent=self)
 
     def databaseAccepted(self):
         values = self.databaseDialog.getValues()
