@@ -34,6 +34,7 @@ import sys
 from soma.path import remove_query_string
 from soma.translation import translate as _
 from soma.undefined import Undefined
+from brainvisa.processing.neuroException import showException
 
 if sys.version_info[0] >= 3:
     unicode = str
@@ -191,3 +192,48 @@ class FileFormats(object):
         # add remaining .minfs
         known += minfs.values()
         return known, unknown
+
+
+
+#------------------------------------------------------------------------------
+_all_formats = None
+
+def getAllFileFormats():
+    global _all_formats
+
+    if _all_formats is None:
+        # getAllFormats() and old formats are defined in neuroDiskItems
+        from brainvisa.data import neuroDiskItems
+        # Build list of all formats used in BrainVISA
+        _all_formats = FileFormats('All formats')
+        formatsAlreadyDefined = set(('Directory',
+                                    'Graph',
+                                     'Graph and data',
+                                     'mdata file'))
+        _all_formats.newFormat('Graph and data', ('arg', 'd|data'))
+        _all_formats.newAlias('Graph', 'Graph and data')
+        for format in (i for i in neuroDiskItems.getAllFormats()
+                       if not i.name.startswith('Series of ')):
+
+            if isinstance(format, neuroDiskItems.FormatSeries) \
+                    or format.name == 'mdata file':
+                continue
+
+            if format.name not in formatsAlreadyDefined:
+                patterns = []
+                for p in format.patterns.patterns:
+                    p = p.pattern
+                    dotIndex = p.find('.')
+                    if dotIndex < 0:
+                        break
+                    patterns.append(p[dotIndex + 1:])
+                try:
+                    _all_formats.newFormat(
+                        format.name,
+                        patterns,
+                        isinstance(format, neuroDiskItems.MinfFormat))
+                    formatsAlreadyDefined.add(format.name)
+                except Exception as e:
+                    showException()
+
+    return _all_formats
