@@ -97,7 +97,6 @@ class FormatsSequence(Sequence):
             formats += [f for f in mesh if f not in formats]
             formats += [f for f in getAllFileFormats().format_names()
                         if f not in formats]
-        print('all_formats:', formats)
         return formats
 
 

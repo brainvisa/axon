@@ -212,13 +212,14 @@ class ReadDiskItem(Parameter):
     def get_formats_order(self, database_dir):
           if database_dir in (None, ''):
               return self.formats
-          import neuroConfig
+          from brainvisa.configuration import neuroConfig
           dbs = [d for d in neuroConfig.dataPath
                  if d.directory == database_dir]
           if len(dbs) != 1:
               return self.formats
           dbs = dbs[0]
-          forder = geattr(dbs.expert_settings, 'preferred_formats_order', None)
+          forder = getattr(dbs.expert_settings, 'preferred_formats_order',
+                           None)
           if forder is None:
               return self.formats
           fdict = {}
