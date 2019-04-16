@@ -1617,15 +1617,7 @@ class SQLDatabase(Database):
                             if rule.type is not None or includeUnknowns:
                                 # insert declared_attributes read from minf and
                                 # fso_attributes.json file
-                                if rule.declared_attributes:
-                                    for att in rule.declared_attributes:
-                                        a.setdefault('_declared_attributes_location', {})[att] = \
-                                            os.path.join(
-                                            nameWithoutExtension, 'fso_attributes.json')
-                                        val = diskItem.get(att)
-                                        if val is not None:
-                                            a[att] = val
-                                if allowYield:
+                                if allowYield or rule.declared_attributes:
                                     diskItem = Directory(
                                         nameWithoutExtension, None)
                                     diskItem.type = rule.type
@@ -1641,6 +1633,19 @@ class SQLDatabase(Database):
                                         rule.priorityOffset
                                     diskItem._identified = True
                                     diskItem.readAndUpdateMinf()
+                                if rule.declared_attributes:
+                                    for att in rule.declared_attributes:
+                                        a.setdefault(
+                                            '_declared_attributes_location',
+                                            {})[att] = \
+                                                os.path.join(
+                                                    nameWithoutExtension,
+                                                    'fso_attributes.json')
+                                        diskItem.readAndUpdateDeclaredAttributes()
+                                        val = diskItem.get(att)
+                                        if val is not None:
+                                            a[att] = val
+                                if allowYield:
                                     yield diskItem
                                     if debugHTML:
                                         print(
