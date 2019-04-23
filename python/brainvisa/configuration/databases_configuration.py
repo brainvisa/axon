@@ -86,10 +86,20 @@ class FormatsSequence(Sequence):
         super(FormatsSequence, self).__init__(Unicode)
 
     @staticmethod
-    def all_formats():
+    def all_formats(database_directory=None):
         from brainvisa.tools import aimsGlobals
         from brainvisa.data.fileformats import getAllFileFormats
+        from brainvisa.configuration import neuroConfig
         formats = []
+        dbs = [d for d in neuroConfig.dataPath
+               if d.directory == database_directory]
+        if len(dbs) == 1:
+            dbs = dbs[0]
+            forder = getattr(dbs.expert_settings, 'preferred_formats_order',
+                             None)
+            if forder:
+                return forder
+
         if 'aimsWriteVolumeFormats' in aimsGlobals.__dict__:
             #print('use aims formats')
             formats = [x.name for x in aimsGlobals.aimsWriteVolumeFormats.data]
@@ -117,7 +127,7 @@ class ExpertDatabaseSettings(HasSignature):
           dict(defaultValue=[], collapsed=True),
     )
 
-    def __init__(self):
+    def __init__(self, database_directory):
         # The list of ontolgies is never empty, so this test cannot to update this list and new ontology such as freesurfer are not added
         # in the expert_settings
         # if not ExpertDatabaseSettings.signature[ 'ontology' ].type.values:
@@ -130,7 +140,7 @@ class ExpertDatabaseSettings(HasSignature):
 
         try:
             self.signature['preferred_formats_order'].defaultValue \
-                = FormatsSequence.all_formats()
+                = FormatsSequence.all_formats(database_directory)
         except ImportError:
             # may happen at startup:
             # neuroConfig is using DatabaseSettings and ExpertDatabaseSettings
@@ -185,7 +195,7 @@ class DatabaseSettings(HasSignature):
 
     def __init__(self, directory=None, selected=True, read_only=False):
         HasSignature.__init__(self)
-        self.expert_settings = ExpertDatabaseSettings()
+        self.expert_settings = ExpertDatabaseSettings(directory)
         if directory:
             if os.path.exists(directory):
                 self.directory = os.path.normpath(directory)
