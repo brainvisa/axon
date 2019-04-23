@@ -316,6 +316,10 @@ class FormatsSequence_Qt4GUI(QtGUI):
         self.btnDown.clicked.connect(self._down)
         hb.addWidget(self.btnDown)
 
+        self.btnDefault = Qt.QPushButton(_('Default'), editionWidget)
+        self.btnDefault.clicked.connect(self._default)
+        hb.addWidget(self.btnDefault)
+
         l.addLayout(hb)
 
         #hb = Qt.QHBoxLayout()
@@ -394,3 +398,7 @@ class FormatsSequence_Qt4GUI(QtGUI):
                 self.btnDown.setEnabled(1)
             else:
                 self.btnDown.setEnabled(0)
+
+    def _default(self, editionWidget):
+        object = FormatsSequence.all_formats()
+        self.updateEditionWidget(editionWidget, object)
