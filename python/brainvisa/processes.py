@@ -3155,8 +3155,7 @@ class ExecutionContext(object):
                     # p: parameter (Read/WriteDiskItem)
                     if v and getattr(v, "type", None) and ((not isSameDiskItemType(v.type, p.type)) or v.format not in p.formats):
                         c = None
-                        formats = [ p.preferredFormat ] \
-                            + [f for f in p.formats if f is not p.preferredFormat]
+                        formats = p.get_formats_order(v.get('_database'))
                         for destinationFormat in formats:
                             converter = getConversionInfo((v.type, v.format),
                                                           (p.type,
