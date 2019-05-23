@@ -35,6 +35,7 @@ from soma.path import remove_query_string
 from soma.translation import translate as _
 from soma.undefined import Undefined
 from brainvisa.processing.neuroException import showException
+import six
 
 if sys.version_info[0] >= 3:
     unicode = str
@@ -144,7 +145,9 @@ class FileFormats(object):
     def read(self, fileName):
         context = {'newFormat': self.newFormat,
                    'newFormatList': self.newFormatList}
-        execfile(fileName, context, context)
+        fopts = {'encoding': 'utf-8'} if sys.version_info[0] >= 3 else {}
+        with open(fileName, **fopts) as f:
+            six.exec_(f.read(), context, context)
 
     def identify(self, directoryIterator, context=None):
         unknown = []

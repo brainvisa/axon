@@ -223,6 +223,7 @@ from soma.uuid import Uuid
 from soma.minf.api import readMinf, writeMinf
 from soma.env import BrainvisaSystemEnv
 import brainvisa
+import six
 
 exitValue = 0
 
@@ -686,7 +687,8 @@ else:
             if a == '-':
                 startup.append('neuroConfig.stdinLoop()')
             else:
-                startup.append("execfile('" + a + "')")
+                fopts = ", {'encoding': 'utf-8'}" if sys.version_info[0] >= 3 else ""
+                startup.append("with open('%s'%s) as f: six.exec_(f.read())" % (a, fopts))
         elif o in ("-c", ):
             startup.append(a)
         elif o in ("-s", ):

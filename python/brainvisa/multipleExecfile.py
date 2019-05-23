@@ -41,14 +41,6 @@ import six
 if sys.version_info[0] >= 3:
     unicode = str
 
-    def execfile(filename, globals=None, locals=None):
-        if globals is None:
-            globals = sys._getframe(1).f_globals
-        if locals is None:
-            locals = sys._getframe(1).f_locals
-        with open(filename, "rb") as fh:
-            exec(fh.read() + b"\n", globals, locals)
-
 
 class MultipleExecfile(object):
 
@@ -153,7 +145,9 @@ class MultipleExecfile(object):
                     self._includeStack.append([file, 0])
                     do_pop = True
                     self.localDict['__name__'] = file
-                    execfile(file, self.globalDict, self.localDict)
+                    fopts = {'encoding': 'utf-8'} if sys.version_info[0] >= 3 else {}
+                    with open(file, **fopts) as ff:
+                        six.exec_(ff.read(), self.globalDict, self.localDict)
                     self._includeStack.pop()
                     do_pop = False
                     if self._includeStack:
