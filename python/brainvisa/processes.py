@@ -5788,7 +5788,10 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
             raise RuntimeError(
                 HTMLMessage(_t_('Cannot load a process from file <em>%s</em>') % (fileName,)))
         currentDirectory = getcwdu()
-        fileIn = open(fileName, moduleDescription[1])
+        fopts = {}
+        if sys.version_info[0] >= 3:
+            fopts['encoding'] = 'utf-8'
+        fileIn = open(fileName, moduleDescription[1], **fopts)
         try:
             if dataDirectory:
                 os.chdir(dataDirectory)
