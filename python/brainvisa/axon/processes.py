@@ -176,9 +176,7 @@ def initializeProcesses():
         try:
             if isinstance(f, basestring):
                 localsStartup = globals().copy()
-                fopts = {'encoding': 'utf-8'} if sys.version_info[0] >= 3 else {}
-                with open(f, **fopts) as ff:
-                    six.exec_(ff.read(), localsStartup, localsStartup)
+                six.exec_(f, localsStartup, localsStartup)
             else:
                 f()
         except:
