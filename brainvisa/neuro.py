@@ -188,17 +188,6 @@ def main():
         raise
         showException()
 
-    # this is obsolete and doesn't do anything any longer
-    # if neuroConfig.validationEnabled:
-        # neuroLog.log( 'Validation mode', html='Validation mode enabled. Databases are going to be modified.', icon='warning.png' )
-        # defaultContext().warning( 'Validation mode enabled. Databases are going to be modified.' )
-        # try:
-            # if d:
-                # neuroConfig.validationDirectory = d
-                # execfile( os.path.join( d, 'initBrainVISAValidation.py' ) )
-        # except:
-            # showException()
-
     if neuroConfig.gui:
         showMainWindow()
 

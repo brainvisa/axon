@@ -32,6 +32,8 @@
 from brainvisa.processes import *
 import operator
 import brainvisa.data.qtgui.scalarFeaturesViewer as sfv
+import six
+import sys
 
 name = 'Show Scalar Features'
 roles = ('viewer',)
@@ -52,7 +54,9 @@ def readData(fileName):
     d = {}
     if not fileName.endswith('.features'):
         fileName = fileName + '.features'
-    execfile(fileName, globals(), d)
+    fopts = {'encoding': 'utf-8'} if sys.version_info[0] >= 3 else {}
+    with open(fileName, **fopts) as f:
+        six.exec_(f.read(), globals(), d)
     return d['attributes']
 
 
