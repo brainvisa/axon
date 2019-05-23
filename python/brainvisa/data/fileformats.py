@@ -192,6 +192,8 @@ class FileFormats(object):
         known += minfs.values()
         return known, unknown
 
+    def format_names(self):
+        return sorted(self._formatsByName.keys())
 
 
 #------------------------------------------------------------------------------

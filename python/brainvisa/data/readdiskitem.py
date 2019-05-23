@@ -103,10 +103,9 @@ class ReadDiskItem(Parameter):
         self.type = getDiskItemType(diskItemType)
         formatsList = to_list(getFormats(formats))
         if len(formatsList) != 0:
-            self.preferredFormat = formatsList[0]
+            self.formats = (formatsList[0], ) + tuple(sorted(formatsList))
         else:
-            self.preferredFormat = None
-        self.formats = tuple(sorted(formatsList))
+            self.formats = ()
         self.enableConversion = enableConversion
         self.exactType = exactType
         self.enableMultiResolution = enableMultiResolution
@@ -209,6 +208,26 @@ class ReadDiskItem(Parameter):
             if not value.isReadable():
                 raise RuntimeError(
                     HTMLMessage(_t_('the parameter <em>%s</em> is not readable or does not exist : %s') % (unicode(name), unicode(value))))
+
+    def get_formats_order(self, database_dir):
+          if database_dir in (None, ''):
+              return self.formats
+          from brainvisa.configuration import neuroConfig
+          dbs = [d for d in neuroConfig.dataPath
+                 if d.directory == database_dir]
+          if len(dbs) != 1:
+              return self.formats
+          dbs = dbs[0]
+          forder = getattr(dbs.expert_settings, 'preferred_formats_order',
+                           None)
+          if forder is None:
+              return self.formats
+          fdict = {}
+          for f in self.formats:  # TODO: could use a cache for this dict
+              fdict[f.name] = f
+          hprio = [fdict[f] for f in forder if f in fdict]
+          lprio = [f for f in self.formats if f not in hprio]
+          return hprio + lprio
 
     def findValue(self, selection, requiredAttributes=None,
                   preferExisting=False, ignore_db_formats_sorting=False,
@@ -487,10 +506,9 @@ class ReadDiskItem(Parameter):
                                 differentOnFormatOnly = []
                                 break
                         if differentOnFormatOnly:
-                            formatsToTest = []
-                            if self.preferredFormat:
-                                formatsToTest = [self.preferredFormat]
-                            formatsToTest += self.formats
+                            formatsToTest = self.get_formats_order(
+                                differentOnFormatOnly[0].getHierarchy(
+                                    '_database'))
                             for preferredFormat in formatsToTest:
                                 l = [
                                     i for i in differentOnFormatOnly if i.format is preferredFormat]
@@ -524,8 +542,7 @@ class ReadDiskItem(Parameter):
             (selection.type is None or selection.type is self.type
              or (not self.exactType
                  and isSameDiskItemType(selection.type, self.type))):
-            format = requiredAttributes.get('_format') or self.preferredFormat \
-                or self.formats[0]
+            format = requiredAttributes.get('_format') or self.formats[0]
             if _debug is not None:
                 print(
                     '  No unique best selection found. But compatible input DiskItem. Checking format.', file=_debug)
