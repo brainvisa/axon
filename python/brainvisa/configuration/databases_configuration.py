@@ -38,7 +38,7 @@
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
-__docformat__ = "epytext en"
+from __future__ import print_function
 
 import os
 import sys
@@ -49,13 +49,6 @@ from soma.signature.api import HasSignature, Signature, FileName, \
 from soma.minf.api import readMinf
 import six
 
-#if sys.version_info[0] >= 3:
-    #def next(iterator):
-        #return iterator.__next__()
-#else:
-    #def next(iterator):
-        #return iterator.next()
-
 
 #------------------------------------------------------------------------------
 class DatabasesConfiguration(ConfigurationGroup):
@@ -65,8 +58,8 @@ class DatabasesConfiguration(ConfigurationGroup):
     class FileSystemOntology(HasSignature):
         signature = Signature(
             'directory', FileName, dict(defaultValue=''),
-          'selected', Boolean, dict(defaultValue=True),
-          'read_only', Boolean, dict(defaultValue=False),
+            'selected', Boolean, dict(defaultValue=True),
+            'read_only', Boolean, dict(defaultValue=False),
         )
 
         def __init__(self, directory='', selected=True, read_only=False):
@@ -87,6 +80,26 @@ class DatabasesConfiguration(ConfigurationGroup):
 
 #------------------------------------------------------------------------------
 
+class FormatsSequence(Sequence):
+
+    def __init__(self):
+        super(FormatsSequence, self).__init__(Unicode)
+
+    @staticmethod
+    def all_formats():
+        from brainvisa.tools import aimsGlobals
+        from brainvisa.data.fileformats import getAllFileFormats
+        formats = []
+        if 'aimsWriteVolumeFormats' in aimsGlobals.__dict__:
+            #print('use aims formats')
+            formats = [x.name for x in aimsGlobals.aimsWriteVolumeFormats.data]
+            mesh = [x.name for x in aimsGlobals.aimsMeshFormats.data]
+            formats += [f for f in mesh if f not in formats]
+            formats += [f for f in getAllFileFormats().format_names()
+                        if f not in formats]
+        return formats
+
+
 #------------------------------------------------------------------------------
 class ExpertDatabaseSettings(HasSignature):
     signature = Signature(
@@ -100,6 +113,8 @@ class ExpertDatabaseSettings(HasSignature):
       'lastIncrementalUpdate', Unicode(), dict(defaultValue='', visible=False),
       # no type dict defined in signature types, using Any
       'lastIncrementalUpdates', Any(), dict(defaultValue={}, visible=False),
+      'preferred_formats_order', FormatsSequence(),
+          dict(defaultValue=[], collapsed=True),
     )
 
     def __init__(self):
@@ -113,10 +128,24 @@ class ExpertDatabaseSettings(HasSignature):
 
         super(ExpertDatabaseSettings, self).__init__()
 
+        try:
+            self.signature['preferred_formats_order'].defaultValue \
+                = FormatsSequence.all_formats()
+        except ImportError:
+            # may happen at startup:
+            # neuroConfig is using DatabaseSettings and ExpertDatabaseSettings
+            # in its initialization, and here we cannot import neuroConfig which
+            # is currently initializing.
+            pass
+
     def __eq__(self, other):
         if not isinstance(other, ExpertDatabaseSettings):
             return False
-        return ((self.ontology == other.ontology) and (self.sqliteFileName == other.sqliteFileName) and (self.activate_history == other.activate_history))
+        return ((self.ontology == other.ontology)
+                and (self.sqliteFileName == other.sqliteFileName)
+                and (self.activate_history == other.activate_history)
+                and (self.preferred_formats_order
+                     == other.preferred_formats_order))
 
     @staticmethod
     def availableOntologies():
@@ -181,6 +210,7 @@ class DatabaseSettings(HasSignature):
         if newDirectory:
             minf = os.path.join(newDirectory, 'database_settings.minf')
             if os.path.exists(minf):
+                #self.expert_settings.preferred_formats_order = []
                 readMinf(minf, targets=(self.expert_settings, ))
             else:
                 it = six.iteritems(self.expert_settings.signature)

@@ -92,10 +92,8 @@ def diskitem_options(diskitem):
     extre = re.compile('^.*\|[^*]*\*(.*)$')
     exts = []
     options = []
-    formats = sorted(diskitem.formats)
-    if diskitem.preferredFormat:
-        formats = [diskitem.preferredFormat] \
-            + [f for f in formats if f != diskitem.preferredFormat]
+    #formats = sorted(diskitem.formats)
+    formats = diskitem.formats
     for format in formats:
         f = neuroDiskItems.getFormat(format)
         for pat in f.patterns.patterns:

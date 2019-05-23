@@ -3155,8 +3155,7 @@ class ExecutionContext(object):
                     # p: parameter (Read/WriteDiskItem)
                     if v and getattr(v, "type", None) and ((not isSameDiskItemType(v.type, p.type)) or v.format not in p.formats):
                         c = None
-                        formats = [ p.preferredFormat ] \
-                            + [f for f in p.formats if f is not p.preferredFormat]
+                        formats = p.get_formats_order(v.get('_database'))
                         for destinationFormat in formats:
                             converter = getConversionInfo((v.type, v.format),
                                                           (p.type,
@@ -3464,20 +3463,23 @@ class ExecutionContext(object):
         return ret
 
     def pythonSystem(self, *args, **kwargs):
-        '''Same as system() but for python2 commands:
+        """Specialization of system() for calling Python scripts
 
-        Prepends the python2 executable to the command, and use the executable full
-        path to call system(). The 1st arg should thus be the python script.
-        On Unix, this should have the same result as using system(), but on Windows
-        the script will not be recognized as a python script, so needs this
-        wrapping.
-        '''
-    # TODO this method's API does not specify which version of Python should be
-    # used. For now (March 2016) we may assume that all scripts are still using
-    # Python2, but in the future we may have to call Python 3 scripts. Maybe we
-    # should simply deprecate this method, which is very little used anyway
-    # (only 6 matches in the standard tree, all calls to cartoLinearComb.py in
-    # Morphologist).
+        The script passed as the first agrument is called through the Python
+        interpreter (``sys.executable``). The script will be searched in
+        ``PATH`` and its full path will be passed to the interpreter, unless
+        the first argument begins with ``-`` (which allows using ``-c`` or
+        ``-m``),
+
+        On Unix, this should have the same result as using system(), but on
+        Windows the script may not be recognized as a Python script by the
+        system, so needs this wrapping.
+
+        NOTE: this method will always use the same interpreter as BrainVISA
+        (i.e. ``sys.executable``), regardless of the shebang line in your
+        Python script. Therefore, you should make sure that your script is
+        compatible with both Python 2 and Python 3.
+        """
         if args[0].startswith('-'):
             # 1st arg is a flag, like -m or -c: use it as is
             exe = args[0]
