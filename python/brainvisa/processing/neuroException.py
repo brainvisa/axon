@@ -233,9 +233,12 @@ def showException(beforeError='', afterError='', parent=None,
                                              parent=parent)
                 mainThreadActions().push(w.show)
         else:
-            HTMLParser(formatter.AbstractFormatter(
-                       formatter.DumbWriter(sys.stdout, maxcol=80)))\
-                .feed(messageHTML + '<hr>' + detailHTML)
+            if sys.version_info[0] >= 3:
+                HTMLParser().feed(messageHTML + '<hr>' + detailHTML)
+            else:
+                HTMLParser(formatter.AbstractFormatter(
+                          formatter.DumbWriter(sys.stdout, maxcol=80)))\
+                    .feed(messageHTML + '<hr>' + detailHTML)
     except Exception as e:
         traceback.print_exc()
     # why this violent exit ??
