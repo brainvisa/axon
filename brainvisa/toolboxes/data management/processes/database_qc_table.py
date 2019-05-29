@@ -70,7 +70,10 @@ def execution(self, context):
         data.append((dtype, items))
         context.write(dtype, ':', len(items), 'items')
 
-    nrows = max([len(values[1]) for values in data])
+    if len(data) == 0:
+        nrows = 0
+    else:
+        nrows = max([len(values[1]) for values in data])
     ncols = len(self.data_types)
     elements = np.zeros((nrows, ncols), dtype=object)
     elements[:,:] = None
