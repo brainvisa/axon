@@ -36,8 +36,10 @@ from brainvisa import shelltools
 from brainvisa.tools import aimsGlobals
 import stat
 from brainvisa import registration
+from brainvisa.data import neuroHierarchy
 
 from brainvisa.tools.data_management.image_importation import Importer
+import six
 
 name = 'Import T1 MRI'
 roles = ('importer',)
@@ -50,21 +52,49 @@ signature = Signature(
         'Raw T1 MRI',
         ['gz compressed NIFTI-1 image', 'NIFTI-1 image', 'GIS image']),
     'referential', WriteDiskItem('Referential of Raw T1 MRI', 'Referential'),
+    'output_database', Choice(),
+    'attributes_merging', Choice('BrainVisa', 'header',
+                                 'selected_from_header'),
+    'selected_attributes_from_header', ListOf(String()),
 )
 
 
-def initSubject(self, inp):
-    value = self.input
-    if self.input is not None and isinstance(self.input, DiskItem):
-        value = self.input.hierarchyAttributes()
-        if value.get("subject", None) is None:
-            value["subject"] = os.path.basename(
-                self.input.fullPath()).partition(".")[0]
+def initSubject(self, inp, b, c, d):
+    if not self.input:
+        return None
+    if not isinstance(self.input, DiskItem):
+        return self.input
+    value = self.input.hierarchyAttributes()
+    if self.output_database:
+        value['_database'] = self.output_database
+    hvalues = {}
+    if value.get("subject", None) is None:
+        value["subject"] = os.path.basename(
+            self.input.fullPath()).partition(".")[0]
+    if self.attributes_merging in ('header', 'selected_from_header'):
+        hvalues = aimsGlobals.aimsVolumeAttributes(self.input)
+        if self.attributes_merging == 'selected_from_header':
+            hvalues = dict([(k, v) for k, v in six.iteritems(hvalues)
+                            if k in
+                                self.selected_attributes_from_header])
+        value.update(hvalues)
     return value
 
 
 def initialization(self):
-    self.addLink("output", "input", self.initSubject)
+    # list of possible databases, while respecting the ontology
+    # ontology: brainvisa-3.2.0
+    databases = [h.name for h in neuroHierarchy.hierarchies()
+                 if h.fso.name == "brainvisa-3.2.0" and not h.builtin]
+    self.signature["output_database"].setChoices(*databases)
+    if len(databases) != 0:
+        self.output_database = databases[0]
+    else:
+        self.signature["output_database"] = OpenChoice()
+
+    self.addLink("output",
+                 ("input", "output_database", "attributes_merging",
+                  "selected_attributes_from_header"), self.initSubject)
     self.signature['output'].browseUserLevel = 3
     self.signature['input'].databaseUserLevel = 2
     self.signature['referential'].userLevel = 2
@@ -84,9 +114,16 @@ def execution(self, context):
     if 'warnings' in results:
         for message in results['warnings']:
             context.warning(message)
+    # merge hierarchy and minf attributes
+    hatt = self.output.hierarchyAttributes()
     # force completing .minf
     minfatt = aimsGlobals.aimsVolumeAttributes(self.output)
     for x, y in minfatt.items():
+        if x in hatt and y != hatt[x]:
+            # conflicting value, the hierarchy wins.
+            context.warning('conflicting attribute %s:' % x, y, 'becomes',
+                            hatt[x])
+            y = hatt[x]
         if x != "dicom":
             self.output.setMinf(x, y)
     self.output.saveMinf()
