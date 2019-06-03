@@ -80,7 +80,7 @@ def diskitem_type(diskitem):
         f = neuroDiskItems.getFormat(format)
         if otype is None and f.fileOrDirectory() is neuroDiskItems.Directory:
             otype = traits.Directory
-        else:
+        elif f.fileOrDirectory() is not neuroDiskItems.Directory:
             otype = traits.File
             break
     if otype is None:
