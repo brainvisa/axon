@@ -1012,7 +1012,7 @@ def axon_to_capsul(proc, outfile, module_name_prefix=None,
     get_all_values: bool (optional)
         if True, the current values of the input process instance will all be
         reported to the output process.
-        Default is False.
+        Default is True.
     capsul_process_name: string (optional)
         if specified, name of the converted Capsul process. Otherwise use the
         same name as the Axon process ID.
@@ -1020,6 +1020,12 @@ def axon_to_capsul(proc, outfile, module_name_prefix=None,
         names mapping table between Axon process IDs and Capsul process names
         when used as pipeline nodes. Default: same as Axon IDs.
     '''
+
+    # try using autopep8
+    try:
+        import autopep8
+    except ImportError:
+        autopep8 = None
 
     if isinstance(proc, procbv.Process):
         procid = proc.id()
@@ -1036,7 +1042,14 @@ def axon_to_capsul(proc, outfile, module_name_prefix=None,
     else:
         proctype = Process
 
-    out = open(outfile, 'w')
+    if autopep8 is not None:
+        # write in a string buffer
+        out = six.moves.StringIO()
+    elif sys.version_info[0] >= 3:
+        out = open(outfile, 'w', encoding='utf-8')
+    else:
+        out = open(outfile, 'w')
+
     out.write('''# -*- coding: utf-8 -*-
 try:
     from traits.api import File, Directory, Float, Int, Bool, Enum, Str, \\
@@ -1074,6 +1087,15 @@ class ''')
         out.write('    def __init__(self, **kwargs):\n')
         out.write('        super(%s, self).__init__()\n' % capsul_process_name)
         write_process_definition(p, out, get_all_values=get_all_values)
+
+    if autopep8 is not None:
+        # use autopep8 and save to an actual file
+        pretty_code = autopep8.fix_code(out.getvalue())
+        if sys.version_info[0] >= 3:
+            out = open(outfile, 'w', encoding='utf-8')
+        else:
+            out = open(outfile, 'w')
+        out.write(pretty_code)
 
 
 def get_subprocesses(procid):
