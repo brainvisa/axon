@@ -1090,7 +1090,10 @@ class ''')
 
     if autopep8 is not None:
         # use autopep8 and save to an actual file
-        pretty_code = autopep8.fix_code(out.getvalue())
+        if [int(x) for x in autopep8.__version__.split('.')] >= [1, 0, 0]:
+            pretty_code = autopep8.fix_code(out.getvalue())
+        else:  # old versions of autopep8
+            pretty_code = autopep8.fix_string(out.getvalue())
         if sys.version_info[0] >= 3:
             out = open(outfile, 'w', encoding='utf-8')
         else:
