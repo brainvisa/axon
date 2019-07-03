@@ -42,15 +42,6 @@ from brainvisa.processing.neuroException import showException
 from brainvisa.configuration import neuroConfig
 import six
 
-if sys.version_info[0] >= 3:
-    def execfile(filename, globals=None, locals=None):
-        if globals is None:
-            globals = sys._getframe(1).f_globals
-        if locals is None:
-            locals = sys._getframe(1).f_locals
-        with open(filename, "rb") as fh:
-            exec(fh.read() + b"\n", globals, locals)
-
 
 class Toolbox(object):
 
@@ -82,7 +73,9 @@ class Toolbox(object):
         # options can be set in toolboxeDirectory/<name>.py
         initFile = os.path.join(toolboxDirectory, name + '.py')
         if os.path.exists(initFile):
-            execfile(initFile, {}, d)
+            fopts = {'encoding': 'utf-8'} if sys.version_info[0] >= 3 else {}
+            with open(initFile, **fopts) as f:
+                six.exec_(f.read(), {}, d)
 
         self.name = d['userName']
         self.id = name.lower()
@@ -146,7 +139,9 @@ class Toolbox(object):
     def init(self):
         if os.path.exists(self.initializationFile):
             try:
-                execfile(self.initializationFile)
+                fopts = {'encoding': 'utf-8'} if sys.version_info[0] >= 3 else {}
+                with open(self.initializationFile, **fopts) as f:
+                    six.exec_(f.read())
             except:
                 showException()
         if os.path.isdir(self.fsoDir):

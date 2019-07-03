@@ -51,14 +51,6 @@ from brainvisa.processing import neuroException, neuroLog
 # used to do: import many things here...
 from brainvisa.processes import *
 import six
-if sys.version_info[0] >= 3:
-    def execfile(filename, globals=None, locals=None):
-        if globals is None:
-            globals = sys._getframe(1).f_globals
-        if locals is None:
-            locals = sys._getframe(1).f_locals
-        with open(filename, "r") as fh:
-            exec(fh.read() + "\n", globals, locals)
 
 _count = 0
 
@@ -173,7 +165,9 @@ def initializeProcesses():
             if os.path.exists(toolbox.startupFile):
                 try:
                     print('exec:', toolbox.startupFile)
-                    execfile(toolbox.startupFile, globals(), {})
+                    fopts = {'encoding': 'utf-8'} if sys.version_info[0] >= 3 else {}
+                    with open(toolbox.startupFile, **fopts) as f:
+                        six.exec_(f.read(), globals(), {})
                 except:
                     neuroException.showException()
 

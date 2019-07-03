@@ -1259,25 +1259,29 @@ class TreeListWidget(QTreeWidget):
         The method tries to decode text event as minf representation of EditableTree.Item and sets self.draggedItems.
         """
         # accept drag if it contains instances of EditableTree.Item
-        self.draggedItems = []
-        if event.mimeData().hasText():
-            textEventBuf = StringIO(event.mimeData().text())
-            # check if it is the expected minf format
-            format, reduction = minfFormat(textEventBuf)
-            if format == "XML":
-                textEventBuf.seek(0)
-                for value in iterateMinf(textEventBuf):
-                    if isinstance(value, EditableTree.Item):
-                        event.accept()
-                        value.setAllModificationsEnabled(
-                            True)  # this is a copy of items that comes from another tree, so enable modifications on the copied items
-                        self.draggedItems.append(value)
-                    else:
-                        event.ignore()
-                textEventBuf.close()
+        try:
+            self.draggedItems = []
+            if event.mimeData().hasText():
+                textEventBuf = StringIO(event.mimeData().text())
+                # check if it is the expected minf format
+                format, reduction = minfFormat(textEventBuf)
+                if format == "XML":
+                    textEventBuf.seek(0)
+                    for value in iterateMinf(textEventBuf):
+                        if isinstance(value, EditableTree.Item):
+                            event.accept()
+                            value.setAllModificationsEnabled(
+                                True)  # this is a copy of items that comes from another tree, so enable modifications on the copied items
+                            self.draggedItems.append(value)
+                        else:
+                            event.ignore()
+                    textEventBuf.close()
+                else:
+                    event.ignore()
             else:
                 event.ignore()
-        else:
+        except:
+            # an error occurred, we could not decode the event correctly
             event.ignore()
 
     def toContentsPoint(self, point):

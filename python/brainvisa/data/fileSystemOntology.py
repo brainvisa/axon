@@ -950,7 +950,9 @@ class FileSystemOntology(object):
             # called hierarchy)
             oldFSOContent = {}
             beforeError = _t_('in file system ontology <em>%s</em>') % str(p)
-            execfile(source, globals(), oldFSOContent)
+            fopts = {'encoding': 'utf-8'} if sys.version_info[0] >= 3 else {}
+            with open(source, **fopts) as f:
+                six.exec_(f.read(), globals(), oldFSOContent)
             self.content = oldFSOContent.get('hierarchy')
             self.cacheName = oldFSOContent.get('cache')
             self.lastModification = os.stat(source).st_mtime

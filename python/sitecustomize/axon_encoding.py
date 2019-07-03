@@ -32,4 +32,4 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 import sys
 if hasattr(sys, 'setdefaultencoding'):
-    sys.setdefaultencoding('iso-8859-1')
+    sys.setdefaultencoding('utf-8')

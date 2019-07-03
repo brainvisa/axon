@@ -285,9 +285,22 @@ class DatabasesTransformationManager(object):
 
     def copyReferential(self,
                         sourceDiskItem,
-                        destinationDiskItem):
-        '''Copy the referential of sourceDiskItem to the one of destinationDiskItem.
-        The minf file of destinationDiskItem is saved by this function.'''
+                        destinationDiskItem,
+                        copy_transformations=True):
+        '''Copy the referential of sourceDiskItem to the one of
+        destinationDiskItem.
+        The minf file of destinationDiskItem is saved by this function.
+
+        Parameters
+        ----------
+        sourceDiskItem: DiskItem
+        destinationDiskItem: DiskItem
+        copy_transformations: bool (optional)
+            if True (default) transformations are also copied from the source
+            disk item header onto the destination. Set it to False if you
+            explicitely manage the destination disk item header
+            transformations.
+        '''
         if destinationDiskItem is None or not destinationDiskItem.isReadable():
             return  # do not create a .minf file for a diskitem that doesn't exist
         refId = self.referential(sourceDiskItem)
@@ -305,11 +318,12 @@ class DatabasesTransformationManager(object):
         if uuid is not None:
             destinationDiskItem.readAndUpdateMinf()
             destinationDiskItem.setMinf('referential', uuid)
-            refs = atts.get('referentials')
-            trans = atts.get('transformations')
-            if refs and trans:
-                destinationDiskItem.setMinf('referentials', refs)
-                destinationDiskItem.setMinf('transformations', trans)
+            if copy_transformations:
+                refs = atts.get('referentials')
+                trans = atts.get('transformations')
+                if refs and trans:
+                    destinationDiskItem.setMinf('referentials', refs)
+                    destinationDiskItem.setMinf('transformations', trans)
             try:
                 neuroHierarchy.databases.insertDiskItem(
                     destinationDiskItem, update=True)
