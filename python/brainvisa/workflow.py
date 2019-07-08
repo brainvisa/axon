@@ -742,7 +742,8 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
         root_group = self.__groups[self.__mainGroupId]
 
         workflow = Workflow(
-            jobs, dependencies, root_group, name=self.process.name)
+            jobs, dependencies, root_group,
+            name='brainvisa_' + self.process.name)
         if self.__out:
             Helper.serialize(self.__out, workflow)
         return workflow

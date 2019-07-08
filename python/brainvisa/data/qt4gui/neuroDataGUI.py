@@ -127,7 +127,10 @@ class StringEditor(QLineEdit, DataEditor):
         self.focusNextChild()
 
     def checkValue(self):
-        value = self._valueFromText(unicode(self.text()))
+        try:
+            value = self._valueFromText(unicode(self.text()))
+        except:
+            return
         if value != self.getValue():
             self.value = value
             self.noDefault.emit(unicode(self.objectName()))
