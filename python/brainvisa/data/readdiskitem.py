@@ -663,12 +663,19 @@ class ReadDiskItem(Parameter):
             for item in readValues:
                 fullPaths.add(item.fullPath())
                 yield item
+            requiredAttributes = dict(requiredAttributes)  # copy
+            if '_type' not in requiredAttributes:
+                # if selection is a diskitem with a different type as self
+                requiredAttributes['_type'] = self.type.name
+            if '_format' not in requiredAttributes:
+                requiredAttributes['_format'] = self.formats
             # Do not allow formats that require a conversion in DiskItem
             # creation
             if self._formatsWithConversion:
                 oldFormats = requiredAttributes.get('_format')
-                requiredAttributes['_format'] = [
-                    i for i in oldFormats if i not in self._formatsWithConversion]
+                if oldFormats is not None:
+                    requiredAttributes['_format'] = [
+                        i for i in oldFormats if i not in self._formatsWithConversion]
             for item in self.database.createDiskItems(selection, _debug=_debug, exactType=self.exactType, **requiredAttributes):
                 if self.diskItemFilter(item, requiredAttributes):
                     if item.fullPath() not in fullPaths:

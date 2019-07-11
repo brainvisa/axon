@@ -3025,17 +3025,17 @@ class ProcessView(QWidget, ExecutionContextGUI):
 
         ptowf = ProcessToSomaWorkflow(
             self.process,
-          input_file_processing=input_file_processing,
-          output_file_processing=output_file_processing,
-          brainvisa_cmd=brainvisa_cmd,
-          brainvisa_db=builtin_db,
-          context=self)
+            input_file_processing=input_file_processing,
+            output_file_processing=output_file_processing,
+            brainvisa_cmd=brainvisa_cmd,
+            brainvisa_db=builtin_db,
+            context=self)
         workflow = ptowf.doIt()
 
         name = unicode(submission_dlg.lineedit_wf_name.text())
         if name == "":
             if workflow.name != None:
-                name = SomaWorkflowWidget.brainvisa_code + workflow.name
+                name = workflow.name  # brainvisa_code is already included
             else:
                 name = SomaWorkflowWidget.brainvisa_code
         else:
@@ -3469,11 +3469,11 @@ class ProcessView(QWidget, ExecutionContextGUI):
 
             ptowf = ProcessToSomaWorkflow(
                 self.process,
-              options.output,
-              input_file_processing=input_file_processing,
-              output_file_processing=output_file_processing,
-              brainvisa_db=builtin_db,
-              context=self)
+                options.output,
+                input_file_processing=input_file_processing,
+                output_file_processing=output_file_processing,
+                brainvisa_db=builtin_db,
+                context=self)
             ptowf.doIt()
 
     def _iterateButton(self):
