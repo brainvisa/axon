@@ -867,6 +867,9 @@ class DiskItem(QObject):
         """
         Adds new attributes to the minf attributes of the diskItem and possibly save the attributes in a minf file.
 
+        Note: it is not possible to remove attributes using this function, as
+        it only changes the values of the attributes given in the dict.
+
         :param dict: dictionary containing the attributes that will be added to this diskItem minf attributes.
         :param bool saveMinf: if True the minf attributes will be saved in the minf file of the diskItem.
         """

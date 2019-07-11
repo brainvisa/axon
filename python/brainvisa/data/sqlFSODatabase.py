@@ -1898,11 +1898,10 @@ class SQLDatabase(Database):
                 chain(*(self._childrenByTypeName[t] for t in tval)))
         if _debug is not None:
             print('!createDiskItems! database:', self.directory, file=_debug)
-            print(_debug, '!createDiskItems! types:',
+            print('!createDiskItems! types:',
                   tuple(types), file=_debug)
-            print(
-                _debug, '!createDiskItems! selection:', selection, file=_debug)
-            print(_debug, '!createDiskItems! required:', required, file=_debug)
+            print('!createDiskItems! selection:', selection, file=_debug)
+            print('!createDiskItems! required:', required, file=_debug)
         for type in types:
             r = self.ruleSelectionByType.get(type)
             if r is None:
