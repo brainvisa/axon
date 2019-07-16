@@ -158,7 +158,7 @@ class CommandWithQProcess(object):
             # print('raising exception...')
             if self._stopped:
                 raise self.UserInterruption(_t_('System call interrupted'))
-            raise self.SignalException(_t_('System call crashed'))
+            raise self.SignalException(_t_('System call crashed in command: ') + repr(self.args))
         return self.exitStatus
 
     def error(self):
