@@ -4802,22 +4802,36 @@ def showMainWindow():
 def close_viewers_action(parent):
     action = QAction(parent)
     action.setText(_t_("Close all viewers"))
-    action.triggered.connect(close_viewers)
+    action.triggered.connect(close_viewers_slot)
     return action
 
 
-def close_viewers():
-    from brainvisa.data.qt4gui.readdiskitemGUI import DiskItemEditor
-    from brainvisa.data.qt4gui.hierarchyBrowser import HierarchyBrowser
-    for w in qApp.allWidgets():
-        if isinstance(w, DiskItemEditor):
-            w.close_viewer()
-        elif isinstance(w, ProcessView):
-            process_info = brainvisa.processes.getProcessInfo(w.process.id())
-            if process_info is not None and "viewer" in process_info.roles:
-                w.close()
-        elif isinstance(w, HierarchyBrowser):
-            w.close_viewers()
+def close_viewers_slot():
+    close_viewers(warn=True)
+
+
+def close_viewers(warn=False):
+    if not warn:
+      a = QMessageBox.Yes
+    else:
+        a = QMessageBox.warning(
+            None, _t_('Quit'),
+            _t_('Close all viewers and unload all viewed objects ?\n'
+                '(unsaved modified objects will be lost)'),
+            QMessageBox.Yes | QMessageBox.Default, QMessageBox.No)
+    if a == QMessageBox.Yes:
+        from brainvisa.data.qt4gui.readdiskitemGUI import DiskItemEditor
+        from brainvisa.data.qt4gui.hierarchyBrowser import HierarchyBrowser
+        for w in qApp.allWidgets():
+            if isinstance(w, DiskItemEditor):
+                w.close_viewer()
+            elif isinstance(w, ProcessView):
+                process_info \
+                    = brainvisa.processes.getProcessInfo(w.process.id())
+                if process_info is not None and "viewer" in process_info.roles:
+                    w.close()
+            elif isinstance(w, HierarchyBrowser):
+                w.close_viewers()
 
 #----------------------------------------------------------------------------
 

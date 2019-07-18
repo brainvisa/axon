@@ -74,6 +74,10 @@ def point3d_options(point):
     return ['trait=Float()', 'minlen=3', 'maxlen=3', 'value=[0, 0, 0]']
 
 
+def matrix_options(list_trait):
+    return ['trait=List()']
+
+
 def diskitem_type(diskitem):
     otype = None
     for format in diskitem.formats:
@@ -120,6 +124,7 @@ param_types_table = \
         neuroData.OpenChoice: (get_openchoice_type, open_choice_options),
         neuroData.ListOf: traits.List,
         neuroData.Point3D: (traits.List, point3d_options),
+        neuroData.Matrix: (traits.List, matrix_options),
     }
 
 
