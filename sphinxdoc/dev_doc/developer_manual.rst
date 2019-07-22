@@ -142,6 +142,8 @@ Types files are in the ``brainvisa/types`` directory or in the types directory o
     Example: Inheritance graph of the **T1 MRI** type
 
 
+.. _hierarchies:
+
 Hierarchies
 -----------
 

@@ -1,4 +1,4 @@
-''' Specialized Process class to link with CAPSUL processes and pipelines.
+''' Specialized Process class to link with :capsul:`CAPSUL <index.html>` processes and pipelines.
 
 the aim is to allow using a Capsul process/pipeline as an Axon process (or at least, ease it). Such a process would like the following:
 
@@ -12,15 +12,26 @@ the aim is to allow using a Capsul process/pipeline as an Axon process (or at le
     base_class = capsul_process.CapsulProcess
     capsul_process = 'morphologist.capsul.morphologist.Morphologist'
 
-Explanation:
+**Explanation:**
 
 The process should inherit the CapsulProcess class (itself inheriting the standard Process). To do so, it declares the "base_class" variable to this CapsulProcess class type.
 
-The it should instantiate the appropriate Capsul process. This is done by overloading the setup_capsul_process() method, which will instantiate the Capsul process and set it into the Axon proxy process.
+Then it should instantiate the appropriate Capsul process. This is done simlply by setting the variable ``capsul_process`` (or alternately by overloading the setup_capsul_process() method, which should instantiate the Capsul process and set it into the Axon proxy process).
 
 The underlying Capsul process traits will be exported to the Axon signature automatically. This behaviour can be avoided or altered by overloading the initialize() method, which we did not define in the above example.
 
-The process also does not have an execution() function. This is normal: CapsulProcess already defines an executionWorkflow() method which will generate a Soma-Workflow workflow which will integrate in the process or parent pipeline (or iteration) workflow.
+The process also does not have an :meth:`~brainvisa.processes.Process.execution` function. This is normal: :class:`CapsulProcess` already defines an :meth:`~CapsulProcess.executionWorkflow` method which will generate a :somaworkflow:`Soma-Workflow <index.html>` workflow which will integrate in the process or parent pipeline (or iteration) workflow.
+
+Process / pipeline parameters completion
+----------------------------------------
+
+Capsul and Axon are using parameters completions system with very different designs (actually Capsul was written partly to overcome Axon's completion limitaions) and thus are difficult to completely integrate. However some things could be done.
+
+A Capsul process will get completion using Capsul's completion system. Thus it should have a completion defined (throug a :capsul:`File Organization Model <user_guide_tree/advanced_usage.html#file-organization-model-fom>` typically). The completion system in Capsul defines some attributes.
+
+The attributes defined in Capsul will be parsed in an Axon process, and using attributes and file format extensions of process parameters, Axon will try to guess matching DiskItem types in Axon.
+
+For this to work, matching :ref:`DiskItem types <data>` must be also defined in Axon, and they should be described in a :ref:`files hierarchy <hierarchies>`. Thus, some things must be defined more or less twice...
 
 See also :doc:`capsul`
 
