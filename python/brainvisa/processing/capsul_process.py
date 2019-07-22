@@ -51,6 +51,7 @@ from brainvisa.data import neuroHierarchy
 from brainvisa.configuration import neuroConfig
 from brainvisa.configuration import axon_capsul_config_link
 from soma.functiontools import SomaPartial
+from capsul.pipeline import pipeline_nodes
 from traits import trait_types
 import traits.api as traits
 import distutils.spawn
@@ -87,6 +88,7 @@ param_types_table = \
         trait_types.CFloat: neuroData.Number,
         trait_types.Int: neuroData.Integer,
         trait_types.CInt: neuroData.Integer,
+        #trait_types.Any: neuroData.String,
         trait_types.File: fileOptions,
         trait_types.Directory: fileOptions,
         trait_types.Enum: (neuroData.Choice, choiceOptions),
@@ -94,6 +96,15 @@ param_types_table = \
         trait_types.ListFloat: (neuroData.ListOf, listOptions),
         trait_types.Set: (neuroData.ListOf, listOptions),
     }
+
+try:
+    import nipype.interfaces.base.traits_extension
+
+    param_types_table.update({
+        nipype.interfaces.base.traits_extension.Str: neuroData.String,
+    })
+except ImportError:
+    pass  # no nipype
 
 
 def make_parameter(param, name, process, attributes=None,
@@ -180,19 +191,48 @@ def get_best_type(process, param, attributes=None, path_completion=None):
     completion_engine = ProcessCompletionEngine.get_completion_engine(process)
     cext = process.trait(param).allowed_extensions
 
+    print('get_best_type', process, param, ':', completion_engine)
+    #is_list = False
+
     if path_completion is None:
         try:
             path_completion = completion_engine.get_path_completion_engine()
         except RuntimeError:
-            return ('Any Type',
-                    [f for f in getAllFormats() if match_ext(cext, [f])])
+            print('no path_completion')
+            # look if it's a pipeline with iterations inside
+            if hasattr(process, 'pipeline_node'):
+                plug = process.pipeline_node.plugs[param]
+                for to in plug.links_to:
+                    if isinstance(to[2], pipeline_nodes.ProcessNode) \
+                            and hasattr(to[2].process, 'iterative_parameters'):
+                        completion_engine \
+                            = ProcessCompletionEngine.get_completion_engine(
+                                to[2].process.process)
+                        try:
+                            path_completion = \
+                                completion_engine.get_path_completion_engine()
+                        except:
+                            continue
+                        process = to[2].process
+                        param = to[1]
+                        #is_list = True
+                        break
+            if path_completion is None:
+                return ('Any Type',
+                        [f for f in getAllFormats() if match_ext(cext, [f])])
 
+    print('path_completion:', path_completion)
     if attributes is None:
         orig_attributes = completion_engine.get_attribute_values()
         attributes = orig_attributes.export_to_dict()
         for attr, trait in six.iteritems(attributes.user_traits()):
             if isinstance(trait.trait_type, traits.Str):
                 setattr(attributes, attr, '<%s>' % attr)
+    print('attributes:', attributes)
+
+    #ret_type = '%s'
+    #if is_list:
+        #ret_type = 'ListOf(%s)'
 
     path = path_completion.attributes_to_path(process, param, attributes)
     if path is None:
@@ -256,7 +296,9 @@ class CapsulProcess(processes.Process):
 
         This is basically the only thing the process must do.
         '''
-        module = processes._processModules[self._id]
+        module = processes._processModules.get(self._id)
+        if module is None:
+            return  # no associated module, may be built on-the-fly
         capsul_process = getattr(module, 'capsul_process')
         if capsul_process:
             from capsul.api import get_process_instance
@@ -277,6 +319,8 @@ class CapsulProcess(processes.Process):
         In such a case, the process designer will also probably have to overload the propagate_parameters_to_capsul() method to setup the underlying Capsul process parameters from the Axon one, since there will not be a direct correspondance any longer.
         '''
         process = self.get_capsul_process()
+        if process is None:
+            return  # no process defined, probably too early to do this.
 
         # speedup attributes
         from capsul.attributes.completion_engine import ProcessCompletionEngine
@@ -320,6 +364,7 @@ class CapsulProcess(processes.Process):
 
         signature = Signature(*signature_args)
         signature['edit_pipeline'] = neuroData.Boolean()
+        signature['capsul_gui'] = neuroData.Boolean()
         has_steps = False
         if getattr(process, 'pipeline_steps', None):
             has_steps = True
@@ -347,6 +392,7 @@ class CapsulProcess(processes.Process):
         if optional:
             self.setOptional(*optional)
         self.edit_pipeline = False
+        self.capsul_gui = False
         self.edit_pipeline_steps = False
         self.edit_study_config = False
         for name in process.user_traits():
@@ -362,6 +408,7 @@ class CapsulProcess(processes.Process):
                                             name))
 
         self.linkParameters(None, 'edit_pipeline', self._on_edit_pipeline)
+        self.linkParameters(None, 'capsul_gui', self._on_capsul_gui)
         if has_steps:
             self.linkParameters(None, 'edit_pipeline_steps',
                                 self._on_edit_pipeline_steps)
@@ -485,6 +532,51 @@ class CapsulProcess(processes.Process):
         context.study_config = study_config
         return study_config
 
+    @classmethod
+    def build_from_instance(cls, process, name=None, category=None):
+        '''
+        Build an Axon process instance from a Capsul process instance,
+        on-the-fly, without an associated module file
+        '''
+        class NewProcess(CapsulProcess):
+            _instance = 0
+            _id = None
+
+        if name is None:
+            name = process.name
+        NewProcess._id = name
+        NewProcess.name = name
+        NewProcess.category = category
+        NewProcess.dataDirectory = None
+        NewProcess.toolbox = None
+
+        axon_process = NewProcess()
+        axon_process.set_capsul_process(process)
+        axon_process.initialization()
+
+        return axon_process
+
+    def custom_iteration(self):
+        '''
+        Build a pipeline iterating over this process
+        '''
+        from capsul.api import Pipeline
+
+        pipeline = Pipeline()
+        pipeline.name = '%s_iteration' % self.get_capsul_process().name
+        study_config = self.get_study_config()
+        pipeline.set_study_config(study_config)
+        # do we need to iterate over all (non-file) parameters, or let the
+        # default completion system determine it ?
+        pipeline.add_iterative_process(pipeline.name,
+                                       self.get_capsul_process())
+        pipeline.autoexport_nodes_parameters(include_optional=True)
+        # TODO: keep current values as 1st element in lists
+
+        axon_process = self.build_from_instance(pipeline)
+
+        return axon_process
+
     def _on_edit_pipeline(self, process, dummy):
         from brainvisa.configuration import neuroConfig
         if not neuroConfig.gui:
@@ -493,6 +585,15 @@ class CapsulProcess(processes.Process):
             processes.mainThreadActions().push(self._open_pipeline)
         else:
             self._pipeline_view = None
+
+    def _on_capsul_gui(self, process, dummy):
+        from brainvisa.configuration import neuroConfig
+        if not neuroConfig.gui:
+            return
+        if process.capsul_gui:
+            processes.mainThreadActions().push(self._open_capsul_gui)
+        else:
+            self._capsul_gui = None
 
     def _on_edit_pipeline_steps(self, process, dummy):
         from brainvisa.configuration import neuroConfig
@@ -519,13 +620,36 @@ class CapsulProcess(processes.Process):
         from capsul.qt_gui.widgets import PipelineDevelopperView
         from capsul.pipeline.pipeline import Pipeline
         from soma.qt_gui.qtThread import MainThreadLife
+        # fancy list editors on ControllerWidget
+        from soma.qt_gui.controller_widget import ControllerWidget
+        from  soma.qt_gui.controls import OffscreenListControlWidget
+        ControllerWidget._defined_controls['List'] = OffscreenListControlWidget
+
         Pipeline.hide_nodes_activation = False
         self.propagate_parameters_to_capsul()
         mpv = PipelineDevelopperView(
             self.get_capsul_process(), allow_open_controller=True,
-          show_sub_pipelines=True)
+            show_sub_pipelines=True)
         mpv.show()
         self._pipeline_view = MainThreadLife(mpv)
+
+    def _open_capsul_gui(self):
+        from brainvisa.configuration import neuroConfig
+        if not neuroConfig.gui:
+            return
+        from capsul.qt_gui.widgets.attributed_process_widget import AttributedProcessWidget
+        from capsul.pipeline.pipeline import Pipeline
+        from soma.qt_gui.qtThread import MainThreadLife
+        # fancy list editors on ControllerWidget
+        from soma.qt_gui.controller_widget import ControllerWidget
+        from  soma.qt_gui.controls import OffscreenListControlWidget
+        ControllerWidget._defined_controls['List'] = OffscreenListControlWidget
+        self.propagate_parameters_to_capsul()
+        pv = AttributedProcessWidget(
+            self.get_capsul_process(), enable_attr_from_filename=True,
+            enable_load_buttons=True)
+        pv.show()
+        self._capsul_gui = MainThreadLife(pv)
 
     def _process_trait_changed(self, name, new_value):
         if name == 'trait_added' \

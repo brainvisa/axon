@@ -3477,10 +3477,17 @@ class ProcessView(QWidget, ExecutionContextGUI):
             ptowf.doIt()
 
     def _iterateButton(self):
-        self.readUserValues()
-        self._iterationDialog = IterationDialog(self, self.process, self)
-        self._iterationDialog.accepted.connect(self._iterateAccept)
-        self._iterationDialog.show()
+        # if the process has a method custom_iteration(), then it is used to
+        # obtain an iterated pipeline (Capsul processes...) without using the
+        # interactive iteration dialog.
+        if hasattr(self.process, 'custom_iteration'):
+            iterated_process = self.process.custom_iteration()
+            showProcess(iterated_process)
+        else:
+            self.readUserValues()
+            self._iterationDialog = IterationDialog(self, self.process, self)
+            self._iterationDialog.accepted.connect(self._iterateAccept)
+            self._iterationDialog.show()
 
     def _iterateAccept(self):
         try:
