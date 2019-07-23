@@ -191,18 +191,21 @@ def get_best_type(process, param, attributes=None, path_completion=None):
     completion_engine = ProcessCompletionEngine.get_completion_engine(process)
     cext = process.trait(param).allowed_extensions
 
-    print('get_best_type', process, param, ':', completion_engine)
-    #is_list = False
+    #print('get_best_type', process, param, ':', completion_engine, path_completion)
+    is_list = False
 
     if path_completion is None:
         try:
             path_completion = completion_engine.get_path_completion_engine()
         except RuntimeError:
-            print('no path_completion')
             # look if it's a pipeline with iterations inside
             if hasattr(process, 'pipeline_node'):
                 plug = process.pipeline_node.plugs[param]
-                for to in plug.links_to:
+                if process.trait(param).output:
+                    links = plug.links_from
+                else:
+                    links = plug.links_to
+                for to in links:
                     if isinstance(to[2], pipeline_nodes.ProcessNode) \
                             and hasattr(to[2].process, 'iterative_parameters'):
                         completion_engine \
@@ -213,33 +216,43 @@ def get_best_type(process, param, attributes=None, path_completion=None):
                                 completion_engine.get_path_completion_engine()
                         except:
                             continue
-                        process = to[2].process
+                        process = to[2].process.process
                         param = to[1]
-                        #is_list = True
+                        cext = process.trait(param).allowed_extensions
+                        is_list = True
                         break
             if path_completion is None:
                 return ('Any Type',
                         [f for f in getAllFormats() if match_ext(cext, [f])])
 
-    print('path_completion:', path_completion)
+    if attributes is not None:
+        if is_list:
+            # keep 1st value. We must instantiate a new attrubutex controller,
+            # using the underlying completion engine
+            orig_attributes = completion_engine.get_attribute_values()
+            orig_attributes = orig_attributes.copy()
+            for attr, trait in six.iteritems(attributes.user_traits()):
+                if isinstance(trait.trait_type, traits.List) \
+                        and isinstance(trait.inner_traits[0].trait_type,
+                                       traits.Str):
+                    setattr(orig_attributes, attr, getattr(attributes, attr)[0])
+                else:
+                    setattr(orig_attributes, attr, getattr(attributes, attr))
+            attributes = orig_attributes
+
     if attributes is None:
         orig_attributes = completion_engine.get_attribute_values()
-        attributes = orig_attributes.export_to_dict()
+        attributes = orig_attributes.copy(with_values=True)  # export_to_dict()
         for attr, trait in six.iteritems(attributes.user_traits()):
             if isinstance(trait.trait_type, traits.Str):
                 setattr(attributes, attr, '<%s>' % attr)
-    print('attributes:', attributes)
-
-    #ret_type = '%s'
-    #if is_list:
-        #ret_type = 'ListOf(%s)'
 
     path = path_completion.attributes_to_path(process, param, attributes)
+    #print('path:', path)
     if path is None:
         # fallback to the completed value
         path = getattr(process, param)
     if path in (None, traits.Undefined):
-        # print('no path for', process.name, param)
         return ('Any Type',
                 [f for f in getAllFormats() if match_ext(cext, [f])])
 
@@ -259,7 +272,6 @@ def get_best_type(process, param, attributes=None, path_completion=None):
                                 continue
                         return (typeitem.name, rule.formats)
 
-    # print('no type found for', param)
     return ('Any Type',
             [f for f in getAllFormats() if match_ext(cext, [f])])
 
@@ -341,6 +353,10 @@ class CapsulProcess(processes.Process):
         for attr, trait in six.iteritems(attributes.user_traits()):
             if isinstance(trait.trait_type, traits.Str):
                 setattr(attributes, attr, '<%s>' % attr)
+            elif isinstance(trait.trait_type, traits.List) \
+                    and isinstance(trait.inner_traits[0].trait_type,
+                                   traits.Str):
+                setattr(attributes, attr, ['<%s>' % attr])
         #
         completion_engine.complete_parameters()
 
