@@ -52,6 +52,7 @@ from brainvisa.configuration import neuroConfig
 from brainvisa.configuration import axon_capsul_config_link
 from soma.functiontools import SomaPartial
 from capsul.pipeline import pipeline_nodes
+from capsul.attributes import attributes_schema
 from traits import trait_types
 import traits.api as traits
 import distutils.spawn
@@ -728,6 +729,8 @@ class CapsulProcess(processes.Process):
                 self._capsul_process)
             if completion_engine is not None and isinstance(value, DiskItem):
                 attributes = value.hierarchyAttributes()
+                attributes = AxonToCapsulAttributesTranslation(
+                    completion_engine).translate(attributes)
                 capsul_attr = completion_engine.get_attribute_values()
                 param_attr \
                     = capsul_attr.get_parameters_attributes().get(param) \
@@ -766,3 +769,31 @@ class CapsulProcess(processes.Process):
 
         finally:
             self._ongoing_completion = False
+    
+    
+class AxonToCapsulAttributesTranslation(object):
+    def __init__(self, completion_engine):
+            # hard-coded for now...
+            self._translations = {
+                'side': AxonToCapsulAttributesTranslation._translate_side}
+        
+    def translate(self, attributes):
+        translated = {}
+        for attr, value in attributes.items():
+            translator = self._translations.get(attr)
+            if translator is not None:
+                new_attr_dict = translator(attr, value)
+                translated.update(new_attr_dict)
+            else:
+                translated[attr] = value
+        return translated
+                
+    @staticmethod
+    def _translate_side(attr, value):
+        if value == 'left':
+            return {attr: 'L')
+        elif value == 'right':
+            return {attr: 'R'}
+        else:
+            return {attr: value}
+
