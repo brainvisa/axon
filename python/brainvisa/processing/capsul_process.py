@@ -199,6 +199,10 @@ def get_best_type(process, param, attributes=None, path_completion=None):
             path_completion = completion_engine.get_path_completion_engine()
         except RuntimeError:
             # look if it's a pipeline with iterations inside
+            # iterations are not handled in a regular way in Capsul, because
+            # they are virtual links (a single process instance is used to
+            # complete parameters iteratively with attributes values from a
+            # list). So here we have to get inside this system. Too bad.
             if hasattr(process, 'pipeline_node'):
                 plug = process.pipeline_node.plugs[param]
                 if process.trait(param).output:
@@ -242,7 +246,7 @@ def get_best_type(process, param, attributes=None, path_completion=None):
 
     if attributes is None:
         orig_attributes = completion_engine.get_attribute_values()
-        attributes = orig_attributes.copy(with_values=True)  # export_to_dict()
+        attributes = orig_attributes.copy(with_values=True)
         for attr, trait in six.iteritems(attributes.user_traits()):
             if isinstance(trait.trait_type, traits.Str):
                 setattr(attributes, attr, '<%s>' % attr)
@@ -357,7 +361,8 @@ class CapsulProcess(processes.Process):
                     and isinstance(trait.inner_traits[0].trait_type,
                                    traits.Str):
                 setattr(attributes, attr, ['<%s>' % attr])
-        #
+
+        #print('complete parameters on', self, self.get_capsul_process())
         completion_engine.complete_parameters()
 
         signature_args = []
