@@ -53,17 +53,21 @@ bv_release_version = aims_version
 
 try:
     import capsul.info
-    capsul_version = '.'.join([capsul.info.version_major,
-                               capsul.info.version_minor])
+    capsul_version = '.'.join([str(x) for x in
+                               [capsul.info.version_major,
+                                capsul.info.version_minor]])
 except:
     capsul_version = '2.1'
 
 try:
-    import morphologist
-    morphoui_version = '.'.join([morphologist.info.version_major,
-                                 morphologist.info.version_minor])
+    import morphologist.info
+    morphoui_version = '.'.join([str(x) for x in
+                                 [morphologist.info.version_major,
+                                  morphologist.info.version_minor]])
 except:
     morphoui_version = '1.0'
+
+pyversion = '%d.%d' % sys.version_info[:2]
 
 # -- General configuration -----------------------------------------------
 
@@ -335,5 +339,6 @@ intersphinx_mapping = {
                          '/sphinx'), None),
   'somaworkflow': (os.path.join(docpath, 'soma-workflow-'
                                 + somaworkflow_version + '/sphinx'), None),
-  'python': ('http://docs.python.org/2.7', None),
+  'capsul': (os.path.join(docpath, 'capsul-' + capsul_version), None),
+  'python': ('http://docs.python.org/%s' % pyversion, None),
 }

@@ -68,23 +68,29 @@ Typically it will look like this:
 
 Here, the ``base_class`` variable tells that this process inherits the special :py:class:`CapsulProcess <brainvisa.processing.capsul_process.CapsulProcess>` class, which handles Capsul/Axon conversion and connection.
 
-The ``capsul_process`` variable tells which Capsul process is wrapped. Naming follonw the python module/class model, exactly like :capsul:`get_process_instance <api_tree/generated/capsul-process/capsul.process.loader.get_process_instance.html>` function.
+The ``capsul_process`` variable tells which Capsul process is wrapped. Naming follonw the python module/class model, exactly like the :func:`~capsul.study_config.process_instance.get_process_instance` function.
+
+See :mod:`brainvisa.processing.capsul_process`.
+
+
+.. _capsul_completion:
+
+Process / pipeline parameters completion
+----------------------------------------
+
+See :mod:`brainvisa.processing.capsul_process`.
 
 
 Limitations
 -----------
 
-* Parameters completion is disabled:
-  Links between parameters are not done, and FOM completion is not performed on the underlying CAPSUL process.
-  Maybe this can be improved in the future.
+* Parameters completion may be incomplete in some cases. See the :ref:`capsul_completion` paragraph above.
 
 * Soma-Workflow files sharing and transfers policy is not exactly the same in Axon and Capsul: in Axon, file transfers can be set differently for input and output files. In Capsul, all files corresponding to a given directory tree are handled the same way. Thus there can be a few behaviour differences in Capsul parts of a workflow.
 
 
 What's the current state ?
 ==========================
-
-Axon / Capsul integratioon is just beginning in BrainVisa 4.5.
 
 By now just a few processes and pipelines have been ported to Capsul (:morphologist:`Morphologist <index.html>` is a typical example of it), and are currently used through dedicated processes or applications, like :morphoui:`Morphologist-UI <index.html>`
 
