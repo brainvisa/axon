@@ -56,6 +56,7 @@ from capsul.attributes import attributes_schema
 from traits import trait_types
 import traits.api as traits
 import distutils.spawn
+import copy
 import six
 
 
@@ -252,30 +253,37 @@ def get_best_type(process, param, attributes=None, path_completion=None):
             if isinstance(trait.trait_type, traits.Str):
                 setattr(attributes, attr, '<%s>' % attr)
 
-    path = path_completion.attributes_to_path(process, param, attributes)
-    #print('path:', path)
-    if path is None:
-        # fallback to the completed value
-        path = getattr(process, param)
-    if path in (None, traits.Undefined):
-        return ('Any Type',
-                [f for f in getAllFormats() if match_ext(cext, [f])])
+    orig_attributes = {}
+    if attributes is not None:
+        orig_attributes = attributes.export_to_dict()
 
-    for db in neuroHierarchy.databases.iterDatabases():
-        for typeitem in getAllDiskItemTypes():
-            rules = db.fso.typeToPatterns.get(typeitem)
-            if rules:
-                for rule in rules:
-                    pattern = rule.pattern.pattern
-                    cpattern = pattern.replace('{', '<')
-                    cpattern = cpattern.replace('}', '>')
-                    if path.startswith(cpattern):
-                        if len(cpattern) < len(path):
-                            if path[len(cpattern)] != '.':
-                                continue
-                            if not match_ext(cext, rule.formats):
-                                continue
-                        return (typeitem.name, rule.formats)
+    try:
+        path = path_completion.attributes_to_path(process, param, attributes)
+        #print('path:', path)
+        if path is None:
+            # fallback to the completed value
+            path = getattr(process, param)
+        if path in (None, traits.Undefined):
+            return ('Any Type',
+                    [f for f in getAllFormats() if match_ext(cext, [f])])
+
+        for db in neuroHierarchy.databases.iterDatabases():
+            for typeitem in getAllDiskItemTypes():
+                rules = db.fso.typeToPatterns.get(typeitem)
+                if rules:
+                    for rule in rules:
+                        pattern = rule.pattern.pattern
+                        cpattern = pattern.replace('{', '<')
+                        cpattern = cpattern.replace('}', '>')
+                        if path.startswith(cpattern):
+                            if len(cpattern) < len(path):
+                                if path[len(cpattern)] != '.':
+                                    continue
+                                if not match_ext(cext, rule.formats):
+                                    continue
+                            return (typeitem.name, rule.formats)
+    finally:
+        attributes.import_from_dict(orig_attributes)
 
     return ('Any Type',
             [f for f in getAllFormats() if match_ext(cext, [f])])
@@ -588,10 +596,12 @@ class CapsulProcess(processes.Process):
         pipeline.name = '%s_iteration' % self.get_capsul_process().name
         study_config = self.get_study_config()
         pipeline.set_study_config(study_config)
+        # duplicate the process
+        process = study_config.get_process_instance(
+            self.get_capsul_process().__class__)
         # do we need to iterate over all (non-file) parameters, or let the
         # default completion system determine it ?
-        pipeline.add_iterative_process(pipeline.name,
-                                       self.get_capsul_process())
+        pipeline.add_iterative_process(pipeline.name, process)
         pipeline.autoexport_nodes_parameters(include_optional=True)
         # TODO: keep current values as 1st element in lists
 
@@ -703,6 +713,57 @@ class CapsulProcess(processes.Process):
         scv.show()
         self._study_config_editor = MainThreadLife(scv)
 
+    def _get_capsul_attributes(self, param, value, completion_engine, itype):
+        if not isinstance(value, DiskItem):
+            return {}, Fasle
+        '''
+        Get Axon attributes (from axon FSO/database hierarchy) of a diskitem
+        and convert it into Capsul attributes system.
+
+        Returns:
+            capsul_attr: dict
+            modified: bool
+        '''
+
+        attributes = value.hierarchyAttributes()
+        attributes = AxonToCapsulAttributesTranslation(
+            completion_engine).translate(attributes)
+        capsul_attr = completion_engine.get_attribute_values()
+        param_attr \
+            = capsul_attr.get_parameters_attributes().get(param) \
+            or capsul_attr.user_traits().keys()
+        capsul_attr = dict([(k, '') for k in capsul_attr.user_traits()])
+        modified = False
+        if param_attr:
+            for attribute, avalue in six.iteritems(attributes):
+                if attribute in param_attr:
+                    if capsul_attr[attribute] != avalue:
+                        capsul_attr[attribute] = avalue
+                        modified = True
+
+            database = attributes.get('_database', None)
+            if database:
+                if isinstance(itype, WriteDiskItem):
+                    db = ['output_directory', 'input_directory']
+                else:
+                    allowed_db = [h.name
+                                  for h in neuroHierarchy.hierarchies()
+                                  if h.fso.name
+                                  not in ("shared", "spm", "fsl")]
+                    if database in allowed_db:
+                        db = ['input_directory', 'output_directory']
+                    else:
+                        db = None
+                    if db is not None:
+                        study_config \
+                            = self._capsul_process.get_study_config()
+                        for idb in db:
+                            if getattr(study_config, idb) != database:
+                                modified = True
+                                setattr(study_config, idb, database)
+
+        return capsul_attr, modified
+
     def _on_axon_parameter_changed(self, param, process, dummy):
         from capsul.attributes.completion_engine import ProcessCompletionEngine
 
@@ -712,6 +773,7 @@ class CapsulProcess(processes.Process):
         if getattr(self, '_ongoing_completion', False):
             return
         self._ongoing_completion = True
+        #print('_on_axon_parameter_changed', param, process)
         try:
             value = getattr(self, param, None)
             itype = self.signature.get(param)
@@ -721,51 +783,45 @@ class CapsulProcess(processes.Process):
             if capsul_value == getattr(self._capsul_process, param):
                 return  # not changed
             setattr(self._capsul_process, param, capsul_value)
-            if not isinstance(itype, ReadDiskItem):
-                # not a DiskItem: nothing else to do.
-                return
+            #if not isinstance(itype, ReadDiskItem):
+                ## not a DiskItem: nothing else to do.
+                #return
 
             completion_engine = ProcessCompletionEngine.get_completion_engine(
                 self._capsul_process)
-            if completion_engine is not None and isinstance(value, DiskItem):
-                attributes = value.hierarchyAttributes()
-                attributes = AxonToCapsulAttributesTranslation(
-                    completion_engine).translate(attributes)
-                capsul_attr = completion_engine.get_attribute_values()
-                param_attr \
-                    = capsul_attr.get_parameters_attributes().get(param) \
-                    or capsul_attr.user_traits().keys()
-                if param_attr:
-                    modified = False
-                    for attribute, value in six.iteritems(attributes):
-                        if attribute in param_attr:
-                            if getattr(capsul_attr, attribute) != value:
-                                setattr(capsul_attr, attribute, value)
-                                modified = True
-
-                    database = attributes.get('_database', None)
-                    if database:
-                        if isinstance(itype, WriteDiskItem):
-                            db = ['output_directory', 'input_directory']
+            if completion_engine is None:
+                return
+            capsul_attr_orig = completion_engine.get_attribute_values()
+            if isinstance(value, list) and len(value) != 0:
+                # if value is a list (of diskitems), then use get attributes
+                # for each list item, and append the values to the list
+                # attributes (which should be lists)
+                capsul_attr = {}
+                for i, item in enumerate(value):
+                    capsul_attr_item, modified \
+                        = self._get_capsul_attributes(param, item,
+                                                      completion_engine,
+                                                      itype.contentType)
+                    for k, v in six.iteritems(capsul_attr_item):
+                        if isinstance(capsul_attr_orig.trait(k).trait_type,
+                                      traits.List):
+                            capsul_attr.setdefault(
+                                k, [''] * i).append(v)
                         else:
-                            allowed_db = [h.name
-                                          for h in neuroHierarchy.hierarchies()
-                                          if h.fso.name
-                                          not in ("shared", "spm", "fsl")]
-                            if database in allowed_db:
-                                db = ['input_directory', 'output_directory']
-                            else:
-                                db = None
-                            if db is not None:
-                                study_config \
-                                    = self._capsul_process.get_study_config()
-                                for idb in db:
-                                    if getattr(study_config, idb) != database:
-                                        modified = True
-                                        setattr(study_config, idb, database)
+                          capsul_attr[k] = v
+                    for k, v in six.iteritems(capsul_attr):
+                        if isinstance(capsul_attr_orig.trait(k).trait_type,
+                                      traits.List) \
+                                and len(v) != i + 1:
+                            v += [''] * (i + 1 - len(v))
+            else:
+                capsul_attr, modified \
+                    = self._get_capsul_attributes(param, value,
+                                                  completion_engine, itype)
 
-                    if modified:
-                        completion_engine.complete_parameters()
+            if modified:
+                capsul_attr_orig.import_from_dict(capsul_attr)
+                completion_engine.complete_parameters()
 
         finally:
             self._ongoing_completion = False
