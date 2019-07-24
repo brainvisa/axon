@@ -791,7 +791,7 @@ class AxonToCapsulAttributesTranslation(object):
     @staticmethod
     def _translate_side(attr, value):
         if value == 'left':
-            return {attr: 'L')
+            return {attr: 'L'}
         elif value == 'right':
             return {attr: 'R'}
         else:
