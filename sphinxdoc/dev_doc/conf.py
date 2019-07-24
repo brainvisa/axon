@@ -67,6 +67,8 @@ try:
 except:
     morphoui_version = '1.0'
 
+pyversion = '%d.%d' % sys.version_info[:2]
+
 # -- General configuration -----------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
@@ -338,5 +340,5 @@ intersphinx_mapping = {
   'somaworkflow': (os.path.join(docpath, 'soma-workflow-'
                                 + somaworkflow_version + '/sphinx'), None),
   'capsul': (os.path.join(docpath, 'capsul-' + capsul_version), None),
-  'python': ('http://docs.python.org/2.7', None),
+  'python': ('http://docs.python.org/%s' % pyversion, None),
 }
