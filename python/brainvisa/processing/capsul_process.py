@@ -716,7 +716,7 @@ class CapsulProcess(processes.Process):
     def _get_capsul_attributes(self, param, value, completion_engine, itype,
                                item=None):
         if not isinstance(value, DiskItem):
-            return {}, Fasle
+            return {}, False
         '''
         Get Axon attributes (from axon FSO/database hierarchy) of a diskitem
         and convert it into Capsul attributes system.
