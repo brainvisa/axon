@@ -732,7 +732,10 @@ class CapsulProcess(processes.Process):
         param_attr \
             = capsul_attr.get_parameters_attributes().get(param) \
             or capsul_attr.user_traits().keys()
-        capsul_attr = dict([(k, '') for k in capsul_attr.user_traits()])
+        # we must start with current attributes values in order to keep those
+        # not used with the current parameter
+        capsul_attr = capsul_attr.export_to_dict()
+        
         modified = False
         if param_attr:
             for attribute, avalue in six.iteritems(attributes):
@@ -803,17 +806,17 @@ class CapsulProcess(processes.Process):
                                                       completion_engine,
                                                       itype.contentType)
                     for k, v in six.iteritems(capsul_attr_item):
-                        if isinstance(capsul_attr_orig.trait(k).trait_type,
-                                      traits.List):
+                        t = capsul_attr_orig.trait(k)
+                        if isinstance(t.trait_type, traits.List):
                             capsul_attr.setdefault(
-                                k, [''] * i).append(v)
+                                k, [t.inner_traits[0].default] * i).append(v)
                         else:
                           capsul_attr[k] = v
                     for k, v in six.iteritems(capsul_attr):
-                        if isinstance(capsul_attr_orig.trait(k).trait_type,
-                                      traits.List) \
+                        t = capsul_attr_orig.trait(k)
+                        if isinstance(t.trait_type, traits.List) \
                                 and len(v) != i + 1:
-                            v += [''] * (i + 1 - len(v))
+                            v += [t.inner_traits[0].default] * (i + 1 - len(v))
             else:
                 capsul_attr, modified \
                     = self._get_capsul_attributes(param, value,
