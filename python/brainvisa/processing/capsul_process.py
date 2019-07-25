@@ -231,17 +231,21 @@ def get_best_type(process, param, attributes=None, path_completion=None):
                 return ('Any Type',
                         [f for f in getAllFormats() if match_ext(cext, [f])])
 
+    orig_attributes = attributes
+    orig_values = None
     if attributes is not None:
         if is_list:
             # keep 1st value. We must instantiate a new attrubutex controller,
             # using the underlying completion engine
             orig_attributes = completion_engine.get_attribute_values()
             orig_attributes = orig_attributes.copy()
+            orig_values = orig_attributes.export_to_dict()
             for attr, trait in six.iteritems(attributes.user_traits()):
                 if isinstance(trait.trait_type, traits.List) \
                         and isinstance(trait.inner_traits[0].trait_type,
                                        traits.Str):
-                    setattr(orig_attributes, attr, getattr(attributes, attr)[0])
+                    setattr(orig_attributes, attr,
+                            getattr(attributes, attr)[0])
                 else:
                     setattr(orig_attributes, attr, getattr(attributes, attr))
             attributes = orig_attributes
@@ -249,13 +253,10 @@ def get_best_type(process, param, attributes=None, path_completion=None):
     if attributes is None:
         orig_attributes = completion_engine.get_attribute_values()
         attributes = orig_attributes.copy(with_values=True)
+        orig_values = orig_attributes.export_to_dict()
         for attr, trait in six.iteritems(attributes.user_traits()):
             if isinstance(trait.trait_type, traits.Str):
                 setattr(attributes, attr, '<%s>' % attr)
-
-    orig_attributes = {}
-    if attributes is not None:
-        orig_attributes = attributes.export_to_dict()
 
     try:
         path = path_completion.attributes_to_path(process, param, attributes)
@@ -283,7 +284,8 @@ def get_best_type(process, param, attributes=None, path_completion=None):
                                     continue
                             return (typeitem.name, rule.formats)
     finally:
-        attributes.import_from_dict(orig_attributes)
+        if orig_values is not None:
+            orig_attributes.import_from_dict(orig_values)
 
     return ('Any Type',
             [f for f in getAllFormats() if match_ext(cext, [f])])
@@ -388,9 +390,7 @@ class CapsulProcess(processes.Process):
                 optional.append(name)
 
         # restore attributes
-        for attr, trait in six.iteritems(attributes.user_traits()):
-            if isinstance(trait.trait_type, traits.Str):
-                setattr(attributes, attr, orig_attributes[attr])
+        attributes.import_from_dict(orig_attributes)
 
         signature = Signature(*signature_args)
         signature['edit_pipeline'] = neuroData.Boolean()
@@ -713,12 +713,16 @@ class CapsulProcess(processes.Process):
         scv.show()
         self._study_config_editor = MainThreadLife(scv)
 
-    def _get_capsul_attributes(self, param, value, completion_engine, itype):
+    def _get_capsul_attributes(self, param, value, completion_engine, itype,
+                               item=None):
         if not isinstance(value, DiskItem):
             return {}, Fasle
         '''
         Get Axon attributes (from axon FSO/database hierarchy) of a diskitem
         and convert it into Capsul attributes system.
+
+        If item is not None, then we must get attributes for this item number
+        in a list
 
         Returns:
             capsul_attr: dict
@@ -735,7 +739,13 @@ class CapsulProcess(processes.Process):
         # we must start with current attributes values in order to keep those
         # not used with the current parameter
         capsul_attr = capsul_attr.export_to_dict()
-        
+        if item is not None:
+            # get item-th element in lists
+            for k, v in six.iteritems(capsul_attr):
+                if isinstance(v, list):
+                    i = min(item, len(v) - 1)
+                    capsul_attr[k] = v[i]
+
         modified = False
         if param_attr:
             for attribute, avalue in six.iteritems(attributes):
@@ -795,16 +805,19 @@ class CapsulProcess(processes.Process):
             if completion_engine is None:
                 return
             capsul_attr_orig = completion_engine.get_attribute_values()
+            modified = False
             if isinstance(value, list) and len(value) != 0:
                 # if value is a list (of diskitems), then use get attributes
                 # for each list item, and append the values to the list
                 # attributes (which should be lists)
                 capsul_attr = {}
                 for i, item in enumerate(value):
-                    capsul_attr_item, modified \
+                    capsul_attr_item, modified_item \
                         = self._get_capsul_attributes(param, item,
                                                       completion_engine,
-                                                      itype.contentType)
+                                                      itype.contentType,
+                                                      item=i)
+                    modified |= modified_item
                     for k, v in six.iteritems(capsul_attr_item):
                         t = capsul_attr_orig.trait(k)
                         if isinstance(t.trait_type, traits.List):
