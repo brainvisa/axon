@@ -611,13 +611,13 @@ class CapsulProcess(processes.Process):
                                 db = ['input_directory', 'output_directory']
                             else:
                                 db = None
-                            if db is not None:
-                                study_config \
-                                    = self._capsul_process.get_study_config()
-                                for idb in db:
-                                    if getattr(study_config, idb) != database:
-                                        modified = True
-                                        setattr(study_config, idb, database)
+                        if db is not None:
+                            study_config \
+                                = self._capsul_process.get_study_config()
+                            for idb in db:
+                                if getattr(study_config, idb) != database:
+                                    modified = True
+                                    setattr(study_config, idb, database)
 
                     if modified:
                         completion_engine.complete_parameters()
