@@ -1949,7 +1949,8 @@ class ParameterizedWidget(QWidget):
         isdefault = not self.parameterized.isDefault(name)
         value = getattr(self.parameterized, name)
         # trick to force links update (there is likely a more efficient way)
-        self.parameterized.setValue(name, None, isdefault)
+        self.parameterized.setValue(
+            name, self.parameterized.signature[name].defaultValue(), isdefault)
         # TODO: if isdefault, we should look if a link can provide a linked value
         # rather than the current one.
         self.parameterized.setValue(name, value, isdefault)
