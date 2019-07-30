@@ -617,11 +617,14 @@ def mapValuesToChildrenParameters(
           #'predicted resulting size', rsize,
           #'fixed resulting size', resultingSize);sys.stdout.flush()
 
+    if resultingSize < 0:
+        resultingSize = rsize
+
     if (defaultProcess is not None) and (name is None):
         name = getProcessInstance(defaultProcess).name
 
     created_nodes = []
-    for i in six.moves.xrange(max(rsize, resultingSize)):
+    for i in six.moves.xrange(resultingSize):
         if i == csize:
             if defaultProcess is not None:
                 # Add a new child node
@@ -642,25 +645,21 @@ def mapValuesToChildrenParameters(
             else:
                 return
 
-        if (resultingSize > -1) and (i >= resultingSize):
-            destNode.removeChild(destNode.childrenNames()[-1])
-        else:
-            for d, l in zip(dest, ls):
-                if i < len(l):
-                    v = l[i]
-                # elif (resultingSize > -1) and (lsize > 0):
-                elif len(l) == 1:
-                    v = l[0]
-                else:
-                    v = None
+        for d, l in zip(dest, ls):
+            if i < len(l):
+                v = l[i]
+            elif len(l) == 1:
+                v = l[0]
+            else:
+                v = None
 
-                # Set node value
-                if len(l) > 0:
-                    k = destNode.childrenNames()[i]
-                    destChild = destNode._children[k]
-                    destObject, destParameter = destChild.parseParameterString(
-                        d)
-                    destObject.setValue(destParameter, v)
+            # Set node value
+            if len(l) > 0:
+                k = destNode.childrenNames()[i]
+                destChild = destNode._children[k]
+                destObject, destParameter = destChild.parseParameterString(
+                    d)
+                destObject.setValue(destParameter, v)
 
         # update csize
         csize = len(destNode.childrenNames())
@@ -722,8 +721,7 @@ def mapValuesToChildrenParameters(
 
     if allow_remove:
         # if we have too many nodes, remove the tailing ones
-        n = max(rsize, resultingSize)
-        while len(destNode.childrenNames()) > n:
+        while len(destNode.childrenNames()) > resultingSize:
             destNode.removeChild(destNode.childrenNames()[-1])
 
 
