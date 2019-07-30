@@ -393,6 +393,7 @@ class CapsulProcess(processes.Process):
         attributes.import_from_dict(orig_attributes)
 
         signature = Signature(*signature_args)
+        signature['use_capsul_completion'] = neuroData.Boolean()
         signature['edit_pipeline'] = neuroData.Boolean()
         signature['capsul_gui'] = neuroData.Boolean()
         has_steps = False
@@ -421,6 +422,7 @@ class CapsulProcess(processes.Process):
 
         if optional:
             self.setOptional(*optional)
+        self.use_capsul_completion = True
         self.edit_pipeline = False
         self.capsul_gui = False
         self.edit_pipeline_steps = False
@@ -444,6 +446,8 @@ class CapsulProcess(processes.Process):
                                 self._on_edit_pipeline_steps)
         self.linkParameters(None, 'edit_study_config',
                             self._on_edit_study_config)
+        self.linkParameters(None, 'use_capsul_completion',
+                            self._on_change_use_completion)
         if hasattr(process, 'visible_groups'):
             self.visible_sections = process.visible_groups
 
@@ -482,7 +486,7 @@ class CapsulProcess(processes.Process):
 
         completion_engine \
             = ProcessCompletionEngine.get_completion_engine(process)
-        if completion_engine is not None:
+        if completion_engine is not None and self.use_capsul_completion:
             completion_engine.complete_parameters()
 
         wf = pipeline_workflow.workflow_from_pipeline(
@@ -609,6 +613,15 @@ class CapsulProcess(processes.Process):
 
         return axon_process
 
+    def _on_change_use_completion(self, process, dummy):
+        if process.use_capsul_completion:
+            from capsul.attributes.completion_engine \
+                import ProcessCompletionEngine
+            ce = ProcessCompletionEngine.get_completion_engine(
+                self.get_capsul_process())
+            if ce is not None:
+                ce.complete_parameters()
+
     def _on_edit_pipeline(self, process, dummy):
         from brainvisa.configuration import neuroConfig
         if not neuroConfig.gui:
@@ -680,6 +693,8 @@ class CapsulProcess(processes.Process):
         pv = AttributedProcessWidget(
             self.get_capsul_process(), enable_attr_from_filename=True,
             enable_load_buttons=True)
+        if not self.use_capsul_completion:
+            pv.checkbox_fom.setChecked(False)
         pv.show()
         self._capsul_gui = MainThreadLife(pv)
 
@@ -837,7 +852,8 @@ class CapsulProcess(processes.Process):
 
             if modified:
                 capsul_attr_orig.import_from_dict(capsul_attr)
-                completion_engine.complete_parameters()
+                if self.use_capsul_completion:
+                    completion_engine.complete_parameters()
 
         finally:
             self._ongoing_completion = False
