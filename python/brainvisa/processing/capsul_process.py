@@ -57,6 +57,7 @@ from traits import trait_types
 import traits.api as traits
 import distutils.spawn
 import copy
+import sys
 import six
 
 
@@ -373,7 +374,6 @@ class CapsulProcess(processes.Process):
                                    traits.Str):
                 setattr(attributes, attr, ['<%s>' % attr])
 
-        #print('complete parameters on', self, self.get_capsul_process())
         completion_engine.complete_parameters()
 
         signature_args = []
@@ -619,7 +619,13 @@ class CapsulProcess(processes.Process):
                 import ProcessCompletionEngine
             ce = ProcessCompletionEngine.get_completion_engine(
                 self.get_capsul_process())
-            if ce is not None:
+            if ce is not None \
+                    and sys._getframe(2).f_code.co_name \
+                        != 'linksInitialization':
+                # we don't want to complete when called from Process
+                # initialization, because attributes are still empty and this
+                # will result in non-empty but incomplete filenames, which is
+                # rather dirty.
                 ce.complete_parameters()
 
     def _on_edit_pipeline(self, process, dummy):
