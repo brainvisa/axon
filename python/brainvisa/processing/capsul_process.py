@@ -261,6 +261,7 @@ def get_best_type(process, param, attributes=None, path_completion=None):
     orig_values = None
     if attributes is not None:
         if is_list:
+            #print('** list !**')
             # keep 1st value. We must instantiate a new attrubutex controller,
             # using the underlying completion engine
             orig_attributes = completion_engine.get_attribute_values().copy()
@@ -303,7 +304,8 @@ def get_best_type(process, param, attributes=None, path_completion=None):
         if path is None:
             # fallback to the completed value
             path = getattr(process, param)
-        if path in (None, traits.Undefined):
+            #print('new path:', path)
+        if path in (None, traits.Undefined, []):
             return ('Any Type',
                     [f for f in getAllFormats() if match_ext(cext, [f])])
 
