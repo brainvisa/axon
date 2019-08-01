@@ -25,13 +25,37 @@ The process also does not have an :meth:`~brainvisa.processes.Process.execution`
 Process / pipeline parameters completion
 ----------------------------------------
 
-Capsul and Axon are using parameters completions system with very different designs (actually Capsul was written partly to overcome Axon's completion limitaions) and thus are difficult to completely integrate. However some things could be done.
+Capsul and Axon are using parameters completions systems with very different designs (actually Capsul was written partly to overcome Axon's completion limitaions) and thus are difficult to completely integrate. However some things could be done.
 
 A Capsul process will get completion using Capsul's completion system. Thus it should have a completion defined (throug a :capsul:`File Organization Model <user_guide_tree/advanced_usage.html#file-organization-model-fom>` typically). The completion system in Capsul defines some attributes.
 
-The attributes defined in Capsul will be parsed in an Axon process, and using attributes and file format extensions of process parameters, Axon will try to guess matching DiskItem types in Axon.
+The attributes defined in Capsul will be parsed in an Axon process, and using attributes and file format extensions of process parameters, Axon will try to guess matching DiskItem types in Axon (Capsul has no types).
 
 For this to work, matching :ref:`DiskItem types <data>` must be also defined in Axon, and they should be described in a :ref:`files hierarchy <hierarchies>`. Thus, some things must be defined more or less twice...
+
+**What to do when it does not work**
+
+In some situations a matching type in Axon will not be found, either because it does not exist in Axon, or because it is declared in a different, complex way. And sometimes a type will be found but is not the one which should be picked, when several possible types are available.
+
+It is possible to force the parameters types on Axon side, by overloading them in the axon process. To do this, it is possible to define a signature (as in a regular Axon process) which only declares the parameters that need to have their type forced.
+
+For instance if a capsul process has 3 parameters, *param_a*, *param_b*, *param_c*, and we need to assign manually a type to *param_b*, we would write:
+
+::
+
+    from brainvisa.processes import *
+    from brainvisa.processing import capsul_process
+
+    name = 'A Capusl process ported to Axon'
+    userLevel = 0
+    base_class = capsul_process.CapsulProcess
+    capsul_process = 'my_processes.MyProcess'
+
+    signature = Signature(
+        'param_b', ReadDiskItem('Raw T1 MRI', 'aims readable volume formats'),
+    )
+
+In this situation the types of *param_a* and *param_c* will be guessed, and *param_b* will be the one from the declared signature. This signature declaration is optional in a wraped Capsul process, of course, when all types can be guessed.
 
 See also :doc:`capsul`
 
@@ -233,7 +257,7 @@ def get_best_type(process, param, attributes=None, path_completion=None):
                         [f for f in getAllFormats() if match_ext(cext, [f])])
 
     orig_attributes = attributes
-    print('## orig:', orig_attributes.user_traits().keys())
+    # print('## orig:', orig_attributes.user_traits().keys())
     orig_values = None
     if attributes is not None:
         if is_list:
@@ -265,17 +289,17 @@ def get_best_type(process, param, attributes=None, path_completion=None):
             # FOM-only case
             open_attribs \
                 = set(path_completion.open_values_attributes(process, param))
-            print('filtered:', open_attribs)
+            # print('filtered:', open_attribs)
             to_remove = [k for k in attributes.user_traits()
                         if k not in open_attribs]
             if to_remove:
                 attributes = attributes.copy()
                 for name in to_remove:
                     attributes.remove_trait(name)
-        print('## att :', attributes.user_traits().keys())
+        # print('## att :', attributes.user_traits().keys())
 
         path = path_completion.attributes_to_path(process, param, attributes)
-        print('path:', path)
+        # print('path:', path)
         if path is None:
             # fallback to the completed value
             path = getattr(process, param)
@@ -284,28 +308,21 @@ def get_best_type(process, param, attributes=None, path_completion=None):
                     [f for f in getAllFormats() if match_ext(cext, [f])])
 
         for db in neuroHierarchy.databases.iterDatabases():
-            print('look in db:', db.directory)
+            # print('look in db:', db.directory)
             for typeitem in getAllDiskItemTypes():
                 rules = db.fso.typeToPatterns.get(typeitem)
                 if rules:
-                    debug = False
-                    if typeitem.name == 'Cortical folds graph':
-                        print('rules:', rules)
-                        debug = True
                     for rule in rules:
                         pattern = rule.pattern.pattern
-                        if debug:
-                            print('rule:', rule, ', pattern:', pattern)
                         cpattern = pattern.replace('{', '<')
                         cpattern = cpattern.replace('}', '>')
-                        if debug: print('cpattern:', cpattern)
                         if path.startswith(cpattern):
                             if len(cpattern) < len(path):
                                 if path[len(cpattern)] != '.':
                                     continue
                                 if not match_ext(cext, rule.formats):
                                     continue
-                            print('found:', typeitem.name, rule.formats)
+                            # print('found:', typeitem.name, rule.formats)
                             return (typeitem.name, rule.formats)
     finally:
         if orig_values is not None:
@@ -399,23 +416,28 @@ class CapsulProcess(processes.Process):
 
         completion_engine.complete_parameters()
 
-        signature_args = []
+        signature = getattr(self, 'signature', Signature())
         excluded_traits = set(('nodes_activation', 'visible_groups',
                                'pipeline_steps'))
         optional = []
         for name, param in six.iteritems(process.user_traits()):
             if name in excluded_traits:
                 continue
-            parameter = make_parameter(param, name, process, attributes,
-                                       path_completion)
-            signature_args += [name, parameter]
+            if name in signature:
+                # the param was explicitely declared in axon process: keep it,
+                # but place it at the same position as in capsul process
+                parameter = signature[name]
+                del signature[name]
+            else:
+                parameter = make_parameter(param, name, process, attributes,
+                                          path_completion)
+            signature[name] = parameter
             if param.optional:
                 optional.append(name)
 
         # restore attributes
         attributes.import_from_dict(orig_attributes)
 
-        signature = Signature(*signature_args)
         signature['use_capsul_completion'] = neuroData.Boolean()
         signature['edit_pipeline'] = neuroData.Boolean()
         signature['capsul_gui'] = neuroData.Boolean()
