@@ -69,7 +69,7 @@ from brainvisa.data import neuroData
 from brainvisa.data.readdiskitem import ReadDiskItem
 from brainvisa.data.writediskitem import WriteDiskItem
 from brainvisa.processes import getAllFormats
-from brainvisa.data.neuroData import Signature
+from brainvisa.data.neuroData import Signature, ListOf
 from brainvisa.data.neuroDiskItems import DiskItem, getAllDiskItemTypes
 from brainvisa.data import neuroHierarchy
 from brainvisa.configuration import neuroConfig
@@ -218,7 +218,7 @@ def get_best_type(process, param, attributes=None, path_completion=None):
     completion_engine = ProcessCompletionEngine.get_completion_engine(process)
     cext = process.trait(param).allowed_extensions
 
-    print('get_best_type', process, param, ':', completion_engine, path_completion)
+    #print('get_best_type', process, param, ':', completion_engine, path_completion)
     is_list = False
 
     if path_completion is None:
@@ -257,7 +257,7 @@ def get_best_type(process, param, attributes=None, path_completion=None):
                         [f for f in getAllFormats() if match_ext(cext, [f])])
 
     orig_attributes = attributes
-    # print('## orig:', orig_attributes.user_traits().keys())
+    #print('## orig:', orig_attributes.user_traits().keys())
     orig_values = None
     if attributes is not None:
         if is_list:
@@ -296,10 +296,10 @@ def get_best_type(process, param, attributes=None, path_completion=None):
                 attributes = attributes.copy()
                 for name in to_remove:
                     attributes.remove_trait(name)
-        # print('## att :', attributes.user_traits().keys())
+        #print('## att :', attributes.user_traits().keys())
 
         path = path_completion.attributes_to_path(process, param, attributes)
-        # print('path:', path)
+        #print('path:', path)
         if path is None:
             # fallback to the completed value
             path = getattr(process, param)
@@ -308,7 +308,7 @@ def get_best_type(process, param, attributes=None, path_completion=None):
                     [f for f in getAllFormats() if match_ext(cext, [f])])
 
         for db in neuroHierarchy.databases.iterDatabases():
-            # print('look in db:', db.directory)
+            #print('look in db:', db.directory)
             for typeitem in getAllDiskItemTypes():
                 rules = db.fso.typeToPatterns.get(typeitem)
                 if rules:
@@ -322,7 +322,7 @@ def get_best_type(process, param, attributes=None, path_completion=None):
                                     continue
                                 if not match_ext(cext, rule.formats):
                                     continue
-                            # print('found:', typeitem.name, rule.formats)
+                            #print('found:', typeitem.name, rule.formats)
                             return (typeitem.name, rule.formats)
     finally:
         if orig_values is not None:
@@ -612,7 +612,8 @@ class CapsulProcess(processes.Process):
         return study_config
 
     @classmethod
-    def build_from_instance(cls, process, name=None, category=None):
+    def build_from_instance(cls, process, name=None, category=None,
+                            pre_signature=None):
         '''
         Build an Axon process instance from a Capsul process instance,
         on-the-fly, without an associated module file
@@ -628,6 +629,8 @@ class CapsulProcess(processes.Process):
         NewProcess.category = category
         NewProcess.dataDirectory = None
         NewProcess.toolbox = None
+        if pre_signature:
+            NewProcess.signature = pre_signature
 
         axon_process = NewProcess()
         axon_process.set_capsul_process(process)
@@ -650,11 +653,27 @@ class CapsulProcess(processes.Process):
             self.get_capsul_process().__class__)
         # do we need to iterate over all (non-file) parameters, or let the
         # default completion system determine it ?
-        pipeline.add_iterative_process(pipeline.name, process)
+        # rather iterate over all
+        plugs = [param for param in process.user_traits().keys()
+                 if param in self.signature]
+        pipeline.add_iterative_process(
+            pipeline.name, process, iterative_plugs=plugs)
         pipeline.autoexport_nodes_parameters(include_optional=True)
         # TODO: keep current values as 1st element in lists
 
-        axon_process = self.build_from_instance(pipeline)
+        # force signature types when we know them on the iterated process
+        # (optional but sometimes helps, especially when types are manually
+        # defined in the process signature)
+        pre_signature = Signature()
+        piter = pipeline.nodes[pipeline.name].process
+        for param in process.user_traits():
+            if param in piter.iterative_parameters:
+                pre_signature[param] = ListOf(self.signature[param])
+            else:
+                pre_signature[param] = self.signature[param]
+
+        axon_process = self.build_from_instance(pipeline,
+                                                pre_signature=pre_signature)
 
         return axon_process
 
