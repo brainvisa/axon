@@ -194,7 +194,7 @@ def get_best_type(process, param, attributes=None, path_completion=None):
     completion_engine = ProcessCompletionEngine.get_completion_engine(process)
     cext = process.trait(param).allowed_extensions
 
-    #print('get_best_type', process, param, ':', completion_engine, path_completion)
+    print('get_best_type', process, param, ':', completion_engine, path_completion)
     is_list = False
 
     if path_completion is None:
@@ -233,13 +233,13 @@ def get_best_type(process, param, attributes=None, path_completion=None):
                         [f for f in getAllFormats() if match_ext(cext, [f])])
 
     orig_attributes = attributes
+    print('## orig:', orig_attributes.user_traits().keys())
     orig_values = None
     if attributes is not None:
         if is_list:
             # keep 1st value. We must instantiate a new attrubutex controller,
             # using the underlying completion engine
-            orig_attributes = completion_engine.get_attribute_values()
-            orig_attributes = orig_attributes.copy()
+            orig_attributes = completion_engine.get_attribute_values().copy()
             orig_values = orig_attributes.export_to_dict()
             for attr, trait in six.iteritems(attributes.user_traits()):
                 if isinstance(trait.trait_type, traits.List) \
@@ -249,7 +249,7 @@ def get_best_type(process, param, attributes=None, path_completion=None):
                             getattr(attributes, attr)[0])
                 else:
                     setattr(orig_attributes, attr, getattr(attributes, attr))
-            attributes = orig_attributes
+            attributes = orig_attributes.copy()
 
     if attributes is None:
         orig_attributes = completion_engine.get_attribute_values()
@@ -260,8 +260,22 @@ def get_best_type(process, param, attributes=None, path_completion=None):
                 setattr(attributes, attr, '<%s>' % attr)
 
     try:
+        #print('attributes:', attributes.export_to_dict())
+        if hasattr(path_completion, 'open_values_attributes'):
+            # FOM-only case
+            open_attribs \
+                = set(path_completion.open_values_attributes(process, param))
+            print('filtered:', open_attribs)
+            to_remove = [k for k in attributes.user_traits()
+                        if k not in open_attribs]
+            if to_remove:
+                attributes = attributes.copy()
+                for name in to_remove:
+                    attributes.remove_trait(name)
+        print('## att :', attributes.user_traits().keys())
+
         path = path_completion.attributes_to_path(process, param, attributes)
-        #print('path:', path)
+        print('path:', path)
         if path is None:
             # fallback to the completed value
             path = getattr(process, param)
@@ -270,19 +284,28 @@ def get_best_type(process, param, attributes=None, path_completion=None):
                     [f for f in getAllFormats() if match_ext(cext, [f])])
 
         for db in neuroHierarchy.databases.iterDatabases():
+            print('look in db:', db.directory)
             for typeitem in getAllDiskItemTypes():
                 rules = db.fso.typeToPatterns.get(typeitem)
                 if rules:
+                    debug = False
+                    if typeitem.name == 'Cortical folds graph':
+                        print('rules:', rules)
+                        debug = True
                     for rule in rules:
                         pattern = rule.pattern.pattern
+                        if debug:
+                            print('rule:', rule, ', pattern:', pattern)
                         cpattern = pattern.replace('{', '<')
                         cpattern = cpattern.replace('}', '>')
+                        if debug: print('cpattern:', cpattern)
                         if path.startswith(cpattern):
                             if len(cpattern) < len(path):
                                 if path[len(cpattern)] != '.':
                                     continue
                                 if not match_ext(cext, rule.formats):
                                     continue
+                            print('found:', typeitem.name, rule.formats)
                             return (typeitem.name, rule.formats)
     finally:
         if orig_values is not None:
