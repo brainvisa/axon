@@ -9,6 +9,7 @@ from brainvisa.data import neuroData
 from brainvisa.data.readdiskitem import ReadDiskItem
 from brainvisa.data.writediskitem import WriteDiskItem
 from brainvisa.data import neuroDiskItems
+from brainvisa.processing.capsul_process import CapsulProcess
 from traits import api as traits
 import weakref
 import sys
@@ -863,9 +864,17 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
                 enode_name = enode.name()
             nodename = make_node_name(enode_name, nodenames, parents)
             proc = enode._process
-            procid = proc.id()
-            moduleprocid = make_module_name(procid, module_name_prefix,
-                                            use_process_names, lowercase_modules)
+            if isinstance(proc, CapsulProcess):
+                # we have actually a wrapped Capsul process: remove the
+                # wrapping layer and use it directly
+                moduleprocid = '.'.join(
+                    [proc.get_capsul_process().__module__,
+                     proc.get_capsul_process().__class__.__name__])
+            else:
+                procid = proc.id()
+                moduleprocid = make_module_name(procid, module_name_prefix,
+                                                use_process_names,
+                                                lowercase_modules)
             procmap[use_weak_ref(proc)] = (nodename, exported)
             if exported:
                 buffered_lines['nodes'].append(
@@ -891,9 +900,10 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
                 # FIXME: BUG: if not exported, should we rebuild switch params
                 # list, and doing this, export again internal params ?
                 nodename = write_switch(enode, buffered_lines, nodenames,
-                                        links, p, processed_links, selfoutparams, revoutparams,
-                                        self_out_traits, exported, parents, enode_name,
-                                        weak_outputs)
+                                        links, p, processed_links,
+                                        selfoutparams, revoutparams,
+                                        self_out_traits, exported, parents,
+                                        enode_name, weak_outputs)
                 procmap[use_weak_ref(enode)] = (nodename, exported)
                 # children should have weak outputs so that they can be
                 # deactivated by the switch
@@ -1244,8 +1254,12 @@ def axon_to_capsul_main(argv):
                      for p in added_processes])
 
     todo = set(todo)  # remove duplicates
+    print('todo:', todo)
 
     for proc, outfile in todo:
+        if isinstance(proc, CapsulProcess):
+            # already a capsul process
+            continue
         procid = get_process_id(proc)
         # print('Process:', procid, '->', gen_process_names.get(procid), '\n')
         if procid in done_processes:
