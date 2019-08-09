@@ -775,14 +775,26 @@ class CapsulProcess(processes.Process):
         if name == 'trait_added' \
                 or name not in self._capsul_process.user_traits().keys():
             return
-        try:
-            self.setValue(name, convert_capsul_value(new_value))
-        except Exception as e:
-            print('exception in _process_trait_changed:', e)
-            print('param:', name, ', value:', new_value, 'of type:',
-                  type(new_value))
-            import traceback
-            traceback.print_exc()
+        if self.isDefault(name):
+            try:
+                self.setValue(name, convert_capsul_value(new_value))
+            except Exception as e:
+                print('exception in _process_trait_changed:', e)
+                print('param:', name, ', value:', new_value, 'of type:',
+                      type(new_value))
+                import traceback
+                traceback.print_exc()
+        else:
+            # non-default value in axon, we cannot change it
+            # and must force it back into capsul
+            value = getattr(self, name, None)
+            itype = self.signature.get(name)
+            trait = self._capsul_process.trait(name)
+            capsul_value = convert_to_capsul_value(
+                value, itype, self._capsul_process.trait(name))
+            if capsul_value == getattr(self._capsul_process, name):
+                return  # not changed
+            setattr(self._capsul_process, name, capsul_value)
 
     def _on_edit_study_config(self, process, dummy):
         from brainvisa.configuration import neuroConfig
