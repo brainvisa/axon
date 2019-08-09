@@ -211,6 +211,32 @@ def match_ext(capsul_exts, axon_formats):
     return False
 
 
+def get_axon_formats(capsul_exts):
+    formats = []
+    used_exts = set()
+    for f in getAllFormats():
+        if match_ext(capsul_exts, [f]):
+            formats.append(f)
+            # get used exts
+            for pattern in f.patterns.patterns:
+                f0 = pattern.pattern.split('|')[-1]
+                f1 = f0.split('*')[-1]
+                if f1 in capsul_exts:
+                    used_exts.add(f1)
+
+    remaining = [e for e in capsul_exts if e not in used_exts]
+    if remaining:
+        # create format
+        from brainvisa.data.neuroDiskItems import Format
+        for ext in remaining:
+            # TODO: name it properly
+            f_name = '%s file' % ext[1:]
+            # create format
+            f = Format(f_name, 'f|*%s' % ext)
+            formats.append(f)
+    return formats
+
+
 def get_best_type(process, param, attributes=None, path_completion=None):
     from capsul.attributes.completion_engine import ProcessCompletionEngine
     from capsul.attributes.attributes_schema import ProcessAttributes
@@ -253,8 +279,14 @@ def get_best_type(process, param, attributes=None, path_completion=None):
                         is_list = True
                         break
             if path_completion is None:
-                return ('Any Type',
-                        [f for f in getAllFormats() if match_ext(cext, [f])])
+                return ('Any Type', get_axon_formats(cext))
+
+    # merge trait extensions and completion system extensions
+    compl_ext = path_completion.allowed_extensions(process, param)
+    if not cext:
+        cext = compl_ext
+    elif compl_ext:
+        cext = [e for e in cext if e in compl_ext]
 
     orig_attributes = attributes
     #print('## orig:', orig_attributes.user_traits().keys())
@@ -306,8 +338,7 @@ def get_best_type(process, param, attributes=None, path_completion=None):
             path = getattr(process, param)
             #print('new path:', path)
         if path in (None, traits.Undefined, []):
-            return ('Any Type',
-                    [f for f in getAllFormats() if match_ext(cext, [f])])
+            return ('Any Type', get_axon_formats(cext))
 
         for db in neuroHierarchy.databases.iterDatabases():
             #print('look in db:', db.directory)
@@ -330,8 +361,7 @@ def get_best_type(process, param, attributes=None, path_completion=None):
         if orig_values is not None:
             orig_attributes.import_from_dict(orig_values)
 
-    return ('Any Type',
-            [f for f in getAllFormats() if match_ext(cext, [f])])
+    return ('Any Type', get_axon_formats(cext))
 
 
 class CapsulProcess(processes.Process):
