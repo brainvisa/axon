@@ -610,7 +610,8 @@ class CapsulProcess(processes.Process):
             study_config = self.init_study_config(context)
             if self._capsul_process is not None:
                 self._capsul_process.set_study_config(study_config)
-        context.study_config = study_config
+        if context is not None:  # may be None during axon_to_capsul conversion
+            context.study_config = study_config
         return study_config
 
     @classmethod
