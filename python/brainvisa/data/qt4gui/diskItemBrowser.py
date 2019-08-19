@@ -97,7 +97,7 @@ def diskItemFilter(database, diskItem, required, explainRejection=False):
                 return 'DiskItem format ' + repr(value) + ' is not in ' + repr(tuple(formats))
             return False
     for key in required:
-        if key in ('_type', '_format'):
+        if key in ('_type', '_format', '_declared_attributes_location'):
             continue
         values = database.getAttributeValues(key, {}, required)
         itemValue = diskItem.get(key, '')
