@@ -207,6 +207,9 @@ def addNewFileFormat(format):
     from brainvisa.data import neuroDiskItems
     global _all_formats
 
+    if _all_formats is None:
+        return  # will be done later
+
     if isinstance(format, str):
         format = neuroDiskItems.getFormat(format)
     patterns = []
