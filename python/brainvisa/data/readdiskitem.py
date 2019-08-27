@@ -242,7 +242,7 @@ class ReadDiskItem(Parameter):
 
         Parameters
         ----------
-        selection: diskitem, or dictionary
+        selection: diskitem, or dictionary, or str (filename)
         requiredAttributes: dictionary (optional)
         preferExisting: boolean
         ignore_db_formats_sorting: boolean

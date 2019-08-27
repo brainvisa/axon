@@ -228,12 +228,15 @@ def get_axon_formats(capsul_exts):
     if remaining:
         # create format
         from brainvisa.data.neuroDiskItems import Format
+        from brainvisa.data import fileformats
         for ext in remaining:
             # TODO: name it properly
             f_name = '%s file' % ext[1:]
             # create format
             f = Format(f_name, 'f|*%s' % ext)
             formats.append(f)
+            # also in fileformats...
+            fileformats.addNewFileFormat(f)
     return formats
 
 
