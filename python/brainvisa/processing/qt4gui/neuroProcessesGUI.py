@@ -3984,7 +3984,7 @@ class ProcessSelectionWidget(QMainWindow):
         self.dock_sw.toggleViewAction().setText(_t_("Workflow execution"))
         self.dock_sw.setAllowedAreas(
             QtCore.Qt.BottomDockWidgetArea | QtCore.Qt.TopDockWidgetArea)
-        if _workflow_application_model != None:
+        if _workflow_application_model is not None:
 
             self.sw_widget = SomaWorkflowWidget(_workflow_application_model,
                                                 computing_resource=None,
@@ -3994,9 +3994,9 @@ class ProcessSelectionWidget(QMainWindow):
                 _workflow_application_model,
                                                          self.sw_widget,
                                                          self.dock_sw)
+            self.dock_sw.hide()
             self.dock_sw.setWidget(self.sw_mini_widget)
 
-            self.dock_sw.hide()
             self.addDockWidget(Qt.BottomDockWidgetArea, self.dock_sw)
         else:
             self.dock_sw.hide()
@@ -4908,7 +4908,7 @@ def initializeProcessesGUI():
     _workflow_application_model = None
 
     if neuroConfig.gui:
-        if _soma_workflow and neuroConfig.userLevel >= 1:
+        if _soma_workflow:
             _computing_resource_pool = ComputingResourcePool()
             _computing_resource_pool.add_default_connection()
             _workflow_application_model = WorkflowApplicationModel(

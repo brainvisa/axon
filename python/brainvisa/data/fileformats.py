@@ -203,6 +203,29 @@ class FileFormats(object):
 #------------------------------------------------------------------------------
 _all_formats = None
 
+
+def addNewFileFormat(format):
+    from brainvisa.data import neuroDiskItems
+    global _all_formats
+
+    if _all_formats is None:
+        return  # will be done later
+
+    if isinstance(format, str):
+        format = neuroDiskItems.getFormat(format)
+    patterns = []
+    for p in format.patterns.patterns:
+        p = p.pattern
+        dotIndex = p.find('.')
+        if dotIndex < 0:
+            break
+        patterns.append(p[dotIndex + 1:])
+    _all_formats.newFormat(
+        format.name,
+        patterns,
+        isinstance(format, neuroDiskItems.MinfFormat))
+
+
 def getAllFileFormats():
     global _all_formats
 
@@ -225,18 +248,8 @@ def getAllFileFormats():
                 continue
 
             if format.name not in formatsAlreadyDefined:
-                patterns = []
-                for p in format.patterns.patterns:
-                    p = p.pattern
-                    dotIndex = p.find('.')
-                    if dotIndex < 0:
-                        break
-                    patterns.append(p[dotIndex + 1:])
                 try:
-                    _all_formats.newFormat(
-                        format.name,
-                        patterns,
-                        isinstance(format, neuroDiskItems.MinfFormat))
+                    addNewFileFormat(format)
                     formatsAlreadyDefined.add(format.name)
                 except Exception as e:
                     showException()
