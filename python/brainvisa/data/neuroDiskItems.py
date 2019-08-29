@@ -2754,7 +2754,7 @@ globalTmpDir = None
 
 
 #----------------------------------------------------------------------------
-def getTemporary(format, diskItemType=None, parent=None, name=None):
+def getTemporary(format, diskItemType=None, parent=None, name=None, suffix=None, prefix=None):
     """
     Creates a new temporary diskitem. It will be automatically deleted when there is no more references on it or when Brainvisa closes.
 
@@ -2779,7 +2779,9 @@ def getTemporary(format, diskItemType=None, parent=None, name=None):
         parent = globalTmpDir
 
     if name is None:
-        name = temporary.manager.newFileName(directory=parent.fullPath())
+        name = temporary.manager.newFileName(directory=parent.fullPath(),
+                                             suffix=suffix,
+                                             prefix=prefix)
     if format.fileOrDirectory() is Directory:
         item = TemporaryDirectory(name, parent)
     else:

@@ -3638,7 +3638,7 @@ class ExecutionContext(object):
                 self._systemLog = None
         return result
 
-    def temporary(self, format, diskItemType=None):
+    def temporary(self, format, diskItemType=None, suffix=None, prefix=None):
         """
         This method enables to create a temporary DiskItem. The argument format is the temporary data format. The optional argument type is the data type. It generates one or several unique filenames (according to the format) in the temporary directory of BrainVISA (it can be changed in BrainVISA configuration). No file is created by this function. The process has to create it. The temporary files are deleted automatically when the temporary diskitem returned by the function is no later used.
 
@@ -3652,7 +3652,7 @@ class ExecutionContext(object):
 
         In this example, a temporary data in GIS format is created and it is used to store the output of the process threshold. Then a new temporary data is created to store the output of a command line. At the end, the variable tmp is deleted, so the temporary data is no more referenced and the corresponding files are deleted.
         """
-        result = getTemporary(format, diskItemType)
+        result = getTemporary(format, diskItemType, suffix=suffix, prefix=prefix)
         return result
 
     def write(self, *messages, **kwargs):
