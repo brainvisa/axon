@@ -190,8 +190,8 @@ def get_initial_study_config():
         "shared_fom": "shared-brainvisa-1.0",
         "use_soma_workflow": True,
         "use_fom": True,
-        "volumes_format": 'NIFTI gz',
-        "meshes_format": "GIFTI",
+        "volumes_format": 'gz compressed NIFTI-1 image',
+        "meshes_format": "GIFTI file",
     }
 
     return init_study_config
@@ -212,17 +212,20 @@ def match_ext(capsul_exts, axon_formats):
 
 
 def get_axon_formats(capsul_exts):
+    if capsul_exts is None:
+        capsul_exts = []
     formats = []
     used_exts = set()
     for f in getAllFormats():
         if match_ext(capsul_exts, [f]):
             formats.append(f)
             # get used exts
-            for pattern in f.patterns.patterns:
-                f0 = pattern.pattern.split('|')[-1]
-                f1 = f0.split('*')[-1]
-                if f1 in capsul_exts:
-                    used_exts.add(f1)
+            if hasattr(f, 'patterns'):
+                for pattern in f.patterns.patterns:
+                    f0 = pattern.pattern.split('|')[-1]
+                    f1 = f0.split('*')[-1]
+                    if f1 in capsul_exts:
+                        used_exts.add(f1)
 
     remaining = [e for e in capsul_exts if e not in used_exts]
     if remaining:
@@ -247,7 +250,7 @@ def get_best_type(process, param, attributes=None, path_completion=None):
     completion_engine = ProcessCompletionEngine.get_completion_engine(process)
     cext = process.trait(param).allowed_extensions
 
-    #print('get_best_type', process, param, ':', completion_engine, path_completion)
+    # print('get_best_type', process, param, ':', completion_engine, path_completion, cext)
     is_list = False
 
     if path_completion is None:
