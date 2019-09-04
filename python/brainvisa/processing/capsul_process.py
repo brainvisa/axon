@@ -377,6 +377,8 @@ class CapsulProcess(processes.Process):
     See the :py:mod:`brainvisa.processing.capsul_process` doc for details.
     '''
 
+    capsul_to_axon_process_map = {}
+
     def __init__(self):
         self._capsul_process = None
         self.setup_capsul_process()
@@ -402,6 +404,8 @@ class CapsulProcess(processes.Process):
 
         This is basically the only thing the process must do.
         '''
+        if not hasattr(self, '_id'):
+            return  # no associated module, may be built on-the-fly
         module = processes._processModules.get(self._id)
         if module is None:
             return  # no associated module, may be built on-the-fly
@@ -410,6 +414,7 @@ class CapsulProcess(processes.Process):
             from capsul.api import get_process_instance
             process = get_process_instance(capsul_process,
                                            self.get_study_config())
+            print('setup_capsul_process:', process.name)
             self.set_capsul_process(process)
 
     def get_capsul_process(self):
@@ -668,6 +673,8 @@ class CapsulProcess(processes.Process):
         NewProcess.category = category
         NewProcess.dataDirectory = None
         NewProcess.toolbox = None
+        NewProcess.capsul_process = '.'.join([process.__module__,
+                                              process.__class__.__name__])
         if pre_signature:
             NewProcess.signature = pre_signature
 
@@ -676,6 +683,58 @@ class CapsulProcess(processes.Process):
         axon_process.initialization()
 
         return axon_process
+
+    @classmethod
+    def axon_process_from_capsul_module(cls, module,
+                                        context=processes.defaultContext()):
+        '''
+        Create an Axon process from a capsul process instance, class, or module
+        definition ('morphologist.capsul.morphologist').
+
+        A registry of capsul:axon process classes is maintained
+
+        May use build_from_instanc() at lower-level. The main differences
+        with build_from_instance() are:
+        * build_from_instance creates a new process class unconditionally
+          each time it is used
+        * build_from_instance will not check if a process wraping class is
+          defined in axon processes
+        * it will not reuse a cache of process classes
+        '''
+        study_config = getattr(context, 'study_config', None)
+        if study_config is None:
+            study_config = cls().get_study_config(context)
+        capsul_proc = study_config.get_process_instance(module)
+        capsul_def = '.'.join([capsul_proc.__module__,
+                               capsul_proc.__class__.__name__])
+        axon_process = cls.capsul_to_axon_process_map.get(capsul_def)
+        if axon_process is not None:
+            return processes.getProcessInstance(axon_process)
+        else:
+            # check if an existing process class matches
+            for pid, proc_class in six.iteritems(processes._processes):
+                if not issubclass(proc_class, CapsulProcess):
+                    continue
+                module = processes._processModules.get(pid)
+                if module is None:
+                    continue  # no associated module, may be built on-the-fly
+                cid = getattr(module, 'capsul_process')
+                if cid is None:
+                    continue
+                try:
+                    cins = study_config.get_process_instance(cid)
+                    if cins.__class__ is capsul_proc.__class__:
+                        axon_process = processes.getProcessInstance(pid)
+                        # cache it
+                        cls.capsul_to_axon_process_map[capsul_def] \
+                            = axon_process.__class__
+                        return axon_process
+                except:
+                    # print('cannot instantiate')
+                    continue
+            axon_process = cls.build_from_instance(capsul_proc)
+            cls.capsul_to_axon_process_map[capsul_def] = axon_process.__class__
+            return axon_process
 
     def custom_iteration(self):
         '''
