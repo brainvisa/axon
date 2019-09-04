@@ -1,40 +1,17 @@
 {
   "fom_name" : "formats-brainvisa-1.0",
 
+  "fom_import": ["brainvisa-formats-3.2.0"],
+
   "formats" : {
-    "NIFTI" : "nii",
-    "NIFTI gz" : "nii.gz",
-    "GIS" : "ima",
-    "MINC" : "mnc",
-    "SPM" : "img",
-    "Label Translation" : "trl",
-    "DEF Label Translation" : "def",
-    "Text Data Table": "dat",
-    "Text file": "txt",
-    "CSV file": "csv",
     "JSON file": "json",
-    "Commissure coordinates" : "APC",
-    "Matlab" : "mat",
-    "Matlab bz2" : "mat.bz2",
-    "XML" : "xml",
-    "Transformation matrix" : "trm",
-    "Referential": "referential",
-    "Histogram" : "his",
-    "Histo Analysis" : "han",
-    "GIFTI" : "gii",
-    "MESH": "mesh",
-    "Graph and data" : "arg",
-    "Referential" : "referential",
-    "Directory" : "",
-    "PLY": "ply",
-    "Energy": "nrj"
   },
 
 
   "format_lists" : {
-    "images" : [ "NIFTI gz", "GIS", "MINC", "SPM", "NIFTI"],
+    "images" : [ "gz compressed NIFTI-1 image", "GIS image", "MINC image", "SPM image", "NIFTI-1 image"],
     "label translations" : [ "Label Translation", "DEF Label Translation" ],
-    "mesh" : ["GIFTI", "MESH", "PLY"]
+    "mesh" : ["GIFTI file", "MESH mesh", "PLY mesh"]
   }
 
 }
