@@ -1,17 +1,19 @@
 {
     "fom_name" : "shared-brainvisa-1.0",
 
+    "fom_import": ["formats-brainvisa-1.0", "brainvisa-formats-3.2.0"],
+
     "shared_patterns" : {
         "shared.anatomical_templates" :
             [["shared:anatomical_templates/MNI152_T1_1mm", "images"],
                 ["shared:anatomical_templates/MNI152_T1_2mm", "images"],
-                ["shared:anatomical_templates/MNI152_T1_1mm_brain", "NIFTI"],
-                ["shared:anatomical_templates/MNI152_T1_2mm_brain", "NIFTI"]
+                ["shared:anatomical_templates/MNI152_T1_1mm_brain", "NIFTI-1 image"],
+                ["shared:anatomical_templates/MNI152_T1_2mm_brain", "NIFTI-1 image"]
             ],
         "shared.anatomical_template_t1":
-            [["shared:anatomical_templates/MNI152_T1_2mm", "NIFTI gz"]],
+            [["shared:anatomical_templates/MNI152_T1_2mm", "gz compressed NIFTI-1 image"]],
         "shared.anatomical_template_t1_skull_stripped":
-            [["shared:anatomical_templates/MNI152_T1_2mm_brain", "NIFTI"]],
+            [["shared:anatomical_templates/MNI152_T1_2mm_brain", "NIFTI-1 image"]],
         "shared.mni_spm_referential" :
             [["shared:registration/Talairach-MNI_template-SPM", "Referential"]],
         "shared.acpc_referential" :
@@ -23,7 +25,7 @@
         "shared.sulci_labels_translation_map" :
             [["shared:nomenclature/translation/sulci_model_<sulci_database>", "label translations", {"sulci_database": "2008"}]],
         "shared.split_template":
-            [["shared:hemitemplate/closedvoronoi", "GIS"]],
+            [["shared:hemitemplate/closedvoronoi", "GIS image"]],
         "spam_models":
             "models/models_<sulci_database>/descriptive_models",
         "spam_labels_priors":

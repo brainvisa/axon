@@ -348,7 +348,10 @@ def parse_links(pipeline, proc, weak_outputs=False):
     return links
 
 
-def is_output(proc, param):
+def is_output(proc, param, verbose=False):
+    if verbose:
+        print('is_output', proc().name, param)
+        print('selection?:', isinstance(proc(), procbv.SelectionExecutionNode))
     if isinstance(proc(), procbv.SelectionExecutionNode):
         # SelectionExecutionNode nodes may be used for switch nodes.
         # They do not have parameters in the Axon API since they are not
@@ -363,7 +366,22 @@ def is_output(proc, param):
         else:
             return False
     signp = proc().signature.get(param)
-    if signp is None:  # non-exported parameter: should be an output
+    if signp is None:  # non-exported parameter
+        # print('internal')
+        # parse sub_nodes
+        if hasattr(proc(), 'executionNode'):
+            en = proc().executionNode()
+            for cn in en.childrenNames():
+                if param.startswith(cn + '_'):
+                    node = getattr(en, cn)
+                    sub_param = param[len(cn) + 1:]
+                    if hasattr(node, 'signature') \
+                            and sub_param in node.signature:
+                        return isinstance(node.signature[sub_param],
+                                          WriteDiskItem)
+        # not found: guess it's an output (may be wrong)
+        print('Warning: internal param %s.%s not foud. Assuming output'
+              % (proc().name, param))
         return True
     return isinstance(signp, WriteDiskItem)
 
