@@ -4203,10 +4203,17 @@ class ProcessSelectionWidget(QMainWindow):
             processId = self.currentProcessId
         self.currentProcess = brainvisa.processes.getProcessInstance(processId)
         # print("iterate process", processId)
-        self._iterationDialog = IterationDialog(
-            self, self.currentProcess, self)
-        self._iterationDialog.accepted.connect(self._iterateAccept)
-        self._iterationDialog.show()
+        # if the process has a method custom_iteration(), then it is used to
+        # obtain an iterated pipeline (Capsul processes...) without using the
+        # interactive iteration dialog.
+        if hasattr(self.currentProcess, 'custom_iteration'):
+            iterated_process = self.currentProcess.custom_iteration()
+            showProcess(iterated_process)
+        else:
+            self._iterationDialog = IterationDialog(
+                self, self.currentProcess, self)
+            self._iterationDialog.accepted.connect(self._iterateAccept)
+            self._iterationDialog.show()
 
     def _iterateAccept(self):
         """
