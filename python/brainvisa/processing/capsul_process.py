@@ -22,6 +22,11 @@ The underlying Capsul process traits will be exported to the Axon signature auto
 
 The process also does not have an :meth:`~brainvisa.processes.Process.execution` function. This is normal: :class:`CapsulProcess` already defines an :meth:`~CapsulProcess.executionWorkflow` method which will generate a :somaworkflow:`Soma-Workflow <index.html>` workflow which will integrate in the process or parent pipeline (or iteration) workflow.
 
+**nipype interfaces**
+
+As Capsul processes can be built directly from nipype interfaces, any nipype interface can be used in Axon wrappings here.
+
+
 Pipeline design directly using Capsul nodes
 -------------------------------------------
 
@@ -58,6 +63,13 @@ Note that using this syntax, a Capsul process wihch does not have an explicit Ax
 
 However if a wrapper process is already defined in Axon (either to make it visible in Axon interface, or because it needs some customization), then the wrapper process will be found, and used. In this situation the pipeline developer thus can either use the Axon wrapper (``ProcessExecutionNode('sulci_deep_labeling')`` here) or the Capsul process identifier (``ProcessExecutionNode('capsul://deepsulci.sulci_labeling.capsul.labeling')`` here). The result will be the same.
 
+Note that **nipype interfaces** can also be used directly, the exact same way::
+
+    eNode.addChild(
+        'Smoothing',
+        ProcessExecutionNode(
+            'capsul://nipype.interfaces.spm.smooth', optional=1))
+
 
 Process / pipeline parameters completion
 ----------------------------------------
@@ -93,6 +105,12 @@ For instance if a capsul process has 3 parameters, *param_a*, *param_b*, *param_
     )
 
 In this situation the types of *param_a* and *param_c* will be guessed, and *param_b* will be the one from the declared signature. This signature declaration is optional in a wraped Capsul process, of course, when all types can be guessed.
+
+
+Iterations
+----------
+
+Capsul has its own iteration system, using iteration nodes in pipelines. Thus Capsul processes are iterated in the Capsul way. For the user it looks differently: parameters are replaced by lists, istead of duplicating the process to be iterated. The GUI is thus more concise and more efficient, and parameters completion is done in Capsul, which is also much more efficient than the Axon way (Capsul completion time is linear with the number of parameters to be completed, where Axon also slows down with the size of the database).
 
 See also :doc:`capsul`
 
@@ -442,12 +460,14 @@ class CapsulProcess(processes.Process):
 
         This is basically the only thing the process must do.
         '''
-        if not hasattr(self, '_id'):
-            return  # no associated module, may be built on-the-fly
-        module = processes._processModules.get(self._id)
-        if module is None:
-            return  # no associated module, may be built on-the-fly
-        capsul_process = getattr(module, 'capsul_process')
+        capsul_process = getattr(self, 'capsul_process', None)
+        if capsul_process is None:
+            if not hasattr(self, '_id'):
+                return  # no associated module, may be built on-the-fly
+            module = processes._processModules.get(self._id)
+            if module is None:
+                return  # no associated module, may be built on-the-fly
+            capsul_process = getattr(module, 'capsul_process')
         if capsul_process:
             from capsul.api import get_process_instance
             process = get_process_instance(capsul_process,
@@ -715,8 +735,13 @@ class CapsulProcess(processes.Process):
         NewProcess.category = category
         NewProcess.dataDirectory = None
         NewProcess.toolbox = None
-        NewProcess.capsul_process = '.'.join([process.__module__,
-                                              process.__class__.__name__])
+        if process.id == 'capsul.pipeline.pipeline.Pipeline':
+            # special case of a pipeline built on-the-fly
+            NewProcess.capsul_process = None
+            # anyway it will miss things, hope setup_capsul_process()
+            # will be called with a real instance later.
+        else:
+            NewProcess.capsul_process = process.id
         if pre_signature:
             NewProcess.signature = pre_signature
 
@@ -757,8 +782,7 @@ class CapsulProcess(processes.Process):
             if study_config is None:
                 study_config = cls().get_study_config(context)
         capsul_proc = study_config.get_process_instance(process)
-        capsul_def = '.'.join([capsul_proc.__module__,
-                               capsul_proc.__class__.__name__])
+        capsul_def = capsul_proc.id
         axon_process = cls.capsul_to_axon_process_map.get(capsul_def)
         if axon_process is not None:
             return processes.getProcessInstance(axon_process)
@@ -776,8 +800,7 @@ class CapsulProcess(processes.Process):
                 try:
                     cins = study_config.get_process_instance(cid)
                     # cache it anyway
-                    cid_def = '.'.join([cins.__module__,
-                                        cins.__class__.__name__])
+                    cid_def = cins.id
                     cls.capsul_to_axon_process_map[cid_def] = proc_class
                     if cins.__class__ is capsul_proc.__class__:
                         axon_process = processes.getProcessInstance(pid)
