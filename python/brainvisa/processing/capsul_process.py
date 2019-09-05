@@ -551,19 +551,20 @@ class CapsulProcess(processes.Process):
 
         if optional:
             self.setOptional(*optional)
-        self.use_capsul_completion = True
-        self.edit_pipeline = False
-        self.capsul_gui = False
-        self.edit_pipeline_steps = False
-        self.edit_study_config = False
+        self.setValue('use_capsul_completion', True, default=True)
+        self.setValue('edit_pipeline', False, default=True)
+        self.setValue('capsul_gui', False, default=True)
+        if getattr(process, 'pipeline_steps', None):
+            self.setValue('edit_pipeline_steps', False, default=True)
+        self.setValue('edit_study_config', False, default=True)
         for name in process.user_traits():
             if name in excluded_traits:
                 continue
             value = getattr(process, name)
             if value not in (traits.Undefined, ''):
-                setattr(self, name, convert_capsul_value(value))
+                self.setValue(name, convert_capsul_value(value), default=True)
             else:
-                setattr(self, name, None)
+                self.setValue(name, None, default=True)
             self.linkParameters(None, name,
                                 SomaPartial(self._on_axon_parameter_changed,
                                             name))
@@ -817,6 +818,8 @@ class CapsulProcess(processes.Process):
         pre_signature = Signature()
         piter = pipeline.nodes[pipeline.name].process
         for param in process.user_traits():
+            if param not in self.signature:
+                continue  # control trait such as "nodes_activation"
             if param in piter.iterative_parameters:
                 pre_signature[param] = ListOf(self.signature[param])
             else:
