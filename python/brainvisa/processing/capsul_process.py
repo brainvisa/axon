@@ -618,6 +618,26 @@ class CapsulProcess(processes.Process):
             except traits.TraitError:
                 pass
 
+    def forbid_completion(self, params, forbid=True):
+        ''' Forbids (blocks) Capsul completion system for the selected
+        parameters. This allows to replace Capsul completion by Axon links
+        when needed (this is more or less the equivalent of unplugging internal
+        links in Axon processes when inserting them in pipelines).
+
+        Parameters
+        ----------
+        params: str or list
+            parameters to block
+        forbid: bool
+            True blocks completion, False allows it again
+        '''
+        if isinstance(params, six.string_types):
+            params = [params]
+        process = self.get_capsul_process()
+        for param in params:
+            t = process.trait(param)
+            t.forbid_completion = forbid
+
     def executionWorkflow(self, context=processes.defaultContext()):
         ''' Build the workflow for execution. The workflow will be integrated in the parent pipeline workflow, if any.
 
