@@ -2083,6 +2083,7 @@ class ExecutionNode(object):
         self.__dict__['_expandedInGui'] = expandedInGui
         self.__dict__['_dependencies'] = []
         self.__dict__['_parent'] = None
+        self.__dict__['_invalid_children'] = set()
 
     def __del__(self):
         # print('del ExecutionNode', self)
@@ -2126,24 +2127,34 @@ class ExecutionNode(object):
         :param node: an :py:class:`ExecutionNode` which will be added
           to this node's children.
         '''
-        if name in self._children:
+        if name in self._children or name in self._invalid_children:
             raise KeyError(
                 HTMLMessage(_t_('<em>%s</em> already defined') % (name, )))
         if not isinstance(node, ExecutionNode):
             raise RuntimeError(
                 HTMLMessage('<em>node</em> argument must be an execution node'))
 
-        if not index is None:
-            self._children.insert(index, name, node)
+        if not node.is_valid():
+            # invalid nodes are just marked in a list, not really added
+            self._invalid_children.add(name)
         else:
-            self._children[name] = node
-        node._parent = weakref.ref(self)
+            if not index is None:
+                self._children.insert(index, name, node)
+            else:
+                self._children[name] = node
+            node._parent = weakref.ref(self)
+
+    def is_valid(self):
+        return True
 
     def removeChild(self, name):
         '''Remove child execution node.
 
         :param string name: name which identifies the node
         '''
+        if name in self._invalid_children:
+            self._invalid_children.remove(name)
+            return None
         if name not in self._children:
             raise KeyError(
                 HTMLMessage(_t_('<em>%s</em> not defined') % (name, )))
@@ -2448,23 +2459,60 @@ class ProcessExecutionNode(ExecutionNode):
     '''
 
     def __init__(self, process, optional=False, selected=True,
-                 guiOnly=False, expandedInGui=False, altname=None):
-        process = getProcessInstance(process)
-        # print('ProcessExecutionNode.__init__:', self, process.name)
-        ExecutionNode.__init__(self, process.name,
+                 guiOnly=False, expandedInGui=False, altname=None,
+                 skip_failed=False):
+        '''
+        Parameters
+        ----------
+        process: process id or instance or class
+        optional: bool
+            may be unchecked in the pipeline (not run)
+        selected: bool
+            checked in the pipeline, will be the selected one in a selection
+            node
+        guiOnly: bool
+            will be skipped in a non-interactive environment
+        expandedInGui: bool
+            in the tree widget
+        altname: str
+            alternative name displayed in the GUI
+        skip_failed: bool
+            marks the node as "optional": if the process cannot be
+            instantiated, the pipeline construction will not fail, but the
+            node will not be added. Links involving this node will be also
+            skipped silently. This is useful to buils pipelines with several
+            alternative nodes which may be unavailable in some contexts (due
+            to missing dependencies or external software, typically)
+        '''
+        self.__dict__['failing_node'] = False
+        if skip_failed:
+            try:
+                process = getProcessInstance(process)
+            except:
+                process = None
+                self.__dict__['failing_node'] = True
+        else:
+            process = getProcessInstance(process)
+        pname = ''
+        if process is not None:
+            pname = process.name
+        # print('ProcessExecutionNode.__init__:', self, pname)
+        ExecutionNode.__init__(self, pname,
                                optional=optional,
                                selected=selected,
                                guiOnly=guiOnly,
                                parameterized=process,
                                expandedInGui=expandedInGui)
         self.__dict__['_process'] = process
-        process._parent = weakref.ref(self)
+        if process is not None:
+            process._parent = weakref.ref(self)
         if altname is not None:
             self.__dict__['_name'] = altname
-        reloadNotifier = getattr(process, 'processReloadNotifier', None)
-        if reloadNotifier is not None:
-            reloadNotifier.add(ExecutionNode.MethodCallbackProxy(
-                               self.processReloaded))
+        if process is not None:
+            reloadNotifier = getattr(process, 'processReloadNotifier', None)
+            if reloadNotifier is not None:
+                reloadNotifier.add(ExecutionNode.MethodCallbackProxy(
+                                  self.processReloaded))
 
     def __del__(self):
         # print('del ProcessExecutionNode', self)
@@ -2473,28 +2521,30 @@ class ProcessExecutionNode(ExecutionNode):
             return
         if hasattr(self, '_process'):
             # print('     del proc:', self._process.name)
-            reloadNotifier = getattr(
-                self._process, 'processReloadNotifier', None)
-            if reloadNotifier is not None:
-                try:
-                    l = len(reloadNotifier._listeners)
-                    z = ExecutionNode.MethodCallbackProxy(
-                        self.processReloaded)
-                    # bidouille: hack z so as to contain a weakref to None
-                    # since we are in __del__ and existing weakrefs to self have already
-                    # been neutralized
+            process = self._process
+            if process is not None:
+                reloadNotifier = getattr(
+                    self._process, 'processReloadNotifier', None)
+                if reloadNotifier is not None:
+                    try:
+                        l = len(reloadNotifier._listeners)
+                        z = ExecutionNode.MethodCallbackProxy(
+                            self.processReloaded)
+                        # bidouille: hack z so as to contain a weakref to None
+                        # since we are in __del__ and existing weakrefs to self
+                        # have already been neutralized
 
-                    class A(object):
+                        class A(object):
+                            pass
+                        w = weakref.ref(A())  # w points to None immediately
+                        z.object = w
+                        x = reloadNotifier.remove(z)
+                    except AttributeError:
+                        # this try..except is here to prevent an error when quitting
+                        # BrainVisa:
+                        # ProcessExecutionNode class is set to None during module
+                        # destruction
                         pass
-                    w = weakref.ref(A())  # w points to None immediately
-                    z.object = w
-                    x = reloadNotifier.remove(z)
-                except AttributeError:
-                    # this try..except is here to prevent an error when quitting
-                    # BrainVisa:
-                    # ProcessExecutionNode class is set to None during module
-                    # destruction
-                    pass
         else:
             # print('del ProcessExecutionNode', self)
             print('no _process in ProcessExecutionNode !')
@@ -2669,30 +2719,31 @@ class SerialExecutionNode(ExecutionNode):
                 node = self.possibleChildrenProcesses
             self._internalIndex += 1
 
-        if self.notify:
+        if self.notify and node.is_valid():
             self.beforeChildAdded.notify(
                 weakref.proxy(self), name, weakref.proxy(node))
 
         super(SerialExecutionNode, self).addChild(name, node, index)
 
-        if self.notify:
+        if self.notify and node.is_valid():
             self.afterChildAdded.notify(
                 weakref.proxy(self), name, weakref.proxy(node))
 
     def removeChild(self, name):
+        valid = name not in self._invalid_children
         if self.possibleChildrenProcesses:
-            if name not in self._children:
+            if name not in self._children and valid:
                 raise KeyError(
                     HTMLMessage(_t_('<em>%s</em> not defined') % (name, )))
 
-        if self.notify:
+        if self.notify and valid:
             node = self._children[name]
             self.beforeChildRemoved.notify(
                 weakref.proxy(self), name, weakref.proxy(node))
 
         super(SerialExecutionNode, self).removeChild(name)
 
-        if self.notify:
+        if self.notify and valid:
             self.afterChildRemoved.notify(
                 weakref.proxy(self), name, weakref.proxy(node))
 
@@ -2750,9 +2801,10 @@ class SelectionExecutionNode(ExecutionNode):
     def addChild(self, name, node, index=None):
         'Add a new child execution node'
         ExecutionNode.addChild(self, name, node, index)
-        node._selectionChange.add(ExecutionNode.MethodCallbackProxy(
-                                  self.childSelectionChange))
-        node._dependencies += self._dependencies
+        if node.is_valid():
+            node._selectionChange.add(ExecutionNode.MethodCallbackProxy(
+                                      self.childSelectionChange))
+            node._dependencies += self._dependencies
 
     def childSelectionChange(self, node):
         '''This callback is called when the selection state of a child has changed.
