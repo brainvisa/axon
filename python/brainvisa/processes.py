@@ -4358,6 +4358,12 @@ def getProcess(processId, ignoreValidation=False, checkUpdate=True):
                             (unicode(processId['type'])))
     else:
         if isinstance(processId, six.string_types):
+            if processId.startswith('capsul://'):
+                from brainvisa.processing import capsul_process
+                capsul_pid = processId[9:]
+                instance = capsul_process.CapsulProcess. \
+                    axon_process_from_capsul_module(capsul_pid)
+                return instance.__class__
             processId = processId.lower()
         result = _processes.get(processId)
     if result is None:

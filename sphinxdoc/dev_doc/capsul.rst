@@ -44,7 +44,12 @@ Can we use CAPSUL processes in BrainVISA/Axon ?
 
 Yes, partly.
 
-It is possible to declare an Axon process which wraps a Capsul process or pipeline. Capsul parameters are translated to Axon ones, so Axon GUI will display all the parameters. But again, files typing and links do not work, at least not yet.
+Starting in Axon 4.6.2 it is possible to directly use Capsul processes as nodes in Axon pipelines: see :mod:`brainvisa.processing.capsul_process`, simply by adding nodes which identifier starts with ``capsul://``::
+
+    ProcessExecutionNode(
+        'capsul://deepsulci.sulci_labeling.capsul.labeling', optional=1)
+
+It is also possible to declare an Axon process which wraps a Capsul process or pipeline. Capsul parameters are translated to Axon ones, so Axon GUI will display all the parameters.
 
 Capsul process execution will be triggered by Axon pipeline execution, and their workflows will integrate, so distributed execution should work as expected in Soma-Workflow.
 
