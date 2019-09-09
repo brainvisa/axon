@@ -591,6 +591,7 @@ def mapValuesToChildrenParameters(
     sourceNode += [sourceNode[-1]] * (nparam - len(sourceNode))
     source += [source[-1]] * (nparam - len(source))
     sources = [n.parseParameterString(s) for n, s in zip(sourceNode, source)]
+    sources = [s for s in sources if s is not None]
 
     # print('destination attributes', dest,
           #'source nodes', len(sourceNode),
@@ -657,8 +658,10 @@ def mapValuesToChildrenParameters(
             if len(l) > 0:
                 k = destNode.childrenNames()[i]
                 destChild = destNode._children[k]
-                destObject, destParameter = destChild.parseParameterString(
-                    d)
+                dst = destChild.parseParameterString(d)
+                if d is None:  # invalid destination node
+                    continue
+                destObject, destParameter = dst
                 destObject.setValue(destParameter, v)
 
         # update csize
@@ -704,7 +707,10 @@ def mapValuesToChildrenParameters(
                         src_par = part_func.kwargs.get('source')
                     if not src_par:
                         continue
-                    src_obj, src_par = src_node.parseParameterString(src_par)
+                    src = src_node.parseParameterString(src_par)
+                    if src is None:
+                        continue
+                    src_obj, src_par = src
                     value = getattr(src_obj, src_par, [])
                     nval = len(value)
                     if nval == 0:
@@ -729,15 +735,21 @@ def mapValuesToChildrenParameters(
 
 
 def mapChildrenParametersToValues(destNode, sourceNode, dest, source, value=None):
+    d = destNode.parseParameterString(dest)
+    if d is None:  # invalid dest node
+        return
+    destObject, destParameter = d
+
     r = []
     for k in sourceNode.childrenNames():
         sourceChild = sourceNode._children[k]
-        sourceObject, sourceParameter = sourceChild.parseParameterString(
-            source)
+        src = sourceChild.parseParameterString(source)
+        if src is None:
+            continue
+        sourceObject, sourceParameter = src
         s = getattr(sourceObject, sourceParameter, None)
         r.append(s)
 
-    destObject, destParameter = destNode.parseParameterString(dest)
     # setattr(destObject, destParameter, r)
     destObject.setValue(destParameter, r)
 
@@ -2083,6 +2095,7 @@ class ExecutionNode(object):
         self.__dict__['_expandedInGui'] = expandedInGui
         self.__dict__['_dependencies'] = []
         self.__dict__['_parent'] = None
+        self.__dict__['_invalid_children'] = set()
 
     def __del__(self):
         # print('del ExecutionNode', self)
@@ -2126,24 +2139,34 @@ class ExecutionNode(object):
         :param node: an :py:class:`ExecutionNode` which will be added
           to this node's children.
         '''
-        if name in self._children:
+        if name in self._children or name in self._invalid_children:
             raise KeyError(
                 HTMLMessage(_t_('<em>%s</em> already defined') % (name, )))
         if not isinstance(node, ExecutionNode):
             raise RuntimeError(
                 HTMLMessage('<em>node</em> argument must be an execution node'))
 
-        if not index is None:
-            self._children.insert(index, name, node)
+        if not node.is_valid():
+            # invalid nodes are just marked in a list, not really added
+            self._invalid_children.add(name)
         else:
-            self._children[name] = node
-        node._parent = weakref.ref(self)
+            if not index is None:
+                self._children.insert(index, name, node)
+            else:
+                self._children[name] = node
+            node._parent = weakref.ref(self)
+
+    def is_valid(self):
+        return True
 
     def removeChild(self, name):
         '''Remove child execution node.
 
         :param string name: name which identifies the node
         '''
+        if name in self._invalid_children:
+            self._invalid_children.remove(name)
+            return None
         if name not in self._children:
             raise KeyError(
                 HTMLMessage(_t_('<em>%s</em> not defined') % (name, )))
@@ -2304,17 +2327,28 @@ class ExecutionNode(object):
         sources = []
         if type(source) in (list, tuple):
             for i in source:
-                sources.append(self.parseParameterString(i))
+                s = self.parseParameterString(i)
+                if s is not None:
+                    sources.append(s)
         else:
-            sources.append(self.parseParameterString(source))
+            s = self.parseParameterString(source)
+            if s is not None:
+                sources.append(s)
 
         # Parse destination
         destinations = []
         if type(destination) in (list, tuple):
             for i in destination:
-                destinations.append(self.parseParameterString(i))
+                d = self.parseParameterString(i)
+                if d is not None:
+                    destinations.append(d)
         else:
-            destinations.append(self.parseParameterString(destination))
+            d = self.parseParameterString(destination)
+            if d is not None:
+                destinations.append(d)
+
+        if len(sources) == 0 or len(destinations) == 0:
+            return  # nothing to do
 
         # Check if a default function can be provided
         if function is None:
@@ -2350,17 +2384,28 @@ class ExecutionNode(object):
         sources = []
         if type(source) in (list, tuple):
             for i in source:
-                sources.append(self.parseParameterString(i))
+                s = self.parseParameterString(i)
+                if s is not None:
+                    sources.append(s)
         else:
-            sources.append(self.parseParameterString(source))
+            s = self.parseParameterString(source)
+            if s is not None:
+                sources.append(s)
 
         # Parse destination
         destinations = []
         if type(destination) in (list, tuple):
             for i in destination:
-                destinations.append(self.parseParameterString(i))
+                d = self.parseParameterString(i)
+                if d is not None:
+                    destinations.append(d)
         else:
-            destinations.append(self.parseParameterString(destination))
+            d = self.parseParameterString(destination)
+            if d is not None:
+                destinations.append(d)
+
+        if len(sources) == 0 or len(destinations) == 0:
+            return
 
         for destObject, destParameter in destinations:
             removed = False
@@ -2395,15 +2440,22 @@ class ExecutionNode(object):
 
     def parseParameterString(self, parameterString):
         """
-        Returns a tuple containing the :py:class:`Parameterized` object of the child node indicated in the parameter string and the name of the parameter.
+        Returns a tuple containing the :class:`Parameterized` object of the child node indicated in the parameter string and the name of the parameter. May return None if the node is invalid.
 
-        :param string parameterString: references a parameter of a child node with a path like <node name 1>.<node name 2>...<parameter name>
+        Parameters
+        ----------
+        parameterString: str
+            references a parameter of a child node with a path like <node name 1>.<node name 2>...<parameter name>
         """
         if parameterString is None:
             return (None, None)
         l = parameterString.split('.')
         node = self
         for nodeName in l[: -1]:
+            if not node.is_valid():  # invalid process node
+                return None
+            if nodeName in node._invalid_children:
+                return None
             node = node.child(nodeName)
         parameterized = node._parameterized
         if parameterized is not None:
@@ -2448,23 +2500,61 @@ class ProcessExecutionNode(ExecutionNode):
     '''
 
     def __init__(self, process, optional=False, selected=True,
-                 guiOnly=False, expandedInGui=False, altname=None):
-        process = getProcessInstance(process)
-        # print('ProcessExecutionNode.__init__:', self, process.name)
-        ExecutionNode.__init__(self, process.name,
+                 guiOnly=False, expandedInGui=False, altname=None,
+                 skip_invalid=False):
+        '''
+        Parameters
+        ----------
+        process: process id or instance or class
+        optional: bool
+            may be unchecked in the pipeline (not run)
+        selected: bool
+            checked in the pipeline, will be the selected one in a selection
+            node
+        guiOnly: bool
+            will be skipped in a non-interactive environment
+        expandedInGui: bool
+            in the tree widget
+        altname: str
+            alternative name displayed in the GUI
+        skip_invalid: bool
+            marks the node as "optional": if the process cannot be
+            instantiated, the pipeline construction will not fail, but the
+            node will not be added. Links involving this node will be also
+            skipped silently. This is useful to buils pipelines with several
+            alternative nodes which may be unavailable in some contexts (due
+            to missing dependencies or external software, typically)
+        '''
+        self.__dict__['failing_node'] = False
+        self.__dict__['skip_invalid'] = skip_invalid
+        if skip_invalid:
+            try:
+                process = getProcessInstance(process)
+            except:
+                process = None
+                self.__dict__['failing_node'] = True
+        else:
+            process = getProcessInstance(process)
+        pname = ''
+        if process is not None:
+            pname = process.name
+        # print('ProcessExecutionNode.__init__:', self, pname)
+        ExecutionNode.__init__(self, pname,
                                optional=optional,
                                selected=selected,
                                guiOnly=guiOnly,
                                parameterized=process,
                                expandedInGui=expandedInGui)
         self.__dict__['_process'] = process
-        process._parent = weakref.ref(self)
+        if process is not None:
+            process._parent = weakref.ref(self)
         if altname is not None:
             self.__dict__['_name'] = altname
-        reloadNotifier = getattr(process, 'processReloadNotifier', None)
-        if reloadNotifier is not None:
-            reloadNotifier.add(ExecutionNode.MethodCallbackProxy(
-                               self.processReloaded))
+        if process is not None:
+            reloadNotifier = getattr(process, 'processReloadNotifier', None)
+            if reloadNotifier is not None:
+                reloadNotifier.add(ExecutionNode.MethodCallbackProxy(
+                                  self.processReloaded))
 
     def __del__(self):
         # print('del ProcessExecutionNode', self)
@@ -2473,28 +2563,30 @@ class ProcessExecutionNode(ExecutionNode):
             return
         if hasattr(self, '_process'):
             # print('     del proc:', self._process.name)
-            reloadNotifier = getattr(
-                self._process, 'processReloadNotifier', None)
-            if reloadNotifier is not None:
-                try:
-                    l = len(reloadNotifier._listeners)
-                    z = ExecutionNode.MethodCallbackProxy(
-                        self.processReloaded)
-                    # bidouille: hack z so as to contain a weakref to None
-                    # since we are in __del__ and existing weakrefs to self have already
-                    # been neutralized
+            process = self._process
+            if process is not None:
+                reloadNotifier = getattr(
+                    self._process, 'processReloadNotifier', None)
+                if reloadNotifier is not None:
+                    try:
+                        l = len(reloadNotifier._listeners)
+                        z = ExecutionNode.MethodCallbackProxy(
+                            self.processReloaded)
+                        # bidouille: hack z so as to contain a weakref to None
+                        # since we are in __del__ and existing weakrefs to self
+                        # have already been neutralized
 
-                    class A(object):
+                        class A(object):
+                            pass
+                        w = weakref.ref(A())  # w points to None immediately
+                        z.object = w
+                        x = reloadNotifier.remove(z)
+                    except AttributeError:
+                        # this try..except is here to prevent an error when quitting
+                        # BrainVisa:
+                        # ProcessExecutionNode class is set to None during module
+                        # destruction
                         pass
-                    w = weakref.ref(A())  # w points to None immediately
-                    z.object = w
-                    x = reloadNotifier.remove(z)
-                except AttributeError:
-                    # this try..except is here to prevent an error when quitting
-                    # BrainVisa:
-                    # ProcessExecutionNode class is set to None during module
-                    # destruction
-                    pass
         else:
             # print('del ProcessExecutionNode', self)
             print('no _process in ProcessExecutionNode !')
@@ -2503,6 +2595,9 @@ class ProcessExecutionNode(ExecutionNode):
         except:
             # same as above
             pass
+
+    def is_valid(self):
+        return not getattr(self, 'failing_node', False)
 
     def addChild(self, name, node, index=None):
         raise RuntimeError(
@@ -2669,30 +2764,31 @@ class SerialExecutionNode(ExecutionNode):
                 node = self.possibleChildrenProcesses
             self._internalIndex += 1
 
-        if self.notify:
+        if self.notify and node.is_valid():
             self.beforeChildAdded.notify(
                 weakref.proxy(self), name, weakref.proxy(node))
 
         super(SerialExecutionNode, self).addChild(name, node, index)
 
-        if self.notify:
+        if self.notify and node.is_valid():
             self.afterChildAdded.notify(
                 weakref.proxy(self), name, weakref.proxy(node))
 
     def removeChild(self, name):
+        valid = name not in self._invalid_children
         if self.possibleChildrenProcesses:
-            if name not in self._children:
+            if name not in self._children and valid:
                 raise KeyError(
                     HTMLMessage(_t_('<em>%s</em> not defined') % (name, )))
 
-        if self.notify:
+        if self.notify and valid:
             node = self._children[name]
             self.beforeChildRemoved.notify(
                 weakref.proxy(self), name, weakref.proxy(node))
 
         super(SerialExecutionNode, self).removeChild(name)
 
-        if self.notify:
+        if self.notify and valid:
             self.afterChildRemoved.notify(
                 weakref.proxy(self), name, weakref.proxy(node))
 
@@ -2750,9 +2846,10 @@ class SelectionExecutionNode(ExecutionNode):
     def addChild(self, name, node, index=None):
         'Add a new child execution node'
         ExecutionNode.addChild(self, name, node, index)
-        node._selectionChange.add(ExecutionNode.MethodCallbackProxy(
-                                  self.childSelectionChange))
-        node._dependencies += self._dependencies
+        if node.is_valid():
+            node._selectionChange.add(ExecutionNode.MethodCallbackProxy(
+                                      self.childSelectionChange))
+            node._dependencies += self._dependencies
 
     def childSelectionChange(self, node):
         '''This callback is called when the selection state of a child has changed.
