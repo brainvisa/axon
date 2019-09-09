@@ -591,6 +591,7 @@ def mapValuesToChildrenParameters(
     sourceNode += [sourceNode[-1]] * (nparam - len(sourceNode))
     source += [source[-1]] * (nparam - len(source))
     sources = [n.parseParameterString(s) for n, s in zip(sourceNode, source)]
+    sources = [s for s in sources if s is not None]
 
     # print('destination attributes', dest,
           #'source nodes', len(sourceNode),
@@ -657,8 +658,10 @@ def mapValuesToChildrenParameters(
             if len(l) > 0:
                 k = destNode.childrenNames()[i]
                 destChild = destNode._children[k]
-                destObject, destParameter = destChild.parseParameterString(
-                    d)
+                dst = destChild.parseParameterString(d)
+                if d is None:  # invalid destination node
+                    continue
+                destObject, destParameter = dst
                 destObject.setValue(destParameter, v)
 
         # update csize
@@ -704,7 +707,10 @@ def mapValuesToChildrenParameters(
                         src_par = part_func.kwargs.get('source')
                     if not src_par:
                         continue
-                    src_obj, src_par = src_node.parseParameterString(src_par)
+                    src = src_node.parseParameterString(src_par)
+                    if src is None:
+                        continue
+                    src_obj, src_par = src
                     value = getattr(src_obj, src_par, [])
                     nval = len(value)
                     if nval == 0:
@@ -729,15 +735,21 @@ def mapValuesToChildrenParameters(
 
 
 def mapChildrenParametersToValues(destNode, sourceNode, dest, source, value=None):
+    d = destNode.parseParameterString(dest)
+    if d is None:  # invalid dest node
+        return
+    destObject, destParameter = d
+
     r = []
     for k in sourceNode.childrenNames():
         sourceChild = sourceNode._children[k]
-        sourceObject, sourceParameter = sourceChild.parseParameterString(
-            source)
+        src = sourceChild.parseParameterString(source)
+        if src is None:
+            continue
+        sourceObject, sourceParameter = src
         s = getattr(sourceObject, sourceParameter, None)
         r.append(s)
 
-    destObject, destParameter = destNode.parseParameterString(dest)
     # setattr(destObject, destParameter, r)
     destObject.setValue(destParameter, r)
 
@@ -2315,17 +2327,28 @@ class ExecutionNode(object):
         sources = []
         if type(source) in (list, tuple):
             for i in source:
-                sources.append(self.parseParameterString(i))
+                s = self.parseParameterString(i)
+                if s is not None:
+                    sources.append(s)
         else:
-            sources.append(self.parseParameterString(source))
+            s = self.parseParameterString(source)
+            if s is not None:
+                sources.append(s)
 
         # Parse destination
         destinations = []
         if type(destination) in (list, tuple):
             for i in destination:
-                destinations.append(self.parseParameterString(i))
+                d = self.parseParameterString(i)
+                if d is not None:
+                    destinations.append(d)
         else:
-            destinations.append(self.parseParameterString(destination))
+            d = self.parseParameterString(destination)
+            if d is not None:
+                destinations.append(d)
+
+        if len(sources) == 0 or len(destinations) == 0:
+            return  # nothing to do
 
         # Check if a default function can be provided
         if function is None:
@@ -2361,17 +2384,28 @@ class ExecutionNode(object):
         sources = []
         if type(source) in (list, tuple):
             for i in source:
-                sources.append(self.parseParameterString(i))
+                s = self.parseParameterString(i)
+                if s is not None:
+                    sources.append(s)
         else:
-            sources.append(self.parseParameterString(source))
+            s = self.parseParameterString(source)
+            if s is not None:
+                sources.append(s)
 
         # Parse destination
         destinations = []
         if type(destination) in (list, tuple):
             for i in destination:
-                destinations.append(self.parseParameterString(i))
+                d = self.parseParameterString(i)
+                if d is not None:
+                    destinations.append(d)
         else:
-            destinations.append(self.parseParameterString(destination))
+            d = self.parseParameterString(destination)
+            if d is not None:
+                destinations.append(d)
+
+        if len(sources) == 0 or len(destinations) == 0:
+            return
 
         for destObject, destParameter in destinations:
             removed = False
@@ -2406,15 +2440,22 @@ class ExecutionNode(object):
 
     def parseParameterString(self, parameterString):
         """
-        Returns a tuple containing the :py:class:`Parameterized` object of the child node indicated in the parameter string and the name of the parameter.
+        Returns a tuple containing the :class:`Parameterized` object of the child node indicated in the parameter string and the name of the parameter. May return None if the node is invalid.
 
-        :param string parameterString: references a parameter of a child node with a path like <node name 1>.<node name 2>...<parameter name>
+        Parameters
+        ----------
+        parameterString: str
+            references a parameter of a child node with a path like <node name 1>.<node name 2>...<parameter name>
         """
         if parameterString is None:
             return (None, None)
         l = parameterString.split('.')
         node = self
         for nodeName in l[: -1]:
+            if not node.is_valid():  # invalid process node
+                return None
+            if nodeName in node._invalid_children:
+                return None
             node = node.child(nodeName)
         parameterized = node._parameterized
         if parameterized is not None:
@@ -2485,6 +2526,7 @@ class ProcessExecutionNode(ExecutionNode):
             to missing dependencies or external software, typically)
         '''
         self.__dict__['failing_node'] = False
+        self.__dict__['skip_failed'] = skip_failed
         if skip_failed:
             try:
                 process = getProcessInstance(process)
@@ -2553,6 +2595,9 @@ class ProcessExecutionNode(ExecutionNode):
         except:
             # same as above
             pass
+
+    def is_valid(self):
+        return not getattr(self, 'failing_node', False)
 
     def addChild(self, name, node, index=None):
         raise RuntimeError(
