@@ -895,13 +895,23 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
                                                 lowercase_modules)
             procmap[use_weak_ref(proc)] = (nodename, exported)
             if exported:
+                skip_invalid = getattr(enode, 'skip_invalid', False)
+                if skip_invalid:
+                    opt = ', skip_invalid=True'
+                else:
+                    opt = ''
                 buffered_lines['nodes'].append(
-                    '        self.add_process(\'%s\', \'%s\')\n'
-                    % (nodename, moduleprocid))
+                    '        self.add_process(\'%s\', \'%s\'%s)\n'
+                    % (nodename, moduleprocid, opt))
                 if weak_outputs:
+                    ind = ''
+                    if skip_invalid:
+                        buffered_lines['nodes'].append(
+                            '        if \'%s\' in self.nodes:\n' % nodename)
+                        ind = '    '
                     buffered_lines['nodes'].append(
-                        '        self.nodes[\'%s\']._weak_outputs = True\n'
-                        % nodename)
+                        '        %sself.nodes[\'%s\']._weak_outputs = True\n'
+                        % (ind, nodename))
                 links += parse_links(p, proc, weak_outputs)
                 for param_name in six.iterkeys(proc.signature):
                     if not proc.isDefault(param_name):
