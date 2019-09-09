@@ -684,6 +684,8 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
         enode_name = 'select_' + enode.name()
     nodename = make_node_name(enode_name, nodenames, parent_names)
     input_names = [input_name for input_name in enode.childrenNames()]
+    have_optional = any([getattr(enode.child(x), 'skip_invalid', False)
+                         for x in input_names])
     output_names = ['switch_out']
     if hasattr(enode, 'switch_output'):
         output_names = enode.switch_output
@@ -691,11 +693,11 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
                 or isinstance(output_names, unicode):
             output_names = [output_names]  # have a list
     elif exported:
-        buffered_lines['nodes'].append(
+        buffered_lines['switches'].append(
             '        # warning, the switch output trait should be '
             'renamed to a more comprehensive name\n')
     if exported and not hasattr(enode, 'selection_outputs'):
-        buffered_lines['nodes'].append(
+        buffered_lines['switches'].append(
             '        # warning, input items should be connected to '
             'adequate output items in each subprocess in the switch.\n')
     if exported:
@@ -770,9 +772,16 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
                 else:
                     out_types[output_name] = (traits.Any, [])
                     out_types_list.append('Any()')
-            buffered_lines['nodes'].append(
+            if have_optional:
+                buffered_lines['switches'].append(
+                    '        input_names = [n for n in %s if n in self.nodes]\n' % repr(input_names))
+                input_names = 'input_names'
+            else:
+                input_names = repr(input_names)
+            print('*** add switch:', nodename)
+            buffered_lines['switches'].append(
                 '        self.add_switch(\'%s\', %s, %s, output_types=[%s])\n'
-                % (nodename, repr(input_names), repr(output_names),
+                % (nodename, input_names, repr(output_names),
                    ', '.join(out_types_list)))
 
     # select the right child
@@ -780,7 +789,9 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
         node = enode.child(sub_node_name)
         if node.isSelected():
             buffered_lines['initialization'].append(
-                '        self.nodes[\'%s\'].switch = \'%s\'\n'
+                '        if \'%s\' in self.nodes:\n' % sub_node_name)
+            buffered_lines['initialization'].append(
+                '            self.nodes[\'%s\'].switch = \'%s\'\n'
                 % (nodename, sub_node_name))
     return nodename
 
@@ -835,7 +846,7 @@ def reorder_exports(buffered_lines, p):
 
 def write_buffered_lines(out, buffered_lines, sections=None):
     if sections is None:
-        sections = ('nodes', 'exports', 'links', 'initialization')
+        sections = ('nodes', 'switches', 'exports', 'links', 'initialization')
     for section in sections:
         if buffered_lines.get(section):
             out.write('        # %s section\n' % section)
@@ -855,7 +866,7 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
     '''
 
     # writing will be buffered so as to allow reordering
-    buffered_lines = {'nodes': [], 'exports': [], 'links': [],
+    buffered_lines = {'nodes': [], 'switches': [], 'exports': [], 'links': [],
                       'initialization': []}
     out.write('\n\n')
     out.write('    def pipeline_definition(self):\n')
@@ -971,7 +982,7 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
     reorder_exports(buffered_lines, p)
     # flush the write buffer
     write_buffered_lines(out, buffered_lines,
-                         sections=('nodes', 'exports', 'links'))
+                         sections=('nodes', 'switches', 'exports', 'links'))
 
     # remove this when there is a more convenient method in Pipeline
     # out.write(
@@ -1282,7 +1293,6 @@ def axon_to_capsul_main(argv):
                      for p in added_processes])
 
     todo = set(todo)  # remove duplicates
-    print('todo:', todo)
 
     for proc, outfile in todo:
         if isinstance(proc, CapsulProcess):
