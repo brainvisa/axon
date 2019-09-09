@@ -2501,7 +2501,7 @@ class ProcessExecutionNode(ExecutionNode):
 
     def __init__(self, process, optional=False, selected=True,
                  guiOnly=False, expandedInGui=False, altname=None,
-                 skip_failed=False):
+                 skip_invalid=False):
         '''
         Parameters
         ----------
@@ -2517,7 +2517,7 @@ class ProcessExecutionNode(ExecutionNode):
             in the tree widget
         altname: str
             alternative name displayed in the GUI
-        skip_failed: bool
+        skip_invalid: bool
             marks the node as "optional": if the process cannot be
             instantiated, the pipeline construction will not fail, but the
             node will not be added. Links involving this node will be also
@@ -2526,8 +2526,8 @@ class ProcessExecutionNode(ExecutionNode):
             to missing dependencies or external software, typically)
         '''
         self.__dict__['failing_node'] = False
-        self.__dict__['skip_failed'] = skip_failed
-        if skip_failed:
+        self.__dict__['skip_invalid'] = skip_invalid
+        if skip_invalid:
             try:
                 process = getProcessInstance(process)
             except:
