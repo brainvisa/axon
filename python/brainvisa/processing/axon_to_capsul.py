@@ -711,6 +711,7 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
     if hasattr(enode, 'selection_outputs'):
         # connect children outputs to the switch
         sel_out = enode.selection_outputs
+        sw_options = ''
         for link_src, link_pars in zip(input_names, sel_out):
             if not isinstance(link_pars, list) \
                     and not isinstance(link_pars, tuple):
@@ -773,16 +774,12 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
                     out_types[output_name] = (traits.Any, [])
                     out_types_list.append('Any()')
             if have_optional:
-                buffered_lines['switches'].append(
-                    '        input_names = [n for n in %s if n in self.nodes]\n' % repr(input_names))
-                input_names = 'input_names'
-            else:
-                input_names = repr(input_names)
-            print('*** add switch:', nodename)
+                sw_options += ', opt_nodes=True'
+            input_names = repr(input_names)
             buffered_lines['switches'].append(
-                '        self.add_switch(\'%s\', %s, %s, output_types=[%s])\n'
+                '        self.add_switch(\'%s\', %s, %s, output_types=[%s]%s)\n'
                 % (nodename, input_names, repr(output_names),
-                   ', '.join(out_types_list)))
+                   ', '.join(out_types_list), sw_options))
 
     # select the right child
     for sub_node_name in enode.childrenNames():
