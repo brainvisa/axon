@@ -167,12 +167,15 @@ def startShell():
     from soma.qt_gui.qt_backend.QtGui import qApp
     qt_impl = qt_backend.get_qt_backend()
     if qt_impl == 'PyQt4':
-        os.environ[
-            "QT_API"] = "pyqt"  # prevent ipython from trying to use PySide
+        # prevent ipython from trying to use PySide
+        qt_api = "pyqt"
     elif qt_impl == 'PyQt5':
-        os.environ["QT_API"] = "pyqt5"
+        qt_api = "pyqt5"
     elif qt_impl == 'PySide':
-        os.environ["QT_API"] = "pyside"
+        qt_api = "pyside"
+    else:
+        qt_api = "pyqt5"
+    os.environ["QT_API"] = qt_api
     try:
         import IPython
         ipversion = [int(x) for x in IPython.__version__.split('.')]
@@ -184,12 +187,9 @@ def startShell():
                 ipmodule = 'IPython.terminal.ipapp'
             else:
                 ipmodule = 'IPython.frontend.terminal.ipapp'
-            qt_api = qt_backend.get_qt_backend()
-            qt_apis = {'PyQt4': 'pyqt', 'PyQt5': 'pyqt5', 'PySide': 'pyside'}
-            qt_api_code = qt_apis.get(qt_api, 'pyqt')
             sp = soma.subprocess.Popen([sys.executable, '-c',
                                    'import os; os.environ["QT_API"] = "%s"; from %s import launch_new_instance; launch_new_instance()'
-                                   % (qt_api_code, ipmodule),
+                                   % (qt_api, ipmodule),
                                    'qtconsole', '--existing',
                                    '--shell=%d' % ipConsole.shell_port,
                                    '--iopub=%d' % ipConsole.iopub_port,
