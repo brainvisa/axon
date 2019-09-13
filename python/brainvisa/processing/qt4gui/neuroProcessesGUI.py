@@ -180,7 +180,7 @@ def startShell():
         import IPython
         ipversion = [int(x) for x in IPython.__version__.split('.')]
         if ipversion >= [0, 11]:
-        # ipython >= 0.11, use client/server mode
+            # ipython >= 0.11, use client/server mode
             ipConsole = brainvisa.processes.runIPConsoleKernel()
             import soma.subprocess
             if ipversion >= [1, 0]:
