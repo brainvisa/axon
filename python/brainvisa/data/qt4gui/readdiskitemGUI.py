@@ -1285,6 +1285,10 @@ class DiskItemListEditor(QWidget, DataEditor):
                 t = self.browseDialog.findChild(QTreeView)
                 if t:
                     t.setSelectionMode(QAbstractItemView.ExtendedSelection)
+                e = self.browseDialog.findChild(QLineEdit)
+                if e:
+                    # Increases QLineEdit maximum length wich default was to 32767
+                    e.setMaxLength(2**20)
 
             self.browseDialog.show()
 
