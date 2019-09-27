@@ -296,21 +296,27 @@ def readProcdoc(processId):
     Returns the content of the documentation file (.procdoc) of the process in parameter.
     """
     processInfo = getProcessInfo(processId)
+    procdoc = {}
     if processInfo is not None:
         procdoc = processInfo.procdoc
         if procdoc is None:
+            procdoc = {}
             fileName = getProcdocFileName(processInfo)
-            if fileName and os.path.exists(fileName):
-                try:
-                    procdoc = readMinf(fileName)[0]
-                except:
-                    print('!Error in!', fileName)
-                    raise
-            else:
-                procdoc = {}
+            if fileName:
+                if os.path.exists(fileName):
+                    try:
+                        procdoc = readMinf(fileName)[0]
+                    except:
+                        print('!Error in!', fileName)
+                        raise
+                else:
+                    # if the process is Capsul-derived, try to use the Capsul
+                    # process doc
+                    proc = getProcessInstance(processId)
+                    from brainvisa.processing import capsul_process
+                    if isinstance(proc, capsul_process.CapsulProcess):
+                        procdoc = proc.procdoc_from_capsul()
             processInfo.procdoc = procdoc
-    else:
-        procdoc = {}
     return procdoc
 
 
@@ -329,6 +335,11 @@ def writeProcdoc(processId, documentation):
         if os.path.islink(procFileName) and procFileName != procSourceFileName:
             sourceFileName = os.path.join(os.path.dirname(procSourceFileName),
                                           os.path.basename(fileName))
+            if os.path.islink(fileName):
+                os.unlink(fileName)
+            elif os.path.exists(fileName):
+                raise OSError('procdoc file %s should be a symlink, but '
+                              'is not' % fileName)
             os.symlink(sourceFileName, fileName)
             fileName = sourceFileName
     writeMinf(fileName, (documentation, ))
