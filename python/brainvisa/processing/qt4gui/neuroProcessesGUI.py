@@ -2793,15 +2793,18 @@ class ProcessView(QWidget, ExecutionContextGUI):
             return showProcess(clone)
 
     def menuShowDocumentation(self):
-        global _mainWindow
-        item = self.executionTree.currentItem()
-        if item:
-            enode = item._executionNode
-            if hasattr(enode, '_process'):
-                proc = enode._process
-                doc = brainvisa.processes.getHTMLFileName(proc)
-                if os.path.exists(doc):
-                    _mainWindow.info.setSource(doc)
+        try:
+            global _mainWindow
+            item = self.executionTree.currentItem()
+            if item:
+                enode = item._executionNode
+                if hasattr(enode, '_process'):
+                    proc = enode._process
+                    doc = brainvisa.processes.getHTMLFileName(proc)
+                    if doc is not None and os.path.exists(doc):
+                        _mainWindow.info.setSource(doc)
+        except:
+            showException()
 
     def menuLockStep(self):
         global _mainWindow
@@ -3854,8 +3857,11 @@ class ProcessEdit(QDialog):
         self.mleLong = QPlainTextEdit()
         vb.addWidget(self.mleLong)
 
-        self.readDocumentation()
-        self.setLanguage(unicode(self.cmbLanguage.currentText()))
+        try:
+            self.readDocumentation()
+            self.setLanguage(unicode(self.cmbLanguage.currentText()))
+        except:
+            showException()
 
         w = QWidget()
         hb = QHBoxLayout()
@@ -3938,10 +3944,14 @@ class ProcessEdit(QDialog):
         self.setLanguage(unicode(self.cmbLanguage.currentText()))
 
     def applyChanges(self):
-        self.saveLanguage()
-        self.writeDocumentation()
-        brainvisa.processes.generateHTMLProcessesDocumentation(self.process)
-        mainWindow().info.reload()
+        try:
+            self.saveLanguage()
+            self.writeDocumentation()
+            brainvisa.processes.generateHTMLProcessesDocumentation(
+                self.process)
+            mainWindow().info.reload()
+        except:
+            neuroException.showException()
 
     def accept(self):
         self.applyChanges()

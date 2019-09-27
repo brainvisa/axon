@@ -139,6 +139,11 @@ import distutils.spawn
 import copy
 import sys
 import six
+import subprocess
+if sys.version_info[0] >= 3:
+    from io import StringIO
+else:
+    from cStringIO import StringIO
 
 
 def fileOptions(filep, name, process, attributes=None, path_completion=None):
@@ -1008,8 +1013,6 @@ class CapsulProcess(processes.Process):
 
     def _get_capsul_attributes(self, param, value, completion_engine, itype,
                                item=None):
-        if not isinstance(value, DiskItem):
-            return {}, False
         '''
         Get Axon attributes (from axon FSO/database hierarchy) of a diskitem
         and convert it into Capsul attributes system.
@@ -1021,6 +1024,9 @@ class CapsulProcess(processes.Process):
             capsul_attr: dict
             modified: bool
         '''
+
+        if not isinstance(value, DiskItem):
+            return {}, False
 
         attributes = value.hierarchyAttributes()
         attributes = AxonToCapsulAttributesTranslation(
@@ -1037,7 +1043,10 @@ class CapsulProcess(processes.Process):
             for k, v in six.iteritems(capsul_attr):
                 if isinstance(v, list):
                     i = min(item, len(v) - 1)
-                    capsul_attr[k] = v[i]
+                    if i >= 0:
+                        capsul_attr[k] = v[i]
+                    else:  # empty list
+                        capsul_attr[k] = traits.Undefined
 
         modified = False
         if param_attr:
@@ -1075,9 +1084,9 @@ class CapsulProcess(processes.Process):
 
         if getattr(self, '_capsul_process', None) is None:
             return
-
         if getattr(self, '_ongoing_completion', False):
             return
+
         self._ongoing_completion = True
         #print('_on_axon_parameter_changed', param, process)
         try:
@@ -1135,14 +1144,50 @@ class CapsulProcess(processes.Process):
 
         finally:
             self._ongoing_completion = False
-    
-    
+
+
+    @staticmethod
+    def sphinx_to_xhtml(doc):
+        pandoc = distutils.spawn.find_executable('pandoc')
+        if pandoc:
+            cmd = ['pandoc', '-r', 'rst', '-t', 'html', '--']
+            proc = subprocess.Popen(cmd, stdin=subprocess.PIPE,
+                                    stdout=subprocess.PIPE)
+            out = proc.communicate(input=doc)
+            return out[0]
+        else:
+            from soma.html import htmlEscape
+            return htmlEscape(doc).replace('\n', '<br/>\n')
+
+
+    def procdoc_from_capsul(self):
+        from soma.minf import xhtml
+        process = self.get_capsul_process()
+        doc = process.__doc__
+        # remove note added by capsul
+        i = doc.rfind('\n    .. note::')
+        if i >= 0:
+            doc = doc[:i]
+
+        param = {}
+        procdoc = {'en':{
+            'long': xhtml.XHTML.buildFromHTML(self.sphinx_to_xhtml(doc)),
+            'short': '',
+            'parameters': param,
+        }}
+        for name, trait in six.iteritems(process.user_traits()):
+            if trait.desc:
+                param[name] = xhtml.XHTML.buildFromHTML(
+                    self.sphinx_to_xhtml(trait.desc))
+        return procdoc
+
+
 class AxonToCapsulAttributesTranslation(object):
     def __init__(self, completion_engine):
             # hard-coded for now...
             self._translations = {
                 'side': AxonToCapsulAttributesTranslation._translate_side}
-        
+
     def translate(self, attributes):
         translated = {}
         for attr, value in attributes.items():

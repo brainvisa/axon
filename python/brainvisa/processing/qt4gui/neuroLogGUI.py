@@ -170,11 +170,17 @@ class LogItemsViewer(QWidget):
                 if self.searchText and ok:
                     self.searchResults = self.findItem(self.searchText)
                     if (self.searchResults):
-                        item = next(self.searchResults)
+                        try:
+                            item = next(self.searchResults)
+                        except StopIteration:
+                            item = None
             elif (keyEvent.matches(QKeySequence.FindNext)):
                 if (self.searchResults is not None):
                     if (self.searchResults):
-                        item = next(self.searchResults)
+                        try:
+                            item = next(self.searchResults)
+                        except StopIteration:
+                            item = None
                         if item is None:
                             self.searchResults.close()
                             self.searchResults = None
