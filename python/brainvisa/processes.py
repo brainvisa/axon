@@ -219,7 +219,7 @@ from brainvisa.debug import debugHere
 from brainvisa.data.sqlFSODatabase import Database, NotInDatabaseError
 import brainvisa.toolboxes
 from brainvisa.data import fileSystemOntology
-from brainvisa.processing.qtgui.backwardCompatibleQt import QProcess
+from soma.qt_gui.qt_backend.QtCore import QProcess
 from brainvisa.processing.qtgui.command import CommandWithQProcess as Command
 from soma import safemkdir
 from soma.qtgui.api import QtThreadCall, FakeQtThreadCall
