@@ -112,6 +112,29 @@ Iterations
 
 Capsul has its own iteration system, using iteration nodes in pipelines. Thus Capsul processes are iterated in the Capsul way. For the user it looks differently: parameters are replaced by lists, istead of duplicating the process to be iterated. The GUI is thus more concise and more efficient, and parameters completion is done in Capsul, which is also much more efficient than the Axon way (Capsul completion time is linear with the number of parameters to be completed, where Axon also slows down with the size of the database).
 
+
+Completion time and bottlenecks
+-------------------------------
+
+Capsul completion system, although not providing immeditate answers, is much more efficient than Axon's. Typically to perform completion on **1000 iterations over a process of about 5-6 parameters**,
+
+* Pure Capsul: about 2-3 seconds.
+* Axon: about  1 minute
+* Capsul process in Axon: about the same (1 minute) as Axon, because the long part here is the validation of file parameters (checking that files exist, are valid etc), which is always done in Axon whatever the process type.
+
+For a complex pipeline, for instance the **Morphologist pipeline, 50 iterations** over it will take
+
+* Pure Capsul: about 6 seconds
+* Axon: about 3 minutes and 30 seconds
+* Capsul process in Axon: about 35 seconds. This is faster than the Axon one because all pipeline internals (nodes parameters) are not exported in Axon.
+* The specialized "Morphologist Capsul iteration", which hides the Capsul process inside and does not expose its parameters in Axon, will merely show any completion latency, because completion is delayed to runtime workflow preparation. It will run as fast as the Capsul version.
+
+
+Process documentation
+---------------------
+
+Capsul processes have their documentation conventions: docs are normally in the process docstrings, and are normally written in `Sphinx <http://www.sphinx-doc.org>`_ / `RestructuredText <http://docutils.sourceforge.net/rst.html>`_ markup language. A Capsul process in Axon will be able to automatically retreive its Capsul documentation, and convert it into HTML as expected in Axon. The conversion will use `pandoc <https://pandoc.org/>`_ if available to convert the RST markup of Capsul into HTML (which is still not complete `Sphinx <http://www.sphinx-doc.org>`_ but easier to use), and the result will be used to generate the process documentation when the ``generateDocumentation`` process is used. Process developpers should not edit the process documentation is Axon though, because then a ``.procdoc`` file would be written and would be used afterwards, therefore the docs will be duplicated and may get out of sync when updated.
+
 See also :doc:`capsul`
 
 '''
