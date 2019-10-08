@@ -35,17 +35,17 @@ from __future__ import print_function
 # import neuroConfig
 import sys
 import os
-from brainvisa.processing.qtgui.backwardCompatibleQt import QProcess, QTimer
+from soma.qt_gui.qt_backend.QtCore import QProcess, QTimer
 from brainvisa.configuration import neuroConfig
-from brainvisa.processing.qtgui import backwardCompatibleQt
-if hasattr(backwardCompatibleQt, 'PYQT_VERSION'):
-    from brainvisa.processing.qtgui.backwardCompatibleQt import PYQT_VERSION
+from soma.qt_gui import qt_backend
+if qt_backend.get_qt_backend() == 'PySide':
+    use_pyside = True
+else:
     use_pyside = False
+    from soma.qt_gui.qt_backend.QtCore import PYQT_VERSION
     if PYQT_VERSION < 0x040703:
         # a bug in PyQt QProcess.start() needs a compiled workaround
         from soma import somaqt
-else:
-    use_pyside = True
 if sys.version_info[0] >= 3:
     unicode = str
 

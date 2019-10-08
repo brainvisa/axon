@@ -78,43 +78,6 @@ class SignalNameComboBox(QComboBox):
 
 
 #----------------------------------------------------------------------------
-def diskItemFilter(database, diskItem, required, explainRejection=False):
-    if diskItem.type is not None:
-        types = database.getTypeChildren(
-            *database.getAttributeValues('_type', {}, required))
-        if types and diskItem.type.name not in types:
-            if explainRejection:
-                return 'DiskItem type ' + repr(diskItem.type.name) + ' is not in ' + repr(tuple(types))
-            return False
-    formats = database.getAttributeValues('_format', {}, required)
-    if formats and diskItem.format is not None:
-        if diskItem.format.name not in formats:
-            if explainRejection:
-                if diskItem.format is None:
-                    value = None
-                else:
-                    value = diskItem.format.name
-                return 'DiskItem format ' + repr(value) + ' is not in ' + repr(tuple(formats))
-            return False
-    for key in required:
-        if key in ('_type', '_format', '_declared_attributes_location'):
-            continue
-        values = database.getAttributeValues(key, {}, required)
-        itemValue = diskItem.get(key, '')
-        if (key == 'name_serie'):
-            if itemValue != values:
-                if explainRejection:
-                    return 'DiskItem attribute ' + repr(key) + ' = ' + repr(itemValue) + ' != ' + repr(values)
-                return False
-        else:
-            if itemValue not in values:
-                if explainRejection:
-                    return 'DiskItem attribute ' + repr(key) + ' = ' + repr(itemValue) + ' is not in ' + repr(tuple(values))
-                return False
-    return True
-
-
-#----------------------------------------------------------------------------
 class DiskItemBrowser(QDialog):
 
     selected = Signal(DiskItem)
