@@ -116,6 +116,8 @@ Capsul has its own iteration system, using iteration nodes in pipelines. Thus Ca
 Completion time and bottlenecks
 -------------------------------
 
+The first time a Capsul process is opened, the :capsul:`FOM completion system <user_guide_tree/advanced_usage.html#file-organization-model-fom>` is initialized (technically the :capsul:`auto-fom mode <api/study_config.html#capsul.study_config.config_modules.fom_config.FomConfig>` is used and and all FOMs are read), which takes a few seconds (up to 10s). Later uses will not have this overhead.
+
 Capsul completion system, although not providing immeditate answers, is much more efficient than Axon's. Typically to perform completion on **1000 iterations over a process of about 5-6 parameters**,
 
 * Pure Capsul: about 2-3 seconds.
