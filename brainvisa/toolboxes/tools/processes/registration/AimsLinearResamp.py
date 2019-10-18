@@ -79,7 +79,7 @@ def execution(self, context):
             'One field is mandatory (dimX or dimY or dimZ or sizeX or sizeY or sizeZ or volume_ref)')
     else:
         if self.volume_ref is not None:
-            command += ['-t', self.volume_ref]
+            command += ['-r', self.volume_ref]
         if self.dimX is not None:
             command += ['--dx', self.dimX]
         if self.dimY is not None:
