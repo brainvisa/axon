@@ -818,6 +818,7 @@ class CapsulProcess(processes.Process):
 
         May use build_from_instanc() at lower-level. The main differences
         with build_from_instance() are:
+
         * build_from_instance creates a new process class unconditionally
           each time it is used
         * build_from_instance will not check if a process wraping class is
