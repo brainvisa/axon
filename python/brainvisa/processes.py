@@ -2244,6 +2244,20 @@ class ExecutionNode(object):
         """True if this node is selected."""
         return self._selected
 
+    @property
+    def parameterized(self):
+        """The Parameterized object associated with this node.
+
+        The ExecutionNode keeps only a weak reference in _parameterized. This
+        property returns a strong reference to the Parameterized object if it
+        is still alive, otherwise it returns None.
+        """
+        weak_ref = self._parameterized
+        if weak_ref is not None:
+            return weak_ref()
+        else:
+            return None
+
     def __setattr__(self, attribute, value):
         """ If the attribute is in the signature of the corresponding
         parameterized object, it is modified.
