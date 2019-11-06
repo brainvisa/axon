@@ -2343,7 +2343,7 @@ class ExecutionNode(object):
             return ExecutionNodeGUI(parent, self._parameterized())
         return None
 
-    def setHidden(self, hidden):
+    def setNodeHidden(self, hidden=True):
         """
         Set the status of this node for graphical user interface.
         """
