@@ -96,8 +96,6 @@ class TemporaryFileManager:
         self.__defaultPrefix = defaultPrefix
         self.__pathsToDelete = set()
         self.__lock = threading.RLock()
-        self.__identifier = str(os.getpid())
-        self.__count = 0
 
     def registerPath(self, path):
         self.__lock.acquire()
@@ -167,6 +165,8 @@ class TemporaryFileManager:
             manager = None
 
     def newFileName(self, suffix=None, prefix=None, directory=None):
+        from tempfile import mktemp as _mktemp
+
         if directory is None:
             directory = self.__directory
         if suffix is None:
@@ -175,11 +175,13 @@ class TemporaryFileManager:
             prefix = self.__defaultPrefix
         self.__lock.acquire()
         try:
-            result = os.path.join(directory,
-                                  prefix + self.__identifier + '_' + str(self.__count) + suffix)
-            self.__count += 1
+            result = _mktemp(suffix, prefix, directory)
+            
+            #print("Temporary file", result)
+                
         finally:
             self.__lock.release()
+            
         return result
 
     def createSelfDestroyed(self, path):
