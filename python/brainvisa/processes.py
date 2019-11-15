@@ -174,7 +174,6 @@ import soma.subprocess
 
 import traceback
 import threading
-import pickle
 import formatter
 import operator
 import inspect
@@ -191,6 +190,7 @@ import errno
 import time
 import calendar
 import six
+import tempfile
 from six.moves import StringIO
 from six.moves import cPickle
 
@@ -6197,8 +6197,8 @@ def readProcesses(processesPath):
     processesCache = {}
     if neuroConfig.fastStart and os.path.exists(processesCacheFile):
         try:
-            _processesInfo, converters = cPickle.load(
-                open(processesCacheFile, 'r'))
+            with open(processesCacheFile, 'rb') as f:
+                _processesInfo, converters = cPickle.load(f)
             # change _converters keys to use the same instances as the global
             # types / formats list
             for k in converters.keys():
@@ -6225,9 +6225,26 @@ def readProcesses(processesPath):
 
         # save processes cache
         try:
-            cPickle.dump(
-                (_processesInfo, _converters), open(processesCacheFile, 'wb'))
-        except:
+            # the file is first written completely to a temporary file name,
+            # then atomically moved to its final destination, to avoid race
+            # conditions where two processes write to the file concurrently or
+            # a process reads from an incomplete file.
+            with tempfile.NamedTemporaryFile(mode='wb',
+                                             prefix=os.path.basename(processesCacheFile),
+                                             dir=os.path.dirname(processesCacheFile),
+                                             delete=False) as f:
+                # Use version 2 of the pickle protocol (more optimized than
+                # version 0, but still compatible with Python 2)
+                cPickle.dump((_processesInfo, _converters), f, 2)
+            if hasattr(os, 'replace'):
+                os.replace(f.name, processesCacheFile)
+            else:
+                try:
+                    os.remove(processesCacheFile)
+                except OSError:
+                    pass
+                os.rename(f.name, processesCacheFile)
+        except Exception:
             if neuroConfig.mainLog is not None:
                 neuroConfig.mainLog.append('Cannot write processes cache',
                                            html=exceptionHTML(
