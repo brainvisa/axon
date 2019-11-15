@@ -106,25 +106,17 @@ def exceptionMessageHTML(exceptionInfo, beforeError='', afterError=''):
 
     e, v, t = exceptionInfo
     # tb = traceback.extract_tb( t )
-    txt = "<b>" + htmlEscape(unicode(v)) + "</b>"
-    if v is not None:  # could occur when raising string exception (deprecated)
-        if isinstance(v, Exception):
-            if v.args:
-                message = v.args[0]
-                if isinstance(message, HTMLMessage):  # if the exception message is in html, don't escape
-                    txt = message.html
-                elif message and len(v.args) == 1:  # should be a user message in unicode
-                    txt = "<b>" + htmlEscape(unicode(message)) + "</b>"
-                else:  # if there is no message, we must use str(v) to get the message. It should be a system exception and the message is encoded with console encoding. So we decode it with console encoding to get unicode string.
-                    if hasattr(sys.stdout, 'encoding'):
-                        enco = sys.stdout.encoding
-                    else:  # IPython fake streams do not have the encoding variable
-                        enco = None
-                    if not enco:
-                        enco = sys.getdefaultencoding()
-                        if not enco:
-                            enco = 'utf8'
-                    txt = "<b>" + htmlEscape(unicode(v)) + "</b>"
+    try:
+        message = six.text_type(v)
+    except Exception as e:
+        # Some exceptions from cPickle can contain incorrectly incoded
+        # characters... see https://github.com/brainvisa/axon/issues/18
+        message = six.ensure_text(str(v), errors='replace')
+    txt = "<b>" + htmlEscape(message) + "</b>"
+    if isinstance(v, BaseException) and len(v.args) == 1:
+        if isinstance(v.args[0], HTMLMessage):
+            # if the exception message is in html, don't escape
+            txt = v.args[0].html
     msg = '<table border=0><tr><td width=50><img alt="' + _t_('ERROR') + '" src="' \
         + os.path.join( neuroConfig.iconPath, 'error.png' ) + '"></td><td><font color=red> ' \
         + beforeError \
