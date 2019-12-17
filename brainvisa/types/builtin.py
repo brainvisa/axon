@@ -200,7 +200,10 @@ FileType('Directory', 'Any Type', 'Directory')
 # Remove DICOM format from default '4D Volume' formats because
 # there is no specific file name extension for this format.
 volumeFormats = list(aimsGlobals.anatomistVolumeFormats)
-del volumeFormats[volumeFormats.index(getFormat('DICOM image'))]
+try:
+    del volumeFormats[volumeFormats.index(getFormat('DICOM image'))]
+except:
+    pass  # dicom not supported anyway
 createFormatList('BrainVISA volume formats', volumeFormats)
 createFormatList('BrainVISA image formats', 'Aims image formats')
 createFormatList('BrainVISA mesh formats', 'Anatomist mesh formats')

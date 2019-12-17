@@ -122,6 +122,9 @@ class MultipleExecfile(object):
 
         :returns: The list of exception that occured during files execution.
         """
+        class IncludeError(RuntimeError):
+            pass
+
         exc = []
         for f in args:
             file = None
@@ -142,7 +145,7 @@ class MultipleExecfile(object):
                 if status is None:
     # dbg#        print('!MultipleExecfile! execute', file)
                     self._executedFiles[file] = False
-                    self._includeStack.append([file, 0])
+                    self._includeStack.append([file, self._last_line])
                     do_pop = True
                     self.localDict['__name__'] = file
                     fopts = {'encoding': 'utf-8'} if sys.version_info[0] >= 3 else {}
@@ -157,27 +160,40 @@ class MultipleExecfile(object):
                     self._executedFiles[file] = True
                 elif status == False:
                     self._executedFiles[file] = True
-                    raise RuntimeError(
+                    raise IncludeError(
                         _t_('Circular dependencies in included files. Inclusion order:')
                         + ', '.join(['%s:%d' % (x[0], x[1])
                                      for x in self._includeStack
                                         + [(file, 0)]]))
-    # dbg#      else:
-    # dbg#        print('!MultipleExecfile!', file, 'already executed')
+            except IncludeError as e:
+                six.reraise(*sys.exc_info())
             except Exception as e:
-                lineno = sys.exc_info()[2].tb_lineno
-                if sys.exc_info()[2].tb_next:
-                    lineno = sys.exc_info()[2].tb_next.tb_lineno
+                einfo = sys.exc_info()
+                tb = einfo[2]
+                lineno = tb.tb_lineno  # tb_frame.f_lineno
+                while tb.tb_next \
+                        and os.path.basename(tb.tb_frame.f_code.co_filename) \
+                            in ('multipleExecfile.py', 'multipleExecfile.pyc',
+                                'six.py', 'six.pyc'):
+                    # skip frames of thie file and six.exec_()
+                    tb = tb.tb_next
+                    lineno = tb.tb_lineno  # tb_frame.f_lineno
+                if sys.version_info[0] < 3 and tb.tb_next:
+                    # one frame up because there is one more in python2.
+                    tb = tb.tb_next
+                    lineno = tb.tb_lineno  # tb_frame.f_lineno
                 msg = unicode('while executing file ' + f
                               + ':%d' % lineno + ' ')
+                #import traceback
+                #msg += traceback.format_exc()
                 if file:
                     msg += u'(' + unicode(file) + u'): '
                     self._executedFiles[file] = True
 
                 if len(self._includeStack) > 1:
-                    msg += 'include stack: '
+                    msg += 'include stack:\n'
                     for x in self._includeStack:
-                        msg += '%s:%d. ' % (x[0], x[1])
+                        msg += '%s:%d.\n' % (x[0], x[1])
 
                 if do_pop:
                     self._includeStack.pop()
@@ -193,8 +209,8 @@ class MultipleExecfile(object):
                 import traceback
                 traceback.print_exc()
                 if not kwargs.get('continue_on_error', False):
-                    raise e
-                exc.append((type(e), e, sys.exc_info()[2]))
+                    six.reraise(*einfo)
+                exc.append(einfo)
         if exc:
             return exc
 
