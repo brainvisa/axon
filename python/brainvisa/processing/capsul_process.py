@@ -1174,13 +1174,20 @@ class CapsulProcess(processes.Process):
 
     @staticmethod
     def sphinx_to_xhtml(doc):
+        if sys.version_info[0] >= 3:
+            doc_utf8 = doc.encode('utf-8')
+        else:
+            doc_utf8 = doc
         pandoc = distutils.spawn.find_executable('pandoc')
         if pandoc:
             cmd = ['pandoc', '-r', 'rst', '-t', 'html', '--']
             proc = subprocess.Popen(cmd, stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE)
-            out = proc.communicate(input=doc)
-            return out[0]
+            out = proc.communicate(input=doc_utf8)
+            if sys.version_info[0] >= 3:
+                return out[0].decode('utf-8')
+            else:
+                return out[0]
         else:
             from soma.html import htmlEscape
             return htmlEscape(doc).replace('\n', '<br/>\n')
