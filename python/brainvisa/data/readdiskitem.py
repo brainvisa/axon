@@ -474,7 +474,7 @@ class ReadDiskItem(Parameter):
                         selection + query_string)
                     if result is not None:
                         result.type = self.type
-                except:
+                except Exception:
                     pass
         elif isinstance(selection, dict):
             if '_declared_attributes_location' in selection.keys():

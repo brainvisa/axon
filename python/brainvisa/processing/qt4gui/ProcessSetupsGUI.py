@@ -235,7 +235,7 @@ class LoadProcessSetupsGUI(QDialog):
             process_path = data[1]
             try:
                 showProcess(getProcessInstance(process_path))
-            except:
+            except Exception:
                 QMessageBox.warning(
                     self, '', "Brainvisa process read error occured")
 

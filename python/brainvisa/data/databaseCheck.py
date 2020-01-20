@@ -1386,7 +1386,7 @@ class BVConverter_3_1(DBConverter):
         try:
             try:
                 super(BVConverter_3_1, self).undo(component)
-            except:
+            except Exception:
                 raise
         finally:
             self.db = SQLDatabase(self.db.sqlDatabaseFile, self.db.directory)

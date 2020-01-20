@@ -801,7 +801,7 @@ class SQLDatabase(Database):
                     try:
                         p = readMinf(bvprocfile)[
                             0]  # ProcessExecutionEvent object
-                    except:
+                    except Exception:
                         context.warning(
                             'process history file %s cannot be read.' % bvprocfile)
                         continue
@@ -823,11 +823,11 @@ class SQLDatabase(Database):
                             item.readAndUpdateMinf()
                                                    # it may have been
                                                    # modified/rewritten.
-                        except:
+                        except Exception:
                             try:
                                 item = self.createDiskItemFromFileName(par)
                                 addit = True
-                            except:
+                            except Exception:
                                 context.write(
                                     'Warning: file', par, 'cannot be inserted in any database.')
                                 continue
@@ -848,11 +848,11 @@ class SQLDatabase(Database):
                     try:
                         item = self.getDiskItemFromFileName(
                             bvprocfile)  # already exists in DB: no need to add it
-                    except:
+                    except Exception:
                         try:
                             item = self.createDiskItemFromFileName(bvprocfile)
                             addit = True
-                        except:
+                        except Exception:
                             context.write(
                                 'Warning: file', bvprocfile, 'cannot be inserted in any database.')
                             continue
@@ -1135,7 +1135,7 @@ class SQLDatabase(Database):
                             ('?' for i in tableFields)) + ')'
                 self._tableFieldsAndInsertByTypeName[type] = (
                     tableName, tableFields, tableAttributes, sql)
-        except:
+        except:  # noqa: E722
             self._closeDatabaseCursor(cursor, rollback=True)
             raise
         else:
@@ -1361,7 +1361,7 @@ class SQLDatabase(Database):
             self._closeDatabaseCursor(cursor, rollback=True)
             raise DatabaseError("Cannot insert items in database " + self.name + ": " +
                                 unicode(e) + ". Item:" + diskItem.fullPath() + ". You should update this database.")
-        except:
+        except:  # noqa: E722
             self._closeDatabaseCursor(cursor, rollback=True)
             raise
         else:
@@ -1390,7 +1390,7 @@ class SQLDatabase(Database):
             self._closeDatabaseCursor(cursor, rollback=True)
             raise DatabaseError(
                 "Cannot remove items from database " + self.name + ". You should update this database.")
-        except:
+        except:  # noqa: E722
             self._closeDatabaseCursor(cursor, rollback=True)
             raise
         else:
@@ -1405,7 +1405,7 @@ class SQLDatabase(Database):
         if sys.version_info[0] >= 3:
             try:
                 state = cPickle.loads(minf)
-            except:
+            except Exception:
                 # pickes from python2 may look like this.
                 state = cPickle.loads(six.b(minf), encoding='latin1')
         else:

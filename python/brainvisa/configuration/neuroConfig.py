@@ -638,7 +638,7 @@ def convertCommandLineParameter(i):
     if len(i) > 0 and (i[0] in '[({' or i in ('None', 'True', 'False')):
         try:
             res = eval(i)
-        except:
+        except Exception:
             res = i
     else:
         res = i
@@ -874,7 +874,7 @@ class RunsInfo:
                     self.runs.pop(self.currentRun, None)
                     self.count = len(self.runs)
                     self.write()
-            except:
+            except Exception:
                 pass
 
     def check(self, context):
@@ -944,7 +944,7 @@ sharedDatabaseFound = False
 try:
     import brainvisa_share.config
     bvShareDirectory = brainvisa_share.config.share
-except:
+except Exception:
     bvShareDirectory = 'brainvisa-share-' + shortVersion
 for p in (os.path.join(getSharePath(), bvShareDirectory),
           os.path.join(getSharePath(), 'shfj-' + shortVersion),
@@ -1065,7 +1065,7 @@ def unregisterObject(object):
     try:
         del _allObjects[object]
         return True
-    except:
+    except Exception:
         return False
 
 

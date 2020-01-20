@@ -142,7 +142,7 @@ class Toolbox(object):
                 fopts = {'encoding': 'utf-8'} if sys.version_info[0] >= 3 else {}
                 with open(self.initializationFile, **fopts) as f:
                     six.exec_(f.read())
-            except:
+            except Exception:
                 showException()
         if os.path.isdir(self.fsoDir):
             neuroConfig.fileSystemOntologiesPath.append(self.fsoDir)
@@ -173,7 +173,7 @@ def readToolboxes(toolboxesDir, homeBrainVISADir):
         if name != '__pycache__':
             try:
                 addToolbox(name, os.path.join(toolboxesDir, name))
-            except:
+            except Exception:
                 traceback.print_exc()
     print('Loading toolbox', 'My processes')
     _toolboxes['My processes'] = Toolbox(

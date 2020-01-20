@@ -120,7 +120,7 @@ class LabelSelection(Parameter):
             self.file = context.temporary('selection')
         try:
             f = open(self.file.fullPath(), 'w')
-        except:
+        except IOError:
             context.write('<b><font color="#c00000">Warning:</font></b> '
                           'writeSelection: file', self.file.fullPath(),
                           "can't be written<br>")

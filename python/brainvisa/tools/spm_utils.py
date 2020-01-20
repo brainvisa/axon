@@ -73,7 +73,7 @@ def merge_mat_files(mergedMatFile, *matFiles):
             try:
                 currentNum = re.match(
                     r"matlabbatch\{([0-9]*)\}(.*)", l).group(1)
-            except:
+            except Exception:
                 pass
             if previousNum and currentNum != previousNum:
                 moduleNum += 1
@@ -81,7 +81,7 @@ def merge_mat_files(mergedMatFile, *matFiles):
             try:
                 mergedMatFileFo.write(
                     re.sub(r"matlabbatch{([0-9]*)}", "matlabbatch{" + str(moduleNum) + "}", l))
-            except:
+            except Exception:
                 return False
         moduleNum += 1
     mergedMatFileFo.close()

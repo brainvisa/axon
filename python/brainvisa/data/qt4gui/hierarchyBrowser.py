@@ -402,7 +402,7 @@ class HierarchyBrowser(QWidget):
                             self.remove(f, db)
                         item.parent().takeChild(
                             item.parent().indexOfChild(item))
-                    except:
+                    except Exception:
                         showException(
                             beforeError="Error when trying to remove " + item.diskItem.fileName())
 
@@ -431,20 +431,20 @@ class HierarchyBrowser(QWidget):
             if item.diskItem:
                 try:
                     viewer = brainvisa.processes.getViewer(item.diskItem)
-                except:
+                except Exception:
                     viewer = None
                 if viewer:
                     try:
                         item.viewer = brainvisa.processes.defaultContext().runProcess(
                             viewer, item.diskItem)
-                    except:
+                    except Exception:
                         showException()
                         brainvisa.processes.showProcess(viewer, item.diskItem)
 
     def viewCondition(self, item):
         try:
             return item and item.diskItem and not getattr(item, "viewer", None) and brainvisa.processes.getViewer(item.diskItem, checkUpdate=False)
-        except:
+        except Exception:
             return False
 
     def menuHideEvent(self):
@@ -577,7 +577,7 @@ class HierarchyBrowser(QWidget):
                 try:
                     di = neuroHierarchy.databases.getDiskItemFromFileName(
                         fname)
-                except:
+                except Exception:
                     di = None
                 if di is not None and di.isWriteable() \
                         and di.isLockData() != setLock:

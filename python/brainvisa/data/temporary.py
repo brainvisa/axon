@@ -40,7 +40,7 @@ from soma.minf.tree import registerClassAs
 
 try:
     set
-except:
+except NameError:
     from sets import Set as set
 
 manager = None

@@ -63,7 +63,7 @@ class Integer(Number):
     def convert(self, value, checkValue=None):
         try:
             value = int(value)
-        except:
+        except ValueError:
             value = long(value)
         return value
 

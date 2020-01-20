@@ -79,7 +79,7 @@ class ManualRegistration():
         self._anatomist = ana.Anatomist('-b')
         try:
             self._anatomist.config()['setAutomaticReferential'] = 0
-        except:
+        except Exception:
             pass
         self._loadData()
         self._loadUi()
@@ -123,7 +123,7 @@ class ManualRegistration():
                     aImg.setPalette('Rainbow', minVal=0, maxVal=1)
                 elif aimsImg.header()["modality"] == "NM":
                     aImg.setPalette('French', minVal=0, maxVal=1)
-            except:
+            except Exception:
                 pass
             self._aImages.update({img: aImg})
 

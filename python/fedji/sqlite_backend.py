@@ -246,7 +246,7 @@ class FedjiSqliteCollection(object):
                         'DELETE FROM %s WHERE list=?' % list_table, (rowid,))
                 cnx.execute('DELETE FROM %s WHERE rowid=?' %
                             self._documents_table, (rowid,))
-        except:
+        except:  # noqa: E722
             cnx.rollback()
             raise
         cnx.commit()

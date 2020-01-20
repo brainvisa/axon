@@ -306,7 +306,7 @@ def readProcdoc(processId):
                 if os.path.exists(fileName):
                     try:
                         procdoc = readMinf(fileName)[0]
-                    except:
+                    except Exception:
                         print('!Error in!', fileName)
                         raise
                 else:
@@ -543,7 +543,7 @@ def convertSpecialLinks(msg, language, baseForLinks, translator):
                 item.tag = None
                 try:
                     n = getProcessInfo(item.attributes['name']).name
-                except:
+                except Exception:
                     n = item.attributes['name']
                 item.content = (translator.translate(n, ))
     return msg
@@ -1527,7 +1527,7 @@ class Process(Parameterized):
             return
         try:
             Parameterized.__del__(self)
-        except:
+        except Exception:
             # can happen when quitting the application: the current module is
             # not available any longer
             pass
@@ -2555,7 +2555,7 @@ class ProcessExecutionNode(ExecutionNode):
         if skip_invalid:
             try:
                 process = getProcessInstance(process)
-            except:
+            except Exception:
                 process = None
                 self.__dict__['failing_node'] = True
         else:
@@ -2617,7 +2617,7 @@ class ProcessExecutionNode(ExecutionNode):
             print('no _process in ProcessExecutionNode !')
         try:
             ExecutionNode.__del__(self)
-        except:
+        except Exception:
             # same as above
             pass
 
@@ -2965,7 +2965,7 @@ class ExecutionContext(object):
         self._lock.acquire()
         try:
             stack = self._processStackThread[threading.currentThread()]
-        except:
+        except Exception:
             stack = []
             self._processStackThread[threading.currentThread()] = stack
         self._lock.release()
@@ -3242,7 +3242,7 @@ class ExecutionContext(object):
                         print(content, file=process._outputLogFile)
                         process._outputLogFile.flush()
                         content = process._outputLog
-                    except:
+                    except Exception:
                         content += '<font color=red>' + \
                             _t_('Unabled to open log file') + \
                                 '</font></html></body>'
@@ -3296,7 +3296,7 @@ class ExecutionContext(object):
                                         self._setArguments(c, **convargs)
                                         if c.write is not None:
                                             break
-                                    except:
+                                    except Exception:
                                         pass
                         # if not converter: raise Exception( _t_('Cannot convert format <em>%s</em> to format <em>%s</em> for parameter <em>%s</em>') % ( _t_( v.format.name ), _t_( destinationFormat.name ), n ) )
                         # tmp = self.temporary( destinationFormat )
@@ -3394,7 +3394,7 @@ class ExecutionContext(object):
                     self._showException()
                 except SystemExit as e:
                     neuroConfig.exitValue = e.args[0]
-                except:
+                except Exception:
                     import traceback
                     info = sys.exc_info()
                     sys.stderr.write(
@@ -3447,7 +3447,7 @@ class ExecutionContext(object):
                                     item, update=True)
                         except NotInDatabaseError:
                             pass
-                        except:
+                        except Exception:
                             showException()
                         item_hash[1] = item.modificationHash()
                 elif (process.isMainProcess):  # clear unused minfs only when the main process is finished to avoid clearing minf that will be used in next steps
@@ -3817,7 +3817,7 @@ class ExecutionContext(object):
                     formatter.DumbWriter(sys.stdout, 80)))
         try: ## WARNING DEBUG
             self._writeHTMLParser.feed(html + '<br>\n')
-        except:
+        except Exception:
             print('** could not write HTML string: **')
             print(repr(html))
             print('-----')
@@ -3864,7 +3864,7 @@ class ExecutionContext(object):
         self.write('</pre>')
         try:
             result = int(line)
-        except:
+        except Exception:
             result = None
         return result
 
@@ -3888,7 +3888,7 @@ class ExecutionContext(object):
         stackTop = self._stackTop()
         try:
             self.checkInterruption()
-        except:
+        except Exception:
             pass
 
         beforeError = _t_('in <em>%s</em>') % (
@@ -4609,7 +4609,7 @@ def getProcessInstanceFromProcessEvent(event):
                     result.setValue(n, v, default=True)
                 except KeyError:
                     pass
-                except:
+                except Exception:
                     defaultContext().showException(
                         beforeError='<em>while loading process %s, setting '
                         'parameter %s with value: %s</em>'
@@ -6158,7 +6158,7 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
             _readProcessLog.append(
                 NewProcess._id, html=exceptionHTML(), icon='warning.png')
         raise
-    except:
+    except Exception:
         if _readProcessLog is not None:
             _readProcessLog.append(
                 os.path.basename(fileName), html=exceptionHTML(), icon='error.png')
@@ -6205,7 +6205,7 @@ def readProcesses(processesPath):
                 src = (getDiskItemType(k[0].name), getFormat(k[1].name))
                 dst = (getDiskItemType(k[2].name), getFormat(k[3].name))
                 registerConverter(src, dst, converters[k])
-        except:
+        except Exception:
             _processesInfo, _converters = {}, {}
             if neuroConfig.mainLog is not None:
                 neuroConfig.mainLog.append('Cannot read processes cache',
@@ -6326,7 +6326,7 @@ class ProcessTree(EditableTree):
                 p = []
                 try:
                     listdir = os.listdir(dir)
-                except:
+                except Exception:
                     showException()
                     listdir = []
                 for f in sorted(listdir):
@@ -6359,7 +6359,7 @@ class ProcessTree(EditableTree):
                             addProcessInfo(id, processInfo)
                     except ValidationError:  # it may occur a validation error on reading process
                         pass
-                    except:
+                    except Exception:
                         showException()
                     processInfo = getProcessInfo(id)
                     if processInfo is not None:
@@ -6675,7 +6675,7 @@ class ProcessTrees(ObservableAttributes, ObservableSortedDictionary):
                 if (format == "XML") and (reduction == "brainvisa-tree_2.0"):
                     userTrees, currentTree = iterateMinf(
                         self.userProcessTreeMinfFile)
-            except:
+            except Exception:
                 print("Error while reading", self.userProcessTreeMinfFile)
         if userTrees != None:
             for userTree in userTrees:

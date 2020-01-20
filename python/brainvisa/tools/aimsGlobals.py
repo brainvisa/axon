@@ -274,7 +274,7 @@ def initializeFormatLists():
             _formats_table['MINC'] = (
                 'MINC image', 'gz compressed MINC image', 'FreesurferMGZ',
                 'FreesurferMGH')
-    except:
+    except Exception:
         # no aims, formats lists are empty
         class Aims(object):
             @staticmethod

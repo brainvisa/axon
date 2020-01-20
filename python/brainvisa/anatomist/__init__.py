@@ -160,7 +160,7 @@ if anatomistImport:
                         anatomistParameters += [
                             '--cout', self.outputLog.fileName, '--cerr',
                             self.outputLog.fileName]
-            except:
+            except Exception:
                 neuroException.showException()
                 self.communicationLogFile = None
                 self.outputLog = None
@@ -306,7 +306,7 @@ if anatomistImport:
                             if loadTransformations:
                                 self.loadTransformations(newObject.referential)
 
-                    except:
+                    except Exception:
                         neuroException.showException(afterError='Cannot load referential and transformations information with '
                                                      'object "' + file + '"')
             else:
@@ -418,7 +418,7 @@ if anatomistImport:
                         self.log(
                             string.join('processTransformations warning: multiple transformations from', ref1, 'to', ref2))
                         loadTrAndCreateRef = forceLoadTransformation
-                    except:
+                    except Exception:
                         loadTrAndCreateRef = True
 
                     if loadTrAndCreateRef:
@@ -542,7 +542,7 @@ if anatomistImport:
                             (block is None or (w.block is not None
                                                and w.block.internalWidget == block.internalWidget)):
                             return w
-                    except:  # window probably closed in the meantime
+                    except Exception:  # window probably closed in the meantime
                         todel.add(w)
             finally:
                 if len(todel) != 0:
@@ -750,7 +750,7 @@ if anatomistImport:
                     object.setPalette(minVal=max(grey[0] - grey[1] * 8, 0),
                                       maxVal=white[0] + white[1] * 3,
                                       absoluteMode=True)
-                except:
+                except Exception:
                     print('Warning: histogram could not be read:', hanfile)
 
             window.addObjects([object])
@@ -1015,7 +1015,7 @@ if anatomistImport:
                         # which create a new window object (proxy for
                         # anatomist window)... -> infinite loop
                     self.setChoices(*choices)
-                except:
+                except Exception:
                     # if it is impossible to get informations about anatomist
                     # windows, it may be already closed (close window event may
                     # occur after exit event...), so retrieve default choices.

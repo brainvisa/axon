@@ -347,7 +347,7 @@ class AxonFedjiDatabase(Database):
         try:
             i = attributes.index('_uuid')
             fields[i] = '_id'
-        except:
+        except Exception:
             pass
 
         for document in self.fedji_collection.find(query, fields=fields):

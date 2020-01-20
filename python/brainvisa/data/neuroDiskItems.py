@@ -1044,7 +1044,7 @@ class DiskItem(QObject):
                     minfContent.pop('dicom', None)
                 f.close()
                 return minfContent
-            except:
+            except Exception:
                 showException(beforeError=_t_(
                     'in file <em>%s</em><br>') % attrFile)
         return None
@@ -1446,7 +1446,7 @@ class Directory(DiskItem):
                         modificationTime = max(modificationTime,
                                                os.stat(os.path.join(fullName, n))[stat.ST_MTIME])
                         listdir.append(n)
-                    except:
+                    except Exception:
                         pass
             else:
                 modificationTime = os.stat(fullName)[stat.ST_MTIME]
@@ -2719,7 +2719,7 @@ class TemporaryDiskItem(File):
                     try:
                         temporary.manager.removePath(f)
                         break
-                    except:
+                    except OSError:
                         if n < 100:
                             n += 1
                             time.sleep(0.01)
@@ -2742,7 +2742,7 @@ class TemporaryDiskItem(File):
             try:
                 temporary.manager.removePath(f)
                 temporary.manager.registerPath(f)
-            except:
+            except Exception:
                 showException(
                     beforeError=_t_(
                         'temorary file <em>%s</em> not deleted<br>') % f,
@@ -2973,12 +2973,12 @@ def readTypes():
             for e in exc:
                 try:
                     six.reraise(e[0], e[1], e[2])
-                except:
+                except Exception:
                     showException(
                         beforeError="Error while reading types file: ")
         typesLastModification = max(
             (os.stat(f).st_mtime for f in mef.executedFiles()))
-    except:
+    except Exception:
         showException()
 
 
@@ -3034,9 +3034,9 @@ try:
     # all DiskItem namings
     try:
         aims.setQtResolveSymlinks(False)
-    except:
+    except Exception:
         pass
-except:
+except Exception:
     _finder = None
 
 
@@ -3081,6 +3081,6 @@ def aimsFileInfo(fileName):
             s = s[13:-1] + f.read()
             result = eval(s, locals())
             f.close()
-    except:
+    except Exception:
         pass
     return result

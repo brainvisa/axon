@@ -1144,7 +1144,7 @@ class FileSystemOntology(object):
                 for e in exc:
                     try:
                         six.reraise(e[0], e[1], e[2])
-                    except:
+                    except Exception:
                         showException(
                             beforeError="Error while reading ontology " + directory + ": ")
 

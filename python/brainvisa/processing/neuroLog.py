@@ -108,7 +108,7 @@ class TextFileLink(FileLink):
                 file = open(self.fileName, 'r')
             result = file.read()
             file.close()
-        except:
+        except Exception:
             result = neuroException.exceptionHTML()
         return result
 
@@ -138,7 +138,7 @@ class LogFileLink(FileLink):
             reader = LogFileReader(self.fileName)
             result = reader.read()
             reader.close()
-        except:
+        except Exception:
             # print("error while reading log file ", self)
             result = [
                 LogFile.Item(icon='error.png', what='Error', html=neuroException.exceptionHTML())]

@@ -16,7 +16,7 @@ import yaml
 import json
 try:
     from collections import OrderedDict
-except:
+except ImportError:
     # It is necessary to keep this for compatibility with python 2.6.*
     from soma.sorted_dictionary import OrderedDict
 import axon_to_capsul

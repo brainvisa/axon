@@ -311,13 +311,13 @@ class Number(String):
             return value
         try:
             return int(value)
-        except:
+        except ValueError:
             try:
                 return long(value)
-            except:
+            except ValueError:
                 try:
                     return float(value)
-                except:
+                except ValueError:
                     raise ValueError('cannot convert value to number:', value)
 
 
@@ -338,10 +338,10 @@ class Integer(Number):
             return value
         try:
             return int(value)
-        except:
+        except ValueError:
             try:
                 return long(value)
-            except:
+            except ValueError:
                 return None
 
 
@@ -446,7 +446,7 @@ class Choice(Parameter):
         elif isinstance(value, six.string_types):
             try:
                 value = eval(value)
-            except:
+            except Exception:
                 pass
             else:
                 i = self.findIndex(value)

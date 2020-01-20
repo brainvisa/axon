@@ -167,7 +167,7 @@ class DatabaseManagerGUI(qt.QWidget):
                                   (settings.expert_settings, ))
                     except IOError:
                         pass
-        except:
+        except Exception:
             showException()
 
     def _add(self):
@@ -187,7 +187,7 @@ class DatabaseManagerGUI(qt.QWidget):
                                   (settings.expert_settings, ))
                     except IOError:
                         pass
-        except:
+        except Exception:
             showException()
 
     def _remove(self):
@@ -350,7 +350,7 @@ class FormatsSequence_Qt4GUI(QtGUI):
     def _add(self):
         try:
             pass
-        except:
+        except Exception:
             showException()
 
     def _remove(self):

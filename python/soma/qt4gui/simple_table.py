@@ -51,7 +51,7 @@ if get_qt_backend() == 'PyQt4':
         use_qvariant = sip.getapi('QVariant') < 2
         if use_qvariant:
             from soma.qt_gui.qt_backend.QtCore import QVariant
-    except:
+    except Exception:
         pass  # PySide doesn't have QVariant at all.
 import operator
 

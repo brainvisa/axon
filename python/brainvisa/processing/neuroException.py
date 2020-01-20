@@ -143,7 +143,7 @@ def exceptionTracebackHTML(exceptionInfo):
     e, v, t = exceptionInfo
     try:
         name = e.__name__
-    except:
+    except AttributeError:
         name = str(e)
     msg = '<font color=red><b>' + name + '</b><br>'
     if(t is not None):

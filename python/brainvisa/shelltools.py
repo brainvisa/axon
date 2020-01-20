@@ -63,12 +63,12 @@ def cp(*args, **kwargs):
                 try:
                     shutil.copy(source, dest)
                     return
-                except:
+                except OSError:
                     pass
             try:
                 shutil.copyfile(source, dest)
                 return
-            except:
+            except OSError:
                 pass
             # nothing has worked
             raise
@@ -88,7 +88,7 @@ def cp(*args, **kwargs):
             source = sources[0]
             try:
                 os.remove(dest)
-            except:
+            except OSError:
                 # try forcing permissions
                 os.chmod(dest, 0o770)
                 os.remove(dest)
@@ -126,7 +126,7 @@ def cp(*args, **kwargs):
             if os.path.exists(newpath):
                 try:
                     os.remove(newpath)
-                except:
+                except OSError:
                     # try forcing permissions
                     os.chmod(newpath, 0o770)
                     os.remove(newpath)
@@ -135,7 +135,7 @@ def cp(*args, **kwargs):
             if os.path.exists(newpath):
                 try:
                     os.remove(newpath)
-                except:
+                except OSError:
                     # try forcing permissions
                     os.chmod(newpath, 0o770)
                     os.remove(newpath)
@@ -165,7 +165,7 @@ def rm(*args):
         else:
             try:
                 os.remove(path)
-            except:
+            except OSError:
                 # try forcing permissions
                 os.chmod(path, 0o770)
                 os.remove(path)

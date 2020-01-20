@@ -264,7 +264,7 @@ class HistoryBook(object):
                     try:
                         item.setMinf('lastHistoricalEvent', historyBooksContext[
                                      book].get('processExcutionEvent').uuid)
-                    except:
+                    except Exception:
                         neuroException.showException()
 
 

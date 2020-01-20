@@ -76,7 +76,7 @@ import socket
 import six
 try:
     import sip
-except:
+except ImportError:
     # for sip 3.x (does it work ??)
     import libsip as sip
 # for comatibility, make mainThreadActions visible in neuroProcessesGUI
@@ -159,7 +159,7 @@ class _ProcDeleter(object):
     def __del__(self):
         try:
             self.o.kill()
-        except:
+        except Exception:
             pass
 
 
@@ -196,7 +196,7 @@ def startShell():
                                    '--stdin=%d' % ipConsole.stdin_port, '--hb=%d' % ipConsole.hb_port])
             brainvisa.processes._ipsubprocs.append(_ProcDeleter(sp))
             return
-    except:
+    except Exception:
         pass
     neuroConfig.shell = True
     try:
@@ -230,7 +230,7 @@ def quitRequest():
             if a:
                 close_viewers()
                 a.close()
-        except:
+        except Exception:
             pass
         if neuroConfig.shell:
             sys.exit()
@@ -284,7 +284,7 @@ def runHtmlBrowser(source, existingWidget=None):
                         env.update(neuroConfig.brainvisaSysEnv.getVariables())
                 if os.spawnle(os.P_NOWAIT, browser, browser, source, env) > 0:
                     return
-    except:
+    except Exception:
         pass
     if existingWidget is None:
         existingWidget = HTMLBrowser(None)
@@ -345,7 +345,7 @@ def runCsvViewer(source, existingWidget=None):
         existingWidget.show()
         existingWidget.raise_()
         return existingWidget
-    except:
+    except Exception:
         pass
     # fallback to text editor
     textEditor = configuration.brainvisa.textEditor
@@ -804,7 +804,7 @@ class SomaWorkflowProcessView(QMainWindow):
                         db, brainvisa.processes.defaultContext())
                     checker.findActions()
                     checker.process()
-            except:
+            except Exception:
                 neuroException.showException(
                     beforeError="Error while updating database " + dbSettings.directory)
         QtGui.QApplication.restoreOverrideCursor()
@@ -1934,7 +1934,7 @@ class ParameterizedWidget(QWidget):
 
             if self._doUpdateParameterValue:
                 setattr(self.parameterized, name, value)
-        except:
+        except Exception:
             import traceback
             traceback.print_exc()
 
@@ -1973,7 +1973,7 @@ class ParameterizedWidget(QWidget):
                     self.labels[name].lock_id.setChecked(True)
                 else:
                     self.labels[name].lock_id.setChecked(False)
-            except:
+            except Exception:
                 self.labels[name].lock_id.setChecked(False)
                 print('Could not change lock for', name, ':')
                 import traceback
@@ -2025,12 +2025,12 @@ class ParameterizedWidget(QWidget):
             try:
                 oldValue.lockChanged.disconnect(
                     self.labels[parameterName].setlock)
-            except:
+            except Exception:
                 pass
             try:
                 oldValue.lockChanged.disconnect(
                     self.editors[parameterName].lockChanged)
-            except:
+            except Exception:
                 pass
         if isinstance(value, QObject) and hasattr(value, 'lockChanged'):
             value.lockChanged.connect(self.labels[parameterName].setlock)
@@ -2803,7 +2803,7 @@ class ProcessView(QWidget, ExecutionContextGUI):
                     doc = brainvisa.processes.getHTMLFileName(proc)
                     if doc is not None and os.path.exists(doc):
                         _mainWindow.info.setSource(doc)
-        except:
+        except Exception:
             showException()
 
     def menuLockStep(self):
@@ -2984,7 +2984,7 @@ class ProcessView(QWidget, ExecutionContextGUI):
                 else:
                     processView._runningProcess = 0
                     processView._startCurrentProcess(executionFunction)
-            except:
+            except Exception:
                 neuroException.showException()
         finally:
             self.action_run.setEnabled(True)
@@ -3085,7 +3085,7 @@ class ProcessView(QWidget, ExecutionContextGUI):
     def _run_with_soma_workflow_button(self, executionFunction=None):
         try:
             self._run_with_soma_workflow(executionFunction=executionFunction)
-        except:
+        except Exception:
             neuroException.showException()
         finally:
             self.action_run_with_sw.setEnabled(True)
@@ -3095,7 +3095,7 @@ class ProcessView(QWidget, ExecutionContextGUI):
             try:
                 self._setInterruptionRequest(
                     brainvisa.processes.ExecutionContext.UserInterruption())
-            except:
+            except Exception:
                 neuroException.showException()
 
     def _interruptStepButton(self, executionFunction=None):
@@ -3506,7 +3506,7 @@ class ProcessView(QWidget, ExecutionContextGUI):
                                                                      processes,
                                                                      self.process.name)
             showProcess(iterationProcess)
-        except:
+        except Exception:
             neuroException.showException()
             self._iterationDialog.show()
 
@@ -3610,7 +3610,7 @@ def showProcess(process_id, *args, **kwargs):
             view.move(*windowGeometry['position'])
             view.resize(*windowGeometry['size'])
         view.show()
-    except:  # an exception can occur if the process is reloaded and an error has been introduced in its code.
+    except Exception:  # an exception can occur if the process is reloaded and an error has been introduced in its code.
         neuroException.showException()
     return view
 
@@ -3860,7 +3860,7 @@ class ProcessEdit(QDialog):
         try:
             self.readDocumentation()
             self.setLanguage(unicode(self.cmbLanguage.currentText()))
-        except:
+        except Exception:
             showException()
 
         w = QWidget()
@@ -3894,7 +3894,7 @@ class ProcessEdit(QDialog):
     def readDocumentation(self):
         try:
             self.documentation = brainvisa.processes.readProcdoc(self.process)
-        except:
+        except Exception:
             import traceback
             traceback.print_exc()
 
@@ -3950,7 +3950,7 @@ class ProcessEdit(QDialog):
             brainvisa.processes.generateHTMLProcessesDocumentation(
                 self.process)
             mainWindow().info.reload()
-        except:
+        except Exception:
             neuroException.showException()
 
     def accept(self):
@@ -4128,7 +4128,7 @@ class ProcessSelectionWidget(QMainWindow):
                 self.searchboxLineEdit.setEnabled(False)
                 self.searchboxSearchB.setText('next')
 #        self.searchboxSearchB.setShortcut( QKeySequence.FindNext )
-            except:
+            except Exception:
                 self.resetSearch()
 
     def resetSearch(self):
@@ -4161,7 +4161,7 @@ class ProcessSelectionWidget(QMainWindow):
                         self.info.setSource(source)
                     else:
                         self.info.setText('')
-                except:
+                except Exception:
                     import traceback
                     traceback.print_exc()
                 if self.btnEdit is not None:
@@ -4242,7 +4242,7 @@ class ProcessSelectionWidget(QMainWindow):
                                                                      self.currentProcess.name)
             # iterationProcess.possibleChildrenProcesses =
             showProcess(iterationProcess)
-        except:
+        except Exception:
             neuroException.showException()
             self._iterationDialog.show()
 
@@ -4562,7 +4562,7 @@ class ProcessTreesWidget(QSplitter):
                                 pname = proc.name
                                 if pname.lower().find(name) > -1:
                                     keep = True
-                            except:
+                            except Exception:
                                 pass
                         if keep:
                             self.select(widget, item, lastSelection)

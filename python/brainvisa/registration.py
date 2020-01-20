@@ -161,7 +161,7 @@ class DatabasesTransformationManager(object):
         diskItem.setMinf('referential', str(ref_uuid))
         try:
             neuroHierarchy.databases.insertDiskItem(diskItem, update=True)
-        except:
+        except Exception:
             pass
 
     def createNewReferentialFor(self,
@@ -268,7 +268,7 @@ class DatabasesTransformationManager(object):
             referential.createParentDirectory()
             referential.saveMinf()
             neuroHierarchy.databases.insertDiskItem(referential, update=True)
-        except:
+        except Exception:
             referential = None
         return referential
 
@@ -327,7 +327,7 @@ class DatabasesTransformationManager(object):
             try:
                 neuroHierarchy.databases.insertDiskItem(
                     destinationDiskItem, update=True)
-            except:
+            except Exception:
                 pass
 
     def createNewTransformation(self,
@@ -417,7 +417,7 @@ class DatabasesTransformationManager(object):
                     'source_referential', sourceRef.uuid(), saveMinf=False)
                 transformation.setMinf(
                     'destination_referential', destRef.uuid(), saveMinf=False)
-            except:
+            except Exception:
                 return None
             if name is not None:
                 transformation.setMinf('name', name, saveMinf=False)
@@ -458,7 +458,7 @@ class DatabasesTransformationManager(object):
             # transformation.saveMinf()
             neuroHierarchy.databases.insertDiskItem(
                 transformation, update=True)
-        except:
+        except Exception:
             pass
 
     def findOrCreateReferential(self, referentialType,
@@ -475,7 +475,7 @@ class DatabasesTransformationManager(object):
         """
         try:
             oldref = diskItem.get('referential')
-        except:
+        except Exception:
             oldref = None
         result = self.createNewReferentialFor(diskItem,
                                               name=name,
@@ -500,7 +500,7 @@ class DatabasesTransformationManager(object):
                     try:
                         neuroHierarchy.databases.insertDiskItem(
                             result, update=True)
-                    except:
+                    except Exception:
                         pass  # not in a database
                 if assign:
                     if str(result.uuid()) != oldref and diskItem.isWriteable():
@@ -509,7 +509,7 @@ class DatabasesTransformationManager(object):
                         try:
                             neuroHierarchy.databases.insertDiskItem(
                                 diskItem, update=True)
-                        except:
+                        except Exception:
                             pass  # not in a database
 
         return result
