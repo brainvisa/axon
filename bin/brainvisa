@@ -70,7 +70,7 @@ if neuro:
     (pythonPath, os.path.join( pythonPath, "..", "python" ), )]
   execfile( neuro )
 else:
-  print >> sys.stderr, "Cannot find main BrainVISA directory"
+  sys.stderr.write("Cannot find main BrainVISA directory\n")
 '
 
 LANG="$OLDLANG"
