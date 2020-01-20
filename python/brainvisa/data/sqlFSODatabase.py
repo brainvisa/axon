@@ -97,6 +97,17 @@ databaseVersions = {'1.0': '3.1.0',
                     '2.2': '4.5.0',
                     '2.3': '4.6.0'}
 
+# Force use of the pickle protocol version 0, because the pickled data is
+# inserted in a sqlite field of type TEXT (expects Unicode data).
+#
+# FIXME: Ideally we should use version 2 of the pickle protocol as long as we
+# want to support Python 2. The problem is that Pickle protocols after version
+# 1 use a binary representation, so we should switch the _DISKITEMS_ table to
+# use a BLOB type instead of TEXT. However, we must make sure that the
+# transition is handled correctly (i.e. mark the databases as needing an update
+# instead of showing weird error messages).
+MINF_PICKLE_PROTOCOL = 0
+
 #------------------------------------------------------------------------------
 
 
@@ -1239,7 +1250,7 @@ class SQLDatabase(Database):
                   '_uuid': diskItem._uuid,
                   '_priority': getattr(diskItem, '_priority', 0),
                 }
-                minf = cPickle.dumps(state)
+                minf = cPickle.dumps(state, MINF_PICKLE_PROTOCOL)
                 diskItem._globalAttributes["_database"] = self.name
                 if diskItem.type.isA('Transformation'):
                     destination_referential = diskItem.getNonHierarchy(
@@ -1320,7 +1331,7 @@ class SQLDatabase(Database):
                         # f = StringIO()
                         # writeMinf( f, ( state, ) )
                         # minf = f.getvalue()
-                        minf = cPickle.dumps(state)
+                        minf = cPickle.dumps(state, MINF_PICKLE_PROTOCOL)
                         cursor.execute(
                             'INSERT INTO _DISKITEMS_ (_uuid, _diskItem) VALUES (? ,?)', (uuid, minf))
                         if source_referential and destination_referential:
