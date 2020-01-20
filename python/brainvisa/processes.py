@@ -4769,7 +4769,7 @@ def resetConverters():
 #-----------------------------------------------------------------------------
 
 
-def registerConverter(source, dest, proc):
+def registerConverter(source, dest, process_id):
     """
     Registers converter from source to destination.
     :param source: tuple (type, format). If a converter is not found directly, parent types are tried.
@@ -4779,10 +4779,10 @@ def registerConverter(source, dest, proc):
     global _converters, _converters_dist, _converters_from, _converters_to
 
     # print('===== registering converter for (', source, dest, '):', proc)
-    _converters[(source, dest)] = proc._id
-    _converters_dist[(source, dest)] = ((0, 0), proc._id)
-    _converters_from.setdefault(source, {})[dest] = proc._id
-    _converters_to.setdefault(dest, {})[source] = proc._id
+    _converters[(source, dest)] = process_id
+    _converters_dist[(source, dest)] = ((0, 0), process_id)
+    _converters_from.setdefault(source, {})[dest] = process_id
+    _converters_to.setdefault(dest, {})[source] = process_id
 
 #-----------------------------------------------------------------------------
 
@@ -6064,7 +6064,7 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
             # Register all source parents types
             # print('==== registering converter for source', source, 'dest',
             # dest, 'proc', proc.name)
-            registerConverter(source, dest, proc)
+            registerConverter(source, dest, proc._id)
 
         if 'converter' in roles:
             possibleConversions = getattr(
@@ -6201,10 +6201,10 @@ def readProcesses(processesPath):
                 _processesInfo, converters = cPickle.load(f)
             # change _converters keys to use the same instances as the global
             # types / formats list
-            for k in converters.keys():
-                src = (getDiskItemType(k[0].name), getFormat(k[1].name))
-                dst = (getDiskItemType(k[2].name), getFormat(k[3].name))
-                registerConverter(src, dst, converters[k])
+            for (src, dst), process_id in six.iteritems(converters):
+                src = (getDiskItemType(src[0].name), getFormat(src[1].name))
+                dst = (getDiskItemType(dst[0].name), getFormat(dst[1].name))
+                registerConverter(src, dst, process_id)
         except Exception:
             _processesInfo, _converters = {}, {}
             if neuroConfig.mainLog is not None:

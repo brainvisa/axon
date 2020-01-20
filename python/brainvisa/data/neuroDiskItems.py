@@ -1859,7 +1859,7 @@ class Format(object):
                         raise ValueError(HTMLMessage(_t_(
                                                      '<em><code>%s</code></em> init parameter formatName is missing')
                                                      % htmlEscape(str(cls))))
-                    formatName = 'Series of ' + baseFormat.name
+                    formatName = 'Series of ' + getFormat(baseFormat).name
             else:
                 if len(args) >= 1:
                     formatName = args[0]
@@ -1877,6 +1877,9 @@ class Format(object):
         cls._reloaded_formats.setdefault(id, 0)
         cls._reloaded_formats[id] += 1
         return instance
+
+    def __getnewargs__(self):
+        return (self.name,)
 
     def __init__(self, formatName, patterns, attributes=None, exclusive=None,
                  ignoreExclusive=0):
