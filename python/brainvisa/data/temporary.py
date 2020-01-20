@@ -35,6 +35,7 @@ import threading
 import warnings
 import stat
 import platform
+import tempfile
 from soma.minf.tree import registerClassAs
 
 try:
@@ -216,16 +217,7 @@ class TemporaryFileManager:
 
 
 def getSystemDefaultTempDir():
-    if platform.system() == 'Windows':
-        defaultTemporary = os.getenv('TEMP')
-        if not defaultTemporary:
-            defaultTemporary = os.getenv('TMP')
-            if not defaultTemporary:
-                defaultTemporary = 'C:\\WINDOWS\\TEMP'
-    else:
-        defaultTemporary = '/tmp'
-
-    return defaultTemporary
+    return tempfile.gettempdir()
 
 #----------------------------------------------------------------------------
 

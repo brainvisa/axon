@@ -215,6 +215,7 @@ import errno
 import re
 import time
 import socket
+import tempfile
 from soma.wip.application.api import Application
 from brainvisa.configuration.api import initializeConfiguration, readConfiguration, DatabaseSettings
 
@@ -422,14 +423,8 @@ if not sys.executable.startswith(basePath):
 
 userLevel = 0
 sessionID = Uuid()
-if platform == "windows":
-    temporaryDirectory = os.getenv('TEMP')
-    if not temporaryDirectory:
-        temporaryDirectory = os.getenv('TMP')
-        if not temporaryDirectory:
-            temporaryDirectory = 'C:\\WINDOWS\\TEMP'
-else:
-    temporaryDirectory = '/tmp'
+
+temporaryDirectory = tempfile.gettempdir()
 
 
 def getDocPath(path, project=''):
@@ -808,7 +803,6 @@ class RunsInfo:
         global cleanLog
         self.dontrecordruns = dontrecordruns
         if dontrecordruns:
-            import tempfile
             fd, self.file = tempfile.mkstemp(suffix='.minf',
                                              prefix='bv_current_runs', dir=temporaryDirectory, text=True)
             os.close(fd)
