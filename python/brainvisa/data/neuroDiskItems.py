@@ -1858,7 +1858,7 @@ class Format(object):
                     else:
                         raise ValueError(HTMLMessage(_t_(
                                                      '<em><code>%s</code></em> init parameter formatName is missing')
-                                                     % cls))
+                                                     % htmlEscape(str(cls))))
                     formatName = 'Series of ' + baseFormat.name
             else:
                 if len(args) >= 1:
@@ -1866,7 +1866,7 @@ class Format(object):
                 else:
                     raise ValueError(HTMLMessage(_t_(
                                                  '<em><code>%s</code></em> init parameter formatName is missing')
-                                                 % cls))
+                                                 % htmlEscape(str(cls))))
 
         id = getId(formatName)
         instance = formats.get(id)
