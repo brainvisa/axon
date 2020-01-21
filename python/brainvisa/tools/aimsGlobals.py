@@ -276,12 +276,11 @@ def initializeFormatLists():
                 'FreesurferMGH')
     except Exception:
         # no aims, formats lists are empty
-        class Aims(object):
+        class FakeAims(object):
             @staticmethod
             def supported_io_formats(*args, **kwargs):
                 return set()
-        aims = Aims()
-        return
+        aims = FakeAims()
 
     global anatomistVolumeFormats
     anatomistVolumeFormats = createFormatList(
