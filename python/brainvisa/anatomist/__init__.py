@@ -55,7 +55,6 @@ if anatomistImport:
     from brainvisa.processing import neuroLog
     from brainvisa.processing import neuroException
     from brainvisa.data import neuroData
-    from brainvisa.validation import ValidationError
     from soma.qtgui.api import QtThreadCall
     import distutils.spawn
     import weakref
@@ -94,6 +93,7 @@ Specificities added for brainvisa are :
 
 
 def validation():
+    from brainvisa.validation import ValidationError
     if not anatomistImport:
         raise ValidationError('Cannot find anatomist module')
     elif distutils.spawn.find_executable('anatomist') is None:
