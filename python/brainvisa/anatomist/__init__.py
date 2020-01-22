@@ -34,6 +34,7 @@ from __future__ import print_function
 import sys
 import os
 from brainvisa.configuration import neuroConfig
+from brainvisa.processing.neuroException import showException
 use_headless = False
 try:
     import anatomist
@@ -47,8 +48,10 @@ try:
     exec("import " + anatomist.getDefaultImplementationModuleName()
          + " as anatomistModule")
 except Exception as e:
-    print(e)
+    import traceback
+    showException(beforeError='The Anatomist module failed to load:')
     anatomistImport = False
+    noAnatomistReason = '\n'.join(traceback.format_exception_only(type(e), e))
 
 if anatomistImport:
     from brainvisa import registration
@@ -95,7 +98,8 @@ Specificities added for brainvisa are :
 def validation():
     from brainvisa.validation import ValidationError
     if not anatomistImport:
-        raise ValidationError('Cannot find anatomist module')
+        raise ValidationError('Cannot find anatomist module: {0}'
+                              .format(noAnatomistReason))
     elif distutils.spawn.find_executable('anatomist') is None:
         raise ValidationError('Cannot find Anatomist executable')
 
