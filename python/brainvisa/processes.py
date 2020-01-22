@@ -5933,8 +5933,10 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
                 # to add the line <tt>"from brainvisa.processes import *"</tt>
                 # at the begining of the process)') ))
             except Exception as e:
+                # Add context information to the exception message (file name
+                # where the exception occurred)
                 six.reraise(type(e),
-                            type(e)(*(('%s: %s' % (str(fileIn), e.args[0]), )
+                            type(e)(*(('%s: %s' % (fileName, e.args[0]), )
                                     + e.args[1:])),
                             sys.exc_info()[2])
         finally:
