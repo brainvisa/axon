@@ -105,14 +105,10 @@ def exceptionMessageHTML(exceptionInfo, beforeError='', afterError=''):
     """
 
     e, v, t = exceptionInfo
-    # tb = traceback.extract_tb( t )
-    try:
-        message = six.text_type(v)
-    except Exception as e:
-        # Some exceptions from cPickle can contain incorrectly incoded
-        # characters... see https://github.com/brainvisa/axon/issues/18
-        message = six.ensure_text(str(v), errors='replace')
-    txt = "<b>" + htmlEscape(message) + "</b>"
+    message = '<br>'.join(
+        htmlEscape(line) for line in traceback.format_exception_only(e, v)
+    )
+    txt = "<b>" + message + "</b>"
     if isinstance(v, BaseException) and len(v.args) == 1:
         if isinstance(v.args[0], HTMLMessage):
             # if the exception message is in html, don't escape
