@@ -5,6 +5,7 @@
 
   "formats" : {
     "JSON file": "json",
+    "Deep model file": "mdsm"
   },
 
 
