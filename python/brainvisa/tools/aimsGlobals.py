@@ -75,8 +75,11 @@ These global variables are initialized through the function :py:func:`initialize
 """
 import os
 import string
+import sys
 from brainvisa.data.neuroDiskItems import createFormatList, getFormat, \
     aimsFileInfo, DiskItem, Directory
+from brainvisa.processes import defaultContext
+from brainvisa.processing.neuroException import exceptionMessageHTML
 from soma.path import find_in_path
 
 #------------
@@ -274,14 +277,26 @@ def initializeFormatLists():
             _formats_table['MINC'] = (
                 'MINC image', 'gz compressed MINC image', 'FreesurferMGZ',
                 'FreesurferMGH')
-    except:
+    except Exception as exc:
+        choice = defaultContext().ask(
+            exceptionMessageHTML(
+                (type(exc), exc, None),
+                afterError= '<p>AIMS could not be loaded. BrainVISA will work '
+                'in degraded mode, AIMS format lists will be empty and '
+                'processes that depend on AIMS will not load.</p>'
+            ),
+            "Abort",
+            "Ignore",
+        )
+        if choice == 0:  # in batch mode ask() returns -1 so we do not exit
+            sys.exit(1)
+
         # no aims, formats lists are empty
-        class Aims(object):
+        class FakeAims(object):
             @staticmethod
             def supported_io_formats(*args, **kwargs):
                 return set()
-        aims = Aims()
-        return
+        aims = FakeAims()
 
     global anatomistVolumeFormats
     anatomistVolumeFormats = createFormatList(

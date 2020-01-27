@@ -168,7 +168,7 @@ def initializeProcesses():
                     fopts = {'encoding': 'utf-8'} if sys.version_info[0] >= 3 else {}
                     with open(toolbox.startupFile, **fopts) as f:
                         six.exec_(f.read(), globals(), {})
-                except:
+                except Exception:
                     neuroException.showException()
 
     localsStartup = {}
@@ -179,6 +179,6 @@ def initializeProcesses():
                 six.exec_(f, localsStartup, localsStartup)
             else:
                 f()
-        except:
+        except Exception:
             neuroException.showException()
     del localsStartup

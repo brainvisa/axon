@@ -98,7 +98,7 @@ class CheckRegistration():
                 if os.path.splitext(f)[1] not in allowedExt:
 #                    try:
 #                        dicom.read_file(f)
-#                    except:
+#                    except Exception:
                         continue
                 imagesToLoad.append(f)
             if len(imagesToLoad) == 0:
@@ -146,7 +146,7 @@ class CheckRegistration():
                     aImg.setPalette('Rainbow', minVal=0, maxVal=1)
                 elif aimsImg.header()["modality"] == "NM":
                     aImg.setPalette('French', minVal=0, maxVal=1)
-            except:
+            except Exception:
                 pass
             self._aImages.update({img: aImg})
 
@@ -200,7 +200,7 @@ class CheckRegistration():
             try:
                 self._mainDiag.displayRowOptionsCb.setChecked(
                     self._configuration["showRowOptions"])
-            except:
+            except Exception:
                 pass
 
     def _init3dCursor(self):
@@ -211,7 +211,7 @@ class CheckRegistration():
             frame = self._rowFrames.keys()[0]
             view = self._rowFrames[frame]["views"][0]
             aImg = self._aImages[self._rowFrames[frame]["image"][1]]
-        except:
+        except Exception:
             return
 
         bbox = [aims.Point3df(x[:3]) for x in aImg.boundingbox()]
@@ -228,7 +228,7 @@ class CheckRegistration():
         """
         try:
             rowConfig = self._configuration["rows"]
-        except:
+        except Exception:
             return
         for row in rowConfig:
             image1 = row["image1"]
@@ -518,7 +518,7 @@ class CheckRegistration():
             if o:
                 try:
                     o.removeFromWindows(self._rowFrames[frame]["views"])
-                except:
+                except Exception:
                     pass
 
     def _addInViews(self, frame):

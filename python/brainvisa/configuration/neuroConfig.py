@@ -215,6 +215,7 @@ import errno
 import re
 import time
 import socket
+import tempfile
 from soma.wip.application.api import Application
 from brainvisa.configuration.api import initializeConfiguration, readConfiguration, DatabaseSettings
 
@@ -422,14 +423,8 @@ if not sys.executable.startswith(basePath):
 
 userLevel = 0
 sessionID = Uuid()
-if platform == "windows":
-    temporaryDirectory = os.getenv('TEMP')
-    if not temporaryDirectory:
-        temporaryDirectory = os.getenv('TMP')
-        if not temporaryDirectory:
-            temporaryDirectory = 'C:\\WINDOWS\\TEMP'
-else:
-    temporaryDirectory = '/tmp'
+
+temporaryDirectory = tempfile.gettempdir()
 
 
 def getDocPath(path, project=''):
@@ -643,7 +638,7 @@ def convertCommandLineParameter(i):
     if len(i) > 0 and (i[0] in '[({' or i in ('None', 'True', 'False')):
         try:
             res = eval(i)
-        except:
+        except Exception:
             res = i
     else:
         res = i
@@ -808,7 +803,6 @@ class RunsInfo:
         global cleanLog
         self.dontrecordruns = dontrecordruns
         if dontrecordruns:
-            import tempfile
             fd, self.file = tempfile.mkstemp(suffix='.minf',
                                              prefix='bv_current_runs', dir=temporaryDirectory, text=True)
             os.close(fd)
@@ -880,7 +874,7 @@ class RunsInfo:
                     self.runs.pop(self.currentRun, None)
                     self.count = len(self.runs)
                     self.write()
-            except:
+            except Exception:
                 pass
 
     def check(self, context):
@@ -950,7 +944,7 @@ sharedDatabaseFound = False
 try:
     import brainvisa_share.config
     bvShareDirectory = brainvisa_share.config.share
-except:
+except Exception:
     bvShareDirectory = 'brainvisa-share-' + shortVersion
 for p in (os.path.join(getSharePath(), bvShareDirectory),
           os.path.join(getSharePath(), 'shfj-' + shortVersion),
@@ -1071,7 +1065,7 @@ def unregisterObject(object):
     try:
         del _allObjects[object]
         return True
-    except:
+    except Exception:
         return False
 
 

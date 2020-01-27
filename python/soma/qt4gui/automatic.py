@@ -201,7 +201,7 @@ class ApplicationQt4GUI(ApplicationBaseGUI):
         if result:
             try:
                 dialog.setObject(object)
-            except:
+            except Exception:
                 import traceback
                 traceback.print_exc()
         self.closeEditionDialog(dialog)

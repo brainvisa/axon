@@ -67,11 +67,11 @@ try:
             qt_api_ver = sip.getapi(qt_class)
             if qt_api_ver == PYQT_API_VERSION:
                 continue
-        except:
+        except Exception:
             pass  # getapi() fails: probably not set yet
         sip.setapi(qt_class, PYQT_API_VERSION)
     del qt_api, qt_class, qt_api_ver
-except:
+except Exception:
     print("WARNING: impossible to use version %d of sip/Qt API."
           % PYQT_API_VERSION)
 

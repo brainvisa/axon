@@ -106,7 +106,7 @@ class DisplayResultsFromSPM(object):
         try:
             # Select the global maxima in the table
             self._tableClicked(2, 9)
-        except:
+        except Exception:
             pass
 
         splitter.widget(0).resize(10000, 10000)
@@ -255,7 +255,7 @@ class DisplayResultsFromSPM(object):
             # Create glass brain with grid
             try:
                 self._createGlassBrain(context) # default is rediologic display
-            except:
+            except Exception:
                 # Disable glass brain
                 self.display_glass_brain = False
 
@@ -392,7 +392,7 @@ class DisplayResultsFromSPM(object):
             for el in line:
                 try:
                     el = textReplace[ el ]
-                except:
+                except Exception:
                     pass
                 if col == 0 or col == 1:
                     col += 1
@@ -531,7 +531,7 @@ class DisplayResultsFromSPM(object):
             coords = [ int(self.table.item(x, 9).text()),
                        int(self.table.item(x, 10).text()),
                        int(self.table.item(x, 11).text()) ]
-        except:
+        except Exception:
             return
 
         # Get the Anatomist coordinates according the MNI ones
@@ -563,7 +563,7 @@ class DisplayResultsFromSPM(object):
                     self.aviewGlass[ 0 ].moveLinkedCursor([ coords[0], coords[1], 0 ])# X, Y, Z
                     self.aviewGlass[ 1 ].moveLinkedCursor([ coords[1], coords[2], 0 ])# Y, Z, X
                     self.aviewGlass[ 2 ].moveLinkedCursor([ coords[0], coords[2], 0 ])# X, Z, Y
-            except:
+            except Exception:
                 pass
 
         # Color the table cells
@@ -611,7 +611,7 @@ class DisplayResultsFromSPM(object):
                 coords = [ int(self.table.item(i, 9).text()),
                            int(self.table.item(i, 10).text()),
                            int(self.table.item(i, 11).text()) ]
-            except:
+            except Exception:
                 continue
             coords = self._getTalairachCoordsFromMNI(coords)
 
@@ -690,7 +690,7 @@ class DisplayResultsFromSPM(object):
             else:
                 print("Error...")
 
-        except:
+        except Exception:
             pass
 
         self.blockCursorUpdate = False
@@ -704,12 +704,12 @@ class DisplayResultsFromSPM(object):
                 if row and i == row:
                     try:
                         self.table.item(i, j).setBackgroundColor(QtGui.QColor(217, 255, 217))
-                    except:
+                    except Exception:
                         pass
                 else:
                     try:
                         self.table.item(i, j).setBackgroundColor(QtGui.QColor(255, 255, 255))
-                    except:
+                    except Exception:
                         pass
 
     def _getTalairachCoordsFromMNI(self, coords):
@@ -784,7 +784,7 @@ class DisplayResultsFromSPM(object):
 
         try:
             atlasImg = self.atlasFiles[ atlasName ]
-        except:
+        except Exception:
             for i in six.moves.xrange(2, self.table.rowCount()):
                 item = QtGui.QTableWidgetItem("-")
                 item.setBackgroundColor(self.table.item(i, 14).backgroundColor())
@@ -810,7 +810,7 @@ class DisplayResultsFromSPM(object):
                 coords = [ int(self.table.item(i, 9).text()),
                            int(self.table.item(i, 10).text()),
                            int(self.table.item(i, 11).text()) ]
-            except:
+            except Exception:
                 continue
 
             # Image already flipped R/L
@@ -823,7 +823,7 @@ class DisplayResultsFromSPM(object):
 
             try:
                 label = labelDic[ str(value) ]
-            except:
+            except Exception:
                 label = "N/A"
 
             item = QtGui.QTableWidgetItem(label)
@@ -1069,6 +1069,6 @@ def _readFile(filePath):
     for l in f.readlines():
         try:
             result.append(eval(l))
-        except:
+        except Exception:
             pass
     return result

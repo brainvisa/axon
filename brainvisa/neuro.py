@@ -228,7 +228,6 @@ if neuroConfig.gui:
         qApp.installEventFilter(_globalEventFilter)
         QMimeSourceFactory.defaultFactory().addFilePath(
             os.path.join(neuroConfig.docPath, 'processes'))
-    neuroConfig.guiLoaded = True
 else:
     # neuroConfig.qtApplication = QApplication( sys.argv, QApplication.Tty )
     neuroConfig.qtApplication = QCoreApplication(sys.argv)
@@ -275,6 +274,11 @@ if neuroConfig.gui:
     neuroConfig.qtApplication.lastWindowClosed .connect(sys.exit)
     # Ctrl + C is now linked to qApp.exit()
     signal.signal(signal.SIGINT, qt_exit_handler)
+
+    # The GUI can now be used (in particular for showing error messages, see
+    # brainvisa.processing.neuroException.showException)
+    neuroConfig.guiLoaded = True
+
     if neuroConfig.shell:
         import IPython
         if [int(x) for x in IPython.__version__.split('.')[:2]] >= [0, 11]:

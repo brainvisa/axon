@@ -36,7 +36,7 @@ def checkUpdates():
     # lines = urllib2.urlopen( filesaddress, timeout=3 ).readlines()
     try:
         lines = urllib2.urlopen(filesaddress, timeout=5).readlines()
-    except:  # the network may be not available
+    except urllib2.URLError:  # the network may be not available
         lines = []
     rexp = re.compile(
         '^.*(brainvisa-(.*)-(i686|x86_64).*-([^-]+)-.*)\.README.*$')

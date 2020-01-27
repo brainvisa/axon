@@ -88,10 +88,10 @@ class Number(DataType):
     def convert(self, value, checkValue=None):
         try:
             value = int(value)
-        except:
+        except ValueError:
             try:
                 value = long(value)
-            except:
+            except ValueError:
                 value = float(value)
         return value
 

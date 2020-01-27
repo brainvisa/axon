@@ -208,7 +208,7 @@ class DataType(object):
             value = getattr(hasSignatureObject, name)
         try:
             newValue = checkValue(value)
-        except:
+        except Exception:
             newValue = self.convert(value, checkValue=checkValue)
         return newValue
 

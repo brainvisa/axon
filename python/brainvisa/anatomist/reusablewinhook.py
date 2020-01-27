@@ -43,7 +43,7 @@ if neuroConfig.anatomistImplementation != 'socket':
     from soma import aims
     try:
         from soma.aims import aimsgui
-    except:
+    except ImportError:
         print('Warning: pyaimsgui not available')
 
     class ReusableWindowAction(QtGui.QAction):

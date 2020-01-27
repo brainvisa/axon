@@ -158,7 +158,7 @@ class DictPattern:
                             if not result:
                                 raise ke
                             return result
-                        except:
+                        except Exception:
                             raise ke
                 else:
                     if not matchResult:

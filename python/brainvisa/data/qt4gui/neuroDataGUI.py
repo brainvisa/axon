@@ -129,7 +129,7 @@ class StringEditor(QLineEdit, DataEditor):
     def checkValue(self):
         try:
             value = self._valueFromText(unicode(self.text()))
-        except:
+        except Exception:
             return
         if value != self.getValue():
             self.value = value
@@ -152,13 +152,13 @@ class NumberEditor(StringEditor):
         if value:
             try:
                 result = int(value)
-            except:
+            except ValueError:
                 try:
                     result = long(value)
-                except:
+                except ValueError:
                     try:
                         result = float(value)
-                    except:
+                    except ValueError:
                         raise ValueError(
                             HTMLMessage(_t_('<em>%s</em> is not a valid number') % value))
         else:
@@ -173,10 +173,10 @@ class IntegerEditor(StringEditor):
         if value:
             try:
                 result = int(value)
-            except:
+            except ValueError:
                 try:
                     result = long(value)
-                except:
+                except ValueError:
                     raise ValueError(
                         HTMLMessage(_t_('<em>%s</em> is not a valid integer') % value))
         else:
@@ -191,7 +191,7 @@ class FloatEditor(StringEditor):
         if value:
             try:
                 result = float(value)
-            except:
+            except ValueError:
                 raise ValueError(
                     HTMLMessage(_t_('<em>%s</em> is not a valid float') % value))
         else:
@@ -261,7 +261,7 @@ class ChoiceEditor(QComboBox, DataEditor):
             self.addItem(n)
         try:
             self.setValue(oldValue)
-        except:
+        except Exception:
             pass
         self.blockSignals(False)
 
@@ -459,7 +459,7 @@ class BooleanListEditor(QWidget, DataEditor):
         w = self.BooleanListSelect(self, unicode(self.objectName()))
         try:
             w.setValue(self.getValue())
-        except:
+        except Exception:
             pass
         w.show()
 
@@ -720,13 +720,13 @@ class NumberListEditor(StringListEditor):
         for s in text.split():
             try:
                 n = int(s)
-            except:
+            except ValueError:
                 try:
                     n = long(s)
-                except:
+                except ValueError:
                     try:
                         n = float(s)
-                    except:
+                    except ValueError:
                         raise ValueError(
                             HTMLMessage(_t_('<em>%s</em> is not a valid number') % s))
             result.append(n)
@@ -745,7 +745,7 @@ class NumberListEditor(StringListEditor):
             try:
                 valuel = list(value)  # can convert to a list ?
                 text = ' '.join([str(x) for x in valuel])
-            except:
+            except Exception:
                 text = str(value)
         self.setText(text)
 
@@ -763,10 +763,10 @@ class IntegerListEditor(NumberListEditor):
         for s in unicode(self.text()).split():
             try:
                 n = int(s)
-            except:
+            except ValueError:
                 try:
                     n = long(s)
-                except:
+                except ValueError:
                     raise ValueError(
                         HTMLMessage(_t_('<em>%s</em> is not a valid integer') % s))
             result.append(n)
@@ -786,7 +786,7 @@ class FloatListEditor(NumberListEditor):
         for s in unicode(self.text()).split():
             try:
                 n = float(s)
-            except:
+            except ValueError:
                 raise ValueError(
                     HTMLMessage(_t_('<em>%s</em> is not a valid float') % s))
             result.append(n)
@@ -963,7 +963,7 @@ class ChoiceListEditor(QWidget, DataEditor):
         w = self.ChoiceListSelect(self, unicode(self.objectName()))
         try:
             w.setValue(self.getValue())
-        except:
+        except Exception:
             pass
         w.show()
 
@@ -1123,7 +1123,7 @@ class PointListEditor(QWidget, DataEditor):
     def textChanged(self):
         try:
             v = self.getValue()
-        except:
+        except Exception:
             pass
         else:
             self.noDefault.emit(unicode(self.objectName()))
@@ -1260,7 +1260,7 @@ class GenericListSelection(QWidget):
                 # else:
                     # self.lbxValues.insertItem( v.fileName() )
             # self.lbxValues.setCurrentItem( len( self.values ) - 1 )
-        except:
+        except Exception:
             showException(parent=self)
 
     def _remove(self):

@@ -522,7 +522,7 @@ class DiskItemBrowser(QDialog):
                             'unexpected database value type in DiskItem browser combo:', type(v), 'for attribute:', a)
                         try:
                             vstring = quote_string(str(v))
-                        except:
+                        except Exception:
                             vstring = None
                     if vstring is not None and vstring not in s:
                         cmb.addItem(vstring)

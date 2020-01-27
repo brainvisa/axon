@@ -290,7 +290,7 @@ class LogViewer(QWidget):
         if logFileName:
             try:
                 self.setLogFile(logFileName)
-            except:
+            except Exception:
                 neuroException.showException()
 
 

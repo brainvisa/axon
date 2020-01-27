@@ -150,7 +150,7 @@ def openDatabases():
                         if base.fso.name == "brainvisa-3.0":
                             showWarning(
                                 _t_("The database " + base.name + " uses brainvisa-3.0 ontology which is deprecated. You should convert this database to the new ontology using the process Data management -> Convert Old database."))
-        except:
+        except Exception:
             showException()
     # update SQLDatabases object
     databases.removeDatabases()

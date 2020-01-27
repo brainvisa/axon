@@ -83,7 +83,7 @@ class Configuration(HasSignature):
                         self.set_module_config(
                             getattr(self, name), module_config)
                 self._loaded.update(read)
-            except:
+            except Exception:
                 exceptions = [sys.exc_info()]
         return exceptions
 

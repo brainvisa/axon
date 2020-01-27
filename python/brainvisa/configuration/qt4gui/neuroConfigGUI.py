@@ -210,7 +210,7 @@ def addSupportMenu(widget, menuBar):
         supportMenu = menuBar.addMenu(_t_("&Support"))
         try:
             supportMenu.addAction(_t_('Bug report'), showBugReport)
-        except:
+        except Exception:
             showException()
     else:
         brainvisa.processes.defaultContext().log(_t_('Feature disabled'),

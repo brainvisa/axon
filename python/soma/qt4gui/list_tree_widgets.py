@@ -1280,7 +1280,7 @@ class TreeListWidget(QTreeWidget):
                     event.ignore()
             else:
                 event.ignore()
-        except:
+        except Exception:
             # an error occurred, we could not decode the event correctly
             event.ignore()
 

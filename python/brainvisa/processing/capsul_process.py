@@ -363,7 +363,7 @@ def get_best_type(process, param, attributes=None, path_completion=None):
                         try:
                             path_completion = \
                                 completion_engine.get_path_completion_engine()
-                        except:
+                        except Exception:
                             continue
                         process = to[2].process.process
                         param = to[1]
@@ -856,7 +856,7 @@ class CapsulProcess(processes.Process):
                     if cins.__class__ is capsul_proc.__class__:
                         axon_process = processes.getProcessInstance(pid)
                         return axon_process
-                except:
+                except Exception:
                     # print('cannot instantiate')
                     continue
             axon_process = cls.build_from_instance(capsul_proc,

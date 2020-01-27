@@ -737,7 +737,7 @@ class DiskItemEditor(QWidget, DataEditor):
         try:
             self._editors = brainvisa.processes.getDataEditors(
                 source, 0, checkUpdate=False, process=self.process)
-        except:
+        except Exception:
             self._editors = None
 
     def updateDataEditorsComboBox(self):
@@ -1098,7 +1098,7 @@ class DiskItemListEditor(QWidget, DataEditor):
                 self.lbxValues.clearSelection()
                 self.lbxValues.setCurrentRow(len(self.values) - 1,
                                              QItemSelectionModel.SelectCurrent)
-            except:
+            except Exception:
                 showException(parent=self)
 
         def _remove(self):
@@ -1696,7 +1696,7 @@ class DiskItemListEditor(QWidget, DataEditor):
             self._viewers = brainvisa.processes.getViewers(
                 source, 1, checkUpdate=False, listof=True,
                                   process=self.process, check_values=True)
-        except:
+        except Exception:
             self._viewers = []
             
     def updateViewersComboBox(self):
@@ -1841,7 +1841,7 @@ class DiskItemListEditor(QWidget, DataEditor):
             self._editors = brainvisa.processes.getDataEditors(
                 source, 0, checkUpdate=False, listof=True,
                                 process=proc)
-        except:
+        except Exception:
             self._editors = []
 
     def updateDataEditorsComboBox(self):
@@ -1891,7 +1891,7 @@ class DiskItemListEditor(QWidget, DataEditor):
           databaseUserLevel=dul, browseUserLevel=bul)
         try:
             w.setValue(self.getValue())
-        except:
+        except Exception:
             showException(parent=self)
         w.accepted[list].connect(self._newValue)
         w.findPressed()
@@ -1908,7 +1908,7 @@ class DiskItemListEditor(QWidget, DataEditor):
           databaseUserLevel=dul, browseUserLevel=bul)
         try:
             w.setValue(self.getValue())
-        except:
+        except Exception:
             showException(parent=self)
         w.show()
         w.findPressed()
@@ -1924,7 +1924,7 @@ class DiskItemListEditor(QWidget, DataEditor):
             # context = self._context, databaseUserLevel=dul, browseUserLevel=bul )
         # try:
             # w.setValue( self.getValue() )
-        # except:
+        # except Exception:
             # showException( parent = self )
         # w.accepted.connect(self._newValue)
         # w.browsePressed()
@@ -1941,7 +1941,7 @@ class DiskItemListEditor(QWidget, DataEditor):
           context=self._context, databaseUserLevel=dul, browseUserLevel=bul)
         try:
             w.setValue(self.getValue())
-        except:
+        except Exception:
             showException(parent=self)
         w.show()
         if len(self.sle.getValue()) == 0:

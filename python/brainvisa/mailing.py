@@ -34,13 +34,13 @@ try:
     from email.MIMEText import MIMEText
     from email.MIMEBase import MIMEBase
     canMail = 1
-except:
+except Exception:
     canMail = 0
 
 if canMail:
     try:
         from email.MIMEMultipart import MIMEMultipart
-    except:
+    except ImportError:
         # Copyright (C) 2002 Python Software Foundation
         # Author: barry@zope.com (Barry Warsaw)
 

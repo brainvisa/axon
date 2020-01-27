@@ -68,7 +68,7 @@ class UpdateDatabasesGUI(qt.QWidget):
         for dbs in neuroConfig.dataPath:
             try:
                 database = neuroHierarchy.databases.database(dbs.directory)
-            except:
+            except Exception:
                 print('PROBLEM: database', dbs.directory, 'is missing')
                 continue
             selected = not dbs.builtin

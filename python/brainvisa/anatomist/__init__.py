@@ -34,6 +34,7 @@ from __future__ import print_function
 import sys
 import os
 from brainvisa.configuration import neuroConfig
+from brainvisa.processing.neuroException import showException
 use_headless = False
 try:
     import anatomist
@@ -47,15 +48,16 @@ try:
     exec("import " + anatomist.getDefaultImplementationModuleName()
          + " as anatomistModule")
 except Exception as e:
-    print(e)
+    import traceback
+    showException(beforeError='The Anatomist module failed to load:')
     anatomistImport = False
+    noAnatomistReason = '\n'.join(traceback.format_exception_only(type(e), e))
 
 if anatomistImport:
     from brainvisa import registration
     from brainvisa.processing import neuroLog
     from brainvisa.processing import neuroException
     from brainvisa.data import neuroData
-    from brainvisa.validation import ValidationError
     from soma.qtgui.api import QtThreadCall
     import distutils.spawn
     import weakref
@@ -94,8 +96,10 @@ Specificities added for brainvisa are :
 
 
 def validation():
+    from brainvisa.validation import ValidationError
     if not anatomistImport:
-        raise ValidationError('Cannot find anatomist module')
+        raise ValidationError('Cannot find anatomist module: {0}'
+                              .format(noAnatomistReason))
     elif distutils.spawn.find_executable('anatomist') is None:
         raise ValidationError('Cannot find Anatomist executable')
 
@@ -160,7 +164,7 @@ if anatomistImport:
                         anatomistParameters += [
                             '--cout', self.outputLog.fileName, '--cerr',
                             self.outputLog.fileName]
-            except:
+            except Exception:
                 neuroException.showException()
                 self.communicationLogFile = None
                 self.outputLog = None
@@ -306,7 +310,7 @@ if anatomistImport:
                             if loadTransformations:
                                 self.loadTransformations(newObject.referential)
 
-                    except:
+                    except Exception:
                         neuroException.showException(afterError='Cannot load referential and transformations information with '
                                                      'object "' + file + '"')
             else:
@@ -418,7 +422,7 @@ if anatomistImport:
                         self.log(
                             string.join('processTransformations warning: multiple transformations from', ref1, 'to', ref2))
                         loadTrAndCreateRef = forceLoadTransformation
-                    except:
+                    except Exception:
                         loadTrAndCreateRef = True
 
                     if loadTrAndCreateRef:
@@ -542,7 +546,7 @@ if anatomistImport:
                             (block is None or (w.block is not None
                                                and w.block.internalWidget == block.internalWidget)):
                             return w
-                    except:  # window probably closed in the meantime
+                    except Exception:  # window probably closed in the meantime
                         todel.add(w)
             finally:
                 if len(todel) != 0:
@@ -750,7 +754,7 @@ if anatomistImport:
                     object.setPalette(minVal=max(grey[0] - grey[1] * 8, 0),
                                       maxVal=white[0] + white[1] * 3,
                                       absoluteMode=True)
-                except:
+                except Exception:
                     print('Warning: histogram could not be read:', hanfile)
 
             window.addObjects([object])
@@ -1015,7 +1019,7 @@ if anatomistImport:
                         # which create a new window object (proxy for
                         # anatomist window)... -> infinite loop
                     self.setChoices(*choices)
-                except:
+                except Exception:
                     # if it is impossible to get informations about anatomist
                     # windows, it may be already closed (close window event may
                     # occur after exit event...), so retrieve default choices.

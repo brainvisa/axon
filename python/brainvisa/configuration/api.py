@@ -296,14 +296,14 @@ def convertConfiguration30To31(sourceFileName, destFileName,
         fopts = {'encoding': 'utf-8'} if sys.version_info[0] >= 3 else {}
         with open(sourceFileName, **fopts) as f:
             six.exec_(f.read(), d, d)
-    except:
+    except Exception:
         import traceback
         print(_('Cannot execute "%s":' % sourceFileName), file=sys.stderr)
         traceback.print_exc()
         return
     try:
         configuration.save(destFileName)
-    except:
+    except Exception:
         print(_('Cannot convert "%(old)s" to "%(new)s"' % {
             'old': sourceFileName, 'new': destFileName}), file=sys.stderr)
         # raise
