@@ -298,8 +298,15 @@ class DiskItemBrowser(QDialog):
                 index = None
         if index is not None:
             index = self._tableData.sortedIndex(index)
-            item = (self._items[index] if isinstance(self._items[index], DiskItem) else self._database.database(
-                self._items[index][1]).getDiskItemFromUuid(self._items[index][0]))
+            if isinstance(self._items[index], DiskItem):
+                item = self._items[index]
+            else:
+                item = self._database.database(self._items[index][1]) \
+                    .getDiskItemFromUuid(self._items[index][0])
+                if item is None:
+                    print('database', self._items[index][1], 'cannot be read',
+                          file=sys.stderr)
+                    raise ValueError('corrupted database')
             self._items[index] = item
             self._ui.textBrowser.setText(self.diskItemDisplayText(item))
             self.selected.emit(item)
