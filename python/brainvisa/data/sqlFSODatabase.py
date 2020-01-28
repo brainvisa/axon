@@ -1413,14 +1413,21 @@ class SQLDatabase(Database):
             # minf=minf.encode("utf-8")
         # f = StringIO( minf )
         # state = readMinf( f )[ 0 ]
-        if sys.version_info[0] >= 3:
-            try:
-                state = cPickle.loads(minf)
-            except Exception:
-                # pickes from python2 may look like this.
-                state = cPickle.loads(six.b(minf), encoding='latin1')
-        else:
-            state = cPickle.loads(str(minf))
+        try:
+            if sys.version_info[0] >= 3:
+                try:
+                    state = cPickle.loads(minf)
+                except Exception:
+                    # pickes from python2 may look like this.
+                    state = cPickle.loads(six.b(minf), encoding='latin1')
+            else:
+                state = cPickle.loads(str(minf))
+        except ValueError as e:
+            print('Could not decode attributes for disk item:',
+                  file=sys.stderr)
+            print(e, file=sys.stderr)
+            return None
+
         if state['isDirectory']:
             diskItem = Directory(
                 os.path.join(self.directory, state['name']), None)
