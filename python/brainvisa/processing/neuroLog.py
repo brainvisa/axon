@@ -364,9 +364,8 @@ class LogFile:
                 children.close()
             if self._writer is not None:
                 self._writer.flush()
-                self._writer.close()
+                self._writer.close()  # also closes the file
                 self._writer = None
-                self._file.close()
                 self._file = None
                 if self._parent is not None:
                     self._parent._subLogClosed(self)
