@@ -35,7 +35,7 @@ from __future__ import print_function
 # import neuroConfig
 import sys
 import os
-from soma.qt_gui.qt_backend.QtCore import QProcess, QTimer
+from soma.qt_gui.qt_backend.QtCore import QProcess, QTimer, QProcessEnvironment
 from brainvisa.configuration import neuroConfig
 from soma.qt_gui import qt_backend
 if qt_backend.get_qt_backend() == 'PySide':
@@ -107,11 +107,13 @@ class CommandWithQProcess(object):
         if env:
             mapenv = os.environ.copy()
             mapenv.update(env)
-            listenv = []
+            pe = QProcessEnvironment()
+            #listenv = []
             for var, value in mapenv.items():
                 if value is not None:
-                    listenv.append(var + "=" + value)
-            self._qprocess.setEnvironment(listenv)
+                    #listenv.append(var + "=" + value)
+                    pe.insert(var, value)
+            self._qprocess.setProcessEnvironment(pe)
 
     def start(self):
         '''Starts the command. If it cannot be started, a RuntimeError is raised'''
