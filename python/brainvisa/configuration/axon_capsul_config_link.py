@@ -171,26 +171,40 @@ class AxonCapsulConfSynchronizer(object):
 
         if ax_conf.SPM.spm12_standalone_command:
             study_config.spm_exec = ax_conf.SPM.spm12_standalone_command
-            study_config.spm_standalone = True
+            study_config.spm_version = '12'
             use_spm = True
             need_matab = False
         elif ax_conf.SPM.spm8_standalone_command:
             study_config.spm_exec = ax_conf.SPM.spm8_standalone_command
-            study_config.spm_standalone = True
+            study_config.spm_version = '8'
             use_spm = True
             need_matab = False
         if ax_conf.SPM.spm12_standalone_path:
-            study_config.spm_directory = ax_conf.SPM.spm12_standalone_path
+            if os.path.exists(os.path.join(ax_conf.SPM.spm12_standalone_path,
+                                           'mcr', 'v713')):
+                study_config.spm_directory = ax_conf.SPM.spm12_standalone_path
+            elif os.path.exists(os.path.join(ax_conf.SPM.spm12_standalone_path,
+                                             '../..', 'mcr', 'v713')):
+                study_config.spm_directory \
+                    = os.path.dirname(os.path.dirname(
+                        ax_conf.SPM.spm12_standalone_path))
+            study_config.spm_version = '12'
             use_spm = True
         elif ax_conf.SPM.spm8_standalone_path:
             study_config.spm_directory = ax_conf.SPM.spm8_standalone_path
+            study_config.spm_version = '8'
             use_spm = True
         elif ax_conf.SPM.spm12_path:
             study_config.spm_directory = ax_conf.SPM.spm12_path
+            study_config.spm_version = '12'
             use_spm = True
         elif ax_conf.SPM.spm8_path:
             study_config.spm_directory = ax_conf.SPM.spm8_path
+            study_config.spm_version = '8'
             use_spm = True
+
+        if not need_matab:
+            study_config.spm_standalone = True
 
         if use_spm and (not need_matab or study_config.use_matlab):
             study_config.use_spm = True
@@ -228,10 +242,8 @@ class AxonCapsulConfSynchronizer(object):
 
         # matlab
         try:
-            if study_config.use_matlab:
+            if study_config.use_matlab is not Undefined:
                 ax_conf.matlab.executable = study_config.matlab_exec
-            else:
-                ax_conf.matlab.executable = ''
         except Exception as e:
             print('Exception:', e)
 
@@ -240,13 +252,15 @@ class AxonCapsulConfSynchronizer(object):
             if study_config.use_spm:
                 if getattr(study_config, 'spm_version', '12') == '12':
                     if study_config.spm_standalone:
-                        ax_conf.SPM.spm12_standalone_command \
-                            = study_config.spm_exec
-                        ax_conf.SPM.spm12_standalone_path \
-                            = study_config.spm_directory
-                        ax_conf.SPM.spm12_standalone_mcr_path \
-                            = os.path.join(study_config.spm_directory, 'mcr',
-                                           'v713')
+                        if study_config.spm_exec is not Undefined:
+                            ax_conf.SPM.spm12_standalone_command \
+                                = study_config.spm_exec
+                        if study_config.spm_directory is not Undefined:
+                            ax_conf.SPM.spm12_standalone_path \
+                                = study_config.spm_directory
+                            ax_conf.SPM.spm12_standalone_mcr_path \
+                                = os.path.join(study_config.spm_directory,
+                                               'mcr', 'v713')
                     else:
                         ax_conf.SPM.spm12_standalone_path = ''
                         ax_conf.SPM.spm12_standalone_command = ''
@@ -256,13 +270,15 @@ class AxonCapsulConfSynchronizer(object):
                     ax_conf.SPM.spm8_standalone_mcr_path = ''
                 else:
                     if study_config.spm_standalone:
-                        ax_conf.SPM.spm8_standalone_command \
-                            = study_config.spm_exec
-                        ax_conf.SPM.spm8_standalone_path \
-                            = study_config.spm_directory
-                        ax_conf.SPM.spm8_standalone_mcr_path \
-                            = os.path.join(study_config.spm_directory, 'mcr',
-                                           'v713')
+                        if study_config.spm_exec is not Undefined:
+                            ax_conf.SPM.spm8_standalone_command \
+                                = study_config.spm_exec
+                        if study_config.spm_directory is not Undefined:
+                            ax_conf.SPM.spm8_standalone_path \
+                                = study_config.spm_directory
+                            ax_conf.SPM.spm8_standalone_mcr_path \
+                                = os.path.join(study_config.spm_directory,
+                                               'mcr', 'v713')
                     else:
                         ax_conf.SPM.spm8_standalone_path = ''
                         ax_conf.SPM.spm8_standalone_command = ''
@@ -270,13 +286,13 @@ class AxonCapsulConfSynchronizer(object):
                     ax_conf.SPM.spm12_standalone_path = ''
                     ax_conf.SPM.spm12_standalone_command = ''
                     ax_conf.SPM.spm12_standalone_mcr_path = ''
-            else:
-                ax_conf.SPM.spm12_standalone_path = ''
-                ax_conf.SPM.spm12_standalone_command = ''
-                ax_conf.SPM.spm12_standalone_mcr_path = ''
-                ax_conf.SPM.spm8_standalone_path = ''
-                ax_conf.SPM.spm8_standalone_command = ''
-                ax_conf.SPM.spm8_standalone_mcr_path = ''
+            #else:
+                #ax_conf.SPM.spm12_standalone_path = ''
+                #ax_conf.SPM.spm12_standalone_command = ''
+                #ax_conf.SPM.spm12_standalone_mcr_path = ''
+                #ax_conf.SPM.spm8_standalone_path = ''
+                #ax_conf.SPM.spm8_standalone_command = ''
+                #ax_conf.SPM.spm8_standalone_mcr_path = ''
         except Exception as e:
             print('Exception:', e)
 
@@ -338,11 +354,11 @@ class AxonCapsulConfSynchronizer(object):
         if value:
             study_config.spm_exec = value
             study_config.spm_standalone = True
-            study_config.spm_standalone_version = ver
+            study_config.spm_version = ver
         else:
             study_config.spm_standalone = False
             study_config.spm_exec = ''
-            study_config.spm_standalone_version = None
+            study_config.spm_version = None
         if study_config.spm_standalone \
                 or (study_config.use_matlab and study_config.spm_directory):
             study_config.use_spm = True
