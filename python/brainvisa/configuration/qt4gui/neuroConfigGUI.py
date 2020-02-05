@@ -70,8 +70,10 @@ def editConfiguration():
         x for x in neuroConfig.dataPath if hasattr(x, 'builtin') and x.builtin]
     for fso in configuration.databases.fso:
         if fso.selected and fso.directory and os.path.exists(fso.directory):
-            newDataPath.append(DatabaseSettings(fso.directory,
-                                                read_only=fso.read_only))
+            #newDataPath.append(DatabaseSettings(fso.directory,
+                                                #read_only=fso.read_only))
+            newDataPath.append(neuroConfig.get_database_settings(
+                fso.directory, read_only=fso.read_only))
     if neuroConfig.dataPath != newDataPath:
         neuroConfig.dataPath = newDataPath
         neuroHierarchy.openDatabases()

@@ -1022,6 +1022,15 @@ def initGlobalVariables():
             sys.stderr.write(str(msg) + '\n')
 
 
+def get_database_settings(name, selected=True, read_only=False):
+    global dataPath
+    for dbs in dataPath:
+        if dbs.directory == name:
+            return dbs
+    # not found, create a new one
+    return DatabaseSettings(name, selected=selected, read_only=read_only)
+
+
 def getDocFile(filename):
     """
     Search doc file in doc path and if not found, in english documentation path.

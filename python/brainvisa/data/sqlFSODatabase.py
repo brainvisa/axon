@@ -532,9 +532,10 @@ class SQLDatabase(Database):
         minf = os.path.join(self.directory, 'database_settings.minf')
         if fso is None:
             if os.path.exists(minf):
-                fso = readMinf(minf)[0].get('ontology', 'brainvisa-3.2.0')
-            else:
-                fso = 'brainvisa-3.2.0'
+                fso = readMinf(minf)[0].get('ontology', None)
+            if fso is None:
+                db_settings = neuroConfig.get_database_settings(directory)
+                fso = db_settings.expert_settings.ontology
         self.fso = FileSystemOntology.get(fso)
         self.otherSqliteFiles = otherSqliteFiles
         self._mustBeUpdated = False
@@ -773,7 +774,7 @@ class SQLDatabase(Database):
         simulation = False
         # if simulation: removeold = False
         directory = os.path.join(self.name, "history_book")
-        params = neuroConfig.DatabaseSettings(self.name)
+        params = neuroConfig.get_database_settings(self.name)
         lastIncrementalUpdates = params.expert_settings.lastIncrementalUpdates
         lastIncrementalUpdate = lastIncrementalUpdates.get(databaseVersion)
         if lastIncrementalUpdate is None:
@@ -910,7 +911,7 @@ class SQLDatabase(Database):
         if not scanAllBvproc and len(infiles) > 0:
             dateLastIncrementalUpdate = time.strftime(
                 '%Y-%m-%d-%H:%M', time.localtime())
-            params = neuroConfig.DatabaseSettings(self.name)
+            params = neuroConfig.get_database_settings(self.name)
             params.expert_settings.lastIncrementalUpdates[databaseVersion] \
                 = dateLastIncrementalUpdate
             try:
