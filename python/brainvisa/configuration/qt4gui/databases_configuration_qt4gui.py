@@ -129,13 +129,15 @@ class DatabaseManagerGUI(qt.QWidget):
     def getConfiguredDatabases(self):
         for i in range(self.lvDatabases.count()):
             item = self.lvDatabases.item(i)
-            directory, selected, read_only = item._value
+            directory, selected, read_only, settings = item._value
             yield (directory, (item.checkState() == qt.Qt.Checked), read_only)
 
     def update(self, databases):
+        from brainvisa.configuration import neuroConfig
         self.lvDatabases.clear()
         for d in databases:
-            self._addDatabase(d.directory, d.selected, d.read_only)
+            self._addDatabase(d.directory, d.selected, d.read_only,
+                              neuroConfig.get_database_settings(d.directory))
 
     def _getDatabaseEditor(self):
         if self._databaseEditor is None:
@@ -144,14 +146,18 @@ class DatabaseManagerGUI(qt.QWidget):
 
     def _edit(self):
         try:
-            settings = DatabaseSettings(
-                *self.lvDatabases.currentItem()._value)
+            from brainvisa.configuration import neuroConfig
+            item = self.lvDatabases.currentItem()
+            directory, selected, read_only, settings = item._value
+            if settings is None:
+                settings = neuroConfig.get_database_settings(
+                    directory, selected, read_only)
             appgui = ApplicationQtGUI()
             if appgui.edit(settings, live=True, parent=self):
                 if settings.directory:
-                    item = self.lvDatabases.currentItem()
+                    #item = self.lvDatabases.currentItem()
                     item._value = (settings.directory, settings._selected,
-                                   settings.read_only)
+                                   settings.read_only, settings)
                     item.setText(settings.directory)
                     if settings.read_only:
                         item.setIcon(self.pixLock)
@@ -178,7 +184,7 @@ class DatabaseManagerGUI(qt.QWidget):
             if appgui.edit(settings, live=True, parent=self):
                 if settings.directory:
                     self._addDatabase(settings.directory, settings._selected,
-                                      settings.read_only)
+                                      settings.read_only, settings)
                     self.modification = True
                     try:
                         writeMinf(
@@ -234,7 +240,8 @@ class DatabaseManagerGUI(qt.QWidget):
             else:
                 self.btnDown.setEnabled(0)
 
-    def _addDatabase(self, directory, selected, read_only=False):
+    def _addDatabase(self, directory, selected, read_only=False,
+                     settings=None):
         item = qt.QListWidgetItem(self.lvDatabases)
         if os.path.isdir(directory) and not os.access(directory,
                                                       os.R_OK + os.W_OK + os.X_OK):
@@ -248,7 +255,7 @@ class DatabaseManagerGUI(qt.QWidget):
             item.setCheckState(qt.Qt.Checked)
         else:
             item.setCheckState(qt.Qt.Unchecked)
-        item._value = (directory, selected, read_only)
+        item._value = (directory, selected, read_only, settings)
 
 #------------------------------------------------------------------------------
 
