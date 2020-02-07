@@ -320,7 +320,7 @@ if neuroConfig.shell:
         # use jupyter API
         import jupyter_console.app as japp
         app = japp.ZMQTerminalIPythonApp.instance()
-        app.initialize()
+        app.initialize([])
         app.start()
     except ImportError:
         try:
