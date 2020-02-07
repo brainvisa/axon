@@ -7102,15 +7102,15 @@ def runIPConsoleKernel(mode='qtconsole'):
         if not app.initialized() or not app.kernel:
             print('runing IP console kernel')
             app.hb_port = 50042  # don't know why this is not set automatically
-            app.initialize([mode, '--pylab=qt',
+            app.initialize([mode, '--gui=qt', # '--pylab=qt',
                             "--KernelApp.parent_appname='ipython-%s'" % mode])
             # in ipython >= 1.2, app.start() blocks until a ctrl-c is issued in
             # the terminal. Seems to block in tornado.ioloop.PollIOLoop.start()
             #
             # So, don't call app.start because it would begin a zmq/tornado loop
             # instead we must just initialize its callback.
-            # if app.poller is not None:
-                            # app.poller.start()
+            #if app.poller is not None:
+                #app.poller.start()
             app.kernel.start()
 
             from zmq.eventloop import ioloop
