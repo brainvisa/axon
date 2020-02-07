@@ -7140,7 +7140,7 @@ def runIPConsoleKernel(mode='qtconsole'):
                     _my_ioloop_start(ioloop.IOLoop.instance())
                 except KeyboardInterrupt:
                     pass
-            return app
+        return app
 
     else:
         # ipython 0.x API
