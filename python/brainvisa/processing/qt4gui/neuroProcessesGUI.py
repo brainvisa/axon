@@ -176,28 +176,45 @@ def startShell():
     else:
         qt_api = "pyqt5"
     os.environ["QT_API"] = qt_api
+    ipfunc = None
+    print('startShell')
     try:
-        import IPython
-        ipversion = [int(x) for x in IPython.__version__.split('.')]
-        if ipversion >= [0, 11]:
-            # ipython >= 0.11, use client/server mode
-            ipConsole = brainvisa.processes.runIPConsoleKernel()
-            import soma.subprocess
-            if ipversion >= [1, 0]:
-                ipmodule = 'IPython.terminal.ipapp'
-            else:
-                ipmodule = 'IPython.frontend.terminal.ipapp'
-            sp = soma.subprocess.Popen([sys.executable, '-c',
-                                   'import os; os.environ["QT_API"] = "%s"; from %s import launch_new_instance; launch_new_instance()'
-                                   % (qt_api, ipmodule),
-                                   'qtconsole', '--existing',
-                                   '--shell=%d' % ipConsole.shell_port,
-                                   '--iopub=%d' % ipConsole.iopub_port,
-                                   '--stdin=%d' % ipConsole.stdin_port, '--hb=%d' % ipConsole.hb_port])
-            brainvisa.processes._ipsubprocs.append(_ProcDeleter(sp))
-            return
-    except Exception:
-        pass
+        import jupyter_core.application
+        ipfunc = 'from jupyter_core import application; ' \
+            'app = application.JupyterApp(); app.initialize(); app.start()'
+        print('ipfunc:', ipfunc)
+    except ImportError:
+        try:
+            import IPython
+            ipversion = [int(x) for x in IPython.__version__.split('.')]
+            if ipversion >= [0, 11]:
+                # ipython >= 0.11, use client/server mode
+                print('ipversion:', ipversion)
+                if ipversion >= [1, 0]:
+                    ipmodule = 'IPython.terminal.ipapp'
+                else:
+                    ipmodule = 'IPython.frontend.terminal.ipapp'
+                ipfunc = 'from %s import launch_new_instance; launch_new_instance()' % ipmodule
+        except Exception:
+            print('failed to run Qt console')
+
+    print('ipfunc:', ipfunc)
+    if ipfunc:
+        import soma.subprocess
+
+        ipConsole = brainvisa.processes.runIPConsoleKernel()
+        cmd = [sys.executable, '-c',
+               'import os; os.environ["QT_API"] = "%s"; %s' % (qt_api, ipfunc),
+               'qtconsole', '--existing',
+               '--shell=%d' % ipConsole.shell_port,
+               '--iopub=%d' % ipConsole.iopub_port,
+               '--stdin=%d' % ipConsole.stdin_port,
+               '--hb=%d' % ipConsole.hb_port]
+        print('cmd:', cmd)
+        sp = soma.subprocess.Popen(cmd)
+        brainvisa.processes._ipsubprocs.append(_ProcDeleter(sp))
+        return
+
     neuroConfig.shell = True
     try:
         if neuroConfig.anatomistImplementation == 'socket':

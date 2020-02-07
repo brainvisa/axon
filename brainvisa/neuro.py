@@ -245,14 +245,19 @@ else:
 
 def startConsoleShell():
     from soma.qt_gui.qt_backend.QtGui import qApp
-    import IPython
-    ipversion = [int(x) for x in IPython.__version__.split('.')]
+    try:
+        import jupyter_console.app
+        ipmodule = 'jupyter_console.app'
+    except ImportError:
+        import IPython
+        ipversion = [int(x) for x in IPython.__version__.split('.')]
+        if ipversion >= [1, 0]:
+            ipmodule = 'IPython.terminal.ipapp'
+        else:
+            ipmodule = 'IPython.frontend.terminal.ipapp'
+
     ipConsole = runIPConsoleKernel()
     import soma.subprocess
-    if ipversion >= [1, 0]:
-        ipmodule = 'IPython.terminal.ipapp'
-    else:
-        ipmodule = 'IPython.frontend.terminal.ipapp'
     sp = soma.subprocess.Popen([sys.executable, '-c',
                            'from %s import launch_new_instance; launch_new_instance()' % ipmodule,
                            'console', '--existing',
@@ -280,12 +285,18 @@ if neuroConfig.gui:
     neuroConfig.guiLoaded = True
 
     if neuroConfig.shell:
-        import IPython
-        if [int(x) for x in IPython.__version__.split('.')[:2]] >= [0, 11]:
-            # ipython >= 0.11, use client/server mode
-            print('running shell...')
+        try:
+            import jupyter_console
+            print('running jupyter shell...')
             neuroConfig.shell = False
             QTimer.singleShot(0, startConsoleShell)
+        except ImportError:
+            import IPython
+            if [int(x) for x in IPython.__version__.split('.')[:2]] >= [0, 11]:
+                # ipython >= 0.11, use client/server mode
+                print('running shell...')
+                neuroConfig.shell = False
+                QTimer.singleShot(0, startConsoleShell)
     if not neuroConfig.shell:
         if USE_QT4:
             neuroConfig.qtApplication.exec_()
@@ -304,34 +315,41 @@ if neuroConfig.databaseServer:
 ipConsole = None
 ipsubprocs = []
 if neuroConfig.shell:
+    neuroConfig.shell = 0
     try:
-        neuroConfig.shell = 0
-        import IPython
-        ipversion = [int(x) for x in IPython.__version__.split('.')]
-        if ipversion >= [0, 11]:
-            if not neuroConfig.gui:  # with gui this is done earlier using qtconsole
-                # ipython >= 0.11
-                if ipversion >= [1, 0]:
-                    from IPython.terminal.ipapp import TerminalIPythonApp
-                else:
-                    from IPython.frontend.terminal.ipapp import TerminalIPythonApp
-                app = TerminalIPythonApp.instance()
-                app.initialize([])
-                app.start()
-        else:
-            # Qt console does not exist in ipython <= 0.10
-            # and the API was different
-            if USE_QT4:
-                ipshell = IPython.Shell.IPShellQt4(['-q4thread'])
-                from soma.qt_gui.qt_backend.QtCore import QTimer
-            else:
-                ipshell = IPython.Shell.IPShellQt(['-qthread'])
-                from qt import QTimer
-            ipshell.mainloop(sys_exit=1)
-            cleanupGui()
+        # use jupyter API
+        import jupyter_console.app as japp
+        app = japp.ZMQTerminalIPythonApp.instance()
+        app.initialize([])
+        app.start()
     except ImportError:
-        print('IPython not found - Shell mode disabled', file=sys.stderr)
-        neuroConfig.shell = 0
+        try:
+            import IPython
+            ipversion = [int(x) for x in IPython.__version__.split('.')]
+            if ipversion >= [0, 11]:
+                if not neuroConfig.gui:  # with gui this is done earlier using qtconsole
+                    # ipython >= 0.11
+                    if ipversion >= [1, 0]:
+                        from IPython.terminal.ipapp import TerminalIPythonApp
+                    else:
+                        from IPython.frontend.terminal.ipapp import TerminalIPythonApp
+                    app = TerminalIPythonApp.instance()
+                    app.initialize([])
+                    app.start()
+            else:
+                # Qt console does not exist in ipython <= 0.10
+                # and the API was different
+                if USE_QT4:
+                    ipshell = IPython.Shell.IPShellQt4(['-q4thread'])
+                    from soma.qt_gui.qt_backend.QtCore import QTimer
+                else:
+                    ipshell = IPython.Shell.IPShellQt(['-qthread'])
+                    from qt import QTimer
+                ipshell.mainloop(sys_exit=1)
+                cleanupGui()
+        except ImportError:
+            print('IPython not found - Shell mode disabled', file=sys.stderr)
+            neuroConfig.shell = 0
 
 while len(ipsubprocs) != 0:
     sp = ipsubprocs.pop()
