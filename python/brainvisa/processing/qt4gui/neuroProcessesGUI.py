@@ -179,6 +179,7 @@ def startShell():
     ipfunc = None
     print('startShell')
     try:
+        import qtconsole  # to check it is installed
         import jupyter_core.application
         ipfunc = 'from jupyter_core import application; ' \
             'app = application.JupyterApp(); app.initialize(); app.start()'
@@ -198,7 +199,6 @@ def startShell():
         except Exception:
             print('failed to run Qt console')
 
-    print('ipfunc:', ipfunc)
     if ipfunc:
         import soma.subprocess
 
