@@ -32,9 +32,11 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from __future__ import print_function
-# import neuroConfig
-import sys
+
+import locale
 import os
+import sys
+
 from soma.qt_gui.qt_backend.QtCore import QProcess, QTimer, QProcessEnvironment
 from brainvisa.configuration import neuroConfig
 from soma.qt_gui import qt_backend
@@ -46,8 +48,6 @@ else:
     if PYQT_VERSION < 0x040703:
         # a bug in PyQt QProcess.start() needs a compiled workaround
         from soma import somaqt
-if sys.version_info[0] >= 3:
-    unicode = str
 
 # import logging
 # LOG_FILENAME = '/tmp/commands.log'
@@ -55,6 +55,11 @@ if sys.version_info[0] >= 3:
 # logging.basicConfig( filename=LOG_FILENAME, level=logging.DEBUG )
 
 #--------------------------------------------------------------------------
+
+
+def _decode_output(output_bytes):
+    """Decode the output of a process to Unicode."""
+    return bytes(output_bytes).decode(locale.getpreferredencoding(), 'replace')
 
 
 class CommandWithQProcess(object):
@@ -219,29 +224,30 @@ class CommandWithQProcess(object):
         self.normalExit = (exitStatus == QProcess.NormalExit)
         self.exitStatus = exitCode
 
+    @staticmethod
     def _filterOutputString(buffer):
         # filter '\r', '\b' and similar
-        result = ''
+        # FIXME: use a more efficient filtering method!!! (e.g. re.sub)
+        result = u''
         for c in buffer:
-            if c == '\b':
+            if c == u'\b':
                 if len(result) > 0:
                     result = result[:-1]
-            elif (c == '\r') and (neuroConfig.platform != 'windows'):
+            elif (c == u'\r') and (neuroConfig.platform != 'windows'):
                 # On windows \r means a carriage return and is followed by a \n
                 result = ''
-            elif c in ('\a', '\m', '\x0b'):  # might appear on Mac/Windows
+            elif c in (u'\a', u'\u000b'):  # might appear on Mac/Windows
                 pass
             else:
                 result += c
         return result
-    _filterOutputString = staticmethod(_filterOutputString)
 
     def _readStdout(self):
         line = self._filterOutputString(
-            unicode(self._qprocess.readAllStandardOutput()))
-        self._stdoutAction(line + '\n')
+            _decode_output(self._qprocess.readAllStandardOutput()))
+        self._stdoutAction(line + u'\n')
 
     def _readStderr(self):
         line = self._filterOutputString(
-            unicode(self._qprocess.readAllStandardError()))
-        self._stderrAction(line + '\n')
+            _decode_output(self._qprocess.readAllStandardError()))
+        self._stderrAction(line + u'\n')
