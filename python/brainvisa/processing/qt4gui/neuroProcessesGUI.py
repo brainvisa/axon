@@ -615,11 +615,13 @@ class SomaWorkflowProcessView(QMainWindow):
         view_menu.addAction(self.ui.dock_plot.toggleViewAction())
         view_menu.addAction(close_viewers_action(self))
 
-        self.action_update_databases = QAction(self)
-        self.action_update_databases.setText(_t_('Check && update databases'))
-        self.action_update_databases.triggered.connect(self.update_databases)
+        self.action_rebuild_check_all_databases = QAction(self)
+        self.action_rebuild_check_all_databases.setText(
+            _t_('Completely rebuild and check ALL databases...'))
+        self.action_rebuild_check_all_databases.triggered.connect(
+            self.complete_rebuild_and_check_all_databases)
         self.process_menu = self.ui.menubar.addMenu("&Process")
-        self.process_menu.addAction(self.action_update_databases)
+        self.process_menu.addAction(self.action_rebuild_check_all_databases)
 
         self.workflow_tool_bar = QToolBar(self)
         self.workflow_tool_bar.addWidget(
@@ -800,7 +802,7 @@ class SomaWorkflowProcessView(QMainWindow):
             self.process_menu.addAction(self.process_view.action_iterate)
 
     @QtCore.Slot()
-    def update_databases(self):
+    def complete_rebuild_and_check_all_databases(self):
         QtGui.QApplication.setOverrideCursor(
             QtGui.QCursor(QtCore.Qt.WaitCursor))
         for dbSettings in neuroConfig.dataPath:
