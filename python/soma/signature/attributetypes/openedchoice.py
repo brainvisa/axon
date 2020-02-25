@@ -46,10 +46,6 @@ __docformat__ = "epytext en"
 from soma.signature.attributetypes.choice import Choice
 import sys
 
-if sys.version_info[0] >= 3:
-    six.text_type = str
-    six.string_types = str
-
 #-------------------------------------------------------------------------
 
 
