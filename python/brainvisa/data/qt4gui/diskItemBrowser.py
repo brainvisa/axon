@@ -56,8 +56,6 @@ from six.moves import range
 
 if sys.version_info[0] >= 3:
     xrange = range
-    six.text_type = str
-    six.string_types = str
 
 #----------------------------------------------------------------------------
 
