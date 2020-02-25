@@ -58,10 +58,6 @@ from brainvisa.processes import defaultContext
 import six
 import sys
 
-if sys.version_info[0] >= 3:
-    six.text_type = str
-
-
 minfHistory = 'brainvisa-history_2.0'
 
 
