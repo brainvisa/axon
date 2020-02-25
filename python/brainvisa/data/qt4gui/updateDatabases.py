@@ -53,8 +53,6 @@ from brainvisa.processing.qt4gui import neuroProcessesGUI
 
 if sys.version_info[0] >= 3:
     xrange = range
-    six.text_type = str
-
 
 class UpdateDatabasesGUI(qt.QWidget):
 
