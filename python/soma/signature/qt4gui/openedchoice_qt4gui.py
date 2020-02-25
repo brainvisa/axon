@@ -46,9 +46,6 @@ __docformat__ = "epytext en"
 
 from soma.signature.qt4gui.choice_qt4gui import Choice_Qt4GUI
 import sys
-if sys.version_info[0] >= 3:
-    six.text_type = str
-
 
 class OpenedChoice_Qt4GUI(Choice_Qt4GUI):
 
