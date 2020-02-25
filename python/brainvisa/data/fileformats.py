@@ -37,10 +37,6 @@ from soma.undefined import Undefined
 from brainvisa.processing.neuroException import showException
 import six
 
-if sys.version_info[0] >= 3:
-    six.text_type = str
-
-
 class Format(object):
 
     def __init__(self, name, extensions, isMinf=False):
