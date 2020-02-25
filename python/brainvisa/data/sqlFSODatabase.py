@@ -70,7 +70,6 @@ from brainvisa.data.fileformats import FileFormats, getAllFileFormats
 from brainvisa.data.directory_iterator import DirectoryIterator, VirtualDirectoryIterator
 from brainvisa.data import temporary
 import six
-from six.moves import reduce
 from six.moves import zip
 from six.moves import range
 from functools import reduce
@@ -81,8 +80,7 @@ if sys.version_info[0] >= 3:
     def values(thing):
         return list(thing.values())
     xrange = range
-    six.string_types = str
-    six.text_type = str
+
 else:
     
 
