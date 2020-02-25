@@ -52,8 +52,6 @@ from six.moves import reduce
 from functools import reduce
 
 if sys.version_info[0] >= 3:
-    six.string_types = str
-    six.text_type = str
 
     def to_list(thing):
         return list(thing)
