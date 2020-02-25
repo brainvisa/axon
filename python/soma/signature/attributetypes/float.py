@@ -46,11 +46,11 @@ class Float(Number):
         if minimum is None:
             self.minimum = None
         else:
-            self.minimum = int(minimum)
+            self.minimum = float(minimum)
         if maximum is None:
             self.maximum = None
         else:
-            self.maximum = int(maximum)
+            self.maximum = float(maximum)
 
     def checkValue(self, value):
         return float(Number.checkValue(self, value))
