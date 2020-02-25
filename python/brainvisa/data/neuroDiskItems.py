@@ -135,8 +135,6 @@ from six.moves import range
 from six.moves import zip
 
 if sys.version_info[0] >= 3:
-    six.string_types = str
-    six.text_type = str
     from collections import UserList
 
     def values(thing):
