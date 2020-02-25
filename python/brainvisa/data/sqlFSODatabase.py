@@ -75,8 +75,6 @@ from six.moves import range
 from functools import reduce
 
 if sys.version_info[0] >= 3:
-    izip = zip
-
     def values(thing):
         return list(thing.values())
     xrange = range
