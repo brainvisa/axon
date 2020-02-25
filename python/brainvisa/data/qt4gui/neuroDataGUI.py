@@ -155,13 +155,10 @@ class NumberEditor(StringEditor):
                 result = int(value)
             except ValueError:
                 try:
-                    result = int(value)
+                    result = float(value)
                 except ValueError:
-                    try:
-                        result = float(value)
-                    except ValueError:
-                        raise ValueError(
-                            HTMLMessage(_t_('<em>%s</em> is not a valid number') % value))
+                    raise ValueError(
+                        HTMLMessage(_t_('<em>%s</em> is not a valid number') % value))
         else:
             result = None
         return result
@@ -175,11 +172,8 @@ class IntegerEditor(StringEditor):
             try:
                 result = int(value)
             except ValueError:
-                try:
-                    result = int(value)
-                except ValueError:
-                    raise ValueError(
-                        HTMLMessage(_t_('<em>%s</em> is not a valid integer') % value))
+                raise ValueError(
+                    HTMLMessage(_t_('<em>%s</em> is not a valid integer') % value))
         else:
             result = None
         return result
@@ -723,13 +717,10 @@ class NumberListEditor(StringListEditor):
                 n = int(s)
             except ValueError:
                 try:
-                    n = int(s)
+                    n = float(s)
                 except ValueError:
-                    try:
-                        n = float(s)
-                    except ValueError:
-                        raise ValueError(
-                            HTMLMessage(_t_('<em>%s</em> is not a valid number') % s))
+                    raise ValueError(
+                        HTMLMessage(_t_('<em>%s</em> is not a valid number') % s))
             result.append(n)
         return result
 
@@ -765,11 +756,8 @@ class IntegerListEditor(NumberListEditor):
             try:
                 n = int(s)
             except ValueError:
-                try:
-                    n = int(s)
-                except ValueError:
-                    raise ValueError(
-                        HTMLMessage(_t_('<em>%s</em> is not a valid integer') % s))
+                raise ValueError(
+                    HTMLMessage(_t_('<em>%s</em> is not a valid integer') % s))
             result.append(n)
         return result
 
