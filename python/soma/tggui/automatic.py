@@ -49,9 +49,6 @@ __docformat__ = "epytext en"
 
 
 import six.moves.builtins
-if not hasattr(__builtin__, 'set'):
-    from sets import Set as set
-
 import gc
 import cherrypy
 import turbogears
