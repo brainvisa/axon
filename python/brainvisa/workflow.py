@@ -20,10 +20,6 @@ from soma_workflow.constants import *
 from soma_workflow.client import Job, FileTransfer, SharedResourcePath, Group, Workflow, Helper, OptionPath
 from six.moves import map
 
-if sys.version_info[0] >= 3:
-    six.string_types = str
-
-
 class ProcessToWorkflow(object):
     JOB = 'j'
     NATIVE_JOB = 'n'
