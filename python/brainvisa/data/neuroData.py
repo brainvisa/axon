@@ -78,8 +78,6 @@ import six
 from six.moves import map
 if sys.version_info[0] >= 3:
     from collections import UserDict, UserList
-    six.text_type = str
-    six.string_types = str
 
     def list_map(f, sequence):
         return list(map(f, sequence))
@@ -315,12 +313,9 @@ class Number(String):
             return int(value)
         except ValueError:
             try:
-                return int(value)
+                return float(value)
             except ValueError:
-                try:
-                    return float(value)
-                except ValueError:
-                    raise ValueError('cannot convert value to number:', value)
+                raise ValueError('cannot convert value to number:', value)
 
 
 #----------------------------------------------------------------------------
