@@ -45,9 +45,6 @@ from soma.undefined import Undefined
 import copy
 import six
 
-if sys.version_info[0] >= 3:
-    six.text_type = str
-
 
 #-------------------------------------------------------------------------
 
