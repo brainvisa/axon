@@ -59,21 +59,8 @@ from brainvisa.processing import neuroException
 import gzip
 import six
 
-if sys.version_info[0] >= 3:
-    six.text_type = str
-
-    def items(thing):
-        return list(thing.items())
-
-    #def next(iterator):
-        #return iterator.__next__()
-else:
-    def items(thing):
-        return list(thing.items())
-
-    #def next(iterator):
-        #return iterator.next()
-
+def items(thing):
+    return list(thing.items())
 
 #------------------------------------------------------------------------------
 class FileLink:
