@@ -230,7 +230,6 @@ from soma.qtgui.api import QtThreadCall, FakeQtThreadCall
 if sys.version_info[0] >= 3:
     from html.parser import HTMLParser
     getcwdu = os.getcwd
-    six.text_type = str
 
     def items(thing):
         return list(thing.items())
