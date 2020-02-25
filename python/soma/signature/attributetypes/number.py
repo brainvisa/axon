@@ -67,8 +67,7 @@ class Number(DataType):
         return (), kwargs
 
     def checkValue(self, value):
-        if isinstance( value, int ) or isinstance( value, float ) or \
-           isinstance(value, int):
+        if isinstance( value, int ) or isinstance( value, float ):
             if ( self.minimum is not None and value < self.minimum ) or \
                (self.maximum is not None and value > self.maximum):
                 if self.maximum is None:
