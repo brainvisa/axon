@@ -41,9 +41,6 @@ from soma.signature.api import DataType, Undefined
 import six
 from six.moves import zip
 
-if sys.version_info[0] >= 3:
-    six.text_type = str
-
 #-------------------------------------------------------------------------
 
 
