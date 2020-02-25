@@ -62,10 +62,7 @@ class Integer(Number):
         self._checkValueError(value)
 
     def convert(self, value, checkValue=None):
-        try:
-            value = int(value)
-        except ValueError:
-            value = int(value)
+        value = int(value)
         return value
 
 
