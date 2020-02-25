@@ -50,9 +50,6 @@ import soma.subprocess
 import sys
 import six
 
-if sys.version_info[0] >= 3:
-    six.text_type = str
-
 #----------------------------------------------------------------------------
 
 
