@@ -51,9 +51,6 @@ from brainvisa.data.actions import Move, Remove, FileProcess, ImportData
 import sys
 import six
 
-if sys.version_info[0] >= 3:
-    six.text_type = str
-
 ICON_SIZE = 16
 
 
