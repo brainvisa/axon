@@ -5979,10 +5979,7 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
         for n, v in items(processModule.__dict__):
             if g.get(n) is not v:
                 if type(v) is types.FunctionType:
-                    if sys.version_info[0] >= 3:
-                        code = v.__code__
-                    else:
-                        code = v.__code__
+                    code = v.__code__
                     args = inspect.getargs(code)[0]
                     if args and args[0] == 'self':
                         setattr(NewProcess, n, v)
