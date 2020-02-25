@@ -30,6 +30,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL-B license and that you accept its terms.
 
+from __future__ import absolute_import
 import types
 from soma.signature.attributetypes.number import Number
 
@@ -45,11 +46,11 @@ class Float(Number):
         if minimum is None:
             self.minimum = None
         else:
-            self.minimum = long(minimum)
+            self.minimum = int(minimum)
         if maximum is None:
             self.maximum = None
         else:
-            self.maximum = long(maximum)
+            self.maximum = int(maximum)
 
     def checkValue(self, value):
         return float(Number.checkValue(self, value))

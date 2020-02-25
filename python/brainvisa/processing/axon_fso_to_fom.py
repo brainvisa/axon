@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 
 from __future__ import print_function
+from __future__ import absolute_import
 import os
 from brainvisa.axon import processes
 from brainvisa import processes as procbv
@@ -14,12 +15,13 @@ import sys
 from argparse import ArgumentParser
 import yaml
 import json
+from six.moves import range
 try:
     from collections import OrderedDict
 except ImportError:
     # It is necessary to keep this for compatibility with python 2.6.*
     from soma.sorted_dictionary import OrderedDict
-import axon_to_capsul
+from . import axon_to_capsul
 import six
 
 
@@ -370,7 +372,7 @@ def ordered_dump(data, stream=None, Dumper=yaml.Dumper, **kwds):
     def _dict_representer(dumper, data):
         return dumper.represent_mapping(
             yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
-            data.items())
+            list(data.items()))
     OrderedDumper.add_representer(OrderedDict, _dict_representer)
     return yaml.dump(data, stream, OrderedDumper, **kwds)
 

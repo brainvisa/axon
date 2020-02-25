@@ -1,5 +1,6 @@
 
 from __future__ import print_function
+from __future__ import absolute_import
 from brainvisa.processes import *
 from brainvisa.data import neuroHierarchy
 from soma.wip.application.api import findIconFile
@@ -8,6 +9,8 @@ import numpy as np
 import os
 import tempfile
 import six
+from six.moves import range
+from six.moves import zip
 
 
 name = 'Database QC table'
@@ -760,7 +763,7 @@ def save_html(self, filename, context=None):
                         for row, row_id in six.iteritems(rev_row_ids)])
 
     # sort items
-    rows_order = zip(*sorted(zip(rev_row_ids.values(), range(nrows))))[1]
+    rows_order = zip(*sorted(zip(list(rev_row_ids.values()), list(range(nrows)))))[1]
 
     for row in rows_order:
         row_id = max([rid for rid in row_ids if row_ids[rid] == row])

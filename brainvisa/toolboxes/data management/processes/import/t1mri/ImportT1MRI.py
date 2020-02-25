@@ -31,6 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import absolute_import
 from brainvisa.processes import *
 from brainvisa import shelltools
 from brainvisa.tools import aimsGlobals
@@ -40,6 +41,7 @@ from brainvisa.data import neuroHierarchy
 
 from brainvisa.tools.data_management.image_importation import Importer
 import six
+from six.moves import map
 
 name = 'Import T1 MRI'
 roles = ('importer',)
@@ -105,8 +107,8 @@ def initialization(self):
 
 
 def execution(self, context):
-    if self.input.format in map(getFormat,
-                                ('SPM image', 'Series of SPM image')):
+    if self.input.format in list(map(getFormat,
+                                ('SPM image', 'Series of SPM image'))):
         context.warning("The image is in Analyze format: be careful, the image"
                         " orientation could be wrong.")
     results = Importer.import_t1mri(self.input.fullPath(),

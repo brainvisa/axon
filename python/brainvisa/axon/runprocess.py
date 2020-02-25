@@ -40,6 +40,7 @@ python -m brainvisa.axon.runprocess <process name> <process arguments>
 
 from __future__ import print_function
 
+from __future__ import absolute_import
 from brainvisa import axon
 from brainvisa.configuration import neuroConfig
 import brainvisa.processes

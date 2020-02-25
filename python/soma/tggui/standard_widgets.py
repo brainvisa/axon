@@ -41,6 +41,8 @@ modification only after an inactivity period.
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
+from __future__ import absolute_import
+import six
 __docformat__ = "epytext en"
 
 
@@ -71,7 +73,7 @@ class TgAutoNamed(object):
             autonamed = True
 
         if autonamed:
-            widgetid = unicode(Uuid()).replace('-', '')
+            widgetid = six.text_type(Uuid()).replace('-', '')
             self.__class__._get_path = update_path(TgAutoNamed._get_path)
             self.__class__.path = property(TgAutoNamed._get_path)
             self.__class__.name_path = property(TgAutoNamed._get_name_path)
@@ -442,7 +444,7 @@ class TgUploadMultipleFiles(TgStandardBase, CompoundFormField):
         self.selectfiles_attrs['for'] = self.field_id
         self.selectfiles_widget = TgExtendedApplet()
         self.selectfiles_widget.applet_attrs = dict(
-            self.selectfiles_widget.applet_attrs.items() + self.selectfiles_attrs.items())
+            list(self.selectfiles_widget.applet_attrs.items()) + list(self.selectfiles_attrs.items()))
         self.selectfiles_widget.applet_params = self.selectfiles_params
 
         self.filesuploader_params[
@@ -450,7 +452,7 @@ class TgUploadMultipleFiles(TgStandardBase, CompoundFormField):
         self.filesuploader_attrs['for'] = self.field_id
         self.filesuploader_widget = TgExtendedApplet()
         self.filesuploader_widget.applet_attrs = dict(
-            self.filesuploader_widget.applet_attrs.items() + self.filesuploader_attrs.items())
+            list(self.filesuploader_widget.applet_attrs.items()) + list(self.filesuploader_attrs.items()))
         self.filesuploader_widget.applet_params = self.filesuploader_params
 
     def stopInternalModification(self):

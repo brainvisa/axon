@@ -41,6 +41,7 @@ data type.
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
+from __future__ import absolute_import
 __docformat__ = "epytext en"
 
 from turbogears.widgets.base import CSSLink, JSLink, js_location, mochikit
@@ -102,11 +103,11 @@ class HasSignatureEditionWidget(TgFieldSet):
                                                         attributeName)
             attributeWidget = tggui.editionWidget(
                 getattr(object, attributeName), self._tggui.window,
-                                                   parent=self, name=unicode(
+                                                   parent=self, name=six.text_type(
                                                        attributeName),
                                                    live=live)
             labelWidget = tggui.labelWidget(
-                object, unicode(attributeName), attributeWidget,
+                object, six.text_type(attributeName), attributeWidget,
                                              parent=self)
             if signatureItem.collapsed and isinstance(attributeWidget, HasSignatureEditionWidget):
                 attributeWidget._expandOrCollapse()

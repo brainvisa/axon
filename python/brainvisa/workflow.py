@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
+from __future__ import absolute_import
 import collections
 import os
 import sys
@@ -17,9 +18,10 @@ from brainvisa.data.neuroDiskItems import DiskItem
 
 from soma_workflow.constants import *
 from soma_workflow.client import Job, FileTransfer, SharedResourcePath, Group, Workflow, Helper, OptionPath
+from six.moves import map
 
 if sys.version_info[0] >= 3:
-    basestring = str
+    six.string_types = str
 
 
 class ProcessToWorkflow(object):
@@ -65,7 +67,7 @@ class ProcessToWorkflow(object):
             iterable = iter(l)
         except TypeError:
             return [l]
-        return sum(map(self.flatten, l), [])
+        return sum(list(map(self.flatten, l)), [])
 
     def parameterToString(self, process, name):
         def toString(value, useHierarchy, escape=None, level=0):
@@ -89,7 +91,7 @@ class ProcessToWorkflow(object):
                         value = new_value
 
             if level == 0:
-                if isinstance(value, basestring) and (value.startswith('"')
+                if isinstance(value, six.string_types) and (value.startswith('"')
                                                       or value.startswith("'") or value == "None"):
                     value = '"' + str(value) + '"'
                 else:
@@ -518,7 +520,7 @@ class ProcessToWorkflow(object):
         elif id[0] in (self.JOB, self.NATIVE_JOB):
             # add source dependencies deps to a single job id
             for dep in deps:
-                if type(dep) not in (str, unicode):
+                if type(dep) not in (str, six.text_type):
                     dep = dep()  # dereference weakref
                     if dep in jobtoid or (hasattr(dep, '_process') and
                                           dep._process in jobtoid):  # dep is a single job
@@ -737,7 +739,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
         super(ProcessToSomaWorkflow, self).doIt()
 
         # Due to native jobs, it is necessary to flatten jobs list
-        jobs = self.flatten(self.__jobs.values())
+        jobs = self.flatten(list(self.__jobs.values()))
         dependencies = self.__dependencies
         root_group = self.__groups[self.__mainGroupId]
 
@@ -806,7 +808,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
                     else:
                         value = new_value
             if not isinstance(value, list) and not isinstance(value, tuple):
-                if isinstance(value, basestring) and (value.startswith('"')
+                if isinstance(value, six.string_types) and (value.startswith('"')
                                                       or value.startswith("'") or value == "None"):
                     value = '"' + str(value) + '"'
                 else:

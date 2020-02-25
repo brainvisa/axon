@@ -37,6 +37,7 @@
 # option). A independent GUI is displayed from BV and operates processes.
 
 from __future__ import print_function
+from __future__ import absolute_import
 import brainvisa.axon
 import atexit
 import os
@@ -174,7 +175,7 @@ def initializeProcesses():
     localsStartup = {}
     for f in neuroConfig.startup:
         try:
-            if isinstance(f, basestring):
+            if isinstance(f, six.string_types):
                 localsStartup = globals().copy()
                 six.exec_(f, localsStartup, localsStartup)
             else:

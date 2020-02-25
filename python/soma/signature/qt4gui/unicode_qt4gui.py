@@ -40,6 +40,8 @@ data type.
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
+from __future__ import absolute_import
+import six
 __docformat__ = "epytext en"
 
 from soma.translation import translate as _
@@ -47,7 +49,7 @@ from soma.qt4gui.api import Qt4GUI, TimeredQLineEdit
 from soma.qt_gui.qt_backend import QtGui, QtCore
 import sys
 if sys.version_info[0] >= 3:
-    unicode = str
+    six.text_type = str
 
 
 #-------------------------------------------------------------------------
@@ -85,15 +87,15 @@ class Unicode_Qt4GUI(Qt4GUI):
         self._widget = None
 
     def getPythonValue(self, editionWidget):
-        return self.dataTypeInstance.convert(unicode(editionWidget.text()))
+        return self.dataTypeInstance.convert(six.text_type(editionWidget.text()))
 
     def updateEditionWidget(self, editionWidget, value):
         if self._live:
             editionWidget.startInternalModification()
-            editionWidget.setText(unicode(value))
+            editionWidget.setText(six.text_type(value))
             editionWidget.stopInternalModification()
         else:
-            editionWidget.setText(unicode(value))
+            editionWidget.setText(six.text_type(value))
 
     def _userModification(self, ):
         self.onWidgetChange.notify(self._widget)
@@ -103,7 +105,7 @@ class Unicode_Qt4GUI(Qt4GUI):
 class Sequence_Unicode_Qt4GUI(Unicode_Qt4GUI):
 
     def setObject(self, editionWidget, object):
-        object[:] = list(self.valuesFromText(unicode(editionWidget.text())))
+        object[:] = list(self.valuesFromText(six.text_type(editionWidget.text())))
 
     def updateEditionWidget(self, editionWidget, value):
         if self._live:

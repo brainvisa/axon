@@ -72,6 +72,7 @@ In some cases allowed processes may not be a fixed list. To handle this situatio
 
 '''
 
+from __future__ import absolute_import
 from brainvisa import processes
 
 

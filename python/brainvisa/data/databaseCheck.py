@@ -32,6 +32,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from __future__ import print_function
+from __future__ import absolute_import
 import os
 import stat
 import re
@@ -101,7 +102,7 @@ class DBProcessor(object):
                 actions.extend(c.findActions())
             else:
                 raise NameError(self.__class__ + " has no component named " +
-                                component + ". Available components : " + self.components.keys() + ".")
+                                component + ". Available components : " + list(self.components.keys()) + ".")
         else:
             for c in self.components.values():
                 actions.extend(c.findActions())
@@ -122,7 +123,7 @@ class DBProcessor(object):
                 c.process(debug=debug)
             else:
                 raise NameError(self.__class__ + " has no component named " +
-                                component + ". Available components : " + self.components.keys() + ".")
+                                component + ". Available components : " + list(self.components.keys()) + ".")
         else:
 
             for c in self.components.values():
@@ -183,7 +184,7 @@ class DBProcessor(object):
                 c.generateUndoScripts()
             else:
                 raise NameError(self.__class__ + " has no component named " +
-                                component + ". Available components : " + self.components.keys() + ".")
+                                component + ". Available components : " + list(self.components.keys()) + ".")
         else:
             for c in self.components.values():
                 c.generateUndoScripts()
@@ -206,9 +207,9 @@ class DBProcessor(object):
                 c.undo()
             else:
                 raise NameError(self.__class__ + " has no component named " +
-                                component + ". Available components : " + self.components.keys() + ".")
+                                component + ". Available components : " + list(self.components.keys()) + ".")
         else:
-            for c in reversed(self.components.values()):
+            for c in reversed(list(self.components.values())):
                 c.undo()
 
 #
@@ -1537,7 +1538,7 @@ class DBChecker(DBProcessor):
                 c.process(debug=debug)
             else:
                 raise NameError(self.__class__ + " has no component named " +
-                                component + ". Available components : " + self.components.keys() + ".")
+                                component + ". Available components : " + list(self.components.keys()) + ".")
         else:
             for c in self.components.values():
                 c.process(debug=debug)
@@ -1554,7 +1555,7 @@ class DBChecker(DBProcessor):
                 item.doit(debug, context=self.context)
         else:
             if isinstance(item, collections.Mapping):
-                item = item.values()
+                item = list(item.values())
             for i in item:
                 self.processRec(i, debug)
 

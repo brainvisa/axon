@@ -31,6 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import absolute_import
 from brainvisa.data.neuroData import *
 from brainvisa.processing.qtgui.backwardCompatibleQt import *
 from brainvisa.processing.neuroException import HTMLMessage
@@ -78,8 +79,8 @@ class DataEditor(object):
 #----------------------------------------------------------------------------
 class StringEditor(QLineEdit, DataEditor):
 
-    noDefault = QtCore.Signal(unicode)
-    newValidValue = QtCore.Signal(unicode, object)
+    noDefault = QtCore.Signal(six.text_type)
+    newValidValue = QtCore.Signal(six.text_type, object)
 
     def __init__(self, parameter, parent, name):
         DataEditor.__init__(self)
@@ -116,25 +117,25 @@ class StringEditor(QLineEdit, DataEditor):
         if value is None:
             self.setText('')
         else:
-            self.setText(unicode(value))
+            self.setText(six.text_type(value))
         if value != self.value:
             self.value = value
             if not default:
-                self.noDefault.emit(unicode(self.objectName()))
-            self.newValidValue.emit(unicode(self.objectName()), self.value)
+                self.noDefault.emit(six.text_type(self.objectName()))
+            self.newValidValue.emit(six.text_type(self.objectName()), self.value)
 
     def setFocusNext(self):
         self.focusNextChild()
 
     def checkValue(self):
         try:
-            value = self._valueFromText(unicode(self.text()))
+            value = self._valueFromText(six.text_type(self.text()))
         except Exception:
             return
         if value != self.getValue():
             self.value = value
-            self.noDefault.emit(unicode(self.objectName()))
-            self.newValidValue.emit(unicode(self.objectName()), self.value)
+            self.noDefault.emit(six.text_type(self.objectName()))
+            self.newValidValue.emit(six.text_type(self.objectName()), self.value)
 
 
 #----------------------------------------------------------------------------
@@ -154,7 +155,7 @@ class NumberEditor(StringEditor):
                 result = int(value)
             except ValueError:
                 try:
-                    result = long(value)
+                    result = int(value)
                 except ValueError:
                     try:
                         result = float(value)
@@ -175,7 +176,7 @@ class IntegerEditor(StringEditor):
                 result = int(value)
             except ValueError:
                 try:
-                    result = long(value)
+                    result = int(value)
                 except ValueError:
                     raise ValueError(
                         HTMLMessage(_t_('<em>%s</em> is not a valid integer') % value))
@@ -202,8 +203,8 @@ class FloatEditor(StringEditor):
 #----------------------------------------------------------------------------
 class ChoiceEditor(QComboBox, DataEditor):
 
-    noDefault = QtCore.Signal(unicode)
-    newValidValue = QtCore.Signal(unicode, object)
+    noDefault = QtCore.Signal(six.text_type)
+    newValidValue = QtCore.Signal(six.text_type, object)
 
     def __init__(self, parameter, parent, name):
         QComboBox.__init__(self, parent)
@@ -236,13 +237,13 @@ class ChoiceEditor(QComboBox, DataEditor):
             self.value = self.parameter.values[i][1]
         else:
             raise Exception(HTMLMessage(_t_('<em>%s</em> is not a valid choice')
-                                        % unicode(value)))
+                                        % six.text_type(value)))
         self.blockSignals(True)  # don't call newValue now.
         self.setCurrentIndex(i)
         self.blockSignals(False)
 
     def newValue(self):
-        disp_value = unicode(self.currentText())
+        disp_value = six.text_type(self.currentText())
         value = disp_value
         # convert to underlying value
         i = self.parameter.findIndex(disp_value)
@@ -250,8 +251,8 @@ class ChoiceEditor(QComboBox, DataEditor):
             value = self.parameter.values[i][1]
         if self.value != value:
             self.value = self.parameter.values[self.currentIndex()][1]
-            self.noDefault.emit(unicode(self.objectName()))
-            self.newValidValue.emit(unicode(self.objectName()), self.value)
+            self.noDefault.emit(six.text_type(self.objectName()))
+            self.newValidValue.emit(six.text_type(self.objectName()), self.value)
 
     def changeChoices(self):
         oldValue = self.getValue()
@@ -269,8 +270,8 @@ class ChoiceEditor(QComboBox, DataEditor):
 #----------------------------------------------------------------------------
 class BooleanEditor(QCheckBox, DataEditor):
 
-    noDefault = QtCore.Signal(unicode)
-    newValidValue = QtCore.Signal(unicode, object)
+    noDefault = QtCore.Signal(six.text_type)
+    newValidValue = QtCore.Signal(six.text_type, object)
 
     def __init__(self, parent, name):
         QCheckBox.__init__(self, parent)
@@ -303,22 +304,22 @@ class BooleanEditor(QCheckBox, DataEditor):
         if value != self.value:
             self.value = value
             if not default:
-                self.noDefault.emit(unicode(self.objectName()))
-            self.newValidValue.emit(unicode(self.objectName()), value)
+                self.noDefault.emit(six.text_type(self.objectName()))
+            self.newValidValue.emit(six.text_type(self.objectName()), value)
 
     def newValue(self):
         value = self._valueFromWidget()
         if value != self.value:
             self.value = value
-            self.noDefault.emit(unicode(self.objectName()))
-            self.newValidValue.emit(unicode(self.objectName()), value)
+            self.noDefault.emit(six.text_type(self.objectName()))
+            self.newValidValue.emit(six.text_type(self.objectName()), value)
 
 
 #----------------------------------------------------------------------------
 class BooleanListEditor(QWidget, DataEditor):
 
-    noDefault = QtCore.Signal(unicode)
-    newValidValue = QtCore.Signal(unicode, object)
+    noDefault = QtCore.Signal(six.text_type)
+    newValidValue = QtCore.Signal(six.text_type, object)
 
     class BooleanListSelect(QWidget):  # Ex QSemiModal
 
@@ -440,8 +441,8 @@ class BooleanListEditor(QWidget, DataEditor):
         if value != self.value:
             self.value = value
             if not default:
-                self.noDefault.emit(unicode(self.objectName()))
-            self.newValidValue.emit(unicode(self.objectName()), self.value)
+                self.noDefault.emit(six.text_type(self.objectName()))
+            self.newValidValue.emit(six.text_type(self.objectName()), self.value)
 
     def checkValue(self):
         self.sle.checkValue()
@@ -452,11 +453,11 @@ class BooleanListEditor(QWidget, DataEditor):
             currentValue = None
         if currentValue != self.getValue():
             self.value = currentValue
-            self.noDefault.emit(unicode(self.objectName()))
-            self.newValidValue.emit(unicode(self.objectName()), self.value)
+            self.noDefault.emit(six.text_type(self.objectName()))
+            self.newValidValue.emit(six.text_type(self.objectName()), self.value)
 
     def _selectValues(self):
-        w = self.BooleanListSelect(self, unicode(self.objectName()))
+        w = self.BooleanListSelect(self, six.text_type(self.objectName()))
         try:
             w.setValue(self.getValue())
         except Exception:
@@ -467,8 +468,8 @@ class BooleanListEditor(QWidget, DataEditor):
 #----------------------------------------------------------------------------
 class OpenChoiceEditor(QComboBox, DataEditor):
 
-    noDefault = QtCore.Signal(unicode)
-    newValidValue = QtCore.Signal(unicode, object)
+    noDefault = QtCore.Signal(six.text_type)
+    newValidValue = QtCore.Signal(six.text_type, object)
 
     def __init__(self, parameter, parent, name):
         DataEditor.__init__(self)
@@ -517,7 +518,7 @@ class OpenChoiceEditor(QComboBox, DataEditor):
             self.value = self.parameter.values[i][1]
             self.setCurrentIndex(i)
         else:
-            self.value = unicode(value)
+            self.value = six.text_type(value)
             self.setEditText(self.value)
         self.blockSignals(False)
 
@@ -526,7 +527,7 @@ class OpenChoiceEditor(QComboBox, DataEditor):
         self.focusNextChild()
 
     def checkValue(self):
-        disp_value = unicode(self.currentText())
+        disp_value = six.text_type(self.currentText())
         value = disp_value
         # convert to underlying value
         i = self.parameter.findIndex(disp_value)
@@ -534,8 +535,8 @@ class OpenChoiceEditor(QComboBox, DataEditor):
             value = self.parameter.values[i][1]
         if value != self.getValue():
             self.value = value
-            self.noDefault.emit(unicode(self.objectName()))
-            self.newValidValue.emit(unicode(self.objectName()), self.value)
+            self.noDefault.emit(six.text_type(self.objectName()))
+            self.newValidValue.emit(six.text_type(self.objectName()), self.value)
 
     def valueSelected(self, index):
         self.checkValue()
@@ -594,8 +595,8 @@ class MatrixEditor(StringEditor):
 #----------------------------------------------------------------------------
 class StringListEditor(QLineEdit, DataEditor):
 
-    noDefault = QtCore.Signal(unicode)
-    newValidValue = QtCore.Signal(unicode, object)
+    noDefault = QtCore.Signal(six.text_type)
+    newValidValue = QtCore.Signal(six.text_type, object)
 
     def __init__(self, parent, name):
         DataEditor.__init__(self)
@@ -657,8 +658,8 @@ class StringListEditor(QLineEdit, DataEditor):
         if value != self.value:
             self._setValue(value)
             if not default:
-                self.noDefault.emit(unicode(self.objectName()))
-            self.newValidValue.emit(unicode(self.objectName()), self.value)
+                self.noDefault.emit(six.text_type(self.objectName()))
+            self.newValidValue.emit(six.text_type(self.objectName()), self.value)
 
     def _setValue(self, value):
         self.value = value
@@ -697,11 +698,11 @@ class StringListEditor(QLineEdit, DataEditor):
         self.focusNextChild()
 
     def checkValue(self):
-        currentValue = self._valueFromText(unicode(self.text()))
+        currentValue = self._valueFromText(six.text_type(self.text()))
         if currentValue != self.getValue() and (self.getValue() or currentValue):
             self.value = currentValue
-            self.noDefault.emit(unicode(self.objectName()))
-            self.newValidValue.emit(unicode(self.objectName()), self.value)
+            self.noDefault.emit(six.text_type(self.objectName()))
+            self.newValidValue.emit(six.text_type(self.objectName()), self.value)
 
 
 #----------------------------------------------------------------------------
@@ -722,7 +723,7 @@ class NumberListEditor(StringListEditor):
                 n = int(s)
             except ValueError:
                 try:
-                    n = long(s)
+                    n = int(s)
                 except ValueError:
                     try:
                         n = float(s)
@@ -739,7 +740,7 @@ class NumberListEditor(StringListEditor):
             pass
         elif isinstance(value, (list, tuple)):
             text = ' '.join([str(x) for x in value])
-        elif isinstance(value, basestring):
+        elif isinstance(value, six.string_types):
             text = str(value)
         else:
             try:
@@ -760,12 +761,12 @@ class IntegerListEditor(NumberListEditor):
         if not text:
             return None
         result = []
-        for s in unicode(self.text()).split():
+        for s in six.text_type(self.text()).split():
             try:
                 n = int(s)
             except ValueError:
                 try:
-                    n = long(s)
+                    n = int(s)
                 except ValueError:
                     raise ValueError(
                         HTMLMessage(_t_('<em>%s</em> is not a valid integer') % s))
@@ -783,7 +784,7 @@ class FloatListEditor(NumberListEditor):
         if not text:
             return None
         result = []
-        for s in unicode(self.text()).split():
+        for s in six.text_type(self.text()).split():
             try:
                 n = float(s)
             except ValueError:
@@ -796,8 +797,8 @@ class FloatListEditor(NumberListEditor):
 #----------------------------------------------------------------------------
 class ChoiceListEditor(QWidget, DataEditor):
 
-    noDefault = QtCore.Signal(unicode)
-    newValidValue = QtCore.Signal(unicode, object)
+    noDefault = QtCore.Signal(six.text_type)
+    newValidValue = QtCore.Signal(six.text_type, object)
 
     class ChoiceListSelect(QWidget):  # Ex QSemiModal
 
@@ -874,7 +875,7 @@ class ChoiceListEditor(QWidget, DataEditor):
                 self.setValue([value])
 
         def add(self):
-            n = unicode(self.valueSelect.currentText())
+            n = six.text_type(self.valueSelect.currentText())
             v = self.valueSelect.getValue()
             if v != self.valueSelect.parameter.findValue(n):
                 self.valueSelect.setValue(str(n))
@@ -944,8 +945,8 @@ class ChoiceListEditor(QWidget, DataEditor):
         if value != self.value:
             self.value = value
             if not default:
-                self.noDefault.emit(unicode(self.objectName()))
-            self.newValidValue.emit(unicode(self.objectName()), self.value)
+                self.noDefault.emit(six.text_type(self.objectName()))
+            self.newValidValue.emit(six.text_type(self.objectName()), self.value)
 
     def checkValue(self):
         self.sle.checkValue()
@@ -956,11 +957,11 @@ class ChoiceListEditor(QWidget, DataEditor):
             currentValue = None
         if currentValue != self.getValue():
             self.value = currentValue
-            self.noDefault.emit(unicode(self.objectName()))
-            self.newValidValue.emit(unicode(self.objectName()), self.value)
+            self.noDefault.emit(six.text_type(self.objectName()))
+            self.newValidValue.emit(six.text_type(self.objectName()), self.value)
 
     def _selectValues(self):
-        w = self.ChoiceListSelect(self, unicode(self.objectName()))
+        w = self.ChoiceListSelect(self, six.text_type(self.objectName()))
         try:
             w.setValue(self.getValue())
         except Exception:
@@ -972,8 +973,8 @@ class ChoiceListEditor(QWidget, DataEditor):
 
 class PointEditor(QWidget, DataEditor):
 
-    noDefault = QtCore.Signal(unicode)
-    newValidValue = QtCore.Signal(unicode, object)
+    noDefault = QtCore.Signal(six.text_type)
+    newValidValue = QtCore.Signal(six.text_type, object)
 
     def __init__(self, parameter, parent, name):
         if getattr(PointEditor, 'pixSelect', None) is None:
@@ -1056,8 +1057,8 @@ class PointEditor(QWidget, DataEditor):
 
 class PointListEditor(QWidget, DataEditor):
 
-    noDefault = QtCore.Signal(unicode)
-    newValidValue = QtCore.Signal(unicode, object)
+    noDefault = QtCore.Signal(six.text_type)
+    newValidValue = QtCore.Signal(six.text_type, object)
 
     def __init__(self, parameter, parent, name):
         if getattr(PointListEditor, 'pixSelect', None) is None:
@@ -1103,7 +1104,7 @@ class PointListEditor(QWidget, DataEditor):
         self.led.selectAll()
 
     def getValue(self):
-        text = unicode(self.led.text())
+        text = six.text_type(self.led.text())
         if text:
             return [[float(y) for y in x.split()] for x in text.split(',')]
 
@@ -1126,8 +1127,8 @@ class PointListEditor(QWidget, DataEditor):
         except Exception:
             pass
         else:
-            self.noDefault.emit(unicode(self.objectName()))
-            self.newValidValue.emit(unicode(self.objectName()), v)
+            self.noDefault.emit(six.text_type(self.objectName()))
+            self.newValidValue.emit(six.text_type(self.objectName()), v)
 
     def selectPressed(self):
         from brainvisa import anatomist
@@ -1309,8 +1310,8 @@ class GenericListSelection(QWidget):
 #----------------------------------------------------------------------------
 class ListOfListEditor(QPushButton, DataEditor):
 
-    noDefault = QtCore.Signal(unicode)
-    newValidValue = QtCore.Signal(unicode, object)
+    noDefault = QtCore.Signal(six.text_type)
+    newValidValue = QtCore.Signal(six.text_type, object)
 
     def __init__(self, parameter, parent, name, context=None):
         QPushButton.__init__(self, parent)
@@ -1338,9 +1339,9 @@ class ListOfListEditor(QPushButton, DataEditor):
         self.editValuesDialog.show()
 
     def acceptEditedValues(self):
-        self.newValidValue.emit(unicode(self.objectName()),
+        self.newValidValue.emit(six.text_type(self.objectName()),
                                 self.acceptEditedValues.values)
-        self.noDefault.emit(unicode(self.objectName()))
+        self.noDefault.emit(six.text_type(self.objectName()))
 
 
 # ----------------------------------------------------------------------------
@@ -1386,8 +1387,8 @@ class ObjectsSelection(QListWidget):
 #----------------------------------------------------------------------------
 class NotImplementedEditor(QLabel, DataEditor):
 
-    noDefault = QtCore.Signal(unicode)
-    newValidValue = QtCore.Signal(unicode, object)
+    noDefault = QtCore.Signal(six.text_type)
+    newValidValue = QtCore.Signal(six.text_type, object)
 
     def __init__(self, parent):
         QLabel.__init__(self, '<font color=red>' +

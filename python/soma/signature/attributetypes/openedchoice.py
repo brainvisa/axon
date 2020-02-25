@@ -39,14 +39,16 @@ An L{OpenedChoice} accepts a set of predefined values and any unicode or string 
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
+from __future__ import absolute_import
+import six
 __docformat__ = "epytext en"
 
 from soma.signature.attributetypes.choice import Choice
 import sys
 
 if sys.version_info[0] >= 3:
-    unicode = str
-    basestring = str
+    six.text_type = str
+    six.string_types = str
 
 #-------------------------------------------------------------------------
 
@@ -56,7 +58,7 @@ class OpenedChoice(Choice):
     def checkValue(self, value):
         i = self.findIndex(value)
         if i == -1:
-            if isinstance(value, basestring):
+            if isinstance(value, six.string_types):
                 return value
             raise ValueError(
                 _('%s is not a valid Choice value') % repr(value))
@@ -69,4 +71,4 @@ class OpenedChoice(Choice):
             return checkValue(value)
         except ValueError:
             pass
-        return unicode(value)
+        return six.text_type(value)

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 import re
 import platform
 import sys
@@ -10,8 +11,8 @@ try:
     from six.moves.urllib.error import URLError
 except ImportError:
     # some six versions do not provide six.moves.urllib (Ubuntu 12.04)
-    import urllib2
-    from urllib2 import URLError
+    import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
+    from six.moves.urllib.error import URLError
 import six
 
 filesaddress = 'ftp://ftp.cea.fr/pub/dsv/anatomist/binary'
@@ -37,7 +38,7 @@ def checkUpdates():
     # timeout parameter does not exists in python 2.5
     # lines = urllib2.urlopen( filesaddress, timeout=3 ).readlines()
     try:
-        lines = urllib2.urlopen(filesaddress, timeout=5).readlines()
+        lines = six.moves.urllib.request.urlopen(filesaddress, timeout=5).readlines()
     except URLError:  # the network may be not available
         lines = []
     rexp = re.compile(

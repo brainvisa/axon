@@ -31,10 +31,12 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import absolute_import
 from brainvisa.processes import *
 from brainvisa.data.neuroHierarchy import databases
 import brainvisa.tools.aimsGlobals as shfjGlobals
 from brainvisa import registration
+from six.moves import map
 
 """
 This process search for a specific importer according to the type of output and execute it.
@@ -72,7 +74,7 @@ def orient(self, input):
         hide = 1
         res = 'Not applicable'
         if self.input is not None:
-            if self.input.format in map(getFormat, ('SPM image', 'Series of SPM image')):
+            if self.input.format in list(map(getFormat, ('SPM image', 'Series of SPM image'))):
                 hide = 0
                 atts = shfjGlobals.aimsVolumeAttributes(self.input)
                 tr = atts.get('storage_to_memory')

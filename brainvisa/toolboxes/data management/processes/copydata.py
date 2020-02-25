@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from brainvisa.processes import *
 from brainvisa.data.directory_iterator import DirectoryIterator
 from brainvisa.data.neuroHierarchy import databases
+from six.moves import zip
 
 name = 'Copy data between databases'
 userLevel = 0

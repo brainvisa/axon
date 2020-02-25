@@ -33,13 +33,14 @@
 This module defines the class :py:class:`MultipleExecfile` that is used to read Brainvisa ontology files.
 """
 from __future__ import print_function
+from __future__ import absolute_import
 import sys
 import os
 from traceback import format_exc
 import six
 
 if sys.version_info[0] >= 3:
-    unicode = str
+    six.text_type = str
 
 
 class MultipleExecfile(object):
@@ -182,12 +183,12 @@ class MultipleExecfile(object):
                     # one frame up because there is one more in python2.
                     tb = tb.tb_next
                     lineno = tb.tb_lineno  # tb_frame.f_lineno
-                msg = unicode('while executing file ' + f
+                msg = six.text_type('while executing file ' + f
                               + ':%d' % lineno + ' ')
                 #import traceback
                 #msg += traceback.format_exc()
                 if file:
-                    msg += u'(' + unicode(file) + u'): '
+                    msg += u'(' + six.text_type(file) + u'): '
                     self._executedFiles[file] = True
 
                 if len(self._includeStack) > 1:
@@ -200,7 +201,7 @@ class MultipleExecfile(object):
                     do_pop = False
 
                 if hasattr(e, 'message'):
-                    msg = msg + '%s: %s' % (e.__class__.__name__, unicode(e))
+                    msg = msg + '%s: %s' % (e.__class__.__name__, six.text_type(e))
                     e.message = msg
                 else:
                     msg = msg + format_exc()

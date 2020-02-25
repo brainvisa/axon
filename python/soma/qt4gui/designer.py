@@ -44,6 +44,7 @@ license: `CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.
 
 # obsolete: use soma.qt_gui.qt_backend instead.
 
+from __future__ import absolute_import
 __docformat__ = "restructuredtext en"
 
 

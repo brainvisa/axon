@@ -32,6 +32,7 @@
 # knowledge of the CeCILL-B license and that you accept its terms.
 
 
+from __future__ import absolute_import
 import types
 import sys
 from soma.translation import translate as _
@@ -45,7 +46,7 @@ import copy
 import six
 
 if sys.version_info[0] >= 3:
-    unicode = str
+    six.text_type = str
 
 
 #-------------------------------------------------------------------------
@@ -86,7 +87,7 @@ class DataType(object):
         Any other value lead to a C{TypeError} exception.
         """
         if isinstance( value, type ) \
-                or (sys.version_info[0] < 3 and type(value) is types.ClassType):
+                or (sys.version_info[0] < 3 and type(value) is type):
             if issubclass(value, DataType):
                 value = value()
             else:
@@ -358,7 +359,7 @@ class Signature(DataType):
             self.defaultValue = defaultValue
             #: Documentation of the attribute
             if doc:
-                self.doc = unicode(doc)
+                self.doc = six.text_type(doc)
             else:
                 self.doc = None
             #: If set to C{True}, the attribute value cannot be modified
@@ -369,7 +370,7 @@ class Signature(DataType):
             self.collapsed = bool(collapsed)
             # store other kwargs as attributes
             if kwargs:
-                self._options = kwargs.keys()
+                self._options = list(kwargs.keys())
                 for k, v in six.iteritems(kwargs):
                     setattr(self, k, v)
 
@@ -482,19 +483,19 @@ class Signature(DataType):
         """
         see L{SortedDictionary.keys}
         """
-        return self.__dict__['_signature_data'].keys()
+        return list(self.__dict__['_signature_data'].keys())
 
     def values(self):
         """
         see L{SortedDictionary.values}
         """
-        return self.__dict__['_signature_data'].values()
+        return list(self.__dict__['_signature_data'].values())
 
     def items(self):
         """
         see L{SortedDictionary.items}
         """
-        return self.__dict__['_signature_data'].items()
+        return list(self.__dict__['_signature_data'].items())
 
     def __iter__(self):
         """
@@ -642,17 +643,16 @@ class MetaHasSignature(type):
                     break
             if referenceSignature is not None and not isinstance(signature, referenceSignature.__class__):
                 raise TypeError(_('signature must be an instance of %s') %
-                                (unicode(referenceSignature.__class__), ))
+                                (six.text_type(referenceSignature.__class__), ))
         super(MetaHasSignature, cls).__init__(name, bases, dict)
 
 
 #-------------------------------------------------------------------------
-class HasSignature(ObservableAttributes):
+class HasSignature(six.with_metaclass(MetaHasSignature, ObservableAttributes)):
 
     """
     HasSignature is the base class for all object using the signature system.
     """
-    __metaclass__ = MetaHasSignature
 
     #: The default empty signature
     signature = Signature()

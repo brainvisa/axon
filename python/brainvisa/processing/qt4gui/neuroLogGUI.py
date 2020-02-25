@@ -31,6 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import absolute_import
 import time
 import os
 from brainvisa.processing.qtgui.backwardCompatibleQt import QWidget, QVBoxLayout, QIcon, QSplitter, Qt, QSizePolicy, QSize, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QHBoxLayout, QPushButton, QObject, QFileDialog, QKeySequence, QInputDialog, QLineEdit, qApp
@@ -41,9 +42,10 @@ from soma.qtgui.api import TextEditWithSearch
 from soma.qt_gui import qt_backend
 import sys
 import sip
+import six
 
 if sys.version_info[0] >= 3:
-    unicode = str
+    six.text_type = str
 
     #def next(iterable):
         #return iterable.__next__()
@@ -158,7 +160,7 @@ class LogItemsViewer(QWidget):
         return (viewItem, itemIndex)
 
     def _updateContent(self, item):
-        self._content.setText(unicode(self._contents.get(item, '')))
+        self._content.setText(six.text_type(self._contents.get(item, '')))
 
     def keyPressEvent(self, keyEvent):
         if (self._list.hasFocus()):
@@ -282,10 +284,10 @@ class LogViewer(QWidget):
        # workaround a bug in PyQt ? Param 5 doesn't work; try to use kwargs
         import sipconfig
         if sipconfig.Configuration().sip_version >= 0x040a00:
-            logFileName = unicode(qt_backend.getOpenFileName(
+            logFileName = six.text_type(qt_backend.getOpenFileName(
                 None, _t_('Open log file'), self._fileName, '', options=QFileDialog.DontUseNativeDialog))
         else:
-            logFileName = unicode(qt_backend.getOpenFileName(
+            logFileName = six.text_type(qt_backend.getOpenFileName(
                 None, _t_('Open log file'), self._fileName, '', None, QFileDialog.DontUseNativeDialog))
         if logFileName:
             try:

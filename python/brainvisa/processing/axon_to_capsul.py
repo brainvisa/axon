@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 
 from __future__ import print_function
+from __future__ import absolute_import
 from brainvisa.axon import processes
 from capsul.api import Process
 from capsul.api import Pipeline
@@ -18,9 +19,10 @@ import inspect
 import six
 
 from optparse import OptionParser
+from six.moves import zip
 
 if sys.version_info[0] >= 3:
-    unicode = str
+    six.text_type = str
 
 
 def choice_options(choice):
@@ -47,7 +49,7 @@ def get_choice_type(choice):
         int: traits.Int,
         float: traits.Float,
         str: traits.Str,
-        unicode: traits.Str,
+        six.text_type: traits.Str,
         list: traits.List,
         tuple: traits.List,
     }
@@ -690,7 +692,7 @@ def write_switch(enode, buffered_lines, nodenames, links, p, processed_links,
     if hasattr(enode, 'switch_output'):
         output_names = enode.switch_output
         if isinstance(output_names, str) \
-                or isinstance(output_names, unicode):
+                or isinstance(output_names, six.text_type):
             output_names = [output_names]  # have a list
     elif exported:
         buffered_lines['switches'].append(
@@ -1277,17 +1279,17 @@ def axon_to_capsul_main(argv):
     # print('use_process_names:', use_process_names)
 
     done_processes = set()
-    todo = zip([procbv.getProcessInstance(p, ignoreValidation=True)
+    todo = list(zip([procbv.getProcessInstance(p, ignoreValidation=True)
                 for p in options.process],
-               options.output)
+               options.output))
     if options.subprocess:
         added_processes = []
         for proc, outfile in todo:
             added_processes += get_subprocesses(proc)
-        todo += zip(list(added_processes),
+        todo += list(zip(list(added_processes),
                     [module_filename(p.id(), lowercase_modules,
                                      gen_process_names) + '.py'
-                     for p in added_processes])
+                     for p in added_processes]))
 
     todo = set(todo)  # remove duplicates
 

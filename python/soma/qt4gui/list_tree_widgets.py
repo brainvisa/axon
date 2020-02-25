@@ -43,6 +43,8 @@ They provide user interaction to modify the underlying model (drag&drop, context
 '''
 from __future__ import print_function
 
+from __future__ import absolute_import
+import six
 __docformat__ = "epytext en"
 
 import os
@@ -57,7 +59,7 @@ from soma.wip.application.api import findIconFile
 from soma.qt4gui.api import defaultIconSize
 
 if sys.version_info[0] >= 3:
-    unicode = str
+    six.text_type = str
 
 #----------------------------------------------------------------------------
 
@@ -664,7 +666,7 @@ class EditableTreeWidget(QTreeWidget):
             """It is the called associated to the signal QTreeWidget.itemChanged(item, col). It is called when user renames the item.
             The name must be changed in the model."""
             if getattr(self, "model", None) is not None:
-                newText = unicode(self.getText())
+                newText = six.text_type(self.getText())
                 if self.model.name != newText:
                     if self.model.name == self.model.tooltip:
                         self.model.tooltip = newText
@@ -1128,7 +1130,7 @@ class ObservableListWidget(QTreeWidget):
             """This method is called when user renames the item.
             The name must be changed in the model."""
             if getattr(self, "model", None) is not None:
-                newText = unicode(self.text(0))
+                newText = six.text_type(self.text(0))
                 if self.model.name != newText:
                     if self.model.name == self.model.tooltip:
                         self.model.tooltip = newText
@@ -1424,7 +1426,7 @@ class TreeListWidget(QTreeWidget):
             The name must be changed in the model.
             """
             if getattr(self, "model", None) is not None:
-                newText = unicode(self.text(0))
+                newText = six.text_type(self.text(0))
                 if self.model.name != newText:
                     if self.model.name == self.model.tooltip:
                         self.model.tooltip = newText

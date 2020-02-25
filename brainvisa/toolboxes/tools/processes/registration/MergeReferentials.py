@@ -25,6 +25,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import absolute_import
 from brainvisa.processes import *
 from brainvisa import registration
 
@@ -76,7 +77,7 @@ def execution(self, context):
         # print " all databases"
         # print all_databases.values()
 
-        AllDatabases = all_databases.values()
+        AllDatabases = list(all_databases.values())
 
         if (AllDatabases != []):
             for db in all_databases.values():

@@ -1,4 +1,5 @@
 
+from __future__ import absolute_import
 from brainvisa.tools.spm_basic_models import *
 
 #------------------------------------------------------------------------------

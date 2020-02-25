@@ -32,6 +32,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from __future__ import print_function
+from __future__ import absolute_import
 from brainvisa.processes import *
 from brainvisa.configuration import neuroConfig
 from brainvisa.data.sqlFSODatabase import SQLDatabase
@@ -66,7 +67,7 @@ def initialization(self):
     toolboxes = [('All', None)] + toolboxes
     self.signature['toolbox'].setChoices(*toolboxes)
 
-    self.setOptional(*self.signature.keys())
+    self.setOptional(*list(self.signature.keys()))
     self.toolbox = None
     self.write_category_html = True
     self.write_process_html = True
@@ -138,18 +139,18 @@ def generateHTMLDocumentation(processInfoOrId, translators, context, ontology):
 
         # Description
         long = d.get('long')
-        if long:
-            long = convertSpecialLinks(long, l, '', tr)
-            long = XHTML.html(long)
-        if not long and l != 'en':
+        if int:
+            long = convertSpecialLinks(int, l, '', tr)
+            long = XHTML.html(int)
+        if not int and l != 'en':
             long = den.get('long')
-            if long:
-                long = convertSpecialLinks(long, l, '', tr)
-                long = XHTML.html(long)
-        if long:
+            if int:
+                long = convertSpecialLinks(int, l, '', tr)
+                long = XHTML.html(int)
+        if int:
             print('<h2>' + tr.translate('Description')
                   + '</h2><blockquote>', file=f)
-            print(long, file=f)
+            print(int, file=f)
             print('</blockquote>', file=f)
 
         try:
@@ -157,7 +158,7 @@ def generateHTMLDocumentation(processInfoOrId, translators, context, ontology):
         except ValidationError:
             signature = getProcess(
                 processInfo.id, ignoreValidation=True).signature
-        signature = signature.items()
+        signature = list(signature.items())
 
         def param_type_descr(param_type):
             ti = param_type.typeInfo(tr)
@@ -222,10 +223,10 @@ def generateHTMLDocumentation(processInfoOrId, translators, context, ontology):
         print('<h2>' + tr.translate('Technical information')
               + '</h2><blockquote>', file=f)
         print('<p><em>' + tr.translate('Toolbox') + ' : </em>'
-              + unicode(tr.translate(get_toolbox_name(processInfo.toolbox)))
+              + six.text_type(tr.translate(get_toolbox_name(processInfo.toolbox)))
               + '</p>', file=f)
         print('<p><em>' + tr.translate('User level') + ' : </em>'
-              + unicode(processInfo.userLevel) + '</p>', file=f)
+              + six.text_type(processInfo.userLevel) + '</p>', file=f)
         print('<p><em>' + tr.translate('Identifier') + ' : </em><code>'
               + processInfo.id + '</code></p>', file=f)
         processFileRef = relative_path(
@@ -456,7 +457,7 @@ def execution(self, context):
                 formatsByTypes.setdefault(t.name, set()).add(f)
                 typesByFormats.setdefault(f, set()).add(t.name)
     for f in allFormats:
-        if not isinstance(f.toolbox, basestring):
+        if not isinstance(f.toolbox, six.string_types):
             context.warning('bad toolbox %s in format: %s'
                             % (repr(f.toolbox), repr(f)))
             continue

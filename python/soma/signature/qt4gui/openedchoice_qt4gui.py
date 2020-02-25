@@ -40,12 +40,14 @@ data type.
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
+from __future__ import absolute_import
+import six
 __docformat__ = "epytext en"
 
 from soma.signature.qt4gui.choice_qt4gui import Choice_Qt4GUI
 import sys
 if sys.version_info[0] >= 3:
-    unicode = str
+    six.text_type = str
 
 
 class OpenedChoice_Qt4GUI(Choice_Qt4GUI):
@@ -61,11 +63,11 @@ class OpenedChoice_Qt4GUI(Choice_Qt4GUI):
         return widget
 
     def getPythonValue(self, attributeWidget):
-        return self.dataTypeInstance.checkValue(unicode(attributeWidget.currentText()))
+        return self.dataTypeInstance.checkValue(six.text_type(attributeWidget.currentText()))
 
     def updateEditionWidget(self, editionWidget, value):
         index = self.dataTypeInstance.findIndex(value)
         if index != -1 and index != editionWidget.currentIndex():
             editionWidget.setCurrentIndex(index)
         else:
-            editionWidget.setEditText(unicode(value))
+            editionWidget.setEditText(six.text_type(value))

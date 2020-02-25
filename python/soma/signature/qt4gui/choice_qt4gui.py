@@ -40,6 +40,8 @@ data type.
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
+from __future__ import absolute_import
+import six
 __docformat__ = "epytext en"
 
 from soma.translation import translate as _
@@ -48,7 +50,7 @@ from soma.qt4gui.api import Qt4GUI
 from soma.qt_gui.qt_backend import QtGui, QtCore
 import sys
 if sys.version_info[0] >= 3:
-    unicode = str
+    six.text_type = str
 
 
 #-------------------------------------------------------------------------
@@ -73,9 +75,9 @@ class Choice_Qt4GUI(Qt4GUI):
             index = self.dataTypeInstance.findIndex(value)
             if index == -1:
                 if editable:
-                    self._widget.setEditText(unicode(value))
+                    self._widget.setEditText(six.text_type(value))
                 else:
-                    label = unicode(value)
+                    label = six.text_type(value)
                     self._widget.addItem(label)
                     self.dataTypeInstance.labels.append(label)
                     self.dataTypeInstance.values.append(value)

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 from soma.qt_gui.qt_backend.QtGui import QDialog, QMessageBox, QIcon
 from soma.qt_gui.qt_backend.QtGui import QVBoxLayout, QHBoxLayout, QFormLayout
 from soma.qt_gui.qt_backend.QtGui import QLabel, QLineEdit, QPushButton, QPlainTextEdit
@@ -12,6 +13,7 @@ from brainvisa.processing.qt4gui.neuroProcessesGUI import showProcess
 
 import json
 import os
+from six.moves import range
 
 
 class SaveProcessSetupsGUI(QDialog):

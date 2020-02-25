@@ -149,13 +149,15 @@ Data type classes
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
 
+from __future__ import absolute_import
+import six
 __docformat__ = "restructuredtext en"
 
 from soma.signature.signature import DataType, ClassDataType, Signature, \
     VariableSignature, HasSignature, Undefined
 
 from soma.signature.attributetypes.any import Any
-from soma.signature.attributetypes.unicode import Unicode
+from soma.signature.attributetypes.six.text_type import Unicode
 from soma.signature.attributetypes.bytes import Bytes
 from soma.signature.attributetypes.number import Number
 from soma.signature.attributetypes.float import Float, Float32, Float64

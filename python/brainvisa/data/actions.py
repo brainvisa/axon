@@ -32,12 +32,14 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from __future__ import print_function
+from __future__ import absolute_import
 import os
 import shutil
 import re
 import brainvisa.processes
 from brainvisa import registration
 from brainvisa.data import neuroHierarchy
+import six
 
 #
 
@@ -353,7 +355,7 @@ class CallProcess(Action):
             context.runProcess(self.processName, *args, **kwargs)
         except Exception as e:
             context.warning(
-                "Error while executing " + self.processName + " : " + unicode(e))
+                "Error while executing " + self.processName + " : " + six.text_type(e))
         return True
 
     def __str__(self):
@@ -423,7 +425,7 @@ class ImportData(CallProcess):
         return undo
 
     def __str__(self):
-        return unicode(self.dest.relativePath())
+        return six.text_type(self.dest.relativePath())
 
 #
 

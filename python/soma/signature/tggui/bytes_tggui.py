@@ -40,6 +40,8 @@ data type.
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
+from __future__ import absolute_import
+import six
 __docformat__ = "epytext en"
 
 import turbogears.widgets
@@ -79,7 +81,7 @@ class Bytes_TgGUI(TgGUI):
         pass
 
     def getPythonValue(self, editionWidget):
-        return eval("'" + unicode(editionWidget.text()) + "'")
+        return eval("'" + six.text_type(editionWidget.text()) + "'")
 
     def updateEditionWidget(self, editionWidget, value):
         editionWidget.setText(repr(value + '"')[1: -2])
@@ -88,7 +90,7 @@ class Bytes_TgGUI(TgGUI):
         if (self._widget is not None):
             res = self.findValueFromParams(
                 value, self._widget.widgetid, self._name, default='')
-            self._widget.setText(unicode(res))
+            self._widget.setText(six.text_type(res))
 
     def _userModification(self, ):
         self.onWidgetChange.notify(self._widget)

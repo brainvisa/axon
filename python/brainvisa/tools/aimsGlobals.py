@@ -73,6 +73,7 @@ This module provides a few functions using pyaims (soma.aims module), and define
 
 These global variables are initialized through the function :py:func:`initializeFormatLists`.
 """
+from __future__ import absolute_import
 import os
 import string
 import sys

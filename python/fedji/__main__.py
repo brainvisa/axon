@@ -1,4 +1,5 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import sys
 import os
 from pprint import pprint
@@ -9,6 +10,7 @@ from shutil import rmtree
 from pprint import pprint
 from fedji.sqlite_backend import FedjiSqlite
 import six
+from six.moves import range
 
 tmp = mkdtemp()
 try:

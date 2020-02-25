@@ -30,11 +30,13 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL-B license and that you accept its terms.
 
+from __future__ import absolute_import
 import sys
 from soma.signature.api import DataType
+import six
 
 if sys.version_info[0] >= 3:
-    unicode = str
+    six.text_type = str
 
 #-------------------------------------------------------------------------
 
@@ -46,14 +48,14 @@ class Unicode(DataType):
         self.mutable = False
 
     def checkValue(self, value):
-        if not isinstance(value, unicode):
+        if not isinstance(value, six.text_type):
             if isinstance(value, str):
-                return unicode(value)
+                return six.text_type(value)
             self._checkValueError(value)
         return value
 
     def convert(self, value, checkValue=None):
-        return unicode(value)
+        return six.text_type(value)
 
     def createValue(self):
         return u''

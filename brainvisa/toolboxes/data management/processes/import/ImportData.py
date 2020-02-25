@@ -31,10 +31,12 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import absolute_import
 from brainvisa.processes import *
 from brainvisa import shelltools
 from brainvisa.tools import aimsGlobals
 import six
+from six.moves import map
 
 # This process should not be called directly unless you
 # exactly know what you are doing. Import processes for
@@ -60,7 +62,7 @@ def initialization(self):
             hide = 1
             res = 'Not applicable'
             if self.input is not None:
-                if self.input.format in map(getFormat, ('SPM image', 'Series of SPM image')):
+                if self.input.format in list(map(getFormat, ('SPM image', 'Series of SPM image'))):
                     hide = 0
                     atts = aimsGlobals.aimsVolumeAttributes(self.input)
                     tr = atts.get('storage_to_memory')
@@ -108,8 +110,8 @@ def execution(self, context):
         if converter is None:
             raise RuntimeError(_t_('Cannot convert input data'))
         input = self.input
-        if self.input.format in map(getFormat,
-                                    ('SPM image', 'Series of SPM image')):
+        if self.input.format in list(map(getFormat,
+                                    ('SPM image', 'Series of SPM image'))):
             atts = aimsGlobals.aimsVolumeAttributes(self.input)
             tr = atts.get('storage_to_memory')
             radio = None
@@ -164,8 +166,8 @@ def execution(self, context):
             context.write('cp', inputFiles[i], outputFiles[i])
             shelltools.cp(inputFiles[i], outputFiles[i])
 
-        if self.input.format in map(getFormat,
-                                    ('SPM image', 'Series of SPM image')):
+        if self.input.format in list(map(getFormat,
+                                    ('SPM image', 'Series of SPM image'))):
             atts = aimsGlobals.aimsVolumeAttributes(self.input)
             radio = atts.get('spm_radio_convention')
             if self.input_spm_orientation == 'Neurological':

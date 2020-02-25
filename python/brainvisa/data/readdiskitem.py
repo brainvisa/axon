@@ -35,6 +35,7 @@ This module defines the class :py:class:`ReadDiskItem` which is a subclass :py:c
 It is used to define an input data file as a parameter in a :py:class:`brainvisa.processes.Process` :py:class:`brainvisa.data.neuroData.Signature`.
 """
 from __future__ import print_function
+from __future__ import absolute_import
 import os
 import operator
 # from soma.debug import print_stack
@@ -48,10 +49,11 @@ from brainvisa.processing.neuroException import HTMLMessage
 import six
 import sys
 from six.moves import reduce
+from functools import reduce
 
 if sys.version_info[0] >= 3:
-    basestring = str
-    unicode = str
+    six.string_types = str
+    six.text_type = str
 
     def to_list(thing):
         return list(thing)
@@ -243,7 +245,7 @@ class ReadDiskItem(Parameter):
         if ((value is not None) and (self.mandatory == True)):
             if not value.isReadable():
                 raise RuntimeError(
-                    HTMLMessage(_t_('the parameter <em>%s</em> is not readable or does not exist : %s') % (unicode(name), unicode(value))))
+                    HTMLMessage(_t_('the parameter <em>%s</em> is not readable or does not exist : %s') % (six.text_type(name), six.text_type(value))))
 
     def get_formats_order(self, database_dir):
           if database_dir in (None, ''):
@@ -361,7 +363,7 @@ class ReadDiskItem(Parameter):
                 else:
                     fullSelection['_format'] = selection.format.name
 
-        elif isinstance(selection, basestring):
+        elif isinstance(selection, six.string_types):
             if selection.startswith('{'):
                 # String value is a dictionary
                 return self.findValue(eval(selection), requiredAttributes=requiredAttributes, _debug=_debug)
@@ -477,7 +479,7 @@ class ReadDiskItem(Parameter):
                 except Exception:
                     pass
         elif isinstance(selection, dict):
-            if '_declared_attributes_location' in selection.keys():
+            if '_declared_attributes_location' in list(selection.keys()):
                 # keep it could cause problems because it should not be
                 # compared between disk items
                 del selection['_declared_attributes_location']

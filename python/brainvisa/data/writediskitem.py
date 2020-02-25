@@ -35,6 +35,7 @@ This module defines the class :py:class:`WriteDiskItem` which is a subclass :py:
 It is used to define an output data file as a parameter in a :py:class:`brainvisa.processes.Process` :py:class:`brainvisa.data.neuroData.Signature`.
 """
 
+from __future__ import absolute_import
 from soma.undefined import Undefined
 from brainvisa.data.neuroData import Parameter
 from brainvisa.data.readdiskitem import ReadDiskItem

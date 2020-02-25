@@ -196,6 +196,7 @@ Several global variables are defined in this module to store **Brainvisa configu
 """
 
 from __future__ import print_function
+from __future__ import absolute_import
 __docformat__ = 'restructuredtext en'
 
 import sys
@@ -205,9 +206,9 @@ if sys.version_info[0] >= 3:
     if '_t_' not in builtins.__dict__:
         builtins._t_ = _defaultTranslateFunction
 else:
-    import __builtin__
-    if '_t_' not in __builtin__.__dict__:
-        __builtin__.__dict__['_t_'] = _defaultTranslateFunction
+    import six.moves.builtins
+    if '_t_' not in six.moves.builtins.__dict__:
+        six.moves.builtins.__dict__['_t_'] = _defaultTranslateFunction
 
 import sys
 import os
@@ -247,7 +248,7 @@ sys.path[0:0] = [mainPath, os.path.join(basePath, 'python')]
 # A bit of cleanup
 sys.path = [os.path.normpath(os.path.abspath(p)) for p in sys.path]
 
-_commandLine = " ".join(map(lambda x: '"' + x + '"', sys.argv))
+_commandLine = " ".join(['"' + x + '"' for x in sys.argv])
 
 
 def commandLine():

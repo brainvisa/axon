@@ -43,6 +43,7 @@ The functions are used to display error and warning messages in Brainvisa.
 >>>   neuroException.showException(beforeError="The following error occured when...:")
 
 """
+from __future__ import absolute_import
 import sys
 import os
 import traceback
@@ -53,7 +54,7 @@ from soma.html import htmlEscape
 import six
 if sys.version_info[0] >= 3:
     from html.parser import HTMLParser
-    unicode = str
+    six.text_type = str
 else:
     from htmllib import HTMLParser
 

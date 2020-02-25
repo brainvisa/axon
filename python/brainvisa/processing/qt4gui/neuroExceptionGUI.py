@@ -30,8 +30,10 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import absolute_import
 from brainvisa.processing.qtgui.backwardCompatibleQt import QDialog, Qt, QVBoxLayout, QHBoxLayout, QPushButton, QSizePolicy, QTextCursor, QWidget
 from soma.qtgui.api import TextEditWithSearch
+from six.moves import zip
 
 
 class ShowException(QDialog):

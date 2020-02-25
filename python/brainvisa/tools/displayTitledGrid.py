@@ -34,6 +34,7 @@
 # import anatomist.threaded.api as ana
 
 from __future__ import print_function
+from __future__ import absolute_import
 from soma.qt_gui.qt_backend import QtCore, Qt, QtGui
 from soma.qt_gui.qt_backend.QtGui import QRadioButton, QPalette, QButtonGroup, QLabel, QFrame, QVBoxLayout, QColor
 from soma.qt_gui.qt_backend.uic import loadUi
@@ -43,6 +44,8 @@ from functools import partial
 import brainvisa.anatomist as ana
 from anatomist.cpp.paletteEditor import PaletteEditor
 import weakref
+from six.moves import range
+from six.moves import zip
 
 #------------------------------------------------------------------------------
 
@@ -238,7 +241,7 @@ class DisplayTitledGrid(QtGui.QWidget):
         for buttonIndex in range(0, len(buttonTitles)):
             title = buttonTitles[buttonIndex]
             NotNoneCount = len(
-                filter(lambda x: x != None, self.anatomistObjectList[buttonIndex]))
+                [x for x in self.anatomistObjectList[buttonIndex] if x != None])
             isFusionPossibleOnRow = NotNoneCount > 1 or len(
                 self._overlaid_images) > 0
             widget = DisplayTitledGrid._createColoredButton(

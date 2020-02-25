@@ -30,12 +30,15 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import absolute_import
 from brainvisa.processes import *
 from brainvisa import registration
 from brainvisa.tools import aimsGlobals
 from brainvisa import shelltools
 import numpy as np
 import sys
+from six.moves import map
+from six.moves import zip
 
 if sys.version_info[0] >= 3:
     def map_list(func, thing):
@@ -124,7 +127,7 @@ def execution(self, context):
         if self.extract_contours == 'Yes':
             ar_copy = ar.copy()
             for label in [v['roi_label'] for v in graph.vertices()]:
-                ind = zip(*np.where(ar_copy == label))
+                ind = list(zip(*np.where(ar_copy == label)))
                 for i in ind:
                     erase = True
                     for neigh in neighbors(*i):

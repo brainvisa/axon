@@ -30,8 +30,10 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL-B license and that you accept its terms.
 
+from __future__ import absolute_import
 import os
-from soma.signature.attributetypes.unicode import Unicode
+from soma.signature.attributetypes.six.text_type import Unicode
+import six
 
 #-------------------------------------------------------------------------
 

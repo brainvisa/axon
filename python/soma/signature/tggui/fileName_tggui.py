@@ -30,6 +30,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL-B license and that you accept its terms.
 
+from __future__ import absolute_import
 import os.path
 import base64
 
@@ -39,6 +40,7 @@ from soma.httpupload import resourcemanager
 from soma.tggui.api import TgGUI, TgUploadMultipleFiles
 from soma.signature.tggui.unicode_tggui import Unicode_TgGUI, Sequence_Unicode_TgGUI
 from soma.tggui import tools
+import six
 
 
 uploaddirectory = resourcemanager.getDirectory('httpupload.dirbasefileoutput')
@@ -68,7 +70,7 @@ class FileName_TgGUI(Unicode_TgGUI):
 
     def getPythonValue(self, editionWidget):
         foundValue = self.dataTypeInstance.convert(
-            unicode(editionWidget.default))
+            six.text_type(editionWidget.default))
         filepath = os.path.join(
             uploaddirectory, base64.b64decode(foundValue))
         foundValue = Application().temporary.createSelfDestroyed(foundValue)
@@ -81,7 +83,7 @@ class Sequence_FileName_TgGUI(FileName_TgGUI):
 
     def setObject(self, editionWidget, object):
         values = list()
-        for value in Sequence_Unicode_TgGUI.valuesFromText(unicode(editionWidget.default)):
+        for value in Sequence_Unicode_TgGUI.valuesFromText(six.text_type(editionWidget.default)):
             filepath = os.path.join(uploaddirectory, base64.b64decode(value))
             values.append(
                 Application().temporary.createSelfDestroyed(filepath))

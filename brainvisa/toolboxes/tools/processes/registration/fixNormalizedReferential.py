@@ -30,9 +30,11 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import absolute_import
 from brainvisa.processes import *
 from brainvisa import registration
 from soma import aims
+from six.moves import map
 
 name = 'Fix normalized image referential'
 userLevel = 0
@@ -72,8 +74,8 @@ def fixtransformation(self, trans, context):
     self.input.setMinf('transformations', transformations)
     self.input.setMinf('referentials', refs)
     self.input.saveMinf()
-    if self.input.format in map(getFormat,
-                                ('NIFTI-1 image', 'GZ Compressed NIFTI-1 image')):
+    if self.input.format in list(map(getFormat,
+                                ('NIFTI-1 image', 'GZ Compressed NIFTI-1 image'))):
         # re-write image
         context.system('AimsFileConvert', self.input, self.input)
 

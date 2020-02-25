@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 
 from __future__ import print_function
+from __future__ import absolute_import
 from brainvisa.axon import processes
 from capsul import process, pipeline
 from brainvisa import processes as procbv
@@ -13,6 +14,7 @@ import importlib
 import six
 
 from optparse import OptionParser
+from six.moves import zip
 
 
 def fileOptions(filep):
@@ -92,7 +94,7 @@ for procid, outfile in zip(options.process, options.output):
     module = importlib.import_module(modname)
 
     p = getattr(module, procname)()
-    print('process:', p
+    print('process:', p)
 
     out=open(outfile, 'w')
     out.write( '''# -*- coding: utf-8 -*-

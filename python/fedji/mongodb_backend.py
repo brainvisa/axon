@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from pymongo import MongoClient
 from pymongo.database import Database
 from pymongo.collection import Collection
@@ -5,7 +6,7 @@ import six
 
 class_to_class_name = {
     str:     'unicode',
-    unicode: 'unicode',
+    six.text_type: 'unicode',
     bool:    'bool',
     list:    'list',
     tuple:   'list',

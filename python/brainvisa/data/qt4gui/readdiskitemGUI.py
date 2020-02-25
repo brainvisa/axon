@@ -32,6 +32,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from __future__ import print_function
 
+from __future__ import absolute_import
 from brainvisa.processing.qtgui.backwardCompatibleQt \
     import QAction, QLineEdit, QPushButton, QToolButton, QComboBox, \
            Qt, QIcon, QWidget, QWidgetAction, QFileDialog, QVBoxLayout, \
@@ -57,9 +58,10 @@ import sys
 import os
 import six
 import weakref
+from six.moves import map
 
 if sys.version_info[0] >= 3:
-    unicode = str
+    six.text_type = str
 
 class ComboBoxAction(QWidgetAction):
     
@@ -151,8 +153,8 @@ class RightClickablePushButton(QPushButton):
 
 class DiskItemEditor(QWidget, DataEditor):
 
-    noDefault = QtCore.Signal(unicode)
-    newValidValue = QtCore.Signal(unicode, object)
+    noDefault = QtCore.Signal(six.text_type)
+    newValidValue = QtCore.Signal(six.text_type, object)
 
     def __init__(self, parameter, parent, name, write=False, context=None,
                  process=None):
@@ -405,12 +407,12 @@ class DiskItemEditor(QWidget, DataEditor):
                 if self.btnEdit:
                     self.btnEdit.setEnabled(0)
                 self.newValidValue.emit(
-                    unicode(self.objectName()), self.diskItem)
+                    six.text_type(self.objectName()), self.diskItem)
             else:
                 self.led.setText(self.diskItem.fullPath())
                 self.checkReadable()
                 self.newValidValue.emit(
-                    unicode(self.objectName()), self.diskItem)
+                    six.text_type(self.objectName()), self.diskItem)
         self._textChanged = 0
         self.forceDefault = 0
         self.led.setPalette(pal)
@@ -458,11 +460,11 @@ class DiskItemEditor(QWidget, DataEditor):
     def textChanged(self):
         self._textChanged = 1
         if not self.forceDefault:
-            self.noDefault.emit(unicode(self.objectName()))
+            self.noDefault.emit(six.text_type(self.objectName()))
 
     def checkValue(self):
         if self._textChanged:
-            self.setValue(unicode(self.led.text()))
+            self.setValue(six.text_type(self.led.text()))
 
     def showPressed(self):
         if self.btnShow.isChecked():
@@ -490,7 +492,7 @@ class DiskItemEditor(QWidget, DataEditor):
                                    'format=<em>%s</em> value=<em>%s</em> '
                                    '(try using it interactively by '
                                    'right-clicking on the eye icon)')
-                          % (unicode(v.type), unicode(v.format), unicode(v)),
+                          % (six.text_type(v.type), six.text_type(v.format), six.text_type(v)),
                           icon='eye.png')
                         continue
 
@@ -499,7 +501,7 @@ class DiskItemEditor(QWidget, DataEditor):
                 self.btnShow.setEnabled(viewerExists)
                 self.btnShow.setChecked(False)
                 raise RuntimeError(
-                    HTMLMessage(_t_('No viewer could be found for type=<em>%s</em> and format=<em>%s</em>') % (unicode(v.type), unicode(v.format))))
+                    HTMLMessage(_t_('No viewer could be found for type=<em>%s</em> and format=<em>%s</em>') % (six.text_type(v.type), six.text_type(v.format))))
 
             except Exception as error:
                     # transform the exception into a print message, and return.
@@ -677,7 +679,7 @@ class DiskItemEditor(QWidget, DataEditor):
                                    'format=<em>%s</em> value=<em>%s</em> '
                                    '(try using it interactively by '
                                    'right-clicking on the pencil icon)')
-                          % (unicode(v.type), unicode(v.format), unicode(v)),
+                          % (six.text_type(v.type), six.text_type(v.format), six.text_type(v)),
                           icon='pencil.png')
                         continue
 
@@ -685,7 +687,7 @@ class DiskItemEditor(QWidget, DataEditor):
                 self.btnEdit.setChecked(False)
                 raise RuntimeError(HTMLMessage(_t_('No editor could be found for '
                                                    'type=<em>%s</em> and format=<em>%s</em>')
-                                               % (unicode(v.type), unicode(v.format))))
+                                               % (six.text_type(v.type), six.text_type(v.format))))
 
             except Exception as error:
                     # transform the exception into a print message, and return.
@@ -841,7 +843,7 @@ class DiskItemEditor(QWidget, DataEditor):
                 allPatterns[flt] = 1
                 filters.append(_t_(f.name) + ' (' + flt + ')')
             filters.insert(0, _t_('Recognized formats') + ' ('
-                           + ' '.join(allPatterns.keys()) + ')')
+                           + ' '.join(list(allPatterns.keys())) + ')')
             filters.append(_t_('All files') + ' (*)')
             if dirOnly:
                 mode = QFileDialog.Directory
@@ -862,12 +864,12 @@ class DiskItemEditor(QWidget, DataEditor):
     def browseAccepted(self):
         value = self.browseDialog.selectedFiles()
         if (len(value) > 0):
-            value = unicode(value[0])
+            value = six.text_type(value[0])
         else:
             value = None
         parent = self._context
         if hasattr(parent, '_currentDirectory'):
-            parent._currentDirectory = unicode(
+            parent._currentDirectory = six.text_type(
                 self.browseDialog.directory().path())
         self.setValue(value)
 
@@ -879,12 +881,12 @@ class DiskItemEditor(QWidget, DataEditor):
 #----------------------------------------------------------------------------
 class DiskItemListEditor(QWidget, DataEditor):
 
-    noDefault = QtCore.Signal(unicode)
-    newValidValue = QtCore.Signal(unicode, object)
+    noDefault = QtCore.Signal(six.text_type)
+    newValidValue = QtCore.Signal(six.text_type, object)
 
     class DiskItemListSelect(QWidget):  # Ex QSemiModal
 
-        accepted = QtCore.Signal((unicode, ), (list,))
+        accepted = QtCore.Signal((six.text_type, ), (list,))
         # accepted = QtCore.Signal(list)
 
         def __init__(self, dilEditor, name, write, context=None,
@@ -978,7 +980,7 @@ class DiskItemListEditor(QWidget, DataEditor):
             hb = QHBoxLayout()
             hb.setSpacing(6)
 
-            self.sle = StringListEditor(None, unicode(self.objectName()))
+            self.sle = StringListEditor(None, six.text_type(self.objectName()))
             self.sle.newValidValue.connect(self.checkUI)
             hb.addWidget(self.sle)
 
@@ -1172,7 +1174,7 @@ class DiskItemListEditor(QWidget, DataEditor):
         def _setDirectoryAccepted(self):
             parent = self._context
             # Get the selected directory
-            directory = unicode(self.browseDirectoryDialog.selectedFiles()[0])
+            directory = six.text_type(self.browseDirectoryDialog.selectedFiles()[0])
             if hasattr(parent, '_currentDirectory'):
                 parent._currentDirectory = directory
 
@@ -1193,7 +1195,7 @@ class DiskItemListEditor(QWidget, DataEditor):
                 self.updateEditorValue()
 
             else:
-                self.accepted.emit(unicode(directory))
+                self.accepted.emit(six.text_type(directory))
 
         def setValue(self, value):
             if isinstance(value, (list, tuple)):
@@ -1262,7 +1264,7 @@ class DiskItemListEditor(QWidget, DataEditor):
                     allPatterns[flt] = 1
                     filters.append(_t_(f.name) + ' (' + flt + ')')
                 filters.insert(0, _t_('Recognized formats') + ' ('
-                               + ' '.join(allPatterns.keys()) + ')')
+                               + ' '.join(list(allPatterns.keys())) + ')')
                 filters.append(_t_('All files') + ' (*)')
                 self.browseDialog.setNameFilters(filters)
                 # self.browseDialog.fileSelected.connect(self.browseAccepted)
@@ -1295,7 +1297,7 @@ class DiskItemListEditor(QWidget, DataEditor):
         def browseAccepted(self):
             parent = self._context
             if hasattr(parent, '_currentDirectory'):
-                parent._currentDirectory = unicode(
+                parent._currentDirectory = six.text_type(
                     self.browseDialog.directory().path())
             l = [str(i) for i in self.browseDialog.selectedFiles()]
             if self.isVisible():
@@ -1614,8 +1616,8 @@ class DiskItemListEditor(QWidget, DataEditor):
                                    'format=<em>%s</em> value=<em>%s</em> '
                                    '(try using it interactively by '
                                    'right-clicking on the eye icon)')
-                          % (unicode(self.parameter.type),
-                             unicode(self.parameter.formats), unicode(v)),
+                          % (six.text_type(self.parameter.type),
+                             six.text_type(self.parameter.formats), six.text_type(v)),
                           icon='eye.png')
                         continue
 
@@ -1623,8 +1625,8 @@ class DiskItemListEditor(QWidget, DataEditor):
                 self.btnShow.setChecked(False)
                 raise RuntimeError(HTMLMessage(_t_('No viewer could be found for '
                                                    'type=<em>%s</em> and format=<em>%s</em>')
-                                               % (unicode(self.parameter.type),
-                                                  unicode(self.parameter.formats))))
+                                               % (six.text_type(self.parameter.type),
+                                                  six.text_type(self.parameter.formats))))
 
             except Exception as error:
                     # transform the exception into a print message, and return.
@@ -1776,7 +1778,7 @@ class DiskItemListEditor(QWidget, DataEditor):
                                    'format=<em>%s</em> value=<em>%s</em> '
                                    '(try using it interactively by '
                                    'right-clicking on the pencil icon)')
-                          % (unicode(v.type), unicode(v.format), unicode(v)),
+                          % (six.text_type(v.type), six.text_type(v.format), six.text_type(v)),
                           icon='pencil.png')
                         continue
 
@@ -1784,7 +1786,7 @@ class DiskItemListEditor(QWidget, DataEditor):
                 self.btnEdit.setChecked(False)
                 raise RuntimeError(HTMLMessage(_t_('No editor could be found for '
                                                    'type=<em>%s</em> and format=<em>%s</em>')
-                                               % (unicode(v.type), unicode(v.format))))
+                                               % (six.text_type(v.type), six.text_type(v.format))))
 
             except Exception as error:
                     # transform the exception into a print message, and return.
@@ -1887,7 +1889,7 @@ class DiskItemListEditor(QWidget, DataEditor):
         if hasattr(self.parameter, 'browseUserLevel'):
             bul = self.parameter.browseUserLevel
         w = self.DiskItemListSelect(
-            self, unicode(self.objectName()), self.write,
+            self, six.text_type(self.objectName()), self.write,
           databaseUserLevel=dul, browseUserLevel=bul)
         try:
             w.setValue(self.getValue())
@@ -1904,7 +1906,7 @@ class DiskItemListEditor(QWidget, DataEditor):
         if hasattr(self.parameter, 'browseUserLevel'):
             bul = self.parameter.browseUserLevel
         w = self.DiskItemListSelect(
-            self, unicode(self.objectName()), self.write,
+            self, six.text_type(self.objectName()), self.write,
           databaseUserLevel=dul, browseUserLevel=bul)
         try:
             w.setValue(self.getValue())
@@ -1937,7 +1939,7 @@ class DiskItemListEditor(QWidget, DataEditor):
         if hasattr(self.parameter, 'browseUserLevel'):
             bul = self.parameter.browseUserLevel
         w = self.DiskItemListSelect(
-            self, unicode(self.objectName()), self.write,
+            self, six.text_type(self.objectName()), self.write,
           context=self._context, databaseUserLevel=dul, browseUserLevel=bul)
         try:
             w.setValue(self.getValue())
@@ -1958,9 +1960,9 @@ class DiskItemListEditor(QWidget, DataEditor):
 
     def _newValue(self, v):
         self._setValue(v)
-        self.newValidValue.emit(unicode(self.objectName()), v)
+        self.newValidValue.emit(six.text_type(self.objectName()), v)
         if not self.forceDefault:
-            self.noDefault.emit(unicode(self.objectName()))
+            self.noDefault.emit(six.text_type(self.objectName()))
 
     def checkValue(self):
         self.sle.checkValue()

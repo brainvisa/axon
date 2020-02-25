@@ -143,6 +143,7 @@ See also :doc:`capsul`
 
 from __future__ import print_function
 
+from __future__ import absolute_import
 import os
 import brainvisa.processes as processes
 from brainvisa.data import neuroData
@@ -997,7 +998,7 @@ class CapsulProcess(processes.Process):
 
     def _process_trait_changed(self, name, new_value):
         if name == 'trait_added' \
-                or name not in self._capsul_process.user_traits().keys():
+                or name not in list(self._capsul_process.user_traits().keys()):
             return
         if self.isDefault(name):
             try:
@@ -1060,7 +1061,7 @@ class CapsulProcess(processes.Process):
         capsul_attr = completion_engine.get_attribute_values()
         param_attr \
             = capsul_attr.get_parameters_attributes().get(param) \
-            or capsul_attr.user_traits().keys()
+            or list(capsul_attr.user_traits().keys())
         # we must start with current attributes values in order to keep those
         # not used with the current parameter
         capsul_attr = capsul_attr.export_to_dict()

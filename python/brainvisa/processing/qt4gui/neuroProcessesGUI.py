@@ -32,6 +32,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from __future__ import print_function
+from __future__ import absolute_import
 import brainvisa.processes
 from datetime import date
 from datetime import datetime
@@ -47,6 +48,7 @@ from soma.qt_gui import qt_backend
 from soma.qt_gui.qt_backend.QtGui import QKeySequence
 from soma.qt_gui.qt_backend import QtCore
 from soma.qt_gui.qt_backend import QtGui
+from six.moves import range
 try:
     from soma.qt_gui.qt_backend import QtWebEngine
     from soma.qt_gui.qt_backend.QtWebEngineWidgets import QWebEnginePage
@@ -98,7 +100,7 @@ try:
     from six.moves.urllib import parse as urllib
 except ImportError:
     # some six versions do not provide six.moves.urllib (Ubuntu 12.04)
-    import urllib
+    import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
 
 # Because soma_workflow uses soma.qt_gui.qt_backend.uic, we need to first
 # initialize
@@ -134,11 +136,11 @@ else:
 if sys.version_info[0] >= 3:
     def items(thing):
         return list(thing.items())
-    unicode = str
+    six.text_type = str
     xrange = range
 else:
     def items(thing):
-        return thing.items()
+        return list(thing.items())
 
 #----------------------------------------------------------------------------
 
@@ -1017,7 +1019,7 @@ class HTMLBrowser(QWidget):
 
         def setSource(self, url):
             text = url.toString()
-            bvp = unicode(text)
+            bvp = six.text_type(text)
             if bvp.startswith('bvshowprocess://'):
                 bvp = bvp[16:]
                 # remove tailing '/'
@@ -1067,7 +1069,7 @@ class HTMLBrowser(QWidget):
             if hit_url:
                 menu.addSeparator()
                 menu.addAction(self.openLinkWebAction)
-                if unicode(hit_url.toString()).endswith('.py'):
+                if six.text_type(hit_url.toString()).endswith('.py'):
                     menu.addAction(self.openLinkInTextEditorAction)
                 menu.addAction(self.copyLinkAction)
             return menu
@@ -1092,7 +1094,7 @@ class HTMLBrowser(QWidget):
                                 neuroConfig.brainvisaSysEnv.getVariables())
                     os.spawnle(
                         os.P_NOWAIT, textEditor, textEditor,
-                      unicode(self.linkUrl.toString()), env)
+                      six.text_type(self.linkUrl.toString()), env)
 
         def openWeb(self):
             openWeb(self.url().toString())
@@ -1233,7 +1235,7 @@ Download it on <a href="http://brainvisa.info/downloadpage.html">the BrainVISA d
             if not hasattr(self, '_currentNonSearchPage'):
                 self._currentNonSearchPage = self.browser.url()
             url = 'http://www.google.com/cse?url=brainvisa.info&cref=http%3A%2F%2Fwww.google.com%2Fcse%2Ftools%2Fmakecse%3Furl%3Dbrainvisa.info&ie=&q=' + \
-                urllib.quote_plus(self._siteSearch.text())
+                six.moves.urllib.parse.quote_plus(self._siteSearch.text())
             self.setSource(QUrl.fromEncoded(url))
         else:
             # get back to the previous non-search page
@@ -1250,7 +1252,7 @@ class NamedPushButton(QPushButton):
         self.clicked.connect(self._pyClicked)
 
     def _pyClicked(self):
-        self.clicked.emit(unicode(self.name()))
+        self.clicked.emit(six.text_type(self.name()))
 
 
 #----------------------------------------------------------------------------
@@ -1632,7 +1634,7 @@ class ParameterLabel(QLabel):
 
     def readText(self, txt):
         """ Function to return the value of text without value of tag for images """
-        if unicode(txt).startswith('<img src='):
+        if six.text_type(txt).startswith('<img src='):
             x = txt.find('/> ')
             txt = txt[x + 3:]
             return txt
@@ -1661,7 +1663,7 @@ class ParameterLabel(QLabel):
             self.default_id.isChecked(), self.lock_id.isChecked())
 
         txt += self.printParameterName
-        self.setText(unicode(txt))
+        self.setText(six.text_type(txt))
 
     def defaultChanged(self, checked=False):
         # print("-- FUNCTION defaultChanged : neuroProcessesGUI /
@@ -1672,7 +1674,7 @@ class ParameterLabel(QLabel):
             self.default_id.isChecked(), self.lock_id.isChecked())
 
         txt += self.printParameterName
-        self.setText(unicode(txt))
+        self.setText(six.text_type(txt))
 
     def setDefault(self, default):
         # print("-- FUNCTION setDefault : neuroProcessesGUI / ParameterLabel
@@ -1685,7 +1687,7 @@ class ParameterLabel(QLabel):
             self.default_id.isChecked(), self.lock_id.isChecked())
 
         txt += self.printParameterName
-        self.setText(unicode(txt))
+        self.setText(six.text_type(txt))
 
     # def defaultChanged( self, checked=False ):
         # self.default_id.toggle()
@@ -1784,7 +1786,7 @@ class ParameterizedWidget(QWidget):
             if neuroConfig.userLevel >= parameter.userLevel and parameter.visible:
                 sectionTitle = parameter.getSectionTitleIfDefined()
                 sectionTitleList.append(sectionTitle)
-                if sectionTitle in sectionTitleSortedDict.keys():
+                if sectionTitle in list(sectionTitleSortedDict.keys()):
                     sectionTitleSortedDict[
                         sectionTitle].append((key, parameter))
                 else:
@@ -2324,7 +2326,7 @@ class ProcessView(QWidget, ExecutionContextGUI):
         if documentation is None:
             documentation = procdoc.get('en', {})
 
-        t = _t_(process.name) + ' ' + unicode(process.instance)
+        t = _t_(process.name) + ' ' + six.text_type(process.instance)
         self.setWindowTitle(t)
 
         if process.showMaximized:
@@ -2644,22 +2646,22 @@ class ProcessView(QWidget, ExecutionContextGUI):
             parent = item.parent()
             if parent:
                 if all:
-                    r = xrange(parent.childCount())
+                    r = range(parent.childCount())
                 elif before:
-                    r = xrange(parent.indexOfChild(item))
+                    r = range(parent.indexOfChild(item))
                 else:  # after
-                    r = xrange(
+                    r = range(
                         parent.indexOfChild(item) + 1, parent.childCount())
                 for i in r:
                     parent.child(i).check(select)
             else:
                 parent = item.treeWidget()
                 if all:
-                    r = xrange(parent.topLevelItemCount())
+                    r = range(parent.topLevelItemCount())
                 elif before:
-                    r = xrange(parent.indexOfTopLevelItem(item))
+                    r = range(parent.indexOfTopLevelItem(item))
                 else:  # after
-                    r = xrange(parent.indexOfTopLevelItem(
+                    r = range(parent.indexOfTopLevelItem(
                         item) + 1, parent.topLevelItemCount())
                 for i in r:
                     parent.topLevelItem(i).check(select)
@@ -2847,7 +2849,7 @@ class ProcessView(QWidget, ExecutionContextGUI):
 
             if isinstance( enode, brainvisa.processes.SerialExecutionNode ) \
                and enode.possibleChildrenProcesses:
-                defaultProcess = enode.possibleChildrenProcesses.keys()[0]
+                defaultProcess = list(enode.possibleChildrenProcesses.keys())[0]
                 defaultProcessOptions = enode.possibleChildrenProcesses[
                     defaultProcess]
                 child = brainvisa.processes.ProcessExecutionNode(
@@ -3024,7 +3026,7 @@ class ProcessView(QWidget, ExecutionContextGUI):
         if sys.version_info[0] >= 3:
             queue = submission_dlg.combo_queue.currentText()
         else:
-            queue = unicode(
+            queue = six.text_type(
                 submission_dlg.combo_queue.currentText()).encode('utf-8')
         if queue == "default queue":
             queue = None
@@ -3057,7 +3059,7 @@ class ProcessView(QWidget, ExecutionContextGUI):
             context=self)
         workflow = ptowf.doIt()
 
-        name = unicode(submission_dlg.lineedit_wf_name.text())
+        name = six.text_type(submission_dlg.lineedit_wf_name.text())
         if name == "":
             if workflow.name != None:
                 name = workflow.name  # brainvisa_code is already included
@@ -3279,7 +3281,7 @@ class ProcessView(QWidget, ExecutionContextGUI):
         if childItem:
 
             # Remove matching child item
-            for i in xrange(item.childCount()):
+            for i in range(item.childCount()):
                 c = item.child(i)
                 if (childItem == c) or (childItem is weakref.proxy(c)):
                     item.takeChild(i)
@@ -3552,11 +3554,11 @@ class ProcessView(QWidget, ExecutionContextGUI):
         # workaround a bug in PyQt ? Param 5 doesn't work; try to use kwargs
         import sipconfig
         if sipconfig.Configuration().sip_version >= 0x040a00:
-            minf = unicode(qt_backend.getSaveFileName(
+            minf = six.text_type(qt_backend.getSaveFileName(
                 None, 'Save a process file', minf,
                 'BrainVISA process (*.bvproc);;All files (*)', options=QFileDialog.DontUseNativeDialog))
         else:
-            minf = unicode(
+            minf = six.text_type(
                 QFileDialog.getSaveFileName(None, 'Save a process file', minf,
                                             'BrainVISA process (*.bvproc);;All files (*)', None, QFileDialog.DontUseNativeDialog))
         if minf:
@@ -3589,12 +3591,12 @@ class ProcessView(QWidget, ExecutionContextGUI):
     def open():
         import sipconfig
         if sipconfig.Configuration().sip_version >= 0x040a00:
-            minf = unicode(qt_backend.getOpenFileName(
+            minf = six.text_type(qt_backend.getOpenFileName(
                 None, _t_('Open a process file'), '',
                 'BrainVISA process (*.bvproc);;All files (*)',
                 options=QFileDialog.DontUseNativeDialog))
         else:
-            minf = unicode(QFileDialog.getOpenFileName(
+            minf = six.text_type(QFileDialog.getOpenFileName(
                 None, _t_('Open a process file'), '',
                 'BrainVISA process (*.bvproc);;All files (*)', None,
                 QFileDialog.DontUseNativeDialog))
@@ -3612,8 +3614,8 @@ def showProcess(process_id, *args, **kwargs):
         if process is None:
             raise RuntimeError(neuroException.HTMLMessage(
                 _t_('Invalid process <em>%s</em>') % (str(process_id), )))
-        for i in xrange(len(args)):
-            k, p = process.signature.items()[i]
+        for i in range(len(args)):
+            k, p = list(process.signature.items())[i]
             process.setValue(k, args[i])
         for k, v in kwargs.items():
             process.setValue(k, v)
@@ -3642,7 +3644,7 @@ class IterationDialog(QDialog):
         self.setLayout(layout)
         layout.setContentsMargins(10, 10, 10, 10)
         self.setWindowTitle(_t_('%s iteration') %
-                            unicode(parent.windowTitle()))
+                            six.text_type(parent.windowTitle()))
 
         params = []
         for (n, p) in parameterized.signature.items():
@@ -3703,7 +3705,7 @@ class UserDialog(QDialog):
         self.signature = signature
         self._currentDirectory = None
         if message is not None:
-            lab = QLabel(unicode(message))
+            lab = QLabel(six.text_type(message))
             lab.setWordWrap(True)
             layout.addWidget(lab)
             lab.setSizePolicy(
@@ -3745,7 +3747,7 @@ class UserDialog(QDialog):
         for b in buttons:
             if type(b) in (tuple, list):
                 caption, action = b
-                btn = QPushButton(unicode(caption))
+                btn = QPushButton(six.text_type(caption))
                 group1Layout.addWidget(btn)
                 self.group1.addButton(btn, i)
                 btn.setSizePolicy(
@@ -3753,7 +3755,7 @@ class UserDialog(QDialog):
                 self._actions[self.group1.id(btn)] = action
                 deleteGroup1 = 0
             else:
-                btn = QPushButton(unicode(b))
+                btn = QPushButton(six.text_type(b))
                 group2Layout.addWidget(btn)
                 self.group2.addButton(btn, i)
                 btn.setSizePolicy(
@@ -3876,7 +3878,7 @@ class ProcessEdit(QDialog):
 
         try:
             self.readDocumentation()
-            self.setLanguage(unicode(self.cmbLanguage.currentText()))
+            self.setLanguage(six.text_type(self.cmbLanguage.currentText()))
         except Exception:
             showException()
 
@@ -3930,20 +3932,20 @@ class ProcessEdit(QDialog):
         p = d.get('parameters', {})
         for i, j in self.mleParameters.items():
             j.setPlainText(
-                XHTML.html(p.get(unicode(self.cmbParameter.itemText(i)), '')))
+                XHTML.html(p.get(six.text_type(self.cmbParameter.itemText(i)), '')))
 
     def saveLanguage(self):
         d = {}
         d['short'] = self.escapeXMLEntities(
-            unicode(self.mleShort.toPlainText()))
+            six.text_type(self.mleShort.toPlainText()))
         d['long'] = self.escapeXMLEntities(
-            unicode(self.mleLong.toPlainText()))
+            six.text_type(self.mleLong.toPlainText()))
         d['parameters'] = p = {}
         for i, j in self.mleParameters.items():
-            p[unicode(self.cmbParameter.itemText(i))] = self.escapeXMLEntities(
-                unicode(j.toPlainText()))
+            p[six.text_type(self.cmbParameter.itemText(i))] = self.escapeXMLEntities(
+                six.text_type(j.toPlainText()))
         self.documentation[self.language] = d
-        htmlPath = unicode(self.leHTMLPath.text())
+        htmlPath = six.text_type(self.leHTMLPath.text())
         if htmlPath:
             self.documentation['htmlPath'] = htmlPath
         else:
@@ -3958,7 +3960,7 @@ class ProcessEdit(QDialog):
 
     def changeLanguage(self):
         self.saveLanguage()
-        self.setLanguage(unicode(self.cmbLanguage.currentText()))
+        self.setLanguage(six.text_type(self.cmbLanguage.currentText()))
 
     def applyChanges(self):
         try:
@@ -4131,7 +4133,7 @@ class ProcessSelectionWidget(QMainWindow):
         # new search
         if not self.matchedProcs:
                 # searched string
-            s = unicode(self.searchboxLineEdit.text()).lower()
+            s = six.text_type(self.searchboxLineEdit.text()).lower()
             if s == "":
                 self.matchedProcs = None
             else:

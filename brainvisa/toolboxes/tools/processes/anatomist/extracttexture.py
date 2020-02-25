@@ -30,6 +30,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import absolute_import
 from brainvisa.processes import *
 from brainvisa import anatomist
 
@@ -56,9 +57,9 @@ def execution(self, context):
     # sel = info.get( 'selections' )
     sel = a.getSelection()
     if not sel:
-        raise 'Select one object in Anatomist before running'
+        raise RuntimeError('Select one object in Anatomist before running')
     if len(sel) != 1:
-        raise 'Select a single object'
+        raise RuntimeError('Select a single object')
     sel = sel[0]
     time = -1
     if self.time is not None:

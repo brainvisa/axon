@@ -99,6 +99,7 @@ All temporary files and directories are written in Brainvisa global temporary di
 
 """
 from __future__ import print_function
+from __future__ import absolute_import
 import types
 import sys
 import os
@@ -130,10 +131,12 @@ from brainvisa import shelltools
 from brainvisa.multipleExecfile import MultipleExecfile
 from soma.qt_gui.qt_backend.QtCore import QObject, Signal
 import re
+from six.moves import range
+from six.moves import zip
 
 if sys.version_info[0] >= 3:
-    basestring = str
-    unicode = str
+    six.string_types = str
+    six.text_type = str
     from collections import UserList
 
     def values(thing):
@@ -145,7 +148,7 @@ else:
     from UserList import UserList
 
     def values(thing):
-        return thing.values()
+        return list(thing.values())
     map_list = map
 
 
@@ -324,7 +327,7 @@ class DiskItem(QObject):
             self._lock = RLock()
 
     def __eq__(self, other):
-        if isinstance(other, basestring):
+        if isinstance(other, six.string_types):
             return other in self.fullPaths()
         return self is other or (isinstance(other, DiskItem) and self.fullPath() == other.fullPath())
 
@@ -334,12 +337,12 @@ class DiskItem(QObject):
             return self.fullPath().__hash__()
 
     def __ne__(self, other):
-        if isinstance(other, basestring):
+        if isinstance(other, six.string_types):
             return other not in self.fullPaths()
         return self is not other and ((not isinstance(other, DiskItem)) or self.fullPath() != other.fullPath())
 
     def __lt__(self, other):
-        if isinstance(other, basestring):
+        if isinstance(other, six.string_types):
             return self.fullPath() < other
         return self is not other and isinstance(other, DiskItem) \
             and self.fullPath() < other.fullPath()
@@ -615,7 +618,7 @@ class DiskItem(QObject):
         Returns the first file name of each item of the serie.
         """
         return map_list(lambda i, self=self: self.fullPathSerie(i),
-                        range(len(self.get('name_serie'))))
+                        list(range(len(self.get('name_serie')))))
 
     def _getGlobal(self, attrName, default=None):
         r = self._globalAttributes.get(attrName)
@@ -1148,7 +1151,7 @@ class DiskItem(QObject):
                     self._writeMinf(attrs)
                 except Exception as e:
                     raise MinfError(
-                        unicode(_t_('uuid cannot be saved in minf file') + ': ') + unicode(e))
+                        six.text_type(_t_('uuid cannot be saved in minf file') + ': ') + six.text_type(e))
 
     def uuid(self, saveMinf=True):
         """
@@ -1917,14 +1920,14 @@ class Format(object):
     def _update_internals(self, state):
         old_filename = getattr(self, 'fileName', None)
         old_line = getattr(self, 'parse_line', None)
-        keys = state.keys()
+        keys = list(state.keys())
         if 'formatName' in keys:
             keys = ['formatName'] + [k for k in keys if k != 'formatName']
         for key in keys:
             value = state[key]
             if key == 'formatName':
                 formatName = value
-                if not isinstance(formatName, basestring):
+                if not isinstance(formatName, six.string_types):
                     raise ValueError(HTMLMessage(_t_(
                                                  '<em><code>%s</code></em> is not a valid format name')
                                                  % formatName))
@@ -2047,7 +2050,7 @@ class Format(object):
         """
         attrs = self._formatAttributes
         if attrs is not None:
-            if type(attrs) is types.DictType:
+            if type(attrs) is dict:
                 item._updateOther(attrs)
             elif callable(attrs):
                 item._updateOther(attrs(item, writeOnly=writeOnly))
@@ -2167,7 +2170,7 @@ class FormatSeries(Format):
             return groupedItem
         if matchRule:
             ns = groupedItem._getLocal('name_serie')
-            if not isinstance(ns, basestring):
+            if not isinstance(ns, six.string_types):
                 ns.append(matchRule.get('name_serie'))
         return groupedItem
 
@@ -2184,7 +2187,7 @@ class FormatSeries(Format):
         name_serie = item.get('name_serie')
         if len(name_serie) > 1:
             # Sort name_serie by numeric order
-            numbers = [(long(i), i) for i in name_serie]
+            numbers = [(int(i), i) for i in name_serie]
             numbers.sort()
             name_serie = [i[1] for i in numbers]
             # Remove identical entries
@@ -2238,7 +2241,7 @@ def getFormat(item, default=Undefined):
     """
     if isinstance(item, Format):
         return item
-    elif isinstance(item, basestring):
+    elif isinstance(item, six.string_types):
         if item == 'Graph':
             item = 'Graph and data'
         result = formats.get(getId(item))
@@ -2559,7 +2562,7 @@ class DiskItemType(object):
         """
         attrs = self._typeAttributes
         if attrs is not None:
-            if type(attrs) is types.DictType:
+            if type(attrs) is dict:
                 item.updateMinf(attrs)
             elif callable(attrs):
                 item.updateMinf(attrs(item, writeOnly=writeOnly))
@@ -2575,7 +2578,7 @@ def getDiskItemType(item):
     """
     if isinstance(item, DiskItemType):
         return item
-    elif type(item) is str or type(item) is unicode:
+    elif type(item) is str or type(item) is six.text_type:
         result = diskItemTypes.get(getId(item))
         if result:
             return result
@@ -3065,7 +3068,7 @@ def aimsFileInfo(fileName):
             nan = None
         if _finder is not None:
             finder = aims.Finder()
-            if sys.version_info[0] < 3 and type(fileName) is unicode:
+            if sys.version_info[0] < 3 and type(fileName) is six.text_type:
                 # convert to str
                 import codecs
                 fileName = codecs.getencoder('utf8')(fileName)[0]

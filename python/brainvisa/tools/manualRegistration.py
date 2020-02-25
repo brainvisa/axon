@@ -31,6 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import absolute_import
 from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
 from soma.qt_gui.qtThread import MainThreadLife
 import anatomist.cpp as anatomist
@@ -46,6 +47,7 @@ from tempfile import mkstemp
 from soma.subprocess import check_call
 import os
 import six
+from six.moves import range
 
 
 def manual_registration(image1, image2, context=None):
@@ -103,7 +105,7 @@ class ManualRegistration():
             v.removeObjects(v.objects)
             del v
         self._anatomist.deleteObjects(
-            self._aImages.values() + [self._fusion, self._winGroup])
+            list(self._aImages.values()) + [self._fusion, self._winGroup])
         for el in self._spinBoxTimers.values():
             del el
         self._mainDiag.close()
@@ -682,7 +684,7 @@ class ViewButtons():
         :returns:
             All the buttons.
         """
-        return self._buttons.values()
+        return list(self._buttons.values())
 
     def _graphicsViewOnWindow(self):
         """

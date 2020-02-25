@@ -39,6 +39,9 @@
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
 from __future__ import print_function
+from __future__ import absolute_import
+import six
+from six.moves import range
 __docformat__ = "epytext en"
 
 import sys
@@ -50,7 +53,7 @@ from brainvisa.processing.qt4gui import neuroProcessesGUI
 
 if sys.version_info[0] >= 3:
     xrange = range
-    unicode = str
+    six.text_type = str
 
 
 class UpdateDatabasesGUI(qt.QWidget):
@@ -130,7 +133,7 @@ class UpdateDatabasesGUI(qt.QWidget):
             item = self.lvDatabases.item(i)
             if item.checkState() == qt.Qt.Checked:
                 result.append(
-                    neuroHierarchy.databases.database(unicode(item.text())))
+                    neuroHierarchy.databases.database(six.text_type(item.text())))
             i += 1
         return result
 
@@ -169,7 +172,7 @@ def warnUserAboutDatabasesToUpdate():
             from soma.qt_gui.qt_backend import QtCore
             _ontologiesModificationDialog.setAttribute(
                 QtCore.Qt.WA_DeleteOnClose)
-            for i in xrange(_ontologiesModificationDialog.inlineGUI.lvDatabases.count()):
+            for i in range(_ontologiesModificationDialog.inlineGUI.lvDatabases.count()):
                 _ontologiesModificationDialog.inlineGUI.lvDatabases.item(
                     i).setCheckState(qt.Qt.Unchecked)
             # item = _ontologiesModificationDialog.inlineGUI.lvDatabases.firstChild()
@@ -178,9 +181,9 @@ def warnUserAboutDatabasesToUpdate():
                 # item = item.nextSibling()
         # item = _ontologiesModificationDialog.inlineGUI.lvDatabases.firstChild()
         # while item is not None:
-        for i in xrange(_ontologiesModificationDialog.inlineGUI.lvDatabases.count()):
+        for i in range(_ontologiesModificationDialog.inlineGUI.lvDatabases.count()):
             item = _ontologiesModificationDialog.inlineGUI.lvDatabases.item(i)
-            if getattr(neuroHierarchy.databases.database(unicode(item.text())), '_mustBeUpdated', False):
+            if getattr(neuroHierarchy.databases.database(six.text_type(item.text())), '_mustBeUpdated', False):
                 item.setCheckState(qt.Qt.Checked)
             # item = item.nextSibling()
         _ontologiesModificationDialog.show()
