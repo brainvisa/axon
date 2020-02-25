@@ -41,8 +41,6 @@ from soma.qt4gui.api import TimeredQLineEdit, getPixmap
 from soma.wip.application.api import somaIconsDirectory
 import sys
 import six
-if sys.version_info[0] >= 3:
-    six.text_type = str
 
 #-------------------------------------------------------------------------
 
