@@ -35,9 +35,6 @@ import sys
 from soma.signature.api import DataType
 import six
 
-if sys.version_info[0] >= 3:
-    six.text_type = str
-
 #-------------------------------------------------------------------------
 
 
