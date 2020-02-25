@@ -48,7 +48,7 @@ from brainvisa.data.neuroDiskItems import getFormat, getFormats, DiskItem, isSam
 from brainvisa.processing.neuroException import HTMLMessage
 import six
 import sys
-from six.moves import reduce
+from functools import reduce
 
 if sys.version_info[0] >= 3:
 
