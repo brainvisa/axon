@@ -54,7 +54,7 @@ from soma.html import htmlEscape
 import six
 if sys.version_info[0] >= 3:
     from html.parser import HTMLParser
-    six.text_type = str
+
 else:
     from htmllib import HTMLParser
 
