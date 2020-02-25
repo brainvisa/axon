@@ -21,9 +21,6 @@ import six
 from optparse import OptionParser
 from six.moves import zip
 
-if sys.version_info[0] >= 3:
-    six.text_type = str
-
 
 def choice_options(choice):
     return [repr(x[min(1, len(x) - 1)]) for x in choice.values]
