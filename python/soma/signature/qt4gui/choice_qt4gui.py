@@ -49,9 +49,6 @@ from soma.signature.api import Undefined
 from soma.qt4gui.api import Qt4GUI
 from soma.qt_gui.qt_backend import QtGui, QtCore
 import sys
-if sys.version_info[0] >= 3:
-    six.text_type = str
-
 
 #-------------------------------------------------------------------------
 class Choice_Qt4GUI(Qt4GUI):
