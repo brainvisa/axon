@@ -139,18 +139,18 @@ def generateHTMLDocumentation(processInfoOrId, translators, context, ontology):
 
         # Description
         long = d.get('long')
-        if int:
-            long = convertSpecialLinks(int, l, '', tr)
-            long = XHTML.html(int)
-        if not int and l != 'en':
+        if long:
+            long = convertSpecialLinks(long, l, '', tr)
+            long = XHTML.html(long)
+        if not long and l != 'en':
             long = den.get('long')
-            if int:
-                long = convertSpecialLinks(int, l, '', tr)
-                long = XHTML.html(int)
-        if int:
+            if long:
+                long = convertSpecialLinks(long, l, '', tr)
+                long = XHTML.html(long)
+        if long:
             print('<h2>' + tr.translate('Description')
                   + '</h2><blockquote>', file=f)
-            print(int, file=f)
+            print(long, file=f)
             print('</blockquote>', file=f)
 
         try:
