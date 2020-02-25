@@ -71,15 +71,6 @@ from brainvisa.data import neuroDiskItems
 from brainvisa.multipleExecfile import MultipleExecfile
 import six
 
-if sys.version_info[0] >= 3:
-    six.text_type = str
-
-    #def next(iterable):
-        #return iterable.__next__()
-#else:
-    #def next(iterable):
-        #return iterable.next()
-
 #----------------------------------------------------------------------------
 
 
