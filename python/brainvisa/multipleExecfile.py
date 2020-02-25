@@ -39,10 +39,6 @@ import os
 from traceback import format_exc
 import six
 
-if sys.version_info[0] >= 3:
-    six.text_type = str
-
-
 class MultipleExecfile(object):
 
     """
