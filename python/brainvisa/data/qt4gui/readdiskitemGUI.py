@@ -60,9 +60,6 @@ import six
 import weakref
 from six.moves import map
 
-if sys.version_info[0] >= 3:
-    six.text_type = str
-
 class ComboBoxAction(QWidgetAction):
     
     def __init__(self, parent, text = None, icon_file = None):
