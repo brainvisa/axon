@@ -136,7 +136,6 @@ else:
 if sys.version_info[0] >= 3:
     def items(thing):
         return list(thing.items())
-    six.text_type = str
     xrange = range
 else:
     def items(thing):
