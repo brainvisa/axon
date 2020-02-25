@@ -32,7 +32,7 @@
 
 from __future__ import absolute_import
 import os
-from soma.signature.attributetypes.six.text_type import Unicode
+from soma.signature.attributetypes.unicode import Unicode
 import six
 
 #-------------------------------------------------------------------------
