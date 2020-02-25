@@ -90,10 +90,7 @@ class Number(DataType):
         try:
             value = int(value)
         except ValueError:
-            try:
-                value = int(value)
-            except ValueError:
-                value = float(value)
+            value = float(value)
         return value
 
     def createValue(self):
