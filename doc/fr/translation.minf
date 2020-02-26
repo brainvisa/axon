@@ -1168,7 +1168,7 @@ Il faudra ensuite ré-ouvrir tout traitement qui dépend de SPM.</s>
   <s name="Average Gyri Texture">Texture moyenne de gyri</s>
   <s name="SHFJ: Import &amp; reconstruct GEMS double-echo volumes (2x3D)">SHFJ: Importation et reconstruction de données GEMS double-écho (2x3D)</s>
   <s name='Object %(object)s has no such parameter: %(param)s'>L'objet %(object)s n'a pas ce paramètre : %(param)s</s>
-  <s name="Check &amp;&amp; update databases">Vérification et actualisation de bases de données</s>
+  <s name="Completely rebuild and check ALL databases...">Re-créer et vérifier TOUTES les bases...</s>
   <s name="Enhanced mean">Moyenne rehaussée</s>
   <s name="Sulcal Parcellation">Parcellisation sulcale</s>
   <s name="Preferences">Préférences</s>
