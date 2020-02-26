@@ -3513,6 +3513,9 @@ class ProcessView(QWidget, ExecutionContextGUI):
         else:
             self.readUserValues()
             self._iterationDialog = IterationDialog(self, self.process, self)
+            # make it window modal to avoid user changes in the parent process
+            # window
+            self._iterationDialog.setWindowModality(QtCore.Qt.WindowModal)
             self._iterationDialog.accepted.connect(self._iterateAccept)
             self._iterationDialog.show()
 
@@ -3639,7 +3642,6 @@ class IterationDialog(QDialog):
 
     def __init__(self, parent, parameterized, context):
         QDialog.__init__(self, parent)
-        self.setModal(True)
         layout = QVBoxLayout()
         self.setLayout(layout)
         layout.setContentsMargins(10, 10, 10, 10)
@@ -4257,8 +4259,8 @@ class ProcessSelectionWidget(QMainWindow):
             processes = self.currentProcess._iterate(**params)
             iterationProcess = brainvisa.processes.IterationProcess(
                 self.currentProcess.name + " iteration",
-                                                                     processes,
-                                                                     self.currentProcess.name)
+                processes,
+                self.currentProcess.name)
             # iterationProcess.possibleChildrenProcesses =
             showProcess(iterationProcess)
         except Exception:
