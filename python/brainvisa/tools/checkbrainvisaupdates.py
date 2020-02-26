@@ -7,9 +7,11 @@ import sys
 from brainvisa.configuration import neuroConfig
 try:
     import six.moves.urllib.request as urllib2
+    from six.moves.urllib.error import URLError
 except ImportError:
     # some six versions do not provide six.moves.urllib (Ubuntu 12.04)
     import urllib2
+    from urllib2 import URLError
 import six
 
 filesaddress = 'ftp://ftp.cea.fr/pub/dsv/anatomist/binary'
@@ -36,7 +38,7 @@ def checkUpdates():
     # lines = urllib2.urlopen( filesaddress, timeout=3 ).readlines()
     try:
         lines = urllib2.urlopen(filesaddress, timeout=5).readlines()
-    except urllib2.URLError:  # the network may be not available
+    except URLError:  # the network may be not available
         lines = []
     rexp = re.compile(
         '^.*(brainvisa-(.*)-(i686|x86_64).*-([^-]+)-.*)\.README.*$')
