@@ -2185,7 +2185,10 @@ class FormatSeries(Format):
         name_serie = item.get('name_serie')
         if len(name_serie) > 1:
             # Sort name_serie by numeric order
-            numbers = [(int(i), i) for i in name_serie]
+            if sys.version_info[0] >= 3:
+                numbers = [(int(i), i) for i in name_serie]
+            else:
+                numbers = [(long(i), i) for i in name_serie]
             numbers.sort()
             name_serie = [i[1] for i in numbers]
             # Remove identical entries

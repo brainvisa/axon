@@ -44,14 +44,14 @@ This module gather together several public items defined in various submodules:
     - L{EditableTreeWidget}
     - L{getPixmap}
     - L{ObservableListWidget}
-'''  # - L{QFileDialogWithSignals}
-'''    - L{QLineEditModificationTimer}
+    # - L{QFileDialogWithSignals}
+    - L{QLineEditModificationTimer}
     - L{QtThreadCall}, L{FakeQtThreadCall}
     - L{SimpleTable}
     - L{TimeredQLineEdit}
     - L{TreeListWidget}
-'''  # - L{VScrollFrame}
-'''@author: Yann Cointepas
+    # - L{VScrollFrame}
+@author: Yann Cointepas
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''

@@ -154,8 +154,15 @@ class NumberEditor(StringEditor):
             try:
                 result = int(value)
             except ValueError:
+                if sys.version_info[0] < 3:
+                    try:
+                        return long(value)
+                    except ValueError:
+                        pass
+                    
                 try:
                     result = float(value)
+
                 except ValueError:
                     raise ValueError(
                         HTMLMessage(_t_('<em>%s</em> is not a valid number') % value))
@@ -172,6 +179,12 @@ class IntegerEditor(StringEditor):
             try:
                 result = int(value)
             except ValueError:
+                if sys.version_info[0] < 3:
+                    try:
+                        return long(value)
+                    except ValueError:
+                        pass
+                    
                 raise ValueError(
                     HTMLMessage(_t_('<em>%s</em> is not a valid integer') % value))
         else:
@@ -716,6 +729,12 @@ class NumberListEditor(StringListEditor):
             try:
                 n = int(s)
             except ValueError:
+                if sys.version_info[0] < 3:
+                    try:
+                        n = long(s)
+                    except ValueError:
+                        pass
+                    
                 try:
                     n = float(s)
                 except ValueError:
@@ -756,6 +775,12 @@ class IntegerListEditor(NumberListEditor):
             try:
                 n = int(s)
             except ValueError:
+                if sys.version_info[0] < 3:
+                    try:
+                        n = long(s)
+                    except ValueError:
+                        pass
+                    
                 raise ValueError(
                     HTMLMessage(_t_('<em>%s</em> is not a valid integer') % s))
             result.append(n)

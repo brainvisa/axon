@@ -68,7 +68,8 @@ def initialization(self):
     databases = [(dbs.directory, neuroHierarchy.databases.database(dbs.directory))
                  for dbs in neuroConfig.dataPath if not dbs.builtin]
     self.signature['output_database'].setChoices(*databases)
-    self.output_database = databases[0][1]
+    if len(databases) > 0:
+        self.output_database = databases[0][1]
     self.addLink('input_data', 'data_type', self.dataTypeChanged)
     self.linkParameters('output_database', 'input_data', linkDB)
     self.linkParameters('output_data', ('input_data', 'output_database'),

@@ -1012,14 +1012,11 @@ def initGlobalVariables():
     os.environ['LANGUAGE'] = language
     docPath = os.path.join(docPath, language)
     if _t_ is _defaultTranslateFunction:
-        if sys.version_info[0] >= 3:
-            import builtins
-        else:
-            builtins = __builtin__
+        
         try:
-            builtins.__dict__['_t_'] = Translator(language).translate
+            six.moves.builtins.__dict__['_t_'] = Translator(language).translate
         except Exception as msg:
-            builtins.__dict__['_t_'] = lambda x: x
+            six.moves.builtins.__dict__['_t_'] = lambda x: x
             sys.stderr.write(str(msg) + '\n')
 
 

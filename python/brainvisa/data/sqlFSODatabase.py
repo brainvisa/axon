@@ -75,15 +75,16 @@ from six.moves import range
 from functools import reduce
 
 if sys.version_info[0] >= 3:
+    izip = zip
     def values(thing):
         return list(thing.values())
     xrange = range
 
 else:
-    
+    from itertools import izip
 
     def values(thing):
-        return list(thing.values())
+        return thing.values()
 
 out = sys.stdout
 
@@ -504,13 +505,13 @@ class SQLDatabase(Database):
             print('!cursor!', self._id, ':', message, file=sys.stderr)
 
     def __init__(self, sqlDatabaseFile, directory, fso=None, context=None, otherSqliteFiles=[], settings=None):
-        # print('!==================================!')
-        # print('!SQLDatabase, initialization started!')
-        # print('!==================================!')
-        # print('!sqlDatabaseFile:', sqlDatabaseFile, '!')
-        # print('!directory:', directory, '!')
-        # print('!otherSqliteFiles:', otherSqliteFiles, '!')
-        # print('!==================================!')
+        #print('!==================================!')
+        #print('!SQLDatabase, initialization started!')
+        #print('!==================================!')
+        #print('!sqlDatabaseFile:', sqlDatabaseFile, '!')
+        #print('!directory:', directory, '!')
+        #print('!otherSqliteFiles:', otherSqliteFiles, '!')
+        #print('!==================================!')
 
         super(SQLDatabase, self).__init__()
         self._connection = None
@@ -665,8 +666,8 @@ class SQLDatabase(Database):
             self._attributesEditionByType[type.name] = (
                 editableAttributes, selectedValueAttributes, declaredAttributes)
 
-        # print('!SQLDatabase, rule! selection by type :')
-        # print(self.ruleSelectionByType)
+        #print('!SQLDatabase, rule! selection by type :')
+        #print(self.ruleSelectionByType)
 
         self.typesWithTable = set()
         self._childrenByTypeName = {}
@@ -737,9 +738,9 @@ class SQLDatabase(Database):
                 brainvisa.processes.defaultContext().write(
                     "Database ",  self.name, " must be updated because it has been used with other versions of Brainvisa.")
 
-        # print('!==================================!')
-        # print('!SQLDatabase initialization ended!')
-        # print('!==================================!')
+        #print('!==================================!')
+        #print('!SQLDatabase initialization ended!')
+        #print('!==================================!')
 
     def _scanDatabaseByChunks(
             self, directoriesToScan, recursion=True, context=None, chunkSize=1000):
@@ -1132,7 +1133,7 @@ class SQLDatabase(Database):
                     sql = 'CREATE TABLE ' + '"' + tableName + \
                         '" (_uuid CHAR(36) PRIMARY KEY, ' + ', '.join(
                             (i + ' VARCHAR' for i in tableFields[1:])) + ')'
-                    # print('!createTables!', sql)
+                    #print('!createTables!', sql)
                     cursor.execute(sql)
                     # create index
                     keys = self.keysByType[type]
@@ -1846,7 +1847,7 @@ class SQLDatabase(Database):
                               file=_debug)
                     continue
             where = {}
-            for f, a in zip(tableFields, tableAttributes):
+            for f, a in izip(tableFields, tableAttributes):
                 if a in required or a not in nonMandatoryKeyAttributes:
                     v = self.getAttributeValues(a, selection, required)
                     # if _debug is not None:

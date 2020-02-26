@@ -37,11 +37,8 @@ from brainvisa import shelltools
 import sys
 from six.moves import map
 
-if sys.version_info[0] >= 3:
-    def map_list(func, thing):
-        return list(map(func, thing))
-else:
-    map_list = map
+def map_list(func, thing):
+    return list(map(func, thing))
 
 name = 'Aims Texture Converter'
 roles = ('converter',)

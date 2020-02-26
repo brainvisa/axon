@@ -40,11 +40,8 @@ import sys
 from six.moves import map
 from six.moves import zip
 
-if sys.version_info[0] >= 3:
-    def map_list(func, thing):
-        return list(map(func, thing))
-else:
-    map_list = map
+def map_list(func, thing):
+    return list(map(func, thing))
 
 name = 'Graph To Volume Converter'
 userLevel = 0

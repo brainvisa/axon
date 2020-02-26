@@ -67,7 +67,7 @@ class Number(DataType):
         return (), kwargs
 
     def checkValue(self, value):
-        if isinstance( value, int ) or isinstance( value, float ):
+        if isinstance( value, six.integer_types ) or isinstance( value, float ):
             if ( self.minimum is not None and value < self.minimum ) or \
                (self.maximum is not None and value > self.maximum):
                 if self.maximum is None:
@@ -89,6 +89,11 @@ class Number(DataType):
         try:
             value = int(value)
         except ValueError:
+            if sys.version_info[0] < 3:
+                try:
+                    value = long(value)
+                except ValueError:
+                    pass
             value = float(value)
         return value
 

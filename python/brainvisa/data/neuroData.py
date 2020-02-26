@@ -78,16 +78,15 @@ import six
 from six.moves import map
 if sys.version_info[0] >= 3:
     from collections import UserDict, UserList
-
-    def list_map(f, sequence):
-        return list(map(f, sequence))
 else:
     from UserDict import UserDict
     from UserList import UserList
-    list_map = map
+    
 from soma.notification import Notifier
 from brainvisa.processing.neuroException import HTMLMessage
 
+def list_map(f, sequence):
+    return list(map(f, sequence))
 #----------------------------------------------------------------------------
 
 
@@ -312,6 +311,11 @@ class Number(String):
         try:
             return int(value)
         except ValueError:
+            if sys.version_info[0] < 3:
+                try:
+                    return long(value)
+                except ValueError:
+                    pass
             try:
                 return float(value)
             except ValueError:
@@ -336,10 +340,12 @@ class Integer(Number):
         try:
             return int(value)
         except ValueError:
-            try:
-                return int(value)
-            except ValueError:
-                return None
+            if sys.version_info[0] < 3:
+                try:
+                    return long(value)
+                except ValueError:
+                    pass
+            return None
 
 
 #----------------------------------------------------------------------------

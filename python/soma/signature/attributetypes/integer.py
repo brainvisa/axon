@@ -50,11 +50,17 @@ class Integer(Number):
         if minimum is None:
             self.minimum = None
         else:
-            self.minimum = int(minimum)
+            if sys.version_info[0] >= 3:
+                self.minimum = int(minimum)
+            else:
+                self.minimum = long(minimum)
         if maximum is None:
             self.maximum = None
         else:
-            self.maximum = int(maximum)
+            if sys.version_info[0] >= 3:
+                self.maximum = int(maximum)
+            else:
+                self.maximum = long(maximum)
 
     def checkValue(self, value):
         if not isinstance(value, float):
