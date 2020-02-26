@@ -1,4 +1,5 @@
 from __future__ import print_function
+from __future__ import absolute_import
 from soma.singleton import Singleton
 from brainvisa.data.temporary import manager as temporaryManager
 from brainvisa.data.sqlFSODatabase import NoGeneratorSQLDatabase

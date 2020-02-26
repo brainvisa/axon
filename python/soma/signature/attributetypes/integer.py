@@ -30,6 +30,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL-B license and that you accept its terms.
 
+from __future__ import absolute_import
 import types
 import sys
 from soma.signature.attributetypes.number import Number
@@ -49,11 +50,17 @@ class Integer(Number):
         if minimum is None:
             self.minimum = None
         else:
-            self.minimum = long(minimum)
+            if sys.version_info[0] >= 3:
+                self.minimum = int(minimum)
+            else:
+                self.minimum = long(minimum)
         if maximum is None:
             self.maximum = None
         else:
-            self.maximum = long(maximum)
+            if sys.version_info[0] >= 3:
+                self.maximum = int(maximum)
+            else:
+                self.maximum = long(maximum)
 
     def checkValue(self, value):
         if not isinstance(value, float):
@@ -61,10 +68,7 @@ class Integer(Number):
         self._checkValueError(value)
 
     def convert(self, value, checkValue=None):
-        try:
-            value = int(value)
-        except ValueError:
-            value = long(value)
+        value = int(value)
         return value
 
 

@@ -34,6 +34,7 @@
 
 from __future__ import print_function
 
+from __future__ import absolute_import
 import os
 import distutils.spawn
 from traits.api import Undefined

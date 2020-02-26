@@ -43,13 +43,12 @@ L{soma.signature} module but it can be used in many other contexts.
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
 from __future__ import print_function
+from __future__ import absolute_import
+import six
 __docformat__ = "epytext en"
 
 
-import __builtin__
-if not hasattr(__builtin__, 'set'):
-    from sets import Set as set
-
+import six.moves.builtins
 import gc
 import cherrypy
 import turbogears
@@ -121,7 +120,7 @@ class TgWindow(object):
 
         if windowid is None:
             # Generate a new unique identifier
-            windowid = unicode(Uuid()).replace('-', '')
+            windowid = six.text_type(Uuid()).replace('-', '')
 
         if windowid in manager:
             # Get the existing instance

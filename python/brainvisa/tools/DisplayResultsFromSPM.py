@@ -32,6 +32,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from __future__ import print_function
+from __future__ import absolute_import
 from soma.qt_gui.qt_backend import QtGui, QtCore, Qt
 from soma.qt_gui import qt_backend
 from anatomist.cpp.paletteEditor import PaletteEditor
@@ -45,6 +46,7 @@ import math
 import numpy as np
 import six
 from brainvisa.tools.spm_results import createBrainMIPWithGridTextFiles
+from six.moves import range
 
 class DisplayResultsFromSPM(object):
     def __init__(self, title, display_glass_brain, comment, resultMap, statsCsv, threshInfo, singleSubject, mipMat

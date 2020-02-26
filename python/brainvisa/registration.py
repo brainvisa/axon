@@ -32,6 +32,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from __future__ import print_function
+from __future__ import absolute_import
 from brainvisa.configuration import neuroConfig
 from brainvisa.data import neuroHierarchy
 from brainvisa.data.neuroDiskItems import getDiskItemType, isSameDiskItemType, DiskItem
@@ -39,6 +40,7 @@ from brainvisa.processing.neuroException import HTMLMessage
 from brainvisa.data.writediskitem import WriteDiskItem
 from soma import uuid
 import threading
+from six.moves import range
 
 
 #------------------------------------------------------------------------------

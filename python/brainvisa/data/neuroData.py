@@ -68,26 +68,25 @@ Matching graphical editors classes are defined in :py:mod:`brainvisa.data.qt4gui
 :Classes:
 
 """
+from __future__ import absolute_import
 import types
 import string
 import weakref
 import copy
 import sys
 import six
+from six.moves import map
 if sys.version_info[0] >= 3:
     from collections import UserDict, UserList
-    unicode = str
-    basestring = str
-
-    def list_map(f, sequence):
-        return list(map(f, sequence))
 else:
     from UserDict import UserDict
     from UserList import UserList
-    list_map = map
+    
 from soma.notification import Notifier
 from brainvisa.processing.neuroException import HTMLMessage
 
+def list_map(f, sequence):
+    return list(map(f, sequence))
 #----------------------------------------------------------------------------
 
 
@@ -312,13 +311,15 @@ class Number(String):
         try:
             return int(value)
         except ValueError:
-            try:
-                return long(value)
-            except ValueError:
+            if sys.version_info[0] < 3:
                 try:
-                    return float(value)
+                    return long(value)
                 except ValueError:
-                    raise ValueError('cannot convert value to number:', value)
+                    pass
+            try:
+                return float(value)
+            except ValueError:
+                raise ValueError('cannot convert value to number:', value)
 
 
 #----------------------------------------------------------------------------
@@ -339,10 +340,12 @@ class Integer(Number):
         try:
             return int(value)
         except ValueError:
-            try:
-                return long(value)
-            except ValueError:
-                return None
+            if sys.version_info[0] < 3:
+                try:
+                    return long(value)
+                except ValueError:
+                    pass
+            return None
 
 
 #----------------------------------------------------------------------------
@@ -406,9 +409,9 @@ class Choice(Parameter):
         values = []
         for p in args:
             if type(p) in (tuple, list) and len(p) == 2:
-                values.append((unicode(p[0]), p[1]))
+                values.append((six.text_type(p[0]), p[1]))
             else:
-                values.append((unicode(p), p))
+                values.append((six.text_type(p), p))
         if self.values != values:
             self.values = values
             for f in self._warnChoices.keys():
@@ -452,7 +455,7 @@ class Choice(Parameter):
                 i = self.findIndex(value)
                 if i >= 0:
                     return self.values[i][1]
-        raise KeyError('%s is not a valid choice' % unicode(value))
+        raise KeyError('%s is not a valid choice' % six.text_type(value))
 
     def findIndex(self, value):
         """
@@ -533,7 +536,7 @@ class Boolean(Parameter):
             return True  # default is True
         # convert to int first because if value is a string, '0' or '1',
         # direct bool conversion will not work.
-        if type(value) in (str, unicode):
+        if type(value) in (str, six.text_type):
             if value == 'True':
                 return True
             elif value == 'False':
@@ -739,7 +742,7 @@ class Matrix(String):
         """
         if not value:
             return None
-        if isinstance(value, basestring):
+        if isinstance(value, six.string_types):
             value = eval(value)
         return MatrixValue(value, self.length, self.width)
 

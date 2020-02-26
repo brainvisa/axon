@@ -40,6 +40,7 @@ This module is obsolete and should be replaced by soma.application
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
 
+from __future__ import absolute_import
 __docformat__ = "epytext en"
 
 

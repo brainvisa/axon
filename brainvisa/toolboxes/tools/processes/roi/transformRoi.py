@@ -32,6 +32,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from __future__ import print_function
+from __future__ import absolute_import
 from brainvisa.processes import *
 from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
 
@@ -49,6 +50,7 @@ import glob
 import numpy as np
 import math
 import six
+from six.moves import range
 # from brainvisa.tools.transformROI import transform_roi
 
 name = 'Transform ROI'
@@ -328,7 +330,7 @@ class TransformRoi():
 
     def _updateUi(self):
         moreThanOneSubRoi = len(
-            self._roiDict[self.getSelectedRoi()]["sub_roi"].keys()) > 1
+            list(self._roiDict[self.getSelectedRoi()]["sub_roi"].keys())) > 1
         if not moreThanOneSubRoi:
             self._globalModeOn = True
         self._mainDiag.globalCb.blockSignals(True)

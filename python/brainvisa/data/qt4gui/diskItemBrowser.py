@@ -31,6 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from __future__ import print_function
+from __future__ import absolute_import
 import sys
 import os
 from itertools import chain
@@ -51,11 +52,10 @@ from brainvisa.data.neuroDiskItems import DiskItem, getFormats, getDiskItemType
 import brainvisa.processes
 import types
 import six
+from six.moves import range
 
 if sys.version_info[0] >= 3:
     xrange = range
-    unicode = str
-    basestring = str
 
 #----------------------------------------------------------------------------
 
@@ -200,7 +200,7 @@ class DiskItemBrowser(QDialog):
             searchedTypes = self._requestedTypes
         for t in searchedTypes:
             for values in self._database.findAttributes(self._editableAttributes, _type=t):
-                for i in xrange(len(values)):
+                for i in range(len(values)):
                     if values[i]:
                         self._editableAttributesValues[
                             self._editableAttributes[i]].add(values[i])
@@ -335,7 +335,7 @@ class DiskItemBrowser(QDialog):
             self._lastSelection = None
         elif index > 0:
             if name == 'name_serie':  # only name_serie attribute must be interpreted as a list when a value of a combo box is selected. A type or format can be in several words but is not a list...
-                l = list(string_to_list(unicode(cmb.itemText(index))))
+                l = list(string_to_list(six.text_type(cmb.itemText(index))))
                 if not l:
                     v = ''
                 elif len(l) == 1:
@@ -343,7 +343,7 @@ class DiskItemBrowser(QDialog):
                 else:
                     v = l
             else:
-                v = unquote_string(unicode(cmb.itemText(index)))
+                v = unquote_string(six.text_type(cmb.itemText(index)))
             self._selectedAttributes[name] = v
             self._lastSelection = name
         self.rescan()
@@ -360,8 +360,8 @@ class DiskItemBrowser(QDialog):
             else:
                 return
         c = cmb.currentIndex()
-        text = unicode(cmb.currentText())
-        if c > 0 and text == unicode(cmb.itemText(c)):
+        text = six.text_type(cmb.currentText())
+        if c > 0 and text == six.text_type(cmb.itemText(c)):
             return
         l = list(string_to_list(text))
         if not l:
@@ -429,8 +429,8 @@ class DiskItemBrowser(QDialog):
 
             if self._cmbDatabase is not None:
                 selected = self._selectedAttributes.get('_database')
-                for i in xrange(1, self._cmbDatabase.count()):
-                    if unicode(self._cmbDatabase.itemText(i)) == selected:
+                for i in range(1, self._cmbDatabase.count()):
+                    if six.text_type(self._cmbDatabase.itemText(i)) == selected:
                         self._cmbDatabase.setCurrentIndex(i)
                         break
                 else:
@@ -504,7 +504,7 @@ class DiskItemBrowser(QDialog):
                 values = set(self._editableAttributesValues.get(a, ()))
                 if a in required:
                     requiredValue = required.get(a)
-                    if isinstance(requiredValue, basestring):
+                    if isinstance(requiredValue, six.string_types):
                         requiredValue = [requiredValue]
                     values.update(requiredValue)
                 elif a in self._attributesValues and self._write:
@@ -519,9 +519,9 @@ class DiskItemBrowser(QDialog):
                 for v in sorted(values, key=key_func):
                     if not v:
                         v = ''
-                    if isinstance(v, basestring):
+                    if isinstance(v, six.string_types):
                         vstring = quote_string(v)
-                    elif type(v) in (types.ListType, types.TupleType):
+                    elif type(v) in (list, tuple):
                         vstring = list_to_string(v)
                     else:
                         # WARNING DEBUG
@@ -572,7 +572,7 @@ class DiskItemBrowser(QDialog):
                   uniquecolsvals, attrs)
             if self._write:
                 for item in self._database.createDiskItems({}, exactType=self._exactType, **required):
-                    attrs = [item.type.name] + [unicode(item.getHierarchy(i))
+                    attrs = [item.type.name] + [six.text_type(item.getHierarchy(i))
                                                 for i in keyAttributes] + [item.format.name, item.getHierarchy('_database')]
                     if tuple(attrs) not in readItems:
                         self._tableData.addRow(attrs)
@@ -607,7 +607,7 @@ class DiskItemBrowser(QDialog):
                 if cmb.isEditable():
                     selected = self._selectedAttributes.get(a)
                     if selected is not None:
-                        if isinstance(selected, basestring):
+                        if isinstance(selected, six.string_types):
                             cmb.setCurrentText(quote_string(selected))
                         else:
                             cmb.setCurrentText(list_to_string(selected))
@@ -622,7 +622,7 @@ class DiskItemBrowser(QDialog):
 
             self.attributesWidget.adjustSize()
             self._ui.tblItems.resizeColumnsToContents()
-            for i in xrange(len(keyAttributes) + 3):
+            for i in range(len(keyAttributes) + 3):
                 self._ui.tblItems.setColumnHidden(i, i in uniquecols)
         finally:
             QApplication.restoreOverrideCursor()
@@ -669,7 +669,7 @@ class DiskItemBrowser(QDialog):
             # Format
             text += '<b>' + _t_('Uuid') + ': </b>'
             if diskItem._uuid:
-                text += htmlEscape(unicode(diskItem._uuid))
+                text += htmlEscape(six.text_type(diskItem._uuid))
             else:
                 text += _t_('None')
             text += '<br/>\n'
@@ -693,9 +693,9 @@ class DiskItemBrowser(QDialog):
             parent = diskItem.parent
             if parent is not None:
                 p = parent.attributes()
-            for k in chain(diskItem._globalAttributes.keys(),
-                           diskItem._minfAttributes.keys(),
-                           diskItem._otherAttributes.keys()):
+            for k in chain(list(diskItem._globalAttributes.keys()),
+                           list(diskItem._minfAttributes.keys()),
+                           list(diskItem._otherAttributes.keys())):
                 if k in p:
                     del p[k]
             o = diskItem._otherAttributes.copy()
@@ -720,7 +720,7 @@ class DiskItemBrowser(QDialog):
                         continue
                     text += '<em>' + \
                         htmlEscape(_t_(n)) + '</em> = ' + htmlEscape(
-                            unicode(v)) + '<br/>\n'
+                            six.text_type(v)) + '<br/>\n'
                 text += '</blockquote>'
 
             # Special Attributes
@@ -730,10 +730,10 @@ class DiskItemBrowser(QDialog):
             text += '<em>' + htmlEscape(_t_('Minf file name')) + '</em> = <code>' + htmlEscape(
                 os.path.basename(diskItem.minfFileName())) + '</code><br/>\n'
             text += '<em>' + htmlEscape(_t_('priority')) + '</em> = ' + htmlEscape(
-                unicode(diskItem.priority())) + '<br/>\n'
+                six.text_type(diskItem.priority())) + '<br/>\n'
             text += '<em>' + \
                 htmlEscape(_t_('identified' ) ) + '</em> = ' + \
-                unicode(diskItem._identified) + '<br/>\n'
+                six.text_type(diskItem._identified) + '<br/>\n'
             # if isinstance( diskItem, Directory ):
                 # text += '<em>'+ htmlEscape( _t_( 'lastModified' ) ) +'</em> = ' + htmlEscape( time.asctime( time.localtime( diskItem.lastModified ) ) ) + '<br/>\n'
                 # text += '<em>'+ htmlEscape( _t_( 'check_directory_time_only'

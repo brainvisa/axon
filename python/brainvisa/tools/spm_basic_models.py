@@ -8,6 +8,8 @@
 # SPM8 default parameters for paired t-test analysis
 #
 from __future__ import print_function
+from __future__ import absolute_import
+from six.moves import range
 
 
 def initialize_pairedTTest_SPM8_default_parameters(process):

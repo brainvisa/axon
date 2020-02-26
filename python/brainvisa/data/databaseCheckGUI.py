@@ -33,4 +33,5 @@
 # This module has been moved to qt3gui/databaseCheckGUI.py and converted to qt4 in qt4gui/databaseCheckGUI.py
 # The module qtgui choose one or the other version according the current version of qt.
 # This module is kept for backward compatibility.
+from __future__ import absolute_import
 from brainvisa.data.qtgui.databaseCheckGUI import *

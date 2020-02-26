@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import os
 import os.path as osp
 import uuid
@@ -9,7 +10,7 @@ A small subset of MongoDB Python API implemented with SQLite
 '''
 
 class_name_to_class = {
-    'unicode': unicode,
+    'unicode': six.text_type,
     'bool':    bool,
     'list':    list,
     'int':     int,
@@ -18,7 +19,7 @@ class_name_to_class = {
 
 class_to_class_name = {
     str:     'unicode',
-    unicode: 'unicode',
+    six.text_type: 'unicode',
     bool:    'bool',
     list:    'list',
     tuple:   'list',
@@ -31,7 +32,7 @@ class_to_field_type = dict((i, eval(j))
 
 class_to_column_type = {
     str:     'TEXT',
-    unicode: 'TEXT',
+    six.text_type: 'TEXT',
     bool:    'BOOL',
     list:    'TEXT',
     tuple:   'TEXT',
@@ -41,7 +42,7 @@ class_to_column_type = {
 
 value_to_sql = {
     str: lambda x: x,
-    unicode: lambda x: x,
+    six.text_type: lambda x: x,
     bool: lambda x: x,
     list: lambda x: '\t'.join(repr(i) for i in x),
     tuple: lambda x: '\t'.join(repr(i) for i in x),
@@ -51,7 +52,7 @@ value_to_sql = {
 
 sql_to_value = {
     str: lambda x: x,
-    unicode: lambda x: x,
+    six.text_type: lambda x: x,
     bool: lambda x: (None if x is None else bool(x)),
     list: lambda x: (None if x is None else [eval(i) for i in x.split('\t')]),
     tuple: lambda x: (None if x is None else [eval(i) for i in x.split('\t')]),
@@ -138,7 +139,7 @@ class FedjiSqliteCollection(object):
             if not self._fields:
                 sql = 'INSERT INTO %s (name, type) VALUES (?, ?)' % self._fields_table
                 self._connection.execute(sql, ('_id', 'unicode'))
-                self._fields['_id'] = unicode
+                self._fields['_id'] = six.text_type
                 self.create_index('_id')
             self._connection.commit()
         return self._connection
@@ -184,7 +185,7 @@ class FedjiSqliteCollection(object):
         for document in documents:
             id = document.get('_id')
             if not id:
-                document['_id'] = unicode(uuid.uuid4().bytes)
+                document['_id'] = six.text_type(uuid.uuid4().bytes)
             list_fields = []
             list_values = []
             values = []
@@ -196,7 +197,7 @@ class FedjiSqliteCollection(object):
                     values.append(value_to_sql[v.__class__](v))
                 else:
                     values.append(value_to_sql[v.__class__](v))
-            columns = document.keys()
+            columns = list(document.keys())
             sql = 'INSERT INTO %(table)s (%(columns)s) VALUES (%(values)s)'\
                 % dict(table=self._documents_table,
                        columns=', '.join(columns),
@@ -384,7 +385,7 @@ class FedjiSqliteQueryResult(object):
         if self.fields:
             columns = self.fields
         else:
-            columns = self.collection.fields.keys()
+            columns = list(self.collection.fields.keys())
         sql, sql_data = self._get_sql('SELECT %s' % ', '.join(columns))
         if sql:
             for row in cnx.execute(sql, sql_data):

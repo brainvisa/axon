@@ -34,6 +34,7 @@
 
 from __future__ import print_function
 
+from __future__ import absolute_import
 from brainvisa.processing.qtgui.backwardCompatibleQt import QWidget, QVBoxLayout, QHBoxLayout, QSpacerItem, QSizePolicy, QPushButton, Qt, QApplication, QCursor
 import brainvisa.processing.qtgui.backwardCompatibleQt as qt
 from soma.qtgui.api import QtGUI

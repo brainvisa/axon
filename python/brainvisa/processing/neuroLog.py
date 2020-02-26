@@ -44,6 +44,7 @@ This main log is created in the function :py:func:`initializeLog`.
 
 """
 from __future__ import print_function
+from __future__ import absolute_import
 import os
 import threading
 import shutil
@@ -56,22 +57,10 @@ from brainvisa.data import temporary
 from brainvisa.configuration import neuroConfig
 from brainvisa.processing import neuroException
 import gzip
+import six
 
-if sys.version_info[0] >= 3:
-    unicode = str
-
-    def items(thing):
-        return list(thing.items())
-
-    #def next(iterator):
-        #return iterator.__next__()
-else:
-    def items(thing):
-        return thing.items()
-
-    #def next(iterator):
-        #return iterator.next()
-
+def items(thing):
+    return list(thing.items())
 
 #------------------------------------------------------------------------------
 class FileLink:
@@ -93,7 +82,7 @@ class TextFileLink(FileLink):
         """
         :param string fileName: name of the file
         """
-        self.fileName = unicode(fileName)
+        self.fileName = six.text_type(fileName)
 
     def expand(self):
         """
@@ -127,7 +116,7 @@ class LogFileLink(FileLink):
     """
 
     def __init__(self, fileName):
-        self.fileName = unicode(fileName)
+        self.fileName = six.text_type(fileName)
 
     def expand(self):
         """
@@ -185,9 +174,9 @@ class LogFile:
             # print("SubTextLog ", fileName, " of parent ", parentLog)
             # Create empty file
             if sys.version_info[0] >= 3:
-                file = open(unicode(self.fileName), 'w', encoding='utf-8')
+                file = open(six.text_type(self.fileName), 'w', encoding='utf-8')
             else:
-                file = open(unicode(self.fileName), 'w')
+                file = open(six.text_type(self.fileName), 'w')
             file.close()
             self._parent = parentLog
 
@@ -218,7 +207,7 @@ class LogFile:
             :param children: sub items: a list of Items or a LogFile (which contains Items)
             :param string icon: An icon file associated to this entry.
             """
-            self._what = unicode(what)
+            self._what = six.text_type(what)
             if when is None:
                 self._when = time.time()
             else:
@@ -250,7 +239,7 @@ class LogFile:
             """
             if isinstance(self._html, FileLink):
                 return self._html.expand()
-            return unicode(self._html)
+            return six.text_type(self._html)
 
         def children(self):
             """
@@ -392,7 +381,7 @@ class LogFile:
                 fileName = temporary.manager.new()
             # print("Creating sublog...")
             result = LogFile(fileName, self, self._lock)
-            self._opened[unicode(result.fileName)] = result
+            self._opened[six.text_type(result.fileName)] = result
         finally:
             self._lock.release()
         return result
@@ -412,7 +401,7 @@ class LogFile:
                 fileName = temporary.manager.new()
             # print("Creating subTextLog...")
             result = self.SubTextLog(fileName, self)
-            self._opened[unicode(result.fileName)] = result
+            self._opened[six.text_type(result.fileName)] = result
         finally:
             self._lock.release()
         return result
@@ -430,7 +419,7 @@ class LogFile:
             # log file is expanded
             if getattr(subLog, "_closed", None):
                 self._closed.update(subLog._closed)
-            self._opened.pop(unicode(subLog.fileName), None)
+            self._opened.pop(six.text_type(subLog.fileName), None)
             # print("subLogClosed ", subLog, "remaining opened : ",
             # self._opened.values())
         finally:

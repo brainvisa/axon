@@ -36,11 +36,14 @@
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
 
+from __future__ import absolute_import
 from brainvisa.processing.qtgui.backwardCompatibleQt import *
 
 import operator
 from brainvisa.validation import ValidationError
 import six
+import numbers
+import collections
 qwtAvailable = True
 try:
     try:
@@ -170,7 +173,7 @@ if qwtAvailable:
             self.lbxFeatures.clear()
 
             features = set()
-            names = self.data.keys()
+            names = list(self.data.keys())
             names.sort()
             for name in names:
                 if name in ('format', 'content_type'):
@@ -185,9 +188,9 @@ if qwtAvailable:
 
         def updateFeatures(self,  features, data):
             for name, value in data.items():
-                if operator.isNumberType(value):
+                if isinstance(value, numbers.Number):
                     features.add(name)
-                elif operator.isMappingType(value):
+                elif isinstance(value, collections.Mapping):
                     if value.get('mean') is not None:
                         features.add(name)
                         continue
@@ -209,7 +212,7 @@ if qwtAvailable:
             if data:
                 text = '<html><body><h3>' + self._item + \
                     ': ' + self._feature + '</h3>'
-                if operator.isMappingType(data):
+                if isinstance(data, collections.Mapping):
                     for name, value in data.items():
                         if name == '_vectors':
                             continue
@@ -218,7 +221,7 @@ if qwtAvailable:
                     text += '<b>' + self._feature + \
                         ':</b> ' + str(data) + '<br>'
                 text += '</body></html>'
-                if operator.isMappingType(data):
+                if isinstance(data, collections.Mapping):
                     vectorData = data.get('_vectors')
                     if vectorData is not None:
                         self.crvFeatures.setData(vectorData)

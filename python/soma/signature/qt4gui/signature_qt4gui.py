@@ -41,6 +41,7 @@ data type.
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
+from __future__ import absolute_import
 __docformat__ = "epytext en"
 
 from soma.qt_gui.qt_backend import QtGui, QtCore

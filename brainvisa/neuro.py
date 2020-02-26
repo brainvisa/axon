@@ -37,6 +37,8 @@ This is the main module of BrainVISA. It is executed by ``brainvisa`` command to
 It loads a lot of other modules and initializes BrainVISA application according to the options given at startup.
 """
 from __future__ import print_function
+from __future__ import absolute_import
+import six
 __docformat__ = 'restructuredtext en'
 
 # Be careful, it is necessary to initialize
@@ -202,13 +204,13 @@ if neuroConfig.gui:
     # otherwise it is incomplete (even after instanciation).
     app = Application()
     app.configuration.brainvisa.signature['gui_style'].type = SomaChoice(
-        *[('<system default>', None)] + [unicode(i) for i in QStyleFactory.keys()])
+        *[('<system default>', None)] + [six.text_type(i) for i in QStyleFactory.keys()])
     if USE_QT4:
         app.configuration.brainvisa.signature[
-            'gui_style'].defaultValue = unicode(qApp.style().objectName())
+            'gui_style'].defaultValue = six.text_type(qApp.style().objectName())
     else:
         app.configuration.brainvisa.signature[
-            'gui_style'].defaultValue = unicode(qApp.style().name())
+            'gui_style'].defaultValue = six.text_type(qApp.style().name())
     app.configuration.brainvisa.onAttributeChange(
         'gui_style', setQtApplicationStyle)
     setQtApplicationStyle(app.configuration.brainvisa.gui_style)

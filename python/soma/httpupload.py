@@ -62,11 +62,12 @@ Http upload is processed as follow :
 '''
 from __future__ import with_statement
 from __future__ import print_function
+from __future__ import absolute_import
 __docformat__ = 'restructuredtext en'
 
 import datetime
 import os
-import thread
+import six.moves._thread
 import threading
 import tempfile
 import hashlib
@@ -78,7 +79,7 @@ import gc
 import six
 
 from threading import RLock
-from Queue import Queue
+from six.moves.queue import Queue
 from xml.dom import minidom, Node
 
 from soma.decorators import synchronized
@@ -201,7 +202,7 @@ def showNode(node, showattributes=False):
     if showattributes:
         # Write out the attributes.
         attrs = node.attributes
-        content.append(attrs.values())
+        content.append(list(attrs.values()))
 
     # Walk over any text nodes in the current node.
     for child in node.childNodes:
@@ -246,7 +247,7 @@ def getUploadResponseDocument(upload):
 
     document = minidom.Document()
     node = document.createElement('fragment')
-    node.setAttribute('upload', unicode(upload))
+    node.setAttribute('upload', six.text_type(upload))
     document.appendChild(node)
 
     return document
@@ -265,7 +266,7 @@ def getFileBuildLengthResponseDocument(filelength):
 
     document = minidom.Document()
     node = document.createElement('file')
-    node.setAttribute('buildlength', unicode(filelength))
+    node.setAttribute('buildlength', six.text_type(filelength))
     document.appendChild(node)
 
     return document
@@ -284,7 +285,7 @@ def getFileBuildCountResponseDocument(buildcount):
 
     document = minidom.Document()
     node = document.createElement('uploadtask')
-    node.setAttribute('buildcount', unicode(buildcount))
+    node.setAttribute('buildcount', six.text_type(buildcount))
     document.appendChild(node)
 
     return document
@@ -1260,7 +1261,7 @@ class FileBuilderInfo(object):
         - returns: *string* representing the current :py:class:`FileBuilderInfo`.
         '''
         result = '--> filebuilderinfo - filename : ' + self.filename + \
-            ', filebuilderinfo.filelength : ' + unicode(self.filelength) + '\n'
+            ', filebuilderinfo.filelength : ' + six.text_type(self.filelength) + '\n'
 
         objectlock = resourcemanager.getObjectLock(self)
         with objectlock:
@@ -1423,11 +1424,11 @@ class FileFragment(object):
             document.getElementsByTagName('filename')[0])
         self.basedirectory = getTextValue(
             document.getElementsByTagName('basedirectory')[0])
-        self.filelength = long(
+        self.filelength = int(
             getTextValue(document.getElementsByTagName('filelength')[0]))
-        self.offset = long(
+        self.offset = int(
             getTextValue(document.getElementsByTagName('offset')[0]))
-        self.length = long(
+        self.length = int(
             getTextValue(document.getElementsByTagName('length')[0]))
         self.sha1 = getTextValue(document.getElementsByTagName('sha1')[0])
         self.uploadid = getTextValue(
@@ -1550,4 +1551,4 @@ class FileFragment(object):
 
         - returns: *string* representing the current :py:class:`FileFragment`.
         '''
-        return 'self.filename : ' + self.filename + ', self.filelength : ' + unicode(self.filelength) + ', self.offset : ' + unicode(self.offset) + ', self.length : ' + unicode(self.length) + ', self.sha1 : ' + self.sha1 + ', self.getLocalDataPath() : ' + self.getLocalDataPath()
+        return 'self.filename : ' + self.filename + ', self.filelength : ' + six.text_type(self.filelength) + ', self.offset : ' + six.text_type(self.offset) + ', self.length : ' + six.text_type(self.length) + ', self.sha1 : ' + self.sha1 + ', self.getLocalDataPath() : ' + self.getLocalDataPath()

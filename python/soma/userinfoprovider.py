@@ -30,6 +30,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL-B license and that you accept its terms.
 from __future__ import print_function
+from __future__ import absolute_import
 import operator
 import types
 
@@ -37,6 +38,7 @@ from soma.signature.api import Signature, VariableSignature, Unicode, Sequence, 
 from soma.configuration import ConfigurationGroup
 from soma.wip.application.api import Application
 import six
+from six.moves import zip
 
 
 def getUsersInfo(dataset, formats, keys, sorts):
@@ -75,8 +77,8 @@ def getUsersInfo(dataset, formats, keys, sorts):
             resultrecord = list()
             for format in formats:
                 formatvalue = format[1]
-                formatted = formatvalue % dict(zip(keys, datarecord))
-                resultrecord.append(unicode(
+                formatted = formatvalue % dict(list(zip(keys, datarecord)))
+                resultrecord.append(six.text_type(
                     formatted, 'utf-8').lstrip().rstrip().lower())
             recordset.append(resultrecord)
 

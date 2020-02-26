@@ -30,6 +30,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import absolute_import
 import re
 import string
 import ftplib
@@ -47,7 +48,7 @@ class Splitter:
         if self.s:
             match = self.re.match(self.s)
             if match is None:
-                raise 'No match !'
+                raise RuntimeError('No match !')
             else:
                 result = match.group(1, 2)
                 self.s = match.group(3)
@@ -66,7 +67,7 @@ class EnhancedFTP:
             splitter.get()
             self.user = splitter.get()[0]
             self.group = splitter.get()[0]
-            self.size = long(splitter.get()[0])
+            self.size = int(splitter.get()[0])
             self.date = string.join(
                 (splitter.get()[0], splitter.get()[0], splitter.get()[0]))
             if self.flags[0] == 'l':

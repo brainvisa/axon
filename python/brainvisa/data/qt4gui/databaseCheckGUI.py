@@ -39,6 +39,7 @@
 # possibilite de visualiser la donnee
 # filtres pour modifier la vue
 
+from __future__ import absolute_import
 from brainvisa.configuration import neuroConfig
 # WITH NEW DATABASE SYSTEM ####
 from brainvisa.data.qt4gui.diskItemBrowser import DiskItemBrowser
@@ -48,9 +49,7 @@ import os
 from brainvisa.data import neuroDiskItems, neuroHierarchy
 from brainvisa.data.actions import Move, Remove, FileProcess, ImportData
 import sys
-
-if sys.version_info[0] >= 3:
-    unicode = str
+import six
 
 ICON_SIZE = 16
 
@@ -187,9 +186,9 @@ class ActionWidget(qt.QTreeWidgetItem):
         self.setToolTip(0, fileProcess.filePattern())
         if fileProcess.action is not None:
             icon = fileProcess.action.icon
-            self.setText(1, unicode(fileProcess.action))
+            self.setText(1, six.text_type(fileProcess.action))
             self.setToolTip(
-                1, fileProcess.tooltip + " " + unicode(fileProcess.action))
+                1, fileProcess.tooltip + " " + six.text_type(fileProcess.action))
         else:  # there's nothing to do because the file is correct
             icon = "ok.png"
         pix = qt.QIcon(os.path.join(neuroConfig.iconPath, icon))
@@ -204,9 +203,9 @@ class ActionWidget(qt.QTreeWidgetItem):
         self.model.action = action
         pix = qt.QIcon(os.path.join(neuroConfig.iconPath, action.icon))
         self.setIcon(1, pix)
-        self.setText(1, unicode(self.model.action))
+        self.setText(1, six.text_type(self.model.action))
         self.setToolTip(
-            1, self.model.tooltip + " " + unicode(self.model.action))
+            1, self.model.tooltip + " " + six.text_type(self.model.action))
 
 #
 
@@ -273,7 +272,7 @@ class UnknownFilesWidget(ActionsWidget):
             # getExistingDirectory ( QWidget * parent = 0, const QString &
             # caption = QString(), const QString & dir = QString(), Options
             # options = ShowDirsOnly )
-            dest = unicode(
+            dest = six.text_type(
                 qt.QFileDialog.getExistingDirectory(
                     self, _t_("Choose a directory for destination : "),
                            self.defaultDest, qt.QFileDialog.ShowDirsOnly | qt.QFileDialog.DontUseNativeDialog))
@@ -337,7 +336,7 @@ class UnknownFilesWidget(ActionsWidget):
         Called when the user click on move all button. Set action Move on all unknown file.
         """
         # open a dialog to choose where to move
-        dest = unicode(
+        dest = six.text_type(
             qt.QFileDialog.getExistingDirectory(
                 self, _t_("Choose a directory for destination : "),
                        self.defaultDest, qt.QFileDialog.ShowDirsOnly | qt.QFileDialog.DontUseNativeDialog))
@@ -411,11 +410,11 @@ class CheckFileWidget(qt.QTreeWidgetItem):
         qt.QTreeWidgetItem.__init__(self, parent)
         self.setText(0, os.path.basename(fileProcess.diskItem.name))
         self.setToolTip(0, self.text(0))
-        self.setText(1, unicode(fileProcess.diskItem.type))
-        self.setText(2, unicode(fileProcess.diskItem.format))
+        self.setText(1, six.text_type(fileProcess.diskItem.type))
+        self.setText(2, six.text_type(fileProcess.diskItem.format))
         if fileProcess.action is not None:
             icon = fileProcess.action.icon
-            self.setText(3, unicode(fileProcess.action))
+            self.setText(3, six.text_type(fileProcess.action))
         else:  # there's nothing to do because the file is correct
             icon = "ok.png"
         pix = qt.QIcon(os.path.join(neuroConfig.iconPath, icon))
@@ -431,4 +430,4 @@ class CheckFileWidget(qt.QTreeWidgetItem):
         self.model.action = action
         pix = qt.QIcon(os.path.join(neuroConfig.iconPath, action.icon))
         self.setIcon(3, pix)
-        self.setText(3, unicode(self.model.action))
+        self.setText(3, six.text_type(self.model.action))

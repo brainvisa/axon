@@ -31,6 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL-B license and that you accept its terms.
 
+from __future__ import absolute_import
 import os
 from soma.qt_gui.qt_backend.QtGui import QWidget, QHBoxLayout, QLineEdit, QPushButton, QIcon, QFileDialog
 from soma.qt_gui import qt_backend
@@ -39,8 +40,7 @@ from soma.signature.qt4gui.unicode_qt4gui import Unicode_Qt4GUI, \
 from soma.qt4gui.api import TimeredQLineEdit, getPixmap
 from soma.wip.application.api import somaIconsDirectory
 import sys
-if sys.version_info[0] >= 3:
-    unicode = str
+import six
 
 #-------------------------------------------------------------------------
 
@@ -110,19 +110,19 @@ class FileName_Qt4GUI(Unicode_Qt4GUI):
             else:
                 value = qt_backend.getSaveFileName(
                     self._widget, 'Select a file', '', '', None, QFileDialog.DontUseNativeDialog)
-        self._lineEdit.setText(unicode(value))
+        self._lineEdit.setText(six.text_type(value))
 
     def getPythonValue(self, editionWidget):
-        v = self.dataTypeInstance.convert(unicode(self._lineEdit.text()))
-        return self.dataTypeInstance.convert(unicode(self._lineEdit.text()))
+        v = self.dataTypeInstance.convert(six.text_type(self._lineEdit.text()))
+        return self.dataTypeInstance.convert(six.text_type(self._lineEdit.text()))
 
     def updateEditionWidget(self, editionWidget, value):
         if self._live:
             self._lineEdit.startInternalModification()
-            self._lineEdit.setText(unicode(value))
+            self._lineEdit.setText(six.text_type(value))
             self._lineEdit.stopInternalModification()
         else:
-            self._lineEdit.setText(unicode(value))
+            self._lineEdit.setText(six.text_type(value))
 
 
 #-------------------------------------------------------------------------

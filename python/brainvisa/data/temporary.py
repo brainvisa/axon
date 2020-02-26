@@ -30,6 +30,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from __future__ import print_function
+from __future__ import absolute_import
 import os
 import threading
 import warnings
@@ -37,6 +38,7 @@ import stat
 import platform
 import tempfile
 from soma.minf.tree import registerClassAs
+import six
 
 try:
     set
@@ -141,7 +143,7 @@ class TemporaryFileManager:
                                 raise
                 if error is not None:
                     warnings.warn(_t_('temporary path %(path)s not deleted: %(error)s') %
-                                  {'path': path, 'error': unicode(error)})
+                                  {'path': path, 'error': six.text_type(error)})
             if isinstance(path, self.__SelfDestroyFileName):
                 path.freeManager()
         finally:

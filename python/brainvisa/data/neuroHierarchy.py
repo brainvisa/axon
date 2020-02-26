@@ -49,6 +49,7 @@ The function :py:func:`hierarchies` enables to get the list of databases objects
 """
 
 from __future__ import print_function
+from __future__ import absolute_import
 import os
 
 from brainvisa.data.sqlFSODatabase import SQLDatabase, SQLDatabases, DatabaseError, databaseVersion, databaseVersions
@@ -162,7 +163,7 @@ def hierarchies():
     """
     Returns a list of :py:class:`brainvisa.data.sqlFSODatabase.SQLDatabase` objects representing the databases currently loaded in Brainvisa.
     """
-    return databases._databases.values()
+    return list(databases._databases.values())
 
 
 def update_soma_workflow_translations():

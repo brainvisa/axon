@@ -31,6 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import absolute_import
 from brainvisa.processing.qtgui.backwardCompatibleQt import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QCheckBox, QSizePolicy, QSpacerItem, QPushButton, QMenu, QTextEdit
 from soma.wip.application.api import Application
 from soma.qtgui.api import ApplicationQtGUI
@@ -43,6 +44,7 @@ import brainvisa.mailing as mailing
 import smtplib
 import string
 import os
+import six
 
 #------------------------------------------------------------------------------
 
@@ -151,10 +153,10 @@ class BugReportDialog(QWidget):
         outer['Subject'] = '[BrainVISA ' + \
             neuroConfig.versionString() + '] Bug report'
         for field in ('From', 'Cc', 'Bcc'):
-            value = unicode(getattr(self, 'led' + field).text())
+            value = six.text_type(getattr(self, 'led' + field).text())
             if value:
                 outer[field] = value
-        to = unicode(self.ledTo.text())
+        to = six.text_type(self.ledTo.text())
         to = [x.strip() for x in to.split(',')]
         outer['To'] = ', '.join(to)
         if outer.get("Cc", None):
@@ -167,7 +169,7 @@ class BugReportDialog(QWidget):
         outer.epilogue = ''
 
         msg = mailing.MIMEText(
-            unicode(self.tedMessage.toPlainText()), 'plain')
+            six.text_type(self.tedMessage.toPlainText()), 'plain')
         outer.attach(msg)
         if self.chkSendLog.isChecked() and neuroConfig.logFileName:
             # Copy and expand log file
