@@ -281,7 +281,7 @@ class HistoricalEvent(object):
         writeMinFile = False
         bvProcDiskItem = None
 
-        if type(eventFileName) in (str, six.text_type):
+        if not hasattr(eventFileName, 'write'):
             if compression:
                 eventFile = gzipOpen(eventFileName, mode='w')
             else:
