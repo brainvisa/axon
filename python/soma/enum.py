@@ -70,7 +70,9 @@ original arguments used to create the enumeration::
     >>> shirt_colour.index
     2
 """
+from __future__ import absolute_import
 import math
+import six
 
 __author_name__ = "Ben Finney"
 __author_email__ = "ben+python@benfinney.id.au"
@@ -304,7 +306,7 @@ class Enum(object):
 
     def __contains__(self, value):
         is_member = False
-        if isinstance(value, basestring):
+        if isinstance(value, six.string_types):
             is_member = (value in self._keys)
         else:
             try:

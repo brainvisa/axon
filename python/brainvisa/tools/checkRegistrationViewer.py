@@ -31,6 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import absolute_import
 from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
 from soma.qt_gui.qtThread import MainThreadLife
 import anatomist.api as ana
@@ -41,6 +42,7 @@ from soma.qt_gui.qt_backend import QtCore, QtGui, uic, Qt
 import glob
 import os
 import six
+from six.moves import range
 
 
 def check_registration(images,
@@ -115,13 +117,13 @@ class CheckRegistration():
 
     def _initImageLists(self, images, overlays):
         for i in images:
-            if isinstance(i, basestring):
+            if isinstance(i, six.string_types):
                 self._images.append(i)
             else:
                 self._images.append(str(i))
         self._overlays = []
         for i in overlays:
-            if isinstance(i, basestring):
+            if isinstance(i, six.string_types):
                 self._overlays.append(i)
             else:
                 self._overlays.append(str(i))
@@ -208,7 +210,7 @@ class CheckRegistration():
         Inits the 3D cursor position according to the image of the first row
         """
         try:
-            frame = self._rowFrames.keys()[0]
+            frame = list(self._rowFrames.keys())[0]
             view = self._rowFrames[frame]["views"][0]
             aImg = self._aImages[self._rowFrames[frame]["image"][1]]
         except Exception:
@@ -286,7 +288,7 @@ class CheckRegistration():
                                  "slider": None,
                                  "anatomist_objects": [],
                                  "views": [],
-                                 "layout_position": len(self._rowFrames.keys()),
+                                 "layout_position": len(list(self._rowFrames.keys())),
                                  "buttons": {"down": None,
                                              "up": None}
                                  }
@@ -464,7 +466,7 @@ class CheckRegistration():
         """
         frame1 = self._mainDiag.sender().parent().parent()
         currentPosition = self._rowFrames[frame1]["layout_position"]
-        if currentPosition == len(self._rowFrames.keys()) - 1:
+        if currentPosition == len(list(self._rowFrames.keys())) - 1:
             return
         newPosition = currentPosition + 1
         for k, v in six.iteritems(self._rowFrames):
@@ -494,7 +496,7 @@ class CheckRegistration():
             downEnabled = True
             if v["layout_position"] == 0:
                 upEnabled = False
-            if v["layout_position"] == len(self._rowFrames.keys()) - 1:
+            if v["layout_position"] == len(list(self._rowFrames.keys())) - 1:
                 downEnabled = False
             v["buttons"]["down"].setEnabled(downEnabled)
             v["buttons"]["up"].setEnabled(upEnabled)

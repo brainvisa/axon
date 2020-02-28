@@ -1,8 +1,10 @@
 
+from __future__ import absolute_import
 import sys
 import re
 from brainvisa import processes
 from brainvisa.processes import ValidationError
+import six
 
 
 def process_description(pi, hide=[]):
@@ -76,7 +78,7 @@ def process_parameters_help(pi, cols=None):
     except ValidationError:
         signature = processes.getProcess(
             pi.id, ignoreValidation=True).signature
-    signature = signature.items()
+    signature = list(signature.items())
 
     lines.append('    parameters:')
     for param, p in signature:
@@ -111,7 +113,7 @@ def xhtml_to_str(xhtml, indent=0, shorten_first=0, cols=None):
     br_tags = set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'br'])
     while todo:
         item = todo.pop(0)
-        if isinstance(item, basestring):
+        if isinstance(item, six.string_types):
             result.append(item)
         else:
             if item.tag in skipped_tags:

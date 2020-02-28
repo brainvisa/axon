@@ -51,6 +51,7 @@ At the end of your script, call a cleanup function. It would be called automatic
 """
 
 from __future__ import print_function
+from __future__ import absolute_import
 import os
 import sys
 

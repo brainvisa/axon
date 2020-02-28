@@ -165,6 +165,9 @@ After loading, Brainvisa processes are stored in an object :py:class:`ProcessTre
 """
 from __future__ import print_function
 
+from __future__ import absolute_import
+from six.moves import range
+from six.moves import zip
 __docformat__ = 'restructuredtext en'
 
 # Be careful, it is necessary to initialize
@@ -227,7 +230,6 @@ from soma.qtgui.api import QtThreadCall, FakeQtThreadCall
 if sys.version_info[0] >= 3:
     from html.parser import HTMLParser
     getcwdu = os.getcwd
-    unicode = str
 
     def items(thing):
         return list(thing.items())
@@ -236,7 +238,7 @@ else:
     from os import getcwdu
 
     def items(thing):
-        return thing.items()
+        return list(thing.items())
 
 global _mainThreadActions
 _mainThreadActions = FakeQtThreadCall()
@@ -256,7 +258,7 @@ def pathsplit(path):
        pathsplit('/toto/titi/tata') == ('/', 'toto', 'titi', 'tata')
 
     '''
-    if isinstance(path, basestring):
+    if isinstance(path, six.string_types):
         if path:
             return pathsplit((path, ))
         else:
@@ -427,13 +429,13 @@ def procdocToXHTML(procdoc):
                     # for i in six.moves.xrange( column - 1 ):
                         # editor.content.moveCursor( QtGui.QTextCursor.Right )
                     if editor.exec_() == QDialog.Accepted:
-                        value = unicode(editor.content.toPlainText())
+                        value = six.text_type(editor.content.toPlainText())
                         goOn = True
                     else:
-                        newValue = unicode(editor.content.toPlainText())
+                        newValue = six.text_type(editor.content.toPlainText())
                         goOn = False
             d[k] = newValue
-        elif type(value) is types.DictType:
+        elif type(value) is dict:
             stack += [(value, key, h + '.' + key)
                       for key in six.iterkeys(value)]
 
@@ -1181,11 +1183,11 @@ class Parameterized(object):
         """
         self.setVisible(*args)
 
-        if 'userLevel' in kwargs.keys():
+        if 'userLevel' in list(kwargs.keys()):
             userLevel = kwargs['userLevel']
             self.setUserLevel(userLevel, *args)
 
-        if 'mandatory' in kwargs.keys():
+        if 'mandatory' in list(kwargs.keys()):
             if kwargs['mandatory']:
                 self.setMandatory(*args)
             else:
@@ -1362,7 +1364,7 @@ class Parameterized(object):
     def clearLinksTo(self, *args):
         """Removes all links that have a parameter in `args` as a destination."""
         for i in args:
-            if isinstance(i, basestring):
+            if isinstance(i, six.string_types):
                 destObject,  destParameter = None, i
             else:
                 destObject,  destParameter = i
@@ -1370,7 +1372,7 @@ class Parameterized(object):
                 destObject = self
             if destParameter not in destObject.signature:
                 raise KeyError(_t_('Object %(object)s has no such parameter: %(param)s') %
-                               {'object': unicode(destObject), 'param': destParameter})
+                               {'object': six.text_type(destObject), 'param': destParameter})
             for k, l in self._links.items():
                 i = 0
                 while i < len(l):
@@ -1405,8 +1407,8 @@ class Parameterized(object):
 
     def convertStateValue(self, value):
 
-        if value is not None and not isinstance(value, (int, float, basestring, list, dict, tuple)):
-            result = unicode(value)
+        if value is not None and not isinstance(value, (int, float, six.string_types, list, dict, tuple)):
+            result = six.text_type(value)
         elif isinstance(value, list):
             result = [self.convertStateValue(itervalue)
                       for itervalue in value]
@@ -1644,7 +1646,7 @@ class Process(Parameterized):
         if instance is None:
             return self.id()
         else:
-            return self.id() + '_' + unicode(instance)
+            return self.id() + '_' + six.text_type(instance)
 
     def addLink(self, destination, source, function=None,
                 destDefaultUpdate=True):
@@ -1810,7 +1812,7 @@ class IterationProcess(Process):
         self.base = base
         self._processes = [getProcessInstance(p) for p in processes]
         Process.__init__(self)
-        for sp, p in zip(self._executionNode._children.values(), processes):
+        for sp, p in zip(list(self._executionNode._children.values()), processes):
             if isinstance(p, ExecutionNode):
                 sp._optional = p._optional
                 sp._selected = p._selected
@@ -1888,7 +1890,7 @@ class ListOfIterationProcess(IterationProcess):
         IterationProcess.__init__(self, name, processes)
         en = self.executionNode()
         chs = list(en.children())[0]._process.signature
-        self.changeSignature(Signature('param', ListOf(chs.values()[0])))
+        self.changeSignature(Signature('param', ListOf(list(chs.values())[0])))
         en._parameterized = weakref.ref(self)
         chkeys = list(self.executionNode()._children.keys())
         for i, p in enumerate(en.children()):
@@ -1910,7 +1912,7 @@ class DistributedProcess(Process):
         self.instance = 1
         self._processes = [getProcessInstance(p) for p in processes]
         Process.__init__(self)
-        for sp, p in zip(self._executionNode._children.values(), processes):
+        for sp, p in zip(list(self._executionNode._children.values()), processes):
             if isinstance(p, ExecutionNode):
                 sp._optional = p._optional
                 sp._selected = p._selected
@@ -1941,7 +1943,7 @@ class SelectionProcess(Process):
         self.instance = 1
         self._processes = [getProcessInstance(p) for p in processes]
         Process.__init__(self)
-        for sp, p in zip(self._executionNode._children.values(), processes):
+        for sp, p in zip(list(self._executionNode._children.values()), processes):
             if isinstance(p, ExecutionNode):
                 sp._optional = p._optional
                 sp._selected = p._selected
@@ -2774,11 +2776,11 @@ class SerialExecutionNode(ExecutionNode):
                     result.append(node.run(context))
                     del npi
                 except ExecutionContext.UserInterruptionStep as e:
-                    context.error(unicode(e))
+                    context.error(six.text_type(e))
                 except ExecutionContext.UserInterruption:
                     raise
                 except Exception as e:
-                    context.error("Error in execution node : " + unicode(e))
+                    context.error("Error in execution node : " + six.text_type(e))
         context.progress()
         return result
 
@@ -3407,7 +3409,7 @@ class ExecutionContext(object):
                     import traceback
                     info = sys.exc_info()
                     sys.stderr.write(
-                        '\n%s: %s\n' % (info[0].__name__, unicode(info[1])))
+                        '\n%s: %s\n' % (info[0].__name__, six.text_type(info[1])))
                     traceback.print_tb(info[2], None, sys.stderr)
                 logException(context=self)
                 if self._depth() != 1 or not self.manageExceptions:
@@ -3731,7 +3733,7 @@ class ExecutionContext(object):
                             first = False
                         else:
                             retry = retry - 1
-                        self._systemStderr(unicode(e) + "\n", systemLogFile)
+                        self._systemStderr(six.text_type(e) + "\n", systemLogFile)
                         if (retry != 0):
                             self._systemStderr(
                                 "Try to restart the command...\n", systemLogFile)
@@ -3796,7 +3798,7 @@ class ExecutionContext(object):
         """
         self.checkInterruption()
         if messages:
-            msg = u' '.join(unicode(i) for i in messages)
+            msg = u' '.join(six.text_type(i) for i in messages)
             self._writeMessageInLogFile(msg)
             self._write(msg)
 
@@ -4408,7 +4410,7 @@ class ProcessInfo:
         """
         Returns the process information in html format.
         """
-        return '\n'.join(['<b>' + n + ': </b>' + unicode(getattr(self, n)) +
+        return '\n'.join(['<b>' + n + ': </b>' + six.text_type(getattr(self, n)) +
                           '<br>\n' for n in ('id', 'name', 'toolbox', 'signature',
                                              'userLevel', 'category',
                                              'fileName', 'roles')])
@@ -4486,7 +4488,7 @@ def getProcess(processId, ignoreValidation=False, checkUpdate=True):
             return SelectionProcess(processId.get('name', 'Selection'), [getProcessInstance(i) for i in processId['children']])
         else:
             raise TypeError(_t_('Unknown process type: %s') %
-                            (unicode(processId['type'])))
+                            (six.text_type(processId['type'])))
     else:
         if isinstance(processId, six.string_types):
             if processId.startswith('capsul://'):
@@ -4673,7 +4675,7 @@ def getProcessFromExecutionNode(node):
     elif nt is SerialExecutionNode:
         return IterationProcess(node.name(), node.children())
     elif isinstance(node, ParallelExecutionNode):
-        return DistributedProcess(node.name(), node._children.values())
+        return DistributedProcess(node.name(), list(node._children.values()))
     elif nt is SelectionExecutionNode:
         return SelectionProcess(node.name(), node.children())
 
@@ -4715,10 +4717,10 @@ def getProcessInstance(processIdClassOrInstance, ignoreValidation=False):
             result = getProcessFromExecutionNode(processIdClassOrInstance)
         else:
             try:
-                if (isinstance(processIdClassOrInstance, basestring) or hasattr(processIdClassOrInstance, 'readline')) and minfFormat(processIdClassOrInstance)[1] == minfHistory:
+                if (isinstance(processIdClassOrInstance, six.string_types) or hasattr(processIdClassOrInstance, 'readline')) and minfFormat(processIdClassOrInstance)[1] == minfHistory:
                     event = readMinf(processIdClassOrInstance)[0]
                     result = getProcessInstanceFromProcessEvent(event)
-                    if result is not None and isinstance(processIdClassOrInstance, basestring):
+                    if result is not None and isinstance(processIdClassOrInstance, six.string_types):
                         result._savedAs = processIdClassOrInstance
             except IOError as e:
                 raise KeyError('Could not get process "' + repr(processIdClassOrInstance)
@@ -4733,7 +4735,7 @@ def allProcessesInfo():
     """
     Returns a list of :py:class:`ProcessInfo` objects for the loaded processes.
     """
-    return _processesInfo.values()
+    return list(_processesInfo.values())
 
 
 #----------------------------------------------------------------------------
@@ -5986,10 +5988,7 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
         for n, v in items(processModule.__dict__):
             if g.get(n) is not v:
                 if type(v) is types.FunctionType:
-                    if sys.version_info[0] >= 3:
-                        code = v.__code__
-                    else:
-                        code = v.func_code
+                    code = v.__code__
                     args = inspect.getargs(code)[0]
                     if args and args[0] == 'self':
                         setattr(NewProcess, n, v)
@@ -6026,7 +6025,7 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
                 if not ignoreValidation:
                     processInfo.valid = False
                     raise ValidationError(HTMLMessage("The process <em>" + relative_path(
-                        processInfo.fileName, neuroConfig.toolboxesDir) + "</em> is not available: <b>" + unicode(e) + "</b>"))
+                        processInfo.fileName, neuroConfig.toolboxesDir) + "</em> is not available: <b>" + six.text_type(e) + "</b>"))
                 else:
                     valid = False
 
@@ -6081,7 +6080,7 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
             possibleConversions = getattr(
                 NewProcess, 'possibleConversions', None)
             if possibleConversions is None:
-                sourceArg, destArg = NewProcess.signature.values()[: 2]
+                sourceArg, destArg = list(NewProcess.signature.values())[: 2]
                 for destFormat in destArg.formats:
                     for sourceFormat in sourceArg.formats:
                         _setConverter((sourceArg.type, sourceFormat),
@@ -6097,7 +6096,7 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
         if 'viewer' in roles:
             global _viewers
             global _listViewers
-            arg = NewProcess.signature.values()[0]
+            arg = list(NewProcess.signature.values())[0]
             if isinstance(arg, ListOf):
                 arg = arg.contentType
                 if hasattr(arg, 'formats'):
@@ -6124,7 +6123,7 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
         if 'editor' in roles:
             global _dataEditors
             global _listDataEditors
-            arg = NewProcess.signature.values()[0]
+            arg = list(NewProcess.signature.values())[0]
             if isinstance(arg, ListOf):
                 arg = arg.contentType
                 if hasattr(arg, 'formats'):
@@ -6150,7 +6149,7 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
             warnRole(processInfo.fileName, 'editor')
         if 'importer' in roles:
             global _importers
-            sourceArg, destArg = NewProcess.signature.values()[: 2]
+            sourceArg, destArg = list(NewProcess.signature.values())[: 2]
             if hasattr(destArg, 'formats'):
                 for format in destArg.formats:
                     _importers[(destArg.type, format)] = NewProcess._id
@@ -6311,7 +6310,7 @@ class ProcessTree(EditableTree):
                         # contains at least one visible child
 
     def __getinitargs__(self):
-        content = self.values()
+        content = list(self.values())
         return (self.initName, self.id, self.icon, self.tooltip, self.modifiable, self.user, content)
 
     def __getinitkwargs__(self):
@@ -6319,7 +6318,7 @@ class ProcessTree(EditableTree):
         This object can be saved in a minf file (in userProcessTree.minf for user bookmarks). That's why it defines __getinitkwargs__ method.  this method's result is stored in the file and passed to the constructor to restore the object.
         Some changes to the constructor attributes must be reflected in getinitkwargs method, but changes can affect the reading of existing minf files.
         """
-        content = self.values()
+        content = list(self.values())
         return ((), {'name': self.initName, 'id': self.id, 'icon': self.icon, 'editable': self.modifiable, 'user': self.user, 'content': content})
 
     def addDir(self, processesDir, category="", processesCache={}, toolbox='brainvisa'):
@@ -6468,11 +6467,11 @@ class ProcessTree(EditableTree):
                             # file for example), it is usefull to do so.
 
         def __getinitargs__(self):
-            content = self.values()
+            content = list(self.values())
             return (self.initName, self.id, self.modifiable, self.icon, content)
 
         def __getinitkwargs__(self):
-            content = self.values()
+            content = list(self.values())
             return ((), {'name': self.initName, 'id': self.id, 'editable': self.modifiable, 'content': content})
 
         def __reduce__(self):
@@ -6903,7 +6902,7 @@ def _my_ioloop_start(self):
     from zmq.eventloop import ioloop
     from zmq.eventloop.ioloop import IOLoop
     import signal
-    import thread
+    import six.moves._thread
     import logging
     import heapq
 
@@ -6921,7 +6920,7 @@ def _my_ioloop_start(self):
         return
     old_current = getattr(IOLoop._current, "instance", None)
     IOLoop._current.instance = self
-    self._thread_ident = thread.get_ident()
+    self._thread_ident = six.moves._thread.get_ident()
     self._running = True
 
     # signal.set_wakeup_fd closes a race condition in event loops:

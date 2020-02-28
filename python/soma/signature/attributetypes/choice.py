@@ -32,14 +32,14 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL-B license and that you accept its terms.
 
+from __future__ import absolute_import
 import types
 import sys
 
 from soma.translation import translate as _
 from soma.signature.api import DataType, Undefined
-
-if sys.version_info[0] >= 3:
-    unicode = str
+import six
+from six.moves import zip
 
 #-------------------------------------------------------------------------
 
@@ -65,7 +65,7 @@ class Choice(DataType):
                len(p) == 2:
                 label, value = p
             else:
-                label, value = unicode(p), p
+                label, value = six.text_type(p), p
             if label in self.labels:
                 raise KeyError(_('label "%s" is used twice') % (label, ))
             i = None
@@ -106,9 +106,9 @@ class Choice(DataType):
         try:
             return checkValue(value)
         except ValueError:
-            if isinstance(type, basestring):
+            if isinstance(type, six.string_types):
                 try:
-                    index = [unicode(i) for i in self.values].index(value)
+                    index = [six.text_type(i) for i in self.values].index(value)
                     return self.values[index]
                 except ValueError:
                     pass
@@ -120,7 +120,7 @@ class Choice(DataType):
         return (args, kwargs)
 
     def copy(self):
-        return self.__class__(*zip(self.labels, self.values))
+        return self.__class__(*list(zip(self.labels, self.values)))
 
     def createValue(self):
         return self.values[0]

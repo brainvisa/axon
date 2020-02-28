@@ -39,6 +39,7 @@
   `IFR 49 <http://www.ifr49.org>\\_
 - license: `CeCILL version 2 <http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>`_
 '''
+from __future__ import absolute_import
 __docformat__ = 'restructuredtext en'
 
 from soma.singleton import Singleton

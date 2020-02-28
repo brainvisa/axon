@@ -149,6 +149,8 @@ Data type classes
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
 
+from __future__ import absolute_import
+import six
 __docformat__ = "restructuredtext en"
 
 from soma.signature.signature import DataType, ClassDataType, Signature, \

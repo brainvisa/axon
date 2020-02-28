@@ -1,7 +1,10 @@
 
+from __future__ import absolute_import
 from brainvisa.processes import *
 from soma import aims
 import numpy as np
+from six.moves import range
+from six.moves import zip
 
 name = 'Reduce Texture on ROIs'
 userLevel = 1

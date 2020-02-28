@@ -37,6 +37,7 @@
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
 
+from __future__ import absolute_import
 from brainvisa.data.neuroData import Parameter
 from brainvisa.data.qtgui.neuroDataGUI import NotImplementedEditor
 from brainvisa.data.writediskitem import WriteDiskItem
@@ -135,6 +136,6 @@ class LabelSelection(Parameter):
             return False
         m = minf.readMinf(self.file.fullPath())
         m = m[0]
-        if len(m) == 0 or (len(m) == 1 and m.keys()[0] == '__syntax__'):
+        if len(m) == 0 or (len(m) == 1 and list(m.keys())[0] == '__syntax__'):
             return False
         return True

@@ -37,6 +37,7 @@ The main classes are :py:class:`SQLDatabases` and :py:class:`SQLDatabase`.
 
 """
 from __future__ import print_function
+from __future__ import absolute_import
 import sys
 import os
 import re
@@ -69,16 +70,16 @@ from brainvisa.data.fileformats import FileFormats, getAllFileFormats
 from brainvisa.data.directory_iterator import DirectoryIterator, VirtualDirectoryIterator
 from brainvisa.data import temporary
 import six
-from six.moves import reduce
+from six.moves import zip
+from six.moves import range
+from functools import reduce
 
 if sys.version_info[0] >= 3:
     izip = zip
-
     def values(thing):
         return list(thing.values())
     xrange = range
-    basestring = str
-    unicode = str
+
 else:
     from itertools import izip
 
@@ -142,7 +143,7 @@ class CombineGet(object):
 
 def _indicesForTuplesWithMissingValues(n):
     if n > 0:
-        for i in xrange(n):
+        for i in range(n):
             yield (i, )
             for t in _indicesForTuplesWithMissingValues(n - i - 1):
                 yield (i, ) + tuple(j + i + 1 for j in t)
@@ -152,7 +153,7 @@ def _indicesForTuplesWithMissingValues(n):
 
 def tupleWithMissingValues(t, tpl, missingValue):
     result = list()
-    for i in xrange(len(tpl)):
+    for i in range(len(tpl)):
         if (i in t):
             result += tuple((missingValue, ))
         else:
@@ -237,14 +238,14 @@ class Database(object):
         if t is Undefined:
             if r is Undefined:
                 return []
-            if r is None or isinstance( r, (basestring, int, float, bool) ):
+            if r is None or isinstance( r, six.string_types + (int, float, bool) ):
                 return [r]
             return r
-        if t is None or isinstance( t, (basestring, int, float, bool) ):
+        if t is None or isinstance( t, six.string_types + (int, float, bool) ):
             t = [t]
         elif t is Undefined:
             t = []
-        if s is None or isinstance( s, (basestring, int, float, bool) ):
+        if s is None or isinstance( s, six.string_types + (int, float, bool) ):
             s = [s]
         elif s is Undefined:
             s = []
@@ -254,7 +255,7 @@ class Database(object):
             s = s + [None] + t
         if r is Undefined:
             return s
-        if r is None or isinstance( r, (basestring, int, float, bool) ):
+        if r is None or isinstance( r, six.string_types + (int, float, bool) ):
             r = set([r])
         else:
             r = set(r)
@@ -504,13 +505,13 @@ class SQLDatabase(Database):
             print('!cursor!', self._id, ':', message, file=sys.stderr)
 
     def __init__(self, sqlDatabaseFile, directory, fso=None, context=None, otherSqliteFiles=[], settings=None):
-        # print('!==================================!')
-        # print('!SQLDatabase, initialization started!')
-        # print('!==================================!')
-        # print('!sqlDatabaseFile:', sqlDatabaseFile, '!')
-        # print('!directory:', directory, '!')
-        # print('!otherSqliteFiles:', otherSqliteFiles, '!')
-        # print('!==================================!')
+        #print('!==================================!')
+        #print('!SQLDatabase, initialization started!')
+        #print('!==================================!')
+        #print('!sqlDatabaseFile:', sqlDatabaseFile, '!')
+        #print('!directory:', directory, '!')
+        #print('!otherSqliteFiles:', otherSqliteFiles, '!')
+        #print('!==================================!')
 
         super(SQLDatabase, self).__init__()
         self._connection = None
@@ -665,8 +666,8 @@ class SQLDatabase(Database):
             self._attributesEditionByType[type.name] = (
                 editableAttributes, selectedValueAttributes, declaredAttributes)
 
-        # print('!SQLDatabase, rule! selection by type :')
-        # print(self.ruleSelectionByType)
+        #print('!SQLDatabase, rule! selection by type :')
+        #print(self.ruleSelectionByType)
 
         self.typesWithTable = set()
         self._childrenByTypeName = {}
@@ -737,9 +738,9 @@ class SQLDatabase(Database):
                 brainvisa.processes.defaultContext().write(
                     "Database ",  self.name, " must be updated because it has been used with other versions of Brainvisa.")
 
-        # print('!==================================!')
-        # print('!SQLDatabase initialization ended!')
-        # print('!==================================!')
+        #print('!==================================!')
+        #print('!SQLDatabase initialization ended!')
+        #print('!==================================!')
 
     def _scanDatabaseByChunks(
             self, directoriesToScan, recursion=True, context=None, chunkSize=1000):
@@ -960,7 +961,7 @@ class SQLDatabase(Database):
                     os.remove(f + ".minf")
             if context is not None:
                 context.write(
-                    "Delete other versions of database cache files : " + unicode(self.otherSqliteFiles))
+                    "Delete other versions of database cache files : " + six.text_type(self.otherSqliteFiles))
             self.otherSqliteFiles = []
         cursor = self._getDatabaseCursor()
         try:
@@ -1004,7 +1005,7 @@ class SQLDatabase(Database):
                 print('</blockquote>', file=out)
             key = self.keysByType[type]
             print('<b>Key: </b><font color="blue">' +
-                  htmlEscape(unicode(key)) + '</font><p>', file=out)
+                  htmlEscape(six.text_type(key)) + '</font><p>', file=out)
             nonMandatory = self._nonMandatoryKeyAttributesByType[type]
             if nonMandatory:
                 print('<blockquote><b>Non mandatory key attributes: </b>' +
@@ -1018,8 +1019,8 @@ class SQLDatabase(Database):
                     print(n + ' = ' + htmlEscape(repr(v)) + '<br/>', file=out)
                 print('</blockquote>', file=out)
             if ruleSelectionByAttributeValue or ruleSelectionByMissingKeyAttributes:
-                print('<b>Rules selection key: </b><font color=darkgreen>' + htmlEscape(unicode(ruleSelectionByAttributeValue))
-                      + '</font> <font color=blue>' + htmlEscape(unicode(ruleSelectionByMissingKeyAttributes)) + '</font><p>', file=out)
+                print('<b>Rules selection key: </b><font color=darkgreen>' + htmlEscape(six.text_type(ruleSelectionByAttributeValue))
+                      + '</font> <font color=blue>' + htmlEscape(six.text_type(ruleSelectionByMissingKeyAttributes)) + '</font><p>', file=out)
             for ruleKey, rules in six.iteritems(rulesDictionary):
                 # print('<font color=darkgreen>' + htmlEscape( unicode(
                 # ruleKey[0] ) ) + '</font> <font color=blue>' + htmlEscape(
@@ -1028,13 +1029,13 @@ class SQLDatabase(Database):
                     print('<hr>', file=out)
                 for rule in rules:
                     print(
-                        htmlEscape(unicode(rule.pattern.pattern)) + '<br/>',
+                        htmlEscape(six.text_type(rule.pattern.pattern)) + '<br/>',
                           file=out)
                     print('<blockquote>', file=out)
                     print('<b>Formats: </b>' + htmlEscape(
                         repr(rule.formats)) + '<br/>', file=out)
                     print('Rule selection key: <font color=darkgreen>' + htmlEscape(
-                        unicode(ruleKey[0])) + '</font> <font color=blue>' + htmlEscape(unicode(ruleKey[1])) + '</font><br/>', file=out)
+                        six.text_type(ruleKey[0])) + '</font> <font color=blue>' + htmlEscape(six.text_type(ruleKey[1])) + '</font><br/>', file=out)
                     print(
                         'Priority offset: ' +
                             str(rule.priorityOffset) + '<br/>',
@@ -1132,7 +1133,7 @@ class SQLDatabase(Database):
                     sql = 'CREATE TABLE ' + '"' + tableName + \
                         '" (_uuid CHAR(36) PRIMARY KEY, ' + ', '.join(
                             (i + ' VARCHAR' for i in tableFields[1:])) + ')'
-                    # print('!createTables!', sql)
+                    #print('!createTables!', sql)
                     cursor.execute(sql)
                     # create index
                     keys = self.keysByType[type]
@@ -1176,7 +1177,7 @@ class SQLDatabase(Database):
                 tablesExist = self.typesWithTable.issubset(
                     tables)  # there are also tables for diskitems and filenames which does match a specific type.
             except sqlite3.OperationalError as e:
-                brainvisa.processes.defaultContext().warning(unicode(e))
+                brainvisa.processes.defaultContext().warning(six.text_type(e))
         finally:
             self._closeDatabaseCursor(cursor)
         return tablesExist
@@ -1221,7 +1222,7 @@ class SQLDatabase(Database):
             for diskItem in diSet:
                 if diskItem.type is None:
                     raise DatabaseError(
-                        _('Cannot insert an item wthout type in a database: %s') % (unicode(diskItem), ))
+                        _('Cannot insert an item wthout type in a database: %s') % (six.text_type(diskItem), ))
                 try:
                     uuid = str(diskItem.uuid())
                 except RuntimeError:
@@ -1348,7 +1349,7 @@ class SQLDatabase(Database):
                         (relative_path(i, self.directory), uuid) for i in diskItem.fullPaths()))
                 except sqlite3.IntegrityError as e:
                     raise DatabaseError(
-                        unicode(e) + ': file names = ' + repr(diskItem.fullPaths()))
+                        six.text_type(e) + ': file names = ' + repr(diskItem.fullPaths()))
 
                 values = [uuid,
                           format, os.path.basename(diskItem.fullPath())]
@@ -1359,10 +1360,10 @@ class SQLDatabase(Database):
                         v = diskItem.getHierarchy(i)
                         if v is None:
                             values.append(None)
-                        elif isinstance(v, basestring):
+                        elif isinstance(v, six.string_types):
                             values.append(v)
                         else:
-                            values.append(unicode(v))
+                            values.append(six.text_type(v))
                     # print('!!', sql, values, [ type(i) for i in values ])
                     if delete:
                         cursor.execute(
@@ -1372,7 +1373,7 @@ class SQLDatabase(Database):
         except sqlite3.OperationalError as e:
             self._closeDatabaseCursor(cursor, rollback=True)
             raise DatabaseError("Cannot insert items in database " + self.name + ": " +
-                                unicode(e) + ". Item:" + diskItem.fullPath() + ". You should update this database.")
+                                six.text_type(e) + ". Item:" + diskItem.fullPath() + ". You should update this database.")
         except:  # noqa: E722
             self._closeDatabaseCursor(cursor, rollback=True)
             raise
@@ -1477,7 +1478,7 @@ class SQLDatabase(Database):
             minf = None
             try:
                 sql = "SELECT _diskItem FROM _FILENAMES_ F, _DISKITEMS_ D WHERE F._uuid=D._uuid AND F.filename='" + \
-                    unicode(relative_path(fileName, self.directory)) + "'"
+                    six.text_type(relative_path(fileName, self.directory)) + "'"
                 minf = cursor.execute(sql).fetchone()
             except sqlite3.OperationalError as e:
                 brainvisa.processes.defaultContext().warning(
@@ -1863,7 +1864,7 @@ class SQLDatabase(Database):
                 for f, v in six.iteritems(where):
                     if v is None:
                         sqlWhereClauses.append(f + '=NULL')
-                    elif isinstance(v, basestring):
+                    elif isinstance(v, six.string_types):
                         sqlWhereClauses.append(f + "='" + v + "'")
                     else:
                         # sqlWhereClauses.append( f + ' IN (' + ','.join(
@@ -1890,7 +1891,7 @@ class SQLDatabase(Database):
                     sqlResult = cursor.execute(sql).fetchall()
                 except sqlite3.OperationalError as e:
                     brainvisa.processes.defaultContext().warning(
-                        "Cannot question database ", self.name, " : ", unicode(e), ". You should update this database.")
+                        "Cannot question database ", self.name, " : ", six.text_type(e), ". You should update this database.")
             finally:
                 self._closeDatabaseCursor(cursor)
             for tpl in sqlResult:
@@ -1959,7 +1960,7 @@ class SQLDatabase(Database):
                 print('!createDiskItems! stack = ', stack, file=_debug)
             while stack:
                 k1, k2 = stack.pop(0)
-                for i in xrange(len(k1)):
+                for i in range(len(k1)):
                     if isinstance(k1[i], (set, list, tuple)):
                         if k1[i]:
                             stack += [[k1[:i] + [j] + k1[i + 1:], k2]
@@ -1969,7 +1970,7 @@ class SQLDatabase(Database):
                         k1 = None
                         break
                 if k1 is not None:
-                    for i in xrange(len(k2)):
+                    for i in range(len(k2)):
                         if isinstance(k2[i], (set, list, tuple)) and k2[i]:
                             stack += [[k1, k2[:i] + [j] + k2[i + 1:]]
                                       for j in k2[i]]

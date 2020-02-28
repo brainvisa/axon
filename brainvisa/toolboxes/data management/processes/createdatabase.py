@@ -1,4 +1,5 @@
 
+from __future__ import absolute_import
 from brainvisa.configuration import neuroConfig
 from brainvisa import processes
 from brainvisa.data import neuroHierarchy

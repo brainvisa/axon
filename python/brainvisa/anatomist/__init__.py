@@ -31,6 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 from __future__ import print_function
+from __future__ import absolute_import
 import sys
 import os
 from brainvisa.configuration import neuroConfig
@@ -588,7 +589,7 @@ if anatomistImport:
 
         def setReusableWindow(self, win, state=True):
             self._reusableWindows = [w for w in self._reusableWindows if w]
-            if type(win) not in (types.ListType, types.TupleType):
+            if type(win) not in (list, tuple):
                 win = [win]
             if state:
                 for w in win:
@@ -609,7 +610,7 @@ if anatomistImport:
                         mainThread.push(ac.setChecked, state)
 
         def setReusableWindowBlock(self, win, state=True):
-            if type(win) not in (types.ListType, types.TupleType):
+            if type(win) not in (list, tuple):
                 win = [win]
             win2 = []
             for w in win:
@@ -733,7 +734,7 @@ if anatomistImport:
                     r = re.compile('^.*mean:\s*(-?[0-9]+(\.[0-9]*)?)\s*sigma:\s'
                                    '(-?[0-9]+(\.[0-9]*)?)\s*$')
                     gmean, gsigma, wmean, wsigma = None, None, None, None
-                    for l in open(hanfile).xreadlines():
+                    for l in open(hanfile):
                         l = l.strip()
                         if l.startswith('gray:'):
                             m = r.match(l)
@@ -834,7 +835,7 @@ if anatomistImport:
             else:
                 ref1, ref2 = refFMRI, refMRI
             if transformation is not None:
-                if type(transformation) in (types.ListType, types.TupleType):
+                if type(transformation) in (list, tuple):
                     transformation = self.createTransformation(
                         transformation, ref1, ref2)
                 else:

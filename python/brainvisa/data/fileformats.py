@@ -29,6 +29,7 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
+from __future__ import absolute_import
 import os
 import sys
 from soma.path import remove_query_string
@@ -37,14 +38,10 @@ from soma.undefined import Undefined
 from brainvisa.processing.neuroException import showException
 import six
 
-if sys.version_info[0] >= 3:
-    unicode = str
-
-
 class Format(object):
 
     def __init__(self, name, extensions, isMinf=False):
-        self.name = unicode(name)
+        self.name = six.text_type(name)
         self.isMinf = isMinf
         self._extensionsAndIsDir = []
         for e in extensions:
@@ -193,7 +190,7 @@ class FileFormats(object):
             # print '!identify! -->', noExt, files, minf, format.name
             known.append((noExt, files, minf, format.name, it))
         # add remaining .minfs
-        known += minfs.values()
+        known += list(minfs.values())
         return known, unknown
 
     def format_names(self):

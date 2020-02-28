@@ -31,6 +31,8 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import absolute_import
+from __future__ import print_function
 import glob
 from brainvisa.processes import *
 import math
@@ -87,7 +89,7 @@ def preloadfiles(self, anim):
     for iter in anim:  # for each step of the animation
         objectsDict = iter.get("objects")
         for objID, obj in objectsDict.items():
-            if objID not in preloadedfiles.keys():
+            if objID not in list(preloadedfiles.keys()):
                 tmpfilename = obj.get("filename")
                 if tmpfilename:
                     preloadedfiles[objID] = a.loadObject(tmpfilename)

@@ -40,6 +40,7 @@ data type.
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
+from __future__ import absolute_import
 __docformat__ = "epytext en"
 
 import turbogears
@@ -74,13 +75,13 @@ class Choice_TgGUI(TgGUI):
         # self._widget.setEditable( editable )
         for i in six.moves.xrange(len(self.dataTypeInstance.labels)):
             label = self.dataTypeInstance.labels[i]
-            self._widget.options += [(unicode(i), label)]
+            self._widget.options += [(six.text_type(i), label)]
 
         if value is not Undefined:
             index = self.dataTypeInstance.findIndex(value)
             if index == -1:
                 if editable:
-                    label = unicode(value)
+                    label = six.text_type(value)
                     index = len(self.dataTypeInstance.labels)
                     self._widget.options += [(index, label)]
                     self.dataTypeInstance.labels.append(label)
@@ -89,7 +90,7 @@ class Choice_TgGUI(TgGUI):
             index = 0
 
         if index >= 0:
-            self._widget.default = unicode(index)
+            self._widget.default = six.text_type(index)
 
         if live:
             self._widget.onAttributeChange('default', self._userModification)
@@ -118,7 +119,7 @@ class Choice_TgGUI(TgGUI):
         index = self.dataTypeInstance.findIndex(value)
         tools.unlockWidget(editionWidget)
         editionWidget.delayAttributeNotification(ignoreDoubles=True)
-        editionWidget.default = unicode(index)
+        editionWidget.default = six.text_type(index)
         editionWidget.restartAttributeNotification()
 
     def unserializeEditionWidgetValue(self, value, notifyObject=False):
@@ -133,4 +134,4 @@ class Choice_TgGUI(TgGUI):
                 index = self.dataTypeInstance.findIndex(res)
 
             if not index is None:
-                self._widget.default = unicode(index)
+                self._widget.default = six.text_type(index)

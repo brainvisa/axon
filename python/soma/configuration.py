@@ -39,6 +39,7 @@
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
 
+from __future__ import absolute_import
 import sys
 from soma.signature.api import (HasSignature, Signature, VariableSignature,
                                 Sequence)

@@ -58,6 +58,7 @@ Several classes inheriting from :py:class:`ScannerRuleBuilder` are used to assoc
 
 """
 from __future__ import print_function
+from __future__ import absolute_import
 import types
 import sys
 import os
@@ -69,15 +70,6 @@ from soma.sorted_dictionary import SortedDictionary
 from brainvisa.data import neuroDiskItems
 from brainvisa.multipleExecfile import MultipleExecfile
 import six
-
-if sys.version_info[0] >= 3:
-    unicode = str
-
-    #def next(iterable):
-        #return iterable.__next__()
-#else:
-    #def next(iterable):
-        #return iterable.next()
 
 #----------------------------------------------------------------------------
 
@@ -856,7 +848,7 @@ class DirectoryScanner(object):
                         unknown.append(item)
 
         # Correct items if necessary
-        known += groups.values()
+        known += list(groups.values())
         for item in known:
             if item.format:
                 item.format.postProcessing(item)
@@ -1151,7 +1143,7 @@ class FileSystemOntology(object):
             try:
                 fso.content = self.localDict['hierarchy']
             except Exception as e:
-                msg = 'in filesystem ontology "' + directory + '": ' + unicode(e) \
+                msg = 'in filesystem ontology "' + directory + '": ' + six.text_type(e) \
                     + ', files=' + str(files)
                 if hasattr(e, 'messsage'):
                     e.message = msg

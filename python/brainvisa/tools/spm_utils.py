@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 import calendar
 import datetime as dt
 import locale
 import os
 import shutil
 import re
+from six.moves import range
 
 
 def moveSpmOutFiles(inDir, outPath, spmPrefixes=['w'], outDir=None, ext='.nii'):

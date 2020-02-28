@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
+from __future__ import absolute_import
 import os
 import os.path as osp
 from stat import S_ISDIR
@@ -108,7 +109,7 @@ class AxonFedjiDatabase(Database):
         for d in diskItems:
             if d.type is None:
                 raise ValueError(
-                    'Cannot insert an item without type in a database: %s' % (unicode(d), ))
+                    'Cannot insert an item without type in a database: %s' % (six.text_type(d), ))
 
             d._globalAttributes["_database"] = self.name
 
@@ -322,7 +323,7 @@ class AxonFedjiDatabase(Database):
                           six.iteritems(required)):
             if k == '_uuid':
                 k = '_id'
-            if isinstance(v, basestring):
+            if isinstance(v, six.string_types):
                 query[k] = v
             elif not v:
                 continue
@@ -377,7 +378,7 @@ class AxonFedjiDatabase(Database):
                 k = 'fom_format'
             if k == '_type':
                 k = 'fom_parameter'
-            if isinstance(v, basestring):
+            if isinstance(v, six.string_types):
                 query[k] = v
             elif not v:
                 continue

@@ -30,16 +30,15 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import absolute_import
 from brainvisa.processes import *
 from brainvisa.tools import aimsGlobals
 from brainvisa import shelltools
 import sys
+from six.moves import map
 
-if sys.version_info[0] >= 3:
-    def map_list(func, thing):
-        return list(map(func, thing))
-else:
-    map_list = map
+def map_list(func, thing):
+    return list(map(func, thing))
 
 name = 'Aims Texture Converter'
 roles = ('converter',)

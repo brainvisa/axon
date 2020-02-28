@@ -31,6 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import absolute_import
 import os
 import time
 import shutil
@@ -56,10 +57,6 @@ from brainvisa.data.neuroDiskItems import DiskItem
 from brainvisa.processes import defaultContext
 import six
 import sys
-
-if sys.version_info[0] >= 3:
-    unicode = str
-
 
 minfHistory = 'brainvisa-history_2.0'
 
@@ -171,7 +168,7 @@ class HistoryBook(object):
         if l:
             return l[0]
         raise ValueError(_('History book %(book)s does not contain event %(uuid)s') %
-                         {'book': unicode(self), 'uuid': str(uuid)})
+                         {'book': six.text_type(self), 'uuid': str(uuid)})
 
     def removeEvent(self, uuid):
         os.remove(self._findEventFileName(uuid))
@@ -249,7 +246,7 @@ class HistoryBook(object):
                     if val[1] != val[0].modificationHash():
                         changedItems.append(val[0])
             historyBooksContext[book].get('processExcutionEvent').content[
-                'modified_data'] = [unicode(item) for item in changedItems]
+                'modified_data'] = [six.text_type(item) for item in changedItems]
             book.storeEvent(historyBooksContext[book].get(
                 'processExcutionEvent'), storeBvproc=True)
             # update the the lastHistoricalEvent of each diskitems
@@ -284,7 +281,7 @@ class HistoricalEvent(object):
         writeMinFile = False
         bvProcDiskItem = None
 
-        if type(eventFileName) in (str, unicode):
+        if not hasattr(eventFileName, 'write'):
             if compression:
                 eventFile = gzipOpen(eventFileName, mode='w')
             else:

@@ -31,12 +31,13 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from __future__ import print_function
+from __future__ import absolute_import
 import re
 import types
 import six
 
 if six.PY3:
-    unicode = str
+    six.text_type = str
 
 #------------------------------------------------------------------------------
 
@@ -479,7 +480,7 @@ class DictPattern:
         :returns: the rebuilt matching string.
         """
         try:
-            return ''.join( [unicode(i( dic, matchResult )) for i in self.unmatchList] )
+            return ''.join( [six.text_type(i( dic, matchResult )) for i in self.unmatchList] )
         except KeyError as e:
             # print('!unmatch!', e)
             return None

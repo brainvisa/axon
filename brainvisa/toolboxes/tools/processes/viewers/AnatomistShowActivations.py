@@ -31,6 +31,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from __future__ import print_function
+from __future__ import absolute_import
 from brainvisa.processes import *
 from brainvisa import anatomist
 
@@ -61,7 +62,7 @@ def update(dialog):
         if dialog.view is None:
             mri = dialog.getValue('mri')
             if mri is not None:
-                print(globals().keys())
+                print(list(globals().keys()))
                 dialog.view = a.viewActivationsOnMRI(mri, dialog.Zmap,
                                                      dialog.getValue(
                                                      'matrix'),

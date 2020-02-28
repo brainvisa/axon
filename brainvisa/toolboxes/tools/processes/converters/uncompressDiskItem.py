@@ -31,6 +31,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import absolute_import
 from brainvisa.processes import *
 import brainvisa.tools.aimsGlobals as shfjGlobals
 from brainvisa.data import neuroDiskItems
@@ -92,7 +93,7 @@ def execution(self, context):
             y = s.rfind('.', 0, x - 1)
             if y:
                 ext = s[y:x]
-                k = filter(lambda z: z.endswith(ext), dest)
+                k = [z for z in dest if z.endswith(ext)]
                 if len(k) > 0:
                     d = k[0]
         f = gzip.open(source[i], 'rb')

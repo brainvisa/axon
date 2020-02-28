@@ -39,6 +39,7 @@
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
 from __future__ import print_function
+from __future__ import absolute_import
 __docformat__ = "epytext en"
 
 import sys
@@ -255,7 +256,7 @@ def convertConfiguration30To31(sourceFileName, destFileName,
         if os.path.exists(fileName):
             file = open(fileName)
             location = 0
-            for line in file.xreadlines():
+            for line in file:
                 if location == 0:
                     if line == '#------------- DO NOT CHANGE ANYTHING BELOW (INCLUDING THIS LINE) -------------\n':
                         location = 1

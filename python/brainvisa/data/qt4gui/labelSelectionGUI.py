@@ -37,6 +37,7 @@
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
 from __future__ import print_function
+from __future__ import absolute_import
 from soma.qt_gui.qt_backend.QtGui import QWidget, QHBoxLayout, QPushButton
 from soma.qt_gui.qt_backend.QtCore import QSize
 from soma.qt_gui.qt_backend import Qt
@@ -47,17 +48,15 @@ from brainvisa.configuration import neuroConfig
 import threading
 import soma.subprocess
 import sys
-
-if sys.version_info[0] >= 3:
-    unicode = str
+import six
 
 #----------------------------------------------------------------------------
 
 
 class LabelSelectionEditor(QWidget, DataEditor):
 
-    noDefault = Qt.Signal(unicode)
-    newValidValue = Qt.Signal(unicode, object)
+    noDefault = Qt.Signal(six.text_type)
+    newValidValue = Qt.Signal(six.text_type, object)
 
     def __init__(self, parameter, parent, name):
         DataEditor.__init__(self)
@@ -81,8 +80,8 @@ class LabelSelectionEditor(QWidget, DataEditor):
         if value is not None and value != self.value:
             self.value = value
             if not default:
-                self.noDefault.emit(unicode(self.objectName()))
-            self.newValidValue.emit(unicode(self.objectName()), self.value)
+                self.noDefault.emit(six.text_type(self.objectName()))
+            self.newValidValue.emit(six.text_type(self.objectName()), self.value)
 
     def getValue(self):
         return self.value
@@ -130,7 +129,7 @@ class LabelSelectionEditor(QWidget, DataEditor):
         del self._thread
 
     def newValue(self):
-        self.newValidValue.emit(unicode(self.objectName()), self.value)
+        self.newValidValue.emit(six.text_type(self.objectName()), self.value)
         # self.emit( PYSIGNAL('noDefault'), ( self.name(),) )
 
     def diskItemChanged(self, name, val):

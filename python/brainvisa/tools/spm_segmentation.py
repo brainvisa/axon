@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from brainvisa.tools.spm_run import getSpm8Path
 
 

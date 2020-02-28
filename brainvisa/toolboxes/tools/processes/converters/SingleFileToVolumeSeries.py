@@ -30,8 +30,10 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
+from __future__ import absolute_import
 from brainvisa.processes import *
 from brainvisa.tools import aimsGlobals
+from six.moves import range
 
 name = 'Single file to volume series'
 roles = ('converter',)
@@ -103,8 +105,8 @@ def execution(self, context):
 
     command = [ 'AimsSubVolume', '--singleminf', '-i', self.read, '-o'] + \
         self.write.firstFullPathsOfEachSeries() + \
-        [ '-t' ] + range( len( name_serie ) ) + \
-        ['-T'] + range(len(name_serie))
+        [ '-t' ] + list(range( len( name_serie ))) + \
+        ['-T'] + list(range(len(name_serie)))
 
     if context.system(*command):
         raise Exception(_t_('Error while splitting <em>%s</em>') %

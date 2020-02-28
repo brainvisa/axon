@@ -32,6 +32,7 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL-B license and that you accept its terms.
 
+from __future__ import absolute_import
 from soma.translation import translate as _
 from soma.signature.api import DataType
 
@@ -66,8 +67,7 @@ class Number(DataType):
         return (), kwargs
 
     def checkValue(self, value):
-        if isinstance( value, int ) or isinstance( value, float ) or \
-           isinstance(value, long):
+        if isinstance( value, six.integer_types ) or isinstance( value, float ):
             if ( self.minimum is not None and value < self.minimum ) or \
                (self.maximum is not None and value > self.maximum):
                 if self.maximum is None:
@@ -89,10 +89,12 @@ class Number(DataType):
         try:
             value = int(value)
         except ValueError:
-            try:
-                value = long(value)
-            except ValueError:
-                value = float(value)
+            if sys.version_info[0] < 3:
+                try:
+                    value = long(value)
+                except ValueError:
+                    pass
+            value = float(value)
         return value
 
     def createValue(self):
