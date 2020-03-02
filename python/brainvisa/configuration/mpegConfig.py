@@ -97,31 +97,17 @@ def findCodec(encoder):
         # return [ 'asv1', 'asv2', 'dvvideo', 'ffv1', 'h263', 'huffyuv', 'h263p',
         #         'ljpeg', 'mjpeg', 'mpeg4', 'mpeg1video', 'mpeg2video', 'msmpeg4',
         #         'msmpeg4v1', 'msmpeg4v2', 'rv10', 'rv20', 'wmv1', 'wmv2', 'wmv3' ]
-        try:
-        # Valid only since Python 2.4
-            import soma.subprocess
-            sproc = soma.subprocess.Popen(('bv_unenv', encoder, '-codecs'),
-                                     stdout=soma.subprocess.PIPE,
-                                     stderr=soma.subprocess.PIPE)
-            out, err = sproc.communicate()
-            if sproc.returncode != 0:
+        import soma.subprocess
+        sproc = soma.subprocess.Popen(('bv_unenv', encoder, '-codecs'),
+                                      stdout=soma.subprocess.PIPE,
+                                      stderr=soma.subprocess.PIPE)
+        out, err = sproc.communicate()
+        if sproc.returncode != 0:
             # maybe the older ffmpeg using -formats argument
-                sproc = soma.subprocess.Popen(('bv_unenv', encoder, '-formats'),
-                                         stdout=soma.subprocess.PIPE,
-                                         stderr=soma.subprocess.PIPE)
-                out, err = sproc.communicate()
-        except ImportError:
-            # Work with earlier Python version but generates the following error at exit:
-            # Exception exceptions.TypeError: TypeError("'NoneType' object is
-            # not callable",) in <bound method Popen3.__del__ of <popen2.Popen3
-            # instance at 0xb7303c2c>> ignored
-            stdin, stdout, stderr = os.popen3(encoder + ' -codecs')
-            stdin.close()
-            err = stderr.read()
-            out = stdout.read()
-            stdout.close()
-            stderr.close()
-            del stdout, stderr, stdin
+            sproc = soma.subprocess.Popen(('bv_unenv', encoder, '-formats'),
+                                          stdout=soma.subprocess.PIPE,
+                                          stderr=soma.subprocess.PIPE)
+            out, err = sproc.communicate()
 
         codecs = []
         lines = out.split(six.b('\n'))

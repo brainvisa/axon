@@ -16,11 +16,7 @@ from argparse import ArgumentParser
 import yaml
 import json
 from six.moves import range
-try:
-    from collections import OrderedDict
-except ImportError:
-    # It is necessary to keep this for compatibility with python 2.6.*
-    from soma.sorted_dictionary import OrderedDict
+from collections import OrderedDict
 from . import axon_to_capsul
 import six
 
