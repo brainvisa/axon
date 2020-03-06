@@ -236,7 +236,8 @@ def run_process_with_distribution(
                                % workflow_status)
         print('workflow status OK')
         if len(failed_jobs) != 0:
-            raise RuntimeError('Morphologist jobs failed:', failed_jobs)
+            raise RuntimeError('Jobs failed, n=%d:' % len(failed_jobs),
+                               failed_jobs)
 
         if not keep_workflow and keep_failed_workflow:
             wc.delete_workflow(wid)
