@@ -2023,7 +2023,7 @@ class ExecutionNode(object):
     """
     Base class for the classes that describe a pipeline structure.
     """
-    class MultiParameterLink:
+    class MultiParameterLink(object):
 
         def __init__(self, sources, dest, function):
             self.sources = []
@@ -2932,7 +2932,7 @@ class ExecutionContext(object):
             Exception.__init__(
                 self, _t_('user interruption of current step'))
 
-    class StackInfo:
+    class StackInfo(object):
 
         def __init__(self, process):
             self.process = process
@@ -4316,7 +4316,7 @@ class ProgressInfo(object):
 
 
 #----------------------------------------------------------------------------
-class ProcessInfo:
+class ProcessInfo(object):
 
     """
     This object stores information about a process. Such objects are created at BrainVISA startup when the processes are loaded.
@@ -4942,7 +4942,7 @@ def getDiskItemSourceInfo(source):
 #-------------------------------------------------------------------------
 
 
-class DiskItemConversionInfo:
+class DiskItemConversionInfo(object):
 
     """
     Contains information about :py:class:`neuroDiskItems.DiskItem` conversions.

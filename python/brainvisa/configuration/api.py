@@ -192,7 +192,7 @@ def readConfiguration(mainPath, userProfile, homeBrainVISADir):
 
 def convertConfiguration30To31(sourceFileName, destFileName,
                                startupfileName):
-    class Options3_0:
+    class Options3_0(object):
         equiv30_31 = {
             'showSplashScreen': None,
           'userLevel': 'brainvisa.userLevel',

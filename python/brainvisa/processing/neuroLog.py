@@ -63,7 +63,7 @@ def items(thing):
     return list(thing.items())
 
 #------------------------------------------------------------------------------
-class FileLink:
+class FileLink(object):
 
     """
     Base virtual class for a link on a log file.
@@ -141,7 +141,7 @@ class LogFileLink(FileLink):
 
 
 #------------------------------------------------------------------------------
-class LogFile:
+class LogFile(object):
 
     """
     This class represents Brainvisa log file.
@@ -192,7 +192,7 @@ class LogFile:
                 self.fileName = None
 
     #-------------------------------------------------------------------------
-    class Item:
+    class Item(object):
 
         """
         An entry in a log file. It can have a list of children items.
@@ -494,7 +494,7 @@ def newLogFile(fileName, file=None):
 
 
 #------------------------------------------------------------------------------
-class LogFileReader:
+class LogFileReader(object):
 
     """
     This objects enables to read :py:class:`LogFile` :py:class:`Logfile.Item` from a filename.

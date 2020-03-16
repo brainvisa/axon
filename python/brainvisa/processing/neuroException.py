@@ -59,7 +59,7 @@ else:
     from htmllib import HTMLParser
 
 
-class HTMLMessage:
+class HTMLMessage(object):
 
     """
     This class enables to create an error message in HTML format.

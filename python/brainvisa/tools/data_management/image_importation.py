@@ -13,7 +13,7 @@ import brainvisa.data.temporary as temporary
 import six
 
 
-class Importer:
+class Importer(object):
 
     @classmethod
     def import_t1mri(cls, input_filename, output_filename,

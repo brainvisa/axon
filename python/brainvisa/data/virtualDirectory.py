@@ -38,7 +38,7 @@ from UserDict import UserDict
 
 
 #-------------------------------------------------------------------------
-class VirtualDirectory:
+class VirtualDirectory(object):
 
     '''A VirtualDirectory is a place where file- or directory-like data are stored
     (local file system, ftp server, data base, etc.). A VirtualDirectory have a
@@ -154,7 +154,7 @@ class VirtualDirectory:
 
 
 #-------------------------------------------------------------------------
-class VirtualDirectoriesManager:
+class VirtualDirectoriesManager(object):
 
     def __init__(self):
         self.__virtualDirectories = {}

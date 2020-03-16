@@ -1395,7 +1395,7 @@ class ExecutionNodeGUI(QWidget):
 #----------------------------------------------------------------------------
 
 
-class VoidClass:
+class VoidClass(object):
     pass
 
 

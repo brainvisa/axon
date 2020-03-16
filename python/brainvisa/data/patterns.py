@@ -42,7 +42,7 @@ if six.PY3:
 #------------------------------------------------------------------------------
 
 
-class DictPattern:
+class DictPattern(object):
 
     '''A DictPattern contains a pattern that is matched against a string and a
     set of attributes contained in a dictionary. When the match succeed, it
@@ -112,7 +112,7 @@ class DictPattern:
     >>> DictPattern.match( DictPattern.match( s, dict ), dict ) == s
 
     '''
-    class Constant:
+    class Constant(object):
         pass
 
         def __repr__(self):
@@ -237,7 +237,7 @@ class DictPattern:
         def __str__(self):
             return '<MatchResult ' + repr(self.__key) + '>'
 
-    class RegexpMatch:
+    class RegexpMatch(object):
 
         def __init__(self, matchList):
             precompile = True

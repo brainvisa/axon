@@ -805,7 +805,7 @@ class EditableTreeWidget(QTreeWidget):
 #----------------------------------------------------------------------------
 
 
-class EditableTreeController:
+class EditableTreeController(object):
 
     """The controller is called to make changes on the model when events occur."""
 

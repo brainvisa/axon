@@ -1716,7 +1716,7 @@ def getResolutionsFromItems(items):
 
 
 #----------------------------------------------------------------------------
-class BackwardCompatiblePatterns:
+class BackwardCompatiblePatterns(object):
 
     """
     This class represents several file patterns.

@@ -44,7 +44,7 @@ import six
 #
 
 
-class FileProcess:
+class FileProcess(object):
 
     """
     Represents a process to execute on a file.

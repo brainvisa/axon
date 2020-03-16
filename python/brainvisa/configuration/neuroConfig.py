@@ -786,7 +786,7 @@ if setup:
 #
 
 
-class RunsInfo:
+class RunsInfo(object):
 
     """
     This class gets information about possibly existing runs of Brainvisa and adds information about the current one.
@@ -957,7 +957,7 @@ for p in (os.path.join(getSharePath(), bvShareDirectory),
         break
 
 
-class Translator:
+class Translator(object):
 
     def __init__(self, lang=language):
         self.language = lang
