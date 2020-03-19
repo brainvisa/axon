@@ -43,6 +43,8 @@ FileType('Transformation matrix', 'Transformation',
 FileType('Referential', 'Text file', 'Referential')
 FileType('Referential of Raw T1 MRI', 'Referential')
 
+FileType( 'Referential of Raw FLAIR MRI', 'Referential' )
+
 FileType('Resamp Spline Image',  '3D Volume')
 FileType('Registration Directory', 'Directory')
 
