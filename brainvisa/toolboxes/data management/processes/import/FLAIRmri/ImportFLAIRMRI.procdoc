@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="fr">
+    <xhtml name="short">Cette fonction place une image IRM FLAIR dans la base de données de BrainVISA</xhtml>
+    <d name="parameters">
+      <xhtml name="input">image à placer dans la base</xhtml>
+      <xhtml name="input_spm_orientation"/>
+      <xhtml name="output">emplacement dans la base où placer l'image</xhtml>
+    </d>
+    <xhtml name="long">
+      Cette brique permet de copier une image FLAIR initialement hors de la base pour la placer dans la base de données de BrainVISA.<br/><br/>
+
+      Pour remplir le paramètre <tt>input</tt>, il faut utiliser le sélecteur de fichiers standard <img src="../../images/icons/browse_read.png"/>.
+      Il <em>ne peut pas</em> être rempli en utilisant l'icône "base de données" <img src="../../images/icons/database_read.png"/> puisque l'image n'est pas encore dans la base de données de BrainVISA.<br/>
+      <img src="../../images/whasa_v2/importFLAIR-1.png"/><br/><br/><br/>
+
+      Pour remplir le paramètre <tt>output</tt>, il faut utiliser l'icône "base de données" <img src="../../images/icons/database_write.png"/>.
+      Comme l'emplacement de l'image dans la base de données BrainVISA n'existe pas encore, il va falloir le créer à l'aide de l'interface de choix de l'emplacement de sortie, utilisant un système de filtres:
+      choix de la base de données, du type de données, du format du fichier, et éventuellement du nom du protocole, du sujet et de l'acquisition.
+      <img src="../../images/whasa_v2/importFLAIR-2.png"/><br/>
+      Le nom de l'image en entrée est récupérée pour remplir le paramètre sujet par défaut.<br/><br/><br/>
+
+      Premièrement, il est nécessaire de sélectionner une base de données (si vous en avez plusieurs):<br/>
+      <img src="../../images/whasa_v2/importFLAIR-3.png"/><br/><br/><br/>
+
+      Il faut ensuite fixer le <tt>type de données</tt>, le <tt>format de fichier</tt> et un <tt>protocole</tt>. Si le protocole voulu n'existe pas encore, il faut en créer un en tapant un nouveau nom dans le champ <tt>protocole</tt>. Vous pouvez choisir un nom d'acquisition ou modifier le nom du sujet.<br/>
+      <img src="../../images/whasa_v2/importFLAIR-4.png"/><br/>
+      Il ne reste plus qu'à sélectionner l'image proposée à droite et à valider.<br/><br/><br/>
+
+      Pour lancer le traitement, il suffit d'appuyer sur <tt>run</tt>.<br/>
+      <img src="../../images/whasa_v2/importFLAIR-5.png"/><br/><br/><br/>
+    </xhtml>
+  </d>
+
+  <d name="en">
+    <xhtml name="short">This process places a FLAIR MR image in BrainVISA database</xhtml>
+    <d name="parameters">
+      <xhtml name="input">image to import in the database</xhtml>
+      <xhtml name="input_spm_orientation"/>
+      <xhtml name="output">where in the database the image should be placed</xhtml>
+    </d>
+    <xhtml name="long">
+      This process enables to copy a FLAIR MR image initially out of BrainVISA database to its location in the database.<br/><br/>
+
+      To set the parameter <tt>input</tt>, you must use the standard file browser <img src="../../images/icons/browse_read.png"/>.
+      This parameter <em>cannot</em> be set with the "database" icon <img src="../../images/icons/database_read.png"/> since the input image is not yet in the BrainVISA database.<br/>
+      <img src="../../images/whasa_v2/importFLAIR-1.png"/><br/><br/><br/>
+
+      To set the parameter <tt>output</tt>, you must use the "database" icon <img src="../../images/icons/database_write.png"/>.
+      As the location of the output image does not exist yet, it will have to be created using the user interface for the choice of the location, using data filter on attributes of the image:
+      choice of the database, type of data, file format, and optionnaly the name of the protocol, subject and acquisition.<br/>
+      <img src="../../images/whasa_v2/importFLAIR-2.png"/><br/>
+      The name of the input image is retrieved to fill by default the parameter <tt>subject</tt>.<br/><br/><br/>
+
+      First, a database must be chosen (if you have several ones):<br/>
+      <img src="../../images/whasa_v2/importFLAIR-3.png"/><br/><br/>
+
+      Then the <tt>data type</tt>, <tt>file format</tt> and a <tt>protocol</tt> should be chosen. If the protocol does not exist yet, you can type a new name in the <tt>protocol</tt> field. You can choose a name in the <tt>acquisition</tt> field or modify the parameter <tt>subject</tt>.<br/>
+      <img src="../../images/whasa_v2/importFLAIR-4.png"/><br/>
+      Now you only have to select the image proposed on the right panel and to validate.<br/><br/><br/>
+
+      Click on the <tt>Run</tt> button to run the process.<br/>
+      <img src="../../images/whasa_v2/importFLAIR-5.png"/><br/><br/><br/>
+    </xhtml>
+  </d>
+</d>
+</minf>
