@@ -1009,7 +1009,7 @@ class SQLDatabase(Database):
             nonMandatory = self._nonMandatoryKeyAttributesByType[type]
             if nonMandatory:
                 print('<blockquote><b>Non mandatory key attributes: </b>' +
-                      htmlEscape(tuple(nonMandatory)) + '<p>', file=out)
+                      htmlEscape(six.text_type(tuple(nonMandatory))) + '<p>', file=out)
             ruleSelectionByAttributeValue, ruleSelectionByMissingKeyAttributes, rulesDictionary, defaultAttributesValues = self.ruleSelectionByType[
                 type]
             if defaultAttributesValues:
