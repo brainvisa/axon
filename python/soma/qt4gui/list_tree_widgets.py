@@ -58,9 +58,6 @@ from soma.minf.api import defaultReducer, createMinfWriter, iterateMinf, minfFor
 from soma.wip.application.api import findIconFile
 from soma.qt4gui.api import defaultIconSize
 
-if sys.version_info[0] >= 3:
-    six.text_type = str
-
 #----------------------------------------------------------------------------
 
 
