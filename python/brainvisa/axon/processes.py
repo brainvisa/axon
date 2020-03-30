@@ -178,7 +178,8 @@ def initializeProcesses():
         try:
             if isinstance(f, six.string_types):
                 localsStartup = globals().copy()
-                six.exec_(f, localsStartup, localsStartup)
+                code = compile(f, '<neuroConfig.startup>', 'exec')
+                six.exec_(code, localsStartup, localsStartup)
             else:
                 f()
         except Exception:
