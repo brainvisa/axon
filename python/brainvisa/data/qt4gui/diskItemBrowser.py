@@ -51,11 +51,9 @@ from soma.stringtools import quote_string, unquote_string, string_to_list, list_
 from brainvisa.data.neuroDiskItems import DiskItem, getFormats, getDiskItemType
 import brainvisa.processes
 import types
+
 import six
 from six.moves import range
-
-if sys.version_info[0] >= 3:
-    xrange = range
 
 #----------------------------------------------------------------------------
 
@@ -512,11 +510,7 @@ class DiskItemBrowser(QDialog):
                 else:
                     values.update(v[0]
                                   for v in self._database.findAttributes((a, ), {}, exactType=self._exactType, **required))
-                if sys.version_info[0] >= 3:
-                    key_func = lambda x: (type(x).__name__, x)
-                else:
-                    key_func = None
-                for v in sorted(values, key=key_func):
+                for v in sorted(values, key=lambda x: (type(x).__name__, x)):
                     if not v:
                         v = ''
                     if isinstance(v, six.string_types):
@@ -555,10 +549,7 @@ class DiskItemBrowser(QDialog):
             uniquecols = set(range(len(keyAttributes) + 3))
             uniquecolsvals = []
             allColsNonUnique = False
-            if sys.version_info[0] >= 3:
-                key_func = lambda x: [(type(y).__name__, y) for y in x]
-            else:
-                key_func = None
+            key_func = lambda x: [(type(y).__name__, y) for y in x]
             for attrs in sorted(self._database.findAttributes(
                 ['_type'] + keyAttributes + list(self._declaredAttributes)
                 + ['_format', '_database', '_uuid'], selection={},

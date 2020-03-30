@@ -50,13 +50,6 @@ import six
 import sys
 from functools import reduce
 
-if sys.version_info[0] >= 3:
-
-    def to_list(thing):
-        return list(thing)
-else:
-    def to_list(thing):
-        return thing
 
 #----------------------------------------------------------------------------
 def diskItemFilter(database, diskItem, required, explainRejection=False):
@@ -136,7 +129,7 @@ class ReadDiskItem(Parameter):
         Parameter.__init__(self, section)
         self._debug = _debug
         self.type = getDiskItemType(diskItemType)
-        formatsList = to_list(getFormats(formats))
+        formatsList = list(getFormats(formats))
         if len(formatsList) != 0:
             self.formats = (formatsList[0], ) + tuple(sorted(formatsList))
         else:

@@ -164,12 +164,9 @@ import traits.api as traits
 import distutils.spawn
 import copy
 import sys
-import six
 import subprocess
-if sys.version_info[0] >= 3:
-    from io import StringIO
-else:
-    from cStringIO import StringIO
+
+import six
 
 
 def fileOptions(filep, name, process, attributes=None, path_completion=None):
@@ -1175,20 +1172,14 @@ class CapsulProcess(processes.Process):
 
     @staticmethod
     def sphinx_to_xhtml(doc):
-        if sys.version_info[0] >= 3:
-            doc_utf8 = doc.encode('utf-8')
-        else:
-            doc_utf8 = doc
+        doc_utf8 = six.ensure_binary(doc, 'utf-8')
         pandoc = distutils.spawn.find_executable('pandoc')
         if pandoc:
             cmd = ['pandoc', '-r', 'rst', '-t', 'html', '--']
             proc = subprocess.Popen(cmd, stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE)
             out = proc.communicate(input=doc_utf8)
-            if sys.version_info[0] >= 3:
-                return out[0].decode('utf-8')
-            else:
-                return out[0]
+            return six.ensure_text(out[0], 'utf-8')
         else:
             from soma.html import htmlEscape
             return htmlEscape(doc).replace('\n', '<br/>\n')

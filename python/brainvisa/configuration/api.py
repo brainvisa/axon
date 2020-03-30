@@ -294,9 +294,9 @@ def convertConfiguration30To31(sourceFileName, destFileName,
     d = {'options': Options3_0(
         configuration), 'versionNumber': versionNumber}
     try:
-        fopts = {'encoding': 'utf-8'} if sys.version_info[0] >= 3 else {}
-        with open(sourceFileName, **fopts) as f:
-            six.exec_(f.read(), d, d)
+        with open(sourceFileName, 'rb') as f:
+            code = compile(f.read(), f.name, 'exec')
+        six.exec_(code, d, d)
     except Exception:
         import traceback
         print(_('Cannot execute "%s":' % sourceFileName), file=sys.stderr)

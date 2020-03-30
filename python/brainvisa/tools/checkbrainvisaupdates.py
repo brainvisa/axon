@@ -6,14 +6,10 @@ import re
 import platform
 import sys
 from brainvisa.configuration import neuroConfig
-try:
-    import six.moves.urllib.request as urllib2
-    from six.moves.urllib.error import URLError
-except ImportError:
-    # some six versions do not provide six.moves.urllib (Ubuntu 12.04)
-    import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
-    from six.moves.urllib.error import URLError
+
 import six
+import six.moves.urllib.request
+from six.moves.urllib.error import URLError
 
 filesaddress = 'ftp://ftp.cea.fr/pub/dsv/anatomist/binary'
 
@@ -44,13 +40,8 @@ def checkUpdates():
     upgrade = False
     exactarch = None
     compatiblearch = None
-    if sys.version_info[0] >= 3:
-        decode = True
-    else:
-        decode = False
     for l in lines:
-        if decode:
-            l = l.decode()
+        l = six.ensure_str(l)
         m = rexp.match(l)
         if not m:
             continue

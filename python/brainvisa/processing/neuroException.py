@@ -43,7 +43,9 @@ The functions are used to display error and warning messages in Brainvisa.
 >>>   neuroException.showException(beforeError="The following error occured when...:")
 
 """
-from __future__ import absolute_import
+
+from __future__ import absolute_import, print_function
+
 import sys
 import os
 import traceback
@@ -51,12 +53,9 @@ import formatter
 from brainvisa.configuration.neuroConfig import *
 from brainvisa.configuration import neuroConfig
 from soma.html import htmlEscape
-import six
-if sys.version_info[0] >= 3:
-    from html.parser import HTMLParser
 
-else:
-    from htmllib import HTMLParser
+import six
+from six.moves.html_parser import HTMLParser
 
 
 class HTMLMessage(object):
@@ -73,6 +72,39 @@ class HTMLMessage(object):
 
     def __str__(self):
         return self.html
+
+
+class DumbHTMLPrinter(HTMLParser):
+    def __init__(self, formatter):
+        super(DumbHTMLPrinter, self).__init__()
+        self.formatter = formatter
+
+    def handle_data(self, data):
+        self.formatter.add_flowing_data(data)
+
+
+try:
+    import html2text
+    html2text_maker = html2text.HTML2Text()
+    html2text_maker.bodywidth = 0  # disable line wrapping
+    html2text_maker.images_to_alt = True
+    html2text_maker.unicode_snob = True  # use Unicode instead of HTML entities
+except ImportError:
+    html2text_maker = None
+
+
+def print_html(message, file=sys.stdout, flush=True):
+    """Print a HTML message converted to plain text"""
+    if html2text_maker is not None:
+        text = html2text_maker.handle(message)
+        print(text, end='', file=file)
+    else:
+        printer = DumbHTMLPrinter(
+            formatter.AbstractFormatter(
+                formatter.DumbWriter(sys.stdout, 80)))
+        printer.feed(message)
+    if flush:
+        file.flush()
 
 
 def exceptionHTML(beforeError='', afterError='', exceptionInfo=None):
@@ -222,12 +254,8 @@ def showException(beforeError='', afterError='', parent=None,
                                              parent=parent)
                 mainThreadActions().push(w.show)
         else:
-            if sys.version_info[0] >= 3:
-                HTMLParser().feed(messageHTML + '<hr>' + detailHTML)
-            else:
-                HTMLParser(formatter.AbstractFormatter(
-                          formatter.DumbWriter(sys.stdout, maxcol=80)))\
-                    .feed(messageHTML + '<hr>' + detailHTML)
+            print_html(messageHTML + '<hr>' + detailHTML,
+                       file=sys.stdout, flush=True)
     except Exception as e:
         traceback.print_exc()
     # why this violent exit ??
@@ -264,9 +292,8 @@ def showWarning(message, parent=None, gui=None):
                                              parent=parent)
                 mainThreadActions().push(w.show)
         else:
-            HTMLParser(formatter.AbstractFormatter(
-                       formatter.DumbWriter( sys.stdout, 80 ) ) )\
-                .feed(messageHTML + '<hr>' + "")
+            print_html(messageHTML + '<hr>' + "",
+                       file=sys.stdout, flush=True)
     except Exception as e:
         traceback.print_exc()
 

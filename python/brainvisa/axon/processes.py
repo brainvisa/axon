@@ -67,13 +67,14 @@ def cleanup():
     if _count != 0:
         return
 
-    try:
-        if sys.version_info[0] >= 3:
-            atexit.unregister(cleanup)
-        else:
+    if not six.PY2:
+        atexit.unregister(cleanup)
+    else:
+        try:
             atexit._exithandlers.remove((cleanup, (), {}))
-    except ValueError:
-        pass
+        except ValueError:
+            pass
+
     if neuroConfig.runsInfo:
         neuroConfig.runsInfo.delete()
     neuroConfig.clearObjects()
@@ -166,9 +167,9 @@ def initializeProcesses():
             if os.path.exists(toolbox.startupFile):
                 try:
                     print('exec:', toolbox.startupFile)
-                    fopts = {'encoding': 'utf-8'} if sys.version_info[0] >= 3 else {}
-                    with open(toolbox.startupFile, **fopts) as f:
-                        six.exec_(f.read(), globals(), {})
+                    with open(toolbox.startupFile, 'rb') as f:
+                        code = compile(f.read(), f.name, 'exec')
+                    six.exec_(code, globals(), {})
                 except Exception:
                     neuroException.showException()
 

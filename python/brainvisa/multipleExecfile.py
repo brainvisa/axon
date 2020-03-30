@@ -145,9 +145,9 @@ class MultipleExecfile(object):
                     self._includeStack.append([file, self._last_line])
                     do_pop = True
                     self.localDict['__name__'] = file
-                    fopts = {'encoding': 'utf-8'} if sys.version_info[0] >= 3 else {}
-                    with open(file, **fopts) as ff:
-                        six.exec_(ff.read(), self.globalDict, self.localDict)
+                    with open(file, 'rb') as ff:
+                        code = compile(ff.read(), ff.name, 'exec')
+                    six.exec_(code, self.globalDict, self.localDict)
                     self._includeStack.pop()
                     do_pop = False
                     if self._includeStack:
@@ -175,7 +175,7 @@ class MultipleExecfile(object):
                     # skip frames of thie file and six.exec_()
                     tb = tb.tb_next
                     lineno = tb.tb_lineno  # tb_frame.f_lineno
-                if sys.version_info[0] < 3 and tb.tb_next:
+                if six.PY2 and tb.tb_next:
                     # one frame up because there is one more in python2.
                     tb = tb.tb_next
                     lineno = tb.tb_lineno  # tb_frame.f_lineno

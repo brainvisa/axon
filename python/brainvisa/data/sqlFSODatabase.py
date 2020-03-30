@@ -69,22 +69,10 @@ from brainvisa.data.sql import mangleSQL, unmangleSQL
 from brainvisa.data.fileformats import FileFormats, getAllFileFormats
 from brainvisa.data.directory_iterator import DirectoryIterator, VirtualDirectoryIterator
 from brainvisa.data import temporary
-import six
-from six.moves import zip
-from six.moves import range
 from functools import reduce
 
-if sys.version_info[0] >= 3:
-    izip = zip
-    def values(thing):
-        return list(thing.values())
-    xrange = range
-
-else:
-    from itertools import izip
-
-    def values(thing):
-        return thing.values()
+import six
+from six.moves import range, zip
 
 out = sys.stdout
 
@@ -1847,7 +1835,7 @@ class SQLDatabase(Database):
                               file=_debug)
                     continue
             where = {}
-            for f, a in izip(tableFields, tableAttributes):
+            for f, a in zip(tableFields, tableAttributes):
                 if a in required or a not in nonMandatoryKeyAttributes:
                     v = self.getAttributeValues(a, selection, required)
                     # if _debug is not None:
@@ -2257,8 +2245,8 @@ class SQLDatabases(Database):
             if baseName is None:
                 database = None
                 if len(self._databases) == 1:
-                    database = values(self._databases)[0]
-                    if not diskItem.fullPath().startswith(values(self._databases)[0].name):
+                    database = next(iter(self._databases))
+                    if not diskItem.fullPath().startswith(database.name):
                         database = None
                 if database is None:
                     raise NotInDatabaseError(
@@ -2273,7 +2261,7 @@ class SQLDatabases(Database):
             baseName = diskItem.getHierarchy('_database')
             if baseName is None:
                 if len(self._databases) == 1:
-                    database = values(self._databases)[0]
+                    database = next(iter(self._databases))
                 else:
                     raise NotInDatabaseError(
                         _('Cannot find out from which database "%s" should be removed') % (diskItem.fullPath(), ))

@@ -141,9 +141,9 @@ class FileFormats(object):
     def read(self, fileName):
         context = {'newFormat': self.newFormat,
                    'newFormatList': self.newFormatList}
-        fopts = {'encoding': 'utf-8'} if sys.version_info[0] >= 3 else {}
-        with open(fileName, **fopts) as f:
-            six.exec_(f.read(), context, context)
+        with open(fileName, 'rb') as f:
+            code = compile(f.read(), f.name, 'exec')
+        six.exec_(code, context, context)
 
     def identify(self, directoryIterator, context=None):
         unknown = []
