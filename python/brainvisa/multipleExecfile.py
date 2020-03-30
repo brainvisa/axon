@@ -202,9 +202,9 @@ class MultipleExecfile(object):
                 else:
                     msg = msg + format_exc()
                 e.args = (msg, ) + e.args[1:]
-                print(msg)
-                import traceback
-                traceback.print_exc()
+                # print(msg)
+                # import traceback
+                # traceback.print_exc()
                 if not kwargs.get('continue_on_error', False):
                     six.reraise(*einfo)
                 exc.append(einfo)

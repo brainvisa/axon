@@ -138,26 +138,30 @@ def exceptionMessageHTML(exceptionInfo, beforeError='', afterError=''):
     """
 
     e, v, t = exceptionInfo
-    message = '<br>'.join(
-        htmlEscape(line) for line in traceback.format_exception_only(e, v)
-    )
-    txt = "<b>" + message + "</b>"
-    if isinstance(v, BaseException) and len(v.args) == 1:
-        if isinstance(v.args[0], HTMLMessage):
-            # if the exception message is in html, don't escape
-            txt = v.args[0].html
-    msg = '<table border=0><tr><td width=50><img alt="' + _t_('ERROR') + '" src="' \
-        + os.path.join( neuroConfig.iconPath, 'error.png' ) + '"></td><td><font color=red> ' \
-        + beforeError \
-        + " " + txt + " " + afterError + '</font></td></tr></table>'
+    if (isinstance(v, BaseException)
+            and len(v.args) == 1
+            and isinstance(v.args[0], HTMLMessage)):
+        # if the exception message is in html, don't escape
+        txt = v.args[0].html
+    else:
+        txt = '<strong><pre>' + '\n'.join(
+            htmlEscape(line) for line in traceback.format_exception_only(e, v)
+        ) + '</pre></strong>'
+
+    msg = ('<p style="color: red">'
+           '<img alt="' + _t_('ERROR:') + '" style="float: left" src="'
+           + htmlEscape(os.path.join( neuroConfig.iconPath, 'error.png' ))
+           + '"/> '
+           + beforeError + " " + txt + " " + afterError
+           + '</p><div style="clear: left"></div>')
     return msg
 
 
 def warningMessageHTML(message):
-    msg =  '<table border=0><tr><td width=50><img alt="WARNING: " src="' \
-        + os.path.join(neuroConfig.iconPath, 'warning.png' ) + \
-                       '"></td><td><font color=orange><b>' + \
-                           message + '</b></font></td></tr></table>'
+    msg = ('<p style="color: orange">'
+           '<img alt="WARNING:" style="float: left" src="'
+           + htmlEscape(os.path.join(neuroConfig.iconPath, 'warning.png' ))
+           + '"/> ' + message + '</p><div style="clear: left"/>')
     return msg
 
 
@@ -174,15 +178,11 @@ def exceptionTracebackHTML(exceptionInfo):
         name = e.__name__
     except AttributeError:
         name = str(e)
-    msg = '<font color=red><b>' + name + '</b><br>'
-    if(t is not None):
-        tb = traceback.extract_tb(t)
-        for file, line, function, text in tb:
-            if text is None:
-                text = '?'
-            msg += htmlEscape( os.path.basename( file ) + ' (' + str(line) + ') in ' + function + ': '  ) + \
-                '<blockquote> ' + htmlEscape(text) + '</blockquote>'
-    msg += '</font>'
+    msg = '<code style="color: red"><strong>' + htmlEscape(name) + '</strong></code>'
+    msg += '<pre style="color: red"><code>'
+    msg += ''.join(htmlEscape(line)
+                   for line in traceback.format_exception(e, v, t))
+    msg += '</code></pre>'
     return msg
 
 
