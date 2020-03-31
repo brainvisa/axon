@@ -74,9 +74,9 @@ class Toolbox(object):
         # options can be set in toolboxeDirectory/<name>.py
         initFile = os.path.join(toolboxDirectory, name + '.py')
         if os.path.exists(initFile):
-            fopts = {'encoding': 'utf-8'} if sys.version_info[0] >= 3 else {}
-            with open(initFile, **fopts) as f:
-                six.exec_(f.read(), {}, d)
+            with open(initFile, 'rb') as f:
+                code = compile(f.read(), f.name, 'exec')
+            six.exec_(code, {}, d)
 
         self.name = d['userName']
         self.id = name.lower()
@@ -140,9 +140,9 @@ class Toolbox(object):
     def init(self):
         if os.path.exists(self.initializationFile):
             try:
-                fopts = {'encoding': 'utf-8'} if sys.version_info[0] >= 3 else {}
-                with open(self.initializationFile, **fopts) as f:
-                    six.exec_(f.read())
+                with open(self.initializationFile, 'rb') as f:
+                    code = compile(f.read(), f.name, 'exec')
+                six.exec_(code)
             except Exception:
                 showException()
         if os.path.isdir(self.fsoDir):

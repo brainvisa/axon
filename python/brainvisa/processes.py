@@ -192,10 +192,7 @@ import os
 import errno
 import time
 import calendar
-import six
 import tempfile
-from six.moves import StringIO
-from six.moves import cPickle
 
 from soma.sorted_dictionary import SortedDictionary
 from soma.functiontools import numberOfParameterRange, hasParameter, partial
@@ -216,6 +213,7 @@ from brainvisa.data.writediskitem import WriteDiskItem
 from brainvisa.configuration import neuroConfig
 from brainvisa.data import neuroDiskItems
 from brainvisa.processing import neuroLog
+from brainvisa.processing import neuroException
 from brainvisa.processing.neuroException import *
 from brainvisa.validation import ValidationError
 from brainvisa.debug import debugHere
@@ -227,18 +225,10 @@ from brainvisa.processing.qtgui.command import CommandWithQProcess as Command
 from soma import safemkdir
 from soma.qtgui.api import QtThreadCall, FakeQtThreadCall
 
-if sys.version_info[0] >= 3:
-    from html.parser import HTMLParser
-    getcwdu = os.getcwd
+import six
+from six.moves import cPickle, getcwd, StringIO
+from six.moves.html_parser import HTMLParser
 
-    def items(thing):
-        return list(thing.items())
-else:
-    from htmllib import HTMLParser
-    from os import getcwdu
-
-    def items(thing):
-        return list(thing.items())
 
 global _mainThreadActions
 _mainThreadActions = FakeQtThreadCall()
@@ -805,7 +795,7 @@ class Parameterized(object):
         self.deleteCallbacks = []
         self._blocklinks = False
 
-        for i, p in items(self.signature):
+        for i, p in list(self.signature.items()):
             np = copy.copy(p)
             self.signature[i] = np
             np.copyPostprocessing()
@@ -2023,7 +2013,7 @@ class ExecutionNode(object):
     """
     Base class for the classes that describe a pipeline structure.
     """
-    class MultiParameterLink:
+    class MultiParameterLink(object):
 
         def __init__(self, sources, dest, function):
             self.sources = []
@@ -2932,7 +2922,7 @@ class ExecutionContext(object):
             Exception.__init__(
                 self, _t_('user interruption of current step'))
 
-    class StackInfo:
+    class StackInfo(object):
 
         def __init__(self, process):
             self.process = process
@@ -3802,27 +3792,7 @@ class ExecutionContext(object):
                 outputLogFile.flush()
 
     def _write(self, html):
-        if not hasattr(self, '_writeHTMLParser'):
-            if sys.version_info[0] >= 3:
-                class Parser(HTMLParser):
-
-                    def __init__(self, formatter):
-                        super(Parser, self).__init__()
-                        self.formatter = formatter
-
-                    def handle_data(self, data):
-                        self.formatter.add_flowing_data(data)
-            else:
-                Parser = HTMLParser
-            self._writeHTMLParser = Parser(
-                formatter.AbstractFormatter(
-                    formatter.DumbWriter(sys.stdout, 80)))
-        try: ## WARNING DEBUG
-            self._writeHTMLParser.feed(html + '<br>\n')
-        except Exception:
-            print('** could not write HTML string: **')
-            print(repr(html))
-            print('-----')
+        neuroException.print_html(html, file=sys.stdout, flush=True)
 
     def warning(self, *messages):
         """
@@ -4316,7 +4286,7 @@ class ProgressInfo(object):
 
 
 #----------------------------------------------------------------------------
-class ProcessInfo:
+class ProcessInfo(object):
 
     """
     This object stores information about a process. Such objects are created at BrainVISA startup when the processes are loaded.
@@ -4942,7 +4912,7 @@ def getDiskItemSourceInfo(source):
 #-------------------------------------------------------------------------
 
 
-class DiskItemConversionInfo:
+class DiskItemConversionInfo(object):
 
     """
     Contains information about :py:class:`neuroDiskItems.DiskItem` conversions.
@@ -5915,10 +5885,8 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
         if moduleDescription is None:
             raise RuntimeError(
                 HTMLMessage(_t_('Cannot load a process from file <em>%s</em>') % (fileName,)))
-        currentDirectory = getcwdu()
-        fopts = {}
-        if sys.version_info[0] >= 3:
-            fopts['encoding'] = 'utf-8'
+        currentDirectory = getcwd()
+        fopts = {} if six.PY2 else {'encoding': 'utf-8'}
         fileIn = open(fileName, moduleDescription[1], **fopts)
         try:
             if dataDirectory:
@@ -5976,7 +5944,7 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
                 setattr(NewProcess, n, v)
 
         # Other attributes
-        for n, v in items(processModule.__dict__):
+        for n, v in list(processModule.__dict__.items()):
             if g.get(n) is not v:
                 if type(v) is types.FunctionType:
                     code = v.__code__
@@ -6028,10 +5996,10 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
             NewProcess.toolbox = oldProcess.toolbox
             processInfo.toolbox = oldProcess.toolbox
             for n in ('execution', 'initialization', 'checkArguments'):
-                if sys.version_info[0] >= 3:
-                    setattr(oldProcess, n, getattr(NewProcess, n))
-                else:
+                if six.PY2:
                     setattr(oldProcess, n, getattr(NewProcess, n).__func__)
+                else:
+                    setattr(oldProcess, n, getattr(NewProcess, n))
             oldProcess._fileTime = NewProcess._fileTime
 
         if valid or neuroConfig.ignoreValidation:

@@ -388,7 +388,7 @@ class AxonFedjiDatabase(Database):
                 query[k] = list(v)
         # print('!createDiskItems! query=', query)
         if _debug:
-            class debug:
+            class debug(object):
 
                 @staticmethod
                 def debug(*args):

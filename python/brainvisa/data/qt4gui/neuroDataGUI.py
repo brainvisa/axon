@@ -154,7 +154,7 @@ class NumberEditor(StringEditor):
             try:
                 result = int(value)
             except ValueError:
-                if sys.version_info[0] < 3:
+                if six.PY2:
                     try:
                         return long(value)
                     except ValueError:
@@ -179,7 +179,7 @@ class IntegerEditor(StringEditor):
             try:
                 result = int(value)
             except ValueError:
-                if sys.version_info[0] < 3:
+                if six.PY2:
                     try:
                         return long(value)
                     except ValueError:
@@ -729,7 +729,7 @@ class NumberListEditor(StringListEditor):
             try:
                 n = int(s)
             except ValueError:
-                if sys.version_info[0] < 3:
+                if six.PY2:
                     try:
                         n = long(s)
                     except ValueError:
@@ -775,7 +775,7 @@ class IntegerListEditor(NumberListEditor):
             try:
                 n = int(s)
             except ValueError:
-                if sys.version_info[0] < 3:
+                if six.PY2:
                     try:
                         n = long(s)
                     except ValueError:

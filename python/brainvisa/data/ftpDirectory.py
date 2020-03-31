@@ -38,7 +38,7 @@ import ftplib
 from brainvisa.data import virtualDirectory
 
 
-class Splitter:
+class Splitter(object):
     re = re.compile('([^ ]*)([ ]*)([^ ]?.*)')
 
     def __init__(self, s):
@@ -57,9 +57,9 @@ class Splitter:
         return result
 
 
-class EnhancedFTP:
+class EnhancedFTP(object):
 
-    class Item:
+    class Item(object):
 
         def __init__(self, ftpDirString, parentName):
             splitter = Splitter(ftpDirString)
@@ -77,7 +77,7 @@ class EnhancedFTP:
             self.fullName = parentName + '/' + self.name
             self.isDirectory = self.flags[0] == 'd'
 
-    class __Reader:
+    class __Reader(object):
 
         def __init__(self, ftp, socket, bufferSize):
             self.__ftp = ftp

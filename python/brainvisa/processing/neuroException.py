@@ -43,7 +43,9 @@ The functions are used to display error and warning messages in Brainvisa.
 >>>   neuroException.showException(beforeError="The following error occured when...:")
 
 """
-from __future__ import absolute_import
+
+from __future__ import absolute_import, print_function
+
 import sys
 import os
 import traceback
@@ -51,15 +53,12 @@ import formatter
 from brainvisa.configuration.neuroConfig import *
 from brainvisa.configuration import neuroConfig
 from soma.html import htmlEscape
+
 import six
-if sys.version_info[0] >= 3:
-    from html.parser import HTMLParser
-
-else:
-    from htmllib import HTMLParser
+from six.moves.html_parser import HTMLParser
 
 
-class HTMLMessage:
+class HTMLMessage(object):
 
     """
     This class enables to create an error message in HTML format.
@@ -73,6 +72,39 @@ class HTMLMessage:
 
     def __str__(self):
         return self.html
+
+
+class DumbHTMLPrinter(HTMLParser):
+    def __init__(self, formatter):
+        super(DumbHTMLPrinter, self).__init__()
+        self.formatter = formatter
+
+    def handle_data(self, data):
+        self.formatter.add_flowing_data(data)
+
+
+try:
+    import html2text
+    html2text_maker = html2text.HTML2Text()
+    html2text_maker.bodywidth = 0  # disable line wrapping
+    html2text_maker.images_to_alt = True
+    html2text_maker.unicode_snob = True  # use Unicode instead of HTML entities
+except ImportError:
+    html2text_maker = None
+
+
+def print_html(message, file=sys.stdout, flush=True):
+    """Print a HTML message converted to plain text"""
+    if html2text_maker is not None:
+        text = html2text_maker.handle(message)
+        print(text, end='', file=file)
+    else:
+        printer = DumbHTMLPrinter(
+            formatter.AbstractFormatter(
+                formatter.DumbWriter(sys.stdout, 80)))
+        printer.feed(message)
+    if flush:
+        file.flush()
 
 
 def exceptionHTML(beforeError='', afterError='', exceptionInfo=None):
@@ -106,26 +138,30 @@ def exceptionMessageHTML(exceptionInfo, beforeError='', afterError=''):
     """
 
     e, v, t = exceptionInfo
-    message = '<br>'.join(
-        htmlEscape(line) for line in traceback.format_exception_only(e, v)
-    )
-    txt = "<b>" + message + "</b>"
-    if isinstance(v, BaseException) and len(v.args) == 1:
-        if isinstance(v.args[0], HTMLMessage):
-            # if the exception message is in html, don't escape
-            txt = v.args[0].html
-    msg = '<table border=0><tr><td width=50><img alt="' + _t_('ERROR') + '" src="' \
-        + os.path.join( neuroConfig.iconPath, 'error.png' ) + '"></td><td><font color=red> ' \
-        + beforeError \
-        + " " + txt + " " + afterError + '</font></td></tr></table>'
+    if (isinstance(v, BaseException)
+            and len(v.args) == 1
+            and isinstance(v.args[0], HTMLMessage)):
+        # if the exception message is in html, don't escape
+        txt = v.args[0].html
+    else:
+        txt = '<strong><pre>' + '\n'.join(
+            htmlEscape(line) for line in traceback.format_exception_only(e, v)
+        ) + '</pre></strong>'
+
+    msg = ('<p style="color: red">'
+           '<img alt="' + _t_('ERROR:') + '" style="float: left" src="'
+           + htmlEscape(os.path.join( neuroConfig.iconPath, 'error.png' ))
+           + '"/> '
+           + beforeError + " " + txt + " " + afterError
+           + '</p><div style="clear: left"></div>')
     return msg
 
 
 def warningMessageHTML(message):
-    msg =  '<table border=0><tr><td width=50><img alt="WARNING: " src="' \
-        + os.path.join(neuroConfig.iconPath, 'warning.png' ) + \
-                       '"></td><td><font color=orange><b>' + \
-                           message + '</b></font></td></tr></table>'
+    msg = ('<p style="color: orange">'
+           '<img alt="WARNING:" style="float: left" src="'
+           + htmlEscape(os.path.join(neuroConfig.iconPath, 'warning.png' ))
+           + '"/> ' + message + '</p><div style="clear: left"/>')
     return msg
 
 
@@ -142,15 +178,11 @@ def exceptionTracebackHTML(exceptionInfo):
         name = e.__name__
     except AttributeError:
         name = str(e)
-    msg = '<font color=red><b>' + name + '</b><br>'
-    if(t is not None):
-        tb = traceback.extract_tb(t)
-        for file, line, function, text in tb:
-            if text is None:
-                text = '?'
-            msg += htmlEscape( os.path.basename( file ) + ' (' + str(line) + ') in ' + function + ': '  ) + \
-                '<blockquote> ' + htmlEscape(text) + '</blockquote>'
-    msg += '</font>'
+    msg = '<code style="color: red"><strong>' + htmlEscape(name) + '</strong></code>'
+    msg += '<pre style="color: red"><code>'
+    msg += ''.join(htmlEscape(line)
+                   for line in traceback.format_exception(e, v, t))
+    msg += '</code></pre>'
     return msg
 
 
@@ -222,12 +254,8 @@ def showException(beforeError='', afterError='', parent=None,
                                              parent=parent)
                 mainThreadActions().push(w.show)
         else:
-            if sys.version_info[0] >= 3:
-                HTMLParser().feed(messageHTML + '<hr>' + detailHTML)
-            else:
-                HTMLParser(formatter.AbstractFormatter(
-                          formatter.DumbWriter(sys.stdout, maxcol=80)))\
-                    .feed(messageHTML + '<hr>' + detailHTML)
+            print_html(messageHTML + '<hr>' + detailHTML,
+                       file=sys.stdout, flush=True)
     except Exception as e:
         traceback.print_exc()
     # why this violent exit ??
@@ -264,9 +292,8 @@ def showWarning(message, parent=None, gui=None):
                                              parent=parent)
                 mainThreadActions().push(w.show)
         else:
-            HTMLParser(formatter.AbstractFormatter(
-                       formatter.DumbWriter( sys.stdout, 80 ) ) )\
-                .feed(messageHTML + '<hr>' + "")
+            print_html(messageHTML + '<hr>' + "",
+                       file=sys.stdout, flush=True)
     except Exception as e:
         traceback.print_exc()
 

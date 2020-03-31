@@ -39,7 +39,7 @@ import six
 # (just translated to python)
 
 
-class Quaternion:
+class Quaternion(object):
 
     def __init__(self, quat=None):
         if type(quat) in (tuple, list) \

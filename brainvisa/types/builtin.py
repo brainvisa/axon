@@ -301,7 +301,8 @@ FileType('Split Brain Mask', 'Label Volume')
 
 FileType('T1 MRI Analysis Directory', 'Directory')
 
-FileType( 'FLAIR', '3D Volume' )
+FileType( 'FLAIR MRI', '3D Volume' )
+FileType( 'Raw FLAIR MRI', 'FLAIR MRI' )
 
 #----------------- Graphs -------------------------
 

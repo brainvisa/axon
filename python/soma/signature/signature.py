@@ -83,8 +83,7 @@ class DataType(object):
             C{L{ClassDataType}( value )}.
         Any other value lead to a C{TypeError} exception.
         """
-        if isinstance( value, type ) \
-                or (sys.version_info[0] < 3 and type(value) is type):
+        if isinstance( value, six.class_types ):
             if issubclass(value, DataType):
                 value = value()
             else:

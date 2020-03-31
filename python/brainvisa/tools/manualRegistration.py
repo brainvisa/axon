@@ -67,7 +67,7 @@ def _manual_registration_on_gui_thread(image1, image2,
     return mw
 
 
-class ManualRegistration():
+class ManualRegistration(object):
 
     def __init__(self, movingImage, fixedImage, parent):
         self._movingImage = movingImage
@@ -653,7 +653,7 @@ class ManualRegistration():
         return actions
 
 
-class ViewButtons():
+class ViewButtons(object):
 
     """
     Builds a group of control buttons to add on an image view.

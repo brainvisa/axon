@@ -35,7 +35,9 @@ import types
 import sys
 from soma.signature.attributetypes.number import Number
 
-if sys.version_info[0] >= 3:
+import six
+
+if not six.PY2:
     long = int
 
 #-------------------------------------------------------------------------
@@ -50,17 +52,11 @@ class Integer(Number):
         if minimum is None:
             self.minimum = None
         else:
-            if sys.version_info[0] >= 3:
-                self.minimum = int(minimum)
-            else:
-                self.minimum = long(minimum)
+            self.minimum = long(minimum)
         if maximum is None:
             self.maximum = None
         else:
-            if sys.version_info[0] >= 3:
-                self.maximum = int(maximum)
-            else:
-                self.maximum = long(maximum)
+            self.maximum = long(maximum)
 
     def checkValue(self, value):
         if not isinstance(value, float):

@@ -51,8 +51,6 @@ from brainvisa.data import neuroHierarchy
 import brainvisa.processes
 from brainvisa.processing.qt4gui import neuroProcessesGUI
 
-if sys.version_info[0] >= 3:
-    xrange = range
 
 class UpdateDatabasesGUI(qt.QWidget):
 

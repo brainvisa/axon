@@ -199,16 +199,10 @@ from __future__ import print_function
 from __future__ import absolute_import
 __docformat__ = 'restructuredtext en'
 
-import sys
 _defaultTranslateFunction = lambda x: x
-if sys.version_info[0] >= 3:
-    import builtins
-    if '_t_' not in builtins.__dict__:
-        builtins._t_ = _defaultTranslateFunction
-else:
-    import six.moves.builtins
-    if '_t_' not in six.moves.builtins.__dict__:
-        six.moves.builtins.__dict__['_t_'] = _defaultTranslateFunction
+import six.moves.builtins
+if not hasattr(six.moves.builtins, '_t_'):
+    six.moves.builtins._t_ = _defaultTranslateFunction
 
 import sys
 import os
@@ -683,8 +677,10 @@ else:
             if a == '-':
                 startup.append('neuroConfig.stdinLoop()')
             else:
-                fopts = ", {'encoding': 'utf-8'}" if sys.version_info[0] >= 3 else ""
-                startup.append("with open('%s'%s) as f: six.exec_(f.read())" % (a, fopts))
+                startup.append("with open({0!r}, 'rb') as f:\n"
+                               "    code = compile(f.read(), {0!r}, 'exec')\n"
+                               "six.exec_(code)\n"
+                               .format(a))
         elif o in ("-c", ):
             startup.append(a)
         elif o in ("-s", ):
@@ -786,7 +782,7 @@ if setup:
 #
 
 
-class RunsInfo:
+class RunsInfo(object):
 
     """
     This class gets information about possibly existing runs of Brainvisa and adds information about the current one.
@@ -957,7 +953,7 @@ for p in (os.path.join(getSharePath(), bvShareDirectory),
         break
 
 
-class Translator:
+class Translator(object):
 
     def __init__(self, lang=language):
         self.language = lang

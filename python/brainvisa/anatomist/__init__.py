@@ -34,6 +34,9 @@ from __future__ import print_function
 from __future__ import absolute_import
 import sys
 import os
+
+import six
+
 from brainvisa.configuration import neuroConfig
 from brainvisa.processing.neuroException import showException
 use_headless = False
@@ -46,8 +49,8 @@ try:
         use_headless = True
         headless.setup_headless()
     anatomistImport = True
-    exec("import " + anatomist.getDefaultImplementationModuleName()
-         + " as anatomistModule")
+    six.exec_("import " + anatomist.getDefaultImplementationModuleName()
+              + " as anatomistModule")
 except Exception as e:
     import traceback
     showException(beforeError='The Anatomist module failed to load:')
@@ -68,12 +71,6 @@ if anatomistImport:
     from brainvisa.processing.qtgui import backwardCompatibleQt as qt
     from brainvisa.processing.qtgui import neuroProcessesGUI
 
-#if sys.version_info[0] >= 3:
-    #def next(iterator):
-        #return iterator.__next__()
-#else:
-    #def next(iterator):
-        #return iterator.next()
 
 """
 This module enables to generate an implementation of anatomist api specialized for brainvisa.
@@ -291,11 +288,7 @@ if anatomistImport:
                         if ref is not None:
                             # the referential is loaded only if necessary : if
                             # the object has not the right referential assigned
-                            if sys.version_info[0] >= 3:
-                                # ruuid = bytes(ref.uuid())
-                                ruuid = ref.uuid()
-                            else:
-                                ruuid = str(ref.uuid())
+                            ruuid = ref.uuid()
                             oruuid = newObject.referential.refUuid
                             if (ruuid != oruuid):
                         # create referential
