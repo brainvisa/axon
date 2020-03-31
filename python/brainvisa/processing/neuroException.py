@@ -74,7 +74,8 @@ class HTMLMessage(object):
         return self.html
 
 
-class DumbHTMLPrinter(HTMLParser):
+# Inherit from object because HTMLParser is an old-style class in Python 2
+class DumbHTMLPrinter(HTMLParser, object):
     def __init__(self, formatter):
         super(DumbHTMLPrinter, self).__init__()
         self.formatter = formatter
