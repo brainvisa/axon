@@ -1403,16 +1403,23 @@ class SQLDatabase(Database):
             # minf=minf.encode("utf-8")
         # f = StringIO( minf )
         # state = readMinf( f )[ 0 ]
+
+        # Coerce minf to bytes datatype
+        if not isinstance(minf, six.string_types):
+            # Under Python 2 we may get a 'buffer' object when reading a
+            # database that was written by Python 3.
+            minf = bytes(minf)
+        elif isinstance(minf, six.text_type):
+            minf = minf.encode('latin1')
+
         try:
-            if sys.version_info[0] >= 3:
-                try:
-                    state = cPickle.loads(minf)
-                except Exception:
-                    # pickes from python2 may look like this.
-                    state = cPickle.loads(six.b(minf), encoding='latin1')
+            if six.PY2:
+                state = cPickle.loads(minf)
             else:
-                state = cPickle.loads(str(minf))
-        except ValueError as e:
+                # pickles from python2 need encoding='latin1', see
+                # https://docs.python.org/3/library/pickle.html#pickle.Unpickler.
+                state = cPickle.loads(minf, encoding='latin1')
+        except Exception as e:
             print('Could not decode attributes for disk item:',
                   file=sys.stderr)
             print(e, file=sys.stderr)
