@@ -1237,7 +1237,8 @@ Download it on <a href="http://brainvisa.info/downloadpage.html">the BrainVISA d
                 self._currentNonSearchPage = self.browser.url()
             url = 'http://www.google.com/cse?url=brainvisa.info&cref=http%3A%2F%2Fwww.google.com%2Fcse%2Ftools%2Fmakecse%3Furl%3Dbrainvisa.info&ie=&q=' + \
                 six.moves.urllib.parse.quote_plus(self._siteSearch.text())
-            self.setSource(QUrl.fromEncoded(url))
+            self.setSource(QUrl.fromEncoded(QtCore.QByteArray(url.encode(
+                'utf-8'))))
         else:
             # get back to the previous non-search page
             url = self._currentNonSearchPage
@@ -3580,10 +3581,13 @@ class ProcessView(QWidget, ExecutionContextGUI):
         save_process_setups_GUI.exec_()
 
     def clone(self):
-        self.readUserValues()
-        clone = brainvisa.processes.getProcessInstanceFromProcessEvent(
-            self.createProcessExecutionEvent())
-        return showProcess(clone)
+        try:
+            self.readUserValues()
+            clone = brainvisa.processes.getProcessInstanceFromProcessEvent(
+                self.createProcessExecutionEvent())
+            return showProcess(clone)
+        except Exception:
+            showException()
 
     def show_process_doc(self):
         global _mainWindow
