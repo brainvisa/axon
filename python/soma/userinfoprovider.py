@@ -127,7 +127,7 @@ class UserInfo(object):
             return self.completename.title()
 
 
-class UserInfoProviderType:
+class UserInfoProviderType(object):
     BASIC = 'basic'
     LDAP = 'ldap'
     NIS = 'nis'

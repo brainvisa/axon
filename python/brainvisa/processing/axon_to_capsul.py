@@ -15,6 +15,7 @@ from traits import api as traits
 import weakref
 import sys
 import re
+import io
 import inspect
 import six
 
@@ -187,7 +188,7 @@ def write_process_signature(p, out, buffered_lines, get_all_values=True):
     # write signature
     for name, param in six.iteritems(p.signature):
         newtype, paramoptions = capsul_param_type(param)
-        out.write('        self.add_trait(\'%s\', %s(%s))\n'
+        out.write(u'        self.add_trait(\'%s\', %s(%s))\n'
                   % (name, newtype, ', '.join(paramoptions)))
         if get_all_values or not p.isDefault(name):
             value = getattr(p, name)
@@ -200,12 +201,12 @@ def write_process_signature(p, out, buffered_lines, get_all_values=True):
                 # None as number is a forced optional value
                 buffered_lines['initialization'].append(
                     '        self.%s = %s\n' % (name, 'Undefined'))
-    out.write('\n\n')
+    out.write(u'\n\n')
 
 
 def write_process_execution(p, out):
     axon_name = p.id()
-    out.write('''    def _run_process(self):
+    out.write(u'''    def _run_process(self):
         from brainvisa import axon
         from brainvisa.configuration import neuroConfig
         import brainvisa.processes
@@ -845,10 +846,10 @@ def write_buffered_lines(out, buffered_lines, sections=None):
         sections = ('nodes', 'switches', 'exports', 'links', 'initialization')
     for section in sections:
         if buffered_lines.get(section):
-            out.write('        # %s section\n' % section)
+            out.write(u'        # %s section\n' % section)
             for line in buffered_lines[section]:
-                out.write(line)
-            out.write('\n')
+                out.write(six.ensure_text(line))
+            out.write(u'\n')
 
 
 def write_pipeline_definition(p, out, parse_subpipelines=False,
@@ -864,8 +865,8 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
     # writing will be buffered so as to allow reordering
     buffered_lines = {'nodes': [], 'switches': [], 'exports': [], 'links': [],
                       'initialization': []}
-    out.write('\n\n')
-    out.write('    def pipeline_definition(self):\n')
+    out.write(u'\n\n')
+    out.write(u'    def pipeline_definition(self):\n')
     # enodes list: each element is a 6-tuple:
     # axon_node, name, exported, weak_outputs, parents, parentnode
     enodes = [(p.executionNode(), None, True, False, None, None)]
@@ -996,10 +997,10 @@ def write_pipeline_definition(p, out, parse_subpipelines=False,
     write_buffered_lines(out, buffered_lines, sections=('initialization', ))
     if all([not buffered_lines.get(section)
             for section in ('nodes', 'exports', 'links', 'initialization')]):
-        out.write('        pass\n')
+        out.write(u'        pass\n')
 
     out.write(
-        '''
+        u'''
     def autoexport_nodes_parameters(self):
         \'\'\'export orphan and internal output parameters\'\'\'
         for node_name, node in six.iteritems(self.nodes):
@@ -1094,13 +1095,11 @@ def axon_to_capsul(proc, outfile, module_name_prefix=None,
 
     if autopep8 is not None:
         # write in a string buffer
-        out = six.moves.StringIO()
-    elif sys.version_info[0] >= 3:
-        out = open(outfile, 'w', encoding='utf-8')
+        out = six.StringIO()
     else:
-        out = open(outfile, 'w')
+        out = io.open(outfile, 'w', encoding='utf-8')
 
-    out.write('''# -*- coding: utf-8 -*-
+    out.write(u'''# -*- coding: utf-8 -*-
 try:
     from traits.api import File, Directory, Float, Int, Bool, Enum, Str, \\
         List, Any, Undefined
@@ -1112,16 +1111,16 @@ from capsul.api import Process
 import six
 ''')
     if proctype is Pipeline:
-        out.write('''from capsul.api import Pipeline
+        out.write(u'''from capsul.api import Pipeline
 from capsul.api import Switch
 ''')
-    out.write('''
+    out.write(u'''
 
 class ''')
-    out.write(capsul_process_name + '(%s):\n' % proctype.__name__)
+    out.write(six.ensure_text(capsul_process_name) + u'(%s):\n' % proctype.__name__)
 
     if proctype is Pipeline:
-        out.write('''    def __init__(self, autoexport_nodes_parameters=True, **kwargs):
+        out.write(u'''    def __init__(self, autoexport_nodes_parameters=True, **kwargs):
         self._autoexport_nodes_parameters = autoexport_nodes_parameters
         super(%s, self).__init__(False, **kwargs)
         del self._autoexport_nodes_parameters
@@ -1134,8 +1133,8 @@ class ''')
                                   use_process_names=use_process_names,
                                   lowercase_modules=lowercase_modules)
     else:
-        out.write('    def __init__(self, **kwargs):\n')
-        out.write('        super(%s, self).__init__()\n' % capsul_process_name)
+        out.write(u'    def __init__(self, **kwargs):\n')
+        out.write(u'        super(%s, self).__init__()\n' % capsul_process_name)
         write_process_definition(p, out, get_all_values=get_all_values)
 
     if autopep8 is not None:
@@ -1144,10 +1143,7 @@ class ''')
             pretty_code = autopep8.fix_code(out.getvalue())
         else:  # old versions of autopep8
             pretty_code = autopep8.fix_string(out.getvalue())
-        if sys.version_info[0] >= 3:
-            out = open(outfile, 'w', encoding='utf-8')
-        else:
-            out = open(outfile, 'w')
+        out = io.open(outfile, 'w', encoding='utf-8')
         out.write(pretty_code)
 
 

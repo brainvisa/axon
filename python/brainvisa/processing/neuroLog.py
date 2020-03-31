@@ -45,6 +45,8 @@ This main log is created in the function :py:func:`initializeLog`.
 """
 from __future__ import print_function
 from __future__ import absolute_import
+
+import io
 import os
 import threading
 import shutil
@@ -63,7 +65,7 @@ def items(thing):
     return list(thing.items())
 
 #------------------------------------------------------------------------------
-class FileLink:
+class FileLink(object):
 
     """
     Base virtual class for a link on a log file.
@@ -91,15 +93,10 @@ class TextFileLink(FileLink):
         # print("expand text ", self)
         result = None
         try:
-            if sys.version_info[0] >= 3:
-                file = open(self.fileName, 'r', encoding='utf-8')
-            else:
-                file = open(self.fileName, 'r')
-            result = file.read()
-            file.close()
+            with io.open(self.fileName, 'r', encoding='utf-8') as f:
+                return six.ensure_str(f.read())
         except Exception:
-            result = neuroException.exceptionHTML()
-        return result
+            return neuroException.exceptionHTML()
 
     def __getinitargs__(self):
         return (self.fileName, )
@@ -141,7 +138,7 @@ class LogFileLink(FileLink):
 
 
 #------------------------------------------------------------------------------
-class LogFile:
+class LogFile(object):
 
     """
     This class represents Brainvisa log file.
@@ -173,11 +170,8 @@ class LogFile:
             self.fileName = fileName
             # print("SubTextLog ", fileName, " of parent ", parentLog)
             # Create empty file
-            if sys.version_info[0] >= 3:
-                file = open(six.text_type(self.fileName), 'w', encoding='utf-8')
-            else:
-                file = open(six.text_type(self.fileName), 'w')
-            file.close()
+            with io.open(six.text_type(self.fileName), 'w', encoding='utf-8'):
+                pass
             self._parent = parentLog
 
         def __del__(self):
@@ -192,7 +186,7 @@ class LogFile:
                 self.fileName = None
 
     #-------------------------------------------------------------------------
-    class Item:
+    class Item(object):
 
         """
         An entry in a log file. It can have a list of children items.
@@ -318,10 +312,7 @@ class LogFile:
         self._closed = set()
         self._temporary = temporary
         if file is None:
-            if sys.version_info[0] >= 3:
-                self._file = open(fileName, 'w', encoding='utf-8')
-            else:
-                self._file = open(fileName, 'w')
+            self._file = io.open(fileName, 'w', encoding='utf-8')
         else:
             self._file = file
         self._writer = createMinfWriter(self._file, format='XML',
@@ -469,10 +460,7 @@ class LogFile:
             reader.close()
             self._closed.clear()
             shutil.copyfile(tmp, self.fileName)
-            if sys.version_info[0] >= 3:
-                self._file = open(self.fileName, 'a+', encoding='utf-8')
-            else:
-                self._file = open(self.fileName, 'a+')
+            self._file = io.open(self.fileName, 'a+', encoding='utf-8')
             self._writer.change_file(self._file)
         finally:
             self._lock.release()
@@ -494,7 +482,7 @@ def newLogFile(fileName, file=None):
 
 
 #------------------------------------------------------------------------------
-class LogFileReader:
+class LogFileReader(object):
 
     """
     This objects enables to read :py:class:`LogFile` :py:class:`Logfile.Item` from a filename.

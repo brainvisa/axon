@@ -36,6 +36,8 @@ from __future__ import absolute_import
 from soma.translation import translate as _
 from soma.signature.api import DataType
 
+import six
+
 #-------------------------------------------------------------------------
 
 
@@ -89,7 +91,7 @@ class Number(DataType):
         try:
             value = int(value)
         except ValueError:
-            if sys.version_info[0] < 3:
+            if six.PY2:
                 try:
                     value = long(value)
                 except ValueError:

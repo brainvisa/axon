@@ -78,7 +78,7 @@ def _findExtraFile(filename, type):
     return None
 
 
-class CheckRegistration():
+class CheckRegistration(object):
 
     def __init__(self, images, overlays, configuration):
         self._configuration = configuration

@@ -111,7 +111,7 @@ def _transform_roi_on_gui_thread(images,
     return mw
 
 
-class TransformRoi():
+class TransformRoi(object):
 
     def __init__(self, images, inputRoi, outputRoi, parent):
         self._temporaryObjects = []

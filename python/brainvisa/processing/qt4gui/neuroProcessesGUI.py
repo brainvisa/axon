@@ -133,13 +133,6 @@ except ImportError:
 else:
     _soma_workflow = True
 
-if sys.version_info[0] >= 3:
-    def items(thing):
-        return list(thing.items())
-    xrange = range
-else:
-    def items(thing):
-        return list(thing.items())
 
 #----------------------------------------------------------------------------
 
@@ -1237,7 +1230,8 @@ Download it on <a href="http://brainvisa.info/downloadpage.html">the BrainVISA d
                 self._currentNonSearchPage = self.browser.url()
             url = 'http://www.google.com/cse?url=brainvisa.info&cref=http%3A%2F%2Fwww.google.com%2Fcse%2Ftools%2Fmakecse%3Furl%3Dbrainvisa.info&ie=&q=' + \
                 six.moves.urllib.parse.quote_plus(self._siteSearch.text())
-            self.setSource(QUrl.fromEncoded(url))
+            self.setSource(QUrl.fromEncoded(QtCore.QByteArray(url.encode(
+                'utf-8'))))
         else:
             # get back to the previous non-search page
             url = self._currentNonSearchPage
@@ -1395,7 +1389,7 @@ class ExecutionNodeGUI(QWidget):
 #----------------------------------------------------------------------------
 
 
-class VoidClass:
+class VoidClass(object):
     pass
 
 
@@ -1783,7 +1777,7 @@ class ParameterizedWidget(QWidget):
         # sort signature item by section title
         sectionTitleList = []  # useful to keep signature order
         sectionTitleSortedDict = {}
-        for key, parameter in items(self.parameterized.signature):
+        for key, parameter in list(self.parameterized.signature.items()):
             if neuroConfig.userLevel >= parameter.userLevel and parameter.visible:
                 sectionTitle = parameter.getSectionTitleIfDefined()
                 sectionTitleList.append(sectionTitle)
@@ -1896,7 +1890,7 @@ class ParameterizedWidget(QWidget):
             self.labels[x].set_read_only(read_only)
 
     def parameterizedDeleted(self, parameterized):
-        for k, p in items(parameterized.signature):
+        for k, p in list(parameterized.signature.items()):
             try:
                 parameterized.removeParameterObserver(
                     k, self.parameterChanged)
@@ -1916,7 +1910,7 @@ class ParameterizedWidget(QWidget):
             self.editors[x].releaseCallbacks()
 
     def closeEvent(self, event):
-        for k, p in items(self.parameterized.signature):
+        for k, p in list(self.parameterized.signature.items()):
             try:
                 self.parameterized.removeParameterObserver(
                     k, self.parameterChanged)
@@ -2021,7 +2015,7 @@ class ParameterizedWidget(QWidget):
             return (False)
 
     def checkReadable(self):
-        for (n, p) in items(self.parameterized.signature):
+        for (n, p) in list(self.parameterized.signature.items()):
             if p.checkReadable(getattr(self.parameterized, n, None)):
                 e = self.editors.get(n)
                 if e is not None:
@@ -2569,7 +2563,7 @@ class ProcessView(QWidget, ExecutionContextGUI):
             self._widgetStack.setCurrentIndex(0)
 #    if self.parameterizedWidget is not None:
 #      if documentation is not None:
-#        for ( k, p ) in items(self.process.signature):
+#        for ( k, p ) in list(self.process.signature.items()):
 #          if neuroConfig.userLevel >= p.userLevel:
 #            self.parameterizedWidget.setParameterToolTip( k,
 #              XHTML.html( documentation.get( 'parameters', {} ).get( k, '' ) ) \
@@ -3024,11 +3018,8 @@ class ProcessView(QWidget, ExecutionContextGUI):
         date = datetime(
             qtdt.date().year(), qtdt.date().month(), qtdt.date().day(),
                         qtdt.time().hour(), qtdt.time().minute(), qtdt.time().second())
-        if sys.version_info[0] >= 3:
-            queue = submission_dlg.combo_queue.currentText()
-        else:
-            queue = six.text_type(
-                submission_dlg.combo_queue.currentText()).encode('utf-8')
+        queue = six.ensure_str(six.text_type(submission_dlg.combo_queue.currentText()),
+                               'utf-8')
         if queue == "default queue":
             queue = None
 
@@ -3580,10 +3571,13 @@ class ProcessView(QWidget, ExecutionContextGUI):
         save_process_setups_GUI.exec_()
 
     def clone(self):
-        self.readUserValues()
-        clone = brainvisa.processes.getProcessInstanceFromProcessEvent(
-            self.createProcessExecutionEvent())
-        return showProcess(clone)
+        try:
+            self.readUserValues()
+            clone = brainvisa.processes.getProcessInstanceFromProcessEvent(
+                self.createProcessExecutionEvent())
+            return showProcess(clone)
+        except Exception:
+            showException()
 
     def show_process_doc(self):
         global _mainWindow

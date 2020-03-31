@@ -109,7 +109,6 @@ import operator
 import time
 import traceback
 from weakref import ref, WeakValueDictionary
-import six
 from threading import RLock
 import json
 
@@ -131,23 +130,12 @@ from brainvisa import shelltools
 from brainvisa.multipleExecfile import MultipleExecfile
 from soma.qt_gui.qt_backend.QtCore import QObject, Signal
 import re
-from six.moves import range
-from six.moves import zip
 
-if sys.version_info[0] >= 3:
-    from collections import UserList
+import six
+from six.moves import UserList, range, zip
 
-    def values(thing):
-        return list(thing.values())
-
-    def map_list(func, thing):
-        return [func(x) for x in thing]
-else:
-    from UserList import UserList
-
-    def values(thing):
-        return list(thing.values())
-    map_list = map
+if not six.PY2:
+    long = int
 
 
 #----------------------------------------------------------------------------
@@ -329,10 +317,8 @@ class DiskItem(QObject):
             return other in self.fullPaths()
         return self is other or (isinstance(other, DiskItem) and self.fullPath() == other.fullPath())
 
-    if sys.version_info[0] >= 3:
-        # defint q hqsh function for python3
-        def __hash__(self):
-            return self.fullPath().__hash__()
+    def __hash__(self):
+        return hash(self.fullPath())
 
     def __ne__(self, other):
         if isinstance(other, six.string_types):
@@ -481,9 +467,9 @@ class DiskItem(QObject):
         if name_serie:
             result = []
             for number in name_serie:
-                result += map_list(
+                result += list(map(
                     lambda x, number=number: expand_name_serie(x, number),
-                               self._files)
+                               self._files))
         
         elif self._files:
             result = self._files
@@ -518,10 +504,10 @@ class DiskItem(QObject):
         """
         name_serie = self.get('name_serie')
         if name_serie:
-            return map_list(
+            return list(map(
                 lambda x, number=name_serie[
                     serie]: expand_name_serie(x, number),
-                         self._files)
+                         self._files))
         raise RuntimeError(
             HTMLMessage(_t_('<em>%s</em> is not a file series')))
 
@@ -567,10 +553,10 @@ class DiskItem(QObject):
         if self.parent is None:
             return self.fileNames(withQueryString=withQueryString)
         else:
-            return map_list(
+            return list(map(
                     lambda x, p=self.parent.fullPath(withQueryString = False): \
                             os.path.join(p, x), \
-                            self.fileNames(withQueryString=withQueryString))
+                            self.fileNames(withQueryString=withQueryString)))
             
     def existingFiles(self):
         """
@@ -607,16 +593,16 @@ class DiskItem(QObject):
         if self.parent is None:
             return self.fileNamesSerie(serie)
         else:
-            return map_list(
+            return list(map(
                 lambda x, p=self.parent.fullPath(): os.path.join(p, x),
-                            self.fileNamesSerie(serie))
+                            self.fileNamesSerie(serie)))
 
     def firstFullPathsOfEachSeries(self):
         """
         Returns the first file name of each item of the serie.
         """
-        return map_list(lambda i, self=self: self.fullPathSerie(i),
-                        list(range(len(self.get('name_serie')))))
+        return list(map(lambda i, self=self: self.fullPathSerie(i),
+                        list(range(len(self.get('name_serie'))))))
 
     def _getGlobal(self, attrName, default=None):
         r = self._globalAttributes.get(attrName)
@@ -1716,7 +1702,7 @@ def getResolutionsFromItems(items):
 
 
 #----------------------------------------------------------------------------
-class BackwardCompatiblePatterns:
+class BackwardCompatiblePatterns(object):
 
     """
     This class represents several file patterns.
@@ -1988,8 +1974,8 @@ class Format(object):
         if d:
             oldName = diskItem.name
             diskItem.name = f
-            result = map_list(lambda x, d=d: os.path.join(
-                d, x), self.patterns.unmatch(diskItem, matchResult, force=force))
+            result = list(map(lambda x, d=d: os.path.join(
+                d, x), self.patterns.unmatch(diskItem, matchResult, force=force)))
             diskItem.name = oldName
         else:
             result = self.patterns.unmatch(
@@ -2185,10 +2171,7 @@ class FormatSeries(Format):
         name_serie = item.get('name_serie')
         if len(name_serie) > 1:
             # Sort name_serie by numeric order
-            if sys.version_info[0] >= 3:
-                numbers = [(int(i), i) for i in name_serie]
-            else:
-                numbers = [(long(i), i) for i in name_serie]
+            numbers = [(long(i), i) for i in name_serie]
             numbers.sort()
             name_serie = [i[1] for i in numbers]
             # Remove identical entries
@@ -2373,7 +2356,7 @@ def getAllFormats():
     Returns the list of all available formats.
     """
     global formats
-    return values(formats)
+    return list(formats.values())
 
 directoryFormat = Format('Directory', 'd|*', ignoreExclusive=1)
 fileFormat = Format('File', 'f|*', ignoreExclusive=1)
@@ -2592,7 +2575,7 @@ def getAllDiskItemTypes():
     """
     Gets all registered :py:class:`DiskItemType`.
     """
-    return values(diskItemTypes)
+    return list(diskItemTypes.values())
 
 
 #----------------------------------------------------------------------------
@@ -3069,10 +3052,9 @@ def aimsFileInfo(fileName):
             nan = None
         if _finder is not None:
             finder = aims.Finder()
-            if sys.version_info[0] < 3 and type(fileName) is six.text_type:
-                # convert to str
-                import codecs
-                fileName = codecs.getencoder('utf8')(fileName)[0]
+            fileName = six.ensure_str(fileName,
+                                      sys.getfilesystemencoding()
+                                      or sys.getdefaultencoding())
             # Finder is not thread-safe (yet)
             if mainThreadActions().call(finder.check, fileName):
                 result = eval(str(finder.header()), locals())

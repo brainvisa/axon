@@ -74,14 +74,10 @@ import string
 import weakref
 import copy
 import sys
+
 import six
-from six.moves import map
-if sys.version_info[0] >= 3:
-    from collections import UserDict, UserList
-else:
-    from UserDict import UserDict
-    from UserList import UserList
-    
+from six.moves import UserDict, UserList, map
+
 from soma.notification import Notifier
 from brainvisa.processing.neuroException import HTMLMessage
 
@@ -306,12 +302,12 @@ class Number(String):
         """
         if value is None:
             return None
-        if type(value) in six.integer_types + (float,):
+        if isinstance(value, six.integer_types + (float,)):
             return value
         try:
             return int(value)
         except ValueError:
-            if sys.version_info[0] < 3:
+            if six.PY2:
                 try:
                     return long(value)
                 except ValueError:
@@ -335,12 +331,12 @@ class Integer(Number):
         """
         if value is None:
             return None
-        if type(value) in six.integer_types:
+        if isinstance(value, six.integer_types):
             return value
         try:
             return int(value)
         except ValueError:
-            if sys.version_info[0] < 3:
+            if six.PY2:
                 try:
                     return long(value)
                 except ValueError:

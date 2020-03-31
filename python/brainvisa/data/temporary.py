@@ -56,7 +56,7 @@ def void(*args, **kwargs):
 #----------------------------------------------------------------------------
 
 
-class TemporaryFileManager:
+class TemporaryFileManager(object):
 
     """
     This object manages temporary files.

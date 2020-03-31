@@ -55,9 +55,9 @@ def readData(fileName):
     d = {}
     if not fileName.endswith('.features'):
         fileName = fileName + '.features'
-    fopts = {'encoding': 'utf-8'} if sys.version_info[0] >= 3 else {}
-    with open(fileName, **fopts) as f:
-        six.exec_(f.read(), globals(), d)
+    with open(fileName, 'rb') as f:
+        code = compile(f.read(), f.name, 'exec')
+    six.exec_(code, globals(), d)
     return d['attributes']
 
 
