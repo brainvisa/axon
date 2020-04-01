@@ -76,7 +76,11 @@ class HTMLMessage(object):
 
 class DumbHTMLPrinter(HTMLParser):
     def __init__(self, formatter):
-        super(DumbHTMLPrinter, self).__init__()
+        if six.PY2:
+            HTMLParser.__init__(self)
+        else:
+            super(DumbHTMLPrinter, self).__init__()
+            
         self.formatter = formatter
 
     def handle_data(self, data):
