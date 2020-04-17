@@ -272,7 +272,6 @@ FileType('Curves graph', 'ROI')
 FileType('Labels selection', None, 'Selection')
 
 #----------- Visualization / Animation ------------
-
 FileType('BrainVISA/Anatomist animation', 'Any Type',
          'BrainVISA/Anatomist animation')
 FileType('MPEG film', 'Any Type', ('MPEG film', 'AVI film'))
@@ -280,7 +279,6 @@ FileType('MPEG film', 'Any Type', ('MPEG film', 'AVI film'))
 FileType('MINC image', 'Any Type', 'MINC image')
 FileType('Display BIC drawing', 'MINC image')
 FileType('Anatomist BIC drawing', '3D Volume')
-
 
 #----------------- Toolbox ----------------------
 FileType('Coordinates File', 'Text file')
@@ -290,7 +288,6 @@ FileType('Bounding Box Info', 'Any Type', 'JSON file')
 FileType('Subject Info', 'Any Type', 'Info file')
 
 #----------------- Anatomy (base) ---------------
-
 FileType('T1 MRI', '3D Volume')
 FileType('T2 MRI', '3D Volume')
 FileType('Raw T1 MRI', 'T1 MRI')
@@ -298,14 +295,16 @@ FileType('T1 MRI Bias Corrected', 'T1 MRI')
 FileType('Label volume', '3D Volume')
 FileType('Rainbow 3D volume', '3D Volume')
 FileType('Split Brain Mask', 'Label Volume')
+FileType('Tissue probability map', '3D Volume')
 
 FileType('T1 MRI Analysis Directory', 'Directory')
 
-FileType( 'FLAIR MRI', '3D Volume' )
-FileType( 'Raw FLAIR MRI', 'FLAIR MRI' )
+FileType('FLAIR MRI', '3D Volume')
+FileType('Raw FLAIR MRI', 'FLAIR MRI')
+
+FileType('Analysis Report', 'Text file')
 
 #----------------- Graphs -------------------------
-
 Format('Label Translation', "f|*.trl")
 Format('DEF Label Translation', "f|*.def")
 
