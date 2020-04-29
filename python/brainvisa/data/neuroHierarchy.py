@@ -99,19 +99,12 @@ def openDatabases():
                     remoteAccessURI = os.path.join(
                         dbSettings.directory, 'remoteAccessURI')
                     if os.path.exists(remoteAccessURI):
-                        import Pyro
-                        import Pyro.core
-                        Pyro.config.PYRO_TRACELEVEL = 3
-                        Pyro.config.PYRO_USER_TRACELEVEL = 3
-                        Pyro.config.PYRO_LOGFILE = '/dev/stderr'
-                        Pyro.config.PYRO_STDLOGGING = 1
-                        from soma.pyro import ThreadSafeProxy
-                        uri = Pyro.core.PyroURI(open(remoteAccessURI).read())
-                        print(
-                            'Database', dbSettings.directory, 'is remotely accessed from',
-                              uri.protocol + '://' + uri.address + ':' + str(uri.port))
-                        base = ThreadSafeProxy(uri.getAttrProxy())
-                        newDatabases.append(base)
+                        raise NotImplementedError(
+                            'Remote database access has been removed from '
+                            'BrainVISA, it was an experimental feature. '
+                            'Please remove {0} and check your database '
+                            'configuration.'.format(remoteAccessURI)
+                        )
                     else:
                         otherSqliteFiles = []
                         if dbSettings.expert_settings.sqliteFileName != ":memory:" and dbSettings.expert_settings.sqliteFileName != ":temporary:":

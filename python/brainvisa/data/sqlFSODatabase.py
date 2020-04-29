@@ -2167,34 +2167,6 @@ class SQLDatabase(Database):
 
 
 #------------------------------------------------------------------------------
-class NoGeneratorSQLDatabase(SQLDatabase):
-
-    '''
-    It is not possible to use a SQLDatabase through Pyro because generators
-    cannot be pickled. This class replace all methods creating generators (i.e.
-    using yield) by methods returning lists.
-    '''
-
-    def __init__(self, sqlDatabaseInstance):
-        self._sqlDatabaseInstance = sqlDatabaseInstance
-
-    def __getattr__(self, name):
-        return getattr(self._sqlDatabaseInstance, name)
-
-    def scanDatabaseDirectories(self, *args, **kwargs):
-        return list(self._sqlDatabaseInstance.scanDatabaseDirectories(*args, **kwargs))
-
-    def findAttributes(self, *args, **kwargs):
-        return list(self._sqlDatabaseInstance.findAttributes(*args, **kwargs))
-
-    def findDiskItems(self, *args, **kwargs):
-        return list(self._sqlDatabaseInstance.findDiskItems(*args, **kwargs))
-
-    def createDiskItems(self, *args, **kwargs):
-        return list(self._sqlDatabaseInstance.createDiskItems(*args, **kwargs))
-
-
-#------------------------------------------------------------------------------
 class SQLDatabases(Database):
 
     """
