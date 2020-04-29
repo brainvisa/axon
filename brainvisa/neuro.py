@@ -305,15 +305,6 @@ if neuroConfig.gui:
         else:
             neuroConfig.qtApplication.exec_loop()
 
-if neuroConfig.databaseServer:
-    # Start a Pyro server to serve databases
-    from brainvisa.remote.database import DatabaseServer
-    server = DatabaseServer()
-    server.initialize()
-    for database in neuroHierarchy.databases.iterDatabases():
-        server.addDatabase(database)
-    server.serve()
-
 ipConsole = None
 ipsubprocs = []
 if neuroConfig.shell:
