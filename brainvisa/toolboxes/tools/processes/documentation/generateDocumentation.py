@@ -103,7 +103,10 @@ def generateHTMLDocumentation(processInfoOrId, translators, context, ontology):
         if not os.path.isdir(p):
             os.makedirs(p)
         # Main page
-        f = open(htmlFileName, 'w')
+        if int(sys.version[0]) < 3:
+            f = open(htmlFileName, 'w')
+        else:
+            f = open(htmlFileName, 'w', encoding='utf-8')
         print('<html>', file=f)
         print('<head>', file=f)
         print('<title>' + tr.translate(processInfo.name) + '</title>', file=f)

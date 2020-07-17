@@ -958,7 +958,10 @@ class Translator(object):
         translations = dict()
 
         for filePath in self.getTranslationFiles():
-            file = open(filePath, 'r')
+            if int(sys.version[0]) < 3:
+                file = open(filePath, 'r')
+            else:
+                file = open(filePath, 'r', encoding='utf-8')
             translations.update(readMinf(file)[0])
             file.close()
 
