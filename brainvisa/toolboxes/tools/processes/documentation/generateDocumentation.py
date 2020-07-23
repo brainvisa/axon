@@ -109,7 +109,7 @@ def generateHTMLDocumentation(processInfoOrId, translators, context, ontology):
 <html>
 <head>
 <title>{process_info_name}</title>
-<meta http-equiv="Content-Type" content="text/html; charset={default_encoding}">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta content="BrainVISA {short_version}" name="generator">
 <link rel="stylesheet" href="../../axon.css" media="screen" />
 </head>
@@ -117,7 +117,6 @@ def generateHTMLDocumentation(processInfoOrId, translators, context, ontology):
 <h1><a href="bvshowprocess://{process_info_id}"><img src="../../images/icons/icon_process.png" border="0"></a>
 <a name="bv_process%{process_info_id}">{process_info_name}</a></h1>
         """.format(
-            default_encoding=sys.getdefaultencoding(),
             short_version=neuroConfig.shortVersion,
             process_info_id=processInfo.id,
             process_info_name=tr.translate(processInfo.name)
@@ -384,7 +383,7 @@ def generateHTMLProcessesDocumentation(context,
                 f.write(u"""
 <html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset={encoding}">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta content="BrainVISA {short_version}" name="generator">
   <link rel="stylesheet" href="{subdirs}axon.css" media="screen" />
 </head>
@@ -392,7 +391,6 @@ def generateHTMLProcessesDocumentation(context,
 {html_content}
 </body></html>
                                       """.format(
-                    encoding=sys.getdefaultencoding(),
                     short_version=neuroConfig.shortVersion,
                     subdirs='../' * nsubdirs,
                     html_content=XHTML.html(c)
