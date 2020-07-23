@@ -105,7 +105,7 @@ def generateHTMLDocumentation(processInfoOrId, translators, context, ontology):
             os.makedirs(p)
         # Main page
         f = io.open(htmlFileName, 'w', encoding='utf-8')
-        f.write(six.text_type("""
+        f.write(u"""
 <html>
 <head>
 <title>{process_info_name}</title>
@@ -121,11 +121,7 @@ def generateHTMLDocumentation(processInfoOrId, translators, context, ontology):
             short_version=neuroConfig.shortVersion,
             process_info_id=processInfo.id,
             process_info_name=tr.translate(processInfo.name)
-        )))
-        # unicode strings written in this file are encoded using default encoding
-        # to choose a different encoding, unicode_string.encode("encoding") should be used
-        # in Brainvisa, the default encoding is set at initilization using
-        # sys.setdefaultencoding in neuro.py
+        ))
         short = d.get('short')
         if short:
             short = convertSpecialLinks(short, l, '', tr)
@@ -135,11 +131,11 @@ def generateHTMLDocumentation(processInfoOrId, translators, context, ontology):
             if short:
                 short = convertSpecialLinks(short, l, '', tr)
                 short = XHTML.html(short)
-        f.write(six.text_type("""
+        f.write(u"""
 <blockquote>
 {short}
 </blockquote>
-        """.format(short=short)))
+        """.format(short=short))
 
         # Description
         long = d.get('long')
@@ -152,14 +148,14 @@ def generateHTMLDocumentation(processInfoOrId, translators, context, ontology):
                 long = convertSpecialLinks(long, l, '', tr)
                 long = XHTML.html(long)
         if long:
-            f.write(six.text_type("""
+            f.write(u"""
 '<h2>{description}</h2><blockquote>'
 {long}
 '</blockquote>'
                     """.format(
                 description=tr.translate('Description'),
                 long=long
-            )))
+            ))
 
         try:
             signature = getProcessInstance(processInfo.id).signature
@@ -191,7 +187,7 @@ def generateHTMLDocumentation(processInfoOrId, translators, context, ontology):
         if signature:
             # Parameters
             p = d.get('parameters', {})
-            f.write(six.text_type('<h2>' + tr.translate('Parameters') + '</h2>'))
+            f.write(u'<h2>{}</h2>'.format(tr.translate('Parameters')))
             for i, j in signature:
                 ti = j.typeInfo(tr)
                 descr = p.get(i, '')
@@ -200,8 +196,8 @@ def generateHTMLDocumentation(processInfoOrId, translators, context, ontology):
                 if not descr and l != 'en':
                     descr = XHTML.html(pen.get(i, ''))
                 type_descr = param_type_descr(j)
-                f.write(six.text_type('<blockquote><b>' + i + '</b>: ' + type_descr))
-                f.write(six.text_type('<i> ( '))
+                f.write(u'<blockquote><b>{}</b>: {}'.format(i, type_descr))
+                f.write(u'<i> ( ')
                 if not j.mandatory:
                     f.write(six.text_type(_t_('optional, ')))
                 try:
@@ -214,8 +210,8 @@ def generateHTMLDocumentation(processInfoOrId, translators, context, ontology):
                     raise
                 except Exception as e:
                     print(e)
-                f.write(six.text_type(' )</i>'))
-                f.write(six.text_type("<blockquote>\n{}\n</blockquote></blockquote>".format(descr)))
+                f.write(u' )</i>')
+                f.write(u"<blockquote>\n{}\n</blockquote></blockquote>".format(descr))
 
                 try:
                     if len(ti) > 2:
@@ -230,7 +226,7 @@ def generateHTMLDocumentation(processInfoOrId, translators, context, ontology):
             processInfo.fileName, os.path.dirname(htmlFileName))
         processFileName = relative_path(
             processInfo.fileName, os.path.dirname(neuroConfig.mainPath))
-        f.write(six.text_type("""
+        f.write(u"""
 <h2>{technical_info}</h2><blockquote>
 <p><em>{toolbox} : </em>{toolbox_name}</p>
 <p><em>{user_level_label} : </em>{user_level}</p>
@@ -247,24 +243,24 @@ def generateHTMLDocumentation(processInfoOrId, translators, context, ontology):
             filename=tr.translate('File name'),
             process_file_ref=processFileRef,
             process_file_name=processFileName
-        )))
+        ))
 
         if supportedFormats:
-            f.write(six.text_type('<p><em>' + tr.translate('Supported file formats') + ' : </em>'))
+            f.write(u'<p><em>{} : </em>'.format(tr.translate('Supported file formats')))
             try:
                 for parameter, formats in supportedFormats:
                     f.write(
-                        six.text_type("<blockquote> {} :<blockquote> {} </blockquote></blockquote>".format(
+                        u"<blockquote> {} :<blockquote> {} </blockquote></blockquote>".format(
                             parameter, formats
-                        ))
+                        )
                     )
             except context.UserInterruption:
                 raise
             except Exception as e:
                 print(e)
-            f.write(six.text_type('</p>'))
-        f.write(six.text_type('</blockquote>\n'))
-        f.write(six.text_type('</body></html>'))
+            f.write(u'</p>')
+        f.write(u'</blockquote>\n')
+        f.write(u'</body></html>')
         f.close()
 
 # ----------------------------------------------------------------------------
@@ -385,7 +381,7 @@ def generateHTMLProcessesDocumentation(context,
                     os.makedirs(p)
                 nsubdirs = len(category.split('/')) + 3
                 f = io.open(os.path.join(p, 'category_documentation.html'), 'w', encoding='utf-8')
-                f.write(six.text_type("""
+                f.write(u"""
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset={encoding}">
@@ -400,7 +396,7 @@ def generateHTMLProcessesDocumentation(context,
                     short_version=neuroConfig.shortVersion,
                     subdirs='../' * nsubdirs,
                     html_content=XHTML.html(c)
-                )))
+                ))
                 f.close()
 
 # ----------------------------------------------------------------------------
