@@ -1197,12 +1197,19 @@ class DiskItem(QObject):
         files = self.fullPaths() + [self.minfFileName()]
         return tuple([(f,) + tuple(modificationHashOrEmpty(f)) for f in files])
 
-    def eraseFiles(self):
+    def eraseFiles(self, remove_from_database=False):
         """
         Deletes all files associated to this diskItem.
         """
+        if remove_from_database:
+            database = self.get('_database')
+            if database:
+                from brainvisa.data import neuroHierarchy
+                db = neuroHierarchy.databases.database(database)
+                db.removeDiskItem(self, eraseFiles=False)
+
         for fp in self.fullPaths():
-            
+
             if os.path.exists(fp):
                 shelltools.rm(fp)
         fp = self.minfFileName()
