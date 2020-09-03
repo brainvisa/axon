@@ -3162,7 +3162,7 @@ class ExecutionContext(object):
         ishead = not stackTop
 
         # Logging process start
-        if not stackTop:
+        if not stackTop or stackTop.process._executionNode is None:
             process.isMainProcess = True
 
         try:  # finally -> processFinished
@@ -3442,10 +3442,10 @@ class ExecutionContext(object):
                         except Exception:
                             showException()
                         item_hash[1] = item.modificationHash()
-                elif (process.isMainProcess):  # clear unused minfs only when the main process is finished to avoid clearing minf that will be used in next steps
-                    item.clearMinf()
             for uuid in wdi_to_release:
                 del self._allWriteDiskItems[uuid]
+
+            self._clear_unused_minfs(process)
 
             # Close output log file
             if process._outputLogFile is not None:
@@ -3467,6 +3467,28 @@ class ExecutionContext(object):
                     self._lastStartProcessLogItem = None
             self._popStack().thread = None  # WARNING !!! not pop()
         return result
+
+    def _clear_unused_minfs(self, process):
+        # clear unused minfs only when the main process is finished to avoid
+        # clearing minf that will be used in next steps
+        if not process.isMainProcess:
+            return
+        writeParameters = []
+        for parameterized, attribute, type in process.getAllParameters():
+            if isinstance(type, WriteDiskItem):
+                item = getattr(parameterized, attribute)
+                if item is not None:
+                    writeParameters.append(item)
+            elif isinstance(type, ListOf) and isinstance(type.contentType,
+                                                         WriteDiskItem):
+                itemList = getattr(parameterized, attribute)
+                if itemList:
+                    writeParameters.extend(
+                        item for item in itemList if item is not None
+                    )
+        for item in writeParameters:
+            if not item.isReadable():
+                item.eraseFiles(True)
 
     def _currentProcess(self):
         stackTop = self._stackTop()
