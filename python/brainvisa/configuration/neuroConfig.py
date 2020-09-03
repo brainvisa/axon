@@ -181,10 +181,6 @@ Several global variables are defined in this module to store **Brainvisa configu
 .. py:data:: Roptions
              Rexecutable
 
-.. py:data:: databaseServer
-
-  if enabled, Brainvisa is started as a database server (experimental). Set with ``--databaseServer`` option.
-
 .. py:data:: profileFileName
 
   filename where profiling information may be written. Set with ``--profile`` option.
@@ -220,6 +216,7 @@ from soma.minf.api import readMinf, writeMinf
 from soma.env import BrainvisaSystemEnv
 import brainvisa
 import six
+import io
 
 exitValue = 0
 
@@ -622,7 +619,6 @@ userProfile = None
 openMainWindow = 1
 showHelp = 0
 fastStart = False
-databaseServer = False
 global setup
 setup = False
 noToolBox = False
@@ -662,7 +658,7 @@ else:
         opts, args = getopt.getopt(argv, "bfe:c:s:u:h",
                                    ["updateDocumentation", "noMainWindow",
                                     "logFile=", "cleanLog", "profile=", "shell",
-                                    "debugHierarchy=", "debugLinks=", "databaseServer",
+                                    "debugHierarchy=", "debugLinks=",
                                     "help", "setup", "noToolBox",
                                     "ignoreValidation"])
     except getopt.GetoptError as msg:
@@ -711,9 +707,6 @@ else:
             debugHierarchyScanning = openDebugFile(a)
         elif o in ("--debugLinks", ):
             debugParametersLinks = openDebugFile(a)
-        elif o in ("--databaseServer", ):
-            databaseServer = True
-            gui = False
         elif o in ("-h", "--help"):
             showHelp = 1
         elif o in ("--setup"):
@@ -966,7 +959,7 @@ class Translator(object):
         translations = dict()
 
         for filePath in self.getTranslationFiles():
-            file = open(filePath, 'r')
+            file = io.open(filePath, 'r', encoding='utf-8')
             translations.update(readMinf(file)[0])
             file.close()
 

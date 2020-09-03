@@ -4800,8 +4800,14 @@ def __getConverters(registry, key, keepType=1, checkUpdate=True):
     while len(stack) > 0:
         type, d = stack.pop()
         result.update(d)
-    return dict([(k, getProcess(p, checkUpdate=checkUpdate))
-                for k, p in six.iteritems(result)])
+    converters = {}
+    for k, p in six.iteritems(result):
+        try:
+            pp = getProcess(p, checkUpdate=checkUpdate)
+            converters[k] = pp
+        except Exception:
+            pass  # invalid process
+    return converters
 
 #-----------------------------------------------------------------------------
 

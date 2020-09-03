@@ -6,7 +6,7 @@ include('registration')
 FileType('Template', '3D Volume')
 FileType('anatomical Template', 'Template')
 FileType('grey probability map', 'Template')
-FileType('tissue probability map', 'Template')
+FileType('Tissue Probability Map Template', 'Template')
 FileType('PET Template', 'Template')
 FileType('Dartel Template', 'Template')
          #False : Dartel template is 4D Volume!! (mickael L)
@@ -25,5 +25,5 @@ FileType('SPM single subject', 'anatomical Template')
 
 #-------------- General SPM types ---------------------
 
-FileType('Matlab SPM script', 'Any Type', 'Matlab script')
+FileType('Matlab SPM script', 'Any Type', 'Matlab script') # doublon par rapport à builtin
 FileType('Transform Softmean to MNI', 'Transformation matrix')
