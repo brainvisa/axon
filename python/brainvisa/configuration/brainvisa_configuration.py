@@ -54,7 +54,8 @@ import os
 
 
 def htmlBrowsers():
-    return [i for i in ('firefox', 'konqueror', 'explorer', 'opera',
+    return [i for i in ('firefox', 'konqueror', 'chrome',
+                        '/opt/google/chrome/chrome', 'explorer', 'opera',
                         '/Applications/Internet\\ Explorer.app/Contents'
                         '/MacOS/Internet\\ Explorer',
                         '/Applications/Safari.app/Contents/MacOS/Safari',
@@ -74,7 +75,9 @@ def defaultHTMLBrowser():
 
 
 def textEditors():
-    return [t for t in ('nedit', 'kedit', 'kwrite', 'xemacs', 'emacs', 'textedit', 'notepad', 'write') if find_executable(t)]
+    return [t for t in ('leafpad', 'gedit', 'nedit', 'kedit', 'kwrite',
+                        'xemacs', 'emacs', 'textedit', 'notepad', 'write',
+                        'kate') if find_executable(t)]
 
 
 def defaultTextEditor():
@@ -106,7 +109,8 @@ def defaultCSVViewer():
 
 
 def pngViewers():
-    return [i for i in ('eog', 'shotwell', 'feh', 'geeqie', 'gpicview', 'gwenview', 'mirage') if find_executable(i)]
+    return [i for i in ('eog', 'shotwell', 'feh', 'geeqie', 'gpicview',
+                        'gwenview', 'mirage') if find_executable(i)]
 
 
 def defaultPNGViewer():
@@ -160,7 +164,7 @@ class BrainVISAConfiguration(ConfigurationGroup):
           defaultValue=[
           ], doc='List of directories containing BrainVISA processes.'),
       'temporaryDirectory', FileName(directoryOnly=True), dict(defaultValue=getSystemDefaultTempDir(),
-                                                               doc='Directory where temporary files are stored. Name of temporary files produced by BrainVISA starts with <tt>"bv_"</tt>.'),
+          doc='Directory where temporary files are stored. Name of temporary files produced by BrainVISA starts with <tt>"bv_"</tt>.'),
       'textEditor', OpenedChoice(* textEditors()), dict(
           defaultValue=defaultTextEditor(
           ), doc='Location of the program used to edit text files.'),
