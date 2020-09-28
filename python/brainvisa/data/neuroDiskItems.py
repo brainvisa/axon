@@ -1044,8 +1044,11 @@ class DiskItem(QObject):
         minf = self.minfFileName()
         # print("!neuroDiskItems : _writeMinf : ", minf)
         if minfContent:
-            file = open(minf, 'w')
-            print('attributes = ' + repr(minfContent), file=file)
+            if six.PY2:
+                file = open(minf, 'w')
+            else:
+                file = open(minf, 'w', encoding='UTF-8')
+            file.write('attributes = ' + str(minfContent))
             file.close()
         else:
             if os.path.exists(minf):
