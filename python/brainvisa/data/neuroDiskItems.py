@@ -1023,7 +1023,11 @@ class DiskItem(QObject):
         attrFile = self.minfFileName()
         if os.path.exists(attrFile):
             try:
-                f = open(attrFile)
+                if six.PY2:
+                    f = open(attrFile)
+                else:
+                    f = open(attrFile, encoding='UTF-8')
+                # f = open(attrFile)
                 minfContent = readMinf(f)[0]
                 # Ignor huge DICOM information produced by NMR
                 # and stored in 'dicom' key.
