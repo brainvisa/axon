@@ -17,6 +17,10 @@ FileType('SPM TPM template', 'TPM template')
 FileType('TPM HDW DARTEL template', '4D Volume')
 FileType('SPM TPM HDW DARTEL template', 'TPM HDW DARTEL template')
 
+#-------------- Templates CAT -----------------------
+FileType('CAT template', 'TPM template')
+FileType('CAT shooting template', 'CAT template')
+
 #-------------- Render SPM type ---------------------
 FileType('SPM Render', 'Matlab SPM file')
 

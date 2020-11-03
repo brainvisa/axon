@@ -72,6 +72,11 @@ hierarchy = (
                 # looks more similar to Template_6_IXI550_MNI152 in SPM8
                 'icbm152', SetType('Dartel Template'),
                 SetWeakAttr('normalized', 'yes', 'databasename', 'spm')),
+            'cat12', SetContent(
+                'templates_volumes', SetContent(
+                    'Template_0_IXI555_MNI152_GS', SetType('CAT shooting template'),
+                )
+            )
         ),  # toolbox
         'rend', SetContent(
             'render_{spm_render}', SetType('SPM Render')),
