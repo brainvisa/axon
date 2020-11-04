@@ -160,6 +160,7 @@ Format('Log file', 'f|*.log')
 Format('pickle file', 'f|*.pickle')
 Format('Database Cache file', 'f|*.fsd')
 Format('SQLite Database File', 'f|*.sqlite')
+Format('HDF5 File', 'f|*.h5')
 Format('Python Script', "f|*.py")
 
 # For lessons and demo
@@ -256,6 +257,7 @@ FileType('Database Cache file', 'Any Type',
 FileType('Database description page', 'HTML file')
 FileType('Database settings', 'Text file', 'Minf')
 FileType('Script', 'Text file', 'Python Script')
+FileType('HDF5', 'Any Type', 'HDF5 File')
 
 # ROI can be either a 'Graph and data' or a 'Volume 3D'
 # It should be a subtype of 'Graph' but the default format
