@@ -93,7 +93,8 @@ if neuroConfig.anatomistImplementation != 'socket':
                                     'QAWindowBlock'))
 
         def removeparent(self, parent):
-            del ReusableWindowBlockAction._actions[parent]
+            if parent in ReusableWindowBlockAction._actions:
+                del ReusableWindowBlockAction._actions[parent]
 
     class ReusableWindowBlockWithViewsAction(QtGui.QAction):
 
