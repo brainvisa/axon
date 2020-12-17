@@ -44,12 +44,13 @@ userLevel = 2
 signature = Signature(
     'volume_input', ReadDiskItem("T1 MRI", 'Aims readable volume formats',
                                  enableConversion=False),
-  'referential_volume_input', WriteDiskItem(
-      'Referential of Raw T1 MRI', 'Referential'),
-  'T1_TO_Scanner_Based', WriteDiskItem(
-      'Transformation to Scanner Based Referential', 'Transformation matrix'),
-  'new_referential', WriteDiskItem(
-      'Scanner Based Referential', 'Referential'),
+    'referential_volume_input', WriteDiskItem(
+        'Referential of Raw T1 MRI', 'Referential'),
+    'T1_TO_Scanner_Based', WriteDiskItem(
+        'Transformation to Scanner Based Referential',
+        'Transformation matrix'),
+    'new_referential', WriteDiskItem(
+        'Scanner Based Referential', 'Referential'),
 )
 
 

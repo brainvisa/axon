@@ -502,7 +502,7 @@ class DiskItemBrowser(QDialog):
                 values = set(self._editableAttributesValues.get(a, ()))
                 if a in required:
                     requiredValue = required.get(a)
-                    if isinstance(requiredValue, six.string_types):
+                    if isinstance( requiredValue, six.string_types + (basestring, int, float, bool) ):
                         requiredValue = [requiredValue]
                     values.update(requiredValue)
                 elif a in self._attributesValues and self._write:
@@ -600,6 +600,8 @@ class DiskItemBrowser(QDialog):
                     if selected is not None:
                         if isinstance(selected, six.string_types):
                             cmb.setCurrentText(quote_string(selected))
+                        elif isinstance( selected, (float, int, bool) ):
+                            cmb.setCurrentText( unicode( selected ) )
                         else:
                             cmb.setCurrentText(list_to_string(selected))
                     cmb._modificationTimer.stopInternalModification()

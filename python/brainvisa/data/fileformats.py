@@ -32,6 +32,7 @@
 from __future__ import absolute_import
 import os
 import sys
+from soma.path import remove_query_string
 from soma.translation import translate as _
 from soma.undefined import Undefined
 from brainvisa.processing.neuroException import showException
@@ -111,7 +112,7 @@ class FileFormats(object):
     def _findMatchingFormat(self, f):
         format = None
         noExt = ext = None
-        path, filename = os.path.split(f)
+        path, filename = os.path.split( remove_query_string(f) )
         dotIndex = filename.find('.')
         if dotIndex > -1:
             dotIndex = len(path) + dotIndex + 1

@@ -226,14 +226,14 @@ class Database(object):
         if t is Undefined:
             if r is Undefined:
                 return []
-            if r is None or isinstance(r, six.string_types):
+            if r is None or isinstance( r, six.string_types + (int, float, bool) ):
                 return [r]
             return r
-        if t is None or isinstance(t, six.string_types):
+        if t is None or isinstance( t, six.string_types + (int, float, bool) ):
             t = [t]
         elif t is Undefined:
             t = []
-        if s is None or isinstance(s, six.string_types):
+        if s is None or isinstance( s, six.string_types + (int, float, bool) ):
             s = [s]
         elif s is Undefined:
             s = []
@@ -243,7 +243,7 @@ class Database(object):
             s = s + [None] + t
         if r is Undefined:
             return s
-        if r is None or isinstance(r, six.string_types):
+        if r is None or isinstance( r, six.string_types + (int, float, bool) ):
             r = set([r])
         else:
             r = set(r)
@@ -1870,7 +1870,7 @@ class SQLDatabase(Database):
                             if i is None:
                                 whereParts += ('NULL', )
                             else:
-                                whereParts += ("'" + i + "'", )
+                                whereParts += ("'" + unicode(i) +"'", )
                         sqlWhereClauses.append(
                             f + ' IN (' + ','.join(whereParts) + ')')
                 if diskitem_searched:

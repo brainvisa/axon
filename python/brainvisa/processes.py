@@ -2335,6 +2335,15 @@ class ExecutionNode(object):
             return ExecutionNodeGUI(parent, self._parameterized())
         return None
 
+    def setNodeHidden(self, hidden=True):
+        """
+        Set the status of this node for graphical user interface.
+        """
+        self._hidden = hidden
+        gui_item = getattr(self, '_guiItem', None)
+        if gui_item:
+            gui_item.setHidden(getattr(self, '_hidden', False))
+
     def addLink(self, destination, source, function=None,
                 destDefaultUpdate=True):
         """
