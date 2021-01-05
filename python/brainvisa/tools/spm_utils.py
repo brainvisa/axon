@@ -128,10 +128,11 @@ def removeNan(filePath):
 #
 # Write smooth batch for one image to smooth
 #
-def writeSmoothMatFile(context, data, matfileDI, mat_file                              , fwhm="""[8 8 8]"""
-                              , dtype="""0"""
-                              , im="""0"""
-                              , prefix="""spmSmooth_"""
+def writeSmoothMatFile(context, data, matfileDI, mat_file,
+                       fwhm="""[8 8 8]""",
+                       dtype="""0""",
+                       im="""0""",
+                       prefix="""spmSmooth_"""
                        ):
     mat_file.write("""
 matlabbatch{1}.spm.spatial.smooth.data = {'%s,1'};
