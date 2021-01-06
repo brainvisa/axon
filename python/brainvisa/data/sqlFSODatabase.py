@@ -1870,7 +1870,7 @@ class SQLDatabase(Database):
                             if i is None:
                                 whereParts += ('NULL', )
                             else:
-                                whereParts += ("'" + unicode(i) +"'", )
+                                whereParts += ("'" + six.text_type(i) +"'", )
                         sqlWhereClauses.append(
                             f + ' IN (' + ','.join(whereParts) + ')')
                 if diskitem_searched:
