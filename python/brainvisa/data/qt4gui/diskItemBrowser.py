@@ -502,7 +502,7 @@ class DiskItemBrowser(QDialog):
                 values = set(self._editableAttributesValues.get(a, ()))
                 if a in required:
                     requiredValue = required.get(a)
-                    if isinstance( requiredValue, six.string_types + (basestring, int, float, bool) ):
+                    if isinstance( requiredValue, six.string_types + (int, float, bool) ):
                         requiredValue = [requiredValue]
                     values.update(requiredValue)
                 elif a in self._attributesValues and self._write:
