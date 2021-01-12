@@ -85,8 +85,33 @@ BRAINVISA_COPY_PYTHON_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/python"
 # exception for axon component that should be removed when all string encoded
 # in iso-8859-1 will be converted to utf8.
 BRAINVISA_INSTALL( FILES "${CMAKE_BINARY_DIR}/python/sitecustomize/__init__.py"
-                    DESTINATION "python/sitecustomize"
-                    COMPONENT ${PROJECT_NAME} )
+                   DESTINATION "python/sitecustomize"
+                   COMPONENT ${PROJECT_NAME} )
+
+# build and install shared database files
+
+add_custom_command( OUTPUT "${CMAKE_BINARY_DIR}/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database-2.3.sqlite"
+                    "${CMAKE_BINARY_DIR}/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database-2.3.sqlite.minf"
+                    "${CMAKE_BINARY_DIR}/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database_fso.html"
+                    "${CMAKE_BINARY_DIR}/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database_fso.html.minf"
+                    COMMAND brainvisa -b --setup )
+
+add_custom_target( axon_build_shared_index
+                   DEPENDS "${CMAKE_BINARY_DIR}/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database-2.3.sqlite"
+                   "${CMAKE_BINARY_DIR}/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database-2.3.sqlite.minf"
+                   "${CMAKE_BINARY_DIR}/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database_fso.html"
+                   "${CMAKE_BINARY_DIR}/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database_fso.html.minf" )
+
+add_dependencies( install-axon axon_build_shared_index )
+# build it also in a regular build
+add_dependencies( axon_target_1 axon_build_shared_index )
+
+BRAINVISA_INSTALL( FILES "${CMAKE_BINARY_DIR}/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database-2.3.sqlite"
+                   "${CMAKE_BINARY_DIR}/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database-2.3.sqlite.minf"
+                   "${CMAKE_BINARY_DIR}/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database_fso.html"
+                   "${CMAKE_BINARY_DIR}/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database_fso.html.minf"
+                   DESTINATION "share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}"
+                   COMPONENT ${PROJECT_NAME} )
                                  
 BRAINVISA_COPY_PYTHON_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/brainvisa"
                                  ${PROJECT_NAME} )
