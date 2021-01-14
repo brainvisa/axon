@@ -102,9 +102,13 @@ add_custom_target( axon_build_shared_index
                    "${CMAKE_BINARY_DIR}/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database_fso.html"
                    "${CMAKE_BINARY_DIR}/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database_fso.html.minf" )
 
-add_dependencies( install-axon axon_build_shared_index )
-# build it also in a regular build
+# build it also in a regular build (just once)
 add_dependencies( axon_target_1 axon_build_shared_index )
+
+# this version to run setup unconditionally at each install
+add_custom_target( axon_always_build_shared_index
+                   COMMAND brainvisa -b --setup )
+add_dependencies( install-axon axon_always_build_shared_index )
 
 BRAINVISA_INSTALL( FILES "${CMAKE_BINARY_DIR}/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database-2.3.sqlite"
                    "${CMAKE_BINARY_DIR}/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database-2.3.sqlite.minf"
