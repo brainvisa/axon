@@ -1082,6 +1082,14 @@ class SQLDatabase(Database):
             self._connection.currentThreadCleanup()
 
     def createTables(self, context=None):
+        # Save, in the database directory, an HTML file corresponding to
+        # database ontology
+        # this file has to be older than the sqlite file to allow the database
+        # to be considered up-to-date.
+        if create and os.path.exists(self.sqlDatabaseFile):
+            html = os.path.join(
+                os.path.dirname(self.sqlDatabaseFile), 'database_fso.html')
+            self.fsoToHTML(html)
         # if the database file is created by sqlite, the write permission is
         # given only for the current user, not for the group, so the database
         # cannot be shared
@@ -1141,12 +1149,6 @@ class SQLDatabase(Database):
             raise
         else:
             self._closeDatabaseCursor(cursor)
-        # Save, in the database directory, an HTML file corresponding to
-        # database ontology
-        if create and os.path.exists(self.sqlDatabaseFile):
-            html = os.path.join(
-                os.path.dirname(self.sqlDatabaseFile), 'database_fso.html')
-            self.fsoToHTML(html)
         return create
 
     def checkTables(self):
