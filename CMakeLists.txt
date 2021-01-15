@@ -116,17 +116,17 @@ BRAINVISA_INSTALL( FILES "${CMAKE_BINARY_DIR}/share/brainvisa-share-${brainvisa-
                    "${CMAKE_BINARY_DIR}/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database_fso.html.minf"
                    DESTINATION "share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}"
                    COMPONENT ${PROJECT_NAME} )
-                                 
+
 BRAINVISA_COPY_PYTHON_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/brainvisa"
                                  ${PROJECT_NAME} )
-BRAINVISA_COPY_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/share" 
+BRAINVISA_COPY_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/share"
                           "share/${PROJECT_NAME}-${BRAINVISA_PACKAGE_VERSION_MAJOR}.${BRAINVISA_PACKAGE_VERSION_MINOR}"
                           ${PROJECT_NAME} )
-BRAINVISA_COPY_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/foms" 
+BRAINVISA_COPY_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/foms"
                           "share/foms"
                           ${PROJECT_NAME} )
 # this doc should be part of the "run" package.
-BRAINVISA_COPY_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/doc" 
+BRAINVISA_COPY_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/doc"
                           "share/doc/${PROJECT_NAME}-${BRAINVISA_PACKAGE_VERSION_MAJOR}.${BRAINVISA_PACKAGE_VERSION_MINOR}"
                           ${PROJECT_NAME} )
 BRAINVISA_COPY_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/bin"
@@ -135,6 +135,12 @@ BRAINVISA_COPY_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/bin"
 BRAINVISA_COPY_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/scripts"
                           scripts
                           ${PROJECT_NAME} )
+
+# ensure the installed database file is newer than the rest
+add_custom_command( TARGET install-axon
+                    POST_BUILD
+                    COMMAND cmake -E touch "$(BRAINVISA_INSTALL_PREFIX)/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database-2.3.sqlite"
+                    )
 
 # Docbook - obsolete.
 # BRAINVISA_GENERATE_DOCBOOK_DOC()
