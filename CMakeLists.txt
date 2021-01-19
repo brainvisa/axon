@@ -105,11 +105,6 @@ add_custom_target( axon_build_shared_index
 # build it also in a regular build (just once)
 add_dependencies( axon_target_1 axon_build_shared_index )
 
-# this version to run setup unconditionally at each install
-add_custom_target( axon_always_build_shared_index
-                   COMMAND brainvisa -b --setup )
-add_dependencies( install-axon axon_always_build_shared_index )
-
 BRAINVISA_INSTALL( FILES "${CMAKE_BINARY_DIR}/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database-2.3.sqlite"
                    "${CMAKE_BINARY_DIR}/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database-2.3.sqlite.minf"
                    "${CMAKE_BINARY_DIR}/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database_fso.html"
@@ -136,19 +131,11 @@ BRAINVISA_COPY_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/scripts"
                           scripts
                           ${PROJECT_NAME} )
 
-# ensure the installed database file is newer than the rest
-add_custom_command( TARGET install-axon
+# ensure the installed database file is newer than the rest - rebuild it after
+# all toolboxes are installed
+add_custom_command( TARGET install-runtime
                     POST_BUILD
-                    COMMAND cmake -E touch "$(BRAINVISA_INSTALL_PREFIX)/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database-2.3.sqlite"
-                    )
-
-# Docbook - obsolete.
-# BRAINVISA_GENERATE_DOCBOOK_DOC()
-
-# find_package( Epydoc )
-# BRAINVISA_GENERATE_EPYDOC_DOC( "${CMAKE_BINARY_DIR}/python/brainvisa"
-#      "share/doc/${PROJECT_NAME}-${BRAINVISA_PACKAGE_VERSION_MAJOR}.${BRAINVISA_PACKAGE_VERSION_MINOR}/epydoc"
-#      EXCLUDE brainvisa.*.qt3gui )
+                    COMMAND if [ -f \"$(BRAINVISA_INSTALL_PREFIX)/bin/bv_env\" ]; then "$(BRAINVISA_INSTALL_PREFIX)/bin/bv_env" brainvisa -b --setup; fi )
 
 find_package( Sphinx )
 BRAINVISA_GENERATE_SPHINX_DOC( "sphinxdoc/user_doc"
