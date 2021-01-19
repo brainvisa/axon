@@ -133,9 +133,11 @@ BRAINVISA_COPY_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/scripts"
 
 # ensure the installed database file is newer than the rest - rebuild it after
 # all toolboxes are installed
-add_custom_command( TARGET install-runtime
-                    POST_BUILD
-                    COMMAND if [ -f \"$(BRAINVISA_INSTALL_PREFIX)/bin/bv_env\" ]; then "$(BRAINVISA_INSTALL_PREFIX)/bin/bv_env" brainvisa -b --setup; fi )
+add_custom_target( axon_install_shared_index
+    COMMAND if [ -f \"$(BRAINVISA_INSTALL_PREFIX)/bin/bv_env\" ] \; then "$(BRAINVISA_INSTALL_PREFIX)/bin/bv_env" brainvisa -b --setup \; fi
+)
+
+add_dependencies( post-install axon_install_shared_index )
 
 find_package( Sphinx )
 BRAINVISA_GENERATE_SPHINX_DOC( "sphinxdoc/user_doc"
