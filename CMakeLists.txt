@@ -105,13 +105,6 @@ add_custom_target( axon_build_shared_index
 # build it also in a regular build (just once)
 add_dependencies( axon_target_1 axon_build_shared_index )
 
-BRAINVISA_INSTALL( FILES "${CMAKE_BINARY_DIR}/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database-2.3.sqlite"
-                   "${CMAKE_BINARY_DIR}/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database-2.3.sqlite.minf"
-                   "${CMAKE_BINARY_DIR}/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database_fso.html"
-                   "${CMAKE_BINARY_DIR}/share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}/database_fso.html.minf"
-                   DESTINATION "share/brainvisa-share-${brainvisa-share_VERSION_MAJOR}.${brainvisa-share_VERSION_MINOR}"
-                   COMPONENT ${PROJECT_NAME} )
-
 BRAINVISA_COPY_PYTHON_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/brainvisa"
                                  ${PROJECT_NAME} )
 BRAINVISA_COPY_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/share"
