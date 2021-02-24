@@ -1211,7 +1211,7 @@ class HTMLBrowser(QWidget):
 <hr/>
 <h2>A newer BrainVISA version is available</h2>
 <p>Version ''' + '.'.join( [ str(x) for x in newver[0] ] ) + ''' is available on the BrainVISA web site.<br/>
-Download it on <a href="https://brainvisa.info/downloadpage.html">the BrainVISA download page</a>.</p>
+Download it on <a href="https://brainvisa.info/download.html">the BrainVISA download page</a>.</p>
 <hr/>
 </div>
 <iframe src="file://''' + neuroConfig.getDocFile(os.path.join( 'help', 'index.html' ) ) + '''" align="center" width="100%" height="100%" scrolling="auto" frameborder="0"></iframe>
