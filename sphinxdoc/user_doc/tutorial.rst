@@ -8,7 +8,7 @@ Introduction
 
 .. note:: Disclaimer
 
-  All contributors of BrainVISA project are very happy to propose tools, libraries, demonstration data and documentation available free of charge on http://brainvisa.info. The BrainVISA project is focused on neuroimaging and the development of tools only in a context of research. Although every care has been taken by all contributors of the BrainVISA project no warranty can be given in respect of the accuracy, reliability, up-to-dateness or completeness of the information contained within BrainVISA project. In the same way no one will be responsible or liable for any loss or damage of any sort.
+  All contributors of BrainVISA project are very happy to propose tools, libraries, demonstration data and documentation available free of charge on https://brainvisa.info. The BrainVISA project is focused on neuroimaging and the development of tools only in a context of research. Although every care has been taken by all contributors of the BrainVISA project no warranty can be given in respect of the accuracy, reliability, up-to-dateness or completeness of the information contained within BrainVISA project. In the same way no one will be responsible or liable for any loss or damage of any sort.
 
   Any contributor reserves the right to alter or remove the content, in full or in part, without prior notice.
 
@@ -24,11 +24,11 @@ BrainVISA main features are:
 * Full customization possible.
 * Runs on Linux, Mac and Windows.
 
-BrainVISA is developped by french governement founded research organizations (mainly CEA, INSERM, INRIA, CNRS) grouped in a federative research institute: IFR 49. It is a free and open-source software written in Python script language and can be downloaded from: http://brainvisa.info.
+BrainVISA is developped by french governement founded research organizations (mainly CEA, INSERM, INRIA, CNRS) grouped in a federative research institute: IFR 49. It is a free and open-source software written in Python script language and can be downloaded from: https://brainvisa.info.
 
 See the slides of an introduction to BrainVISA: :axon:`BrainVISA Advanced Training - Introduction <intro_bv.pdf>`
 
-BrainVISA is available for free download here: http://brainvisa.info/downloadpage.html. Installation instructions: http://brainvisa.info/download.html#installation and the :axonman:`BrainVISA manual <axon_manual.html>`.
+BrainVISA is available for free download here: https://brainvisa.info/download.html. Installation instructions: https://brainvisa.info/download.html#installation and the :axonman:`BrainVISA manual <axon_manual.html>`.
 
 In this tutorial, we will use demonstration data that are available for download here: ftp://ftp.cea.fr/pub/dsv/anatomist/data/demo_data.zip.
 

@@ -22,7 +22,7 @@ What is *BrainVISA*
 
 * Allow a unified and simplified usage of neuroimaging tools through a common graphical interface.
 
-* Allow anyone to use and/or extend *BrainVISA* with his own tools. Therefore, *BrainVISA* is an open source project: http://brainvisa.info.
+* Allow anyone to use and/or extend *BrainVISA* with his own tools. Therefore, *BrainVISA* is an open source project: https://brainvisa.info.
 
 
 .. _fig_brainvisa_management:
@@ -55,7 +55,7 @@ What is provided with the *BrainVISA* package
 
 *BrainVISA* is a software platform that provides access to various analysis tools and enables to run one or more sequences of processes on a series of images. These processes are called up from specific libraries, or via command lines provided by different laboratories. These command lines therefore act as building blocks, which are used to create the tools assembly lines. *BrainVISA* comes with a range of different modules, for use in anatomical image processing, morphometry.
 
-Other tools are provided by Anatomist, such as image viewing commands (fusion, display of graphs, etc.). Anatomist is a visualization and manipulation software used with images and structured objects such as sulci graphs (http://brainvisa.info). BrainVISA interacts with Anatomist in the management of a certain number of processes. Modules pertaining to functional image analysis or EEG-MEG analysis have also been implemented and are distributed as an additional toolbox (http://cogimage.dsi.cnrs.fr/logiciels/index.htm). It is perfectly possible to integrate your own processes or modules. All you need is a basic knowledge of computing and programming (Python language).
+Other tools are provided by Anatomist, such as image viewing commands (fusion, display of graphs, etc.). Anatomist is a visualization and manipulation software used with images and structured objects such as sulci graphs (https://brainvisa.info). BrainVISA interacts with Anatomist in the management of a certain number of processes. Modules pertaining to functional image analysis or EEG-MEG analysis have also been implemented and are distributed as an additional toolbox (http://cogimage.dsi.cnrs.fr/logiciels/index.htm). It is perfectly possible to integrate your own processes or modules. All you need is a basic knowledge of computing and programming (Python language).
 
 
 Quick start
@@ -100,7 +100,7 @@ Before installing *BrainVISA* on your computer, you need to check a few things:
 The operating system
 --------------------
 
-BrainVISA has been developed as a cross-platform software, and thus can run on Linux, Windows and MacOS. For a more precise description of OS releases that have been tested, please refer to the web site: :web:`http://brainvisa.info/download.html <download.html>`
+BrainVISA has been developed as a cross-platform software, and thus can run on Linux, Windows and MacOS. For a more precise description of OS releases that have been tested, please refer to the web site: :web:`https://brainvisa.info/download.html <download.html>`
 
 It is possible that your operating system and version are not mentioned in the supported systems table there. When you install a package, you may encounter a number of different problems. You can either update your system or compile the sources. To compile the sources, please refer to `the downoad section <download_>`_.
 
@@ -112,7 +112,7 @@ The video card often comes up in questions about recommended hardware. Here are 
 
 * If you work with linux, 3D graphics generally have two sets of 3D drivers: open-source, community drivers, and proprietary drivers written by the company who build the hardware. Proprietary drivers do normally work better and are more optimized. But some open-source drivers now are OK in many situations. As of 2014 we generally use open-source drivers for AMD hardware, and proprietary drivers for NVidia hardware.
 
-* If you encounter graphic display problems, please refer to http://brainvisa.info/forum.
+* If you encounter graphic display problems, please refer to https://brainvisa.info/forum.
 
 
 .. download:
@@ -120,11 +120,11 @@ The video card often comes up in questions about recommended hardware. Here are 
 Downloads
 ---------
 
-You can download ready-to-install binary packages. If the binary distribution does not work (for example, if your operating system is not compatible), you can download the sources for compilation via your working environment (see http://brainvisa.info/repository.html#use_brainvisa_sources for compilation instructions).
+You can download ready-to-install binary packages. If the binary distribution does not work (for example, if your operating system is not compatible), you can download the sources for compilation via your working environment (see https://brainvisa.info/repository.html#use_brainvisa_sources for compilation instructions).
 
 You can download the packages via the following link:
 
-:web:`http://brainvisa.info/downloadpage.html <downloadpage.html>`
+:web:`https://brainvisa.info/download.html <download.html>`
 
 
 Installation
@@ -343,7 +343,7 @@ Toolboxes panel
 
 The left panel of the main window contains the list of available toolboxes. A toolbox contains a set of processes related to a common theme. When you select a toolbox, its list of processes appear on the next panel.
 
-Several toolboxes are included in BrainVISA package but some other toolboxes are available for download separately and have to be installed in addition to BrainVISA main package. More information about existing toolboxes on :documentation:`http://brainvisa.info/toolboxes.html <toolboxes.html>`.
+Several toolboxes are included in BrainVISA package but some other toolboxes are available for download separately and have to be installed in addition to BrainVISA main package. More information about existing toolboxes on :documentation:`https://brainvisa.info/toolboxes.html <toolboxes.html>`.
 
 
 .. _bookmarks:
@@ -874,7 +874,7 @@ Here is a little advice on what to do if an error occurs while a process is runn
 
 * Consult the process log via the *BrainVISA -> Show log* menu (for more information, see the paragraph on the :ref:`log window <log>`).
 
-* Sign up to and consult the forum at http://brainvisa.info/forum.
+* Sign up to and consult the forum at https://brainvisa.info/forum.
 
 * Report the error to the BrainVISA team on the forum and attach the log file to your post.
 
