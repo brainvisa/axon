@@ -18,7 +18,7 @@
 </p>
 <p>Si le second volume est spécifié, la seconde transformation est composée à la première. Le second volume peut ne pas avoir de fichier .mat associé: dans ce cas c'est la translation vers son origine SPM qui sera prise en compte.
 </p>
-<p><b>Remarque</b>: les systèmes de coordonnées (référentiels) internnes utilisés par SPM et Aims sont complètement différents. Ainsi en plus de l'extraction proprement dite, des conversions de coordonnées sont effectuées. C'est pourquoi vous ne retrouvez pas dans le fichier .trm de sortie le contenu de la matrice SPM. Pour plus d'informations sur les référentiels et transformations, voyez <a href="http://brainvisa.info/doc/html/aims/en/referentials.html">http://brainvisa.info/doc/html/aims/en/referentials.html</a>.
+<p><b>Remarque</b>: les systèmes de coordonnées (référentiels) internnes utilisés par SPM et Aims sont complètement différents. Ainsi en plus de l'extraction proprement dite, des conversions de coordonnées sont effectuées. C'est pourquoi vous ne retrouvez pas dans le fichier .trm de sortie le contenu de la matrice SPM. Pour plus d'informations sur les référentiels et transformations, voyez <a href="https://brainvisa.info/doc/html/aims/en/referentials.html">https://brainvisa.info/doc/html/aims/en/referentials.html</a>.
 </p></xhtml>
   </d>
   <d name="en" length="3">
@@ -39,7 +39,7 @@
 </p>
 <p>If the second volume is specified, the second transformation is combined to the first one. The second volume is not required to have an associated .mat file: in this case only the translation to its SPM origin will be taken into account.
 </p>
-<p><b>Remarq</b>: internal coordinates systems (referentials) used by SPM and Aims are completely different. So in addition to the matrix extraction itself, some coordinates conversions are done. This is why you don't find in the output .trm file the contents of the SPM matrix. For more information about referentials and transformations, see <a href="http://brainvisa.info/doc/html/aims/en/referentials.html">http://brainvisa.info/doc/html/aims/en/referentials.html</a>.
+<p><b>Remarq</b>: internal coordinates systems (referentials) used by SPM and Aims are completely different. So in addition to the matrix extraction itself, some coordinates conversions are done. This is why you don't find in the output .trm file the contents of the SPM matrix. For more information about referentials and transformations, see <a href="https://brainvisa.info/doc/html/aims/en/referentials.html">https://brainvisa.info/doc/html/aims/en/referentials.html</a>.
 </p></xhtml>
   </d>
 </minf>

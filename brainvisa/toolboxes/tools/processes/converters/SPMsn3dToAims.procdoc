@@ -15,7 +15,7 @@
 </p>
 <p>Ce traitement n'utilise plus Matlab, et lit les fichiers .mat grâce au module scipy en Python, ce qui est un grand proprès pour ceux qui, comme moi, ne disposent pas de Matlab.
 </p>
-<p><b>Remarque</b>: les systèmes de coordonnées (référentiels) internnes utilisés par SPM et Aims sont complètement différents. Ainsi en plus de l'extraction proprement dite, des conversions de coordonnées sont effectuées. C'est pourquoi vous ne retrouvez pas dans le fichier .trm de sortie le contenu de la matrice affine de SPM. Pour plus d'informations sur les référentiels et transformations, voyez <a href="http://brainvisa.info/doc/html/aims/en/referentials.html">http://brainvisa.info/doc/html/aims/en/referentials.html</a>.
+<p><b>Remarque</b>: les systèmes de coordonnées (référentiels) internnes utilisés par SPM et Aims sont complètement différents. Ainsi en plus de l'extraction proprement dite, des conversions de coordonnées sont effectuées. C'est pourquoi vous ne retrouvez pas dans le fichier .trm de sortie le contenu de la matrice affine de SPM. Pour plus d'informations sur les référentiels et transformations, voyez <a href="https://brainvisa.info/doc/html/aims/en/referentials.html">https://brainvisa.info/doc/html/aims/en/referentials.html</a>.
 </p>
 <p>La transformation en sortie a comme référentiel source le référentiel AIMS (x: droite vers gauche, y: avant vers arrière, z: haut vers bas, origine au centre du premier voxel à droite, en avant, en haut) du volume source, et comme référentiel destination, selon ce qui est précisé par le paramètre <b>target</b>:
   <ul>
@@ -43,7 +43,7 @@ Notez que le paramètre <b>normalized_volume</b> n'est utilisé que dans ce dern
 </p>
 <p>This process does not use Matlab any longer, and reads the .mat files thanks to the scipy Python module, which is a great improvement for those who, like me, do not have Matlab.
 </p>
-<p><b>Remarq</b>: internal coordinates systems (referentials) used by SPM and Aims are completely different. So in addition to the matrix extraction itself, some coordinates conversions are done. This is why you don't find in the output .trm file the contents of the affine matrix of SPM. For more information about referentials and transformations, see <a href="http://brainvisa.info/doc/html/aims/en/referentials.html">http://brainvisa.info/doc/html/aims/en/referentials.html</a>.
+<p><b>Remarq</b>: internal coordinates systems (referentials) used by SPM and Aims are completely different. So in addition to the matrix extraction itself, some coordinates conversions are done. This is why you don't find in the output .trm file the contents of the affine matrix of SPM. For more information about referentials and transformations, see <a href="https://brainvisa.info/doc/html/aims/en/referentials.html">https://brainvisa.info/doc/html/aims/en/referentials.html</a>.
 </p>
 <p>The output transformation has as source referential the AIMS referential (x: right to left, y: front to rear, z: top to bottom, origin in the center of the first voxel right, front, top) of the source volume, and as destination referential, depending on the <b>target</b> parameter value:
   <ul>

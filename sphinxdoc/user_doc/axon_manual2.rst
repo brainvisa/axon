@@ -607,7 +607,7 @@ However, these articles deal with BrainVISA as a framework but it is hosting var
 
 .. note::
 
-  A complete bibliography is detailed at http://brainvisa.info/biblio/en/index.html
+  A complete bibliography is detailed at https://brainvisa.info/biblio/en/index.html
 
 
 .. _helpcom:

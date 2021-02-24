@@ -299,7 +299,7 @@ extlinks = {
   'connectomistusr': ('%s', 'connectomist '),
   'brainrat': ('../../brainrat-gpl-' + bv_release_version +
                '/brainrat_man/en/html/%s', 'brainrat '),
-  'web': ('http://brainvisa.info/%s', 'brainvisa '),
+  'web': ('https://brainvisa.info/%s', 'brainvisa '),
   'documentation': ('../../%s', 'docs '),
 }
 
