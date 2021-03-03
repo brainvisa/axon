@@ -49,14 +49,8 @@ from soma.qt_gui.qt_backend.QtGui import QKeySequence
 from soma.qt_gui.qt_backend import QtCore
 from soma.qt_gui.qt_backend import QtGui
 from six.moves import range
-try:
-    from soma.qt_gui.qt_backend import QtWebEngine
-    from soma.qt_gui.qt_backend.QtWebEngineWidgets import QWebEnginePage
-    use_webengine = True
-except ImportError:
-    from soma.qt_gui.qt_backend import QtWebKit
-    QWebEnginePage = QtWebKit.QWebPage
-    use_webengine = False
+from soma.qt4gui.text import (QWebEnginePage, use_webengine,
+    QWebEngineView, QWebPage)
 from soma.qt_gui.qt_backend import loadUi, loadUiType
 from brainvisa.configuration import neuroConfig
 from brainvisa.configuration.qt4gui import neuroConfigGUI
