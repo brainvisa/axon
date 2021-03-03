@@ -42,6 +42,13 @@ from __future__ import absolute_import
 from soma.qt_gui.qt_backend import QtGui, QtCore
 from soma.qt_gui import qt_backend
 try:
+    # DISABLE for release 5.0.0
+    # x2go is widely used but only provides GLX 1.2
+    # WebEngine needs GLX 1.3 and makes brainvisa fail. As it is almost vital
+    # for our users, we fallback to the obsolete WebKit for now.
+    # note the very elegant way to fallback... :)
+    import rototobidulechouette.nomodule
+
     # use the newer Qt5 QtWebEngine
     from soma.qt_gui.qt_backend import QtWebEngine
     from soma.qt_gui.qt_backend.QtWebEngineWidgets \
