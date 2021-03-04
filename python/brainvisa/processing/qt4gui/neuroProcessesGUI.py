@@ -1222,8 +1222,12 @@ Download it on <a href="https://brainvisa.info/download.html">the BrainVISA down
         if self._siteSearch.text():
             if not hasattr(self, '_currentNonSearchPage'):
                 self._currentNonSearchPage = self.browser.url()
-            url = 'http://www.google.com/cse?url=brainvisa.info&cref=http%3A%2F%2Fwww.google.com%2Fcse%2Ftools%2Fmakecse%3Furl%3Dbrainvisa.info&ie=&q=' + \
+            #url = 'http://www.google.com/cse?url=brainvisa.info&cref=http%3A%2F%2Fwww.google.com%2Fcse%2Ftools%2Fmakecse%3Furl%3Dbrainvisa.info&ie=&q=' + \
+                #six.moves.urllib.parse.quote_plus(self._siteSearch.text())
+
+            url = 'https://duckduckgo.com/?t=h_&ia=web&q=!brainvisa.info+' + \
                 six.moves.urllib.parse.quote_plus(self._siteSearch.text())
+
             self.setSource(QUrl.fromEncoded(QtCore.QByteArray(url.encode(
                 'utf-8'))))
         else:
