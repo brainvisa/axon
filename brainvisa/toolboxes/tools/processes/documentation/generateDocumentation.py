@@ -148,9 +148,9 @@ def generateHTMLDocumentation(processInfoOrId, translators, context, ontology):
                 long = XHTML.html(long)
         if long:
             f.write(u"""
-'<h2>{description}</h2><blockquote>'
+<h2>{description}</h2><blockquote>
 {long}
-'</blockquote>'
+</blockquote>
                     """.format(
                 description=tr.translate('Description'),
                 long=long
