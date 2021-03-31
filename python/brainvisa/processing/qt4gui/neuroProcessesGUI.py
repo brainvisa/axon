@@ -3937,9 +3937,14 @@ class ProcessEdit(QDialog):
             six.text_type(self.mleLong.toPlainText()))
         d['parameters'] = p = {}
         for i, j in self.mleParameters.items():
-            p[six.text_type(self.cmbParameter.itemText(i))] = self.escapeXMLEntities(
-                six.text_type(j.toPlainText()))
-        self.documentation[self.language] = d
+            param_name = six.text_type(self.cmbParameter.itemText(i))
+            if j.toPlainText():
+                p[param_name] = self.escapeXMLEntities(
+                    six.text_type(j.toPlainText()))
+            else:
+                if param_name in p:
+                    del p[param_name]
+            self.documentation[self.language] = d
         htmlPath = six.text_type(self.leHTMLPath.text())
         if htmlPath:
             self.documentation['htmlPath'] = htmlPath
