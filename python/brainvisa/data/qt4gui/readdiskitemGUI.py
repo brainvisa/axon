@@ -1137,7 +1137,7 @@ class DiskItemListEditor(QWidget, DataEditor):
                     self.values[index - 1] = tmp
                     item = self.lbxValues.takeItem(index)
                     self.lbxValues.insertItem(index - 1, item)
-                    self.lbxValues.setItemSelected(item, 1)
+                    item.setSelected(1)
 
         def _down(self):
             indexes = [i.row() for i in self.lbxValues.selectedIndexes()]
@@ -1151,7 +1151,7 @@ class DiskItemListEditor(QWidget, DataEditor):
                     self.values[index + 1] = tmp
                     item = self.lbxValues.takeItem(index)
                     self.lbxValues.insertItem(index + 1, item)
-                    self.lbxValues.setItemSelected(item, 1)
+                    item.setSelected(1)
 
         def _setDirectory(self):
             self.browseDirectoryDialog = QFileDialog(self.window())
