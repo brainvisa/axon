@@ -306,3 +306,64 @@ def showWarning(message, parent=None, gui=None):
 def exceptionHook(exceptType, value, traceback):
     from brainvisa.processing.qtgui.neuroExceptionGUI import ShowException
     showException(exceptionInfo=(exceptType, value, traceback))
+
+
+def catch_gui_exception(method):
+    '''
+    A decorator for Qt5 slots.
+
+    Runs the method in a try... except block, and if an exception occurs, show
+    it in the GUI and return.
+    This decorator can be used for PyQt5 slots which do not catch exceptions by
+    default as PyQt4 used to do.
+    '''
+    # several wrapper types have to be defined according to their signature
+    # becuse Qt signals will call them with or without some optional arguments
+    # according to the slot signature. Thus we have to follow the initial
+    # slot signature in order to make PyQt call it the same way.
+    def wrapper_args_kwargs(*args, **kwargs):
+        try:
+            method(*args, **kwargs)
+        except:
+            showException()
+
+    def wrapper_args(*args):
+        try:
+            method(*args)
+        except:
+            showException()
+
+    def wrapper_kwargs(**kwargs):
+        try:
+            method(**kwargs)
+        except:
+            showException()
+
+    def wrapper(*args, **kwargs):
+        try:
+            method()
+        except:
+            showException()
+
+    import inspect
+    if six.PY2:
+        arg_spec = inspect.getargspec(method)
+        if arg_spec.args or arg_spec.varargs:
+            if arg_spec.keywords:
+                return wrapper_args_kwargs
+            else:
+                return wrapper_args
+        elif arg_spec.keywords:
+                return wrapper_kwargs
+        return wrapper
+    else:
+        arg_spec = inspect.getfullargspec(method)
+        if arg_spec.args or arg_spec.varargs:
+            if arg_spec.varkw or arg_spec.kwonlyargs:
+                return wrapper_args_kwargs
+            else:
+                return wrapper_args
+        elif arg_spec.varkw or arg_spec.kwonlyargs:
+                return wrapper_kwargs
+        return wrapper
+

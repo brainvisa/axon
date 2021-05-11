@@ -79,6 +79,7 @@ except ImportError:
 from brainvisa.processes import mainThreadActions
 
 from brainvisa.processing import neuroException
+from brainvisa.processing.neuroException import catch_gui_exception
 from soma.qtgui.api import EditableTreeWidget, TreeListWidget
 from soma.notification import ObservableList, EditableTree
 from soma.signature.api import HasSignature
@@ -3584,6 +3585,7 @@ class ProcessView(QWidget, ExecutionContextGUI):
             _mainWindow.info.setSource(doc)
 
     @staticmethod
+    @catch_gui_exception
     def open():
         import sipconfig
         if sipconfig.Configuration().sip_version >= 0x040a00:
