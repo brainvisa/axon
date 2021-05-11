@@ -116,7 +116,7 @@ class LabelSelection(Parameter):
     def writeSelection(self, context=None):
         if context is None:
             context = defaultContext()
-        s = self.getAutoSelection()
+        s = self.getAutoSelection().decode('utf-8')
         if not self.file:
             self.file = context.temporary('selection')
         try:
