@@ -48,9 +48,8 @@ try:
         from anatomist import headless
         use_headless = True
         headless.setup_headless()
+    import anatomist.api as anatomistModule
     anatomistImport = True
-    six.exec_("import " + anatomist.getDefaultImplementationModuleName()
-              + " as anatomistModule")
 except Exception as e:
     import traceback
     showException(beforeError='The Anatomist module failed to load:')
