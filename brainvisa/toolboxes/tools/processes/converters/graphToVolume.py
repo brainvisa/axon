@@ -100,7 +100,7 @@ def execution(self, context):
         vol = graph[self.extract_volume]
     else:
         atts = [x for x in graph.keys()
-                if isinstance(graph[x], aims.rc_ptr_AimsData_S16)]
+                if isinstance(graph[x], aims.rc_ptr_Volume_S16)]
         if len(atts) == 0:
             raise RuntimeError(_t_('the ROI graph contains no voxel data'))
         elif len(atts) > 1:
@@ -112,14 +112,17 @@ def execution(self, context):
     # handle bounding box which may have cropped the data
     bmin = graph['boundingbox_min']
     bmax = graph['boundingbox_max']
+    context.write('vol:', vol)
+    context.write('bmin:', bmin, ', bmax:', bmax, ', size:', vol.getSize())
     if bmin[:3] != [0, 0, 0] \
-            or bmax[:3] != [vol.dimX(), vol.dimY(), vol.dimZ()]:
+            or bmax[:3] != [x+1 for x in vol.getSize()[:3]]:
+        context.write('enlarging')
         # needs expanding in a bigger volume
         vol2 = aims.Volume_S16(bmax[0] + 1, bmax[1] + 1, bmax[2] + 1)
-        vol2.fill(-1)
-        ar = vol2.arraydata()
-        ar[:, bmin[2]:bmax[2] + 1, bmin[1]:bmax[1] + 1, bmin[0]:bmax[0] + 1] \
-            = vol.volume().arraydata()
+        vol2.fill(0)
+        ar = vol2.np
+        ar[bmin[0]:bmax[0] + 1, bmin[1]:bmax[1] + 1, bmin[2]:bmax[2] + 1, :] \
+            = vol.np
 
         if self.extract_contours == 'Yes':
             ar_copy = ar.copy()
@@ -133,15 +136,10 @@ def execution(self, context):
                     if erase:
                         ar[i] = 0
 
-        for x, y in vol.header().items():
-            vol2.header()[x] = y
-        # add 1 to all voxels because the background is -1
-    #    vol2 += 1
+        vol2.copyHeaderFrom(vol.header())
         aims.write(vol2, self.write.fullPath())
     else:
         # bounding box OK
-        # add 1 to all voxels because the background is -1
-        vol += 1
         aims.write(vol.get(), self.write.fullPath())
     registration.getTransformationManager().copyReferential(self.read,
                                                             self.write)
