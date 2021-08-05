@@ -1022,9 +1022,12 @@ class HTMLBrowser(QWidget):
                     win.show()
             elif bvp.startswith('file://') and bvp.endswith('.py'):
                 WebBrowserWithSearch.setSource(self, url)
-                self.setHtml('<html><body><pre>' + htmlEscape(
-                    open(url.toLocalFile()).read()) + '</pre></body></html>')
-                sys.stdout.flush()
+                try:
+                    self.setHtml('<html><body><pre>' + htmlEscape(
+                        open(url.toLocalFile()).read())
+                        + '</pre></body></html>')
+                except FileNotFoundError:
+                    self.setHtml('<font color="#a00000">Documentation file "<tt>%s</tt>" cannot be read</font>' % url.toLocalFile())
             else:
                 WebBrowserWithSearch.setSource(self, url)
             if not use_webengine:
