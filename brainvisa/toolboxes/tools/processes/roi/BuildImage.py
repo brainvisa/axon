@@ -75,8 +75,8 @@ def initialization(self):
 def execution(self, context):
 
     fic = self.file_of_point
-    a = aims.AimsData_S16(self.dimX, self.dimY, self.dimZ)
-    a.setSizeXYZT(self.sizeX, self.sizeY, self.sizeZ)
+    a = aims.Volume_S16(self.dimX, self.dimY, self.dimZ)
+    a.setVoxelSize(self.sizeX, self.sizeY, self.sizeZ)
     # mettre les valeurs :
 
     fic = open(self.file_of_point.fullPath(), 'r')
