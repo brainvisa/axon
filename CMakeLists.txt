@@ -6,7 +6,6 @@ enable_testing()
 BRAINVISA_FIND_PACKAGE( soma-base REQUIRED )
 BRAINVISA_FIND_PACKAGE( aims-free QUIET )
 BRAINVISA_FIND_PACKAGE( soma-workflow )
-BRAINVISA_FIND_PACKAGE( brainvisa-release QUIET )
 BRAINVISA_FIND_PACKAGE( datamind QUIET )
 if( NOT DESIRED_QT_VERSION )
   find_package( Qt REQUIRED )
@@ -55,9 +54,6 @@ endif()
 
 if( soma-workflow_FOUND )
   BRAINVISA_DEPENDENCY( RUN RECOMMENDS "soma-workflow" RUN ">= ${soma-workflow_VERSION};" )
-endif()
-if( BRAINVISA-RELEASE_FOUND )
-  BRAINVISA_DEPENDENCY( RUN RECOMMENDS "brainvisa-release" RUN BINARY_INDEPENDENT )
 endif()
 
 BRAINVISA_DEPENDENCY( RUN DEPENDS python RUN ">= ${PYTHON_SHORT_VERSION}" )
@@ -165,5 +161,3 @@ brainvisa_add_test(axon-tests "${PYTHON_EXECUTABLE_NAME}" -m brainvisa.tests.tes
 brainvisa_add_test(axon-tests "${PYTHON_EXECUTABLE_NAME}" -m brainvisa.tests.test_registration)
 
 BRAINVISA_CREATE_CMAKE_CONFIG_FILES()
-
-
