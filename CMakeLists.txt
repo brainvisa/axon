@@ -132,6 +132,11 @@ add_custom_target( axon_install_shared_index
 
 add_dependencies( post-install axon_install_shared_index )
 
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/bin/bv_create_ontology_doc" )
+  set( CREATE_ONTOLOGY_DOC "${CMAKE_CURRENT_SOURCE_DIR}/bin/bv_create_ontology_doc" PARENT_SCOPE)
+endif()
+
+
 find_package( Sphinx )
 BRAINVISA_GENERATE_SPHINX_DOC( "sphinxdoc/user_doc"
   "share/doc/axon-${BRAINVISA_PACKAGE_VERSION_MAJOR}.${BRAINVISA_PACKAGE_VERSION_MINOR}/user_doc" USER )
