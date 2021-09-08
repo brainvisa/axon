@@ -1,0 +1,100 @@
+#! /usr/bin/env python
+
+#  This software and supporting documentation are distributed by
+#      Institut Federatif de Recherche 49
+#      CEA/NeuroSpin, Batiment 145,
+#      91191 Gif-sur-Yvette cedex
+#      France
+#
+# This software is governed by the CeCILL-B license under
+# French law and abiding by the rules of distribution of free software.
+# You can  use, modify and/or redistribute the software under the
+# terms of the CeCILL-B license as circulated by CEA, CNRS
+# and INRIA at the following URL "http://www.cecill.info".
+#
+# As a counterpart to the access to the source code and  rights to copy,
+# modify and redistribute granted by the license, users are provided only
+# with a limited warranty  and the software's author,  the holder of the
+# economic rights,  and the successive licensors  have only  limited
+# liability.
+#
+# In this respect, the user's attention is drawn to the risks associated
+# with loading,  using,  modifying and/or developing or reproducing the
+# software by the user in light of its specific status of free software,
+# that may mean  that it is complicated to manipulate,  and  that  also
+# therefore means  that it is reserved for developers  and  experienced
+# professionals having in-depth computer knowledge. Users are therefore
+# encouraged to load and test the software's suitability as regards their
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
+# same conditions as regards security.
+#
+# The fact that you are presently reading this means that you have had
+# knowledge of the CeCILL-B license and that you accept its terms.
+
+# This script create an html page containing an index of all documentations in a directory
+# Usage : buildIndexDoc <doc directory> : create a file index.html in doc directory
+# doc directory contains sub-directories project-version
+# each project directory can contain epydoc, doxygen, docbook docs, examples...
+
+from __future__ import absolute_import, print_function
+
+import sys
+import os
+import getopt
+import subprocess
+
+
+def usage():
+    print(
+        "\nThis script generates an html documentation of brainvisa ontology in a brainvisa package or build directory.")
+    print("Usage : bv_create_ontology_doc [options] <build or pack directory>")
+    print("Options : ")
+    print("-h --help : display this help page\n")
+
+# OPTIONS
+try:
+    opts, args = getopt.getopt(sys.argv[1:], "h", ["help"])
+except getopt.GetOptError:
+    # print help information and exit:
+    usage()
+    sys.exit(2)
+
+for o, v in opts:
+    if o in ("-h", "--help"):
+        usage()
+        sys.exit()
+
+if not args:
+    print("You must give the directory where brainvisa is installed. ")
+    usage()
+    sys.exit(2)
+
+# get the directory
+install_directory = args[0]
+if not os.path.isdir(install_directory):
+    print("Directory ", install_directory, " does not exist.")
+    sys.exit(2)
+
+# axon = os.path.join( install_directory, 'bin', 'brainvisa' )
+axon = os.path.join(install_directory, 'brainvisa', 'neuro.py')
+if os.path.exists(axon):
+    print('Generating BrainVISA processes documentation')
+    env = os.environ.copy()
+    env['BRAINVISA_SHARE'] = os.path.join(install_directory, 'share')
+    for variable, value in (
+        ('PATH', os.path.join(install_directory, 'bin')),
+      ('PYTHONPATH', os.path.join(install_directory, 'python')),
+      ('LD_LIBRARY_PATH', os.path.join(install_directory, 'lib'))):
+        path = env.get(variable)
+        if path:
+            env[variable] = value + os.pathsep + path
+        else:
+            env[variable] = value
+    popen = subprocess.Popen(['python', axon,
+                              '-b', '--ignoreValidation',
+                              '--updateDocumentation'],
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT,
+                             env=env)
+    popen.stdout.read()

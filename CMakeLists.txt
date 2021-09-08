@@ -128,6 +128,10 @@ add_custom_target( axon_install_shared_index
 
 add_dependencies( post-install axon_install_shared_index )
 
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/bin/bv_create_ontology_doc" )
+  set( CREATE_ONTOLOGY_DOC "${CMAKE_CURRENT_SOURCE_DIR}/bin/bv_create_ontology_doc" PARENT_SCOPE)
+endif()
+
 
 # Documentation of axon processes and ontologies
 BRAINVISA_FIND_PACKAGE( documentation QUIET )
