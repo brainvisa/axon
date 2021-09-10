@@ -134,7 +134,6 @@ endif()
 
 
 # Documentation of axon processes and ontologies
-BRAINVISA_FIND_PACKAGE( documentation QUIET )
 add_custom_target( bv_ontology_doc
   COMMAND "${CMAKE_BINARY_DIR}/bin/bv_env${CMAKE_EXECUTABLE_SUFFIX}" "${PYTHON_EXECUTABLE}" ${CREATE_ONTOLOGY_DOC} ${CMAKE_BINARY_DIR}
   )
@@ -173,6 +172,7 @@ add_custom_target( bv_ontology_doc
 # # completely rebuilt during installation, which is kind of wasteful. Is there
 # # any good reason to keep doing it this way?
 # add_dependencies( install-bv_doc_index install-bv_ontology_doc)
+
 
 
 find_package( Sphinx )
