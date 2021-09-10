@@ -1,0 +1,216 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+
+#  This software and supporting documentation are distributed by
+#      Institut Federatif de Recherche 49
+#      CEA/NeuroSpin, Batiment 145,
+#      91191 Gif-sur-Yvette cedex
+#      France
+#
+# This software is governed by the CeCILL-B license under
+# French law and abiding by the rules of distribution of free software.
+# You can  use, modify and/or redistribute the software under the
+# terms of the CeCILL-B license as circulated by CEA, CNRS
+# and INRIA at the following URL "http://www.cecill.info".
+#
+# As a counterpart to the access to the source code and  rights to copy,
+# modify and redistribute granted by the license, users are provided only
+# with a limited warranty  and the software's author,  the holder of the
+# economic rights,  and the successive licensors  have only  limited
+# liability.
+#
+# In this respect, the user's attention is drawn to the risks associated
+# with loading,  using,  modifying and/or developing or reproducing the
+# software by the user in light of its specific status of free software,
+# that may mean  that it is complicated to manipulate,  and  that  also
+# therefore means  that it is reserved for developers  and  experienced
+# professionals having in-depth computer knowledge. Users are therefore
+# encouraged to load and test the software's suitability as regards their
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
+# same conditions as regards security.
+#
+# The fact that you are presently reading this means that you have had
+# knowledge of the CeCILL-B license and that you accept its terms.
+
+# This script create an html page containing an index of all documentations in a directory
+# Usage : buildIndexDoc <doc directory> : create a file index.html in doc directory
+# doc directory contains sub-directories project-version
+# each project directory can contain epydoc, doxygen, sphinx, docbook
+# docs, examples...
+
+from __future__ import absolute_import, print_function
+
+import sys
+import os
+import getopt
+import re
+
+
+def usage():
+    print(
+        "\nThis script creates an html page containing an index of all documentation in a directory")
+    print("Usage : buildIndexDoc [options] <doc directory>")
+    print("Options : ")
+    print("-h --help : display this help page\n")
+
+# GLOBAL VARIABLES
+# docBookTypes : indicates a name for some documentation in docbook format
+# according to their suffix. For example, a doc named myproject_man is a
+# user manual for myproject...
+docBookTypes = {"_man": "User Manual", "_training":
+                "Tutorial", "_pg": "Programming manual"}
+# ignored : patterns of directories or files that mustn't be listed in the
+# index. for example CMakeLists.txt is not a documentation and must be
+# ignored. Elements of this list must be regexp patterns as defined here :
+# https://docs.python.org/howto/regex.html
+ignored = [re.compile("CMakeLists\.txt")]
+
+# This script parses the doc directory and creates a list of dictionaries :
+# [{ name : projectName, version : projectVersion, docs : [ {name : docName, links : [docPath, ...] }, ...] }, ...]
+# an html index is then created from this list.
+
+# OPTIONS
+# get the option doc directory
+try:
+    opts, args = getopt.getopt(sys.argv[1:], "h", ["help"])
+except getopt.GetOptError:
+    # print help information and exit:
+    usage()
+    sys.exit(2)
+
+for o, v in opts:
+    if o in ("-h", "--help"):
+        usage()
+        sys.exit()
+
+if not args:
+    print("You must give the documentations directory. ")
+    usage()
+    sys.exit(2)
+
+docDir = args[0]
+if not os.path.isdir(docDir):
+    print("Directory ", docDir, " does not exist.")
+    sys.exit(2)
+
+
+# MAIN PART
+os.chdir(docDir)
+# creates the index html file
+indexFile = open("doc_index.html", "w")
+
+# parse docDir : each subdirectory is a project
+docProjects = []
+root, dirs, files = next(os.walk(os.curdir))
+for projectDir in sorted(dirs):  # for each project
+    # do not take into account links that point to current directory
+    if os.path.islink(projectDir):
+        parentDir = os.path.dirname(os.readlink(projectDir))
+        if (parentDir == ""):
+            continue
+    p = projectDir.rsplit("-", 1)
+    if (len(p) == 2):  # if the directory doesn't match project-version, it is not a project doc directory, and it is passed
+        docs = []
+        project = {'name': p[0], 'version': p[1], 'docs': docs}
+        otherLinks = []  # unknown types of docs
+        # parse sub directories : types of doc
+        pfiles = os.listdir(projectDir)
+        for f in pfiles:
+            # check that it is not a pattern to ignore :
+            ignore = False
+            for pattern in ignored:
+                if pattern.match(f):
+                    ignore = True
+                    break
+            if not ignore:
+                # according type of doc
+                if os.path.isdir(os.path.join(projectDir, f)):
+                    if (f == "examples"):  # examples directory
+                        doc = {
+                            'name': f, 'link': os.path.join(projectDir, f)}
+                        docs.append(doc)
+                    elif f in ("doxygen", "epydoc", "sphinx") or os.path.exists(os.path.join(projectDir, f, "index.html")):  # doxygen, sphinx, epydoc, or other HTML directory
+                        doc = {'name': f, 'link': os.path.join(
+                            projectDir, f, "index.html")}
+                        docs.append(doc)
+                    # elif os.path.exists( os.path.join( projectDir, f, 'en', "index.html" ) ):
+                        # doc={'name' : f, 'link' : os.path.join(projectDir, f, 'en', "index.html") }
+                        # docs.append(doc)
+                    else:
+                        # check if it is a docbook directory (suffix match
+                        # docBookTypes keys)
+                        docbook = False
+                        for suffix, docName in docBookTypes.items():  # Test if directory is a docbook documentation
+                            if f.endswith(suffix):
+                                docbook = True
+                                links = []
+                                # sub directories are languages
+                                languages = os.listdir(
+                                    os.path.join(projectDir, f))
+                                for l in languages:
+                                    # subdirectories are types of doc : html,
+                                    # pdf
+                                    if os.path.exists(os.path.join(projectDir, f, l, "html")):
+                                        links.append(
+                                            ("html_" + l, os.path.join(projectDir, f, l, "html", "index.html")))
+                                    if os.path.exists(os.path.join(projectDir, f, l, "pdf")):
+                                        links.append(
+                                            ("pdf_" + l, os.path.join(projectDir, f, l, "pdf", project['name'] + ".pdf")))
+                                doc = {'name': docName, 'links': links}
+                                docs.append(doc)
+                        if not docbook:  # unknown doc -> add a link in other docs
+                            links = []
+                            for l in ('en', 'fr'):
+                                if os.path.exists(os.path.join(projectDir, f, l, "index.html")):
+                                    links.append(
+                                        (l, os.path.join(projectDir, f, l, 'index.html')))
+                            if len(links) != 0:
+                                doc = {'name': 'HTML doc', 'links': links}
+                                docs.append(doc)
+                            else:
+                                otherLinks.append(
+                                    (f, os.path.join(projectDir, f)))
+                else:  # unknown doc
+                    otherLinks.append((f, os.path.join(projectDir, f)))
+        # end for subdirs in project dir
+
+        if otherLinks:
+            docs.append({'name': 'Other docs', 'links': otherLinks})
+
+        docProjects.append(project)
+# end for each project
+
+# Write information in the output html index file
+# print("docProjects : ", docProjects)
+indexFile.write("<html><head></head><body>\n")
+
+indexFile.write("<h1>Documentation index</h1><hr>\n")
+# index of the page
+prec = ""
+for project in docProjects:
+    if project['name'] != prec:
+        indexFile.write("<a href='#" + project[
+                        'name'] + "'>" + project['name'] + "</a><br>\n")
+    prec = project['name']
+indexFile.write("<hr>\n")
+
+for project in docProjects:
+    indexFile.write("<a name='" + project['name'] + "'><h3>" + project[
+                    'name'] + " - Version " + project['version'] + "</h3></a>\n")
+    indexFile.write("<ul>\n")
+    for doc in project["docs"]:
+        if doc.get("link", None):
+            indexFile.write("<li><a href='" + doc.get(
+                "link") + "'>" + doc.get("name") + "</a></li>\n")
+        elif doc.get("links", None):
+            indexFile.write("<li>" + doc.get("name") + " : ")
+            for link in doc.get("links"):
+                indexFile.write(
+                    "<a href='" + link[1] + "'>" + link[0] + "</a> &nbsp; &nbsp; ")
+            indexFile.write("</li>\n")
+
+    indexFile.write("</ul>\n")
+
+indexFile.write("</body></html>\n")
+indexFile.close()

@@ -137,25 +137,41 @@ endif()
 add_custom_target( bv_ontology_doc
   COMMAND "${CMAKE_BINARY_DIR}/bin/bv_env${CMAKE_EXECUTABLE_SUFFIX}" "${PYTHON_EXECUTABLE}" ${CREATE_ONTOLOGY_DOC} ${CMAKE_BINARY_DIR}
   )
-# Index of all documentation
-add_custom_target( bv_doc_index
-  COMMAND "${CMAKE_BINARY_DIR}/bin/bv_env${CMAKE_EXECUTABLE_SUFFIX}" "${PYTHON_EXECUTABLE}" ${CREATE_DOC_INDEX} ${CMAKE_BINARY_DIR}/share/doc
-  )
-add_dependencies( bv_doc_index bv_commands_doc bv_ontology_doc )
-add_dependencies( bv_doc_index usrdoc devdoc)
-add_dependencies( ${PROJECT_NAME}-doc bv_doc_index)
 
-# FIXME: the latter two components of documentation (ontology and index) are
-# completely rebuilt during installation, which is kind of wasteful. Is there
-# any good reason to keep doing it this way?
-add_custom_target( install-bv_ontology_doc
-  COMMAND "${CMAKE_BINARY_DIR}/bin/bv_env${CMAKE_EXECUTABLE_SUFFIX}" "${PYTHON_EXECUTABLE}" ${CREATE_ONTOLOGY_DOC} $(BRAINVISA_INSTALL_PREFIX)
-  )
-add_custom_target( install-bv_doc_index
-  COMMAND "${CMAKE_BINARY_DIR}/bin/bv_env${CMAKE_EXECUTABLE_SUFFIX}" "${PYTHON_EXECUTABLE}" ${CREATE_DOC_INDEX} $(BRAINVISA_INSTALL_PREFIX)/share/doc
-  )
-add_dependencies( install-bv_doc_index install-bv_commands_doc install-bv_ontology_doc)
-add_dependencies( install-${PROJECT_NAME}-doc install-bv_doc_index )
+# I can't make this crap work. Let's try another day.
+
+# # commands docs help
+#
+# if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/scripts/brainvisa/bv_create_commands_doc" )
+#   set( CREATE_COMMANDS_DOC "${CMAKE_CURRENT_SOURCE_DIR}/scripts/brainvisa/bv_create_commands_doc" )
+# endif()
+# if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/scripts/brainvisa/bv_create_doc_index" )
+#   set( CREATE_DOC_INDEX "${CMAKE_CURRENT_SOURCE_DIR}/scripts/brainvisa/bv_create_doc_index" )
+# endif()
+#
+# BRAINVISA_GENERATE_COMMANDS_HELP()
+# BRAINVISA_GENERATE_COMMANDS_HELP_INDEX()
+#
+# # create global doc index after all is installed
+# # Index of all documentation
+# add_custom_target( bv_doc_index
+#   COMMAND "${CMAKE_BINARY_DIR}/bin/bv_env${CMAKE_EXECUTABLE_SUFFIX}" "${PYTHON_EXECUTABLE}" ${CREATE_DOC_INDEX} ${CMAKE_BINARY_DIR}/share/doc
+#   )
+# add_dependencies( bv_doc_index bv_commands_doc )
+# add_dependencies( bv_doc_index usrdoc devdoc)
+# add_dependencies( bv_doc_index bv_ontology_doc )
+# add_dependencies( ${PROJECT_NAME}-doc bv_doc_index)
+#
+# add_custom_target( install-bv_doc_index
+#   COMMAND "${CMAKE_BINARY_DIR}/bin/bv_env${CMAKE_EXECUTABLE_SUFFIX}" "${PYTHON_EXECUTABLE}" ${CREATE_DOC_INDEX} $(BRAINVISA_INSTALL_PREFIX)/share/doc
+#   )
+# add_dependencies( install-bv_doc_index install-bv_commands_doc )
+# add_dependencies( install-${PROJECT_NAME}-doc install-bv_doc_index )
+#
+# # FIXME: the latter components of documentation (ontology and index) are
+# # completely rebuilt during installation, which is kind of wasteful. Is there
+# # any good reason to keep doing it this way?
+# add_dependencies( install-bv_doc_index install-bv_ontology_doc)
 
 
 find_package( Sphinx )
