@@ -133,9 +133,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/bin/bv_create_ontology_doc" )
 endif()
 
 
-
 # Documentation of axon processes and ontologies
-BRAINVISA_FIND_PACKAGE( documentation QUIET )
 add_custom_target( bv_ontology_doc
   COMMAND "${CMAKE_BINARY_DIR}/bin/bv_env${CMAKE_EXECUTABLE_SUFFIX}" "${PYTHON_EXECUTABLE}" ${CREATE_ONTOLOGY_DOC} ${CMAKE_BINARY_DIR}
   )
