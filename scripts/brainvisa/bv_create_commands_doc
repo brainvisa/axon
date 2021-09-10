@@ -1,0 +1,400 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+#  This software and supporting documentation are distributed by
+#      Institut Federatif de Recherche 49
+#      CEA/NeuroSpin, Batiment 145,
+#      91191 Gif-sur-Yvette cedex
+#      France
+#
+# This software is governed by the CeCILL-B license under
+# French law and abiding by the rules of distribution of free software.
+# You can  use, modify and/or redistribute the software under the
+# terms of the CeCILL-B license as circulated by CEA, CNRS
+# and INRIA at the following URL "http://www.cecill.info".
+#
+# As a counterpart to the access to the source code and  rights to copy,
+# modify and redistribute granted by the license, users are provided only
+# with a limited warranty  and the software's author,  the holder of the
+# economic rights,  and the successive licensors  have only  limited
+# liability.
+#
+# In this respect, the user's attention is drawn to the risks associated
+# with loading,  using,  modifying and/or developing or reproducing the
+# software by the user in light of its specific status of free software,
+# that may mean  that it is complicated to manipulate,  and  that  also
+# therefore means  that it is reserved for developers  and  experienced
+# professionals having in-depth computer knowledge. Users are therefore
+# encouraged to load and test the software's suitability as regards their
+# requirements in conditions enabling the security of their systems and/or
+# data to be ensured and,  more generally, to use and operate it in the
+# same conditions as regards security.
+#
+# The fact that you are presently reading this means that you have had
+# knowledge of the CeCILL-B license and that you accept its terms.
+
+from __future__ import absolute_import, division
+from __future__ import print_function, unicode_literals
+
+import sys
+import io
+import os
+import re
+import getopt
+import operator
+
+import six
+
+
+if sys.platform[:3] == 'win':
+    try:
+        import win32pipe as pipe
+    except:
+        import os as pipe
+else:
+    import os as pipe
+
+
+def htmlEscape(msg):
+    """Replace special characters with HTML-safe sequences.
+
+    "&", "<", ">", double quote ("), and single quote (') are replaced.
+    """
+    # Same as html.escape in Python 3.2+
+    msg = msg.replace("&", "&amp;") # Must be done first!
+    msg = msg.replace("<", "&lt;")
+    msg = msg.replace(">", "&gt;")
+    msg = msg.replace('"', "&quot;")
+    msg = msg.replace('\'', "&#x27;")
+
+    return six.ensure_text(msg, 'utf-8')
+
+
+def get_commands(commandsPattern, exclude=[], mode=3, fakestable=0,
+                 exepath=None, textpath=None, commands=None, **kwargs):
+
+    if not (exepath or textpath):
+    # Default try to find files based on executable pathes
+        exepath = os.environ['PATH']
+
+    if not commandsPattern and commands is None:
+        return {}
+
+    # devPattern = re.compile(
+    # r'.*-[0-9][0-9][0-9][0-9]_[0-9][0-9]_[0-9][0-9]$' )
+    devPattern = re.compile(
+        r'.*-(([0-9][0-9][0-9][0-9]_[0-9][0-9]_[0-9][0-9])|(dev))$')
+    # Find commands
+    if commandsPattern:
+        pattern = re.compile(commandsPattern)
+    commands_filt = {}
+
+    # Create path list keeping if they are used to find executables (ptype = 0)
+    # or text files (ptype = 1)
+    pathes = []
+
+    if (exepath):
+        pathes += [(p, 0) for p in exepath.split(os.pathsep)]
+
+    if (textpath):
+        pathes += [(p, 1) for p in textpath.split(os.pathsep)]
+
+    for p, ptype in pathes:
+        if not (os.path.exists(p) and os.path.isdir(p)):
+            continue
+        if commands is not None:
+            it = commands
+        else:
+            it = os.listdir(p)
+
+        for c in it:
+            if c not in exclude:
+# if pattern.match( c ) and c[ -4: ] != '-dev' and not
+# commands_filt.has_key( c ):
+                if not commandsPattern or (pattern.match(c)
+                                           and c not in commands_filt):
+                    ok = 1
+                    dev = 0
+                    if mode != 3:
+                        dev = bool(devPattern.match(c))
+                        if (dev and mode != 1) or (not dev and mode != 2):
+                            ok = 0
+                    if ok:
+                        pc = os.path.join(p, c)
+                        if ( not ptype and os.access( pc, os.X_OK) ) \
+                                or (ptype and os.access(pc, os.R_OK)):
+                            commands_filt[c] = (pc, ptype)
+
+    return commands_filt
+
+
+def get_help(commands, exclude=[], mode=3, fakestable=0, progress=1,
+             encodings=['utf-8']):
+    # commands is a dictionnary where keys are command name and items are tuples
+    # that contain path of the file and ptype (0 : executable, 1 : text file)
+
+    help = {}
+    for c, v in commands.items():
+        if c not in exclude:
+            if progress:
+                print(c)
+                sys.stdout.flush()
+            if v[1]:
+                # File is a text file that contains command help
+                output = open(os.path.realpath(v[0]), 'rb')
+            else:
+                # File is an executable that must be called with -h option
+                output = pipe.popen(c + ' -h 2>&1', mode='rb')
+
+            if mode == 1 and fakestable == 1:
+                o = [x.replace(c, c[:-4]) for x in output.readlines()]
+            else:
+                o = output.readlines()
+
+            # Try to find appropriate encoding to use
+            converted = False
+            for encoding in encodings:
+                if encoding:
+                    try:
+                        o = [six.ensure_text(i, encoding) for i in o]
+                        converted = True
+                        break
+                    except UnicodeError:
+                        pass
+            if not converted:
+                raise ValueError('failed to decode help of command: {0}'
+                                 .format(c))
+
+            try:
+                help[c] = [htmlEscape(line) for line in o]
+            except:
+                print('failed in command:', c)
+                raise
+
+            try:
+                output.close()
+            except:
+                # avoid crashes on windows
+                pass
+
+        else:
+            if progress:
+                print(c, '- ignored')
+                sys.stdout.flush()
+            help[c] = 'command ignored'
+
+    return help
+
+
+def find_help(commandsPattern, exclude=[], mode=3, fakestable=0,
+              exepath=None, textpath=None, progress=1, encodings=['utf-8'],
+              commands=None):
+
+    # Do not exclude commands here because
+    # we would like these commands to be marked as ignored
+    commands = get_commands(commandsPattern, [], mode, fakestable,
+                            exepath, textpath, commands=commands)
+    help = get_help(commands, exclude, mode, fakestable, progress,
+                    encodings=encodings)
+
+    return help
+
+# -- main begin --
+
+s = 'dsflp:t:e:v:c:n:h'
+l = ['dev', 'stable', 'fakestable', 'list', 'path=', 'text-path=',
+     'encodings=', 'verbose=', 'commands=', 'name=', 'help', 'no-default']
+try:
+    optlist, args = getopt.getopt(sys.argv[1:], s, l)
+except getopt.error as msg:
+    sys.stderr.write(str(msg) + '\n')
+    sys.stderr.write('Try `' + os.path.basename(sys.argv[0])
+                     + ' -h\' for more information\n.')
+    sys.exit(2)
+
+output = 'index.html'
+mode = 3
+fakestable = 0
+listcommands = 0
+exepath = None
+textpath = None
+encodings = ['utf-8', 'iso-8859-1', None]
+verbose = 1
+sections = {
+    'carto': {
+        'label': 'Cartograph Commands',
+        'regex': ('^carto(?!.*_test$).*', [])},
+    'aims': {'label': 'AIMS Commands',
+             'regex': ('^Aims(?!.*_example$).*', [])},
+    'anatomist': {'label': 'Anatomist',
+                  'regex': ('(^anatomist)|(^anasimple.*)', [])},
+    'brainvisa-cmake': {'label': 'Brainvisa-CMake'},
+    'vip': {'label': 'VIP commands', 'regex': ('^Vip.*', [])},
+    'sigraph': {'label': 'SiGraph commands',
+                'regex': ('(^si[A-Z].*)|(sulci[A-Z].*)', [])},
+    'constellation': {'label': 'Constellation commands',
+                      'regex': ('^constel.*', [])},
+}
+sections_order = ['carto', 'aims', 'anatomist',
+                  'brainvisa-cmake', 'vip', 'sigraph', 'constellation']
+
+for option, argument in optlist:
+    if option == '--no-default':
+        sections = {}
+        sections_order = []
+    elif option == '-l' or option == '--list':
+        listcommands = 1
+    elif option == '-p' or option == '--path':
+        exepath = argument
+    elif option == '-t' or option == '--text-path':
+        textpath = argument
+    elif option == '-e' or option == '--encodings':
+        encodings = argument.split(',')
+    elif option in ('-c', '--commands'):
+        sec, cmds = argument.split(':')
+        cmds = cmds.split(',')
+        if sec in sections:
+            cs = sections[sec]
+        else:
+            cs = {}
+            sections[sec] = cs
+            sections_order.append(sec)
+        cs['commands'] = cmds
+    elif option in ('-n', '--name'):
+        sep = argument.find(':')
+        sec = argument[:sep].strip()
+        label = argument[sep + 1:].strip()
+        if sec in sections:
+            cs = sections[sec]
+        else:
+            cs = {}
+            sections[sec] = cs
+            sections_order.append(sec)
+        cs['label'] = label
+    elif option == '-v' or option == '--verbose':
+        verbose = int(argument)
+    else:
+        print('Usage:', sys.argv[0], '[options] [output.html]')
+        print('Options:')
+        print(
+            '--no-default      don\'t use a default projects list: all should be given via -c and -n otpions. This option should be specified before any -c or -n option, otherwise the previous ones will be forgotten.')
+        print(
+            '                  as if they were stable (don\'t print the -dev suffix)')
+        print(
+            '-p, --path        specify the search path for commands (default: use ')
+        print('                  the PATH environment variable)')
+        print('-l, --list        list commands included in documentation')
+        print(
+            '-t, --text-path   path to search for text files that contain command help.')
+        print(
+            '                  (for these files command help is not generated using ')
+        print(
+            '                  executables, but reading the content of the text file)')
+        print('-e, --encodings   encodings to use to decode help characters.')
+        print(
+            '                  (many encodings can be specified using comma separator)')
+        print(
+            '-c, --commands    commands list for a section, ex: -c "aims:AimsFileInfo,AimsFileConvert". Several -c options allowed')
+        print(
+            '-n, --name        section name, ex: -n "aims:AIMS Commands". Several -n option allowed.')
+        print('-v, --verbose     display verbose information')
+        print()
+        print('[output.html] defaults to index.html')
+        sys.exit(2)
+
+if len(args) > 1:
+    sys.stderr.write('too many arguments\n')
+    sys.exit(2)
+if len(args) > 0:
+    output = args[0]
+
+help = {}
+commands = {}
+params = {'encodings': encodings,
+          'progress': verbose}
+
+if not (exepath or textpath):
+    # Default try to find files based on executable pathes
+    exepath = os.environ['PATH']
+
+else:
+    if (exepath):
+        params['exepath'] = exepath + os.pathsep + os.environ['PATH']
+
+    if (textpath):
+        params['textpath'] = textpath
+
+if listcommands:
+    for s in sections_order:
+        sd = sections[s]
+        t, p, c = sd.get('label'), sd.get(
+            'regex', ('', [])), sd.get('commands')
+        infos = get_commands(*p, commands=c, **params)
+        if len(infos) == 0 and mode == 1:
+            infos = get_commands(*p, commands=c, **params)
+        commands[s] = list(infos.keys())
+        commands[s].sort()
+        print(s, ':', commands[s])
+
+else:
+    for s in sections_order:
+        sd = sections[s]
+        t, p, c = sd.get('label', s), sd.get(
+            'regex', ('', [])), sd.get('commands')
+        help[s] = find_help(*p, commands=c, **params)
+        if len(help[s]) == 0 and mode == 1:
+            help[s] = find_help(
+                *p, morde=2, fakestable=0, commands=c, **params)
+        commands[s] = sorted(help[s].keys())
+
+    html = io.open(output, 'w', encoding='utf-8')
+    html.write( '''\
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Commands help</title>
+</head>
+<body>
+<h1>Commands help</h1>
+  ''' )
+    for s in sections_order:
+        if len(commands[s]) != 0:
+            sd = sections[s]
+            t = sd.get('label', s)
+            html.write('<a href="#' + s + '">' + t + '</a><p>\n')
+
+    for s in sections_order:
+        if len(commands[s]) != 0:
+            sd = sections[s]
+            t = sd.get('label', s)
+            html.write('<hr><a name="' + s + '"><h2>' +
+                       t + '</h2></a>\n<table width="90%"><tr>\n')
+            i = -1
+            for c in commands[s]:
+                if fakestable and mode == 1:
+                    c = c[:-4]
+                i += 1
+                if i == 3:
+                    html.write('</tr>\n<tr>')
+                    i = 0
+                html.write(
+                    '<td><a href="#' + s + '_' + c + '">' + c + '</a></td>')
+            html.write('</table>\n')
+
+    for s in sections_order:
+        for c in commands[s]:
+            if fakestable and mode == 1:
+                cm = c[:-4]
+            else:
+                cm = c
+            html.write('<hr><a name="' + s + '_' +
+                       cm + '"><h2>' + cm + '</h2></a><pre>\n')
+            html.writelines(help[s][c])
+            html.write('</pre>')
+
+    html.write( '''
+</body>
+</html>
+  ''' )
+    html.close()
