@@ -804,21 +804,26 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
                     else:
                         value = new_value
             if not isinstance(value, list) and not isinstance(value, tuple):
-                if isinstance(value, six.string_types) and (value.startswith('"')
-                                                      or value.startswith("'") or value == "None"):
+                if isinstance(value, six.string_types) \
+                        and (value.startswith('"')
+                             or value.startswith("'") or value == "None"):
                     value = '"' + str(value) + '"'
-                else:
+                elif type(value) not in (type(None), bool, float, int):
+                    print('str(', value, '):', str(value))
                     value = str(value)
-                if escape is not None:
+                if escape is not None and isinstance(value, str):
                     for e, r in escape:
                         value = value.replace(e, r)
 
             return value
 
         value = getattr(process, name)
+        print('parameterToString', process, name)
+        print('value:', repr(value))
         useHierarchy = name in getattr(
             process, 'workflow_transmit_by_attributes', ())
         value = toString(value, useHierarchy, escape=self.escape())
+        print('str value:', repr(value))
 
         return value
 
