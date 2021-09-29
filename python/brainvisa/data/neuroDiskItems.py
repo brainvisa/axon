@@ -3013,13 +3013,13 @@ def reloadTypes():
 
 def pruneObsoleteTypes():
     global formats
-    for format in formats.keys():
+    for format in list(formats.keys()):
         if format not in Format._reloaded_formats:
             del formats[format]
     Format._reloaded_formats = {}
 
     global diskItemTypes
-    for type in diskItemTypes.keys():
+    for type in list(diskItemTypes.keys()):
         if type not in DiskItemType._reloaded_types:
             del diskItemTypes[type]
     DiskItemType._reloaded_types = {}
