@@ -37,8 +37,11 @@ def process_description(pi, hide=[]):
 
 
 def process_short_help(pi, indent=0, shorten_first=0, cols=None):
-    pdoc = pi.procdoc.get(processes.neuroConfig.language,
-                          pi.procdoc.get('en', {})).get('short')
+    if pi.procdoc is None:
+        pdoc = None
+    else:
+        pdoc = pi.procdoc.get(processes.neuroConfig.language,
+                              pi.procdoc.get('en', {})).get('short')
     if pdoc:
         help = xhtml_to_str(pdoc, indent=indent, shorten_first=shorten_first,
                             cols=cols)
@@ -154,6 +157,9 @@ def process_help_pprint(text, indent=0, shorten_first=0, cols=None):
                 w = line.rfind(' ', 0, maxw)
                 if w < 0:
                     w = line.find(' ')
+                if w >= 0 and line[:w] == ' ' * w:
+                    # hard break: we cannot do something very nice...
+                    w = maxw
                 if w >= 0:
                     new_lines.append(line[0:w])
                     line = ' ' * indent + line[w + 1:]
@@ -189,7 +195,10 @@ def process_list_help(sort_by='name', output=sys.stdout, proc_filter=None,
     else:
         key_att = sort_by
     for pi in processes.allProcessesInfo():
-        processes.readProcdoc(pi.id)  # ensure doc is here
+        try:
+            processes.readProcdoc(pi.id)  # ensure doc is here
+        except:
+            pass
         if proc_filter and not filter_process(pi, proc_filters):
             continue
         keys = getattr(pi, key_att)
