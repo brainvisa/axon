@@ -5,6 +5,7 @@ import re
 from brainvisa import processes
 from brainvisa.processes import ValidationError
 import six
+import os
 
 
 def process_description(pi, hide=[]):
@@ -181,40 +182,66 @@ def filter_process(pi, proc_filters):
 
 def process_list_help(sort_by='name', output=sys.stdout, proc_filter=None,
                       hide=None):
-    proc_filters = []
-    if proc_filter:
-        for pf in proc_filter:
-            sep = pf.find('=')
-            attrib = pf[:sep]
-            rule = re.compile(pf[sep + 1:])
-            proc_filters.append((attrib, rule))
-
-    proc_list = {}
-    if sort_by == 'role':
-        key_att = 'roles'
+    # redirect stderr/stdout to avoid printing error messages from processes
+    stdout = sys.stdout
+    stderr = sys.stderr
+    tmp = []
+    if os.path.exists('/dev/null'):
+        outfile = open('/dev/null', 'a')
     else:
-        key_att = sort_by
-    for pi in processes.allProcessesInfo():
-        try:
-            processes.readProcdoc(pi.id)  # ensure doc is here
-        except:
-            pass
-        if proc_filter and not filter_process(pi, proc_filters):
-            continue
-        keys = getattr(pi, key_att)
-        if type(keys) not in (list, tuple):
-            keys = (keys,)
-        for key in keys:
-            plentry = proc_list.setdefault(key, {})
-            plentry[pi.id] = process_description(pi, hide)
+        import tempfile
+        x = mkstemp()[0]
+        os.close(x[0])
+        outfile = open(x[1], 'a')
+        tmp.append(x[1])
+    # print('--- disabling stdout/err ---')
+    sys.stdout = outfile
+    sys.stderr = outfile
+    try:
+        proc_filters = []
+        if proc_filter:
+            for pf in proc_filter:
+                sep = pf.find('=')
+                attrib = pf[:sep]
+                rule = re.compile(pf[sep + 1:])
+                proc_filters.append((attrib, rule))
 
-    sorted_entries = sorted(proc_list.keys())
-    descr_list = []
-    for key in sorted_entries:
-        entry = proc_list[key]
-        ids = sorted(entry.keys())
-        for pid in ids:
-            descr_list.append(entry[pid])
+        proc_list = {}
+        if sort_by == 'role':
+            key_att = 'roles'
+        else:
+            key_att = sort_by
+        for pi in processes.allProcessesInfo():
+            try:
+                processes.readProcdoc(pi.id)  # ensure doc is here
+            except:
+                pass
+            if proc_filter and not filter_process(pi, proc_filters):
+                continue
+            keys = getattr(pi, key_att)
+            if type(keys) not in (list, tuple):
+                keys = (keys,)
+            for key in keys:
+                plentry = proc_list.setdefault(key, {})
+                plentry[pi.id] = process_description(pi, hide)
+
+        sorted_entries = sorted(proc_list.keys())
+        descr_list = []
+        for key in sorted_entries:
+            entry = proc_list[key]
+            ids = sorted(entry.keys())
+            for pid in ids:
+                descr_list.append(entry[pid])
+    finally:
+        sys.stderr = stderr
+        sys.stdout = stdout
+        outfile.close()
+        del outfile
+        x = None
+        for x in tmp:
+            os.unlink(x)
+        del x, tmp
+        # print('*** Re-enabling stdout/err ***')
 
     output.write('\n'.join(descr_list))
 

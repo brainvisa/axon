@@ -50,6 +50,7 @@ import re
 import types
 from optparse import OptionParser, OptionGroup
 import six
+import os
 
 
 def get_process_with_params(process_name, iterated_params=[], *args, **kwargs):
@@ -354,6 +355,9 @@ parser.add_option_group(group4)
 parser.disable_interspersed_args()
 (options, args) = parser.parse_args()
 
+print('Initializing brainvisa... (takes a while)...')
+sys.stdout.flush()
+
 # if options.enablegui:
     # neuroConfig.gui = True
     # from soma.qt_gui.qt_backend import QtGui
@@ -370,7 +374,39 @@ else:
     if not options.enabledb and not options.historyBook:
         neuroConfig.logFileName = ''
 
-axon.initializeProcesses()
+# redirect stderr/stdout to avoid printing error messages from processes
+stdout = sys.stdout
+stderr = sys.stderr
+tmp = []
+if os.path.exists('/dev/null'):
+    outfile = open('/dev/null', 'a')
+else:
+    import tempfile
+    x = mkstemp()[0]
+    os.close(x[0])
+    outfile = open(x[1], 'a')
+    tmp.append(x[1])
+    del x
+# print('--- disabling stdout/err ---')
+sys.stdout = outfile
+sys.stderr = outfile
+# print('*** DISABLED. ***')
+try:
+
+    axon.initializeProcesses()
+
+finally:
+    sys.stderr = stderr
+    sys.stdout = stdout
+    outfile.close()
+    del outfile
+    x = None
+    for x in tmp:
+        os.unlink(x)
+    del x, tmp
+    # print('*** Re-enabling stdout/err ***')
+
+
 
 if options.list_processes:
     sort_by = options.sort_by
