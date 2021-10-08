@@ -150,8 +150,10 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/scripts/brainvisa/bv_create_doc_index" )
   set( CREATE_DOC_INDEX "${CMAKE_CURRENT_SOURCE_DIR}/scripts/brainvisa/bv_create_doc_index" )
 endif()
 
-BRAINVISA_GENERATE_COMMANDS_HELP()
-BRAINVISA_GENERATE_COMMANDS_HELP_INDEX()
+if ( NOT NO_BV_MAKER )
+  BRAINVISA_GENERATE_COMMANDS_HELP()
+  BRAINVISA_GENERATE_COMMANDS_HELP_INDEX()
+endif()
 
 # create global doc index after all is installed
 # Index of all documentation
