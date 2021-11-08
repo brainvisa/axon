@@ -72,12 +72,11 @@ def execution(self, context):
                '-t', '0',
                '-b']
     context.write('Sum')
-    Addition = ['AimsLinearComb',
+    Addition = ['cartoLinearComb.py',
                 '-i', tAbove.fullPath(),
-                '-a', '1',
-                '-j', tBelow.fullPath(),
-                '-c', '1',
-                '-o', tAdd.fullPath()]
+                '-i', tBelow.fullPath(),
+                '-o', tAdd.fullPath(),
+                '-f', 'I1 + I2']
     context.write('Dilation')
     MaskDilation = ['AimsMorphoMath', '-m', 'dil',
                     '-i', tAdd.fullPath(),
@@ -91,7 +90,7 @@ def execution(self, context):
 
     context.system(*ThreshA)
     context.system(*ThreshB)
-    context.system(*Addition)
+    context.pythonSystem(*Addition)
     context.system(*MaskDilation)
     context.system(*Conversion)
 

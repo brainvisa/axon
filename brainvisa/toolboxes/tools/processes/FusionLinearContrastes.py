@@ -76,8 +76,9 @@ def execution(self, context):
         context.pythonSystem('cartoLinearComb.py', '-i', list_write[0],
                              '-i', list_write[i + 1], '-o', list_write[0],
                              '-f', 'I1 + I2')
-    context.system('AimsLinearComb', '-i', list_write[
-                   0], '-j', list_write[-1], '-o', self.write)
+    context.pythonSystem('cartoLinearComb.py', '-i', list_write[0],
+                         '-i', list_write[-1], '-o', self.write,
+                         '-f', 'I1 + I2')
 
     context.system('VipSplineResamp', '-i',  write.fullName(), '-t',
                    write.fullName(), '-did', '-or', '0', '-o', write.fullName())
