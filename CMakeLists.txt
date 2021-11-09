@@ -178,7 +178,7 @@ add_dependencies( install-${PROJECT_NAME}-doc install-bv_doc_index )
 # components only, then build docs pointers to them only. This is not used any
 # longer since modularity is gone using containers.
 
-# add_dependencies( install-bv_doc_index install-bv_ontology_doc)
+add_dependencies( install-bv_doc_index install-bv_ontology_doc)
 
 
 
