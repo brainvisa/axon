@@ -37,6 +37,17 @@ from brainvisa.tools import aimsGlobals
 from brainvisa import shelltools
 import sys
 from six.moves import map
+try:
+    from soma import aims
+except ImportError:
+    pass
+
+def validation():
+    try:
+        from soma import aims
+    except ImportError:
+        raise ValidationError('aims is not available')
+
 
 def map_list(func, thing):
     return list(map(func, thing))
@@ -45,9 +56,13 @@ name = 'Aims Converter'
 roles = ('converter',)
 userLevel = 0
 
+formats = aimsGlobals.aimsVolumeFormats
+if [int(x) for x in aims.__version__.split('.')] < [5, 0, 4]:
+    formats = [f for f in formats
+               if f not in ('FreesurferMGZ', 'FreesurferMGH')]
+
 signature = Signature(
-    'read', ReadDiskItem('4D Volume', aimsGlobals.aimsVolumeFormats,
-                         enableConversion=False),
+    'read', ReadDiskItem('4D Volume', formats, enableConversion=False),
     'write', WriteDiskItem('4D Volume',  aimsGlobals.aimsWriteVolumeFormats),
     'preferredFormat', Choice(*([('<auto>', None)]
                                + map_list(lambda x: (x, getFormat(x)),

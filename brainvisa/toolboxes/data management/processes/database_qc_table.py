@@ -5,6 +5,7 @@ from brainvisa.processes import *
 from brainvisa.data import neuroHierarchy
 from soma.wip.application.api import findIconFile
 from soma.qt_gui.qtThread import MainThreadLife
+from soma.qt_gui.qt_backend.Qt import QTableWidget, QTableWidgetItem
 import numpy as np
 import os
 import tempfile

@@ -43,7 +43,15 @@ import os
 import sys
 import re
 import types
-from brainvisa.processing.qtgui.backwardCompatibleQt import *
+from soma.qt_gui.qt_backend.Qt import (
+    QDialog, QWidget, QMainWindow, QHBoxLayout, QVBoxLayout, QGridLayout, Qt,
+    QPushButton, QMenu, QMenuBar, QAction, QScrollArea, QTransform, QTreeWidget,
+    QTreeWidgetItem, QTreeWidgetItemIterator, QLabel, QLineEdit, QSplitter,
+    QIcon, QDockWidget, QSize, QSizePolicy, QSpacerItem, QStackedWidget,
+    QToolBar, QToolButton, QTimer, QUrl, qApp, QApplication, QFrame,
+    QFileDialog, QFont, QFontInfo, QFormLayout, QFile, QFormLayout, QMovie,
+    QTextEdit, QPalette, QMessageBox, QObject
+)
 from soma.qt_gui import qt_backend
 from soma.qt_gui.qt_backend.QtGui import QKeySequence
 from soma.qt_gui.qt_backend import QtCore
