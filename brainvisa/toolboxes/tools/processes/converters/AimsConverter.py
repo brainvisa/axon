@@ -59,7 +59,7 @@ userLevel = 0
 formats = aimsGlobals.aimsVolumeFormats
 if [int(x) for x in aims.__version__.split('.')] < [5, 0, 4]:
     formats = [f for f in formats
-               if f not in ('FreesurferMGZ', 'FreesurferMGH')]
+               if f.name not in ('FreesurferMGZ', 'FreesurferMGH')]
 
 signature = Signature(
     'read', ReadDiskItem('4D Volume', formats, enableConversion=False),
