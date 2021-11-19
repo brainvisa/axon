@@ -1898,12 +1898,18 @@ class ParameterizedWidget(QWidget):
             self.labels[x].set_read_only(read_only)
 
     def parameterizedDeleted(self, parameterized):
-        for k, p in list(parameterized.signature.items()):
-            try:
-                parameterized.removeParameterObserver(
-                    k, self.parameterChanged)
-            except ValueError:
-                pass
+        try:
+            signature = parameterized.signature
+            for k, p in list(parameterized.signature.items()):
+                try:
+                    parameterized.removeParameterObserver(
+                        k, self.parameterChanged)
+                except ValueError:
+                    pass
+        except ReferenceError:
+            # parameterized is a weak proxy and, here, it has already been
+            # deleted.
+            return
         self.parameterized = None
         for x in self.editors.keys():
             self.editors[x].releaseCallbacks()
