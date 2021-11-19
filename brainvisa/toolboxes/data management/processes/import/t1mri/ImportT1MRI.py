@@ -102,7 +102,8 @@ def initialization(self):
     self.signature['output'].browseUserLevel = 3
     self.signature['input'].databaseUserLevel = 2
     self.signature['referential'].userLevel = 2
-    self.setOptional('referential')
+    self.setOptional('referential', 'output_database', 'attributes_merging',
+                     'selected_attributes_from_header')
     self.linkParameters('referential', 'output')
 
 
