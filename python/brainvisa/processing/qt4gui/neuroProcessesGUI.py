@@ -44,16 +44,17 @@ import sys
 import re
 import types
 from soma.qt_gui.qt_backend.Qt import (
-    QDialog, QWidget, QMainWindow, QHBoxLayout, QVBoxLayout, QGridLayout, Qt,
-    QPushButton, QMenu, QMenuBar, QAction, QScrollArea, QTransform, QTreeWidget,
-    QTreeWidgetItem, QTreeWidgetItemIterator, QLabel, QLineEdit, QSplitter,
-    QIcon, QDockWidget, QSize, QSizePolicy, QSpacerItem, QStackedWidget,
-    QToolBar, QToolButton, QTimer, QUrl, qApp, QApplication, QFrame,
-    QFileDialog, QFont, QFontInfo, QFormLayout, QFile, QFormLayout, QMovie,
-    QTextEdit, QPalette, QMessageBox, QObject
+    Qt, qApp, QAction, QApplication, QButtonGroup,
+    QCursor, QComboBox, QDialog, QDockWidget, QFile, QFileDialog, QFont,
+    QFontInfo, QFormLayout, QFrame, QGridLayout, QHBoxLayout, QIcon,
+    QKeySequence, QLabel, QLineEdit, QMainWindow, QMenu, QMenuBar, QMessageBox,
+    QMovie, QObject, QPalette, QPixmap, QPlainTextEdit, QProgressBar,
+    QPushButton, QRadioButton, QScrollArea, QSize, QSizePolicy, QSpacerItem,
+    QSplitter, QStackedWidget, QTextEdit, QTimer, QToolBar, QToolButton,
+    QTransform, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator,
+    QUrl, QVBoxLayout, QWidget,
 )
 from soma.qt_gui import qt_backend
-from soma.qt_gui.qt_backend.QtGui import QKeySequence
 from soma.qt_gui.qt_backend import QtCore
 from soma.qt_gui.qt_backend import QtGui
 from six.moves import range
