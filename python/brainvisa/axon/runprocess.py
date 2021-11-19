@@ -76,6 +76,14 @@ def get_process_with_params(process_name, iterated_params=[], *args, **kwargs):
     process: Process instance
     '''
     process = brainvisa.processes.getProcessInstance(process_name)
+
+    if neuroConfig.fastStart and getattr(process, 'require_databasing', False):
+        # databasing is required by the process and is not enabled yet
+        print('Warning: initializing databases. This takes time and may '
+              'cause problems on network filesystems.')
+        from brainvisa.data import neuroHierarchy
+        neuroHierarchy.openDatabases()
+
     context = brainvisa.processes.defaultContext()
 
     # check for iterations
