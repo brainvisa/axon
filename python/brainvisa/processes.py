@@ -5975,7 +5975,7 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
         # Optional attributes
         for n in ('signature', 'execution', 'name', 'userLevel', 'roles',
                   'category', 'showMaximized', 'allowed_processes',
-                  'rolePriority'):
+                  'rolePriority', 'require_databasing'):
             v = getattr(processModule, n, None)
             if v is not None:
                 setattr(NewProcess, n, v)
