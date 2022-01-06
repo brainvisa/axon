@@ -957,7 +957,7 @@ class CapsulProcess(processes.Process):
         from brainvisa.configuration import neuroConfig
         if not neuroConfig.gui:
             return
-        from capsul.qt_gui.widgets import PipelineDevelopperView
+        from capsul.qt_gui.widgets import PipelineDeveloperView
         from capsul.pipeline.pipeline import Pipeline
         from soma.qt_gui.qtThread import MainThreadLife
         # fancy list editors on ControllerWidget
@@ -967,7 +967,7 @@ class CapsulProcess(processes.Process):
 
         Pipeline.hide_nodes_activation = False
         self.propagate_parameters_to_capsul()
-        mpv = PipelineDevelopperView(
+        mpv = PipelineDeveloperView(
             self.get_capsul_process(), allow_open_controller=True,
             show_sub_pipelines=True)
         mpv.show()
