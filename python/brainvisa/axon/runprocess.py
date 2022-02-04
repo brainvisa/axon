@@ -149,7 +149,8 @@ def run_process_with_distribution(
         process, use_soma_workflow=False, resource_id=None, login=None,
         password=None, config=None, rsa_key_pass=None, queue=None,
         input_file_processing=None, output_file_processing=None,
-        keep_workflow=False, keep_failed_workflow=False):
+        keep_workflow=False, keep_failed_workflow=False,
+        write_workflow_only=None):
     ''' Run the given process, either sequentially or distributed through
     Soma-Workflow.
 
@@ -189,7 +190,15 @@ def run_process_with_distribution(
     keep_failed_workflow: bool
         keep the workflow in the computing resource database after execution,
         if it has failed. By default it is removed.
+    write_workflow_only: str
+        if specified, this is an output filename where the workflow file will
+        be written. The workflow will not be actually run, because int his
+        situation the user probably wants to use the workflow on his own.
     '''
+
+    if write_workflow_only:
+        use_soma_workflow = True
+
     if use_soma_workflow:
         from brainvisa import workflow
         from soma_workflow import client as swclient
@@ -208,6 +217,12 @@ def run_process_with_distribution(
             input_file_processing=input_file_processing,
             output_file_processing=output_file_processing,
             context=context)
+
+        if write_workflow_only:
+            print('saving workflow %s' % write_workflow_only)
+            swclient.Helper.serialize(write_workflow_only, wf)
+            # end here
+            return
 
         wc = swclient.WorkflowController(
             resource_id=resource_id,
@@ -324,6 +339,12 @@ group2.add_option('--keep-failed-workflow', dest='keep_failed_workflow',
                   help='keep the workflow in the computing resource database '
                   'after execution, if it has failed. By default it is '
                   'removed.')
+group2.add_option('-w', '--write-workflow-only', dest='write_workflow',
+                  default=None, help='if specified, this is an output '
+                  'filename where the workflow file will be written. The '
+                  'workflow will not be actually run, because in this '
+                  'situation the user probably wants to use the workflow on '
+                  'his own.')
 parser.add_option_group(group2)
 
 group3 = OptionGroup(parser, 'Iteration',
@@ -494,7 +515,8 @@ run_process_with_distribution(
     input_file_processing=file_processing[0],
     output_file_processing=file_processing[1],
     keep_workflow=options.keep_workflow,
-    keep_failed_workflow=options.keep_failed_workflow)
+    keep_failed_workflow=options.keep_failed_workflow,
+    write_workflow_only=options.write_workflow)
 
 
 sys.exit(neuroConfig.exitValue)
