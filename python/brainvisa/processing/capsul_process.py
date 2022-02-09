@@ -646,6 +646,17 @@ class CapsulProcess(processes.Process):
             except traits.TraitError:
                 pass
 
+            # enable / forbid completion in capsul when it's forbidden in axon
+            forbid_completion = not self.parameterLinkable(name)
+            if hasattr(process, 'propagate_metadata'):
+                if name in process.pipeline_node.plugs:
+                    process.propagate_metadata(
+                        '', name, {'forbid_completion': forbid_completion})
+            else:
+                trait = process.trait(name)
+                if trait is not None:
+                    trait.forbid_completion = forbid_completion
+
     def forbid_completion(self, params, forbid=True):
         ''' Forbids (blocks) Capsul completion system for the selected
         parameters. This allows to replace Capsul completion by Axon links
