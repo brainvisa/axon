@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="en">
+    <xhtml name="short">Computes simple statistics on one or more images from region of interest.</xhtml>
+    <xhtml name="long"><p>This process allows to compute simple statistics in images according to a mask or a set of labels. Several images can be used as input, but only one ROI file can be used at a time.
+<br/><br/>Images and ROI files have to be in the same space to return meaning values (ex: in MNI space).
+</p>
+
+<h3>Features computed</h3>
+
+<p>For each label in the ROI image, several values are output by the process:
+  <ul>
+    <li><b>mean</b> of the values in the ROI</li>
+    <li><b>volume</b> of the ROI</li>
+    <li>the <b>median</b> value in the ROI</li>
+    <li>the <b>standard deviation (stddev)</b> of the image in the ROI</li>
+    <li><b>minimum</b> value of the image in the ROI</li>
+    <li><b>maximum</b> value of the image in the ROI</li>
+    <li>the total value of the image measured in the ROI (<b>point_count</b>)</li>
+  </ul>
+</p></xhtml>
+    <d name="parameters">
+      <xhtml name="images">List of images to make measures on</xhtml>
+      <xhtml name="ROI">ROI or mask image</xhtml>
+      <xhtml name="translation">JSON file which contains names of ROI values</xhtml>
+      <xhtml name="statistics">Output file as a csv file which contains results for all images</xhtml>
+    </d>
+  </d>
+</d>
+</minf>
