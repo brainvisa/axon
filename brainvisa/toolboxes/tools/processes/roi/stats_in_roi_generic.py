@@ -4,8 +4,10 @@ import os
 import shutil
 from tempfile import NamedTemporaryFile
 
+import pandas as pd
+
 from brainvisa.processes import Signature
-from brainvisa.processes import ListOf, ReadDiskItem, WriteDiskItem
+from brainvisa.processes import ListOf, ReadDiskItem, WriteDiskItem, Choice
 
 userLevel = 0
 name = 'Statistics in ROI - generic'
@@ -16,12 +18,14 @@ signature = Signature(
     'ROI', ReadDiskItem('4D Volume',
                         ['gz compressed NIFTI-1 image', 'NIFTI-1 image']),
     'translation', ReadDiskItem('Any type', 'JSON file'),
-    'statistics', WriteDiskItem('CSV file', 'CSV file'),
+    'statistics_csv', WriteDiskItem('CSV file', 'CSV file'),
+    'statistics', ListOf(Choice("mean", "volume", "median", "stddev", "min", "max", "point_count")),
 )
 
 
 def initialization(self):
     self.setOptional('translation')
+    self.statistics = ["mean", "volume", "max", "min"]
 
 
 def execution(self, context):
@@ -31,29 +35,20 @@ def execution(self, context):
            '-f', 'csv',
            '-i', self.ROI.fullPath(),
            '-s', images_joined,
-           '-o', self.statistics.fullPath()]
+           '-o', self.statistics_csv.fullPath()]
     context.system(*cmd)
 
+    stats = pd.read_csv(self.statistics_csv.fullPath(), sep='\t')
+    columns = ['ROI_label']
+
+    # Use translate
     if self.translation:
         with open(self.translation.fullPath(), 'r') as trans_file:
             trans_dict = json.load(trans_file)
+        stats['ROI_name'] = stats.apply(lambda row: trans_dict[str(int(row['ROI_label']))], axis=1)
+        columns.append('ROI_name')
 
-        tempfile = NamedTemporaryFile(mode='w', delete=False)
-        try:
-            with open(self.statistics.fullPath(), 'r') as stat_file, tempfile:
-                reader = csv.reader(stat_file, delimiter='\t')
-                writer = csv.writer(tempfile, delimiter='\t')
-
-                header = next(reader)
-                header.insert(1, 'ROI_name')
-                writer.writerow(header)
-                
-                for row in reader:
-                    label = row[0]
-                    row.insert(1, trans_dict.get(label, ''))
-                    writer.writerow(row)
-
-            shutil.move(tempfile.name, self.statistics.fullPath())
-        finally:
-            if os.path.exists(tempfile.name):
-                os.remove(tempfile.name)
+    # Only keep interesting statistics
+    columns += self.statistics
+    stats = stats[columns]
+    stats.to_csv(self.statistics_csv.fullPath(), sep='\t', index=False)
