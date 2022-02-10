@@ -1,5 +1,6 @@
 import csv
 import json
+import os
 import shutil
 from tempfile import NamedTemporaryFile
 
@@ -38,17 +39,21 @@ def execution(self, context):
             trans_dict = json.load(trans_file)
 
         tempfile = NamedTemporaryFile(mode='w', delete=False)
-        with open(self.statistics.fullPath(), 'r') as stat_file, tempfile:
-            reader = csv.reader(stat_file, delimiter='\t')
-            writer = csv.writer(tempfile, delimiter='\t')
+        try:
+            with open(self.statistics.fullPath(), 'r') as stat_file, tempfile:
+                reader = csv.reader(stat_file, delimiter='\t')
+                writer = csv.writer(tempfile, delimiter='\t')
 
-            header = next(reader)
-            header.insert(1, 'ROI_name')
-            writer.writerow(header)
-            
-            for row in reader:
-                label = row[0]
-                row.insert(1, trans_dict.get(label, ''))
-                writer.writerow(row)
+                header = next(reader)
+                header.insert(1, 'ROI_name')
+                writer.writerow(header)
+                
+                for row in reader:
+                    label = row[0]
+                    row.insert(1, trans_dict.get(label, ''))
+                    writer.writerow(row)
 
-        shutil.move(tempfile.name, self.statistics.fullPath())
+            shutil.move(tempfile.name, self.statistics.fullPath())
+        finally:
+            if os.path.exists(tempfile.name):
+                os.remove(tempfile.name)
