@@ -41,7 +41,7 @@ def execution(self, context):
     stats = pd.read_csv(self.statistics_csv.fullPath(), sep='\t')
     columns = ['ROI_label']
 
-    # Use translate
+    # Use translate to save ROI name
     if self.translation:
         with open(self.translation.fullPath(), 'r') as trans_file:
             trans_dict = json.load(trans_file)
