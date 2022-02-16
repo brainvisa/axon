@@ -891,10 +891,11 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
                     for path, trans in self.context.soma_workflow_config[
                             'path_translations'].items():
                         namespace, uuid = trans
+                        path = os.path.join(path, '')  # end with /
                         if namespace != 'brainvisa' \
-                                and fileName.startswith(os.path.join(path, '')):
+                                and fileName.startswith(path):
                             global_in_file = SharedResourcePath(
-                                relative_path=fileName[(len(path) + 1):],
+                                relative_path=fileName[len(path):],
                                 namespace=namespace,
                                 uuid=uuid)
                             break
@@ -1012,10 +1013,11 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
                     for path, trans in self.context.soma_workflow_config[
                             'path_translations'].items():
                         namespace, uuid = trans
+                        path = os.path.join(path, '')
                         if namespace != 'brainvisa' \
-                                and fileName.startswith(os.path.join(path, '')):
+                                and fileName.startswith(path):
                             global_out_file = SharedResourcePath(
-                                relative_path=fileName[(len(path) + 1):],
+                                relative_path=fileName[len(path):],
                                 namespace=namespace,
                                 uuid=uuid)
                             break
