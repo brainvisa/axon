@@ -715,6 +715,21 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
             for db in neuroHierarchy.databases.iterDatabases():
                 path_translations[db.directory] = ['brainvisa', db.uuid]
 
+            # allow to translate paths outside of databases, if they are
+            # configured in the local client resource
+
+            # we should use the correct resource, but we don't know which one
+            # here
+            import soma_workflow.client as swc
+            wc = swc.WorkflowController()
+            translations = wc.config.get_path_translation()
+            for namespace, items in translations.items():
+                if namespace == 'brainvisa':
+                    # skip brainvisa namespace which is handled above
+                    continue
+                for uuid, path in items.items():
+                    path_translations[path] = [namespace, uuid]
+
         context.soma_workflow_config = {'path_translations': path_translations,
                                         'transfer_paths': transfer_paths}
 
@@ -818,12 +833,12 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
             return value
 
         value = getattr(process, name)
-        print('parameterToString', process, name)
-        print('value:', repr(value))
+        # print('parameterToString', process, name)
+        # print('value:', repr(value))
         useHierarchy = name in getattr(
             process, 'workflow_transmit_by_attributes', ())
         value = toString(value, useHierarchy, escape=self.escape())
-        print('str value:', repr(value))
+        # print('str value:', repr(value))
 
         return value
 
@@ -872,14 +887,26 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
                       namespace="brainvisa",
                       uuid=databaseUuid)
                 else:
-                    print("Cannot find database uuid for file " + repr(
-                        fileName) + " => the file will be transfered.")
-                    global_in_file = FileTransfer(is_input=True,
-                                                  client_path=fileName,
-                                                  name=os.path.basename(
-                                                      fileName),
-                                                  client_paths=fullPaths)
-                    self.__file_transfers[fileId] = global_in_file
+                    global_in_file = None
+                    for path, trans in self.context.soma_workflow_config[
+                            'path_translations'].items():
+                        namespace, uuid = trans
+                        if namespace != 'brainvisa' \
+                                and fileName.startswith(os.path.join(path, '')):
+                            global_in_file = SharedResourcePath(
+                                relative_path=fileName[(len(path) + 1):],
+                                namespace=namespace,
+                                uuid=uuid)
+                            break
+                    if global_in_file is None:
+                        print("Cannot find database uuid for file " + repr(
+                            fileName) + " => the file will be transfered.")
+                        global_in_file = FileTransfer(is_input=True,
+                                                      client_path=fileName,
+                                                      name=os.path.basename(
+                                                          fileName),
+                                                      client_paths=fullPaths)
+                        self.__file_transfers[fileId] = global_in_file
 
             elif self.__input_file_processing == self.BV_DB_SHARED_PATH:
                 if databaseUuid and databaseUuid in self.brainvisa_db:
@@ -981,14 +1008,27 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
                                                          namespace="brainvisa",
                                                          uuid=databaseUuid)
                 else:
-                    print("Cannot find database uuid for file " + repr(
-                        fileName) + " => the file will be transfered.")
-                    global_out_file = FileTransfer(is_input=False,
-                                                   client_path=fileName,
-                                                   name=os.path.basename(
-                                                   fileName),
-                                                   client_paths=fullPaths)
-                    self.__file_transfers[fileId] = global_out_file
+                    global_out_file = None
+                    for path, trans in self.context.soma_workflow_config[
+                            'path_translations'].items():
+                        namespace, uuid = trans
+                        if namespace != 'brainvisa' \
+                                and fileName.startswith(os.path.join(path, '')):
+                            global_out_file = SharedResourcePath(
+                                relative_path=fileName[(len(path) + 1):],
+                                namespace=namespace,
+                                uuid=uuid)
+                            break
+                        else:
+                            print("Cannot find database uuid for file " + repr(
+                                fileName) + " => the file will be transfered.")
+                            global_out_file = FileTransfer(
+                                is_input=False,
+                                client_path=fileName,
+                                name=os.path.basename(
+                                fileName),
+                                client_paths=fullPaths)
+                            self.__file_transfers[fileId] = global_out_file
             else:
                 raise ValueError('Unsupported output file processing mode: %s'
                                  % self.__output_file_processing)
