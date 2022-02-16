@@ -891,9 +891,11 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
                     for path, trans in self.context.soma_workflow_config[
                             'path_translations'].items():
                         namespace, uuid = trans
-                        path = os.path.join(path, '')  # end with /
+                        if path.endswith(os.path.sep):
+                            path = path[:-1]
+                        path2 = os.path.join(path, '')
                         if namespace != 'brainvisa' \
-                                and fileName.startswith(path):
+                                and (fileName == path or fileName.startswith(path2)):
                             global_in_file = SharedResourcePath(
                                 relative_path=fileName[len(path):],
                                 namespace=namespace,
@@ -1013,24 +1015,26 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
                     for path, trans in self.context.soma_workflow_config[
                             'path_translations'].items():
                         namespace, uuid = trans
-                        path = os.path.join(path, '')
+                        if path.endswith(os.path.sep):
+                            path = path[:-1]
+                        path2 = os.path.join(path, '')
                         if namespace != 'brainvisa' \
-                                and fileName.startswith(path):
+                                and (fileName == path or fileName.startswith(path2)):
                             global_out_file = SharedResourcePath(
                                 relative_path=fileName[len(path):],
                                 namespace=namespace,
                                 uuid=uuid)
                             break
-                        else:
-                            print("Cannot find database uuid for file " + repr(
-                                fileName) + " => the file will be transfered.")
-                            global_out_file = FileTransfer(
-                                is_input=False,
-                                client_path=fileName,
-                                name=os.path.basename(
-                                fileName),
-                                client_paths=fullPaths)
-                            self.__file_transfers[fileId] = global_out_file
+                    if global_out_file is None:
+                        print("Cannot find database uuid for file " + repr(
+                              fileName) + " => the file will be transfered.")
+                        global_out_file = FileTransfer(
+                            is_input=False,
+                            client_path=fileName,
+                            name=os.path.basename(
+                            fileName),
+                            client_paths=fullPaths)
+                        self.__file_transfers[fileId] = global_out_file
             else:
                 raise ValueError('Unsupported output file processing mode: %s'
                                  % self.__output_file_processing)
