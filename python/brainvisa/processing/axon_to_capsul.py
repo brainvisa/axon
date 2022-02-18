@@ -1070,7 +1070,7 @@ class AxonToCapsul(object):
             u'''
     def autoexport_nodes_parameters(self):
         \'\'\'export orphan and internal output parameters\'\'\'
-        for node_name, node in six.iteritems(self.nodes):
+        for node_name, node in self.nodes.items():
             if node_name == '':
                 continue # skip main node
             if hasattr(node, '_weak_outputs'):
@@ -1183,6 +1183,7 @@ import six
             out.write(u'''# -*- coding: utf-8 -*-
 from soma.controller import file, directory, field, undefined, Any, \\
     Literal, is_path, is_list
+from pydantic import conlist
 from capsul.api import Process
 ''')
 
@@ -1256,11 +1257,11 @@ class AxonToCapsul_v3(AxonToCapsul):
 
 
     def point3d_options(self, point):
-        return ['type=float', 'minlen=3', 'maxlen=3', 'default=[0, 0, 0]']
+        return ['default_factory=lambda: [0, 0, 0]']
 
 
     def matrix_options(self, list_trait):
-        return ['type_=list']
+        return ['float']
 
 
     def diskitem_type(self, diskitem):
@@ -1315,7 +1316,8 @@ class AxonToCapsul_v3(AxonToCapsul):
             neuroData.OpenChoice: (self.get_openchoice_type,
                                    self.open_choice_options),
             neuroData.ListOf: list,
-            neuroData.Point3D: ('list[]', self.point3d_options),
+            neuroData.Point3D: ('conlist(float, min_items=3, max_items=3)',
+                                self.point3d_options),
             neuroData.Matrix: ('list[]', self.matrix_options),
         }
         return self._param_types_table
@@ -1524,6 +1526,8 @@ def axon_to_capsul_main(argv):
 
     ver = options.capsul
 
+    converter = AxonToCapsulInstance(ver=ver)
+
     # processes.fastStart = True
     from brainvisa.configuration import neuroConfig
     neuroConfig.ignoreValidation = True
@@ -1533,8 +1537,8 @@ def axon_to_capsul_main(argv):
                               for (axon, capsul) in [name.split(':') for name in options.name]])
     use_process_names = dict(
         [(axon,
-          self.make_module_name(capsul, options.module, {},
-                                lowercase_modules))
+          converter.make_module_name(capsul, options.module, {},
+                                     lowercase_modules))
          for axon, capsul in six.iteritems(gen_process_names)])
     # print('converted proc names:', use_process_names)
     use_process_names.update(dict([(axon, capsul)
@@ -1556,8 +1560,6 @@ def axon_to_capsul_main(argv):
                      for p in added_processes]))
 
     todo = set(todo)  # remove duplicates
-
-    converter = AxonToCapsulInstance(ver=ver)
 
     for proc, outfile in todo:
         if isinstance(proc, CapsulProcess):
