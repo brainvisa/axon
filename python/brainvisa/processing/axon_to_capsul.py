@@ -824,7 +824,8 @@ class AxonToCapsul(object):
                         if todel:
                             options.remove(todel)
                         out_types_list.append(
-                            self.param_type_decl_string(ptype, options))
+                            self.param_type_decl_string(ptype, options,
+                                                        as_instance=True))
                     else:
                         out_types[output_name] = (self.Any, [])
                         out_types_list.append('Any()')
@@ -848,7 +849,7 @@ class AxonToCapsul(object):
         return nodename
 
 
-    def param_type_decl_string(self, ptype, options):
+    def param_type_decl_string(self, ptype, options, as_instance=False):
         return '%s(%s)' % (ptype, ', '.join(options))
 
 
@@ -1181,8 +1182,8 @@ import six
 ''')
         else:
             out.write(u'''# -*- coding: utf-8 -*-
-from soma.controller import file, directory, field, undefined, Any, \\
-    Literal, is_path, is_list
+from soma.controller import File, Directory, undefined, Any, \\
+    Literal, field
 from pydantic import conlist
 from capsul.api import Process
 ''')
@@ -1270,12 +1271,12 @@ class AxonToCapsul_v3(AxonToCapsul):
             f = neuroDiskItems.getFormat(format)
             if otype is None \
                     and f.fileOrDirectory() is neuroDiskItems.Directory:
-                otype = 'directory()'
+                otype = 'Directory'
             elif f.fileOrDirectory() is not neuroDiskItems.Directory:
-                otype = 'file()'
+                otype = 'File'
                 break
         if otype is None:
-            otype = 'file()'
+            otype = 'File'
         return otype
 
 
@@ -1283,6 +1284,10 @@ class AxonToCapsul_v3(AxonToCapsul):
         extre = re.compile('^.*\|[^*]*\*(.*)$')
         exts = []
         options = []
+        if isinstance(diskitem, WriteDiskItem):
+            options.append('write=True')
+        else:
+            options.append('read=True')
         #formats = sorted(diskitem.formats)
         formats = diskitem.formats
         for format in formats:
@@ -1293,8 +1298,6 @@ class AxonToCapsul_v3(AxonToCapsul):
                     exts.append(m.group(1))
         if len(exts) != 0:
             options.append('allowed_extensions=%s' % repr(exts))
-        if isinstance(diskitem, WriteDiskItem):
-            options.append('write=True')
         return options
 
 
@@ -1346,16 +1349,20 @@ class AxonToCapsul_v3(AxonToCapsul):
         return newtype, paramoptions
 
 
-    def param_type_decl_string(self, ptype, options):
-        if ptype.endswith('()'):
-            type_str = '%s(%s)' % (ptype[:-2], ', '.join(options))
-        elif isinstance(ptype, str) and ptype.endswith('[]'):
+    def param_type_decl_string(self, ptype, options, as_instance=False):
+        #if ptype.endswith('()'):
+            #type_str = '%s(%s)' % (ptype[:-2], ', '.join(options))
+        if isinstance(ptype, str) and ptype.endswith('[]'):
             type_opt = [p for p in options if '=' not in p]
             par_opt = [p for p in options if '=' in p]
             type_str = '%s[%s]' % (ptype[:-2], ', '.join(type_opt))
             type_str = ', '.join([type_str] + par_opt)
+            if as_instance and par_opt:
+                type_str = 'field(type_=%s)' % type_str
         else:
             type_str = ', '.join([ptype] + options)
+            if as_instance and options:
+                type_str = 'field(type_=%s)' % type_str
         return type_str
 
 
