@@ -897,7 +897,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
                         if namespace != 'brainvisa' \
                                 and (fileName == path or fileName.startswith(path2)):
                             global_in_file = SharedResourcePath(
-                                relative_path=fileName[len(path):],
+                                relative_path=fileName[len(path) + 1:],
                                 namespace=namespace,
                                 uuid=uuid)
                             break
@@ -1021,7 +1021,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
                         if namespace != 'brainvisa' \
                                 and (fileName == path or fileName.startswith(path2)):
                             global_out_file = SharedResourcePath(
-                                relative_path=fileName[len(path):],
+                                relative_path=fileName[len(path) + 1:],
                                 namespace=namespace,
                                 uuid=uuid)
                             break
