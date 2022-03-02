@@ -1182,7 +1182,7 @@ import six
 ''')
         else:
             out.write(u'''# -*- coding: utf-8 -*-
-from soma.controller import file, directory, undefined, Any, \\
+from soma.controller import File, Directory, undefined, Any, \\
     Literal, field
 from pydantic import conlist
 from capsul.api import Process
@@ -1267,26 +1267,27 @@ class AxonToCapsul_v3(AxonToCapsul):
 
     def diskitem_type(self, diskitem):
         otype = None
-        params = ''
-        if isinstance(diskitem, WriteDiskItem):
-            params = 'write=True'
         for format in diskitem.formats:
             f = neuroDiskItems.getFormat(format)
             if otype is None \
                     and f.fileOrDirectory() is neuroDiskItems.Directory:
-                otype = 'directory(%s)'
+                otype = 'Directory'
             elif f.fileOrDirectory() is not neuroDiskItems.Directory:
-                otype = 'file(%s)'
+                otype = 'File'
                 break
         if otype is None:
-            otype = 'file(%s)'
-        return otype % params
+            otype = 'File'
+        return otype
 
 
     def diskitem_options(self, diskitem):
         extre = re.compile('^.*\|[^*]*\*(.*)$')
         exts = []
         options = []
+        if isinstance(diskitem, WriteDiskItem):
+            options.append('write=True')
+        else:
+            options.append('read=True')
         #formats = sorted(diskitem.formats)
         formats = diskitem.formats
         for format in formats:
