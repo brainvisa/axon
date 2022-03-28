@@ -3601,6 +3601,7 @@ class ExecutionContext(object):
         self._stdout = None
         self._stderr = None
         if ret and not ignoreReturnValue:
+            print('Command failed:\n', command, file=sys.stderr)
             raise RuntimeError(
                 _t_('System command exited with non null value : %s') % str(ret))
         return ret
