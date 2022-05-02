@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="en">
+    <xhtml name="short">Apply a formula to a set of homogeneous images or textures (homogeneous means
+all of the same data type) using cartoLinearComb.py.</xhtml>
+    <xhtml name="long"/>
+    <d name="parameters">
+      <xhtml name="images">input volume(s)</xhtml>
+      <xhtml name="formula">image formula, ex: ( I1 * 2 + I2 * I3 ) / 1.2 . Image (or other objects) can be named I1, I2... or image[1], image[2] etc. Indices normally start at 1 (kind of matlab-style). A formula is basically a python expression, thus can use anything supported in python expressions. ex: sum(images). Numpy may be used (as np), and numpy results can be converted to volumes: np.asarray(I1) ** 2, or np.sqrt(I1)</xhtml>
+      <xhtml name="lazy">use lazy reading and release of objects during the formula evaluation. With this option, each image is loaded when used, and released once one operation has been performed with it. It allows to process large lists of images without loading all of them in memory, but will read them several times if they are used several times in the formula. (see aims.lazy_read_data.LasyReadData python class for details)</xhtml>
+      <xhtml name="threads">use threaded preloading when iterating over the list of images (see soma.aims.lazy_read_data.PreloadIterator python class for details). Implies lazy, and only useful when using  an iteration over the list of volumes, such as in the formula "sum(image)". In such an iteration volumes in the later iterations can be preloaded using threads, making the process much faster. The number of threads / preloads is specified with this option. 0 means guess the number of CPUs of the current machine. Default is 1: no threading/preloading
+</xhtml>
+      <xhtml name="output">output volume</xhtml>
+    </d>
+  </d>
+</d>
+</minf>
