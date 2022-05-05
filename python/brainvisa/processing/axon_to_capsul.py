@@ -1212,7 +1212,7 @@ class ''')
                 lowercase_modules=lowercase_modules)
         else:
             out.write(u'    def __init__(self, **kwargs):\n')
-            out.write(u'        super(%s, self).__init__()\n' % capsul_process_name)
+            out.write(u'        super(%s, self).__init__(**kwargs)\n' % capsul_process_name)
             self.write_process_definition(p, out,
                                           get_all_values=get_all_values)
 
