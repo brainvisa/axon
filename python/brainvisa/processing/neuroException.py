@@ -49,7 +49,7 @@ from __future__ import absolute_import, print_function
 import sys
 import os
 import traceback
-import formatter
+from . import formatter
 from brainvisa.configuration.neuroConfig import *
 from brainvisa.configuration import neuroConfig
 from soma.html import htmlEscape

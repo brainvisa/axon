@@ -177,7 +177,6 @@ import soma.subprocess
 
 import traceback
 import threading
-import formatter
 import operator
 import inspect
 import signal
