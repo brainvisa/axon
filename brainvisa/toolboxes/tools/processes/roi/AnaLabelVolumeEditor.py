@@ -44,10 +44,10 @@ def validation():
     anatomist.validation()
 
 signature = Signature(
-    'label_volume', WriteDiskItem('Label volume',
-                                  'aims writable Volume Formats'),
+  'label_volume', WriteDiskItem('Label volume',
+                                'Aims writable volume formats'),
   'support_volume', ReadDiskItem('Raw T1 MRI',
-                                 'anatomist Volume Formats',
+                                 'Anatomist volume formats',
                                  exactType=True),
   'pipeline_mask_nomenclature', ReadDiskItem('Nomenclature', 'Hierarchy'),
   'background_label', OpenChoice('minimum'),
@@ -55,11 +55,30 @@ signature = Signature(
 
 
 def initialization(self):
-    self.linkParameters('support_volume', 'label_volume')
-    # self.pipeline_mask_nomenclature = self.signature['pipeline_mask_nomenclature'].findValue(
-    #     {"filename_variable": "pipeline_masks"}, requiredAttributes={"filename_variable": "pipeline_masks"})
+    self.linkParameters('support_volume', 'label_volume', self.linkSupportVolume)
+    self.pipeline_mask_nomenclature = self.signature['pipeline_mask_nomenclature'].findValue(
+        {"filename_variable": "pipeline_masks"}, requiredAttributes={"filename_variable": "pipeline_masks"})
     self.setOptional('pipeline_mask_nomenclature')
     self.setOptional('support_volume')
+
+
+def linkSupportVolume(self, *args):
+    """Find a T1 that is guaranteed to be from the same acquisition."""
+    label_vol_attrs = self.label_volume.hierarchyAttributes()
+    required_attrs = {
+        'center': label_vol_attrs.get('center'),
+        'subject': label_vol_attrs.get('subject'),
+        'acquisition': label_vol_attrs.get('acquisition'),
+    }
+    if 'normalization' in label_vol_attrs:
+        required_attrs['normalization'] = label_vol_attrs['normalization']
+    if None in required_attrs.values():
+        # Give up: findValue could match anything, including images from a
+        # different subject
+        return None
+    wdi = self.signature['support_volume']
+    return wdi.findValue(self.label_volume,
+                         requiredAttributes=required_attrs)
 
 
 def add_save_button(self, win):
