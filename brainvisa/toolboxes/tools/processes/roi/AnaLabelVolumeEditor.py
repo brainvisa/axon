@@ -56,8 +56,8 @@ signature = Signature(
 
 def initialization(self):
     self.linkParameters('support_volume', 'label_volume', self.linkSupportVolume)
-    # self.pipeline_mask_nomenclature = self.signature['pipeline_mask_nomenclature'].findValue(
-    #     {"filename_variable": "pipeline_masks"}, requiredAttributes={"filename_variable": "pipeline_masks"})
+    self.pipeline_mask_nomenclature = self.signature['pipeline_mask_nomenclature'].findValue(
+        {"filename_variable": "pipeline_masks"}, requiredAttributes={"filename_variable": "pipeline_masks"})
     self.setOptional('pipeline_mask_nomenclature')
     self.setOptional('support_volume')
 
