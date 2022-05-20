@@ -843,9 +843,14 @@ class AxonToCapsul(object):
             if node.isSelected():
                 buffered_lines['initialization'].append(
                     '        if \'%s\' in self.nodes:\n' % sub_node_name)
-                buffered_lines['initialization'].append(
-                    '            self.nodes[\'%s\'].switch = \'%s\'\n'
-                    % (nodename, sub_node_name))
+                if self.ver == '3':
+                    buffered_lines['initialization'].append(
+                    '            self.dispatch_value(self, \'%s\', \'%s\')\n'
+                        % (nodename, sub_node_name))
+                else:
+                    buffered_lines['initialization'].append(
+                        '            self.%s = \'%s\'\n'
+                        % (nodename, sub_node_name))
         return nodename
 
 
