@@ -2695,6 +2695,47 @@ class TemporaryDirectory(Directory):
                     raise
         Directory.__init__(self, name, parent)
 
+    def __del__(self):
+        if Application().configuration.brainvisa.removeTemporary and \
+           temporary.manager is not None:
+            toDelete = self.fullPaths()
+            toDelete.append(toDelete[0] + '.minf')
+            # print('deleting temp DI:', toDelete)
+            for f in toDelete:
+                n = 0
+                while 1:
+                    try:
+                        temporary.manager.removePath(f)
+                        break
+                    except OSError:
+                        if n < 100:
+                            n += 1
+                            time.sleep(0.01)
+                            # print('can\' delete', f, 'yet. waiting')
+                            # sys.stdout.flush()
+                        else:
+                            # print('exception while removing', f)
+                            showException(beforeError=_t_('temporary file <em>%s</em> not '
+                                                          'deleted<br>') % f, gui=0)
+                            # giving up, let it for later
+                            temporary.manager.registerPath(f)
+                            print('continuing after failed rm on %s' % f)
+                            break
+
+    def clear(self):
+        """
+        Removes all files associated to this diskItem.
+        """
+        for f in self.fullPaths():
+            try:
+                temporary.manager.removePath(f)
+                temporary.manager.registerPath(f)
+            except Exception:
+                showException(
+                    beforeError=_t_(
+                        'temorary file <em>%s</em> not deleted<br>') % f,
+                  gui=0)
+
 
 #----------------------------------------------------------------------------
 class TemporaryDiskItem(File):
