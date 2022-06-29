@@ -244,11 +244,16 @@ class DiskItemBrowser(QDialog):
         attributeSize = self.attributesWidget.sizeHint()
         tableSize = self._ui.grpItems.sizeHint()
         textSize = self._ui.textBrowser.sizeHint()
-        return QSize((attributeSize.width() + self._ui.hsplitter.handleWidth() + tableSize.width()) * 1.2, (attributeSize.height() + self._ui.vsplitter.handleWidth() + textSize.height()) * 1.2)
+        return QSize(
+            int((attributeSize.width() + self._ui.hsplitter.handleWidth()
+                 + tableSize.width()) * 1.2),
+            int((attributeSize.height() + self._ui.vsplitter.handleWidth()
+                 + textSize.height()) * 1.2))
 
     def saveLayout(self):
         DiskItemBrowser._savedLayout = (
-            self.size(), self._ui.hsplitter.sizes(), self._ui.vsplitter.sizes())
+            self.size(), self._ui.hsplitter.sizes(),
+            self._ui.vsplitter.sizes())
 
     def restoreLayout(self):
         if DiskItemBrowser._savedLayout is not None:
