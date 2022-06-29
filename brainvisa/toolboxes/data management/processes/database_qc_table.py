@@ -213,7 +213,7 @@ if neuroConfig.gui:
             size = super(RotatedHeaderView, self).sectionSizeFromContents(
                 logicalIndex)
             size.transpose()
-            return Qt.QSize(size.width(), size.height() * 0.9)
+            return Qt.QSize(size.width(), int(size.height() * 0.9))
 
 
     class QActionWithViewer(Qt.QWidgetAction):
