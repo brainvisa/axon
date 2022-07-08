@@ -1010,9 +1010,12 @@ class SQLDatabase(Database):
                 print('<b>Rules selection key: </b><font color=darkgreen>' + htmlEscape(six.text_type(ruleSelectionByAttributeValue))
                       + '</font> <font color=blue>' + htmlEscape(six.text_type(ruleSelectionByMissingKeyAttributes)) + '</font><p>', file=out)
             for ruleKey, rules in six.iteritems(rulesDictionary):
-                # print('<font color=darkgreen>' + htmlEscape( unicode(
-                # ruleKey[0] ) ) + '</font> <font color=blue>' + htmlEscape(
-                # unicode( ruleKey[1] ) ) + '</font><blockquote>', file=out)
+                #print('<hr/>Rule key: <font color=darkgreen>'
+                      #+ htmlEscape(ruleKey[0])
+                      #+ '</font> <font color=blue>'
+                      #+ htmlEscape(ruleKey[1])
+                      #+ '</font>; rules: %d<br/>' % len(rules),
+                      #file=out)
                 if len(rules) > 1:
                     print('<hr>', file=out)
                 for rule in rules:
