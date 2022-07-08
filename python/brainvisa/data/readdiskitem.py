@@ -500,8 +500,9 @@ class ReadDiskItem(Parameter):
                     if _debug is not None:
                         print(
                             '  findValue priority sorted items:', file=_debug)
+                        print('dist to:', selection.attributes(), file=_debug)
                         for l in values:
-                            print('   ', l, file=_debug)
+                            print('   ', l, l[1].attributes(), file=_debug)
                     if values[0][0] != values[1][0]:
                         result = values[0][1]
                     else:
