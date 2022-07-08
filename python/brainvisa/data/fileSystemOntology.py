@@ -1131,6 +1131,7 @@ class FileSystemOntology(object):
                 files.extend(shelltools.filesFromShPatterns(
                     os.path.join(directory, '*.py')))
             files.sort()
+            # print('*** BUILD FSO:', files)
             exc = self.execute(continue_on_error=True, *files)
             if exc:
                 for e in exc:
@@ -1142,6 +1143,7 @@ class FileSystemOntology(object):
 
             try:
                 fso.content = self.localDict['hierarchy']
+                # fso.printHierarchy()
             except Exception as e:
                 msg = 'in filesystem ontology "' + directory + '": ' + six.text_type(e) \
                     + ', files=' + str(files)
@@ -1171,8 +1173,9 @@ class FileSystemOntology(object):
             self._insert(True, False, path, *content)
 
         def _insert(self, first, last, path, *content):
-# dbg#      print('!_insert! in', path, first, '(', self.localDict[
-# '__name__' ], ')')
+            #print('=== !_insert! in', path, first, '(',
+                  #self.localDict['__name__'], ')')
+            #print(content)
             contentScanner = SetContent(*content).scanner
             for ruleBuilder in self.localDict['hierarchy']:
                 if isinstance(ruleBuilder, SetContent):
@@ -1354,6 +1357,16 @@ class FileSystemOntology(object):
                     print(file=file)
             print('),', file=file)
         print(file=file)
+
+    def printHierarchy(self, file=sys.stdout):
+        ''' Print the ontology in a hierachical way, with indentation
+        '''
+        todo = [(rule, 0) for rule in self.content[1].scanner.rules]
+        while todo:
+            rule, indent = todo.pop(0)
+            print('* ' + '    ' * indent, rule.type.name if rule.type else None, ':', rule.pattern, file=file)
+            if isinstance(rule, ScannerRule) and rule.scanner:
+                todo = [(r, indent + 1) for r in rule.scanner.rules] + todo
 
     def printFormats(self, file=sys.stdout):
         """
