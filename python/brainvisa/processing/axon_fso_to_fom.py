@@ -318,6 +318,8 @@ class AxonFsoToFom(object):
                 or process.executionNode() is None:
             return  # not a pipeline
 
+        a_to_c = axon_to_capsul.AxonToCapsul()
+
         nodes = [(process.executionNode(), node_name, self.current_fom_def)]
         while nodes:
             node, current_node_name, current_fom_def = nodes.pop(0)
@@ -330,7 +332,7 @@ class AxonFsoToFom(object):
                 for child_name in node.childrenNames():
                     child = node.child(child_name)
                     if isinstance(child, procbv.ProcessExecutionNode):
-                        new_node_name = axon_to_capsul.make_node_name(
+                        new_node_name = a_to_c.make_node_name(
                             '.'.join([current_node_name, child_name]),
                             node_names,
                             None)
