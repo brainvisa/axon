@@ -70,10 +70,20 @@ class AxonFsoToFom(object):
         it it is not found in it. Formats lists are handled.
         '''
         formats_lists = self.formats_fom.get('format_lists', {})
-        fnames = set([f.name for f in formats])
+        fnames = set()
+        # remove duplicates
+        nformats = []
+        for f in formats:
+            if f.name not in fnames:
+                fnames.add(f.name)
+                nformats.append(f)
+                if f.name == 'Directory':
+                    fdir = f
+        formats = nformats
         # special case of Directory format
         if len(fnames) >= 2 and 'Directory' in fnames:
             fnames.remove('Directory')
+            formats.remove(fdir)
         for flist_name, flist in six.iteritems(formats_lists):
             if set(flist) == fnames:
                 return flist_name
@@ -85,7 +95,7 @@ class AxonFsoToFom(object):
             if format.name not in all_formats:
                 all_formats[format.name] \
                     = self._extensions_from_format(format)[0]
-        return list(fnames)
+        return [f.name for f in formats]
 
     def _extensions_from_format(self, format):
         '''
@@ -145,12 +155,12 @@ class AxonFsoToFom(object):
         fom_added_attr = {}
         defaults = {}
         for k, value in six.iteritems(matched_attr):
-            if k not in input_attr and k not in non_transformed:
-                if k in rule.defaultAttributesValues:
-                    defaults[k] = {'default_value':
-                                   rule.defaultAttributesValues[k]}
-                else:
-                    fom_added_attr[k] = value
+            if k in rule.defaultAttributesValues:
+                defaults[k] = {'default_value':
+                                rule.defaultAttributesValues[k]}
+            if k not in input_attr and k not in non_transformed \
+                    and k not in rule.defaultAttributesValues:
+                fom_added_attr[k] = value
         return fom_pattern, fom_added_attr, defaults
 
     def fso_to_fom(self, proc_name, node_name, data):
@@ -328,17 +338,16 @@ class AxonFsoToFom(object):
                     node._process, current_node_name, input_attr,
                     current_fom_def)
                 default_atts.update(added_default_atts)
-            else:
-                for child_name in node.childrenNames():
-                    child = node.child(child_name)
-                    if isinstance(child, procbv.ProcessExecutionNode):
-                        new_node_name = a_to_c.make_node_name(
-                            '.'.join([current_node_name, child_name]),
-                            node_names,
-                            None)
-                    else:
-                        new_node_name = current_node_name
-                    nodes.append((child, new_node_name, current_fom_def))
+            for child_name in node.childrenNames():
+                child = node.child(child_name)
+                if isinstance(child, procbv.ProcessExecutionNode):
+                    new_node_name = a_to_c.make_node_name(
+                        '.'.join([current_node_name, child_name]),
+                        node_names,
+                        None)
+                else:
+                    new_node_name = current_node_name
+                nodes.append((child, new_node_name, current_fom_def))
 
 
 def ordered_load(stream, Loader=yaml.Loader, object_pairs_hook=OrderedDict):
