@@ -463,7 +463,9 @@ class CapsulProcess(processes.Process):
 
     capsul_to_axon_process_map = {}
     # possibly costomize FSO->FOM names translations
-    fso_to_fom_map = {}
+    fso_to_fom_map = {
+        'brainvisa-3.2.0': 'morphologist-auto-1.0',
+    }
 
     def __init__(self):
         self._capsul_process = None
@@ -601,7 +603,11 @@ class CapsulProcess(processes.Process):
 
         if optional:
             self.setOptional(*optional)
-        self.setValue('use_capsul_completion', True, default=True)
+        use_capsul_completion = getattr(self.__class__, 'use_capsul_completion',
+                                        True)
+
+        self.setValue('use_capsul_completion', use_capsul_completion,
+                      default=True)
         self.setValue('edit_pipeline', False, default=True)
         self.setValue('capsul_gui', False, default=True)
         if getattr(process, 'pipeline_steps', None):
@@ -866,6 +872,13 @@ class CapsulProcess(processes.Process):
                     cls.capsul_to_axon_process_map[cid_def] = proc_class
                     if cins.__class__ is capsul_proc.__class__:
                         axon_process = processes.getProcessInstance(pid)
+                        use_capsul_completion = getattr(
+                            module, 'use_capsul_completion', None)
+                        if use_capsul_completion is not None:
+                            axon_process.__class__.use_capsul_completion \
+                                = use_capsul_completion
+                            axon_process.use_capsul_completion \
+                                = use_capsul_completion
                         return axon_process
                 except Exception:
                     # print('cannot instantiate')
