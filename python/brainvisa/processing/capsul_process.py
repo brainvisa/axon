@@ -704,7 +704,9 @@ class CapsulProcess(processes.Process):
         completion_engine \
             = ProcessCompletionEngine.get_completion_engine(process)
         if completion_engine is not None and self.use_capsul_completion:
-            completion_engine.complete_parameters()
+            self._on_axon_parameter_changed(self.signature.keys()[0],
+                                            self, None)
+            # completion_engine.complete_parameters()
 
         wf = pipeline_workflow.workflow_from_pipeline(
             process, study_config=study_config)  # , jobs_priority=priority)
