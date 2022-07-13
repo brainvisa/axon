@@ -462,6 +462,8 @@ class CapsulProcess(processes.Process):
     '''
 
     capsul_to_axon_process_map = {}
+    # possibly costomize FSO->FOM names translations
+    fso_to_fom_map = {}
 
     def __init__(self):
         self._capsul_process = None
@@ -1111,6 +1113,17 @@ class CapsulProcess(processes.Process):
                         if getattr(study_config, idb) != database:
                             modified = True
                             setattr(study_config, idb, database)
+
+                # convert FSO to FOM name
+                db = neuroHierarchy.databases.database(database)
+                fso = db.fso.name
+                fom = self.fso_to_fom_map.get(fso, fso)
+                if not fom in study_config.modules_data.all_foms:
+                    print('FOM', fom, 'is not found. Fallback to morphologist')
+                    fso = 'morphologist-auto-1.0'
+                # print('FSO:', fso, ', FOM:', fom)
+                study_config.input_fom = fom
+                study_config.output_fom = fom
 
         return capsul_attr, modified
 
