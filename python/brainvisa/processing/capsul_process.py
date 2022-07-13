@@ -1133,10 +1133,14 @@ class CapsulProcess(processes.Process):
                 fom = self.fso_to_fom_map.get(fso, fso)
                 if not fom in study_config.modules_data.all_foms:
                     print('FOM', fom, 'is not found. Fallback to morphologist')
-                    fso = 'morphologist-auto-1.0'
-                # print('FSO:', fso, ', FOM:', fom)
-                study_config.input_fom = fom
-                study_config.output_fom = fom
+                    fom = 'morphologist-auto-1.0'
+                # print('FSO:', fso, ', FOM:', fom, 'for param:', param, ':', value)
+                # print(study_config.input_fom)
+
+                if study_config.input_fom != fom \
+                        or study_config.output_fom != fom:
+                    study_config.input_fom = fom
+                    study_config.output_fom = fom
 
         return capsul_attr, modified
 
