@@ -71,6 +71,14 @@ def initSubject(self, inp, b, c, d):
     value = self.input.hierarchyAttributes()
     if self.output_database:
         value['_database'] = self.output_database
+        for a in ['_ontology', ]:  #'_declared_attributes_location', ]:
+            if a in value:
+                del value[a]
+        if 'session' not in value \
+                and 'bids' in [h.fso.name for h in neuroHierarchy.hierarchies()
+                               if h.name == self.output_database][0]:
+            # this default value should be filled automatically - but is not...
+            value['session'] = '1'
     hvalues = {}
     if value.get("subject", None) is None:
         value["subject"] = os.path.basename(
@@ -89,7 +97,8 @@ def initialization(self):
     # list of possible databases, while respecting the ontology
     # ontology: brainvisa-3.2.0
     databases = [h.name for h in neuroHierarchy.hierarchies()
-                 if h.fso.name == "brainvisa-3.2.0" and not h.builtin]
+                 if not h.builtin and (h.fso.name == "brainvisa-3.2.0"
+                                       or 'morphologist' in h.fso.name)]
     self.signature["output_database"].setChoices(*databases)
     if len(databases) != 0:
         self.output_database = databases[0]
