@@ -227,9 +227,9 @@ def findStandAlonePaths(spm_version):
         executable_path = find_executable(possible_right_command)
         stand_alone_run_path, stand_alone_MCR_path = extractPathFromExecutable(
             executable_path)
-        if not None in [stand_alone_run_path, stand_alone_MCR_path]:
-            if 'run_' + executable_name + '.sh' in stand_alone_run_path and\
-                    'mcr/v713' in stand_alone_MCR_path:
+        if None not in [stand_alone_run_path, stand_alone_MCR_path]:
+            if 'run_' + executable_name + '.sh' in stand_alone_run_path and \
+                    'mcr/v' in stand_alone_MCR_path:
                 standalone_directory = os.path.dirname(stand_alone_run_path)
                 return standalone_directory, stand_alone_run_path, stand_alone_MCR_path
             else:
