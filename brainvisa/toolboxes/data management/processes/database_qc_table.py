@@ -252,7 +252,7 @@ if neuroConfig.gui:
             label.setText(self.text)
             # label.setTextAlignment(Qt.Qt.LeftAlignment)
             l.addWidget(label)
-            l.addStretch(1.)
+            l.addStretch(1)
             self._view_button = b
             self._widget = w
             label.clicked.connect(self._action_triggered)
