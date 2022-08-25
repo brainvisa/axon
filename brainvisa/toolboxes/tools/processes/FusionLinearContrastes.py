@@ -65,8 +65,8 @@ def execution(self, context):
         else:
             level = level + 1
         write = context.temporary('File')
-        context.system('VipSingleThreshold', '-i', read.fullName(),
-                       '-o', write.fullName(), '-m', 'gt', '-t', '0', '-c', 'b')
+        context.system('AimsThreshold', '-i', read.fullName(),
+                       '-o', write.fullName(), '-m', 'gt', '-t', '0', '-b')
         context.system('AimsReplaceLevel', '-i',
                        write, '-g', '255', '-n', level, '-o', write)
         list_write.append(write)
