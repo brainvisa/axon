@@ -1547,7 +1547,7 @@ class DBChecker(DBProcessor):
             if item.selected and item.action:
                 item.doit(debug, context=self.context)
         else:
-            if isinstance(item, collections.Mapping):
+            if isinstance(item, collections.abc.Mapping):
                 item = list(item.values())
             for i in item:
                 self.processRec(i, debug)

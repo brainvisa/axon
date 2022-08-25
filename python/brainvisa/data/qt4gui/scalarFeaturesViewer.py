@@ -190,7 +190,7 @@ if qwtAvailable:
             for name, value in data.items():
                 if isinstance(value, numbers.Number):
                     features.add(name)
-                elif isinstance(value, collections.Mapping):
+                elif isinstance(value, collections.abc.Mapping):
                     if value.get('mean') is not None:
                         features.add(name)
                         continue
@@ -212,7 +212,7 @@ if qwtAvailable:
             if data:
                 text = '<html><body><h3>' + self._item + \
                     ': ' + self._feature + '</h3>'
-                if isinstance(data, collections.Mapping):
+                if isinstance(data, collections.abc.Mapping):
                     for name, value in data.items():
                         if name == '_vectors':
                             continue
@@ -221,7 +221,7 @@ if qwtAvailable:
                     text += '<b>' + self._feature + \
                         ':</b> ' + str(data) + '<br>'
                 text += '</body></html>'
-                if isinstance(data, collections.Mapping):
+                if isinstance(data, collections.abc.Mapping):
                     vectorData = data.get('_vectors')
                     if vectorData is not None:
                         self.crvFeatures.setData(vectorData)
