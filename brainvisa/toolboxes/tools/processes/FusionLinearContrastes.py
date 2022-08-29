@@ -80,5 +80,6 @@ def execution(self, context):
                          '-i', list_write[-1], '-o', self.write,
                          '-f', 'I1 + I2')
 
-    context.system('VipSplineResamp', '-i',  write.fullName(), '-t',
-                   write.fullName(), '-did', '-or', '0', '-o', write.fullName())
+    context.system('AimsApplyTransformation', '-i',  write.fullName(),
+                   '-r', write.fullName(), '--vol_id', '-n', '0',
+                   '-o', write.fullName())

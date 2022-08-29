@@ -66,14 +66,14 @@ def execution(self, context):
                          '-f', 'I1 + 1')
     if (self.transformation is None):
         context.system(
-            'VipSplineResamp', '-i', volume, '-o', volume, '-w', 't',
-          '-t', self.destination_image.fullName(), '-did',
-          '-or', 0)
+            'AimsApplyTransform', '-i', volume, '-o', volume,
+            '-r', self.destination_image.fullName(), '--vol_id',
+            '-n', 0)
     else:
         context.system(
-            'VipSplineResamp', '-i', volume, '-o', volume, '-w', 't',
-          '-t', self.destination_image.fullName(), '-d', self.transformation,
-          '-or', 0)
+            'AimsApplyTransform', '-i', volume, '-o', volume,
+            '-r', self.destination_image.fullName(), '-d', self.transformation,
+            '-n', 0)
     context.pythonSystem('cartoLinearComb.py', '-i', volume, '-o', volume,
                          '-f', 'I1 - 1')
     file = open(tmp.fullPath())
