@@ -64,11 +64,11 @@ def initialization(self):
 
 def execution(self, context):
     command = [
-        'AimsResample',
-      '-i', self.image,
-      '-m', self.transformation,
-      '-t', self.interpolation,
-      '-o', self.resampled,
+        'AimsApplyTransform',
+        '-i', self.image,
+        '-m', self.transformation,
+        '-t', self.interpolation,
+        '-o', self.resampled,
     ]
     if self.resampled_grid_geometry is not None:
         command += ['-r', self.resampled_grid_geometry]

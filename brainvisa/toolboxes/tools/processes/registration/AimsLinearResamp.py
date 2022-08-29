@@ -66,7 +66,7 @@ def initialization(self):
 
 
 def execution(self, context):
-    command = ['AimsResample',
+    command = ['AimsApplyTransform',
                '-i', self.image_input,
                '-o', self.image_output,
                '-t', self.resampling_type]

@@ -626,7 +626,8 @@ class TransformRoi(object):
                 aims.write(self._previousMotions[
                            self._roiDict[roi]["sub_roi"][k]["meshes"][0]], trsfTmp)
                 check_call(
-                    ['AimsResample', '-i', imageFile, '-o', imageFile, '-m', trsfTmp, '-t', 'n'])
+                    ['AimsApplyTransform', '-i', imageFile, '-o', imageFile,
+                     '-m', trsfTmp, '-t', 'n'])
                 label += 1
 
             firstImg = aims.read(images[0])

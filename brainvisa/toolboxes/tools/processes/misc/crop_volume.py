@@ -83,6 +83,6 @@ def execution(self, context):
     print('transfo:')
     print(trans)
     aims.write(trans, transfile.fullPath())
-    cmd = ['AimsResample', '-t', 'n', '-i', self.read, '-o', self.write,
+    cmd = ['AimsApplyTransform', '-t', 'n', '-i', self.read, '-o', self.write,
            '--dx', dims[0], '--dy', dims[1], '--dz', dims[2], '-m', transfile]
     context.system(*cmd)

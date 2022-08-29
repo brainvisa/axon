@@ -626,7 +626,7 @@ class ManualRegistration(object):
             return
         tmpTrsf = mkstemp()[1]
         self._saveTransformation(tmpTrsf)
-        check_call(['AimsResample',
+        check_call(['AimsApplyTransform',
                     '-i', self._movingImage, '-o', saveFilename,
                     '-m', tmpTrsf, '-r', self._fixedImage])
 

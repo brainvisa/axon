@@ -70,6 +70,6 @@ def execution(self, context):
     trans.setTranslation([self.added_border * vs[0], self.added_border * vs[1],
                           self.added_border * vs[2]])
     aims.write(trans, transfile.fullPath())
-    cmd = ['AimsResample', '-t', 'n', '-i', self.read, '-o', self.write,
+    cmd = ['AimsApplyTransform', '-t', 'n', '-i', self.read, '-o', self.write,
            '--dx', dims[0], '--dy', dims[1], '--dz', dims[2], '-m', transfile]
     context.system(*cmd)
