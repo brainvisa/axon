@@ -498,9 +498,10 @@ class ReadDiskItem(Parameter):
                     values = sorted((self.diskItemDistance(i, selection), i)
                                     for i in values)
                     if _debug is not None:
-                        print(
-                            '  findValue priority sorted items:', file=_debug)
-                        print('dist to:', selection.attributes(), file=_debug)
+                        print('  findValue priority sorted items:', file=_debug)
+                        print('dist to:',
+                              selection.attributes() if isinstance(selection, DiskItem) else selection,
+                              file=_debug)
                         for l in values:
                             print('   ', l, l[1].attributes(), file=_debug)
                     if values[0][0] != values[1][0]:
