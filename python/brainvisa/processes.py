@@ -3029,8 +3029,15 @@ class ExecutionContext(object):
             to_restore.add(_process)
             # performing this 2 pass loop allows to set parameters with
             # a forced value to immutable (ie non-linked) before actually
-            # setting values and running links. This avoids a bunch of unnecessary
-            # links to work (often several times)
+            # setting values and running links. This avoids a bunch of
+            # unnecessary links to work (often several times)
+
+            # unfortunately in processes with dynamic signatures, setting a
+            # parameter may affect the list and order of other positional
+            # params, thus we don't know if the 2nd or 3rd parameter value
+            # correspond to the 2nd or 3rd one in the initial signature. So we
+            # have to give up (except for the first, which is reliable)
+            break
         for (n, v) in kwargs.items():
             proc, argname = self._get_process_and_argname(_process, n)
             proc._setImmutable(argname, True)
