@@ -353,6 +353,7 @@ FileType('anatomical Mask Template', '3D Volume')
 #--- Fiber bundles ---------------------
 Format('Aims bundles', ['f|*.bundles', 'f|*.bundlesdata'])
 Format('Trackvis tracts', 'f|*.trk')
+Format('Mrtrix tracts', 'f|*.tck')
 Format('Bundle Selection Rules', 'f|*.brules')
 
 createFormatList(
@@ -360,6 +361,7 @@ createFormatList(
   (
     'Aims Bundles',
     'Trackvis tracts',
+    'Mrtrix tracts',
   )
 )
 
