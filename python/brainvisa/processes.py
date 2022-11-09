@@ -5306,7 +5306,7 @@ def getProcessesBySourceDist(registry, source, enableConversion=1,
     """
     # Create a list of process set that can be ordered by distance vector
     r = list()
-    if not source is None:
+    if not source is None and all(source):
         src_type, src_format = source
         converters = getConvertersFrom(source, keepType=0, checkUpdate=checkUpdate)
 
