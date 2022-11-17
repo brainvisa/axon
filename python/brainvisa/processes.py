@@ -3361,8 +3361,11 @@ class ExecutionContext(object):
                             Workflow, Helper
                         workflow = process.executionWorkflow(context=self)
                         if isinstance(workflow, tuple):
+                            param_links = {}
                             if len(workflow) == 3:
                                 jobs, dependencies, root_group = workflow
+                            elif len(workflow) == 4:
+                                jobs, dependencies, root_group, param_links = workflow
                             else:
                                 raise ValueError(
                                     'Bad workflow in %s.executionWorkflow()'
@@ -3370,6 +3373,7 @@ class ExecutionContext(object):
                             workflow = Workflow(
                                 jobs=jobs, dependencies=dependencies,
                                 root_group=root_group,
+                                param_links = param_links,
                                 name='brainvisa_' + process.name)
                         controller = WorkflowController()
                         wid = controller.submit_workflow(
