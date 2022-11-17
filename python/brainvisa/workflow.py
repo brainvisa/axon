@@ -668,6 +668,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
         self.__groups = {}
         self.__mainGroupId = None
         self.__dependencies = []
+        self.__param_links = {}
 
         self.__input_file_processing = input_file_processing
         self.__output_file_processing = output_file_processing
@@ -740,6 +741,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
         self.__groups = {}
         self.__mainGroupId = None
         self.__dependencies = []
+        self.__param_links = {}
 
         # self.linkcnt = {}
         # self.linkcnt[(self.JOB, self.JOB)] = 0
@@ -753,10 +755,12 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
         jobs = self.flatten(list(self.__jobs.values()))
         dependencies = self.__dependencies
         root_group = self.__groups[self.__mainGroupId]
+        param_links = self.__param_links
 
         workflow = Workflow(
             jobs, dependencies, root_group,
-            name='brainvisa_' + self.process.name)
+            name='brainvisa_' + self.process.name,
+            param_links = param_links)
         if self.__out:
             Helper.serialize(self.__out, workflow)
         return workflow
@@ -849,11 +853,14 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
         self.__groups[inGroup].elements.append(self.__jobs[jobId])
 
     def _append_native_jobs(self, depth, jobId, process, inGroup, priority):
-        jobs, dependencies, groups \
-            = process.executionWorkflow(context=self.context)
+        wf_params  = process.executionWorkflow(context=self.context)
+        jobs, dependencies, groups = wf_params[:3]
+        
         self.__jobs[jobId] = jobs
         self.__groups[inGroup].elements += groups
         self.__dependencies += dependencies
+        if len(wf_params) > 3:
+            self.__param_links.update(wf_params[3])
 
     def open_group(self, depth, groupId, label, inGroup):
         # print('open_group' + repr( ( depth, groupId, label, inGroup ) ))
