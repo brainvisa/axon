@@ -102,8 +102,10 @@ def run_button_clicked(self, checked=False):
         databases = self.context.inlineGUI.selectedDatabases()
         # must close the connection currently opened in the main thread before
         # clearing and updating the database
+        database = None
         for database in databases:
             database.currentThreadCleanup()
+        del database
 
         self.databases = [x.directory for x in databases]
         if self.context.inlineGUI.quick_hf_method():
