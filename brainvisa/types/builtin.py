@@ -171,6 +171,8 @@ Format('Aims scalar features', 'f|*.features')
 
 Format('Bucket', 'f|*.bck')
 
+Format('mdsm file', 'f|*.mdsm')
+
 # selector files
 Format('Selection', 'f|*.sel')
 
