@@ -50,7 +50,7 @@ __docformat__ = "epytext en"
 import os
 import sys
 from six.moves import StringIO
-from soma.qt_gui.qt_backend.QtGui import QTreeWidget, QTreeWidgetItem, QListWidget, QListWidgetItem, QPixmap, QDrag, QMenu, QPainter, QPen, QCursor, QSizePolicy, QIcon, qApp, QKeyEvent, QApplication
+from soma.qt_gui.qt_backend.QtGui import QTreeWidget, QTreeWidgetItem, QListWidget, QListWidgetItem, QPixmap, QDrag, QMenu, QPainter, QPen, QCursor, QSizePolicy, QIcon, QKeyEvent, QApplication
 from soma.qt_gui.qt_backend.QtCore import Qt, QEvent, QMimeData, QObject, QPoint, QRect, QSize, QTimer
 import copy
 from soma.notification import ObservableList, EditableTree

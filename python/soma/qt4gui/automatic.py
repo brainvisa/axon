@@ -111,7 +111,7 @@ class WidgetGeometryUpdater(object):
 #------------------------------------------------------------------------------
 class EditionDialog(QtGui.QDialog):
 
-    def __init__(self, object, parent=None, name=None, live=False, modal=False, wflags=QtCore.Qt.WindowFlags()):
+    def __init__(self, object, parent=None, name=None, live=False, modal=False, wflags=QtCore.Qt.WindowType(0)):
         super(EditionDialog, self).__init__(parent, wflags)
         if name:
             self.setObjectName(name)
@@ -183,7 +183,7 @@ class ApplicationQt4GUI(ApplicationBaseGUI):
         self.widgetGeometryUpdater = WidgetGeometryUpdater()
 
     def createEditionDialog(self, object, parent=None, name=None,
-                            live=False, modal=False, wflags=QtCore.Qt.WindowFlags()):
+                            live=False, modal=False, wflags=QtCore.Qt.WindowType(0)):
         '''
         Create a QDialog allowing to edit an object.
         '''

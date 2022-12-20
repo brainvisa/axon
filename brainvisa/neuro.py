@@ -52,34 +52,15 @@ import signal
 import atexit
 import time
 
-# Force QString API version in order to be compatible with recent version
-# of enthought.traits.ui (3.6 for instance)
-import sip
-PYQT_API_VERSION = 2
-qt_api = ["QDate", "QDateTime", "QString", "QTextStream", "QTime", "QUrl",
-          "QVariant"]
-for qt_class in qt_api:
-    sip.setapi(qt_class, PYQT_API_VERSION)
-del qt_api, qt_class
+from soma.qt_gui import qt_backend
+qt_backend.set_qt_backend(compatible_qt5=True)
+qt_mod = qt_backend.get_qt_backend()
 
 if len(sys.argv) > 1 and sys.platform[:6] == 'darwin' and sys.argv[1][:5] == '-psn_':
     # MacOS calls me with this strange argument, I don't want it.
     del sys.argv[1]
 
-try:
-    from soma.config import MAJOR_QT_VERSION
-    USE_QT4 = MAJOR_QT_VERSION >= 4
-except ImportError:
-    # in non-cmake version, soma.config does not exist.
-    # Then we are forced to use the gui to check Qt
-    import soma.qtgui.api as qg
-    if qg.QtGUI == getattr(qg, "Qt4GUI", None):
-        USE_QT4 = True
-    else:
-        USE_QT4 = False
-    del qg
-if USE_QT4:
-    from soma.qt_gui.qt_backend import QtGui
+from soma.qt_gui.qt_backend import QtGui, QtCore
 
 from soma.wip.application.api import Application
 from soma.signature.api import Choice as SomaChoice
@@ -205,12 +186,8 @@ if neuroConfig.gui:
     app = Application()
     app.configuration.brainvisa.signature['gui_style'].type = SomaChoice(
         *[('<system default>', None)] + [six.text_type(i) for i in QStyleFactory.keys()])
-    if USE_QT4:
-        app.configuration.brainvisa.signature[
-            'gui_style'].defaultValue = six.text_type(qApp.style().objectName())
-    else:
-        app.configuration.brainvisa.signature[
-            'gui_style'].defaultValue = six.text_type(qApp.style().name())
+    app.configuration.brainvisa.signature[
+        'gui_style'].defaultValue = six.text_type(qApp.style().objectName())
     app.configuration.brainvisa.onAttributeChange(
         'gui_style', setQtApplicationStyle)
     setQtApplicationStyle(app.configuration.brainvisa.gui_style)
@@ -220,16 +197,9 @@ if neuroConfig.gui:
 # to a PyQt bug. This bug has been reported and fixed in earlier
 # versions.
 
-    if USE_QT4:
-        neuroConfig.qtApplication.setWindowIcon(
-            QIcon(os.path.join(iconPath, 'icon.png')))
-        QDir.addSearchPath("", os.path.join(neuroConfig.docPath, 'processes'))
-    else:
-        global _globalEventFilter
-        _globalEventFilter = EventFilter()
-        qApp.installEventFilter(_globalEventFilter)
-        QMimeSourceFactory.defaultFactory().addFilePath(
-            os.path.join(neuroConfig.docPath, 'processes'))
+    neuroConfig.qtApplication.setWindowIcon(
+        QIcon(os.path.join(iconPath, 'icon.png')))
+    QDir.addSearchPath("", os.path.join(neuroConfig.docPath, 'processes'))
 else:
     # neuroConfig.qtApplication = QApplication( sys.argv, QApplication.Tty )
     neuroConfig.qtApplication = QCoreApplication(sys.argv)
@@ -300,10 +270,10 @@ if neuroConfig.gui:
                 neuroConfig.shell = False
                 QTimer.singleShot(0, startConsoleShell)
     if not neuroConfig.shell:
-        if USE_QT4:
-            neuroConfig.qtApplication.exec_()
+        if QtCore.QT_VERSION >= 0x060000:
+            neuroConfig.qtApplication.exec()
         else:
-            neuroConfig.qtApplication.exec_loop()
+            neuroConfig.qtApplication.exec_()
 
 ipConsole = None
 ipsubprocs = []
@@ -332,12 +302,8 @@ if neuroConfig.shell:
             else:
                 # Qt console does not exist in ipython <= 0.10
                 # and the API was different
-                if USE_QT4:
-                    ipshell = IPython.Shell.IPShellQt4(['-q4thread'])
-                    from soma.qt_gui.qt_backend.QtCore import QTimer
-                else:
-                    ipshell = IPython.Shell.IPShellQt(['-qthread'])
-                    from qt import QTimer
+                ipshell = IPython.Shell.IPShellQt4(['-q4thread'])
+                from soma.qt_gui.qt_backend.QtCore import QTimer
                 ipshell.mainloop(sys_exit=1)
                 cleanupGui()
         except ImportError:
