@@ -420,7 +420,7 @@ def item_clicked(self, item):
                 action.viewer_triggered.connect(self.run_element_viewer)
                 action.triggered.connect(menu.close)
             element = None
-            chosen_action = menu.exec_(Qt.QCursor.pos())
+            chosen_action = menu.exec(Qt.QCursor.pos())
         except:
             import traceback
             traceback.print_exc()
@@ -595,7 +595,7 @@ def show_interactive_viewers(self, element, viewers):
             action.viewer = viewer
             menu.addAction(action)
             #action.triggered.connect(self.run_interactive_viewer)
-        chosen_action = menu.exec_(Qt.QCursor.pos())
+        chosen_action = menu.exec(Qt.QCursor.pos())
         del menu
         if chosen_action is not None:
             viewer = chosen_action.viewer

@@ -38,7 +38,7 @@ from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
 
 import anatomist.cpp as anatomist
 import anatomist.api as ana
-from soma.qt_gui.qt_backend import QtCore, QtGui, uic
+from soma.qt_gui.qt_backend import QtCore, QtGui, uic, QtWidgets
 from anatomist.cpp.paletteEditor import PaletteEditor
 from soma.qt_gui.qtThread import MainThreadLife
 from soma import aims
@@ -153,7 +153,7 @@ class TransformRoi(object):
         self._updateUi()
         self._updateControlMode()
         self._mainDiag.showMaximized()
-        self._mainDiag.exec_()
+        self._mainDiag.exec()
         self._removeSymmetricPlaneAction()
 
         return [self._mainDiag]
@@ -578,7 +578,8 @@ class TransformRoi(object):
 
     def _validClicked(self):
         self._mainDiag.frame.setEnabled(False)
-        QtGui.qApp.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.instance().setOverrideCursor(
+            QtCore.Qt.WaitCursor)
 
         roiValidities = {}
         for roi in self._inputRoi:
@@ -684,7 +685,7 @@ class TransformRoi(object):
             print("attributes = ", minf, file=fd)
             fd.close()
 
-        QtGui.qApp.restoreOverrideCursor()
+        QtWidgets.QApplication.instance().restoreOverrideCursor()
         self._mainDiag.frame.setEnabled(True)
         for k, v in six.iteritems(roiValidities):
             if True in v:

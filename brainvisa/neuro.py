@@ -89,7 +89,7 @@ def system_exit_handler(number, frame):
 
 def qt_exit_handler(number, frame):
     """The callback associated to SIGINT signal (CTRL+C) when a Qt Application is running."""
-    qApp.exit()
+    QApplication.instance().exit()
 
 # Ctrl + C is linked to sys.exit() until Qt event loop is entered
 signal.signal(signal.SIGINT, system_exit_handler)
@@ -117,7 +117,7 @@ def setQtApplicationStyle(newStyle):
     if not newStyle:
         newStyle = app.configuration.brainvisa.signature[
             'gui_style'].defaultValue
-    qApp.setStyle(newStyle)
+    QApplication.instance().setStyle(newStyle)
 
 
 def main():
@@ -187,7 +187,8 @@ if neuroConfig.gui:
     app.configuration.brainvisa.signature['gui_style'].type = SomaChoice(
         *[('<system default>', None)] + [six.text_type(i) for i in QStyleFactory.keys()])
     app.configuration.brainvisa.signature[
-        'gui_style'].defaultValue = six.text_type(qApp.style().objectName())
+        'gui_style'].defaultValue = six.text_type(
+            QApplication.instance().style().objectName())
     app.configuration.brainvisa.onAttributeChange(
         'gui_style', setQtApplicationStyle)
     setQtApplicationStyle(app.configuration.brainvisa.gui_style)
@@ -216,7 +217,7 @@ else:
 
 
 def startConsoleShell():
-    from soma.qt_gui.qt_backend.QtGui import qApp
+    from soma.qt_gui.qt_backend.QtWidgets import QApplication
     try:
         import jupyter_console.app
         ipmodule = 'jupyter_console.app'
@@ -249,7 +250,7 @@ if SomaApplication is not None:
 
 if neuroConfig.gui:
     neuroConfig.qtApplication.lastWindowClosed .connect(sys.exit)
-    # Ctrl + C is now linked to qApp.exit()
+    # Ctrl + C is now linked to QApplication.instance().exit()
     signal.signal(signal.SIGINT, qt_exit_handler)
 
     # The GUI can now be used (in particular for showing error messages, see
@@ -273,7 +274,7 @@ if neuroConfig.gui:
         if QtCore.QT_VERSION >= 0x060000:
             neuroConfig.qtApplication.exec()
         else:
-            neuroConfig.qtApplication.exec_()
+            neuroConfig.qtApplication.exec()
 
 ipConsole = None
 ipsubprocs = []

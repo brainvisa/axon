@@ -131,7 +131,7 @@ class DisplayResultsFromSPM(object):
         self.a.onCursorNotifier.add(self._cursorMoveHandler)
 
         mainDialog.showMaximized()
-        mainDialog.exec_()
+        mainDialog.exec()
 
         # Remove the 3D cursor notifier
         self.a.onCursorNotifier.remove(self._cursorMoveHandler)
@@ -486,7 +486,7 @@ class DisplayResultsFromSPM(object):
 
         # Create the print dialog
         printDialog = Qt.QPrintDialog(printer)
-        if printDialog.exec_() != QtGui.QDialog.Accepted:
+        if printDialog.exec() != QtGui.QDialog.Accepted:
             return
 
         # Scale the pixmap to a full size page

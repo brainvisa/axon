@@ -225,7 +225,7 @@ def execution(self, context):
         done = False
         while not done:
             if isinstance(threading.current_thread(), threading._MainThread):
-                Qt.qApp.processEvents()
+                Qt.QApplication.instance().processEvents()
             time.sleep(0.1)
             done = mainThreadActions().call(getattr, self, 'win_deleted')
     else:
@@ -249,7 +249,7 @@ def wait_for_close(self, win):
         # for the editor window to be closed by the user. The destroyed
         # callback will take care of ending the loop.
         self.local_event_loop = Qt.QEventLoop()
-        self.local_event_loop.exec_()
+        self.local_event_loop.exec()
     else:
         # we are running in a secondary thrad: poll in the main thread for
         # the editor window to be closed by the user

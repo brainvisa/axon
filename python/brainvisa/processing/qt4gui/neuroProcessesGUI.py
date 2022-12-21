@@ -44,7 +44,7 @@ import sys
 import re
 import types
 from soma.qt_gui.qt_backend.Qt import (
-    Qt, qApp, QAction, QApplication, QButtonGroup,
+    Qt, QAction, QApplication, QButtonGroup,
     QCursor, QComboBox, QDialog, QDockWidget, QFile, QFileDialog, QFont,
     QFontInfo, QFormLayout, QFrame, QGridLayout, QHBoxLayout, QIcon,
     QKeySequence, QLabel, QLineEdit, QMainWindow, QMenu, QMenuBar, QMessageBox,
@@ -162,7 +162,6 @@ class _ProcDeleter(object):
 
 
 def startShell():
-    from soma.qt_gui.qt_backend.QtGui import qApp
     qt_impl = qt_backend.get_qt_backend()
     if qt_impl == 'PyQt4':
         # prevent ipython from trying to use PySide
@@ -223,7 +222,7 @@ def startShell():
                 a._restartshell_launched = True
     except Exception as e:
         print(e)
-    mainThreadActions().push(qApp.exit)
+    mainThreadActions().push(QApplication.instance().exit)
 
 
 #----------------------------------------------------------------------------
@@ -234,7 +233,7 @@ def quitRequest():
         None, _t_('Quit'), _t_('Do you really want to quit BrainVISA ?'),
                             QMessageBox.Yes | QMessageBox.Default, QMessageBox.No)
     if a == QMessageBox.Yes:
-        wids = qApp.topLevelWidgets()
+        wids = QApplication.instance().topLevelWidgets()
         for w in wids:
             if isinstance(w, ProcessView) or isinstance(w, SomaWorkflowProcessView):
                 w.close()
@@ -250,19 +249,19 @@ def quitRequest():
         if neuroConfig.shell:
             sys.exit()
         else:
-            qApp.exit()
+            QApplication.instance().exit()
 
 #----------------------------------------------------------------------------
 
 
 def cleanupGui():
     # called when quitting a ipython shell
-    wids = qApp.topLevelWidgets()
+    wids = QApplication.instance().topLevelWidgets()
     for w in wids:
         if isinstance(w, ProcessView):
             w.close()
             del w
-    wids = qApp.topLevelWidgets()
+    wids = QApplication.instance().topLevelWidgets()
     for w in wids:
         w.close()
         del w
@@ -913,10 +912,12 @@ class AboutWidget(QWidget):
         widget.setContentsMargins(5, 5, 5, 5)
 
         if parent is None:
-            px = (neuroConfig.qtApplication.desktop()
-                  .width() - self.sizeHint().width()) / 2
-            py = (neuroConfig.qtApplication.desktop()
-                  .height() - self.sizeHint().height()) / 2
+            if hasattr(self, 'screen'):
+                screen = self.screen()
+            else:
+                screen = QApplication.primaryScreen()
+            px = (screen.width() - self.sizeHint().width()) / 2
+            py = (screen.height() - self.sizeHint().height()) / 2
             self.setGeometry(
                 px, py, self.sizeHint().width(), self.sizeHint().height())
             self.btnClose = QPushButton(_t_('Close'))
@@ -973,21 +974,27 @@ def _addSeparator(menu):
 def addBrainVISAMenu(widget, menuBar):
     bvMenu = QMenu("&BrainVISA", menuBar)  # avoid creating the menu in addMenu
     menuBar.addMenu(bvMenu)  # same problem as addAction()
-    _addAction(bvMenu, _t_("&Help"), helpRequest, Qt.CTRL + Qt.Key_H)
+    _addAction(bvMenu, _t_("&Help"), helpRequest,
+               QKeySequence(Qt.CTRL | Qt.Key_H))
     _addAction(bvMenu, _t_("About"), aboutRequest)
     _addAction(bvMenu)
     _addAction(bvMenu, _t_("&Preferences"),
-               neuroConfigGUI.editConfiguration, Qt.CTRL + Qt.Key_P)
-    _addAction(bvMenu, _t_("Show &Log"), logRequest, Qt.CTRL + Qt.Key_L)
+               neuroConfigGUI.editConfiguration,
+               QKeySequence(Qt.CTRL | Qt.Key_P))
+    _addAction(bvMenu, _t_("Show &Log"), logRequest,
+               QKeySequence(Qt.CTRL | Qt.Key_L))
     _addAction(bvMenu, _t_("&Open process..."), ProcessView.open,
-               Qt.CTRL + Qt.Key_O)
+               QKeySequence(Qt.CTRL | Qt.Key_O))
     _addAction(bvMenu, _t_("Load process setups"), loadProcessSetupsGUI)
     _addAction(bvMenu, _t_("Reload toolboxes"), reloadToolboxesGUI)
-    _addAction(bvMenu, _t_("Start &Shell"), startShell, Qt.CTRL + Qt.Key_S)
+    _addAction(bvMenu, _t_("Start &Shell"), startShell,
+               QKeySequence(Qt.CTRL | Qt.Key_S))
     _addAction(bvMenu)
     if not isinstance(widget, ProcessSelectionWidget):
-        _addAction(bvMenu, _t_("Close"), widget.close, Qt.CTRL + Qt.Key_W)
-    _addAction(bvMenu, _t_("&Quit"), quitRequest, Qt.CTRL + Qt.Key_Q)
+        _addAction(bvMenu, _t_("Close"), widget.close,
+                   QKeySequence(Qt.CTRL | Qt.Key_W))
+    _addAction(bvMenu, _t_("&Quit"), quitRequest,
+               QKeySequence(Qt.CTRL | Qt.Key_Q))
     return bvMenu
 
 
@@ -1002,7 +1009,7 @@ class HTMLBrowser(QWidget):
                 self.setObjectName(name)
             # self.mimeSourceFactory().setExtensionType("py", "text/plain")
             self.openWebAction = QAction(_t_('Open in a web browser'), self)
-            self.openWebAction.setShortcut(Qt.CTRL + Qt.Key_W)
+            self.openWebAction.setShortcut(QKeySequence(Qt.CTRL | Qt.Key_W))
             self.openWebAction.triggered.connect(self.openWeb)
             self.openLinkWebAction = QAction(
                 _t_('Open link in a web browser'), self)
@@ -1060,7 +1067,7 @@ class HTMLBrowser(QWidget):
                 if hit_url.isEmpty():
                     hit_url = None
             menu = self.customMenu(hit_url)
-            menu.exec_(event.globalPos())
+            menu.exec(event.globalPos())
 
         def customMenu(self, hit_url=None):
             menu = WebBrowserWithSearch.customMenu(self)
@@ -1100,7 +1107,7 @@ class HTMLBrowser(QWidget):
         def openWeb(self):
             openWeb(self.url().toString())
 
-    def __init__(self, parent=None, name=None, fl=Qt.WindowFlags()):
+    def __init__(self, parent=None, name=None, fl=Qt.WindowType(0)):
         QWidget.__init__(self, parent, fl)
         if name:
             self.setObjectName(name)
@@ -1603,7 +1610,7 @@ class ParameterLabel(QLabel):
         self.default_id.setEnabled(not read_only)
 
     def contextMenuEvent(self, e):
-        self.contextMenu.exec_(e.globalPos())
+        self.contextMenu.exec(e.globalPos())
         e.accept()
 
     def paramLabelText(self,  val_default_id, val_lock_id):
@@ -2077,7 +2084,7 @@ class BrainVISAAnimation(QLabel):
             os.path.join(neuroConfig.iconPath, 'rotatingBrainVISA.gif'))  # , 1024*10 )
         self.setMovie(self.mmovie)
         # self.mmovie.setSpeed( 500 )
-        # qApp.processEvents()
+        # QApplication.instance().processEvents()
         self.mmovie.stop()
 
     def start(self):
@@ -2085,7 +2092,7 @@ class BrainVISAAnimation(QLabel):
 
     def stop(self):
         self.mmovie.start()
-        qApp.processEvents()
+        QApplication.instance().processEvents()
         self.mmovie.stop()
 
 
@@ -2228,15 +2235,16 @@ class ProcessView(QWidget, ExecutionContextGUI):
         self.workflowEnabled = False
 
         self.action_save_process = QAction(_t_('&Save...'), self)
-        self.action_save_process.setShortcut(Qt.CTRL + Qt.Key_S)
+        self.action_save_process.setShortcut(QKeySequence(Qt.CTRL | Qt.Key_S))
         self.action_save_process.triggered.connect(self.saveAs)
 
         self.action_clone_process = QAction(_t_('&Clone...'), self)
-        self.action_clone_process.setShortcut(Qt.CTRL + Qt.Key_C)
+        self.action_clone_process.setShortcut(QKeySequence(Qt.CTRL | Qt.Key_C))
         self.action_clone_process.triggered.connect(self.clone)
 
         self.action_create_workflow = QAction(_t_('Create &Workflow...'), self)
-        self.action_create_workflow.setShortcut(Qt.CTRL + Qt.Key_D)
+        self.action_create_workflow.setShortcut(
+            QKeySequence(Qt.CTRL | Qt.Key_D))
         self.action_create_workflow.triggered.connect(self.createWorkflow)
 
         self.action_run = QAction(_t_('Run'), self)
@@ -2539,7 +2547,7 @@ class ProcessView(QWidget, ExecutionContextGUI):
         if parent is None:
             self.show()
             self.resize(600, 801)
-            # qApp.processEvents()
+            # QApplication.instance().processEvents()
 
         initGUI = getattr(self.process, 'initializationGUI', None)
         if initGUI is not None:
@@ -2650,7 +2658,7 @@ class ProcessView(QWidget, ExecutionContextGUI):
                 self.executionTreeMenu._addnodeaction.isVisible() or
                 self.executionTreeMenu._removenodeaction.isVisible())
 
-            self.executionTreeMenu.exec_(QCursor.pos())
+            self.executionTreeMenu.exec(QCursor.pos())
 
     def changeItemSelection(self, select=True, all=True, before=False):
         item = self.executionTree.currentItem()
@@ -2786,7 +2794,7 @@ class ProcessView(QWidget, ExecutionContextGUI):
             files = [f for f in files if f.isWriteable() and f.isLockData()]
         # show and confirm
         dialog = lockFilesGUI.LockedFilesListEditor(self, files, setLock)
-        if dialog.exec_():
+        if dialog.exec():
             files = dialog.selectedDiskItems()
             if files:
                 if setLock:
@@ -3024,7 +3032,7 @@ class ProcessView(QWidget, ExecutionContextGUI):
         from brainvisa.workflow import ProcessToSomaWorkflow
 
         submission_dlg = WorkflowSubmissionDlg(self)
-        if submission_dlg.exec_() != QtGui.QDialog.Accepted:
+        if submission_dlg.exec() != QtGui.QDialog.Accepted:
             return
 
         resource_id = submission_dlg.combo_resource.currentText()
@@ -3421,7 +3429,7 @@ class ProcessView(QWidget, ExecutionContextGUI):
             # Trick to have correct slider
 #      size = self.size()
             # self.resize( size.width()+1, size.height() )
-            # qApp.processEvents()
+            # QApplication.instance().processEvents()
             # self.resize( size )
 
     # def executionNodeClicked( self, item, column ):
@@ -3585,7 +3593,7 @@ class ProcessView(QWidget, ExecutionContextGUI):
         from brainvisa.processing.qt4gui.ProcessSetupsGUI import SaveProcessSetupsGUI
         save_process_setups_GUI = SaveProcessSetupsGUI(self)
         save_process_setups_GUI.show()
-        save_process_setups_GUI.exec_()
+        save_process_setups_GUI.exec()
 
     def clone(self):
         try:
@@ -3805,7 +3813,7 @@ class UserDialog(QDialog):
         if neuroConfig.gui:
             self._result = None
             mainThreadActions().call(self.show)
-            mainThreadActions().call(self.exec_)
+            mainThreadActions().call(self.exec)
             result = self._result
             del self._result
             return result
@@ -4121,7 +4129,11 @@ class ProcessSelectionWidget(QMainWindow):
 
         # try to start with a doc opened
         self.info.home()
-        ds = qApp.desktop().size()
+        if hasattr(self, 'screen'):
+            screen = self.screen()
+        else:
+            screen = QApplication.primaryScreen()
+        ds = screen.size()
         self.resize(min(1200, ds.width()), min(800, ds.height()))
 
         state_path = os.path.join(
@@ -4488,7 +4500,7 @@ class ProcessTreesWidget(QSplitter):
         """
         Called on contextMenuRequested signal. It opens the popup menu at cursor position.
         """
-        self.popupMenu.exec_(QCursor.pos())
+        self.popupMenu.exec(QCursor.pos())
 
     def openProcessMenu(self, listView, point):
         """
@@ -4496,7 +4508,7 @@ class ProcessTreesWidget(QSplitter):
         """
         item = listView.itemAt(point)
         if item and item.model and item.model.isLeaf():
-            self.processMenu.exec_(QCursor.pos())
+            self.processMenu.exec(QCursor.pos())
         else:
             listView.openContextMenu(point)
 
@@ -4859,7 +4871,7 @@ def showMainWindow():
         # window with customizable lists of processes
         _mainWindow = ProcessSelectionWidget()
         _mainWindow.show()
-        for w in qApp.topLevelWidgets():
+        for w in QApplication.instance().topLevelWidgets():
             if w is not _mainWindow:
 
                 w.raise_()
@@ -4890,7 +4902,7 @@ def close_viewers(warn=False):
     if a == QMessageBox.Yes:
         from brainvisa.data.qt4gui.readdiskitemGUI import DiskItemEditor
         from brainvisa.data.qt4gui.hierarchyBrowser import HierarchyBrowser
-        for w in qApp.allWidgets():
+        for w in QApplication.instance().allWidgets():
             if isinstance(w, DiskItemEditor):
                 w.close_viewer()
             elif isinstance(w, ProcessView):
@@ -4929,13 +4941,13 @@ def loadProcessSetupsGUI():
     from brainvisa.processing.qt4gui.ProcessSetupsGUI import LoadProcessSetupsGUI
     load_process_setups_GUI = LoadProcessSetupsGUI()
     load_process_setups_GUI.show()
-    load_process_setups_GUI.exec_()
+    load_process_setups_GUI.exec()
 
 
 def save_and_close_all_processes():
     close_viewers()
     saved = []
-    for w in qApp.allWidgets():
+    for w in QApplication.instance().allWidgets():
         if isinstance(w, ProcessView):
             # dont' remember updateDatabases process, it will be shown
             # again if needed after reload.

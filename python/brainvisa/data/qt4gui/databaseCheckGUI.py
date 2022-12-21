@@ -257,7 +257,7 @@ class UnknownFilesWidget(ActionsWidget):
         """
         Called on contextMenuRequested signal. It opens the popup menu at cursor position.
         """
-        self.popupMenu.exec_(qt.QCursor.pos())
+        self.popupMenu.exec(qt.QCursor.pos())
 
     def menuRemoveEvent(self):
         item = self.actionsList.currentItem()

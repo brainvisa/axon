@@ -34,7 +34,7 @@
 from __future__ import absolute_import
 import time
 import os
-from brainvisa.processing.qtgui.backwardCompatibleQt import QWidget, QVBoxLayout, QIcon, QSplitter, Qt, QSizePolicy, QSize, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QHBoxLayout, QPushButton, QObject, QFileDialog, QKeySequence, QInputDialog, QLineEdit, qApp
+from brainvisa.processing.qtgui.backwardCompatibleQt import QWidget, QVBoxLayout, QIcon, QSplitter, Qt, QSizePolicy, QSize, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QHBoxLayout, QPushButton, QObject, QFileDialog, QKeySequence, QInputDialog, QLineEdit
 from brainvisa.processing import neuroLog
 from brainvisa.processing import neuroException
 from brainvisa.configuration import neuroConfig
@@ -245,7 +245,11 @@ class LogViewer(QWidget):
 
         neuroConfig.registerObject(self)
         self.setLogFile(fileName)
-        ds = qApp.desktop().size()
+        if hasattr(self, 'screen'):
+            screen = self.screen()
+        else:
+            screen = QApplication.primaryScreen()
+        ds = screen.size()
         self.resize(min(1200, ds.width()), min(800, ds.height()))
 
     def setLogFile(self, fileName):

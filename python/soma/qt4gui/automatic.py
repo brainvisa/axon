@@ -61,7 +61,7 @@ import soma.qt_gui.qt_backend
 soma.qt_gui.qt_backend.set_qt_backend(compatible_qt5=True)
 # print('Qt backend:', soma.qt_gui.qt_backend.get_qt_backend())
 import sip
-from soma.qt_gui.qt_backend import QtGui, QtCore
+from soma.qt_gui.qt_backend import QtGui, QtCore, QtWidgets
 
 #-------------------------------------------------------------------------
 
@@ -77,9 +77,9 @@ class WidgetGeometryUpdater(object):
       3) restore original size
     However, events cannot be processed in all cases without crashing the
     application. Therefore, I use another trick. When the user ask for geometry
-    update of a widget (with L{udate} method), the widget is stored and the real
+    update of a widget (with update method), the widget is stored and the real
     geometry update is started by a single shot timer event (with 0 as delay).
-    During the timer event C{qt.qApp.processEvents()} can be called without
+    During the timer event QApplication.instance().processEvents() can be called without
     crashing the application.
     '''
 
@@ -103,7 +103,7 @@ class WidgetGeometryUpdater(object):
         sizes = [widget.size() for widget in widgetsToUpdate]
         for widget, size in zip(widgetsToUpdate, sizes):
             widget.resize(size.width() + 1, size.height() + 1)
-        QtGui.qApp.processEvents()
+        QtWidgets.QApplication.instance().processEvents()
         for widget, size in zip(widgetsToUpdate, sizes):
             widget.resize(size)
 
@@ -117,7 +117,7 @@ class EditionDialog(QtGui.QDialog):
             self.setObjectName(name)
         self.setModal(modal)
         # window modal means that the dialog will block only its parent windows
-        # in modal mode, which is set automatically when calling exec_ method
+        # in modal mode, which is set automatically when calling exec method
         if not modal:
             self.setWindowModality(QtCore.Qt.WindowModal)
         else:
@@ -199,7 +199,7 @@ class ApplicationQt4GUI(ApplicationBaseGUI):
     def edit(self, object, live=True, parent=None, modal=False):
         dialog = self.createEditionDialog(
             object, parent=parent, live=live, modal=modal)
-        result = dialog.exec_()
+        result = dialog.exec()
         if result:
             try:
                 dialog.setObject(object)

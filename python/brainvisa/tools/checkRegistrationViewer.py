@@ -111,7 +111,7 @@ class CheckRegistration(object):
         self._loadUi()
         self._init3dCursor()
         self._mainDiag.showMaximized()
-        self._mainDiag.exec_()
+        self._mainDiag.exec()
 
         return [self._mainDiag]
 
@@ -131,7 +131,7 @@ class CheckRegistration(object):
     def _openFileDialog(self):
         fileDialog = QtGui.QFileDialog()
         fileDialog.setFileMode(QtGui.QFileDialog.ExistingFiles)
-        fileDialog.exec_()
+        fileDialog.exec()
         return fileDialog.selectedFiles()
 
     def _loadData(self):
@@ -748,7 +748,7 @@ class CheckRegistration(object):
         print_dialog = Qt.QPrintDialog(printer)
         print_dialog.setOption(
             QtGui.QAbstractPrintDialog.PrintPageRange, False)
-        if print_dialog.exec_() != QtGui.QDialog.Accepted:
+        if print_dialog.exec() != QtGui.QDialog.Accepted:
             return
         pix = pix.scaled(printer.pageRect().size(),
                          aspectRatioMode=QtCore.Qt.KeepAspectRatio,

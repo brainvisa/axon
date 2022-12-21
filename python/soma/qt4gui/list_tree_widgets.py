@@ -284,7 +284,7 @@ class EditableTreeWidget(QTreeWidget):
             mimeData = QMimeData()
             mimeData.setText(itemMinf)
             d.setMimeData(mimeData)
-            dropAction = d.exec_()
+            dropAction = d.exec()
         # QTreeWidget.mouseMoveEvent(self, event)
 
     def dragEnterEvent(self, event):
@@ -490,7 +490,7 @@ class EditableTreeWidget(QTreeWidget):
             # event.accept()
         # else: event.ignore()
         if accept:
-            self.popupMenu.exec_(QCursor.pos())
+            self.popupMenu.exec(QCursor.pos())
 
     def menuNewItemEvent(self):
         """

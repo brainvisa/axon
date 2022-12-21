@@ -115,6 +115,6 @@ def showActions(actions):
     actionsWidget = ActionsWidget(actions)
     actionsWidget.runLaterButton.setEnabled(False)
 
-    result = actionsWidget.exec_()
+    result = actionsWidget.exec()
 
     return result  # convert immediatly

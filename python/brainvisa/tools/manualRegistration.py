@@ -92,7 +92,7 @@ class ManualRegistration(object):
         self._updateControlMode()
         self._transformationChanged()
         self._mainDiag.showMaximized()
-        self._mainDiag.exec_()
+        self._mainDiag.exec()
         self._clear()
 
     def _clear(self):

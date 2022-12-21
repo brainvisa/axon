@@ -33,7 +33,7 @@
 
 from __future__ import print_function
 from __future__ import absolute_import
-from soma.qt_gui.qt_backend.Qt import QWidget, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QIcon, QHBoxLayout, QVBoxLayout, QTextEdit, QSpacerItem, QSizePolicy, QSize, QPushButton, qApp, QMenu, QCursor, QDrag, QPixmap, QMimeData, Qt, QMessageBox, QPoint, QApplication, QUrl, QSplitter, QBrush, QColor
+from soma.qt_gui.qt_backend.Qt import QWidget, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QIcon, QHBoxLayout, QVBoxLayout, QTextEdit, QSpacerItem, QSizePolicy, QSize, QPushButton, QMenu, QCursor, QDrag, QPixmap, QMimeData, Qt, QMessageBox, QPoint, QApplication, QUrl, QSplitter, QBrush, QColor
 import os
 
 from soma.wip.application.api import findIconFile
@@ -286,11 +286,11 @@ class HierarchyBrowser(QWidget):
                                 viewItem.setToolTip(
                                     0, _t_("Unidentified file") + " " + viewItem.text(0))
                             # viewItem.setExpandable( False )
-                        qApp.processEvents()
+                        QApplication.instance().processEvents()
                     dbItem.setIcon(0, self.pixDirectory)
                     dbItem.setToolTip(
                         0, _t_("Directory") + " " + dbItem.text(0))
-        finally:  # can occur if the window is closed during this method execution, it is possible because it calls qApp.processEvents
+        finally:  # can occur if the window is closed during this method execution, it is possible because it calls QApplication.instance().processEvents
             if doscan:
                 self.scanning -= 1
                 if self.stop_scanning:
@@ -385,7 +385,7 @@ class HierarchyBrowser(QWidget):
                     action.setVisible(True)
                 else:
                     action.setVisible(False)
-            self.popupMenu.exec_(QCursor.pos())
+            self.popupMenu.exec(QCursor.pos())
 
     def menuRemoveEvent(self):
         """
@@ -589,7 +589,7 @@ class HierarchyBrowser(QWidget):
                 if os.path.isdir(fname):
                     dirs.append(fname)
         dialog = lockFilesGUI.LockedFilesListEditor(self, ditems, setLock)
-        if dialog.exec_():
+        if dialog.exec():
             ditems = dialog.selectedDiskItems()
             if ditems:
                 if setLock:
@@ -690,7 +690,7 @@ class HierarchyBrowser(QWidget):
             mimeData = QMimeData()
             mimeData.setUrls(files)
             d.setMimeData(mimeData)
-            dropAction = d.exec_()
+            dropAction = d.exec()
 
 
 class SearchResultItem(QTreeWidgetItem):

@@ -189,7 +189,7 @@ class ConfigurationWidget(qt.QWidget):
       b"\x89\x00\x00\x00\x00\x49\x45\x4e\x44\xae\x42\x60" \
       b"\x82"
 
-    def __init__(self, parent=None, name=None, flags=qt.Qt.WindowFlags()):
+    def __init__(self, parent=None, name=None, flags=qt.Qt.WindowType(0)):
         super(ConfigurationWidget, self).__init__(parent, flags)
         if name:
             self.setObjectName(name)

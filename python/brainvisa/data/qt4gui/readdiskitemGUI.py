@@ -536,7 +536,7 @@ class DiskItemEditor(QWidget, DataEditor):
             popup = QMenu(self)
             op = popup.addAction(DiskItemEditor.pixShow, 'open viewer')
             sh = popup.addAction(DiskItemEditor.pixHistory, 'show history')
-            ac = popup.exec_(pos)
+            ac = popup.exec(pos)
             if ac is not None:
                 if ac is sh:
                     self.openHistory()

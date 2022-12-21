@@ -102,6 +102,6 @@ def showActions(dbCleaner):
     """
     actionsWidget = UnknownFilesWidget(dbCleaner)
 
-    result = actionsWidget.exec_()
+    result = actionsWidget.exec()
 
     return result  # convert immediatly

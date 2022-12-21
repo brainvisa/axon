@@ -55,11 +55,24 @@ try:
         import QWebEngineView, QWebEnginePage
     use_webengine = True
 except ImportError:
-    from soma.qt_gui.qt_backend import QtWebKit
-    QWebEngineView = QtWebKit.QWebView
-    QWebPage = QtWebKit.QWebPage
-    QWebEnginePage = QWebPage
-    use_webengine = False
+    try:
+        import plouf
+        from soma.qt_gui.qt_backend import QtWebKit
+        QWebEngineView = QtWebKit.QWebView
+        QWebPage = QtWebKit.QWebPage
+        QWebEnginePage = QWebPage
+        use_webengine = False
+    except ImportError:
+        # use the newer Qt5/6 QtWebEngine
+        from soma.qt_gui.qt_backend.QtWebEngineWidgets import QWebEngineView
+        try:
+            # PyQt6
+            from soma.qt_gui.qt_backend.QtWebEngineCore import QWebEnginePage
+        except ImportError:
+            # PyQt5
+            from soma.qt_gui.qt_backend.QtWebEngineWidgets \
+                import QWebEnginePage
+        use_webengine = True
 
 
 class TextEditWithSearch(QtGui.QTextEdit):
@@ -95,7 +108,7 @@ class TextEditWithSearch(QtGui.QTextEdit):
 
     def contextMenuEvent(self, event):
         menu = self.customMenu()
-        menu.exec_(event.globalPos())
+        menu.exec(event.globalPos())
 
     def search(self):
         (res, ok) = QtGui.QInputDialog.getText(self, "Find",
@@ -144,7 +157,7 @@ class TextBrowserWithSearch(QtGui.QTextBrowser):
 
     def contextMenuEvent(self, event):
         menu = self.customMenu()
-        menu.exec_(event.globalPos())
+        menu.exec(event.globalPos())
 
     def search(self):
         (res, ok) = QtGui.QInputDialog.getText(self, "Find",
@@ -209,13 +222,16 @@ class WebBrowserWithSearch(QWebEngineView):
         self.findPreviousAction.setShortcut(QtGui.QKeySequence.FindPrevious)
         self.findPreviousAction.triggered.connect(self.searchPrevious)
         self.zoomInAction = QtGui.QAction(_t_('Zoom in'), self)
-        self.zoomInAction.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_Plus)
+        self.zoomInAction.setShortcut(
+            QtGui.QKeySequence(QtCore.Qt.CTRL | QtCore.Qt.Key_Plus))
         self.zoomInAction.triggered.connect(self.zoomIn)
         self.zoomOutAction = QtGui.QAction(_t_('Zoom out'), self)
-        self.zoomOutAction.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_Minus)
+        self.zoomOutAction.setShortcut(
+            QtGui.QKeySequence(QtCore.Qt.CTRL | QtCore.Qt.Key_Minus))
         self.zoomOutAction.triggered.connect(self.zoomOut)
         self.zoomOneAction = QtGui.QAction(_t_('Reset zoom'), self)
-        self.zoomOneAction.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_Equal)
+        self.zoomOneAction.setShortcut(
+            QtGui.QKeySequence(QtCore.Qt.CTRL | QtCore.Qt.Key_Equal))
         self.zoomOneAction.triggered.connect(self.zoomOne)
         self.addAction(self.findAction)
         self.addAction(self.findNextAction)
@@ -248,7 +264,7 @@ class WebBrowserWithSearch(QWebEngineView):
 
     def contextMenuEvent(self, event):
         menu = self.customMenu()
-        menu.exec_(event.globalPos())
+        menu.exec(event.globalPos())
 
     def search(self, void):
         text = self.selectedText()

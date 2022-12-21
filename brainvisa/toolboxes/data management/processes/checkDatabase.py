@@ -84,6 +84,6 @@ def show(checker):
     """
     widget = CheckFilesWidget(checker)
 
-    result = widget.exec_()
+    result = widget.exec()
 
     return result  # convert immediatly

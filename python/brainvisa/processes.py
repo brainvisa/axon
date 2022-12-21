@@ -417,7 +417,7 @@ def procdocToXHTML(procdoc):
                         editor.content.moveCursor(QtGui.QTextCursor.NextBlock)
                     # for i in six.moves.xrange( column - 1 ):
                         # editor.content.moveCursor( QtGui.QTextCursor.Right )
-                    if editor.exec_() == QDialog.Accepted:
+                    if editor.exec() == QDialog.Accepted:
                         value = six.text_type(editor.content.toPlainText())
                         goOn = True
                     else:
