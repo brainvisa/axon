@@ -242,6 +242,12 @@ class WebBrowserWithSearch(QWebEngineView):
         if use_webengine:
             self.setPage(QWebPage(self))
             self.page().linkClicked.connect(self.linkClicked)
+            if QtCore.QT_VERSION >= 0x060000:
+                self.current_link = None
+                self.page().linkHovered.connect(self.link_hovered)
+
+    def link_hovered(self, url):
+        self.current_link = url
 
     def customMenu(self):
         menu = QtGui.QMenu(self)

@@ -916,8 +916,8 @@ class AboutWidget(QWidget):
                 screen = self.screen()
             else:
                 screen = QApplication.primaryScreen()
-            px = (screen.width() - self.sizeHint().width()) / 2
-            py = (screen.height() - self.sizeHint().height()) / 2
+            px = int((screen.size().width() - self.sizeHint().width()) / 2)
+            py = int((screen.size().height() - self.sizeHint().height()) / 2)
             self.setGeometry(
                 px, py, self.sizeHint().width(), self.sizeHint().height())
             self.btnClose = QPushButton(_t_('Close'))
@@ -1053,10 +1053,14 @@ class HTMLBrowser(QWidget):
         def contextMenuEvent(self, event):
             rel_pos = event.pos()
             if use_webengine:
-                cmdata = self.page().contextMenuData()
-                if not cmdata.isValid():
-                    return
-                hit_url = cmdata.linkUrl()
+                hit_url = None
+                if QtCore.QT_VERSION >= 0x060000:
+                    hit_url = QtCore.QUrl(self.current_link)
+                else:
+                    cmdata = self.page().contextMenuData()
+                    if not cmdata.isValid():
+                        return
+                    hit_url = cmdata.linkUrl()
                 if hit_url is not None \
                         and (not hit_url.isValid() or hit_url.isEmpty()):
                     hit_url = None
