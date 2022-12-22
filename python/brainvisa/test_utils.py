@@ -100,7 +100,10 @@ def setUpModule_axon(init_hooks=[]):
     except BaseException:
         if temp_test_dir is not None:
             shutil.rmtree(temp_test_dir)
-        brainvisa.axon.cleanup()
+        try:
+            brainvisa.axon.cleanup()
+        except UnboundLocalError:
+            pass  # brainvisa.axon has not been imported, nothing to clean up
         raise
 
 
