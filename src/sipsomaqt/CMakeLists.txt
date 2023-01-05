@@ -15,8 +15,10 @@ message("soma_qt module: ${soma_qt}" )
 set( AXON_RELATIVE_SIP_DIRECTORY
      "share/axon-${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}/sip" )
 
+file( GLOB _sipSources "${CMAKE_CURRENT_SOURCE_DIR}/*.sip" )
+
 include_directories( ${SIP_INCLUDE_DIRS} )
 BRAINVISA_ADD_SIP_PYTHON_MODULE( somaqt soma "${CMAKE_CURRENT_SOURCE_DIR}/${soma_qt}"
-  SIP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/${soma_qt}"
+  SIP_SOURCES "${_sipSources}"
   SIP_INCLUDE "${PYQT${DESIRED_QT_VERSION}_SIP_DIR}" "${CMAKE_BINARY_DIR}/${AXON_RELATIVE_SIP_DIRECTORY}" )
 target_link_libraries( somaqt "${PYTHON_LIBRARY}" ${QT_LIBRARIES} )
