@@ -2964,19 +2964,19 @@ class ExecutionContext(object):
     def _processStack(self):
         self._lock.acquire()
         try:
-            stack = self._processStackThread[threading.currentThread()]
+            stack = self._processStackThread[threading.current_thread()]
         except Exception:
             stack = []
-            self._processStackThread[threading.currentThread()] = stack
+            self._processStackThread[threading.current_thread()] = stack
         self._lock.release()
         return stack
 
     def _popStack(self):
         self._lock.acquire()
-        stack = self._processStackThread[threading.currentThread()]
+        stack = self._processStackThread[threading.current_thread()]
         stackinfo = stack.pop()
         if len(stack) == 0:
-            del self._processStackThread[threading.currentThread()]
+            del self._processStackThread[threading.current_thread()]
         if stackinfo is self._processStackHead:
             self._processStackHead = None
         self._lock.release()
@@ -3272,7 +3272,7 @@ class ExecutionContext(object):
                         self, process)
 
                 self._processStarted()
-                newStackTop.thread = threading.currentThread()
+                newStackTop.thread = threading.current_thread()
 
                 self._lastProcessRaisedException = None
                 # Check arguments and conversions
@@ -6808,7 +6808,7 @@ def initializeProcesses():
     global _processModules, _processes, _processesInfo, _processesInfoByName, \
         _viewers, _listViewers, _mainThread, _defaultContext, _dataEditors, \
         _listDataEditors, _importers, _askUpdateProcess, _readProcessLog
-    _mainThread = threading.currentThread()
+    _mainThread = threading.current_thread()
     _processesInfo = {}
     _processesInfoByName = {}
     _processes = {}
