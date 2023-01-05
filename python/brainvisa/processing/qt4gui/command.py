@@ -211,7 +211,7 @@ class CommandWithQProcess(object):
         self._stderrAction = callable
 
     def _createQProcess(self):
-#    print(threading.currentThread(), '_createQProcess()', self.args)
+#    print(threading.current_thread(), '_createQProcess()', self.args)
         if use_pyside or PYQT_VERSION >= 0x040703:
             qprocess = QProcess()
         else:

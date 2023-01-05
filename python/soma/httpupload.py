@@ -395,7 +395,7 @@ class LogManager(Singleton):
                             self.__module__,
                             level,
                             value,
-                            threading.currentThread().getName()),
+                            threading.current_thread().getName()),
                            filepath,
                            mode)
             except Exception as error:
@@ -770,7 +770,7 @@ class FileBuilder(threading.Thread):
 
         while 1:
 
-            if self._finished.isSet():
+            if self._finished.is_set():
                 return
 
             # Get a file builder info out of the queue
