@@ -34,7 +34,8 @@
 from __future__ import absolute_import
 import time
 import os
-from brainvisa.processing.qtgui.backwardCompatibleQt import QWidget, QVBoxLayout, QIcon, QSplitter, Qt, QSizePolicy, QSize, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QHBoxLayout, QPushButton, QObject, QFileDialog, QKeySequence, QInputDialog, QLineEdit
+from soma.qt_gui.qt_backend.Qt import QWidget, QVBoxLayout, QIcon, QSplitter, Qt, QSizePolicy, QSize, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QHBoxLayout, QPushButton, QObject, QFileDialog, QKeySequence, QInputDialog, QLineEdit
+from soma.qt_gui.qt_backend.Qt import QApplication
 from brainvisa.processing import neuroLog
 from brainvisa.processing import neuroException
 from brainvisa.configuration import neuroConfig
