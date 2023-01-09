@@ -465,6 +465,7 @@ class CapsulProcess(processes.Process):
     # possibly costomize FSO->FOM names translations
     fso_to_fom_map = {
         'brainvisa-3.2.0': 'morphologist-auto-1.0',
+        'morphologist-bids-1.0': 'morphologist-bids-auto-1.0',
     }
 
     def __init__(self):
