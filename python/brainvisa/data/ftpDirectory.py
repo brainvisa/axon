@@ -71,7 +71,7 @@ class EnhancedFTP(object):
             self.date = string.join(
                 (splitter.get()[0], splitter.get()[0], splitter.get()[0]))
             if self.flags[0] == 'l':
-                self.name = string.split(splitter.s, ' -> ')[0]
+                self.name = splitter.s.split(' -> ')[0]
             else:
                 self.name = splitter.s
             self.fullName = parentName + '/' + self.name
