@@ -413,7 +413,7 @@ if anatomistImport:
                     try:
                         p = next(pth)
                         self.log(
-                            string.join('processTransformations warning: multiple transformations from', ref1, 'to', ref2))
+                            ' '.join('processTransformations warning: multiple transformations from', ref1, 'to', ref2))
                         loadTrAndCreateRef = forceLoadTransformation
                     except Exception:
                         loadTrAndCreateRef = True
