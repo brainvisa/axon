@@ -3375,7 +3375,10 @@ class ExecutionContext(object):
                                 root_group=root_group,
                                 param_links = param_links,
                                 name='brainvisa_' + process.name)
-                        controller = WorkflowController()
+                        controller = WorkflowController(
+                            isolated_light_mode=True)
+                        print('Soma-workflow temp directory:',
+                              controller.config._temp_config_dir)
                         wid = controller.submit_workflow(
                             workflow=workflow, name=process.name)
                         Helper.wait_workflow(wid, controller)
@@ -3385,16 +3388,26 @@ class ExecutionContext(object):
                         result = workflow
                         configuration = Application().configuration
                         if (len(list_failed_jobs) > 0):
+                            msg = ''
                             if not configuration.soma_workflow.somaworkflow_keep_failed_workflows:
                                 # Delete the submitted workflow
                                 controller.delete_workflow(wid, True)
+                                tmp_dir = controller.config._temp_config_dir
+                                del controller
+                                shutil.rmtree(tmp_dir)
+                            else:
+                                msg = ', workflow temp dir has been left: %s' \
+                                    % controller.config._temp_config_dir
                             raise RuntimeError(
                                 'run through soma workflow failed, see '
-                                'details with soma-workflow-gui')
+                                'details with soma-workflow-gui%s' % msg)
                         else:
                             if not configuration.soma_workflow.somaworkflow_keep_succeeded_workflows:
                                 # Delete the submitted workflow
                                 controller.delete_workflow(wid, True)
+                                tmp_dir = controller.config._temp_config_dir
+                                del controller
+                                shutil.rmtree(tmp_dir)
                     else:
                         result = process.execution(self)
                 else:
