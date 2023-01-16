@@ -68,7 +68,7 @@ class EnhancedFTP(object):
             self.user = splitter.get()[0]
             self.group = splitter.get()[0]
             self.size = int(splitter.get()[0])
-            self.date = string.join(
+            self.date = ' '.join(
                 (splitter.get()[0], splitter.get()[0], splitter.get()[0]))
             if self.flags[0] == 'l':
                 self.name = splitter.s.split(' -> ')[0]
