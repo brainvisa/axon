@@ -14,7 +14,7 @@ while os.path.islink(p):
     else:
         p=os.path.join(os.path.dirname(p),x)
 if not p: p=os.path.join(".", os.path.basename(p))
-print os.path.abspath( p )'
+print os.path.abspath(p)'
 
 # Find Python executable in $python
 
@@ -34,7 +34,7 @@ fi
 runbrainvisa='
 import sys,os
 neuro = ""
-executable = sys.argv[ 1 ]
+executable = sys.argv[1]
 if sys.version_info[0] >= 3:
     def execfile(filename, global_vars=globals(), local_vars=locals()):
         with open(filename) as f:
@@ -44,7 +44,7 @@ found = False
 while True:
     p = os.path.dirname(executable)
     for d in (os.path.normpath(os.path.join(p, "..", "brainvisa")),
-              os.path.normpath(os.path.join( p, "..", "..", "brainvisa"))):
+              os.path.normpath(os.path.join(p, "..", "..", "brainvisa"))):
       neuro = os.path.join(d, "neuro.py")
       if os.path.exists(neuro):
           found = True
