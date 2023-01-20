@@ -250,9 +250,12 @@ class AxonCapsulConfSynchronizer(object):
         # matlab
         try:
             if study_config.use_matlab is not Undefined:
-                ax_conf.matlab.executable = study_config.matlab_exec
+                if study_config.matlab_exec is Undefined:
+                    ax_conf.matlab.executable = ''
+                else:
+                    ax_conf.matlab.executable = study_config.matlab_exec
         except Exception as e:
-            print('Exception:', e)
+            print('Exception while setting matlab config:', e)
 
         # SPM
         try:
