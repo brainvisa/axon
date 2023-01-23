@@ -1779,11 +1779,11 @@ class BackwardCompatiblePatterns(object):
             return result
         return None
 
-    def __cmp__(self, other):
-        return self.patterns != other.patterns
-
     def __eq__(self, other):
         return self.patterns == other.patterns
+
+    def __ne__(self, other):
+        return self.patterns != other.patterns
 
     def __lt__(self, other):
         return self.patterns < other.patterns
