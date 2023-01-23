@@ -1083,6 +1083,7 @@ class SQLDatabase(Database):
     def currentThreadCleanup(self):
         if self._connection is not None:
             self._connection.currentThreadCleanup()
+            self._connection = None
 
     def createTables(self, context=None):
         # Save, in the database directory, an HTML file corresponding to
@@ -2137,6 +2138,9 @@ class SQLDatabase(Database):
             print('SQL error in database:', self.sqlDatabaseFile)
             print(e)
             paths = []
+        finally:
+            self._closeDatabaseCursor(cursor)
+
         if flat_output:
             return paths
         refs = list(set([p[1] for p in paths] + [p[2] for p in paths])

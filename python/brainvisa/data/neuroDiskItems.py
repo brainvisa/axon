@@ -119,7 +119,7 @@ from soma.path import parse_query_string, update_query_string, \
                       remove_query_string, split_path
 from soma.minf.api import readMinf, MinfError
 from soma.wip.application.api import Application
-from soma.sqlite_tools import sqlite3, ThreadSafeSQLiteConnection
+from soma.sqlite_tools import sqlite3
 
 
 from brainvisa.configuration import neuroConfig
