@@ -119,7 +119,7 @@ from soma.path import parse_query_string, update_query_string, \
                       remove_query_string, split_path
 from soma.minf.api import readMinf, MinfError
 from soma.wip.application.api import Application
-from soma.sqlite_tools import sqlite3, ThreadSafeSQLiteConnection
+from soma.sqlite_tools import sqlite3
 
 
 from brainvisa.configuration import neuroConfig
@@ -1779,11 +1779,11 @@ class BackwardCompatiblePatterns(object):
             return result
         return None
 
-    def __cmp__(self, other):
-        return self.patterns != other.patterns
-
     def __eq__(self, other):
         return self.patterns == other.patterns
+
+    def __ne__(self, other):
+        return self.patterns != other.patterns
 
     def __lt__(self, other):
         return self.patterns < other.patterns

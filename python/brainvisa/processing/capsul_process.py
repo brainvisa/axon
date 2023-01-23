@@ -157,7 +157,6 @@ from brainvisa.configuration import neuroConfig
 from brainvisa.configuration import axon_capsul_config_link
 from soma.functiontools import SomaPartial
 from capsul.pipeline import pipeline_nodes
-from capsul.attributes import attributes_schema
 import capsul.api as capsul
 from traits import trait_types
 import traits.api as traits
