@@ -491,12 +491,22 @@ if not homeBrainVISADir:
     homeBrainVISADir = os.path.join(homedir, '.brainvisa')
 
 if not os.path.exists(homeBrainVISADir):
+    if os.path.lexists(homeBrainVISADir):
+        # .brainvisa is a broken symbolic link, likely from
+        # /casa/home/.brainvisa to the host home directory; make the target
+        # directory
+        path_to_make = os.readlink(homeBrainVISADir)
+    else:
+        path_to_make = homeBrainVISADir
     try:
-        os.mkdir(homeBrainVISADir)
+        os.mkdir(path_to_make)
     except OSError as e:
-        if not e.errno == errno.EEXIST:
-            # filter out 'File exists' exception, if the same dir has been created
-            # concurrently by another instance of BrainVisa or another thread
+        if e.errno == errno.EEXIST:
+            # filter out 'File exists' exception, if the same dir has been
+            # created concurrently by another instance of BrainVisa or another
+            # thread
+            pass
+        else:
             raise
 
 # Other defaults
