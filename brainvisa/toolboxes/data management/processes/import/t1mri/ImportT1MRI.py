@@ -63,7 +63,7 @@ signature = Signature(
 )
 
 
-def initSubject(self, inp, b, c, d):
+def initSubject(self, proc, dummy):
     if not self.input:
         return None
     if not isinstance(self.input, DiskItem):
@@ -74,11 +74,14 @@ def initSubject(self, inp, b, c, d):
         for a in ['_ontology', ]:  #'_declared_attributes_location', ]:
             if a in value:
                 del value[a]
-        if 'session' not in value \
-                and 'bids' in [h.fso.name for h in neuroHierarchy.hierarchies()
-                               if h.name == self.output_database][0]:
-            # this default value should be filled automatically - but is not...
-            value['session'] = '1'
+
+        if 'session' not in value:
+            fso_names = [h.fso.name for h in neuroHierarchy.hierarchies()
+                         if h.name == self.output_database]
+            if len(fso_names) != 0 and 'bids' in fso_names[0]:
+                # this default value should be filled automatically
+                # - but is not...
+                value['session'] = '1'
     hvalues = {}
     if value.get("subject", None) is None:
         value["subject"] = os.path.basename(
@@ -105,9 +108,9 @@ def initialization(self):
     else:
         self.signature["output_database"] = OpenChoice()
 
-    self.addLink("output",
-                 ("input", "output_database", "attributes_merging",
-                  "selected_attributes_from_header"), self.initSubject)
+    self.linkParameters("output",
+                        ("input", "output_database", "attributes_merging",
+                         "selected_attributes_from_header"), self.initSubject)
     self.signature['output'].browseUserLevel = 3
     self.signature['input'].databaseUserLevel = 2
     self.signature['referential'].userLevel = 2
