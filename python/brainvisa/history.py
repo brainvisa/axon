@@ -345,7 +345,7 @@ class ProcessExecutionEvent(HistoricalEvent):
         self.content = {}
         self.content.update(content)
 
-    def __getinitargs__(self):
+    def __getnewargs__(self):
         return (self.uuid, self.content)
 
     def setBvsession(self, uuid):
@@ -385,7 +385,7 @@ class BrainVISASessionEvent(HistoricalEvent):
         HistoricalEvent.__init__(self, uuid)
         self.content = content.copy()
 
-    def __getinitargs__(self):
+    def __getnewargs__(self):
         return (self.uuid, self.content)
 
     def setCurrentBrainVISASession(self, uuidDb):

@@ -6329,7 +6329,7 @@ class ProcessTree(EditableTree):
                         # tag the tree as visible or not : it is visible if it
                         # contains at least one visible child
 
-    def __getinitargs__(self):
+    def __getnewargs__(self):
         content = list(self.values())
         return (self.initName, self.id, self.icon, self.tooltip, self.modifiable, self.user, content)
 
@@ -6486,7 +6486,7 @@ class ProcessTree(EditableTree):
                             # with a content (when it is restored from minf
                             # file for example), it is usefull to do so.
 
-        def __getinitargs__(self):
+        def __getnewargs__(self):
             content = list(self.values())
             return (self.initName, self.id, self.modifiable, self.icon, content)
 
@@ -6498,7 +6498,7 @@ class ProcessTree(EditableTree):
             """This method is redefined for enable deepcopy of this object (and potentially pickle).
             It gives the arguments to pass to the init method of the object when creating a copy
             """
-            return (self.__class__, self.__getinitargs__(), None, None, None)
+            return (self.__class__, self.__getnewargs__(), None, None, None)
 
         def setVisible(self):
             """
@@ -6573,7 +6573,7 @@ class ProcessTree(EditableTree):
             else:
                 self.enabled = True
 
-        def __getinitargs__(self):
+        def __getnewargs__(self):
             return (self.id, self.initName, self.modifiable, self.icon, self.userLevel)
 
         def __getinitkwargs__(self):
@@ -6583,7 +6583,7 @@ class ProcessTree(EditableTree):
             """This method is redefined for enable deepcopy of this object (and potentially pickle).
             It gives the arguments to pass to the init method of the object when creating a copy
             """
-            return (self.__class__,  self.__getinitargs__(), None, None, None)
+            return (self.__class__,  self.__getnewargs__(), None, None, None)
 
         def setVisible(self, processInfo):
             """

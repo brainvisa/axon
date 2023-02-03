@@ -98,7 +98,7 @@ class TextFileLink(FileLink):
         except Exception:
             return neuroException.exceptionHTML()
 
-    def __getinitargs__(self):
+    def __getnewargs__(self):
         return (self.fileName, )
 
     def __repr__(self):
@@ -130,7 +130,7 @@ class LogFileLink(FileLink):
                 LogFile.Item(icon='error.png', what='Error', html=neuroException.exceptionHTML())]
         return result
 
-    def __getinitargs__(self):
+    def __getnewargs__(self):
         return (self.fileName, )
 
     def __repr__(self):

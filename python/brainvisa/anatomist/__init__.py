@@ -945,7 +945,7 @@ if anatomistImport:
                                lambda self=self: self._newWindow('Browser'))
             self.refreshChoices()
 
-        def __getinitargs__(self):
+        def __getnewargs__(self):
             """
             getinitargs, getstate, setstate are used by copy module.
             When a process is opened, its signature is copied. So if the
