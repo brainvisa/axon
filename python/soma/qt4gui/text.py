@@ -49,30 +49,24 @@ try:
     # note the very elegant way to fallback... :)
     import rototobidulechouette.nomodule
 
-    # use the newer Qt5 QtWebEngine
-    from soma.qt_gui.qt_backend import QtWebEngine
-    from soma.qt_gui.qt_backend.QtWebEngineWidgets \
-        import QWebEngineView, QWebEnginePage
+    # use the newer Qt5/6 QtWebEngine
+    from soma.qt_gui.qt_backend.QtWebEngineWidgets import QWebEngineView
+    try:
+        # PyQt6
+        from soma.qt_gui.qt_backend.QtWebEngineCore import QWebEnginePage
+    except ImportError:
+        # PyQt5
+        from soma.qt_gui.qt_backend.QtWebEngineWidgets \
+            import QWebEnginePage
     use_webengine = True
 except ImportError:
-    try:
-        import plouf
-        from soma.qt_gui.qt_backend import QtWebKit
-        QWebEngineView = QtWebKit.QWebView
-        QWebPage = QtWebKit.QWebPage
-        QWebEnginePage = QWebPage
-        use_webengine = False
-    except ImportError:
-        # use the newer Qt5/6 QtWebEngine
-        from soma.qt_gui.qt_backend.QtWebEngineWidgets import QWebEngineView
-        try:
-            # PyQt6
-            from soma.qt_gui.qt_backend.QtWebEngineCore import QWebEnginePage
-        except ImportError:
-            # PyQt5
-            from soma.qt_gui.qt_backend.QtWebEngineWidgets \
-                import QWebEnginePage
-        use_webengine = True
+    from soma.qt_gui.qt_backend import QtWebKit
+    QWebEngineView = QtWebKit.QWebView
+    QWebPage = QtWebKit.QWebPage
+    QWebEnginePage = QWebPage
+    use_webengine = False
+
+print('use_webengine:', use_webengine)
 
 
 class TextEditWithSearch(QtGui.QTextEdit):
