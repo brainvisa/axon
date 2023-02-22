@@ -75,8 +75,9 @@ def defaultHTMLBrowser():
 
 
 def textEditors():
-    return [t for t in ('leafpad', 'gedit', 'nedit', 'kedit', 'kwrite',
-                        'xemacs', 'emacs', 'textedit', 'notepad', 'write',
+    return [t for t in ('featherpad', 'mousepad', 'leafpad',
+                        'gedit', 'nedit', 'kedit', 'kwrite',
+                        'xemacs', 'emacs', 'textedit', 'notepad',
                         'kate') if find_executable(t)]
 
 
@@ -110,6 +111,7 @@ def defaultCSVViewer():
 
 def pngViewers():
     return [i for i in ('eog', 'shotwell', 'feh', 'geeqie', 'gpicview',
+                        'lximage-qt',
                         'gwenview', 'mirage') if find_executable(i)]
 
 
