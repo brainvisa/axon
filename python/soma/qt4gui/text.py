@@ -66,8 +66,6 @@ except ImportError:
     QWebEnginePage = QWebPage
     use_webengine = False
 
-print('use_webengine:', use_webengine)
-
 
 class TextEditWithSearch(QtGui.QTextEdit):
 
