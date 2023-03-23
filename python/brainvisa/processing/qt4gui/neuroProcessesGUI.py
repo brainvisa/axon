@@ -3796,7 +3796,11 @@ class UserDialog(QDialog):
             self.group1.buttonClicked[int].connect(self._doAction)
         group2Widget.setSizePolicy(
             QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed))
-        self.group2.buttonClicked[int].connect(self.select)
+        if hasattr(self.group2, 'idClicked'):
+            # Qt >= 5.15
+            self.group2.idClicked.connect(self.select)
+        else:
+            self.group2.buttonClicked[int].connect(self.select)
 
     def select(self, value):
         for e in self.editors.values():

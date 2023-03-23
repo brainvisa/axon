@@ -33,38 +33,51 @@
 
 '''
 
-@author: Dominique Geffroy
-@organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
-@license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
+organization: NeuroSpin
+license: CeCILL version 2 (http://www.cecill.info/licences/Licence_CeCILL_V2-en.html)
 '''
 
 from __future__ import absolute_import
 from soma.qt_gui.qt_backend import QtGui, QtCore
 from soma.qt_gui import qt_backend
-try:
-    # DISABLE for release 5.0.0
-    # x2go is widely used but only provides GLX 1.2
-    # WebEngine needs GLX 1.3 and makes brainvisa fail. As it is almost vital
-    # for our users, we fallback to the obsolete WebKit for now.
-    # note the very elegant way to fallback... :)
-    import rototobidulechouette.nomodule
 
-    # use the newer Qt5/6 QtWebEngine
-    from soma.qt_gui.qt_backend.QtWebEngineWidgets import QWebEngineView
+# DISABLE QtWebEngine for Qt5 releases
+# x2go is widely used but only provides GLX 1.2
+# WebEngine needs GLX 1.3 and makes brainvisa fail. As it is almost vital
+# for our users, we fallback to the obsolete WebKit for now.
+# note the very elegant way to fallback... :)
+web_import_order = ('QtWebKit', 'QtWebEngine')
+if QtCore.QT_VERSION >= 0x060000:
+    web_import_order = ('QtWebEngine', 'QtWebKit')
+
+use_webengine = None
+for web_mod in web_import_order:
     try:
-        # PyQt6
-        from soma.qt_gui.qt_backend.QtWebEngineCore import QWebEnginePage
+        if web_mod == 'QtWebEngine':
+            # use the newer Qt5/6 QtWebEngine
+            from soma.qt_gui.qt_backend.QtWebEngineWidgets \
+                import QWebEngineView
+            if QtCore.QT_VERSION >= 0x060000:
+                # PyQt6
+                from soma.qt_gui.qt_backend.QtWebEngineCore \
+                    import QWebEnginePage
+            else:
+                # PyQt5
+                from soma.qt_gui.qt_backend.QtWebEngineWidgets \
+                    import QWebEnginePage
+            use_webengine = True
+            break  # success
+        else:
+            # use the obsolete QtWebKit
+            from soma.qt_gui.qt_backend import QtWebKit
+            QWebEngineView = QtWebKit.QWebView
+            QWebPage = QtWebKit.QWebPage
+            QWebEnginePage = QWebPage
+            use_webengine = False
     except ImportError:
-        # PyQt5
-        from soma.qt_gui.qt_backend.QtWebEngineWidgets \
-            import QWebEnginePage
-    use_webengine = True
-except ImportError:
-    from soma.qt_gui.qt_backend import QtWebKit
-    QWebEngineView = QtWebKit.QWebView
-    QWebPage = QtWebKit.QWebPage
-    QWebEnginePage = QWebPage
-    use_webengine = False
+        pass
+if use_webengine is None:
+    raise ImportError('Could not import either of %s' % repr(web_import_order))
 
 
 class TextEditWithSearch(QtGui.QTextEdit):

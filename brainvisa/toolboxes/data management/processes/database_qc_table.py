@@ -274,7 +274,6 @@ def exec_mainthread(self, context):
     from soma.qt_gui import qt_backend
     from soma.qt_gui.qt_backend import Qt
     from brainvisa.data.qt4gui.readdiskitemGUI import RightClickablePushButton
-    qt5 = qt_backend.get_qt_backend() == 'PyQt5'
 
     mw = Qt.QMainWindow()
     wid = Qt.QWidget()
@@ -317,12 +316,8 @@ def exec_mainthread(self, context):
     tablew.setHorizontalHeader(RotatedHeaderView(Qt.Qt.Horizontal, tablew))
 
     header = tablew.horizontalHeader()
-    if qt5:
-        header.setSectionsClickable(True)
-        header.setSectionsMovable(True)
-    else:
-        header.setClickable(True)
-        header.setMovable(True)
+    header.setSectionsClickable(True)
+    header.setSectionsMovable(True)
 
     tablew.setColumnCount(ncols + nkeys)
     header.setDefaultSectionSize(32)
