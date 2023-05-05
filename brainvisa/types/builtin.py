@@ -228,6 +228,7 @@ FileType('HTML file', 'Any Type', 'HTML')
 FileType('GIFTI geometry', 'Any type', 'GIFTI file')
 FileType('Bucket', 'Any Type', 'Bucket')
 FileType('SVG figure', 'Any Type', 'SVG file')
+FileType('PDF file', 'Any Type', 'PDF file')
 
 FileType('B values','Any Type','Bval File') ##########################
 FileType('B vectors','Any Type','Bvec File') ##########################
