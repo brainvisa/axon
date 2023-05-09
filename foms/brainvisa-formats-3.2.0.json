@@ -304,6 +304,7 @@
         ]
     },
     "formats": {
+        "no ext": "",
         "gz compressed ECAT v image": "v.gz",
         "XLS file": "xls",
         "gz compressed PS file": "ps.gz",
