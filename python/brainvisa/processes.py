@@ -3008,6 +3008,7 @@ class ExecutionContext(object):
         '''
         argnames = param_name.split('.')
         current_proc = process
+        enode = None
         if len(argnames) > 1:
             enode_meth = getattr(current_proc, 'executionNode')
             if not enode_meth:
@@ -3016,9 +3017,9 @@ class ExecutionContext(object):
             enode = enode_meth()
             for pname in argnames[:-1]:
                 enode = enode.child(pname)
-            current_proc = enode._process
+            current_proc = getattr(enode, '_process', enode)
 
-        return current_proc, argnames[-1]
+        return current_proc, argnames[-1], enode
 
     def _setArguments(self, _process, *args, **kwargs):
         # Set arguments
@@ -3039,9 +3040,13 @@ class ExecutionContext(object):
             # have to give up (except for the first, which is reliable)
             break
         for (n, v) in kwargs.items():
-            proc, argname = self._get_process_and_argname(_process, n)
-            proc._setImmutable(argname, True)
-            to_restore.add(proc)
+            proc, argname, enode = self._get_process_and_argname(_process, n)
+            if argname not in proc.signature and argname in ('selected',
+                                                             '_selected'):
+                enode.setSelected(v)
+            else:
+                proc._setImmutable(argname, True)
+                to_restore.add(proc)
         for i, v in enumerate(args):
             n = list(_process.signature.keys())[i]
             _process.setDefault(n, 0)
@@ -3057,7 +3062,8 @@ class ExecutionContext(object):
         for n in _process.signature.keys():
             if n in kwargs:
                 v = kwargs[n]
-                proc, argname = self._get_process_and_argname(_process, n)
+                proc, argname, enode = self._get_process_and_argname(_process,
+                                                                     n)
                 proc.setDefault(argname, 0)
                 if v is not None:
                     proc.setValue(argname, v)
