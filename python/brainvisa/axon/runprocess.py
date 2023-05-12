@@ -277,9 +277,13 @@ usage = '''Usage: %prog [options] processname [arg1] [arg2] ... [argx=valuex] [a
 Example:
 %prog --enabledb threshold ~/data/irm.ima /tmp/th.nii threshold1=80
 
-Named arguments (in the shape argx=valuex) may address sub-processes of a pipeline, using the dot separator:
+Named arguments (in the shape argx=value) may address sub-processes of a pipeline, using the dot separator:
 
 PrepareSubject.t1mri=/home/myself/mymri.nii
+
+Nodes may be selected or unselected using the "selected" or "_selected" node variable:
+
+HemispheresProcessing.selected=0
 
 For a more precise description, please look at the web documentation:
 https://brainvisa.info/axon/user_doc/axon_manual2.html#brainvisa-commandline
