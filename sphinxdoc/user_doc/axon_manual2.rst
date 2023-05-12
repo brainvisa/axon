@@ -511,6 +511,22 @@ will produce a text-only version of the process documentation available in the B
 In the above example, however, all required parameters are filled in exhaustively: for the threshold process, the parameters ``image_input`` and ``image_output`` must be specified. This default mode of ``axon-runprocess`` is the lightweight mode, and does not use databasing (nor history logging). It is faster to start, but for complex processes and pipelines, using databasing and parameters completion is useful.
 
 
+Pipelines nodes
+---------------
+
+Named arguments (in the shape ``argx=value``) may address sub-processes of a pipeline, using the dot separator:
+
+.. code-block:: bash
+
+    axon-runprocess morphologist PrepareSubject.t1mri=/home/myself/mymri.nii
+
+Nodes may be selected or unselected using the ``selected`` or ``_selected`` node variable (``_selected`` should be used when ``selected`` is actually a parameter name):
+
+.. code-block:: bash
+
+    axon-runprocess morphologist HemispheresProcessing.selected=0
+
+
 Parameters types and syntax
 ---------------------------
 
