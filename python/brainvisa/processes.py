@@ -3041,8 +3041,8 @@ class ExecutionContext(object):
             break
         for (n, v) in kwargs.items():
             proc, argname, enode = self._get_process_and_argname(_process, n)
-            if argname not in proc.signature and argname in ('selected',
-                                                             '_selected'):
+            if argname not in getattr(proc, 'signature', {}) \
+                    and argname in ('selected', '_selected'):
                 enode.setSelected(v)
             else:
                 proc._setImmutable(argname, True)
