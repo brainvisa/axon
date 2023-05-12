@@ -291,8 +291,12 @@ class WebBrowserWithSearch(QWebEngineView):
     def searchNext(self, void):
         if self.searchText:
             # not case sensitive, not whole word
+            if use_webengine:
+                flags = QWebEnginePage.FindFlags()
+            else:
+                flags = QWebEnginePage.FindWrapsAroundDocument
             self.findText(
-                self.searchText, QWebEnginePage.FindWrapsAroundDocument)
+                self.searchText, flags)
 
     def searchPrevious(self, void):
         if self.searchText:
