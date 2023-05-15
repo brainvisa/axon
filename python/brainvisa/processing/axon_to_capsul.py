@@ -55,6 +55,8 @@ class AxonToCapsul(object):
 
     Any = traits.Any
     Undefined = traits.Undefined
+    sections_order = ('nodes', 'switches', 'exports', 'links',
+                      'initialization')
 
     def __init__(self, ver='2'):
         self.ver = ver
@@ -732,8 +734,8 @@ class AxonToCapsul(object):
 
     def write_switch(self, enode, buffered_lines, nodenames, links, p,
                      processed_links, selfoutparams, revoutparams,
-                     self_out_traits, exported, parent_names, enode_name=None,
-                     weak_outputs=False):
+                     self_out_traits, exported, parent_names, procmap,
+                     enode_name=None, weak_outputs=False):
         if enode_name is None:
             enode_name = 'select_' + enode.name()
         nodename = self.make_node_name(enode_name, nodenames, parent_names)
@@ -767,6 +769,8 @@ class AxonToCapsul(object):
             # connect children outputs to the switch
             sel_out = enode.selection_outputs
             sw_options = ''
+            new_links = {}
+            new_processed_links = set()
             for link_src, link_pars in zip(input_names, sel_out):
                 if not isinstance(link_pars, list) \
                         and not isinstance(link_pars, tuple):
@@ -798,15 +802,16 @@ class AxonToCapsul(object):
                     src_par = src().signature[link_par]
                     out_types.setdefault(output_name, []).append(src_par)
                     # input_name = link_src  # has changed again in Switch...
-                    links.append((src, link_par, use_weak_ref(enode), input_name,
-                                  weak_outputs))
-                    processed_links.add(
+                    new_links.setdefault(link_src, []).append(
+                        (src, link_par, use_weak_ref(enode),
+                         input_name, weak_outputs))
+                    new_processed_links.add(
                         (src, link_par, use_weak_ref(p), output_name))
-                    processed_links.add(
+                    new_processed_links.add(
                         (use_weak_ref(p), output_name, src, link_par))
-                    processed_links.add(
+                    new_processed_links.add(
                         (src, link_par, use_weak_ref(p), input_name))
-                    processed_links.add(
+                    new_processed_links.add(
                         (use_weak_ref(p), input_name, src, link_par))
             if exported:
                 for out_name in out_types.keys():
@@ -829,13 +834,12 @@ class AxonToCapsul(object):
                     else:
                         out_types[output_name] = (self.Any, [])
                         out_types_list.append('Any()')
-                if have_optional:
-                    sw_options += ', opt_nodes=True'
-                input_names = repr(input_names)
-                buffered_lines['switches'].append(
-                    '        self.add_switch(\'%s\', %s, %s, output_types=[%s]%s)\n'
-                    % (nodename, input_names, repr(output_names),
-                      ', '.join(out_types_list), sw_options))
+                self.build_switch_lines(nodename, input_names, output_names,
+                                        buffered_lines, links, processed_links,
+                                        out_types_list, sw_options, new_links,
+                                        new_processed_links, have_optional,
+                                        procmap, p, selfoutparams,
+                                        revoutparams)
 
         # select the right child
         for sub_node_name in enode.childrenNames():
@@ -853,6 +857,23 @@ class AxonToCapsul(object):
                         % (nodename, sub_node_name))
         return nodename
 
+    def build_switch_lines(self, nodename, input_names, output_names,
+                           buffered_lines, links, processed_links,
+                           out_types_list, sw_options, new_links,
+                           new_processed_links, have_optional, procmap, p,
+                           selfoutparams, revoutparams):
+        if have_optional:
+            sw_options += ', opt_nodes=True'
+        nlinks2 = set()
+        for nlinks in new_links.values():
+            nlinks2.update(nlinks)
+        links += nlinks2
+        processed_links.update(new_processed_links)
+        input_names = repr(input_names)
+        buffered_lines['switches'].append(
+            '        self.add_switch(\'%s\', %s, %s, output_types=[%s]%s)\n'
+            % (nodename, input_names, repr(output_names),
+              ', '.join(out_types_list), sw_options))
 
     def param_type_decl_string(self, ptype, options, as_instance=False):
         return '%s(%s)' % (ptype, ', '.join(options))
@@ -905,11 +926,23 @@ class AxonToCapsul(object):
             new_lines.append(old_lines[j])
         buffered_lines['exports'] = new_lines
 
+    def ordered_sections(self, sections=None):
+        if sections is None:
+            return self.sections_order
+        ordered = []
+        for section in self.sections_order:
+            if section in sections:
+                ordered.append(section)
+                if len(ordered) == len(sections):
+                    return tuple(ordered)
+        if len(ordered) != len(sections):
+            for section in sections:
+                if section not in ordered:
+                    ordered.append(section)
+        return tuple(ordered)
 
     def write_buffered_lines(self, out, buffered_lines, sections=None):
-        if sections is None:
-            sections = ('nodes', 'switches', 'exports', 'links',
-                        'initialization')
+        sections = self.ordered_sections(sections)
         for section in sections:
             if buffered_lines.get(section):
                 out.write(u'        # %s section\n' % section)
@@ -946,6 +979,7 @@ class AxonToCapsul(object):
         selfoutparams = {}
         revoutparams = {}
         self_out_traits = []
+        switches = []
         while enodes:
             enode, enode_name, exported, weak_outputs, parents, parentnode \
                 = enodes.pop(0)
@@ -1001,15 +1035,12 @@ class AxonToCapsul(object):
                 # parse process signature, look for non-default values
             else:
                 if isinstance(enode, procbv.SelectionExecutionNode) and exported:
-                    # FIXME: BUG: if not exported, should we rebuild switch params
-                    # list, and doing this, export again internal params ?
-                    nodename = self.write_switch(enode, buffered_lines,
-                                                 nodenames, links, p,
-                                                 processed_links,
-                                                 selfoutparams, revoutparams,
-                                                 self_out_traits, exported,
-                                                 parents, enode_name,
-                                                 weak_outputs)
+                    # FIXME: BUG: if not exported, should we rebuild switch
+                    # params list, and doing this, export again internal
+                    # params ?
+                    # postpone switch creation afer other nodes
+                    switches.append((enode, enode_name, exported, weak_outputs,
+                                     parents, parentnode))
                     procmap[use_weak_ref(enode)] = (nodename, exported)
                     # children should have weak outputs so that they can be
                     # deactivated by the switch
@@ -1037,6 +1068,18 @@ class AxonToCapsul(object):
                 else:
                     buffered_lines['initialization'].append(
                         '        self.nodes_activation.%s = False\n' % nodename)
+
+        # process switches
+        for switch_def in switches:
+            enode, enode_name, exported, weak_outputs, parents, parentnode \
+                = switch_def
+            nodename = self.write_switch(enode, buffered_lines,
+                                         nodenames, links, p,
+                                         processed_links,
+                                         selfoutparams, revoutparams,
+                                         self_out_traits, exported,
+                                         parents, procmap, enode_name,
+                                         weak_outputs)
 
         self.write_pipeline_links(p, buffered_lines, procmap, links,
                                   processed_links, selfoutparams, revoutparams,
@@ -1235,6 +1278,8 @@ class AxonToCapsul_v3(AxonToCapsul):
 
     Any = 'Any'
     Undefined = 'undefined'
+    sections_order = ('nodes', 'switches', 'exports', 'links',
+                      'initialization')
 
     def get_choice_type(self, choice):
         if len(choice.values) == 0:
@@ -1424,7 +1469,48 @@ class AxonToCapsul_v3(AxonToCapsul):
         context.runProcess('%s', **kwargs)
 ''' % axon_name)
 
+    def build_switch_lines(self, nodename, input_names, output_names,
+                           buffered_lines, links, processed_links,
+                           out_types_list, sw_options, new_links,
+                           new_processed_links, have_optional, procmap, p,
+                           selfoutparams, revoutparams):
+        print('build_switch_lines v3:')
+        print(nodename, input_names, output_names)
+        print(len(new_links))
+        print('procmap:')
+        print(procmap)
+        #processed_links.update(new_processed_links)
+        #opts = {}
+        #for way, ldefs in new_links.items():
+            #for ldef in ldefs:
+                #print('way:', way, ', ldef:', ldef)
+                #link = self.converted_link(ldef, processed_links, p, [],
+                                          #[], selfoutparams,
+                                          #revoutparams, procmap)
+                #print('link:', link)
+                #if link is None:
+                    #link = ldef
+                #oname = link[3].split('_switch_')[-1]
+                #name = link[1]
+                #print('link for:', name, oname)
+                #pname = procmap[ldef[0]][0]
+                #print('pname:', pname)
+                #onv = opts.setdefault(way, {})
+                #onv[oname] = '%s%s%s' % (pname, '.' if pname else '', name)
+        #buffered_lines['switches'].append(
+            #'        self.create_switch(\'%s\', %s%s)\n'
+            #% (nodename, repr(opts), sw_options))
 
+        nlinks2 = set()
+        for nlinks in new_links.values():
+            nlinks2.update(nlinks)
+        links += nlinks2
+        processed_links.update(new_processed_links)
+        input_names = repr(input_names)
+        buffered_lines['switches'].append(
+            '        self.add_switch(\'%s\', %s, %s, output_types=[%s]%s)\n'
+            % (nodename, input_names, repr(output_names),
+              ', '.join(out_types_list), sw_options))
 
 
 def get_subprocesses(procid):
