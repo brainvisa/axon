@@ -53,31 +53,7 @@ else:
 # in all BrainVISA and here, we define the new attribute for older PyQt
 # versions.
 
-# Qt.WStyle_Dialog has been replaced by Qt.WType_Dialog in PyQt 3.0
-if not hasattr(Qt, 'WType_Dialog'):
-    if hasattr(Qt, 'WStyle_Dialog'):
-        Qt.WType_Dialog = Qt.WStyle_Dialog
-    if hasattr(Qt, 'Dialog'):
-        Qt.WType_Dialog = Qt.Dialog
-
-# Qt.WType_Modal has been replaced by Qt.WShowModal in PyQt 3.0
-if not hasattr(Qt, 'WShowModal'):
-    if hasattr(Qt, 'WType_Modal'):
-        Qt.WShowModal = Qt.WType_Modal
-
-# QWidget.setBackgroundColor has been removed in PyQt 3.0.
-# We use QWidget.setPaletteBackgroundColor instead.
-if not hasattr(QWidget, 'setPaletteBackgroundColor'):
-    if hasattr(QWidget, 'setBackgroundColor'):
-        def setPaletteBackgroundColor(self, color):
-            self.setBackgroundColor(color)
-        QWidget.setPaletteBackgroundColor = setPaletteBackgroundColor
-
-# QComboBox.setCurrentText does not exists before Qt 3.0
-if not hasattr(QComboBox, 'setCurrentText'):
-    def setCurrentText(self, text):
-        return self.lineEdit().setText(text)
-    QComboBox.setCurrentText = setCurrentText
+# -- (none) --
 
 # set plugins path for binary packages (needed on MacOSX/Fink version of Qt)
 
@@ -100,9 +76,9 @@ def setPluginPath():
             if os.path.isdir(p):
                 shared = p
                 break
-    if shared is not None:
-        p = os.path.normpath(
-            os.path.join(shared, '..', 'lib', 'qt3-plugins'))
-        QApplication.addLibraryPath(p)
+    #if shared is not None:
+        #p = os.path.normpath(
+            #os.path.join(shared, '..', 'lib', 'qt3-plugins'))
+        #QApplication.addLibraryPath(p)
 
 setPluginPath()

@@ -441,7 +441,7 @@ if os.path.exists(docPath):
             _languages.append(l)
 else:
     print(
-        'WARNING: You should check your BrainVISA installation because the following directory does not exists:',
+        'WARNING: You should check your BrainVISA installation because the following directory does not exist:',
           repr(docPath), file=sys.stderr)
 for i in ('LANGUAGE', 'LC_ALL', 'LC_MESSAGES', 'LANG'):
     language = os.environ.get(i, '')[: 2]
