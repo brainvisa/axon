@@ -1,6 +1,6 @@
 set( soma_qt "soma_qt.sip" )
 message("SIP VERSION: ${SIP_VERSION}" )
-if( PYQT_VERSION VERSION_GREATER_EQUAL "6.0.0" )
+if( QT_VERSION VERSION_GREATER_EQUAL "6.0.0" )
   set( soma_qt "soma_qt6.sip" )
 endif()
 
