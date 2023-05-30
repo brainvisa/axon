@@ -165,8 +165,17 @@ class SimpleTable(QAbstractTableModel):
     def sort(self, column, order):
         """Sort table by given column number.
         """
+        class str_itemgetter:
+            def __init__(self, col):
+                self.col = col
+            def __call__(self, l):
+                item = l[self.col]
+                if item is None:
+                    return ''
+                return item
+
         self.layoutAboutToBeChanged.emit()
-        self._data.sort(key=operator.itemgetter(
+        self._data.sort(key=str_itemgetter( #operator.itemgetter(
             column), reverse=(order == Qt.DescendingOrder))
         self.layoutChanged.emit()
 
