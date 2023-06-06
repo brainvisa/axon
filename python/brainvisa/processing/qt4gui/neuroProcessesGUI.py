@@ -1530,7 +1530,7 @@ class NodeCheckListItem(QTreeWidgetItem):
 
     def isOn(self):
         if self.read_only:
-            return int(Qt.ItemIsEnabled & self.flags()) > 0
+            return int(self.flags() & Qt.ItemIsEnabled) > 0
         elif self.itemType == "radio":
             return self.widget.isChecked()
         elif self.itemType == "check":
