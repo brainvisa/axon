@@ -474,19 +474,23 @@ class HierarchyBrowser(QWidget):
         return item and item.diskItem and item.diskItem.get("graph_version", None) == "3.0" and neuroDiskItems.isSameDiskItemType(item.diskItem.type, self.graphType) and self.graphConverter
 
     def menuHistoryEvent(self):
-        items = self.selectedItems()
-        for item in items:
-            if item.diskItem:
-                bvproc_uuid = item.diskItem.get("lastHistoricalEvent", None)
-                # print('!menuHistoryEvent : type item.diskitem ',
-                # type(item.diskItem)) #<class
-                # 'brainvisa.data.neuroDiskItems.File'>
-                if bvproc_uuid is not None:
-                    history_window = DataHistoryWindow(
-                        item.diskItem, bvproc_uuid,
-                                                       parent=self)
-                    history_window.setAttribute(Qt.WA_DeleteOnClose)
-                    history_window.show()
+        try:
+            items = self.selectedItems()
+            for item in items:
+                if item.diskItem:
+                    bvproc_uuid = item.diskItem.get("lastHistoricalEvent",
+                                                    None)
+                    # print('!menuHistoryEvent : type item.diskitem ',
+                    # type(item.diskItem)) #<class
+                    # 'brainvisa.data.neuroDiskItems.File'>
+                    if bvproc_uuid is not None:
+                        history_window = DataHistoryWindow(
+                            item.diskItem, bvproc_uuid,
+                                                          parent=self)
+                        history_window.setAttribute(Qt.WA_DeleteOnClose)
+                        history_window.show()
+        except Exception:
+            showException()
 
     def historyCondition(self, item):
         return item and item.diskItem and item.diskItem.get("lastHistoricalEvent", None) is not None
@@ -501,9 +505,12 @@ class HierarchyBrowser(QWidget):
             if item.diskItem:
                 bvproc_uuid = item.diskItem._uuid
                 if bvproc_uuid is not None:
-                    history_window = DataHistoryWindow(
-                        item.diskItem, bvproc_uuid, parent=self)
-                    history_window.show()
+                    try:
+                        history_window = DataHistoryWindow(
+                            item.diskItem, bvproc_uuid, parent=self)
+                        history_window.show()
+                    except Exception:
+                        showException()
 
     def lockItemCondition(self, item):
         return item and item.diskItem and item.diskItem.isWriteable() \
