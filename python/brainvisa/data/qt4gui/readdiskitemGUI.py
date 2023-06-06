@@ -628,10 +628,13 @@ class DiskItemEditor(QWidget, DataEditor):
         v = self.getValue()
         bvproc_uuid = v.get("lastHistoricalEvent", None)
         if bvproc_uuid is not None:
-            history_window = historygui.DataHistoryWindow(v, bvproc_uuid,
-                                                          parent=self)
-            history_window.setAttribute(Qt.WA_DeleteOnClose)
-            history_window.show()
+            try:
+                history_window = historygui.DataHistoryWindow(v, bvproc_uuid,
+                                                              parent=self)
+                history_window.setAttribute(Qt.WA_DeleteOnClose)
+                history_window.show()
+            except Exception:
+                showException()
 
     def getDataEditors(self, update = False):
         if self._editors is None or update:
