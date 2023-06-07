@@ -697,6 +697,7 @@ class CapsulProcess(processes.Process):
         from capsul.attributes.completion_engine import ProcessCompletionEngine
 
         study_config = self.get_study_config(context)
+        print('CONFIG:', study_config.engine.settings.select_configurations('global', check_invalid_mods=True))
 
         self.propagate_parameters_to_capsul()
         process = self.get_capsul_process()
