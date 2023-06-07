@@ -11,8 +11,6 @@ def run_fsl_command(context, cmd, **kwargs):
     Uses capsul.in_context.fsl to do so.
     '''
     configuration = Application().configuration
-    print('FSL conf:', configuration.FSL.fsldir)
-    print(configuration.FSL.fsl_commands_prefix)
     os.environ['FSL_CONFIG'] = osp.join(configuration.FSL.fsldir, 'etc',
                                         'fslconf', 'fsl.sh')
     if configuration.FSL.fsl_commands_prefix:
