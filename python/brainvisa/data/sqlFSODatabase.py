@@ -1536,6 +1536,10 @@ class SQLDatabase(Database):
         attributes = {}
         # if directoriesToScan and len( directoriesToScan ) == 1:
             # self._getParentAttributes( directoriesToScan[0], attributes )
+        if directoriesToScan is not None:
+            # add / at end of dir names
+            directoriesToScan = [os.path.join(d, '')
+                                 for d in directoriesToScan]
         if directoriesIterator is None:
             stack = [
                 (DirectoryIterator(self.directory), scanner, attributes, 0)]
@@ -1545,7 +1549,7 @@ class SQLDatabase(Database):
         while stack:
             itDirectory, scanner, attributes, priorityOffset = stack.pop(0)
 
-            f = itDirectory.fullPath()
+            f = os.path.join(itDirectory.fullPath(), '')
             if directoriesToScan is not None:
                 ignore = True
                 allowYield = False
