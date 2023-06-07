@@ -285,6 +285,10 @@ Nodes may be selected or unselected using the "selected" or "_selected" node var
 
 HemispheresProcessing.selected=0
 
+A process may be a BrainVisa/Axon process name, or it may also be any Capsul process or pipeline, using on-the-fly wrapping. To select one of them, use the prefix ``capsul://`` to the Capsul process/pipeline definition::
+
+%prog capsul://capsul.engine.write_engine_config engine.json
+
 For a more precise description, please look at the web documentation:
 https://brainvisa.info/axon/user_doc/axon_manual2.html#brainvisa-commandline
 '''
