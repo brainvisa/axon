@@ -3440,7 +3440,7 @@ class ProcessView(QWidget, ExecutionContextGUI):
         # item.itemClicked()
 
     def executionNodeChanged(self, item, column):
-        if item._node._selected != item.isOn() \
+        if hasattr(item, '_node') and item._node._selected != item.isOn() \
                 and (not hasattr(item, 'creating') or not item.creating):
             item.itemClicked()
 
