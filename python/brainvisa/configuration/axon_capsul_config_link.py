@@ -264,11 +264,15 @@ class AxonCapsulConfSynchronizer(object):
                         if study_config.spm_exec is not Undefined:
                             ax_conf.SPM.spm12_standalone_command \
                                 = study_config.spm_exec
-                        if study_config.spm_directory is not Undefined:
                             ax_conf.SPM.spm12_standalone_path \
+                                = os.path.dirname(study_config.spm_exec)
+                        if study_config.spm_directory is not Undefined:
+                            ax_conf.SPM.spm12_standalone_mcr_path \
                                 = study_config.spm_directory
+                        else:
                             mcr = glob.glob(os.path.join(
-                                study_config.spm_directory, 'mcr', 'v*'))
+                                os.path.dirname(study_config.spm_exec), 'mcr',
+                                'v*'))
                             if len(mcr) == 1:
                                 ax_conf.SPM.spm12_standalone_mcr_path = mcr[0]
                     else:
