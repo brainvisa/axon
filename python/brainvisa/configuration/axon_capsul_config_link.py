@@ -183,21 +183,20 @@ class AxonCapsulConfSynchronizer(object):
             study_config.spm_version = '8'
             use_spm = True
             need_matab = False
-        if ax_conf.SPM.spm12_standalone_path:
-            mcr = glob.glob(os.path.join(ax_conf.SPM.spm12_standalone_path,
-                                         'mcr', 'v*'))
-            if len(mcr) == 1 and os.path.exists(mcr[0]):
-                study_config.spm_directory = ax_conf.SPM.spm12_standalone_path
-            else:
+        mcr = ax_conf.SPM.spm12_standalone_mcr_path
+        if mcr and os.path.exists(mcr):
+            study_config.spm_directory = mcr
+        else:
+            if ax_conf.SPM.spm12_standalone_path:
                 mcr = glob.glob(os.path.join(ax_conf.SPM.spm12_standalone_path,
                                              '../..', 'mcr', 'v*'))
                 if len(mcr) == 1 and os.path.exists(mcr[0]):
-                    study_config.spm_directory \
-                        = os.path.dirname(os.path.dirname(
-                            ax_conf.SPM.spm12_standalone_path))
+                    mcr = mcr[0]
+                    study_config.spm_directory = mcr
             study_config.spm_version = '12'
             use_spm = True
-        elif ax_conf.SPM.spm8_standalone_path:
+        if not ax_conf.SPM.spm12_standalone_path \
+                and ax_conf.SPM.spm8_standalone_path:
             study_config.spm_directory = ax_conf.SPM.spm8_standalone_path
             study_config.spm_version = '8'
             use_spm = True
