@@ -64,9 +64,9 @@ BRAINVISA_DEPENDENCY( RUN RECOMMENDS "python-matplotlib" RUN )
 
 BRAINVISA_DEPENDENCY( RUN RECOMMENDS graphviz RUN )
 
-configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/config/config.py.in" "${CMAKE_BINARY_DIR}/python/brainvisa/config.py" @ONLY )
+configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/config/config.py.in" "${CMAKE_BINARY_DIR}/${PYTHON_INSTALL_DIRECTORY}/brainvisa/config.py" @ONLY )
 BRAINVISA_INSTALL( FILES "${CMAKE_BINARY_DIR}/python/brainvisa/config.py"
-                   DESTINATION "python/brainvisa"
+                   DESTINATION "${PYTHON_INSTALL_DIRECTORY}/brainvisa"
                    COMPONENT ${PROJECT_NAME} )
 BRAINVISA_COPY_PYTHON_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/python"
                                  ${PROJECT_NAME} )
@@ -81,7 +81,7 @@ BRAINVISA_COPY_PYTHON_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/python"
 # exception for axon component that should be removed when all string encoded
 # in iso-8859-1 will be converted to utf8.
 BRAINVISA_INSTALL( FILES "${CMAKE_BINARY_DIR}/python/sitecustomize/__init__.py"
-                   DESTINATION "python/sitecustomize"
+                   DESTINATION "${PYTHON_INSTALL_DIRECTORY}/sitecustomize"
                    COMPONENT ${PROJECT_NAME} )
 
 # build and install shared database files
@@ -191,7 +191,7 @@ BRAINVISA_GENERATE_SPHINX_DOC( "sphinxdoc/dev_doc"
 BRAINVISA_COPY_FILES( ${PROJECT_NAME}
     "usecases.rst" "usecases_nb.ipynb"
     SOURCE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/sphinxdoc/dev_doc"
-    DESTINATION "python/brainvisa/tests" )
+    DESTINATION "${PYTHON_INSTALL_DIRECTORY}/brainvisa/tests" )
 
 # commands list, doc
 if(WIN32)
