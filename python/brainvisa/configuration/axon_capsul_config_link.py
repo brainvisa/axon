@@ -32,10 +32,8 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-from __future__ import print_function
-
-from __future__ import absolute_import
 import os
+import os.path as osp
 import distutils.spawn
 import glob
 from traits.api import Undefined
@@ -212,8 +210,12 @@ class AxonCapsulConfSynchronizer(object):
         if not need_matab:
             study_config.spm_standalone = True
 
-        if use_spm and (not need_matab or study_config.use_matlab):
+        if use_spm and (not need_matab or study_config.use_matlab) \
+                and study_config.spm_directory not in (None, Undefined) \
+                and study_config.spm_exec not in (None, Undefined):
             study_config.use_spm = True
+        else:
+            study_config.use_spm = False
 
         # FSL
         if ax_conf.FSL.fsldir:
