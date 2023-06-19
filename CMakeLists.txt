@@ -65,7 +65,7 @@ BRAINVISA_DEPENDENCY( RUN RECOMMENDS "python-matplotlib" RUN )
 BRAINVISA_DEPENDENCY( RUN RECOMMENDS graphviz RUN )
 
 configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/config/config.py.in" "${CMAKE_BINARY_DIR}/${PYTHON_INSTALL_DIRECTORY}/brainvisa/config.py" @ONLY )
-BRAINVISA_INSTALL( FILES "${CMAKE_BINARY_DIR}/python/brainvisa/config.py"
+BRAINVISA_INSTALL( FILES "${CMAKE_BINARY_DIR}/${PYTHON_INSTALL_DIRECTORY}/brainvisa/config.py"
                    DESTINATION "${PYTHON_INSTALL_DIRECTORY}/brainvisa"
                    COMPONENT ${PROJECT_NAME} )
 BRAINVISA_COPY_PYTHON_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/python"
@@ -80,7 +80,7 @@ BRAINVISA_COPY_PYTHON_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/python"
 # supposed to be packaged (it is only used in build tree). This is an
 # exception for axon component that should be removed when all string encoded
 # in iso-8859-1 will be converted to utf8.
-BRAINVISA_INSTALL( FILES "${CMAKE_BINARY_DIR}/python/sitecustomize/__init__.py"
+BRAINVISA_INSTALL( FILES "${CMAKE_BINARY_DIR}/${PYTHON_INSTALL_DIRECTORY}/sitecustomize/__init__.py"
                    DESTINATION "${PYTHON_INSTALL_DIRECTORY}/sitecustomize"
                    COMPONENT ${PROJECT_NAME} )
 
