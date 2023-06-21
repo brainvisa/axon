@@ -37,7 +37,6 @@ import os.path as osp
 import distutils.spawn
 import glob
 from traits.api import Undefined
-from brainvisa.configuration import neuroConfig
 from soma.wip.application.api import Application
 
 
@@ -75,6 +74,10 @@ class AxonCapsulConfSynchronizer(object):
                                       self._set_spm_directory_capsul)
         ax_conf.SPM.onAttributeChange('spm8_path',
                                       self._set_spm_directory_capsul)
+        ax_conf.SPM.onAttributeChange('spm12_standalone_mcr_path',
+                                      self._set_spm_mcr_capsul)
+        ax_conf.SPM.onAttributeChange('spm8_standalone_mcr_path',
+                                      self._set_spm_mcr_capsul)
         # FSL
         ax_conf.FSL.onAttributeChange('fsldir',
                                       self._set_fsl_directory_capsul)
@@ -109,6 +112,10 @@ class AxonCapsulConfSynchronizer(object):
             'spm8_standalone_path', self._set_spm_directory_capsul)
         ax_conf.SPM.removeOnAttributeChange(
             'spm8_path', self._set_spm_directory_capsul)
+        ax_conf.SPM.removeOnAttributeChange(
+            'spm12_standalone_mcr_path', self._set_spm_mcr_capsul)
+        ax_conf.SPM.removeOnAttributeChange(
+            'spm8_standalone_mcr_path', self._set_spm_mcr_capsul)
         # FSL
         ax_conf.FSL.removeOnAttributeChange(
             'fsldir', self._set_fsl_directory_capsul)
@@ -169,35 +176,39 @@ class AxonCapsulConfSynchronizer(object):
 
         # SPM
         use_spm = False
-        need_matab = True
 
         if ax_conf.SPM.spm12_standalone_command:
             study_config.spm_exec = ax_conf.SPM.spm12_standalone_command
             study_config.spm_version = '12'
-            use_spm = True
-            need_matab = False
+            study_config.spm_mcr_directory \
+                = ax_conf.SPM.spm12_standalone_mcr_path
+            study_config.spm_directory = ax_conf.SPM.spm12_standalone_path
+            use_spm = bool(study_config.spm_mcr_directory)
+            study_config.spm_standalone = True
         elif ax_conf.SPM.spm8_standalone_command:
             study_config.spm_exec = ax_conf.SPM.spm8_standalone_command
             study_config.spm_version = '8'
-            use_spm = True
-            need_matab = False
-        mcr = ax_conf.SPM.spm12_standalone_mcr_path
-        if mcr and os.path.exists(mcr):
-            study_config.spm_directory = mcr
-        else:
+            study_config.spm_directory = ax_conf.SPM.spm8_standalone_path
+            study_config.spm_mcr_directory \
+                = ax_conf.SPM.spm8_standalone_mcr_path
+            use_spm = bool(study_config.spm_mcr_directory)
+            study_config.spm_standalone = True
+
+        if study_config.spm_standalone and not study_config.spm_mcr_directory:
+            p = None
             if ax_conf.SPM.spm12_standalone_path:
-                mcr = glob.glob(os.path.join(ax_conf.SPM.spm12_standalone_path,
-                                             '../..', 'mcr', 'v*'))
+                p = ax_conf.SPM.spm12_standalone_path
+                v = '12'
+            elif ax_conf.SPM.spm8_standalone_path:
+                p = ax_conf.SPM.spm8_standalone_path
+                v = '8'
+            if p:
+                mcr = glob.glob(os.path.join(p, 'mcr', 'v*'))
                 if len(mcr) == 1 and os.path.exists(mcr[0]):
                     mcr = mcr[0]
-                    study_config.spm_directory = mcr
-            study_config.spm_version = '12'
-            use_spm = True
-        if not ax_conf.SPM.spm12_standalone_path \
-                and ax_conf.SPM.spm8_standalone_path:
-            study_config.spm_directory = ax_conf.SPM.spm8_standalone_path
-            study_config.spm_version = '8'
-            use_spm = True
+                    study_config.spm_mcr_directory = mcr
+                    study_config.spm_version = v
+                    use_spm = True
         elif ax_conf.SPM.spm12_path:
             study_config.spm_directory = ax_conf.SPM.spm12_path
             study_config.spm_version = '12'
@@ -207,10 +218,10 @@ class AxonCapsulConfSynchronizer(object):
             study_config.spm_version = '8'
             use_spm = True
 
-        if not need_matab:
-            study_config.spm_standalone = True
-
-        if use_spm and (not need_matab or study_config.use_matlab) \
+        if use_spm and ((study_config.spm_standalone
+                         and study_config.spm_mcr_directory
+                         not in (None, Undefined))
+                        or study_config.use_matlab) \
                 and study_config.spm_directory not in (None, Undefined) \
                 and study_config.spm_exec not in (None, Undefined):
             study_config.use_spm = True
@@ -267,14 +278,12 @@ class AxonCapsulConfSynchronizer(object):
                             ax_conf.SPM.spm12_standalone_command \
                                 = study_config.spm_exec
                             ax_conf.SPM.spm12_standalone_path \
-                                = os.path.dirname(study_config.spm_exec)
-                        if study_config.spm_directory is not Undefined:
-                            ax_conf.SPM.spm12_standalone_mcr_path \
                                 = study_config.spm_directory
-                        else:
+                            ax_conf.SPM.spm12_standalone_mcr_path \
+                                = study_config.spm_mcr_directory
+                        if not ax_conf.SPM.spm12_standalone_mcr_path:
                             mcr = glob.glob(os.path.join(
-                                os.path.dirname(study_config.spm_exec), 'mcr',
-                                'v*'))
+                                study_config.spm_directory, 'mcr', 'v*'))
                             if len(mcr) == 1:
                                 ax_conf.SPM.spm12_standalone_mcr_path = mcr[0]
                     else:
@@ -289,9 +298,11 @@ class AxonCapsulConfSynchronizer(object):
                         if study_config.spm_exec is not Undefined:
                             ax_conf.SPM.spm8_standalone_command \
                                 = study_config.spm_exec
-                        if study_config.spm_directory is not Undefined:
                             ax_conf.SPM.spm8_standalone_path \
                                 = study_config.spm_directory
+                            ax_conf.SPM.spm8_standalone_mcr_path \
+                                = study_config.spm_mcr_directory
+                        if not ax_conf.SPM.spm8_standalone_mcr_path:
                             mcr = glob.glob(os.path.join(
                                 study_config.spm_directory, 'mcr', 'v*'))
                             if mcr:
@@ -303,13 +314,6 @@ class AxonCapsulConfSynchronizer(object):
                     ax_conf.SPM.spm12_standalone_path = ''
                     ax_conf.SPM.spm12_standalone_command = ''
                     ax_conf.SPM.spm12_standalone_mcr_path = ''
-            #else:
-                #ax_conf.SPM.spm12_standalone_path = ''
-                #ax_conf.SPM.spm12_standalone_command = ''
-                #ax_conf.SPM.spm12_standalone_mcr_path = ''
-                #ax_conf.SPM.spm8_standalone_path = ''
-                #ax_conf.SPM.spm8_standalone_command = ''
-                #ax_conf.SPM.spm8_standalone_mcr_path = ''
         except Exception as e:
             print('Exception:', e)
 
@@ -376,7 +380,7 @@ class AxonCapsulConfSynchronizer(object):
             study_config.spm_standalone = False
             study_config.spm_exec = ''
             study_config.spm_version = None
-        if study_config.spm_standalone \
+        if (study_config.spm_standalone and study_config.spm_mcr_directory) \
                 or (study_config.use_matlab and study_config.spm_directory):
             study_config.use_spm = True
         else:
@@ -395,6 +399,24 @@ class AxonCapsulConfSynchronizer(object):
                 break
         study_config.spm_directory = value
         study_config.spm_version = ver
+
+    def _set_spm_mcr_capsul(self, unused_value):
+        study_config = self.study_config
+        ax_conf = Application().configuration
+        variables = (('spm12_standalone_mcr_path', '12'),
+                     ('spm8_standalone_mcr_path', '8'))
+        ver = None
+        value = None
+        for var, ver in variables:
+            value = getattr(ax_conf.SPM, var)
+            if value:
+                break
+        study_config.spm_mcr_directory = value
+        if (study_config.spm_standalone and study_config.spm_mcr_directory) \
+                or (study_config.use_matlab and study_config.spm_directory):
+            study_config.use_spm = True
+        else:
+            study_config.use_spm = False
 
     def _set_fsl_directory_capsul(self, value):
         study_config = self.study_config
