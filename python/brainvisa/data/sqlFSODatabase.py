@@ -1306,7 +1306,7 @@ class SQLDatabase(Database):
                                 self._closeDatabaseCursor(cursor)
                                 cursor = self._getDatabaseCursor()
                                 # generate a new uuid
-                                uuid = str(uuid.uuid4())
+                                uuid = str(Uuid())
                                 diskItem.setUuid(uuid, saveMinf=True)
                                 self.insertDiskItems([diskItem], update=True,
                                                      insertParentDirs=False)
