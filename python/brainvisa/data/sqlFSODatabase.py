@@ -1286,6 +1286,7 @@ class SQLDatabase(Database):
                                     cursor.execute('UPDATE _TRANSFORMATIONS_ SET _from=?, _to=? WHERE _uuid=?', (
                                         source_referential, destination_referential, str(uuid)))
                             else:
+                                # filename uuid is not diskItem._uuid
                                 print('UUID conflict in database, uuid:',
                                       str(uuid), file=sys.stderr)
                                 print('while inserting:',
@@ -1300,11 +1301,21 @@ class SQLDatabase(Database):
                                 for f in files:
                                     print(f, file=sys.stderr)
                                 print('error:', e)
-                                raise DatabaseError(
-                                    'Cannot insert "%s" because its uuid is '
-                                    'in conflict with the uuid of another '
-                                    'file in the database.'
-                                    % diskItem.fullPath())
+                                print('changing uuid')
+                                # commit changes
+                                self._closeDatabaseCursor(cursor)
+                                cursor = self._getDatabaseCursor()
+                                # generate a new uuid
+                                uuid = str(uuid.uuid4())
+                                diskItem.setUuid(uuid, saveMinf=True)
+                                self.insertDiskItems([diskItem], update=True,
+                                                     insertParentDirs=False)
+
+                                #raise DatabaseError(
+                                    #'Cannot insert "%s" because its uuid is '
+                                    #'in conflict with the uuid of another '
+                                    #'file in the database.'
+                                    #% diskItem.fullPath())
                         else:
                             raise DatabaseError(
                                 'Cannot insert "%s" because it is already in the database' % diskItem.fullPath())
