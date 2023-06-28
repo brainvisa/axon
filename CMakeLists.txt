@@ -65,6 +65,7 @@ BRAINVISA_DEPENDENCY( RUN RECOMMENDS "python-matplotlib" RUN )
 BRAINVISA_DEPENDENCY( RUN RECOMMENDS graphviz RUN )
 
 BRAINVISA_COPY_PYTHON_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/python"
+                                 DESTINATION "${PYTHON_INSTALL_DIRECTORY}"
                                  ${PROJECT_NAME} )
 
 # For historical reasons, Axon needs to modify its encoding to iso-8859-1. 
@@ -98,7 +99,8 @@ add_custom_target( axon_build_shared_index
 add_dependencies( axon_target_1 axon_build_shared_index )
 
 BRAINVISA_COPY_PYTHON_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/brainvisa"
-                                 ${PROJECT_NAME} )
+                                 ${PROJECT_NAME}
+                                 "${PYTHON_INSTALL_DIRECTORY}/brainvisa" )
 BRAINVISA_COPY_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/share"
                           "share/${PROJECT_NAME}-${BRAINVISA_PACKAGE_VERSION_MAJOR}.${BRAINVISA_PACKAGE_VERSION_MINOR}"
                           ${PROJECT_NAME} )

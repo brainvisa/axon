@@ -98,13 +98,13 @@ def findCodec(encoder):
         #         'ljpeg', 'mjpeg', 'mpeg4', 'mpeg1video', 'mpeg2video', 'msmpeg4',
         #         'msmpeg4v1', 'msmpeg4v2', 'rv10', 'rv20', 'wmv1', 'wmv2', 'wmv3' ]
         import soma.subprocess
-        sproc = soma.subprocess.Popen(('bv_unenv', encoder, '-codecs'),
+        sproc = soma.subprocess.Popen((encoder, '-codecs'),
                                       stdout=soma.subprocess.PIPE,
                                       stderr=soma.subprocess.PIPE)
         out, err = sproc.communicate()
         if sproc.returncode != 0:
             # maybe the older ffmpeg using -formats argument
-            sproc = soma.subprocess.Popen(('bv_unenv', encoder, '-formats'),
+            sproc = soma.subprocess.Popen((encoder, '-formats'),
                                           stdout=soma.subprocess.PIPE,
                                           stderr=soma.subprocess.PIPE)
             out, err = sproc.communicate()

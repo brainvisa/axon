@@ -366,7 +366,7 @@ def procdocToXHTML(procdoc):
                     from soma.qt4gui.designer import loadUi
                     from soma.qt_gui.qt_backend import QtGui, QtCore
                     editor = loadUi(
-                        os.path.join(mainPath, '..', 'python', 'brainvisa', 'textEditor.ui'))
+                        os.path.join(mainPath, 'textEditor.ui'))
                     # editor.setAttribute( QtCore.Qt.WA_DeleteOnClose, True )
 
                     def f():
