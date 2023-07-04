@@ -38,9 +38,20 @@ brainvisa.axon.runprocess is not a real python module, but rather an executable 
 python -m brainvisa.axon.runprocess <process name> <process arguments>
 """
 
-from __future__ import print_function
-
-from __future__ import absolute_import
+try:
+    # in case any import instantiates a Qt app or loads plugins
+    import anatomist.headless as ah
+    ah.setup_headless()
+    from soma.qt_gui.qt_backend import QtWidgets, QtCore, sip
+    if not isinstance(QtWidgets.QApplication.instance(),
+                      QtWidgets.QApplication):
+        if QtWidgets.QApplication.instance() is None:
+            QtWidgets.QApplication.setAttribute(
+                QtCore.Qt.ApplicationAttribute.AA_ShareOpenGLContexts)
+        qapp = QtWidgets.QApplication([])
+        sip.transferto(qapp, None)
+except Exception:
+    pass
 from brainvisa import axon
 from brainvisa.configuration import neuroConfig
 import brainvisa.processes
@@ -419,7 +430,7 @@ if os.path.exists('/dev/null'):
     outfile = open('/dev/null', 'a')
 else:
     import tempfile
-    x = mkstemp()[0]
+    x = tempfile.mkstemp()
     os.close(x[0])
     outfile = open(x[1], 'a')
     tmp.append(x[1])

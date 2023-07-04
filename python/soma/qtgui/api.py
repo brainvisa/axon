@@ -37,11 +37,10 @@ This module provides a switch between qt3 and qt4. If PyQt4 is loaded, this modu
 It also provides en alias name for classes that have not the same name in qt3 and qt4 version : ApplicationQtGUI and QTGUI.
 
 @author: Dominique Geffroy
-@organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
 from __future__ import absolute_import
-__docformat__ = "epytext en"
+__docformat__ = "restructuredText"
 import sys
 
 from soma.qt4gui.api import *
