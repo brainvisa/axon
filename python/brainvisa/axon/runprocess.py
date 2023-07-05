@@ -537,5 +537,24 @@ run_process_with_distribution(
     keep_failed_workflow=options.keep_failed_workflow,
     write_workflow_only=options.write_workflow)
 
+# a bit of cleanup
+try:
+    import anatomist.api as ana
+    if hasattr(ana.Anatomist, 'anatomistinstance') \
+            and ana.Anatomist.anatomistinstance is not None:
+        a = ana.Anatomist()
+        a.close()
+        sip.delete(a)
+        sip.delete(qapp)
+        del a
+        del qapp
+except Exception as e:
+    pass
 
+if neuroConfig.exitValue == 0:
+    # no error, do a dirty exit, but avoid cleanup crashes after the process
+    # has succeeded...
+    os._exit(0)
+
+# otherwise it has failed, exit "normally"
 sys.exit(neuroConfig.exitValue)
