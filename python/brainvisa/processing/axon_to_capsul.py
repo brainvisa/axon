@@ -198,7 +198,7 @@ class AxonToCapsul(object):
 
     def capsul_merged_param_type(self, axon_params):
         ''' get a "common" capsul parameter type for a list of axon parameters,
-            typically to form a swith output from its possible inputs. the
+            typically to form a switch output from its possible inputs. the
             output allowed_extensions will be the union of input extensions
             (which may not always be OK).
         '''
