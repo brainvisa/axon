@@ -281,7 +281,6 @@ class AxonToCapsul(object):
 
     def write_process_definition(self, p, out, get_all_values=True):
         buffered_lines = {'initialization': []}
-        print('write_process_definition ver:', self.ver)
         self.write_process_signature(p, out, buffered_lines,
                                      get_all_values=get_all_values)
         self.write_buffered_lines(out, buffered_lines,
@@ -634,7 +633,6 @@ class AxonToCapsul(object):
         print('    was:', proc().name, '/', param)
         return (None, None, None)
 
-
     def write_pipeline_links(self, p, buffered_lines, procmap, links,
                              processed_links, selfoutparams, revoutparams,
                              selfouttraits):
@@ -650,12 +648,19 @@ class AxonToCapsul(object):
             src, sparam, dst, dparam, weak_link = link
             sname, sexported = procmap.get(src, (None, None))
             if sname is None:
-                print('warning, src process', src().name, 'not found in pipeline.')
+                name = dst().name
+                if not isinstance(name, str):
+                    name = name()
+                print('warning, src process', name, 'not found in pipeline.')
                 # print('procmap:', [ k[0]().name for k in procmap ])
                 continue  # skip this one
             dname, dexported = procmap.get(dst, (None, None))
             if dname is None:
-                print('warning, dst process', dst().name, 'not found in pipeline.')
+                name = dst().name
+                if not isinstance(name, str):
+                    name = name()
+                print('warning, dst process', name, 'not found in pipeline.')
+                print(dname, dexported)
                 continue  # skip this one
             spname = sparam
             if sname:
@@ -688,8 +693,8 @@ class AxonToCapsul(object):
                         and self.is_output(src, sparam) \
                             == self.is_output(dst, dparam):
                     print('Warning: write_pipeline_links, sname: %s, '
-                          'sparam: %s, dname: %s, dparam: %s: both same IO type:'
-                          % (sname, sparam, dname, dparam),
+                          'sparam: %s, dname: %s, dparam: %s: both same '
+                          'IO type:' % (sname, sparam, dname, dparam),
                           self.is_output(src, sparam))
                     if self.is_output(src, sparam):
                         # both outputs: export 1st
@@ -1041,13 +1046,13 @@ class AxonToCapsul(object):
                     # postpone switch creation afer other nodes
                     switches.append((enode, enode_name, exported, weak_outputs,
                                      parents, parentnode))
-                    procmap[use_weak_ref(enode)] = (nodename, exported)
                     # children should have weak outputs so that they can be
                     # deactivated by the switch
                     weak_outputs = True
                 new_parents = parents
                 enodes += [(enode.child(name), name, exported, weak_outputs,
-                            new_parents, enode) for name in enode.childrenNames()]
+                            new_parents, enode)
+                           for name in enode.childrenNames()]
             if nodename and not enode.isSelected() and exported:
                 # FIXME: the exported flag filters out sub-nodes of sub-pipelines
                 # so it is not possible this way to unselect a node inside a
@@ -1080,6 +1085,7 @@ class AxonToCapsul(object):
                                          self_out_traits, exported,
                                          parents, procmap, enode_name,
                                          weak_outputs)
+            procmap[use_weak_ref(enode)] = (nodename, exported)
 
         self.write_pipeline_links(p, buffered_lines, procmap, links,
                                   processed_links, selfoutparams, revoutparams,
