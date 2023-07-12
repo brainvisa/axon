@@ -1474,11 +1474,11 @@ class AxonToCapsul_v3(AxonToCapsul):
                            out_types_list, sw_options, new_links,
                            new_processed_links, have_optional, procmap, p,
                            selfoutparams, revoutparams):
-        print('build_switch_lines v3:')
-        print(nodename, input_names, output_names)
-        print(len(new_links))
-        print('procmap:')
-        print(procmap)
+        #print('build_switch_lines v3:')
+        #print(nodename, input_names, output_names)
+        #print(len(new_links))
+        #print('procmap:')
+        #print(procmap)
         #processed_links.update(new_processed_links)
         #opts = {}
         #for way, ldefs in new_links.items():
