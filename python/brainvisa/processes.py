@@ -1513,7 +1513,7 @@ class Process(Parameterized):
         self.instance = self.__class__._instance
 
     def __del__(self):
-        if self._deleted:
+        if getattr(self, '_deleted', False):
             # print('*** Process already deleted ***')
             return
         try:
