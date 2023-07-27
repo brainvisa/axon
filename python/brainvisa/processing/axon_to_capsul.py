@@ -1447,7 +1447,7 @@ class AxonToCapsul_v3(AxonToCapsul):
 
     def write_process_execution(self, p, out):
         axon_name = p.id()
-        out.write(u'''    def execution(self, context=None):
+        out.write(u'''    def execute(self, context=None):
         from brainvisa import axon
         from brainvisa.configuration import neuroConfig
         import brainvisa.processes
@@ -1464,9 +1464,9 @@ class AxonToCapsul_v3(AxonToCapsul):
             value = getattr(self, name)
             if value is undefined:
                 continue
-            if is_path(field) and value != '':
+            if field.path_type and value != '':
                 kwargs[name] = value
-            elif is_list(field):
+            elif field.is_list():
                 kwargs[name] = list(value)
             else:
                 kwargs[name] = value
