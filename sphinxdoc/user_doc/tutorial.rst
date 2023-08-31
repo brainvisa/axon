@@ -30,7 +30,7 @@ See the slides of an introduction to BrainVISA: :axon:`BrainVISA Advanced Traini
 
 BrainVISA is available for free download here: https://brainvisa.info/download.html. Installation instructions: https://brainvisa.info/download.html#installation and the :axonman:`BrainVISA manual <axon_manual.html>`.
 
-In this tutorial, we will use demonstration data that are available for download here: ftp://ftp.cea.fr/pub/dsv/anatomist/data/demo_data.zip.
+In this tutorial, we will use demonstration data that are available for download here: https://brainvisa.info/download/data/demo_data.zip.
 
 
 General features
