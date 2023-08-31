@@ -1353,8 +1353,40 @@ class AxonToCapsul_v3(AxonToCapsul):
                 if m is not None and m.group(1) not in exts:
                     exts.append(m.group(1))
         if len(exts) != 0:
-            options.append('allowed_extensions=%s' % repr(exts))
+            options.append('extensions=%s' % repr(exts))
         return options
+
+
+    def capsul_merged_param_type(self, axon_params):
+        ''' get a "common" capsul parameter type for a list of axon parameters,
+            typically to form a switch output from its possible inputs. the
+            output allowed_extensions will be the union of input extensions
+            (which may not always be OK).
+        '''
+        ctype = None
+        coptions = []
+        allowed_extensions = []
+        for axon_param in axon_params:
+            newtype, paramoptions = self.capsul_param_type(axon_param)
+            if ctype is None:
+                ctype = newtype
+            else:
+                if ctype != newtype:
+                    print('warning: unmatching input types (for switch) %s and %s'
+                          % (ctype, newtype))
+            for opt in paramoptions:
+                oname, oval = opt.split('=')
+                oname = oname.strip()
+                if oname == 'extensions':
+                    oval = eval(oval)
+                    for ext in oval:
+                        if ext not in allowed_extensions:
+                            allowed_extensions.append(ext)
+                elif opt not in coptions:
+                    coptions.append(opt)
+        if len(allowed_extensions) != 0:
+            coptions.append('extensions=%s' % repr(allowed_extensions))
+        return ctype, coptions
 
 
     @property
