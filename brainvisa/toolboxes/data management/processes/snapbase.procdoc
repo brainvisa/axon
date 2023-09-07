@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="en">
+    <xhtml name="short">Multiple snapshots boards in large images</xhtml>
+    <xhtml name="long">This generic process replaces the older SnapBase, which has been deprecated and removed because it was unmaintained.
+This tool has a simpler code, and relies on the BrainVisa infrastructure and viewers.
+It basically uses one of Brainvisa viewers based on Anatomist, iterates it over a set of input data (can be all subjects of a database), and prints snapshots of the views in one or several large image(s).
+<br/>
+The "preset" parameter allows to quickly select a viewer type amongst common ones.
+<br/>
+This process requires databasing being enabled during the process run: this means that it will not work correctly when run non-graphically or remotely through soma-workflow. This requirement is needed for the selected viewer to run with only the main input selected (viewers often display several data, and get the other ones by links which require databasing). Moreover some metadata may be print on the snapshots, like subject name, or side, or other metadata only available in BrainVisa database entries for the input data.</xhtml>
+    <d name="parameters">
+      <xhtml name="snapshot">Output image(s)
+If an image format us used (like jpeg), and several snapshot pages are needed, the second and additional ones are suffixed with the page number (starting at 0), thus for the output <tt>snapshot.jpg</tt>, output files will actually be <tt>snapshot.jpg</tt>, <tt>snapshot1.jpg</tt>, <tt>snapshot2.jpg</tt> etc.
+<br/>
+If the PDF format is used, then the single output document may contain multiple pages.</xhtml>
+      <xhtml name="preset">The "preset" parameter allows to quickly select a viewer type amongst common ones.<br/>
+It is only here to ease the viewer_type selecton because this one may contain many entries (there are currently more than 130 viewers in Brainvisa toolboxes).</xhtml>
+      <xhtml name="viewer_type">Select one of the viewer processes available in BrainVisa. It will be used to display the input data.<br/>
+<tt>input_data</tt> type will be dynamically adapted to match the viewer main input parameter.</xhtml>
+      <xhtml name="input_data">The list of main data to be displayed. This is the main entry of the selected viewer. The <tt>input_data</tt> type is dynamically adapted from the selected viewer.</xhtml>
+      <xhtml name="displayed_attributes">List of metadata attributes displayed on the snapshots in order to identidy each of them.<br/>
+Generally we use at least the subject name.</xhtml>
+      <xhtml name="page_size_ratio">Width / height ratio of large snapshots pages.</xhtml>
+      <xhtml name="max_views_per_page">Number of indivisual snapshot images in each large snapshots pages. 0 means no limit (all views in a single page)</xhtml>
+      <xhtml name="indiv_width">Width of each snapshot image</xhtml>
+      <xhtml name="indiv_height">Height of each snapshot image</xhtml>
+      <xhtml name="referential">Referential assigned to each view.</xhtml>
+      <xhtml name="view_config">This optional string main contain a JSON dictionary used to pass settings to Anatomist views before taking snapshots.<br/>
+This dict is organized as follows:
+<pre>
+    {view_type: {side:{"camera": {&lt;cam_options&gt;},
+                                   "window_config": {&lt;win_config_options&gt;}}}}
+</pre>
+<br/>
+<tt>view_type</tt> corresponds to Anatomist window types identifiers: <tt>3D</tt>, <tt>Axial</tt>, <tt>Coronal</tt>, <tt>Sagittal</tt>.<br/>
+<tt>side</tt> corresponds to the "side" metadata of the input data, if any, in order to customize camera orientation and settings depending on the brain side.<br/>
+<tt>camera</tt> and <tt>window_config</tt> sub-dicts correspond to parameters passed to <a href="https://brainvisa.info/anatomist/dev_doc/commands.html#camera">Camera</a> and <a href="https://brainvisa.info/anatomist/dev_doc/commands.html#windowconfig">WindowConfig</a> commands of Anatomist commands system.
+<br/>
+Ex:
+<pre>
+    {
+         "3D": {
+            "left": {
+                "camera": {"zoom": 1.5},
+                "window_config": {"light": {"background": [0., 0., 0.7, 1.]}}}
+        }   
+    }
+</pre>
+The config dictionary here is merged to a default one which selects black background for views, and sets a default bounding box, zoom, and camera position and orientation for 3D views, so this parameter can be left empty in most cases.</xhtml>
+    </d>
+  </d>
+</d>
+</minf>
