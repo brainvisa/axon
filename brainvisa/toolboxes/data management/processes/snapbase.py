@@ -1,6 +1,8 @@
 
 from brainvisa import processes
-from brainvisa.processes import *
+from brainvisa.processes import (
+    Signature, ReadDiskItem, WriteDiskItem, ListOf, Choice, Float, Integer,
+    String, getProcessInstance, formatLists, getAllFormats, mainThreadActions)
 import math
 import json
 
@@ -24,7 +26,9 @@ presets = {
 
 
 signature = Signature(
-    'snapshot', WriteDiskItem('2D Image', formatLists['aims image formats'] + ['PDF file']),
+    'snapshot', WriteDiskItem('2D Image',
+                              formatLists['aims image formats']
+                              + ['PDF file']),
     'preset', Choice(*(sorted(presets.keys()) + ['Any'])),
     'viewer_type', Choice(*get_viewers()),
     'input_data', ListOf(ReadDiskItem('Any type', getAllFormats())),
@@ -232,7 +236,7 @@ def execution_mainthread(self, context):
                     todo += list(item)
                 elif isinstance(item, ana.Anatomist.AWindow) \
                         and item.windowType != 'Browser':
-                    #print('AWINDOW')
+                    # print('AWINDOW')
                     w = item
                     break
                 elif isinstance(item, dict):
@@ -252,7 +256,7 @@ def execution_mainthread(self, context):
                 else:
                     context.write('Viewer returns no Anatomist window and '
                                   'no widget.')
-                print(repr(res))
+                # print(repr(res))
 
             if w is not None:
                 self.setup_view(w, config, in_data)
@@ -264,7 +268,6 @@ def execution_mainthread(self, context):
                 scale = self.indiv_width / qimage.width()
                 if qimage.height() * scale > self.indiv_height:
                     scale = self.indiv_height / qimage.height()
-                print('scale:', scale)
                 w = True
             if w:
                 att_dict = {k: in_data.get(k)
@@ -282,7 +285,6 @@ def execution_mainthread(self, context):
                         = self.snapshot_size(len(self.input_data) - ni)
                     current_page = Qt.QImage(width, height,
                                              Qt.QImage.Format_RGB32)
-                    # print('page:', width, height, current_page.size(), nrows, ncols)
                     current_page.fill(Qt.QColor(*[
                         int(x * 255.9) for x in self.background_color]))
                     c = 0
