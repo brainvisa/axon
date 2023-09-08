@@ -15,9 +15,17 @@ def get_viewers():
     return sorted(viewers)
 
 
+presets = {
+    'Sulci': 'AnatomistShowFoldGraph',
+    'Brain mask': 'AnatomistShowBrainMask',
+    'Bias correction': 'AnatomistShowBiasCorrection',
+    'Histogram analysis': 'histo_analysis_viewer',
+}
+
+
 signature = Signature(
     'snapshot', WriteDiskItem('2D Image', formatLists['aims image formats'] + ['PDF file']),
-    'preset', Choice('Sulci', 'Any'),
+    'preset', Choice(*(sorted(presets.keys()) + ['Any'])),
     'viewer_type', Choice(*get_viewers()),
     'input_data', ListOf(ReadDiskItem('Any type', getAllFormats())),
     'displayed_attributes', ListOf(String()),
@@ -27,13 +35,16 @@ signature = Signature(
     'indiv_height', Integer(),
     'referential', Choice('Talairach', 'MNI', 'Native'),
     'view_config', String(),
+    'background_color', ListOf(Float()),
+    'text_color', ListOf(Float()),
+    'text_offset', ListOf(Integer()),
 )
 
 
 def link_preset(self, preset):
-    if preset == 'Sulci' and [x for x in self.signature['viewer_type'].values
-                              if x[0] == 'AnatomistShowFoldGraph']:
-        return 'AnatomistShowFoldGraph'
+    vtype = presets.get(preset, 'Any')
+    if [x for x in self.signature['viewer_type'].values if x[0] == vtype]:
+        return presets[preset]
     return self.viewer_type
 
 
@@ -55,11 +66,15 @@ def set_input_data_type(self, viewer_type):
 
 def initialization(self):
     self.signature['viewer_type'].setChoices(*get_viewers())
+    self.preset = 'Sulci'
     self.displayed_attributes = ['subject']
     self.page_size_ratio = 1.33
     self.max_views_per_page = 0
     self.indiv_width = 500
     self.indiv_height = 400
+    self.background_color = [0., 0., 0.]
+    self.text_color = [0.5, 0.5, 0.5]
+    self.text_offset = [10, 10]
     self.setOptional('view_config')
     self.addLink('viewer_type', 'preset', self.link_preset)
     self.addLink(None, 'viewer_type', self.set_input_data_type)
@@ -150,7 +165,7 @@ def setup_view(self, w, config, data):
               'cursor_position': (0, 0, 0), 'zoom': 1,
               'observer_position': obs_pos}
     swconfig = {'cursor_visibility': 0,
-                'light': {'background': [0., 0., 0., 1.]}}
+                'light': {'background': self.background_color + [1.]}}
 
     side = data.get('side')
     if side == 'left':
@@ -172,15 +187,17 @@ def setup_view(self, w, config, data):
         w.windowConfig(**swconfig)
 
 
-def print_attributes(qimage, att_dict):
+def print_attributes(self, qimage, att_dict):
     from soma.qt_gui.qt_backend import Qt
 
     painter = Qt.QPainter(qimage)
     painter.setFont(Qt.QFont('Arial', 18))
-    painter.setPen(Qt.Qt.gray)
+    painter.setPen(Qt.QColor(*[int(x*255.9) for x in self.text_color]))
     n = len(att_dict)
     for i, v in enumerate(att_dict.values()):
-        painter.drawText(10, qimage.height() - 10 - (n - i - 1) * 20, v)
+        painter.drawText(self.text_offset[0],
+                         qimage.height() - self.text_offset[1]
+                         - (n - i - 1) * 20, v)
 
 
 def execution_mainthread(self, context):
@@ -207,6 +224,7 @@ def execution_mainthread(self, context):
         for ni, in_data in enumerate(self.input_data):
             res = context.runProcess(viewer, in_data)
             w = None
+            qwid = None
             todo = [res]
             while todo:
                 item = todo.pop(0)
@@ -219,12 +237,36 @@ def execution_mainthread(self, context):
                     break
                 elif isinstance(item, dict):
                     todo += item.values()
+                elif isinstance(item, Qt.QWidget):
+                    if qwid is None:
+                        qwid = item
+                elif hasattr(item, 'ref') \
+                        and hasattr(item.ref, '__call__') \
+                        and isinstance(item.ref(), Qt.QWidget):
+                    if qwid is None:
+                        qwid = item.ref()
+
             if w is None:
-                context.write('Viewer returns no Anatomist window.')
+                if qwid is not None:
+                    context.write('uging widget')
+                else:
+                    context.write('Viewer returns no Anatomist window and '
+                                  'no widget.')
                 print(repr(res))
+
             if w is not None:
                 self.setup_view(w, config, in_data)
                 qimage = w.snapshotImage(self.indiv_width, self.indiv_height)
+                scale = 1.
+            elif qwid is not None:
+                qwid.resize(self.indiv_width, self.indiv_height)
+                qimage = qwid.grab()
+                scale = self.indiv_width / qimage.width()
+                if qimage.height() * scale > self.indiv_height:
+                    scale = self.indiv_height / qimage.height()
+                print('scale:', scale)
+                w = True
+            if w:
                 att_dict = {k: in_data.get(k)
                             for k in self.displayed_attributes}
                 self.print_attributes(qimage, att_dict)
@@ -241,14 +283,19 @@ def execution_mainthread(self, context):
                     current_page = Qt.QImage(width, height,
                                              Qt.QImage.Format_RGB32)
                     # print('page:', width, height, current_page.size(), nrows, ncols)
-                    current_page.fill(Qt.QColor(0, 0, 0))
+                    current_page.fill(Qt.QColor(*[
+                        int(x * 255.9) for x in self.background_color]))
                     c = 0
                     r = 0
                 painter = Qt.QPainter(current_page)
+                painter.scale(scale, scale)
                 x = c * (self.indiv_width + spacing)
                 y = r * (self.indiv_height + spacing)
                 # print('paint', c, r, x, y)
-                painter.drawImage(x, y, qimage)
+                if isinstance(qimage, Qt.QPixmap):
+                    painter.drawPixmap(int(x / scale), int(y / scale), qimage)
+                else:
+                    painter.drawImage(x, y, qimage)
                 del painter
                 n += 1
                 c += 1
