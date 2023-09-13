@@ -1238,7 +1238,10 @@ import six
             out.write(u'''# -*- coding: utf-8 -*-
 from soma.controller import File, Directory, undefined, Any, \\
     Literal, field
-from pydantic import conlist
+try:
+    from pydantic.v1 import conlist
+except ImportError:
+    from pydantic import conlist
 from capsul.api import Process
 ''')
 
