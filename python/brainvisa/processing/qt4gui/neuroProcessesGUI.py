@@ -163,7 +163,9 @@ class _ProcDeleter(object):
 
 def startShell():
     qt_impl = qt_backend.get_qt_backend()
-    if qt_impl == 'PyQt4':
+    if qt_impl == 'PyQt6':
+        qt_api = "pyqt6"
+    elif qt_impl == 'PyQt4':
         # prevent ipython from trying to use PySide
         qt_api = "pyqt"
     elif qt_impl == 'PyQt5':
