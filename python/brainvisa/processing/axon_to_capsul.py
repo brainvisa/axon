@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
-from __future__ import absolute_import
 from brainvisa.axon import processes
 from capsul.api import Process
 from capsul.api import Pipeline
