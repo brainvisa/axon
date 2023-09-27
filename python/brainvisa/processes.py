@@ -6005,7 +6005,8 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
         # Optional attributes
         for n in ('signature', 'execution', 'name', 'userLevel', 'roles',
                   'category', 'showMaximized', 'allowed_processes',
-                  'rolePriority', 'require_databasing'):
+                  'rolePriority', 'require_databasing',
+                  'capsul_param_options'):
             v = getattr(processModule, n, None)
             if v is not None:
                 setattr(NewProcess, n, v)

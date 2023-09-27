@@ -1462,6 +1462,8 @@ class AxonToCapsul_v3(AxonToCapsul):
         # write signature
         for name, param in six.iteritems(p.signature):
             newtype, paramoptions = self.capsul_param_type(param)
+            paramoptions += getattr(p, 'capsul_param_options', {}).get(
+                name, [])
             type_str = self.param_type_decl_string(newtype, paramoptions)
 
             out.write(u'        self.add_field(\'%s\', %s)\n'
