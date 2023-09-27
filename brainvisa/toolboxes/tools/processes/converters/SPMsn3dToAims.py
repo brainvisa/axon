@@ -78,6 +78,11 @@ signature = Signature(
 )
 
 
+capsul_param_options = {
+    'normalized_volume': ['dataset=None'],
+}
+
+
 def initialization(self):
     def linkSource(proc, param):
         if self.read is None:
