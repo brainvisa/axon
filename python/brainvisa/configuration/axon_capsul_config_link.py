@@ -36,14 +36,14 @@ import os
 import os.path as osp
 import distutils.spawn
 import glob
-from traits.api import Undefined
+from soma.controller import undefined
 from soma.wip.application.api import Application
 
 
 class AxonCapsulConfSynchronizer(object):
 
-    def __init__(self, study_config):
-        self.study_config = study_config
+    def __init__(self, capsul):
+        self.capsul = capsul
         self.install_axon_to_capsul_config_sync()
 
     def __del__(self):
@@ -83,14 +83,16 @@ class AxonCapsulConfSynchronizer(object):
                                       self._set_fsl_directory_capsul)
         # Freesurfer
         ax_conf.FSL.onAttributeChange('freesurfer_home_path',
+
                                       self._set_fs_home_path_capsul)
-        # Soma-Workflow
-        ax_conf.soma_workflow.onAttributeChange(
-            'somaworkflow_keep_failed_workflows',
-            self._set_swf_keep_failed_wf_capsul)
-        ax_conf.soma_workflow.onAttributeChange(
-            'somaworkflow_keep_succeeded_workflows',
-            self._set_swf_keep_succeeded_wf_capsul)
+        # TODO
+        ## Soma-Workflow
+        #ax_conf.soma_workflow.onAttributeChange(
+            #'somaworkflow_keep_failed_workflows',
+            #self._set_swf_keep_failed_wf_capsul)
+        #ax_conf.soma_workflow.onAttributeChange(
+            #'somaworkflow_keep_succeeded_workflows',
+            #self._set_swf_keep_succeeded_wf_capsul)
 
     def uninstall_axon_to_capsul_config_sync(self):
         ax_conf = Application().configuration
@@ -122,13 +124,14 @@ class AxonCapsulConfSynchronizer(object):
         # Freesurfer
         ax_conf.FSL.removeOnAttributeChange(
             'freesurfer_home_path', self._set_fs_home_path_capsul)
-        # Soma-Workflow
-        ax_conf.soma_workflow.removeOnAttributeChange(
-            'somaworkflow_keep_failed_workflows',
-            self._set_swf_keep_failed_wf_capsul)
-        ax_conf.soma_workflow.removeOnAttributeChange(
-            'somaworkflow_keep_succeeded_workflows',
-            self._set_swf_keep_succeeded_wf_capsul)
+        # TODO
+        ## Soma-Workflow
+        #ax_conf.soma_workflow.removeOnAttributeChange(
+            #'somaworkflow_keep_failed_workflows',
+            #self._set_swf_keep_failed_wf_capsul)
+        #ax_conf.soma_workflow.removeOnAttributeChange(
+            #'somaworkflow_keep_succeeded_workflows',
+            #self._set_swf_keep_succeeded_wf_capsul)
 
     def sync_axon_to_capsul(self):
         '''Copies Axon config options to their CAPSUL equivalent.
@@ -139,117 +142,102 @@ class AxonCapsulConfSynchronizer(object):
         The StudyConfig of Capsul has to be initialized with BrainVISAConfig,
         FomConfig, FreeSurferConfig modules.
         '''
-        study_config = self.study_config
+        def get_shared_path():
+            try:
+                from soma import aims
+                return aims.carto.Paths.resourceSearchPath()[-1]
+            except Exception:
+                return '!{dataset.shared.path}'
+
+        capsul = self.capsul
         ax_conf = Application().configuration
 
-        # soma-workflow
-        study_config.use_soma_workflow = True  # always. that's it.
-
+        bconf = capsul.config.builtin
         # FOMs
-        if not study_config.shared_fom:
-            study_config.shared_fom = 'shared-brainvisa-1.0'
-        if not study_config.input_fom:
-            study_config.input_fom = 'morphologist-auto-1.0'
-        if not study_config.output_fom:
-            study_config.output_fom = 'morphologist-auto-1.0'
-        if not study_config.volumes_format:
-            study_config.volumes_format = 'NIFTI'
-        if not study_config.meshes_format:
-            study_config.meshes_format = 'GIFTI'
-        study_config.use_fom = True
+        if bconf.dataset is undefined:
+            bconf.dataset = {
+                'input': {'metadata_schema': 'brainvisa',
+                          'path': ''},
+                'output': {'metadata_schema': 'brainvisa',
+                           'path': ''},
+                'shared': {'metadata_schema': 'brainvisa_shared',
+                           'path': get_shared_path()}
+            }
+
+        if bconf.dataset.field('shared') is None:
+            bconf.dataset.shared = {}
+        if not bconf.dataset.shared.metadata_schema:
+            bconf.dataset.shared.metadata_schema = 'brainvisa_shared'
+        if not bconf.dataset.input.metadata_schema:
+            bconf.dataset.input.metadata_schema = 'brainvisa'
+        if not bconf.dataset.output.metadata_schema:
+            bconf.dataset.output.metadata_schema = 'brainvisa'
+        # TODO
+        #if not study_config.volumes_format:
+            #study_config.volumes_format = 'NIFTI'
+        #if not study_config.meshes_format:
+            #study_config.meshes_format = 'GIFTI'
 
         # Matlab
         if ax_conf.matlab.executable:
             # capsul only accepts complete file names
             if ax_conf.matlab.executable \
-                    == os.path.basename(ax_conf.matlab.executable):
+                    == osp.basename(ax_conf.matlab.executable):
                 matlab = \
                     distutils.spawn.find_executable(ax_conf.matlab.executable)
                 if matlab:
-                    study_config.matlab_exec = matlab
+                    if 'matlab' not in bconf.config_modules:
+                        bconf.config_modules.append('matlab')
+                    bconf.matlab.matlab = {'executable': matlab}
             else:
-                study_config.matlab_exec = ax_conf.matlab.executable
-            try:
-                study_config.use_matlab = True
-            except EnvironmentError:
-                pass  # will be False finally.
+                bconf.matlab.matlab = {'executable': ax_conf.matlab.executable}
 
         # SPM
-        use_spm = False
-
         if ax_conf.SPM.spm12_standalone_command:
-            study_config.spm_exec = ax_conf.SPM.spm12_standalone_command
-            study_config.spm_version = '12'
-            study_config.spm_mcr_directory \
-                = ax_conf.SPM.spm12_standalone_mcr_path
-            study_config.spm_directory = ax_conf.SPM.spm12_standalone_path
-            use_spm = bool(study_config.spm_mcr_directory)
-            study_config.spm_standalone = True
+            bconf.spm.spm12_stadalone = {
+                'directory': ax_conf.SPM.spm12_standalone_path,
+                'standalone': True,
+                'version': '12'}
+            bconf.matlab.matlab_mcr = {
+                'mcr_directory': ax_conf.SPM.spm12_standalone_mcr_path}
         elif ax_conf.SPM.spm8_standalone_command:
-            study_config.spm_exec = ax_conf.SPM.spm8_standalone_command
-            study_config.spm_version = '8'
-            study_config.spm_directory = ax_conf.SPM.spm8_standalone_path
-            study_config.spm_mcr_directory \
-                = ax_conf.SPM.spm8_standalone_mcr_path
-            use_spm = bool(study_config.spm_mcr_directory)
-            study_config.spm_standalone = True
-
-        if study_config.spm_standalone and not study_config.spm_mcr_directory:
-            p = None
-            if ax_conf.SPM.spm12_standalone_path:
-                p = ax_conf.SPM.spm12_standalone_path
-                v = '12'
-            elif ax_conf.SPM.spm8_standalone_path:
-                p = ax_conf.SPM.spm8_standalone_path
-                v = '8'
-            if p:
-                mcr = glob.glob(os.path.join(p, 'mcr', 'v*'))
-                if len(mcr) == 1 and os.path.exists(mcr[0]):
-                    mcr = mcr[0]
-                    study_config.spm_mcr_directory = mcr
-                    study_config.spm_version = v
-                    use_spm = True
-        elif ax_conf.SPM.spm12_path:
-            study_config.spm_directory = ax_conf.SPM.spm12_path
-            study_config.spm_version = '12'
-            use_spm = True
-        elif ax_conf.SPM.spm8_path:
-            study_config.spm_directory = ax_conf.SPM.spm8_path
-            study_config.spm_version = '8'
-            use_spm = True
-
-        if use_spm and ((study_config.spm_standalone
-                         and study_config.spm_mcr_directory
-                         not in (None, Undefined))
-                        or study_config.use_matlab) \
-                and study_config.spm_directory not in (None, Undefined) \
-                and study_config.spm_exec not in (None, Undefined):
-            study_config.use_spm = True
-        else:
-            study_config.use_spm = False
+            bconf.spm.spm8_stadalone = {
+                'directory': ax_conf.SPM.spm8_standalone_path,
+                'standalone': True,
+                'version': '8'}
+            bconf.matlab.matlab_mcr = {
+                'mcr_directory': ax_conf.SPM.spm8_standalone_mcr_path}
 
         # FSL
         if ax_conf.FSL.fsldir:
-            study_config.fsl_config = os.path.join(
-                ax_conf.FSL.fsldir, 'etc', 'fslconf', 'fsl.sh')
-            study_config.use_fsl = True
+            bconf.add_module('fsl')
+            bconf.fsl.fsl = {
+                'setup_script': osp.join(
+                    ax_conf.FSL.fsldir, 'etc', 'fslconf', 'fsl.sh'),
+                'directory': ax_conf.FSL.fsldir,
+                'prefix': ax_conf.FSL.fsl_commands_prefix
+            }
 
         # Freesurfer
         try:
             if ax_conf.freesurfer.freesurfer_home_path:
-                study_config.freesurfer_config = os.path.join(
-                    ax_conf.freesurfer.freesurfer_home_path,
-                    'SetUpFreeSurfer.sh')
-                study_config.use_freesurfer = True
+                bconf.add_module('freesurfer')
+                bconf.freesurfer.freesurfer = {
+                    'setup_script': osp.join(
+                        ax_conf.freesurfer.freesurfer_home_path,
+                        'SetUpFreeSurfer.sh'),
+                    'subjects_dir': ax_conf.freesurfer.freesurfer_home_path
+                }
         except AttributeError:
             # FS toolbox is probably not installed.
-            study_config.use_freesurfer = False
+            bconf.freesurfer = {}
 
-        # Soma-Workflow
-        study_config.somaworkflow_keep_failed_workflows \
-            = ax_conf.soma_workflow.somaworkflow_keep_failed_workflows
-        study_config.somaworkflow_keep_succeeded_workflows \
-            = ax_conf.soma_workflow.somaworkflow_keep_succeeded_workflows
+        # TODO
+        ## Soma-Workflow
+        #study_config.somaworkflow_keep_failed_workflows \
+            #= ax_conf.soma_workflow.somaworkflow_keep_failed_workflows
+        #study_config.somaworkflow_keep_succeeded_workflows \
+            #= ax_conf.soma_workflow.somaworkflow_keep_succeeded_workflows
 
     def sync_capsul_to_axon(self):
         '''Copies CAPSUL config options to their Axon equivalent.
@@ -257,112 +245,101 @@ class AxonCapsulConfSynchronizer(object):
         by calling brainvisa.axon.processes.initializeProcesses()).
         '''
         ax_conf = Application().configuration
-        study_config = self.study_config
+        capsul = self.capsul
+        bconf = capsul.config.builtin
 
         # matlab
         try:
-            if study_config.use_matlab is not Undefined:
-                if study_config.matlab_exec is Undefined:
+            if len(bconf.matlab) != 0:
+                if bconf.matlab.field('matlab') is None:
                     ax_conf.matlab.executable = ''
                 else:
-                    ax_conf.matlab.executable = study_config.matlab_exec
+                    ax_conf.matlab.executable = bconf.matlab.matlab.executable
         except Exception as e:
             print('Exception while setting matlab config:', e)
 
         # SPM
         try:
-            if study_config.use_spm:
-                if getattr(study_config, 'spm_version', '12') == '12':
-                    if study_config.spm_standalone:
-                        if study_config.spm_exec is not Undefined:
-                            ax_conf.SPM.spm12_standalone_command \
-                                = study_config.spm_exec
-                            ax_conf.SPM.spm12_standalone_path \
-                                = study_config.spm_directory
-                            ax_conf.SPM.spm12_standalone_mcr_path \
-                                = study_config.spm_mcr_directory
-                        if not ax_conf.SPM.spm12_standalone_mcr_path:
+            if len(bconf.spm) != 0:
+                for keyf in bconf.spm.user_fields():
+                    key = keyf.name
+                    sc = getattr(bconf.spm, key)
+                    ver = sc.version
+                    if sc.standalone:
+                        if bconf.matlab.field('matlab_mcr') is not None:
+                            setattr(ax_conf.SPM,
+                                    'spm%s_standalone_parh' % ver,
+                                    sc.directory)
+                            setattr(ax_conf.SPM,
+                                    'spm%s_standalone_command' % ver,
+                                    osp.join(sc, 'run_spm%s.sh' % ver))
+                            setattr(ax_conf.SPM,
+                                    'spm%s_standalone_mcr_path' % ver,
+                                    bconf.matlab.matlab_mcr.mcr_directory)
+                        if not bconf.matlab.matlab_mcr.mcr_directory:
                             mcr = glob.glob(os.path.join(
-                                study_config.spm_directory, 'mcr', 'v*'))
+                                sc.directory, 'mcr', 'v*'))
                             if len(mcr) == 1:
-                                ax_conf.SPM.spm12_standalone_mcr_path = mcr[0]
+                                setattr(ax_conf.SPM,
+                                        'spm%s_standalone_mcr_path' % ver,
+                                        mcr[0])
                     else:
-                        ax_conf.SPM.spm12_standalone_path = ''
-                        ax_conf.SPM.spm12_standalone_command = ''
-                        ax_conf.SPM.spm12_standalone_mcr_path = ''
-                    ax_conf.SPM.spm8_standalone_path = ''
-                    ax_conf.SPM.spm8_standalone_command = ''
-                    ax_conf.SPM.spm8_standalone_mcr_path = ''
-                else:
-                    if study_config.spm_standalone:
-                        if study_config.spm_exec is not Undefined:
-                            ax_conf.SPM.spm8_standalone_command \
-                                = study_config.spm_exec
-                            ax_conf.SPM.spm8_standalone_path \
-                                = study_config.spm_directory
-                            ax_conf.SPM.spm8_standalone_mcr_path \
-                                = study_config.spm_mcr_directory
-                        if not ax_conf.SPM.spm8_standalone_mcr_path:
-                            mcr = glob.glob(os.path.join(
-                                study_config.spm_directory, 'mcr', 'v*'))
-                            if mcr:
-                                ax_conf.SPM.spm8_standalone_mcr_path = mcr[0]
-                    else:
-                        ax_conf.SPM.spm8_standalone_path = ''
-                        ax_conf.SPM.spm8_standalone_command = ''
-                        ax_conf.SPM.spm8_standalone_mcr_path = ''
-                    ax_conf.SPM.spm12_standalone_path = ''
-                    ax_conf.SPM.spm12_standalone_command = ''
-                    ax_conf.SPM.spm12_standalone_mcr_path = ''
+                        setattr(ax_conf.SPM, 'spm%s_standalone_path' % ver, '')
+                        setattr(ax_conf.SPM, 'spm%s_standalone_command' % ver,
+                                '')
+                        setattr(ax_conf.SPM, 'spm%s_standalone_mcr_path' % ver,
+                                '')
         except Exception as e:
             print('Exception:', e)
 
         # FSL
         try:
-            if study_config.use_fsl:
-                ax_conf.FSL.fsldir = os.path.dirname(os.path.dirname(
-                    os.path.dirname(study_config.fsl_config)))
+            if len(bconf.fsl) != 0:
+                ax_conf.FSL.fsldir = bconf.fsl.fsl.directoty
+                ax_conf.FSL.fsl_commands_prefix = bconf.fsl.fsl.prefix
             else:
                 ax_conf.FSL.fsldir = None
+                ax_conf.FSL.fsl_commands_prefix = ''
         except Exception as e:
             print('Exception:', e)
 
         # Freesurfer
         try:
-            if study_config.use_freesurfer:
+            if len(bconf.freesurfer) != 0:
                 ax_conf.freesurfer.freesurfer_home_path \
-                    = os.path.dirname(study_config.freesurfer_config)
+                    = osp.dirname(bconf.freesurfer.freesurfer.setup_script)
             else:
                 ax_conf.freesurfer.freesurfer_home_path = None
         except Exception as e:
             print('Exception:', e)
 
-        # Soma-Workflow
-        ax_conf.soma_workflow.somaworkflow_keep_failed_workflows \
-            = study_config.somaworkflow_keep_failed_workflows
-        ax_conf.soma_workflow.somaworkflow_keep_succeeded_workflows \
-            = study_config.somaworkflow_keep_succeeded_workflows
+        # TODO
+        ## Soma-Workflow
+        #ax_conf.soma_workflow.somaworkflow_keep_failed_workflows \
+            #= study_config.somaworkflow_keep_failed_workflows
+        #ax_conf.soma_workflow.somaworkflow_keep_succeeded_workflows \
+            #= study_config.somaworkflow_keep_succeeded_workflows
 
     def _set_matlab_executable_capsul(self, value):
-        study_config = self.study_config
+        capsul = self.capsul
         notdone = True
+        bconf = capsul.config.builtin
         if value:
             # capsul only accepts complete file names
             if value == os.path.basename(value):
                 matlab = distutils.spawn.find_executable(value)
                 if matlab:
-                    study_config.matlab_exec = matlab
-                    study_config.use_matlab = True
+                    bconf.matlab.matlab.executable = matlab
                     notdone = False
             else:
-                study_config.matlab_exec = value
-                study_config.use_matlab = True
+                bconf.matlab.matlab.executable = value
                 notdone = False
-        if notdone:
-            study_config.use_matlab = False
+        if notdone and bconf.matlab.field('matlab') is not None:
+            bconf.matlab.remove_field('matlab')
 
     def _set_spm_standalone_command_capsul(self, unused_value):
-        study_config = self.study_config
+        capsul = self.capsul
+        bconf = capsul.config.builtin
         ax_conf = Application().configuration
         variables = (('spm12_standalone_command', '12'),
                      ('spm8_standalone_command', '8'))
@@ -372,19 +349,17 @@ class AxonCapsulConfSynchronizer(object):
             value = getattr(ax_conf.SPM, var)
             if value:
                 break
+        k = 'spm%s_standalone'
         if value:
-            study_config.spm_exec = value
-            study_config.spm_standalone = True
-            study_config.spm_version = ver
+            if bconf.spm.field(k) is None:
+                setattr(bconf.spm, k, {})
+            sc = getattr(bconf.spm, k)
+            setattr(sc, 'directory', osp.dirname(value))
+            setattr(sc, 'version', ver)
         else:
-            study_config.spm_standalone = False
-            study_config.spm_exec = ''
-            study_config.spm_version = None
-        if (study_config.spm_standalone and study_config.spm_mcr_directory) \
-                or (study_config.use_matlab and study_config.spm_directory):
-            study_config.use_spm = True
-        else:
-            study_config.use_spm = False
+            if bconf.spm.field(k) is not None:
+                sc = getattr(bconf.spm, k)
+                sc.directory = ''
 
     def _set_spm_directory_capsul(self, unused_value):
         study_config = self.study_config
@@ -401,7 +376,8 @@ class AxonCapsulConfSynchronizer(object):
         study_config.spm_version = ver
 
     def _set_spm_mcr_capsul(self, unused_value):
-        study_config = self.study_config
+        capsul = self.capsul
+        bconf = capsul.config.builtin
         ax_conf = Application().configuration
         variables = (('spm12_standalone_mcr_path', '12'),
                      ('spm8_standalone_mcr_path', '8'))
@@ -411,37 +387,28 @@ class AxonCapsulConfSynchronizer(object):
             value = getattr(ax_conf.SPM, var)
             if value:
                 break
-        study_config.spm_mcr_directory = value
-        if (study_config.spm_standalone and study_config.spm_mcr_directory) \
-                or (study_config.use_matlab and study_config.spm_directory):
-            study_config.use_spm = True
-        else:
-            study_config.use_spm = False
+        if value:
+            bconf.matlab.matlab_mcr = {'mcr_directory': value}
 
     def _set_fsl_directory_capsul(self, value):
-        study_config = self.study_config
+        capsul = self.capsul
+        bconf = capsul.config.builtin
         if value:
-            study_config.fsl_config = os.path.join(
+            if bconf.fsl.field('fsl') is None:
+                bconf.fsl.fsl = {}
+            bconf.fsl.fsl.setup_script = os.path.join(
                 value, 'etc', 'fslconf', 'fsl.sh')
-            study_config.use_fsl = True
+            bconf.fsl.fsl.directory = value
         else:
-            study_config.fsl_config = Undefined
-            study_config.use_fsl = False
+            if bconf.fsl.field('fsl') is not None:
+                bconf.fsl.remove_field('fsl')
 
     def _set_fs_home_path_capsul(self, value):
-        study_config = self.study_config
+        capsul = self.capsul
+        bconf = capsul.config.builtin
         if value:
-            study_config.freesurfer_config = os.path.join(
-                value, 'SetUpFreeSurfer.sh')
-            study_config.use_freesurfer = True
-        else:
-            study_config.freesurfer_config = Undefined
-            study_config.use_freesurfer = False
+            if bconf.freesurfer.field('freesurfer') is None:
+                bconf.freesurfer.freesurfer = {}
+            bconf.freesurfer.freesurfer.setup_script \
+                = os.path.join(value, 'SetUpFreeSurfer.sh')
 
-    def _set_swf_keep_failed_wf_capsul(self, value):
-        study_config = self.study_config
-        study_config.somaworkflow_keep_failed_workflows = value
-
-    def _set_swf_keep_succeeded_wf_capsul(self, value):
-        study_config = self.study_config
-        study_config.somaworkflow_keep_succeeded_workflows = value

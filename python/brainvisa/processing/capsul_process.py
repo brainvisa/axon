@@ -18,7 +18,7 @@ The process should inherit the CapsulProcess class (itself inheriting the standa
 
 Then it should instantiate the appropriate Capsul process. This is done simlply by setting the variable ``capsul_process`` (or alternately by overloading the setup_capsul_process() method, which should instantiate the Capsul process and set it into the Axon proxy process).
 
-The underlying Capsul process traits will be exported to the Axon signature automatically. This behaviour can be avoided or altered by overloading the initialize() method, which we did not define in the above example.
+The underlying Capsul process fields will be exported to the Axon signature automatically. This behaviour can be avoided or altered by overloading the initialize() method, which we did not define in the above example.
 
 The process also does not have an :meth:`~brainvisa.processes.Process.execution` function. This is normal: :class:`CapsulProcess` already defines an :meth:`~CapsulProcess.executionWorkflow` method which will generate a :somaworkflow:`Soma-Workflow <index.html>` workflow which will integrate in the process or parent pipeline (or iteration) workflow.
 
@@ -116,7 +116,7 @@ Capsul has its own iteration system, using iteration nodes in pipelines. Thus Ca
 Completion time and bottlenecks
 -------------------------------
 
-The first time a Capsul process is opened, the :capsul:`FOM completion system <user_guide_tree/advanced_usage.html#file-organization-model-fom>` is initialized (technically the :capsul:`auto-fom mode <api/study_config.html#capsul.study_config.config_modules.fom_config.FomConfig>` is used and and all FOMs are read), which takes a few seconds (up to 10s). Later uses will not have this overhead.
+The first time a Capsul process is opened, the :capsul:`completion system <user_guide_tree/advanced_usage.html#>` is initialized, which takes a few seconds. Later uses will not have this overhead.
 
 Capsul completion system, although not providing immeditate answers, is much more efficient than Axon's. Typically to perform completion on **1000 iterations over a process of about 5-6 parameters**,
 
@@ -141,10 +141,6 @@ See also :doc:`capsul`
 
 '''
 
-from __future__ import print_function
-
-from __future__ import absolute_import
-import os
 import brainvisa.processes as processes
 from brainvisa.data import neuroData
 from brainvisa.data.readdiskitem import ReadDiskItem
@@ -156,55 +152,43 @@ from brainvisa.data import neuroHierarchy
 from brainvisa.configuration import neuroConfig
 from brainvisa.configuration import axon_capsul_config_link
 from soma.functiontools import SomaPartial
-from capsul.pipeline import pipeline_nodes
-import capsul.api as capsul
-from traits import trait_types
-import traits.api as traits
+from capsul.pipeline.pipeline import Pipeline
+from soma.controller import File, Directory, Any, Literal, undefined
 import distutils.spawn
-import copy
 import sys
 import subprocess
 
 import six
 
 
-def fileOptions(filep, name, process, attributes=None, path_completion=None):
+def fileOptions(filep, name, process, attributes=None):
     if hasattr(filep, 'output') and filep.output:
-        return (WriteDiskItem, get_best_type(process, name, attributes,
-                                             path_completion))
-    return (ReadDiskItem, get_best_type(process, name, attributes,
-                                        path_completion))
+        return (WriteDiskItem, get_best_type(process, name, attributes))
+    return (ReadDiskItem, get_best_type(process, name, attributes))
 
 
-def choiceOptions(choice, name, process, attributes=None,
-                  path_completion=None):
-    return [x for x in choice.trait_type.values]
+def choiceOptions(choice, name, process, attributes=None):
+    return list(choice.subtypes())
 
 
-def listOptions(param, name, process, attributes=None, path_completion=None):
-    item_type = param.inner_traits[0]
-    return [make_parameter(item_type, name, process, attributes,
-                           path_completion)]
+def listOptions(param, name, process, attributes=None):
+    item_type = param.subtypes()[0]
+    return [make_parameter(item_type, name, process, attributes)]
 
 
 param_types_table = \
     {
-        trait_types.Bool: neuroData.Boolean,
-        trait_types.CBool: neuroData.Boolean,
-        trait_types.String: neuroData.String,
-        trait_types.Str: neuroData.String,
-        trait_types.CStr: neuroData.String,
-        trait_types.Float: neuroData.Number,
-        trait_types.CFloat: neuroData.Number,
-        trait_types.Int: neuroData.Integer,
-        trait_types.CInt: neuroData.Integer,
-        #trait_types.Any: neuroData.String,
-        trait_types.File: fileOptions,
-        trait_types.Directory: fileOptions,
-        trait_types.Enum: (neuroData.Choice, choiceOptions),
-        trait_types.List: (neuroData.ListOf, listOptions),
-        trait_types.ListFloat: (neuroData.ListOf, listOptions),
-        trait_types.Set: (neuroData.ListOf, listOptions),
+        bool: neuroData.Boolean,
+        str: neuroData.String,
+        float: neuroData.Number,
+        int: neuroData.Integer,
+        # Any: neuroData.String,
+        File: fileOptions,
+        Directory: fileOptions,
+        Literal: (neuroData.Choice, choiceOptions),
+        list: (neuroData.ListOf, listOptions),
+        list[float]: (neuroData.ListOf, listOptions),
+        set: (neuroData.ListOf, listOptions),
     }
 
 try:
@@ -217,67 +201,85 @@ except ImportError:
     pass  # no nipype
 
 
-def make_parameter(param, name, process, attributes=None,
-                   path_completion=None):
-    newtype = param_types_table.get(type(param.trait_type))
+def make_parameter(param, name, process, attributes=None):
+                   #path_completion=None):
+    newtype = param_types_table.get(param.type)
     paramoptions = []
     kwoptions = {}
     if newtype is None:
-        print('no known converted type for', name, ':',
-              type(param.trait_type))
+        print('no known converted type for', name, ':', param.type)
         newtype = neuroData.String
     if isinstance(newtype, tuple):
-        paramoptions = newtype[1](param, name, process, attributes,
-                                  path_completion)
+        paramoptions = newtype[1](param, name, process, attributes)
         newtype = newtype[0]
-    elif hasattr(newtype, '__code__'): # function
-        newtype, paramoptions = newtype(param, name, process, attributes,
-                                        path_completion)
-    if param.groups:
+    elif hasattr(newtype, '__code__'):  # function
+        newtype, paramoptions = newtype(param, name, process, attributes)
+    if param.metadata('groups'):
         section = param.groups[0]
         kwoptions['section'] = section
     return newtype(*paramoptions, **kwoptions)
 
 
 def convert_capsul_value(value):
-    if isinstance(value, (traits.TraitListObject, traits.TraitSetObject)):
+    if isinstance(value, (list, set)):
         value = [convert_capsul_value(x) for x in value]
-    elif value is traits.Undefined or value in ("<undefined>", "None"):
+    elif value is undefined or value in ("<undefined>", "None"):
         # FIXME: "<undefined>" or "None" is a bug in the Controller GUI
         value = None
     return value
 
 
-def convert_to_capsul_value(value, item_type=None, trait=None):
+def convert_to_capsul_value(value, item_type=None, field=None):
     if isinstance(value, DiskItem):
         value = value.fullPath()
     elif isinstance(value, list):
         value = [convert_to_capsul_value(x, item_type.contentType)
                  for x in value]
-        if trait is not None and type(trait.trait_type) is trait_types.Set:
+        if field is not None and field.type is set:
             value = set(value)
     elif isinstance(value, set):
         value = set([convert_to_capsul_value(x, item_type.contentType)
                      for x in value])
     elif value is None and isinstance(item_type, ReadDiskItem):
-        value = traits.Undefined
+        value = undefined
     return value
 
 
-def get_initial_study_config():
-    from soma.wip.application.api import Application as Appli2
-    configuration = Appli2().configuration
-    init_study_config = {
-        "input_fom": "morphologist-auto-1.0",
-        "output_fom": "morphologist-auto-1.0",
-        "shared_fom": "shared-brainvisa-1.0",
-        "use_soma_workflow": True,
-        "use_fom": True,
-        "volumes_format": 'gz compressed NIFTI-1 image',
-        "meshes_format": "GIFTI file",
+def get_initial_capsul():
+    #init_config = {
+        #"input_fom": "morphologist-auto-1.0",
+        #"output_fom": "morphologist-auto-1.0",
+        #"shared_fom": "shared-brainvisa-1.0",
+        #"use_soma_workflow": True,
+        #"use_fom": True,
+        #"volumes_format": 'gz compressed NIFTI-1 image',
+        #"meshes_format": "GIFTI file",
+    #}
+
+    init_config = {
+        'builtin': {
+            'config_modules': [
+                'spm',
+                'axon',
+            ],
+            #'dataset': {
+                #'input': {
+                    #'path': '/tmp/morpho-bids',
+                    #'metadata_schema': 'bids',
+                #},
+                #'output': {
+                    #'path': '/tmp/morpho-bv',
+                    #'metadata_schema': output_schema,
+                #},
+                #'shared': {
+                    #'path': get_shared_path(),
+                    #'metadata_schema': 'brainvisa_shared',
+                #},
+            #},
+        }
     }
 
-    return init_study_config
+    return init_config
 
 
 def match_ext(capsul_exts, axon_formats):
@@ -326,111 +328,91 @@ def get_axon_formats(capsul_exts):
     return formats
 
 
-def get_best_type(process, param, attributes=None, path_completion=None):
-    from capsul.attributes.completion_engine import ProcessCompletionEngine
-    from capsul.attributes.attributes_schema import ProcessAttributes
+def get_best_type(process, param, metadata=None):
 
-    completion_engine = ProcessCompletionEngine.get_completion_engine(process)
-    cext = process.trait(param).allowed_extensions
+    from capsul.dataset import ProcessMetadata
 
-    # print('get_best_type', process, param, ':', completion_engine, path_completion, cext)
-    is_list = False
+    cext = process.field(param).metadata('extensions')
+    if metadata is None:
+        metadata = process.metadata
 
-    if path_completion is None:
-        try:
-            path_completion = completion_engine.get_path_completion_engine()
-        except RuntimeError:
-            # look if it's a pipeline with iterations inside
-            # iterations are not handled in a regular way in Capsul, because
-            # they are virtual links (a single process instance is used to
-            # complete parameters iteratively with attributes values from a
-            # list). So here we have to get inside this system. Too bad.
-            if hasattr(process, 'pipeline_node'):
-                plug = process.pipeline_node.plugs[param]
-                if process.trait(param).output:
-                    links = plug.links_from
-                else:
-                    links = plug.links_to
-                for to in links:
-                    if isinstance(to[2], pipeline_nodes.ProcessNode) \
-                            and hasattr(to[2].process, 'iterative_parameters'):
-                        completion_engine \
-                            = ProcessCompletionEngine.get_completion_engine(
-                                to[2].process.process)
-                        try:
-                            path_completion = \
-                                completion_engine.get_path_completion_engine()
-                        except Exception:
-                            continue
-                        process = to[2].process.process
-                        param = to[1]
-                        cext = process.trait(param).allowed_extensions
-                        is_list = True
-                        break
-            if path_completion is None:
-                return ('Any Type', get_axon_formats(cext))
+    # print('get_best_type', process, param, ':', completion_engine, cext)
+    is_list = process.field(param).is_list()
+    orig_meta = metadata
 
-    # merge trait extensions and completion system extensions
-    compl_ext = path_completion.allowed_extensions(process, param)
+    if metadata is None:
+        # look if it's a pipeline with iterations inside
+        # iterations are not handled in a regular way in Capsul, because
+        # they are virtual links (a single process instance is used to
+        # complete parameters iteratively with attributes values from a
+        # list). So here we have to get inside this system. Too bad.
+        if isinstance(process, Pipeline):
+            plug = process.plugs[param]
+            if process.field(param).is_output():
+                links = plug.links_from
+            else:
+                links = plug.links_to
+            for to in links:
+                if hasattr(to[2], 'iterative_parameters'):
+                    metadata = ProcessMetadata(
+                        to[2], metadata.execution_context,
+                        datasets=metadata.datasets)
+                    process = to[2].process
+                    param = to[1]
+                    cext = process.field(param).metadata('extensions')
+                    is_list = True
+                    break
+        if metadata is None:
+            return ('Any Type', get_axon_formats(cext))
+
+    # merge field extensions and completion system extensions
+    compl_ext = None  # FIXME allowed extensions for param
     if not cext:
         cext = compl_ext
     elif compl_ext:
         cext = [e for e in cext if e in compl_ext]
 
-    orig_attributes = attributes
-    #print('## orig:', orig_attributes.user_traits().keys())
+    # print('## orig:', [f.name for f in orig_meta.user_fields()])
     orig_values = None
-    if attributes is not None:
+    if metadata is not None:
         if is_list:
-            #print('** list !**')
+            # print('** list !**')
             # keep 1st value. We must instantiate a new attrubutex controller,
             # using the underlying completion engine
-            orig_attributes = completion_engine.get_attribute_values().copy()
-            orig_values = orig_attributes.export_to_dict()
-            for attr, trait in six.iteritems(attributes.user_traits()):
-                if isinstance(trait.trait_type, traits.List) \
-                        and isinstance(trait.inner_traits[0].trait_type,
-                                       traits.Str):
-                    setattr(orig_attributes, attr,
-                            getattr(attributes, attr)[0])
+            orig_meta = metadata.copy()
+            orig_values = orig_meta.asdict()
+            for field in metadata.fields():
+                attr = field.name
+                if field.is_list() and issubclass(field.subtypes()[0], str):
+                    setattr(orig_meta, attr,
+                            getattr(metadata, attr)[0])
                 else:
-                    setattr(orig_attributes, attr, getattr(attributes, attr))
-            attributes = orig_attributes.copy()
+                    setattr(orig_meta, attr, getattr(metadata, attr))
+            metadata = orig_meta.copy()
 
-    if attributes is None:
-        orig_attributes = completion_engine.get_attribute_values()
-        attributes = orig_attributes.copy(with_values=True)
-        orig_values = orig_attributes.export_to_dict()
-        for attr, trait in six.iteritems(attributes.user_traits()):
-            if isinstance(trait.trait_type, traits.Str):
-                setattr(attributes, attr, '<%s>' % attr)
+    # FIXME
+    #if metadata is None:
+        #orig_meta = completion_engine.get_attribute_values()
+        #attributes = orig_attributes.copy(with_values=True)
+        #orig_values = orig_attributes.export_to_dict()
+        #for attr, trait in six.iteritems(attributes.user_traits()):
+            #if isinstance(trait.trait_type, traits.Str):
+                #setattr(attributes, attr, '<%s>' % attr)
 
     try:
-        #print('attributes:', attributes.export_to_dict())
-        if hasattr(path_completion, 'open_values_attributes'):
-            # FOM-only case
-            open_attribs \
-                = set(path_completion.open_values_attributes(process, param))
-            # print('filtered:', open_attribs)
-            to_remove = [k for k in attributes.user_traits()
-                        if k not in open_attribs]
-            if to_remove:
-                attributes = attributes.copy()
-                for name in to_remove:
-                    attributes.remove_trait(name)
-        #print('## att :', attributes.user_traits().keys())
+        # print('metadata:', metadata.asdict())
 
-        path = path_completion.attributes_to_path(process, param, attributes)
-        #print('path:', path)
+        path = None  # FIXME metadata..attributes_to_path(process, param, attributes)
+        # print('path:', path)
         if path is None:
             # fallback to the completed value
             path = getattr(process, param)
-            #print('new path:', path)
-        if path in (None, traits.Undefined, []):
+            # print('new path:', path)
+        if path in (None, undefined, []):
             return ('Any Type', get_axon_formats(cext))
 
         for db in neuroHierarchy.databases.iterDatabases():
-            #print('look in db:', db.directory)
+            # print('look in db:', db.directory)
             for typeitem in getAllDiskItemTypes():
                 rules = db.fso.typeToPatterns.get(typeitem)
                 if rules:
@@ -444,11 +426,11 @@ def get_best_type(process, param, attributes=None, path_completion=None):
                                     continue
                                 if not match_ext(cext, rule.formats):
                                     continue
-                            #print('found:', typeitem.name, rule.formats)
+                            # print('found:', typeitem.name, rule.formats)
                             return (typeitem.name, rule.formats)
     finally:
         if orig_values is not None:
-            orig_attributes.import_from_dict(orig_values)
+            orig_meta.import_dict(orig_values)
 
     return ('Any Type', get_axon_formats(cext))
 
@@ -462,24 +444,29 @@ class CapsulProcess(processes.Process):
 
     capsul_to_axon_process_map = {}
     # possibly costomize FSO->FOM names translations
-    fso_to_fom_map = {
-        'brainvisa-3.2.0': 'morphologist-auto-1.0',
-        'morphologist-bids-1.0': 'morpho-deepsulci-bids-1.0',
+    fso_to_schema_map = {
+        'brainvisa-3.2.0': 'brainvisa',
+        'morphologist-bids-1.0': 'morphologist_bids',
     }
 
     def __init__(self):
         self._capsul_process = None
         self.setup_capsul_process()
-        super(CapsulProcess, self).__init__()
+        super().__init__()
 
     def set_capsul_process(self, process):
         ''' Sets a CAPSUL process into the Axon (proxy) process
         '''
-        from capsul.attributes.completion_engine import ProcessCompletionEngine
+        from capsul.dataset import ProcessMetadata
+        from capsul.schemas.brainvisa import morphologist_datasets
+
+        capsul = self.get_capsul()
+        execution_context = capsul.engine().execution_context(process)
+
+        metadata = ProcessMetadata(process, execution_context,
+                                   datasets=morphologist_datasets)
 
         self._capsul_process = process
-        completion_engine \
-            = ProcessCompletionEngine.get_completion_engine(process)
 
     def setup_capsul_process(self):
         ''' This method is in charge of instantiating the appropriate CAPSUL process or pipeline, and setting it into the Axon process (self), using the set_capsul_process() method.
@@ -501,9 +488,8 @@ class CapsulProcess(processes.Process):
                 return  # no associated module, may be built on-the-fly
             capsul_process = getattr(module, 'capsul_process')
         if capsul_process:
-            from capsul.api import get_process_instance
-            process = get_process_instance(capsul_process,
-                                           self.get_study_config())
+            capsul = self.get_capsul()
+            process = capsul.executable(capsul_process)
             self.set_capsul_process(process)
 
     def get_capsul_process(self):
@@ -511,49 +497,53 @@ class CapsulProcess(processes.Process):
         return self._capsul_process
 
     def initialization(self):
-        ''' This specialized initialization() method sets up a default signature for the process, duplicating every user trait of the underlying CAPSUL process.
+        ''' This specialized initialization() method sets up a default
+        signature for the process, duplicating every user field of the
+        underlying CAPSUL process.
 
-        As some parameter types and links will not be correctly translated, it is possible to prevent this automatic behaviour, and to setup manually
+        As some parameter types and links will not be correctly translated, it
+        is possible to prevent this automatic behaviour, and to setup manually
         a new signature, by overloading the initialization() method.
 
-        In such a case, the process designer will also probably have to overload the propagate_parameters_to_capsul() method to setup the underlying Capsul process parameters from the Axon one, since there will not be a direct correspondance any longer.
+        In such a case, the process designer will also probably have to
+        overload the propagate_parameters_to_capsul() method to setup the
+        underlying Capsul process parameters from the Axon one, since there
+        will not be a direct correspondance any longer.
         '''
         process = self.get_capsul_process()
         if process is None:
             return  # no process defined, probably too early to do this.
 
-        # speedup attributes
-        from capsul.attributes.completion_engine import ProcessCompletionEngine
-        from capsul.attributes.attributes_schema import ProcessAttributes
+        from capsul.dataset import ProcessMetadata
+        from capsul.schemas.brainvisa import morphologist_datasets
+        from soma.qt_gui.qtThread import gui_thread_function
 
-        completion_engine = ProcessCompletionEngine.get_completion_engine(
-            process)
-        try:
-            path_completion = completion_engine.get_path_completion_engine()
-        except RuntimeError:
-            path_completion = None
+        capsul = self.get_capsul()
+        execution_context = capsul.engine().execution_context(process)
+        metadata = ProcessMetadata(process, execution_context,
+                                   datasets=morphologist_datasets)
 
         # save parameters values
-        orig_params = process.export_to_dict()
+        orig_params = process.asdict()
 
-        attributes = completion_engine.get_attribute_values()
-        orig_attributes = attributes.export_to_dict()
-        for attr, trait in six.iteritems(attributes.user_traits()):
-            if isinstance(trait.trait_type, traits.Str):
-                setattr(attributes, attr, '<%s>' % attr)
-            elif isinstance(trait.trait_type, traits.List) \
-                    and isinstance(trait.inner_traits[0].trait_type,
-                                   traits.Str):
-                setattr(attributes, attr, ['<%s>' % attr])
+        orig_attributes = metadata.asdict()
+        for field in metadata.fields():
+            attr = field.name
+            if issubclass(field.type, str):
+                setattr(metadata, attr, '<%s>' % attr)
+            elif field.is_list() \
+                    and issubclass(field.subtypes()[0], str):
+                setattr(metadata, attr, ['<%s>' % attr])
 
-        completion_engine.complete_parameters()
+        metadata.generate_paths()
 
         signature = getattr(self, 'signature', Signature())
-        excluded_traits = set(('nodes_activation', 'visible_groups',
+        excluded_fields = set(('nodes_activation', 'visible_groups',
                                'pipeline_steps'))
         optional = []
-        for name, param in six.iteritems(process.user_traits()):
-            if name in excluded_traits:
+        for param in process.user_fields():
+            name = param.name
+            if name in excluded_fields:
                 continue
             if name in signature:
                 # the param was explicitely declared in axon process: keep it,
@@ -561,17 +551,17 @@ class CapsulProcess(processes.Process):
                 parameter = signature[name]
                 del signature[name]
             else:
-                parameter = make_parameter(param, name, process, attributes,
-                                          path_completion)
+                # FIXME
+                parameter = make_parameter(param, name, process, metadata)
             signature[name] = parameter
             if param.optional:
                 optional.append(name)
 
         # restore attributes
-        attributes.import_from_dict(orig_attributes)
+        metadata.import_dict(orig_attributes)
 
         for name in ('use_capsul_completion', 'edit_pipeline', 'capsul_gui',
-                     'edit_pipeline_steps', 'edit_study_config'):
+                     'edit_pipeline_steps', 'edit_capsul_config'):
             if name in signature:
                 del signature[name]
         signature['use_capsul_completion'] = neuroData.Boolean()
@@ -581,29 +571,30 @@ class CapsulProcess(processes.Process):
         if getattr(process, 'pipeline_steps', None):
             has_steps = True
             signature['edit_pipeline_steps'] = neuroData.Boolean()
-        signature['edit_study_config'] = neuroData.Boolean()
+        signature['edit_capsul_config'] = neuroData.Boolean()
         self.__class__.signature = signature
         self.changeSignature(signature)
 
         # restore parameters
-        for param, value in six.iteritems(orig_params):
+        for param, value in orig_params.items():
             if param not in ('pipeline_steps', 'nodes_activation'):
                 setattr(process, param, value)
 
         # setup callbacks to sync capsul and axon parameters values
-        if neuroConfig.gui:
-            from soma.qt_gui import qt_backend
-            qt_backend.init_traitsui_handler()
-            dispatch = 'ui'
-        else:
-            dispatch = 'same'
+        dispatch = gui_thread_function(neuroConfig.gui)
 
-        self._capsul_process.on_trait_change(self._process_trait_changed,
-                                             dispatch=dispatch)
+        self._capsul_process.on_attribute_change.add(
+            dispatch(self._process_field_changed))
+        import inspect
+        pcallback = dispatch(self._process_field_changed)
+        signature = inspect.signature(pcallback)
+        print('callback params:', len(signature.parameters))
+        print('  :', signature.parameters)
 
         if optional:
             self.setOptional(*optional)
-        use_capsul_completion = getattr(self.__class__, 'use_capsul_completion',
+        use_capsul_completion = getattr(self.__class__,
+                                        'use_capsul_completion',
                                         True)
 
         self.setValue('use_capsul_completion', use_capsul_completion,
@@ -612,12 +603,13 @@ class CapsulProcess(processes.Process):
         self.setValue('capsul_gui', False, default=True)
         if getattr(process, 'pipeline_steps', None):
             self.setValue('edit_pipeline_steps', False, default=True)
-        self.setValue('edit_study_config', False, default=True)
-        for name in process.user_traits():
-            if name in excluded_traits:
+        self.setValue('edit_capsul_config', False, default=True)
+        for field in process.user_fields():
+            name = field.name
+            if name in excluded_fields:
                 continue
             value = getattr(process, name)
-            if value not in (traits.Undefined, ''):
+            if value not in (undefined, ''):
                 self.setValue(name, convert_capsul_value(value), default=True)
             else:
                 self.setValue(name, None, default=True)
@@ -630,8 +622,8 @@ class CapsulProcess(processes.Process):
         if has_steps:
             self.linkParameters(None, 'edit_pipeline_steps',
                                 self._on_edit_pipeline_steps)
-        self.linkParameters(None, 'edit_study_config',
-                            self._on_edit_study_config)
+        self.linkParameters(None, 'edit_capsul_config',
+                            self._on_edit_capsul_config)
         self.linkParameters(None, 'use_capsul_completion',
                             self._on_change_use_completion)
         if hasattr(process, 'visible_groups'):
@@ -648,10 +640,10 @@ class CapsulProcess(processes.Process):
         for name, itype in six.iteritems(self.signature):
             converted_value = convert_to_capsul_value(getattr(self, name),
                                                       itype,
-                                                      process.trait(name))
+                                                      process.field(name))
             try:
                 setattr(process, name, converted_value)
-            except traits.TraitError:
+            except AttributeError:
                 pass
 
             # enable / forbid completion in capsul when it's forbidden in axon
@@ -661,9 +653,9 @@ class CapsulProcess(processes.Process):
                     process.propagate_metadata(
                         '', name, {'forbid_completion': forbid_completion})
             else:
-                trait = process.trait(name)
-                if trait is not None:
-                    trait.forbid_completion = forbid_completion
+                field = process.field(name)
+                if field is not None:
+                    field.forbid_completion = forbid_completion
 
     def forbid_completion(self, params, forbid=True):
         ''' Forbids (blocks) Capsul completion system for the selected
@@ -678,12 +670,12 @@ class CapsulProcess(processes.Process):
         forbid: bool
             True blocks completion, False allows it again
         '''
-        if isinstance(params, six.string_types):
+        if isinstance(params, str):
             params = [params]
         process = self.get_capsul_process()
         for param in params:
-            t = process.trait(param)
-            t.forbid_completion = forbid
+            f = process.field(param)
+            f.forbid_completion = forbid
 
     def executionWorkflow(self, context=processes.defaultContext()):
         ''' Build the workflow for execution. The workflow will be integrated in the parent pipeline workflow, if any.
@@ -717,14 +709,31 @@ class CapsulProcess(processes.Process):
 
         return jobs, dependencies, root_group
 
-    def init_study_config(self, context=processes.defaultContext()):
-        ''' Build a Capsul StudyConfig object if not present in the context,
+    def init_capsul(self, context=processes.defaultContext()):
+        ''' Build a Capsul / config object if not present in the context,
         set it up, and return it
         '''
-        from capsul.study_config.study_config import StudyConfig
-        from soma.wip.application.api import Application as Appli2
+        from capsul.api import Capsul
+        from capsul.schemas.brainvisa import declare_morpho_schemas
+        import sys
+        import os.path as osp
 
-        study_config = getattr(context, 'study_config', None)
+        # morphologist may be imported as a toolbox. Here we need the regular
+        # module
+        old_morpho = None
+        if 'morphologist' in sys.modules \
+                and sys.modules['morphologist'].__file__.endswith(
+                    osp.join('brainvisa', 'toolboxes', 'morphologist',
+                            'processes', 'morphologist.py')):
+            print('change morphologist module')
+            old_morpho = sys.modules['morphologist']
+            del sys.modules['morphologist']
+        declare_morpho_schemas('morphologist.capsul')
+        if old_morpho is not None:
+            # restore toolbox module
+            sys.modules['morphologist'] = old_morpho
+
+        capsul = getattr(context, 'capsul', None)
 
         # axon_to_capsul_formats = {
             #'NIFTI-1 image': "NIFTI",
@@ -738,54 +747,69 @@ class CapsulProcess(processes.Process):
             #'siRelax Fold Energy': "Energy",
         #}
 
-        ditems = [(name, item) for name, item in six.iteritems(self.signature)
+        ditems = [(name, item) for name, item in self.signature.items()
                   if isinstance(item, DiskItem)]
-        database = ''
-        # format = ''
+        idatabase = ''
+        odatabase = ''
+        ischema = None
+        oschema = None
         for item in ditems:
             # format = axon_to_capsul_formats.get(
                 # item[1].format.name, item[1].format.name)
             database = getattr(self, item[0]).get('_database', '')
+            schema = self.get_capsul_schema(database)
             if database and \
                     not neuroHierarchy.databases.database(database).builtin:
-                break
-            database = ''
+                if isinstance(item, WriteDiskItem):
+                    if odatabase == '':
+                        odatabase = database
+                        oschema = schema
+                elif idatabase == '':
+                    idatabase = database
+                    ischema = schema
+                if idatabase != '' and odatabase != '':
+                    break
 
-        if study_config is None:
-            initial_study_config = get_initial_study_config()
-            study_config = StudyConfig(
-                init_config=initial_study_config,
-                modules=StudyConfig.default_modules + ['BrainVISAConfig',
-                                                       'FomConfig',
-                                                       'FreeSurferConfig'])
-        study_config.axon_link = \
-            axon_capsul_config_link.AxonCapsulConfSynchronizer(study_config)
-        study_config.axon_link.sync_axon_to_capsul()
-        study_config.on_trait_change(
-            study_config.axon_link.sync_capsul_to_axon)
+        if capsul is None:
+            initial_config = get_initial_capsul()
+            print('create Capsul')
+            capsul = Capsul()
+            capsul.config.import_dict(initial_config)
+            print('initial:', initial_config)
+            print('export:', capsul.config.builtin.asdict())
+        capsul.axon_link = \
+            axon_capsul_config_link.AxonCapsulConfSynchronizer(capsul)
+        capsul.axon_link.sync_axon_to_capsul()
+        capsul.config.builtin.on_attribute_change.add(
+            capsul.axon_link.sync_capsul_to_axon)
 
-        study_config.input_directory = database
-        study_config.output_directory = database
+        if ischema:
+            capsul.config.builtin.dataset.input.path = idatabase
+            capsul.config.builtin.dataset.input.metadata_schema = ischema
+        if oschema:
+            capsul.config.builtin.dataset.output.path = odatabase
+            capsul.config.builtin.dataset.output.metadata_schema = oschema
 
-        # soma-workflow execution settings
-        soma_workflow_config = getattr(context, 'soma_workflow_config', {})
-        study_config.somaworkflow_computing_resource = 'localhost'
-        study_config.somaworkflow_computing_resources_config.localhost \
-            = soma_workflow_config
+        # TODO
+        ## soma-workflow execution settings
+        #soma_workflow_config = getattr(context, 'soma_workflow_config', {})
+        #study_config.somaworkflow_computing_resource = 'localhost'
+        #study_config.somaworkflow_computing_resources_config.localhost \
+            #= soma_workflow_config
 
-        return study_config
+        return capsul
 
-    def get_study_config(self, context=processes.defaultContext()):
-        study_config = None
+    def get_capsul(self, context=processes.defaultContext()):
+        capsul = None
         if self._capsul_process is not None:
-            study_config = getattr(self._capsul_process, 'study_config', None)
-        if study_config is None:
-            study_config = self.init_study_config(context)
+            capsul = getattr(self._capsul_process, 'capsul', None)
+        if capsul is None:
+            capsul = self.init_capsul(context)
             if self._capsul_process is not None:
-                self._capsul_process.set_study_config(study_config)
+                self._capsul_process.capsul = capsul
         if context is not None:  # may be None during axon_to_capsul conversion
-            context.study_config = study_config
-        return study_config
+            context.capsul = capsul
+        return capsul
 
     @classmethod
     def build_from_instance(cls, process, name=None, category=None,
@@ -805,13 +829,13 @@ class CapsulProcess(processes.Process):
         NewProcess.category = category
         NewProcess.dataDirectory = None
         NewProcess.toolbox = None
-        if process.id == 'capsul.pipeline.pipeline.Pipeline':
+        if process.definition == 'capsul.pipeline.pipeline.Pipeline':
             # special case of a pipeline built on-the-fly
             NewProcess.capsul_process = None
             # anyway it will miss things, hope setup_capsul_process()
             # will be called with a real instance later.
         else:
-            NewProcess.capsul_process = process.id
+            NewProcess.capsul_process = process.definition
         if pre_signature:
             NewProcess.signature = pre_signature
 
@@ -845,15 +869,15 @@ class CapsulProcess(processes.Process):
           defined in axon processes
         * it will not reuse a cache of process classes
         '''
-        study_config = None
+        capsul = None
         if isinstance(process, capsul.Process):
-            study_config = process.get_study_config()
-        if study_config is None:
-            study_config = getattr(context, 'study_config', None)
-            if study_config is None:
-                study_config = cls().get_study_config(context)
-        capsul_proc = study_config.get_process_instance(process)
-        capsul_def = capsul_proc.id
+            capsul = getattr(process, 'capsul', None)
+        if capsul is None:
+            capsul = getattr(context, 'capsul', None)
+            if capsul is None:
+                capsul = cls().get_capsul(context)
+        capsul_proc = capsul.executable(process)
+        capsul_def = capsul_proc.definition
         axon_process = cls.capsul_to_axon_process_map.get(capsul_def)
         if axon_process is not None:
             return processes.getProcessInstance(axon_process)
@@ -869,9 +893,9 @@ class CapsulProcess(processes.Process):
                 if cid is None:
                     continue
                 try:
-                    cins = study_config.get_process_instance(cid)
+                    cins = capsul.executable(cid)
                     # cache it anyway
-                    cid_def = cins.id
+                    cid_def = cins.definition
                     cls.capsul_to_axon_process_map[cid_def] = proc_class
                     if cins.__class__ is capsul_proc.__class__:
                         axon_process = processes.getProcessInstance(pid)
@@ -898,16 +922,15 @@ class CapsulProcess(processes.Process):
 
         pipeline = Pipeline()
         pipeline.name = '%s_iteration' % self.get_capsul_process().name
-        study_config = self.get_study_config()
-        pipeline.set_study_config(study_config)
+        capsul = self.get_capsul()
+        pipeline.capsul = capsul
         # duplicate the process
-        process = study_config.get_process_instance(
-            self.get_capsul_process().__class__)
+        process = capsul.executabme(self.get_capsul_process().__class__)
         # do we need to iterate over all (non-file) parameters, or let the
         # default completion system determine it ?
         # rather iterate over all
-        plugs = [param for param in process.user_traits().keys()
-                 if param in self.signature]
+        plugs = [field.name for field in process.fields()
+                 if field.name in self.signature]
         pipeline.add_iterative_process(
             pipeline.name, process, iterative_plugs=plugs)
         pipeline.autoexport_nodes_parameters(include_optional=True)
@@ -917,10 +940,11 @@ class CapsulProcess(processes.Process):
         # (optional but sometimes helps, especially when types are manually
         # defined in the process signature)
         pre_signature = Signature()
-        piter = pipeline.nodes[pipeline.name].process
-        for param in process.user_traits():
+        piter = pipeline.nodes[pipeline.name]
+        for field in process.fields():
+            param = field.name
             if param not in self.signature:
-                continue  # control trait such as "nodes_activation"
+                continue  # control field such as "nodes_activation"
             if param in piter.iterative_parameters:
                 pre_signature[param] = ListOf(self.signature[param])
             else:
@@ -933,18 +957,17 @@ class CapsulProcess(processes.Process):
 
     def _on_change_use_completion(self, process, dummy):
         if process.use_capsul_completion:
-            from capsul.attributes.completion_engine \
-                import ProcessCompletionEngine
-            ce = ProcessCompletionEngine.get_completion_engine(
-                self.get_capsul_process())
-            if ce is not None \
+            cprocess = self.get_capsul_process()
+            metadata = getattr(cprocess, 'metadata')
+
+            if metadata is not None \
                     and sys._getframe(2).f_code.co_name \
                         != 'linksInitialization':
                 # we don't want to complete when called from Process
                 # initialization, because attributes are still empty and this
                 # will result in non-empty but incomplete filenames, which is
                 # rather dirty.
-                ce.complete_parameters()
+                metadata.generate_paths(cprocess)
 
     def _on_edit_pipeline(self, process, dummy):
         from brainvisa.configuration import neuroConfig
@@ -976,9 +999,9 @@ class CapsulProcess(processes.Process):
                 del steps_view
                 del self._steps_view
             return
-        from soma.qt_gui.controller_widget import ScrollControllerWidget
+        from soma.qt_gui.controller import ControllerWidget
         from soma.qt_gui.qtThread import MainThreadLife
-        steps_view = ScrollControllerWidget(steps, live=True)
+        steps_view = ControllerWidget(steps, live=True)
         steps_view.show()
         self._steps_view = MainThreadLife(steps_view)
 
@@ -989,10 +1012,6 @@ class CapsulProcess(processes.Process):
         from capsul.qt_gui.widgets import PipelineDeveloperView
         from capsul.pipeline.pipeline import Pipeline
         from soma.qt_gui.qtThread import MainThreadLife
-        # fancy list editors on ControllerWidget
-        from soma.qt_gui.controller_widget import ControllerWidget
-        from  soma.qt_gui.controls import OffscreenListControlWidget
-        ControllerWidget._defined_controls['List'] = OffscreenListControlWidget
 
         Pipeline.hide_nodes_activation = False
         self.propagate_parameters_to_capsul()
@@ -1006,13 +1025,9 @@ class CapsulProcess(processes.Process):
         from brainvisa.configuration import neuroConfig
         if not neuroConfig.gui:
             return
-        from capsul.qt_gui.widgets.attributed_process_widget import AttributedProcessWidget
-        from capsul.pipeline.pipeline import Pipeline
+        from capsul.qt_gui.widgets.attributed_process_widget \
+            import AttributedProcessWidget
         from soma.qt_gui.qtThread import MainThreadLife
-        # fancy list editors on ControllerWidget
-        from soma.qt_gui.controller_widget import ControllerWidget
-        from  soma.qt_gui.controls import OffscreenListControlWidget
-        ControllerWidget._defined_controls['List'] = OffscreenListControlWidget
         self.propagate_parameters_to_capsul()
         pv = AttributedProcessWidget(
             self.get_capsul_process(), enable_attr_from_filename=True,
@@ -1022,15 +1037,15 @@ class CapsulProcess(processes.Process):
         pv.show()
         self._capsul_gui = MainThreadLife(pv)
 
-    def _process_trait_changed(self, name, new_value):
-        if name == 'trait_added' \
-                or name not in list(self._capsul_process.user_traits().keys()):
+    def _process_field_changed(self, new_value, old_value, name):
+        print('_process_field_changed:', name, new_value)
+        if name not in [f.name for f in self._capsul_process.user_fields()]:
             return
         if self.isDefault(name):
             try:
                 self.setValue(name, convert_capsul_value(new_value))
             except Exception as e:
-                print('exception in _process_trait_changed:', e)
+                print('exception in _process_field_changed:', e)
                 print('param:', name, ', value:', new_value, 'of type:',
                       type(new_value))
                 import traceback
@@ -1040,32 +1055,30 @@ class CapsulProcess(processes.Process):
             # and must force it back into capsul
             value = getattr(self, name, None)
             itype = self.signature.get(name)
-            trait = self._capsul_process.trait(name)
-            capsul_value = convert_to_capsul_value(
-                value, itype, self._capsul_process.trait(name))
+            field = self._capsul_process.field(name)
+            capsul_value = convert_to_capsul_value(value, itype, field)
             if capsul_value == getattr(self._capsul_process, name):
                 return  # not changed
             setattr(self._capsul_process, name, capsul_value)
 
-    def _on_edit_study_config(self, process, dummy):
+    def _on_edit_capsul_config(self, process, dummy):
         from brainvisa.configuration import neuroConfig
         if not neuroConfig.gui:
             return
-        if process.edit_study_config:
-            processes.mainThreadActions().push(self._open_study_config_editor)
+        if process.edit_capsul_config:
+            processes.mainThreadActions().push(self._open_capsul_config_editor)
         else:
-            self._study_config_editor = None
+            self._capsul_capsul_editor = None
 
-    def _open_study_config_editor(self):
-        from soma.qt_gui.controller_widget import ScrollControllerWidget
+    def _open_capsul_config_editor(self):
+        from soma.qt_gui.controller import ControllerWidget
         from soma.qt_gui.qtThread import MainThreadLife
-        study_config = self.get_study_config()
-        scv = ScrollControllerWidget(study_config, live=True)
+        capsul = self.get_capsul()
+        scv = ControllerWidget(capsul.config, live=True)
         scv.show()
-        self._study_config_editor = MainThreadLife(scv)
+        self._capsul_config_editor = MainThreadLife(scv)
 
-    def _get_capsul_attributes(self, param, value, completion_engine, itype,
-                               item=None):
+    def _get_capsul_attributes(self, param, value, itype, item=None):
         '''
         Get Axon attributes (from axon FSO/database hierarchy) of a diskitem
         and convert it into Capsul attributes system.
@@ -1081,88 +1094,96 @@ class CapsulProcess(processes.Process):
         if not isinstance(value, DiskItem):
             return {}, False
 
+        cprocess = self.get_capsul_process()
+        metadata = getattr(cprocess, 'metadata', None)
+        if metadata is None:
+            return {}, False
+
+        schema = metadata.schema_per_parameter[param]
+        meta_attr = getattr(metadata, schema)
         attributes = value.hierarchyAttributes()
         attributes = AxonToCapsulAttributesTranslation(
-            completion_engine).translate(attributes)
-        capsul_attr = completion_engine.get_attribute_values()
-        param_attr \
-            = capsul_attr.get_parameters_attributes().get(param) \
-            or list(capsul_attr.user_traits().keys())
+            meta_attr).translate(attributes)
+        param_attr = [f.name for f in meta_attr.fields()]
         # we must start with current attributes values in order to keep those
         # not used with the current parameter
-        capsul_attr = capsul_attr.export_to_dict()
+        capsul_attr = meta_attr.asdict()
         if item is not None:
             # get item-th element in lists
-            for k, v in six.iteritems(capsul_attr):
+            for k, v in capsul_attr.items():
                 if isinstance(v, list):
                     i = min(item, len(v) - 1)
                     if i >= 0:
                         capsul_attr[k] = v[i]
                     else:  # empty list
-                        capsul_attr[k] = traits.Undefined
+                        capsul_attr[k] = undefined
+        print('bv attr:', attributes)
+        print('meta:', capsul_attr)
 
         modified = False
-        if param_attr:
-            for attribute, avalue in six.iteritems(attributes):
-                if attribute in param_attr:
-                    if capsul_attr[attribute] != avalue:
-                        capsul_attr[attribute] = avalue
-                        modified = True
+        for attribute, avalue in attributes.items():
+            if avalue is not None and attribute in param_attr:
+                if capsul_attr.get(attribute) != avalue:
+                    capsul_attr[attribute] = avalue
+                    modified = True
+        print('capsul attr:', capsul_attr)
 
-            database = attributes.get('_database', None)
-            if database:
-                if isinstance(itype, WriteDiskItem):
-                    db = ['output_directory', 'input_directory']
+        database = attributes.get('_database', None)
+        if database:
+            if isinstance(itype, WriteDiskItem):
+                db = ['output', 'input']
+            else:
+                allowed_db = [h.name
+                                for h in neuroHierarchy.hierarchies()
+                                if h.fso.name
+                                not in ("shared", "spm", "fsl")]
+                if database in allowed_db:
+                    db = ['input', 'output']
                 else:
-                    allowed_db = [h.name
-                                  for h in neuroHierarchy.hierarchies()
-                                  if h.fso.name
-                                  not in ("shared", "spm", "fsl")]
-                    if database in allowed_db:
-                        db = ['input_directory', 'output_directory']
-                    else:
-                        db = None
-                if db is not None:
-                    study_config \
-                        = self._capsul_process.get_study_config()
-                    for idb in db:
-                        if getattr(study_config, idb) != database:
-                            modified = True
-                            setattr(study_config, idb, database)
+                    db = None
+            if db is not None:
+                capsul = self.get_capsul()
+                for idb in db:
+                    ds = getattr(capsul.config.builtin.dataset, idb)
+                    if ds.path != database:
+                        modified = True
+                        ds.path = database
 
-                # convert FSO to FOM name
-                db = neuroHierarchy.databases.database(database)
-                fso = db.fso.name
-                fom = self.fso_to_fom_map.get(fso, fso)
-                if not fom in study_config.modules_data.all_foms:
-                    print('FOM', fom, 'is not found. Fallback to morphologist')
-                    fom = 'morphologist-auto-1.0'
-                # print('FSO:', fso, ', FOM:', fom, 'for param:', param, ':', value)
-                # print(study_config.input_fom)
+            # convert FSO to FOM name
+            db = neuroHierarchy.databases.database(database)
+            fso = db.fso.name
+            schema = self.fso_to_schema_map.get(fso, fso)
+            # print('FSO:', fso, ', schema:', schema, 'for param:', param, ':', value)
 
-                if study_config.input_fom != fom \
-                        or study_config.output_fom != fom:
-                    study_config.input_fom = fom
-                    study_config.output_fom = fom
+            if capsul.config.builtin.dataset.input.metadata_schema \
+                    != schema \
+                    or capsul.config.builtin.dataset.output.schema \
+                        != schema:
+                capsul.config.builtin.dataset.input.metadata_schema \
+                    = schema
+                capsul.config.builtin.dataset.output.metadata_schema \
+                    = schema
 
         return capsul_attr, modified
 
     def _on_axon_parameter_changed(self, param, process, dummy):
-        from capsul.attributes.completion_engine import ProcessCompletionEngine
+
+        from capsul.schemas.brainvisa import morphologist_datasets
+        from capsul.dataset import ProcessMetadata
 
         if getattr(self, '_capsul_process', None) is None:
             return
         if getattr(self, '_ongoing_completion', False):
             return
 
+        print('Process:', process.id())
         self._ongoing_completion = True
-        #print('_on_axon_parameter_changed', param, process)
+        # print('_on_axon_parameter_changed', param, process)
         try:
             value = getattr(self, param, None)
             itype = self.signature.get(param)
-            trait = self._capsul_process.trait(param)
-            capsul_value = convert_to_capsul_value(
-                value, itype, self._capsul_process.trait(param))
+            field = self._capsul_process.field(param)
+            capsul_value = convert_to_capsul_value(value, itype, field)
             if capsul_value == getattr(self._capsul_process, param):
                 return  # not changed
             setattr(self._capsul_process, param, capsul_value)
@@ -1170,11 +1191,15 @@ class CapsulProcess(processes.Process):
                 ## not a DiskItem: nothing else to do.
                 #return
 
-            completion_engine = ProcessCompletionEngine.get_completion_engine(
-                self._capsul_process)
-            if completion_engine is None:
+            capsul = self.get_capsul()
+            metadata = ProcessMetadata(
+                self._capsul_process,
+                capsul.engine().execution_context(self._capsul_process),
+                datasets=morphologist_datasets)
+            if metadata is None:
                 return
-            capsul_attr_orig = completion_engine.get_attribute_values()
+            schema = metadata.schema_per_parameter[param]
+            meta_attr = getattr(metadata, schema)
             modified = False
             if isinstance(value, list) and len(value) != 0:
                 # if value is a list (of diskitems), then use get attributes
@@ -1184,35 +1209,52 @@ class CapsulProcess(processes.Process):
                 for i, item in enumerate(value):
                     capsul_attr_item, modified_item \
                         = self._get_capsul_attributes(param, item,
-                                                      completion_engine,
+                                                      meta_attr,
                                                       itype.contentType,
                                                       item=i)
                     modified |= modified_item
-                    for k, v in six.iteritems(capsul_attr_item):
-                        t = capsul_attr_orig.trait(k)
-                        if isinstance(t.trait_type, traits.List):
-                            capsul_attr.setdefault(
-                                k, [t.inner_traits[0].default] * i).append(v)
+                    for k, v in capsul_attr_item.items():
+                        f = meta_attr.field(k)
+                        if f.is_list():
+                            if k not in capsul_attr:
+                                li = f.default_value()
+                                if len(li) > 0:
+                                    if len(li) < i:
+                                        li += [li[-1]] * (i - len(li))
+                                else:
+                                    li += [None] * i
+                                capsul_attr[k] = li
+                            else:
+                                li = capsul_attr[k]
+                            li.append(v)
                         else:
-                          capsul_attr[k] = v
-                    for k, v in six.iteritems(capsul_attr):
-                        t = capsul_attr_orig.trait(k)
-                        if isinstance(t.trait_type, traits.List) \
-                                and len(v) != i + 1:
-                            v += [t.inner_traits[0].default] * (i + 1 - len(v))
+                            capsul_attr[k] = v
+                    for k, v in capsul_attr.items():
+                        f = meta_attr.field(k)
+                        if f.is_list() and len(v) != i + 1:
+                            li = f.default_value()
+                            if len(li) == 0:
+                                li = [None] * (i + 1 - len(v))
+                            else:
+                                li += [li[-1]] * (i + 1 - len(v) - len(li))
+                            v += li
             else:
                 capsul_attr, modified \
-                    = self._get_capsul_attributes(param, value,
-                                                  completion_engine, itype)
+                    = self._get_capsul_attributes(param, value, itype)
 
+            print('modified:', modified)
             if modified:
-                capsul_attr_orig.import_from_dict(capsul_attr)
+                meta_attr.import_dict(capsul_attr)
+                print('meta:', metadata.asdict())
                 if self.use_capsul_completion:
-                    completion_engine.complete_parameters()
+                    metadata.generate_paths()
+                    self._capsul_process.resolve_paths(
+                        capsul.engine().execution_context(
+                            self._capsul_process))
+                    print('proc values:', self._capsul_process.asdict())
 
         finally:
             self._ongoing_completion = False
-
 
     @staticmethod
     def sphinx_to_xhtml(doc):
@@ -1228,7 +1270,6 @@ class CapsulProcess(processes.Process):
             from soma.html import htmlEscape
             return htmlEscape(doc).replace('\n', '<br/>\n')
 
-
     def procdoc_from_capsul(self):
         from soma.minf import xhtml
         process = self.get_capsul_process()
@@ -1239,37 +1280,47 @@ class CapsulProcess(processes.Process):
             doc = doc[:i]
 
         param = {}
-        procdoc = {'en':{
+        procdoc = {'en': {
             'long': xhtml.XHTML.buildFromHTML(self.sphinx_to_xhtml(doc)),
             'short': '',
             'parameters': param,
         }}
-        for name, trait in six.iteritems(process.user_traits()):
-            if trait.desc:
+        for field in process.fields():
+            name = field.name
+            if getattr(field, 'doc', None):
                 param[name] = xhtml.XHTML.buildFromHTML(
-                    self.sphinx_to_xhtml(trait.desc))
+                    self.sphinx_to_xhtml(field.doc))
         return procdoc
 
 
 class AxonToCapsulAttributesTranslation(object):
-    def __init__(self, completion_engine):
-            # hard-coded for now...
-            self._translations = {
-                'side': AxonToCapsulAttributesTranslation._translate_side}
+    def __init__(self, schema_meta):
+        # hard-coded for now...
+        self._translations = {
+            'side': AxonToCapsulAttributesTranslation._translate_side,
+            'graph_version':
+                AxonToCapsulAttributesTranslation._translate_graph_version,
+            'labelled':
+                AxonToCapsulAttributesTranslation._translate_labeling_type,
+            'manually_labelled':
+                AxonToCapsulAttributesTranslation._translate_labeling_type,
+            'automatically_labelled':
+                AxonToCapsulAttributesTranslation._translate_labeling_type,
+        }
 
     def translate(self, attributes):
         translated = {}
         for attr, value in attributes.items():
             translator = self._translations.get(attr)
             if translator is not None:
-                new_attr_dict = translator(attr, value)
+                new_attr_dict = translator(attr, value, attributes)
                 translated.update(new_attr_dict)
             else:
                 translated[attr] = value
         return translated
-                
+
     @staticmethod
-    def _translate_side(attr, value):
+    def _translate_side(attr, value, attributes):
         if value == 'left':
             return {attr: 'L'}
         elif value == 'right':
@@ -1277,3 +1328,16 @@ class AxonToCapsulAttributesTranslation(object):
         else:
             return {attr: value}
 
+    @staticmethod
+    def _translate_graph_version(attr, value, attributes):
+        return {'sulci_graph_version': value}
+
+    @staticmethod
+    def _translate_labeling_type(attr, value, attributes):
+        if attributes.get('manually_labelled') == 'Yes':
+            return {'sulci_recognition_type': 'manual'}
+        elif attributes.get('automatically_labelled') == 'Yes':
+            return {'sulci_recognition_type': 'auto'}
+        elif attributes.get('labelled') == 'No':
+            return {'sulci_recognition_type': undefined}
+        return {}
