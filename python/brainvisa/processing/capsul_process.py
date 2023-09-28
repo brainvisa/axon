@@ -458,13 +458,11 @@ class CapsulProcess(processes.Process):
         ''' Sets a CAPSUL process into the Axon (proxy) process
         '''
         from capsul.dataset import ProcessMetadata
-        from capsul.schemas.brainvisa import morphologist_datasets
 
         capsul = self.get_capsul()
         execution_context = capsul.engine().execution_context(process)
 
-        metadata = ProcessMetadata(process, execution_context,
-                                   datasets=morphologist_datasets)
+        metadata = ProcessMetadata(process, execution_context)
 
         self._capsul_process = process
 
@@ -515,13 +513,11 @@ class CapsulProcess(processes.Process):
             return  # no process defined, probably too early to do this.
 
         from capsul.dataset import ProcessMetadata
-        from capsul.schemas.brainvisa import morphologist_datasets
         from soma.qt_gui.qtThread import gui_thread_function
 
         capsul = self.get_capsul()
         execution_context = capsul.engine().execution_context(process)
-        metadata = ProcessMetadata(process, execution_context,
-                                   datasets=morphologist_datasets)
+        metadata = ProcessMetadata(process, execution_context)
 
         # save parameters values
         orig_params = process.asdict()
@@ -1168,7 +1164,6 @@ class CapsulProcess(processes.Process):
 
     def _on_axon_parameter_changed(self, param, process, dummy):
 
-        from capsul.schemas.brainvisa import morphologist_datasets
         from capsul.dataset import ProcessMetadata
 
         if getattr(self, '_capsul_process', None) is None:
@@ -1194,8 +1189,7 @@ class CapsulProcess(processes.Process):
             capsul = self.get_capsul()
             metadata = ProcessMetadata(
                 self._capsul_process,
-                capsul.engine().execution_context(self._capsul_process),
-                datasets=morphologist_datasets)
+                capsul.engine().execution_context(self._capsul_process))
             if metadata is None:
                 return
             schema = metadata.schema_per_parameter[param]
