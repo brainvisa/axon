@@ -153,12 +153,11 @@ from brainvisa.configuration import neuroConfig
 from brainvisa.configuration import axon_capsul_config_link
 from soma.functiontools import SomaPartial
 from capsul.pipeline.pipeline import Pipeline
-from soma.controller import File, Directory, Any, Literal, undefined
+from soma.controller import File, Directory, Literal, undefined
 import distutils.spawn
 import sys
 import subprocess
-
-import six
+import re
 
 
 def fileOptions(filep, name, process, attributes=None):
@@ -336,9 +335,7 @@ def get_best_type(process, param, metadata=None):
     if metadata is None:
         metadata = process.metadata
 
-    # print('get_best_type', process, param, ':', completion_engine, cext)
     is_list = process.field(param).is_list()
-    orig_meta = metadata
 
     if metadata is None:
         # look if it's a pipeline with iterations inside
@@ -372,66 +369,66 @@ def get_best_type(process, param, metadata=None):
     elif compl_ext:
         cext = [e for e in cext if e in compl_ext]
 
-    # print('## orig:', [f.name for f in orig_meta.user_fields()])
     orig_values = None
-    if metadata is not None:
-        if is_list:
-            # print('** list !**')
-            # keep 1st value. We must instantiate a new attrubutex controller,
-            # using the underlying completion engine
-            orig_meta = metadata.copy()
-            orig_values = orig_meta.asdict()
-            for field in metadata.fields():
-                attr = field.name
-                if field.is_list() and issubclass(field.subtypes()[0], str):
-                    setattr(orig_meta, attr,
-                            getattr(metadata, attr)[0])
-                else:
-                    setattr(orig_meta, attr, getattr(metadata, attr))
-            metadata = orig_meta.copy()
+    # TODO
+    #if is_list:
+        ## print('** list !**')
+        ## keep 1st value. We must instantiate a new attrubutex controller,
+        ## using the underlying completion engine
+        #orig_values = metadata.asdict()
+        #for field in metadata.fields():
+            #attr = field.name
+            #if field.is_list() and issubclass(field.subtypes()[0], str):
+                #setattr(metadata, attr,
+                        #getattr(metadata, attr)[0])
+            #else:
+                #setattr(metadata, attr, getattr(metadata, attr))
 
-    # FIXME
-    #if metadata is None:
-        #orig_meta = completion_engine.get_attribute_values()
-        #attributes = orig_attributes.copy(with_values=True)
-        #orig_values = orig_attributes.export_to_dict()
-        #for attr, trait in six.iteritems(attributes.user_traits()):
-            #if isinstance(trait.trait_type, traits.Str):
-                #setattr(attributes, attr, '<%s>' % attr)
+    orig_values = metadata.asdict()
+    tr = CapsulToAxonSchemaTranslation()
+    tr.translate_metadata(metadata, in_place=True)
 
     try:
         # print('metadata:', metadata.asdict())
 
-        path = None  # FIXME metadata..attributes_to_path(process, param, attributes)
-        # print('path:', path)
-        if path is None:
-            # fallback to the completed value
-            path = getattr(process, param)
-            # print('new path:', path)
-        if path in (None, undefined, []):
-            return ('Any Type', get_axon_formats(cext))
+        path = metadata.path_for_parameter(process, param)
+        # remove dataset
+        if path is not None and path is not undefined:
+            m = re.match('!{[^}]*}/(.*)', path)
+            if m:
+                path = m.group(1)
+            # print('path:', path)
+            if path is None:
+                # fallback to the completed value
+                path = getattr(process, param)
+                # print('new path:', path)
+            if path in (None, undefined, []):
+                # print('Any 2')
+                return ('Any Type', get_axon_formats(cext))
 
-        for db in neuroHierarchy.databases.iterDatabases():
-            # print('look in db:', db.directory)
-            for typeitem in getAllDiskItemTypes():
-                rules = db.fso.typeToPatterns.get(typeitem)
-                if rules:
-                    for rule in rules:
-                        pattern = rule.pattern.pattern
-                        cpattern = pattern.replace('{', '<')
-                        cpattern = cpattern.replace('}', '>')
-                        if path.startswith(cpattern):
-                            if len(cpattern) < len(path):
-                                if path[len(cpattern)] != '.':
-                                    continue
-                                if not match_ext(cext, rule.formats):
-                                    continue
-                            # print('found:', typeitem.name, rule.formats)
-                            return (typeitem.name, rule.formats)
+            for db in neuroHierarchy.databases.iterDatabases():
+                # print('look in db:', db.directory)
+                for typeitem in getAllDiskItemTypes():
+                    rules = db.fso.typeToPatterns.get(typeitem)
+                    if rules:
+                        for rule in rules:
+                            pattern = rule.pattern.pattern
+                            cpattern = pattern.replace('{', '<')
+                            cpattern = cpattern.replace('}', '>')
+                            # print('cpattern:', cpattern)
+                            if path.startswith(cpattern):
+                                if len(cpattern) < len(path):
+                                    if path[len(cpattern)] != '.':
+                                        continue
+                                    if not match_ext(cext, rule.formats):
+                                        continue
+                                # print('found:', typeitem.name, rule.formats)
+                                return (typeitem.name, rule.formats)
     finally:
         if orig_values is not None:
-            orig_meta.import_dict(orig_values)
+            metadata.import_dict(orig_values)
 
+    # print('Any end')
     return ('Any Type', get_axon_formats(cext))
 
 
@@ -633,7 +630,7 @@ class CapsulProcess(processes.Process):
         By default, it assumes a direct correspondance between Axon and Capsul processes parameters, so it will just copy all parameters values. If the initialization() method has been specialized in a particular process, this direct correspondance will likely be broken, so this method should also be overloaded.
         '''
         process = self.get_capsul_process()
-        for name, itype in six.iteritems(self.signature):
+        for name, itype in self.signature.items():
             converted_value = convert_to_capsul_value(getattr(self, name),
                                                       itype,
                                                       process.field(name))
@@ -879,7 +876,7 @@ class CapsulProcess(processes.Process):
             return processes.getProcessInstance(axon_process)
         else:
             # check if an existing process class matches
-            for pid, proc_class in six.iteritems(processes._processes):
+            for pid, proc_class in processes._processes.items():
                 if not issubclass(proc_class, CapsulProcess):
                     continue
                 module = processes._processModules.get(pid)
@@ -1252,14 +1249,20 @@ class CapsulProcess(processes.Process):
 
     @staticmethod
     def sphinx_to_xhtml(doc):
-        doc_utf8 = six.ensure_binary(doc, 'utf-8')
+        if isinstance(doc, str):
+            doc_utf8 = doc.encode('utf-8')
+        else:
+            doc_utf8 = doc
         pandoc = distutils.spawn.find_executable('pandoc')
         if pandoc:
             cmd = ['pandoc', '-r', 'rst', '-t', 'html', '--']
             proc = subprocess.Popen(cmd, stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE)
             out = proc.communicate(input=doc_utf8)
-            return six.ensure_text(out[0], 'utf-8')
+            out_txt = out[0]
+            if not isinstance(out_txt, str):
+                out_txt = out_txt.decode()
+            return out_txt
         else:
             from soma.html import htmlEscape
             return htmlEscape(doc).replace('\n', '<br/>\n')
@@ -1287,7 +1290,7 @@ class CapsulProcess(processes.Process):
         return procdoc
 
 
-class AxonToCapsulAttributesTranslation(object):
+class AxonToCapsulAttributesTranslation:
     def __init__(self, schema_meta):
         # hard-coded for now...
         self._translations = {
@@ -1335,3 +1338,65 @@ class AxonToCapsulAttributesTranslation(object):
         elif attributes.get('labelled') == 'No':
             return {'sulci_recognition_type': undefined}
         return {}
+
+
+class CapsulToAxonSchemaTranslation:
+    schemas = {
+        'bids': {
+            'sub': '<subject>',
+            'ses': '<session>',
+            'sub': '<subject>',
+            'acq': '<acquisition>',
+        },
+        'brainvisa': {
+            'center': '<center>',
+            'subject': '<subject>',
+            'modality': 't1mri',
+            'acquisition': '<acquisition>',
+            'analysis': '<analysis>',
+            'sulci_graph_version': '<graph_version>',
+            'sulci_recognition_session': '<sulci_recognition_session>',
+            'side': 'L',
+        },
+        'shared': {
+            'side': 'L',
+            'graph_version': '<graph_version>',
+        },
+        'morphologist_bids': {
+            'center': '<center>',
+            'subject': '<subject>',
+            'modality': 't1mri',
+            'acquisition': '<acquisition>',
+            'analysis': '<analysis>',
+            'sulci_graph_version': '<graph_version>',
+            'sulci_recognition_session': '<sulci_recognition_session>',
+            'side': 'L',
+        },
+    }
+
+    def __init__(self):
+        pass
+
+    def translate_metadata(self, metadata, in_place=False):
+        result = {}
+        for sfield in metadata.fields():
+            sname = sfield.name
+            schema = getattr(metadata, sname)
+            axon_schema = self.schemas.get(sfield.name, {})
+            amap = {}
+            result[sname] = amap
+            for field in schema.fields():
+                afield = axon_schema.get(field.name)
+                if afield is not None:
+                    if hasattr(afield, '__call__'):
+                        afield = afield(metadata, sname, field.name,
+                                        getattr(schema, field.name))
+                    amap[field.name] = afield
+                    if in_place:
+                        setattr(schema, field.name, afield)
+
+        return result
+
+    @staticmethod
+    def identity(metadata, scheman, attribute, value):
+        return value
