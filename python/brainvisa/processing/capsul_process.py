@@ -201,7 +201,6 @@ except ImportError:
 
 
 def make_parameter(param, name, process, attributes=None):
-                   #path_completion=None):
     newtype = param_types_table.get(param.type)
     paramoptions = []
     kwoptions = {}
@@ -245,16 +244,6 @@ def convert_to_capsul_value(value, item_type=None, field=None):
 
 
 def get_initial_capsul():
-    #init_config = {
-        #"input_fom": "morphologist-auto-1.0",
-        #"output_fom": "morphologist-auto-1.0",
-        #"shared_fom": "shared-brainvisa-1.0",
-        #"use_soma_workflow": True,
-        #"use_fom": True,
-        #"volumes_format": 'gz compressed NIFTI-1 image',
-        #"meshes_format": "GIFTI file",
-    #}
-
     init_config = {
         'builtin': {
             'config_modules': [
@@ -670,32 +659,85 @@ class CapsulProcess(processes.Process):
             f = process.field(param)
             f.forbid_completion = forbid
 
+    @staticmethod
+    def capsul_workflow_to_somaworkflow(wf_name, cwf):
+        ''' Convert a CapsulWorkflow (Capsul3) to Soma-Workflow
+        '''
+        import soma_workflow.client as swc
+        import json
+
+        def resolve_tmp(value, temps):
+            if isinstance(value, list):
+                return [resolve_tmp(v, temps) for v in value]
+            if isinstance(value, str) \
+                    and value.startswith('!{dataset.tmp.path}'):
+                tvalue = temps.get(value)
+                if tvalue is not None:
+                    return tvalue
+                if len(value) == 19:  # exactly temp dir
+                    tvalue = '/tmp'  # FIXME
+                else:
+                    tvalue = swc.TemporaryPath(suffix=value[20:])
+                temps[value] = tvalue
+                return tvalue
+            return value
+
+        deps = []
+        job_map = {}
+        temps = {}
+        for job_id, cjob in cwf.jobs.items():
+            cmd = [
+                'python', '-m', 'capsul', 'run',
+                cjob['process']['definition'],
+            ]
+            for param, index in cjob.get('parameters_index', {}).items():
+                value = cwf.parameters_values[index]
+                while isinstance(value, list) and len(value) == 2 \
+                        and value[0] == '&':
+                    value = value[1]
+                value = resolve_tmp(value, temps)
+                try:
+                    value = json.dumps(value)
+                except TypeError:  # TemporaryPath are not jsonisable
+                    pass
+                cmd.append(f'{param}={value}')
+            job = swc.Job(command=cmd)
+            job_map[job_id] = job
+            priority = cjob.get('priority')
+            if priority is not None:
+                job.priority = priority
+            # TODO param links
+
+        for job_id, cjob in cwf.jobs.items():
+            for dep in cjob.get('wait_for', []):
+                deps.append((job_map[dep], job_map[job_id]))
+
+        wf = swc.Workflow(name=wf_name, jobs=job_map.values(),
+                          dependencies=deps)
+        return wf
+
     def executionWorkflow(self, context=processes.defaultContext()):
-        ''' Build the workflow for execution. The workflow will be integrated in the parent pipeline workflow, if any.
-
-        StudyConfig options are handled to support local or remote execution, file transfers / translations and other specific stuff.
-
-        FOM completion is not performed yet.
+        ''' Build the workflow for execution. The workflow will be integrated
+        in the parent pipeline workflow, if any.
         '''
 
-        from capsul.pipeline import pipeline_workflow
-        from capsul.attributes.completion_engine import ProcessCompletionEngine
-
-        study_config = self.get_study_config(context)
-        print('CONFIG:', study_config.engine.settings.select_configurations('global', check_invalid_mods=True))
+        from capsul.execution_context import CapsulWorkflow
 
         self.propagate_parameters_to_capsul()
         process = self.get_capsul_process()
 
-        completion_engine \
-            = ProcessCompletionEngine.get_completion_engine(process)
-        if completion_engine is not None and self.use_capsul_completion:
+        metadata = getattr(process, 'metadata', None)
+        if metadata is not None and self.use_capsul_completion:
             self._on_axon_parameter_changed(self.signature.keys()[0],
                                             self, None)
-            # completion_engine.complete_parameters()
+            #metadata.generate_paths(process)
+            #execution_context \
+                #= self.get_capsul().engine().execution_context(process)
+            #process.resolve_paths(execution_context)
 
-        wf = pipeline_workflow.workflow_from_pipeline(
-            process, study_config=study_config)  # , jobs_priority=priority)
+        cwf = CapsulWorkflow(process)
+
+        wf = self.capsul_workflow_to_somaworkflow(process.name, cwf)
         jobs = wf.jobs
         dependencies = wf.dependencies
         root_group = wf.root_group
@@ -717,7 +759,7 @@ class CapsulProcess(processes.Process):
         if 'morphologist' in sys.modules \
                 and sys.modules['morphologist'].__file__.endswith(
                     osp.join('brainvisa', 'toolboxes', 'morphologist',
-                            'processes', 'morphologist.py')):
+                             'processes', 'morphologist.py')):
             print('change morphologist module')
             old_morpho = sys.modules['morphologist']
             del sys.modules['morphologist']
