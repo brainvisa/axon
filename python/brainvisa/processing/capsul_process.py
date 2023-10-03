@@ -693,7 +693,7 @@ class CapsulProcess(processes.Process):
         temps = {}
         for job_id, cjob in cwf.jobs.items():
             cmd = [
-                'python', '-m', 'capsul', 'run',
+                'python', '-m', 'capsul', 'run', '--non-persistent',
                 cjob['process']['definition'],
             ]
             ref_inputs = []
