@@ -644,83 +644,6 @@ class CapsulProcess(processes.Process):
             f = process.field(param)
             f.forbid_completion = forbid
 
-    @staticmethod
-    def capsul_workflow_to_somaworkflow(wf_name, cwf):
-        ''' Convert a CapsulWorkflow (Capsul3) to Soma-Workflow
-        '''
-        import soma_workflow.client as swc
-        import json
-
-        def resolve_tmp(value, temps, ref_param, param_dict, pname):
-            if isinstance(value, list):
-                return [resolve_tmp(v, temps, ref_param, param_dict,
-                                    '%s_%d' % (pname, i))
-                        for i, v in enumerate(value)]
-            if isinstance(value, str) \
-                    and value.startswith('!{dataset.tmp.path}'):
-                tvalue = temps.get(value)
-                if tvalue is not None:
-                    ref_param.append(tvalue)
-                    param_dict[pname] = tvalue
-                    return tvalue
-                if len(value) == 19:  # exactly temp dir
-                    tvalue = tempfile.gettempdir()  # FIXME
-                else:
-                    tvalue = swc.TemporaryPath(suffix=value[20:])
-                    ref_param.append(tvalue)
-                temps[value] = tvalue
-                param_dict[pname] = tvalue
-                return tvalue
-            return value
-
-        deps = []
-        job_map = {}
-        temps = {}
-        for job_id, cjob in cwf.jobs.items():
-            cmd = [
-                'python', '-m', 'capsul', 'run', '--non-persistent',
-                cjob['process']['definition'],
-            ]
-            ref_inputs = []
-            ref_outputs = []
-            param_dict = {}
-            for param, index in cjob.get('parameters_index', {}).items():
-                value = cwf.parameters_values[index]
-                while isinstance(value, list) and len(value) == 2 \
-                        and value[0] == '&':
-                    value = value[1]
-                if param in cjob.get('write_parameters', []):
-                    ref_param = ref_outputs
-                else:
-                    ref_param = ref_inputs
-                value = resolve_tmp(value, temps, ref_param, param_dict, param)
-                try:
-                    value = json.dumps(value)
-                except TypeError:  # TemporaryPath are not jsonisable
-                    pass
-                if isinstance(value, str):
-                    cmd.append(f'{param}={value}')
-                else:
-                    cmd.append(['<join>', f'{param}=', value])
-            job = swc.Job(command=cmd,
-                          name=cjob['process']['definition'],
-                          param_dict=param_dict,
-                          referenced_input_files=ref_inputs,
-                          referenced_output_files=ref_outputs)
-            job_map[job_id] = job
-            priority = cjob.get('priority')
-            if priority is not None:
-                job.priority = priority
-            # TODO param links
-
-        for job_id, cjob in cwf.jobs.items():
-            for dep in cjob.get('wait_for', []):
-                deps.append((job_map[dep], job_map[job_id]))
-
-        wf = swc.Workflow(name=wf_name, jobs=job_map.values(),
-                          dependencies=deps)
-        return wf
-
     def executionWorkflow(self, context=processes.defaultContext()):
         ''' Build the workflow for execution. The workflow will be integrated
         in the parent pipeline workflow, if any.
@@ -742,7 +665,7 @@ class CapsulProcess(processes.Process):
 
         cwf = CapsulWorkflow(process)
 
-        wf = self.capsul_workflow_to_somaworkflow(process.name, cwf)
+        wf = cwf.capsul_workflow_to_somaworkflow(process.name)
         jobs = wf.jobs
         dependencies = wf.dependencies
         root_group = wf.root_group
