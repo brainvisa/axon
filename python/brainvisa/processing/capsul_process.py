@@ -158,6 +158,7 @@ import distutils.spawn
 import sys
 import subprocess
 import re
+import tempfile
 
 
 def fileOptions(filep, name, process, attributes=None):
@@ -250,20 +251,6 @@ def get_initial_capsul():
                 'spm',
                 'axon',
             ],
-            #'dataset': {
-                #'input': {
-                    #'path': '/tmp/morpho-bids',
-                    #'metadata_schema': 'bids',
-                #},
-                #'output': {
-                    #'path': '/tmp/morpho-bv',
-                    #'metadata_schema': output_schema,
-                #},
-                #'shared': {
-                    #'path': get_shared_path(),
-                    #'metadata_schema': 'brainvisa_shared',
-                #},
-            #},
         }
     }
 
@@ -570,8 +557,6 @@ class CapsulProcess(processes.Process):
         import inspect
         pcallback = dispatch(self._process_field_changed)
         signature = inspect.signature(pcallback)
-        print('callback params:', len(signature.parameters))
-        print('  :', signature.parameters)
 
         if optional:
             self.setOptional(*optional)
@@ -679,7 +664,7 @@ class CapsulProcess(processes.Process):
                     param_dict[pname] = tvalue
                     return tvalue
                 if len(value) == 19:  # exactly temp dir
-                    tvalue = '/tmp'  # FIXME
+                    tvalue = tempfile.gettempdir()  # FIXME
                 else:
                     tvalue = swc.TemporaryPath(suffix=value[20:])
                     ref_param.append(tvalue)
@@ -780,7 +765,7 @@ class CapsulProcess(processes.Process):
                 and sys.modules['morphologist'].__file__.endswith(
                     osp.join('brainvisa', 'toolboxes', 'morphologist',
                              'processes', 'morphologist.py')):
-            print('change morphologist module')
+            # print('change morphologist module')
             old_morpho = sys.modules['morphologist']
             del sys.modules['morphologist']
         declare_morpho_schemas('morphologist.capsul')
@@ -827,11 +812,8 @@ class CapsulProcess(processes.Process):
 
         if capsul is None:
             initial_config = get_initial_capsul()
-            print('create Capsul')
             capsul = Capsul()
             capsul.config.import_dict(initial_config)
-            print('initial:', initial_config)
-            print('export:', capsul.config.builtin.asdict())
         capsul.axon_link = \
             axon_capsul_config_link.AxonCapsulConfSynchronizer(capsul)
         capsul.axon_link.sync_axon_to_capsul()
@@ -1093,7 +1075,6 @@ class CapsulProcess(processes.Process):
         self._capsul_gui = MainThreadLife(pv)
 
     def _process_field_changed(self, new_value, old_value, name):
-        print('_process_field_changed:', name, new_value)
         if name not in [f.name for f in self._capsul_process.user_fields()]:
             return
         if self.isDefault(name):
@@ -1172,8 +1153,6 @@ class CapsulProcess(processes.Process):
                         capsul_attr[k] = v[i]
                     else:  # empty list
                         capsul_attr[k] = undefined
-        print('bv attr:', attributes)
-        print('meta:', capsul_attr)
 
         modified = False
         for attribute, avalue in attributes.items():
@@ -1181,7 +1160,6 @@ class CapsulProcess(processes.Process):
                 if capsul_attr.get(attribute) != avalue:
                     capsul_attr[attribute] = avalue
                     modified = True
-        print('capsul attr:', capsul_attr)
 
         database = attributes.get('_database', None)
         if database:
@@ -1230,7 +1208,7 @@ class CapsulProcess(processes.Process):
         if getattr(self, '_ongoing_completion', False):
             return
 
-        print('Process:', process.id())
+        # print('Process:', process.id())
         self._ongoing_completion = True
         # print('_on_axon_parameter_changed', param, process)
         try:
@@ -1295,16 +1273,13 @@ class CapsulProcess(processes.Process):
                 capsul_attr, modified \
                     = self._get_capsul_attributes(param, value, itype)
 
-            print('modified:', modified)
             if modified:
                 meta_attr.import_dict(capsul_attr)
-                print('meta:', metadata.asdict())
                 if self.use_capsul_completion:
                     metadata.generate_paths()
                     self._capsul_process.resolve_paths(
                         capsul.engine().execution_context(
                             self._capsul_process))
-                    print('proc values:', self._capsul_process.asdict())
 
         finally:
             self._ongoing_completion = False
