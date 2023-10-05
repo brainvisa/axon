@@ -194,14 +194,14 @@ class AxonCapsulConfSynchronizer(object):
 
         # SPM
         if ax_conf.SPM.spm12_standalone_command:
-            bconf.spm.spm12_stadalone = {
+            bconf.spm.spm12_standalone = {
                 'directory': ax_conf.SPM.spm12_standalone_path,
                 'standalone': True,
                 'version': '12'}
             bconf.matlab.matlab_mcr = {
                 'mcr_directory': ax_conf.SPM.spm12_standalone_mcr_path}
         elif ax_conf.SPM.spm8_standalone_command:
-            bconf.spm.spm8_stadalone = {
+            bconf.spm.spm8_standalone = {
                 'directory': ax_conf.SPM.spm8_standalone_path,
                 'standalone': True,
                 'version': '8'}
