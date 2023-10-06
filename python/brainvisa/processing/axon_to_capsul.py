@@ -1464,26 +1464,35 @@ class AxonToCapsul_v3(AxonToCapsul):
             newtype, paramoptions = self.capsul_param_type(param)
             paramoptions += getattr(p, 'capsul_param_options', {}).get(
                 name, [])
+            field_name = name
+            if field_name == 'field':  # field is not allowed
+                field_name = 'b_field'
             type_str = self.param_type_decl_string(newtype, paramoptions)
 
             out.write(u'        self.add_field(\'%s\', %s)\n'
-                      % (name, type_str))
+                      % (field_name, type_str))
             if get_all_values or not p.isDefault(name):
                 value = getattr(p, name)
                 if value is not None:
                     buffered_lines['initialization'].append(
-                        '        self.%s = %s\n' % (name, repr(value)))
+                        '        self.%s = %s\n' % (field_name, repr(value)))
                     # print('non-default value for %s in %s' % (name, p.name))
                 elif type(param) in (neuroData.Boolean, neuroData.Number,
-                                    neuroData.Float, neuroData.Integer):
+                                     neuroData.Float, neuroData.Integer):
                     # None as number is a forced optional value
                     buffered_lines['initialization'].append(
-                        '        self.%s = %s\n' % (name, 'undefined'))
+                        '        self.%s = %s\n' % (field_name, 'undefined'))
         out.write(u'\n\n')
 
 
     def write_process_execution(self, p, out):
         axon_name = p.id()
+        patch = ''
+        if 'field' in p.signature:
+            patch = '''            # patch forbidden field name "field"
+            if name == 'b_field':
+                name = 'field'
+'''
         out.write(u'''    def execute(self, context=None):
         from brainvisa import axon
         from brainvisa.configuration import neuroConfig
@@ -1501,7 +1510,7 @@ class AxonToCapsul_v3(AxonToCapsul):
             value = getattr(self, name)
             if value is undefined:
                 continue
-            if field.path_type and value != '':
+%s            if field.path_type and value != '':
                 kwargs[name] = value
             elif field.is_list():
                 kwargs[name] = list(value)
@@ -1510,7 +1519,7 @@ class AxonToCapsul_v3(AxonToCapsul):
 
         context = brainvisa.processes.defaultContext()
         context.runProcess('%s', **kwargs)
-''' % axon_name)
+''' % (patch, axon_name))
 
     def build_switch_lines(self, nodename, input_names, output_names,
                            buffered_lines, links, processed_links,
