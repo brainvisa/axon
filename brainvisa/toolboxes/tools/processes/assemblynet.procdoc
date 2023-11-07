@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="en">
+    <xhtml name="short">This process allows <b>AssemblyNet</b> (https://github.com/volBrain/AssemblyNet) to run.
+You nedd to already have it with apptainer/singularity image on your local host.</xhtml>
+    <xhtml name="long"/>
+    <d name="parameters">
+      <xhtml name="assemblynet_image">Apptainer/singularity image of AssemblyNet</xhtml>
+      <xhtml name="t1mri">T1mri to be segmented with AssemblyNet</xhtml>
+      <xhtml name="subject_folder">Subject folder in brainvisa database, selected automatically if t1mri parameter is in a brainvisa database. Used to found output_folder.</xhtml>
+      <xhtml name="output_folder">Output folder for AssemblyNet according to brainvisa database hierarchy.</xhtml>
+      <xhtml name="age">Float representing subject age at scan time. If specified, the produced volumetry report report_filename.pdf will show the expected limits/normative bounds of normalized volumes in function of age.</xhtml>
+      <xhtml name="sex">Subject sex. If specified, the produced volumetry report report_filename.pdf will show the expected limits/normative bounds of normalized volumes in function of sex.</xhtml>
+      <xhtml name="pdf_report">Boolean to specify if PDF format volumetry report is produced.</xhtml>
+    </d>
+  </d>
+</d>
+</minf>
