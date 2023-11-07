@@ -20,6 +20,11 @@ signature = Signature(
 )
 
 
+def validation():
+    if os.system('apptainer'):
+        raise OSError('Apptainer is not on the environment')
+
+
 def initialization(self):
     self.pdf_report = True
     self.setOptional('age', 'sex')
