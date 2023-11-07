@@ -9,8 +9,6 @@ name = 'Run AssemblyNet'
 assemblynet_options = 'AssemblyNet options'
 
 signature = Signature(
-    # TODO get apptainer image
-    # TODO GPU?
     'assemblynet_image', String(),
     't1mri', ReadDiskItem('Raw T1 MRI', ['gz compressed NIFTI-1 image', 'NIFTI-1 image']),
     'subject_folder', ReadDiskItem('Subject', 'Directory'),
