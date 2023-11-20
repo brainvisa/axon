@@ -1,4 +1,4 @@
-import os
+import os, shutil
 
 from brainvisa.processes import Signature, ReadDiskItem, WriteDiskItem
 from brainvisa.processes import String, Float, Choice, Boolean
@@ -21,7 +21,7 @@ signature = Signature(
 
 
 def validation():
-    if os.system('apptainer'):
+    if not shutil.which('apptainer'):
         raise OSError('Apptainer is not on the environment')
 
 

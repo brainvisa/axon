@@ -6385,6 +6385,8 @@ class ProcessTree(EditableTree):
                 for f, ff in p:
                     if not os.path.exists(ff):
                         continue
+                    #print('Reading process from file:', ff)
+                    #sys.stdout.flush()
                     id = f[:-3]
                     try:
                         processInfo = processesCache.get(id)
