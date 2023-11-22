@@ -192,6 +192,7 @@ import errno
 import time
 import calendar
 import tempfile
+import sys
 
 from soma.sorted_dictionary import SortedDictionary
 from soma.functiontools import numberOfParameterRange, hasParameter, partial
@@ -5943,9 +5944,17 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
         extPos = fileName.rfind('.')
         fileExtension = fileName[extPos + 1:]
         moduleName = os.path.basename(fileName[: extPos])
+        full_mod_name = 'axon_process.%s' % moduleName
         dataDirectory = fileName[: extPos] + '.data'
         if not os.path.exists(dataDirectory):
             dataDirectory = None
+
+        # create the module 'axon_process' if not done already
+        if 'axon_process' not in sys.modules:
+            m = type(sys)(name='axon_process')
+            # (I don't know where the "module" type is defined)
+            sys.modules['axon_process'] = m
+        import axon_process
 
         # Load module
         moduleDescription = _extToModuleDescription.get(fileExtension)
@@ -5960,7 +5969,7 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
                 os.chdir(dataDirectory)
             try:
                 processModule = imp.load_module(
-                    moduleName, fileIn, fileName, moduleDescription)
+                    full_mod_name, fileIn, fileName, moduleDescription)
             except NameError as e:
                 showException(beforeError=(_t_('In <em>%s</em>')) % (fileName, ), afterError=_t_(
                     ' (perharps you need to add the line <tt>"from brainvisa.processes import *"</tt> at the begining of the process)'))
@@ -5982,6 +5991,7 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
                 os.chdir(currentDirectory)
 
         _processModules[moduleName] = processModule
+        setattr(axon_process, moduleName, processModule)
 
         if category is None:
             category = os.path.basename(os.path.dirname(fileName))
