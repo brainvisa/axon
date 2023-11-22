@@ -678,23 +678,8 @@ class CapsulProcess(processes.Process):
         '''
         from capsul.api import Capsul
         from capsul.schemas.brainvisa import declare_morpho_schemas
-        import sys
-        import os.path as osp
 
-        # morphologist may be imported as a toolbox. Here we need the regular
-        # module
-        old_morpho = None
-        if 'morphologist' in sys.modules \
-                and sys.modules['morphologist'].__file__.endswith(
-                    osp.join('brainvisa', 'toolboxes', 'morphologist',
-                             'processes', 'morphologist.py')):
-            # print('change morphologist module')
-            old_morpho = sys.modules['morphologist']
-            del sys.modules['morphologist']
         declare_morpho_schemas('morphologist.capsul')
-        if old_morpho is not None:
-            # restore toolbox module
-            sys.modules['morphologist'] = old_morpho
 
         capsul = getattr(context, 'capsul', None)
 
