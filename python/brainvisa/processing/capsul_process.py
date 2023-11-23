@@ -158,7 +158,6 @@ import distutils.spawn
 import sys
 import subprocess
 import re
-import tempfile
 
 
 def fileOptions(filep, name, process, attributes=None):
@@ -172,6 +171,10 @@ def choiceOptions(choice, name, process, attributes=None):
 
 
 def listOptions(param, name, process, attributes=None):
+    if len(param.subtypes()) == 0:
+        print('no subtype for param', name, ':', getattr(param, 'type', param),
+              '- falling back to string')
+        return [neuroData.String()]  # we don't have an Any type...
     item_type = param.subtypes()[0]
     return [make_parameter(item_type, name, process, attributes)]
 
@@ -202,18 +205,28 @@ except ImportError:
 
 
 def make_parameter(param, name, process, attributes=None):
-    newtype = param_types_table.get(param.type)
+    # param may be a Field instance, or a type (when called from listOptions()
+    # for instance)
+    ptype = getattr(param, 'type', param)
+    newtype = param_types_table.get(ptype)
     paramoptions = []
     kwoptions = {}
     if newtype is None:
-        print('no known converted type for', name, ':', param.type)
+        if hasattr(ptype, '__origin__'):
+            # field types like Literal[..] or list[..] sometimes (when?) come
+            # as "types.ConstrainedListValue, or Literal[..]. We can find the
+            # generic container type in __origin__.
+            newtype = param_types_table.get(ptype.__origin__)
+    if newtype is None:
+        print('no known converted type for', name, ':', param.type,
+              '- falling back to string')
         newtype = neuroData.String
     if isinstance(newtype, tuple):
         paramoptions = newtype[1](param, name, process, attributes)
         newtype = newtype[0]
     elif hasattr(newtype, '__code__'):  # function
         newtype, paramoptions = newtype(param, name, process, attributes)
-    if param.metadata('groups'):
+    if hasattr(param, 'metadata') and param.metadata('groups'):
         section = param.groups[0]
         kwoptions['section'] = section
     return newtype(*paramoptions, **kwoptions)
@@ -1128,7 +1141,16 @@ class CapsulProcess(processes.Process):
             capsul_value = convert_to_capsul_value(value, itype, field)
             if capsul_value == getattr(self._capsul_process, param):
                 return  # not changed
-            setattr(self._capsul_process, param, capsul_value)
+            try:
+                setattr(self._capsul_process, param, capsul_value)
+            except Exception as e:
+                print('exception while setting capsul value:', e)
+                print('param:', param)
+                print('axon value:', type(value), repr(value))
+                print('value:', type(capsul_value), repr(capsul_value))
+                print('exp. type:', field.type)
+                print('subtypes:', field.subtypes())
+                raise
             #if not isinstance(itype, ReadDiskItem):
                 ## not a DiskItem: nothing else to do.
                 #return
