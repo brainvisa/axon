@@ -814,8 +814,10 @@ class CapsulProcess(processes.Process):
           defined in axon processes
         * it will not reuse a cache of process classes
         '''
-        capsul = None
-        if isinstance(process, capsul.Process):
+        from capsul.api import Process
+
+        capsul = None  # Capsul instance
+        if isinstance(process, Process):
             capsul = getattr(process, 'capsul', None)
         if capsul is None:
             capsul = getattr(context, 'capsul', None)
