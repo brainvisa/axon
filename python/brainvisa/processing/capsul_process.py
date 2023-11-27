@@ -260,10 +260,14 @@ def convert_to_capsul_value(value, item_type=None, field=None):
 def get_initial_capsul():
     init_config = {
         'builtin': {
+            'python_modules': ['morphologist.capsul.toolbox_init'],
             'config_modules': [
                 'spm',
                 'axon',
             ],
+            'start_workers': {
+                'count': 1,
+            },
         }
     }
 
@@ -690,9 +694,6 @@ class CapsulProcess(processes.Process):
         set it up, and return it
         '''
         from capsul.api import Capsul
-        from capsul.schemas.brainvisa import declare_morpho_schemas
-
-        declare_morpho_schemas('morphologist.capsul')
 
         capsul = getattr(context, 'capsul', None)
 
