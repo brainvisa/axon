@@ -1195,7 +1195,10 @@ class HTMLBrowser(QWidget):
         self.browser.reload()
 
     def setText(self, text):
-        self.browser.setHtml(text)
+        if text == '':
+            self.browser.setPage(None)
+        else:
+            self.browser.setHtml(text)
 
     def openWeb(self):
         self.browser.openWeb()
