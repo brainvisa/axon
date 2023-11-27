@@ -1241,10 +1241,13 @@ class CapsulProcess(processes.Process):
         from soma.minf import xhtml
         process = self.get_capsul_process()
         doc = process.__doc__
-        # remove note added by capsul
-        i = doc.rfind('\n    .. note::')
-        if i >= 0:
-            doc = doc[:i]
+        if doc is None:
+            doc = ''
+        else:
+            # remove note added by capsul
+            i = doc.rfind('\n    .. note::')
+            if i >= 0:
+                doc = doc[:i]
 
         param = {}
         procdoc = {'en': {
