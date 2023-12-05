@@ -384,7 +384,7 @@ def get_best_type(process, param, metadata=None):
     try:
         # print('metadata:', metadata.asdict())
 
-        path = metadata.path_for_parameter(process, param)
+        path = metadata.path_for_parameters(process, [param])[param]
         # remove dataset
         if path is not None and path is not undefined:
             m = re.match('!{[^}]*}/(.*)', path)
@@ -919,7 +919,7 @@ class CapsulProcess(processes.Process):
     def _on_change_use_completion(self, process, dummy):
         if process.use_capsul_completion:
             cprocess = self.get_capsul_process()
-            metadata = getattr(cprocess, 'metadata')
+            metadata = getattr(cprocess, 'metadata', None)
 
             if metadata is not None \
                     and sys._getframe(2).f_code.co_name \
