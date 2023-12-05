@@ -260,7 +260,6 @@ def convert_to_capsul_value(value, item_type=None, field=None):
 def get_initial_capsul():
     init_config = {
         'builtin': {
-            'python_modules': ['morphologist.capsul.toolbox_init'],
             'config_modules': [
                 'spm',
                 'axon',
@@ -270,6 +269,13 @@ def get_initial_capsul():
             },
         }
     }
+
+    try:
+        import morphologist.capsul
+        init_config['builtin']['python_modules'] \
+            =  ['morphologist.capsul.toolbox_init']
+    except ImportError:
+        pass
 
     return init_config
 
@@ -384,7 +390,8 @@ def get_best_type(process, param, metadata=None):
     try:
         # print('metadata:', metadata.asdict())
 
-        path = metadata.path_for_parameters(process, [param])[param]
+        #path = metadata.path_for_parameters(process, [param])[param]
+        path = metadata.path_for_parameter(process, param)
         # remove dataset
         if path is not None and path is not undefined:
             m = re.match('!{[^}]*}/(.*)', path)
