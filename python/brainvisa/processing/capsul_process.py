@@ -158,6 +158,7 @@ import distutils.spawn
 import sys
 import subprocess
 import re
+import pydantic
 
 
 def fileOptions(filep, name, process, attributes=None):
@@ -568,9 +569,16 @@ class CapsulProcess(processes.Process):
         self.changeSignature(signature)
 
         # restore parameters
-        for param, value in orig_params.items():
+        for param in self.signature:
             if param not in ('pipeline_steps', 'nodes_activation'):
-                setattr(process, param, value)
+                value = orig_params.get(param, None)
+                try:
+                    setattr(process, param, value)
+                except pydantic.ValidationError:
+                    if value is None:
+                        setattr(process, param, undefined)
+                    else:
+                        raise
 
         # setup callbacks to sync capsul and axon parameters values
         dispatch = gui_thread_function(neuroConfig.gui)
@@ -1062,6 +1070,7 @@ class CapsulProcess(processes.Process):
 
         cprocess = self.get_capsul_process()
         metadata = getattr(cprocess, 'metadata', None)
+        # print('_get_capsul_attributes, metadata:', type(metadata))
         if metadata is None:
             return {}, False
 
@@ -1168,6 +1177,7 @@ class CapsulProcess(processes.Process):
                 capsul.engine().execution_context(self._capsul_process))
             if metadata is None:
                 return
+            self._capsul_process.metadata = metadata
             schema = metadata.schema_per_parameter[param]
             meta_attr = getattr(metadata, schema)
             modified = False
