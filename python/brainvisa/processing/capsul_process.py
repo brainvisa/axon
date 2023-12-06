@@ -390,7 +390,7 @@ def get_best_type(process, param, metadata=None):
     try:
         # print('metadata:', metadata.asdict())
 
-        path = metadata.path_for_parameters(process, [param])[param]
+        path = metadata.path_for_parameters(process, [param]).get(param)
         # remove dataset
         if path is not None and path is not undefined:
             m = re.match('!{[^}]*}/(.*)', path)
