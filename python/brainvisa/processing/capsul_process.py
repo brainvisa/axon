@@ -162,7 +162,8 @@ import pydantic
 
 
 def fileOptions(filep, name, process, attributes=None):
-    if hasattr(filep, 'output') and filep.output:
+    if (hasattr(filep, 'output') and filep.output) \
+            or (hasattr(filep, 'write') and filep.write):
         return (WriteDiskItem, get_best_type(process, name, attributes))
     return (ReadDiskItem, get_best_type(process, name, attributes))
 
