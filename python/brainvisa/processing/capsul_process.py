@@ -159,6 +159,7 @@ import sys
 import subprocess
 import re
 import pydantic
+import os.path as osp
 
 
 def fileOptions(filep, name, process, attributes=None):
@@ -330,6 +331,17 @@ def get_axon_formats(capsul_exts):
 
 def get_best_type(process, param, metadata=None):
 
+    def replace_in_path_for_meta(path, metadata):
+        # this replacement is a bidouille to replace graph version /3.1/
+        # with /<3.1>/ when looking for ontology rules. This is needed because
+        # this metadata is not set by the user metadata set, but from the
+        # parameter "graph_version" of the process, and has fixed choice values
+        # thus cannot be changed to "<3.1>".
+        p = path.find('/3.1/')
+        if p >= 0:
+            path = path[:p] + '/<graph_version>/' + path[p + 5:]
+        return path
+
     from capsul.dataset import ProcessMetadata
 
     cext = process.field(param).metadata('extensions')
@@ -337,6 +349,7 @@ def get_best_type(process, param, metadata=None):
         metadata = process.metadata
 
     is_list = process.field(param).is_list()
+    # print('get_best_type for', param)
 
     if metadata is None:
         # look if it's a pipeline with iterations inside
@@ -364,11 +377,18 @@ def get_best_type(process, param, metadata=None):
             return ('Any Type', get_axon_formats(cext))
 
     # merge field extensions and completion system extensions
-    compl_ext = None  # FIXME allowed extensions for param
+    # compl_ext = None  # FIXME allowed extensions for param
     if not cext:
-        cext = compl_ext
-    elif compl_ext:
-        cext = [e for e in cext if e in compl_ext]
+        value = getattr(process, param)
+        if isinstance(value, list):
+            value = value[0]
+        if isinstance(value, str):
+            exts = osp.basename(value).split('.')
+            if len(exts) >= 2:
+                exts = exts[1:]
+                cext = ['.' + '.'.join(exts[i:]) for i in range(len(exts))]
+    # elif compl_ext:
+        # cext = [e for e in cext if e in compl_ext]
 
     orig_values = None
     # TODO
@@ -392,21 +412,25 @@ def get_best_type(process, param, metadata=None):
     try:
         # print('metadata:', metadata.asdict())
 
-        path = metadata.path_for_parameters(process, [param]).get(param)
+        # path = metadata.path_for_parameters(process, [param]).get(param)
+        path = getattr(process, param)
+        # print('path 0:', path)
         # remove dataset
         if path is not None and path is not undefined:
+            # bidouille to replace values with "<value>"
             m = re.match('!{[^}]*}/(.*)', path)
             if m:
                 path = m.group(1)
             # print('path:', path)
-            if path is None:
-                # fallback to the completed value
-                path = getattr(process, param)
-                # print('new path:', path)
+            #if path is None:
+                ## fallback to the completed value
+                #path = getattr(process, param)
+                #print('new path:', path)
             if path in (None, undefined, []):
                 # print('Any 2')
                 return ('Any Type', get_axon_formats(cext))
 
+            path = replace_in_path_for_meta(path, metadata)
             for db in neuroHierarchy.databases.iterDatabases():
                 # print('look in db:', db.directory)
                 for typeitem in getAllDiskItemTypes():
@@ -521,14 +545,10 @@ class CapsulProcess(processes.Process):
         orig_params = process.asdict()
 
         orig_attributes = metadata.asdict()
-        for field in metadata.fields():
-            attr = field.name
-            if issubclass(field.type, str):
-                setattr(metadata, attr, '<%s>' % attr)
-            elif field.is_list() \
-                    and issubclass(field.subtypes()[0], str):
-                setattr(metadata, attr, ['<%s>' % attr])
+        tr = CapsulToAxonSchemaTranslation()
+        tr.translate_metadata(metadata, in_place=True)
 
+        # print('completion using meta:', metadata.asdict())
         metadata.generate_paths()
 
         signature = getattr(self, 'signature', Signature())
@@ -1014,6 +1034,9 @@ class CapsulProcess(processes.Process):
         self._capsul_gui = MainThreadLife(pv)
 
     def _process_field_changed(self, new_value, old_value, name):
+        if getattr(self, '_capsul_axon_propagation_blocked', False):
+            return
+        # print('capsul field changed:', name, ':', new_value)
         if name not in [f.name for f in self._capsul_process.user_fields()]:
             return
         if self.isDefault(name):
@@ -1093,6 +1116,9 @@ class CapsulProcess(processes.Process):
                         capsul_attr[k] = v[i]
                     else:  # empty list
                         capsul_attr[k] = undefined
+        if hasattr(meta_attr, 'extension') and value.fullPath() is not None:
+            capsul_attr['extension'] = value.fullPath()[
+                len(value.fullName()) + 1:]
 
         modified = False
         for attribute, avalue in attributes.items():
@@ -1179,7 +1205,9 @@ class CapsulProcess(processes.Process):
             if metadata is None:
                 return
             self._capsul_process.metadata = metadata
-            schema = metadata.schema_per_parameter[param]
+            schema = metadata.schema_per_parameter.get(param)
+            if schema is None:
+                return
             meta_attr = getattr(metadata, schema)
             modified = False
             if isinstance(value, list) and len(value) != 0:
@@ -1224,9 +1252,18 @@ class CapsulProcess(processes.Process):
                     = self._get_capsul_attributes(param, value, itype)
 
             if modified:
+                # print('modified. Running completion:', capsul_attr)
                 meta_attr.import_dict(capsul_attr)
+                # print('meta:', metadata.asdict())
                 if self.use_capsul_completion:
+                    # blocking propagation actually prevents values which will
+                    # not change later to be updated (non-path values)
+                    # so we leave the non-optimal behavior for now.
+                    ## block propagation for now: we will change values
+                    ## in resolve_paths
+                    # self._capsul_axon_propagation_blocked = True
                     metadata.generate_paths()
+                    # del self._capsul_axon_propagation_blocked
                     self._capsul_process.resolve_paths(
                         capsul.engine().execution_context(
                             self._capsul_process))
@@ -1282,6 +1319,7 @@ class CapsulProcess(processes.Process):
 
 class AxonToCapsulAttributesTranslation:
     def __init__(self, schema_meta):
+        self.schema_meta = schema_meta
         # hard-coded for now...
         self._translations = {
             'side': AxonToCapsulAttributesTranslation._translate_side,
@@ -1304,6 +1342,9 @@ class AxonToCapsulAttributesTranslation:
                 translated.update(new_attr_dict)
             else:
                 translated[attr] = value
+        if 'extension' not in translated \
+                and self.schema_meta.field('extension') is not None:
+            translated['extension'] = 'nii.gz'
         return translated
 
     @staticmethod
@@ -1346,7 +1387,6 @@ class CapsulToAxonSchemaTranslation:
             'analysis': '<analysis>',
             'sulci_graph_version': '<graph_version>',
             'sulci_recognition_session': '<sulci_recognition_session>',
-            'side': 'L',
         },
         'shared': {
             'side': 'L',
@@ -1360,12 +1400,15 @@ class CapsulToAxonSchemaTranslation:
             'analysis': '<analysis>',
             'sulci_graph_version': '<graph_version>',
             'sulci_recognition_session': '<sulci_recognition_session>',
-            'side': 'L',
         },
     }
 
     def __init__(self):
-        pass
+        self.parse_mode = False
+        CapsulToAxonSchemaTranslation.schemas['brainvisa']['side'] \
+            = CapsulToAxonSchemaTranslation.transate_side
+        CapsulToAxonSchemaTranslation.schemas['morphologist_bids']['side'] \
+            = CapsulToAxonSchemaTranslation.transate_side
 
     def translate_metadata(self, metadata, in_place=False):
         result = {}
@@ -1390,3 +1433,14 @@ class CapsulToAxonSchemaTranslation:
     @staticmethod
     def identity(metadata, scheman, attribute, value):
         return value
+
+    @staticmethod
+    def transate_side(metadata, scheman, attribute, value):
+        side = getattr(getattr(metadata, scheman), attribute)
+        if side in (None, undefined):
+            other = {'side': 'sidebis', 'sidebis': 'side'}.get(attribute)
+            if other is not None:
+                side = getattr(getattr(metadata, scheman), other)
+        if side not in (None, undefined):
+            return f'<{side}>'
+        return side
