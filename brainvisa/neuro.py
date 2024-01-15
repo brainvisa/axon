@@ -124,13 +124,6 @@ def main():
     """
     This function initializes BrainVISA components: log, databases, processes, graphical user interface.
     """
-    import brainvisa.processing.qtgui
-    p = os.path.join(os.path.dirname(brainvisa.processing.qtgui.__file__),
-                     'protection_against_qt3')
-    if os.path.exists(p):
-        sys.path.insert(0, p)
-    #  sys.excepthook = exceptionHook
-    # InitializationoptionFile
     try:
 
         from brainvisa import axon

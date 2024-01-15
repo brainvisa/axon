@@ -26,59 +26,11 @@ for pythonexe in $pythonexelist; do
 done
 [ -z "$python" ] && echo 'Cannot find Python executable' && exit 1
 
-os=`echo $OSTYPE | sed -e 's/^\([^0-9\.]*\).*/\1/'`
-if [ "$os" = "darwin" ]; then
-    python=`"$python" -c "$nosymlink"` # "$python"`/$pythonexe
-fi
-
-runbrainvisa='
-import sys,os
-neuro = ""
-executable = sys.argv[1]
-if sys.version_info[0] >= 3:
-    def execfile(filename, global_vars=globals(), local_vars=locals()):
-        with open(filename) as f:
-            code = compile(f.read(), filename, "exec")
-            exec(code, global_vars, local_vars)
-found = False
-while True:
-    p = os.path.dirname(executable)
-    for d in (os.path.normpath(os.path.join(p, "..", "brainvisa")),
-              os.path.normpath(os.path.join(p, "..", "..", "brainvisa"))):
-      neuro = os.path.join(d, "neuro.py")
-      if os.path.exists(neuro):
-          found = True
-          break
-    if found:
-        break
-    if os.path.islink(executable):
-        executable = os.path.join(os.path.dirname(executable),
-                                  os.readlink(executable))
-    else:
-        break
-if neuro:
-    neuro = os.path.abspath(neuro)
-    sys.argv[0] = neuro
-    del sys.argv[1]
-    pythonPath = os.path.dirname(neuro)
-    sys.path[0:0] = [os.path.normpath(i) for i in \
-                     (pythonPath, os.path.join(pythonPath, "..", "python"), )]
-    execfile(neuro)
-else:
-    sys.stderr.write("Cannot find main BrainVISA directory\n")
-'
-
 LANG="$OLDLANG"
 unset OLDLANG
 
-if [ -n "$BRAINVISA_HOME" ]; then
-    BRAINVISA_EXE="$BRAINVISA_HOME/bin/brainvisa"
-else
-    BRAINVISA_EXE="$0"
-fi
-
 # Look for neuro.py
-"$python" -t -c "$runbrainvisa" "$BRAINVISA_EXE" "$@"
+"$python" -m brainvisa.neuro "$@"
 returnValue=$?
 
 # After using IPython in brainvisa, console need to be reset otherwise

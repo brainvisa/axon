@@ -158,8 +158,6 @@ Several global variables are defined in this module to store **Brainvisa configu
   May be a list of directories: in that case, history files are duplicated in each of them.
 """
 
-from __future__ import print_function
-from __future__ import absolute_import
 __docformat__ = 'restructuredtext en'
 
 _defaultTranslateFunction = lambda x: x
@@ -167,6 +165,7 @@ import six.moves.builtins
 if not hasattr(six.moves.builtins, '_t_'):
     six.moves.builtins._t_ = _defaultTranslateFunction
 
+import glob
 import sys
 import os
 import errno
@@ -187,24 +186,28 @@ import io
 
 exitValue = 0
 
-mainPath = os.path.normpath(
-    os.path.join(os.path.dirname(brainvisa.__file__), "..", "..", "brainvisa"))
+mainPath = None
+casa_build = os.environ.get('CASA_BUILD')
+if casa_build:
+    for i in [os.path.join(casa_build, 'python', 'brainvisa'), 
+              os.path.join(casa_build, 'lib', 'python*', 'sites-packages', 'brainvisa')]:
+        g = glob.glob(i)
+        if g:
+            if os.path.exists(os.path.join(g[0], 'toolboxes')):
+                mainPath = g[0]
+                break
+if not mainPath:
+    mainPath = os.path.normpath(
+        os.path.join(os.path.dirname(brainvisa.__file__), "..", "..", "brainvisa"))
 
-sys.argv[0] = os.path.normpath(
-    os.path.abspath(os.path.join(mainPath, '..', 'bin', 'brainvisa')))
+    sys.argv[0] = os.path.normpath(
+        os.path.abspath(os.path.join(mainPath, '..', 'bin', 'brainvisa')))
 
-mainPath = os.path.normpath(os.path.abspath(mainPath))
+    mainPath = os.path.normpath(os.path.abspath(mainPath))
 if not os.path.isdir(mainPath):
     raise RuntimeError('Cannot find main BrainVISA directory')
 
-# Change sys.path[0] because Python follow symlinks when it adds
-# this directory and we do not want that to be able to make symlinks
-# in build tree to source tree and create the *.pyo or *.pyc in build tree.
 basePath = os.path.dirname(mainPath)
-sys.path[0:0] = [mainPath, os.path.join(basePath, 'python')]
-
-# A bit of cleanup
-sys.path = [os.path.normpath(os.path.abspath(p)) for p in sys.path]
 
 _commandLine = " ".join(['"' + x + '"' for x in sys.argv])
 
@@ -323,10 +326,10 @@ def getSharePath():
         # empty string rather than None to avoid later re-detection
         _sharePath = ''
         for projectName in ('axon', 'brainvisa'):
-            sharePath = os.path.normpath(os.path.join(mainPath, '..', 'share',
+            sharePath = os.path.normpath(os.path.join(os.environ.get('CASA_BUILD', ''), 'share',
                                                       projectName + '-' + shortVersion))
             if os.path.isdir(sharePath):
-                _sharePath = os.path.normpath(os.path.join(mainPath, '..',
+                _sharePath = os.path.normpath(os.path.join(os.environ.get('CASA_BUILD', ''),
                                                            'share'))
                 break
     return _sharePath
