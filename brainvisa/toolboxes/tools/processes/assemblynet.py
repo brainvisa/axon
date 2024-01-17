@@ -66,9 +66,19 @@ def initialization(self):
     assemblynet_output_parameters += ["transformation_to_mni", "report"]
     self.setUserLevel(1, *assemblynet_output_parameters)
     for param in assemblynet_output_parameters:
-        self.addLink(param, "t1mri")
+        self.addLink(param, "output_folder")
 
     self.addLink("output_folder", "t1mri")
+    # self.addLink("output_folder", "t1mri", self._update_output_folder)
+
+
+def _update_output_folder(self, t1mri):
+    attr = {
+        'acquisition': t1mri.get('acquisition'),
+        'subject': t1mri.get('subject'),
+    }
+    print(f'attr, {attr}')
+    return self.signature['output_folder'].findValue(attr)
 
 
 def execution(self, context):
