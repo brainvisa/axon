@@ -1,36 +1,3 @@
-# -*- coding: utf-8 -*-
-#  This software and supporting documentation are distributed by
-#      Institut Federatif de Recherche 49
-#      CEA/NeuroSpin, Batiment 145,
-#      91191 Gif-sur-Yvette cedex
-#      France
-#
-# This software is governed by the CeCILL license version 2 under
-# French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the
-# terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info".
-#
-# As a counterpart to the access to the source code and  rights to copy,
-# modify and redistribute granted by the license, users are provided only
-# with a limited warranty  and the software's author,  the holder of the
-# economic rights,  and the successive licensors  have only  limited
-# liability.
-#
-# In this respect, the user's attention is drawn to the risks associated
-# with loading,  using,  modifying and/or developing or reproducing the
-# software by the user in light of its specific status of free software,
-# that may mean  that it is complicated to manipulate,  and  that  also
-# therefore means  that it is reserved for developers  and  experienced
-# professionals having in-depth computer knowledge. Users are therefore
-# encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or
-# data to be ensured and,  more generally, to use and operate it in the
-# same conditions as regards security.
-#
-# The fact that you are presently reading this means that you have had
-# knowledge of the CeCILL license version 2 and that you accept its terms.
-
 """
 Several global variables are defined in this module to store **Brainvisa configuration and user options**:
 
@@ -191,8 +158,6 @@ Several global variables are defined in this module to store **Brainvisa configu
   May be a list of directories: in that case, history files are duplicated in each of them.
 """
 
-from __future__ import print_function
-from __future__ import absolute_import
 __docformat__ = 'restructuredtext en'
 
 _defaultTranslateFunction = lambda x: x
@@ -200,6 +165,7 @@ import six.moves.builtins
 if not hasattr(six.moves.builtins, '_t_'):
     six.moves.builtins._t_ = _defaultTranslateFunction
 
+import glob
 import sys
 import os
 import errno
@@ -220,24 +186,28 @@ import io
 
 exitValue = 0
 
-mainPath = os.path.normpath(
-    os.path.join(os.path.dirname(brainvisa.__file__), "..", "..", "brainvisa"))
+mainPath = None
+casa_build = os.environ.get('CASA_BUILD')
+if casa_build:
+    for i in [os.path.join(casa_build, 'python', 'brainvisa'), 
+              os.path.join(casa_build, 'lib', 'python*', 'sites-packages', 'brainvisa')]:
+        g = glob.glob(i)
+        if g:
+            if os.path.exists(os.path.join(g[0], 'toolboxes')):
+                mainPath = g[0]
+                break
+if not mainPath:
+    mainPath = os.path.normpath(
+        os.path.join(os.path.dirname(brainvisa.__file__), "..", "..", "brainvisa"))
 
-sys.argv[0] = os.path.normpath(
-    os.path.abspath(os.path.join(mainPath, '..', 'bin', 'brainvisa')))
+    sys.argv[0] = os.path.normpath(
+        os.path.abspath(os.path.join(mainPath, '..', 'bin', 'brainvisa')))
 
-mainPath = os.path.normpath(os.path.abspath(mainPath))
+    mainPath = os.path.normpath(os.path.abspath(mainPath))
 if not os.path.isdir(mainPath):
     raise RuntimeError('Cannot find main BrainVISA directory')
 
-# Change sys.path[0] because Python follow symlinks when it adds
-# this directory and we do not want that to be able to make symlinks
-# in build tree to source tree and create the *.pyo or *.pyc in build tree.
 basePath = os.path.dirname(mainPath)
-sys.path[0:0] = [mainPath, os.path.join(basePath, 'python')]
-
-# A bit of cleanup
-sys.path = [os.path.normpath(os.path.abspath(p)) for p in sys.path]
 
 _commandLine = " ".join(['"' + x + '"' for x in sys.argv])
 
@@ -356,10 +326,10 @@ def getSharePath():
         # empty string rather than None to avoid later re-detection
         _sharePath = ''
         for projectName in ('axon', 'brainvisa'):
-            sharePath = os.path.normpath(os.path.join(mainPath, '..', 'share',
+            sharePath = os.path.normpath(os.path.join(os.environ.get('CASA_BUILD', ''), 'share',
                                                       projectName + '-' + shortVersion))
             if os.path.isdir(sharePath):
-                _sharePath = os.path.normpath(os.path.join(mainPath, '..',
+                _sharePath = os.path.normpath(os.path.join(os.environ.get('CASA_BUILD', ''),
                                                            'share'))
                 break
     return _sharePath

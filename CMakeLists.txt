@@ -64,10 +64,6 @@ BRAINVISA_DEPENDENCY( RUN RECOMMENDS "python-matplotlib" RUN )
 
 BRAINVISA_DEPENDENCY( RUN RECOMMENDS graphviz RUN )
 
-configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/config/config.py.in" "${CMAKE_BINARY_DIR}/${PYTHON_INSTALL_DIRECTORY}/brainvisa/config.py" @ONLY )
-BRAINVISA_INSTALL( FILES "${CMAKE_BINARY_DIR}/${PYTHON_INSTALL_DIRECTORY}/brainvisa/config.py"
-                   DESTINATION "${PYTHON_INSTALL_DIRECTORY}/brainvisa"
-                   COMPONENT ${PROJECT_NAME} )
 BRAINVISA_COPY_PYTHON_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/python"
                                  ${PROJECT_NAME} )
 
