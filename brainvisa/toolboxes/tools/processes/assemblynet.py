@@ -1,22 +1,55 @@
-import os, shutil
+import shutil
+from pathlib import Path
 
 from brainvisa.processes import Signature, ReadDiskItem, WriteDiskItem
 from brainvisa.processes import String, Float, Choice, Boolean
+from brainvisa.data.neuroHierarchy import databases
 
 userLevel = 1
 name = 'Run AssemblyNet'
 
 assemblynet_options = 'AssemblyNet options'
+assemblynet_outputs = 'AssemblyNet outputs'
+
+default_format = ["gz compressed NIFTI-1 image", "NIFTI-1 image"]
 
 signature = Signature(
-    'assemblynet_image', String(),
-    't1mri', ReadDiskItem('Raw T1 MRI', ['gz compressed NIFTI-1 image', 'NIFTI-1 image']),
-    'subject_folder', ReadDiskItem('Subject', 'Directory'),
-    'output_folder', WriteDiskItem('Directory', 'Directory'),
+    "assemblynet_image", String(),
+    "t1mri", ReadDiskItem("Raw T1 MRI", ["gz compressed NIFTI-1 image", "NIFTI-1 image"]),
+    "output_folder", WriteDiskItem("Acquisition", "Directory", requiredAttributes={"modality": "assemblyNet"}),
+    
+    "age", Float(section=assemblynet_options),
+    "sex", Choice(None, "Male", "Female", section=assemblynet_options),
+    "pdf_report", Boolean(section=assemblynet_options),
 
-    'age', Float(section=assemblynet_options),
-    'sex', Choice(None, 'Male', 'Female', section=assemblynet_options),
-    'pdf_report', Boolean(section=assemblynet_options),
+    "transformation_to_mni", WriteDiskItem("Transformation", "Text file", section=assemblynet_outputs,
+                                           requiredAttributes={"space": "mni", "modality": "assemblyNet"}),
+    "mni_lobes", WriteDiskItem("Brain Lobes", default_format, section=assemblynet_outputs,
+                               requiredAttributes={"space": "mni", "modality": "assemblyNet"}),
+    "mni_macrostructures", WriteDiskItem("Split Brain Mask", default_format, section=assemblynet_outputs,
+                                         requiredAttributes={"space": "mni", "modality": "assemblyNet"}),
+    "mni_mask", WriteDiskItem("Intracranial mask", default_format, section=assemblynet_outputs,
+                              requiredAttributes={"space": "mni", "modality": "assemblyNet"}),
+    "mni_structures", WriteDiskItem("Brain Structures", default_format, section=assemblynet_outputs,
+                                    requiredAttributes={"space": "mni", "modality": "assemblyNet"}),
+    "mni_t1", WriteDiskItem("T1 MRI Denoised and Bias Corrected", default_format, section=assemblynet_outputs,
+                            requiredAttributes={"space": "mni", "modality": "assemblyNet"}),
+    "mni_tissues", WriteDiskItem("Intracranial labels", default_format, section=assemblynet_outputs,
+                                 requiredAttributes={"space": "mni", "modality": "assemblyNet"}),
+    "native_lobes", WriteDiskItem("Brain Lobes", default_format, section=assemblynet_outputs,
+                                  requiredAttributes={"space": "native", "modality": "assemblyNet"}),
+    "native_macrostructures", WriteDiskItem("Split Brain Mask", default_format, section=assemblynet_outputs,
+                                            requiredAttributes={"space": "native", "modality": "assemblyNet"}),
+    "native_mask", WriteDiskItem("Intracranial mask", default_format, section=assemblynet_outputs,
+                                 requiredAttributes={"space": "native", "modality": "assemblyNet"}),
+    "native_structures", WriteDiskItem("Brain Structures", default_format, section=assemblynet_outputs,
+                                       requiredAttributes={"space": "native", "modality": "assemblyNet"}),
+    "native_t1", WriteDiskItem("T1 MRI Denoised and Bias Corrected", default_format, section=assemblynet_outputs,
+                               requiredAttributes={"space": "native", "modality": "assemblyNet"}),
+    "native_tissues", WriteDiskItem("Intracranial labels", default_format, section=assemblynet_outputs,
+                                    requiredAttributes={"space": "native", "modality": "assemblyNet"}),
+    "report", WriteDiskItem("Analysis Report", "Text file", section=assemblynet_outputs,
+                            requiredAttributes={"modality": "assemblyNet"})
 )
 
 
@@ -29,44 +62,56 @@ def initialization(self):
     self.pdf_report = True
     self.setOptional('age', 'sex')
 
-    self.linkParameters('output_folder', 'subject_folder', self.update_output_folder)
-    self.addLink('subject_folder', 't1mri', self.update_subject_folder)
+    assemblynet_output_parameters = [p for p in self.signature if (p.startswith('mni') or p.startswith('native'))]
+    assemblynet_output_parameters += ["transformation_to_mni", "report"]
+    self.setUserLevel(1, *assemblynet_output_parameters)
+    for param in assemblynet_output_parameters:
+        self.addLink(param, "output_folder")
+
+    self.addLink("output_folder", "t1mri")
+    # self.addLink("output_folder", "t1mri", self._update_output_folder)
 
 
-def update_subject_folder(self, t1mri):
-    sub = self.t1mri.get('subject')
-    center = self.t1mri.get('center')
-    database = self.t1mri.get('_database')
-    return self.signature['subject_folder'].findValue({'subject': sub, 'center': center, '_database': database})
-
-
-def update_output_folder(self, proc, dummy):
-    tp = self.t1mri.get('acquisition')
-    return os.path.join(self.subject_folder.fullPath(), 'assemblynet', tp)
+def _update_output_folder(self, t1mri):
+    attr = {
+        'acquisition': t1mri.get('acquisition'),
+        'subject': t1mri.get('subject'),
+    }
+    print(f'attr, {attr}')
+    return self.signature['output_folder'].findValue(attr)
 
 
 def execution(self, context):
-    command = [
-        'apptainer',
-        'run',
-        '-B',
-        f'{self.subject_folder.fullPath()}:/data',
-        self.assemblynet_image,
-    ]
-
-    if self.age:
-        command.extend(['-age', self.age])
-    if self.sex:
-        command.extend(['-sex', self.sex])
-    if not self.pdf_report:
-        command += '-no-pdf-report'
+    output_folder = Path(self.output_folder.fullPath())
+    output_folder.mkdir(exist_ok=True)
     
-    if not os.path.exists(self.output_folder.fullPath()):
-        os.makedirs(self.output_folder.fullPath())
+    # Run AssemblyNet
+    context.runProcess(
+        "assemblynet_generic",
+        assemblynet_image=self.assemblynet_image,
+        t1mri=self.t1mri,
+        output_folder=self.output_folder.fullPath(),
+        age=self.age,
+        sex=self.sex,
+        pdf_report=self.pdf_report
+    )
 
-    command.extend([
-        self.t1mri.fullPath().replace(self.subject_folder.fullPath(), '/data'),
-        self.output_folder.fullPath().replace(self.subject_folder.fullPath(), '/data')
-    ])
+    # Move results into space folder
+    mni_path = output_folder / "mni"
+    mni_path.mkdir(exist_ok=True)
+    native_path = output_folder / "native"
+    native_path.mkdir(exist_ok=True)
 
-    context.system(*command)
+    for file_path in output_folder.iterdir():
+        if file_path.is_dir():
+            continue
+        if file_path.name.startswith("mni") or file_path.name.startswith("matrix"):
+            new_file_path = str(file_path).replace(str(output_folder), str(mni_path))
+            file_path.rename(new_file_path)
+        elif file_path.name.startswith("native"):
+            new_file_path = str(file_path).replace(str(output_folder), str(native_path))
+            file_path.rename(new_file_path)
+            
+    # Update brainvisa database to take into account results
+    db = databases.database(self.output_folder.get('_database'))
+    db.update(directoriesToScan=[self.output_folder.fullPath()])

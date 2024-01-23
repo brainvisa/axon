@@ -75,6 +75,9 @@ hierarchy = (
             'cat12', SetContent(
                 'templates_volumes', SetContent(
                     'Template_0_IXI555_MNI152_GS', SetType('CAT shooting template'),
+                ),
+                'templates_MNI152NLin2009cAsym', SetContent(
+                    'Template_0_GS', SetType('CAT shooting template'),
                 )
             )
         ),  # toolbox
