@@ -344,7 +344,7 @@ class CheckRegistration(object):
         slider = QtGui.QSlider(QtCore.Qt.Horizontal)
         slider.setOrientation(QtCore.Qt.Vertical)
         if fusionRate is not None:
-            slider.setValue(fusionRate * 100)
+            slider.setValue(int(fusionRate * 100))
         else:
             slider.setValue(50)
         self._rowFrames[frame]["slider"] = slider
