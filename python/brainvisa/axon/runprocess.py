@@ -545,14 +545,15 @@ run_process_with_distribution(
 # a bit of cleanup
 try:
     import anatomist.api as ana
+    import sip
     if hasattr(ana.Anatomist, 'anatomistinstance') \
             and ana.Anatomist.anatomistinstance is not None:
         a = ana.Anatomist()
         a.close()
         sip.delete(a)
-        sip.delete(qapp)
+        # sip.delete(qapp)
         del a
-        del qapp
+        # del qapp
 except Exception as e:
     pass
 
