@@ -163,21 +163,10 @@ After loading, Brainvisa processes are stored in an object :py:class:`ProcessTre
 .. autofunction:: cleanupProcesses
 
 """
-from __future__ import print_function
 
-from __future__ import absolute_import
-from six.moves import range
-from six.moves import zip
 __docformat__ = 'restructuredtext en'
 
-# Be careful, it is necessary to initialize
-# subprocess with subprocess32 when it is possible because of known
-# issues in subprocess module that can lead to lock in subprocess run
-import soma.subprocess
-
-import traceback
 import threading
-import operator
 import inspect
 import signal
 import shutil
@@ -185,7 +174,6 @@ import imp
 import types
 import copy
 import weakref
-import string
 import distutils.spawn
 import os
 import errno
@@ -196,12 +184,12 @@ import sys
 
 from soma.sorted_dictionary import SortedDictionary
 from soma.functiontools import numberOfParameterRange, hasParameter, partial
-from soma.minf.api import readMinf, writeMinf, createMinfWriter, iterateMinf, minfFormat
+from soma.minf.api import (readMinf, writeMinf, createMinfWriter, iterateMinf,
+                           minfFormat)
 from soma.minf.xhtml import XHTML
 from soma.minf.xml_tags import xhtmlTag
 from soma.notification import EditableTree, ObservableSortedDictionary, \
     ObservableAttributes, Notifier
-from soma.minf.api import createMinfWriter, iterateMinf, minfFormat
 from soma.html import htmlEscape
 from soma.somatime import timeDifferenceToString
 from soma.path import relative_path
@@ -212,7 +200,6 @@ from brainvisa.data.readdiskitem import ReadDiskItem
 from brainvisa.data.writediskitem import WriteDiskItem
 from brainvisa.configuration import neuroConfig
 from brainvisa.data import neuroDiskItems
-from brainvisa.processing import neuroLog
 from brainvisa.processing import neuroException
 from brainvisa.processing.neuroException import *
 from brainvisa.validation import ValidationError
@@ -226,8 +213,7 @@ from soma import safemkdir
 from soma.qtgui.api import QtThreadCall, FakeQtThreadCall
 
 import six
-from six.moves import cPickle, getcwd, StringIO
-from six.moves.html_parser import HTMLParser
+from six.moves import cPickle, getcwd
 
 
 global _mainThreadActions
