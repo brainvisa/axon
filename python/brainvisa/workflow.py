@@ -828,7 +828,7 @@ class ProcessToSomaWorkflow(ProcessToWorkflow):
                              or value.startswith("'") or value == "None"):
                     value = '"' + str(value) + '"'
                 elif type(value) not in (type(None), bool, float, int):
-                    print('str(', value, '):', str(value))
+                    # print('str(', value, '):', str(value))
                     value = str(value)
                 if escape is not None and isinstance(value, str):
                     for e, r in escape:
