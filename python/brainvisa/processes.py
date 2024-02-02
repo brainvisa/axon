@@ -3039,6 +3039,7 @@ class ExecutionContext(object):
             # correspond to the 2nd or 3rd one in the initial signature. So we
             # have to give up (except for the first, which is reliable)
             break
+        kwprocs = {}
         for (n, v) in kwargs.items():
             proc, argname, enode = self._get_process_and_argname(_process, n)
             if argname not in getattr(proc, 'signature', {}) \
@@ -3047,6 +3048,13 @@ class ExecutionContext(object):
             else:
                 proc._setImmutable(argname, True)
                 to_restore.add(proc)
+                # postpone assignation by process
+                pname = n.rsplit('.', 1)
+                if len(pname) >= 2:
+                    pname = pname[0]
+                else:
+                    pname = ''
+                kwprocs.setdefault(pname, (proc, {}))[1].setdefault(argname, v)
         for i, v in enumerate(args):
             n = list(_process.signature.keys())[i]
             _process.setDefault(n, 0)
@@ -3059,16 +3067,16 @@ class ExecutionContext(object):
         # predictable).
         # FIXME: some values may not be set if they are added dynamically to
         # the signature by parameter links.
-        for n in _process.signature.keys():
-            if n in kwargs:
-                v = kwargs[n]
-                proc, argname, enode = self._get_process_and_argname(_process,
-                                                                     n)
-                proc.setDefault(argname, 0)
-                if v is not None:
-                    proc.setValue(argname, v)
-                else:
-                    setattr(proc, argname, None)
+        for key in sorted(kwprocs.keys()):
+            proc, paramdict = kwprocs[key]
+            for argname in proc.signature.keys():
+                if argname in paramdict:
+                    v = paramdict[argname]
+                    proc.setDefault(argname, 0)
+                    if v is not None:
+                        proc.setValue(argname, v)
+                    else:
+                        setattr(proc, argname, None)
         for proc in to_restore:
             proc._clearImmutableParameters()
         # FIXME TODO WARNING
