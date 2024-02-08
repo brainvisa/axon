@@ -331,17 +331,6 @@ def get_axon_formats(capsul_exts):
 
 def get_best_type(process, param, metadata=None):
 
-    def replace_in_path_for_meta(path, metadata):
-        # this replacement is a bidouille to replace graph version /3.1/
-        # with /<3.1>/ when looking for ontology rules. This is needed because
-        # this metadata is not set by the user metadata set, but from the
-        # parameter "graph_version" of the process, and has fixed choice values
-        # thus cannot be changed to "<3.1>".
-        p = path.find('/3.1/')
-        if p >= 0:
-            path = path[:p] + '/<graph_version>/' + path[p + 5:]
-        return path
-
     from capsul.dataset import ProcessMetadata
 
     cext = process.field(param).metadata('extensions')
@@ -430,7 +419,8 @@ def get_best_type(process, param, metadata=None):
                 # print('Any 2')
                 return ('Any Type', get_axon_formats(cext))
 
-            path = replace_in_path_for_meta(path, metadata)
+            path = tr.replace_in_path(path, metadata)
+            # print('path 2:', path)
             for db in neuroHierarchy.databases.iterDatabases():
                 # print('look in db:', db.directory)
                 for typeitem in getAllDiskItemTypes():
@@ -1388,8 +1378,8 @@ class CapsulToAxonSchemaTranslation:
             'sulci_graph_version': '<graph_version>',
             'sulci_recognition_session': '<sulci_recognition_session>',
         },
-        'shared': {
-            'side': 'L',
+        'brainvisa_shared': {
+            'side': '<side>',
             'graph_version': '<graph_version>',
         },
         'morphologist_bids': {
@@ -1409,6 +1399,14 @@ class CapsulToAxonSchemaTranslation:
             = CapsulToAxonSchemaTranslation.transate_side
         CapsulToAxonSchemaTranslation.schemas['morphologist_bids']['side'] \
             = CapsulToAxonSchemaTranslation.transate_side
+        CapsulToAxonSchemaTranslation.schemas['brainvisa_shared'][
+            'model_version'] \
+                = CapsulToAxonSchemaTranslation.transate_model_version
+
+        self.replacements = [
+            CapsulToAxonSchemaTranslation.replace_model_version,
+            CapsulToAxonSchemaTranslation.replace_graph_version,
+        ]
 
     def translate_metadata(self, metadata, in_place=False):
         result = {}
@@ -1420,6 +1418,7 @@ class CapsulToAxonSchemaTranslation:
             result[sname] = amap
             for field in schema.fields():
                 afield = axon_schema.get(field.name)
+                #print('schema:', sname, field.name, '->', afield)
                 if afield is not None:
                     if hasattr(afield, '__call__'):
                         afield = afield(metadata, sname, field.name,
@@ -1429,6 +1428,11 @@ class CapsulToAxonSchemaTranslation:
                         setattr(schema, field.name, afield)
 
         return result
+
+    def replace_in_path(self, path, metadata):
+        for rep in self.replacements:
+            path = rep(path, metadata)
+        return path
 
     @staticmethod
     def identity(metadata, scheman, attribute, value):
@@ -1444,3 +1448,23 @@ class CapsulToAxonSchemaTranslation:
         if side not in (None, undefined):
             return f'<{side}>'
         return side
+
+    @staticmethod
+    def transate_model_version(metadata, scheman, attribute, value):
+        return '<sulci_database>'
+
+    @staticmethod
+    def replace_model_version(path, metadata):
+        return path.replace('20<sulci_database>', '<sulci_database>')
+
+    @staticmethod
+    def replace_graph_version(path, metadata):
+        # this replacement is a bidouille to replace graph version /3.1/
+        # with /<3.1>/ when looking for ontology rules. This is needed because
+        # this metadata is not set by the user metadata set, but from the
+        # parameter "graph_version" of the process, and has fixed choice values
+        # thus cannot be changed to "<3.1>".
+        p = path.find('/3.1/')
+        if p >= 0:
+            path = path[:p] + '/<graph_version>/' + path[p + 5:]
+        return path
