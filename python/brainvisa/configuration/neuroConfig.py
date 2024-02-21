@@ -192,7 +192,7 @@ mainPath = None
 casa_build = os.environ.get('CASA_BUILD')
 if casa_build:
     for i in [os.path.join(casa_build, 'python', 'brainvisa'), 
-              os.path.join(casa_build, 'lib', 'python*', 'sites-packages', 'brainvisa')]:
+              os.path.join(casa_build, 'lib', 'python*', 'site-packages', 'brainvisa')]:
         g = glob.glob(i)
         if g:
             if os.path.exists(os.path.join(g[0], 'toolboxes')):
