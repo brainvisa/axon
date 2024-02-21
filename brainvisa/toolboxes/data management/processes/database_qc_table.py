@@ -1,6 +1,4 @@
 
-from __future__ import print_function
-from __future__ import absolute_import
 from brainvisa.processes import *
 from brainvisa.data import neuroHierarchy
 from soma.wip.application.api import findIconFile
@@ -188,7 +186,7 @@ if neuroConfig.gui:
             self.setMinimumSectionSize(20)
 
         def paintSection(self, painter, rect, logicalIndex ):
-            import sip
+            from soma.qt_gui.qt_backend import sip
             if sip.isdeleted(self):
                 return
             painter.save()

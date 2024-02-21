@@ -184,13 +184,15 @@ import brainvisa
 import six
 import io
 
+from brainvisa.config import fullVersion, shortVersion
+
 exitValue = 0
 
 mainPath = None
 casa_build = os.environ.get('CASA_BUILD')
 if casa_build:
     for i in [os.path.join(casa_build, 'python', 'brainvisa'), 
-              os.path.join(casa_build, 'lib', 'python*', 'sites-packages', 'brainvisa')]:
+              os.path.join(casa_build, 'lib', 'python*', 'site-packages', 'brainvisa')]:
         g = glob.glob(i)
         if g:
             if os.path.exists(os.path.join(g[0], 'toolboxes')):
@@ -267,18 +269,6 @@ def executableWithPath(file,
     return os.path.join(path, file)
 
 
-try:
-    from brainvisa.config import fullVersion, shortVersion
-except ImportError:
-    f = os.path.join(mainPath, 'VERSION')
-    if not os.path.exists(f):
-        f = os.path.join(mainPath, '..', 'VERSION')
-    f = open(f)
-    fullVersion = f.readline()[:-1]
-    f.close()
-    shortVersion = '.'.join(fullVersion.split('.')[:2])
-
-
 def versionNumber():
     """Returns Brainvisa short version X.Y as a float number"""
     global shortVersion
@@ -324,12 +314,18 @@ def getSharePath():
          and not os.path.isdir(os.path.join(_sharePath,
                                             'brainvisa-' + shortVersion))):
         # empty string rather than None to avoid later re-detection
-        _sharePath = ''
+        _sharePath = None
         for projectName in ('axon', 'brainvisa'):
             sharePath = os.path.normpath(os.path.join(os.environ.get('CASA_BUILD', ''), 'share',
                                                       projectName + '-' + shortVersion))
             if os.path.isdir(sharePath):
                 _sharePath = os.path.normpath(os.path.join(os.environ.get('CASA_BUILD', ''),
+                                                           'share'))
+                break
+            sharePath = os.path.normpath(os.path.join(mainPath, '..', '..', '..', '..', 'share',
+                                                      projectName + '-' + shortVersion))
+            if os.path.isdir(sharePath):
+                _sharePath = os.path.normpath(os.path.join(mainPath, '..', '..', '..', '..',
                                                            'share'))
                 break
     return _sharePath
@@ -349,16 +345,7 @@ def initializeOntologyPaths():
 initializeOntologyPaths()
 processesPath = [os.path.join(mainPath, 'processes')]
 
-for projectName in ('axon', 'brainvisa'):
-    sharePath = os.path.join(getSharePath(), projectName + '-' + shortVersion)
-    if os.path.isdir(sharePath):
-        break
-    # Sources organization
-    sharePath = os.path.normpath(
-        os.path.join(mainPath, '..', 'share', projectName + '-' + shortVersion))
-    if os.path.isdir(sharePath):
-        break
-
+sharePath = getSharePath()
 iconPath = os.path.join(sharePath, 'icons')
 uiPath = os.path.join(sharePath, 'ui')
 toolboxesDir = os.path.join(mainPath, 'toolboxes')
@@ -392,7 +379,8 @@ temporaryDirectory = tempfile.gettempdir()
 def getDocPath(path, project=''):
     """Returns the path of the documentation directory of the given project."""
     # Language and documentation
-    result = os.path.join(getSharePath(), 'doc', project)
+    global sharePath
+    result = os.path.join(sharePath, 'doc', project)
     if not os.path.exists(result):
         result = os.path.normpath(
             os.path.join(path, '..', 'share', 'doc', project))
@@ -402,7 +390,7 @@ def getDocPath(path, project=''):
     return result
 
 docPath = mainDocPath = getDocPath(
-    mainPath, projectName + '-' + str(versionNumber()))
+    mainPath, 'axon-' + str(versionNumber()))
 
 _languages = []
 if os.path.exists(docPath):
@@ -916,9 +904,7 @@ try:
     bvShareDirectory = brainvisa_share.config.share
 except Exception:
     bvShareDirectory = 'brainvisa-share-' + shortVersion
-for p in (os.path.join(getSharePath(), bvShareDirectory),
-          os.path.join(getSharePath(), 'shfj-' + shortVersion),
-          os.path.join(getSharePath(), 'shfj')):
+for p in (os.path.join(sharePath, bvShareDirectory),):
     if os.path.isdir(p):
         dataPath.insert(0, DatabaseSettings(p, read_only=True))
         dataPath[0].builtin = True  # mark as a builtin, non-removable database
