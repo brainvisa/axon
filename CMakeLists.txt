@@ -65,21 +65,8 @@ BRAINVISA_DEPENDENCY( RUN RECOMMENDS "python-matplotlib" RUN )
 BRAINVISA_DEPENDENCY( RUN RECOMMENDS graphviz RUN )
 
 BRAINVISA_COPY_PYTHON_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/python"
-                                 DESTINATION "${PYTHON_INSTALL_DIRECTORY}"
-                                 ${PROJECT_NAME} )
-
-# For historical reasons, Axon needs to modify its encoding to iso-8859-1. 
-# In Python this can only be done in an early step of Python startup. This
-# is why axon installs the sitecustomize package created by bv_maker (see
-# comments in bv_maker sources). That makes it possible to automatically 
-# import modules at startup. The module python/sitecustomize/axon_encoding.py
-# is loaded on startup and sets the encoding. The package sitecustomize is not
-# supposed to be packaged (it is only used in build tree). This is an
-# exception for axon component that should be removed when all string encoded
-# in iso-8859-1 will be converted to utf8.
-BRAINVISA_INSTALL( FILES "${CMAKE_BINARY_DIR}/${PYTHON_INSTALL_DIRECTORY}/sitecustomize/__init__.py"
-                   DESTINATION "${PYTHON_INSTALL_DIRECTORY}/sitecustomize"
-                   COMPONENT ${PROJECT_NAME} )
+                                 "${PROJECT_NAME}"
+                                 "${PYTHON_INSTALL_DIRECTORY}")
 
 # build and install shared database files
 
