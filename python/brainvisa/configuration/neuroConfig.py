@@ -347,7 +347,8 @@ def initializeOntologyPaths():
 initializeOntologyPaths()
 processesPath = [os.path.join(mainPath, 'processes')]
 
-sharePath = getSharePath()
+#sharePath = getSharePath()
+sharePath = os.path.join(getSharePath(), f'axon-{shortVersion}')
 iconPath = os.path.join(sharePath, 'icons')
 uiPath = os.path.join(sharePath, 'ui')
 toolboxesDir = os.path.join(mainPath, 'toolboxes')
@@ -381,18 +382,26 @@ temporaryDirectory = tempfile.gettempdir()
 def getDocPath(path, project=''):
     """Returns the path of the documentation directory of the given project."""
     # Language and documentation
-    global sharePath
-    result = os.path.join(sharePath, 'doc', project)
+    global _sharePath
+    result = os.path.join(_sharePath, 'doc', project)
+    print('test doc path:', result)
     if not os.path.exists(result):
+        print('no.')
         result = os.path.normpath(
             os.path.join(path, '..', 'share', 'doc', project))
+        print('test:', result)
         if not os.path.exists(result):
+            print('no.')
             result = os.path.normpath(os.path.join(path, '..', 'doc'))
+    print('return:', result)
 
     return result
 
-docPath = mainDocPath = getDocPath(
-    mainPath, 'axon-' + str(versionNumber()))
+print('mainPath:', mainPath)
+print('_sharePath:', _sharePath)
+print('sharePath:', sharePath)
+docPath = mainDocPath = getDocPath(mainPath, f'axon-{versionNumber()}')
+print('docPath:', docPath)
 
 _languages = []
 if os.path.exists(docPath):
@@ -906,7 +915,7 @@ try:
     bvShareDirectory = brainvisa_share.config.share
 except Exception:
     bvShareDirectory = 'brainvisa-share-' + shortVersion
-for p in (os.path.join(sharePath, bvShareDirectory),):
+for p in (os.path.join(_sharePath, bvShareDirectory),):
     if os.path.isdir(p):
         dataPath.insert(0, DatabaseSettings(p, read_only=True))
         dataPath[0].builtin = True  # mark as a builtin, non-removable database
