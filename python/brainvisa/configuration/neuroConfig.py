@@ -384,24 +384,15 @@ def getDocPath(path, project=''):
     # Language and documentation
     global _sharePath
     result = os.path.join(_sharePath, 'doc', project)
-    print('test doc path:', result)
     if not os.path.exists(result):
-        print('no.')
         result = os.path.normpath(
             os.path.join(path, '..', 'share', 'doc', project))
-        print('test:', result)
         if not os.path.exists(result):
-            print('no.')
             result = os.path.normpath(os.path.join(path, '..', 'doc'))
-    print('return:', result)
 
     return result
 
-print('mainPath:', mainPath)
-print('_sharePath:', _sharePath)
-print('sharePath:', sharePath)
 docPath = mainDocPath = getDocPath(mainPath, f'axon-{versionNumber()}')
-print('docPath:', docPath)
 
 _languages = []
 if os.path.exists(docPath):
