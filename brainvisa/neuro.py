@@ -131,7 +131,10 @@ def main():
 
 
 if neuroConfig.gui:
-    # QApplication.setColorSpec( QApplication.ManyColor )
+    from soma.qt_gui import ipkernel_tools
+
+    ipkernel_tools.before_start_ipkernel()
+
     neuroConfig.qtApplication = QApplication(
         [sys.argv[0], '-name', versionText()] + sys.argv[1:])
     neuroConfig.qtApplication.setAttribute(Qt.AA_DontShowIconsInMenus, False)
@@ -172,6 +175,7 @@ else:
 
 
 def startConsoleShell():
+
     from soma.qt_gui.qt_backend.QtWidgets import QApplication
     try:
         import jupyter_console.app
@@ -226,10 +230,8 @@ if neuroConfig.gui:
                 neuroConfig.shell = False
                 QTimer.singleShot(0, startConsoleShell)
     if not neuroConfig.shell:
-        if QtCore.QT_VERSION >= 0x060000:
-            neuroConfig.qtApplication.exec()
-        else:
-            neuroConfig.qtApplication.exec()
+        ipkernel_tools.start_ipkernel_qt_engine()
+        # neuroConfig.qtApplication.exec()
 
 ipConsole = None
 ipsubprocs = []

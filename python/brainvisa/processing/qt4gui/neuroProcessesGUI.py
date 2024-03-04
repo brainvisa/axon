@@ -215,10 +215,14 @@ def quitRequest():
                 a.close()
         except Exception:
             pass
-        if neuroConfig.shell:
-            sys.exit()
-        else:
-            QApplication.instance().exit()
+        # ipython kernel prevents QApplication.instance().exit() from working.
+        # More precisely the Qt event loop probably exits, but the IP kernel
+        # does not.
+        #if neuroConfig.shell:
+            #sys.exit()
+        #else:
+            #QApplication.instance().exit()
+        sys.exit()
 
 #----------------------------------------------------------------------------
 
