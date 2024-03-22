@@ -5,9 +5,9 @@ Axon developer manual
 Introduction
 ============
 
-This document should teach how to program BrainVisa and to create custom processes. The audience is supposed to be familiar with `Python language <http://python.org>`_.
+This document should teach how to program BrainVisa and to create custom processes. The audience is supposed to be familiar with `Python language <https://python.org>`_.
 
-If you are not, you are encouraged to look at the `Python tutorial <https://docs.python.org/tutorial/index.html>`_ and the `Python documentation <http://docs.python.org>`_.
+If you are not, you are encouraged to look at the `Python tutorial <https://docs.python.org/tutorial/index.html>`_ and the `Python documentation <https://docs.python.org>`_.
 
 In addition to this manual, the reader may also have a look at :doc:`usecases`.
 
