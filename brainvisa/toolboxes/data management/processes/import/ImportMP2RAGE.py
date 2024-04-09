@@ -76,7 +76,7 @@ def initialization(self):
         proc.signature['input_spm_orientation'].lastInput = self.input
         return res
 
-    self.setOptional('subject', 'inv1', 'inv2', 't1map', 'uni',
+    self.setOptional('inv1', 'inv2', 't1map', 'uni',
                      'output_inv1', 'output_inv2', 'output_t1map', 'output_uni')
     # self.linkParameters('input_spm_orientation', 'input', _orient)
     self.signature['input_spm_orientation'].linkParameterWithNonDefaultValue = 1
