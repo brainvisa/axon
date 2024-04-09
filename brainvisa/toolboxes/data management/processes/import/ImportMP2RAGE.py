@@ -15,7 +15,6 @@ roles = ('importer')
 
 # inputs/outputs definition
 signature=Signature(
-    'subject', String(),
     'inv1', ReadDiskItem('Raw MP2RAGE INV1', 'Aims readable volume formats'),
     'inv2', ReadDiskItem('Raw MP2RAGE INV2', 'Aims readable volume formats'),
     't1map', ReadDiskItem('Raw MP2RAGE T1MAP', 'Aims readable volume formats'),
