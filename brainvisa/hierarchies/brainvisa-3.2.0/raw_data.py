@@ -31,10 +31,10 @@ insert('{center}/{subject}',
               SetDefaultAttributeValue('acquisition', default_acquisition),
               SetNonMandatoryKeyAttribute('acquisition'),
               SetContent(
-                     '<subject>_inv1', SetType('Raw MP2RAGE INV1'), SetWeakAttr('normalized', 'no'),
-                     '<subject>_inv2', SetType('Raw MP2RAGE INV2'), SetWeakAttr('normalized', 'no'),
-                     '<subject>_uni', SetType('Raw MP2RAGE UNI'), SetWeakAttr('normalized', 'no'),
-                     '<subject>_t1map', SetType('Raw MP2RAGE T1MAP'), SetWeakAttr('normalized', 'no'),
+                     '<subject>_INV1', SetType('Raw MP2RAGE INV1'), SetWeakAttr('normalized', 'no'),
+                     '<subject>_INV2', SetType('Raw MP2RAGE INV2'), SetWeakAttr('normalized', 'no'),
+                     '<subject>_UNI', SetType('Raw MP2RAGE UNI'), SetWeakAttr('normalized', 'no'),
+                     '<subject>_T1MAP', SetType('Raw MP2RAGE T1MAP'), SetWeakAttr('normalized', 'no'),
               )
        ),
        )
