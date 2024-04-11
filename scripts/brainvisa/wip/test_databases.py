@@ -30,11 +30,9 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
-from __future__ import print_function
-from __future__ import absolute_import
+
 import sys
 import time
-import six
 
 from brainvisa.data.sqlFSODatabase import SQLDatabase, SQLDatabases
 from brainvisa.data.readdiskitem import ReadDiskItem
@@ -175,8 +173,8 @@ w.show()
         # oldItems[ diskItem.fullPath() ] = diskItem
     # children = diskItem.childs()
     # if children: stack += children
-# import cPickle
-# oldItems = cPickle.load( open( 'oldItems.pickle' ) )
+# import pickle
+# oldItems = pickle.load( open( 'oldItems.pickle' ) )
 
 # print('Checking differences')
 # new = 0

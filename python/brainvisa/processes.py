@@ -213,7 +213,8 @@ from soma import safemkdir
 from soma.qtgui.api import QtThreadCall, FakeQtThreadCall
 
 import six
-from six.moves import cPickle, getcwd
+import pickle
+from os import getcwd
 
 
 global _mainThreadActions
@@ -6239,7 +6240,7 @@ def readProcesses(processesPath):
     if neuroConfig.fastStart and os.path.exists(processesCacheFile):
         try:
             with open(processesCacheFile, 'rb') as f:
-                _processesInfo, converters = cPickle.load(f)
+                _processesInfo, converters = pickle.load(f)
             # change _converters keys to use the same instances as the global
             # types / formats list
             for (src, dst), process_id in six.iteritems(converters):
@@ -6276,7 +6277,7 @@ def readProcesses(processesPath):
                                              delete=False) as f:
                 # Use version 2 of the pickle protocol (more optimized than
                 # version 0, but still compatible with Python 2)
-                cPickle.dump((_processesInfo, _converters), f, 2)
+                pickle.dump((_processesInfo, _converters), f, 2)
             if hasattr(os, 'replace'):
                 os.replace(f.name, processesCacheFile)
             else:
