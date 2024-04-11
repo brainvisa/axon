@@ -39,7 +39,7 @@ python -m brainvisa.axon.runprocess <process name> <process arguments>
 """
 
 # headless requires to run Xvfb and initialize VirtualGL. It needs to be
-# done first, but in paerallel execution, many processed doing it will end
+# done first, but in parallel execution, many processes doing it will end
 # up with conflicts in accessing X servers, and some processes will fail.
 # so I disable it.
 #
@@ -326,6 +326,19 @@ group1.add_option('--logFile', dest='logFile', default=None,
                   help='specify the log file to use. '
                   'Default is the usual brainvisa.log if databasing is enabled, else no log '
                   'file is used.')
+group1.add_option('--params', dest='paramsfile', default=None,
+                  help='specify a file containing commandline parameters. '
+                  'The file will contain arguments for this commandline '
+                  '(argv): it is an alternative to providing them here. It '
+                  'can be useful to reuse parameters, or when the parameters '
+                  'are too long (in a large iteration, typically). The file '
+                  'syntax is one line per parameter, with no further parsing. '
+                  'It will be processed after all the current commanline '
+                  'arguments, not right now as the argument appears. But if '
+                  'a parameter has already been set (via commandline), it '
+                  'will not be replaced: first set arguments have priority. '
+                  'If the params file itself contains a --params parameter, '
+                  'then another file will be read afterwards, and so on.')
 parser.add_option_group(group1)
 
 group2 = OptionGroup(parser, 'Processing',
@@ -407,6 +420,17 @@ parser.add_option_group(group4)
 
 parser.disable_interspersed_args()
 (options, args) = parser.parse_args()
+
+while options.paramsfile:
+    pfile = options.paramsfile
+    options.paramsfile = None
+    with open(pfile) as f:
+        new_argv = [l.strip() for l in f.readlines()]
+    new_options, new_args = parser.parse_args(new_argv)
+    for k, v in new_options.__dict__.items():
+        if not getattr(options, k, None):
+            setattr(options, k, v)
+    args += new_args
 
 print('Initializing brainvisa... (takes a while)...')
 sys.stdout.flush()
