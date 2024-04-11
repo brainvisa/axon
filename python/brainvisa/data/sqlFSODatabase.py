@@ -11,8 +11,7 @@ import re
 
 import time
 from itertools import chain
-from six.moves import StringIO
-from six.moves import cPickle
+import pickle
 
 from soma.minf.api import readMinf, writeMinf
 from soma.html import htmlEscape
@@ -1210,7 +1209,7 @@ class SQLDatabase(Database):
                   '_uuid': diskItem._uuid,
                   '_priority': getattr(diskItem, '_priority', 0),
                 }
-                minf = cPickle.dumps(state, MINF_PICKLE_PROTOCOL)
+                minf = pickle.dumps(state, MINF_PICKLE_PROTOCOL)
                 diskItem._globalAttributes["_database"] = self.name
                 if diskItem.type.isA('Transformation'):
                     destination_referential = diskItem.getNonHierarchy(
@@ -1302,7 +1301,7 @@ class SQLDatabase(Database):
                         # f = StringIO()
                         # writeMinf( f, ( state, ) )
                         # minf = f.getvalue()
-                        minf = cPickle.dumps(state, MINF_PICKLE_PROTOCOL)
+                        minf = pickle.dumps(state, MINF_PICKLE_PROTOCOL)
                         cursor.execute(
                             'INSERT INTO _DISKITEMS_ (_uuid, _diskItem) VALUES (? ,?)', (uuid, minf))
                         if source_referential and destination_referential:
@@ -1395,11 +1394,11 @@ class SQLDatabase(Database):
 
         try:
             if six.PY2:
-                state = cPickle.loads(minf)
+                state = pickle.loads(minf)
             else:
                 # pickles from python2 need encoding='latin1', see
                 # https://docs.python.org/3/library/pickle.html#pickle.Unpickler.
-                state = cPickle.loads(minf, encoding='latin1')
+                state = pickle.loads(minf, encoding='latin1')
         except Exception as e:
             print('Could not decode attributes for disk item:',
                   file=sys.stderr)

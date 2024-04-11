@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import brainvisa.processes
-from datetime import date
 from datetime import datetime
 from datetime import timedelta
-from six.moves import StringIO
+from io import StringIO
 import distutils
 import os
 import sys
 import re
-import types
 from soma.qt_gui.qt_backend.Qt import (
     Qt, QAction, QApplication, QButtonGroup,
     QCursor, QComboBox, QDialog, QDockWidget, QFile, QFileDialog, QFont,
@@ -24,7 +22,6 @@ from soma.qt_gui.qt_backend.Qt import (
 from soma.qt_gui import qt_backend
 from soma.qt_gui.qt_backend import QtCore
 from soma.qt_gui.qt_backend import QtGui
-from six.moves import range
 from soma.qt4gui.text import (QWebEnginePage, use_webengine,
     QWebEngineView, QWebPage)
 from soma.qt_gui.qt_backend import loadUi, loadUiType
@@ -43,8 +40,6 @@ from soma.qtgui.api import QtThreadCall, FakeQtThreadCall, WebBrowserWithSearch,
 from soma.html import htmlEscape
 from soma.wip.application.api import Application
 import soma.functiontools
-import threading
-import socket
 import six
 try:
     from soma.qt_gui.qt_backend import sip
@@ -62,7 +57,6 @@ from soma.signature.api import HasSignature
 from soma.signature.api import Signature as SomaSignature
 from soma.signature.api import FileName as SomaFileName
 from soma.signature.api import Choice as SomaChoice
-from soma.signature.api import Boolean as SomaBoolean
 from soma.qt4gui.api import ApplicationQt4GUI
 from brainvisa.data.databaseCheck import BVChecker_3_1
 from brainvisa.data import neuroHierarchy
