@@ -333,7 +333,7 @@ group1.add_option('--params', dest='paramsfile', default=None,
                   'can be useful to reuse parameters, or when the parameters '
                   'are too long (in a large iteration, typically). The file '
                   'syntax is one line per parameter, with no further parsing. '
-                  'It will be processed after all the current commanline '
+                  'It will be processed after all the current commandline '
                   'arguments, not right now as the argument appears. But if '
                   'a parameter has already been set (via commandline), it '
                   'will not be replaced: first set arguments have priority. '
