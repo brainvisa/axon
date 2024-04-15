@@ -95,11 +95,6 @@ def link_outputs(self, *proc):
         return self.signature["output_folder"].findValue(d)
 
 
-def update_acquisition(self, t1mri):
-    if t1mri:
-        return t1mri.get('acquisition')
-
-
 def extract_zip(self, context, zip_path):
     if zip_path:
         dir_mni = context.temporary("Directory")
@@ -117,7 +112,7 @@ def initialization(self):
         self.addLink(param, "output_folder")
     self.addLink("output_folder", ("subject", "acquisition"), self.link_outputs)
     self.addLink("subject", "t1mri")
-    self.addLink("acquisition", "t1mri", self.update_acquisition)
+    self.addLink("acquisition", "t1mri", lambda x: x.get('acquisition') if x else None)
 
 
 def execution(self, context):
