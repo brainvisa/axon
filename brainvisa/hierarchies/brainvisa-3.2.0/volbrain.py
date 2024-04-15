@@ -64,6 +64,8 @@ insert('{center}/{subject}',
             ),
             "report_<subject>",
             SetType("Analysis Report"),
+            "metadata_<subject>",
+            SetType('Metadata Execution')
         ),
     ),
 )

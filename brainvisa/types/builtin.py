@@ -315,6 +315,7 @@ FileType('FLAIR MRI', '3D Volume')
 FileType('Raw FLAIR MRI', 'FLAIR MRI')
 
 FileType('Analysis Report', 'Text file')
+FileType('Metadata Execution', 'Any Type', 'JSON file')
 
 #----------------- Graphs -------------------------
 Format('Label Translation', "f|*.trl")
