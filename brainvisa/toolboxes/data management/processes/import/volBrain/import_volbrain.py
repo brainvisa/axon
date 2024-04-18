@@ -5,7 +5,7 @@ import zipfile
 import glob
 
 
-name = 'Import volBrain results into a brainvisa database'
+name = 'Import volBrain results'
 userLevel = 0
 
 inputs = 'Inputs'
