@@ -20,10 +20,6 @@ signature = Signature(
         'Any Type',
         'ZIP file',
         section=inputs),
-    #'volBrain_native_zip', ReadDiskItem(
-    #    'Any Type',
-    #    'ZIP file',
-    #    section=inputs),
     'subject', ReadDiskItem(
         'Subject',
         'Directory',
@@ -143,18 +139,6 @@ signature = Signature(
 
 
 def initialization(self):
-    #def linkSubject(self, proc):
-        #if self.volBrain_mni_zip is not None:
-            #subject = os.path.basename(self.volBrain_mni_zip.fullPath()).split('.nii.gz')[0]
-        #return subject
-    
-    #def linkNativeZip(self, proc):
-        #if self.volBrain_mni_zip is not None:
-            #directory = os.path.dirname(self.volBrain_mni_zip.fullPath())
-            #basename = os.path.basename(self.volBrain_mni_zip.fullPath())
-            #zip_native = os.path.join(directory,
-            #                          'native_' + basename)
-            #return zip_native
     
     def linkVolBrainOutput(self, proc):
         if self.subject and self.acquisition:
@@ -189,12 +173,9 @@ def initialization(self):
                                                           'thickness')
             return p
     
-    #self.linkParameters('subject', 'volBrain_mni_zip', linkSubject)
-    #self.linkParameters('volBrain_native_zip', 'volBrain_mni_zip', linkNativeZip)
     
     self.linkParameters('report_csv', ('subject', 'acquisition'), linkVolBrainOutput)
     
-    #self.linkParameters('report_csv', 'mni_lab')
     self.linkParameters('report_pdf', 'report_csv')
     self.linkParameters('readme', 'report_csv')
     
@@ -219,9 +200,6 @@ def initialization(self):
     self.linkParameters('native_thickness', 'native_structures',
                         linkThicknessNative)
     self.linkParameters('native_t1','native_structures')
-    
-    #self.signature['volBrain_mni_zip'].mandatory = False
-    #self.signature['volBrain_native_zip'].mandatory = False
     
 
 def execution(self, context):
@@ -260,7 +238,6 @@ def execution(self, context):
                         '-o', self.__dict__[p_out]]
         if p_out != 'mni_t1':
             command_list += ['-t', 'S16']
-        #print(command_list)
         context.system(*command_list)
     
     files_list = glob.glob(os.path.join(dir_mni.fullPath(), 'native*'))
@@ -272,5 +249,4 @@ def execution(self, context):
                         '-o', self.__dict__[p_out]]
         if p_out != 'native_t1':
             command_list += ['-t', 'S16']
-        #print(command_list)
         context.system(*command_list)
