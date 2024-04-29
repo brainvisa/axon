@@ -24,7 +24,6 @@ def volbrain_space(space):
         f'<subject>_{space}_readme', SetType('Text file'),
     )
 
-
 insert('{center}/{subject}',
     'volBrain', SetWeakAttr('modality', 'volBrain'), SetContent(
         '{acquisition}', SetType('Acquisition'),
@@ -66,6 +65,31 @@ insert('{center}/{subject}',
             SetType("Analysis Report"),
             "metadata_<subject>",
             SetType('Metadata Execution')
+        ),
+    ),
+)
+
+insert('{center}/{subject}',
+    'vol2Brain', SetWeakAttr('modality', 'vol2Brain'), SetContent(
+        '{acquisition}', SetType('Acquisition'),
+        SetDefaultAttributeValue('acquisition', default_acquisition), SetContent(
+            'matrix_affine_native_to_mni_<subject>', SetType('Transformation'),
+            'mni_t1_<subject>', SetType('T1 MRI Denoised and Bias Corrected'), SetWeakAttr('space', 'mni'),
+            'mni_mask_<subject>', SetType('Intracranial mask'), SetWeakAttr('space', 'mni'),
+            'mni_tissues_<subject>', SetType('Intracranial labels'), SetWeakAttr('space', 'mni'),
+            'mni_macrostructures_<subject>', SetType('Split Brain Mask'), SetWeakAttr('space', 'mni'),
+            'mni_lobes_<subject>', SetType('Brain Lobes'), SetWeakAttr('space', 'mni'),
+            'mni_structures_<subject>', SetType('Subcortical labels'), SetWeakAttr('space', 'mni'),
+            'mni_thickness_<subject>', SetType('Cortical Thickness map'), SetWeakAttr('space', 'mni'),
+            'native_t1_<subject>', SetType('T1 MRI Denoised and Bias Corrected'), SetWeakAttr('space', 'native'),
+            'native_mask_<subject>', SetType('Intracranial mask'), SetWeakAttr('space', 'native'),
+            'native_tissues_<subject>', SetType('Intracranial labels'), SetWeakAttr('space', 'native'),
+            'native_macrostructures_<subject>', SetType('Split Brain Mask'), SetWeakAttr('space', 'native'),
+            'native_lobes_<subject>', SetType('Brain Lobes'), SetWeakAttr('space', 'native'),
+            'native_structures_<subject>', SetType('Subcortical labels'), SetWeakAttr('space', 'native'),
+            'native_thickness_<subject>', SetType('Cortical Thickness map'), SetWeakAttr('space', 'native'),
+            'report_<subject>', SetType('Analysis Report'),
+            'readme_<subject>', SetType('Text file'),
         ),
     ),
 )

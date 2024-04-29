@@ -308,6 +308,7 @@ FileType('Brain Lobes', 'Label Volume')
 FileType('Intracranial labels', 'Label Volume')
 FileType('Intracranial mask', 'Label Volume')
 FileType('Subcortical labels', 'Label Volume')
+FileType('Cortical Thickness map', '3D Volume')
 
 FileType('T1 MRI Analysis Directory', 'Directory')
 
