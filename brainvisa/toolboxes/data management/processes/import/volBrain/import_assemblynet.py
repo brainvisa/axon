@@ -117,7 +117,6 @@ def initialization(self):
 
 def execution(self, context):
     dir_zip = self.extract_zip(context, self.assemblynet_zip)
-    print(dir_zip)
     files_list = Path(dir_zip.fullPath()).glob("*.nii.gz")
     for f in files_list:
         file_type = f.name.split("_job")[0]
