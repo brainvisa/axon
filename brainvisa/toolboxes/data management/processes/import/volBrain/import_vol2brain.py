@@ -51,7 +51,7 @@ signature = Signature(
         section=outputs_mni),
     # MNI outputs
     'mni_structures', WriteDiskItem(
-        'Subcortical labels',
+        'Brain Structures',
         'gz compressed NIFTI-1 image',
         requiredAttributes={'modality': 'vol2Brain',
                             'space': 'mni'},
@@ -94,7 +94,7 @@ signature = Signature(
         section=outputs_mni),
     # Native outputs
     'native_structures', WriteDiskItem(
-        'Subcortical labels',
+        'Brain Structures',
         'gz compressed NIFTI-1 image',
         requiredAttributes={'modality': 'vol2Brain',
                             'space': 'native'},
@@ -149,31 +149,6 @@ def initialization(self):
                  'acquisition': self.acquisition}
             return self.signature['report_csv'].findValue(d)
     
-    def linkLobesMNI(self, proc):
-        if self.mni_structures:
-            p = self.mni_structures.fullPath().replace('structures',
-                                                       'lobes')
-            return p
-    
-    def linkLobesNative(self, proc):
-        if self.native_structures:
-            p = self.native_structures.fullPath().replace('structures',
-                                                          'lobes')
-            return p
-    
-    def linkThicknessMNI(self, proc):
-        if self.mni_structures:
-            p = self.mni_structures.fullPath().replace('structures',
-                                                       'thickness')
-            return p
-    
-    def linkThicknessNative(self, proc):
-        if self.native_structures:
-            p = self.native_structures.fullPath().replace('structures',
-                                                          'thickness')
-            return p
-    
-    
     self.linkParameters('report_csv', ('subject', 'acquisition'), linkVolBrainOutput)
     
     self.linkParameters('report_pdf', 'report_csv')
@@ -184,10 +159,8 @@ def initialization(self):
     self.linkParameters('mni_macrostructures', 'mni_structures')
     self.linkParameters('mni_mask', 'mni_structures')
     self.linkParameters('mni_tissues', 'mni_structures')
-    self.linkParameters('mni_lobes', 'mni_structures',
-                        linkLobesMNI)
-    self.linkParameters('mni_thickness', 'mni_structures',
-                        linkThicknessMNI)
+    self.linkParameters('mni_lobes', 'mni_structures')
+    self.linkParameters('mni_thickness', 'mni_structures')
     self.linkParameters('mni_t1', 'mni_structures')
     
     self.linkParameters('native_structures', 'mni_structures')
@@ -195,10 +168,8 @@ def initialization(self):
                         'native_structures')
     self.linkParameters('native_mask','native_structures')
     self.linkParameters('native_tissues','native_structures')
-    self.linkParameters('native_lobes', 'native_structures',
-                        linkLobesNative)
-    self.linkParameters('native_thickness', 'native_structures',
-                        linkThicknessNative)
+    self.linkParameters('native_lobes', 'native_structures')
+    self.linkParameters('native_thickness', 'native_structures')
     self.linkParameters('native_t1','native_structures')
     
 
