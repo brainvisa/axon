@@ -98,9 +98,10 @@ def initialization(self):
 def execution(self, context):
     tm = registration.getTransformationManager()
     ref = None
-    
-    for input_image, output_image in zip([self.inv1, self.inv2, self.t1map, self.uni],
-                                         [self.output_inv1, self.output_inv2, self.output_t1map, self.output_uni]):
+
+    for input_image, output_image, image_type in zip([self.inv1, self.inv2, self.t1map, self.uni],
+                                                     [self.output_inv1, self.output_inv2, self.output_t1map, self.output_uni],
+                                                     ["Raw MP2RAGE INV1", "Raw MP2RAGE INV2", "Raw MP2RAGE T1MAP", "Raw MP2RAGE UNI"]):
         # to fetch all parameters of the input image (type, transfo, dimension, voxel size, ...)
         if input_image is None and output_image is None:
             continue
@@ -119,7 +120,7 @@ def execution(self, context):
                 if self.input_spm_orientation == 'Radiological':
                     iradio = 1
                 if radio is None or radio != iradio:
-                    input1 = context.temporary(input1.format, 'Raw FLAIR MRI')
+                    input1 = context.temporary(input1.format, image_type)
                     if neuroConfig.platform != 'windows':
                         os.symlink(input_image.fullName() + '.img',
                                     input1.fullName() + '.img')
@@ -141,7 +142,7 @@ def execution(self, context):
             if dtype in ('FLOAT', 'DOUBLE'):
                 # in float/double images, NaN values may have been introduced
                 # (typically by SPM after a normalization)
-                input2 = context.temporary('NIFTI-1 image', 'Raw T1 MRI')
+                input2 = context.temporary('NIFTI-1 image', image_type)
                 context.system('AimsRemoveNaN', '-i', input1, '-o', input2)
                 input1 = input2
                 input = input2
@@ -149,7 +150,7 @@ def execution(self, context):
                 if dtype == 'S16':
                     input = output_image
                 else:
-                    input = context.temporary('NIFTI-1 image', 'Raw T1 MRI')
+                    input = context.temporary('NIFTI-1 image', image_type)
                 context.runProcess(converter, input1, input)
             if dtype != 'S16':
                 # here we must convert to S16 data type
