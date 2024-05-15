@@ -2,7 +2,7 @@ include('base')
 include('anatomy')
 
 
-def assemblynet_space(space):
+def volbrain_processes_space(space):
     return (
         f"{space}_lobes_<subject>", SetType("Brain Lobes"), SetWeakAttr("space", space),
         f"{space}_macrostructures_<subject>", SetType("Split Brain Mask"), SetWeakAttr("space", space),
@@ -43,49 +43,30 @@ insert('{center}/{subject}',
             '<subject>_report', SetType('Analysis Report'),
         ),
     ),
-    "assemblyNet",
-    SetWeakAttr("modality", "assemblyNet"),
-    SetContent(
+    "assemblyNet", SetWeakAttr("modality", "assemblyNet"), SetContent(
         "{acquisition}",
         SetType("Acquisition"),
         SetDefaultAttributeValue("acquisition", default_acquisition),
         SetContent(
-            *assemblynet_space("mni"),
-            *assemblynet_space("native"),
+            *volbrain_processes_space("mni"),
+            *volbrain_processes_space("native"),
             "matrix_affine_native_to_mni_<subject>", SetType("Transformation"),
             "report_<subject>", SetType("Analysis Report"),
             "metadata_<subject>", SetType('Metadata Execution'),
-
-            # "mni",
-            # SetWeakAttr("space", "mni"),
-            # SetContent(
-            #     # *(("<subject>_affine_transformation", SetType("Transformation"), SetWeakAttr("space", "mni")) + assemblynet_space("mni")),
-            #     *(("matrix_affine_native_to_mni_<subject>", SetType("Transformation"), SetWeakAttr("space", "mni")) + assemblynet_space("mni")),
-            # ),
-            # "native",
-            # SetWeakAttr("space", "native"),
-            # SetContent(
-            #     *assemblynet_space("native")
-            # ),
-            # "report_<subject>",
-            # SetType("Analysis Report"),
-            # "metadata_<subject>",
-            # SetType('Metadata Execution')
         ),
     ),
-)
-
-insert('{center}/{subject}',
-    'vol2Brain', SetWeakAttr('modality', 'vol2Brain'), SetContent(
-        '{acquisition}', SetType('Acquisition'),
-        SetDefaultAttributeValue('acquisition', default_acquisition), SetContent(
-            *assemblynet_space('mni'),
-            *assemblynet_space('native'),
-            'matrix_affine_native_to_mni_<subject>', SetType('Transformation'),
-            'mni_thickness_<subject>', SetType('Cortical Thickness map'), SetWeakAttr('space', 'mni'),
-            'native_thickness_<subject>', SetType('Cortical Thickness map'), SetWeakAttr('space', 'native'),
-            'report_<subject>', SetType('Analysis Report'),
-            'readme_<subject>', SetType('Text file'),
+    "vol2Brain", SetWeakAttr("modality", "vol2Brain"), SetContent(
+        "{acquisition}",
+        SetType("Acquisition"),
+        SetDefaultAttributeValue("acquisition", default_acquisition),
+        SetContent(
+            *volbrain_processes_space("mni"),
+            *volbrain_processes_space("native"),
+            "matrix_affine_native_to_mni_<subject>", SetType("Transformation"),
+            "mni_thickness_<subject>", SetType("Cortical Thickness map"), SetWeakAttr("space", "mni"),
+            "native_thickness_<subject>", SetType("Cortical Thickness map"), SetWeakAttr("space", "native"),
+            "report_<subject>", SetType("Analysis Report"),
+            "readme_<subject>", SetType("Text file"),
         ),
     ),
 )
