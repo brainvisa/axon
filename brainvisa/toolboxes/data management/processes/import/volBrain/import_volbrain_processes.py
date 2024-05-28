@@ -80,10 +80,10 @@ signature = Signature(
         "Brain Structures", default_format, section=outputs_native,
         requiredAttributes={"space": "native"}
     ),
-    # "native_t1", WriteDiskItem(
-    #     "T1 MRI Denoised and Bias Corrected", default_format, section=outputs_native,
-    #     requiredAttributes={"space": "native"}
-    # ),
+    "native_t1", WriteDiskItem(
+        "T1 MRI Denoised and Bias Corrected", default_format, section=outputs_native,
+        requiredAttributes={"space": "native"}
+    ),
     "native_tissues", WriteDiskItem(
         "Intracranial labels", default_format, section=outputs_native,
         requiredAttributes={"space": "native"}
