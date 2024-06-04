@@ -188,26 +188,8 @@ from brainvisa.config import fullVersion, shortVersion
 
 exitValue = 0
 
-mainPath = None
-build_or_install = os.environ.get('CASA_BUILD')
-if not build_or_install:
-    build_or_install = os.environ.get('CONDA_PREFIX')
-if build_or_install:
-    for i in [os.path.join(build_or_install, 'python', 'brainvisa'), 
-              os.path.join(build_or_install, 'lib', 'python*', 'site-packages', 'brainvisa')]:
-        g = glob.glob(i)
-        if g:
-            if os.path.exists(os.path.join(g[0], 'toolboxes')):
-                mainPath = g[0]
-                break
-if not mainPath:
-    mainPath = os.path.normpath(
-        os.path.join(os.path.dirname(brainvisa.__file__), "..", "..", "brainvisa"))
+mainPath = os.path.dirname(brainvisa.__file__)
 
-    sys.argv[0] = os.path.normpath(
-        os.path.abspath(os.path.join(mainPath, '..', 'bin', 'brainvisa')))
-
-    mainPath = os.path.normpath(os.path.abspath(mainPath))
 if not os.path.isdir(mainPath):
     raise RuntimeError('Cannot find main BrainVISA directory')
 
