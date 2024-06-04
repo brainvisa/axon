@@ -279,7 +279,7 @@ def getSharePath():
         return _sharePath
     try:
         from soma.config import BRAINVISA_SHARE
-        _sharePath = BRAINVISA_SHARE
+        _sharePath = os.path.dirname(BRAINVISA_SHARE)
     except ImportError:
         path = os.getenv('PATH').split(os.pathsep)
         for p in path:
