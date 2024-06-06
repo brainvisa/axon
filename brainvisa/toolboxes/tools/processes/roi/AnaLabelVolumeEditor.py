@@ -31,6 +31,10 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from __future__ import absolute_import
+
+import os
+import shutil
+
 from brainvisa.processes import *
 from brainvisa import anatomist
 from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
@@ -156,6 +160,8 @@ def save_roi(self, message=None):
                        os.path.join(
                            self.fgraphbase + '.data', 'roi_Volume'), '-o',
                        self.label_volume, '-g', -1, '-n', val)
+        shutil.rmtree(os.path.join(self.fgraphbase + '.data'))
+        os.unlink(self.finalgraph)
 
 
 def execution(self, context):
