@@ -38,6 +38,10 @@ import shutil
 from brainvisa.processes import *
 from brainvisa import anatomist
 from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
+from soma.qt_gui.qtThread import MainThreadLife
+import threading
+import os
+
 
 name = 'Label volume editor'
 roles = ('editor',)
@@ -47,14 +51,15 @@ userLevel = 0
 def validation():
     anatomist.validation()
 
+
 signature = Signature(
-  'label_volume', WriteDiskItem('Label volume',
-                                'Aims writable volume formats'),
-  'support_volume', ReadDiskItem('Raw T1 MRI',
-                                 'Anatomist volume formats',
-                                 exactType=True),
-  'pipeline_mask_nomenclature', ReadDiskItem('Nomenclature', 'Hierarchy'),
-  'background_label', OpenChoice('minimum'),
+    'label_volume', WriteDiskItem('Label volume',
+                                  'Aims writable volume formats'),
+    'support_volume', ReadDiskItem('Raw T1 MRI',
+                                   'Anatomist volume formats',
+                                   exactType=True),
+    'pipeline_mask_nomenclature', ReadDiskItem('Nomenclature', 'Hierarchy'),
+    'background_label', OpenChoice('minimum'),
 )
 
 
@@ -135,22 +140,31 @@ def close_and_save(self, win):
     if self.local_event_loop is not None:
         # if a local event loop runs in the main thread, quit it
         self.local_event_loop.quit()
+    data = self.data.ref()
+    with data.glob_lock:
+        data.edited_data.remove(data.label_volume.fullPath())
 
 
 def save_roi(self, message=None):
-    context = self.context
+    data = self.data.ref()
+    context = data.context
     if not isinstance(message, str) or not message:
-        message = 'Save ROI ?'
+        message = 'Save ROI {0} ?'.format(data.label_volume)
+    modified = (os.stat(data.label_volume.fullPath()).st_mtime != data.m_date)
+    if modified:
+        message += '<br/><b style="color: #c00000;">WARNING: the file has ' \
+            'been modified after it has been loaded, thus saving it may ' \
+            'overwrite other modifications !</b>'
     rep = context.ask(message, "OK", "Cancel", modal=0)
     if rep != 1:
-        self.voigraphnum.save(self.voigraph)
+        data.voigraphnum.save(data.voigraph)
         a = anatomist.Anatomist()
         a.sync()
                # make sure that anatomist has finished to process previous commands
         # a.getInfo()
         context.system('AimsGraphConvert',
-                       '-i', self.voigraph,
-                       '-o', self.finalgraph,
+                       '-i', data.voigraph,
+                       '-o', data.finalgraph,
                        '--volume')
         if self.background_label != 'minimum':
             val = self.background_label
@@ -158,13 +172,35 @@ def save_roi(self, message=None):
             val = 0
         context.system('AimsReplaceLevel', '-i',
                        os.path.join(
-                           self.fgraphbase + '.data', 'roi_Volume'), '-o',
-                       self.label_volume, '-g', -1, '-n', val)
+                           data.fgraphbase + '.data', 'roi_Volume'), '-o',
+                       data.label_volume, '-g', -1, '-n', val)
         shutil.rmtree(os.path.join(self.fgraphbase + '.data'))
         os.unlink(self.finalgraph)
+        # update loaded date
+        data.m_date = os.stat(data.label_volume.fullPath()).st_mtime
+
+
+class EditData:
+    glob_lock = threading.RLock()
+    edited_data = set()
 
 
 def execution(self, context):
+    data = EditData()
+    data.lock = threading.RLock()
+    already_edited = False
+    with data.glob_lock:
+        if self.label_volume.fullPath() in data.edited_data:
+            already_edited = True
+        data.edited_data.add(self.label_volume.fullPath())
+    if already_edited:
+        raise RuntimeError(
+            'The file {0} is already edited in another editor in the same '
+            'BrainVisa/Anatomist session.'.format(
+                self.label_volume.fullPath()))
+    self.data = MainThreadLife(data)
+    data.m_date = os.stat(self.label_volume.fullPath()).st_mtime
+
     a = anatomist.Anatomist()
     if self.pipeline_mask_nomenclature is not None:
         hie = a.loadObject(self.pipeline_mask_nomenclature)
@@ -184,9 +220,12 @@ def execution(self, context):
     else:
         vol = mask
     tmpdir = context.temporary('directory')
-    voi = os.path.join(tmpdir.fullPath(), 'voi.ima')
-    voigraph = os.path.join(tmpdir.fullPath(), 'voigraph.arg')
-    fgraphbase = os.path.join(tmpdir.fullPath(), 'finalgraph')
+    context.write(self.label_volume.fullPath())
+    context.write(self.label_volume.fullName())
+    voigraphname = os.path.basename(self.label_volume.fullName())
+    voigraph = os.path.join(tmpdir.fullPath(), '{0}.arg'.format(voigraphname))
+    fgraphbase = os.path.join(tmpdir.fullPath(),
+                              'finalgraph_{0}'.format(voigraphname))
     finalgraph = fgraphbase + '.arg'
 
     context.system('AimsGraphConvert',
@@ -209,24 +248,26 @@ def execution(self, context):
     # selects the graph
     children = voigraphnum.children
     windownum.group.addToSelection(children)
-    windownum.group.unSelect(children[1:])
+    if len(children) > 1:
+        windownum.group.unSelect(children[1:])
 
     del children
 
     a.execute('SetControl', windows=[windownum], control='PaintControl')
     windownum.showToolbox(True)
 
-    self.context = context
-    self.voigraph = voigraph
-    self.window = windownum
-    self.fgraphbase = fgraphbase
-    self.finalgraph = finalgraph
-    self.voigraphnum = voigraphnum
-    self.finished = False
+    data.tmpdir = tmpdir
+    data.label_volume = self.label_volume
+    data.context = context
+    data.voigraph = voigraph
+    data.window = windownum
+    data.fgraphbase = fgraphbase
+    data.finalgraph = finalgraph
+    data.voigraphnum = voigraphnum
+    data.finished = False
     ac = mainThreadActions().call(self.add_save_button, windownum)
     if ac:
         self.wait_for_close(windownum)
-        import threading
         from soma.qt_gui.qt_backend import Qt
         done = False
         while not done:
@@ -239,16 +280,10 @@ def execution(self, context):
         self.save_roi(message='Click here when finished')
 
     # mainThreadActions().call(self.remove_save_button, windownum, ac)
-    del self.context
-    del self.voigraph
-    del self.window
-    del self.fgraphbase
-    del self.finalgraph
-    del self.voigraphnum
+    del self.data
 
 
 def wait_for_close(self, win):
-    import threading
     from soma.qt_gui.qt_backend import Qt
     if isinstance(threading.current_thread(), threading._MainThread):
         # we are running in the main thread: use a local event loop to wait
