@@ -165,17 +165,19 @@ class EditData:
         context = data.context
         if not isinstance(message, str) or not message:
             message = 'Save ROI {0} ?'.format(data.label_volume)
-        modified = (os.stat(data.label_volume.fullPath()).st_mtime != data.m_date)
+        modified = (os.stat(data.label_volume.fullPath()).st_mtime
+                    != data.m_date)
         if modified:
-            message += '<br/><b style="color: #c00000;">WARNING: the file has ' \
-                'been modified after it has been loaded, thus saving it may ' \
-                'overwrite other modifications !</b>'
+            message += '<br/><b style="color: #c00000;">WARNING: the file ' \
+                'has been modified after it has been loaded, thus saving it ' \
+                'may overwrite other modifications !</b>'
         rep = context.ask(message, "OK", "Cancel", modal=0)
         if rep != 1:
             data.voigraphnum.save(data.voigraph)
             a = anatomist.Anatomist()
             a.sync()
-                # make sure that anatomist has finished to process previous commands
+            # make sure that anatomist has finished to process previous
+            # commands
             # a.getInfo()
             context.system('AimsGraphConvert',
                            '-i', data.voigraph,
@@ -186,11 +188,11 @@ class EditData:
             else:
                 val = 0
             context.system('AimsReplaceLevel', '-i',
-                        os.path.join(
-                            data.fgraphbase + '.data', 'roi_Volume'), '-o',
-                        data.label_volume, '-g', -1, '-n', val)
-        shutil.rmtree(os.path.join(self.fgraphbase + '.data'))
-        os.unlink(self.finalgraph)
+                           os.path.join(
+                                data.fgraphbase + '.data', 'roi_Volume'), '-o',
+                           data.label_volume, '-g', -1, '-n', val)
+            shutil.rmtree(os.path.join(self.fgraphbase + '.data'))
+            os.unlink(self.finalgraph)
             # update loaded date
             data.m_date = os.stat(data.label_volume.fullPath()).st_mtime
 
