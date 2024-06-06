@@ -5,7 +5,7 @@ import zipfile
 import glob
 
 
-name = 'Import volBrain results into a brainvisa database'
+name = 'Import volBrain results'
 userLevel = 0
 
 inputs = 'Inputs'
@@ -24,6 +24,11 @@ signature = Signature(
         'Any Type',
         'ZIP file',
         section=inputs),
+    't1mri', ReadDiskItem(
+        'Raw T1 MRI',
+        'gz compressed NIFTI-1 image',
+        section=inputs
+    ),
     'subject', ReadDiskItem(
         'Subject',
         'Directory',
@@ -181,6 +186,9 @@ def initialization(self):
     #self.linkParameters('subject', 'volBrain_mni_zip', linkSubject)
     self.linkParameters('volBrain_native_zip', 'volBrain_zip', linkNativeZip)
     
+    self.addLink('subject', 't1mri')
+    self.addLink('acquisition', 't1mri', lambda x: x.get('acquisition') if x else None)
+
     #self.linkParameters('mni_lab', ('subject', 'acquisition'), linkVolBrainOutput)
     self.linkParameters('report_csv', ('subject', 'acquisition'), linkVolBrainOutput)
     
@@ -206,7 +214,7 @@ def initialization(self):
     self.linkParameters('native_normalised', 'native_lab')
     self.linkParameters('native_readme', 'native_lab')
     
-    self.setOptional('volBrain_native_zip', 'native_filtered', 'native_normalised', 'native_readme')
+    self.setOptional('t1mri', 'volBrain_native_zip', 'native_filtered', 'native_normalised', 'native_readme')
     
 
 def execution(self, context):

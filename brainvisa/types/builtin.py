@@ -308,6 +308,7 @@ FileType('Brain Lobes', 'Label Volume')
 FileType('Intracranial labels', 'Label Volume')
 FileType('Intracranial mask', 'Label Volume')
 FileType('Subcortical labels', 'Label Volume')
+FileType('Cortical Thickness map', '3D Volume')
 
 FileType('T1 MRI Analysis Directory', 'Directory')
 
@@ -315,6 +316,7 @@ FileType('FLAIR MRI', '3D Volume')
 FileType('Raw FLAIR MRI', 'FLAIR MRI')
 
 FileType('Analysis Report', 'Text file')
+FileType('Metadata Execution', 'Any Type', 'JSON file')
 
 #----------------- Graphs -------------------------
 Format('Label Translation', "f|*.trl")
