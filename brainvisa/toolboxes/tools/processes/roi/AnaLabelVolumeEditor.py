@@ -109,10 +109,10 @@ def add_save_button(self, win):
         ac = QtGui.QAction(icon,
                            win.tr('Save ROI', 'QAWindow'), win.getInternalRep())
         toolbar.addAction(ac)
-        ac.triggered.connect(self.save_roi)
-        self.win_deleted = False
-        self.local_event_loop = None
-        win.getInternalRep().destroyed.connect(self.close_and_save)
+        data = self.data.ref()
+        ac.triggered.connect(data.save_roi)
+        data.win_deleted = False
+        win.getInternalRep().destroyed.connect(data.close_and_save)
         return ac
 
 
@@ -134,60 +134,69 @@ def add_save_button(self, win):
         # sip.transferbacck(ac)
 
 
-def close_and_save(self, win):
-    self.save_roi()
-    self.win_deleted = True
-    if self.local_event_loop is not None:
-        # if a local event loop runs in the main thread, quit it
-        self.local_event_loop.quit()
-    data = self.data.ref()
-    with data.glob_lock:
-        data.edited_data.remove(data.label_volume.fullPath())
-
-
-def save_roi(self, message=None):
-    data = self.data.ref()
-    context = data.context
-    if not isinstance(message, str) or not message:
-        message = 'Save ROI {0} ?'.format(data.label_volume)
-    modified = (os.stat(data.label_volume.fullPath()).st_mtime != data.m_date)
-    if modified:
-        message += '<br/><b style="color: #c00000;">WARNING: the file has ' \
-            'been modified after it has been loaded, thus saving it may ' \
-            'overwrite other modifications !</b>'
-    rep = context.ask(message, "OK", "Cancel", modal=0)
-    if rep != 1:
-        data.voigraphnum.save(data.voigraph)
-        a = anatomist.Anatomist()
-        a.sync()
-               # make sure that anatomist has finished to process previous commands
-        # a.getInfo()
-        context.system('AimsGraphConvert',
-                       '-i', data.voigraph,
-                       '-o', data.finalgraph,
-                       '--volume')
-        if self.background_label != 'minimum':
-            val = self.background_label
-        else:
-            val = 0
-        context.system('AimsReplaceLevel', '-i',
-                       os.path.join(
-                           data.fgraphbase + '.data', 'roi_Volume'), '-o',
-                       data.label_volume, '-g', -1, '-n', val)
-        shutil.rmtree(os.path.join(self.fgraphbase + '.data'))
-        os.unlink(self.finalgraph)
-        # update loaded date
-        data.m_date = os.stat(data.label_volume.fullPath()).st_mtime
-
-
 class EditData:
     glob_lock = threading.RLock()
     edited_data = set()
 
+    def __del__(self):
+        self.close_and_save(self.window)
+
+    def close_and_save(self, win):
+        self.save_roi()
+        self.win_deleted = True
+        if self.label_volume is not None:
+            with self.glob_lock:
+                self.edited_data.remove(self.label_volume.fullPath())
+
+        self.label_volume = None
+        self.tmpdir = None
+        self.context = None
+        self.voigraph = None
+        self.window = None
+        self.fgraphbase = None
+        self.finalgraph = None
+        self.voigraphnum = None
+        self.ana_objects = None
+
+    def save_roi(self, message=None):
+        data = self
+        if self.win_deleted:
+            return  # nothing to do
+        context = data.context
+        if not isinstance(message, str) or not message:
+            message = 'Save ROI {0} ?'.format(data.label_volume)
+        modified = (os.stat(data.label_volume.fullPath()).st_mtime != data.m_date)
+        if modified:
+            message += '<br/><b style="color: #c00000;">WARNING: the file has ' \
+                'been modified after it has been loaded, thus saving it may ' \
+                'overwrite other modifications !</b>'
+        rep = context.ask(message, "OK", "Cancel", modal=0)
+        if rep != 1:
+            data.voigraphnum.save(data.voigraph)
+            a = anatomist.Anatomist()
+            a.sync()
+                # make sure that anatomist has finished to process previous commands
+            # a.getInfo()
+            context.system('AimsGraphConvert',
+                           '-i', data.voigraph,
+                           '-o', data.finalgraph,
+                           '--volume')
+            if self.background_label != 'minimum':
+                val = self.background_label
+            else:
+                val = 0
+            context.system('AimsReplaceLevel', '-i',
+                        os.path.join(
+                            data.fgraphbase + '.data', 'roi_Volume'), '-o',
+                        data.label_volume, '-g', -1, '-n', val)
+        shutil.rmtree(os.path.join(self.fgraphbase + '.data'))
+        os.unlink(self.finalgraph)
+            # update loaded date
+            data.m_date = os.stat(data.label_volume.fullPath()).st_mtime
+
 
 def execution(self, context):
     data = EditData()
-    data.lock = threading.RLock()
     already_edited = False
     with data.glob_lock:
         if self.label_volume.fullPath() in data.edited_data:
@@ -202,10 +211,11 @@ def execution(self, context):
     data.m_date = os.stat(self.label_volume.fullPath()).st_mtime
 
     a = anatomist.Anatomist()
+    ana_objects = []
     if self.pipeline_mask_nomenclature is not None:
         hie = a.loadObject(self.pipeline_mask_nomenclature)
+        ana_objects.append(hie)
 
-    context.write('background:', self.background_label)
     if self.background_label != 'minimum':
         mask = context.temporary('GIS image', 'Label Volume')
         context.write('not min')
@@ -220,8 +230,6 @@ def execution(self, context):
     else:
         vol = mask
     tmpdir = context.temporary('directory')
-    context.write(self.label_volume.fullPath())
-    context.write(self.label_volume.fullName())
     voigraphname = os.path.basename(self.label_volume.fullName())
     voigraph = os.path.join(tmpdir.fullPath(), '{0}.arg'.format(voigraphname))
     fgraphbase = os.path.join(tmpdir.fullPath(),
@@ -234,6 +242,7 @@ def execution(self, context):
                    '--bucket')
 
     imagenum = a.loadObject(vol)
+    ana_objects.append(imagenum)
     voigraphnum = a.loadObject(voigraph)
     ref = imagenum.referential
     if ref != a.centralRef:
@@ -264,37 +273,13 @@ def execution(self, context):
     data.fgraphbase = fgraphbase
     data.finalgraph = finalgraph
     data.voigraphnum = voigraphnum
-    data.finished = False
+    data.background_label = self.background_label
+    data.ana_objects = ana_objects
+    data.win_deleted = False
+
     ac = mainThreadActions().call(self.add_save_button, windownum)
-    if ac:
-        self.wait_for_close(windownum)
-        from soma.qt_gui.qt_backend import Qt
-        done = False
-        while not done:
-            if isinstance(threading.current_thread(), threading._MainThread):
-                Qt.QApplication.instance().processEvents()
-            time.sleep(0.1)
-            done = mainThreadActions().call(getattr, self, 'win_deleted')
-    else:
-        # ac is None, probably socket mode
-        self.save_roi(message='Click here when finished')
 
-    # mainThreadActions().call(self.remove_save_button, windownum, ac)
+    res = self.data
     del self.data
+    return res
 
-
-def wait_for_close(self, win):
-    from soma.qt_gui.qt_backend import Qt
-    if isinstance(threading.current_thread(), threading._MainThread):
-        # we are running in the main thread: use a local event loop to wait
-        # for the editor window to be closed by the user. The destroyed
-        # callback will take care of ending the loop.
-        self.local_event_loop = Qt.QEventLoop()
-        self.local_event_loop.exec()
-    else:
-        # we are running in a secondary thrad: poll in the main thread for
-        # the editor window to be closed by the user
-        done = False
-        while not done:
-            time.sleep(0.1)
-            done = mainThreadActions().call(getattr, self, 'win_deleted')
