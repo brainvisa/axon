@@ -1,3 +1,8 @@
+
+
+import os
+import shutil
+
 from brainvisa.processes import *
 from brainvisa import anatomist
 from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
@@ -152,6 +157,8 @@ class EditData:
                         os.path.join(
                             data.fgraphbase + '.data', 'roi_Volume'), '-o',
                         data.label_volume, '-g', -1, '-n', val)
+            shutil.rmtree(os.path.join(self.fgraphbase + '.data'))
+            os.unlink(self.finalgraph)
             # update loaded date
             data.m_date = os.stat(data.label_volume.fullPath()).st_mtime
 
