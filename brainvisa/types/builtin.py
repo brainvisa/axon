@@ -315,6 +315,11 @@ FileType('T1 MRI Analysis Directory', 'Directory')
 FileType('FLAIR MRI', '3D Volume')
 FileType('Raw FLAIR MRI', 'FLAIR MRI')
 
+FileType('Raw MP2RAGE INV1', '3D Volume')
+FileType('Raw MP2RAGE INV2', '3D Volume')
+FileType('Raw MP2RAGE UNI', '3D Volume')
+FileType('Raw MP2RAGE T1MAP', '3D Volume')
+
 FileType('Analysis Report', 'Text file')
 FileType('Metadata Execution', 'Any Type', 'JSON file')
 
