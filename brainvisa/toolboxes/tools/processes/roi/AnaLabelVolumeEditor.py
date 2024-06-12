@@ -227,17 +227,18 @@ def execution(self, context):
     a.addObjects(objects=[voigraphnum, imagenum], windows=[windownum])
 
     voigraphnum.setMaterial(a.Material(diffuse=[0.8, 0.8, 0.8, 0.5]))
-    # selects the graph
-    children = voigraphnum.children
-    windownum.group.addToSelection(children)
-    if len(children) > 1:
-        windownum.group.unSelect(children[1:])
-
-    del children
 
     a.execute('SetControl', windows=[windownum], control='PaintControl')
     windownum.showToolbox(True)
 
+    # selects the graph
+    children = {c.attributed().get('name'): c for c in voigraphnum.children}
+    cname = sorted(children)[0]
+    windownum.group.setSelection(children[cname])
+    #if len(children) > 1:
+        #windownum.group.unSelect(children[1:])
+
+    del children
     data.tmpdir = tmpdir
     data.label_volume = self.label_volume
     data.context = context
