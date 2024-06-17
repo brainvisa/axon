@@ -70,8 +70,13 @@ for web_mod in web_import_order:
         else:
             # use the obsolete QtWebKit
             from soma.qt_gui.qt_backend import QtWebKit
-            QWebEngineView = QtWebKit.QWebView
-            QWebPage = QtWebKit.QWebPage
+            try:
+                from soma.qt_gui.qt_backend import QtWebKitWidgets
+            except ImportError:
+                print('NO QtWebKitWidgets module')
+                QtWebKitWidgets = QtWebKit
+            QWebEngineView = QtWebKitWidgets.QWebView
+            QWebPage = QtWebKitWidgets.QWebPage
             QWebEnginePage = QWebPage
             use_webengine = False
     except ImportError:
