@@ -132,6 +132,16 @@ if anatomistImport:
 
         def __singleton_init__(self, *args, **kwargs):
             import threading
+
+            if use_headless:
+                from soma.qt_gui.qt_backend import Qt, sip
+                if not isinstance(Qt.QApplication.instance(), Qt.QApplication):
+                    # the qapp keeps being deleted at some places, I don't
+                    # understand where and why.
+                    qapp = Qt.QApplication([sys.argv[0], '-platform',
+                                            'offscreen'])
+                    sip.transferto(qapp, None)
+
             self.communicationLogFile = None
             self.outputLog = None
             if neuroConfig.mainLog is not None:
