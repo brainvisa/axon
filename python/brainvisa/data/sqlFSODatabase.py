@@ -1176,38 +1176,42 @@ class SQLDatabase(Database):
     def _diskItemsWithParents(self, diskItems):
         diSet = set(diskItems)
         cursor = None
-        for diskItem in diskItems:
-            dirname = os.path.dirname(diskItem.fullPath())
-            reldirname = relative_path(dirname, self.directory)
-            # add parents until one is already in the set or already in the
-            # database
-            lastItem = diskItem
-            while reldirname:
-                dirItem = self.createDiskItemFromFileName(
-                    os.path.join(self.directory, reldirname), None)
-                if dirItem:
-                    # set/fix parent item
-                    lastItem.parent = dirItem
-                    lastItem = dirItem
-                    if dirItem in diSet:
-                        break
-                    # check if it is already in the database
-                    if cursor is None:
-                        cursor = self._getDatabaseCursor()
-                    uuid = cursor.execute(
-                        'SELECT _uuid FROM _FILENAMES_ WHERE filename=?',
-                      (reldirname, )).fetchone()
-                    if uuid:
-                        break
-                    diSet.add(dirItem)
-                reldirname = os.path.dirname(reldirname)
+        try:
+            for diskItem in diskItems:
+                dirname = os.path.dirname(diskItem.fullPath())
+                reldirname = relative_path(dirname, self.directory)
+                # add parents until one is already in the set or already in the
+                # database
+                lastItem = diskItem
+                while reldirname:
+                    dirItem = self.createDiskItemFromFileName(
+                        os.path.join(self.directory, reldirname), None)
+                    if dirItem:
+                        # set/fix parent item
+                        lastItem.parent = dirItem
+                        lastItem = dirItem
+                        if dirItem in diSet:
+                            break
+                        # check if it is already in the database
+                        if cursor is None:
+                            cursor = self._getDatabaseCursor()
+                        uuid = cursor.execute(
+                            'SELECT _uuid FROM _FILENAMES_ WHERE filename=?',
+                        (reldirname, )).fetchone()
+                        if uuid:
+                            break
+                        diSet.add(dirItem)
+                    reldirname = os.path.dirname(reldirname)
+        finally:
+            if cursor is not None:
+                self._closeDatabaseCursor(cursor)
         return diSet
 
     def insertDiskItems(self, diskItems, update=False, insertParentDirs=True):
-        cursor = self._getDatabaseCursor()
         diSet = diskItems
         if insertParentDirs:
             diSet = self._diskItemsWithParents(diskItems)
+        cursor = self._getDatabaseCursor()
         try:
             # print("sqlFSODatabase : insertDiskItems ", diSet)
             for diskItem in diSet:
