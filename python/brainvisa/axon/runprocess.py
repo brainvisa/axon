@@ -557,7 +557,7 @@ try:
         # sip.delete(qapp)
         del a
         # del qapp
-except Exception as e:
+except Exception:
     pass
 
 if neuroConfig.exitValue == 0:
