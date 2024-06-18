@@ -38,26 +38,6 @@ brainvisa.axon.runprocess is not a real python module, but rather an executable 
 python -m brainvisa.axon.runprocess <process name> <process arguments>
 """
 
-# headless requires to run Xvfb and initialize VirtualGL. It needs to be
-# done first, but in parallel execution, many processes doing it will end
-# up with conflicts in accessing X servers, and some processes will fail.
-# so I disable it.
-#
-#try:
-    ## in case any import instantiates a Qt app or loads plugins
-    #import anatomist.headless as ah
-    #ah.setup_headless()
-    #from soma.qt_gui.qt_backend import QtWidgets, QtCore, sip
-    #if not isinstance(QtWidgets.QApplication.instance(),
-                      #QtWidgets.QApplication):
-        #if QtWidgets.QApplication.instance() is None:
-            #QtWidgets.QApplication.setAttribute(
-                #QtCore.Qt.ApplicationAttribute.AA_ShareOpenGLContexts)
-        #qapp = QtWidgets.QApplication([])
-        #sip.transferto(qapp, None)
-#except Exception:
-    #pass
-
 from brainvisa import axon
 from brainvisa.configuration import neuroConfig
 import brainvisa.processes
@@ -482,7 +462,6 @@ finally:
         os.unlink(x)
     del x, tmp
     # print('*** Re-enabling stdout/err ***')
-
 
 
 if options.list_processes:
