@@ -376,10 +376,17 @@ def getDocPath(path, project=''):
 
 docPath = mainDocPath = getDocPath(mainPath, f'axon-{versionNumber()}')
 
-_languages = []
+_languages = ['en', 'fr']
+for l in _languages:
+    if not os.path.exists(os.path.join(docPath, l)):
+        try:
+            os.makedirs(os.path.join(docPath, l))
+        except Exception:
+            pass
 if os.path.exists(docPath):
     for l in os.listdir(docPath):
-        if len(l) == 2 and os.path.isdir(os.path.join(mainDocPath, l)):
+        if l not in _languages and len(l) == 2 \
+                and os.path.isdir(os.path.join(mainDocPath, l)):
             _languages.append(l)
 else:
     print(
