@@ -2962,6 +2962,7 @@ class TypesMEF(MultipleExecfile):
                 if module.endswith('.py'):
                     module = module[:-3]
         else:
+            toolbox = 'MyProcesses'
             module = file
         return (toolbox, module)
 
