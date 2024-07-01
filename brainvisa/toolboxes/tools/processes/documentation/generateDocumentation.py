@@ -455,6 +455,9 @@ def execution(self, context):
     typesByToolboxes = {}
     formatsByToolboxes = {}
     for t in allTypes:
+        if t.toolbox is None:
+            context.write('Type without toolbox:', t)
+            t.toolbox = 'MyProcesses'
         typesByToolboxes.setdefault(t.toolbox, []).append(t)
         if isinstance(t.formats, NamedFormatList):
             f = t.formats.name
