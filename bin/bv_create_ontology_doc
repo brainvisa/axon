@@ -37,7 +37,6 @@
 # doc directory contains sub-directories project-version
 # each project directory can contain epydoc, doxygen, docbook docs, examples...
 
-from __future__ import absolute_import, print_function
 
 import sys
 import os
@@ -46,9 +45,10 @@ import subprocess
 
 
 def usage():
-    print(
-        "\nThis script generates an html documentation of brainvisa ontology in a brainvisa package or build directory.")
-    print("Usage : bv_create_ontology_doc [options] <build or pack directory>")
+    print("This script generates an html documentation of brainvisa ontology "
+          "in a brainvisa package or build directory.")
+    print("Usage : bv_create_ontology_doc [options] "
+          "<build or install directory>")
     print("Options : ")
     print("-h --help : display this help page\n")
 
@@ -77,7 +77,12 @@ if not os.path.isdir(install_directory):
     sys.exit(2)
 
 # axon = os.path.join( install_directory, 'bin', 'brainvisa' )
-axon = os.path.join(install_directory, 'brainvisa', 'neuro.py')
+axon = os.path.join(install_directory, 'python', 'brainvisa', 'neuro.py')
+if not os.path.exists(axon):
+    # conda-like install
+    axon = os.path.join(install_directory, 'lib',
+                        'python' + '.'.join(sys.version_info[:2]),
+                        'site-packages', 'brainvisa', 'neuro.py')
 if os.path.exists(axon):
     print('Generating BrainVISA processes documentation')
     env = os.environ.copy()
