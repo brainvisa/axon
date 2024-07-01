@@ -44,9 +44,6 @@ if( aims-free_FOUND )
   math( EXPR result "${aims-free_VERSION_MINOR}+1" )
   BRAINVISA_DEPENDENCY( RUN RECOMMENDS "aims-free" RUN ">= ${aims-free_VERSION};<< ${aims-free_VERSION_MAJOR}.${result}" )
 endif()
-if( datamind_FOUND )
-  BRAINVISA_DEPENDENCY( RUN RECOMMENDS "datamind" RUN ">= ${datamind_VERSION}" )
-endif()
 if( brainvisa-share_VERSION_MINOR )
   math( EXPR result "${brainvisa-share_VERSION_MINOR}+1" )
   BRAINVISA_DEPENDENCY( RUN RECOMMENDS "brainvisa-share" RUN ">= ${brainvisa-share_VERSION};<< ${brainvisa-share_VERSION_MAJOR}.${result}" )
@@ -116,7 +113,6 @@ add_dependencies( post-install axon_install_shared_index )
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/bin/bv_create_ontology_doc" )
   set( CREATE_ONTOLOGY_DOC "${CMAKE_CURRENT_SOURCE_DIR}/bin/bv_create_ontology_doc" )
 endif()
-
 
 # Documentation of axon processes and ontologies
 add_custom_target( bv_ontology_doc
