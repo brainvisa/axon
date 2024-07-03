@@ -2852,7 +2852,7 @@ class ProcessView(QWidget, ExecutionContextGUI):
                     if doc is not None and os.path.exists(doc):
                         _mainWindow.info.setSource(doc)
         except Exception:
-            showException()
+            neuroException.showException()
 
     def menuLockStep(self):
         global _mainWindow
@@ -3611,7 +3611,7 @@ class ProcessView(QWidget, ExecutionContextGUI):
                 self.createProcessExecutionEvent())
             return showProcess(clone)
         except Exception:
-            showException()
+            neuroException.showException()
 
     def show_process_doc(self):
         global _mainWindow
@@ -3912,7 +3912,7 @@ class ProcessEdit(QDialog):
             self.readDocumentation()
             self.setLanguage(six.text_type(self.cmbLanguage.currentText()))
         except Exception:
-            showException()
+            neuroException.showException()
 
         w = QWidget()
         hb = QHBoxLayout()
