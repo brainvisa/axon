@@ -902,6 +902,9 @@ for p in (os.path.join(_sharePath, bvShareDirectory),):
         sharedDatabaseFound = True
         break
 
+def sharedDatabasePath():
+    return os.path.join(getSharePath(), bvShareDirectory)
+
 
 class Translator(object):
 
