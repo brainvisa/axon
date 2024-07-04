@@ -75,7 +75,10 @@ for web_mod in web_import_order:
             except ImportError:
                 print('NO QtWebKitWidgets module')
                 QtWebKitWidgets = QtWebKit
-            QWebEngineView = QtWebKitWidgets.QWebView
+            try:
+                QWebEngineView = QtWebKitWidgets.QWebView
+            except AttributeError:
+                continue
             QWebPage = QtWebKitWidgets.QWebPage
             QWebEnginePage = QWebPage
             use_webengine = False
