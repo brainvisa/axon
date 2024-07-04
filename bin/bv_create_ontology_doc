@@ -81,7 +81,7 @@ axon = os.path.join(install_directory, 'python', 'brainvisa', 'neuro.py')
 if not os.path.exists(axon):
     # conda-like install
     axon = os.path.join(install_directory, 'lib',
-                        'python' + '.'.join(sys.version_info[:2]),
+                        f'python{sys.version_info[0]}.{sys.version_info[1]}',
                         'site-packages', 'brainvisa', 'neuro.py')
 if os.path.exists(axon):
     print('Generating BrainVISA processes documentation')
