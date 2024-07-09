@@ -984,6 +984,9 @@ class Parameterized(object):
             self._isParameterSet[name] = True
             newValue = self.signature[name].findValue(value)
             changed = True
+        if isinstance(newValue, DiskItem) \
+                and isinstance(self.signature[name], WriteDiskItem):
+            newValue._write = True
         self.__dict__[name] = newValue
         if changed:
             self._parameterHasChanged(name, newValue)
