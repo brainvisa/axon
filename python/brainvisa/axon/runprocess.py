@@ -77,7 +77,7 @@ def get_process_with_params(process_name, iterated_params=[], *args, **kwargs):
     if neuroConfig.fastStart and getattr(process, 'require_databasing', False):
         # databasing is required by the process and is not enabled yet
         print('Warning: initializing databases. This takes time and may '
-              'cause problems on network filesystems.')
+              'cause problems on network filesystems.', file=sys.stderr)
         from brainvisa.data import neuroHierarchy
         neuroHierarchy.openDatabases()
 
@@ -295,10 +295,17 @@ group1 = OptionGroup(parser, 'Config',
                      description='Processing configuration, database options')
 group1.add_option('--enabledb', dest='enabledb', action='store_true',
                   default=False,
-                  help='enable databasing (slower startup, but all features enabled)')
+                  help='enable databasing on client side (slower startup, but '
+                  'all features enabled). This option is needed to perform '
+                  'parameters completion, for instance. Note that this is '
+                  'only activated on client side: during exection, in '
+                  'sequential mode (no soma-workflow) this option will also '
+                  'apply, but in soma-workflow distributed processing, it '
+                  'will not, unless the process has been written to '
+                  'explicitly require it.')
 group1.add_option('--historyBook', dest='historyBook', action='append',
-                  help='store history information files in this directory (otherwise '
-                  'disabled unless dabasing is enabled)')
+                  help='store history information files in this directory '
+                  '(otherwise disabled unless dabasing is enabled)')
 # group1.add_option('--enablegui', dest='enablegui', action='store_true',
     # default=False,
     # help='enable graphical user interface for interactive processes')
@@ -425,7 +432,7 @@ if not options.enabledb:
     neuroConfig.fastStart = True
 if options.historyBook:
     neuroConfig.historyBookDirectory = options.historyBook
-if not options.logFile is None:
+if options.logFile is not None:
     neuroConfig.logFileName = options.logFile
 else:
     if not options.enabledb and not options.historyBook:
