@@ -4880,16 +4880,17 @@ def close_viewers(warn=False):
     if a == QMessageBox.Yes:
         from brainvisa.data.qt4gui.readdiskitemGUI import DiskItemEditor
         from brainvisa.data.qt4gui.hierarchyBrowser import HierarchyBrowser
-        for w in QApplication.instance().allWidgets():
-            if isinstance(w, DiskItemEditor):
-                w.close_viewer()
-            elif isinstance(w, ProcessView):
-                process_info \
-                    = brainvisa.processes.getProcessInfo(w.process.id())
-                if process_info is not None and "viewer" in process_info.roles:
-                    w.close()
-            elif isinstance(w, HierarchyBrowser):
-                w.close_viewers()
+        if isinstance(QApplication.instance(), QApplication):
+            for w in QApplication.instance().allWidgets():
+                if isinstance(w, DiskItemEditor):
+                    w.close_viewer()
+                elif isinstance(w, ProcessView):
+                    process_info \
+                        = brainvisa.processes.getProcessInfo(w.process.id())
+                    if process_info is not None and "viewer" in process_info.roles:
+                        w.close()
+                elif isinstance(w, HierarchyBrowser):
+                    w.close_viewers()
 
 #----------------------------------------------------------------------------
 
