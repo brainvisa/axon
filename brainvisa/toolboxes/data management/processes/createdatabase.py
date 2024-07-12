@@ -1,5 +1,4 @@
 
-from __future__ import absolute_import
 from brainvisa.configuration import neuroConfig
 from brainvisa import processes
 from brainvisa.data import neuroHierarchy
@@ -11,6 +10,8 @@ from brainvisa.data.sqlFSODatabase import databaseVersion
 
 name = 'Create database'
 userLevel = 0
+require_databasing = True
+
 
 def availableOntologies():
     ontologies = ['brainvisa-3.2.0', 'brainvisa-3.1.0', 'brainvisa-3.0',
@@ -25,7 +26,8 @@ def availableOntologies():
                 for ontology in os.listdir(path):
                     if ontology == 'flat':
                         continue
-                    if ontology not in ontologies and ontology not in moreOntologies:
+                    if ontology not in ontologies \
+                            and ontology not in moreOntologies:
                         moreOntologies.add(ontology)
     except ImportError:
         # may happen at startup:
@@ -43,6 +45,7 @@ signature = Signature(
     'read_only', Boolean(),
     'temporary', Boolean(),
 )
+
 
 def initialization(self):
     self.read_only = False
@@ -66,7 +69,7 @@ def create_database(database_directory, ontology='brainvisa-3.2.0',
     try:
         database.clear(context=processes.defaultContext())
         database.update(context=processes.defaultContext())
-    except:
+    except Exception:
         if not allow_ro:
             raise
     if persistent:

@@ -35,10 +35,9 @@
 
 '''
 @author: Yann Cointepas
-@organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
+@organization: NeuroSpin and IFR 49
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
-from __future__ import absolute_import
 __docformat__ = "epytext en"
 
 
@@ -50,6 +49,7 @@ from brainvisa.data.qtgui.updateDatabases import UpdateDatabasesGUI
 
 name = 'Update databases'
 userLevel = 0
+require_databasing = True
 
 signature = Signature(
     'databases', ListOf(ReadDiskItem('Directory', 'Directory'),

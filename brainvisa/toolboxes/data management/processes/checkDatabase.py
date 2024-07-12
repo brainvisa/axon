@@ -31,16 +31,17 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-from __future__ import absolute_import
-from brainvisa.processes import *
-from brainvisa.data import neuroHierarchy, neuroDiskItems
+from brainvisa.processes import (
+    Signature, Choice, neuroConfig, mainThreadActions,
+)
+from brainvisa.data import neuroHierarchy
 from brainvisa.data.databaseCheck import BVChecker_3_1
 from brainvisa.data.qtgui.databaseCheckGUI import CheckFilesWidget
-import sys
 
 
 name = 'Check database'
 userLevel = 0
+require_databasing = True
 
 signature = Signature(
     'database', Choice()
@@ -48,7 +49,8 @@ signature = Signature(
 
 
 def initialization(self):
-    databases = [(dbs.directory, neuroHierarchy.databases.database(dbs.directory))
+    databases = [(dbs.directory,
+                  neuroHierarchy.databases.database(dbs.directory))
                  for dbs in neuroConfig.dataPath if not dbs.builtin]
     self.signature['database'].setChoices(*databases)
     if databases:
@@ -80,7 +82,11 @@ def execution(self, context):
 def show(checker):
     """
     Opens a dialog that presents suggested actions to the user.
-    @returns : True if the user choose to execute actions immediatly, false if he decided to run it later.
+
+    Returns
+    -------
+    True if the user choose to execute actions immediatly,
+    false if he decided to run it later.
     """
     widget = CheckFilesWidget(checker)
 
