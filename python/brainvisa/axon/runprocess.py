@@ -311,8 +311,10 @@ group1.add_option('--historyBook', dest='historyBook', action='append',
     # help='enable graphical user interface for interactive processes')
 group1.add_option('--logFile', dest='logFile', default=None,
                   help='specify the log file to use. '
-                  'Default is the usual brainvisa.log if databasing is enabled, else no log '
-                  'file is used.')
+                  'Default is the usual brainvisa.log if databasing is '
+                  'enabled, else no log file is used.')
+group1.add_option('-v', '--verbose', action='store_true',
+                  help='print more messages during initialization')
 group1.add_option('--params', dest='paramsfile', default=None,
                   help='specify a file containing commandline parameters. '
                   'The file will contain arguments for this commandline '
@@ -438,37 +440,41 @@ else:
     if not options.enabledb and not options.historyBook:
         neuroConfig.logFileName = ''
 
-# redirect stderr/stdout to avoid printing error messages from processes
-stdout = sys.stdout
-stderr = sys.stderr
-tmp = []
-if os.path.exists('/dev/null'):
-    outfile = open('/dev/null', 'a')
-else:
-    import tempfile
-    x = tempfile.mkstemp()
-    os.close(x[0])
-    outfile = open(x[1], 'a')
-    tmp.append(x[1])
-    del x
-# print('--- disabling stdout/err ---')
-sys.stdout = outfile
-sys.stderr = outfile
-# print('*** DISABLED. ***')
+verbose = options.verbose
+if not verbose:
+    # redirect stderr/stdout to avoid printing error messages from processes
+    stdout = sys.stdout
+    stderr = sys.stderr
+    tmp = []
+    if os.path.exists('/dev/null'):
+        outfile = open('/dev/null', 'a')
+    else:
+        import tempfile
+        x = tempfile.mkstemp()
+        os.close(x[0])
+        outfile = open(x[1], 'a')
+        tmp.append(x[1])
+        del x
+    # print('--- disabling stdout/err ---')
+    sys.stdout = outfile
+    sys.stderr = outfile
+    # print('*** DISABLED. ***')
+
 try:
 
     axon.initializeProcesses()
 
 finally:
-    sys.stderr = stderr
-    sys.stdout = stdout
-    outfile.close()
-    del outfile
-    x = None
-    for x in tmp:
-        os.unlink(x)
-    del x, tmp
-    # print('*** Re-enabling stdout/err ***')
+    if not verbose:
+        sys.stderr = stderr
+        sys.stdout = stdout
+        outfile.close()
+        del outfile
+        x = None
+        for x in tmp:
+            os.unlink(x)
+        del x, tmp
+        # print('*** Re-enabling stdout/err ***')
 
 
 if options.list_processes:
