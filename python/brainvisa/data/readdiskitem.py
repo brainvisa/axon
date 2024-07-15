@@ -341,10 +341,8 @@ class ReadDiskItem(Parameter):
                         print(
                             '  DiskItem has the _write attribute set to True',
                               file=_debug)
+                    write = True
                 fullSelection = selection.globalAttributes()
-                # selection will not be the initial DI, thus its _write
-                # attribute is no longer carried on.
-                fullSelection['_write'] = False
                 if selection.type is None:
                     fullSelection['_type'] = None
                 else:
