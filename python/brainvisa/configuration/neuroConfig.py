@@ -165,7 +165,6 @@ import six.moves.builtins
 if not hasattr(six.moves.builtins, '_t_'):
     six.moves.builtins._t_ = _defaultTranslateFunction
 
-import glob
 import sys
 import os
 import errno
