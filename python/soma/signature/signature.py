@@ -67,7 +67,7 @@ class DataType(object):
         #: Indicate wether the value of this type are mutable (I{i.e.} can be
         #: modified) or not. By default, C{mutable} is set to C{True}.For more
         #: information about mutable or immutable objects, see
-        #: U{Python documentation<http://docs.python.org/>}.
+        #: U{Python documentation<https://docs.python.org/>}.
         self.mutable = True
         #: Name of this C{DataType}, by default, it is the class name without the
         #: module(s) prefix (I{i.e.} as defined in the C{class} statement).

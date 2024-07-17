@@ -297,17 +297,31 @@ FileType('T1 MRI', '3D Volume')
 FileType('T2 MRI', '3D Volume')
 FileType('Raw T1 MRI', 'T1 MRI')
 FileType('T1 MRI Bias Corrected', 'T1 MRI')
+FileType('T1 MRI Denoised', '3D Volume')
+FileType('T1 MRI Denoised and Bias Corrected', '3D Volume')
 FileType('Label volume', '3D Volume')
 FileType('Rainbow 3D volume', '3D Volume')
 FileType('Split Brain Mask', 'Label Volume')
 FileType('Tissue probability map', '3D Volume')
+FileType('Brain Structures', 'Label Volume')
+FileType('Brain Lobes', 'Label Volume')
+FileType('Intracranial labels', 'Label Volume')
+FileType('Intracranial mask', 'Label Volume')
+FileType('Subcortical labels', 'Label Volume')
+FileType('Cortical Thickness map', '3D Volume')
 
 FileType('T1 MRI Analysis Directory', 'Directory')
 
 FileType('FLAIR MRI', '3D Volume')
 FileType('Raw FLAIR MRI', 'FLAIR MRI')
 
+FileType('Raw MP2RAGE INV1', '3D Volume')
+FileType('Raw MP2RAGE INV2', '3D Volume')
+FileType('Raw MP2RAGE UNI', '3D Volume')
+FileType('Raw MP2RAGE T1MAP', '3D Volume')
+
 FileType('Analysis Report', 'Text file')
+FileType('Metadata Execution', 'Any Type', 'JSON file')
 
 #----------------- Graphs -------------------------
 Format('Label Translation', "f|*.trl")

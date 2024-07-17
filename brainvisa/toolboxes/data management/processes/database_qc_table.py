@@ -1,6 +1,4 @@
 
-from __future__ import print_function
-from __future__ import absolute_import
 from brainvisa.processes import *
 from brainvisa.data import neuroHierarchy
 from soma.wip.application.api import findIconFile
@@ -26,7 +24,8 @@ signature = Signature(
     'data_filters', ListOf(String()),
     'keys', ListOf(String()),
     'type_labels', ListOf(String()),
-    'output_file', WriteDiskItem('Text File', 'HTML PDF'),
+    'output_file', WriteDiskItem(
+        'Text File', ['HTML', 'PDF file', 'CSV file']),
 )
 
 
@@ -188,7 +187,7 @@ if neuroConfig.gui:
             self.setMinimumSectionSize(20)
 
         def paintSection(self, painter, rect, logicalIndex ):
-            import sip
+            from soma.qt_gui.qt_backend import sip
             if sip.isdeleted(self):
                 return
             painter.save()
@@ -628,6 +627,8 @@ def save_file(self, filename, context=None):
         self.save_html(filename, context)
     elif filename.endswith('.pdf'):
         self.save_pdf(filename, context)
+    elif filename.endswith('.csv'):
+        self.save_csv(filename, context)
     else:
         raise('Unrecognized output format')
 
@@ -730,7 +731,6 @@ def save_html(self, filename, context=None):
 ''')
 
     nrows, ncols = self.elements.shape
-    nkeys = len(self.keys)
 
     labels = self.keys + self.type_labels \
         + self.data_types[len(self.type_labels):]
@@ -759,7 +759,7 @@ def save_html(self, filename, context=None):
                         for row, row_id in six.iteritems(rev_row_ids)])
 
     # sort items
-    rows_order = zip(*sorted(zip(list(rev_row_ids.values()), list(range(nrows)))))[1]
+    rows_order = list(zip(*sorted(zip(rev_row_ids.values(), range(nrows)))))[1]
 
     for row in rows_order:
         row_id = max([rid for rid in row_ids if row_ids[rid] == row])
@@ -798,3 +798,40 @@ def save_pdf(self, filename, context=None):
     else:
         soma.subprocess.check_call(['wkhtmltopdf', temp_file, filename])
 
+
+def save_csv(self, filename, context=None):
+    f = open(filename, 'w')
+
+    nrows, ncols = self.elements.shape
+
+    labels = self.keys + self.type_labels \
+        + self.data_types[len(self.type_labels):]
+    f.write('\t'.join(labels))
+    f.write('\n')
+
+    row_ids = self.row_ids
+
+    # eliminate duplicate rows by keeping most complete id for each
+    rev_row_ids = {}
+    for row_id, row in six.iteritems(row_ids):
+        rev_row_ids.setdefault(row, []).append(row_id)
+    rev_row_ids = dict([(row, max(row_id))
+                        for row, row_id in six.iteritems(rev_row_ids)])
+    # sort items
+    rows_order = list(zip(*sorted(zip(rev_row_ids.values(), range(nrows)))))[1]
+
+    for row in rows_order:
+        row_id = max([rid for rid in row_ids if row_ids[rid] == row])
+        for key in row_id:
+            if key is None:
+                key = ''
+            f.write('%s\t' % key)
+
+        for elem in self.elements[row]:
+            if elem is None:
+                f.write('0\t')
+            elif isinstance(elem, list):
+                f.write('2\t')
+            else:
+                f.write('1\t')
+        f.write('\n')

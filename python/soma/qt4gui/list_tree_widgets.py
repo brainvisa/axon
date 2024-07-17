@@ -41,15 +41,11 @@ They provide user interaction to modify the underlying model (drag&drop, context
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
-from __future__ import print_function
 
-from __future__ import absolute_import
 import six
 __docformat__ = "epytext en"
 
-import os
-import sys
-from six.moves import StringIO
+from io import StringIO
 from soma.qt_gui.qt_backend.QtGui import QTreeWidget, QTreeWidgetItem, QListWidget, QListWidgetItem, QPixmap, QDrag, QMenu, QPainter, QPen, QCursor, QSizePolicy, QIcon, QKeyEvent, QApplication
 from soma.qt_gui.qt_backend.QtCore import Qt, QEvent, QMimeData, QObject, QPoint, QRect, QSize, QTimer
 import copy
@@ -543,7 +539,7 @@ class EditableTreeWidget(QTreeWidget):
                 itemBefore = EditableTreeWidget.Branch(
                     None, item, None, self.iconDim)
             self.insertTopLevelItem(position, itemBefore)
-            if item.unamed and self.hasFocus():
+            if getattr(item, 'unamed', False) and self.hasFocus():
                 self.editItem(itemBefore, 0)
                 item.unamed = False
         # print("current item : ", self.currentItem())

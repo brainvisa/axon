@@ -38,26 +38,6 @@ brainvisa.axon.runprocess is not a real python module, but rather an executable 
 python -m brainvisa.axon.runprocess <process name> <process arguments>
 """
 
-# headless requires to run Xvfb and initialize VirtualGL. It needs to be
-# done first, but in paerallel execution, many processed doing it will end
-# up with conflicts in accessing X servers, and some processes will fail.
-# so I disable it.
-#
-#try:
-    ## in case any import instantiates a Qt app or loads plugins
-    #import anatomist.headless as ah
-    #ah.setup_headless()
-    #from soma.qt_gui.qt_backend import QtWidgets, QtCore, sip
-    #if not isinstance(QtWidgets.QApplication.instance(),
-                      #QtWidgets.QApplication):
-        #if QtWidgets.QApplication.instance() is None:
-            #QtWidgets.QApplication.setAttribute(
-                #QtCore.Qt.ApplicationAttribute.AA_ShareOpenGLContexts)
-        #qapp = QtWidgets.QApplication([])
-        #sip.transferto(qapp, None)
-#except Exception:
-    #pass
-
 from brainvisa import axon
 from brainvisa.configuration import neuroConfig
 import brainvisa.processes
@@ -97,7 +77,7 @@ def get_process_with_params(process_name, iterated_params=[], *args, **kwargs):
     if neuroConfig.fastStart and getattr(process, 'require_databasing', False):
         # databasing is required by the process and is not enabled yet
         print('Warning: initializing databases. This takes time and may '
-              'cause problems on network filesystems.')
+              'cause problems on network filesystems.', file=sys.stderr)
         from brainvisa.data import neuroHierarchy
         neuroHierarchy.openDatabases()
 
@@ -315,17 +295,39 @@ group1 = OptionGroup(parser, 'Config',
                      description='Processing configuration, database options')
 group1.add_option('--enabledb', dest='enabledb', action='store_true',
                   default=False,
-                  help='enable databasing (slower startup, but all features enabled)')
+                  help='enable databasing on client side (slower startup, but '
+                  'all features enabled). This option is needed to perform '
+                  'parameters completion, for instance. Note that this is '
+                  'only activated on client side: during exection, in '
+                  'sequential mode (no soma-workflow) this option will also '
+                  'apply, but in soma-workflow distributed processing, it '
+                  'will not, unless the process has been written to '
+                  'explicitly require it.')
 group1.add_option('--historyBook', dest='historyBook', action='append',
-                  help='store history information files in this directory (otherwise '
-                  'disabled unless dabasing is enabled)')
+                  help='store history information files in this directory '
+                  '(otherwise disabled unless dabasing is enabled)')
 # group1.add_option('--enablegui', dest='enablegui', action='store_true',
     # default=False,
     # help='enable graphical user interface for interactive processes')
 group1.add_option('--logFile', dest='logFile', default=None,
                   help='specify the log file to use. '
-                  'Default is the usual brainvisa.log if databasing is enabled, else no log '
-                  'file is used.')
+                  'Default is the usual brainvisa.log if databasing is '
+                  'enabled, else no log file is used.')
+group1.add_option('-v', '--verbose', action='store_true',
+                  help='print more messages during initialization')
+group1.add_option('--params', dest='paramsfile', default=None,
+                  help='specify a file containing commandline parameters. '
+                  'The file will contain arguments for this commandline '
+                  '(argv): it is an alternative to providing them here. It '
+                  'can be useful to reuse parameters, or when the parameters '
+                  'are too long (in a large iteration, typically). The file '
+                  'syntax is one line per parameter, with no further parsing. '
+                  'It will be processed after all the current commandline '
+                  'arguments, not right now as the argument appears. But if '
+                  'a parameter has already been set (via commandline), it '
+                  'will not be replaced: first set arguments have priority. '
+                  'If the params file itself contains a --params parameter, '
+                  'then another file will be read afterwards, and so on.')
 parser.add_option_group(group1)
 
 group2 = OptionGroup(parser, 'Processing',
@@ -408,6 +410,17 @@ parser.add_option_group(group4)
 parser.disable_interspersed_args()
 (options, args) = parser.parse_args()
 
+while options.paramsfile:
+    pfile = options.paramsfile
+    options.paramsfile = None
+    with open(pfile) as f:
+        new_argv = [l.strip() for l in f.readlines()]
+    new_options, new_args = parser.parse_args(new_argv)
+    for k, v in new_options.__dict__.items():
+        if not getattr(options, k, None):
+            setattr(options, k, v)
+    args += new_args
+
 print('Initializing brainvisa... (takes a while)...')
 sys.stdout.flush()
 
@@ -421,44 +434,47 @@ if not options.enabledb:
     neuroConfig.fastStart = True
 if options.historyBook:
     neuroConfig.historyBookDirectory = options.historyBook
-if not options.logFile is None:
+if options.logFile is not None:
     neuroConfig.logFileName = options.logFile
 else:
     if not options.enabledb and not options.historyBook:
         neuroConfig.logFileName = ''
 
-# redirect stderr/stdout to avoid printing error messages from processes
-stdout = sys.stdout
-stderr = sys.stderr
-tmp = []
-if os.path.exists('/dev/null'):
-    outfile = open('/dev/null', 'a')
-else:
-    import tempfile
-    x = tempfile.mkstemp()
-    os.close(x[0])
-    outfile = open(x[1], 'a')
-    tmp.append(x[1])
-    del x
-# print('--- disabling stdout/err ---')
-sys.stdout = outfile
-sys.stderr = outfile
-# print('*** DISABLED. ***')
+verbose = options.verbose
+if not verbose:
+    # redirect stderr/stdout to avoid printing error messages from processes
+    stdout = sys.stdout
+    stderr = sys.stderr
+    tmp = []
+    if os.path.exists('/dev/null'):
+        outfile = open('/dev/null', 'a')
+    else:
+        import tempfile
+        x = tempfile.mkstemp()
+        os.close(x[0])
+        outfile = open(x[1], 'a')
+        tmp.append(x[1])
+        del x
+    # print('--- disabling stdout/err ---')
+    sys.stdout = outfile
+    sys.stderr = outfile
+    # print('*** DISABLED. ***')
+
 try:
 
     axon.initializeProcesses()
 
 finally:
-    sys.stderr = stderr
-    sys.stdout = stdout
-    outfile.close()
-    del outfile
-    x = None
-    for x in tmp:
-        os.unlink(x)
-    del x, tmp
-    # print('*** Re-enabling stdout/err ***')
-
+    if not verbose:
+        sys.stderr = stderr
+        sys.stdout = stdout
+        outfile.close()
+        del outfile
+        x = None
+        for x in tmp:
+            os.unlink(x)
+        del x, tmp
+        # print('*** Re-enabling stdout/err ***')
 
 
 if options.list_processes:
@@ -545,15 +561,16 @@ run_process_with_distribution(
 # a bit of cleanup
 try:
     import anatomist.api as ana
+    import sip
     if hasattr(ana.Anatomist, 'anatomistinstance') \
             and ana.Anatomist.anatomistinstance is not None:
         a = ana.Anatomist()
         a.close()
         sip.delete(a)
-        sip.delete(qapp)
+        # sip.delete(qapp)
         del a
-        del qapp
-except Exception as e:
+        # del qapp
+except Exception:
     pass
 
 if neuroConfig.exitValue == 0:

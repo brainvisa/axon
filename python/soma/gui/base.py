@@ -34,12 +34,12 @@
 
 '''
 Customizable framework for automatic creation of
-U{Turbogears<http://docs.turbogears.org>} widgets to view or edit any
+U{Turbogears<https://docs.turbogears.org>} widgets to view or edit any
 Python object. This framework is especially designed to work with
 L{soma.signature} module but it can be used in many other contexts.
 
 @author: Nicolas Souedet
-@organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
+@organization: NeuroSpin, MirCen
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
 from __future__ import absolute_import

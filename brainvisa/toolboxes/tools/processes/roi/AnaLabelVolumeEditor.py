@@ -1,39 +1,18 @@
-#  This software and supporting documentation are distributed by
-#      Institut Federatif de Recherche 49
-#      CEA/NeuroSpin, Batiment 145,
-#      91191 Gif-sur-Yvette cedex
-#      France
-#
-# This software is governed by the CeCILL license version 2 under
-# French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the
-# terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info".
-#
-# As a counterpart to the access to the source code and  rights to copy,
-# modify and redistribute granted by the license, users are provided only
-# with a limited warranty  and the software's author,  the holder of the
-# economic rights,  and the successive licensors  have only  limited
-# liability.
-#
-# In this respect, the user's attention is drawn to the risks associated
-# with loading,  using,  modifying and/or developing or reproducing the
-# software by the user in light of its specific status of free software,
-# that may mean  that it is complicated to manipulate,  and  that  also
-# therefore means  that it is reserved for developers  and  experienced
-# professionals having in-depth computer knowledge. Users are therefore
-# encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or
-# data to be ensured and,  more generally, to use and operate it in the
-# same conditions as regards security.
-#
-# The fact that you are presently reading this means that you have had
-# knowledge of the CeCILL license version 2 and that you accept its terms.
 
-from __future__ import absolute_import
+
+
+
+import os
+import shutil
+
+
 from brainvisa.processes import *
 from brainvisa import anatomist
 from brainvisa.processing.qtgui.neuroProcessesGUI import mainThreadActions
+from soma.qt_gui.qtThread import MainThreadLife
+import threading
+import os
+
 
 name = 'Label volume editor'
 roles = ('editor',)
@@ -43,14 +22,15 @@ userLevel = 0
 def validation():
     anatomist.validation()
 
+
 signature = Signature(
-  'label_volume', WriteDiskItem('Label volume',
-                                'Aims writable volume formats'),
-  'support_volume', ReadDiskItem('Raw T1 MRI',
-                                 'Anatomist volume formats',
-                                 exactType=True),
-  'pipeline_mask_nomenclature', ReadDiskItem('Nomenclature', 'Hierarchy'),
-  'background_label', OpenChoice('minimum'),
+    'label_volume', WriteDiskItem('Label volume',
+                                  'Aims writable volume formats'),
+    'support_volume', ReadDiskItem('Raw T1 MRI',
+                                   'Anatomist volume formats',
+                                   exactType=True),
+    'pipeline_mask_nomenclature', ReadDiskItem('Nomenclature', 'Hierarchy'),
+    'background_label', OpenChoice('minimum'),
 )
 
 
@@ -100,10 +80,10 @@ def add_save_button(self, win):
         ac = QtGui.QAction(icon,
                            win.tr('Save ROI', 'QAWindow'), win.getInternalRep())
         toolbar.addAction(ac)
-        ac.triggered.connect(self.save_roi)
-        self.win_deleted = False
-        self.local_event_loop = None
-        win.getInternalRep().destroyed.connect(self.close_and_save)
+        data = self.data.ref()
+        ac.triggered.connect(data.save_roi)
+        data.win_deleted = False
+        win.getInternalRep().destroyed.connect(data.close_and_save)
         return ac
 
 
@@ -121,49 +101,94 @@ def add_save_button(self, win):
             # if win.toolBarsVisible():
                 # toolbar.show()
     # if toolbar is not None:
-        # import sip
+        # from soma.qt_gui.qt_backend import sip
         # sip.transferbacck(ac)
 
 
-def close_and_save(self, win):
-    self.save_roi()
-    self.win_deleted = True
-    if self.local_event_loop is not None:
-        # if a local event loop runs in the main thread, quit it
-        self.local_event_loop.quit()
+class EditData:
+    glob_lock = threading.RLock()
+    edited_data = set()
 
+    def __del__(self):
+        self.close_and_save(self.window)
 
-def save_roi(self, message=None):
-    context = self.context
-    if not isinstance(message, str) or not message:
-        message = 'Save ROI ?'
-    rep = context.ask(message, "OK", "Cancel", modal=0)
-    if rep != 1:
-        self.voigraphnum.save(self.voigraph)
-        a = anatomist.Anatomist()
-        a.sync()
-               # make sure that anatomist has finished to process previous commands
-        # a.getInfo()
-        context.system('AimsGraphConvert',
-                       '-i', self.voigraph,
-                       '-o', self.finalgraph,
-                       '--volume')
-        if self.background_label != 'minimum':
-            val = self.background_label
-        else:
-            val = 0
-        context.system('AimsReplaceLevel', '-i',
-                       os.path.join(
-                           self.fgraphbase + '.data', 'roi_Volume'), '-o',
-                       self.label_volume, '-g', -1, '-n', val)
+    def close_and_save(self, win):
+        self.save_roi()
+        self.win_deleted = True
+        if self.label_volume is not None:
+            with self.glob_lock:
+                self.edited_data.remove(self.label_volume.fullPath())
+
+        self.label_volume = None
+        self.tmpdir = None
+        self.context = None
+        self.voigraph = None
+        self.window = None
+        self.fgraphbase = None
+        self.finalgraph = None
+        self.voigraphnum = None
+        self.ana_objects = None
+
+    def save_roi(self, message=None):
+        data = self
+        if self.win_deleted:
+            return  # nothing to do
+        context = data.context
+        if not isinstance(message, str) or not message:
+            message = 'Save ROI {0} ?'.format(data.label_volume)
+        modified = (os.stat(data.label_volume.fullPath()).st_mtime
+                    != data.m_date)
+        if modified:
+            message += '<br/><b style="color: #c00000;">WARNING: the file ' \
+                'has been modified after it has been loaded, thus saving it ' \
+                'may overwrite other modifications !</b>'
+        rep = context.ask(message, "OK", "Cancel", modal=0)
+        if rep != 1:
+            data.voigraphnum.save(data.voigraph)
+            a = anatomist.Anatomist()
+            a.sync()
+            # make sure that anatomist has finished to process previous
+            # commands
+            # a.getInfo()
+            context.system('AimsGraphConvert',
+                           '-i', data.voigraph,
+                           '-o', data.finalgraph,
+                           '--volume')
+            if self.background_label != 'minimum':
+                val = self.background_label
+            else:
+                val = 0
+            context.system('AimsReplaceLevel', '-i',
+                           os.path.join(
+                                data.fgraphbase + '.data', 'roi_Volume'), '-o',
+                           data.label_volume, '-g', -1, '-n', val)
+            shutil.rmtree(os.path.join(self.fgraphbase + '.data'))
+            os.unlink(self.finalgraph)
+            # update loaded date
+            data.m_date = os.stat(data.label_volume.fullPath()).st_mtime
 
 
 def execution(self, context):
+    data = EditData()
+    already_edited = False
+    with data.glob_lock:
+        if self.label_volume.fullPath() in data.edited_data:
+            already_edited = True
+        data.edited_data.add(self.label_volume.fullPath())
+    if already_edited:
+        raise RuntimeError(
+            'The file {0} is already edited in another editor in the same '
+            'BrainVisa/Anatomist session.'.format(
+                self.label_volume.fullPath()))
+    self.data = MainThreadLife(data)
+    data.m_date = os.stat(self.label_volume.fullPath()).st_mtime
+
     a = anatomist.Anatomist()
+    ana_objects = []
     if self.pipeline_mask_nomenclature is not None:
         hie = a.loadObject(self.pipeline_mask_nomenclature)
+        ana_objects.append(hie)
 
-    context.write('background:', self.background_label)
     if self.background_label != 'minimum':
         mask = context.temporary('GIS image', 'Label Volume')
         context.write('not min')
@@ -178,9 +203,10 @@ def execution(self, context):
     else:
         vol = mask
     tmpdir = context.temporary('directory')
-    voi = os.path.join(tmpdir.fullPath(), 'voi.ima')
-    voigraph = os.path.join(tmpdir.fullPath(), 'voigraph.arg')
-    fgraphbase = os.path.join(tmpdir.fullPath(), 'finalgraph')
+    voigraphname = os.path.basename(self.label_volume.fullName())
+    voigraph = os.path.join(tmpdir.fullPath(), '{0}.arg'.format(voigraphname))
+    fgraphbase = os.path.join(tmpdir.fullPath(),
+                              'finalgraph_{0}'.format(voigraphname))
     finalgraph = fgraphbase + '.arg'
 
     context.system('AimsGraphConvert',
@@ -189,6 +215,7 @@ def execution(self, context):
                    '--bucket')
 
     imagenum = a.loadObject(vol)
+    ana_objects.append(imagenum)
     voigraphnum = a.loadObject(voigraph)
     ref = imagenum.referential
     if ref != a.centralRef:
@@ -200,60 +227,33 @@ def execution(self, context):
     a.addObjects(objects=[voigraphnum, imagenum], windows=[windownum])
 
     voigraphnum.setMaterial(a.Material(diffuse=[0.8, 0.8, 0.8, 0.5]))
-    # selects the graph
-    children = voigraphnum.children
-    windownum.group.addToSelection(children)
-    windownum.group.unSelect(children[1:])
-
-    del children
 
     a.execute('SetControl', windows=[windownum], control='PaintControl')
     windownum.showToolbox(True)
 
-    self.context = context
-    self.voigraph = voigraph
-    self.window = windownum
-    self.fgraphbase = fgraphbase
-    self.finalgraph = finalgraph
-    self.voigraphnum = voigraphnum
-    self.finished = False
+    # selects the graph
+    children = {c.attributed().get('name'): c for c in voigraphnum.children}
+    cname = sorted(children)[0]
+    windownum.group.setSelection(children[cname])
+    #if len(children) > 1:
+        #windownum.group.unSelect(children[1:])
+
+    del children
+    data.tmpdir = tmpdir
+    data.label_volume = self.label_volume
+    data.context = context
+    data.voigraph = voigraph
+    data.window = windownum
+    data.fgraphbase = fgraphbase
+    data.finalgraph = finalgraph
+    data.voigraphnum = voigraphnum
+    data.background_label = self.background_label
+    data.ana_objects = ana_objects
+    data.win_deleted = False
+
     ac = mainThreadActions().call(self.add_save_button, windownum)
-    if ac:
-        self.wait_for_close(windownum)
-        import threading
-        from soma.qt_gui.qt_backend import Qt
-        done = False
-        while not done:
-            if isinstance(threading.current_thread(), threading._MainThread):
-                Qt.QApplication.instance().processEvents()
-            time.sleep(0.1)
-            done = mainThreadActions().call(getattr, self, 'win_deleted')
-    else:
-        # ac is None, probably socket mode
-        self.save_roi(message='Click here when finished')
 
-    # mainThreadActions().call(self.remove_save_button, windownum, ac)
-    del self.context
-    del self.voigraph
-    del self.window
-    del self.fgraphbase
-    del self.finalgraph
-    del self.voigraphnum
+    res = self.data
+    del self.data
+    return res
 
-
-def wait_for_close(self, win):
-    import threading
-    from soma.qt_gui.qt_backend import Qt
-    if isinstance(threading.current_thread(), threading._MainThread):
-        # we are running in the main thread: use a local event loop to wait
-        # for the editor window to be closed by the user. The destroyed
-        # callback will take care of ending the loop.
-        self.local_event_loop = Qt.QEventLoop()
-        self.local_event_loop.exec()
-    else:
-        # we are running in a secondary thrad: poll in the main thread for
-        # the editor window to be closed by the user
-        done = False
-        while not done:
-            time.sleep(0.1)
-            done = mainThreadActions().call(getattr, self, 'win_deleted')

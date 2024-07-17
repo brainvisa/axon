@@ -1,48 +1,13 @@
 # -*- coding: utf-8 -*-
-#  This software and supporting documentation are distributed by
-#      Institut Federatif de Recherche 49
-#      CEA/NeuroSpin, Batiment 145,
-#      91191 Gif-sur-Yvette cedex
-#      France
-#
-# This software is governed by the CeCILL license version 2 under
-# French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the
-# terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info".
-#
-# As a counterpart to the access to the source code and  rights to copy,
-# modify and redistribute granted by the license, users are provided only
-# with a limited warranty  and the software's author,  the holder of the
-# economic rights,  and the successive licensors  have only  limited
-# liability.
-#
-# In this respect, the user's attention is drawn to the risks associated
-# with loading,  using,  modifying and/or developing or reproducing the
-# software by the user in light of its specific status of free software,
-# that may mean  that it is complicated to manipulate,  and  that  also
-# therefore means  that it is reserved for developers  and  experienced
-# professionals having in-depth computer knowledge. Users are therefore
-# encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or
-# data to be ensured and,  more generally, to use and operate it in the
-# same conditions as regards security.
-#
-# The fact that you are presently reading this means that you have had
-# knowledge of the CeCILL license version 2 and that you accept its terms.
 
-from __future__ import print_function
-from __future__ import absolute_import
 import brainvisa.processes
-from datetime import date
 from datetime import datetime
 from datetime import timedelta
-from six.moves import StringIO
+from io import StringIO
 import distutils
 import os
 import sys
 import re
-import types
 from soma.qt_gui.qt_backend.Qt import (
     Qt, QAction, QApplication, QButtonGroup,
     QCursor, QComboBox, QDialog, QDockWidget, QFile, QFileDialog, QFont,
@@ -57,7 +22,6 @@ from soma.qt_gui.qt_backend.Qt import (
 from soma.qt_gui import qt_backend
 from soma.qt_gui.qt_backend import QtCore
 from soma.qt_gui.qt_backend import QtGui
-from six.moves import range
 from soma.qt4gui.text import (QWebEnginePage, use_webengine,
     QWebEngineView, QWebPage)
 from soma.qt_gui.qt_backend import loadUi, loadUiType
@@ -76,11 +40,9 @@ from soma.qtgui.api import QtThreadCall, FakeQtThreadCall, WebBrowserWithSearch,
 from soma.html import htmlEscape
 from soma.wip.application.api import Application
 import soma.functiontools
-import threading
-import socket
 import six
 try:
-    import sip
+    from soma.qt_gui.qt_backend import sip
 except ImportError:
     # for sip 3.x (does it work ??)
     import libsip as sip
@@ -95,7 +57,6 @@ from soma.signature.api import HasSignature
 from soma.signature.api import Signature as SomaSignature
 from soma.signature.api import FileName as SomaFileName
 from soma.signature.api import Choice as SomaChoice
-from soma.signature.api import Boolean as SomaBoolean
 from soma.qt4gui.api import ApplicationQt4GUI
 from brainvisa.data.databaseCheck import BVChecker_3_1
 from brainvisa.data import neuroHierarchy
@@ -248,10 +209,14 @@ def quitRequest():
                 a.close()
         except Exception:
             pass
-        if neuroConfig.shell:
-            sys.exit()
-        else:
-            QApplication.instance().exit()
+        # ipython kernel prevents QApplication.instance().exit() from working.
+        # More precisely the Qt event loop probably exits, but the IP kernel
+        # does not.
+        #if neuroConfig.shell:
+            #sys.exit()
+        #else:
+            #QApplication.instance().exit()
+        sys.exit()
 
 #----------------------------------------------------------------------------
 
@@ -2852,7 +2817,7 @@ class ProcessView(QWidget, ExecutionContextGUI):
                     if doc is not None and os.path.exists(doc):
                         _mainWindow.info.setSource(doc)
         except Exception:
-            showException()
+            neuroException.showException()
 
     def menuLockStep(self):
         global _mainWindow
@@ -3611,7 +3576,7 @@ class ProcessView(QWidget, ExecutionContextGUI):
                 self.createProcessExecutionEvent())
             return showProcess(clone)
         except Exception:
-            showException()
+            neuroException.showException()
 
     def show_process_doc(self):
         global _mainWindow
@@ -3916,7 +3881,7 @@ class ProcessEdit(QDialog):
             self.readDocumentation()
             self.setLanguage(six.text_type(self.cmbLanguage.currentText()))
         except Exception:
-            showException()
+            neuroException.showException()
 
         w = QWidget()
         hb = QHBoxLayout()
@@ -4915,16 +4880,17 @@ def close_viewers(warn=False):
     if a == QMessageBox.Yes:
         from brainvisa.data.qt4gui.readdiskitemGUI import DiskItemEditor
         from brainvisa.data.qt4gui.hierarchyBrowser import HierarchyBrowser
-        for w in QApplication.instance().allWidgets():
-            if isinstance(w, DiskItemEditor):
-                w.close_viewer()
-            elif isinstance(w, ProcessView):
-                process_info \
-                    = brainvisa.processes.getProcessInfo(w.process.id())
-                if process_info is not None and "viewer" in process_info.roles:
-                    w.close()
-            elif isinstance(w, HierarchyBrowser):
-                w.close_viewers()
+        if isinstance(QApplication.instance(), QApplication):
+            for w in QApplication.instance().allWidgets():
+                if isinstance(w, DiskItemEditor):
+                    w.close_viewer()
+                elif isinstance(w, ProcessView):
+                    process_info \
+                        = brainvisa.processes.getProcessInfo(w.process.id())
+                    if process_info is not None and "viewer" in process_info.roles:
+                        w.close()
+                elif isinstance(w, HierarchyBrowser):
+                    w.close_viewers()
 
 #----------------------------------------------------------------------------
 

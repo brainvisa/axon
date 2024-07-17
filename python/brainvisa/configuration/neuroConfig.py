@@ -1,36 +1,3 @@
-# -*- coding: utf-8 -*-
-#  This software and supporting documentation are distributed by
-#      Institut Federatif de Recherche 49
-#      CEA/NeuroSpin, Batiment 145,
-#      91191 Gif-sur-Yvette cedex
-#      France
-#
-# This software is governed by the CeCILL license version 2 under
-# French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the
-# terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info".
-#
-# As a counterpart to the access to the source code and  rights to copy,
-# modify and redistribute granted by the license, users are provided only
-# with a limited warranty  and the software's author,  the holder of the
-# economic rights,  and the successive licensors  have only  limited
-# liability.
-#
-# In this respect, the user's attention is drawn to the risks associated
-# with loading,  using,  modifying and/or developing or reproducing the
-# software by the user in light of its specific status of free software,
-# that may mean  that it is complicated to manipulate,  and  that  also
-# therefore means  that it is reserved for developers  and  experienced
-# professionals having in-depth computer knowledge. Users are therefore
-# encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or
-# data to be ensured and,  more generally, to use and operate it in the
-# same conditions as regards security.
-#
-# The fact that you are presently reading this means that you have had
-# knowledge of the CeCILL license version 2 and that you accept its terms.
-
 """
 Several global variables are defined in this module to store **Brainvisa configuration and user options**:
 
@@ -191,8 +158,6 @@ Several global variables are defined in this module to store **Brainvisa configu
   May be a list of directories: in that case, history files are duplicated in each of them.
 """
 
-from __future__ import print_function
-from __future__ import absolute_import
 __docformat__ = 'restructuredtext en'
 
 _defaultTranslateFunction = lambda x: x
@@ -218,26 +183,16 @@ import brainvisa
 import six
 import io
 
+from brainvisa.config import fullVersion, shortVersion
+
 exitValue = 0
 
-mainPath = os.path.normpath(
-    os.path.join(os.path.dirname(brainvisa.__file__), "..", "..", "brainvisa"))
+mainPath = os.path.dirname(brainvisa.__file__)
 
-sys.argv[0] = os.path.normpath(
-    os.path.abspath(os.path.join(mainPath, '..', 'bin', 'brainvisa')))
-
-mainPath = os.path.normpath(os.path.abspath(mainPath))
 if not os.path.isdir(mainPath):
     raise RuntimeError('Cannot find main BrainVISA directory')
 
-# Change sys.path[0] because Python follow symlinks when it adds
-# this directory and we do not want that to be able to make symlinks
-# in build tree to source tree and create the *.pyo or *.pyc in build tree.
 basePath = os.path.dirname(mainPath)
-sys.path[0:0] = [mainPath, os.path.join(basePath, 'python')]
-
-# A bit of cleanup
-sys.path = [os.path.normpath(os.path.abspath(p)) for p in sys.path]
 
 _commandLine = " ".join(['"' + x + '"' for x in sys.argv])
 
@@ -297,18 +252,6 @@ def executableWithPath(file,
     return os.path.join(path, file)
 
 
-try:
-    from brainvisa.config import fullVersion, shortVersion
-except ImportError:
-    f = os.path.join(mainPath, 'VERSION')
-    if not os.path.exists(f):
-        f = os.path.join(mainPath, '..', 'VERSION')
-    f = open(f)
-    fullVersion = f.readline()[:-1]
-    f.close()
-    shortVersion = '.'.join(fullVersion.split('.')[:2])
-
-
 def versionNumber():
     """Returns Brainvisa short version X.Y as a float number"""
     global shortVersion
@@ -335,7 +278,7 @@ def getSharePath():
         return _sharePath
     try:
         from soma.config import BRAINVISA_SHARE
-        _sharePath = BRAINVISA_SHARE
+        _sharePath = os.path.dirname(BRAINVISA_SHARE)
     except ImportError:
         path = os.getenv('PATH').split(os.pathsep)
         for p in path:
@@ -354,12 +297,18 @@ def getSharePath():
          and not os.path.isdir(os.path.join(_sharePath,
                                             'brainvisa-' + shortVersion))):
         # empty string rather than None to avoid later re-detection
-        _sharePath = ''
+        _sharePath = None
         for projectName in ('axon', 'brainvisa'):
-            sharePath = os.path.normpath(os.path.join(mainPath, '..', 'share',
+            sharePath = os.path.normpath(os.path.join(os.environ.get('CASA_BUILD', ''), 'share',
                                                       projectName + '-' + shortVersion))
             if os.path.isdir(sharePath):
-                _sharePath = os.path.normpath(os.path.join(mainPath, '..',
+                _sharePath = os.path.normpath(os.path.join(os.environ.get('CASA_BUILD', ''),
+                                                           'share'))
+                break
+            sharePath = os.path.normpath(os.path.join(mainPath, '..', '..', '..', '..', 'share',
+                                                      projectName + '-' + shortVersion))
+            if os.path.isdir(sharePath):
+                _sharePath = os.path.normpath(os.path.join(mainPath, '..', '..', '..', '..',
                                                            'share'))
                 break
     return _sharePath
@@ -379,16 +328,8 @@ def initializeOntologyPaths():
 initializeOntologyPaths()
 processesPath = [os.path.join(mainPath, 'processes')]
 
-for projectName in ('axon', 'brainvisa'):
-    sharePath = os.path.join(getSharePath(), projectName + '-' + shortVersion)
-    if os.path.isdir(sharePath):
-        break
-    # Sources organization
-    sharePath = os.path.normpath(
-        os.path.join(mainPath, '..', 'share', projectName + '-' + shortVersion))
-    if os.path.isdir(sharePath):
-        break
-
+#sharePath = getSharePath()
+sharePath = os.path.join(getSharePath(), f'axon-{shortVersion}')
 iconPath = os.path.join(sharePath, 'icons')
 uiPath = os.path.join(sharePath, 'ui')
 toolboxesDir = os.path.join(mainPath, 'toolboxes')
@@ -422,7 +363,8 @@ temporaryDirectory = tempfile.gettempdir()
 def getDocPath(path, project=''):
     """Returns the path of the documentation directory of the given project."""
     # Language and documentation
-    result = os.path.join(getSharePath(), 'doc', project)
+    global _sharePath
+    result = os.path.join(_sharePath, 'doc', project)
     if not os.path.exists(result):
         result = os.path.normpath(
             os.path.join(path, '..', 'share', 'doc', project))
@@ -431,13 +373,19 @@ def getDocPath(path, project=''):
 
     return result
 
-docPath = mainDocPath = getDocPath(
-    mainPath, projectName + '-' + str(versionNumber()))
+docPath = mainDocPath = getDocPath(mainPath, f'axon-{versionNumber()}')
 
-_languages = []
+_languages = ['en', 'fr']
+for l in _languages:
+    if not os.path.exists(os.path.join(docPath, l)):
+        try:
+            os.makedirs(os.path.join(docPath, l))
+        except Exception:
+            pass
 if os.path.exists(docPath):
     for l in os.listdir(docPath):
-        if len(l) == 2 and os.path.isdir(os.path.join(mainDocPath, l)):
+        if l not in _languages and len(l) == 2 \
+                and os.path.isdir(os.path.join(mainDocPath, l)):
             _languages.append(l)
 else:
     print(
@@ -946,14 +894,15 @@ try:
     bvShareDirectory = brainvisa_share.config.share
 except Exception:
     bvShareDirectory = 'brainvisa-share-' + shortVersion
-for p in (os.path.join(getSharePath(), bvShareDirectory),
-          os.path.join(getSharePath(), 'shfj-' + shortVersion),
-          os.path.join(getSharePath(), 'shfj')):
+for p in (os.path.join(_sharePath, bvShareDirectory),):
     if os.path.isdir(p):
         dataPath.insert(0, DatabaseSettings(p, read_only=True))
         dataPath[0].builtin = True  # mark as a builtin, non-removable database
         sharedDatabaseFound = True
         break
+
+def sharedDatabasePath():
+    return os.path.join(getSharePath(), bvShareDirectory)
 
 
 class Translator(object):

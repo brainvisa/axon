@@ -59,7 +59,6 @@ class AxonToCapsul(object):
     def __init__(self, ver='2'):
         self.ver = ver
 
-
     def get_choice_type(self, choice):
         if len(choice.values) == 0:
             return None
@@ -1216,7 +1215,7 @@ class AxonToCapsul(object):
 
         if autopep8 is not None:
             # write in a string buffer
-            out = six.StringIO()
+            out = io.StringIO()
         else:
             out = io.open(outfile, 'w', encoding='utf-8')
 

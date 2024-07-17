@@ -70,6 +70,9 @@ class Importer(object):
                     
                 if remove_nan_needed:
                     ext = cls._file_extension(input_filename)
+                    if temporary.manager is None:
+                        temporary.initializeTemporaryFiles(
+                            temporary.getSystemDefaultTempDir())
                     temp_filename = temporary.manager.new(suffix=ext)
                     command = ["AimsRemoveNaN", "-i", input_filename, "-o",
                                temp_filename]

@@ -29,11 +29,8 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
-from __future__ import absolute_import
-import stat
-import os
-import cStringIO
-import types
+
+import io
 from UserDict import UserDict
 
 
@@ -65,7 +62,7 @@ class VirtualDirectory(object):
             data. If the self.hasChildren() returns True, this method throws an
             exception.'''
 
-            return cStringIO.StringIO('')
+            return io.StringIO('')
 
         def hasChildren(self):
             '''Returns True if the object has one or more children.'''

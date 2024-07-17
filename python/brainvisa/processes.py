@@ -163,21 +163,10 @@ After loading, Brainvisa processes are stored in an object :py:class:`ProcessTre
 .. autofunction:: cleanupProcesses
 
 """
-from __future__ import print_function
 
-from __future__ import absolute_import
-from six.moves import range
-from six.moves import zip
 __docformat__ = 'restructuredtext en'
 
-# Be careful, it is necessary to initialize
-# subprocess with subprocess32 when it is possible because of known
-# issues in subprocess module that can lead to lock in subprocess run
-import soma.subprocess
-
-import traceback
 import threading
-import operator
 import inspect
 import signal
 import shutil
@@ -185,7 +174,6 @@ import imp
 import types
 import copy
 import weakref
-import string
 import distutils.spawn
 import os
 import errno
@@ -196,12 +184,12 @@ import sys
 
 from soma.sorted_dictionary import SortedDictionary
 from soma.functiontools import numberOfParameterRange, hasParameter, partial
-from soma.minf.api import readMinf, writeMinf, createMinfWriter, iterateMinf, minfFormat
+from soma.minf.api import (readMinf, writeMinf, createMinfWriter, iterateMinf,
+                           minfFormat)
 from soma.minf.xhtml import XHTML
 from soma.minf.xml_tags import xhtmlTag
 from soma.notification import EditableTree, ObservableSortedDictionary, \
     ObservableAttributes, Notifier
-from soma.minf.api import createMinfWriter, iterateMinf, minfFormat
 from soma.html import htmlEscape
 from soma.somatime import timeDifferenceToString
 from soma.path import relative_path
@@ -212,7 +200,6 @@ from brainvisa.data.readdiskitem import ReadDiskItem
 from brainvisa.data.writediskitem import WriteDiskItem
 from brainvisa.configuration import neuroConfig
 from brainvisa.data import neuroDiskItems
-from brainvisa.processing import neuroLog
 from brainvisa.processing import neuroException
 from brainvisa.processing.neuroException import *
 from brainvisa.validation import ValidationError
@@ -226,8 +213,8 @@ from soma import safemkdir
 from soma.qtgui.api import QtThreadCall, FakeQtThreadCall
 
 import six
-from six.moves import cPickle, getcwd, StringIO
-from six.moves.html_parser import HTMLParser
+import pickle
+from os import getcwd
 
 
 global _mainThreadActions
@@ -380,7 +367,7 @@ def procdocToXHTML(procdoc):
                     from soma.qt4gui.designer import loadUi
                     from soma.qt_gui.qt_backend import QtGui, QtCore
                     editor = loadUi(
-                        os.path.join(mainPath, '..', 'python', 'brainvisa', 'textEditor.ui'))
+                        os.path.join(mainPath, 'textEditor.ui'))
                     # editor.setAttribute( QtCore.Qt.WA_DeleteOnClose, True )
 
                     def f():
@@ -997,6 +984,9 @@ class Parameterized(object):
             self._isParameterSet[name] = True
             newValue = self.signature[name].findValue(value)
             changed = True
+        if isinstance(newValue, DiskItem) \
+                and isinstance(self.signature[name], WriteDiskItem):
+            newValue._write = True
         self.__dict__[name] = newValue
         if changed:
             self._parameterHasChanged(name, newValue)
@@ -3040,6 +3030,7 @@ class ExecutionContext(object):
             # correspond to the 2nd or 3rd one in the initial signature. So we
             # have to give up (except for the first, which is reliable)
             break
+        kwprocs = {}
         for (n, v) in kwargs.items():
             proc, argname, enode = self._get_process_and_argname(_process, n)
             if argname not in getattr(proc, 'signature', {}) \
@@ -3048,6 +3039,13 @@ class ExecutionContext(object):
             else:
                 proc._setImmutable(argname, True)
                 to_restore.add(proc)
+                # postpone assignation by process
+                pname = n.rsplit('.', 1)
+                if len(pname) >= 2:
+                    pname = pname[0]
+                else:
+                    pname = ''
+                kwprocs.setdefault(pname, (proc, {}))[1].setdefault(argname, v)
         for i, v in enumerate(args):
             n = list(_process.signature.keys())[i]
             _process.setDefault(n, 0)
@@ -3060,16 +3058,16 @@ class ExecutionContext(object):
         # predictable).
         # FIXME: some values may not be set if they are added dynamically to
         # the signature by parameter links.
-        for n in _process.signature.keys():
-            if n in kwargs:
-                v = kwargs[n]
-                proc, argname, enode = self._get_process_and_argname(_process,
-                                                                     n)
-                proc.setDefault(argname, 0)
-                if v is not None:
-                    proc.setValue(argname, v)
-                else:
-                    setattr(proc, argname, None)
+        for key in sorted(kwprocs.keys()):
+            proc, paramdict = kwprocs[key]
+            for argname in proc.signature.keys():
+                if argname in paramdict:
+                    v = paramdict[argname]
+                    proc.setDefault(argname, 0)
+                    if v is not None:
+                        proc.setValue(argname, v)
+                    else:
+                        setattr(proc, argname, None)
         for proc in to_restore:
             proc._clearImmutableParameters()
         # FIXME TODO WARNING
@@ -6245,7 +6243,7 @@ def readProcesses(processesPath):
     if neuroConfig.fastStart and os.path.exists(processesCacheFile):
         try:
             with open(processesCacheFile, 'rb') as f:
-                _processesInfo, converters = cPickle.load(f)
+                _processesInfo, converters = pickle.load(f)
             # change _converters keys to use the same instances as the global
             # types / formats list
             for (src, dst), process_id in six.iteritems(converters):
@@ -6282,7 +6280,7 @@ def readProcesses(processesPath):
                                              delete=False) as f:
                 # Use version 2 of the pickle protocol (more optimized than
                 # version 0, but still compatible with Python 2)
-                cPickle.dump((_processesInfo, _converters), f, 2)
+                pickle.dump((_processesInfo, _converters), f, 2)
             if hasattr(os, 'replace'):
                 os.replace(f.name, processesCacheFile)
             else:

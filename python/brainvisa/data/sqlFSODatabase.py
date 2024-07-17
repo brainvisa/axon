@@ -1,51 +1,17 @@
 # -*- coding: utf-8 -*-
-#  This software and supporting documentation are distributed by
-#      Institut Federatif de Recherche 49
-#      CEA/NeuroSpin, Batiment 145,
-#      91191 Gif-sur-Yvette cedex
-#      France
-#
-# This software is governed by the CeCILL license version 2 under
-# French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the
-# terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info".
-#
-# As a counterpart to the access to the source code and  rights to copy,
-# modify and redistribute granted by the license, users are provided only
-# with a limited warranty  and the software's author,  the holder of the
-# economic rights,  and the successive licensors  have only  limited
-# liability.
-#
-# In this respect, the user's attention is drawn to the risks associated
-# with loading,  using,  modifying and/or developing or reproducing the
-# software by the user in light of its specific status of free software,
-# that may mean  that it is complicated to manipulate,  and  that  also
-# therefore means  that it is reserved for developers  and  experienced
-# professionals having in-depth computer knowledge. Users are therefore
-# encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or
-# data to be ensured and,  more generally, to use and operate it in the
-# same conditions as regards security.
-#
-# The fact that you are presently reading this means that you have had
-# knowledge of the CeCILL license version 2 and that you accept its terms.
 """
 This module contains classes defining Brainvisa **databases**.
 
 The main classes are :py:class:`SQLDatabases` and :py:class:`SQLDatabase`.
 
 """
-from __future__ import print_function
-from __future__ import absolute_import
 import sys
 import os
 import re
 
 import time
 from itertools import chain
-from six.moves import StringIO
-from six.moves import cPickle
+import pickle
 
 from soma.minf.api import readMinf, writeMinf
 from soma.html import htmlEscape
@@ -1176,38 +1142,42 @@ class SQLDatabase(Database):
     def _diskItemsWithParents(self, diskItems):
         diSet = set(diskItems)
         cursor = None
-        for diskItem in diskItems:
-            dirname = os.path.dirname(diskItem.fullPath())
-            reldirname = relative_path(dirname, self.directory)
-            # add parents until one is already in the set or already in the
-            # database
-            lastItem = diskItem
-            while reldirname:
-                dirItem = self.createDiskItemFromFileName(
-                    os.path.join(self.directory, reldirname), None)
-                if dirItem:
-                    # set/fix parent item
-                    lastItem.parent = dirItem
-                    lastItem = dirItem
-                    if dirItem in diSet:
-                        break
-                    # check if it is already in the database
-                    if cursor is None:
-                        cursor = self._getDatabaseCursor()
-                    uuid = cursor.execute(
-                        'SELECT _uuid FROM _FILENAMES_ WHERE filename=?',
-                      (reldirname, )).fetchone()
-                    if uuid:
-                        break
-                    diSet.add(dirItem)
-                reldirname = os.path.dirname(reldirname)
+        try:
+            for diskItem in diskItems:
+                dirname = os.path.dirname(diskItem.fullPath())
+                reldirname = relative_path(dirname, self.directory)
+                # add parents until one is already in the set or already in the
+                # database
+                lastItem = diskItem
+                while reldirname:
+                    dirItem = self.createDiskItemFromFileName(
+                        os.path.join(self.directory, reldirname), None)
+                    if dirItem:
+                        # set/fix parent item
+                        lastItem.parent = dirItem
+                        lastItem = dirItem
+                        if dirItem in diSet:
+                            break
+                        # check if it is already in the database
+                        if cursor is None:
+                            cursor = self._getDatabaseCursor()
+                        uuid = cursor.execute(
+                            'SELECT _uuid FROM _FILENAMES_ WHERE filename=?',
+                        (reldirname, )).fetchone()
+                        if uuid:
+                            break
+                        diSet.add(dirItem)
+                    reldirname = os.path.dirname(reldirname)
+        finally:
+            if cursor is not None:
+                self._closeDatabaseCursor(cursor)
         return diSet
 
     def insertDiskItems(self, diskItems, update=False, insertParentDirs=True):
-        cursor = self._getDatabaseCursor()
         diSet = diskItems
         if insertParentDirs:
             diSet = self._diskItemsWithParents(diskItems)
+        cursor = self._getDatabaseCursor()
         try:
             # print("sqlFSODatabase : insertDiskItems ", diSet)
             for diskItem in diSet:
@@ -1243,7 +1213,7 @@ class SQLDatabase(Database):
                   '_uuid': diskItem._uuid,
                   '_priority': getattr(diskItem, '_priority', 0),
                 }
-                minf = cPickle.dumps(state, MINF_PICKLE_PROTOCOL)
+                minf = pickle.dumps(state, MINF_PICKLE_PROTOCOL)
                 diskItem._globalAttributes["_database"] = self.name
                 if diskItem.type.isA('Transformation'):
                     destination_referential = diskItem.getNonHierarchy(
@@ -1335,7 +1305,7 @@ class SQLDatabase(Database):
                         # f = StringIO()
                         # writeMinf( f, ( state, ) )
                         # minf = f.getvalue()
-                        minf = cPickle.dumps(state, MINF_PICKLE_PROTOCOL)
+                        minf = pickle.dumps(state, MINF_PICKLE_PROTOCOL)
                         cursor.execute(
                             'INSERT INTO _DISKITEMS_ (_uuid, _diskItem) VALUES (? ,?)', (uuid, minf))
                         if source_referential and destination_referential:
@@ -1428,11 +1398,11 @@ class SQLDatabase(Database):
 
         try:
             if six.PY2:
-                state = cPickle.loads(minf)
+                state = pickle.loads(minf)
             else:
                 # pickles from python2 need encoding='latin1', see
                 # https://docs.python.org/3/library/pickle.html#pickle.Unpickler.
-                state = cPickle.loads(minf, encoding='latin1')
+                state = pickle.loads(minf, encoding='latin1')
         except Exception as e:
             print('Could not decode attributes for disk item:',
                   file=sys.stderr)

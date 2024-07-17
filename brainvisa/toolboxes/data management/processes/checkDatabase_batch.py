@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #  This software and supporting documentation are distributed by
 #      Institut Federatif de Recherche 49
 #      CEA/NeuroSpin, Batiment 145,
@@ -30,7 +30,42 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
-from __future__ import absolute_import
-import sys
-if hasattr(sys, 'setdefaultencoding'):
-    sys.setdefaultencoding('utf-8')
+
+from brainvisa.processes import (
+    Signature, Choice, OpenChoice, neuroConfig,
+)
+from brainvisa.data import neuroHierarchy
+from brainvisa.data.databaseCheck import BVChecker_3_1
+
+
+name = 'Check database batch'
+userLevel = 0
+require_databasing = True
+
+signature = Signature(
+    'database', Choice()
+)
+
+
+def initialization(self):
+    if len(neuroHierarchy.databases._databases) == 0:
+        self.signature['database'] = OpenChoice()
+        databases = None
+    else:
+        databases = [dbs.directory
+                     for dbs in neuroConfig.dataPath if not dbs.builtin]
+        self.signature['database'].setChoices(*databases)
+    if databases:
+        self.database = databases[0]
+    else:
+        self.database = None
+
+
+def execution(self, context):
+    database = self.database
+    print('neuroConfig.dataPath:', [dbs.directory for dbs in neuroConfig.dataPath])
+    print('neuroHierarchy.databases:', neuroHierarchy.databases._databases)
+    database = neuroHierarchy.databases.database(self.database)
+    checker = BVChecker_3_1(database, context)
+    checker.findActions()
+    checker.process(debug=True)

@@ -44,9 +44,6 @@ if( aims-free_FOUND )
   math( EXPR result "${aims-free_VERSION_MINOR}+1" )
   BRAINVISA_DEPENDENCY( RUN RECOMMENDS "aims-free" RUN ">= ${aims-free_VERSION};<< ${aims-free_VERSION_MAJOR}.${result}" )
 endif()
-if( datamind_FOUND )
-  BRAINVISA_DEPENDENCY( RUN RECOMMENDS "datamind" RUN ">= ${datamind_VERSION}" )
-endif()
 if( brainvisa-share_VERSION_MINOR )
   math( EXPR result "${brainvisa-share_VERSION_MINOR}+1" )
   BRAINVISA_DEPENDENCY( RUN RECOMMENDS "brainvisa-share" RUN ">= ${brainvisa-share_VERSION};<< ${brainvisa-share_VERSION_MAJOR}.${result}" )
@@ -64,25 +61,9 @@ BRAINVISA_DEPENDENCY( RUN RECOMMENDS "python-matplotlib" RUN )
 
 BRAINVISA_DEPENDENCY( RUN RECOMMENDS graphviz RUN )
 
-configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/config/config.py.in" "${CMAKE_BINARY_DIR}/${PYTHON_INSTALL_DIRECTORY}/brainvisa/config.py" @ONLY )
-BRAINVISA_INSTALL( FILES "${CMAKE_BINARY_DIR}/${PYTHON_INSTALL_DIRECTORY}/brainvisa/config.py"
-                   DESTINATION "${PYTHON_INSTALL_DIRECTORY}/brainvisa"
-                   COMPONENT ${PROJECT_NAME} )
 BRAINVISA_COPY_PYTHON_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/python"
-                                 ${PROJECT_NAME} )
-
-# For historical reasons, Axon needs to modify its encoding to iso-8859-1. 
-# In Python this can only be done in an early step of Python startup. This
-# is why axon installs the sitecustomize package created by bv_maker (see
-# comments in bv_maker sources). That makes it possible to automatically 
-# import modules at startup. The module python/sitecustomize/axon_encoding.py
-# is loaded on startup and sets the encoding. The package sitecustomize is not
-# supposed to be packaged (it is only used in build tree). This is an
-# exception for axon component that should be removed when all string encoded
-# in iso-8859-1 will be converted to utf8.
-BRAINVISA_INSTALL( FILES "${CMAKE_BINARY_DIR}/${PYTHON_INSTALL_DIRECTORY}/sitecustomize/__init__.py"
-                   DESTINATION "${PYTHON_INSTALL_DIRECTORY}/sitecustomize"
-                   COMPONENT ${PROJECT_NAME} )
+                                 "${PROJECT_NAME}"
+                                 "${PYTHON_INSTALL_DIRECTORY}")
 
 # build and install shared database files
 
@@ -102,7 +83,8 @@ add_custom_target( axon_build_shared_index
 add_dependencies( axon_target_1 axon_build_shared_index )
 
 BRAINVISA_COPY_PYTHON_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/brainvisa"
-                                 ${PROJECT_NAME} )
+                                 ${PROJECT_NAME}
+                                 "${PYTHON_INSTALL_DIRECTORY}/brainvisa" )
 BRAINVISA_COPY_DIRECTORY( "${CMAKE_CURRENT_SOURCE_DIR}/share"
                           "share/${PROJECT_NAME}-${BRAINVISA_PACKAGE_VERSION_MAJOR}.${BRAINVISA_PACKAGE_VERSION_MINOR}"
                           ${PROJECT_NAME} )
@@ -131,7 +113,6 @@ add_dependencies( post-install axon_install_shared_index )
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/bin/bv_create_ontology_doc" )
   set( CREATE_ONTOLOGY_DOC "${CMAKE_CURRENT_SOURCE_DIR}/bin/bv_create_ontology_doc" )
 endif()
-
 
 # Documentation of axon processes and ontologies
 add_custom_target( bv_ontology_doc

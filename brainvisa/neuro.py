@@ -1,43 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#  This software and supporting documentation are distributed by
-#      Institut Federatif de Recherche 49
-#      CEA/NeuroSpin, Batiment 145,
-#      91191 Gif-sur-Yvette cedex
-#      France
-#
-# This software is governed by the CeCILL license version 2 under
-# French law and abiding by the rules of distribution of free software.
-# You can  use, modify and/or redistribute the software under the
-# terms of the CeCILL license version 2 as circulated by CEA, CNRS
-# and INRIA at the following URL "http://www.cecill.info".
-#
-# As a counterpart to the access to the source code and  rights to copy,
-# modify and redistribute granted by the license, users are provided only
-# with a limited warranty  and the software's author,  the holder of the
-# economic rights,  and the successive licensors  have only  limited
-# liability.
-#
-# In this respect, the user's attention is drawn to the risks associated
-# with loading,  using,  modifying and/or developing or reproducing the
-# software by the user in light of its specific status of free software,
-# that may mean  that it is complicated to manipulate,  and  that  also
-# therefore means  that it is reserved for developers  and  experienced
-# professionals having in-depth computer knowledge. Users are therefore
-# encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or
-# data to be ensured and,  more generally, to use and operate it in the
-# same conditions as regards security.
-#
-# The fact that you are presently reading this means that you have had
-# knowledge of the CeCILL license version 2 and that you accept its terms.
 """
 This is the main module of BrainVISA. It is executed by ``brainvisa`` command to start the software.
 It loads a lot of other modules and initializes BrainVISA application according to the options given at startup.
 """
-from __future__ import print_function
-from __future__ import absolute_import
 import six
 __docformat__ = 'restructuredtext en'
 
@@ -49,8 +16,6 @@ import soma.subprocess
 import sys
 import os
 import signal
-import atexit
-import time
 
 from soma.qt_gui import qt_backend
 qt_backend.set_qt_backend(compatible_qt5=True)
@@ -60,15 +25,13 @@ if len(sys.argv) > 1 and sys.platform[:6] == 'darwin' and sys.argv[1][:5] == '-p
     # MacOS calls me with this strange argument, I don't want it.
     del sys.argv[1]
 
-from soma.qt_gui.qt_backend import QtGui, QtCore
+from soma.qt_gui.qt_backend import QtCore
 
 from soma.wip.application.api import Application
 from soma.signature.api import Choice as SomaChoice
 from brainvisa.configuration import neuroConfig
-from brainvisa.toolboxes import readToolboxes, allToolboxes
 from brainvisa.data import temporary
 from brainvisa.configuration.qtgui import neuroConfigGUI
-from brainvisa.processing import neuroLog
 from brainvisa.processing.neuroException import *
 from brainvisa.data.neuroData import *
 from brainvisa.processes import *
@@ -78,7 +41,6 @@ from brainvisa.data.qtgui.neuroDataGUI import *
 from brainvisa.processing.qtgui.neuroProcessesGUI import *
 from brainvisa.data import neuroHierarchy
 from brainvisa.processing.qtgui.backwardCompatibleQt import *
-from brainvisa.data.minfExtensions import initializeMinfExtensions
 from brainvisa.data.qtgui.updateDatabases import warnUserAboutDatabasesToUpdate
 
 
@@ -124,13 +86,6 @@ def main():
     """
     This function initializes BrainVISA components: log, databases, processes, graphical user interface.
     """
-    import brainvisa.processing.qtgui
-    p = os.path.join(os.path.dirname(brainvisa.processing.qtgui.__file__),
-                     'protection_against_qt3')
-    if os.path.exists(p):
-        sys.path.insert(0, p)
-    #  sys.excepthook = exceptionHook
-    # InitializationoptionFile
     try:
 
         from brainvisa import axon
@@ -176,7 +131,10 @@ def main():
 
 
 if neuroConfig.gui:
-    # QApplication.setColorSpec( QApplication.ManyColor )
+    from soma.qt_gui import ipkernel_tools
+
+    ipkernel_tools.before_start_ipkernel()
+
     neuroConfig.qtApplication = QApplication(
         [sys.argv[0], '-name', versionText()] + sys.argv[1:])
     neuroConfig.qtApplication.setAttribute(Qt.AA_DontShowIconsInMenus, False)
@@ -217,6 +175,7 @@ else:
 
 
 def startConsoleShell():
+
     from soma.qt_gui.qt_backend.QtWidgets import QApplication
     try:
         import jupyter_console.app
@@ -271,10 +230,8 @@ if neuroConfig.gui:
                 neuroConfig.shell = False
                 QTimer.singleShot(0, startConsoleShell)
     if not neuroConfig.shell:
-        if QtCore.QT_VERSION >= 0x060000:
-            neuroConfig.qtApplication.exec()
-        else:
-            neuroConfig.qtApplication.exec()
+        ipkernel_tools.start_ipkernel_qt_engine()
+        # neuroConfig.qtApplication.exec()
 
 ipConsole = None
 ipsubprocs = []
