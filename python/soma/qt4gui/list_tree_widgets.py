@@ -539,7 +539,7 @@ class EditableTreeWidget(QTreeWidget):
                 itemBefore = EditableTreeWidget.Branch(
                     None, item, None, self.iconDim)
             self.insertTopLevelItem(position, itemBefore)
-            if item.unamed and self.hasFocus():
+            if getattr(item, 'unamed', False) and self.hasFocus():
                 self.editItem(itemBefore, 0)
                 item.unamed = False
         # print("current item : ", self.currentItem())
