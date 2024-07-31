@@ -92,18 +92,58 @@ def cleanup():
     sys.stdout.flush()
 
 
-def initializeProcesses():
+def initializeProcesses(verbose=True):
     '''
     This method intends to retrieve a list of all existing types in the
     BrainVISA ontology, of all processes and databases. This replicates the
     job which is usually done at the very beginning when BrainVISA starts,
     but here no GUI is created.
 
-    The processes are available through functions in :py:mod:`brainvisa.processes`.
+    The processes are available through functions in
+    :py:mod:`brainvisa.processes`.
     The databases are in :py:data:`brainvisa.data.neuroHierarchy.databases`.
-    The types are available through functions in :py:mod:`brainvisa.data.neuroDiskItems`.
+    The types are available through functions in
+    :py:mod:`brainvisa.data.neuroDiskItems`.
 
+    In non-verbose mode, sys.stdout and sys.stderr are suppressed during the
+    operation, and restored afterwards.
     '''
+    if not verbose:
+        # redirect stderr/stdout to avoid printing error messages from
+        # processes
+        stdout = sys.stdout
+        stderr = sys.stderr
+        tmp = []
+        if os.path.exists('/dev/null'):
+            outfile = open('/dev/null', 'a')
+        else:
+            import tempfile
+            x = tempfile.mkstemp()
+            os.close(x[0])
+            outfile = open(x[1], 'a')
+            tmp.append(x[1])
+            del x
+        # print('--- disabling stdout/err ---')
+        sys.stdout = outfile
+        sys.stderr = outfile
+        # print('*** DISABLED. ***')
+
+    try:
+        _initializeProcesses()
+    finally:
+        if not verbose:
+            sys.stderr = stderr
+            sys.stdout = stdout
+            outfile.close()
+            del outfile
+            x = None
+            for x in tmp:
+                os.unlink(x)
+            del x, tmp
+            # print('*** Re-enabling stdout/err ***')
+
+
+def _initializeProcesses():
     # protect agains recursive calls
     global _count
     _count += 1

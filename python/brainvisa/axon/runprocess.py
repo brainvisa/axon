@@ -441,41 +441,7 @@ else:
         neuroConfig.logFileName = ''
 
 verbose = options.verbose
-if not verbose:
-    # redirect stderr/stdout to avoid printing error messages from processes
-    stdout = sys.stdout
-    stderr = sys.stderr
-    tmp = []
-    if os.path.exists('/dev/null'):
-        outfile = open('/dev/null', 'a')
-    else:
-        import tempfile
-        x = tempfile.mkstemp()
-        os.close(x[0])
-        outfile = open(x[1], 'a')
-        tmp.append(x[1])
-        del x
-    # print('--- disabling stdout/err ---')
-    sys.stdout = outfile
-    sys.stderr = outfile
-    # print('*** DISABLED. ***')
-
-try:
-
-    axon.initializeProcesses()
-
-finally:
-    if not verbose:
-        sys.stderr = stderr
-        sys.stdout = stdout
-        outfile.close()
-        del outfile
-        x = None
-        for x in tmp:
-            os.unlink(x)
-        del x, tmp
-        # print('*** Re-enabling stdout/err ***')
-
+axon.initializeProcesses(verbose=verbose)
 
 if options.list_processes:
     sort_by = options.sort_by
