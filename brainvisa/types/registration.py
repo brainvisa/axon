@@ -48,6 +48,8 @@ FileType( 'Referential of Raw FLAIR MRI', 'Referential' )
 FileType('Resamp Spline Image',  '3D Volume')
 FileType('Registration Directory', 'Directory')
 
+FileType('Transformation Graph', 'Any Type', 'YAML file')
+
 FileType('Template Pole To Talairach Tranformation', 'Transformation matrix')
 
 #----------------- Scanner Based using ---------------------------------
