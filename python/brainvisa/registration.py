@@ -139,7 +139,7 @@ class DatabasesTransformationManager(object):
                 print(e)
                 print('  no transformation corresponds to this uuid: %s, used in a '
                       'possible path to link refs %s (%s) and %s (%s)' %
-                      (i[0], source_referential,
+                      (path[0], source_referential,
                        neuroHierarchy.databases.getDiskItemFromUuid(
                        source_referential),
                           destination_referential,
