@@ -56,6 +56,9 @@ hierarchy = (
         'tables', SetType('Tables Directory'),
         SetContent(  # Set Content must be present even if it is empty, otherwise it is impossible to insert something in subject directory
         ),
+        'biology',
+        SetContent(  # Set Content must be present even if it is empty, otherwise it is impossible to insert something in subject directory
+        ),
         '{center}', SetFileNameStrongAttribute('center'), SetType('Center'),
         SetDefaultAttributeValue('center', default_center),
         SetContent(
