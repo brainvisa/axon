@@ -978,7 +978,12 @@ class Parameterized(object):
             self.setDefault(name, default)
         if self._isParameterSet.get(name, False):
             oldValue = getattr(self, name, None)
-            newValue = self.signature[name].findValue(value)
+            try:
+                newValue = self.signature[name].findValue(value)
+            except Exception as e:
+                e.args = (f'Error while setting parameter "{name}" of '
+                          f'process "{self.name}" : {str(e)}', ) + e.args[1:]
+                raise
             changed = changed or newValue != oldValue
         else:
             self._isParameterSet[name] = True
