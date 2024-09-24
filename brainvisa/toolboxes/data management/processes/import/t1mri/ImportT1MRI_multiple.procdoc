@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<minf expander="minf_2.0">
+<d>
+  <d name="en">
+    <xhtml name="short">Places several T1 MRI images in BrainVISA database</xhtml>
+    <xhtml name="long">This is a variant of the <a href="ImportT1MRI.html">Import T1 MRI process</a>, allowing to import multiple T1 images at once and place them in the same output data organization.<br/>
+<em>Inputs</em> and <em>outputs</em> parameters are lists, and a few extra parameters (specific to BrainVISA standard fies organization) allow to easily place them in the output database, typically by entering a list of subjects names.<br/>
+Otherwise it behaves like iterating over the <a href="ImportT1MRI.html">Import T1 MRI process</a>, in sequential mode.</xhtml>
+    <d name="parameters">
+    </d>
+  </d>
+</d>
+</minf>
