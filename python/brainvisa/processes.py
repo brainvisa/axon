@@ -192,6 +192,7 @@ import errno
 import time
 import calendar
 import tempfile
+import io
 
 from soma.sorted_dictionary import SortedDictionary
 from soma.functiontools import numberOfParameterRange, hasParameter, partial
@@ -3402,7 +3403,8 @@ class ExecutionContext(object):
                         result = workflow
                         configuration = Application().configuration
                         if (len(list_failed_jobs) > 0):
-                            msg = ''
+                            msg = 'Run through soma workflow failed. ' \
+                                'Plase see the log (ctrl-L)'
                             if not configuration.soma_workflow.somaworkflow_keep_failed_workflows:
                                 # Delete the submitted workflow
                                 controller.delete_workflow(wid, True)
@@ -3410,11 +3412,25 @@ class ExecutionContext(object):
                                 del controller
                                 shutil.rmtree(tmp_dir)
                             else:
-                                msg = ', workflow temp dir has been left: %s' \
+                                msg += ', and see details with ' \
+                                    'soma-workflow-gui, ' \
+                                    'workflow temp dir has been left: %s' \
                                     % controller.config._temp_config_dir
-                            raise RuntimeError(
-                                'run through soma workflow failed, see '
-                                'details with soma-workflow-gui%s' % msg)
+                                msg += '\nTo see details, run the following ' \
+                                    'command:\nsoma_workflow_gui --database ' \
+                                    '%s/soma-workflow.db' \
+                                    % controller.config._temp_config_dir
+                            if process._outputLogFile:
+                                f = io.StringIO()
+                                controller.log_failed_workflow(wid, file=f)
+                                err_msg = htmlEscape(f.getvalue()).replace(
+                                    '\n', '<br/>')
+                                err_msg = '<b style="color: #e00000">Error ' \
+                                    'in job:</b><br/>' \
+                                    + err_msg
+                                print(err_msg, file=process._outputLogFile)
+
+                            raise RuntimeError(msg)
                         else:
                             if not configuration.soma_workflow.somaworkflow_keep_succeeded_workflows:
                                 # Delete the submitted workflow
