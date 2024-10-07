@@ -8,7 +8,7 @@
 import subprocess
 import sys
 # import os
-import importlib
+import importlib.util
 
 s = importlib.util.find_spec('brainvisa.axon.runprocess')
 
