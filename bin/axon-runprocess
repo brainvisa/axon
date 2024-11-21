@@ -1,14 +1,11 @@
 #!/usr/bin/env python
-#from runpy import run_module
-
-#run_module('brainvisa.axon.runprocess')
 
 # avoid preloading modules imported in brainvisa.axon.__init__
 # they conflict with headless Anatomist
 import subprocess
 import sys
 # import os
-import importlib
+import importlib.util
 
 s = importlib.util.find_spec('brainvisa.axon.runprocess')
 
