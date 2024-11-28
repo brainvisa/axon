@@ -151,6 +151,14 @@ def snapshot_size(self, n):
     return width, height, nr, nc, spacing
 
 
+def merge_dicts(d1, d2):
+    for k, v in d2.items():
+        if not isinstance(v, dict) or k not in d1:
+            d1[k] = v
+        else:
+            merge_dicts(d1[k], v)
+
+
 def setup_view(self, w, config, data):
     import anatomist.direct.api as ana
 
@@ -159,31 +167,92 @@ def setup_view(self, w, config, data):
     if self.referential == 'Talairach':
         w.setReferential(a.centralReferential())
     elif self.referential == 'MNI':
-        w.setReferential(a.Referential.mniTemplateReferential())
+        w.setReferential(ana.cpp.Referential.mniTemplateReferential())
     w.focusView()
 
-    bbox = (120, 100, 90)
-    bbmin = (-120, -100, -20)
-    obs_pos = tuple((x+y)/2 for x, y in zip(bbox, bbmin))
-    camera = {'boundingbox_min': bbmin, 'boundingbox_max': bbox,
-              'cursor_position': (0, 0, 0), 'zoom': 1,
-              'observer_position': obs_pos}
+    base_configs = {
+        'Talairach': {
+            'all': {
+                'all': {
+                    'observer_position': [0, 17, -20],
+                    'boundingbox_max': (120, 100, 90),
+                    'boundingbox_min': (-120, -100, -20),
+                },
+            },
+            'left': {
+                'all': {
+                    'cursor_position': [33, 17, -8],
+                },
+                '3D': {
+                    'view_quaternion': [0.5, 0.5, 0.5, 0.5]
+                }
+            },
+            'right': {
+                'all': {
+                    'cursor_position': [-33, 17, -8],
+                },
+                '3D': {
+                    'view_quaternion': [0.5, -0.5, -0.5, 0.5]
+                }
+            }
+        },
+        'MNI': {
+            'all': {
+                'all': {
+                    'observer_position': [0., -22., 14.],
+                    #'cursor_position': [33, 17, -8],
+                    'boundingbox_max': (37., 93., 72.),
+                    'boundingbox_min': (-37., -93., -72.),
+                },
+            },
+            'left': {
+                '3D': {
+                    'view_quaternion': [0.5, -0.5, -0.5, 0.5]
+                }
+            },
+            'right': {
+                '3D': {
+                    'view_quaternion': [0.5, 0.5, 0.5, 0.5]
+                }
+            }
+        },
+        'Native': {
+            'all': {
+                'all': {
+                    'observer_position': [0., 130., 95.],
+                    'boundingbox_max': (40., 55., 90.),
+                    'boundingbox_min': (-40., -55., -90.),
+                    'zoom': 0.65,
+                },
+            },
+            'left': {
+                '3D': {
+                    'view_quaternion': [0.5, 0.5, 0.5, 0.5]
+                }
+            },
+            'right': {
+                '3D': {
+                    'view_quaternion': [0.5, -0.5, -0.5, 0.5]
+                }
+            }
+        },
+    }
+    side = data.get('side')
+    refconf = base_configs.get(self.referential, {}).get('all', {})
+    merge_dicts(refconf, base_configs.get(self.referential, {}).get(side, {}))
+    camera = {'cursor_position': (0, 0, 0), 'zoom': 1}
+    merge_dicts(camera, refconf.get('all', {}))
+    merge_dicts(camera, refconf.get(w.windowType, {}))
+    bbox = camera.get('boundingbox_max')
+    bbmin = camera.get('boundingbox_min')
+    if bbox and bbmin and 'observer_position' not in camera:
+        obs_pos = tuple((x+y)/2 for x, y in zip(bbox, bbmin))
+        camera['observer_position'] = obs_pos
     swconfig = {'cursor_visibility': 0,
                 'light': {'background': self.background_color + [1.]}}
 
-    side = data.get('side')
-    if side == 'left':
-        camera['observer_position'] = [0, 17, -20]
-        camera['cursor_position'] = [33, 17, -8]
-        if w.windowType == '3D':
-            camera['view_quaternion'] = [0.5, 0.5, 0.5, 0.5]
-    elif side == 'right':
-        camera['observer_position'] = [0, 17, -20]
-        camera['cursor_position'] = [-33, 17, -8]
-        if w.windowType == '3D':
-            camera['view_quaternion'] = [0.5, -0.5, -0.5, 0.5]
     sconfig = wconfig.get(side, wconfig)
-    camera.update(sconfig.get('camera', {}))
+    merge_dicts(camera, sconfig.get('camera', {}))
     if camera:
         w.camera(**camera)
     swconfig.update(sconfig.get('window_config', {}))
