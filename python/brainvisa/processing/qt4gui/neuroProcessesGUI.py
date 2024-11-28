@@ -3546,15 +3546,9 @@ class ProcessView(QWidget, ExecutionContextGUI):
     def saveAs(self):
         minf = getattr(self.process, '_savedAs', '')
         # workaround a bug in PyQt ? Param 5 doesn't work; try to use kwargs
-        import sipconfig
-        if sipconfig.Configuration().sip_version >= 0x040a00:
-            minf = six.text_type(qt_backend.getSaveFileName(
-                None, 'Save a process file', minf,
-                'BrainVISA process (*.bvproc);;All files (*)', options=QFileDialog.DontUseNativeDialog))
-        else:
-            minf = six.text_type(
-                QFileDialog.getSaveFileName(None, 'Save a process file', minf,
-                                            'BrainVISA process (*.bvproc);;All files (*)', None, QFileDialog.DontUseNativeDialog))
+        minf = six.text_type(qt_backend.getSaveFileName(
+            None, 'Save a process file', minf,
+            'BrainVISA process (*.bvproc);;All files (*)', options=QFileDialog.DontUseNativeDialog))
         if minf:
             if not minf.endswith('.bvproc'):
                 minf += '.bvproc'
