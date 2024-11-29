@@ -93,8 +93,14 @@ class FileName_Qt4GUI(Unicode_Qt4GUI):
         elif self.dataTypeInstance.readOnly:
             # workaround a bug in PyQt ? Param 5 doesn't work; try to use
             # kwargs
-            import sipconfig
-            if sipconfig.Configuration().sip_version >= 0x040a00:
+            sip6 = True
+            try:
+                import sipconfig
+                if sipconfig.Configuration().sip_version < 0x040a00:
+                    sip6 = False
+            except ImportError:
+                pass
+            if sip6:
                 value = qt_backend.getOpenFileName(
                     self._widget, 'Select a file', '', '', options=QFileDialog.DontUseNativeDialog)
             else:
@@ -103,8 +109,14 @@ class FileName_Qt4GUI(Unicode_Qt4GUI):
         else:
             # workaround a bug in PyQt ? Param 5 doesn't work; try to use
             # kwargs
-            import sipconfig
-            if sipconfig.Configuration().sip_version >= 0x040a00:
+            sip6 = True
+            try:
+                import sipconfig
+                if sipconfig.Configuration().sip_version < 0x040a00:
+                    sip6 = False
+            except ImportError:
+                pass
+            if sip6:
                 value = qt_backend.getSaveFileName(
                     self._widget, 'Select a file', '', '', options=QFileDialog.DontUseNativeDialog)
             else:

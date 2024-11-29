@@ -3581,8 +3581,14 @@ class ProcessView(QWidget, ExecutionContextGUI):
     @staticmethod
     @catch_gui_exception
     def open():
-        import sipconfig
-        if sipconfig.Configuration().sip_version >= 0x040a00:
+        sip6 = True
+        try:
+            import sipconfig
+            if sipconfig.Configuration().sip_version < 0x040a00:
+                sip6 = False
+        except ImportError:
+            pass
+        if sip6:
             minf = six.text_type(qt_backend.getOpenFileName(
                 None, _t_('Open a process file'), '',
                 'BrainVISA process (*.bvproc);;All files (*)',
