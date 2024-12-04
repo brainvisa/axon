@@ -30,12 +30,9 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
-from __future__ import print_function
-from __future__ import absolute_import
+
 import sys
 import os
-
-import six
 
 from brainvisa.configuration import neuroConfig
 from brainvisa.processing.neuroException import showException
@@ -63,10 +60,7 @@ if anatomistImport:
     from brainvisa.data import neuroData
     from soma.qtgui.api import QtThreadCall
     import distutils.spawn
-    import weakref
-    import types
     import threading
-    import copy
     from brainvisa.processing.qtgui import backwardCompatibleQt as qt
     from brainvisa.processing.qtgui import neuroProcessesGUI
 
