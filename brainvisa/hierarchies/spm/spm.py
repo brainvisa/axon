@@ -59,6 +59,8 @@ hierarchy = (
             SetWeakAttr('template', 'TPM', 'SPM_version', '12'),
         ),
         'toolbox', SetContent(
+            # this OldNorm is the location of templates in SPM12
+            'OldNorm', SetContent(*templates_contents),
             'Seg', SetContent(
                 # TPM in SPM8
                 'TPM', SetType('TPM template')),
@@ -67,21 +69,25 @@ hierarchy = (
                 # SPM8
                 'Template_{step}_IXI550_{template}', SetType('TPM HDW DARTEL template'),
                 SetWeakAttr('normalized', 'yes', 'databasename', 'spm')),
-            # this OldNorm is the location of templates in SPM12
-            'OldNorm', SetContent(*templates_contents),
             'DARTEL', SetContent(
                 # in SPM12, but not exactly the same as in SPM8, this one
                 # looks more similar to Template_6_IXI550_MNI152 in SPM8
                 'icbm152', SetType('Dartel Template'),
                 SetWeakAttr('normalized', 'yes', 'databasename', 'spm')),
             'cat12', SetContent(
+                # before v. 1839
                 'templates_volumes', SetContent(
-                    'Template_0_IXI555_MNI152_GS', SetType('CAT shooting template'),
+                    'Template_{step}_IXI555_MNI152_GS', SetType('CAT shooting template'),
+                    SetWeakAttr('template', 'IXI555_MNI152'),
                     'Template_{step}_IXI555_MNI152', SetType('CAT Dartel template'),
+                    SetWeakAttr('template', 'IXI555_MNI152'),
                 ),
+                # after v. 1839
                 'templates_MNI152NLin2009cAsym', SetContent(
-                    'Template_0_GS', SetType('CAT shooting template'),
+                    'Template_{step}_GS', SetType('CAT shooting template'),
+                    SetWeakAttr('template', 'MNI152NLin2009cAsym'),
                     'Template_{step}_Dartel', SetType('CAT Dartel template'),
+                    SetWeakAttr('template', 'MNI152NLin2009cAsym'),
                 )
             )
         ),  # toolbox
