@@ -17,7 +17,7 @@ signature = Signature(
     "assemblynet_image", String(), #TODO readDiskItem AnyType
     "t1mri", ReadDiskItem("Raw T1 MRI", ["gz compressed NIFTI-1 image", "NIFTI-1 image"]),
     "output_folder", WriteDiskItem("Acquisition", "Directory", requiredAttributes={"modality": "assemblyNet"}),
-    
+
     "age", Float(section=assemblynet_options),
     "sex", Choice(None, "Male", "Female", section=assemblynet_options),
     "pdf_report", Boolean(section=assemblynet_options),
@@ -49,9 +49,9 @@ signature = Signature(
     "native_tissues", WriteDiskItem("Intracranial labels", default_format, section=assemblynet_outputs,
                                     requiredAttributes={"space": "native", "modality": "assemblyNet"}),
     "report_csv", WriteDiskItem("Analysis Report", "CSV file", section=assemblynet_outputs,
-                            requiredAttributes={"modality": "assemblyNet"})
+                                requiredAttributes={"modality": "assemblyNet"}),
     "report_pdf", WriteDiskItem("Analysis Report", "CSV file", section=assemblynet_outputs,
-                            requiredAttributes={"modality": "assemblyNet"})
+                                requiredAttributes={"modality": "assemblyNet"})
 )
 
 
