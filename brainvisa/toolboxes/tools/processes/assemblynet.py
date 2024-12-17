@@ -50,7 +50,7 @@ signature = Signature(
                                     requiredAttributes={"space": "native", "modality": "assemblyNet"}),
     "report_csv", WriteDiskItem("Analysis Report", "CSV file", section=assemblynet_outputs,
                                 requiredAttributes={"modality": "assemblyNet"}),
-    "report_pdf", WriteDiskItem("Analysis Report", "CSV file", section=assemblynet_outputs,
+    "report_pdf", WriteDiskItem("Analysis Report", "PDF file", section=assemblynet_outputs,
                                 requiredAttributes={"modality": "assemblyNet"})
 )
 
@@ -65,7 +65,7 @@ def initialization(self):
     self.setOptional('age', 'sex')
 
     assemblynet_output_parameters = [p for p in self.signature if (p.startswith('mni') or p.startswith('native'))]
-    assemblynet_output_parameters += ["transformation_to_mni", "report"]
+    assemblynet_output_parameters += ["transformation_to_mni", "report_csv", "report_pdf"]
     self.setUserLevel(1, *assemblynet_output_parameters)
     for param in assemblynet_output_parameters:
         self.addLink(param, "output_folder")
@@ -108,11 +108,14 @@ def execution(self, context):
             if not Path(output_file).exists():
                 file_path.rename(output_file)
         elif file_path.name.startswith("matrix_affine"):
-            output_file = self.tranformation_to_mni.fullPath()
+            output_file = self.transformation_to_mni.fullPath()
             if not Path(output_file).exists():
                 file_path.rename(output_file)
         elif file_path.name.startswith("report"):
-            output_file = self.report.fullPath()
+            if file_path.suffix == '.csv':
+                output_file = self.report_csv.fullPath()
+            elif file_path.suffix == '.pdf':
+                output_file = self.report_pdf.fullPath()
             if not Path(output_file).exists():
                 file_path.rename(output_file)
 

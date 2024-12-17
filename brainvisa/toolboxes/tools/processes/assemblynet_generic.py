@@ -31,9 +31,12 @@ def initialization(self):
 
 def execution(self, context):
     t1mri_parent = os.path.dirname(self.t1mri.fullPath())
+    tmp_dir = context.temporary('Directory')
     command = [
         'apptainer',
         'run',
+        '-B',
+        f'{tmp_dir.fullPath()}:/tmp',
         '-B',
         f'{t1mri_parent}:/data',
         '-B',
@@ -47,7 +50,7 @@ def execution(self, context):
         command.extend(['-sex', self.sex])
     if not self.pdf_report:
         command += '-no-pdf-report'
-    
+
     os.makedirs(self.output_folder.fullPath(), exist_ok=True)
 
     command.extend([
