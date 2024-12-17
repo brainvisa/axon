@@ -48,7 +48,9 @@ signature = Signature(
                                requiredAttributes={"space": "native", "modality": "assemblyNet"}),
     "native_tissues", WriteDiskItem("Intracranial labels", default_format, section=assemblynet_outputs,
                                     requiredAttributes={"space": "native", "modality": "assemblyNet"}),
-    "report", WriteDiskItem("Analysis Report", "Text file", section=assemblynet_outputs,
+    "report_csv", WriteDiskItem("Analysis Report", "CSV file", section=assemblynet_outputs,
+                            requiredAttributes={"modality": "assemblyNet"})
+    "report_pdf", WriteDiskItem("Analysis Report", "CSV file", section=assemblynet_outputs,
                             requiredAttributes={"modality": "assemblyNet"})
 )
 
@@ -84,7 +86,7 @@ def _update_output_folder(self, t1mri):
 def execution(self, context):
     output_folder = Path(self.output_folder.fullPath())
     output_folder.mkdir(exist_ok=True)
-    
+
     # Run AssemblyNet
     context.runProcess(
         "assemblynet_generic",
@@ -105,11 +107,15 @@ def execution(self, context):
             output_file = getattr(self, signature_name).fullPath()
             if not Path(output_file).exists():
                 file_path.rename(output_file)
-        elif file_path.startswith("matrix_affine"):
+        elif file_path.name.startswith("matrix_affine"):
             output_file = self.tranformation_to_mni.fullPath()
             if not Path(output_file).exists():
                 file_path.rename(output_file)
-                
+        elif file_path.name.startswith("report"):
+            output_file = self.report.fullPath()
+            if not Path(output_file).exists():
+                file_path.rename(output_file)
+
     # Update brainvisa database to take into account results
     db = databases.database(self.output_folder.get('_database'))
     db.update(directoriesToScan=[self.output_folder.fullPath()])
