@@ -36,9 +36,10 @@ class SPMConfiguration(ConfigurationGroup):
 
     def __init__(self, *args, **kwargs):
         super(SPMConfiguration, self).__init__(*args, **kwargs)
-        if 'CONDA_PREFIX' in os.environ:
-            spm12_path = os.path.join(os.environ['CONDA_PREFIX'], 'share', 'spm12-standalone')
+        conda_prefix = os.environ.get('CONDA_PREFIX')
+        if conda_prefix:
+            spm12_path = os.path.join(conda_prefix, 'spm12')
             if os.path.exists(spm12_path) and not self.spm12_path and not self.spm12_standalone_path:
                 self.spm12_standalone_path = spm12_path
                 self.spm12_standalone_command = os.path.join(spm12_path, 'run_spm12.sh')
-                self.spm12_standalone_mcr_path = os.path.join(os.environ['CONDA_PREFIX'], 'share', 'matlab-mcr')
+                self.spm12_standalone_mcr_path = os.path.join(conda_prefix, 'MATLAB', 'MATLAB_Runtime', 'v97')
