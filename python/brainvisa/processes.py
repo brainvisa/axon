@@ -170,7 +170,7 @@ import threading
 import inspect
 import signal
 import shutil
-import imp
+import importlib
 import types
 import copy
 import weakref
@@ -5880,14 +5880,6 @@ def getImporter(source, checkUpdate=True):
 
 
 #----------------------------------------------------------------------------
-_extToModuleDescription = {
-    'py': ('.py', 'r', imp.PY_SOURCE),
-  'pyo': ('.py', 'r', imp.PY_COMPILED),
-  'pyc': ('.py', 'r', imp.PY_COMPILED),
-  'so': ('.so', 'rb', imp.C_EXTENSION),
-}
-
-#----------------------------------------------------------------------------
 
 
 def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainvisa'):
@@ -5961,7 +5953,6 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
             pass
 
         extPos = fileName.rfind('.')
-        fileExtension = fileName[extPos + 1:]
         moduleName = os.path.basename(fileName[: extPos])
         full_mod_name = 'axon_process.%s' % moduleName
         dataDirectory = fileName[: extPos] + '.data'
@@ -5976,19 +5967,22 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
         import axon_process
 
         # Load module
-        moduleDescription = _extToModuleDescription.get(fileExtension)
-        if moduleDescription is None:
-            raise RuntimeError(
-                HTMLMessage(_t_('Cannot load a process from file <em>%s</em>') % (fileName,)))
         currentDirectory = getcwd()
-        fopts = {} if six.PY2 else {'encoding': 'utf-8'}
-        fileIn = open(fileName, moduleDescription[1], **fopts)
         try:
             if dataDirectory:
                 os.chdir(dataDirectory)
             try:
-                processModule = imp.load_module(
-                    full_mod_name, fileIn, fileName, moduleDescription)
+                spec = importlib.util.spec_from_file_location(full_mod_name,
+                                                              fileName)
+                processModule = importlib.util.module_from_spec(spec)
+                sys.modules[full_mod_name] = processModule
+                spec.loader.exec_module(processModule)
+            except FileNotFoundError:
+                showException(beforeError=(
+                    _t_('In <em>%s</em>')) % (fileName, ),
+                    afterError=_t_(
+                        ' module file not found'))
+                return
             except NameError as e:
                 showException(beforeError=(_t_('In <em>%s</em>')) % (fileName, ), afterError=_t_(
                     ' (perharps you need to add the line <tt>"from brainvisa.processes import *"</tt> at the begining of the process)'))
@@ -6005,7 +5999,6 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
                                     + e.args[1:])),
                             sys.exc_info()[2])
         finally:
-            fileIn.close()
             if dataDirectory:
                 os.chdir(currentDirectory)
 
