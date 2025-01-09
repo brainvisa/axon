@@ -110,9 +110,9 @@ class ReadDiskItem(Parameter):
 
     This method of files selection ease file selection by showing the user only files that matches type and format required for this parameter. It also enables BrainVISA to automatically fill some parameters values. The ReadDiskItem class has methods to search matching diskitems in BrainVISA databases :
 
-      * :py:meth:`ReadDiskItem.findItems(\<database directory diskitem\> <ReadDiskItem.findItems>`, <attributes>) : this method returns a list of diskitems that exist in that database and match type, format and required attributes of the parameter. It is possible to specify additional attributes in the method parameters. Found items will have the selected value for these attributes if they have the attribute, but these attributes are not mandatory. That's the difference with the required attributes set in the constructor.
-      * :py:meth:`ReadDiskItem.findValues(\<value\>) <ReadDiskItem.findValues>` : this method searches diskitems matching the value in parameter. This value can be a diskitem, a filename, a dictionary of attributes.
-      * :py:meth:`ReadDiskItem.findValue(\<value\>) <ReadDiskItem.findValue>` : this method returns the best among possible value, that is to say with the more common attributes, highest priority. If there is an ambiguity, it returns None.
+      * :py:meth:`ReadDiskItem.findItems(\\<database directory diskitem\\> <ReadDiskItem.findItems>`, <attributes>) : this method returns a list of diskitems that exist in that database and match type, format and required attributes of the parameter. It is possible to specify additional attributes in the method parameters. Found items will have the selected value for these attributes if they have the attribute, but these attributes are not mandatory. That's the difference with the required attributes set in the constructor.
+      * :py:meth:`ReadDiskItem.findValues(\\<value\\>) <ReadDiskItem.findValues>` : this method searches diskitems matching the value in parameter. This value can be a diskitem, a filename, a dictionary of attributes.
+      * :py:meth:`ReadDiskItem.findValue(\\<value\\>) <ReadDiskItem.findValue>` : this method returns the best among possible value, that is to say with the more common attributes, highest priority. If there is an ambiguity, it returns None.
 
     **Examples**
 

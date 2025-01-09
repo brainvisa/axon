@@ -2329,7 +2329,7 @@ class SQLDatabases(Database):
             filename = os.path.basename(diskItem.fileName())
             # get the number at the end of the filename : it is considered as
             # the name_serie
-            regexp = re.compile("(.+?)(\d+|#)\.(.+)")
+            regexp = re.compile("(.+?)(\\d+|#)\\.(.+)")
             match = regexp.match(filename)
             if match:
                 name = match.group(1)
@@ -2348,7 +2348,7 @@ class SQLDatabases(Database):
                         diskItem._files.append(
                             os.path.join(os.path.dirname(f), namef + "#." + extf))
                 # search the other numbers of the serie
-                regexp = re.compile("^" + name + "(\d+|#)\." + ext + "$")
+                regexp = re.compile("^" + name + "(\\d+|#)\\." + ext + "$")
                 for file in sorted(os.listdir(parentDir)):
                     match = regexp.match(file)
                     if match:

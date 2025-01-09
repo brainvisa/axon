@@ -350,8 +350,8 @@ def procdocToXHTML(procdoc):
             # Add a '/' at the end of non closed tags
             for l in ('img', 'br', 'hr'):
                 expr = '<(' + l + \
-                    '(([^A-Za-z_0-9>/]?)|([^A-Za-z_0-9][^>]*[^/>])))>(?!\s*</' + \
-                            l + '>)'
+                    '(([^A-Za-z_0-9>/]?)|([^A-Za-z_0-9][^>]*[^/>])))>' \
+                    '(?!\\s*</' + l + '>)'
                 value = re.sub(expr, '<\\1/>', value)
 
             # convert <s> tag to <xhtml> tag

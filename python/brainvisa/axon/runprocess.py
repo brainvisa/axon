@@ -460,7 +460,7 @@ if options.process_help:
     sys.exit(0)
 
 args = tuple((neuroConfig.convertCommandLineParameter(i) for i in args))
-kwre = re.compile('([a-zA-Z_](\.?[a-zA-Z0-9_])*)\s*=\s*(.*)$')
+kwre = re.compile('([a-zA-Z_](\\.?[a-zA-Z0-9_])*)\\s*=\\s*(.*)$')
 kwargs = {}
 todel = []
 for arg in args:
