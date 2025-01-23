@@ -73,9 +73,8 @@ This module provides a few functions using pyaims (soma.aims module), and define
 
 These global variables are initialized through the function :py:func:`initializeFormatLists`.
 """
-from __future__ import absolute_import
+
 import os
-import string
 import sys
 from brainvisa.data.neuroDiskItems import createFormatList, getFormat, \
     aimsFileInfo, DiskItem, Directory
@@ -267,8 +266,14 @@ def initializeFormatLists():
     """
     Initializes several lists of formats. The lists are stored in global variables.
     """
+    from soma.qt_gui import headless
     try:
         from soma import aims
+        # handle headless Qt if needed
+        try:
+            from soma.qt_gui.qt_backend import QtWidgets
+        except ImportError:
+            pass  # never mind
         # fix mgz format
         aims.carto.PluginLoader.load()
         io = aims.supported_io_formats() # to test is works

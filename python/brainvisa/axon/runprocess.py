@@ -47,6 +47,7 @@ import re
 from optparse import OptionParser, OptionGroup
 import six
 import os
+from soma.qt_gui import qt_backend
 
 
 def get_process_with_params(process_name, iterated_params=[], *args, **kwargs):
@@ -267,6 +268,9 @@ def run_process_with_distribution(
 
 
 # main
+
+# prevent any GUI
+qt_backend.set_headless()
 
 usage = '''Usage: %prog [options] processname [arg1] [arg2] ... [argx=valuex] [argy=valuey] ...
 

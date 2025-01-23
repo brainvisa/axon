@@ -36,8 +36,6 @@
 # This script is intended to get run using BrainVISA (BV) script support ('-e'
 # option). A independent GUI is displayed from BV and operates processes.
 
-from __future__ import print_function
-from __future__ import absolute_import
 import brainvisa.axon
 import atexit
 import os
@@ -151,6 +149,10 @@ def _initializeProcesses():
         return
 
     atexit.register(cleanup)
+    if not neuroConfig.gui:
+        from soma.qt_gui import qt_backend
+        qt_backend.set_headless()
+
     if not neuroConfig.noToolBox:
         brainvisa.toolboxes.readToolboxes(neuroConfig.toolboxesDir,
                                           neuroConfig.homeBrainVISADir)

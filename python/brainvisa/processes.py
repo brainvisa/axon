@@ -211,7 +211,7 @@ from brainvisa.data import fileSystemOntology
 from soma.qt_gui.qt_backend.QtCore import QProcess
 from brainvisa.processing.qtgui.command import CommandWithQProcess as Command
 from soma import safemkdir
-from soma.qtgui.api import QtThreadCall, FakeQtThreadCall
+from soma.qt_gui.qtThread import QtThreadCall, FakeQtThreadCall
 
 import six
 import pickle
