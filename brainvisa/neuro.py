@@ -26,22 +26,25 @@ if len(sys.argv) > 1 and sys.platform[:6] == 'darwin' and sys.argv[1][:5] == '-p
     del sys.argv[1]
 
 from soma.qt_gui.qt_backend import QtCore
-
 from soma.wip.application.api import Application
 from soma.signature.api import Choice as SomaChoice
 from brainvisa.configuration import neuroConfig
 from brainvisa.data import temporary
-from brainvisa.configuration.qtgui import neuroConfigGUI
+if neuroConfig.gui:
+    from brainvisa.configuration.qtgui import neuroConfigGUI
 from brainvisa.processing.neuroException import *
 from brainvisa.data.neuroData import *
 from brainvisa.processes import *
 import brainvisa.processes
 from brainvisa.data.neuroHierarchy import *
-from brainvisa.data.qtgui.neuroDataGUI import *
-from brainvisa.processing.qtgui.neuroProcessesGUI import *
+if neuroConfig.gui:
+    from brainvisa.data.qtgui.neuroDataGUI import *
+    from brainvisa.processing.qtgui.neuroProcessesGUI import *
 from brainvisa.data import neuroHierarchy
-from brainvisa.processing.qtgui.backwardCompatibleQt import *
-from brainvisa.data.qtgui.updateDatabases import warnUserAboutDatabasesToUpdate
+if neuroConfig.gui:
+    from brainvisa.processing.qtgui.backwardCompatibleQt import *
+if neuroConfig.gui:
+    from brainvisa.data.qtgui.updateDatabases import warnUserAboutDatabasesToUpdate
 
 
 def system_exit_handler(number, frame):
@@ -161,6 +164,7 @@ if neuroConfig.gui:
     QDir.addSearchPath("", os.path.join(neuroConfig.docPath, 'processes'))
 else:
     # neuroConfig.qtApplication = QApplication( sys.argv, QApplication.Tty )
+    from soma.qt_gui.qt_backend.QtCore import QCoreApplication
     neuroConfig.qtApplication = QCoreApplication(sys.argv)
 
 if neuroConfig.profileFileName:
@@ -271,7 +275,6 @@ if neuroConfig.shell:
 while len(ipsubprocs) != 0:
     sp = ipsubprocs.pop()
     sp.kill()
-
 
 neuroHierarchy.databases.currentThreadCleanup()
 
