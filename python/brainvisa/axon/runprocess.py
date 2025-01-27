@@ -546,6 +546,10 @@ except Exception:
 if neuroConfig.exitValue == 0:
     # no error, do a dirty exit, but avoid cleanup crashes after the process
     # has succeeded...
+    # try to remove temp files anyway
+    from brainvisa.data import temporary
+
+    temporary.remove_all_temporaries()
     os._exit(0)
 
 # otherwise it has failed, exit "normally"

@@ -278,5 +278,11 @@ while len(ipsubprocs) != 0:
 
 neuroHierarchy.databases.currentThreadCleanup()
 
+
 if __name__ == '__main__':
+    ch = []
+    if neuroConfig.exitValue == 0:
+        temporary.remove_all_temporaries()
+        os._exit(0)
+
     sys.exit(neuroConfig.exitValue)
