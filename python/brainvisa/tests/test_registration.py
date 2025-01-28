@@ -114,11 +114,11 @@ class TestTransformationManager(unittest.TestCase):
                                   self.create_uuid((self.number_of_subjects,
                                                     self.number_of_sulci)),
                                   maxLength=None, bidirectional=True))
-        self.assertEquals(len(paths), 65)
+        self.assertEqual(len(paths), 65)
         paths = list(tr.findPaths(self.create_uuid((1, 1)),
                                   self.create_uuid((self.number_of_subjects,
                                                     self.number_of_sulci))))
-        self.assertEquals(len(paths), 0)
+        self.assertEqual(len(paths), 0)
 
     def tearDown(self):
         brainvisa.axon.cleanup()

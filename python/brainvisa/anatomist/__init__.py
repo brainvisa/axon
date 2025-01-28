@@ -727,8 +727,9 @@ if anatomistImport:
                     ( ( gray_mean, gray_stdev ), ( white_mean, white_stdev ) )
                     '''
                     import re
-                    r = re.compile('^.*mean:\s*(-?[0-9]+(\.[0-9]*)?)\s*sigma:\s'
-                                   '(-?[0-9]+(\.[0-9]*)?)\s*$')
+                    r = re.compile(
+                        '^.*mean:\\s*(-?[0-9]+(\\.[0-9]*)?)\\s*sigma:\\s'
+                        '(-?[0-9]+(\\.[0-9]*)?)\\s*$')
                     gmean, gsigma, wmean, wsigma = None, None, None, None
                     for l in open(hanfile):
                         l = l.strip()

@@ -254,7 +254,8 @@ def runHtmlBrowser(source, existingWidget=None):
             if browser:
                 if sys.platform == "darwin":
                     m = re.match(
-                        "\/Applications\/.+\.app/Contents/MacOS/(.*)", browser)
+                        "\\/Applications\\/.+\\.app/Contents/MacOS/(.*)",
+                        browser)
                     if m:
                         if os.system("open -a " + m.group(1) + " '" + source + "'") == 0:
                             return
@@ -299,7 +300,8 @@ def runCsvViewer(source, existingWidget=None):
             if browser:
                 if sys.platform == "darwin":
                     m = re.match(
-                        "\/Applications\/.+\.app/Contents/MacOS/(.*)", browser)
+                        "\\/Applications\\/.+\\.app/Contents/MacOS/(.*)",
+                        browser)
                     if m:
                         if os.system("open -a " + m.group(1) + " '" + source + "'") == 0:
                             return

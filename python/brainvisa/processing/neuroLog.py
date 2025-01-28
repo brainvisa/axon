@@ -43,8 +43,6 @@ This main log is created in the function :py:func:`initializeLog`.
 :Classes and functions:
 
 """
-from __future__ import print_function
-from __future__ import absolute_import
 
 import io
 import os
@@ -52,7 +50,6 @@ import threading
 import shutil
 import time
 import weakref
-import sys
 
 from soma.minf.api import iterateMinf, createMinfWriter
 from brainvisa.data import temporary
@@ -60,6 +57,7 @@ from brainvisa.configuration import neuroConfig
 from brainvisa.processing import neuroException
 import gzip
 import six
+
 
 def items(thing):
     return list(thing.items())
@@ -346,6 +344,8 @@ class LogFile(object):
                 self._writer.flush()
                 self._writer.close()  # also closes the file
                 self._writer = None
+                if self._file is not None:
+                    self._file.close()
                 self._file = None
                 if self._parent is not None:
                     self._parent._subLogClosed(self)
