@@ -31,8 +31,6 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-from __future__ import print_function
-from __future__ import absolute_import
 from brainvisa.processes import *
 from brainvisa.configuration import neuroConfig
 from brainvisa.data.sqlFSODatabase import SQLDatabase
@@ -40,8 +38,10 @@ from soma.path import relative_path
 from brainvisa.toolboxes import getToolbox
 from brainvisa.data.fileSystemOntology import FileSystemOntology
 import soma.subprocess
+import shutil
 import six
 import io
+
 
 signature = Signature(
     'toolbox',                Choice(('All', None)),
@@ -514,7 +514,7 @@ def execution(self, context):
             ':memory:', tmpDatabase.fullPath(), fso=ontology)
         databases.append(database)
 
-    if self.write_graphs and distutils.spawn.find_executable('dot') is None:
+    if self.write_graphs and shutil.which('dot') is None:
         self.write_graphs = False
         context.warning(
             'Cannot find dot executable. Inheritance graphs won\'t be written.')

@@ -3737,7 +3737,7 @@ class ExecutionContext(object):
                        html=systemLog,
                        icon='icon_system.png')
         try:
-            commandName = distutils.spawn.find_executable(c.commandName())
+            commandName = shutil.which(c.commandName())
             if not commandName:
                 commandName = c.commandName()
             if systemLogFile:

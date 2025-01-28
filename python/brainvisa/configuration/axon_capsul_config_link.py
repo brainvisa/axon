@@ -34,7 +34,7 @@
 
 import os
 import os.path as osp
-import distutils.spawn
+import shutil
 import glob
 from traits.api import Undefined
 from soma.wip.application.api import Application
@@ -164,7 +164,7 @@ class AxonCapsulConfSynchronizer(object):
             if ax_conf.matlab.executable \
                     == os.path.basename(ax_conf.matlab.executable):
                 matlab = \
-                    distutils.spawn.find_executable(ax_conf.matlab.executable)
+                    shutil.which(ax_conf.matlab.executable)
                 if matlab:
                     study_config.matlab_exec = matlab
             else:
@@ -349,7 +349,7 @@ class AxonCapsulConfSynchronizer(object):
         if value:
             # capsul only accepts complete file names
             if value == os.path.basename(value):
-                matlab = distutils.spawn.find_executable(value)
+                matlab = shutil.which(value)
                 if matlab:
                     study_config.matlab_exec = matlab
                     study_config.use_matlab = True

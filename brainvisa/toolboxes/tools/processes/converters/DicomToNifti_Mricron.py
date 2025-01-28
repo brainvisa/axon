@@ -36,6 +36,7 @@ from brainvisa.processes import *
 from brainvisa import shelltools
 import glob
 from brainvisa import registration
+import shutil
 
 name = 'Dicom to Nifti Converter Using MRICRON'
 roles = ('converter',)
@@ -44,7 +45,7 @@ userLevel = 0
 
 
 def validation():
-    mricron = distutils.spawn.find_executable('dcm2nii')
+    mricron = shutil.which('dcm2nii')
     if not mricron:
         raise ValidationError('MRICRON dcm2nii program not found')
 
@@ -75,7 +76,7 @@ def execution(self, context):
         context.error(
             "You must give a valid value for input_file or input_directory.")
     if self.read:
-        mricron = distutils.spawn.find_executable('dcm2nii')
+        mricron = shutil.which('dcm2nii')
         # creating a temporary directory to write the output nifti file, as we
         # cannot choose the name of the output file with dcm2nii command
         outdir = context.temporary('Directory')

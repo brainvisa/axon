@@ -38,17 +38,16 @@
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
-from __future__ import print_function
-from __future__ import absolute_import
+
 __docformat__ = "epytext en"
 
 
 from soma.configuration import ConfigurationGroup
 from brainvisa.data.temporary import getSystemDefaultTempDir
-from soma.signature.api import HasSignature, Signature, VariableSignature, Unicode, \
-    Choice, OpenedChoice, Boolean, Sequence, FileName
-from distutils.spawn import find_executable
+from soma.signature.api import HasSignature, Signature, VariableSignature, \
+    Unicode, Choice, OpenedChoice, Boolean, Sequence, FileName
 import os
+import shutil
 
 #------------------------------------------------------------------------------
 
@@ -59,7 +58,7 @@ def htmlBrowsers():
                         '/Applications/Internet\\ Explorer.app/Contents'
                         '/MacOS/Internet\\ Explorer',
                         '/Applications/Safari.app/Contents/MacOS/Safari',
-                        'mozilla', 'netscape') if find_executable(i)]
+                        'mozilla', 'netscape') if shutil.which(i)]
 
 
 def defaultHTMLBrowser():
@@ -78,7 +77,7 @@ def textEditors():
     return [t for t in ('featherpad', 'mousepad', 'leafpad',
                         'gedit', 'nedit', 'kedit', 'kwrite',
                         'xemacs', 'emacs', 'textedit', 'notepad',
-                        'kate') if find_executable(t)]
+                        'kate') if shutil.which(t)]
 
 
 def defaultTextEditor():
@@ -93,7 +92,7 @@ def defaultTextEditor():
 
 def csvViewers():
     return [i for i in ('gnumeric', 'openoffice', 'libreoffice')
-            if find_executable(i)]
+            if shutil.which(i)]
 
 
 def defaultCSVViewer():
@@ -112,7 +111,7 @@ def defaultCSVViewer():
 def pngViewers():
     return [i for i in ('eog', 'shotwell', 'feh', 'geeqie', 'gpicview',
                         'lximage-qt',
-                        'gwenview', 'mirage') if find_executable(i)]
+                        'gwenview', 'mirage') if shutil.which(i)]
 
 
 def defaultPNGViewer():

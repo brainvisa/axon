@@ -4,7 +4,7 @@ import brainvisa.processes
 from datetime import datetime
 from datetime import timedelta
 from io import StringIO
-import distutils
+import shutil
 import os
 import sys
 import re
@@ -250,7 +250,7 @@ def runHtmlBrowser(source, existingWidget=None):
     try:
         browser = neuroConfig.HTMLBrowser
         if browser is not None:
-            browser = distutils.spawn.find_executable(browser)
+            browser = shutil.which(browser)
             if browser:
                 if sys.platform == "darwin":
                     m = re.match(
@@ -295,7 +295,7 @@ def runCsvViewer(source, existingWidget=None):
         configuration = Application().configuration
         browser = configuration.brainvisa.csvViewer
         if browser is not None:
-            browser = distutils.spawn.find_executable(browser)
+            browser = shutil.which(browser)
             if browser:
                 if sys.platform == "darwin":
                     m = re.match(
@@ -331,7 +331,7 @@ def runCsvViewer(source, existingWidget=None):
     # fallback to text editor
     textEditor = configuration.brainvisa.textEditor
     if textEditor is not None:
-        textEditor = distutils.spawn.find_executable(textEditor)
+        textEditor = shutil.which(textEditor)
         if textEditor:
             env = os.environ.copy()
             if (not textEditor.startswith(os.path.dirname(neuroConfig.mainPath))):  # external command
@@ -1063,7 +1063,7 @@ class HTMLBrowser(QWidget):
             configuration = Application().configuration
             textEditor = configuration.brainvisa.textEditor
             if textEditor is not None:
-                textEditor = distutils.spawn.find_executable(textEditor)
+                textEditor = shutil.which(textEditor)
                 if textEditor:
                     env = os.environ.copy()
                     if not textEditor.startswith(os.path.dirname(neuroConfig.mainPath)):

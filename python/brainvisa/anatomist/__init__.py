@@ -59,7 +59,7 @@ if anatomistImport:
     from brainvisa.processing import neuroException
     from brainvisa.data import neuroData
     from soma.qtgui.api import QtThreadCall
-    import distutils.spawn
+    import shutil
     import threading
     from brainvisa.processing.qtgui import backwardCompatibleQt as qt
     from brainvisa.processing.qtgui import neuroProcessesGUI
@@ -91,7 +91,7 @@ def validation():
     if not anatomistImport:
         raise ValidationError('Cannot find anatomist module: {0}'
                               .format(noAnatomistReason))
-    elif distutils.spawn.find_executable('anatomist') is None:
+    elif shutil.which('anatomist') is None:
         raise ValidationError('Cannot find Anatomist executable')
 
 

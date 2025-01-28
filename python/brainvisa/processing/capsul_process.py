@@ -141,10 +141,6 @@ See also :doc:`capsul`
 
 '''
 
-from __future__ import print_function
-
-from __future__ import absolute_import
-import os
 import brainvisa.processes as processes
 from brainvisa.data import neuroData
 from brainvisa.data.readdiskitem import ReadDiskItem
@@ -160,8 +156,7 @@ from capsul.pipeline import pipeline_nodes
 import capsul.api as capsul
 from traits import trait_types
 import traits.api as traits
-import distutils.spawn
-import copy
+import shutil
 import sys
 import subprocess
 
@@ -1216,7 +1211,7 @@ class CapsulProcess(processes.Process):
     @staticmethod
     def sphinx_to_xhtml(doc):
         doc_utf8 = six.ensure_binary(doc, 'utf-8')
-        pandoc = distutils.spawn.find_executable('pandoc')
+        pandoc = shutil.which('pandoc')
         if pandoc:
             cmd = ['pandoc', '-r', 'rst', '-t', 'html', '--']
             proc = subprocess.Popen(cmd, stdin=subprocess.PIPE,
