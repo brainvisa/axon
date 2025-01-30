@@ -154,6 +154,7 @@ from brainvisa.configuration import axon_capsul_config_link
 from soma.functiontools import SomaPartial
 from capsul.pipeline import pipeline_nodes
 import capsul.api as capsul
+import traits as _traits
 from traits import trait_types
 import traits.api as traits
 import shutil
@@ -198,9 +199,11 @@ param_types_table = \
         trait_types.Directory: fileOptions,
         trait_types.Enum: (neuroData.Choice, choiceOptions),
         trait_types.List: (neuroData.ListOf, listOptions),
-        trait_types.ListFloat: (neuroData.ListOf, listOptions),
         trait_types.Set: (neuroData.ListOf, listOptions),
     }
+if [int(x) for x in _traits.__version__.split('.')] < [7, 0]:
+    # some types have been removed from traits 7
+    param_types_table[trait_types.ListFloat] = (neuroData.ListOf, listOptions)
 
 try:
     import nipype.interfaces.base.traits_extension
