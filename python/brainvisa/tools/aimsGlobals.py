@@ -284,18 +284,12 @@ def initializeFormatLists():
                 'MINC image', 'gz compressed MINC image', 'FreesurferMGZ',
                 'FreesurferMGH')
     except Exception as exc:
-        choice = defaultContext().ask(
-            exceptionMessageHTML(
-                (type(exc), exc, None),
-                afterError= '<p>AIMS could not be loaded. BrainVISA will work '
-                'in degraded mode, AIMS format lists will be empty and '
-                'processes that depend on AIMS will not load.</p>'
-            ),
-            "Abort",
-            "Ignore",
-        )
-        if choice == 0:  # in batch mode ask() returns -1 so we do not exit
-            sys.exit(1)
+        msg = 'ERROR in aims loading: ' + str(exc) \
+            + '<br/><p>AIMS could not be loaded. BrainVISA will work ' \
+              'in degraded mode, AIMS format lists will be empty and ' \
+              'processes that depend on AIMS will not load.</p>'
+        print(msg, file=sys.stderr)
+        defaultContext().showException(msg)
 
         # no aims, formats lists are empty
         class FakeAims(object):
