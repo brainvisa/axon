@@ -37,9 +37,11 @@ organization: NeuroSpin
 license: CeCILL version 2 (http://www.cecill.info/licences/Licence_CeCILL_V2-en.html)
 '''
 
-from __future__ import absolute_import
-from soma.qt_gui.qt_backend import QtGui, QtCore
 from soma.qt_gui import qt_backend
+qt_backend.set_qt_backend(compatible_qt5=True)
+from soma.qt_gui.qt_backend import QtGui, QtCore, QtWidgets
+from soma.qt_gui import qt_backend
+import sys
 
 # DISABLE QtWebEngine for Qt5 releases
 # x2go is widely used but only provides GLX 1.2
@@ -55,8 +57,26 @@ for web_mod in web_import_order:
     try:
         if web_mod == 'QtWebEngine':
             # use the newer Qt5/6 QtWebEngine
+            create_qapp = False
+            from soma.qt_gui.qt_backend import sip
+            if QtWidgets.QApplication.instance() is not None:
+                sip.delete(QtWidgets.QApplication.instance())
+                create_qapp = True
             from soma.qt_gui.qt_backend.QtWebEngineWidgets \
                 import QWebEngineView
+            if create_qapp:
+                if qt_backend.headless:
+
+                    qapp = QtWidgets.QApplication([sys.argv[0], '-platform',
+                                                   'offscreen'] + sys.argv[1:])
+                    from soma.qt_gui import headless
+                    if headless.headless_initialized is not None:
+                        headless.headless_initialized.qapp = qapp
+                        qapp = None
+                else:
+                    qapp = QtWidgets.QApplication(sys.argv)
+                if qapp is not None:
+                    sip.transferto(qapp, None)
             if QtCore.QT_VERSION >= 0x060000:
                 # PyQt6
                 from soma.qt_gui.qt_backend.QtWebEngineCore \
@@ -88,7 +108,7 @@ if use_webengine is None:
     raise ImportError('Could not import either of %s' % repr(web_import_order))
 
 
-class TextEditWithSearch(QtGui.QTextEdit):
+class TextEditWithSearch(QtWidgets.QTextEdit):
 
     """
     A QTextEdit with search feature to search a piece of text in the QTextEdit content.
