@@ -455,7 +455,6 @@ else:
 # prevent any GUI
 needs_opengl = options.opengl
 qt_backend.set_headless(True, needs_opengl=needs_opengl)
-
 verbose = options.verbose
 axon.initializeProcesses(verbose=verbose)
 

@@ -253,7 +253,6 @@ class AxonToCapsul(object):
         if getattr(p, 'needs_opengl', False):
             init_code = '''        from soma.qt_gui import qt_backend
         qt_backend.set_headless(True, needs_opengl=True)
-
 '''
 
         out.write(u'''    def _run_process(self):
