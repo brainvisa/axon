@@ -5973,8 +5973,6 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
             if dataDirectory:
                 os.chdir(dataDirectory)
             try:
-                print('full_mod_name:', full_mod_name)
-                print('filename:', fileName)
                 spec = importlib.util.spec_from_file_location(full_mod_name,
                                                               fileName)
                 processModule = importlib.util.module_from_spec(spec)
@@ -6031,7 +6029,7 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
         for n in ('signature', 'execution', 'name', 'userLevel', 'roles',
                   'category', 'showMaximized', 'allowed_processes',
                   'rolePriority', 'require_databasing',
-                  'capsul_param_options'):
+                  'capsul_param_options', 'needs_opengl'):
             v = getattr(processModule, n, None)
             if v is not None:
                 setattr(NewProcess, n, v)
