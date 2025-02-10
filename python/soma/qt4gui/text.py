@@ -57,26 +57,8 @@ for web_mod in web_import_order:
     try:
         if web_mod == 'QtWebEngine':
             # use the newer Qt5/6 QtWebEngine
-            create_qapp = False
-            from soma.qt_gui.qt_backend import sip
-            if QtWidgets.QApplication.instance() is not None:
-                sip.delete(QtWidgets.QApplication.instance())
-                create_qapp = True
             from soma.qt_gui.qt_backend.QtWebEngineWidgets \
                 import QWebEngineView
-            if create_qapp:
-                if qt_backend.headless:
-
-                    qapp = QtWidgets.QApplication([sys.argv[0], '-platform',
-                                                   'offscreen'] + sys.argv[1:])
-                    from soma.qt_gui import headless
-                    if headless.headless_initialized is not None:
-                        headless.headless_initialized.qapp = qapp
-                        qapp = None
-                else:
-                    qapp = QtWidgets.QApplication(sys.argv)
-                if qapp is not None:
-                    sip.transferto(qapp, None)
             if QtCore.QT_VERSION >= 0x060000:
                 # PyQt6
                 from soma.qt_gui.qt_backend.QtWebEngineCore \
