@@ -269,9 +269,6 @@ def run_process_with_distribution(
 
 # main
 
-# prevent any GUI
-qt_backend.set_headless()
-
 usage = '''Usage: %prog [options] processname [arg1] [arg2] ... [argx=valuex] [argy=valuey] ...
 
 Example:
@@ -319,6 +316,17 @@ group1.add_option('--logFile', dest='logFile', default=None,
                   'enabled, else no log file is used.')
 group1.add_option('-v', '--verbose', action='store_true',
                   help='print more messages during initialization')
+group1.add_option('--opengl', action='store_true', default=False,
+                  help='Tell the process loading system that we will require '
+                  'headless OpenGL, which needs proper setup and libraries '
+                  'loading tweaks. Without this option, Qt and potentially '
+                  'graphical modules will be initialized in headless mode, '
+                  'but there will be no check for a working OpenGL/GLX '
+                  'implementation. In some cases it will work anyway, but in '
+                  'others (no X server) OpenGL will require using a virtual '
+                  'X server (Xvfb) and possibly loading appropriate OpenGL '
+                  'libraries. This is not done systematically because of the '
+                  'overhead it brings.')
 group1.add_option('--params', dest='paramsfile', default=None,
                   help='specify a file containing commandline parameters. '
                   'The file will contain arguments for this commandline '
@@ -443,6 +451,10 @@ if options.logFile is not None:
 else:
     if not options.enabledb and not options.historyBook:
         neuroConfig.logFileName = ''
+
+# prevent any GUI
+needs_opengl = options.opengl
+qt_backend.set_headless(True, needs_opengl=needs_opengl)
 
 verbose = options.verbose
 axon.initializeProcesses(verbose=verbose)
