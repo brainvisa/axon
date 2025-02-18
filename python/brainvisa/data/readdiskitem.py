@@ -34,8 +34,6 @@
 This module defines the class :py:class:`ReadDiskItem` which is a subclass :py:class:`brainvisa.data.neuroData.Parameter`.
 It is used to define an input data file as a parameter in a :py:class:`brainvisa.processes.Process` :py:class:`brainvisa.data.neuroData.Signature`.
 """
-from __future__ import print_function
-from __future__ import absolute_import
 import os
 import operator
 # from soma.debug import print_stack
@@ -610,8 +608,8 @@ class ReadDiskItem(Parameter):
 
     def diskItemDistance(self, diskItem, other):
         '''Returns a value that represents a sort of distance between two
-           DiskItems.
-            The distance is not a number but distances can be sorted.'''
+        DiskItems.
+        The distance is not a number but distances can be sorted.'''
         # Count the number of common hierarchy attributes
         if isinstance(other, DiskItem):
             if other.type is not None:
