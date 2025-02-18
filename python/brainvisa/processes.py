@@ -1051,6 +1051,7 @@ class Parameterized(object):
             ReadDiskItem.findValue(). The dict maps destination attributes
             from source parameters attributes values.
             Ex:
+
             * {'dst_attrib': 'src_attrib'}
               will get in the source parameter value the attribute
               'src_attrib', and its value will be forced as the value of the
@@ -1061,6 +1062,7 @@ class Parameterized(object):
               'src_param1', and set it as the value of 'dst_attrib1' of the
               destination parameter. Same for 'dst_attrib2', but the value will
               be taken from another source parameter.
+
             As values are passed as requiredAttributes, they are thus
             mandatory in the destination parameter value, and are "stronger"
             than standard links. In this respect, it can be meaningful to
@@ -1155,18 +1157,20 @@ class Parameterized(object):
 
     def setEnable(self, *args, **kwargs):
         """Indicates parameters visibility and mandatory
-        using examples : self.setEnable( *args)
-                         self.setEnable( *args, userLevel=0)
-                         self.setEnable( *args, userLevel=0, mandatory=True)
+        using examples::
+
+            self.setEnable(*args)
+            self.setEnable(*args, userLevel=0)
+            self.setEnable(*args, userLevel=0, mandatory=True)
 
         *optional keyword paramerers*
 
         userLevel: int
-            indicates that the parameters are visible or hidden regarding the userLevel.
-            ( default value : the previous userLevel is kept )
+            indicates that the parameters are visible or hidden regarding the
+            userLevel. (default value: the previous userLevel is kept)
         mandatory: boolean
-            indicates that the parameters are mandatory(True) or optional(False).
-            ( default value : True )
+            indicates that the parameters are mandatory(True) or
+            optional(False). (default value: True)
         """
         self.setVisible(*args)
 

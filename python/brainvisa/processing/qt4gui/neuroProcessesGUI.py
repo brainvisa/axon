@@ -4764,17 +4764,18 @@ class RemoteContextGUI(QTreeWidgetItem):
         The specific GUI is a QListView. It is composed of an arborescence of QListViewItems that sorts
         the messages according to the process and the host they belong to::
 
-        Remote Hosts:
-        |
-        --host
-          |
-          --process
+        Remote Hosts::
+
             |
-            --message
-            --message
-          --process
+            --host
             |
-            --message
+            --process
+                |
+                --message
+                --message
+            --process
+                |
+                --message
 
         :param parent: the QListView.
         :param name: name
