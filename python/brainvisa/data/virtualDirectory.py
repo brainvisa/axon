@@ -31,7 +31,7 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 import io
-from UserDict import UserDict
+from collections import UserDict
 
 
 #-------------------------------------------------------------------------
