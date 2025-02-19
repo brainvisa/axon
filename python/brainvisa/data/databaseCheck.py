@@ -31,14 +31,11 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-from __future__ import print_function
-from __future__ import absolute_import
 import os
 import stat
 import re
 import shutil
 import time
-import operator
 from brainvisa.data import neuroHierarchy
 from brainvisa import registration
 from soma.sorted_dictionary import SortedDictionary
@@ -48,7 +45,6 @@ from brainvisa.data.sqlFSODatabase import SQLDatabase
 from brainvisa.data.readdiskitem import ReadDiskItem
 import six
 import collections
-import sys
 
 #
 # DBProcessor
@@ -290,13 +286,13 @@ class T1MriConverter(DBConverter):
     """
     In protocol/subject :
 
-      * protocol -> center
-      * anatomy -> t1mri/acquisition/analysis (raw t1 mri and acpc coordinates files are put in acquisition, the others in analysis)
-      If anatomy already contains acquisition directories, they are moved in t1mri, and analysis level is added.
-      * segment -> t1mri/acquisition/analysis/segmentation
-      * tri, mesh -> t1mri/acquisition/analysis/segmentation/mesh
-      * deepnuclei -> t1mri/acquisition/analysis/nuclei
-      * Referential and transformations :
+    * protocol -> center
+    * anatomy -> t1mri/acquisition/analysis (raw t1 mri and acpc coordinates files are put in acquisition, the others in analysis)
+    If anatomy already contains acquisition directories, they are moved in t1mri, and analysis level is added.
+    * segment -> t1mri/acquisition/analysis/segmentation
+    * tri, mesh -> t1mri/acquisition/analysis/segmentation/mesh
+    * deepnuclei -> t1mri/acquisition/analysis/nuclei
+    * Referential and transformations :
         * <subject>_TO_talairach.trm -> <center>/<subject>/registration/RawT1-<subject>_<acquisition>_TO_Talairach-ACPC.trm
         * *<subject>.referential -> *<subject>-default_acquisition.referential, *<subject>_TO_*.trm -> *<subject>_default_acquisition_TO_*.trm
     """

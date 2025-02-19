@@ -4,7 +4,7 @@ import brainvisa.processes
 from datetime import datetime
 from datetime import timedelta
 from io import StringIO
-import distutils
+import shutil
 import os
 import sys
 import re
@@ -250,11 +250,12 @@ def runHtmlBrowser(source, existingWidget=None):
     try:
         browser = neuroConfig.HTMLBrowser
         if browser is not None:
-            browser = distutils.spawn.find_executable(browser)
+            browser = shutil.which(browser)
             if browser:
                 if sys.platform == "darwin":
                     m = re.match(
-                        "\/Applications\/.+\.app/Contents/MacOS/(.*)", browser)
+                        "\\/Applications\\/.+\\.app/Contents/MacOS/(.*)",
+                        browser)
                     if m:
                         if os.system("open -a " + m.group(1) + " '" + source + "'") == 0:
                             return
@@ -295,11 +296,12 @@ def runCsvViewer(source, existingWidget=None):
         configuration = Application().configuration
         browser = configuration.brainvisa.csvViewer
         if browser is not None:
-            browser = distutils.spawn.find_executable(browser)
+            browser = shutil.which(browser)
             if browser:
                 if sys.platform == "darwin":
                     m = re.match(
-                        "\/Applications\/.+\.app/Contents/MacOS/(.*)", browser)
+                        "\\/Applications\\/.+\\.app/Contents/MacOS/(.*)",
+                        browser)
                     if m:
                         if os.system("open -a " + m.group(1) + " '" + source + "'") == 0:
                             return
@@ -331,7 +333,7 @@ def runCsvViewer(source, existingWidget=None):
     # fallback to text editor
     textEditor = configuration.brainvisa.textEditor
     if textEditor is not None:
-        textEditor = distutils.spawn.find_executable(textEditor)
+        textEditor = shutil.which(textEditor)
         if textEditor:
             env = os.environ.copy()
             if (not textEditor.startswith(os.path.dirname(neuroConfig.mainPath))):  # external command
@@ -1063,7 +1065,7 @@ class HTMLBrowser(QWidget):
             configuration = Application().configuration
             textEditor = configuration.brainvisa.textEditor
             if textEditor is not None:
-                textEditor = distutils.spawn.find_executable(textEditor)
+                textEditor = shutil.which(textEditor)
                 if textEditor:
                     env = os.environ.copy()
                     if not textEditor.startswith(os.path.dirname(neuroConfig.mainPath)):
@@ -3546,15 +3548,9 @@ class ProcessView(QWidget, ExecutionContextGUI):
     def saveAs(self):
         minf = getattr(self.process, '_savedAs', '')
         # workaround a bug in PyQt ? Param 5 doesn't work; try to use kwargs
-        import sipconfig
-        if sipconfig.Configuration().sip_version >= 0x040a00:
-            minf = six.text_type(qt_backend.getSaveFileName(
-                None, 'Save a process file', minf,
-                'BrainVISA process (*.bvproc);;All files (*)', options=QFileDialog.DontUseNativeDialog))
-        else:
-            minf = six.text_type(
-                QFileDialog.getSaveFileName(None, 'Save a process file', minf,
-                                            'BrainVISA process (*.bvproc);;All files (*)', None, QFileDialog.DontUseNativeDialog))
+        minf = six.text_type(qt_backend.getSaveFileName(
+            None, 'Save a process file', minf,
+            'BrainVISA process (*.bvproc);;All files (*)', options=QFileDialog.DontUseNativeDialog))
         if minf:
             if not minf.endswith('.bvproc'):
                 minf += '.bvproc'
@@ -3587,8 +3583,14 @@ class ProcessView(QWidget, ExecutionContextGUI):
     @staticmethod
     @catch_gui_exception
     def open():
-        import sipconfig
-        if sipconfig.Configuration().sip_version >= 0x040a00:
+        sip6 = True
+        try:
+            import sipconfig
+            if sipconfig.Configuration().sip_version < 0x040a00:
+                sip6 = False
+        except ImportError:
+            pass
+        if sip6:
             minf = six.text_type(qt_backend.getOpenFileName(
                 None, _t_('Open a process file'), '',
                 'BrainVISA process (*.bvproc);;All files (*)',
@@ -3763,7 +3765,11 @@ class UserDialog(QDialog):
         else:
             group1Widget.setSizePolicy(
                 QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed))
-            self.group1.buttonClicked[int].connect(self._doAction)
+            if hasattr(self.group2, 'idClicked'):
+                # Qt >= 5.15
+                self.group1.idClicked[int].connect(self._doAction)
+            else:
+                self.group1.buttonClicked[int].connect(self._doAction)
         group2Widget.setSizePolicy(
             QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed))
         if hasattr(self.group2, 'idClicked'):
@@ -4758,17 +4764,18 @@ class RemoteContextGUI(QTreeWidgetItem):
         The specific GUI is a QListView. It is composed of an arborescence of QListViewItems that sorts
         the messages according to the process and the host they belong to::
 
-        Remote Hosts:
-        |
-        --host
-          |
-          --process
+        Remote Hosts::
+
             |
-            --message
-            --message
-          --process
+            --host
             |
-            --message
+            --process
+                |
+                --message
+                --message
+            --process
+                |
+                --message
 
         :param parent: the QListView.
         :param name: name

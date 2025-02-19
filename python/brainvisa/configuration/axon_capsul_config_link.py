@@ -34,7 +34,7 @@
 
 import os
 import os.path as osp
-import distutils.spawn
+import shutil
 import glob
 from soma.controller import undefined
 from soma.wip.application.api import Application
@@ -184,7 +184,7 @@ class AxonCapsulConfSynchronizer(object):
             if ax_conf.matlab.executable \
                     == osp.basename(ax_conf.matlab.executable):
                 matlab = \
-                    distutils.spawn.find_executable(ax_conf.matlab.executable)
+                    shutil.which(ax_conf.matlab.executable)
                 if matlab:
                     if 'matlab' not in bconf.config_modules:
                         bconf.config_modules.append('matlab')
@@ -327,7 +327,7 @@ class AxonCapsulConfSynchronizer(object):
         if value:
             # capsul only accepts complete file names
             if value == os.path.basename(value):
-                matlab = distutils.spawn.find_executable(value)
+                matlab = shutil.which(value)
                 if matlab:
                     bconf.matlab.matlab.executable = matlab
                     notdone = False

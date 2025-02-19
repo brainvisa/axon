@@ -196,6 +196,9 @@ param_types_table = \
         list[float]: (neuroData.ListOf, listOptions),
         set: (neuroData.ListOf, listOptions),
     }
+if [int(x) for x in _traits.__version__.split('.')] < [7, 0]:
+    # some types have been removed from traits 7
+    param_types_table[trait_types.ListFloat] = (neuroData.ListOf, listOptions)
 
 try:
     import nipype.interfaces.base.traits_extension

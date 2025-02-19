@@ -36,18 +36,18 @@ insert('',
        'registration', SetContent(
            '*', SetType('Referential'),
        ),
-       )
+)
 
 insert('',
        'transformation', SetContent(
            '*', SetType('Transformation matrix'),
        ),
-       )
+)
 
 insert('hemitemplate',
        'RawT1-Template_TO_Talairach-ACPC', SetType(
            "Template Pole To Talairach Tranformation"),
-       )
+)
 
 insert('',
        'anatomical_templates', SetContent(
@@ -69,5 +69,10 @@ insert('',
                'anatomical Mask Template'), SetWeakAttr('Size', '2 mm'),
            'MNI152_T1_3mm_brain_mask', SetType(
                'anatomical Mask Template'), SetWeakAttr('Size', '3 mm'),
+           'mni_icbm152_nlin_asym_09c', SetType('anatomical Template'),
+            SetWeakAttr('Size', '1 mm', 'normalized', 'yes',
+                        'skull_stripped', 'no',
+                        'referential', '84b1989b-eb68-8665-0049-8feaf3c22679'),
+            SetPriority(-1)
        )
-       )
+)

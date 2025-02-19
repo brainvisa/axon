@@ -37,9 +37,11 @@ organization: NeuroSpin
 license: CeCILL version 2 (http://www.cecill.info/licences/Licence_CeCILL_V2-en.html)
 '''
 
-from __future__ import absolute_import
-from soma.qt_gui.qt_backend import QtGui, QtCore
 from soma.qt_gui import qt_backend
+qt_backend.set_qt_backend(compatible_qt5=True)
+from soma.qt_gui.qt_backend import QtGui, QtCore, QtWidgets
+from soma.qt_gui import qt_backend
+import sys
 
 # DISABLE QtWebEngine for Qt5 releases
 # x2go is widely used but only provides GLX 1.2
@@ -88,7 +90,7 @@ if use_webengine is None:
     raise ImportError('Could not import either of %s' % repr(web_import_order))
 
 
-class TextEditWithSearch(QtGui.QTextEdit):
+class TextEditWithSearch(QtWidgets.QTextEdit):
 
     """
     A QTextEdit with search feature to search a piece of text in the QTextEdit content.

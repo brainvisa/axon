@@ -14,16 +14,16 @@ assemblynet_outputs = 'AssemblyNet outputs'
 default_format = ["gz compressed NIFTI-1 image", "NIFTI-1 image"]
 
 signature = Signature(
-    "assemblynet_image", String(),
+    "assemblynet_image", String(), #TODO readDiskItem AnyType
     "t1mri", ReadDiskItem("Raw T1 MRI", ["gz compressed NIFTI-1 image", "NIFTI-1 image"]),
     "output_folder", WriteDiskItem("Acquisition", "Directory", requiredAttributes={"modality": "assemblyNet"}),
-    
+
     "age", Float(section=assemblynet_options),
     "sex", Choice(None, "Male", "Female", section=assemblynet_options),
     "pdf_report", Boolean(section=assemblynet_options),
 
     "transformation_to_mni", WriteDiskItem("Transformation", "Text file", section=assemblynet_outputs,
-                                           requiredAttributes={"space": "mni", "modality": "assemblyNet"}),
+                                           requiredAttributes={"modality": "assemblyNet"}),
     "mni_lobes", WriteDiskItem("Brain Lobes", default_format, section=assemblynet_outputs,
                                requiredAttributes={"space": "mni", "modality": "assemblyNet"}),
     "mni_macrostructures", WriteDiskItem("Split Brain Mask", default_format, section=assemblynet_outputs,
@@ -48,8 +48,10 @@ signature = Signature(
                                requiredAttributes={"space": "native", "modality": "assemblyNet"}),
     "native_tissues", WriteDiskItem("Intracranial labels", default_format, section=assemblynet_outputs,
                                     requiredAttributes={"space": "native", "modality": "assemblyNet"}),
-    "report", WriteDiskItem("Analysis Report", "Text file", section=assemblynet_outputs,
-                            requiredAttributes={"modality": "assemblyNet"})
+    "report_csv", WriteDiskItem("Analysis Report", "CSV file", section=assemblynet_outputs,
+                                requiredAttributes={"modality": "assemblyNet"}),
+    "report_pdf", WriteDiskItem("Analysis Report", "PDF file", section=assemblynet_outputs,
+                                requiredAttributes={"modality": "assemblyNet"})
 )
 
 
@@ -63,7 +65,7 @@ def initialization(self):
     self.setOptional('age', 'sex')
 
     assemblynet_output_parameters = [p for p in self.signature if (p.startswith('mni') or p.startswith('native'))]
-    assemblynet_output_parameters += ["transformation_to_mni", "report"]
+    assemblynet_output_parameters += ["transformation_to_mni", "report_csv", "report_pdf"]
     self.setUserLevel(1, *assemblynet_output_parameters)
     for param in assemblynet_output_parameters:
         self.addLink(param, "output_folder")
@@ -84,7 +86,7 @@ def _update_output_folder(self, t1mri):
 def execution(self, context):
     output_folder = Path(self.output_folder.fullPath())
     output_folder.mkdir(exist_ok=True)
-    
+
     # Run AssemblyNet
     context.runProcess(
         "assemblynet_generic",
@@ -96,22 +98,27 @@ def execution(self, context):
         pdf_report=self.pdf_report
     )
 
-    # Move results into space folder
-    mni_path = output_folder / "mni"
-    mni_path.mkdir(exist_ok=True)
-    native_path = output_folder / "native"
-    native_path.mkdir(exist_ok=True)
-
     for file_path in output_folder.iterdir():
         if file_path.is_dir():
             continue
-        if file_path.name.startswith("mni") or file_path.name.startswith("matrix"):
-            new_file_path = str(file_path).replace(str(output_folder), str(mni_path))
-            file_path.rename(new_file_path)
-        elif file_path.name.startswith("native"):
-            new_file_path = str(file_path).replace(str(output_folder), str(native_path))
-            file_path.rename(new_file_path)
-            
+        # if file_path.name.startswith("mni") or file_path.name.startswith("matrix"):
+        if file_path.name.startswith("mni") or file_path.name.startswith("native"):
+            signature_name = '_'.join(file_path.name.split('_')[:2])
+            output_file = getattr(self, signature_name).fullPath()
+            if not Path(output_file).exists():
+                file_path.rename(output_file)
+        elif file_path.name.startswith("matrix_affine"):
+            output_file = self.transformation_to_mni.fullPath()
+            if not Path(output_file).exists():
+                file_path.rename(output_file)
+        elif file_path.name.startswith("report"):
+            if file_path.suffix == '.csv':
+                output_file = self.report_csv.fullPath()
+            elif file_path.suffix == '.pdf':
+                output_file = self.report_pdf.fullPath()
+            if not Path(output_file).exists():
+                file_path.rename(output_file)
+
     # Update brainvisa database to take into account results
     db = databases.database(self.output_folder.get('_database'))
     db.update(directoriesToScan=[self.output_folder.fullPath()])

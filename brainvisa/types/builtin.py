@@ -31,7 +31,6 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-from __future__ import absolute_import
 from brainvisa.configuration import neuroConfig
 
 # Build-in formats
@@ -141,6 +140,7 @@ Format('TIFF(.tif) image', 'f|*.tif')
 Format('Text file', 'f|*.txt')
 Format('CSV file', 'f|*.csv')
 Format('JSON file', 'f|*.json')
+Format('YAML file', 'f|*.yaml')
 Format('ASCII results', 'f|*.asc')
 Format('XML', 'f|*.xml')
 Format('gzipped XML', 'f|*.xml.gz')
@@ -339,8 +339,14 @@ FileType('Nomenclature', 'Hierarchy')
 FileType('Label translation', 'Label translation or Nomenclature',
          ['Label Translation', 'DEF Label Translation'])
 
+#--- Matlab / SPM types ----------------
+FileType('Matlab SPM script', 'Any Type', 'Matlab script')
+FileType('Matlab SPM file', 'Any Type',
+         ['Matlab file', 'gz Matlab file', 'bz2 Matlab file'])
+# Postscript files for SPM results
+FileType('Postscript file', 'Any Type', ['PS file', 'gz compressed PS file'])
 
-#--- General types for fMRI ---------------------
+#--- General types for fMRI ------------
 # FileType( 'Functional volume', '4D Volume' )
 FileType('3D Functional volume', '3D Volume')
 FileType('4D Functional volume', '4D Volume')
@@ -351,11 +357,6 @@ FileType('fMRI activations', '3D functional volume')
 FileType('Group definition', 'XML parameters', 'XML')
 FileType('Analysis Dir', 'Directory')
 
-FileType('Matlab SPM file', 'Any Type',
-         ['Matlab file', 'gz Matlab file', 'bz2 Matlab file'])
-# Postscript files for SPM results
-FileType('Postscript file', 'Any Type', ['PS file', 'gz compressed PS file'])
-
 #--- Group Snapshots with Snapbase------
 FileType('Snapshots Dir', 'Directory')
 FileType('Tables Directory', 'Directory')
@@ -365,6 +366,8 @@ Format('Numpy Array', 'f|*.npy')
 FileType('Numpy Array', 'Any Type', 'Numpy Array')
 
 #--- Templates -------------------------
+FileType('Template', '3D Volume')
+FileType('4D Template', '4D Volume')
 FileType('anatomical Mask Template', '3D Volume')
 
 #--- Fiber bundles ---------------------

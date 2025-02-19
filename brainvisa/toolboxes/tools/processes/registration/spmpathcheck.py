@@ -31,14 +31,11 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-from __future__ import print_function
-from __future__ import absolute_import
 from brainvisa.processes import *
 from soma.wip.application.api import Application
 from brainvisa.configuration import neuroConfig
 from brainvisa.data import neuroHierarchy
-from distutils.spawn import find_executable
-
+import shutil
 import os
 import platform
 
@@ -70,7 +67,7 @@ def inlineGUI(self, values, pview, parent, externalRunButton=False):
 def checkSPMCommand(context, cmd):
     configuration = Application().configuration
     spm_path = None
-    mexe = distutils.spawn.find_executable(
+    mexe = shutil.which(
         configuration.matlab.executable)
     if mexe == None:
         context.write('The Matlab executable was not found.')
@@ -224,7 +221,7 @@ def findStandAlonePaths(spm_version):
             possible_right_command_list.append(command_contains_spm)
 
     for possible_right_command in possible_right_command_list:
-        executable_path = find_executable(possible_right_command)
+        executable_path = shutil.which(possible_right_command)
         stand_alone_run_path, stand_alone_MCR_path = extractPathFromExecutable(
             executable_path)
         if None not in [stand_alone_run_path, stand_alone_MCR_path]:

@@ -30,7 +30,8 @@ def displayTitledGrid(transformationManager, parent, inverseRawColumn,
                       ):
     '''Grid of Anatomist views
 
-    Parameters:
+    Parameters
+    ----------
     linkWindows: str
         possible values : 'all' | none | row
     rowColors: list

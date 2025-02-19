@@ -343,9 +343,12 @@ class DiskItem(QObject):
 
     def localAttributes(self):
         """
-        Returns a dictionary containing the name and value of the local attributes.
-        The local attributes are valid only for this diskItem, they are no transmitted to child diskItem.
-        For example the attribute ``name_serie`` that indicates the list of numbers of a serie of files that store the data, is a local attribute.
+        Returns a dictionary containing the name and value of the local
+        attributes.
+        The local attributes are valid only for this diskItem, they are not
+        transmitted to children diskItems.
+        For example the attribute ``name_serie`` that indicates the list of
+        numbers of a series of files that store the data, is a local attribute.
         """
         result = {}
         self._mergeLocalAttributes(result)

@@ -29,21 +29,15 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
-from __future__ import print_function
-from __future__ import absolute_import
+
 import os
+import sys
 import threading
 import warnings
 import stat
-import platform
 import tempfile
 from soma.minf.tree import registerClassAs
-import six
 
-try:
-    set
-except NameError:
-    from sets import Set as set
 
 manager = None
 
@@ -143,7 +137,7 @@ class TemporaryFileManager(object):
                                 raise
                 if error is not None:
                     warnings.warn(_t_('temporary path %(path)s not deleted: %(error)s') %
-                                  {'path': path, 'error': six.text_type(error)})
+                                  {'path': path, 'error': str(error)})
             if isinstance(path, self.__SelfDestroyFileName):
                 path.freeManager()
         finally:
@@ -230,3 +224,16 @@ def initializeTemporaryFiles(defaultTemporaryDirectory):
         manager = TemporaryFileManager(defaultTemporaryDirectory, 'bv_')
     else:
         print('initializeTemporaryFiles - manager already exists!:', manager)
+
+
+def remove_all_temporaries():
+    try:
+        import objgraph
+        all_tmp = objgraph.by_type('TemporaryFileManager')
+        print('tmp managers:', len(all_tmp))
+        for tmp in all_tmp:
+            tmp.close()
+    except ImportError:
+        print('The objgraph module could not be loaded. '
+              'Temporary files may be left. '
+              'Please consider installing objgraph.', file=sys.stderr)

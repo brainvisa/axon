@@ -4,12 +4,6 @@ if( QT_VERSION VERSION_GREATER_EQUAL "6.0.0" )
   set( soma_qt "soma_qt6.sip" )
 endif()
 
-if( DESIRED_QT_VERSION EQUAL 6 )
-  add_definitions( ${Qt6Core_DEFINITIONS} )
-  include_directories( ${Qt6Core_INCLUDE_DIRS} )
-  set( QT_LIBRARIES Qt6::Core )
-endif()
-
 set( AXON_RELATIVE_SIP_DIRECTORY
      "share/axon-${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}/sip" )
 

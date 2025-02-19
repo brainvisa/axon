@@ -56,6 +56,13 @@ def setUpModule_axon(init_hooks=[]):
     configuration state that affects the import of processes (e.g. configuring
     external tools such as MATLAB and SPM).
     """
+
+    # set headless mode for Qt. If you need Anatomist, you have to tell it
+    # earlier.
+    from soma.qt_gui import qt_backend
+
+    qt_backend.set_headless(True)
+
     global temp_test_dir
 
     try:

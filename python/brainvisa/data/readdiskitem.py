@@ -34,8 +34,6 @@
 This module defines the class :py:class:`ReadDiskItem` which is a subclass :py:class:`brainvisa.data.neuroData.Parameter`.
 It is used to define an input data file as a parameter in a :py:class:`brainvisa.processes.Process` :py:class:`brainvisa.data.neuroData.Signature`.
 """
-from __future__ import print_function
-from __future__ import absolute_import
 import os
 import operator
 # from soma.debug import print_stack
@@ -110,9 +108,9 @@ class ReadDiskItem(Parameter):
 
     This method of files selection ease file selection by showing the user only files that matches type and format required for this parameter. It also enables BrainVISA to automatically fill some parameters values. The ReadDiskItem class has methods to search matching diskitems in BrainVISA databases :
 
-      * :py:meth:`ReadDiskItem.findItems(\<database directory diskitem\> <ReadDiskItem.findItems>`, <attributes>) : this method returns a list of diskitems that exist in that database and match type, format and required attributes of the parameter. It is possible to specify additional attributes in the method parameters. Found items will have the selected value for these attributes if they have the attribute, but these attributes are not mandatory. That's the difference with the required attributes set in the constructor.
-      * :py:meth:`ReadDiskItem.findValues(\<value\>) <ReadDiskItem.findValues>` : this method searches diskitems matching the value in parameter. This value can be a diskitem, a filename, a dictionary of attributes.
-      * :py:meth:`ReadDiskItem.findValue(\<value\>) <ReadDiskItem.findValue>` : this method returns the best among possible value, that is to say with the more common attributes, highest priority. If there is an ambiguity, it returns None.
+      * :py:meth:`ReadDiskItem.findItems(\\<database directory diskitem\\> <ReadDiskItem.findItems>`, <attributes>) : this method returns a list of diskitems that exist in that database and match type, format and required attributes of the parameter. It is possible to specify additional attributes in the method parameters. Found items will have the selected value for these attributes if they have the attribute, but these attributes are not mandatory. That's the difference with the required attributes set in the constructor.
+      * :py:meth:`ReadDiskItem.findValues(\\<value\\>) <ReadDiskItem.findValues>` : this method searches diskitems matching the value in parameter. This value can be a diskitem, a filename, a dictionary of attributes.
+      * :py:meth:`ReadDiskItem.findValue(\\<value\\>) <ReadDiskItem.findValue>` : this method returns the best among possible value, that is to say with the more common attributes, highest priority. If there is an ambiguity, it returns None.
 
     **Examples**
 
@@ -341,10 +339,8 @@ class ReadDiskItem(Parameter):
                         print(
                             '  DiskItem has the _write attribute set to True',
                               file=_debug)
+                    write = True
                 fullSelection = selection.globalAttributes()
-                # selection will not be the initial DI, thus its _write
-                # attribute is no longer carried on.
-                fullSelection['_write'] = False
                 if selection.type is None:
                     fullSelection['_type'] = None
                 else:
@@ -612,8 +608,8 @@ class ReadDiskItem(Parameter):
 
     def diskItemDistance(self, diskItem, other):
         '''Returns a value that represents a sort of distance between two
-           DiskItems.
-            The distance is not a number but distances can be sorted.'''
+        DiskItems.
+        The distance is not a number but distances can be sorted.'''
         # Count the number of common hierarchy attributes
         if isinstance(other, DiskItem):
             if other.type is not None:

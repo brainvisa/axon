@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import print_function
-from __future__ import absolute_import
 from brainvisa.validation import ValidationError
-import distutils.spawn
+import shutil
 import os
 import sys
 
@@ -51,14 +49,14 @@ def validation(configuration):
 def validationSpm8Standalone(configuration):
     if((not configuration.SPM.spm8_standalone_command
         or not (configuration.SPM.spm8_standalone_mcr_path or (sys.platform == "win32")))) \
-        and not distutils.spawn.find_executable(
+        and not shutil.which(
             configuration.matlab.executable):
         raise ValidationError('SPM or matlab is not found')
     return True
 
 
 def validationSpm8(configuration):
-    if(not distutils.spawn.find_executable(configuration.matlab.executable)):
+    if(not shutil.which(configuration.matlab.executable)):
         # print("Matlab executable is not found")
         raise ValidationError('Matlab is not found')
     if(not configuration.SPM.spm8_path):
@@ -186,7 +184,7 @@ def runMatblatBatch(context, configuration, matlabBatchPath,
     # execution batch file
     # momoTODO check if mexe is None when no matlab then raise error or
     # exception
-    mexe = distutils.spawn.find_executable(configuration.matlab.executable)
+    mexe = shutil.which(configuration.matlab.executable)
     matlabCmd = os.path.basename(matlabBatchPath)[
         :os.path.basename(matlabBatchPath).rindex('.')]  # remove extension
     matlabOptions = configuration.matlab.options

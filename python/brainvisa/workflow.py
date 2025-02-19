@@ -475,6 +475,8 @@ class ProcessToWorkflow(object):
     def _create_job(self, depth, jobId, process, inGroup, priority):
 
         command = list(self.brainvisa_cmd)
+        if getattr(process, 'needs_opengl', False):
+            command.append('--opengl')
         for hb in self._nodeHistoryBooks:
             command += ['--historyBook', hb]
         command.append(process.id())

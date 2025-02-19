@@ -1,394 +1,401 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import sys, os
-# Set default encoding to 'iso-8859-1'
-try:
-  ksdjfh34_f9
-except:
-  c = sys.executable + " -S -c 'import sys; ksdjfh34_f9=True; sys.argv[ 0 ] = \"" + sys.argv[0] + "\"; execfile( \"" + sys.argv[ 0 ] + "\" )' " + ' '.join( ["'" + x + "'" for x in sys.argv[1: ] ] )
-  sys.exit( os.system( c ) )
-sys.setdefaultencoding( 'iso-8859-1' )
-import site
-
-import __builtin__
-
+import token
+import parser
+import soma.minf.api as minfXML
+from soma.html import htmlEscape
 from soma.qt_gui import qt_backend
-qt_backend.set_qt_backend('PyQt4', 2)
+import __builtin__
+import sys
+import os
+import shutil
+# Set default encoding to 'iso-8859-1'
+# try:
+#     ksdjfh34_f9
+# except:
+#     c = sys.executable + " -S -c 'import sys; ksdjfh34_f9=True; sys.argv[ 0 ] = \"" + sys.argv[0] + "\"; execfile( \"" + sys.argv[ 0 ] + "\" )' " + ' '.join( ["'" + x + "'" for x in sys.argv[1: ] ] )
+#     sys.exit( os.system( c ) )
+sys.setdefaultencoding('iso-8859-1')
+
+
+qt_backend.set_qt_backend('PyQt5', 2)
 
 
 translatables = {}
 _translate = None
 
 
+def myTranslator(toTranslate):
+    import neuroConfig
+    global _translate
+    if _translate is None:
+        _translate = neuroConfig.Translator().translate
+    l = translatables.setdefault(toTranslate, [])
+    f = sys._getframe(1)
+    modfile = sys.modules[f.f_globals['__name__']].__file__
+    if modfile.endswith('.pyc') or modfile.endswith('.pyo'):
+        modfile = modfile[:-1]
+    l.append((modfile, f.f_lineno))
+    # l.append( ( os.path.join( mainPath, f.f_globals[ '__name__' ] ) + '.py', f.f_lineno ) )
+    #print('!myTranslator!', toTranslate, l[ -1 ])
+    return _translate(toTranslate)
 
-def myTranslator( toTranslate ):
-  import neuroConfig
-  global _translate
-  if _translate is None:
-    _translate = neuroConfig.Translator().translate
-  l = translatables.setdefault( toTranslate, [] )
-  f = sys._getframe( 1 )
-  modfile = sys.modules[ f.f_globals[ '__name__' ] ].__file__
-  if modfile.endswith( '.pyc' ) or modfile.endswith( '.pyo' ):
-    modfile = modfile[:-1]
-  l.append( ( modfile, f.f_lineno ) )
-  # l.append( ( os.path.join( mainPath, f.f_globals[ '__name__' ] ) + '.py', f.f_lineno ) )
-  #print '!myTranslator!', toTranslate, l[ -1 ]
-  return _translate( toTranslate )
+
 __builtin__.__dict__['_t_'] = myTranslator
 
 
-import re, parser, token, types
-from soma.html import htmlEscape
 #import minfXML
-import soma.minf.api as minfXML
 try:
-  from soma.config import MAJOR_QT_VERSION
-  USE_QT4 = MAJOR_QT_VERSION == 4
+    from soma.config import MAJOR_QT_VERSION
+    USE_QT4 = MAJOR_QT_VERSION == 4
 except ImportError:
-  # in non-cmake version, soma.config does not exist.
-  # Then we are forced to use the gui to check Qt
-  import soma.qtgui.api as qg
-  if qg.QtGUI == getattr(qg, "Qt4GUI", None):
-    USE_QT4 = True
-  else:
-    USE_QT4 = False
-  del qg
-if USE_QT4:
-  from PyQt4 import uic
-else:
-  from qtui import *
-
-def tokens( fileName ):
-  f = open( fileName )
-  content = f.read()
-  f.close()
-  try:
-    stack = [ parser.suite( content ).totuple( True ) ]
-  except Exception, e:
-    print >> sys.stderr, 'Error in file ' + fileName + ': ' + unicode( e )
-    return
-  while stack:
-    node = stack.pop( 0 )
-    if token.ISTERMINAL( node[ 0 ] ):
-      yield node
+    # in non-cmake version, soma.config does not exist.
+    # Then we are forced to use the gui to check Qt
+    import soma.qtgui.api as qg
+    if qg.QtGUI == getattr(qg, "Qt4GUI", None):
+        USE_QT4 = True
     else:
-      stack = list( node[ 1: ] ) + stack
+        USE_QT4 = False
+    del qg
+if USE_QT4:
+    from PyQt4 import uic
+else:
+    from qtui import *
 
 
-def findTranslatableStrings( fileName, result ):
-  toBeChecked = set()
-  state = 0
-  for t, c, l in tokens( fileName ):
-    if state == 0:
-      if t == token.NAME and c == "_t_":
-        state = 1
-        line = l
-      elif t == token.STRING:
-        u = result.get( eval( c ) )
-        if u is not None:
-          u.append( ( fileName, l ) )
-    elif state == 1:
-      if t != token.LPAR:
-        toBeChecked.add( line )
-        state = 0
-      else:
-        state = 2
-    elif state == 2:
-      if t != token.STRING:
-        toBeChecked.add( line )
-        state = 0
-      else:
-        translatable = eval( c )
-        state = 3
-    elif state == 3:
-      if t != token.RPAR:
-        toBeChecked.add( line )
-        state = 0
-      else:
-        result.setdefault( translatable, [] ).append( ( fileName, line ) )
-        state = 0
-#    print l, ':', token.tok_name[ t ], ':', c
-  return toBeChecked
+def tokens(fileName):
+    f = open(fileName)
+    content = f.read()
+    f.close()
+    try:
+        stack = [parser.suite(content).totuple(True)]
+    except Exception as e:
+        print('Error in file ' + fileName + ': ' + unicode(e), file=sys.stderr)
+        return
+    while stack:
+        node = stack.pop(0)
+        if token.ISTERMINAL(node[0]):
+            yield node
+        else:
+            stack = list(node[1:]) + stack
 
+
+def findTranslatableStrings(fileName, result):
+    toBeChecked = set()
+    state = 0
+    for t, c, l in tokens(fileName):
+        if state == 0:
+            if t == token.NAME and c == "_t_":
+                state = 1
+                line = l
+            elif t == token.STRING:
+                u = result.get(eval(c))
+                if u is not None:
+                    u.append((fileName, l))
+        elif state == 1:
+            if t != token.LPAR:
+                toBeChecked.add(line)
+                state = 0
+            else:
+                state = 2
+        elif state == 2:
+            if t != token.STRING:
+                toBeChecked.add(line)
+                state = 0
+            else:
+                translatable = eval(c)
+                state = 3
+        elif state == 3:
+            if t != token.RPAR:
+                toBeChecked.add(line)
+                state = 0
+            else:
+                result.setdefault(translatable, []).append((fileName, line))
+                state = 0
+#    print(l, ':', token.tok_name[ t ], ':', c)
+    return toBeChecked
 
 
 def main():
-  global editor, languages, translationTables, readOnly
-  #------------------------------------------------------------------------------
-  print 'Reading translation tables'
-  #------------------------------------------------------------------------------
-  readOnly = False
-  translationTables = {}
-  docPath = neuroConfig.mainDocPath
-  languages = []
-  for l in os.listdir( docPath ):
-    if len( l ) == 2 and os.path.isdir( os.path.join( docPath, l ) ):
-      languages.append( l )
-  for language in languages:
-    if USE_QT4:
-      func = '''
+    global editor, languages, translationTables, readOnly
+    # ------------------------------------------------------------------------------
+    print('Reading translation tables')
+    # ------------------------------------------------------------------------------
+    readOnly = False
+    translationTables = {}
+    docPath = neuroConfig.mainDocPath
+    languages = []
+    for l in os.listdir(docPath):
+        if len(l) == 2 and os.path.isdir(os.path.join(docPath, l)):
+            languages.append(l)
+    for language in languages:
+        if USE_QT4:
+            func = '''
 def translationChanged_''' + language + '''():
   source = unicode( editor.txtSource.toPlainText() )
   translation = unicode( editor.txt''' + language + '''.toPlainText() )
   translationTables[ "''' + language + '''" ][ source ] = translation
 '''
-    else:
-      func = '''
+        else:
+            func = '''
 def translationChanged_''' + language + '''():
   source = unicode( editor.txtSource.text() )
   translation = unicode( editor.txt''' + language + '''.text() )
   translationTables[ "''' + language + '''" ][ source ] = translation
 '''
-    exec func in globals(), globals()
-    n = os.path.join( docPath, language, 'translation.minf' )
-    print ' ', n
-    # Check that file can be opened for writing
-    try:
-      f = open( n, 'r+' )
-      f.close()
-    except IOError:
-      readOnly = True
-    f = open( n )
-    translationTables[ language ] = minfXML.readMinf( f )[0]
-    # print 'translationTables[', language, ']:', translationTables[ language ]
-    f.close()
-    for s, t in translationTables[ language ].iteritems():
-      translatables.setdefault( s, [] )
-
-
-  #------------------------------------------------------------------------------
-  print 'Parsing BrainVISA sources for translation'
-  #------------------------------------------------------------------------------
-  toBeChecked = {}
-  files = []
-  ##stack = [ os.path.join( mainPath, i ) for i in os.listdir( mainPath ) ]
-  import brainvisa
-  bvmodpath = os.path.dirname( brainvisa.__file__ )
-  stack = [ mainPath, bvmodpath ]
-  while stack:
-    item = stack.pop()
-    if os.path.isdir( item ):
-  ##    pass
-      stack += [ os.path.join( item, i ) for i in os.listdir( item ) ]
-    elif item.endswith( '.py' ):
-      files.append( item )
-
-  progress = QProgressDialog()
-  if USE_QT4:
-    QListViewItem = QTreeWidgetItem
-    progress.setMaximum( len( files ) )
-  else:
-    progress.setTotalSteps( len( files ) )
-  progress.setLabelText( 'Parsing BrainVISA sources...' )
-  progress.setMinimumDuration( 0 )
-  i = 0
-
-  for item in files:
-    if USE_QT4:
-      progress.setValue( i )
-    else:
-      progress.setProgress( i )
-    qApp.processEvents()
-    if progress.wasCanceled():
-      break
-    chk = findTranslatableStrings( item, translatables )
-    if chk:
-      toBeChecked[ item ] = sorted( list(chk) )
-    i += 1
-  progress.close()
-  del progress
-  qApp.processEvents()
-
-  #------------------------------------------------------------------------------
-  print 'Create graphical interface'
-  #------------------------------------------------------------------------------
-  def sourceSelectedQt4( item, col ):
-    return sourceSelected( item )
-
-  def sourceSelected( item ):
-    global editor, languages, translationTables
-    if item is not None:
-      source = unicode( item.text( 0 ) )
-      if USE_QT4:
-        editor.txtSource.setPlainText( source )
-      else:
-        editor.txtSource.setText( source )
-      for language in languages:
-        txt = getattr( editor, 'txt'+language )
-        if USE_QT4:
-          txt.setPlainText( translationTables[ language ].get( source, '' ) )
-        else:
-          txt.setText( translationTables[ language ].get( source, '' ) )
-      usage = translatables[ source ]
-      editor.lstUsage.clear()
-      editor.txtUsage.setText( '' )
-      editor.labUsage.setText( '' )
-      if usage:
-        for f, l in usage:
-          item = QListViewItem( editor.lstUsage )
-          item.fileName = f
-          item.setText( 0, os.path.basename( f ) )
-          item.setText( 1, str( l ) )
-    else:
-      editor.txtSource.setText( '' )
-      for language in languages:
-        getattr( editor, 'txt'+language ).setText( '' )
-      editor.lstUsage.clear()
-      editor.txtUsage.setText( '' )
-      editor.labUsage.setText( '' )
-
-  def usageSelectedQt4( item, col ):
-    return usageSelected( item )
-
-  def usageSelected( item ):
-    global editor
-    if item is None:
-      editor.txtUsage.setText( '' )
-    else:
-      file = item.fileName
-      editor.labUsage.setText( file )
-      line = int( str( item.text( 1 ) ) )
-      txt = '<html><body><pre>'
-      i = 1
-      for l in open( file ):
-        #cl = '<font color="darkgreen">'+ str( i ) + ' - </font>' + htmlEscape( l )
-        cl = htmlEscape( l )
-        if i ==line:
-          txt += '<p><b><font color=blue><a name="here">' + cl + '</a></font></b></p>'
-        else:
-          txt += cl
-        i += 1
-      txt += '</pre></body></html>'
-      editor.txtUsage.setText( txt )
-      editor.txtUsage.scrollToAnchor( 'here' )
-
-  def saveCurrent():
-    if not readOnly:
-      print 'Saving translation tables'
-      for l in languages:
-        for k, v in translationTables[ l ].items():
-          if not v:
-            del translationTables[ l ][ k ]
-        f = os.path.join( docPath, l, 'translation.minf' )
-        print ' ', f
-        f = open( f, 'w' )
-        minfXML.writeMinf( f, ( translationTables[ l ], ), format='XML',
-          reducer='minf_1.0' )
+        exec(func in globals(), globals())
+        n = os.path.join(docPath, language, 'translation.minf')
+        print(' ', n)
+        # Check that file can be opened for writing
+        try:
+            f = open(n, 'r+')
+            f.close()
+        except IOError:
+            readOnly = True
+        f = open(n)
+        translationTables[language] = minfXML.readMinf(f)[0]
+        # print('translationTables[', language, ']:', translationTables[ language ])
         f.close()
+        for s, t in translationTables[language].iteritems():
+            translatables.setdefault(s, [])
 
-  import brainvisa
-  if USE_QT4:
-    editor = uic.loadUi( os.path.join( os.path.dirname( brainvisa.__file__ ), 'brainvisaTranslation-qt4.ui' ) )
-  else:
-    editor = QWidgetFactory.create( os.path.join( os.path.dirname( brainvisa.__file__ ), 'brainvisaTranslation.ui' ) )
-    for x in editor.queryList( None, 'BV_.*' ):
-      setattr( editor, x.name()[ 3:], x )
-  pixOk = QPixmap( os.path.join( neuroConfig.iconPath, 'ok.png' ) )
-  pixBad = QPixmap( os.path.join( neuroConfig.iconPath, 'abort.png' ) )
-  pixUnused = QPixmap( os.path.join( neuroConfig.iconPath, 'help.png' ) )
-  if USE_QT4:
-    editor.connect( editor.lstSources,
-                    SIGNAL( 'itemActivated( QTreeWidgetItem *, int )' ),
-                    sourceSelectedQt4 )
-    editor.connect( editor.lstUsage,
-                    SIGNAL( 'itemActivated( QTreeWidgetItem *, int )' ),
-                    usageSelectedQt4 )
-  else:
-    editor.connect( editor.lstSources,
-                    SIGNAL( 'selectionChanged( QListViewItem *)' ),
-                    sourceSelected )
-    editor.connect( editor.lstUsage,
-                    SIGNAL( 'selectionChanged( QListViewItem *)' ),
-                    usageSelected )
-  editor.connect( editor.btnApply, SIGNAL( 'clicked()'), saveCurrent )
-  for language in languages:
-    txt = getattr( editor, 'txt'+language )
-    txt.setReadOnly( readOnly )
-    txt.connect( txt, SIGNAL( 'textChanged()' ), globals()[ 'translationChanged_' + language ] )
-  if readOnly:
-    editor.btnOk.hide()
-    editor.btnApply.hide()
+    # ------------------------------------------------------------------------------
+    print('Parsing BrainVISA sources for translation')
+    # ------------------------------------------------------------------------------
+    toBeChecked = {}
+    files = []
+    ##stack = [ os.path.join( mainPath, i ) for i in os.listdir( mainPath ) ]
+    import brainvisa
+    bvmodpath = os.path.dirname(brainvisa.__file__)
+    stack = [mainPath, bvmodpath]
+    while stack:
+        item = stack.pop()
+        if os.path.isdir(item):
+            # pass
+            stack += [os.path.join(item, i) for i in os.listdir(item)]
+        elif item.endswith('.py'):
+            files.append(item)
+
+    progress = QProgressDialog()
     if USE_QT4:
-      editor.setWindowTitle( unicode( editor.caption() ) + ' (read only)' )
+        QListViewItem = QTreeWidgetItem
+        progress.setMaximum(len(files))
     else:
-      editor.setCaption( unicode( editor.caption() ) + ' (read only)' )
+        progress.setTotalSteps(len(files))
+    progress.setLabelText('Parsing BrainVISA sources...')
+    progress.setMinimumDuration(0)
+    i = 0
 
-  for s, u in translatables.iteritems():
+    for item in files:
+        if USE_QT4:
+            progress.setValue(i)
+        else:
+            progress.setProgress(i)
+        qApp.processEvents()
+        if progress.wasCanceled():
+            break
+        chk = findTranslatableStrings(item, translatables)
+        if chk:
+            toBeChecked[item] = sorted(list(chk))
+        i += 1
+    progress.close()
+    del progress
+    qApp.processEvents()
+
+    # ------------------------------------------------------------------------------
+    print('Create graphical interface')
+    # ------------------------------------------------------------------------------
+
+    def sourceSelectedQt4(item, col):
+        return sourceSelected(item)
+
+    def sourceSelected(item):
+        global editor, languages, translationTables
+        if item is not None:
+            source = unicode(item.text(0))
+            if USE_QT4:
+                editor.txtSource.setPlainText(source)
+            else:
+                editor.txtSource.setText(source)
+            for language in languages:
+                txt = getattr(editor, 'txt'+language)
+                if USE_QT4:
+                    txt.setPlainText(
+                        translationTables[language].get(source, ''))
+                else:
+                    txt.setText(translationTables[language].get(source, ''))
+            usage = translatables[source]
+            editor.lstUsage.clear()
+            editor.txtUsage.setText('')
+            editor.labUsage.setText('')
+            if usage:
+                for f, l in usage:
+                    item = QListViewItem(editor.lstUsage)
+                    item.fileName = f
+                    item.setText(0, os.path.basename(f))
+                    item.setText(1, str(l))
+        else:
+            editor.txtSource.setText('')
+            for language in languages:
+                getattr(editor, 'txt'+language).setText('')
+            editor.lstUsage.clear()
+            editor.txtUsage.setText('')
+            editor.labUsage.setText('')
+
+    def usageSelectedQt4(item, col):
+        return usageSelected(item)
+
+    def usageSelected(item):
+        global editor
+        if item is None:
+            editor.txtUsage.setText('')
+        else:
+            file = item.fileName
+            editor.labUsage.setText(file)
+            line = int(str(item.text(1)))
+            txt = '<html><body><pre>'
+            i = 1
+            for l in open(file):
+                #cl = '<font color="darkgreen">'+ str( i ) + ' - </font>' + htmlEscape( l )
+                cl = htmlEscape(l)
+                if i == line:
+                    txt += '<p><b><font color=blue><a name="here">' + cl + '</a></font></b></p>'
+                else:
+                    txt += cl
+                i += 1
+            txt += '</pre></body></html>'
+            editor.txtUsage.setText(txt)
+            editor.txtUsage.scrollToAnchor('here')
+
+    def saveCurrent():
+        if not readOnly:
+            print('Saving translation tables')
+            for l in languages:
+                for k, v in translationTables[l].items():
+                    if not v:
+                        del translationTables[l][k]
+                f = os.path.join(docPath, l, 'translation.minf')
+                print(' ', f)
+                f = open(f, 'w')
+                minfXML.writeMinf(f, (translationTables[l], ), format='XML',
+                                  reducer='minf_1.0')
+                f.close()
+
+    import brainvisa
     if USE_QT4:
-      item = QTreeWidgetItem( editor.lstSources )
+        editor = uic.loadUi(os.path.join(os.path.dirname(
+            brainvisa.__file__), 'brainvisaTranslation-qt4.ui'))
     else:
-      item = QListViewItem( editor.lstSources )
-    if not u:
-      pix = pixUnused
-    else:
-      ok = True
-      for language in languages:
-        if language == 'en': continue
-        if not translationTables[ language ].get( s, '' ):
-          ok = False
-          break
-      if ok:
-        pix = pixOk
-      else:
-        pix = pixBad
+        editor = QWidgetFactory.create(os.path.join(
+            os.path.dirname(brainvisa.__file__), 'brainvisaTranslation.ui'))
+        for x in editor.queryList(None, 'BV_.*'):
+            setattr(editor, x.name()[3:], x)
+    pixOk = QPixmap(os.path.join(neuroConfig.iconPath, 'ok.png'))
+    pixBad = QPixmap(os.path.join(neuroConfig.iconPath, 'abort.png'))
+    pixUnused = QPixmap(os.path.join(neuroConfig.iconPath, 'help.png'))
     if USE_QT4:
-      item.setIcon( 0, QIcon( pix ) )
-      if s is None:
-        item.setText( 0, '' )
-      else:
-        item.setText( 0, s )
+        editor.connect(editor.lstSources,
+                       SIGNAL('itemActivated( QTreeWidgetItem *, int )'),
+                       sourceSelectedQt4)
+        editor.connect(editor.lstUsage,
+                       SIGNAL('itemActivated( QTreeWidgetItem *, int )'),
+                       usageSelectedQt4)
     else:
-      item.setPixmap( 0, pix )
-      item.setText( 0, s )
+        editor.connect(editor.lstSources,
+                       SIGNAL('selectionChanged( QListViewItem *)'),
+                       sourceSelected)
+        editor.connect(editor.lstUsage,
+                       SIGNAL('selectionChanged( QListViewItem *)'),
+                       usageSelected)
+    editor.connect(editor.btnApply, SIGNAL('clicked()'), saveCurrent)
+    for language in languages:
+        txt = getattr(editor, 'txt'+language)
+        txt.setReadOnly(readOnly)
+        txt.connect(txt, SIGNAL('textChanged()'), globals()
+                    ['translationChanged_' + language])
+    if readOnly:
+        editor.btnOk.hide()
+        editor.btnApply.hide()
+        if USE_QT4:
+            editor.setWindowTitle(unicode(editor.caption()) + ' (read only)')
+        else:
+            editor.setCaption(unicode(editor.caption()) + ' (read only)')
 
-  if USE_QT4:
-    r = editor.exec_()
-  else:
-    r = editor.exec_loop()
-  if r == editor.Accepted:
-    saveCurrent()
+    for s, u in translatables.iteritems():
+        if USE_QT4:
+            item = QTreeWidgetItem(editor.lstSources)
+        else:
+            item = QListViewItem(editor.lstSources)
+        if not u:
+            pix = pixUnused
+        else:
+            ok = True
+            for language in languages:
+                if language == 'en':
+                    continue
+                if not translationTables[language].get(s, ''):
+                    ok = False
+                    break
+            if ok:
+                pix = pixOk
+            else:
+                pix = pixBad
+        if USE_QT4:
+            item.setIcon(0, QIcon(pix))
+            if s is None:
+                item.setText(0, '')
+            else:
+                item.setText(0, s)
+        else:
+            item.setPixmap(0, pix)
+            item.setText(0, s)
+
+    if USE_QT4:
+        r = editor.exec_()
+    else:
+        r = editor.exec_loop()
+    if r == editor.Accepted:
+        saveCurrent()
 
 
-
-from distutils.spawn import find_executable
 neuro = ""
-if len ( sys.argv ) > 1:
-  brainvisa = sys.argv[1]
-  del sys.argv[ 1 ]
+if len(sys.argv) > 1:
+    brainvisa = sys.argv[1]
+    del sys.argv[1]
 else:
-  brainvisa = 'brainvisa'
+    brainvisa = 'brainvisa'
 
-executable = find_executable( brainvisa )
+executable = shutil.which(brainvisa)
 if executable is None:
-  print >> sys.stderr, 'Cannot find executable:', brainvisa
-  sys.exit( 1 )
+    print('Cannot find executable:', brainvisa, file=sys.stderr)
+    sys.exit(1)
 
 
 found = False
 while True:
-  p = os.path.dirname( executable )
-  for d in ( os.path.normpath( os.path.join( p, "..", "brainvisa" ) ),
-            os.path.normpath( os.path.join( p, "..", "..", "brainvisa" ) ) ):
-    neuro = os.path.join( d, "neuro.py" )
-    if os.path.exists( neuro ):
-      found = True
-      break
-  if found:
-    break
-  if os.path.islink( executable ):
-    executable = os.path.join( os.path.dirname( executable ), os.readlink( executable ) )
-  else:
-    break
+    p = os.path.dirname(executable)
+    for d in (os.path.normpath(os.path.join(p, "..", "brainvisa")),
+              os.path.normpath(os.path.join(p, "..", "..", "brainvisa"))):
+        neuro = os.path.join(d, "neuro.py")
+        if os.path.exists(neuro):
+            found = True
+            break
+    if found:
+        break
+    if os.path.islink(executable):
+        executable = os.path.join(os.path.dirname(
+            executable), os.readlink(executable))
+    else:
+        break
 if neuro:
-  neuro = os.path.abspath( neuro )
-  sys.argv[ 0 ] = neuro
-  pythonPath = os.path.dirname( neuro )
-  sys.path[0:0] = [os.path.normpath(i) for i in \
-    (pythonPath, os.path.join( pythonPath, "..", "python" ), )]
-  import neuroConfig
-  neuroConfig.startup.append( main )
-  execfile( neuro )
+    neuro = os.path.abspath(neuro)
+    sys.argv[0] = neuro
+    pythonPath = os.path.dirname(neuro)
+    sys.path[0:0] = [os.path.normpath(i) for i in
+                     (pythonPath, os.path.join(pythonPath, "..", "python"), )]
+    import neuroConfig
+    neuroConfig.startup.append(main)
+    execfile(neuro)
 else:
-  print >> sys.stderr, "Cannot find main BrainVISA directory"
+    print("Cannot find main BrainVISA directory", file=sys.stderr)

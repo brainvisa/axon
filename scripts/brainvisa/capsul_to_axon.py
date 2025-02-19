@@ -1,20 +1,18 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
-from __future__ import absolute_import
 from brainvisa.axon import processes
 from capsul import process, pipeline
 from brainvisa import processes as procbv
 from brainvisa.data import neuroData
 from brainvisa.data.readdiskitem import ReadDiskItem
 from brainvisa.data.writediskitem import WriteDiskItem
+import traits as _traits
 from traits import api as traits
 from traits import trait_types
 import importlib
 import six
 
 from optparse import OptionParser
-from six.moves import zip
 
 
 def fileOptions(filep):
@@ -47,9 +45,11 @@ param_types_table = \
         trait_types.Directory: fileOptions,
         trait_types.Enum: (neuroData.Choice, choiceOptions),
         trait_types.List: (neuroData.ListOf, listOptions),
-        trait_types.ListFloat: (neuroData.ListOf, listOptions),
         trait_types.Set: (neuroData.ListOf, listOptions),
     }
+if [int(x) for x in _traits.__version__.split('.')] < [7, 0]:
+    # some types have been removed from traits 7
+    param_types_table[trait_types.ListFloat] = (neuroData.ListOf, listOptions)
 
 
 def make_parameter(param, name='<unnamed>'):

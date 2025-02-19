@@ -30,12 +30,9 @@
 #
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
-from __future__ import print_function
-from __future__ import absolute_import
+
 import sys
 import os
-
-import six
 
 from brainvisa.configuration import neuroConfig
 from brainvisa.processing.neuroException import showException
@@ -62,11 +59,8 @@ if anatomistImport:
     from brainvisa.processing import neuroException
     from brainvisa.data import neuroData
     from soma.qtgui.api import QtThreadCall
-    import distutils.spawn
-    import weakref
-    import types
+    import shutil
     import threading
-    import copy
     from brainvisa.processing.qtgui import backwardCompatibleQt as qt
     from brainvisa.processing.qtgui import neuroProcessesGUI
 
@@ -97,7 +91,7 @@ def validation():
     if not anatomistImport:
         raise ValidationError('Cannot find anatomist module: {0}'
                               .format(noAnatomistReason))
-    elif distutils.spawn.find_executable('anatomist') is None:
+    elif shutil.which('anatomist') is None:
         raise ValidationError('Cannot find Anatomist executable')
 
 
@@ -733,8 +727,9 @@ if anatomistImport:
                     ( ( gray_mean, gray_stdev ), ( white_mean, white_stdev ) )
                     '''
                     import re
-                    r = re.compile('^.*mean:\s*(-?[0-9]+(\.[0-9]*)?)\s*sigma:\s'
-                                   '(-?[0-9]+(\.[0-9]*)?)\s*$')
+                    r = re.compile(
+                        '^.*mean:\\s*(-?[0-9]+(\\.[0-9]*)?)\\s*sigma:\\s'
+                        '(-?[0-9]+(\\.[0-9]*)?)\\s*$')
                     gmean, gsigma, wmean, wsigma = None, None, None, None
                     for l in open(hanfile):
                         l = l.strip()

@@ -47,6 +47,7 @@ import re
 from optparse import OptionParser, OptionGroup
 import six
 import os
+from soma.qt_gui import qt_backend
 
 
 def get_process_with_params(process_name, iterated_params=[], *args, **kwargs):
@@ -315,6 +316,17 @@ group1.add_option('--logFile', dest='logFile', default=None,
                   'enabled, else no log file is used.')
 group1.add_option('-v', '--verbose', action='store_true',
                   help='print more messages during initialization')
+group1.add_option('--opengl', action='store_true', default=False,
+                  help='Tell the process loading system that we will require '
+                  'headless OpenGL, which needs proper setup and libraries '
+                  'loading tweaks. Without this option, Qt and potentially '
+                  'graphical modules will be initialized in headless mode, '
+                  'but there will be no check for a working OpenGL/GLX '
+                  'implementation. In some cases it will work anyway, but in '
+                  'others (no X server) OpenGL will require using a virtual '
+                  'X server (Xvfb) and possibly loading appropriate OpenGL '
+                  'libraries. This is not done systematically because of the '
+                  'overhead it brings.')
 group1.add_option('--params', dest='paramsfile', default=None,
                   help='specify a file containing commandline parameters. '
                   'The file will contain arguments for this commandline '
@@ -440,42 +452,11 @@ else:
     if not options.enabledb and not options.historyBook:
         neuroConfig.logFileName = ''
 
+# prevent any GUI
+needs_opengl = options.opengl
+qt_backend.set_headless(True, needs_opengl=needs_opengl)
 verbose = options.verbose
-if not verbose:
-    # redirect stderr/stdout to avoid printing error messages from processes
-    stdout = sys.stdout
-    stderr = sys.stderr
-    tmp = []
-    if os.path.exists('/dev/null'):
-        outfile = open('/dev/null', 'a')
-    else:
-        import tempfile
-        x = tempfile.mkstemp()
-        os.close(x[0])
-        outfile = open(x[1], 'a')
-        tmp.append(x[1])
-        del x
-    # print('--- disabling stdout/err ---')
-    sys.stdout = outfile
-    sys.stderr = outfile
-    # print('*** DISABLED. ***')
-
-try:
-
-    axon.initializeProcesses()
-
-finally:
-    if not verbose:
-        sys.stderr = stderr
-        sys.stdout = stdout
-        outfile.close()
-        del outfile
-        x = None
-        for x in tmp:
-            os.unlink(x)
-        del x, tmp
-        # print('*** Re-enabling stdout/err ***')
-
+axon.initializeProcesses(verbose=verbose)
 
 if options.list_processes:
     sort_by = options.sort_by
@@ -494,7 +475,7 @@ if options.process_help:
     sys.exit(0)
 
 args = tuple((neuroConfig.convertCommandLineParameter(i) for i in args))
-kwre = re.compile('([a-zA-Z_](\.?[a-zA-Z0-9_])*)\s*=\s*(.*)$')
+kwre = re.compile('([a-zA-Z_](\\.?[a-zA-Z0-9_])*)\\s*=\\s*(.*)$')
 kwargs = {}
 todel = []
 for arg in args:
@@ -576,6 +557,10 @@ except Exception:
 if neuroConfig.exitValue == 0:
     # no error, do a dirty exit, but avoid cleanup crashes after the process
     # has succeeded...
+    # try to remove temp files anyway
+    from brainvisa.data import temporary
+
+    temporary.remove_all_temporaries()
     os._exit(0)
 
 # otherwise it has failed, exit "normally"

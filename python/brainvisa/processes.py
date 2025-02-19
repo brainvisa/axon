@@ -170,7 +170,7 @@ import threading
 import inspect
 import signal
 import shutil
-import imp
+import importlib
 import types
 import copy
 import weakref
@@ -181,6 +181,7 @@ import time
 import calendar
 import tempfile
 import sys
+import io
 
 from soma.sorted_dictionary import SortedDictionary
 from soma.functiontools import numberOfParameterRange, hasParameter, partial
@@ -210,7 +211,7 @@ from brainvisa.data import fileSystemOntology
 from soma.qt_gui.qt_backend.QtCore import QProcess
 from brainvisa.processing.qtgui.command import CommandWithQProcess as Command
 from soma import safemkdir
-from soma.qtgui.api import QtThreadCall, FakeQtThreadCall
+from soma.qt_gui.qtThread import QtThreadCall, FakeQtThreadCall
 
 import six
 import pickle
@@ -221,6 +222,7 @@ global _mainThreadActions
 _mainThreadActions = FakeQtThreadCall()
 global _defaultContext
 _defaultContext = None
+_readProcessLog = None
 
 #----------------------------------------------------------------------------
 
@@ -349,8 +351,8 @@ def procdocToXHTML(procdoc):
             # Add a '/' at the end of non closed tags
             for l in ('img', 'br', 'hr'):
                 expr = '<(' + l + \
-                    '(([^A-Za-z_0-9>/]?)|([^A-Za-z_0-9][^>]*[^/>])))>(?!\s*</' + \
-                            l + '>)'
+                    '(([^A-Za-z_0-9>/]?)|([^A-Za-z_0-9][^>]*[^/>])))>' \
+                    '(?!\\s*</' + l + '>)'
                 value = re.sub(expr, '<\\1/>', value)
 
             # convert <s> tag to <xhtml> tag
@@ -978,7 +980,12 @@ class Parameterized(object):
             self.setDefault(name, default)
         if self._isParameterSet.get(name, False):
             oldValue = getattr(self, name, None)
-            newValue = self.signature[name].findValue(value)
+            try:
+                newValue = self.signature[name].findValue(value)
+            except Exception as e:
+                e.args = (f'Error while setting parameter "{name}" of '
+                          f'process "{self.name}" : {str(e)}', ) + e.args[1:]
+                raise
             changed = changed or newValue != oldValue
         else:
             self._isParameterSet[name] = True
@@ -1044,6 +1051,7 @@ class Parameterized(object):
             ReadDiskItem.findValue(). The dict maps destination attributes
             from source parameters attributes values.
             Ex:
+
             * {'dst_attrib': 'src_attrib'}
               will get in the source parameter value the attribute
               'src_attrib', and its value will be forced as the value of the
@@ -1054,6 +1062,7 @@ class Parameterized(object):
               'src_param1', and set it as the value of 'dst_attrib1' of the
               destination parameter. Same for 'dst_attrib2', but the value will
               be taken from another source parameter.
+
             As values are passed as requiredAttributes, they are thus
             mandatory in the destination parameter value, and are "stronger"
             than standard links. In this respect, it can be meaningful to
@@ -1148,18 +1157,20 @@ class Parameterized(object):
 
     def setEnable(self, *args, **kwargs):
         """Indicates parameters visibility and mandatory
-        using examples : self.setEnable( *args)
-                         self.setEnable( *args, userLevel=0)
-                         self.setEnable( *args, userLevel=0, mandatory=True)
+        using examples::
+
+            self.setEnable(*args)
+            self.setEnable(*args, userLevel=0)
+            self.setEnable(*args, userLevel=0, mandatory=True)
 
         *optional keyword paramerers*
 
         userLevel: int
-            indicates that the parameters are visible or hidden regarding the userLevel.
-            ( default value : the previous userLevel is kept )
+            indicates that the parameters are visible or hidden regarding the
+            userLevel. (default value: the previous userLevel is kept)
         mandatory: boolean
-            indicates that the parameters are mandatory(True) or optional(False).
-            ( default value : True )
+            indicates that the parameters are mandatory(True) or
+            optional(False). (default value: True)
         """
         self.setVisible(*args)
 
@@ -3393,7 +3404,8 @@ class ExecutionContext(object):
                         result = workflow
                         configuration = Application().configuration
                         if (len(list_failed_jobs) > 0):
-                            msg = ''
+                            msg = 'Run through soma workflow failed. ' \
+                                'Plase see the log (ctrl-L)'
                             if not configuration.soma_workflow.somaworkflow_keep_failed_workflows:
                                 # Delete the submitted workflow
                                 controller.delete_workflow(wid, True)
@@ -3401,11 +3413,25 @@ class ExecutionContext(object):
                                 del controller
                                 shutil.rmtree(tmp_dir)
                             else:
-                                msg = ', workflow temp dir has been left: %s' \
+                                msg += ', and see details with ' \
+                                    'soma-workflow-gui, ' \
+                                    'workflow temp dir has been left: %s' \
                                     % controller.config._temp_config_dir
-                            raise RuntimeError(
-                                'run through soma workflow failed, see '
-                                'details with soma-workflow-gui%s' % msg)
+                                msg += '\nTo see details, run the following ' \
+                                    'command:\nsoma_workflow_gui --database ' \
+                                    '%s/soma-workflow.db' \
+                                    % controller.config._temp_config_dir
+                            if process._outputLogFile:
+                                f = io.StringIO()
+                                controller.log_failed_workflow(wid, file=f)
+                                err_msg = htmlEscape(f.getvalue()).replace(
+                                    '\n', '<br/>')
+                                err_msg = '<b style="color: #e00000">Error ' \
+                                    'in job:</b><br/>' \
+                                    + err_msg
+                                print(err_msg, file=process._outputLogFile)
+
+                            raise RuntimeError(msg)
                         else:
                             if not configuration.soma_workflow.somaworkflow_keep_succeeded_workflows:
                                 # Delete the submitted workflow
@@ -3716,7 +3742,7 @@ class ExecutionContext(object):
                        html=systemLog,
                        icon='icon_system.png')
         try:
-            commandName = distutils.spawn.find_executable(c.commandName())
+            commandName = shutil.which(c.commandName())
             if not commandName:
                 commandName = c.commandName()
             if systemLogFile:
@@ -5859,14 +5885,6 @@ def getImporter(source, checkUpdate=True):
 
 
 #----------------------------------------------------------------------------
-_extToModuleDescription = {
-    'py': ('.py', 'r', imp.PY_SOURCE),
-  'pyo': ('.py', 'r', imp.PY_COMPILED),
-  'pyc': ('.py', 'r', imp.PY_COMPILED),
-  'so': ('.so', 'rb', imp.C_EXTENSION),
-}
-
-#----------------------------------------------------------------------------
 
 
 def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainvisa'):
@@ -5940,7 +5958,6 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
             pass
 
         extPos = fileName.rfind('.')
-        fileExtension = fileName[extPos + 1:]
         moduleName = os.path.basename(fileName[: extPos])
         full_mod_name = 'axon_process.%s' % moduleName
         dataDirectory = fileName[: extPos] + '.data'
@@ -5955,19 +5972,22 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
         import axon_process
 
         # Load module
-        moduleDescription = _extToModuleDescription.get(fileExtension)
-        if moduleDescription is None:
-            raise RuntimeError(
-                HTMLMessage(_t_('Cannot load a process from file <em>%s</em>') % (fileName,)))
         currentDirectory = getcwd()
-        fopts = {} if six.PY2 else {'encoding': 'utf-8'}
-        fileIn = open(fileName, moduleDescription[1], **fopts)
         try:
             if dataDirectory:
                 os.chdir(dataDirectory)
             try:
-                processModule = imp.load_module(
-                    full_mod_name, fileIn, fileName, moduleDescription)
+                spec = importlib.util.spec_from_file_location(full_mod_name,
+                                                              fileName)
+                processModule = importlib.util.module_from_spec(spec)
+                sys.modules[full_mod_name] = processModule
+                spec.loader.exec_module(processModule)
+            except FileNotFoundError:
+                showException(beforeError=(
+                    _t_('In <em>%s</em>')) % (fileName, ),
+                    afterError=_t_(
+                        ' module file not found'))
+                return
             except NameError as e:
                 showException(beforeError=(_t_('In <em>%s</em>')) % (fileName, ), afterError=_t_(
                     ' (perharps you need to add the line <tt>"from brainvisa.processes import *"</tt> at the begining of the process)'))
@@ -5984,7 +6004,6 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
                                     + e.args[1:])),
                             sys.exc_info()[2])
         finally:
-            fileIn.close()
             if dataDirectory:
                 os.chdir(currentDirectory)
 
@@ -6014,7 +6033,7 @@ def readProcess(fileName, category=None, ignoreValidation=False, toolbox='brainv
         for n in ('signature', 'execution', 'name', 'userLevel', 'roles',
                   'category', 'showMaximized', 'allowed_processes',
                   'rolePriority', 'require_databasing',
-                  'capsul_param_options'):
+                  'capsul_param_options', 'needs_opengl'):
             v = getattr(processModule, n, None)
             if v is not None:
                 setattr(NewProcess, n, v)

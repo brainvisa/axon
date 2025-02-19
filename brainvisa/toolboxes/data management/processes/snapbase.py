@@ -2,9 +2,11 @@
 from brainvisa import processes
 from brainvisa.processes import (
     Signature, ReadDiskItem, WriteDiskItem, ListOf, Choice, Float, Integer,
-    String, getProcessInstance, formatLists, getAllFormats, mainThreadActions)
+    String, Boolean, getProcessInstance, formatLists, getAllFormats,
+    mainThreadActions)
 import math
 import json
+import os.path as osp
 
 
 userLevel = 0
@@ -12,15 +14,19 @@ userLevel = 0
 
 def get_viewers():
     viewers = set()
-    for procset in processes._viewers.values():
-        viewers.update(procset)
+    for proc_name, proc in processes._processes.items():
+        roles = getattr(proc, 'roles', [])
+        if 'viewer' in roles or 'snapshot' in roles:
+            viewers.add(proc_name)
+
     return sorted(viewers)
 
 
 presets = {
-    'Sulci': 'AnatomistShowFoldGraph',
-    'Brain mask': 'AnatomistShowBrainMask',
-    'Bias correction': 'AnatomistShowBiasCorrection',
+    'Sulci': 'anatomistshowfoldgraph',
+    'Sulci snapshots': 'sulci_snapshots',
+    'Brain mask': 'anatomistshowbrainmask',
+    'Bias correction': 'anatomistshowbiascorrection',
     'Histogram analysis': 'histo_analysis_viewer',
 }
 
@@ -31,6 +37,7 @@ signature = Signature(
                               + ['PDF file']),
     'preset', Choice(*(sorted(presets.keys()) + ['Any'])),
     'viewer_type', Choice(*get_viewers()),
+    'use_existing_snapshots', Boolean(),
     'input_data', ListOf(ReadDiskItem('Any type', getAllFormats())),
     'displayed_attributes', ListOf(String()),
     'page_size_ratio', Float(),
@@ -47,6 +54,7 @@ signature = Signature(
 
 def link_preset(self, preset):
     vtype = presets.get(preset, 'Any')
+    print('preset change:', preset, ':', vtype)
     if [x for x in self.signature['viewer_type'].values if x[0] == vtype]:
         return presets[preset]
     return self.viewer_type
@@ -151,6 +159,14 @@ def snapshot_size(self, n):
     return width, height, nr, nc, spacing
 
 
+def merge_dicts(d1, d2):
+    for k, v in d2.items():
+        if not isinstance(v, dict) or k not in d1:
+            d1[k] = v
+        else:
+            merge_dicts(d1[k], v)
+
+
 def setup_view(self, w, config, data):
     import anatomist.direct.api as ana
 
@@ -159,31 +175,92 @@ def setup_view(self, w, config, data):
     if self.referential == 'Talairach':
         w.setReferential(a.centralReferential())
     elif self.referential == 'MNI':
-        w.setReferential(a.Referential.mniTemplateReferential())
+        w.setReferential(ana.cpp.Referential.mniTemplateReferential())
     w.focusView()
 
-    bbox = (120, 100, 90)
-    bbmin = (-120, -100, -20)
-    obs_pos = tuple((x+y)/2 for x, y in zip(bbox, bbmin))
-    camera = {'boundingbox_min': bbmin, 'boundingbox_max': bbox,
-              'cursor_position': (0, 0, 0), 'zoom': 1,
-              'observer_position': obs_pos}
+    base_configs = {
+        'Talairach': {
+            'all': {
+                'all': {
+                    'observer_position': [0, 17, -20],
+                    'boundingbox_max': (120, 100, 90),
+                    'boundingbox_min': (-120, -100, -20),
+                },
+            },
+            'left': {
+                'all': {
+                    'cursor_position': [33, 17, -8],
+                },
+                '3D': {
+                    'view_quaternion': [0.5, 0.5, 0.5, 0.5]
+                }
+            },
+            'right': {
+                'all': {
+                    'cursor_position': [-33, 17, -8],
+                },
+                '3D': {
+                    'view_quaternion': [0.5, -0.5, -0.5, 0.5]
+                }
+            }
+        },
+        'MNI': {
+            'all': {
+                'all': {
+                    'observer_position': [0., -22., 14.],
+                    #'cursor_position': [33, 17, -8],
+                    'boundingbox_max': (37., 93., 72.),
+                    'boundingbox_min': (-37., -93., -72.),
+                },
+            },
+            'left': {
+                '3D': {
+                    'view_quaternion': [0.5, -0.5, -0.5, 0.5]
+                }
+            },
+            'right': {
+                '3D': {
+                    'view_quaternion': [0.5, 0.5, 0.5, 0.5]
+                }
+            }
+        },
+        'Native': {
+            'all': {
+                'all': {
+                    'observer_position': [0., 130., 95.],
+                    'boundingbox_max': (40., 55., 90.),
+                    'boundingbox_min': (-40., -55., -90.),
+                    'zoom': 0.65,
+                },
+            },
+            'left': {
+                '3D': {
+                    'view_quaternion': [0.5, 0.5, 0.5, 0.5]
+                }
+            },
+            'right': {
+                '3D': {
+                    'view_quaternion': [0.5, -0.5, -0.5, 0.5]
+                }
+            }
+        },
+    }
+    side = data.get('side')
+    refconf = base_configs.get(self.referential, {}).get('all', {})
+    merge_dicts(refconf, base_configs.get(self.referential, {}).get(side, {}))
+    camera = {'cursor_position': (0, 0, 0), 'zoom': 1}
+    merge_dicts(camera, refconf.get('all', {}))
+    merge_dicts(camera, refconf.get(w.windowType, {}))
+    bbox = camera.get('boundingbox_max')
+    bbmin = camera.get('boundingbox_min')
+    if bbox and bbmin and 'observer_position' not in camera:
+        obs_pos = tuple((x+y)/2 for x, y in zip(bbox, bbmin))
+        camera['observer_position'] = obs_pos
     swconfig = {'cursor_visibility': 0,
                 'light': {'background': self.background_color + [1.]}}
 
-    side = data.get('side')
-    if side == 'left':
-        camera['observer_position'] = [0, 17, -20]
-        camera['cursor_position'] = [33, 17, -8]
-        if w.windowType == '3D':
-            camera['view_quaternion'] = [0.5, 0.5, 0.5, 0.5]
-    elif side == 'right':
-        camera['observer_position'] = [0, 17, -20]
-        camera['cursor_position'] = [-33, 17, -8]
-        if w.windowType == '3D':
-            camera['view_quaternion'] = [0.5, -0.5, -0.5, 0.5]
     sconfig = wconfig.get(side, wconfig)
-    camera.update(sconfig.get('camera', {}))
+    merge_dicts(camera, sconfig.get('camera', {}))
     if camera:
         w.camera(**camera)
     swconfig.update(sconfig.get('window_config', {}))
@@ -204,12 +281,107 @@ def print_attributes(self, qimage, att_dict):
                          - (n - i - 1) * 20, v)
 
 
+def get_snapshot_image_snap(self, viewer, context, in_data, viewer_snapshot):
+    from soma.qt_gui.qt_backend import Qt
+
+    proc = getProcessInstance(type(viewer))
+    in_param = next(iter(proc.signature))
+    setattr(proc, in_param, in_data)
+    out_image_name = getattr(proc, viewer_snapshot)
+    if out_image_name is None or not osp.exists(out_image_name.fullPath()):
+        out_image_name = context.temporary(
+            proc.signature[viewer_snapshot].formats[0])
+        setattr(proc, viewer_snapshot, out_image_name)
+        context.runProcess(proc)
+    qimage = Qt.QImage(out_image_name.fullPath())
+    scale = self.indiv_width / qimage.width()
+    context.write('scale:', scale)
+    if qimage.height() * scale > self.indiv_height:
+        scale = self.indiv_height / qimage.height()
+        context.write('scale2:', scale)
+    #scale = 1.
+
+    return (qimage, scale)
+
+
+def get_snapshot_image_viewer(self, viewer, context, in_data, config):
+    import anatomist.direct.api as ana
+    from soma.qt_gui.qt_backend import Qt
+
+    qimage = None
+    res = context.runProcess(viewer, in_data)
+    w = None
+    qwid = None
+    todo = [res]
+    while todo:
+        item = todo.pop(0)
+        if isinstance(item, (list, tuple)):
+            todo += list(item)
+        elif isinstance(item, ana.Anatomist.AWindow) \
+                and item.windowType != 'Browser':
+            # print('AWINDOW')
+            w = item
+            break
+        elif isinstance(item, dict):
+            todo += item.values()
+        elif isinstance(item, Qt.QWidget):
+            if qwid is None:
+                qwid = item
+        elif hasattr(item, 'ref') \
+                and hasattr(item.ref, '__call__') \
+                and isinstance(item.ref(), Qt.QWidget):
+            if qwid is None:
+                qwid = item.ref()
+
+    if w is None:
+        if qwid is not None:
+            context.write('uging widget')
+        else:
+            context.write('Viewer returns no Anatomist window and no widget.')
+        # print(repr(res))
+
+    if w is not None:
+        self.setup_view(w, config, in_data)
+        qimage = w.snapshotImage(self.indiv_width, self.indiv_height)
+        scale = 1.
+    elif qwid is not None:
+        qwid.resize(self.indiv_width, self.indiv_height)
+        qimage = qwid.grab()
+        scale = self.indiv_width / qimage.width()
+        if qimage.height() * scale > self.indiv_height:
+            scale = self.indiv_height / qimage.height()
+
+    return (qimage, scale)
+
+
+def get_snapshot_image(self, viewer, context, in_data, config):
+    viewer_snapshot = config.get('viewer_snapshot')
+    if viewer_snapshot is not None:
+        return self.get_snapshot_image_snap(viewer, context, in_data,
+                                            viewer_snapshot)
+    else:
+        return self.get_snapshot_image_viewer(viewer, context, in_data, config)
+
+
+def get_snapshot_param(viewer):
+    accepted_types = set(['Snapshot', ])
+    images_2d = set(f.name
+                    for f in processes.formatLists['aims image formats'])
+
+    for pname, ptype in viewer.signature.items():
+        if isinstance(ptype, processes.WriteDiskItem) and (
+                ptype.type.name in accepted_types
+                or set(f.name for f in ptype.formats).issubset(images_2d)):
+            return pname
+
+    return None
+
+
 def execution_mainthread(self, context):
     import anatomist.headless as hana
 
     hana.setup_headless()
 
-    import anatomist.direct.api as ana
     from soma.qt_gui.qt_backend import Qt
 
     config = {}
@@ -217,6 +389,14 @@ def execution_mainthread(self, context):
         config = json.loads(self.view_config)
 
     viewer = getProcessInstance(self.viewer_type)
+    viewer_snapshot = ('snapshot' in getattr(viewer, 'roles', []))
+    if viewer_snapshot:
+        sparam = get_snapshot_param(viewer)
+        if sparam is None:
+            if 'viewer' not in viewer.roles:
+                raise ValueError('snapshot process has not 2D image output')
+        config = {'viewer_snapshot': sparam}
+
     current_page = None
     n = 0
     page = 0
@@ -226,50 +406,10 @@ def execution_mainthread(self, context):
 
     try:
         for ni, in_data in enumerate(self.input_data):
-            res = context.runProcess(viewer, in_data)
-            w = None
-            qwid = None
-            todo = [res]
-            while todo:
-                item = todo.pop(0)
-                if isinstance(item, (list, tuple)):
-                    todo += list(item)
-                elif isinstance(item, ana.Anatomist.AWindow) \
-                        and item.windowType != 'Browser':
-                    # print('AWINDOW')
-                    w = item
-                    break
-                elif isinstance(item, dict):
-                    todo += item.values()
-                elif isinstance(item, Qt.QWidget):
-                    if qwid is None:
-                        qwid = item
-                elif hasattr(item, 'ref') \
-                        and hasattr(item.ref, '__call__') \
-                        and isinstance(item.ref(), Qt.QWidget):
-                    if qwid is None:
-                        qwid = item.ref()
+            qimage, scale = self.get_snapshot_image(
+                viewer, context, in_data, config)
 
-            if w is None:
-                if qwid is not None:
-                    context.write('uging widget')
-                else:
-                    context.write('Viewer returns no Anatomist window and '
-                                  'no widget.')
-                # print(repr(res))
-
-            if w is not None:
-                self.setup_view(w, config, in_data)
-                qimage = w.snapshotImage(self.indiv_width, self.indiv_height)
-                scale = 1.
-            elif qwid is not None:
-                qwid.resize(self.indiv_width, self.indiv_height)
-                qimage = qwid.grab()
-                scale = self.indiv_width / qimage.width()
-                if qimage.height() * scale > self.indiv_height:
-                    scale = self.indiv_height / qimage.height()
-                w = True
-            if w:
+            if qimage is not None:
                 att_dict = {k: in_data.get(k)
                             for k in self.displayed_attributes}
                 self.print_attributes(qimage, att_dict)
@@ -297,7 +437,7 @@ def execution_mainthread(self, context):
                 if isinstance(qimage, Qt.QPixmap):
                     painter.drawPixmap(int(x / scale), int(y / scale), qimage)
                 else:
-                    painter.drawImage(x, y, qimage)
+                    painter.drawImage(int(x / scale), int(y / scale), qimage)
                 del painter
                 n += 1
                 c += 1

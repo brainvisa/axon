@@ -44,8 +44,6 @@ The functions are used to display error and warning messages in Brainvisa.
 
 """
 
-from __future__ import absolute_import, print_function
-
 import sys
 import os
 import traceback
@@ -366,4 +364,3 @@ def catch_gui_exception(method):
         elif arg_spec.varkw or arg_spec.kwonlyargs:
                 return wrapper_kwargs
         return wrapper
-

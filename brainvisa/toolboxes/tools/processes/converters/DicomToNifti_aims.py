@@ -31,11 +31,10 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-from __future__ import absolute_import
 from brainvisa.processes import *
 from brainvisa import shelltools
-import glob
 from brainvisa import registration
+import shutil
 
 name = 'Dicom to Nifti Converter Using Aims'
 roles = ('converter',)
@@ -44,8 +43,8 @@ userLevel = 0
 
 
 def validation():
-    mricron = distutils.spawn.find_executable('AimsFileConvert')
-    if not mricron:
+    fc = shutil.which('AimsFileConvert')
+    if not fc:
         raise ValidationError('AimsFileConvert program not found')
 
 signature = Signature(

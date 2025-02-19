@@ -248,6 +248,13 @@ class AxonToCapsul(object):
 
     def write_process_execution(self, p, out):
         axon_name = p.id()
+
+        init_code = ''
+        if getattr(p, 'needs_opengl', False):
+            init_code = '''        from soma.qt_gui import qt_backend
+        qt_backend.set_headless(True, needs_opengl=True)
+'''
+
         out.write(u'''    def _run_process(self):
         from brainvisa import axon
         from brainvisa.configuration import neuroConfig
@@ -257,6 +264,7 @@ class AxonToCapsul(object):
         neuroConfig.fastStart = True
         neuroConfig.logFileName = ''
 
+%s
         axon.initializeProcesses()
 
         kwargs = {}
@@ -273,7 +281,7 @@ class AxonToCapsul(object):
 
         context = brainvisa.processes.defaultContext()
         context.runProcess('%s', **kwargs)
-''' % axon_name)
+''' % (init_code, axon_name))
 
 
     def write_process_definition(self, p, out, get_all_values=True):
