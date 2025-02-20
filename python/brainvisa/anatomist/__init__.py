@@ -44,7 +44,7 @@ try:
         # use headless version
         from anatomist import headless
         use_headless = True
-        headless.setup_headless()
+        headless.setup_headless(need_opengl=True)
     import anatomist.api as anatomistModule
     anatomistImport = True
 except Exception as e:
