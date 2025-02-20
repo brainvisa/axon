@@ -1,9 +1,11 @@
 import shutil
 from pathlib import Path
+import os
+import gzip
 
 from brainvisa.processes import Signature, ReadDiskItem, WriteDiskItem
 from brainvisa.processes import String, Float, Choice, Boolean
-from brainvisa.data.neuroHierarchy import databases
+# from brainvisa.data.neuroHierarchy import databases
 
 userLevel = 1
 name = 'Run AssemblyNet'
@@ -99,14 +101,19 @@ def execution(self, context):
     )
 
     for file_path in output_folder.iterdir():
-        if file_path.is_dir():
+        if file_path.is_dir() or file_path.suffix == '.minf':
             continue
-        # if file_path.name.startswith("mni") or file_path.name.startswith("matrix"):
         if file_path.name.startswith("mni") or file_path.name.startswith("native"):
             signature_name = '_'.join(file_path.name.split('_')[:2])
             output_file = getattr(self, signature_name).fullPath()
-            if not Path(output_file).exists():
-                file_path.rename(output_file)
+            if Path(output_file).suffix == '.gz':
+                if not Path(output_file).exists():
+                    file_path.rename(output_file)
+            else:
+                with gzip.open(file_path, 'rb') as f_in:
+                    with open(output_file, 'wb') as f_out:
+                        shutil.copyfileobj(f_in, f_out)
+                os.remove(file_path)
         elif file_path.name.startswith("matrix_affine"):
             output_file = self.transformation_to_mni.fullPath()
             if not Path(output_file).exists():
@@ -120,5 +127,6 @@ def execution(self, context):
                 file_path.rename(output_file)
 
     # Update brainvisa database to take into account results
-    db = databases.database(self.output_folder.get('_database'))
-    db.update(directoriesToScan=[self.output_folder.fullPath()])
+    # Commented for now, otherwise we can't run it in parallel mode. TODO Find an other way
+    # db = databases.database(self.output_folder.get('_database'))
+    # db.update(directoriesToScan=[self.output_folder.fullPath()])
