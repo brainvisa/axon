@@ -5,7 +5,7 @@ import gzip
 
 from brainvisa.processes import Signature, ReadDiskItem, WriteDiskItem
 from brainvisa.processes import String, Float, Choice, Boolean
-# from brainvisa.data.neuroHierarchy import databases
+from brainvisa.data.neuroHierarchy import databases
 
 userLevel = 1
 name = 'Run AssemblyNet'
@@ -16,7 +16,7 @@ assemblynet_outputs = 'AssemblyNet outputs'
 default_format = ["gz compressed NIFTI-1 image", "NIFTI-1 image"]
 
 signature = Signature(
-    "assemblynet_image", String(), #TODO readDiskItem AnyType
+    "assemblynet_image", String(),  # TODO readDiskItem AnyType
     "t1mri", ReadDiskItem("Raw T1 MRI", ["gz compressed NIFTI-1 image", "NIFTI-1 image"]),
     "output_folder", WriteDiskItem("Acquisition", "Directory", requiredAttributes={"modality": "assemblyNet"}),
 
@@ -102,31 +102,33 @@ def execution(self, context):
 
     for file_path in output_folder.iterdir():
         if file_path.is_dir() or file_path.suffix == '.minf':
+            # iterdir is updated during the for so we have to deal with .minf files
             continue
         if file_path.name.startswith("mni") or file_path.name.startswith("native"):
             signature_name = '_'.join(file_path.name.split('_')[:2])
             output_file = getattr(self, signature_name).fullPath()
             if Path(output_file).suffix == '.gz':
-                if not Path(output_file).exists():
-                    file_path.rename(output_file)
-            else:
+                file_path.rename(output_file)
+            elif Path(output_file).suffix == '.nii':
                 with gzip.open(file_path, 'rb') as f_in:
                     with open(output_file, 'wb') as f_out:
                         shutil.copyfileobj(f_in, f_out)
                 os.remove(file_path)
+            else:
+                raise ValueError('unsupported file format')
         elif file_path.name.startswith("matrix_affine"):
             output_file = self.transformation_to_mni.fullPath()
-            if not Path(output_file).exists():
-                file_path.rename(output_file)
+            file_path.rename(output_file)
         elif file_path.name.startswith("report"):
             if file_path.suffix == '.csv':
                 output_file = self.report_csv.fullPath()
             elif file_path.suffix == '.pdf':
                 output_file = self.report_pdf.fullPath()
-            if not Path(output_file).exists():
-                file_path.rename(output_file)
+            file_path.rename(output_file)
 
     # Update brainvisa database to take into account results
-    # Commented for now, otherwise we can't run it in parallel mode. TODO Find an other way
-    # db = databases.database(self.output_folder.get('_database'))
-    # db.update(directoriesToScan=[self.output_folder.fullPath()])
+    try:
+        db = databases.database(self.output_folder.get('_database'))
+        db.update(directoriesToScan=[self.output_folder.fullPath()])
+    except KeyError:  # For parallel mode
+        pass
