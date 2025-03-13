@@ -31,7 +31,8 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-from brainvisa.processes import *
+from brainvisa.processes import Signature, ReadDiskItem, WriteDiskItem, DiskItem
+from brainvisa.processes import ListOf, String, Choice, OpenChoice
 from brainvisa.tools import aimsGlobals
 from brainvisa import registration
 from brainvisa.data import neuroHierarchy
@@ -107,7 +108,7 @@ def initOutputs(self, proc, dummy):
 
             if 'session' not in value:
                 fso_names = [h.fso.name for h in neuroHierarchy.hierarchies()
-                            if h.name == self.output_database]
+                             if h.name == self.output_database]
                 if len(fso_names) != 0 and 'bids' in fso_names[0]:
                     # this default value should be filled automatically
                     # - but is not...
@@ -158,7 +159,7 @@ def initialization(self):
     self.linkParameters("outputs",
                         ("inputs", "output_database", "attributes_merging",
                          "selected_attributes_from_header", "subjects",
-                         "acquisition"), self.initOutputs)
+                         "center", "acquisition"), self.initOutputs)
     self.signature['outputs'].browseUserLevel = 3
     self.signature['inputs'].databaseUserLevel = 2
     self.signature['referentials'].userLevel = 2
@@ -169,8 +170,10 @@ def initialization(self):
 
 
 def execution(self, context):
+    ng = len(self.inputs)
     for num, (input, output) in enumerate(zip(self.inputs, self.outputs)):
-
+        context.progress(num, ng, process=self)
+        context.write(self.subjects[num])
         results = Importer.import_t1mri(input.fullPath(),
                                         output.fullPath())
         if results['return_value'] != 0:
@@ -204,4 +207,5 @@ def execution(self, context):
                 tm.createNewReferential(referential)
                 tm.setReferentialTo(output, referential)
         if referential is None:
-            ref = tm.createNewReferentialFor(output, name='Raw T1 MRI')
+            tm.createNewReferentialFor(output, name='Raw T1 MRI')
+    context.progress(ng, ng, process=self)
