@@ -1,3 +1,30 @@
+# This is the generic version of a QC table process.
+# See morphologist_qc_table (in Morphologist) for instance for an example
+# of concrete use of it.
+#
+# By default, each data file is displayed using a "present/absent" status icon.
+# It is possible to specialize the status on a type-by-type basis.
+# To do so, the specialized process must register a status function in
+# the status_for_type table. Typically:
+#
+# def get_qc_status(proc, di):
+#     with open(di.fullPath()) as f:
+#         report = json.load(f)
+#     stat = {
+#         'OK': proc.statuses.OK,
+#         'Warning': proc.statuses.WARNING,
+#         'Suspicious': proc.statuses.SUSPICIOUS,
+#         'Bad': proc.statuses.BAD,
+#     }
+#     status = report.get('status', 'Bad')
+#     return stat[status]
+#
+# def execution(self, context):
+#     self.proc = getProcessInstance('database_qc_table')
+#     self.proc.status_for_type['Morphologist JSON report'] = get_qc_status
+#
+#     return context.runProcess(self.proc, database=self.database, ...)
+#
 
 from brainvisa.processes import *
 from brainvisa.data import neuroHierarchy
@@ -18,6 +45,17 @@ userLevel = 2
 wkhtmltopdf = findInPath('wkhtmltopdf')
 
 
+class statuses:
+    OK = 0
+    PRESENT = 1
+    WARNING = 2
+    SUSPICIOUS = 3
+    BAD = 4
+    ABSENT = 5
+
+
+status_for_type = {}
+
 signature = Signature(
     'database', Choice(),
     'data_types', ListOf(Choice('Any Type')),
@@ -30,6 +68,9 @@ signature = Signature(
 
 
 def initialization(self):
+    self.status_for_type = status_for_type
+    self.statuses = statuses
+
     # list of possible databases, while respecting the ontology
     # ontology: brainvisa-3.2.0
     databases = [h.name for h in neuroHierarchy.hierarchies()]
@@ -269,6 +310,15 @@ if neuroConfig.gui:
             return self._widget
 
 
+def file_status(self, di):
+    if di is None:
+        return statuses.ABSENT
+    stat_func = self.status_for_type.get(di.type.name)
+    if stat_func is not None:
+        return stat_func(self, di)
+    return statuses.PRESENT
+
+
 def exec_mainthread(self, context):
     from soma.qt_gui import qt_backend
     from soma.qt_gui.qt_backend import Qt
@@ -329,9 +379,22 @@ def exec_mainthread(self, context):
 
     tablew.setRowCount(nrows)
 
-    ok_icon = Qt.QIcon(findIconFile('ok.png'))
     no_icon = Qt.QIcon(findIconFile('absent.png'))
+    present_icon = Qt.QIcon(findIconFile('ok.png'))
+    ok_icon = Qt.QIcon(findIconFile('code_ok.png'))
+    warn_icon = Qt.QIcon(findIconFile('code_warning.png'))
+    susp_icon = Qt.QIcon(findIconFile('code_suspicious.png'))
+    bad_icon = Qt.QIcon(findIconFile('code_bad.png'))
     mult_icon = Qt.QIcon(findIconFile('multiple.png'))
+
+    status_icons = {
+        statuses.OK: ok_icon,
+        statuses.PRESENT: present_icon,
+        statuses.WARNING: warn_icon,
+        statuses.SUSPICIOUS: susp_icon,
+        statuses.BAD: bad_icon,
+        statuses.ABSENT: no_icon,
+    }
 
     row_ids = self.row_ids
 
@@ -349,7 +412,9 @@ def exec_mainthread(self, context):
                 titem = Qt.QTableWidgetItem(mult_icon, '')
                 titem.position = (row, col)
             else:
-                titem = Qt.QTableWidgetItem(ok_icon, '')
+                status = self.file_status(elem)
+                icon = status_icons[status]
+                titem = Qt.QTableWidgetItem(icon, '')
                 titem.position = (row, col)
             tablew.setItem(row, col + nkeys, titem)
 
