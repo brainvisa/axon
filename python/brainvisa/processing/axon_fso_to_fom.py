@@ -1,15 +1,11 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
-from __future__ import absolute_import
 import os
+import os.path as osp
 from brainvisa.axon import processes
 from brainvisa import processes as procbv
-# from brainvisa.data import neuroData
-# from brainvisa.data import neuroDiskItems
 from brainvisa.data.readdiskitem import ReadDiskItem
 from brainvisa.data.writediskitem import WriteDiskItem
-# from traits import api as traits
 from brainvisa.data import neuroHierarchy
 import sys
 from argparse import ArgumentParser
@@ -396,6 +392,12 @@ def fso_to_fom_main(argv):
     basedir = os.path.dirname(__file__)
     for i in range(3):
         basedir = os.path.dirname(basedir)
+    while not osp.exists(osp.join(basedir, 'share')):
+        basedir2 = osp.dirname(basedir)
+        if basedir2 == basedir:
+            raise ValueError('Could not determine shared data path!')
+        basedir = basedir2
+
     foms_dir = os.path.join(basedir, 'share', 'foms')
     def_formats_fom = os.path.join(foms_dir, 'brainvisa-formats-3.2.0.json')
 
