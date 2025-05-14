@@ -322,12 +322,13 @@ if anatomistImport:
             if allowreuse:
                 win = self.findReusableWindow(wintype, block=block)
                 if win and geometry is not None:
-                    a.execute('WindowConfig', window=win, geometry=geometry)
+                    self.execute('WindowConfig', window=win, geometry=geometry)
             else:
                 win = None
             if win is None:
                 win = anatomistModule.Anatomist.createWindow(
-                    self, wintype, geometry=geometry, block=block, no_decoration=no_decoration, options=options)
+                    self, wintype, geometry=geometry, block=block,
+                    no_decoration=no_decoration, options=options)
             return win
 
         def createWindowsBlock(self, nbCols=2, nbRows=0, allowreuse=True):
@@ -539,9 +540,11 @@ if anatomistImport:
             try:
                 for w in self._reusableWindows:
                     try:
-                        if w.windowType == wintype and len( w.objects ) == 0 and \
+                        if w.windowType == wintype and len(w.objects) == 0 \
+                            and \
                             (block is None or (w.block is not None
-                                               and w.block.internalWidget == block.internalWidget)):
+                                               and w.block.internalWidget
+                                               == block.internalWidget)):
                             return w
                     except Exception:  # window probably closed in the meantime
                         todel.add(w)
