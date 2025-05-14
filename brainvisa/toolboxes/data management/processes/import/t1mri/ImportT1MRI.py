@@ -31,13 +31,11 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
-from __future__ import absolute_import
 from brainvisa.processes import *
-from brainvisa import shelltools
 from brainvisa.tools import aimsGlobals
-import stat
 from brainvisa import registration
 from brainvisa.data import neuroHierarchy
+import os.path as osp
 
 from brainvisa.tools.data_management.image_importation import Importer
 import six
@@ -69,6 +67,7 @@ def initSubject(self, proc, dummy):
     if not isinstance(self.input, DiskItem):
         return self.input
     value = self.input.hierarchyAttributes()
+    sub = None
     if self.output_database:
         value['_database'] = self.output_database
         for a in ['_ontology', ]:  #'_declared_attributes_location', ]:
@@ -81,11 +80,21 @@ def initSubject(self, proc, dummy):
             if len(fso_names) != 0 and 'bids' in fso_names[0]:
                 # this default value should be filled automatically
                 # - but is not...
-                value['session'] = '1'
+                ses = osp.basename(osp.dirname(self.input.fullPath()))
+                if ses.startswith('ses-'):
+                    ses = ses[4:]
+                value['session'] = ses
+                subject = osp.basename(osp.dirname(osp.dirname(
+                    self.input.fullPath())))
+                if subject.startswith('sub-'):
+                    sub = subject[4:]
     hvalues = {}
     if value.get("subject", None) is None:
-        value["subject"] = os.path.basename(
-            self.input.fullPath()).partition(".")[0]
+        if sub is not None:
+            value['subject'] = sub
+        else:
+            value["subject"] = os.path.basename(
+                self.input.fullPath()).partition(".")[0]
     if self.attributes_merging in ('header', 'selected_from_header'):
         hvalues = aimsGlobals.aimsVolumeAttributes(self.input)
         if self.attributes_merging == 'selected_from_header':
