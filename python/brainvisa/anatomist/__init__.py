@@ -539,8 +539,16 @@ if anatomistImport:
             todel = set()
             try:
                 for w in self._reusableWindows:
+                    # a window is reusable if its type matches the expected
+                    # one, if it is empty, this means it has no objects, or
+                    # only temporary objects (some controls may leave some
+                    # until they are deactivated), and if its block matches
+                    # the expected one.
                     try:
-                        if w.windowType == wintype and len(w.objects) == 0 \
+                        if w.windowType == wintype \
+                            and (len(w.objects) == 0
+                                 or len([o for o in w.objects
+                                         if not w.isTemporary(o)]) == 0) \
                             and \
                             (block is None or (w.block is not None
                                                and w.block.internalWidget
