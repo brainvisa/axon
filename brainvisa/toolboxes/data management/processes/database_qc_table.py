@@ -52,6 +52,20 @@ class statuses:
     SUSPICIOUS = 3
     BAD = 4
     ABSENT = 5
+    # VALID_* for manually validated (marked OK)
+    VALID_OK = 8
+    VALID_PRESENT = 9
+    VALID_WARNING = 10
+    VALID_SUSPICIOUS = 11
+    VALID_BAD = 12
+    VALID_ABSENT = 13
+    # INVALID_* for manually invalidated (marked bad)
+    INVALID_OK = 16
+    INVALID_PRESENT = 17
+    INVALID_WARNING = 18
+    INVALID_SUSPICIOUS = 19
+    INVALID_BAD = 20
+    INVALID_ABSENT = 21
 
 
 status_for_type = {}
@@ -386,6 +400,18 @@ def exec_mainthread(self, context):
     susp_icon = Qt.QIcon(findIconFile('code_suspicious.png'))
     bad_icon = Qt.QIcon(findIconFile('code_bad.png'))
     mult_icon = Qt.QIcon(findIconFile('multiple.png'))
+    valid_no_icon = Qt.QIcon(findIconFile('absent.png'))
+    valid_present_icon = Qt.QIcon(findIconFile('code_valid_ok.png'))
+    valid_ok_icon = Qt.QIcon(findIconFile('code_valid_ok.png'))
+    valid_warn_icon = Qt.QIcon(findIconFile('code_valid_warning.png'))
+    valid_susp_icon = Qt.QIcon(findIconFile('code_valid_suspicious.png'))
+    valid_bad_icon = Qt.QIcon(findIconFile('code_valid_bad.png'))
+    invalid_no_icon = Qt.QIcon(findIconFile('absent.png'))
+    invalid_present_icon = Qt.QIcon(findIconFile('code_invalid_ok.png'))
+    invalid_ok_icon = Qt.QIcon(findIconFile('code_invalid_ok.png'))
+    invalid_warn_icon = Qt.QIcon(findIconFile('code_invalid_warning.png'))
+    invalid_susp_icon = Qt.QIcon(findIconFile('code_invalid_suspicious.png'))
+    invalid_bad_icon = Qt.QIcon(findIconFile('code_invalid_bad.png'))
 
     status_icons = {
         statuses.OK: ok_icon,
@@ -394,6 +420,20 @@ def exec_mainthread(self, context):
         statuses.SUSPICIOUS: susp_icon,
         statuses.BAD: bad_icon,
         statuses.ABSENT: no_icon,
+
+        statuses.VALID_OK: valid_ok_icon,
+        statuses.VALID_PRESENT: valid_present_icon,
+        statuses.VALID_WARNING: valid_warn_icon,
+        statuses.VALID_SUSPICIOUS: valid_susp_icon,
+        statuses.VALID_BAD: valid_bad_icon,
+        statuses.VALID_ABSENT: valid_no_icon,
+
+        statuses.INVALID_OK: invalid_ok_icon,
+        statuses.INVALID_PRESENT: invalid_present_icon,
+        statuses.INVALID_WARNING: invalid_warn_icon,
+        statuses.INVALID_SUSPICIOUS: invalid_susp_icon,
+        statuses.INVALID_BAD: invalid_bad_icon,
+        statuses.INVALID_ABSENT: invalid_no_icon,
     }
 
     row_ids = self.row_ids
