@@ -160,7 +160,8 @@ import subprocess
 import re
 import pydantic
 import os.path as osp
-
+import traits as _traits
+from traits import trait_types
 
 def fileOptions(filep, name, process, attributes=None):
     if (hasattr(filep, 'output') and filep.output) \
