@@ -155,7 +155,7 @@ add_custom_target( install-bv_doc_index
   COMMAND "${CMAKE_BINARY_DIR}/bin/bv_env${CMAKE_EXECUTABLE_SUFFIX}" "${PYTHON_EXECUTABLE}" ${CREATE_DOC_INDEX} $(BRAINVISA_INSTALL_PREFIX)/share/doc
   )
 add_dependencies( install-bv_doc_index install-bv_commands_doc )
-add_dependencies( install-${PROJECT_NAME}-doc install-bv_doc_index )
+add_dependencies( install-${PROJECT_NAME}-usrdoc install-bv_doc_index )
 
 # FIXME: the latter components of documentation (ontology and index) are
 # completely rebuilt during installation, which is kind of wasteful. Is there
