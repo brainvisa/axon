@@ -44,7 +44,7 @@ try:
         # use headless version
         from anatomist import headless
         use_headless = True
-        headless.setup_headless()
+        headless.setup_headless(need_opengl=True)
     import anatomist.api as anatomistModule
     anatomistImport = True
 except Exception as e:
@@ -322,12 +322,13 @@ if anatomistImport:
             if allowreuse:
                 win = self.findReusableWindow(wintype, block=block)
                 if win and geometry is not None:
-                    a.execute('WindowConfig', window=win, geometry=geometry)
+                    self.execute('WindowConfig', window=win, geometry=geometry)
             else:
                 win = None
             if win is None:
                 win = anatomistModule.Anatomist.createWindow(
-                    self, wintype, geometry=geometry, block=block, no_decoration=no_decoration, options=options)
+                    self, wintype, geometry=geometry, block=block,
+                    no_decoration=no_decoration, options=options)
             return win
 
         def createWindowsBlock(self, nbCols=2, nbRows=0, allowreuse=True):
@@ -538,10 +539,20 @@ if anatomistImport:
             todel = set()
             try:
                 for w in self._reusableWindows:
+                    # a window is reusable if its type matches the expected
+                    # one, if it is empty, this means it has no objects, or
+                    # only temporary objects (some controls may leave some
+                    # until they are deactivated), and if its block matches
+                    # the expected one.
                     try:
-                        if w.windowType == wintype and len( w.objects ) == 0 and \
+                        if w.windowType == wintype \
+                            and (len(w.objects) == 0
+                                 or len([o for o in w.objects
+                                         if not w.isTemporary(o)]) == 0) \
+                            and \
                             (block is None or (w.block is not None
-                                               and w.block.internalWidget == block.internalWidget)):
+                                               and w.block.internalWidget
+                                               == block.internalWidget)):
                             return w
                     except Exception:  # window probably closed in the meantime
                         todel.add(w)
