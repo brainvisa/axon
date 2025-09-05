@@ -87,7 +87,7 @@ class Importer(object):
                                 '-o', output_filename]
                 
                 if conversion_data_type is not None:
-                    command_list.extend(['-t', 'S16'])
+                    command_list.extend(['-t', conversion_data_type])
                 
                 if resampling_needed:
                     if conversion_omin is not None \
