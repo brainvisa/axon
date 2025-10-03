@@ -8,7 +8,6 @@ soma-env:
 
   internal-dependencies:
     - soma
-    - soma-workflow
     - capsul
   
   type: interpreted
