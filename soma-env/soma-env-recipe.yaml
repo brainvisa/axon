@@ -1,0 +1,15 @@
+package:
+  name: axon
+
+soma-env:
+  publication: neuro-forge
+  components:
+    - axon
+
+  internal-dependencies:
+    - soma
+    - soma-workflow
+    - capsul
+  
+  type: interpreted
+
