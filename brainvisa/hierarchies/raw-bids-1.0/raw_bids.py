@@ -35,11 +35,12 @@ from brainvisa.data.ontology.base import db_entries
 
 # Constants for default attributes values
 default_center = "subjects"
-default_acquisition = "default_acquisition"
-default_analysis = "default_analysis"
-default_session = "default_session"
+default_acquisition = "0"
+default_analysis = "0"
+default_session = "0"
+default_run = "0"
 default_graph_version = "3.1"
-default_acq_session = '1'
+default_acq_session = '0'
 
 hierarchy = (
     SetWeakAttr('database', '%f'),
@@ -53,16 +54,46 @@ hierarchy = (
             SetContent(
                 'anat',
                 SetContent(
-                    'toto', SetType('Raw T1 MRI'),
                     'sub-<subject>_ses-<session>_acq-{acquisition}_T1w',
                     SetType('Raw T1 MRI'), SetWeakAttr('modality', 't1mri'),
                     'sub-<subject>_ses-<session>_acq-{acquisition}_T2w',
                     SetType('T2 MRI'), SetWeakAttr('modality', 't2mri'),
+                    'sub-<subject>_ses-<session>_run-{run}_T1w',
+                    SetType('Raw T1 MRI'), SetWeakAttr('modality', 't1mri'),
+                    'sub-<subject>_ses-<session>_run-{run}_T2w',
+                    SetType('T2 MRI'), SetWeakAttr('modality', 't2mri'),
+                    'sub-<subject>_ses-<session>_run-<run>_*',
+                    SetType('Raw T1 MRI'), SetWeakAttr('modality', 't1mri'),
+                    'sub-<subject>_ses-<session>_*',
+                    SetType('Raw T1 MRI'), SetWeakAttr('modality', 't1mri'),
+                    'sub-<subject>_*',
+                    SetType('Raw T1 MRI'), SetWeakAttr('modality', 't1mri'),
                 ),
                 'dwi',
                 SetContent(
                     'sub-<subject>_ses-<session>_acq-{acquisition}_dir-{direction}_dwi',
                     SetType('4D Volume'), SetWeakAttr('modality', 'dwimri'),
+                ),
+                'run-{run}',
+                SetContent(
+                    'anat',
+                    SetContent(
+                        'sub-<subject>_ses-<session>_run-<run>_T1w',
+                        SetType('Raw T1 MRI'), SetWeakAttr('modality', 't1mri'),
+                        'sub-<subject>_ses-<session>_run-<run>_T2w',
+                        SetType('T2 MRI'), SetWeakAttr('modality', 't2mri'),
+                        'sub-<subject>_ses-<session>_run-<run>_*',
+                        SetType('Raw T1 MRI'), SetWeakAttr('modality', 't1mri'),
+                        'sub-<subject>_ses-<session>_*',
+                        SetType('Raw T1 MRI'), SetWeakAttr('modality', 't1mri'),
+                        'sub-<subject>_*',
+                        SetType('Raw T1 MRI'), SetWeakAttr('modality', 't1mri'),
+                    ),
+                    'dwi',
+                    SetContent(
+                        'sub-<subject>_ses-<session>_{acquisition}_dir-{direction}_dwi',
+                        SetType('4D Volume'), SetWeakAttr('modality', 'dwimri'),
+                    ),
                 ),
             ),
         ),
