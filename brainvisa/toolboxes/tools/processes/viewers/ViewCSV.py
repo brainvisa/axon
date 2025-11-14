@@ -40,7 +40,7 @@ userLevel = 0
 roles = ("viewer", )
 
 signature = Signature(
-    'csv_file', ReadDiskItem("CSV file", "CSV file")
+    'csv_file', ReadDiskItem("Text file", ("CSV file", "TSV file"))
 )
 
 
