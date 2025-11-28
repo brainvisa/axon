@@ -139,6 +139,7 @@ Format('TIFF(.tif) image', 'f|*.tif')
 
 Format('Text file', 'f|*.txt')
 Format('CSV file', 'f|*.csv')
+Format('TSV file', 'f|*.tsv')
 Format('JSON file', 'f|*.json')
 Format('YAML file', 'f|*.yaml')
 Format('ASCII results', 'f|*.asc')
@@ -224,6 +225,7 @@ FileType('ROI Texture', 'Label Texture')
 FileType('Log file', 'Any Type', ['Log file', 'Text file'])
 FileType('Text file', 'Any Type')
 FileType('CSV file', 'Text file', 'CSV file')
+FileType('TSV file', 'CSV file', 'TSV file')
 FileType('HTML file', 'Any Type', 'HTML')
 FileType('GIFTI geometry', 'Any type', 'GIFTI file')
 FileType('Bucket', 'Any Type', 'Bucket')
@@ -275,6 +277,12 @@ FileType('Curves graph', 'ROI')
 
 # selector files
 FileType('Labels selection', None, 'Selection')
+
+# QC table
+FileType('QC table', 'Text file', ('TSV file', 'CSV file'))
+
+# BIDS participants table
+FileType('Participants table', 'Text file', 'TSV file')
 
 #----------- Visualization / Animation ------------
 FileType('BrainVISA/Anatomist animation', 'Any Type',

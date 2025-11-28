@@ -701,7 +701,8 @@ class CapsulProcess(processes.Process):
 
         completion_engine \
             = ProcessCompletionEngine.get_completion_engine(process)
-        if completion_engine is not None and self.use_capsul_completion:
+        if completion_engine is not None \
+                and getattr(self, 'use_capsul_completion', False):
             self._on_axon_parameter_changed(self.signature.keys()[0],
                                             self, None)
             # completion_engine.complete_parameters()

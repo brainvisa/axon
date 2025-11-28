@@ -367,6 +367,7 @@
         "Series of gz compressed GIS image": "ima.gz",
         "MESH mesh": "mesh",
         "CSV file": "csv",
+        "TSV file": "tsv",
         "HTML": "html",
         "Z compressed Texture": "tex.Z",
         "Histogram": "his",

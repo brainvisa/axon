@@ -73,5 +73,9 @@ hierarchy = (
             SetContent(  # Set Content must be present even if it is empty, otherwise it is impossible to insert something in subject directory
             ),
         ),
+        'qc',
+        SetContent(
+            'qc', SetType('QC table'),
+        ),
     ),
 )
