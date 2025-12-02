@@ -48,6 +48,8 @@
             "models/models_<sulci_database>/discriminative_models/<graph_version>/<side>folds_noroots/<side>folds_noroots",
         "shared.sulcal_morphometry_sulci_file":
             [["shared:nomenclature/translation/sulci_default_list", "JSON file"]],
+        "shared.normative_brain_volumes_file":
+            [["shared:normative_tables/morphologist/ukb_hcp/morphologist_normative_brain_volumes_stats", "JSON file"]],
     }
 }
   
