@@ -100,9 +100,7 @@ def main():
     try:
 
         from brainvisa import axon
-        print('BATCH MODE 2')
         axon.initializeProcesses()
-        print('BATCH MODE 3')
 
         neuroHierarchy.update_soma_workflow_translations()
 
@@ -185,7 +183,6 @@ if neuroConfig.profileFileName:
     p.sort_stats('time').print_stats(10)
     p.sort_stats('time').print_callers(10)
 else:
-    print('BATCH MODE')
     main()
 
 
