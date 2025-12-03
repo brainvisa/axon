@@ -25,6 +25,14 @@ if len(sys.argv) > 1 and sys.platform[:6] == 'darwin' and sys.argv[1][:5] == '-p
     # MacOS calls me with this strange argument, I don't want it.
     del sys.argv[1]
 
+if '-b' in sys.argv[1:]:
+    from soma.qt_gui import qt_backend
+
+    qt_backend.set_headless(headless_mode=True, needs_opengl=True)
+    from soma.qt_gui.qt_backend import QtWidgets
+
+    qapp = QtWidgets.QApplication([])
+
 from soma.qt_gui.qt_backend import QtCore
 from soma.wip.application.api import Application
 from soma.signature.api import Choice as SomaChoice
@@ -92,7 +100,9 @@ def main():
     try:
 
         from brainvisa import axon
+        print('BATCH MODE 2')
         axon.initializeProcesses()
+        print('BATCH MODE 3')
 
         neuroHierarchy.update_soma_workflow_translations()
 
@@ -175,6 +185,7 @@ if neuroConfig.profileFileName:
     p.sort_stats('time').print_stats(10)
     p.sort_stats('time').print_callers(10)
 else:
+    print('BATCH MODE')
     main()
 
 
