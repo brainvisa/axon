@@ -9,6 +9,6 @@ soma-env:
   internal-dependencies:
     - soma
     - capsul
-  
+
   type: interpreted
 
