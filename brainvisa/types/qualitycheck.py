@@ -35,3 +35,4 @@ include('builtin')
 Format('Quality Check Report', 'f|*.qcreport')
 
 FileType('Quality Check Report', 'Any Type', 'Quality Check Report')
+FileType('Normative brain volumes stats', 'Any Type', 'JSON file')
