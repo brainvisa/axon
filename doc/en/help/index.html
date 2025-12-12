@@ -5,7 +5,7 @@
 </head>
 
 <body>
-<h1><img class="white_circle" src="../../images/brainvisa.png" height="96" width="96" style="vertical-align:middle"/>&nbsp;&nbsp;BrainVISA 5.2</h1>
+<h1><img class="white_circle" src="../../images/brainvisa.png" height="96" width="96" style="vertical-align:middle"/>&nbsp;&nbsp;BrainVISA 6.0</h1>
 
 <div class="contribs">
 <img src="../../images/icons/ifr49.png" height="40" width="32"/>&nbsp;
@@ -20,6 +20,16 @@
 <p>Website : <a href="https://brainvisa.info/index.html" target="blank">https://brainvisa.info</a></p>
 </div>
 
+<p><b class="warning-title">New in 6.0:</b>
+<ul>
+  <li>The Morphologist pipeline has been added a summary report process step, and some global morphometry which may be used as QC with normative values.
+  </li>
+  <li>A new snapshot utility process is available, which is a simpler version of the former "SnapBase" tool, which had been removed in 5.1 versions because its maintenance was discontinued. The new process is named "snapbase", as a replacement.
+  </li>
+  <li>The BIDS files organization for Morphologist has been widely changed, in order to fit more standard BIDS schemas, and fix problems in the earlier version. For this reason, data processed with the former (1.0) BIDS schema will not be reusable with the newer one (2.0).
+  </li>
+</ul>
+
 <p><b class="warning-title">New in 5.1:</b>
 <ul>
   <li>Support for BIDS-like data organization: databases can now use ontologies <tt>morphologist-bids-1.0</tt> or <tt>freesurfer-bids</tt> to describe or organize processed data in a BIDS-like manner. <tt>raw-bids-1.0</tt> can be used for input raw data as input for import processes.</li>
@@ -27,26 +37,6 @@
 </ul>
 </p>
 <p>See <a href="https://brainvisa.info/web/changelog.html">The changelog</a>.
-</p>
-
-<p><b>New in 5.0:</b>
-<ul>
-  <li>New sulci identification algorithm in Morphologist
-  </li>
-  <li>Internal changes and bug fixes</li>
-</ul>
-</p>
-
-<p><b>New in 4.6: mainly internal changes</b>.
-<ul>
-  <li><a href="../../dev_doc/capsul.html">CAPSUL integration improves</a>
-</li>
-  <li>It is now possible to set <b>read-only databases</b>: they will be excluded from parameteres links for write items, and database output browsers. <em>Builtin</em> databases are read-only.</li>
-</ul>
-</p>
-
-<p><b>New in 4.5: Morphologist has a new GUI: Morphologist-UI</b>.
-<div>See the <a href="../processes/categories/morphologist/category_documentation.html">Morphologist toolbox</a> for details.</div>
 </p>
 
 <h2>Quick start</h2>
