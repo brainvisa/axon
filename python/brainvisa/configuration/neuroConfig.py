@@ -728,7 +728,12 @@ Notes:
 
 if setup:
     startup.append(
-        'from brainvisa.data.neuroHierarchy import databases\nfrom brainvisa.processes import defaultContext\ndb = list( databases.iterDatabases() )[0]\ndb.clear(context=defaultContext())\ndb.update(context=defaultContext())')
+        '''from brainvisa.data.neuroHierarchy import databases
+from brainvisa.processes import defaultContext
+for db in databases.iterDatabases():
+    if db.builtin:
+        db.clear(context=defaultContext())
+        db.update(context=defaultContext())''')
 
 #
 
