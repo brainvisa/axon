@@ -169,6 +169,14 @@ class DiskItemBrowser(QDialog):
         layoutRow = 0
         e, v, d = self._database.getAttributesEdition()
         databases = v.get('_database', ())
+        if self._write:
+            # filter out non-writable databases
+            from brainvisa.data import neuroHierarchy
+
+            dbh = [h.name for h in neuroHierarchy.hierarchies()
+                   if not h.builtin and not h.read_only]
+
+            databases = tuple(db for db in databases if db in dbh)
         if len(databases) > 1:
             self._cmbDatabase = self._createCombo(
                 _t_('Database'), '_database', False, layoutRow)
