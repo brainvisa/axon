@@ -92,8 +92,9 @@ def initialization(self):
     databases = [
         (dbs.directory, neuroHierarchy.databases.database(dbs.directory))
         for dbs in neuroConfig.dataPath
-        if not dbs.builtin
-            and dbs.expert_settings.ontology.startswith('brainvisa-')]
+        if not dbs.builtin and not dbs.read_only
+            and (dbs.expert_settings.ontology.startswith('brainvisa-')
+                 or 'morphologist' in dbs.expert_settings.ontology)]
     self.signature['output_database'].setChoices(*databases)
     if len(databases) != 0:
         self.output_database = databases[0][0]

@@ -65,8 +65,10 @@ def initialization(self):
     possibleTypes = [t.name for t in getAllDiskItemTypes()]
     self.signature['data_type'].setChoices(*sorted(possibleTypes))
     self.data_type = 'Any Type'
-    databases = [(dbs.directory, neuroHierarchy.databases.database(dbs.directory))
-                 for dbs in neuroConfig.dataPath if not dbs.builtin]
+    databases = [(dbs.directory,
+                  neuroHierarchy.databases.database(dbs.directory))
+                 for dbs in neuroConfig.dataPath
+                 if not dbs.builtin and not dbs.read_only]
     self.signature['output_database'].setChoices(*databases)
     if len(databases) > 0:
         self.output_database = databases[0][1]
