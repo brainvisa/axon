@@ -5,6 +5,8 @@
 ### Changed
 
 - `brainvisa --setup` updates all builtin databases, not only the first (main) one
+- read-only databases are now hidden for selecting outputs
+- fixed a possible crash in parameters change notifications when triggered from a non-principal thread (like a process execution)
 
 ## [6.6.0] 2026-01-12
 
