@@ -1925,6 +1925,10 @@ class ParameterizedWidget(QWidget):
                                               parameterName, text)))
 
     def parameterChanged(self, parameterized, parameterName, value):
+        mainThreadActions().call(self.parameterChangedMT, parameterized,
+                                 parameterName, value)
+
+    def parameterChangedMT(self, parameterized, parameterName, value):
         """This method is called when an attribute has changed in the model.
         A parameter can change in the model because it is links to another parameter that has changed or because the user changed it in the GUI."""
         # It is necessary to read user values before applying changes,
