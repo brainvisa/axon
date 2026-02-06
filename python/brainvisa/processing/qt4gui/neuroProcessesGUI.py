@@ -4009,6 +4009,7 @@ class ProcessSelectionWidget(QMainWindow):
 
     def __init__(self):
         QMainWindow.__init__(self)
+        self.setWindowTitle("BrainVISA")
 
         if getattr(ProcessSelectionWidget, '_pixmapCache', None) is None:
             ProcessSelectionWidget._pixmapCache = {}
