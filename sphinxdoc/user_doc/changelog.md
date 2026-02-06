@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [6.0.5] 2026-02-06
 
 ### Changed
 
@@ -8,7 +8,7 @@
 - read-only databases are now hidden for selecting outputs
 - fixed a possible crash in parameters change notifications when triggered from a non-principal thread (like a process execution)
 
-## [6.6.0] 2026-01-12
+## [6.0.0] 2026-01-12
 
 ### Added
 
