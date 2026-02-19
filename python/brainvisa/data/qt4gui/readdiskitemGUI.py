@@ -856,9 +856,11 @@ class DiskItemEditor(QWidget, DataEditor):
         # set current directory
         parent = self._context
         if hasattr(parent, '_currentDirectory') and parent._currentDirectory:
-            self.browseDialog.setDirectory(parent._currentDirectory)
+            if os.path.exists(parent._currentDirectory):
+                self.browseDialog.setDirectory(parent._currentDirectory)
         else:
-            self.browseDialog.setDirectory(os.getcwd())
+            if os.path.exists(os.getcwd()):
+                self.browseDialog.setDirectory(os.getcwd())
         self.browseDialog.show()
 
     def browseAccepted(self):
@@ -1165,10 +1167,12 @@ class DiskItemListEditor(QWidget, DataEditor):
                 QFileDialog.ShowDirsOnly, True)
             parent = self._context
             if hasattr(parent, '_currentDirectory') and parent._currentDirectory:
-                self.browseDirectoryDialog.setDirectory(
-                    parent._currentDirectory)
+                if os.path.exists(parent._currentDirectory):
+                    self.browseDirectoryDialog.setDirectory(
+                        parent._currentDirectory)
             else:
-                self.browseDirectoryDialog.setDirectory(os.getcwd())
+                if os.path.exists(os.getcwd()):
+                    self.browseDirectoryDialog.setDirectory(os.getcwd())
             self.browseDirectoryDialog.show()
 
         def _setDirectoryAccepted(self):
@@ -1274,9 +1278,11 @@ class DiskItemListEditor(QWidget, DataEditor):
                     self.browseDialog.setOption(QFileDialog.ShowDirsOnly)
                 parent = self._context
                 if hasattr(parent, '_currentDirectory') and parent._currentDirectory:
-                    self.browseDialog.setDirectory(parent._currentDirectory)
+                    if os.path.exists(parent._currentDirectory):
+                        self.browseDialog.setDirectory(parent._currentDirectory)
                 else:
-                    self.browseDialog.setDirectory(os.getcwd())
+                    if os.path.exists(os.getcwd()):
+                        self.browseDialog.setDirectory(os.getcwd())
 
                 # Set multiselection even for Directory and AnyFile modes
                 self.browseDialog.setOption(
