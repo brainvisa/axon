@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.0.8] 2026-02-06
+
+### Changed
+
+- make `brainvisa --shell` work again
+- copydata process: avoid errors in output_databse link: use only valid databases
+
 ## [6.0.5] 2026-02-06
 
 ### Changed
