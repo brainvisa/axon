@@ -33,7 +33,10 @@ def initialization(self):
             idbo = [p for p in neuroConfig.dataPath
                     if p.directory == idbn][0]
             onto = idbo.expert_settings.ontology
-            odbo = [p for p in neuroConfig.dataPath
+            odbo1 = [p for p in neuroConfig.dataPath
+                     if p.directory in
+                     self.signature['output_database'].values[0]]
+            odbo = [p for p in odbo1
                     if p.expert_settings.ontology == onto]
             if len(odbo) >= 2:
                 odb = [p.directory for p in odbo if p.directory != idbn]
