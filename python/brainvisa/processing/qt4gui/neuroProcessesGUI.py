@@ -1200,7 +1200,9 @@ class HTMLBrowser(QWidget):
             text = '''<html><div style="background-color: #ffe8e8">
 <hr/>
 <h2>A newer BrainVISA version is available</h2>
-<p>Version ''' + '.'.join( [ str(x) for x in newver[0] ] ) + ''' is available on the BrainVISA web site.<br/>
+<p>Axon version ''' + '.'.join([str(x) for x in newver[0]]) \
+    + ' (BrainVisa ' + '.'.join([str(x) for x in newver[-1]]) \
+    + ''') is available on the BrainVISA web site.<br/>
 Download it on <a href="https://brainvisa.info/download.html">the BrainVISA download page</a>.</p>
 <hr/>
 </div>
