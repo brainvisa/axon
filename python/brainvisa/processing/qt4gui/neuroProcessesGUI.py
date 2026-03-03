@@ -1209,6 +1209,7 @@ Download it on <a href="https://brainvisa.info/download.html">the BrainVISA down
             tmp = brainvisa.processes.defaultContext().temporary('HTML')
             open(tmp.fullPath(), 'w').write(text)
             self.setSource(tmp.fullPath())
+            self._tmphome = tmp
         else:
             self.setSource(neuroConfig.getDocFile(
                 os.path.join('help', 'index.html')))
