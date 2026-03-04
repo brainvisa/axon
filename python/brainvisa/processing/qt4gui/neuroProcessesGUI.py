@@ -1200,7 +1200,9 @@ class HTMLBrowser(QWidget):
             text = '''<html><div style="background-color: #ffe8e8">
 <hr/>
 <h2>A newer BrainVISA version is available</h2>
-<p>Version ''' + '.'.join( [ str(x) for x in newver[0] ] ) + ''' is available on the BrainVISA web site.<br/>
+<p>Axon version ''' + '.'.join([str(x) for x in newver[0]]) \
+    + ' (BrainVisa ' + '.'.join([str(x) for x in newver[-1]]) \
+    + ''') is available on the BrainVISA web site.<br/>
 Download it on <a href="https://brainvisa.info/download.html">the BrainVISA download page</a>.</p>
 <hr/>
 </div>
@@ -1209,6 +1211,7 @@ Download it on <a href="https://brainvisa.info/download.html">the BrainVISA down
             tmp = brainvisa.processes.defaultContext().temporary('HTML')
             open(tmp.fullPath(), 'w').write(text)
             self.setSource(tmp.fullPath())
+            self._tmphome = tmp
         else:
             self.setSource(neuroConfig.getDocFile(
                 os.path.join('help', 'index.html')))
