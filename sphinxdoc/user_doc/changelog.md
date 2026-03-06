@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.0.10] 2026-03-06
+
+### Changed
+
+- fixed the software update check
+- fixed the doc web paged displayed when an update is available
+
+
 ## [6.0.8] 2026-02-27
 
 ### Changed
