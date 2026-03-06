@@ -1281,12 +1281,16 @@ class DiskItem(QObject):
         """
         dims = self.get('resolutions_dimension', search_header = True)
         value_resolution_level = self.get('resolution_level')
+        
         if dims is not None and len(dims) > 1:
             
             # Remove the query string resolution_level option if the default
             # value is selected
+            resolution_level = resolution_level % len(dims)
+
             if resolution_level == (len(dims) - 1):
                 resolution_level = None
+
             if value_resolution_level != resolution_level:
                 # Update query string only when levels are not the same
                 if resolution_level is None:
@@ -1317,16 +1321,8 @@ class DiskItem(QObject):
                 resolution_level = len(dims) - 1
                 
             else:
-                resolution_level = int(resolution_level)
-                
-                if resolution_level < 0:
-                    resolution_level = len(dims) + resolution_level
-                
-                if resolution_level < 0 or resolution_level >= len(dims):
-                    # Set default resolution level if resolution level 
-                    # is out of valid resolution levels
-                    resolution_level = len(dims) - 1
-                    
+                resolution_level = int(resolution_level) % len(dims)
+                                    
             return resolution_level
             
         return 0
@@ -1604,15 +1600,18 @@ def getResolutionsFromItems(items):
             i_ratios = []
             if i_dims is not None:
                 for d in six.moves.xrange(len(i_dims)):
-                    i_ratios.append([(a / b) for a, b in zip(i_dims[0], 
+                    # Because ratios are voxels aggregations
+                    # ratios are integers
+                    i_ratios.append([(a // b) for a, b in zip(i_dims[0], 
                                                              i_dims[d])])    
             items_ratios.append(i_ratios)
         
-        # Process item full resolution voxel size
+        # Process item full resolution (level 0) voxel size
         items_vs = list()
         
         for i, r in zip(items, items_ratios):
             vs = i.get('voxel_size', search_header = True)
+
             res = i.resolutionLevel()
             if vs is not None and res is not None:
                 items_vs.append([s / f for s, f in zip(vs, r[res])])
@@ -1681,7 +1680,7 @@ def getResolutionsFromItems(items):
         
         resolutions  = [get_resolution_string(level, ldim = max_ldim) 
                         for level in six.moves.xrange(len(uniform_dims))]
-        
+
     return resolutions
 
 

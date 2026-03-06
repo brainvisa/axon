@@ -227,6 +227,7 @@ class DiskItemEditor(QWidget, DataEditor):
         self.actResolutions = None
         self.cmbResolutionsSeparator = None
         self.cmbResolutions = None
+        self._res_infos = None
     
         self._view = None
         self.btnShow.clicked.connect(self.showPressed)
@@ -327,36 +328,43 @@ class DiskItemEditor(QWidget, DataEditor):
     def setResolutionLevel(self, resolution_level):
         v = self.getValue()
         if v is not None:
-            v.setResolutionLevel(resolution_level)
-            self.setValue(v)
+            # It is necessary to create a new item to update resolution values
+            # else changes are not notified
+            newItem = v.clone()
+            newItem.setResolutionLevel(resolution_level)
+            self.setValue(newItem.fullPath())
 
     def updateResolutions(self):
         if self.parameter.enableMultiResolution:
+            visible = False
             v = self.getValue()
-            self.cmbResolutions.clear()
-            
+
             if v is not None:
                 res_infos = getResolutionsFromItems(v)
                 
                 if res_infos is not None and len(res_infos) > 1:           
-                    
-                    for level in six.moves.xrange(len(res_infos)):
-                        self.cmbResolutions.addItem(res_infos[level], 
-                                                    str(level))
-                    resolution_level = v.resolutionLevel()                        
-                        
+                    visible = True
+
+                    self.cmbResolutions.blockSignals(True)
+                    if self._res_infos != res_infos:
+                        #  Update resolutions combo box
+                        self._res_infos = res_infos
+                        self.cmbResolutions.clear()
+
+                        for level in six.moves.xrange(len(res_infos)):
+                            self.cmbResolutions.addItem(res_infos[level], 
+                                                        str(level))
+
+                    # Update selected item if not matching
+                    # resolution_level of data
+                    resolution_level = v.resolutionLevel()
                     if resolution_level is None:
                         resolution_level = len(res_infos) - 1
-                        
-                    self.cmbResolutions.setCurrentIndex(resolution_level)
-                        
-                    visible = True
-                    
-                else:
-                    visible = False
-                    
-            else:
-                visible = False
+
+                    if self.cmbResolutions.currentIndex() != resolution_level: 
+                        self.cmbResolutions.setCurrentIndex(resolution_level)
+
+                    self.cmbResolutions.blockSignals(False)
                 
             # Display or hide the viewer action in popup menu
             self.cmbResolutionsSeparator.setVisible(visible)
@@ -388,6 +396,7 @@ class DiskItemEditor(QWidget, DataEditor):
     def setValue(self, value, default=0):
         self.forceDefault = default
         pal = QPalette()
+
         if self.diskItem != value or \
            (not(value is None and self.led.text() == '') \
             and (value != self.led.text())):
