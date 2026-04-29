@@ -179,7 +179,7 @@ class Importer(object):
     
         try:
             input_vol = aims.read(input_filename)
-        except (aims.aimssip.IOError, IOError) as e:
+        except (aims.IOError, IOError) as e:
             raise ImportationError(str(e))
         
         conversion_needed = cls._conversion_needed(input_filename, input_vol,
