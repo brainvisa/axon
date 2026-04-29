@@ -463,6 +463,7 @@ class CapsulProcess(processes.Process):
     fso_to_fom_map = {
         'brainvisa-3.2.0': 'morphologist-auto-1.0',
         'morphologist-bids-1.0': 'morpho-deepsulci-bids-1.0',
+        'freesurfer': 'morpho-deepsulci-bids-2.0',
     }
 
     def __init__(self):
