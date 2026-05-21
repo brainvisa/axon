@@ -418,7 +418,12 @@ def get_best_type(process, param, attributes=None, path_completion=None):
                     attributes.remove_trait(name)
         #print('## att :', attributes.user_traits().keys())
 
-        path = path_completion.attributes_to_path(process, param, attributes)
+        try:
+            path = path_completion.attributes_to_path(process, param,
+                                                      attributes)
+        except KeyError:
+            path = None
+
         #print('path:', path)
         if path is None:
             # fallback to the completed value
@@ -1111,23 +1116,28 @@ class CapsulProcess(processes.Process):
             database = attributes.get('_database', None)
             if database:
                 if isinstance(itype, WriteDiskItem):
-                    db = ['output_directory', 'input_directory']
+                    db = [['output_directory'], ['input_directory']]
                 else:
                     allowed_db = [h.name
                                   for h in neuroHierarchy.hierarchies()
                                   if h.fso.name
                                   not in ("shared", "spm", "fsl")]
                     if database in allowed_db:
-                        db = ['input_directory', 'output_directory']
+                        db = [['input_directory'], ['output_directory']]
                     else:
                         db = None
                 if db is not None:
                     study_config \
                         = self._capsul_process.get_study_config()
-                    for idb in db:
-                        if getattr(study_config, idb) != database:
-                            modified = True
-                            setattr(study_config, idb, database)
+                    # force 1st set of db, suggest the 2nd
+                    force = True
+                    for idbs in db:
+                        for idb in idbs:
+                            if getattr(study_config, idb) != database:
+                                if force or not getattr(study_config, idb):
+                                    modified = True
+                                    setattr(study_config, idb, database)
+                        force = False
 
                 # convert FSO to FOM name
                 db = neuroHierarchy.databases.database(database)
