@@ -235,6 +235,8 @@ FileType('PDF file', 'Any Type', 'PDF file')
 FileType('B values','Any Type','Bval File') ##########################
 FileType('B vectors','Any Type','Bvec File') ##########################
 
+FileType('Participants file', 'CSV file', ['CSV file', 'TSV file'])
+
 # There's a bug in BrainVISA when using 'Directory' as base type
 # FileType( 'Protocol','Directory' )
 # FileType( 'Subject','Directory' )

@@ -21,6 +21,7 @@ db_entries = lambda: (
     ),
     'database_fso', SetType('Database description page'),
     'database_settings', SetType('Database settings'),
+    'participants', SetType('Participants file'),
     'trash',  # directory containing files that must be deleted
     '*', SetType('Database Cache file'),
 )

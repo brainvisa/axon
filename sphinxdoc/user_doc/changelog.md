@@ -1,5 +1,16 @@
 # Changelog
 
+## [6.0.12] 2026-05-21
+
+### Added
+
+- BIDS `participants.tsv` file is supported in BV databases
+
+### Changed
+
+- Capsul processes in Axon improvements and fixes
+- A few misc. fixes
+
 ## [6.0.10] 2026-03-06
 
 ### Changed
