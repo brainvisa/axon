@@ -26,17 +26,21 @@
 #     return context.runProcess(self.proc, database=self.database, ...)
 #
 
-from brainvisa.processes import *
+# from brainvisa.processes import *
+from brainvisa.processes import (
+    Signature, Choice, ListOf, String, ReadDiskItem, WriteDiskItem,
+    OpenChoice, getAllDiskItemTypes, findInPath, getAllFormats,
+    mainThreadActions, getViewers, getDataEditors, getProcessInstance,
+    defaultContext, showProcess, showException)
+from brainvisa.configuration import neuroConfig
 from brainvisa.data import neuroHierarchy
 from soma.wip.application.api import findIconFile
 from soma.qt_gui.qtThread import MainThreadLife
-from soma.qt_gui.qt_backend.Qt import QTableWidget, QTableWidgetItem
+from soma.qt_gui.qt_backend.Qt import QTableWidgetItem
+import soma.subprocess
 import numpy as np
 import os
 import tempfile
-import six
-from six.moves import range
-from six.moves import zip
 
 
 name = 'Database QC table'
@@ -134,7 +138,7 @@ def execution(self, context):
         nrows = max([len(values[1]) for values in data])
     ncols = len(self.data_types)
     elements = np.zeros((nrows, ncols), dtype=object)
-    elements[:,:] = None
+    elements[:, :] = None
 
     keys = self.keys
     key_values = []
@@ -156,7 +160,7 @@ def execution(self, context):
                     # print('row_id:', row_id)
                     old_nrow = elements.shape[0]
                     elements.resize((row + 1, ncols))
-                    elements[old_nrow:,:] = None
+                    elements[old_nrow:, :] = None
                 max_row = max((max_row, row))
             element = elements[row, elem_col]
             if isinstance(element, list):
@@ -170,7 +174,7 @@ def execution(self, context):
     old_nrow = elements.shape[0]
     elements.resize((nrows, ncols))
     if nrows > old_nrow:
-        elements[old_nrow:,:] = None
+        elements[old_nrow:, :] = None
     self.elements = elements
     self.row_ids = row_ids
 
@@ -204,7 +208,7 @@ def get_row(self, key_vals, row_ids, key_values):
         # print('changed id:', row_id)
         changed_id = True
         row = None
-        for id, i in six.iteritems(row_ids):
+        for id, i in row_ids.items():
             kvals2 = list(id)
             for j, key in enumerate(id):
                 if key is None:
@@ -241,7 +245,7 @@ if neuroConfig.gui:
             super(RotatedHeaderView, self).__init__(orientation, parent)
             self.setMinimumSectionSize(20)
 
-        def paintSection(self, painter, rect, logicalIndex ):
+        def paintSection(self, painter, rect, logicalIndex):
             from soma.qt_gui.qt_backend import sip
             if sip.isdeleted(self):
                 return
@@ -268,7 +272,6 @@ if neuroConfig.gui:
                 logicalIndex)
             size.transpose()
             return Qt.QSize(size.width(), int(size.height() * 0.9))
-
 
     class QActionWithViewer(Qt.QWidgetAction):
 
@@ -334,7 +337,6 @@ def file_status(self, di):
 
 
 def exec_mainthread(self, context):
-    from soma.qt_gui import qt_backend
     from soma.qt_gui.qt_backend import Qt
     from brainvisa.data.qt4gui.readdiskitemGUI import RightClickablePushButton
 
@@ -438,7 +440,7 @@ def exec_mainthread(self, context):
 
     row_ids = self.row_ids
 
-    for row_id, row in six.iteritems(row_ids):
+    for row_id, row in row_ids.items():
         for c, key in enumerate(row_id):
             if key is not None:
                 tablew.setItem(row, c, Qt.QTableWidgetItem(key))
@@ -502,7 +504,7 @@ def item_clicked(self, item):
         menu = Qt.QMenu()
         chosen_action = None
         try:
-            eye = Qt.QIcon(findIconFile('eye.png'))
+            # eye = Qt.QIcon(findIconFile('eye.png'))
             for i, element in enumerate(elements):
                 # action = menu.addAction(element.fullPath())
                 # action.setCheckable(True)
@@ -512,15 +514,15 @@ def item_clicked(self, item):
                 # action = menu.addAction(eye, element.fullPath())
                 # action.number = -i - 1
                 action = QActionWithViewer(element.fullPath(), has_view, item,
-                                          i, menu)
+                                           i, menu)
                 # action.number = i
                 menu.addAction(action)
                 action.action_triggered.connect(self.display_item)
                 action.viewer_triggered.connect(self.run_element_viewer)
                 action.triggered.connect(menu.close)
             element = None
-            chosen_action = menu.exec(Qt.QCursor.pos())
-        except:
+            # chosen_action = menu.exec(Qt.QCursor.pos())
+        except Exception:
             import traceback
             traceback.print_exc()
             return
@@ -546,8 +548,6 @@ def item_clicked(self, item):
 
 
 def item_double_clicked(self, item):
-    from soma.qt_gui.qt_backend import Qt
-
     if not hasattr(item, 'position'):
         # no data under this item
         return
@@ -621,7 +621,7 @@ def run_element_viewer(self, item, num=0):
                     viewer_res[num] = res
                     item.setBackground(Qt.QBrush(Qt.QColor(210, 210, 230)))
                     break
-                except:
+                except Exception:
                     pass
 
 
@@ -638,7 +638,7 @@ def viewer_clicked(self, checked):
                 res = defaultContext().runProcess(viewer, element)
                 self._viewer = res
                 break
-            except:
+            except Exception:
                 pass
     else:
         self._viewer = None
@@ -662,7 +662,7 @@ def editor_clicked(self, checked):
                 print('res:', res)
                 self._editor = res
                 break
-            except:
+            except Exception:
                 pass
     else:
         self._editor = None
@@ -693,7 +693,7 @@ def show_interactive_viewers(self, element, viewers):
             action = Qt.QAction(viewer.name, menu)
             action.viewer = viewer
             menu.addAction(action)
-            #action.triggered.connect(self.run_interactive_viewer)
+            # action.triggered.connect(self.run_interactive_viewer)
         chosen_action = menu.exec(Qt.QCursor.pos())
         del menu
         if chosen_action is not None:
@@ -702,7 +702,7 @@ def show_interactive_viewers(self, element, viewers):
                 viewer = getProcessInstance(viewer)
                 viewer.reference_process = self
                 showProcess(viewer, element)
-            except:
+            except Exception:
                 showException()
 
 
@@ -718,7 +718,7 @@ def save_gui(self):
     if filename is not None and filename != '':
         try:
             self.save_file(filename)
-        except:
+        except Exception:
             import traceback
             traceback.print_exc()
 
@@ -735,7 +735,7 @@ def save_file(self, filename, context=None):
     elif filename.endswith('.csv'):
         self.save_csv(filename, context)
     else:
-        raise('Unrecognized output format')
+        raise ValueError('Unrecognized output format')
 
 
 def save_html(self, filename, context=None):
@@ -858,10 +858,10 @@ def save_html(self, filename, context=None):
 
     # eliminate duplicate rows by keeping most complete id for each
     rev_row_ids = {}
-    for row_id, row in six.iteritems(row_ids):
+    for row_id, row in row_ids.items():
         rev_row_ids.setdefault(row, []).append(row_id)
     rev_row_ids = dict([(row, max(row_id))
-                        for row, row_id in six.iteritems(rev_row_ids)])
+                        for row, row_id in rev_row_ids.items()])
 
     # sort items
     rows_order = list(zip(*sorted(zip(rev_row_ids.values(), range(nrows)))))[1]
@@ -918,10 +918,10 @@ def save_csv(self, filename, context=None):
 
     # eliminate duplicate rows by keeping most complete id for each
     rev_row_ids = {}
-    for row_id, row in six.iteritems(row_ids):
+    for row_id, row in row_ids.items():
         rev_row_ids.setdefault(row, []).append(row_id)
     rev_row_ids = dict([(row, max(row_id))
-                        for row, row_id in six.iteritems(rev_row_ids)])
+                        for row, row_id in rev_row_ids.items()])
     # sort items
     rows_order = list(zip(*sorted(zip(rev_row_ids.values(), range(nrows)))))[1]
 
