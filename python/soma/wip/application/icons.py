@@ -38,21 +38,23 @@
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
 
-from __future__ import absolute_import
 __docformat__ = "epytext en"
 
 
 import os
 import glob
-from soma.wip.application.application import Application
 from soma.path import split_path
 import soma
 
 #-------------------------------------------------------------------------------
 #: Directory where soma icons files are stored
-somaIconsDirectory = sorted(glob.glob(os.path.join(*(
-                                                   split_path(soma.__file__)[:-3] + ['share', 'axon-*', 'icons'])
-                                                   )))
+_sd = split_path(soma.__file__)
+_ld = -3
+if _sd[-4].startswith('python'):
+    _ld = -5
+somaIconsDirectory = sorted(glob.glob(os.path.join(
+    *(_sd[:_ld] + ['share', 'axon-*', 'icons']))))
+del _sd, _ld
 if somaIconsDirectory:
     somaIconsDirectory = somaIconsDirectory[0]
 else:
@@ -65,6 +67,8 @@ def findIconFile(fileName):
     Find an icon file in user, application and site "icons" directories.
     Return C{None} if the file has not been found.
     '''
+    from .application import Application
+
     if fileName is not None:
         app = Application("soma", "")
         for dir in (app.directories.user, app.directories.application,

@@ -40,7 +40,6 @@ This module is obsolete and should be replaced by soma.application
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
 
-from __future__ import absolute_import
 __docformat__ = "epytext en"
 
 
@@ -54,7 +53,7 @@ from soma.uuid import Uuid
 from soma.minf.api import readMinf, minfFormat
 from soma.translation import translate as _
 from soma.notification import Notifier
-from soma.wip.application.plugins import Plugins
+from .plugins import Plugins
 from soma.configuration import Configuration
 
 

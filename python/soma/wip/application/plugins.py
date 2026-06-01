@@ -37,18 +37,17 @@
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
-from __future__ import print_function
-from __future__ import absolute_import
 __docformat__ = "epytext en"
 
 import os
+import sys
 from soma.minf.api import readMinf, minfFormat, writeMinf
 from soma.signature.api import HasSignature, Signature, Unicode, Sequence, \
     Boolean
 from soma.translation import translate as _
 
 
-#-------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 class PluginDependency(HasSignature):
     signature = Signature(
         'module', Unicode,
@@ -60,7 +59,7 @@ class PluginDependency(HasSignature):
         self.initializeSignatureAttributes(**kwargs)
 
 
-#-------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 class Plugin(HasSignature):
     signature = Signature(
         'pluginSystem', Unicode, dict(defaultValue='soma'),
@@ -99,7 +98,7 @@ class Plugin(HasSignature):
         __import__(self.module)
 
 
-#-------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 class Plugins(object):
 
     def __init__(self):
@@ -110,6 +109,8 @@ class Plugins(object):
         '''
         Make a plugin available for initialization and import.
         '''
+        from soma.wip.application.application import Application
+
         if isinstance(pluginName, Plugin):
             plugin = pluginName
         elif os.path.isdir(pluginName):
@@ -159,6 +160,8 @@ class Plugins(object):
         return result
 
     def initialize(self):
+        from soma.wip.application.application import Application
+
         auto_include = []
         app = Application()
         for d in app.directories.user, app.directories.site, app.directories.application:
@@ -182,4 +185,3 @@ class Plugins(object):
                       plugin.version)
             self.includePlugin(plugin)
 
-from soma.wip.application.application import Application
