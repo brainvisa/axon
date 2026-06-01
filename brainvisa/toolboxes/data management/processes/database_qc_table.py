@@ -502,7 +502,7 @@ def item_clicked(self, item):
     element = None
     if isinstance(elements, list):
         menu = Qt.QMenu()
-        chosen_action = None
+        # chosen_action = None
         try:
             # eye = Qt.QIcon(findIconFile('eye.png'))
             for i, element in enumerate(elements):
@@ -522,6 +522,7 @@ def item_clicked(self, item):
                 action.triggered.connect(menu.close)
             element = None
             # chosen_action = menu.exec(Qt.QCursor.pos())
+            menu.exec(Qt.QCursor.pos())
         except Exception:
             import traceback
             traceback.print_exc()
