@@ -141,17 +141,13 @@ def execution(self, context):
     elements[:, :] = None
 
     keys = self.keys
-    key_values = []
-    for i in keys:
-        key_values.append(set())
     row_ids = {}
     max_row = 0
 
     for elem_col, (dtype, items) in enumerate(data):
         for item in items:
             key_vals = [item.get(att) for att in keys]
-            row, row_id, changed_id = self.get_row(key_vals, row_ids,
-                                                   key_values)
+            row, row_id, changed_id = self.get_row(key_vals, row_ids)
             if changed_id:
                 if row >= elements.shape[0]:
                     # should not happen if get_row() had no bug...
@@ -167,6 +163,8 @@ def execution(self, context):
                 elements[row, elem_col].append(item)
             elif element is None:
                 elements[row, elem_col] = item
+            elif isinstance(element, list):
+                elements[row, elem_col] = element + [item]
             else:
                 elements[row, elem_col] = [element, item]
 
@@ -186,19 +184,9 @@ def execution(self, context):
         return mainThreadActions().call(self.exec_mainthread, context)
 
 
-def get_row(self, key_vals, row_ids, key_values):
+def get_row(self, key_vals, row_ids):
     # print('get_row for:', key_vals)
-    kvals = list(key_vals)
-    for i, key in enumerate(key_vals):
-        kvalues = key_values[i]
-        if key is None:
-            if len(kvalues) != 0:
-                kvals[i] = next(iter(kvalues))
-        elif key not in kvalues:
-            kvalues.add(key)
-            # print('add value for key:', i, ':', key)
-
-    row_id = tuple(kvals)
+    row_id = tuple(key_vals)
     # print('row_id:', row_id)
     row = row_ids.get(row_id)
     if row is not None:
@@ -210,22 +198,27 @@ def get_row(self, key_vals, row_ids, key_values):
         row = None
         for id, i in row_ids.items():
             kvals2 = list(id)
+            same = True
             for j, key in enumerate(id):
-                if key is None:
-                    kvalues = key_values[j]
-                    if len(kvalues) != 0:
-                        kvals2[j] = next(iter(kvalues))
+                if key is not None and key_vals[j] is not None \
+                        and key != key_vals[j]:
+                    # different element
+                    same = False
+                    break
+                if key_vals[j] is not None:
+                    kvals2[j] = key_vals[j]
 
-            if kvals2 == kvals:
+            if same:
                 # print('found old row:', i, 'for id:', row_id, ':', kvals2, id)
                 row = i
+                if kvals2 != id:
+                    # delete key with None values to avoid ambiguities with
+                    # other different key values which may come later
+                    del row_ids[id]
+                row_id = tuple(kvals2)
                 row_ids[row_id] = row
                 break
-        if row is not None:
-            # delete key with None values to avoid ambiguities with other
-            # different key values which may come later
-            del row_ids[id]
-        else:
+        if row is None:
             if len(row_ids) == 0:
                 row = 0
             else:
