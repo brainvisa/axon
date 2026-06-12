@@ -31,7 +31,7 @@ from brainvisa.processes import (
     Signature, Choice, ListOf, String, ReadDiskItem, WriteDiskItem,
     OpenChoice, getAllDiskItemTypes, findInPath, getAllFormats,
     mainThreadActions, getViewers, getDataEditors, getProcessInstance,
-    defaultContext, showProcess, showException)
+    defaultContext, showException)
 from brainvisa.configuration import neuroConfig
 from brainvisa.data import neuroHierarchy
 from soma.wip.application.api import findIconFile
@@ -691,6 +691,8 @@ def show_interactive_viewers(self, element, viewers):
         chosen_action = menu.exec(Qt.QCursor.pos())
         del menu
         if chosen_action is not None:
+            from brainvisa.processing.neuroProcessesGui import showProcess
+
             viewer = chosen_action.viewer
             try:
                 viewer = getProcessInstance(viewer)
