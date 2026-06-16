@@ -1,5 +1,14 @@
 # Changelog
 
+## [6.0.13] 2026-06-16
+
+### Changed
+
+- fixes in data selection / sorting in database_qt_table + code cleaning
+- better management of process life/killing in PDF viewer
+- internal python modules fixes in modules importation
+
+
 ## [6.0.12] 2026-05-21
 
 ### Added
