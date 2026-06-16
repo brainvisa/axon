@@ -7,7 +7,8 @@
 - fixes in data selection / sorting in database_qt_table + code cleaning
 - better management of process life/killing in PDF viewer
 - internal python modules fixes in modules importation
-
+- little fix in Morphologist-ui import
+- try harder to start Xvfb in the headless mode with OpenGL off-screen rendering (soma-base)
 
 ## [6.0.12] 2026-05-21
 
