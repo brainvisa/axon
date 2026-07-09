@@ -36,6 +36,9 @@ class SPMConfiguration(ConfigurationGroup):
 
     def __init__(self, *args, **kwargs):
         super(SPMConfiguration, self).__init__(*args, **kwargs)
+
+    def apply_conda_defaults(self):
+        """Apply default SPM paths from CONDA_PREFIX if current values are empty."""
         conda_prefix = os.environ.get('CONDA_PREFIX')
         if conda_prefix:
             spm12_path = os.path.join(conda_prefix, 'spm12')
