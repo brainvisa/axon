@@ -146,6 +146,12 @@ def readConfiguration(mainPath, userProfile, homeBrainVISADir):
             showException(beforeError="Error while reading options from " + userOptionFile +
                           "<br>", afterError="<br>The option will be ignored.", exceptionInfo=exc)
 
+    # Apply SPM defaults from CONDA_PREFIX after loading user config
+    try:
+        configuration.SPM.apply_conda_defaults()
+    except Exception as e:
+        showException(beforeError="Error applying SPM conda defaults:<br>", exceptionInfo=e)
+
     equiv31_30 = {
         'R.executable': 'Rexecutable',
       'R.options': 'Roptions',
