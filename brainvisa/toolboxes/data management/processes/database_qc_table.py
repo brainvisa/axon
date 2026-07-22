@@ -232,6 +232,24 @@ def get_row(self, key_vals, row_ids):
 if neuroConfig.gui:
     from soma.qt_gui.qt_backend import Qt
 
+    class QSortingTabeWidgetItem(Qt.QTableWidgetItem):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.sort_data = None
+
+        def __lt__(self, other):
+            if self.sort_data is not None \
+                    and getattr(other, 'sort_data', None) is not None:
+                return (self.sort_data < other.sort_data)
+            return super().__lt__(other)
+
+        def __gt__(self, other):
+            if self.sort_data is not None \
+                    and getattr(other, 'sort_data', None) is not None:
+                return (self.sort_data > other.sort_data)
+            return super().__gt__(other)
+
+
     class RotatedHeaderView(Qt.QHeaderView):
 
         def __init__(self, orientation, parent=None):
@@ -442,14 +460,17 @@ def exec_mainthread(self, context):
         for row in range(nrows):
             elem = self.elements[row, col]
             if elem is None:
-                titem = Qt.QTableWidgetItem(no_icon, '')
+                titem = QSortingTabeWidgetItem(no_icon, '')
+                titem.sort_data = statuses.ABSENT
             elif isinstance(elem, list):
-                titem = Qt.QTableWidgetItem(mult_icon, '')
+                titem = QSortingTabeWidgetItem(mult_icon, '')
+                titem.sort_data = -1
                 titem.position = (row, col)
             else:
                 status = self.file_status(elem)
                 icon = status_icons[status]
-                titem = Qt.QTableWidgetItem(icon, '')
+                titem = QSortingTabeWidgetItem(icon, '')
+                titem.sort_data = status
                 titem.position = (row, col)
             tablew.setItem(row, col + nkeys, titem)
 
