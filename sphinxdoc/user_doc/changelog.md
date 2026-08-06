@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.0.14] 2026-08-06
+
+### Changed
+
+- SPM config change: the user local configuration now takes priority over the builtin install one, so that user settings can apply. As a consequence, an ill-configured personal config will make BrainVisa fail.
+- QC table: allow to sort the table by status
+
+
 ## [6.0.13] 2026-06-16
 
 ### Changed
