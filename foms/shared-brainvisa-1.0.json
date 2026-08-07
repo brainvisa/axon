@@ -49,7 +49,7 @@
         "shared.sulcal_morphometry_sulci_file":
             [["shared:nomenclature/translation/sulci_default_list", "JSON file"]],
         "shared.normative_brain_volumes_file":
-            [["shared:normative_tables/morphologist/ukb_hcp_abcd-strat/morphologist_normative_brain_volumes_stats", "JSON file"]],
+            [["shared:normative_tables/morphologist/ukb_hcp_abcd_openbhb26-strat/morphologist_normative_brain_volumes_stats", "JSON file"]],
     }
 }
   
