@@ -3,7 +3,12 @@
 # taken from https://gist.github.com/eyllanesc/7566bab2f8a91593c460015ee2151717
 
 import sys
-from PyQt5 import QtCore, QtWidgets, QtWebEngineWidgets
+try:
+    from PyQt6 import QtCore, QtWidgets, QtWebEngineWidgets, QtWebEngineCore
+    QWebEngineSettings = QtWebEngineCore.QWebEngineSettings
+except ImportError:
+    from PyQt5 import QtCore, QtWidgets, QtWebEngineWidgets
+    QWebEngineSettings = QtWebEngineWidgets.QWebEngineSettings
 
 
 def main():
@@ -23,13 +28,12 @@ def main():
 
     view = QtWebEngineWidgets.QWebEngineView()
     settings = view.settings()
-    settings.setAttribute(QtWebEngineWidgets.QWebEngineSettings.PluginsEnabled,
-                          True)
+    settings.setAttribute(QWebEngineSettings.WebAttribute.PluginsEnabled, True)
     url = QtCore.QUrl.fromLocalFile(filename)
     view.load(url)
     view.resize(640, 800)
     view.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 if __name__ == "__main__":
     main()
