@@ -41,6 +41,7 @@ import soma.subprocess
 import numpy as np
 import os
 import tempfile
+import re
 
 
 name = 'Database QC table'
@@ -50,6 +51,7 @@ wkhtmltopdf = findInPath('wkhtmltopdf')
 
 
 class statuses:
+    UNDEFINED = -1
     OK = 0
     PRESENT = 1
     WARNING = 2
@@ -72,12 +74,35 @@ class statuses:
     INVALID_ABSENT = 21
 
 
+status_str = {
+    statuses.UNDEFINED: 'undefined',
+    statuses.OK: 'ok',
+    statuses.PRESENT: 'present',
+    statuses.WARNING: 'warning',
+    statuses.SUSPICIOUS: 'suspicious',
+    statuses.BAD: 'bad',
+    statuses.ABSENT: 'absent',
+    statuses.VALID_OK: 'valid_ok',
+    statuses.VALID_PRESENT: 'valid_present',
+    statuses.VALID_WARNING: 'valid_warning',
+    statuses.VALID_SUSPICIOUS: 'valid_suspicious',
+    statuses.VALID_BAD: 'valid_bad',
+    statuses.VALID_ABSENT: 'valid_absent',
+    statuses.INVALID_OK: 'invalid_ok',
+    statuses.INVALID_PRESENT: 'invalid_present',
+    statuses.INVALID_WARNING: 'invalid_warning',
+    statuses.INVALID_SUSPICIOUS: 'invalid_suspicious',
+    statuses.INVALID_BAD: 'invalid_bad',
+    statuses.INVALID_ABSENT: 'invalid_absent',
+}
+
+
 status_for_type = {}
 
 signature = Signature(
     'database', Choice(),
     'data_types', ListOf(Choice('Any Type')),
-    'data_filters', ListOf(String()),
+    'data_filters', String(),
     'keys', ListOf(String()),
     'type_labels', ListOf(String()),
     'output_file', WriteDiskItem(
@@ -101,7 +126,7 @@ def initialization(self):
     possibleTypes = [t.name for t in getAllDiskItemTypes()]
     self.signature['data_types'].contentType.setChoices(*sorted(possibleTypes))
 
-    self.setOptional('output_file')
+    self.setOptional('output_file', 'data_filters')
 
     self.keys = ['subject']
 
@@ -113,22 +138,39 @@ def execution(self, context):
     data = []
     # db = neuroHierarchy.databases.database(self.database)
 
-    for i, dtype in enumerate(self.data_types):
-        if len(self.data_filters) > i or len(self.data_filters) == 1:
-            ifilt = i
-            if len(self.data_filters) == 1:
-                # broadcast filter
-                ifilt = 0
-            filt = self.data_filters[ifilt]
-            if filt == '':
-                dfilt = {}
-            else:
-                dfilt = eval(filt)
+    data_filters = [{} for i in range(len(self.data_types))]
+    self.status_filters = [{} for i in range(len(self.data_types))]
+    self.need_status = False
+    if self.data_filters:
+        df = eval(self.data_filters)
+        if isinstance(df, list):
+            data_filters = df
+        elif isinstance(df, dict):
+            for k, v in df.items():
+                kr = re.compile(k)
+                cols = [i for i, c in enumerate(self.type_labels)
+                        if kr.match(c)]
+                if len(cols) == 0:
+                    print('no match for', k, 'in cols:', self.type_labels)
+                    raise ValueError(
+                        f'data filer column "{k}" is not found')
+                sf = v.get('file_status')
+                if sf:
+                    v = {x: y for x, y in v.items() if x != 'file_status'}
+                    self.need_status = True
+                for i in cols:
+                    data_filters[i].update(v)
+                    if sf:
+                        self.status_filters[i] = sf
         else:
-            dfilt = {}
+            raise ValueError('data_filters is not recognized')
+
+    for i, dtype in enumerate(self.data_types):
+        dfilt = data_filters[i]
         rdi = ReadDiskItem(dtype, getAllFormats(), exactType=True)
         dfilt['_database'] = self.database
         items = list(rdi.findValues({}, requiredAttributes=dfilt))
+        # self.filter_status(items, self.status_filters[i])
         data.append((dtype, items))
         context.write(dtype, ':', len(items), 'items')
 
@@ -137,8 +179,7 @@ def execution(self, context):
     else:
         nrows = max([len(values[1]) for values in data])
     ncols = len(self.data_types)
-    elements = np.zeros((nrows, ncols), dtype=object)
-    elements[:, :] = None
+    elements = [[None] * ncols]
 
     keys = self.keys
     row_ids = {}
@@ -149,30 +190,73 @@ def execution(self, context):
             key_vals = [item.get(att) for att in keys]
             row, row_id, changed_id = self.get_row(key_vals, row_ids)
             if changed_id:
-                if row >= elements.shape[0]:
-                    # should not happen if get_row() had no bug...
-                    # print('warning: adding row', row, '>=', elements.shape[0])
-                    # print('row_ids:', row_ids)
-                    # print('row_id:', row_id)
-                    old_nrow = elements.shape[0]
-                    elements.resize((row + 1, ncols))
-                    elements[old_nrow:, :] = None
+                if row >= len(elements):
+                    old_nrow = len(elements)
+                    elements += [[None] * ncols
+                                 for row in range(old_nrow, row + 1)]
                 max_row = max((max_row, row))
-            element = elements[row, elem_col]
+            element = elements[row][elem_col]
             if isinstance(element, list):
-                elements[row, elem_col].append(item)
+                elements[row][elem_col].append(item)
             elif element is None:
-                elements[row, elem_col] = item
+                elements[row][elem_col] = item
             elif isinstance(element, list):
-                elements[row, elem_col] = element + [item]
+                elements[row][elem_col] = element + [item]
             else:
-                elements[row, elem_col] = [element, item]
+                elements[row][elem_col] = [element, item]
+
+    # print('filter status:', self.need_status, self.status_filters)
+    if self.need_status:
+        # filter out by status
+        todel = []
+        for row, items in enumerate(elements):
+            # print('row:', row)
+            # print(items)
+            for c, sfilt in enumerate(self.status_filters):
+                if not sfilt:
+                    # print('no filter for col', c)
+                    continue
+                if not items[c]:
+                    if sfilt != 'absent':
+                        # print('not present', row)
+                        todel.append(row)
+                        break
+                if sfilt == 'absent' and items[c]:
+                    # print('remove absent row:', row, items[c])
+                    todel.append(row)
+                    break
+                citems = items[c]
+                citems = citems if isinstance(citems, list) else (
+                    [] if citems is None else [citems])
+                fitems = []
+                dtype = self.data_types[c]
+                for item in citems:
+                    status = status_str[self.file_status(item)]
+                    # print('item:', item, ', status:', status)
+                    if status == sfilt:
+                        fitems.append(item)
+                        # print('keep.')
+                if len(fitems) == 0 and sfilt != 'absent':
+                    # print('del fitems', row, ':', fitems)
+                    todel.append(row)
+                    break
+
+        # print('to del:', todel)
+        delid = []
+        for row in reversed(todel):
+            del elements[row]
+            for row_id, r in row_ids.items():
+                if r == row:
+                    delid.append(row_id)
+                elif r >= row:
+                    row_ids[row_id] = r - 1
+        for row_id in delid:
+            del row_ids[row_id]
+        max_row -= len(todel)
 
     nrows = max_row + 1
-    old_nrow = elements.shape[0]
-    elements.resize((nrows, ncols))
-    if nrows > old_nrow:
-        elements[old_nrow:, :] = None
+    old_nrow = len(elements)
+    elements += [[None] * ncols for row in range(len(elements), nrows)]
     self.elements = elements
     self.row_ids = row_ids
 
@@ -182,6 +266,11 @@ def execution(self, context):
             # context.write(open(self.output_file.fullPath()).read())
     else:
         return mainThreadActions().call(self.exec_mainthread, context)
+
+
+def filter_status(self, items, sfilt):
+    # TODO
+    return items
 
 
 def get_row(self, key_vals, row_ids):
@@ -386,7 +475,8 @@ def exec_mainthread(self, context):
     self._editor = None
     self.context = context
 
-    nrows, ncols = self.elements.shape
+    nrows = len(self.elements)
+    ncols = len(self.data_types)
     nkeys = len(self.keys)
 
     tablew.setHorizontalHeader(RotatedHeaderView(Qt.Qt.Horizontal, tablew))
@@ -458,7 +548,7 @@ def exec_mainthread(self, context):
 
     for col in range(ncols):
         for row in range(nrows):
-            elem = self.elements[row, col]
+            elem = self.elements[row][col]
             if elem is None:
                 titem = QSortingTabeWidgetItem(no_icon, '')
                 titem.sort_data = statuses.ABSENT
@@ -512,7 +602,7 @@ def item_clicked(self, item):
         self.current_item = None
         return
     row, col = item.position
-    elements = self.elements[row, col]
+    elements = self.elements[row][col]
     element = None
     if isinstance(elements, list):
         menu = Qt.QMenu()
@@ -567,7 +657,7 @@ def item_double_clicked(self, item):
         # no data under this item
         return
     row, col = item.position
-    elements = self.elements[row, col]
+    elements = self.elements[row][col]
     element = None
     if isinstance(elements, list):
         element = elements[0]
@@ -587,7 +677,7 @@ def display_item(self, item, num):
         # no data under this item
         return
     row, col = item.position
-    elements = self.elements[row, col]
+    elements = self.elements[row][col]
     element = None
     if isinstance(elements, list):
         element = elements[num]
@@ -608,7 +698,7 @@ def run_element_viewer(self, item, num=0):
         # no data under this item
         return
     row, col = item.position
-    elements = self.elements[row, col]
+    elements = self.elements[row][col]
     element = None
     if isinstance(elements, list):
         element = elements[num]
@@ -852,7 +942,8 @@ def save_html(self, filename, context=None):
     <colgroup>
 ''')
 
-    nrows, ncols = self.elements.shape
+    nrows = len(self.elements)
+    ncols = len(self.data_types)
 
     labels = self.keys + self.type_labels \
         + self.data_types[len(self.type_labels):]
@@ -924,7 +1015,7 @@ def save_pdf(self, filename, context=None):
 def save_csv(self, filename, context=None):
     f = open(filename, 'w')
 
-    nrows, ncols = self.elements.shape
+    nrows = len(self.elements)
 
     labels = self.keys + self.type_labels \
         + self.data_types[len(self.type_labels):]
