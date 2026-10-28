@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.0.15] 2026-10-28
+
+### Added
+
+- QC table: data filter reimplemented
+- QC table: dynamic GUI data filter
+
+
 ## [6.0.14] 2026-08-06
 
 ### Changed
