@@ -36,7 +36,6 @@ from brainvisa.configuration import neuroConfig
 from brainvisa.data import neuroHierarchy
 from soma.wip.application.api import findIconFile
 from soma.qt_gui.qtThread import MainThreadLife
-from soma.qt_gui.qt_backend.Qt import QTableWidgetItem
 import soma.subprocess
 import numpy as np
 import os
@@ -321,7 +320,7 @@ def get_row(self, key_vals, row_ids):
 if neuroConfig.gui:
     from soma.qt_gui.qt_backend import Qt
 
-    class QSortingTabeWidgetItem(Qt.QTableWidgetItem):
+    class QSortingItem(Qt.QStandardItem):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.sort_data = None
@@ -338,6 +337,60 @@ if neuroConfig.gui:
                 return (self.sort_data > other.sort_data)
             return super().__gt__(other)
 
+    class CustomSortProxyModel(Qt.QSortFilterProxyModel):
+        def lessThan(self, left_index, right_index):
+            while not isinstance(left_index.model(), Qt.QStandardItemModel):
+                proxy = left_index.model()
+                if proxy is None:
+                    break
+                left_index = proxy.mapToSource(left_index)
+            left_item = left_index.model().itemFromIndex(left_index)
+            while not isinstance(right_index.model(), Qt.QStandardItemModel):
+                proxy = right_index.model()
+                if proxy is None:
+                    break
+                right_index = proxy.mapToSource(right_index)
+            right_item = right_index.model().itemFromIndex(right_index)
+
+            if left_item is None:
+                return True
+            if right_item is None:
+                return False
+
+            try:
+                return left_item < right_item
+            except TypeError:
+                # Sécurité si les types ne sont pas comparables
+                return super().lessThan(left_index, right_index)
+
+        def filterAcceptsRow(self, sourceRow, sourceParent):
+            if self.filterRegularExpression() is None:
+                return True
+            col = self.filterKeyColumn()
+            if col != -1:
+                index = self.sourceModel().index(sourceRow, col, sourceParent)
+                item = self.sourceModel().itemFromIndex(index)
+                if item is None or not hasattr(item, 'sort_data'):
+                    return super().filterAcceptsRow(sourceRow, sourceParent)
+                stat_str = status_str[item.sort_data]
+                return self.filterRegularExpression().match(
+                    stat_str).hasMatch()
+            res = False
+            for col in range(self.sourceModel().columnCount()):
+                index = self.sourceModel().index(sourceRow, col, sourceParent)
+                item = self.sourceModel().itemFromIndex(index)
+                if item is None or not hasattr(item, 'sort_data'):
+                    res |= super().filterAcceptsRow(sourceRow, sourceParent)
+                    if res:
+                        break
+                else:
+                    stat_str = status_str[item.sort_data]
+                    res |= \
+                        self.filterRegularExpression().match(
+                            stat_str).hasMatch()
+                    if res:
+                        break
+            return res
 
     class RotatedHeaderView(Qt.QHeaderView):
 
@@ -375,8 +428,8 @@ if neuroConfig.gui:
 
     class QActionWithViewer(Qt.QWidgetAction):
 
-        action_triggered = Qt.Signal(QTableWidgetItem, int)
-        viewer_triggered = Qt.Signal(QTableWidgetItem, int)
+        action_triggered = Qt.Signal(QSortingItem, int)
+        viewer_triggered = Qt.Signal(QSortingItem, int)
 
         def __init__(self, text, checked, item, num, parent):
             super(QActionWithViewer, self).__init__(parent)
@@ -445,7 +498,7 @@ def exec_mainthread(self, context):
     mw.setCentralWidget(wid)
     lay = Qt.QVBoxLayout()
     wid.setLayout(lay)
-    tablew = Qt.QTableWidget()
+    tablew = Qt.QTableView()
     lay.addWidget(tablew)
 
     eye = Qt.QIcon(findIconFile('eye.png'))
@@ -479,22 +532,22 @@ def exec_mainthread(self, context):
     ncols = len(self.data_types)
     nkeys = len(self.keys)
 
+    model = Qt.QStandardItemModel(nrows, ncols + nkeys)
+    self.model = model
+
     tablew.setHorizontalHeader(RotatedHeaderView(Qt.Qt.Horizontal, tablew))
 
     header = tablew.horizontalHeader()
     header.setSectionsClickable(True)
     header.setSectionsMovable(True)
 
-    tablew.setColumnCount(ncols + nkeys)
     header.setDefaultSectionSize(32)
     header.setDefaultAlignment(Qt.Qt.AlignLeft)
     labels = self.keys + self.type_labels \
         + self.data_types[len(self.type_labels):]
-    tablew.setHorizontalHeaderLabels(labels)
+    model.setHorizontalHeaderLabels(labels)
     tablew.setSortingEnabled(True)
     tablew.setEditTriggers(tablew.NoEditTriggers)
-
-    tablew.setRowCount(nrows)
 
     no_icon = Qt.QIcon(findIconFile('absent.png'))
     present_icon = Qt.QIcon(findIconFile('ok.png'))
@@ -544,28 +597,31 @@ def exec_mainthread(self, context):
     for row_id, row in row_ids.items():
         for c, key in enumerate(row_id):
             if key is not None:
-                tablew.setItem(row, c, Qt.QTableWidgetItem(key))
+                model.setItem(row, c, Qt.QStandardItem(key))
 
     for col in range(ncols):
         for row in range(nrows):
             elem = self.elements[row][col]
             if elem is None:
-                titem = QSortingTabeWidgetItem(no_icon, '')
+                titem = QSortingItem(no_icon, '')
                 titem.sort_data = statuses.ABSENT
             elif isinstance(elem, list):
-                titem = QSortingTabeWidgetItem(mult_icon, '')
+                titem = QSortingItem(mult_icon, '')
                 titem.sort_data = -1
                 titem.position = (row, col)
             else:
                 status = self.file_status(elem)
                 icon = status_icons[status]
-                titem = QSortingTabeWidgetItem(icon, '')
+                titem = QSortingItem(icon, '')
                 titem.sort_data = status
                 titem.position = (row, col)
-            tablew.setItem(row, col + nkeys, titem)
+            model.setItem(row, col + nkeys, titem)
 
-    tablew.itemClicked.connect(self.item_clicked)
-    tablew.itemDoubleClicked.connect(self.item_double_clicked)
+    proxy = CustomSortProxyModel()
+    proxy.setSourceModel(model)
+    tablew.setModel(proxy)
+    tablew.clicked.connect(self.item_clicked)
+    tablew.doubleClicked.connect(self.item_double_clicked)
 
     tablew.sortByColumn(0, Qt.Qt.AscendingOrder)
     for col in range(nkeys):
@@ -585,11 +641,20 @@ def exec_mainthread(self, context):
     mw.resize(800, 800)
     mw.show()
 
+    self.table = tablew
+
     return MainThreadLife(mw)
 
 
-def item_clicked(self, item):
+def item_clicked(self, index):
     from soma.qt_gui.qt_backend import Qt
+
+    while index.model() is not self.model:
+        proxy = index.model()
+        if proxy is None:
+            break
+        index = proxy.mapToSource(index)
+    item = self.model.itemFromIndex(index)
 
     if not self._viewer:
         self.view_btn.setEnabled(False)
@@ -652,7 +717,14 @@ def item_clicked(self, item):
             self.edit_btn.setEnabled(True)
 
 
-def item_double_clicked(self, item):
+def item_double_clicked(self, index):
+    while index.model() is not self.model:
+        proxy = index.model()
+        if proxy is None:
+            break
+        index = proxy.mapToSource(index)
+    item = self.model.itemFromIndex(index)
+
     if not hasattr(item, 'position'):
         # no data under this item
         return
