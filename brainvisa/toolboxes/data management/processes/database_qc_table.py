@@ -506,7 +506,13 @@ def exec_mainthread(self, context):
 
     vlay = Qt.QVBoxLayout()
     lay.addLayout(vlay)
-    vlay.addWidget(Qt.QLabel('Selected item:'))
+    slay = Qt.QHBoxLayout()
+    vlay.addLayout(slay)
+    slay.addWidget(Qt.QLabel('Selected item:'))
+    slay.addStretch()
+    count_label = Qt.QLabel()
+    self.count_label = count_label
+    slay.addWidget(count_label)
     hlay = Qt.QHBoxLayout()
     vlay.addLayout(hlay)
     self.view_btn = RightClickablePushButton()
@@ -531,6 +537,8 @@ def exec_mainthread(self, context):
     nrows = len(self.elements)
     ncols = len(self.data_types)
     nkeys = len(self.keys)
+
+    count_label.setText(f'Items count: {nrows}')
 
     model = Qt.QStandardItemModel(nrows, ncols + nkeys)
     self.model = model
@@ -635,9 +643,13 @@ def exec_mainthread(self, context):
     menu = Qt.QMenuBar()
     fmenu = menu.addMenu('File')
     action = fmenu.addAction('Save HTML or PDF...')
+    action.setShortcut(Qt.QKeySequence(Qt.Qt.CTRL + Qt.Qt.Key_S))
     action.triggered.connect(self.save_gui)
+    action = fmenu.addAction('Close')
+    action.setShortcut(Qt.QKeySequence(Qt.Qt.CTRL + Qt.Qt.Key_W))
+    action.triggered.connect(mw.close)
     emenu = menu.addMenu('Edit')
-    action = emenu.addAction('Find...')
+    action = emenu.addAction('Find / filter...')
     action.setShortcut(Qt.QKeySequence(Qt.Qt.CTRL + Qt.Qt.Key_F))
     action.triggered.connect(self.find_data_gui)
     mw.setMenuBar(menu)
@@ -1216,3 +1228,5 @@ def update_find_gui(self, _=None):
         proxy.setFilterRegularExpression(regexp)
     else:
         proxy.setFilterRegularExpression(None)
+    nrows = proxy.rowCount()
+    self.count_label.setText(f'Items count: {nrows}')
