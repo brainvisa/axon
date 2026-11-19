@@ -37,7 +37,6 @@
 @organization: U{NeuroSpin<http://www.neurospin.org>} and U{IFR 49<http://www.ifr49.org>}
 @license: U{CeCILL version 2<http://www.cecill.info/licences/Licence_CeCILL_V2-en.html>}
 '''
-from __future__ import absolute_import
 __docformat__ = "epytext en"
 
 import os
@@ -57,3 +56,13 @@ class FSLConfiguration(ConfigurationGroup):
       'fsl_commands_prefix', Unicode, dict(
           defaultValue='', doc='prefix, prepended to FSL commands names, used in some installations (Ubuntu uses "fsl4.1-")'),
     )
+
+    def apply_conda_defaults(self):
+        """Apply default FSL paths from CONDA_PREFIX if current values are empty."""
+        print('FSL.apply_conda_defaults !')
+        conda_prefix = os.environ.get('CONDA_PREFIX')
+        if conda_prefix:
+            if os.path.exists(conda_prefix) and os.path.exists(os.path.join(conda_prefix, 'etc', 'fslconf')) \
+                    and not self.fsldir:
+                self.fsldir = conda_prefix
+                self.fsl_commands_prefix = None

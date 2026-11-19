@@ -151,6 +151,11 @@ def readConfiguration(mainPath, userProfile, homeBrainVISADir):
         configuration.SPM.apply_conda_defaults()
     except Exception as e:
         showException(beforeError="Error applying SPM conda defaults:<br>", exceptionInfo=e)
+    # Apply FSL defaults from CONDA_PREFIX after loading user config
+    try:
+        configuration.FSL.apply_conda_defaults()
+    except Exception as e:
+        showException(beforeError="Error applying FSL conda defaults:<br>", exceptionInfo=e)
 
     equiv31_30 = {
         'R.executable': 'Rexecutable',
