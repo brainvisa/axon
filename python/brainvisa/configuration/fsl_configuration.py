@@ -59,7 +59,6 @@ class FSLConfiguration(ConfigurationGroup):
 
     def apply_conda_defaults(self):
         """Apply default FSL paths from CONDA_PREFIX if current values are empty."""
-        print('FSL.apply_conda_defaults !')
         conda_prefix = os.environ.get('CONDA_PREFIX')
         if conda_prefix:
             if os.path.exists(conda_prefix) and os.path.exists(os.path.join(conda_prefix, 'etc', 'fslconf')) \
