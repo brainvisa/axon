@@ -11,10 +11,13 @@ def run_fsl_command(context, cmd, **kwargs):
     Uses capsul.in_context.fsl to do so.
     '''
     configuration = Application().configuration
-    os.environ['FSL_CONFIG'] = osp.join(configuration.FSL.fsldir, 'etc',
-                                        'fslconf', 'fsl.sh')
-    if configuration.FSL.fsl_commands_prefix:
-        os.environ['FSL_PREFIX'] = configuration.FSL.fsl_commands_prefix
-    full_cmd = fsl.fsl_command_with_environment(cmd)
+    if configuration.FSL.fsldir:
+        os.environ['FSL_CONFIG'] = osp.join(configuration.FSL.fsldir, 'etc',
+                                            'fslconf', 'fsl.sh')
+        if configuration.FSL.fsl_commands_prefix:
+            os.environ['FSL_PREFIX'] = configuration.FSL.fsl_commands_prefix
+        full_cmd = fsl.fsl_command_with_environment(cmd)
+    else:
+        full_cmd = cmd
     return context.system(*full_cmd, **kwargs)
 
